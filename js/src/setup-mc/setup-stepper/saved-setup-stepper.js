@@ -14,6 +14,8 @@ import useTargetAudienceWithSuggestions from './useTargetAudienceWithSuggestions
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
 import useShippingRates from '.~/hooks/useShippingRates';
+import useGoogleMCPhoneNumber from '.~/hooks/useGoogleMCPhoneNumber';
+import useStoreAddress from '.~/hooks/useStoreAddress';
 import useShippingTimes from '.~/hooks/useShippingTimes';
 import useSaveShippingRates from '.~/hooks/useSaveShippingRates';
 import useSaveShippingTimes from '.~/hooks/useSaveShippingTimes';
@@ -33,15 +35,25 @@ import {
 /**
  * @param {Object} props React props
  * @param {string} [props.savedStep] A saved step overriding the current step
- * @param {boolean} [props.hasConfirmedStoreRequirements] Whether the store requirements have been confirmed
  * @fires gla_setup_mc with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button', 'step3-continue-button', action: 'go-to-step2' | 'go-to-step3' | 'go-to-step4' }`.
  * @fires gla_setup_mc with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button' | 'stepper-step3-button', action: 'go-to-step1' | 'go-to-step2' | 'go-to-step3' }`.
  */
-const SavedSetupStepper = ( {
-	savedStep,
-	hasConfirmedStoreRequirements = false,
-} ) => {
+const SavedSetupStepper = ( { savedStep } ) => {
 	const [ step, setStep ] = useState( savedStep );
+
+	const { data: address, loaded: addressLoaded } = useStoreAddress();
+	const { data: phone, loaded: phoneLoaded } = useGoogleMCPhoneNumber();
+
+	const hasValidPhoneNumber =
+		phoneLoaded && phone?.isValid && phone?.isVerified;
+
+	const hasValidAddress =
+		addressLoaded &&
+		address?.isAddressFilled &&
+		! address?.isMCAddressDifferent;
+
+	const hasConfirmedStoreRequirements =
+		hasValidPhoneNumber && hasValidAddress;
 
 	const { settings } = useSettings();
 	const { data: suggestedAudience } = useTargetAudienceWithSuggestions();
@@ -217,25 +229,19 @@ const SavedSetupStepper = ( {
 					),
 					onClick: handleStepClick,
 				},
-				...( ! hasConfirmedStoreRequirements
-					? [
-							{
-								key: stepNameKeyMap.store_requirements,
-								label: __(
-									'Confirm store requirements',
-									'google-listings-and-ads'
-								),
-								content: (
-									<StoreRequirements
-										onContinue={
-											handleStoreRequirementsContinue
-										}
-									/>
-								),
-								onClick: handleStepClick,
-							},
-					  ]
-					: [] ),
+				{
+					key: stepNameKeyMap.store_requirements,
+					label: __(
+						'Confirm store requirements',
+						'google-listings-and-ads'
+					),
+					content: (
+						<StoreRequirements
+							onContinue={ handleStoreRequirementsContinue }
+						/>
+					),
+					onClick: handleStepClick,
+				},
 				{
 					key: stepNameKeyMap.paid_ads,
 					label: __( 'Create a campaign', 'google-listings-and-ads' ),

@@ -1,8 +1,14 @@
 /**
+ * External dependencies
+ */
+import { useSelect } from '@wordpress/data';
+
+/**
  * Internal dependencies
  */
-import useAppSelectDispatch from './useAppSelectDispatch';
+import { STORE_KEY } from '.~/data/constants';
 import useCountryKeyNameMap from './useCountryKeyNameMap';
+import useGoogleMCAccount from './useGoogleMCAccount';
 
 /**
  * @typedef {import('.~/hooks/types.js').StoreAddress} StoreAddress
@@ -36,53 +42,73 @@ const emptyData = {
  * @return {StoreAddressResult} Store address result.
  */
 export default function useStoreAddress( source = 'wc' ) {
-	const {
-		data: contact,
-		hasFinishedResolution: loaded,
-		invalidateResolution: refetch,
-	} = useAppSelectDispatch( 'getGoogleMCContactInformation' );
-
+	const { googleMCAccount } = useGoogleMCAccount();
 	const countryNameDict = useCountryKeyNameMap();
 
-	let data = emptyData;
+	return useSelect(
+		( select ) => {
+			let data = emptyData;
 
-	if ( loaded && contact ) {
-		const {
-			is_mc_address_different: isMCAddressDifferent,
-			wc_address_errors: missingRequiredFields,
-		} = contact;
+			// If there is no MC account then there is no store address data to fetch.
+			if ( ! googleMCAccount?.id ) {
+				return {
+					refetch: () => {},
+					loaded: false,
+					data,
+				};
+			}
 
-		const storeAddress =
-			source === 'wc' ? contact.wc_address : contact.mc_address;
+			const {
+				getGoogleMCContactInformation,
+				hasFinishedResolution,
+				refetch,
+			} = select( STORE_KEY );
 
-		// Handle fallback for `null` fields to make sure the returned data types are consistent.
-		const streetAddress = storeAddress?.street_address || '';
-		const city = storeAddress?.locality || '';
-		const state = storeAddress?.region || '';
-		const postcode = storeAddress?.postal_code || '';
+			const contact = getGoogleMCContactInformation();
+			const loaded = hasFinishedResolution(
+				'getGoogleMCContactInformation'
+			);
 
-		const [ address, address2 = '' ] = streetAddress.split( '\n' );
-		const country = countryNameDict[ storeAddress?.country ] || '';
-		const countryCode = storeAddress?.country || '';
-		const isAddressFilled = ! missingRequiredFields.length;
+			if ( contact && loaded ) {
+				const {
+					is_mc_address_different: isMCAddressDifferent,
+					wc_address_errors: missingRequiredFields,
+				} = contact;
 
-		data = {
-			countryCode,
-			address,
-			address2,
-			city,
-			state,
-			country,
-			postcode,
-			isAddressFilled,
-			isMCAddressDifferent,
-			missingRequiredFields,
-		};
-	}
+				const storeAddress =
+					source === 'wc' ? contact.wc_address : contact.mc_address;
 
-	return {
-		refetch,
-		loaded,
-		data,
-	};
+				// Handle fallback for `null` fields to make sure the returned data types are consistent.
+				const streetAddress = storeAddress?.street_address || '';
+				const city = storeAddress?.locality || '';
+				const state = storeAddress?.region || '';
+				const postcode = storeAddress?.postal_code || '';
+
+				const [ address, address2 = '' ] = streetAddress.split( '\n' );
+				const country = countryNameDict[ storeAddress?.country ] || '';
+				const countryCode = storeAddress?.country || '';
+				const isAddressFilled = ! missingRequiredFields.length;
+
+				data = {
+					countryCode,
+					address,
+					address2,
+					city,
+					state,
+					country,
+					postcode,
+					isAddressFilled,
+					isMCAddressDifferent,
+					missingRequiredFields,
+				};
+			}
+
+			return {
+				refetch,
+				loaded,
+				data,
+			};
+		},
+		[ countryNameDict, googleMCAccount?.id, source ]
+	);
 }

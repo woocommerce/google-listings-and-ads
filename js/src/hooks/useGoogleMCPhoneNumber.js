@@ -8,6 +8,7 @@ import { parsePhoneNumberFromString as parsePhoneNumber } from 'libphonenumber-j
  * Internal dependencies
  */
 import { STORE_KEY } from '.~/data/constants';
+import useGoogleMCAccount from './useGoogleMCAccount';
 
 const emptyData = {
 	country: '',
@@ -40,29 +41,48 @@ const emptyData = {
  * @return {PhoneNumber} The payload of parsed phone number associated with the Google Merchant Center account and its loaded state.
  */
 export default function useGoogleMCPhoneNumber() {
-	return useSelect( ( select ) => {
-		const { getGoogleMCPhoneNumber } = select( STORE_KEY );
-		const { data: contact, loaded } = getGoogleMCPhoneNumber();
-		let data = emptyData;
+	const { googleMCAccount } = useGoogleMCAccount();
 
-		if ( contact ) {
-			// Prevent to call parsePhoneNumber with null.
-			const parsed = parsePhoneNumber( contact.phone_number || '' );
-			if ( parsed ) {
-				data = {
-					...parsed,
-					isValid: parsed.isValid(),
-					isVerified:
-						contact.phone_verification_status === 'verified',
-					display: parsed.formatInternational(),
+	return useSelect(
+		( select ) => {
+			let data = emptyData;
+
+			// If there is no MC account then there is no phone number data to fetch.
+			if ( ! googleMCAccount?.id ) {
+				return {
+					loaded: false,
+					data,
 				};
-				delete data.metadata;
 			}
-		}
 
-		return {
-			loaded,
-			data,
-		};
-	}, [] );
+			const { getGoogleMCContactInformation, hasFinishedResolution } =
+				select( STORE_KEY );
+
+			const contact = getGoogleMCContactInformation();
+			const loaded = hasFinishedResolution(
+				'getGoogleMCContactInformation'
+			);
+
+			if ( contact && loaded ) {
+				// Prevent to call parsePhoneNumber with null.
+				const parsed = parsePhoneNumber( contact.phone_number || '' );
+				if ( parsed ) {
+					data = {
+						...parsed,
+						isValid: parsed.isValid(),
+						isVerified:
+							contact.phone_verification_status === 'verified',
+						display: parsed.formatInternational(),
+					};
+					delete data.metadata;
+				}
+			}
+
+			return {
+				loaded,
+				data,
+			};
+		},
+		[ googleMCAccount?.id ]
+	);
 }
