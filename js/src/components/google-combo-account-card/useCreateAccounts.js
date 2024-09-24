@@ -12,7 +12,6 @@ import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
 import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts';
 import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
 import { receiveMCAccount } from '.~/data/actions';
-import { useAppDispatch } from '.~/data';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 
 /**
@@ -25,7 +24,8 @@ const useCreateAccounts = () => {
 
 	const {
 		googleAdsAccount,
-		hasFinishedResolution: hasFinishedResolutionForExistingAdsccounts,
+		hasFinishedResolution: hasFinishedResolutionForExistingAdsccount,
+		refetchGoogleAdsAccount,
 	} = useGoogleAdsAccount();
 
 	const {
@@ -42,29 +42,31 @@ const useCreateAccounts = () => {
 		useCreateMCAccount();
 
 	const [ upsertAdsAccount, { loading } ] = useUpsertAdsAccount();
-	const { invalidateResolution } = useAppDispatch();
 
 	// Process account creation completion.
 	useEffect( () => {
 		if ( response?.status === 200 && ! loading ) {
 			receiveMCAccount( account );
-			invalidateResolution( 'getExistingGoogleAdsAccounts' );
+			refetchGoogleAdsAccount();
 			isCreatingAccountsRef.current = false;
 			accountsCreatedRef.current = true;
 		}
 	}, [ response, loading ] );
 
 	useEffect( () => {
-		if (
+		const existingAccountsResolved =
 			! isResolvingExistingAdsAccount &&
-			hasFinishedResolutionForExistingMCAccounts &&
+			hasFinishedResolutionForExistingMCAccounts;
+
+		accountCreationResolvedRef.current = existingAccountsResolved;
+
+		if (
+			existingAccountsResolved &&
 			isCreatingAccountsRef.current === false &&
-			accountCreationResolvedRef.current === false &&
 			account === undefined &&
-			! googleAdsAccount &&
-			! hasFinishedResolutionForExistingAdsccounts
+			hasFinishedResolutionForExistingAdsccount &&
+			googleAdsAccount.id === 0
 		) {
-			accountCreationResolvedRef.current = true;
 			const hasExistingAccounts =
 				existingMCAccounts?.length > 0 &&
 				existingAdsAccount?.length > 0;
