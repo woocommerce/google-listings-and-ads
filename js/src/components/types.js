@@ -9,12 +9,6 @@
  */
 
 /**
- * @typedef {Object} ValidateCampaignOptions
- * @property {number | undefined} dailyBudget Daily budget for the campaign.
- * @property {Function} formatAmount A function to format the budget amount according to the currency settings.
- */
-
-/**
  * @typedef {Object} AssetGroupFormValues
  * @property {string | null} final_url - The page URL on merchant's website that people reach when they click the ad.
  * @property {string | null} business_name - The business name or brand of merchant's website.

@@ -5,7 +5,12 @@ import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * @typedef {import('.~/components/types.js').CampaignFormValues} CampaignFormValues
- * @typedef {import('.~/components/types.js').ValidateCampaignOptions} ValidateCampaignOptions
+ */
+
+/**
+ * @typedef {Object} ValidateCampaignOptions
+ * @property {number | undefined} dailyBudget Daily budget for the campaign.
+ * @property {Function} formatAmount A function to format the budget amount according to the currency settings.
  */
 
 // Minimum percentage of the recommended daily budget.

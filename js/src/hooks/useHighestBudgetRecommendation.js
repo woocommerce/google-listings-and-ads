@@ -15,13 +15,17 @@ import useAdsCurrency from './useAdsCurrency';
  */
 
 /**
+ * @typedef {Object} HighestBudgetRecommendationHook
+ * @property {number|undefined} dailyBudget The highest recommended daily budget. If no recommendations are available, this will be `undefined`.
+ * @property {boolean} hasFinishedResolution A boolean indicating whether the budget recommendation data has been fetched.
+ * @property {(amount: number) => string} formatAmount A function to format the budget amount according to the currency settings.
+ */
+
+/**
  * Fetch the highest budget recommendation for countries in a side effect.
  *
  * @param {Array<CountryCode>} [countryCodes] An array of country codes. If empty, the dailyBudget will be undefined.
- * @return {Object} An object containing the `dailyBudget` value, `formatAmount` function and a `loading` state.
- * @property {number|null} dailyBudget The highest recommended daily budget. If no recommendations are available, this will be `undefined`.
- * @property {boolean} loading A boolean indicating whether the budget recommendation data is being fetched.
- * @property {Function} formatAmount A function to format the budget amount according to the currency settings.
+ * @return {HighestBudgetRecommendationHook} An object containing the `dailyBudget` value, `formatAmount` function and a `hasFinishedResolution` state.
  */
 const useHighestBudgetRecommendation = ( countryCodes ) => {
 	const { formatAmount } = useAdsCurrency();
