@@ -366,20 +366,33 @@ test.describe( 'Set up Ads account', () => {
 			);
 		} );
 
-		test( 'Set the budget', async () => {
-			budget = '0';
-			await setupBudgetPage.fillBudget( budget );
+		test.describe( 'Set the budget', async () => {
+			test( 'Continue button should be disabled if budget is 0', async () => {
+				budget = '0';
+				await setupBudgetPage.fillBudget( budget );
 
-			await expect(
-				page.getByRole( 'button', { name: 'Continue' } )
-			).toBeDisabled();
+				await expect(
+					page.getByRole( 'button', { name: 'Continue' } )
+				).toBeDisabled();
+			} );
 
-			budget = '1';
-			await setupBudgetPage.fillBudget( budget );
+			test( 'Continue button should be disabled if budget is less than recommended value', async () => {
+				budget = '2';
+				await setupBudgetPage.fillBudget( budget );
 
-			await expect(
-				page.getByRole( 'button', { name: 'Continue' } )
-			).toBeEnabled();
+				await expect(
+					page.getByRole( 'button', { name: 'Continue' } )
+				).toBeDisabled();
+			} );
+
+			test( 'Continue button should be enabled if budget is above the recommended value', async () => {
+				budget = '5';
+				await setupBudgetPage.fillBudget( budget );
+
+				await expect(
+					page.getByRole( 'button', { name: 'Continue' } )
+				).toBeEnabled();
+			} );
 		} );
 
 		test( 'Budget Recommendation', async () => {
