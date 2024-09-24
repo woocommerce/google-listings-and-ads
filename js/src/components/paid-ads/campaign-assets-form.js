@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useState, useMemo } from '@wordpress/element';
+import { useState, useMemo, useEffect, useRef } from '@wordpress/element';
 import { noop } from 'lodash';
 
 /**
@@ -74,20 +74,41 @@ export default function CampaignAssetsForm( {
 	onChange = noop,
 	...adaptiveFormProps
 } ) {
+	const formRef = useRef();
 	const initialAssetGroup = useMemo( () => {
 		return convertAssetEntityGroupToFormValues( assetEntityGroup );
 	}, [ assetEntityGroup ] );
-
 	const [ baseAssetGroup, setBaseAssetGroup ] = useState( initialAssetGroup );
 	const [ hasImportedAssets, setHasImportedAssets ] = useState( false );
-	const [ countryCodes, setCountryCodes ] = useState( [] );
-	const { validateCampaignWithCountryCodes } =
-		useValidateCampaignWithCountryCodes( countryCodes );
+	const {
+		validateCampaignWithCountryCodes,
+		dailyBudget,
+		refreshCountryCodes,
+		currencyCode,
+	} = useValidateCampaignWithCountryCodes();
+
+	// Grab the recommendations for the initial country codes.
+	useEffect( () => {
+		refreshCountryCodes( initialCampaign.countryCodes );
+	}, [ initialCampaign.countryCodes, refreshCountryCodes ] );
 
 	const handleOnChange = ( _, values, arg ) => {
-		setCountryCodes( values.countryCodes );
 		onChange( _, values, arg );
+
+		// Whenever there's a change, update the country codes in the validation function.
+		refreshCountryCodes( values.countryCodes );
 	};
+
+	useEffect( () => {
+		const { setValue } = formRef.current;
+
+		// Trigger a form value change to refresh the validation function once again with the new budget values
+		// If the validation function and values do not change, then the validation will not be triggerred since the `validate`
+		// function uses useCallback and will not be re-created.
+		setValue( 'dailyBudget', dailyBudget );
+		// Sometimes the currency code takes time to resolve and the budget data is already available.
+		setValue( 'currencyCode', currencyCode );
+	}, [ dailyBudget, currencyCode ] );
 
 	const extendAdapter = ( formContext ) => {
 		const assetGroupErrors = validateAssetGroup( formContext.values );
@@ -127,6 +148,7 @@ export default function CampaignAssetsForm( {
 
 	return (
 		<AdaptiveForm
+			ref={ formRef }
 			initialValues={ {
 				...initialCampaign,
 				...initialAssetGroup,

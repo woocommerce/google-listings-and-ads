@@ -45,30 +45,11 @@ export default function PaidAdsSetupSections( {
 	onStatesReceived,
 	countryCodes,
 } ) {
-	const {
-		hasFinishedResolution: hasResolvedValidateCampaignWithCountryCodes,
-		validateCampaignWithCountryCodes,
-	} = useValidateCampaignWithCountryCodes( countryCodes );
+	const { validateCampaignWithCountryCodes, hasFinishedResolution } =
+		useValidateCampaignWithCountryCodes( countryCodes );
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
-
 	const onStatesReceivedRef = useRef();
 	onStatesReceivedRef.current = onStatesReceived;
-
-	/**
-	 * Resolve the initial paid ads data from the given paid ads data.
-	 * Parts of the resolved data are used in the `initialValues` prop of `Form` component.
-	 *
-	 * @param {PaidAdsData} paidAds The paid ads data as the base to be resolved with other states.
-	 * @return {PaidAdsData} The resolved paid ads data.
-	 */
-	function resolveInitialPaidAds( paidAds ) {
-		const nextPaidAds = { ...paidAds };
-		nextPaidAds.isValid = ! Object.keys(
-			validateCampaignWithCountryCodes( nextPaidAds )
-		).length;
-
-		return nextPaidAds;
-	}
 
 	const [ paidAds, setPaidAds ] = useState( () => {
 		// Resolve the starting paid ads data with the campaign data stored in the client session.
@@ -76,7 +57,7 @@ export default function PaidAdsSetupSections( {
 			...defaultPaidAds,
 			...clientSession.getCampaign(),
 		};
-		return resolveInitialPaidAds( startingPaidAds );
+		return startingPaidAds;
 	} );
 
 	const isBillingCompleted =
@@ -97,15 +78,20 @@ export default function PaidAdsSetupSections( {
 	  For example, refresh page during onboarding flow after the billing setup is finished.
 	*/
 	useEffect( () => {
+		const isValid = ! Object.keys(
+			validateCampaignWithCountryCodes( paidAds )
+		).length;
 		const nextPaidAds = {
 			...paidAds,
-			isReady: paidAds.isValid && isBillingCompleted,
+			isValid,
+			isReady: isValid && isBillingCompleted,
 		};
+
 		onStatesReceivedRef.current( nextPaidAds );
 		clientSession.setCampaign( nextPaidAds );
-	}, [ paidAds, isBillingCompleted ] );
+	}, [ paidAds, isBillingCompleted, validateCampaignWithCountryCodes ] );
 
-	if ( ! billingStatus || ! hasResolvedValidateCampaignWithCountryCodes ) {
+	if ( ! billingStatus || ! hasFinishedResolution ) {
 		return (
 			<Section>
 				<SpinnerCard />
