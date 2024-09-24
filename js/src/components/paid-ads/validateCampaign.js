@@ -42,7 +42,7 @@ const validateCampaign = ( values, opts ) => {
 						'Please make sure daily average cost is greater than %s.',
 						'google-listings-and-ads'
 					),
-					formatAmount( minAmount )
+					formatAmount( minAmount - 1 )
 				),
 			};
 		}

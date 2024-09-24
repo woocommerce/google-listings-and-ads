@@ -231,7 +231,7 @@ test.describe( 'Complete your campaign', () => {
 						.locator( '.components-base-control__help' )
 						.textContent();
 					await expect( error ).toBe(
-						'Please make sure daily average cost is greater than NT$30.00.'
+						'Please make sure daily average cost is greater than NT$29.00.'
 					);
 				} );
 

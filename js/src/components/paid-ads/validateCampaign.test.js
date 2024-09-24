@@ -95,6 +95,19 @@ describe( 'validateCampaign', () => {
 		expect( errors.amount ).toContain( 'is greater than Rs 30' );
 	} );
 
+	it( 'When a budget is provided and the amount is same than the minimum, should pass', () => {
+		const mockFormatAmount = jest.fn().mockReturnValue( 'Rs 30' );
+		values.amount = 30;
+
+		const opts = {
+			dailyBudget: 100,
+			formatAmount: mockFormatAmount,
+		};
+
+		const errors = validateCampaign( values, opts );
+		expect( errors ).not.toHaveProperty( 'amount' );
+	} );
+
 	it( 'When a budget is provided and the amount is greater than the minimum, should pass', () => {
 		const mockFormatAmount = jest.fn().mockReturnValue( 'Rs 35' );
 		values.amount = 35;

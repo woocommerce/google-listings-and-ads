@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { expect, test } from '@playwright/test';
+
 /**
  * Internal dependencies
  */
@@ -392,6 +393,18 @@ test.describe( 'Set up Ads account', () => {
 				await expect(
 					page.getByRole( 'button', { name: 'Continue' } )
 				).toBeEnabled();
+			} );
+
+			test( 'User is notified of the minimum value', async () => {
+				budget = '4';
+				await setupBudgetPage.fillBudget( budget );
+				await setupBudgetPage.getBudgetInput().blur();
+
+				await expect(
+					page.getByText(
+						'Please make sure daily average cost is greater than €4.00.'
+					)
+				).toBeVisible();
 			} );
 		} );
 
