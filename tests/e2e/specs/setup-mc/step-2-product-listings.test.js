@@ -260,8 +260,8 @@ test.describe( 'Configure product listings', () => {
 			await expect( minimumOrderForFreeShippingText ).toBeVisible();
 		} );
 
-		test( 'should show error message if clicking "Continue" button when shipping time is < 0', async () => {
-			await productListingsPage.fillEstimatedShippingTimes( '-1' );
+		test( 'should show error message if min shipping time is bigger than max time', async () => {
+			await productListingsPage.fillEstimatedShippingTimes( '9', '7' );
 			await productListingsPage.clickContinueButton();
 			const estimatedTimesError =
 				productListingsPage.getEstimatedShippingTimesError();
@@ -370,7 +370,7 @@ test.describe( 'Configure product listings', () => {
 					request.postDataJSON().time === 14
 			);
 
-			await productListingsPage.fillEstimatedShippingTimes( '14' );
+			await productListingsPage.fillEstimatedShippingTimes( '14', '20' );
 
 			const request = await requestPromise;
 			const response = await request.response();
@@ -438,7 +438,7 @@ test.describe( 'Configure product listings', () => {
 			// Mock MC contact information
 			productListingsPage.mockContactInformation();
 			productListingsPage.checkRecommendedShippingRateRadioButton();
-			await productListingsPage.fillEstimatedShippingTimes( '14' );
+			await productListingsPage.fillEstimatedShippingTimes( '14', '20' );
 			await productListingsPage.checkNonDestinationBasedTaxRateRadioButton();
 		} );
 

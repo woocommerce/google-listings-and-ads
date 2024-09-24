@@ -242,7 +242,7 @@ export default class ProductListingsPage extends MockRequests {
 	 */
 	getEstimatedShippingTimesError() {
 		return this.getEstimatedShippingTimesCard().getByText(
-			'Please specify estimated shipping times for all the countries, and the time cannot be less than 0'
+			'The minimum shipping time must not be more than the maximum shipping time.'
 		);
 	}
 
@@ -514,16 +514,20 @@ export default class ProductListingsPage extends MockRequests {
 	/**
 	 * Fill estimated shipping times.
 	 *
-	 * @param {string} days
+	 * @param {string} min The minimum shipping time
+	 * @param {string} max The maximum shipping time
 	 *
 	 * @return {Promise<void>}
 	 */
-	async fillEstimatedShippingTimes( days = '0' ) {
+	async fillEstimatedShippingTimes( min = '0', max = '10' ) {
 		const estimatedTimesInputBox = this.getEstimatedShippingTimesInputBox();
-		await estimatedTimesInputBox.fill( days );
+
+		await estimatedTimesInputBox.first().fill( min );
+		await estimatedTimesInputBox.last().fill( max );
 
 		// A hack to finish typing in the input box, similar to pressing anywhere in the page.
-		await estimatedTimesInputBox.press( 'Tab' );
+		await estimatedTimesInputBox.first().press( 'Tab' );
+		await estimatedTimesInputBox.last().press( 'Tab' );
 
 		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	}
