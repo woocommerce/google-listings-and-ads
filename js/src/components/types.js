@@ -10,8 +10,8 @@
 
 /**
  * @typedef {Object} ValidateCampaignOptions
- * @property {string} Currency symbol to be used (e.g., 'USD').
- * @property {number} dailyBudget Daily budget for the campaign.
+ * @property {number | undefined} dailyBudget Daily budget for the campaign.
+ * @property {Function} formatAmount A function to format the budget amount according to the currency settings.
  */
 
 /**

@@ -17,7 +17,7 @@ import useAdsCurrency from './useAdsCurrency';
 /**
  * Fetch the highest budget recommendation for countries in a side effect.
  *
- * @param {Array<CountryCode>} countryCodes An array of country codes. If empty, the dailyBudget will be undefined.
+ * @param {Array<CountryCode>} [countryCodes] An array of country codes. If empty, the dailyBudget will be undefined.
  * @return {Object} An object containing the `dailyBudget` value, `formatAmount` function and a `loading` state.
  * @property {number|null} dailyBudget The highest recommended daily budget. If no recommendations are available, this will be `undefined`.
  * @property {boolean} loading A boolean indicating whether the budget recommendation data is being fetched.
@@ -26,19 +26,24 @@ import useAdsCurrency from './useAdsCurrency';
 const useHighestBudgetRecommendation = ( countryCodes ) => {
 	const { formatAmount } = useAdsCurrency();
 
-	return useSelect( ( select ) => {
-		const { getAdsBudgetRecommendations, isResolving } =
-			select( STORE_KEY );
+	return useSelect(
+		( select ) => {
+			const { getAdsBudgetRecommendations, hasFinishedResolution } =
+				select( STORE_KEY );
 
-		const budgetData = getAdsBudgetRecommendations( countryCodes );
-		const budget = getHighestBudget( budgetData?.recommendations );
+			const budgetData = getAdsBudgetRecommendations( countryCodes );
+			const budget = getHighestBudget( budgetData?.recommendations );
 
-		return {
-			dailyBudget: budget?.daily_budget,
-			formatAmount,
-			loading: isResolving( 'getAdsBudgetRecommendations' ),
-		};
-	} );
+			return {
+				dailyBudget: budget?.daily_budget,
+				formatAmount,
+				hasFinishedResolution: hasFinishedResolution(
+					'getAdsBudgetRecommendations'
+				),
+			};
+		},
+		[ countryCodes, formatAmount ]
+	);
 };
 
 export default useHighestBudgetRecommendation;

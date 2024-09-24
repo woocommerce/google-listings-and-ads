@@ -46,9 +46,8 @@ export default function PaidAdsSetupSections( {
 	countryCodes,
 } ) {
 	const {
-		loading: loadingValidateCampaignWithCountryCodes,
+		hasFinishedResolution: hasResolvedValidateCampaignWithCountryCodes,
 		validateCampaignWithCountryCodes,
-		budgetData,
 	} = useValidateCampaignWithCountryCodes( countryCodes );
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 
@@ -106,7 +105,7 @@ export default function PaidAdsSetupSections( {
 		clientSession.setCampaign( nextPaidAds );
 	}, [ paidAds, isBillingCompleted ] );
 
-	if ( ! billingStatus || loadingValidateCampaignWithCountryCodes ) {
+	if ( ! billingStatus || ! hasResolvedValidateCampaignWithCountryCodes ) {
 		return (
 			<Section>
 				<SpinnerCard />
@@ -131,7 +130,6 @@ export default function PaidAdsSetupSections( {
 					<BudgetSection
 						formProps={ formProps }
 						countryCodes={ countryCodes }
-						budgetData={ budgetData }
 					>
 						<BillingCard />
 					</BudgetSection>

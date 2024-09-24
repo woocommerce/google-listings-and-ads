@@ -15,20 +15,21 @@ import { STORE_KEY } from '.~/data/constants';
 /**
  * Fetch the highest budget recommendation for countries in a side effect.
  *
- * @param {Array<CountryCode>} countryCodes An array of country codes. If empty, the fetch will not be triggered.
+ * @param {Array<CountryCode>} [countryCodes] An array of country codes. If empty, the fetch will not be triggered.
  * @return {Object} Budget recommendation.
  */
 const useFetchBudgetRecommendation = ( countryCodes ) => {
-	return useSelect( ( select ) => {
-		const { getAdsBudgetRecommendations, isResolving } =
-			select( STORE_KEY );
+	return useSelect(
+		( select ) => {
+			const { getAdsBudgetRecommendations } = select( STORE_KEY );
 
-		const data = getAdsBudgetRecommendations( countryCodes );
-		return {
-			loading: isResolving( 'getAdsBudgetRecommendations' ),
-			data,
-		};
-	} );
+			const data = getAdsBudgetRecommendations( countryCodes );
+			return {
+				data,
+			};
+		},
+		[ countryCodes ]
+	);
 };
 
 export default useFetchBudgetRecommendation;

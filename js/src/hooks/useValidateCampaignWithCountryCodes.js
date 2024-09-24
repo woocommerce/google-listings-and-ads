@@ -13,15 +13,19 @@ import validateCampaign from '.~/components/paid-ads/validateCampaign';
  */
 
 /**
+ * @typedef {Object} ValidateCampaignWithCountryCodesHook
+ * @property {(values: CampaignFormValues) => Object} validateCampaignWithCountryCodes A function to validate campaign form values.
+ * @property {boolean} hasFinishedResolution A boolean indicating whether the budget recommendation data has been resolved.
+ */
+
+/**
  * Validate campaign form. Accepts the form values object and returns errors object.
  *
- * @param {Array<CountryCode>} countryCodes Country code array. If not provided, the validate function will not take into account budget recommendations.
- * @return {Object} An object containing the `validateCampaignWithCountryCodes` function and a `loading` state.
- * @property {Function} validateCampaignWithCountryCodes A function to validate campaign form values.
- * @property {boolean} loading A boolean indicating whether the budget recommendation data is being fetched.
+ * @param {Array<CountryCode>} [countryCodes] Country code array. If not provided, the validate function will not take into account budget recommendations.
+ * @return {ValidateCampaignWithCountryCodesHook} An object containing the `validateCampaignWithCountryCodes` function and a `loading` state.
  */
 const useValidateCampaignWithCountryCodes = ( countryCodes ) => {
-	const { dailyBudget, formatAmount, loading } =
+	const { dailyBudget, formatAmount, hasFinishedResolution } =
 		useHighestBudgetRecommendation( countryCodes );
 
 	/**
@@ -37,7 +41,7 @@ const useValidateCampaignWithCountryCodes = ( countryCodes ) => {
 		} );
 	};
 
-	return { validateCampaignWithCountryCodes, loading };
+	return { validateCampaignWithCountryCodes, hasFinishedResolution };
 };
 
 export default useValidateCampaignWithCountryCodes;

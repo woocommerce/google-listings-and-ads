@@ -179,11 +179,10 @@ export function calculateDelta( value, base ) {
  * the result to lowercase.
  *
  * @param {Array<CountryCode>} countryCodes - An array of country code strings.
- *
  * @return {string} A underscore-separated, lowercase string representing the sorted country codes.
  */
-export function getCountryCodesKey( countryCodes ) {
-	return countryCodes.sort().join( '_' ).toLowerCase();
+export function getCountryCodesKey( countryCodes = [] ) {
+	return [ ...countryCodes ].sort().join( '_' ).toLowerCase();
 }
 
 /**

@@ -46,7 +46,6 @@ import {
 	receiveMappingRules,
 	receiveStoreCategories,
 	receiveTour,
-	receiveAdsBudgetRecommendations,
 } from './actions';
 
 /**
@@ -545,7 +544,7 @@ getGoogleAdsAccountStatus.shouldInvalidate = ( action ) => {
 /**
  * Fetch ad budget recommendations for the specified country codes.
  *
- * @param {Array<CountryCode>} countryCodes An array of country codes for which to fetch budget recommendations.
+ * @param {Array<CountryCode>} [countryCodes] An array of country codes for which to fetch budget recommendations.
  */
 export function* getAdsBudgetRecommendations( countryCodes ) {
 	if ( ! countryCodes || ! countryCodes.length ) {
@@ -562,11 +561,14 @@ export function* getAdsBudgetRecommendations( countryCodes ) {
 			path,
 		} );
 
-		yield receiveAdsBudgetRecommendations(
+		const { currency, recommendations } = data;
+
+		return {
+			type: TYPES.RECEIVE_ADS_BUDGET_RECOMMENDATIONS,
 			countryCodesKey,
-			data.currency,
-			data.recommendations
-		);
+			currency,
+			recommendations,
+		};
 	} catch ( response ) {
 		// Intentionally silence the specific in case the no budget recommendations are found from the API.
 		if ( response.status === 404 ) {

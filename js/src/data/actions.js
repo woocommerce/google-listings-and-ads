@@ -19,13 +19,8 @@ import { isWCIos, isWCAndroid } from '.~/utils/isMobileApp';
 
 /**
  * @typedef {import('.~/data/types.js').AssetEntityGroupUpdateBody} AssetEntityGroupUpdateBody
+ * @typedef {import('.~/data/actions').CountryCode} CountryCode
  * @typedef {import('./selectors').Tour} Tour
- */
-
-/**
- * CountryCode
- *
- * @typedef {string} CountryCode Two-letter country code in ISO 3166-1 alpha-2 format. Example: 'US'.
  */
 
 /**
@@ -1286,29 +1281,4 @@ export function* fetchGoogleAdsAccountStatus() {
 			)
 		);
 	}
-}
-
-/**
- * Action to receive ad budget recommendations.
- *
- * This function constructs an action object containing the type of the action,
- * the provided country codes, currency, and recommendations.
- *
- * @param {string} countryCodesKey String identifying the country codes.
- * @param {string} currency The currency code representing the currency of the recommendations.
- * @param {Object} recommendations The budget recommendations object.
- * @param {CountryCode} recommendations.country The country-specific recommendations.
- * @param {number} recommendations.daily_budget The daily budget recommendation for the country.
- */
-export function* receiveAdsBudgetRecommendations(
-	countryCodesKey,
-	currency,
-	recommendations
-) {
-	return {
-		type: TYPES.RECEIVE_ADS_BUDGET_RECOMMENDATIONS,
-		countryCodesKey,
-		currency,
-		recommendations,
-	};
 }
