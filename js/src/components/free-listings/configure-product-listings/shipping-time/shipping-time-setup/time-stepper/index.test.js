@@ -2,7 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, fireEvent } from '@testing-library/react';
+import { render, fireEvent, waitFor } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -10,7 +10,7 @@ import { render, fireEvent } from '@testing-library/react';
 import Stepper from './index';
 
 describe( 'Stepper', () => {
-	it( 'Should increase value when clicking on the plus button', () => {
+	it( 'Should increase value when clicking on the plus button', async () => {
 		const handleBlur = jest.fn();
 		const handleIncrement = jest.fn();
 
@@ -24,12 +24,15 @@ describe( 'Stepper', () => {
 
 		fireEvent.mouseDown( getByRole( 'button', { name: 'Increment' } ) );
 
-		expect( handleIncrement ).toHaveBeenCalledTimes( 1 );
+		await waitFor( () => {
+			expect( handleIncrement ).toHaveBeenCalledTimes( 1 );
+		} );
+
 		expect( handleIncrement ).toHaveBeenCalledWith( 2, 'time' );
 		expect( getByDisplayValue( '2' ) ).toBeInTheDocument();
 	} );
 
-	it( 'Should decrease value when clicking on the minus button', () => {
+	it( 'Should decrease value when clicking on the minus button', async () => {
 		const handleBlur = jest.fn();
 		const handleIncrement = jest.fn();
 
@@ -43,7 +46,10 @@ describe( 'Stepper', () => {
 
 		fireEvent.mouseDown( getByRole( 'button', { name: 'Decrement' } ) );
 
-		expect( handleIncrement ).toHaveBeenCalledTimes( 1 );
+		await waitFor( () => {
+			expect( handleIncrement ).toHaveBeenCalledTimes( 1 );
+		} );
+
 		expect( handleIncrement ).toHaveBeenCalledWith( 3, 'time' );
 		expect( getByDisplayValue( '3' ) ).toBeInTheDocument();
 	} );
