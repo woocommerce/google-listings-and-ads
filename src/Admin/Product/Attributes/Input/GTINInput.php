@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Input;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Text;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -17,9 +18,11 @@ defined( 'ABSPATH' ) || exit;
 class GTINInput extends Text {
 
 	/**
+	 * Initial install version to disable the GTIN field for.
+	 *
 	 * @var string
 	 */
-	private $disabled_from = '2024-09-20';
+	private $hidden_from = '2.8.5';
 
 	/**
 	 * GTINInput constructor.
@@ -34,22 +37,22 @@ class GTINInput extends Text {
 	}
 
 	/**
-	 * If WooCommerce >= 9.2 is installed then the field will be:
-	 * - Disabled if GLA was installed after this feature was added
-	 * - Readonly if GLA was installed before this feature was added
+	 * Controls the inputs visibility based on the WooCommerce version and the
+	 * initial version of Google for WooCommerce at the time of installation.
 	 *
 	 * @since x.x.x
 	 * @return void
 	 */
 	public function conditionally_restrict(): void {
-		if ( version_compare( WC_VERSION, '9.2', '>=' ) ) {
-			if ( $this->gla_installed_after( $this->disabled_from ) ) {
-				$this->set_disabled( true );
-				return;
-			}
+		$initial_version = $this->options->get( OptionsInterface::INSTALL_VERSION, false );
 
-			$this->set_readonly( true );
-			$this->set_description( __( 'The Global Trade Item Number (GTIN) for your item can now be entered on the "Inventory" tab', 'google-listings-and-ads' ) );
+		if ( version_compare( WC_VERSION, '9.2', '>=' ) ) {
+			if ( version_compare( $initial_version, $this->hidden_from, '>=' ) ) {
+				$this->set_disabled( true );
+			} else {
+				$this->set_readonly( true );
+				$this->set_description( __( 'The Global Trade Item Number (GTIN) for your item can now be entered on the "Inventory" tab', 'google-listings-and-ads' ) );
+			}
 		}
 	}
 }
