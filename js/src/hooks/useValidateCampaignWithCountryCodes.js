@@ -51,7 +51,7 @@ const useValidateCampaignWithCountryCodes = ( initialCountryCodes ) => {
 					validateCampaignWithCountryCodes: validateCampaign,
 					dailyBudget: null,
 					formatAmount,
-					setCountryCodes,
+					refreshCountryCodes: setCountryCodes,
 					currencyCode: code,
 					hasFinishedResolution: true,
 				};
