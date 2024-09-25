@@ -62,11 +62,13 @@ function resolveInitialPaidAds( paidAds ) {
  * @param {(onStatesReceived: PaidAdsData)=>void} props.onStatesReceived Callback to receive the data for setting up paid ads when initial and also when the budget and billing are updated.
  * @param {Array<CountryCode>|undefined} props.countryCodes Country codes for the campaign.
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
+ * @param {boolean} [props.showCampaignPreviewCard=false] Whether to show the campaign preview card.
  */
 export default function PaidAdsSetupSections( {
 	onStatesReceived,
 	countryCodes,
 	campaign,
+	showCampaignPreviewCard = false,
 } ) {
 	const isCreation = ! campaign;
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
@@ -136,7 +138,7 @@ export default function PaidAdsSetupSections( {
 						countryCodes={ countryCodes }
 					>
 						<BillingCard />
-						<CampaignPreviewCard />
+						{ showCampaignPreviewCard && <CampaignPreviewCard /> }
 					</BudgetSection>
 				);
 			} }

@@ -230,7 +230,6 @@ const SavedSetupStepper = ( { savedStep } ) => {
 						<CampaignAssetsForm
 							initialCampaign={ {
 								amount: 0,
-								countryCodes: [],
 							} }
 						>
 							<SetupPaidAds />
