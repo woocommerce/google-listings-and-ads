@@ -28,4 +28,19 @@ class ScriptAssetTest extends TestCase {
 		$asset = new ScriptAsset( __FUNCTION__, self::URI, [], '' );
 		$this->assertTrue( $asset->can_enqueue() );
 	}
+
+	/**
+	 * Confirm an exception is logged using the `woocommerce_gla_exception`
+	 * action if an asset is enqueued before it is registered.
+	 *
+	 * @return void
+	 */
+	public function test_exception_logged_if_asset_enqueued_before_registration() {
+		do_action( 'wp_enqueue_scripts' );
+
+		$asset = new ScriptAsset( __FUNCTION__, self::URI, [], '', '__return_true' );
+		$asset->enqueue();
+
+		$this->assertEquals( 1, did_action( 'woocommerce_gla_exception' ) );
+	}
 }
