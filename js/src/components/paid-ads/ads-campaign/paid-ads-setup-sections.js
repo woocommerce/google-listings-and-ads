@@ -14,6 +14,7 @@ import SpinnerCard from '.~/components/spinner-card';
 import Section from '.~/wcdl/section';
 import validateCampaign from '.~/components/paid-ads/validateCampaign';
 import clientSession from './clientSession';
+import CampaignPreviewCard from '.~/components/paid-ads/campaign-preview/campaign-preview-card';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 
 /**
@@ -135,6 +136,7 @@ export default function PaidAdsSetupSections( {
 						countryCodes={ countryCodes }
 					>
 						<BillingCard />
+						<CampaignPreviewCard />
 					</BudgetSection>
 				);
 			} }
