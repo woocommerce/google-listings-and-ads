@@ -4,7 +4,6 @@
 import { __ } from '@wordpress/i18n';
 import { Flex, FlexItem, FlexBlock } from '@wordpress/components';
 import { Pill } from '@woocommerce/components';
-import { noop } from 'lodash';
 import GridiconCheckmark from 'gridicons/dist/checkmark';
 
 /**
@@ -13,9 +12,6 @@ import GridiconCheckmark from 'gridicons/dist/checkmark';
 import Section from '.~/wcdl/section';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import CampaignPreview from '.~/components/paid-ads/campaign-preview';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import AppButton from '.~/components/app-button';
-import SkipButton from './skip-button';
 import FreeAdCredit from '.~/components/free-ad-credit';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import useFreeAdCredit from '.~/hooks/useFreeAdCredit';
@@ -51,23 +47,9 @@ function FeatureList() {
 /**
  * Renders a section layout to elaborate on the features of paid ads and show the buttons
  * for the next actions: skip or continue the paid ads setup.
- *
- * @param {Object} props React props.
- * @param {boolean} props.hidePaidAdsSetupFooterButtons Whether to hide the buttons at the section footer.
- * @param {() => void} props.onSkipClick Callback called when the skip button is clicked.
- * @param {() => void} props.onCreateCampaignClick Callback called when the create campaign button is clicked.
- * @param {boolean} [props.disableCreateButton=false] Whether to disable the create campaign button.
  */
-export default function PaidAdsFeaturesSection( {
-	hidePaidAdsSetupFooterButtons,
-	onSkipClick = noop,
-	onCreateCampaignClick = noop,
-	disableCreateButton = false,
-} ) {
+export default function PaidAdsFeaturesSection( {} ) {
 	const hasFreeAdCredit = useFreeAdCredit();
-	const { hasGoogleAdsConnection } = useGoogleAdsAccount();
-	const hideFooterButtons =
-		! hasGoogleAdsConnection || hidePaidAdsSetupFooterButtons;
 
 	return (
 		<Section
@@ -133,26 +115,6 @@ export default function PaidAdsFeaturesSection( {
 						{ hasFreeAdCredit && <FreeAdCredit /> }
 					</VerticalGapLayout>
 				</Section.Card.Body>
-				<Section.Card.Footer hidden={ hideFooterButtons }>
-					<SkipButton
-						text={ __(
-							'Skip this step for now',
-							'google-listings-and-ads'
-						) }
-						onClick={ onSkipClick }
-					/>
-
-					<AppButton
-						isPrimary
-						text={ __(
-							'Create campaign',
-							'google-listings-and-ads'
-						) }
-						disabled={ disableCreateButton }
-						onClick={ onCreateCampaignClick }
-						eventName="gla_onboarding_open_paid_ads_setup_button_click"
-					/>
-				</Section.Card.Footer>
 			</Section.Card>
 		</Section>
 	);

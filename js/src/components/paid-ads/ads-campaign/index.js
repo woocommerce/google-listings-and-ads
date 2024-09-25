@@ -22,7 +22,6 @@ import FaqsSection from '../faqs-section';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
 import PaidAdsSetupSections from './paid-ads-setup-sections';
 import SkipButton from './skip-button';
-import clientSession from './clientSession';
 import { ACTION_SKIP, ACTION_COMPLETE } from './constants';
 
 /**
@@ -60,7 +59,6 @@ export default function AdsCampaign( {
 	const { isValidForm, setValue } = formContext;
 	const [ completing, setCompleting ] = useState( null );
 	const [ paidAds, setPaidAds ] = useState( {} );
-	const [ showPaidAdsSetup, setShowPaidAdsSetup ] = useState( true );
 
 	useEffect( () => {
 		if ( error ) {
@@ -74,12 +72,6 @@ export default function AdsCampaign( {
 		const { amount, countryCodes } = paidAdsValues;
 		setValue( 'amount', amount );
 		setValue( 'countryCodes', countryCodes );
-	};
-
-	const handleCreateCampaignClick = () => {
-		setShowPaidAdsSetup( true );
-
-		clientSession.setShowPaidAdsSetup( true );
 	};
 
 	const handleSkipCreateAds = () => {
@@ -98,7 +90,6 @@ export default function AdsCampaign( {
 	// because when there is no connected account, it will disable the budget section and set the `amount` to `undefined`.
 	const disabledComplete =
 		completing === ACTION_SKIP || ! paidAds.isReady || ! isValidForm;
-	const shouldShowPaidAdsSetup = ! onboardingSetup || showPaidAdsSetup;
 
 	let continueButtonProps = {
 		text: __( 'Continue', 'google-listings-and-ads' ),
@@ -141,47 +132,36 @@ export default function AdsCampaign( {
 				description={ description }
 			/>
 
-			{ onboardingSetup && (
-				<PaidAdsFeaturesSection
-					hidePaidAdsSetupFooterButtons={ shouldShowPaidAdsSetup }
-					onSkipClick={ handleSkipCreateAds }
-					onCreateCampaignClick={ handleCreateCampaignClick }
-					disableCreateButton={ completing === ACTION_SKIP }
-				/>
-			) }
+			{ onboardingSetup && <PaidAdsFeaturesSection /> }
 
-			{ shouldShowPaidAdsSetup && (
-				<PaidAdsSetupSections
-					onStatesReceived={ handleOnStatesReceived }
-					campaign={ campaign }
-				/>
-			) }
+			<PaidAdsSetupSections
+				onStatesReceived={ handleOnStatesReceived }
+				campaign={ campaign }
+			/>
 
 			<FaqsSection />
 
-			{ shouldShowPaidAdsSetup && (
-				<StepContentFooter>
-					{ onboardingSetup && (
-						<SkipButton
-							text={ __(
-								'Skip paid ads creation',
-								'google-listings-and-ads'
-							) }
-							onSkipCreatePaidAds={ handleSkipCreateAds }
-							completing={ completing }
-							paidAds={ paidAds }
-						/>
-					) }
-
-					<AppButton
-						isPrimary
-						disabled={ disabledComplete }
-						onClick={ handleCompleteClick }
-						loading={ completing === ACTION_COMPLETE }
-						{ ...continueButtonProps }
+			<StepContentFooter>
+				{ onboardingSetup && (
+					<SkipButton
+						text={ __(
+							'Skip paid ads creation',
+							'google-listings-and-ads'
+						) }
+						onSkipCreatePaidAds={ handleSkipCreateAds }
+						completing={ completing }
+						paidAds={ paidAds }
 					/>
-				</StepContentFooter>
-			) }
+				) }
+
+				<AppButton
+					isPrimary
+					disabled={ disabledComplete }
+					onClick={ handleCompleteClick }
+					loading={ completing === ACTION_COMPLETE }
+					{ ...continueButtonProps }
+				/>
+			</StepContentFooter>
 		</StepContent>
 	);
 }
