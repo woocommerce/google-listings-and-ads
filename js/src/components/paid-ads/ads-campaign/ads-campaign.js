@@ -148,7 +148,10 @@ export default function AdsCampaign( {
 				onStatesReceived={ handleOnStatesReceived }
 				campaign={ campaign }
 				countryCodes={ countryCodes }
-				showCampaignPreviewCard={ trackingContext === 'setup-ads' }
+				showCampaignPreviewCard={
+					trackingContext === 'setup-ads' ||
+					trackingContext === 'create-ads'
+				}
 			/>
 
 			<FaqsSection />
