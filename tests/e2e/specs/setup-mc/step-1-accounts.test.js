@@ -218,6 +218,68 @@ test.describe( 'Set up accounts', () => {
 
 			expect( page.url() ).toMatch( baseURL + 'google_auth' );
 		} );
+
+		test( 'should create merchant center and ads account if does not exist for the user', async () => {
+			await setUpAccountsPage.mockJetpackConnected();
+			await setUpAccountsPage.mockGoogleConnected();
+
+			await setupAdsAccountPage.fulfillAdsAccountsRequests( [
+				{
+					id: 0,
+					currency: 'USD',
+					status: 'disconnected',
+					symbol: '$',
+				},
+				{
+					id: 119119119,
+					currency: 'USD',
+					status: 'disconnected',
+					symbol: '$',
+				},
+			] );
+
+			await setupAdsAccountPage.fulfillMCAccountsRequests( [
+				[],
+				{
+					id: 5432178,
+					name: null,
+					subaccount: null,
+					domain: null,
+				},
+			] );
+
+			await setUpAccountsPage.goto();
+			const googleAccountCard = setUpAccountsPage.getGoogleAccountCard();
+
+			await expect(
+				googleAccountCard.getByText(
+					/You don’t have Merchant Center nor Google Ads accounts, so we’re creating them for you./,
+					{
+						exact: true,
+					}
+				)
+			).toBeVisible();
+		} );
+
+		test( 'should see the merchant center id and ads account id if connected', async () => {
+			await setUpAccountsPage.mockGoogleConnected();
+			await setUpAccountsPage.mockAdsAccountConnected();
+			await setUpAccountsPage.mockMCConnected();
+			await setUpAccountsPage.goto();
+
+			const googleAccountCard = setUpAccountsPage.getGoogleAccountCard();
+			await expect(
+				googleAccountCard.getByText( 'Merchant Center ID: 1234', {
+					exact: true,
+				} )
+			).toBeVisible();
+
+			await expect(
+				googleAccountCard.getByText( 'Google Ads ID: 12345', {
+					exact: true,
+				} )
+			).toBeVisible();
+		} );
 	} );
 
 	test.describe( 'Continue button', () => {

@@ -39,6 +39,32 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Send the different response for each time the route is called.
+	 *
+	 * @param {RegExp|string} url       The url to fulfill.
+	 * @param {Array}         payloads  The payload to send.
+	 * @param {number}        status    The HTTP status in the response.
+	 * @return {Promise<void>}
+	 */
+	async fulfillRequests( url, payloads = [], status = 200 ) {
+		let callCount = 0;
+		await this.page.route( url, ( route ) => {
+			if ( callCount < payloads.length ) {
+				route.fulfill( {
+					status,
+					contentType: 'application/json',
+					headers: { 'Access-Control-Allow-Origin': '*' },
+					body: JSON.stringify( payloads[ callCount ] ),
+				} );
+			} else {
+				// Optionally handle additional calls beyond the responses array
+				route.continue();
+			}
+			callCount += 1;
+		} );
+	}
+
+	/**
 	 * Fulfill the WC options default country request.
 	 *
 	 * @param {Object} payload
@@ -108,6 +134,16 @@ export default class MockRequests {
 			status,
 			methods
 		);
+	}
+
+	/**
+	 * Fulfill the MC accounts requests.
+	 *
+	 * @param {Object} payloads
+	 * @return {Promise<void>}
+	 */
+	async fulfillMCAccountsRequests( payloads ) {
+		await this.fulfillRequests( /\/wc\/gla\/mc\/accounts\b/, payloads );
 	}
 
 	/**
@@ -220,6 +256,16 @@ export default class MockRequests {
 	 */
 	async fulfillAdsAccounts( payload ) {
 		await this.fulfillRequest( /\/wc\/gla\/ads\/accounts\b/, payload );
+	}
+
+	/**
+	 * Fulfill the Ads Account requests.
+	 *
+	 * @param {Object} payloads
+	 * @return {Promise<void>}
+	 */
+	async fulfillAdsAccountsRequests( payloads ) {
+		await this.fulfillRequests( /\/wc\/gla\/ads\/accounts\b/, payloads );
 	}
 
 	/**
