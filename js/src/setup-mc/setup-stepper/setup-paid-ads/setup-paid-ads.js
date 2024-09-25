@@ -13,14 +13,11 @@ import { noop } from 'lodash';
 import useAdminUrl from '.~/hooks/useAdminUrl';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useAdsSetupCompleteCallback from '.~/hooks/useAdsSetupCompleteCallback';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
-import SkipPaidAdsConfirmationModal from './skip-paid-ads-confirmation-modal';
 import { getProductFeedUrl } from '.~/utils/urls';
-import { API_NAMESPACE, STORE_KEY } from '.~/data/constants';
+import { API_NAMESPACE } from '.~/data/constants';
 import { GUIDE_NAMES } from '.~/constants';
-import { recordGlaEvent } from '.~/utils/tracks';
 
 /**
  * Clicking on the "Create a paid ad campaign" button to open the paid ads setup in the onboarding flow.
@@ -58,16 +55,10 @@ import { recordGlaEvent } from '.~/utils/tracks';
  */
 export default function SetupPaidAds() {
 	const adminUrl = useAdminUrl();
-	const { googleAdsAccount } = useGoogleAdsAccount();
-	const [ paidAds, setPaidAds ] = useState( {} );
 	const [ error, setError ] = useState( false );
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
-	const [
-		showSkipPaidAdsConfirmationModal,
-		setShowSkipPaidAdsConfirmationModal,
-	] = useState( false );
 
 	const finishOnboardingSetup = async ( event, onBeforeFinish = noop ) => {
 		try {
@@ -94,29 +85,7 @@ export default function SetupPaidAds() {
 	};
 
 	const handleSkipCreatePaidAds = async ( event ) => {
-		const selector = select( STORE_KEY );
-		const billing = selector.getGoogleAdsAccountBillingStatus();
-
-		setShowSkipPaidAdsConfirmationModal( false );
-
-		const eventProps = {
-			google_ads_account_status: googleAdsAccount?.status,
-			billing_method_status: billing?.status || 'unknown',
-			campaign_form_validation: paidAds.isValid ? 'valid' : 'invalid',
-		};
-
-		recordGlaEvent( 'gla_onboarding_complete_button_click', eventProps );
-
 		await finishOnboardingSetup( event );
-	};
-
-	const handleShowSkipPaidAdsConfirmationModal = ( paidAdsData ) => {
-		setShowSkipPaidAdsConfirmationModal( true );
-		setPaidAds( paidAdsData );
-	};
-
-	const handleCancelSkipPaidAdsClick = () => {
-		setShowSkipPaidAdsConfirmationModal( false );
 	};
 
 	const handleCompleteClick = async ( paidAdsData ) => {
@@ -129,27 +98,19 @@ export default function SetupPaidAds() {
 	};
 
 	return (
-		<>
-			<AdsCampaign
-				headerTitle={ __(
-					'Create a campaign to advertise your products',
-					'google-listings-and-ads'
-				) }
-				headerDescription={ __(
-					'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your products will be included in the campaign after they’re approved.',
-					'google-listings-and-ads'
-				) }
-				onSkip={ handleShowSkipPaidAdsConfirmationModal }
-				onContinue={ handleCompleteClick }
-				error={ error }
-				onboardingSetup
-			/>
-			{ showSkipPaidAdsConfirmationModal && (
-				<SkipPaidAdsConfirmationModal
-					onRequestClose={ handleCancelSkipPaidAdsClick }
-					onSkipCreatePaidAds={ handleSkipCreatePaidAds }
-				/>
+		<AdsCampaign
+			headerTitle={ __(
+				'Create a campaign to advertise your products',
+				'google-listings-and-ads'
 			) }
-		</>
+			headerDescription={ __(
+				'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your products will be included in the campaign after they’re approved.',
+				'google-listings-and-ads'
+			) }
+			onSkip={ handleSkipCreatePaidAds }
+			onContinue={ handleCompleteClick }
+			error={ error }
+			onboardingSetup
+		/>
 	);
 }

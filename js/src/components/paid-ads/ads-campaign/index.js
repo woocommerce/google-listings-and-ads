@@ -82,8 +82,8 @@ export default function AdsCampaign( {
 		clientSession.setShowPaidAdsSetup( true );
 	};
 
-	const handleSkipClick = ( event ) => {
-		setCompleting( event.target.dataset.action );
+	const handleSkipCreateAds = () => {
+		setCompleting( ACTION_SKIP );
 
 		onSkip( paidAds );
 	};
@@ -144,7 +144,7 @@ export default function AdsCampaign( {
 			{ onboardingSetup && (
 				<PaidAdsFeaturesSection
 					hidePaidAdsSetupFooterButtons={ shouldShowPaidAdsSetup }
-					onSkipClick={ handleSkipClick }
+					onSkipClick={ handleSkipCreateAds }
 					onCreateCampaignClick={ handleCreateCampaignClick }
 					disableCreateButton={ completing === ACTION_SKIP }
 				/>
@@ -167,7 +167,9 @@ export default function AdsCampaign( {
 								'Skip paid ads creation',
 								'google-listings-and-ads'
 							) }
-							onClick={ handleSkipClick }
+							onSkipCreatePaidAds={ handleSkipCreateAds }
+							completing={ completing }
+							paidAds={ paidAds }
 						/>
 					) }
 
