@@ -19,26 +19,8 @@ import { API_NAMESPACE } from '.~/data/constants';
 import { GUIDE_NAMES } from '.~/constants';
 
 /**
- * Clicking on the "Create a paid ad campaign" button to open the paid ads setup in the onboarding flow.
- *
- * @event gla_onboarding_open_paid_ads_setup_button_click
- */
-
-/**
- * Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
- *
- * @event gla_onboarding_complete_with_paid_ads_button_click
- * @property {number} budget The budget for the campaign
- * @property {string} audiences The targeted audiences for the campaign
- */
-
-/**
  * Renders the onboarding step for setting up the paid ads (Google Ads account and paid campaign)
  * or skipping it, and then completing the onboarding flow.
- *
- * @fires gla_onboarding_open_paid_ads_setup_button_click
- * @fires gla_onboarding_complete_with_paid_ads_button_click
- * @fires gla_onboarding_complete_button_click
  */
 export default function SetupPaidAds() {
 	const adminUrl = useAdminUrl();

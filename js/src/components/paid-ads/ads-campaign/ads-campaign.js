@@ -30,12 +30,21 @@ import { ACTION_SKIP, ACTION_COMPLETE } from './constants';
  */
 
 /**
+ * Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
+ *
+ * @event gla_onboarding_complete_with_paid_ads_button_click
+ * @property {number} budget The budget for the campaign
+ * @property {string} audiences The targeted audiences for the campaign
+ */
+
+/**
  * Renders the container of the form content for campaign management.
  *
  * Please note that this component relies on an CampaignAssetsForm's context and custom adapter,
  * so it expects a `CampaignAssetsForm` to existing in its parents.
  *
  * @fires gla_documentation_link_click with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
+ * @fires gla_onboarding_complete_with_paid_ads_button_click
  * @param {Object} props React props.
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
  * @param {string} props.headerTitle The title of the step.
