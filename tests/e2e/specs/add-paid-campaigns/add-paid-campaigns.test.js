@@ -287,7 +287,6 @@ test.describe( 'Set up Ads account', () => {
 
 		test( 'Continue to create paid campaign', async () => {
 			await setupAdsAccounts.clickContinue();
-
 			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 
 			await expect(
@@ -406,7 +405,7 @@ test.describe( 'Set up Ads account', () => {
 		} );
 
 		test( 'Launch paid campaign should be enabled', async () => {
-			//Click Add paid Campaign
+			//Reload the page
 			await page.reload();
 			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 
