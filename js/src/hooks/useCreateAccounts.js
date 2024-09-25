@@ -17,6 +17,13 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
  * Custom hook to handle the creation of MC and Ads accounts.
  */
 const useCreateAccounts = () => {
+	/**
+	 * Refs are used to avoid the re-render of the parent component.
+	 *
+	 * accountCreationChecksResolvedRef - Indicates if the account creation checks have been resolved.
+	 * isCreatingAccountsRef - Indicates if the accounts are being created.
+	 * accountsCreatedRef - Indicates if the accounts have been created.
+	 */
 	const accountCreationChecksResolvedRef = useRef( false );
 	const isCreatingAccountsRef = useRef( false );
 	const accountsCreatedRef = useRef( false );
