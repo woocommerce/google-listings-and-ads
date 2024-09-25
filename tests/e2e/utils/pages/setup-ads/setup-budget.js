@@ -88,6 +88,16 @@ export default class SetupBudget extends MockRequests {
 	}
 
 	/**
+	 * Focus the budget input.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async focusBudget() {
+		const input = this.getBudgetInput();
+		await input.focus();
+	}
+
+	/**
 	 * Click set up billing button.
 	 *
 	 * @return {Promise<void>}

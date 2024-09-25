@@ -394,6 +394,30 @@ test.describe( 'Set up Ads account', () => {
 			test( 'should open a popup when clicking set up billing button', async () => {
 				await checkBillingAdsPopup( page );
 			} );
+
+			test( 'should see billing has been set up successfully when billing status API returns approved', async () => {
+				const newPagePromise = page.waitForEvent( 'popup' );
+				await setupBudgetPage.clickSetUpBillingLink();
+				const newPage = await newPagePromise;
+				await newPage.waitForLoadState();
+
+				await setupBudgetPage.fulfillBillingStatusRequest( {
+					status: 'pending',
+				} );
+
+				await newPage.close();
+				await setupBudgetPage.focusBudget();
+				await setupBudgetPage.fulfillBillingStatusRequest( {
+					status: 'approved',
+				} );
+				await setupBudgetPage.awaitForBillingStatusRequest();
+
+				const billingSetupSuccessSection =
+					setupBudgetPage.getBillingSetupSuccessSection();
+				await expect( billingSetupSuccessSection ).toContainText(
+					'Billing method for Google Ads added successfully'
+				);
+			} );
 		} );
 	} );
 
@@ -418,11 +442,6 @@ test.describe( 'Set up Ads account', () => {
 				status: 'approved',
 			} );
 			await setupBudgetPage.fillBudget( '1' );
-			await expect(
-				page.getByText(
-					'Billing method for Google Ads added successfully'
-				)
-			).toBeVisible();
 
 			await expect(
 				page.getByRole( 'button', { name: 'Continue' } )

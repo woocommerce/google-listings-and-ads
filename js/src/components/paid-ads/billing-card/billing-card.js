@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useState, useEffect } from '@wordpress/element';
 import Gridiconcheckmark from 'gridicons/dist/checkmark';
 import { Flex, FlexBlock } from '@wordpress/components';
 
@@ -15,18 +16,30 @@ import fallbackBillingUrl from './fallbackBillingUrl';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 import './billing-card.scss';
 
-const { APPROVED } = GOOGLE_ADS_BILLING_STATUS;
+const { APPROVED, PENDING } = GOOGLE_ADS_BILLING_STATUS;
 
 /**
  * Renders a success notice card or a setup card according to the billing status
  * of the connected Google Ads account.
  */
 export default function BillingCard() {
+	const [ showNotice, setShowNotice ] = useState( false );
 	const { billingStatus, hasFinishedResolution } =
 		useGoogleAdsAccountBillingStatus();
 
+	useEffect( () => {
+		// only show notice if we are in pending state before
+		if ( billingStatus.status === PENDING && ! showNotice ) {
+			setShowNotice( true );
+		}
+	}, [ billingStatus, showNotice ] );
+
 	if ( ! hasFinishedResolution ) {
 		return <SpinnerCard />;
+	}
+
+	if ( billingStatus.status === APPROVED && ! showNotice ) {
+		return null;
 	}
 
 	if ( billingStatus.status === APPROVED ) {
