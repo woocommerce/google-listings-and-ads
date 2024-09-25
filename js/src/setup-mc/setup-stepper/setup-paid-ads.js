@@ -59,7 +59,7 @@ export default function SetupPaidAds() {
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
 
-	const finishOnboardingSetup = async ( event, onBeforeFinish = noop ) => {
+	const finishOnboardingSetup = async ( onBeforeFinish = noop ) => {
 		try {
 			await onBeforeFinish();
 			await apiFetch( {
@@ -83,8 +83,8 @@ export default function SetupPaidAds() {
 		window.location.href = adminUrl + getProductFeedUrl( query );
 	};
 
-	const handleSkipCreatePaidAds = async ( event ) => {
-		await finishOnboardingSetup( event );
+	const handleSkipCreatePaidAds = async () => {
+		await finishOnboardingSetup();
 	};
 
 	const handleCompleteClick = async ( paidAdsData ) => {
@@ -93,6 +93,7 @@ export default function SetupPaidAds() {
 			paidAdsData.amount,
 			countryCodes
 		);
+
 		await finishOnboardingSetup( onBeforeFinish );
 	};
 
