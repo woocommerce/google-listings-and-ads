@@ -39,14 +39,17 @@ const ConnectedGoogleComboAccountCard = ( { googleAccount } ) => {
 		hasFinishedResolution: hasFinishedResolutionForCurrentAdsAccount,
 	} = useGoogleAdsAccount();
 
-	const { accountsCreated, accountCreationResolved, isCreatingAccounts } =
-		useCreateAccounts();
+	const {
+		accountsCreated,
+		accountCreationChecksResolved,
+		isCreatingAccounts,
+	} = useCreateAccounts();
 
 	if (
 		! accountsCreated &&
 		( ! hasFinishedResolutionForCurrentAdsAccount ||
 			! hasFinishedResolutionForCurrentMCAccount ||
-			! accountCreationResolved )
+			! accountCreationChecksResolved )
 	) {
 		return <AccountCard description={ <AppSpinner /> } />;
 	}

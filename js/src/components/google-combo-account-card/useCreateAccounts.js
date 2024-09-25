@@ -11,21 +11,19 @@ import useCreateMCAccount from '../google-mc-account-card/useCreateMCAccount';
 import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
 import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts';
 import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
-import { receiveMCAccount } from '.~/data/actions';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 
 /**
  * Custom hook to handle the creation of MC and Ads accounts.
  */
 const useCreateAccounts = () => {
-	const accountCreationResolvedRef = useRef( false );
+	const accountCreationChecksResolvedRef = useRef( false );
 	const isCreatingAccountsRef = useRef( false );
 	const accountsCreatedRef = useRef( false );
 
 	const {
 		googleAdsAccount,
 		hasFinishedResolution: hasFinishedResolutionForExistingAdsccount,
-		refetchGoogleAdsAccount,
 	} = useGoogleAdsAccount();
 
 	const {
@@ -46,8 +44,6 @@ const useCreateAccounts = () => {
 	// Process account creation completion.
 	useEffect( () => {
 		if ( response?.status === 200 && ! loading ) {
-			receiveMCAccount( account );
-			refetchGoogleAdsAccount();
 			isCreatingAccountsRef.current = false;
 			accountsCreatedRef.current = true;
 		}
@@ -58,7 +54,7 @@ const useCreateAccounts = () => {
 			! isResolvingExistingAdsAccount &&
 			hasFinishedResolutionForExistingMCAccounts;
 
-		accountCreationResolvedRef.current = existingAccountsResolved;
+			accountCreationChecksResolvedRef.current = existingAccountsResolved;
 
 		if (
 			existingAccountsResolved &&
@@ -89,7 +85,7 @@ const useCreateAccounts = () => {
 
 	return {
 		isCreatingAccounts: isCreatingAccountsRef.current,
-		accountCreationResolved: accountCreationResolvedRef.current,
+		accountCreationChecksResolved: accountCreationChecksResolvedRef.current,
 		accountsCreated: accountsCreatedRef.current,
 	};
 };
