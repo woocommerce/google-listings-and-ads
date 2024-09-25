@@ -48,7 +48,7 @@ function FeatureList() {
  * Renders a section layout to elaborate on the features of paid ads and show the buttons
  * for the next actions: skip or continue the paid ads setup.
  */
-export default function PaidAdsFeaturesSection( {} ) {
+export default function PaidAdsFeaturesSection() {
 	const hasFreeAdCredit = useFreeAdCredit();
 
 	return (
