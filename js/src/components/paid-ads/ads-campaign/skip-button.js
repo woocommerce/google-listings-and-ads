@@ -36,8 +36,6 @@ export default function SkipButton( {
 
 	const handleSkipCreatePaidAds = () => {
 		setShowSkipPaidAdsConfirmationModal( false );
-
-		// Confirm
 		onSkipCreatePaidAds();
 	};
 
