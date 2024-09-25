@@ -24,7 +24,7 @@ export default function SkipButton( {
 		setShowSkipPaidAdsConfirmationModal,
 	] = useState( false );
 	const { googleAdsAccount, hasGoogleAdsConnection } = useGoogleAdsAccount();
-	const { status: billingStatus } = useGoogleAdsAccountBillingStatus();
+	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 
 	const handleOnSkipClick = () => {
 		setShowSkipPaidAdsConfirmationModal( true );
@@ -41,7 +41,7 @@ export default function SkipButton( {
 
 	const eventProps = {
 		google_ads_account_status: googleAdsAccount?.status,
-		billing_method_status: billingStatus || 'unknown',
+		billing_method_status: billingStatus?.status || 'unknown',
 		campaign_form_validation: paidAds?.isValid ? 'valid' : 'invalid',
 	};
 
