@@ -7,7 +7,7 @@ import { useEffect, useRef } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import useCreateMCAccount from '../google-mc-account-card/useCreateMCAccount';
+import useCreateMCAccount from '../components/google-mc-account-card/useCreateMCAccount';
 import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
 import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts';
 import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
@@ -54,7 +54,7 @@ const useCreateAccounts = () => {
 			! isResolvingExistingAdsAccount &&
 			hasFinishedResolutionForExistingMCAccounts;
 
-			accountCreationChecksResolvedRef.current = existingAccountsResolved;
+		accountCreationChecksResolvedRef.current = existingAccountsResolved;
 
 		if (
 			existingAccountsResolved &&

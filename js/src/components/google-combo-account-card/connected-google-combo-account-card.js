@@ -11,7 +11,7 @@ import AccountCard, { APPEARANCE } from '../account-card';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import AppSpinner from '../app-spinner';
-import useCreateAccounts from './useCreateAccounts';
+import useCreateAccounts from '../../hooks/useCreateAccounts';
 
 /**
  * Clicking on the "connect to a different Google account" button.
