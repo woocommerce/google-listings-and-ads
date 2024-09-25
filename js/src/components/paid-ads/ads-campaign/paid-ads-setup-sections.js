@@ -22,6 +22,10 @@ import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
  */
 
 /**
+ * @typedef {import('.~/data/actions').CountryCode} CountryCode
+ */
+
+/**
  *
  * @typedef {Object} PaidAdsData
  * @property {number|undefined} amount Daily average cost of the paid ads campaign.

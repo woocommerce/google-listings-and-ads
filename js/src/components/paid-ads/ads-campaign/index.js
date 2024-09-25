@@ -22,6 +22,7 @@ import FaqsSection from '../faqs-section';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
 import PaidAdsSetupSections from './paid-ads-setup-sections';
 import SkipButton from './skip-button';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import { ACTION_SKIP, ACTION_COMPLETE } from './constants';
 
 /**
@@ -37,41 +38,41 @@ import { ACTION_SKIP, ACTION_COMPLETE } from './constants';
  * @fires gla_documentation_link_click with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
  * @param {Object} props React props.
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
- * @param {() => void} props.onContinue Callback called once continue button is clicked.
  * @param {string} props.headerTitle The title of the step.
  * @param {string} [props.headerDescription] The description of the step.
- * @param {() => void} props.onSkip Callback called once skip button is clicked.
- * @param {boolean} [props.error=false] Whether there's an error to reset the complete state.
- * @param {boolean} [props.onboardingSetup=false] Whether this component is used in onboarding setup.
+ * @param {() => void} props.onContinue Callback called once continue button is clicked.
+ * @param {() => void} [props.onSkip] Callback called once skip button is clicked.
+ * @param {boolean} [props.hasError=false] Whether there's an error to reset the completing state.
+ * @param {boolean} [props.isOnboardingFlow=false] Whether this component is used in onboarding flow.
  * @param {'create-ads'|'edit-ads'|'setup-ads'} props.trackingContext A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  */
 export default function AdsCampaign( {
 	campaign,
-	trackingContext,
 	headerTitle,
 	headerDescription,
-	onContinue = noop,
+	onContinue,
 	onSkip = noop,
-	error = false,
-	onboardingSetup = false,
+	hasError = false,
+	isOnboardingFlow = false,
+	trackingContext,
 } ) {
 	const formContext = useAdaptiveFormContext();
+	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const { isValidForm, setValue } = formContext;
 	const [ completing, setCompleting ] = useState( null );
 	const [ paidAds, setPaidAds ] = useState( {} );
 
 	useEffect( () => {
-		if ( error ) {
+		if ( hasError ) {
 			setCompleting( null );
 		}
-	}, [ error ] );
+	}, [ hasError ] );
 
 	const handleOnStatesReceived = ( paidAdsValues ) => {
 		setPaidAds( paidAdsValues );
 
-		const { amount, countryCodes } = paidAdsValues;
+		const { amount } = paidAdsValues;
 		setValue( 'amount', amount );
-		setValue( 'countryCodes', countryCodes );
 	};
 
 	const handleSkipCreateAds = () => {
@@ -95,14 +96,14 @@ export default function AdsCampaign( {
 		text: __( 'Continue', 'google-listings-and-ads' ),
 	};
 
-	if ( onboardingSetup ) {
+	if ( isOnboardingFlow ) {
 		continueButtonProps = {
 			'data-action': ACTION_COMPLETE,
 			text: __( 'Complete setup', 'google-listings-and-ads' ),
 			eventName: 'gla_onboarding_complete_with_paid_ads_button_click',
 			eventProps: {
 				budget: paidAds.amount,
-				audiences: paidAds.countryCodes?.join( ',' ),
+				audiences: countryCodes?.join( ',' ),
 			},
 		};
 	}
@@ -132,17 +133,18 @@ export default function AdsCampaign( {
 				description={ description }
 			/>
 
-			{ onboardingSetup && <PaidAdsFeaturesSection /> }
+			{ isOnboardingFlow && <PaidAdsFeaturesSection /> }
 
 			<PaidAdsSetupSections
 				onStatesReceived={ handleOnStatesReceived }
 				campaign={ campaign }
+				countryCodes={ countryCodes }
 			/>
 
 			<FaqsSection />
 
 			<StepContentFooter>
-				{ onboardingSetup && (
+				{ isOnboardingFlow && (
 					<SkipButton
 						text={ __(
 							'Skip paid ads creation',

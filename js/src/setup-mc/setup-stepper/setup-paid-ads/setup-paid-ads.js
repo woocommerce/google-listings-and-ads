@@ -4,7 +4,6 @@
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { useState } from '@wordpress/element';
-import { select } from '@wordpress/data';
 import { noop } from 'lodash';
 
 /**
@@ -55,7 +54,7 @@ import { GUIDE_NAMES } from '.~/constants';
  */
 export default function SetupPaidAds() {
 	const adminUrl = useAdminUrl();
-	const [ error, setError ] = useState( false );
+	const [ hasError, setHasError ] = useState( false );
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
@@ -68,7 +67,7 @@ export default function SetupPaidAds() {
 				method: 'POST',
 			} );
 		} catch ( e ) {
-			setError( true );
+			setHasError( true );
 
 			createNotice(
 				'error',
@@ -109,8 +108,8 @@ export default function SetupPaidAds() {
 			) }
 			onSkip={ handleSkipCreatePaidAds }
 			onContinue={ handleCompleteClick }
-			error={ error }
-			onboardingSetup
+			hasError={ hasError }
+			isOnboardingFlow
 		/>
 	);
 }
