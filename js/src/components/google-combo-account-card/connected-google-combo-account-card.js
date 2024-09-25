@@ -3,6 +3,7 @@
  */
 import { createInterpolateElement } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
+import { Spinner } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -97,6 +98,21 @@ const ConnectedGoogleComboAccountCard = ( { googleAccount } ) => {
 		);
 	};
 
+	const Indicator = () => {
+		if ( creatingAccounts ) {
+			return (
+				<>
+					<Spinner />
+					<span>
+						{ __( 'Creating…', 'google-listings-and-ads' ) }
+					</span>
+				</>
+			);
+		}
+
+		return null;
+	};
+
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE }
@@ -111,7 +127,7 @@ const ConnectedGoogleComboAccountCard = ( { googleAccount } ) => {
 					p: <p></p>,
 				}
 			) }
-			indicator={ creatingAccounts ? 'Creating...' : null }
+			indicator={ <Indicator /> }
 		/>
 	);
 };

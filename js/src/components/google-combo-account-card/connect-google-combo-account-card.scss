@@ -9,5 +9,15 @@
 		.gla-account-card__description {
 			gap: 0;
 		}
+
+		.gla-account-card__indicator {
+			color: #007CBA;
+			display: flex;
+			vertical-align: middle;
+
+			.components-spinner {
+				margin-top: 0;
+			}
+		}
 	}
 }
