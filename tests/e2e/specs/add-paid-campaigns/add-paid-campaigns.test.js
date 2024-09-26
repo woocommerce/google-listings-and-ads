@@ -391,6 +391,20 @@ test.describe( 'Set up Ads account', () => {
 		} );
 
 		test( 'It should show the campaign creation success message', async () => {
+			await setupBudgetPage.fulfillAdsCampaignsRequest(
+				{
+					id: 111111111,
+					name: 'Test Campaign',
+					status: 'enabled',
+					type: 'performance_max',
+					amount: budget,
+					country: 'US',
+					targeted_locations: {},
+				},
+				200,
+				[ 'POST' ]
+			);
+
 			await setupBudgetPage.getLaunchPaidCampaignButton().click();
 
 			//It should redirect to the dashboard page
