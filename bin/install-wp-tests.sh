@@ -203,7 +203,7 @@ install_wc() {
     git clone --quiet --depth=1 --branch="${WC_VERSION}" https://github.com/woocommerce/woocommerce.git "${WC_TMPDIR}"
 
     ln -s "${WC_TMPDIR}"/plugins/woocommerce "$WC_DIR"
-	  touch "$WC_VERSION_FILE"
+    touch "$WC_VERSION_FILE"
 
     # Install composer for WooCommerce
     cd "${WC_DIR}"
