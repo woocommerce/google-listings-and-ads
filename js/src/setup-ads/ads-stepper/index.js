@@ -3,7 +3,7 @@
  */
 import { Stepper } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useState, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -12,13 +12,13 @@ import SetupAccounts from './setup-accounts';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import SetupBilling from './setup-billing';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
 	FILTER_ONBOARDING,
 	CONTEXT_ADS_ONBOARDING,
 } from '.~/utils/tracks';
-import { glaData } from '.~/constants';
 
 /**
  * @param {Object} props React props
@@ -28,12 +28,21 @@ import { glaData } from '.~/constants';
  */
 const AdsStepper = ( { formProps } ) => {
 	const [ step, setStep ] = useState( '1' );
-	const hasGoogleAdsId = glaData.initialWpData.adsId;
+	const { googleAdsAccount, hasGoogleAdsConnection } = useGoogleAdsAccount();
+	const initHasAdsConnectionRef = useRef( null );
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_ADS_ONBOARDING,
 		step,
 	} );
+
+	if ( ! googleAdsAccount ) {
+		return null; // or a spinner
+	}
+
+	if ( initHasAdsConnectionRef.current === null ) {
+		initHasAdsConnectionRef.current = hasGoogleAdsConnection;
+	}
 
 	// Allow the users to go backward only, not forward.
 	// Users can only go forward by clicking on the Continue button.
@@ -61,7 +70,7 @@ const AdsStepper = ( { formProps } ) => {
 	};
 
 	const handleCreateCampaignContinue = () => {
-		continueStep( hasGoogleAdsId ? '2' : '3' );
+		continueStep( initHasAdsConnectionRef.current ? '2' : '3' );
 	};
 
 	let steps = [
@@ -92,16 +101,16 @@ const AdsStepper = ( { formProps } ) => {
 		},
 	];
 
-	if ( hasGoogleAdsId ) {
-		// Remove first step if there's an Ads account connected.
+	if ( initHasAdsConnectionRef.current ) {
+		// Remove first step if the initial connection state of Ads account is connected.
 		steps.shift();
 
-		steps = steps.map( ( singleStep ) => {
+		steps = steps.map( ( singleStep, index ) => {
 			return {
 				...singleStep,
-				key: ( parseInt( singleStep.key, 10 ) - 1 ).toString(),
+				key: index.toString(),
 			};
-		}, [] );
+		} );
 	}
 
 	return (
