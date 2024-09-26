@@ -37,7 +37,7 @@ const AdsStepper = ( { formProps } ) => {
 	} );
 
 	if ( ! googleAdsAccount ) {
-		return null; // or a spinner
+		return null;
 	}
 
 	if ( initHasAdsConnectionRef.current === null ) {
