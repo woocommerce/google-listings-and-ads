@@ -386,15 +386,6 @@ test.describe( 'Set up Ads account', () => {
 				).toBeDisabled();
 			} );
 
-			test( 'Continue button should be enabled if budget is above the recommended value', async () => {
-				budget = '5';
-				await setupBudgetPage.fillBudget( budget );
-
-				await expect(
-					page.getByRole( 'button', { name: 'Continue' } )
-				).toBeEnabled();
-			} );
-
 			test( 'User is notified of the minimum value', async () => {
 				budget = '4';
 				await setupBudgetPage.fillBudget( budget );
@@ -405,6 +396,15 @@ test.describe( 'Set up Ads account', () => {
 						'Please make sure daily average cost is greater than €4.00.'
 					)
 				).toBeVisible();
+			} );
+
+			test( 'Continue button should be enabled if budget is above the recommended value', async () => {
+				budget = '5';
+				await setupBudgetPage.fillBudget( budget );
+
+				await expect(
+					page.getByRole( 'button', { name: 'Continue' } )
+				).toBeEnabled();
 			} );
 		} );
 
