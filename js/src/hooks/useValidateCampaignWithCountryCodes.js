@@ -44,13 +44,16 @@ const useValidateCampaignWithCountryCodes = ( initialCountryCodes ) => {
 	const [ countryCodes, setCountryCodes ] = useState( [] );
 
 	useEffect( () => {
-		setCountryCodes( initialCountryCodes );
+		if ( initialCountryCodes ) {
+			setCountryCodes( initialCountryCodes );
+		}
 	}, [ initialCountryCodes ] );
 
 	return useSelect(
 		( select ) => {
 			// If no country codes are provided, return the default validateCampaign function.
-			if ( ! countryCodes?.length ) {
+			// countryCodes is initially empty when being set in state, hence the check for initialCountryCodes as well.
+			if ( ! countryCodes.length && ! initialCountryCodes?.length ) {
 				return {
 					validateCampaignWithCountryCodes: validateCampaign,
 					dailyBudget: null,
@@ -65,6 +68,12 @@ const useValidateCampaignWithCountryCodes = ( initialCountryCodes ) => {
 				select( STORE_KEY );
 			const budgetData = getAdsBudgetRecommendations( countryCodes );
 			const budget = getHighestBudget( budgetData?.recommendations );
+			const loaded =
+				hasFinishedResolution( 'getAdsBudgetRecommendations', [
+					countryCodes,
+				] ) &&
+				code &&
+				countryCodes.length; // make sure the country codes are set in state before considering the data loaded
 
 			/**
 			 * Validate campaign form. Accepts the form values object and returns errors object.
@@ -85,13 +94,10 @@ const useValidateCampaignWithCountryCodes = ( initialCountryCodes ) => {
 				formatAmount,
 				refreshCountryCodes: setCountryCodes,
 				currencyCode: code,
-				loaded:
-					hasFinishedResolution( 'getAdsBudgetRecommendations', [
-						countryCodes,
-					] ) && code,
+				loaded,
 			};
 		},
-		[ countryCodes, formatAmount, code ]
+		[ countryCodes, formatAmount, code, initialCountryCodes ]
 	);
 };
 
