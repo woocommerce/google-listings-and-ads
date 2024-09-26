@@ -281,6 +281,9 @@ test.describe( 'Set up Ads account', () => {
 	test.describe( 'Create your paid campaign', () => {
 		test.beforeAll( async () => {
 			setupBudgetPage = new SetupBudgetPage( page );
+			await setupBudgetPage.fulfillBillingStatusRequest( {
+				status: 'approved',
+			} );
 		} );
 
 		test( 'Continue to create paid ad campaign', async () => {
@@ -388,7 +391,7 @@ test.describe( 'Set up Ads account', () => {
 		} );
 
 		test( 'It should show the campaign creation success message', async () => {
-			setupBudgetPage.getLaunchPaidCampaignButton().click();
+			await setupBudgetPage.getLaunchPaidCampaignButton().click();
 
 			//It should redirect to the dashboard page
 			await page.waitForURL(
