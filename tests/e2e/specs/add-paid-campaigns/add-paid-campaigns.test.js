@@ -66,7 +66,6 @@ test.describe( 'Set up Ads account', () => {
 		page = await browser.newPage();
 		dashboardPage = new DashboardPage( page );
 		setupAdsAccounts = new SetupAdsAccountsPage( page );
-		setupBudgetPage = new SetupBudgetPage( page );
 		await setOnboardedMerchant();
 		await setupAdsAccounts.mockAdsAccountsResponse( [] );
 		await dashboardPage.mockRequests();
@@ -281,6 +280,9 @@ test.describe( 'Set up Ads account', () => {
 
 	test.describe( 'Create your paid campaign', () => {
 		test.beforeAll( async () => {
+			setupBudgetPage = new SetupBudgetPage( page );
+
+			// Mock billing approved status.
 			await setupBudgetPage.fulfillBillingStatusRequest( {
 				status: 'approved',
 			} );
