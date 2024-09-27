@@ -391,10 +391,8 @@ test.describe( 'Set up Ads account', () => {
 		} );
 
 		test( 'It should show the campaign creation success message', async () => {
-			await setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
-				budget,
-				{}
-			);
+			// Mock the campaign creation request.
+			await setupBudgetPage.mockCampaignCreation( budget, {} );
 
 			await setupBudgetPage.getLaunchPaidCampaignButton().click();
 
