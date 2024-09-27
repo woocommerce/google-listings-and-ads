@@ -324,8 +324,6 @@ class SyncerHooks implements Service, Registerable {
 	 */
 	protected function maybe_send_delete_notification( int $product_id ) {
 		$product = $this->wc->maybe_get_product( $product_id );
-		var_dump( $product->get_meta('_wc_gla_notification_status') );
-
 		if ( $product instanceof WC_Product && $this->product_helper->has_notified_creation( $product ) ) {
 			$result = $this->notifications_service->notify( NotificationsService::TOPIC_PRODUCT_DELETED, $product_id, [ 'offer_id' => $this->product_helper->get_offer_id( $product_id ) ] );
 			if ( $result ) {
