@@ -42,7 +42,7 @@ const validateCampaign = ( values, opts ) => {
 				amount: sprintf(
 					/* translators: %1$s: minimum daily budget */
 					__(
-						'Please make sure daily average cost is at least %s.',
+						'Please make sure daily average cost is at least %s',
 						'google-listings-and-ads'
 					),
 					formatAmount( minAmount )

@@ -92,7 +92,7 @@ describe( 'validateCampaign', () => {
 		const errors = validateCampaign( values, opts );
 
 		expect( errors ).toHaveProperty( 'amount' );
-		expect( errors.amount ).toContain( 'is greater than Rs 30' );
+		expect( errors.amount ).toContain( 'is at least Rs 30' );
 	} );
 
 	it( 'When a budget is provided and the amount is same than the minimum, should pass', () => {

@@ -393,7 +393,7 @@ test.describe( 'Set up Ads account', () => {
 
 				await expect(
 					page.getByText(
-						'Please make sure daily average cost is greater than €4.00.'
+						'Please make sure daily average cost is at least €4.50'
 					)
 				).toBeVisible();
 			} );
