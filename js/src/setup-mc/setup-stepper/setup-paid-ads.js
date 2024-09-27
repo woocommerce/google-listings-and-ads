@@ -14,6 +14,7 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useAdsSetupCompleteCallback from '.~/hooks/useAdsSetupCompleteCallback';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
+import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import { getProductFeedUrl } from '.~/utils/urls';
 import { API_NAMESPACE } from '.~/data/constants';
 import { GUIDE_NAMES } from '.~/constants';
@@ -68,19 +69,21 @@ export default function SetupPaidAds() {
 	};
 
 	return (
-		<AdsCampaign
-			headerTitle={ __(
-				'Create a campaign to advertise your products',
-				'google-listings-and-ads'
-			) }
-			headerDescription={ __(
-				'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your products will be included in the campaign after they’re approved.',
-				'google-listings-and-ads'
-			) }
-			onSkip={ handleSkipCreatePaidAds }
-			onContinue={ handleCompleteClick }
-			hasError={ hasError }
-			isOnboardingFlow
-		/>
+		<CampaignAssetsForm
+			initialCampaign={ {
+				amount: 0,
+			} }
+		>
+			<AdsCampaign
+				headerTitle={ __(
+					'Create a campaign to advertise your products',
+					'google-listings-and-ads'
+				) }
+				onSkip={ handleSkipCreatePaidAds }
+				onContinue={ handleCompleteClick }
+				hasError={ hasError }
+				isOnboardingFlow
+			/>
+		</CampaignAssetsForm>
 	);
 }

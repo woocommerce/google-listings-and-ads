@@ -38,11 +38,11 @@ export default function BillingCard() {
 		return <SpinnerCard />;
 	}
 
-	if ( billingStatus.status === APPROVED && ! showNotice ) {
-		return null;
-	}
-
 	if ( billingStatus.status === APPROVED ) {
+		if ( ! showNotice ) {
+			return null;
+		}
+
 		return (
 			<Flex className="gla-google-ads-billing-card__success-status">
 				<Gridiconcheckmark size={ 18 } />

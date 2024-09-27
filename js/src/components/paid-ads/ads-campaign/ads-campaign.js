@@ -48,7 +48,6 @@ import { ACTION_SKIP, ACTION_COMPLETE } from './constants';
  * @param {Object} props React props.
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
  * @param {string} props.headerTitle The title of the step.
- * @param {string} [props.headerDescription] The description of the step.
  * @param {() => void} props.onContinue Callback called once continue button is clicked.
  * @param {() => void} [props.onSkip] Callback called once skip button is clicked.
  * @param {boolean} [props.hasError=false] Whether there's an error to reset the completing state.
@@ -58,7 +57,6 @@ import { ACTION_SKIP, ACTION_COMPLETE } from './constants';
 export default function AdsCampaign( {
 	campaign,
 	headerTitle,
-	headerDescription,
 	onContinue,
 	onSkip = noop,
 	hasError = false,
@@ -117,23 +115,28 @@ export default function AdsCampaign( {
 		};
 	}
 
-	const description =
-		headerDescription ||
-		createInterpolateElement(
-			__(
-				'Paid Performance Max campaigns are automatically optimized for you by Google. <link>See what your ads will look like.</link>',
-				'google-listings-and-ads'
+	let description = createInterpolateElement(
+		__(
+			'Paid Performance Max campaigns are automatically optimized for you by Google. <link>See what your ads will look like.</link>',
+			'google-listings-and-ads'
+		),
+		{
+			link: (
+				<AppDocumentationLink
+					context={ trackingContext }
+					linkId="see-what-ads-look-like"
+					href="https://support.google.com/google-ads/answer/6275294"
+				/>
 			),
-			{
-				link: (
-					<AppDocumentationLink
-						context={ trackingContext }
-						linkId="see-what-ads-look-like"
-						href="https://support.google.com/google-ads/answer/6275294"
-					/>
-				),
-			}
+		}
+	);
+
+	if ( isOnboardingFlow ) {
+		description = __(
+			'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your products will be included in the campaign after they’re approved.',
+			'google-listings-and-ads'
 		);
+	}
 
 	return (
 		<StepContent>

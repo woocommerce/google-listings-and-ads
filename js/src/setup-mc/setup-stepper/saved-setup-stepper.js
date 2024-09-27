@@ -23,7 +23,6 @@ import SetupFreeListings from '.~/components/free-listings/setup-free-listings';
 import StoreRequirements from './store-requirements';
 import SetupPaidAds from './setup-paid-ads';
 import stepNameKeyMap from './stepNameKeyMap';
-import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
@@ -226,15 +225,7 @@ const SavedSetupStepper = ( { savedStep } ) => {
 				{
 					key: stepNameKeyMap.paid_ads,
 					label: __( 'Create a campaign', 'google-listings-and-ads' ),
-					content: (
-						<CampaignAssetsForm
-							initialCampaign={ {
-								amount: 0,
-							} }
-						>
-							<SetupPaidAds />
-						</CampaignAssetsForm>
-					),
+					content: <SetupPaidAds />,
 					onClick: handleStepClick,
 				},
 			] }
