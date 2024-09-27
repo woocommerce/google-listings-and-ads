@@ -66,6 +66,7 @@ test.describe( 'Set up Ads account', () => {
 		page = await browser.newPage();
 		dashboardPage = new DashboardPage( page );
 		setupAdsAccounts = new SetupAdsAccountsPage( page );
+		setupBudgetPage = new SetupBudgetPage( page );
 		await setOnboardedMerchant();
 		await setupAdsAccounts.mockAdsAccountsResponse( [] );
 		await dashboardPage.mockRequests();
@@ -280,7 +281,6 @@ test.describe( 'Set up Ads account', () => {
 
 	test.describe( 'Create your paid campaign', () => {
 		test.beforeAll( async () => {
-			setupBudgetPage = new SetupBudgetPage( page );
 			await setupBudgetPage.fulfillBillingStatusRequest( {
 				status: 'approved',
 			} );
@@ -391,18 +391,9 @@ test.describe( 'Set up Ads account', () => {
 		} );
 
 		test( 'It should show the campaign creation success message', async () => {
-			await setupBudgetPage.fulfillAdsCampaignsRequest(
-				{
-					id: 111111111,
-					name: 'Test Campaign',
-					status: 'enabled',
-					type: 'performance_max',
-					amount: budget,
-					country: 'US',
-					targeted_locations: {},
-				},
-				200,
-				[ 'POST' ]
+			await setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
+				budget,
+				{}
 			);
 
 			await setupBudgetPage.getLaunchPaidCampaignButton().click();
