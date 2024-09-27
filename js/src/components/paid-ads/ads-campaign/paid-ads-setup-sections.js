@@ -63,11 +63,13 @@ function resolveInitialPaidAds( paidAds ) {
  * @param {Array<CountryCode>|undefined} props.countryCodes Country codes for the campaign.
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
  * @param {boolean} [props.showCampaignPreviewCard=false] Whether to show the campaign preview card.
+ * @param {boolean} [props.loadCampaignFromClientSession=false] Whether to load the campaign data from the client session.
  */
 export default function PaidAdsSetupSections( {
 	onStatesReceived,
 	countryCodes,
 	campaign,
+	loadCampaignFromClientSession,
 	showCampaignPreviewCard = false,
 } ) {
 	const isCreation = ! campaign;
@@ -78,10 +80,16 @@ export default function PaidAdsSetupSections( {
 
 	const [ paidAds, setPaidAds ] = useState( () => {
 		// Resolve the starting paid ads data with the campaign data stored in the client session.
-		const startingPaidAds = {
+		let startingPaidAds = {
 			...defaultPaidAds,
-			...clientSession.getCampaign(),
 		};
+
+		if ( loadCampaignFromClientSession ) {
+			startingPaidAds = {
+				...startingPaidAds,
+				...clientSession.getCampaign(),
+			};
+		}
 		return resolveInitialPaidAds( startingPaidAds );
 	} );
 
