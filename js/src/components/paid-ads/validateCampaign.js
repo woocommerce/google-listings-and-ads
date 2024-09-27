@@ -11,6 +11,7 @@ import { __, sprintf } from '@wordpress/i18n';
  * @typedef {Object} ValidateCampaignOptions
  * @property {number | undefined} dailyBudget Daily budget for the campaign.
  * @property {Function} formatAmount A function to format the budget amount according to the currency settings.
+ * @property {number} precision Number of decimal for the amount.
  */
 
 // Minimum percentage of the recommended daily budget.
@@ -33,11 +34,11 @@ const validateCampaign = ( values, opts ) => {
 		const { amount } = values;
 		const { dailyBudget, formatAmount, precision } = opts;
 
-		const minAmount = parseFloat(
-			( dailyBudget * BUDGET_MIN_PERCENT ).toFixed( precision )
+		const minAmount = ( dailyBudget * BUDGET_MIN_PERCENT ).toFixed(
+			precision
 		);
 
-		if ( amount < minAmount ) {
+		if ( amount < parseFloat( minAmount ) ) {
 			return {
 				amount: sprintf(
 					/* translators: %1$s: minimum daily budget */

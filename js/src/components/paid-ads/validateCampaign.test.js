@@ -12,6 +12,7 @@ describe( 'validateCampaign', () => {
 	const validateCampaignOptions = {
 		dailyBudget: undefined,
 		formatAmount: jest.mock(),
+		precision: 0,
 	};
 
 	beforeEach( () => {
@@ -87,6 +88,7 @@ describe( 'validateCampaign', () => {
 		const opts = {
 			dailyBudget: 100,
 			formatAmount: mockFormatAmount,
+			precision: 0,
 		};
 
 		const errors = validateCampaign( values, opts );
@@ -119,5 +121,22 @@ describe( 'validateCampaign', () => {
 
 		const errors = validateCampaign( values, opts );
 		expect( errors ).not.toHaveProperty( 'amount' );
+	} );
+
+	it( 'When precision is set, the correct amount should be displayed', () => {
+		const mockFormatAmount = jest
+			.fn()
+			.mockImplementation( ( amount ) => `Rs ${ amount }` );
+
+		values.amount = 10;
+
+		const opts = {
+			dailyBudget: 100,
+			formatAmount: mockFormatAmount,
+			precision: 2,
+		};
+
+		const errors = validateCampaign( values, opts );
+		expect( errors.amount ).toContain( 'is at least Rs 30.00' );
 	} );
 } );
