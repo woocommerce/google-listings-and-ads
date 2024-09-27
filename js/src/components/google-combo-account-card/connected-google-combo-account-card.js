@@ -1,9 +1,7 @@
 /**
  * External dependencies
  */
-import { createInterpolateElement } from '@wordpress/element';
-import { __, sprintf } from '@wordpress/i18n';
-import { Spinner } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -12,7 +10,9 @@ import AccountCard, { APPEARANCE } from '../account-card';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import AppSpinner from '../app-spinner';
-import useCreateAccounts from '../../hooks/useCreateAccounts';
+import useAutoCreateAdsMCAccounts from '../../hooks/useAutoCreateAdsMCAccounts';
+import LoadingLabel from '../loading-label/loading-label';
+import AccountCreationDescription from './account-creation-description';
 
 /**
  * Clicking on the "connect to a different Google account" button.
@@ -43,8 +43,11 @@ const ConnectedGoogleComboAccountCard = ( { googleAccount } ) => {
 	const {
 		accountsCreated,
 		accountCreationChecksResolved,
-		isCreatingAccounts,
-	} = useCreateAccounts();
+		isCreatingAdsAccount,
+		isCreatingMCAccount,
+	} = useAutoCreateAdsMCAccounts();
+
+	const isCreatingAccounts = isCreatingAdsAccount || isCreatingMCAccount;
 
 	if (
 		! accountsCreated &&
@@ -61,73 +64,38 @@ const ConnectedGoogleComboAccountCard = ( { googleAccount } ) => {
 			( ! hasFinishedResolutionForCurrentMCAccount ||
 				! hasFinishedResolutionForCurrentAdsAccount ) );
 
-	const Description = () => {
-		if ( creatingAccounts ) {
-			return createInterpolateElement(
-				__(
-					'<p>You don’t have Merchant Center nor Google Ads accounts, so we’re creating them for you.</p>',
-					'google-listings-and-ads'
-				),
-				{
-					p: <p></p>,
-				}
-			);
-		}
-
-		return (
-			<>
-				<p>{ googleAccount?.email }</p>
-				<p>
-					{ sprintf(
-						// Translators: %s is the Merchant Center ID
-						__(
-							'Merchant Center ID: %s',
-							'google-listings-and-ads'
-						),
-						googleMCAccount?.id
-					) }
-				</p>
-				<p>
-					{ sprintf(
-						// Translators: %s is the Google Ads ID
-						__( 'Google Ads ID: %s', 'google-listings-and-ads' ),
-						googleAdsAccount?.id
-					) }
-				</p>
-			</>
-		);
-	};
-
-	const Indicator = () => {
-		if ( creatingAccounts ) {
-			return (
-				<>
-					<Spinner />
-					<span>
-						{ __( 'Creating…', 'google-listings-and-ads' ) }
-					</span>
-				</>
-			);
-		}
-
-		return null;
-	};
-
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE }
-			className="gla-connect-google-combo-account-card gla-connected-google-combo-account-card"
-			description={ <Description /> }
-			helper={ createInterpolateElement(
-				__(
-					'<p>Merchant Center is required to sync products so they show on Google. Google Ads is required to set up conversion measurement for your store.</p>',
-					'google-listings-and-ads'
-				),
-				{
-					p: <p></p>,
-				}
-			) }
-			indicator={ <Indicator /> }
+			className="gla-google-combo-account-card--connected"
+			description={
+				<AccountCreationDescription
+					isCreatingAccounts={ isCreatingAccounts }
+					isCreatingAdsAccount={ isCreatingAdsAccount }
+					isCreatingMCAccount={ isCreatingMCAccount }
+					googleAccount={ googleAccount }
+					googleMCAccount={ googleMCAccount }
+					googleAdsAccount={ googleAdsAccount }
+				/>
+			}
+			helper={
+				isCreatingAdsAccount &&
+				isCreatingMCAccount && (
+					<p>
+						{ __(
+							'Merchant Center is required to sync products so they show on Google. Google Ads is required to set up conversion measurement for your store.',
+							'google-listings-and-ads'
+						) }
+					</p>
+				)
+			}
+			indicator={
+				creatingAccounts ? (
+					<LoadingLabel
+						text={ __( 'Creating…', 'google-listings-and-ads' ) }
+					/>
+				) : null
+			}
 		/>
 	);
 };

@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /**
  * External dependencies
  */
@@ -11,12 +10,16 @@ import useCreateMCAccount from '../components/google-mc-account-card/useCreateMC
 import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
 import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts';
 import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 
 /**
  * Custom hook to handle the creation of MC and Ads accounts.
+ *
+ * @return {Object} Object with the following properties:
+ * 	  - isCreatingAccounts: Indicates if the accounts are being created.
+ *    - accountCreationChecksResolved: Indicates if the account creation checks have been resolved.
+ *    - accountsCreated: Indicates if the accounts have been created
  */
-const useCreateAccounts = () => {
+const useAutoCreateAdsMCAccounts = () => {
 	/**
 	 * Refs are used to avoid the re-render of the parent component.
 	 *
@@ -26,12 +29,9 @@ const useCreateAccounts = () => {
 	 */
 	const accountCreationChecksResolvedRef = useRef( false );
 	const isCreatingAccountsRef = useRef( false );
+	const isCreatingAdsAccountsRef = useRef( false );
+	const isCreatingMCAccountsRef = useRef( false );
 	const accountsCreatedRef = useRef( false );
-
-	const {
-		googleAdsAccount,
-		hasFinishedResolution: hasFinishedResolutionForExistingAdsccount,
-	} = useGoogleAdsAccount();
 
 	const {
 		data: existingMCAccounts,
@@ -43,14 +43,35 @@ const useCreateAccounts = () => {
 		isResolving: isResolvingExistingAdsAccount,
 	} = useExistingGoogleAdsAccounts();
 
-	const [ handleCreateAccount, { data: account, response } ] =
-		useCreateMCAccount();
-
+	const [ handleCreateAccount, { response } ] = useCreateMCAccount();
 	const [ upsertAdsAccount, { loading } ] = useUpsertAdsAccount();
 
-	// Process account creation completion.
+	const createAccounts = async () => {
+		const hasExistingMCAccount = existingMCAccounts.length > 0;
+		const hasExistingAdsAccount = existingAdsAccount.length > 0;
+
+		isCreatingMCAccountsRef.current = ! hasExistingMCAccount;
+		isCreatingAdsAccountsRef.current = ! hasExistingAdsAccount;
+		isCreatingAccountsRef.current =
+			! hasExistingAdsAccount || ! hasExistingMCAccount;
+
+		if ( ! hasExistingMCAccount ) {
+			await handleCreateAccount();
+		}
+
+		if ( ! hasExistingAdsAccount ) {
+			await upsertAdsAccount();
+		}
+	};
+
 	useEffect( () => {
-		if ( response?.status === 200 && ! loading ) {
+		if (
+			isCreatingAccountsRef.current === true &&
+			response?.status === 200 &&
+			! loading
+		) {
+			isCreatingMCAccountsRef.current = false;
+			isCreatingAdsAccountsRef.current = false;
 			isCreatingAccountsRef.current = false;
 			accountsCreatedRef.current = true;
 		}
@@ -65,36 +86,28 @@ const useCreateAccounts = () => {
 
 		if (
 			existingAccountsResolved &&
-			isCreatingAccountsRef.current === false &&
-			account === undefined &&
-			hasFinishedResolutionForExistingAdsccount &&
-			googleAdsAccount.id === 0
+			isCreatingAccountsRef.current === false
 		) {
-			const hasExistingAccounts =
-				existingMCAccounts?.length > 0 &&
-				existingAdsAccount?.length > 0;
+			const hasExistingMCAccount = existingMCAccounts?.length > 0;
+			const hasExistingAdsAccount = existingAdsAccount?.length > 0;
 
-			if ( ! hasExistingAccounts ) {
-				const createAccounts = async () => {
-					await handleCreateAccount();
-					await upsertAdsAccount();
-				};
-
-				isCreatingAccountsRef.current = true;
-				accountsCreatedRef.current = false;
+			if ( ! hasExistingMCAccount || ! hasExistingAdsAccount ) {
 				createAccounts();
 			}
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [
 		isResolvingExistingAdsAccount,
 		hasFinishedResolutionForExistingMCAccounts,
 	] );
 
 	return {
-		isCreatingAccounts: isCreatingAccountsRef.current,
-		accountCreationChecksResolved: accountCreationChecksResolvedRef.current,
 		accountsCreated: accountsCreatedRef.current,
+		accountCreationChecksResolved: accountCreationChecksResolvedRef.current,
+		isCreatingAccounts: isCreatingAccountsRef.current,
+		isCreatingAdsAccount: isCreatingAdsAccountsRef.current,
+		isCreatingMCAccount: isCreatingMCAccountsRef.current,
 	};
 };
 
-export default useCreateAccounts;
+export default useAutoCreateAdsMCAccounts;

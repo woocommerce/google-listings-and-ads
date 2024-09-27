@@ -1,23 +1,10 @@
-.gla-connect-google-combo-account-card {
+.gla-google-combo-account-card--connected {
 
-	.gla-account-card__helper {
-		font-size: $gla-font-base;
+	.gla-account-card__icon {
+		align-self: flex-start;
 	}
 
-	&.gla-connected-google-combo-account-card {
-
-		.gla-account-card__description {
-			gap: 0;
-		}
-
-		.gla-account-card__indicator {
-			color: #007cba;
-			display: flex;
-			vertical-align: middle;
-
-			.components-spinner {
-				margin-top: 0;
-			}
-		}
+	.gla-account-card__description p {
+		margin: 0;
 	}
 }
