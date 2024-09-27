@@ -15,10 +15,11 @@ import { noop } from 'lodash';
 import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
+import StepContentActions from '.~/components/stepper/step-content-actions';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppButton from '.~/components/app-button';
-import FaqsSection from '../faqs-section';
+import PaidAdsFaqsPanel from './faqs-panel';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
 import PaidAdsSetupSections from './paid-ads-setup-sections';
 import SkipButton from './skip-button';
@@ -158,28 +159,30 @@ export default function AdsCampaign( {
 				}
 			/>
 
-			<FaqsSection />
-
 			<StepContentFooter>
-				{ isOnboardingFlow && (
-					<SkipButton
-						text={ __(
-							'Skip paid ads creation',
-							'google-listings-and-ads'
-						) }
-						onSkipCreatePaidAds={ handleSkipCreateAds }
-						completing={ completing }
-						paidAds={ paidAds }
-					/>
-				) }
+				<StepContentActions>
+					{ isOnboardingFlow && (
+						<SkipButton
+							text={ __(
+								'Skip paid ads creation',
+								'google-listings-and-ads'
+							) }
+							onSkipCreatePaidAds={ handleSkipCreateAds }
+							completing={ completing }
+							paidAds={ paidAds }
+						/>
+					) }
 
-				<AppButton
-					isPrimary
-					disabled={ disabledComplete }
-					onClick={ handleCompleteClick }
-					loading={ completing === ACTION_COMPLETE }
-					{ ...continueButtonProps }
-				/>
+					<AppButton
+						isPrimary
+						disabled={ disabledComplete }
+						onClick={ handleCompleteClick }
+						loading={ completing === ACTION_COMPLETE }
+						{ ...continueButtonProps }
+					/>
+				</StepContentActions>
+
+				<PaidAdsFaqsPanel />
 			</StepContentFooter>
 		</StepContent>
 	);
