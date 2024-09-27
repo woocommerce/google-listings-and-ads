@@ -25,6 +25,7 @@ import getHighestBudget from '.~/utils/getHighestBudget';
  * @property {(values: CampaignFormValues) => Object} validateCampaignWithCountryCodes A function to validate campaign form values.
  * @property {number | undefined} dailyBudget The daily budget recommendation.
  * @property {(number: string | number) => string} formatAmount A function to format an amount according to the user's currency settings.
+ * @property {number} precision Number of decimal places after the decimal separator.
  * @property {(countryCodes: Array<CountryCode>) => void} refreshCountryCodes A function to refresh the country codes.
  * @property {string} currencyCode The currency code.
  * @property {boolean} loaded A boolean indicating whether the budget recommendation data has been resolved and the code currency available.
@@ -39,7 +40,7 @@ import getHighestBudget from '.~/utils/getHighestBudget';
 const useValidateCampaignWithCountryCodes = ( initialCountryCodes ) => {
 	const {
 		formatAmount,
-		adsCurrencyConfig: { code },
+		adsCurrencyConfig: { code, precision },
 	} = useAdsCurrency();
 	const [ countryCodes, setCountryCodes ] = useState( [] );
 
@@ -60,6 +61,7 @@ const useValidateCampaignWithCountryCodes = ( initialCountryCodes ) => {
 					formatAmount,
 					refreshCountryCodes: setCountryCodes,
 					currencyCode: code,
+					precision,
 					loaded: true,
 				};
 			}
@@ -85,6 +87,7 @@ const useValidateCampaignWithCountryCodes = ( initialCountryCodes ) => {
 				return validateCampaign( values, {
 					dailyBudget: budget?.daily_budget,
 					formatAmount,
+					precision,
 				} );
 			};
 
@@ -92,12 +95,13 @@ const useValidateCampaignWithCountryCodes = ( initialCountryCodes ) => {
 				validateCampaignWithCountryCodes,
 				dailyBudget: budget?.daily_budget,
 				formatAmount,
+				precision,
 				refreshCountryCodes: setCountryCodes,
 				currencyCode: code,
 				loaded,
 			};
 		},
-		[ countryCodes, formatAmount, code, initialCountryCodes ]
+		[ countryCodes, formatAmount, code, initialCountryCodes, precision ]
 	);
 };
 

@@ -31,18 +31,21 @@ const validateCampaign = ( values, opts ) => {
 		Number.isFinite( opts?.dailyBudget )
 	) {
 		const { amount } = values;
-		const { dailyBudget, formatAmount } = opts;
-		const minAmount = Math.round( dailyBudget * BUDGET_MIN_PERCENT );
+		const { dailyBudget, formatAmount, precision } = opts;
+
+		const minAmount = parseFloat(
+			( dailyBudget * BUDGET_MIN_PERCENT ).toFixed( precision )
+		);
 
 		if ( amount < minAmount ) {
 			return {
 				amount: sprintf(
 					/* translators: %1$s: minimum daily budget */
 					__(
-						'Please make sure daily average cost is greater than %s.',
+						'Please make sure daily average cost is at least %s.',
 						'google-listings-and-ads'
 					),
-					formatAmount( minAmount - 1 )
+					formatAmount( minAmount )
 				),
 			};
 		}
