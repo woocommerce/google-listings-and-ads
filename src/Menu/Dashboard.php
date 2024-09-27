@@ -17,7 +17,6 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 
 	use MenuFixesTrait;
 	use MerchantCenterAwareTrait;
-	use WooAdminNavigationTrait;
 
 	public const PATH = '/google/dashboard';
 
@@ -32,52 +31,15 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 		add_action(
 			'admin_menu',
 			function () {
-				if ( $this->is_woo_nav_enabled() ) {
-					$this->register_navigation_pages();
-				} else {
-					$this->register_classic_submenu_page(
-						[
-							'id'     => 'google-listings-and-ads',
-							'title'  => __( 'Google for WooCommerce', 'google-listings-and-ads' ),
-							'parent' => 'woocommerce-marketing',
-							'path'   => self::PATH,
-						]
-					);
-				}
+				$this->register_classic_submenu_page(
+					[
+						'id'     => 'google-listings-and-ads',
+						'title'  => __( 'Google for WooCommerce', 'google-listings-and-ads' ),
+						'parent' => 'woocommerce-marketing',
+						'path'   => self::PATH,
+					]
+				);
 			}
-		);
-	}
-
-	/**
-	 * Register navigation pages for WC Navigation.
-	 */
-	protected function register_navigation_pages(): void {
-		wc_admin_register_page(
-			[
-				'id'       => 'google-listings-and-ads-category',
-				'title'    => __( 'Google for WooCommerce', 'google-listings-and-ads' ),
-				'parent'   => 'woocommerce',
-				'path'     => self::PATH,
-				'nav_args' => [
-					'title'        => __( 'Google for WooCommerce', 'google-listings-and-ads' ),
-					'is_category'  => true,
-					'menuId'       => 'plugins',
-					'is_top_level' => true,
-				],
-			]
-		);
-
-		wc_admin_register_page(
-			[
-				'id'       => 'google-dashboard',
-				'title'    => __( 'Dashboard', 'google-listings-and-ads' ),
-				'parent'   => 'google-listings-and-ads-category',
-				'path'     => self::PATH,
-				'nav_args' => [
-					'order'  => 10,
-					'parent' => 'google-listings-and-ads-category',
-				],
-			]
 		);
 	}
 }

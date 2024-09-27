@@ -12,7 +12,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUn
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use WC_Helper_Product;
 use WC_Product;
 

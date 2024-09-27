@@ -10,10 +10,6 @@ import { Flex } from '@wordpress/components';
 import AppInputControl from '.~/components/app-input-control';
 import './verification-code-control.scss';
 
-const KEY_CODE_LEFT = 37;
-const KEY_CODE_RIGHT = 39;
-const KEY_CODE_BACKSPACE = 8;
-
 const DIGIT_LENGTH = 6;
 const initDigits = Array( DIGIT_LENGTH ).fill( '' );
 
@@ -65,15 +61,15 @@ export default function VerificationCodeControl( {
 		const { dataset, selectionStart, selectionEnd, value } = e.target;
 		const idx = Number( dataset.idx );
 
-		switch ( e.keyCode ) {
-			case KEY_CODE_LEFT:
-			case KEY_CODE_BACKSPACE:
+		switch ( e.code ) {
+			case 'ArrowLeft':
+			case 'Backspace':
 				if ( selectionStart === 0 && selectionEnd === 0 ) {
 					maybeMoveFocus( idx - 1 );
 				}
 				break;
 
-			case KEY_CODE_RIGHT:
+			case 'ArrowRight':
 				if ( selectionStart === 1 || ! value ) {
 					maybeMoveFocus( idx + 1 );
 				}

@@ -9,7 +9,7 @@ import { getNewPath, getPath } from '@woocommerce/navigation';
  */
 import { glaData } from '.~/constants';
 import AppTabNav from '.~/components/app-tab-nav';
-import useLegacyMenuEffect from '.~/hooks/useLegacyMenuEffect';
+import useMenuEffect from '.~/hooks/useMenuEffect';
 
 let tabs = [
 	{
@@ -51,7 +51,7 @@ const getSelectedTabKey = () => {
 };
 
 const MainTabNav = () => {
-	useLegacyMenuEffect();
+	useMenuEffect();
 
 	const selectedKey = getSelectedTabKey();
 

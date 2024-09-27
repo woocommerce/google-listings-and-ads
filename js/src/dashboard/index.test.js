@@ -18,6 +18,16 @@ import isWCTracksEnabled from '.~/utils/isWCTracksEnabled';
 import RebrandingTour from '.~/components/tours/rebranding-tour';
 import { GUIDE_NAMES } from '.~/constants';
 
+jest.mock( '.~/components/different-currency-notice', () =>
+	jest.fn().mockName( 'DifferentCurrencyNotice' )
+);
+
+jest.mock( './summary-section', () => jest.fn().mockName( 'SummarySection' ) );
+
+jest.mock( './all-programs-table-card', () =>
+	jest.fn().mockName( 'AllProgramsTableCard' )
+);
+
 jest.mock( '@woocommerce/settings', () => {
 	return {
 		getSetting: () => ( {
@@ -44,7 +54,7 @@ jest.mock( '.~/components/customer-effort-score-prompt', () => () => (
 ) );
 
 beforeAll( () => {
-	// Used in the js/src/hooks/useLegacyMenuEffect.js dependency
+	// Used in the js/src/hooks/useMenuEffect.js dependency
 	window.wpNavMenuClassChange = jest.fn();
 } );
 
@@ -87,9 +97,10 @@ describe( 'Dashboard', () => {
 				).not.toBeInTheDocument();
 			} );
 
-			test( 'Should not render CustomerEffortScorePrompt when user clicks "Got it"', () => {
+			test( 'Should not render CustomerEffortScorePrompt when user clicks "Got it"', async () => {
+				const user = userEvent.setup();
 				const { queryByText } = render( <Dashboard /> );
-				userEvent.click( screen.getByText( 'Got it' ) );
+				await user.click( screen.getByText( 'Got it' ) );
 
 				expect(
 					queryByText( CES_PROMPT_TEXT )
@@ -115,9 +126,10 @@ describe( 'Dashboard', () => {
 				).not.toBeInTheDocument();
 			} );
 
-			test( 'Should render CustomerEffortScorePrompt when user clicks "Got it"', () => {
+			test( 'Should render CustomerEffortScorePrompt when user clicks "Got it"', async () => {
+				const user = userEvent.setup();
 				const { queryByText } = render( <Dashboard /> );
-				userEvent.click( screen.getByText( 'Got it' ) );
+				await user.click( screen.getByText( 'Got it' ) );
 
 				expect( queryByText( CES_PROMPT_TEXT ) ).toBeInTheDocument();
 			} );
