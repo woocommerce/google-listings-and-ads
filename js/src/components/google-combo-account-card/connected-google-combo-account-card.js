@@ -24,12 +24,9 @@ import AccountCreationDescription from './account-creation-description';
  * Renders a Google account card UI with connected account information.
  * It will also kickoff Ads and Merchant Center account creation if the user does not have accounts.
  *
- * @param {Object} props React props.
- * @param {{ googleAccount: object }} props.googleAccount The Google account.
- *
  * @fires gla_google_account_connect_different_account_button_click
  */
-const ConnectedGoogleComboAccountCard = ( { googleAccount } ) => {
+const ConnectedGoogleComboAccountCard = () => {
 	const {
 		googleMCAccount,
 		hasFinishedResolution: hasFinishedResolutionForCurrentMCAccount,
@@ -41,42 +38,38 @@ const ConnectedGoogleComboAccountCard = ( { googleAccount } ) => {
 	} = useGoogleAdsAccount();
 
 	const {
-		accountsCreated,
-		accountCreationChecksResolved,
+		isCreatingAccounts,
+		isCreatingBothAccounts,
 		isCreatingAdsAccount,
 		isCreatingMCAccount,
+		accountCreationChecksResolved,
 	} = useAutoCreateAdsMCAccounts();
 
-	const isCreatingAccounts = isCreatingAdsAccount || isCreatingMCAccount;
-
 	if (
-		! accountsCreated &&
-		( ! hasFinishedResolutionForCurrentAdsAccount ||
-			! hasFinishedResolutionForCurrentMCAccount ||
-			! accountCreationChecksResolved )
+		! hasFinishedResolutionForCurrentAdsAccount ||
+		! hasFinishedResolutionForCurrentMCAccount ||
+		! accountCreationChecksResolved
 	) {
 		return <AccountCard description={ <AppSpinner /> } />;
 	}
 
-	const creatingAccounts =
-		isCreatingAccounts ||
-		( accountsCreated &&
-			( ! hasFinishedResolutionForCurrentMCAccount ||
-				! hasFinishedResolutionForCurrentAdsAccount ) );
+	const getHelper = () => {
+		if ( isCreatingBothAccounts ) {
+			return (
+				<p>
+					{ __(
+						'Merchant Center is required to sync products so they show on Google. Google Ads is required to set up conversion measurement for your store.',
+						'google-listings-and-ads'
+					) }
+				</p>
+			);
+		}
 
-	const getHelper = () =>
-		isCreatingAdsAccount &&
-		isCreatingMCAccount && (
-			<p>
-				{ __(
-					'Merchant Center is required to sync products so they show on Google. Google Ads is required to set up conversion measurement for your store.',
-					'google-listings-and-ads'
-				) }
-			</p>
-		);
+		return null;
+	};
 
 	const getIndicator = () => {
-		if ( creatingAccounts ) {
+		if ( isCreatingAccounts ) {
 			return (
 				<LoadingLabel
 					text={ __( 'Creating…', 'google-listings-and-ads' ) }
@@ -93,10 +86,9 @@ const ConnectedGoogleComboAccountCard = ( { googleAccount } ) => {
 			className="gla-google-combo-account-card--connected"
 			description={
 				<AccountCreationDescription
-					isCreatingAccounts={ creatingAccounts }
+					isCreatingAccounts={ isCreatingAccounts }
 					isCreatingAdsAccount={ isCreatingAdsAccount }
 					isCreatingMCAccount={ isCreatingMCAccount }
-					googleAccount={ googleAccount }
 					googleMCAccount={ googleMCAccount }
 					googleAdsAccount={ googleAdsAccount }
 				/>
