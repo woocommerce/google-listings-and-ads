@@ -37,7 +37,10 @@ class ShippingRate implements JsonSerializable {
 	 * @param float $rate The shipping cost in store currency.
 	 */
 	public function __construct( float $rate ) {
-		$this->rate = $rate;
+		// Google only accepts rates with two decimal places.
+		// We avoid using wc_format_decimal or number_format_i18n because these functions format numbers according to locale settings, which may include thousands separators and different decimal separators.
+		// At this stage, we want to ensure the number is formatted strictly as a float, with no thousands separators and a dot as the decimal separator.
+		$this->rate = (float) number_format( $rate, 2 );
 	}
 
 	/**

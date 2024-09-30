@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\WP;
 
 use Automattic\WooCommerce\Admin\RemoteInboxNotifications\TransformerService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -29,6 +30,11 @@ class NotificationsServiceTest extends UnitTest {
 	 * @var MockObject|MerchantCenterService
 	 */
 	public $merchant_center;
+
+	/**
+	 * @var MockObject|AccountService
+	 */
+	public $account;
 
 	public const DUMMY_BLOG_ID = '123';
 
@@ -208,21 +214,46 @@ class NotificationsServiceTest extends UnitTest {
 	}
 
 	/**
+	 * Test notify() function logs an error when WPCOM Auth is not healthy
+	 */
+	public function test_notify_show_error_when_wpcom_not_healthy() {
+		$this->service = $this->get_mock( true, true, false );
+		$this->service->expects( $this->never() )->method( 'do_request' );
+		$this->assertFalse( $this->service->notify( 'product.create', 1 ) );
+		$this->assertEquals( did_action( 'woocommerce_gla_error' ), 1 );
+	}
+
+	public function test_is_ready_not_calling_status_api_if_with_health_check_is_false() {
+		$this->service = $this->get_mock( true, true, false );
+		$this->account->expects( $this->never() )->method( 'is_wpcom_api_status_healthy' );
+		$this->assertTrue( $this->service->is_ready( false ) );
+	}
+
+	public function test_is_ready_calling_status_api_if_with_health_check_is_true() {
+		$this->service = $this->get_mock();
+		$this->account->expects( $this->once() )->method( 'is_wpcom_api_status_healthy' );
+		$this->assertTrue( $this->service->is_ready() );
+	}
+
+	/**
 	 * Mocks the service
 	 *
 	 * @param bool $mc_ready
 	 * @param bool $wpcom_authorized
+	 * @param bool $is_wpcom_api_status_healthy
 	 * @return TransformerService
 	 */
-	public function get_mock( $mc_ready = true, $wpcom_authorized = true ) {
+	public function get_mock( $mc_ready = true, $wpcom_authorized = true, $is_wpcom_api_status_healthy = true ) {
 		$this->merchant_center = $this->createMock( MerchantCenterService::class );
 		$this->merchant_center->method( 'is_ready_for_syncing' )->willReturn( $mc_ready );
+		$this->account = $this->createMock( AccountService::class );
+		$this->account->method( 'is_wpcom_api_status_healthy' )->willReturn( $is_wpcom_api_status_healthy );
 		$this->options = $this->createMock( OptionsInterface::class );
 		$this->options->method( 'is_wpcom_api_authorized' )->willReturn( $wpcom_authorized );
 
 		/** @var NotificationsService $mock */
 		$mock = $this->getMockBuilder( NotificationsService::class )
-			->setConstructorArgs( [ $this->merchant_center ] )
+			->setConstructorArgs( [ $this->merchant_center, $this->account ] )
 			->onlyMethods( [ 'do_request' ] )
 			->getMock();
 		$mock->set_options_object( $this->options );

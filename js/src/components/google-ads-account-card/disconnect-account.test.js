@@ -40,6 +40,7 @@ describe( 'DisconnectAccount', () => {
 	} );
 
 	it( 'should disable the button after clicking it', async () => {
+		const user = userEvent.setup();
 		let resolve;
 
 		disconnectGoogleAdsAccount.mockReturnValue(
@@ -53,7 +54,7 @@ describe( 'DisconnectAccount', () => {
 
 		expect( button ).toBeEnabled();
 
-		await userEvent.click( button );
+		await user.click( button );
 
 		expect( button ).toBeDisabled();
 
@@ -63,6 +64,7 @@ describe( 'DisconnectAccount', () => {
 	} );
 
 	it( 'should enable the button after a failed disconnection', async () => {
+		const user = userEvent.setup();
 		let reject;
 
 		disconnectGoogleAdsAccount.mockReturnValue(
@@ -74,7 +76,7 @@ describe( 'DisconnectAccount', () => {
 		render( <DisconnectAccount /> );
 		const button = screen.getByRole( 'button' );
 
-		await act( async () => await userEvent.click( button ) );
+		await user.click( button );
 
 		expect( button ).toBeDisabled();
 
@@ -84,13 +86,15 @@ describe( 'DisconnectAccount', () => {
 	} );
 
 	it( 'should record click events and be aware of extra event properties from filters', async () => {
+		const user = userEvent.setup();
+
 		// Prevent the component from locking in the disconnecting state
 		disconnectGoogleAdsAccount.mockRejectedValue();
 
 		await expectComponentToRecordEventWithFilteredProperties(
 			DisconnectAccount,
 			FILTER_ONBOARDING,
-			async () => await userEvent.click( screen.getByRole( 'button' ) ),
+			async () => await user.click( screen.getByRole( 'button' ) ),
 			'gla_ads_account_disconnect_button_click',
 			[
 				{ context: 'setup-mc', step: '1' },

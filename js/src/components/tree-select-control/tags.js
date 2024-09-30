@@ -59,7 +59,7 @@ const Tags = ( {
 				}
 				const screenReaderLabel = sprintf(
 					// translators: 1: Tag Label, 2: Current Tag index, 3: Total amount of tags.
-					__( '%1$s (%2$d of %3$d)', 'woocommerce-admin' ),
+					__( '%1$s (%2$d of %3$d)', 'google-listings-and-ads' ),
 					item.label,
 					i + 1,
 					tags.length
@@ -84,10 +84,10 @@ const Tags = ( {
 					} }
 				>
 					{ showAll
-						? __( 'Show less', 'google-listing-and-ads' )
+						? __( 'Show less', 'google-listings-and-ads' )
 						: sprintf(
 								// translators: %d: The number of extra tags to show
-								__( '+ %d more', 'google-listing-and-ads' ),
+								__( '+ %d more', 'google-listings-and-ads' ),
 								tags.length - maxTags
 						  ) }
 				</AppButton>

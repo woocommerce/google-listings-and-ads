@@ -12,7 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\View\ViewException;
 /**
  * Class PHPViewTest
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Utility
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\View
  */
 class PHPViewTest extends UnitTest {
 

@@ -28,6 +28,14 @@ import useActiveIssueType from '.~/hooks/useActiveIssueType';
 import ReviewRequest from '.~/product-feed/review-request/index';
 import { recordGlaEvent } from '.~/utils/tracks';
 
+function isNotRendering( accountState ) {
+	const { queryByTestId, queryByRole } = render(
+		<ReviewRequest account={ accountState } />
+	);
+	expect( queryByTestId( 'gla-review-request-notice' ) ).toBeFalsy();
+	expect( queryByRole( 'dialog' ) ).toBeFalsy();
+}
+
 describe( 'Request Review Component', () => {
 	it.each( [ 'DISAPPROVED', 'WARNING' ] )(
 		'Status %s renders the component on account issues',
@@ -112,11 +120,3 @@ describe( 'Request Review Component', () => {
 		} );
 	} );
 } );
-
-function isNotRendering( accountState ) {
-	const { queryByTestId, queryByRole } = render(
-		<ReviewRequest account={ accountState } />
-	);
-	expect( queryByTestId( 'gla-review-request-notice' ) ).toBeFalsy();
-	expect( queryByRole( 'dialog' ) ).toBeFalsy();
-}
