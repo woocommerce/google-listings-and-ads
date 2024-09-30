@@ -10,6 +10,7 @@ import { createInterpolateElement } from '@wordpress/element';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
+import StepContentActions from '.~/components/stepper/step-content-actions';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppButton from '.~/components/app-button';
 import { useAdaptiveFormContext } from '.~/components/adaptive-form';
@@ -17,8 +18,8 @@ import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillin
 import AudienceSection from './audience-section';
 import BudgetSection from './budget-section';
 import { CampaignPreviewCard } from './campaign-preview';
-import FaqsSection from './faqs-section';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
+import PaidAdsFaqsPanel from './faqs-panel';
 
 /**
  * @typedef {import('.~/data/actions').Campaign} Campaign
@@ -101,24 +102,28 @@ export default function AdsCampaign( {
 			<BudgetSection
 				formProps={ formContext }
 				disabled={ disabledBudgetSection }
+				countryCodes={ formContext.values.countryCodes }
 			>
 				<CampaignPreviewCard />
 			</BudgetSection>
-			<FaqsSection />
+
 			<StepContentFooter>
-				<AppButton
-					isPrimary
-					disabled={
-						! isValidForm ||
-						( trackingContext === 'setup-ads' &&
-							billingStatus?.status !==
-								GOOGLE_ADS_BILLING_STATUS.APPROVED )
-					}
-					loading={ isLoading }
-					onClick={ onContinue }
-				>
-					{ submitButtonText }
-				</AppButton>
+				<StepContentActions>
+					<AppButton
+						isPrimary
+						disabled={
+							! isValidForm ||
+							( trackingContext === 'setup-ads' &&
+								billingStatus?.status !==
+									GOOGLE_ADS_BILLING_STATUS.APPROVED )
+						}
+						loading={ isLoading }
+						onClick={ onContinue }
+					>
+						{ submitButtonText }
+					</AppButton>
+				</StepContentActions>
+				<PaidAdsFaqsPanel />
 			</StepContentFooter>
 		</StepContent>
 	);

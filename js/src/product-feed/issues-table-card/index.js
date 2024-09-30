@@ -69,7 +69,9 @@ const IssuesTableCard = () => {
 	const account = useAppSelectDispatch( 'getMCReviewRequest' );
 
 	// We don't want to render if no issues are found
-	if ( ! total ) return null;
+	if ( ! total ) {
+		return null;
+	}
 
 	return (
 		<AppTableCardDiv className="gla-issues-table-card">

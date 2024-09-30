@@ -23,6 +23,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupProductsJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
@@ -652,7 +653,7 @@ class ConnectionTest implements Service, Registerable {
 				<?php
 				  $options = $this->container->get( OptionsInterface::class );
 				  $wp_api_status = $options->get( OptionsInterface::WPCOM_REST_API_STATUS );
-				  $notification_service = new NotificationsService( $this->container->get( MerchantCenterService::class ) );
+				  $notification_service = new NotificationsService( $this->container->get( MerchantCenterService::class ), $this->container->get( AccountService::class ) );
 				  $notification_service->set_options_object( $options );
 				?>
 				<h2 class="title">Partner API Pull Integration</h2>
@@ -865,7 +866,7 @@ class ConnectionTest implements Service, Registerable {
 			$mc    = $this->container->get( MerchantCenterService::class );
 			/** @var OptionsInterface $options */
 			$options = $this->container->get( OptionsInterface::class );
-			$service = new NotificationsService( $mc );
+			$service = new NotificationsService( $mc, $this->container->get( AccountService::class ) );
 			$service->set_options_object( $options );
 
 			if ( $service->notify( $topic, $item ) ) {

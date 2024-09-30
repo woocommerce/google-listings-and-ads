@@ -81,17 +81,6 @@ export function getCountryInputSearchBox( page ) {
 }
 
 /**
- * Get tree select menu.
- *
- * @param {import('@playwright/test').Page} page The current page.
- *
- * @return {import('@playwright/test').Locator} Get tree select menu.
- */
-export function getTreeSelectMenu( page ) {
-	return page.locator( '.woocommerce-tree-select-control__main' );
-}
-
-/**
  * Get tree item by country name.
  *
  * @param {import('@playwright/test').Page} page The current page.
