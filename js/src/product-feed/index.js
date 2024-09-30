@@ -8,7 +8,7 @@ import { getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import NavigationClassic from '.~/components/navigation-classic';
+import MainTabNav from '.~/components/main-tab-nav';
 import IssuesTableCard from './issues-table-card';
 import ProductFeedTableCard from './product-feed-table-card';
 import SubmissionSuccessGuide from './submission-success-guide';
@@ -47,7 +47,7 @@ const ProductFeed = () => {
 
 	return (
 		<>
-			<NavigationClassic />
+			<MainTabNav />
 			<RebrandingTour />
 			{ isSubmissionSuccessOpen && <SubmissionSuccessGuide /> }
 			{ canCESPromptOpen && (

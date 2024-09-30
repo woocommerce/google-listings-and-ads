@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { useRef } from '@wordpress/element';
+import { Form } from '@woocommerce/components';
 import { pick, noop } from 'lodash';
 
 /**

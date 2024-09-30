@@ -70,7 +70,9 @@ const ReviewRequestModal = ( {
 	}
 
 	const handleOnClose = ( action ) => {
-		if ( isRequestingReview ) return;
+		if ( isRequestingReview ) {
+			return;
+		}
 		onClose( action );
 	};
 
@@ -82,7 +84,9 @@ const ReviewRequestModal = ( {
 	};
 
 	const handleReviewRequest = () => {
-		if ( isRequestingReview ) return;
+		if ( isRequestingReview ) {
+			return;
+		}
 
 		setIsRequestingReview( true );
 		recordGlaEvent( 'gla_request_review' );

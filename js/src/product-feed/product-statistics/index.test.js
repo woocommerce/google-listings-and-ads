@@ -45,6 +45,16 @@ describe( 'Product Statistics', () => {
 			expect(
 				container.querySelectorAll( '.woocommerce-spinner' ).length
 			).toBe( 5 );
+
+			// Ignore the following warnings from React with calling console.error().
+			// > Support for `defaultProps` will be removed from function components
+			//   in a future major release.
+			//
+			// This should be able to be removed after `@woocommerce/components` get rid of it.
+			//
+			// `@wordpress/jest-console` doesn't seem to be possible to use `toHaveErroredWith`
+			// with regex matching strings, so it has to ignore all calls to `console.error`.
+			expect( console ).toHaveErrored();
 		} );
 		it( 'Should render placeholder if hasFinishedResolution = false', () => {
 			useMCProductStatistics.mockImplementation( () => {

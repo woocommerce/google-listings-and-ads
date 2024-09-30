@@ -1,8 +1,4 @@
 .app-button {
-	&[hidden] {
-		display: none !important;
-	}
-
 	white-space: nowrap;
 
 	svg {
@@ -12,6 +8,10 @@
 		circle {
 			stroke: currentcolor;
 		}
+	}
+
+	&[hidden] {
+		display: none !important;
 	}
 
 	// Add a gap between the SVG icon and text when the icon is on the right side.

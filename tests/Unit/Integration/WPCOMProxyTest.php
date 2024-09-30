@@ -1,6 +1,6 @@
 <?php
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Integration;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
@@ -14,12 +14,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
 use WC_Meta_Data;
 use WP_REST_Response;
+use WP_REST_Request;
 
 
 /**
  * Class WPCOMProxyTest
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Integration
  */
 class WPCOMProxyTest extends RESTControllerUnitTest {
 
@@ -458,13 +459,15 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 		$this->assertArrayHasKey( 'gla_shipping_times', $response_mapped );
 	}
 
-	public function test_get_empty_data_as_object() {
+	public function test_get_empty_settings_for_shipping_zone_methods_as_object() {
+		$request = new WP_REST_Request( 'GET', '/wc/v3/shipping/zones/4/methods' );
+
 		// dummy data
 		$data = [
-			'foo'  => 'bar',
-			'var'  => [],
-			'baz'  => null,
-			'bool' => false,
+			[
+				'id'       => '1',
+				'settings' => [],
+			],
 		];
 
 		$proxy = new WPCOMProxy(
@@ -474,12 +477,70 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 
 		$this->assertEquals(
 			[
-				'foo'  => 'bar',
-				'var'  => (object) [],
-				'baz'  => null,
-				'bool' => false,
+				[
+					'id'       => '1',
+					'settings' => (object) [],
+				],
 			],
-			$proxy->prepare_data( $data )
+			$proxy->prepare_data( $data, $request )
 		);
+
+		// If the request is not for shipping zone methods, the data should not be modified.
+		$request = new WP_REST_Request( 'GET', '/wc/v3/products' );
+
+		$this->assertEquals(
+			[
+				[
+					'id'       => '1',
+					'settings' => [],
+				],
+			],
+			$proxy->prepare_data( $data, $request )
+		);
+	}
+
+	public function test_product_types() {
+		add_filter( 'woocommerce_rest_prepare_product_object', [ $this, 'alter_product_price_types' ], 10, 3 );
+
+		$product          = ProductHelper::create_simple_product();
+		$product_variable = ProductHelper::create_variation_product();
+		$variation        = $product_variable->get_available_variations()[0];
+		$this->add_metadata( $product->get_id(), $this->get_test_metadata() );
+
+		$request = $this->do_request( '/wc/v3/products', 'GET', [ 'gla_syncable' => '1' ] );
+		$this->assertEquals( 'string', gettype( $request->get_data()[0]['price'] ) );
+		$this->assertEquals( 'string', gettype( $request->get_data()[0]['regular_price'] ) );
+		$this->assertEquals( 'string', gettype( $request->get_data()[0]['sale_price'] ) );
+
+		$request = $this->do_request( '/wc/v3/products/' . $product->get_id(), 'GET', [ 'gla_syncable' => '1' ] );
+		$this->assertEquals( 'string', gettype( $request->get_data()['price'] ) );
+		$this->assertEquals( 'string', gettype( $request->get_data()['regular_price'] ) );
+		$this->assertEquals( 'string', gettype( $request->get_data()['sale_price'] ) );
+
+		$request = $this->do_request( '/wc/v3/products/' . $product_variable->get_id() . '/variations', 'GET', [ 'gla_syncable' => '1' ] );
+		$this->assertEquals( 'string', gettype( $request->get_data()[0]['price'] ) );
+		$this->assertEquals( 'string', gettype( $request->get_data()[0]['regular_price'] ) );
+		$this->assertEquals( 'string', gettype( $request->get_data()[0]['sale_price'] ) );
+
+		$request = $this->do_request( '/wc/v3/products/' . $product_variable->get_id() . '/variations/' . $variation['variation_id'], 'GET', [ 'gla_syncable' => '1' ] );
+		$this->assertEquals( 'string', gettype( $request->get_data()['price'] ) );
+		$this->assertEquals( 'string', gettype( $request->get_data()['regular_price'] ) );
+		$this->assertEquals( 'string', gettype( $request->get_data()['sale_price'] ) );
+
+		// Doesn't apply if here is not 'gla_syncable'
+		$request = $this->do_request( '/wc/v3/products' );
+		$this->assertEquals( 'integer', gettype( $request->get_data()[0]['price'] ) );
+		$this->assertEquals( 'integer', gettype( $request->get_data()[0]['regular_price'] ) );
+		$this->assertEquals( 'integer', gettype( $request->get_data()[0]['sale_price'] ) );
+
+		remove_filter( 'woocommerce_rest_prepare_product_object', [ $this, 'alter_product_price_types' ] );
+	}
+
+	public function alter_product_price_types( $response ) {
+		$response->data['price']         = intval( $response->data['price'] );
+		$response->data['regular_price'] = intval( $response->data['regular_price'] );
+		$response->data['sale_price']    = intval( $response->data['sale_price'] );
+
+		return $response;
 	}
 }
