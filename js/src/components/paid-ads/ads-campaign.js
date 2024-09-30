@@ -10,13 +10,14 @@ import { createInterpolateElement } from '@wordpress/element';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
+import StepContentActions from '.~/components/stepper/step-content-actions';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppButton from '.~/components/app-button';
 import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import AudienceSection from './audience-section';
 import BudgetSection from './budget-section';
 import { CampaignPreviewCard } from './campaign-preview';
-import FaqsSection from './faqs-section';
+import PaidAdsFaqsPanel from './faqs-panel';
 
 /**
  * @typedef {import('.~/data/actions').Campaign} Campaign
@@ -98,15 +99,18 @@ export default function AdsCampaign( {
 			>
 				<CampaignPreviewCard />
 			</BudgetSection>
-			<FaqsSection />
+
 			<StepContentFooter>
-				<AppButton
-					isPrimary
-					disabled={ ! isValidForm }
-					onClick={ onContinue }
-				>
-					{ __( 'Continue', 'google-listings-and-ads' ) }
-				</AppButton>
+				<StepContentActions>
+					<AppButton
+						isPrimary
+						disabled={ ! isValidForm }
+						onClick={ onContinue }
+					>
+						{ __( 'Continue', 'google-listings-and-ads' ) }
+					</AppButton>
+				</StepContentActions>
+				<PaidAdsFaqsPanel />
 			</StepContentFooter>
 		</StepContent>
 	);

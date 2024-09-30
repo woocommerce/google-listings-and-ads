@@ -45,6 +45,13 @@
 		}
 
 		&__footer {
+			justify-content: flex-end;
+			width: 100%;
+			height: auto;
+			margin: calc(var(--large-gap) / 2) 0 0;
+			padding: 0 $grid-unit-30 $grid-unit-30;
+			box-sizing: border-box;
+
 			@media (max-width: $break-small) {
 				// Prevent layout break on small mobile devices
 				position: static;
@@ -56,13 +63,6 @@
 					margin-top: $grid-unit-15;
 				}
 			}
-
-			justify-content: flex-end;
-			width: 100%;
-			height: auto;
-			margin: calc(var(--large-gap) / 2) 0 0;
-			padding: 0 $grid-unit-30 $grid-unit-30;
-			box-sizing: border-box;
 
 			.components-button {
 				position: static;

@@ -1,4 +1,11 @@
 .app-modal {
+	/**
+	 * Set `hidden` as the default overflow for container and `auto` for body to
+	 * make them stable across newer versions of @wordpress/components.
+	 * More details can be found in the AppModal implementation.
+	 */
+	overflow: hidden;
+
 	@include break-large {
 		width: $gla-width-large;
 	}
@@ -18,13 +25,6 @@
 			justify-content: center;
 		}
 	}
-
-	/**
-	 * Set `hidden` as the default overflow for container and `auto` for body to
-	 * make them stable across newer versions of @wordpress/components.
-	 * More details can be found in the AppModal implementation.
-	 */
-	overflow: hidden;
 
 	.components-modal__content {
 		overflow: auto;

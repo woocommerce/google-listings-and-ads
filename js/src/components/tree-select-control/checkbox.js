@@ -17,7 +17,9 @@ import { Icon, check } from '@wordpress/icons';
  * @return {JSX.Element|null} The Checkbox component
  */
 const Checkbox = ( { option, checked, className, ...props } ) => {
-	if ( ! option ) return null;
+	if ( ! option ) {
+		return null;
+	}
 
 	return (
 		<div className={ className }>
