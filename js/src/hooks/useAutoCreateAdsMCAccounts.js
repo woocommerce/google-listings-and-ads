@@ -12,12 +12,15 @@ import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts'
 import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
 
 /**
- * Custom hook to handle the creation of MC and Ads accounts.
+ * Custom hook to handle the creation of Google Merchant Center (MC) and Google Ads accounts.
  *
- * @return {Object} Object with the following properties:
- * 	  - isCreatingAccounts: Indicates if the accounts are being created.
- *    - accountCreationChecksResolved: Indicates if the account creation checks have been resolved.
- *    - accountsCreated: Indicates if the accounts have been created
+ * @typedef {Object} AutoCreateAccountsStatus
+ * @property {boolean} isCreatingAdsAccount Indicates if the Google Ads account is currently being created.
+ * @property {boolean} isCreatingMCAccount Indicates if the Google Merchant Center account is currently being created.
+ * @property {boolean} accountCreationChecksResolved Indicates if the account creation checks (for existing accounts) have been resolved.
+ * @property {boolean} accountsCreated Indicates if both the Google Ads and Google Merchant Center accounts have been successfully created.
+ *
+ * @return {AutoCreateAccountsStatus} Object containing properties related to the account creation status.
  */
 const useAutoCreateAdsMCAccounts = () => {
 	/**
@@ -104,7 +107,6 @@ const useAutoCreateAdsMCAccounts = () => {
 	return {
 		accountsCreated: accountsCreatedRef.current,
 		accountCreationChecksResolved: accountCreationChecksResolvedRef.current,
-		isCreatingAccounts: isCreatingAccountsRef.current,
 		isCreatingAdsAccount: isCreatingAdsAccountsRef.current,
 		isCreatingMCAccount: isCreatingMCAccountsRef.current,
 	};

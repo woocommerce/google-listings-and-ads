@@ -64,13 +64,36 @@ const ConnectedGoogleComboAccountCard = ( { googleAccount } ) => {
 			( ! hasFinishedResolutionForCurrentMCAccount ||
 				! hasFinishedResolutionForCurrentAdsAccount ) );
 
+	const getHelper = () =>
+		isCreatingAdsAccount &&
+		isCreatingMCAccount && (
+			<p>
+				{ __(
+					'Merchant Center is required to sync products so they show on Google. Google Ads is required to set up conversion measurement for your store.',
+					'google-listings-and-ads'
+				) }
+			</p>
+		);
+
+	const getIndicator = () => {
+		if ( creatingAccounts ) {
+			return (
+				<LoadingLabel
+					text={ __( 'Creating…', 'google-listings-and-ads' ) }
+				/>
+			);
+		}
+
+		return null;
+	};
+
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE }
 			className="gla-google-combo-account-card--connected"
 			description={
 				<AccountCreationDescription
-					isCreatingAccounts={ isCreatingAccounts }
+					isCreatingAccounts={ creatingAccounts }
 					isCreatingAdsAccount={ isCreatingAdsAccount }
 					isCreatingMCAccount={ isCreatingMCAccount }
 					googleAccount={ googleAccount }
@@ -78,24 +101,8 @@ const ConnectedGoogleComboAccountCard = ( { googleAccount } ) => {
 					googleAdsAccount={ googleAdsAccount }
 				/>
 			}
-			helper={
-				isCreatingAdsAccount &&
-				isCreatingMCAccount && (
-					<p>
-						{ __(
-							'Merchant Center is required to sync products so they show on Google. Google Ads is required to set up conversion measurement for your store.',
-							'google-listings-and-ads'
-						) }
-					</p>
-				)
-			}
-			indicator={
-				creatingAccounts ? (
-					<LoadingLabel
-						text={ __( 'Creating…', 'google-listings-and-ads' ) }
-					/>
-				) : null
-			}
+			helper={ getHelper() }
+			indicator={ getIndicator() }
 		/>
 	);
 };

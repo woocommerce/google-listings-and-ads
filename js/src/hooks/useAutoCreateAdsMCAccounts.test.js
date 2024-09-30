@@ -58,7 +58,8 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 
 		const { result } = renderHook( () => useCreateAccounts() );
 
-		expect( result.current.isCreatingAccounts ).toBe( false );
+		expect( result.current.isCreatingAdsAccount ).toBe( false );
+		expect( result.current.isCreatingMCAccount ).toBe( false );
 		expect( result.current.accountsCreated ).toBe( false );
 		expect( handleCreateAccount ).not.toHaveBeenCalled();
 		expect( upsertAdsAccount ).not.toHaveBeenCalled();
@@ -68,7 +69,8 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 		// Simulate the initial state and mock behavior for account creation
 		const { result, rerender } = renderHook( () => useCreateAccounts() );
 
-		expect( result.current.isCreatingAccounts ).toBe( false );
+		expect( result.current.isCreatingAdsAccount ).toBe( false );
+		expect( result.current.isCreatingMCAccount ).toBe( false );
 
 		useCreateMCAccount.mockReturnValueOnce( [
 			handleCreateAccount,
@@ -83,7 +85,6 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 			rerender(); // Trigger the effect that begins account creation
 		} );
 
-		// At this point, isCreatingAccounts should be true
 		expect( result.current.isCreatingAdsAccount ).toBe( true );
 		expect( result.current.isCreatingMCAccount ).toBe( true );
 
@@ -91,7 +92,8 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 			rerender();
 		} );
 
-		expect( result.current.isCreatingAccounts ).toBe( false );
+		expect( result.current.isCreatingAdsAccount ).toBe( false );
+		expect( result.current.isCreatingMCAccount ).toBe( false );
 		expect( result.current.accountsCreated ).toBe( true );
 
 		// Finally, check that the functions were called correctly
@@ -119,7 +121,8 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 		const { result, rerender } = renderHook( () => useCreateAccounts() );
 
 		// Initially, it should not be creating accounts
-		expect( result.current.isCreatingAccounts ).toBe( false );
+		expect( result.current.isCreatingAdsAccount ).toBe( false );
+		expect( result.current.isCreatingMCAccount ).toBe( false );
 
 		// Trigger the effect that starts account creation
 		await act( async () => {
@@ -144,9 +147,9 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 		} );
 
 		// Step 4: Final assertions after account creation has completed
-		expect( result.current.isCreatingAccounts ).toBe( false ); // Account creation should be complete
+		expect( result.current.isCreatingAdsAccount ).toBe( false );
+		expect( result.current.isCreatingMCAccount ).toBe( false );
 		expect( result.current.accountsCreated ).toBe( true ); // The account has been created
-		expect( result.current.isCreatingMCAccount ).toBe( false ); // MC account creation finished
 
 		// Finally, verify that only handleCreateAccount was called, not upsertAdsAccount
 		expect( handleCreateAccount ).toHaveBeenCalledTimes( 1 );
@@ -173,7 +176,8 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 		const { result, rerender } = renderHook( () => useCreateAccounts() );
 
 		// Initially, it should not be creating accounts
-		expect( result.current.isCreatingAccounts ).toBe( false );
+		expect( result.current.isCreatingAdsAccount ).toBe( false );
+		expect( result.current.isCreatingMCAccount ).toBe( false );
 
 		// Trigger the effect that starts account creation
 		await act( async () => {
@@ -198,7 +202,6 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 		} );
 
 		// Step 4: Final assertions after Ads account creation has completed
-		expect( result.current.isCreatingAccounts ).toBe( false ); // Account creation should be complete
 		expect( result.current.accountsCreated ).toBe( true ); // The account has been created
 		expect( result.current.isCreatingAdsAccount ).toBe( false ); // Ads account creation finished
 
