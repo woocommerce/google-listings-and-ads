@@ -215,7 +215,7 @@ test.describe( 'Set up Ads account', () => {
 
 			await setupAdsAccounts.mockAdsStatusClaimed();
 
-			await page.reload();
+			await page.waitForTimeout( 30000 );
 
 			await expect( setupAdsAccounts.getContinueButton() ).toBeEnabled();
 
@@ -504,16 +504,19 @@ test.describe( 'Set up Ads account', () => {
 			await adsConnectionButton.click();
 			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 
-			//Step 1 - Accounts are already set up.
-			await setupAdsAccounts.clickContinue();
-			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+			// Check if add account page is skipped.
+			await expect(
+				page.getByRole( 'heading', {
+					name: 'Create your paid campaign',
+				} )
+			).toBeVisible();
 
-			//Step 2 - Fill the budget
+			//Step 1 - Fill the budget
 			await setupBudgetPage.fillBudget( '1' );
 			await page.getByRole( 'button', { name: 'Continue' } ).click();
 			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 
-			//Step 3 - Billing is already setup
+			//Step 2 - Billing is already setup
 			await expect(
 				page.getByText(
 					'Great! You already have billing information saved for this'
