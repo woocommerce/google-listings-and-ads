@@ -108,7 +108,7 @@ const AdsStepper = ( { formProps } ) => {
 		steps = steps.map( ( singleStep, index ) => {
 			return {
 				...singleStep,
-				key: index.toString(),
+				key: ( index + 1 ).toString(),
 			};
 		} );
 	}
