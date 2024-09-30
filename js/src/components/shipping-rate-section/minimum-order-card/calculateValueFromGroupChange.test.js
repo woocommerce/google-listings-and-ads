@@ -2,7 +2,6 @@
  * Internal dependencies
  */
 import { calculateValueFromGroupChange } from './calculateValueFromGroupChange';
-import { structuredClone } from '.~/utils/structuredClone.js';
 
 describe( 'calculateValueFromGroupChange', () => {
 	const value = Object.freeze( [

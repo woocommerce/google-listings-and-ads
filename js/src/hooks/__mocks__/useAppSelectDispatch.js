@@ -1,4 +1,3 @@
-/* global jest */
 export default jest.fn( () => ( {
 	hasFinishedResolution: true,
 	data: {

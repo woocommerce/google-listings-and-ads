@@ -2,10 +2,6 @@
  * External dependencies
  */
 import { useEffect } from '@wordpress/element';
-/**
- * Internal dependencies
- */
-import isWCNavigationEnabled from '.~/utils/isWCNavigationEnabled';
 
 /**
  * Mocked result of parsing a page entry from {@link /js/src/index.js} by WC-admin's <Route>.
@@ -18,25 +14,17 @@ const dashboardPage = {
 };
 
 /**
- * Effect that highlights the GLA Dashboard menu entry in the legacy WC menu.
+ * Effect that highlights the GLA Dashboard menu entry in the WC menu.
  *
  * Should be called for every "root page" (`.~/pages/*`) that wants to open the GLA menu.
  *
- * The hook could be removed once WC Navigation will be always enabled,
- * or if we make the plugin fully use the routing feature of WC,
+ * The hook could be removed once make the plugin fully use the routing feature of WC,
  * and let this be done by proper matching of URL matchers from {@link /js/src/index.js}
  *
  * @see window.wpNavMenuClassChange
  */
-export default function useLegacyMenuEffect() {
-	const navigationEnabled = isWCNavigationEnabled();
+export default function useMenuEffect() {
 	return useEffect( () => {
-		// Highlight the wp-admin dashboard menu
-		if ( ! navigationEnabled ) {
-			window.wpNavMenuClassChange(
-				dashboardPage,
-				dashboardPage.match.url
-			);
-		}
-	}, [ navigationEnabled ] );
+		window.wpNavMenuClassChange( dashboardPage, dashboardPage.match.url );
+	} );
 }

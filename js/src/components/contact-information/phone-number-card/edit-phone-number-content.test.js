@@ -33,7 +33,9 @@ describe( 'PhoneNumberCard', () => {
 		expect( phone.value ).toBe( '2133734253' );
 	} );
 
-	it( 'When an entered phone number is invalid, should disable "Send verification code" button', () => {
+	it( 'When an entered phone number is invalid, should disable "Send verification code" button', async () => {
+		const user = userEvent.setup();
+
 		render(
 			<EditPhoneNumberContent
 				initCountry="US"
@@ -46,20 +48,22 @@ describe( 'PhoneNumberCard', () => {
 
 		expect( submit ).toBeEnabled();
 
-		userEvent.type( phone, '{backspace}' );
+		await user.click( phone );
+		await user.keyboard( '{Backspace}' );
 
 		expect( submit ).toBeDisabled();
 
-		userEvent.type( phone, '1' );
+		await user.type( phone, '1' );
 
 		expect( submit ).toBeEnabled();
 
-		userEvent.type( phone, '2' );
+		await user.type( phone, '2' );
 
 		expect( submit ).toBeDisabled();
 	} );
 
 	it( 'Should call back `onSendVerificationCodeClick` with input values and verification method when clicking on "Send verification code" button', async () => {
+		const user = userEvent.setup();
 		const onSendVerificationCodeClick = jest
 			.fn()
 			.mockName( 'onSendVerificationCodeClick' );
@@ -79,12 +83,12 @@ describe( 'PhoneNumberCard', () => {
 		expect( onSendVerificationCodeClick ).toHaveBeenCalledTimes( 0 );
 
 		// Select and enter a U.S. phone number
-		userEvent.type( country, 'uni' );
-		userEvent.click( await screen.findByRole( 'option' ) );
-		userEvent.clear( phone );
-		userEvent.type( phone, '2133734253' );
+		await user.type( country, 'uni' );
+		await user.click( await screen.findByRole( 'option' ) );
+		await user.clear( phone );
+		await user.type( phone, '2133734253' );
 
-		userEvent.click( submit );
+		await user.click( submit );
 
 		expect( onSendVerificationCodeClick ).toHaveBeenCalledTimes( 1 );
 		expect( onSendVerificationCodeClick ).toHaveBeenCalledWith(
@@ -100,16 +104,16 @@ describe( 'PhoneNumberCard', () => {
 		);
 
 		// Select and enter a Japanese phone number
-		userEvent.clear( country );
-		userEvent.type( country, 'jap' );
-		userEvent.click( await screen.findByRole( 'option' ) );
-		userEvent.clear( phone );
-		userEvent.type( phone, '570550634' );
+		await user.clear( country );
+		await user.type( country, 'jap' );
+		await user.click( await screen.findByRole( 'option' ) );
+		await user.clear( phone );
+		await user.type( phone, '570550634' );
 
 		// Select verification method to PHONE_CALL
-		userEvent.click( screen.getByRole( 'radio', { name: 'Phone call' } ) );
+		await user.click( screen.getByRole( 'radio', { name: 'Phone call' } ) );
 
-		userEvent.click( submit );
+		await user.click( submit );
 
 		expect( onSendVerificationCodeClick ).toHaveBeenCalledTimes( 2 );
 		expect( onSendVerificationCodeClick ).toHaveBeenLastCalledWith(

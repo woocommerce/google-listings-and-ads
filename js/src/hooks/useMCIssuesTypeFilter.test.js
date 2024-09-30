@@ -14,7 +14,7 @@ jest.mock( '.~/hooks/useAppSelectDispatch', () => ( {
 /**
  * External dependencies
  */
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 
 /**
  * Internal dependencies
