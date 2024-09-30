@@ -367,4 +367,13 @@ export default class SetUpAccountsPage extends MockRequests {
 			'Conversion measurement has been set up. You can create a campaign later.'
 		);
 	}
+
+	/**
+	 * Get terms checkbox.
+	 *
+	 * @return {import('@playwright/test').Locator} Terms checkbox.
+	 */
+	getTermsCheckbox() {
+		return this.page.getByLabel( /I accept the terms and conditions/ );
+	}
 }
