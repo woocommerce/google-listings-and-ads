@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -38,19 +37,12 @@ const MerchantCenterSelectControl = ( {
 		return a.label.localeCompare( b.label );
 	} );
 
-	useEffect( () => {
-		// Triggers the onChange event in order to pre-select the initial value
-		if ( value === undefined ) {
-			onChange( options[ 0 ]?.value );
-		}
-	}, [ options, onChange, value ] );
-
 	return (
 		<AppSelectControl
 			options={ options }
 			onChange={ onChange }
 			value={ value }
-			selectSingleValue
+			autoSelectFirstOption
 			{ ...props }
 		/>
 	);

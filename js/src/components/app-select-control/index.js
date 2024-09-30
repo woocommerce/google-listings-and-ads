@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { SelectControl } from '@wordpress/components';
+import { useEffect } from '@wordpress/element';
 import classNames from 'classnames';
 
 /**
@@ -17,18 +18,38 @@ import './index.scss';
  * so that you can further control its style.
  *
  * @param {*} props The component props.
- * @param {boolean} [props.selectSingleValue=false] Whether the select should show only one value.
+ * @param {boolean} [props.autoSelectFirstOption=false] Whether the automatically select the first option.
  */
 const AppSelectControl = ( props ) => {
-	const { className, options, selectSingleValue = false, ...rest } = props;
-	const showSingleValue = selectSingleValue && options?.length === 1;
+	const {
+		className,
+		options,
+		onChange,
+		value,
+		autoSelectFirstOption = false,
+		...rest
+	} = props;
+	const hasSingleValueStyle = autoSelectFirstOption && options?.length === 1;
+
+	useEffect( () => {
+		// Triggers the onChange event to set the initial value for the select
+		if (
+			autoSelectFirstOption &&
+			options?.length > 0 &&
+			value === undefined
+		) {
+			onChange( options[ 0 ].value );
+		}
+	}, [ autoSelectFirstOption, onChange, options, value ] );
 
 	let selectProps = {
 		options,
+		value,
+		onChange,
 		...rest,
 	};
 
-	if ( showSingleValue ) {
+	if ( hasSingleValueStyle ) {
 		selectProps = {
 			...selectProps,
 			suffix: ' ',
@@ -40,7 +61,7 @@ const AppSelectControl = ( props ) => {
 	return (
 		<div
 			className={ classNames( 'app-select-control', className, {
-				'app-select-control--has-single-value': showSingleValue,
+				'app-select-control--has-single-value': hasSingleValueStyle,
 			} ) }
 		>
 			<SelectControl { ...selectProps } />
