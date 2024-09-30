@@ -281,7 +281,6 @@ test.describe( 'Set up Ads account', () => {
 
 	test.describe( 'Create your paid campaign', () => {
 		test.beforeAll( async () => {
-			// `Launch Paid Campaign` button is only enabled when billing status is approved.
 			await setupBudgetPage.fulfillBillingStatusRequest( {
 				status: 'approved',
 			} );
@@ -393,7 +392,7 @@ test.describe( 'Set up Ads account', () => {
 
 		test( 'It should show the campaign creation success message', async () => {
 			// Mock the campaign creation request.
-			await setupBudgetPage.mockCampaignCreation( budget, {} );
+			await setupBudgetPage.mockCampaignCreation( budget, [] );
 
 			await setupBudgetPage.getLaunchPaidCampaignButton().click();
 
