@@ -82,7 +82,8 @@ const AccountCreationDescription = ( {
 		return (
 			<>
 				<p>{ google?.email }</p>
-				{ googleMCAccount?.id && (
+
+				{ googleMCAccount?.id !== 0 && (
 					<p>
 						{ sprintf(
 							// Translators: %s is the Merchant Center ID
@@ -94,6 +95,7 @@ const AccountCreationDescription = ( {
 						) }
 					</p>
 				) }
+
 				{ googleAdsAccount?.id && (
 					<p>
 						{ sprintf(

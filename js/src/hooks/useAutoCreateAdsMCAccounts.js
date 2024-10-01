@@ -48,7 +48,7 @@ const useAutoCreateAdsMCAccounts = () => {
 	} = useExistingGoogleAdsAccounts();
 
 	const [ handleCreateAccount, { response } ] = useCreateMCAccount();
-	const [ upsertAdsAccount, { loading, action } ] = useUpsertAdsAccount();
+	const [ upsertAdsAccount, { loading } ] = useUpsertAdsAccount();
 
 	const hasExistingMCAccount = existingMCAccounts?.length > 0;
 	const hasExistingAdsAccount = existingAdsAccount?.length > 0;
