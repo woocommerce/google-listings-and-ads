@@ -11,12 +11,12 @@ import useGoogleAccount from '.~/hooks/useGoogleAccount';
 /**
  * Renders the description for the account creation card.
  *
- * @param {*} param0 Props.
- * @param {boolean} param0.isCreatingAccounts Whether accounts are being created.
- * @param {boolean} param0.isCreatingMCAccount Whether Merchant Center account is being created.
- * @param {boolean} param0.isCreatingAdsAccount Whether Google Ads account is being created.
- * @param {Object} param0.googleMCAccount Google Merchant Center account.
- * @param {Object} param0.googleAdsAccount Google Ads account.
+ * @param {Object} props Props.
+ * @param {boolean} props.isCreatingAccounts Whether accounts are being created.
+ * @param {boolean} props.isCreatingMCAccount Whether Merchant Center account is being created.
+ * @param {boolean} props.isCreatingAdsAccount Whether Google Ads account is being created.
+ * @param {Object} props.googleMCAccount Google Merchant Center account.
+ * @param {Object} props.googleAdsAccount Google Ads account.
  */
 const AccountCreationDescription = ( {
 	isCreatingAccounts,
@@ -32,7 +32,7 @@ const AccountCreationDescription = ( {
 
 		if ( isCreatingAccounts ) {
 			if ( isCreatingMCAccount && isCreatingAdsAccount ) {
-				description = (
+				return (
 					<p>
 						{ __(
 							'You don’t have Merchant Center nor Google Ads accounts, so we’re creating them for you.',
@@ -41,7 +41,7 @@ const AccountCreationDescription = ( {
 					</p>
 				);
 			} else if ( isCreatingAdsAccount ) {
-				description = (
+				return (
 					<>
 						<p>
 							{ __(
@@ -58,7 +58,7 @@ const AccountCreationDescription = ( {
 					</>
 				);
 			} else if ( isCreatingMCAccount ) {
-				description = (
+				return (
 					<>
 						<p>
 							{ __(
@@ -75,39 +75,37 @@ const AccountCreationDescription = ( {
 					</>
 				);
 			}
-		} else {
-			description = (
-				<>
-					<p>{ google?.email }</p>
-					{ googleMCAccount?.id && (
-						<p>
-							{ sprintf(
-								// Translators: %s is the Merchant Center ID
-								__(
-									'Merchant Center ID: %s',
-									'google-listings-and-ads'
-								),
-								googleMCAccount.id
-							) }
-						</p>
-					) }
-					{ googleAdsAccount?.id && (
-						<p>
-							{ sprintf(
-								// Translators: %s is the Google Ads ID
-								__(
-									'Google Ads ID: %s',
-									'google-listings-and-ads'
-								),
-								googleAdsAccount.id
-							) }
-						</p>
-					) }
-				</>
-			);
 		}
 
-		return description;
+		return (
+			<>
+				<p>{ google?.email }</p>
+				{ googleMCAccount?.id && (
+					<p>
+						{ sprintf(
+							// Translators: %s is the Merchant Center ID
+							__(
+								'Merchant Center ID: %s',
+								'google-listings-and-ads'
+							),
+							googleMCAccount.id
+						) }
+					</p>
+				) }
+				{ googleAdsAccount?.id && (
+					<p>
+						{ sprintf(
+							// Translators: %s is the Google Ads ID
+							__(
+								'Google Ads ID: %s',
+								'google-listings-and-ads'
+							),
+							googleAdsAccount.id
+						) }
+					</p>
+				) }
+			</>
+		);
 	};
 
 	return (

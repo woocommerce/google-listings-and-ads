@@ -43,7 +43,7 @@ const useAutoCreateAdsMCAccounts = () => {
 
 	const {
 		existingAccounts: existingAdsAccount,
-		isResolving: isResolvingExistingAdsAccount,
+		hasFinishedResolution: hasFinishedResolutionForExistingAdsAccount,
 	} = useExistingGoogleAdsAccounts();
 
 	const [ handleCreateAccount, { response } ] = useCreateMCAccount();
@@ -82,7 +82,7 @@ const useAutoCreateAdsMCAccounts = () => {
 
 	useEffect( () => {
 		const existingAccountsResolved =
-			! isResolvingExistingAdsAccount &&
+			hasFinishedResolutionForExistingAdsAccount &&
 			hasFinishedResolutionForExistingMCAccounts;
 
 		accountCreationChecksResolvedRef.current = existingAccountsResolved;
@@ -100,7 +100,7 @@ const useAutoCreateAdsMCAccounts = () => {
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [
-		isResolvingExistingAdsAccount,
+		hasFinishedResolutionForExistingAdsAccount,
 		hasFinishedResolutionForExistingMCAccounts,
 	] );
 

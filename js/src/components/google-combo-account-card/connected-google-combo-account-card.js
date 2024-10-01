@@ -96,7 +96,6 @@ const ConnectedGoogleComboAccountCard = ( { googleAccount } ) => {
 					isCreatingAccounts={ creatingAccounts }
 					isCreatingAdsAccount={ isCreatingAdsAccount }
 					isCreatingMCAccount={ isCreatingMCAccount }
-					googleAccount={ googleAccount }
 					googleMCAccount={ googleMCAccount }
 					googleAdsAccount={ googleAdsAccount }
 				/>
