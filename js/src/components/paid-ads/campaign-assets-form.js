@@ -80,29 +80,8 @@ export default function CampaignAssetsForm( {
 	}, [ assetEntityGroup ] );
 	const [ baseAssetGroup, setBaseAssetGroup ] = useState( initialAssetGroup );
 	const [ hasImportedAssets, setHasImportedAssets ] = useState( false );
-	const {
-		validateCampaignWithCountryCodes,
-		dailyBudget,
-		refreshCountryCodes,
-		currencyCode,
-	} = useValidateCampaignWithCountryCodes();
-
-	// Grab the budget recommendations for the initial country codes.
-	// refreshCountryCodes will trigger a new validation function with the new budget values.
-	useEffect( () => {
-		if ( initialCampaign?.countryCodes ) {
-			refreshCountryCodes( initialCampaign.countryCodes );
-		}
-	}, [ initialCampaign, refreshCountryCodes ] );
-
-	const handleOnChange = ( _, values, arg ) => {
-		onChange( _, values, arg );
-
-		// Whenever there's a change, update the country codes in the validation function.
-		if ( values.countryCodes ) {
-			refreshCountryCodes( values.countryCodes );
-		}
-	};
+	const { validateCampaignWithCountryCodes, dailyBudget, currencyCode } =
+		useValidateCampaignWithCountryCodes();
 
 	useEffect( () => {
 		const { setValue } = formRef.current;
@@ -163,7 +142,7 @@ export default function CampaignAssetsForm( {
 			} }
 			validate={ validateCampaignWithCountryCodes }
 			extendAdapter={ extendAdapter }
-			onChange={ handleOnChange }
+			onChange={ onChange }
 			{ ...adaptiveFormProps }
 		/>
 	);

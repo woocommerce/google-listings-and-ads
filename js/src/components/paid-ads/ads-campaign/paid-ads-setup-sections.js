@@ -46,20 +46,18 @@ const defaultPaidAds = {
  *
  * @param {Object} props React props.
  * @param {(onStatesReceived: PaidAdsData)=>void} props.onStatesReceived Callback to receive the data for setting up paid ads when initial and also when the budget and billing are updated.
- * @param {Array<CountryCode>|undefined} props.countryCodes Country codes for the campaign.
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
  * @param {boolean} [props.showCampaignPreviewCard=false] Whether to show the campaign preview card.
  * @param {boolean} [props.loadCampaignFromClientSession=false] Whether to load the campaign data from the client session.
  */
 export default function PaidAdsSetupSections( {
 	onStatesReceived,
-	countryCodes,
 	campaign,
 	loadCampaignFromClientSession,
 	showCampaignPreviewCard = false,
 } ) {
 	const { validateCampaignWithCountryCodes, loaded } =
-		useValidateCampaignWithCountryCodes( countryCodes );
+		useValidateCampaignWithCountryCodes();
 	const isCreation = ! campaign;
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const onStatesReceivedRef = useRef();
@@ -133,10 +131,7 @@ export default function PaidAdsSetupSections( {
 		>
 			{ ( formProps ) => {
 				return (
-					<BudgetSection
-						formProps={ formProps }
-						countryCodes={ countryCodes }
-					>
+					<BudgetSection formProps={ formProps }>
 						<BillingCard />
 						{ showCampaignPreviewCard && <CampaignPreviewCard /> }
 					</BudgetSection>
