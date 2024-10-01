@@ -352,53 +352,6 @@ test.describe( 'Set up Ads account', () => {
 				await checkFAQExpandable( page );
 			} );
 		} );
-
-		test( 'Set the budget', async () => {
-			test( 'Continue button should be disabled if budget is 0', async () => {
-				budget = '0';
-				await setupBudgetPage.fillBudget( budget );
-
-				await expect(
-					page.getByRole( 'button', { name: 'Continue' } )
-				).toBeDisabled();
-			} );
-
-			test( 'Continue button should be disabled if budget is less than recommended value', async () => {
-				budget = '2';
-				await setupBudgetPage.fillBudget( budget );
-
-				await expect(
-					page.getByRole( 'button', { name: 'Continue' } )
-				).toBeDisabled();
-			} );
-
-			test( 'User is notified of the minimum value', async () => {
-				budget = '4';
-				await setupBudgetPage.fillBudget( budget );
-				await setupBudgetPage.getBudgetInput().blur();
-
-				await expect(
-					page.getByText(
-						'Please make sure daily average cost is at least €4.50'
-					)
-				).toBeVisible();
-			} );
-
-			test( 'Continue button should be enabled if budget is above the recommended value', async () => {
-				budget = '5';
-				await setupBudgetPage.fillBudget( budget );
-
-				await expect(
-					page.getByRole( 'button', { name: 'Continue' } )
-				).toBeEnabled();
-			} );
-		} );
-
-		test( 'Budget Recommendation', async () => {
-			await expect(
-				page.getByText( 'set a daily budget of 15 USD' )
-			).toBeVisible();
-		} );
 	} );
 
 	test.describe( 'Set up billing', () => {
@@ -452,30 +405,65 @@ test.describe( 'Set up Ads account', () => {
 	} );
 
 	test.describe( 'Create Ads with billing data already setup', () => {
-		test.beforeAll( async () => {
-			await setupBudgetPage.fulfillBillingStatusRequest( {
-				status: 'approved',
+		test.describe( 'Set the budget', async () => {
+			test( 'Continue button should be disabled if budget is 0', async () => {
+				//Reload the page
+				await page.reload();
+				await setupBudgetPage.fulfillBillingStatusRequest( {
+					status: 'approved',
+				} );
+				await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+
+				//Step 1 - Accounts are already set up.
+				await setupAdsAccounts.clickContinue();
+				await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+
+				budget = '0';
+				await setupBudgetPage.fillBudget( budget );
+
+				await expect(
+					page.getByRole( 'button', { name: 'Continue' } )
+				).toBeDisabled();
+			} );
+
+			test( 'Continue button should be disabled if budget is less than recommended value', async () => {
+				budget = '2';
+				await setupBudgetPage.fillBudget( budget );
+
+				await expect(
+					page.getByRole( 'button', { name: 'Continue' } )
+				).toBeDisabled();
+			} );
+
+			test( 'User is notified of the minimum value', async () => {
+				budget = '4';
+				await setupBudgetPage.fillBudget( budget );
+				await setupBudgetPage.getBudgetInput().blur();
+
+				await expect(
+					page.getByText(
+						'Please make sure daily average cost is at least €4.50'
+					)
+				).toBeVisible();
+			} );
+
+			test( 'Continue button should be enabled if budget is above the recommended value', async () => {
+				budget = '5';
+				await setupBudgetPage.fillBudget( budget );
+
+				await expect(
+					page.getByRole( 'button', { name: 'Continue' } )
+				).toBeEnabled();
 			} );
 		} );
 
-		test( 'Launch paid campaign should be enabled', async () => {
-			//Reload the page
-			await page.reload();
-			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-
-			//Step 1 - Accounts are already set up.
-			await setupAdsAccounts.clickContinue();
-			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-
-			//Step 2 - Fill the budget
-			await setupBudgetPage.fulfillBillingStatusRequest( {
-				status: 'approved',
-			} );
-			await setupBudgetPage.fillBudget( '1' );
-
+		test( 'Budget Recommendation', async () => {
 			await expect(
-				page.getByRole( 'button', { name: 'Continue' } )
-			).toBeEnabled();
+				page.getByText( 'set a daily budget of 15 USD' )
+			).toBeVisible();
+		} );
+
+		test( 'Launch paid campaign should be enabled', async () => {
 			await page.getByRole( 'button', { name: 'Continue' } ).click();
 			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 
@@ -492,7 +480,7 @@ test.describe( 'Set up Ads account', () => {
 
 			const campaignCreation =
 				setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
-					'1',
+					'5',
 					[ 'US' ]
 				);
 			await page
