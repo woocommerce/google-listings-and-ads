@@ -353,34 +353,16 @@ test.describe( 'Set up Ads account', () => {
 			} );
 		} );
 
-<<<<<<< HEAD
-		test( 'Audience should be United States', async () => {
-			const countrySearchBoxContainer =
-				getCountryInputSearchBoxContainer( page );
-			const countryTags =
-				getCountryTagsFromInputSearchBoxContainer( page );
-			await expect( countryTags ).toHaveCount( 1 );
-			await expect( countrySearchBoxContainer ).toContainText(
-				'United States'
-			);
-		} );
-
-		test.describe( 'Set the budget', async () => {
+		test( 'Set the budget', async () => {
 			test( 'Continue button should be disabled if budget is 0', async () => {
 				budget = '0';
 				await setupBudgetPage.fillBudget( budget );
-=======
-		test( 'Set the budget', async () => {
-			budget = '0';
-			await setupBudgetPage.fillBudget( budget );
->>>>>>> update/2535-consolidate-ad-creation-ccf-merged
 
 				await expect(
 					page.getByRole( 'button', { name: 'Continue' } )
 				).toBeDisabled();
 			} );
 
-<<<<<<< HEAD
 			test( 'Continue button should be disabled if budget is less than recommended value', async () => {
 				budget = '2';
 				await setupBudgetPage.fillBudget( budget );
@@ -410,10 +392,6 @@ test.describe( 'Set up Ads account', () => {
 					page.getByRole( 'button', { name: 'Continue' } )
 				).toBeEnabled();
 			} );
-=======
-			budget = '1';
-			await setupBudgetPage.fillBudget( budget );
->>>>>>> update/2535-consolidate-ad-creation-ccf-merged
 		} );
 
 		test( 'Budget Recommendation', async () => {
