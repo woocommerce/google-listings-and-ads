@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { useState, useMemo, useEffect, useRef } from '@wordpress/element';
-import { noop, isPlainObject } from 'lodash';
+import { isPlainObject } from 'lodash';
 
 /**
  * Internal dependencies
@@ -71,7 +71,6 @@ function convertAssetEntityGroupToFormValues( assetEntityGroup = {} ) {
 export default function CampaignAssetsForm( {
 	initialCampaign,
 	assetEntityGroup,
-	onChange = noop,
 	...adaptiveFormProps
 } ) {
 	const formRef = useRef();
@@ -142,7 +141,6 @@ export default function CampaignAssetsForm( {
 			} }
 			validate={ validateCampaignWithCountryCodes }
 			extendAdapter={ extendAdapter }
-			onChange={ onChange }
 			{ ...adaptiveFormProps }
 		/>
 	);
