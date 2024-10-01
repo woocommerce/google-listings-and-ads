@@ -11,15 +11,9 @@ import AppSelectControl from '.~/components/app-select-control';
 
 /**
  * @param {Object} props The component props
- * @param {string} [props.value] The selected value. IF no value is defined, then the first option is selected and onChange function is triggered.
- * @param {Function} [props.onChange] Callback when the select value changes.
  * @return {JSX.Element} An enhanced AppSelectControl component.
  */
-const MerchantCenterSelectControl = ( {
-	value,
-	onChange = () => {},
-	...props
-} ) => {
+const MerchantCenterSelectControl = ( props ) => {
 	const { data: existingAccounts = [] } = useExistingGoogleMCAccounts();
 	const options = existingAccounts.map( ( acc ) => {
 		return {
@@ -40,8 +34,6 @@ const MerchantCenterSelectControl = ( {
 	return (
 		<AppSelectControl
 			options={ options }
-			onChange={ onChange }
-			value={ value }
 			autoSelectFirstOption
 			{ ...props }
 		/>
