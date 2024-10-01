@@ -295,12 +295,21 @@ test.describe( 'Complete your campaign', () => {
 				} );
 
 				test( 'should see billing has been set up successfully when billing status API returns approved', async () => {
+					await setupBudgetPage.mockAdsAccountsResponse( {
+						id: 12345,
+						billing_url: null,
+					} );
 					await setupBudgetPage.fulfillBillingStatusRequest( {
-						status: 'approved',
+						status: 'pending',
 					} );
 
 					await newPage.close();
-					await page.reload();
+					// return focus to the page.
+					await setupBudgetPage.focusBudget();
+					await setupBudgetPage.fulfillBillingStatusRequest( {
+						status: 'approved',
+					} );
+					await setupBudgetPage.awaitForBillingStatusRequest();
 
 					const billingSetupSuccessSection =
 						setupBudgetPage.getBillingSetupSuccessSection();

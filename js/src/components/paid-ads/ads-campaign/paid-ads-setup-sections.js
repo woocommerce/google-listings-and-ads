@@ -14,13 +14,20 @@ import SpinnerCard from '.~/components/spinner-card';
 import Section from '.~/wcdl/section';
 import useValidateCampaignWithCountryCodes from '.~/hooks/useValidateCampaignWithCountryCodes';
 import clientSession from './clientSession';
+import CampaignPreviewCard from '.~/components/paid-ads/campaign-preview/campaign-preview-card';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
+
+/**
+ *
+ * @typedef {import('.~/data/actions').Campaign} Campaign
+ */
 
 /**
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
  */
 
 /**
+ *
  * @typedef {Object} PaidAdsData
  * @property {number|undefined} amount Daily average cost of the paid ads campaign.
  * @property {boolean} isValid Whether the campaign data are valid values.
@@ -40,23 +47,36 @@ const defaultPaidAds = {
  * @param {Object} props React props.
  * @param {(onStatesReceived: PaidAdsData)=>void} props.onStatesReceived Callback to receive the data for setting up paid ads when initial and also when the budget and billing are updated.
  * @param {Array<CountryCode>|undefined} props.countryCodes Country codes for the campaign.
+ * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
+ * @param {boolean} [props.showCampaignPreviewCard=false] Whether to show the campaign preview card.
+ * @param {boolean} [props.loadCampaignFromClientSession=false] Whether to load the campaign data from the client session.
  */
 export default function PaidAdsSetupSections( {
 	onStatesReceived,
 	countryCodes,
+	campaign,
+	loadCampaignFromClientSession,
+	showCampaignPreviewCard = false,
 } ) {
 	const { validateCampaignWithCountryCodes, loaded } =
 		useValidateCampaignWithCountryCodes( countryCodes );
+	const isCreation = ! campaign;
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const onStatesReceivedRef = useRef();
 	onStatesReceivedRef.current = onStatesReceived;
 
 	const [ paidAds, setPaidAds ] = useState( () => {
 		// Resolve the starting paid ads data with the campaign data stored in the client session.
-		const startingPaidAds = {
+		let startingPaidAds = {
 			...defaultPaidAds,
-			...clientSession.getCampaign(),
 		};
+
+		if ( loadCampaignFromClientSession ) {
+			startingPaidAds = {
+				...startingPaidAds,
+				...clientSession.getCampaign(),
+			};
+		}
 		return startingPaidAds;
 	} );
 
@@ -100,7 +120,7 @@ export default function PaidAdsSetupSections( {
 	}
 
 	const initialValues = {
-		amount: paidAds.amount,
+		amount: isCreation ? paidAds.amount : campaign.amount,
 	};
 
 	return (
@@ -118,6 +138,7 @@ export default function PaidAdsSetupSections( {
 						countryCodes={ countryCodes }
 					>
 						<BillingCard />
+						{ showCampaignPreviewCard && <CampaignPreviewCard /> }
 					</BudgetSection>
 				);
 			} }

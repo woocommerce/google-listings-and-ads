@@ -145,6 +145,10 @@ const CreatePaidAdsCampaign = () => {
 							),
 							content: (
 								<AdsCampaign
+									headerTitle={ __(
+										'Create your paid campaign',
+										'google-listings-and-ads'
+									) }
 									trackingContext={ eventContext }
 									onContinue={ () =>
 										handleContinueClick( STEP.ASSET_GROUP )
