@@ -52,7 +52,7 @@ const useValidateCampaignWithCountryCodes = () => {
 					formatAmount,
 					currencyCode: code,
 					precision,
-					loaded: true,
+					loaded: false,
 				};
 			}
 

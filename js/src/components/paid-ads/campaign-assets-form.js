@@ -79,20 +79,19 @@ export default function CampaignAssetsForm( {
 	}, [ assetEntityGroup ] );
 	const [ baseAssetGroup, setBaseAssetGroup ] = useState( initialAssetGroup );
 	const [ hasImportedAssets, setHasImportedAssets ] = useState( false );
-	const { validateCampaignWithCountryCodes, dailyBudget, currencyCode } =
+	const { validateCampaignWithCountryCodes, dailyBudget, loaded } =
 		useValidateCampaignWithCountryCodes();
 
 	useEffect( () => {
-		const { setValue } = formRef.current;
+		if ( loaded ) {
+			const { setValue } = formRef.current;
 
-		// Trigger a form value change to refresh the validation function once again with the new budget values
-		// If the validation function and values do not change, then the validation will not be triggerred since the `validate`
-		// function uses useCallback and will not be re-created.
-		setValue( 'dailyBudget', dailyBudget );
-
-		// Sometimes the currency code takes time to resolve and the budget data is already available.
-		setValue( 'currencyCode', currencyCode );
-	}, [ dailyBudget, currencyCode ] );
+			// Simulate a form value change to refresh the validation function once again with the new budget values
+			// If the validation function and values do not change, then the validation will not be triggerred since the `validate`
+			// function uses useCallback and will not be re-created.
+			setValue( 'dailyBudget', dailyBudget );
+		}
+	}, [ dailyBudget, loaded ] );
 
 	const extendAdapter = ( formContext ) => {
 		const assetGroupErrors = validateAssetGroup( formContext.values );
