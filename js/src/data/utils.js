@@ -89,6 +89,29 @@ export function getReportQuery( category, type, query, dateReference ) {
 	return reportQuery;
 }
 
+/*
+ * This `replacer` is used with `JSON.stringify` to ensure that an object/array
+ * will be stringified to the same result regardless of the values' order when
+ * it has the same set of keys and values.
+ *
+ * For example, the following two inputs will both result in
+ * '{"a":"","b":["c","d"]}'
+ *
+ * - JSON.stringify( { a: '', b: [ 'c', 'd' ] }, replacer );
+ * - JSON.stringify( { b: [ 'd', 'c' ], a: '' }, replacer );
+ */
+function replacer( key, value ) {
+	if ( value ) {
+		if ( Array.isArray( value ) ) {
+			return [ ...value ].sort();
+		}
+		if ( typeof value === 'object' ) {
+			return Object.fromEntries( Object.entries( value ).sort() );
+		}
+	}
+	return value;
+}
+
 /**
  * Get a key for accessing report data from store state.
  *
@@ -99,9 +122,49 @@ export function getReportQuery( category, type, query, dateReference ) {
  * @return {string} The report key.
  */
 export function getReportKey( category, type, reportQuery ) {
-	const id = JSON.stringify( reportQuery, Object.keys( reportQuery ).sort() );
+	const id = JSON.stringify( reportQuery, replacer );
 	return `${ category }:${ type }:${ id }`;
 }
+
+/**
+ * Calculate delta.
+ *
+ * @param {number} [value] The primary report field fetched from report API.
+ * @param {number} [base] The secondary report field fetched from report API.
+ * @return {number | null} The delta percentage calculated by the `value` compared to the `base` and then rounded to second decimal.
+ *                         `null` if any number is not number type, or the result is not finite.
+ */
+export function calculateDelta( value, base ) {
+	let delta = null;
+	if ( typeof value === 'number' && typeof base === 'number' ) {
+		delta = 0;
+		if ( value !== base ) {
+			const percent = ( ( value - base ) / base ) * 100;
+			delta = Number.isFinite( percent ) ? round( percent ) : null;
+		}
+	}
+
+	return delta;
+}
+
+/**
+ * Calculate deltas and map indidual ReportField metrics to PerformanceData field.
+ *
+ * @param {number} [value] The primary report field fetched from report API.
+ * @param {number} [base] The secondary report field fetched from report API.
+ * @param {MISSING_FREE_LISTINGS_DATA} [missingFreeListingsData] Flag indicating whether the data miss entries from Free Listings.
+ * @return {PerformanceData} The calculated performance data of each metric.
+ */
+export const fieldsToPerformance = (
+	value,
+	base,
+	missingFreeListingsData
+) => ( {
+	value,
+	delta: calculateDelta( value, base ),
+	prevValue: base,
+	missingFreeListingsData,
+} );
 
 /**
  * Calculate performance data by each metric.
@@ -129,46 +192,6 @@ export function mapReportFieldsToPerformance(
 		} ),
 		{}
 	);
-}
-
-/**
- * Calculate deltas and map indidual ReportField metrics to PerformanceData field.
- *
- * @param {number} [value] The primary report field fetched from report API.
- * @param {number} [base] The secondary report field fetched from report API.
- * @param {MISSING_FREE_LISTINGS_DATA} [missingFreeListingsData] Flag indicating whether the data miss entries from Free Listings.
- * @return {PerformanceData} The calculated performance data of each metric.
- */
-export const fieldsToPerformance = (
-	value,
-	base,
-	missingFreeListingsData
-) => ( {
-	value,
-	delta: calculateDelta( value, base ),
-	prevValue: base,
-	missingFreeListingsData,
-} );
-
-/**
- * Calculate delta.
- *
- * @param {number} [value] The primary report field fetched from report API.
- * @param {number} [base] The secondary report field fetched from report API.
- * @return {number | null} The delta percentage calculated by the `value` compared to the `base` and then rounded to second decimal.
- *                         `null` if any number is not number type, or the result is not finite.
- */
-export function calculateDelta( value, base ) {
-	let delta = null;
-	if ( typeof value === 'number' && typeof base === 'number' ) {
-		delta = 0;
-		if ( value !== base ) {
-			const percent = ( ( value - base ) / base ) * 100;
-			delta = Number.isFinite( percent ) ? round( percent ) : null;
-		}
-	}
-
-	return delta;
 }
 
 /**

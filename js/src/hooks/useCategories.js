@@ -24,46 +24,16 @@ const getDeletedCategoryName = ( categoryId ) => {
 };
 
 /**
- * Returns the categories and selected categories in the SelectControl format and also the categories in string format
- * It also maps the deleted (and previously selected) categories
+ * Return a category in SelectControl format
  *
- * @param {Array<string>} [selected] The selected category ID's
- * @return {{categories: Array, selected: Array, names: string, hasFinishedResolution: boolean}} The categories ready to insert in Select Control as well as the selected categories and the categories separated by commas together with the resolution state
+ * @param {Object} category The category to be formatted
+ * @return {{label: string, value: number, key: number}} The category formatted in SelectControl format
  */
-const useCategories = ( selected = [] ) => {
-	const { data, hasFinishedResolution } =
-		useAppSelectDispatch( 'getStoreCategories' );
-
-	if ( ! hasFinishedResolution ) {
-		return {
-			hasFinishedResolution,
-			categories: [],
-			selected: [],
-			names: '',
-		};
-	}
-
-	// Parse deleted categories previously selected in a rule
-	const deletedCategories = selected
-		.filter(
-			( category ) => ! data.find( ( e ) => e.id.toString() === category )
-		)
-		.map( ( category ) => {
-			return {
-				id: category,
-				name: getDeletedCategoryName( category ),
-				parent: 0,
-			};
-		} );
-
-	const categories = [ ...data, ...deletedCategories ];
-	const selectedCategories = getSelected( selected, categories );
-
+const getSelectControlFormat = ( category ) => {
 	return {
-		hasFinishedResolution,
-		selected: selectedCategories,
-		categories: formatCategoriesForSelectControl( categories ),
-		names: getCategoryNames( selectedCategories ),
+		key: category.id,
+		label: category.name,
+		value: category.id,
 	};
 };
 
@@ -107,16 +77,46 @@ const getSelected = ( selected, allCategories ) => {
 };
 
 /**
- * Return a category in SelectControl format
+ * Returns the categories and selected categories in the SelectControl format and also the categories in string format
+ * It also maps the deleted (and previously selected) categories
  *
- * @param {Object} category The category to be formatted
- * @return {{label: string, value: number, key: number}} The category formatted in SelectControl format
+ * @param {Array<string>} [selected] The selected category ID's
+ * @return {{categories: Array, selected: Array, names: string, hasFinishedResolution: boolean}} The categories ready to insert in Select Control as well as the selected categories and the categories separated by commas together with the resolution state
  */
-const getSelectControlFormat = ( category ) => {
+const useCategories = ( selected = [] ) => {
+	const { data, hasFinishedResolution } =
+		useAppSelectDispatch( 'getStoreCategories' );
+
+	if ( ! hasFinishedResolution ) {
+		return {
+			hasFinishedResolution,
+			categories: [],
+			selected: [],
+			names: '',
+		};
+	}
+
+	// Parse deleted categories previously selected in a rule
+	const deletedCategories = selected
+		.filter(
+			( category ) => ! data.find( ( e ) => e.id.toString() === category )
+		)
+		.map( ( category ) => {
+			return {
+				id: category,
+				name: getDeletedCategoryName( category ),
+				parent: 0,
+			};
+		} );
+
+	const categories = [ ...data, ...deletedCategories ];
+	const selectedCategories = getSelected( selected, categories );
+
 	return {
-		key: category.id,
-		label: category.name,
-		value: category.id,
+		hasFinishedResolution,
+		selected: selectedCategories,
+		categories: formatCategoriesForSelectControl( categories ),
+		names: getCategoryNames( selectedCategories ),
 	};
 };
 

@@ -10,6 +10,12 @@ import userEvent from '@testing-library/user-event';
  */
 import CampaignAssetsForm from './campaign-assets-form';
 
+jest.mock( '@wordpress/api-fetch', () => {
+	const impl = jest.fn().mockName( '@wordpress/api-fetch' );
+	impl.use = jest.fn().mockName( 'apiFetch.use' );
+	return impl;
+} );
+
 jest.mock( '@woocommerce/settings', () => ( {
 	getSetting: jest
 		.fn()
@@ -60,6 +66,7 @@ describe( 'CampaignAssetsForm', () => {
 	} );
 
 	it( 'Should be able to accumulate and reset the validation request count', async () => {
+		const user = userEvent.setup();
 		const inspect = jest.fn();
 
 		render(
@@ -87,15 +94,15 @@ describe( 'CampaignAssetsForm', () => {
 
 		expect( inspect ).toHaveBeenLastCalledWith( 0 );
 
-		await userEvent.click( requestButton );
+		await user.click( requestButton );
 
 		expect( inspect ).toHaveBeenLastCalledWith( 1 );
 
-		await userEvent.click( requestButton );
+		await user.click( requestButton );
 
 		expect( inspect ).toHaveBeenLastCalledWith( 2 );
 
-		await userEvent.click( resetButton );
+		await user.click( resetButton );
 
 		expect( inspect ).toHaveBeenLastCalledWith( 0 );
 	} );

@@ -43,7 +43,7 @@ import { ARROW_DOWN, ARROW_UP, ENTER, ESCAPE, ROOT_VALUE } from './constants';
 			],
 		}
      ],
- **/
+ */
 
 /**
  * @typedef {Object} CommonOption
@@ -190,7 +190,9 @@ const TreeSelectControl = ( {
 		const highlightOptionLabel = ( optionLabel, matchPosition ) => {
 			const matchLength = matchPosition + filter.length;
 
-			if ( ! isSearching ) return optionLabel;
+			if ( ! isSearching ) {
+				return optionLabel;
+			}
 
 			return (
 				<span>
@@ -309,7 +311,9 @@ const TreeSelectControl = ( {
 	}, [ treeOptions, filter ] );
 
 	const onKeyDown = ( event ) => {
-		if ( disabled ) return;
+		if ( disabled ) {
+			return;
+		}
 
 		if ( ESCAPE === event.key ) {
 			setTreeVisible( false );
@@ -377,26 +381,6 @@ const TreeSelectControl = ( {
 	};
 
 	/**
-	 * Handles a change on the Tree options. Could be a click on a parent option
-	 * or a child option
-	 *
-	 * @param {boolean} checked Indicates if the item should be checked
-	 * @param {InnerOption} option The option to change
-	 */
-	const handleOptionsChange = ( checked, option ) => {
-		if ( option.hasChildren ) {
-			handleParentChange( checked, option );
-		} else {
-			handleSingleChange( checked, option );
-		}
-
-		setInputControlValue( '' );
-		if ( ! nodesExpanded.includes( option.parent ) ) {
-			controlRef.current.focus();
-		}
-	};
-
-	/**
 	 * Handles a change of a child element.
 	 *
 	 * @param {boolean} checked Indicates if the item should be checked
@@ -432,6 +416,26 @@ const TreeSelectControl = ( {
 		}
 
 		onChange( newValue );
+	};
+
+	/**
+	 * Handles a change on the Tree options. Could be a click on a parent option
+	 * or a child option
+	 *
+	 * @param {boolean} checked Indicates if the item should be checked
+	 * @param {InnerOption} option The option to change
+	 */
+	const handleOptionsChange = ( checked, option ) => {
+		if ( option.hasChildren ) {
+			handleParentChange( checked, option );
+		} else {
+			handleSingleChange( checked, option );
+		}
+
+		setInputControlValue( '' );
+		if ( ! nodesExpanded.includes( option.parent ) ) {
+			controlRef.current.focus();
+		}
 	};
 
 	/**
@@ -481,7 +485,9 @@ const TreeSelectControl = ( {
 					setTreeVisible( true );
 				} }
 				onControlClick={ () => {
-					if ( disabled ) return;
+					if ( disabled ) {
+						return;
+					}
 					setTreeVisible( true );
 				} }
 				instanceId={ instanceId }

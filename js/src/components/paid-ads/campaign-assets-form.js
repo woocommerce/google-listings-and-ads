@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { useState, useMemo, useEffect, useRef } from '@wordpress/element';
-import { noop } from 'lodash';
+import { noop, isPlainObject } from 'lodash';
 
 /**
  * Internal dependencies
@@ -87,7 +87,7 @@ export default function CampaignAssetsForm( {
 		currencyCode,
 	} = useValidateCampaignWithCountryCodes();
 
-	// Grab the budget ecommendations for the initial country codes.
+	// Grab the budget recommendations for the initial country codes.
 	// refreshCountryCodes will trigger a new validation function with the new budget values.
 	useEffect( () => {
 		if ( initialCampaign?.countryCodes ) {
@@ -99,7 +99,9 @@ export default function CampaignAssetsForm( {
 		onChange( _, values, arg );
 
 		// Whenever there's a change, update the country codes in the validation function.
-		refreshCountryCodes( values.countryCodes );
+		if ( values.countryCodes ) {
+			refreshCountryCodes( values.countryCodes );
+		}
 	};
 
 	useEffect( () => {
@@ -133,7 +135,9 @@ export default function CampaignAssetsForm( {
 			hasImportedAssets,
 			isValidAssetGroup: Object.keys( assetGroupErrors ).length === 0,
 			resetAssetGroup( assetGroup ) {
-				const nextAssetGroup = assetGroup || initialAssetGroup;
+				const nextAssetGroup = isPlainObject( assetGroup )
+					? assetGroup
+					: initialAssetGroup;
 				let hasNonEmptyAssets = false;
 
 				Object.keys( emptyAssetGroup ).forEach( ( key ) => {

@@ -14,7 +14,6 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
 import './css/index.scss';
 import withAdminPageShell from '.~/components/withAdminPageShell';
 import './data';
-import isWCNavigationEnabled from './utils/isWCNavigationEnabled';
 import { addBaseEventProperties } from '.~/utils/tracks';
 
 const Dashboard = lazy( () =>
@@ -59,24 +58,11 @@ addFilter(
 	'woocommerce_admin_pages_list',
 	'woocommerce/google-listings-and-ads/add-page-routes',
 	( pages ) => {
-		const navigationEnabled = isWCNavigationEnabled();
-		const initialBreadcrumbs = [ [ '', woocommerceTranslation ] ];
-
-		/**
-		 * If the WooCommerce Navigation feature is not enabled,
-		 * we want to display the plugin under WC Marketing;
-		 * otherwise, display it under WC Navigation - Extensions.
-		 */
-		if ( ! navigationEnabled ) {
-			initialBreadcrumbs.push( [
-				'/marketing',
-				__( 'Marketing', 'google-listings-and-ads' ),
-			] );
-		}
-
-		initialBreadcrumbs.push(
-			__( 'Google for WooCommerce', 'google-listings-and-ads' )
-		);
+		const initialBreadcrumbs = [
+			[ '', woocommerceTranslation ],
+			[ '/marketing', __( 'Marketing', 'google-listings-and-ads' ) ],
+			__( 'Google for WooCommerce', 'google-listings-and-ads' ),
+		];
 
 		const pluginAdminPages = [
 			{

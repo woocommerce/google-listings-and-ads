@@ -25,7 +25,6 @@ describe( 'reducer', () => {
 				target_audience: null,
 				countries: null,
 				continents: null,
-				policy_check: null,
 				shipping: {
 					rates: [],
 					times: [],
@@ -918,7 +917,6 @@ describe( 'reducer', () => {
 			[ TYPES.SAVE_TARGET_AUDIENCE, 'target_audience', 'mc.target_audience' ],
 			[ TYPES.RECEIVE_MC_SETUP, 'mcSetup', 'mc_setup' ],
 			[ TYPES.RECEIVE_MC_PRODUCT_STATISTICS, 'mcProductStatistics', 'mc_product_statistics' ],
-			[ TYPES.POLICY_CHECK, 'data', 'mc.policy_check' ],
 			[ TYPES.RECEIVE_STORE_CATEGORIES, 'storeCategories', 'store_categories' ],
 		];
 		/* eslint-enable prettier/prettier */

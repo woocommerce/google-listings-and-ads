@@ -21,7 +21,7 @@ use WC_Helper_Product;
 /**
  * Class AttributeManagerTest
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product\Attributes
  */
 class AttributeManagerTest extends ContainerAwareUnitTest {
 

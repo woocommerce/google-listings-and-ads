@@ -7,8 +7,6 @@ import { getNewPath } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import AppTabNav from '.~/components/app-tab-nav';
-import isWCNavigationEnabled from '.~/utils/isWCNavigationEnabled';
 import AppSubNav from '.~/components/app-sub-nav';
 import getSelectedReportKey from '.~/utils/getSelectedReportKey';
 
@@ -26,14 +24,9 @@ const tabs = [
 ];
 
 const ReportsNavigation = () => {
-	const navigationEnabled = isWCNavigationEnabled();
 	const reportKey = getSelectedReportKey();
 
-	return navigationEnabled ? (
-		<AppTabNav tabs={ tabs } selectedKey={ reportKey } />
-	) : (
-		<AppSubNav tabs={ tabs } selectedKey={ reportKey } />
-	);
+	return <AppSubNav tabs={ tabs } selectedKey={ reportKey } />;
 };
 
 export default ReportsNavigation;

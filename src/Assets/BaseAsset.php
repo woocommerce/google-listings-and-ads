@@ -212,7 +212,11 @@ abstract class BaseAsset implements Asset {
 	 */
 	protected function defer_action( string $action, callable $callback, int $priority = 10 ): void {
 		if ( did_action( $action ) ) {
-			$callback();
+			try {
+				$callback();
+			} catch ( InvalidAsset $exception ) {
+				do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
+			}
 
 			return;
 		}

@@ -2,7 +2,6 @@
  * Check if the WC app is running on iOS.
  *
  * @return {boolean} Whether the WC app is running on iOS.
- *
  */
 const isWCIos = () => {
 	return window.navigator.userAgent.toLowerCase().includes( 'wc-ios' );

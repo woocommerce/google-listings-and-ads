@@ -115,6 +115,7 @@ describe( 'TextsEditor', () => {
 	} );
 
 	it( 'When the number of texts reaches `maxNumberOfTexts`, it should disable the add button and vice versa', async () => {
+		const user = userEvent.setup();
 		const initialTexts = [ 'Text 1', 'Text 2' ];
 		render(
 			<TextsEditor initialTexts={ initialTexts } maxNumberOfTexts={ 3 } />
@@ -123,11 +124,11 @@ describe( 'TextsEditor', () => {
 
 		expect( addButton ).toBeEnabled();
 
-		await userEvent.click( addButton );
+		await user.click( addButton );
 
 		expect( addButton ).toBeDisabled();
 
-		await userEvent.click(
+		await user.click(
 			screen.getAllByRole( 'button', { name: 'Remove text' } ).at( -1 )
 		);
 
@@ -220,39 +221,41 @@ describe( 'TextsEditor', () => {
 	} );
 
 	it( 'When typing on the input field, the count of characters should be updated accordingly', async () => {
+		const user = userEvent.setup();
+
 		render(
 			<TextsEditor minNumberOfTexts={ 1 } maxCharacterCounts={ 10 } />
 		);
 		const input = screen.getByRole( 'textbox' );
 		const label = screen.getByText( /\d+\/10 characters/ );
 
-		await userEvent.type( input, 'Hello' );
+		await user.type( input, 'Hello' );
 
 		expect( label ).toHaveTextContent( '5/10 characters' );
 
-		await userEvent.type( input, ' World!' );
+		await user.type( input, ' World!' );
 
 		expect( label ).toHaveTextContent( '12/10 characters' );
 	} );
 
 	it( 'When the texts are changed, should trigger `onChange` callback function with the updated texts', async () => {
+		const user = userEvent.setup();
+
 		render( <TextsEditor minNumberOfTexts={ 1 } onChange={ onChange } /> );
 
-		await userEvent.type( screen.getByRole( 'textbox' ), 'Hello' );
+		await user.type( screen.getByRole( 'textbox' ), 'Hello' );
 
 		expect( onChange ).toHaveBeenCalledWith( [ 'Hello' ] );
 
-		await userEvent.click(
-			screen.getByRole( 'button', { name: 'Add text' } )
-		);
+		await user.click( screen.getByRole( 'button', { name: 'Add text' } ) );
 
 		expect( onChange ).toHaveBeenCalledWith( [ 'Hello', '' ] );
 
-		await userEvent.type( screen.getAllByRole( 'textbox' )[ 1 ], 'World' );
+		await user.type( screen.getAllByRole( 'textbox' )[ 1 ], 'World' );
 
 		expect( onChange ).toHaveBeenCalledWith( [ 'Hello', 'World' ] );
 
-		await userEvent.click(
+		await user.click(
 			screen.getByRole( 'button', { name: 'Remove text' } )
 		);
 
@@ -260,9 +263,11 @@ describe( 'TextsEditor', () => {
 	} );
 
 	it( 'Should trim the texts for the `onChange` callback function', async () => {
+		const user = userEvent.setup();
+
 		render( <TextsEditor minNumberOfTexts={ 1 } onChange={ onChange } /> );
 
-		await userEvent.type( screen.getByRole( 'textbox' ), ' Hello ' );
+		await user.type( screen.getByRole( 'textbox' ), ' Hello ' );
 
 		expect( onChange ).toHaveBeenCalledWith( [ 'Hello' ] );
 	} );

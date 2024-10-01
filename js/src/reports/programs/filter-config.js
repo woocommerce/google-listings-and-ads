@@ -27,7 +27,9 @@ const freeListingsProgramsIds = new Set(
  * @return {boolean} true if these are sets of same elements.
  */
 function isSubset( subset, superset ) {
-	if ( subset.size > superset.size ) return false;
+	if ( subset.size > superset.size ) {
+		return false;
+	}
 	for ( const a of subset ) {
 		if ( ! superset.has( a ) ) {
 			return false;
