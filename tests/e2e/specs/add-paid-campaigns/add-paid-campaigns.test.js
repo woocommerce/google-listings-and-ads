@@ -392,9 +392,15 @@ test.describe( 'Set up Ads account', () => {
 
 		test( 'It should show the campaign creation success message', async () => {
 			// Mock the campaign creation request.
-			await setupBudgetPage.mockCampaignCreation( budget, [] );
+			const campaignCreation =
+				setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
+					'1',
+					[ 'US' ]
+				);
 
 			await setupBudgetPage.getLaunchPaidCampaignButton().click();
+
+			await campaignCreation;
 
 			//It should redirect to the dashboard page
 			await page.waitForURL(
