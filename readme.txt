@@ -140,6 +140,11 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 2.8.6 - 2024-10-02 =
+* Dev - Fix missing blueprint dependency.
+* Tweak - Adjust WP Proxy Response to force the string type for the price fields.
+* Tweak - Logic for Delete notifications.
+
 = 2.8.5 - 2024-09-05 =
 * Break - Remove WooCommerce Navigation integration.
 * Fix - Issue with syncing shipping rates with more than two decimals.
