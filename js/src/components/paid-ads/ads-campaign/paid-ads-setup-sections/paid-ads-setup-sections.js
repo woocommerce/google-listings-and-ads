@@ -41,7 +41,7 @@ export default function PaidAdsSetupSections( props ) {
 		props.countryCodes
 	);
 
-	let recommendedBudget = 0;
+	let recommendedBudget;
 	if ( data ) {
 		const { recommendations } = data;
 		const { daily_budget: dailyBudget } =
