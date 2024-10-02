@@ -11,7 +11,7 @@ import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillin
 import BudgetSection from '.~/components/paid-ads/budget-section';
 import BillingCard from '.~/components/paid-ads/billing-card';
 import validateCampaign from '.~/components/paid-ads/validateCampaign';
-import clientSession from '../clientSession';
+import clientSession from './clientSession';
 import CampaignPreviewCard from '.~/components/paid-ads/campaign-preview/campaign-preview-card';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 
