@@ -10,24 +10,9 @@ import GridiconNoticeOutline from 'gridicons/dist/notice-outline';
  * Internal dependencies
  */
 import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
-import useFetchBudgetRecommendationEffect from '.~/hooks/useFetchBudgetRecommendationEffect';
+import useFetchBudgetRecommendation from '.~/hooks/useFetchBudgetRecommendation';
+import getHighestBudget from '.~/utils/getHighestBudget';
 import './index.scss';
-
-/*
- * If a merchant selects more than one country, the budget recommendation
- * takes the highest country out from the selected countries.
- *
- * For example, a merchant selected Brunei (20 USD) and Croatia (15 USD),
- * then the budget recommendation should be (20 USD).
- */
-function getHighestBudget( recommendations ) {
-	return recommendations.reduce( ( defender, challenger ) => {
-		if ( challenger.daily_budget > defender.daily_budget ) {
-			return challenger;
-		}
-		return defender;
-	} );
-}
 
 function toRecommendationRange( isMultiple, ...values ) {
 	const conversionMap = { strong: <strong />, em: <em />, br: <br /> };
@@ -51,7 +36,7 @@ function toRecommendationRange( isMultiple, ...values ) {
 
 const BudgetRecommendation = ( props ) => {
 	const { countryCodes, dailyAverageCost = Infinity } = props;
-	const { data } = useFetchBudgetRecommendationEffect( countryCodes );
+	const { data } = useFetchBudgetRecommendation( countryCodes );
 	const map = useCountryKeyNameMap();
 
 	if ( ! data ) {
@@ -69,18 +54,6 @@ const BudgetRecommendation = ( props ) => {
 		currency,
 		countryName
 	);
-
-	// const { currency, recommendations } = data;
-	// const { daily_budget: dailyBudget, country } =
-	// 	getHighestBudget( recommendations );
-
-	// const countryName = map[ country ];
-	// const recommendationRange = toRecommendationRange(
-	// 	multipleRecommendations,
-	// 	dailyBudget,
-	// 	currency,
-	// 	countryName
-	// );
 
 	const showLowerBudgetNotice = dailyAverageCost < dailyBudget;
 

@@ -10,10 +10,8 @@ import { Form } from '@woocommerce/components';
 import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
 import BudgetSection from '.~/components/paid-ads/budget-section';
 import BillingCard from '.~/components/paid-ads/billing-card';
-import SpinnerCard from '.~/components/spinner-card';
-import Section from '.~/wcdl/section';
 import validateCampaign from '.~/components/paid-ads/validateCampaign';
-import clientSession from './clientSession';
+import clientSession from '../clientSession';
 import CampaignPreviewCard from '.~/components/paid-ads/campaign-preview/campaign-preview-card';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 
@@ -27,11 +25,7 @@ import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
  */
 
 /**
- *
- * @typedef {Object} PaidAdsData
- * @property {number|undefined} amount Daily average cost of the paid ads campaign.
- * @property {boolean} isValid Whether the campaign data are valid values.
- * @property {boolean} isReady Whether the campaign data and the billing setting are ready for completing the paid ads setup.
+ * @typedef {import('./paid-ads-setup-sections').PaidAdsData} PaidAdsData
  */
 
 const defaultPaidAds = {
@@ -64,15 +58,15 @@ function resolveInitialPaidAds( paidAds ) {
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
  * @param {boolean} [props.showCampaignPreviewCard=false] Whether to show the campaign preview card.
  * @param {boolean} [props.loadCampaignFromClientSession=false] Whether to load the campaign data from the client session.
- * @param {number} props.recommendedDailyAmount The recommended daily budget.
+ * @param {number} props.recommendedBudget The recommended budget.
  */
-export default function PaidAdsSetupSections( {
+export default function PaidAdsSetupForm( {
 	onStatesReceived,
 	countryCodes,
 	campaign,
 	loadCampaignFromClientSession,
 	showCampaignPreviewCard = false,
-	recommendedDailyAmount,
+	recommendedBudget,
 } ) {
 	const isCreation = ! campaign;
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
@@ -89,7 +83,7 @@ export default function PaidAdsSetupSections( {
 		if ( ! campaign ) {
 			startingPaidAds = {
 				...startingPaidAds,
-				amount: recommendedDailyAmount,
+				amount: recommendedBudget,
 			};
 		}
 
@@ -98,8 +92,7 @@ export default function PaidAdsSetupSections( {
 			startingPaidAds = {
 				...startingPaidAds,
 				amount:
-					clientSession.getCampaign()?.amount ||
-					recommendedDailyAmount,
+					clientSession.getCampaign()?.amount || recommendedBudget,
 			};
 		}
 
@@ -107,7 +100,7 @@ export default function PaidAdsSetupSections( {
 	} );
 
 	const isBillingCompleted =
-		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
+		billingStatus.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
 	/*
 	  If a merchant has not yet finished the billing setup, the billing status will be
@@ -131,14 +124,6 @@ export default function PaidAdsSetupSections( {
 		onStatesReceivedRef.current( nextPaidAds );
 		clientSession.setCampaign( nextPaidAds );
 	}, [ paidAds, isBillingCompleted ] );
-
-	if ( ! billingStatus ) {
-		return (
-			<Section>
-				<SpinnerCard />
-			</Section>
-		);
-	}
 
 	const initialValues = {
 		amount: isCreation ? paidAds.amount : campaign.amount,

@@ -153,7 +153,6 @@ export default function AdsCampaign( {
 				campaign={ campaign }
 				countryCodes={ countryCodes }
 				loadCampaignFromClientSession={ isOnboardingFlow }
-				recommendedDailyAmount={ dailyBudget }
 				showCampaignPreviewCard={
 					trackingContext === 'setup-ads' ||
 					trackingContext === 'create-ads'

@@ -7,22 +7,13 @@
  */
 export default function getHighestBudget( recommendations ) {
 	if ( ! recommendations ) {
-		return {
-			daily_budget: 0,
-			country: '',
-		};
+		return null;
 	}
 
-	return recommendations.reduce(
-		( defender, challenger ) => {
-			if ( challenger.daily_budget > defender.daily_budget ) {
-				return challenger;
-			}
-			return defender;
-		},
-		{
-			daily_budget: 0,
-			country: '',
+	return recommendations.reduce( ( defender, challenger ) => {
+		if ( challenger.daily_budget > defender.daily_budget ) {
+			return challenger;
 		}
-	);
+		return defender;
+	} );
 }
