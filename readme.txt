@@ -160,9 +160,4 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Tweak - Replace deprecated event.keyCode with event.code for the verification code inputs in the contact information setting.
 * Tweak - Update the copy in the "Linked accounts" of the accounts connection setting to include Google Ads account.
 
-= 2.8.3 - 2024-08-20 =
-* Fix - Return empty array props as empty objects in WCOM Proxy responses.
-* Tweak - Display additional context in error message when Google Ads account limit reached.
-* Tweak - Upgrade readme details in WPORG.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
