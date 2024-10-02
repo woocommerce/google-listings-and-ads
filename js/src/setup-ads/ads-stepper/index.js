@@ -91,6 +91,10 @@ const AdsStepper = ( { formProps } ) => {
 					),
 					content: (
 						<AdsCampaign
+							headerTitle={ __(
+								'Create your paid campaign',
+								'google-listings-and-ads'
+							) }
 							trackingContext="setup-ads"
 							onContinue={ handleCreateCampaignContinue }
 						/>

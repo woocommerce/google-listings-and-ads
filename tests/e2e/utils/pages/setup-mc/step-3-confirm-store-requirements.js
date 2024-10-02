@@ -56,15 +56,6 @@ export default class StoreRequirements extends MockRequests {
 	}
 
 	/**
-	 * Get checklist card.
-	 *
-	 * @return {import('@playwright/test').Locator} Get checklist card.
-	 */
-	getChecklistCard() {
-		return this.page.locator( '.gla-pre-launch-checklist' );
-	}
-
-	/**
 	 * Get phone number description text.
 	 *
 	 * @return {import('@playwright/test').Locator} Get checklist card.
@@ -168,24 +159,6 @@ export default class StoreRequirements extends MockRequests {
 	}
 
 	/**
-	 * Get pre-launch checklist checkboxes.
-	 *
-	 * @return {import('@playwright/test').Locator} Get pre-launch checklist checkboxes.
-	 */
-	getPrelaunchChecklistCheckboxes() {
-		return this.getChecklistCard().getByRole( 'checkbox' );
-	}
-
-	/**
-	 * Get pre-launch checklist panels.
-	 *
-	 * @return {import('@playwright/test').Locator} Get pre-launch checklist panels.
-	 */
-	getPrelaunchChecklistPanels() {
-		return this.getChecklistCard().locator( '.components-panel__body' );
-	}
-
-	/**
 	 * Get Continue button.
 	 *
 	 * @return {import('@playwright/test').Locator} Get Continue button.
@@ -219,18 +192,6 @@ export default class StoreRequirements extends MockRequests {
 	}
 
 	/**
-	 * Get read google merchant center requirements link.
-	 *
-	 * @return {import('@playwright/test').Locator} Get read google merchant center requirements link.
-	 */
-	getReadGoogleMerchantCenterRequirementsLink() {
-		return this.page.getByRole( 'link', {
-			name: 'Read Google Merchant Center requirements',
-			exact: true,
-		} );
-	}
-
-	/**
 	 * Get WooCommerce settings link.
 	 *
 	 * @return {import('@playwright/test').Locator} Get WooCommerce settings link.
@@ -240,29 +201,6 @@ export default class StoreRequirements extends MockRequests {
 			name: 'WooCommerce settings',
 			exact: true,
 		} );
-	}
-
-	/**
-	 * Register settings request when the confirm button or checkbox in pre-lauch checklist is checked.
-	 *
-	 * @param {Array} settings
-	 * @return {Promise<import('@playwright/test').Request[]>} The requests.
-	 */
-	registerPrelaunchChecklistConfirmCheckedRequest( settings = [] ) {
-		const promises = [];
-
-		for ( const setting of settings ) {
-			promises.push(
-				this.page.waitForRequest(
-					( request ) =>
-						request.url().includes( '/gla/mc/settings' ) &&
-						request.method() === 'POST' &&
-						request.postDataJSON()[ setting ] === true
-				)
-			);
-		}
-
-		return Promise.all( promises );
 	}
 
 	/**

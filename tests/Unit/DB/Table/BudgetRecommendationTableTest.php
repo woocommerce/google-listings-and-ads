@@ -12,7 +12,7 @@ use wpdb;
 /**
  * Class MigratorTest
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\DB\Migration
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\DB\Table
  */
 class BudgetRecommendationTableTest extends UnitTest {
 

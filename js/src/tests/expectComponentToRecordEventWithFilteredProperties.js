@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { render, act } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { recordEvent } from '@woocommerce/tracks';
 
 /**
@@ -57,9 +57,7 @@ export default async function expectComponentToRecordEventWithFilteredProperties
 			rerender( <Component /> );
 		}
 
-		await act( async () => {
-			await performAction();
-		} );
+		await performAction();
 
 		const times = i + 1;
 

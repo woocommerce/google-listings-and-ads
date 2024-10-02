@@ -2,7 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { screen, render, act } from '@testing-library/react';
+import { screen, render, act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -14,7 +14,17 @@ const alwaysValid = () => ( {} );
 
 const delayOneSecond = () => new Promise( ( r ) => setTimeout( r, 1000 ) );
 
+const setupUserWithFakeTimers = () => {
+	jest.useFakeTimers();
+	return userEvent.setup( { advanceTimers: jest.advanceTimersByTime } );
+};
+
 describe( 'AdaptiveForm', () => {
+	afterEach( () => {
+		jest.useRealTimers();
+		jest.clearAllTimers();
+	} );
+
 	it( 'Should have `formContext.adapter` with functions and initial states', () => {
 		const children = jest.fn();
 
@@ -38,6 +48,7 @@ describe( 'AdaptiveForm', () => {
 	} );
 
 	it( 'Should provide `isSubmitting` and `isSubmitted` states via adapter', async () => {
+		const user = setupUserWithFakeTimers();
 		const inspect = jest.fn();
 
 		render(
@@ -53,9 +64,7 @@ describe( 'AdaptiveForm', () => {
 
 		expect( inspect ).toHaveBeenLastCalledWith( false, false );
 
-		await act( async () => {
-			return userEvent.click( screen.getByRole( 'button' ) );
-		} );
+		await user.click( screen.getByRole( 'button' ) );
 
 		expect( inspect ).toHaveBeenLastCalledWith( true, false );
 
@@ -67,6 +76,7 @@ describe( 'AdaptiveForm', () => {
 	} );
 
 	it( 'Should be able to signal failed submission to reset `isSubmitting` and `isSubmitted` states', async () => {
+		const user = setupUserWithFakeTimers();
 		const inspect = jest.fn();
 
 		const onSubmit = ( values, enhancer ) => {
@@ -85,9 +95,7 @@ describe( 'AdaptiveForm', () => {
 			</AdaptiveForm>
 		);
 
-		await act( async () => {
-			return userEvent.click( screen.getByRole( 'button' ) );
-		} );
+		await user.click( screen.getByRole( 'button' ) );
 
 		expect( inspect ).toHaveBeenLastCalledWith( true, false );
 
@@ -99,7 +107,8 @@ describe( 'AdaptiveForm', () => {
 	} );
 
 	it( 'Should provide the element triggering the form submission via `submitter` until the processing is completed', async () => {
-		const inspectOnSubmit = jest.fn();
+		const user = setupUserWithFakeTimers();
+		const inspectOnSubmit = jest.fn( delayOneSecond );
 		const inspectSubmitter = jest.fn();
 
 		render(
@@ -135,8 +144,9 @@ describe( 'AdaptiveForm', () => {
 		expect( inspectOnSubmit ).toHaveBeenCalledTimes( 0 );
 
 		// Click button A to test if the form indicates that button A triggered a submission.
+		await user.click( buttonA );
 		await act( async () => {
-			return userEvent.click( buttonA );
+			jest.runOnlyPendingTimers();
 		} );
 
 		expect( inspectSubmitter ).toHaveBeenCalledWith( buttonA );
@@ -150,8 +160,9 @@ describe( 'AdaptiveForm', () => {
 		// Click button B to test if the form indicates that button B triggered another submission.
 		inspectSubmitter.mockClear();
 
+		await user.click( buttonB );
 		await act( async () => {
-			return userEvent.click( buttonB );
+			jest.runOnlyPendingTimers();
 		} );
 
 		expect( inspectSubmitter ).toHaveBeenCalledWith( buttonB );
@@ -166,9 +177,7 @@ describe( 'AdaptiveForm', () => {
 		// is triggered without a corresponding event.
 		inspectSubmitter.mockClear();
 
-		await act( async () => {
-			return userEvent.click( buttonC );
-		} );
+		await user.click( buttonC );
 
 		expect( inspectSubmitter ).toHaveBeenCalled();
 		inspectSubmitter.mock.calls.forEach( ( args ) => {
@@ -182,6 +191,7 @@ describe( 'AdaptiveForm', () => {
 	} );
 
 	it( 'Should be able to accumulate and reset the validation request count and requested state', async () => {
+		const user = userEvent.setup();
 		const inspect = jest.fn();
 
 		render(
@@ -212,21 +222,23 @@ describe( 'AdaptiveForm', () => {
 
 		expect( inspect ).toHaveBeenLastCalledWith( false, 0 );
 
-		await userEvent.click( requestButton );
+		await user.click( requestButton );
 
 		expect( inspect ).toHaveBeenLastCalledWith( true, 1 );
 
-		await userEvent.click( requestButton );
+		await user.click( requestButton );
 
 		expect( inspect ).toHaveBeenLastCalledWith( true, 2 );
 
-		await userEvent.click( resetButton );
+		await user.click( resetButton );
 
 		expect( inspect ).toHaveBeenLastCalledWith( false, 0 );
 	} );
 
 	describe( 'Compatibility patches', () => {
 		it( 'Should update all changes to values for the synchronous multiple calls to `setValue`', async () => {
+			const user = userEvent.setup();
+
 			render(
 				<AdaptiveForm
 					initialValues={ {
@@ -259,15 +271,17 @@ describe( 'AdaptiveForm', () => {
 
 			expect( article.textContent ).toBe( 'Foo Bar (empty)' );
 
-			await act( async () => {
-				await userEvent.click( screen.getByRole( 'button' ) );
-				jest.runAllTimers();
-			} );
+			await user.click( screen.getByRole( 'button' ) );
 
-			expect( article.textContent ).toBe( 'Hey Howdy hi[at]greetings' );
+			await waitFor( () =>
+				expect( article.textContent ).toBe(
+					'Hey Howdy hi[at]greetings'
+				)
+			);
 		} );
 
 		it( 'Should call back to `onChange` for the changed value only', async () => {
+			const user = setupUserWithFakeTimers();
 			const onChange = jest.fn();
 
 			render(
@@ -302,8 +316,8 @@ describe( 'AdaptiveForm', () => {
 				</AdaptiveForm>
 			);
 
+			await user.click( screen.getByRole( 'button' ) );
 			await act( async () => {
-				await userEvent.click( screen.getByRole( 'button' ) );
 				jest.runAllTimers();
 			} );
 
@@ -314,7 +328,7 @@ describe( 'AdaptiveForm', () => {
 				true
 			);
 
-			await userEvent.type( screen.getByRole( 'textbox' ), 'a' );
+			await user.type( screen.getByRole( 'textbox' ), 'a' );
 
 			expect( onChange ).toHaveBeenCalledTimes( 2 );
 			expect( onChange ).toHaveBeenLastCalledWith(
@@ -323,7 +337,7 @@ describe( 'AdaptiveForm', () => {
 				true
 			);
 
-			await userEvent.click( screen.getByRole( 'checkbox' ) );
+			await user.click( screen.getByRole( 'checkbox' ) );
 
 			expect( onChange ).toHaveBeenCalledTimes( 3 );
 			expect( onChange ).toHaveBeenLastCalledWith(
