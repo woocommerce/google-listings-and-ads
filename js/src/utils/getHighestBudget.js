@@ -7,7 +7,10 @@
  */
 export default function getHighestBudget( recommendations ) {
 	if ( ! recommendations ) {
-		return null;
+		return {
+			daily_budget: 0,
+			country: '',
+		};
 	}
 
 	return recommendations.reduce(

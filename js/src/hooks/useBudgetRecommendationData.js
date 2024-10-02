@@ -39,6 +39,7 @@ const useBudgetRecommendationData = ( countryCodes ) => {
 		multipleRecommendations,
 		recommendations,
 		loading,
+		data,
 	};
 };
 

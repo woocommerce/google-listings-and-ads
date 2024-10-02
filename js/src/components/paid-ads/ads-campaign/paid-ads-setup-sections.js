@@ -81,22 +81,28 @@ export default function PaidAdsSetupSections( {
 	onStatesReceivedRef.current = onStatesReceived;
 
 	const [ paidAds, setPaidAds ] = useState( () => {
-		// Resolve the starting paid ads data with the campaign data stored in the client session.
 		let startingPaidAds = {
 			...defaultPaidAds,
 		};
 
-		if ( loadCampaignFromClientSession ) {
-			startingPaidAds = {
-				...startingPaidAds,
-				...clientSession.getCampaign(),
-			};
-		} else {
+		// If we are creating a new campaign, set the amount with the recommended daily amount.
+		if ( ! campaign ) {
 			startingPaidAds = {
 				...startingPaidAds,
 				amount: recommendedDailyAmount,
 			};
 		}
+
+		// Resolve the starting paid ads data with the campaign data stored in the client session if any.
+		if ( loadCampaignFromClientSession ) {
+			startingPaidAds = {
+				...startingPaidAds,
+				amount:
+					clientSession.getCampaign()?.amount ||
+					recommendedDailyAmount,
+			};
+		}
+
 		return resolveInitialPaidAds( startingPaidAds );
 	} );
 

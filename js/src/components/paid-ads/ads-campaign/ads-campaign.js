@@ -24,7 +24,6 @@ import PaidAdsFeaturesSection from './paid-ads-features-section';
 import PaidAdsSetupSections from './paid-ads-setup-sections';
 import SkipButton from './skip-button';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
-import useBudgetRecommendationData from '.~/hooks/useBudgetRecommendationData';
 import { ACTION_SKIP, ACTION_COMPLETE } from './constants';
 
 /**
@@ -70,7 +69,6 @@ export default function AdsCampaign( {
 	const { isValidForm, setValue } = formContext;
 	const [ completing, setCompleting ] = useState( null );
 	const [ paidAds, setPaidAds ] = useState( {} );
-	const { dailyBudget } = useBudgetRecommendationData( countryCodes );
 
 	useEffect( () => {
 		if ( hasError ) {
@@ -150,17 +148,19 @@ export default function AdsCampaign( {
 
 			{ isOnboardingFlow && <PaidAdsFeaturesSection /> }
 
-			<PaidAdsSetupSections
-				onStatesReceived={ handleOnStatesReceived }
-				campaign={ campaign }
-				countryCodes={ countryCodes }
-				loadCampaignFromClientSession={ isOnboardingFlow }
-				recommendedDailyAmount={ dailyBudget }
-				showCampaignPreviewCard={
-					trackingContext === 'setup-ads' ||
-					trackingContext === 'create-ads'
-				}
-			/>
+			{ /* { ! loading && (
+				<PaidAdsSetupSections
+					onStatesReceived={ handleOnStatesReceived }
+					campaign={ campaign }
+					countryCodes={ countryCodes }
+					loadCampaignFromClientSession={ isOnboardingFlow }
+					recommendedDailyAmount={ dailyBudget }
+					showCampaignPreviewCard={
+						trackingContext === 'setup-ads' ||
+						trackingContext === 'create-ads'
+					}
+				/>
+			) } */ }
 
 			<StepContentFooter>
 				<StepContentActions>
