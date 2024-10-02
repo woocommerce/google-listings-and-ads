@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { SelectControl } from '@wordpress/components';
-import { useEffect, useState } from '@wordpress/element';
+import { useEffect, useRef } from '@wordpress/element';
 import classNames from 'classnames';
 import { noop } from 'lodash';
 
@@ -31,30 +31,30 @@ const AppSelectControl = ( props ) => {
 		autoSelectFirstOption = false,
 		...rest
 	} = props;
-	const [ hasTriggerredOnChangeOnMount, setHasTriggerredOnChangeOnMount ] =
-		useState( false );
-	const hasSingleValueStyle = autoSelectFirstOption && options?.length === 1;
+
+	// Maintain refs to prevent rerender
+	const onChangeRef = useRef();
+	const valueRef = useRef();
+	const autoSelectFirstOptionRef = useRef();
+	const optionsRef = useRef();
+
+	// Update refs if any of the dependencies change
+	useEffect( () => {
+		onChangeRef.current = onChange;
+		valueRef.current = value;
+		autoSelectFirstOptionRef.current = autoSelectFirstOption;
+		optionsRef.current = options;
+	}, [ onChange, value, autoSelectFirstOption, options ] );
 
 	useEffect( () => {
-		if ( hasTriggerredOnChangeOnMount ) {
-			return;
-		}
-
 		if (
-			autoSelectFirstOption &&
-			options?.length > 0 &&
-			value === undefined
+			autoSelectFirstOptionRef.current &&
+			optionsRef.current?.length > 0 &&
+			valueRef.current === undefined
 		) {
-			onChange( options[ 0 ].value );
-			setHasTriggerredOnChangeOnMount( true );
+			onChangeRef.current( optionsRef.current[ 0 ].value );
 		}
-	}, [
-		autoSelectFirstOption,
-		onChange,
-		options,
-		value,
-		hasTriggerredOnChangeOnMount,
-	] );
+	}, [] );
 
 	let selectProps = {
 		options,
@@ -63,6 +63,7 @@ const AppSelectControl = ( props ) => {
 		...rest,
 	};
 
+	const hasSingleValueStyle = autoSelectFirstOption && options?.length === 1;
 	if ( hasSingleValueStyle ) {
 		selectProps = {
 			...selectProps,
