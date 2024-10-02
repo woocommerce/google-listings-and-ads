@@ -91,6 +91,7 @@ export default function PaidAdsSetupForm( {
 		if ( loadCampaignFromClientSession ) {
 			startingPaidAds = {
 				...startingPaidAds,
+				...clientSession.getCampaign(),
 				amount:
 					clientSession.getCampaign()?.amount || recommendedBudget,
 			};
@@ -100,7 +101,7 @@ export default function PaidAdsSetupForm( {
 	} );
 
 	const isBillingCompleted =
-		billingStatus.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
+		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
 	/*
 	  If a merchant has not yet finished the billing setup, the billing status will be
