@@ -148,19 +148,17 @@ export default function AdsCampaign( {
 
 			{ isOnboardingFlow && <PaidAdsFeaturesSection /> }
 
-			{ /* { ! loading && (
-				<PaidAdsSetupSections
-					onStatesReceived={ handleOnStatesReceived }
-					campaign={ campaign }
-					countryCodes={ countryCodes }
-					loadCampaignFromClientSession={ isOnboardingFlow }
-					recommendedDailyAmount={ dailyBudget }
-					showCampaignPreviewCard={
-						trackingContext === 'setup-ads' ||
-						trackingContext === 'create-ads'
-					}
-				/>
-			) } */ }
+			<PaidAdsSetupSections
+				onStatesReceived={ handleOnStatesReceived }
+				campaign={ campaign }
+				countryCodes={ countryCodes }
+				loadCampaignFromClientSession={ isOnboardingFlow }
+				recommendedDailyAmount={ dailyBudget }
+				showCampaignPreviewCard={
+					trackingContext === 'setup-ads' ||
+					trackingContext === 'create-ads'
+				}
+			/>
 
 			<StepContentFooter>
 				<StepContentActions>

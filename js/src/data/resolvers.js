@@ -15,7 +15,7 @@ import {
 } from '.~/constants';
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
-import { getReportKey } from './utils';
+import { getReportKey, getCountryCodesKey } from './utils';
 import { handleApiError } from '.~/utils/handleError';
 import { adaptAdsCampaign, adaptAssetGroup } from './adapters';
 import { fetchWithHeaders, awaitPromise } from './controls';
@@ -47,6 +47,10 @@ import {
 	receiveStoreCategories,
 	receiveTour,
 } from './actions';
+
+/**
+ * @typedef {import('.~/data/actions').CountryCode} CountryCode
+ */
 
 export function* getShippingRates() {
 	yield fetchShippingRates();
@@ -510,3 +514,50 @@ export function* getGoogleAdsAccountStatus() {
 getGoogleAdsAccountStatus.shouldInvalidate = ( action ) => {
 	return action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS;
 };
+
+/**
+ * Fetch ad budget recommendations for the specified country codes.
+ *
+ * @param {Array<CountryCode>} [countryCodes] An array of country codes for which to fetch budget recommendations.
+ */
+export function* getAdsBudgetRecommendations( countryCodes ) {
+	if ( ! countryCodes || ! countryCodes.length ) {
+		return;
+	}
+
+	const countryCodesKey = getCountryCodesKey( countryCodes );
+	const endpoint = `${ API_NAMESPACE }/ads/campaigns/budget-recommendation`;
+	const query = { country_codes: countryCodes };
+	const path = addQueryArgs( endpoint, query );
+
+	try {
+		const { data } = yield fetchWithHeaders( {
+			path,
+		} );
+
+		const { currency, recommendations } = data;
+
+		return {
+			type: TYPES.RECEIVE_ADS_BUDGET_RECOMMENDATIONS,
+			countryCodesKey,
+			currency,
+			recommendations,
+		};
+	} catch ( response ) {
+		// Intentionally silence the specific in case the no budget recommendations are found from the API.
+		if ( response.status === 404 ) {
+			return;
+		}
+
+		const bodyPromise = response?.json() || response?.text();
+		const error = yield awaitPromise( bodyPromise );
+
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the budget recommendation.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
