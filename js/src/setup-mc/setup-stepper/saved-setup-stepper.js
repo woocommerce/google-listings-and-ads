@@ -14,6 +14,8 @@ import useTargetAudienceWithSuggestions from './useTargetAudienceWithSuggestions
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
 import useShippingRates from '.~/hooks/useShippingRates';
+import useGoogleMCPhoneNumber from '.~/hooks/useGoogleMCPhoneNumber';
+import useStoreAddress from '.~/hooks/useStoreAddress';
 import useShippingTimes from '.~/hooks/useShippingTimes';
 import useSaveShippingRates from '.~/hooks/useSaveShippingRates';
 import useSaveShippingTimes from '.~/hooks/useSaveShippingTimes';
@@ -38,6 +40,20 @@ import {
  */
 const SavedSetupStepper = ( { savedStep } ) => {
 	const [ step, setStep ] = useState( savedStep );
+
+	const { data: address, loaded: addressLoaded } = useStoreAddress();
+	const { data: phone, loaded: phoneLoaded } = useGoogleMCPhoneNumber();
+
+	const hasValidPhoneNumber =
+		phoneLoaded && phone?.isValid && phone?.isVerified;
+
+	const hasValidAddress =
+		addressLoaded &&
+		address?.isAddressFilled &&
+		! address?.isMCAddressDifferent;
+
+	const hasConfirmedStoreRequirements =
+		hasValidPhoneNumber && hasValidAddress;
 
 	const { settings } = useSettings();
 	const { data: suggestedAudience } = useTargetAudienceWithSuggestions();
@@ -102,7 +118,11 @@ const SavedSetupStepper = ( { savedStep } ) => {
 	};
 
 	const handleSetupListingsContinue = () => {
-		continueStep( stepNameKeyMap.store_requirements );
+		if ( hasConfirmedStoreRequirements ) {
+			continueStep( stepNameKeyMap.paid_ads );
+		} else {
+			continueStep( stepNameKeyMap.store_requirements );
+		}
 	};
 
 	const handleStoreRequirementsContinue = () => {
