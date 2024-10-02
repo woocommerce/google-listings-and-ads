@@ -25,7 +25,6 @@ describe( 'reducer', () => {
 				target_audience: null,
 				countries: null,
 				continents: null,
-				policy_check: null,
 				shipping: {
 					rates: [],
 					times: [],
@@ -73,6 +72,7 @@ describe( 'reducer', () => {
 					inviteLink: null,
 					step: null,
 				},
+				budgetRecommendations: {},
 			},
 		} );
 
@@ -866,6 +866,39 @@ describe( 'reducer', () => {
 		} );
 	} );
 
+	describe( 'Ads Budget Recommendations', () => {
+		const path = 'ads.budgetRecommendations';
+
+		it( 'should receive a budget recommendation', () => {
+			const recommendation = {
+				countryCodesKey: 'mu_sg',
+				currency: 'MUR',
+				recommendations: [
+					{
+						country: 'MU',
+						daily_budget: 15,
+					},
+					{
+						country: 'SG',
+						daily_budget: 10,
+					},
+				],
+			};
+
+			const action = {
+				type: TYPES.RECEIVE_ADS_BUDGET_RECOMMENDATIONS,
+				...recommendation,
+			};
+			const state = reducer( prepareState(), action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( `${ path }.mu_sg`, {
+				currency: recommendation.currency,
+				recommendations: recommendation.recommendations,
+			} );
+		} );
+	} );
+
 	describe( 'Remaining actions simply update the data payload to the specific path of state and return the updated state', () => {
 		// The readability is better than applying the formatting here.
 		/* eslint-disable prettier/prettier */
@@ -884,7 +917,6 @@ describe( 'reducer', () => {
 			[ TYPES.SAVE_TARGET_AUDIENCE, 'target_audience', 'mc.target_audience' ],
 			[ TYPES.RECEIVE_MC_SETUP, 'mcSetup', 'mc_setup' ],
 			[ TYPES.RECEIVE_MC_PRODUCT_STATISTICS, 'mcProductStatistics', 'mc_product_statistics' ],
-			[ TYPES.POLICY_CHECK, 'data', 'mc.policy_check' ],
 			[ TYPES.RECEIVE_STORE_CATEGORIES, 'storeCategories', 'store_categories' ],
 		];
 		/* eslint-enable prettier/prettier */

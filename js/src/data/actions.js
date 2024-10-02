@@ -85,11 +85,6 @@ import { isWCIos, isWCAndroid } from '.~/utils/isMobileApp';
  * @property {'automatic'|'flat'|'manual'} [shipping_rate] Type of the shipping rate.
  * @property {'flat'|'manual'} [shipping_time] Type of the shipping time.
  * @property {string|null} [tax_rate] Type of tax rate, There are two possible values if US is selected: 'destination' and 'manual' otherwise will be null.
- * @property {boolean} [website_live] Whether the store website is live.
- * @property {boolean} [checkout_process_secure] Whether the checkout process is complete and secure.
- * @property {boolean} [payment_methods_visible] Whether the payment methods are visible on the website.
- * @property {boolean} [refund_tos_visible] Whether the refund policy and terms of service are visible on the website.
- * @property {boolean} [contact_info_visible] Whether the phone number, email, and/or address are visible on the website.
  */
 
 /**
@@ -542,6 +537,13 @@ export function* disconnectAllAccounts() {
 	}
 }
 
+export function receiveGoogleAdsAccountBillingStatus( billingStatus ) {
+	return {
+		type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_BILLING_STATUS,
+		billingStatus,
+	};
+}
+
 export function* fetchGoogleAdsAccountBillingStatus() {
 	try {
 		const response = yield apiFetch( {
@@ -771,13 +773,6 @@ export function receiveAdsAccount( account ) {
 	};
 }
 
-export function receiveGoogleAdsAccountBillingStatus( billingStatus ) {
-	return {
-		type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_BILLING_STATUS,
-		billingStatus,
-	};
-}
-
 /**
  * Save the target audience countries.
  *
@@ -962,6 +957,13 @@ export function receiveReport( reportKey, data ) {
 	};
 }
 
+export function* receiveMCSetup( mcSetup ) {
+	return {
+		type: TYPES.RECEIVE_MC_SETUP,
+		mcSetup,
+	};
+}
+
 export function* fetchMCSetup() {
 	try {
 		const response = yield apiFetch( {
@@ -980,19 +982,11 @@ export function* fetchMCSetup() {
 	}
 }
 
-export function* receiveMCSetup( mcSetup ) {
-	return {
-		type: TYPES.RECEIVE_MC_SETUP,
-		mcSetup,
-	};
-}
-
 /**
  * Creates a wp-data action with data payload to be dispatched the received
  * MC product statistics to wp-data store.
  *
  * @param {ProductStatistics} mcProductStatistics The received MC product statistics data.
- * @yield {Object} The wp-data action with data payload.
  */
 export function* receiveMCProductStatistics( mcProductStatistics ) {
 	return {

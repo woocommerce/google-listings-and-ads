@@ -10,22 +10,22 @@ import { Form } from '@woocommerce/components';
 import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
 import BudgetSection from '.~/components/paid-ads/budget-section';
 import BillingCard from '.~/components/paid-ads/billing-card';
-import SpinnerCard from '.~/components/spinner-card';
-import Section from '.~/wcdl/section';
 import validateCampaign from '.~/components/paid-ads/validateCampaign';
 import clientSession from './clientSession';
+import CampaignPreviewCard from '.~/components/paid-ads/campaign-preview/campaign-preview-card';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
-import useBudgetRecommendationData from '.~/hooks/useBudgetRecommendationData';
+
+/**
+ *
+ * @typedef {import('.~/data/actions').Campaign} Campaign
+ */
 
 /**
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
  */
 
 /**
- * @typedef {Object} PaidAdsData
- * @property {number|undefined} amount Daily average cost of the paid ads campaign.
- * @property {boolean} isValid Whether the campaign data are valid values.
- * @property {boolean} isReady Whether the campaign data and the billing setting are ready for completing the paid ads setup.
+ * @typedef {import('./paid-ads-setup-sections').PaidAdsData} PaidAdsData
  */
 
 const defaultPaidAds = {
@@ -55,35 +55,53 @@ function resolveInitialPaidAds( paidAds ) {
  * @param {Object} props React props.
  * @param {(onStatesReceived: PaidAdsData)=>void} props.onStatesReceived Callback to receive the data for setting up paid ads when initial and also when the budget and billing are updated.
  * @param {Array<CountryCode>|undefined} props.countryCodes Country codes for the campaign.
+ * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
+ * @param {boolean} [props.showCampaignPreviewCard=false] Whether to show the campaign preview card.
+ * @param {boolean} [props.loadCampaignFromClientSession=false] Whether to load the campaign data from the client session.
+ * @param {number} props.recommendedBudget The recommended budget.
  */
-export default function PaidAdsSetupSections( {
+export default function PaidAdsSetupForm( {
 	onStatesReceived,
 	countryCodes,
+	campaign,
+	loadCampaignFromClientSession,
+	showCampaignPreviewCard = false,
+	recommendedBudget,
 } ) {
+	const isCreation = ! campaign;
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 
 	const onStatesReceivedRef = useRef();
 	onStatesReceivedRef.current = onStatesReceived;
 
 	const [ paidAds, setPaidAds ] = useState( () => {
-		// Resolve the starting paid ads data with the campaign data stored in the client session.
-		const startingPaidAds = {
+		let startingPaidAds = {
 			...defaultPaidAds,
-			...clientSession.getCampaign(),
 		};
+
+		// If we are creating a new campaign, set the amount with the recommended daily amount.
+		if ( ! campaign ) {
+			startingPaidAds = {
+				...startingPaidAds,
+				amount: recommendedBudget,
+			};
+		}
+
+		// Resolve the starting paid ads data with the campaign data stored in the client session if any.
+		if ( loadCampaignFromClientSession ) {
+			startingPaidAds = {
+				...startingPaidAds,
+				...clientSession.getCampaign(),
+				amount:
+					clientSession.getCampaign()?.amount || recommendedBudget,
+			};
+		}
+
 		return resolveInitialPaidAds( startingPaidAds );
 	} );
 
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
-
-	const {
-		country,
-		dailyBudget,
-		recommendations,
-		multipleRecommendations,
-		loading,
-	} = useBudgetRecommendationData( countryCodes );
 
 	/*
 	  If a merchant has not yet finished the billing setup, the billing status will be
@@ -100,31 +118,16 @@ export default function PaidAdsSetupSections( {
 	  For example, refresh page during onboarding flow after the billing setup is finished.
 	*/
 	useEffect( () => {
-		if ( ! loading ) {
-			const sessionCampaign = clientSession.getCampaign();
-			const sessionAmount = sessionCampaign?.amount;
-
-			const nextPaidAds = {
-				...paidAds,
-				amount: sessionAmount || dailyBudget,
-				isReady: paidAds.isValid && isBillingCompleted,
-			};
-
-			onStatesReceivedRef.current( nextPaidAds );
-			clientSession.setCampaign( nextPaidAds );
-		}
-	}, [ dailyBudget, paidAds, isBillingCompleted, loading ] );
-
-	if ( ! billingStatus || loading ) {
-		return (
-			<Section>
-				<SpinnerCard />
-			</Section>
-		);
-	}
+		const nextPaidAds = {
+			...paidAds,
+			isReady: paidAds.isValid && isBillingCompleted,
+		};
+		onStatesReceivedRef.current( nextPaidAds );
+		clientSession.setCampaign( nextPaidAds );
+	}, [ paidAds, isBillingCompleted ] );
 
 	const initialValues = {
-		amount: clientSession.getCampaign()?.amount || dailyBudget,
+		amount: isCreation ? paidAds.amount : campaign.amount,
 	};
 
 	return (
@@ -132,10 +135,6 @@ export default function PaidAdsSetupSections( {
 			initialValues={ initialValues }
 			onChange={ ( _, values, isValid ) => {
 				setPaidAds( { ...paidAds, ...values, isValid } );
-
-				if ( isValid ) {
-					clientSession.setCampaign( values );
-				}
 			} }
 			validate={ validateCampaign }
 		>
@@ -144,12 +143,9 @@ export default function PaidAdsSetupSections( {
 					<BudgetSection
 						formProps={ formProps }
 						countryCodes={ countryCodes }
-						country={ country }
-						dailyBudget={ dailyBudget }
-						isMultiple={ multipleRecommendations }
-						recommendations={ recommendations }
 					>
 						<BillingCard />
+						{ showCampaignPreviewCard && <CampaignPreviewCard /> }
 					</BudgetSection>
 				);
 			} }

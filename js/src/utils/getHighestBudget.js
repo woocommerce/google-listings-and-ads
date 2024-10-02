@@ -10,16 +10,10 @@ export default function getHighestBudget( recommendations ) {
 		return null;
 	}
 
-	return recommendations.reduce(
-		( defender, challenger ) => {
-			if ( challenger.daily_budget > defender.daily_budget ) {
-				return challenger;
-			}
-			return defender;
-		},
-		{
-			daily_budget: 0,
-			country: '',
+	return recommendations.reduce( ( defender, challenger ) => {
+		if ( challenger.daily_budget > defender.daily_budget ) {
+			return challenger;
 		}
-	);
+		return defender;
+	} );
 }

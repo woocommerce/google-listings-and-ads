@@ -29,11 +29,8 @@ const nonInteractableProps = {
  *
  * @param {Object} props React props.
  * @param {Object} props.formProps Form props forwarded from `Form` component.
- * @param {string} props.country Country code.
  * @param {Array<CountryCode>} props.countryCodes Country codes to fetch budget recommendations for.
- * @param {number} props.dailyBudget Daily budget.
  * @param {boolean} [props.disabled=false] Whether display the Card in disabled style.
- * @param {boolean} [props.isMultiple=false] Whether the campaign is targeting multiple countries.
  * @param {JSX.Element} [props.children] Extra content to be rendered under the card of budget inputs.
  */
 const BudgetSection = ( {
@@ -41,7 +38,6 @@ const BudgetSection = ( {
 	countryCodes,
 	disabled = false,
 	children,
-	...recommendationProps
 } ) => {
 	const { getInputProps, setValue, values } = formProps;
 	const { amount } = values;
@@ -55,8 +51,6 @@ const BudgetSection = ( {
 	// `useEffect`.
 	const setValueRef = useRef();
 	setValueRef.current = setValue;
-
-	const { recommendations } = recommendationProps || {};
 
 	return (
 		<div className="gla-budget-section">
@@ -94,12 +88,10 @@ const BudgetSection = ( {
 								value={ monthlyMaxEstimated }
 							/>
 						</div>
-						{ recommendations?.length > 0 && (
+						{ countryCodes?.length > 0 && (
 							<BudgetRecommendation
 								countryCodes={ countryCodes }
 								dailyAverageCost={ amount }
-								currency={ currency }
-								{ ...recommendationProps }
 							/>
 						) }
 					</Section.Card.Body>

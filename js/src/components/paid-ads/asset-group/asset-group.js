@@ -11,9 +11,10 @@ import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
+import StepContentActions from '.~/components/stepper/step-content-actions';
 import AppButton from '.~/components/app-button';
+import AssetGroupFaqsPanel from './faqs-panel';
 import AssetGroupSection from './asset-group-section';
-import FaqsSection from './faqs-section';
 import { recordGlaEvent } from '.~/utils/tracks';
 
 export const ACTION_SUBMIT_CAMPAIGN_AND_ASSETS = 'submit-campaign-and-assets';
@@ -114,50 +115,59 @@ export default function AssetGroup( { campaign } ) {
 				) }
 			/>
 			<AssetGroupSection />
-			<FaqsSection />
+
 			<StepContentFooter>
-				{ ( isCreation || adapter.isEmptyAssetEntityGroup ) && (
-					// Currently, the PMax Assets feature in this extension doesn't offer the function
-					// to delete the asset entity group, so it needs to hide the skip button if the editing
-					// asset group is not considered empty.
+				<StepContentActions>
+					{ ( isCreation || adapter.isEmptyAssetEntityGroup ) && (
+						// Currently, the PMax Assets feature in this extension doesn't offer the function
+						// to delete the asset entity group, so it needs to hide the skip button if the editing
+						// asset group is not considered empty.
+						<AppButton
+							isTertiary
+							data-action={ ACTION_SUBMIT_CAMPAIGN_ONLY }
+							disabled={
+								! isValidForm ||
+								isSubmitted ||
+								currentAction ===
+									ACTION_SUBMIT_CAMPAIGN_AND_ASSETS
+							}
+							loading={
+								isSubmitting &&
+								currentAction === ACTION_SUBMIT_CAMPAIGN_ONLY
+							}
+							onClick={ handleSkipClick }
+						>
+							{ __(
+								'Skip this step',
+								'google-listings-and-ads'
+							) }
+						</AppButton>
+					) }
 					<AppButton
-						isTertiary
-						data-action={ ACTION_SUBMIT_CAMPAIGN_ONLY }
+						isPrimary
+						data-action={ ACTION_SUBMIT_CAMPAIGN_AND_ASSETS }
 						disabled={
-							! isValidForm ||
+							! adapter.baseAssetGroup[
+								ASSET_FORM_KEY.FINAL_URL
+							] ||
 							isSubmitted ||
-							currentAction === ACTION_SUBMIT_CAMPAIGN_AND_ASSETS
+							currentAction === ACTION_SUBMIT_CAMPAIGN_ONLY
 						}
 						loading={
 							isSubmitting &&
-							currentAction === ACTION_SUBMIT_CAMPAIGN_ONLY
+							currentAction === ACTION_SUBMIT_CAMPAIGN_AND_ASSETS
 						}
-						onClick={ handleSkipClick }
+						onClick={ handleLaunchClick }
 					>
-						{ __( 'Skip this step', 'google-listings-and-ads' ) }
+						{ isCreation
+							? __(
+									'Launch paid campaign',
+									'google-listings-and-ads'
+							  )
+							: __( 'Save changes', 'google-listings-and-ads' ) }
 					</AppButton>
-				) }
-				<AppButton
-					isPrimary
-					data-action={ ACTION_SUBMIT_CAMPAIGN_AND_ASSETS }
-					disabled={
-						! adapter.baseAssetGroup[ ASSET_FORM_KEY.FINAL_URL ] ||
-						isSubmitted ||
-						currentAction === ACTION_SUBMIT_CAMPAIGN_ONLY
-					}
-					loading={
-						isSubmitting &&
-						currentAction === ACTION_SUBMIT_CAMPAIGN_AND_ASSETS
-					}
-					onClick={ handleLaunchClick }
-				>
-					{ isCreation
-						? __(
-								'Launch paid campaign',
-								'google-listings-and-ads'
-						  )
-						: __( 'Save changes', 'google-listings-and-ads' ) }
-				</AppButton>
+				</StepContentActions>
+				<AssetGroupFaqsPanel />
 			</StepContentFooter>
 		</StepContent>
 	);

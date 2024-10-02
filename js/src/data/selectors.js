@@ -8,7 +8,12 @@ import createSelector from 'rememo';
  * Internal dependencies
  */
 import { STORE_KEY } from './constants';
-import { getReportQuery, getReportKey, getPerformanceQuery } from './utils';
+import {
+	getReportQuery,
+	getReportKey,
+	getPerformanceQuery,
+	getCountryCodesKey,
+} from './utils';
 
 /**
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
@@ -219,10 +224,6 @@ export const getMCReviewRequest = ( state ) => {
 	return state.mc_review_request;
 };
 
-export const getPolicyCheck = ( state ) => {
-	return state.mc.policy_check;
-};
-
 // note: we use rememo createSelector here to cache the sliced issues array,
 // to prevent returning new array to the consumer every time,
 // which might cause rendering performance problem.
@@ -409,4 +410,17 @@ export const getTour = ( state, tourId ) => {
  */
 export const getGoogleAdsAccountStatus = ( state ) => {
 	return state.ads.accountStatus;
+};
+
+/**
+ * Retrieves ad budget recommendations for provided country codes.
+ * If no recommendations are found, it returns `null`.
+ *
+ * @param {Object} state The state
+ * @param {Array<CountryCode>} [countryCodes] - An array of country code strings used to generate a unique key.
+ * @return {Object|null} The recommendations. It will be `null` if not yet fetched or fetched but doesn't exist.
+ */
+export const getAdsBudgetRecommendations = ( state, countryCodes = [] ) => {
+	const key = getCountryCodesKey( countryCodes );
+	return state.ads.budgetRecommendations[ key ] || null;
 };

@@ -3,11 +3,13 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
+use Automattic\Jetpack\Connection\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
@@ -226,6 +228,12 @@ class AccountService implements OptionsAwareInterface, Service {
 
 		$id                    = $this->options->get_merchant_id();
 		$wpcom_rest_api_status = $this->options->get( OptionsInterface::WPCOM_REST_API_STATUS );
+
+		// If token is revoked outside the extension. Set the status as error to force the merchant to grant access again.
+		if ( $wpcom_rest_api_status === 'approved' && ! $this->is_wpcom_api_status_healthy() ) {
+			$wpcom_rest_api_status = OAuthService::STATUS_ERROR;
+			$this->options->update( OptionsInterface::WPCOM_REST_API_STATUS, $wpcom_rest_api_status );
+		}
 
 		$status = [
 			'id'                           => $id,
@@ -539,6 +547,7 @@ class AccountService implements OptionsAwareInterface, Service {
 	 */
 	public function reset_wpcom_api_authorization_data(): bool {
 		$this->delete_wpcom_api_auth_nonce();
+		$this->delete_wpcom_api_status_transient();
 		return $this->options->delete( OptionsInterface::WPCOM_REST_API_STATUS );
 	}
 
@@ -592,6 +601,7 @@ class AccountService implements OptionsAwareInterface, Service {
 				]
 			);
 
+			$this->delete_wpcom_api_status_transient();
 			return $this->options->update( OptionsInterface::WPCOM_REST_API_STATUS, $status );
 		} catch ( ExceptionWithResponseData $e ) {
 
@@ -622,5 +632,46 @@ class AccountService implements OptionsAwareInterface, Service {
 	 */
 	public function delete_wpcom_api_auth_nonce(): bool {
 		return $this->options->delete( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE );
+	}
+
+	/**
+	 * Deletes the transient storing the WPCOM Status data.
+	 */
+	public function delete_wpcom_api_status_transient(): void {
+		$transients = $this->container->get( TransientsInterface::class );
+		$transients->delete( TransientsInterface::WPCOM_API_STATUS );
+	}
+
+	/**
+	 * Check if the WPCOM API Status is healthy by doing a request to /wc/partners/google/remote-site-status endpoint in WPCOM.
+	 *
+	 * @return bool True when the status is healthy, false otherwise.
+	 */
+	public function is_wpcom_api_status_healthy() {
+		/** @var TransientsInterface $transients */
+		$transients = $this->container->get( TransientsInterface::class );
+		$status     = $transients->get( TransientsInterface::WPCOM_API_STATUS );
+
+		if ( ! $status ) {
+
+			$integration_status_args = [
+				'method'  => 'GET',
+				'timeout' => 30,
+				'url'     => 'https://public-api.wordpress.com/wpcom/v2/sites/' . Jetpack_Options::get_option( 'id' ) . '/wc/partners/google/remote-site-status',
+				'user_id' => get_current_user_id(),
+			];
+
+			$integration_remote_request_response = Client::remote_request( $integration_status_args, null );
+
+			if ( is_wp_error( $integration_remote_request_response ) ) {
+				$status = [ 'is_healthy' => false ];
+			} else {
+				$status = json_decode( wp_remote_retrieve_body( $integration_remote_request_response ), true ) ?? [ 'is_healthy' => false ];
+			}
+
+			$transients->set( TransientsInterface::WPCOM_API_STATUS, $status, MINUTE_IN_SECONDS * 30 );
+		}
+
+		return isset( $status['is_healthy'] ) && $status['is_healthy'] && $status['is_wc_rest_api_healthy'] && $status['is_partner_token_healthy'];
 	}
 }

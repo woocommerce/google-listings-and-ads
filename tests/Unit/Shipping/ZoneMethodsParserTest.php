@@ -46,6 +46,69 @@ class ZoneMethodsParserTest extends UnitTest {
 		$this->assertEquals( 10, $shipping_rates[0]->get_rate() );
 	}
 
+	public function test_returns_flat_rate_methods_with_decimals_and_comma() {
+		$flat_rate     = $this->createMock( WC_Shipping_Flat_Rate::class );
+		$flat_rate->id = ZoneMethodsParser::METHOD_FLAT_RATE;
+		$flat_rate->expects( $this->any() )
+			->method( 'get_option' )
+			->willReturnMap(
+				[
+					[ 'cost', null, '10,6' ],
+				]
+			);
+
+		$zone = $this->createMock( WC_Shipping_Zone::class );
+		$zone->expects( $this->any() )
+			->method( 'get_shipping_methods' )
+			->willReturn( [ $flat_rate ] );
+
+		$shipping_rates = $this->methods_parser->parse( $zone );
+		$this->assertCount( 1, $shipping_rates );
+		$this->assertEquals( 10.6, $shipping_rates[0]->get_rate() );
+	}
+
+	public function test_returns_flat_rate_methods_with_decimals_and_dot() {
+		$flat_rate     = $this->createMock( WC_Shipping_Flat_Rate::class );
+		$flat_rate->id = ZoneMethodsParser::METHOD_FLAT_RATE;
+		$flat_rate->expects( $this->any() )
+			->method( 'get_option' )
+			->willReturnMap(
+				[
+					[ 'cost', null, '10.6' ],
+				]
+			);
+
+		$zone = $this->createMock( WC_Shipping_Zone::class );
+		$zone->expects( $this->any() )
+			->method( 'get_shipping_methods' )
+			->willReturn( [ $flat_rate ] );
+
+		$shipping_rates = $this->methods_parser->parse( $zone );
+		$this->assertCount( 1, $shipping_rates );
+		$this->assertEquals( 10.6, $shipping_rates[0]->get_rate() );
+	}
+
+	public function test_returns_flat_rate_methods_with_more_than_two_decimals() {
+		$flat_rate     = $this->createMock( WC_Shipping_Flat_Rate::class );
+		$flat_rate->id = ZoneMethodsParser::METHOD_FLAT_RATE;
+		$flat_rate->expects( $this->any() )
+			->method( 'get_option' )
+			->willReturnMap(
+				[
+					[ 'cost', null, '10.6123' ],
+				]
+			);
+
+		$zone = $this->createMock( WC_Shipping_Zone::class );
+		$zone->expects( $this->any() )
+			->method( 'get_shipping_methods' )
+			->willReturn( [ $flat_rate ] );
+
+		$shipping_rates = $this->methods_parser->parse( $zone );
+		$this->assertCount( 1, $shipping_rates );
+		$this->assertEquals( 10.61, $shipping_rates[0]->get_rate() );
+	}
+
 	public function test_returns_flat_rate_methods_including_shipping_classes() {
 		// Return three sample shipping classes.
 		$light_class          = new \stdClass();
@@ -69,10 +132,10 @@ class ZoneMethodsParserTest extends UnitTest {
 			->willReturnMap(
 				[
 					[ 'cost', null, 10 ],
-					[ 'class_cost_0', null, 5 ],
+					[ 'class_cost_0', null, '5,20' ], // Comma decimal separator will be converted to dot.
 					[ 'class_cost_1', null, 15 ],
 					[ 'class_cost_2', null, '[qty] / 10' ],
-					[ 'no_class_cost', null, 2 ],
+					[ 'no_class_cost', null, '6,7' ],
 				]
 			);
 
@@ -103,11 +166,11 @@ class ZoneMethodsParserTest extends UnitTest {
 
 		foreach ( $shipping_rates as $shipping_rate ) {
 			if ( [] === $shipping_rate->get_applicable_classes() ) {
-				// The `no_class_cost` should be added to the flat rate method cost (10+2=12).
-				$this->assertEquals( 12, $shipping_rate->get_rate() );
+				// The `no_class_cost` should be added to the flat rate method cost (10+6.7=16.7).
+				$this->assertEquals( 16.7, $shipping_rate->get_rate() );
 			} elseif ( [ 'light' ] === $shipping_rate->get_applicable_classes() ) {
-				// The shipping class costs should be added to the flat rate method cost (10+5=15).
-				$this->assertEquals( 15, $shipping_rate->get_rate() );
+				// The shipping class costs should be added to the flat rate method cost (10+5.20=15.20).
+				$this->assertEquals( 15.20, $shipping_rate->get_rate() );
 			} elseif ( [ 'heavy' ] === $shipping_rate->get_applicable_classes() ) {
 				// The shipping class costs should be added to the flat rate method cost (10+15=25).
 				$this->assertEquals( 25, $shipping_rate->get_rate() );

@@ -287,16 +287,6 @@ export default class MockRequests {
 	}
 
 	/**
-	 * Fulfill policy check request.
-	 *
-	 * @param {Object} payload
-	 * @return {Promise<void>}
-	 */
-	async fulfillPolicyCheckRequest( payload ) {
-		await this.fulfillRequest( /\/wc\/gla\/mc\/policy_check\b/, payload );
-	}
-
-	/**
 	 * Fulfill the MC account issues request.
 	 *
 	 * @param {Object} payload
@@ -528,14 +518,16 @@ export default class MockRequests {
 	 * Mock Google Ads account as connected.
 	 *
 	 * @param {number} [id=12345]
+	 * @param {Object} [args={}] - Additional properties to customize the account connection details.
 	 * @return {Promise<void>}
 	 */
-	async mockAdsAccountConnected( id = 12345 ) {
+	async mockAdsAccountConnected( id = 12345, args = {} ) {
 		await this.fulfillAdsConnection( {
 			id,
 			currency: 'TWD',
 			symbol: 'NT$',
 			status: 'connected',
+			...args,
 		} );
 	}
 

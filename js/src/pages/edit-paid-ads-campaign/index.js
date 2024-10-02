@@ -200,6 +200,10 @@ const EditPaidAdsCampaign = () => {
 									onContinue={ () =>
 										handleContinueClick( STEP.ASSET_GROUP )
 									}
+									headerTitle={ __(
+										'Edit your paid campaign',
+										'google-listings-and-ads'
+									) }
 								/>
 							),
 							onClick: handleStepperClick,

@@ -55,19 +55,6 @@ export function getCountryInputSearchBoxContainer( page ) {
 }
 
 /**
- * Get country tags from input search box container.
- *
- * @param {import('@playwright/test').Page} page The current page.
- *
- * @return {import('@playwright/test').Locator} Get country tags from input search box container.
- */
-export function getCountryTagsFromInputSearchBoxContainer( page ) {
-	return getCountryInputSearchBoxContainer( page ).locator(
-		'.woocommerce-tag'
-	);
-}
-
-/**
  * Get country input search box.
  *
  * @param {import('@playwright/test').Page} page The current page.

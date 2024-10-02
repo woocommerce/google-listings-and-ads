@@ -9,11 +9,12 @@ import { __ } from '@wordpress/i18n';
 import AppButton from '.~/components/app-button';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
+import StepContentActions from '.~/components/stepper/step-content-actions';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import { ConnectedGoogleAccountCard } from '.~/components/google-account-card';
 import GoogleAdsAccountCard from '.~/components/google-ads-account-card';
-import FreeAdCredit from './free-ad-credit';
+import FreeAdCredit from '.~/components/free-ad-credit';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
@@ -75,13 +76,15 @@ const SetupAccounts = ( props ) => {
 				</VerticalGapLayout>
 			</Section>
 			<StepContentFooter>
-				<AppButton
-					isPrimary
-					disabled={ isContinueButtonDisabled }
-					onClick={ onContinue }
-				>
-					{ __( 'Continue', 'google-listings-and-ads' ) }
-				</AppButton>
+				<StepContentActions>
+					<AppButton
+						isPrimary
+						disabled={ isContinueButtonDisabled }
+						onClick={ onContinue }
+					>
+						{ __( 'Continue', 'google-listings-and-ads' ) }
+					</AppButton>
+				</StepContentActions>
 			</StepContentFooter>
 		</StepContent>
 	);

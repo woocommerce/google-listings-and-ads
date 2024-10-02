@@ -15,7 +15,9 @@ const COLLAPSED_ISSUES_SIZE = 5;
 
 const ReviewRequestIssues = ( { issues = [] } ) => {
 	const [ expanded, setExpanded ] = useState( false );
-	if ( ! issues.length ) return null;
+	if ( ! issues.length ) {
+		return null;
+	}
 
 	const toggleExpanded = () => {
 		recordGlaEvent( 'gla_request_review_issue_list_toggle_click', {
@@ -44,12 +46,12 @@ const ReviewRequestIssues = ( { issues = [] } ) => {
 			{ issues.length > COLLAPSED_ISSUES_SIZE && (
 				<AppButton isTertiary onClick={ toggleExpanded }>
 					{ expanded
-						? __( 'Show less', 'google-listing-and-ads' )
+						? __( 'Show less', 'google-listings-and-ads' )
 						: sprintf(
 								// translators: %d: The number of extra issues issues
 								__(
 									'+ %d more issue(s)',
-									'google-listing-and-ads'
+									'google-listings-and-ads'
 								),
 								issues.length - COLLAPSED_ISSUES_SIZE
 						  ) }
