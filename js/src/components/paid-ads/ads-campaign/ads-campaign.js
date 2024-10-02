@@ -12,14 +12,12 @@ import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import StepContentActions from '.~/components/stepper/step-content-actions';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import AppButton from '.~/components/app-button';
 import { useAdaptiveFormContext } from '.~/components/adaptive-form';
-import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
-import AudienceSection from './audience-section';
-import BudgetSection from './budget-section';
-import { CampaignPreviewCard } from './campaign-preview';
-import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
-import PaidAdsFaqsPanel from './faqs-panel';
+import AudienceSection from '../audience-section';
+import BudgetSection from '../budget-section';
+import { CampaignPreviewCard } from '../campaign-preview';
+import PaidAdsFaqsPanel from '../faqs-panel';
+import ContinueButton from './continue-button';
 
 /**
  * @typedef {import('.~/data/actions').Campaign} Campaign
@@ -35,22 +33,18 @@ import PaidAdsFaqsPanel from './faqs-panel';
  *
  * @param {Object} props React props.
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
- * @param {() => void} props.onContinue Callback called once continue button is clicked.
  * @param {boolean} [props.isLoading] If true, the Continue button will display a loading spinner .
- * @param {string} [props.submitButtonText] Text to display on submit button.
+ * @param {() => void} props.onContinue Callback called once continue button is clicked.
  * @param {'create-ads'|'edit-ads'|'setup-ads'} props.trackingContext A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  */
 export default function AdsCampaign( {
 	campaign,
-	onContinue,
 	isLoading,
-	submitButtonText = __( 'Continue', 'google-listings-and-ads' ),
+	onContinue,
 	trackingContext,
 } ) {
 	const isCreation = ! campaign;
 	const formContext = useAdaptiveFormContext();
-	const { isValidForm } = formContext;
-	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 
 	const disabledBudgetSection = ! formContext.values.countryCodes.length;
 	const helperText = isCreation
@@ -109,19 +103,11 @@ export default function AdsCampaign( {
 
 			<StepContentFooter>
 				<StepContentActions>
-					<AppButton
-						isPrimary
-						disabled={
-							! isValidForm ||
-							( trackingContext === 'setup-ads' &&
-								billingStatus?.status !==
-									GOOGLE_ADS_BILLING_STATUS.APPROVED )
-						}
-						loading={ isLoading }
-						onClick={ onContinue }
-					>
-						{ submitButtonText }
-					</AppButton>
+					<ContinueButton
+						onContinue={ onContinue }
+						setupAdsFlow={ trackingContext === 'setup-ads' }
+						isLoading={ isLoading }
+					/>
 				</StepContentActions>
 				<PaidAdsFaqsPanel />
 			</StepContentFooter>
