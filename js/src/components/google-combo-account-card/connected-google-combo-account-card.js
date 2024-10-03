@@ -24,12 +24,9 @@ import AccountCreationDescription from './account-creation-description';
  * Renders a Google account card UI with connected account information.
  * It will also kickoff Ads and Merchant Center account creation if the user does not have accounts.
  *
- * @param {Object} props React props.
- * @param {{ googleAccount: object }} props.googleAccount The Google account.
- *
  * @fires gla_google_account_connect_different_account_button_click
  */
-const ConnectedGoogleComboAccountCard = ( { googleAccount } ) => {
+const ConnectedGoogleComboAccountCard = () => {
 	const {
 		googleMCAccount,
 		hasFinishedResolution: hasFinishedResolutionForCurrentMCAccount,
@@ -93,7 +90,10 @@ const ConnectedGoogleComboAccountCard = ( { googleAccount } ) => {
 			className="gla-google-combo-account-card--connected"
 			description={
 				<AccountCreationDescription
-					isCreatingAccounts={ creatingAccounts }
+					isLoading={
+						! hasFinishedResolutionForCurrentMCAccount ||
+						! hasFinishedResolutionForCurrentAdsAccount
+					}
 					isCreatingAdsAccount={ isCreatingAdsAccount }
 					isCreatingMCAccount={ isCreatingMCAccount }
 					googleMCAccount={ googleMCAccount }
