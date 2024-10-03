@@ -12,6 +12,7 @@ import useGoogleAccount from '.~/hooks/useGoogleAccount';
  * Renders the description for the account creation card.
  *
  * @param {Object} props Props.
+ * @param {boolean} props.isCreatingBothAccounts Whether both, MC and Ads accounts are being created.
  * @param {boolean} props.isCreatingMCAccount Whether Merchant Center account is being created.
  * @param {boolean} props.isCreatingAdsAccount Whether Google Ads account is being created.
  * @param {boolean} props.isLoading Whether the data is loading.
