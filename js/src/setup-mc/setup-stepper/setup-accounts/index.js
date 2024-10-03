@@ -127,9 +127,6 @@ const SetupAccounts = ( props ) => {
 			( googleMCAccount?.status === 'incomplete' &&
 				googleMCAccount?.step === 'link_ads' ) );
 
-	console.log('isGoogleAdsReady', isGoogleAdsReady);
-	console.log('isGoogleMCReady', isGoogleMCReady);
-
 	const isContinueButtonDisabled = ! (
 		hasFinishedResolution &&
 		isGoogleAdsReady &&

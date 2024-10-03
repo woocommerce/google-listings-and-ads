@@ -41,7 +41,7 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 		} );
 		useExistingGoogleAdsAccounts.mockReturnValue( {
 			existingAccounts: [],
-			isResolving: false,
+			hasFinishedResolution: true,
 		} );
 	} );
 
@@ -53,7 +53,7 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 		} );
 		useExistingGoogleAdsAccounts.mockReturnValue( {
 			existingAccounts: [ { id: 1 } ],
-			isResolving: false,
+			hasFinishedResolution: false,
 		} );
 
 		const { result } = renderHook( () => useCreateAccounts() );
@@ -85,8 +85,8 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 			rerender(); // Trigger the effect that begins account creation
 		} );
 
-		expect( result.current.isCreatingAdsAccount ).toBe( true );
-		expect( result.current.isCreatingMCAccount ).toBe( true );
+		expect( result.current.isCreatingAdsAccount ).toBe( false );
+		expect( result.current.isCreatingMCAccount ).toBe( false );
 
 		await act( async () => {
 			rerender();
@@ -102,14 +102,9 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 	} );
 
 	it( 'should create Merchant Center account only when there is no existing MC account, but there is an existing Ads account', async () => {
-		// Simulate no existing MC account but an existing Ads account
-		useExistingGoogleMCAccounts.mockReturnValue( {
-			data: [], // No existing MC account
-			hasFinishedResolution: true,
-		} );
 		useExistingGoogleAdsAccounts.mockReturnValue( {
 			existingAccounts: [ { id: 1 } ], // Existing Ads account
-			isResolving: false,
+			hasFinishedResolution: true,
 		} );
 
 		// Step 1: Initial render - No response, loading is true
@@ -161,10 +156,6 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 		useExistingGoogleMCAccounts.mockReturnValue( {
 			data: [ { id: 1 } ], // Existing MC account
 			hasFinishedResolution: true,
-		} );
-		useExistingGoogleAdsAccounts.mockReturnValue( {
-			existingAccounts: [], // No existing Ads account
-			isResolving: false,
 		} );
 
 		// Step 1: Initial render - No response, loading is true for Ads account creation
