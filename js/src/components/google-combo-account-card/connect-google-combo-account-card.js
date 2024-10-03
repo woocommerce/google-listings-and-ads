@@ -14,7 +14,6 @@ import AppButton from '.~/components/app-button';
 import readMoreLink from '../google-account-card/read-more-link';
 import useGoogleConnectFlow from '../google-account-card/use-google-connect-flow';
 import AppDocumentationLink from '../app-documentation-link';
-import './connect-google-combo-account-card.scss';
 
 /**
  * @param {Object} props React props
