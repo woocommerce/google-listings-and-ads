@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { CardDivider } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -13,6 +14,7 @@ import AppSpinner from '../app-spinner';
 import useAutoCreateAdsMCAccounts from '../../hooks/useAutoCreateAdsMCAccounts';
 import LoadingLabel from '../loading-label/loading-label';
 import AccountCreationDescription from './account-creation-description';
+import ConnectMC from './connect-mc';
 
 /**
  * Clicking on the "connect to a different Google account" button.
@@ -46,10 +48,18 @@ const ConnectedGoogleComboAccountCard = () => {
 		accountsCreated,
 	} = useAutoCreateAdsMCAccounts();
 
+	// if (
+	// 	! accountsCreated &&
+	// 	( ! hasFinishedResolutionForCurrentAdsAccount ||
+	// 		! hasFinishedResolutionForCurrentMCAccount ||
+	// 		! accountCreationChecksResolved )
+	// ) {
+	// 	return <AccountCard description={ <AppSpinner /> } />;
+	// }
+
 	if (
 		! accountsCreated &&
-		( ! hasFinishedResolutionForCurrentAdsAccount ||
-			! hasFinishedResolutionForCurrentMCAccount ||
+		( ! hasFinishedResolutionForCurrentMCAccount ||
 			! accountCreationChecksResolved )
 	) {
 		return <AccountCard description={ <AppSpinner /> } />;
@@ -83,25 +93,29 @@ const ConnectedGoogleComboAccountCard = () => {
 	};
 
 	return (
-		<AccountCard
-			appearance={ APPEARANCE.GOOGLE }
-			className="gla-google-combo-account-card--connected"
-			description={
-				<AccountCreationDescription
-					isLoading={
-						! hasFinishedResolutionForCurrentAdsAccount ||
-						! hasFinishedResolutionForCurrentMCAccount
-					}
-					isCreatingBothAccounts={ isCreatingBothAccounts }
-					isCreatingAdsAccount={ isCreatingAdsAccount }
-					isCreatingMCAccount={ isCreatingMCAccount }
-					googleMCAccount={ googleMCAccount }
-					googleAdsAccount={ googleAdsAccount }
-				/>
-			}
-			helper={ getHelper() }
-			indicator={ getIndicator() }
-		/>
+		<div className="gla-google-combo-account-card">
+			<AccountCard
+				appearance={ APPEARANCE.GOOGLE }
+				className="gla-google-combo-account-card--connected"
+				description={
+					<AccountCreationDescription
+						isLoading={
+							! hasFinishedResolutionForCurrentAdsAccount ||
+							! hasFinishedResolutionForCurrentMCAccount
+						}
+						isCreatingBothAccounts={ isCreatingBothAccounts }
+						isCreatingAdsAccount={ isCreatingAdsAccount }
+						isCreatingMCAccount={ isCreatingMCAccount }
+						googleMCAccount={ googleMCAccount }
+						googleAdsAccount={ googleAdsAccount }
+					/>
+				}
+				helper={ getHelper() }
+				indicator={ getIndicator() }
+			/>
+			<CardDivider />
+			<ConnectMC />
+		</div>
 	);
 };
 

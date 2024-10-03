@@ -1,4 +1,3 @@
-/* eslint-disable testing-library/no-unnecessary-act */
 /**
  * External dependencies
  */
@@ -81,13 +80,12 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 			{ loading: false },
 		] );
 
-		await act( async () => {
-			rerender(); // Trigger the effect that begins account creation
-		} );
+		rerender();
 
 		expect( result.current.isCreatingAdsAccount ).toBe( false );
 		expect( result.current.isCreatingMCAccount ).toBe( false );
 
+		// eslint-disable-next-line testing-library/no-unnecessary-act
 		await act( async () => {
 			rerender();
 		} );
@@ -119,10 +117,8 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 		expect( result.current.isCreatingAdsAccount ).toBe( false );
 		expect( result.current.isCreatingMCAccount ).toBe( false );
 
-		// Trigger the effect that starts account creation
-		await act( async () => {
-			rerender(); // Simulate the effect firing
-		} );
+		// Trigger the effect that starts account creation.
+		rerender();
 
 		// Step 2: At this point, MC account creation should have started
 		expect( result.current.isCreatingMCAccount ).toBe( true );
@@ -136,10 +132,8 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 			{ response: { status: 200 }, loading: false }, // Now account creation is complete
 		] );
 
-		// Trigger a rerender to simulate the async function resolving
-		await act( async () => {
-			rerender(); // Re-render after response has been updated
-		} );
+		// Trigger a rerender to simulate the async function resolving.
+		rerender();
 
 		// Step 4: Final assertions after account creation has completed
 		expect( result.current.isCreatingAdsAccount ).toBe( false );
@@ -170,10 +164,7 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 		expect( result.current.isCreatingAdsAccount ).toBe( false );
 		expect( result.current.isCreatingMCAccount ).toBe( false );
 
-		// Trigger the effect that starts account creation
-		await act( async () => {
-			rerender(); // Simulate the effect firing
-		} );
+		rerender(); // Simulate the effect firing.
 
 		// Step 2: At this point, Ads account creation should have started
 		expect( result.current.isCreatingAdsAccount ).toBe( true );
@@ -187,10 +178,8 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 			{ response: { status: 200 }, loading: false }, // Now Ads account creation is complete
 		] );
 
-		// Trigger a rerender to simulate the async function resolving
-		await act( async () => {
-			rerender(); // Re-render after response has been updated
-		} );
+		// Trigger a rerender to simulate the async function resolving.
+		rerender();
 
 		// Step 4: Final assertions after Ads account creation has completed
 		expect( result.current.accountsCreated ).toBe( true ); // The account has been created

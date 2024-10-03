@@ -81,7 +81,7 @@ const useAutoCreateAdsMCAccounts = () => {
 	}, [ createMCAccount, createAdsAccount ] );
 
 	const accountCreationChecksResolved =
-		initHasExistingAdsAccountsRef.current !== null &&
+		// initHasExistingAdsAccountsRef.current !== null &&
 		initHasExistingMCAccountsRef.current !== null;
 
 	const shouldCreateAdsAccount =
