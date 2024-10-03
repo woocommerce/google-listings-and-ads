@@ -69,20 +69,24 @@ const ConnectedGoogleComboAccountCard = () => {
 	};
 
 	return (
-		<AccountCard
-			appearance={ APPEARANCE.GOOGLE }
-			className="gla-google-combo-account-card--connected"
-			description={
-				<AccountCreationDescription
-					isCreatingBothAccounts={ isCreatingBothAccounts }
-					isCreatingAdsAccount={ isCreatingAdsAccount }
-					isCreatingMCAccount={ isCreatingMCAccount }
-					accountsCreated={ accountsCreated }
-				/>
-			}
-			helper={ getHelper() }
-			indicator={ getIndicator() }
-		/>
+		<div className="gla-google-combo-account-card">
+			<AccountCard
+				appearance={ APPEARANCE.GOOGLE }
+				className="gla-google-combo-account-card--connected"
+				description={
+					<AccountCreationDescription
+						isCreatingBothAccounts={ isCreatingBothAccounts }
+						isCreatingAdsAccount={ isCreatingAdsAccount }
+						isCreatingMCAccount={ isCreatingMCAccount }
+						accountsCreated={ accountsCreated }
+					/>
+				}
+				helper={ getHelper() }
+				indicator={ getIndicator() }
+			/>
+
+			<ConnectMC />
+		</div>
 	);
 };
 

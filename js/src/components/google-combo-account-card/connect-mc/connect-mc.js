@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { CardDivider } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
@@ -11,16 +10,17 @@ import { __ } from '@wordpress/i18n';
 import MerchantCenterSelectControl from '.~/components/merchant-center-select-control';
 import AppButton from '.~/components/app-button';
 import Section from '.~/wcdl/section';
-import Subsection from '.~/wcdl/subsection';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import SwitchUrlCard from '.~/components/google-mc-account-card/switch-url-card';
 import ReclaimUrlCard from '.~/components/google-mc-account-card/reclaim-url-card';
-import AccountCard, { APPEARANCE } from '.~/components/account-card';
+import AccountCard from '.~/components/account-card';
 import CreateAccountButton from '.~/components/google-mc-account-card/create-account-button';
 import useConnectMCAccount from '.~/components/google-mc-account-card/useConnectMCAccount';
 import useCreateMCAccount from '.~/components/google-mc-account-card/useCreateMCAccount';
 import CreatingCard from '.~/components/google-mc-account-card/creating-card';
-import './connect-mc.scss';
+import ConnectedIconLabel from '.~/components/connected-icon-label';
+import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
+import DisconnectAccountButton from '.~/components/google-mc-account-card/disconnect-account-button';
 
 /**
  * Clicking on the button to connect an existing Google Merchant Center account.
@@ -40,9 +40,18 @@ import './connect-mc.scss';
  * @fires gla_mc_account_connect_button_click
  */
 const ConnectMC = () => {
+	const { googleMCAccount } = useGoogleMCAccount();
 	const [ value, setValue ] = useState();
 	const [ handleConnectMC, resultConnectMC ] = useConnectMCAccount( value );
 	const [ handleCreateAccount, resultCreateAccount ] = useCreateMCAccount();
+
+	// MC is ready when we have a connection.
+	// The `link_ads` step will be resolved when the Ads account is connected
+	// since these can be connected in any order.
+	const isConnected =
+		googleMCAccount?.status === 'connected' ||
+		( googleMCAccount?.status === 'incomplete' &&
+			googleMCAccount?.step === 'link_ads' );
 
 	if ( resultConnectMC.response?.status === 409 ) {
 		return (
@@ -91,45 +100,56 @@ const ConnectMC = () => {
 
 	return (
 		<AccountCard
-			className="gla-connect-mc-card"
+			className="gla-google-combo-service-account-card"
 			title={ __(
-				'Select an existing account',
+				'Connect to existing Merchant Center account',
 				'google-listings-and-ads'
 			) }
 			helper={ __(
-				'Required to set up conversion measurement for your store.',
+				'Required to sync products so they show on Google.',
 				'google-listings-and-ads'
 			) }
 		>
-			<Section.Card.Body>
+			<Section.Card.Body className="gla-google-combo-service-account-card__body">
 				<ContentButtonLayout>
 					<MerchantCenterSelectControl
 						value={ value }
 						onChange={ setValue }
 					/>
-					<AppButton
-						isSecondary
-						loading={ resultConnectMC.loading }
-						disabled={ ! value }
-						eventName="gla_mc_account_connect_button_click"
-						eventProps={ { id: Number( value ) } }
-						onClick={ handleConnectMC }
-					>
-						{ __( 'Connect', 'google-listings-and-ads' ) }
-					</AppButton>
+
+					{ isConnected && (
+						<ConnectedIconLabel className="gla-google-combo-service-connected-icon-label" />
+					) }
+
+					{ ! isConnected && (
+						<AppButton
+							isSecondary
+							loading={ resultConnectMC.loading }
+							disabled={ ! value }
+							eventName="gla_mc_account_connect_button_click"
+							eventProps={ { id: Number( value ) } }
+							onClick={ handleConnectMC }
+						>
+							{ __( 'Connect', 'google-listings-and-ads' ) }
+						</AppButton>
+					) }
 				</ContentButtonLayout>
 			</Section.Card.Body>
-			<Section.Card.Footer>
-				<CreateAccountButton
-					isLink
-					disabled={ resultConnectMC.loading }
-					onCreateAccount={ handleCreateAccount }
-				>
-					{ __(
-						'Or, create a new Merchant Center account',
-						'google-listings-and-ads'
-					) }
-				</CreateAccountButton>
+			<Section.Card.Footer className="gla-google-combo-service-account-card__footer">
+				{ isConnected && <DisconnectAccountButton /> }
+
+				{ ! isConnected && (
+					<CreateAccountButton
+						isLink
+						disabled={ resultConnectMC.loading }
+						onCreateAccount={ handleCreateAccount }
+					>
+						{ __(
+							'Or, create a new Merchant Center account',
+							'google-listings-and-ads'
+						) }
+					</CreateAccountButton>
+				) }
 			</Section.Card.Footer>
 		</AccountCard>
 	);
