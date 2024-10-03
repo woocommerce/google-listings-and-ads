@@ -7,8 +7,6 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AccountCard, { APPEARANCE } from '../account-card';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import AppSpinner from '../app-spinner';
 import useAutoCreateAdsMCAccounts from '../../hooks/useAutoCreateAdsMCAccounts';
 import LoadingLabel from '../loading-label/loading-label';
