@@ -33,7 +33,7 @@ const useAutoCreateAdsMCAccounts = () => {
 	const isCreatingBothAccountsRef = useRef( false );
 	const isCreatingAdsAccountsRef = useRef( false );
 	const isCreatingMCAccountsRef = useRef( false );
-	const initHasExistingMCAAccountsRef = useRef( null );
+	const initHasExistingMCAccountsRef = useRef( null );
 	const initHasExistingAdsAccountsRef = useRef( null );
 	const accountsCreatedRef = useRef( false );
 
@@ -44,7 +44,7 @@ const useAutoCreateAdsMCAccounts = () => {
 
 	const {
 		existingAccounts: existingAdsAccount,
-		isResolving: isResolvingExistingAdsAccount,
+		hasFinishedResolution: hasFinishedResolutionForExistingAdsAccount,
 	} = useExistingGoogleAdsAccounts();
 
 	const [ handleCreateAccount, { response } ] = useCreateMCAccount();
@@ -54,15 +54,15 @@ const useAutoCreateAdsMCAccounts = () => {
 	const hasExistingAdsAccount = existingAdsAccount?.length > 0;
 
 	if (
-		initHasExistingMCAAccountsRef.current === null &&
+		initHasExistingMCAccountsRef.current === null &&
 		hasFinishedResolutionForExistingMCAccounts
 	) {
-		initHasExistingMCAAccountsRef.current = hasExistingMCAccount;
+		initHasExistingMCAccountsRef.current = hasExistingMCAccount;
 	}
 
 	if (
 		initHasExistingAdsAccountsRef.current === null &&
-		! isResolvingExistingAdsAccount
+		hasFinishedResolutionForExistingAdsAccount
 	) {
 		initHasExistingAdsAccountsRef.current = hasExistingAdsAccount;
 	}
@@ -82,19 +82,19 @@ const useAutoCreateAdsMCAccounts = () => {
 
 	const accountCreationChecksResolved =
 		initHasExistingAdsAccountsRef.current !== null &&
-		initHasExistingMCAAccountsRef.current !== null;
+		initHasExistingMCAccountsRef.current !== null;
 
 	const shouldCreateAdsAccount =
 		initHasExistingAdsAccountsRef.current === false &&
-		initHasExistingMCAAccountsRef.current === true;
+		initHasExistingMCAccountsRef.current === true;
 
 	const shouldCreateMCAccount =
 		initHasExistingAdsAccountsRef.current === true &&
-		initHasExistingMCAAccountsRef.current === false;
+		initHasExistingMCAccountsRef.current === false;
 
 	const shouldCreateBothAccounts =
 		! initHasExistingAdsAccountsRef.current &&
-		! initHasExistingMCAAccountsRef.current;
+		! initHasExistingMCAccountsRef.current;
 
 	const isCreatingAccounts =
 		isCreatingAdsAccountsRef.current ||

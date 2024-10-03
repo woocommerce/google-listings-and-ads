@@ -19,6 +19,7 @@ import useGoogleAccount from '.~/hooks/useGoogleAccount';
  * @param {Object} props.googleAdsAccount Google Ads account.
  */
 const AccountCreationDescription = ( {
+	isCreatingBothAccounts,
 	isCreatingMCAccount,
 	isCreatingAdsAccount,
 	isLoading = false,
@@ -28,7 +29,7 @@ const AccountCreationDescription = ( {
 	const { google } = useGoogleAccount();
 
 	const getDescription = () => {
-		if ( isCreatingMCAccount && isCreatingAdsAccount ) {
+		if ( isCreatingBothAccounts ) {
 			return (
 				<p>
 					{ __(

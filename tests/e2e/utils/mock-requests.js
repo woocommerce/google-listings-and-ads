@@ -21,46 +21,35 @@ export default class MockRequests {
 	 * @return {Promise<void>}
 	 */
 	async fulfillRequest( url, payload, status = 200, methods = [] ) {
+		let callCount = 0;
+
 		await this.page.route( url, ( route ) => {
 			if (
-				methods.length === 0 ||
-				methods.includes( route.request().method() )
+				( Array.isArray( payload ) && callCount < payload.length ) || // Ensure there are payloads to fulfill
+				( ! Array.isArray( payload ) && callCount === 0 ) // For single payload scenario
 			) {
-				route.fulfill( {
-					status,
-					content: 'application/json',
-					headers: { 'Access-Control-Allow-Origin': '*' },
-					body: JSON.stringify( payload ),
-				} );
+				if (
+					methods.length === 0 ||
+					methods.includes( route.request().method() )
+				) {
+					// Handle single or multiple payloads
+					const currentPayload = Array.isArray( payload )
+						? payload[ callCount ]
+						: payload;
+
+					route.fulfill( {
+						status,
+						contentType: 'application/json',
+						headers: { 'Access-Control-Allow-Origin': '*' },
+						body: JSON.stringify( currentPayload ),
+					} );
+					callCount += 1;
+				} else {
+					route.fallback();
+				}
 			} else {
 				route.fallback();
 			}
-		} );
-	}
-
-	/**
-	 * Send the different response for each time the route is called.
-	 *
-	 * @param {RegExp|string} url       The url to fulfill.
-	 * @param {Array}         payloads  The payload to send.
-	 * @param {number}        status    The HTTP status in the response.
-	 * @return {Promise<void>}
-	 */
-	async fulfillRequests( url, payloads = [], status = 200 ) {
-		let callCount = 0;
-		await this.page.route( url, ( route ) => {
-			if ( callCount < payloads.length ) {
-				route.fulfill( {
-					status,
-					contentType: 'application/json',
-					headers: { 'Access-Control-Allow-Origin': '*' },
-					body: JSON.stringify( payloads[ callCount ] ),
-				} );
-			} else {
-				// Optionally handle additional calls beyond the responses array
-				route.continue();
-			}
-			callCount += 1;
 		} );
 	}
 
@@ -134,16 +123,6 @@ export default class MockRequests {
 			status,
 			methods
 		);
-	}
-
-	/**
-	 * Fulfill the MC accounts requests.
-	 *
-	 * @param {Object} payloads
-	 * @return {Promise<void>}
-	 */
-	async fulfillMCAccountsRequests( payloads ) {
-		await this.fulfillRequests( /\/wc\/gla\/mc\/accounts\b/, payloads );
 	}
 
 	/**
@@ -254,18 +233,13 @@ export default class MockRequests {
 	 * @param {Object} payload
 	 * @return {Promise<void>}
 	 */
-	async fulfillAdsAccounts( payload ) {
-		await this.fulfillRequest( /\/wc\/gla\/ads\/accounts\b/, payload );
-	}
-
-	/**
-	 * Fulfill the Ads Account requests.
-	 *
-	 * @param {Object} payloads
-	 * @return {Promise<void>}
-	 */
-	async fulfillAdsAccountsRequests( payloads ) {
-		await this.fulfillRequests( /\/wc\/gla\/ads\/accounts\b/, payloads );
+	async fulfillAdsAccounts( payload, status = 200, methods = [] ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/accounts\b/,
+			payload,
+			status,
+			methods
+		);
 	}
 
 	/**

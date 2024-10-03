@@ -92,6 +92,7 @@ const ConnectedGoogleComboAccountCard = () => {
 						! hasFinishedResolutionForCurrentAdsAccount ||
 						! hasFinishedResolutionForCurrentMCAccount
 					}
+					isCreatingBothAccounts={ isCreatingBothAccounts }
 					isCreatingAdsAccount={ isCreatingAdsAccount }
 					isCreatingMCAccount={ isCreatingMCAccount }
 					googleMCAccount={ googleMCAccount }
