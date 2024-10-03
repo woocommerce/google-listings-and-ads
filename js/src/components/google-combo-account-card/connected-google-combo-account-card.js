@@ -28,16 +28,6 @@ import AccountCreationDescription from './account-creation-description';
  */
 const ConnectedGoogleComboAccountCard = () => {
 	const {
-		googleMCAccount,
-		hasFinishedResolution: hasFinishedResolutionForCurrentMCAccount,
-	} = useGoogleMCAccount();
-
-	const {
-		googleAdsAccount,
-		hasFinishedResolution: hasFinishedResolutionForCurrentAdsAccount,
-	} = useGoogleAdsAccount();
-
-	const {
 		isCreatingAccounts,
 		isCreatingBothAccounts,
 		isCreatingAdsAccount,
@@ -46,12 +36,7 @@ const ConnectedGoogleComboAccountCard = () => {
 		accountsCreated,
 	} = useAutoCreateAdsMCAccounts();
 
-	if (
-		! accountsCreated &&
-		( ! hasFinishedResolutionForCurrentAdsAccount ||
-			! hasFinishedResolutionForCurrentMCAccount ||
-			! accountCreationChecksResolved )
-	) {
+	if ( ! accountCreationChecksResolved ) {
 		return <AccountCard description={ <AppSpinner /> } />;
 	}
 
@@ -88,15 +73,10 @@ const ConnectedGoogleComboAccountCard = () => {
 			className="gla-google-combo-account-card--connected"
 			description={
 				<AccountCreationDescription
-					isLoading={
-						! hasFinishedResolutionForCurrentAdsAccount ||
-						! hasFinishedResolutionForCurrentMCAccount
-					}
 					isCreatingBothAccounts={ isCreatingBothAccounts }
 					isCreatingAdsAccount={ isCreatingAdsAccount }
 					isCreatingMCAccount={ isCreatingMCAccount }
-					googleMCAccount={ googleMCAccount }
-					googleAdsAccount={ googleAdsAccount }
+					accountsCreated={ accountsCreated }
 				/>
 			}
 			helper={ getHelper() }
