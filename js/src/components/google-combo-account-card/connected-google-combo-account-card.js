@@ -38,13 +38,13 @@ const ConnectedGoogleComboAccountCard = () => {
 	} = useGoogleAdsAccount();
 
 	const {
-		accountsCreated,
-		accountCreationChecksResolved,
+		isCreatingAccounts,
+		isCreatingBothAccounts,
 		isCreatingAdsAccount,
 		isCreatingMCAccount,
+		accountCreationChecksResolved,
+		accountsCreated,
 	} = useAutoCreateAdsMCAccounts();
-
-	const isCreatingAccounts = isCreatingAdsAccount || isCreatingMCAccount;
 
 	if (
 		! accountsCreated &&
@@ -55,25 +55,23 @@ const ConnectedGoogleComboAccountCard = () => {
 		return <AccountCard description={ <AppSpinner /> } />;
 	}
 
-	const creatingAccounts =
-		isCreatingAccounts ||
-		( accountsCreated &&
-			( ! hasFinishedResolutionForCurrentMCAccount ||
-				! hasFinishedResolutionForCurrentAdsAccount ) );
+	const getHelper = () => {
+		if ( isCreatingBothAccounts ) {
+			return (
+				<p>
+					{ __(
+						'Merchant Center is required to sync products so they show on Google. Google Ads is required to set up conversion measurement for your store.',
+						'google-listings-and-ads'
+					) }
+				</p>
+			);
+		}
 
-	const getHelper = () =>
-		isCreatingAdsAccount &&
-		isCreatingMCAccount && (
-			<p>
-				{ __(
-					'Merchant Center is required to sync products so they show on Google. Google Ads is required to set up conversion measurement for your store.',
-					'google-listings-and-ads'
-				) }
-			</p>
-		);
+		return null;
+	};
 
 	const getIndicator = () => {
-		if ( creatingAccounts ) {
+		if ( isCreatingAccounts ) {
 			return (
 				<LoadingLabel
 					text={ __( 'Creating…', 'google-listings-and-ads' ) }
@@ -91,8 +89,8 @@ const ConnectedGoogleComboAccountCard = () => {
 			description={
 				<AccountCreationDescription
 					isLoading={
-						! hasFinishedResolutionForCurrentMCAccount ||
-						! hasFinishedResolutionForCurrentAdsAccount
+						! hasFinishedResolutionForCurrentAdsAccount ||
+						! hasFinishedResolutionForCurrentMCAccount
 					}
 					isCreatingAdsAccount={ isCreatingAdsAccount }
 					isCreatingMCAccount={ isCreatingMCAccount }

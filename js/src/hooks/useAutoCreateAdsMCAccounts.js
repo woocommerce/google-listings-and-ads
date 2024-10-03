@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useEffect, useRef } from '@wordpress/element';
+import { useEffect, useRef, useCallback } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -30,10 +30,11 @@ const useAutoCreateAdsMCAccounts = () => {
 	 * isCreatingAccountsRef - Indicates if the accounts are being created.
 	 * accountsCreatedRef - Indicates if the accounts have been created.
 	 */
-	const accountCreationChecksResolvedRef = useRef( false );
-	const isCreatingAccountsRef = useRef( false );
+	const isCreatingBothAccountsRef = useRef( false );
 	const isCreatingAdsAccountsRef = useRef( false );
 	const isCreatingMCAccountsRef = useRef( false );
+	const initHasExistingMCAAccountsRef = useRef( null );
+	const initHasExistingAdsAccountsRef = useRef( null );
 	const accountsCreatedRef = useRef( false );
 
 	const {
@@ -43,72 +44,138 @@ const useAutoCreateAdsMCAccounts = () => {
 
 	const {
 		existingAccounts: existingAdsAccount,
-		hasFinishedResolution: hasFinishedResolutionForExistingAdsAccount,
+		isResolving: isResolvingExistingAdsAccount,
 	} = useExistingGoogleAdsAccounts();
 
 	const [ handleCreateAccount, { response } ] = useCreateMCAccount();
 	const [ upsertAdsAccount, { loading } ] = useUpsertAdsAccount();
 
-	const createAccounts = async () => {
-		const hasExistingMCAccount = existingMCAccounts.length > 0;
-		const hasExistingAdsAccount = existingAdsAccount.length > 0;
+	const hasExistingMCAccount = existingMCAccounts?.length > 0;
+	const hasExistingAdsAccount = existingAdsAccount?.length > 0;
 
-		isCreatingMCAccountsRef.current = ! hasExistingMCAccount;
-		isCreatingAdsAccountsRef.current = ! hasExistingAdsAccount;
-		isCreatingAccountsRef.current =
-			! hasExistingAdsAccount || ! hasExistingMCAccount;
+	if (
+		initHasExistingMCAAccountsRef.current === null &&
+		hasFinishedResolutionForExistingMCAccounts
+	) {
+		initHasExistingMCAAccountsRef.current = hasExistingMCAccount;
+	}
 
-		if ( ! hasExistingMCAccount ) {
-			await handleCreateAccount();
-		}
+	if (
+		initHasExistingAdsAccountsRef.current === null &&
+		! isResolvingExistingAdsAccount
+	) {
+		initHasExistingAdsAccountsRef.current = hasExistingAdsAccount;
+	}
 
-		if ( ! hasExistingAdsAccount ) {
-			await upsertAdsAccount();
-		}
-	};
+	const createMCAccount = useCallback( async () => {
+		await handleCreateAccount();
+	}, [ handleCreateAccount ] );
+
+	const createAdsAccount = useCallback( async () => {
+		await upsertAdsAccount();
+	}, [ upsertAdsAccount ] );
+
+	const createBothAccounts = useCallback( async () => {
+		await createMCAccount();
+		await createAdsAccount();
+	}, [ createMCAccount, createAdsAccount ] );
+
+	const accountCreationChecksResolved =
+		initHasExistingAdsAccountsRef.current !== null &&
+		initHasExistingMCAAccountsRef.current !== null;
+
+	const shouldCreateAdsAccount =
+		initHasExistingAdsAccountsRef.current === false &&
+		initHasExistingMCAAccountsRef.current === true;
+
+	const shouldCreateMCAccount =
+		initHasExistingAdsAccountsRef.current === true &&
+		initHasExistingMCAAccountsRef.current === false;
+
+	const shouldCreateBothAccounts =
+		! initHasExistingAdsAccountsRef.current &&
+		! initHasExistingMCAAccountsRef.current;
+
+	const isCreatingAccounts =
+		isCreatingAdsAccountsRef.current ||
+		isCreatingMCAccountsRef.current ||
+		isCreatingBothAccountsRef.current;
 
 	useEffect( () => {
+		// Ads account check
+		if ( isCreatingAdsAccountsRef.current === true && ! loading ) {
+			isCreatingAdsAccountsRef.current = false;
+			accountsCreatedRef.current = true;
+		}
+
+		// MC account check
 		if (
-			isCreatingAccountsRef.current === true &&
+			isCreatingMCAccountsRef.current === true &&
+			response?.status === 200
+		) {
+			isCreatingMCAccountsRef.current = false;
+			accountsCreatedRef.current = true;
+		}
+
+		// both accounts check
+		if (
+			isCreatingBothAccountsRef.current === true &&
 			response?.status === 200 &&
 			! loading
 		) {
-			isCreatingMCAccountsRef.current = false;
-			isCreatingAdsAccountsRef.current = false;
-			isCreatingAccountsRef.current = false;
+			isCreatingBothAccountsRef.current = false;
 			accountsCreatedRef.current = true;
 		}
 	}, [ response, loading ] );
 
 	useEffect( () => {
-		const existingAccountsResolved =
-			hasFinishedResolutionForExistingAdsAccount &&
-			hasFinishedResolutionForExistingMCAccounts;
-
-		accountCreationChecksResolvedRef.current = existingAccountsResolved;
-
-		if (
-			existingAccountsResolved &&
-			isCreatingAccountsRef.current === false
-		) {
-			const hasExistingMCAccount = existingMCAccounts?.length > 0;
-			const hasExistingAdsAccount = existingAdsAccount?.length > 0;
-
-			if ( ! hasExistingMCAccount || ! hasExistingAdsAccount ) {
-				createAccounts();
+		const handleCreation = async () => {
+			// Bail out if we haven't resolved the existing accounts checks yet or there's a creation in progress or the accounts have been created.
+			if (
+				! accountCreationChecksResolved ||
+				isCreatingAccounts ||
+				accountsCreatedRef.current
+			) {
+				return;
 			}
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+
+			if ( shouldCreateAdsAccount ) {
+				isCreatingAdsAccountsRef.current = true;
+				await createAdsAccount();
+				return;
+			}
+
+			if ( shouldCreateMCAccount ) {
+				isCreatingMCAccountsRef.current = true;
+				await createMCAccount();
+				return;
+			}
+
+			if ( shouldCreateBothAccounts ) {
+				isCreatingBothAccountsRef.current = true;
+				await createBothAccounts();
+			}
+		};
+
+		handleCreation();
 	}, [
-		hasFinishedResolutionForExistingAdsAccount,
-		hasFinishedResolutionForExistingMCAccounts,
+		accountCreationChecksResolved,
+		createBothAccounts,
+		createAdsAccount,
+		createMCAccount,
+		isCreatingAccounts,
+		shouldCreateAdsAccount,
+		shouldCreateMCAccount,
+		shouldCreateBothAccounts,
 	] );
 
 	return {
-		accountsCreated: accountsCreatedRef.current,
-		accountCreationChecksResolved: accountCreationChecksResolvedRef.current,
+		accountCreationChecksResolved,
 		isCreatingAdsAccount: isCreatingAdsAccountsRef.current,
 		isCreatingMCAccount: isCreatingMCAccountsRef.current,
+		isCreatingBothAccounts: isCreatingBothAccountsRef.current,
+		isCreatingAccounts,
+		accountsCreated: accountsCreatedRef.current,
 	};
 };
 
