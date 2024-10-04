@@ -215,7 +215,8 @@ test.describe( 'Set up Ads account', () => {
 
 			await setupAdsAccounts.mockAdsStatusClaimed();
 
-			await page.waitForTimeout( 30000 );
+			await page.dispatchEvent( 'body', 'blur' );
+			await page.dispatchEvent( 'body', 'focus' );
 
 			await expect( setupAdsAccounts.getContinueButton() ).toBeEnabled();
 
