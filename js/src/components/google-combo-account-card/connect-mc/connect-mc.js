@@ -7,26 +7,15 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import MerchantCenterSelectControl from '.~/components/merchant-center-select-control';
-import AppButton from '.~/components/app-button';
-import ContentButtonLayout from '.~/components/content-button-layout';
 import SwitchUrlCard from '.~/components/google-mc-account-card/switch-url-card';
 import ReclaimUrlCard from '.~/components/google-mc-account-card/reclaim-url-card';
-import CreateAccountButton from '.~/components/google-mc-account-card/create-account-button';
 import useConnectMCAccount from '.~/components/google-mc-account-card/useConnectMCAccount';
 import useCreateMCAccount from '.~/components/google-mc-account-card/useCreateMCAccount';
 import CreatingCard from '.~/components/google-mc-account-card/creating-card';
-import ConnectedIconLabel from '.~/components/connected-icon-label';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
-import DisconnectAccountButton from '.~/components/google-mc-account-card/disconnect-account-button';
 import ConnectAccountCard from '../connect-account-card';
-
-/**
- * Clicking on the button to connect an existing Google Merchant Center account.
- *
- * @event gla_mc_account_connect_button_click
- * @property {number} id The account ID to be connected.
- */
+import ConnectMCBody from './connect-mc-body';
+import ConnectMCFooter from './connect-mc-footer';
 
 /**
  * Clicking on the "Switch account" button to select a different Google Merchant Center account to connect.
@@ -35,9 +24,6 @@ import ConnectAccountCard from '../connect-account-card';
  * @property {string} context (`switch-url`|`reclaim-url`) - indicate the button is clicked from which step.
  */
 
-/**
- * @fires gla_mc_account_connect_button_click
- */
 const ConnectMC = () => {
 	const { googleMCAccount } = useGoogleMCAccount();
 	const [ value, setValue ] = useState();
@@ -108,47 +94,20 @@ const ConnectMC = () => {
 				'google-listings-and-ads'
 			) }
 			body={
-				<ContentButtonLayout>
-					<MerchantCenterSelectControl
-						value={ value }
-						onChange={ setValue }
-					/>
-
-					{ isConnected && (
-						<ConnectedIconLabel className="gla-google-combo-service-connected-icon-label" />
-					) }
-
-					{ ! isConnected && (
-						<AppButton
-							isSecondary
-							loading={ resultConnectMC.loading }
-							disabled={ ! value }
-							eventName="gla_mc_account_connect_button_click"
-							eventProps={ { id: Number( value ) } }
-							onClick={ handleConnectMC }
-						>
-							{ __( 'Connect', 'google-listings-and-ads' ) }
-						</AppButton>
-					) }
-				</ContentButtonLayout>
+				<ConnectMCBody
+					value={ value }
+					setValue={ setValue }
+					isConnected={ isConnected }
+					resultConnectMC={ resultConnectMC }
+					handleConnectMC={ handleConnectMC }
+				/>
 			}
 			footer={
-				<>
-					{ isConnected && <DisconnectAccountButton /> }
-
-					{ ! isConnected && (
-						<CreateAccountButton
-							isLink
-							disabled={ resultConnectMC.loading }
-							onCreateAccount={ handleCreateAccount }
-						>
-							{ __(
-								'Or, create a new Merchant Center account',
-								'google-listings-and-ads'
-							) }
-						</CreateAccountButton>
-					) }
-				</>
+				<ConnectMCFooter
+					isConnected={ isConnected }
+					resultConnectMC={ resultConnectMC }
+					handleCreateAccount={ handleCreateAccount }
+				/>
 			}
 		/>
 	);
