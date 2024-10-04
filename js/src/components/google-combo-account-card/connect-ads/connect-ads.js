@@ -27,11 +27,15 @@ import ConnectAdsBody from './connect-ads-body';
  */
 
 /**
+ * ConnectAds component renders an account card to connect to an existing Google Ads account.
+ *
+ * @param {Object} props Props.
+ * @param {boolean} props.isVisible Whether the card should be visible.
  * @fires gla_ads_account_connect_button_click when "Connect" button is clicked.
  * @fires gla_documentation_link_click with `{ context: 'setup-ads-connect-account', link_id: 'connect-sub-account', href: 'https://support.google.com/google-ads/answer/6139186' }`
  * @return {JSX.Element} {@link AccountCard} filled with content.
  */
-const ConnectAds = () => {
+const ConnectAds = ( { isVisible = false } ) => {
 	const {
 		existingAccounts: accounts,
 		hasFinishedResolution: hasFinishedResolutionForExistingAdsAccount,
@@ -89,12 +93,13 @@ const ConnectAds = () => {
 		return null;
 	}
 
-	// if (
-	// 	! hasFinishedResolutionForCurrentAccount ||
-	// 	googleAdsAccount.id !== 0
-	// ) {
-	// 	return null;
-	// }
+	if (
+		( ! hasFinishedResolutionForCurrentAccount ||
+			googleAdsAccount.id !== 0 ) &&
+		isVisible === false
+	) {
+		return null;
+	}
 
 	return (
 		<ConnectAccountCard
