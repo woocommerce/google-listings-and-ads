@@ -25,9 +25,7 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
  * @property {(values: CampaignFormValues) => Object} validateCampaignWithCountryCodes A function to validate campaign form values.
  * @property {number | undefined} dailyBudget The daily budget recommendation.
  * @property {(number: string | number) => string} formatAmount A function to format an amount according to the user's currency settings.
- * @property {number} precision Number of decimal places after the decimal separator.
- * @property {string} currencyCode The currency code.
- * @property {boolean} loaded A boolean indicating whether the budget recommendation data has been resolved and the code currency available.
+ * @property {boolean} loaded A boolean indicating whether the budget recommendation data has been resolved.
  */
 
 /**
@@ -37,10 +35,7 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
  */
 const useValidateCampaignWithCountryCodes = () => {
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
-	const {
-		formatAmount,
-		adsCurrencyConfig: { code, precision },
-	} = useAdsCurrency();
+	const { formatAmount } = useAdsCurrency();
 
 	return useSelect(
 		( select ) => {
@@ -50,8 +45,6 @@ const useValidateCampaignWithCountryCodes = () => {
 					validateCampaignWithCountryCodes: validateCampaign,
 					dailyBudget: null,
 					formatAmount,
-					currencyCode: code,
-					precision,
 					loaded: false,
 				};
 			}
@@ -60,10 +53,10 @@ const useValidateCampaignWithCountryCodes = () => {
 				select( STORE_KEY );
 			const budgetData = getAdsBudgetRecommendations( countryCodes );
 			const budget = getHighestBudget( budgetData?.recommendations );
-			const loaded =
-				hasFinishedResolution( 'getAdsBudgetRecommendations', [
-					countryCodes,
-				] ) && code;
+			const loaded = hasFinishedResolution(
+				'getAdsBudgetRecommendations',
+				[ countryCodes ]
+			);
 
 			/**
 			 * Validate campaign form. Accepts the form values object and returns errors object.
@@ -75,7 +68,6 @@ const useValidateCampaignWithCountryCodes = () => {
 				return validateCampaign( values, {
 					dailyBudget: budget?.daily_budget,
 					formatAmount,
-					precision,
 				} );
 			};
 
@@ -83,12 +75,10 @@ const useValidateCampaignWithCountryCodes = () => {
 				validateCampaignWithCountryCodes,
 				dailyBudget: budget?.daily_budget,
 				formatAmount,
-				precision,
-				currencyCode: code,
 				loaded,
 			};
 		},
-		[ countryCodes, formatAmount, code, precision ]
+		[ countryCodes, formatAmount ]
 	);
 };
 
