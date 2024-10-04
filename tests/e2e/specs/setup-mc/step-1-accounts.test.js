@@ -242,10 +242,12 @@ test.describe( 'Set up accounts', () => {
 			await setupAdsAccountPage.fulfillAdsAccounts(
 				[
 					[],
-					{
-						id: 78787878,
-						name: 'gla',
-					},
+					[
+						{
+							id: 78787878,
+							name: 'gla',
+						},
+					],
 				],
 				200,
 				[ 'GET' ]
@@ -254,12 +256,14 @@ test.describe( 'Set up accounts', () => {
 			await setupAdsAccountPage.fulfillMCAccounts(
 				[
 					[],
-					{
-						id: 5432178,
-						name: null,
-						subaccount: null,
-						domain: null,
-					},
+					[
+						{
+							id: 5432178,
+							name: null,
+							subaccount: null,
+							domain: null,
+						},
+					],
 				],
 				200,
 				'GET'
@@ -339,10 +343,12 @@ test.describe( 'Set up accounts', () => {
 			await setupAdsAccountPage.fulfillAdsAccounts(
 				[
 					[],
-					{
-						id: 78787878,
-						name: 'gla',
-					},
+					[
+						{
+							id: 78787878,
+							name: 'gla',
+						},
+					],
 				],
 				200,
 				[ 'GET' ]
@@ -351,12 +357,14 @@ test.describe( 'Set up accounts', () => {
 			await setupAdsAccountPage.fulfillMCAccounts(
 				[
 					[],
-					{
-						id: 5432178,
-						name: null,
-						subaccount: null,
-						domain: null,
-					},
+					[
+						{
+							id: 5432178,
+							name: null,
+							subaccount: null,
+							domain: null,
+						},
+					],
 				],
 				200,
 				'GET'
@@ -404,6 +412,143 @@ test.describe( 'Set up accounts', () => {
 					exact: true,
 				} )
 			).toBeVisible();
+		} );
+	} );
+
+	test.describe( 'Google Ads card aabrakadarbra', () => {
+		test.beforeAll( async () => {
+			// Mock Jetpack as connected
+			await setUpAccountsPage.mockJetpackConnected(
+				'Test user',
+				'jetpack@example.com'
+			);
+
+			await setUpAccountsPage.fulfillMCAccounts( [
+				[
+					{
+						id: 5432178,
+						name: null,
+						subaccount: null,
+						domain: null,
+					},
+				],
+			] );
+
+			await setUpAccountsPage.fulfillAdsAccounts( [
+				[
+					{
+						id: 111111,
+						name: 'gla',
+					},
+					{
+						id: 222222,
+						name: 'gla',
+					},
+					{
+						id: 333333,
+						name: 'gla',
+					},
+				],
+			] );
+
+			await setUpAccountsPage.mockAdsAccountDisconnected();
+			await setUpAccountsPage.mockGoogleConnected();
+			await setUpAccountsPage.mockMCConnected();
+			await setUpAccountsPage.goto();
+		} );
+
+		test( 'should see the Google Ads card with the correct title and body', async () => {
+			const googleAdsAccountCard =
+				setUpAccountsPage.getGoogleAdsAccountCard();
+
+			await expect(
+				googleAdsAccountCard.getByText(
+					'Connect to existing Google Ads account',
+					{ exact: true }
+				)
+			).toBeVisible();
+
+			await expect(
+				googleAdsAccountCard.getByText(
+					'Required to set up conversion measurement for your store.',
+					{ exact: true }
+				)
+			).toBeVisible();
+
+			await expect(
+				googleAdsAccountCard.getByRole( 'button', { name: 'Connect' } )
+			).toBeDisabled();
+		} );
+
+		test( 'should see the button as enabled when selects the account from dropdown', async () => {
+			const googleAdsAccountCard =
+				setUpAccountsPage.getGoogleAdsAccountCard();
+
+			const adsAccountDropdown = googleAdsAccountCard.locator( 'select' );
+			await adsAccountDropdown.selectOption( '111111' );
+
+			await expect(
+				googleAdsAccountCard.getByRole( 'button', { name: 'Connect' } )
+			).toBeEnabled();
+		} );
+
+		test( 'should send an API request to connect existing Google Ads account', async () => {
+			const googleAdsAccountCard =
+				setUpAccountsPage.getGoogleAdsAccountCard();
+
+			await setUpAccountsPage.fulfillAdsAccounts(
+				{
+					id: 111111,
+				},
+				200,
+				[ 'POST' ]
+			);
+
+			await setUpAccountsPage.fulfillAdsAccountStatus(
+				{
+					has_access: true,
+				},
+				200,
+				[ 'GET' ]
+			);
+
+			await setUpAccountsPage.fulfillAdsConnection(
+				{
+					id: 111111,
+					status: 'connected',
+				},
+				200,
+				[ 'GET' ]
+			);
+
+			await googleAdsAccountCard
+				.getByRole( 'button', { name: 'Connect' } )
+				.click();
+		} );
+
+		test( 'should display the Ads ID in account card description', async () => {
+			await setUpAccountsPage.fulfillAdsAccounts(
+				[
+					[
+						{
+							id: 111111,
+						},
+					],
+				],
+				200,
+				[ 'GET' ]
+			);
+
+			const googleAdsAccountCard =
+				setUpAccountsPage.getGoogleAdsAccountCard();
+
+			await expect(
+				googleAdsAccountCard.getByText( 'Google Ads ID: 111111' )
+			).toBeVisible();
+
+			await expect(
+				googleAdsAccountCard.getByRole( 'button', { name: 'Connect' } )
+			).not.toBeVisible();
 		} );
 	} );
 

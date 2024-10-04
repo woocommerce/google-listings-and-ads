@@ -106,7 +106,7 @@ const AccountCreationDescription = ( {
 							'Merchant Center ID: %s',
 							'google-listings-and-ads'
 						),
-						googleMCAccount.id
+						googleMCAccount?.id
 					) }
 				/>
 				<AccountInfo
@@ -114,7 +114,7 @@ const AccountCreationDescription = ( {
 					text={ sprintf(
 						// Translators: %s is the Google Ads ID
 						__( 'Google Ads ID: %s', 'google-listings-and-ads' ),
-						googleAdsAccount.id
+						googleAdsAccount?.id
 					) }
 				/>
 			</>

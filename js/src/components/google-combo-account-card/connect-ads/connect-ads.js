@@ -94,6 +94,7 @@ const ConnectAds = () => {
 
 	return (
 		<ConnectAccountCard
+			className="gla-google-combo-service-account-card--ads"
 			title={ __(
 				'Connect to existing Google Ads account',
 				'google-listings-and-ads'
