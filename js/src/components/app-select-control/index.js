@@ -18,8 +18,8 @@ import './index.scss';
  * @param {Array} props.options Array of options for the select dropdown. Each option should be an object containing `label` and `value` properties.
  * @param {string} [props.className] Additional classname to further control the style of the component.
  * @param {Function} [props.onChange=noop] Callback function triggered when the selected value changes. Receives the new value as an argument.
- * @param {string} [props.value] The selected value. If no value is defined, the first option is selected and `onChange` is triggered when `autoSelectFirstOption` is true.
- * @param {boolean} [props.autoSelectFirstOption=false] If true, automatically triggers the onChange callback with the first option as value when no value is provided. If only one option is available, the select is also disabled to prevent user interaction.
+ * @param {string} [props.value] The currently selected value. This component should be used as a controlled component. A special case is that after mounting, when `autoSelectFirstOption` is true and `value` is undefined, it tries to call back `onChange` once to select the first option so that the `value` can be consistent with the `<select>` element's own value.
+ * @param {boolean} [props.autoSelectFirstOption=false] If true, automatically triggers the onChange callback with the first option as value when no value is provided. If only one option is available, the select control is also changed to non-interactive.
  * @param {*} [props.rest] Additional props passed to the `SelectControl` component.
  */
 const AppSelectControl = ( props ) => {
