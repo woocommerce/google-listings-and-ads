@@ -9,11 +9,9 @@ import { __ } from '@wordpress/i18n';
  */
 import MerchantCenterSelectControl from '.~/components/merchant-center-select-control';
 import AppButton from '.~/components/app-button';
-import Section from '.~/wcdl/section';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import SwitchUrlCard from '.~/components/google-mc-account-card/switch-url-card';
 import ReclaimUrlCard from '.~/components/google-mc-account-card/reclaim-url-card';
-import AccountCard from '.~/components/account-card';
 import CreateAccountButton from '.~/components/google-mc-account-card/create-account-button';
 import useConnectMCAccount from '.~/components/google-mc-account-card/useConnectMCAccount';
 import useCreateMCAccount from '.~/components/google-mc-account-card/useCreateMCAccount';
@@ -21,6 +19,7 @@ import CreatingCard from '.~/components/google-mc-account-card/creating-card';
 import ConnectedIconLabel from '.~/components/connected-icon-label';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import DisconnectAccountButton from '.~/components/google-mc-account-card/disconnect-account-button';
+import ConnectAccountCard from '../connect-account-card';
 
 /**
  * Clicking on the button to connect an existing Google Merchant Center account.
@@ -99,8 +98,7 @@ const ConnectMC = () => {
 	}
 
 	return (
-		<AccountCard
-			className="gla-google-combo-service-account-card"
+		<ConnectAccountCard
 			title={ __(
 				'Connect to existing Merchant Center account',
 				'google-listings-and-ads'
@@ -109,8 +107,7 @@ const ConnectMC = () => {
 				'Required to sync products so they show on Google.',
 				'google-listings-and-ads'
 			) }
-		>
-			<Section.Card.Body className="gla-google-combo-service-account-card__body">
+			body={
 				<ContentButtonLayout>
 					<MerchantCenterSelectControl
 						value={ value }
@@ -134,24 +131,26 @@ const ConnectMC = () => {
 						</AppButton>
 					) }
 				</ContentButtonLayout>
-			</Section.Card.Body>
-			<Section.Card.Footer className="gla-google-combo-service-account-card__footer">
-				{ isConnected && <DisconnectAccountButton /> }
+			}
+			footer={
+				<>
+					{ isConnected && <DisconnectAccountButton /> }
 
-				{ ! isConnected && (
-					<CreateAccountButton
-						isLink
-						disabled={ resultConnectMC.loading }
-						onCreateAccount={ handleCreateAccount }
-					>
-						{ __(
-							'Or, create a new Merchant Center account',
-							'google-listings-and-ads'
-						) }
-					</CreateAccountButton>
-				) }
-			</Section.Card.Footer>
-		</AccountCard>
+					{ ! isConnected && (
+						<CreateAccountButton
+							isLink
+							disabled={ resultConnectMC.loading }
+							onCreateAccount={ handleCreateAccount }
+						>
+							{ __(
+								'Or, create a new Merchant Center account',
+								'google-listings-and-ads'
+							) }
+						</CreateAccountButton>
+					) }
+				</>
+			}
+		/>
 	);
 };
 
