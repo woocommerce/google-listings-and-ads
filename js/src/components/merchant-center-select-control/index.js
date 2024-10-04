@@ -15,7 +15,7 @@ import AppSelectControl from '.~/components/app-select-control';
  */
 const MerchantCenterSelectControl = ( props ) => {
 	const { data: existingAccounts = [] } = useExistingGoogleMCAccounts();
-	const options = existingAccounts.map( ( acc ) => {
+	const options = existingAccounts?.map( ( acc ) => {
 		return {
 			value: acc.id,
 			label: sprintf(
