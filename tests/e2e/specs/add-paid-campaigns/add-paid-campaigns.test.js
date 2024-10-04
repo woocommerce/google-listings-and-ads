@@ -442,13 +442,13 @@ test.describe( 'Set up Ads account', () => {
 
 				await expect(
 					page.getByText(
-						'Please make sure daily average cost is at least €4.50'
+						'Please make sure daily average cost is at least €5.00'
 					)
 				).toBeVisible();
 			} );
 
 			test( 'Continue button should be enabled if budget is above the recommended value', async () => {
-				budget = '5';
+				budget = '6';
 				await setupBudgetPage.fillBudget( budget );
 
 				await expect(
@@ -480,7 +480,7 @@ test.describe( 'Set up Ads account', () => {
 
 			const campaignCreation =
 				setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
-					'5',
+					'6',
 					[ 'US' ]
 				);
 			await page
