@@ -27,7 +27,7 @@ const MerchantCenterSelectControl = ( props ) => {
 			),
 		};
 	} );
-	options.sort( ( a, b ) => {
+	options?.sort( ( a, b ) => {
 		return a.label.localeCompare( b.label );
 	} );
 

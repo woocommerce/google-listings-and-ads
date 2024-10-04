@@ -24,37 +24,25 @@ import './index.scss';
  */
 const AppSelectControl = ( props ) => {
 	const {
-		options,
+		options = [],
 		className,
 		onChange = noop,
 		value,
 		autoSelectFirstOption = false,
 		...rest
 	} = props;
-
-	// Maintain refs to prevent rerender
-	const onChangeRef = useRef();
-	const valueRef = useRef();
-	const autoSelectFirstOptionRef = useRef();
-	const optionsRef = useRef();
-
-	// Update refs if any of the dependencies change
-	useEffect( () => {
-		onChangeRef.current = onChange;
-		valueRef.current = value;
-		autoSelectFirstOptionRef.current = autoSelectFirstOption;
-		optionsRef.current = options;
-	}, [ onChange, value, autoSelectFirstOption, options ] );
+	const shouldAutoSelectOnceRef = useRef( autoSelectFirstOption === true );
 
 	useEffect( () => {
-		if (
-			autoSelectFirstOptionRef.current &&
-			optionsRef.current?.length > 0 &&
-			valueRef.current === undefined
-		) {
-			onChangeRef.current( optionsRef.current[ 0 ].value );
+		if ( ! shouldAutoSelectOnceRef.current ) {
+			return;
 		}
-	}, [] );
+
+		if ( value === undefined && options.length ) {
+			shouldAutoSelectOnceRef.current = false;
+			onChange( options[ 0 ].value );
+		}
+	}, [ value, options, onChange ] );
 
 	let selectProps = {
 		options,
