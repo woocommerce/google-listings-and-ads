@@ -84,7 +84,7 @@ const ConnectedGoogleComboAccountCard = () => {
 				indicator={ getIndicator() }
 			/>
 
-			<ConnectAds isVisible={ false } />
+			<ConnectAds />
 		</div>
 	);
 };

@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useEffect, useRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -35,10 +36,15 @@ const ConnectAdsBody = ( {
 	setValue,
 	value,
 } ) => {
+	const initialValueRef = useRef( googleAdsAccount.id );
 	const getEventProps = useEventPropertiesFilter( FILTER_ONBOARDING );
 
+	useEffect( () => {
+		setValue( initialValueRef.current );
+	}, [ initialValueRef, setValue ] );
+
 	const ConnectCTA = () => {
-		if ( isConnected && googleAdsAccount?.id === Number( value ) ) {
+		if ( isConnected && initialValueRef.current === Number( value ) ) {
 			return <ConnectedIconLabel />;
 		}
 
