@@ -13,6 +13,7 @@ import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import SetupBilling from './setup-billing';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
@@ -29,7 +30,10 @@ import {
 const AdsStepper = ( { formProps } ) => {
 	const [ step, setStep ] = useState( '1' );
 	const { googleAdsAccount, hasGoogleAdsConnection } = useGoogleAdsAccount();
+	const { hasAccess } = useGoogleAdsAccountStatus();
 	const initHasAdsConnectionRef = useRef( null );
+
+	const isGoogleAdsReady = hasGoogleAdsConnection && hasAccess;
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_ADS_ONBOARDING,
@@ -41,7 +45,7 @@ const AdsStepper = ( { formProps } ) => {
 	}
 
 	if ( initHasAdsConnectionRef.current === null ) {
-		initHasAdsConnectionRef.current = hasGoogleAdsConnection;
+		initHasAdsConnectionRef.current = isGoogleAdsReady;
 	}
 
 	// Allow the users to go backward only, not forward.
