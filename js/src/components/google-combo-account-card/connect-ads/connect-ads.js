@@ -37,6 +37,16 @@ const ConnectAds = () => {
 		hasFinishedResolution: hasFinishedResolutionForExistingAdsAccount,
 	} = useExistingGoogleAdsAccounts();
 
+	const {
+		googleAdsAccount,
+		hasFinishedResolution: hasFinishedResolutionForCurrentAccount,
+	} = useGoogleAdsAccount();
+
+	const isConnected =
+		googleAdsAccount?.status === 'connected' ||
+		( googleAdsAccount?.status === 'incomplete' &&
+			googleAdsAccount?.step === 'link_merchant' );
+
 	const [ value, setValue ] = useState();
 	const [ isLoading, setLoading ] = useState( false );
 	const [ fetchConnectAdsAccount ] = useApiFetchCallback( {
@@ -58,6 +68,7 @@ const ConnectAds = () => {
 			await fetchConnectAdsAccount();
 			await fetchGoogleAdsAccountStatus();
 			await refetchGoogleAdsAccount();
+			setLoading( false );
 		} catch ( error ) {
 			setLoading( false );
 			createNotice(
@@ -78,6 +89,13 @@ const ConnectAds = () => {
 		return null;
 	}
 
+	// if (
+	// 	! hasFinishedResolutionForCurrentAccount ||
+	// 	googleAdsAccount.id !== 0
+	// ) {
+	// 	return null;
+	// }
+
 	return (
 		<ConnectAccountCard
 			title={ __(
@@ -92,6 +110,8 @@ const ConnectAds = () => {
 				<ConnectAdsBody
 					{ ...{
 						accounts,
+						googleAdsAccount,
+						isConnected,
 						handleConnectClick,
 						isLoading,
 						setValue,
