@@ -11,6 +11,7 @@ import AppSpinner from '../app-spinner';
 import useAutoCreateAdsMCAccounts from '../../hooks/useAutoCreateAdsMCAccounts';
 import LoadingLabel from '../loading-label/loading-label';
 import AccountCreationDescription from './account-creation-description';
+import { ConnectAds } from './connect-ads';
 
 /**
  * Clicking on the "connect to a different Google account" button.
@@ -66,20 +67,24 @@ const ConnectedGoogleComboAccountCard = () => {
 	};
 
 	return (
-		<AccountCard
-			appearance={ APPEARANCE.GOOGLE }
-			className="gla-google-combo-account-card--connected"
-			description={
-				<AccountCreationDescription
-					isCreatingBothAccounts={ isCreatingBothAccounts }
-					isCreatingAdsAccount={ isCreatingAdsAccount }
-					isCreatingMCAccount={ isCreatingMCAccount }
-					accountsCreated={ accountsCreated }
-				/>
-			}
-			helper={ getHelper() }
-			indicator={ getIndicator() }
-		/>
+		<div className="gla-google-combo-account-card">
+			<AccountCard
+				appearance={ APPEARANCE.GOOGLE }
+				className="gla-google-combo-account-card--connected"
+				description={
+					<AccountCreationDescription
+						isCreatingBothAccounts={ isCreatingBothAccounts }
+						isCreatingAdsAccount={ isCreatingAdsAccount }
+						isCreatingMCAccount={ isCreatingMCAccount }
+						accountsCreated={ accountsCreated }
+					/>
+				}
+				helper={ getHelper() }
+				indicator={ getIndicator() }
+			/>
+
+			<ConnectAds />
+		</div>
 	);
 };
 
