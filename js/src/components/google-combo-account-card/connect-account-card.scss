@@ -1,0 +1,24 @@
+
+.gla-google-combo-service-account-card {
+	padding: var(--large-gap);
+
+	> div {
+		display: flex;
+		flex-direction: column;
+		gap: calc(var(--main-gap) / 2);
+	}
+
+	.wcdl-section-card-body,
+	.gla-google-combo-service-account-card__body {
+		padding: 0;
+
+		.app-select-control {
+			flex-grow: 1;
+		}
+	}
+
+	.gla-google-combo-service-account-card__footer {
+		border: 0;
+		padding: 0;
+	}
+}

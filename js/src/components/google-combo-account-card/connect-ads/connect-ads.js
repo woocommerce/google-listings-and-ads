@@ -7,19 +7,15 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import AppButton from '.~/components/app-button';
 import AccountCard from '.~/components/account-card';
-import ContentButtonLayout from '.~/components/content-button-layout';
-import LoadingLabel from '.~/components/loading-label';
-import Section from '.~/wcdl/section';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
-import AdsAccountSelectControl from '.~/components/google-ads-account-card/connect-ads/ads-account-select-control';
 import { useAppDispatch } from '.~/data';
-import { FILTER_ONBOARDING } from '.~/utils/tracks';
 import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts';
+import ConnectAccountCard from '../connect-account-card';
+import ConnectAdsFooter from './connect-ads-footer';
+import ConnectAdsBody from './connect-ads-body';
 
 /**
  * Clicking on the button to connect an existing Google Ads account.
@@ -41,7 +37,6 @@ const ConnectAds = () => {
 		hasFinishedResolution: hasFinishedResolutionForExistingAdsAccount,
 	} = useExistingGoogleAdsAccounts();
 
-	const onCreateNew = () => {};
 	const [ value, setValue ] = useState();
 	const [ isLoading, setLoading ] = useState( false );
 	const [ fetchConnectAdsAccount ] = useApiFetchCallback( {
@@ -50,7 +45,6 @@ const ConnectAds = () => {
 		data: { id: value },
 	} );
 	const { refetchGoogleAdsAccount } = useGoogleAdsAccount();
-	const getEventProps = useEventPropertiesFilter( FILTER_ONBOARDING );
 	const { createNotice } = useDispatchCoreNotices();
 	const { fetchGoogleAdsAccountStatus } = useAppDispatch();
 
@@ -85,60 +79,28 @@ const ConnectAds = () => {
 	}
 
 	return (
-		<AccountCard
-			className="gla-google-combo-service-account-card"
-			alignIcon="top"
+		<ConnectAccountCard
 			title={ __(
 				'Connect to existing Google Ads account',
 				'google-listings-and-ads'
 			) }
-			helper={ __(
+			helperText={ __(
 				'Required to set up conversion measurement for your store.',
 				'google-listings-and-ads'
 			) }
-		>
-			<Section.Card.Body className="gla-google-combo-service-account-card__body">
-				<ContentButtonLayout>
-					<AdsAccountSelectControl
-						accounts={ accounts }
-						value={ value }
-						onChange={ setValue }
-					/>
-					{ isLoading ? (
-						<LoadingLabel
-							text={ __(
-								'Connecting…',
-								'google-listings-and-ads'
-							) }
-						/>
-					) : (
-						<AppButton
-							isSecondary
-							disabled={ ! value }
-							eventName="gla_ads_account_connect_button_click"
-							eventProps={ getEventProps( {
-								id: Number( value ),
-							} ) }
-							onClick={ handleConnectClick }
-						>
-							{ __( 'Connect', 'google-listings-and-ads' ) }
-						</AppButton>
-					) }
-				</ContentButtonLayout>
-			</Section.Card.Body>
-			<Section.Card.Footer className="gla-google-combo-service-account-card__footer">
-				<AppButton
-					isTertiary
-					disabled={ isLoading }
-					onClick={ onCreateNew }
-				>
-					{ __(
-						'Or, create a new Google Ads account',
-						'google-listings-and-ads'
-					) }
-				</AppButton>
-			</Section.Card.Footer>
-		</AccountCard>
+			body={
+				<ConnectAdsBody
+					{ ...{
+						accounts,
+						handleConnectClick,
+						isLoading,
+						setValue,
+						value,
+					} }
+				/>
+			}
+			footer={ <ConnectAdsFooter /> }
+		/>
 	);
 };
 
