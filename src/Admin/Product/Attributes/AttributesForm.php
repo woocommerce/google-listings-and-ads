@@ -167,7 +167,7 @@ class AttributesForm extends Form {
 
 		$attribute_input = self::init_input( new $input_type(), new $attribute_type() );
 
-		if ( ! $attribute_input->is_disabled() ) {
+		if ( ! $attribute_input->is_hidden() ) {
 			$this->add( $attribute_input );
 
 			$attribute_id                           = call_user_func( [ $attribute_type, 'get_id' ] );
