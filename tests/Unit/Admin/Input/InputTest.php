@@ -184,4 +184,18 @@ class InputTest extends UnitTest {
 			$this->input->get_block_config()
 		);
 	}
+
+	public function test_hidden_prop() {
+		$this->assertFalse( $this->input->is_hidden() );
+		$this->input->set_hidden( true );
+		$this->assertTrue( $this->input->is_hidden() );
+		$this->input->set_hidden( false );
+	}
+
+	public function test_readonly_prop() {
+		$this->assertFalse( isset( $this->input->get_view_data()['custom_attributes']['readonly'] ) );
+		$this->input->set_readonly( true );
+		$this->assertEquals( $this->input->get_view_data()['custom_attributes']['readonly'], 'readonly' );
+		$this->input->set_readonly( false );
+	}
 }
