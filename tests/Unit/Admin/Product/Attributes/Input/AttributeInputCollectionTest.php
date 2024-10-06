@@ -310,13 +310,12 @@ class AttributeInputCollectionTest extends UnitTest {
 	}
 
 	public function test_gtin_input() {
-
-		$description = 'Global Trade Item Number (GTIN) for your item. These identifiers include UPC (in North America), EAN (in Europe), JAN (in Japan), and ISBN (for books)';
+		$description       = 'Global Trade Item Number (GTIN) for your item. These identifiers include UPC (in North America), EAN (in Europe), JAN (in Japan), and ISBN (for books)';
 		$custom_attributes = [];
 
 		if ( version_compare( WC_VERSION, '9.2', '>=' ) ) {
 			$custom_attributes = [ 'readonly' => 'readonly' ];
-			$description = 'The Global Trade Item Number (GTIN) for your item can now be entered on the "Inventory" tab';
+			$description       = 'The Global Trade Item Number (GTIN) for your item can now be entered on the "Inventory" tab';
 		}
 
 		$input = new GTINInput();
@@ -326,15 +325,15 @@ class AttributeInputCollectionTest extends UnitTest {
 
 		$this->assertEquals(
 			[
-				'id'          => 'gla_gtin',
-				'type'        => 'text',
-				'label'       => 'Global Trade Item Number (GTIN)',
-				'description' => $description,
-				'desc_tip'    => true,
-				'value'       => null,
-				'name'        => 'gla_gtin',
-				'is_root'     => true,
-				'children'    => [],
+				'id'                => 'gla_gtin',
+				'type'              => 'text',
+				'label'             => 'Global Trade Item Number (GTIN)',
+				'description'       => $description,
+				'desc_tip'          => true,
+				'value'             => null,
+				'name'              => 'gla_gtin',
+				'is_root'           => true,
+				'children'          => [],
 				'custom_attributes' => $custom_attributes,
 			],
 			$input->get_view_data()
