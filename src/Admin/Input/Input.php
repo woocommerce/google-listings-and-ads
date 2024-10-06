@@ -4,8 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -17,7 +15,6 @@ defined( 'ABSPATH' ) || exit;
 class Input extends Form implements InputInterface {
 
 	use PluginHelper;
-	use Utilities;
 
 	/**
 	 * @var string
@@ -62,7 +59,7 @@ class Input extends Form implements InputInterface {
 	/**
 	 * @var bool
 	 */
-	protected $is_disabled = false;
+	protected $is_hidden = false;
 
 	/**
 	 * Input constructor.
@@ -73,9 +70,6 @@ class Input extends Form implements InputInterface {
 	public function __construct( string $type, string $block_name ) {
 		$this->type       = $type;
 		$this->block_name = $block_name;
-
-		$this->set_options_object( woogle_get_container()->get( OptionsInterface::class ) );
-
 		parent::__construct();
 	}
 
@@ -163,7 +157,7 @@ class Input extends Form implements InputInterface {
 	 *
 	 * @return InputInterface
 	 */
-	public function set_readonly( $value = false ) {
+	public function set_readonly( $value ): InputInterface {
 		$this->is_readonly = $value;
 
 		return $this;
@@ -173,8 +167,8 @@ class Input extends Form implements InputInterface {
 	 *
 	 * @return InputInterface
 	 */
-	public function set_disabled( $value = false ) {
-		$this->is_disabled = $value;
+	public function set_hidden( $value ): InputInterface {
+		$this->is_hidden = $value;
 
 		return $this;
 	}
@@ -182,8 +176,8 @@ class Input extends Form implements InputInterface {
 	/**
 	 * @return bool
 	 */
-	public function is_disabled(): bool {
-		return $this->is_disabled;
+	public function is_hidden(): bool {
+		return $this->is_hidden;
 	}
 
 	/**
