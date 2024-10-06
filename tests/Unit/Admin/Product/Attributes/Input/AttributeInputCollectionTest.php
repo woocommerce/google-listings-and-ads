@@ -327,7 +327,6 @@ class AttributeInputCollectionTest extends UnitTest {
 			$description               = 'The Global Trade Item Number (GTIN) for your item can now be entered on the "Inventory" tab';
 			$data['description']       = $description;
 			$data['custom_attributes'] = [ 'readonly' => 'readonly' ];
-
 		}
 
 		$input = new GTINInput();

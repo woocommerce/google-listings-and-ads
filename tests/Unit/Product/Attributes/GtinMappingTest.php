@@ -34,8 +34,13 @@ class GtinMappingTest extends TestCase {
 	 * @return void
 	 */
 	public function test_gtin_populated_from_wc_core_global_unique_id() {
-		$mock_product = WC_Helper_Product::create_simple_product( false );
-		$mock_product->set_global_unique_id( $this->core_gtin );
+		$expected_gtin = $this->gla_gtin;
+		$mock_product  = WC_Helper_Product::create_simple_product( false );
+
+		if ( version_compare( WC_VERSION, '9.2', '>=' ) ) {
+			$mock_product->set_global_unique_id( $this->core_gtin );
+			$expected_gtin = $this->core_gtin;
+		}
 
 		$adapter = new WCProductAdapter();
 		$adapter->mapTypes(
@@ -48,7 +53,7 @@ class GtinMappingTest extends TestCase {
 			]
 		);
 
-		$this->assertEquals( $this->core_gtin, $adapter->getGtin() );
+		$this->assertEquals( $expected_gtin, $adapter->getGtin() );
 	}
 
 	/**
