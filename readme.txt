@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.6
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.8.5
+Stable tag: 2.8.6
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -140,6 +140,11 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 2.8.6 - 2024-10-02 =
+* Dev - Fix missing blueprint dependency.
+* Tweak - Adjust WP Proxy Response to force the string type for the price fields.
+* Tweak - Logic for Delete notifications.
+
 = 2.8.5 - 2024-09-05 =
 * Break - Remove WooCommerce Navigation integration.
 * Fix - Issue with syncing shipping rates with more than two decimals.
@@ -159,10 +164,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Tweak - Make the Tooltip use the new placement prop when WordPress >= 6.4.
 * Tweak - Replace deprecated event.keyCode with event.code for the verification code inputs in the contact information setting.
 * Tweak - Update the copy in the "Linked accounts" of the accounts connection setting to include Google Ads account.
-
-= 2.8.3 - 2024-08-20 =
-* Fix - Return empty array props as empty objects in WCOM Proxy responses.
-* Tweak - Display additional context in error message when Google Ads account limit reached.
-* Tweak - Upgrade readme details in WPORG.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
