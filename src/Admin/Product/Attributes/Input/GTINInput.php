@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Input;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Text;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -17,12 +18,14 @@ defined( 'ABSPATH' ) || exit;
  */
 class GTINInput extends Text {
 
+	use OptionsAwareTrait;
+
 	/**
-	 * Initial install version to disable the GTIN field for.
+	 * Version since we start hiding the GTIN field.
 	 *
 	 * @var string
 	 */
-	private $hidden_from = '2.8.5';
+	private $hidden_since_version = '2.8.5';
 
 	/**
 	 * GTINInput constructor.
@@ -32,8 +35,8 @@ class GTINInput extends Text {
 
 		$this->set_label( __( 'Global Trade Item Number (GTIN)', 'google-listings-and-ads' ) );
 		$this->set_description( __( 'Global Trade Item Number (GTIN) for your item. These identifiers include UPC (in North America), EAN (in Europe), JAN (in Japan), and ISBN (for books)', 'google-listings-and-ads' ) );
-
-		$this->conditionally_restrict();
+		$this->set_options_object( woogle_get_container()->get( OptionsInterface::class ) );
+		$this->set_field_visibility();
 	}
 
 	/**
@@ -43,12 +46,13 @@ class GTINInput extends Text {
 	 * @since x.x.x
 	 * @return void
 	 */
-	public function conditionally_restrict(): void {
+	public function set_field_visibility(): void {
 		$initial_version = $this->options->get( OptionsInterface::INSTALL_VERSION, false );
-
+		// 9.2 is the version when GTIN field was added in Woo Core. So we need to hide or set the field as read-only since then.
 		if ( version_compare( WC_VERSION, '9.2', '>=' ) ) {
-			if ( version_compare( $initial_version, $this->hidden_from, '>=' ) ) {
-				$this->set_disabled( true );
+			// For versions after 2.8.5 hide the GTIN field from G4W tab. Otherwise, set as readonly.
+			if ( $initial_version && version_compare( $initial_version, $this->hidden_since_version, '>=' ) ) {
+				$this->set_hidden( true );
 			} else {
 				$this->set_readonly( true );
 				$this->set_description( __( 'The Global Trade Item Number (GTIN) for your item can now be entered on the "Inventory" tab', 'google-listings-and-ads' ) );
