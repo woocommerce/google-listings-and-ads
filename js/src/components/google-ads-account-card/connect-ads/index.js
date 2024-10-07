@@ -19,7 +19,7 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
-import AdsAccountSelectControl from './ads-account-select-control';
+import AdsAccountSelectControl from '.~/components/ads-account-select-control';
 import { useAppDispatch } from '.~/data';
 import { FILTER_ONBOARDING } from '.~/utils/tracks';
 import './index.scss';
@@ -95,7 +95,7 @@ const ConnectAds = ( props ) => {
 			<Section.Card.Body>
 				<Subsection.Title>
 					{ __(
-						'Select an existing account',
+						'Connect to an existing account',
 						'google-listings-and-ads'
 					) }
 				</Subsection.Title>
@@ -120,7 +120,6 @@ const ConnectAds = ( props ) => {
 				) }
 				<ContentButtonLayout>
 					<AdsAccountSelectControl
-						accounts={ accounts }
 						value={ value }
 						onChange={ setValue }
 					/>

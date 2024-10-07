@@ -132,14 +132,14 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 		add_filter(
 			'woocommerce_rest_prepare_' . $object_type . '_object',
 			[ $this, 'filter_response_by_syncable_item' ],
-			1000, // Run this filter last to override any other response.
+			PHP_INT_MAX, // Run this filter last to override any other response.
 			3
 		);
 
 		add_filter(
 			'woocommerce_rest_prepare_' . $object_type . '_object',
 			[ $this, 'prepare_response' ],
-			10,
+			PHP_INT_MAX - 1,
 			3
 		);
 
@@ -338,6 +338,11 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 			$attr = $this->attribute_manager->get_all_aggregated_values( $item );
 			// In case of empty array, convert to object to keep the response consistent.
 			$data['gla_attributes'] = (object) $attr;
+
+			// Force types and prevent user type change for fields as Google has strict type requirements.
+			$data['price']         = strval( $data['price'] ?? null );
+			$data['regular_price'] = strval( $data['regular_price'] ?? null );
+			$data['sale_price']    = strval( $data['sale_price'] ?? null );
 		}
 
 		foreach ( $data['meta_data'] ?? [] as $key => $meta ) {

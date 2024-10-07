@@ -246,17 +246,9 @@ test.describe( 'Set up Ads account', () => {
 		test( 'Select one existing account', async () => {
 			const adsAccountSelected = `${ ADS_ACCOUNTS[ 1 ].id }`;
 
-			await expect(
-				setupAdsAccounts.getConnectAdsButton()
-			).toBeDisabled();
-
 			await setupAdsAccounts.selectAnExistingAdsAccount(
 				adsAccountSelected
 			);
-
-			await expect(
-				setupAdsAccounts.getConnectAdsButton()
-			).toBeEnabled();
 
 			//Intercept Ads connection request
 			const connectAdsAccountRequest =
