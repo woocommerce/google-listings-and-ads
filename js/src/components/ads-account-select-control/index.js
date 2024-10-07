@@ -9,9 +9,9 @@ import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts'
  * @return {JSX.Element} An enhanced AppSelectControl component.
  */
 const AdsAccountSelectControl = ( props ) => {
-	const { existingAccounts: accounts = [] } = useExistingGoogleAdsAccounts();
+	const { existingAccounts } = useExistingGoogleAdsAccounts();
 
-	const options = accounts?.map( ( acc ) => ( {
+	const options = existingAccounts?.map( ( acc ) => ( {
 		value: acc.id,
 		label: `${ acc.name } (${ acc.id })`,
 	} ) );

@@ -14,7 +14,7 @@ import AppSelectControl from '.~/components/app-select-control';
  * @return {JSX.Element} An enhanced AppSelectControl component.
  */
 const MerchantCenterSelectControl = ( props ) => {
-	const { data: existingAccounts = [] } = useExistingGoogleMCAccounts();
+	const { data: existingAccounts } = useExistingGoogleMCAccounts();
 	const options = existingAccounts?.map( ( acc ) => {
 		return {
 			value: acc.id,
