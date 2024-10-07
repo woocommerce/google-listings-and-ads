@@ -89,11 +89,15 @@ export default function PaidAdsSetupForm( {
 
 		// Resolve the starting paid ads data with the campaign data stored in the client session if any.
 		if ( loadCampaignFromClientSession ) {
+			const initialAmount = Math.max(
+				clientSession.getCampaign()?.amount || 0,
+				recommendedBudget
+			);
+
 			startingPaidAds = {
 				...startingPaidAds,
 				...clientSession.getCampaign(),
-				amount:
-					clientSession.getCampaign()?.amount || recommendedBudget,
+				amount: initialAmount,
 			};
 		}
 
