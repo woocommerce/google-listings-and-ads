@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { CardDivider } from '@wordpress/components';
 
 /**
  * Internal dependencies

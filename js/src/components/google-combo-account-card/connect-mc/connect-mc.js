@@ -16,6 +16,7 @@ import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import ConnectAccountCard from '../connect-account-card';
 import ConnectMCBody from './connect-mc-body';
 import ConnectMCFooter from './connect-mc-footer';
+import SpinnerCard from '.~/components/spinner-card';
 
 /**
  * Clicking on the "Switch account" button to select a different Google Merchant Center account to connect.
@@ -25,7 +26,7 @@ import ConnectMCFooter from './connect-mc-footer';
  */
 
 const ConnectMC = () => {
-	const { googleMCAccount } = useGoogleMCAccount();
+	const { googleMCAccount, hasFinishedResolution } = useGoogleMCAccount();
 	const [ value, setValue ] = useState();
 	const [ handleConnectMC, resultConnectMC ] = useConnectMCAccount( value );
 	const [ handleCreateAccount, resultCreateAccount ] = useCreateMCAccount();
@@ -34,11 +35,12 @@ const ConnectMC = () => {
 	// The `link_ads` step will be resolved when the Ads account is connected
 	// since these can be connected in any order.
 	const isConnected =
+		googleMCAccount?.id ||
 		googleMCAccount?.status === 'connected' ||
 		( googleMCAccount?.status === 'incomplete' &&
 			googleMCAccount?.step === 'link_ads' );
 
-	if ( resultConnectMC.response?.status === 409 ) {
+	if ( ! isConnected && resultConnectMC.response?.status === 409 ) {
 		return (
 			<SwitchUrlCard
 				id={ resultConnectMC.error.id }
@@ -51,8 +53,9 @@ const ConnectMC = () => {
 	}
 
 	if (
-		resultConnectMC.response?.status === 403 ||
-		resultCreateAccount.response?.status === 403
+		! isConnected &&
+		( resultConnectMC.response?.status === 403 ||
+			resultCreateAccount.response?.status === 403 )
 	) {
 		return (
 			<ReclaimUrlCard
@@ -72,8 +75,9 @@ const ConnectMC = () => {
 	}
 
 	if (
-		resultCreateAccount.loading ||
-		resultCreateAccount.response?.status === 503
+		! isConnected &&
+		( resultCreateAccount.loading ||
+			resultCreateAccount.response?.status === 503 )
 	) {
 		return (
 			<CreatingCard
@@ -81,6 +85,10 @@ const ConnectMC = () => {
 				onRetry={ handleCreateAccount }
 			/>
 		);
+	}
+
+	if ( ! hasFinishedResolution ) {
+		return <SpinnerCard />;
 	}
 
 	return (
