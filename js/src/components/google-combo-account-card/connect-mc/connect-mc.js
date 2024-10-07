@@ -98,7 +98,7 @@ const ConnectMC = () => {
 					value={ value }
 					setValue={ setValue }
 					isConnected={ isConnected }
-					resultConnectMC={ resultConnectMC }
+					isConnecting={ resultConnectMC.loading }
 					handleConnectMC={ handleConnectMC }
 				/>
 			}

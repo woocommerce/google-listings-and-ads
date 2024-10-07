@@ -10,6 +10,7 @@ import MerchantCenterSelectControl from '.~/components/merchant-center-select-co
 import AppButton from '.~/components/app-button';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import ConnectedIconLabel from '.~/components/connected-icon-label';
+import LoadingLabel from '.~/components/loading-label';
 
 /**
  * Clicking on the button to connect an existing Google Merchant Center account.
@@ -29,8 +30,8 @@ import ConnectedIconLabel from '.~/components/connected-icon-label';
  * @param {string}   props.value The selected Merchant Center account ID.
  * @param {Function} props.setValue Callback to update the selected account value.
  * @param {boolean}  props.isConnected Whether the Merchant Center account is connected.
+ * @param {boolean}  props.isConnecting Whether the Merchant Center account is being connected.
  * @param {Function} props.handleConnectMC Callback function to handle the connection process.
- * @param {Object}   props.resultConnectMC The result of the connection request, used to handle loading state.
  *
  * @fires gla_mc_account_connect_button_click
  */
@@ -38,24 +39,40 @@ const ConnectMCBody = ( {
 	value,
 	setValue,
 	isConnected,
+	isConnecting,
 	handleConnectMC,
-	resultConnectMC,
 } ) => {
+	let selectControlProps = {};
+	if ( isConnected ) {
+		selectControlProps = {
+			suffix: ' ',
+			tabIndex: '-1',
+			readOnly: true,
+			className: 'gla-google-combo-service-select-control--connected',
+		};
+	}
+
 	return (
 		<ContentButtonLayout>
 			<MerchantCenterSelectControl
 				value={ value }
 				onChange={ setValue }
+				{ ...selectControlProps }
 			/>
 
 			{ isConnected && (
 				<ConnectedIconLabel className="gla-google-combo-service-connected-icon-label" />
 			) }
 
-			{ ! isConnected && (
+			{ isConnecting && (
+				<LoadingLabel
+					text={ __( 'Connecting…', 'google-listings-and-ads' ) }
+				/>
+			) }
+
+			{ ! isConnected && ! isConnecting && (
 				<AppButton
 					isSecondary
-					loading={ resultConnectMC.loading }
 					disabled={ ! value }
 					eventName="gla_mc_account_connect_button_click"
 					eventProps={ { id: Number( value ) } }
