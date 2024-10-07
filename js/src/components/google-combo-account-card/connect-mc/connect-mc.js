@@ -26,7 +26,8 @@ import SpinnerCard from '.~/components/spinner-card';
  */
 
 const ConnectMC = () => {
-	const { googleMCAccount, hasFinishedResolution } = useGoogleMCAccount();
+	const { googleMCAccount, hasFinishedResolution, isPreconditionReady } =
+		useGoogleMCAccount();
 	const [ value, setValue ] = useState();
 	const [ handleConnectMC, resultConnectMC ] = useConnectMCAccount( value );
 	const [ handleCreateAccount, resultCreateAccount ] = useCreateMCAccount();
@@ -117,6 +118,7 @@ const ConnectMC = () => {
 					handleCreateAccount={ handleCreateAccount }
 				/>
 			}
+			disabled={ ! isPreconditionReady }
 		/>
 	);
 };

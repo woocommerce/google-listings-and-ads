@@ -13,13 +13,21 @@ import './connect-account-card.scss';
  * @param {string} props.helperText The helper text for the account card.
  * @param {JSX.Element} props.body The content for the body of the account card.
  * @param {JSX.Element} props.footer The content for the footer of the account card.
+ * @param {boolean} [props.disabled=false] Whether display the Card in disabled style.
  */
-const ConnectAccountCard = ( { title, helperText, body, footer } ) => {
+const ConnectAccountCard = ( {
+	title,
+	helperText,
+	body,
+	footer,
+	disabled = false,
+} ) => {
 	return (
 		<AccountCard
 			className="gla-google-combo-connect-account-card"
 			title={ title }
 			helper={ helperText }
+			disabled={ disabled }
 		>
 			<Section.Card.Body className="gla-google-combo-connect-account-card__body">
 				{ body }
