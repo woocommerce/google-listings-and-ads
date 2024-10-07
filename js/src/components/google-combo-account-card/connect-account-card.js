@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import classNames from 'classnames';
+
+/**
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
@@ -14,6 +19,7 @@ import './connect-account-card.scss';
  * @param {JSX.Element} props.body The content for the body of the account card.
  * @param {JSX.Element} props.footer The content for the footer of the account card.
  * @param {boolean} [props.disabled=false] Whether display the Card in disabled style.
+ * @param {string} [props.className] Additional class names to apply to the card.
  */
 const ConnectAccountCard = ( {
 	title,
@@ -21,10 +27,14 @@ const ConnectAccountCard = ( {
 	body,
 	footer,
 	disabled = false,
+	className,
 } ) => {
 	return (
 		<AccountCard
-			className="gla-google-combo-connect-account-card"
+			className={ classNames(
+				'gla-google-combo-connect-account-card',
+				className
+			) }
 			title={ title }
 			helper={ helperText }
 			disabled={ disabled }

@@ -242,10 +242,12 @@ test.describe( 'Set up accounts', () => {
 			await setupAdsAccountPage.fulfillAdsAccounts(
 				[
 					[],
-					{
-						id: 78787878,
-						name: 'gla',
-					},
+					[
+						{
+							id: 78787878,
+							name: 'gla',
+						},
+					],
 				],
 				200,
 				[ 'GET' ]
@@ -254,12 +256,14 @@ test.describe( 'Set up accounts', () => {
 			await setupAdsAccountPage.fulfillMCAccounts(
 				[
 					[],
-					{
-						id: 5432178,
-						name: null,
-						subaccount: null,
-						domain: null,
-					},
+					[
+						{
+							id: 5432178,
+							name: null,
+							subaccount: null,
+							domain: null,
+						},
+					],
 				],
 				200,
 				'GET'
@@ -339,10 +343,12 @@ test.describe( 'Set up accounts', () => {
 			await setupAdsAccountPage.fulfillAdsAccounts(
 				[
 					[],
-					{
-						id: 78787878,
-						name: 'gla',
-					},
+					[
+						{
+							id: 78787878,
+							name: 'gla',
+						},
+					],
 				],
 				200,
 				[ 'GET' ]
@@ -351,12 +357,14 @@ test.describe( 'Set up accounts', () => {
 			await setupAdsAccountPage.fulfillMCAccounts(
 				[
 					[],
-					{
-						id: 5432178,
-						name: null,
-						subaccount: null,
-						domain: null,
-					},
+					[
+						{
+							id: 5432178,
+							name: null,
+							subaccount: null,
+							domain: null,
+						},
+					],
 				],
 				200,
 				'GET'
@@ -403,6 +411,30 @@ test.describe( 'Set up accounts', () => {
 				googleAccountCard.getByText( 'Google Ads ID: 78787878', {
 					exact: true,
 				} )
+			).toBeVisible();
+		} );
+	} );
+
+	test.describe( 'Google Merchant Center card', () => {
+		test.beforeAll( async () => {
+			await setUpAccountsPage.mockJetpackConnected();
+			await setUpAccountsPage.mockAdsAccountConnected();
+			await setUpAccountsPage.mockMCHasAccounts();
+			await setUpAccountsPage.mockMCNotConnected();
+			await setUpAccountsPage.mockGoogleConnected();
+			await setUpAccountsPage.mockAdsAccountConnected();
+			await setUpAccountsPage.goto();
+		} );
+
+		test( 'should be prompted to connect to an existing MC account', async () => {
+			const googleMCAccountCard = setUpAccountsPage.getMCAccountCard();
+			console.log( 'ZOPE', googleMCAccountCard );
+
+			await expect(
+				googleMCAccountCard.getByText(
+					'Connect to existing Merchant Center account',
+					{ exact: true }
+				)
 			).toBeVisible();
 		} );
 	} );

@@ -226,7 +226,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get account cards.
 	 */
 	getAccountCards( options = {} ) {
-		return this.page.locator( '.gla-account-card', options );
+		return this.page.locator( '.gla-google-combo-account-card', options );
 	}
 
 	/**
@@ -271,9 +271,12 @@ export default class SetUpAccountsPage extends MockRequests {
 	 */
 	getMCAccountCard() {
 		return this.getAccountCards( {
-			has: this.page.locator( '.gla-account-card__title', {
-				hasText: 'Google Merchant Center',
-			} ),
+			has: this.page.locator(
+				'.gla-google-combo-service-account-card--merchant-center',
+				{
+					hasText: 'Merchant Center',
+				}
+			),
 		} ).first();
 	}
 
