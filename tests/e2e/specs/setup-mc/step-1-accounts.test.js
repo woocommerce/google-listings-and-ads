@@ -223,22 +223,6 @@ test.describe( 'Set up accounts', () => {
 			await setUpAccountsPage.mockJetpackConnected();
 			await setUpAccountsPage.mockGoogleConnected();
 
-			await page.route( /\/wc\/gla\/mc\/accounts\b/, ( route ) => {
-				if ( route.request().method() === 'POST' ) {
-					// Do nothing.
-				} else {
-					route.continue();
-				}
-			} );
-
-			await page.route( /\/wc\/gla\/ads\/accounts\b/, ( route ) => {
-				if ( route.request().method() === 'POST' ) {
-					// Do nothing.
-				} else {
-					route.continue();
-				}
-			} );
-
 			await setupAdsAccountPage.fulfillAdsAccounts(
 				[
 					[],
@@ -250,7 +234,8 @@ test.describe( 'Set up accounts', () => {
 					],
 				],
 				200,
-				[ 'GET' ]
+				[ 'GET' ],
+				true
 			);
 
 			await setupAdsAccountPage.fulfillMCAccounts(
@@ -266,38 +251,51 @@ test.describe( 'Set up accounts', () => {
 					],
 				],
 				200,
-				'GET'
+				'GET',
+				true
 			);
 
-			await setUpAccountsPage.fulfillAdsConnection( [
-				{
-					id: 0,
-					currency: 'USD',
-					status: 'approved',
-					symbol: '$',
-				},
-				{
-					id: 78787878,
-					currency: 'USD',
-					status: 'approved',
-					symbol: '$',
-				},
-			] );
+			await setUpAccountsPage.fulfillAdsConnection(
+				[
+					{
+						id: 0,
+						currency: 'USD',
+						status: 'disconnected',
+						symbol: '$',
+					},
+					{
+						id: 78787878,
+						currency: 'USD',
+						status: 'incomplete',
+						step: 'account_access',
+						sub_account: true,
+						symbol: '$',
+					},
+				],
+				200,
+				'GET',
+				true
+			);
 
-			await setUpAccountsPage.fulfillMCConnection( [
-				{
-					id: 0,
-					name: null,
-					subaccount: null,
-					domain: null,
-				},
-				{
-					id: 5432178,
-					name: null,
-					subaccount: null,
-					domain: null,
-				},
-			] );
+			await setUpAccountsPage.fulfillMCConnection(
+				[
+					{
+						id: 0,
+						name: null,
+						subaccount: null,
+						domain: null,
+					},
+					{
+						id: 5432178,
+						name: null,
+						subaccount: null,
+						domain: null,
+					},
+				],
+				200,
+				'GET',
+				true
+			);
 
 			await setUpAccountsPage.goto();
 			const googleAccountCard = setUpAccountsPage.getGoogleAccountCard();
@@ -312,106 +310,81 @@ test.describe( 'Set up accounts', () => {
 			).toBeVisible();
 		} );
 
-		test( 'should see the merchant center id and ads account id if connected', async () => {
-			await setUpAccountsPage.mockJetpackConnected();
-			await setUpAccountsPage.mockGoogleConnected();
-			await setUpAccountsPage.goto();
+		test.describe( 'After connecting Google account', () => {
+			test.beforeEach( async () => {
+				await setUpAccountsPage.mockJetpackConnected();
+				await setUpAccountsPage.mockGoogleConnected();
 
-			await setupAdsAccountPage.fulfillAdsAccounts(
-				{
-					message:
-						'Account must be accepted before completing setup.',
-					has_access: false,
-					step: 'account_access',
-					invite_link: 'https://ads.google.com/nav/',
-				},
-				428,
-				[ 'POST' ]
-			);
-
-			await setupAdsAccountPage.fulfillMCAccounts(
-				{
+				await setUpAccountsPage.fulfillMCConnection( {
 					id: 5432178,
 					name: null,
 					subaccount: null,
 					domain: null,
-				},
-				200,
-				[ 'POST' ]
-			);
+					status: 'incomplete',
+					step: 'claim',
+				} );
 
-			await setupAdsAccountPage.fulfillAdsAccounts(
-				[
-					[],
-					[
-						{
-							id: 78787878,
-							name: 'gla',
-						},
-					],
-				],
-				200,
-				[ 'GET' ]
-			);
-
-			await setupAdsAccountPage.fulfillMCAccounts(
-				[
-					[],
-					[
-						{
-							id: 5432178,
-							name: null,
-							subaccount: null,
-							domain: null,
-						},
-					],
-				],
-				200,
-				'GET'
-			);
-
-			await setUpAccountsPage.fulfillAdsConnection( [
-				{
-					id: 0,
-					currency: 'USD',
-					status: 'approved',
-					symbol: '$',
-				},
-				{
+				await setUpAccountsPage.fulfillAdsConnection( {
 					id: 78787878,
 					currency: 'USD',
-					status: 'approved',
+					status: 'incomplete',
+					step: 'account_access',
+					sub_account: true,
 					symbol: '$',
-				},
-			] );
+				} );
 
-			await setUpAccountsPage.fulfillMCConnection( [
-				{
-					id: 0,
-					name: null,
-					subaccount: null,
-					domain: null,
-				},
-				{
-					id: 5432178,
-					name: null,
-					subaccount: null,
-					domain: null,
-				},
-			] );
+				await setUpAccountsPage.goto();
+			} );
 
-			const googleAccountCard = setUpAccountsPage.getGoogleAccountCard();
-			await expect(
-				googleAccountCard.getByText( 'Merchant Center ID: 5432178', {
-					exact: true,
-				} )
-			).toBeVisible();
+			test( 'should see the merchant center id and ads account id if connected', async () => {
+				await setupAdsAccountPage.fulfillAdsAccounts(
+					{
+						message:
+							'Account must be accepted before completing setup.',
+						has_access: false,
+						step: 'account_access',
+						invite_link: 'https://ads.google.com/nav/',
+					},
+					428,
+					[ 'POST' ]
+				);
 
-			await expect(
-				googleAccountCard.getByText( 'Google Ads ID: 78787878', {
-					exact: true,
-				} )
-			).toBeVisible();
+				await setupAdsAccountPage.fulfillMCAccounts(
+					{
+						id: 5432178,
+						name: null,
+						subaccount: null,
+						domain: null,
+					},
+					200,
+					[ 'POST' ]
+				);
+
+				const googleAccountCard =
+					setUpAccountsPage.getGoogleAccountCard();
+				await expect(
+					googleAccountCard.getByText(
+						'Merchant Center ID: 5432178',
+						{
+							exact: true,
+						}
+					)
+				).toBeVisible();
+
+				await expect(
+					googleAccountCard.getByText( 'Google Ads ID: 78787878', {
+						exact: true,
+					} )
+				).toBeVisible();
+			} );
+
+			test( 'should see the connected label', async () => {
+				const googleAccountCard =
+					setUpAccountsPage.getGoogleAccountCard();
+				await expect(
+					googleAccountCard.getByText( 'Connected', { exact: true } )
+				).toBeVisible();
+			} );
 		} );
 	} );
 
