@@ -473,25 +473,8 @@ test.describe( 'Set up accounts', () => {
 
 		test.describe( 'Merchant Center has no connected accounts', () => {
 			test.beforeAll( async () => {
-				await setUpAccountsPage.mockAdsAccountsResponse( [
-					ADS_ACCOUNTS,
-				] );
-				await setUpAccountsPage.fulfillMCAccounts( [
-					[
-						{
-							id: 12345,
-							subaccount: true,
-							name: 'MC Account 1',
-							domain: 'https://example.com',
-						},
-						{
-							id: 23456,
-							subaccount: true,
-							name: 'MC Account 2',
-							domain: 'https://example.com',
-						},
-					],
-				] );
+				await setUpAccountsPage.mockAdsAccountsResponse( ADS_ACCOUNTS );
+				await setUpAccountsPage.mockMCHasAccounts();
 				await setUpAccountsPage.goto();
 			} );
 
@@ -585,25 +568,10 @@ test.describe( 'Set up accounts', () => {
 							setUpAccountsPage.mockGoogleConnected(
 								'google@example.com'
 							),
-							setUpAccountsPage.mockAdsAccountsResponse( [
-								ADS_ACCOUNTS,
-							] ),
-							setUpAccountsPage.fulfillMCAccounts( [
-								[
-									{
-										id: 12345,
-										subaccount: true,
-										name: 'MC Account 1',
-										domain: 'https://example.com',
-									},
-									{
-										id: 23456,
-										subaccount: true,
-										name: 'MC Account 2',
-										domain: 'https://example.com',
-									},
-								],
-							] ),
+							setUpAccountsPage.mockAdsAccountsResponse(
+								ADS_ACCOUNTS
+							),
+							setUpAccountsPage.mockMCHasAccounts(),
 
 							// Mock Merchant Center as not connected
 							setUpAccountsPage.mockMCNotConnected(),
@@ -705,30 +673,13 @@ test.describe( 'Set up accounts', () => {
 						'google@example.com'
 					),
 
-					setUpAccountsPage.mockAdsAccountsResponse( [
-						ADS_ACCOUNTS,
-					] ),
+					setUpAccountsPage.mockAdsAccountsResponse( ADS_ACCOUNTS ),
 
 					// Mock merchant center as not connected.
 					setUpAccountsPage.mockMCNotConnected(),
 
 					// Mock merchant center has accounts
-					setUpAccountsPage.fulfillMCAccounts( [
-						[
-							{
-								id: 12345,
-								subaccount: true,
-								name: 'MC Account 1',
-								domain: 'https://example.com',
-							},
-							{
-								id: 23456,
-								subaccount: true,
-								name: 'MC Account 2',
-								domain: 'https://example.com',
-							},
-						],
-					] ),
+					setUpAccountsPage.mockMCHasAccounts(),
 				] );
 
 				await setUpAccountsPage.goto();
@@ -820,22 +771,7 @@ test.describe( 'Set up accounts', () => {
 						setUpAccountsPage.mockMCNotConnected(),
 
 						// Mock merchant center has accounts
-						setUpAccountsPage.fulfillMCAccounts( [
-							[
-								{
-									id: 12345,
-									subaccount: true,
-									name: 'MC Account 1',
-									domain: 'https://example.com',
-								},
-								{
-									id: 23456,
-									subaccount: true,
-									name: 'MC Account 2',
-									domain: 'https://example.com',
-								},
-							],
-						] ),
+						setUpAccountsPage.mockMCHasAccounts(),
 					] );
 
 					await setUpAccountsPage.goto();
