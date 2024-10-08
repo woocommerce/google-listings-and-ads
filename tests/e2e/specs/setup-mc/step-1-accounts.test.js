@@ -223,22 +223,6 @@ test.describe( 'Set up accounts', () => {
 			await setUpAccountsPage.mockJetpackConnected();
 			await setUpAccountsPage.mockGoogleConnected();
 
-			await page.route( /\/wc\/gla\/mc\/accounts\b/, ( route ) => {
-				if ( route.request().method() === 'POST' ) {
-					// Do nothing.
-				} else {
-					route.continue();
-				}
-			} );
-
-			await page.route( /\/wc\/gla\/ads\/accounts\b/, ( route ) => {
-				if ( route.request().method() === 'POST' ) {
-					// Do nothing.
-				} else {
-					route.continue();
-				}
-			} );
-
 			await setupAdsAccountPage.fulfillAdsAccounts(
 				[
 					[],
