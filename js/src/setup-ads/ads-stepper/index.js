@@ -55,13 +55,13 @@ const AdsStepper = ( { formProps } ) => {
 		! hasResolvedGoogleAccount ||
 		! hasResolvedGoogleAdsAccount ||
 		! hasResolvedAdsAccountStatus ||
-		googleAdsAccount === null // Catch errors retrieving accounts.
+		googleAdsAccount === null
 	) {
 		return null;
 	}
 
 	const isGoogleAdsReady = 
-		googleAdsAccount.status === GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED && 
+		googleAdsAccount.status !== GOOGLE_ADS_ACCOUNT_STATUS.DISCONNECTED && 
 		hasAccess === true && 
 		!( hasAccess === true && step === 'conversion_action' );
 
