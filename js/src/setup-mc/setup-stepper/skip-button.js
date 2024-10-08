@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import { noop } from 'lodash';
 
@@ -12,7 +13,7 @@ import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillin
 import AppButton from '.~/components/app-button';
 import SkipPaidAdsConfirmationModal from './skip-paid-ads-confirmation-modal';
 import { recordGlaEvent } from '.~/utils/tracks';
-import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
+import { ACTION_SKIP } from './constants';
 
 /**
  * Clicking on the skip paid ads button to complete the onboarding flow.
@@ -27,10 +28,10 @@ import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
  */
 
 export default function SkipButton( {
-	text,
 	paidAds,
 	onSkipCreatePaidAds = noop,
-	completing,
+	loading,
+	disabled,
 } ) {
 	const [
 		showSkipPaidAdsConfirmationModal,
@@ -60,17 +61,19 @@ export default function SkipButton( {
 		onSkipCreatePaidAds();
 	};
 
-	const disabledSkip =
-		completing === ACTION_COMPLETE || ! hasGoogleAdsConnection;
+	const isDisabled = disabled || ! hasGoogleAdsConnection;
 
 	return (
 		<>
 			<AppButton
 				isTertiary
 				data-action={ ACTION_SKIP }
-				text={ text }
-				loading={ completing === ACTION_SKIP }
-				disabled={ disabledSkip }
+				text={ __(
+					'Skip paid ads creation',
+					'google-listings-and-ads'
+				) }
+				loading={ loading }
+				disabled={ isDisabled }
 				onClick={ handleOnSkipClick }
 			/>
 

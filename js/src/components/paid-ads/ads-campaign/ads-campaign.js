@@ -2,12 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import {
-	createInterpolateElement,
-	useState,
-	useEffect,
-} from '@wordpress/element';
-import { noop } from 'lodash';
+import { createInterpolateElement, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -18,16 +13,21 @@ import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentActions from '.~/components/stepper/step-content-actions';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import AppButton from '.~/components/app-button';
 import PaidAdsFaqsPanel from './faqs-panel';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
 import PaidAdsSetupSections from './paid-ads-setup-sections';
-import SkipButton from './skip-button';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
-import { ACTION_SKIP, ACTION_COMPLETE } from './constants';
 
 /**
  * @typedef {import('.~/data/actions').Campaign} Campaign
+ */
+
+/**
+ * @typedef {import('.~/components/adaptive-form/adaptive-form-context').AdaptiveFormContext} AdaptiveFormContext
+ */
+
+/**
+ * @typedef {import('.~/components/paid-ads/ads-campaign/paid-ads-setup-sections').PaidAdsData} PaidAdsData
  */
 
 /**
@@ -49,32 +49,23 @@ import { ACTION_SKIP, ACTION_COMPLETE } from './constants';
  * @param {Object} props React props.
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
  * @param {string} props.headerTitle The title of the step.
- * @param {() => void} props.onContinue Callback called once continue button is clicked.
- * @param {() => void} [props.onSkip] Callback called once skip button is clicked.
- * @param {boolean} [props.hasError=false] Whether there's an error to reset the completing state.
  * @param {boolean} [props.isOnboardingFlow=false] Whether this component is used in onboarding flow.
  * @param {'create-ads'|'edit-ads'|'setup-ads'} props.trackingContext A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
+ * @param {JSX|(PaidAdsData) =>JSX} [props.skipButton] A React element or function to render the "Skip" button. If a function is passed, it receives the paid ads data and returns the button element.
+ * @param {JSX|(AdaptiveFormContext, PaidAdsData) =>JSX} [props.continueButton] A React element or function to render the "Continue" button. If a function is passed, it receives the form context and paid ads data and returns the button element. It handles submission logic in the form.
  */
 export default function AdsCampaign( {
 	campaign,
 	headerTitle,
-	onContinue,
-	onSkip = noop,
-	hasError = false,
 	isOnboardingFlow = false,
 	trackingContext,
+	skipButton,
+	continueButton,
 } ) {
 	const formContext = useAdaptiveFormContext();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
-	const { isValidForm, setValue } = formContext;
-	const [ completing, setCompleting ] = useState( null );
+	const { setValue } = formContext;
 	const [ paidAds, setPaidAds ] = useState( {} );
-
-	useEffect( () => {
-		if ( hasError ) {
-			setCompleting( null );
-		}
-	}, [ hasError ] );
 
 	const handleOnStatesReceived = ( paidAdsValues ) => {
 		setPaidAds( paidAdsValues );
@@ -82,39 +73,6 @@ export default function AdsCampaign( {
 		const { amount } = paidAdsValues;
 		setValue( 'amount', amount );
 	};
-
-	const handleSkipCreateAds = () => {
-		setCompleting( ACTION_SKIP );
-
-		onSkip( paidAds );
-	};
-
-	const handleCompleteClick = ( event ) => {
-		setCompleting( event.target.dataset.action );
-
-		onContinue( paidAds );
-	};
-
-	// The status check of Google Ads account connection is included in `paidAds.isReady`,
-	// because when there is no connected account, it will disable the budget section and set the `amount` to `undefined`.
-	const disabledComplete =
-		completing === ACTION_SKIP || ! paidAds.isReady || ! isValidForm;
-
-	let continueButtonProps = {
-		text: __( 'Continue', 'google-listings-and-ads' ),
-	};
-
-	if ( isOnboardingFlow ) {
-		continueButtonProps = {
-			'data-action': ACTION_COMPLETE,
-			text: __( 'Complete setup', 'google-listings-and-ads' ),
-			eventName: 'gla_onboarding_complete_with_paid_ads_button_click',
-			eventProps: {
-				budget: paidAds.amount,
-				audiences: countryCodes?.join( ',' ),
-			},
-		};
-	}
 
 	let description = createInterpolateElement(
 		__(
@@ -161,25 +119,13 @@ export default function AdsCampaign( {
 
 			<StepContentFooter>
 				<StepContentActions>
-					{ isOnboardingFlow && (
-						<SkipButton
-							text={ __(
-								'Skip paid ads creation',
-								'google-listings-and-ads'
-							) }
-							onSkipCreatePaidAds={ handleSkipCreateAds }
-							completing={ completing }
-							paidAds={ paidAds }
-						/>
-					) }
+					{ typeof skipButton === 'function'
+						? skipButton( paidAds )
+						: skipButton }
 
-					<AppButton
-						isPrimary
-						disabled={ disabledComplete }
-						onClick={ handleCompleteClick }
-						loading={ completing === ACTION_COMPLETE }
-						{ ...continueButtonProps }
-					/>
+					{ typeof continueButton === 'function'
+						? continueButton( formContext, paidAds )
+						: continueButton }
 				</StepContentActions>
 
 				<PaidAdsFaqsPanel />
