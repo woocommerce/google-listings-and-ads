@@ -26,7 +26,7 @@ function getCurrentStep() {
  *
  * @param {Object} props Props
  * @param {Object} props.formProps Form props forwarded from `Form` component.
- * @param {'create-ads'|'edit-ads'|'setup-ads'} props.trackingContext A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
+ * @param {'create-ads'|'edit-ads'} props.trackingContext A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  * @return {import(".~/components/paid-ads/continue-button").default} The button.
  */
 const ContinueButton = ( props ) => {

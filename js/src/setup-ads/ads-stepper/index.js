@@ -30,15 +30,14 @@ import {
 const AdsStepper = ( { formProps } ) => {
 	const [ step, setStep ] = useState( '1' );
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
-
-	const isDisabledLaunch =
-		! formProps.isValidForm ||
-		billingStatus?.status !== GOOGLE_ADS_BILLING_STATUS.APPROVED;
-
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_ADS_ONBOARDING,
 		step,
 	} );
+
+	const isDisabledLaunch =
+		! formProps.isValidForm ||
+		billingStatus?.status !== GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
 	// Allow the users to go backward only, not forward.
 	// Users can only go forward by clicking on the Continue button.

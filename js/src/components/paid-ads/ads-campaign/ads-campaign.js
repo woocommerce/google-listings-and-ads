@@ -100,7 +100,10 @@ export default function AdsCampaign( {
 			<StepContentFooter>
 				<StepContentActions>
 					{ typeof continueButton === 'function'
-						? continueButton( formContext, trackingContext )
+						? continueButton( {
+								formProps: formContext,
+								trackingContext,
+						  } )
 						: continueButton }
 				</StepContentActions>
 				<PaidAdsFaqsPanel />
