@@ -17,7 +17,6 @@ import AudienceSection from '../audience-section';
 import BudgetSection from '../budget-section';
 import { CampaignPreviewCard } from '../campaign-preview';
 import PaidAdsFaqsPanel from '../faqs-panel';
-import ContinueButton from './continue-button';
 
 /**
  * @typedef {import('.~/data/actions').Campaign} Campaign
@@ -30,17 +29,14 @@ import ContinueButton from './continue-button';
  * so it expects a `CampaignAssetsForm` to exist in its parents.
  *
  * @fires gla_documentation_link_click with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
- *
  * @param {Object} props React props.
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
- * @param {boolean} [props.isLoading] If true, the Continue button will display a loading spinner .
- * @param {() => void} props.onContinue Callback called once continue button is clicked.
+ * @param props.continueButton
  * @param {'create-ads'|'edit-ads'|'setup-ads'} props.trackingContext A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  */
 export default function AdsCampaign( {
 	campaign,
-	isLoading,
-	onContinue,
+	continueButton,
 	trackingContext,
 } ) {
 	const isCreation = ! campaign;
@@ -103,11 +99,9 @@ export default function AdsCampaign( {
 
 			<StepContentFooter>
 				<StepContentActions>
-					<ContinueButton
-						onContinue={ onContinue }
-						setupAdsFlow={ trackingContext === 'setup-ads' }
-						isLoading={ isLoading }
-					/>
+					{ typeof continueButton === 'function'
+						? continueButton( formContext )
+						: continueButton }
 				</StepContentActions>
 				<PaidAdsFaqsPanel />
 			</StepContentFooter>

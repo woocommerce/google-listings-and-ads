@@ -14,6 +14,7 @@ import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 import { useAppDispatch } from '.~/data';
 import { getDashboardUrl } from '.~/utils/urls';
+import AppButton from '.~/components/app-button';
 import convertToAssetGroupUpdateBody from '.~/components/paid-ads/convertToAssetGroupUpdateBody';
 import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
@@ -70,6 +71,17 @@ const EditPaidAdsCampaign = () => {
 	} = useAppSelectDispatch( 'getCampaignAssetGroups', id );
 	const campaign = campaigns?.find( ( el ) => el.id === id );
 	const assetEntityGroup = assetEntityGroups?.at( 0 );
+
+	const ContinueButton = ( formProps ) => {
+		return (
+			<AppButton
+				isPrimary
+				text={ __( 'Continue', 'google-listings-and-ads' ) }
+				disabled={ ! formProps.isValidForm }
+				onClick={ () => handleContinueClick( STEP.ASSET_GROUP ) }
+			/>
+		);
+	};
 
 	useEffect( () => {
 		if ( campaign && campaign.type !== CAMPAIGN_TYPE_PMAX ) {
@@ -197,9 +209,7 @@ const EditPaidAdsCampaign = () => {
 								<AdsCampaign
 									campaign={ campaign }
 									trackingContext={ eventContext }
-									onContinue={ () =>
-										handleContinueClick( STEP.ASSET_GROUP )
-									}
+									continueButton={ ContinueButton }
 								/>
 							),
 							onClick: handleStepperClick,

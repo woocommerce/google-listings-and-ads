@@ -17,6 +17,7 @@ import { useAppDispatch } from '.~/data';
 import { getDashboardUrl } from '.~/utils/urls';
 import convertToAssetGroupUpdateBody from '.~/components/paid-ads/convertToAssetGroupUpdateBody';
 import TopBar from '.~/components/stepper/top-bar';
+import AppButton from '.~/components/app-button';
 import HelpIconButton from '.~/components/help-icon-button';
 import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
@@ -51,6 +52,17 @@ const CreatePaidAdsCampaign = () => {
 	const { createAdsCampaign, updateCampaignAssetGroup } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: initialCountryCodes } = useTargetAudienceFinalCountryCodes();
+
+	const ContinueButton = ( formProps ) => {
+		return (
+			<AppButton
+				isPrimary
+				text={ __( 'Continue', 'google-listings-and-ads' ) }
+				disabled={ ! formProps.isValidForm }
+				onClick={ () => handleContinueClick( STEP.ASSET_GROUP ) }
+			/>
+		);
+	};
 
 	const handleStepperClick = ( nextStep ) => {
 		recordStepperChangeEvent(
@@ -146,9 +158,7 @@ const CreatePaidAdsCampaign = () => {
 							content: (
 								<AdsCampaign
 									trackingContext={ eventContext }
-									onContinue={ () =>
-										handleContinueClick( STEP.ASSET_GROUP )
-									}
+									continueButton={ ContinueButton }
 								/>
 							),
 							onClick: handleStepperClick,

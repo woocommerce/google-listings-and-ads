@@ -9,8 +9,11 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import SetupAccounts from './setup-accounts';
+import AppButton from '.~/components/app-button';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
+import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
+import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
@@ -26,6 +29,11 @@ import {
  */
 const AdsStepper = ( { formProps } ) => {
 	const [ step, setStep ] = useState( '1' );
+	const { billingStatus } = useGoogleAdsAccountBillingStatus();
+
+	const isDisabledLaunch =
+		! formProps.isValidForm ||
+		billingStatus?.status !== GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_ADS_ONBOARDING,
@@ -87,8 +95,18 @@ const AdsStepper = ( { formProps } ) => {
 					content: (
 						<AdsCampaign
 							trackingContext="setup-ads"
-							onContinue={ formProps.handleSubmit }
-							isLoading={ formProps.isSubmitting }
+							continueButton={
+								<AppButton
+									isPrimary
+									text={ __(
+										'Launch paid campaign',
+										'google-listings-and-ads'
+									) }
+									disabled={ isDisabledLaunch }
+									loading={ formProps.isSubmitting }
+									onClick={ formProps.handleSubmit }
+								/>
+							}
 						/>
 					),
 					onClick: handleStepClick,
