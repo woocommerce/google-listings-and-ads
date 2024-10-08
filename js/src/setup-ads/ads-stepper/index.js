@@ -12,6 +12,7 @@ import SetupAccounts from './setup-accounts';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import SetupBilling from './setup-billing';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
+import AppButton from '.~/components/app-button';
 import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
@@ -96,7 +97,16 @@ const AdsStepper = ( { formProps } ) => {
 								'google-listings-and-ads'
 							) }
 							trackingContext="setup-ads"
-							onContinue={ handleCreateCampaignContinue }
+							continueButton={
+								<AppButton
+									isPrimary
+									text={ __(
+										'Continue',
+										'google-listings-and-ads'
+									) }
+									onClick={ handleCreateCampaignContinue }
+								/>
+							}
 						/>
 					),
 					onClick: handleStepClick,

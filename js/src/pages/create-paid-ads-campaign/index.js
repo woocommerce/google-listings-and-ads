@@ -20,6 +20,7 @@ import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
 import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
+import AppButton from '.~/components/app-button';
 import AssetGroup, {
 	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
 } from '.~/components/paid-ads/asset-group';
@@ -150,8 +151,19 @@ const CreatePaidAdsCampaign = () => {
 										'google-listings-and-ads'
 									) }
 									trackingContext={ eventContext }
-									onContinue={ () =>
-										handleContinueClick( STEP.ASSET_GROUP )
+									continueButton={
+										<AppButton
+											isPrimary
+											text={ __(
+												'Continue',
+												'google-listings-and-ads'
+											) }
+											onClick={ () =>
+												handleContinueClick(
+													STEP.ASSET_GROUP
+												)
+											}
+										/>
 									}
 								/>
 							),
