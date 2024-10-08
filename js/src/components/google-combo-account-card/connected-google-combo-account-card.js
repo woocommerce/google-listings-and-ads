@@ -15,6 +15,10 @@ import './connected-google-combo-account-card.scss';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import ConnectedIconLabel from '../connected-icon-label';
+import {
+	GOOGLE_ADS_ACCOUNT_STATUS,
+	GOOGLE_MC_ACCOUNT_STATUS,
+} from '.~/constants';
 
 /**
  * Clicking on the "connect to a different Google account" button.
@@ -57,14 +61,16 @@ const ConnectedGoogleComboAccountCard = () => {
 	}
 
 	const isGoogleAdsAccountConnected =
-		googleAdsAccount?.status === 'approved' ||
-		( googleAdsAccount?.status === 'incomplete' &&
-			googleAdsAccount?.step === 'link_merchant' );
+		googleAdsAccount?.status === GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED ||
+		( googleAdsAccount?.status === GOOGLE_ADS_ACCOUNT_STATUS.INCOMPLETE &&
+			[ 'link_merchant', 'account_access' ].includes(
+				googleAdsAccount?.step
+			) );
 
 	const isGoogleMCAccountConnected =
 		googleMCAccount?.id ||
-		googleMCAccount?.status === 'connected' ||
-		( googleMCAccount?.status === 'incomplete' &&
+		googleMCAccount?.status === GOOGLE_MC_ACCOUNT_STATUS.CONNECTED ||
+		( googleMCAccount?.status === GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE &&
 			googleMCAccount?.step === 'link_ads' );
 
 	const getHelper = () => {
