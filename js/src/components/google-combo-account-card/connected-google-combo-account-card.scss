@@ -7,6 +7,10 @@
 	.gla-account-card__description p {
 		margin: 0;
 	}
+
+	.components-select-control__input {
+		pointer-events: none;
+	}
 }
 
 .gla-google-combo-service-connected-icon-label {
