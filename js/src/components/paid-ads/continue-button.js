@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import AppButton from '.~/components/app-button';
 
 /**
- * An AppButton that renders Continue button on paid ad campaign.
+ * Renders Continue button on paid ad campaign create and edit page.
  *
  * @param {Object} props Props
  * @param {Object} props.formProps Form props forwarded from `Form` component.
