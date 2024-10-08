@@ -15,6 +15,7 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import { useAppDispatch } from '.~/data';
 import { FILTER_ONBOARDING } from '.~/utils/tracks';
 import expectComponentToRecordEventWithFilteredProperties from '.~/tests/expectComponentToRecordEventWithFilteredProperties';
+import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts';
 
 jest.mock( '.~/hooks/useApiFetchCallback', () =>
 	jest.fn().mockName( 'useApiFetchCallback' )
@@ -22,6 +23,10 @@ jest.mock( '.~/hooks/useApiFetchCallback', () =>
 
 jest.mock( '.~/hooks/useGoogleAdsAccount', () =>
 	jest.fn().mockName( 'useGoogleAdsAccount' )
+);
+
+jest.mock( '.~/hooks/useExistingGoogleAdsAccounts', () =>
+	jest.fn().mockName( 'useExistingGoogleAdsAccounts' )
 );
 
 jest.mock( '.~/data', () => ( {
@@ -64,6 +69,10 @@ describe( 'ConnectAds', () => {
 				.mockName( 'refetchGoogleAdsAccount' ),
 		} );
 
+		useExistingGoogleAdsAccounts.mockReturnValue( {
+			existingAccounts: accounts,
+		} );
+
 		fetchGoogleAdsAccountStatus = jest
 			.fn()
 			.mockName( 'fetchGoogleAdsAccountStatus' );
@@ -76,11 +85,7 @@ describe( 'ConnectAds', () => {
 
 	it( 'should render the given accounts in a selection', () => {
 		render( <ConnectAds accounts={ accounts } /> );
-
 		expect( screen.getByRole( 'combobox' ) ).toBeInTheDocument();
-		expect(
-			screen.getByRole( 'option', { name: 'Select one' } )
-		).toBeInTheDocument();
 		expect(
 			screen.getByRole( 'option', { name: 'Account A (1)' } )
 		).toBeInTheDocument();
@@ -115,20 +120,13 @@ describe( 'ConnectAds', () => {
 		expect( onCreateNew ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	it( 'should disable the "Connect" button when no account is selected', async () => {
-		const user = userEvent.setup();
+	it( 'should disable the "Connect" button when there are no accounts', async () => {
+		useExistingGoogleAdsAccounts.mockReturnValue( {
+			existingAccounts: [],
+		} );
 
-		render( <ConnectAds accounts={ accounts } /> );
-		const combobox = screen.getByRole( 'combobox' );
+		render( <ConnectAds accounts={ [] } /> );
 		const button = getConnectButton();
-
-		expect( button ).toBeDisabled();
-
-		await user.selectOptions( combobox, '1' );
-
-		expect( button ).toBeEnabled();
-
-		await user.selectOptions( combobox, '' );
 
 		expect( button ).toBeDisabled();
 	} );

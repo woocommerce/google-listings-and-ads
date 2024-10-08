@@ -11,12 +11,15 @@ import useCreateMCAccount from '../components/google-mc-account-card/useCreateMC
 import useUpsertAdsAccount from './useUpsertAdsAccount';
 import useExistingGoogleAdsAccounts from './useExistingGoogleAdsAccounts';
 import useExistingGoogleMCAccounts from './useExistingGoogleMCAccounts';
+import useGoogleAdsAccount from './useGoogleAdsAccount';
+import useGoogleMCAccount from './useGoogleMCAccount';
 
 jest.mock( '../components/google-mc-account-card/useCreateMCAccount' );
 jest.mock( './useUpsertAdsAccount' );
 jest.mock( './useExistingGoogleAdsAccounts' );
 jest.mock( './useExistingGoogleMCAccounts' );
 jest.mock( './useGoogleAdsAccount' );
+jest.mock( './useGoogleMCAccount' );
 
 describe( 'useAutoCreateAdsMCAccounts hook', () => {
 	let handleCreateAccount;
@@ -41,6 +44,21 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 		useExistingGoogleAdsAccounts.mockReturnValue( {
 			existingAccounts: [],
 			hasFinishedResolution: true,
+		} );
+
+		useGoogleAdsAccount.mockReturnValue( {
+			hasFinishedResolution: true,
+			hasGoogleAdsConnection: false,
+		} );
+
+		useGoogleAdsAccount.mockReturnValue( {
+			hasFinishedResolution: true,
+			hasGoogleAdsConnection: false,
+		} );
+
+		useGoogleMCAccount.mockReturnValue( {
+			hasFinishedResolution: true,
+			googleMCAccount: undefined,
 		} );
 	} );
 

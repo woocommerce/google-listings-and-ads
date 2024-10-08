@@ -498,4 +498,49 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 			$proxy->prepare_data( $data, $request )
 		);
 	}
+
+	public function test_product_types() {
+		add_filter( 'woocommerce_rest_prepare_product_object', [ $this, 'alter_product_price_types' ], 10, 3 );
+
+		$product          = ProductHelper::create_simple_product();
+		$product_variable = ProductHelper::create_variation_product();
+		$variation        = $product_variable->get_available_variations()[0];
+		$this->add_metadata( $product->get_id(), $this->get_test_metadata() );
+
+		$request = $this->do_request( '/wc/v3/products', 'GET', [ 'gla_syncable' => '1' ] );
+		$this->assertEquals( 'string', gettype( $request->get_data()[0]['price'] ) );
+		$this->assertEquals( 'string', gettype( $request->get_data()[0]['regular_price'] ) );
+		$this->assertEquals( 'string', gettype( $request->get_data()[0]['sale_price'] ) );
+
+		$request = $this->do_request( '/wc/v3/products/' . $product->get_id(), 'GET', [ 'gla_syncable' => '1' ] );
+		$this->assertEquals( 'string', gettype( $request->get_data()['price'] ) );
+		$this->assertEquals( 'string', gettype( $request->get_data()['regular_price'] ) );
+		$this->assertEquals( 'string', gettype( $request->get_data()['sale_price'] ) );
+
+		$request = $this->do_request( '/wc/v3/products/' . $product_variable->get_id() . '/variations', 'GET', [ 'gla_syncable' => '1' ] );
+		$this->assertEquals( 'string', gettype( $request->get_data()[0]['price'] ) );
+		$this->assertEquals( 'string', gettype( $request->get_data()[0]['regular_price'] ) );
+		$this->assertEquals( 'string', gettype( $request->get_data()[0]['sale_price'] ) );
+
+		$request = $this->do_request( '/wc/v3/products/' . $product_variable->get_id() . '/variations/' . $variation['variation_id'], 'GET', [ 'gla_syncable' => '1' ] );
+		$this->assertEquals( 'string', gettype( $request->get_data()['price'] ) );
+		$this->assertEquals( 'string', gettype( $request->get_data()['regular_price'] ) );
+		$this->assertEquals( 'string', gettype( $request->get_data()['sale_price'] ) );
+
+		// Doesn't apply if here is not 'gla_syncable'
+		$request = $this->do_request( '/wc/v3/products' );
+		$this->assertEquals( 'integer', gettype( $request->get_data()[0]['price'] ) );
+		$this->assertEquals( 'integer', gettype( $request->get_data()[0]['regular_price'] ) );
+		$this->assertEquals( 'integer', gettype( $request->get_data()[0]['sale_price'] ) );
+
+		remove_filter( 'woocommerce_rest_prepare_product_object', [ $this, 'alter_product_price_types' ] );
+	}
+
+	public function alter_product_price_types( $response ) {
+		$response->data['price']         = intval( $response->data['price'] );
+		$response->data['regular_price'] = intval( $response->data['regular_price'] );
+		$response->data['sale_price']    = intval( $response->data['sale_price'] );
+
+		return $response;
+	}
 }

@@ -315,6 +315,9 @@ test.describe( 'Set up accounts', () => {
 				await setUpAccountsPage.mockJetpackConnected();
 				await setUpAccountsPage.mockGoogleConnected();
 
+				await setUpAccountsPage.fulfillAdsAccounts( [] );
+				await setUpAccountsPage.fulfillMCAccounts( [] );
+
 				await setUpAccountsPage.fulfillMCConnection( {
 					id: 5432178,
 					name: null,
@@ -333,10 +336,6 @@ test.describe( 'Set up accounts', () => {
 					symbol: '$',
 				} );
 
-				await setUpAccountsPage.goto();
-			} );
-
-			test( 'should see the merchant center id and ads account id if connected', async () => {
 				await setupAdsAccountPage.fulfillAdsAccounts(
 					{
 						message:
@@ -360,6 +359,10 @@ test.describe( 'Set up accounts', () => {
 					[ 'POST' ]
 				);
 
+				await setUpAccountsPage.goto();
+			} );
+
+			test( 'should see the merchant center id and ads account id if connected', async () => {
 				const googleAccountCard =
 					setUpAccountsPage.getGoogleAccountCard();
 				await expect(
@@ -388,7 +391,7 @@ test.describe( 'Set up accounts', () => {
 		} );
 	} );
 
-	test.describe( 'Google Ads card aabrakadarbra', () => {
+	test.describe( 'Google Ads card', () => {
 		test.beforeAll( async () => {
 			// Mock Jetpack as connected
 			await setUpAccountsPage.mockJetpackConnected(
@@ -397,31 +400,27 @@ test.describe( 'Set up accounts', () => {
 			);
 
 			await setUpAccountsPage.fulfillMCAccounts( [
-				[
-					{
-						id: 5432178,
-						name: null,
-						subaccount: null,
-						domain: null,
-					},
-				],
+				{
+					id: 5432178,
+					name: null,
+					subaccount: null,
+					domain: null,
+				},
 			] );
 
 			await setUpAccountsPage.fulfillAdsAccounts( [
-				[
-					{
-						id: 111111,
-						name: 'gla',
-					},
-					{
-						id: 222222,
-						name: 'gla',
-					},
-					{
-						id: 333333,
-						name: 'gla',
-					},
-				],
+				{
+					id: 111111,
+					name: 'gla',
+				},
+				{
+					id: 222222,
+					name: 'gla',
+				},
+				{
+					id: 333333,
+					name: 'gla',
+				},
 			] );
 
 			await setUpAccountsPage.mockAdsAccountDisconnected();
@@ -500,17 +499,11 @@ test.describe( 'Set up accounts', () => {
 		} );
 
 		test( 'should display the Ads ID in account card description', async () => {
-			await setUpAccountsPage.fulfillAdsAccounts(
-				[
-					[
-						{
-							id: 111111,
-						},
-					],
-				],
-				200,
-				[ 'GET' ]
-			);
+			await setUpAccountsPage.fulfillAdsAccounts( [
+				{
+					id: 111111,
+				},
+			] );
 
 			const googleAdsAccountCard =
 				setUpAccountsPage.getGoogleAdsAccountCard();

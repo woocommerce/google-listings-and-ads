@@ -13,6 +13,13 @@ import LoadingLabel from '../loading-label/loading-label';
 import AccountCreationDescription from './account-creation-description';
 import { ConnectAds } from './connect-ads';
 import './connected-google-combo-account-card.scss';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
+import ConnectedIconLabel from '../connected-icon-label';
+import {
+	GOOGLE_ADS_ACCOUNT_STATUS,
+	GOOGLE_MC_ACCOUNT_STATUS,
+} from '.~/constants';
 
 /**
  * Clicking on the "connect to a different Google account" button.
@@ -28,6 +35,16 @@ import './connected-google-combo-account-card.scss';
  */
 const ConnectedGoogleComboAccountCard = () => {
 	const {
+		googleAdsAccount,
+		hasFinishedResolution: hasFinishedResolutionForCurrentAdsAccount,
+	} = useGoogleAdsAccount();
+
+	const {
+		googleMCAccount,
+		hasFinishedResolution: hasFinishedResolutionForCurrentMCAccount,
+	} = useGoogleMCAccount();
+
+	const {
 		isCreatingAccounts,
 		isCreatingBothAccounts,
 		isCreatingAdsAccount,
@@ -36,9 +53,26 @@ const ConnectedGoogleComboAccountCard = () => {
 		accountsCreated,
 	} = useAutoCreateAdsMCAccounts();
 
-	if ( ! accountCreationChecksResolved ) {
+	if (
+		! accountCreationChecksResolved ||
+		! hasFinishedResolutionForCurrentAdsAccount ||
+		! hasFinishedResolutionForCurrentMCAccount
+	) {
 		return <AccountCard description={ <AppSpinner /> } />;
 	}
+
+	const isGoogleAdsAccountConnected =
+		googleAdsAccount?.status === GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED ||
+		( googleAdsAccount?.status === GOOGLE_ADS_ACCOUNT_STATUS.INCOMPLETE &&
+			[ 'link_merchant', 'account_access' ].includes(
+				googleAdsAccount?.step
+			) );
+
+	const isGoogleMCAccountConnected =
+		googleMCAccount?.id ||
+		googleMCAccount?.status === GOOGLE_MC_ACCOUNT_STATUS.CONNECTED ||
+		( googleMCAccount?.status === GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE &&
+			[ 'link_ads', 'claim' ].includes( googleMCAccount?.step ) );
 
 	const getHelper = () => {
 		if ( isCreatingBothAccounts ) {
@@ -60,6 +94,14 @@ const ConnectedGoogleComboAccountCard = () => {
 			return (
 				<LoadingLabel
 					text={ __( 'Creating…', 'google-listings-and-ads' ) }
+				/>
+			);
+		}
+
+		if ( isGoogleAdsAccountConnected && isGoogleMCAccountConnected ) {
+			return (
+				<ConnectedIconLabel
+					text={ __( 'Connected', 'google-listings-and-ads' ) }
 				/>
 			);
 		}

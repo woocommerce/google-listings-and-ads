@@ -10,6 +10,9 @@ import useCreateMCAccount from '../components/google-mc-account-card/useCreateMC
 import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
 import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts';
 import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
+import useGoogleAdsAccount from './useGoogleAdsAccount';
+import useGoogleMCAccount from './useGoogleMCAccount';
+import { GOOGLE_MC_ACCOUNT_STATUS } from '.~/constants';
 
 /**
  * Custom hook to handle the creation of Google Merchant Center (MC) and Google Ads accounts.
@@ -47,22 +50,39 @@ const useAutoCreateAdsMCAccounts = () => {
 		hasFinishedResolution: hasFinishedResolutionForExistingAdsAccount,
 	} = useExistingGoogleAdsAccounts();
 
+	const {
+		hasFinishedResolution: hasFinishedResolutionForGoogleAdsAccount,
+		hasGoogleAdsConnection,
+	} = useGoogleAdsAccount();
+
+	const {
+		googleMCAccount,
+		hasFinishedResolution: hasFinishedResolutionForGoogleMCAccount,
+	} = useGoogleMCAccount();
+
 	const [ handleCreateAccount, { response } ] = useCreateMCAccount();
 	const [ upsertAdsAccount, { loading } ] = useUpsertAdsAccount();
+	const isGoogleMCConnected =
+		googleMCAccount?.status === GOOGLE_MC_ACCOUNT_STATUS.CONNECTED ||
+		googleMCAccount?.status === GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE;
 
-	const hasExistingMCAccount = existingMCAccounts?.length > 0;
-	const hasExistingAdsAccount = existingAdsAccount?.length > 0;
+	const hasExistingMCAccount =
+		isGoogleMCConnected || existingMCAccounts?.length > 0;
+	const hasExistingAdsAccount =
+		hasGoogleAdsConnection || existingAdsAccount?.length > 0;
 
 	if (
 		initHasExistingMCAccountsRef.current === null &&
-		hasFinishedResolutionForExistingMCAccounts
+		hasFinishedResolutionForExistingMCAccounts &&
+		hasFinishedResolutionForGoogleMCAccount
 	) {
 		initHasExistingMCAccountsRef.current = hasExistingMCAccount;
 	}
 
 	if (
 		initHasExistingAdsAccountsRef.current === null &&
-		hasFinishedResolutionForExistingAdsAccount
+		hasFinishedResolutionForExistingAdsAccount &&
+		hasFinishedResolutionForGoogleAdsAccount
 	) {
 		initHasExistingAdsAccountsRef.current = hasExistingAdsAccount;
 	}

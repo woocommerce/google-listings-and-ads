@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import AdsAccountSelectControl from '.~/components/google-ads-account-card/connect-ads/ads-account-select-control';
+import AdsAccountSelectControl from '.~/components/ads-account-select-control';
 import AppButton from '.~/components/app-button';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import ConnectedIconLabel from '.~/components/connected-icon-label';
