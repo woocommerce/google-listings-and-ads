@@ -57,6 +57,10 @@ const AdsStepper = ( { formProps } ) => {
 		continueStep( '2' );
 	};
 
+	// @todo: Add check for billing status once billing setup is moved to step 2.
+	// For now, only disable based on the form being valid for testing purposes.
+	const isDisabledLaunch = ! formProps.isValidForm;
+
 	return (
 		// This Stepper with this class name
 		// should be refactored into separate shared component.
@@ -94,7 +98,7 @@ const AdsStepper = ( { formProps } ) => {
 										'Launch paid campaign',
 										'google-listings-and-ads'
 									) }
-									disabled={ ! formProps.isValidForm }
+									disabled={ isDisabledLaunch }
 									loading={ formProps.isSubmitting }
 									onClick={ formProps.handleSubmit }
 								/>
