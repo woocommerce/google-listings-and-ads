@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 import { noop } from 'lodash';
 
 /**
@@ -16,11 +16,43 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AppButton from '.~/components/app-button';
+import validateCampaign from '.~/components/paid-ads/validateCampaign';
+import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
 import { getProductFeedUrl } from '.~/utils/urls';
 import { API_NAMESPACE } from '.~/data/constants';
-import { GUIDE_NAMES } from '.~/constants';
+import { GUIDE_NAMES, GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
 import SkipButton from './skip-button';
+import clientSession from './clientSession';
+
+/**
+ *
+ * @typedef {Object} PaidAdsData
+ * @property {number|undefined} amount Daily average cost of the paid ads campaign.
+ * @property {boolean} isValid Whether the campaign data are valid values.
+ * @property {boolean} isReady Whether the campaign data and the billing setting are ready for completing the paid ads setup.
+ */
+
+const defaultPaidAds = {
+	amount: 0,
+	isValid: false,
+	isReady: false,
+};
+
+/**
+ * Resolve the initial paid ads data from the given paid ads data.
+ * Parts of the resolved data are used in the `initialValues` prop of `Form` component.
+ *
+ * @param {PaidAdsData} paidAds The paid ads data as the base to be resolved with other states.
+ * @return {PaidAdsData} The resolved paid ads data.
+ */
+function resolveInitialPaidAds( paidAds ) {
+	const nextPaidAds = { ...paidAds };
+	nextPaidAds.isValid = ! Object.keys( validateCampaign( nextPaidAds ) )
+		.length;
+
+	return nextPaidAds;
+}
 
 /**
  * Renders the onboarding step for setting up the paid ads (Google Ads account and paid campaign)
@@ -32,6 +64,19 @@ export default function SetupPaidAds() {
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
+	const { billingStatus } = useGoogleAdsAccountBillingStatus();
+	const [ paidAds, setPaidAds ] = useState( () => {
+		// Resolve the starting paid ads data with the campaign data stored in the client session.
+		const startingPaidAds = {
+			...defaultPaidAds,
+			...clientSession.getCampaign(),
+		};
+
+		return resolveInitialPaidAds( startingPaidAds );
+	} );
+
+	const isBillingCompleted =
+		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
 	const finishOnboardingSetup = async ( onBeforeFinish = noop ) => {
 		try {
@@ -61,7 +106,7 @@ export default function SetupPaidAds() {
 		await finishOnboardingSetup();
 	};
 
-	const skipButton = ( paidAds ) => {
+	const CreateSkipButton = () => {
 		return (
 			<SkipButton
 				paidAds={ paidAds }
@@ -72,10 +117,14 @@ export default function SetupPaidAds() {
 		);
 	};
 
-	const continueButton = ( formContext, paidAds ) => {
+	const ContinueButton = ( formContext ) => {
 		const { isValidForm } = formContext;
+
 		const disabled =
-			completing === ACTION_SKIP || ! paidAds.isReady || ! isValidForm;
+			completing === ACTION_SKIP ||
+			! paidAds.isValid ||
+			! isValidForm ||
+			! isBillingCompleted;
 
 		const handleCompleteClick = async () => {
 			setCompleting( ACTION_COMPLETE );
@@ -105,10 +154,16 @@ export default function SetupPaidAds() {
 		);
 	};
 
+	useEffect( () => {
+		clientSession.setCampaign( paidAds );
+	}, [ paidAds ] );
+
 	return (
 		<CampaignAssetsForm
-			initialCampaign={ {
-				amount: 0,
+			initialCampaign={ paidAds }
+			validate={ validateCampaign }
+			onChange={ ( _, values, isValid ) => {
+				setPaidAds( { ...paidAds, ...values, isValid } );
 			} }
 		>
 			<AdsCampaign
@@ -116,8 +171,8 @@ export default function SetupPaidAds() {
 					'Create a campaign to advertise your products',
 					'google-listings-and-ads'
 				) }
-				continueButton={ continueButton }
-				skipButton={ skipButton }
+				continueButton={ ContinueButton }
+				skipButton={ CreateSkipButton }
 				isOnboardingFlow
 			/>
 		</CampaignAssetsForm>

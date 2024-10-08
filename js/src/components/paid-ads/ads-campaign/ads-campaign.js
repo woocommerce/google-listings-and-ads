@@ -47,7 +47,6 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
  * @fires gla_documentation_link_click with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
  * @fires gla_onboarding_complete_with_paid_ads_button_click
  * @param {Object} props React props.
- * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
  * @param {string} props.headerTitle The title of the step.
  * @param {boolean} [props.isOnboardingFlow=false] Whether this component is used in onboarding flow.
  * @param {'create-ads'|'edit-ads'|'setup-ads'} props.trackingContext A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
@@ -55,7 +54,6 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
  * @param {JSX|(AdaptiveFormContext, PaidAdsData) =>JSX} [props.continueButton] A React element or function to render the "Continue" button. If a function is passed, it receives the form context and paid ads data and returns the button element. It handles submission logic in the form.
  */
 export default function AdsCampaign( {
-	campaign,
 	headerTitle,
 	isOnboardingFlow = false,
 	trackingContext,
@@ -64,15 +62,6 @@ export default function AdsCampaign( {
 } ) {
 	const formContext = useAdaptiveFormContext();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
-	const { setValue } = formContext;
-	const [ paidAds, setPaidAds ] = useState( {} );
-
-	const handleOnStatesReceived = ( paidAdsValues ) => {
-		setPaidAds( paidAdsValues );
-
-		const { amount } = paidAdsValues;
-		setValue( 'amount', amount );
-	};
 
 	let description = createInterpolateElement(
 		__(
@@ -107,10 +96,7 @@ export default function AdsCampaign( {
 			{ isOnboardingFlow && <PaidAdsFeaturesSection /> }
 
 			<PaidAdsSetupSections
-				onStatesReceived={ handleOnStatesReceived }
-				campaign={ campaign }
 				countryCodes={ countryCodes }
-				loadCampaignFromClientSession={ isOnboardingFlow }
 				showCampaignPreviewCard={
 					trackingContext === 'setup-ads' ||
 					trackingContext === 'create-ads'
@@ -120,11 +106,11 @@ export default function AdsCampaign( {
 			<StepContentFooter>
 				<StepContentActions>
 					{ typeof skipButton === 'function'
-						? skipButton( paidAds )
+						? skipButton()
 						: skipButton }
 
 					{ typeof continueButton === 'function'
-						? continueButton( formContext, paidAds )
+						? continueButton( formContext )
 						: continueButton }
 				</StepContentActions>
 

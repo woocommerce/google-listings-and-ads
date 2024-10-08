@@ -33,6 +33,7 @@ import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
 } from '.~/utils/tracks';
+import validateCampaign from '.~/components/paid-ads/validateCampaign';
 
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'edit-ads';
@@ -166,6 +167,17 @@ const EditPaidAdsCampaign = () => {
 		getHistory().push( getDashboardUrl() );
 	};
 
+	const ContinueButton = ( formProps ) => {
+		return (
+			<AppButton
+				isPrimary
+				text={ __( 'Continue', 'google-listings-and-ads' ) }
+				disabled={ ! formProps.isValidForm }
+				onClick={ () => handleContinueClick( STEP.ASSET_GROUP ) }
+			/>
+		);
+	};
+
 	return (
 		<>
 			<TopBar
@@ -184,6 +196,7 @@ const EditPaidAdsCampaign = () => {
 				} }
 				assetEntityGroup={ assetEntityGroup }
 				onSubmit={ handleSubmit }
+				validate={ validateCampaign }
 			>
 				<Stepper
 					currentStep={ getCurrentStep() }
@@ -202,20 +215,7 @@ const EditPaidAdsCampaign = () => {
 										'Edit your paid campaign',
 										'google-listings-and-ads'
 									) }
-									continueButton={
-										<AppButton
-											isPrimary
-											text={ __(
-												'Continue',
-												'google-listings-and-ads'
-											) }
-											onClick={ () =>
-												handleContinueClick(
-													STEP.ASSET_GROUP
-												)
-											}
-										/>
-									}
+									continueButton={ ContinueButton }
 								/>
 							),
 							onClick: handleStepperClick,

@@ -105,6 +105,7 @@ const AdsStepper = ( { formProps } ) => {
 										'google-listings-and-ads'
 									) }
 									onClick={ handleCreateCampaignContinue }
+									disabled={ ! formProps.isValidForm }
 								/>
 							}
 						/>

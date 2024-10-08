@@ -41,6 +41,7 @@ const BudgetSection = ( {
 } ) => {
 	const { getInputProps, setValue, values } = formProps;
 	const { amount } = values;
+	console.log( formProps );
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const monthlyMaxEstimated = getMonthlyMaxEstimated( amount );
 	// Display the currency code that will be used by Google Ads, but still use the store's currency formatting settings.

@@ -16,6 +16,7 @@ import useAdsSetupCompleteCallback from '.~/hooks/useAdsSetupCompleteCallback';
 import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AdsStepper from './ads-stepper';
 import SetupAdsTopBar from './top-bar';
+import validateCampaign from '.~/components/paid-ads/validateCampaign';
 import { recordGlaEvent } from '.~/utils/tracks';
 
 /**
@@ -87,6 +88,7 @@ const SetupAdsForm = () => {
 			initialCampaign={ initialValues }
 			onChange={ handleChange }
 			onSubmit={ handleSubmit }
+			validate={ validateCampaign }
 		>
 			{ ( formProps ) => {
 				const mixedFormProps = {
