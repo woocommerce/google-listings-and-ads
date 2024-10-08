@@ -13,6 +13,9 @@ import LoadingLabel from '../loading-label/loading-label';
 import AccountCreationDescription from './account-creation-description';
 import ConnectMC from './connect-mc';
 import './connected-google-combo-account-card.scss';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
+import ConnectedIconLabel from '../connected-icon-label';
 
 /**
  * Clicking on the "connect to a different Google account" button.
@@ -28,6 +31,16 @@ import './connected-google-combo-account-card.scss';
  */
 const ConnectedGoogleComboAccountCard = () => {
 	const {
+		googleAdsAccount,
+		hasFinishedResolution: hasFinishedResolutionForCurrentAdsAccount,
+	} = useGoogleAdsAccount();
+
+	const {
+		googleMCAccount,
+		hasFinishedResolution: hasFinishedResolutionForCurrentMCAccount,
+	} = useGoogleMCAccount();
+
+	const {
 		isCreatingAccounts,
 		isCreatingBothAccounts,
 		isCreatingAdsAccount,
@@ -36,9 +49,24 @@ const ConnectedGoogleComboAccountCard = () => {
 		accountsCreated,
 	} = useAutoCreateAdsMCAccounts();
 
-	if ( ! accountCreationChecksResolved ) {
+	if (
+		! accountCreationChecksResolved ||
+		! hasFinishedResolutionForCurrentAdsAccount ||
+		! hasFinishedResolutionForCurrentMCAccount
+	) {
 		return <AccountCard description={ <AppSpinner /> } />;
 	}
+
+	const isGoogleAdsAccountConnected =
+		googleAdsAccount?.status === 'approved' ||
+		( googleAdsAccount?.status === 'incomplete' &&
+			googleAdsAccount?.step === 'link_merchant' );
+
+	const isGoogleMCAccountConnected =
+		googleMCAccount?.id ||
+		googleMCAccount?.status === 'connected' ||
+		( googleMCAccount?.status === 'incomplete' &&
+			googleMCAccount?.step === 'link_ads' );
 
 	const getHelper = () => {
 		if ( isCreatingBothAccounts ) {
@@ -60,6 +88,14 @@ const ConnectedGoogleComboAccountCard = () => {
 			return (
 				<LoadingLabel
 					text={ __( 'Creating…', 'google-listings-and-ads' ) }
+				/>
+			);
+		}
+
+		if ( isGoogleAdsAccountConnected && isGoogleMCAccountConnected ) {
+			return (
+				<ConnectedIconLabel
+					text={ __( 'Connected', 'google-listings-and-ads' ) }
 				/>
 			);
 		}
