@@ -21,7 +21,6 @@ import {
 	FILTER_ONBOARDING,
 	CONTEXT_ADS_ONBOARDING,
 } from '.~/utils/tracks';
-import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 
 /**
  * @param {Object} props React props
@@ -32,18 +31,19 @@ import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 const AdsStepper = ( { formProps } ) => {
 	const [ step, setStep ] = useState( '1' );
 	const initHasAdsConnectionRef = useRef( null );
-	const {
-		hasFinishedResolution: hasResolvedGoogleAccount,
-	} = useGoogleAccount();
+	const { hasFinishedResolution: hasResolvedGoogleAccount } =
+		useGoogleAccount();
 
 	const {
 		googleAdsAccount,
 		hasFinishedResolution: hasResolvedGoogleAdsAccount,
+		hasGoogleAdsConnection,
 	} = useGoogleAdsAccount();
 
 	const {
 		hasAccess,
 		hasFinishedResolution: hasResolvedAdsAccountStatus,
+		step: adsAccountSetupStep,
 	} = useGoogleAdsAccountStatus();
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
@@ -60,10 +60,10 @@ const AdsStepper = ( { formProps } ) => {
 		return null;
 	}
 
-	const isGoogleAdsReady = 
-		googleAdsAccount.status !== GOOGLE_ADS_ACCOUNT_STATUS.DISCONNECTED && 
-		hasAccess === true && 
-		!( hasAccess === true && step === 'conversion_action' );
+	const isGoogleAdsReady =
+		hasGoogleAdsConnection &&
+		hasAccess === true &&
+		adsAccountSetupStep !== 'conversion_action';
 
 	if ( initHasAdsConnectionRef.current === null ) {
 		initHasAdsConnectionRef.current = isGoogleAdsReady;
