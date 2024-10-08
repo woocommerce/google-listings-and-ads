@@ -31,7 +31,7 @@ import PaidAdsFaqsPanel from '../faqs-panel';
  * @fires gla_documentation_link_click with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
  * @param {Object} props React props.
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
- * @param props.continueButton
+ * @param {JSX.Element|Function} props.continueButton Continue button component.
  * @param {'create-ads'|'edit-ads'|'setup-ads'} props.trackingContext A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  */
 export default function AdsCampaign( {
@@ -100,7 +100,7 @@ export default function AdsCampaign( {
 			<StepContentFooter>
 				<StepContentActions>
 					{ typeof continueButton === 'function'
-						? continueButton( formContext )
+						? continueButton( formContext, trackingContext )
 						: continueButton }
 				</StepContentActions>
 				<PaidAdsFaqsPanel />

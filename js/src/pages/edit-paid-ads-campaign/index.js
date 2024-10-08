@@ -14,7 +14,7 @@ import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 import { useAppDispatch } from '.~/data';
 import { getDashboardUrl } from '.~/utils/urls';
-import AppButton from '.~/components/app-button';
+import ContinueButton from '.~/components/paid-ads/continue-button';
 import convertToAssetGroupUpdateBody from '.~/components/paid-ads/convertToAssetGroupUpdateBody';
 import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
@@ -72,17 +72,6 @@ const EditPaidAdsCampaign = () => {
 	const campaign = campaigns?.find( ( el ) => el.id === id );
 	const assetEntityGroup = assetEntityGroups?.at( 0 );
 
-	const ContinueButton = ( formProps ) => {
-		return (
-			<AppButton
-				isPrimary
-				text={ __( 'Continue', 'google-listings-and-ads' ) }
-				disabled={ ! formProps.isValidForm }
-				onClick={ () => handleContinueClick( STEP.ASSET_GROUP ) }
-			/>
-		);
-	};
-
 	useEffect( () => {
 		if ( campaign && campaign.type !== CAMPAIGN_TYPE_PMAX ) {
 			getHistory().replace( dashboardURL );
@@ -129,16 +118,6 @@ const EditPaidAdsCampaign = () => {
 	const handleStepperClick = ( nextStep ) => {
 		recordStepperChangeEvent(
 			eventName,
-			STEP_NUMBER_MAP[ nextStep ],
-			eventContext
-		);
-		setStep( nextStep );
-	};
-
-	const handleContinueClick = ( nextStep ) => {
-		recordStepContinueEvent(
-			eventName,
-			STEP_NUMBER_MAP[ step ],
 			STEP_NUMBER_MAP[ nextStep ],
 			eventContext
 		);

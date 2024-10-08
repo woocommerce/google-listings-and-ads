@@ -17,7 +17,7 @@ import { useAppDispatch } from '.~/data';
 import { getDashboardUrl } from '.~/utils/urls';
 import convertToAssetGroupUpdateBody from '.~/components/paid-ads/convertToAssetGroupUpdateBody';
 import TopBar from '.~/components/stepper/top-bar';
-import AppButton from '.~/components/app-button';
+import ContinueButton from '.~/components/paid-ads/continue-button';
 import HelpIconButton from '.~/components/help-icon-button';
 import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
@@ -29,10 +29,7 @@ import {
 	CAMPAIGN_STEP_NUMBER_MAP as STEP_NUMBER_MAP,
 } from '.~/constants';
 import { API_NAMESPACE } from '.~/data/constants';
-import {
-	recordStepperChangeEvent,
-	recordStepContinueEvent,
-} from '.~/utils/tracks';
+import { recordStepperChangeEvent } from '.~/utils/tracks';
 
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'create-ads';
@@ -53,30 +50,9 @@ const CreatePaidAdsCampaign = () => {
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: initialCountryCodes } = useTargetAudienceFinalCountryCodes();
 
-	const ContinueButton = ( formProps ) => {
-		return (
-			<AppButton
-				isPrimary
-				text={ __( 'Continue', 'google-listings-and-ads' ) }
-				disabled={ ! formProps.isValidForm }
-				onClick={ () => handleContinueClick( STEP.ASSET_GROUP ) }
-			/>
-		);
-	};
-
 	const handleStepperClick = ( nextStep ) => {
 		recordStepperChangeEvent(
 			eventName,
-			STEP_NUMBER_MAP[ nextStep ],
-			eventContext
-		);
-		setStep( nextStep );
-	};
-
-	const handleContinueClick = ( nextStep ) => {
-		recordStepContinueEvent(
-			eventName,
-			STEP_NUMBER_MAP[ step ],
 			STEP_NUMBER_MAP[ nextStep ],
 			eventContext
 		);
