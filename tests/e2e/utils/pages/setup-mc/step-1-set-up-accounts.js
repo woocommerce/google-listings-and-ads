@@ -270,9 +270,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get Merchant Center account card.
 	 */
 	getMCAccountCard() {
-		return this.getAccountCards().locator(
-			'.gla-google-combo-account-card__merchant-center'
-		);
+		return this.page.locator( '.gla-google-combo-account-card--mc' );
 	}
 
 	/**

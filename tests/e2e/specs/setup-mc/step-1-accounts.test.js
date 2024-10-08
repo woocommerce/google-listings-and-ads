@@ -551,6 +551,16 @@ test.describe( 'Set up accounts', () => {
 						const host = new URL( baseURL ).host;
 
 						await Promise.all( [
+							// Mock Jetpack as connected.
+							setUpAccountsPage.mockJetpackConnected(
+								'Test user',
+								'jetpack@example.com'
+							),
+
+							// Mock google as connected.
+							setUpAccountsPage.mockGoogleConnected(
+								'google@example.com'
+							),
 							setUpAccountsPage.mockAdsAccountsResponse( [
 								ADS_ACCOUNTS,
 							] ),
@@ -660,6 +670,17 @@ test.describe( 'Set up accounts', () => {
 		test.describe( 'Merchant Center has existing accounts', () => {
 			test.beforeAll( async () => {
 				await Promise.all( [
+					// Mock Jetpack as connected.
+					setUpAccountsPage.mockJetpackConnected(
+						'Test user',
+						'jetpack@example.com'
+					),
+
+					// Mock google as connected.
+					setUpAccountsPage.mockGoogleConnected(
+						'google@example.com'
+					),
+
 					setUpAccountsPage.mockAdsAccountsResponse( [
 						ADS_ACCOUNTS,
 					] ),
