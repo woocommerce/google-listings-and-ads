@@ -242,10 +242,12 @@ test.describe( 'Set up accounts', () => {
 			await setupAdsAccountPage.fulfillAdsAccounts(
 				[
 					[],
-					{
-						id: 78787878,
-						name: 'gla',
-					},
+					[
+						{
+							id: 78787878,
+							name: 'gla',
+						},
+					],
 				],
 				200,
 				[ 'GET' ]
@@ -254,12 +256,14 @@ test.describe( 'Set up accounts', () => {
 			await setupAdsAccountPage.fulfillMCAccounts(
 				[
 					[],
-					{
-						id: 5432178,
-						name: null,
-						subaccount: null,
-						domain: null,
-					},
+					[
+						{
+							id: 5432178,
+							name: null,
+							subaccount: null,
+							domain: null,
+						},
+					],
 				],
 				200,
 				'GET'
@@ -339,10 +343,12 @@ test.describe( 'Set up accounts', () => {
 			await setupAdsAccountPage.fulfillAdsAccounts(
 				[
 					[],
-					{
-						id: 78787878,
-						name: 'gla',
-					},
+					[
+						{
+							id: 78787878,
+							name: 'gla',
+						},
+					],
 				],
 				200,
 				[ 'GET' ]
@@ -351,12 +357,14 @@ test.describe( 'Set up accounts', () => {
 			await setupAdsAccountPage.fulfillMCAccounts(
 				[
 					[],
-					{
-						id: 5432178,
-						name: null,
-						subaccount: null,
-						domain: null,
-					},
+					[
+						{
+							id: 5432178,
+							name: null,
+							subaccount: null,
+							domain: null,
+						},
+					],
 				],
 				200,
 				'GET'
