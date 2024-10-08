@@ -76,7 +76,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	 */
 	getGoogleDescriptionRow() {
 		return this.getGoogleAccountCard().locator(
-			'.gla-account-card__description'
+			'.gla-connected-google-combo-account-card__description'
 		);
 	}
 
@@ -226,7 +226,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get account cards.
 	 */
 	getAccountCards( options = {} ) {
-		return this.page.locator( '.gla-google-combo-account-card', options );
+		return this.page.locator( '.gla-google-combo-account-cards', options );
 	}
 
 	/**
@@ -270,14 +270,9 @@ export default class SetUpAccountsPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get Merchant Center account card.
 	 */
 	getMCAccountCard() {
-		return this.getAccountCards( {
-			has: this.page.locator(
-				'.gla-google-combo-service-account-card--merchant-center',
-				{
-					hasText: 'Merchant Center',
-				}
-			),
-		} ).first();
+		return this.getAccountCards().locator(
+			'.gla-google-combo-account-card__merchant-center'
+		);
 	}
 
 	/**

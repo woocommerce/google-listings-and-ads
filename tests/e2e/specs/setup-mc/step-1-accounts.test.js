@@ -1,4 +1,10 @@
 /**
+ * External dependencies
+ */
+import { screen, render, act } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
+/**
  * Internal dependencies
  */
 import SetUpAccountsPage from '../../utils/pages/setup-mc/step-1-set-up-accounts';
@@ -33,6 +39,17 @@ let setupAdsAccountPage = null;
  * @type {import('@playwright/test').Page} page
  */
 let page = null;
+
+const ADS_ACCOUNTS = [
+	{
+		id: 1111111,
+		name: 'Test 1',
+	},
+	{
+		id: 2222222,
+		name: 'Test 2',
+	},
+];
 
 test.describe( 'Set up accounts', () => {
 	test.beforeAll( async ( { browser } ) => {
@@ -415,29 +432,481 @@ test.describe( 'Set up accounts', () => {
 		} );
 	} );
 
-	test.describe( 'Google Merchant Center card', () => {
+	test.describe( 'Connect Merchant Center account', () => {
+		// test.beforeAll( async () => {
+		// 	await Promise.all( [
+		// 		// Mock Jetpack as connected.
+		// 		setUpAccountsPage.mockJetpackConnected(
+		// 			'Test user',
+		// 			'jetpack@example.com'
+		// 		),
+
+		// 		// Mock google as connected.
+		// 		setUpAccountsPage.mockGoogleConnected( 'google@example.com' ),
+
+		// 		// Mock Google Ads as connected.
+		// 		setUpAccountsPage.fulfillAdsAccounts( [
+		// 			[
+		// 				{
+		// 					id: 111111,
+		// 					name: 'gla',
+		// 				},
+		// 				{
+		// 					id: 222222,
+		// 					name: 'gla',
+		// 				},
+		// 				{
+		// 					id: 333333,
+		// 					name: 'gla',
+		// 				},
+		// 			],
+		// 		] ),
+		// 		setupAdsAccountPage.mockAdsAccountConnected(),
+		// 		setUpAccountsPage.fulfillMCAccounts( [
+		// 			[
+		// 				{
+		// 					id: 12345,
+		// 					subaccount: true,
+		// 					name: 'MC Account 1',
+		// 					domain: 'https://example.com',
+		// 				},
+		// 				{
+		// 					id: 23456,
+		// 					subaccount: true,
+		// 					name: 'MC Account 2',
+		// 					domain: 'https://example.com',
+		// 				},
+		// 			],
+		// 		] ),
+
+		// 		// Mock merchant center as not connected.
+		// 		setUpAccountsPage.mockMCNotConnected(),
+		// 	] );
+		// } );
 		test.beforeAll( async () => {
-			await setUpAccountsPage.mockJetpackConnected();
-			await setUpAccountsPage.mockAdsAccountConnected();
-			await setUpAccountsPage.mockMCHasAccounts();
-			await setUpAccountsPage.mockMCNotConnected();
-			await setUpAccountsPage.mockGoogleConnected();
-			await setUpAccountsPage.mockAdsAccountConnected();
-			await setUpAccountsPage.goto();
+			await Promise.all( [
+				// Mock Jetpack as connected.
+				setUpAccountsPage.mockJetpackConnected(
+					'Test user',
+					'jetpack@example.com'
+				),
+
+				// Mock google as connected.
+				setUpAccountsPage.mockGoogleConnected( 'google@example.com' ),
+
+				// Mock Google Ads as connected.
+				setUpAccountsPage.mockAdsAccountConnected(),
+				setUpAccountsPage.mockAdsStatusClaimed(),
+
+				// Mock merchant center as not connected.
+				setUpAccountsPage.mockMCNotConnected(),
+			] );
 		} );
 
-		test( 'should be prompted to connect to an existing MC account', async () => {
-			const googleMCAccountCard = setUpAccountsPage.getMCAccountCard();
-			console.log( 'ZOPE', googleMCAccountCard );
+		// test.describe( 'Merchant Center has no existing accounts', () => {
+		// 	test.beforeAll( async () => {
+		// 		// Mock merchant center has no accounts
+		// 		await setUpAccountsPage.mockAdsAccountsResponse( ADS_ACCOUNTS );
+		// 		await setUpAccountsPage.mockMCHasAccounts();
+		// 		await setUpAccountsPage.goto();
+		// 	} );
 
-			await expect(
-				googleMCAccountCard.getByText(
-					'Connect to existing Merchant Center account',
-					{ exact: true }
-				)
-			).toBeVisible();
+		// 	test( 'should see their Google email, "Google Merchant Center" title & "Create account" button', async () => {
+		// 		const googleDescriptionRow =
+		// 			setUpAccountsPage.getGoogleDescriptionRow();
+		// 		await expect( googleDescriptionRow ).toContainText(
+		// 			'google@example.com'
+		// 		);
+
+		// 		const mcTitleRow = setUpAccountsPage.getMCTitleRow();
+		// 		await expect( mcTitleRow ).toContainText(
+		// 			'Connect to existing Merchant Center account'
+		// 		);
+
+		// 		const createAccountButton =
+		// 			setUpAccountsPage.getMCCreateAccountButtonFromPage();
+		// 		await expect( createAccountButton ).toBeEnabled();
+
+		// 		const continueButton = setUpAccountsPage.getContinueButton();
+		// 		await expect( continueButton ).toBeDisabled();
+		// 	} );
+
+		// 	test( 'click "Create account" button should see the modal of confirmation of creating account', async () => {
+		// 		// Click the create account button
+		// 		const createAccountButton =
+		// 			setUpAccountsPage.getMCCreateAccountButtonFromPage();
+		// 		await createAccountButton.click();
+		// 		await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+
+		// 		const modalHeader = setUpAccountsPage.getModalHeader();
+		// 		await expect( modalHeader ).toContainText(
+		// 			'Create Google Merchant Center Account'
+		// 		);
+
+		// 		const modalCheckbox = setUpAccountsPage.getModalCheckbox();
+		// 		await expect( modalCheckbox ).toBeEnabled();
+
+		// 		const createAccountButtonFromModal =
+		// 			setUpAccountsPage.getMCCreateAccountButtonFromModal();
+		// 		await expect( createAccountButtonFromModal ).toBeDisabled();
+
+		// 		// Click the checkbox of accepting ToS, the create account button will be enabled.
+		// 		await modalCheckbox.click();
+		// 		await expect( createAccountButtonFromModal ).toBeEnabled();
+		// 	} );
+
+		// 	test.describe( 'click "Create account" button from the modal', () => {
+		// 		test( 'should see Merchant Center "Connected" when the website is not claimed', async ( {
+		// 			baseURL,
+		// 		} ) => {
+		// 			await Promise.all( [
+		// 				// Mock Merchant Center create accounts
+		// 				setUpAccountsPage.mockMCCreateAccountWebsiteNotClaimed(),
+
+		// 				// Mock Merchant Center as connected with ID 12345
+		// 				setUpAccountsPage.mockMCConnected( 12345 ),
+		// 			] );
+
+		// 			const createAccountButtonFromModal =
+		// 				setUpAccountsPage.getMCCreateAccountButtonFromModal();
+		// 			await createAccountButtonFromModal.click();
+		// 			await page.waitForLoadState(
+		// 				LOAD_STATE.DOM_CONTENT_LOADED
+		// 			);
+		// 			const mcConnectedLabel =
+		// 				setUpAccountsPage.getMCConnectedLabel();
+		// 			await expect( mcConnectedLabel ).toContainText(
+		// 				'Connected'
+		// 			);
+
+		// 			const host = new URL( baseURL ).host;
+		// 			const mcDescriptionRow =
+		// 				setUpAccountsPage.getMCDescriptionRow();
+		// 			await expect( mcDescriptionRow ).toContainText(
+		// 				`${ host } (12345)`
+		// 			);
+		// 		} );
+
+		// 		test.describe( 'when the website is already claimed', () => {
+		// 			test( 'should see "Reclaim my URL" button, "Switch account" button, and site URL input', async ( {
+		// 				baseURL,
+		// 			} ) => {
+		// 				const host = new URL( baseURL ).host;
+
+		// 				await Promise.all( [
+		// 					// Mock merchant center has no accounts
+		// 					setUpAccountsPage.mockMCHasNoAccounts(),
+
+		// 					// Mock Merchant Center as not connected
+		// 					setUpAccountsPage.mockMCNotConnected(),
+		// 				] );
+
+		// 				await page.reload();
+
+		// 				// Mock Merchant Center create accounts
+		// 				await setUpAccountsPage.mockMCCreateAccountWebsiteClaimed(
+		// 					12345,
+		// 					host
+		// 				);
+
+		// 				// Click "Create account" button from the page.
+		// 				const createAccountButton =
+		// 					setUpAccountsPage.getMCCreateAccountButtonFromPage();
+		// 				await createAccountButton.click();
+		// 				await page.waitForLoadState(
+		// 					LOAD_STATE.DOM_CONTENT_LOADED
+		// 				);
+
+		// 				// Check the checkbox to accept ToS.
+		// 				const modalCheckbox =
+		// 					setUpAccountsPage.getModalCheckbox();
+		// 				await modalCheckbox.click();
+
+		// 				// Click "Create account" button from the modal.
+		// 				const createAccountButtonFromModal =
+		// 					setUpAccountsPage.getMCCreateAccountButtonFromModal();
+		// 				await createAccountButtonFromModal.click();
+		// 				await page.waitForLoadState(
+		// 					LOAD_STATE.DOM_CONTENT_LOADED
+		// 				);
+
+		// 				const reclaimButton =
+		// 					setUpAccountsPage.getReclaimMyURLButton();
+		// 				await expect( reclaimButton ).toBeVisible();
+
+		// 				const switchAccountButton =
+		// 					setUpAccountsPage.getSwitchAccountButton();
+		// 				await expect( switchAccountButton ).toBeVisible();
+
+		// 				const reclaimingURLInput =
+		// 					setUpAccountsPage.getReclaimingURLInput();
+		// 				await expect( reclaimingURLInput ).toHaveValue(
+		// 					baseURL
+		// 				);
+
+		// 				const continueButton =
+		// 					setUpAccountsPage.getContinueButton();
+		// 				await expect( continueButton ).toBeDisabled();
+		// 			} );
+
+		// 			test( 'click "Reclaim my URL" should send a claim overwrite request and see Merchant Center "Connected"', async ( {
+		// 				baseURL,
+		// 			} ) => {
+		// 				await Promise.all( [
+		// 					// Mock Merchant Center accounts claim overwrite
+		// 					setUpAccountsPage.mockMCAccountsClaimOverwrite(
+		// 						12345
+		// 					),
+
+		// 					// Mock Merchant Center as connected with ID 12345
+		// 					setUpAccountsPage.mockMCConnected( 12345 ),
+		// 				] );
+
+		// 				const reclaimButton =
+		// 					setUpAccountsPage.getReclaimMyURLButton();
+		// 				await reclaimButton.click();
+		// 				await page.waitForLoadState(
+		// 					LOAD_STATE.DOM_CONTENT_LOADED
+		// 				);
+
+		// 				const mcConnectedLabel =
+		// 					setUpAccountsPage.getMCConnectedLabel();
+		// 				await expect( mcConnectedLabel ).toContainText(
+		// 					'Connected'
+		// 				);
+
+		// 				const host = new URL( baseURL ).host;
+		// 				const mcDescriptionRow =
+		// 					setUpAccountsPage.getMCDescriptionRow();
+		// 				await expect( mcDescriptionRow ).toContainText(
+		// 					`${ host } (12345)`
+		// 				);
+		// 			} );
+		// 		} );
+		// 	} );
+		// } );
+
+		test.describe( 'Merchant Center has existing accounts', () => {
+			test.beforeAll( async () => {
+				await Promise.all( [
+					setUpAccountsPage.mockAdsAccountsResponse( [
+						ADS_ACCOUNTS,
+					] ),
+
+					// Mock merchant center as not connected.
+					setUpAccountsPage.mockMCNotConnected(),
+
+					// Mock merchant center has accounts
+					setUpAccountsPage.fulfillMCAccounts( [
+						[
+							{
+								id: 12345,
+								subaccount: true,
+								name: 'MC Account 1',
+								domain: 'https://example.com',
+							},
+							{
+								id: 23456,
+								subaccount: true,
+								name: 'MC Account 2',
+								domain: 'https://example.com',
+							},
+						],
+					] ),
+				] );
+
+				await setUpAccountsPage.goto();
+			} );
+
+			test.describe( 'connect to an existing account', () => {
+				test( 'should see "Select an existing account" title', async () => {
+					const selectAccountTitle =
+						setUpAccountsPage.getSelectExistingMCAccountTitle();
+					await expect( selectAccountTitle ).toContainText(
+						'Select an existing account'
+					);
+				} );
+
+				test( 'should see "Or, create a new Merchant Center account" text', async () => {
+					const mcFooter = setUpAccountsPage.getMCCardFooter();
+					await expect( mcFooter ).toContainText(
+						'Or, create a new Merchant Center account'
+					);
+				} );
+
+				test( 'should see "Connect" button', async () => {
+					const connectButton = setUpAccountsPage.getConnectButton();
+					await expect( connectButton ).toBeEnabled();
+				} );
+
+				test( 'should see "Continue" button is disabled', async () => {
+					const continueButton =
+						setUpAccountsPage.getContinueButton();
+					await expect( continueButton ).toBeDisabled();
+				} );
+
+				test( 'select MC Account 2 and click "Connect" button should see Merchant Center "Connected"', async ( {
+					baseURL,
+				} ) => {
+					await Promise.all( [
+						// Mock Merchant Center create accounts
+						setUpAccountsPage.mockMCCreateAccountWebsiteNotClaimed(),
+
+						// Mock Merchant Center as connected with ID 12345
+						setUpAccountsPage.mockMCConnected( 23456 ),
+					] );
+
+					// Select MC Account 2 from the options
+					const mcAccountsSelect =
+						setUpAccountsPage.getMCAccountsSelect();
+					await mcAccountsSelect.selectOption( {
+						label: 'MC Account 2 ・ https://example.com (23456)',
+					} );
+
+					// Click connect button
+					const connectButton = setUpAccountsPage.getConnectButton();
+					await connectButton.click();
+					await page.waitForLoadState(
+						LOAD_STATE.DOM_CONTENT_LOADED
+					);
+
+					const mcConnectedLabel =
+						setUpAccountsPage.getMCConnectedLabel();
+					await expect( mcConnectedLabel ).toContainText(
+						'Connected'
+					);
+
+					const host = new URL( baseURL ).host;
+					const mcDescriptionRow =
+						setUpAccountsPage.getMCDescriptionRow();
+					await expect( mcDescriptionRow ).toContainText(
+						`${ host } (23456)`
+					);
+				} );
+			} );
+
+			test.describe( 'click "Or, create a new Merchant Center account"', () => {
+				test.beforeAll( async () => {
+					await Promise.all( [
+						// Mock merchant center as not connected.
+						setUpAccountsPage.mockMCNotConnected(),
+
+						// Mock merchant center has accounts
+						setUpAccountsPage.fulfillMCAccounts( [
+							{
+								id: 12345,
+								subaccount: true,
+								name: 'MC Account 1',
+								domain: 'https://example.com',
+							},
+							{
+								id: 23456,
+								subaccount: true,
+								name: 'MC Account 2',
+								domain: 'https://example.com',
+							},
+						] ),
+					] );
+
+					await setUpAccountsPage.goto();
+				} );
+
+				test( 'should see see a modal to ensure the intention of creating a new account', async () => {
+					// Click 'Or, create a new Merchant Center account'
+					const mcFooterButton =
+						setUpAccountsPage.getMCCardFooterButton();
+					await mcFooterButton.click();
+					await page.waitForLoadState(
+						LOAD_STATE.DOM_CONTENT_LOADED
+					);
+
+					const modalHeader = setUpAccountsPage.getModalHeader();
+					await expect( modalHeader ).toContainText(
+						'Create Google Merchant Center Account'
+					);
+
+					const modalCheckbox = setUpAccountsPage.getModalCheckbox();
+					await expect( modalCheckbox ).toBeEnabled();
+
+					const modalPrimaryButton =
+						setUpAccountsPage.getModalPrimaryButton();
+					await expect( modalPrimaryButton ).toContainText(
+						'Create account'
+					);
+					await expect( modalPrimaryButton ).toBeDisabled();
+
+					// Select the checkbox, the button should be enabled.
+					await modalCheckbox.click();
+					await expect( modalPrimaryButton ).toBeEnabled();
+				} );
+			} );
 		} );
 	} );
+
+	// test.describe( 'Google Merchant Center card', () => {
+	// 	test.beforeAll( async () => {
+	// 		await setUpAccountsPage.mockJetpackConnected();
+	// 		await setUpAccountsPage.mockGoogleConnected();
+
+	// 		await setUpAccountsPage.fulfillMCAccounts( [
+	// 			[
+	// 				{
+	// 					id: 12345,
+	// 					subaccount: true,
+	// 					name: 'MC Account 1',
+	// 					domain: 'https://example.com',
+	// 				},
+	// 				{
+	// 					id: 23456,
+	// 					subaccount: true,
+	// 					name: 'MC Account 2',
+	// 					domain: 'https://example.com',
+	// 				},
+	// 			],
+	// 		] );
+	// 		await setUpAccountsPage.fulfillAdsAccounts( [
+	// 			[
+	// 				{
+	// 					id: 111111,
+	// 					name: 'gla',
+	// 				},
+	// 				{
+	// 					id: 222222,
+	// 					name: 'gla',
+	// 				},
+	// 				{
+	// 					id: 333333,
+	// 					name: 'gla',
+	// 				},
+	// 			],
+	// 		] );
+
+	// 		await setUpAccountsPage.mockAdsAccountConnected( 111111 );
+	// 		await setUpAccountsPage.mockMCNotConnected();
+	// 		await setUpAccountsPage.goto();
+	// 	} );
+
+	// 	test( 'should be prompted to connect to an existing MC account', async () => {
+	// 		const googleMCAccountCard = setUpAccountsPage.getMCAccountCard();
+
+	// 		await expect(
+	// 			googleMCAccountCard.getByText(
+	// 				'Connect to existing Merchant Center account',
+	// 				{ exact: true }
+	// 			)
+	// 		).toBeVisible();
+	// 	} );
+
+	// 	test( 'should render a connected state after clicking the "Connect" button', async () => {
+	// 		await setUpAccountsPage.mockMCConnected( 12345 );
+	// 		const connectButton = setUpAccountsPage.getConnectButton();
+	// 		await connectButton.click();
+	// 		await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+
+	// 		await expect( page.getByText( 'Connecting' ) ).toBeVisible();
+	// 		await expect( connectButton ).not.toBeVisible();
+	// 	} );
+	// } );
 
 	test.describe( 'Continue button', () => {
 		test.beforeAll( async () => {

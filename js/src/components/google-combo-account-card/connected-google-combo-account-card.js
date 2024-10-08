@@ -68,7 +68,7 @@ const ConnectedGoogleComboAccountCard = () => {
 	};
 
 	return (
-		<div className="gla-google-combo-account-card">
+		<div className="gla-google-combo-account-cards">
 			<AccountCard
 				appearance={ APPEARANCE.GOOGLE }
 				className="gla-google-combo-account-card--connected"

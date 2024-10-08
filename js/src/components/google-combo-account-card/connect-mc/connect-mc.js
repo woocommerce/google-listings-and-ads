@@ -94,7 +94,7 @@ const ConnectMC = () => {
 
 	return (
 		<ConnectAccountCard
-			className="gla-google-combo-connect-account-card--merchant-center"
+			className="gla-google-combo-account-card__merchant-center"
 			title={ __(
 				'Connect to existing Merchant Center account',
 				'google-listings-and-ads'
