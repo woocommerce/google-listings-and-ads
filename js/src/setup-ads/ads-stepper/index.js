@@ -12,8 +12,6 @@ import SetupAccounts from './setup-accounts';
 import AppButton from '.~/components/app-button';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
-import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
-import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
@@ -29,15 +27,10 @@ import {
  */
 const AdsStepper = ( { formProps } ) => {
 	const [ step, setStep ] = useState( '1' );
-	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_ADS_ONBOARDING,
 		step,
 	} );
-
-	const isDisabledLaunch =
-		! formProps.isValidForm ||
-		billingStatus?.status !== GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
 	// Allow the users to go backward only, not forward.
 	// Users can only go forward by clicking on the Continue button.
@@ -101,7 +94,7 @@ const AdsStepper = ( { formProps } ) => {
 										'Launch paid campaign',
 										'google-listings-and-ads'
 									) }
-									disabled={ isDisabledLaunch }
+									disabled={ ! formProps.isValidForm }
 									loading={ formProps.isSubmitting }
 									onClick={ formProps.handleSubmit }
 								/>
