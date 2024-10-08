@@ -261,7 +261,8 @@ test.describe( 'Set up accounts', () => {
 					],
 				],
 				200,
-				[ 'GET' ]
+				[ 'GET' ],
+				true
 			);
 
 			await setupAdsAccountPage.fulfillMCAccounts(
@@ -277,38 +278,49 @@ test.describe( 'Set up accounts', () => {
 					],
 				],
 				200,
-				'GET'
+				'GET',
+				true
 			);
 
-			await setUpAccountsPage.fulfillAdsConnection( [
-				{
-					id: 0,
-					currency: 'USD',
-					status: 'approved',
-					symbol: '$',
-				},
-				{
-					id: 78787878,
-					currency: 'USD',
-					status: 'approved',
-					symbol: '$',
-				},
-			] );
+			await setUpAccountsPage.fulfillAdsConnection(
+				[
+					{
+						id: 0,
+						currency: 'USD',
+						status: 'approved',
+						symbol: '$',
+					},
+					{
+						id: 78787878,
+						currency: 'USD',
+						status: 'approved',
+						symbol: '$',
+					},
+				],
+				200,
+				'GET',
+				true
+			);
 
-			await setUpAccountsPage.fulfillMCConnection( [
-				{
-					id: 0,
-					name: null,
-					subaccount: null,
-					domain: null,
-				},
-				{
-					id: 5432178,
-					name: null,
-					subaccount: null,
-					domain: null,
-				},
-			] );
+			await setUpAccountsPage.fulfillMCConnection(
+				[
+					{
+						id: 0,
+						name: null,
+						subaccount: null,
+						domain: null,
+					},
+					{
+						id: 5432178,
+						name: null,
+						subaccount: null,
+						domain: null,
+					},
+				],
+				200,
+				'GET',
+				true
+			);
 
 			await setUpAccountsPage.goto();
 			const googleAccountCard = setUpAccountsPage.getGoogleAccountCard();
@@ -362,7 +374,8 @@ test.describe( 'Set up accounts', () => {
 					],
 				],
 				200,
-				[ 'GET' ]
+				[ 'GET' ],
+				true
 			);
 
 			await setupAdsAccountPage.fulfillMCAccounts(
@@ -378,38 +391,49 @@ test.describe( 'Set up accounts', () => {
 					],
 				],
 				200,
-				'GET'
+				'GET',
+				true
 			);
 
-			await setUpAccountsPage.fulfillAdsConnection( [
-				{
-					id: 0,
-					currency: 'USD',
-					status: 'approved',
-					symbol: '$',
-				},
-				{
-					id: 78787878,
-					currency: 'USD',
-					status: 'approved',
-					symbol: '$',
-				},
-			] );
+			await setUpAccountsPage.fulfillAdsConnection(
+				[
+					{
+						id: 0,
+						currency: 'USD',
+						status: 'approved',
+						symbol: '$',
+					},
+					{
+						id: 78787878,
+						currency: 'USD',
+						status: 'approved',
+						symbol: '$',
+					},
+				],
+				200,
+				'GET',
+				true
+			);
 
-			await setUpAccountsPage.fulfillMCConnection( [
-				{
-					id: 0,
-					name: null,
-					subaccount: null,
-					domain: null,
-				},
-				{
-					id: 5432178,
-					name: null,
-					subaccount: null,
-					domain: null,
-				},
-			] );
+			await setUpAccountsPage.fulfillMCConnection(
+				[
+					{
+						id: 0,
+						name: null,
+						subaccount: null,
+						domain: null,
+					},
+					{
+						id: 5432178,
+						name: null,
+						subaccount: null,
+						domain: null,
+					},
+				],
+				200,
+				'GET',
+				true
+			);
 
 			const googleAccountCard = setUpAccountsPage.getGoogleAccountCard();
 			await expect(
