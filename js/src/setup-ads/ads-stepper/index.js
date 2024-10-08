@@ -12,6 +12,7 @@ import SetupAccounts from './setup-accounts';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import SetupBilling from './setup-billing';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
+import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import {
@@ -20,6 +21,7 @@ import {
 	FILTER_ONBOARDING,
 	CONTEXT_ADS_ONBOARDING,
 } from '.~/utils/tracks';
+import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 
 /**
  * @param {Object} props React props
@@ -29,20 +31,39 @@ import {
  */
 const AdsStepper = ( { formProps } ) => {
 	const [ step, setStep ] = useState( '1' );
-	const { googleAdsAccount, hasGoogleAdsConnection } = useGoogleAdsAccount();
-	const { hasAccess } = useGoogleAdsAccountStatus();
 	const initHasAdsConnectionRef = useRef( null );
+	const {
+		hasFinishedResolution: hasResolvedGoogleAccount,
+	} = useGoogleAccount();
 
-	const isGoogleAdsReady = hasGoogleAdsConnection && hasAccess;
+	const {
+		googleAdsAccount,
+		hasFinishedResolution: hasResolvedGoogleAdsAccount,
+	} = useGoogleAdsAccount();
+
+	const {
+		hasAccess,
+		hasFinishedResolution: hasResolvedAdsAccountStatus,
+	} = useGoogleAdsAccountStatus();
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_ADS_ONBOARDING,
 		step,
 	} );
 
-	if ( ! googleAdsAccount ) {
+	if (
+		! hasResolvedGoogleAccount ||
+		! hasResolvedGoogleAdsAccount ||
+		! hasResolvedAdsAccountStatus ||
+		googleAdsAccount === null // Catch errors retrieving accounts.
+	) {
 		return null;
 	}
+
+	const isGoogleAdsReady = 
+		googleAdsAccount.status === GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED && 
+		hasAccess === true && 
+		!( hasAccess === true && step === 'conversion_action' );
 
 	if ( initHasAdsConnectionRef.current === null ) {
 		initHasAdsConnectionRef.current = isGoogleAdsReady;
