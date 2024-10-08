@@ -102,7 +102,6 @@ export default function AdsCampaign( {
 					{ typeof continueButton === 'function'
 						? continueButton( {
 								formProps: formContext,
-								trackingContext,
 						  } )
 						: continueButton }
 				</StepContentActions>

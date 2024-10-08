@@ -29,7 +29,10 @@ import {
 	CAMPAIGN_STEP_NUMBER_MAP as STEP_NUMBER_MAP,
 } from '.~/constants';
 import { API_NAMESPACE } from '.~/data/constants';
-import { recordStepperChangeEvent } from '.~/utils/tracks';
+import {
+	recordStepperChangeEvent,
+	recordStepContinueEvent,
+} from '.~/utils/tracks';
 
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'create-ads';
@@ -53,6 +56,16 @@ const CreatePaidAdsCampaign = () => {
 	const handleStepperClick = ( nextStep ) => {
 		recordStepperChangeEvent(
 			eventName,
+			STEP_NUMBER_MAP[ nextStep ],
+			eventContext
+		);
+		setStep( nextStep );
+	};
+
+	const handleContinueClick = ( nextStep ) => {
+		recordStepContinueEvent(
+			eventName,
+			STEP_NUMBER_MAP[ step ],
 			STEP_NUMBER_MAP[ nextStep ],
 			eventContext
 		);
@@ -134,7 +147,16 @@ const CreatePaidAdsCampaign = () => {
 							content: (
 								<AdsCampaign
 									trackingContext={ eventContext }
-									continueButton={ ContinueButton }
+									continueButton={ ( props ) => (
+										<ContinueButton
+											{ ...props }
+											handleContinueClick={ () =>
+												handleContinueClick(
+													STEP.ASSET_GROUP
+												)
+											}
+										/>
+									) }
 								/>
 							),
 							onClick: handleStepperClick,

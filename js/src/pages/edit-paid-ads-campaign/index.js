@@ -14,12 +14,12 @@ import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 import { useAppDispatch } from '.~/data';
 import { getDashboardUrl } from '.~/utils/urls';
-import ContinueButton from '.~/components/paid-ads/continue-button';
 import convertToAssetGroupUpdateBody from '.~/components/paid-ads/convertToAssetGroupUpdateBody';
 import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
 import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
+import ContinueButton from '.~/components/paid-ads/continue-button';
 import AppSpinner from '.~/components/app-spinner';
 import AssetGroup, {
 	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
@@ -124,6 +124,16 @@ const EditPaidAdsCampaign = () => {
 		setStep( nextStep );
 	};
 
+	const handleContinueClick = ( nextStep ) => {
+		recordStepContinueEvent(
+			eventName,
+			STEP_NUMBER_MAP[ step ],
+			STEP_NUMBER_MAP[ nextStep ],
+			eventContext
+		);
+		setStep( nextStep );
+	};
+
 	const handleSubmit = async ( values, enhancer ) => {
 		const { action } = enhancer.submitter.dataset;
 		const { amount } = values;
@@ -188,7 +198,16 @@ const EditPaidAdsCampaign = () => {
 								<AdsCampaign
 									campaign={ campaign }
 									trackingContext={ eventContext }
-									continueButton={ ContinueButton }
+									continueButton={ ( props ) => (
+										<ContinueButton
+											{ ...props }
+											handleContinueClick={ () =>
+												handleContinueClick(
+													STEP.ASSET_GROUP
+												)
+											}
+										/>
+									) }
 								/>
 							),
 							onClick: handleStepperClick,
