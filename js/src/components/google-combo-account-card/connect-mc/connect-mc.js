@@ -3,6 +3,7 @@
  */
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -94,7 +95,9 @@ const ConnectMC = () => {
 
 	return (
 		<ConnectAccountCard
-			className="gla-google-combo-account-card__merchant-center"
+			className={ classNames( 'gla-google-combo-account-card--mc', {
+				'gla-google-combo-account-card--connected': isConnected,
+			} ) }
 			title={ __(
 				'Connect to existing Merchant Center account',
 				'google-listings-and-ads'

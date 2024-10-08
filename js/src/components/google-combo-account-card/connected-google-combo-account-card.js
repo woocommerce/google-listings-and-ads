@@ -107,7 +107,7 @@ const ConnectedGoogleComboAccountCard = () => {
 		<div className="gla-google-combo-account-cards">
 			<AccountCard
 				appearance={ APPEARANCE.GOOGLE }
-				className="gla-google-combo-account-card--connected"
+				className="gla-google-combo-account-card gla-google-combo-account-card--connected"
 				description={
 					<AccountCreationDescription
 						isCreatingBothAccounts={ isCreatingBothAccounts }

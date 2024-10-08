@@ -48,7 +48,6 @@ const ConnectMCBody = ( {
 			suffix: ' ',
 			tabIndex: '-1',
 			readOnly: true,
-			className: 'gla-google-combo-service-select-control--connected',
 		};
 	}
 
