@@ -9,7 +9,6 @@ import { __, sprintf } from '@wordpress/i18n';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import AccountInfo from './account-info';
 
 /**
  * Renders the description for the account creation card.
@@ -20,6 +19,8 @@ import AccountInfo from './account-info';
  * @param {boolean} props.isCreatingMCAccount Whether Merchant Center account is being created.
  * @param {boolean} props.isCreatingAdsAccount Whether Google Ads account is being created.
  * @param {boolean} props.hasExistingMCAccounts Whether there are existing MC accounts.
+ * @param {boolean} props.isGoogleAdsAccountConnected Whether Google Ads account is connected.
+ * @param {boolean} props.isGoogleMCAccountConnected Whether Merchant Center account is connected.
  */
 const AccountCreationDescription = ( {
 	accountsCreated,
@@ -27,6 +28,8 @@ const AccountCreationDescription = ( {
 	isCreatingMCAccount,
 	isCreatingAdsAccount,
 	hasExistingMCAccounts,
+	isGoogleAdsAccountConnected,
+	isGoogleMCAccountConnected,
 } ) => {
 	const { google } = useGoogleAccount();
 	const {
@@ -119,25 +122,32 @@ const AccountCreationDescription = ( {
 		return (
 			<>
 				<p>{ google?.email }</p>
-				<AccountInfo
-					account={ googleMCAccount }
-					text={ sprintf(
-						// Translators: %s is the Merchant Center ID
-						__(
-							'Merchant Center ID: %s',
-							'google-listings-and-ads'
-						),
-						googleMCAccount.id
-					) }
-				/>
-				<AccountInfo
-					account={ googleAdsAccount }
-					text={ sprintf(
-						// Translators: %s is the Google Ads ID
-						__( 'Google Ads ID: %s', 'google-listings-and-ads' ),
-						googleAdsAccount.id
-					) }
-				/>
+
+				{ isGoogleMCAccountConnected && (
+					<p>
+						{ sprintf(
+							// Translators: %s is the Merchant Center ID
+							__(
+								'Merchant Center ID: %s',
+								'google-listings-and-ads'
+							),
+							googleMCAccount.id
+						) }
+					</p>
+				) }
+
+				{ isGoogleAdsAccountConnected && (
+					<p>
+						{ sprintf(
+							// Translators: %s is the Google Ads ID
+							__(
+								'Google Ads ID: %s',
+								'google-listings-and-ads'
+							),
+							googleAdsAccount.id
+						) }
+					</p>
+				) }
 			</>
 		);
 	};
