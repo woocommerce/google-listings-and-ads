@@ -72,7 +72,7 @@ const ConnectedGoogleComboAccountCard = () => {
 		googleMCAccount?.id ||
 		googleMCAccount?.status === GOOGLE_MC_ACCOUNT_STATUS.CONNECTED ||
 		( googleMCAccount?.status === GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE &&
-			googleMCAccount?.step === 'link_ads' );
+			[ 'link_ads', 'claim' ].includes( googleMCAccount?.step ) );
 
 	const getHelper = () => {
 		if ( isCreatingBothAccounts ) {
