@@ -1,23 +1,21 @@
 /**
  * External dependencies
  */
-import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
+import { useState } from '@wordpress/element';
 import classNames from 'classnames';
 
 /**
  * Internal dependencies
  */
-import SwitchUrlCard from '.~/components/google-mc-account-card/switch-url-card';
-import ReclaimUrlCard from '.~/components/google-mc-account-card/reclaim-url-card';
 import useConnectMCAccount from '.~/components/google-mc-account-card/useConnectMCAccount';
 import useCreateMCAccount from '.~/components/google-mc-account-card/useCreateMCAccount';
-import CreatingCard from '.~/components/google-mc-account-card/creating-card';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import ConnectAccountCard from '../connect-account-card';
 import ConnectMCBody from './connect-mc-body';
 import ConnectMCFooter from './connect-mc-footer';
 import SpinnerCard from '.~/components/spinner-card';
+import AccountConnectionStatus from '.~/components/google-mc-account-card/account-connection-status';
 
 /**
  * Clicking on the "Switch account" button to select a different Google Merchant Center account to connect.
@@ -33,6 +31,10 @@ const ConnectMC = () => {
 	const [ handleConnectMC, resultConnectMC ] = useConnectMCAccount( value );
 	const [ handleCreateAccount, resultCreateAccount ] = useCreateMCAccount();
 
+	if ( ! hasFinishedResolution ) {
+		return <SpinnerCard />;
+	}
+
 	// MC is ready when we have a connection.
 	// The `link_ads` step will be resolved when the Ads account is connected
 	// since these can be connected in any order.
@@ -42,55 +44,21 @@ const ConnectMC = () => {
 		( googleMCAccount?.status === 'incomplete' &&
 			googleMCAccount?.step === 'link_ads' );
 
-	if ( ! isConnected && resultConnectMC.response?.status === 409 ) {
-		return (
-			<SwitchUrlCard
-				id={ resultConnectMC.error.id }
-				message={ resultConnectMC.error.message }
-				claimedUrl={ resultConnectMC.error.claimed_url }
-				newUrl={ resultConnectMC.error.new_url }
-				onSelectAnotherAccount={ resultConnectMC.reset }
-			/>
-		);
-	}
-
 	if (
-		! isConnected &&
-		( resultConnectMC.response?.status === 403 ||
-			resultCreateAccount.response?.status === 403 )
+		( resultConnectMC.response?.status === 409 ||
+			resultConnectMC.response?.status === 403 ||
+			resultCreateAccount.response?.status === 403 ||
+			resultCreateAccount.loading ||
+			resultCreateAccount.response?.status === 503 ) &&
+		! isConnected
 	) {
 		return (
-			<ReclaimUrlCard
-				id={
-					resultConnectMC.error?.id || resultCreateAccount.error?.id
-				}
-				websiteUrl={
-					resultConnectMC.error?.website_url ||
-					resultCreateAccount.error?.website_url
-				}
-				onSwitchAccount={ () => {
-					resultConnectMC.reset();
-					resultCreateAccount.reset();
-				} }
-			/>
-		);
-	}
-
-	if (
-		! isConnected &&
-		( resultCreateAccount.loading ||
-			resultCreateAccount.response?.status === 503 )
-	) {
-		return (
-			<CreatingCard
-				retryAfter={ resultCreateAccount.error?.retry_after }
+			<AccountConnectionStatus
+				resultConnectMC={ resultConnectMC }
+				resultCreateAccount={ resultCreateAccount }
 				onRetry={ handleCreateAccount }
 			/>
 		);
-	}
-
-	if ( ! hasFinishedResolution ) {
-		return <SpinnerCard />;
 	}
 
 	return (

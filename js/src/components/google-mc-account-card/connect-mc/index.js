@@ -13,13 +13,11 @@ import AppButton from '.~/components/app-button';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import ContentButtonLayout from '.~/components/content-button-layout';
-import SwitchUrlCard from '../switch-url-card';
-import ReclaimUrlCard from '../reclaim-url-card';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import CreateAccountButton from '../create-account-button';
 import useConnectMCAccount from '../useConnectMCAccount';
 import useCreateMCAccount from '../useCreateMCAccount';
-import CreatingCard from '../creating-card';
+import AccountConnectionStatus from '../account-connection-status';
 import './index.scss';
 
 /**
@@ -44,46 +42,17 @@ const ConnectMC = () => {
 	const [ handleConnectMC, resultConnectMC ] = useConnectMCAccount( value );
 	const [ handleCreateAccount, resultCreateAccount ] = useCreateMCAccount();
 
-	if ( resultConnectMC.response?.status === 409 ) {
-		return (
-			<SwitchUrlCard
-				id={ resultConnectMC.error.id }
-				message={ resultConnectMC.error.message }
-				claimedUrl={ resultConnectMC.error.claimed_url }
-				newUrl={ resultConnectMC.error.new_url }
-				onSelectAnotherAccount={ resultConnectMC.reset }
-			/>
-		);
-	}
-
 	if (
+		resultConnectMC.response?.status === 409 ||
 		resultConnectMC.response?.status === 403 ||
-		resultCreateAccount.response?.status === 403
-	) {
-		return (
-			<ReclaimUrlCard
-				id={
-					resultConnectMC.error?.id || resultCreateAccount.error?.id
-				}
-				websiteUrl={
-					resultConnectMC.error?.website_url ||
-					resultCreateAccount.error?.website_url
-				}
-				onSwitchAccount={ () => {
-					resultConnectMC.reset();
-					resultCreateAccount.reset();
-				} }
-			/>
-		);
-	}
-
-	if (
+		resultCreateAccount.response?.status === 403 ||
 		resultCreateAccount.loading ||
 		resultCreateAccount.response?.status === 503
 	) {
 		return (
-			<CreatingCard
-				retryAfter={ resultCreateAccount.error?.retry_after }
+			<AccountConnectionStatus
+				resultConnectMC={ resultConnectMC }
+				resultCreateAccount={ resultCreateAccount }
 				onRetry={ handleCreateAccount }
 			/>
 		);

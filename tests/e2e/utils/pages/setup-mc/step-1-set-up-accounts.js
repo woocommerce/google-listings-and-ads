@@ -244,11 +244,13 @@ export default class SetUpAccountsPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get Google account card.
 	 */
 	getGoogleAccountCard() {
-		return this.getAccountCards( {
-			has: this.page.locator( '.gla-account-card__title', {
-				hasText: 'Google',
-			} ),
-		} ).first();
+		return this.page
+			.locator( '.components-card-body', {
+				has: this.page.locator( '.gla-account-card__title', {
+					hasText: 'Google',
+				} ),
+			} )
+			.first();
 	}
 
 	/**
