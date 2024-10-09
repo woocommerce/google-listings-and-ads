@@ -24,10 +24,12 @@ import { useAdaptiveFormContext } from '.~/components/adaptive-form';
  * @param {Object} props React props.
  * @param {Array<CountryCode>|undefined} props.countryCodes Country codes for the campaign.
  * @param {boolean} [props.showCampaignPreviewCard=false] Whether to show the campaign preview card.
+ * @param {boolean} props.showBillingCard Whether to show the billing card.
  */
 export default function PaidAdsSetupSections( {
 	countryCodes,
 	showCampaignPreviewCard = false,
+	showBillingCard,
 } ) {
 	const formContext = useAdaptiveFormContext();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
@@ -42,7 +44,10 @@ export default function PaidAdsSetupSections( {
 
 	return (
 		<BudgetSection formProps={ formContext } countryCodes={ countryCodes }>
-			<BillingCard />
+			{ showBillingCard && (
+				<BillingCard billingStatus={ billingStatus } />
+			) }
+
 			{ showCampaignPreviewCard && <CampaignPreviewCard /> }
 		</BudgetSection>
 	);

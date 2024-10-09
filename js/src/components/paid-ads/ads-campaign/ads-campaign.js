@@ -92,6 +92,11 @@ export default function AdsCampaign( {
 					trackingContext === 'setup-ads' ||
 					trackingContext === 'create-ads'
 				}
+				showBillingCard={
+					// only show the billing card during onboarding or setup Ads flow.
+					// For creating/editing a campaign, we assume billing is already set up.
+					isOnboardingFlow || trackingContext === 'setup-ads'
+				}
 			/>
 
 			<StepContentFooter>
