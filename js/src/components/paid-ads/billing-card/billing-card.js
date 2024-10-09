@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect } from '@wordpress/element';
 import Gridiconcheckmark from 'gridicons/dist/checkmark';
 import { Flex, FlexBlock } from '@wordpress/components';
 

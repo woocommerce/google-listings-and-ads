@@ -1,15 +1,3 @@
-jest.mock( '@woocommerce/tracks', () => {
-	return {
-		recordEvent: jest.fn().mockName( 'recordEvent' ),
-	};
-} );
-
-jest.mock( './setup-accounts', () => jest.fn().mockName( 'SetupAccounts' ) );
-jest.mock( '.~/components/paid-ads/ads-campaign', () =>
-	jest.fn().mockName( 'AdsCampaign' )
-);
-jest.mock( './setup-billing', () => jest.fn().mockName( 'SetupBilling' ) );
-
 /**
  * External dependencies
  */
@@ -25,6 +13,17 @@ import SetupAccounts from './setup-accounts';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import SetupBilling from './setup-billing';
 
+jest.mock( '@woocommerce/tracks', () => {
+	return {
+		recordEvent: jest.fn().mockName( 'recordEvent' ),
+	};
+} );
+jest.mock( './setup-accounts', () => jest.fn().mockName( 'SetupAccounts' ) );
+jest.mock( '.~/components/paid-ads/ads-campaign', () =>
+	jest.fn().mockName( 'AdsCampaign' )
+);
+jest.mock( './setup-billing', () => jest.fn().mockName( 'SetupBilling' ) );
+
 describe( 'AdsStepper', () => {
 	let continueToStep2;
 	let continueToStep3;
@@ -35,8 +34,10 @@ describe( 'AdsStepper', () => {
 			return null;
 		} );
 
-		AdsCampaign.mockImplementation( ( { onContinue } ) => {
-			continueToStep3 = onContinue;
+		AdsCampaign.mockImplementation( ( { continueButton } ) => {
+			// Mock the rendering of the ContinueButton
+			const mockContinueButton = continueButton( {} );
+			continueToStep3 = mockContinueButton.props.onClick;
 			return null;
 		} );
 

@@ -26,6 +26,14 @@ import SkipButton from './skip-button';
 import clientSession from './clientSession';
 
 /**
+ * Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
+ *
+ * @event gla_onboarding_complete_with_paid_ads_button_click
+ * @property {number} budget The budget for the campaign
+ * @property {string} audiences The targeted audiences for the campaign
+ */
+
+/**
  *
  * @typedef {Object} PaidAdsData
  * @property {number|undefined} amount Daily average cost of the paid ads campaign.
@@ -57,6 +65,7 @@ function resolveInitialPaidAds( paidAds ) {
 /**
  * Renders the onboarding step for setting up the paid ads (Google Ads account and paid campaign)
  * or skipping it, and then completing the onboarding flow.
+ * @fires gla_onboarding_complete_with_paid_ads_button_click
  */
 export default function SetupPaidAds() {
 	const adminUrl = useAdminUrl();
