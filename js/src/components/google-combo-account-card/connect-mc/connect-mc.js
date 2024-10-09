@@ -39,7 +39,7 @@ const ConnectMC = () => {
 	// The `link_ads` step will be resolved when the Ads account is connected
 	// since these can be connected in any order.
 	const isConnected =
-		googleMCAccount?.id ||
+		!! googleMCAccount?.id ||
 		googleMCAccount?.status === 'connected' ||
 		( googleMCAccount?.status === 'incomplete' &&
 			googleMCAccount?.step === 'link_ads' );
