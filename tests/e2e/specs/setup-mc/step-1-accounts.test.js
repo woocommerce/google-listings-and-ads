@@ -326,15 +326,6 @@ test.describe( 'Set up accounts', () => {
 				await setUpAccountsPage.mockJetpackConnected();
 				await setUpAccountsPage.mockGoogleConnected();
 
-				await setUpAccountsPage.fulfillMCConnection( {
-					id: 5432178,
-					name: null,
-					subaccount: null,
-					domain: null,
-					status: 'incomplete',
-					step: 'claim',
-				} );
-
 				await setUpAccountsPage.fulfillAdsConnection( {
 					id: 78787878,
 					currency: 'USD',
@@ -343,6 +334,9 @@ test.describe( 'Set up accounts', () => {
 					sub_account: true,
 					symbol: '$',
 				} );
+
+				await setupAdsAccountPage.mockMCHasAccounts();
+				await setUpAccountsPage.mockMCConnected();
 
 				await setUpAccountsPage.goto();
 			} );
@@ -360,26 +354,12 @@ test.describe( 'Set up accounts', () => {
 					[ 'POST' ]
 				);
 
-				await setupAdsAccountPage.fulfillMCAccounts(
-					{
-						id: 5432178,
-						name: null,
-						subaccount: null,
-						domain: null,
-					},
-					200,
-					[ 'POST' ]
-				);
-
 				const googleAccountCard =
 					setUpAccountsPage.getGoogleAccountCard();
 				await expect(
-					googleAccountCard.getByText(
-						'Merchant Center ID: 5432178',
-						{
-							exact: true,
-						}
-					)
+					googleAccountCard.getByText( 'Merchant Center ID: 1234', {
+						exact: true,
+					} )
 				).toBeVisible();
 
 				await expect(
