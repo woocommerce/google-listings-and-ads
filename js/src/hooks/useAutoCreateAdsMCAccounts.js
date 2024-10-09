@@ -191,6 +191,7 @@ const useAutoCreateAdsMCAccounts = () => {
 
 	return {
 		accountCreationChecksResolved,
+		hasExistingMCAccounts: initHasExistingMCAccountsRef.current,
 		isCreatingAdsAccount: isCreatingAdsAccountsRef.current,
 		isCreatingMCAccount: isCreatingMCAccountsRef.current,
 		isCreatingBothAccounts: isCreatingBothAccountsRef.current,

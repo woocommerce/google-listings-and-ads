@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -51,7 +52,10 @@ const ConnectedGoogleComboAccountCard = () => {
 		isCreatingMCAccount,
 		accountCreationChecksResolved,
 		accountsCreated,
+		hasExistingMCAccounts,
 	} = useAutoCreateAdsMCAccounts();
+	const [ isManuallyCreatingMCAccount, setIsManuallyCreatingMCAccount ] =
+		useState( false );
 
 	if (
 		! accountCreationChecksResolved ||
@@ -115,16 +119,21 @@ const ConnectedGoogleComboAccountCard = () => {
 			className="gla-google-combo-account-card gla-google-combo-account-card--connected"
 			description={
 				<AccountCreationDescription
+					hasExistingMCAccounts={ hasExistingMCAccounts }
 					isCreatingBothAccounts={ isCreatingBothAccounts }
 					isCreatingAdsAccount={ isCreatingAdsAccount }
-					isCreatingMCAccount={ isCreatingMCAccount }
+					isCreatingMCAccount={
+						isCreatingMCAccount || isManuallyCreatingMCAccount
+					}
 					accountsCreated={ accountsCreated }
 				/>
 			}
 			helper={ getHelper() }
 			indicator={ getIndicator() }
 		>
-			<ConnectMC />
+			<ConnectMC
+				onCreateAccountLoading={ setIsManuallyCreatingMCAccount }
+			/>
 		</AccountCard>
 	);
 };

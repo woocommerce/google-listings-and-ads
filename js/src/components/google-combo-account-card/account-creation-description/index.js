@@ -19,12 +19,14 @@ import AccountInfo from './account-info';
  * @param {boolean} props.isCreatingBothAccounts Whether both, MC and Ads accounts are being created.
  * @param {boolean} props.isCreatingMCAccount Whether Merchant Center account is being created.
  * @param {boolean} props.isCreatingAdsAccount Whether Google Ads account is being created.
+ * @param {boolean} props.hasExistingMCAccounts Whether there are existing MC accounts.
  */
 const AccountCreationDescription = ( {
 	accountsCreated,
 	isCreatingBothAccounts,
 	isCreatingMCAccount,
 	isCreatingAdsAccount,
+	hasExistingMCAccounts,
 } ) => {
 	const { google } = useGoogleAccount();
 	const {
@@ -76,6 +78,25 @@ const AccountCreationDescription = ( {
 					</>
 				);
 			} else if ( isCreatingMCAccount ) {
+				if ( hasExistingMCAccounts ) {
+					return (
+						<>
+							<p>
+								{ __(
+									'Creating a new Google Merchant Center account',
+									'google-listings-and-ads'
+								) }
+							</p>
+							<em>
+								{ __(
+									'This may take a few minutes, please wait a moment…',
+									'google-listings-and-ads'
+								) }
+							</em>
+						</>
+					);
+				}
+
 				return (
 					<>
 						<p>

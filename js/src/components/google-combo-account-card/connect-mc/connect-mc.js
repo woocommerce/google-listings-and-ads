@@ -2,8 +2,9 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 import classNames from 'classnames';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -24,12 +25,16 @@ import AccountConnectionStatus from '.~/components/google-mc-account-card/accoun
  * @property {string} context (`switch-url`|`reclaim-url`) - indicate the button is clicked from which step.
  */
 
-const ConnectMC = () => {
+const ConnectMC = ( { onCreateAccountLoading = noop } ) => {
 	const { googleMCAccount, hasFinishedResolution, isPreconditionReady } =
 		useGoogleMCAccount();
 	const [ value, setValue ] = useState();
 	const [ handleConnectMC, resultConnectMC ] = useConnectMCAccount( value );
 	const [ handleCreateAccount, resultCreateAccount ] = useCreateMCAccount();
+
+	useEffect( () => {
+		onCreateAccountLoading( resultCreateAccount?.loading );
+	}, [ resultCreateAccount, onCreateAccountLoading ] );
 
 	if ( ! hasFinishedResolution ) {
 		return <SpinnerCard />;
@@ -43,14 +48,17 @@ const ConnectMC = () => {
 		googleMCAccount?.status === 'connected' ||
 		( googleMCAccount?.status === 'incomplete' &&
 			googleMCAccount?.step === 'link_ads' );
+	const shouldClaimAccount =
+		googleMCAccount?.status === 'incomplete' &&
+		googleMCAccount?.step === 'claim';
 
 	if (
-		( resultConnectMC.response?.status === 409 ||
-			resultConnectMC.response?.status === 403 ||
-			resultCreateAccount.response?.status === 403 ||
-			resultCreateAccount.loading ||
-			resultCreateAccount.response?.status === 503 ) &&
-		! isConnected
+		resultConnectMC.response?.status === 409 ||
+		resultConnectMC.response?.status === 403 ||
+		resultCreateAccount.response?.status === 403 ||
+		resultCreateAccount.loading ||
+		resultCreateAccount.response?.status === 503 ||
+		shouldClaimAccount
 	) {
 		return (
 			<AccountConnectionStatus
