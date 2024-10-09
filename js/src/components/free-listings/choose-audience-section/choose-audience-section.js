@@ -1,16 +1,13 @@
 /**
  * External dependencies
  */
-import { RadioControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import AppRadioContentControl from '.~/components/app-radio-content-control';
-import AppDocumentationLink from '.~/components/app-documentation-link';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import RadioHelperText from '.~/wcdl/radio-helper-text';
@@ -23,16 +20,12 @@ import './choose-audience-section.scss';
  *
  * To be used in onboarding and further editing.
  * Does not provide any save strategy, this is to be bound externaly.
- *
- * @fires gla_documentation_link_click with `{ context: 'setup-mc-audience', link_id: 'site-language', href: 'https://support.google.com/merchants/answer/160637' }`
  */
 const ChooseAudienceSection = () => {
 	const {
-		values,
 		getInputProps,
 		adapter: { renderRequestedValidation },
 	} = useAdaptiveFormContext();
-	const { locale, language } = values;
 
 	return (
 		<>
@@ -50,37 +43,6 @@ const ChooseAudienceSection = () => {
 			>
 				<Section.Card>
 					<Section.Card.Body>
-						<Subsection>
-							<Subsection.Title>
-								{ __( 'Language', 'google-listings-and-ads' ) }
-							</Subsection.Title>
-							<Subsection.HelperText className="gla-choose-audience-section__language-helper">
-								{ createInterpolateElement(
-									__(
-										'Listings can only be displayed in your site language. <link>Read more</link>',
-										'google-listings-and-ads'
-									),
-									{
-										link: (
-											<AppDocumentationLink
-												context="setup-mc-audience"
-												linkId="site-language"
-												href="https://support.google.com/merchants/answer/160637"
-											/>
-										),
-									}
-								) }
-							</Subsection.HelperText>
-							<RadioControl
-								selected={ locale }
-								options={ [
-									{
-										label: language,
-										value: locale,
-									},
-								] }
-							/>
-						</Subsection>
 						<Subsection>
 							<Subsection.Title>
 								{ __( 'Location', 'google-listings-and-ads' ) }

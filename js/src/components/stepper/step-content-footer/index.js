@@ -1,16 +1,14 @@
 /**
  * Internal dependencies
  */
-import './index.scss';
+import Section from '.~/wcdl/section';
+import VerticalGapLayout from '.~/components/vertical-gap-layout';
 
-const StepContentFooter = ( props ) => {
-	const { className = '', ...rest } = props;
-
+const StepContentFooter = ( { children } ) => {
 	return (
-		<div
-			className={ `gla-step-content-footer ${ className }` }
-			{ ...rest }
-		/>
+		<Section className="gla-step-content-footer">
+			<VerticalGapLayout size="xlarge">{ children }</VerticalGapLayout>
+		</Section>
 	);
 };
 

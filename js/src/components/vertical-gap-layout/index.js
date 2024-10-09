@@ -13,6 +13,7 @@ const sizeClassName = {
 	normal: false,
 	medium: 'gla-vertical-gap-layout__medium',
 	large: 'gla-vertical-gap-layout__large',
+	xlarge: 'gla-vertical-gap-layout__xlarge',
 	overlap: 'gla-vertical-gap-layout__overlap',
 };
 
@@ -21,10 +22,11 @@ const sizeClassName = {
  *
  * @param {Object} props React props.
  * @param {string} [props.className] Additional CSS class name to be appended.
- * @param {'normal'|'medium'|'large'|'overlap'} [props.size='normal'] Indicate the gap between children.
+ * @param {'normal'|'medium'|'large'|'xlarge'|'overlap'} [props.size='normal'] Indicate the gap between children.
  *     'normal': A normal gap.
  *     'medium': A medium gap.
  *     'large': A large gap.
+ *     'xlarge': An extra large gap.
  *     'overlap': Overlap the back child on the front child with -1 pixel spacing.
  */
 const VerticalGapLayout = ( props ) => {

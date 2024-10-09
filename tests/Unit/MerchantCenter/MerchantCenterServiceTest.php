@@ -511,11 +511,10 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
 		$this->merchant_account_state->method( 'last_incomplete_step' )->willReturn( '' );
 		$this->ads_service->method( 'connected_account' )->willReturn( true );
-		$this->options->method( 'get' )
+		$this->options->expects( $this->exactly( 3 ) )->method( 'get' )
 			->withConsecutive(
 				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ],
 				[ OptionsInterface::TARGET_AUDIENCE ],
-				[ OptionsInterface::MERCHANT_CENTER, [] ],
 				[ OptionsInterface::MERCHANT_CENTER, [] ]
 			)->willReturnOnConsecutiveCalls(
 				false,
@@ -523,14 +522,7 @@ class MerchantCenterServiceTest extends UnitTest {
 					'location'  => 'selected',
 					'countries' => [ 'GB' ],
 				],
-				[],
-				[
-					'website_live'            => true,
-					'checkout_process_secure' => true,
-					'payment_methods_visible' => true,
-					'refund_tos_visible'      => true,
-					'contact_info_visible'    => true,
-				]
+				[]
 			);
 		$this->shipping_time_query->method( 'get_results' )
 			->willReturn(

@@ -11,6 +11,10 @@
 		gap: var(--main-gap);
 	}
 
+	&.gla-vertical-gap-layout__xlarge {
+		gap: var(--large-gap);
+	}
+
 	&.gla-vertical-gap-layout__overlap {
 		gap: 0;
 

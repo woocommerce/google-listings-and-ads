@@ -91,7 +91,7 @@ class SettingsController extends BaseOptionsController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'shipping_rate'           => [
+			'shipping_rate' => [
 				'type'              => 'string',
 				'description'       => __(
 					'Whether shipping rate is a simple flat rate or needs to be configured manually in the Merchant Center.',
@@ -105,7 +105,7 @@ class SettingsController extends BaseOptionsController {
 					'manual',
 				],
 			],
-			'shipping_time'           => [
+			'shipping_time' => [
 				'type'              => 'string',
 				'description'       => __(
 					'Whether shipping time is a simple flat time or needs to be configured manually in the Merchant Center.',
@@ -118,7 +118,7 @@ class SettingsController extends BaseOptionsController {
 					'manual',
 				],
 			],
-			'tax_rate'                => [
+			'tax_rate'      => [
 				'type'              => 'string',
 				'description'       => __(
 					'Whether tax rate is destination based or need to be configured manually in the Merchant Center.',
@@ -130,53 +130,7 @@ class SettingsController extends BaseOptionsController {
 					'destination',
 					'manual',
 				],
-			],
-			'website_live'            => [
-				'type'              => 'boolean',
-				'description'       => __( 'Whether the store website is live.', 'google-listings-and-ads' ),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-				'default'           => false,
-			],
-			'checkout_process_secure' => [
-				'type'              => 'boolean',
-				'description'       => __(
-					'Whether the checkout process is complete and secure.',
-					'google-listings-and-ads'
-				),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-				'default'           => false,
-			],
-			'payment_methods_visible' => [
-				'type'              => 'boolean',
-				'description'       => __(
-					'Whether the payment methods are visible on the website.',
-					'google-listings-and-ads'
-				),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-				'default'           => false,
-			],
-			'refund_tos_visible'      => [
-				'type'              => 'boolean',
-				'description'       => __(
-					'Whether the refund policy and terms of service are visible on the website.',
-					'google-listings-and-ads'
-				),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-				'default'           => false,
-			],
-			'contact_info_visible'    => [
-				'type'              => 'boolean',
-				'description'       => __(
-					'Whether the phone number, email, and/or address are visible on the website.',
-					'google-listings-and-ads'
-				),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-				'default'           => false,
+				'default'           => 'destination',
 			],
 		];
 	}

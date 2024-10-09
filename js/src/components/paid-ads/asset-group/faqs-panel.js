@@ -7,7 +7,6 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import Section from '.~/wcdl/section';
 import FaqsPanel from '.~/components/faqs-panel';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 
@@ -70,12 +69,8 @@ const faqItems = [
  * @fires gla_faq with `{ context: 'campaign-management', id: 'what-makes-these-ads-different-from-product-ads', action: 'expand' | 'collapse' }`.
  * @fires gla_documentation_link_click with `{ context: 'assets-faq', linkId: 'assets-faq-about-ad-formats-available-in-different-campaign-types', href: 'https://support.google.com/google-ads/answer/1722124' }`.
  */
-const FaqsSection = () => {
-	return (
-		<Section>
-			<FaqsPanel context="campaign-management" faqItems={ faqItems } />
-		</Section>
-	);
+const AssetGroupFaqsPanel = () => {
+	return <FaqsPanel context="campaign-management" faqItems={ faqItems } />;
 };
 
-export default FaqsSection;
+export default AssetGroupFaqsPanel;

@@ -70,39 +70,14 @@ export default class SetUpAccountsPage extends MockRequests {
 	}
 
 	/**
-	 * Get .gla-account-card__title class.
-	 *
-	 * @return {import('@playwright/test').Locator} Get .gla-account-card__title class.
-	 */
-	getCardTitleClass() {
-		return this.page.locator( '.gla-account-card__title' );
-	}
-
-	/**
-	 * Get .gla-account-card__description class.
-	 *
-	 * @return {import('@playwright/test').Locator} Get .gla-account-card__description class.
-	 */
-	getCardDescriptionClass() {
-		return this.page.locator( '.gla-account-card__description' );
-	}
-
-	/**
-	 * Get Jetpack description row.
-	 *
-	 * @return {import('@playwright/test').Locator} Get Jetpack description row.
-	 */
-	getJetpackDescriptionRow() {
-		return this.getCardDescriptionClass().first();
-	}
-
-	/**
 	 * Get Google description row.
 	 *
 	 * @return {import('@playwright/test').Locator} Get Google description row.
 	 */
 	getGoogleDescriptionRow() {
-		return this.getCardDescriptionClass().nth( 1 );
+		return this.getGoogleAccountCard().locator(
+			'.gla-account-card__description'
+		);
 	}
 
 	/**
@@ -111,16 +86,9 @@ export default class SetUpAccountsPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get Merchant Center description row.
 	 */
 	getMCDescriptionRow() {
-		return this.getCardDescriptionClass().nth( 3 );
-	}
-
-	/**
-	 * Get Google Ads title.
-	 *
-	 * @return {import('@playwright/test').Locator} Get Google Ads title.
-	 */
-	getAdsTitleRow() {
-		return this.getCardTitleClass().nth( 2 );
+		return this.getMCAccountCard().locator(
+			'.gla-account-card__description'
+		);
 	}
 
 	/**
@@ -129,7 +97,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get Google Merchant Center title.
 	 */
 	getMCTitleRow() {
-		return this.getCardTitleClass().nth( 3 );
+		return this.getMCAccountCard().locator( '.gla-account-card__title' );
 	}
 
 	/**
@@ -178,39 +146,12 @@ export default class SetUpAccountsPage extends MockRequests {
 	}
 
 	/**
-	 * Get .gla-connected-icon-label class.
-	 *
-	 * @return {import('@playwright/test').Locator} Get .gla-connected-icon-label class.
-	 */
-	getConnectedLabelClass() {
-		return this.page.locator( '.gla-connected-icon-label' );
-	}
-
-	/**
-	 * Get Jetpack connected label.
-	 *
-	 * @return {import('@playwright/test').Locator} Get Jetpack connected label.
-	 */
-	getJetpackConnectedLabel() {
-		return this.getConnectedLabelClass().first();
-	}
-
-	/**
-	 * Get Google connected label.
-	 *
-	 * @return {import('@playwright/test').Locator} Get Google connected label.
-	 */
-	getGoogleConnectedLabel() {
-		return this.getConnectedLabelClass().nth( 1 );
-	}
-
-	/**
 	 * Get Merchant Center connected label.
 	 *
 	 * @return {import('@playwright/test').Locator} Get Merchant Center connected label.
 	 */
 	getMCConnectedLabel() {
-		return this.getConnectedLabelClass().nth( 2 );
+		return this.getMCAccountCard().locator( '.gla-connected-icon-label' );
 	}
 
 	/**
@@ -247,30 +188,14 @@ export default class SetUpAccountsPage extends MockRequests {
 	}
 
 	/**
-	 * Get sub section title row.
-	 *
-	 * @return {import('@playwright/test').Locator} Get sub section title row.
-	 */
-	getSubSectionTitleRow() {
-		return this.page.locator( '.wcdl-subsection-title' );
-	}
-
-	/**
-	 * Get section footer row.
-	 *
-	 * @return {import('@playwright/test').Locator} Get section footer row.
-	 */
-	getSectionFooterRow() {
-		return this.page.locator( '.wcdl-section-card-footer' );
-	}
-
-	/**
 	 * Get select existing Merchant Center account title.
 	 *
 	 * @return {import('@playwright/test').Locator} Get select existing Merchant Center account title.
 	 */
 	getSelectExistingMCAccountTitle() {
-		return this.getSubSectionTitleRow().nth( 4 );
+		return this.getMCAccountCard()
+			.locator( '.wcdl-subsection-title' )
+			.nth( 1 );
 	}
 
 	/**
@@ -297,10 +222,11 @@ export default class SetUpAccountsPage extends MockRequests {
 	/**
 	 * Get account cards.
 	 *
+	 * @param {Object} options
 	 * @return {import('@playwright/test').Locator} Get account cards.
 	 */
-	getAccountCards() {
-		return this.page.locator( '.gla-account-card' );
+	getAccountCards( options = {} ) {
+		return this.page.locator( '.gla-account-card', options );
 	}
 
 	/**
@@ -309,7 +235,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get WordPress account card.
 	 */
 	getWPAccountCard() {
-		return this.getAccountCards().first();
+		return this.getAccountCards( { hasText: 'WordPress.com' } ).first();
 	}
 
 	/**
@@ -318,7 +244,11 @@ export default class SetUpAccountsPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get Google account card.
 	 */
 	getGoogleAccountCard() {
-		return this.getAccountCards().nth( 1 );
+		return this.getAccountCards( {
+			has: this.page.locator( '.gla-account-card__title', {
+				hasText: 'Google',
+			} ),
+		} ).first();
 	}
 
 	/**
@@ -327,7 +257,11 @@ export default class SetUpAccountsPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get Google Ads account card.
 	 */
 	getGoogleAdsAccountCard() {
-		return this.getAccountCards().nth( 2 );
+		return this.getAccountCards( {
+			has: this.page.locator( '.gla-account-card__title', {
+				hasText: 'Google Ads',
+			} ),
+		} ).first();
 	}
 
 	/**
@@ -336,7 +270,11 @@ export default class SetUpAccountsPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get Merchant Center account card.
 	 */
 	getMCAccountCard() {
-		return this.getAccountCards().nth( 3 );
+		return this.getAccountCards( {
+			has: this.page.locator( '.gla-account-card__title', {
+				hasText: 'Google Merchant Center',
+			} ),
+		} ).first();
 	}
 
 	/**

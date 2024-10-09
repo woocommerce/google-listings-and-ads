@@ -15,6 +15,7 @@ import AppSpinner from '.~/components/app-spinner';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
+import StepContentActions from '.~/components/stepper/step-content-actions';
 import Section from '.~/wcdl/section';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
@@ -101,15 +102,15 @@ const SetupAccounts = ( props ) => {
 	 * and the whole page would display this AppSpinner, which is not desired.
 	 */
 	const isLoadingJetpack = ! jetpack;
-	const isLoadingGoogle = jetpack?.active === 'yes' && ! google;
+	const isJetpackActive = jetpack?.active === 'yes';
+
+	const isLoadingGoogle = isJetpackActive && ! google;
 	const isLoadingGoogleMCAccount =
 		google?.active === 'yes' && scope.gmcRequired && ! googleMCAccount;
 
 	if ( isLoadingJetpack || isLoadingGoogle || isLoadingGoogleMCAccount ) {
 		return <AppSpinner />;
 	}
-
-	const isGoogleAccountDisabled = jetpack?.active !== 'yes';
 
 	// Ads is ready when we have a connection and verified and verified access.
 	// Billing is not required, and the 'link_merchant' step will be resolved
@@ -155,8 +156,10 @@ const SetupAccounts = ( props ) => {
 				) }
 			>
 				<VerticalGapLayout size="large">
-					<WPComAccountCard jetpack={ jetpack } />
-					<GoogleAccountCard disabled={ isGoogleAccountDisabled } />
+					{ ! isJetpackActive && (
+						<WPComAccountCard jetpack={ jetpack } />
+					) }
+					<GoogleAccountCard disabled={ ! isJetpackActive } />
 					<GoogleAdsAccountCard />
 				</VerticalGapLayout>
 			</Section>
@@ -166,16 +169,19 @@ const SetupAccounts = ( props ) => {
 				disabledLeft={ ! isGMCPreconditionReady }
 			>
 				<GoogleMCAccountCard />
-				<Faqs />
 			</Section>
+
 			<StepContentFooter>
-				<AppButton
-					isPrimary
-					disabled={ isContinueButtonDisabled }
-					onClick={ onContinue }
-				>
-					{ __( 'Continue', 'google-listings-and-ads' ) }
-				</AppButton>
+				<StepContentActions>
+					<AppButton
+						isPrimary
+						disabled={ isContinueButtonDisabled }
+						onClick={ onContinue }
+					>
+						{ __( 'Continue', 'google-listings-and-ads' ) }
+					</AppButton>
+				</StepContentActions>
+				<Faqs />
 			</StepContentFooter>
 		</StepContent>
 	);
