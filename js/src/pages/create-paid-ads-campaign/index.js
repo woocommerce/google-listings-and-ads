@@ -20,7 +20,6 @@ import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
 import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
-import AppButton from '.~/components/app-button';
 import AssetGroup, {
 	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
 } from '.~/components/paid-ads/asset-group';
@@ -33,6 +32,7 @@ import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
 } from '.~/utils/tracks';
+import ContinueButton from '.~/components/paid-ads/ads-campaign/continue-button';
 import validateCampaign from '.~/components/paid-ads/validateCampaign';
 
 const eventName = 'gla_paid_campaign_step';
@@ -115,17 +115,6 @@ const CreatePaidAdsCampaign = () => {
 		getHistory().push( getDashboardUrl( { campaign: 'saved' } ) );
 	};
 
-	const ContinueButton = ( formProps ) => {
-		return (
-			<AppButton
-				isPrimary
-				text={ __( 'Continue', 'google-listings-and-ads' ) }
-				disabled={ ! formProps.isValidForm }
-				onClick={ () => handleContinueClick( STEP.ASSET_GROUP ) }
-			/>
-		);
-	};
-
 	if ( ! initialCountryCodes ) {
 		return null;
 	}
@@ -164,7 +153,16 @@ const CreatePaidAdsCampaign = () => {
 										'google-listings-and-ads'
 									) }
 									trackingContext={ eventContext }
-									continueButton={ ContinueButton }
+									continueButton={ ( formContext ) => (
+										<ContinueButton
+											formProps={ formContext }
+											onClick={ () => {
+												handleContinueClick(
+													STEP.ASSET_GROUP
+												);
+											} }
+										/>
+									) }
 								/>
 							),
 							onClick: handleStepperClick,

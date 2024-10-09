@@ -20,7 +20,7 @@ import HelpIconButton from '.~/components/help-icon-button';
 import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import AppSpinner from '.~/components/app-spinner';
-import AppButton from '.~/components/app-button';
+import ContinueButton from '.~/components/paid-ads/ads-campaign/continue-button';
 import AssetGroup, {
 	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
 } from '.~/components/paid-ads/asset-group';
@@ -167,17 +167,6 @@ const EditPaidAdsCampaign = () => {
 		getHistory().push( getDashboardUrl() );
 	};
 
-	const ContinueButton = ( formProps ) => {
-		return (
-			<AppButton
-				isPrimary
-				text={ __( 'Continue', 'google-listings-and-ads' ) }
-				disabled={ ! formProps.isValidForm }
-				onClick={ () => handleContinueClick( STEP.ASSET_GROUP ) }
-			/>
-		);
-	};
-
 	return (
 		<>
 			<TopBar
@@ -215,7 +204,16 @@ const EditPaidAdsCampaign = () => {
 										'Edit your paid campaign',
 										'google-listings-and-ads'
 									) }
-									continueButton={ ContinueButton }
+									continueButton={ ( formContext ) => (
+										<ContinueButton
+											formProps={ formContext }
+											onClick={ () =>
+												handleContinueClick(
+													STEP.ASSET_GROUP
+												)
+											}
+										/>
+									) }
 								/>
 							),
 							onClick: handleStepperClick,

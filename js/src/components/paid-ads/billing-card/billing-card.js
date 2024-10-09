@@ -16,33 +16,21 @@ import fallbackBillingUrl from './fallbackBillingUrl';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 import './billing-card.scss';
 
-const { APPROVED, PENDING } = GOOGLE_ADS_BILLING_STATUS;
+const { APPROVED } = GOOGLE_ADS_BILLING_STATUS;
 
 /**
  * Renders a success notice card or a setup card according to the billing status
  * of the connected Google Ads account.
  */
 export default function BillingCard() {
-	const [ showNotice, setShowNotice ] = useState( false );
 	const { billingStatus, hasFinishedResolution } =
 		useGoogleAdsAccountBillingStatus();
-
-	useEffect( () => {
-		// only show notice if we are in pending state before
-		if ( billingStatus.status === PENDING && ! showNotice ) {
-			setShowNotice( true );
-		}
-	}, [ billingStatus, showNotice ] );
 
 	if ( ! hasFinishedResolution ) {
 		return <SpinnerCard />;
 	}
 
 	if ( billingStatus.status === APPROVED ) {
-		if ( ! showNotice ) {
-			return null;
-		}
-
 		return (
 			<Flex className="gla-google-ads-billing-card__success-status">
 				<Gridiconcheckmark size={ 18 } />

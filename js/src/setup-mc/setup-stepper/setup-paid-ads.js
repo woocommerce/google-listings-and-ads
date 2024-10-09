@@ -103,10 +103,11 @@ export default function SetupPaidAds() {
 	};
 
 	const handleSkipCreatePaidAds = async () => {
+		setCompleting( ACTION_SKIP );
 		await finishOnboardingSetup();
 	};
 
-	const CreateSkipButton = () => {
+	const createSkipButton = () => {
 		return (
 			<SkipButton
 				paidAds={ paidAds }
@@ -117,7 +118,7 @@ export default function SetupPaidAds() {
 		);
 	};
 
-	const ContinueButton = ( formContext ) => {
+	const createContinueButton = ( formContext ) => {
 		const { isValidForm } = formContext;
 
 		const disabled =
@@ -171,8 +172,8 @@ export default function SetupPaidAds() {
 					'Create a campaign to advertise your products',
 					'google-listings-and-ads'
 				) }
-				continueButton={ ContinueButton }
-				skipButton={ CreateSkipButton }
+				continueButton={ createContinueButton }
+				skipButton={ createSkipButton }
 				isOnboardingFlow
 			/>
 		</CampaignAssetsForm>
