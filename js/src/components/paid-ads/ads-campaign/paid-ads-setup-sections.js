@@ -10,11 +10,6 @@ import CampaignPreviewCard from '.~/components/paid-ads/campaign-preview/campaig
 import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 
 /**
- *
- * @typedef {import('.~/data/actions').Campaign} Campaign
- */
-
-/**
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
  */
 

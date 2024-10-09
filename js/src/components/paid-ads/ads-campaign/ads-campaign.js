@@ -19,10 +19,6 @@ import PaidAdsSetupSections from './paid-ads-setup-sections';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 
 /**
- * @typedef {import('.~/data/actions').Campaign} Campaign
- */
-
-/**
  * @typedef {import('.~/components/adaptive-form/adaptive-form-context').AdaptiveFormContext} AdaptiveFormContext
  */
 
