@@ -48,11 +48,12 @@ const ConnectMC = ( {
 	}
 
 	if (
-		resultConnectMC.response?.status === 409 ||
-		resultConnectMC.response?.status === 403 ||
-		accountCreationResponse.response?.status === 403 ||
-		accountCreationResponse.loading ||
-		accountCreationResponse.response?.status === 503
+		! isConnected &&
+		( resultConnectMC.response?.status === 409 ||
+			resultConnectMC.response?.status === 403 ||
+			accountCreationResponse.response?.status === 403 ||
+			accountCreationResponse.loading ||
+			accountCreationResponse.response?.status === 503 )
 	) {
 		return (
 			<AccountConnectionStatus
