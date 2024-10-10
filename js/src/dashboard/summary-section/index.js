@@ -111,24 +111,21 @@ export default function SummarySection() {
 	return (
 		<>
 			<SummaryCard
-				title={ __(
-					'Performance (Free Listing)',
-					'google-listings-and-ads'
-				) }
-			>
-				<FreePerformanceCard />
-			</SummaryCard>
-			<SummaryCard
-				title={ __(
-					'Performance (Paid Campaigns)',
-					'google-listings-and-ads'
-				) }
+				title={ __( 'Google Ads', 'google-listings-and-ads' ) }
 			>
 				{ adsSetupComplete ? (
 					<PaidPerformanceCard />
 				) : (
 					<PaidCampaignPromotionCard />
 				) }
+			</SummaryCard>
+			<SummaryCard
+				title={ __(
+					'Free Listings (Limited Visibility)',
+					'google-listings-and-ads'
+				) }
+			>
+				<FreePerformanceCard />
 			</SummaryCard>
 		</>
 	);
