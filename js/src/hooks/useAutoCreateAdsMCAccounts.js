@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useEffect, useRef, useCallback } from '@wordpress/element';
+import { useEffect, useRef, useCallback, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -33,9 +33,10 @@ const useAutoCreateAdsMCAccounts = () => {
 	 * isCreatingAccountsRef - Indicates if the accounts are being created.
 	 * accountsCreatedRef - Indicates if the accounts have been created.
 	 */
-	const isCreatingBothAccountsRef = useRef( false );
-	const isCreatingAdsAccountRef = useRef( false );
-	const isCreatingMCAccountRef = useRef( false );
+	const [ isCreatingAdsAccount, setIsCreatingAdsAccount ] = useState( false );
+	const [ isCreatingMCAccount, setIsCreatingMCAccount ] = useState( false );
+	const [ isCreatingBothAccounts, setIsCreatingBothAccounts ] =
+		useState( false );
 	const initHasExistingMCAccountsRef = useRef( null );
 	const initHasExistingAdsAccountsRef = useRef( null );
 	const accountsCreatedRef = useRef( false );
@@ -117,40 +118,38 @@ const useAutoCreateAdsMCAccounts = () => {
 		! initHasExistingMCAccountsRef.current;
 
 	const isCreatingAccounts =
-		isCreatingAdsAccountRef.current ||
-		isCreatingMCAccountRef.current ||
-		isCreatingBothAccountsRef.current;
+		isCreatingAdsAccount || isCreatingMCAccount || isCreatingBothAccounts;
+	// We consider the creation process done even if we need to reclaim the URL
+	// or if we hit the limit of accounts created (status: 406)
+	const mcAccountCreated = [ 200, 403, 406, 503 ].includes(
+		resultCreateAccount?.response?.status
+	);
 
 	useEffect( () => {
 		// Ads account check
-		if ( isCreatingAdsAccountRef.current === true && ! loading ) {
-			isCreatingAdsAccountRef.current = false;
+		if ( isCreatingAdsAccount && ! loading ) {
 			accountsCreatedRef.current = true;
+			setIsCreatingAdsAccount( false );
 		}
 
 		// MC account check
-		if (
-			isCreatingMCAccountRef.current === true &&
-			// We consider the creation process done even if we need to reclaim the URL
-			// or if we hit the limit of accounts created (status: 406)
-			[ 200, 403, 406, 503 ].includes(
-				resultCreateAccount?.response?.status
-			)
-		) {
-			isCreatingMCAccountRef.current = false;
+		if ( isCreatingMCAccount && mcAccountCreated ) {
+			setIsCreatingMCAccount( false );
 			accountsCreatedRef.current = true;
 		}
 
 		// both accounts check
-		if (
-			isCreatingBothAccountsRef.current === true &&
-			resultCreateAccount?.response?.status === 200 &&
-			! loading
-		) {
-			isCreatingBothAccountsRef.current = false;
+		if ( isCreatingBothAccounts && mcAccountCreated && ! loading ) {
+			setIsCreatingBothAccounts( false );
 			accountsCreatedRef.current = true;
 		}
-	}, [ resultCreateAccount, loading ] );
+	}, [
+		loading,
+		isCreatingAdsAccount,
+		isCreatingMCAccount,
+		isCreatingBothAccounts,
+		mcAccountCreated,
+	] );
 
 	useEffect( () => {
 		const handleCreation = async () => {
@@ -164,19 +163,19 @@ const useAutoCreateAdsMCAccounts = () => {
 			}
 
 			if ( shouldCreateAdsAccount ) {
-				isCreatingAdsAccountRef.current = true;
+				setIsCreatingAdsAccount( true );
 				await createAdsAccount();
 				return;
 			}
 
 			if ( shouldCreateMCAccount ) {
-				isCreatingMCAccountRef.current = true;
+				setIsCreatingMCAccount( true );
 				await createMCAccount();
 				return;
 			}
 
 			if ( shouldCreateBothAccounts ) {
-				isCreatingBothAccountsRef.current = true;
+				setIsCreatingBothAccounts( true );
 				await createBothAccounts();
 			}
 		};
@@ -196,9 +195,9 @@ const useAutoCreateAdsMCAccounts = () => {
 	return {
 		accountCreationChecksResolved,
 		hasExistingMCAccounts: initHasExistingMCAccountsRef.current,
-		isCreatingAdsAccount: isCreatingAdsAccountRef.current,
-		isCreatingMCAccount: isCreatingMCAccountRef.current,
-		isCreatingBothAccounts: isCreatingBothAccountsRef.current,
+		isCreatingAdsAccount,
+		isCreatingMCAccount,
+		isCreatingBothAccounts,
 		mcAccountCreationResult: resultCreateAccount,
 		isCreatingAccounts,
 		accountsCreated: accountsCreatedRef.current,
