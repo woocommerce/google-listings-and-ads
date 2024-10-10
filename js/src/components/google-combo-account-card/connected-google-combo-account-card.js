@@ -105,29 +105,34 @@ const ConnectedGoogleComboAccountCard = () => {
 	};
 
 	return (
-		<AccountCard
-			appearance={ APPEARANCE.GOOGLE }
-			className="gla-google-combo-account-card gla-google-combo-account-card--connected"
-			description={
-				<AccountCreationDescription
-					hasExistingMCAccounts={ hasExistingMCAccounts }
-					isCreatingBothAccounts={ isCreatingBothAccounts }
-					isCreatingAdsAccount={ isCreatingAdsAccount }
-					isCreatingMCAccount={
-						isCreatingMCAccount || isManuallyCreatingMCAccount
-					}
-					accountsCreated={ accountsCreated }
-					isGoogleMCAccountConnected={ isGoogleMCAccountConnected }
-					isGoogleAdsAccountConnected={ isGoogleAdsAccountConnected }
-				/>
-			}
-			helper={ getHelper() }
-			indicator={ getIndicator() }
-		>
+		<div className="gla-google-combo-account-cards">
+			<AccountCard
+				appearance={ APPEARANCE.GOOGLE }
+				className="gla-google-combo-account-card gla-google-combo-account-card--connected"
+				description={
+					<AccountCreationDescription
+						hasExistingMCAccounts={ hasExistingMCAccounts }
+						isCreatingBothAccounts={ isCreatingBothAccounts }
+						isCreatingAdsAccount={ isCreatingAdsAccount }
+						isCreatingMCAccount={
+							isCreatingMCAccount || isManuallyCreatingMCAccount
+						}
+						accountsCreated={ accountsCreated }
+						isGoogleMCAccountConnected={
+							isGoogleMCAccountConnected
+						}
+						isGoogleAdsAccountConnected={
+							isGoogleAdsAccountConnected
+						}
+					/>
+				}
+				helper={ getHelper() }
+				indicator={ getIndicator() }
+			/>
 			<ConnectMC
 				onCreateAccountLoading={ setIsManuallyCreatingMCAccount }
 			/>
-		</AccountCard>
+		</div>
 	);
 };
 
