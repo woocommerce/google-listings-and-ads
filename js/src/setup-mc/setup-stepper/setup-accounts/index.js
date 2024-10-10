@@ -83,8 +83,11 @@ const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
 	const { jetpack } = useJetpackAccount();
 	const { google, scope } = useGoogleAccount();
-	const { googleMCAccount, isConnected: isGoogleMCReady } =
-		useGoogleMCAccount();
+	const {
+		googleMCAccount,
+		isPreconditionReady: isGMCPreconditionReady,
+		isConnected: isGoogleMCReady,
+	} = useGoogleMCAccount();
 	const { hasFinishedResolution, hasGoogleAdsConnection } =
 		useGoogleAdsAccount();
 	const { hasAccess, step } = useGoogleAdsAccountStatus();

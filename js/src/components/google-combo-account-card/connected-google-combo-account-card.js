@@ -17,10 +17,7 @@ import './connected-google-combo-account-card.scss';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import ConnectedIconLabel from '../connected-icon-label';
-import {
-	GOOGLE_ADS_ACCOUNT_STATUS,
-	GOOGLE_MC_ACCOUNT_STATUS,
-} from '.~/constants';
+import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 
 /**
  * Clicking on the "connect to a different Google account" button.
