@@ -19,6 +19,7 @@ import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
 import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
+import ContinueButton from '.~/components/paid-ads/continue-button';
 import AppSpinner from '.~/components/app-spinner';
 import AssetGroup, {
 	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
@@ -197,9 +198,16 @@ const EditPaidAdsCampaign = () => {
 								<AdsCampaign
 									campaign={ campaign }
 									trackingContext={ eventContext }
-									onContinue={ () =>
-										handleContinueClick( STEP.ASSET_GROUP )
-									}
+									continueButton={ ( props ) => (
+										<ContinueButton
+											{ ...props }
+											onClick={ () =>
+												handleContinueClick(
+													STEP.ASSET_GROUP
+												)
+											}
+										/>
+									) }
 								/>
 							),
 							onClick: handleStepperClick,

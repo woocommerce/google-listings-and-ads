@@ -115,7 +115,7 @@ export default function ImagesSelector( {
 
 		if ( disabled && reachedMaxNumberTip ) {
 			return (
-				<AppTooltip position="top center" text={ reachedMaxNumberTip }>
+				<AppTooltip placement="top" text={ reachedMaxNumberTip }>
 					{ button }
 				</AppTooltip>
 			);

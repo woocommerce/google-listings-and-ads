@@ -26,7 +26,7 @@ describe( 'Issues Solved Message', () => {
 	} );
 
 	it.each( [ 'account', 'product' ] )(
-		'It renders when there are not issues of type %s',
+		'renders when there are not issues of type %s',
 		( issueType ) => {
 			useActiveIssueType.mockReturnValue( issueType );
 

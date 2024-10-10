@@ -161,7 +161,9 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 	};
 
 	const handleClose = () => {
-		if ( saving ) return;
+		if ( saving ) {
+			return;
+		}
 		onRequestClose( 'dismiss' );
 	};
 
@@ -172,8 +174,8 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 			className="gla-attribute-mapping__rule-modal"
 			title={
 				rule
-					? __( 'Manage attribute rule', ' google-listings-and-ads' )
-					: __( 'Create attribute rule', ' google-listings-and-ads' )
+					? __( 'Manage attribute rule', 'google-listings-and-ads' )
+					: __( 'Create attribute rule', 'google-listings-and-ads' )
 			}
 			buttons={ [
 				<AppButton

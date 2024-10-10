@@ -8,7 +8,7 @@ import { getQuery, getHistory } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { API_RESPONSE_CODES } from '.~/constants';
-import useLegacyMenuEffect from '.~/hooks/useLegacyMenuEffect';
+import useMenuEffect from '.~/hooks/useMenuEffect';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useUpdateRestAPIAuthorizeStatusByUrlQuery from '.~/hooks/useUpdateRestAPIAuthorizeStatusByUrlQuery';
 import { subpaths, getReconnectAccountUrl } from '.~/utils/urls';
@@ -19,7 +19,7 @@ import ReconnectGoogleAccount from './reconnect-google-account';
 import EditStoreAddress from './edit-store-address';
 import EditPhoneNumber from './edit-phone-number';
 import EnableNewProductSyncNotice from '.~/components/enable-new-product-sync-notice';
-import NavigationClassic from '.~/components/navigation-classic';
+import MainTabNav from '.~/components/main-tab-nav';
 import RebrandingTour from '.~/components/tours/rebranding-tour';
 import './index.scss';
 
@@ -28,7 +28,7 @@ const pageClassName = 'gla-settings';
 const Settings = () => {
 	const { subpath } = getQuery();
 	// Make the component highlight GLA entry in the WC legacy menu.
-	useLegacyMenuEffect();
+	useMenuEffect();
 
 	useUpdateRestAPIAuthorizeStatusByUrlQuery();
 
@@ -65,7 +65,7 @@ const Settings = () => {
 	return (
 		<div className={ pageClassName }>
 			<EnableNewProductSyncNotice />
-			<NavigationClassic />
+			<MainTabNav />
 			<RebrandingTour />
 			<ContactInformationPreview />
 			<LinkedAccounts />
