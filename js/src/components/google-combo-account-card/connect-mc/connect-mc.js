@@ -17,7 +17,6 @@ import ConnectMCBody from './connect-mc-body';
 import ConnectMCFooter from './connect-mc-footer';
 import SpinnerCard from '.~/components/spinner-card';
 import AccountConnectionStatus from '.~/components/google-mc-account-card/account-connection-status';
-import { GOOGLE_MC_ACCOUNT_STATUS } from '.~/constants';
 
 /**
  * Clicking on the "Switch account" button to select a different Google Merchant Center account to connect.
@@ -27,7 +26,7 @@ import { GOOGLE_MC_ACCOUNT_STATUS } from '.~/constants';
  */
 
 const ConnectMC = ( { onCreateAccountLoading = noop } ) => {
-	const { googleMCAccount, hasFinishedResolution, isPreconditionReady } =
+	const { hasFinishedResolution, isConnected, isPreconditionReady } =
 		useGoogleMCAccount();
 	const [ value, setValue ] = useState();
 	const [ handleConnectMC, resultConnectMC ] = useConnectMCAccount( value );
@@ -40,15 +39,6 @@ const ConnectMC = ( { onCreateAccountLoading = noop } ) => {
 	if ( ! hasFinishedResolution ) {
 		return <SpinnerCard />;
 	}
-
-	// MC is ready when we have a connection and preconditions are met.
-	// The `link_ads` step will be resolved when the Ads account is connected
-	// since these can be connected in any order.
-	const isConnected =
-		isPreconditionReady &&
-		( googleMCAccount?.status === GOOGLE_MC_ACCOUNT_STATUS.CONNECTED ||
-			( googleMCAccount?.status === GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE &&
-				googleMCAccount?.step === 'link_ads' ) );
 
 	if (
 		resultConnectMC.response?.status === 409 ||

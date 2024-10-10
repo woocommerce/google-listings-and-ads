@@ -41,8 +41,7 @@ const ConnectedGoogleComboAccountCard = () => {
 	} = useGoogleAdsAccount();
 
 	const {
-		googleMCAccount,
-		isPreconditionReady,
+		isConnected: isGoogleMCAccountConnected,
 		hasFinishedResolution: hasFinishedResolutionForCurrentMCAccount,
 	} = useGoogleMCAccount();
 
@@ -72,12 +71,6 @@ const ConnectedGoogleComboAccountCard = () => {
 			[ 'link_merchant', 'account_access' ].includes(
 				googleAdsAccount?.step
 			) );
-
-	const isGoogleMCAccountConnected =
-		isPreconditionReady &&
-		( googleMCAccount?.status === GOOGLE_MC_ACCOUNT_STATUS.CONNECTED ||
-			( googleMCAccount?.status === GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE &&
-				googleMCAccount?.step === 'link_ads' ) );
 
 	const getHelper = () => {
 		if ( isCreatingBothAccounts ) {
