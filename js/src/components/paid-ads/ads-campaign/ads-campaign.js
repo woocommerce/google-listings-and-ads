@@ -12,12 +12,11 @@ import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import StepContentActions from '.~/components/stepper/step-content-actions';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import AppButton from '.~/components/app-button';
 import { useAdaptiveFormContext } from '.~/components/adaptive-form';
-import AudienceSection from './audience-section';
-import BudgetSection from './budget-section';
-import { CampaignPreviewCard } from './campaign-preview';
-import PaidAdsFaqsPanel from './faqs-panel';
+import AudienceSection from '../audience-section';
+import BudgetSection from '../budget-section';
+import { CampaignPreviewCard } from '../campaign-preview';
+import PaidAdsFaqsPanel from '../faqs-panel';
 
 /**
  * @typedef {import('.~/data/actions').Campaign} Campaign
@@ -26,24 +25,22 @@ import PaidAdsFaqsPanel from './faqs-panel';
 /**
  * Renders the container of the form content for campaign management.
  *
- * Please note that this component relies on an CampaignAssetsForm's context and custom adapter,
- * so it expects a `CampaignAssetsForm` to existing in its parents.
+ * Please note that this component relies on a CampaignAssetsForm's context and custom adapter,
+ * so it expects a `CampaignAssetsForm` to exist in its parents.
  *
  * @fires gla_documentation_link_click with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
- *
  * @param {Object} props React props.
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
- * @param {() => void} props.onContinue Callback called once continue button is clicked.
+ * @param {JSX.Element|Function} props.continueButton Continue button component.
  * @param {'create-ads'|'edit-ads'|'setup-ads'} props.trackingContext A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  */
 export default function AdsCampaign( {
 	campaign,
-	onContinue,
+	continueButton,
 	trackingContext,
 } ) {
 	const isCreation = ! campaign;
 	const formContext = useAdaptiveFormContext();
-	const { isValidForm } = formContext;
 
 	const disabledBudgetSection = ! formContext.values.countryCodes.length;
 	const helperText = isCreation
@@ -102,13 +99,11 @@ export default function AdsCampaign( {
 
 			<StepContentFooter>
 				<StepContentActions>
-					<AppButton
-						isPrimary
-						disabled={ ! isValidForm }
-						onClick={ onContinue }
-					>
-						{ __( 'Continue', 'google-listings-and-ads' ) }
-					</AppButton>
+					{ typeof continueButton === 'function'
+						? continueButton( {
+								formProps: formContext,
+						  } )
+						: continueButton }
 				</StepContentActions>
 				<PaidAdsFaqsPanel />
 			</StepContentFooter>
