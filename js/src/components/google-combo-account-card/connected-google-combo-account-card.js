@@ -15,6 +15,7 @@ import './connected-google-combo-account-card.scss';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import ConnectedIconLabel from '../connected-icon-label';
+import { ClaimAdsAccount } from './claim-ads-account';
 import {
 	GOOGLE_ADS_ACCOUNT_STATUS,
 	GOOGLE_MC_ACCOUNT_STATUS,
@@ -108,21 +109,29 @@ const ConnectedGoogleComboAccountCard = () => {
 		return null;
 	};
 
-	return (
-		<AccountCard
-			appearance={ APPEARANCE.GOOGLE }
-			className="gla-google-combo-account-card--connected"
-			description={
+	const getCardDescription = () => {
+		return (
+			<>
 				<AccountCreationDescription
 					isCreatingBothAccounts={ isCreatingBothAccounts }
 					isCreatingAdsAccount={ isCreatingAdsAccount }
 					isCreatingMCAccount={ isCreatingMCAccount }
 					accountsCreated={ accountsCreated }
 				/>
-			}
+			</>
+		);
+	};
+
+	return (
+		<AccountCard
+			appearance={ APPEARANCE.GOOGLE }
+			className="gla-google-combo-account-card--connected"
+			description={ getCardDescription() }
 			helper={ getHelper() }
 			indicator={ getIndicator() }
-		/>
+		>
+			<ClaimAdsAccount />
+		</AccountCard>
 	);
 };
 

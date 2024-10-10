@@ -1,0 +1,25 @@
+.gla-claim-ads-account-section {
+    padding-top: 0;
+
+    * {
+        margin: 0;
+    }
+
+    .gla-claim-ads-account-box {
+        border: 1px solid #dddddd;
+        display: flex;
+        flex-direction: column;
+        font-size: $gla-font-small;
+        gap: 8px;
+        padding: 24px;
+
+        h4 {
+            font-size: $gla-font-small;
+        }
+    
+        p:nth-of-type(2) {
+            color: #757575;
+            font-style: italic;
+        }
+    }
+}
