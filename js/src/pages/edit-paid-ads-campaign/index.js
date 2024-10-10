@@ -201,7 +201,7 @@ const EditPaidAdsCampaign = () => {
 									continueButton={ ( props ) => (
 										<ContinueButton
 											{ ...props }
-											handleContinueClick={ () =>
+											onClick={ () =>
 												handleContinueClick(
 													STEP.ASSET_GROUP
 												)

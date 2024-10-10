@@ -14,7 +14,7 @@ import AppButton from '.~/components/app-button';
  * @param {Object} props Props
  * @param {Object} props.formProps Form props forwarded from `Form` component.
  * @param {Function} props.onClick Function to handle the continue button click.
- * @return {import(".~/components/app-button").default} The button.
+ * @return {JSX.Element} The component.
  */
 const ContinueButton = ( { formProps, onClick } ) => {
 	return (
