@@ -4,7 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
 import classNames from 'classnames';
-import { noop } from 'lodash';
+import { noop, merge } from 'lodash';
 
 /**
  * Internal dependencies
@@ -25,12 +25,19 @@ import AccountConnectionStatus from '.~/components/google-mc-account-card/accoun
  * @property {string} context (`switch-url`|`reclaim-url`) - indicate the button is clicked from which step.
  */
 
-const ConnectMC = ( { onCreateAccountLoading = noop } ) => {
+const ConnectMC = ( {
+	onCreateAccountLoading = noop,
+	autoAccountCreationResult,
+} ) => {
 	const { hasFinishedResolution, isConnected, isPreconditionReady } =
 		useGoogleMCAccount();
 	const [ value, setValue ] = useState();
 	const [ handleConnectMC, resultConnectMC ] = useConnectMCAccount( value );
 	const [ handleCreateAccount, resultCreateAccount ] = useCreateMCAccount();
+	const accountCreationResponse = merge(
+		autoAccountCreationResult,
+		resultCreateAccount
+	);
 
 	useEffect( () => {
 		onCreateAccountLoading( resultCreateAccount?.loading );
@@ -43,14 +50,14 @@ const ConnectMC = ( { onCreateAccountLoading = noop } ) => {
 	if (
 		resultConnectMC.response?.status === 409 ||
 		resultConnectMC.response?.status === 403 ||
-		resultCreateAccount.response?.status === 403 ||
-		resultCreateAccount.loading ||
-		resultCreateAccount.response?.status === 503
+		accountCreationResponse.response?.status === 403 ||
+		accountCreationResponse.loading ||
+		accountCreationResponse.response?.status === 503
 	) {
 		return (
 			<AccountConnectionStatus
 				resultConnectMC={ resultConnectMC }
-				resultCreateAccount={ resultCreateAccount }
+				resultCreateAccount={ accountCreationResponse }
 				onRetry={ handleCreateAccount }
 			/>
 		);

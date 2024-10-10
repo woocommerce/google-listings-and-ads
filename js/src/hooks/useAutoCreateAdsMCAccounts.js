@@ -34,8 +34,8 @@ const useAutoCreateAdsMCAccounts = () => {
 	 * accountsCreatedRef - Indicates if the accounts have been created.
 	 */
 	const isCreatingBothAccountsRef = useRef( false );
-	const isCreatingAdsAccountsRef = useRef( false );
-	const isCreatingMCAccountsRef = useRef( false );
+	const isCreatingAdsAccountRef = useRef( false );
+	const isCreatingMCAccountRef = useRef( false );
 	const initHasExistingMCAccountsRef = useRef( null );
 	const initHasExistingAdsAccountsRef = useRef( null );
 	const accountsCreatedRef = useRef( false );
@@ -60,7 +60,7 @@ const useAutoCreateAdsMCAccounts = () => {
 		hasFinishedResolution: hasFinishedResolutionForGoogleMCAccount,
 	} = useGoogleMCAccount();
 
-	const [ handleCreateAccount, { response } ] = useCreateMCAccount();
+	const [ handleCreateAccount, resultCreateAccount ] = useCreateMCAccount();
 	const [ upsertAdsAccount, { loading } ] = useUpsertAdsAccount();
 	const isGoogleMCConnected =
 		googleMCAccount?.status === GOOGLE_MC_ACCOUNT_STATUS.CONNECTED ||
@@ -117,36 +117,40 @@ const useAutoCreateAdsMCAccounts = () => {
 		! initHasExistingMCAccountsRef.current;
 
 	const isCreatingAccounts =
-		isCreatingAdsAccountsRef.current ||
-		isCreatingMCAccountsRef.current ||
+		isCreatingAdsAccountRef.current ||
+		isCreatingMCAccountRef.current ||
 		isCreatingBothAccountsRef.current;
 
 	useEffect( () => {
 		// Ads account check
-		if ( isCreatingAdsAccountsRef.current === true && ! loading ) {
-			isCreatingAdsAccountsRef.current = false;
+		if ( isCreatingAdsAccountRef.current === true && ! loading ) {
+			isCreatingAdsAccountRef.current = false;
 			accountsCreatedRef.current = true;
 		}
 
 		// MC account check
 		if (
-			isCreatingMCAccountsRef.current === true &&
-			response?.status === 200
+			isCreatingMCAccountRef.current === true &&
+			// We consider the creation process done even if we need to reclaim the URL
+			// or if we hit the limit of accounts created (status: 406)
+			[ 200, 403, 406, 503 ].includes(
+				resultCreateAccount?.response?.status
+			)
 		) {
-			isCreatingMCAccountsRef.current = false;
+			isCreatingMCAccountRef.current = false;
 			accountsCreatedRef.current = true;
 		}
 
 		// both accounts check
 		if (
 			isCreatingBothAccountsRef.current === true &&
-			response?.status === 200 &&
+			resultCreateAccount?.response?.status === 200 &&
 			! loading
 		) {
 			isCreatingBothAccountsRef.current = false;
 			accountsCreatedRef.current = true;
 		}
-	}, [ response, loading ] );
+	}, [ resultCreateAccount, loading ] );
 
 	useEffect( () => {
 		const handleCreation = async () => {
@@ -160,13 +164,13 @@ const useAutoCreateAdsMCAccounts = () => {
 			}
 
 			if ( shouldCreateAdsAccount ) {
-				isCreatingAdsAccountsRef.current = true;
+				isCreatingAdsAccountRef.current = true;
 				await createAdsAccount();
 				return;
 			}
 
 			if ( shouldCreateMCAccount ) {
-				isCreatingMCAccountsRef.current = true;
+				isCreatingMCAccountRef.current = true;
 				await createMCAccount();
 				return;
 			}
@@ -192,9 +196,10 @@ const useAutoCreateAdsMCAccounts = () => {
 	return {
 		accountCreationChecksResolved,
 		hasExistingMCAccounts: initHasExistingMCAccountsRef.current,
-		isCreatingAdsAccount: isCreatingAdsAccountsRef.current,
-		isCreatingMCAccount: isCreatingMCAccountsRef.current,
+		isCreatingAdsAccount: isCreatingAdsAccountRef.current,
+		isCreatingMCAccount: isCreatingMCAccountRef.current,
 		isCreatingBothAccounts: isCreatingBothAccountsRef.current,
+		mcAccountCreationResult: resultCreateAccount,
 		isCreatingAccounts,
 		accountsCreated: accountsCreatedRef.current,
 	};

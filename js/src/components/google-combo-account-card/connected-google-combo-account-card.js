@@ -50,7 +50,9 @@ const ConnectedGoogleComboAccountCard = () => {
 		accountCreationChecksResolved,
 		accountsCreated,
 		hasExistingMCAccounts,
+		mcAccountCreationResult,
 	} = useAutoCreateAdsMCAccounts();
+
 	const [ isManuallyCreatingMCAccount, setIsManuallyCreatingMCAccount ] =
 		useState( false );
 
@@ -129,8 +131,10 @@ const ConnectedGoogleComboAccountCard = () => {
 				helper={ getHelper() }
 				indicator={ getIndicator() }
 			/>
+
 			<ConnectMC
 				onCreateAccountLoading={ setIsManuallyCreatingMCAccount }
+				autoAccountCreationResult={ mcAccountCreationResult }
 			/>
 		</div>
 	);
