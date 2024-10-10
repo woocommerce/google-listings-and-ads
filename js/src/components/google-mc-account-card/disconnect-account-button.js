@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -23,7 +24,7 @@ import { useAppDispatch } from '.~/data';
  *
  * * @fires gla_mc_account_connect_different_account_button_click
  */
-const DisconnectAccountButton = () => {
+const DisconnectAccountButton = ( { onDisconnect = noop } ) => {
 	const { createNotice, removeNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
 
@@ -57,6 +58,7 @@ const DisconnectAccountButton = () => {
 			await fetchGoogleMCDisconnect();
 			invalidateResolution( 'getExistingGoogleMCAccounts', [] );
 			invalidateResolution( 'getGoogleMCAccount', [] );
+			onDisconnect();
 		} catch ( error ) {
 			createNotice(
 				'error',

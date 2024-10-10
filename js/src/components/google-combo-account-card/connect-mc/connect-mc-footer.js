@@ -24,10 +24,16 @@ import DisconnectAccountButton from '.~/components/google-mc-account-card/discon
 const ConnectMCFooter = ( {
 	isConnected,
 	resultConnectMC,
+	resultCreateAccount,
 	handleCreateAccount,
 } ) => {
+	const handleDisconnect = () => {
+		resultConnectMC?.reset();
+		resultCreateAccount?.reset();
+	};
+
 	if ( isConnected ) {
-		return <DisconnectAccountButton />;
+		return <DisconnectAccountButton onDisconnect={ handleDisconnect } />;
 	}
 
 	return (

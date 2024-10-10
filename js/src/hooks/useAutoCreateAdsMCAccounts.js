@@ -6,7 +6,6 @@ import { useEffect, useRef, useCallback, useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import useCreateMCAccount from '../components/google-mc-account-card/useCreateMCAccount';
 import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
 import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts';
 import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
@@ -25,7 +24,7 @@ import { GOOGLE_MC_ACCOUNT_STATUS } from '.~/constants';
  *
  * @return {AutoCreateAccountsStatus} Object containing properties related to the account creation status.
  */
-const useAutoCreateAdsMCAccounts = () => {
+const useAutoCreateAdsMCAccounts = ( createMerchantCenterAccount ) => {
 	/**
 	 * Refs are used to avoid the re-render of the parent component.
 	 *
@@ -61,7 +60,8 @@ const useAutoCreateAdsMCAccounts = () => {
 		hasFinishedResolution: hasFinishedResolutionForGoogleMCAccount,
 	} = useGoogleMCAccount();
 
-	const [ handleCreateAccount, resultCreateAccount ] = useCreateMCAccount();
+	const [ handleCreateAccount, resultCreateAccount ] =
+		createMerchantCenterAccount;
 	const [ upsertAdsAccount, { loading } ] = useUpsertAdsAccount();
 	const isGoogleMCConnected =
 		googleMCAccount?.status === GOOGLE_MC_ACCOUNT_STATUS.CONNECTED ||
@@ -198,7 +198,6 @@ const useAutoCreateAdsMCAccounts = () => {
 		isCreatingAdsAccount,
 		isCreatingMCAccount,
 		isCreatingBothAccounts,
-		mcAccountCreationResult: resultCreateAccount,
 		isCreatingAccounts,
 		accountsCreated: accountsCreatedRef.current,
 	};

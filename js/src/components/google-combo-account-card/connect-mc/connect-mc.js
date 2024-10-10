@@ -2,15 +2,13 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect } from '@wordpress/element';
+import { useEffect } from '@wordpress/element';
 import classNames from 'classnames';
-import { noop, merge } from 'lodash';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
  */
-import useConnectMCAccount from '.~/components/google-mc-account-card/useConnectMCAccount';
-import useCreateMCAccount from '.~/components/google-mc-account-card/useCreateMCAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import ConnectAccountCard from '../connect-account-card';
 import ConnectMCBody from './connect-mc-body';
@@ -26,18 +24,16 @@ import AccountConnectionStatus from '.~/components/google-mc-account-card/accoun
  */
 
 const ConnectMC = ( {
+	merchantCenterID,
+	setMerchantCenterID,
+	createMCAccount,
+	connectMCAccount,
 	onCreateAccountLoading = noop,
-	autoAccountCreationResult,
 } ) => {
 	const { hasFinishedResolution, isConnected, isPreconditionReady } =
 		useGoogleMCAccount();
-	const [ value, setValue ] = useState();
-	const [ handleConnectMC, resultConnectMC ] = useConnectMCAccount( value );
-	const [ handleCreateAccount, resultCreateAccount ] = useCreateMCAccount();
-	const accountCreationResponse = merge(
-		autoAccountCreationResult,
-		resultCreateAccount
-	);
+	const [ handleConnectMC, resultConnectMC ] = connectMCAccount;
+	const [ handleCreateAccount, resultCreateAccount ] = createMCAccount;
 
 	useEffect( () => {
 		onCreateAccountLoading( resultCreateAccount?.loading );
@@ -51,14 +47,14 @@ const ConnectMC = ( {
 		! isConnected &&
 		( resultConnectMC.response?.status === 409 ||
 			resultConnectMC.response?.status === 403 ||
-			accountCreationResponse.response?.status === 403 ||
-			accountCreationResponse.loading ||
-			accountCreationResponse.response?.status === 503 )
+			resultCreateAccount.response?.status === 403 ||
+			resultCreateAccount.loading ||
+			resultCreateAccount.response?.status === 503 )
 	) {
 		return (
 			<AccountConnectionStatus
 				resultConnectMC={ resultConnectMC }
-				resultCreateAccount={ accountCreationResponse }
+				resultCreateAccount={ resultCreateAccount }
 				onRetry={ handleCreateAccount }
 			/>
 		);
@@ -79,8 +75,8 @@ const ConnectMC = ( {
 			) }
 			body={
 				<ConnectMCBody
-					value={ value }
-					setValue={ setValue }
+					value={ merchantCenterID }
+					setValue={ setMerchantCenterID }
 					isConnected={ isConnected }
 					isConnecting={ resultConnectMC.loading }
 					handleConnectMC={ handleConnectMC }
@@ -90,6 +86,7 @@ const ConnectMC = ( {
 				<ConnectMCFooter
 					isConnected={ isConnected }
 					resultConnectMC={ resultConnectMC }
+					resultCreateAccount={ resultCreateAccount }
 					handleCreateAccount={ handleCreateAccount }
 				/>
 			}
