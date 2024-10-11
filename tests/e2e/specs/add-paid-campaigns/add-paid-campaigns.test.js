@@ -388,6 +388,12 @@ test.describe( 'Set up Ads account', () => {
 						'You do not have billing information set up in your Google Ads account. Once you have set up billing, you can start running ads.'
 					)
 				).toBeVisible();
+
+				await expect(
+					page.getByRole( 'link', {
+						name: 'click here instead',
+					} )
+				).toBeVisible();
 			} );
 
 			// eslint-disable-next-line jest/expect-expect

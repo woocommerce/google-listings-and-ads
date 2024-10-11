@@ -1,3 +1,14 @@
+jest.mock( '@woocommerce/tracks', () => {
+	return {
+		recordEvent: jest.fn().mockName( 'recordEvent' ),
+	};
+} );
+jest.mock( './setup-accounts', () => jest.fn().mockName( 'SetupAccounts' ) );
+jest.mock( '.~/components/paid-ads/ads-campaign', () =>
+	jest.fn().mockName( 'AdsCampaign' )
+);
+jest.mock( './setup-billing', () => jest.fn().mockName( 'SetupBilling' ) );
+
 /**
  * External dependencies
  */
@@ -12,17 +23,6 @@ import AdsStepper from './';
 import SetupAccounts from './setup-accounts';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import SetupBilling from './setup-billing';
-
-jest.mock( '@woocommerce/tracks', () => {
-	return {
-		recordEvent: jest.fn().mockName( 'recordEvent' ),
-	};
-} );
-jest.mock( './setup-accounts', () => jest.fn().mockName( 'SetupAccounts' ) );
-jest.mock( '.~/components/paid-ads/ads-campaign', () =>
-	jest.fn().mockName( 'AdsCampaign' )
-);
-jest.mock( './setup-billing', () => jest.fn().mockName( 'SetupBilling' ) );
 
 describe( 'AdsStepper', () => {
 	let continueToStep2;

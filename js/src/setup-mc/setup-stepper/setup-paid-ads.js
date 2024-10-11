@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
-import { useState, useEffect } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 import { noop } from 'lodash';
 
 /**
@@ -16,12 +16,12 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AppButton from '.~/components/app-button';
-import validateCampaign from '.~/components/paid-ads/validateCampaign';
 import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
 import { getProductFeedUrl } from '.~/utils/urls';
 import { API_NAMESPACE } from '.~/data/constants';
 import { GUIDE_NAMES, GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
+import validateCampaign from '.~/components/paid-ads/validateCampaign';
 import SkipButton from './skip-button';
 import clientSession from './clientSession';
 
@@ -38,24 +38,25 @@ import clientSession from './clientSession';
  * @typedef {Object} PaidAdsData
  * @property {number|undefined} amount Daily average cost of the paid ads campaign.
  * @property {boolean} isValid Whether the campaign data are valid values.
- * @property {boolean} isReady Whether the campaign data and the billing setting are ready for completing the paid ads setup.
  */
 
 const defaultPaidAds = {
 	amount: 0,
 	isValid: false,
-	isReady: false,
 };
 
 /**
  * Resolve the initial paid ads data from the given paid ads data.
- * Parts of the resolved data are used in the `initialValues` prop of `Form` component.
+ * Parts of the resolved data are used in the `initialCampaign` prop of `CampaignAssetsForm` component.
  *
- * @param {PaidAdsData} paidAds The paid ads data as the base to be resolved with other states.
  * @return {PaidAdsData} The resolved paid ads data.
  */
-function resolveInitialPaidAds( paidAds ) {
-	const nextPaidAds = { ...paidAds };
+function resolveInitialPaidAds() {
+	const startingPaidAds = {
+		...defaultPaidAds,
+		...clientSession.getCampaign(),
+	};
+	const nextPaidAds = { ...startingPaidAds };
 	nextPaidAds.isValid = ! Object.keys( validateCampaign( nextPaidAds ) )
 		.length;
 
@@ -74,15 +75,7 @@ export default function SetupPaidAds() {
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
-	const [ paidAds, setPaidAds ] = useState( () => {
-		// Resolve the starting paid ads data with the campaign data stored in the client session.
-		const startingPaidAds = {
-			...defaultPaidAds,
-			...clientSession.getCampaign(),
-		};
-
-		return resolveInitialPaidAds( startingPaidAds );
-	} );
+	const paidAds = resolveInitialPaidAds();
 
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
@@ -116,10 +109,12 @@ export default function SetupPaidAds() {
 		await finishOnboardingSetup();
 	};
 
-	const createSkipButton = () => {
+	const createSkipButton = ( formContext ) => {
+		const { isValidForm } = formContext;
+
 		return (
 			<SkipButton
-				paidAds={ paidAds }
+				isValidForm={ isValidForm }
 				onSkipCreatePaidAds={ handleSkipCreatePaidAds }
 				disabled={ completing === ACTION_COMPLETE }
 				loading={ completing === ACTION_SKIP }
@@ -128,19 +123,17 @@ export default function SetupPaidAds() {
 	};
 
 	const createContinueButton = ( formContext ) => {
-		const { isValidForm } = formContext;
+		const { isValidForm, values } = formContext;
+		const { amount } = values;
 
 		const disabled =
-			completing === ACTION_SKIP ||
-			! paidAds.isValid ||
-			! isValidForm ||
-			! isBillingCompleted;
+			completing === ACTION_SKIP || ! isValidForm || ! isBillingCompleted;
 
 		const handleCompleteClick = async () => {
 			setCompleting( ACTION_COMPLETE );
 			const onBeforeFinish = handleSetupComplete.bind(
 				null,
-				paidAds.amount,
+				amount,
 				countryCodes
 			);
 
@@ -153,27 +146,21 @@ export default function SetupPaidAds() {
 				disabled={ disabled }
 				onClick={ handleCompleteClick }
 				loading={ completing === ACTION_COMPLETE }
-				data-action="ACTION_COMPLETE"
 				text={ __( 'Complete setup', 'google-listings-and-ads' ) }
 				eventName="gla_onboarding_complete_with_paid_ads_button_click"
 				eventProps={ {
-					budget: paidAds.amount,
+					budget: amount,
 					audiences: countryCodes?.join( ',' ),
 				} }
 			/>
 		);
 	};
 
-	useEffect( () => {
-		clientSession.setCampaign( paidAds );
-	}, [ paidAds ] );
-
 	return (
 		<CampaignAssetsForm
 			initialCampaign={ paidAds }
-			validate={ validateCampaign }
 			onChange={ ( _, values, isValid ) => {
-				setPaidAds( { ...paidAds, ...values, isValid } );
+				clientSession.setCampaign( { ...values, isValid } );
 			} }
 		>
 			<AdsCampaign

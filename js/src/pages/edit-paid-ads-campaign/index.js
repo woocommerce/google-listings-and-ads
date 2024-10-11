@@ -33,7 +33,6 @@ import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
 } from '.~/utils/tracks';
-import validateCampaign from '.~/components/paid-ads/validateCampaign';
 
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'edit-ads';
@@ -181,11 +180,9 @@ const EditPaidAdsCampaign = () => {
 			<CampaignAssetsForm
 				initialCampaign={ {
 					amount: campaign.amount,
-					countryCodes: campaign.displayCountries,
 				} }
 				assetEntityGroup={ assetEntityGroup }
 				onSubmit={ handleSubmit }
-				validate={ validateCampaign }
 			>
 				<Stepper
 					currentStep={ getCurrentStep() }

@@ -23,10 +23,6 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
  */
 
 /**
- * @typedef {import('.~/components/paid-ads/ads-campaign/paid-ads-setup-sections').PaidAdsData} PaidAdsData
- */
-
-/**
  * Renders the container of the form content for campaign management.
  *
  * Please note that this component relies on an CampaignAssetsForm's context and custom adapter,
@@ -37,8 +33,8 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
  * @param {string} props.headerTitle The title of the step.
  * @param {boolean} [props.isOnboardingFlow=false] Whether this component is used in onboarding flow.
  * @param {'create-ads'|'edit-ads'|'setup-ads'} props.trackingContext A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
- * @param {JSX|(PaidAdsData) =>JSX} [props.skipButton] A React element or function to render the "Skip" button. If a function is passed, it receives the paid ads data and returns the button element.
- * @param {JSX|(AdaptiveFormContext, PaidAdsData) =>JSX} [props.continueButton] A React element or function to render the "Continue" button. If a function is passed, it receives the form context and paid ads data and returns the button element. It handles submission logic in the form.
+ * @param {(AdaptiveFormContext) => JSX.Element|JSX.Element} [props.skipButton] A React element or function to render the "Skip" button. If a function is passed, it receives the form context and returns the button element.
+ * @param {(AdaptiveFormContext) => JSX.Element|JSX.Element} [props.continueButton] A React element or function to render the "Continue" button. If a function is passed, it receives the form context and returns the button element.
  */
 export default function AdsCampaign( {
 	headerTitle,
@@ -98,7 +94,7 @@ export default function AdsCampaign( {
 			<StepContentFooter>
 				<StepContentActions>
 					{ typeof skipButton === 'function'
-						? skipButton()
+						? skipButton( formContext )
 						: skipButton }
 
 					{ typeof continueButton === 'function'

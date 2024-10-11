@@ -16,7 +16,6 @@ import useAdsSetupCompleteCallback from '.~/hooks/useAdsSetupCompleteCallback';
 import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AdsStepper from './ads-stepper';
 import SetupAdsTopBar from './top-bar';
-import validateCampaign from '.~/components/paid-ads/validateCampaign';
 import { recordGlaEvent } from '.~/utils/tracks';
 
 /**
@@ -27,11 +26,10 @@ const SetupAdsForm = () => {
 	const [ isSubmitted, setSubmitted ] = useState( false );
 	const [ handleSetupComplete, isSubmitting ] = useAdsSetupCompleteCallback();
 	const adminUrl = useAdminUrl();
-	const { data: targetAudience } = useTargetAudienceFinalCountryCodes();
+	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 
 	const initialValues = {
 		amount: 0,
-		countryCodes: targetAudience,
 	};
 
 	useEffect( () => {
@@ -56,7 +54,7 @@ const SetupAdsForm = () => {
 	);
 
 	const handleSubmit = ( values ) => {
-		const { amount, countryCodes } = values;
+		const { amount } = values;
 
 		recordGlaEvent( 'gla_launch_paid_campaign_button_click', {
 			audiences: countryCodes.join( ',' ),
@@ -69,17 +67,14 @@ const SetupAdsForm = () => {
 	};
 
 	const handleChange = ( _, values ) => {
-		const args = [ initialValues, values ].map(
-			( { countryCodes, ...v } ) => {
-				v.countrySet = new Set( countryCodes );
-				return v;
-			}
-		);
+		const args = [ initialValues, values ].map( ( v ) => {
+			return v;
+		} );
 
 		setFormChanged( ! isEqual( ...args ) );
 	};
 
-	if ( ! targetAudience ) {
+	if ( ! countryCodes ) {
 		return null;
 	}
 
@@ -88,7 +83,6 @@ const SetupAdsForm = () => {
 			initialCampaign={ initialValues }
 			onChange={ handleChange }
 			onSubmit={ handleSubmit }
-			validate={ validateCampaign }
 		>
 			{ ( formProps ) => {
 				const mixedFormProps = {
