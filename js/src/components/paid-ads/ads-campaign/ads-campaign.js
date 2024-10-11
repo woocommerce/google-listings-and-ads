@@ -25,6 +25,10 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
  */
 
 /**
+ * @typedef {import('.~/data/actions').Campaign} Campaign
+ */
+
+/**
  * Renders the container of the form content for campaign management.
  *
  * Please note that this component relies on an CampaignAssetsForm's context and custom adapter,
@@ -32,12 +36,14 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
  *
  * @fires gla_documentation_link_click with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
  * @param {Object} props React props.
+ * @param {Campaign} [props.campaign] Campaign data to be edited. The displayCountries property will be used to fetch budget recommendation data.
  * @param {string} props.headerTitle The title of the step.
  * @param {'create-ads'|'edit-ads'|'setup-ads'|'setup-mc'} props.context A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  * @param {(AdaptiveFormContext) => JSX.Element|JSX.Element} [props.skipButton] A React element or function to render the "Skip" button. If a function is passed, it receives the form context and returns the button element.
  * @param {(AdaptiveFormContext) => JSX.Element|JSX.Element} [props.continueButton] A React element or function to render the "Continue" button. If a function is passed, it receives the form context and returns the button element.
  */
 export default function AdsCampaign( {
+	campaign,
 	headerTitle,
 	context,
 	skipButton,
@@ -47,7 +53,9 @@ export default function AdsCampaign( {
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const isOnboardingFlow = context === 'setup-mc';
 	const showCampaignPreviewCard =
-		context === 'setup-ads' || context === 'create-ads';
+		context === 'setup-ads' ||
+		context === 'create-ads' ||
+		context === 'edit-ads';
 	// only show the billing card during onboarding or setup Ads flow.
 	// For creating/editing a campaign, we assume billing is already set up.
 	const showBillingCard = context === 'setup-mc' || context === 'setup-ads';
@@ -86,7 +94,11 @@ export default function AdsCampaign( {
 
 			<BudgetSection
 				formProps={ formContext }
-				countryCodes={ countryCodes }
+				countryCodes={
+					context === 'edit-ads'
+						? campaign?.displayCountries
+						: countryCodes
+				}
 			>
 				{ showBillingCard && <BillingCard /> }
 
