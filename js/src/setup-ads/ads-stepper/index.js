@@ -9,10 +9,9 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import SetupAccounts from './setup-accounts';
+import AppButton from '.~/components/app-button';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
-import SetupBilling from './setup-billing';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
-import ContinueButton from '.~/components/paid-ads/ads-campaign/continue-button';
 import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
@@ -23,8 +22,8 @@ import {
 /**
  * @param {Object} props React props
  * @param {Object} props.formProps Form props forwarded from `Form` component.
- * @fires gla_setup_ads with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button' , action: 'go-to-step2' | 'go-to-step3' }`.
- * @fires gla_setup_ads with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
+ * @fires gla_setup_ads with `{ triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
+ * @fires gla_setup_ads with `{ triggered_by: 'stepper-step1-button', action: 'go-to-step1'}`.
  */
 const AdsStepper = ( { formProps } ) => {
 	const [ step, setStep ] = useState( '1' );
@@ -59,9 +58,9 @@ const AdsStepper = ( { formProps } ) => {
 		continueStep( '2' );
 	};
 
-	const handleCreateCampaignContinue = () => {
-		continueStep( '3' );
-	};
+	// @todo: Add check for billing status once billing setup is moved to step 2.
+	// For now, only disable based on the form being valid for testing purposes.
+	const isDisabledLaunch = ! formProps.isValidForm;
 
 	return (
 		// This Stepper with this class name
@@ -98,19 +97,19 @@ const AdsStepper = ( { formProps } ) => {
 							) }
 							context="setup-ads"
 							continueButton={ ( formContext ) => (
-								<ContinueButton
-									formProps={ formContext }
-									onClick={ handleCreateCampaignContinue }
+								<AppButton
+									isPrimary
+									text={ __(
+										'Launch paid campaign',
+										'google-listings-and-ads'
+									) }
+									disabled={ isDisabledLaunch }
+									loading={ formContext.isSubmitting }
+									onClick={ formContext.handleSubmit }
 								/>
 							) }
 						/>
 					),
-					onClick: handleStepClick,
-				},
-				{
-					key: '3',
-					label: __( 'Set up billing', 'google-listings-and-ads' ),
-					content: <SetupBilling formProps={ formProps } />,
 					onClick: handleStepClick,
 				},
 			] }

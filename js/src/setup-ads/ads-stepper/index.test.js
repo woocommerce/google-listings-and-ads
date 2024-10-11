@@ -7,7 +7,6 @@ jest.mock( './setup-accounts', () => jest.fn().mockName( 'SetupAccounts' ) );
 jest.mock( '.~/components/paid-ads/ads-campaign', () =>
 	jest.fn().mockName( 'AdsCampaign' )
 );
-jest.mock( './setup-billing', () => jest.fn().mockName( 'SetupBilling' ) );
 
 /**
  * External dependencies
@@ -22,7 +21,6 @@ import { recordEvent } from '@woocommerce/tracks';
 import AdsStepper from './';
 import SetupAccounts from './setup-accounts';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
-import SetupBilling from './setup-billing';
 
 describe( 'AdsStepper', () => {
 	let continueToStep2;
@@ -40,8 +38,6 @@ describe( 'AdsStepper', () => {
 			continueToStep3 = mockContinueButton.props.onClick;
 			return null;
 		} );
-
-		SetupBilling.mockReturnValue( null );
 	} );
 
 	afterEach( () => {

@@ -32,7 +32,7 @@ import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
 } from '.~/utils/tracks';
-import ContinueButton from '.~/components/paid-ads/ads-campaign/continue-button';
+import ContinueButton from '.~/components/paid-ads/continue-button';
 
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'create-ads';
