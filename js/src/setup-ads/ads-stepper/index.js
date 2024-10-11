@@ -9,20 +9,15 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import SetupAccounts from './setup-accounts';
-import AppButton from '.~/components/app-button';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
-import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
 import LaunchPaidCampaignButton from './launch-paid-campaign-button';
-import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
 	FILTER_ONBOARDING,
 	CONTEXT_ADS_ONBOARDING,
 } from '.~/utils/tracks';
-
-const { APPROVED } = GOOGLE_ADS_BILLING_STATUS;
 
 /**
  * @param {Object} props React props
@@ -32,7 +27,6 @@ const { APPROVED } = GOOGLE_ADS_BILLING_STATUS;
  */
 const AdsStepper = ( { isSubmitting } ) => {
 	const [ step, setStep ] = useState( '1' );
-	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_ADS_ONBOARDING,
