@@ -170,7 +170,7 @@ export default function SetupPaidAds() {
 				) }
 				continueButton={ createContinueButton }
 				skipButton={ createSkipButton }
-				isOnboardingFlow
+				context="setup-mc"
 			/>
 		</CampaignAssetsForm>
 	);

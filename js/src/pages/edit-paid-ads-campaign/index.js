@@ -196,7 +196,7 @@ const EditPaidAdsCampaign = () => {
 							content: (
 								<AdsCampaign
 									campaign={ campaign }
-									trackingContext={ eventContext }
+									context={ eventContext }
 									headerTitle={ __(
 										'Edit your paid campaign',
 										'google-listings-and-ads'

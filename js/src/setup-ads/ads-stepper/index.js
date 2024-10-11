@@ -96,7 +96,7 @@ const AdsStepper = ( { formProps } ) => {
 								'Create your paid campaign',
 								'google-listings-and-ads'
 							) }
-							trackingContext="setup-ads"
+							context="setup-ads"
 							continueButton={ ( formContext ) => (
 								<ContinueButton
 									formProps={ formContext }

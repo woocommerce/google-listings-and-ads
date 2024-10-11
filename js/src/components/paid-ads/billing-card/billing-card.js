@@ -8,8 +8,11 @@ import { Flex, FlexBlock } from '@wordpress/components';
 /**
  * Internal dependencies
  */
+import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
 import BillingSetupCard from './billing-setup-card';
 import fallbackBillingUrl from './fallbackBillingUrl';
+import SpinnerCard from '.~/components/spinner-card';
+import Section from '.~/wcdl/section';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 import './billing-card.scss';
 
@@ -18,11 +21,18 @@ const { APPROVED } = GOOGLE_ADS_BILLING_STATUS;
 /**
  * Renders a success notice card or a setup card according to the billing status
  * of the connected Google Ads account.
- *
- * @param {Object} props Component props.
- * @param {Object} props.billingStatus The billing status of the connected Google Ads account.
  */
-export default function BillingCard( { billingStatus } ) {
+export default function BillingCard() {
+	const { billingStatus } = useGoogleAdsAccountBillingStatus();
+
+	if ( ! billingStatus ) {
+		return (
+			<Section>
+				<SpinnerCard />
+			</Section>
+		);
+	}
+
 	if ( billingStatus.status === APPROVED ) {
 		return (
 			<Flex className="gla-google-ads-billing-card__success-status">

@@ -15,7 +15,9 @@ import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import PaidAdsFaqsPanel from './faqs-panel';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
-import PaidAdsSetupSections from './paid-ads-setup-sections';
+import CampaignPreviewCard from '.~/components/paid-ads/campaign-preview/campaign-preview-card';
+import BudgetSection from '.~/components/paid-ads/budget-section';
+import BillingCard from '.~/components/paid-ads/billing-card';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 
 /**
@@ -31,20 +33,24 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
  * @fires gla_documentation_link_click with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
  * @param {Object} props React props.
  * @param {string} props.headerTitle The title of the step.
- * @param {boolean} [props.isOnboardingFlow=false] Whether this component is used in onboarding flow.
- * @param {'create-ads'|'edit-ads'|'setup-ads'} props.trackingContext A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
+ * @param {'create-ads'|'edit-ads'|'setup-ads'|'setup-mc'} props.context A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  * @param {(AdaptiveFormContext) => JSX.Element|JSX.Element} [props.skipButton] A React element or function to render the "Skip" button. If a function is passed, it receives the form context and returns the button element.
  * @param {(AdaptiveFormContext) => JSX.Element|JSX.Element} [props.continueButton] A React element or function to render the "Continue" button. If a function is passed, it receives the form context and returns the button element.
  */
 export default function AdsCampaign( {
 	headerTitle,
-	isOnboardingFlow = false,
-	trackingContext,
+	context,
 	skipButton,
 	continueButton,
 } ) {
 	const formContext = useAdaptiveFormContext();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
+	const isOnboardingFlow = context === 'setup-mc';
+	const showCampaignPreviewCard =
+		context === 'setup-ads' || context === 'create-ads';
+	// only show the billing card during onboarding or setup Ads flow.
+	// For creating/editing a campaign, we assume billing is already set up.
+	const showBillingCard = context === 'setup-mc' || context === 'setup-ads';
 
 	let description = createInterpolateElement(
 		__(
@@ -54,7 +60,7 @@ export default function AdsCampaign( {
 		{
 			link: (
 				<AppDocumentationLink
-					context={ trackingContext }
+					context={ context }
 					linkId="see-what-ads-look-like"
 					href="https://support.google.com/google-ads/answer/6275294"
 				/>
@@ -78,18 +84,14 @@ export default function AdsCampaign( {
 
 			{ isOnboardingFlow && <PaidAdsFeaturesSection /> }
 
-			<PaidAdsSetupSections
+			<BudgetSection
+				formProps={ formContext }
 				countryCodes={ countryCodes }
-				showCampaignPreviewCard={
-					trackingContext === 'setup-ads' ||
-					trackingContext === 'create-ads'
-				}
-				showBillingCard={
-					// only show the billing card during onboarding or setup Ads flow.
-					// For creating/editing a campaign, we assume billing is already set up.
-					isOnboardingFlow || trackingContext === 'setup-ads'
-				}
-			/>
+			>
+				{ showBillingCard && <BillingCard /> }
+
+				{ showCampaignPreviewCard && <CampaignPreviewCard /> }
+			</BudgetSection>
 
 			<StepContentFooter>
 				<StepContentActions>

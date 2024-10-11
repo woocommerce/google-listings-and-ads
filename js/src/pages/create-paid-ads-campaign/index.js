@@ -149,7 +149,7 @@ const CreatePaidAdsCampaign = () => {
 										'Create your paid campaign',
 										'google-listings-and-ads'
 									) }
-									trackingContext={ eventContext }
+									context={ eventContext }
 									continueButton={ ( formContext ) => (
 										<ContinueButton
 											formProps={ formContext }
