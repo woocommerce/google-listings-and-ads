@@ -12,7 +12,6 @@ import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillin
 import BillingSetupCard from './billing-setup-card';
 import fallbackBillingUrl from './fallbackBillingUrl';
 import SpinnerCard from '.~/components/spinner-card';
-import Section from '.~/wcdl/section';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 import './billing-card.scss';
 
@@ -26,11 +25,7 @@ export default function BillingCard() {
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 
 	if ( ! billingStatus ) {
-		return (
-			<Section>
-				<SpinnerCard />
-			</Section>
-		);
+		return <SpinnerCard />;
 	}
 
 	if ( billingStatus.status === APPROVED ) {

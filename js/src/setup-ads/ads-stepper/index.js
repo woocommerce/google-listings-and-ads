@@ -12,12 +12,16 @@ import SetupAccounts from './setup-accounts';
 import AppButton from '.~/components/app-button';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
+import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
+import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
 	FILTER_ONBOARDING,
 	CONTEXT_ADS_ONBOARDING,
 } from '.~/utils/tracks';
+
+const { APPROVED } = GOOGLE_ADS_BILLING_STATUS;
 
 /**
  * @param {Object} props React props
@@ -27,6 +31,7 @@ import {
  */
 const AdsStepper = ( { isSubmitting } ) => {
 	const [ step, setStep ] = useState( '1' );
+	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_ADS_ONBOARDING,
@@ -99,7 +104,10 @@ const AdsStepper = ( { isSubmitting } ) => {
 										'Launch paid campaign',
 										'google-listings-and-ads'
 									) }
-									disabled={ formContext.isValidForm }
+									disabled={
+										! formContext.isValidForm ||
+										billingStatus?.status !== APPROVED
+									}
 									loading={ isSubmitting }
 									onClick={ formContext.handleSubmit }
 								/>
