@@ -11,7 +11,7 @@ jest.mock( '.~/components/paid-ads/ads-campaign', () =>
 /**
  * External dependencies
  */
-import { screen, render, waitFor } from '@testing-library/react';
+import { screen, render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { recordEvent } from '@woocommerce/tracks';
 
@@ -20,22 +20,13 @@ import { recordEvent } from '@woocommerce/tracks';
  */
 import AdsStepper from './';
 import SetupAccounts from './setup-accounts';
-import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 
 describe( 'AdsStepper', () => {
 	let continueToStep2;
-	let continueToStep3;
 
 	beforeEach( () => {
 		SetupAccounts.mockImplementation( ( { onContinue } ) => {
 			continueToStep2 = onContinue;
-			return null;
-		} );
-
-		AdsCampaign.mockImplementation( ( { continueButton } ) => {
-			// Mock the rendering of the ContinueButton
-			const mockContinueButton = continueButton( {} );
-			continueToStep3 = mockContinueButton.props.onClick;
 			return null;
 		} );
 	} );
