@@ -13,6 +13,7 @@ import AppButton from '.~/components/app-button';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
 import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
+import LaunchPaidCampaignButton from './launch-paid-campaign-button';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 import {
 	recordStepperChangeEvent,
@@ -98,18 +99,9 @@ const AdsStepper = ( { isSubmitting } ) => {
 							) }
 							context="setup-ads"
 							continueButton={ ( formContext ) => (
-								<AppButton
-									isPrimary
-									text={ __(
-										'Launch paid campaign',
-										'google-listings-and-ads'
-									) }
-									disabled={
-										! formContext.isValidForm ||
-										billingStatus?.status !== APPROVED
-									}
-									loading={ isSubmitting }
-									onClick={ formContext.handleSubmit }
+								<LaunchPaidCampaignButton
+									formProps={ formContext }
+									isLoading={ isSubmitting }
 								/>
 							) }
 						/>

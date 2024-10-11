@@ -67,6 +67,9 @@ test.describe( 'Set up Ads account', () => {
 		setupBudgetPage = new SetupBudgetPage( page );
 		await setOnboardedMerchant();
 		await setupAdsAccounts.mockAdsAccountsResponse( [] );
+		await setupBudgetPage.fulfillBillingStatusRequest( {
+			status: 'approved',
+		} );
 		await dashboardPage.mockRequests();
 		await dashboardPage.goto();
 	} );
@@ -278,16 +281,9 @@ test.describe( 'Set up Ads account', () => {
 	} );
 
 	test.describe( 'Create your paid campaign', () => {
-		test.beforeAll( async () => {
-			await setupBudgetPage.fulfillBillingStatusRequest( {
-				status: 'approved',
-			} );
-		} );
-
 		test( 'Continue to create paid ad campaign', async () => {
 			await setupAdsAccounts.clickContinue();
 			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-
 			await expect(
 				page.getByRole( 'heading', {
 					name: 'Create your paid campaign',
@@ -394,32 +390,6 @@ test.describe( 'Set up Ads account', () => {
 				}
 			);
 
-			await expect(
-				page.getByRole( 'heading', {
-					name: "You've set up a paid Performance Max Campaign!",
-				} )
-			).toBeVisible();
-
-			await expect(
-				page.getByRole( 'button', {
-					name: 'Create another campaign',
-				} )
-			).toBeEnabled();
-
-			await expect(
-				page.getByRole( 'button', {
-					name: 'Got It',
-				} )
-			).toBeEnabled();
-
-			await page
-				.getByRole( 'button', {
-					name: 'Got It',
-				} )
-				.click();
-		} );
-
-		test( 'It should show the campaign creation success message', async () => {
 			await expect(
 				page.getByRole( 'heading', {
 					name: "You've set up a paid Performance Max Campaign!",
