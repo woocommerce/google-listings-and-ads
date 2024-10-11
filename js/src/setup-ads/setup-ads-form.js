@@ -84,19 +84,8 @@ const SetupAdsForm = () => {
 			onChange={ handleChange }
 			onSubmit={ handleSubmit }
 		>
-			{ ( formProps ) => {
-				const mixedFormProps = {
-					...formProps,
-					// TODO: maybe move all API calls in useSetupCompleteCallback to ~./data
-					isSubmitting,
-				};
-				return (
-					<>
-						<SetupAdsTopBar />
-						<AdsStepper formProps={ mixedFormProps } />
-					</>
-				);
-			} }
+			<SetupAdsTopBar />
+			<AdsStepper isSubmitting={ isSubmitting } />
 		</CampaignAssetsForm>
 	);
 };
