@@ -49,25 +49,6 @@ export default class ProductFeedPage extends MockRequests {
 				loading: false,
 			} ),
 
-			// Mock Reports Programs
-			this.fulfillMCReportProgram( {
-				free_listings: null,
-				products: null,
-				intervals: null,
-				totals: {
-					clicks: 0,
-					impressions: 0,
-				},
-				next_page: null,
-			} ),
-
-			this.fulfillTargetAudience( {
-				location: 'selected',
-				countries: [ 'US' ],
-				locale: 'en_US',
-				language: 'English',
-			} ),
-
 			this.fulfillJetPackConnection( {
 				active: 'yes',
 				owner: 'yes',
