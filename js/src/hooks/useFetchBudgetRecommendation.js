@@ -26,7 +26,7 @@ const useFetchBudgetRecommendation = ( countryCodes ) => {
 				select( STORE_KEY );
 
 			const data = getAdsBudgetRecommendations( countryCodes );
-			let highestDailyBudget;
+			let highestDailyBudget = 0;
 			let highestDailyBudgetCountryCode;
 
 			if ( data ) {

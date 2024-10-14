@@ -33,6 +33,7 @@ import {
 	recordStepContinueEvent,
 } from '.~/utils/tracks';
 import ContinueButton from '.~/components/paid-ads/continue-button';
+import useFetchBudgetRecommendation from '.~/hooks/useFetchBudgetRecommendation';
 
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'create-ads';
@@ -52,6 +53,8 @@ const CreatePaidAdsCampaign = () => {
 	const { createAdsCampaign, updateCampaignAssetGroup } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
+	const { highestDailyBudget, hasFinishedResolution } =
+		useFetchBudgetRecommendation( countryCodes );
 
 	const handleStepperClick = ( nextStep ) => {
 		recordStepperChangeEvent(
@@ -114,7 +117,7 @@ const CreatePaidAdsCampaign = () => {
 		getHistory().push( getDashboardUrl( { campaign: 'saved' } ) );
 	};
 
-	if ( ! countryCodes ) {
+	if ( ! countryCodes || ! hasFinishedResolution ) {
 		return null;
 	}
 
@@ -130,7 +133,7 @@ const CreatePaidAdsCampaign = () => {
 			/>
 			<CampaignAssetsForm
 				initialCampaign={ {
-					amount: 0,
+					amount: highestDailyBudget,
 				} }
 				onSubmit={ handleSubmit }
 			>
