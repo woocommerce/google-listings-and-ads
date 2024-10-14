@@ -21,16 +21,8 @@ import {
 } from '.~/constants';
 
 /**
- * Clicking on the "connect to a different Google account" button.
- *
- * @event gla_google_account_connect_different_account_button_click
- */
-
-/**
  * Renders a Google account card UI with connected account information.
  * It will also kickoff Ads and Merchant Center account creation if the user does not have accounts.
- *
- * @fires gla_google_account_connect_different_account_button_click
  */
 const ConnectedGoogleComboAccountCard = () => {
 	const {
@@ -98,11 +90,7 @@ const ConnectedGoogleComboAccountCard = () => {
 		}
 
 		if ( isGoogleAdsAccountConnected && isGoogleMCAccountConnected ) {
-			return (
-				<ConnectedIconLabel
-					text={ __( 'Connected', 'google-listings-and-ads' ) }
-				/>
-			);
+			return <ConnectedIconLabel />;
 		}
 
 		return null;
@@ -111,6 +99,7 @@ const ConnectedGoogleComboAccountCard = () => {
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE }
+			alignIcon="top"
 			className="gla-google-combo-account-card--connected"
 			description={
 				<AccountCreationDescription

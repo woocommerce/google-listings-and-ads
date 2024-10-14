@@ -33,7 +33,6 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE }
-			className="gla-connect-google-combo-account-card"
 			disabled={ disabled }
 			alignIcon="top"
 			description={

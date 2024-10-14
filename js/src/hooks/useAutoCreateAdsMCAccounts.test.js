@@ -6,15 +6,15 @@ import { renderHook, act } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import useCreateAccounts from './useAutoCreateAdsMCAccounts';
-import useCreateMCAccount from '../components/google-mc-account-card/useCreateMCAccount';
+import useAutoCreateAdsMCAccounts from './useAutoCreateAdsMCAccounts';
+import useCreateMCAccount from './useCreateMCAccount';
 import useUpsertAdsAccount from './useUpsertAdsAccount';
 import useExistingGoogleAdsAccounts from './useExistingGoogleAdsAccounts';
 import useExistingGoogleMCAccounts from './useExistingGoogleMCAccounts';
 import useGoogleAdsAccount from './useGoogleAdsAccount';
 import useGoogleMCAccount from './useGoogleMCAccount';
 
-jest.mock( '../components/google-mc-account-card/useCreateMCAccount' );
+jest.mock( './useCreateMCAccount' );
 jest.mock( './useUpsertAdsAccount' );
 jest.mock( './useExistingGoogleAdsAccounts' );
 jest.mock( './useExistingGoogleMCAccounts' );
@@ -51,11 +51,6 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 			hasGoogleAdsConnection: false,
 		} );
 
-		useGoogleAdsAccount.mockReturnValue( {
-			hasFinishedResolution: true,
-			hasGoogleAdsConnection: false,
-		} );
-
 		useGoogleMCAccount.mockReturnValue( {
 			hasFinishedResolution: true,
 			googleMCAccount: undefined,
@@ -73,7 +68,7 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 			hasFinishedResolution: false,
 		} );
 
-		const { result } = renderHook( () => useCreateAccounts() );
+		const { result } = renderHook( () => useAutoCreateAdsMCAccounts() );
 
 		expect( result.current.isCreatingAdsAccount ).toBe( false );
 		expect( result.current.isCreatingMCAccount ).toBe( false );
@@ -84,7 +79,7 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 
 	it( 'should call "handleCreateAccount" and "upsertAdsAccount" when there are no existing accounts', async () => {
 		// Simulate the initial state and mock behavior for account creation
-		const { result, rerender } = renderHook( () => useCreateAccounts() );
+		const { result, rerender } = renderHook( () => useAutoCreateAdsMCAccounts() );
 
 		expect( result.current.isCreatingAdsAccount ).toBe( false );
 		expect( result.current.isCreatingMCAccount ).toBe( false );
@@ -129,7 +124,7 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 			{ response: undefined, loading: true }, // Initially no response, loading is true
 		] );
 
-		const { result, rerender } = renderHook( () => useCreateAccounts() );
+		const { result, rerender } = renderHook( () => useAutoCreateAdsMCAccounts() );
 
 		// Initially, it should not be creating accounts
 		expect( result.current.isCreatingAdsAccount ).toBe( false );
@@ -176,7 +171,7 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 			{ response: undefined, loading: true }, // Initially no response, loading is true for Ads account creation
 		] );
 
-		const { result, rerender } = renderHook( () => useCreateAccounts() );
+		const { result, rerender } = renderHook( () => useAutoCreateAdsMCAccounts() );
 
 		// Initially, it should not be creating accounts
 		expect( result.current.isCreatingAdsAccount ).toBe( false );

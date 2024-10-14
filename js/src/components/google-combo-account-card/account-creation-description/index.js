@@ -15,7 +15,7 @@ import AccountInfo from './account-info';
  * Renders the description for the account creation card.
  *
  * @param {Object} props Props.
- * @param {Object} props.accountsCreated Whether accounts have been created.
+ * @param {boolean} props.accountsCreated Whether accounts have been created.
  * @param {boolean} props.isCreatingBothAccounts Whether both, MC and Ads accounts are being created.
  * @param {boolean} props.isCreatingMCAccount Whether Merchant Center account is being created.
  * @param {boolean} props.isCreatingAdsAccount Whether Google Ads account is being created.
@@ -37,14 +37,14 @@ const AccountCreationDescription = ( {
 		hasFinishedResolution: hasFinishedResolutionForCurrentAdsAccount,
 	} = useGoogleAdsAccount();
 
-	const isLoadingData =
+	const isLoadingAccountsData =
 		accountsCreated &&
 		( ! hasFinishedResolutionForCurrentMCAccount ||
 			! hasFinishedResolutionForCurrentAdsAccount );
 
 	const getDescription = () => {
 		if (
-			isLoadingData ||
+			isLoadingAccountsData ||
 			isCreatingBothAccounts ||
 			isCreatingMCAccount ||
 			isCreatingAdsAccount
