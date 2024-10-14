@@ -58,7 +58,7 @@ const useAdsCampaigns = ( ...query ) => {
 				data,
 			};
 		},
-		[ queryRefValue ]
+		[ queryRefValue, hasGoogleAdsConnection, hasFinishedResolution ]
 	);
 };
 
