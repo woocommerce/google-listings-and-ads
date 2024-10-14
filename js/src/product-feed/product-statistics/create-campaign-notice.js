@@ -18,6 +18,7 @@ const CreateCampaignNotice = () => {
 
 	const isLoading =
 		! productsResolution || products?.loading || ! campaignsLoaded;
+
 	const inValidData =
 		( productsResolution && ! products ) ||
 		( campaignsLoaded && ! campaigns );
