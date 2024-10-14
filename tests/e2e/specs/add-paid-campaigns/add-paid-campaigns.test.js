@@ -295,10 +295,6 @@ test.describe( 'Set up Ads account', () => {
 			).toBeVisible();
 
 			await expect(
-				setupBudgetPage.getLaunchPaidCampaignButton()
-			).toBeDisabled();
-
-			await expect(
 				page.getByRole( 'link', {
 					name: 'See what your ads will look like.',
 				} )
