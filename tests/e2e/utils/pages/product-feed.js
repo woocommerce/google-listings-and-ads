@@ -41,12 +41,14 @@ export default class ProductFeedPage extends MockRequests {
 				reviewEligibleRegions: [],
 				status: 'ONBOARDING',
 			} ),
+
 			this.fulfillAccountIssuesRequest( {
 				issues: [],
 				page: 1,
 				total: 0,
 				loading: false,
 			} ),
+
 			// Mock Reports Programs
 			this.fulfillMCReportProgram( {
 				free_listings: null,
@@ -58,19 +60,23 @@ export default class ProductFeedPage extends MockRequests {
 				},
 				next_page: null,
 			} ),
+
 			this.fulfillTargetAudience( {
 				location: 'selected',
 				countries: [ 'US' ],
 				locale: 'en_US',
 				language: 'English',
 			} ),
+
 			this.fulfillJetPackConnection( {
 				active: 'yes',
 				owner: 'yes',
 				displayName: 'John',
 				email: 'john@email.com',
 			} ),
+
 			this.mockGoogleConnected(),
+
 			this.fulfillAdsConnection( {
 				id: 1111111,
 				currency: 'USD',
