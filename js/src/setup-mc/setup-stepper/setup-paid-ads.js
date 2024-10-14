@@ -21,7 +21,6 @@ import { getProductFeedUrl } from '.~/utils/urls';
 import { API_NAMESPACE } from '.~/data/constants';
 import { GUIDE_NAMES, GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
-import validateCampaign from '.~/components/paid-ads/validateCampaign';
 import SkipButton from './skip-button';
 import clientSession from './clientSession';
 
@@ -40,29 +39,6 @@ import clientSession from './clientSession';
  * @property {boolean} isValid Whether the campaign data are valid values.
  */
 
-const defaultPaidAds = {
-	amount: 0,
-	isValid: false,
-};
-
-/**
- * Resolve the initial paid ads data from the given paid ads data.
- * Parts of the resolved data are used in the `initialCampaign` prop of `CampaignAssetsForm` component.
- *
- * @return {PaidAdsData} The resolved paid ads data.
- */
-function resolveInitialPaidAds() {
-	const startingPaidAds = {
-		...defaultPaidAds,
-		...clientSession.getCampaign(),
-	};
-	const nextPaidAds = { ...startingPaidAds };
-	nextPaidAds.isValid = ! Object.keys( validateCampaign( nextPaidAds ) )
-		.length;
-
-	return nextPaidAds;
-}
-
 /**
  * Renders the onboarding step for setting up the paid ads (Google Ads account and paid campaign)
  * or skipping it, and then completing the onboarding flow.
@@ -75,7 +51,6 @@ export default function SetupPaidAds() {
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
-	const paidAds = resolveInitialPaidAds();
 
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
@@ -156,11 +131,16 @@ export default function SetupPaidAds() {
 		);
 	};
 
+	const paidAds = {
+		amount: 0,
+		...clientSession.getCampaign(),
+	};
+
 	return (
 		<CampaignAssetsForm
 			initialCampaign={ paidAds }
-			onChange={ ( _, values, isValid ) => {
-				clientSession.setCampaign( { ...values, isValid } );
+			onChange={ ( _, values ) => {
+				clientSession.setCampaign( { ...values } );
 			} }
 		>
 			<AdsCampaign
