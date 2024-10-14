@@ -41,9 +41,11 @@ test.describe( 'Product Feed Page', () => {
 		dashboardPage = new DashboardPage( page );
 		productFeedPage = new ProductFeedPage( page );
 		setupAdsAccounts = new SetupAdsAccountsPage( page );
-		await setupAdsAccounts.mockAdsAccountsResponse( [] );
-		await setOnboardedMerchant();
-		await dashboardPage.mockRequests();
+		await Promise.all( [
+			setupAdsAccounts.mockAdsAccountsResponse( [] ),
+			productFeedPage.mockRequests(),
+			setOnboardedMerchant(),
+		] );
 	} );
 
 	test.afterAll( async () => {
@@ -53,12 +55,6 @@ test.describe( 'Product Feed Page', () => {
 
 	test.describe( 'No campaign', () => {
 		test.beforeAll( async () => {
-			await setupAdsAccounts.mockAdsAccountsResponse( {
-				issues: [],
-				total: 0,
-				page: 1,
-				loading: false,
-			} );
 			await productFeedPage.fulfillAdsCampaignsRequest( [] );
 			await productFeedPage.goto();
 		} );
@@ -155,12 +151,6 @@ test.describe( 'Product Feed Page', () => {
 
 	test.describe( 'Has campaign', () => {
 		test.beforeAll( async () => {
-			await setupAdsAccounts.mockAdsAccountsResponse( {
-				issues: [],
-				total: 0,
-				page: 1,
-				loading: false,
-			} );
 			await productFeedPage.fulfillAdsCampaignsRequest( [
 				{
 					id: 111111111,
@@ -201,7 +191,8 @@ test.describe( 'Product Feed Page', () => {
 					disapproved: 0,
 					not_synced: 1137,
 				},
-				scheduled_sync: 1,
+				scheduled_sync: 0,
+				loading: false,
 			} );
 			await page.reload();
 			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );

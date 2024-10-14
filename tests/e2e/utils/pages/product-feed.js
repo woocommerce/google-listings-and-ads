@@ -29,6 +29,59 @@ export default class ProductFeedPage extends MockRequests {
 	}
 
 	/**
+	 * Mock all requests related to external accounts such as Merchant Center, Google, etc.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockRequests() {
+		await Promise.all( [
+			this.fulfillMCReview( {
+				cooldown: 0,
+				issues: [],
+				reviewEligibleRegions: [],
+				status: 'ONBOARDING',
+			} ),
+			this.fulfillAccountIssuesRequest( {
+				issues: [],
+				page: 1,
+				total: 0,
+				loading: false,
+			} ),
+			// Mock Reports Programs
+			this.fulfillMCReportProgram( {
+				free_listings: null,
+				products: null,
+				intervals: null,
+				totals: {
+					clicks: 0,
+					impressions: 0,
+				},
+				next_page: null,
+			} ),
+			this.fulfillTargetAudience( {
+				location: 'selected',
+				countries: [ 'US' ],
+				locale: 'en_US',
+				language: 'English',
+			} ),
+			this.fulfillJetPackConnection( {
+				active: 'yes',
+				owner: 'yes',
+				displayName: 'John',
+				email: 'john@email.com',
+			} ),
+			this.mockGoogleConnected(),
+			this.fulfillAdsConnection( {
+				id: 1111111,
+				currency: 'USD',
+				symbol: '$',
+				status: 'connected',
+				step: '',
+			} ),
+		] );
+	}
+
+	/**
 	 * Get the active product value element.
 	 *
 	 * @return {Promise<import('@playwright/test').Locator>} The active product value element.
