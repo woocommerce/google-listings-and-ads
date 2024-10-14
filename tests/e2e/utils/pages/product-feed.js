@@ -95,7 +95,7 @@ export default class ProductFeedPage extends MockRequests {
 	async getActiveProductValueElement() {
 		return this.page
 			.locator( '.woocommerce-summary__item-label span >> text=Active' )
-			.locator( '../..' ) // Move to parent
+			.locator( '../..' )
 			.locator( '.woocommerce-summary__item-value span' );
 	}
 
@@ -107,7 +107,7 @@ export default class ProductFeedPage extends MockRequests {
 	async getActiveProductValue() {
 		return this.page
 			.locator( '.woocommerce-summary__item-label span >> text=Active' )
-			.locator( '../..' ) // Move to parent
+			.locator( '../..' )
 			.locator( '.woocommerce-summary__item-value span' )
 			.innerText();
 	}
