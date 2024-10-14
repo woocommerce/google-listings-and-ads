@@ -79,7 +79,9 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 
 	it( 'should call "handleCreateAccount" and "upsertAdsAccount" when there are no existing accounts', async () => {
 		// Simulate the initial state and mock behavior for account creation
-		const { result, rerender } = renderHook( () => useAutoCreateAdsMCAccounts() );
+		const { result, rerender } = renderHook( () =>
+			useAutoCreateAdsMCAccounts()
+		);
 
 		expect( result.current.isCreatingAdsAccount ).toBe( false );
 		expect( result.current.isCreatingMCAccount ).toBe( false );
@@ -124,7 +126,9 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 			{ response: undefined, loading: true }, // Initially no response, loading is true
 		] );
 
-		const { result, rerender } = renderHook( () => useAutoCreateAdsMCAccounts() );
+		const { result, rerender } = renderHook( () =>
+			useAutoCreateAdsMCAccounts()
+		);
 
 		// Initially, it should not be creating accounts
 		expect( result.current.isCreatingAdsAccount ).toBe( false );
@@ -171,7 +175,9 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 			{ response: undefined, loading: true }, // Initially no response, loading is true for Ads account creation
 		] );
 
-		const { result, rerender } = renderHook( () => useAutoCreateAdsMCAccounts() );
+		const { result, rerender } = renderHook( () =>
+			useAutoCreateAdsMCAccounts()
+		);
 
 		// Initially, it should not be creating accounts
 		expect( result.current.isCreatingAdsAccount ).toBe( false );
