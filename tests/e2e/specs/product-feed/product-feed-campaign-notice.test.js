@@ -6,7 +6,6 @@ import { expect, test } from '@playwright/test';
  * Internal dependencies
  */
 import { clearOnboardedMerchant, setOnboardedMerchant } from '../../utils/api';
-import DashboardPage from '../../utils/pages/dashboard.js';
 import ProductFeedPage from '../../utils/pages/product-feed';
 import SetupAdsAccountsPage from '../../utils/pages/setup-ads/setup-ads-accounts.js';
 import { LOAD_STATE } from '../../utils/constants';
@@ -14,11 +13,6 @@ import { LOAD_STATE } from '../../utils/constants';
 test.use( { storageState: process.env.ADMINSTATE } );
 
 test.describe.configure( { mode: 'serial' } );
-
-/**
- * @type {import('../../utils/pages/dashboard.js').default} dashboardPage
- */
-let dashboardPage = null;
 
 /**
  * @type {import('../../utils/pages/setup-ads/setup-ads-accounts').default} setupAdsAccounts
@@ -38,7 +32,6 @@ let page = null;
 test.describe( 'Product Feed Page', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
-		dashboardPage = new DashboardPage( page );
 		productFeedPage = new ProductFeedPage( page );
 		setupAdsAccounts = new SetupAdsAccountsPage( page );
 		await Promise.all( [
