@@ -10,8 +10,8 @@ import { useState } from '@wordpress/element';
  */
 import SetupAccounts from './setup-accounts';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
-import SetupBilling from './setup-billing';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
+import LaunchPaidCampaignButton from './launch-paid-campaign-button';
 import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
@@ -21,11 +21,11 @@ import {
 
 /**
  * @param {Object} props React props
- * @param {Object} props.formProps Form props forwarded from `Form` component.
- * @fires gla_setup_ads with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button' , action: 'go-to-step2' | 'go-to-step3' }`.
- * @fires gla_setup_ads with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
+ * @param {Object} [props.isSubmitting] Where the form ads setup has been submitted via the useAdsSetupCompleteCallback hook.
+ * @fires gla_setup_ads with `{ triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
+ * @fires gla_setup_ads with `{ triggered_by: 'stepper-step1-button', action: 'go-to-step1'}`.
  */
-const AdsStepper = ( { formProps } ) => {
+const AdsStepper = ( { isSubmitting } ) => {
 	const [ step, setStep ] = useState( '1' );
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
@@ -56,10 +56,6 @@ const AdsStepper = ( { formProps } ) => {
 
 	const handleSetupAccountsContinue = () => {
 		continueStep( '2' );
-	};
-
-	const handleCreateCampaignContinue = () => {
-		continueStep( '3' );
 	};
 
 	return (
@@ -95,16 +91,15 @@ const AdsStepper = ( { formProps } ) => {
 								'Create your paid campaign',
 								'google-listings-and-ads'
 							) }
-							trackingContext="setup-ads"
-							onContinue={ handleCreateCampaignContinue }
+							context="setup-ads"
+							continueButton={ ( formContext ) => (
+								<LaunchPaidCampaignButton
+									formProps={ formContext }
+									isLoading={ isSubmitting }
+								/>
+							) }
 						/>
 					),
-					onClick: handleStepClick,
-				},
-				{
-					key: '3',
-					label: __( 'Set up billing', 'google-listings-and-ads' ),
-					content: <SetupBilling formProps={ formProps } />,
 					onClick: handleStepClick,
 				},
 			] }

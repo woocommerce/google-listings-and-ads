@@ -7,6 +7,7 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import { STORE_KEY } from '.~/data/constants';
+import getHighestBudget from '.~/utils/getHighestBudget';
 
 /**
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
@@ -25,8 +26,21 @@ const useFetchBudgetRecommendation = ( countryCodes ) => {
 				select( STORE_KEY );
 
 			const data = getAdsBudgetRecommendations( countryCodes );
+			let highestDailyBudget;
+			let highestDailyBudgetCountryCode;
+
+			if ( data ) {
+				const { recommendations } = data;
+				( {
+					daily_budget: highestDailyBudget,
+					country: highestDailyBudgetCountryCode,
+				} = getHighestBudget( recommendations ) );
+			}
+
 			return {
 				data,
+				highestDailyBudget,
+				highestDailyBudgetCountryCode,
 				hasFinishedResolution: hasFinishedResolution(
 					'getAdsBudgetRecommendations',
 					[ countryCodes ]

@@ -11,7 +11,6 @@ import GridiconNoticeOutline from 'gridicons/dist/notice-outline';
  */
 import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
 import useFetchBudgetRecommendation from '.~/hooks/useFetchBudgetRecommendation';
-import getHighestBudget from '.~/utils/getHighestBudget';
 import './index.scss';
 
 function toRecommendationRange( isMultiple, ...values ) {
@@ -36,7 +35,8 @@ function toRecommendationRange( isMultiple, ...values ) {
 
 const BudgetRecommendation = ( props ) => {
 	const { countryCodes, dailyAverageCost = Infinity } = props;
-	const { data } = useFetchBudgetRecommendation( countryCodes );
+	const { data, highestDailyBudgetCountryCode, highestDailyBudget } =
+		useFetchBudgetRecommendation( countryCodes );
 	const map = useCountryKeyNameMap();
 
 	if ( ! data ) {
@@ -44,18 +44,15 @@ const BudgetRecommendation = ( props ) => {
 	}
 
 	const { currency, recommendations } = data;
-	const { daily_budget: dailyBudget, country } =
-		getHighestBudget( recommendations );
-
-	const countryName = map[ country ];
+	const countryName = map[ highestDailyBudgetCountryCode ];
 	const recommendationRange = toRecommendationRange(
 		recommendations.length > 1,
-		dailyBudget,
+		highestDailyBudget,
 		currency,
 		countryName
 	);
 
-	const showLowerBudgetNotice = dailyAverageCost < dailyBudget;
+	const showLowerBudgetNotice = dailyAverageCost < highestDailyBudget;
 
 	return (
 		<div className="gla-budget-recommendation">

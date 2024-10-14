@@ -32,6 +32,7 @@ import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
 } from '.~/utils/tracks';
+import ContinueButton from '.~/components/paid-ads/continue-button';
 
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'create-ads';
@@ -50,7 +51,7 @@ const CreatePaidAdsCampaign = () => {
 	const createdCampaignIdRef = useRef( null );
 	const { createAdsCampaign, updateCampaignAssetGroup } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
-	const { data: initialCountryCodes } = useTargetAudienceFinalCountryCodes();
+	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 
 	const handleStepperClick = ( nextStep ) => {
 		recordStepperChangeEvent(
@@ -75,7 +76,7 @@ const CreatePaidAdsCampaign = () => {
 		const { action } = enhancer.submitter.dataset;
 
 		try {
-			const { amount, countryCodes } = values;
+			const { amount } = values;
 
 			// Avoid re-creating a new campaign if the subsequent asset group update is failed.
 			if ( createdCampaignIdRef.current === null ) {
@@ -113,7 +114,7 @@ const CreatePaidAdsCampaign = () => {
 		getHistory().push( getDashboardUrl( { campaign: 'saved' } ) );
 	};
 
-	if ( ! initialCountryCodes ) {
+	if ( ! countryCodes ) {
 		return null;
 	}
 
@@ -130,7 +131,6 @@ const CreatePaidAdsCampaign = () => {
 			<CampaignAssetsForm
 				initialCampaign={ {
 					amount: 0,
-					countryCodes: initialCountryCodes,
 				} }
 				onSubmit={ handleSubmit }
 			>
@@ -149,10 +149,17 @@ const CreatePaidAdsCampaign = () => {
 										'Create your paid campaign',
 										'google-listings-and-ads'
 									) }
-									trackingContext={ eventContext }
-									onContinue={ () =>
-										handleContinueClick( STEP.ASSET_GROUP )
-									}
+									context={ eventContext }
+									continueButton={ ( formContext ) => (
+										<ContinueButton
+											formProps={ formContext }
+											onClick={ () => {
+												handleContinueClick(
+													STEP.ASSET_GROUP
+												);
+											} }
+										/>
+									) }
 								/>
 							),
 							onClick: handleStepperClick,
