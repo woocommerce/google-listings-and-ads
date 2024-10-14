@@ -98,25 +98,32 @@ const AccountCreationDescription = ( {
 		return (
 			<>
 				<p>{ google?.email }</p>
-				<AccountInfo
-					account={ googleMCAccount }
-					text={ sprintf(
-						// Translators: %s is the Merchant Center ID
-						__(
-							'Merchant Center ID: %s',
-							'google-listings-and-ads'
-						),
-						googleMCAccount.id
-					) }
-				/>
-				<AccountInfo
-					account={ googleAdsAccount }
-					text={ sprintf(
-						// Translators: %s is the Google Ads ID
-						__( 'Google Ads ID: %s', 'google-listings-and-ads' ),
-						googleAdsAccount.id
-					) }
-				/>
+				{ googleMCAccount.id > 0 && (
+					<AccountInfo
+						account={ googleMCAccount }
+						text={ sprintf(
+							// Translators: %s is the Merchant Center ID
+							__(
+								'Merchant Center ID: %s',
+								'google-listings-and-ads'
+							),
+							googleMCAccount.id
+						) }
+					/>
+				) }
+				{ googleAdsAccount.id > 0 && (
+					<AccountInfo
+						account={ googleAdsAccount }
+						text={ sprintf(
+							// Translators: %s is the Google Ads ID
+							__(
+								'Google Ads ID: %s',
+								'google-listings-and-ads'
+							),
+							googleAdsAccount.id
+						) }
+					/>
+				) }
 			</>
 		);
 	};

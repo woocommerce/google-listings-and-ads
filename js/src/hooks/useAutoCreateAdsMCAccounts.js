@@ -30,8 +30,8 @@ import { GOOGLE_MC_ACCOUNT_STATUS } from '.~/constants';
 const useAutoCreateAdsMCAccounts = () => {
 	// Refs are used to avoid the re-render of the parent component.
 	const isCreatingBothAccountsRef = useRef( false );
-	const isCreatingAdsAccountsRef = useRef( false );
-	const isCreatingMCAccountsRef = useRef( false );
+	const isCreatingAdsAccountRef = useRef( false );
+	const isCreatingMCAccountRef = useRef( false );
 	const initHasExistingMCAccountsRef = useRef( null );
 	const initHasExistingAdsAccountsRef = useRef( null );
 	const accountsCreatedRef = useRef( false );
@@ -100,23 +100,23 @@ const useAutoCreateAdsMCAccounts = () => {
 		! initHasExistingMCAccountsRef.current;
 
 	const isCreatingAccounts =
-		isCreatingAdsAccountsRef.current ||
-		isCreatingMCAccountsRef.current ||
+		isCreatingAdsAccountRef.current ||
+		isCreatingMCAccountRef.current ||
 		isCreatingBothAccountsRef.current;
 
 	useEffect( () => {
 		// Ads account check
-		if ( isCreatingAdsAccountsRef.current === true && ! loading ) {
-			isCreatingAdsAccountsRef.current = false;
+		if ( isCreatingAdsAccountRef.current === true && ! loading ) {
+			isCreatingAdsAccountRef.current = false;
 			accountsCreatedRef.current = true;
 		}
 
 		// MC account check
 		if (
-			isCreatingMCAccountsRef.current === true &&
+			isCreatingMCAccountRef.current === true &&
 			response?.status === 200
 		) {
-			isCreatingMCAccountsRef.current = false;
+			isCreatingMCAccountRef.current = false;
 			accountsCreatedRef.current = true;
 		}
 
@@ -132,19 +132,6 @@ const useAutoCreateAdsMCAccounts = () => {
 	}, [ response, loading ] );
 
 	useEffect( () => {
-		const createMCAccount = async () => {
-			await handleCreateAccount();
-		};
-
-		const createAdsAccount = async () => {
-			await upsertAdsAccount();
-		};
-
-		const createBothAccounts = async () => {
-			await createMCAccount();
-			await createAdsAccount();
-		};
-
 		const handleCreation = async () => {
 			// Bail out if we haven't resolved the existing accounts checks yet or there's a creation in progress or the accounts have been created.
 			if (
@@ -156,20 +143,21 @@ const useAutoCreateAdsMCAccounts = () => {
 			}
 
 			if ( shouldCreateAdsAccount ) {
-				isCreatingAdsAccountsRef.current = true;
-				await createAdsAccount();
+				isCreatingAdsAccountRef.current = true;
+				await upsertAdsAccount();
 				return;
 			}
 
 			if ( shouldCreateMCAccount ) {
-				isCreatingMCAccountsRef.current = true;
-				await createMCAccount();
+				isCreatingMCAccountRef.current = true;
+				await handleCreateAccount();
 				return;
 			}
 
 			if ( shouldCreateBothAccounts ) {
 				isCreatingBothAccountsRef.current = true;
-				await createBothAccounts();
+				await handleCreateAccount();
+				await upsertAdsAccount();
 			}
 		};
 
@@ -186,8 +174,8 @@ const useAutoCreateAdsMCAccounts = () => {
 
 	return {
 		accountCreationChecksResolved,
-		isCreatingAdsAccount: isCreatingAdsAccountsRef.current,
-		isCreatingMCAccount: isCreatingMCAccountsRef.current,
+		isCreatingAdsAccount: isCreatingAdsAccountRef.current,
+		isCreatingMCAccount: isCreatingMCAccountRef.current,
 		isCreatingBothAccounts: isCreatingBothAccountsRef.current,
 		isCreatingAccounts,
 		accountsCreated: accountsCreatedRef.current,
