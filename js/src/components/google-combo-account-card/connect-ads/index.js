@@ -2,4 +2,4 @@
  * Internal dependencies
  */
 
-export { default as ConnectAds } from './connect-ads';
+export { default } from './connect-ads';

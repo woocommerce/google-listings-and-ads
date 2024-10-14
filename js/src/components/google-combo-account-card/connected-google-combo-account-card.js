@@ -11,7 +11,7 @@ import AppSpinner from '../app-spinner';
 import useAutoCreateAdsMCAccounts from '../../hooks/useAutoCreateAdsMCAccounts';
 import LoadingLabel from '../loading-label/loading-label';
 import AccountCreationDescription from './account-creation-description';
-import { ConnectAds } from './connect-ads';
+import ConnectAds from './connect-ads';
 import './connected-google-combo-account-card.scss';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';

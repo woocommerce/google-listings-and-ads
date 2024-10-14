@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useState } from '@wordpress/element';
+import { useEffect, useRef, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -18,18 +18,8 @@ import ConnectAdsFooter from './connect-ads-footer';
 import ConnectAdsBody from './connect-ads-body';
 
 /**
- * Clicking on the button to connect an existing Google Ads account.
- *
- * @event gla_ads_account_connect_button_click
- * @property {number} id The account ID to be connected.
- * @property {string} [context] Indicates the place where the button is located.
- * @property {string} [step] Indicates the step in the onboarding process.
- */
-
-/**
  * ConnectAds component renders an account card to connect to an existing Google Ads account.
  *
- * @fires gla_ads_account_connect_button_click when "Connect" button is clicked.
  * @fires gla_documentation_link_click with `{ context: 'setup-ads-connect-account', link_id: 'connect-sub-account', href: 'https://support.google.com/google-ads/answer/6139186' }`
  * @return {JSX.Element} {@link AccountCard} filled with content.
  */
@@ -52,13 +42,24 @@ const ConnectAds = () => {
 	const [ value, setValue ] = useState();
 	const [ isLoading, setLoading ] = useState( false );
 	const [ fetchConnectAdsAccount ] = useApiFetchCallback( {
-		path: `/wc/gla/ads/accounts`,
+		path: '/wc/gla/ads/accounts',
 		method: 'POST',
 		data: { id: value },
 	} );
 	const { refetchGoogleAdsAccount } = useGoogleAdsAccount();
 	const { createNotice } = useDispatchCoreNotices();
 	const { fetchGoogleAdsAccountStatus } = useAppDispatch();
+	const initialValueRef = useRef( null );
+
+	if ( googleAdsAccount?.id ) {
+		initialValueRef.current = googleAdsAccount.id;
+	}
+
+	useEffect( () => {
+		if ( initialValueRef.current ) {
+			setValue( initialValueRef.current );
+		}
+	}, [ initialValueRef ] );
 
 	const handleConnectClick = async () => {
 		if ( ! value ) {
@@ -105,15 +106,13 @@ const ConnectAds = () => {
 			) }
 			body={
 				<ConnectAdsBody
-					{ ...{
-						accounts,
-						googleAdsAccount,
-						isConnected,
-						handleConnectClick,
-						isLoading,
-						setValue,
-						value,
-					} }
+					accounts={ accounts }
+					googleAdsAccount={ googleAdsAccount }
+					isConnected={ isConnected }
+					handleConnectClick={ handleConnectClick }
+					isLoading={ isLoading }
+					setValue={ setValue }
+					value={ value }
 				/>
 			}
 			footer={ <ConnectAdsFooter /> }

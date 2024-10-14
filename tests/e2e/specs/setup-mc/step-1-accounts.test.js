@@ -449,7 +449,7 @@ test.describe( 'Set up accounts', () => {
 
 			await expect(
 				googleAdsAccountCard.getByRole( 'button', { name: 'Connect' } )
-			).toBeDisabled();
+			).toBeEnabled();
 		} );
 
 		test( 'should see the button as enabled when selects the account from dropdown', async () => {

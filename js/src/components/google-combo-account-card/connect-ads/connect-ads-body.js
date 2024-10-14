@@ -1,21 +1,27 @@
 /**
  * External dependencies
  */
-import { useEffect, useRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import AdsAccountSelectControl from '.~/components/ads-account-select-control';
-import AppButton from '.~/components/app-button';
 import ContentButtonLayout from '.~/components/content-button-layout';
-import ConnectedIconLabel from '.~/components/connected-icon-label';
+import ConnectCTA from './connect-cta';
 import LoadingLabel from '.~/components/loading-label/loading-label';
-import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
-import { FILTER_ONBOARDING } from '.~/utils/tracks';
 
 /**
+ * Clicking on the button to connect an existing Google Ads account.
+ *
+ * @event gla_ads_account_connect_button_click
+ * @property {number} id The account ID to be connected.
+ * @property {string} [context] Indicates the place where the button is located.
+ * @property {string} [step] Indicates the step in the onboarding process.
+ */
+
+/**
+ * ConnectAdsBody component.
  *
  * @param {Object} props Props.
  * @param {Array} props.accounts Accounts.
@@ -25,6 +31,7 @@ import { FILTER_ONBOARDING } from '.~/utils/tracks';
  * @param {boolean} props.isLoading Whether the card is in a loading state.
  * @param {Function} props.setValue Callback to set the value.
  * @param {string} props.value Ads account ID.
+ * @fires gla_ads_account_connect_button_click when "Connect" button is clicked.
  * @return {JSX.Element} Body component.
  */
 const ConnectAdsBody = ( {
@@ -36,33 +43,6 @@ const ConnectAdsBody = ( {
 	setValue,
 	value,
 } ) => {
-	const initialValueRef = useRef( googleAdsAccount.id );
-	const getEventProps = useEventPropertiesFilter( FILTER_ONBOARDING );
-
-	useEffect( () => {
-		setValue( initialValueRef.current );
-	}, [ initialValueRef, setValue ] );
-
-	const ConnectCTA = () => {
-		if ( isConnected && initialValueRef.current === Number( value ) ) {
-			return <ConnectedIconLabel />;
-		}
-
-		return (
-			<AppButton
-				isSecondary
-				disabled={ ! value }
-				eventName="gla_ads_account_connect_button_click"
-				eventProps={ getEventProps( {
-					id: Number( value ),
-				} ) }
-				onClick={ handleConnectClick }
-			>
-				{ __( 'Connect', 'google-listings-and-ads' ) }
-			</AppButton>
-		);
-	};
-
 	return (
 		<ContentButtonLayout>
 			<AdsAccountSelectControl
@@ -75,7 +55,12 @@ const ConnectAdsBody = ( {
 					text={ __( 'Connecting…', 'google-listings-and-ads' ) }
 				/>
 			) : (
-				<ConnectCTA />
+				<ConnectCTA
+					isConnected={ isConnected }
+					id={ googleAdsAccount.id }
+					handleConnectClick={ handleConnectClick }
+					value={ value }
+				/>
 			) }
 		</ContentButtonLayout>
 	);
