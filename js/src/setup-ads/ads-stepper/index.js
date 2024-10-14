@@ -12,7 +12,6 @@ import SetupAccounts from './setup-accounts';
 import AppButton from '.~/components/app-button';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
-import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import {
@@ -31,8 +30,6 @@ import {
 const AdsStepper = ( { formProps } ) => {
 	const [ step, setStep ] = useState( '1' );
 	const initHasAdsConnectionRef = useRef( null );
-	const { hasFinishedResolution: hasResolvedGoogleAccount } =
-		useGoogleAccount();
 
 	const {
 		googleAdsAccount,
@@ -52,7 +49,6 @@ const AdsStepper = ( { formProps } ) => {
 	} );
 
 	if (
-		! hasResolvedGoogleAccount ||
 		! hasResolvedGoogleAdsAccount ||
 		! hasResolvedAdsAccountStatus ||
 		googleAdsAccount === null
