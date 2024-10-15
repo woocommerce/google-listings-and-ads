@@ -9,9 +9,9 @@ import { Flex, FlexBlock } from '@wordpress/components';
  * Internal dependencies
  */
 import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
+import SpinnerCard from '.~/components/spinner-card';
 import BillingSetupCard from './billing-setup-card';
 import fallbackBillingUrl from './fallbackBillingUrl';
-import SpinnerCard from '.~/components/spinner-card';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 import './billing-card.scss';
 
@@ -22,9 +22,10 @@ const { APPROVED } = GOOGLE_ADS_BILLING_STATUS;
  * of the connected Google Ads account.
  */
 export default function BillingCard() {
-	const { billingStatus } = useGoogleAdsAccountBillingStatus();
+	const { billingStatus, hasFinishedResolution } =
+		useGoogleAdsAccountBillingStatus();
 
-	if ( ! billingStatus ) {
+	if ( ! hasFinishedResolution ) {
 		return <SpinnerCard />;
 	}
 

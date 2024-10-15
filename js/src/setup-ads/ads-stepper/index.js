@@ -8,8 +8,8 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import AppButton from '.~/components/app-button';
 import SetupAccounts from './setup-accounts';
+import AppButton from '.~/components/app-button';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
 import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
@@ -25,7 +25,7 @@ const { APPROVED } = GOOGLE_ADS_BILLING_STATUS;
 
 /**
  * @param {Object} props React props
- * @param {Object} props.isSubmitting When the form ads setup is currently being submitted via the useAdsSetupCompleteCallback hook.
+ * @param {Object} props.isSubmitting When the form in the parent component, i.e SetupAdsForm, is currently being submitted via the useAdsSetupCompleteCallback hook.
  * @fires gla_setup_ads with `{ triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
  * @fires gla_setup_ads with `{ triggered_by: 'stepper-step1-button', action: 'go-to-step1'}`.
  */

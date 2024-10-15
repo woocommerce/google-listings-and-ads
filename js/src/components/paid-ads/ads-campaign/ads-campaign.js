@@ -10,8 +10,8 @@ import { createInterpolateElement } from '@wordpress/element';
 import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
-import StepContentActions from '.~/components/stepper/step-content-actions';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
+import StepContentActions from '.~/components/stepper/step-content-actions';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import PaidAdsFaqsPanel from './faqs-panel';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
@@ -115,7 +115,6 @@ export default function AdsCampaign( {
 						? continueButton( formContext )
 						: continueButton }
 				</StepContentActions>
-
 				<PaidAdsFaqsPanel />
 			</StepContentFooter>
 		</StepContent>
