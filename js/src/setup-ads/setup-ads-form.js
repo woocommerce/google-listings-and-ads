@@ -67,9 +67,7 @@ const SetupAdsForm = () => {
 	};
 
 	const handleChange = ( _, values ) => {
-		const args = [ initialValues, values ].map( ( v ) => {
-			return v;
-		} );
+		const args = [ initialValues, values ];
 
 		setFormChanged( ! isEqual( ...args ) );
 	};
