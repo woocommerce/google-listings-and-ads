@@ -16,8 +16,8 @@ import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import BillingCard from '.~/components/paid-ads/billing-card';
 import BudgetSection from '../budget-section';
 import { CampaignPreviewCard } from '../campaign-preview';
-import PaidAdsFeaturesSection from './paid-ads-features-section';
 import PaidAdsFaqsPanel from './faqs-panel';
+import PaidAdsFeaturesSection from './paid-ads-features-section';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 
 /**
