@@ -66,13 +66,14 @@ export default function AssetGroup( { campaign } ) {
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const { isValidAssetGroup, isSubmitting, isSubmitted, submitter } = adapter;
 	const currentAction = submitter?.dataset.action;
+	const audiences = isCreation ? countryCodes : campaign?.displayCountries;
 
 	function recordSubmissionClickEvent( event ) {
 		const finalUrl = values[ ASSET_FORM_KEY.FINAL_URL ];
 		const eventProps = {
 			context: isCreation ? 'campaign-creation' : 'campaign-editing',
 			action: event.target.dataset.action,
-			audiences: countryCodes.join( ',' ),
+			audiences: audiences.join( ',' ),
 			budget: values.amount.toString(),
 			assets_validation: isValidAssetGroup ? 'valid' : 'invalid',
 		};
