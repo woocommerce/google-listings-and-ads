@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useState, useMemo, useRef } from '@wordpress/element';
+import { useState, useMemo } from '@wordpress/element';
 import { isPlainObject } from 'lodash';
 
 /**
@@ -66,7 +66,6 @@ function convertAssetEntityGroupToFormValues( assetEntityGroup = {} ) {
  * @augments AdaptiveForm
  * @param {Object} props React props.
  * @param {CampaignFormValues} props.initialCampaign Initial campaign values.
- * @param {Function} [props.onChange] Callback when the form values change.
  * @param {AssetEntityGroup} [props.assetEntityGroup] The asset entity group to be used in initializing the form values for editing.
  * @param {number} props.minimumAmount The minimum amount for the daily budget.
  */
@@ -76,7 +75,6 @@ export default function CampaignAssetsForm( {
 	minimumAmount,
 	...adaptiveFormProps
 } ) {
-	const formRef = useRef();
 	const initialAssetGroup = useMemo( () => {
 		return convertAssetEntityGroupToFormValues( assetEntityGroup );
 	}, [ assetEntityGroup ] );
@@ -131,7 +129,6 @@ export default function CampaignAssetsForm( {
 
 	return (
 		<AdaptiveForm
-			ref={ formRef }
 			initialValues={ {
 				...initialCampaign,
 				...initialAssetGroup,
