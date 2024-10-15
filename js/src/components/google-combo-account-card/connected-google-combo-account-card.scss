@@ -1,15 +1,18 @@
 .gla-google-combo-account-card--connected {
 
-	.gla-account-card__icon {
-		align-self: flex-start;
-	}
-
 	.gla-account-card__description p {
 		margin: 0;
 	}
 
 	.components-select-control__input {
 		pointer-events: none;
+	}
+
+	.gla-connected-google-combo-account-card__description {
+
+		em {
+			color: #757575;
+		}
 	}
 }
 
