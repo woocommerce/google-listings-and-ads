@@ -70,7 +70,7 @@ test.describe( 'Set up Ads account', () => {
 		await setOnboardedMerchant();
 		await setupAdsAccounts.mockAdsAccountsResponse( [] );
 		await setupBudgetPage.fulfillBillingStatusRequest( {
-			status: 'approved',
+			status: 'unknown',
 		} );
 		await dashboardPage.mockRequests();
 		await dashboardPage.goto();
@@ -414,7 +414,7 @@ test.describe( 'Set up Ads account', () => {
 				await setupBudgetPage.fillBudget( budget );
 
 				await expect(
-					page.getByRole( 'button', { name: 'Continue' } )
+					setupBudgetPage.getLaunchPaidCampaignButton()
 				).toBeDisabled();
 			} );
 
@@ -423,7 +423,7 @@ test.describe( 'Set up Ads account', () => {
 				await setupBudgetPage.fillBudget( budget );
 
 				await expect(
-					page.getByRole( 'button', { name: 'Continue' } )
+					setupBudgetPage.getLaunchPaidCampaignButton()
 				).toBeDisabled();
 			} );
 
@@ -444,31 +444,15 @@ test.describe( 'Set up Ads account', () => {
 				await setupBudgetPage.fillBudget( budget );
 
 				await expect(
-					page.getByRole( 'button', { name: 'Continue' } )
+					setupBudgetPage.getLaunchPaidCampaignButton()
 				).toBeEnabled();
 			} );
-		} );
 
-		test( 'Budget Recommendation', async () => {
-			await expect(
-				page.getByText( 'set a daily budget of 15 USD' )
-			).toBeVisible();
-		} );
-
-		test( 'Launch paid campaign should be enabled', async () => {
-			await page.getByRole( 'button', { name: 'Continue' } ).click();
-			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-
-			//Step 3 - Billing is already setup
-			await expect(
-				page.getByText(
-					'Great! You already have billing information saved for this'
-				)
-			).toBeVisible();
-
-			await expect(
-				page.getByRole( 'button', { name: 'Launch paid campaign' } )
-			).toBeEnabled();
+			test( 'Budget Recommendation should be visible', async () => {
+				await expect(
+					page.getByText( 'set a daily budget of 15 USD' )
+				).toBeVisible();
+			} );
 		} );
 
 		test( 'It should show the campaign creation success message', async () => {
