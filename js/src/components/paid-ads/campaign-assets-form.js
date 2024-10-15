@@ -123,7 +123,7 @@ export default function CampaignAssetsForm( {
 	};
 
 	const validateCampaignMinimumAmount = ( values ) => {
-		validateCampaign( values, {
+		return validateCampaign( values, {
 			dailyBudget: minimumAmount,
 			formatAmount,
 		} );
