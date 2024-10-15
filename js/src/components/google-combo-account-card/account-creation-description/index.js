@@ -9,22 +9,21 @@ import { __, sprintf } from '@wordpress/i18n';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import AccountInfo from './account-info';
 
 /**
  * Renders the description for the account creation card.
  *
  * @param {Object} props Props.
- * @param {Object} props.accountsCreated Whether accounts have been created.
+ * @param {boolean} props.accountsCreated Whether accounts have been created.
  * @param {boolean} props.isCreatingBothAccounts Whether both, MC and Ads accounts are being created.
- * @param {boolean} props.isCreatingMCAccount Whether Merchant Center account is being created.
- * @param {boolean} props.isCreatingAdsAccount Whether Google Ads account is being created.
+ * @param {boolean} props.isCreatingOnlyMCAccount Whether only the Merchant Center account is being created.
+ * @param {boolean} props.isCreatingOnlyAdsAccount Whether only Google Ads account is being created.
  */
 const AccountCreationDescription = ( {
 	accountsCreated,
 	isCreatingBothAccounts,
-	isCreatingMCAccount,
-	isCreatingAdsAccount,
+	isCreatingOnlyMCAccount,
+	isCreatingOnlyAdsAccount,
 } ) => {
 	const { google } = useGoogleAccount();
 	const {
@@ -37,17 +36,16 @@ const AccountCreationDescription = ( {
 		hasFinishedResolution: hasFinishedResolutionForCurrentAdsAccount,
 	} = useGoogleAdsAccount();
 
-	const isLoadingData =
+	const isLoadingAccountsData =
 		accountsCreated &&
 		( ! hasFinishedResolutionForCurrentMCAccount ||
 			! hasFinishedResolutionForCurrentAdsAccount );
 
 	const getDescription = () => {
 		if (
-			isLoadingData ||
 			isCreatingBothAccounts ||
-			isCreatingMCAccount ||
-			isCreatingAdsAccount
+			isCreatingOnlyMCAccount ||
+			isCreatingOnlyAdsAccount
 		) {
 			if ( isCreatingBothAccounts ) {
 				return (
@@ -58,7 +56,7 @@ const AccountCreationDescription = ( {
 						) }
 					</p>
 				);
-			} else if ( isCreatingAdsAccount ) {
+			} else if ( isCreatingOnlyAdsAccount ) {
 				return (
 					<>
 						<p>
@@ -75,7 +73,7 @@ const AccountCreationDescription = ( {
 						</em>
 					</>
 				);
-			} else if ( isCreatingMCAccount ) {
+			} else if ( isCreatingOnlyMCAccount ) {
 				return (
 					<>
 						<p>
@@ -98,25 +96,30 @@ const AccountCreationDescription = ( {
 		return (
 			<>
 				<p>{ google?.email }</p>
-				<AccountInfo
-					account={ googleMCAccount }
-					text={ sprintf(
-						// Translators: %s is the Merchant Center ID
-						__(
-							'Merchant Center ID: %s',
-							'google-listings-and-ads'
-						),
-						googleMCAccount.id
-					) }
-				/>
-				<AccountInfo
-					account={ googleAdsAccount }
-					text={ sprintf(
-						// Translators: %s is the Google Ads ID
-						__( 'Google Ads ID: %s', 'google-listings-and-ads' ),
-						googleAdsAccount.id
-					) }
-				/>
+				{ ! isLoadingAccountsData && googleMCAccount.id > 0 && (
+					<p>
+						{ sprintf(
+							// Translators: %s is the Merchant Center ID
+							__(
+								'Merchant Center ID: %s',
+								'google-listings-and-ads'
+							),
+							googleMCAccount.id
+						) }
+					</p>
+				) }
+				{ ! isLoadingAccountsData && googleAdsAccount.id > 0 && (
+					<p>
+						{ sprintf(
+							// Translators: %s is the Google Ads ID
+							__(
+								'Google Ads ID: %s',
+								'google-listings-and-ads'
+							),
+							googleAdsAccount.id
+						) }
+					</p>
+				) }
 			</>
 		);
 	};

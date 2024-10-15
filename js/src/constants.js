@@ -63,14 +63,12 @@ export const ISSUE_TYPE_ACCOUNT = 'account';
 export const REQUEST_REVIEW = 'request-review';
 export const ISSUE_TABLE_PER_PAGE = 5;
 
-// Account status related
 export const GOOGLE_ADS_ACCOUNT_STATUS = {
 	CONNECTED: 'connected',
 	DISCONNECTED: 'disconnected',
 	INCOMPLETE: 'incomplete',
 };
 
-// Account status related
 export const GOOGLE_MC_ACCOUNT_STATUS = {
 	CONNECTED: 'connected',
 	DISCONNECTED: 'disconnected',

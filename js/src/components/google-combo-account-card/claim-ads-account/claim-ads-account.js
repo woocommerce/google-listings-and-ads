@@ -1,14 +1,20 @@
 /**
  * External dependencies
  */
+import { useEffect, useRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Flex, FlexBlock } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
+import ClaimAdsAccountButton from './claim-ads-account-button';
 import Section from '.~/wcdl/section';
+import useWindowFocus from '.~/hooks/useWindowFocus';
+import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
+import { useAppDispatch } from '.~/data';
 import './claim-ads-account.scss';
+import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
 
 /**
  * ClaimAdsAccount component.
@@ -16,6 +22,40 @@ import './claim-ads-account.scss';
  * @return {JSX.Element} ClaimAdsAccount component.
  */
 const ClaimAdsAccount = () => {
+	const isWindowFocused = useWindowFocus();
+	const { hasAccess, hasFinishedResolution, inviteLink, step } =
+		useGoogleAdsAccountStatus();
+	const [ upsertAdsAccount, { loading } ] = useUpsertAdsAccount();
+	const { invalidateResolution } = useAppDispatch();
+	const claimButtonClickedRef = useRef( false );
+
+	useEffect( () => {
+		if ( isWindowFocused && claimButtonClickedRef.current ) {
+			invalidateResolution( 'getGoogleAdsAccountStatus' );
+		}
+	}, [ isWindowFocused, invalidateResolution ] );
+
+	useEffect( () => {
+		if ( claimButtonClickedRef.current && hasFinishedResolution ) {
+			claimButtonClickedRef.current = false;
+		}
+
+		if ( hasAccess === true && step === 'conversion_action' ) {
+			upsertAdsAccount();
+		}
+	}, [ hasAccess, hasFinishedResolution, step, upsertAdsAccount ] );
+
+	// If the user has accepted the invitation, we don't show the claim account section.
+	if (
+		hasAccess ||
+		( ! hasFinishedResolution && ! claimButtonClickedRef.current )
+	) {
+		return null;
+	}
+
+	const isLoading =
+		loading || ( ! hasFinishedResolution && claimButtonClickedRef.current );
+
 	return (
 		<Section.Card.Body className="gla-claim-ads-account-section">
 			<Flex gap={ 4 }>
@@ -39,6 +79,13 @@ const ClaimAdsAccount = () => {
 								'google-listings-and-ads'
 							) }
 						</p>
+						<ClaimAdsAccountButton
+							inviteLink={ inviteLink }
+							loading={ isLoading }
+							onClick={ () => {
+								claimButtonClickedRef.current = true;
+							} }
+						/>
 					</div>
 				</FlexBlock>
 			</Flex>

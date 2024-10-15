@@ -4,7 +4,7 @@
 import CreateAccountCard from './create-account-card';
 import CreatingCard from './creating-card';
 import ReclaimUrlCard from './reclaim-url-card';
-import useCreateMCAccount from './useCreateMCAccount';
+import useCreateMCAccount from '../../hooks/useCreateMCAccount';
 
 /**
  * Create Account flow.
