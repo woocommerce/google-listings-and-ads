@@ -71,11 +71,7 @@ const SetupAdsForm = () => {
 	};
 
 	const handleChange = ( _, values ) => {
-		const args = [ initialValues, values ].map( ( v ) => {
-			return v;
-		} );
-
-		setFormChanged( ! isEqual( ...args ) );
+		setFormChanged( ! isEqual( initialValues, values ) );
 	};
 
 	if ( ! countryCodes || ! hasFinishedResolution ) {

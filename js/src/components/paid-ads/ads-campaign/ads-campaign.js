@@ -7,17 +7,17 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
-import StepContentActions from '.~/components/stepper/step-content-actions';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
+import StepContentActions from '.~/components/stepper/step-content-actions';
 import AppDocumentationLink from '.~/components/app-documentation-link';
+import { useAdaptiveFormContext } from '.~/components/adaptive-form';
+import BillingCard from '.~/components/paid-ads/billing-card';
+import BudgetSection from '../budget-section';
+import { CampaignPreviewCard } from '../campaign-preview';
 import PaidAdsFaqsPanel from './faqs-panel';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
-import CampaignPreviewCard from '.~/components/paid-ads/campaign-preview/campaign-preview-card';
-import BudgetSection from '.~/components/paid-ads/budget-section';
-import BillingCard from '.~/components/paid-ads/billing-card';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 
 /**
@@ -39,8 +39,8 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
  * @param {Campaign} [props.campaign] Campaign data to be edited. The displayCountries property will be used to fetch budget recommendation data.
  * @param {string} props.headerTitle The title of the step.
  * @param {'create-ads'|'edit-ads'|'setup-ads'|'setup-mc'} props.context A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
- * @param {(AdaptiveFormContext) => JSX.Element|JSX.Element} [props.skipButton] A React element or function to render the "Skip" button. If a function is passed, it receives the form context and returns the button element.
- * @param {(AdaptiveFormContext) => JSX.Element|JSX.Element} [props.continueButton] A React element or function to render the "Continue" button. If a function is passed, it receives the form context and returns the button element.
+ * @param {(formContext: AdaptiveFormContext) => JSX.Element | JSX.Element} [props.skipButton] A React element or function to render the "Skip" button. If a function is passed, it receives the form context and returns the button element.
+ * @param {(formContext: AdaptiveFormContext) => JSX.Element | JSX.Element} [props.continueButton] A React element or function to render the "Continue" button. If a function is passed, it receives the form context and returns the button element.
  */
 export default function AdsCampaign( {
 	campaign,
@@ -96,7 +96,7 @@ export default function AdsCampaign( {
 				formProps={ formContext }
 				countryCodes={
 					context === 'edit-ads'
-						? campaign?.displayCountries
+						? campaign.displayCountries
 						: countryCodes
 				}
 			>
@@ -115,7 +115,6 @@ export default function AdsCampaign( {
 						? continueButton( formContext )
 						: continueButton }
 				</StepContentActions>
-
 				<PaidAdsFaqsPanel />
 			</StepContentFooter>
 		</StepContent>

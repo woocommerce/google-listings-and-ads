@@ -35,13 +35,6 @@ import AppSpinner from '.~/components/app-spinner';
  */
 
 /**
- *
- * @typedef {Object} PaidAdsData
- * @property {number|undefined} amount Daily average cost of the paid ads campaign.
- * @property {boolean} isValid Whether the campaign data are valid values.
- */
-
-/**
  * Renders the onboarding step for setting up the paid ads (Google Ads account and paid campaign)
  * or skipping it, and then completing the onboarding flow.
  * @fires gla_onboarding_complete_with_paid_ads_button_click

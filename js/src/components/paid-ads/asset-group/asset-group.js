@@ -16,6 +16,7 @@ import AppButton from '.~/components/app-button';
 import AssetGroupFaqsPanel from './faqs-panel';
 import AssetGroupSection from './asset-group-section';
 import { recordGlaEvent } from '.~/utils/tracks';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 
 export const ACTION_SUBMIT_CAMPAIGN_AND_ASSETS = 'submit-campaign-and-assets';
 export const ACTION_SUBMIT_CAMPAIGN_ONLY = 'submit-campaign-only';
@@ -62,15 +63,17 @@ export default function AssetGroup( { campaign } ) {
 	const isCreation = ! campaign;
 	const { isValidForm, handleSubmit, adapter, values } =
 		useAdaptiveFormContext();
+	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const { isValidAssetGroup, isSubmitting, isSubmitted, submitter } = adapter;
 	const currentAction = submitter?.dataset.action;
+	const audiences = isCreation ? countryCodes : campaign.displayCountries;
 
 	function recordSubmissionClickEvent( event ) {
 		const finalUrl = values[ ASSET_FORM_KEY.FINAL_URL ];
 		const eventProps = {
 			context: isCreation ? 'campaign-creation' : 'campaign-editing',
 			action: event.target.dataset.action,
-			audiences: values.countryCodes.join( ',' ),
+			audiences: audiences.join( ',' ),
 			budget: values.amount.toString(),
 			assets_validation: isValidAssetGroup ? 'valid' : 'invalid',
 		};

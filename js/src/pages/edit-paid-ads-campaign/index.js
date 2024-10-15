@@ -19,8 +19,8 @@ import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
 import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
-import AppSpinner from '.~/components/app-spinner';
 import ContinueButton from '.~/components/paid-ads/continue-button';
+import AppSpinner from '.~/components/app-spinner';
 import AssetGroup, {
 	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
 } from '.~/components/paid-ads/asset-group';
