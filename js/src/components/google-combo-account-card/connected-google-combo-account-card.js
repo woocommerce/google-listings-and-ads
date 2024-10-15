@@ -38,8 +38,8 @@ const ConnectedGoogleComboAccountCard = () => {
 	const {
 		isCreatingAccounts,
 		isCreatingBothAccounts,
-		isCreatingAdsAccount,
-		isCreatingMCAccount,
+		isCreatingOnlyAdsAccount,
+		isCreatingOnlyMCAccount,
 		accountCreationChecksResolved,
 		accountsCreated,
 	} = useAutoCreateAdsMCAccounts();
@@ -104,8 +104,8 @@ const ConnectedGoogleComboAccountCard = () => {
 			description={
 				<AccountCreationDescription
 					isCreatingBothAccounts={ isCreatingBothAccounts }
-					isCreatingAdsAccount={ isCreatingAdsAccount }
-					isCreatingMCAccount={ isCreatingMCAccount }
+					isCreatingOnlyAdsAccount={ isCreatingOnlyAdsAccount }
+					isCreatingOnlyMCAccount={ isCreatingOnlyMCAccount }
 					accountsCreated={ accountsCreated }
 				/>
 			}
