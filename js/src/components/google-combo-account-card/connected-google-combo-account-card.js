@@ -11,6 +11,7 @@ import AppSpinner from '../app-spinner';
 import useAutoCreateAdsMCAccounts from '../../hooks/useAutoCreateAdsMCAccounts';
 import LoadingLabel from '../loading-label/loading-label';
 import AccountCreationDescription from './account-creation-description';
+import ConnectAds from './connect-ads';
 import './connected-google-combo-account-card.scss';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
@@ -97,21 +98,24 @@ const ConnectedGoogleComboAccountCard = () => {
 	};
 
 	return (
-		<AccountCard
-			appearance={ APPEARANCE.GOOGLE }
-			alignIcon="top"
-			className="gla-google-combo-account-card--connected"
-			description={
-				<AccountCreationDescription
-					isCreatingBothAccounts={ isCreatingBothAccounts }
-					isCreatingOnlyAdsAccount={ isCreatingOnlyAdsAccount }
-					isCreatingOnlyMCAccount={ isCreatingOnlyMCAccount }
-					accountsCreated={ accountsCreated }
-				/>
-			}
-			helper={ getHelper() }
-			indicator={ getIndicator() }
-		/>
+		<div className="gla-google-combo-account-card gla-account-card">
+			<AccountCard
+				appearance={ APPEARANCE.GOOGLE }
+				alignIcon="top"
+				className="gla-google-combo-account-card--connected"
+				description={
+					<AccountCreationDescription
+						isCreatingBothAccounts={ isCreatingBothAccounts }
+						isCreatingOnlyAdsAccount={ isCreatingOnlyAdsAccount }
+						isCreatingOnlyMCAccount={ isCreatingOnlyMCAccount }
+						accountsCreated={ accountsCreated }
+					/>
+				}
+				helper={ getHelper() }
+				indicator={ getIndicator() }
+			/>
+			<ConnectAds />
+		</div>
 	);
 };
 

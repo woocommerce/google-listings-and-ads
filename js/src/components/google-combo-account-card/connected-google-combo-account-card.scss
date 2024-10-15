@@ -4,10 +4,18 @@
 		margin: 0;
 	}
 
+	.components-select-control__input {
+		pointer-events: none;
+	}
+
 	.gla-connected-google-combo-account-card__description {
 
 		em {
 			color: #757575;
 		}
 	}
+}
+
+.gla-google-combo-service-connected-icon-label {
+	width: auto;
 }
