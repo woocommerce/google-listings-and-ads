@@ -33,6 +33,7 @@ import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
 } from '.~/utils/tracks';
+import useFetchBudgetRecommendation from '.~/hooks/useFetchBudgetRecommendation';
 
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'edit-ads';
@@ -71,7 +72,8 @@ const EditPaidAdsCampaign = () => {
 	} = useAppSelectDispatch( 'getCampaignAssetGroups', id );
 	const campaign = campaigns?.find( ( el ) => el.id === id );
 	const assetEntityGroup = assetEntityGroups?.at( 0 );
-
+	const { highestDailyBudget, hasFinishedResolution } =
+		useFetchBudgetRecommendation( campaign?.displayCountries );
 	useEffect( () => {
 		if ( campaign && campaign.type !== CAMPAIGN_TYPE_PMAX ) {
 			getHistory().replace( dashboardURL );
@@ -84,7 +86,11 @@ const EditPaidAdsCampaign = () => {
 		getHistory().push( url );
 	};
 
-	if ( ! loaded || ! hasResolvedAssetEntityGroups ) {
+	if (
+		! loaded ||
+		! hasResolvedAssetEntityGroups ||
+		! hasFinishedResolution
+	) {
 		return (
 			<>
 				<TopBar
@@ -181,6 +187,7 @@ const EditPaidAdsCampaign = () => {
 				initialCampaign={ {
 					amount: campaign.amount,
 				} }
+				minimumAmount={ highestDailyBudget }
 				assetEntityGroup={ assetEntityGroup }
 				onSubmit={ handleSubmit }
 			>

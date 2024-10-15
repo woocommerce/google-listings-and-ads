@@ -13,7 +13,6 @@ import './index.scss';
 import BudgetRecommendation from './budget-recommendation';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import AppInputPriceControl from '.~/components/app-input-price-control';
-import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 
 /**
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
@@ -30,11 +29,16 @@ const nonInteractableProps = {
  *
  * @param {Object} props React props.
  * @param {Object} props.formProps Form props forwarded from `Form` component.
+ * @param {Array<CountryCode>} props.countryCodes Country codes to fetch budget recommendations for.
  * @param {boolean} [props.disabled=false] Whether display the Card in disabled style.
  * @param {JSX.Element} [props.children] Extra content to be rendered under the card of budget inputs.
  */
-const BudgetSection = ( { formProps, disabled = false, children } ) => {
-	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
+const BudgetSection = ( {
+	formProps,
+	countryCodes,
+	disabled = false,
+	children,
+} ) => {
 	const { getInputProps, setValue, values } = formProps;
 	const { amount } = values;
 	const { googleAdsAccount } = useGoogleAdsAccount();

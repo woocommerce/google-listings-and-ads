@@ -86,6 +86,7 @@ const SetupAdsForm = () => {
 	return (
 		<CampaignAssetsForm
 			initialCampaign={ initialValues }
+			minimumAmount={ highestDailyBudget }
 			onChange={ handleChange }
 			onSubmit={ handleSubmit }
 		>

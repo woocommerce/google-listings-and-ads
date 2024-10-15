@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useState, useMemo, useEffect, useRef } from '@wordpress/element';
+import { useState, useMemo, useRef } from '@wordpress/element';
 import { isPlainObject } from 'lodash';
 
 /**
@@ -10,7 +10,8 @@ import { isPlainObject } from 'lodash';
 import { ASSET_GROUP_KEY, ASSET_FORM_KEY } from '.~/constants';
 import AdaptiveForm from '.~/components/adaptive-form';
 import validateAssetGroup from '.~/components/paid-ads/validateAssetGroup';
-import useValidateCampaignWithCountryCodes from '.~/hooks/useValidateCampaignWithCountryCodes';
+import useAdsCurrency from '.~/hooks/useAdsCurrency';
+import validateCampaign from '.~/components/paid-ads/validateCampaign';
 
 /**
  * @typedef {import('.~/components/types.js').CampaignFormValues} CampaignFormValues
@@ -67,10 +68,12 @@ function convertAssetEntityGroupToFormValues( assetEntityGroup = {} ) {
  * @param {CampaignFormValues} props.initialCampaign Initial campaign values.
  * @param {Function} [props.onChange] Callback when the form values change.
  * @param {AssetEntityGroup} [props.assetEntityGroup] The asset entity group to be used in initializing the form values for editing.
+ * @param {number} props.minimumAmount The minimum amount for the daily budget.
  */
 export default function CampaignAssetsForm( {
 	initialCampaign,
 	assetEntityGroup,
+	minimumAmount,
 	...adaptiveFormProps
 } ) {
 	const formRef = useRef();
@@ -79,19 +82,7 @@ export default function CampaignAssetsForm( {
 	}, [ assetEntityGroup ] );
 	const [ baseAssetGroup, setBaseAssetGroup ] = useState( initialAssetGroup );
 	const [ hasImportedAssets, setHasImportedAssets ] = useState( false );
-	const { validateCampaignWithCountryCodes, dailyBudget, loaded } =
-		useValidateCampaignWithCountryCodes();
-
-	useEffect( () => {
-		if ( loaded ) {
-			const { setValue } = formRef.current;
-
-			// Simulate a form value change to refresh the validation function once again with the new budget values
-			// If the validation function and values do not change, then the validation will not be triggerred since the `validate`
-			// function uses useCallback and will not be re-created.
-			setValue( 'dailyBudget', dailyBudget );
-		}
-	}, [ dailyBudget, loaded ] );
+	const { formatAmount } = useAdsCurrency();
 
 	const extendAdapter = ( formContext ) => {
 		const assetGroupErrors = validateAssetGroup( formContext.values );
@@ -131,6 +122,13 @@ export default function CampaignAssetsForm( {
 		};
 	};
 
+	const validateCampaignMinimumAmount = ( values ) => {
+		validateCampaign( values, {
+			dailyBudget: minimumAmount,
+			formatAmount,
+		} );
+	};
+
 	return (
 		<AdaptiveForm
 			ref={ formRef }
@@ -138,7 +136,7 @@ export default function CampaignAssetsForm( {
 				...initialCampaign,
 				...initialAssetGroup,
 			} }
-			validate={ validateCampaignWithCountryCodes }
+			validate={ validateCampaignMinimumAmount }
 			extendAdapter={ extendAdapter }
 			{ ...adaptiveFormProps }
 		/>
