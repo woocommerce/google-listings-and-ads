@@ -9,7 +9,6 @@ import { __, sprintf } from '@wordpress/i18n';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import AccountInfo from './account-info';
 
 /**
  * Renders the description for the account creation card.
@@ -44,7 +43,6 @@ const AccountCreationDescription = ( {
 
 	const getDescription = () => {
 		if (
-			isLoadingAccountsData ||
 			isCreatingBothAccounts ||
 			isCreatingMCAccount ||
 			isCreatingAdsAccount
@@ -98,10 +96,9 @@ const AccountCreationDescription = ( {
 		return (
 			<>
 				<p>{ google?.email }</p>
-				{ googleMCAccount.id > 0 && (
-					<AccountInfo
-						account={ googleMCAccount }
-						text={ sprintf(
+				{ ! isLoadingAccountsData && googleMCAccount.id > 0 && (
+					<p>
+						{ sprintf(
 							// Translators: %s is the Merchant Center ID
 							__(
 								'Merchant Center ID: %s',
@@ -109,12 +106,11 @@ const AccountCreationDescription = ( {
 							),
 							googleMCAccount.id
 						) }
-					/>
+					</p>
 				) }
-				{ googleAdsAccount.id > 0 && (
-					<AccountInfo
-						account={ googleAdsAccount }
-						text={ sprintf(
+				{ ! isLoadingAccountsData && googleAdsAccount.id > 0 && (
+					<p>
+						{ sprintf(
 							// Translators: %s is the Google Ads ID
 							__(
 								'Google Ads ID: %s',
@@ -122,7 +118,7 @@ const AccountCreationDescription = ( {
 							),
 							googleAdsAccount.id
 						) }
-					/>
+					</p>
 				) }
 			</>
 		);

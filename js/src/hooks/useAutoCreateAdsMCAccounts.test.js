@@ -63,9 +63,10 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 			data: [ { id: 1 } ],
 			hasFinishedResolution: true,
 		} );
+
 		useExistingGoogleAdsAccounts.mockReturnValue( {
 			existingAccounts: [ { id: 1 } ],
-			hasFinishedResolution: false,
+			hasFinishedResolution: true,
 		} );
 
 		const { result } = renderHook( () => useAutoCreateAdsMCAccounts() );
