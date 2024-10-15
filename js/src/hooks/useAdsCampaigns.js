@@ -30,15 +30,15 @@ const selectorName = 'getAdsCampaigns';
  */
 const useAdsCampaigns = ( ...query ) => {
 	const queryRefValue = useIsEqualRefValue( query );
-	const { hasGoogleAdsConnection, hasFinishedResolution } =
+	const { hasGoogleAdsConnection, hasFinishedResolution, isResolving } =
 		useGoogleAdsAccount();
 
 	return useSelect(
 		( select ) => {
-			if ( hasFinishedResolution && ! hasGoogleAdsConnection ) {
+			if ( ! hasGoogleAdsConnection ) {
 				return {
-					loading: false,
-					loaded: true,
+					loading: isResolving,
+					loaded: hasFinishedResolution,
 					data: [],
 				};
 			}
@@ -58,7 +58,12 @@ const useAdsCampaigns = ( ...query ) => {
 				data,
 			};
 		},
-		[ queryRefValue, hasGoogleAdsConnection, hasFinishedResolution ]
+		[
+			hasFinishedResolution,
+			hasGoogleAdsConnection,
+			isResolving,
+			queryRefValue,
+		]
 	);
 };
 
