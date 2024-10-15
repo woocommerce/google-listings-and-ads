@@ -1,13 +1,14 @@
 /**
  * External dependencies
  */
-import { useEffect, useRef } from '@wordpress/element';
+import { useEffect, useRef, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Flex, FlexBlock } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
+import AppNotice from '.~/components/app-notice';
 import ClaimAdsAccountButton from './claim-ads-account-button';
 import Section from '.~/wcdl/section';
 import useWindowFocus from '.~/hooks/useWindowFocus';
@@ -22,6 +23,7 @@ import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
  * @return {JSX.Element} ClaimAdsAccount component.
  */
 const ClaimAdsAccount = () => {
+	const [ , forceUpdate ] = useState( 0 );
 	const isWindowFocused = useWindowFocus();
 	const { hasAccess, hasFinishedResolution, inviteLink, step } =
 		useGoogleAdsAccountStatus();
@@ -32,6 +34,7 @@ const ClaimAdsAccount = () => {
 	useEffect( () => {
 		if ( isWindowFocused && claimButtonClickedRef.current ) {
 			invalidateResolution( 'getGoogleAdsAccountStatus' );
+			forceUpdate( ( prev ) => prev + 1 );
 		}
 	}, [ isWindowFocused, invalidateResolution ] );
 
@@ -45,16 +48,20 @@ const ClaimAdsAccount = () => {
 		}
 	}, [ hasAccess, hasFinishedResolution, step, upsertAdsAccount ] );
 
-	// If the user has accepted the invitation, we don't show the claim account section.
-	if (
-		hasAccess ||
-		( ! hasFinishedResolution && ! claimButtonClickedRef.current )
-	) {
-		return null;
-	}
-
 	const isLoading =
 		loading || ( ! hasFinishedResolution && claimButtonClickedRef.current );
+
+	// If the user has access and the step is not conversion_action, we don't show the claim account section.
+	if ( hasAccess && step !== 'conversion_action' ) {
+		return (
+			<AppNotice status="success" isDismissible={ false }>
+				{ __(
+					'Google Ads conversion measurement has been set up for your store.',
+					'google-listings-and-ads'
+				) }
+			</AppNotice>
+		);
+	}
 
 	return (
 		<Section.Card.Body className="gla-claim-ads-account-section">

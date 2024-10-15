@@ -9,6 +9,7 @@ import { __ } from '@wordpress/i18n';
  */
 import AppButton from '.~/components/app-button';
 import getWindowFeatures from '.~/utils/getWindowFeatures';
+import LoadingLabel from '.~/components/loading-label/loading-label';
 import { FILTER_ONBOARDING } from '.~/utils/tracks';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
 
@@ -46,16 +47,22 @@ const ClaimAdsAccountButton = ( {
 		onClick( event );
 	};
 
-	const text = ! loading
-		? __( 'Claim your Google Ads account', 'google-listings-and-ads' )
-		: __( 'Updating…', 'google-listings-and-ads' );
+	if ( loading ) {
+		return (
+			<LoadingLabel
+				text={ __( 'Updating…', 'google-listings-and-ads' ) }
+			/>
+		);
+	}
 
 	return (
 		<AppButton
 			{ ...restProps }
-			loading={ loading }
-			isPrimary={ ! loading }
-			text={ text }
+			isPrimary
+			text={ __(
+				'Claim your Google Ads account',
+				'google-listings-and-ads'
+			) }
 			eventName="gla_open_ads_account_claim_invitation_button_click"
 			eventProps={ getEventProps() }
 			onClick={ handleClaimAccountClick }
