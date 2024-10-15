@@ -401,14 +401,7 @@ test.describe( 'Set up accounts', () => {
 				'jetpack@example.com'
 			);
 
-			await setUpAccountsPage.fulfillMCAccounts( [
-				{
-					id: 5432178,
-					name: null,
-					subaccount: null,
-					domain: null,
-				},
-			] );
+			await setUpAccountsPage.mockMCHasAccounts();
 
 			await setUpAccountsPage.fulfillAdsAccounts( [
 				{
