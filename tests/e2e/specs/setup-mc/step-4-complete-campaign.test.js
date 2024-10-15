@@ -412,6 +412,7 @@ test.describe( 'Complete your campaign', () => {
 			await completeCampaign.goto();
 			await completeCampaign.clickCreatePaidAdButton();
 			await completeCampaign.clickSkipPaidAdsCreationButon();
+			await completeCampaign.fulfillAdsCampaignsRequest( [] );
 		} );
 
 		test( 'should also see the setup success modal', async () => {
