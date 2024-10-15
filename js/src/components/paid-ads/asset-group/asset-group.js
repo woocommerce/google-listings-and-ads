@@ -66,7 +66,7 @@ export default function AssetGroup( { campaign } ) {
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const { isValidAssetGroup, isSubmitting, isSubmitted, submitter } = adapter;
 	const currentAction = submitter?.dataset.action;
-	const audiences = isCreation ? countryCodes : campaign?.displayCountries;
+	const audiences = isCreation ? countryCodes : campaign.displayCountries;
 
 	function recordSubmissionClickEvent( event ) {
 		const finalUrl = values[ ASSET_FORM_KEY.FINAL_URL ];

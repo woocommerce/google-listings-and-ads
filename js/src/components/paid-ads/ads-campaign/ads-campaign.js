@@ -96,7 +96,7 @@ export default function AdsCampaign( {
 				formProps={ formContext }
 				countryCodes={
 					context === 'edit-ads'
-						? campaign?.displayCountries
+						? campaign.displayCountries
 						: countryCodes
 				}
 			>
