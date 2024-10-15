@@ -19,6 +19,7 @@ import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
 import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
+import ContinueButton from '.~/components/paid-ads/continue-button';
 import AppSpinner from '.~/components/app-spinner';
 import AssetGroup, {
 	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
@@ -179,7 +180,6 @@ const EditPaidAdsCampaign = () => {
 			<CampaignAssetsForm
 				initialCampaign={ {
 					amount: campaign.amount,
-					countryCodes: campaign.displayCountries,
 				} }
 				assetEntityGroup={ assetEntityGroup }
 				onSubmit={ handleSubmit }
@@ -196,13 +196,20 @@ const EditPaidAdsCampaign = () => {
 							content: (
 								<AdsCampaign
 									campaign={ campaign }
-									trackingContext={ eventContext }
-									onContinue={ () =>
-										handleContinueClick( STEP.ASSET_GROUP )
-									}
+									context={ eventContext }
 									headerTitle={ __(
 										'Edit your paid campaign',
 										'google-listings-and-ads'
+									) }
+									continueButton={ ( formContext ) => (
+										<ContinueButton
+											formProps={ formContext }
+											onClick={ () =>
+												handleContinueClick(
+													STEP.ASSET_GROUP
+												)
+											}
+										/>
 									) }
 								/>
 							),

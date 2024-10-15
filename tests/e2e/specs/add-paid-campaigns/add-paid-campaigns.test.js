@@ -66,8 +66,12 @@ test.describe( 'Set up Ads account', () => {
 		page = await browser.newPage();
 		dashboardPage = new DashboardPage( page );
 		setupAdsAccounts = new SetupAdsAccountsPage( page );
+		setupBudgetPage = new SetupBudgetPage( page );
 		await setOnboardedMerchant();
 		await setupAdsAccounts.mockAdsAccountsResponse( [] );
+		await setupBudgetPage.fulfillBillingStatusRequest( {
+			status: 'approved',
+		} );
 		await dashboardPage.mockRequests();
 		await dashboardPage.goto();
 	} );
@@ -279,17 +283,9 @@ test.describe( 'Set up Ads account', () => {
 	} );
 
 	test.describe( 'Create your paid campaign', () => {
-		test.beforeAll( async () => {
-			setupBudgetPage = new SetupBudgetPage( page );
-			await setupBudgetPage.fulfillBillingStatusRequest( {
-				status: 'pending',
-			} );
-		} );
-
-		test( 'Continue to create paid campaign', async () => {
+		test( 'Continue to create paid ad campaign', async () => {
 			await setupAdsAccounts.clickContinue();
 			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-
 			await expect(
 				page.getByRole( 'heading', {
 					name: 'Create your paid campaign',
@@ -299,10 +295,6 @@ test.describe( 'Set up Ads account', () => {
 			await expect(
 				page.getByRole( 'heading', { name: 'Set your budget' } )
 			).toBeVisible();
-
-			await expect(
-				page.getByRole( 'button', { name: 'Continue' } )
-			).toBeDisabled();
 
 			await expect(
 				page.getByRole( 'link', {
@@ -477,19 +469,29 @@ test.describe( 'Set up Ads account', () => {
 			await expect(
 				page.getByRole( 'button', { name: 'Launch paid campaign' } )
 			).toBeEnabled();
+		} );
 
+		test( 'It should show the campaign creation success message', async () => {
+			// Mock the campaign creation request.
 			const campaignCreation =
 				setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
 					'6',
 					[ 'US' ]
 				);
-			await page
-				.getByRole( 'button', { name: 'Launch paid campaign' } )
-				.click();
-			await campaignCreation;
-		} );
 
-		test( 'It should show the campaign creation success message', async () => {
+			await setupBudgetPage.getLaunchPaidCampaignButton().click();
+
+			await campaignCreation;
+
+			//It should redirect to the dashboard page
+			await page.waitForURL(
+				'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard&guide=campaign-creation-success',
+				{
+					timeout: 30000,
+					waitUntil: LOAD_STATE.DOM_CONTENT_LOADED,
+				}
+			);
+
 			await expect(
 				page.getByRole( 'heading', {
 					name: "You've set up a paid Performance Max Campaign!",

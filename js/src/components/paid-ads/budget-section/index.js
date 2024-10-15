@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useEffect, useRef } from '@wordpress/element';
+import { useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -47,17 +47,6 @@ const BudgetSection = ( { formProps, disabled = false, children } ) => {
 	// `useEffect`.
 	const setValueRef = useRef();
 	setValueRef.current = setValue;
-
-	/**
-	 * In addition to the initial value setting during initialization, when `disabled` changes
-	 * - from false to true, then clear filled amount to `undefined` for showing a blank <input>.
-	 * - from true to false, then reset amount to the initial value passed from the consumer side.
-	 */
-	const initialAmountRef = useRef( amount );
-	useEffect( () => {
-		const nextAmount = disabled ? undefined : initialAmountRef.current;
-		setValueRef.current( 'amount', nextAmount );
-	}, [ disabled ] );
 
 	return (
 		<div className="gla-budget-section">

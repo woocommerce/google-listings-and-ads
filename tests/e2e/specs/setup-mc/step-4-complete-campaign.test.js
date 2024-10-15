@@ -79,6 +79,24 @@ test.describe( 'Complete your campaign', () => {
 				[ 'GET' ]
 			),
 
+			completeCampaign.fulfillBudgetRecommendations( {
+				currency: 'USD',
+				recommendations: [
+					{
+						country: 'US',
+						daily_budget: 10,
+					},
+					{
+						country: 'TW',
+						daily_budget: 8,
+					},
+					{
+						country: 'GB',
+						daily_budget: 20,
+					},
+				],
+			} ),
+
 			// The following mocks are requests will happen after completing the onboarding
 			completeCampaign.mockSuccessfulSettingsSyncRequest(),
 
@@ -195,6 +213,14 @@ test.describe( 'Complete your campaign', () => {
 			} );
 
 			test.describe( 'Set up budget', () => {
+				test( '"Daily average cost" input should have highest value set', async () => {
+					const dailyAverageCostInput =
+						setupBudgetPage.getBudgetInput();
+					await expect( dailyAverageCostInput ).toHaveValue(
+						'20.00'
+					);
+				} );
+
 				test( 'should see the low budget tip when the buget is set lower than the recommended value', async () => {
 					await setupBudgetPage.fillBudget( '1' );
 					const lowBudgetTip = setupBudgetPage.getLowerBudgetTip();

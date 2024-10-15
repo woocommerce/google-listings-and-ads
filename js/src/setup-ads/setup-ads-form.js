@@ -17,6 +17,8 @@ import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AdsStepper from './ads-stepper';
 import SetupAdsTopBar from './top-bar';
 import { recordGlaEvent } from '.~/utils/tracks';
+import useFetchBudgetRecommendation from '.~/hooks/useFetchBudgetRecommendation';
+import AppSpinner from '.~/components/app-spinner';
 
 /**
  * @fires gla_launch_paid_campaign_button_click on submit
@@ -26,11 +28,12 @@ const SetupAdsForm = () => {
 	const [ isSubmitted, setSubmitted ] = useState( false );
 	const [ handleSetupComplete, isSubmitting ] = useAdsSetupCompleteCallback();
 	const adminUrl = useAdminUrl();
-	const { data: targetAudience } = useTargetAudienceFinalCountryCodes();
+	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
+	const { highestDailyBudget, hasFinishedResolution } =
+		useFetchBudgetRecommendation( countryCodes );
 
 	const initialValues = {
-		amount: 0,
-		countryCodes: targetAudience,
+		amount: highestDailyBudget,
 	};
 
 	useEffect( () => {
@@ -55,7 +58,7 @@ const SetupAdsForm = () => {
 	);
 
 	const handleSubmit = ( values ) => {
-		const { amount, countryCodes } = values;
+		const { amount } = values;
 
 		recordGlaEvent( 'gla_launch_paid_campaign_button_click', {
 			audiences: countryCodes.join( ',' ),
@@ -68,18 +71,16 @@ const SetupAdsForm = () => {
 	};
 
 	const handleChange = ( _, values ) => {
-		const args = [ initialValues, values ].map(
-			( { countryCodes, ...v } ) => {
-				v.countrySet = new Set( countryCodes );
-				return v;
-			}
-		);
-
-		setFormChanged( ! isEqual( ...args ) );
+		setFormChanged( ! isEqual( initialValues, values ) );
 	};
 
-	if ( ! targetAudience ) {
-		return null;
+	if ( ! countryCodes || ! hasFinishedResolution ) {
+		return (
+			<>
+				<SetupAdsTopBar />
+				<AppSpinner />
+			</>
+		);
 	}
 
 	return (
@@ -88,19 +89,8 @@ const SetupAdsForm = () => {
 			onChange={ handleChange }
 			onSubmit={ handleSubmit }
 		>
-			{ ( formProps ) => {
-				const mixedFormProps = {
-					...formProps,
-					// TODO: maybe move all API calls in useSetupCompleteCallback to ~./data
-					isSubmitting,
-				};
-				return (
-					<>
-						<SetupAdsTopBar />
-						<AdsStepper formProps={ mixedFormProps } />
-					</>
-				);
-			} }
+			<SetupAdsTopBar />
+			<AdsStepper isSubmitting={ isSubmitting } />
 		</CampaignAssetsForm>
 	);
 };

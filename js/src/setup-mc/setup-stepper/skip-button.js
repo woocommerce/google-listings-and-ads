@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import { noop } from 'lodash';
 
@@ -12,7 +13,6 @@ import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillin
 import AppButton from '.~/components/app-button';
 import SkipPaidAdsConfirmationModal from './skip-paid-ads-confirmation-modal';
 import { recordGlaEvent } from '.~/utils/tracks';
-import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
 
 /**
  * Clicking on the skip paid ads button to complete the onboarding flow.
@@ -27,16 +27,16 @@ import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
  */
 
 export default function SkipButton( {
-	text,
-	paidAds,
+	isValidForm,
 	onSkipCreatePaidAds = noop,
-	completing,
+	loading,
+	disabled,
 } ) {
 	const [
 		showSkipPaidAdsConfirmationModal,
 		setShowSkipPaidAdsConfirmationModal,
 	] = useState( false );
-	const { googleAdsAccount, hasGoogleAdsConnection } = useGoogleAdsAccount();
+	const { googleAdsAccount } = useGoogleAdsAccount();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 
 	const handleOnSkipClick = () => {
@@ -53,24 +53,23 @@ export default function SkipButton( {
 		const eventProps = {
 			google_ads_account_status: googleAdsAccount?.status,
 			billing_method_status: billingStatus?.status || 'unknown',
-			campaign_form_validation: paidAds?.isValid ? 'valid' : 'invalid',
+			campaign_form_validation: isValidForm ? 'valid' : 'invalid',
 		};
 		recordGlaEvent( 'gla_onboarding_complete_button_click', eventProps );
 
 		onSkipCreatePaidAds();
 	};
 
-	const disabledSkip =
-		completing === ACTION_COMPLETE || ! hasGoogleAdsConnection;
-
 	return (
 		<>
 			<AppButton
 				isTertiary
-				data-action={ ACTION_SKIP }
-				text={ text }
-				loading={ completing === ACTION_SKIP }
-				disabled={ disabledSkip }
+				text={ __(
+					'Skip paid ads creation',
+					'google-listings-and-ads'
+				) }
+				loading={ loading }
+				disabled={ disabled }
 				onClick={ handleOnSkipClick }
 			/>
 

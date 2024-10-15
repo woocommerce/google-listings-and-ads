@@ -2,119 +2,63 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import {
-	createInterpolateElement,
-	useState,
-	useEffect,
-} from '@wordpress/element';
-import { noop } from 'lodash';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
-import StepContentActions from '.~/components/stepper/step-content-actions';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
+import StepContentActions from '.~/components/stepper/step-content-actions';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import AppButton from '.~/components/app-button';
+import { useAdaptiveFormContext } from '.~/components/adaptive-form';
+import BillingCard from '.~/components/paid-ads/billing-card';
+import BudgetSection from '../budget-section';
+import { CampaignPreviewCard } from '../campaign-preview';
 import PaidAdsFaqsPanel from './faqs-panel';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
-import PaidAdsSetupSections from './paid-ads-setup-sections';
-import SkipButton from './skip-button';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
-import { ACTION_SKIP, ACTION_COMPLETE } from './constants';
+
+/**
+ * @typedef {import('.~/components/adaptive-form/adaptive-form-context').AdaptiveFormContext} AdaptiveFormContext
+ */
 
 /**
  * @typedef {import('.~/data/actions').Campaign} Campaign
  */
 
 /**
- * Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
- *
- * @event gla_onboarding_complete_with_paid_ads_button_click
- * @property {number} budget The budget for the campaign
- * @property {string} audiences The targeted audiences for the campaign
- */
-
-/**
  * Renders the container of the form content for campaign management.
  *
- * Please note that this component relies on an CampaignAssetsForm's context and custom adapter,
- * so it expects a `CampaignAssetsForm` to existing in its parents.
+ * Please note that this component relies on a CampaignAssetsForm's context and custom adapter,
+ * so it expects a `CampaignAssetsForm` to exist in its parents.
  *
  * @fires gla_documentation_link_click with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
- * @fires gla_onboarding_complete_with_paid_ads_button_click
  * @param {Object} props React props.
- * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
+ * @param {Campaign} [props.campaign] Campaign data to be edited. The displayCountries property will be used to fetch budget recommendation data.
  * @param {string} props.headerTitle The title of the step.
- * @param {() => void} props.onContinue Callback called once continue button is clicked.
- * @param {() => void} [props.onSkip] Callback called once skip button is clicked.
- * @param {boolean} [props.hasError=false] Whether there's an error to reset the completing state.
- * @param {boolean} [props.isOnboardingFlow=false] Whether this component is used in onboarding flow.
- * @param {'create-ads'|'edit-ads'|'setup-ads'} props.trackingContext A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
+ * @param {'create-ads'|'edit-ads'|'setup-ads'|'setup-mc'} props.context A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
+ * @param {(formContext: AdaptiveFormContext) => JSX.Element | JSX.Element} [props.skipButton] A React element or function to render the "Skip" button. If a function is passed, it receives the form context and returns the button element.
+ * @param {(formContext: AdaptiveFormContext) => JSX.Element | JSX.Element} [props.continueButton] A React element or function to render the "Continue" button. If a function is passed, it receives the form context and returns the button element.
  */
 export default function AdsCampaign( {
 	campaign,
 	headerTitle,
-	onContinue,
-	onSkip = noop,
-	hasError = false,
-	isOnboardingFlow = false,
-	trackingContext,
+	context,
+	skipButton,
+	continueButton,
 } ) {
 	const formContext = useAdaptiveFormContext();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
-	const { isValidForm, setValue } = formContext;
-	const [ completing, setCompleting ] = useState( null );
-	const [ paidAds, setPaidAds ] = useState( {} );
-
-	useEffect( () => {
-		if ( hasError ) {
-			setCompleting( null );
-		}
-	}, [ hasError ] );
-
-	const handleOnStatesReceived = ( paidAdsValues ) => {
-		setPaidAds( paidAdsValues );
-
-		const { amount } = paidAdsValues;
-		setValue( 'amount', amount );
-	};
-
-	const handleSkipCreateAds = () => {
-		setCompleting( ACTION_SKIP );
-
-		onSkip( paidAds );
-	};
-
-	const handleCompleteClick = ( event ) => {
-		setCompleting( event.target.dataset.action );
-
-		onContinue( paidAds );
-	};
-
-	// The status check of Google Ads account connection is included in `paidAds.isReady`,
-	// because when there is no connected account, it will disable the budget section and set the `amount` to `undefined`.
-	const disabledComplete =
-		completing === ACTION_SKIP || ! paidAds.isReady || ! isValidForm;
-
-	let continueButtonProps = {
-		text: __( 'Continue', 'google-listings-and-ads' ),
-	};
-
-	if ( isOnboardingFlow ) {
-		continueButtonProps = {
-			'data-action': ACTION_COMPLETE,
-			text: __( 'Complete setup', 'google-listings-and-ads' ),
-			eventName: 'gla_onboarding_complete_with_paid_ads_button_click',
-			eventProps: {
-				budget: paidAds.amount,
-				audiences: countryCodes?.join( ',' ),
-			},
-		};
-	}
+	const isOnboardingFlow = context === 'setup-mc';
+	const showCampaignPreviewCard =
+		context === 'setup-ads' ||
+		context === 'create-ads' ||
+		context === 'edit-ads';
+	// only show the billing card during onboarding or setup Ads flow.
+	// For creating/editing a campaign, we assume billing is already set up.
+	const showBillingCard = context === 'setup-mc' || context === 'setup-ads';
 
 	let description = createInterpolateElement(
 		__(
@@ -124,7 +68,7 @@ export default function AdsCampaign( {
 		{
 			link: (
 				<AppDocumentationLink
-					context={ trackingContext }
+					context={ context }
 					linkId="see-what-ads-look-like"
 					href="https://support.google.com/google-ads/answer/6275294"
 				/>
@@ -148,40 +92,29 @@ export default function AdsCampaign( {
 
 			{ isOnboardingFlow && <PaidAdsFeaturesSection /> }
 
-			<PaidAdsSetupSections
-				onStatesReceived={ handleOnStatesReceived }
-				campaign={ campaign }
-				countryCodes={ countryCodes }
-				loadCampaignFromClientSession={ isOnboardingFlow }
-				showCampaignPreviewCard={
-					trackingContext === 'setup-ads' ||
-					trackingContext === 'create-ads'
+			<BudgetSection
+				formProps={ formContext }
+				countryCodes={
+					context === 'edit-ads'
+						? campaign.displayCountries
+						: countryCodes
 				}
-			/>
+			>
+				{ showBillingCard && <BillingCard /> }
+
+				{ showCampaignPreviewCard && <CampaignPreviewCard /> }
+			</BudgetSection>
 
 			<StepContentFooter>
 				<StepContentActions>
-					{ isOnboardingFlow && (
-						<SkipButton
-							text={ __(
-								'Skip paid ads creation',
-								'google-listings-and-ads'
-							) }
-							onSkipCreatePaidAds={ handleSkipCreateAds }
-							completing={ completing }
-							paidAds={ paidAds }
-						/>
-					) }
+					{ typeof skipButton === 'function'
+						? skipButton( formContext )
+						: skipButton }
 
-					<AppButton
-						isPrimary
-						disabled={ disabledComplete }
-						onClick={ handleCompleteClick }
-						loading={ completing === ACTION_COMPLETE }
-						{ ...continueButtonProps }
-					/>
+					{ typeof continueButton === 'function'
+						? continueButton( formContext )
+						: continueButton }
 				</StepContentActions>
-
 				<PaidAdsFaqsPanel />
 			</StepContentFooter>
 		</StepContent>
