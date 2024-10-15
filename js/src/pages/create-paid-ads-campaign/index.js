@@ -17,6 +17,7 @@ import { useAppDispatch } from '.~/data';
 import { getDashboardUrl } from '.~/utils/urls';
 import convertToAssetGroupUpdateBody from '.~/components/paid-ads/convertToAssetGroupUpdateBody';
 import TopBar from '.~/components/stepper/top-bar';
+import ContinueButton from '.~/components/paid-ads/continue-button';
 import HelpIconButton from '.~/components/help-icon-button';
 import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
@@ -32,7 +33,6 @@ import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
 } from '.~/utils/tracks';
-import ContinueButton from '.~/components/paid-ads/continue-button';
 
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'create-ads';

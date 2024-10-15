@@ -7,17 +7,17 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import StepContentActions from '.~/components/stepper/step-content-actions';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import PaidAdsFaqsPanel from './faqs-panel';
-import PaidAdsFeaturesSection from './paid-ads-features-section';
-import CampaignPreviewCard from '.~/components/paid-ads/campaign-preview/campaign-preview-card';
-import BudgetSection from '.~/components/paid-ads/budget-section';
+import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import BillingCard from '.~/components/paid-ads/billing-card';
+import BudgetSection from '../budget-section';
+import { CampaignPreviewCard } from '../campaign-preview';
+import PaidAdsFeaturesSection from './paid-ads-features-section';
+import PaidAdsFaqsPanel from './faqs-panel';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 
 /**
