@@ -162,3 +162,4 @@ function clear_notifications_ready() {
 	$transients->delete( TransientsInterface::URL_MATCHES );
 	$options->delete( OptionsInterface::WPCOM_REST_API_STATUS );
 }
+
