@@ -14,22 +14,16 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
  * Renders the description for the account creation card.
  *
  * @param {Object} props Props.
- * @param {Object} props.accountsCreated Whether accounts have been created.
+ * @param {boolean} props.accountsCreated Whether accounts have been created.
  * @param {boolean} props.isCreatingBothAccounts Whether both, MC and Ads accounts are being created.
- * @param {boolean} props.isCreatingMCAccount Whether Merchant Center account is being created.
- * @param {boolean} props.isCreatingAdsAccount Whether Google Ads account is being created.
- * @param {boolean} props.hasExistingMCAccounts Whether there are existing MC accounts.
- * @param {boolean} props.isGoogleAdsAccountConnected Whether Google Ads account is connected.
- * @param {boolean} props.isGoogleMCAccountConnected Whether Merchant Center account is connected.
+ * @param {boolean} props.isCreatingOnlyMCAccount Whether only the Merchant Center account is being created.
+ * @param {boolean} props.isCreatingOnlyAdsAccount Whether only Google Ads account is being created.
  */
 const AccountCreationDescription = ( {
 	accountsCreated,
 	isCreatingBothAccounts,
-	isCreatingMCAccount,
-	isCreatingAdsAccount,
-	hasExistingMCAccounts,
-	isGoogleAdsAccountConnected,
-	isGoogleMCAccountConnected,
+	isCreatingOnlyMCAccount,
+	isCreatingOnlyAdsAccount,
 } ) => {
 	const { google } = useGoogleAccount();
 	const {
@@ -42,17 +36,16 @@ const AccountCreationDescription = ( {
 		hasFinishedResolution: hasFinishedResolutionForCurrentAdsAccount,
 	} = useGoogleAdsAccount();
 
-	const isLoadingData =
+	const isLoadingAccountsData =
 		accountsCreated &&
 		( ! hasFinishedResolutionForCurrentMCAccount ||
 			! hasFinishedResolutionForCurrentAdsAccount );
 
 	const getDescription = () => {
 		if (
-			isLoadingData ||
 			isCreatingBothAccounts ||
-			isCreatingMCAccount ||
-			isCreatingAdsAccount
+			isCreatingOnlyMCAccount ||
+			isCreatingOnlyAdsAccount
 		) {
 			if ( isCreatingBothAccounts ) {
 				return (
@@ -63,7 +56,7 @@ const AccountCreationDescription = ( {
 						) }
 					</p>
 				);
-			} else if ( isCreatingAdsAccount ) {
+			} else if ( isCreatingOnlyAdsAccount ) {
 				return (
 					<>
 						<p>
@@ -80,26 +73,7 @@ const AccountCreationDescription = ( {
 						</em>
 					</>
 				);
-			} else if ( isCreatingMCAccount ) {
-				if ( hasExistingMCAccounts ) {
-					return (
-						<>
-							<p>
-								{ __(
-									'Creating a new Google Merchant Center account',
-									'google-listings-and-ads'
-								) }
-							</p>
-							<em>
-								{ __(
-									'This may take a few minutes, please wait a moment…',
-									'google-listings-and-ads'
-								) }
-							</em>
-						</>
-					);
-				}
-
+			} else if ( isCreatingOnlyMCAccount ) {
 				return (
 					<>
 						<p>
@@ -122,8 +96,7 @@ const AccountCreationDescription = ( {
 		return (
 			<>
 				<p>{ google?.email }</p>
-
-				{ isGoogleMCAccountConnected && (
+				{ ! isLoadingAccountsData && googleMCAccount.id > 0 && (
 					<p>
 						{ sprintf(
 							// Translators: %s is the Merchant Center ID
@@ -135,8 +108,7 @@ const AccountCreationDescription = ( {
 						) }
 					</p>
 				) }
-
-				{ isGoogleAdsAccountConnected && (
+				{ ! isLoadingAccountsData && googleAdsAccount.id > 0 && (
 					<p>
 						{ sprintf(
 							// Translators: %s is the Google Ads ID

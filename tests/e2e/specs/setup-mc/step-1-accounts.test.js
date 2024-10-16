@@ -301,6 +301,8 @@ test.describe( 'Set up accounts', () => {
 						name: null,
 						subaccount: null,
 						domain: null,
+						status: 'incomplete',
+						step: 'claim',
 					},
 				],
 				200,

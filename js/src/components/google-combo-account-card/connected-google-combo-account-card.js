@@ -22,16 +22,8 @@ import useCreateMCAccount from '.~/components/google-mc-account-card/useCreateMC
 import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 
 /**
- * Clicking on the "connect to a different Google account" button.
- *
- * @event gla_google_account_connect_different_account_button_click
- */
-
-/**
  * Renders a Google account card UI with connected account information.
  * It will also kickoff Ads and Merchant Center account creation if the user does not have accounts.
- *
- * @fires gla_google_account_connect_different_account_button_click
  */
 const ConnectedGoogleComboAccountCard = () => {
 	const [ merchantCenterID, setMerchantCenterID ] = useState();
@@ -51,8 +43,8 @@ const ConnectedGoogleComboAccountCard = () => {
 	const {
 		isCreatingAccounts,
 		isCreatingBothAccounts,
-		isCreatingAdsAccount,
-		isCreatingMCAccount,
+		isCreatingOnlyAdsAccount,
+		isCreatingOnlyMCAccount,
 		accountCreationChecksResolved,
 		accountsCreated,
 		hasExistingMCAccounts,
@@ -101,11 +93,7 @@ const ConnectedGoogleComboAccountCard = () => {
 		}
 
 		if ( isGoogleAdsAccountConnected && isGoogleMCAccountConnected ) {
-			return (
-				<ConnectedIconLabel
-					text={ __( 'Connected', 'google-listings-and-ads' ) }
-				/>
-			);
+			return <ConnectedIconLabel />;
 		}
 
 		return null;
@@ -115,22 +103,14 @@ const ConnectedGoogleComboAccountCard = () => {
 		<div className="gla-google-combo-account-cards">
 			<AccountCard
 				appearance={ APPEARANCE.GOOGLE }
-				className="gla-google-combo-account-card gla-google-combo-account-card--connected"
+				alignIcon="top"
+				className="gla-google-combo-account-card--connected"
 				description={
 					<AccountCreationDescription
-						hasExistingMCAccounts={ hasExistingMCAccounts }
 						isCreatingBothAccounts={ isCreatingBothAccounts }
-						isCreatingAdsAccount={ isCreatingAdsAccount }
-						isCreatingMCAccount={
-							isCreatingMCAccount || isManuallyCreatingMCAccount
-						}
+						isCreatingOnlyAdsAccount={ isCreatingOnlyAdsAccount }
+						isCreatingOnlyMCAccount={ isCreatingOnlyMCAccount }
 						accountsCreated={ accountsCreated }
-						isGoogleMCAccountConnected={
-							isGoogleMCAccountConnected
-						}
-						isGoogleAdsAccountConnected={
-							isGoogleAdsAccountConnected
-						}
 					/>
 				}
 				helper={ getHelper() }
