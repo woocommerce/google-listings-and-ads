@@ -18,7 +18,7 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import ConnectedIconLabel from '../connected-icon-label';
 import useConnectMCAccount from '.~/components/google-mc-account-card/useConnectMCAccount';
-import useCreateMCAccount from '.~/components/google-mc-account-card/useCreateMCAccount';
+import useCreateMCAccount from '.~/hooks/useCreateMCAccount';
 import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 
 /**
@@ -47,11 +47,7 @@ const ConnectedGoogleComboAccountCard = () => {
 		isCreatingOnlyMCAccount,
 		accountCreationChecksResolved,
 		accountsCreated,
-		hasExistingMCAccounts,
 	} = useAutoCreateAdsMCAccounts( createMCAccount, connectMCAccount );
-
-	const [ isManuallyCreatingMCAccount, setIsManuallyCreatingMCAccount ] =
-		useState( false );
 
 	if (
 		! accountCreationChecksResolved ||
@@ -110,6 +106,12 @@ const ConnectedGoogleComboAccountCard = () => {
 						isCreatingBothAccounts={ isCreatingBothAccounts }
 						isCreatingOnlyAdsAccount={ isCreatingOnlyAdsAccount }
 						isCreatingOnlyMCAccount={ isCreatingOnlyMCAccount }
+						isGoogleMCAccountConnected={
+							isGoogleMCAccountConnected
+						}
+						isGoogleAdsAccountConnected={
+							isGoogleAdsAccountConnected
+						}
 						accountsCreated={ accountsCreated }
 					/>
 				}
@@ -118,7 +120,6 @@ const ConnectedGoogleComboAccountCard = () => {
 			/>
 
 			<ConnectMC
-				onCreateAccountLoading={ setIsManuallyCreatingMCAccount }
 				merchantCenterID={ merchantCenterID }
 				setMerchantCenterID={ setMerchantCenterID }
 				connectMCAccount={ connectMCAccount }

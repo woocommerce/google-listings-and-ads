@@ -18,12 +18,16 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
  * @param {boolean} props.isCreatingBothAccounts Whether both, MC and Ads accounts are being created.
  * @param {boolean} props.isCreatingOnlyMCAccount Whether only the Merchant Center account is being created.
  * @param {boolean} props.isCreatingOnlyAdsAccount Whether only Google Ads account is being created.
+ * @param {boolean} props.isGoogleMCAccountConnected Whether we have a connected MC account.
+ * @param {boolean} props.isGoogleAdsAccountConnected Whether we have a connected Ads account.
  */
 const AccountCreationDescription = ( {
 	accountsCreated,
 	isCreatingBothAccounts,
 	isCreatingOnlyMCAccount,
 	isCreatingOnlyAdsAccount,
+	isGoogleMCAccountConnected,
+	isGoogleAdsAccountConnected,
 } ) => {
 	const { google } = useGoogleAccount();
 	const {
@@ -96,7 +100,7 @@ const AccountCreationDescription = ( {
 		return (
 			<>
 				<p>{ google?.email }</p>
-				{ ! isLoadingAccountsData && googleMCAccount.id > 0 && (
+				{ isGoogleMCAccountConnected && (
 					<p>
 						{ sprintf(
 							// Translators: %s is the Merchant Center ID
@@ -108,7 +112,7 @@ const AccountCreationDescription = ( {
 						) }
 					</p>
 				) }
-				{ ! isLoadingAccountsData && googleAdsAccount.id > 0 && (
+				{ isGoogleAdsAccountConnected && (
 					<p>
 						{ sprintf(
 							// Translators: %s is the Google Ads ID

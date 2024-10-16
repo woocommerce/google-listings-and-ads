@@ -27,7 +27,7 @@ import { GOOGLE_MC_ACCOUNT_STATUS } from '.~/constants';
  *
  * @return {AutoCreateAccountsStatus} Object containing properties related to the account creation status.
  */
-const useAutoCreateAdsMCAccounts = () => {
+const useAutoCreateAdsMCAccounts = ( createMCAccount ) => {
 	// Refs are used to avoid the re-render of the parent component.
 	const isCreatingBothAccountsRef = useRef( false );
 	const isCreatingAdsAccountRef = useRef( false );
@@ -56,7 +56,7 @@ const useAutoCreateAdsMCAccounts = () => {
 		hasFinishedResolution: hasFinishedResolutionForGoogleMCAccount,
 	} = useGoogleMCAccount();
 
-	const [ handleCreateAccount, { response } ] = useCreateMCAccount();
+	const [ handleCreateAccount, { response } ] = createMCAccount;
 	const [ upsertAdsAccount, { loading } ] = useUpsertAdsAccount();
 	const isGoogleMCConnected =
 		googleMCAccount?.status === GOOGLE_MC_ACCOUNT_STATUS.CONNECTED ||
