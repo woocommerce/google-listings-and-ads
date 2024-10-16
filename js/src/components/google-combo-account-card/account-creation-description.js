@@ -14,32 +14,23 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
  * Renders the description for the account creation card.
  *
  * @param {Object} props Props.
- * @param {boolean} props.accountsCreated Whether accounts have been created.
  * @param {boolean} props.isCreatingBothAccounts Whether both, MC and Ads accounts are being created.
  * @param {boolean} props.isCreatingOnlyMCAccount Whether only the Merchant Center account is being created.
  * @param {boolean} props.isCreatingOnlyAdsAccount Whether only Google Ads account is being created.
+ * @param {boolean} props.isGoogleMCAccountConnected Whether we have a connected MC account.
+ * @param {boolean} props.isGoogleAdsAccountConnected Whether we have a connected Ads account.
  */
 const AccountCreationDescription = ( {
-	accountsCreated,
 	isCreatingBothAccounts,
 	isCreatingOnlyMCAccount,
 	isCreatingOnlyAdsAccount,
+	isGoogleMCAccountConnected,
+	isGoogleAdsAccountConnected,
 } ) => {
 	const { google } = useGoogleAccount();
-	const {
-		googleMCAccount,
-		hasFinishedResolution: hasFinishedResolutionForCurrentMCAccount,
-	} = useGoogleMCAccount();
+	const { googleMCAccount } = useGoogleMCAccount();
 
-	const {
-		googleAdsAccount,
-		hasFinishedResolution: hasFinishedResolutionForCurrentAdsAccount,
-	} = useGoogleAdsAccount();
-
-	const isLoadingAccountsData =
-		accountsCreated &&
-		( ! hasFinishedResolutionForCurrentMCAccount ||
-			! hasFinishedResolutionForCurrentAdsAccount );
+	const { googleAdsAccount } = useGoogleAdsAccount();
 
 	const getDescription = () => {
 		if (
@@ -96,7 +87,8 @@ const AccountCreationDescription = ( {
 		return (
 			<>
 				<p>{ google?.email }</p>
-				{ ! isLoadingAccountsData && googleMCAccount.id > 0 && (
+
+				{ isGoogleMCAccountConnected && (
 					<p>
 						{ sprintf(
 							// Translators: %s is the Merchant Center ID
@@ -108,7 +100,8 @@ const AccountCreationDescription = ( {
 						) }
 					</p>
 				) }
-				{ ! isLoadingAccountsData && googleAdsAccount.id > 0 && (
+
+				{ isGoogleAdsAccountConnected && (
 					<p>
 						{ sprintf(
 							// Translators: %s is the Google Ads ID

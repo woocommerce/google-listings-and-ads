@@ -7,6 +7,7 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import { STORE_KEY } from '.~/data/constants';
+import { GOOGLE_MC_ACCOUNT_STATUS } from '.~/constants';
 import useGoogleAccount from './useGoogleAccount';
 
 /**
@@ -43,18 +44,30 @@ const useGoogleMCAccount = () => {
 					// has not been granted necessary access permissions for Google Merchant Center, then
 					// the precondition doesn't meet.
 					isPreconditionReady: false,
+					isConnected: false,
 				};
 			}
 
 			const { getGoogleMCAccount, isResolving, hasFinishedResolution } =
 				select( STORE_KEY );
 
+			const googleMCAccount = getGoogleMCAccount();
 			return {
-				googleMCAccount: getGoogleMCAccount(),
+				googleMCAccount,
 				isResolving: isResolving( 'getGoogleMCAccount' ),
 				hasFinishedResolution:
 					hasFinishedResolution( 'getGoogleMCAccount' ),
 				isPreconditionReady: true,
+
+				// MC is ready when we have a connection and preconditions are met.
+				// The `link_ads` step will be resolved when the Ads account is connected
+				// since these can be connected in any order.
+				isConnected:
+					googleMCAccount?.status ===
+						GOOGLE_MC_ACCOUNT_STATUS.CONNECTED ||
+					( googleMCAccount?.status ===
+						GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE &&
+						googleMCAccount?.step === 'link_ads' ),
 			};
 		},
 		[
