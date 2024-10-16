@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { expect, test } from '@playwright/test';
+
 /**
  * Internal dependencies
  */
@@ -14,6 +15,7 @@ import {
 	getFAQPanelTitle,
 	getFAQPanelRow,
 	checkFAQExpandable,
+	checkBillingAdsPopup,
 } from '../../utils/page';
 
 const ADS_ACCOUNTS = [
@@ -68,7 +70,7 @@ test.describe( 'Set up Ads account', () => {
 		await setOnboardedMerchant();
 		await setupAdsAccounts.mockAdsAccountsResponse( [] );
 		await setupBudgetPage.fulfillBillingStatusRequest( {
-			status: 'approved',
+			status: 'unknown',
 		} );
 		await dashboardPage.mockRequests();
 		await dashboardPage.goto();
@@ -295,10 +297,6 @@ test.describe( 'Set up Ads account', () => {
 			).toBeVisible();
 
 			await expect(
-				setupBudgetPage.getLaunchPaidCampaignButton()
-			).toBeDisabled();
-
-			await expect(
 				page.getByRole( 'link', {
 					name: 'See what your ads will look like.',
 				} )
@@ -346,34 +344,122 @@ test.describe( 'Set up Ads account', () => {
 				await checkFAQExpandable( page );
 			} );
 		} );
+	} );
 
-		test( 'Set the budget', async () => {
-			budget = '0';
-			await setupBudgetPage.fillBudget( budget );
+	test.describe( 'Set up billing', () => {
+		test.describe( 'Billing status is not approved', () => {
+			test( 'It should say that the billing is not setup', async () => {
+				await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 
-			await expect(
-				setupBudgetPage.getLaunchPaidCampaignButton()
-			).toBeDisabled();
+				await expect(
+					page.getByRole( 'button', {
+						name: 'Set up billing',
+						exact: true,
+					} )
+				).toBeEnabled();
 
-			budget = '1';
-			await setupBudgetPage.fillBudget( budget );
+				await expect(
+					page.getByText(
+						'You do not have billing information set up in your Google Ads account. Once you have set up billing, you can start running ads.'
+					)
+				).toBeVisible();
+			} );
 
-			await expect(
-				setupBudgetPage.getLaunchPaidCampaignButton()
-			).toBeEnabled();
+			// eslint-disable-next-line jest/expect-expect
+			test( 'should open a popup when clicking set up billing button', async () => {
+				await checkBillingAdsPopup( page );
+			} );
+
+			test( 'should see billing has been set up successfully when billing status API returns approved', async () => {
+				const newPagePromise = page.waitForEvent( 'popup' );
+				await setupBudgetPage.clickSetUpBillingLink();
+				const newPage = await newPagePromise;
+				await newPage.waitForLoadState();
+
+				await setupBudgetPage.fulfillBillingStatusRequest( {
+					status: 'pending',
+				} );
+
+				await newPage.close();
+				await setupBudgetPage.focusBudget();
+				await setupBudgetPage.fulfillBillingStatusRequest( {
+					status: 'approved',
+				} );
+				await setupBudgetPage.awaitForBillingStatusRequest();
+
+				const billingSetupSuccessSection =
+					setupBudgetPage.getBillingSetupSuccessSection();
+				await expect( billingSetupSuccessSection ).toContainText(
+					'Billing method for Google Ads added successfully'
+				);
+			} );
 		} );
+	} );
 
-		test( 'Budget Recommendation', async () => {
-			await expect(
-				page.getByText( 'set a daily budget of 15 USD' )
-			).toBeVisible();
+	test.describe( 'Create Ads with billing data already setup', () => {
+		test.describe( 'Set the budget', async () => {
+			test( 'Continue button should be disabled if budget is 0', async () => {
+				//Reload the page
+				await page.reload();
+				await setupBudgetPage.fulfillBillingStatusRequest( {
+					status: 'approved',
+				} );
+				await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+
+				//Step 1 - Accounts are already set up.
+				await setupAdsAccounts.clickContinue();
+				await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+
+				budget = '0';
+				await setupBudgetPage.fillBudget( budget );
+
+				await expect(
+					setupBudgetPage.getLaunchPaidCampaignButton()
+				).toBeDisabled();
+			} );
+
+			test( 'Continue button should be disabled if budget is less than recommended value', async () => {
+				budget = '2';
+				await setupBudgetPage.fillBudget( budget );
+
+				await expect(
+					setupBudgetPage.getLaunchPaidCampaignButton()
+				).toBeDisabled();
+			} );
+
+			test( 'User is notified of the minimum value', async () => {
+				budget = '4';
+				await setupBudgetPage.fillBudget( budget );
+				await setupBudgetPage.getBudgetInput().blur();
+
+				await expect(
+					page.getByText(
+						'Please make sure daily average cost is at least €5.00'
+					)
+				).toBeVisible();
+			} );
+
+			test( 'Continue button should be enabled if budget is above the recommended value', async () => {
+				budget = '6';
+				await setupBudgetPage.fillBudget( budget );
+
+				await expect(
+					setupBudgetPage.getLaunchPaidCampaignButton()
+				).toBeEnabled();
+			} );
+
+			test( 'Budget Recommendation should be visible', async () => {
+				await expect(
+					page.getByText( 'set a daily budget of 15 USD' )
+				).toBeVisible();
+			} );
 		} );
 
 		test( 'It should show the campaign creation success message', async () => {
 			// Mock the campaign creation request.
 			const campaignCreation =
 				setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
-					'1',
+					'6',
 					[ 'US' ]
 				);
 

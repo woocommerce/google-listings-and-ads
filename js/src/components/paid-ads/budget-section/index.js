@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useEffect, useRef } from '@wordpress/element';
+import { useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -29,7 +29,7 @@ const nonInteractableProps = {
  *
  * @param {Object} props React props.
  * @param {Object} props.formProps Form props forwarded from `Form` component.
- * @param {Array<CountryCode>|undefined} props.countryCodes Country codes to fetch budget recommendations for.
+ * @param {Array<CountryCode>} props.countryCodes Country codes to fetch budget recommendations for.
  * @param {boolean} [props.disabled=false] Whether display the Card in disabled style.
  * @param {JSX.Element} [props.children] Extra content to be rendered under the card of budget inputs.
  */
@@ -51,17 +51,6 @@ const BudgetSection = ( {
 	// `useEffect`.
 	const setValueRef = useRef();
 	setValueRef.current = setValue;
-
-	/**
-	 * In addition to the initial value setting during initialization, when `disabled` changes
-	 * - from false to true, then clear filled amount to `undefined` for showing a blank <input>.
-	 * - from true to false, then reset amount to the initial value passed from the consumer side.
-	 */
-	const initialAmountRef = useRef( amount );
-	useEffect( () => {
-		const nextAmount = disabled ? undefined : initialAmountRef.current;
-		setValueRef.current( 'amount', nextAmount );
-	}, [ disabled ] );
 
 	return (
 		<div className="gla-budget-section">

@@ -29,11 +29,13 @@
 		color: $gray-700;
 	}
 
+	&.has-error .components-input-control__backdrop,
 	&--error-character-count .components-input-control .components-input-control__container .components-input-control__backdrop {
 		border-color: $alert-red;
 		box-shadow: none;
 	}
 
+	&.has-error .components-base-control__help,
 	&--error-character-count &__character-count {
 		color: $alert-red;
 	}
