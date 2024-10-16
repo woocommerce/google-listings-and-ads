@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 import classNames from 'classnames';
 
 /**
@@ -24,13 +24,22 @@ import useConnectMCAccount from '.~/hooks/useConnectMCAccount';
  */
 
 const ConnectMC = ( { createMCAccount } ) => {
-	const [ merchantCenterID, setMerchantCenterID ] = useState();
-	const connectMCAccount = useConnectMCAccount( merchantCenterID );
-
-	const { hasFinishedResolution, isConnected, isPreconditionReady } =
-		useGoogleMCAccount();
+	const {
+		googleMCAccount,
+		hasFinishedResolution,
+		isConnected,
+		isPreconditionReady,
+	} = useGoogleMCAccount();
+	const [ accountID, setAccountID ] = useState();
+	const connectMCAccount = useConnectMCAccount( accountID );
 	const [ handleConnectMC, resultConnectMC ] = connectMCAccount;
 	const [ handleCreateAccount, resultCreateAccount ] = createMCAccount;
+
+	useEffect( () => {
+		if ( isConnected ) {
+			setAccountID( googleMCAccount.id );
+		}
+	}, [ googleMCAccount, isConnected ] );
 
 	if ( ! hasFinishedResolution ) {
 		return <SpinnerCard />;
@@ -68,8 +77,8 @@ const ConnectMC = ( { createMCAccount } ) => {
 			) }
 			body={
 				<ConnectMCBody
-					value={ merchantCenterID }
-					setValue={ setMerchantCenterID }
+					value={ accountID }
+					setValue={ setAccountID }
 					isConnected={ isConnected }
 					isConnecting={ resultConnectMC.loading }
 					handleConnectMC={ handleConnectMC }

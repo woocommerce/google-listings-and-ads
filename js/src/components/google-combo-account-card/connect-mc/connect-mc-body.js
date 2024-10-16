@@ -19,6 +19,15 @@ import LoadingLabel from '.~/components/loading-label';
  * @property {number} id The account ID to be connected.
  */
 
+const nonInteractableProps = {
+	suffix: ' ',
+	style: {
+		pointerEvents: 'none',
+	},
+	readOnly: true,
+	tabIndex: -1,
+};
+
 /**
  * ConnectMCBody component.
  *
@@ -42,22 +51,12 @@ const ConnectMCBody = ( {
 	isConnecting,
 	handleConnectMC,
 } ) => {
-	let selectControlProps = {};
-	if ( isConnected ) {
-		selectControlProps = {
-			suffix: ' ',
-			tabIndex: '-1',
-			readOnly: true,
-			className: 'gla-google-combo-service-connected-select-control',
-		};
-	}
-
 	return (
 		<ContentButtonLayout>
 			<MerchantCenterSelectControl
 				value={ value }
 				onChange={ setValue }
-				{ ...selectControlProps }
+				{ ...( isConnected && nonInteractableProps ) }
 			/>
 
 			{ isConnected && (
