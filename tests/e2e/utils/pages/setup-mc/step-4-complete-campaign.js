@@ -47,45 +47,12 @@ export default class CompleteCampaign extends MockRequests {
 	}
 
 	/**
-	 * Get ads audience section.
-	 *
-	 * @return {import('@playwright/test').Locator} Get ads audience section.
-	 */
-	getAdsAudienceSection() {
-		return this.getSections().nth( 1 );
-	}
-
-	/**
 	 * Get budget section.
 	 *
 	 * @return {import('@playwright/test').Locator} Get budget section.
 	 */
 	getBudgetSection() {
 		return this.page.locator( '.gla-budget-section' ).nth( 0 );
-	}
-
-	/**
-	 * Get skip this step for now button.
-	 *
-	 * @return {import('@playwright/test').Locator} Get skip this step for now button.
-	 */
-	getSkipStepButton() {
-		return this.page.getByRole( 'button', {
-			name: 'Skip this step for now',
-			exact: true,
-		} );
-	}
-
-	/**
-	 * Get create a paid ad button.
-	 *
-	 * @return {import('@playwright/test').Locator} Get create a paid ad button.
-	 */
-	getCreatePaidAdButton() {
-		return this.page.getByRole( 'button', {
-			name: 'Create campaign',
-			exact: true,
-		} );
 	}
 
 	/**
@@ -113,34 +80,12 @@ export default class CompleteCampaign extends MockRequests {
 	}
 
 	/**
-	 * Click skip this step for now button.
-	 *
-	 * @return {Promise<void>}
-	 */
-	async clickSkipStepButton() {
-		const button = this.getSkipStepButton();
-		await button.click();
-		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-	}
-
-	/**
 	 * Click skip paid ads creation button.
 	 *
 	 * @return {Promise<void>}
 	 */
-	async clickSkipPaidAdsCreationButon() {
+	async clickSkipPaidAdsCreationButton() {
 		const button = this.getSkipPaidAdsCreationButton();
-		await button.click();
-		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-	}
-
-	/**
-	 * Click create a paid ad campaign button.
-	 *
-	 * @return {Promise<void>}
-	 */
-	async clickCreatePaidAdButton() {
-		const button = this.getCreatePaidAdButton();
 		await button.click();
 		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	}
@@ -178,5 +123,72 @@ export default class CompleteCampaign extends MockRequests {
 			campaignsRequestPromise,
 			mcSettingsSyncRequestPromise,
 		] );
+	}
+
+	/**
+	 * Retrieves the "Complete setup without setting up ads" button from the skip paid ads creation modal.
+	 *
+	 * @return {import('@playwright/test').Locator} Locator for the "Complete setup without setting up ads" button.
+	 */
+	getCompleteSetupModalButton() {
+		return this.page.getByRole( 'button', {
+			name: 'Complete setup without setting up ads',
+			exact: true,
+		} );
+	}
+
+	/**
+	 * Clicks the "Complete setup without setting up ads" button in the skip paid ads creation modal.
+	 *
+	 * @return {Promise<void>} Resolves when the click action is completed and the page has loaded.
+	 */
+	async clickCompleteSetupModalButton() {
+		const button = this.getCompleteSetupModalButton();
+		await button.click();
+		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+	}
+
+	/**
+	 * Retrieves the "Cancel" button from the skip paid ads creation modal.
+	 *
+	 * @return {import('@playwright/test').Locator} Locator for the "Cancel" button.
+	 */
+	getCancelModalButton() {
+		return this.page.getByRole( 'button', {
+			name: 'Cancel',
+			exact: true,
+		} );
+	}
+
+	/**
+	 * Clicks the "Cancel" button in the skip paid ads creation modal.
+	 *
+	 * @return {Promise<void>} Resolves when the click action is completed.
+	 */
+	async clickCancelModalButton() {
+		const button = this.getCancelModalButton();
+		await button.click();
+	}
+
+	/**
+	 * Retrieves the skip paid ads creation modal element.
+	 *
+	 * @return {import('@playwright/test').Locator} Locator for the modal containing the text "Skip setting up ads?".
+	 */
+	getSkipPaidAdsCreationModal() {
+		return this.page.locator( '.components-modal__content' ).filter( {
+			hasText: 'Skip setting up ads?',
+		} );
+	}
+
+	/**
+	 * Retrieves the setup success modal element.
+	 *
+	 * @return {import('@playwright/test').Locator} Locator for the modal containing the text "You’ve successfully set up Google for WooCommerce!".
+	 */
+	getSetupSuccessModal() {
+		return this.page.locator( '.components-modal__content' ).filter( {
+			hasText: 'You’ve successfully set up Google for WooCommerce!',
+		} );
 	}
 }

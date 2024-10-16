@@ -12,12 +12,11 @@ describe( 'validateCampaign', () => {
 
 	beforeEach( () => {
 		// Initial values
-		values = { countryCodes: [], amount: 0 };
+		values = { amount: 0 };
 	} );
 
 	it( 'When all checks are passed, should return an empty object', () => {
 		const errors = validateCampaign( {
-			countryCodes: [ 'US' ],
 			amount: 1,
 		} );
 
@@ -27,15 +26,7 @@ describe( 'validateCampaign', () => {
 	it( 'should indicate multiple unpassed checks by setting properties in the returned object', () => {
 		const errors = validateCampaign( values );
 
-		expect( errors ).toHaveProperty( 'countryCodes' );
 		expect( errors ).toHaveProperty( 'amount' );
-	} );
-
-	it( 'When the country codes array is empty, should not pass', () => {
-		const errors = validateCampaign( values );
-
-		expect( errors ).toHaveProperty( 'countryCodes' );
-		expect( errors.countryCodes ).toMatchSnapshot();
 	} );
 
 	it( 'When the amount is not a number, should not pass', () => {
