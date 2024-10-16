@@ -29,6 +29,7 @@ const ClaimAdsAccount = () => {
 	const [ upsertAdsAccount, { loading } ] = useUpsertAdsAccount();
 	const { invalidateResolution } = useAppDispatch();
 	const claimButtonClickedRef = useRef( false );
+	const claimInProgressRef = useRef( false );
 
 	useEffect( () => {
 		if ( isWindowFocused && claimButtonClickedRef.current ) {
@@ -38,14 +39,24 @@ const ClaimAdsAccount = () => {
 	}, [ isWindowFocused, invalidateResolution ] );
 
 	useEffect( () => {
+		const handlePostClaimActions = async () => {
+			await upsertAdsAccount();
+			claimInProgressRef.current = false;
+		};
+
+		if (
+			hasAccess === true &&
+			step === 'conversion_action' &&
+			! claimInProgressRef.current
+		) {
+			claimInProgressRef.current = true;
+			handlePostClaimActions();
+		}
+
 		if ( claimButtonClickedRef.current && hasFinishedResolution ) {
 			claimButtonClickedRef.current = false;
 		}
-
-		if ( hasAccess === true && step === 'conversion_action' ) {
-			upsertAdsAccount();
-		}
-	}, [ hasAccess, hasFinishedResolution, step, upsertAdsAccount ] );
+	}, [ hasAccess, step, upsertAdsAccount, hasFinishedResolution ] );
 
 	const isLoading =
 		loading || ( ! hasFinishedResolution && claimButtonClickedRef.current );
