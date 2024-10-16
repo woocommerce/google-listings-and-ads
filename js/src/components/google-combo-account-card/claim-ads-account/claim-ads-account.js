@@ -61,6 +61,12 @@ const ClaimAdsAccount = () => {
 	const isLoading =
 		loading || ( ! hasFinishedResolution && claimButtonClickedRef.current );
 
+	/**
+	 * Do not render anything if:
+	 *
+	 * 1. The user has access to the Google Ads account.
+	 * 2. The resolution has not finished and the claim button has not been clicked.
+	 */
 	if (
 		hasAccess ||
 		( ! hasFinishedResolution && ! claimButtonClickedRef.current )
