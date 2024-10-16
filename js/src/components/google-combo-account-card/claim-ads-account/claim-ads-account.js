@@ -8,7 +8,6 @@ import { Flex, FlexBlock } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import AppNotice from '.~/components/app-notice';
 import ClaimAdsAccountButton from './claim-ads-account-button';
 import Section from '.~/wcdl/section';
 import useWindowFocus from '.~/hooks/useWindowFocus';
@@ -51,16 +50,11 @@ const ClaimAdsAccount = () => {
 	const isLoading =
 		loading || ( ! hasFinishedResolution && claimButtonClickedRef.current );
 
-	// If the user has access and the step is not conversion_action, we don't show the claim account section.
-	if ( hasAccess && step !== 'conversion_action' ) {
-		return (
-			<AppNotice status="success" isDismissible={ false }>
-				{ __(
-					'Google Ads conversion measurement has been set up for your store.',
-					'google-listings-and-ads'
-				) }
-			</AppNotice>
-		);
+	if (
+		hasAccess ||
+		( ! hasFinishedResolution && ! claimButtonClickedRef.current )
+	) {
+		return null;
 	}
 
 	return (

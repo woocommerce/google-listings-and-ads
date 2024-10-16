@@ -163,3 +163,6 @@ function clear_notifications_ready() {
 	$options->delete( OptionsInterface::WPCOM_REST_API_STATUS );
 }
 
+add_filter( 'woocommerce_gla_ads_billing_setup_status', function( $status ) {
+	return 'approved';
+} );

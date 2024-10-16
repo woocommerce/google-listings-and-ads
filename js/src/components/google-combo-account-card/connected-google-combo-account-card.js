@@ -15,6 +15,7 @@ import './connected-google-combo-account-card.scss';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import ConnectedIconLabel from '../connected-icon-label';
+import ConversionMeasurementNotice from './conversion-measurement-notice';
 import { ClaimAdsAccount } from './claim-ads-account';
 import {
 	GOOGLE_ADS_ACCOUNT_STATUS,
@@ -110,6 +111,10 @@ const ConnectedGoogleComboAccountCard = () => {
 		);
 	};
 
+	const showSuccessNotice =
+		googleAdsAccount.status === GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED ||
+		googleAdsAccount.step === 'link_merchant';
+
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE }
@@ -118,6 +123,7 @@ const ConnectedGoogleComboAccountCard = () => {
 			helper={ getHelper() }
 			indicator={ getIndicator() }
 		>
+			{ showSuccessNotice && <ConversionMeasurementNotice /> }
 			<ClaimAdsAccount />
 		</AccountCard>
 	);
