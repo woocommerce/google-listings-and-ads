@@ -15,7 +15,7 @@ import Subsection from '.~/wcdl/subsection';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import CreateAccountButton from '../create-account-button';
-import useConnectMCAccount from '../useConnectMCAccount';
+import useConnectMCAccount from '.~/hooks/useConnectMCAccount';
 import AccountConnectionStatus from '../account-connection-status';
 import useCreateMCAccount from '../../../hooks/useCreateMCAccount';
 import './index.scss';

@@ -14,7 +14,6 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
  * Renders the description for the account creation card.
  *
  * @param {Object} props Props.
- * @param {boolean} props.accountsCreated Whether accounts have been created.
  * @param {boolean} props.isCreatingBothAccounts Whether both, MC and Ads accounts are being created.
  * @param {boolean} props.isCreatingOnlyMCAccount Whether only the Merchant Center account is being created.
  * @param {boolean} props.isCreatingOnlyAdsAccount Whether only Google Ads account is being created.
@@ -22,7 +21,6 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
  * @param {boolean} props.isGoogleAdsAccountConnected Whether we have a connected Ads account.
  */
 const AccountCreationDescription = ( {
-	accountsCreated,
 	isCreatingBothAccounts,
 	isCreatingOnlyMCAccount,
 	isCreatingOnlyAdsAccount,
@@ -30,20 +28,9 @@ const AccountCreationDescription = ( {
 	isGoogleAdsAccountConnected,
 } ) => {
 	const { google } = useGoogleAccount();
-	const {
-		googleMCAccount,
-		hasFinishedResolution: hasFinishedResolutionForCurrentMCAccount,
-	} = useGoogleMCAccount();
+	const { googleMCAccount } = useGoogleMCAccount();
 
-	const {
-		googleAdsAccount,
-		hasFinishedResolution: hasFinishedResolutionForCurrentAdsAccount,
-	} = useGoogleAdsAccount();
-
-	const isLoadingAccountsData =
-		accountsCreated &&
-		( ! hasFinishedResolutionForCurrentMCAccount ||
-			! hasFinishedResolutionForCurrentAdsAccount );
+	const { googleAdsAccount } = useGoogleAdsAccount();
 
 	const getDescription = () => {
 		if (
@@ -100,6 +87,7 @@ const AccountCreationDescription = ( {
 		return (
 			<>
 				<p>{ google?.email }</p>
+
 				{ isGoogleMCAccountConnected && (
 					<p>
 						{ sprintf(
@@ -112,6 +100,7 @@ const AccountCreationDescription = ( {
 						) }
 					</p>
 				) }
+
 				{ isGoogleAdsAccountConnected && (
 					<p>
 						{ sprintf(

@@ -2,9 +2,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useEffect } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 import classNames from 'classnames';
-import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -15,6 +14,7 @@ import ConnectMCBody from './connect-mc-body';
 import ConnectMCFooter from './connect-mc-footer';
 import SpinnerCard from '.~/components/spinner-card';
 import AccountConnectionStatus from '.~/components/google-mc-account-card/account-connection-status';
+import useConnectMCAccount from '.~/hooks/useConnectMCAccount';
 
 /**
  * Clicking on the "Switch account" button to select a different Google Merchant Center account to connect.
@@ -23,21 +23,14 @@ import AccountConnectionStatus from '.~/components/google-mc-account-card/accoun
  * @property {string} context (`switch-url`|`reclaim-url`) - indicate the button is clicked from which step.
  */
 
-const ConnectMC = ( {
-	merchantCenterID,
-	setMerchantCenterID,
-	createMCAccount,
-	connectMCAccount,
-	onCreateAccountLoading = noop,
-} ) => {
+const ConnectMC = ( { createMCAccount } ) => {
+	const [ merchantCenterID, setMerchantCenterID ] = useState();
+	const connectMCAccount = useConnectMCAccount( merchantCenterID );
+
 	const { hasFinishedResolution, isConnected, isPreconditionReady } =
 		useGoogleMCAccount();
 	const [ handleConnectMC, resultConnectMC ] = connectMCAccount;
 	const [ handleCreateAccount, resultCreateAccount ] = createMCAccount;
-
-	useEffect( () => {
-		onCreateAccountLoading( resultCreateAccount?.loading );
-	}, [ resultCreateAccount, onCreateAccountLoading ] );
 
 	if ( ! hasFinishedResolution ) {
 		return <SpinnerCard />;

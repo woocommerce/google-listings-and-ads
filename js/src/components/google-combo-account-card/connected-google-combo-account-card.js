@@ -17,7 +17,6 @@ import './connected-google-combo-account-card.scss';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import ConnectedIconLabel from '../connected-icon-label';
-import useConnectMCAccount from '.~/components/google-mc-account-card/useConnectMCAccount';
 import useCreateMCAccount from '.~/hooks/useCreateMCAccount';
 import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 
@@ -26,8 +25,6 @@ import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
  * It will also kickoff Ads and Merchant Center account creation if the user does not have accounts.
  */
 const ConnectedGoogleComboAccountCard = () => {
-	const [ merchantCenterID, setMerchantCenterID ] = useState();
-	const connectMCAccount = useConnectMCAccount( merchantCenterID );
 	const createMCAccount = useCreateMCAccount();
 
 	const {
@@ -47,7 +44,7 @@ const ConnectedGoogleComboAccountCard = () => {
 		isCreatingOnlyMCAccount,
 		accountCreationChecksResolved,
 		accountsCreated,
-	} = useAutoCreateAdsMCAccounts( createMCAccount, connectMCAccount );
+	} = useAutoCreateAdsMCAccounts( createMCAccount );
 
 	if (
 		! accountCreationChecksResolved ||
@@ -119,12 +116,7 @@ const ConnectedGoogleComboAccountCard = () => {
 				indicator={ getIndicator() }
 			/>
 
-			<ConnectMC
-				merchantCenterID={ merchantCenterID }
-				setMerchantCenterID={ setMerchantCenterID }
-				connectMCAccount={ connectMCAccount }
-				createMCAccount={ createMCAccount }
-			/>
+			<ConnectMC createMCAccount={ createMCAccount } />
 		</div>
 	);
 };

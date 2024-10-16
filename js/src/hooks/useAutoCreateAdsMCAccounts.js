@@ -6,7 +6,6 @@ import { useEffect, useRef } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import useCreateMCAccount from './useCreateMCAccount';
 import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
 import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts';
 import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
@@ -62,8 +61,8 @@ const useAutoCreateAdsMCAccounts = ( createMCAccount ) => {
 		googleMCAccount?.status === GOOGLE_MC_ACCOUNT_STATUS.CONNECTED ||
 		googleMCAccount?.status === GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE;
 
-	const hasExistingMCAccount =
-		isGoogleMCConnected || existingMCAccounts?.length > 0;
+	const hasExistingMCAccount = false;
+	// isGoogleMCConnected || existingMCAccounts?.length > 0;
 	const hasExistingAdsAccount =
 		hasGoogleAdsConnection || existingAdsAccounts?.length > 0;
 
@@ -105,6 +104,10 @@ const useAutoCreateAdsMCAccounts = ( createMCAccount ) => {
 		isCreatingBothAccountsRef.current;
 
 	useEffect( () => {
+		if ( ! response && ! loading ) {
+			return;
+		}
+
 		// Ads account check
 		if ( isCreatingAdsAccountRef.current === true && ! loading ) {
 			isCreatingAdsAccountRef.current = false;
@@ -114,8 +117,10 @@ const useAutoCreateAdsMCAccounts = ( createMCAccount ) => {
 		// MC account check
 		if (
 			isCreatingMCAccountRef.current === true &&
-			response?.status === 200
+			// 406: account limit reached
+			[ 200, 403, 406, 503 ].includes( response?.status )
 		) {
+			console.log( 'MC heree Finished' );
 			isCreatingMCAccountRef.current = false;
 			accountsCreatedRef.current = true;
 		}
@@ -123,9 +128,10 @@ const useAutoCreateAdsMCAccounts = ( createMCAccount ) => {
 		// both accounts check
 		if (
 			isCreatingBothAccountsRef.current === true &&
-			response?.status === 200 &&
+			[ 200, 403, 406, 503 ].includes( response?.status ) &&
 			! loading
 		) {
+			console.log( 'heree Finished' );
 			isCreatingBothAccountsRef.current = false;
 			accountsCreatedRef.current = true;
 		}
