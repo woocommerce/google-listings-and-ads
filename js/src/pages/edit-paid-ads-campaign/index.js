@@ -180,7 +180,6 @@ const EditPaidAdsCampaign = () => {
 			<CampaignAssetsForm
 				initialCampaign={ {
 					amount: campaign.amount,
-					countryCodes: campaign.displayCountries,
 				} }
 				assetEntityGroup={ assetEntityGroup }
 				onSubmit={ handleSubmit }
@@ -197,10 +196,14 @@ const EditPaidAdsCampaign = () => {
 							content: (
 								<AdsCampaign
 									campaign={ campaign }
-									trackingContext={ eventContext }
-									continueButton={ ( props ) => (
+									context={ eventContext }
+									headerTitle={ __(
+										'Edit your paid campaign',
+										'google-listings-and-ads'
+									) }
+									continueButton={ ( formContext ) => (
 										<ContinueButton
-											{ ...props }
+											formProps={ formContext }
 											onClick={ () =>
 												handleContinueClick(
 													STEP.ASSET_GROUP

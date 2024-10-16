@@ -11,8 +11,6 @@ import SetupAdsAccountsPage from '../../utils/pages/setup-ads/setup-ads-accounts
 import SetupBudgetPage from '../../utils/pages/setup-ads/setup-budget';
 import { LOAD_STATE } from '../../utils/constants';
 import {
-	getCountryInputSearchBoxContainer,
-	getCountryTagsFromInputSearchBoxContainer,
 	getFAQPanelTitle,
 	getFAQPanelRow,
 	checkFAQExpandable,
@@ -69,6 +67,9 @@ test.describe( 'Set up Ads account', () => {
 		setupBudgetPage = new SetupBudgetPage( page );
 		await setOnboardedMerchant();
 		await setupAdsAccounts.mockAdsAccountsResponse( [] );
+		await setupBudgetPage.fulfillBillingStatusRequest( {
+			status: 'approved',
+		} );
 		await dashboardPage.mockRequests();
 		await dashboardPage.goto();
 	} );
@@ -280,24 +281,13 @@ test.describe( 'Set up Ads account', () => {
 	} );
 
 	test.describe( 'Create your paid campaign', () => {
-		test.beforeAll( async () => {
-			await setupBudgetPage.fulfillBillingStatusRequest( {
-				status: 'approved',
-			} );
-		} );
-
 		test( 'Continue to create paid ad campaign', async () => {
 			await setupAdsAccounts.clickContinue();
 			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-
 			await expect(
 				page.getByRole( 'heading', {
 					name: 'Create your paid campaign',
 				} )
-			).toBeVisible();
-
-			await expect(
-				page.getByRole( 'heading', { name: 'Ads audience' } )
 			).toBeVisible();
 
 			await expect(
@@ -355,17 +345,6 @@ test.describe( 'Set up Ads account', () => {
 			test( 'should see FAQ rows when all FAQ titles are clicked', async () => {
 				await checkFAQExpandable( page );
 			} );
-		} );
-
-		test( 'Audience should be United States', async () => {
-			const countrySearchBoxContainer =
-				getCountryInputSearchBoxContainer( page );
-			const countryTags =
-				getCountryTagsFromInputSearchBoxContainer( page );
-			await expect( countryTags ).toHaveCount( 1 );
-			await expect( countrySearchBoxContainer ).toContainText(
-				'United States'
-			);
 		} );
 
 		test( 'Set the budget', async () => {

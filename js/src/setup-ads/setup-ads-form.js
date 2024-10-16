@@ -26,11 +26,10 @@ const SetupAdsForm = () => {
 	const [ isSubmitted, setSubmitted ] = useState( false );
 	const [ handleSetupComplete, isSubmitting ] = useAdsSetupCompleteCallback();
 	const adminUrl = useAdminUrl();
-	const { data: targetAudience } = useTargetAudienceFinalCountryCodes();
+	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 
 	const initialValues = {
 		amount: 0,
-		countryCodes: targetAudience,
 	};
 
 	useEffect( () => {
@@ -55,7 +54,7 @@ const SetupAdsForm = () => {
 	);
 
 	const handleSubmit = ( values ) => {
-		const { amount, countryCodes } = values;
+		const { amount } = values;
 
 		recordGlaEvent( 'gla_launch_paid_campaign_button_click', {
 			audiences: countryCodes.join( ',' ),
@@ -68,17 +67,10 @@ const SetupAdsForm = () => {
 	};
 
 	const handleChange = ( _, values ) => {
-		const args = [ initialValues, values ].map(
-			( { countryCodes, ...v } ) => {
-				v.countrySet = new Set( countryCodes );
-				return v;
-			}
-		);
-
-		setFormChanged( ! isEqual( ...args ) );
+		setFormChanged( ! isEqual( initialValues, values ) );
 	};
 
-	if ( ! targetAudience ) {
+	if ( ! countryCodes ) {
 		return null;
 	}
 
@@ -88,19 +80,8 @@ const SetupAdsForm = () => {
 			onChange={ handleChange }
 			onSubmit={ handleSubmit }
 		>
-			{ ( formProps ) => {
-				const mixedFormProps = {
-					...formProps,
-					// TODO: maybe move all API calls in useSetupCompleteCallback to ~./data
-					isSubmitting,
-				};
-				return (
-					<>
-						<SetupAdsTopBar />
-						<AdsStepper formProps={ mixedFormProps } />
-					</>
-				);
-			} }
+			<SetupAdsTopBar />
+			<AdsStepper isSubmitting={ isSubmitting } />
 		</CampaignAssetsForm>
 	);
 };
