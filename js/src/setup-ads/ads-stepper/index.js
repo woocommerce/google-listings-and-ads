@@ -9,29 +9,23 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import SetupAccounts from './setup-accounts';
-import AppButton from '.~/components/app-button';
-import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
-import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
-import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
 	FILTER_ONBOARDING,
 	CONTEXT_ADS_ONBOARDING,
 } from '.~/utils/tracks';
-
-const { APPROVED } = GOOGLE_ADS_BILLING_STATUS;
+import SetupPaidAds from './setup-paid-ads';
 
 /**
  * @param {Object} props React props
- * @param {Object} props.isSubmitting When the form in the parent component, i.e SetupAdsForm, is currently being submitted via the useAdsSetupCompleteCallback hook.
+ * @param {boolean} props.isSubmitting When the form in the parent component, i.e SetupAdsForm, is currently being submitted via the useAdsSetupCompleteCallback hook.
  * @fires gla_setup_ads with `{ triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
  * @fires gla_setup_ads with `{ triggered_by: 'stepper-step1-button', action: 'go-to-step1'}`.
  */
 const AdsStepper = ( { isSubmitting } ) => {
 	const [ step, setStep ] = useState( '1' );
-	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_ADS_ONBOARDING,
@@ -90,30 +84,7 @@ const AdsStepper = ( { isSubmitting } ) => {
 						'Create your paid campaign',
 						'google-listings-and-ads'
 					),
-					content: (
-						<AdsCampaign
-							headerTitle={ __(
-								'Create your paid campaign',
-								'google-listings-and-ads'
-							) }
-							context="setup-ads"
-							continueButton={ ( formContext ) => (
-								<AppButton
-									isPrimary
-									text={ __(
-										'Launch paid campaign',
-										'google-listings-and-ads'
-									) }
-									disabled={
-										! formContext.isValidForm ||
-										billingStatus?.status !== APPROVED
-									}
-									loading={ isSubmitting }
-									onClick={ formContext.handleSubmit }
-								/>
-							) }
-						/>
-					),
+					content: <SetupPaidAds isSubmitting={ isSubmitting } />,
 					onClick: handleStepClick,
 				},
 			] }
