@@ -25,6 +25,8 @@ import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
  * It will also kickoff Ads and Merchant Center account creation if the user does not have accounts.
  */
 const ConnectedGoogleComboAccountCard = () => {
+	// We are using a centralized hook which will be used when auto creating the MC account or manually creating a MC account
+	// since we need to potentially show the reclaim url in a single place across both scenarios.
 	const createMCAccount = useCreateMCAccount();
 
 	const {
@@ -44,6 +46,7 @@ const ConnectedGoogleComboAccountCard = () => {
 		isCreatingOnlyMCAccount,
 		accountCreationChecksResolved,
 		accountsCreated,
+		hasExistingMCAccount,
 	} = useAutoCreateAdsMCAccounts( createMCAccount );
 
 	if (
@@ -116,7 +119,9 @@ const ConnectedGoogleComboAccountCard = () => {
 				indicator={ getIndicator() }
 			/>
 
-			<ConnectMC createMCAccount={ createMCAccount } />
+			{ hasExistingMCAccount && (
+				<ConnectMC createMCAccount={ createMCAccount } />
+			) }
 		</div>
 	);
 };
