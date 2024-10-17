@@ -35,8 +35,6 @@ const useAutoCreateAdsMCAccounts = () => {
 	} );
 
 	const { accountsCreated, isCreatingWhichAccount } = accountsState;
-	const initHasExistingMCAccountsRef = useRef( null );
-	const initHasExistingAdsAccountsRef = useRef( null );
 	const shouldCreateAccounts = useRef();
 
 	const {
@@ -63,22 +61,6 @@ const useAutoCreateAdsMCAccounts = () => {
 	const hasExistingMCAccount = existingMCAccounts?.length > 0;
 	const hasExistingAdsAccount =
 		hasGoogleAdsConnection || existingAdsAccounts?.length > 0;
-
-	if (
-		initHasExistingMCAccountsRef.current === null &&
-		hasFinishedResolutionForExistingMCAccounts &&
-		hasFinishedResolutionForGoogleMCAccount
-	) {
-		initHasExistingMCAccountsRef.current = hasExistingMCAccount;
-	}
-
-	if (
-		initHasExistingAdsAccountsRef.current === null &&
-		hasFinishedResolutionForExistingAdsAccount &&
-		hasFinishedResolutionForGoogleAdsAccount
-	) {
-		initHasExistingAdsAccountsRef.current = hasExistingAdsAccount;
-	}
 
 	const googleAdsAccountChecksResolved =
 		hasFinishedResolutionForExistingAdsAccount &&
