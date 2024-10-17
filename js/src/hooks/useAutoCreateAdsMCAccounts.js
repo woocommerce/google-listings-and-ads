@@ -16,7 +16,6 @@ import {
 	CREATING_ADS_ACCOUNT,
 	CREATING_BOTH_ACCOUNTS,
 	CREATING_MC_ACCOUNT,
-	GOOGLE_MC_ACCOUNT_STATUS,
 } from '.~/constants';
 
 /**
@@ -54,21 +53,13 @@ const useAutoCreateAdsMCAccounts = () => {
 		hasGoogleAdsConnection,
 	} = useGoogleAdsAccount();
 
-	const {
-		googleMCAccount,
-		hasFinishedResolution: hasFinishedResolutionForGoogleMCAccount,
-	} = useGoogleMCAccount();
+	const { hasFinishedResolution: hasFinishedResolutionForGoogleMCAccount } =
+		useGoogleMCAccount();
 
 	const [ handleCreateAccount, { response } ] = useCreateMCAccount();
 	const [ upsertAdsAccount, { loading } ] = useUpsertAdsAccount();
 
-	const isGoogleMCConnected = [
-		GOOGLE_MC_ACCOUNT_STATUS.CONNECTED,
-		GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE,
-	].includes( googleMCAccount?.status );
-
-	const hasExistingMCAccount =
-		isGoogleMCConnected || existingMCAccounts?.length > 0;
+	const hasExistingMCAccount = existingMCAccounts?.length > 0;
 	const hasExistingAdsAccount =
 		hasGoogleAdsConnection || existingAdsAccounts?.length > 0;
 
