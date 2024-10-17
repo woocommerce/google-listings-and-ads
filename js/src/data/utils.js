@@ -201,7 +201,7 @@ export function mapReportFieldsToPerformance(
  * joins them into a single string with underscore (`_`), and converts
  * the result to lowercase.
  *
- * @param {Array<CountryCode>} countryCodes - An array of country code strings.
+ * @param {Array<CountryCode>} [countryCodes] - An array of country code strings.
  * @return {string} A underscore-separated, lowercase string representing the sorted country codes.
  */
 export function getCountryCodesKey( countryCodes = [] ) {

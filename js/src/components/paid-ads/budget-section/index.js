@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -29,7 +28,7 @@ const nonInteractableProps = {
  *
  * @param {Object} props React props.
  * @param {Object} props.formProps Form props forwarded from `Form` component.
- * @param {Array<CountryCode>} props.countryCodes Country codes to fetch budget recommendations for.
+ * @param {Array<CountryCode>|undefined} props.countryCodes Country codes to fetch budget recommendations for.
  * @param {boolean} [props.disabled=false] Whether display the Card in disabled style.
  * @param {JSX.Element} [props.children] Extra content to be rendered under the card of budget inputs.
  */
@@ -39,18 +38,12 @@ const BudgetSection = ( {
 	disabled = false,
 	children,
 } ) => {
-	const { getInputProps, setValue, values } = formProps;
+	const { getInputProps, values } = formProps;
 	const { amount } = values;
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const monthlyMaxEstimated = getMonthlyMaxEstimated( amount );
 	// Display the currency code that will be used by Google Ads, but still use the store's currency formatting settings.
 	const currency = googleAdsAccount?.currency;
-
-	// Wrapping `useRef` is because since WC 6.9, the reference of `setValue` may be changed
-	// after calling itself and further leads to an infinite re-rendering loop if used in a
-	// `useEffect`.
-	const setValueRef = useRef();
-	setValueRef.current = setValue;
 
 	return (
 		<div className="gla-budget-section">
