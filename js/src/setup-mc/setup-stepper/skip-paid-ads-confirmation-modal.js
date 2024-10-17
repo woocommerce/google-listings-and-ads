@@ -9,7 +9,6 @@ import { __ } from '@wordpress/i18n';
 import AppModal from '.~/components/app-modal';
 import AppButton from '.~/components/app-button';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import { ACTION_SKIP } from './constants';
 
 /**
  * @fires gla_documentation_link_click with `{ context: 'skip-paid-ads-modal', link_id: 'paid-ads-with-performance-max-campaigns-learn-more', href: 'https://support.google.com/google-ads/answer/10724817' }`
@@ -37,7 +36,6 @@ const SkipPaidAdsConfirmationModal = ( {
 				<AppButton
 					key="complete-setup"
 					onClick={ onSkipCreatePaidAds }
-					data-action={ ACTION_SKIP }
 					isPrimary
 				>
 					{ __(

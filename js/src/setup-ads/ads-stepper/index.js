@@ -9,8 +9,6 @@ import { useState, useRef } from '@wordpress/element';
  * Internal dependencies
  */
 import SetupAccounts from './setup-accounts';
-import AppButton from '.~/components/app-button';
-import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
@@ -20,14 +18,15 @@ import {
 	FILTER_ONBOARDING,
 	CONTEXT_ADS_ONBOARDING,
 } from '.~/utils/tracks';
+import SetupPaidAds from './setup-paid-ads';
 
 /**
  * @param {Object} props React props
- * @param {Object} props.formProps Form props forwarded from `Form` component.
+ * @param {boolean} props.isSubmitting When the form in the parent component, i.e SetupAdsForm, is currently being submitted via the useAdsSetupCompleteCallback hook.
  * @fires gla_setup_ads with `{ triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
  * @fires gla_setup_ads with `{ triggered_by: 'stepper-step1-button', action: 'go-to-step1'}`.
  */
-const AdsStepper = ( { formProps } ) => {
+const AdsStepper = ( { isSubmitting } ) => {
 	const [ step, setStep ] = useState( '1' );
 	const initHasAdsConnectionRef = useRef( null );
 
@@ -89,10 +88,6 @@ const AdsStepper = ( { formProps } ) => {
 		continueStep( '2' );
 	};
 
-	// @todo: Add check for billing status once billing setup is moved to step 2.
-	// For now, only disable based on the form being valid for testing purposes.
-	const isDisabledLaunch = ! formProps.isValidForm;
-
 	let steps = [
 		{
 			key: '1',
@@ -105,23 +100,7 @@ const AdsStepper = ( { formProps } ) => {
 		{
 			key: '2',
 			label: __( 'Create your paid campaign', 'google-listings-and-ads' ),
-			content: (
-				<AdsCampaign
-					trackingContext="setup-ads"
-					continueButton={
-						<AppButton
-							isPrimary
-							text={ __(
-								'Launch paid campaign',
-								'google-listings-and-ads'
-							) }
-							disabled={ isDisabledLaunch }
-							loading={ formProps.isSubmitting }
-							onClick={ formProps.handleSubmit }
-						/>
-					}
-				/>
-			),
+			content: <SetupPaidAds isSubmitting={ isSubmitting } />,
 			onClick: handleStepClick,
 		},
 	];

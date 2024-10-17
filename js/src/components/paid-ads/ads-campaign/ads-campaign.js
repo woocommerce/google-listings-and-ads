@@ -13,10 +13,16 @@ import StepContentFooter from '.~/components/stepper/step-content-footer';
 import StepContentActions from '.~/components/stepper/step-content-actions';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import { useAdaptiveFormContext } from '.~/components/adaptive-form';
-import AudienceSection from '../audience-section';
+import BillingCard from '.~/components/paid-ads/billing-card';
 import BudgetSection from '../budget-section';
 import { CampaignPreviewCard } from '../campaign-preview';
-import PaidAdsFaqsPanel from '../faqs-panel';
+import PaidAdsFaqsPanel from './faqs-panel';
+import PaidAdsFeaturesSection from './paid-ads-features-section';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
+
+/**
+ * @typedef {import('.~/components/adaptive-form/adaptive-form-context').AdaptiveFormContext} AdaptiveFormContext
+ */
 
 /**
  * @typedef {import('.~/data/actions').Campaign} Campaign
@@ -30,79 +36,83 @@ import PaidAdsFaqsPanel from '../faqs-panel';
  *
  * @fires gla_documentation_link_click with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
  * @param {Object} props React props.
- * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
- * @param {JSX.Element|Function} props.continueButton Continue button component.
- * @param {'create-ads'|'edit-ads'|'setup-ads'} props.trackingContext A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
+ * @param {Campaign} [props.campaign] Campaign data to be edited. The displayCountries property will be used to fetch budget recommendation data.
+ * @param {string} props.headerTitle The title of the step.
+ * @param {'create-ads'|'edit-ads'|'setup-ads'|'setup-mc'} props.context A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
+ * @param {(formContext: AdaptiveFormContext) => JSX.Element | JSX.Element} [props.skipButton] A React element or function to render the "Skip" button. If a function is passed, it receives the form context and returns the button element.
+ * @param {(formContext: AdaptiveFormContext) => JSX.Element | JSX.Element} [props.continueButton] A React element or function to render the "Continue" button. If a function is passed, it receives the form context and returns the button element.
  */
 export default function AdsCampaign( {
 	campaign,
+	headerTitle,
+	context,
+	skipButton,
 	continueButton,
-	trackingContext,
 } ) {
-	const isCreation = ! campaign;
 	const formContext = useAdaptiveFormContext();
+	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
+	const isOnboardingFlow = context === 'setup-mc';
+	const showCampaignPreviewCard =
+		context === 'setup-ads' ||
+		context === 'create-ads' ||
+		context === 'edit-ads';
+	// only show the billing card during onboarding or setup Ads flow.
+	// For creating/editing a campaign, we assume billing is already set up.
+	const showBillingCard = context === 'setup-mc' || context === 'setup-ads';
 
-	const disabledBudgetSection = ! formContext.values.countryCodes.length;
-	const helperText = isCreation
-		? __(
-				'You can only choose from countries you’ve selected during product listings configuration.',
-				'google-listings-and-ads'
-		  )
-		: __(
-				'Once a campaign has been created, you cannot change the target country(s).',
-				'google-listings-and-ads'
-		  );
+	let description = createInterpolateElement(
+		__(
+			'Paid Performance Max campaigns are automatically optimized for you by Google. <link>See what your ads will look like.</link>',
+			'google-listings-and-ads'
+		),
+		{
+			link: (
+				<AppDocumentationLink
+					context={ context }
+					linkId="see-what-ads-look-like"
+					href="https://support.google.com/google-ads/answer/6275294"
+				/>
+			),
+		}
+	);
+
+	if ( isOnboardingFlow ) {
+		description = __(
+			'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your products will be included in the campaign after they’re approved.',
+			'google-listings-and-ads'
+		);
+	}
 
 	return (
 		<StepContent>
 			<StepContentHeader
-				title={
-					isCreation
-						? __(
-								'Create your paid campaign',
-								'google-listings-and-ads'
-						  )
-						: __(
-								'Edit your paid campaign',
-								'google-listings-and-ads'
-						  )
-				}
-				description={ createInterpolateElement(
-					__(
-						'Paid Performance Max campaigns are automatically optimized for you by Google. <link>See what your ads will look like.</link>',
-						'google-listings-and-ads'
-					),
-					{
-						link: (
-							<AppDocumentationLink
-								context={ trackingContext }
-								linkId="see-what-ads-look-like"
-								href="https://support.google.com/google-ads/answer/6275294"
-							/>
-						),
-					}
-				) }
+				title={ headerTitle }
+				description={ description }
 			/>
-			<AudienceSection
-				disabled={ ! isCreation }
-				multiple={ isCreation || campaign.allowMultiple }
-				countrySelectHelperText={ helperText }
-				formProps={ formContext }
-			/>
+
+			{ isOnboardingFlow && <PaidAdsFeaturesSection /> }
+
 			<BudgetSection
 				formProps={ formContext }
-				disabled={ disabledBudgetSection }
-				countryCodes={ formContext.values.countryCodes }
+				countryCodes={
+					context === 'edit-ads'
+						? campaign.displayCountries
+						: countryCodes
+				}
 			>
-				<CampaignPreviewCard />
+				{ showBillingCard && <BillingCard /> }
+
+				{ showCampaignPreviewCard && <CampaignPreviewCard /> }
 			</BudgetSection>
 
 			<StepContentFooter>
 				<StepContentActions>
+					{ typeof skipButton === 'function'
+						? skipButton( formContext )
+						: skipButton }
+
 					{ typeof continueButton === 'function'
-						? continueButton( {
-								formProps: formContext,
-						  } )
+						? continueButton( formContext )
 						: continueButton }
 				</StepContentActions>
 				<PaidAdsFaqsPanel />
