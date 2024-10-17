@@ -65,7 +65,6 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 
 			// It should create both accounts.
 			expect( result.current.isCreatingWhichAccount ).toBe( 'both' );
-			expect( result.current.isCreatingAccounts ).toBe( true );
 		} );
 
 		it( 'should create only the Merchant Center account', () => {
@@ -83,7 +82,6 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 
 			// It should create only the Merchant Center account.
 			expect( result.current.isCreatingWhichAccount ).toBe( 'mc' );
-			expect( result.current.isCreatingAccounts ).toBe( true );
 		} );
 
 		it( 'should create only the Google Ads account', () => {
@@ -101,7 +99,6 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 
 			// It should create only the Google Ads account.
 			expect( result.current.isCreatingWhichAccount ).toBe( 'ads' );
-			expect( result.current.isCreatingAccounts ).toBe( true );
 		} );
 	} );
 
@@ -142,7 +139,6 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 
 			// It should not create any accounts.
 			expect( result.current.isCreatingWhichAccount ).toBe( null );
-			expect( result.current.isCreatingAccounts ).toBe( false );
 
 			// make sure functions are not called.
 			expect( handleCreateAccount ).not.toHaveBeenCalled();

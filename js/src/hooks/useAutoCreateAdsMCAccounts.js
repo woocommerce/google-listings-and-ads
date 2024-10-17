@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useEffect, useRef, useState } from '@wordpress/element';
+import { useEffect, useState, useRef, useCallback } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -18,16 +18,6 @@ import {
 	CREATING_MC_ACCOUNT,
 } from '.~/constants';
 
-/**
- * Custom hook to handle the creation of Google Merchant Center (MC) and Google Ads accounts.
- *
- * @typedef {Object} AutoCreateAccountsStatus
- * @property {boolean} accountCreationChecksResolved Whether the checks for account creation have been resolved.
- * @property {boolean} isCreatingAccounts Whether the accounts are being created.
- * @property {string|null} isCreatingWhichAccount The type of account that is being created.
- *
- * @return {AutoCreateAccountsStatus} Object containing properties related to the account creation status.
- */
 const useAutoCreateAdsMCAccounts = () => {
 	const [ accountsState, setAccountsState ] = useState( {
 		accountsCreated: false,
@@ -73,11 +63,8 @@ const useAutoCreateAdsMCAccounts = () => {
 	const accountCreationChecksResolved =
 		googleAdsAccountChecksResolved && googleMCAccountChecksResolved;
 
-	const isCreatingAccounts = !! isCreatingWhichAccount;
-
 	if ( googleAdsAccountChecksResolved && googleMCAccountChecksResolved ) {
 		if ( ! hasExistingAdsAccount || ! hasExistingMCAccount ) {
-			// Based on which accounts to create, set shouldCreateAccounts to 'ads, 'mc', or 'both'.
 			const createBothAccounts =
 				! hasExistingAdsAccount && ! hasExistingMCAccount;
 
@@ -91,35 +78,8 @@ const useAutoCreateAdsMCAccounts = () => {
 		}
 	}
 
-	useEffect( () => {
-		// Set shouldCreateAccounts when all checks are resolved and accounts need to be created
-		if ( accountCreationChecksResolved && ! shouldCreateAccounts.current ) {
-			if ( ! hasExistingAdsAccount || ! hasExistingMCAccount ) {
-				const createBothAccounts =
-					! hasExistingAdsAccount && ! hasExistingMCAccount;
-
-				if ( createBothAccounts ) {
-					shouldCreateAccounts.current = CREATING_BOTH_ACCOUNTS;
-				} else if ( ! hasExistingAdsAccount ) {
-					shouldCreateAccounts.current = CREATING_ADS_ACCOUNT;
-				} else {
-					shouldCreateAccounts.current = CREATING_MC_ACCOUNT;
-				}
-			}
-		}
-
-		// Handle account creation and updating the state when responses are resolved
-		if ( ! response && loading ) {
-			return;
-		}
-
-		if ( isCreatingWhichAccount === CREATING_ADS_ACCOUNT && ! loading ) {
-			setAccountsState( ( prevState ) => ( {
-				...prevState,
-				isCreatingWhichAccount: null,
-				accountsCreated: true,
-			} ) );
-			shouldCreateAccounts.current = null;
+	const handlePostAccountCreation = useCallback( () => {
+		if ( ! isCreatingWhichAccount ) {
 			return;
 		}
 
@@ -127,80 +87,68 @@ const useAutoCreateAdsMCAccounts = () => {
 			response?.status
 		);
 
-		if (
-			isCreatingWhichAccount === CREATING_MC_ACCOUNT &&
-			mcAccountCreated
-		) {
+		const resetState =
+			( isCreatingWhichAccount === CREATING_ADS_ACCOUNT && ! loading ) ||
+			( isCreatingWhichAccount === CREATING_MC_ACCOUNT &&
+				mcAccountCreated ) ||
+			( isCreatingWhichAccount === CREATING_BOTH_ACCOUNTS &&
+				mcAccountCreated &&
+				! loading );
+
+		if ( resetState ) {
+			shouldCreateAccounts.current = null;
 			setAccountsState( ( prevState ) => ( {
 				...prevState,
 				isCreatingWhichAccount: null,
 				accountsCreated: true,
 			} ) );
-			shouldCreateAccounts.current = null;
+		}
+	}, [ response, loading, isCreatingWhichAccount ] );
+
+	const handleAccountCreation = useCallback( async () => {
+		if (
+			! accountCreationChecksResolved ||
+			isCreatingWhichAccount ||
+			accountsCreated
+		) {
 			return;
 		}
 
-		if (
-			isCreatingWhichAccount === CREATING_BOTH_ACCOUNTS &&
-			mcAccountCreated &&
-			! loading
-		) {
+		if ( shouldCreateAccounts.current ) {
 			setAccountsState( ( prevState ) => ( {
 				...prevState,
-				isCreatingWhichAccount: null,
-				accountsCreated: true,
+				isCreatingWhichAccount: shouldCreateAccounts.current,
 			} ) );
-			shouldCreateAccounts.current = null;
-		}
 
-		// Trigger account creation when appropriate
-		const handleCreation = async () => {
-			if (
-				! accountCreationChecksResolved ||
-				isCreatingAccounts ||
-				accountsCreated
+			if ( shouldCreateAccounts.current === CREATING_BOTH_ACCOUNTS ) {
+				await handleCreateAccount();
+				await upsertAdsAccount();
+			} else if (
+				shouldCreateAccounts.current === CREATING_ADS_ACCOUNT
 			) {
-				return;
-			}
-
-			if ( shouldCreateAccounts.current ) {
-				setAccountsState( ( prevState ) => ( {
-					...prevState,
-					isCreatingWhichAccount: shouldCreateAccounts.current,
-				} ) );
-
-				if ( shouldCreateAccounts.current === CREATING_BOTH_ACCOUNTS ) {
-					await handleCreateAccount();
-					await upsertAdsAccount();
-					return;
-				}
-
-				if ( shouldCreateAccounts.current === CREATING_ADS_ACCOUNT ) {
-					await upsertAdsAccount();
-					return;
-				}
-
+				await upsertAdsAccount();
+			} else {
 				await handleCreateAccount();
 			}
-		};
-
-		handleCreation();
+		}
 	}, [
 		accountCreationChecksResolved,
-		isCreatingAccounts,
+		isCreatingWhichAccount,
 		accountsCreated,
 		handleCreateAccount,
 		upsertAdsAccount,
-		response,
-		loading,
-		isCreatingWhichAccount,
-		hasExistingMCAccount,
-		hasExistingAdsAccount,
 	] );
+
+	useEffect( () => {
+		handlePostAccountCreation();
+	}, [ response, loading, handlePostAccountCreation ] );
+
+	useEffect( () => {
+		handleAccountCreation();
+	}, [ handleAccountCreation ] );
 
 	return {
 		accountCreationChecksResolved,
-		isCreatingAccounts,
 		isCreatingWhichAccount,
 	};
 };

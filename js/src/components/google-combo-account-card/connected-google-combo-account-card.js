@@ -32,11 +32,10 @@ const ConnectedGoogleComboAccountCard = () => {
 		hasFinishedResolution: hasFinishedResolutionForCurrentMCAccount,
 	} = useGoogleMCAccount();
 
-	const {
-		accountCreationChecksResolved,
-		isCreatingAccounts,
-		isCreatingWhichAccount,
-	} = useAutoCreateAdsMCAccounts();
+	const { accountCreationChecksResolved, isCreatingWhichAccount } =
+		useAutoCreateAdsMCAccounts();
+
+	const isCreatingAccounts = !! isCreatingWhichAccount;
 
 	if (
 		! accountCreationChecksResolved ||
