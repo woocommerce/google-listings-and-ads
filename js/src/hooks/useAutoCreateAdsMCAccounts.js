@@ -49,13 +49,16 @@ const useAutoCreateAdsMCAccounts = () => {
 		hasGoogleAdsConnection,
 	} = useGoogleAdsAccount();
 
-	const { hasFinishedResolution: hasFinishedResolutionForGoogleMCAccount } =
-		useGoogleMCAccount();
+	const {
+		hasGoogleMCConnection,
+		hasFinishedResolution: hasFinishedResolutionForGoogleMCAccount,
+	} = useGoogleMCAccount();
 
 	const [ handleCreateAccount, { response } ] = useCreateMCAccount();
 	const [ upsertAdsAccount, { loading } ] = useUpsertAdsAccount();
 
-	const hasExistingMCAccount = existingMCAccounts?.length > 0;
+	const hasExistingMCAccount =
+		hasGoogleMCConnection || existingMCAccounts?.length > 0;
 	const hasExistingAdsAccount =
 		hasGoogleAdsConnection || existingAdsAccounts?.length > 0;
 

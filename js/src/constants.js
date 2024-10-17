@@ -69,6 +69,12 @@ export const GOOGLE_ADS_ACCOUNT_STATUS = {
 	INCOMPLETE: 'incomplete',
 };
 
+export const GOOGLE_MC_ACCOUNT_STATUS = {
+	CONNECTED: 'connected',
+	DISCONNECTED: 'disconnected',
+	INCOMPLETE: 'incomplete',
+};
+
 export const GOOGLE_ADS_BILLING_STATUS = {
 	UNKNOWN: 'unknown',
 	PENDING: 'pending',
