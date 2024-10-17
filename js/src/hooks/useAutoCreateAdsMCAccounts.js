@@ -16,8 +16,15 @@ import {
 	CREATING_ADS_ACCOUNT,
 	CREATING_BOTH_ACCOUNTS,
 	CREATING_MC_ACCOUNT,
-} from '.~/constants';
+} from '.~/components/google-combo-account-card/constants';
 
+/**
+ * Hook to automatically create Ads and Merchant Center accounts if they do not exist.
+ *
+ * @return {Object} Object containing the state of the account creation process.
+ * @property {boolean} hasFinishedResolutionForExistingAdsMCAccounts Indicates whether the checks for existing Merchant Center (MC) and Google Ads accounts have been completed.
+ * @property {string|null} isCreatingWhichAccount The type of account that is being created. Possible values are 'ads', 'mc', or 'both'.
+ */
 const useAutoCreateAdsMCAccounts = () => {
 	const [ accountsState, setAccountsState ] = useState( {
 		accountsCreated: false,
@@ -63,7 +70,7 @@ const useAutoCreateAdsMCAccounts = () => {
 	const accountCreationChecksResolved =
 		googleAdsAccountChecksResolved && googleMCAccountChecksResolved;
 
-	if ( googleAdsAccountChecksResolved && googleMCAccountChecksResolved ) {
+	if ( accountCreationChecksResolved ) {
 		if ( ! hasExistingAdsAccount || ! hasExistingMCAccount ) {
 			const createBothAccounts =
 				! hasExistingAdsAccount && ! hasExistingMCAccount;
@@ -148,7 +155,8 @@ const useAutoCreateAdsMCAccounts = () => {
 	}, [ handleAccountCreation ] );
 
 	return {
-		accountCreationChecksResolved,
+		hasFinishedResolutionForExistingAdsMCAccounts:
+			accountCreationChecksResolved,
 		isCreatingWhichAccount,
 	};
 };

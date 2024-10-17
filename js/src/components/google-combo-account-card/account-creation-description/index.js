@@ -13,24 +13,22 @@ import {
 	CREATING_ADS_ACCOUNT,
 	CREATING_BOTH_ACCOUNTS,
 	CREATING_MC_ACCOUNT,
-} from '.~/constants';
+} from '../constants';
 
 /**
  * Renders the description for the account creation card.
  *
  * @param {Object} props Props.
- * @param {string} props.isCreatingWhichAccount The type of account that is being created.
- * @param {number} props.isGoogleAdsReady Whether the Google Ads account is ready.
- * @param {number} props.isGoogleMCReady Whether the Merchant Center account is ready.
+ * @param {string} props.isCreatingWhichAccount The type of account that is being created. Possible values are 'ads', 'mc', or 'both'.
  */
-const AccountCreationDescription = ( {
-	isCreatingWhichAccount,
-	isGoogleAdsReady,
-	isGoogleMCReady,
-} ) => {
-	const { google } = useGoogleAccount();
+const AccountCreationDescription = ( { isCreatingWhichAccount } ) => {
+	const { google, hasFinishedResolution } = useGoogleAccount();
 	const { googleMCAccount } = useGoogleMCAccount();
 	const { googleAdsAccount } = useGoogleAdsAccount();
+
+	if ( ! hasFinishedResolution ) {
+		return null;
+	}
 
 	const getDescription = () => {
 		if ( isCreatingWhichAccount ) {
@@ -83,10 +81,15 @@ const AccountCreationDescription = ( {
 			}
 		}
 
+		const isCreatingAccounts = !! isCreatingWhichAccount;
+		const isGoogleAdsReady =
+			! isCreatingAccounts && googleAdsAccount.id > 0;
+		const isGoogleMCReady = ! isCreatingAccounts && googleMCAccount.id > 0;
+
 		return (
 			<>
 				<p>{ google?.email }</p>
-				{ isGoogleMCReady > 0 && (
+				{ isGoogleMCReady && (
 					<p>
 						{ sprintf(
 							// Translators: %s is the Merchant Center ID
@@ -98,7 +101,7 @@ const AccountCreationDescription = ( {
 						) }
 					</p>
 				) }
-				{ isGoogleAdsReady > 0 && (
+				{ isGoogleAdsReady && (
 					<p>
 						{ sprintf(
 							// Translators: %s is the Google Ads ID

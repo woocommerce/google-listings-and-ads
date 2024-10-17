@@ -7,15 +7,16 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AccountCard, { APPEARANCE } from '../account-card';
-import AppSpinner from '../app-spinner';
-import useAutoCreateAdsMCAccounts from '../../hooks/useAutoCreateAdsMCAccounts';
-import LoadingLabel from '../loading-label/loading-label';
 import AccountCreationDescription from './account-creation-description';
-import './connected-google-combo-account-card.scss';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
+import AppSpinner from '../app-spinner';
 import ConnectedIconLabel from '../connected-icon-label';
-import { CREATING_BOTH_ACCOUNTS } from '.~/constants';
+import { CREATING_BOTH_ACCOUNTS } from './constants';
+import LoadingLabel from '../loading-label/loading-label';
+import useAutoCreateAdsMCAccounts from '../../hooks/useAutoCreateAdsMCAccounts';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
+import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
+import './connected-google-combo-account-card.scss';
 
 /**
  * Renders a Google account card UI with connected account information.
@@ -23,30 +24,43 @@ import { CREATING_BOTH_ACCOUNTS } from '.~/constants';
  */
 const ConnectedGoogleComboAccountCard = () => {
 	const {
-		googleAdsAccount,
+		hasGoogleAdsConnection,
 		hasFinishedResolution: hasFinishedResolutionForCurrentAdsAccount,
 	} = useGoogleAdsAccount();
 
 	const {
 		googleMCAccount,
+		isPreconditionReady,
 		hasFinishedResolution: hasFinishedResolutionForCurrentMCAccount,
 	} = useGoogleMCAccount();
 
-	const { accountCreationChecksResolved, isCreatingWhichAccount } =
-		useAutoCreateAdsMCAccounts();
+	const {
+		hasFinishedResolutionForExistingAdsMCAccounts,
+		isCreatingWhichAccount,
+	} = useAutoCreateAdsMCAccounts();
+
+	const { hasAccess, step } = useGoogleAdsAccountStatus();
 
 	const isCreatingAccounts = !! isCreatingWhichAccount;
 
 	if (
-		! accountCreationChecksResolved ||
+		! hasFinishedResolutionForExistingAdsMCAccounts ||
 		! hasFinishedResolutionForCurrentAdsAccount ||
 		! hasFinishedResolutionForCurrentMCAccount
 	) {
 		return <AccountCard description={ <AppSpinner /> } />;
 	}
 
-	const isGoogleAdsReady = ! isCreatingAccounts && googleAdsAccount.id > 0;
-	const isGoogleMCReady = ! isCreatingAccounts && googleMCAccount.id > 0;
+	const isGoogleAdsConnected =
+		hasGoogleAdsConnection &&
+		hasAccess &&
+		[ '', 'billing', 'link_merchant' ].includes( step );
+
+	const isGoogleMCConnected =
+		isPreconditionReady &&
+		( googleMCAccount?.status === 'connected' ||
+			( googleMCAccount?.status === 'incomplete' &&
+				googleMCAccount?.step === 'link_ads' ) );
 
 	const getHelper = () => {
 		if ( isCreatingWhichAccount === CREATING_BOTH_ACCOUNTS ) {
@@ -72,7 +86,7 @@ const ConnectedGoogleComboAccountCard = () => {
 			);
 		}
 
-		if ( isGoogleAdsReady && isGoogleMCReady ) {
+		if ( isGoogleAdsConnected && isGoogleMCConnected ) {
 			return <ConnectedIconLabel />;
 		}
 
@@ -87,8 +101,6 @@ const ConnectedGoogleComboAccountCard = () => {
 			description={
 				<AccountCreationDescription
 					isCreatingWhichAccount={ isCreatingWhichAccount }
-					isGoogleAdsReady={ isGoogleAdsReady }
-					isGoogleMCReady={ isGoogleMCReady }
 				/>
 			}
 			helper={ getHelper() }
