@@ -9,6 +9,7 @@ import { useState, useRef } from '@wordpress/element';
  * Internal dependencies
  */
 import SetupAccounts from './setup-accounts';
+import AppSpinner from '.~/components/app-spinner';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
@@ -49,13 +50,13 @@ const AdsStepper = ( { isSubmitting } ) => {
 
 	if ( initHasAdsConnectionRef.current === null ) {
 		if (
-			! ( hasResolvedGoogleAdsAccount && hasResolvedAdsAccountStatus )
+			! ( hasResolvedGoogleAdsAccount && hasResolvedAdsAccountStatus ) ||
+			googleAdsAccount === null // Catch errors retrieving accounts.
 		) {
-			return null;
+			return <AppSpinner />;
 		}
 
 		const isGoogleAdsReady =
-			googleAdsAccount !== null &&
 			hasGoogleAdsConnection &&
 			hasAccess === true &&
 			adsAccountSetupStep !== 'conversion_action';
