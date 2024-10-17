@@ -111,8 +111,6 @@ const useAutoCreateAdsMCAccounts = () => {
 			return;
 		}
 
-		console.debug( 'isCreatingWhichAccount', isCreatingWhichAccount );
-
 		if ( isCreatingWhichAccount === CREATING_ADS_ACCOUNT && ! loading ) {
 			setAccountsState( ( prevState ) => ( {
 				...prevState,
