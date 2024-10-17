@@ -19,6 +19,7 @@ import DisconnectAccountButton from '.~/components/google-mc-account-card/discon
  * @param {Object}   props
  * @param {boolean}  props.isConnected Whether the Merchant Center account is connected.
  * @param {Object}   props.resultConnectMC The result of the connection request, used to handle loading state.
+ * @param {Object}   props.resultCreateAccount The result of the create account request.
  * @param {Function} props.handleCreateAccount Callback function for creating a new Merchant Center account.
  */
 const ConnectMCFooter = ( {
