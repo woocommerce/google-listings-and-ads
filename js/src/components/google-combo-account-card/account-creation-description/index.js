@@ -16,14 +16,14 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
  * @param {Object} props Props.
  * @param {boolean} props.accountsCreated Whether accounts have been created.
  * @param {boolean} props.isCreatingBothAccounts Whether both, MC and Ads accounts are being created.
- * @param {boolean} props.isCreatingOnlyMCAccount Whether only the Merchant Center account is being created.
- * @param {boolean} props.isCreatingOnlyAdsAccount Whether only Google Ads account is being created.
+ * @param {boolean} props.isCreatingMCAccountOnly Whether only the Merchant Center account is being created.
+ * @param {boolean} props.isCreatingAdsAccountOnly Whether only Google Ads account is being created.
  */
 const AccountCreationDescription = ( {
 	accountsCreated,
 	isCreatingBothAccounts,
-	isCreatingOnlyMCAccount,
-	isCreatingOnlyAdsAccount,
+	isCreatingMCAccountOnly,
+	isCreatingAdsAccountOnly,
 } ) => {
 	const { google } = useGoogleAccount();
 	const {
@@ -44,8 +44,8 @@ const AccountCreationDescription = ( {
 	const getDescription = () => {
 		if (
 			isCreatingBothAccounts ||
-			isCreatingOnlyMCAccount ||
-			isCreatingOnlyAdsAccount
+			isCreatingMCAccountOnly ||
+			isCreatingAdsAccountOnly
 		) {
 			if ( isCreatingBothAccounts ) {
 				return (
@@ -56,7 +56,7 @@ const AccountCreationDescription = ( {
 						) }
 					</p>
 				);
-			} else if ( isCreatingOnlyAdsAccount ) {
+			} else if ( isCreatingAdsAccountOnly ) {
 				return (
 					<>
 						<p>
@@ -73,7 +73,7 @@ const AccountCreationDescription = ( {
 						</em>
 					</>
 				);
-			} else if ( isCreatingOnlyMCAccount ) {
+			} else if ( isCreatingMCAccountOnly ) {
 				return (
 					<>
 						<p>

@@ -21,9 +21,9 @@ import { GOOGLE_MC_ACCOUNT_STATUS } from '.~/constants';
  * @property {boolean} accountsCreated Indicates if both the Google Ads and Google Merchant Center accounts have been successfully created.
  * @property {boolean} accountCreationChecksResolved Indicates if the account creation checks (for existing accounts) have been resolved.
  * @property {boolean} isCreatingAccounts Indicates if the Google Ads and/or Google Merchant Center account(s) are being created.
- * @property {boolean} isCreatingOnlyAdsAccount Indicates if only the Google Ads account is currently being created.
+ * @property {boolean} isCreatingAdsAccountOnly Indicates if only the Google Ads account is currently being created.
  * @property {boolean} isCreatingBothAccounts Indicates if both the Google Ads and Google Merchant Center accounts are currently being created.
- * @property {boolean} isCreatingOnlyMCAccount Indicates if only the Google Merchant Center account is currently being created.
+ * @property {boolean} isCreatingMCAccountOnly Indicates if only the Google Merchant Center account is currently being created.
  *
  * @return {AutoCreateAccountsStatus} Object containing properties related to the account creation status.
  */
@@ -174,8 +174,8 @@ const useAutoCreateAdsMCAccounts = () => {
 
 	return {
 		accountCreationChecksResolved,
-		isCreatingOnlyAdsAccount: isCreatingAdsAccountRef.current,
-		isCreatingOnlyMCAccount: isCreatingMCAccountRef.current,
+		isCreatingAdsAccountOnly: isCreatingAdsAccountRef.current,
+		isCreatingMCAccountOnly: isCreatingMCAccountRef.current,
 		isCreatingBothAccounts: isCreatingBothAccountsRef.current,
 		isCreatingAccounts,
 		accountsCreated: accountsCreatedRef.current,
