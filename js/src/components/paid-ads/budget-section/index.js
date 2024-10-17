@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useEffect, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -39,29 +38,12 @@ const BudgetSection = ( {
 	disabled = false,
 	children,
 } ) => {
-	const { getInputProps, setValue, values } = formProps;
+	const { getInputProps, values } = formProps;
 	const { amount } = values;
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const monthlyMaxEstimated = getMonthlyMaxEstimated( amount );
 	// Display the currency code that will be used by Google Ads, but still use the store's currency formatting settings.
 	const currency = googleAdsAccount?.currency;
-
-	// Wrapping `useRef` is because since WC 6.9, the reference of `setValue` may be changed
-	// after calling itself and further leads to an infinite re-rendering loop if used in a
-	// `useEffect`.
-	const setValueRef = useRef();
-	setValueRef.current = setValue;
-
-	/**
-	 * In addition to the initial value setting during initialization, when `disabled` changes
-	 * - from false to true, then clear filled amount to `undefined` for showing a blank <input>.
-	 * - from true to false, then reset amount to the initial value passed from the consumer side.
-	 */
-	const initialAmountRef = useRef( amount );
-	useEffect( () => {
-		const nextAmount = disabled ? undefined : initialAmountRef.current;
-		setValueRef.current( 'amount', nextAmount );
-	}, [ disabled ] );
 
 	return (
 		<div className="gla-budget-section">
