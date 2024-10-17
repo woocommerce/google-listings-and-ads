@@ -388,6 +388,96 @@ test.describe( 'Set up accounts', () => {
 				).toBeVisible();
 			} );
 		} );
+
+		test.describe( 'Claim Google Ads Account adsaccountclaim', () => {
+			test.beforeEach( async () => {
+				await setUpAccountsPage.mockJetpackConnected();
+				await setUpAccountsPage.mockGoogleConnected();
+				await setUpAccountsPage.mockMCConnected();
+
+				await setUpAccountsPage.fulfillAdsConnection( {
+					id: 12345,
+					currency: 'USD',
+					status: 'incomplete',
+					step: 'account_access',
+					sub_account: true,
+					symbol: '$',
+				} );
+
+				await setUpAccountsPage.fulfillAdsAccounts( {
+					id: 12345,
+					name: 'gla',
+				} );
+
+				await setUpAccountsPage.fulfillAdsAccountStatus( {
+					has_access: false,
+					invite_link: 'https://example.com',
+					step: 'account_access',
+				} );
+
+				await setUpAccountsPage.goto();
+			} );
+
+			test( 'should see the claim button', async () => {
+				const googleAccountCard =
+					setUpAccountsPage.getGoogleAccountCard();
+				await expect(
+					googleAccountCard.getByRole( 'button', {
+						name: 'Claim your Google Ads account',
+					} )
+				).toBeVisible();
+			} );
+
+			test( 'should open the popup when the claim button is clicked', async () => {
+				const googleAccountCard =
+					setUpAccountsPage.getGoogleAccountCard();
+
+				const [ popupPage ] = await Promise.all( [
+					page.waitForEvent( 'popup' ),
+					await googleAccountCard
+						.getByRole( 'button', {
+							name: 'Claim your Google Ads account',
+						} )
+						.click(),
+				] );
+
+				await popupPage.waitForLoadState();
+				const url = popupPage.url();
+				expect( url ).toMatch( /^https:\/\/example\.com(\/|\?|$)/ );
+			} );
+
+			test.describe( 'Account claimed', () => {
+				test.beforeEach( async () => {
+					await setUpAccountsPage.fulfillAdsAccountStatus( {
+						has_access: true,
+						invite_link: '',
+						step: '',
+					} );
+
+					await setUpAccountsPage.fulfillAdsConnection( {
+						id: 78787878,
+						currency: 'USD',
+						status: 'connected',
+						symbol: '$',
+					} );
+
+					await setUpAccountsPage.goto();
+				} );
+
+				test( 'should see conversion action notice', async () => {
+					const googleAccountCard =
+						setUpAccountsPage.getGoogleAccountCard();
+					await expect(
+						googleAccountCard.getByText(
+							'Google Ads conversion measurement has been set up for your store.',
+							{
+								exact: true,
+							}
+						)
+					).toBeVisible();
+				} );
+			} );
+		} );
 	} );
 
 	test.describe( 'Continue button', () => {

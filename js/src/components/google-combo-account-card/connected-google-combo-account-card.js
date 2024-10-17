@@ -15,6 +15,8 @@ import './connected-google-combo-account-card.scss';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import ConnectedIconLabel from '../connected-icon-label';
+import ConversionMeasurementNotice from './conversion-measurement-notice';
+import { ClaimAdsAccount } from './claim-ads-account';
 import {
 	GOOGLE_ADS_ACCOUNT_STATUS,
 	GOOGLE_MC_ACCOUNT_STATUS,
@@ -96,22 +98,34 @@ const ConnectedGoogleComboAccountCard = () => {
 		return null;
 	};
 
-	return (
-		<AccountCard
-			appearance={ APPEARANCE.GOOGLE }
-			alignIcon="top"
-			className="gla-google-combo-account-card--connected"
-			description={
+	const getCardDescription = () => {
+		return (
+			<>
 				<AccountCreationDescription
 					isCreatingBothAccounts={ isCreatingBothAccounts }
 					isCreatingAdsAccountOnly={ isCreatingAdsAccountOnly }
 					isCreatingMCAccountOnly={ isCreatingMCAccountOnly }
 					accountsCreated={ accountsCreated }
 				/>
-			}
+			</>
+		);
+	};
+
+	const showSuccessNotice =
+		googleAdsAccount.status === GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED ||
+		googleAdsAccount.step === 'link_merchant';
+
+	return (
+		<AccountCard
+			appearance={ APPEARANCE.GOOGLE }
+			className="gla-google-combo-account-card--connected"
+			description={ getCardDescription() }
 			helper={ getHelper() }
 			indicator={ getIndicator() }
-		/>
+		>
+			{ showSuccessNotice && <ConversionMeasurementNotice /> }
+			<ClaimAdsAccount />
+		</AccountCard>
 	);
 };
 
