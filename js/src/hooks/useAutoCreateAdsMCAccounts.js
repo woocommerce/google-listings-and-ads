@@ -37,6 +37,7 @@ const useAutoCreateAdsMCAccounts = () => {
 	const { accountsCreated, isCreatingWhichAccount } = accountsState;
 	const initHasExistingMCAccountsRef = useRef( null );
 	const initHasExistingAdsAccountsRef = useRef( null );
+	const shouldCreateAccounts = useRef();
 
 	const {
 		data: existingMCAccounts,
@@ -79,23 +80,34 @@ const useAutoCreateAdsMCAccounts = () => {
 		initHasExistingAdsAccountsRef.current = hasExistingAdsAccount;
 	}
 
+	const googleAdsAccountChecksResolved =
+		hasFinishedResolutionForExistingAdsAccount &&
+		hasFinishedResolutionForGoogleAdsAccount;
+
+	const googleMCAccountChecksResolved =
+		hasFinishedResolutionForGoogleMCAccount &&
+		hasFinishedResolutionForExistingMCAccounts;
+
 	const accountCreationChecksResolved =
-		initHasExistingAdsAccountsRef.current !== null &&
-		initHasExistingMCAccountsRef.current !== null;
-
-	const shouldCreateAdsAccount =
-		initHasExistingAdsAccountsRef.current === false &&
-		initHasExistingMCAccountsRef.current === true;
-
-	const shouldCreateMCAccount =
-		initHasExistingAdsAccountsRef.current === true &&
-		initHasExistingMCAccountsRef.current === false;
-
-	const shouldCreateBothAccounts =
-		! initHasExistingAdsAccountsRef.current &&
-		! initHasExistingMCAccountsRef.current;
+		googleAdsAccountChecksResolved && googleMCAccountChecksResolved;
 
 	const isCreatingAccounts = !! isCreatingWhichAccount;
+
+	if ( googleAdsAccountChecksResolved && googleMCAccountChecksResolved ) {
+		if ( ! hasExistingAdsAccount || ! hasExistingMCAccount ) {
+			// Based on which accounts to create, set shouldCreateAccounts to 'ads, 'mc', or 'both'.
+			const createBothAccounts =
+				! hasExistingAdsAccount && ! hasExistingMCAccount;
+
+			if ( createBothAccounts ) {
+				shouldCreateAccounts.current = CREATING_BOTH_ACCOUNTS;
+			} else if ( ! hasExistingAdsAccount ) {
+				shouldCreateAccounts.current = CREATING_ADS_ACCOUNT;
+			} else {
+				shouldCreateAccounts.current = CREATING_MC_ACCOUNT;
+			}
+		}
+	}
 
 	useEffect( () => {
 		if ( ! response && loading ) {
@@ -108,6 +120,7 @@ const useAutoCreateAdsMCAccounts = () => {
 				isCreatingWhichAccount: null,
 				accountsCreated: true,
 			} ) );
+			shouldCreateAccounts.current = null;
 			return;
 		}
 
@@ -124,6 +137,7 @@ const useAutoCreateAdsMCAccounts = () => {
 				isCreatingWhichAccount: null,
 				accountsCreated: true,
 			} ) );
+			shouldCreateAccounts.current = null;
 			return;
 		}
 
@@ -137,6 +151,7 @@ const useAutoCreateAdsMCAccounts = () => {
 				isCreatingWhichAccount: null,
 				accountsCreated: true,
 			} ) );
+			shouldCreateAccounts.current = null;
 		}
 	}, [ response, loading, isCreatingWhichAccount ] );
 
@@ -150,43 +165,33 @@ const useAutoCreateAdsMCAccounts = () => {
 				return;
 			}
 
-			if ( shouldCreateAdsAccount ) {
+			if ( shouldCreateAccounts.current ) {
 				setAccountsState( ( prevState ) => ( {
 					...prevState,
-					isCreatingWhichAccount: CREATING_ADS_ACCOUNT,
+					isCreatingWhichAccount: shouldCreateAccounts.current,
 				} ) );
-				await upsertAdsAccount();
-				return;
-			}
 
-			if ( shouldCreateMCAccount ) {
-				setAccountsState( ( prevState ) => ( {
-					...prevState,
-					isCreatingWhichAccount: CREATING_MC_ACCOUNT,
-				} ) );
-				await handleCreateAccount();
-				return;
-			}
+				if ( shouldCreateAccounts.current === CREATING_BOTH_ACCOUNTS ) {
+					await handleCreateAccount();
+					await upsertAdsAccount();
+					return;
+				}
 
-			if ( shouldCreateBothAccounts ) {
-				setAccountsState( ( prevState ) => ( {
-					...prevState,
-					isCreatingWhichAccount: CREATING_BOTH_ACCOUNTS,
-				} ) );
+				if ( shouldCreateAccounts.current === CREATING_ADS_ACCOUNT ) {
+					await upsertAdsAccount();
+					return;
+				}
+
 				await handleCreateAccount();
-				await upsertAdsAccount();
 			}
 		};
 
 		handleCreation();
 	}, [
 		accountCreationChecksResolved,
+		isCreatingAccounts,
 		accountsCreated,
 		handleCreateAccount,
-		isCreatingAccounts,
-		shouldCreateAdsAccount,
-		shouldCreateBothAccounts,
-		shouldCreateMCAccount,
 		upsertAdsAccount,
 	] );
 

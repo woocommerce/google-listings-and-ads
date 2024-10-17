@@ -104,4 +104,49 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 			expect( result.current.isCreatingAccounts ).toBe( true );
 		} );
 	} );
+
+	describe( 'Existing accounts', () => {
+		beforeEach( () => {
+			useCreateMCAccount.mockReturnValue( [
+				handleCreateAccount,
+				{ response: { status: 200 } },
+			] );
+			useUpsertAdsAccount.mockReturnValue( [
+				upsertAdsAccount,
+				{ loading: false },
+			] );
+		} );
+
+		it( 'should not create accounts if they already exist', () => {
+			useExistingGoogleMCAccounts.mockReturnValue( {
+				data: [
+					{
+						id: 1,
+						name: 'Test MC Account',
+					},
+				],
+				hasFinishedResolution: true,
+			} );
+
+			useExistingGoogleAdsAccounts.mockReturnValue( {
+				existingAccounts: [
+					{
+						id: 1,
+						name: 'Test Ads Account',
+					},
+				],
+				hasFinishedResolution: true,
+			} );
+
+			const { result } = renderHook( () => useAutoCreateAdsMCAccounts() );
+
+			// It should not create any accounts.
+			expect( result.current.isCreatingWhichAccount ).toBe( null );
+			expect( result.current.isCreatingAccounts ).toBe( false );
+
+			// make sure functions are not called.
+			expect( handleCreateAccount ).not.toHaveBeenCalled();
+			expect( upsertAdsAccount ).not.toHaveBeenCalled();
+		} );
+	} );
 } );
