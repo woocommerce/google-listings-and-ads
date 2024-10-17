@@ -48,20 +48,19 @@ const AdsStepper = ( { formProps } ) => {
 		step,
 	} );
 
-	if (
-		! hasResolvedGoogleAdsAccount ||
-		! hasResolvedAdsAccountStatus ||
-		googleAdsAccount === null
-	) {
-		return null;
-	}
-
-	const isGoogleAdsReady =
-		hasGoogleAdsConnection &&
-		hasAccess === true &&
-		adsAccountSetupStep !== 'conversion_action';
-
 	if ( initHasAdsConnectionRef.current === null ) {
+		if (
+			! ( hasResolvedGoogleAdsAccount && hasResolvedAdsAccountStatus )
+		) {
+			return null;
+		}
+
+		const isGoogleAdsReady =
+			googleAdsAccount !== null &&
+			hasGoogleAdsConnection &&
+			hasAccess === true &&
+			adsAccountSetupStep !== 'conversion_action';
+
 		initHasAdsConnectionRef.current = isGoogleAdsReady;
 	}
 
