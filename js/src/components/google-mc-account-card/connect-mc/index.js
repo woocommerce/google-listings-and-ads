@@ -18,7 +18,7 @@ import ReclaimUrlCard from '../reclaim-url-card';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import CreateAccountButton from '../create-account-button';
 import useConnectMCAccount from '../useConnectMCAccount';
-import useCreateMCAccount from '../../../hooks/useCreateMCAccount';
+import useCreateMCAccount from '.~/hooks/useCreateMCAccount';
 import CreatingCard from '../creating-card';
 import './index.scss';
 

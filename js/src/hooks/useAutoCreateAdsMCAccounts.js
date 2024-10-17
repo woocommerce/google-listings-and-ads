@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useEffect, useRef } from '@wordpress/element';
+import { useEffect, useRef, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -12,29 +12,32 @@ import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts'
 import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
 import useGoogleAdsAccount from './useGoogleAdsAccount';
 import useGoogleMCAccount from './useGoogleMCAccount';
-import { GOOGLE_MC_ACCOUNT_STATUS } from '.~/constants';
+import {
+	CREATING_ADS_ACCOUNT,
+	CREATING_BOTH_ACCOUNTS,
+	CREATING_MC_ACCOUNT,
+	GOOGLE_MC_ACCOUNT_STATUS,
+} from '.~/constants';
 
 /**
  * Custom hook to handle the creation of Google Merchant Center (MC) and Google Ads accounts.
  *
  * @typedef {Object} AutoCreateAccountsStatus
- * @property {boolean} accountsCreated Indicates if both the Google Ads and Google Merchant Center accounts have been successfully created.
- * @property {boolean} accountCreationChecksResolved Indicates if the account creation checks (for existing accounts) have been resolved.
- * @property {boolean} isCreatingAccounts Indicates if the Google Ads and/or Google Merchant Center account(s) are being created.
- * @property {boolean} isCreatingAdsAccountOnly Indicates if only the Google Ads account is currently being created.
- * @property {boolean} isCreatingBothAccounts Indicates if both the Google Ads and Google Merchant Center accounts are currently being created.
- * @property {boolean} isCreatingMCAccountOnly Indicates if only the Google Merchant Center account is currently being created.
+ * @property {boolean} accountCreationChecksResolved Whether the checks for account creation have been resolved.
+ * @property {boolean} isCreatingAccounts Whether the accounts are being created.
+ * @property {string|null} isCreatingWhichAccount The type of account that is being created.
  *
  * @return {AutoCreateAccountsStatus} Object containing properties related to the account creation status.
  */
 const useAutoCreateAdsMCAccounts = () => {
-	// Refs are used to avoid the re-render of the parent component.
-	const isCreatingBothAccountsRef = useRef( false );
-	const isCreatingAdsAccountRef = useRef( false );
-	const isCreatingMCAccountRef = useRef( false );
+	const [ accountsState, setAccountsState ] = useState( {
+		accountsCreated: false,
+		isCreatingWhichAccount: null,
+	} );
+
+	const { accountsCreated, isCreatingWhichAccount } = accountsState;
 	const initHasExistingMCAccountsRef = useRef( null );
 	const initHasExistingAdsAccountsRef = useRef( null );
-	const accountsCreatedRef = useRef( false );
 
 	const {
 		data: existingMCAccounts,
@@ -58,9 +61,11 @@ const useAutoCreateAdsMCAccounts = () => {
 
 	const [ handleCreateAccount, { response } ] = useCreateMCAccount();
 	const [ upsertAdsAccount, { loading } ] = useUpsertAdsAccount();
-	const isGoogleMCConnected =
-		googleMCAccount?.status === GOOGLE_MC_ACCOUNT_STATUS.CONNECTED ||
-		googleMCAccount?.status === GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE;
+
+	const isGoogleMCConnected = [
+		GOOGLE_MC_ACCOUNT_STATUS.CONNECTED,
+		GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE,
+	].includes( googleMCAccount?.status );
 
 	const hasExistingMCAccount =
 		isGoogleMCConnected || existingMCAccounts?.length > 0;
@@ -99,63 +104,86 @@ const useAutoCreateAdsMCAccounts = () => {
 		! initHasExistingAdsAccountsRef.current &&
 		! initHasExistingMCAccountsRef.current;
 
-	const isCreatingAccounts =
-		isCreatingAdsAccountRef.current ||
-		isCreatingMCAccountRef.current ||
-		isCreatingBothAccountsRef.current;
+	const isCreatingAccounts = !! isCreatingWhichAccount;
 
 	useEffect( () => {
-		// Ads account check
-		if ( isCreatingAdsAccountRef.current === true && ! loading ) {
-			isCreatingAdsAccountRef.current = false;
-			accountsCreatedRef.current = true;
+		if ( ! response && loading ) {
+			return;
 		}
 
-		// MC account check
+		console.debug( 'isCreatingWhichAccount', isCreatingWhichAccount );
+
+		if ( isCreatingWhichAccount === CREATING_ADS_ACCOUNT && ! loading ) {
+			setAccountsState( ( prevState ) => ( {
+				...prevState,
+				isCreatingWhichAccount: null,
+				accountsCreated: true,
+			} ) );
+			return;
+		}
+
+		const mcAccountCreated = [ 200, 403, 406, 503 ].includes(
+			response?.status
+		);
+
 		if (
-			isCreatingMCAccountRef.current === true &&
-			response?.status === 200
+			isCreatingWhichAccount === CREATING_MC_ACCOUNT &&
+			mcAccountCreated
 		) {
-			isCreatingMCAccountRef.current = false;
-			accountsCreatedRef.current = true;
+			setAccountsState( ( prevState ) => ( {
+				...prevState,
+				isCreatingWhichAccount: null,
+				accountsCreated: true,
+			} ) );
+			return;
 		}
 
-		// both accounts check
 		if (
-			isCreatingBothAccountsRef.current === true &&
-			response?.status === 200 &&
+			isCreatingWhichAccount === CREATING_BOTH_ACCOUNTS &&
+			mcAccountCreated &&
 			! loading
 		) {
-			isCreatingBothAccountsRef.current = false;
-			accountsCreatedRef.current = true;
+			setAccountsState( ( prevState ) => ( {
+				...prevState,
+				isCreatingWhichAccount: null,
+				accountsCreated: true,
+			} ) );
 		}
-	}, [ response, loading ] );
+	}, [ response, loading, isCreatingWhichAccount ] );
 
 	useEffect( () => {
 		const handleCreation = async () => {
-			// Bail out if we haven't resolved the existing accounts checks yet or there's a creation in progress or the accounts have been created.
 			if (
 				! accountCreationChecksResolved ||
 				isCreatingAccounts ||
-				accountsCreatedRef.current
+				accountsCreated
 			) {
 				return;
 			}
 
 			if ( shouldCreateAdsAccount ) {
-				isCreatingAdsAccountRef.current = true;
+				setAccountsState( ( prevState ) => ( {
+					...prevState,
+					isCreatingWhichAccount: CREATING_ADS_ACCOUNT,
+				} ) );
 				await upsertAdsAccount();
 				return;
 			}
 
 			if ( shouldCreateMCAccount ) {
-				isCreatingMCAccountRef.current = true;
+				setAccountsState( ( prevState ) => ( {
+					...prevState,
+					isCreatingWhichAccount: CREATING_MC_ACCOUNT,
+				} ) );
 				await handleCreateAccount();
 				return;
 			}
 
 			if ( shouldCreateBothAccounts ) {
-				isCreatingBothAccountsRef.current = true;
+				setAccountsState( ( prevState ) => ( {
+					...prevState,
+					isCreatingWhichAccount: CREATING_BOTH_ACCOUNTS,
+				} ) );
 				await handleCreateAccount();
 				await upsertAdsAccount();
 			}
@@ -164,21 +192,19 @@ const useAutoCreateAdsMCAccounts = () => {
 		handleCreation();
 	}, [
 		accountCreationChecksResolved,
+		accountsCreated,
+		handleCreateAccount,
 		isCreatingAccounts,
 		shouldCreateAdsAccount,
-		shouldCreateMCAccount,
 		shouldCreateBothAccounts,
-		handleCreateAccount,
+		shouldCreateMCAccount,
 		upsertAdsAccount,
 	] );
 
 	return {
 		accountCreationChecksResolved,
-		isCreatingAdsAccountOnly: isCreatingAdsAccountRef.current,
-		isCreatingMCAccountOnly: isCreatingMCAccountRef.current,
-		isCreatingBothAccounts: isCreatingBothAccountsRef.current,
 		isCreatingAccounts,
-		accountsCreated: accountsCreatedRef.current,
+		isCreatingWhichAccount,
 	};
 };
 
