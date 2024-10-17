@@ -92,6 +92,23 @@ const useAutoCreateAdsMCAccounts = () => {
 	}
 
 	useEffect( () => {
+		// Set shouldCreateAccounts when all checks are resolved and accounts need to be created
+		if ( accountCreationChecksResolved && ! shouldCreateAccounts.current ) {
+			if ( ! hasExistingAdsAccount || ! hasExistingMCAccount ) {
+				const createBothAccounts =
+					! hasExistingAdsAccount && ! hasExistingMCAccount;
+
+				if ( createBothAccounts ) {
+					shouldCreateAccounts.current = CREATING_BOTH_ACCOUNTS;
+				} else if ( ! hasExistingAdsAccount ) {
+					shouldCreateAccounts.current = CREATING_ADS_ACCOUNT;
+				} else {
+					shouldCreateAccounts.current = CREATING_MC_ACCOUNT;
+				}
+			}
+		}
+
+		// Handle account creation and updating the state when responses are resolved
 		if ( ! response && loading ) {
 			return;
 		}
@@ -135,9 +152,8 @@ const useAutoCreateAdsMCAccounts = () => {
 			} ) );
 			shouldCreateAccounts.current = null;
 		}
-	}, [ response, loading, isCreatingWhichAccount ] );
 
-	useEffect( () => {
+		// Trigger account creation when appropriate
 		const handleCreation = async () => {
 			if (
 				! accountCreationChecksResolved ||
@@ -175,6 +191,11 @@ const useAutoCreateAdsMCAccounts = () => {
 		accountsCreated,
 		handleCreateAccount,
 		upsertAdsAccount,
+		response,
+		loading,
+		isCreatingWhichAccount,
+		hasExistingMCAccount,
+		hasExistingAdsAccount,
 	] );
 
 	return {
