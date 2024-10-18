@@ -18,8 +18,9 @@ import useAdsSetupCompleteCallback from '.~/hooks/useAdsSetupCompleteCallback';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
-import FaqsSection from '.~/components/paid-ads/faqs-section';
+import StepContentActions from '.~/components/stepper/step-content-actions';
 import AppButton from '.~/components/app-button';
+import PaidAdsFaqsPanel from '.~/components/paid-ads/faqs-panel';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
 import PaidAdsSetupSections from './paid-ads-setup-sections';
 import { getProductFeedUrl } from '.~/utils/urls';
@@ -193,32 +194,35 @@ export default function SetupPaidAds() {
 			{ showPaidAdsSetup && (
 				<PaidAdsSetupSections onStatesReceived={ setPaidAds } />
 			) }
-			<FaqsSection />
-			<StepContentFooter hidden={ ! showPaidAdsSetup }>
-				<Flex justify="right" gap={ 4 }>
-					{ createSkipButton(
-						__(
-							'Skip paid ads creation',
-							'google-listings-and-ads'
-						)
-					) }
-					<AppButton
-						isPrimary
-						data-action={ ACTION_COMPLETE }
-						text={ __(
-							'Complete setup',
-							'google-listings-and-ads'
+
+			<StepContentFooter>
+				<StepContentActions hidden={ ! showPaidAdsSetup }>
+					<Flex justify="right" gap={ 4 }>
+						{ createSkipButton(
+							__(
+								'Skip paid ads creation',
+								'google-listings-and-ads'
+							)
 						) }
-						loading={ completing === ACTION_COMPLETE }
-						disabled={ disabledComplete }
-						onClick={ handleCompleteClick }
-						eventName="gla_onboarding_complete_with_paid_ads_button_click"
-						eventProps={ {
-							budget: paidAds.amount,
-							audiences: paidAds.countryCodes?.join( ',' ),
-						} }
-					/>
-				</Flex>
+						<AppButton
+							isPrimary
+							data-action={ ACTION_COMPLETE }
+							text={ __(
+								'Complete setup',
+								'google-listings-and-ads'
+							) }
+							loading={ completing === ACTION_COMPLETE }
+							disabled={ disabledComplete }
+							onClick={ handleCompleteClick }
+							eventName="gla_onboarding_complete_with_paid_ads_button_click"
+							eventProps={ {
+								budget: paidAds.amount,
+								audiences: paidAds.countryCodes?.join( ',' ),
+							} }
+						/>
+					</Flex>
+				</StepContentActions>
+				<PaidAdsFaqsPanel />
 			</StepContentFooter>
 		</StepContent>
 	);
