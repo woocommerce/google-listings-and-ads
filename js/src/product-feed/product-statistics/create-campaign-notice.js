@@ -19,13 +19,11 @@ const CreateCampaignNotice = () => {
 	const isLoading =
 		! productsResolution || products?.loading || ! campaignsLoaded;
 
-	const inValidData =
-		( productsResolution && ! products ) ||
-		( campaignsLoaded && ! campaigns );
+	const invalidData = ! isLoading && ( ! products || ! campaigns );
 
 	if (
 		isLoading ||
-		inValidData ||
+		invalidData ||
 		products?.statistics?.active === 0 ||
 		campaigns?.length > 0
 	) {
