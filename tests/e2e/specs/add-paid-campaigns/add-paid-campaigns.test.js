@@ -460,6 +460,18 @@ test.describe( 'Set up Ads account', () => {
 					)
 				).toBeVisible();
 
+				await setupBudgetPage.fulfillAdsCampaignsRequest( [
+					{
+						id: 111111111,
+						name: 'Test Campaign',
+						status: 'enabled',
+						type: 'performance_max',
+						amount: budget,
+						country: 'US',
+						targeted_locations: [ 'US' ],
+					},
+				] );
+
 				//It should redirect to the dashboard page
 				await page.waitForURL(
 					'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard&guide=campaign-creation-success',
@@ -499,6 +511,20 @@ test.describe( 'Set up Ads account', () => {
 	} );
 
 	test.describe( 'Create Ads with billing data already setup', () => {
+		test.beforeAll( async () => {
+			// Reset the campaigns set in the previous tests.
+			await setupBudgetPage.fulfillAdsCampaignsRequest( [] );
+
+			// Mock budget recommendations.
+			await setupBudgetPage.fulfillRequest(
+				/\/wc\/gla\/ads\/campaigns\/budget-recommendation\b/,
+				{
+					currency: 'USD',
+					recommendations: [ { country: 'US', daily_budget: 15 } ],
+				}
+			);
+		} );
+
 		test( 'Launch paid campaign should be enabled', async () => {
 			//Click Add paid Campaign
 			await adsConnectionButton.click();
