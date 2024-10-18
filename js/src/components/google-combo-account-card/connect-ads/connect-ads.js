@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useEffect, useRef, useState } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -46,20 +46,16 @@ const ConnectAds = () => {
 		method: 'POST',
 		data: { id: value },
 	} );
+
 	const { refetchGoogleAdsAccount } = useGoogleAdsAccount();
 	const { createNotice } = useDispatchCoreNotices();
 	const { fetchGoogleAdsAccountStatus } = useAppDispatch();
-	const initialValueRef = useRef( null );
-
-	if ( googleAdsAccount?.id ) {
-		initialValueRef.current = googleAdsAccount.id;
-	}
 
 	useEffect( () => {
-		if ( initialValueRef.current ) {
-			setValue( initialValueRef.current );
+		if ( isConnected ) {
+			setValue( googleAdsAccount.id );
 		}
-	}, [ initialValueRef ] );
+	}, [ googleAdsAccount, isConnected ] );
 
 	const handleConnectClick = async () => {
 		if ( ! value ) {
@@ -106,7 +102,6 @@ const ConnectAds = () => {
 			) }
 			body={
 				<ConnectAdsBody
-					accounts={ accounts }
 					googleAdsAccount={ googleAdsAccount }
 					isConnected={ isConnected }
 					handleConnectClick={ handleConnectClick }

@@ -6,9 +6,6 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-/**
- * Internal dependencies
- */
 import AccountCard, { APPEARANCE } from '../account-card';
 import AccountCreationDescription from './account-creation-description';
 import AppSpinner from '../app-spinner';
