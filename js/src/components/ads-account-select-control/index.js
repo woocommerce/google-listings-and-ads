@@ -10,8 +10,9 @@ import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts'
  */
 const AdsAccountSelectControl = ( props ) => {
 	const { existingAccounts } = useExistingGoogleAdsAccounts();
+	const accounts = props.accounts || existingAccounts;
 
-	const options = existingAccounts?.map( ( acc ) => ( {
+	const options = accounts?.map( ( acc ) => ( {
 		value: acc.id,
 		label: `${ acc.name } (${ acc.id })`,
 	} ) );

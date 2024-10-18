@@ -13,13 +13,17 @@ import AppButton from '.~/components/app-button';
  *
  * @return {JSX.Element} Footer component.
  */
-const ConnectAdsFooter = () => (
-	<AppButton isTertiary>
-		{ __(
-			'Or, create a new Google Ads account',
-			'google-listings-and-ads'
-		) }
-	</AppButton>
-);
+const ConnectAdsFooter = ( { isConnected } ) => {
+	const text = isConnected
+		? __(
+				'Or, connect to a different Google Ads account',
+				'google-listings-and-ads'
+		  )
+		: __(
+				'Or, create a new Google Ads account',
+				'google-listings-and-ads'
+		  );
+	return <AppButton isTertiary>{ text }</AppButton>;
+};
 
 export default ConnectAdsFooter;

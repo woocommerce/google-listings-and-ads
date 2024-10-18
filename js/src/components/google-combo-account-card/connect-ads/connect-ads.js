@@ -115,7 +115,7 @@ const ConnectAds = () => {
 					value={ value }
 				/>
 			}
-			footer={ <ConnectAdsFooter /> }
+			footer={ <ConnectAdsFooter isConnected={ isConnected } /> }
 		/>
 	);
 };

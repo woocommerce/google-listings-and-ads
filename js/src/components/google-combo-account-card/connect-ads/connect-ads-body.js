@@ -43,12 +43,17 @@ const ConnectAdsBody = ( {
 	setValue,
 	value,
 } ) => {
+	const connectedAccount = accounts.filter( ( account ) => {
+		return isConnected && account.id === value;
+	} );
+
 	return (
 		<ContentButtonLayout>
 			<AdsAccountSelectControl
-				accounts={ accounts }
+				accounts={ isConnected ? connectedAccount : accounts }
 				value={ value }
 				onChange={ setValue }
+				autoSelectFirstOption={ isConnected || accounts.length === 1 }
 			/>
 			{ isLoading ? (
 				<LoadingLabel
