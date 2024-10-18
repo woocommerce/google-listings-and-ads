@@ -29,7 +29,7 @@ const CreateCampaignNotice = () => {
 	}
 
 	return (
-		<Notice className="gla-create-campaign-notice" isDismissible={ false }>
+		<Notice isDismissible={ false }>
 			<section>
 				<p>
 					{ __(

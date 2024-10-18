@@ -99,7 +99,10 @@ export default class ProductFeedPage extends MockRequests {
 	 * @return {Promise<import('@playwright/test').Locator>} The campaign notice section.
 	 */
 	async getCampaignNoticeSection() {
-		return this.page.locator( '.gla-create-campaign-notice' );
+		return this.page.locator( '.components-notice__content' ).filter( {
+			hasText:
+				'You have approved products. Create a Google Ads campaign to reach more customers and drive more sales.',
+		} );
 	}
 
 	/**
