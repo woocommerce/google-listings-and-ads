@@ -17,8 +17,6 @@ import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AdsStepper from './ads-stepper';
 import SetupAdsTopBar from './top-bar';
 import { recordGlaEvent } from '.~/utils/tracks';
-import useFetchBudgetRecommendation from '.~/hooks/useFetchBudgetRecommendation';
-import AppSpinner from '.~/components/app-spinner';
 
 /**
  * @fires gla_launch_paid_campaign_button_click on submit
@@ -29,11 +27,9 @@ const SetupAdsForm = () => {
 	const [ handleSetupComplete, isSubmitting ] = useAdsSetupCompleteCallback();
 	const adminUrl = useAdminUrl();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
-	const { highestDailyBudget, hasFinishedResolution } =
-		useFetchBudgetRecommendation( countryCodes );
 
 	const initialValues = {
-		amount: highestDailyBudget,
+		amount: 0,
 	};
 
 	useEffect( () => {
@@ -73,15 +69,6 @@ const SetupAdsForm = () => {
 	const handleChange = ( _, values ) => {
 		setFormChanged( ! isEqual( initialValues, values ) );
 	};
-
-	if ( ! countryCodes || ! hasFinishedResolution ) {
-		return (
-			<>
-				<SetupAdsTopBar />
-				<AppSpinner />
-			</>
-		);
-	}
 
 	return (
 		<CampaignAssetsForm

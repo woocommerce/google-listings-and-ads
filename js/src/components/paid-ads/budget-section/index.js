@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useRef, useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -12,6 +13,9 @@ import './index.scss';
 import BudgetRecommendation from './budget-recommendation';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import AppInputPriceControl from '.~/components/app-input-price-control';
+import AppSpinner from '.~/components/app-spinner';
+import useFetchBudgetRecommendation from '.~/hooks/useFetchBudgetRecommendation';
+import clientSession from './clientSession';
 
 /**
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
@@ -31,19 +35,51 @@ const nonInteractableProps = {
  * @param {Array<CountryCode>|undefined} props.countryCodes Country codes to fetch budget recommendations for.
  * @param {boolean} [props.disabled=false] Whether display the Card in disabled style.
  * @param {JSX.Element} [props.children] Extra content to be rendered under the card of budget inputs.
+ * @param {'create-ads'|'edit-ads'|'setup-ads'|'setup-mc'} props.context A context indicating which page this component is used on.
  */
 const BudgetSection = ( {
 	formProps,
 	countryCodes,
 	disabled = false,
 	children,
+	context,
 } ) => {
-	const { getInputProps, values } = formProps;
+	const initialAmountRef = useRef( null );
+	const { getInputProps, values, setValue } = formProps;
 	const { amount } = values;
 	const { googleAdsAccount } = useGoogleAdsAccount();
+	const { highestDailyBudget, hasFinishedResolution } =
+		useFetchBudgetRecommendation( countryCodes );
 	const monthlyMaxEstimated = getMonthlyMaxEstimated( amount );
 	// Display the currency code that will be used by Google Ads, but still use the store's currency formatting settings.
 	const currency = googleAdsAccount?.currency;
+
+	useEffect( () => {
+		if (
+			context !== 'setup-mc' ||
+			! hasFinishedResolution ||
+			! values.amount
+		) {
+			return;
+		}
+
+		if ( values.amount >= highestDailyBudget ) {
+			clientSession.setCampaign( values );
+		}
+	}, [ values, highestDailyBudget, context, hasFinishedResolution ] );
+
+	if ( ! initialAmountRef.current && ! amount && hasFinishedResolution ) {
+		let clientSessionAmount = 0;
+		if ( context === 'setup-mc' ) {
+			( { amount: clientSessionAmount } = clientSession.getCampaign() );
+		}
+
+		initialAmountRef.current = true;
+		setValue(
+			'amount',
+			Math.max( clientSessionAmount, highestDailyBudget )
+		);
+	}
 
 	return (
 		<div className="gla-budget-section">
@@ -61,31 +97,38 @@ const BudgetSection = ( {
 			>
 				<Section.Card>
 					<Section.Card.Body className="gla-budget-section__card-body">
-						<div className="gla-budget-section__card-body__cost">
-							<AppInputPriceControl
-								label={ __(
-									'Daily average cost',
-									'google-listings-and-ads'
+						{ hasFinishedResolution ? (
+							<>
+								<div className="gla-budget-section__card-body__cost">
+									<AppInputPriceControl
+										label={ __(
+											'Daily average cost',
+											'google-listings-and-ads'
+										) }
+										suffix={ currency }
+										{ ...getInputProps( 'amount' ) }
+										{ ...( disabled &&
+											nonInteractableProps ) }
+									/>
+									<AppInputPriceControl
+										disabled
+										label={ __(
+											'Monthly max, estimated',
+											'google-listings-and-ads'
+										) }
+										suffix={ currency }
+										value={ monthlyMaxEstimated }
+									/>
+								</div>
+								{ countryCodes?.length > 0 && (
+									<BudgetRecommendation
+										countryCodes={ countryCodes }
+										dailyAverageCost={ amount }
+									/>
 								) }
-								suffix={ currency }
-								{ ...getInputProps( 'amount' ) }
-								{ ...( disabled && nonInteractableProps ) }
-							/>
-							<AppInputPriceControl
-								disabled
-								label={ __(
-									'Monthly max, estimated',
-									'google-listings-and-ads'
-								) }
-								suffix={ currency }
-								value={ monthlyMaxEstimated }
-							/>
-						</div>
-						{ countryCodes?.length > 0 && (
-							<BudgetRecommendation
-								countryCodes={ countryCodes }
-								dailyAverageCost={ amount }
-							/>
+							</>
+						) : (
+							<AppSpinner />
 						) }
 					</Section.Card.Body>
 				</Section.Card>
