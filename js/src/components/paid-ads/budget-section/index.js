@@ -55,6 +55,7 @@ const BudgetSection = ( {
 	const currency = googleAdsAccount?.currency;
 
 	useEffect( () => {
+		// Load the amount from client session during the onboarding flow only.
 		if (
 			context !== 'setup-mc' ||
 			! hasFinishedResolution ||
