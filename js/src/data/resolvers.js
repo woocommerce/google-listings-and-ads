@@ -563,5 +563,8 @@ export function* getAdsBudgetRecommendations( countryCodes ) {
 }
 
 getAdsBudgetRecommendations.shouldInvalidate = ( action ) => {
-	return action.type === TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS;
+	return (
+		action.type === TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS ||
+		action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS
+	);
 };
