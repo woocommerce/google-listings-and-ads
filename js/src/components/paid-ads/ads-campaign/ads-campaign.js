@@ -99,6 +99,7 @@ export default function AdsCampaign( {
 						? campaign.displayCountries
 						: countryCodes
 				}
+				context={ context }
 			>
 				{ showBillingCard && <BillingCard /> }
 

@@ -22,7 +22,6 @@ import { API_NAMESPACE } from '.~/data/constants';
 import { GUIDE_NAMES, GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
 import SkipButton from './skip-button';
-import clientSession from './clientSession';
 
 /**
  * Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
@@ -124,16 +123,10 @@ export default function SetupPaidAds() {
 		);
 	};
 
-	const paidAds = {
-		amount: 0,
-		...clientSession.getCampaign(),
-	};
-
 	return (
 		<CampaignAssetsForm
-			initialCampaign={ paidAds }
-			onChange={ ( _, values ) => {
-				clientSession.setCampaign( { ...values } );
+			initialCampaign={ {
+				amount: 0,
 			} }
 		>
 			<AdsCampaign
