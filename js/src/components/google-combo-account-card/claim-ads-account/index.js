@@ -2,4 +2,4 @@
  * Internal dependencies
  */
 
-export { default as ClaimAdsAccount } from './claim-ads-account';
+export { default } from './claim-ads-account';

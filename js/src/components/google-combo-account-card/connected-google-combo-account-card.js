@@ -7,20 +7,19 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AccountCard, { APPEARANCE } from '../account-card';
-import AppSpinner from '../app-spinner';
-import useAutoCreateAdsMCAccounts from '../../hooks/useAutoCreateAdsMCAccounts';
-import LoadingLabel from '../loading-label/loading-label';
 import AccountCreationDescription from './account-creation-description';
-import './connected-google-combo-account-card.scss';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
+import AppSpinner from '../app-spinner';
+import ClaimAdsAccount from './claim-ads-account';
 import ConnectedIconLabel from '../connected-icon-label';
 import ConversionMeasurementNotice from './conversion-measurement-notice';
-import { ClaimAdsAccount } from './claim-ads-account';
-import {
-	GOOGLE_ADS_ACCOUNT_STATUS,
-	GOOGLE_MC_ACCOUNT_STATUS,
-} from '.~/constants';
+import { CREATING_BOTH_ACCOUNTS } from './constants';
+import LoadingLabel from '../loading-label/loading-label';
+import useAutoCreateAdsMCAccounts from '../../hooks/useAutoCreateAdsMCAccounts';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
+import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
+import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
+import './connected-google-combo-account-card.scss';
 
 /**
  * Renders a Google account card UI with connected account information.
@@ -29,46 +28,46 @@ import {
 const ConnectedGoogleComboAccountCard = () => {
 	const {
 		googleAdsAccount,
+		hasGoogleAdsConnection,
 		hasFinishedResolution: hasFinishedResolutionForCurrentAdsAccount,
 	} = useGoogleAdsAccount();
 
 	const {
 		googleMCAccount,
+		isPreconditionReady,
 		hasFinishedResolution: hasFinishedResolutionForCurrentMCAccount,
 	} = useGoogleMCAccount();
 
 	const {
-		isCreatingAccounts,
-		isCreatingBothAccounts,
-		isCreatingOnlyAdsAccount,
-		isCreatingOnlyMCAccount,
-		accountCreationChecksResolved,
-		accountsCreated,
+		hasFinishedResolutionForExistingAdsMCAccounts,
+		isCreatingWhichAccount,
 	} = useAutoCreateAdsMCAccounts();
 
+	const { hasAccess, step } = useGoogleAdsAccountStatus();
+
+	const isCreatingAccounts = !! isCreatingWhichAccount;
+
 	if (
-		! accountCreationChecksResolved ||
+		! hasFinishedResolutionForExistingAdsMCAccounts ||
 		! hasFinishedResolutionForCurrentAdsAccount ||
 		! hasFinishedResolutionForCurrentMCAccount
 	) {
 		return <AccountCard description={ <AppSpinner /> } />;
 	}
 
-	const isGoogleAdsAccountConnected =
-		googleAdsAccount?.status === GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED ||
-		( googleAdsAccount?.status === GOOGLE_ADS_ACCOUNT_STATUS.INCOMPLETE &&
-			[ 'link_merchant', 'account_access' ].includes(
-				googleAdsAccount?.step
-			) );
+	const isGoogleAdsConnected =
+		hasGoogleAdsConnection &&
+		hasAccess &&
+		[ '', 'billing', 'link_merchant' ].includes( step );
 
-	const isGoogleMCAccountConnected =
-		googleMCAccount?.id ||
-		googleMCAccount?.status === GOOGLE_MC_ACCOUNT_STATUS.CONNECTED ||
-		( googleMCAccount?.status === GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE &&
-			[ 'link_ads', 'claim' ].includes( googleMCAccount?.step ) );
+	const isGoogleMCConnected =
+		isPreconditionReady &&
+		( googleMCAccount?.status === 'connected' ||
+			( googleMCAccount?.status === 'incomplete' &&
+				googleMCAccount?.step === 'link_ads' ) );
 
 	const getHelper = () => {
-		if ( isCreatingBothAccounts ) {
+		if ( isCreatingWhichAccount === CREATING_BOTH_ACCOUNTS ) {
 			return (
 				<p>
 					{ __(
@@ -91,7 +90,7 @@ const ConnectedGoogleComboAccountCard = () => {
 			);
 		}
 
-		if ( isGoogleAdsAccountConnected && isGoogleMCAccountConnected ) {
+		if ( isGoogleAdsConnected && isGoogleMCConnected ) {
 			return <ConnectedIconLabel />;
 		}
 
@@ -102,10 +101,7 @@ const ConnectedGoogleComboAccountCard = () => {
 		return (
 			<>
 				<AccountCreationDescription
-					isCreatingBothAccounts={ isCreatingBothAccounts }
-					isCreatingOnlyAdsAccount={ isCreatingOnlyAdsAccount }
-					isCreatingOnlyMCAccount={ isCreatingOnlyMCAccount }
-					accountsCreated={ accountsCreated }
+					isCreatingWhichAccount={ isCreatingWhichAccount }
 				/>
 			</>
 		);
