@@ -22,8 +22,8 @@ const CreateCampaignNotice = () => {
 	if (
 		isLoading ||
 		! products ||
-		! campaigns ||
 		products?.statistics?.active === 0 ||
+		! campaigns ||
 		campaigns?.length > 0
 	) {
 		return null;
