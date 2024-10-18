@@ -50,8 +50,7 @@ const AdsStepper = ( { isSubmitting } ) => {
 
 	if ( initHasAdsConnectionRef.current === null ) {
 		if (
-			! ( hasResolvedGoogleAdsAccount && hasResolvedAdsAccountStatus ) ||
-			googleAdsAccount === null // Catch errors retrieving accounts.
+			! ( hasResolvedGoogleAdsAccount && hasResolvedAdsAccountStatus )
 		) {
 			return <AppSpinner />;
 		}
