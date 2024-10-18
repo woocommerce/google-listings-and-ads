@@ -12,12 +12,16 @@ import useMCProductStatistics from '.~/hooks/useMCProductStatistics';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 
 const CreateCampaignNotice = () => {
-	const { hasFinishedResolution: productsResolution, data: products } =
-		useMCProductStatistics();
+	const {
+		hasFinishedResolution: hasMCProductStatsFinishedResolution,
+		data: products,
+	} = useMCProductStatistics();
 	const { loaded: campaignsLoaded, data: campaigns } = useAdsCampaigns();
 
 	const isLoading =
-		! productsResolution || products?.loading || ! campaignsLoaded;
+		! hasMCProductStatsFinishedResolution ||
+		products?.loading ||
+		! campaignsLoaded;
 
 	if (
 		isLoading ||
