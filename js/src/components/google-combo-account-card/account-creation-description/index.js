@@ -19,7 +19,7 @@ import {
  * Renders the description for the account creation card.
  *
  * @param {Object} props Props.
- * @param {string} props.isCreatingWhichAccount The type of account that is being created. Possible values are 'ads', 'mc', or 'both'.
+ * @param {string|null} props.isCreatingWhichAccount The type of account that is being created. Possible values are 'ads', 'mc', or 'both'.
  */
 const AccountCreationDescription = ( { isCreatingWhichAccount } ) => {
 	const { google, hasFinishedResolution } = useGoogleAccount();
