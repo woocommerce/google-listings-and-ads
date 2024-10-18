@@ -8,6 +8,7 @@ import { useSelect } from '@wordpress/data';
  */
 import { STORE_KEY } from '.~/data/constants';
 import getHighestBudget from '.~/utils/getHighestBudget';
+import useGoogleAdsAccount from './useGoogleAdsAccount';
 
 /**
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
@@ -20,8 +21,22 @@ import getHighestBudget from '.~/utils/getHighestBudget';
  * @return {Object} Budget recommendation.
  */
 const useFetchBudgetRecommendation = ( countryCodes ) => {
+	const {
+		hasGoogleAdsConnection,
+		hasFinishedResolution: hasFinishedResolutionAdsAccount,
+	} = useGoogleAdsAccount();
+
 	return useSelect(
 		( select ) => {
+			if ( ! hasGoogleAdsConnection ) {
+				return {
+					data: undefined,
+					highestDailyBudget: 0,
+					highestDailyBudgetCountryCode: undefined,
+					hasFinishedResolution: hasFinishedResolutionAdsAccount,
+				};
+			}
+
 			const { getAdsBudgetRecommendations, hasFinishedResolution } =
 				select( STORE_KEY );
 
@@ -47,7 +62,11 @@ const useFetchBudgetRecommendation = ( countryCodes ) => {
 				),
 			};
 		},
-		[ countryCodes ]
+		[
+			countryCodes,
+			hasGoogleAdsConnection,
+			hasFinishedResolutionAdsAccount,
+		]
 	);
 };
 
