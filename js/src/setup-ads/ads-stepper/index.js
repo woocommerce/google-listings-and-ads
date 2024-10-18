@@ -32,7 +32,6 @@ const AdsStepper = ( { isSubmitting } ) => {
 	const initHasAdsConnectionRef = useRef( null );
 
 	const {
-		googleAdsAccount,
 		hasFinishedResolution: hasResolvedGoogleAdsAccount,
 		hasGoogleAdsConnection,
 	} = useGoogleAdsAccount();
