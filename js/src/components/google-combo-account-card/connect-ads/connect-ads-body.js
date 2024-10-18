@@ -53,7 +53,7 @@ const ConnectAdsBody = ( {
 				accounts={ isConnected ? connectedAccount : accounts }
 				value={ value }
 				onChange={ setValue }
-				autoSelectFirstOption={ isConnected || accounts.length === 1 }
+				autoSelectFirstOption={ true }
 			/>
 			{ isLoading ? (
 				<LoadingLabel

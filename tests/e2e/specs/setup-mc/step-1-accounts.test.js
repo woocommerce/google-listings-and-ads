@@ -515,8 +515,14 @@ test.describe( 'Set up accounts', () => {
 			).toBeVisible();
 
 			await expect(
-				googleAdsAccountCard.getByRole( 'button', { name: 'Connect' } )
-			).not.toBeVisible();
+				googleAdsAccountCard.getByText( 'Connected' )
+			).toBeVisible();
+
+			await expect(
+				googleAdsAccountCard.getByText(
+					'Or, connect to a different Google Ads account'
+				)
+			).toBeVisible();
 		} );
 	} );
 
