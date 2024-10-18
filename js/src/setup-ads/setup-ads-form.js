@@ -70,6 +70,10 @@ const SetupAdsForm = () => {
 		setFormChanged( ! isEqual( initialValues, values ) );
 	};
 
+	if ( ! countryCodes ) {
+		return null;
+	}
+
 	return (
 		<CampaignAssetsForm
 			initialCampaign={ initialValues }

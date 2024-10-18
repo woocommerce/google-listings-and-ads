@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useRef, useEffect } from '@wordpress/element';
+import { useEffect, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -44,7 +44,6 @@ const BudgetSection = ( {
 	children,
 	context,
 } ) => {
-	const initialAmountRef = useRef( null );
 	const { getInputProps, values, setValue } = formProps;
 	const { amount } = values;
 	const { googleAdsAccount } = useGoogleAdsAccount();
@@ -54,6 +53,7 @@ const BudgetSection = ( {
 		highestDailyBudgetCountryCode,
 		hasFinishedResolution,
 	} = useFetchBudgetRecommendation( countryCodes );
+	const initialAmountRef = useRef( null );
 	const monthlyMaxEstimated = getMonthlyMaxEstimated( amount );
 	// Display the currency code that will be used by Google Ads, but still use the store's currency formatting settings.
 	const currency = googleAdsAccount?.currency;

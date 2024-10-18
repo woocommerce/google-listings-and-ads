@@ -114,6 +114,10 @@ const CreatePaidAdsCampaign = () => {
 		getHistory().push( getDashboardUrl( { campaign: 'saved' } ) );
 	};
 
+	if ( ! countryCodes ) {
+		return null;
+	}
+
 	return (
 		<>
 			<TopBar
