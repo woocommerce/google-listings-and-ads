@@ -9,13 +9,16 @@ import { __ } from '@wordpress/i18n';
 import AccountCard, { APPEARANCE } from '../account-card';
 import AccountCreationDescription from './account-creation-description';
 import AppSpinner from '../app-spinner';
+import ClaimAdsAccount from './claim-ads-account';
 import ConnectedIconLabel from '../connected-icon-label';
+import ConversionMeasurementNotice from './conversion-measurement-notice';
 import { CREATING_BOTH_ACCOUNTS } from './constants';
 import LoadingLabel from '../loading-label/loading-label';
 import useAutoCreateAdsMCAccounts from '../../hooks/useAutoCreateAdsMCAccounts';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
+import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 import './connected-google-combo-account-card.scss';
 
 /**
@@ -24,6 +27,7 @@ import './connected-google-combo-account-card.scss';
  */
 const ConnectedGoogleComboAccountCard = () => {
 	const {
+		googleAdsAccount,
 		hasGoogleAdsConnection,
 		hasFinishedResolution: hasFinishedResolutionForCurrentAdsAccount,
 	} = useGoogleAdsAccount();
@@ -93,19 +97,31 @@ const ConnectedGoogleComboAccountCard = () => {
 		return null;
 	};
 
-	return (
-		<AccountCard
-			appearance={ APPEARANCE.GOOGLE }
-			alignIcon="top"
-			className="gla-google-combo-account-card--connected"
-			description={
+	const getCardDescription = () => {
+		return (
+			<>
 				<AccountCreationDescription
 					isCreatingWhichAccount={ isCreatingWhichAccount }
 				/>
-			}
+			</>
+		);
+	};
+
+	const showSuccessNotice =
+		googleAdsAccount.status === GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED ||
+		googleAdsAccount.step === 'link_merchant';
+
+	return (
+		<AccountCard
+			appearance={ APPEARANCE.GOOGLE }
+			className="gla-google-combo-account-card--connected"
+			description={ getCardDescription() }
 			helper={ getHelper() }
 			indicator={ getIndicator() }
-		/>
+		>
+			{ showSuccessNotice && <ConversionMeasurementNotice /> }
+			<ClaimAdsAccount />
+		</AccountCard>
 	);
 };
 
