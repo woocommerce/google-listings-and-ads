@@ -48,8 +48,12 @@ const BudgetSection = ( {
 	const { getInputProps, values, setValue } = formProps;
 	const { amount } = values;
 	const { googleAdsAccount } = useGoogleAdsAccount();
-	const { highestDailyBudget, hasFinishedResolution } =
-		useFetchBudgetRecommendation( countryCodes );
+	const {
+		data: budgetRecommendationData,
+		highestDailyBudget,
+		highestDailyBudgetCountryCode,
+		hasFinishedResolution,
+	} = useFetchBudgetRecommendation( countryCodes );
 	const monthlyMaxEstimated = getMonthlyMaxEstimated( amount );
 	// Display the currency code that will be used by Google Ads, but still use the store's currency formatting settings.
 	const currency = googleAdsAccount?.currency;
@@ -123,8 +127,16 @@ const BudgetSection = ( {
 								</div>
 								{ countryCodes?.length > 0 && (
 									<BudgetRecommendation
-										countryCodes={ countryCodes }
 										dailyAverageCost={ amount }
+										highestDailyBudget={
+											highestDailyBudget
+										}
+										highestDailyBudgetCountryCode={
+											highestDailyBudgetCountryCode
+										}
+										budgetRecommendationData={
+											budgetRecommendationData
+										}
 									/>
 								) }
 							</>
