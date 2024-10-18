@@ -45,11 +45,9 @@ const CreateCampaignNotice = () => {
 					eventProps={ {
 						context: 'product-feed-overview-promotion',
 					} }
-					children={ __(
-						'Create Campaign',
-						'google-listings-and-ads'
-					) }
-				/>
+				>
+					{ __( 'Create Campaign', 'google-listings-and-ads' ) }{ ' ' }
+				</AddPaidCampaignButton>
 			</section>
 		</Notice>
 	);
