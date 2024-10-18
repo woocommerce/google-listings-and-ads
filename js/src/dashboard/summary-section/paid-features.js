@@ -85,7 +85,7 @@ function FreeAdCredit() {
  *
  * @return {Card} Card with title and content.
  */
-const PaidFeatures = ( { showFreeCredit } ) => {
+const PaidFeatures = () => {
 	return (
 		<VerticalGapLayout size="medium">
 			<Flex
@@ -99,7 +99,7 @@ const PaidFeatures = ( { showFreeCredit } ) => {
 				<FlexBlock>
 					<FeatureList />
 				</FlexBlock>
-				{ showFreeCredit && <FreeAdCredit /> }
+				<FreeAdCredit />
 			</Flex>
 			<AddPaidCampaignButton
 				isPrimary
