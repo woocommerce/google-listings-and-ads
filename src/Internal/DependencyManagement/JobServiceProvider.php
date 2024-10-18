@@ -135,7 +135,6 @@ class JobServiceProvider extends AbstractServiceProvider {
 			Product\Attributes\AttributeManager::class
 		);
 
-
 		$this->share_with_tags(
 			JobRepository::class,
 			JobInterface::class
