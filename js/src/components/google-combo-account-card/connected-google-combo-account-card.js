@@ -9,6 +9,7 @@ import { __ } from '@wordpress/i18n';
 import AccountCard, { APPEARANCE } from '../account-card';
 import AccountCreationDescription from './account-creation-description';
 import AppSpinner from '../app-spinner';
+import ConnectAds from './connect-ads';
 import ConnectedIconLabel from '../connected-icon-label';
 import { CREATING_BOTH_ACCOUNTS } from './constants';
 import LoadingLabel from '../loading-label/loading-label';
@@ -17,7 +18,6 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import './connected-google-combo-account-card.scss';
-
 /**
  * Renders a Google account card UI with connected account information.
  * It will also kickoff Ads and Merchant Center account creation if the user does not have accounts.
@@ -94,18 +94,21 @@ const ConnectedGoogleComboAccountCard = () => {
 	};
 
 	return (
-		<AccountCard
-			appearance={ APPEARANCE.GOOGLE }
-			alignIcon="top"
-			className="gla-google-combo-account-card--connected"
-			description={
-				<AccountCreationDescription
-					isCreatingWhichAccount={ isCreatingWhichAccount }
-				/>
-			}
-			helper={ getHelper() }
-			indicator={ getIndicator() }
-		/>
+		<div className="gla-google-combo-account-card gla-account-card">
+			<AccountCard
+				appearance={ APPEARANCE.GOOGLE }
+				alignIcon="top"
+				className="gla-google-combo-account-card--connected"
+				description={
+					<AccountCreationDescription
+						isCreatingWhichAccount={ isCreatingWhichAccount }
+					/>
+				}
+				helper={ getHelper() }
+				indicator={ getIndicator() }
+			/>
+			<ConnectAds />
+		</div>
 	);
 };
 
