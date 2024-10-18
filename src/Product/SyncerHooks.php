@@ -306,14 +306,6 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $product_id
 	 */
 	protected function handle_delete_product( int $product_id ) {
-		if ( $this->notifications_service->is_ready() ) {
-			/**
-			 * For deletions, we do send directly the notification instead of scheduling it.
-			 * This is because we want to avoid that the product is not in the database anymore when the scheduled action runs.
-			*/
-			$this->maybe_send_delete_notification( $product_id );
-		}
-
 		if ( isset( $this->delete_requests_map[ $product_id ] ) ) {
 			$product_id_map = BatchProductIDRequestEntry::convert_to_id_map( $this->delete_requests_map[ $product_id ] )->get();
 			if ( ! empty( $product_id_map ) && ! $this->is_already_scheduled_to_delete( $product_id ) ) {
@@ -331,8 +323,7 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $product_id
 	 */
 	protected function maybe_send_delete_notification( int $product_id ) {
-		$product = wc_get_product( $product_id );
-
+		$product = $this->wc->maybe_get_product( $product_id );
 		if ( $product instanceof WC_Product && $this->product_helper->has_notified_creation( $product ) ) {
 			$result = $this->notifications_service->notify( NotificationsService::TOPIC_PRODUCT_DELETED, $product_id, [ 'offer_id' => $this->product_helper->get_offer_id( $product_id ) ] );
 			if ( $result ) {
@@ -365,6 +356,14 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $product_id
 	 */
 	protected function handle_pre_delete_product( int $product_id ) {
+		if ( $this->notifications_service->is_ready() ) {
+			/**
+			 * For deletions, we do send directly the notification instead of scheduling it.
+			 * This is because we want to avoid that the product is not in the database anymore when the scheduled action runs.
+			 */
+			$this->maybe_send_delete_notification( $product_id );
+		}
+
 		$product = $this->wc->maybe_get_product( $product_id );
 
 		// each variation is passed to this method separately so we don't need to delete the variable product

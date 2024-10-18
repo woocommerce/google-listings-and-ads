@@ -17,7 +17,6 @@ import FreeAdCredit from './free-ad-credit';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
-import useFreeAdCredit from '.~/hooks/useFreeAdCredit';
 import AppSpinner from '.~/components/app-spinner';
 import Section from '.~/wcdl/section';
 
@@ -26,7 +25,6 @@ const SetupAccounts = ( props ) => {
 	const { google } = useGoogleAccount();
 	const { googleAdsAccount, hasGoogleAdsConnection } = useGoogleAdsAccount();
 	const { hasAccess, step } = useGoogleAdsAccountStatus();
-	const hasFreeAdCredit = useFreeAdCredit();
 
 	if ( ! google || ( google.active === 'yes' && ! googleAdsAccount ) ) {
 		return <AppSpinner />;
@@ -71,7 +69,7 @@ const SetupAccounts = ( props ) => {
 						) }
 					/>
 					<GoogleAdsAccountCard />
-					{ hasFreeAdCredit && <FreeAdCredit /> }
+					<FreeAdCredit />
 				</VerticalGapLayout>
 			</Section>
 			<StepContentFooter>
