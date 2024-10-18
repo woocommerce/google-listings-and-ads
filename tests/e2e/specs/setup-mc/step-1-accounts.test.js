@@ -326,7 +326,7 @@ test.describe( 'Set up accounts', () => {
 					subaccount: null,
 					domain: null,
 					status: 'incomplete',
-					step: 'claim',
+					step: 'link_ads',
 				} );
 
 				await setUpAccountsPage.fulfillAdsConnection( {
@@ -386,6 +386,13 @@ test.describe( 'Set up accounts', () => {
 			test( 'should see the connected label', async () => {
 				const googleAccountCard =
 					setUpAccountsPage.getGoogleAccountCard();
+
+				await setUpAccountsPage.fulfillAdsAccountStatus( {
+					has_access: true,
+					invite_link: '',
+					step: 'link_merchant',
+				} );
+
 				await expect(
 					googleAccountCard.getByText( 'Connected', { exact: true } )
 				).toBeVisible();
