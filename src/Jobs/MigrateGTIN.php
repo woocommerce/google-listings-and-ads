@@ -86,9 +86,8 @@ class MigrateGTIN extends AbstractBatchedActionSchedulerJob implements OptionsAw
 
 			// process variations
 			if ( $product instanceof \WC_Product_Variable ) {
-				$variations = $product->get_available_variations();
-				$ids        = array_column( $variations, 'variation_id' );
-				$this->process_items( $ids );
+				$variations = $product->get_children();
+				$this->process_items( $variations );
 				continue;
 			}
 
