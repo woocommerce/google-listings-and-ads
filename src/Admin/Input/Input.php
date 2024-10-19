@@ -52,6 +52,16 @@ class Input extends Form implements InputInterface {
 	protected $value;
 
 	/**
+	 * @var bool
+	 */
+	protected $is_readonly = false;
+
+	/**
+	 * @var bool
+	 */
+	protected $is_hidden = false;
+
+	/**
 	 * Input constructor.
 	 *
 	 * @param string $type
@@ -143,6 +153,34 @@ class Input extends Form implements InputInterface {
 	}
 
 	/**
+	 * @param bool $value
+	 *
+	 * @return InputInterface
+	 */
+	public function set_readonly( bool $value ): InputInterface {
+		$this->is_readonly = $value;
+
+		return $this;
+	}
+	/**
+	 * @param bool $value
+	 *
+	 * @return InputInterface
+	 */
+	public function set_hidden( bool $value ): InputInterface {
+		$this->is_hidden = $value;
+
+		return $this;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function is_hidden(): bool {
+		return $this->is_hidden;
+	}
+
+	/**
 	 * Return the data used for the input's view.
 	 *
 	 * @return array
@@ -156,6 +194,12 @@ class Input extends Form implements InputInterface {
 			'description' => $this->get_description(),
 			'desc_tip'    => true,
 		];
+
+		if ( $this->is_readonly ) {
+			$view_data['custom_attributes'] = [
+				'readonly' => 'readonly',
+			];
+		}
 
 		return array_merge( parent::get_view_data(), $view_data );
 	}
