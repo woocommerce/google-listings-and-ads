@@ -28,6 +28,7 @@ interface OptionsInterface {
 	public const GOOGLE_CONNECTED                          = 'google_connected';
 	public const GOOGLE_WPCOM_AUTH_NONCE                   = 'google_wpcom_auth_nonce';
 	public const INSTALL_TIMESTAMP                         = 'install_timestamp';
+	public const INSTALL_VERSION                           = 'install_version';
 	public const JETPACK_CONNECTED                         = 'jetpack_connected';
 	public const MC_SETUP_COMPLETED_AT                     = 'mc_setup_completed_at';
 	public const MERCHANT_ACCOUNT_STATE                    = 'merchant_account_state';
@@ -61,6 +62,7 @@ interface OptionsInterface {
 		self::FILE_VERSION                              => true,
 		self::GOOGLE_CONNECTED                          => true,
 		self::INSTALL_TIMESTAMP                         => true,
+		self::INSTALL_VERSION                           => true,
 		self::JETPACK_CONNECTED                         => true,
 		self::MC_SETUP_COMPLETED_AT                     => true,
 		self::MERCHANT_ACCOUNT_STATE                    => true,
