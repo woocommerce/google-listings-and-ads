@@ -157,7 +157,7 @@ class Input extends Form implements InputInterface {
 	 *
 	 * @return InputInterface
 	 */
-	public function set_readonly( $value ): InputInterface {
+	public function set_readonly( bool $value ): InputInterface {
 		$this->is_readonly = $value;
 
 		return $this;
@@ -167,7 +167,7 @@ class Input extends Form implements InputInterface {
 	 *
 	 * @return InputInterface
 	 */
-	public function set_hidden( $value ): InputInterface {
+	public function set_hidden( bool $value ): InputInterface {
 		$this->is_hidden = $value;
 
 		return $this;
