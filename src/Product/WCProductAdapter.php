@@ -941,7 +941,8 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			return $this;
 		}
 
-		$global_unique_id = $this->wc_product->get_global_unique_id();
+		// avoid dashes and other unsupported format
+		$global_unique_id = preg_replace( '/[^0-9]/', '', $this->wc_product->get_global_unique_id() );
 
 		if ( ! empty( $global_unique_id ) ) {
 			$this->setGtin( $global_unique_id );
