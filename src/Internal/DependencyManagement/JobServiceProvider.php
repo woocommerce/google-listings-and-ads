@@ -24,6 +24,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\MigrateGTIN;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\CouponNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ProductNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\SettingsNotificationJob;
@@ -125,6 +126,13 @@ class JobServiceProvider extends AbstractServiceProvider {
 			CouponNotificationJob::class,
 			NotificationsService::class,
 			CouponHelper::class
+		);
+
+		// share GTIN migration job
+		$this->share_action_scheduler_job(
+			MigrateGTIN::class,
+			ProductRepository::class,
+			Product\Attributes\AttributeManager::class
 		);
 
 		$this->share_with_tags(
