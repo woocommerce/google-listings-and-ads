@@ -83,7 +83,7 @@ describe( 'AllProgramsTableCard', () => {
 		let mockedCampaigns = [];
 
 		useAdsCampaigns.mockImplementation( () => {
-			return { data: mockedCampaigns };
+			return { data: mockedCampaigns, loaded: true };
 		} );
 
 		mockCampaigns = ( ...campaigns ) => {
