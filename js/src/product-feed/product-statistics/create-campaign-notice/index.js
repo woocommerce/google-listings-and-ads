@@ -10,6 +10,7 @@ import { Notice } from '@wordpress/components';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
 import useMCProductStatistics from '.~/hooks/useMCProductStatistics';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
+import './index.scss';
 
 const CreateCampaignNotice = () => {
 	const { hasFinishedResolution, data: products } = useMCProductStatistics();
@@ -29,7 +30,7 @@ const CreateCampaignNotice = () => {
 	}
 
 	return (
-		<Notice isDismissible={ false }>
+		<Notice isDismissible={ false } className="gla-ads-inline-notice">
 			<section>
 				<p>
 					{ __(
@@ -38,6 +39,7 @@ const CreateCampaignNotice = () => {
 					) }
 				</p>
 				<AddPaidCampaignButton
+					isSmall={ false }
 					eventProps={ {
 						context: 'product-feed-overview-promotion',
 					} }
