@@ -7,16 +7,9 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
-import AppButton from '.~/components/app-button';
 import ConnectedIconLabel from '.~/components/connected-icon-label';
 import Section from '.~/wcdl/section';
-import useSwitchGoogleAccount from './useSwitchGoogleAccount';
-
-/**
- * Clicking on the "connect to a different Google account" button.
- *
- * @event gla_google_account_connect_different_account_button_click
- */
+import SwitchAccountButton from './switch-account-button';
 
 /**
  * Renders a Google account card UI with connected account information.
@@ -26,16 +19,12 @@ import useSwitchGoogleAccount from './useSwitchGoogleAccount';
  * @param {{ email: string }} props.googleAccount A data payload object containing the user's Google account email.
  * @param {JSX.Element} [props.helper] Helper content below the Google account email.
  * @param {boolean} [props.hideAccountSwitch=false] Indicate whether hide the account switch block at the card footer.
- *
- * @fires gla_google_account_connect_different_account_button_click
  */
 const ConnectedGoogleAccountCard = ( {
 	googleAccount,
 	helper,
 	hideAccountSwitch = false,
 } ) => {
-	const [ handleSwitch, { loading } ] = useSwitchGoogleAccount();
-
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE }
@@ -45,16 +34,7 @@ const ConnectedGoogleAccountCard = ( {
 		>
 			{ ! hideAccountSwitch && (
 				<Section.Card.Footer>
-					<AppButton
-						isLink
-						disabled={ loading }
-						text={ __(
-							'Or, connect to a different Google account',
-							'google-listings-and-ads'
-						) }
-						eventName="gla_google_account_connect_different_account_button_click"
-						onClick={ handleSwitch }
-					/>
+					<SwitchAccountButton />
 				</Section.Card.Footer>
 			) }
 		</AccountCard>

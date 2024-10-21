@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -12,6 +13,8 @@ import AppSpinner from '../app-spinner';
 import ConnectedIconLabel from '../connected-icon-label';
 import { CREATING_BOTH_ACCOUNTS } from './constants';
 import LoadingLabel from '../loading-label/loading-label';
+import AppButton from '.~/components/app-button';
+import SwitchAccountButton from '../google-account-card/switch-account-button';
 import useAutoCreateAdsMCAccounts from '../../hooks/useAutoCreateAdsMCAccounts';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
@@ -23,6 +26,7 @@ import './connected-google-combo-account-card.scss';
  * It will also kickoff Ads and Merchant Center account creation if the user does not have accounts.
  */
 const ConnectedGoogleComboAccountCard = () => {
+	const [ editMode, setEditMode ] = useState( false );
 	const {
 		hasGoogleAdsConnection,
 		hasFinishedResolution: hasFinishedResolutionForCurrentAdsAccount,
@@ -77,6 +81,10 @@ const ConnectedGoogleComboAccountCard = () => {
 		return null;
 	};
 
+	const handleEditClick = () => {
+		setEditMode( true );
+	};
+
 	const getIndicator = () => {
 		if ( isCreatingAccounts ) {
 			return (
@@ -99,9 +107,21 @@ const ConnectedGoogleComboAccountCard = () => {
 			alignIcon="top"
 			className="gla-google-combo-account-card--connected"
 			description={
-				<AccountCreationDescription
-					isCreatingWhichAccount={ isCreatingWhichAccount }
-				/>
+				<>
+					<AccountCreationDescription
+						isCreatingWhichAccount={ isCreatingWhichAccount }
+					/>
+
+					{ ! editMode && (
+						<AppButton
+							isLink
+							text={ __( 'Edit', 'google-listings-and-ads' ) }
+							onClick={ handleEditClick }
+						/>
+					) }
+
+					{ editMode && <SwitchAccountButton /> }
+				</>
 			}
 			helper={ getHelper() }
 			indicator={ getIndicator() }
