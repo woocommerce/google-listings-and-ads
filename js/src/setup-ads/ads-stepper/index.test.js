@@ -57,11 +57,9 @@ describe( 'AdsStepper', () => {
 
 			render( <AdsStepper /> );
 
-			await waitFor( () => {
-				expect( screen ).toBeDefined();
+			const step1 = await screen.findByRole( 'button', {
+				name: /accounts/,
 			} );
-
-			const step1 = screen.getByRole( 'button', { name: /accounts/ } );
 
 			// Step 2 -> Step 1
 			await continueToStep2();
