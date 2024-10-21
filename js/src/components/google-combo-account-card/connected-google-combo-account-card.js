@@ -102,30 +102,39 @@ const ConnectedGoogleComboAccountCard = () => {
 	};
 
 	return (
-		<AccountCard
-			appearance={ APPEARANCE.GOOGLE }
-			alignIcon="top"
-			className="gla-google-combo-account-card--connected"
-			description={
-				<>
-					<AccountCreationDescription
-						isCreatingWhichAccount={ isCreatingWhichAccount }
-					/>
-
-					{ ! editMode && (
-						<AppButton
-							isLink
-							text={ __( 'Edit', 'google-listings-and-ads' ) }
-							onClick={ handleEditClick }
+		<>
+			<AccountCard
+				appearance={ APPEARANCE.GOOGLE }
+				alignIcon="top"
+				className="gla-google-combo-account-card--connected"
+				description={
+					<>
+						<AccountCreationDescription
+							isCreatingWhichAccount={ isCreatingWhichAccount }
 						/>
-					) }
 
-					{ editMode && <SwitchAccountButton /> }
+						{ ! editMode && (
+							<AppButton
+								isLink
+								text={ __( 'Edit', 'google-listings-and-ads' ) }
+								onClick={ handleEditClick }
+							/>
+						) }
+
+						{ editMode && <SwitchAccountButton /> }
+					</>
+				}
+				helper={ getHelper() }
+				indicator={ getIndicator() }
+			/>
+
+			{ editMode && (
+				<>
+					<p>Connect Ads</p>
+					<p>Connect MC</p>
 				</>
-			}
-			helper={ getHelper() }
-			indicator={ getIndicator() }
-		/>
+			) }
+		</>
 	);
 };
 
