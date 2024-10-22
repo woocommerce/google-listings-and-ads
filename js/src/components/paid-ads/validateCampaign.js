@@ -28,7 +28,8 @@ const validateCampaign = ( values, opts ) => {
 
 	if (
 		Number.isFinite( values.amount ) &&
-		Number.isFinite( opts?.dailyBudget )
+		Number.isFinite( opts?.dailyBudget ) &&
+		opts?.dailyBudget > 0
 	) {
 		const { amount } = values;
 		const { dailyBudget, formatAmount } = opts;

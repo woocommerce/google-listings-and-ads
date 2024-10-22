@@ -9,9 +9,9 @@ import { isPlainObject } from 'lodash';
  */
 import { ASSET_GROUP_KEY, ASSET_FORM_KEY } from '.~/constants';
 import AdaptiveForm from '.~/components/adaptive-form';
+import validateCampaign from '.~/components/paid-ads/validateCampaign';
 import validateAssetGroup from '.~/components/paid-ads/validateAssetGroup';
 import useAdsCurrency from '.~/hooks/useAdsCurrency';
-import validateCampaign from '.~/components/paid-ads/validateCampaign';
 
 /**
  * @typedef {import('.~/components/types.js').CampaignFormValues} CampaignFormValues
