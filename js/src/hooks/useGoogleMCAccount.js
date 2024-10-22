@@ -49,9 +49,6 @@ const useGoogleMCAccount = () => {
 				};
 			}
 
-			const { getGoogleMCAccount, hasFinishedResolution } =
-				select( STORE_KEY );
-
 			const selector = select( STORE_KEY );
 			const acc = selector[ googleMCAccountSelector ]();
 			const isResolvingGoogleMCAccount = selector.isResolving(
@@ -64,10 +61,11 @@ const useGoogleMCAccount = () => {
 			].includes( acc?.status );
 
 			return {
-				googleMCAccount: getGoogleMCAccount(),
+				googleMCAccount: acc,
 				isResolving: isResolvingGoogleMCAccount,
-				hasFinishedResolution:
-					hasFinishedResolution( 'getGoogleMCAccount' ),
+				hasFinishedResolution: selector.hasFinishedResolution(
+					googleMCAccountSelector
+				),
 				isPreconditionReady: true,
 				hasGoogleMCConnection,
 			};
