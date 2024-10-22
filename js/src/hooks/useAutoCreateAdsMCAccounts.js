@@ -26,12 +26,9 @@ import {
  * @property {'ads'|'mc'|'both'|null} creatingWhichAccount The type of account that is being created.
  */
 const useAutoCreateAdsMCAccounts = () => {
-	const [ accountsState, setAccountsState ] = useState( {
-		accountsCreated: false,
-		creatingWhichAccount: null,
-	} );
-
-	const { accountsCreated, creatingWhichAccount } = accountsState;
+	// Create separate states.
+	const [ accountsCreated, setAccountsCreated ] = useState( false );
+	const [ creatingWhichAccount, setCreatingWhichAccount ] = useState( null );
 	const shouldCreateAccounts = useRef();
 
 	const {
@@ -107,11 +104,8 @@ const useAutoCreateAdsMCAccounts = () => {
 				! loading );
 
 		if ( resetState ) {
-			shouldCreateAccounts.current = null;
-			setAccountsState( () => ( {
-				creatingWhichAccount: null,
-				accountsCreated: true,
-			} ) );
+			setAccountsCreated( true );
+			setCreatingWhichAccount( null );
 		}
 	}, [ response, loading, creatingWhichAccount ] );
 
@@ -125,10 +119,7 @@ const useAutoCreateAdsMCAccounts = () => {
 		}
 
 		if ( shouldCreateAccounts.current ) {
-			setAccountsState( ( prevState ) => ( {
-				...prevState,
-				creatingWhichAccount: shouldCreateAccounts.current,
-			} ) );
+			setCreatingWhichAccount( shouldCreateAccounts.current );
 
 			if ( shouldCreateAccounts.current === CREATING_BOTH_ACCOUNTS ) {
 				await handleCreateAccount();
