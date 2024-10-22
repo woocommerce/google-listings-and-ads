@@ -24,7 +24,7 @@ const ConnectedGoogleComboAccountCard = () => {
 	const {
 		accountsCreated,
 		hasFinishedResolutionForExistingAdsMCAccounts,
-		isCreatingWhichAccount,
+		creatingWhichAccount,
 	} = useAutoCreateAdsMCAccounts();
 
 	if (
@@ -38,7 +38,7 @@ const ConnectedGoogleComboAccountCard = () => {
 
 	const accountCreationData = {
 		accountsCreated,
-		creatingAccounts: isCreatingWhichAccount,
+		creatingAccounts: creatingWhichAccount,
 	};
 
 	return (

@@ -64,7 +64,7 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 			const { result } = renderHook( () => useAutoCreateAdsMCAccounts() );
 
 			// It should create both accounts.
-			expect( result.current.isCreatingWhichAccount ).toBe( 'both' );
+			expect( result.current.creatingWhichAccount ).toBe( 'both' );
 		} );
 
 		it( 'should create only the Merchant Center account', () => {
@@ -81,7 +81,7 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 			const { result } = renderHook( () => useAutoCreateAdsMCAccounts() );
 
 			// It should create only the Merchant Center account.
-			expect( result.current.isCreatingWhichAccount ).toBe( 'mc' );
+			expect( result.current.creatingWhichAccount ).toBe( 'mc' );
 		} );
 
 		it( 'should create only the Google Ads account', () => {
@@ -98,7 +98,7 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 			const { result } = renderHook( () => useAutoCreateAdsMCAccounts() );
 
 			// It should create only the Google Ads account.
-			expect( result.current.isCreatingWhichAccount ).toBe( 'ads' );
+			expect( result.current.creatingWhichAccount ).toBe( 'ads' );
 		} );
 	} );
 
@@ -138,7 +138,7 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 			const { result } = renderHook( () => useAutoCreateAdsMCAccounts() );
 
 			// It should not create any accounts.
-			expect( result.current.isCreatingWhichAccount ).toBe( null );
+			expect( result.current.creatingWhichAccount ).toBe( null );
 
 			// make sure functions are not called.
 			expect( handleCreateAccount ).not.toHaveBeenCalled();

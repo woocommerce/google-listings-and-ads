@@ -23,15 +23,15 @@ import {
  *
  * @return {Object} The state of the account creation process.
  * @property {boolean} hasFinishedResolutionForExistingAdsMCAccounts Indicates whether the checks for existing Merchant Center (MC) and Google Ads accounts have been completed.
- * @property {'ads'|'mc'|'both'|null} isCreatingWhichAccount The type of account that is being created.
+ * @property {'ads'|'mc'|'both'|null} creatingWhichAccount The type of account that is being created.
  */
 const useAutoCreateAdsMCAccounts = () => {
 	const [ accountsState, setAccountsState ] = useState( {
 		accountsCreated: false,
-		isCreatingWhichAccount: null,
+		creatingWhichAccount: null,
 	} );
 
-	const { accountsCreated, isCreatingWhichAccount } = accountsState;
+	const { accountsCreated, creatingWhichAccount } = accountsState;
 	const shouldCreateAccounts = useRef();
 
 	const {
@@ -92,33 +92,33 @@ const useAutoCreateAdsMCAccounts = () => {
 	}
 
 	const handlePostAccountCreation = useCallback( () => {
-		if ( ! isCreatingWhichAccount ) {
+		if ( ! creatingWhichAccount ) {
 			return;
 		}
 
 		const mcAccountCreated = !! response?.status;
 
 		const resetState =
-			( isCreatingWhichAccount === CREATING_ADS_ACCOUNT && ! loading ) ||
-			( isCreatingWhichAccount === CREATING_MC_ACCOUNT &&
+			( creatingWhichAccount === CREATING_ADS_ACCOUNT && ! loading ) ||
+			( creatingWhichAccount === CREATING_MC_ACCOUNT &&
 				mcAccountCreated ) ||
-			( isCreatingWhichAccount === CREATING_BOTH_ACCOUNTS &&
+			( creatingWhichAccount === CREATING_BOTH_ACCOUNTS &&
 				mcAccountCreated &&
 				! loading );
 
 		if ( resetState ) {
 			shouldCreateAccounts.current = null;
 			setAccountsState( () => ( {
-				isCreatingWhichAccount: null,
+				creatingWhichAccount: null,
 				accountsCreated: true,
 			} ) );
 		}
-	}, [ response, loading, isCreatingWhichAccount ] );
+	}, [ response, loading, creatingWhichAccount ] );
 
 	const handleAccountCreation = useCallback( async () => {
 		if (
 			! accountCreationChecksResolved ||
-			isCreatingWhichAccount ||
+			creatingWhichAccount ||
 			accountsCreated
 		) {
 			return;
@@ -127,7 +127,7 @@ const useAutoCreateAdsMCAccounts = () => {
 		if ( shouldCreateAccounts.current ) {
 			setAccountsState( ( prevState ) => ( {
 				...prevState,
-				isCreatingWhichAccount: shouldCreateAccounts.current,
+				creatingWhichAccount: shouldCreateAccounts.current,
 			} ) );
 
 			if ( shouldCreateAccounts.current === CREATING_BOTH_ACCOUNTS ) {
@@ -143,7 +143,7 @@ const useAutoCreateAdsMCAccounts = () => {
 		}
 	}, [
 		accountCreationChecksResolved,
-		isCreatingWhichAccount,
+		creatingWhichAccount,
 		accountsCreated,
 		handleCreateAccount,
 		upsertAdsAccount,
@@ -161,7 +161,7 @@ const useAutoCreateAdsMCAccounts = () => {
 		hasFinishedResolutionForExistingAdsMCAccounts:
 			accountCreationChecksResolved,
 		accountsCreated,
-		isCreatingWhichAccount,
+		creatingWhichAccount,
 	};
 };
 
