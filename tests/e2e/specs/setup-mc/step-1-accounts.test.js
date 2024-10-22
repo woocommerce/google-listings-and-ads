@@ -318,65 +318,23 @@ test.describe( 'Set up accounts', () => {
 			test.beforeEach( async () => {
 				await setUpAccountsPage.mockJetpackConnected();
 				await setUpAccountsPage.mockGoogleConnected();
-
-				await setUpAccountsPage.fulfillMCConnection( {
-					id: 5432178,
-					name: null,
-					subaccount: null,
-					domain: null,
-					status: 'incomplete',
-					step: 'link_ads',
-				} );
-
-				await setUpAccountsPage.fulfillAdsConnection( {
-					id: 78787878,
-					currency: 'USD',
-					status: 'incomplete',
-					step: 'account_access',
-					sub_account: true,
-					symbol: '$',
-				} );
+				await setUpAccountsPage.mockMCConnected();
+				await setupAdsAccountPage.mockAdsAccountConnected();
 
 				await setUpAccountsPage.goto();
 			} );
 
 			test( 'should see the merchant center id and ads account id if connected', async () => {
-				await setupAdsAccountPage.fulfillAdsAccounts(
-					{
-						message:
-							'Account must be accepted before completing setup.',
-						has_access: false,
-						step: 'account_access',
-						invite_link: 'https://ads.google.com/nav/',
-					},
-					428,
-					[ 'POST' ]
-				);
-
-				await setupAdsAccountPage.fulfillMCAccounts(
-					{
-						id: 5432178,
-						name: null,
-						subaccount: null,
-						domain: null,
-					},
-					200,
-					[ 'POST' ]
-				);
-
 				const googleAccountCard =
 					setUpAccountsPage.getGoogleAccountCard();
 				await expect(
-					googleAccountCard.getByText(
-						'Merchant Center ID: 5432178',
-						{
-							exact: true,
-						}
-					)
+					googleAccountCard.getByText( 'Merchant Center ID: 1234', {
+						exact: true,
+					} )
 				).toBeVisible();
 
 				await expect(
-					googleAccountCard.getByText( 'Google Ads ID: 78787878', {
+					googleAccountCard.getByText( 'Google Ads ID: 12345', {
 						exact: true,
 					} )
 				).toBeVisible();
