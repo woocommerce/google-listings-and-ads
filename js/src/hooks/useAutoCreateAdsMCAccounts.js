@@ -21,9 +21,9 @@ import {
 /**
  * Hook to automatically create Ads and Merchant Center accounts if they do not exist.
  *
- * @return {Object} Object containing the state of the account creation process.
+ * @return {Object} The state of the account creation process.
  * @property {boolean} hasFinishedResolutionForExistingAdsMCAccounts Indicates whether the checks for existing Merchant Center (MC) and Google Ads accounts have been completed.
- * @property {string|null} isCreatingWhichAccount The type of account that is being created. Possible values are 'ads', 'mc', or 'both'.
+ * @property {'ads'|'mc'|'both'|null} isCreatingWhichAccount The type of account that is being created.
  */
 const useAutoCreateAdsMCAccounts = () => {
 	const [ accountsState, setAccountsState ] = useState( {
@@ -41,7 +41,7 @@ const useAutoCreateAdsMCAccounts = () => {
 
 	const {
 		existingAccounts: existingAdsAccounts,
-		hasFinishedResolution: hasFinishedResolutionForExistingAdsAccount,
+		hasFinishedResolution: hasFinishedResolutionForExistingAdsAccounts,
 	} = useExistingGoogleAdsAccounts();
 
 	const {
@@ -63,7 +63,7 @@ const useAutoCreateAdsMCAccounts = () => {
 		hasGoogleAdsConnection || existingAdsAccounts?.length > 0;
 
 	const googleAdsAccountChecksResolved =
-		hasFinishedResolutionForExistingAdsAccount &&
+		hasFinishedResolutionForExistingAdsAccounts &&
 		hasFinishedResolutionForGoogleAdsAccount;
 
 	const googleMCAccountChecksResolved =
@@ -93,9 +93,7 @@ const useAutoCreateAdsMCAccounts = () => {
 			return;
 		}
 
-		const mcAccountCreated = [ 200, 403, 406, 503 ].includes(
-			response?.status
-		);
+		const mcAccountCreated = response?.status;
 
 		const resetState =
 			( isCreatingWhichAccount === CREATING_ADS_ACCOUNT && ! loading ) ||
@@ -107,8 +105,7 @@ const useAutoCreateAdsMCAccounts = () => {
 
 		if ( resetState ) {
 			shouldCreateAccounts.current = null;
-			setAccountsState( ( prevState ) => ( {
-				...prevState,
+			setAccountsState( () => ( {
 				isCreatingWhichAccount: null,
 				accountsCreated: true,
 			} ) );
@@ -160,6 +157,7 @@ const useAutoCreateAdsMCAccounts = () => {
 	return {
 		hasFinishedResolutionForExistingAdsMCAccounts:
 			accountCreationChecksResolved,
+		accountsCreated,
 		isCreatingWhichAccount,
 	};
 };
