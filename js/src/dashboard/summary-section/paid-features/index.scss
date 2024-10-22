@@ -1,0 +1,30 @@
+.gla-paid-features-section {
+	@media (max-width: $break-small) {
+		&__content {
+			flex-direction: column;
+			gap: $grid-unit-20;
+		}
+	}
+
+	&__feature-list {
+		display: flex;
+		flex-direction: column;
+		gap: $grid-unit-20;
+		margin: $grid-unit-30 0 $grid-unit-20;
+		line-height: $gla-line-height-smaller;
+		color: $gray-800;
+		text-align: left;
+
+		.gridicon {
+			fill: #5ec862;
+		}
+	}
+
+	.gla-free-ad-credit {
+		text-align: left;
+	}
+
+	.components-button {
+		align-self: flex-end;
+	}
+}

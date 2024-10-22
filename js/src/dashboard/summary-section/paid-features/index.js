@@ -14,8 +14,7 @@ import CampaignPreview from '.~/components/paid-ads/campaign-preview';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
 import FreeAdCredit from '.~/components/free-ad-credit';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-
-// import '.~/setup-mc/setup-stepper/setup-paid-ads/paid-ads-features-section.scss';
+import './index.scss';
 
 function FeatureList() {
 	const featuresItems = [
@@ -53,7 +52,7 @@ function FeatureList() {
 	];
 
 	return (
-		<div className="gla-paid-ads-features-section__feature-list">
+		<div className="gla-paid-features-section__feature-list">
 			{ featuresItems.map( ( { Icon, content }, idx ) => (
 				<Flex key={ idx } align="flex-start">
 					<Icon size="18" />
@@ -71,11 +70,11 @@ function FeatureList() {
  */
 const PaidFeatures = () => {
 	return (
-		<VerticalGapLayout size="medium">
+		<VerticalGapLayout size="medium" className="gla-paid-features-section">
 			<Flex
-				className="gla-paid-ads-features-section__content"
 				align="center"
 				gap={ 9 }
+				className="gla-paid-features-section__content"
 			>
 				<FlexItem>
 					<CampaignPreview />
@@ -83,8 +82,8 @@ const PaidFeatures = () => {
 				<FlexBlock>
 					<FeatureList />
 				</FlexBlock>
-				<FreeAdCredit />
 			</Flex>
+			<FreeAdCredit />
 			<AddPaidCampaignButton
 				isPrimary
 				isSecondary={ false }
