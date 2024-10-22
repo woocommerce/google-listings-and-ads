@@ -7,17 +7,18 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AccountCard, { APPEARANCE } from '../account-card';
-import AppSpinner from '../app-spinner';
-import useAutoCreateAdsMCAccounts from '../../hooks/useAutoCreateAdsMCAccounts';
-import LoadingLabel from '../loading-label/loading-label';
 import AccountCreationDescription from './account-creation-description';
+import AppSpinner from '../app-spinner';
+import ConnectedIconLabel from '../connected-icon-label';
+import { CREATING_BOTH_ACCOUNTS } from './constants';
+import LoadingLabel from '../loading-label/loading-label';
+import useAutoCreateAdsMCAccounts from '.~/hooks/useAutoCreateAdsMCAccounts';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
+import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
+import useCreateMCAccount from '.~/hooks/useCreateMCAccount';
 import ConnectMC from './connect-mc';
 import './connected-google-combo-account-card.scss';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
-import ConnectedIconLabel from '../connected-icon-label';
-import useCreateMCAccount from '.~/hooks/useCreateMCAccount';
-import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 
 /**
  * Renders a Google account card UI with connected account information.
@@ -29,42 +30,47 @@ const ConnectedGoogleComboAccountCard = () => {
 	const createMCAccount = useCreateMCAccount();
 
 	const {
-		googleAdsAccount,
+		hasGoogleAdsConnection,
 		hasFinishedResolution: hasFinishedResolutionForCurrentAdsAccount,
 	} = useGoogleAdsAccount();
 
 	const {
-		isConnected: isGoogleMCAccountConnected,
+		googleMCAccount,
+		isPreconditionReady,
 		hasFinishedResolution: hasFinishedResolutionForCurrentMCAccount,
 	} = useGoogleMCAccount();
 
 	const {
-		isCreatingAccounts,
-		isCreatingBothAccounts,
-		isCreatingOnlyAdsAccount,
-		isCreatingOnlyMCAccount,
-		accountCreationChecksResolved,
-		accountsCreated,
+		hasFinishedResolutionForExistingAdsMCAccounts,
+		isCreatingWhichAccount,
 		hasExistingMCAccount,
 	} = useAutoCreateAdsMCAccounts( createMCAccount );
 
+	const { hasAccess, step } = useGoogleAdsAccountStatus();
+
+	const isCreatingAccounts = !! isCreatingWhichAccount;
+
 	if (
-		! accountCreationChecksResolved ||
+		! hasFinishedResolutionForExistingAdsMCAccounts ||
 		! hasFinishedResolutionForCurrentAdsAccount ||
 		! hasFinishedResolutionForCurrentMCAccount
 	) {
 		return <AccountCard description={ <AppSpinner /> } />;
 	}
 
-	const isGoogleAdsAccountConnected =
-		googleAdsAccount?.status === GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED ||
-		( googleAdsAccount?.status === GOOGLE_ADS_ACCOUNT_STATUS.INCOMPLETE &&
-			[ 'link_merchant', 'account_access' ].includes(
-				googleAdsAccount?.step
-			) );
+	const isGoogleAdsConnected =
+		hasGoogleAdsConnection &&
+		hasAccess &&
+		[ '', 'billing', 'link_merchant' ].includes( step );
+
+	const isGoogleMCConnected =
+		isPreconditionReady &&
+		( googleMCAccount?.status === 'connected' ||
+			( googleMCAccount?.status === 'incomplete' &&
+				googleMCAccount?.step === 'link_ads' ) );
 
 	const getHelper = () => {
-		if ( isCreatingBothAccounts ) {
+		if ( isCreatingWhichAccount === CREATING_BOTH_ACCOUNTS ) {
 			return (
 				<p>
 					{ __(
@@ -87,7 +93,7 @@ const ConnectedGoogleComboAccountCard = () => {
 			);
 		}
 
-		if ( isGoogleAdsAccountConnected && isGoogleMCAccountConnected ) {
+		if ( isGoogleAdsConnected && isGoogleMCConnected ) {
 			return <ConnectedIconLabel />;
 		}
 
@@ -95,23 +101,14 @@ const ConnectedGoogleComboAccountCard = () => {
 	};
 
 	return (
-		<div className="gla-google-combo-account-cards">
+		<>
 			<AccountCard
 				appearance={ APPEARANCE.GOOGLE }
 				alignIcon="top"
 				className="gla-google-combo-account-card--connected"
 				description={
 					<AccountCreationDescription
-						isCreatingBothAccounts={ isCreatingBothAccounts }
-						isCreatingOnlyAdsAccount={ isCreatingOnlyAdsAccount }
-						isCreatingOnlyMCAccount={ isCreatingOnlyMCAccount }
-						isGoogleMCAccountConnected={
-							isGoogleMCAccountConnected
-						}
-						isGoogleAdsAccountConnected={
-							isGoogleAdsAccountConnected
-						}
-						accountsCreated={ accountsCreated }
+						isCreatingWhichAccount={ isCreatingWhichAccount }
 					/>
 				}
 				helper={ getHelper() }
@@ -121,7 +118,7 @@ const ConnectedGoogleComboAccountCard = () => {
 			{ hasExistingMCAccount && (
 				<ConnectMC createMCAccount={ createMCAccount } />
 			) }
-		</div>
+		</>
 	);
 };
 

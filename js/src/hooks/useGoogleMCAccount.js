@@ -20,6 +20,8 @@ import useGoogleAccount from './useGoogleAccount';
  * @property {boolean} isPreconditionReady Whether the precondition of continued connection processing is fulfilled.
  */
 
+const googleMCAccountSelector = 'getGoogleMCAccount';
+
 /**
  * A hook to load the connection data of Google Merchant Center account.
  *
@@ -48,17 +50,28 @@ const useGoogleMCAccount = () => {
 				};
 			}
 
-			const { getGoogleMCAccount, isResolving, hasFinishedResolution } =
+			const { getGoogleMCAccount, hasFinishedResolution } =
 				select( STORE_KEY );
+
+			const selector = select( STORE_KEY );
+			const acc = selector[ googleMCAccountSelector ]();
+			const isResolvingGoogleMCAccount = selector.isResolving(
+				googleMCAccountSelector
+			);
+
+			const hasGoogleMCConnection = [
+				GOOGLE_MC_ACCOUNT_STATUS.CONNECTED,
+				GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE,
+			].includes( acc?.status );
 
 			const googleMCAccount = getGoogleMCAccount();
 			return {
 				googleMCAccount,
-				isResolving: isResolving( 'getGoogleMCAccount' ),
+				isResolving: isResolvingGoogleMCAccount,
 				hasFinishedResolution:
 					hasFinishedResolution( 'getGoogleMCAccount' ),
 				isPreconditionReady: true,
-
+				hasGoogleMCConnection,
 				// MC is ready when we have a connection and preconditions are met.
 				// The `link_ads` step will be resolved when the Ads account is connected
 				// since these can be connected in any order.

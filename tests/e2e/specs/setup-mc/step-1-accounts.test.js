@@ -328,6 +328,15 @@ test.describe( 'Set up accounts', () => {
 				await setUpAccountsPage.mockJetpackConnected();
 				await setUpAccountsPage.mockGoogleConnected();
 
+				await setUpAccountsPage.fulfillMCConnection( {
+					id: 5432178,
+					name: null,
+					subaccount: null,
+					domain: null,
+					status: 'incomplete',
+					step: 'link_ads',
+				} );
+
 				await setUpAccountsPage.fulfillAdsConnection( {
 					id: 78787878,
 					currency: 'USD',
@@ -374,6 +383,13 @@ test.describe( 'Set up accounts', () => {
 			test( 'should see the connected label', async () => {
 				const googleAccountCard =
 					setUpAccountsPage.getGoogleAccountCard();
+
+				await setUpAccountsPage.fulfillAdsAccountStatus( {
+					has_access: true,
+					invite_link: '',
+					step: 'link_merchant',
+				} );
+
 				await expect(
 					googleAccountCard.getByText( 'Connected', { exact: true } )
 				).toBeVisible();
