@@ -13,6 +13,11 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 
+/**
+ * Account creation indicator.
+ * Displays a loading indicator when accounts are being created or a connected icon when accounts are connected.
+ * @return {JSX.Element|null} Indicator component.
+ */
 const Indicator = () => {
 	const { creatingAccounts } = useAccountCreationData();
 	const { hasGoogleAdsConnection } = useGoogleAdsAccount();

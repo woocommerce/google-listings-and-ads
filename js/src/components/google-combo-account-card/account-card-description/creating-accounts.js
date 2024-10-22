@@ -19,51 +19,47 @@ import {
  * @return {JSX.Element|null} JSX markup.
  */
 const CreatingAccounts = ( { creatingAccounts } ) => {
+	let text = null;
+	let subText = null;
+
 	if ( ! creatingAccounts ) {
 		return null;
 	}
 
-	const helperText = {
-		text: null,
-		subText: null,
-	};
-
 	switch ( creatingAccounts ) {
 		case CREATING_BOTH_ACCOUNTS:
-			helperText.text = __(
+			text = __(
 				'You don’t have Merchant Center nor Google Ads accounts, so we’re creating them for you.',
 				'google-listings-and-ads'
 			);
-			helperText.subText = __(
+			subText = __(
 				'Merchant Center is required to sync products so they show on Google. Google Ads is required to set up conversion measurement for your store.',
 				'google-listings-and-ads'
 			);
 			break;
 
 		case CREATING_ADS_ACCOUNT:
-			helperText.text = __(
+			text = __(
 				'You don’t have Google Ads account, so we’re creating one for you.',
 				'google-listings-and-ads'
 			);
-			helperText.subText = __(
+			subText = __(
 				'Required to set up conversion measurement for your store.',
 				'google-listings-and-ads'
 			);
 			break;
 
 		case CREATING_MC_ACCOUNT:
-			helperText.text = __(
+			text = __(
 				'You don’t have Merchant Center account, so we’re creating one for you.',
 				'google-listings-and-ads'
 			);
-			helperText.subText = __(
+			subText = __(
 				'Required to sync products so they show on Google.',
 				'google-listings-and-ads'
 			);
 			break;
 	}
-
-	const { text, subText } = helperText;
 
 	return (
 		<>

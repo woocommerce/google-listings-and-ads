@@ -7,9 +7,9 @@ import { __, sprintf } from '@wordpress/i18n';
  * Account details.
  *
  * @param {Object} props Component props.
- * @param {string} props.email Account email.
- * @param {number} props.googleAdsID Google Ads ID.
- * @param {number} props.googleMerchantCenterID Google Merchant Center ID.
+ * @param {string} props.email Google account email address.
+ * @param {number} props.googleAdsID Google Ads account ID.
+ * @param {number} props.googleMerchantCenterID Google Merchant Center account ID.
  * @return {JSX.Element} JSX markup.
  */
 const AccountDetails = ( { email, googleAdsID, googleMerchantCenterID } ) => {
