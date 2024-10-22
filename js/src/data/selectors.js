@@ -417,7 +417,7 @@ export const getGoogleAdsAccountStatus = ( state ) => {
  * If no recommendations are found, it returns `null`.
  *
  * @param {Object} state The state
- * @param {Array<CountryCode>} [countryCodes] - An array of country code strings used to generate a unique key.
+ * @param {Array<CountryCode>} [countryCodes] - An array of country code strings to retrieve the budget recommendations for.
  * @return {Object|null} The recommendations. It will be `null` if not yet fetched or fetched but doesn't exist.
  */
 export const getAdsBudgetRecommendations = ( state, countryCodes = [] ) => {

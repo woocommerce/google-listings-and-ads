@@ -19,12 +19,10 @@ import {
 import SetupPaidAds from './setup-paid-ads';
 
 /**
- * @param {Object} props React props
- * @param {boolean} props.isSubmitting When the form in the parent component, i.e SetupAdsForm, is currently being submitted via the useAdsSetupCompleteCallback hook.
  * @fires gla_setup_ads with `{ triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
  * @fires gla_setup_ads with `{ triggered_by: 'stepper-step1-button', action: 'go-to-step1'}`.
  */
-const AdsStepper = ( { isSubmitting } ) => {
+const AdsStepper = () => {
 	const [ step, setStep ] = useState( '1' );
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
@@ -84,7 +82,7 @@ const AdsStepper = ( { isSubmitting } ) => {
 						'Create your paid campaign',
 						'google-listings-and-ads'
 					),
-					content: <SetupPaidAds isSubmitting={ isSubmitting } />,
+					content: <SetupPaidAds />,
 					onClick: handleStepClick,
 				},
 			] }

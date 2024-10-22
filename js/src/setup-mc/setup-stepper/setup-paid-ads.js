@@ -143,7 +143,7 @@ export default function SetupPaidAds() {
 			minimumAmount={ highestDailyBudget }
 			onChange={ ( _, values ) => {
 				if ( values.amount >= highestDailyBudget ) {
-					clientSession.setCampaign( { ...values } );
+					clientSession.setCampaign( values );
 				}
 			} }
 		>

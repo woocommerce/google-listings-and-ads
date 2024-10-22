@@ -37,6 +37,7 @@ const BudgetRecommendation = ( props ) => {
 	const { countryCodes, dailyAverageCost = Infinity } = props;
 	const { data, highestDailyBudgetCountryCode, highestDailyBudget } =
 		useFetchBudgetRecommendation( countryCodes );
+
 	const map = useCountryKeyNameMap();
 
 	if ( ! data ) {
