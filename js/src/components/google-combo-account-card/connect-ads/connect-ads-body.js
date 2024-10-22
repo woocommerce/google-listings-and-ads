@@ -8,16 +8,15 @@ import { __ } from '@wordpress/i18n';
  */
 import AdsAccountSelectControl from '.~/components/ads-account-select-control';
 import ContentButtonLayout from '.~/components/content-button-layout';
-import ConnectCTA from './connect-cta';
+import ConnectCTA from '.~/components/google-ads-account-card/connect-ads/connect-cta';
 import LoadingLabel from '.~/components/loading-label/loading-label';
 import ConnectedIconLabel from '.~/components/connected-icon-label';
-import { NON_INTERACTABLE_PROPS } from '.~/constants';
+import { NON_INTERACTABLE_SELECT_PROPS } from '.~/constants';
 
 /**
  * ConnectAdsBody component.
  *
  * @param {Object} props Props.
- * @param {Object} props.googleAdsAccount Google Ads account object.
  * @param {boolean} props.isConnected Whether the account is connected.
  * @param {Function} props.handleConnectClick Callback to handle the connect click.
  * @param {boolean} props.isLoading Whether the card is in a loading state.
@@ -26,7 +25,6 @@ import { NON_INTERACTABLE_PROPS } from '.~/constants';
  * @return {JSX.Element} Body component.
  */
 const ConnectAdsBody = ( {
-	googleAdsAccount,
 	isConnected,
 	handleConnectClick,
 	isLoading,
@@ -39,7 +37,7 @@ const ConnectAdsBody = ( {
 				value={ value }
 				onChange={ setValue }
 				autoSelectFirstOption={ true }
-				{ ...( isConnected && NON_INTERACTABLE_PROPS ) }
+				{ ...( isConnected && NON_INTERACTABLE_SELECT_PROPS ) }
 			/>
 			{ isLoading ? (
 				<LoadingLabel
@@ -47,14 +45,10 @@ const ConnectAdsBody = ( {
 				/>
 			) : (
 				<>
-					{ isConnected &&
-						googleAdsAccount.id === Number( value ) && (
-							<ConnectedIconLabel />
-						) }
-					{ ! isConnected && (
+					{ isConnected ? (
+						<ConnectedIconLabel />
+					) : (
 						<ConnectCTA
-							isConnected={ isConnected }
-							id={ googleAdsAccount.id }
 							handleConnectClick={ handleConnectClick }
 							value={ value }
 						/>

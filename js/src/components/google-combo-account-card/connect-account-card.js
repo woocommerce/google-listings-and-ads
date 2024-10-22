@@ -18,7 +18,7 @@ import './connect-account-card.scss';
  * @param {string} props.helperText The helper text for the account card.
  * @param {JSX.Element} props.body The content for the body of the account card.
  * @param {JSX.Element} props.footer The content for the footer of the account card.
- * @param {string} props.className Additional class names for the account card.
+ * @param {string} [props.className] Additional class names for the account card.
  * @return {JSX.Element} ConnectAccountCard component.
  */
 const ConnectAccountCard = ( {

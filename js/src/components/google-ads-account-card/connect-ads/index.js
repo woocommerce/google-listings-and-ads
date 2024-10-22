@@ -11,6 +11,7 @@ import { CardDivider } from '@wordpress/components';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppButton from '.~/components/app-button';
 import AppDocumentationLink from '.~/components/app-documentation-link';
+import ConnectCTA from './connect-cta';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import LoadingLabel from '.~/components/loading-label';
 import Section from '.~/wcdl/section';
@@ -131,17 +132,10 @@ const ConnectAds = ( props ) => {
 							) }
 						/>
 					) : (
-						<AppButton
-							isSecondary
-							disabled={ ! value }
-							eventName="gla_ads_account_connect_button_click"
-							eventProps={ getEventProps( {
-								id: Number( value ),
-							} ) }
-							onClick={ handleConnectClick }
-						>
-							{ __( 'Connect', 'google-listings-and-ads' ) }
-						</AppButton>
+						<ConnectCTA
+							handleConnectClick={ handleConnectClick }
+							value={ Number( value ) }
+						/>
 					) }
 				</ContentButtonLayout>
 			</Section.Card.Body>

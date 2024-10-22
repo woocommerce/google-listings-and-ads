@@ -125,7 +125,7 @@ export const GOOGLE_WPCOM_APP_CONNECTED_STATUS = {
 	DISABLED: 'disabled',
 };
 
-export const NON_INTERACTABLE_PROPS = {
+export const NON_INTERACTABLE_SELECT_PROPS = {
 	suffix: ' ',
 	style: {
 		pointerEvents: 'none',
