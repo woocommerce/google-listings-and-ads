@@ -77,7 +77,7 @@ const useAutoCreateAdsMCAccounts = () => {
 		googleAdsAccountChecksResolved && googleMCAccountChecksResolved;
 
 	if ( accountCreationChecksResolved ) {
-		if ( ! adsAccountCreationRequired || ! MCAccountCreationRequired ) {
+		if ( adsAccountCreationRequired || MCAccountCreationRequired ) {
 			const createBothAccounts =
 				adsAccountCreationRequired && MCAccountCreationRequired;
 

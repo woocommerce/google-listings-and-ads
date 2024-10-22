@@ -36,7 +36,7 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 
 		useGoogleMCAccount.mockReturnValue( {
 			hasFinishedResolution: true,
-			googleMCAccount: undefined,
+			hasGoogleMCConnection: false,
 		} );
 	} );
 
