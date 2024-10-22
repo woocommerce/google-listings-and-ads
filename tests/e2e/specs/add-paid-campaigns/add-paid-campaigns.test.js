@@ -80,20 +80,35 @@ test.describe( 'Set up Ads account', () => {
 	} );
 
 	test( 'Dashboard page contains Add Paid campaign buttons', async () => {
-		//Add page campaign in the Performance (Paid Campaigns) section
-		await expect(
-			dashboardPage.getAdsConnectionAllProgramsButton( 'summary-card' )
-		).toBeEnabled();
-
 		//Add page campaign in the programs section.
 		adsConnectionButton = dashboardPage.getAdsConnectionAllProgramsButton();
 		await expect( adsConnectionButton ).toBeEnabled();
 	} );
 
-	test( 'Dashboard page contains Paid Features section', async () => {
+	test( 'Dashboard page contains Paid Features section with feature list and Create Campaign button', async () => {
 		await expect(
-			dashboardPage.getPaidFeaturesContentArea()
+			page.getByText(
+				'Reach more customer by advertising your products across Google Ads channels like Search, YouTube and Discover.'
+			)
 		).toBeVisible();
+
+		await expect(
+			page.getByText(
+				'New to Google Ads? Get $500 in ad credit when you spend $500 within your first 60 days.'
+			)
+		).toBeVisible();
+
+		await expect( dashboardPage.getCreateCampaignButton() ).toBeEnabled();
+		await dashboardPage.getCreateCampaignButton().click();
+		await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+		await expect(
+			page.getByRole( 'heading', {
+				name: 'Set up your accounts',
+			} )
+		).toBeVisible();
+
+		await dashboardPage.goto();
+		await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	} );
 
 	test.describe( 'Set up your accounts page', async () => {

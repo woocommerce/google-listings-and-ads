@@ -131,34 +131,22 @@ export default class DashboardPage extends MockRequests {
 	/**
 	 * Get the Ads connection button.
 	 *
-	 * @param  {('programs-table'|'summary-card')} [type] The type of button to get. Either 'programs-table' or 'summary-card'.
 	 * @return {import('@playwright/test').Locator} Get the Ads connection button.
 	 */
-	getAdsConnectionAllProgramsButton( type = 'programs-table' ) {
-		return this.page.locator(
-			`${
-				type === 'programs-table'
-					? '.gla-all-programs-table-card button'
-					: '.gla-summary-card'
-			}`,
-			{
-				hasText:
-					type === 'programs-table'
-						? 'Add paid campaign'
-						: 'Create Campaign',
-			}
-		);
+	getAdsConnectionAllProgramsButton() {
+		return this.page.locator( '.gla-all-programs-table-card button', {
+			hasText: 'Add paid campaign',
+		} );
 	}
 
 	/**
-	 * Get the Paid Features content area.
+	 * Get the Create Campaign button.
 	 *
 	 * @return {import('@playwright/test').Locator} Get the Ads connection button.
 	 */
-	getPaidFeaturesContentArea() {
-		return this.page.locator( 'gla-paid-ads-features-section__content', {
-			hasText:
-				'Reach more customer by advertising your products across Google Ads channels like Search, YouTube and Discover.',
+	getCreateCampaignButton() {
+		return this.page.locator( '.gla-summary-card button', {
+			hasText: 'Create Campaign',
 		} );
 	}
 }
