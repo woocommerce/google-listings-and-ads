@@ -222,6 +222,8 @@ test.describe( 'Set up accounts', () => {
 		test( 'should create merchant center and ads account if does not exist for the user', async () => {
 			await setUpAccountsPage.mockJetpackConnected();
 			await setUpAccountsPage.mockGoogleConnected();
+			await setupAdsAccountPage.mockAdsAccountDisconnected();
+			await setUpAccountsPage.mockMCNotConnected();
 
 			await setupAdsAccountPage.fulfillAdsAccounts(
 				[
