@@ -11,7 +11,17 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import { useAccountCreationContext } from '.~/components/google-combo-account-card/account-creation-context';
 
-const useAccountCreationData = () => {
+/**
+ * useAccountsData hook.
+ *
+ * Checks if accounts are being created and if they are ready.
+ * @return {Object} Object with account data.
+ * @property {boolean} creatingAccounts - Whether accounts are being created.
+ * @property {Object} google - Google account data.
+ * @property {Object} googleAdsAccount - Google Ads account data.
+ * @property {Object} googleMCAccount - Google Merchant Center account data.
+ */
+const useAccountsData = () => {
 	const {
 		google,
 		hasFinishedResolution: hasFinishedResolutionForGoogleAccount,
@@ -27,7 +37,7 @@ const useAccountCreationData = () => {
 
 	const accountCreationContext = useAccountCreationContext();
 	const wasCreatingAccounts = useRef( null );
-	const { creatingAccounts, accountsCreated } = accountCreationContext;
+	const { creatingWhich, accountsCreated } = accountCreationContext;
 
 	const accountDetailsResolved =
 		hasFinishedResolutionForGoogleAccount &&
@@ -35,8 +45,8 @@ const useAccountCreationData = () => {
 		hasFinishedResolutionForGoogleMCAccount;
 
 	useEffect( () => {
-		if ( creatingAccounts ) {
-			wasCreatingAccounts.current = creatingAccounts;
+		if ( creatingWhich ) {
+			wasCreatingAccounts.current = creatingWhich;
 		}
 
 		if (
@@ -52,20 +62,20 @@ const useAccountCreationData = () => {
 			}
 		}
 	}, [
-		creatingAccounts,
+		creatingWhich,
 		accountsCreated,
 		accountDetailsResolved,
-		google.email,
-		googleAdsAccount.id,
-		googleMCAccount.id,
+		google,
+		googleAdsAccount,
+		googleMCAccount,
 	] );
 
 	return {
-		creatingAccounts: wasCreatingAccounts.current,
-		email: google.email,
+		creatingWhich: wasCreatingAccounts.current,
+		google,
 		googleAdsAccount,
 		googleMCAccount,
 	};
 };
 
-export default useAccountCreationData;
+export default useAccountsData;

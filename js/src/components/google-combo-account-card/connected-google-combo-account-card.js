@@ -35,7 +35,7 @@ const ConnectedGoogleComboAccountCard = () => {
 
 	const accountCreationData = {
 		accountsCreated,
-		creatingAccounts: creatingWhich,
+		creatingWhich,
 	};
 
 	return (

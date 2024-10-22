@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 import ConnectedIconLabel from '.~/components/connected-icon-label';
 import LoadingLabel from '.~/components/loading-label/loading-label';
-import useAccountCreationData from '.~/hooks/useAccountCreationData';
+import useAccountsData from '.~/hooks/useAccountsData';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
@@ -19,7 +19,7 @@ import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
  * @return {JSX.Element|null} Indicator component.
  */
 const Indicator = () => {
-	const { creatingAccounts } = useAccountCreationData();
+	const { creatingWhich } = useAccountsData();
 	const { hasGoogleAdsConnection } = useGoogleAdsAccount();
 	const { googleMCAccount, isPreconditionReady } = useGoogleMCAccount();
 	const { hasAccess, step } = useGoogleAdsAccountStatus();
@@ -35,7 +35,7 @@ const Indicator = () => {
 			( googleMCAccount?.status === 'incomplete' &&
 				googleMCAccount?.step === 'link_ads' ) );
 
-	if ( creatingAccounts ) {
+	if ( creatingWhich ) {
 		return (
 			<LoadingLabel
 				text={ __( 'Creating…', 'google-listings-and-ads' ) }

@@ -6,7 +6,7 @@ import { createContext, useContext } from '@wordpress/element';
 /**
  * @typedef {Object} AccountCreationContext
  * @property {boolean} accountsCreated `true` if the accounts have been created.
- * @property {string|null} creatingAccounts The accounts that are being created. It can be 'ads', 'mc', or 'both'.
+ * @property {string|null} creatingWhich The accounts that are being created. It can be 'ads', 'mc', or 'both'.
  */
 
 export const AccountCreationContext = createContext( {} );
