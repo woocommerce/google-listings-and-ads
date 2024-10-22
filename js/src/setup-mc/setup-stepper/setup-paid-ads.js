@@ -22,6 +22,9 @@ import { API_NAMESPACE } from '.~/data/constants';
 import { GUIDE_NAMES, GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
 import SkipButton from './skip-button';
+import clientSession from './clientSession';
+import useFetchBudgetRecommendation from '.~/hooks/useFetchBudgetRecommendation';
+import AppSpinner from '.~/components/app-spinner';
 
 /**
  * Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
@@ -41,6 +44,8 @@ export default function SetupPaidAds() {
 	const [ completing, setCompleting ] = useState( null );
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
+	const { highestDailyBudget, hasFinishedResolution } =
+		useFetchBudgetRecommendation( countryCodes );
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 
@@ -123,10 +128,22 @@ export default function SetupPaidAds() {
 		);
 	};
 
+	const paidAds = {
+		amount: highestDailyBudget,
+		...clientSession.getCampaign(),
+	};
+
+	if ( ! hasFinishedResolution || ! countryCodes ) {
+		return <AppSpinner />;
+	}
+
 	return (
 		<CampaignAssetsForm
-			initialCampaign={ {
-				amount: 0,
+			initialCampaign={ paidAds }
+			onChange={ ( _, values ) => {
+				if ( values.amount >= highestDailyBudget ) {
+					clientSession.setCampaign( values );
+				}
 			} }
 		>
 			<AdsCampaign
