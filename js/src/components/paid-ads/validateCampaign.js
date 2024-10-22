@@ -20,7 +20,7 @@ const BUDGET_MIN_PERCENT = 0.3;
  * Validate campaign form. Accepts the form values object and returns errors object.
  *
  * @param {CampaignFormValues} values Campaign form values.
- * @param {ValidateCampaignOptions} opts Extra form options.
+ * @param {ValidateCampaignOptions} [opts] Extra form options.
  * @return {Object} errors.
  */
 const validateCampaign = ( values, opts ) => {
