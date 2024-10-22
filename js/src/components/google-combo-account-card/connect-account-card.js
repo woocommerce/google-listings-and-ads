@@ -26,7 +26,7 @@ const ConnectAccountCard = ( {
 	helperText,
 	body,
 	footer,
-	className = '',
+	className,
 } ) => {
 	return (
 		<AccountCard

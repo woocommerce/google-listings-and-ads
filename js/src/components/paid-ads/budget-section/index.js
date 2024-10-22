@@ -13,7 +13,12 @@ import './index.scss';
 import BudgetRecommendation from './budget-recommendation';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import AppInputPriceControl from '.~/components/app-input-price-control';
-import { NON_INTERACTABLE_SELECT_PROPS } from '.~/constants';
+
+const nonInteractableProps = {
+	noPointerEvents: true,
+	readOnly: true,
+	tabIndex: -1,
+};
 
 /**
  * Renders <Section> and <Section.Card> UI with campaign budget inputs.
@@ -72,8 +77,7 @@ const BudgetSection = ( { formProps, disabled = false, children } ) => {
 								) }
 								suffix={ currency }
 								{ ...getInputProps( 'amount' ) }
-								{ ...( disabled &&
-									NON_INTERACTABLE_SELECT_PROPS ) }
+								{ ...( disabled && nonInteractableProps ) }
 							/>
 							<AppInputPriceControl
 								disabled

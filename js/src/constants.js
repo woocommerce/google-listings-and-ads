@@ -124,12 +124,3 @@ export const GOOGLE_WPCOM_APP_CONNECTED_STATUS = {
 	ERROR: 'error',
 	DISABLED: 'disabled',
 };
-
-export const NON_INTERACTABLE_SELECT_PROPS = {
-	suffix: ' ',
-	style: {
-		pointerEvents: 'none',
-	},
-	readOnly: true,
-	tabIndex: -1,
-};

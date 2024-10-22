@@ -11,7 +11,6 @@ import ContentButtonLayout from '.~/components/content-button-layout';
 import ConnectButton from '.~/components/google-ads-account-card/connect-ads/connect-button';
 import LoadingLabel from '.~/components/loading-label/loading-label';
 import ConnectedIconLabel from '.~/components/connected-icon-label';
-import { NON_INTERACTABLE_SELECT_PROPS } from '.~/constants';
 
 /**
  * ConnectAdsBody component.
@@ -37,7 +36,7 @@ const ConnectAdsBody = ( {
 				value={ value }
 				onChange={ setValue }
 				autoSelectFirstOption={ true }
-				{ ...( isConnected && NON_INTERACTABLE_SELECT_PROPS ) }
+				nonInteractive={ isConnected }
 			/>
 			{ isLoading ? (
 				<LoadingLabel
