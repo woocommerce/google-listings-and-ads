@@ -57,10 +57,13 @@ const useAutoCreateAdsMCAccounts = () => {
 	const [ handleCreateAccount, { response } ] = useCreateMCAccount();
 	const [ upsertAdsAccount, { loading } ] = useUpsertAdsAccount();
 
-	const hasExistingMCAccount =
-		hasGoogleMCConnection || existingMCAccounts?.length > 0;
-	const hasExistingAdsAccount =
-		hasGoogleAdsConnection || existingAdsAccounts?.length > 0;
+	const hasExistingMCAccount = existingMCAccounts?.length > 0;
+	const hasExistingAdsAccount = existingAdsAccounts?.length > 0;
+
+	const adsAccountCreationRequired =
+		! hasGoogleAdsConnection && ! hasExistingAdsAccount;
+	const MCAccountCreationRequired =
+		! hasGoogleMCConnection && ! hasExistingMCAccount;
 
 	const googleAdsAccountChecksResolved =
 		hasFinishedResolutionForExistingAdsAccounts &&
@@ -74,13 +77,13 @@ const useAutoCreateAdsMCAccounts = () => {
 		googleAdsAccountChecksResolved && googleMCAccountChecksResolved;
 
 	if ( accountCreationChecksResolved ) {
-		if ( ! hasExistingAdsAccount || ! hasExistingMCAccount ) {
+		if ( ! adsAccountCreationRequired || ! MCAccountCreationRequired ) {
 			const createBothAccounts =
-				! hasExistingAdsAccount && ! hasExistingMCAccount;
+				adsAccountCreationRequired && MCAccountCreationRequired;
 
 			if ( createBothAccounts ) {
 				shouldCreateAccounts.current = CREATING_BOTH_ACCOUNTS;
-			} else if ( ! hasExistingAdsAccount ) {
+			} else if ( adsAccountCreationRequired ) {
 				shouldCreateAccounts.current = CREATING_ADS_ACCOUNT;
 			} else {
 				shouldCreateAccounts.current = CREATING_MC_ACCOUNT;

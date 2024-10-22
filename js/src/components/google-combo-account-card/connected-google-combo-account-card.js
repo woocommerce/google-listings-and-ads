@@ -5,7 +5,7 @@ import AccountCard, { APPEARANCE } from '../account-card';
 import AccountCardDescription, { Indicator } from './account-card-description';
 import { AccountCreationContext } from './account-creation-context';
 import AppSpinner from '../app-spinner';
-import useAutoCreateAdsMCAccounts from '../../hooks/useAutoCreateAdsMCAccounts';
+import useAutoCreateAdsMCAccounts from '.~/hooks/useAutoCreateAdsMCAccounts';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import './connected-google-combo-account-card.scss';
