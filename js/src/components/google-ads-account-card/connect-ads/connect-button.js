@@ -28,7 +28,7 @@ import { FILTER_ONBOARDING } from '.~/utils/tracks';
  * @fires gla_ads_account_connect_button_click when "Connect" button is clicked.
  * @return {JSX.Element} Connect CTA component.
  */
-const ConnectCTA = ( { handleConnectClick, value } ) => {
+const ConnectButton = ( { handleConnectClick, value } ) => {
 	const getEventProps = useEventPropertiesFilter( FILTER_ONBOARDING );
 
 	return (
@@ -46,4 +46,4 @@ const ConnectCTA = ( { handleConnectClick, value } ) => {
 	);
 };
 
-export default ConnectCTA;
+export default ConnectButton;

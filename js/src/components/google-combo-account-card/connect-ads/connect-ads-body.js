@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 import AdsAccountSelectControl from '.~/components/ads-account-select-control';
 import ContentButtonLayout from '.~/components/content-button-layout';
-import ConnectCTA from '.~/components/google-ads-account-card/connect-ads/connect-cta';
+import ConnectButton from '.~/components/google-ads-account-card/connect-ads/connect-button';
 import LoadingLabel from '.~/components/loading-label/loading-label';
 import ConnectedIconLabel from '.~/components/connected-icon-label';
 import { NON_INTERACTABLE_SELECT_PROPS } from '.~/constants';
@@ -48,7 +48,7 @@ const ConnectAdsBody = ( {
 					{ isConnected ? (
 						<ConnectedIconLabel />
 					) : (
-						<ConnectCTA
+						<ConnectButton
 							handleConnectClick={ handleConnectClick }
 							value={ value }
 						/>

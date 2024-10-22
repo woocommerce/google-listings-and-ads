@@ -11,7 +11,7 @@ import { CardDivider } from '@wordpress/components';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppButton from '.~/components/app-button';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import ConnectCTA from './connect-cta';
+import ConnectButton from './connect-button';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import LoadingLabel from '.~/components/loading-label';
 import Section from '.~/wcdl/section';
@@ -129,9 +129,9 @@ const ConnectAds = ( props ) => {
 							) }
 						/>
 					) : (
-						<ConnectCTA
+						<ConnectButton
 							handleConnectClick={ handleConnectClick }
-							value={ Number( value ) }
+							value={ value }
 						/>
 					) }
 				</ContentButtonLayout>
