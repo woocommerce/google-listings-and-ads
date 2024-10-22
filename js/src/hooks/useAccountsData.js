@@ -12,14 +12,21 @@ import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import { useAccountCreationContext } from '.~/components/google-combo-account-card/account-creation-context';
 
 /**
+ * @typedef {Object} AccountsData
+ * @property {('ads'|'mc'|'both'|null)} creatingWhich - The type of accounts being created, or `null` if none.
+ * @property {Object} google - Google account data.
+ * @property {string} google.email - Google account email.
+ * @property {Object} googleAdsAccount - Google Ads account data.
+ * @property {number} googleAdsAccount.id - Google Ads account ID.
+ * @property {Object} googleMCAccount - Google Merchant Center account data.
+ * @property {number} googleMCAccount.id - Google Merchant Center account ID.
+ */
+
+/**
  * useAccountsData hook.
  *
  * Checks if accounts are being created and if they are ready.
- * @return {Object} Object with account data.
- * @property {boolean} creatingAccounts - Whether accounts are being created.
- * @property {Object} google - Google account data.
- * @property {Object} googleAdsAccount - Google Ads account data.
- * @property {Object} googleMCAccount - Google Merchant Center account data.
+ * @return {AccountsData} Object with account data.
  */
 const useAccountsData = () => {
 	const {

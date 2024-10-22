@@ -6,7 +6,7 @@ import CreatingAccounts from './creating-accounts';
 import useAccountsData from '.~/hooks/useAccountsData';
 
 /**
- * AccountCardDescription component
+ * AccountCardDescription component.
  * @return {JSX.Element} AccountCardDescription component.
  */
 const AccountCardDescription = () => {

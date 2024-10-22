@@ -16,6 +16,19 @@ import {
 	CREATING_MC_ACCOUNT,
 } from '.~/components/google-combo-account-card/constants';
 
+/**
+ * @typedef {Object} AutoCreateAdsMCAccountsData
+ * @property {boolean} accountsCreated - Whether the accounts have been successfully created.
+ * @property {boolean} hasDetermined - Whether the checks to determine if accounts should be created are finished.
+ * @property {('ads'|'mc'|'both'|null)} creatingWhich - Which accounts are being created ('ads', 'mc', 'both'), or `null` if none.
+ */
+
+/**
+ * useAutoCreateAdsMCAccounts hook.
+ * Creates Google Ads and Merchant Center accounts if the user doesn't have any existing and connected accounts.
+ *
+ * @return {AutoCreateAdsMCAccountsData} Object containing account creation data.
+ */
 const useAutoCreateAdsMCAccounts = () => {
 	const lockedRef = useRef( false );
 	// Create separate states.

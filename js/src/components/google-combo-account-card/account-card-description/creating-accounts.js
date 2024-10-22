@@ -22,10 +22,6 @@ const CreatingAccounts = ( { creatingAccounts } ) => {
 	let text = null;
 	let subText = null;
 
-	if ( ! creatingAccounts ) {
-		return null;
-	}
-
 	switch ( creatingAccounts ) {
 		case CREATING_BOTH_ACCOUNTS:
 			text = __(
