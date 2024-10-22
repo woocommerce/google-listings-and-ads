@@ -11,7 +11,24 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import { useAccountCreationContext } from '.~/components/google-combo-account-card/account-creation-context';
 
-const useAccountCreationData = () => {
+/**
+ * @typedef {Object} AccountsData
+ * @property {('ads'|'mc'|'both'|null)} creatingWhich - The type of accounts being created, or `null` if none.
+ * @property {Object} google - Google account data.
+ * @property {string} google.email - Google account email.
+ * @property {Object} googleAdsAccount - Google Ads account data.
+ * @property {number} googleAdsAccount.id - Google Ads account ID.
+ * @property {Object} googleMCAccount - Google Merchant Center account data.
+ * @property {number} googleMCAccount.id - Google Merchant Center account ID.
+ */
+
+/**
+ * useAccountsData hook.
+ *
+ * Checks if accounts are being created and if they are ready.
+ * @return {AccountsData} Object with account data.
+ */
+const useAccountsData = () => {
 	const {
 		google,
 		hasFinishedResolution: hasFinishedResolutionForGoogleAccount,
@@ -27,7 +44,7 @@ const useAccountCreationData = () => {
 
 	const accountCreationContext = useAccountCreationContext();
 	const wasCreatingAccounts = useRef( null );
-	const { creatingAccounts, accountsCreated } = accountCreationContext;
+	const { creatingWhich, accountsCreated } = accountCreationContext;
 
 	const accountDetailsResolved =
 		hasFinishedResolutionForGoogleAccount &&
@@ -35,8 +52,8 @@ const useAccountCreationData = () => {
 		hasFinishedResolutionForGoogleMCAccount;
 
 	useEffect( () => {
-		if ( creatingAccounts ) {
-			wasCreatingAccounts.current = creatingAccounts;
+		if ( creatingWhich ) {
+			wasCreatingAccounts.current = creatingWhich;
 		}
 
 		if (
@@ -52,20 +69,20 @@ const useAccountCreationData = () => {
 			}
 		}
 	}, [
-		creatingAccounts,
+		creatingWhich,
 		accountsCreated,
 		accountDetailsResolved,
-		google.email,
-		googleAdsAccount.id,
-		googleMCAccount.id,
+		google,
+		googleAdsAccount,
+		googleMCAccount,
 	] );
 
 	return {
-		creatingAccounts: wasCreatingAccounts.current,
-		email: google.email,
+		creatingWhich: wasCreatingAccounts.current,
+		google,
 		googleAdsAccount,
 		googleMCAccount,
 	};
 };
 
-export default useAccountCreationData;
+export default useAccountsData;
