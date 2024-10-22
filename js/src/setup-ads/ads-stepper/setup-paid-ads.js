@@ -26,6 +26,8 @@ const { APPROVED } = GOOGLE_ADS_BILLING_STATUS;
 
 /**
  * Renders the step to setup paid ads
+ *
+ * @fires gla_launch_paid_campaign_button_click on submit
  */
 const SetupPaidAds = () => {
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
