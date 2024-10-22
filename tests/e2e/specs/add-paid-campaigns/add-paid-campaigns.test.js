@@ -85,6 +85,10 @@ test.describe( 'Set up Ads account', () => {
 			dashboardPage.getAdsConnectionAllProgramsButton( 'summary-card' )
 		).toBeEnabled();
 
+		await expect(
+			dashboardPage.getPaidFeaturesContentArea()
+		).toBeVisible();
+
 		//Add page campaign in the programs section.
 		adsConnectionButton = dashboardPage.getAdsConnectionAllProgramsButton();
 		await expect( adsConnectionButton ).toBeEnabled();

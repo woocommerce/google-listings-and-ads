@@ -142,8 +142,23 @@ export default class DashboardPage extends MockRequests {
 					: '.gla-summary-card'
 			}`,
 			{
-				hasText: 'Add paid campaign',
+				hasText:
+					type === 'programs-table'
+						? 'Add paid campaign'
+						: 'Create Campaign',
 			}
 		);
+	}
+
+	/**
+	 * Get the Paid Features content area.
+	 *
+	 * @return {import('@playwright/test').Locator} Get the Ads connection button.
+	 */
+	getPaidFeaturesContentArea() {
+		return this.page.locator( 'gla-paid-ads-features-section__content', {
+			hasText:
+				'Reach more customer by advertising your products across Google Ads channels like Search, YouTube and Discover.',
+		} );
 	}
 }
