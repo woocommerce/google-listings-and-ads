@@ -26,7 +26,7 @@ const useShouldCreateMCAccount = () => {
 		return null;
 	}
 
-	return ! hasConnection && accounts.length === 0;
+	return ! hasConnection && accounts?.length === 0;
 };
 
 export default useShouldCreateMCAccount;
