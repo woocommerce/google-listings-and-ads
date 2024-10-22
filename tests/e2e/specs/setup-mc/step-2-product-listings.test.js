@@ -5,7 +5,6 @@ import ProductListingsPage from '../../utils/pages/setup-mc/step-2-product-listi
 import {
 	getCountryInputSearchBoxContainer,
 	getCountryInputSearchBox,
-	removeCountryFromSearchBox,
 	selectCountryFromSearchBox,
 } from '../../utils/page';
 
@@ -70,6 +69,7 @@ test.describe( 'Configure product listings', () => {
 					payment_methods_visible: false,
 					refund_tos_visible: false,
 					contact_info_visible: false,
+					tax_rate: 'destination',
 				},
 				200,
 				[ 'GET' ]
@@ -101,11 +101,6 @@ test.describe( 'Configure product listings', () => {
 				'our product details, estimated shipping info and tax details will be displayed across Google.'
 			)
 		).toBeVisible();
-	} );
-
-	test( 'should select the default language English', async () => {
-		const languageRadioRow = productListingsPage.getLanguageRadioRow();
-		await expect( languageRadioRow ).toBeChecked();
 	} );
 
 	test( 'should see US but should not see UK in the country search box', async () => {
@@ -158,31 +153,6 @@ test.describe( 'Configure product listings', () => {
 
 		// Check the radio button of "Selected countries only" first in order to make the country search box visible again.
 		await productListingsPage.checkSelectedCountriesOnlyRadioButton();
-	} );
-
-	test( 'should still see "Tax rate (required for U.S. only)" even if deselect US when the default country is US', async () => {
-		const taxRateSection = productListingsPage.getTaxRateSection();
-		await expect( taxRateSection ).toBeVisible();
-		await removeCountryFromSearchBox( page, 'United States (US)' );
-		await expect( taxRateSection ).toBeVisible();
-	} );
-
-	test( 'should hide "Tax rate (required for U.S. only)" if deselect US when the default country is not US', async () => {
-		// Mock WC default country as TW, because Tax rate will always be shown if the default country is US.
-		await productListingsPage.fulfillWCDefaultCountry( {
-			woocommerce_default_country: 'TW',
-		} );
-		await page.reload();
-
-		// Check the radio button of "Selected countries only" first in order to ensure the country search box is visible.
-		await productListingsPage.checkSelectedCountriesOnlyRadioButton();
-
-		const taxRateSection = productListingsPage.getTaxRateSection();
-		await expect( taxRateSection ).toBeVisible();
-
-		await removeCountryFromSearchBox( page, 'United States (US)' );
-
-		await expect( taxRateSection ).not.toBeVisible();
 	} );
 
 	test.describe( 'Shipping rate is simple', () => {
@@ -357,27 +327,12 @@ test.describe( 'Configure product listings', () => {
 				'Successfully added time for country: "US".'
 			);
 		} );
-
-		test( 'should show error message if clicking "Continue" button when tax rate is not chosen', async () => {
-			await productListingsPage.clickContinueButton();
-			const taxRateError = productListingsPage.getTaxRateError();
-			await expect( taxRateError ).toBeVisible();
-		} );
 	} );
 
 	test.describe( 'Links', () => {
 		test.beforeAll( async () => {
 			// Check simple shipping rate first so we can get "Shipping rates" and "Shipping times" fields.
 			await productListingsPage.checkSimpleShippingRateRadioButton();
-		} );
-
-		test( 'should contain the correct URL for "Read more for Language" link', async () => {
-			const link = productListingsPage.getReadMoreLanguageLink();
-			await expect( link ).toBeVisible();
-			await expect( link ).toHaveAttribute(
-				'href',
-				'https://support.google.com/merchants/answer/160637'
-			);
 		} );
 
 		test( 'should contain the correct URL for "Read more for Shipping Rates" link', async () => {
@@ -397,15 +352,6 @@ test.describe( 'Configure product listings', () => {
 				'https://support.google.com/merchants/answer/7050921'
 			);
 		} );
-
-		test( 'should contain the correct URL for "Read more for Tax Rate" link', async () => {
-			const link = productListingsPage.getReadMoreTaxRateLink();
-			await expect( link ).toBeVisible();
-			await expect( link ).toHaveAttribute(
-				'href',
-				'https://support.google.com/merchants/answer/160162'
-			);
-		} );
 	} );
 
 	test.describe( 'Click "Continue" button', () => {
@@ -414,13 +360,11 @@ test.describe( 'Configure product listings', () => {
 			productListingsPage.mockContactInformation();
 			productListingsPage.checkRecommendedShippingRateRadioButton();
 			await productListingsPage.fillEstimatedShippingTimes( '14' );
-			await productListingsPage.checkNonDestinationBasedTaxRateRadioButton();
 		} );
 
-		test( 'should see the heading of next step and send two requests after clicking "Continue"', async () => {
-			const requestPromises =
-				productListingsPage.registerContinueRequests();
-
+		test( 'should see the heading of next step and request for the contact information after clicking "Continue"', async () => {
+			const requestPromise =
+				productListingsPage.registerContinueRequest();
 			await productListingsPage.clickContinueButton();
 
 			await expect(
@@ -430,12 +374,15 @@ test.describe( 'Configure product listings', () => {
 				} )
 			).toBeVisible();
 
-			const requests = await requestPromises;
-			const policyCheckResponse = await requests[ 1 ].response();
-			const policyCheckResponseBody = await policyCheckResponse.json();
+			const request = await requestPromise;
+			const response = await request.response();
+			const responseBody = await response.json();
 
-			expect( policyCheckResponse.status() ).toBe( 200 );
-			expect( policyCheckResponseBody.allowed_countries ).toBeTruthy();
+			expect( response.status() ).toBe( 200 );
+
+			expect( responseBody.wc_address.street_address ).toBe(
+				'Automata Road'
+			);
 		} );
 	} );
 } );

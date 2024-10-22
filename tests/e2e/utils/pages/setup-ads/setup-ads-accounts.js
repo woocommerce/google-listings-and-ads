@@ -228,4 +228,18 @@ export default class SetupAdsAccount extends MockRequests {
 		const button = this.getConnectDifferentAccountButton();
 		await button.click();
 	}
+
+	/**
+	 * Await the response for ads connection.
+	 *
+	 * @return {Promise<import('@playwright/test').Response>} The response.
+	 */
+	async awaitAdsConnectionResponse() {
+		return this.page.waitForResponse( ( response ) => {
+			return (
+				response.url().includes( '/gla/ads/connection' ) &&
+				response.status() === 200
+			);
+		} );
+	}
 }
