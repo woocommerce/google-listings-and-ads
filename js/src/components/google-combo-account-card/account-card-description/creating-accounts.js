@@ -6,7 +6,6 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { useAccountCreationContext } from '../account-creation-context';
 import {
 	CREATING_ADS_ACCOUNT,
 	CREATING_BOTH_ACCOUNTS,
@@ -15,11 +14,11 @@ import {
 
 /**
  * Account creation in progress description.
+ * @param {Object} props Component props.
+ * @param {string|null} props.creatingAccounts Whether the accounts are being created. Possible values are: 'both', 'ads', 'mc'.
  * @return {JSX.Element|null} JSX markup.
  */
-const CreatingAccounts = () => {
-	const creatingAccounts = useAccountCreationContext();
-
+const CreatingAccounts = ( { creatingAccounts } ) => {
 	if ( ! creatingAccounts ) {
 		return null;
 	}

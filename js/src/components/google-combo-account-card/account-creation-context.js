@@ -3,14 +3,14 @@
  */
 import { createContext, useContext } from '@wordpress/element';
 
-export const AccountCreationContext = createContext( false );
+export const AccountCreationContext = createContext( {} );
 
 export function useAccountCreationContext() {
 	const adaptiveFormContext = useContext( AccountCreationContext );
 
-	if ( adaptiveFormContext === false ) {
+	if ( Object.keys( adaptiveFormContext ).length === 0 ) {
 		throw new Error(
-			'useAccountCreationContext was used outside of its context provider.'
+			'useAccountCreationContext was used outside of its context provider ConnectedGoogleComboAccountCard.'
 		);
 	}
 

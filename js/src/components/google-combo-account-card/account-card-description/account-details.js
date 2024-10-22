@@ -4,21 +4,19 @@
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
- * Internal dependencies
+ * Account details.
+ *
+ * @param {Object} props Component props.
+ * @param {string} props.email Account email.
+ * @param {number} props.googleAdsID Google Ads ID.
+ * @param {number} props.googleMerchantCenterID Google Merchant Center ID.
+ * @return {JSX.Element} JSX markup.
  */
-import useGoogleAccount from '.~/hooks/useGoogleAccount';
-import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-
-const AccountDetails = () => {
-	const { google } = useGoogleAccount();
-	const { googleMCAccount } = useGoogleMCAccount();
-	const { googleAdsAccount } = useGoogleAdsAccount();
-
+const AccountDetails = ( { email, googleAdsID, googleMerchantCenterID } ) => {
 	return (
 		<div className="gla-account-card__account_details">
-			<span>{ google?.email }</span>
-			{ googleMCAccount.id > 0 && (
+			<span>{ email }</span>
+			{ Number( googleMerchantCenterID ) > 0 && (
 				<span>
 					{ sprintf(
 						// Translators: %s is the Merchant Center ID
@@ -26,16 +24,16 @@ const AccountDetails = () => {
 							'Merchant Center ID: %s',
 							'google-listings-and-ads'
 						),
-						googleMCAccount.id
+						googleMerchantCenterID
 					) }
 				</span>
 			) }
-			{ googleAdsAccount.id > 0 && (
+			{ Number( googleAdsID ) > 0 && (
 				<span>
 					{ sprintf(
 						// Translators: %s is the Google Ads ID
 						__( 'Google Ads ID: %s', 'google-listings-and-ads' ),
-						googleAdsAccount.id
+						googleAdsID
 					) }
 				</span>
 			) }

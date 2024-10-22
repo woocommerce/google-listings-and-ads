@@ -93,7 +93,7 @@ const useAutoCreateAdsMCAccounts = () => {
 			return;
 		}
 
-		const mcAccountCreated = response?.status;
+		const mcAccountCreated = !! response?.status;
 
 		const resetState =
 			( isCreatingWhichAccount === CREATING_ADS_ACCOUNT && ! loading ) ||

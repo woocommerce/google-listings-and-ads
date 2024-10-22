@@ -3,13 +3,24 @@
  */
 import AccountDetails from './account-details';
 import CreatingAccounts from './creating-accounts';
-import { useAccountCreationContext } from '../account-creation-context';
+import useAccountCreationData from '.~/hooks/useAccountCreationData';
 
 const AccountCardDescription = () => {
-	const creatingAccounts = useAccountCreationContext();
+	const { creatingAccounts, email, googleAdsAccount, googleMCAccount } =
+		useAccountCreationData();
 
 	return (
-		<>{ creatingAccounts ? <CreatingAccounts /> : <AccountDetails /> }</>
+		<>
+			{ creatingAccounts ? (
+				<CreatingAccounts creatingAccounts={ creatingAccounts } />
+			) : (
+				<AccountDetails
+					email={ email }
+					googleAdsID={ googleAdsAccount.id }
+					googleMerchantCenterID={ googleMCAccount.id }
+				/>
+			) }
+		</>
 	);
 };
 

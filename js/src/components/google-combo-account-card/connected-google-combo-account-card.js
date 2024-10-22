@@ -36,8 +36,13 @@ const ConnectedGoogleComboAccountCard = () => {
 		return <AccountCard description={ <AppSpinner /> } />;
 	}
 
+	const accountCreationData = {
+		accountsCreated,
+		creatingAccounts: isCreatingWhichAccount,
+	};
+
 	return (
-		<AccountCreationContext.Provider value={ isCreatingWhichAccount }>
+		<AccountCreationContext.Provider value={ accountCreationData }>
 			<AccountCard
 				appearance={ APPEARANCE.GOOGLE }
 				alignIcon="top"
