@@ -2,12 +2,18 @@
  * Internal dependencies
  */
 import useLayout from '.~/hooks/useLayout';
-import SetupAdsForm from './setup-ads-form';
+import SetupAdsTopBar from './top-bar';
+import AdsStepper from './ads-stepper';
 
 const SetupAds = () => {
 	useLayout( 'full-page' );
 
-	return <SetupAdsForm />;
+	return (
+		<>
+			<SetupAdsTopBar />
+			<AdsStepper />
+		</>
+	);
 };
 
 export default SetupAds;
