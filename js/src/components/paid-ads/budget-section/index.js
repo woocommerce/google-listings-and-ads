@@ -72,7 +72,8 @@ const BudgetSection = ( { formProps, disabled = false, children } ) => {
 								) }
 								suffix={ currency }
 								{ ...getInputProps( 'amount' ) }
-								{ ...( disabled && NON_INTERACTABLE_SELECT_PROPS ) }
+								{ ...( disabled &&
+									NON_INTERACTABLE_SELECT_PROPS ) }
 							/>
 							<AppInputPriceControl
 								disabled

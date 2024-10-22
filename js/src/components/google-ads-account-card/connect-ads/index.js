@@ -19,10 +19,8 @@ import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
 import AdsAccountSelectControl from '.~/components/ads-account-select-control';
 import { useAppDispatch } from '.~/data';
-import { FILTER_ONBOARDING } from '.~/utils/tracks';
 import './index.scss';
 
 /**
@@ -50,7 +48,6 @@ const ConnectAds = ( props ) => {
 		data: { id: value },
 	} );
 	const { refetchGoogleAdsAccount } = useGoogleAdsAccount();
-	const getEventProps = useEventPropertiesFilter( FILTER_ONBOARDING );
 	const { createNotice } = useDispatchCoreNotices();
 	const { fetchGoogleAdsAccountStatus } = useAppDispatch();
 
