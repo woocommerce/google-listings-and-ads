@@ -3,7 +3,6 @@
  */
 import AccountCard, { APPEARANCE } from '../account-card';
 import AccountCardDescription, { Indicator } from './account-card-description';
-import { AccountCreationContext } from './account-creation-context';
 import AppSpinner from '../app-spinner';
 import useAutoCreateAdsMCAccounts from '.~/hooks/useAutoCreateAdsMCAccounts';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
@@ -33,21 +32,16 @@ const ConnectedGoogleComboAccountCard = () => {
 		return <AccountCard description={ <AppSpinner /> } />;
 	}
 
-	const accountCreationData = {
-		accountsCreated,
-		creatingWhich,
-	};
-
 	return (
-		<AccountCreationContext.Provider value={ accountCreationData }>
-			<AccountCard
-				appearance={ APPEARANCE.GOOGLE }
-				alignIcon="top"
-				className="gla-google-combo-account-card--connected"
-				helper={ <AccountCardDescription /> }
-				indicator={ <Indicator /> }
-			/>
-		</AccountCreationContext.Provider>
+		<AccountCard
+			appearance={ APPEARANCE.GOOGLE }
+			alignIcon="top"
+			className="gla-google-combo-account-card--connected"
+			helper={
+				<AccountCardDescription creatingWhich={ creatingWhich } />
+			}
+			indicator={ <Indicator creatingWhich={ creatingWhich } /> }
+		/>
 	);
 };
 

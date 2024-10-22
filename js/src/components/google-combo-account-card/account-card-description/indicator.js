@@ -8,26 +8,19 @@ import { __ } from '@wordpress/i18n';
  */
 import ConnectedIconLabel from '.~/components/connected-icon-label';
 import LoadingLabel from '.~/components/loading-label/loading-label';
-import useAccountsData from '.~/hooks/useAccountsData';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
+import useGoogleAdsAccountReady from '.~/hooks/useGoogleAdsAccountReady';
 
 /**
  * Account creation indicator.
  * Displays a loading indicator when accounts are being created or a connected icon when accounts are connected.
+ * @param {Object} props Component props.
+ * @param {string|null} props.creatingWhich Whether the accounts are being created. Possible values are: 'both', 'ads', 'mc'.
  * @return {JSX.Element|null} Indicator component.
  */
-const Indicator = () => {
-	const { creatingWhich } = useAccountsData();
-	const { hasGoogleAdsConnection } = useGoogleAdsAccount();
+const Indicator = ( { creatingWhich } ) => {
 	const { googleMCAccount, isPreconditionReady } = useGoogleMCAccount();
-	const { hasAccess, step } = useGoogleAdsAccountStatus();
-
-	const isGoogleAdsConnected =
-		hasGoogleAdsConnection &&
-		hasAccess &&
-		[ '', 'billing', 'link_merchant' ].includes( step );
+	const isGoogleAdsReady = useGoogleAdsAccountReady();
 
 	const isGoogleMCConnected =
 		isPreconditionReady &&
@@ -43,7 +36,7 @@ const Indicator = () => {
 		);
 	}
 
-	if ( isGoogleAdsConnected && isGoogleMCConnected ) {
+	if ( isGoogleAdsReady && isGoogleMCConnected ) {
 		return <ConnectedIconLabel />;
 	}
 

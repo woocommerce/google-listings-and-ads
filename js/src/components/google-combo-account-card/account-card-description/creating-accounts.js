@@ -19,6 +19,10 @@ import {
  * @return {JSX.Element|null} JSX markup.
  */
 const CreatingAccounts = ( { creatingAccounts } ) => {
+	if ( ! creatingAccounts ) {
+		return null;
+	}
+
 	let text = null;
 	let subText = null;
 

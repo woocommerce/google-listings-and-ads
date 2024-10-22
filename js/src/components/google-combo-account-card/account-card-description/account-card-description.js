@@ -3,29 +3,19 @@
  */
 import AccountDetails from './account-details';
 import CreatingAccounts from './creating-accounts';
-import useAccountsData from '.~/hooks/useAccountsData';
 
 /**
  * AccountCardDescription component.
+ * @param {Object} props Component props.
+ * @param {string|null} props.creatingWhich Whether the accounts are being created. Possible values are: 'both', 'ads', 'mc'.
  * @return {JSX.Element} AccountCardDescription component.
  */
-const AccountCardDescription = () => {
-	const { creatingWhich, google, googleAdsAccount, googleMCAccount } =
-		useAccountsData();
+const AccountCardDescription = ( { creatingWhich } ) => {
+	if ( creatingWhich ) {
+		return <CreatingAccounts creatingAccounts={ creatingWhich } />;
+	}
 
-	return (
-		<>
-			{ creatingWhich ? (
-				<CreatingAccounts creatingAccounts={ creatingWhich } />
-			) : (
-				<AccountDetails
-					email={ google.email }
-					googleAdsID={ googleAdsAccount.id }
-					googleMerchantCenterID={ googleMCAccount.id }
-				/>
-			) }
-		</>
-	);
+	return <AccountDetails />;
 };
 
 export default AccountCardDescription;
