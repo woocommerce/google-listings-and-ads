@@ -78,6 +78,7 @@ export default function CampaignAssetsForm( {
 	const initialAssetGroup = useMemo( () => {
 		return convertAssetEntityGroupToFormValues( assetEntityGroup );
 	}, [ assetEntityGroup ] );
+
 	const [ baseAssetGroup, setBaseAssetGroup ] = useState( initialAssetGroup );
 	const [ hasImportedAssets, setHasImportedAssets ] = useState( false );
 	const { formatAmount } = useAdsCurrency();
