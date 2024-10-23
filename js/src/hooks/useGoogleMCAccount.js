@@ -55,6 +55,10 @@ const useGoogleMCAccount = () => {
 			const isResolvingGoogleMCAccount = selector.isResolving(
 				googleMCAccountSelector
 			);
+			const hasGoogleMCConnection = [
+				GOOGLE_MC_ACCOUNT_STATUS.CONNECTED,
+				GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE,
+			].includes( googleMCAccount?.status );
 
 			return {
 				googleMCAccount,
@@ -63,15 +67,7 @@ const useGoogleMCAccount = () => {
 					googleMCAccountSelector
 				),
 				isPreconditionReady: true,
-				// MC is ready when we have a connection and preconditions are met.
-				// The `link_ads` step will be resolved when the Ads account is connected
-				// since these can be connected in any order.
-				hasGoogleMCConnection:
-					googleMCAccount?.status ===
-						GOOGLE_MC_ACCOUNT_STATUS.CONNECTED ||
-					( googleMCAccount?.status ===
-						GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE &&
-						googleMCAccount?.step === 'link_ads' ),
+				hasGoogleMCConnection,
 			};
 		},
 		[
