@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useEffect, useRef } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -10,7 +10,7 @@ import AccountCard, { APPEARANCE } from '../account-card';
 import AccountDetails from './account-details';
 import AppSpinner from '../app-spinner';
 import Indicator from './indicator';
-import useAccountCreationText from './useAccountCreationText';
+import getAccountCreationTexts from '.~/utils/getAccountCreationTexts';
 import useAutoCreateAdsMCAccounts from '.~/hooks/useAutoCreateAdsMCAccounts';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
@@ -22,7 +22,9 @@ import './connected-google-combo-account-card.scss';
  * It will also kickoff Ads and Merchant Center account creation if the user does not have accounts.
  */
 const ConnectedGoogleComboAccountCard = () => {
-	const wasCreatingAccounts = useRef( null );
+	// Used to track whether the account creation ever happened.
+	const [ wasCreatingAccounts, setWasCreatingAccounts ] =
+		useState( undefined );
 
 	const {
 		googleAdsAccount,
@@ -34,44 +36,37 @@ const ConnectedGoogleComboAccountCard = () => {
 		hasFinishedResolution: hasFinishedResolutionForCurrentMCAccount,
 	} = useGoogleMCAccount();
 
-	const { accountsCreated, hasDetermined, creatingWhich } =
-		useAutoCreateAdsMCAccounts();
-
-	const { text, subText } = useAccountCreationText(
-		wasCreatingAccounts.current
-	);
+	const { hasDetermined, creatingWhich } = useAutoCreateAdsMCAccounts();
+	const { text, subText } = getAccountCreationTexts( wasCreatingAccounts );
 
 	const accountDetailsResolved =
+		hasDetermined &&
 		hasFinishedResolutionForCurrentAdsAccount &&
 		hasFinishedResolutionForCurrentMCAccount;
 
+	const accountsCreated =
+		wasCreatingAccounts !== undefined && ! creatingWhich;
+
+	const accountsReady =
+		accountDetailsResolved &&
+		!! googleAdsAccount?.id &&
+		!! googleMCAccount?.id;
+
+	const displayAccountDetails =
+		wasCreatingAccounts &&
+		accountsCreated &&
+		accountDetailsResolved &&
+		accountsReady;
+
 	useEffect( () => {
 		if ( creatingWhich ) {
-			wasCreatingAccounts.current = creatingWhich;
+			setWasCreatingAccounts( creatingWhich );
 		}
-
-		if (
-			wasCreatingAccounts.current &&
-			accountsCreated &&
-			accountDetailsResolved
-		) {
-			const accountsReady =
-				!! googleAdsAccount?.id && !! googleMCAccount?.id;
-
-			if ( accountsReady ) {
-				wasCreatingAccounts.current = null;
-			}
-		}
-	}, [
-		accountDetailsResolved,
-		accountsCreated,
-		creatingWhich,
-		googleAdsAccount,
-		googleMCAccount,
-	] );
+	}, [ creatingWhich ] );
 
 	if (
 		! accountsCreated &&
+		wasCreatingAccounts === undefined &&
 		( ! hasDetermined ||
 			! hasFinishedResolutionForCurrentAdsAccount ||
 			! hasFinishedResolutionForCurrentMCAccount )
@@ -80,24 +75,16 @@ const ConnectedGoogleComboAccountCard = () => {
 	}
 
 	return (
-		<>
-			<AccountCard
-				appearance={ APPEARANCE.GOOGLE }
-				alignIcon="top"
-				className="gla-google-combo-account-card--connected"
-				description={
-					!! wasCreatingAccounts.current ? text : <AccountDetails />
-				}
-				helper={ subText }
-				indicator={
-					<Indicator
-						creatingAccounts={ wasCreatingAccounts.current }
-					/>
-				}
-			/>
-
-			<ConnectMC />
-		</>
+		<AccountCard
+			appearance={ APPEARANCE.GOOGLE }
+			alignIcon="top"
+			className="gla-google-combo-account-card--connected"
+			description={ ! displayAccountDetails ? text : <AccountDetails /> }
+			helper={ ! displayAccountDetails ? subText : null }
+			indicator={
+				<Indicator creatingAccounts={ ! displayAccountDetails } />
+			}
+		/>
 	);
 };
 

@@ -1,9 +1,10 @@
 .gla-google-combo-account-card--connected {
 
 	.gla-account-card__account_details {
-		display: flex;
-		flex-direction: column;
-		gap: $grid-unit;
+
+		p {
+			margin: 0.5em 0;
+		}
 	}
 }
 

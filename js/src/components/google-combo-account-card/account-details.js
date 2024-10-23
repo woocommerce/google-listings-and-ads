@@ -21,21 +21,21 @@ const AccountDetails = () => {
 
 	return (
 		<div className="gla-account-card__account_details">
-			<span>{ google.email }</span>
-			<span>
+			<p>{ google.email }</p>
+			<p>
 				{ sprintf(
 					// Translators: %s is the Merchant Center ID
 					__( 'Merchant Center ID: %s', 'google-listings-and-ads' ),
 					googleMCAccount.id
 				) }
-			</span>
-			<span>
+			</p>
+			<p>
 				{ sprintf(
 					// Translators: %s is the Google Ads ID
 					__( 'Google Ads ID: %s', 'google-listings-and-ads' ),
 					googleAdsAccount.id
 				) }
-			</span>
+			</p>
 		</div>
 	);
 };
