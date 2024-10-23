@@ -80,8 +80,7 @@ export default function CampaignAssetsForm( {
 	}, [ assetEntityGroup ] );
 	const [ baseAssetGroup, setBaseAssetGroup ] = useState( initialAssetGroup );
 	const [ hasImportedAssets, setHasImportedAssets ] = useState( false );
-	const { formatAmount, adsCurrencyConfig } = useAdsCurrency();
-	console.log( useAdsCurrency(), adsCurrencyConfig );
+	const { formatAmount } = useAdsCurrency();
 
 	const extendAdapter = ( formContext ) => {
 		const assetGroupErrors = validateAssetGroup( formContext.values );
