@@ -67,12 +67,12 @@ function convertAssetEntityGroupToFormValues( assetEntityGroup = {} ) {
  * @param {Object} props React props.
  * @param {CampaignFormValues} props.initialCampaign Initial campaign values.
  * @param {AssetEntityGroup} [props.assetEntityGroup] The asset entity group to be used in initializing the form values for editing.
- * @param {number} props.highestDailyBudget The highest daily budget.
+ * @param {number} props.recommendedDailyBudget The recommended daily budget for the campaign. The minimum campaign amount will be set to 30% of this value.
  */
 export default function CampaignAssetsForm( {
 	initialCampaign,
 	assetEntityGroup,
-	highestDailyBudget,
+	recommendedDailyBudget,
 	...adaptiveFormProps
 } ) {
 	const initialAssetGroup = useMemo( () => {
@@ -123,7 +123,7 @@ export default function CampaignAssetsForm( {
 
 	const validateCampaignWithMinimumAmount = ( values ) => {
 		return validateCampaign( values, {
-			dailyBudget: highestDailyBudget,
+			dailyBudget: recommendedDailyBudget,
 			formatAmount,
 		} );
 	};

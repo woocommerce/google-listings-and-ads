@@ -3,6 +3,10 @@
  */
 import validateCampaign from './validateCampaign';
 
+const mockFormatAmount = jest
+	.fn()
+	.mockImplementation( ( amount ) => `Rs ${ amount }` );
+
 /**
  * `validateCampaign` function returns an object, and if any checks are not passed,
  * set properties respectively with an error message to indicate it.
@@ -11,7 +15,7 @@ describe( 'validateCampaign', () => {
 	let values;
 	const validateCampaignOptions = {
 		dailyBudget: undefined,
-		formatAmount: jest.mock(),
+		formatAmount: mockFormatAmount,
 	};
 
 	beforeEach( () => {
@@ -81,7 +85,6 @@ describe( 'validateCampaign', () => {
 	} );
 
 	it( 'When a budget is provided and the amount is less than the minimum, should not pass', () => {
-		const mockFormatAmount = jest.fn().mockReturnValue( 'Rs 30' );
 		values.amount = 10;
 
 		const opts = {
@@ -95,23 +98,7 @@ describe( 'validateCampaign', () => {
 		expect( errors.amount ).toContain( 'is at least Rs 30' );
 	} );
 
-	it( 'When a budget is provided and the amount is slightly less than the minimum, should not pass', () => {
-		const mockFormatAmount = jest.fn().mockReturnValue( 'Rs 30' );
-		values.amount = 29.99;
-
-		const opts = {
-			dailyBudget: 100,
-			formatAmount: mockFormatAmount,
-		};
-
-		const errors = validateCampaign( values, opts );
-
-		expect( errors ).toHaveProperty( 'amount' );
-		expect( errors.amount ).toContain( 'is at least Rs 30' );
-	} );
-
 	it( 'When a budget is provided and the amount is same as the minimum, should pass', () => {
-		const mockFormatAmount = jest.fn().mockReturnValue( 'Rs 30' );
 		values.amount = 30;
 
 		const opts = {
@@ -124,7 +111,6 @@ describe( 'validateCampaign', () => {
 	} );
 
 	it( 'When a budget is provided and the amount is greater than the minimum, should pass', () => {
-		const mockFormatAmount = jest.fn().mockReturnValue( 'Rs 35' );
 		values.amount = 35;
 
 		const opts = {
@@ -136,16 +122,23 @@ describe( 'validateCampaign', () => {
 		expect( errors ).not.toHaveProperty( 'amount' );
 	} );
 
-	it( 'When a budget is provided and the amount is slightly greater than the minimum, should pass', () => {
-		const mockFormatAmount = jest.fn().mockReturnValue( 'Rs 35' );
-		values.amount = 30.01;
+	it( 'The minimum amount should be rounded up to the nearest integer', () => {
+		values.amount = 30.99;
 
-		const opts = {
-			dailyBudget: 100,
+		let opts = {
+			dailyBudget: 101,
 			formatAmount: mockFormatAmount,
 		};
-
 		const errors = validateCampaign( values, opts );
-		expect( errors ).not.toHaveProperty( 'amount' );
+
+		opts = {
+			dailyBudget: 102,
+			formatAmount: mockFormatAmount,
+		};
+		const errorsNext = validateCampaign( values, opts );
+
+		expect( errors ).toEqual( errorsNext );
+		expect( errors ).toHaveProperty( 'amount' );
+		expect( errors.amount ).toContain( 'is at least Rs 31' );
 	} );
 } );

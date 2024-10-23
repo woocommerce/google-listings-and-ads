@@ -187,7 +187,7 @@ const EditPaidAdsCampaign = () => {
 				initialCampaign={ {
 					amount: campaign.amount,
 				} }
-				highestDailyBudget={ highestDailyBudget }
+				recommendedDailyBudget={ highestDailyBudget }
 				assetEntityGroup={ assetEntityGroup }
 				onSubmit={ handleSubmit }
 			>
