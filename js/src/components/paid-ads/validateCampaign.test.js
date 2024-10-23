@@ -95,7 +95,22 @@ describe( 'validateCampaign', () => {
 		expect( errors.amount ).toContain( 'is at least Rs 30' );
 	} );
 
-	it( 'When a budget is provided and the amount is same than the minimum, should pass', () => {
+	it( 'When a budget is provided and the amount is slightly less than the minimum, should not pass', () => {
+		const mockFormatAmount = jest.fn().mockReturnValue( 'Rs 30' );
+		values.amount = 29.99;
+
+		const opts = {
+			dailyBudget: 100,
+			formatAmount: mockFormatAmount,
+		};
+
+		const errors = validateCampaign( values, opts );
+
+		expect( errors ).toHaveProperty( 'amount' );
+		expect( errors.amount ).toContain( 'is at least Rs 30' );
+	} );
+
+	it( 'When a budget is provided and the amount is same as the minimum, should pass', () => {
 		const mockFormatAmount = jest.fn().mockReturnValue( 'Rs 30' );
 		values.amount = 30;
 
@@ -111,6 +126,19 @@ describe( 'validateCampaign', () => {
 	it( 'When a budget is provided and the amount is greater than the minimum, should pass', () => {
 		const mockFormatAmount = jest.fn().mockReturnValue( 'Rs 35' );
 		values.amount = 35;
+
+		const opts = {
+			dailyBudget: 100,
+			formatAmount: mockFormatAmount,
+		};
+
+		const errors = validateCampaign( values, opts );
+		expect( errors ).not.toHaveProperty( 'amount' );
+	} );
+
+	it( 'When a budget is provided and the amount is slightly greater than the minimum, should pass', () => {
+		const mockFormatAmount = jest.fn().mockReturnValue( 'Rs 35' );
+		values.amount = 30.01;
 
 		const opts = {
 			dailyBudget: 100,

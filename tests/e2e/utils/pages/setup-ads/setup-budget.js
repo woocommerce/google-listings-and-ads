@@ -191,20 +191,6 @@ export default class SetupBudget extends MockRequests {
 	}
 
 	/**
-	 * Mock the budget recommendation.
-	 *
-	 * @param {Object} payload The payload.
-	 * @return {Promise<void>}
-	 */
-	async mockBudgetRecommendation( payload ) {
-		await this.fulfillRequest(
-			/\/wc\/gla\/ads\/campaigns\/budget-recommendation\b/,
-			payload,
-			200
-		);
-	}
-
-	/**
 	 * Mock the campaign creation process and the Ads setup completion.
 	 *
 	 * @param {string} budget The campaign budget.

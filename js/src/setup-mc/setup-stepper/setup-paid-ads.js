@@ -140,7 +140,7 @@ export default function SetupPaidAds() {
 	return (
 		<CampaignAssetsForm
 			initialCampaign={ paidAds }
-			minimumAmount={ highestDailyBudget }
+			highestDailyBudget={ highestDailyBudget }
 			onChange={ ( _, values ) => {
 				if ( values.amount >= highestDailyBudget ) {
 					clientSession.setCampaign( values );

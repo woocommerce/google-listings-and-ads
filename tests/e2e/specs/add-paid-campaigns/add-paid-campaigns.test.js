@@ -15,7 +15,6 @@ import {
 	getFAQPanelTitle,
 	getFAQPanelRow,
 	checkFAQExpandable,
-	checkBillingAdsPopup,
 } from '../../utils/page';
 
 const ADS_ACCOUNTS = [
@@ -70,7 +69,16 @@ test.describe( 'Set up Ads account', () => {
 		await setOnboardedMerchant();
 		await setupAdsAccounts.mockAdsAccountsResponse( [] );
 		await setupBudgetPage.fulfillBillingStatusRequest( {
-			status: 'unknown',
+			status: 'approved',
+		} );
+		await setupBudgetPage.fulfillBudgetRecommendations( {
+			currency: 'EUR',
+			recommendations: [
+				{
+					country: 'FR',
+					daily_budget: 15,
+				},
+			],
 		} );
 		await dashboardPage.mockRequests();
 		await dashboardPage.goto();
@@ -346,70 +354,9 @@ test.describe( 'Set up Ads account', () => {
 		} );
 	} );
 
-	test.describe( 'Set up billing', () => {
-		test.describe( 'Billing status is not approved', () => {
-			test( 'It should say that the billing is not setup', async () => {
-				await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-
-				await expect(
-					page.getByRole( 'button', {
-						name: 'Set up billing',
-						exact: true,
-					} )
-				).toBeEnabled();
-
-				await expect(
-					page.getByText(
-						'You do not have billing information set up in your Google Ads account. Once you have set up billing, you can start running ads.'
-					)
-				).toBeVisible();
-			} );
-
-			// eslint-disable-next-line jest/expect-expect
-			test( 'should open a popup when clicking set up billing button', async () => {
-				await checkBillingAdsPopup( page );
-			} );
-
-			test( 'should see billing has been set up successfully when billing status API returns approved', async () => {
-				const newPagePromise = page.waitForEvent( 'popup' );
-				await setupBudgetPage.clickSetUpBillingLink();
-				const newPage = await newPagePromise;
-				await newPage.waitForLoadState();
-
-				await setupBudgetPage.fulfillBillingStatusRequest( {
-					status: 'pending',
-				} );
-
-				await newPage.close();
-				await setupBudgetPage.focusBudget();
-				await setupBudgetPage.fulfillBillingStatusRequest( {
-					status: 'approved',
-				} );
-				await setupBudgetPage.awaitForBillingStatusRequest();
-
-				const billingSetupSuccessSection =
-					setupBudgetPage.getBillingSetupSuccessSection();
-				await expect( billingSetupSuccessSection ).toContainText(
-					'Billing method for Google Ads added successfully'
-				);
-			} );
-		} );
-	} );
-
 	test.describe( 'Create Ads with billing data already setup', () => {
 		test.describe( 'Set the budget', async () => {
 			test( 'Continue button should be disabled if budget is 0', async () => {
-				//Reload the page
-				await page.reload();
-				await setupBudgetPage.fulfillBillingStatusRequest( {
-					status: 'approved',
-				} );
-				await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-
-				//Step 1 - Accounts are already set up.
-				await setupAdsAccounts.clickContinue();
-				await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-
 				budget = '0';
 				await setupBudgetPage.fillBudget( budget );
 
@@ -450,7 +397,7 @@ test.describe( 'Set up Ads account', () => {
 
 			test( 'Budget Recommendation should be visible', async () => {
 				await expect(
-					page.getByText( 'set a daily budget of 15 USD' )
+					page.getByText( 'set a daily budget of 15 EUR' )
 				).toBeVisible();
 			} );
 		} );

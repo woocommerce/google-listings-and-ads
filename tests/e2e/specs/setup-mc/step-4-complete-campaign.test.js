@@ -236,8 +236,8 @@ test.describe( 'Complete your campaign', () => {
 
 			test.describe( 'Validate budget percent', () => {
 				test.beforeAll( async () => {
-					await setupBudgetPage.mockBudgetRecommendation( {
-						currency: 'USD',
+					await setupBudgetPage.fulfillBudgetRecommendations( {
+						currency: 'TWD',
 						recommendations: [
 							{
 								country: 'US',
@@ -252,11 +252,23 @@ test.describe( 'Complete your campaign', () => {
 				test( 'should see validation error if lower than the 30%', async () => {
 					await setupBudgetPage.fillBudget( '10' );
 					await setupBudgetPage.getBudgetInput().blur();
+					const error = page.locator(
+						'.components-base-control__help'
+					);
 
-					const error = await page
-						.locator( '.components-base-control__help' )
-						.textContent();
-					await expect( error ).toBe(
+					await expect( error ).toHaveText(
+						'Please make sure daily average cost is at least NT$30.00'
+					);
+				} );
+
+				test( 'should see validation error if slightly less than the 30%', async () => {
+					await setupBudgetPage.fillBudget( '29.99' );
+					await setupBudgetPage.getBudgetInput().blur();
+					const error = page.locator(
+						'.components-base-control__help'
+					);
+
+					await expect( error ).toHaveText(
 						'Please make sure daily average cost is at least NT$30.00'
 					);
 				} );
@@ -265,7 +277,17 @@ test.describe( 'Complete your campaign', () => {
 					await setupBudgetPage.fillBudget( '30' );
 					await setupBudgetPage.getBudgetInput().blur();
 
-					const error = await page.locator(
+					const error = page.locator(
+						'.components-base-control__help'
+					);
+					await expect( error ).not.toBeVisible();
+				} );
+
+				test( 'should not see validation error if slightly greater than 30%', async () => {
+					await setupBudgetPage.fillBudget( '30.5' );
+					await setupBudgetPage.getBudgetInput().blur();
+
+					const error = page.locator(
 						'.components-base-control__help'
 					);
 					await expect( error ).not.toBeVisible();
@@ -275,7 +297,7 @@ test.describe( 'Complete your campaign', () => {
 					await setupBudgetPage.fillBudget( '40' );
 					await setupBudgetPage.getBudgetInput().blur();
 
-					const error = await page.locator(
+					const error = page.locator(
 						'.components-base-control__help'
 					);
 					await expect( error ).not.toBeVisible();

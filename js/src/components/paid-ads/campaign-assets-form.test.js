@@ -16,27 +16,6 @@ jest.mock( '@wordpress/api-fetch', () => {
 	return impl;
 } );
 
-jest.mock( '@woocommerce/settings', () => ( {
-	getSetting: jest
-		.fn()
-		.mockName( "getSetting( 'currency' )" )
-		.mockReturnValue( {
-			code: 'EUR',
-			symbol: '€',
-			precision: 2,
-			decimalSeparator: '.',
-			thousandSeparator: ',',
-			priceFormat: '%1$s %2$s',
-		} ),
-} ) );
-
-jest.mock( '.~/hooks/useFetchBudgetRecommendation', () => ( {
-	__esModule: true,
-	default: jest.fn().mockImplementation( () => {
-		return [ jest.fn(), null ];
-	} ),
-} ) );
-
 const alwaysValid = () => ( {} );
 
 describe( 'CampaignAssetsForm', () => {

@@ -20,7 +20,7 @@ const BUDGET_MIN_PERCENT = 0.3;
  * Validate campaign form. Accepts the form values object and returns errors object.
  *
  * @param {CampaignFormValues} values Campaign form values.
- * @param {ValidateCampaignOptions} [opts] Extra form options.
+ * @param {ValidateCampaignOptions} opts Extra form options.
  * @return {Object} errors.
  */
 const validateCampaign = ( values, opts ) => {
@@ -28,15 +28,15 @@ const validateCampaign = ( values, opts ) => {
 
 	if (
 		Number.isFinite( values.amount ) &&
-		Number.isFinite( opts?.dailyBudget ) &&
-		opts?.dailyBudget > 0
+		Number.isFinite( opts.dailyBudget ) &&
+		opts.dailyBudget > 0
 	) {
 		const { amount } = values;
 		const { dailyBudget, formatAmount } = opts;
 
 		const minAmount = Math.ceil( dailyBudget * BUDGET_MIN_PERCENT );
 
-		if ( amount < parseFloat( minAmount ) ) {
+		if ( amount < minAmount ) {
 			return {
 				amount: sprintf(
 					/* translators: %1$s: minimum daily budget */

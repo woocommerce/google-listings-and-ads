@@ -67,12 +67,12 @@ function convertAssetEntityGroupToFormValues( assetEntityGroup = {} ) {
  * @param {Object} props React props.
  * @param {CampaignFormValues} props.initialCampaign Initial campaign values.
  * @param {AssetEntityGroup} [props.assetEntityGroup] The asset entity group to be used in initializing the form values for editing.
- * @param {number} props.minimumAmount The minimum amount for the daily budget.
+ * @param {number} props.highestDailyBudget The highest daily budget.
  */
 export default function CampaignAssetsForm( {
 	initialCampaign,
 	assetEntityGroup,
-	minimumAmount,
+	highestDailyBudget,
 	...adaptiveFormProps
 } ) {
 	const initialAssetGroup = useMemo( () => {
@@ -80,7 +80,8 @@ export default function CampaignAssetsForm( {
 	}, [ assetEntityGroup ] );
 	const [ baseAssetGroup, setBaseAssetGroup ] = useState( initialAssetGroup );
 	const [ hasImportedAssets, setHasImportedAssets ] = useState( false );
-	const { formatAmount } = useAdsCurrency();
+	const { formatAmount, adsCurrencyConfig } = useAdsCurrency();
+	console.log( useAdsCurrency(), adsCurrencyConfig );
 
 	const extendAdapter = ( formContext ) => {
 		const assetGroupErrors = validateAssetGroup( formContext.values );
@@ -120,9 +121,9 @@ export default function CampaignAssetsForm( {
 		};
 	};
 
-	const validateCampaignMinimumAmount = ( values ) => {
+	const validateCampaignWithMinimumAmount = ( values ) => {
 		return validateCampaign( values, {
-			dailyBudget: minimumAmount,
+			dailyBudget: highestDailyBudget,
 			formatAmount,
 		} );
 	};
@@ -133,7 +134,7 @@ export default function CampaignAssetsForm( {
 				...initialCampaign,
 				...initialAssetGroup,
 			} }
-			validate={ validateCampaignMinimumAmount }
+			validate={ validateCampaignWithMinimumAmount }
 			extendAdapter={ extendAdapter }
 			{ ...adaptiveFormProps }
 		/>

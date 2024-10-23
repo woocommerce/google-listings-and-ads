@@ -90,7 +90,7 @@ const SetupPaidAds = () => {
 			initialCampaign={ initialValues }
 			onChange={ handleChange }
 			onSubmit={ handleSubmit }
-			minimumAmount={ highestDailyBudget }
+			highestDailyBudget={ highestDailyBudget }
 		>
 			<AdsCampaign
 				headerTitle={ __(
