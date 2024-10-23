@@ -102,7 +102,6 @@ const ConnectAds = () => {
 			) }
 			body={
 				<ConnectAdsBody
-					googleAdsAccount={ googleAdsAccount }
 					isConnected={ isConnected }
 					handleConnectClick={ handleConnectClick }
 					isLoading={ isLoading }
