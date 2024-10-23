@@ -7,8 +7,8 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import { STORE_KEY } from '.~/data/constants';
-import { GOOGLE_MC_ACCOUNT_STATUS } from '.~/constants';
 import useGoogleAccount from './useGoogleAccount';
+import { GOOGLE_MC_ACCOUNT_STATUS } from '.~/constants';
 
 /**
  * @typedef {import('.~/data/selectors').GoogleMCAccount} GoogleMCAccount
@@ -51,17 +51,17 @@ const useGoogleMCAccount = () => {
 			}
 
 			const selector = select( STORE_KEY );
-			const googleMCAccount = selector[ googleMCAccountSelector ]();
+			const acc = selector[ googleMCAccountSelector ]();
 			const isResolvingGoogleMCAccount = selector.isResolving(
 				googleMCAccountSelector
 			);
 			const hasGoogleMCConnection = [
 				GOOGLE_MC_ACCOUNT_STATUS.CONNECTED,
 				GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE,
-			].includes( googleMCAccount?.status );
+			].includes( acc?.status );
 
 			return {
-				googleMCAccount,
+				googleMCAccount: acc,
 				isResolving: isResolvingGoogleMCAccount,
 				hasFinishedResolution: selector.hasFinishedResolution(
 					googleMCAccountSelector

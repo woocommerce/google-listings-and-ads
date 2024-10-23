@@ -35,7 +35,6 @@ const ConnectedGoogleComboAccountCard = () => {
 
 	const {
 		googleMCAccount,
-		hasGoogleMCConnection,
 		hasFinishedResolution: hasFinishedResolutionForCurrentMCAccount,
 	} = useGoogleMCAccount();
 
@@ -78,7 +77,9 @@ const ConnectedGoogleComboAccountCard = () => {
 
 	// Show the Connect MC card if there's no connected accounts and there are existing accounts.
 	// The "Edit" button will be used to display the card within the connected state.
-	const showConnectMCCard = ! hasGoogleMCConnection && accounts.length > 0;
+	// @TODO: review
+	// const showConnectMCCard = ! hasGoogleMCConnection && accounts.length > 0;
+	const showConnectMCCard = true;
 
 	return (
 		<div className="gla-google-combo-account-cards">

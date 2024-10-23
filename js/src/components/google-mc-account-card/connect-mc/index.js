@@ -17,6 +17,7 @@ import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import CreateAccountButton from '../create-account-button';
 import useConnectMCAccount from '.~/hooks/useConnectMCAccount';
 import useCreateMCAccount from '.~/hooks/useCreateMCAccount';
+import AccountConnectionStatus from '../account-connection-status';
 import './index.scss';
 
 /**
@@ -42,11 +43,9 @@ const ConnectMC = () => {
 	const [ handleCreateAccount, resultCreateAccount ] = useCreateMCAccount();
 
 	if (
-		resultConnectMC.response?.status === 409 ||
-		resultConnectMC.response?.status === 403 ||
-		resultCreateAccount.response?.status === 403 ||
-		resultCreateAccount.loading ||
-		resultCreateAccount.response?.status === 503
+		[ 403, 409 ].includes( resultConnectMC.response?.status ) ||
+		[ 403, 503 ].includes( resultCreateAccount.response?.status ) ||
+		resultCreateAccount.loading
 	) {
 		return (
 			<AccountConnectionStatus

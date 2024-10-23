@@ -46,11 +46,9 @@ const ConnectMC = ( { createMCAccount, resultCreateMCAccount } ) => {
 
 	if (
 		! hasGoogleMCConnection &&
-		( resultConnectMC.response?.status === 409 ||
-			resultConnectMC.response?.status === 403 ||
-			resultCreateMCAccount.response?.status === 403 ||
-			resultCreateMCAccount.loading ||
-			resultCreateMCAccount.response?.status === 503 )
+		( [ 403, 409 ].includes( resultConnectMC.response?.status ) ||
+			[ 403, 503 ].includes( resultCreateMCAccount.response?.status ) ||
+			resultCreateMCAccount.loading )
 	) {
 		return (
 			<AccountConnectionStatus
