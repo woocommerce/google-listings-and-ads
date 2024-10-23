@@ -28,12 +28,12 @@ const ConnectMCFooter = ( {
 	resultCreateAccount,
 	handleCreateAccount,
 } ) => {
-	const handleDisconnect = () => {
-		resultConnectMC?.reset();
-		resultCreateAccount?.reset();
-	};
-
 	if ( isConnected ) {
+		const handleDisconnect = () => {
+			resultConnectMC.reset();
+			resultCreateAccount.reset();
+		};
+
 		return <DisconnectAccountButton onDisconnect={ handleDisconnect } />;
 	}
 

@@ -77,11 +77,11 @@ const ConnectedGoogleComboAccountCard = () => {
 	}
 
 	// Show the Connect MC card if there's no connected accounts and there are existing accounts.
+	// The "Edit" button will be used to display the card within the connected state.
 	const showConnectMCCard = ! hasGoogleMCConnection && accounts.length > 0;
-	console.log( creatingWhich, text, subText );
 
 	return (
-		<>
+		<div className="gla-google-combo-account-cards">
 			<AccountCard
 				appearance={ APPEARANCE.GOOGLE }
 				alignIcon="top"
@@ -101,7 +101,7 @@ const ConnectedGoogleComboAccountCard = () => {
 					resultCreateMCAccount={ resultCreateMCAccount }
 				/>
 			) }
-		</>
+		</div>
 	);
 };
 
