@@ -7,8 +7,10 @@ import { useEffect, useRef } from '@wordpress/element';
  * Internal dependencies
  */
 import AccountCard, { APPEARANCE } from '../account-card';
-import AccountCardDescription, { Indicator } from './account-card-description';
+import AccountDetails from './account-details';
 import AppSpinner from '../app-spinner';
+import Indicator from './indicator';
+import useAccountCreationText from './useAccountCreationText';
 import useAutoCreateAdsMCAccounts from '.~/hooks/useAutoCreateAdsMCAccounts';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
@@ -19,6 +21,8 @@ import './connected-google-combo-account-card.scss';
  * It will also kickoff Ads and Merchant Center account creation if the user does not have accounts.
  */
 const ConnectedGoogleComboAccountCard = () => {
+	const wasCreatingAccounts = useRef( null );
+
 	const {
 		googleAdsAccount,
 		hasFinishedResolution: hasFinishedResolutionForCurrentAdsAccount,
@@ -32,7 +36,10 @@ const ConnectedGoogleComboAccountCard = () => {
 	const { accountsCreated, hasDetermined, creatingWhich } =
 		useAutoCreateAdsMCAccounts();
 
-	const wasCreatingAccounts = useRef( null );
+	const { text, subText } = useAccountCreationText(
+		wasCreatingAccounts.current
+	);
+
 	const accountDetailsResolved =
 		hasFinishedResolutionForCurrentAdsAccount &&
 		hasFinishedResolutionForCurrentMCAccount;
@@ -76,11 +83,10 @@ const ConnectedGoogleComboAccountCard = () => {
 			appearance={ APPEARANCE.GOOGLE }
 			alignIcon="top"
 			className="gla-google-combo-account-card--connected"
-			helper={
-				<AccountCardDescription
-					creatingAccounts={ wasCreatingAccounts.current }
-				/>
+			description={
+				!! wasCreatingAccounts.current ? text : <AccountDetails />
 			}
+			helper={ subText }
 			indicator={
 				<Indicator creatingAccounts={ wasCreatingAccounts.current } />
 			}
