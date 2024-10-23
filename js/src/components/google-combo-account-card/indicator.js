@@ -15,10 +15,10 @@ import useGoogleAdsAccountReady from '.~/hooks/useGoogleAdsAccountReady';
  * Account creation indicator.
  * Displays a loading indicator when accounts are being created or a connected icon when accounts are connected.
  * @param {Object} props Component props.
- * @param {boolean} props.creatingAccounts Whether the accounts are being created.
+ * @param {boolean} props.showSpinner Whether to display a spinner.
  * @return {JSX.Element|null} Indicator component.
  */
-const Indicator = ( { creatingAccounts } ) => {
+const Indicator = ( { showSpinner } ) => {
 	const { googleMCAccount, isPreconditionReady } = useGoogleMCAccount();
 	const isGoogleAdsConnected = useGoogleAdsAccountReady();
 
@@ -28,7 +28,7 @@ const Indicator = ( { creatingAccounts } ) => {
 			( googleMCAccount?.status === 'incomplete' &&
 				googleMCAccount?.step === 'link_ads' ) );
 
-	if ( creatingAccounts ) {
+	if ( showSpinner ) {
 		return (
 			<LoadingLabel
 				text={ __( 'Creating…', 'google-listings-and-ads' ) }

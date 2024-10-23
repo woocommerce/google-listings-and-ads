@@ -15,6 +15,7 @@ import useAutoCreateAdsMCAccounts from '.~/hooks/useAutoCreateAdsMCAccounts';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
+import useCreateMCAccount from '.~/hooks/useCreateMCAccount';
 import ConnectMC from './connect-mc';
 import './connected-google-combo-account-card.scss';
 
@@ -39,8 +40,9 @@ const ConnectedGoogleComboAccountCard = () => {
 	} = useGoogleMCAccount();
 
 	const { data: accounts } = useExistingGoogleMCAccounts();
-
-	const { hasDetermined, creatingWhich } = useAutoCreateAdsMCAccounts();
+	const [ createMCAccount, resultCreateMCAccount ] = useCreateMCAccount();
+	const { hasDetermined, creatingWhich } =
+		useAutoCreateAdsMCAccounts( createMCAccount );
 	const { text, subText } = getAccountCreationTexts( wasCreatingAccounts );
 
 	const accountDetailsResolved =
@@ -56,11 +58,7 @@ const ConnectedGoogleComboAccountCard = () => {
 		!! googleAdsAccount?.id &&
 		!! googleMCAccount?.id;
 
-	const displayAccountDetails =
-		wasCreatingAccounts &&
-		accountsCreated &&
-		accountDetailsResolved &&
-		accountsReady;
+	const displayAccountDetails = accountDetailsResolved && accountsReady;
 
 	useEffect( () => {
 		if ( creatingWhich ) {
@@ -78,7 +76,9 @@ const ConnectedGoogleComboAccountCard = () => {
 		return <AccountCard description={ <AppSpinner /> } />;
 	}
 
+	// Show the Connect MC card if there's no connected accounts and there are existing accounts.
 	const showConnectMCCard = ! hasGoogleMCConnection && accounts.length > 0;
+	console.log( creatingWhich, text, subText );
 
 	return (
 		<>
@@ -91,11 +91,16 @@ const ConnectedGoogleComboAccountCard = () => {
 				}
 				helper={ ! displayAccountDetails ? subText : null }
 				indicator={
-					<Indicator creatingAccounts={ ! displayAccountDetails } />
+					<Indicator showSpinner={ ! displayAccountDetails } />
 				}
 			/>
 
-			{ showConnectMCCard && <ConnectMC /> }
+			{ showConnectMCCard && (
+				<ConnectMC
+					createMCAccount={ createMCAccount }
+					resultCreateMCAccount={ resultCreateMCAccount }
+				/>
+			) }
 		</>
 	);
 };

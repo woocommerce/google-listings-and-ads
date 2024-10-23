@@ -15,7 +15,6 @@ import ConnectMCFooter from './connect-mc-footer';
 import SpinnerCard from '.~/components/spinner-card';
 import AccountConnectionStatus from '.~/components/google-mc-account-card/account-connection-status';
 import useConnectMCAccount from '.~/hooks/useConnectMCAccount';
-import useCreateMCAccount from '.~/hooks/useCreateMCAccount';
 
 /**
  * Clicking on the "Switch account" button to select a different Google Merchant Center account to connect.
@@ -24,7 +23,7 @@ import useCreateMCAccount from '.~/hooks/useCreateMCAccount';
  * @property {string} context (`switch-url`|`reclaim-url`) - indicate the button is clicked from which step.
  */
 
-const ConnectMC = () => {
+const ConnectMC = ( { createMCAccount, resultCreateMCAccount } ) => {
 	const {
 		googleMCAccount,
 		hasFinishedResolution,
@@ -34,8 +33,6 @@ const ConnectMC = () => {
 	const [ accountID, setAccountID ] = useState();
 	const [ handleConnectMC, resultConnectMC ] =
 		useConnectMCAccount( accountID );
-	const [ handleCreateAccount, resultCreateAccount ] = useCreateMCAccount();
-	console.log( resultCreateAccount );
 
 	useEffect( () => {
 		if ( hasGoogleMCConnection ) {
@@ -51,15 +48,15 @@ const ConnectMC = () => {
 		! hasGoogleMCConnection &&
 		( resultConnectMC.response?.status === 409 ||
 			resultConnectMC.response?.status === 403 ||
-			resultCreateAccount.response?.status === 403 ||
-			resultCreateAccount.loading ||
-			resultCreateAccount.response?.status === 503 )
+			resultCreateMCAccount.response?.status === 403 ||
+			resultCreateMCAccount.loading ||
+			resultCreateMCAccount.response?.status === 503 )
 	) {
 		return (
 			<AccountConnectionStatus
 				resultConnectMC={ resultConnectMC }
-				resultCreateAccount={ resultCreateAccount }
-				onRetry={ handleCreateAccount }
+				resultCreateAccount={ resultCreateMCAccount }
+				onRetry={ createMCAccount }
 			/>
 		);
 	}
@@ -91,8 +88,8 @@ const ConnectMC = () => {
 				<ConnectMCFooter
 					isConnected={ hasGoogleMCConnection }
 					resultConnectMC={ resultConnectMC }
-					resultCreateAccount={ resultCreateAccount }
-					handleCreateAccount={ handleCreateAccount }
+					resultCreateAccount={ resultCreateMCAccount }
+					handleCreateAccount={ createMCAccount }
 				/>
 			}
 			disabled={ ! isPreconditionReady }
