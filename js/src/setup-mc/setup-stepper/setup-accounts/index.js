@@ -88,9 +88,6 @@ const SetupAccounts = ( props ) => {
 		useGoogleMCAccount();
 	const { hasFinishedResolution } = useGoogleAdsAccount();
 	const isGoogleAdsReady = useGoogleAdsAccountReady();
-	// MC is ready when we have a connection and preconditions are met.
-	// The `link_ads` step will be resolved when the Ads account is connected
-	// since these can be connected in any order.
 	const isGoogleMCReady = useGoogleMCAccountReady();
 
 	/**

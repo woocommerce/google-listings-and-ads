@@ -5,12 +5,14 @@ import useGoogleMCAccount from './useGoogleMCAccount';
 import { GOOGLE_MC_ACCOUNT_STATUS } from '.~/constants';
 
 const useGoogleMCAccountReady = () => {
-	const { googleMCAccount } = useGoogleMCAccount();
+	const { hasGoogleMCConnection, googleMCAccount } = useGoogleMCAccount();
 
+	// MC is ready when we have a connection and preconditions are met.
+	// The `link_ads` step will be resolved when the Ads account is connected
+	// since these can be connected in any order.
 	return (
-		googleMCAccount?.status === GOOGLE_MC_ACCOUNT_STATUS.CONNECTED ||
-		( googleMCAccount?.status === GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE &&
-			googleMCAccount?.step === 'link_ads' )
+		hasGoogleMCConnection &&
+		[ '', 'link_merchant' ].includes( googleMCAccount?.step )
 	);
 };
 
