@@ -9,7 +9,7 @@ import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * @typedef {Object} ValidateCampaignOptions
- * @property {number | undefined} dailyBudget Daily budget for the campaign.
+ * @property {number|undefined} dailyBudget Daily budget for the campaign.
  * @property {Function} formatAmount A function to format the budget amount according to the currency settings.
  */
 
