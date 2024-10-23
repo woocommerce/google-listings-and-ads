@@ -10,14 +10,14 @@ import {
 	CREATING_ADS_ACCOUNT,
 	CREATING_BOTH_ACCOUNTS,
 	CREATING_MC_ACCOUNT,
-} from './constants';
+} from '../components/google-combo-account-card/constants';
 
 /**
  * Account creation in progress description.
  * @param {string|null} creatingWhich Which account is being created.
  * @return {Object} Text and subtext.
  */
-const useAccountCreationText = ( creatingWhich ) => {
+const getAccountCreationTexts = ( creatingWhich ) => {
 	let text = null;
 	let subText = null;
 
@@ -62,4 +62,4 @@ const useAccountCreationText = ( creatingWhich ) => {
 	};
 };
 
-export default useAccountCreationText;
+export default getAccountCreationTexts;
