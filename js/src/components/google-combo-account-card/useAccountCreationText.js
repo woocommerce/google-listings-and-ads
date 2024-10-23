@@ -10,19 +10,18 @@ import {
 	CREATING_ADS_ACCOUNT,
 	CREATING_BOTH_ACCOUNTS,
 	CREATING_MC_ACCOUNT,
-} from '../constants';
+} from './constants';
 
 /**
  * Account creation in progress description.
- * @param {Object} props Component props.
- * @param {string|null} props.creatingAccounts Whether the accounts are being created. Possible values are: 'both', 'ads', 'mc'.
- * @return {JSX.Element|null} JSX markup.
+ * @param {string|null} creatingWhich Which account is being created.
+ * @return {Object} Text and subtext.
  */
-const CreatingAccounts = ( { creatingAccounts } ) => {
+const useAccountCreationText = ( creatingWhich ) => {
 	let text = null;
 	let subText = null;
 
-	switch ( creatingAccounts ) {
+	switch ( creatingWhich ) {
 		case CREATING_BOTH_ACCOUNTS:
 			text = __(
 				'You don’t have Merchant Center nor Google Ads accounts, so we’re creating them for you.',
@@ -57,12 +56,10 @@ const CreatingAccounts = ( { creatingAccounts } ) => {
 			break;
 	}
 
-	return (
-		<>
-			<p>{ text }</p>
-			<em>{ subText }</em>
-		</>
-	);
+	return {
+		text,
+		subText,
+	};
 };
 
-export default CreatingAccounts;
+export default useAccountCreationText;

@@ -16,30 +16,22 @@ import { ConnectedGoogleAccountCard } from '.~/components/google-account-card';
 import GoogleAdsAccountCard from '.~/components/google-ads-account-card';
 import FreeAdCredit from './free-ad-credit';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useFreeAdCredit from '.~/hooks/useFreeAdCredit';
 import AppSpinner from '.~/components/app-spinner';
 import Section from '.~/wcdl/section';
+import useGoogleAdsAccountReady from '.~/hooks/useGoogleAdsAccountReady';
 
 const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
 	const { google } = useGoogleAccount();
-	const { googleAdsAccount, hasGoogleAdsConnection } = useGoogleAdsAccount();
-	const { hasAccess, step } = useGoogleAdsAccountStatus();
+	const { googleAdsAccount } = useGoogleAdsAccount();
 	const hasFreeAdCredit = useFreeAdCredit();
+	const isGoogleAdsReady = useGoogleAdsAccountReady();
 
 	if ( ! google || ( google.active === 'yes' && ! googleAdsAccount ) ) {
 		return <AppSpinner />;
 	}
-
-	// Ads is ready when we have a connection and verified and verified access.
-	// Billing is not required, and the 'link_merchant' step will be resolved
-	// when the MC the account is connected.
-	const isGoogleAdsReady =
-		hasGoogleAdsConnection &&
-		hasAccess &&
-		[ '', 'billing', 'link_merchant' ].includes( step );
 
 	const isContinueButtonDisabled = ! isGoogleAdsReady;
 

@@ -24,7 +24,7 @@ import GoogleComboAccountCard from '.~/components/google-combo-account-card';
 import Faqs from './faqs';
 import './index.scss';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
+import useGoogleAdsAccountReady from '.~/hooks/useGoogleAdsAccountReady';
 
 /**
  * Renders the disclaimer of Comparison Shopping Service (CSS).
@@ -88,9 +88,8 @@ const SetupAccounts = ( props ) => {
 		isPreconditionReady: isGMCPreconditionReady,
 		isConnected: isGoogleMCReady,
 	} = useGoogleMCAccount();
-	const { hasFinishedResolution, hasGoogleAdsConnection } =
-		useGoogleAdsAccount();
-	const { hasAccess, step } = useGoogleAdsAccountStatus();
+	const { hasFinishedResolution } = useGoogleAdsAccount();
+	const isGoogleAdsReady = useGoogleAdsAccountReady();
 
 	/**
 	 * When jetpack is loading, or when google account is loading,
@@ -112,14 +111,6 @@ const SetupAccounts = ( props ) => {
 	if ( isLoadingJetpack || isLoadingGoogle || isLoadingGoogleMCAccount ) {
 		return <AppSpinner />;
 	}
-
-	// Ads is ready when we have a connection and verified and verified access.
-	// Billing is not required, and the 'link_merchant' step will be resolved
-	// when the MC the account is connected.
-	const isGoogleAdsReady =
-		hasGoogleAdsConnection &&
-		hasAccess &&
-		[ '', 'billing', 'link_merchant' ].includes( step );
 
 	const isContinueButtonDisabled = ! (
 		hasFinishedResolution &&
