@@ -16,7 +16,7 @@ const useCreateMCAccount = () => {
 	const { createNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
 	const [ fetchCreateMCAccount, result ] = useApiFetchCallback( {
-		path: `/wc/gla/mc/accounts`,
+		path: '/wc/gla/mc/accounts',
 		method: 'POST',
 	} );
 
