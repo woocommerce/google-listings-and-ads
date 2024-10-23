@@ -8,17 +8,17 @@ import { __ } from '@wordpress/i18n';
  */
 import ConnectedIconLabel from '.~/components/connected-icon-label';
 import LoadingLabel from '.~/components/loading-label/loading-label';
-import useAccountsData from '.~/hooks/useAccountsData';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccountReady from '.~/hooks/useGoogleAdsAccountReady';
 
 /**
  * Account creation indicator.
  * Displays a loading indicator when accounts are being created or a connected icon when accounts are connected.
+ * @param {Object} props Component props.
+ * @param {boolean} props.creatingAccounts Whether the accounts are being created.
  * @return {JSX.Element|null} Indicator component.
  */
-const Indicator = () => {
-	const { creatingWhich } = useAccountsData();
+const Indicator = ( { creatingAccounts } ) => {
 	const { googleMCAccount, isPreconditionReady } = useGoogleMCAccount();
 	const isGoogleAdsConnected = useGoogleAdsAccountReady();
 
@@ -28,7 +28,7 @@ const Indicator = () => {
 			( googleMCAccount?.status === 'incomplete' &&
 				googleMCAccount?.step === 'link_ads' ) );
 
-	if ( creatingWhich ) {
+	if ( creatingAccounts ) {
 		return (
 			<LoadingLabel
 				text={ __( 'Creating…', 'google-listings-and-ads' ) }

@@ -3,27 +3,17 @@
  */
 import AccountDetails from './account-details';
 import CreatingAccounts from './creating-accounts';
-import useAccountsData from '.~/hooks/useAccountsData';
 
 /**
  * AccountCardDescription component.
  * @return {JSX.Element} AccountCardDescription component.
  */
-const AccountCardDescription = () => {
-	const { creatingWhich, google, googleAdsAccount, googleMCAccount } =
-		useAccountsData();
-
-	if ( creatingWhich ) {
-		return <CreatingAccounts creatingAccounts={ creatingWhich } />;
+const AccountCardDescription = ( { creatingAccounts } ) => {
+	if ( creatingAccounts ) {
+		return <CreatingAccounts creatingAccounts={ creatingAccounts } />;
 	}
 
-	return (
-		<AccountDetails
-			email={ google.email }
-			googleAdsID={ googleAdsAccount.id }
-			googleMerchantCenterID={ googleMCAccount.id }
-		/>
-	);
+	return <AccountDetails />;
 };
 
 export default AccountCardDescription;
