@@ -55,19 +55,6 @@ export function getCountryInputSearchBoxContainer( page ) {
 }
 
 /**
- * Get country tags from input search box container.
- *
- * @param {import('@playwright/test').Page} page The current page.
- *
- * @return {import('@playwright/test').Locator} Get country tags from input search box container.
- */
-export function getCountryTagsFromInputSearchBoxContainer( page ) {
-	return getCountryInputSearchBoxContainer( page ).locator(
-		'.woocommerce-tag'
-	);
-}
-
-/**
  * Get country input search box.
  *
  * @param {import('@playwright/test').Page} page The current page.
@@ -78,17 +65,6 @@ export function getCountryInputSearchBox( page ) {
 	return getCountryInputSearchBoxContainer( page ).locator(
 		'input[id*="woocommerce-tree-select-control"]'
 	);
-}
-
-/**
- * Get tree select menu.
- *
- * @param {import('@playwright/test').Page} page The current page.
- *
- * @return {import('@playwright/test').Locator} Get tree select menu.
- */
-export function getTreeSelectMenu( page ) {
-	return page.locator( '.woocommerce-tree-select-control__main' );
 }
 
 /**

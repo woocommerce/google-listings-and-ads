@@ -4,7 +4,6 @@
 
 /**
  * @typedef {Object} CampaignFormValues
- * @property {Array<CountryCode>} countryCodes Selected country codes for the paid ads campaign.
  * @property {number} amount The daily average cost amount.
  */
 

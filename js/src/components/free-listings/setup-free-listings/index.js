@@ -32,16 +32,7 @@ const targetAudienceFields = [ 'locale', 'language', 'location', 'countries' ];
  *
  * If we are adding a new settings field, it should be added into this array.
  */
-const settingsFieldNames = [
-	'shipping_rate',
-	'shipping_time',
-	'tax_rate',
-	'website_live',
-	'checkout_process_secure',
-	'payment_methods_visible',
-	'refund_tos_visible',
-	'contact_info_visible',
-];
+const settingsFieldNames = [ 'shipping_rate', 'shipping_time', 'tax_rate' ];
 
 /**
  * Get settings object from Form values.
@@ -78,6 +69,7 @@ const getSettings = ( values ) => {
  * @param {() => void} [props.onContinue] Callback called once continue button is clicked. Could be async. While it's being resolved the form would turn into a saving state.
  * @param {string} [props.submitLabel] Submit button label, to be forwarded to `FormContent`.
  * @param {JSX.Element} props.headerTitle Title in the header block of this setup.
+ * @param {boolean} [props.hideTaxRates=false] Whether to hide tax rate section, to be forwarded to `FormContent`.
  */
 const SetupFreeListings = ( {
 	targetAudience,
@@ -92,6 +84,7 @@ const SetupFreeListings = ( {
 	onContinue = noop,
 	submitLabel,
 	headerTitle,
+	hideTaxRates = false,
 } ) => {
 	const formRef = useRef();
 	const { code: storeCountryCode } = useStoreCountry();
@@ -108,7 +101,8 @@ const SetupFreeListings = ( {
 			values,
 			shippingTimesData,
 			countries,
-			storeCountryCode
+			storeCountryCode,
+			hideTaxRates
 		);
 	};
 
@@ -215,11 +209,6 @@ const SetupFreeListings = ( {
 					shipping_rate: settings.shipping_rate,
 					shipping_time: settings.shipping_time,
 					tax_rate: settings.tax_rate,
-					website_live: settings.website_live,
-					checkout_process_secure: settings.checkout_process_secure,
-					payment_methods_visible: settings.payment_methods_visible,
-					refund_tos_visible: settings.refund_tos_visible,
-					contact_info_visible: settings.contact_info_visible,
 					// This is used in UI only, not used in API.
 					offer_free_shipping:
 						getOfferFreeShippingInitialValue( shippingRates ),
@@ -232,7 +221,10 @@ const SetupFreeListings = ( {
 				validate={ handleValidate }
 				onSubmit={ onContinue }
 			>
-				<FormContent submitLabel={ submitLabel } />
+				<FormContent
+					submitLabel={ submitLabel }
+					hideTaxRates={ hideTaxRates }
+				/>
 			</AdaptiveForm>
 		</div>
 	);
