@@ -6,15 +6,55 @@ import { useEffect, useState, useRef } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import useGoogleAdsAccount from './useGoogleAdsAccount';
+import useExistingGoogleAdsAccounts from './useExistingGoogleAdsAccounts';
+import useGoogleMCAccount from './useGoogleMCAccount';
+import useExistingGoogleMCAccounts from './useExistingGoogleMCAccounts';
 import useCreateMCAccount from './useCreateMCAccount';
 import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
-import useShouldCreateAdsAccount from './useShouldCreateAdsAccount';
-import useShouldCreateMCAccount from './useShouldCreateMCAccount';
 import {
 	CREATING_ADS_ACCOUNT,
 	CREATING_BOTH_ACCOUNTS,
 	CREATING_MC_ACCOUNT,
 } from '.~/components/google-combo-account-card/constants';
+
+const useShouldCreateAdsAccount = () => {
+	const {
+		hasFinishedResolution: hasResolvedAccount,
+		hasGoogleAdsConnection: hasConnection,
+	} = useGoogleAdsAccount();
+
+	const {
+		hasFinishedResolution: hasResolvedExistingAccounts,
+		existingAccounts: accounts,
+	} = useExistingGoogleAdsAccounts();
+
+	// Return null if the account hasn't been resolved or the existing accounts haven't been resolved
+	if ( ! hasResolvedAccount || ! hasResolvedExistingAccounts ) {
+		return null;
+	}
+
+	return ! hasConnection && accounts?.length === 0;
+};
+
+const useShouldCreateMCAccount = () => {
+	const {
+		hasFinishedResolution: hasResolvedAccount,
+		hasGoogleMCConnection: hasConnection,
+	} = useGoogleMCAccount();
+
+	const {
+		hasFinishedResolution: hasResolvedExistingAccounts,
+		data: accounts,
+	} = useExistingGoogleMCAccounts();
+
+	// Return null if the account hasn't been resolved or the existing accounts haven't been resolved
+	if ( ! hasResolvedAccount || ! hasResolvedExistingAccounts ) {
+		return null;
+	}
+
+	return ! hasConnection && accounts?.length === 0;
+};
 
 /**
  * @typedef {Object} AutoCreateAdsMCAccountsData
@@ -32,41 +72,23 @@ import {
 const useAutoCreateAdsMCAccounts = () => {
 	const lockedRef = useRef( false );
 	// Create separate states.
-	const [ accountsCreated, setAccountsCreated ] = useState( false );
 	const [ creatingWhich, setCreatingWhich ] = useState( null );
 	const [ hasDetermined, setDetermined ] = useState( false );
 
 	const shouldCreateAds = useShouldCreateAdsAccount();
 	const shouldCreateMC = useShouldCreateMCAccount();
 
-	const [ handleCreateAccount, { response } ] = useCreateMCAccount();
-	const [ upsertAdsAccount, { loading } ] = useUpsertAdsAccount();
+	const [ handleCreateAccount ] = useCreateMCAccount();
+	const [ upsertAdsAccount ] = useUpsertAdsAccount();
 
 	useEffect( () => {
 		if (
+			// Wait for all determinations to be ready
 			shouldCreateMC === null ||
 			shouldCreateAds === null ||
-			accountsCreated
+			// Avoid repeated calls
+			lockedRef.current
 		) {
-			return;
-		}
-
-		if ( lockedRef.current && !! creatingWhich ) {
-			const mcAccountCreated = !! response?.status;
-
-			const resetState =
-				( creatingWhich === CREATING_ADS_ACCOUNT && ! loading ) ||
-				( creatingWhich === CREATING_MC_ACCOUNT && mcAccountCreated ) ||
-				( creatingWhich === CREATING_BOTH_ACCOUNTS &&
-					mcAccountCreated &&
-					! loading );
-
-			if ( resetState ) {
-				lockedRef.current = false;
-				setAccountsCreated( true );
-				setCreatingWhich( null );
-			}
-
 			return;
 		}
 
@@ -90,29 +112,26 @@ const useAutoCreateAdsMCAccounts = () => {
 				if ( which === CREATING_BOTH_ACCOUNTS ) {
 					await handleCreateAccount();
 					await upsertAdsAccount();
+					setCreatingWhich( null );
 				} else if ( which === CREATING_MC_ACCOUNT ) {
 					await handleCreateAccount();
+					setCreatingWhich( null );
 				} else if ( which === CREATING_ADS_ACCOUNT ) {
 					await upsertAdsAccount();
+					setCreatingWhich( null );
 				}
 			};
 
 			handleCreateAccountCallback();
-			setCreatingWhich( which );
 		}
 	}, [
-		accountsCreated,
-		creatingWhich,
 		handleCreateAccount,
-		loading,
-		response?.status,
 		shouldCreateAds,
 		shouldCreateMC,
 		upsertAdsAccount,
 	] );
 
 	return {
-		accountsCreated,
 		hasDetermined,
 		creatingWhich,
 	};
