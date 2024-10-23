@@ -10,7 +10,7 @@ import {
 	CREATING_ADS_ACCOUNT,
 	CREATING_BOTH_ACCOUNTS,
 	CREATING_MC_ACCOUNT,
-} from '../components/google-combo-account-card/constants';
+} from './constants';
 
 /**
  * Account creation in progress description.

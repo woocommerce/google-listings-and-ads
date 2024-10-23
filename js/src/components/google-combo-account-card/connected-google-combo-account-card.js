@@ -10,7 +10,7 @@ import AccountCard, { APPEARANCE } from '../account-card';
 import AccountDetails from './account-details';
 import AppSpinner from '../app-spinner';
 import Indicator from './indicator';
-import getAccountCreationTexts from '.~/utils/getAccountCreationTexts';
+import getAccountCreationTexts from './getAccountCreationTexts';
 import useAutoCreateAdsMCAccounts from '.~/hooks/useAutoCreateAdsMCAccounts';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';

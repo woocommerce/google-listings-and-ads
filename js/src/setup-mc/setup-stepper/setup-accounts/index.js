@@ -25,6 +25,7 @@ import Faqs from './faqs';
 import './index.scss';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleAdsAccountReady from '.~/hooks/useGoogleAdsAccountReady';
+import useGoogleMCAccountReady from '.~/hooks/useGoogleMCAccountReady';
 
 /**
  * Renders the disclaimer of Comparison Shopping Service (CSS).
@@ -87,6 +88,10 @@ const SetupAccounts = ( props ) => {
 		useGoogleMCAccount();
 	const { hasFinishedResolution } = useGoogleAdsAccount();
 	const isGoogleAdsReady = useGoogleAdsAccountReady();
+	// MC is ready when we have a connection and preconditions are met.
+	// The `link_ads` step will be resolved when the Ads account is connected
+	// since these can be connected in any order.
+	const isGoogleMCReady = useGoogleMCAccountReady();
 
 	/**
 	 * When jetpack is loading, or when google account is loading,
@@ -108,15 +113,6 @@ const SetupAccounts = ( props ) => {
 	if ( isLoadingJetpack || isLoadingGoogle || isLoadingGoogleMCAccount ) {
 		return <AppSpinner />;
 	}
-
-	// MC is ready when we have a connection and preconditions are met.
-	// The `link_ads` step will be resolved when the Ads account is connected
-	// since these can be connected in any order.
-	const isGoogleMCReady =
-		isGMCPreconditionReady &&
-		( googleMCAccount?.status === 'connected' ||
-			( googleMCAccount?.status === 'incomplete' &&
-				googleMCAccount?.step === 'link_ads' ) );
 
 	const isContinueButtonDisabled = ! (
 		hasFinishedResolution &&
