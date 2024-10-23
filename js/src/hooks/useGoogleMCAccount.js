@@ -46,7 +46,7 @@ const useGoogleMCAccount = () => {
 					// has not been granted necessary access permissions for Google Merchant Center, then
 					// the precondition doesn't meet.
 					isPreconditionReady: false,
-					isConnected: false,
+					hasGoogleMCConnection: false,
 				};
 			}
 
@@ -56,11 +56,6 @@ const useGoogleMCAccount = () => {
 				googleMCAccountSelector
 			);
 
-			const hasGoogleMCConnection = [
-				GOOGLE_MC_ACCOUNT_STATUS.CONNECTED,
-				GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE,
-			].includes( googleMCAccount?.status );
-
 			return {
 				googleMCAccount,
 				isResolving: isResolvingGoogleMCAccount,
@@ -68,11 +63,10 @@ const useGoogleMCAccount = () => {
 					googleMCAccountSelector
 				),
 				isPreconditionReady: true,
-				hasGoogleMCConnection,
 				// MC is ready when we have a connection and preconditions are met.
 				// The `link_ads` step will be resolved when the Ads account is connected
 				// since these can be connected in any order.
-				isConnected:
+				hasGoogleMCConnection:
 					googleMCAccount?.status ===
 						GOOGLE_MC_ACCOUNT_STATUS.CONNECTED ||
 					( googleMCAccount?.status ===

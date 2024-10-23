@@ -14,6 +14,7 @@ import getAccountCreationTexts from '.~/utils/getAccountCreationTexts';
 import useAutoCreateAdsMCAccounts from '.~/hooks/useAutoCreateAdsMCAccounts';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
+import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
 import ConnectMC from './connect-mc';
 import './connected-google-combo-account-card.scss';
 
@@ -33,8 +34,11 @@ const ConnectedGoogleComboAccountCard = () => {
 
 	const {
 		googleMCAccount,
+		hasGoogleMCConnection,
 		hasFinishedResolution: hasFinishedResolutionForCurrentMCAccount,
 	} = useGoogleMCAccount();
+
+	const { data: accounts } = useExistingGoogleMCAccounts();
 
 	const { hasDetermined, creatingWhich } = useAutoCreateAdsMCAccounts();
 	const { text, subText } = getAccountCreationTexts( wasCreatingAccounts );
@@ -74,17 +78,25 @@ const ConnectedGoogleComboAccountCard = () => {
 		return <AccountCard description={ <AppSpinner /> } />;
 	}
 
+	const showConnectMCCard = ! hasGoogleMCConnection && accounts.length > 0;
+
 	return (
-		<AccountCard
-			appearance={ APPEARANCE.GOOGLE }
-			alignIcon="top"
-			className="gla-google-combo-account-card--connected"
-			description={ ! displayAccountDetails ? text : <AccountDetails /> }
-			helper={ ! displayAccountDetails ? subText : null }
-			indicator={
-				<Indicator creatingAccounts={ ! displayAccountDetails } />
-			}
-		/>
+		<>
+			<AccountCard
+				appearance={ APPEARANCE.GOOGLE }
+				alignIcon="top"
+				className="gla-google-combo-account-card--connected"
+				description={
+					! displayAccountDetails ? text : <AccountDetails />
+				}
+				helper={ ! displayAccountDetails ? subText : null }
+				indicator={
+					<Indicator creatingAccounts={ ! displayAccountDetails } />
+				}
+			/>
+
+			{ showConnectMCCard && <ConnectMC /> }
+		</>
 	);
 };
 

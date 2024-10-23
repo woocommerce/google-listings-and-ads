@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -12,17 +11,12 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
 const useCreateMCAccount = () => {
-	const singletonRef = useRef( null );
 	const { createNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
 	const [ fetchCreateMCAccount, result ] = useApiFetchCallback( {
-		path: '/wc/gla/mc/accounts',
+		path: `/wc/gla/mc/accounts`,
 		method: 'POST',
 	} );
-
-	if ( singletonRef.current ) {
-		return singletonRef.current;
-	}
 
 	const handleCreateAccount = async () => {
 		try {
@@ -45,8 +39,7 @@ const useCreateMCAccount = () => {
 		}
 	};
 
-	singletonRef.current = [ handleCreateAccount, result ];
-	return singletonRef.current;
+	return [ handleCreateAccount, result ];
 };
 
 export default useCreateMCAccount;

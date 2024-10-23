@@ -15,6 +15,7 @@ import ConnectMCFooter from './connect-mc-footer';
 import SpinnerCard from '.~/components/spinner-card';
 import AccountConnectionStatus from '.~/components/google-mc-account-card/account-connection-status';
 import useConnectMCAccount from '.~/hooks/useConnectMCAccount';
+import useCreateMCAccount from '.~/hooks/useCreateMCAccount';
 
 /**
  * Clicking on the "Switch account" button to select a different Google Merchant Center account to connect.
@@ -23,30 +24,31 @@ import useConnectMCAccount from '.~/hooks/useConnectMCAccount';
  * @property {string} context (`switch-url`|`reclaim-url`) - indicate the button is clicked from which step.
  */
 
-const ConnectMC = ( { createMCAccount } ) => {
+const ConnectMC = () => {
 	const {
 		googleMCAccount,
 		hasFinishedResolution,
-		isConnected,
+		hasGoogleMCConnection,
 		isPreconditionReady,
 	} = useGoogleMCAccount();
 	const [ accountID, setAccountID ] = useState();
-	const connectMCAccount = useConnectMCAccount( accountID );
-	const [ handleConnectMC, resultConnectMC ] = connectMCAccount;
-	const [ handleCreateAccount, resultCreateAccount ] = createMCAccount;
+	const [ handleConnectMC, resultConnectMC ] =
+		useConnectMCAccount( accountID );
+	const [ handleCreateAccount, resultCreateAccount ] = useCreateMCAccount();
+	console.log( resultCreateAccount );
 
 	useEffect( () => {
-		if ( isConnected ) {
+		if ( hasGoogleMCConnection ) {
 			setAccountID( googleMCAccount.id );
 		}
-	}, [ googleMCAccount, isConnected ] );
+	}, [ googleMCAccount, hasGoogleMCConnection ] );
 
 	if ( ! hasFinishedResolution ) {
 		return <SpinnerCard />;
 	}
 
 	if (
-		! isConnected &&
+		! hasGoogleMCConnection &&
 		( resultConnectMC.response?.status === 409 ||
 			resultConnectMC.response?.status === 403 ||
 			resultCreateAccount.response?.status === 403 ||
@@ -65,7 +67,8 @@ const ConnectMC = ( { createMCAccount } ) => {
 	return (
 		<ConnectAccountCard
 			className={ classNames( 'gla-google-combo-account-card--mc', {
-				'gla-google-combo-account-card--connected': isConnected,
+				'gla-google-combo-account-card--connected':
+					hasGoogleMCConnection,
 			} ) }
 			title={ __(
 				'Connect to existing Merchant Center account',
@@ -79,14 +82,14 @@ const ConnectMC = ( { createMCAccount } ) => {
 				<ConnectMCBody
 					value={ accountID }
 					setValue={ setAccountID }
-					isConnected={ isConnected }
+					isConnected={ hasGoogleMCConnection }
 					isConnecting={ resultConnectMC.loading }
 					handleConnectMC={ handleConnectMC }
 				/>
 			}
 			footer={
 				<ConnectMCFooter
-					isConnected={ isConnected }
+					isConnected={ hasGoogleMCConnection }
 					resultConnectMC={ resultConnectMC }
 					resultCreateAccount={ resultCreateAccount }
 					handleCreateAccount={ handleCreateAccount }
