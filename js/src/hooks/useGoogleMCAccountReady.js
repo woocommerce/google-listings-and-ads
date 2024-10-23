@@ -2,7 +2,6 @@
  * Internal dependencies
  */
 import useGoogleMCAccount from './useGoogleMCAccount';
-import { GOOGLE_MC_ACCOUNT_STATUS } from '.~/constants';
 
 const useGoogleMCAccountReady = () => {
 	const { hasGoogleMCConnection, googleMCAccount } = useGoogleMCAccount();
