@@ -25,16 +25,16 @@ export const AccountCreationContext = createContext( defaultContext );
  * @throws Will throw an error if the context provider is missing in the component's ancestors.
  */
 export function useAccountCreationContext() {
-	const adaptiveFormContext = useContext( AccountCreationContext );
+	const accountCreationContext = useContext( AccountCreationContext );
 
 	if (
-		adaptiveFormContext.accountsCreated === undefined ||
-		adaptiveFormContext.creatingWhich === undefined
+		accountCreationContext.accountsCreated === undefined ||
+		accountCreationContext.creatingWhich === undefined
 	) {
 		throw new Error(
 			'useAccountCreationContext was used outside of its context provider ConnectedGoogleComboAccountCard.'
 		);
 	}
 
-	return adaptiveFormContext;
+	return accountCreationContext;
 }

@@ -9,9 +9,8 @@ import { __ } from '@wordpress/i18n';
 import ConnectedIconLabel from '.~/components/connected-icon-label';
 import LoadingLabel from '.~/components/loading-label/loading-label';
 import useAccountsData from '.~/hooks/useAccountsData';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
+import useGoogleAdsAccountReady from '.~/hooks/useGoogleAdsAccountReady';
 
 /**
  * Account creation indicator.
@@ -20,14 +19,8 @@ import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
  */
 const Indicator = () => {
 	const { creatingWhich } = useAccountsData();
-	const { hasGoogleAdsConnection } = useGoogleAdsAccount();
 	const { googleMCAccount, isPreconditionReady } = useGoogleMCAccount();
-	const { hasAccess, step } = useGoogleAdsAccountStatus();
-
-	const isGoogleAdsConnected =
-		hasGoogleAdsConnection &&
-		hasAccess &&
-		[ '', 'billing', 'link_merchant' ].includes( step );
+	const isGoogleAdsConnected = useGoogleAdsAccountReady();
 
 	const isGoogleMCConnected =
 		isPreconditionReady &&

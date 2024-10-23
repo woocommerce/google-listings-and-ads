@@ -13,18 +13,16 @@ const AccountCardDescription = () => {
 	const { creatingWhich, google, googleAdsAccount, googleMCAccount } =
 		useAccountsData();
 
+	if ( creatingWhich ) {
+		return <CreatingAccounts creatingAccounts={ creatingWhich } />;
+	}
+
 	return (
-		<>
-			{ creatingWhich ? (
-				<CreatingAccounts creatingAccounts={ creatingWhich } />
-			) : (
-				<AccountDetails
-					email={ google.email }
-					googleAdsID={ googleAdsAccount.id }
-					googleMerchantCenterID={ googleMCAccount.id }
-				/>
-			) }
-		</>
+		<AccountDetails
+			email={ google.email }
+			googleAdsID={ googleAdsAccount.id }
+			googleMerchantCenterID={ googleMCAccount.id }
+		/>
 	);
 };
 
