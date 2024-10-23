@@ -50,11 +50,8 @@ const useGoogleMCAccount = () => {
 				};
 			}
 
-			const { getGoogleMCAccount, hasFinishedResolution } =
-				select( STORE_KEY );
-
 			const selector = select( STORE_KEY );
-			const acc = selector[ googleMCAccountSelector ]();
+			const googleMCAccount = selector[ googleMCAccountSelector ]();
 			const isResolvingGoogleMCAccount = selector.isResolving(
 				googleMCAccountSelector
 			);
@@ -62,14 +59,14 @@ const useGoogleMCAccount = () => {
 			const hasGoogleMCConnection = [
 				GOOGLE_MC_ACCOUNT_STATUS.CONNECTED,
 				GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE,
-			].includes( acc?.status );
+			].includes( googleMCAccount?.status );
 
-			const googleMCAccount = getGoogleMCAccount();
 			return {
 				googleMCAccount,
 				isResolving: isResolvingGoogleMCAccount,
-				hasFinishedResolution:
-					hasFinishedResolution( 'getGoogleMCAccount' ),
+				hasFinishedResolution: selector.hasFinishedResolution(
+					googleMCAccountSelector
+				),
 				isPreconditionReady: true,
 				hasGoogleMCConnection,
 				// MC is ready when we have a connection and preconditions are met.

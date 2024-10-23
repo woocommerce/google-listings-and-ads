@@ -233,6 +233,8 @@ test.describe( 'Set up accounts', () => {
 		test( 'should create merchant center and ads account if does not exist for the user', async () => {
 			await setUpAccountsPage.mockJetpackConnected();
 			await setUpAccountsPage.mockGoogleConnected();
+			await setupAdsAccountPage.mockAdsAccountDisconnected();
+			await setUpAccountsPage.mockMCNotConnected();
 
 			await setupAdsAccountPage.fulfillAdsAccounts(
 				[
@@ -327,24 +329,8 @@ test.describe( 'Set up accounts', () => {
 			test.beforeEach( async () => {
 				await setUpAccountsPage.mockJetpackConnected();
 				await setUpAccountsPage.mockGoogleConnected();
-
-				await setUpAccountsPage.fulfillMCConnection( {
-					id: 5432178,
-					name: null,
-					subaccount: null,
-					domain: null,
-					status: 'incomplete',
-					step: 'link_ads',
-				} );
-
-				await setUpAccountsPage.fulfillAdsConnection( {
-					id: 78787878,
-					currency: 'USD',
-					status: 'incomplete',
-					step: 'account_access',
-					sub_account: true,
-					symbol: '$',
-				} );
+				await setUpAccountsPage.mockMCConnected();
+				await setupAdsAccountPage.mockAdsAccountConnected();
 
 				await setupAdsAccountPage.mockMCHasAccounts();
 				await setUpAccountsPage.mockMCConnected();
@@ -353,18 +339,6 @@ test.describe( 'Set up accounts', () => {
 			} );
 
 			test( 'should see the merchant center id and ads account id if connected', async () => {
-				await setupAdsAccountPage.fulfillAdsAccounts(
-					{
-						message:
-							'Account must be accepted before completing setup.',
-						has_access: false,
-						step: 'account_access',
-						invite_link: 'https://ads.google.com/nav/',
-					},
-					428,
-					[ 'POST' ]
-				);
-
 				const googleAccountCard =
 					setUpAccountsPage.getGoogleAccountCard();
 				await expect(
@@ -374,7 +348,7 @@ test.describe( 'Set up accounts', () => {
 				).toBeVisible();
 
 				await expect(
-					googleAccountCard.getByText( 'Google Ads ID: 78787878', {
+					googleAccountCard.getByText( 'Google Ads ID: 12345', {
 						exact: true,
 					} )
 				).toBeVisible();
