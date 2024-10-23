@@ -51,11 +51,7 @@ const ConnectedGoogleComboAccountCard = () => {
 		!! googleAdsAccount?.id &&
 		!! googleMCAccount?.id;
 
-	const displayAccountDetails =
-		wasCreatingAccounts &&
-		accountsCreated &&
-		accountDetailsResolved &&
-		accountsReady;
+	const displayAccountDetails = accountDetailsResolved && accountsReady;
 
 	useEffect( () => {
 		if ( creatingWhich ) {
@@ -80,9 +76,7 @@ const ConnectedGoogleComboAccountCard = () => {
 			className="gla-google-combo-account-card--connected"
 			description={ ! displayAccountDetails ? text : <AccountDetails /> }
 			helper={ ! displayAccountDetails ? subText : null }
-			indicator={
-				<Indicator creatingAccounts={ ! displayAccountDetails } />
-			}
+			indicator={ <Indicator showSpinner={ ! displayAccountDetails } /> }
 		/>
 	);
 };

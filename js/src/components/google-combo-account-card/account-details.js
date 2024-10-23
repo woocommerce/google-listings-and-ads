@@ -20,7 +20,7 @@ const AccountDetails = () => {
 	const { googleMCAccount } = useGoogleMCAccount();
 
 	return (
-		<div className="gla-account-card__account_details">
+		<>
 			<p>{ google.email }</p>
 			<p>
 				{ sprintf(
@@ -36,7 +36,7 @@ const AccountDetails = () => {
 					googleAdsAccount.id
 				) }
 			</p>
-		</div>
+		</>
 	);
 };
 
