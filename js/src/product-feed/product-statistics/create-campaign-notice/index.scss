@@ -1,13 +1,10 @@
 .gla-ads-inline-notice {
-	margin: $grid-unit-20;
+	background-color: #f0f6fc;
 	border-left: none;
-	padding: 0.75rem 1rem;
+	margin-bottom: $grid-unit-20;
+	padding: $grid-unit-20 $grid-unit-30;
 
-	&.is-info {
-		background-color: #f0f6fc;
-	}
-
-	.components-notice__content p {
+	p {
 		margin-top: 0;
 	}
 }

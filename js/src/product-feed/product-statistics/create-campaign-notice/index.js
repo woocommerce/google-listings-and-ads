@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Notice } from '@wordpress/components';
+import { Flex, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -30,8 +30,8 @@ const CreateCampaignNotice = () => {
 	}
 
 	return (
-		<Notice isDismissible={ false } className="gla-ads-inline-notice">
-			<section>
+		<Flex className="gla-ads-inline-notice">
+			<FlexItem>
 				<p>
 					{ __(
 						'You have approved products. Create a Google Ads campaign to reach more customers and drive more sales.',
@@ -46,8 +46,8 @@ const CreateCampaignNotice = () => {
 				>
 					{ __( 'Create Campaign', 'google-listings-and-ads' ) }{ ' ' }
 				</AddPaidCampaignButton>
-			</section>
-		</Notice>
+			</FlexItem>
+		</Flex>
 	);
 };
 

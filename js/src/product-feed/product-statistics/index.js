@@ -134,8 +134,9 @@ const ProductStatistics = () => {
 					</SummaryList>
 				) }
 			</CardBody>
-			<CreateCampaignNotice />
+
 			<CardFooter gap={ 0 }>
+				<CreateCampaignNotice />
 				<FeedStatus />
 				<SyncStatus />
 				<AccountStatus />
