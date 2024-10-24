@@ -366,6 +366,21 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the budget recommendations request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillBudgetRecommendations( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/campaigns\/budget-recommendation\b/,
+			payload,
+			200,
+			[ 'GET' ]
+		);
+	}
+
+	/**
 	 * Mock the request to connect Jetpack
 	 *
 	 * @param {string} url
@@ -503,14 +518,16 @@ export default class MockRequests {
 	 * Mock Google Ads account as connected.
 	 *
 	 * @param {number} [id=12345]
+	 * @param {Object} [args={}] - Additional properties to customize the account connection details.
 	 * @return {Promise<void>}
 	 */
-	async mockAdsAccountConnected( id = 12345 ) {
+	async mockAdsAccountConnected( id = 12345, args = {} ) {
 		await this.fulfillAdsConnection( {
 			id,
 			currency: 'TWD',
 			symbol: 'NT$',
 			status: 'connected',
+			...args,
 		} );
 	}
 

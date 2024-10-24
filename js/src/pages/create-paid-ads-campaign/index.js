@@ -17,6 +17,7 @@ import { useAppDispatch } from '.~/data';
 import { getDashboardUrl } from '.~/utils/urls';
 import convertToAssetGroupUpdateBody from '.~/components/paid-ads/convertToAssetGroupUpdateBody';
 import TopBar from '.~/components/stepper/top-bar';
+import ContinueButton from '.~/components/paid-ads/continue-button';
 import HelpIconButton from '.~/components/help-icon-button';
 import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
@@ -32,6 +33,7 @@ import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
 } from '.~/utils/tracks';
+import useFetchBudgetRecommendation from '.~/hooks/useFetchBudgetRecommendation';
 
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'create-ads';
@@ -50,7 +52,9 @@ const CreatePaidAdsCampaign = () => {
 	const createdCampaignIdRef = useRef( null );
 	const { createAdsCampaign, updateCampaignAssetGroup } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
-	const { data: initialCountryCodes } = useTargetAudienceFinalCountryCodes();
+	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
+	const { highestDailyBudget, hasFinishedResolution } =
+		useFetchBudgetRecommendation( countryCodes );
 
 	const handleStepperClick = ( nextStep ) => {
 		recordStepperChangeEvent(
@@ -75,7 +79,7 @@ const CreatePaidAdsCampaign = () => {
 		const { action } = enhancer.submitter.dataset;
 
 		try {
-			const { amount, countryCodes } = values;
+			const { amount } = values;
 
 			// Avoid re-creating a new campaign if the subsequent asset group update is failed.
 			if ( createdCampaignIdRef.current === null ) {
@@ -113,7 +117,7 @@ const CreatePaidAdsCampaign = () => {
 		getHistory().push( getDashboardUrl( { campaign: 'saved' } ) );
 	};
 
-	if ( ! initialCountryCodes ) {
+	if ( ! countryCodes || ! hasFinishedResolution ) {
 		return null;
 	}
 
@@ -129,9 +133,9 @@ const CreatePaidAdsCampaign = () => {
 			/>
 			<CampaignAssetsForm
 				initialCampaign={ {
-					amount: 0,
-					countryCodes: initialCountryCodes,
+					amount: highestDailyBudget,
 				} }
+				recommendedDailyBudget={ highestDailyBudget }
 				onSubmit={ handleSubmit }
 			>
 				<Stepper
@@ -145,10 +149,21 @@ const CreatePaidAdsCampaign = () => {
 							),
 							content: (
 								<AdsCampaign
-									trackingContext={ eventContext }
-									onContinue={ () =>
-										handleContinueClick( STEP.ASSET_GROUP )
-									}
+									headerTitle={ __(
+										'Create your paid campaign',
+										'google-listings-and-ads'
+									) }
+									context={ eventContext }
+									continueButton={ ( formContext ) => (
+										<ContinueButton
+											formProps={ formContext }
+											onClick={ () => {
+												handleContinueClick(
+													STEP.ASSET_GROUP
+												);
+											} }
+										/>
+									) }
 								/>
 							),
 							onClick: handleStepperClick,

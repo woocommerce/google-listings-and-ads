@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useEffect, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -13,6 +12,10 @@ import './index.scss';
 import BudgetRecommendation from './budget-recommendation';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import AppInputPriceControl from '.~/components/app-input-price-control';
+
+/**
+ * @typedef {import('.~/data/actions').CountryCode} CountryCode
+ */
 
 const nonInteractableProps = {
 	noPointerEvents: true,
@@ -25,33 +28,22 @@ const nonInteractableProps = {
  *
  * @param {Object} props React props.
  * @param {Object} props.formProps Form props forwarded from `Form` component.
+ * @param {Array<CountryCode>|undefined} props.countryCodes Country codes to fetch budget recommendations for.
  * @param {boolean} [props.disabled=false] Whether display the Card in disabled style.
  * @param {JSX.Element} [props.children] Extra content to be rendered under the card of budget inputs.
  */
-const BudgetSection = ( { formProps, disabled = false, children } ) => {
-	const { getInputProps, setValue, values } = formProps;
-	const { countryCodes, amount } = values;
+const BudgetSection = ( {
+	formProps,
+	countryCodes,
+	disabled = false,
+	children,
+} ) => {
+	const { getInputProps, values } = formProps;
+	const { amount } = values;
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const monthlyMaxEstimated = getMonthlyMaxEstimated( amount );
 	// Display the currency code that will be used by Google Ads, but still use the store's currency formatting settings.
 	const currency = googleAdsAccount?.currency;
-
-	// Wrapping `useRef` is because since WC 6.9, the reference of `setValue` may be changed
-	// after calling itself and further leads to an infinite re-rendering loop if used in a
-	// `useEffect`.
-	const setValueRef = useRef();
-	setValueRef.current = setValue;
-
-	/**
-	 * In addition to the initial value setting during initialization, when `disabled` changes
-	 * - from false to true, then clear filled amount to `undefined` for showing a blank <input>.
-	 * - from true to false, then reset amount to the initial value passed from the consumer side.
-	 */
-	const initialAmountRef = useRef( amount );
-	useEffect( () => {
-		const nextAmount = disabled ? undefined : initialAmountRef.current;
-		setValueRef.current( 'amount', nextAmount );
-	}, [ disabled ] );
 
 	return (
 		<div className="gla-budget-section">
@@ -89,7 +81,7 @@ const BudgetSection = ( { formProps, disabled = false, children } ) => {
 								value={ monthlyMaxEstimated }
 							/>
 						</div>
-						{ countryCodes.length > 0 && (
+						{ countryCodes?.length > 0 && (
 							<BudgetRecommendation
 								countryCodes={ countryCodes }
 								dailyAverageCost={ amount }

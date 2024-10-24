@@ -11,13 +11,8 @@ import CompleteCampaign from '../../utils/pages/setup-mc/step-4-complete-campaig
 import SetupAdsAccountPage from '../../utils/pages/setup-ads/setup-ads-accounts';
 import {
 	checkFAQExpandable,
-	fillCountryInSearchBox,
-	getCountryInputSearchBoxContainer,
-	getCountryTagsFromInputSearchBoxContainer,
 	getFAQPanelTitle,
 	getFAQPanelRow,
-	getTreeSelectMenu,
-	removeCountryFromSearchBox,
 	checkBillingAdsPopup,
 } from '../../utils/page';
 
@@ -83,6 +78,24 @@ test.describe( 'Complete your campaign', () => {
 				},
 				[ 'GET' ]
 			),
+
+			completeCampaign.fulfillBudgetRecommendations( {
+				currency: 'USD',
+				recommendations: [
+					{
+						country: 'US',
+						daily_budget: 10,
+					},
+					{
+						country: 'TW',
+						daily_budget: 8,
+					},
+					{
+						country: 'GB',
+						daily_budget: 20,
+					},
+				],
+			} ),
 
 			// The following mocks are requests will happen after completing the onboarding
 			completeCampaign.mockSuccessfulSettingsSyncRequest(),
@@ -159,15 +172,6 @@ test.describe( 'Complete your campaign', () => {
 
 	test.describe( 'Set up paid ads', () => {
 		test.describe( 'Click "Create a paid ad campaign" button', () => {
-			test.beforeAll( async () => {
-				await completeCampaign.clickCreatePaidAdButton();
-			} );
-
-			test( 'should not see the "Create a paid ad campaign" button after this section is shown', async () => {
-				const button = completeCampaign.getCreatePaidAdButton();
-				await expect( button ).toBeHidden();
-			} );
-
 			test( 'should see "Complete setup" button is disabled', async () => {
 				const completeSetupButton =
 					completeCampaign.getCompleteSetupButton();
@@ -183,17 +187,6 @@ test.describe( 'Complete your campaign', () => {
 			} );
 
 			test.describe( 'Setup up ads to a Google Ads account', () => {
-				test( 'should see "Ads audience" section is enabled', async () => {
-					const adsAudienceSection =
-						completeCampaign.getAdsAudienceSection();
-					await expect( adsAudienceSection ).toBeVisible();
-
-					// Confirm that the section title contains the correct text.
-					await expect(
-						adsAudienceSection.locator( 'h1' )
-					).toContainText( 'Ads audience' );
-				} );
-
 				test( 'should see "Set your budget" section is enabled', async () => {
 					const budgetSection = completeCampaign.getBudgetSection();
 					await expect( budgetSection ).toBeVisible();
@@ -219,79 +212,15 @@ test.describe( 'Complete your campaign', () => {
 				await completeCampaign.goto();
 			} );
 
-			test.describe( 'Select audience', () => {
-				test( 'should see only three country tags in country input search box', async () => {
-					const countrySearchBoxContainer =
-						getCountryInputSearchBoxContainer( page );
-					const countryTags =
-						getCountryTagsFromInputSearchBoxContainer( page );
-					await expect( countryTags ).toHaveCount( 3 );
-					await expect( countrySearchBoxContainer ).toContainText(
-						'United States'
-					);
-					await expect( countrySearchBoxContainer ).toContainText(
-						'Taiwan'
-					);
-					await expect( countrySearchBoxContainer ).toContainText(
-						'United Kingdom'
-					);
-				} );
-
-				test( 'should only allow searching for the same set of the countries selected in step 2, which is returned by target audience API', async () => {
-					const treeSelectMenu = getTreeSelectMenu( page );
-
-					await fillCountryInSearchBox( page, 'United States' );
-					await expect( treeSelectMenu ).toBeVisible();
-
-					await fillCountryInSearchBox( page, 'United Kingdom' );
-					await expect( treeSelectMenu ).toBeVisible();
-
-					await fillCountryInSearchBox( page, 'Taiwan' );
-					await expect( treeSelectMenu ).toBeVisible();
-
-					await fillCountryInSearchBox( page, 'Japan' );
-					await expect( treeSelectMenu ).not.toBeVisible();
-
-					await fillCountryInSearchBox( page, 'Spain' );
-					await expect( treeSelectMenu ).not.toBeVisible();
-				} );
-
-				test( 'should see the budget recommendation value changed, and see the budget recommendation request is triggered when changing the ads audience', async () => {
-					let textContent = await setupBudgetPage
-						.getBudgetRecommendationTextRow()
-						.textContent();
-
-					const textBeforeRemoveCountry =
-						setupBudgetPage.extractBudgetRecommendationValue(
-							textContent
-						);
-
-					const responsePromise =
-						setupBudgetPage.registerBudgetRecommendationResponse();
-
-					await removeCountryFromSearchBox(
-						page,
-						'United Kingdom (UK)'
-					);
-
-					await responsePromise;
-
-					textContent = await setupBudgetPage
-						.getBudgetRecommendationTextRow()
-						.textContent();
-
-					const textAfterRemoveCountry =
-						setupBudgetPage.extractBudgetRecommendationValue(
-							textContent
-						);
-
-					await expect( textBeforeRemoveCountry ).not.toBe(
-						textAfterRemoveCountry
-					);
-				} );
-			} );
-
 			test.describe( 'Set up budget', () => {
+				test( '"Daily average cost" input should have highest value set', async () => {
+					const dailyAverageCostInput =
+						setupBudgetPage.getBudgetInput();
+					await expect( dailyAverageCostInput ).toHaveValue(
+						'20.00'
+					);
+				} );
+
 				test( 'should see the low budget tip when the buget is set lower than the recommended value', async () => {
 					await setupBudgetPage.fillBudget( '1' );
 					const lowBudgetTip = setupBudgetPage.getLowerBudgetTip();
@@ -302,6 +231,76 @@ test.describe( 'Complete your campaign', () => {
 					await setupBudgetPage.fillBudget( '99999' );
 					const lowBudgetTip = setupBudgetPage.getLowerBudgetTip();
 					await expect( lowBudgetTip ).not.toBeVisible();
+				} );
+			} );
+
+			test.describe( 'Validate budget percent', () => {
+				test.beforeAll( async () => {
+					await setupBudgetPage.fulfillBudgetRecommendations( {
+						currency: 'TWD',
+						recommendations: [
+							{
+								country: 'US',
+								daily_budget: 100,
+							},
+						],
+					} );
+
+					await completeCampaign.goto();
+				} );
+
+				test( 'should see validation error if lower than the 30%', async () => {
+					await setupBudgetPage.fillBudget( '10' );
+					await setupBudgetPage.getBudgetInput().blur();
+					const error = page.locator(
+						'.components-base-control__help'
+					);
+
+					await expect( error ).toHaveText(
+						'Please make sure daily average cost is at least NT$30.00'
+					);
+				} );
+
+				test( 'should see validation error if slightly less than the 30%', async () => {
+					await setupBudgetPage.fillBudget( '29.99' );
+					await setupBudgetPage.getBudgetInput().blur();
+					const error = page.locator(
+						'.components-base-control__help'
+					);
+
+					await expect( error ).toHaveText(
+						'Please make sure daily average cost is at least NT$30.00'
+					);
+				} );
+
+				test( 'should not see validation error if exactly 30%', async () => {
+					await setupBudgetPage.fillBudget( '30' );
+					await setupBudgetPage.getBudgetInput().blur();
+
+					const error = page.locator(
+						'.components-base-control__help'
+					);
+					await expect( error ).not.toBeVisible();
+				} );
+
+				test( 'should not see validation error if slightly greater than 30%', async () => {
+					await setupBudgetPage.fillBudget( '30.5' );
+					await setupBudgetPage.getBudgetInput().blur();
+
+					const error = page.locator(
+						'.components-base-control__help'
+					);
+					await expect( error ).not.toBeVisible();
+				} );
+
+				test( 'should not see validation error if greater than 30%', async () => {
+					await setupBudgetPage.fillBudget( '40' );
+					await setupBudgetPage.getBudgetInput().blur();
+
+					const error = page.locator(
+						'.components-base-control__help'
+					);
+					await expect( error ).not.toBeVisible();
 				} );
 			} );
 
@@ -344,12 +343,21 @@ test.describe( 'Complete your campaign', () => {
 				} );
 
 				test( 'should see billing has been set up successfully when billing status API returns approved', async () => {
+					await setupBudgetPage.mockAdsAccountsResponse( {
+						id: 12345,
+						billing_url: null,
+					} );
 					await setupBudgetPage.fulfillBillingStatusRequest( {
-						status: 'approved',
+						status: 'pending',
 					} );
 
 					await newPage.close();
-					await page.reload();
+					// return focus to the page.
+					await setupBudgetPage.focusBudget();
+					await setupBudgetPage.fulfillBillingStatusRequest( {
+						status: 'approved',
+					} );
+					await setupBudgetPage.awaitForBillingStatusRequest();
 
 					const billingSetupSuccessSection =
 						setupBudgetPage.getBillingSetupSuccessSection();
@@ -370,77 +378,114 @@ test.describe( 'Complete your campaign', () => {
 					await completeCampaign.clickCompleteSetupButton();
 					await requestsPromises;
 
-					const setupSuccessModal = page
-						.locator( '.components-modal__content' )
-						.filter( {
-							hasText:
-								'You’ve successfully set up Google for WooCommerce!',
-						} );
+					const setupSuccessModal =
+						completeCampaign.getSetupSuccessModal();
 					await expect( setupSuccessModal ).toBeVisible();
 				} );
 			} );
 		} );
 	} );
 
-	test.describe( 'Complete onboarding by "Skip this step for now"', () => {
-		test.beforeAll( async () => {
-			// Reset the showing status for the "Set up paid ads" section.
-			await page.evaluate( () => window.sessionStorage.clear() );
-			await setupAdsAccountPage.mockAdsAccountIncomplete();
-			await completeCampaign.goto();
-			await completeCampaign.clickSkipStepButton();
-		} );
+	test.describe( 'Ask user for confirmation when clicking "Skip this step for now"', () => {
+		test.describe( 'User skips paid ads creation', () => {
+			test.beforeAll( async () => {
+				// Reset the showing status for the "Set up paid ads" section.
+				await page.evaluate( () => window.sessionStorage.clear() );
+				await setupAdsAccountPage.mockAdsAccountIncomplete();
+				await completeCampaign.goto();
+				await completeCampaign.clickSkipPaidAdsCreationButton();
+			} );
 
-		test( 'should see the setup success modal', async () => {
-			const setupSuccessModal = page
-				.locator( '.components-modal__content' )
-				.filter( {
-					hasText:
-						'You’ve successfully set up Google for WooCommerce!',
+			test( 'should see the modal', async () => {
+				const skipPaidAdsModal =
+					completeCampaign.getSkipPaidAdsCreationModal();
+				await expect( skipPaidAdsModal ).toBeVisible();
+			} );
+
+			test( 'should see the url contains product-feed if the user skips', async () => {
+				await completeCampaign.clickCompleteSetupModalButton();
+				await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
+				expect( page.url() ).toMatch( /path=%2Fgoogle%2Fproduct-feed/ );
+			} );
+
+			test( 'should see the setup success modal', async () => {
+				const setupSuccessModal =
+					completeCampaign.getSetupSuccessModal();
+				await expect( setupSuccessModal ).toBeVisible();
+			} );
+
+			test( 'should see buttons on Dashboard for Google Ads onboarding', async () => {
+				await page.keyboard.press( 'Escape' );
+				await page.getByRole( 'tab', { name: 'Dashboard' } ).click();
+
+				const buttons = page.getByRole( 'button', {
+					name: 'Add paid campaign',
 				} );
-			await expect( setupSuccessModal ).toBeVisible();
+
+				await expect( buttons ).toHaveCount( 2 );
+				for ( const button of await buttons.all() ) {
+					await expect( button ).toBeVisible();
+					await expect( button ).toBeEnabled();
+				}
+			} );
 		} );
 
-		test( 'should see the url contains product-feed', async () => {
-			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fproduct-feed/ );
+		test.describe( 'User does not skip paid ads creation', () => {
+			test.beforeAll( async () => {
+				// Reset the showing status for the "Set up paid ads" section.
+				await page.evaluate( () => window.sessionStorage.clear() );
+				await setupAdsAccountPage.mockAdsAccountIncomplete();
+				await completeCampaign.goto();
+				await completeCampaign.clickSkipPaidAdsCreationButton();
+			} );
+
+			test( 'should no longer see the confirmation modal', async () => {
+				await completeCampaign.clickCancelModalButton();
+
+				const skipPaidAdsModal =
+					completeCampaign.getSkipPaidAdsCreationModal();
+				await expect( skipPaidAdsModal ).not.toBeVisible();
+			} );
+
+			test( 'user should stay on the same page', async () => {
+				await expect( page.url() ).toMatch(
+					/path=%2Fgoogle%2Fsetup-mc&google-mc=connected/
+				);
+			} );
 		} );
 	} );
 
-	test.describe( 'Complete onboarding by "Skip paid ads creation"', () => {
-		test.beforeAll( async () => {
-			await setupAdsAccountPage.mockAdsAccountIncomplete();
+	test.describe( 'Free Ad Credit', () => {
+		test( 'should not see the Free Ad Credit section if the account is not eligible', async () => {
+			await setupAdsAccountPage.mockAdsAccountConnected();
 			await completeCampaign.goto();
-			await completeCampaign.clickCreatePaidAdButton();
-			await completeCampaign.clickSkipPaidAdsCreationButon();
+			await setupAdsAccountPage.awaitAdsConnectionResponse();
+
+			// Check we are on the correct page.
+			await expect(
+				page.getByText( 'Create a campaign to advertise your products' )
+			).toBeVisible();
+
+			await expect(
+				page.getByText(
+					'Spend $500 to get $500 in Google Ads credits!'
+				)
+			).not.toBeVisible();
 		} );
 
-		test( 'should also see the setup success modal', async () => {
-			const setupSuccessModal = page
-				.locator( '.components-modal__content' )
-				.filter( {
-					hasText:
-						'You’ve successfully set up Google for WooCommerce!',
-				} );
-			await expect( setupSuccessModal ).toBeVisible();
-		} );
-
-		test( 'should also see the url contains product-feed', async () => {
-			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fproduct-feed/ );
-		} );
-
-		test( 'should see buttons on Dashboard for Google Ads onboarding', async () => {
-			await page.keyboard.press( 'Escape' );
-			await page.getByRole( 'tab', { name: 'Dashboard' } ).click();
-
-			const buttons = page.getByRole( 'button', {
-				name: 'Add paid campaign',
+		test( 'should see the Free Ad Credit section if the account is eligible', async () => {
+			await setupAdsAccountPage.mockAdsAccountConnected( 12345, {
+				sub_account: true,
+				created_timestamp: Math.floor( Date.now() / 1000 ),
 			} );
+			await completeCampaign.goto();
+			await setupAdsAccountPage.awaitAdsConnectionResponse();
 
-			await expect( buttons ).toHaveCount( 2 );
-			for ( const button of await buttons.all() ) {
-				await expect( button ).toBeVisible();
-				await expect( button ).toBeEnabled();
-			}
+			await expect(
+				page.getByText(
+					'Spend $500 to get $500 in Google Ads credits!'
+				)
+			).toBeVisible();
 		} );
 	} );
 } );

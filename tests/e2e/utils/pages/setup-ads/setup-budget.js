@@ -13,6 +13,17 @@ export default class SetupBudget extends MockRequests {
 	}
 
 	/**
+	 * Get budget recommendation tip section.
+	 *
+	 * @return {import('@playwright/test').Locator} The budget recommendation tip.
+	 */
+	getBudgetRecommendationTip() {
+		return this.page.locator(
+			'.gla-budget-recommendation > .components-tip'
+		);
+	}
+
+	/**
 	 * Get budget recommendation text row.
 	 *
 	 * @return {import('@playwright/test').Locator} The budget recommendation text row.
@@ -85,33 +96,15 @@ export default class SetupBudget extends MockRequests {
 	}
 
 	/**
-	 * Extract budget recommendation value.
+	 * Get the Launch paid campaign button.
 	 *
-	 * @param {string} text
-	 *
-	 * @return {string} The budget recommendation value.
+	 * @return {import('@playwright/test').Locator} Launch paid campaign button.
 	 */
-	extractBudgetRecommendationValue( text ) {
-		const match = text.match( /set a daily budget of (\d+)/ );
-		if ( match ) {
-			return match[ 1 ];
-		}
-		return '';
-	}
-
-	/**
-	 * Register the responses when removing an ads audience.
-	 *
-	 * @return {Promise<import('@playwright/test').Response>} The response.
-	 */
-	registerBudgetRecommendationResponse() {
-		return this.page.waitForResponse(
-			( response ) =>
-				response
-					.url()
-					.includes( '/gla/ads/campaigns/budget-recommendation' ) &&
-				response.status() === 200
-		);
+	getLaunchPaidCampaignButton() {
+		return this.page.getByRole( 'button', {
+			name: 'Launch paid campaign',
+			exact: true,
+		} );
 	}
 
 	/**
@@ -124,6 +117,16 @@ export default class SetupBudget extends MockRequests {
 	async fillBudget( budget = '0' ) {
 		const input = this.getBudgetInput();
 		await input.fill( budget );
+	}
+
+	/**
+	 * Focus the budget input.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async focusBudget() {
+		const input = this.getBudgetInput();
+		await input.focus();
 	}
 
 	/**

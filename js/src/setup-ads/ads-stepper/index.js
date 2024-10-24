@@ -3,35 +3,62 @@
  */
 import { Stepper } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useState, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import SetupAccounts from './setup-accounts';
-import AdsCampaign from '.~/components/paid-ads/ads-campaign';
-import SetupBilling from './setup-billing';
+import AppSpinner from '.~/components/app-spinner';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
 	FILTER_ONBOARDING,
 	CONTEXT_ADS_ONBOARDING,
 } from '.~/utils/tracks';
+import SetupPaidAds from './setup-paid-ads';
 
 /**
- * @param {Object} props React props
- * @param {Object} props.formProps Form props forwarded from `Form` component.
- * @fires gla_setup_ads with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button' , action: 'go-to-step2' | 'go-to-step3' }`.
- * @fires gla_setup_ads with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
+ * @fires gla_setup_ads with `{ triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
+ * @fires gla_setup_ads with `{ triggered_by: 'stepper-step1-button', action: 'go-to-step1'}`.
  */
-const AdsStepper = ( { formProps } ) => {
+const AdsStepper = () => {
 	const [ step, setStep ] = useState( '1' );
+	const initHasAdsConnectionRef = useRef( null );
+
+	const {
+		hasFinishedResolution: hasResolvedGoogleAdsAccount,
+		hasGoogleAdsConnection,
+	} = useGoogleAdsAccount();
+
+	const {
+		hasAccess,
+		hasFinishedResolution: hasResolvedAdsAccountStatus,
+		step: adsAccountSetupStep,
+	} = useGoogleAdsAccountStatus();
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_ADS_ONBOARDING,
 		step,
 	} );
+
+	if ( initHasAdsConnectionRef.current === null ) {
+		if (
+			! ( hasResolvedGoogleAdsAccount && hasResolvedAdsAccountStatus )
+		) {
+			return <AppSpinner />;
+		}
+
+		const isGoogleAdsReady =
+			hasGoogleAdsConnection &&
+			hasAccess === true &&
+			adsAccountSetupStep !== 'conversion_action';
+
+		initHasAdsConnectionRef.current = isGoogleAdsReady;
+	}
 
 	// Allow the users to go backward only, not forward.
 	// Users can only go forward by clicking on the Continue button.
@@ -58,9 +85,34 @@ const AdsStepper = ( { formProps } ) => {
 		continueStep( '2' );
 	};
 
-	const handleCreateCampaignContinue = () => {
-		continueStep( '3' );
-	};
+	let steps = [
+		{
+			key: '1',
+			label: __( 'Set up your accounts', 'google-listings-and-ads' ),
+			content: (
+				<SetupAccounts onContinue={ handleSetupAccountsContinue } />
+			),
+			onClick: handleStepClick,
+		},
+		{
+			key: '2',
+			label: __( 'Create your paid campaign', 'google-listings-and-ads' ),
+			content: <SetupPaidAds />,
+			onClick: handleStepClick,
+		},
+	];
+
+	if ( initHasAdsConnectionRef.current ) {
+		// Remove first step if the initial connection state of Ads account is connected.
+		steps.shift();
+
+		steps = steps.map( ( singleStep, index ) => {
+			return {
+				...singleStep,
+				key: ( index + 1 ).toString(),
+			};
+		} );
+	}
 
 	return (
 		// This Stepper with this class name
@@ -69,41 +121,7 @@ const AdsStepper = ( { formProps } ) => {
 		<Stepper
 			className="gla-setup-stepper"
 			currentStep={ step }
-			steps={ [
-				{
-					key: '1',
-					label: __(
-						'Set up your accounts',
-						'google-listings-and-ads'
-					),
-					content: (
-						<SetupAccounts
-							onContinue={ handleSetupAccountsContinue }
-						/>
-					),
-					onClick: handleStepClick,
-				},
-				{
-					key: '2',
-					label: __(
-						'Create your paid campaign',
-						'google-listings-and-ads'
-					),
-					content: (
-						<AdsCampaign
-							trackingContext="setup-ads"
-							onContinue={ handleCreateCampaignContinue }
-						/>
-					),
-					onClick: handleStepClick,
-				},
-				{
-					key: '3',
-					label: __( 'Set up billing', 'google-listings-and-ads' ),
-					content: <SetupBilling formProps={ formProps } />,
-					onClick: handleStepClick,
-				},
-			] }
+			steps={ steps }
 		/>
 	);
 };
