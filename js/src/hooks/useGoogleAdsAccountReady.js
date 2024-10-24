@@ -19,7 +19,7 @@ const useGoogleAdsAccountReady = () => {
 		hasAccess &&
 		[ '', 'billing', 'link_merchant' ].includes( step );
 
-	return isReady !== null ? isReady : null;
+	return isReady === null ? null : !! isReady;
 };
 
 export default useGoogleAdsAccountReady;
