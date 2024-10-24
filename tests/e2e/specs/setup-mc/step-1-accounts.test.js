@@ -347,6 +347,15 @@ test.describe( 'Set up accounts', () => {
 					step: 'link_merchant',
 				} );
 
+				await setUpAccountsPage.fulfillMCConnection( {
+					id: 1234,
+					name: 'Test Merchant Center',
+					subaccount: null,
+					domain: 'example.com',
+					status: 'connected',
+					step: '',
+				} );
+
 				await expect(
 					cardBody.getByText( 'Connected', { exact: true } )
 				).toBeVisible();
@@ -524,11 +533,14 @@ test.describe( 'Set up accounts', () => {
 
 		test.describe( 'When all accounts are connected', async () => {
 			test.beforeAll( async () => {
-				await setUpAccountsPage.mockJetpackConnected();
-				await setUpAccountsPage.mockGoogleConnected();
 				await setUpAccountsPage.mockAdsAccountConnected();
-				await setUpAccountsPage.mockAdsStatusClaimed();
 				await setUpAccountsPage.mockMCConnected();
+
+				await setUpAccountsPage.fulfillAdsAccountStatus( {
+					has_access: true,
+					invite_link: '',
+					step: 'link_merchant',
+				} );
 
 				await setUpAccountsPage.goto();
 			} );
