@@ -46,6 +46,7 @@ const useGoogleMCAccount = () => {
 					// has not been granted necessary access permissions for Google Merchant Center, then
 					// the precondition doesn't meet.
 					isPreconditionReady: false,
+					hasGoogleMCConnection: false,
 				};
 			}
 

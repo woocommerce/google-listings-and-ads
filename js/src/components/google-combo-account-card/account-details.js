@@ -9,6 +9,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
+import useGoogleMCAccountReady from '.~/hooks/useGoogleMCAccountReady';
 
 /**
  * Account details.
@@ -18,12 +19,13 @@ const AccountDetails = () => {
 	const { google } = useGoogleAccount();
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const { googleMCAccount } = useGoogleMCAccount();
+	const isGoogleMCConnected = useGoogleMCAccountReady();
 
 	return (
 		<>
 			<p>{ google.email }</p>
 			<p>
-				{ googleMCAccount.id > 0 &&
+				{ isGoogleMCConnected &&
 					sprintf(
 						// Translators: %s is the Merchant Center ID
 						__(
