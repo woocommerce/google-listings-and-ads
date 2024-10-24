@@ -25,6 +25,7 @@ import SyncStatus from '.~/product-feed/product-statistics/status-box/sync-statu
 import SyncProductStatistics from '.~/product-feed/product-statistics/status-box/sync-product-statistics';
 import FeedStatus from '.~/product-feed/product-statistics/status-box/feed-status';
 import AccountStatus from '.~/product-feed/product-statistics/status-box/account-status';
+import CreateCampaignNotice from '.~/product-feed/product-statistics/create-campaign-notice';
 import Text from '.~/components/app-text';
 import AppSpinner from '.~/components/app-spinner';
 import './index.scss';
@@ -133,7 +134,9 @@ const ProductStatistics = () => {
 					</SummaryList>
 				) }
 			</CardBody>
+
 			<CardFooter gap={ 0 }>
+				<CreateCampaignNotice />
 				<FeedStatus />
 				<SyncStatus />
 				<AccountStatus />
