@@ -11,7 +11,7 @@ jest.mock( '.~/components/paid-ads/ads-campaign', () =>
 /**
  * External dependencies
  */
-import { screen, render } from '@testing-library/react';
+import { screen, render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { recordEvent } from '@woocommerce/tracks';
 
@@ -39,6 +39,10 @@ describe( 'AdsStepper', () => {
 		it( 'Should record events after calling back to `onContinue`', async () => {
 			render( <AdsStepper /> );
 
+			await waitFor( () => {
+				expect( continueToStep2 ).toBeDefined();
+			} );
+
 			await continueToStep2();
 
 			expect( recordEvent ).toHaveBeenCalledTimes( 1 );
@@ -53,7 +57,9 @@ describe( 'AdsStepper', () => {
 
 			render( <AdsStepper /> );
 
-			const step1 = screen.getByRole( 'button', { name: /accounts/ } );
+			const step1 = await screen.findByRole( 'button', {
+				name: /accounts/,
+			} );
 
 			// Step 2 -> Step 1
 			await continueToStep2();

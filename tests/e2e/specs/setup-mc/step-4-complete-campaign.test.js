@@ -79,6 +79,24 @@ test.describe( 'Complete your campaign', () => {
 				[ 'GET' ]
 			),
 
+			completeCampaign.fulfillBudgetRecommendations( {
+				currency: 'USD',
+				recommendations: [
+					{
+						country: 'US',
+						daily_budget: 10,
+					},
+					{
+						country: 'TW',
+						daily_budget: 8,
+					},
+					{
+						country: 'GB',
+						daily_budget: 20,
+					},
+				],
+			} ),
+
 			// The following mocks are requests will happen after completing the onboarding
 			completeCampaign.mockSuccessfulSettingsSyncRequest(),
 
@@ -195,6 +213,14 @@ test.describe( 'Complete your campaign', () => {
 			} );
 
 			test.describe( 'Set up budget', () => {
+				test( '"Daily average cost" input should have highest value set', async () => {
+					const dailyAverageCostInput =
+						setupBudgetPage.getBudgetInput();
+					await expect( dailyAverageCostInput ).toHaveValue(
+						'20.00'
+					);
+				} );
+
 				test( 'should see the low budget tip when the buget is set lower than the recommended value', async () => {
 					await setupBudgetPage.fillBudget( '1' );
 					const lowBudgetTip = setupBudgetPage.getLowerBudgetTip();
@@ -205,6 +231,76 @@ test.describe( 'Complete your campaign', () => {
 					await setupBudgetPage.fillBudget( '99999' );
 					const lowBudgetTip = setupBudgetPage.getLowerBudgetTip();
 					await expect( lowBudgetTip ).not.toBeVisible();
+				} );
+			} );
+
+			test.describe( 'Validate budget percent', () => {
+				test.beforeAll( async () => {
+					await setupBudgetPage.fulfillBudgetRecommendations( {
+						currency: 'TWD',
+						recommendations: [
+							{
+								country: 'US',
+								daily_budget: 100,
+							},
+						],
+					} );
+
+					await completeCampaign.goto();
+				} );
+
+				test( 'should see validation error if lower than the 30%', async () => {
+					await setupBudgetPage.fillBudget( '10' );
+					await setupBudgetPage.getBudgetInput().blur();
+					const error = page.locator(
+						'.components-base-control__help'
+					);
+
+					await expect( error ).toHaveText(
+						'Please make sure daily average cost is at least NT$30.00'
+					);
+				} );
+
+				test( 'should see validation error if slightly less than the 30%', async () => {
+					await setupBudgetPage.fillBudget( '29.99' );
+					await setupBudgetPage.getBudgetInput().blur();
+					const error = page.locator(
+						'.components-base-control__help'
+					);
+
+					await expect( error ).toHaveText(
+						'Please make sure daily average cost is at least NT$30.00'
+					);
+				} );
+
+				test( 'should not see validation error if exactly 30%', async () => {
+					await setupBudgetPage.fillBudget( '30' );
+					await setupBudgetPage.getBudgetInput().blur();
+
+					const error = page.locator(
+						'.components-base-control__help'
+					);
+					await expect( error ).not.toBeVisible();
+				} );
+
+				test( 'should not see validation error if slightly greater than 30%', async () => {
+					await setupBudgetPage.fillBudget( '30.5' );
+					await setupBudgetPage.getBudgetInput().blur();
+
+					const error = page.locator(
+						'.components-base-control__help'
+					);
+					await expect( error ).not.toBeVisible();
+				} );
+
+				test( 'should not see validation error if greater than 30%', async () => {
+					await setupBudgetPage.fillBudget( '40' );
+					await setupBudgetPage.getBudgetInput().blur();
+
+					const error = page.locator(
+						'.components-base-control__help'
+					);
+					await expect( error ).not.toBeVisible();
 				} );
 			} );
 

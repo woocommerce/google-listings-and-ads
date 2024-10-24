@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { expect, test } from '@playwright/test';
+
 /**
  * Internal dependencies
  */
@@ -69,6 +70,15 @@ test.describe( 'Set up Ads account', () => {
 		await setupAdsAccounts.mockAdsAccountsResponse( [] );
 		await setupBudgetPage.fulfillBillingStatusRequest( {
 			status: 'approved',
+		} );
+		await setupBudgetPage.fulfillBudgetRecommendations( {
+			currency: 'EUR',
+			recommendations: [
+				{
+					country: 'FR',
+					daily_budget: 15,
+				},
+			],
 		} );
 		await dashboardPage.mockRequests();
 		await dashboardPage.goto();
@@ -216,7 +226,8 @@ test.describe( 'Set up Ads account', () => {
 
 			await setupAdsAccounts.mockAdsStatusClaimed();
 
-			await page.reload();
+			await page.dispatchEvent( 'body', 'blur' );
+			await page.dispatchEvent( 'body', 'focus' );
 
 			await expect( setupAdsAccounts.getContinueButton() ).toBeEnabled();
 
@@ -295,10 +306,6 @@ test.describe( 'Set up Ads account', () => {
 			).toBeVisible();
 
 			await expect(
-				setupBudgetPage.getLaunchPaidCampaignButton()
-			).toBeDisabled();
-
-			await expect(
 				page.getByRole( 'link', {
 					name: 'See what your ads will look like.',
 				} )
@@ -346,34 +353,61 @@ test.describe( 'Set up Ads account', () => {
 				await checkFAQExpandable( page );
 			} );
 		} );
+	} );
 
-		test( 'Set the budget', async () => {
-			budget = '0';
-			await setupBudgetPage.fillBudget( budget );
+	test.describe( 'Create Ads with billing data already setup', () => {
+		test.describe( 'Set the budget', async () => {
+			test( 'Continue button should be disabled if budget is 0', async () => {
+				budget = '0';
+				await setupBudgetPage.fillBudget( budget );
 
-			await expect(
-				setupBudgetPage.getLaunchPaidCampaignButton()
-			).toBeDisabled();
+				await expect(
+					setupBudgetPage.getLaunchPaidCampaignButton()
+				).toBeDisabled();
+			} );
 
-			budget = '1';
-			await setupBudgetPage.fillBudget( budget );
+			test( 'Continue button should be disabled if budget is less than recommended value', async () => {
+				budget = '2';
+				await setupBudgetPage.fillBudget( budget );
 
-			await expect(
-				setupBudgetPage.getLaunchPaidCampaignButton()
-			).toBeEnabled();
-		} );
+				await expect(
+					setupBudgetPage.getLaunchPaidCampaignButton()
+				).toBeDisabled();
+			} );
 
-		test( 'Budget Recommendation', async () => {
-			await expect(
-				page.getByText( 'set a daily budget of 15 USD' )
-			).toBeVisible();
+			test( 'User is notified of the minimum value', async () => {
+				budget = '4';
+				await setupBudgetPage.fillBudget( budget );
+				await setupBudgetPage.getBudgetInput().blur();
+
+				await expect(
+					page.getByText(
+						'Please make sure daily average cost is at least €5.00'
+					)
+				).toBeVisible();
+			} );
+
+			test( 'Continue button should be enabled if budget is above the recommended value', async () => {
+				budget = '6';
+				await setupBudgetPage.fillBudget( budget );
+
+				await expect(
+					setupBudgetPage.getLaunchPaidCampaignButton()
+				).toBeEnabled();
+			} );
+
+			test( 'Budget Recommendation should be visible', async () => {
+				await expect(
+					page.getByText( 'set a daily budget of 15 EUR' )
+				).toBeVisible();
+			} );
 		} );
 
 		test( 'It should show the campaign creation success message', async () => {
 			// Mock the campaign creation request.
 			const campaignCreation =
 				setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
-					'1',
+					'6',
 					[ 'US' ]
 				);
 
