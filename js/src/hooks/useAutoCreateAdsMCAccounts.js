@@ -58,7 +58,6 @@ const useShouldCreateMCAccount = () => {
 
 /**
  * @typedef {Object} AutoCreateAdsMCAccountsData
- * @property {boolean} accountsCreated - Whether the accounts have been successfully created.
  * @property {boolean} hasDetermined - Whether the checks to determine if accounts should be created are finished.
  * @property {('ads'|'mc'|'both'|null)} creatingWhich - Which accounts are being created ('ads', 'mc', 'both'), or `null` if none.
  */
@@ -71,7 +70,6 @@ const useShouldCreateMCAccount = () => {
  */
 const useAutoCreateAdsMCAccounts = () => {
 	const lockedRef = useRef( false );
-	// Create separate states.
 	const [ creatingWhich, setCreatingWhich ] = useState( null );
 	const [ hasDetermined, setDetermined ] = useState( false );
 
@@ -112,14 +110,12 @@ const useAutoCreateAdsMCAccounts = () => {
 				if ( which === CREATING_BOTH_ACCOUNTS ) {
 					await handleCreateAccount();
 					await upsertAdsAccount();
-					setCreatingWhich( null );
 				} else if ( which === CREATING_MC_ACCOUNT ) {
 					await handleCreateAccount();
-					setCreatingWhich( null );
 				} else if ( which === CREATING_ADS_ACCOUNT ) {
 					await upsertAdsAccount();
-					setCreatingWhich( null );
 				}
+				setCreatingWhich( null );
 			};
 
 			handleCreateAccountCallback();

@@ -8,9 +8,9 @@ import { useEffect, useState } from '@wordpress/element';
  */
 import AccountCard, { APPEARANCE } from '../account-card';
 import AccountDetails from './account-details';
-import AppSpinner from '../app-spinner';
 import Indicator from './indicator';
 import getAccountCreationTexts from './getAccountCreationTexts';
+import SpinnerCard from '.~/components/spinner-card';
 import useAutoCreateAdsMCAccounts from '.~/hooks/useAutoCreateAdsMCAccounts';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
@@ -54,7 +54,7 @@ const ConnectedGoogleComboAccountCard = () => {
 			! hasFinishedResolutionForCurrentAdsAccount ||
 			! hasFinishedResolutionForCurrentMCAccount )
 	) {
-		return <AccountCard description={ <AppSpinner /> } />;
+		return <SpinnerCard />;
 	}
 
 	return (
