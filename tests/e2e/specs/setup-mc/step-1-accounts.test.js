@@ -325,7 +325,7 @@ test.describe( 'Set up accounts', () => {
 				await setUpAccountsPage.mockMCConnected();
 				await setUpAccountsPage.mockAdsAccountConnected();
 
-				await setupAdsAccountPage.mockMCHasAccounts();
+				await setUpAccountsPage.mockMCHasAccounts();
 				await setUpAccountsPage.mockMCConnected();
 
 				await setUpAccountsPage.goto();
