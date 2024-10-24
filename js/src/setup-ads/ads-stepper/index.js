@@ -3,13 +3,16 @@
  */
 import { Stepper } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useState, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import SetupAccounts from './setup-accounts';
+import AppSpinner from '.~/components/app-spinner';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
@@ -24,11 +27,38 @@ import SetupPaidAds from './setup-paid-ads';
  */
 const AdsStepper = () => {
 	const [ step, setStep ] = useState( '1' );
+	const initHasAdsConnectionRef = useRef( null );
+
+	const {
+		hasFinishedResolution: hasResolvedGoogleAdsAccount,
+		hasGoogleAdsConnection,
+	} = useGoogleAdsAccount();
+
+	const {
+		hasAccess,
+		hasFinishedResolution: hasResolvedAdsAccountStatus,
+		step: adsAccountSetupStep,
+	} = useGoogleAdsAccountStatus();
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_ADS_ONBOARDING,
 		step,
 	} );
+
+	if ( initHasAdsConnectionRef.current === null ) {
+		if (
+			! ( hasResolvedGoogleAdsAccount && hasResolvedAdsAccountStatus )
+		) {
+			return <AppSpinner />;
+		}
+
+		const isGoogleAdsReady =
+			hasGoogleAdsConnection &&
+			hasAccess === true &&
+			adsAccountSetupStep !== 'conversion_action';
+
+		initHasAdsConnectionRef.current = isGoogleAdsReady;
+	}
 
 	// Allow the users to go backward only, not forward.
 	// Users can only go forward by clicking on the Continue button.
@@ -55,6 +85,35 @@ const AdsStepper = () => {
 		continueStep( '2' );
 	};
 
+	let steps = [
+		{
+			key: '1',
+			label: __( 'Set up your accounts', 'google-listings-and-ads' ),
+			content: (
+				<SetupAccounts onContinue={ handleSetupAccountsContinue } />
+			),
+			onClick: handleStepClick,
+		},
+		{
+			key: '2',
+			label: __( 'Create your paid campaign', 'google-listings-and-ads' ),
+			content: <SetupPaidAds />,
+			onClick: handleStepClick,
+		},
+	];
+
+	if ( initHasAdsConnectionRef.current ) {
+		// Remove first step if the initial connection state of Ads account is connected.
+		steps.shift();
+
+		steps = steps.map( ( singleStep, index ) => {
+			return {
+				...singleStep,
+				key: ( index + 1 ).toString(),
+			};
+		} );
+	}
+
 	return (
 		// This Stepper with this class name
 		// should be refactored into separate shared component.
@@ -62,30 +121,7 @@ const AdsStepper = () => {
 		<Stepper
 			className="gla-setup-stepper"
 			currentStep={ step }
-			steps={ [
-				{
-					key: '1',
-					label: __(
-						'Set up your accounts',
-						'google-listings-and-ads'
-					),
-					content: (
-						<SetupAccounts
-							onContinue={ handleSetupAccountsContinue }
-						/>
-					),
-					onClick: handleStepClick,
-				},
-				{
-					key: '2',
-					label: __(
-						'Create your paid campaign',
-						'google-listings-and-ads'
-					),
-					content: <SetupPaidAds />,
-					onClick: handleStepClick,
-				},
-			] }
+			steps={ steps }
 		/>
 	);
 };

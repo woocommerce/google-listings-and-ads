@@ -226,7 +226,8 @@ test.describe( 'Set up Ads account', () => {
 
 			await setupAdsAccounts.mockAdsStatusClaimed();
 
-			await page.reload();
+			await page.dispatchEvent( 'body', 'blur' );
+			await page.dispatchEvent( 'body', 'focus' );
 
 			await expect( setupAdsAccounts.getContinueButton() ).toBeEnabled();
 
