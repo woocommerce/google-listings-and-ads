@@ -9,6 +9,7 @@ const { test, expect } = require( '@playwright/test' );
 import SetupBudgetPage from '../../utils/pages/setup-ads/setup-budget';
 import CompleteCampaign from '../../utils/pages/setup-mc/step-4-complete-campaign';
 import SetupAdsAccountPage from '../../utils/pages/setup-ads/setup-ads-accounts';
+import DashboardPage from '../../utils/pages/dashboard';
 import {
 	checkFAQExpandable,
 	getFAQPanelTitle,
@@ -36,6 +37,11 @@ let completeCampaign = null;
 let setupAdsAccountPage = null;
 
 /**
+ * @type {import('../../utils/pages/dashboard.js').default} dashboardPage
+ */
+let dashboardPage = null;
+
+/**
  * @type {import('@playwright/test').Page} page
  */
 let page = null;
@@ -44,6 +50,7 @@ test.describe( 'Complete your campaign', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		setupBudgetPage = new SetupBudgetPage( page );
+		dashboardPage = new DashboardPage( page );
 		completeCampaign = new CompleteCampaign( page );
 		setupAdsAccountPage = new SetupAdsAccountPage( page );
 		await Promise.all( [
@@ -417,16 +424,16 @@ test.describe( 'Complete your campaign', () => {
 			test( 'should see buttons on Dashboard for Google Ads onboarding', async () => {
 				await page.keyboard.press( 'Escape' );
 				await page.getByRole( 'tab', { name: 'Dashboard' } ).click();
+				const addPaidCampaignButton =
+					await dashboardPage.getAdsConnectionAllProgramsButton();
 
-				const buttons = page.getByRole( 'button', {
-					name: 'Add paid campaign',
-				} );
+				await expect( addPaidCampaignButton ).toBeVisible();
+				await expect( addPaidCampaignButton ).toBeEnabled();
 
-				await expect( buttons ).toHaveCount( 2 );
-				for ( const button of await buttons.all() ) {
-					await expect( button ).toBeVisible();
-					await expect( button ).toBeEnabled();
-				}
+				const createCampaignButton =
+					await dashboardPage.getCreateCampaignButton();
+				await expect( createCampaignButton ).toBeVisible();
+				await expect( createCampaignButton ).toBeEnabled();
 			} );
 		} );
 
@@ -456,7 +463,7 @@ test.describe( 'Complete your campaign', () => {
 	} );
 
 	test.describe( 'Free Ad Credit', () => {
-		test( 'should not see the Free Ad Credit section if the account is not eligible', async () => {
+		test( 'should see the Free Ad Credit section always', async () => {
 			await setupAdsAccountPage.mockAdsAccountConnected();
 			await completeCampaign.goto();
 			await setupAdsAccountPage.awaitAdsConnectionResponse();
@@ -465,21 +472,6 @@ test.describe( 'Complete your campaign', () => {
 			await expect(
 				page.getByText( 'Create a campaign to advertise your products' )
 			).toBeVisible();
-
-			await expect(
-				page.getByText(
-					'Spend $500 to get $500 in Google Ads credits!'
-				)
-			).not.toBeVisible();
-		} );
-
-		test( 'should see the Free Ad Credit section if the account is eligible', async () => {
-			await setupAdsAccountPage.mockAdsAccountConnected( 12345, {
-				sub_account: true,
-				created_timestamp: Math.floor( Date.now() / 1000 ),
-			} );
-			await completeCampaign.goto();
-			await setupAdsAccountPage.awaitAdsConnectionResponse();
 
 			await expect(
 				page.getByText(

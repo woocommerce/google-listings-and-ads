@@ -14,7 +14,6 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import CampaignPreview from '.~/components/paid-ads/campaign-preview';
 import FreeAdCredit from '.~/components/free-ad-credit';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import useFreeAdCredit from '.~/hooks/useFreeAdCredit';
 import './paid-ads-features-section.scss';
 
 function FeatureList() {
@@ -49,8 +48,6 @@ function FeatureList() {
  * for the next actions: skip or continue the paid ads setup.
  */
 export default function PaidAdsFeaturesSection() {
-	const hasFreeAdCredit = useFreeAdCredit();
-
 	return (
 		<Section
 			className="gla-paid-ads-features-section"
@@ -111,8 +108,7 @@ export default function PaidAdsFeaturesSection() {
 								<CampaignPreview />
 							</FlexItem>
 						</Flex>
-
-						{ hasFreeAdCredit && <FreeAdCredit /> }
+						<FreeAdCredit />
 					</VerticalGapLayout>
 				</Section.Card.Body>
 			</Section.Card>
