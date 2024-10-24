@@ -1,20 +1,21 @@
 /**
  * External dependencies
  */
-import { useEffect, useRef, useState } from '@wordpress/element';
+import { useCallback, useEffect, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Flex, FlexBlock } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import ClaimAdsAccountButton from './claim-ads-account-button';
+import ClaimAccountButton from '.~/components/google-ads-account-card/claim-account-button';
 import Section from '.~/wcdl/section';
-import useWindowFocus from '.~/hooks/useWindowFocus';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import { useAppDispatch } from '.~/data';
-import './claim-ads-account.scss';
 import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
+import useWindowFocusCallbackIntervalEffect from '.~/hooks/useWindowFocusCallbackIntervalEffect';
+import './claim-ads-account.scss';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 
 /**
  * ClaimAdsAccount component.
@@ -22,50 +23,31 @@ import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
  * @return {JSX.Element} ClaimAdsAccount component.
  */
 const ClaimAdsAccount = () => {
-	const claimButtonClickedRef = useRef( false );
-	const claimInProgressRef = useRef( false );
+	const [ updating, setUpdating ] = useState( false );
+	const { fetchGoogleAdsAccountStatus } = useAppDispatch();
+	const { googleAdsAccount } = useGoogleAdsAccount();
+	const { hasAccess, step } = useGoogleAdsAccountStatus();
+	const [ upsertAdsAccount ] = useUpsertAdsAccount();
 
-	const [ , forceUpdate ] = useState( 0 );
-	const isWindowFocused = useWindowFocus();
-	const { hasAccess, hasFinishedResolution, inviteLink, step } =
-		useGoogleAdsAccountStatus();
-	const [ upsertAdsAccount, { loading } ] = useUpsertAdsAccount();
-	const { invalidateResolution } = useAppDispatch();
+	const checkUpdatedStatus = useCallback( async () => {
+		setUpdating( true );
+		await fetchGoogleAdsAccountStatus();
+		setUpdating( false );
+	}, [ fetchGoogleAdsAccountStatus ] );
 
-	useEffect( () => {
-		if ( isWindowFocused && claimButtonClickedRef.current ) {
-			invalidateResolution( 'getGoogleAdsAccountStatus' );
-			forceUpdate( ( prev ) => prev + 1 );
-		}
-	}, [ isWindowFocused, invalidateResolution ] );
+	useWindowFocusCallbackIntervalEffect( checkUpdatedStatus, 30 );
 
 	useEffect( () => {
-		const handlePostClaimActions = async () => {
-			await upsertAdsAccount();
-			claimInProgressRef.current = false;
-		};
-
-		if (
-			hasAccess === true &&
-			step === 'conversion_action' &&
-			! claimInProgressRef.current
-		) {
-			claimInProgressRef.current = true;
-			handlePostClaimActions();
+		if ( hasAccess === true && step === 'conversion_action' ) {
+			upsertAdsAccount();
 		}
+	}, [ hasAccess, step, upsertAdsAccount ] );
 
-		if ( claimButtonClickedRef.current && hasFinishedResolution ) {
-			claimButtonClickedRef.current = false;
-		}
-	}, [ hasAccess, step, upsertAdsAccount, hasFinishedResolution ] );
+	const shouldClaimGoogleAdsAccount = Boolean(
+		googleAdsAccount.id && hasAccess === false
+	);
 
-	const isLoading =
-		loading || ( ! hasFinishedResolution && claimButtonClickedRef.current );
-
-	if (
-		hasAccess ||
-		( ! hasFinishedResolution && ! claimButtonClickedRef.current )
-	) {
+	if ( ! shouldClaimGoogleAdsAccount ) {
 		return null;
 	}
 
@@ -92,12 +74,20 @@ const ClaimAdsAccount = () => {
 								'google-listings-and-ads'
 							) }
 						</p>
-						<ClaimAdsAccountButton
-							inviteLink={ inviteLink }
-							loading={ isLoading }
-							onClick={ () => {
-								claimButtonClickedRef.current = true;
-							} }
+						<ClaimAccountButton
+							loading={ updating }
+							text={
+								updating
+									? __(
+											'Updating…',
+											'google-listings-and-ads'
+									  )
+									: __(
+											'Claim your Google Ads account',
+											'google-listings-and-ads'
+									  )
+							}
+							isPrimary={ ! updating }
 						/>
 					</div>
 				</FlexBlock>
