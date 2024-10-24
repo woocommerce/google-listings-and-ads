@@ -4,18 +4,22 @@
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 
+/**
+ * Hook to check if the Google Ads account is ready.
+ * This is used to determine if the user can proceed to the next step.
+ *
+ * @return {boolean|null} Whether the Google Ads account is ready. `null` if the state is not yet determined.
+ */
 const useGoogleAdsAccountReady = () => {
 	const { hasGoogleAdsConnection } = useGoogleAdsAccount();
 	const { hasAccess, step } = useGoogleAdsAccountStatus();
 
-	// Ads is ready when we have a connection and verified and verified access.
-	// Billing is not required, and the 'link_merchant' step will be resolved
-	// when the MC the account is connected.
-	return (
+	const isReady =
 		hasGoogleAdsConnection &&
 		hasAccess &&
-		[ '', 'billing', 'link_merchant' ].includes( step )
-	);
+		[ '', 'billing', 'link_merchant' ].includes( step );
+
+	return isReady !== null ? isReady : null;
 };
 
 export default useGoogleAdsAccountReady;
