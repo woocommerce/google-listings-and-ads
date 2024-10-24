@@ -66,9 +66,11 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 			const { result } = renderHook( () => useAutoCreateAdsMCAccounts() );
 
 			await act( async () => {
-				// It should create both accounts.
 				expect( result.current.creatingWhich ).toBe( 'both' );
 			} );
+
+			expect( handleCreateAccount ).toHaveBeenCalledTimes( 1 );
+			expect( upsertAdsAccount ).toHaveBeenCalledTimes( 1 );
 		} );
 
 		it( 'should create only the Merchant Center account', async () => {
@@ -83,11 +85,12 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 			} );
 
 			const { result } = renderHook( () => useAutoCreateAdsMCAccounts() );
-			// It should create only the Merchant Center account.
 			await act( async () => {
-				// It should create both accounts.
 				expect( result.current.creatingWhich ).toBe( 'mc' );
 			} );
+
+			expect( handleCreateAccount ).toHaveBeenCalledTimes( 1 );
+			expect( upsertAdsAccount ).toHaveBeenCalledTimes( 0 );
 		} );
 
 		it( 'should create only the Google Ads account', async () => {
@@ -102,16 +105,17 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 			} );
 
 			const { result } = renderHook( () => useAutoCreateAdsMCAccounts() );
-			// It should create only the Google Ads account.
 			await act( async () => {
 				expect( result.current.creatingWhich ).toBe( 'ads' );
 			} );
+
+			expect( handleCreateAccount ).toHaveBeenCalledTimes( 0 );
+			expect( upsertAdsAccount ).toHaveBeenCalledTimes( 1 );
 		} );
 	} );
 
 	describe( 'Existing accounts', () => {
 		beforeEach( () => {
-			// Existing Ads and MC accounts.
 			useExistingGoogleAdsAccounts.mockReturnValue( {
 				hasFinishedResolution: true,
 				existingAccounts: [
@@ -136,10 +140,7 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 		it( 'should not create accounts if they already exist', () => {
 			const { result } = renderHook( () => useAutoCreateAdsMCAccounts() );
 
-			// It should not create any accounts.
 			expect( result.current.creatingWhich ).toBe( null );
-
-			// make sure functions are not called.
 			expect( handleCreateAccount ).not.toHaveBeenCalled();
 			expect( upsertAdsAccount ).not.toHaveBeenCalled();
 		} );

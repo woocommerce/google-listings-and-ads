@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import ConnectedIconLabel from '.~/components/connected-icon-label';
 import LoadingLabel from '.~/components/loading-label/loading-label';
 import useGoogleAdsAccountReady from '.~/hooks/useGoogleAdsAccountReady';
-import useGoogleMCAccountReady from '.~/hooks/useGoogleMCAccountReady';
+import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 
 /**
  * Account creation indicator.
@@ -20,7 +20,7 @@ import useGoogleMCAccountReady from '.~/hooks/useGoogleMCAccountReady';
  */
 const Indicator = ( { showSpinner } ) => {
 	const isGoogleAdsConnected = useGoogleAdsAccountReady();
-	const isGoogleMCConnected = useGoogleMCAccountReady();
+	const { isReady: isGoogleMCConnected } = useGoogleMCAccount();
 
 	if ( showSpinner ) {
 		return (

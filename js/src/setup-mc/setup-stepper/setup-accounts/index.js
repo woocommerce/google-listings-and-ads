@@ -25,7 +25,6 @@ import Faqs from './faqs';
 import './index.scss';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleAdsAccountReady from '.~/hooks/useGoogleAdsAccountReady';
-import useGoogleMCAccountReady from '.~/hooks/useGoogleMCAccountReady';
 
 /**
  * Renders the disclaimer of Comparison Shopping Service (CSS).
@@ -84,11 +83,13 @@ const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
 	const { jetpack } = useJetpackAccount();
 	const { google, scope } = useGoogleAccount();
-	const { googleMCAccount, isPreconditionReady: isGMCPreconditionReady } =
-		useGoogleMCAccount();
+	const {
+		googleMCAccount,
+		isPreconditionReady: isGMCPreconditionReady,
+		isReady: isGoogleMCReady,
+	} = useGoogleMCAccount();
 	const { hasFinishedResolution } = useGoogleAdsAccount();
 	const isGoogleAdsReady = useGoogleAdsAccountReady();
-	const isGoogleMCReady = useGoogleMCAccountReady();
 
 	/**
 	 * When jetpack is loading, or when google account is loading,

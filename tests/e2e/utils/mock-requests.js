@@ -601,6 +601,7 @@ export default class MockRequests {
 			currency: 'TWD',
 			symbol: 'NT$',
 			status: 'connected',
+			step: '',
 		} );
 	}
 
@@ -638,6 +639,7 @@ export default class MockRequests {
 			status: 'connected',
 			notification_service_enabled: notificationServiceEnabled,
 			wpcom_rest_api_status: wpcomRestApiStatus,
+			step: '',
 		} );
 	}
 
