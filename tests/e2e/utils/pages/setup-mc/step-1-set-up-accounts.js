@@ -258,9 +258,9 @@ export default class SetUpAccountsPage extends MockRequests {
 	 */
 	getGoogleAdsAccountCard() {
 		return this.getAccountCards( {
-			has: this.page.locator( '.gla-account-card__title', {
-				hasText: 'Google Ads',
-			} ),
+			has: this.page.locator(
+				'.gla-google-combo-service-account-card--ads'
+			),
 		} ).first();
 	}
 

@@ -11,6 +11,7 @@ import { CardDivider } from '@wordpress/components';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppButton from '.~/components/app-button';
 import AppDocumentationLink from '.~/components/app-documentation-link';
+import ConnectButton from './connect-button';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import LoadingLabel from '.~/components/loading-label';
 import Section from '.~/wcdl/section';
@@ -18,10 +19,8 @@ import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
 import AdsAccountSelectControl from '.~/components/ads-account-select-control';
 import { useAppDispatch } from '.~/data';
-import { FILTER_ONBOARDING } from '.~/utils/tracks';
 import './index.scss';
 
 /**
@@ -49,7 +48,6 @@ const ConnectAds = ( props ) => {
 		data: { id: value },
 	} );
 	const { refetchGoogleAdsAccount } = useGoogleAdsAccount();
-	const getEventProps = useEventPropertiesFilter( FILTER_ONBOARDING );
 	const { createNotice } = useDispatchCoreNotices();
 	const { fetchGoogleAdsAccountStatus } = useAppDispatch();
 
@@ -131,17 +129,10 @@ const ConnectAds = ( props ) => {
 							) }
 						/>
 					) : (
-						<AppButton
-							isSecondary
-							disabled={ ! value }
-							eventName="gla_ads_account_connect_button_click"
-							eventProps={ getEventProps( {
-								id: Number( value ),
-							} ) }
-							onClick={ handleConnectClick }
-						>
-							{ __( 'Connect', 'google-listings-and-ads' ) }
-						</AppButton>
+						<ConnectButton
+							handleConnectClick={ handleConnectClick }
+							value={ value }
+						/>
 					) }
 				</ContentButtonLayout>
 			</Section.Card.Body>

@@ -2,6 +2,7 @@
  * Internal dependencies
  */
 import AccountCard, { APPEARANCE } from '../account-card';
+import ConnectAds from './connect-ads';
 import AccountDetails from './account-details';
 import Indicator from './indicator';
 import getAccountCreationTexts from './getAccountCreationTexts';
@@ -22,14 +23,19 @@ const ConnectedGoogleComboAccountCard = () => {
 	}
 
 	return (
-		<AccountCard
-			appearance={ APPEARANCE.GOOGLE }
-			alignIcon="top"
-			className="gla-google-combo-account-card--connected"
-			description={ text || <AccountDetails /> }
-			helper={ subText }
-			indicator={ <Indicator showSpinner={ Boolean( creatingWhich ) } /> }
-		/>
+		<div className="gla-google-combo-account-card gla-account-card">
+			<AccountCard
+				appearance={ APPEARANCE.GOOGLE }
+				alignIcon="top"
+				className="gla-google-combo-account-card--connected"
+				description={ text || <AccountDetails /> }
+				helper={ subText }
+				indicator={
+					<Indicator showSpinner={ Boolean( creatingWhich ) } />
+				}
+			/>
+			<ConnectAds />
+		</div>
 	);
 };
 

@@ -20,6 +20,7 @@ import './index.scss';
  * @param {Function} [props.onChange=noop] Callback function triggered when the selected value changes. Receives the new value as an argument.
  * @param {string} [props.value] The currently selected value. This component should be used as a controlled component. A special case is that after mounting, when `autoSelectFirstOption` is true and `value` is undefined, it tries to call back `onChange` once to select the first option so that the `value` can be consistent with the `<select>` element's own value.
  * @param {boolean} [props.autoSelectFirstOption=false] If true, automatically triggers the onChange callback with the first option as value when no value is provided. If only one option is available, the select control is also changed to non-interactive.
+ * @param {boolean} [props.nonInteractive=false] If true, the select control is changed to non-interactive.
  * @param {*} [props.rest] Additional props passed to the `SelectControl` component.
  */
 const AppSelectControl = ( props ) => {
@@ -29,6 +30,7 @@ const AppSelectControl = ( props ) => {
 		onChange = noop,
 		value,
 		autoSelectFirstOption = false,
+		nonInteractive = false,
 		...rest
 	} = props;
 	const shouldAutoSelectOnceRef = useRef( autoSelectFirstOption === true );
@@ -52,12 +54,15 @@ const AppSelectControl = ( props ) => {
 	};
 
 	const hasSingleValueStyle = autoSelectFirstOption && options?.length === 1;
-	if ( hasSingleValueStyle ) {
+	if ( hasSingleValueStyle || nonInteractive ) {
 		selectProps = {
 			...selectProps,
 			suffix: ' ',
-			tabIndex: '-1',
+			style: {
+				pointerEvents: 'none',
+			},
 			readOnly: true,
+			tabIndex: -1,
 		};
 	}
 
