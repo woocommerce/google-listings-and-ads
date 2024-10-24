@@ -11,6 +11,7 @@ import { ASSET_GROUP_KEY, ASSET_FORM_KEY } from '.~/constants';
 import AdaptiveForm from '.~/components/adaptive-form';
 import validateCampaign from '.~/components/paid-ads/validateCampaign';
 import validateAssetGroup from '.~/components/paid-ads/validateAssetGroup';
+import useAdsCurrency from '.~/hooks/useAdsCurrency';
 
 /**
  * @typedef {import('.~/components/types.js').CampaignFormValues} CampaignFormValues
@@ -66,10 +67,12 @@ function convertAssetEntityGroupToFormValues( assetEntityGroup = {} ) {
  * @param {Object} props React props.
  * @param {CampaignFormValues} props.initialCampaign Initial campaign values.
  * @param {AssetEntityGroup} [props.assetEntityGroup] The asset entity group to be used in initializing the form values for editing.
+ * @param {number} props.recommendedDailyBudget The recommended daily budget for the campaign. The minimum campaign amount will be set to 30% of this value.
  */
 export default function CampaignAssetsForm( {
 	initialCampaign,
 	assetEntityGroup,
+	recommendedDailyBudget,
 	...adaptiveFormProps
 } ) {
 	const initialAssetGroup = useMemo( () => {
@@ -78,6 +81,7 @@ export default function CampaignAssetsForm( {
 
 	const [ baseAssetGroup, setBaseAssetGroup ] = useState( initialAssetGroup );
 	const [ hasImportedAssets, setHasImportedAssets ] = useState( false );
+	const { formatAmount } = useAdsCurrency();
 
 	const extendAdapter = ( formContext ) => {
 		const assetGroupErrors = validateAssetGroup( formContext.values );
@@ -117,13 +121,20 @@ export default function CampaignAssetsForm( {
 		};
 	};
 
+	const validateCampaignWithMinimumAmount = ( values ) => {
+		return validateCampaign( values, {
+			dailyBudget: recommendedDailyBudget,
+			formatAmount,
+		} );
+	};
+
 	return (
 		<AdaptiveForm
 			initialValues={ {
 				...initialCampaign,
 				...initialAssetGroup,
 			} }
-			validate={ validateCampaign }
+			validate={ validateCampaignWithMinimumAmount }
 			extendAdapter={ extendAdapter }
 			{ ...adaptiveFormProps }
 		/>

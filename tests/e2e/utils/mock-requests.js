@@ -366,6 +366,21 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the budget recommendations request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillBudgetRecommendations( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/campaigns\/budget-recommendation\b/,
+			payload,
+			200,
+			[ 'GET' ]
+		);
+	}
+
+	/**
 	 * Mock the request to connect Jetpack
 	 *
 	 * @param {string} url
