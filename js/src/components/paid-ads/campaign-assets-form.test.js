@@ -10,6 +10,12 @@ import userEvent from '@testing-library/user-event';
  */
 import CampaignAssetsForm from './campaign-assets-form';
 
+jest.mock( '@wordpress/api-fetch', () => {
+	const impl = jest.fn().mockName( '@wordpress/api-fetch' );
+	impl.use = jest.fn().mockName( 'apiFetch.use' );
+	return impl;
+} );
+
 const alwaysValid = () => ( {} );
 
 describe( 'CampaignAssetsForm', () => {

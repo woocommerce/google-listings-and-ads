@@ -135,6 +135,7 @@ const CreatePaidAdsCampaign = () => {
 				initialCampaign={ {
 					amount: highestDailyBudget,
 				} }
+				recommendedDailyBudget={ highestDailyBudget }
 				onSubmit={ handleSubmit }
 			>
 				<Stepper

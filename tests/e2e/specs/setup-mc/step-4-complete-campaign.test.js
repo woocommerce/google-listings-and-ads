@@ -234,6 +234,76 @@ test.describe( 'Complete your campaign', () => {
 				} );
 			} );
 
+			test.describe( 'Validate budget percent', () => {
+				test.beforeAll( async () => {
+					await setupBudgetPage.fulfillBudgetRecommendations( {
+						currency: 'TWD',
+						recommendations: [
+							{
+								country: 'US',
+								daily_budget: 100,
+							},
+						],
+					} );
+
+					await completeCampaign.goto();
+				} );
+
+				test( 'should see validation error if lower than the 30%', async () => {
+					await setupBudgetPage.fillBudget( '10' );
+					await setupBudgetPage.getBudgetInput().blur();
+					const error = page.locator(
+						'.components-base-control__help'
+					);
+
+					await expect( error ).toHaveText(
+						'Please make sure daily average cost is at least NT$30.00'
+					);
+				} );
+
+				test( 'should see validation error if slightly less than the 30%', async () => {
+					await setupBudgetPage.fillBudget( '29.99' );
+					await setupBudgetPage.getBudgetInput().blur();
+					const error = page.locator(
+						'.components-base-control__help'
+					);
+
+					await expect( error ).toHaveText(
+						'Please make sure daily average cost is at least NT$30.00'
+					);
+				} );
+
+				test( 'should not see validation error if exactly 30%', async () => {
+					await setupBudgetPage.fillBudget( '30' );
+					await setupBudgetPage.getBudgetInput().blur();
+
+					const error = page.locator(
+						'.components-base-control__help'
+					);
+					await expect( error ).not.toBeVisible();
+				} );
+
+				test( 'should not see validation error if slightly greater than 30%', async () => {
+					await setupBudgetPage.fillBudget( '30.5' );
+					await setupBudgetPage.getBudgetInput().blur();
+
+					const error = page.locator(
+						'.components-base-control__help'
+					);
+					await expect( error ).not.toBeVisible();
+				} );
+
+				test( 'should not see validation error if greater than 30%', async () => {
+					await setupBudgetPage.fillBudget( '40' );
+					await setupBudgetPage.getBudgetInput().blur();
+
+					const error = page.locator(
+						'.components-base-control__help'
+					);
+					await expect( error ).not.toBeVisible();
+				} );
+			} );
+
 			test.describe( 'Set up billing', () => {
 				let newPage;
 
