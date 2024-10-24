@@ -337,6 +337,10 @@ test.describe( 'Set up accounts', () => {
 				const googleAccountCard =
 					setUpAccountsPage.getGoogleAccountCard();
 
+				const cardBody = googleAccountCard.locator(
+					'.gla-google-combo-account-card--connected'
+				);
+
 				await setUpAccountsPage.fulfillAdsAccountStatus( {
 					has_access: true,
 					invite_link: '',
@@ -344,7 +348,7 @@ test.describe( 'Set up accounts', () => {
 				} );
 
 				await expect(
-					googleAccountCard.getByText( 'Connected', { exact: true } )
+					cardBody.getByText( 'Connected', { exact: true } )
 				).toBeVisible();
 			} );
 		} );
