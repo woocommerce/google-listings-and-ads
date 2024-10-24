@@ -446,7 +446,7 @@ test.describe( 'Set up accounts', () => {
 			} );
 
 			test.describe( 'click "Create account" button from the modal', () => {
-				test( 'should see Merchant Center "Connected" when the website is not claimed', async () => {
+				test( 'should see Merchant Center account "Connected" when the website is not claimed', async () => {
 					await Promise.all( [
 						// Mock Merchant Center create accounts
 						setUpAccountsPage.mockMCCreateAccountWebsiteNotClaimed(),
@@ -462,7 +462,7 @@ test.describe( 'Set up accounts', () => {
 						LOAD_STATE.DOM_CONTENT_LOADED
 					);
 					const mcConnectedLabel =
-						setUpAccountsPage.getMCConnectedLabel();
+						setUpAccountsPage.getGoogleComboConnectedLabel();
 					await expect( mcConnectedLabel ).toContainText(
 						'Connected'
 					);
@@ -567,7 +567,7 @@ test.describe( 'Set up accounts', () => {
 						);
 
 						const mcConnectedLabel =
-							setUpAccountsPage.getMCConnectedLabel();
+							setUpAccountsPage.getGoogleComboConnectedLabel();
 						await expect( mcConnectedLabel ).toContainText(
 							'Connected'
 						);
@@ -659,7 +659,7 @@ test.describe( 'Set up accounts', () => {
 					);
 
 					const mcConnectedLabel =
-						setUpAccountsPage.getMCConnectedLabel();
+						setUpAccountsPage.getGoogleComboConnectedLabel();
 					await expect( mcConnectedLabel ).toContainText(
 						'Connected'
 					);

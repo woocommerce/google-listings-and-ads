@@ -76,7 +76,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	 */
 	getGoogleDescriptionRow() {
 		return this.getGoogleAccountCard().locator(
-			'.gla-connected-google-combo-account-card__description'
+			'.gla-account-card__description'
 		);
 	}
 
@@ -155,6 +155,17 @@ export default class SetUpAccountsPage extends MockRequests {
 	}
 
 	/**
+	 * Get Google combo card connected label.
+	 *
+	 * @return {import('@playwright/test').Locator} Get Google combo card connected label.
+	 */
+	getGoogleComboConnectedLabel() {
+		return this.getGoogleComboAccountCard().locator(
+			'.gla-connected-icon-label'
+		);
+	}
+
+	/**
 	 * Get "Reclaim my URL" button.
 	 *
 	 * @return {import('@playwright/test').Locator} Get "Reclaim my URL" button.
@@ -218,12 +229,22 @@ export default class SetUpAccountsPage extends MockRequests {
 	}
 
 	/**
-	 * Get account cards.
+	 * Get Google combo account cards.
 	 *
 	 * @param {Object} options
-	 * @return {import('@playwright/test').Locator} Get account cards.
+	 * @return {import('@playwright/test').Locator} Get Google combo account cards.
 	 */
-	getAccountCards( options = {} ) {
+	getGoogleComboAccountCards( options = {} ) {
+		return this.page.locator( '.gla-google-combo-account-cards', options );
+	}
+
+	/**
+	 * Get Google combo account card.
+	 *
+	 * @param {Object} options
+	 * @return {import('@playwright/test').Locator} Get Google combo account card.
+	 */
+	getGoogleComboAccountCard( options = {} ) {
 		return this.page.locator( '.gla-google-combo-account-card', options );
 	}
 
@@ -259,7 +280,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get Google Ads account card.
 	 */
 	getGoogleAdsAccountCard() {
-		return this.getAccountCards( {
+		return this.getGoogleComboAccountCards( {
 			has: this.page.locator( '.gla-account-card__title', {
 				hasText: 'Google Ads',
 			} ),

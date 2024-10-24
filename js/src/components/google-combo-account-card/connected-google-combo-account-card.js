@@ -80,7 +80,7 @@ const ConnectedGoogleComboAccountCard = () => {
 			<AccountCard
 				appearance={ APPEARANCE.GOOGLE }
 				alignIcon="top"
-				className="gla-google-combo-account-card--connected"
+				className="gla-google-combo-account-card gla-google-combo-account-card--connected"
 				description={
 					! displayAccountDetails ? text : <AccountDetails />
 				}
