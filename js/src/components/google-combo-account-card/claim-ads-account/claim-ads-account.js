@@ -12,10 +12,10 @@ import ClaimAccountButton from '.~/components/google-ads-account-card/claim-acco
 import Section from '.~/wcdl/section';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import { useAppDispatch } from '.~/data';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
 import useWindowFocusCallbackIntervalEffect from '.~/hooks/useWindowFocusCallbackIntervalEffect';
 import './claim-ads-account.scss';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 
 /**
  * ClaimAdsAccount component.
@@ -29,13 +29,13 @@ const ClaimAdsAccount = () => {
 	const { hasAccess, step } = useGoogleAdsAccountStatus();
 	const [ upsertAdsAccount ] = useUpsertAdsAccount();
 
-	const checkUpdatedStatus = useCallback( async () => {
+	const checkUpdatedAdsAccountStatus = useCallback( async () => {
 		setUpdating( true );
 		await fetchGoogleAdsAccountStatus();
 		setUpdating( false );
 	}, [ fetchGoogleAdsAccountStatus ] );
 
-	useWindowFocusCallbackIntervalEffect( checkUpdatedStatus, 30 );
+	useWindowFocusCallbackIntervalEffect( checkUpdatedAdsAccountStatus, 30 );
 
 	useEffect( () => {
 		if ( hasAccess === true && step === 'conversion_action' ) {
