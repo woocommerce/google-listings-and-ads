@@ -22,14 +22,15 @@ import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
  * @return {JSX.Element} ClaimAdsAccount component.
  */
 const ClaimAdsAccount = () => {
+	const claimButtonClickedRef = useRef( false );
+	const claimInProgressRef = useRef( false );
+
 	const [ , forceUpdate ] = useState( 0 );
 	const isWindowFocused = useWindowFocus();
 	const { hasAccess, hasFinishedResolution, inviteLink, step } =
 		useGoogleAdsAccountStatus();
 	const [ upsertAdsAccount, { loading } ] = useUpsertAdsAccount();
 	const { invalidateResolution } = useAppDispatch();
-	const claimButtonClickedRef = useRef( false );
-	const claimInProgressRef = useRef( false );
 
 	useEffect( () => {
 		if ( isWindowFocused && claimButtonClickedRef.current ) {
@@ -61,12 +62,6 @@ const ClaimAdsAccount = () => {
 	const isLoading =
 		loading || ( ! hasFinishedResolution && claimButtonClickedRef.current );
 
-	/**
-	 * Do not render anything if:
-	 *
-	 * 1. The user has access to the Google Ads account.
-	 * 2. The resolution has not finished and the claim button has not been clicked.
-	 */
 	if (
 		hasAccess ||
 		( ! hasFinishedResolution && ! claimButtonClickedRef.current )
