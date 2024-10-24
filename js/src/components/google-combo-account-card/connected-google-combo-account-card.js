@@ -1,9 +1,4 @@
 /**
- * External dependencies
- */
-import { useEffect, useState } from '@wordpress/element';
-
-/**
  * Internal dependencies
  */
 import AccountCard, { APPEARANCE } from '../account-card';
