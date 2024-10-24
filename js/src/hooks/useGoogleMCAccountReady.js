@@ -11,7 +11,7 @@ const useGoogleMCAccountReady = () => {
 	// since these can be connected in any order.
 	return (
 		hasGoogleMCConnection &&
-		[ '', 'link_merchant' ].includes( googleMCAccount?.step )
+		[ '', 'link_ads' ].includes( googleMCAccount?.step )
 	);
 };
 
