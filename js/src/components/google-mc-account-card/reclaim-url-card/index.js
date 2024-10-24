@@ -51,7 +51,6 @@ const ReclaimUrlCard = ( { id, websiteUrl, onSwitchAccount = noop } ) => {
 	const handleReclaimClick = async () => {
 		reset();
 		await fetchClaimOverwrite( { parse: false } );
-		invalidateResolution( 'getExistingGoogleMCAccounts' );
 		invalidateResolution( 'getGoogleMCAccount', [] );
 	};
 

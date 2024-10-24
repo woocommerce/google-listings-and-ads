@@ -102,6 +102,10 @@ export function* getExistingGoogleMCAccounts() {
 	yield fetchExistingGoogleMCAccounts();
 }
 
+getExistingGoogleMCAccounts.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC;
+};
+
 export function* getGoogleAdsAccount() {
 	yield fetchGoogleAdsAccount();
 }
