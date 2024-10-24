@@ -15,6 +15,7 @@ import ConnectMCFooter from './connect-mc-footer';
 import SpinnerCard from '.~/components/spinner-card';
 import AccountConnectionStatus from '.~/components/google-mc-account-card/account-connection-status';
 import useConnectMCAccount from '.~/hooks/useConnectMCAccount';
+import useGoogleMCAccountReady from '.~/hooks/useGoogleMCAccountReady';
 
 /**
  * Clicking on the "Switch account" button to select a different Google Merchant Center account to connect.
@@ -24,28 +25,25 @@ import useConnectMCAccount from '.~/hooks/useConnectMCAccount';
  */
 
 const ConnectMC = ( { createMCAccount, resultCreateMCAccount } ) => {
-	const {
-		googleMCAccount,
-		hasFinishedResolution,
-		hasGoogleMCConnection,
-		isPreconditionReady,
-	} = useGoogleMCAccount();
+	const { googleMCAccount, hasFinishedResolution, isPreconditionReady } =
+		useGoogleMCAccount();
+	const isGoogleMCConnected = useGoogleMCAccountReady();
 	const [ accountID, setAccountID ] = useState();
 	const [ handleConnectMC, resultConnectMC ] =
 		useConnectMCAccount( accountID );
 
 	useEffect( () => {
-		if ( hasGoogleMCConnection ) {
+		if ( isGoogleMCConnected ) {
 			setAccountID( googleMCAccount.id );
 		}
-	}, [ googleMCAccount, hasGoogleMCConnection ] );
+	}, [ googleMCAccount, isGoogleMCConnected ] );
 
 	if ( ! hasFinishedResolution ) {
 		return <SpinnerCard />;
 	}
 
 	if (
-		! hasGoogleMCConnection &&
+		! isGoogleMCConnected &&
 		( [ 403, 409 ].includes( resultConnectMC.response?.status ) ||
 			[ 403, 503 ].includes( resultCreateMCAccount.response?.status ) ||
 			resultCreateMCAccount.loading )
@@ -62,8 +60,7 @@ const ConnectMC = ( { createMCAccount, resultCreateMCAccount } ) => {
 	return (
 		<ConnectAccountCard
 			className={ classNames( 'gla-google-combo-account-card--mc', {
-				'gla-google-combo-account-card--connected':
-					hasGoogleMCConnection,
+				'gla-google-combo-account-card--connected': isGoogleMCConnected,
 			} ) }
 			title={ __(
 				'Connect to existing Merchant Center account',
@@ -77,14 +74,14 @@ const ConnectMC = ( { createMCAccount, resultCreateMCAccount } ) => {
 				<ConnectMCBody
 					value={ accountID }
 					setValue={ setAccountID }
-					isConnected={ hasGoogleMCConnection }
+					isConnected={ isGoogleMCConnected }
 					isConnecting={ resultConnectMC.loading }
 					handleConnectMC={ handleConnectMC }
 				/>
 			}
 			footer={
 				<ConnectMCFooter
-					isConnected={ hasGoogleMCConnection }
+					isConnected={ isGoogleMCConnected }
 					resultConnectMC={ resultConnectMC }
 					resultCreateAccount={ resultCreateMCAccount }
 					handleCreateAccount={ createMCAccount }
