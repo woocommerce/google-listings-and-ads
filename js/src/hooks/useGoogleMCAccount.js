@@ -55,6 +55,7 @@ const useGoogleMCAccount = () => {
 			const isResolvingGoogleMCAccount = selector.isResolving(
 				googleMCAccountSelector
 			);
+
 			const hasGoogleMCConnection = [
 				GOOGLE_MC_ACCOUNT_STATUS.CONNECTED,
 				GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE,
