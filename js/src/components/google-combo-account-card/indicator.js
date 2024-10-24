@@ -8,8 +8,8 @@ import { __ } from '@wordpress/i18n';
  */
 import ConnectedIconLabel from '.~/components/connected-icon-label';
 import LoadingLabel from '.~/components/loading-label/loading-label';
-import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccountReady from '.~/hooks/useGoogleAdsAccountReady';
+import useGoogleMCAccountReady from '.~/hooks/useGoogleMCAccountReady';
 
 /**
  * Account creation indicator.
@@ -19,14 +19,8 @@ import useGoogleAdsAccountReady from '.~/hooks/useGoogleAdsAccountReady';
  * @return {JSX.Element|null} Indicator component.
  */
 const Indicator = ( { showSpinner } ) => {
-	const { googleMCAccount, isPreconditionReady } = useGoogleMCAccount();
 	const isGoogleAdsConnected = useGoogleAdsAccountReady();
-
-	const isGoogleMCConnected =
-		isPreconditionReady &&
-		( googleMCAccount?.status === 'connected' ||
-			( googleMCAccount?.status === 'incomplete' &&
-				googleMCAccount?.step === 'link_ads' ) );
+	const isGoogleMCConnected = useGoogleMCAccountReady();
 
 	if ( showSpinner ) {
 		return (

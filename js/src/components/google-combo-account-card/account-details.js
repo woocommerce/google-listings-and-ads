@@ -23,18 +23,23 @@ const AccountDetails = () => {
 		<>
 			<p>{ google.email }</p>
 			<p>
-				{ sprintf(
-					// Translators: %s is the Merchant Center ID
-					__( 'Merchant Center ID: %s', 'google-listings-and-ads' ),
-					googleMCAccount.id
-				) }
+				{ googleMCAccount.id > 0 &&
+					sprintf(
+						// Translators: %s is the Merchant Center ID
+						__(
+							'Merchant Center ID: %s',
+							'google-listings-and-ads'
+						),
+						googleMCAccount.id
+					) }
 			</p>
 			<p>
-				{ sprintf(
-					// Translators: %s is the Google Ads ID
-					__( 'Google Ads ID: %s', 'google-listings-and-ads' ),
-					googleAdsAccount.id
-				) }
+				{ googleAdsAccount.id > 0 &&
+					sprintf(
+						// Translators: %s is the Google Ads ID
+						__( 'Google Ads ID: %s', 'google-listings-and-ads' ),
+						googleAdsAccount.id
+					) }
 			</p>
 		</>
 	);

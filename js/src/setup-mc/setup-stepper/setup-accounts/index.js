@@ -25,6 +25,7 @@ import Faqs from './faqs';
 import './index.scss';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleAdsAccountReady from '.~/hooks/useGoogleAdsAccountReady';
+import useGoogleMCAccountReady from '.~/hooks/useGoogleMCAccountReady';
 
 /**
  * Renders the disclaimer of Comparison Shopping Service (CSS).
@@ -87,8 +88,7 @@ const SetupAccounts = ( props ) => {
 		useGoogleMCAccount();
 	const { hasFinishedResolution } = useGoogleAdsAccount();
 	const isGoogleAdsReady = useGoogleAdsAccountReady();
-	// @TODO: review
-	const isGoogleMCReady = true;
+	const isGoogleMCReady = useGoogleMCAccountReady();
 
 	/**
 	 * When jetpack is loading, or when google account is loading,

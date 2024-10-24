@@ -10,7 +10,7 @@ import AccountCard, { APPEARANCE } from '../account-card';
 import AccountDetails from './account-details';
 import AppSpinner from '../app-spinner';
 import Indicator from './indicator';
-import getAccountCreationTexts from '.~/utils/getAccountCreationTexts';
+import getAccountCreationTexts from './getAccountCreationTexts';
 import useAutoCreateAdsMCAccounts from '.~/hooks/useAutoCreateAdsMCAccounts';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
@@ -28,15 +28,11 @@ const ConnectedGoogleComboAccountCard = () => {
 	const [ wasCreatingAccounts, setWasCreatingAccounts ] =
 		useState( undefined );
 
-	const {
-		googleAdsAccount,
-		hasFinishedResolution: hasFinishedResolutionForCurrentAdsAccount,
-	} = useGoogleAdsAccount();
+	const { hasFinishedResolution: hasFinishedResolutionForCurrentAdsAccount } =
+		useGoogleAdsAccount();
 
-	const {
-		googleMCAccount,
-		hasFinishedResolution: hasFinishedResolutionForCurrentMCAccount,
-	} = useGoogleMCAccount();
+	const { hasFinishedResolution: hasFinishedResolutionForCurrentMCAccount } =
+		useGoogleMCAccount();
 
 	const { data: accounts } = useExistingGoogleMCAccounts();
 	const [ createMCAccount, resultCreateMCAccount ] = useCreateMCAccount();
@@ -49,24 +45,16 @@ const ConnectedGoogleComboAccountCard = () => {
 		hasFinishedResolutionForCurrentAdsAccount &&
 		hasFinishedResolutionForCurrentMCAccount;
 
-	const accountsCreated =
-		wasCreatingAccounts !== undefined && ! creatingWhich;
-
-	const accountsReady =
-		accountDetailsResolved &&
-		!! googleAdsAccount?.id &&
-		!! googleMCAccount?.id;
-
-	const displayAccountDetails = accountDetailsResolved && accountsReady;
+	const displayAccountDetails =
+		accountDetailsResolved && wasCreatingAccounts === null;
 
 	useEffect( () => {
-		if ( creatingWhich ) {
+		if ( hasDetermined ) {
 			setWasCreatingAccounts( creatingWhich );
 		}
-	}, [ creatingWhich ] );
+	}, [ creatingWhich, hasDetermined ] );
 
 	if (
-		! accountsCreated &&
 		wasCreatingAccounts === undefined &&
 		( ! hasDetermined ||
 			! hasFinishedResolutionForCurrentAdsAccount ||
