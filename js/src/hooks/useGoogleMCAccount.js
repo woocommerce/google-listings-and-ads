@@ -8,6 +8,7 @@ import { useSelect } from '@wordpress/data';
  */
 import { STORE_KEY } from '.~/data/constants';
 import useGoogleAccount from './useGoogleAccount';
+import { GOOGLE_MC_ACCOUNT_STATUS } from '.~/constants';
 
 /**
  * @typedef {import('.~/data/selectors').GoogleMCAccount} GoogleMCAccount
@@ -17,7 +18,11 @@ import useGoogleAccount from './useGoogleAccount';
  * @property {boolean} isResolving Whether resolution is in progress.
  * @property {boolean} hasFinishedResolution Whether resolution has completed.
  * @property {boolean} isPreconditionReady Whether the precondition of continued connection processing is fulfilled.
+ * @property {boolean} hasGoogleMCConnection Whether the user has a Google Merchant Center account connection established.
+ * @property {boolean} isReady Whether the user has a Google Merchant Center account is in connected state.
  */
+
+const googleMCAccountSelector = 'getGoogleMCAccount';
 
 /**
  * A hook to load the connection data of Google Merchant Center account.
@@ -43,18 +48,37 @@ const useGoogleMCAccount = () => {
 					// has not been granted necessary access permissions for Google Merchant Center, then
 					// the precondition doesn't meet.
 					isPreconditionReady: false,
+					hasGoogleMCConnection: false,
+					isReady: false,
 				};
 			}
 
-			const { getGoogleMCAccount, isResolving, hasFinishedResolution } =
-				select( STORE_KEY );
+			const selector = select( STORE_KEY );
+			const acc = selector[ googleMCAccountSelector ]();
+			const isResolvingGoogleMCAccount = selector.isResolving(
+				googleMCAccountSelector
+			);
+
+			const hasGoogleMCConnection = [
+				GOOGLE_MC_ACCOUNT_STATUS.CONNECTED,
+				GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE,
+			].includes( acc?.status );
+
+			const isReady =
+				hasGoogleMCConnection &&
+				( acc.status === GOOGLE_MC_ACCOUNT_STATUS.CONNECTED ||
+					( acc.status === GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE &&
+						acc?.step === 'link_ads' ) );
 
 			return {
-				googleMCAccount: getGoogleMCAccount(),
-				isResolving: isResolving( 'getGoogleMCAccount' ),
-				hasFinishedResolution:
-					hasFinishedResolution( 'getGoogleMCAccount' ),
+				googleMCAccount: acc,
+				isResolving: isResolvingGoogleMCAccount,
+				hasFinishedResolution: selector.hasFinishedResolution(
+					googleMCAccountSelector
+				),
 				isPreconditionReady: true,
+				hasGoogleMCConnection,
+				isReady,
 			};
 		},
 		[

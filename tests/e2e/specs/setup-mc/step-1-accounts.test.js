@@ -2,7 +2,6 @@
  * Internal dependencies
  */
 import SetUpAccountsPage from '../../utils/pages/setup-mc/step-1-set-up-accounts';
-import SetupAdsAccountPage from '../../utils/pages/setup-ads/setup-ads-accounts';
 import { LOAD_STATE } from '../../utils/constants';
 import {
 	getFAQPanelTitle,
@@ -25,11 +24,6 @@ test.describe.configure( { mode: 'serial' } );
 let setUpAccountsPage = null;
 
 /**
- * @type {import('../../utils/pages/setup-ads/setup-ads-accounts.js').default} setupAdsAccountPage
- */
-let setupAdsAccountPage = null;
-
-/**
  * @type {import('@playwright/test').Page} page
  */
 let page = null;
@@ -38,7 +32,6 @@ test.describe( 'Set up accounts', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		setUpAccountsPage = new SetUpAccountsPage( page );
-		setupAdsAccountPage = new SetupAdsAccountPage( page );
 	} );
 
 	test.afterAll( async () => {
@@ -218,6 +211,152 @@ test.describe( 'Set up accounts', () => {
 
 			expect( page.url() ).toMatch( baseURL + 'google_auth' );
 		} );
+
+		test( 'should create merchant center and ads account if does not exist for the user', async () => {
+			await setUpAccountsPage.mockJetpackConnected();
+			await setUpAccountsPage.mockGoogleConnected();
+			await setUpAccountsPage.mockAdsAccountDisconnected();
+			await setUpAccountsPage.mockMCNotConnected();
+
+			await setUpAccountsPage.fulfillAdsAccounts(
+				[
+					[],
+					[
+						{
+							id: 78787878,
+							name: 'gla',
+						},
+					],
+				],
+				200,
+				[ 'GET' ],
+				true
+			);
+
+			await setUpAccountsPage.fulfillMCAccounts(
+				[
+					[],
+					[
+						{
+							id: 5432178,
+							name: null,
+							subaccount: null,
+							domain: null,
+						},
+					],
+				],
+				200,
+				'GET',
+				true
+			);
+
+			await setUpAccountsPage.fulfillAdsConnection(
+				[
+					{
+						id: 0,
+						currency: 'USD',
+						status: 'disconnected',
+						symbol: '$',
+					},
+					{
+						id: 78787878,
+						currency: 'USD',
+						status: 'incomplete',
+						step: 'account_access',
+						sub_account: true,
+						symbol: '$',
+					},
+				],
+				200,
+				'GET',
+				true
+			);
+
+			await setUpAccountsPage.fulfillMCConnection(
+				[
+					{
+						id: 0,
+						name: null,
+						subaccount: null,
+						domain: null,
+					},
+					{
+						id: 5432178,
+						name: null,
+						subaccount: null,
+						domain: null,
+						status: 'incomplete',
+						step: 'claim',
+					},
+				],
+				200,
+				'GET',
+				true
+			);
+
+			await setUpAccountsPage.goto();
+			const googleAccountCard = setUpAccountsPage.getGoogleAccountCard();
+
+			await expect(
+				googleAccountCard.getByText(
+					/You don’t have Merchant Center nor Google Ads accounts, so we’re creating them for you./,
+					{
+						exact: true,
+					}
+				)
+			).toBeVisible();
+		} );
+
+		test.describe( 'After connecting Google account', () => {
+			test.beforeEach( async () => {
+				await setUpAccountsPage.mockJetpackConnected();
+				await setUpAccountsPage.mockGoogleConnected();
+				await setUpAccountsPage.mockMCConnected();
+				await setUpAccountsPage.mockAdsAccountConnected();
+
+				await setUpAccountsPage.goto();
+			} );
+
+			test( 'should see the merchant center id and ads account id if connected', async () => {
+				const googleAccountCard =
+					setUpAccountsPage.getGoogleAccountCard();
+				await expect(
+					googleAccountCard.getByText( 'Merchant Center ID: 1234', {
+						exact: true,
+					} )
+				).toBeVisible();
+
+				await expect(
+					googleAccountCard.getByText( 'Google Ads ID: 12345', {
+						exact: true,
+					} )
+				).toBeVisible();
+			} );
+
+			test( 'should see the connected label', async () => {
+				const googleAccountCard =
+					setUpAccountsPage.getGoogleAccountCard();
+
+				await setUpAccountsPage.fulfillAdsAccountStatus( {
+					has_access: true,
+					invite_link: '',
+					step: 'link_merchant',
+				} );
+
+				await setUpAccountsPage.fulfillMCConnection( {
+					id: 1234,
+					name: 'Test Merchant Center',
+					subaccount: null,
+					domain: 'example.com',
+					status: 'connected',
+					step: '',
+				} );
+
+				await expect(
+					googleAccountCard.getByText( 'Connected', { exact: true } )
+				).toBeVisible();
+			} );
+		} );
 	} );
 
 	test.describe( 'Continue button', () => {
@@ -234,7 +373,7 @@ test.describe( 'Set up accounts', () => {
 
 		test.describe( 'When only Ads is connected', async () => {
 			test.beforeAll( async () => {
-				await setupAdsAccountPage.mockAdsAccountConnected();
+				await setUpAccountsPage.mockAdsAccountConnected();
 				await setUpAccountsPage.mockMCNotConnected();
 
 				await setUpAccountsPage.goto();
@@ -249,7 +388,7 @@ test.describe( 'Set up accounts', () => {
 
 		test.describe( 'When only MC is connected', async () => {
 			test.beforeAll( async () => {
-				await setupAdsAccountPage.mockAdsAccountDisconnected();
+				await setUpAccountsPage.mockAdsAccountDisconnected();
 				await setUpAccountsPage.mockMCConnected();
 
 				await setUpAccountsPage.goto();
@@ -264,9 +403,14 @@ test.describe( 'Set up accounts', () => {
 
 		test.describe( 'When all accounts are connected', async () => {
 			test.beforeAll( async () => {
-				await setupAdsAccountPage.mockAdsAccountConnected();
-				await setupAdsAccountPage.mockAdsStatusClaimed();
+				await setUpAccountsPage.mockAdsAccountConnected();
 				await setUpAccountsPage.mockMCConnected();
+
+				await setUpAccountsPage.fulfillAdsAccountStatus( {
+					has_access: true,
+					invite_link: '',
+					step: 'link_merchant',
+				} );
 
 				await setUpAccountsPage.goto();
 			} );

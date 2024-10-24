@@ -15,8 +15,11 @@ const useExistingGoogleAdsAccounts = () => {
 		const isResolving = select( STORE_KEY ).isResolving(
 			'getExistingGoogleAdsAccounts'
 		);
+		const hasFinishedResolution = select( STORE_KEY ).hasFinishedResolution(
+			'getExistingGoogleAdsAccounts'
+		);
 
-		return { existingAccounts, isResolving };
+		return { existingAccounts, hasFinishedResolution, isResolving };
 	}, [] );
 };
 
