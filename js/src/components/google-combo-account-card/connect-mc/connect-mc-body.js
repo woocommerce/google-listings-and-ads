@@ -19,15 +19,6 @@ import LoadingLabel from '.~/components/loading-label';
  * @property {number} id The account ID to be connected.
  */
 
-const nonInteractableProps = {
-	suffix: ' ',
-	style: {
-		pointerEvents: 'none',
-	},
-	readOnly: true,
-	tabIndex: -1,
-};
-
 /**
  * ConnectMCBody component.
  *
@@ -56,7 +47,7 @@ const ConnectMCBody = ( {
 			<MerchantCenterSelectControl
 				value={ value }
 				onChange={ setValue }
-				{ ...( isConnected && nonInteractableProps ) }
+				nonInteractive={ isConnected }
 			/>
 
 			{ isConnected && (
