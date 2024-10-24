@@ -9,7 +9,6 @@ import { __, sprintf } from '@wordpress/i18n';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
-import useGoogleMCAccountReady from '.~/hooks/useGoogleMCAccountReady';
 
 /**
  * Account details.
@@ -18,8 +17,8 @@ import useGoogleMCAccountReady from '.~/hooks/useGoogleMCAccountReady';
 const AccountDetails = () => {
 	const { google } = useGoogleAccount();
 	const { googleAdsAccount } = useGoogleAdsAccount();
-	const { googleMCAccount } = useGoogleMCAccount();
-	const isGoogleMCConnected = useGoogleMCAccountReady();
+	const { googleMCAccount, isReady: isGoogleMCConnected } =
+		useGoogleMCAccount();
 
 	return (
 		<>

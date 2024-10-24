@@ -15,7 +15,6 @@ import ConnectMCFooter from './connect-mc-footer';
 import SpinnerCard from '.~/components/spinner-card';
 import AccountConnectionStatus from '.~/components/google-mc-account-card/account-connection-status';
 import useConnectMCAccount from '.~/hooks/useConnectMCAccount';
-import useGoogleMCAccountReady from '.~/hooks/useGoogleMCAccountReady';
 
 /**
  * Clicking on the "Switch account" button to select a different Google Merchant Center account to connect.
@@ -25,9 +24,12 @@ import useGoogleMCAccountReady from '.~/hooks/useGoogleMCAccountReady';
  */
 
 const ConnectMC = ( { createMCAccount, resultCreateMCAccount } ) => {
-	const { googleMCAccount, hasFinishedResolution, isPreconditionReady } =
-		useGoogleMCAccount();
-	const isGoogleMCConnected = useGoogleMCAccountReady();
+	const {
+		googleMCAccount,
+		hasFinishedResolution,
+		isPreconditionReady,
+		isReady: isGoogleMCConnected,
+	} = useGoogleMCAccount();
 	const [ accountID, setAccountID ] = useState();
 	const [ handleConnectMC, resultConnectMC ] =
 		useConnectMCAccount( accountID );

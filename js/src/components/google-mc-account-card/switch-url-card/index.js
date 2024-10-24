@@ -56,6 +56,7 @@ const SwitchUrlCard = ( {
 	const handleSwitch = async () => {
 		try {
 			await fetchMCAccountSwitchUrl( { parse: false } );
+			invalidateResolution( 'getExistingGoogleMCAccounts' );
 			invalidateResolution( 'getGoogleMCAccount', [] );
 		} catch ( e ) {
 			if ( e.status !== 403 ) {

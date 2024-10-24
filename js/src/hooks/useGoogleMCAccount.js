@@ -47,6 +47,7 @@ const useGoogleMCAccount = () => {
 					// the precondition doesn't meet.
 					isPreconditionReady: false,
 					hasGoogleMCConnection: false,
+					isReady: false,
 				};
 			}
 
@@ -69,6 +70,10 @@ const useGoogleMCAccount = () => {
 				),
 				isPreconditionReady: true,
 				hasGoogleMCConnection,
+				isReady:
+					acc?.status === GOOGLE_MC_ACCOUNT_STATUS.CONNECTED ||
+					( acc?.status === GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE &&
+						acc?.step === 'link_ads' ),
 			};
 		},
 		[
