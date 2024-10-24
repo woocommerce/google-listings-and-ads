@@ -84,7 +84,7 @@ const ConnectAds = () => {
 	if (
 		! hasFinishedResolutionForExistingAdsAccount ||
 		! hasFinishedResolutionForCurrentAccount ||
-		accounts.length === 0
+		! accounts?.length
 	) {
 		return null;
 	}
