@@ -17,6 +17,6 @@ class AdsAccountQuery extends AdsQuery {
 	 */
 	public function __construct() {
 		parent::__construct( 'customer' );
-		$this->columns( [ 'customer.id', 'customer.descriptive_name', 'customer.manager', 'customer.test_account' ] );
+		$this->columns( [ 'customer.id', 'customer.descriptive_name', 'customer.manager', 'customer.test_account', 'customer.status' ] );
 	}
 }

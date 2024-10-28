@@ -323,6 +323,36 @@ class Ads implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Get the account status.
+	 *
+	 * @return string|null Account status.
+	 */
+	public function get_account_status() {
+		try {
+			$ads_id   = $this->options->get_ads_id();
+			$account  = ResourceNames::forCustomer( $ads_id );
+			$customer = ( new AdsAccountQuery() )
+				->set_client( $this->client, $ads_id )
+				->columns( [ 'customer.status' ] )
+				->where( 'customer.resource_name', $account, '=' )
+				->get_result()
+				->getCustomer();
+
+			if ( ! $customer ) {
+				return null;
+			}
+
+			$status = $customer->getStatus();
+
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+			$status = null;
+		}
+
+		return $status;
+	}
+
+	/**
 	 * Get the link from a merchant account.
 	 *
 	 * The invitation link may not be available in Google Ads immediately after

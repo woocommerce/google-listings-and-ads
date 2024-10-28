@@ -93,6 +93,15 @@ class AccountService implements OptionsAwareInterface, Service {
 			$status['step']   = $incomplete;
 		}
 
+		if ( $id > 0 ) {
+			$customer_status = $this->container->get( Ads::class )->get_account_status();
+
+			// @todo: use ENUM for these values.
+			// 4 maps to 'SUSPENDED' in the API.
+			// See: https://github.com/googleads/google-ads-php/blob/legacy-v22.1.0/src/Google/Ads/GoogleAds/V16/Enums/CustomerStatusEnum/CustomerStatus.php
+			$status['account_status'] = ( 4 === $customer_status ) ? 'suspended' : 'active';
+		}
+
 		$status += $this->state->get_step_data( 'set_id' );
 
 		return $status;
