@@ -13,6 +13,7 @@ import AppButton from '.~/components/app-button';
 import DifferentCurrencyNotice from '.~/components/different-currency-notice';
 import MainTabNav from '.~/components/main-tab-nav';
 import CustomerEffortScorePrompt from '.~/components/customer-effort-score-prompt';
+import AdsAccountSuspended from './ads-account-suspended';
 import AppDateRangeFilterPicker from './app-date-range-filter-picker';
 import SummarySection from './summary-section';
 import CampaignCreationSuccessGuide from './campaign-creation-success-guide';
@@ -87,6 +88,7 @@ const Dashboard = () => {
 	return (
 		<>
 			<div className="gla-dashboard">
+				<AdsAccountSuspended />
 				<DifferentCurrencyNotice context="dashboard" />
 				<MainTabNav />
 				<RebrandingTour />

@@ -1,0 +1,19 @@
+.components-notice.gla-ads-suspended-notice {
+	background-color: white;
+	margin-bottom: $grid-unit-20;
+
+	.gla-ads-suspended-notice__message {
+		align-items: center;
+		display: flex;
+		margin-top: 0;
+		gap: $grid-unit-05;
+	}
+
+	.gla-ads-suspended-notice__icon {
+		fill: $alert-red;
+	}
+
+	.components-notice__actions {
+		margin-left: $grid-unit-20;
+	}
+}
