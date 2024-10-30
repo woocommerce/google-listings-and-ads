@@ -2,11 +2,12 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
+import { createInterpolateElement, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
+import { useAppDispatch } from '.~/data';
 import useJetpackAccount from '.~/hooks/useJetpackAccount';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
@@ -90,8 +91,10 @@ const SetupAccounts = ( props ) => {
 		isReady: isGoogleMCReady,
 	} = useGoogleMCAccount();
 	const { hasFinishedResolution } = useGoogleAdsAccount();
-	const { addressSynced } = useStoreAddressSynced();
+	const { missingRequiredFields } = useStoreAddressSynced();
 	const isGoogleAdsReady = useGoogleAdsAccountReady();
+	const [ isSaving, setSaving ] = useState( false );
+	const { updateGoogleMCContactInformation } = useAppDispatch();
 
 	/**
 	 * When jetpack is loading, or when google account is loading,
@@ -118,8 +121,15 @@ const SetupAccounts = ( props ) => {
 		hasFinishedResolution &&
 		isGoogleAdsReady &&
 		isGoogleMCReady &&
-		addressSynced
+		! missingRequiredFields.length
 	);
+
+	const handleOnClick = async () => {
+		setSaving( true );
+		updateGoogleMCContactInformation()
+			.then( onContinue )
+			.catch( () => setSaving( false ) );
+	};
 
 	return (
 		<StepContent>
@@ -154,7 +164,8 @@ const SetupAccounts = ( props ) => {
 					<AppButton
 						isPrimary
 						disabled={ isContinueButtonDisabled }
-						onClick={ onContinue }
+						onClick={ handleOnClick }
+						loading={ isSaving }
 					>
 						{ __( 'Continue', 'google-listings-and-ads' ) }
 					</AppButton>

@@ -11,7 +11,7 @@ import { STORE_KEY } from '.~/data/constants';
 
 /**
  * @typedef {Object} StoreAddressSyncedData
- * @property {boolean|null} isAddressFilled Whether the `data` is loading. It's equal to `isResolving` state of wp-data selector.
+ * @property {string[]} missingRequiredFields The missing required fields of the store address.
  * @property {boolean|null} addressSynced Returns `true` if the store address matches the GMC account address, otherwise, returns `false`. If the MC account is not connected or if the state is not yet determined, returns `null`.
  */
 
@@ -27,7 +27,7 @@ export default function useStoreAddressSynced() {
 		( select ) => {
 			if ( ! isReady ) {
 				return {
-					isAddressFilled: null,
+					missingRequiredFields: [],
 					addressSynced: null,
 				};
 			}
@@ -37,7 +37,7 @@ export default function useStoreAddressSynced() {
 
 			if ( ! contact ) {
 				return {
-					isAddressFilled: null,
+					missingRequiredFields: [],
 					addressSynced: null,
 				};
 			}
@@ -48,7 +48,7 @@ export default function useStoreAddressSynced() {
 			} = contact;
 
 			return {
-				isAddressFilled: ! missingRequiredFields.length,
+				missingRequiredFields,
 				addressSynced:
 					! Boolean( isMCAddressDifferent ) &&
 					! missingRequiredFields.length,

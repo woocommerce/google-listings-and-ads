@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useRef, createInterpolateElement, useState } from '@wordpress/element';
+import { useRef, createInterpolateElement } from '@wordpress/element';
 import { CardDivider } from '@wordpress/components';
 import { Spinner } from '@woocommerce/components';
 import { update as updateIcon } from '@wordpress/icons';
@@ -12,7 +12,6 @@ import classNames from 'classnames';
 /**
  * Internal dependencies
  */
-import { useAppDispatch } from '.~/data';
 import useStoreAddress from '.~/hooks/useStoreAddress';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
@@ -22,7 +21,6 @@ import ValidationErrors from '.~/components/validation-errors';
 import ContactInformationPreviewCard from './contact-information-preview-card';
 import TrackableLink from '.~/components/trackable-link';
 import mapStoreAddressErrors from './mapStoreAddressErrors';
-import LoadingLabel from '.~/components/loading-label';
 import { recordGlaEvent } from '.~/utils/tracks';
 import './store-address-card.scss';
 
@@ -61,9 +59,7 @@ const StoreAddressCard = ( {
 	showValidation = false,
 	compactStyles = false,
 } ) => {
-	const { loaded, data } = useStoreAddress();
-	const [ isSaving, setSaving ] = useState( false );
-	const { updateGoogleMCContactInformation } = useAppDispatch();
+	const { loaded, data, refetch } = useStoreAddress();
 	const path = getPath();
 	const { subpath } = getQuery();
 
@@ -75,8 +71,7 @@ const StoreAddressCard = ( {
 	}
 
 	const handleRefreshClick = () => {
-		setSaving( true );
-		updateGoogleMCContactInformation().catch( () => setSaving( false ) );
+		refetch();
 
 		refetchedCallbackRef.current = ( storeAddress ) => {
 			const eventProps = {
@@ -90,9 +85,7 @@ const StoreAddressCard = ( {
 		};
 	};
 
-	const refreshButton = isSaving ? (
-		<LoadingLabel />
-	) : (
+	const refreshButton = (
 		<AppButton
 			isSecondary
 			icon={ updateIcon }
@@ -162,7 +155,7 @@ const StoreAddressCard = ( {
 				<p>
 					{ createInterpolateElement(
 						__(
-							'We’re using your store address from Woo Commerce settings for Google verification. This information won’t be public. Edit in <link>WooCommerce settings</link> if needed. Then, refresh to sync it to Google.',
+							'We’re using your store address from Woo Commerce settings for Google verification. This information won’t be public. Edit in <link>WooCommerce settings</link> if needed.',
 							'google-listings-and-ads'
 						),
 						{
@@ -171,6 +164,8 @@ const StoreAddressCard = ( {
 					) }
 				</p>
 				{ addressContent }
+
+				<ValidationErrors messages={ mapStoreAddressErrors( data ) } />
 			</>
 		);
 	}
