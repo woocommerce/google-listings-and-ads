@@ -362,27 +362,15 @@ test.describe( 'Configure product listings', () => {
 			await productListingsPage.fillEstimatedShippingTimes( '14' );
 		} );
 
-		test( 'should see the heading of next step and request for the contact information after clicking "Continue"', async () => {
-			const requestPromise =
-				productListingsPage.registerContinueRequest();
+		test( 'should see the heading of next step after clicking "Continue"', async () => {
 			await productListingsPage.clickContinueButton();
 
 			await expect(
 				page.getByRole( 'heading', {
-					name: 'Confirm store requirements',
+					name: 'Create a campaign to advertise your products',
 					exact: true,
 				} )
 			).toBeVisible();
-
-			const request = await requestPromise;
-			const response = await request.response();
-			const responseBody = await response.json();
-
-			expect( response.status() ).toBe( 200 );
-
-			expect( responseBody.wc_address.street_address ).toBe(
-				'Automata Road'
-			);
 		} );
 	} );
 } );

@@ -256,6 +256,7 @@ test.describe( 'Set up accounts', () => {
 
 				const googleAccountCard =
 					setUpAccountsPage.getGoogleAccountCard();
+
 				await expect(
 					googleAccountCard.getByText( 'Merchant Center ID: 1234', {
 						exact: true,
@@ -271,6 +272,88 @@ test.describe( 'Set up accounts', () => {
 				await expect(
 					googleAccountCard.getByText( 'Connected', { exact: true } )
 				).toBeVisible();
+			} );
+		} );
+	} );
+
+	test.describe( 'Google Ads card', () => {
+		test.beforeAll( async () => {
+			await setUpAccountsPage.mockJetpackConnected();
+			await setUpAccountsPage.mockGoogleConnected();
+			await setUpAccountsPage.mockMCHasAccounts();
+			await setUpAccountsPage.mockMCConnected();
+			await setUpAccountsPage.mockAdsAccountDisconnected();
+			await setUpAccountsPage.fulfillAdsAccounts( [
+				{
+					id: 111111,
+					name: 'gla',
+				},
+				{
+					id: 222222,
+					name: 'gla',
+				},
+				{
+					id: 333333,
+					name: 'gla',
+				},
+			] );
+
+			await setUpAccountsPage.goto();
+		} );
+
+		test.describe( 'When existing Google Ads accounts are available, but not connected', () => {
+			test( 'should see the Google Ads card with the correct title and body', async () => {
+				const googleAdsAccountCard =
+					setUpAccountsPage.getGoogleAdsAccountCard();
+
+				await expect(
+					googleAdsAccountCard.getByText(
+						'Connect to existing Google Ads account',
+						{ exact: true }
+					)
+				).toBeVisible();
+
+				await expect(
+					googleAdsAccountCard.getByText(
+						'Required to set up conversion measurement for your store.',
+						{ exact: true }
+					)
+				).toBeVisible();
+			} );
+
+			test( 'should see the button as enabled when selects the account from dropdown', async () => {
+				const googleAdsAccountCard =
+					setUpAccountsPage.getGoogleAdsAccountCard();
+
+				const adsAccountDropdown =
+					googleAdsAccountCard.locator( 'select' );
+				await adsAccountDropdown.selectOption( '222222' );
+
+				await expect(
+					googleAdsAccountCard.getByRole( 'button', {
+						name: 'Connect',
+					} )
+				).toBeEnabled();
+			} );
+
+			test( 'should display the correct Google Ads ID when connected', async () => {
+				const googleAccountCard =
+					setUpAccountsPage.getGoogleAccountCard();
+				const googleAdsAccountCard =
+					setUpAccountsPage.getGoogleAdsAccountCard();
+
+				const once = setUpAccountsPage.fulfillTimes( 1 );
+				await once.fulfillAdsAccounts( { id: 12345 } );
+				await once.mockAdsAccountConnected();
+				await once.mockAdsStatusClaimed();
+
+				await googleAdsAccountCard
+					.getByRole( 'button', { name: 'Connect' } )
+					.click();
+
+				await expect( googleAccountCard ).toContainText(
+					'Google Ads ID: 12345'
+				);
 			} );
 		} );
 	} );

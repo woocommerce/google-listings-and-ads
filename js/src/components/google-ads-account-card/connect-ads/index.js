@@ -11,6 +11,7 @@ import { CardDivider } from '@wordpress/components';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppButton from '.~/components/app-button';
 import AppDocumentationLink from '.~/components/app-documentation-link';
+import ConnectButton from './connect-button';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import LoadingLabel from '.~/components/loading-label';
 import Section from '.~/wcdl/section';
@@ -18,23 +19,12 @@ import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
 import AdsAccountSelectControl from '.~/components/ads-account-select-control';
 import { useAppDispatch } from '.~/data';
-import { FILTER_ONBOARDING } from '.~/utils/tracks';
 import './index.scss';
 
 /**
- * Clicking on the button to connect an existing Google Ads account.
- *
- * @event gla_ads_account_connect_button_click
- * @property {number} id The account ID to be connected.
- * @property {string} [context] Indicates the place where the button is located.
- * @property {string} [step] Indicates the step in the onboarding process.
- */
-
-/**
- * @fires gla_ads_account_connect_button_click when "Connect" button is clicked.
+ * Connect to an existing Google Ads account.
  * @fires gla_documentation_link_click with `{ context: 'setup-ads-connect-account', link_id: 'connect-sub-account', href: 'https://support.google.com/google-ads/answer/6139186' }`
  * @param {Object} props React props
  * @return {JSX.Element} {@link AccountCard} filled with content.
@@ -49,7 +39,6 @@ const ConnectAds = ( props ) => {
 		data: { id: value },
 	} );
 	const { refetchGoogleAdsAccount } = useGoogleAdsAccount();
-	const getEventProps = useEventPropertiesFilter( FILTER_ONBOARDING );
 	const { createNotice } = useDispatchCoreNotices();
 	const { fetchGoogleAdsAccountStatus } = useAppDispatch();
 
@@ -131,17 +120,10 @@ const ConnectAds = ( props ) => {
 							) }
 						/>
 					) : (
-						<AppButton
-							isSecondary
-							disabled={ ! value }
-							eventName="gla_ads_account_connect_button_click"
-							eventProps={ getEventProps( {
-								id: Number( value ),
-							} ) }
+						<ConnectButton
+							accountID={ value }
 							onClick={ handleConnectClick }
-						>
-							{ __( 'Connect', 'google-listings-and-ads' ) }
-						</AppButton>
+						/>
 					) }
 				</ContentButtonLayout>
 			</Section.Card.Body>
