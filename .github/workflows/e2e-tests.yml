@@ -4,11 +4,11 @@ on:
   push:
     branches:
       - "release/**"
-      - "feature/2458-2459-2460-2509"
+      - "test/fix-e2e-admin-login-failure"
   pull_request:
     branches:
       - "release/**"
-      - "feature/2458-2459-2460-2509"
+      - "test/fix-e2e-admin-login-failure"
   workflow_dispatch:
     inputs:
       wp-rc-version:
