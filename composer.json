@@ -19,7 +19,8 @@
 		"psr/container": "^1.1",
 		"symfony/polyfill-intl-normalizer": "^1.26",
 		"symfony/polyfill-mbstring": "^1.26",
-		"symfony/validator": "^5.2"
+		"symfony/validator": "^5.2",
+		"wp-cli/wp-cli": "^2.11"
 	},
 	"require-dev": {
 		"dealerdirect/phpcodesniffer-composer-installer": "^v0.7",
