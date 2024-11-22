@@ -435,6 +435,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		}
 
 		// ClI Classes
-		$this->share_with_tags( WPCLIMigrationGTIN::class, ProductRepository::class, AttributeManager::class );
+		$this->conditionally_share_with_tags( WPCLIMigrationGTIN::class, ProductRepository::class, AttributeManager::class );
 	}
 }
