@@ -49,7 +49,7 @@ module.exports = async ( config ) => {
 		try {
 			console.log( 'Trying to log-in as admin...' );
 			await adminPage.goto( `/wp-login.php` );
-			await adminPage.screenshot( { path: `tests/e2e/test-results/global/setup/admin-page-${i}.png`, fullPage: true } )
+			await adminPage.screenshot( { path: `tests/e2e/test-results/report/setup/admin-page-${i}.png`, fullPage: true } )
 			await adminPage
 				.locator( 'input[name="log"]' )
 				.fill( admin.username );
