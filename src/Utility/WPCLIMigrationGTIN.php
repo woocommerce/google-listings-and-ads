@@ -208,7 +208,7 @@ class WPCLIMigrationGTIN implements Service, Registerable, Conditional {
 	 * @return bool
 	 */
 	public static function is_needed(): bool {
-		return defined( 'WP_CLI' ) && WP_CLI && class_exists( WP_CLI::class );
+		return defined( 'WP_CLI' ) && WP_CLI;
 	}
 
 	/**
