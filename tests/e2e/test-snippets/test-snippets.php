@@ -40,3 +40,15 @@ add_filter(
 		return $value_options;
 	}
 );
+
+add_filter(
+	'wp_php_error_message',
+	function ( $message, $error ) {
+		echo '<pre>';
+		var_dump( $error );
+		echo '</pre>';
+		return $message;
+	},
+	10,
+	2
+);
