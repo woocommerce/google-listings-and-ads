@@ -18,6 +18,7 @@ import useShippingTimes from '~/hooks/useShippingTimes';
 import useSaveShippingRates from '~/hooks/useSaveShippingRates';
 import useSaveShippingTimes from '~/hooks/useSaveShippingTimes';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import useUpdateRestAPIAuthorizeStatusByUrlQuery from '~/hooks/useUpdateRestAPIAuthorizeStatusByUrlQuery';
 import SetupAccounts from './setup-accounts';
 import SetupListings from './setup-listings';
 import SetupPaidAds from './setup-paid-ads';
@@ -36,6 +37,8 @@ import {
  * @fires gla_setup_mc with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
  */
 const SavedSetupStepper = ( { savedStep } ) => {
+	useUpdateRestAPIAuthorizeStatusByUrlQuery();
+
 	const [ step, setStep ] = useState( savedStep );
 
 	const { settings, saveSettings } = useSettings();

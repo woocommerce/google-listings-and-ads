@@ -20,7 +20,10 @@ import useAutoCreateAdsMCAccounts from '~/hooks/useAutoCreateAdsMCAccounts';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useExistingGoogleMCAccounts from '~/hooks/useExistingGoogleMCAccounts';
 import useCreateMCAccount from '~/hooks/useCreateMCAccount';
-import { ConnectMC } from '~/components/google-mc-account-card';
+import {
+	ConnectMC,
+	WPComAppAuthorizationCard,
+} from '~/components/google-mc-account-card';
 import useExistingGoogleAdsAccounts from '~/hooks/useExistingGoogleAdsAccounts';
 import AppButton from '~/components/app-button';
 import { SwitchAccountButton } from '~/components/google-account-card';
@@ -179,7 +182,7 @@ const ConnectedGoogleComboAccountCard = () => {
 	const showConversionMeasurementNotice =
 		showAdsConversionNotice( googleAdsAccount );
 
-	const showAddressCard = hasFinishedResolution && isGoogleMCReady;
+	const isGoogleMCResolvedAndReady = hasFinishedResolution && isGoogleMCReady;
 
 	return (
 		<div className="gla-google-combo-account-card-wrapper">
@@ -216,8 +219,8 @@ const ConnectedGoogleComboAccountCard = () => {
 					className="gla-google-combo-account-card gla-google-combo-service-account-card--mc"
 				/>
 			) }
-
-			{ showAddressCard && <StoreAddressCard /> }
+			{ isGoogleMCResolvedAndReady && <WPComAppAuthorizationCard /> }
+			{ isGoogleMCResolvedAndReady && <StoreAddressCard /> }
 		</div>
 	);
 };
