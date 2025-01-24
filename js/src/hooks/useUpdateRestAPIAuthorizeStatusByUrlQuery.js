@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { useCallback, useEffect } from '@wordpress/element';
-import { getQuery } from '@woocommerce/navigation';
+import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -47,6 +47,13 @@ const useUpdateRestAPIAuthorizeStatusByUrlQuery = () => {
 			// eslint-disable-next-line no-console
 			console.error( e.message );
 		}
+
+		// Clean up authorization URL queries anyway
+		const url = getNewPath( {
+			google_wpcom_app_status: undefined,
+			nonce: undefined,
+		} );
+		getHistory().replace( url );
 	}, [
 		fetchUpdateRestAPIAuthorize,
 		googleWPCOMAppStatus,

@@ -1,8 +1,8 @@
 /**
  * External dependencies
  */
-import { renderHook } from '@testing-library/react';
-import { getQuery } from '@woocommerce/navigation';
+import { renderHook, waitFor } from '@testing-library/react';
+import { getQuery, getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -14,10 +14,14 @@ jest.mock( '@woocommerce/navigation' );
 jest.mock( '~/hooks/useApiFetchCallback' );
 
 describe( 'useUpdateRestAPIAuthorizeStatusByUrlQuery', () => {
+	let historyReplace;
 	let fetchUpdateRestAPIAuthorize;
 	let consoleErrorSpy;
 
 	beforeEach( () => {
+		historyReplace = jest.fn().mockName( 'getHistory().replace' );
+		getHistory.mockReturnValue( { replace: historyReplace } );
+
 		fetchUpdateRestAPIAuthorize = jest.fn();
 		useApiFetchCallback.mockImplementation( () => [
 			fetchUpdateRestAPIAuthorize,
@@ -65,7 +69,7 @@ describe( 'useUpdateRestAPIAuthorizeStatusByUrlQuery', () => {
 		} );
 	} );
 
-	it( 'should call fetchUpdateRestAPIAuthorize if query param is approved', () => {
+	it( 'should call fetchUpdateRestAPIAuthorize if query param is approved', async () => {
 		getQuery.mockReturnValue( {
 			google_wpcom_app_status: 'approved',
 			nonce: 'nonce-123',
@@ -78,9 +82,12 @@ describe( 'useUpdateRestAPIAuthorizeStatusByUrlQuery', () => {
 				nonce: 'nonce-123',
 			},
 		} );
+		await waitFor( () => {
+			expect( historyReplace ).toHaveBeenCalledTimes( 1 );
+		} );
 	} );
 
-	it( 'should call fetchUpdateRestAPIAuthorize if query param is disapproved', () => {
+	it( 'should call fetchUpdateRestAPIAuthorize if query param is disapproved', async () => {
 		getQuery.mockReturnValue( {
 			google_wpcom_app_status: 'disapproved',
 			nonce: 'nonce-123',
@@ -93,9 +100,12 @@ describe( 'useUpdateRestAPIAuthorizeStatusByUrlQuery', () => {
 				nonce: 'nonce-123',
 			},
 		} );
+		await waitFor( () => {
+			expect( historyReplace ).toHaveBeenCalledTimes( 1 );
+		} );
 	} );
 
-	it( 'should call fetchUpdateRestAPIAuthorize if query param is error', () => {
+	it( 'should call fetchUpdateRestAPIAuthorize if query param is error', async () => {
 		getQuery.mockReturnValue( {
 			google_wpcom_app_status: 'error',
 			nonce: 'nonce-123',
@@ -107,6 +117,9 @@ describe( 'useUpdateRestAPIAuthorizeStatusByUrlQuery', () => {
 				status: 'error',
 				nonce: 'nonce-123',
 			},
+		} );
+		await waitFor( () => {
+			expect( historyReplace ).toHaveBeenCalledTimes( 1 );
 		} );
 	} );
 
