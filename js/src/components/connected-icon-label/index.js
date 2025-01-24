@@ -11,9 +11,17 @@ import GridiconCheckmarkCircle from 'gridicons/dist/checkmark-circle';
  */
 import './index.scss';
 
-const ConnectedIconLabel = ( props ) => {
-	const { className } = props;
-
+/**
+ * Renders a text with a leading checkmark circle icon.
+ *
+ * @param {Object} props React props.
+ * @param {string} [props.className] Additional CSS class name to be appended.
+ * @param {string} [props.text] The text to be displayed.
+ */
+const ConnectedIconLabel = ( {
+	className,
+	text = __( 'Connected', 'google-listings-and-ads' ),
+} ) => {
 	return (
 		<Flex
 			className={ classnames( 'gla-connected-icon-label', className ) }
@@ -23,9 +31,7 @@ const ConnectedIconLabel = ( props ) => {
 			<FlexItem>
 				<GridiconCheckmarkCircle />
 			</FlexItem>
-			<FlexItem>
-				{ __( 'Connected', 'google-listings-and-ads' ) }
-			</FlexItem>
+			<FlexItem>{ text }</FlexItem>
 		</Flex>
 	);
 };
