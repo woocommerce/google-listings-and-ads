@@ -28,7 +28,7 @@ import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
  * @param {Object} props The component props to be forwarded to AppButton.
  * @return {JSX.Element} The button.
  *
- * @fires gla_enable_product_sync_click with `{ page: 'settings', context: 'banner' | 'mc_card' }`
+ * @fires gla_enable_product_sync_click with `{ page: 'setup-mc' | 'settings', context: 'banner' | 'mc_card' }`
  */
 const EnableNewProductSyncButton = ( props ) => {
 	const { createNotice } = useDispatchCoreNotices();
