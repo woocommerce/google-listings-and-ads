@@ -932,7 +932,7 @@ test.describe( 'Set up accounts', () => {
 		test.describe( 'When all accounts are connected and store address is fulfilled', async () => {
 			test.beforeAll( async () => {
 				await setUpAccountsPage.mockAdsAccountConnected();
-				await setUpAccountsPage.mockMCConnected();
+				await setUpAccountsPage.mockMCConnected( 1, true, 'approved' );
 				await setUpAccountsPage.mockAdsStatusClaimed();
 				await setUpAccountsPage.mockContactInformation( {} );
 
