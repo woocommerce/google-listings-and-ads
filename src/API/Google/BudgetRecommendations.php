@@ -90,7 +90,7 @@ class BudgetRecommendations implements OptionsAwareInterface {
 				$recommended = $this->select_recommended_budget( $campaign_budget_recommendation );
 				if ( $recommended ) {
 					$recommended['country'] = reset( $country_codes );
-					return $recommended;
+					return [ $recommended ];
 				}
 			}
 		} catch ( ApiException $e ) {
