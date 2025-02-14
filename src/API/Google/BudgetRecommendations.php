@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCountryQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -19,7 +20,7 @@ use Google\ApiCore\ApiException;
 
 /**
  * Class BudgetRecommendations
- * https://developers.google.com/google-ads/api/docs/performance-max/overview
+ * https://developers.google.com/google-ads/api/rest/reference/rest/v18/Recommendation#CampaignBudgetRecommendation
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
@@ -53,25 +54,14 @@ class BudgetRecommendations implements OptionsAwareInterface {
 	 * @return array|null Recommendations, including metrics.
 	 */
 	public function get_recommendations( array $country_codes ): ?array {
-		/*
-			TODO: Location ID's need to be fetched with a query:
-			SELECT
-				geo_target_constant.canonical_name,
-				geo_target_constant.id,
-				geo_target_constant.name,
-				geo_target_constant.country_code,
-				geo_target_constant.target_type
-			FROM geo_target_constant
-			WHERE geo_target_constant.country_code IN "US,CA"
-			AND geo_target_constant.target_type = "Country"
-		*/
+		$location_ids = $this->get_location_ids( $country_codes );
 
 		$request = new GenerateRecommendationsRequest(
 			[
 				'customer_id'              => $this->options->get_ads_id(),
 				'recommendation_types'     => [ RecommendationType::CAMPAIGN_BUDGET ],
 				'advertising_channel_type' => AdvertisingChannelType::PERFORMANCE_MAX,
-				// TODO: add 'positive_locations_ids'   => '',
+				'positive_locations_ids'   => array_keys( $location_ids ),
 				'bidding_info'             => new BiddingInfo(
 					[
 						'bidding_strategy_type' => BiddingStrategyType::MAXIMIZE_CONVERSION_VALUE,
@@ -121,7 +111,11 @@ class BudgetRecommendations implements OptionsAwareInterface {
 		// Map all available budget options.
 		$options = [];
 		foreach ( $recommendation->getBudgetOptions() as $budget_option ) {
-			$amount  = $this->from_micro( $budget_option->getBudgetAmountMicros() );
+			$amount = $this->from_micro( $budget_option->getBudgetAmountMicros() );
+			if ( ! $amount ) {
+				continue;
+			}
+
 			$metrics = $budget_option->getImpact()->getPotentialMetrics();
 
 			$options[ (string) $amount ] = [
@@ -162,5 +156,33 @@ class BudgetRecommendations implements OptionsAwareInterface {
 		);
 
 		return reset( $numbers );
+	}
+
+	/**
+	 * Fetch location IDs from country codes.
+	 *
+	 * @param array $country_codes List of country codes to fetch.
+	 *
+	 * @return array Mapped array of location IDs to country codes.
+	 */
+	protected function get_location_ids( array $country_codes ): array {
+		try {
+			$location_results = ( new AdsCountryQuery() )
+				->set_client( $this->client, $this->options->get_ads_id() )
+				->where( 'geo_target_constant.country_code', $country_codes, 'IN' )
+				->get_results();
+
+			$locations = [];
+			foreach ( $location_results->iterateAllElements() as $row ) {
+				$location                        = $row->getGeoTargetConstant();
+				$locations[ $location->getId() ] = $location->getCountryCode();
+			}
+
+			return $locations;
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+		}
+
+		return [];
 	}
 }
