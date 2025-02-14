@@ -3,6 +3,7 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetRecommendations;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\BudgetRecommendationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
@@ -27,6 +28,9 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|BudgetRecommendationQuery $budget_recommendation_query */
 	protected $budget_recommendation_query;
 
+	/** @var MockObject|BudgetRecommendations $budget_recommendations */
+	protected $budget_recommendations;
+
 	/** @var MockObject|ISO3166DataProvider $iso_provider */
 	protected $iso_provider;
 
@@ -42,11 +46,13 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 		$this->budget_recommendation_query->method( 'where' )
 			->willReturn( $this->budget_recommendation_query );
 
-		$this->iso_provider = $this->createMock( ISO3166DataProvider::class );
-		$this->ads          = $this->createMock( Ads::class );
+		$this->iso_provider           = $this->createMock( ISO3166DataProvider::class );
+		$this->ads                    = $this->createMock( Ads::class );
+		$this->budget_recommendations = $this->createMock( BudgetRecommendations::class );
 
 		$this->container = new Container();
 		$this->container->addShared( BudgetRecommendationQuery::class, $this->budget_recommendation_query );
+		$this->container->addShared( BudgetRecommendations::class, $this->budget_recommendations );
 
 		$this->controller = new BudgetRecommendationController( $this->server, $this->ads );
 		$this->controller->register();
