@@ -11,6 +11,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
 interface TransientsInterface {
 
 	public const ADS_CAMPAIGN_COUNT   = 'ads_campaign_count';
+	public const ADS_LOCATION_IDS     = 'ads_location_ids';
 	public const ADS_METRICS          = 'ads_metrics';
 	public const FREE_LISTING_METRICS = 'free_listing_metrics';
 	public const MC_ACCOUNT_REVIEW    = 'mc_account_review';
@@ -21,6 +22,7 @@ interface TransientsInterface {
 
 	public const VALID_OPTIONS = [
 		self::ADS_CAMPAIGN_COUNT   => true,
+		self::ADS_LOCATION_IDS     => true,
 		self::ADS_METRICS          => true,
 		self::FREE_LISTING_METRICS => true,
 		self::MC_ACCOUNT_REVIEW    => true,

@@ -8,6 +8,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCountryQuery
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Google\Ads\GoogleAds\V18\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
 use Google\Ads\GoogleAds\V18\Enums\BiddingStrategyTypeEnum\BiddingStrategyType;
@@ -24,11 +27,12 @@ use Google\ApiCore\ApiException;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class BudgetRecommendations implements OptionsAwareInterface {
+class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInterface {
 
 	use MicroTrait;
 	use OptionsAwareTrait;
 	use PluginHelper;
+	use TransientsAwareTrait;
 
 	/**
 	 * The Google Ads Client.
@@ -167,7 +171,16 @@ class BudgetRecommendations implements OptionsAwareInterface {
 	 * @return array Mapped array of location IDs to country codes.
 	 */
 	protected function get_location_ids( array $country_codes ): array {
+		$cache_key = strtolower( join( '-', $country_codes ) );
+		$transient = $this->transients->get( TransientsInterface::ADS_LOCATION_IDS );
+
+		// Check if we have the location ID's cached in the transient.
+		if ( $transient && ! empty( $transient[ $cache_key ] ) ) {
+			return $transient[ $cache_key ];
+		}
+
 		try {
+			// Query the location ID's from the Google Ads API.
 			$location_results = ( new AdsCountryQuery() )
 				->set_client( $this->client, $this->options->get_ads_id() )
 				->where( 'geo_target_constant.country_code', $country_codes, 'IN' )
@@ -178,6 +191,8 @@ class BudgetRecommendations implements OptionsAwareInterface {
 				$location                        = $row->getGeoTargetConstant();
 				$locations[ $location->getId() ] = $location->getCountryCode();
 			}
+
+			$this->transients->set( TransientsInterface::ADS_LOCATION_IDS, [ $cache_key => $locations ] );
 
 			return $locations;
 		} catch ( ApiException $e ) {
