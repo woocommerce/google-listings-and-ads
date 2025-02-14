@@ -6,6 +6,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\BudgetRecommendationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -16,6 +17,9 @@ use PHPUnit\Framework\MockObject\MockObject;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads
  */
 class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
+
+	/** @var Container $container */
+	protected $container;
 
 	/** @var MockObject|Ads $ads */
 	protected $ads;
@@ -41,8 +45,12 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 		$this->iso_provider = $this->createMock( ISO3166DataProvider::class );
 		$this->ads          = $this->createMock( Ads::class );
 
-		$this->controller = new BudgetRecommendationController( $this->server, $this->budget_recommendation_query, $this->ads );
+		$this->container = new Container();
+		$this->container->addShared( BudgetRecommendationQuery::class, $this->budget_recommendation_query );
+
+		$this->controller = new BudgetRecommendationController( $this->server, $this->ads );
 		$this->controller->register();
+		$this->controller->set_container( $this->container );
 		$this->controller->set_iso3166_provider( $this->iso_provider );
 	}
 
