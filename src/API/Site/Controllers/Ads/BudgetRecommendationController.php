@@ -104,11 +104,7 @@ class BudgetRecommendationController extends BaseController implements Container
 				);
 			}
 
-			$query           = $this->container->get( BudgetRecommendationQuery::class );
-			$recommendations = $query
-				->where( 'country', $country_codes, 'IN' )
-				->where( 'currency', $currency )
-				->get_results();
+			$recommendations = $this->get_fallback_recommendations( $country_codes, $currency );
 
 			if ( ! $recommendations ) {
 				return new Response(
@@ -121,24 +117,44 @@ class BudgetRecommendationController extends BaseController implements Container
 				);
 			}
 
-			$returned_recommendations = array_map(
-				function ( $recommendation ) {
-					return [
-						'country'      => $recommendation['country'],
-						'daily_budget' => (int) $recommendation['daily_budget'],
-					];
-				},
-				$recommendations
-			);
-
 			return $this->prepare_item_for_response(
 				[
 					'currency'        => $currency,
-					'recommendations' => $returned_recommendations,
+					'recommendations' => $recommendations,
 				],
 				$request
 			);
 		};
+	}
+
+	/**
+	 * Returns fallback recommendationa from database table.
+	 *
+	 * @param array  $country_codes List of countries to include.
+	 * @param string $currency      Currency to use for recommendations.
+	 *
+	 * @return array|null Recommendation for each included country.
+	 */
+	protected function get_fallback_recommendations( array $country_codes, string $currency ): ?array {
+		$query           = $this->container->get( BudgetRecommendationQuery::class );
+		$recommendations = $query
+			->where( 'country', $country_codes, 'IN' )
+			->where( 'currency', $currency )
+			->get_results();
+
+		if ( ! $recommendations ) {
+			return null;
+		}
+
+		return array_map(
+			function ( $recommendation ) {
+				return [
+					'country'      => $recommendation['country'],
+					'daily_budget' => (int) $recommendation['daily_budget'],
+				];
+			},
+			$recommendations
+		);
 	}
 
 	/**
