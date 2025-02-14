@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetRecommendations;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
@@ -21,6 +22,7 @@ defined( 'ABSPATH' ) || exit;
  * Class BudgetRecommendationController
  *
  * ContainerAware used for:
+ * - BudgetRecommendations
  * - BudgetRecommendationQuery
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
@@ -104,7 +106,14 @@ class BudgetRecommendationController extends BaseController implements Container
 				);
 			}
 
-			$recommendations = $this->get_fallback_recommendations( $country_codes, $currency );
+			// Try to fetch recommendations from the Google Ads API.
+			$budget_recommendations = $this->container->get( BudgetRecommendations::class );
+			$recommendations        = $budget_recommendations->get_recommendations( $country_codes );
+
+			// Fetch fallback recommendations if none returned by the Google Ads API.
+			if ( ! $recommendations ) {
+				$recommendations = $this->get_fallback_recommendations( $country_codes, $currency );
+			}
 
 			if ( ! $recommendations ) {
 				return new Response(
@@ -183,6 +192,26 @@ class BudgetRecommendationController extends BaseController implements Container
 						'daily_budget' => [
 							'type'        => 'number',
 							'description' => __( 'The recommended daily budget for a country.', 'google-listings-and-ads' ),
+						],
+						'metrics'      => [
+							'type'       => 'object',
+							'properties' => [
+								'cost'              => [
+									'type'        => 'number',
+									'description' => __( 'Estimated average amount you will spend weekly during the month.', 'google-listings-and-ads' ),
+									'context'     => [ 'view' ],
+								],
+								'conversions'       => [
+									'type'        => 'number',
+									'description' => __( 'Estimated number of conversions (unit sales) for a typical week.', 'google-listings-and-ads' ),
+									'context'     => [ 'view' ],
+								],
+								'conversions_value' => [
+									'type'        => 'number',
+									'description' => __( 'Estimated total value of all the conversions (sales volume) your campaign will generate in a week.', 'google-listings-and-ads' ),
+									'context'     => [ 'view' ],
+								],
+							],
 						],
 					],
 				],
