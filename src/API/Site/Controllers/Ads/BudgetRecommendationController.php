@@ -8,6 +8,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseControl
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
@@ -18,16 +20,15 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class BudgetRecommendationController
  *
+ * ContainerAware used for:
+ * - BudgetRecommendationQuery
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
-class BudgetRecommendationController extends BaseController implements ISO3166AwareInterface {
+class BudgetRecommendationController extends BaseController implements ContainerAwareInterface, ISO3166AwareInterface {
 
+	use ContainerAwareTrait;
 	use CountryCodeTrait;
-
-	/**
-	 * @var BudgetRecommendationQuery
-	 */
-	protected $budget_recommendation_query;
 
 	/**
 	 * @var Ads
@@ -37,14 +38,12 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 	/**
 	 * BudgetRecommendationController constructor.
 	 *
-	 * @param RESTServer                $rest_server
-	 * @param BudgetRecommendationQuery $budget_recommendation_query
-	 * @param Ads                       $ads
+	 * @param RESTServer $rest_server
+	 * @param Ads        $ads
 	 */
-	public function __construct( RESTServer $rest_server, BudgetRecommendationQuery $budget_recommendation_query, Ads $ads ) {
+	public function __construct( RESTServer $rest_server, Ads $ads ) {
 		parent::__construct( $rest_server );
-		$this->budget_recommendation_query = $budget_recommendation_query;
-		$this->ads                         = $ads;
+		$this->ads = $ads;
 	}
 
 	/**
@@ -105,8 +104,8 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 				);
 			}
 
-			$recommendations = $this
-				->budget_recommendation_query
+			$query           = $this->container->get( BudgetRecommendationQuery::class );
+			$recommendations = $query
 				->where( 'country', $country_codes, 'IN' )
 				->where( 'currency', $currency )
 				->get_results();
