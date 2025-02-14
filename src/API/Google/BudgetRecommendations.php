@@ -48,10 +48,11 @@ class BudgetRecommendations implements OptionsAwareInterface {
 
 	/**
 	 * Fetch budget recommendations (with metrics) from Google Ads API.
+	 * This function will only return a single recommendation in the list, with the first country code.
 	 *
 	 * @param array $country_codes List of countries to include.
 	 *
-	 * @return array|null Recommendations, including metrics.
+	 * @return array|null List of recommendations (including metrics).
 	 */
 	public function get_recommendations( array $country_codes ): ?array {
 		$location_ids = $this->get_location_ids( $country_codes );
@@ -105,7 +106,7 @@ class BudgetRecommendations implements OptionsAwareInterface {
 	 *
 	 * @param CampaignBudgetRecommendation $recommendation
 	 *
-	 * @return array|null Recommendations, including metrics.
+	 * @return array|null Suggested recommendation (including metrics).
 	 */
 	protected function select_recommended_budget( CampaignBudgetRecommendation $recommendation ): ?array {
 		// Map all available budget options.
