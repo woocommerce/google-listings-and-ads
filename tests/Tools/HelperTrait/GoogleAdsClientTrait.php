@@ -41,9 +41,11 @@ use Google\Ads\GoogleAds\V18\Resources\CustomerUserAccess;
 use Google\Ads\GoogleAds\V18\Resources\ShoppingPerformanceView;
 use Google\Ads\GoogleAds\V18\Services\Client\ConversionActionServiceClient;
 use Google\Ads\GoogleAds\V18\Services\Client\CustomerServiceClient;
-use Google\Ads\GoogleAds\V18\Services\Client\ProductLinkInvitationServiceClient;
-use Google\Ads\GoogleAds\V18\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V18\Services\Client\GoogleAdsServiceClient;
+use Google\Ads\GoogleAds\V18\Services\Client\ProductLinkInvitationServiceClient;
+use Google\Ads\GoogleAds\V18\Services\Client\RecommendationServiceClient;
+use Google\Ads\GoogleAds\V18\Services\GenerateRecommendationsResponse;
+use Google\Ads\GoogleAds\V18\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V18\Services\ListAccessibleCustomersResponse;
 use Google\Ads\GoogleAds\V18\Services\MutateCampaignResult;
 use Google\Ads\GoogleAds\V18\Services\MutateLabelResult;
@@ -79,6 +81,9 @@ trait GoogleAdsClientTrait {
 	/** @var MockObject|GoogleAdsClient $client */
 	protected $client;
 
+	/** @var MockObject|RecommendationServiceClient $recommendation_service */
+	protected $recommendation_service;
+
 	/** @var MockObject|GoogleAdsServiceClient $service_client */
 	protected $service_client;
 
@@ -100,6 +105,9 @@ trait GoogleAdsClientTrait {
 
 		$this->conversion_action_service = $this->createMock( ConversionActionServiceClient::class );
 		$this->client->method( 'getConversionActionServiceClient' )->willReturn( $this->conversion_action_service );
+
+		$this->recommendation_service = $this->createMock( RecommendationServiceClient::class );
+		$this->client->method( 'getRecommendationServiceClient' )->willReturn( $this->recommendation_service );
 	}
 
 	/**
@@ -1063,5 +1071,26 @@ trait GoogleAdsClientTrait {
 		}
 
 		return $asset_group_asset_operations;
+	}
+
+	/**
+	 * Generates a list of mocked recommendations.
+	 *
+	 * @param array $mocked_list
+	 */
+	protected function generate_recommendations_mock( array $mocked_list ) {
+		$recommendations = $this->createMock( GenerateRecommendationsResponse::class );
+		$recommendations->method( 'getRecommendations' )->willReturn( $mocked_list );
+
+		$this->recommendation_service->method( 'generateRecommendations' )->willReturn( $recommendations );
+	}
+
+	/**
+	 * Generates a mocked exception when recommendations are requested.
+	 *
+	 * @param ApiException $exception
+	 */
+	protected function generate_recommendations_mock_exception( ApiException $exception ) {
+		$this->recommendation_service->method( 'generateRecommendations' )->willThrowException( $exception );
 	}
 }
