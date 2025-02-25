@@ -91,12 +91,8 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 					continue;
 				}
 
-				// Return recommended budget for the first country.
-				$recommended = $this->select_recommended_budget( $campaign_budget_recommendation );
-				if ( $recommended ) {
-					$recommended['country'] = reset( $country_codes );
-					return [ $recommended ];
-				}
+				// Parse all the returned recommendations and assign to the first country.
+				return $this->parse_recommendations( $campaign_budget_recommendation, reset( $country_codes ) );
 			}
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
@@ -106,13 +102,14 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 	}
 
 	/**
-	 * Select the suggested budget recommendation and return metrics.
+	 * Return all budget recommendations including metrics.
 	 *
-	 * @param CampaignBudgetRecommendation $recommendation
+	 * @param CampaignBudgetRecommendation $recommendation  Collection of recommendation options.
+	 * @param string                       $country_code    Primary country code.
 	 *
-	 * @return array|null Suggested recommendation (including metrics).
+	 * @return array|null Recommendations (including metrics).
 	 */
-	protected function select_recommended_budget( CampaignBudgetRecommendation $recommendation ): ?array {
+	protected function parse_recommendations( CampaignBudgetRecommendation $recommendation, string $country_code ): ?array {
 		// Map all available budget options.
 		$options = [];
 		foreach ( $recommendation->getBudgetOptions() as $budget_option ) {
@@ -137,7 +134,36 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 		$numbers = array_map( 'floatval', array_keys( $options ) );
 		$closest = $this->find_closest( $this->from_micro( $recommendation->getRecommendedBudgetAmountMicros() ), $numbers );
 
-		return $options[ (string) $closest ] ?: null;
+		// Add each option and assign it's level
+		$recommendations = [];
+		foreach ( $options as $option ) {
+			if ( $option['daily_budget'] === $closest ) {
+				$level = 'recommended';
+				$index = 0;
+			} elseif ( $option['daily_budget'] > $closest ) {
+				$level = 'high';
+				$index = 1;
+			} else {
+				$level = 'low';
+				$index = 2;
+			}
+
+			$recommendations[ $index ] = array_merge(
+				$option,
+				[
+					'country' => $country_code,
+					'level'   => $level,
+				]
+			);
+		}
+
+		if ( empty( $recommendations ) ) {
+			return null;
+		}
+
+		// Sort recommendations in the order: recommended, high, low.
+		ksort( $recommendations );
+		return $recommendations;
 	}
 
 	/**
