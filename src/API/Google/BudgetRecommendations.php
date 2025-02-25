@@ -138,13 +138,13 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 		$recommendations = [];
 		foreach ( $options as $option ) {
 			if ( $option['daily_budget'] === $closest ) {
-				$level = 'recommended';
+				$level = __( 'Recommended', 'google-listings-and-ads' );
 				$index = 0;
 			} elseif ( $option['daily_budget'] > $closest ) {
-				$level = 'high';
+				$level = __( 'High', 'google-listings-and-ads' );
 				$index = 1;
 			} else {
-				$level = 'low';
+				$level = __( 'Low', 'google-listings-and-ads' );
 				$index = 2;
 			}
 
