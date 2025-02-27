@@ -193,6 +193,10 @@ class BudgetRecommendationController extends BaseController implements Container
 							'type'        => 'number',
 							'description' => __( 'The recommended daily budget for a country.', 'google-listings-and-ads' ),
 						],
+						'level'        => [
+							'type'        => 'string',
+							'description' => __( 'Label for the recommendation level: High, Recommended, Low', 'google-listings-and-ads' ),
+						],
 						'metrics'      => [
 							'type'       => 'object',
 							'properties' => [
