@@ -113,7 +113,7 @@ class BudgetRecommendationController extends BaseController implements Container
 			// Fetch fallback recommendations from the database.
 			$fallback_recommendations = $this->get_fallback_recommendations( $country_codes, $currency );
 			if ( $fallback_recommendations ) {
-				$recommendations = array_merge( $recommendations, $fallback_recommendations );
+				$recommendations = array_merge( $recommendations ?: [], $fallback_recommendations );
 			}
 
 			if ( ! $recommendations ) {
