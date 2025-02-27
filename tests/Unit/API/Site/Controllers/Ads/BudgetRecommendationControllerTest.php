@@ -88,20 +88,24 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 			'currency'        => 'TWD',
 			'recommendations' => [
 				[
-					'country'      => 'US',
 					'daily_budget' => 330,
+					'country'      => 'US',
+					'level'        => 'Fallback',
 				],
 				[
-					'country'      => 'GB',
 					'daily_budget' => 245,
+					'country'      => 'GB',
+					'level'        => 'Fallback',
 				],
 				[
-					'country'      => 'TW',
 					'daily_budget' => 95,
+					'country'      => 'TW',
+					'level'        => 'Fallback',
 				],
 				[
-					'country'      => 'JP',
 					'daily_budget' => 110,
+					'country'      => 'JP',
+					'level'        => 'Fallback',
 				],
 			],
 		];
