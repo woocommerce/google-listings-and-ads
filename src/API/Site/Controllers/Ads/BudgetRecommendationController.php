@@ -110,9 +110,10 @@ class BudgetRecommendationController extends BaseController implements Container
 			$budget_recommendations = $this->container->get( BudgetRecommendations::class );
 			$recommendations        = $budget_recommendations->get_recommendations( $country_codes );
 
-			// Fetch fallback recommendations if none returned by the Google Ads API.
-			if ( ! $recommendations ) {
-				$recommendations = $this->get_fallback_recommendations( $country_codes, $currency );
+			// Fetch fallback recommendations from the database.
+			$fallback_recommendations = $this->get_fallback_recommendations( $country_codes, $currency );
+			if ( $fallback_recommendations ) {
+				$recommendations = array_merge( $recommendations, $fallback_recommendations );
 			}
 
 			if ( ! $recommendations ) {
@@ -146,8 +147,9 @@ class BudgetRecommendationController extends BaseController implements Container
 	 */
 	protected function get_fallback_recommendations( array $country_codes, string $currency ): ?array {
 		$query           = $this->container->get( BudgetRecommendationQuery::class );
+		$primary_country = reset( $country_codes );
 		$recommendations = $query
-			->where( 'country', $country_codes, 'IN' )
+			->where( 'country', $primary_country )
 			->where( 'currency', $currency )
 			->get_results();
 
@@ -158,8 +160,9 @@ class BudgetRecommendationController extends BaseController implements Container
 		return array_map(
 			function ( $recommendation ) {
 				return [
-					'country'      => $recommendation['country'],
 					'daily_budget' => (int) $recommendation['daily_budget'],
+					'country'      => $recommendation['country'],
+					'level'        => __( 'Fallback', 'google-listings-and-ads' ),
 				];
 			},
 			$recommendations
