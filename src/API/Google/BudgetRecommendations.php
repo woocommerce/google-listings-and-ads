@@ -67,6 +67,7 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 				'recommendation_types'     => [ RecommendationType::CAMPAIGN_BUDGET ],
 				'advertising_channel_type' => AdvertisingChannelType::PERFORMANCE_MAX,
 				'positive_locations_ids'   => array_keys( $location_ids ),
+				'country_codes'            => $country_codes,
 				'bidding_info'             => new BiddingInfo(
 					[
 						'bidding_strategy_type' => BiddingStrategyType::MAXIMIZE_CONVERSION_VALUE,
