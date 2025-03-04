@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Coupon;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\DeleteCouponEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\InvalidCouponEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\SyncTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
@@ -21,6 +22,8 @@ defined( 'ABSPATH' ) || exit();
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Coupon
  */
 class CouponSyncer implements Service {
+
+	use SyncTrait;
 
 	public const FAILURE_THRESHOLD = 5;
 
@@ -476,16 +479,16 @@ class CouponSyncer implements Service {
 			);
 		}
 
-		if ( ! $this->merchant_center->should_push() ) {
+		if ( ! $this->merchant_center->should_push( $this->get_coupons_datatype() ) ) {
 			do_action(
 				'woocommerce_gla_error',
-				'Cannot push any coupons because they are being fetched automatically.',
+				'Cannot push any coupons because the syncing feature has been disabled on your store.',
 				__METHOD__
 			);
 
 			throw new CouponSyncerException(
 				__(
-					'Pushing Coupons will not run if the automatic data fetching is enabled. Please review your configuration in Google Listing and Ads settings.',
+					'Pushing Coupons will not run if the PUSH Sync functionality has been disabled.',
 					'google-listings-and-ads'
 				)
 			);

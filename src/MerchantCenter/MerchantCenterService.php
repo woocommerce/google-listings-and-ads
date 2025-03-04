@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\SyncTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
@@ -55,6 +56,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	use ContainerAwareTrait;
 	use OptionsAwareTrait;
 	use PluginHelper;
+	use SyncTrait;
 
 	/**
 	 * MerchantCenterService constructor.
@@ -130,11 +132,12 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 * - MC is ready for syncing {@see is_ready_for_syncing}
 	 * - Notifications Service is not enabled
 	 *
+	 * @param string|null $data_type The data type to check if the PUSH method is enabled.
 	 * @return bool
 	 * @since 2.8.0
 	 */
-	public function should_push(): bool {
-		return $this->is_ready_for_syncing();
+	public function should_push( string $data_type = null ): bool {
+		return $this->is_ready_for_syncing() && $this->is_push_enabled_for_datatype( $data_type );
 	}
 
 
