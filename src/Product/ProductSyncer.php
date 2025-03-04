@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntr
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
+use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\SyncTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
@@ -22,6 +23,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
 class ProductSyncer implements Service {
+
+	use SyncTrait;
 
 	public const FAILURE_THRESHOLD        = 5;         // Number of failed attempts allowed per FAILURE_THRESHOLD_WINDOW
 	public const FAILURE_THRESHOLD_WINDOW = '3 hours'; // PHP supported Date and Time format: https://www.php.net/manual/en/datetime.formats.php
@@ -362,16 +365,16 @@ class ProductSyncer implements Service {
 			throw new ProductSyncerException( __( 'Google Merchant Center has not been set up correctly. Please review your configuration.', 'google-listings-and-ads' ) );
 		}
 
-		if ( ! $this->merchant_center->should_push() ) {
+		if ( ! $this->merchant_center->should_push( $this->get_products_datatype() ) ) {
 			do_action(
 				'woocommerce_gla_error',
-				'Cannot push any products because they are being fetched automatically.',
+				'Cannot push any products because the syncing feature has been disabled on your store.',
 				__METHOD__
 			);
 
 			throw new ProductSyncerException(
 				__(
-					'Pushing products will not run if the automatic data fetching is enabled. Please review your configuration in Google Listing and Ads settings.',
+					'Pushing products will not run if the PUSH Sync functionality has been disabled.',
 					'google-listings-and-ads'
 				)
 			);
