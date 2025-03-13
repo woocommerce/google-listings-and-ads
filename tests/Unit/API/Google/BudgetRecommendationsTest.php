@@ -57,6 +57,8 @@ class BudgetRecommendationsTest extends UnitTest {
 		$this->recommendations = new BudgetRecommendations( $this->client );
 		$this->recommendations->set_options_object( $this->options );
 		$this->recommendations->set_transients_object( $this->transients );
+
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
 	}
 
 	public function test_get_recommendations_cached() {
@@ -102,8 +104,6 @@ class BudgetRecommendationsTest extends UnitTest {
 	public function test_get_recommendations_empty_set() {
 		$this->generate_location_ids_mock( [ 111 => 'US' ] );
 
-		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
-
 		$this->generate_recommendations_mock( [] );
 		$this->assertNull( $this->recommendations->get_recommendations( [ 'US' ] ) );
 	}
@@ -111,13 +111,42 @@ class BudgetRecommendationsTest extends UnitTest {
 	public function test_get_recommendations_exception() {
 		$this->generate_location_ids_mock( [ 111 => 'US' ] );
 
-		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
-
 		$this->generate_recommendations_mock_exception(
 			new ApiException( 'failed', 7 )
 		);
 
 		$this->assertNull( $this->recommendations->get_recommendations( [ 'US' ] ) );
 		$this->assertEquals( 1, did_action( 'woocommerce_gla_ads_client_exception' ) );
+	}
+
+	public function test_get_recommendations() {
+		$recommendations = [
+			self::TEST_RECOMMENDATION,
+			[
+				'daily_budget' => 14.4,
+				'metrics'      => [
+					'cost'              => 100.8,
+					'conversions'       => 6.5,
+					'conversions_value' => 258.72,
+				],
+				'country'      => 'US',
+				'level'        => 'High',
+			],
+			[
+				'daily_budget' => 9.6,
+				'metrics'      => [
+					'cost'              => 67.2,
+					'conversions'       => 5.7,
+					'conversions_value' => 226.13,
+				],
+				'country'      => 'US',
+				'level'        => 'Low',
+			],
+		];
+
+		$this->generate_location_ids_mock( [ 111 => 'US' ] );
+		$this->generate_recommendations_mock( $recommendations );
+
+		$this->assertEquals( $recommendations, $this->recommendations->get_recommendations( [ 'US' ] ) );
 	}
 }
