@@ -59,6 +59,14 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 	 * @return array|null List of recommendations (including metrics).
 	 */
 	public function get_recommendations( array $country_codes ): ?array {
+		$cache_key = strtolower( join( '-', $country_codes ) );
+		$transient = $this->transients->get( TransientsInterface::ADS_RECOMMENDATIONS );
+
+		// Check if we have the budget recommendations cached in the transient.
+		if ( $transient && ! empty( $transient[ $cache_key ] ) ) {
+			return $transient[ $cache_key ];
+		}
+
 		$location_ids = $this->get_location_ids( $country_codes );
 
 		$request = new GenerateRecommendationsRequest(
@@ -93,7 +101,9 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 				}
 
 				// Parse all the returned recommendations and assign to the first country.
-				return $this->parse_recommendations( $campaign_budget_recommendation, reset( $country_codes ) );
+				$recommendations = $this->parse_recommendations( $campaign_budget_recommendation, reset( $country_codes ) );
+				$this->transients->set( TransientsInterface::ADS_RECOMMENDATIONS, [ $cache_key => $recommendations ], HOUR_IN_SECONDS * 12 );
+				return $recommendations;
 			}
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
