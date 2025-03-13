@@ -175,7 +175,7 @@ class BudgetRecommendationController extends BaseController implements Container
 		return array_map(
 			function ( $recommendation ) {
 				return [
-					'daily_budget' => (int) $recommendation['daily_budget'],
+					'daily_budget' => (float) $recommendation['daily_budget'],
 					'country'      => $recommendation['country'],
 					'level'        => __( 'Recommended', 'google-listings-and-ads' ),
 				];
