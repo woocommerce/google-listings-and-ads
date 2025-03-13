@@ -39,6 +39,11 @@ use Google\Ads\GoogleAds\V18\Resources\ConversionAction;
 use Google\Ads\GoogleAds\V18\Resources\Customer;
 use Google\Ads\GoogleAds\V18\Resources\CustomerUserAccess;
 use Google\Ads\GoogleAds\V18\Resources\GeoTargetConstant;
+use Google\Ads\GoogleAds\V18\Resources\Recommendation;
+use Google\Ads\GoogleAds\V18\Resources\Recommendation\CampaignBudgetRecommendation;
+use Google\Ads\GoogleAds\V18\Resources\Recommendation\CampaignBudgetRecommendation\CampaignBudgetRecommendationOption;
+use Google\Ads\GoogleAds\V18\Resources\Recommendation\RecommendationImpact;
+use Google\Ads\GoogleAds\V18\Resources\Recommendation\RecommendationMetrics;
 use Google\Ads\GoogleAds\V18\Resources\ShoppingPerformanceView;
 use Google\Ads\GoogleAds\V18\Services\Client\ConversionActionServiceClient;
 use Google\Ads\GoogleAds\V18\Services\Client\CustomerServiceClient;
@@ -63,6 +68,7 @@ use Google\Ads\GoogleAds\V18\Services\SearchGoogleAdsResponse;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\Page;
 use Google\ApiCore\PagedListResponse;
+
 /**
  * Trait GoogleAdsClient
  *
@@ -1079,8 +1085,37 @@ trait GoogleAdsClientTrait {
 	 * @param array $mocked_list
 	 */
 	protected function generate_recommendations_mock( array $mocked_list ) {
+		if ( empty( $mocked_list ) ) {
+			$recommendation_list = [];
+		} else {
+			$budget_options = [];
+			foreach ( $mocked_list as $mock ) {
+				$metrics = $this->createMock( RecommendationMetrics::class );
+				$metrics->method( 'getCostMicros' )->willReturn( $this->to_micro( $mock['metrics']['cost'] ) );
+				$metrics->method( 'getConversions' )->willReturn( $mock['metrics']['conversions'] );
+				$metrics->method( 'getConversionsValue' )->willReturn( $mock['metrics']['conversions_value'] );
+
+				$impact = $this->createMock( RecommendationImpact::class );
+				$impact->method( 'getPotentialMetrics' )->willReturn( $metrics );
+
+				$budget_option = $this->createMock( CampaignBudgetRecommendationOption::class );
+				$budget_option->method( 'getBudgetAmountMicros' )->willReturn( $this->to_micro( $mock['daily_budget'] ) );
+				$budget_option->method( 'getImpact' )->willReturn( $impact );
+
+				$budget_options[] = $budget_option;
+			}
+
+			$budget_recommendation = $this->createMock( CampaignBudgetRecommendation::class );
+			$budget_recommendation->method( 'getBudgetOptions' )->willReturn( $budget_options );
+			$budget_recommendation->method( 'getRecommendedBudgetAmountMicros' )->willReturn( $mocked_list[0]['daily_budget'] );
+
+			$recommendation = $this->createMock( Recommendation::class );
+			$recommendation->method( 'getCampaignBudgetRecommendation' )->willReturn( $budget_recommendation );
+			$recommendation_list = [ $recommendation ];
+		}
+
 		$recommendations = $this->createMock( GenerateRecommendationsResponse::class );
-		$recommendations->method( 'getRecommendations' )->willReturn( $mocked_list );
+		$recommendations->method( 'getRecommendations' )->willReturn( $recommendation_list );
 
 		$this->recommendation_service->method( 'generateRecommendations' )->willReturn( $recommendations );
 	}
