@@ -119,6 +119,34 @@ class BudgetRecommendationsTest extends UnitTest {
 		$this->assertEquals( 1, did_action( 'woocommerce_gla_ads_client_exception' ) );
 	}
 
+	public function test_get_recommendations_location_id_exception() {
+		$this->generate_ads_query_mock_exception(
+			new ApiException( 'failed location IDs', 8 )
+		);
+		$this->generate_recommendations_mock( [] );
+
+		$this->assertNull( $this->recommendations->get_recommendations( [ 'US' ] ) );
+		$this->assertEquals( 1, did_action( 'woocommerce_gla_ads_client_exception' ) );
+	}
+
+	public function test_get_recommendations_with_zeros() {
+		$recommendations = [
+			[
+				'daily_budget' => 0,
+				'metrics'      => [
+					'cost'              => 0,
+					'conversions'       => 0,
+					'conversions_value' => 0,
+				],
+			],
+		];
+
+		$this->generate_location_ids_mock( [ 111 => 'US' ] );
+		$this->generate_recommendations_mock( $recommendations );
+
+		$this->assertNull( $this->recommendations->get_recommendations( [ 'US' ] ) );
+	}
+
 	public function test_get_recommendations() {
 		$recommendations = [
 			self::TEST_RECOMMENDATION,
