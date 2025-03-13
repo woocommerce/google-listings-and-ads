@@ -38,6 +38,7 @@ use Google\Ads\GoogleAds\V18\Resources\Campaign\ShoppingSetting;
 use Google\Ads\GoogleAds\V18\Resources\ConversionAction;
 use Google\Ads\GoogleAds\V18\Resources\Customer;
 use Google\Ads\GoogleAds\V18\Resources\CustomerUserAccess;
+use Google\Ads\GoogleAds\V18\Resources\GeoTargetConstant;
 use Google\Ads\GoogleAds\V18\Resources\ShoppingPerformanceView;
 use Google\Ads\GoogleAds\V18\Services\Client\ConversionActionServiceClient;
 use Google\Ads\GoogleAds\V18\Services\Client\CustomerServiceClient;
@@ -62,7 +63,6 @@ use Google\Ads\GoogleAds\V18\Services\SearchGoogleAdsResponse;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\Page;
 use Google\ApiCore\PagedListResponse;
-
 /**
  * Trait GoogleAdsClient
  *
@@ -1092,5 +1092,22 @@ trait GoogleAdsClientTrait {
 	 */
 	protected function generate_recommendations_mock_exception( ApiException $exception ) {
 		$this->recommendation_service->method( 'generateRecommendations' )->willThrowException( $exception );
+	}
+
+	/**
+	 * Generates a mocked response for location IDs.
+	 *
+	 * @param array $locations List of locations.
+	 */
+	protected function generate_location_ids_mock( array $locations ) {
+		foreach ( $locations as $id => $location ) {
+			$geo_target = $this->createMock( GeoTargetConstant::class );
+			$geo_target->method( 'getId' )->willReturn( $id );
+			$geo_target->method( 'getCountryCode' )->willReturn( $location );
+
+			$locations[ $id ] = ( new GoogleAdsRow() )->setGeoTargetConstant( $geo_target );
+		}
+
+		$this->generate_ads_query_mock( array_values( $locations ) );
 	}
 }
