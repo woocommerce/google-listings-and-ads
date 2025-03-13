@@ -50,10 +50,7 @@ class BudgetRecommendationsTest extends UnitTest {
 	}
 
 	public function test_get_recommendations_empty_set() {
-		$this->transients->expects( $this->once() )
-			->method( 'get' )
-			->with( TransientsInterface::ADS_LOCATION_IDS )
-			->willReturn( [ 'us' => [ 111 => 'US' ] ] );
+		$this->generate_location_ids_mock( [ 111 => 'US' ] );
 
 		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
 
@@ -62,10 +59,7 @@ class BudgetRecommendationsTest extends UnitTest {
 	}
 
 	public function test_get_recommendations_exception() {
-		$this->transients->expects( $this->once() )
-			->method( 'get' )
-			->with( TransientsInterface::ADS_LOCATION_IDS )
-			->willReturn( [ 'us' => [ 111 => 'US' ] ] );
+		$this->generate_location_ids_mock( [ 111 => 'US' ] );
 
 		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
 
