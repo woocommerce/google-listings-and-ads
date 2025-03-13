@@ -115,8 +115,8 @@ class BudgetRecommendationController extends BaseController implements Container
 			if ( $fallback_recommendations ) {
 				$fallback_budget = $fallback_recommendations[0]['daily_budget'] ?? 0;
 
-				// Swap recommended if fallback is higher.
-				if ( ! empty( $recommendations[0]['daily_budget'] ) && $recommendations[0]['daily_budget'] < $fallback_budget ) {
+				// Swap recommended if not set or if fallback is higher.
+				if ( empty( $recommendations[0] ) || ( ! empty( $recommendations[0]['daily_budget'] ) && $recommendations[0]['daily_budget'] < $fallback_budget ) ) {
 					$recommendations[0] = $fallback_recommendations[0];
 
 					// Remove high recommendation if fallback is higher.
