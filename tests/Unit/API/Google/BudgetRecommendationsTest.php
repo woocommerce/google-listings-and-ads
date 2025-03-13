@@ -31,7 +31,17 @@ class BudgetRecommendationsTest extends UnitTest {
 	/** @var BudgetRecommendations $recommendations */
 	protected $recommendations;
 
-	protected const TEST_ADS_ID = 1234567890;
+	protected const TEST_ADS_ID         = 1234567890;
+	protected const TEST_RECOMMENDATION = [
+		'daily_budget' => 12,
+		'metrics'      => [
+			'cost'              => 84,
+			'conversions'       => 6.1,
+			'conversions_value' => 243.88,
+		],
+		'country'      => 'US',
+		'level'        => 'Recommended',
+	];
 
 	/**
 	 * Runs before each test is executed.
@@ -47,6 +57,46 @@ class BudgetRecommendationsTest extends UnitTest {
 		$this->recommendations = new BudgetRecommendations( $this->client );
 		$this->recommendations->set_options_object( $this->options );
 		$this->recommendations->set_transients_object( $this->transients );
+	}
+
+	public function test_get_recommendations_cached() {
+		$recommendations = [
+			'us' => self::TEST_RECOMMENDATION,
+		];
+
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->with( TransientsInterface::ADS_RECOMMENDATIONS )
+			->willReturn( $recommendations );
+
+		$this->assertEquals( $recommendations['us'], $this->recommendations->get_recommendations( [ 'US' ] ) );
+	}
+
+	public function test_get_recommendations_cached_locations() {
+		$recommendations = [ self::TEST_RECOMMENDATION ];
+
+		$invoked_count = $this->exactly( 2 );
+		$this->transients->expects( $invoked_count )
+			->method( 'get' )
+			->willReturnCallback(
+				function ( string $transient ) use ( $invoked_count ) {
+					if ( 1 === $invoked_count->getInvocationCount() && $transient === TransientsInterface::ADS_RECOMMENDATIONS ) {
+						return false;
+					}
+
+					if ( 2 === $invoked_count->getInvocationCount() && $transient === TransientsInterface::ADS_LOCATION_IDS ) {
+						return [
+							'us' => [
+								111 => 'US',
+							],
+						];
+					}
+				}
+			);
+
+		$this->generate_recommendations_mock( $recommendations );
+
+		$this->assertEquals( $recommendations, $this->recommendations->get_recommendations( [ 'US' ] ) );
 	}
 
 	public function test_get_recommendations_empty_set() {
