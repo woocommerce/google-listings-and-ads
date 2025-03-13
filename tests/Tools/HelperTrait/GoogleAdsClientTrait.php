@@ -1107,7 +1107,7 @@ trait GoogleAdsClientTrait {
 
 			$budget_recommendation = $this->createMock( CampaignBudgetRecommendation::class );
 			$budget_recommendation->method( 'getBudgetOptions' )->willReturn( $budget_options );
-			$budget_recommendation->method( 'getRecommendedBudgetAmountMicros' )->willReturn( $mocked_list[0]['daily_budget'] );
+			$budget_recommendation->method( 'getRecommendedBudgetAmountMicros' )->willReturn( $this->to_micro( $mocked_list[0]['daily_budget'] ) );
 
 			$recommendation = $this->createMock( Recommendation::class );
 			$recommendation->method( 'getCampaignBudgetRecommendation' )->willReturn( $budget_recommendation );
