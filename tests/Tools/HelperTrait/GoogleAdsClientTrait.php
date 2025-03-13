@@ -1083,10 +1083,15 @@ trait GoogleAdsClientTrait {
 	 * Generates a list of mocked recommendations.
 	 *
 	 * @param array $mocked_list
+	 * @param mixed $return_other_recommendation_type
 	 */
-	protected function generate_recommendations_mock( array $mocked_list ) {
+	protected function generate_recommendations_mock( array $mocked_list, $return_other_recommendation_type = false ) {
 		if ( empty( $mocked_list ) ) {
 			$recommendation_list = [];
+		} elseif ( $return_other_recommendation_type ) {
+			$recommendation = $this->createMock( Recommendation::class );
+			$recommendation->method( 'getCampaignBudgetRecommendation' )->willReturn( null );
+			$recommendation_list = [ $recommendation ];
 		} else {
 			$budget_options = [];
 			foreach ( $mocked_list as $mock ) {

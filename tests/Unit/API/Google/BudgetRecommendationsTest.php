@@ -108,6 +108,13 @@ class BudgetRecommendationsTest extends UnitTest {
 		$this->assertNull( $this->recommendations->get_recommendations( [ 'US' ] ) );
 	}
 
+	public function test_get_recommendations_with_other_recommendation_type() {
+		$this->generate_location_ids_mock( [ 111 => 'US' ] );
+
+		$this->generate_recommendations_mock( [ self::TEST_RECOMMENDATION ], true );
+		$this->assertNull( $this->recommendations->get_recommendations( [ 'US' ] ) );
+	}
+
 	public function test_get_recommendations_exception() {
 		$this->generate_location_ids_mock( [ 111 => 'US' ] );
 
