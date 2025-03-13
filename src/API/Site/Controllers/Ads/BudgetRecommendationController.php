@@ -113,7 +113,22 @@ class BudgetRecommendationController extends BaseController implements Container
 			// Fetch fallback recommendations from the database.
 			$fallback_recommendations = $this->get_fallback_recommendations( $country_codes, $currency );
 			if ( $fallback_recommendations ) {
-				$recommendations = array_merge( $recommendations ?: [], $fallback_recommendations );
+				$fallback_budget = $fallback_recommendations[0]['daily_budget'] ?? 0;
+
+				// Swap recommended if fallback is higher.
+				if ( ! empty( $recommendations[0]['daily_budget'] ) && $recommendations[0]['daily_budget'] < $fallback_budget ) {
+					$recommendations[0] = $fallback_recommendations[0];
+
+					// Remove high recommendation if fallback is higher.
+					if ( ! empty( $recommendations[1]['daily_budget'] ) && $recommendations[1]['daily_budget'] < $fallback_budget ) {
+						unset( $recommendations[1] );
+					}
+
+					// Remove low recommendation if fallback is higher.
+					if ( ! empty( $recommendations[2]['daily_budget'] ) && $recommendations[2]['daily_budget'] < $fallback_budget ) {
+						unset( $recommendations[2] );
+					}
+				}
 			}
 
 			if ( ! $recommendations ) {
@@ -162,7 +177,7 @@ class BudgetRecommendationController extends BaseController implements Container
 				return [
 					'daily_budget' => (int) $recommendation['daily_budget'],
 					'country'      => $recommendation['country'],
-					'level'        => __( 'Fallback', 'google-listings-and-ads' ),
+					'level'        => __( 'Recommended', 'google-listings-and-ads' ),
 				];
 			},
 			$recommendations
