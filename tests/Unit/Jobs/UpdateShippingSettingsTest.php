@@ -130,14 +130,14 @@ class UpdateShippingSettingsTest extends UnitTest {
 			->method( 'is_connected' )
 			->willReturn( true );
 
-		$this->google_settings->expects( $this->any() )
-			->method( 'should_get_shipping_rates_from_woocommerce' )
-			->willReturn( true );
-
 		$this->merchant_center->expects( $this->any() )
 			->method( 'is_enabled_for_datatype' )
 			->with( 'shipping' )
 			->willReturn( false );
+
+		$this->google_settings->expects( $this->any() )
+			->method( 'should_get_shipping_rates_from_woocommerce' )
+			->willReturn( true );
 
 		$this->expectException( JobException::class );
 
