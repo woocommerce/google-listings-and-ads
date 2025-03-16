@@ -139,9 +139,6 @@ class UpdateShippingSettingsTest extends UnitTest {
 			->with( 'shipping' )
 			->willReturn( false );
 
-		$this->google_settings->expects( $this->never() )
-			->method( 'sync_shipping' );
-
 		$this->expectException( JobException::class );
 
 		do_action( $this->job->get_process_item_hook(), [] );

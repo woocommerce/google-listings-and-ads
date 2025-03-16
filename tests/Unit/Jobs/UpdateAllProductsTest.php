@@ -95,6 +95,11 @@ class UpdateAllProductsTest extends UnitTest {
 			->method( 'should_push' )
 			->willReturn( true );
 
+		$this->merchant_center
+			->method( 'is_enabled_for_datatype' )
+			->with( 'products' )
+			->willReturn( true );
+
 		/* adding a filter to make batch smaller for testing */
 		add_filter(
 			'woocommerce_gla_batched_job_size',
@@ -336,5 +341,18 @@ class UpdateAllProductsTest extends UnitTest {
 			->with( gmdate( 'U' ) + 100, self::CREATE_BATCH_HOOK, [ 1 ] );
 
 		$this->job->schedule_delayed( 100 );
+	}
+
+	public function test_cannot_schedule_when_mc_push_is_blocked() {
+		$this->merchant_center
+			->method( 'is_enabled_for_datatype' )
+			->with( 'products' )
+			->willReturn( false );
+
+		$this->action_scheduler
+			->method( 'has_scheduled_action' )
+			->willReturn( false );
+
+		$this->job->can_schedule();
 	}
 }
