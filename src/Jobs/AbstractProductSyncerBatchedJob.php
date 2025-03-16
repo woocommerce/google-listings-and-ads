@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\SyncTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
@@ -19,8 +19,6 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
 abstract class AbstractProductSyncerBatchedJob extends AbstractBatchedActionSchedulerJob {
-
-	use SyncTrait;
 
 	/**
 	 * @var ProductSyncer
@@ -83,6 +81,6 @@ abstract class AbstractProductSyncerBatchedJob extends AbstractBatchedActionSche
 	 * @return bool Returns true if the job can be scheduled.
 	 */
 	public function can_schedule( $args = [] ): bool {
-		return ! $this->is_running( $args ) && $this->merchant_center->should_push( $this->get_products_datatype() );
+		return ! $this->is_running( $args ) && $this->merchant_center->is_enabled_for_datatype( NotificationsService::DATATYPE_PRODUCT );
 	}
 }

@@ -11,7 +11,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\SyncTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
@@ -56,7 +55,6 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	use ContainerAwareTrait;
 	use OptionsAwareTrait;
 	use PluginHelper;
-	use SyncTrait;
 
 	/**
 	 * MerchantCenterService constructor.
@@ -128,18 +126,28 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	}
 
 	/**
-	 * Whether we should push data into MC. Only if:
-	 * - MC is ready for syncing {@see is_ready_for_syncing}
-	 * - Notifications Service is not enabled
+	 * Whether we should push data into MC. Only is MC is ready for syncing.
 	 *
-	 * @param string|null $data_type The data type to check if the PUSH method is enabled.
+	 * @see is_ready_for_syncing
 	 * @return bool
 	 * @since 2.8.0
 	 */
-	public function should_push( string $data_type = null ): bool {
-		return $this->is_ready_for_syncing() && $this->is_push_enabled_for_datatype( $data_type );
+	public function should_push(): bool {
+		return $this->is_ready_for_syncing();
 	}
 
+	/**
+	 * Whether push is enabled for a specific data type.
+	 *
+	 * @param string $data_type The data type to check.
+	 * @return bool
+	 * @since x.x.x
+	 */
+	public function is_enabled_for_datatype( string $data_type ): bool {
+		/** @var NotificationsService $notifications_service */
+		$notifications_service = $this->container->get( NotificationsService::class );
+		return $notifications_service->is_push_enabled_for_datatype( $data_type );
+	}
 
 	/**
 	 * Get whether the country is supported by the Merchant Center.
