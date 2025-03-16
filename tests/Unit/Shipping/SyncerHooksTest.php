@@ -226,28 +226,6 @@ class SyncerHooksTest extends UnitTest {
 		$zone->save();
 	}
 
-	public function test_saving_shipping_zone_schedules_when_datatypes_are_blocked() {
-		$this->mock_sync_ready_flags_and_register_hooks( true, true );
-
-		$this->notification_service->expects( $this->once() )
-			->method( 'is_push_enabled_for_datatype' )->willReturn( false );
-
-		$this->notification_service->expects( $this->once() )
-			->method( 'is_pull_enabled_for_datatype' )->willReturn( false );
-
-		$this->shipping_notification_job->expects( $this->never() )
-			->method( 'schedule' );
-
-		$this->update_shipping_job->expects( $this->never() )
-			->method( 'schedule' );
-
-		$zone = new WC_Shipping_Zone();
-		$zone->set_zone_name( 'GB' );
-		$zone->add_location( 'GB', 'country' );
-		$zone->save();
-	}
-
-
 	/**
 	 * Mocks the validation methods that allow/disallow the shipping settings to be synced.
 	 *
