@@ -38,6 +38,11 @@ class UpdateShippingSettingsTest extends UnitTest {
 		$this->merchant_center->expects( $this->any() )
 			->method( 'is_connected' )
 			->willReturn( true );
+
+		$this->merchant_center->expects( $this->any() )
+			->method( 'is_enabled_for_datatype' )
+			->willReturn( true );
+
 		$this->google_settings->expects( $this->any() )
 			->method( 'should_get_shipping_rates_from_woocommerce' )
 			->willReturn( true );
@@ -83,6 +88,11 @@ class UpdateShippingSettingsTest extends UnitTest {
 		$this->merchant_center->expects( $this->any() )
 			->method( 'is_connected' )
 			->willReturn( true );
+
+		$this->merchant_center->expects( $this->any() )
+			->method( 'is_enabled_for_datatype' )
+			->willReturn( true );
+
 		$this->google_settings->expects( $this->any() )
 			->method( 'should_get_shipping_rates_from_woocommerce' )
 			->willReturn( true );
@@ -132,7 +142,6 @@ class UpdateShippingSettingsTest extends UnitTest {
 
 		$this->merchant_center->expects( $this->any() )
 			->method( 'is_enabled_for_datatype' )
-			->with( 'shipping' )
 			->willReturn( false );
 
 		$this->google_settings->expects( $this->any() )
@@ -155,11 +164,7 @@ class UpdateShippingSettingsTest extends UnitTest {
 		$this->merchant_center  = $this->createMock( MerchantCenterService::class );
 		$this->google_settings  = $this->createMock( GoogleSettings::class );
 
-		$this->merchant_center->method( 'is_enabled_for_datatype' )
-			->with( 'shipping' )
-			->willReturn( true );
-
-		$this->job              = new UpdateShippingSettings( $this->action_scheduler, $this->monitor, $this->merchant_center, $this->google_settings );
+		$this->job = new UpdateShippingSettings( $this->action_scheduler, $this->monitor, $this->merchant_center, $this->google_settings );
 
 		$this->job->init();
 	}
