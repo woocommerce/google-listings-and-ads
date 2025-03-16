@@ -125,6 +125,28 @@ class UpdateShippingSettingsTest extends UnitTest {
 		do_action( $this->job->get_process_item_hook(), [] );
 	}
 
+	public function test_process_items_fails_if_push_sync_is_disabled() {
+		$this->merchant_center->expects( $this->any() )
+			->method( 'is_connected' )
+			->willReturn( true );
+
+		$this->merchant_center->expects( $this->any() )
+			->method( 'is_enabled_for_datatype' )
+			->with( 'shipping' )
+			->willReturn( false );
+
+		$this->google_settings->expects( $this->any() )
+			->method( 'should_get_shipping_rates_from_woocommerce' )
+			->willReturn( true );
+
+		$this->google_settings->expects( $this->never() )
+			->method( 'sync_shipping' );
+
+		$this->expectException( JobException::class );
+
+		do_action( $this->job->get_process_item_hook(), [] );
+	}
+
 	/**
 	 * Runs before each test is executed.
 	 */
@@ -135,6 +157,12 @@ class UpdateShippingSettingsTest extends UnitTest {
 		$this->monitor          = $this->createMock( ActionSchedulerJobMonitor::class );
 		$this->merchant_center  = $this->createMock( MerchantCenterService::class );
 		$this->google_settings  = $this->createMock( GoogleSettings::class );
+
+		$this->merchant_center->expects( $this->any() )
+			->method( 'is_enabled_for_datatype' )
+			->with( 'shipping' )
+			->willReturn( true );
+
 		$this->job              = new UpdateShippingSettings( $this->action_scheduler, $this->monitor, $this->merchant_center, $this->google_settings );
 
 		$this->job->init();
