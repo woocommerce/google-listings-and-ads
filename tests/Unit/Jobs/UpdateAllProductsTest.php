@@ -353,6 +353,6 @@ class UpdateAllProductsTest extends UnitTest {
 			->method( 'has_scheduled_action' )
 			->willReturn( false );
 
-		$this->job->can_schedule();
+		$this->assertFalse( $this->job->can_schedule() );
 	}
 }
