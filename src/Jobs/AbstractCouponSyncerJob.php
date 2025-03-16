@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\SyncTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncer;
@@ -18,8 +18,6 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
 abstract class AbstractCouponSyncerJob extends AbstractActionSchedulerJob {
-
-	use SyncTrait;
 
 	/**
 	 * @var CouponHelper
@@ -75,6 +73,6 @@ abstract class AbstractCouponSyncerJob extends AbstractActionSchedulerJob {
 	 * @return bool Returns true if the job can be scheduled.
 	 */
 	public function can_schedule( $args = [] ): bool {
-		return ! $this->is_running( $args ) && $this->merchant_center->should_push( $this->get_coupons_datatype() );
+		return ! $this->is_running( $args ) && $this->merchant_center->is_enabled_for_datatype( NotificationsService::DATATYPE_COUPON );
 	}
 }
