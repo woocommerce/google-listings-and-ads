@@ -155,6 +155,10 @@ class UpdateShippingSettingsTest extends UnitTest {
 		$this->merchant_center  = $this->createMock( MerchantCenterService::class );
 		$this->google_settings  = $this->createMock( GoogleSettings::class );
 
+		$this->merchant_center->method( 'is_enabled_for_datatype' )
+			->with( 'shipping' )
+			->willReturn( true );
+
 		$this->job              = new UpdateShippingSettings( $this->action_scheduler, $this->monitor, $this->merchant_center, $this->google_settings );
 
 		$this->job->init();

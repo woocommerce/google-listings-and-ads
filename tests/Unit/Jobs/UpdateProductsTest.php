@@ -59,6 +59,12 @@ class UpdateProductsTest extends UnitTest {
 		$this->product_syncer     = $this->createMock( ProductSyncer::class );
 		$this->product_repository = $this->createMock( ProductRepository::class );
 		$this->merchant_center    = $this->createMock( MerchantCenterService::class );
+
+		$this->merchant_center
+			->method( 'is_ready_for_syncing' )
+			->with( 'products' )
+			->willReturn( true );
+
 		$this->job                = new UpdateProducts(
 			$this->action_scheduler,
 			$this->monitor,
@@ -142,5 +148,18 @@ class UpdateProductsTest extends UnitTest {
 		$this->product_syncer->expects( $this->once() )->method( 'update' )->with( $products );
 
 		$this->job->process_items( [] );
+	}
+
+	public function test_cannot_schedule_when_mc_push_blocked() {
+		$this->merchant_center
+			->method( 'is_ready_for_syncing' )
+			->with( 'products' )
+			->willReturn( false );
+
+		$this->action_scheduler
+			->method( 'has_scheduled_action' )
+			->willReturn( false );
+
+		$this->assertFalse( $this->job->can_schedule() );
 	}
 }
