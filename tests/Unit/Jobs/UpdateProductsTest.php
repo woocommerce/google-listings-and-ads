@@ -61,7 +61,7 @@ class UpdateProductsTest extends UnitTest {
 		$this->merchant_center    = $this->createMock( MerchantCenterService::class );
 
 		$this->merchant_center
-			->method( 'is_ready_for_syncing' )
+			->method( 'is_enabled_for_datatype' )
 			->with( 'products' )
 			->willReturn( true );
 
@@ -152,7 +152,7 @@ class UpdateProductsTest extends UnitTest {
 
 	public function test_cannot_schedule_when_mc_push_blocked() {
 		$this->merchant_center
-			->method( 'is_ready_for_syncing' )
+			->method( 'is_enabled_for_datatype' )
 			->with( 'products' )
 			->willReturn( false );
 

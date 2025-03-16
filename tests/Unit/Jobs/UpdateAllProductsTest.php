@@ -344,6 +344,7 @@ class UpdateAllProductsTest extends UnitTest {
 	}
 
 	public function test_cannot_schedule_when_mc_push_is_blocked() {
+
 		$this->merchant_center
 			->method( 'is_enabled_for_datatype' )
 			->with( 'products' )
@@ -352,6 +353,16 @@ class UpdateAllProductsTest extends UnitTest {
 		$this->action_scheduler
 			->method( 'has_scheduled_action' )
 			->willReturn( false );
+
+		$this->job                = new UpdateAllProducts(
+			$this->action_scheduler,
+			$this->monitor,
+			$this->product_syncer,
+			$this->product_repository,
+			$this->product_helper,
+			$this->merchant_center,
+			$this->merchant_statuses
+		);
 
 		$this->assertFalse( $this->job->can_schedule() );
 	}
