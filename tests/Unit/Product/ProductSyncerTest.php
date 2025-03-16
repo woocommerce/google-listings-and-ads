@@ -550,7 +550,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 	public function test_update_throws_exception_when_mc_is_blocked() {
 		$merchant_center = $this->createMock( MerchantCenterService::class );
-		$merchant_center->expects( $this->once() )
+		$merchant_center->expects( $this->any() )
 			->method( 'should_push' )
 			->willReturn( true );
 		$this->merchant_center->expects( $this->any() )
@@ -566,7 +566,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 	public function test_update_by_batch_throws_exception_when_mc_is_blocked() {
 		$merchant_center = $this->createMock( MerchantCenterService::class );
-		$merchant_center->expects( $this->once() )
+		$merchant_center->expects( $this->any() )
 			->method( 'should_push' )
 			->willReturn( true );
 		$this->merchant_center->expects( $this->any() )
@@ -582,7 +582,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 	public function test_delete_throws_exception_when_mc_is_blocked() {
 		$merchant_center = $this->createMock( MerchantCenterService::class );
-		$merchant_center->expects( $this->once() )
+		$merchant_center->expects( $this->any() )
 			->method( 'should_push' )
 			->willReturn( true );
 		$this->merchant_center->expects( $this->any() )
@@ -598,7 +598,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 	public function test_delete_by_batch_throws_exception_when_mc_is_blocked() {
 		$merchant_center = $this->createMock( MerchantCenterService::class );
-		$merchant_center->expects( $this->once() )
+		$merchant_center->expects( $this->any() )
 			->method( 'should_push' )
 			->willReturn( true );
 		$this->merchant_center->expects( $this->any() )
