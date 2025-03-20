@@ -198,7 +198,7 @@ abstract class BaseController extends WC_REST_Controller implements Registerable
 	 */
 	protected function get_sanitize_price_callback(): callable {
 		return function ( $price ) {
-			return preg_match( '/^[0-9]{0,10}(\.[0-9]{0,8})?$/', $price ) ? (float) $price : false;
+			return preg_match( '/^[0-9]{0,10}(\.[0-9]{0,8})?$/', (string) $price ) ? (float) $price : false;
 		};
 	}
 
