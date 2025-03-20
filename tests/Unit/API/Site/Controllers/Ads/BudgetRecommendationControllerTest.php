@@ -4,6 +4,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetRecommendations;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\BudgetRecommendationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
@@ -30,6 +31,9 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 
 	/** @var MockObject|BudgetRecommendations $budget_recommendations */
 	protected $budget_recommendations;
+
+	/** @var MockObject|BudgetMetrics $budget_metrics */
+	protected $budget_metrics;
 
 	/** @var MockObject|ISO3166DataProvider $iso_provider */
 	protected $iso_provider;
@@ -81,10 +85,12 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 		$this->iso_provider           = $this->createMock( ISO3166DataProvider::class );
 		$this->ads                    = $this->createMock( Ads::class );
 		$this->budget_recommendations = $this->createMock( BudgetRecommendations::class );
+		$this->budget_metrics         = $this->createMock( BudgetMetrics::class );
 
 		$this->container = new Container();
 		$this->container->addShared( BudgetRecommendationQuery::class, $this->budget_recommendation_query );
 		$this->container->addShared( BudgetRecommendations::class, $this->budget_recommendations );
+		$this->container->addShared( BudgetMetrics::class, $this->budget_metrics );
 
 		$this->controller = new BudgetRecommendationController( $this->server, $this->ads );
 		$this->controller->register();
@@ -212,6 +218,70 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 			],
 		];
 
+		$fallback_metrics = [
+			'cost'              => 92.4,
+			'conversions'       => 6.3,
+			'conversions_value' => 250.56,
+		];
+
+		$expected_response_data = [
+			'currency'        => 'GBP',
+			'recommendations' => [
+				[
+					'daily_budget' => 13.2,
+					'country'      => 'GB',
+					'level'        => 'Recommended',
+					'metrics'      => $fallback_metrics,
+				],
+				[
+					'daily_budget' => 14.4,
+					'metrics'      => [
+						'cost'              => 100.8,
+						'conversions'       => 6.5,
+						'conversions_value' => 258.72,
+					],
+					'country'      => 'GB',
+					'level'        => 'High',
+				],
+			],
+		];
+
+		$this->ads->expects( $this->once() )
+			->method( 'get_ads_currency' )
+			->willReturn( 'GBP' );
+
+		$this->budget_recommendations->expects( $this->once() )
+			->method( 'get_recommendations' )
+			->willReturn( self::RECOMMENDATION_DATA );
+
+		$this->budget_recommendation_query->expects( $this->once() )
+			->method( 'get_results' )
+			->willReturn( $fallback_data );
+
+		$this->budget_metrics->expects( $this->once() )
+			->method( 'get_metrics' )
+			->with( 13.2, [ 'GB', 'US' ] )
+			->willReturn( $fallback_metrics );
+
+		$response = $this->do_request( self::ROUTE_BUDGET_RECOMMENDATION, 'GET', $budget_recommendation_params );
+
+		$this->assertSame( $expected_response_data, $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_get_budget_recommendation_with_fallback_lower_than_highest_recommendation_no_metrics() {
+		$budget_recommendation_params = [
+			'country_codes' => [ 'GB', 'US' ],
+		];
+
+		$fallback_data = [
+			[
+				'daily_budget' => '13.2',
+				'country'      => 'GB',
+				'level'        => 'Recommended',
+			],
+		];
+
 		$expected_response_data = [
 			'currency'        => 'GBP',
 			'recommendations' => [
@@ -244,6 +314,11 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 		$this->budget_recommendation_query->expects( $this->once() )
 			->method( 'get_results' )
 			->willReturn( $fallback_data );
+
+		$this->budget_metrics->expects( $this->once() )
+			->method( 'get_metrics' )
+			->with( 13.2, [ 'GB', 'US' ] )
+			->willReturn( null );
 
 		$response = $this->do_request( self::ROUTE_BUDGET_RECOMMENDATION, 'GET', $budget_recommendation_params );
 
