@@ -110,14 +110,14 @@ class BudgetRecommendationController extends BaseController implements Container
 			$budget_recommendations = $this->container->get( BudgetRecommendations::class );
 			$recommendations        = $budget_recommendations->get_recommendations( $country_codes );
 
-			// Fetch fallback recommendations from the database.
-			$fallback_recommendations = $this->get_fallback_recommendations( $country_codes, $currency );
-			if ( $fallback_recommendations ) {
-				$fallback_budget = $fallback_recommendations[0]['daily_budget'] ?? 0;
+			// Fetch fallback recommendation from the database.
+			$fallback_recommendation = $this->get_fallback_recommendation( $country_codes, $currency );
+			if ( $fallback_recommendation ) {
+				$fallback_budget = $fallback_recommendation[0]['daily_budget'] ?? 0;
 
 				// Swap recommended if not set or if fallback is higher.
 				if ( empty( $recommendations[0] ) || ( ! empty( $recommendations[0]['daily_budget'] ) && $recommendations[0]['daily_budget'] < $fallback_budget ) ) {
-					$recommendations[0] = $fallback_recommendations[0];
+					$recommendations[0] = $fallback_recommendation[0];
 
 					// Remove high recommendation if fallback is higher.
 					if ( ! empty( $recommendations[1]['daily_budget'] ) && $recommendations[1]['daily_budget'] < $fallback_budget ) {
@@ -153,14 +153,14 @@ class BudgetRecommendationController extends BaseController implements Container
 	}
 
 	/**
-	 * Returns fallback recommendationa from database table.
+	 * Returns a fallback recommendation from the database for the primary country (first in the list).
 	 *
 	 * @param array  $country_codes List of countries to include.
 	 * @param string $currency      Currency to use for recommendations.
 	 *
-	 * @return array|null Recommendation for each included country.
+	 * @return array|null Recommendation for the primary country.
 	 */
-	protected function get_fallback_recommendations( array $country_codes, string $currency ): ?array {
+	protected function get_fallback_recommendation( array $country_codes, string $currency ): ?array {
 		$query           = $this->container->get( BudgetRecommendationQuery::class );
 		$primary_country = reset( $country_codes );
 		$recommendations = $query
