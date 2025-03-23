@@ -117,6 +117,7 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 		);
 
 		$this->register_callbacks();
+		$this->add_g4w_settings();
 
 		foreach ( array_keys( self::$post_types_to_filter ) as $object_type ) {
 			$this->register_object_types_filter( $object_type );
@@ -152,7 +153,10 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 	}
 
 	/**
-	 * Register the callbacks.
+	 * Register the `rest_request_after_callbacks` to add settings to `settings/general`.
+	 * Used for backward compatibility.
+	 *
+	 * @deprecated We created a dedicated settings group for google-for-woocommerce.
 	 */
 	protected function register_callbacks() {
 		add_filter(
@@ -199,6 +203,48 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 			10,
 			3
 		);
+	}
+
+	/**
+	 * Add the Google for WooCommerce settings to the WooCommerce REST API.
+	 *
+	 * @return void
+	 */
+	protected function add_g4w_settings() {
+		add_filter( 'woocommerce_settings_groups', function ( $locations ) {
+			$locations[] = array(
+				'id'          => 'google-for-woocommerce',
+				'label'       => 'Google for WooCommerce',
+				'description' => 'Settings of the Google for WooCommerce plugin.',
+			);
+			return $locations;
+		} );
+
+		add_filter( 'woocommerce_settings-google-for-woocommerce', function ( $data ) {
+			$data[] = [
+				'id'         => 'gla_target_audience',
+				'label'      => 'Google for WooCommerce: Target Audience',
+				'option_key' => OptionsInterface::TARGET_AUDIENCE,
+				'type'       => 'multiselect',
+				'default'	 => [],
+			];
+
+			// Workaround option-less settings by adding a default value.
+			$data[] = [
+				'id'      => 'gla_shipping_times',
+				'label'   => 'Google for WooCommerce: Shipping Times',
+				'type'    => 'multiselect',
+				'default' => $this->shipping_time_query->get_all_shipping_times(),
+			];
+
+			$data[] = [
+				'id'      => 'gla_language',
+				'label'   => 'Google for WooCommerce: Store language',
+				'type'    => 'text',
+				'default' => get_locale(),
+			];
+			return $data;
+		} );
 	}
 
 	/**
