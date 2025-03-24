@@ -38,12 +38,20 @@ use Google\Ads\GoogleAds\V18\Resources\Campaign\ShoppingSetting;
 use Google\Ads\GoogleAds\V18\Resources\ConversionAction;
 use Google\Ads\GoogleAds\V18\Resources\Customer;
 use Google\Ads\GoogleAds\V18\Resources\CustomerUserAccess;
+use Google\Ads\GoogleAds\V18\Resources\GeoTargetConstant;
+use Google\Ads\GoogleAds\V18\Resources\Recommendation;
+use Google\Ads\GoogleAds\V18\Resources\Recommendation\CampaignBudgetRecommendation;
+use Google\Ads\GoogleAds\V18\Resources\Recommendation\CampaignBudgetRecommendation\CampaignBudgetRecommendationOption;
+use Google\Ads\GoogleAds\V18\Resources\Recommendation\RecommendationImpact;
+use Google\Ads\GoogleAds\V18\Resources\Recommendation\RecommendationMetrics;
 use Google\Ads\GoogleAds\V18\Resources\ShoppingPerformanceView;
 use Google\Ads\GoogleAds\V18\Services\Client\ConversionActionServiceClient;
 use Google\Ads\GoogleAds\V18\Services\Client\CustomerServiceClient;
-use Google\Ads\GoogleAds\V18\Services\Client\ProductLinkInvitationServiceClient;
-use Google\Ads\GoogleAds\V18\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V18\Services\Client\GoogleAdsServiceClient;
+use Google\Ads\GoogleAds\V18\Services\Client\ProductLinkInvitationServiceClient;
+use Google\Ads\GoogleAds\V18\Services\Client\RecommendationServiceClient;
+use Google\Ads\GoogleAds\V18\Services\GenerateRecommendationsResponse;
+use Google\Ads\GoogleAds\V18\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V18\Services\ListAccessibleCustomersResponse;
 use Google\Ads\GoogleAds\V18\Services\MutateCampaignResult;
 use Google\Ads\GoogleAds\V18\Services\MutateLabelResult;
@@ -79,6 +87,9 @@ trait GoogleAdsClientTrait {
 	/** @var MockObject|GoogleAdsClient $client */
 	protected $client;
 
+	/** @var MockObject|RecommendationServiceClient $recommendation_service */
+	protected $recommendation_service;
+
 	/** @var MockObject|GoogleAdsServiceClient $service_client */
 	protected $service_client;
 
@@ -100,6 +111,9 @@ trait GoogleAdsClientTrait {
 
 		$this->conversion_action_service = $this->createMock( ConversionActionServiceClient::class );
 		$this->client->method( 'getConversionActionServiceClient' )->willReturn( $this->conversion_action_service );
+
+		$this->recommendation_service = $this->createMock( RecommendationServiceClient::class );
+		$this->client->method( 'getRecommendationServiceClient' )->willReturn( $this->recommendation_service );
 	}
 
 	/**
@@ -1063,5 +1077,77 @@ trait GoogleAdsClientTrait {
 		}
 
 		return $asset_group_asset_operations;
+	}
+
+	/**
+	 * Generates a list of mocked recommendations.
+	 *
+	 * @param array $mocked_list
+	 * @param mixed $return_other_recommendation_type
+	 */
+	protected function generate_recommendations_mock( array $mocked_list, $return_other_recommendation_type = false ) {
+		if ( empty( $mocked_list ) ) {
+			$recommendation_list = [];
+		} elseif ( $return_other_recommendation_type ) {
+			$recommendation = $this->createMock( Recommendation::class );
+			$recommendation->method( 'getCampaignBudgetRecommendation' )->willReturn( null );
+			$recommendation_list = [ $recommendation ];
+		} else {
+			$budget_options = [];
+			foreach ( $mocked_list as $mock ) {
+				$metrics = $this->createMock( RecommendationMetrics::class );
+				$metrics->method( 'getCostMicros' )->willReturn( $this->to_micro( $mock['metrics']['cost'] ) );
+				$metrics->method( 'getConversions' )->willReturn( $mock['metrics']['conversions'] );
+				$metrics->method( 'getConversionsValue' )->willReturn( $mock['metrics']['conversions_value'] );
+
+				$impact = $this->createMock( RecommendationImpact::class );
+				$impact->method( 'getPotentialMetrics' )->willReturn( $metrics );
+
+				$budget_option = $this->createMock( CampaignBudgetRecommendationOption::class );
+				$budget_option->method( 'getBudgetAmountMicros' )->willReturn( $this->to_micro( $mock['daily_budget'] ) );
+				$budget_option->method( 'getImpact' )->willReturn( $impact );
+
+				$budget_options[] = $budget_option;
+			}
+
+			$budget_recommendation = $this->createMock( CampaignBudgetRecommendation::class );
+			$budget_recommendation->method( 'getBudgetOptions' )->willReturn( $budget_options );
+			$budget_recommendation->method( 'getRecommendedBudgetAmountMicros' )->willReturn( $this->to_micro( $mocked_list[0]['daily_budget'] ) );
+
+			$recommendation = $this->createMock( Recommendation::class );
+			$recommendation->method( 'getCampaignBudgetRecommendation' )->willReturn( $budget_recommendation );
+			$recommendation_list = [ $recommendation ];
+		}
+
+		$recommendations = $this->createMock( GenerateRecommendationsResponse::class );
+		$recommendations->method( 'getRecommendations' )->willReturn( $recommendation_list );
+
+		$this->recommendation_service->method( 'generateRecommendations' )->willReturn( $recommendations );
+	}
+
+	/**
+	 * Generates a mocked exception when recommendations are requested.
+	 *
+	 * @param ApiException $exception
+	 */
+	protected function generate_recommendations_mock_exception( ApiException $exception ) {
+		$this->recommendation_service->method( 'generateRecommendations' )->willThrowException( $exception );
+	}
+
+	/**
+	 * Generates a mocked response for location IDs.
+	 *
+	 * @param array $locations List of locations.
+	 */
+	protected function generate_location_ids_mock( array $locations ) {
+		foreach ( $locations as $id => $location ) {
+			$geo_target = $this->createMock( GeoTargetConstant::class );
+			$geo_target->method( 'getId' )->willReturn( $id );
+			$geo_target->method( 'getCountryCode' )->willReturn( $location );
+
+			$locations[ $id ] = ( new GoogleAdsRow() )->setGeoTargetConstant( $geo_target );
+		}
+
+		$this->generate_ads_query_mock( array_values( $locations ) );
 	}
 }

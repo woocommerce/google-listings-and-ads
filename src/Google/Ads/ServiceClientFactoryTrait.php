@@ -31,6 +31,7 @@ use Google\Ads\GoogleAds\V18\Services\Client\CustomerUserAccessServiceClient;
 use Google\Ads\GoogleAds\V18\Services\Client\GeoTargetConstantServiceClient;
 use Google\Ads\GoogleAds\V18\Services\Client\GoogleAdsServiceClient;
 use Google\Ads\GoogleAds\V18\Services\Client\ProductLinkInvitationServiceClient;
+use Google\Ads\GoogleAds\V18\Services\Client\RecommendationServiceClient;
 
 /**
  * Contains service client factory methods.
@@ -200,5 +201,12 @@ trait ServiceClientFactoryTrait {
 	 */
 	public function getProductLinkInvitationServiceClient(): ProductLinkInvitationServiceClient {
 		return new ProductLinkInvitationServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return RecommendationServiceClient
+	 */
+	public function getRecommendationServiceClient(): RecommendationServiceClient {
+		return new RecommendationServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 }
