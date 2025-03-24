@@ -3,8 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\LocationIDTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\LocationIDTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -19,15 +19,15 @@ use Google\Ads\GoogleAds\V18\Resources\Recommendation\CampaignBudgetRecommendati
 use Google\Ads\GoogleAds\V18\Services\GenerateRecommendationsRequest;
 use Google\Ads\GoogleAds\V18\Services\GenerateRecommendationsRequest\AssetGroupInfo;
 use Google\Ads\GoogleAds\V18\Services\GenerateRecommendationsRequest\BiddingInfo;
+use Google\Ads\GoogleAds\V18\Services\GenerateRecommendationsRequest\BudgetInfo;
 use Google\ApiCore\ApiException;
 
 /**
- * Class BudgetRecommendations
- * https://developers.google.com/google-ads/api/rest/reference/rest/v18/Recommendation#CampaignBudgetRecommendation
+ * Class BudgetMetrics
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInterface {
+class BudgetMetrics implements OptionsAwareInterface, TransientsAwareInterface {
 
 	use MicroTrait;
 	use OptionsAwareTrait;
@@ -43,7 +43,7 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 	protected $client;
 
 	/**
-	 * BudgetRecommendations constructor.
+	 * BudgetMetrics constructor.
 	 *
 	 * @param GoogleAdsClient $client
 	 */
@@ -52,18 +52,18 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 	}
 
 	/**
-	 * Fetch budget recommendations (with metrics) from Google Ads API.
-	 * This function will only return a single recommendation in the list, with the first country code.
+	 * Fetch budget metrics from Google Ads API.
 	 *
+	 * @param float $budget        Budget to fetch metrics for.
 	 * @param array $country_codes List of countries to include.
 	 *
-	 * @return array|null List of recommendations (including metrics).
+	 * @return array|null List of metrics.
 	 */
-	public function get_recommendations( array $country_codes ): ?array {
-		$cache_key = strtolower( join( '-', $country_codes ) );
-		$transient = $this->transients->get( TransientsInterface::ADS_RECOMMENDATIONS );
+	public function get_metrics( float $budget, array $country_codes ): ?array {
+		$cache_key = strtolower( join( '-', $country_codes ) . '-' . $budget );
+		$transient = $this->transients->get( TransientsInterface::ADS_BUDGET_METRICS );
 
-		// Check if we have the budget recommendations cached in the transient.
+		// Check if we have the budget metrics cached in the transient.
 		if ( $transient && ! empty( $transient[ $cache_key ] ) ) {
 			return $transient[ $cache_key ];
 		}
@@ -81,6 +81,11 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 					[
 						'bidding_strategy_type' => BiddingStrategyType::MAXIMIZE_CONVERSION_VALUE,
 					]
+				),
+				'budget_info'              => new BudgetInfo(
+					[
+						'current_budget' => $this->to_micro( $budget ),
+					],
 				),
 				'asset_group_info'         => [
 					new AssetGroupInfo(
@@ -101,10 +106,17 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 					continue;
 				}
 
-				// Parse all the returned recommendations and assign to the first country.
-				$recommendations = $this->parse_recommendations( $campaign_budget_recommendation, reset( $country_codes ) );
-				$this->transients->set( TransientsInterface::ADS_RECOMMENDATIONS, [ $cache_key => $recommendations ], HOUR_IN_SECONDS * 12 );
-				return $recommendations;
+				// Parse the metrics for the given budget.
+				$metrics = $this->parse_metrics( $campaign_budget_recommendation, $budget );
+
+				// Merge with previously cached metrics.
+				if ( ! is_array( $transient ) ) {
+					$transient = [];
+				}
+				$transient[ $cache_key ] = $metrics;
+				$this->transients->set( TransientsInterface::ADS_BUDGET_METRICS, $transient, HOUR_IN_SECONDS * 12 );
+
+				return $metrics;
 			}
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
@@ -114,90 +126,27 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 	}
 
 	/**
-	 * Return all budget recommendations including metrics.
+	 * Parse metrics for the given budget.
 	 *
-	 * @param CampaignBudgetRecommendation $recommendation  Collection of recommendation options.
-	 * @param string                       $country_code    Primary country code.
+	 * @param CampaignBudgetRecommendation $recommendation Collection of recommendation options.
+	 * @param float                        $budget         Budget to fetch metrics for.
 	 *
-	 * @return array|null Recommendations (including metrics).
+	 * @return array|null Metrics for the given budget.
 	 */
-	protected function parse_recommendations( CampaignBudgetRecommendation $recommendation, string $country_code ): ?array {
-		// Map all available budget options.
-		$options = [];
+	protected function parse_metrics( CampaignBudgetRecommendation $recommendation, float $budget ): ?array {
 		foreach ( $recommendation->getBudgetOptions() as $budget_option ) {
 			$amount = $this->from_micro( $budget_option->getBudgetAmountMicros() );
-			if ( ! $amount ) {
-				continue;
-			}
+			if ( abs( $amount - $budget ) < 0.00001 ) {
+				$metrics = $budget_option->getImpact()->getPotentialMetrics();
 
-			$metrics = $budget_option->getImpact()->getPotentialMetrics();
-
-			$options[ (string) $amount ] = [
-				'daily_budget' => $amount,
-				'metrics'      => [
+				return [
 					'cost'              => $this->from_micro( $metrics->getCostMicros() ),
 					'conversions'       => $metrics->getConversions(),
 					'conversions_value' => $metrics->getConversionsValue(),
-				],
-			];
-		}
-
-		// Find closest match based on recommended amount.
-		$numbers = array_map( 'floatval', array_keys( $options ) );
-		$closest = $this->find_closest( $this->from_micro( $recommendation->getRecommendedBudgetAmountMicros() ), $numbers );
-
-		// Add each option and assign it's level
-		$recommendations = [];
-		foreach ( $options as $option ) {
-			if ( $option['daily_budget'] === $closest ) {
-				$level = __( 'Recommended', 'google-listings-and-ads' );
-				$index = 0;
-			} elseif ( $option['daily_budget'] > $closest ) {
-				$level = __( 'High', 'google-listings-and-ads' );
-				$index = 1;
-			} else {
-				$level = __( 'Low', 'google-listings-and-ads' );
-				$index = 2;
+				];
 			}
-
-			$recommendations[ $index ] = array_merge(
-				$option,
-				[
-					'country' => $country_code,
-					'level'   => $level,
-				]
-			);
 		}
 
-		if ( empty( $recommendations ) ) {
-			return null;
-		}
-
-		// Sort recommendations in the order: recommended, high, low.
-		ksort( $recommendations );
-		return $recommendations;
-	}
-
-	/**
-	 * Find closest matching number in an array of numbers.
-	 *
-	 * @param float $number  Number to search for.
-	 * @param array $numbers List of numbers to search in.
-	 *
-	 * @return float|null Closest number found.
-	 */
-	protected function find_closest( float $number, array $numbers ): ?float {
-		if ( empty( $numbers ) ) {
-			return null;
-		}
-
-		usort(
-			$numbers,
-			function ( $a, $b ) use ( $number ) {
-				return abs( $number - (float) $a ) <=> abs( $number - (float) $b );
-			}
-		);
-
-		return reset( $numbers );
+		return null;
 	}
 }

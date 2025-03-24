@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetRecommendations;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
@@ -22,6 +23,7 @@ defined( 'ABSPATH' ) || exit;
  * Class BudgetRecommendationController
  *
  * ContainerAware used for:
+ * - BudgetMetrics
  * - BudgetRecommendations
  * - BudgetRecommendationQuery
  *
@@ -118,6 +120,13 @@ class BudgetRecommendationController extends BaseController implements Container
 				// Swap recommended if not set or if fallback is higher.
 				if ( empty( $recommendations[0] ) || ( ! empty( $recommendations[0]['daily_budget'] ) && $recommendations[0]['daily_budget'] < $fallback_budget ) ) {
 					$recommendations[0] = $fallback_recommendation[0];
+
+					// Fetch metrics from the API for the fallback budget (only when we are going to use the fallback).
+					$budget_metrics   = $this->container->get( BudgetMetrics::class );
+					$fallback_metrics = $budget_metrics->get_metrics( $fallback_budget, $country_codes );
+					if ( $fallback_metrics ) {
+						$recommendations[0]['metrics'] = $fallback_metrics;
+					}
 
 					// Remove high recommendation if fallback is higher.
 					if ( ! empty( $recommendations[1]['daily_budget'] ) && $recommendations[1]['daily_budget'] < $fallback_budget ) {

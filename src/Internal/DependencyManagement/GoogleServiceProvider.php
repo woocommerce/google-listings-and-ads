@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsConversionAction;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetRecommendations;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
@@ -85,6 +86,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		AdsReport::class              => true,
 		AdsAssetGroupAsset::class     => true,
 		AdsAsset::class               => true,
+		BudgetMetrics::class          => true,
 		BudgetRecommendations::class  => true,
 		'connect_server_root'         => true,
 		Connection::class             => true,
@@ -119,6 +121,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( AdsCampaignLabel::class, GoogleAdsClient::class );
 		$this->share( AdsConversionAction::class, GoogleAdsClient::class );
 		$this->share( AdsReport::class, GoogleAdsClient::class );
+		$this->share( BudgetMetrics::class, GoogleAdsClient::class );
 		$this->share( BudgetRecommendations::class, GoogleAdsClient::class );
 
 		$this->share( Merchant::class, ShoppingContent::class );
