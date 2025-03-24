@@ -108,7 +108,14 @@ class BudgetMetrics implements OptionsAwareInterface, TransientsAwareInterface {
 
 				// Parse the metrics for the given budget.
 				$metrics = $this->parse_metrics( $campaign_budget_recommendation, $budget );
-				$this->transients->set( TransientsInterface::ADS_BUDGET_METRICS, [ $cache_key => $metrics ], HOUR_IN_SECONDS * 12 );
+
+				// Merge with previously cached metrics.
+				if ( ! is_array( $transient ) ) {
+					$transient = [];
+				}
+				$transient[ $cache_key ] = $metrics;
+				$this->transients->set( TransientsInterface::ADS_BUDGET_METRICS, $transient, HOUR_IN_SECONDS * 12 );
+
 				return $metrics;
 			}
 		} catch ( ApiException $e ) {
