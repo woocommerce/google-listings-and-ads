@@ -156,6 +156,24 @@ class BudgetMetricsTest extends UnitTest {
 		$this->assertNull( $this->metrics->get_metrics( 12, [ 'US' ] ) );
 	}
 
+	public function test_get_metrics_with_float_inaccuracies() {
+		$metrics = [
+			[
+				'daily_budget' => 16.3999998,
+				'metrics'      => [
+					'cost'              => 114.799986,
+					'conversions'       => 6.7,
+					'conversions_value' => 267.87,
+				],
+			],
+		];
+
+		$this->generate_location_ids_mock( [ 111 => 'US' ] );
+		$this->generate_recommendations_mock( $metrics );
+
+		$this->assertEquals( $metrics[0]['metrics'], $this->metrics->get_metrics( 16.4, [ 'US' ] ) );
+	}
+
 	public function test_get_metrics() {
 		$this->generate_location_ids_mock( [ 111 => 'US' ] );
 		$this->generate_recommendations_mock(
