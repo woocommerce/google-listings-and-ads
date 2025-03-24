@@ -167,25 +167,22 @@ class BudgetMetricsController extends BaseController implements ContainerAwareIn
 				'context'     => [ 'view' ],
 			],
 			'metrics'  => [
-				'type'  => 'array',
-				'items' => [
-					'type'       => 'object',
-					'properties' => [
-						'cost'              => [
-							'type'        => 'number',
-							'description' => __( 'Estimated average amount you will spend weekly during the month.', 'google-listings-and-ads' ),
-							'context'     => [ 'view' ],
-						],
-						'conversions'       => [
-							'type'        => 'number',
-							'description' => __( 'Estimated number of conversions (unit sales) for a typical week.', 'google-listings-and-ads' ),
-							'context'     => [ 'view' ],
-						],
-						'conversions_value' => [
-							'type'        => 'number',
-							'description' => __( 'Estimated total value of all the conversions (sales volume) your campaign will generate in a week.', 'google-listings-and-ads' ),
-							'context'     => [ 'view' ],
-						],
+				'type'       => 'object',
+				'properties' => [
+					'cost'              => [
+						'type'        => 'number',
+						'description' => __( 'Estimated average amount you will spend weekly during the month.', 'google-listings-and-ads' ),
+						'context'     => [ 'view' ],
+					],
+					'conversions'       => [
+						'type'        => 'number',
+						'description' => __( 'Estimated number of conversions (unit sales) for a typical week.', 'google-listings-and-ads' ),
+						'context'     => [ 'view' ],
+					],
+					'conversions_value' => [
+						'type'        => 'number',
+						'description' => __( 'Estimated total value of all the conversions (sales volume) your campaign will generate in a week.', 'google-listings-and-ads' ),
+						'context'     => [ 'view' ],
 					],
 				],
 			],
