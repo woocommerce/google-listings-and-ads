@@ -136,7 +136,7 @@ class BudgetMetrics implements OptionsAwareInterface, TransientsAwareInterface {
 	protected function parse_metrics( CampaignBudgetRecommendation $recommendation, float $budget ): ?array {
 		foreach ( $recommendation->getBudgetOptions() as $budget_option ) {
 			$amount = $this->from_micro( $budget_option->getBudgetAmountMicros() );
-			if ( $amount === $budget ) {
+			if ( abs( $amount - $budget ) < 0.00001 ) {
 				$metrics = $budget_option->getImpact()->getPotentialMetrics();
 
 				return [
