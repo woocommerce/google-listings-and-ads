@@ -75,6 +75,7 @@ class BudgetMetricsController extends BaseController implements ContainerAwareIn
 			'budget'        => [
 				'description'       => __( 'Budget to fetch metrics for.', 'google-listings-and-ads' ),
 				'type'              => 'number',
+				'minimum'           => 0,
 				'sanitize_callback' => $this->get_sanitize_price_callback(),
 				'validate_callback' => 'rest_validate_request_arg',
 			],

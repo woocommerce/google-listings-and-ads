@@ -139,4 +139,17 @@ class BudgetMetricsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'Missing parameter(s): country_codes', $response->get_data()['message'] );
 		$this->assertEquals( 400, $response->get_status() );
 	}
+
+	public function test_get_budget_recommendation_with_negative_budget_value() {
+		$budget_recommendation_params = [
+			'country_codes' => [ 'US' ],
+			'budget'        => -10,
+		];
+
+		$response = $this->do_request( self::ROUTE_BUDGET_METRICS, 'GET', $budget_recommendation_params );
+
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertEquals( 'Invalid parameter(s): budget', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
 }
