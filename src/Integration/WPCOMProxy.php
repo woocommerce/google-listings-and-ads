@@ -53,6 +53,11 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 	];
 
 	/**
+	 * The settings group for the REST API.
+	 * @var string
+	 */
+	protected const SETTINGS_GROUP = 'google-for-woocommerce';
+	/**
 	 * WPCOMProxy constructor.
 	 *
 	 * @param ShippingTimeQuery $shipping_time_query The ShippingTimeQuery object.
@@ -153,16 +158,13 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 	}
 
 	/**
-	 * Register the `rest_request_after_callbacks` to add settings to `settings/general`.
-	 * Used for backward compatibility.
-	 *
-	 * @deprecated We created a dedicated settings group for google-for-woocommerce.
+	 * Register the `rest_request_after_callbacks`, to prepare shipping methods.
 	 */
 	protected function register_callbacks() {
 		add_filter(
 			'rest_request_after_callbacks',
 			/**
-			 * Add the Google for WooCommerce and Ads settings to the settings/general response.
+			 * Prepare data for shipping methods.
 			 *
 			 * @param WP_REST_Response|WP_HTTP_Response|WP_Error|mixed $response The response object.
 			 * @param mixed                                             $handler  The handler.
@@ -172,31 +174,6 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 				if ( ! $this->is_gla_request( $request ) || ! $response instanceof WP_REST_Response ) {
 					return $response;
 				}
-
-				$data = $response->get_data();
-
-				if ( $request->get_route() === '/wc/v3/settings/general' ) {
-					$data[] = [
-						'id'    => 'gla_target_audience',
-						'label' => 'Google for WooCommerce: Target Audience',
-						'value' => $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] ),
-					];
-
-					$data[] = [
-						'id'    => 'gla_shipping_times',
-						'label' => 'Google for WooCommerce: Shipping Times',
-						'value' => $this->shipping_time_query->get_all_shipping_times(),
-					];
-
-					$data[] = [
-						'id'    => 'gla_language',
-						'label' => 'Google for WooCommerce: Store language',
-						'value' => get_locale(),
-					];
-
-					$response->set_data( array_values( $data ) );
-				}
-
 				$response->set_data( $this->prepare_data( $response->get_data(), $request ) );
 				return $response;
 			},
@@ -213,14 +190,14 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 	protected function add_g4w_settings() {
 		add_filter( 'woocommerce_settings_groups', function ( $locations ) {
 			$locations[] = array(
-				'id'          => 'google-for-woocommerce',
+				'id'          => self::SETTINGS_GROUP,
 				'label'       => 'Google for WooCommerce',
 				'description' => 'Settings of the Google for WooCommerce plugin.',
 			);
 			return $locations;
 		} );
 
-		add_filter( 'woocommerce_settings-google-for-woocommerce', function ( $data ) {
+		add_filter( 'woocommerce_settings-' . self::SETTINGS_GROUP, function ( $data ) {
 			$data[] = [
 				'id'         => 'gla_target_audience',
 				'label'      => 'Google for WooCommerce: Target Audience',
@@ -228,23 +205,44 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 				'type'       => 'multiselect',
 				'default'	 => [],
 			];
-
-			// Workaround option-less settings by adding a default value.
-			$data[] = [
-				'id'      => 'gla_shipping_times',
-				'label'   => 'Google for WooCommerce: Shipping Times',
-				'type'    => 'multiselect',
-				'default' => $this->shipping_time_query->get_all_shipping_times(),
-			];
-
-			$data[] = [
-				'id'      => 'gla_language',
-				'label'   => 'Google for WooCommerce: Store language',
-				'type'    => 'text',
-				'default' => get_locale(),
-			];
 			return $data;
 		} );
+		// Add non-option settings to the WooCommerce REST API.
+		add_filter(
+			'rest_request_after_callbacks',
+			/**
+			 * Add the Google for WooCommerce and Ads settings to the settings/google-for-woocommerce response.
+			 *
+			 * @param WP_REST_Response|WP_HTTP_Response|WP_Error|mixed $response The response object.
+			 * @param mixed                                             $handler  The handler.
+			 * @param WP_REST_Request                                   $request  The request object.
+			 */
+			function ( $response, $handler, $request ) {
+				if ( ! $response instanceof WP_REST_Response || $request->get_route() !== '/wc/v3/settings/' . self::SETTINGS_GROUP ) {
+					return $response;
+				}
+
+				$data = $response->get_data();
+
+				$data[] = [
+					'id'    => 'gla_shipping_times',
+					'label' => 'Google for WooCommerce: Shipping Times',
+					'value' => $this->shipping_time_query->get_all_shipping_times(),
+				];
+
+				$data[] = [
+					'id'    => 'gla_language',
+					'label' => 'Google for WooCommerce: Store language',
+					'value' => get_locale(),
+				];
+
+				$response->set_data( array_values( $data ) );
+
+				return $response;
+			},
+			10,
+			3
+		);
 	}
 
 	/**
