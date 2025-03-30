@@ -174,7 +174,7 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 		add_filter(
 			'rest_request_after_callbacks',
 			/**
-			 * Prepare data for shipping methods.
+			 * Set data for settings & prepare data for shipping methods.
 			 *
 			 * @param WP_REST_Response|WP_HTTP_Response|WP_Error|mixed $response The response object.
 			 * @param mixed                                             $handler  The handler.
@@ -184,6 +184,50 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 				if ( ! $this->is_gla_request( $request ) || ! $response instanceof WP_REST_Response ) {
 					return $response;
 				}
+
+				if ( $request->get_route() === '/wc/v3/settings/' . self::SETTINGS_GROUP ) {
+
+					$data = $response->get_data();
+
+					$data[] = [
+						'id'    => 'gla_google_connected',
+						'label' => 'Google for WooCommerce: Is Google account connected?',
+						'value' => rest_sanitize_boolean( $this->options->get( OptionsInterface::GOOGLE_CONNECTED, false ) ),
+					];
+					$data[] = [
+						'id'    => 'gla_jetpack_connected',
+						'label' => 'Google for WooCommerce: Is Jetpack connected?',
+						'value' => rest_sanitize_boolean( $this->options->get( OptionsInterface::JETPACK_CONNECTED, false ) ),
+					];
+					$data[] = [
+						'id'    => 'gla_language',
+						'label' => 'Google for WooCommerce: Store language',
+						'value' => get_locale(),
+					];
+					$data[] = [
+						'id'    => 'gla_merchant_center',
+						'label' => 'Google for WooCommerce: Merchant Center settings',
+						'value' => $this->options->get( OptionsInterface::MERCHANT_CENTER, null ),
+					];
+					$data[] = [
+						'id'    => 'gla_shipping_rates',
+						'label' => 'Google for WooCommerce: Shipping Rates',
+						'value' => $this->shipping_rate_query->get_all_shipping_rates(),
+					];
+					$data[] = [
+						'id'    => 'gla_shipping_times',
+						'label' => 'Google for WooCommerce: Shipping Times',
+						'value' => $this->shipping_time_query->get_all_shipping_times(),
+					];
+					$data[] = [
+						'id'    => 'gla_target_audience',
+						'label' => 'Google for WooCommerce: Target Audience',
+						'value' => $this->options->get( OptionsInterface::TARGET_AUDIENCE, null ),
+					];
+
+					$response->set_data( array_values( $data ) );
+				}
+
 				$response->set_data( $this->prepare_data( $response->get_data(), $request ) );
 				return $response;
 			},
@@ -211,72 +255,12 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 		add_filter( 'woocommerce_settings-' . self::SETTINGS_GROUP, function ( $data ) {
 			// We need to add non-empty return value in the filter, to be able to pass the valid group check.
 			$data[] = ['id' => 'gla_settings_placeholder'];
-			// We do not provide a valid 'type', so the entry will be ignored in the response.
+			// We do not provide any valid 'type', so the entry will be ignored in the response.
 
-			// This way `rest_request_after_callbacks` will get an empty data set.
+			// This way `rest_request_after_callbacks` will get an empty data set and could provide complete option- and non-option related settings.
 			return $data;
 		} );
 
-		// Add non-option-conforming settings to the WooCommerce REST API.
-		add_filter(
-			'rest_request_after_callbacks',
-			/**
-			 * Add the Google for WooCommerce and Ads settings to the settings/google-for-woocommerce response.
-			 *
-			 * @param WP_REST_Response|WP_HTTP_Response|WP_Error|mixed $response The response object.
-			 * @param mixed                                             $handler  The handler.
-			 * @param WP_REST_Request                                   $request  The request object.
-			 */
-			function ( $response, $handler, $request ) {
-				if ( ! $response instanceof WP_REST_Response || $request->get_route() !== '/wc/v3/settings/' . self::SETTINGS_GROUP ) {
-					return $response;
-				}
-
-				$data = $response->get_data();
-
-				$data[] = [
-					'id'    => 'gla_google_connected',
-					'label' => 'Google for WooCommerce: Is Google account connected?',
-					'value' => rest_sanitize_boolean( $this->options->get( OptionsInterface::GOOGLE_CONNECTED, false ) ),
-				];
-				$data[] = [
-					'id'    => 'gla_jetpack_connected',
-					'label' => 'Google for WooCommerce: Is Jetpack connected?',
-					'value' => rest_sanitize_boolean( $this->options->get( OptionsInterface::JETPACK_CONNECTED, false ) ),
-				];
-				$data[] = [
-					'id'    => 'gla_language',
-					'label' => 'Google for WooCommerce: Store language',
-					'value' => get_locale(),
-				];
-				$data[] = [
-					'id'    => 'gla_merchant_center',
-					'label' => 'Google for WooCommerce: Merchant Center settings',
-					'value' => $this->options->get( OptionsInterface::MERCHANT_CENTER, null ),
-				];
-				$data[] = [
-					'id'    => 'gla_shipping_rates',
-					'label' => 'Google for WooCommerce: Shipping Rates',
-					'value' => $this->shipping_rate_query->get_all_shipping_rates(),
-				];
-				$data[] = [
-					'id'    => 'gla_shipping_times',
-					'label' => 'Google for WooCommerce: Shipping Times',
-					'value' => $this->shipping_time_query->get_all_shipping_times(),
-				];
-				$data[] = [
-					'id'    => 'gla_target_audience',
-					'label' => 'Google for WooCommerce: Target Audience',
-					'value' => $this->options->get( OptionsInterface::TARGET_AUDIENCE, null ),
-				];
-
-				$response->set_data( array_values( $data ) );
-
-				return $response;
-			},
-			10,
-			3
-		);
 	}
 
 	/**
