@@ -28,7 +28,7 @@ Following is the desired and expected structure of `/settings/google-for-woocomm
             "shipping_rate": ( "flat" | "manual" | "automatic" ),
             "shipping_time": ( "flat" | "manual" ),
             "tax_rate": ( "destination" | "manual" )
-        } | null ) // `null` if the user did not set up it yet, or disconnected accounts.
+        } | null ) // `null` if the user has not set it up yet, or disconnected accounts.
     },
     {
         "id": "gla_shipping_rates",
@@ -39,7 +39,7 @@ Following is the desired and expected structure of `/settings/google-for-woocomm
                 "currency": AMOUNT_1,
                 "free_shipping_threshold": ( FREE_SHIPPING_THRESHOLD_1 | null ),
             },
-			// …
+            // …
         }
     },
     {
@@ -51,7 +51,7 @@ Following is the desired and expected structure of `/settings/google-for-woocomm
                 "time": TIME,
                 "max_time": MAX_TIME
             },
-			// …
+            // …
         }
     },
     {
@@ -62,9 +62,9 @@ Following is the desired and expected structure of `/settings/google-for-woocomm
             "countries": [
                 COUNTRY_CODE_1,
                 COUNTRY_CODE_2,
-				// …
+                // …
             ]
-        } | null ) // `null` if the user did not set up it yet, or disconnected accounts.
+        } | null ) // `null` if the user has not set it up yet, or disconnected accounts.
     }
 ]
 ```
