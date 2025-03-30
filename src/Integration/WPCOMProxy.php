@@ -260,11 +260,19 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 		add_filter(
 			'woocommerce_settings-' . self::SETTINGS_GROUP,
 			function ( $data ) {
-				// We need to add non-empty return value in the filter, to be able to pass the valid group check.
-				$data[] = [ 'id' => 'gla_settings_placeholder' ];
-				// We do not provide any valid 'type', so the entry will be ignored in the response.
+				/*
+				 * We need to add non-empty return value in the filter, to be able to pass the valid group check.
+				 * We do not provide any valid 'type', so the entry will be ignored
+				 * in the response by `WC_REST_Setting_Options_V2_Controller::get_items`
+				 */
+				$data[] = [
+					'option_key' => 'gla_settings_placeholder',
+				];
 
-				// This way `rest_request_after_callbacks` will get an empty data set and could provide complete option- and non-option related settings.
+				/*
+				 * This way `rest_request_after_callbacks` will get an empty data set
+				 * and could provide complete option- and non-option related settings.
+				 */
 				return $data;
 			}
 		);
