@@ -291,9 +291,11 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 			return $data;
 		}
 
-		foreach ( $data as $key => $value ) {
-			if ( preg_match( '/^\/wc\/v3\/shipping\/zones\/\d+\/methods/', $request->get_route() ) && isset( $value['settings'] ) && empty( $value['settings'] ) ) {
-				$data[ $key ]['settings'] = (object) $value['settings'];
+		if ( preg_match( '/^\/wc\/v3\/shipping\/zones\/\d+\/methods/', $request->get_route() ) ) {
+			foreach ( $data as $key => $value ) {
+				if ( isset( $value['settings'] ) && empty( $value['settings'] ) ) {
+					$data[ $key ]['settings'] = (object) $value['settings'];
+				}
 			}
 		}
 
