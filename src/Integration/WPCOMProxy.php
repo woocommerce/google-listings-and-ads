@@ -268,7 +268,7 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 				$data[] = [
 					'id'         => 'gla_settings_placeholder',
 					'option_key' => 'gla_settings_placeholder',
-					'type'       => '_invalid_type_'
+					'type'       => '_invalid_type_',
 				];
 
 				/*
@@ -278,7 +278,6 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 				return $data;
 			}
 		);
-
 	}
 
 	/**
