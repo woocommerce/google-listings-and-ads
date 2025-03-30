@@ -67,4 +67,27 @@ class ShippingRateQuery extends Query {
 			$this->results
 		);
 	}
+
+	/**
+	 * Get all shipping rates.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @return array
+	 */
+	public function get_all_shipping_rates() {
+		$rates = $this->get_results();
+		$items = [];
+		foreach ( $rates as $rate ) {
+			$data = [
+				'country_code'            => $rate['country'],
+				'currency'                => $rate['rate'],
+				'free_shipping_threshold' => $rate['options']['free_shipping_threshold'] ?: $rate['options']['free_shipping_threshold'],
+			];
+
+			$items[ $rate['country'] ] = $data;
+		}
+
+		return $items;
+	}
 }
