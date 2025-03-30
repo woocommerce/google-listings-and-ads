@@ -439,7 +439,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_settings_without_gla_syncable_param() {
-		$response = $this->do_request( '/wc/v3/settings/general', 'GET' );
+		$response = $this->do_request( '/wc/v3/settings/google-for-woocommerce', 'GET' );
 
 		$this->assertEquals( 200, $response->get_status() );
 
@@ -455,14 +455,11 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_settings_with_gla_syncable_param() {
-		$response = $this->do_request( '/wc/v3/settings/general', 'GET', [ 'gla_syncable' => '1' ] );
-
-		$response = $this->do_request( '/wc/v3/settings/google-for-woocommerce', 'GET' );
+		$response = $this->do_request( '/wc/v3/settings/google-for-woocommerce', 'GET', [ 'gla_syncable' => '1' ] );
 
 		$this->assertEquals( 200, $response->get_status() );
 
 		$response_mapped = $this->maps_the_response_with_the_item_id( $response );
-
 
 		$this->assertArrayHasKey( 'gla_google_connected', $response_mapped );
 		$this->assertArrayHasKey( 'gla_jetpack_connected', $response_mapped );
