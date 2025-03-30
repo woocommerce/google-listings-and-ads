@@ -21,7 +21,14 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class WPCOMProxy
  *
- * Initializes the hooks to filter the data sent to the WPCOM proxy depending on the query parameter gla_syncable.
+ * Prepares and filters data pulled by WPCOM proxy based on the `gla_syncable` query parameter.
+ *
+ * The `gla_syncable` parameter indicates that the request originates from the WPCOM proxy.
+ * It's not intended to provide security, as it does not expose any data
+ * that should be hidden from REST API users.
+ *
+ * Its primary purpose is to prevent global endpoints from being cluttered with additional data
+ * and to conceal undocumented implementation details of the integration between the G4W plugin and WPCOM proxy.
  *
  * @since 2.8.0
  *
