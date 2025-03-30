@@ -62,9 +62,11 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 
 	/**
 	 * The settings group for the REST API.
+	 *
 	 * @var string
 	 */
 	protected const SETTINGS_GROUP = 'google-for-woocommerce';
+
 	/**
 	 * WPCOMProxy constructor.
 	 *
@@ -242,24 +244,30 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 	 * @return void
 	 */
 	protected function add_g4w_settings() {
-		add_filter( 'woocommerce_settings_groups', function ( $locations ) {
-			$locations[] = array(
-				'id'          => self::SETTINGS_GROUP,
-				'label'       => 'Google for WooCommerce',
-				'description' => 'Settings of the Google for WooCommerce plugin.',
-			);
-			return $locations;
-		} );
+		add_filter(
+			'woocommerce_settings_groups',
+			function ( $locations ) {
+				$locations[] = [
+					'id'          => self::SETTINGS_GROUP,
+					'label'       => 'Google for WooCommerce',
+					'description' => 'Settings of the Google for WooCommerce plugin.',
+				];
+				return $locations;
+			}
+		);
 
 		// Hack to make the settings group show up in the response.
-		add_filter( 'woocommerce_settings-' . self::SETTINGS_GROUP, function ( $data ) {
-			// We need to add non-empty return value in the filter, to be able to pass the valid group check.
-			$data[] = ['id' => 'gla_settings_placeholder'];
-			// We do not provide any valid 'type', so the entry will be ignored in the response.
+		add_filter(
+			'woocommerce_settings-' . self::SETTINGS_GROUP,
+			function ( $data ) {
+				// We need to add non-empty return value in the filter, to be able to pass the valid group check.
+				$data[] = [ 'id' => 'gla_settings_placeholder' ];
+				// We do not provide any valid 'type', so the entry will be ignored in the response.
 
-			// This way `rest_request_after_callbacks` will get an empty data set and could provide complete option- and non-option related settings.
-			return $data;
-		} );
+				// This way `rest_request_after_callbacks` will get an empty data set and could provide complete option- and non-option related settings.
+				return $data;
+			}
+		);
 
 	}
 
