@@ -2,6 +2,7 @@
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Integration;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\RestApi\UnitTests\Helpers\CouponHelper;
@@ -484,6 +485,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 		];
 
 		$proxy = new WPCOMProxy(
+			$this->container->get( ShippingRateQuery::class ),
 			$this->container->get( ShippingTimeQuery::class ),
 			$this->container->get( AttributeManager::class )
 		);
