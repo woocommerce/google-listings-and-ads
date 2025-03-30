@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Integration;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -29,6 +30,13 @@ defined( 'ABSPATH' ) || exit;
 class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 
 	use OptionsAwareTrait;
+
+	/**
+	 * The ShippingRateQuery object.
+	 *
+	 * @var ShippingRateQuery
+	 */
+	protected $shipping_rate_query;
 
 	/**
 	 * The ShippingTimeQuery object.
@@ -60,10 +68,12 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 	/**
 	 * WPCOMProxy constructor.
 	 *
+	 * @param ShippingRateQuery $shipping_rate_query   The ShippingRateQuery object.
 	 * @param ShippingTimeQuery $shipping_time_query The ShippingTimeQuery object.
 	 * @param AttributeManager  $attribute_manager   The AttributeManager object.
 	 */
-	public function __construct( ShippingTimeQuery $shipping_time_query, AttributeManager $attribute_manager ) {
+	public function __construct( ShippingRateQuery $shipping_rate_query, ShippingTimeQuery $shipping_time_query, AttributeManager $attribute_manager ) {
+		$this->shipping_rate_query = $shipping_rate_query;
 		$this->shipping_time_query = $shipping_time_query;
 		$this->attribute_manager   = $attribute_manager;
 	}
@@ -197,17 +207,17 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 			return $locations;
 		} );
 
+		// Hack to make the settings group show up in the response.
 		add_filter( 'woocommerce_settings-' . self::SETTINGS_GROUP, function ( $data ) {
-			$data[] = [
-				'id'         => 'gla_target_audience',
-				'label'      => 'Google for WooCommerce: Target Audience',
-				'option_key' => OptionsInterface::TARGET_AUDIENCE,
-				'type'       => 'multiselect',
-				'default'	 => [],
-			];
+			// We need to add non-empty return value in the filter, to be able to pass the valid group check.
+			$data[] = ['id' => 'gla_settings_placeholder'];
+			// We do not provide a valid 'type', so the entry will be ignored in the response.
+
+			// This way `rest_request_after_callbacks` will get an empty data set.
 			return $data;
 		} );
-		// Add non-option settings to the WooCommerce REST API.
+
+		// Add non-option-conforming settings to the WooCommerce REST API.
 		add_filter(
 			'rest_request_after_callbacks',
 			/**
@@ -225,15 +235,39 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 				$data = $response->get_data();
 
 				$data[] = [
-					'id'    => 'gla_shipping_times',
-					'label' => 'Google for WooCommerce: Shipping Times',
-					'value' => $this->shipping_time_query->get_all_shipping_times(),
+					'id'    => 'gla_google_connected',
+					'label' => 'Google for WooCommerce: Is Google account connected?',
+					'value' => rest_sanitize_boolean( $this->options->get( OptionsInterface::GOOGLE_CONNECTED, false ) ),
 				];
-
+				$data[] = [
+					'id'    => 'gla_jetpack_connected',
+					'label' => 'Google for WooCommerce: Is Jetpack connected?',
+					'value' => rest_sanitize_boolean( $this->options->get( OptionsInterface::JETPACK_CONNECTED, false ) ),
+				];
 				$data[] = [
 					'id'    => 'gla_language',
 					'label' => 'Google for WooCommerce: Store language',
 					'value' => get_locale(),
+				];
+				$data[] = [
+					'id'    => 'gla_merchant_center',
+					'label' => 'Google for WooCommerce: Merchant Center settings',
+					'value' => $this->options->get( OptionsInterface::MERCHANT_CENTER, null ),
+				];
+				$data[] = [
+					'id'    => 'gla_shipping_rates',
+					'label' => 'Google for WooCommerce: Shipping Rates',
+					'value' => $this->shipping_rate_query->get_all_shipping_rates(),
+				];
+				$data[] = [
+					'id'    => 'gla_shipping_times',
+					'label' => 'Google for WooCommerce: Shipping Times',
+					'value' => $this->shipping_time_query->get_all_shipping_times(),
+				];
+				$data[] = [
+					'id'    => 'gla_target_audience',
+					'label' => 'Google for WooCommerce: Target Audience',
+					'value' => $this->options->get( OptionsInterface::TARGET_AUDIENCE, null ),
 				];
 
 				$response->set_data( array_values( $data ) );
