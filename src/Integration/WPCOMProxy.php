@@ -262,11 +262,13 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 			function ( $data ) {
 				/*
 				 * We need to add non-empty return value in the filter, to be able to pass the valid group check.
-				 * We do not provide any valid 'type', so the entry will be ignored
+				 * We provide invalid 'type', so the entry will be ignored
 				 * in the response by `WC_REST_Setting_Options_V2_Controller::get_items`
 				 */
 				$data[] = [
+					'id'         => 'gla_settings_placeholder',
 					'option_key' => 'gla_settings_placeholder',
+					'type'       => '_invalid_type_'
 				];
 
 				/*
