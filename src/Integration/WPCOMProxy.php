@@ -214,12 +214,12 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 					$data[] = [
 						'id'    => 'gla_shipping_rates',
 						'label' => 'Google for WooCommerce: Shipping Rates',
-						'value' => $this->shipping_rate_query->get_all_shipping_rates(),
+						'value' => (object) $this->shipping_rate_query->get_all_shipping_rates(),
 					];
 					$data[] = [
 						'id'    => 'gla_shipping_times',
 						'label' => 'Google for WooCommerce: Shipping Times',
-						'value' => $this->shipping_time_query->get_all_shipping_times(),
+						'value' => (object) $this->shipping_time_query->get_all_shipping_times(),
 					];
 					$data[] = [
 						'id'    => 'gla_target_audience',
