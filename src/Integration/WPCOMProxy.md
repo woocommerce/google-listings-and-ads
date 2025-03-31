@@ -36,8 +36,9 @@ Following is the desired and expected structure of `/settings/google-for-woocomm
         "value": {
             [ COUNTRY_CODE_1 ]: {
                 "country_code": COUNTRY_CODE_1,
-                "currency": AMOUNT_1,
+                "currency": CURRENCY_CODE_1,
                 "free_shipping_threshold": ( FREE_SHIPPING_THRESHOLD_1 | null ),
+                "rate": AMOUNT_1,
             },
             // …
         }
