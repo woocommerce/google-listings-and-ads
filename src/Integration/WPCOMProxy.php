@@ -204,11 +204,6 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 						'value' => rest_sanitize_boolean( $this->options->get( OptionsInterface::GOOGLE_CONNECTED, false ) ),
 					];
 					$data[] = [
-						'id'    => 'gla_jetpack_connected',
-						'label' => 'Google for WooCommerce: Is Jetpack connected?',
-						'value' => rest_sanitize_boolean( $this->options->get( OptionsInterface::JETPACK_CONNECTED, false ) ),
-					];
-					$data[] = [
 						'id'    => 'gla_language',
 						'label' => 'Google for WooCommerce: Store language',
 						'value' => get_locale(),

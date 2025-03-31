@@ -446,7 +446,6 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 		$response_mapped = $this->maps_the_response_with_the_item_id( $response );
 
 		$this->assertArrayNotHasKey( 'gla_google_connected', $response_mapped );
-		$this->assertArrayNotHasKey( 'gla_jetpack_connected', $response_mapped );
 		$this->assertArrayNotHasKey( 'gla_language', $response_mapped );
 		$this->assertArrayNotHasKey( 'gla_merchant_center', $response_mapped );
 		$this->assertArrayNotHasKey( 'gla_shipping_rates', $response_mapped );
@@ -462,7 +461,6 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 		$response_mapped = $this->maps_the_response_with_the_item_id( $response );
 
 		$this->assertArrayHasKey( 'gla_google_connected', $response_mapped );
-		$this->assertArrayHasKey( 'gla_jetpack_connected', $response_mapped );
 		$this->assertArrayHasKey( 'gla_language', $response_mapped );
 		$this->assertArrayHasKey( 'gla_merchant_center', $response_mapped );
 		$this->assertArrayHasKey( 'gla_shipping_rates', $response_mapped );
