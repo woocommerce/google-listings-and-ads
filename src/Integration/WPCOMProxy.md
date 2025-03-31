@@ -12,11 +12,6 @@ Following is the desired and expected structure of `/settings/google-for-woocomm
         "value": ( true | false )
     },
     {
-        "id": "gla_jetpack_connected",
-        "label": "Google for WooCommerce: Is Jetpack connected?",
-        "value": ( true | false )
-    },
-    {
         "id": "gla_language",
         "label": "Google for WooCommerce: Store language",
         "value": LANGUAGE_CODE,
