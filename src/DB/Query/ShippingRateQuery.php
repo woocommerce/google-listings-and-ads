@@ -69,11 +69,19 @@ class ShippingRateQuery extends Query {
 	}
 
 	/**
-	 * Get all shipping rates.
+	 * Retrieves all available shipping rates and organizes them by country.
 	 *
-	 * @since 2.8.0
+	 * Fetches all shipping rate data using `get_results()`, processes it,
+	 * and returns an associative array in a format suitable for JSON responses.
 	 *
-	 * @return array
+	 * @since x.x.x
+	 *
+	 * @return array Associative array of shipping rates indexed by country codes.
+	 *               Each entry contains:
+	 *               - `country_code` (string): The country code.
+	 *               - `currency` (string): The currency code.
+	 *               - `free_shipping_threshold` (float | null): The minimum order amount required for free shipping.
+	 *               - `rate` (string): The cost of shipping in the respective currency.
 	 */
 	public function get_all_shipping_rates() {
 		$rates = $this->get_results();
@@ -82,8 +90,8 @@ class ShippingRateQuery extends Query {
 			$data = [
 				'country_code'            => $rate['country'],
 				'currency'                => $rate['currency'],
+				'free_shipping_threshold' => $rate['options']['free_shipping_threshold'] ? $rate['options']['free_shipping_threshold'] : null,
 				'rate'                    => $rate['rate'],
-				'free_shipping_threshold' => $rate['options']['free_shipping_threshold'] ?: $rate['options']['free_shipping_threshold'],
 			];
 
 			$items[ $rate['country'] ] = $data;
