@@ -203,7 +203,7 @@ final class Options implements OptionsInterface, Service {
 	 *
 	 * @return string
 	 */
-	public function prefix_name( string $name ): string {
+	protected function prefix_name( string $name ): string {
 		return "{$this->get_slug()}_{$name}";
 	}
 
