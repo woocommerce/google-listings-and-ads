@@ -81,7 +81,8 @@ class ShippingRateQuery extends Query {
 		foreach ( $rates as $rate ) {
 			$data = [
 				'country_code'            => $rate['country'],
-				'currency'                => $rate['rate'],
+				'currency'                => $rate['currency'],
+				'rate'                    => $rate['rate'],
 				'free_shipping_threshold' => $rate['options']['free_shipping_threshold'] ?: $rate['options']['free_shipping_threshold'],
 			];
 
