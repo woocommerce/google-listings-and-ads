@@ -531,4 +531,76 @@ class MiddlewareTest extends UnitTest {
 
 		$this->middleware->get_incentive_credits();
 	}
+
+	public function test_is_subaccount_true() {
+		$accounts = [
+			[
+				'id'         => self::TEST_MERCHANT_ID,
+				'subaccount' => true,
+			],
+			[
+				'id'         => 34567890,
+				'subaccount' => false,
+			],
+		];
+
+		$this->options->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
+		$this->transients->method( 'get' )->with( $this->transients::MC_IS_SUBACCOUNT )->willReturn( null );
+		$this->generate_request_mock( $accounts );
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with( $this->transients::MC_IS_SUBACCOUNT, 1 );
+
+		$this->assertTrue( $this->middleware->is_subaccount() );
+	}
+
+	public function test_is_subaccount_false() {
+		$accounts = [
+			[
+				'id'         => self::TEST_MERCHANT_ID,
+				'subaccount' => false,
+			],
+			[
+				'id'         => 34567890,
+				'subaccount' => true,
+			],
+		];
+
+		$this->options->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
+		$this->transients->method( 'get' )->with( $this->transients::MC_IS_SUBACCOUNT )->willReturn( null );
+		$this->generate_request_mock( $accounts );
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with( $this->transients::MC_IS_SUBACCOUNT, 0 );
+
+		$this->assertFalse( $this->middleware->is_subaccount() );
+	}
+
+	public function test_is_subaccount_cached_true() {
+		$this->transients->method( 'get' )->with( $this->transients::MC_IS_SUBACCOUNT )->willReturn( 1 );
+
+		$this->transients->expects( $this->never() )->method( 'set' );
+		$this->assertTrue( $this->middleware->is_subaccount() );
+	}
+
+	public function test_is_subaccount_cached_false() {
+		$this->transients->method( 'get' )->with( $this->transients::MC_IS_SUBACCOUNT )->willReturn( 0 );
+
+		$this->transients->expects( $this->never() )->method( 'set' );
+		$this->assertFalse( $this->middleware->is_subaccount() );
+	}
+
+	public function test_is_subaccount_no_accounts() {
+		$this->options->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
+		$this->transients->method( 'get' )->with( $this->transients::MC_IS_SUBACCOUNT )->willReturn( null );
+		$this->generate_request_mock( [] );
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with( $this->transients::MC_IS_SUBACCOUNT, 0 );
+
+		$this->assertFalse( $this->middleware->is_subaccount() );
+	}
 }
