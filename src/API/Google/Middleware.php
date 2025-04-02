@@ -477,6 +477,8 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * Get the server endpoint URL
 	 *
+	 * @since x.x.x
+	 *
 	 * @param string $name Resource name.
 	 *
 	 * @return string
@@ -613,6 +615,8 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 
 	/**
 	 * Fetch incentive credits from the Google Ads API.
+	 *
+	 * @since x.x.x
 	 *
 	 * @return array The incentive credits data.
 	 * @throws Exception When an error occurs during the request.

@@ -21,6 +21,8 @@ defined( 'ABSPATH' ) || exit;
  * ContainerAware used for:
  * - Middleware
  *
+ * @since x.x.x
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
 class IncentiveCreditsController extends BaseController implements ContainerAwareInterface {
