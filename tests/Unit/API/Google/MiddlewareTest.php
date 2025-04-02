@@ -64,6 +64,27 @@ class MiddlewareTest extends UnitTest {
 	protected const TEST_ADS_ID      = 12345678;
 	protected const TEST_MERCHANT_ID = 23456781;
 	protected const TEST_BILLING_URL = 'https://domain.test/billing/setup/';
+	protected const TEST_OFFERS      = [
+		[
+			'country'  => 'GB',
+			'currency' => 'JPY',
+			'spending' => 40000,
+			'credit'   => 45000,
+		],
+		[
+			'country'  => 'GB',
+			'currency' => 'GBP',
+			'spending' => 400,
+			'credit'   => 450,
+		],
+		[
+			'country'  => 'GB',
+			'currency' => 'USD',
+			'spending' => 500,
+			'credit'   => 550,
+		],
+	];
+
 
 	/**
 	 * Runs before each test is executed.
@@ -431,5 +452,83 @@ class MiddlewareTest extends UnitTest {
 		$this->expectExceptionMessage( 'Error authenticating Google Partner APP.' );
 		$this->middleware->get_sdi_auth_params();
 		$this->assertEquals( 1, did_action( 'woocommerce_gla_guzzle_client_exception' ) );
+	}
+
+	public function test_get_incentive_credits_success_with_ads_currency() {
+		$this->ads->expects( $this->once() )->method( 'get_ads_currency' )->willReturn( 'GBP' );
+		$this->wc->expects( $this->once() )->method( 'get_base_country' )->willReturn( 'GB' );
+		$this->wc->expects( $this->once() )->method( 'get_woocommerce_currency' )->willReturn( 'USD' );
+		$this->generate_request_mock( [ 'offers' => self::TEST_OFFERS ] );
+
+		$expected = [
+			'country'      => 'GB',
+			'currency'     => 'GBP',
+			'spending'     => 400,
+			'credit'       => 450,
+			'ads_currency' => 'GBP',
+		];
+
+		$this->assertEquals( $expected, $this->middleware->get_incentive_credits() );
+	}
+
+	public function test_get_incentive_credits_success_with_store_currency() {
+		$this->ads->expects( $this->once() )->method( 'get_ads_currency' )->willReturn( 'CAD' );
+		$this->wc->expects( $this->once() )->method( 'get_base_country' )->willReturn( 'GB' );
+		$this->wc->expects( $this->once() )->method( 'get_woocommerce_currency' )->willReturn( 'USD' );
+		$this->generate_request_mock( [ 'offers' => self::TEST_OFFERS ] );
+
+		$expected = [
+			'country'      => 'GB',
+			'currency'     => 'USD',
+			'spending'     => 500,
+			'credit'       => 550,
+			'ads_currency' => 'CAD',
+		];
+
+		$this->assertEquals( $expected, $this->middleware->get_incentive_credits() );
+	}
+
+	public function test_get_incentive_credits_success_with_fallback() {
+		$this->ads->expects( $this->once() )->method( 'get_ads_currency' )->willReturn( 'AUD' );
+		$this->wc->expects( $this->once() )->method( 'get_base_country' )->willReturn( 'GB' );
+		$this->wc->expects( $this->once() )->method( 'get_woocommerce_currency' )->willReturn( 'CAD' );
+		$this->generate_request_mock( [ 'offers' => self::TEST_OFFERS ] );
+
+		$expected = [
+			'country'      => 'GB',
+			'currency'     => 'JPY',
+			'spending'     => 40000,
+			'credit'       => 45000,
+			'ads_currency' => 'AUD',
+		];
+
+		$this->assertEquals( $expected, $this->middleware->get_incentive_credits() );
+	}
+
+	public function test_get_incentive_credits_empty_offers() {
+		$this->wc->expects( $this->once() )->method( 'get_base_country' )->willReturn( 'GB' );
+		$this->generate_request_mock( [ 'offers' => [] ] );
+
+		$this->assertEquals( [], $this->middleware->get_incentive_credits() );
+	}
+
+	public function test_get_incentive_credits_invalid_response() {
+		$this->wc->expects( $this->once() )->method( 'get_base_country' )->willReturn( 'GB' );
+		$this->generate_request_mock( [], 'get', 400 );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Invalid response when fetching incentive credits.' );
+
+		$this->middleware->get_incentive_credits();
+	}
+
+	public function test_get_incentive_credits_exception() {
+		$this->wc->expects( $this->once() )->method( 'get_base_country' )->willReturn( 'GB' );
+		$this->generate_request_mock_exception( 'Error fetching incentive credits.' );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Error fetching incentive credits.' );
+
+		$this->middleware->get_incentive_credits();
 	}
 }
