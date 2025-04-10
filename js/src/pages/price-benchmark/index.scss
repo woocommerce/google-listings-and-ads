@@ -1,3 +1,16 @@
 .gla-price-benchmark__card .app-tab-nav:first-child {
 	padding: 0 $grid-unit-40;
 }
+
+.gla-admin-page.gla-price-benchmark-tour {
+
+	.gla-price-benchmark-tour__heading img {
+		display: block;
+		margin: 0 auto;
+	}
+
+	.woocommerce-tour-kit-step__description {
+		font-size: 13px;
+		line-height: 20px;
+	}
+}

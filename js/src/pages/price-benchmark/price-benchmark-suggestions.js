@@ -4,6 +4,11 @@
 import { TablePlaceholder } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 
+/**
+ * Internal dependencies
+ */
+import PriceBenchmarkTour from './price-benchmark-tour';
+
 const TABLE_DATA_HEADERS = [
 	{
 		key: 'product',
@@ -51,13 +56,16 @@ const TABLE_DATA_HEADERS = [
 
 const PriceBenchmarkSuggestions = () => {
 	return (
-		<TablePlaceholder
-			headers={ TABLE_DATA_HEADERS }
-			caption={ __(
-				'Loading the product data…',
-				'google-listings-and-ads'
-			) }
-		/>
+		<>
+			<PriceBenchmarkTour />
+			<TablePlaceholder
+				headers={ TABLE_DATA_HEADERS }
+				caption={ __(
+					'Loading the product data…',
+					'google-listings-and-ads'
+				) }
+			/>
+		</>
 	);
 };
 
