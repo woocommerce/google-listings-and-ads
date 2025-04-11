@@ -1,0 +1,81 @@
+.gla-horizontal-stacked-bar {
+	background-color: $white;
+	border: 1px solid $gray-300;
+	border-radius: $grid-unit-05;
+	display: grid;
+	grid-template-areas:
+		"title"
+		"chart"
+		"legend";
+	gap: $grid-unit-20;
+	padding: $grid-unit-30;
+
+	@media (min-width: $break-wide) {
+		gap: $grid-unit-15;
+		grid-template-areas:
+			"title legend"
+			"chart chart";
+	}
+}
+
+.gla-horizontal-stacked-bar__title {
+	color: $gray-900;
+	font-size: $gla-font-base;
+	font-weight: 500;
+	grid-area: title;
+	line-height: $gla-line-height-medium;
+	margin: 0;
+}
+
+.gla-horizontal-stacked-bar__legend {
+	grid-area: legend;
+	margin: 0;
+
+	ul {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $grid-unit-20;
+		margin: 0;
+		row-gap: $grid-unit-05;
+
+		@media (min-width: $break-wide) {
+			justify-content: flex-end;
+		}
+	}
+
+	li {
+		margin: 0;
+	}
+}
+
+.gla-horizontal-stacked-bar__legend-item {
+	align-items: center;
+	color: $gray-700;
+	display: flex;
+	font-size: $gla-font-smaller;
+	line-height: $gla-line-height-medium;
+	gap: $grid-unit-05;
+}
+
+.gla-horizontal-stacked-bar__legend-color {
+	border-radius: 50%;
+	display: block;
+	height: $grid-unit;
+	width: $grid-unit;
+}
+
+.gla-horizontal-stacked-bar__chart {
+	display: flex;
+	flex-wrap: nowrap;
+	gap: $grid-unit-05;
+	grid-area: chart;
+
+	span {
+		border-radius: $grid-unit-05;
+		height: $grid-unit-30;
+
+		@media (min-width: $break-wide) {
+			height: $grid-unit-20;
+		}
+	}
+}

@@ -63,10 +63,6 @@ describe( 'reducer', () => {
 				product: null,
 			},
 			mc_product_feed: null,
-			price_benchmark: {
-				suggestions: [],
-				adjustments: [],
-			},
 			report: {},
 			store_categories: [],
 			tours: {},
@@ -79,6 +75,17 @@ describe( 'reducer', () => {
 				budgetRecommendations: {},
 			},
 			gtinMigrationStatus: null,
+			price_benchmark: {
+				suggestions: [],
+				adjustments: [],
+				summary: {
+					total_products: 0,
+					price_similar: 2,
+					price_higher: 60,
+					price_lower: 30,
+					price_unknown: 8,
+				},
+			},
 		} );
 
 		prepareState = prepareImmutableState.bind( null, defaultState );

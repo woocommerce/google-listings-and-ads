@@ -405,3 +405,13 @@ export const getAdsBudgetRecommendations = ( state, countryCodes = [] ) => {
 export const getGtinMigrationStatus = ( state ) => {
 	return state.gtinMigrationStatus;
 };
+
+/**
+ * Retrieves the price benchmark summary from the state.
+ *
+ * @param {Object} state - The state object containing price benchmark data.
+ * @return {Object} The price benchmark summary.
+ */
+export const getPriceBenchmarkSummary = ( state ) => {
+	return state.price_benchmark.summary;
+};

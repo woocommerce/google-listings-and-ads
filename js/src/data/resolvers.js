@@ -35,6 +35,7 @@ import {
 	receiveGoogleMCContactInformation,
 	fetchTargetAudience,
 	fetchMCSetup,
+	fetchPriceBenchmarkSummary,
 	receiveGoogleAccountAccess,
 	receiveReport,
 	receiveMCProductStatistics,
@@ -582,4 +583,11 @@ export function* getGtinMigrationStatus() {
 			)
 		);
 	}
+}
+
+/**
+ * Resolver for getting the Price Benchmark summary.
+ */
+export function* getPriceBenchmarkSummary() {
+	yield fetchPriceBenchmarkSummary();
 }

@@ -124,3 +124,10 @@ export const GOOGLE_WPCOM_APP_CONNECTED_STATUS = {
 	ERROR: 'error',
 	DISABLED: 'disabled',
 };
+
+export const PRICE_BENCHMARK_CHART_COLORS = {
+	LOWER: '#4AB866',
+	SIMILAR: '#F0B849',
+	HIGHER: '#CC1818',
+	UNKNOWN: '#3858E9',
+};

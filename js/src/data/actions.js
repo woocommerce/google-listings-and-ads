@@ -1201,3 +1201,27 @@ export function* fetchGoogleAdsAccountStatus() {
 		);
 	}
 }
+
+/**
+ * Action to fetch the Price Benchmark summary.
+ */
+export function* fetchPriceBenchmarkSummary() {
+	try {
+		const data = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/price-benchmark/summary`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_PRICE_BENCHMARK_SUMMARY,
+			data,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the price benchmark summary.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
