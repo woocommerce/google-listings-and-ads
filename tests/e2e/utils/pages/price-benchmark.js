@@ -38,36 +38,10 @@ export default class PriceBenchmarkPage extends MockRequests {
 	 * @return {Promise<void>}
 	 */
 	async mockRequests() {
-		await Promise.all( [
-			this.fulfillMCReview( {
-				cooldown: 0,
-				issues: [],
-				reviewEligibleRegions: [],
-				status: 'ONBOARDING',
-			} ),
-
-			this.fulfillAccountIssuesRequest( {
-				issues: [],
-				page: 1,
-				total: 0,
-				loading: false,
-			} ),
-
-			this.mockJetpackConnected(),
-			this.mockGoogleConnected(),
-			this.mockAdsAccountConnected(),
-		] );
+		await Promise.all( [ this.fulfillTours() ] );
 	}
 
-	/**
-	 * Get the active product value element.
-	 *
-	 * @return {import('@playwright/test').Locator} The active product value element.
-	 */
-	getActiveProductValueElement() {
-		return this.page
-			.locator( '.woocommerce-summary__item-label span >> text=Active' )
-			.locator( '../..' )
-			.locator( '.woocommerce-summary__item-value span' );
+	async fulfillTours( payload = [] ) {
+		await this.fulfillGetTours( 'price-benchmark-tour', payload );
 	}
 }

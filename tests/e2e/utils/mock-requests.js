@@ -852,4 +852,10 @@ export default class MockRequests {
 			methods
 		);
 	}
+
+	async fulfillGetTours( payload ) {
+		await this.fulfillRequest( /\/wc\/gla\/tours\b/, payload, 200, [
+			'GET',
+		] );
+	}
 }

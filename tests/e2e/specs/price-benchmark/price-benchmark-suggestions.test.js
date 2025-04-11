@@ -6,7 +6,6 @@ import { expect, test } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import { clearOnboardedMerchant } from '../../utils/api';
 import PriceBenchmarkPage from '../../utils/pages/price-benchmark';
 
 test.use( { storageState: process.env.ADMINSTATE } );
@@ -31,7 +30,6 @@ test.describe( 'Price Benchmark Page', () => {
 	} );
 
 	test.afterAll( async () => {
-		await clearOnboardedMerchant();
 		await page.close();
 	} );
 
@@ -92,6 +90,43 @@ test.describe( 'Price Benchmark Page', () => {
 				'aria-selected',
 				'true'
 			);
+		} );
+	} );
+
+	test.describe( 'Price Benchmark Tour', () => {
+		test( 'Price Benchmark Tour should be visible', async () => {
+			await priceBenchmarkPage.goto();
+
+			const tourElement = page.locator(
+				'.gla-price-benchmark-tour__heading'
+			);
+			await expect( tourElement ).toBeVisible();
+		} );
+
+		test( 'Price Benchmark Tour should have the correct heading', async () => {
+			await priceBenchmarkPage.goto();
+
+			const tourHeading = page.locator(
+				'.gla-price-benchmark-tour__heading'
+			);
+			await expect( tourHeading ).toHaveText(
+				'Price Benchmark & Suggestions'
+			);
+		} );
+
+		test( 'Price Benchmark Tour should not be visible after closing', async () => {
+			priceBenchmarkPage.fulfillTours( [
+				{
+					id: 'price-benchmark-tour',
+					checked: true,
+				},
+			] );
+			await priceBenchmarkPage.goto();
+
+			const tourElement = page.locator(
+				'.gla-price-benchmark-tour__heading'
+			);
+			await expect( tourElement ).not.toBeVisible();
 		} );
 	} );
 } );
