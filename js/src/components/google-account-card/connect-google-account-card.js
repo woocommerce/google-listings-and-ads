@@ -7,28 +7,28 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { glaData } from '~/constants';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AppButton from '~/components/app-button';
 import readMoreLink from './read-more-link';
 import useGoogleConnectFlow from './useGoogleConnectFlow';
 
 /**
- * @param {Object} props React props
- * @param {boolean} props.disabled
+ * Renders a card to connect to Google Account.
+ *
+ * Please note that this component is only used on the Reconnection page.
+ * For the onboarding flow, the `GoogleComboAccountCard` component is used instead.
+ *
  * @fires gla_google_account_connect_button_click with `{ action: 'authorization', context: 'reconnect' }`
- * @fires gla_google_account_connect_button_click with `{ action: 'authorization', context: 'setup-mc' }`
  * @fires gla_documentation_link_click with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions' }`
  */
-const ConnectGoogleAccountCard = ( { disabled } ) => {
-	const pageName = glaData.mcSetupComplete ? 'reconnect' : 'setup-mc';
+const ConnectGoogleAccountCard = () => {
+	const pageName = 'reconnect';
 	const [ handleConnect, { loading, data } ] =
 		useGoogleConnectFlow( pageName );
 
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE }
-			disabled={ disabled }
 			alignIcon="top"
 			description={
 				<>
@@ -55,7 +55,6 @@ const ConnectGoogleAccountCard = ( { disabled } ) => {
 			indicator={
 				<AppButton
 					isSecondary
-					disabled={ disabled }
 					loading={ loading || data }
 					eventName="gla_google_account_connect_button_click"
 					eventProps={ {

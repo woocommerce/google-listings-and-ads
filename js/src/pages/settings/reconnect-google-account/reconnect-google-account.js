@@ -29,7 +29,7 @@ export default function ReconnectGoogleAccount() {
 		: undefined;
 
 	const isCompletedReconnection =
-		isConnected && ! noAccess && scope.glaRequired;
+		isConnected && ! noAccess && scope.reconnectionRequired;
 
 	useEffect( () => {
 		if ( isCompletedReconnection ) {

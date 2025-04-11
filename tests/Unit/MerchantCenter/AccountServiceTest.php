@@ -622,6 +622,25 @@ class AccountServiceTest extends UnitTest {
 		$this->assertEquals( self::TEST_ACCOUNT_DATA, $this->account->switch_url( self::TEST_ACCOUNT_ID ) );
 	}
 
+	public function test_setup_account_step_sdi_update() {
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->state->expects( $this->any() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'sdi_update' => [ 'status' => MerchantAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->middleware->expects( $this->once() )
+			->method( 'update_sdi_merchant_account' );
+
+		$this->assertEquals( self::TEST_ACCOUNT_DATA, $this->account->setup_account( self::TEST_ACCOUNT_ID ) );
+	}
+
 	public function test_setup_account_step_link_ads() {
 		$this->options->expects( $this->any() )
 			->method( 'get_ads_id' )

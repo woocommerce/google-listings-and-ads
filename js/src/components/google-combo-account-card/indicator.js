@@ -19,7 +19,7 @@ import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
  * @return {JSX.Element|null} Indicator component.
  */
 const Indicator = ( { showSpinner } ) => {
-	const isGoogleAdsConnected = useGoogleAdsAccountReady();
+	const { isGoogleAdsReady } = useGoogleAdsAccountReady();
 	const { isReady: isGoogleMCConnected } = useGoogleMCAccount();
 
 	if ( showSpinner ) {
@@ -30,7 +30,7 @@ const Indicator = ( { showSpinner } ) => {
 		);
 	}
 
-	if ( isGoogleAdsConnected && isGoogleMCConnected ) {
+	if ( isGoogleAdsReady && isGoogleMCConnected ) {
 		return <ConnectedIconLabel />;
 	}
 

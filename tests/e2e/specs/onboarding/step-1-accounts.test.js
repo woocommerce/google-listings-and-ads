@@ -43,6 +43,8 @@ const ADS_ACCOUNTS = [
 	},
 ];
 
+let wpComAppAuthURL;
+
 test.describe( 'Set up accounts', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
@@ -149,7 +151,7 @@ test.describe( 'Set up accounts', () => {
 	} );
 
 	test.describe( 'Connect Google account', () => {
-		test.beforeAll( async () => {
+		test.beforeAll( async ( { baseURL } ) => {
 			// Mock Jetpack as not connected
 			await setUpAccountsPage.mockJetpackNotConnected();
 
@@ -158,6 +160,11 @@ test.describe( 'Set up accounts', () => {
 			// If not mocked will fail and render nothing,
 			// as Jetpack is mocked only on the client-side.
 			await setUpAccountsPage.mockGoogleNotConnected();
+
+			wpComAppAuthURL = baseURL + 'wpcom_app_auth';
+			await setUpAccountsPage.fulfillRESTApiAuthorize( {
+				auth_url: wpComAppAuthURL,
+			} );
 
 			await setUpAccountsPage.goto();
 		} );
@@ -224,6 +231,69 @@ test.describe( 'Set up accounts', () => {
 			expect( page.url() ).toMatch( baseURL + 'google_auth' );
 		} );
 
+		test( 'should seamlessly redirect to WPCOM app auth once being redirected back from Google auth with all required access', async () => {
+			await setUpAccountsPage.mockJetpackConnected();
+			await setUpAccountsPage.mockGoogleConnected();
+			await setUpAccountsPage.goto( { 'google-mc': 'connected' } );
+
+			// Expect the user to be redirected automatically
+			await page.waitForURL( wpComAppAuthURL );
+
+			expect( page.url() ).toMatch( wpComAppAuthURL );
+		} );
+
+		test( 'should be able to go to WPCOM app auth page', async () => {
+			await setUpAccountsPage.mockJetpackConnected();
+			await setUpAccountsPage.mockGoogleConnected();
+			await setUpAccountsPage.mockMCNotConnected();
+			await setUpAccountsPage.goto();
+
+			const card = setUpAccountsPage.getAuthorizeWPComAppCard();
+
+			await expect( card.getByText( 'mail@example.com' ) ).toBeVisible();
+			await expect(
+				card.getByText(
+					'Granting Google access to your WooCommerce store is required'
+				)
+			).toBeVisible();
+			await expect(
+				card.getByRole( 'button', {
+					name: 'Or, connect to a different',
+				} )
+			).toBeVisible();
+
+			await card.getByRole( 'button', { name: 'Grant access' } ).click();
+			await page.waitForURL( wpComAppAuthURL );
+
+			expect( page.url() ).toMatch( wpComAppAuthURL );
+		} );
+
+		test( 'Should show a corresponding message when the user denies WPCOM app auth', async () => {
+			await setUpAccountsPage.mockJetpackConnected();
+			await setUpAccountsPage.mockGoogleConnected();
+			await setUpAccountsPage.mockMCNotConnected( false, 'disapproved' );
+			await setUpAccountsPage.goto();
+
+			await expect(
+				setUpAccountsPage
+					.getAuthorizeWPComAppCard()
+					.getByText( 'Access was denied' )
+			).toBeVisible();
+		} );
+
+		test( 'Should show a corresponding message when an error occurs in WPCOM app auth', async () => {
+			await setUpAccountsPage.mockJetpackConnected();
+			await setUpAccountsPage.mockGoogleConnected();
+			await setUpAccountsPage.mockMCNotConnected( false, 'error' );
+			await setUpAccountsPage.goto();
+
+			await expect(
+				setUpAccountsPage
+					.getAuthorizeWPComAppCard()
+					.getByText( 'There was an error granting Google access' )
+			).toBeVisible();
+		} );
+
 		test( 'should create merchant center and ads account if does not exist for the user', async () => {
 			const once = setUpAccountsPage.withFulfillTimes( 1 );
 			const deferred = once.withFulfillDeferred();
@@ -238,7 +308,7 @@ test.describe( 'Set up accounts', () => {
 			await once.mockMCHasNoAccounts();
 			await once.mockAdsAccountDisconnected();
 			await once.mockAdsStatusDisconnected();
-			await once.mockMCNotConnected();
+			await once.mockMCNotConnected( false, 'approved' );
 
 			await setUpAccountsPage.goto();
 
@@ -274,7 +344,7 @@ test.describe( 'Set up accounts', () => {
 			await once.mockMCHasNoAccounts();
 			await once.mockAdsAccountDisconnected();
 			await once.mockAdsStatusDisconnected();
-			await once.mockMCNotConnected();
+			await once.mockMCNotConnected( false, 'approved' );
 
 			await setUpAccountsPage.goto();
 
@@ -342,7 +412,7 @@ test.describe( 'Set up accounts', () => {
 				setUpAccountsPage.mockAdsStatusClaimed(),
 
 				// Mock merchant center as not connected.
-				setUpAccountsPage.mockMCNotConnected(),
+				setUpAccountsPage.mockMCNotConnected( false, 'approved' ),
 			] );
 		} );
 
@@ -428,10 +498,10 @@ test.describe( 'Set up accounts', () => {
 					} ) => {
 						const host = new URL( baseURL ).host;
 
-						await Promise.all( [
-							// Mock Merchant Center as not connected
-							setUpAccountsPage.mockMCNotConnected(),
-						] );
+						await setUpAccountsPage.mockMCNotConnected(
+							false,
+							'approved'
+						);
 
 						await page.reload();
 
@@ -512,7 +582,7 @@ test.describe( 'Set up accounts', () => {
 					setUpAccountsPage.mockAdsAccountsResponse( ADS_ACCOUNTS ),
 
 					// Mock merchant center as not connected.
-					setUpAccountsPage.mockMCNotConnected(),
+					setUpAccountsPage.mockMCNotConnected( false, 'approved' ),
 
 					// Mock merchant center has accounts
 					setUpAccountsPage.mockMCHasAccounts(),
@@ -803,7 +873,7 @@ test.describe( 'Set up accounts', () => {
 			await setUpAccountsPage.mockAdsAccountConnected();
 			await setUpAccountsPage.mockAdsStatusClaimed();
 			await setUpAccountsPage.mockMCHasAccounts();
-			await setUpAccountsPage.mockMCNotConnected();
+			await setUpAccountsPage.mockMCNotConnected( false, 'approved' );
 
 			await setUpAccountsPage.goto();
 		} );
@@ -874,7 +944,7 @@ test.describe( 'Set up accounts', () => {
 		test.describe( 'When only Ads is connected', async () => {
 			test.beforeAll( async () => {
 				await setUpAccountsPage.mockAdsAccountConnected();
-				await setUpAccountsPage.mockMCNotConnected();
+				await setUpAccountsPage.mockMCNotConnected( false, 'approved' );
 				await setUpAccountsPage.mockContactInformation( {
 					wcAddressErrors: [],
 					isMCAddressDifferent: false,

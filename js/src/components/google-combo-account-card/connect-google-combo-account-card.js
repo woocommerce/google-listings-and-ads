@@ -8,7 +8,6 @@ import { CheckboxControl } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { glaData } from '~/constants';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AppButton from '~/components/app-button';
 import {
@@ -18,16 +17,20 @@ import {
 import AppDocumentationLink from '../app-documentation-link';
 
 /**
+ * Renders a card to connect to Google Account.
+ *
+ * Please note that this component is only used on the onboarding flow.
+ *
  * @param {Object} props React props
- * @param {boolean} props.disabled
- * @fires gla_google_account_connect_button_click with `{ action: 'authorization', context: 'reconnect' }`
+ * @param {boolean} [props.disabled] Whether display the Card in disabled style.
+ *
  * @fires gla_google_account_connect_button_click with `{ action: 'authorization', context: 'setup-mc' }`
  * @fires gla_documentation_link_click with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions' }`
  * @fires gla_documentation_link_click with `{ context: 'setup-mc-accounts', link_id: 'google-mc-terms-of-service', href: 'https://support.google.com/merchants/answer/160173' }`
  * @fires gla_documentation_link_click with `{ context: 'setup-ads', link_id: 'google-ads-terms-of-service', href: 'https://support.google.com/adspolicy/answer/54818' }`
  */
 const ConnectGoogleComboAccountCard = ( { disabled } ) => {
-	const pageName = glaData.mcSetupComplete ? 'reconnect' : 'setup-mc';
+	const pageName = 'setup-mc';
 	const [ handleConnect, { loading, data } ] =
 		useGoogleConnectFlow( pageName );
 	const [ termsAccepted, setTermsAccepted ] = useState( false );
@@ -77,7 +80,7 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 			}
 			helper={ createInterpolateElement(
 				__(
-					'You will be prompted to give WooCommerce access to your Google account. Please check all the checkboxes to give WooCommerce all required permissions. <link>Read more</link>',
+					'You will be prompted to give WooCommerce access to your Google account and Google to your WooCommerce account. Please approve all access to give WooCommerce and Google all required permissions. <link>Read more</link>',
 					'google-listings-and-ads'
 				),
 				{

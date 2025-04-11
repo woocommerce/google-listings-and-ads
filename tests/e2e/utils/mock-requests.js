@@ -643,14 +643,14 @@ export default class MockRequests {
 	/**
 	 * Mock MC as connected.
 	 *
-	 * @param {number} id
-	 * @param {boolean} notificationServiceEnabled
-	 * @param {null|'approved'|'error'|'dissaproved'} wpcomRestApiStatus
+	 * @param {number} [id=1234]
+	 * @param {boolean} [notificationServiceEnabled=false]
+	 * @param {null|'approved'|'error'|'disapproved'} [wpcomRestApiStatus='approved']
 	 */
 	async mockMCConnected(
 		id = 1234,
 		notificationServiceEnabled = false,
-		wpcomRestApiStatus = null
+		wpcomRestApiStatus = 'approved'
 	) {
 		await this.fulfillMCConnection( {
 			id,
@@ -662,11 +662,19 @@ export default class MockRequests {
 
 	/**
 	 * Mock MC as not connected.
+	 *
+	 * @param {boolean} [notificationServiceEnabled=false]
+	 * @param {null|'approved'|'error'|'disapproved'} [wpcomRestApiStatus=null]
 	 */
-	async mockMCNotConnected() {
+	async mockMCNotConnected(
+		notificationServiceEnabled = false,
+		wpcomRestApiStatus = null
+	) {
 		await this.fulfillMCConnection( {
 			id: 0,
 			status: 'disconnected',
+			notification_service_enabled: notificationServiceEnabled,
+			wpcom_rest_api_status: wpcomRestApiStatus,
 		} );
 	}
 

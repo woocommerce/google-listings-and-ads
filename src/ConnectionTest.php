@@ -112,18 +112,9 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 	}
 
 	/**
-	 * Render the admin page.
+	 * Handle output of messages after being redirect back from a connection.
 	 */
-	protected function render_admin_page() {
-		/** @var OptionsInterface $options */
-		$options = $this->container->get( OptionsInterface::class );
-		/** @var Manager $manager */
-		$manager    = $this->container->get( Manager::class );
-		$blog_token = $manager->get_tokens()->get_access_token();
-		$user_token = $manager->get_tokens()->get_access_token( get_current_user_id() );
-		$user_data  = $manager->get_connected_user_data( get_current_user_id() );
-		$url        = admin_url( 'admin.php?page=connection-test-admin-page' );
-
+	protected function handle_connection_return() {
 		if ( ! empty( $_GET['google-mc'] ) && 'connected' === $_GET['google-mc'] ) {
 			$this->response .= 'Google Account connected successfully.';
 		}
@@ -136,6 +127,39 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 			$this->response .= 'Failed to connect to Google.';
 		}
 
+		if ( ! empty( $_GET['connecting'] ) && 'wpcom-api' === $_GET['connecting'] ) {
+			$status = esc_attr( empty( $_GET['google_wpcom_app_status'] ) ? 'NOT_SET' : $_GET['google_wpcom_app_status'] );
+			$nonce  = empty( $_GET['nonce'] ) ? '' : $_GET['nonce'];
+
+			$this->response .= sprintf( 'Returned from granting permissions for the WPCOM REST API, status: %s', $status );
+			$this->response .= "\n\n";
+
+			// Store the status and nonce.
+			$request = new Request( 'PUT', '/wc/gla/rest-api/authorize' );
+			$request->set_body_params(
+				[
+					'status' => $status,
+					'nonce'  => $nonce,
+				]
+			);
+			$this->send_rest_request( $request );
+		}
+	}
+
+	/**
+	 * Render the admin page.
+	 */
+	protected function render_admin_page() {
+		/** @var OptionsInterface $options */
+		$options = $this->container->get( OptionsInterface::class );
+		/** @var Manager $manager */
+		$manager    = $this->container->get( Manager::class );
+		$blog_token = $manager->get_tokens()->get_access_token();
+		$user_token = $manager->get_tokens()->get_access_token( get_current_user_id() );
+		$user_data  = $manager->get_connected_user_data( get_current_user_id() );
+		$url        = admin_url( 'admin.php?page=connection-test-admin-page' );
+
+		$this->handle_connection_return();
 		?>
 		<div class="wrap">
 			<h2>Connection Test</h2>
@@ -492,6 +516,19 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 										<?php endforeach; ?>
 										)
 									</p>
+									<?php
+										$conversion_action = $options->get( OptionsInterface::ADS_CONVERSION_ACTION );
+										if ( ! empty( $conversion_action ) && is_array( $conversion_action ) ) :
+									?>
+									<p class="description" style="font-style: italic">
+										( Conversion Action --
+										<?php foreach ( $conversion_action as $name => $value ) : ?>
+											<?php echo "{$name} : \"{$value}\""; ?>
+										<?php endforeach; ?>
+										)
+									</p>
+									<?php endif; ?>
+									<br/>
 								<?php endif; ?>
 								<p class="description">
 									Begins/continues a multistep account-setup sequence.
@@ -688,6 +725,7 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 								<p>
 									<code><?php echo $wp_api_status ?? 'NOT SET'; ?></code>
 									<?php if ( $wp_api_status === 'approved' ) { ?> <a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'disconnect-wp-api' ), $url ), 'disconnect-wp-api' ) ); ?>">Disconnect</a> <?php }  ?>
+									<?php if ( $wp_api_status !== 'approved' ) { ?> <a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'grant-wp-api' ), $url ), 'grant-wp-api' ) ); ?>">Grant Access</a> <?php }  ?>
 								</p>
 							</td>
 						</tr>
@@ -913,6 +951,24 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 				}
 			}
 
+		}
+
+		if ( 'grant-wp-api' === $_GET['action'] && check_admin_referer( 'grant-wp-api' ) ) {
+			// Redirect back to connection test page.
+			add_filter(
+				'woocommerce_gla_wpcom_return_url',
+				function ( $url ) {
+					return admin_url( 'admin.php?page=connection-test-admin-page&connecting=wpcom-api' );
+				}
+			);
+
+			$request = new Request( 'GET', '/wc/gla/rest-api/authorize' );
+			$data    = $this->send_rest_request( $request );
+
+			if ( $data && isset( $data['auth_url'] ) ) {
+				wp_redirect( $data['auth_url'] ); // phpcs:ignore WordPress.Security.SafeRedirect
+				exit;
+			}
 		}
 
 		if ( 'disconnect-wp-api' === $_GET['action'] && check_admin_referer( 'disconnect-wp-api' ) ) {

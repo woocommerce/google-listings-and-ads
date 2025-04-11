@@ -129,7 +129,7 @@ class Ads implements OptionsAwareInterface {
 	 * @throws Exception When a link is unavailable.
 	 */
 	public function accept_merchant_link( int $merchant_id ) {
-		$link        = $this->get_merchant_link( $merchant_id, 3 );
+		$link        = $this->get_merchant_link( $merchant_id, 5 );
 		$link_status = $link->getStatus();
 		if ( $link_status === ProductLinkInvitationStatus::ACCEPTED ) {
 			return;
@@ -351,6 +351,7 @@ class Ads implements OptionsAwareInterface {
 		}
 
 		if ( $attempts_left > 0 ) {
+			sleep( 1 );
 			return $this->get_merchant_link( $merchant_id, $attempts_left - 1 );
 		}
 

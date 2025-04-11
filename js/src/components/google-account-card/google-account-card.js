@@ -8,7 +8,14 @@ import RequestFullAccessGoogleAccountCard from './request-full-access-google-acc
 import ConnectedGoogleAccountCard from './connected-google-account-card';
 import ConnectGoogleAccountCard from './connect-google-account-card';
 
-export default function GoogleAccountCard( { disabled = false } ) {
+/**
+ * Renders a card to connect, request full access, or display a connected Google account.
+ *
+ * Please note that this component is only used on the Reconnection page.
+ * For the onboarding flow, the `GoogleComboAccountCard` component is used instead.
+ * Therefore, the `scope` is checked for reconnection requirements.
+ */
+export default function GoogleAccountCard() {
 	const { google, scope, hasFinishedResolution } = useGoogleAccount();
 
 	if ( ! hasFinishedResolution ) {
@@ -17,11 +24,11 @@ export default function GoogleAccountCard( { disabled = false } ) {
 
 	const isConnected = google?.active === 'yes';
 
-	if ( isConnected && scope.glaRequired ) {
+	if ( isConnected && scope.reconnectionRequired ) {
 		return <ConnectedGoogleAccountCard googleAccount={ google } />;
 	}
 
-	if ( isConnected && ! scope.glaRequired ) {
+	if ( isConnected && ! scope.reconnectionRequired ) {
 		return (
 			<RequestFullAccessGoogleAccountCard
 				additionalScopeEmail={ google.email }
@@ -29,5 +36,5 @@ export default function GoogleAccountCard( { disabled = false } ) {
 		);
 	}
 
-	return <ConnectGoogleAccountCard disabled={ disabled } />;
+	return <ConnectGoogleAccountCard />;
 }

@@ -407,8 +407,29 @@ class MerchantCenterServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_get_setup_status_step_accounts_not_yet_authorized_wpcom_api() {
+		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
+		$this->merchant_account_state->method( 'last_incomplete_step' )->willReturn( '' );
+		$this->ads_service->method( 'connected_account' )->willReturn( true );
+		$this->contact_information->method( 'get_contact_information' )
+			->willReturn( $this->get_valid_business_info() );
+		$this->settings->method( 'get_store_address' )
+			->willReturn( $this->get_sample_address() );
+		$this->address_utility->method( 'compare_addresses' )
+			->willReturn( true );
+
+		$this->assertEquals(
+			[
+				'status' => 'incomplete',
+				'step'   => 'accounts',
+			],
+			$this->mc_service->get_setup_status()
+		);
+	}
+
 	public function test_get_setup_status_step_product_listings() {
 		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
+		$this->options->method( 'is_wpcom_api_authorized' )->willReturn( true );
 		$this->merchant_account_state->method( 'last_incomplete_step' )->willReturn( '' );
 		$this->ads_service->method( 'connected_account' )->willReturn( true );
 		$this->options->method( 'get' )
@@ -441,6 +462,7 @@ class MerchantCenterServiceTest extends UnitTest {
 
 	public function test_get_setup_status_shipping_selected_rates() {
 		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
+		$this->options->method( 'is_wpcom_api_authorized' )->willReturn( true );
 		$this->merchant_account_state->method( 'last_incomplete_step' )->willReturn( '' );
 		$this->ads_service->method( 'connected_account' )->willReturn( true );
 		$this->options->method( 'get' )
@@ -491,6 +513,7 @@ class MerchantCenterServiceTest extends UnitTest {
 
 	public function test_get_setup_status_step_paid_ads() {
 		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
+		$this->options->method( 'is_wpcom_api_authorized' )->willReturn( true );
 		$this->merchant_account_state->method( 'last_incomplete_step' )->willReturn( '' );
 		$this->ads_service->method( 'connected_account' )->willReturn( true );
 		$this->options->expects( $this->exactly( 3 ) )->method( 'get' )

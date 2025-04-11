@@ -195,18 +195,7 @@ class WCCouponAdapterTest extends UnitTest {
 		);
 		$adapted_coupon->disable_promotion( $coupon );
 		$dates = $adapted_coupon->getPromotionEffectiveTimePeriod();
-
-		$this->assertEquals(
-			new GoogleTimePeriod(
-				[
-					'startTime' => (string) $postdate,
-					'endTime'   => (string) $postdate,
-				]
-			),
-			$dates
-		);
-
-		$now = gmdate( DATE_ATOM );
+		$now   = gmdate( DATE_ATOM );
 
 		//phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 		$this->assertEquals( $postdate, $dates->startTime );

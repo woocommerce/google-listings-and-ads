@@ -35,7 +35,7 @@ let productEditor = null;
 let page = null;
 
 const actionSchedulerLink =
-	'wp-admin/admin.php?page=wc-status&tab=action-scheduler&orderby=schedule&order=desc';
+	'wp-admin/admin.php?page=wc-status&tab=action-scheduler&orderby=schedule&order=desc&s=gla%2Fjobs%2Fnotifications';
 
 const getASJobRowName = ( itemId, notificationType, status = 'Pending' ) => {
 	return `gla/jobs/notifications/products/process_item Run | Cancel ${ status } 0 => array ( 'item_id' => ${ itemId }, 'topic' => '${ notificationType }'`;
@@ -184,13 +184,25 @@ test.describe( 'Notifications Schedule', () => {
 		await productEditor.publish();
 		const id = productEditor.getPostID();
 
+		// Run the scheduled product.create job so that the subsequent product.create job
+		// being rescheduled won't be skipped due to the existence of the same job.
+		await page.goto( actionSchedulerLink );
+		let row = page.getByRole( 'row', {
+			name: getASJobRowName( id, 'product.create' ),
+		} );
+		await expect( row ).toBeVisible();
+		await row.hover( { force: true } );
+		await row.getByRole( 'link' ).first().click();
+		await page.waitForURL( actionSchedulerLink );
+		await expect( row ).not.toBeVisible();
+
 		await productEditor.gotoEditProductPage( id );
 		await productEditor.mockNotificationStatus( 'created' );
 		await productEditor.unpublish();
 
 		// Check the product.update job is scheduled.
 		await page.goto( actionSchedulerLink );
-		let row = page.getByRole( 'row', {
+		row = page.getByRole( 'row', {
 			name: getASJobRowName( id, 'product.delete' ),
 		} );
 		await expect( row ).toBeVisible();
