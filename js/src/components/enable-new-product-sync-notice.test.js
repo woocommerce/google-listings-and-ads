@@ -2,7 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -13,6 +13,9 @@ import EnableNewProductSyncNotice from './enable-new-product-sync-notice';
 jest.mock( '~/hooks/useGoogleMCAccount' );
 
 describe( 'Enable New Product Sync Notice', () => {
+	const noticeText =
+		'Start using the new and improved method for synchronizing product data with Google.';
+
 	it( 'should render the notice if the account has not switched to new product sync', () => {
 		useGoogleMCAccount.mockImplementation( () => {
 			return {
@@ -24,21 +27,12 @@ describe( 'Enable New Product Sync Notice', () => {
 			};
 		} );
 
-		const { getByText, getByRole } = render(
-			<EnableNewProductSyncNotice />
-		);
+		render( <EnableNewProductSyncNotice /> );
 
+		expect( screen.getByText( noticeText ) ).toBeInTheDocument();
 		expect(
-			getByText(
-				'We will soon transition to a new and improved method for synchronizing product data with Google.'
-			)
-		).toBeInTheDocument();
-
-		const button = getByRole( 'button', {
-			name: /Get early access/i,
-		} );
-
-		expect( button ).toBeEnabled();
+			screen.queryByRole( 'button', { name: 'Grant access' } )
+		).toBeEnabled();
 	} );
 	it( 'should not render the notice if the account has switched to new product sync', () => {
 		useGoogleMCAccount.mockImplementation( () => {
@@ -51,18 +45,11 @@ describe( 'Enable New Product Sync Notice', () => {
 			};
 		} );
 
-		const { queryByText, queryByRole } = render(
-			<EnableNewProductSyncNotice />
-		);
+		render( <EnableNewProductSyncNotice /> );
 
+		expect( screen.queryByText( noticeText ) ).not.toBeInTheDocument();
 		expect(
-			queryByText(
-				'We will soon transition to a new and improved method for synchronizing product data with Google.'
-			)
-		).not.toBeInTheDocument();
-
-		expect(
-			queryByRole( 'button', { name: /Get early access/i } )
+			screen.queryByRole( 'button', { name: 'Grant access' } )
 		).not.toBeInTheDocument();
 	} );
 	it( 'should not render the notice if the notification service is not enabled', () => {
@@ -76,18 +63,11 @@ describe( 'Enable New Product Sync Notice', () => {
 			};
 		} );
 
-		const { queryByText, queryByRole } = render(
-			<EnableNewProductSyncNotice />
-		);
+		render( <EnableNewProductSyncNotice /> );
 
+		expect( screen.queryByText( noticeText ) ).not.toBeInTheDocument();
 		expect(
-			queryByText(
-				'We will soon transition to a new and improved method for synchronizing product data with Google.'
-			)
-		).not.toBeInTheDocument();
-
-		expect(
-			queryByRole( 'button', { name: /Get early access/i } )
+			screen.queryByRole( 'button', { name: 'Grant access' } )
 		).not.toBeInTheDocument();
 	} );
 
@@ -99,18 +79,11 @@ describe( 'Enable New Product Sync Notice', () => {
 			};
 		} );
 
-		const { queryByText, queryByRole } = render(
-			<EnableNewProductSyncNotice />
-		);
+		render( <EnableNewProductSyncNotice /> );
 
+		expect( screen.queryByText( noticeText ) ).not.toBeInTheDocument();
 		expect(
-			queryByText(
-				'We will soon transition to a new and improved method for synchronizing product data with Google.'
-			)
-		).not.toBeInTheDocument();
-
-		expect(
-			queryByRole( 'button', { name: /Get early access/i } )
+			screen.queryByRole( 'button', { name: 'Grant access' } )
 		).not.toBeInTheDocument();
 	} );
 } );

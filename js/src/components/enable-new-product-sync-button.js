@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { addQueryArgs } from '@wordpress/url';
 import { useState } from '@wordpress/element';
 
 /**
@@ -10,9 +9,8 @@ import { useState } from '@wordpress/element';
  */
 import AppButton from '~/components/app-button';
 import { glaData } from '~/constants';
-import { API_NAMESPACE } from '~/data/constants';
-import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import { useAppDispatch } from '~/data';
+import { handleApiError } from '~/utils/handleError';
 
 /**
  * Clicking on the button to start enabling the new product sync (API Pull).
@@ -28,26 +26,24 @@ import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
  * @param {Object} props The component props to be forwarded to AppButton.
  * @return {JSX.Element} The button.
  *
- * @fires gla_enable_product_sync_click with `{ page: 'settings', context: 'banner' | 'mc_card' }`
+ * @fires gla_enable_product_sync_click with `{ page: 'setup-mc' | 'settings', context: 'banner' | 'mc_card' }`
  */
 const EnableNewProductSyncButton = ( props ) => {
-	const { createNotice } = useDispatchCoreNotices();
+	const { fetchWPComAppAuthorizationUrl } = useAppDispatch();
 	const [ loading, setLoading ] = useState( false );
 	const nextPageName = glaData.mcSetupComplete ? 'settings' : 'setup-mc';
-	const query = { next_page_name: nextPageName };
-	const path = addQueryArgs( `${ API_NAMESPACE }/rest-api/authorize`, query );
-	const [ fetchRestAPIAuthorize ] = useApiFetchCallback( { path } );
+
 	const handleEnableClick = async () => {
 		try {
 			setLoading( true );
-			const d = await fetchRestAPIAuthorize();
-			window.location.href = d.auth_url;
+			const authUrl = await fetchWPComAppAuthorizationUrl( nextPageName );
+			window.location.href = authUrl;
 		} catch ( error ) {
 			setLoading( false );
-			createNotice(
-				'error',
+			handleApiError(
+				error,
 				__(
-					'Unable to enable new product sync. Please try again later.',
+					'Unable to enable new product sync.',
 					'google-listings-and-ads'
 				)
 			);
@@ -57,6 +53,7 @@ const EnableNewProductSyncButton = ( props ) => {
 	return (
 		<AppButton
 			isSecondary
+			text={ __( 'Grant access', 'google-listings-and-ads' ) }
 			loading={ loading }
 			onClick={ handleEnableClick }
 			eventName="gla_enable_product_sync_click"

@@ -30,6 +30,7 @@ describe( 'toScopeState', () => {
 	let siteVerificationScopes;
 	let gmcScopes;
 	let adsScopes;
+	let contentAndAdsdScopes;
 	let allScopes;
 
 	beforeEach( () => {
@@ -37,6 +38,7 @@ describe( 'toScopeState', () => {
 		siteVerificationScopes = genScopes( 'site_verification_verify_only' );
 		gmcScopes = genScopes( 'content', 'site_verification_verify_only' );
 		adsScopes = genScopes( 'ad_words' );
+		contentAndAdsdScopes = genScopes( 'content', 'ad_words' );
 		allScopes = genScopes(
 			'content',
 			'site_verification_verify_only',
@@ -49,19 +51,22 @@ describe( 'toScopeState', () => {
 
 		expect( scopeState ).toHaveProperty( 'gmcRequired' );
 		expect( scopeState ).toHaveProperty( 'adsRequired' );
-		expect( scopeState ).toHaveProperty( 'glaRequired' );
+		expect( scopeState ).toHaveProperty( 'onboardingRequired' );
+		expect( scopeState ).toHaveProperty( 'reconnectionRequired' );
 	} );
 
 	it( 'when the `scopes` parameter is not given, should get `false` for all results', () => {
 		expect( toScopeState( false ) ).toMatchObject( {
 			gmcRequired: false,
 			adsRequired: false,
-			glaRequired: false,
+			onboardingRequired: false,
+			reconnectionRequired: false,
 		} );
 		expect( toScopeState( true ) ).toMatchObject( {
 			gmcRequired: false,
 			adsRequired: false,
-			glaRequired: false,
+			onboardingRequired: false,
+			reconnectionRequired: false,
 		} );
 	} );
 
@@ -119,49 +124,97 @@ describe( 'toScopeState', () => {
 		}
 	);
 
-	describe( 'For `glaRequired`', () => {
+	describe.each( [ [ false ], [ true ] ] )(
+		'For `onboardingRequired`, if the parameter `adsSetupComplete` = %p',
+		( adsSetupComplete ) => {
+			it( 'and the `scopes` contains all required scopes, should be `true`', () => {
+				expect(
+					toScopeState( adsSetupComplete, allScopes )
+						.onboardingRequired
+				).toBe( true );
+			} );
+
+			it( "and the `scopes` doesn't contains all required scopes, should be `false`", () => {
+				expect(
+					toScopeState( adsSetupComplete, [] ).onboardingRequired
+				).toBe( false );
+				expect(
+					toScopeState( adsSetupComplete, contentScopes )
+						.onboardingRequired
+				).toBe( false );
+				expect(
+					toScopeState( adsSetupComplete, siteVerificationScopes )
+						.onboardingRequired
+				).toBe( false );
+				expect(
+					toScopeState( adsSetupComplete, adsScopes )
+						.onboardingRequired
+				).toBe( false );
+				expect(
+					toScopeState( adsSetupComplete, gmcScopes )
+						.onboardingRequired
+				).toBe( false );
+				expect(
+					toScopeState( adsSetupComplete, contentAndAdsdScopes )
+						.onboardingRequired
+				).toBe( false );
+			} );
+		}
+	);
+
+	describe( 'For `reconnectionRequired`', () => {
 		describe( 'if the parameter `adsSetupComplete` = false`', () => {
 			it( 'and the `scopes` contains GMC required scopes, should be `true`', () => {
-				expect( toScopeState( false, gmcScopes ).glaRequired ).toBe(
-					true
-				);
+				expect(
+					toScopeState( false, gmcScopes ).reconnectionRequired
+				).toBe( true );
 			} );
 
 			it( "and the `scopes` doesn't contains GMC required scopes, should be `false`", () => {
-				expect( toScopeState( false, [] ).glaRequired ).toBe( false );
-				expect( toScopeState( false, contentScopes ).glaRequired ).toBe(
+				expect( toScopeState( false, [] ).reconnectionRequired ).toBe(
 					false
 				);
 				expect(
-					toScopeState( false, siteVerificationScopes ).glaRequired
+					toScopeState( false, contentScopes ).reconnectionRequired
 				).toBe( false );
-				expect( toScopeState( false, adsScopes ).glaRequired ).toBe(
-					false
-				);
+				expect(
+					toScopeState( false, siteVerificationScopes )
+						.reconnectionRequired
+				).toBe( false );
+				expect(
+					toScopeState( false, adsScopes ).reconnectionRequired
+				).toBe( false );
+				expect(
+					toScopeState( false, contentAndAdsdScopes )
+						.reconnectionRequired
+				).toBe( false );
 			} );
 		} );
 
 		describe( 'if the parameter `adsSetupComplete` = true`', () => {
 			it( 'and the `scopes` contains all required scopes, should be `true`', () => {
-				expect( toScopeState( true, allScopes ).glaRequired ).toBe(
-					true
-				);
+				expect(
+					toScopeState( true, allScopes ).reconnectionRequired
+				).toBe( true );
 			} );
 
 			it( "and the `scopes` doesn't contains all required scopes, should be `false`", () => {
-				expect( toScopeState( true, [] ).glaRequired ).toBe( false );
-				expect( toScopeState( true, contentScopes ).glaRequired ).toBe(
+				expect( toScopeState( true, [] ).reconnectionRequired ).toBe(
 					false
 				);
 				expect(
-					toScopeState( true, siteVerificationScopes ).glaRequired
+					toScopeState( true, contentScopes ).reconnectionRequired
 				).toBe( false );
-				expect( toScopeState( true, adsScopes ).glaRequired ).toBe(
-					false
-				);
-				expect( toScopeState( true, gmcScopes ).glaRequired ).toBe(
-					false
-				);
+				expect(
+					toScopeState( true, siteVerificationScopes )
+						.reconnectionRequired
+				).toBe( false );
+				expect(
+					toScopeState( true, adsScopes ).reconnectionRequired
+				).toBe( false );
+				expect(
+					toScopeState( true, gmcScopes ).reconnectionRequired
+				).toBe( false );
 			} );
 		} );
 	} );

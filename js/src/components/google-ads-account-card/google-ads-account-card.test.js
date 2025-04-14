@@ -18,13 +18,6 @@ jest.mock( '~/hooks/useGoogleAdsAccountStatus', () => ( {
 	default: jest.fn().mockName( 'useGoogleAdsAccountStatus' ),
 } ) );
 
-jest.mock( '@woocommerce/components', () => ( {
-	...jest.requireActual( '@woocommerce/components' ),
-	Spinner: jest
-		.fn( () => <div role="status" aria-label="spinner" /> )
-		.mockName( 'Spinner' ),
-} ) );
-
 jest.mock( '~/hooks/useGoogleAdsAccount', () =>
 	jest.fn().mockName( 'useGoogleAdsAccount' ).mockReturnValue( {} )
 );
@@ -63,7 +56,7 @@ describe( 'GoogleAdsAccountCard', () => {
 		const { rerender } = render( <GoogleAdsAccountCard /> );
 
 		expect(
-			screen.queryByRole( 'status', { name: 'spinner' } )
+			screen.queryByRole( 'status', { name: /Loading/ } )
 		).toBeInTheDocument();
 
 		useGoogleAdsAccountStatus.mockReturnValue( {
@@ -73,7 +66,7 @@ describe( 'GoogleAdsAccountCard', () => {
 		rerender( <GoogleAdsAccountCard /> );
 
 		expect(
-			screen.queryByRole( 'status', { name: 'spinner' } )
+			screen.queryByRole( 'status', { name: /Loading/ } )
 		).not.toBeInTheDocument();
 	} );
 

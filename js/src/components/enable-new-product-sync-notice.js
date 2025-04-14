@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Notice } from '@wordpress/components';
-import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -34,23 +33,18 @@ const EnableNewProductSyncNotice = () => {
 
 	return (
 		<Notice status="info" isDismissible={ false }>
-			{ createInterpolateElement(
-				__(
-					'<p>We will soon transition to a new and improved method for synchronizing product data with Google.</p><enableButton>Get early access</enableButton>',
+			<p>
+				{ __(
+					'Start using the new and improved method for synchronizing product data with Google.',
 					'google-listings-and-ads'
-				),
-				{
-					enableButton: (
-						<EnableNewProductSyncButton
-							eventProps={ {
-								page: 'settings',
-								context: 'banner',
-							} }
-						/>
-					),
-					p: <p />,
-				}
-			) }
+				) }
+			</p>
+			<EnableNewProductSyncButton
+				eventProps={ {
+					page: 'settings',
+					context: 'banner',
+				} }
+			/>
 		</Notice>
 	);
 };

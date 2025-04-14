@@ -29,13 +29,7 @@ test.describe( 'Notifications Banner', () => {
 		page = await browser.newPage();
 		settingsPage = new SettingsPage( page );
 		await setOnboardedMerchant();
-		await Promise.all( [
-			// Mock Jetpack as connected
-			settingsPage.mockJetpackConnected(),
-
-			// Mock google as connected.
-			settingsPage.mockGoogleConnected(),
-		] );
+		await settingsPage.mockRequests();
 
 		settingsPage.goto();
 	} );
@@ -52,7 +46,7 @@ test.describe( 'Notifications Banner', () => {
 
 	test( 'Grant Access button is visible on Settings page when notifications service is enabled', async () => {
 		// Mock Merchant Center as connected
-		await settingsPage.mockMCConnected( 1234, true );
+		await settingsPage.mockMCConnected( 1234, true, null );
 		const button = settingsPage.getGrantAccessBtn();
 
 		await expect( button ).toBeVisible();
@@ -61,7 +55,7 @@ test.describe( 'Notifications Banner', () => {
 	test( 'When click on Grant Access button redirect to Auth page', async () => {
 		const mockAuthURL = 'https://example.com';
 		// Mock Merchant Center as connected
-		await settingsPage.mockMCConnected( 1234, true );
+		await settingsPage.mockMCConnected( 1234, true, null );
 		await settingsPage.fulfillRESTApiAuthorize( { auth_url: mockAuthURL } );
 		const button = settingsPage.getGrantAccessBtn();
 
@@ -71,7 +65,7 @@ test.describe( 'Notifications Banner', () => {
 		expect( page.url() ).toMatch( mockAuthURL );
 	} );
 
-	test( 'When REST API is Approved it shows a success notice in MC and allows to disable it', async () => {
+	test( 'When REST API is Approved it shows a success notice', async () => {
 		await settingsPage.goto();
 		await settingsPage.mockMCConnected( 1234, true, 'approved' );
 		const grantedAccessMessage = page
@@ -80,39 +74,9 @@ test.describe( 'Notifications Banner', () => {
 				'Google has been granted access to fetch your product data.'
 			);
 		await expect( grantedAccessMessage ).toBeVisible();
-
-		const disableDataFetchButton = page.getByRole( 'button', {
-			name: 'Disable product data fetch',
-			exact: true,
-		} );
-		const modalConfirmBtn = page.getByRole( 'button', {
-			name: 'Disable data fetching',
-			exact: true,
-		} );
-		const modalDismissBtn = page.getByRole( 'button', {
-			name: 'Never mind',
-			exact: true,
-		} );
-		const modalCheck = page.getByRole( 'checkbox', {
-			name: 'Yes, I want to disable the data fetching feature.',
-			exact: true,
-		} );
-
-		await expect( disableDataFetchButton ).toBeVisible();
-		await disableDataFetchButton.click();
-
-		await expect( modalConfirmBtn ).toBeDisabled();
-		await expect( modalDismissBtn ).toBeEnabled();
-		await expect( modalCheck ).toBeVisible();
-		await modalCheck.check();
-		await expect( modalConfirmBtn ).toBeEnabled();
-		await modalConfirmBtn.click();
-		await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-		await page.waitForURL( /path=%2Fgoogle%2Fsettings/ );
-		await expect( modalConfirmBtn ).not.toBeVisible();
 	} );
 
-	test( 'When REST API is Error it shows a waring notice in MC and allows to grant access', async () => {
+	test( 'When REST API is Error it shows a waring notice and allows to grant access', async () => {
 		await settingsPage.goto();
 		await settingsPage.mockMCConnected( 1234, true, 'error' );
 		const mockAuthURL = 'https://example.com';
@@ -120,7 +84,7 @@ test.describe( 'Notifications Banner', () => {
 		const errorAccessMessage = page
 			.locator( '#woocommerce-layout__primary' )
 			.getByText(
-				'There was an issue granting access to Google for fetching your products.'
+				'There was an error granting Google access to your WooCommerce store.'
 			);
 		const grantAccessBtn = page.getByRole( 'button', {
 			name: 'Grant access',

@@ -46,7 +46,7 @@ trait GuzzleClientTrait {
 		$result->method( 'getBody' )->willReturn( $body );
 		$result->method( 'getStatusCode' )->willReturn( $code );
 
-		$this->client->method( $type )->willReturn( $result );
+		$this->client->expects( $this->once() )->method( $type )->willReturn( $result );
 	}
 
 	/**

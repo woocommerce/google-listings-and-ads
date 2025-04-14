@@ -28,13 +28,19 @@ export default class SetUpAccountsPage extends MockRequests {
 	/**
 	 * Go to the set up mc page.
 	 *
+	 * @param {Object} [searchParamsObject] Additional Search params to be added to the URL.
 	 * @return {Promise<void>}
 	 */
-	async goto() {
-		await this.page.goto(
-			'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc',
-			{ waitUntil: LOAD_STATE.DOM_CONTENT_LOADED }
-		);
+	async goto( searchParamsObject ) {
+		const search = new URLSearchParams( {
+			page: 'wc-admin',
+			path: '/google/setup-mc',
+			...searchParamsObject,
+		} );
+
+		await this.page.goto( '/wp-admin/admin.php?' + search.toString(), {
+			waitUntil: LOAD_STATE.DOM_CONTENT_LOADED,
+		} );
 	}
 
 	/**
@@ -238,6 +244,15 @@ export default class SetUpAccountsPage extends MockRequests {
 		return this.page.locator(
 			'.gla-google-combo-service-account-card--google'
 		);
+	}
+
+	/**
+	 * Get WPCom app authorization card.
+	 *
+	 * @return {import('@playwright/test').Locator} Locator for WPCom app authorization card.
+	 */
+	getAuthorizeWPComAppCard() {
+		return this.page.locator( '.gla-authorize-wpcom-app-card' );
 	}
 
 	/**

@@ -165,13 +165,21 @@ const EditPaidAdsCampaign = () => {
 	};
 
 	const handleOnChange = ( value, allValues ) => {
-		const hasChange =
-			allValues.amount !== campaign.amount ||
+		const isAmountChanged = allValues.amount !== campaign.amount;
+
+		const isDisplayUrlPathChanged =
+			!! assetEntityGroup &&
 			! isEqual(
 				assetEntityGroup.display_url_path,
 				allValues.display_url_path
-			) ||
+			);
+
+		const hasAssetOperations =
+			!! assetEntityGroup &&
 			diffAssetOperations( assetEntityGroup, allValues ).length > 0;
+
+		const hasChange =
+			isAmountChanged || isDisplayUrlPathChanged || hasAssetOperations;
 
 		setDidChange( hasChange );
 	};

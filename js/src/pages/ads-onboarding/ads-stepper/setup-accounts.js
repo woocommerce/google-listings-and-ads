@@ -24,13 +24,19 @@ const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
 	const { google } = useGoogleAccount();
 	const { googleAdsAccount } = useGoogleAdsAccount();
-	const isGoogleAdsReady = useGoogleAdsAccountReady();
+	const { isLinkedToMerchantCenter } = useGoogleAdsAccountReady();
 
 	if ( ! google || ( google.active === 'yes' && ! googleAdsAccount ) ) {
 		return <AppSpinner />;
 	}
 
-	const isContinueButtonDisabled = ! isGoogleAdsReady;
+	/**
+	 * Here it uses `isLinkedToMerchantCenter` rather than `isGoogleAdsReady`
+	 * state because the latter is still true when the linking process fails.
+	 * When `isLinkedToMerchantCenter` is true, it already means the connection
+	 * process of Ads account is completed.
+	 */
+	const isContinueButtonDisabled = ! isLinkedToMerchantCenter;
 
 	return (
 		<StepContent>

@@ -8,7 +8,10 @@ import { useSelect } from '@wordpress/data';
  */
 import { STORE_KEY } from '~/data/constants';
 import useGoogleAccount from './useGoogleAccount';
-import { GOOGLE_MC_ACCOUNT_STATUS } from '~/constants';
+import {
+	GOOGLE_MC_ACCOUNT_STATUS,
+	GOOGLE_WPCOM_APP_CONNECTED_STATUS,
+} from '~/constants';
 
 /**
  * @typedef {import('~/data/types.js').GoogleMCAccount} GoogleMCAccount
@@ -19,7 +22,9 @@ import { GOOGLE_MC_ACCOUNT_STATUS } from '~/constants';
  * @property {boolean} hasFinishedResolution Whether resolution has completed.
  * @property {boolean} isPreconditionReady Whether the precondition of continued connection processing is fulfilled.
  * @property {boolean} hasGoogleMCConnection Whether the user has a Google Merchant Center account connection established.
+ * @property {boolean} isLinkedToAds Whether the Google Merchant Center account is linked to a Google Ads account.
  * @property {boolean} isReady Whether the user has a Google Merchant Center account is in connected state.
+ * @property {boolean} isWPComAppGranted Whether the user has granted Google's WPCOM app access to WooCommerce product data etc.
  */
 
 const googleMCAccountSelector = 'getGoogleMCAccount';
@@ -49,7 +54,9 @@ const useGoogleMCAccount = () => {
 					// the precondition doesn't meet.
 					isPreconditionReady: false,
 					hasGoogleMCConnection: false,
+					isLinkedToAds: false,
 					isReady: false,
+					isWPComAppGranted: false,
 				};
 			}
 
@@ -66,10 +73,17 @@ const useGoogleMCAccount = () => {
 					GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE,
 				].includes( acc?.status );
 
+			const isLinkedToAds =
+				acc?.status === GOOGLE_MC_ACCOUNT_STATUS.CONNECTED;
+
 			const isReady =
-				acc?.status === GOOGLE_MC_ACCOUNT_STATUS.CONNECTED ||
+				isLinkedToAds ||
 				( acc?.status === GOOGLE_MC_ACCOUNT_STATUS.INCOMPLETE &&
 					acc?.step === 'link_ads' );
+
+			const isWPComAppGranted =
+				acc?.wpcom_rest_api_status ===
+				GOOGLE_WPCOM_APP_CONNECTED_STATUS.APPROVED;
 
 			return {
 				googleMCAccount: acc,
@@ -79,7 +93,9 @@ const useGoogleMCAccount = () => {
 				),
 				isPreconditionReady: true,
 				hasGoogleMCConnection,
+				isLinkedToAds,
 				isReady,
+				isWPComAppGranted,
 			};
 		},
 		[

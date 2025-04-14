@@ -5,7 +5,7 @@ Requires at least: 6.1
 Tested up to: 6.7
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.9.8
+Stable tag: 2.9.10
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -140,15 +140,17 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 2.9.10 - 2025-03-18 =
+* Dev - Add the conversion action details to the connection test page.
+* Fix - It may be unable to connect to the auto-selected Google Ads account after disconnecting during onboarding.
+
+= 2.9.9 - 2025-02-18 =
+* Fix - Error displayed when accessing campaign assets editing page without attached asset groups.
+* Tweak - Opt-in to URL expansion.
+* Tweak - Supplement the implementation of API Pull for the Settings page.
+* Tweak - WC 9.7 compatibility.
+
 = 2.9.8 - 2025-02-04 =
 * Tweak - Replace WooCommerce logo with Woo 2.0 Brand.
-
-= 2.9.7 - 2025-01-28 =
-* Tweak - Adjust some query and table functions.
-* Tweak - Allow mapping of a Google ID without a prefix.
-
-= 2.9.6 - 2025-01-21 =
-* Tweak - Resolve some of the plugin check errors and warnings.
-* Tweak - Set specific flags for html_entity_decode.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
