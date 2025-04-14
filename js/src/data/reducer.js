@@ -507,15 +507,12 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_ADS_BUDGET_RECOMMENDATIONS: {
-			const { countryCodesKey, currency, recommendations } = action;
+			const { countryCodesKey, data } = action;
 
 			return setIn(
 				state,
 				[ 'ads', 'budgetRecommendations', countryCodesKey ],
-				{
-					currency,
-					recommendations,
-				}
+				data
 			);
 		}
 

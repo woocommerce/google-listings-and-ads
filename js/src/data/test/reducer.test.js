@@ -835,31 +835,43 @@ describe( 'reducer', () => {
 		const path = 'ads.budgetRecommendations';
 
 		it( 'should receive a budget recommendation', () => {
-			const recommendation = {
-				countryCodesKey: 'mu_sg',
-				currency: 'MUR',
-				recommendations: [
-					{
-						country: 'MU',
-						daily_budget: 15,
-					},
-					{
-						country: 'SG',
-						daily_budget: 10,
-					},
-				],
-			};
-
 			const action = {
 				type: TYPES.RECEIVE_ADS_BUDGET_RECOMMENDATIONS,
-				...recommendation,
+				countryCodesKey: 'mu_sg',
+				data: {
+					currency: 'MUR',
+					recommended: {
+						country: 'MU',
+						dailyBudget: 15,
+						metrics: {
+							cost: 105,
+							conversions: 2.2,
+							conversionsValue: 89.98,
+						},
+					},
+					high: {
+						country: 'MU',
+						dailyBudget: 20.5,
+						metrics: {
+							cost: 143.5,
+							conversions: 2.5,
+							conversionsValue: 98.59,
+						},
+					},
+					low: {
+						country: 'MU',
+						dailyBudget: 7,
+						metrics: {
+							cost: 49,
+							conversions: 2,
+							conversionsValue: 80.48,
+						},
+					},
+				},
 			};
 			const state = reducer( prepareState(), action );
 
-			expect( state ).toHaveProperty( `${ path }.mu_sg`, {
-				currency: recommendation.currency,
-				recommendations: recommendation.recommendations,
-			} );
+			expect( state ).toHaveProperty( `${ path }.mu_sg`, action.data );
 		} );
 	} );
 
