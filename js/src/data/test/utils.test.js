@@ -6,6 +6,7 @@ import {
 	getReportKey,
 	calculateDelta,
 	mapReportFieldsToPerformance,
+	convertKeysFromSnakeCaseToCamelCase,
 	freeFields,
 	paidFields,
 	MISSING_FREE_LISTINGS_DATA,
@@ -260,6 +261,50 @@ describe( 'mapReportFieldsToPerformance', () => {
 			a: {
 				missingFreeListingsData: MISSING_FREE_LISTINGS_DATA.FOR_REQUEST,
 			},
+		} );
+	} );
+} );
+
+describe( 'convertKeysFromSnakeCaseToCamelCase', () => {
+	it( 'should recursively convert snake case keys to camel case', () => {
+		const input = {
+			snake_case_key: 'value',
+			nested_object: {
+				another_snake_case_key: 'another_value',
+				anotherCamelCaseKey: 'anotherValue',
+			},
+			array_of_objects: [
+				{
+					snake_case_key_in_array: 'value_in_array',
+					camelCaseKeyInArray: 'valueInArray',
+				},
+			],
+			camelCaseKey: 'value',
+		};
+
+		expect( convertKeysFromSnakeCaseToCamelCase( input ) ).toEqual( {
+			snakeCaseKey: 'value',
+			nestedObject: {
+				anotherSnakeCaseKey: 'another_value',
+				anotherCamelCaseKey: 'anotherValue',
+			},
+			arrayOfObjects: [
+				{
+					snakeCaseKeyInArray: 'value_in_array',
+					camelCaseKeyInArray: 'valueInArray',
+				},
+			],
+			camelCaseKey: 'value',
+		} );
+	} );
+
+	it( 'should not convert the starting _[a-z]', () => {
+		const input = {
+			_snake_case_key: 'value',
+		};
+
+		expect( convertKeysFromSnakeCaseToCamelCase( input ) ).toEqual( {
+			_snakeCaseKey: 'value',
 		} );
 	} );
 } );

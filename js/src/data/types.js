@@ -1,4 +1,8 @@
 /**
+ * @typedef {import('~/data/actions').CountryCode} CountryCode
+ */
+
+/**
  * @typedef {Object} GeneralState
  * @property {string} version The version of this extension. Null if not yet connected.
  * @property {number | null} mcId The ID of the connected Google Merchant Center account. Null if not yet connected.
@@ -68,6 +72,24 @@
  * @property {string} path1 The first path of the display URL on the ad.
  * @property {string} path2 The second path of the display URL on the ad.
  * @property {AssetOperations[]} assets The creation and deletion operations for updating the asset group.
+ */
+
+/**
+ * @typedef {Object} AdsBudgetRecommendationEntity
+ * @property {CountryCode} country The country code of the recommendation.
+ * @property {number} dailyBudget The recommended daily budget for a country.
+ * @property {Object} [metrics] The estimated metrics for the campaign.
+ * @property {number} metrics.conversions The estimated number of conversions (unit sales) for a typical week.
+ * @property {number} metrics.conversionsValue The estimated total value of all the conversions (sales volume) the campaign will generate in a week.
+ * @property {number} metrics.cost The estimated average amount will be spent weekly during a month.
+ */
+
+/**
+ * @typedef {Object} AdsBudgetRecommendation
+ * @property {string} currency The currency of the recommendation.
+ * @property {AdsBudgetRecommendationEntity} recommended The recommended budget.
+ * @property {AdsBudgetRecommendationEntity} [high] The high budget recommendation.
+ * @property {AdsBudgetRecommendationEntity} [low] The low budget recommendation.
  */
 
 // This export is required for JSDoc in other files to import the type definitions from this file.

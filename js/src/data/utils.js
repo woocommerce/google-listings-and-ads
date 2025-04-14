@@ -209,6 +209,30 @@ export function getCountryCodesKey( countryCodes = [] ) {
 }
 
 /**
+ * Recursively convert the object's own enumerable keys from snake to camel case.
+ *
+ * @param {*} data The data to convert.
+ * @return {*} The converted data.
+ */
+export function convertKeysFromSnakeCaseToCamelCase( data ) {
+	if ( Array.isArray( data ) ) {
+		return data.map( convertKeysFromSnakeCaseToCamelCase );
+	}
+
+	if ( Object.prototype.toString.call( data ) !== '[object Object]' ) {
+		return data;
+	}
+
+	return Object.entries( data ).reduce( ( acc, [ key, value ] ) => {
+		const camelKey = key.replace( /(?<=[a-z\d])_([a-z])/g, ( _, letter ) =>
+			letter.toUpperCase()
+		);
+		acc[ camelKey ] = convertKeysFromSnakeCaseToCamelCase( value );
+		return acc;
+	}, {} );
+}
+
+/**
  * Report fields fetched from report API.
  *
  * @typedef {Object} ReportFieldsSchema

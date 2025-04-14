@@ -3,11 +3,38 @@
  */
 import { ASSET_TEXT_SPECS } from '~/components/paid-ads/assetSpecs';
 import getCharacterCounter from '~/utils/getCharacterCounter';
+import { convertKeysFromSnakeCaseToCamelCase } from './utils';
 
 /**
  * @typedef {import('~/data/actions').Campaign} Campaign
  * @typedef {import('~/data/types.js').AssetEntityGroup} AssetEntityGroup
+ * @typedef {import('~/data/types.js').AdsBudgetRecommendation} AdsBudgetRecommendation
  */
+
+/**
+ * Adapts the ads budget recommendation data received from API.
+ *
+ * @param {Object} data The ads budget recommendation data to be adapted.
+ * @return {AdsBudgetRecommendation} Ads budget recommendation data.
+ */
+export function adaptAdsBudgetRecommendation( data ) {
+	const validLevelKeys = [ 'recommended', 'high', 'low' ];
+	const { currency } = data;
+
+	return data.recommendations.reduce(
+		( payload, item ) => {
+			const { level, ...rest } = item;
+			const key = level.toLowerCase();
+
+			if ( validLevelKeys.includes( key ) ) {
+				payload[ key ] = convertKeysFromSnakeCaseToCamelCase( rest );
+			}
+
+			return payload;
+		},
+		{ currency }
+	);
+}
 
 /**
  * Adapts the campaign entity received from API.

@@ -1,8 +1,99 @@
 /**
  * Internal dependencies
  */
-import { adaptAssetGroup } from './adapters';
+import { adaptAdsBudgetRecommendation, adaptAssetGroup } from './adapters';
 import { ASSET_KEY } from '~/constants';
+
+describe( 'adaptAdsBudgetRecommendation', () => {
+	let input;
+
+	beforeEach( () => {
+		input = {
+			currency: 'USD',
+			recommendations: [
+				{
+					level: 'Recommended',
+					country: 'US',
+					daily_budget: 15,
+					metrics: {
+						cost: 105,
+						conversions: 2.2,
+						conversions_value: 89.98,
+					},
+				},
+				{
+					level: 'High',
+					country: 'US',
+					daily_budget: 20.5,
+					metrics: {
+						cost: 143.5,
+						conversions: 2.5,
+						conversions_value: 98.59,
+					},
+				},
+				{
+					level: 'Low',
+					country: 'US',
+					daily_budget: 7,
+					metrics: {
+						cost: 49,
+						conversions: 2,
+						conversions_value: 80.48,
+					},
+				},
+			],
+		};
+	} );
+
+	const recommended = {
+		country: 'US',
+		dailyBudget: 15,
+		metrics: {
+			cost: 105,
+			conversions: 2.2,
+			conversionsValue: 89.98,
+		},
+	};
+	const high = {
+		country: 'US',
+		dailyBudget: 20.5,
+		metrics: {
+			cost: 143.5,
+			conversions: 2.5,
+			conversionsValue: 98.59,
+		},
+	};
+	const low = {
+		country: 'US',
+		dailyBudget: 7,
+		metrics: {
+			cost: 49,
+			conversions: 2,
+			conversionsValue: 80.48,
+		},
+	};
+
+	it( 'Adapts the budget recommendation', () => {
+		expect( adaptAdsBudgetRecommendation( input ) ).toEqual( {
+			currency: 'USD',
+			recommended,
+			high,
+			low,
+		} );
+	} );
+
+	it( 'Adapts the budget recommendation for the valid levels only', () => {
+		const invalidItem = input.recommendations.pop();
+		invalidItem.level = 'base';
+		input.recommendations.push( invalidItem );
+
+		expect( adaptAdsBudgetRecommendation( input ) ).toEqual( {
+			currency: 'USD',
+			recommended,
+			high,
+		} );
+	} );
+} );
 
 describe( 'adaptAssetGroup', () => {
 	describe( 'Adapts the order of the multi-value text assets', () => {
