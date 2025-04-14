@@ -53,7 +53,7 @@ const CreatePaidAdsCampaign = () => {
 	const { createAdsCampaign, updateCampaignAssetGroup } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
-	const { highestDailyBudget, hasFinishedResolution } =
+	const { recommendedDailyBudget, hasFinishedResolution } =
 		useBudgetRecommendation( countryCodes );
 
 	const handleStepperClick = ( nextStep ) => {
@@ -133,9 +133,9 @@ const CreatePaidAdsCampaign = () => {
 			/>
 			<CampaignAssetsForm
 				initialCampaign={ {
-					amount: highestDailyBudget,
+					amount: recommendedDailyBudget,
 				} }
-				recommendedDailyBudget={ highestDailyBudget }
+				recommendedDailyBudget={ recommendedDailyBudget }
 				onSubmit={ handleSubmit }
 			>
 				<Stepper

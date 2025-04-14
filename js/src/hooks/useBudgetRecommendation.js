@@ -27,17 +27,17 @@ const useBudgetRecommendation = ( countryCodes ) => {
 				select( STORE_KEY );
 
 			const data = getAdsBudgetRecommendations( countryCodes );
-			let highestDailyBudget = 0;
+			let recommendedDailyBudget = null;
 
 			if ( data ) {
-				const { recommendations } = data;
-				( { daily_budget: highestDailyBudget } =
-					getHighestBudget( recommendations ) );
+				recommendedDailyBudget = getHighestBudget(
+					data.recommendations
+				).daily_budget;
 			}
 
 			return {
 				data,
-				highestDailyBudget,
+				recommendedDailyBudget,
 				hasFinishedResolution: hasFinishedResolution(
 					'getAdsBudgetRecommendations',
 					[ countryCodes ]

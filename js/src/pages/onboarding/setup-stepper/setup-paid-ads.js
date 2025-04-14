@@ -42,7 +42,7 @@ export default function SetupPaidAds() {
 	const adminUrl = useAdminUrl();
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
-	const { highestDailyBudget, hasFinishedResolution } =
+	const { recommendedDailyBudget, hasFinishedResolution } =
 		useBudgetRecommendation( countryCodes );
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
@@ -126,7 +126,7 @@ export default function SetupPaidAds() {
 	};
 
 	const paidAds = {
-		amount: highestDailyBudget,
+		amount: recommendedDailyBudget,
 		...clientSession.getCampaign(),
 	};
 
@@ -137,9 +137,9 @@ export default function SetupPaidAds() {
 	return (
 		<CampaignAssetsForm
 			initialCampaign={ paidAds }
-			recommendedDailyBudget={ highestDailyBudget }
+			recommendedDailyBudget={ recommendedDailyBudget }
 			onChange={ ( _, values ) => {
-				if ( values.amount >= highestDailyBudget ) {
+				if ( values.amount >= recommendedDailyBudget ) {
 					clientSession.setCampaign( values );
 				}
 			} }

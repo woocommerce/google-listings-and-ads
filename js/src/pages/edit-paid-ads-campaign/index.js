@@ -86,7 +86,7 @@ const EditPaidAdsCampaign = () => {
 	} = useAppSelectDispatch( 'getCampaignAssetGroups', id );
 	const campaign = campaigns?.find( ( el ) => el.id === id );
 	const assetEntityGroup = assetEntityGroups?.at( 0 );
-	const { highestDailyBudget, hasFinishedResolution } =
+	const { recommendedDailyBudget, hasFinishedResolution } =
 		useBudgetRecommendation( campaign?.displayCountries );
 	useEffect( () => {
 		if ( campaign && campaign.type !== CAMPAIGN_TYPE_PMAX ) {
@@ -232,7 +232,7 @@ const EditPaidAdsCampaign = () => {
 				initialCampaign={ {
 					amount: campaign.amount,
 				} }
-				recommendedDailyBudget={ highestDailyBudget }
+				recommendedDailyBudget={ recommendedDailyBudget }
 				assetEntityGroup={ assetEntityGroup }
 				onSubmit={ handleSubmit }
 				onChange={ handleOnChange }

@@ -36,11 +36,11 @@ const SetupPaidAds = () => {
 	const [ handleSetupComplete, isSubmitting ] = useAdsSetupCompleteCallback();
 	const adminUrl = useAdminUrl();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
-	const { highestDailyBudget, hasFinishedResolution } =
+	const { recommendedDailyBudget, hasFinishedResolution } =
 		useBudgetRecommendation( countryCodes );
 
 	const initialValues = {
-		amount: highestDailyBudget,
+		amount: recommendedDailyBudget,
 	};
 
 	useEffect( () => {
@@ -88,9 +88,9 @@ const SetupPaidAds = () => {
 	return (
 		<CampaignAssetsForm
 			initialCampaign={ initialValues }
+			recommendedDailyBudget={ recommendedDailyBudget }
 			onChange={ handleChange }
 			onSubmit={ handleSubmit }
-			recommendedDailyBudget={ highestDailyBudget }
 		>
 			<AdsCampaign
 				headerTitle={ __(
