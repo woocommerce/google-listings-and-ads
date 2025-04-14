@@ -2,20 +2,16 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { Tip } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import Section from '~/components/section';
 import getMonthlyMaxEstimated from './getMonthlyMaxEstimated';
-import './index.scss';
-import BudgetRecommendation from './budget-recommendation';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import AppInputPriceControl from '~/components/app-input-price-control';
-
-/**
- * @typedef {import('~/data/actions').CountryCode} CountryCode
- */
+import './index.scss';
 
 const nonInteractableProps = {
 	noPointerEvents: true,
@@ -28,16 +24,10 @@ const nonInteractableProps = {
  *
  * @param {Object} props React props.
  * @param {Object} props.formProps Form props forwarded from `Form` component.
- * @param {Array<CountryCode>|undefined} props.countryCodes Country codes to fetch budget recommendations for.
  * @param {boolean} [props.disabled=false] Whether display the Card in disabled style.
  * @param {JSX.Element} [props.children] Extra content to be rendered under the card of budget inputs.
  */
-const BudgetSection = ( {
-	formProps,
-	countryCodes,
-	disabled = false,
-	children,
-} ) => {
+const BudgetSection = ( { formProps, disabled = false, children } ) => {
 	const { getInputProps, values } = formProps;
 	const { amount } = values;
 	const { googleAdsAccount } = useGoogleAdsAccount();
@@ -82,12 +72,12 @@ const BudgetSection = ( {
 								value={ monthlyMaxEstimated }
 							/>
 						</div>
-						{ countryCodes?.length > 0 && (
-							<BudgetRecommendation
-								countryCodes={ countryCodes }
-								dailyAverageCost={ amount }
-							/>
-						) }
+						<Tip>
+							{ __(
+								'We recommend running campaigns at least 1 month so it can learn to optimize for your business.',
+								'google-listings-and-ads'
+							) }
+						</Tip>
 					</Section.Card.Body>
 				</Section.Card>
 				{ children }

@@ -248,7 +248,6 @@ const EditPaidAdsCampaign = () => {
 							),
 							content: (
 								<AdsCampaign
-									campaign={ campaign }
 									context={ eventContext }
 									headerTitle={ __(
 										'Edit your campaign',

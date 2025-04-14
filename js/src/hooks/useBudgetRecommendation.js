@@ -28,20 +28,16 @@ const useBudgetRecommendation = ( countryCodes ) => {
 
 			const data = getAdsBudgetRecommendations( countryCodes );
 			let highestDailyBudget = 0;
-			let highestDailyBudgetCountryCode;
 
 			if ( data ) {
 				const { recommendations } = data;
-				( {
-					daily_budget: highestDailyBudget,
-					country: highestDailyBudgetCountryCode,
-				} = getHighestBudget( recommendations ) );
+				( { daily_budget: highestDailyBudget } =
+					getHighestBudget( recommendations ) );
 			}
 
 			return {
 				data,
 				highestDailyBudget,
-				highestDailyBudgetCountryCode,
 				hasFinishedResolution: hasFinishedResolution(
 					'getAdsBudgetRecommendations',
 					[ countryCodes ]
