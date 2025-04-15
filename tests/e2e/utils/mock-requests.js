@@ -853,9 +853,28 @@ export default class MockRequests {
 		);
 	}
 
-	async fulfillGetTours( payload ) {
-		await this.fulfillRequest( /\/wc\/gla\/tours\b/, payload, 200, [
+	/**
+	 * Fulfills a mock GET request for the tour endpoint.
+	 *
+	 * @param {Object} payload - The payload to be returned in the mock response.
+	 * @return {Promise<void>} Resolves when the mock request is fulfilled.
+	 */
+	async fulfillGetTour( payload ) {
+		await this.fulfillRequest( /\/wc\/gla\/tours(\/.*)?\b/, payload, 200, [
 			'GET',
 		] );
+	}
+
+	/**
+	 * Mocks a completed tour by fulfilling a GET request with the specified tour data.
+	 *
+	 * @param {string} tourId - The unique identifier of the tour to mock.
+	 * @return {Promise<void>} A promise that resolves when the mock request is fulfilled.
+	 */
+	async mockCompletedTour( tourId ) {
+		await this.fulfillGetTour( {
+			id: tourId,
+			checked: true,
+		} );
 	}
 }
