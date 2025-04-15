@@ -51,6 +51,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCen
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SupportedCountriesController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SyncableProductsCountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\TargetAudienceController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\PriceBenchmarksController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\RestAPI\AuthController as RestAPIAuthController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductFeedQueryHelper;
@@ -143,6 +144,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( TourController::class );
 		$this->share( RestAPIAuthController::class, OAuthService::class, MerchantAccountService::class );
 		$this->share( GTINMigrationController::class, JobRepository::class );
+		$this->share( PriceBenchmarksController::class );
 	}
 
 	/**
