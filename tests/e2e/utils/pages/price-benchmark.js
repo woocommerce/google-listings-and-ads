@@ -31,17 +31,4 @@ export default class PriceBenchmarkPage extends MockRequests {
 			waitUntil: LOAD_STATE.DOM_CONTENT_LOADED,
 		} );
 	}
-
-	/**
-	 * Mock all requests related to external accounts such as Merchant Center, Google, etc.
-	 *
-	 * @return {Promise<void>}
-	 */
-	async mockRequests() {
-		await Promise.all( [ this.fulfillTours() ] );
-	}
-
-	async fulfillTours( payload = [] ) {
-		await this.fulfillGetTours( 'price-benchmark-tour', payload );
-	}
 }

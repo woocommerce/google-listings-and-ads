@@ -26,14 +26,58 @@ test.describe( 'Price Benchmark Page', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		priceBenchmarkPage = new PriceBenchmarkPage( page );
-		await Promise.all( [ priceBenchmarkPage.mockRequests() ] );
 	} );
 
 	test.afterAll( async () => {
 		await page.close();
 	} );
 
+	test.describe( 'Price Benchmark Tour', () => {
+		test.beforeAll( () => {
+			priceBenchmarkPage.fulfillGetTour( [
+				{
+					id: 'price-benchmark-tour',
+					checked: true,
+				},
+			] );
+		} );
+
+		test( 'Price Benchmark Tour should be visible', async () => {
+			await priceBenchmarkPage.goto();
+
+			const tourElement = page.locator(
+				'.woocommerce-tour-kit-step__heading'
+			);
+			await expect( tourElement ).toBeVisible();
+		} );
+
+		test( 'Price Benchmark Tour should have the correct heading', async () => {
+			await priceBenchmarkPage.goto();
+
+			const tourHeading = page.locator(
+				'.woocommerce-tour-kit-step__heading'
+			);
+			await expect( tourHeading ).toHaveText(
+				'Price Benchmark & Suggestions'
+			);
+		} );
+
+		test( 'Price Benchmark Tour should not be visible after closing', async () => {
+			priceBenchmarkPage.mockCompletedTour( 'price-benchmark-tour' );
+			await priceBenchmarkPage.goto();
+
+			const tourElement = page.locator(
+				'.woocommerce-tour-kit-step__heading'
+			);
+			await expect( tourElement ).not.toBeVisible();
+		} );
+	} );
+
 	test.describe( 'Has navigation', () => {
+		test.beforeAll( () => {
+			priceBenchmarkPage.mockCompletedTour( 'price-benchmark-tour' );
+		} );
+
 		test( 'Goes to the Price Benchmark page', async () => {
 			await priceBenchmarkPage.goto();
 
@@ -88,43 +132,6 @@ test.describe( 'Price Benchmark Page', () => {
 				'aria-selected',
 				'true'
 			);
-		} );
-	} );
-
-	test.describe( 'Price Benchmark Tour', () => {
-		test( 'Price Benchmark Tour should be visible', async () => {
-			await priceBenchmarkPage.goto();
-
-			const tourElement = page.locator(
-				'.woocommerce-tour-kit-step__heading'
-			);
-			await expect( tourElement ).toBeVisible();
-		} );
-
-		test( 'Price Benchmark Tour should have the correct heading', async () => {
-			await priceBenchmarkPage.goto();
-
-			const tourHeading = page.locator(
-				'.woocommerce-tour-kit-step__heading'
-			);
-			await expect( tourHeading ).toHaveText(
-				'Price Benchmark & Suggestions'
-			);
-		} );
-
-		test( 'Price Benchmark Tour should not be visible after closing', async () => {
-			priceBenchmarkPage.fulfillTours( [
-				{
-					id: 'price-benchmark-tour',
-					checked: true,
-				},
-			] );
-			await priceBenchmarkPage.goto();
-
-			const tourElement = page.locator(
-				'.woocommerce-tour-kit-step__heading'
-			);
-			await expect( tourElement ).not.toBeVisible();
 		} );
 	} );
 } );
