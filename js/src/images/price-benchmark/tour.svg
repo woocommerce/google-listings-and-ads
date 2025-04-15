@@ -1,13 +1,8 @@
 <svg width="184" height="184" viewBox="0 0 184 184" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_10970_67156)">
-<mask id="mask0_10970_67156" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="184" height="184">
+<mask id="mask0_10970_67160" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="184" height="184">
 <path d="M184 0H0V184H184V0Z" fill="white"/>
 </mask>
-<g mask="url(#mask0_10970_67156)">
-<mask id="mask1_10970_67156" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="184" height="184">
-<path d="M184 0H0V184H184V0Z" fill="white"/>
-</mask>
-<g mask="url(#mask1_10970_67156)">
+<g mask="url(#mask0_10970_67160)">
 <path d="M114.727 49.8711H41.8584V160.731H114.727V49.8711Z" fill="white"/>
 <path fill-rule="evenodd" clip-rule="evenodd" d="M40.8135 49.8736C40.8135 49.2962 41.2815 48.8281 41.8589 48.8281H114.727C115.305 48.8281 115.773 49.2962 115.773 49.8736V160.734C115.773 161.311 115.305 161.779 114.727 161.779H41.8589C41.2815 161.779 40.8135 161.311 40.8135 160.734V49.8736ZM42.9044 50.919V159.688H113.682V50.919H42.9044Z" fill="#3C4043"/>
 <path fill-rule="evenodd" clip-rule="evenodd" d="M51.4785 125.014C51.4785 124.437 51.9466 123.969 52.524 123.969H79.5385C80.1159 123.969 80.584 124.437 80.584 125.014C80.584 125.592 80.1159 126.06 79.5385 126.06H52.524C51.9466 126.06 51.4785 125.592 51.4785 125.014Z" fill="#3C4043"/>
@@ -32,11 +27,4 @@
 <path d="M55.8054 48.4922L47.0654 50.5831L53.7354 57.2531L55.8054 48.5131V48.4922Z" fill="white"/>
 <path fill-rule="evenodd" clip-rule="evenodd" d="M56.4536 47.67C56.7048 47.8683 56.8514 48.1707 56.8514 48.4908V48.5117C56.8514 48.5928 56.842 48.6737 56.8233 48.7526L54.7533 57.4926C54.666 57.8614 54.3859 58.154 54.0213 58.2575C53.6567 58.3609 53.2647 58.2589 52.9967 57.9909L46.3267 51.3209C46.0591 51.0533 45.957 50.6618 46.0599 50.2975C46.1628 49.9332 46.4546 49.653 46.8227 49.5649L55.5627 47.474C55.874 47.3995 56.2023 47.4718 56.4536 47.67ZM49.1265 51.1637L53.1505 55.1877L54.4024 49.9015L49.1265 51.1637Z" fill="white"/>
 </g>
-</g>
-</g>
-<defs>
-<clipPath id="clip0_10970_67156">
-<rect width="184" height="184" fill="white"/>
-</clipPath>
-</defs>
 </svg>

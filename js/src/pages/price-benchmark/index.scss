@@ -2,11 +2,11 @@
 	padding: 0 $grid-unit-40;
 }
 
-.gla-admin-page.gla-price-benchmark-tour {
+.gla-price-benchmark-tour {
 
-	.gla-price-benchmark-tour__heading img {
+	.woocommerce-tour-kit-step__heading img {
 		display: block;
-		margin: 0 auto;
+		margin: 0 auto $grid-unit-20;
 	}
 
 	.woocommerce-tour-kit-step__description {
@@ -16,5 +16,13 @@
 
 	.gla-price-benchmark__comparison-chart {
 		margin: $grid-unit-40 0;
+	}
+
+	.gla-tour-highlight {
+		display: block;
+	}
+
+	.tour-kit-frame__arrow {
+		background-color: #FFFFFF;
 	}
 }
