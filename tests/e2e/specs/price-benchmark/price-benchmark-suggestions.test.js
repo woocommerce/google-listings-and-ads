@@ -34,9 +34,7 @@ test.describe( 'Price Benchmark Page', () => {
 	} );
 
 	test.describe( 'Has navigation', () => {
-		// Corrected: Added a function here
 		test( 'Goes to the Price Benchmark page', async () => {
-			// Added a test case
 			await priceBenchmarkPage.goto();
 
 			const expectedTabs = [
@@ -98,7 +96,7 @@ test.describe( 'Price Benchmark Page', () => {
 			await priceBenchmarkPage.goto();
 
 			const tourElement = page.locator(
-				'.gla-price-benchmark-tour__heading'
+				'.woocommerce-tour-kit-step__heading'
 			);
 			await expect( tourElement ).toBeVisible();
 		} );
@@ -107,7 +105,7 @@ test.describe( 'Price Benchmark Page', () => {
 			await priceBenchmarkPage.goto();
 
 			const tourHeading = page.locator(
-				'.gla-price-benchmark-tour__heading'
+				'.woocommerce-tour-kit-step__heading'
 			);
 			await expect( tourHeading ).toHaveText(
 				'Price Benchmark & Suggestions'
@@ -124,7 +122,7 @@ test.describe( 'Price Benchmark Page', () => {
 			await priceBenchmarkPage.goto();
 
 			const tourElement = page.locator(
-				'.gla-price-benchmark-tour__heading'
+				'.woocommerce-tour-kit-step__heading'
 			);
 			await expect( tourElement ).not.toBeVisible();
 		} );
