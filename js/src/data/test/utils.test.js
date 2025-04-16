@@ -6,6 +6,7 @@ import {
 	getReportKey,
 	calculateDelta,
 	mapReportFieldsToPerformance,
+	getCountryCodesKey,
 	convertKeysFromSnakeCaseToCamelCase,
 	freeFields,
 	paidFields,
@@ -262,6 +263,19 @@ describe( 'mapReportFieldsToPerformance', () => {
 				missingFreeListingsData: MISSING_FREE_LISTINGS_DATA.FOR_REQUEST,
 			},
 		} );
+	} );
+} );
+
+describe( 'getCountryCodesKey', () => {
+	it( 'should return an empty string when no country codes are provided', () => {
+		expect( getCountryCodesKey() ).toBe( '' );
+	} );
+
+	it( 'should return a key', () => {
+		expect( getCountryCodesKey( [ 'US' ] ) ).toBe( 'us' );
+		expect( getCountryCodesKey( [ 'US', 'CA' ] ) ).toBe( 'us_ca' );
+		expect( getCountryCodesKey( [ 'US', 'CA', 'JP' ] ) ).toBe( 'us_ca_jp' );
+		expect( getCountryCodesKey( [ 'CA', 'JP', 'US' ] ) ).toBe( 'ca_jp_us' );
 	} );
 } );
 

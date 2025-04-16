@@ -197,15 +197,11 @@ export function mapReportFieldsToPerformance(
 /**
  * Generates a unique key (slug) from an array of country codes.
  *
- * This function sorts the array of country codes alphabetically,
- * joins them into a single string with underscore (`_`), and converts
- * the result to lowercase.
- *
  * @param {Array<CountryCode>} [countryCodes] - An array of country code strings.
- * @return {string} A underscore-separated, lowercase string representing the sorted country codes.
+ * @return {string} An underscore-separated, lowercase string representing the given country codes.
  */
 export function getCountryCodesKey( countryCodes = [] ) {
-	return [ ...countryCodes ].sort().join( '_' ).toLowerCase();
+	return countryCodes.join( '_' ).toLowerCase();
 }
 
 /**
