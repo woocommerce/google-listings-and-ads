@@ -839,8 +839,8 @@ describe( 'reducer', () => {
 				type: TYPES.RECEIVE_ADS_BUDGET_RECOMMENDATIONS,
 				countryCodesKey: 'mu_sg',
 				data: {
-					currency: 'MUR',
 					recommended: {
+						currency: 'MUR',
 						country: 'MU',
 						dailyBudget: 15,
 						metrics: {
@@ -850,6 +850,7 @@ describe( 'reducer', () => {
 						},
 					},
 					high: {
+						currency: 'MUR',
 						country: 'MU',
 						dailyBudget: 20.5,
 						metrics: {
@@ -859,6 +860,7 @@ describe( 'reducer', () => {
 						},
 					},
 					low: {
+						currency: 'MUR',
 						country: 'MU',
 						dailyBudget: 7,
 						metrics: {

@@ -21,19 +21,18 @@ export function adaptAdsBudgetRecommendation( data ) {
 	const validLevelKeys = [ 'recommended', 'high', 'low' ];
 	const { currency } = data;
 
-	return data.recommendations.reduce(
-		( payload, item ) => {
-			const { level, ...rest } = item;
-			const key = level.toLowerCase();
+	return data.recommendations.reduce( ( payload, item ) => {
+		const { level, ...adaptingData } = item;
+		const key = level.toLowerCase();
 
-			if ( validLevelKeys.includes( key ) ) {
-				payload[ key ] = convertKeysFromSnakeCaseToCamelCase( rest );
-			}
+		if ( validLevelKeys.includes( key ) ) {
+			adaptingData.currency = currency;
+			payload[ key ] =
+				convertKeysFromSnakeCaseToCamelCase( adaptingData );
+		}
 
-			return payload;
-		},
-		{ currency }
-	);
+		return payload;
+	}, {} );
 }
 
 /**

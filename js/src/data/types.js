@@ -75,18 +75,22 @@
  */
 
 /**
+ * @typedef {Object} AdsBudgetMetricsEntity
+ * @property {number} conversions The estimated number of conversions (unit sales) for a typical week.
+ * @property {number} conversionsValue The estimated total value of all the conversions (sales volume) the campaign will generate in a week.
+ * @property {number} cost The estimated average amount will be spent weekly during a month.
+ */
+
+/**
  * @typedef {Object} AdsBudgetRecommendationEntity
+ * @property {string} currency The currency to use for the recommendation.
  * @property {CountryCode} country The country code of the recommendation.
  * @property {number} dailyBudget The recommended daily budget for a country.
- * @property {Object} [metrics] The estimated metrics for the campaign.
- * @property {number} metrics.conversions The estimated number of conversions (unit sales) for a typical week.
- * @property {number} metrics.conversionsValue The estimated total value of all the conversions (sales volume) the campaign will generate in a week.
- * @property {number} metrics.cost The estimated average amount will be spent weekly during a month.
+ * @property {AdsBudgetMetricsEntity} [metrics] The estimated metrics for the campaign.
  */
 
 /**
  * @typedef {Object} AdsBudgetRecommendation
- * @property {string} currency The currency of the recommendation.
  * @property {AdsBudgetRecommendationEntity} recommended The recommended budget.
  * @property {AdsBudgetRecommendationEntity} [high] The high budget recommendation.
  * @property {AdsBudgetRecommendationEntity} [low] The low budget recommendation.

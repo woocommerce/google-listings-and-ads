@@ -46,6 +46,7 @@ describe( 'adaptAdsBudgetRecommendation', () => {
 	} );
 
 	const recommended = {
+		currency: 'USD',
 		country: 'US',
 		dailyBudget: 15,
 		metrics: {
@@ -55,6 +56,7 @@ describe( 'adaptAdsBudgetRecommendation', () => {
 		},
 	};
 	const high = {
+		currency: 'USD',
 		country: 'US',
 		dailyBudget: 20.5,
 		metrics: {
@@ -64,6 +66,7 @@ describe( 'adaptAdsBudgetRecommendation', () => {
 		},
 	};
 	const low = {
+		currency: 'USD',
 		country: 'US',
 		dailyBudget: 7,
 		metrics: {
@@ -75,7 +78,6 @@ describe( 'adaptAdsBudgetRecommendation', () => {
 
 	it( 'Adapts the budget recommendation', () => {
 		expect( adaptAdsBudgetRecommendation( input ) ).toEqual( {
-			currency: 'USD',
 			recommended,
 			high,
 			low,
@@ -88,7 +90,6 @@ describe( 'adaptAdsBudgetRecommendation', () => {
 		input.recommendations.push( invalidItem );
 
 		expect( adaptAdsBudgetRecommendation( input ) ).toEqual( {
-			currency: 'USD',
 			recommended,
 			high,
 		} );
