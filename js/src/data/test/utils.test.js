@@ -7,6 +7,7 @@ import {
 	calculateDelta,
 	mapReportFieldsToPerformance,
 	getCountryCodesKey,
+	getAdsBudgetMetricsKey,
 	convertKeysFromSnakeCaseToCamelCase,
 	freeFields,
 	paidFields,
@@ -276,6 +277,21 @@ describe( 'getCountryCodesKey', () => {
 		expect( getCountryCodesKey( [ 'US', 'CA' ] ) ).toBe( 'us_ca' );
 		expect( getCountryCodesKey( [ 'US', 'CA', 'JP' ] ) ).toBe( 'us_ca_jp' );
 		expect( getCountryCodesKey( [ 'CA', 'JP', 'US' ] ) ).toBe( 'ca_jp_us' );
+	} );
+} );
+
+describe( 'getAdsBudgetMetricsKey', () => {
+	it( 'should return a key', () => {
+		expect( getAdsBudgetMetricsKey( [ 'US' ], 15 ) ).toBe( 'us::15' );
+		expect( getAdsBudgetMetricsKey( [ 'US', 'CA' ], 16.0 ) ).toBe(
+			'us_ca::16'
+		);
+		expect( getAdsBudgetMetricsKey( [ 'US', 'CA', 'JP' ], 1.23 ) ).toBe(
+			'us_ca_jp::1#23'
+		);
+		expect( getAdsBudgetMetricsKey( [ 'CA', 'JP', 'US' ], 99.99 ) ).toBe(
+			'ca_jp_us::99#99'
+		);
 	} );
 } );
 

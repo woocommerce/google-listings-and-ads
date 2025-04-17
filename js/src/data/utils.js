@@ -205,6 +205,19 @@ export function getCountryCodesKey( countryCodes = [] ) {
 }
 
 /**
+ * Generates a key for ads budget metrics.
+ *
+ * @param {Array<CountryCode>} countryCodes An array of country code strings.
+ * @param {number} budget A daily budget.
+ * @return {string} A key for ads budget metrics.
+ */
+export function getAdsBudgetMetricsKey( countryCodes, budget ) {
+	const key = getCountryCodesKey( countryCodes );
+	const budgetString = budget.toString().replace( '.', '#' );
+	return `${ key }::${ budgetString }`;
+}
+
+/**
  * Recursively convert the object's own enumerable keys from snake to camel case.
  *
  * @param {*} data The data to convert.

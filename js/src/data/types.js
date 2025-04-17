@@ -96,5 +96,13 @@
  * @property {AdsBudgetRecommendationEntity} [low] The low budget recommendation.
  */
 
+/**
+ * @typedef {Object} AdsBudgetMetrics
+ * @property {string} currency The currency to use for the metrics.
+ * @property {CountryCode} country The country code of the metrics.
+ * @property {number} dailyBudget The daily budget it queried metrics for.
+ * @property {AdsBudgetMetricsEntity} [metrics] The estimated metrics for the budget.
+ */
+
 // This export is required for JSDoc in other files to import the type definitions from this file.
 export default {};

@@ -1,7 +1,11 @@
 /**
  * Internal dependencies
  */
-import { adaptAdsBudgetRecommendation, adaptAssetGroup } from './adapters';
+import {
+	adaptAdsBudgetRecommendation,
+	adaptAdsBudgetMetrics,
+	adaptAssetGroup,
+} from './adapters';
 import { ASSET_KEY } from '~/constants';
 
 describe( 'adaptAdsBudgetRecommendation', () => {
@@ -93,6 +97,34 @@ describe( 'adaptAdsBudgetRecommendation', () => {
 			recommended,
 			high,
 		} );
+	} );
+} );
+
+describe( 'adaptAdsBudgetMetrics', () => {
+	it( 'Adapts the budget metrics', () => {
+		const input = {
+			currency: 'USD',
+			country: 'US',
+			budget: 15,
+			metrics: {
+				cost: 105,
+				conversions: 2.2,
+				conversions_value: 89.98,
+			},
+		};
+
+		const expected = {
+			currency: 'USD',
+			country: 'US',
+			dailyBudget: 15,
+			metrics: {
+				cost: 105,
+				conversions: 2.2,
+				conversionsValue: 89.98,
+			},
+		};
+
+		expect( adaptAdsBudgetMetrics( input ) ).toEqual( expected );
 	} );
 } );
 
