@@ -17,7 +17,6 @@ import useAdsSetupCompleteCallback from '~/hooks/useAdsSetupCompleteCallback';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import { recordGlaEvent } from '~/utils/tracks';
-import useBudgetRecommendation from '~/hooks/useBudgetRecommendation';
 import AppSpinner from '~/components/app-spinner';
 import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 
@@ -48,12 +47,6 @@ const SetupPaidAds = () => {
 	const [ handleSetupComplete, isSubmitting ] = useAdsSetupCompleteCallback();
 	const adminUrl = useAdminUrl();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
-	const { recommendedDailyBudget, hasFinishedResolution } =
-		useBudgetRecommendation( countryCodes );
-
-	const initialValues = {
-		amount: recommendedDailyBudget,
-	};
 
 	const handleSubmit = ( values ) => {
 		const { amount } = values;
@@ -73,14 +66,13 @@ const SetupPaidAds = () => {
 		} );
 	};
 
-	if ( ! countryCodes || ! hasFinishedResolution ) {
+	if ( ! countryCodes ) {
 		return <AppSpinner />;
 	}
 
 	return (
 		<CampaignAssetsForm
-			initialCampaign={ initialValues }
-			recommendedDailyBudget={ recommendedDailyBudget }
+			countryCodes={ countryCodes }
 			onSubmit={ handleSubmit }
 		>
 			<HookNavigateAwayPrompt />

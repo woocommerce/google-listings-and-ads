@@ -18,7 +18,7 @@ import useCountryCodesForBudgetQuery from './useCountryCodesForBudgetQuery';
  * @typedef {Object} BudgetRecommendationPayload
  * @property {AdsBudgetRecommendation|null} data The budget recommendation data.
  * @property {number|null} recommendedDailyBudget The recommended daily budget. `null` if not yet fetched.
- * @property {boolean} hasFinishedResolution Whether the data fetching is finished.
+ * @property {boolean} hasResolved Whether the data fetching is finished.
  */
 
 /**
@@ -53,7 +53,7 @@ const useBudgetRecommendation = ( countryCodes ) => {
 			return {
 				data,
 				recommendedDailyBudget,
-				hasFinishedResolution: hasResolved,
+				hasResolved,
 			};
 		},
 		[ resolvedCountryCodes ]

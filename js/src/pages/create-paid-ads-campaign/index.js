@@ -33,7 +33,6 @@ import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
 } from '~/utils/tracks';
-import useBudgetRecommendation from '~/hooks/useBudgetRecommendation';
 
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'create-ads';
@@ -53,8 +52,6 @@ const CreatePaidAdsCampaign = () => {
 	const { createAdsCampaign, updateCampaignAssetGroup } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
-	const { recommendedDailyBudget, hasFinishedResolution } =
-		useBudgetRecommendation( countryCodes );
 
 	const handleStepperClick = ( nextStep ) => {
 		recordStepperChangeEvent(
@@ -117,7 +114,7 @@ const CreatePaidAdsCampaign = () => {
 		getHistory().push( getDashboardUrl( { campaign: 'saved' } ) );
 	};
 
-	if ( ! countryCodes || ! hasFinishedResolution ) {
+	if ( ! countryCodes ) {
 		return null;
 	}
 
@@ -132,10 +129,7 @@ const CreatePaidAdsCampaign = () => {
 				backHref={ dashboardURL }
 			/>
 			<CampaignAssetsForm
-				initialCampaign={ {
-					amount: recommendedDailyBudget,
-				} }
-				recommendedDailyBudget={ recommendedDailyBudget }
+				countryCodes={ countryCodes }
 				onSubmit={ handleSubmit }
 			>
 				<Stepper

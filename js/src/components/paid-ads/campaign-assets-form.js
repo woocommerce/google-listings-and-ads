@@ -12,11 +12,13 @@ import AdaptiveForm from '~/components/adaptive-form';
 import validateCampaign from '~/components/paid-ads/validateCampaign';
 import validateAssetGroup from '~/components/paid-ads/validateAssetGroup';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
+import useBudgetRecommendation from '~/hooks/useBudgetRecommendation';
 
 /**
  * @typedef {import('~/components/types.js').CampaignFormValues} CampaignFormValues
  * @typedef {import('~/components/types.js').AssetGroupFormValues} AssetGroupFormValues
  * @typedef {import('~/data/types.js').AssetEntityGroup} AssetEntityGroup
+ * @typedef {import('~/data/actions').CountryCode} CountryCode
  */
 
 const emptyAssetGroup = {
@@ -67,12 +69,12 @@ function convertAssetEntityGroupToFormValues( assetEntityGroup = {} ) {
  * @param {Object} props React props.
  * @param {CampaignFormValues} props.initialCampaign Initial campaign values.
  * @param {AssetEntityGroup} [props.assetEntityGroup] The asset entity group to be used in initializing the form values for editing.
- * @param {number} props.recommendedDailyBudget The recommended daily budget for the campaign. The minimum campaign amount will be set to 30% of this value.
+ * @param {Array<CountryCode>} props.countryCodes Country codes to fetch budget recommendations.
  */
 export default function CampaignAssetsForm( {
 	initialCampaign,
 	assetEntityGroup,
-	recommendedDailyBudget,
+	countryCodes,
 	...adaptiveFormProps
 } ) {
 	const initialAssetGroup = useMemo( () => {
@@ -82,6 +84,12 @@ export default function CampaignAssetsForm( {
 	const [ baseAssetGroup, setBaseAssetGroup ] = useState( initialAssetGroup );
 	const [ hasImportedAssets, setHasImportedAssets ] = useState( false );
 	const { formatAmount } = useAdsCurrency();
+	const { recommendedDailyBudget, hasResolved } =
+		useBudgetRecommendation( countryCodes );
+
+	if ( ! hasResolved ) {
+		return null;
+	}
 
 	const extendAdapter = ( formContext ) => {
 		const assetGroupErrors = validateAssetGroup( formContext.values );
@@ -131,6 +139,7 @@ export default function CampaignAssetsForm( {
 	return (
 		<AdaptiveForm
 			initialValues={ {
+				amount: recommendedDailyBudget,
 				...initialCampaign,
 				...initialAssetGroup,
 			} }
