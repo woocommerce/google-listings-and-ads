@@ -13,21 +13,14 @@ import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import AppInputPriceControl from '~/components/app-input-price-control';
 import './index.scss';
 
-const nonInteractableProps = {
-	noPointerEvents: true,
-	readOnly: true,
-	tabIndex: -1,
-};
-
 /**
  * Renders <Section> and <Section.Card> UI with campaign budget inputs.
  *
  * @param {Object} props React props.
  * @param {Object} props.formProps Form props forwarded from `Form` component.
- * @param {boolean} [props.disabled=false] Whether display the Card in disabled style.
  * @param {JSX.Element} [props.children] Extra content to be rendered under the card of budget inputs.
  */
-const BudgetSection = ( { formProps, disabled = false, children } ) => {
+const BudgetSection = ( { formProps, children } ) => {
 	const { getInputProps, values } = formProps;
 	const { amount } = values;
 	const { googleAdsAccount } = useGoogleAdsAccount();
@@ -39,7 +32,6 @@ const BudgetSection = ( { formProps, disabled = false, children } ) => {
 		<div className="gla-budget-section">
 			<Section
 				verticalGap={ 4 }
-				disabled={ disabled }
 				title={ __( 'Set your budget', 'google-listings-and-ads' ) }
 				description={
 					<p>
@@ -60,7 +52,6 @@ const BudgetSection = ( { formProps, disabled = false, children } ) => {
 								) }
 								suffix={ currency }
 								{ ...getInputProps( 'amount' ) }
-								{ ...( disabled && nonInteractableProps ) }
 							/>
 							<AppInputPriceControl
 								disabled
