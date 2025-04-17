@@ -70,8 +70,34 @@ test.describe( 'Set up Ads account', () => {
 			currency: 'EUR',
 			recommendations: [
 				{
+					level: 'Recommended',
 					country: 'FR',
 					daily_budget: 15,
+					metrics: {
+						cost: 105,
+						conversions: 2.2,
+						conversions_value: 89.98,
+					},
+				},
+				{
+					level: 'High',
+					country: 'FR',
+					daily_budget: 20.5,
+					metrics: {
+						cost: 143.5,
+						conversions: 2.5,
+						conversions_value: 98.59,
+					},
+				},
+				{
+					level: 'Low',
+					country: 'FR',
+					daily_budget: 7,
+					metrics: {
+						cost: 49,
+						conversions: 2,
+						conversions_value: 80.48,
+					},
 				},
 			],
 		} );
@@ -375,12 +401,6 @@ test.describe( 'Set up Ads account', () => {
 				await expect(
 					setupBudgetPage.getCreateCampaignButton()
 				).toBeEnabled();
-			} );
-
-			test( 'Budget Recommendation should be visible', async () => {
-				await expect(
-					page.getByText( 'set a daily budget of 15 EUR' )
-				).toBeVisible();
 			} );
 		} );
 

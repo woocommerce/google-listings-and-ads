@@ -17,7 +17,11 @@ import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
 import { getReportKey, getCountryCodesKey } from './utils';
 import { handleApiError } from '~/utils/handleError';
-import { adaptAdsCampaign, adaptAssetGroup } from './adapters';
+import {
+	adaptAdsBudgetRecommendation,
+	adaptAdsCampaign,
+	adaptAssetGroup,
+} from './adapters';
 import { fetchWithHeaders, awaitPromise } from './controls';
 
 import {
@@ -528,17 +532,12 @@ export function* getAdsBudgetRecommendations( countryCodes ) {
 	const path = addQueryArgs( endpoint, query );
 
 	try {
-		const { data } = yield fetchWithHeaders( {
-			path,
-		} );
-
-		const { currency, recommendations } = data;
+		const { data } = yield fetchWithHeaders( { path } );
 
 		return {
 			type: TYPES.RECEIVE_ADS_BUDGET_RECOMMENDATIONS,
 			countryCodesKey,
-			currency,
-			recommendations,
+			data: adaptAdsBudgetRecommendation( data ),
 		};
 	} catch ( response ) {
 		// Intentionally silence the specific in case the no budget recommendations are found from the API.

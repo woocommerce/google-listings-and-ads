@@ -18,14 +18,9 @@ import BudgetSection from '../budget-section';
 import { CampaignPreviewCard } from '../campaign-preview';
 import Faqs from './faqs';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
-import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 
 /**
  * @typedef {import('~/components/adaptive-form/adaptive-form-context').AdaptiveFormContext} AdaptiveFormContext
- */
-
-/**
- * @typedef {import('~/data/actions').Campaign} Campaign
  */
 
 /**
@@ -36,21 +31,18 @@ import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCo
  *
  * @fires gla_documentation_link_click with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
  * @param {Object} props React props.
- * @param {Campaign} [props.campaign] Campaign data to be edited. The displayCountries property will be used to fetch budget recommendation data.
  * @param {string} props.headerTitle The title of the step.
  * @param {'create-ads'|'edit-ads'|'setup-ads'|'setup-mc'} props.context A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  * @param {(formContext: AdaptiveFormContext) => JSX.Element | JSX.Element} [props.skipButton] A React element or function to render the "Skip" button. If a function is passed, it receives the form context and returns the button element.
  * @param {(formContext: AdaptiveFormContext) => JSX.Element | JSX.Element} [props.continueButton] A React element or function to render the "Continue" button. If a function is passed, it receives the form context and returns the button element.
  */
 export default function AdsCampaign( {
-	campaign,
 	headerTitle,
 	context,
 	skipButton,
 	continueButton,
 } ) {
 	const formContext = useAdaptiveFormContext();
-	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const isOnboardingFlow = context === 'setup-mc';
 	const showCampaignPreviewCard =
 		context === 'setup-ads' ||
@@ -92,16 +84,8 @@ export default function AdsCampaign( {
 
 			{ isOnboardingFlow && <PaidAdsFeaturesSection /> }
 
-			<BudgetSection
-				formProps={ formContext }
-				countryCodes={
-					context === 'edit-ads'
-						? campaign.displayCountries
-						: countryCodes
-				}
-			>
+			<BudgetSection formProps={ formContext }>
 				{ showBillingCard && <BillingCard /> }
-
 				{ showCampaignPreviewCard && <CampaignPreviewCard /> }
 			</BudgetSection>
 

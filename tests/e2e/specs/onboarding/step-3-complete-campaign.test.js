@@ -90,16 +90,34 @@ test.describe( 'Complete your campaign', () => {
 				currency: 'USD',
 				recommendations: [
 					{
+						level: 'Recommended',
 						country: 'US',
-						daily_budget: 10,
+						daily_budget: 15,
+						metrics: {
+							cost: 105,
+							conversions: 2.2,
+							conversions_value: 89.98,
+						},
 					},
 					{
-						country: 'TW',
-						daily_budget: 8,
+						level: 'High',
+						country: 'US',
+						daily_budget: 20.5,
+						metrics: {
+							cost: 143.5,
+							conversions: 2.5,
+							conversions_value: 98.59,
+						},
 					},
 					{
-						country: 'GB',
-						daily_budget: 20,
+						level: 'Low',
+						country: 'US',
+						daily_budget: 7,
+						metrics: {
+							cost: 49,
+							conversions: 2,
+							conversions_value: 80.48,
+						},
 					},
 				],
 			} ),
@@ -231,16 +249,34 @@ test.describe( 'Complete your campaign', () => {
 					currency: 'TWD',
 					recommendations: [
 						{
+							level: 'Recommended',
 							country: 'TW',
-							daily_budget: 8,
-						},
-						{
-							country: 'US',
 							daily_budget: 100,
+							metrics: {
+								cost: 700,
+								conversions: 2.2,
+								conversions_value: 89.98,
+							},
 						},
 						{
-							country: 'GB',
-							daily_budget: 20,
+							level: 'High',
+							country: 'TW',
+							daily_budget: 200,
+							metrics: {
+								cost: 1400,
+								conversions: 2.5,
+								conversions_value: 98.59,
+							},
+						},
+						{
+							level: 'Low',
+							country: 'TW',
+							daily_budget: 50,
+							metrics: {
+								cost: 350,
+								conversions: 2,
+								conversions_value: 80.48,
+							},
 						},
 					],
 				} );
@@ -249,24 +285,12 @@ test.describe( 'Complete your campaign', () => {
 			} );
 
 			test.describe( 'Set up budget', () => {
-				test( '"Daily average cost" input should have highest value set', async () => {
+				test( '"Daily average cost" input should have recommended value set', async () => {
 					const dailyAverageCostInput =
 						setupBudgetPage.getBudgetInput();
 					await expect( dailyAverageCostInput ).toHaveValue(
 						'100.00'
 					);
-				} );
-
-				test( 'should see the low budget tip when the budget is set lower than the recommended value', async () => {
-					await setupBudgetPage.fillBudget( '99.99' );
-					const lowBudgetTip = setupBudgetPage.getLowerBudgetTip();
-					await expect( lowBudgetTip ).toBeVisible();
-				} );
-
-				test( 'should not see the low budget tip when the budget is not set lower than the recommended value', async () => {
-					await setupBudgetPage.fillBudget( '100' );
-					const lowBudgetTip = setupBudgetPage.getLowerBudgetTip();
-					await expect( lowBudgetTip ).not.toBeVisible();
 				} );
 			} );
 
