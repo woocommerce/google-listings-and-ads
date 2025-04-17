@@ -34,6 +34,28 @@ describe( 'CampaignAssetsForm', () => {
 		} );
 	} );
 
+	it( 'Should extend adapter to meet the required states of ads campaign form', () => {
+		const children = jest.fn();
+		const countryCodes = [ 'US', 'JP', 'TW' ];
+
+		render(
+			<CampaignAssetsForm
+				validate={ alwaysValid }
+				countryCodes={ countryCodes }
+			>
+				{ children }
+			</CampaignAssetsForm>
+		);
+
+		const formContextSchema = expect.objectContaining( {
+			adapter: expect.objectContaining( {
+				countryCodes,
+			} ),
+		} );
+
+		expect( children ).toHaveBeenLastCalledWith( formContextSchema );
+	} );
+
 	it( 'Should extend adapter to meet the required states or functions of assets form', () => {
 		const children = jest.fn();
 

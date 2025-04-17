@@ -3,15 +3,18 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Tip } from '@wordpress/components';
+import { useState, useEffect } from '@wordpress/element';
+import { useDebounce } from '@wordpress/compose';
 
 /**
  * Internal dependencies
  */
 import Section from '~/components/section';
-import getMonthlyMaxEstimated from './getMonthlyMaxEstimated';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
+import useBudgetMetrics from '~/hooks/useBudgetMetrics';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import AppInputPriceControl from '~/components/app-input-price-control';
+import AppInputControl from '~/components/app-input-control';
 import './index.scss';
 
 /**
@@ -25,12 +28,22 @@ import './index.scss';
  */
 const BudgetSection = ( { children } ) => {
 	const formContext = useAdaptiveFormContext();
-	const { getInputProps, values } = formContext;
+	const { adapter, getInputProps, values } = formContext;
+	const { countryCodes } = adapter;
 	const { amount } = values;
 	const { googleAdsAccount } = useGoogleAdsAccount();
-	const monthlyMaxEstimated = getMonthlyMaxEstimated( amount );
+
+	const [ budget, setBudget ] = useState( amount );
+	const debouncedSetBudget = useDebounce( setBudget, 1000 );
+	const { data } = useBudgetMetrics( countryCodes, budget );
+
+	useEffect( () => {
+		debouncedSetBudget( amount );
+	}, [ debouncedSetBudget, amount ] );
+
 	// Display the currency code that will be used by Google Ads, but still use the store's currency formatting settings.
 	const currency = googleAdsAccount?.currency;
+	const weeklyCost = data ? data.metrics.cost : null;
 
 	return (
 		<div className="gla-budget-section">
@@ -57,14 +70,13 @@ const BudgetSection = ( { children } ) => {
 								suffix={ currency }
 								{ ...getInputProps( 'amount' ) }
 							/>
-							<AppInputPriceControl
+							<AppInputControl
 								disabled
 								label={ __(
-									'Monthly max, estimated',
+									'Weekly cost',
 									'google-listings-and-ads'
 								) }
-								suffix={ currency }
-								value={ monthlyMaxEstimated }
+								value={ weeklyCost }
 							/>
 						</div>
 						<Tip>

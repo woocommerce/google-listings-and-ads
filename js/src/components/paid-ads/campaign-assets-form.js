@@ -96,6 +96,7 @@ export default function CampaignAssetsForm( {
 		const finalUrl = assetEntityGroup?.[ ASSET_GROUP_KEY.FINAL_URL ];
 
 		return {
+			countryCodes,
 			// Currently, the PMax Assets feature in this extension has functional limits, therefore,
 			// it needs to distinguish whether the `assetEntityGroup` is "empty" or not in order to
 			// provide different special business logic.
