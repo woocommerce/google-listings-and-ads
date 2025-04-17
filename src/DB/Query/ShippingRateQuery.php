@@ -90,7 +90,7 @@ class ShippingRateQuery extends Query {
 			$data = [
 				'country_code'            => $rate['country'],
 				'currency'                => $rate['currency'],
-				'free_shipping_threshold' => $rate['options']['free_shipping_threshold'] ? $rate['options']['free_shipping_threshold'] : null,
+				'free_shipping_threshold' => isset( $rate['options']['free_shipping_threshold'] ) ? (float) $rate['options']['free_shipping_threshold'] : null,
 				'rate'                    => $rate['rate'],
 			];
 
