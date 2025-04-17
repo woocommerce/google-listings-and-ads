@@ -122,6 +122,8 @@ test.describe( 'Complete your campaign', () => {
 				],
 			} ),
 
+			setupBudgetPage.mockBudgetMetrics(),
+
 			// The following mocks are requests will happen after completing the onboarding
 			completeCampaign.mockSuccessfulSettingsSyncRequest(),
 

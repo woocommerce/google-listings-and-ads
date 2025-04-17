@@ -101,6 +101,7 @@ test.describe( 'Set up Ads account', () => {
 				},
 			],
 		} );
+		await setupBudgetPage.mockBudgetMetrics();
 		await dashboardPage.mockRequests();
 		await dashboardPage.goto();
 	} );
