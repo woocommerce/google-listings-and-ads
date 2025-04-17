@@ -9,19 +9,23 @@ import { Tip } from '@wordpress/components';
  */
 import Section from '~/components/section';
 import getMonthlyMaxEstimated from './getMonthlyMaxEstimated';
+import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import AppInputPriceControl from '~/components/app-input-price-control';
 import './index.scss';
 
 /**
- * Renders <Section> and <Section.Card> UI with campaign budget inputs.
+ * Renders a UI for setting up the campaign budget.
+ *
+ * Please note that this component relies on a CampaignAssetsForm's context and custom adapter,
+ * so it expects a `CampaignAssetsForm` to exist in its parents.
  *
  * @param {Object} props React props.
- * @param {Object} props.formProps Form props forwarded from `Form` component.
  * @param {JSX.Element} [props.children] Extra content to be rendered under the card of budget inputs.
  */
-const BudgetSection = ( { formProps, children } ) => {
-	const { getInputProps, values } = formProps;
+const BudgetSection = ( { children } ) => {
+	const formContext = useAdaptiveFormContext();
+	const { getInputProps, values } = formContext;
 	const { amount } = values;
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const monthlyMaxEstimated = getMonthlyMaxEstimated( amount );
