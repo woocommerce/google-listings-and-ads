@@ -1208,7 +1208,7 @@ export function* fetchGoogleAdsAccountStatus() {
 export function* fetchPriceBenchmarkSummary() {
 	try {
 		const data = yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/price-benchmark/summary`,
+			path: `${ API_NAMESPACE }/mc/price-benchmarks/summary`,
 		} );
 
 		return {
@@ -1220,6 +1220,30 @@ export function* fetchPriceBenchmarkSummary() {
 			error,
 			__(
 				'There was an error getting the price benchmark summary.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Action to fetch the Price Benchmark suggestions.
+ */
+export function* fetchPriceBenchmarkSuggestions() {
+	try {
+		const data = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/price-benchmarks`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_PRICE_BENCHMARK_SUGGESTIONS,
+			data,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the price benchmark suggestions.',
 				'google-listings-and-ads'
 			)
 		);

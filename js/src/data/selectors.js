@@ -415,3 +415,13 @@ export const getGtinMigrationStatus = ( state ) => {
 export const getPriceBenchmarkSummary = ( state ) => {
 	return state.price_benchmark.summary;
 };
+
+/**
+ * Retrieves the price benchmark suggestions from the state.
+ *
+ * @param {Object} state - The state object containing price benchmark data.
+ * @return {Array} The array of price benchmark suggestions.
+ */
+export const getPriceBenchmarkSuggestions = ( state ) => {
+	return state.price_benchmark.suggestions;
+};

@@ -1,0 +1,38 @@
+.gla-badge {
+	padding: 0 $grid-unit-10;
+	min-height: $grid-unit-30;
+	max-width: 100%;
+	border-radius: $gla-border-radius;
+	font-size: $gla-font-smaller;
+	font-weight: 400;
+	line-height: $gla-line-height-smaller;
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+
+	&:where(.is-default) {
+		background-color: $gray-100;
+		color: $gray-800;
+	}
+
+	&:where(.is-warning) {
+		background-color: $gla-color-yellow-0;
+		color: $gla-color-yellow-70;
+	}
+
+	&:where(.is-error) {
+		background-color: $gla-color-red-0;
+		color: $gla-color-red-70;
+	}
+
+	&:where(.is-success) {
+		background-color: $gla-color-green-0;
+		color: $gla-color-green-70;
+	}
+}
+
+.gla-badge__content {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}

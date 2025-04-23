@@ -36,6 +36,7 @@ import {
 	fetchTargetAudience,
 	fetchMCSetup,
 	fetchPriceBenchmarkSummary,
+	fetchPriceBenchmarkSuggestions,
 	receiveGoogleAccountAccess,
 	receiveReport,
 	receiveMCProductStatistics,
@@ -590,4 +591,11 @@ export function* getGtinMigrationStatus() {
  */
 export function* getPriceBenchmarkSummary() {
 	yield fetchPriceBenchmarkSummary();
+}
+
+/**
+ * Resolver for getting the Price Benchmark suggestions.
+ */
+export function* getPriceBenchmarkSuggestions() {
+	yield fetchPriceBenchmarkSuggestions();
 }

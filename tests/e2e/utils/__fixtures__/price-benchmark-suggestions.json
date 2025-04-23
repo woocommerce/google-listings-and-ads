@@ -1,0 +1,182 @@
+[
+	{
+		"product": {
+			"id": 259251,
+			"thumbnail": "https://live.staticflickr.com/5725/21726228300_51333bd62c_b.jpg",
+			"title": "Abstract Geometric Poster"
+		},
+		"effectiveness": 3,
+		"regular_price": 25.0,
+		"price_on_google": 20.0,
+		"price_gap": 5.0,
+		"suggested_price": 20.0
+	},
+	{
+		"product": {
+			"id": 259252,
+			"thumbnail": "https://live.staticflickr.com/5725/21726228300_51333bd62c_b.jpg",
+			"title": "Minimal Landscape Print"
+		},
+		"effectiveness": 2,
+		"regular_price": 30.0,
+		"price_on_google": 27.0,
+		"price_gap": 3.0,
+		"suggested_price": 28.0
+	},
+	{
+		"product": {
+			"id": 2592523,
+			"thumbnail": "https://live.staticflickr.com/5725/21726228300_51333bd62c_b.jpg",
+			"title": "Modern Typography Canvas"
+		},
+		"effectiveness": 1,
+		"regular_price": 35.0,
+		"price_on_google": 36.0,
+		"price_gap": -1.0,
+		"suggested_price": 34.0
+	},
+	{
+		"product": {
+			"id": 2592524,
+			"thumbnail": "https://live.staticflickr.com/5725/21726228300_51333bd62c_b.jpg",
+			"title": "Surreal Mountain Scene"
+		},
+		"effectiveness": 3,
+		"regular_price": 40.0,
+		"price_on_google": 32.0,
+		"price_gap": 8.0,
+		"suggested_price": 33.0
+	},
+	{
+		"product": {
+			"id": 2592525,
+			"thumbnail": "https://live.staticflickr.com/5725/21726228300_51333bd62c_b.jpg",
+			"title": "Retro City Poster"
+		},
+		"effectiveness": 2,
+		"regular_price": 22.0,
+		"price_on_google": 21.0,
+		"price_gap": 1.0,
+		"suggested_price": 22.0
+	},
+	{
+		"product": {
+			"id": 2592526,
+			"thumbnail": "https://live.staticflickr.com/5725/21726228300_51333bd62c_b.jpg",
+			"title": "Futuristic Art Deco Print"
+		},
+		"effectiveness": 1,
+		"regular_price": 55.0,
+		"price_on_google": 42.0,
+		"price_gap": 13.0,
+		"suggested_price": 45.0
+	},
+	{
+		"product": {
+			"id": 2592527,
+			"thumbnail": "https://live.staticflickr.com/5725/21726228300_51333bd62c_b.jpg",
+			"title": "Muted Color Abstract"
+		},
+		"effectiveness": 3,
+		"regular_price": 18.0,
+		"price_on_google": 19.0,
+		"price_gap": -1.0,
+		"suggested_price": 17.0
+	},
+	{
+		"product": {
+			"id": 2592528,
+			"thumbnail": "https://live.staticflickr.com/5725/21726228300_51333bd62c_b.jpg",
+			"title": "Bold Graffiti Wall Art"
+		},
+		"effectiveness": 0,
+		"regular_price": 60.0,
+		"price_on_google": 48.0,
+		"price_gap": 12.0,
+		"suggested_price": 50.0
+	},
+	{
+		"product": {
+			"id": 2592529,
+			"thumbnail": "https://live.staticflickr.com/5725/21726228300_51333bd62c_b.jpg",
+			"title": "Dreamy Ocean Scene"
+		},
+		"effectiveness": 1,
+		"regular_price": 28.0,
+		"price_on_google": 30.0,
+		"price_gap": -2.0,
+		"suggested_price": 29.0
+	},
+	{
+		"product": {
+			"id": 2592530,
+			"thumbnail": "https://live.staticflickr.com/5725/21726228300_51333bd62c_b.jpg",
+			"title": "Grayscale Architectural Study"
+		},
+		"effectiveness": 2,
+		"regular_price": 45.0,
+		"price_on_google": 40.0,
+		"price_gap": 5.0,
+		"suggested_price": 42.0
+	},
+	{
+		"product": {
+			"id": 2592531,
+			"thumbnail": "https://live.staticflickr.com/5725/21726228300_51333bd62c_b.jpg",
+			"title": "Botanical Print Series"
+		},
+		"effectiveness": 3,
+		"regular_price": 35.0,
+		"price_on_google": 29.0,
+		"price_gap": 6.0,
+		"suggested_price": 30.0
+	},
+	{
+		"product": {
+			"id": 2592532,
+			"thumbnail": "https://live.staticflickr.com/5725/21726228300_51333bd62c_b.jpg",
+			"title": "Vaporwave Sunset Poster"
+		},
+		"effectiveness": 0,
+		"regular_price": 27.0,
+		"price_on_google": 25.0,
+		"price_gap": 2.0,
+		"suggested_price": 26.0
+	},
+	{
+		"product": {
+			"id": 2592533,
+			"thumbnail": "https://live.staticflickr.com/5725/21726228300_51333bd62c_b.jpg",
+			"title": "Neon Jungle Scene"
+		},
+		"effectiveness": 1,
+		"regular_price": 32.0,
+		"price_on_google": 34.0,
+		"price_gap": -2.0,
+		"suggested_price": 33.0
+	},
+	{
+		"product": {
+			"id": 2592534,
+			"thumbnail": "https://live.staticflickr.com/5725/21726228300_51333bd62c_b.jpg",
+			"title": "Pop Art Character Poster"
+		},
+		"effectiveness": 3,
+		"regular_price": 50.0,
+		"price_on_google": 37.0,
+		"price_gap": 13.0,
+		"suggested_price": 39.0
+	},
+	{
+		"product": {
+			"id": 2592535,
+			"thumbnail": "https://live.staticflickr.com/5725/21726228300_51333bd62c_b.jpg",
+			"title": "Hazy Sunset Canvas"
+		},
+		"effectiveness": 2,
+		"regular_price": 38.0,
+		"price_on_google": 34.0,
+		"price_gap": 4.0,
+		"suggested_price": 35.0
+	}
+]

@@ -1,0 +1,33 @@
+.gla-price-benchmark-table {
+
+	.gla-tooltip__children-container {
+		border-bottom: 1px dashed currentcolor;
+	}
+
+	th:not(:first-child):not(:has(.gla-price-benchmark__label--align-left)) {
+		text-align: right;
+	}
+
+	td > .dataviews-view-table__cell-content-wrapper:not(:has(.gla-badge)) {
+		justify-content: flex-end;
+	}
+
+	.dataviews-view-table tr td:first-child,
+	.dataviews-view-table tr th:first-child {
+		overflow: hidden;
+	}
+
+	.woocommerce-table__table.is-loading {
+
+		.woocommerce-table__header,
+		.woocommerce-table__item {
+			&:not(:first-child) {
+				text-align: right;
+			}
+		}
+	}
+}
+
+.gla-price-benchmark-table__image {
+	width: 100%;
+}

@@ -540,6 +540,11 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, 'price_benchmark.summary', data );
 		}
 
+		case TYPES.RECEIVE_PRICE_BENCHMARK_SUGGESTIONS: {
+			const { data } = action;
+			return setIn( state, 'price_benchmark.suggestions', data );
+		}
+
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.
 		case TYPES.DISCONNECT_ACCOUNTS_ALL:
 		default:

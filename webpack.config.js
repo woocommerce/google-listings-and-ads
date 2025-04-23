@@ -71,6 +71,11 @@ const webpackConfig = {
 		new WooCommerceDependencyExtractionWebpackPlugin( {
 			externalizedReport:
 				! hasReactFastRefresh && '../../.externalized.json',
+			requestToExternal: ( request ) => {
+				if ( request.startsWith( '@wordpress/dataviews' ) ) {
+					return null;
+				}
+			},
 		} ),
 		new MiniCSSExtractPlugin( {
 			filename: '[name].css',
@@ -108,9 +113,15 @@ const webpackConfig = {
 			...defaultConfig.optimization.splitChunks,
 			cacheGroups: {
 				...defaultConfig.optimization.splitChunks.cacheGroups,
+				wordpressDataviews: {
+					name: 'wp-dataviews',
+					priority: 20,
+					test: /[\\/]node_modules[\\/](@wordpress[\\/]dataviews)[\\/]/,
+				},
 				vendors: {
 					name: 'vendors',
 					test: /([\\/])node_modules\1/,
+					priority: 10,
 				},
 				commons: {
 					name: 'commons',

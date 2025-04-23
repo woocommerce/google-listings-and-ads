@@ -6,6 +6,7 @@ import { expect, test } from '@playwright/test';
 /**
  * Internal dependencies
  */
+import priceBenchmarkSuggestionsData from '../../utils/__fixtures__/price-benchmark-suggestions.json';
 import PriceBenchmarkPage from '../../utils/pages/price-benchmark';
 
 test.use( { storageState: process.env.ADMINSTATE } );
@@ -121,6 +122,58 @@ test.describe( 'Price Benchmark Page', () => {
 				'aria-selected',
 				'true'
 			);
+		} );
+	} );
+
+	test.describe( 'Price Benchmark Suggestions Functionality', () => {
+		test( 'Shows no results if there is no data', async () => {
+			await priceBenchmarkPage.goto();
+
+			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions( [] );
+
+			await expect( page.getByText( 'No results' ) ).toBeVisible();
+		} );
+
+		test( 'Shows 10 results per page by default', async () => {
+			await priceBenchmarkPage.goto();
+
+			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions( [
+				...priceBenchmarkSuggestionsData,
+			] );
+
+			const tableRows = page.locator( 'table tbody tr' );
+			await expect( tableRows ).toHaveCount( 10 );
+		} );
+
+		test( 'Navigates to the next page and shows 5 results', async () => {
+			await priceBenchmarkPage.goto();
+
+			priceBenchmarkPage.fulfillPriceBenchmarkSuggestions( [
+				...priceBenchmarkSuggestionsData,
+			] );
+
+			const nextPageButton = page.locator( '[aria-label="Next page"]' );
+			await nextPageButton.click();
+
+			// Ensure the table displays 5 rows on the second page
+			const tableRows = page.locator( 'table tbody tr' );
+			await expect( tableRows ).toHaveCount( 5 );
+		} );
+
+		test( 'Displays the product and action columns only in the table when screen is resized to 400px', async () => {
+			await priceBenchmarkPage.goto();
+
+			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions( [
+				...priceBenchmarkSuggestionsData,
+			] );
+
+			await page.setViewportSize( { width: 400, height: 800 } );
+
+			const tableHeaderColumns = page.locator( 'table thead tr th' );
+			await expect( tableHeaderColumns ).toHaveCount( 2 );
+
+			await expect( tableHeaderColumns.nth( 0 ) ).toHaveText( 'Product' );
+			await expect( tableHeaderColumns.nth( 1 ) ).toHaveText( 'Action' );
 		} );
 	} );
 } );

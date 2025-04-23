@@ -445,6 +445,21 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the price benchmark suggestions request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillPriceBenchmarkSuggestions( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/price-benchmarks\b/,
+			payload,
+			200,
+			[ 'GET' ]
+		);
+	}
+
+	/**
 	 * Mock the request to connect Jetpack
 	 *
 	 * @param {string} url
