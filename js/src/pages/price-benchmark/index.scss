@@ -10,8 +10,8 @@
 	}
 
 	.woocommerce-tour-kit-step__description {
-		font-size: 13px;
-		line-height: 20px;
+		font-size: $gla-font-base;;
+		line-height: $gla-line-height-medium;
 	}
 
 	.gla-price-benchmark__comparison-chart {
@@ -23,6 +23,6 @@
 	}
 
 	.tour-kit-frame__arrow {
-		background-color: #fff;
+		background-color: $white;
 	}
 }

@@ -40,41 +40,34 @@ export default function PriceBenchmarkTour() {
 									'google-listings-and-ads'
 								) }
 							/>
-							{ createInterpolateElement(
-								__(
-									'<span>Price Benchmark & Suggestions</span>',
+							<span className="gla-tour-highlight">
+								{ __(
+									'Price Benchmark & Suggestions',
 									'google-listings-and-ads'
-								),
-								{
-									span: (
-										<span className="gla-tour-highlight" />
-									),
-								}
-							) }
+								) }
+							</span>
 						</>
 					),
 					descriptions: {
 						desktop: (
 							<>
-								{ createInterpolateElement(
-									__(
-										'<p>This report includes a competitive pricing analysis, price recommendations, and insights to help you compare against competitors and accelerate your sales growth.</p>',
+								<p>
+									{ __(
+										'This report includes a competitive pricing analysis, price recommendations, and insights to help you compare against competitors and accelerate your sales growth.',
 										'google-listings-and-ads'
-									),
-									{
-										p: <p></p>,
-									}
-								) }
-								{ createInterpolateElement(
-									__(
-										"<p>The <strong>Effectiveness</strong> grade reveals which products will benefit most from price adjustments. 'High' Effectiveness ratings signify the suggested sale prices are predicted to drive the greatest performance increases.</p>",
-										'google-listings-and-ads'
-									),
-									{
-										p: <p></p>,
-										strong: <strong />,
-									}
-								) }
+									) }
+								</p>
+								<p>
+									{ createInterpolateElement(
+										__(
+											"The <strong>Effectiveness</strong> grade reveals which products will benefit most from price adjustments. 'High' Effectiveness ratings signify the suggested sale prices are predicted to drive the greatest performance increases.",
+											'google-listings-and-ads'
+										),
+										{
+											strong: <strong />,
+										}
+									) }
+								</p>
 							</>
 						),
 					},

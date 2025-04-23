@@ -866,6 +866,19 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Mocks an incomplete tour by fulfilling a GET request with the specified tour data.
+	 *
+	 * @param {string} tourId - The unique identifier of the tour to mock.
+	 * @return {Promise<void>} A promise that resolves when the mock request is fulfilled.
+	 */
+	async mockIncompleteTour( tourId ) {
+		await this.fulfillGetTour( {
+			id: tourId,
+			checked: false,
+		} );
+	}
+
+	/**
 	 * Mocks a completed tour by fulfilling a GET request with the specified tour data.
 	 *
 	 * @param {string} tourId - The unique identifier of the tour to mock.

@@ -32,19 +32,16 @@ test.describe( 'Price Benchmark Page', () => {
 		await page.close();
 	} );
 
+	test.beforeEach( async () => {
+		await priceBenchmarkPage.goto();
+	} );
+
 	test.describe( 'Price Benchmark Tour', () => {
 		test.beforeAll( () => {
-			priceBenchmarkPage.fulfillGetTour( [
-				{
-					id: 'price-benchmark-tour',
-					checked: true,
-				},
-			] );
+			priceBenchmarkPage.mockIncompleteTour( 'price-benchmark-tour' );
 		} );
 
 		test( 'Price Benchmark Tour should be visible', async () => {
-			await priceBenchmarkPage.goto();
-
 			const tourElement = page.locator(
 				'.woocommerce-tour-kit-step__heading'
 			);
@@ -52,8 +49,6 @@ test.describe( 'Price Benchmark Page', () => {
 		} );
 
 		test( 'Price Benchmark Tour should have the correct heading', async () => {
-			await priceBenchmarkPage.goto();
-
 			const tourHeading = page.locator(
 				'.woocommerce-tour-kit-step__heading'
 			);
@@ -79,8 +74,6 @@ test.describe( 'Price Benchmark Page', () => {
 		} );
 
 		test( 'Goes to the Price Benchmark page', async () => {
-			await priceBenchmarkPage.goto();
-
 			const expectedTabs = [
 				'Price Benchmark & Suggestions',
 				'Price Adjustments',
@@ -95,8 +88,6 @@ test.describe( 'Price Benchmark Page', () => {
 		} );
 
 		test( 'Click on "Price Adjustments" should update the URL', async () => {
-			await priceBenchmarkPage.goto();
-
 			const priceAdjustmentsTab = page.locator(
 				'a[role="tab"]:has-text("Price Adjustments")'
 			);
@@ -108,8 +99,6 @@ test.describe( 'Price Benchmark Page', () => {
 		} );
 
 		test( 'Click on "Price Benchmark & Suggestions" should update the URL', async () => {
-			await priceBenchmarkPage.goto();
-
 			const priceBenchmarkTab = page.locator(
 				'a[role="tab"]:has-text("Price Benchmark & Suggestions")'
 			);
