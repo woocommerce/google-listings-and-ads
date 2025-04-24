@@ -874,10 +874,13 @@ export default class MockRequests {
 	 * @param {Object} payload - The payload to be returned in the mock response.
 	 * @return {Promise<void>} Resolves when the mock request is fulfilled.
 	 */
-	async fulfillGetTour( payload ) {
-		await this.fulfillRequest( /\/wc\/gla\/tours(\/.*)?\b/, payload, 200, [
-			'GET',
-		] );
+	async fulfillGetTour( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/tours(\/.*)?\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
 	}
 
 	/**
@@ -887,10 +890,13 @@ export default class MockRequests {
 	 * @return {Promise<void>} A promise that resolves when the mock request is fulfilled.
 	 */
 	async mockIncompleteTour( tourId ) {
-		await this.fulfillGetTour( {
-			id: tourId,
-			checked: false,
-		} );
+		await this.fulfillGetTour(
+			{
+				id: tourId,
+				checked: false,
+			},
+			404
+		);
 	}
 
 	/**
