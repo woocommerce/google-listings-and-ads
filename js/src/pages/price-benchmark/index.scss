@@ -4,6 +4,10 @@
 	padding: 0 $grid-unit-40;
 }
 
+.gla-price-benchmark__comparison-chart {
+	margin: $grid-unit-40 0;
+}
+
 .gla-price-benchmark-tour {
 
 	.woocommerce-tour-kit-step__heading img {
@@ -16,10 +20,6 @@
 		line-height: $gla-line-height-medium;
 	}
 
-	.gla-price-benchmark__comparison-chart {
-		margin: $grid-unit-40 0;
-	}
-
 	.gla-tour-highlight {
 		display: block;
 	}
@@ -28,4 +28,3 @@
 		background-color: $white;
 	}
 }
-
