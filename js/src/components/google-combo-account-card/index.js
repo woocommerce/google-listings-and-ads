@@ -27,7 +27,7 @@ export default function GoogleComboAccountCard( { disabled = false } ) {
 		scope,
 		hasFinishedResolution: hasResolvedGoogle,
 	} = useGoogleAccount();
-	const { isWPComAppGranted, hasFinishedResolution: hasResolvedGMC } =
+	const { hasFinishedResolution: hasResolvedGMC } =
 		useGoogleMCAccount();
 
 	if ( ! hasResolvedGoogle || ! hasResolvedGMC ) {
@@ -41,14 +41,6 @@ export default function GoogleComboAccountCard( { disabled = false } ) {
 			return (
 				<RequestFullAccessGoogleAccountCard
 					additionalScopeEmail={ google.email }
-				/>
-			);
-		}
-
-		if ( ! isWPComAppGranted ) {
-			return (
-				<AuthorizeWPComAppCard
-					eventPropsOfEnableButton={ { page: 'setup-mc' } }
 				/>
 			);
 		}
