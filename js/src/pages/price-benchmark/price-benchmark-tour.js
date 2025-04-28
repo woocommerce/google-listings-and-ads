@@ -78,7 +78,7 @@ export default function PriceBenchmarkTour() {
 			},
 		],
 		options: {
-			classNames: 'gla-price-benchmark-tour',
+			classNames: 'gla-admin-page, gla-price-benchmark-tour',
 			effects: { overlay: true },
 		},
 		placement: 'bottom-start',
