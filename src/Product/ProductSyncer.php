@@ -372,7 +372,7 @@ class ProductSyncer implements Service {
 
 			throw new ProductSyncerException(
 				__(
-					'Pushing products will not run if the the store is not ready for syncing.',
+					'Pushing products will not run if the store is not ready for syncing.',
 					'google-listings-and-ads'
 				)
 			);
