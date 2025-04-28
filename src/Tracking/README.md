@@ -289,7 +289,7 @@ Triggered when "continue" to edit program button is clicked.
 #### Emitters
 - [`EditProgramPromptModal`](../../js/src/pages/dashboard/all-programs-table-card/edit-program-button/edit-program-prompt-modal.js#L31) when "Continue to edit" is clicked.
 
-### [`gla_datepicker_update`](../../js/src/utils/tracks.js#L136)
+### [`gla_datepicker_update`](../../js/src/utils/tracks.js#L135)
 Triggered when datepicker (date ranger picker) is updated,
  with report name and data that comes from `DateRangeFilterPicker`'s `onRangeSelect` callback
 #### Properties
@@ -305,14 +305,19 @@ Triggered when datepicker (date ranger picker) is updated,
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L41)
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
 
-### [`gla_disconnected_accounts`](../../js/src/pages/settings/linked-accounts.js#L34)
+### [`gla_disable_product_sync_click`](../../js/src/components/google-mc-account-card/merchant-center-account-info-card.js#L34)
+Clicking on the button to disable the new product sync (API Pull).
+#### Emitters
+- [`MerchantCenterAccountInfoCard`](../../js/src/components/google-mc-account-card/merchant-center-account-info-card.js#L48)
+
+### [`gla_disconnected_accounts`](../../js/src/pages/settings/linked-accounts.js#L31)
 Accounts are disconnected from the Setting page
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | (`all-accounts`\|`ads-account`) - indicate which accounts have been disconnected.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/linked-accounts.js#L44)
+- [`exports`](../../js/src/pages/settings/linked-accounts.js#L41)
 
 ### [`gla_documentation_link_click`](../../js/src/components/app-documentation-link/index.js#L6)
 When a documentation link is clicked.
@@ -408,16 +413,6 @@ Triggered when store address "Edit in WooCommerce Settings" button is clicked.
 #### Emitters
 - [`StoreAddressCard`](../../js/src/components/contact-information/store-address-card.js#L49) Whenever "Edit in WooCommerce Settings" button is clicked.
 
-### [`gla_enable_product_sync`](../../js/src/pages/onboarding/useAutoWPComAppAuthorization.js#L16)
-Start the WPCOM app authorization process to enable the product sync (API Pull).
-#### Properties
-| name | type | description |
-| ---- | ---- | ----------- |
-`page` | `string` | Indicates the page where this event happened
-`context` | `string` | Indicates the origin that triggered this event
-#### Emitters
-- [`exports`](../../js/src/pages/onboarding/useAutoWPComAppAuthorization.js#L39) with `{ page: 'setup-mc', context: 'auto-redirection' }`
-
 ### [`gla_enable_product_sync_click`](../../js/src/components/enable-new-product-sync-button.js#L15)
 Clicking on the button to start enabling the new product sync (API Pull).
 #### Properties
@@ -426,7 +421,7 @@ Clicking on the button to start enabling the new product sync (API Pull).
 `page` | `string` | Indicates which page this event happened
 `context` | `string` | Indicates where or which the button triggered this event
 #### Emitters
-- [`EnableNewProductSyncButton`](../../js/src/components/enable-new-product-sync-button.js#L31) with `{ page: 'setup-mc' | 'settings', context: 'banner' | 'mc_card' }`
+- [`EnableNewProductSyncButton`](../../js/src/components/enable-new-product-sync-button.js#L31) with `{ page: 'settings', context: 'banner' | 'mc_card' }`
 
 ### [`gla_faq`](../../js/src/components/faqs-panel/index.js#L22)
 Clicking on faq item to collapse or expand it.
@@ -465,7 +460,7 @@ Clicking on faq item to collapse or expand it.
 	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-google-mc-account', action: 'expand' }`.
 	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-google-mc-account', action: 'collapse' }`.
 
-### [`gla_filter`](../../js/src/utils/tracks.js#L148)
+### [`gla_filter`](../../js/src/utils/tracks.js#L147)
 Triggered when changing products & variations filter,
  with data that comes from
  `FilterPicker`'s `onFilterSelect` callback.
@@ -493,7 +488,7 @@ Saving changes of audience and/or shipping settings to the free listings.
 #### Emitters
 - [`exports`](../../js/src/pages/shipping/index.js#L45)
 
-### [`gla_google_account_connect_button_click`](../../js/src/utils/tracks.js#L176)
+### [`gla_google_account_connect_button_click`](../../js/src/utils/tracks.js#L175)
 Clicking on the button to connect Google account.
 #### Properties
 | name | type | description |
@@ -513,7 +508,7 @@ Clicking on the "connect to a different Google account" button.
 #### Emitters
 - [`SwitchAccountButton`](../../js/src/components/google-account-card/switch-account-button.js#L25)
 
-### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L186)
+### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L185)
 Clicking on a Google Merchant Center link.
 #### Properties
 | name | type | description |
@@ -542,7 +537,7 @@ Clicking on the "Scan for assets" button.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/assets-loader.js#L96)
 
-### [`gla_launch_paid_campaign_button_click`](../../js/src/utils/tracks.js#L168)
+### [`gla_launch_paid_campaign_button_click`](../../js/src/utils/tracks.js#L167)
 Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign in the Google Ads setup flow.
 #### Properties
 | name | type | description |
@@ -594,7 +589,7 @@ Clicking on the "Yes, I want a new account" button in the warning modal for crea
 #### Emitters
 - [`WarningModal`](../../js/src/components/google-mc-account-card/warning-modal/index.js#L29)
 
-### [`gla_modal_closed`](../../js/src/utils/tracks.js#L242)
+### [`gla_modal_closed`](../../js/src/utils/tracks.js#L241)
 A modal is closed.
 #### Properties
 | name | type | description |
@@ -617,7 +612,7 @@ Clicking on a text link within the modal content
 #### Emitters
 - [`ContentLink`](../../js/src/components/guide-page-content/index.js#L46) with given `context, href`
 
-### [`gla_modal_open`](../../js/src/utils/tracks.js#L255)
+### [`gla_modal_open`](../../js/src/utils/tracks.js#L254)
 A modal is open
 #### Properties
 | name | type | description |
@@ -660,7 +655,7 @@ Clicking on the button to open the invitation page for claiming the newly create
 #### Emitters
 - [`ClaimAccountButton`](../../js/src/components/google-ads-account-card/claim-account-button.js#L32) When the user clicks on the button to claim the account.
 
-### [`gla_paid_campaign_step`](../../js/src/utils/tracks.js#L202)
+### [`gla_paid_campaign_step`](../../js/src/utils/tracks.js#L201)
 Triggered when moving to another step during creating/editing a campaign.
 #### Properties
 | name | type | description |
@@ -675,19 +670,6 @@ Triggered when moving to another step during creating/editing a campaign.
 - [`EditPaidAdsCampaign`](../../js/src/pages/edit-paid-ads-campaign/index.js#L69)
 	- with `{ context: 'edit-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
 	- with `{ context: 'edit-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
-
-### [`gla_product_sync_status_callback`](../../js/src/hooks/useUpdateRestAPIAuthorizeStatusByUrlQuery.js#L16)
-Being redirected back from WPCOM app authorization for the product sync (API Pull).
- This event is only recorded when the user is brought back to this plugin.
- It won't be recorded if they don't return to this plugin for any reason.
- (e.g., closing the browser tab).
-#### Properties
-| name | type | description |
-| ---- | ---- | ----------- |
-`page` | `string` | Indicates the page where this event happened
-`status` | `string` | The authorization status
-#### Emitters
-- [`useUpdateRestAPIAuthorizeStatusByUrlQuery`](../../js/src/hooks/useUpdateRestAPIAuthorizeStatusByUrlQuery.js#L39) with `{ page: 'setup-mc' | 'settings', status: 'approved' | 'disapproved' | 'error' }`
 
 ### [`gla_request_review`](../../js/src/pages/product-feed/review-request/review-request-modal.js#L19)
 Triggered when request review button is clicked
@@ -718,7 +700,7 @@ Clicking on the "Or, select another page" button.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/final-url-card.js#L39)
 
-### [`gla_setup_ads`](../../js/src/utils/tracks.js#L194)
+### [`gla_setup_ads`](../../js/src/utils/tracks.js#L193)
 Triggered on events during ads onboarding
 #### Properties
 | name | type | description |
@@ -741,7 +723,7 @@ Clicking on faq items to collapse or expand it in the Onboarding Flow or creatin
 #### Emitters
 - [`Faqs`](../../js/src/components/paid-ads/ads-campaign/faqs.js#L88)
 
-### [`gla_setup_mc`](../../js/src/utils/tracks.js#L159)
+### [`gla_setup_mc`](../../js/src/utils/tracks.js#L158)
 Setup Merchant Center
 #### Properties
 | name | type | description |
@@ -782,7 +764,7 @@ Clicking on the submit button on the campaign creation or editing page.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group.js#L62)
 
-### [`gla_table_go_to_page`](../../js/src/utils/tracks.js#L43)
+### [`gla_table_go_to_page`](../../js/src/utils/tracks.js#L42)
 When table pagination is changed by entering page via "Go to page" input.
 #### Properties
 | name | type | description |
@@ -791,7 +773,7 @@ When table pagination is changed by entering page via "Go to page" input.
 `page` | `string` | Page number (starting at 1)
 #### Emitters
 - [`ProductFeedTableCard`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
-- [`recordTablePageEvent`](../../js/src/utils/tracks.js#L122) with the given `{ context, page }`.
+- [`recordTablePageEvent`](../../js/src/utils/tracks.js#L121) with the given `{ context, page }`.
 
 ### [`gla_table_header_toggle`](../../js/src/components/app-table-card/index.js#L12)
 Toggling display of table columns
@@ -805,7 +787,7 @@ Toggling display of table columns
 - [`AppTableCard`](../../js/src/components/app-table-card/index.js#L74) upon toggling column visibility
 - [`recordColumnToggleEvent`](../../js/src/components/app-table-card/index.js#L29) with given `report: trackEventReportId, column: toggled`
 
-### [`gla_table_page_click`](../../js/src/utils/tracks.js#L51)
+### [`gla_table_page_click`](../../js/src/utils/tracks.js#L50)
 When table pagination is clicked
 #### Properties
 | name | type | description |
@@ -814,7 +796,7 @@ When table pagination is clicked
 `direction` | `string` | Direction of page to be changed. `("next" \| "previous")`
 #### Emitters
 - [`ProductFeedTableCard`](../../js/src/pages/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
-- [`recordTablePageEvent`](../../js/src/utils/tracks.js#L122) with the given `{ context, direction }`.
+- [`recordTablePageEvent`](../../js/src/utils/tracks.js#L121) with the given `{ context, direction }`.
 
 ### [`gla_table_sort`](../../js/src/components/app-table-card/index.js#L38)
 Sorting table

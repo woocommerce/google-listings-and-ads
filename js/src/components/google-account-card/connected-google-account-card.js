@@ -3,6 +3,7 @@
  */
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import ConnectedIconLabel from '~/components/connected-icon-label';
+import Section from '~/components/section';
 import SwitchAccountButton from './switch-account-button';
 
 /**
@@ -13,13 +14,11 @@ import SwitchAccountButton from './switch-account-button';
  * @param {{ email: string }} props.googleAccount A data payload object containing the user's Google account email.
  * @param {JSX.Element} [props.helper] Helper content below the Google account email.
  * @param {boolean} [props.hideAccountSwitch=false] Indicate whether hide the account switch block at the card footer.
- * @param {Object} props.restProps Props to be forwarded to AccountCard.
  */
 const ConnectedGoogleAccountCard = ( {
 	googleAccount,
 	helper,
 	hideAccountSwitch = false,
-	...restProps
 } ) => {
 	return (
 		<AccountCard
@@ -27,9 +26,13 @@ const ConnectedGoogleAccountCard = ( {
 			description={ googleAccount.email }
 			helper={ helper }
 			indicator={ <ConnectedIconLabel /> }
-			actions={ ! hideAccountSwitch && <SwitchAccountButton /> }
-			{ ...restProps }
-		/>
+		>
+			{ ! hideAccountSwitch && (
+				<Section.Card.Footer>
+					<SwitchAccountButton />
+				</Section.Card.Footer>
+			) }
+		</AccountCard>
 	);
 };
 

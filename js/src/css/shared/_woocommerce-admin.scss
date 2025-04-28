@@ -75,15 +75,6 @@
 	.components-notice:not(.app-notice) {
 		margin-bottom: $grid-unit-15;
 	}
-
-	> .woocommerce-spinner:only-child {
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		margin: auto;
-	}
 }
 
 // compatibility-code "WC >= 7.3" -- adding margin in the first question label.

@@ -231,7 +231,6 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		if (
 			$this->connected_account() &&
 			$this->container->get( AdsService::class )->connected_account() &&
-			$this->options->is_wpcom_api_authorized() &&
 			$this->is_mc_contact_information_setup()
 		) {
 			$step = 'product_listings';

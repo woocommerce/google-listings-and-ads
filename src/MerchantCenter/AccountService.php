@@ -27,6 +27,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
 use Exception;
 use Jetpack_Options;
 
@@ -345,9 +346,6 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 						} else {
 							$merchant->claimwebsite();
 						}
-						break;
-					case 'sdi_update':
-						$middleware->update_sdi_merchant_account();
 						break;
 					case 'link_ads':
 						// Continue to next step if Ads account is not connected yet.
