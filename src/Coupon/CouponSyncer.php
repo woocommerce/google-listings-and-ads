@@ -486,7 +486,7 @@ class CouponSyncer implements Service {
 
 			throw new CouponSyncerException(
 				__(
-					'Pushing coupons will not run if the the store is not ready for syncing.',
+					'Pushing coupons will not run if the store is not ready for syncing.',
 					'google-listings-and-ads'
 				)
 			);
