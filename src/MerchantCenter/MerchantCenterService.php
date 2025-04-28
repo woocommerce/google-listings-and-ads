@@ -138,10 +138,15 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 
 	/**
 	 * Whether push is enabled for a specific data type.
+	 * This method checks if push synchronization is enabled for a specific data type
+	 * (products, coupons, shipping, settings) in the Merchant Center.
+	 * 
+	 * This differs from should_push() which checks if the Merchant Center is ready
+	 * for syncing in general, while this method checks if a specific data type
+	 * has been enabled for push operations.
 	 *
 	 * @param string $data_type The data type to check.
-	 * @return bool
-	 * @since x.x.x
+	 * @return bool True if push is enabled for the specified data type.
 	 */
 	public function is_enabled_for_datatype( string $data_type ): bool {
 		/** @var NotificationsService $notifications_service */
