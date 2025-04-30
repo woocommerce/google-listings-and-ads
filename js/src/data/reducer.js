@@ -70,6 +70,7 @@ const DEFAULT_STATE = {
 			step: null,
 		},
 		budgetRecommendations: {},
+		budgetMetrics: {},
 	},
 	gtinMigrationStatus: null,
 };
@@ -514,6 +515,11 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				[ 'ads', 'budgetRecommendations', countryCodesKey ],
 				data
 			);
+		}
+
+		case TYPES.RECEIVE_ADS_BUDGET_METRICS: {
+			const { key, data } = action;
+			return setIn( state, [ 'ads', 'budgetMetrics', key ], data );
 		}
 
 		case TYPES.RECEIVE_GTIN_MIGRATION_STATUS: {

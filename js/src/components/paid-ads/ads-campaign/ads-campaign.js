@@ -84,7 +84,7 @@ export default function AdsCampaign( {
 
 			{ isOnboardingFlow && <PaidAdsFeaturesSection /> }
 
-			<BudgetSection formProps={ formContext }>
+			<BudgetSection>
 				{ showBillingCard && <BillingCard /> }
 				{ showCampaignPreviewCard && <CampaignPreviewCard /> }
 			</BudgetSection>

@@ -3,43 +3,52 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Tip } from '@wordpress/components';
+import { useState, useEffect } from '@wordpress/element';
+import { useDebounce } from '@wordpress/compose';
 
 /**
  * Internal dependencies
  */
 import Section from '~/components/section';
-import getMonthlyMaxEstimated from './getMonthlyMaxEstimated';
+import { useAdaptiveFormContext } from '~/components/adaptive-form';
+import useBudgetMetrics from '~/hooks/useBudgetMetrics';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import AppInputPriceControl from '~/components/app-input-price-control';
+import AppInputControl from '~/components/app-input-control';
 import './index.scss';
 
-const nonInteractableProps = {
-	noPointerEvents: true,
-	readOnly: true,
-	tabIndex: -1,
-};
-
 /**
- * Renders <Section> and <Section.Card> UI with campaign budget inputs.
+ * Renders a UI for setting up the campaign budget.
+ *
+ * Please note that this component relies on a CampaignAssetsForm's context and custom adapter,
+ * so it expects a `CampaignAssetsForm` to exist in its parents.
  *
  * @param {Object} props React props.
- * @param {Object} props.formProps Form props forwarded from `Form` component.
- * @param {boolean} [props.disabled=false] Whether display the Card in disabled style.
  * @param {JSX.Element} [props.children] Extra content to be rendered under the card of budget inputs.
  */
-const BudgetSection = ( { formProps, disabled = false, children } ) => {
-	const { getInputProps, values } = formProps;
+const BudgetSection = ( { children } ) => {
+	const formContext = useAdaptiveFormContext();
+	const { adapter, getInputProps, values } = formContext;
+	const { countryCodes } = adapter;
 	const { amount } = values;
 	const { googleAdsAccount } = useGoogleAdsAccount();
-	const monthlyMaxEstimated = getMonthlyMaxEstimated( amount );
+
+	const [ budget, setBudget ] = useState( amount );
+	const debouncedSetBudget = useDebounce( setBudget, 1000 );
+	const { data } = useBudgetMetrics( countryCodes, budget );
+
+	useEffect( () => {
+		debouncedSetBudget( amount );
+	}, [ debouncedSetBudget, amount ] );
+
 	// Display the currency code that will be used by Google Ads, but still use the store's currency formatting settings.
 	const currency = googleAdsAccount?.currency;
+	const weeklyCost = data ? data.metrics.cost : null;
 
 	return (
 		<div className="gla-budget-section">
 			<Section
 				verticalGap={ 4 }
-				disabled={ disabled }
 				title={ __( 'Set your budget', 'google-listings-and-ads' ) }
 				description={
 					<p>
@@ -60,16 +69,14 @@ const BudgetSection = ( { formProps, disabled = false, children } ) => {
 								) }
 								suffix={ currency }
 								{ ...getInputProps( 'amount' ) }
-								{ ...( disabled && nonInteractableProps ) }
 							/>
-							<AppInputPriceControl
+							<AppInputControl
 								disabled
 								label={ __(
-									'Monthly max, estimated',
+									'Weekly cost',
 									'google-listings-and-ads'
 								) }
-								suffix={ currency }
-								value={ monthlyMaxEstimated }
+								value={ weeklyCost }
 							/>
 						</div>
 						<Tip>

@@ -7,7 +7,7 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import { STORE_KEY } from '~/data/constants';
-import useStoreCountry from '~/hooks/useStoreCountry';
+import useCountryCodesForBudgetQuery from './useCountryCodesForBudgetQuery';
 
 /**
  * @typedef {import('~/data/actions').CountryCode} CountryCode
@@ -18,23 +18,8 @@ import useStoreCountry from '~/hooks/useStoreCountry';
  * @typedef {Object} BudgetRecommendationPayload
  * @property {AdsBudgetRecommendation|null} data The budget recommendation data.
  * @property {number|null} recommendedDailyBudget The recommended daily budget. `null` if not yet fetched.
- * @property {boolean} hasFinishedResolution Whether the data fetching is finished.
+ * @property {boolean} hasResolved Whether the data fetching is finished.
  */
-
-function resolveCountryCodes( storeCountry, countryCodes ) {
-	if ( ! storeCountry || ! countryCodes ) {
-		return [];
-	}
-
-	const idx = countryCodes.indexOf( storeCountry );
-
-	if ( idx > 0 ) {
-		const codes = countryCodes.slice();
-		return codes.splice( idx, 1 ).concat( codes );
-	}
-
-	return countryCodes;
-}
 
 /**
  * A hook to fetch the budget recommendations for the given countries. If the
@@ -45,17 +30,12 @@ function resolveCountryCodes( storeCountry, countryCodes ) {
  * @return {BudgetRecommendationPayload} Budget recommendation.
  */
 const useBudgetRecommendation = ( countryCodes ) => {
-	const { code: storeCountry } = useStoreCountry();
+	const resolvedCountryCodes = useCountryCodesForBudgetQuery( countryCodes );
 
 	return useSelect(
 		( select ) => {
 			const { getAdsBudgetRecommendations, hasFinishedResolution } =
 				select( STORE_KEY );
-
-			const resolvedCountryCodes = resolveCountryCodes(
-				storeCountry,
-				countryCodes
-			);
 
 			const data = getAdsBudgetRecommendations( resolvedCountryCodes );
 			let recommendedDailyBudget = null;
@@ -73,10 +53,10 @@ const useBudgetRecommendation = ( countryCodes ) => {
 			return {
 				data,
 				recommendedDailyBudget,
-				hasFinishedResolution: hasResolved,
+				hasResolved,
 			};
 		},
-		[ storeCountry, countryCodes ]
+		[ resolvedCountryCodes ]
 	);
 };
 

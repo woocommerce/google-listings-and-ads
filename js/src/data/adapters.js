@@ -9,6 +9,7 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * @typedef {import('~/data/actions').Campaign} Campaign
  * @typedef {import('~/data/types.js').AssetEntityGroup} AssetEntityGroup
  * @typedef {import('~/data/types.js').AdsBudgetRecommendation} AdsBudgetRecommendation
+ * @typedef {import('~/data/types.js').AdsBudgetMetrics} AdsBudgetMetrics
  */
 
 /**
@@ -33,6 +34,18 @@ export function adaptAdsBudgetRecommendation( data ) {
 
 		return payload;
 	}, {} );
+}
+
+/**
+ * Adapts the ads budget metrics data received from API.
+ *
+ * @param {Object} data The ads budget metrics data to be adapted.
+ * @return {AdsBudgetMetrics} Ads budget metrics data.
+ */
+export function adaptAdsBudgetMetrics( data ) {
+	const { budget, ...adaptingData } = data;
+	adaptingData.dailyBudget = budget;
+	return convertKeysFromSnakeCaseToCamelCase( adaptingData );
 }
 
 /**

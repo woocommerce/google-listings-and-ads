@@ -1,3 +1,8 @@
+/**
+ * External dependencies
+ */
+import loadsh from 'lodash';
+
 const proxyFulfill = ( instance, options ) => {
 	return new Proxy( instance.originalTarget || instance, {
 		get( target, property ) {
@@ -439,6 +444,35 @@ export default class MockRequests {
 		await this.fulfillRequest(
 			/\/wc\/gla\/ads\/campaigns\/budget-recommendation\b/,
 			payload,
+			200,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Mock the budget metrics.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async mockBudgetMetrics( payload ) {
+		const mergedPayload = loadsh.merge(
+			{
+				currency: 'USD',
+				budget: 15,
+				country: 'US',
+				metrics: {
+					cost: 105,
+					conversions: 4.3,
+					conversions_value: 172.3137664794922,
+				},
+			},
+			payload
+		);
+
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/campaigns\/budget-metrics\b/,
+			mergedPayload,
 			200,
 			[ 'GET' ]
 		);

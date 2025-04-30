@@ -1,9 +1,7 @@
 /**
  * External dependencies
  */
-import { isEqual } from 'lodash';
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect } from '@wordpress/element';
 import { getNewPath } from '@woocommerce/navigation';
 
 /**
@@ -16,45 +14,17 @@ import useAdminUrl from '~/hooks/useAdminUrl';
 import useNavigateAwayPromptEffect from '~/hooks/useNavigateAwayPromptEffect';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useAdsSetupCompleteCallback from '~/hooks/useAdsSetupCompleteCallback';
+import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import { recordGlaEvent } from '~/utils/tracks';
-import useBudgetRecommendation from '~/hooks/useBudgetRecommendation';
 import AppSpinner from '~/components/app-spinner';
 import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 
 const { APPROVED } = GOOGLE_ADS_BILLING_STATUS;
 
-/**
- * Renders the step to setup paid ads
- *
- * @fires gla_launch_paid_campaign_button_click on submit
- */
-const SetupPaidAds = () => {
-	const { billingStatus } = useGoogleAdsAccountBillingStatus();
-	const [ didFormChanged, setFormChanged ] = useState( false );
-	const [ isSubmitted, setSubmitted ] = useState( false );
-	const [ handleSetupComplete, isSubmitting ] = useAdsSetupCompleteCallback();
-	const adminUrl = useAdminUrl();
-	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
-	const { recommendedDailyBudget, hasFinishedResolution } =
-		useBudgetRecommendation( countryCodes );
-
-	const initialValues = {
-		amount: recommendedDailyBudget,
-	};
-
-	useEffect( () => {
-		if ( isSubmitted ) {
-			// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.
-			const nextPath = getNewPath(
-				{ guide: 'campaign-creation-success' },
-				'/google/dashboard'
-			);
-			window.location.href = adminUrl + nextPath;
-		}
-	}, [ isSubmitted, adminUrl ] );
-
-	const shouldPreventLeave = didFormChanged && ! isSubmitted;
+function HookNavigateAwayPrompt() {
+	const { isDirty, adapter } = useAdaptiveFormContext();
+	const shouldPreventLeave = isDirty && ! adapter.isSubmitted;
 
 	useNavigateAwayPromptEffect(
 		__(
@@ -63,6 +33,20 @@ const SetupPaidAds = () => {
 		),
 		shouldPreventLeave
 	);
+
+	return null;
+}
+
+/**
+ * Renders the step to setup paid ads
+ *
+ * @fires gla_launch_paid_campaign_button_click on submit
+ */
+const SetupPaidAds = () => {
+	const { billingStatus } = useGoogleAdsAccountBillingStatus();
+	const [ handleSetupComplete, isSubmitting ] = useAdsSetupCompleteCallback();
+	const adminUrl = useAdminUrl();
+	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 
 	const handleSubmit = ( values ) => {
 		const { amount } = values;
@@ -73,25 +57,25 @@ const SetupPaidAds = () => {
 		} );
 
 		handleSetupComplete( amount, countryCodes, () => {
-			setSubmitted( true );
+			// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.
+			const nextPath = getNewPath(
+				{ guide: 'campaign-creation-success' },
+				'/google/dashboard'
+			);
+			window.location.href = adminUrl + nextPath;
 		} );
 	};
 
-	const handleChange = ( _, values ) => {
-		setFormChanged( ! isEqual( initialValues, values ) );
-	};
-
-	if ( ! countryCodes || ! hasFinishedResolution ) {
+	if ( ! countryCodes ) {
 		return <AppSpinner />;
 	}
 
 	return (
 		<CampaignAssetsForm
-			initialCampaign={ initialValues }
-			recommendedDailyBudget={ recommendedDailyBudget }
-			onChange={ handleChange }
+			countryCodes={ countryCodes }
 			onSubmit={ handleSubmit }
 		>
+			<HookNavigateAwayPrompt />
 			<AdsCampaign
 				headerTitle={ __(
 					'Create your campaign',

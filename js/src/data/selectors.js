@@ -13,6 +13,7 @@ import {
 	getReportKey,
 	getPerformanceQuery,
 	getCountryCodesKey,
+	getAdsBudgetMetricsKey,
 } from './utils';
 
 /**
@@ -394,6 +395,11 @@ export const getGoogleAdsAccountStatus = ( state ) => {
 export const getAdsBudgetRecommendations = ( state, countryCodes = [] ) => {
 	const key = getCountryCodesKey( countryCodes );
 	return state.ads.budgetRecommendations[ key ] || null;
+};
+
+export const getAdsBudgetMetrics = ( state, countryCodes, budget ) => {
+	const key = getAdsBudgetMetricsKey( countryCodes, budget );
+	return state.ads.budgetMetrics[ key ] || null;
 };
 
 /**

@@ -22,7 +22,6 @@ import { GUIDE_NAMES, GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
 import SkipButton from './skip-button';
 import clientSession from './clientSession';
-import useBudgetRecommendation from '~/hooks/useBudgetRecommendation';
 import AppSpinner from '~/components/app-spinner';
 
 /**
@@ -42,8 +41,6 @@ export default function SetupPaidAds() {
 	const adminUrl = useAdminUrl();
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
-	const { recommendedDailyBudget, hasFinishedResolution } =
-		useBudgetRecommendation( countryCodes );
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const { syncSettings } = useAppDispatch();
@@ -126,22 +123,19 @@ export default function SetupPaidAds() {
 	};
 
 	const paidAds = {
-		amount: recommendedDailyBudget,
 		...clientSession.getCampaign(),
 	};
 
-	if ( ! hasFinishedResolution || ! countryCodes ) {
+	if ( ! countryCodes ) {
 		return <AppSpinner />;
 	}
 
 	return (
 		<CampaignAssetsForm
 			initialCampaign={ paidAds }
-			recommendedDailyBudget={ recommendedDailyBudget }
+			countryCodes={ countryCodes }
 			onChange={ ( _, values ) => {
-				if ( values.amount >= recommendedDailyBudget ) {
-					clientSession.setCampaign( values );
-				}
+				clientSession.setCampaign( values );
 			} }
 		>
 			<AdsCampaign
