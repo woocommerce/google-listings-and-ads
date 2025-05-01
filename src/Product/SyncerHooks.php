@@ -209,11 +209,6 @@ class SyncerHooks implements Service, Registerable {
 			$product_id = $product->get_id();
 
 			// Avoid to handle variations directly. We handle them from the parent.
-			if ( $this->notifications_service->is_ready( NotificationsService::DATATYPE_PRODUCT ) && $notify ) {
-				$this->handle_update_product_notification( $product );
-			}
-
-			// Avoid to handle variations directly. We handle them from the parent.
 			if ( $this->notifications_service->is_ready_for_datatype( NotificationsService::DATATYPE_PRODUCT ) && $notify ) {
 				$this->handle_update_product_notification( $product );
 			}

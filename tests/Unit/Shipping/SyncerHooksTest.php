@@ -196,8 +196,11 @@ class SyncerHooksTest extends UnitTest {
 	public function test_saving_shipping_zone_doesnt_schedule_notifications_when_disabled() {
 		$this->mock_sync_ready_flags_and_register_hooks( true, true );
 
+		// Expect is_ready_for_datatype to be called once when handling the update
 		$this->notification_service->expects( $this->once() )
-			->method( 'is_ready' );
+			->method( 'is_ready_for_datatype' )
+			->with( NotificationsService::DATATYPE_SHIPPING ) // Check arguments
+			->willReturn( false ); // Return false for this test case
 
 		$this->shipping_notification_job->expects( $this->never() )
 			->method( 'schedule' );
@@ -211,8 +214,11 @@ class SyncerHooksTest extends UnitTest {
 	public function test_saving_shipping_zone_doesnt_schedule_notifications_when_enabled() {
 		$this->mock_sync_ready_flags_and_register_hooks( true, true );
 
+		// Expect is_ready_for_datatype to be called once when handling the update
 		$this->notification_service->expects( $this->once() )
-			->method( 'is_ready' )->willReturn( true );
+			->method( 'is_ready_for_datatype' )
+			->with( NotificationsService::DATATYPE_SHIPPING ) // Check arguments
+			->willReturn( true ); // Return true for this test case
 
 		$this->shipping_notification_job->expects( $this->once() )
 			->method( 'schedule' );

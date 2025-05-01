@@ -240,7 +240,8 @@ class NotificationsServiceTest extends UnitTest {
 	public function test_is_ready_not_calling_status_api_if_with_health_check_is_false() {
 		$this->service = $this->get_mock( true, true, false );
 		$this->account->expects( $this->never() )->method( 'is_wpcom_api_status_healthy' );
-		$this->assertTrue( $this->service->is_ready( null, false ) );
+		// Test the general is_ready without the health check argument (should default to true, but we test the never() above)
+		$this->assertTrue( $this->service->is_ready( false ) );
 	}
 
 	public function test_is_ready_calling_status_api_if_with_health_check_is_true() {

@@ -356,8 +356,9 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 			->method( 'is_ready_for_syncing' )
 			->willReturn( $mc_status );
 
+		// Mock the correct method used after refactoring
 		$this->notification_service->expects( $this->any() )
-			->method( 'is_ready' )
+			->method( 'is_ready_for_datatype' )
 			->willReturn( $notifications_status );
 
 		$this->syncer_hooks = new SyncerHooks(

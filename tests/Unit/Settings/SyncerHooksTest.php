@@ -68,8 +68,10 @@ class SyncerHooksTest extends UnitTest {
 	];
 
 	public function test_saving_woocommerce_general_settings_schedules_notification_job() {
+		// Expect is_ready_for_datatype to be called once during registration
 		$this->notification_service->expects( $this->once() )
-			->method( 'is_ready' )
+			->method( 'is_ready_for_datatype' )
+			->with( NotificationsService::DATATYPE_SETTINGS, false ) // Check arguments
 			->willReturn( true );
 
 		$this->settings_notification_job->expects( $this->exactly( count( self::ALLOWED_SETTINGS ) ) )
@@ -82,8 +84,10 @@ class SyncerHooksTest extends UnitTest {
 	}
 
 	public function test_saving_other_settings_dont_schedules_notification_job() {
+		// Expect is_ready_for_datatype to be called once during registration
 		$this->notification_service->expects( $this->once() )
-			->method( 'is_ready' )
+			->method( 'is_ready_for_datatype' )
+			->with( NotificationsService::DATATYPE_SETTINGS, false ) // Check arguments
 			->willReturn( true );
 
 		$this->settings_notification_job->expects( $this->never() )
@@ -94,8 +98,10 @@ class SyncerHooksTest extends UnitTest {
 	}
 
 	public function test_dont_register_if_notifications_disabled() {
+		// Expect is_ready_for_datatype to be called once during registration
 		$this->notification_service->expects( $this->once() )
-			->method( 'is_ready' )
+			->method( 'is_ready_for_datatype' )
+			->with( NotificationsService::DATATYPE_SETTINGS, false ) // Check arguments
 			->willReturn( false );
 
 		$this->settings_notification_job->expects( $this->never() )
