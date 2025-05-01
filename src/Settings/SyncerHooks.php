@@ -92,21 +92,4 @@ class SyncerHooks implements Service, Registerable {
 
 		add_action( 'update_option', $update_rest, 90, 1 );
 	}
-
-	/**
-	 * Handle updating of Merchant Center settings.
-	 *
-	 * @return void
-	 */
-	protected function handle_settings_update() {
-		// Note: The original logic inside this method might have been more complex.
-		// This fix assumes it only contained the readiness check based on the previous attempt.
-		// If there were other actions scheduled here, they might need to be restored.
-		if ( ! $this->notifications_service->is_ready_for_datatype( NotificationsService::DATATYPE_SETTINGS, false ) ) {
-			return;
-		}
-
-		// Schedule the notification job if settings are updated and service is ready.
-		$this->job_repository->get( SettingsNotificationJob::class )->schedule();
-	}
 }
