@@ -114,7 +114,8 @@ class NotificationsService implements Service, OptionsAwareInterface {
 	 */
 	public function notify( string $topic, $item_id = null, $data = [] ): bool {
 		$is_valid_topic        = in_array( $topic, self::ALLOWED_TOPICS, true );
-		$is_ready_for_datatype = $this->is_ready( $this->get_datatype_from_topic( $topic ) );
+		$data_type             = $this->get_datatype_from_topic( $topic );
+		$is_ready_for_datatype = $this->is_ready_for_datatype( $data_type );
 
 		/**
 		 * Allow users to disable the notification request.
@@ -205,16 +206,29 @@ class NotificationsService implements Service, OptionsAwareInterface {
 	}
 
 	/**
-	 * If the Notifications are ready
-	 * This happens when the WPCOM API is Authorized and the feature is enabled.
+	 * If the Notifications are ready for general checks.
+	 * This happens when the WPCOM API is Authorized, the feature is enabled, and MC is ready.
 	 *
-	 * @param string|null $data_type The data type to check.
-	 * @param bool        $with_health_check If true. Performs a remote request to WPCOM API to get the status.
-	 *        * @return bool
+	 * @param bool $with_health_check If true. Performs a remote request to WPCOM API to get the status.
+	 * @return bool
 	 */
-	public function is_ready( string $data_type = null, bool $with_health_check = true ): bool {
-		$is_ready = $this->options->is_wpcom_api_authorized() && $this->is_enabled() && $this->merchant_center->is_ready_for_syncing() && ( $with_health_check === false || $this->account_service->is_wpcom_api_status_healthy() );
-		return $is_ready && ( is_null( $data_type ) || $this->is_pull_enabled_for_datatype( $data_type ) );
+	public function is_ready( bool $with_health_check = true ): bool {
+		return $this->options->is_wpcom_api_authorized()
+			&& $this->is_enabled()
+			&& $this->merchant_center->is_ready_for_syncing()
+			&& ( ! $with_health_check || $this->account_service->is_wpcom_api_status_healthy() );
+	}
+
+	/**
+	 * If the Notifications are ready for a specific data type.
+	 * Checks general readiness and if pull is enabled for the given data type.
+	 *
+	 * @param string $data_type         The data type to check.
+	 * @param bool   $with_health_check If true. Performs a remote request to WPCOM API to get the status.
+	 * @return bool
+	 */
+	public function is_ready_for_datatype( string $data_type, bool $with_health_check = true ): bool {
+		return $this->is_ready( $with_health_check ) && $this->is_pull_enabled_for_datatype( $data_type );
 	}
 
 	/**

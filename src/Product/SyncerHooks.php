@@ -213,9 +213,9 @@ class SyncerHooks implements Service, Registerable {
 				$this->handle_update_product_notification( $product );
 			}
 
-			// Bail if an event is already scheduled for this product in the current request
-			if ( $this->is_already_scheduled_to_update( $product_id ) ) {
-				continue;
+			// Avoid to handle variations directly. We handle them from the parent.
+			if ( $this->notifications_service->is_ready_for_datatype( NotificationsService::DATATYPE_PRODUCT ) && $notify ) {
+				$this->handle_update_product_notification( $product );
 			}
 
 			// If it's a variable product we handle each variation separately
@@ -344,7 +344,7 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $product_id
 	 */
 	protected function handle_pre_delete_product( int $product_id ) {
-		if ( $this->notifications_service->is_ready( NotificationsService::DATATYPE_PRODUCT ) ) {
+		if ( $this->notifications_service->is_ready_for_datatype( NotificationsService::DATATYPE_PRODUCT ) ) {
 			/**
 			 * For deletions, we do send directly the notification instead of scheduling it.
 			 * This is because we want to avoid that the product is not in the database anymore when the scheduled action runs.
