@@ -222,13 +222,19 @@ class SyncerHooks implements Service, Registerable {
 
 			// Schedule an update job if product sync is enabled.
 			if ( $this->product_helper->is_sync_ready( $product ) ) {
-				$this->product_helper->mark_as_pending( $product );
-				$products_to_update[] = $product->get_id();
-				$this->set_already_scheduled_to_update( $product_id );
+				// Check if already scheduled before adding to the update list
+				if ( ! $this->is_already_scheduled_to_update( $product_id ) ) {
+					$this->product_helper->mark_as_pending( $product );
+					$products_to_update[] = $product->get_id();
+					$this->set_already_scheduled_to_update( $product_id );
+				}
 			} elseif ( $this->product_helper->is_product_synced( $product ) ) {
 				// Delete the product from Google Merchant Center if it's already synced BUT it is not sync ready after the edit.
-				$products_to_delete[] = $product;
-				$this->set_already_scheduled_to_delete( $product_id );
+				// Check if already scheduled before adding to the delete list
+				if ( ! $this->is_already_scheduled_to_delete( $product_id ) ) {
+					$products_to_delete[] = $product;
+					$this->set_already_scheduled_to_delete( $product_id );
+				}
 
 				do_action(
 					'woocommerce_gla_debug_message',
