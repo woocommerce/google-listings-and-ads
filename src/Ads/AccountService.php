@@ -348,8 +348,11 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		$mc_state = $this->container->get( MerchantAccountState::class );
 
 		// Create link for Merchant and accept it in Ads.
-		$this->container->get( Merchant::class )->link_ads_id( $this->options->get_ads_id() );
-		$this->container->get( Ads::class )->accept_merchant_link( $this->options->get_merchant_id() );
+		$waiting_acceptance = $this->container->get( Merchant::class )->link_ads_id( $this->options->get_ads_id() );
+
+		if ( $waiting_acceptance ) {
+			$this->container->get( Ads::class )->accept_merchant_link( $this->options->get_merchant_id() );
+		}
 
 		$mc_state->complete_step( 'link_ads' );
 	}

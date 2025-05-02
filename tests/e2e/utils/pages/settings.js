@@ -70,7 +70,7 @@ export default class SettingsPage extends MockRequests {
 	 */
 	getGrantAccessBtn() {
 		return this.page.getByRole( 'button', {
-			name: 'Grant access',
+			name: 'Get early access',
 			exact: true,
 		} );
 	}

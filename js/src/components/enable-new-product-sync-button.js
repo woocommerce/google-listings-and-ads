@@ -26,7 +26,7 @@ import { handleApiError } from '~/utils/handleError';
  * @param {Object} props The component props to be forwarded to AppButton.
  * @return {JSX.Element} The button.
  *
- * @fires gla_enable_product_sync_click with `{ page: 'setup-mc' | 'settings', context: 'banner' | 'mc_card' }`
+ * @fires gla_enable_product_sync_click with `{ page: 'settings', context: 'banner' | 'mc_card' }`
  */
 const EnableNewProductSyncButton = ( props ) => {
 	const { fetchWPComAppAuthorizationUrl } = useAppDispatch();
@@ -53,7 +53,6 @@ const EnableNewProductSyncButton = ( props ) => {
 	return (
 		<AppButton
 			isSecondary
-			text={ __( 'Grant access', 'google-listings-and-ads' ) }
 			loading={ loading }
 			onClick={ handleEnableClick }
 			eventName="gla_enable_product_sync_click"

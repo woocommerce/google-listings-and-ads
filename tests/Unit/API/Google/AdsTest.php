@@ -174,20 +174,7 @@ class AdsTest extends UnitTest {
 		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
 		$this->generate_mc_link_mock( [] );
 		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Merchant link is not available to accept' );
-
-		$this->ads->accept_merchant_link( self::TEST_MERCHANT_ID );
-	}
-
-	public function test_accept_merchant_link_already_accepted() {
-		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
-		$link = new ProductLinkInvitation();
-		$mc   = new MerchantCenterLinkInvitationIdentifier();
-		$link->setStatus( ProductLinkInvitationStatus::ACCEPTED );
-		$mc->setMerchantCenterId( self::TEST_MERCHANT_ID );
-		$link->setMerchantCenter( $mc );
-		$service = $this->generate_mc_link_mock( [ $link ] );
-		$service->expects( $this->never() )->method( 'updateProductLinkInvitation' );
+		$this->expectExceptionMessage( 'Unable to find the pending approval link sent from the Merchant Center account' );
 
 		$this->ads->accept_merchant_link( self::TEST_MERCHANT_ID );
 	}

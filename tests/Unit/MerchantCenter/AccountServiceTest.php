@@ -622,25 +622,6 @@ class AccountServiceTest extends UnitTest {
 		$this->assertEquals( self::TEST_ACCOUNT_DATA, $this->account->switch_url( self::TEST_ACCOUNT_ID ) );
 	}
 
-	public function test_setup_account_step_sdi_update() {
-		$this->options->expects( $this->any() )
-			->method( 'get_merchant_id' )
-			->willReturn( self::TEST_ACCOUNT_ID );
-
-		$this->state->expects( $this->any() )
-			->method( 'get' )
-			->willReturn(
-				[
-					'sdi_update' => [ 'status' => MerchantAccountState::STEP_PENDING ],
-				]
-			);
-
-		$this->middleware->expects( $this->once() )
-			->method( 'update_sdi_merchant_account' );
-
-		$this->assertEquals( self::TEST_ACCOUNT_DATA, $this->account->setup_account( self::TEST_ACCOUNT_ID ) );
-	}
-
 	public function test_setup_account_step_link_ads() {
 		$this->options->expects( $this->any() )
 			->method( 'get_ads_id' )
@@ -660,11 +641,39 @@ class AccountServiceTest extends UnitTest {
 
 		$this->merchant->expects( $this->once() )
 			->method( 'link_ads_id' )
-			->with( self::TEST_ADS_ID );
+			->with( self::TEST_ADS_ID )
+			->willReturn( true );
 
 		$this->ads->expects( $this->once() )
 			->method( 'accept_merchant_link' )
 			->with( self::TEST_ACCOUNT_ID );
+
+		$this->assertEquals( self::TEST_ACCOUNT_DATA, $this->account->setup_account( self::TEST_ACCOUNT_ID ) );
+	}
+
+	public function test_setup_account_step_link_ads_already_linked() {
+		$this->options->expects( $this->any() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ADS_ID );
+
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'link_ads' => [ 'status' => MerchantAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->merchant->expects( $this->once() )
+			->method( 'link_ads_id' )
+			->with( self::TEST_ADS_ID )
+			->willReturn( false );
+
+		$this->ads->expects( $this->never() )->method( 'accept_merchant_link' );
 
 		$this->assertEquals( self::TEST_ACCOUNT_DATA, $this->account->setup_account( self::TEST_ACCOUNT_ID ) );
 	}

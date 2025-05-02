@@ -430,6 +430,34 @@ class MerchantTest extends UnitTest {
 		);
 	}
 
+	public function test_link_ads_id_exist_link_awaiting_approval() {
+		$account  = $this->createMock( Account::class );
+		$ads_link = $this->createMock( AccountAdsLink::class );
+		$ads_id   = 12345;
+
+		$ads_link->expects( $this->any() )
+			->method( 'getAdsId' )
+			->willReturn( $ads_id );
+
+		$ads_link->expects( $this->any() )
+			->method( 'getStatus' )
+			->willReturn( 'pending' );
+
+		$account->expects( $this->once() )
+			->method( 'getAdsLinks' )
+			->willReturn( [ $ads_link ] );
+
+		$account->expects( $this->never() )->method( 'setAdsLinks' );
+
+		$this->mock_get_account( $account );
+
+		$this->service->accounts->expects( $this->never() )->method( 'update' );
+
+		$this->assertTrue(
+			$this->merchant->link_ads_id( $ads_id )
+		);
+	}
+
 	public function test_ads_id_already_linked() {
 		$account  = $this->createMock( Account::class );
 		$ads_link = $this->createMock( AccountAdsLink::class );
@@ -438,6 +466,10 @@ class MerchantTest extends UnitTest {
 		$ads_link->expects( $this->any() )
 			->method( 'getAdsId' )
 			->willReturn( $ads_id );
+
+		$ads_link->expects( $this->any() )
+			->method( 'getStatus' )
+			->willReturn( 'active' );
 
 		$account->expects( $this->once() )
 			->method( 'getAdsLinks' )

@@ -475,41 +475,16 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
-	 * Get the URL for the Google Shopping Data Integration auth endpoint.
+	 * Get the Google Shopping Data Integration auth endpoint URL
 	 *
 	 * @return string
 	 */
 	public function get_sdi_auth_endpoint(): string {
-		$endpoint = $this->get_sdi_endpoint() . 'oauth/redirect:generate';
-
-		// Add merchant ID for cases where we've already completed onboarding.
-		$merchant_id = $this->options->get_merchant_id();
-		if ( $merchant_id ) {
-			$endpoint .= "?merchant_id={$merchant_id}";
-		}
-
-		return $endpoint;
-	}
-
-	/**
-	 * Get the URL for the Google SDI merchant update endpoint.
-	 *
-	 * @return string
-	 */
-	public function get_sdi_merchant_update_endpoint(): string {
-		return $this->get_sdi_endpoint() . 'account:connect';
-	}
-
-	/**
-	 * Get the base endpoint to the Google Shopping Data Integration (SDI).
-	 *
-	 * @return string
-	 */
-	protected function get_sdi_endpoint(): string {
 		return $this->container->get( 'connect_server_root' )
-			. 'google/google-sdi/v1/credentials/partners/WOO_COMMERCE/merchants/'
-			. $this->strip_url_protocol( $this->get_site_url() )
-			. '/';
+				. 'google/google-sdi/v1/credentials/partners/WOO_COMMERCE/merchants/'
+				. $this->strip_url_protocol( $this->get_site_url() )
+				. '/oauth/redirect:generate'
+				. '?merchant_id=' . $this->options->get_merchant_id();
 	}
 
 	/**
@@ -619,53 +594,6 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 
 			throw new Exception(
 				$this->client_exception_message( $e, __( 'Error authenticating Google Partner APP.', 'google-listings-and-ads' ) ),
-				$e->getCode()
-			);
-		}
-	}
-
-	/**
-	 * Performs a request to Google Shopping Data Integration (SDI) to update the merchant center account.
-	 *
-	 * @throws NotFoundExceptionInterface  When the container was not found.
-	 * @throws ContainerExceptionInterface When an error happens while retrieving the container.
-	 * @throws Exception When the response status is not successful, or merchant ID is not set.
-	 * @see google-sdi in google/services inside WCS
-	 */
-	public function update_sdi_merchant_account() {
-		try {
-			if ( ! $this->options->get_merchant_id() ) {
-				throw new Exception( __( 'Merchant ID must be set before updating in SDI.', 'google-listings-and-ads' ) );
-			}
-
-			/** @var Client $client */
-			$client = $this->container->get( Client::class );
-			$result = $client->post(
-				$this->get_sdi_merchant_update_endpoint(),
-				[
-					'body' => wp_json_encode(
-						[
-							'merchant_center_id' => $this->options->get_merchant_id(),
-						]
-					),
-				]
-			);
-
-			// Check the status, since an empty response is returned upon success.
-			if ( 200 !== $result->getStatusCode() ) {
-				$response = json_decode( $result->getBody()->getContents(), true );
-				do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
-
-				throw new Exception(
-					__( 'Invalid response when updating merchant account in Google Partner APP.', 'google-listings-and-ads' ),
-					$result->getStatusCode()
-				);
-			}
-		} catch ( ClientExceptionInterface $e ) {
-			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
-
-			throw new Exception(
-				$this->client_exception_message( $e, __( 'Error updating merchant account in Google Partner APP.', 'google-listings-and-ads' ) ),
 				$e->getCode()
 			);
 		}

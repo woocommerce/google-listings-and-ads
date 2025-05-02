@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Flex, Notice } from '@wordpress/components';
+import { Flex } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 
 /**
@@ -17,10 +17,7 @@ import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import AppButton from '~/components/app-button';
 import SpinnerCard from '~/components/spinner-card';
 import { ConnectedWPComAccountCard } from '~/components/wpcom-account-card';
-import {
-	ConnectedGoogleAccountCard,
-	AuthorizeWPComAppCard,
-} from '~/components/google-account-card';
+import { ConnectedGoogleAccountCard } from '~/components/google-account-card';
 import { ConnectedGoogleAdsAccountCard } from '~/components/google-ads-account-card';
 import { MerchantCenterAccountInfoCard } from '~/components/google-mc-account-card';
 import Section from '~/components/section';
@@ -45,7 +42,7 @@ export default function LinkedAccounts() {
 	const adminUrl = useAdminUrl();
 	const { jetpack } = useJetpackAccount();
 	const { google } = useGoogleAccount();
-	const { googleMCAccount, isWPComAppGranted } = useGoogleMCAccount();
+	const { googleMCAccount } = useGoogleMCAccount();
 	const { googleAdsAccount } = useGoogleAdsAccount();
 
 	const isLoading = ! (
@@ -77,44 +74,6 @@ export default function LinkedAccounts() {
 		window.location.href = nextPage;
 	};
 
-	const renderGoogleAccountCard = () => {
-		// The initial value of `wpcom_rest_api_status` is `null`, in which case it
-		// will be handled by the `EnableNewProductSyncNotice` component. Therefore,
-		// here checking it to avoid the `AuthorizeWPComAppCard` component being
-		// duplically rendered together with `EnableNewProductSyncNotice`.
-		if (
-			googleMCAccount.wpcom_rest_api_status &&
-			googleMCAccount.notification_service_enabled &&
-			! isWPComAppGranted
-		) {
-			return (
-				<AuthorizeWPComAppCard
-					hideAccountSwitch
-					eventPropsOfEnableButton={ {
-						page: 'settings',
-						context: 'mc_card',
-					} }
-				/>
-			);
-		}
-
-		return (
-			<ConnectedGoogleAccountCard
-				googleAccount={ google }
-				hideAccountSwitch
-			>
-				{ isWPComAppGranted && (
-					<Notice status="success" isDismissible={ false }>
-						{ __(
-							'Google has been granted access to fetch your product data.',
-							'google-listings-and-ads'
-						) }
-					</Notice>
-				) }
-			</ConnectedGoogleAccountCard>
-		);
-	};
-
 	return (
 		<LinkedAccountsSectionWrapper>
 			{ openedModal && (
@@ -129,7 +88,10 @@ export default function LinkedAccounts() {
 			) : (
 				<>
 					<ConnectedWPComAccountCard jetpack={ jetpack } />
-					{ renderGoogleAccountCard() }
+					<ConnectedGoogleAccountCard
+						googleAccount={ google }
+						hideAccountSwitch
+					/>
 					<MerchantCenterAccountInfoCard
 						googleMCAccount={ googleMCAccount }
 					/>

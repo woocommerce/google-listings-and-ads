@@ -12,7 +12,6 @@ import useMenuEffect from '~/hooks/useMenuEffect';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useUpdateRestAPIAuthorizeStatusByUrlQuery from '~/hooks/useUpdateRestAPIAuthorizeStatusByUrlQuery';
 import { subpaths, getReconnectAccountUrl } from '~/utils/urls';
-import { CONTEXT_SETTINGS } from '~/utils/tracks';
 import { ContactInformationPreview } from '~/components/contact-information';
 import SetupTaxRate from './setup-tax-rate';
 import LinkedAccounts from './linked-accounts';
@@ -31,7 +30,7 @@ const Settings = () => {
 	// Make the component highlight GLA entry in the WC legacy menu.
 	useMenuEffect();
 
-	useUpdateRestAPIAuthorizeStatusByUrlQuery( CONTEXT_SETTINGS );
+	useUpdateRestAPIAuthorizeStatusByUrlQuery();
 
 	const { google } = useGoogleAccount();
 	const isReconnectGooglePage = subpath === subpaths.reconnectGoogleAccount;
