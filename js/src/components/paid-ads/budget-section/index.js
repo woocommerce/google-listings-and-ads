@@ -3,48 +3,22 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Tip } from '@wordpress/components';
-import { useState, useEffect } from '@wordpress/element';
-import { useDebounce } from '@wordpress/compose';
 
 /**
  * Internal dependencies
  */
 import Section from '~/components/section';
-import { useAdaptiveFormContext } from '~/components/adaptive-form';
-import useBudgetMetrics from '~/hooks/useBudgetMetrics';
-import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
-import AppInputPriceControl from '~/components/app-input-price-control';
-import AppInputControl from '~/components/app-input-control';
+import Subsection from '~/components/subsection';
+import BudgetSetup from '../budget-setup';
 import './index.scss';
 
 /**
  * Renders a UI for setting up the campaign budget.
  *
- * Please note that this component relies on a CampaignAssetsForm's context and custom adapter,
- * so it expects a `CampaignAssetsForm` to exist in its parents.
- *
  * @param {Object} props React props.
  * @param {JSX.Element} [props.children] Extra content to be rendered under the card of budget inputs.
  */
 const BudgetSection = ( { children } ) => {
-	const formContext = useAdaptiveFormContext();
-	const { adapter, getInputProps, values } = formContext;
-	const { countryCodes } = adapter;
-	const { amount } = values;
-	const { googleAdsAccount } = useGoogleAdsAccount();
-
-	const [ budget, setBudget ] = useState( amount );
-	const debouncedSetBudget = useDebounce( setBudget, 1000 );
-	const { data } = useBudgetMetrics( countryCodes, budget );
-
-	useEffect( () => {
-		debouncedSetBudget( amount );
-	}, [ debouncedSetBudget, amount ] );
-
-	// Display the currency code that will be used by Google Ads, but still use the store's currency formatting settings.
-	const currency = googleAdsAccount?.currency;
-	const weeklyCost = data ? data.metrics.cost : null;
-
 	return (
 		<div className="gla-budget-section">
 			<Section
@@ -61,24 +35,21 @@ const BudgetSection = ( { children } ) => {
 			>
 				<Section.Card>
 					<Section.Card.Body className="gla-budget-section__card-body">
-						<div className="gla-budget-section__card-body__cost">
-							<AppInputPriceControl
-								label={ __(
-									'Daily average cost',
+						<div>
+							<Subsection.Title>
+								{ __(
+									'Average daily budget',
 									'google-listings-and-ads'
 								) }
-								suffix={ currency }
-								{ ...getInputProps( 'amount' ) }
-							/>
-							<AppInputControl
-								disabled
-								label={ __(
-									'Weekly cost',
+							</Subsection.Title>
+							<Subsection.Subtitle>
+								{ __(
+									'These values are based on your settings and the budgets of similar advertisers.',
 									'google-listings-and-ads'
 								) }
-								value={ weeklyCost }
-							/>
+							</Subsection.Subtitle>
 						</div>
+						<BudgetSetup />
 						<Tip>
 							{ __(
 								'We recommend running campaigns at least 1 month so it can learn to optimize for your business.',
