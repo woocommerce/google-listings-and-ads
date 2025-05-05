@@ -12,8 +12,8 @@ const clientSession = {
 	 * @param {CampaignData} data Campaign data to be stored.
 	 * @param {number|undefined} data.amount Daily average cost of the campaign.
 	 */
-	setCampaign( { amount } ) {
-		const json = JSON.stringify( { amount } );
+	setCampaign( { level, amount } ) {
+		const json = JSON.stringify( { level, amount } );
 		sessionStorage.setItem( KEY_PAID_ADS, json );
 	},
 
