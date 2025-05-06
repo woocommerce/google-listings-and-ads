@@ -81,17 +81,7 @@ class OAuthService implements Service, OptionsAwareInterface, Deactivateable, Co
 	public function get_auth_url( string $path ): string {
 		$google_data = $this->get_data_from_google();
 
-		$store_url = urlencode_deep(
-			/**
-			 * Filters the store URL to return to after the WPCOM REST API permissions have been granted.
-			 *
-			 * @param string $url WC Admin path to redirect to.
-			 */
-			apply_filters(
-				'woocommerce_gla_wpcom_return_url',
-				admin_url( "admin.php?page=wc-admin&path={$path}" )
-			)
-		);
+		$store_url = urlencode_deep( admin_url( "admin.php?page=wc-admin&path={$path}" ) );
 
 		$state = $this->base64url_encode(
 			build_query(

@@ -80,7 +80,7 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 			}
 			helper={ createInterpolateElement(
 				__(
-					'You will be prompted to give WooCommerce access to your Google account and Google to your WooCommerce account. Please approve all access to give WooCommerce and Google all required permissions. <link>Read more</link>',
+					'You will be prompted to give WooCommerce access to your Google account. Please check all the checkboxes to give WooCommerce all required permissions. <link>Read more</link>',
 					'google-listings-and-ads'
 				),
 				{

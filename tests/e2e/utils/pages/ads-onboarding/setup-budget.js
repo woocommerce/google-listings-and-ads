@@ -24,15 +24,6 @@ export default class SetupBudget extends MockRequests {
 	}
 
 	/**
-	 * Get lower budget tip.
-	 *
-	 * @return {import('@playwright/test').Locator} The lower budget tip.
-	 */
-	getLowerBudgetTip() {
-		return this.page.locator( '.gla-budget-recommendation__low-budget' );
-	}
-
-	/**
 	 * Get billing setup section.
 	 *
 	 * @return {import('@playwright/test').Locator} The billing setup section.

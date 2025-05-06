@@ -3,11 +3,50 @@
  */
 import { ASSET_TEXT_SPECS } from '~/components/paid-ads/assetSpecs';
 import getCharacterCounter from '~/utils/getCharacterCounter';
+import { convertKeysFromSnakeCaseToCamelCase } from './utils';
 
 /**
  * @typedef {import('~/data/actions').Campaign} Campaign
  * @typedef {import('~/data/types.js').AssetEntityGroup} AssetEntityGroup
+ * @typedef {import('~/data/types.js').AdsBudgetRecommendation} AdsBudgetRecommendation
+ * @typedef {import('~/data/types.js').AdsBudgetMetrics} AdsBudgetMetrics
  */
+
+/**
+ * Adapts the ads budget recommendation data received from API.
+ *
+ * @param {Object} data The ads budget recommendation data to be adapted.
+ * @return {AdsBudgetRecommendation} Ads budget recommendation data.
+ */
+export function adaptAdsBudgetRecommendation( data ) {
+	const validLevelKeys = [ 'recommended', 'high', 'low' ];
+	const { currency } = data;
+
+	return data.recommendations.reduce( ( payload, item ) => {
+		const { level, ...adaptingData } = item;
+		const key = level.toLowerCase();
+
+		if ( validLevelKeys.includes( key ) ) {
+			adaptingData.currency = currency;
+			payload[ key ] =
+				convertKeysFromSnakeCaseToCamelCase( adaptingData );
+		}
+
+		return payload;
+	}, {} );
+}
+
+/**
+ * Adapts the ads budget metrics data received from API.
+ *
+ * @param {Object} data The ads budget metrics data to be adapted.
+ * @return {AdsBudgetMetrics} Ads budget metrics data.
+ */
+export function adaptAdsBudgetMetrics( data ) {
+	const { budget, ...adaptingData } = data;
+	adaptingData.dailyBudget = budget;
+	return convertKeysFromSnakeCaseToCamelCase( adaptingData );
+}
 
 /**
  * Adapts the campaign entity received from API.

@@ -89,7 +89,6 @@ const SetupAccounts = ( props ) => {
 		isPreconditionReady: isGMCPreconditionReady,
 		isLinkedToAds,
 		isReady: isGoogleMCReady,
-		isWPComAppGranted,
 	} = useGoogleMCAccount();
 	const { hasFinishedResolution } = useGoogleAdsAccount();
 	const isStoreAddressReady = useStoreAddressReady();
@@ -143,7 +142,6 @@ const SetupAccounts = ( props ) => {
 		isAdsAndMerchantCenterInterlinked &&
 		isGoogleAdsReady &&
 		isGoogleMCReady &&
-		isWPComAppGranted &&
 		isStoreAddressReady
 	);
 

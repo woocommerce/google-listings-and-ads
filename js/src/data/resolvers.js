@@ -15,9 +15,18 @@ import {
 } from '~/constants';
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
-import { getReportKey, getCountryCodesKey } from './utils';
+import {
+	getReportKey,
+	getCountryCodesKey,
+	getAdsBudgetMetricsKey,
+} from './utils';
 import { handleApiError } from '~/utils/handleError';
-import { adaptAdsCampaign, adaptAssetGroup } from './adapters';
+import {
+	adaptAdsBudgetRecommendation,
+	adaptAdsBudgetMetrics,
+	adaptAdsCampaign,
+	adaptAssetGroup,
+} from './adapters';
 import { fetchWithHeaders, awaitPromise } from './controls';
 
 import {
@@ -52,6 +61,13 @@ import {
 /**
  * @typedef {import('~/data/actions').CountryCode} CountryCode
  */
+
+function* handleResponseError( response, leadingMessage ) {
+	const bodyPromise = response?.json() || response?.text();
+	const error = yield awaitPromise( bodyPromise );
+
+	handleApiError( error, leadingMessage );
+}
 
 export function* getShippingRates() {
 	yield fetchShippingRates();
@@ -485,11 +501,8 @@ export function* getTour( tourId ) {
 			return;
 		}
 
-		const bodyPromise = response?.json() || response?.text();
-		const error = yield awaitPromise( bodyPromise );
-
-		handleApiError(
-			error,
+		yield handleResponseError(
+			response,
 			__(
 				'There was an error getting the tour.',
 				'google-listings-and-ads'
@@ -528,17 +541,12 @@ export function* getAdsBudgetRecommendations( countryCodes ) {
 	const path = addQueryArgs( endpoint, query );
 
 	try {
-		const { data } = yield fetchWithHeaders( {
-			path,
-		} );
-
-		const { currency, recommendations } = data;
+		const { data } = yield fetchWithHeaders( { path } );
 
 		return {
 			type: TYPES.RECEIVE_ADS_BUDGET_RECOMMENDATIONS,
 			countryCodesKey,
-			currency,
-			recommendations,
+			data: adaptAdsBudgetRecommendation( data ),
 		};
 	} catch ( response ) {
 		// Intentionally silence the specific in case the no budget recommendations are found from the API.
@@ -546,11 +554,8 @@ export function* getAdsBudgetRecommendations( countryCodes ) {
 			return;
 		}
 
-		const bodyPromise = response?.json() || response?.text();
-		const error = yield awaitPromise( bodyPromise );
-
-		handleApiError(
-			error,
+		yield handleResponseError(
+			response,
 			__(
 				'There was an error getting the budget recommendation.',
 				'google-listings-and-ads'
@@ -560,6 +565,40 @@ export function* getAdsBudgetRecommendations( countryCodes ) {
 }
 
 getAdsBudgetRecommendations.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS;
+};
+
+export function* getAdsBudgetMetrics( countryCodes, budget ) {
+	try {
+		const { data } = yield fetchWithHeaders( {
+			path: addQueryArgs(
+				`${ API_NAMESPACE }/ads/campaigns/budget-metrics`,
+				{ country_codes: countryCodes, budget }
+			),
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ADS_BUDGET_METRICS,
+			key: getAdsBudgetMetricsKey( countryCodes, budget ),
+			data: adaptAdsBudgetMetrics( data ),
+		};
+	} catch ( response ) {
+		// No related budget metrics.
+		if ( response.status === 404 ) {
+			return;
+		}
+
+		yield handleResponseError(
+			response,
+			__(
+				'There was an error getting the budget metrics.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+getAdsBudgetMetrics.shouldInvalidate = ( action ) => {
 	return action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS;
 };
 

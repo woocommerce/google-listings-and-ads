@@ -9,16 +9,53 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import CampaignAssetsForm from './campaign-assets-form';
+import useAdsCurrency from '~/hooks/useAdsCurrency';
+import useBudgetRecommendation from '~/hooks/useBudgetRecommendation';
 
-jest.mock( '@wordpress/api-fetch', () => {
-	const impl = jest.fn().mockName( '@wordpress/api-fetch' );
-	impl.use = jest.fn().mockName( 'apiFetch.use' );
-	return impl;
-} );
+jest.mock( '~/hooks/useAdsCurrency', () =>
+	jest.fn().mockName( 'useAdsCurrency' )
+);
+
+jest.mock( '~/hooks/useBudgetRecommendation', () =>
+	jest.fn().mockName( 'useBudgetRecommendation' )
+);
 
 const alwaysValid = () => ( {} );
 
 describe( 'CampaignAssetsForm', () => {
+	beforeEach( () => {
+		useAdsCurrency.mockReturnValue( {
+			formatAmount: jest.fn().mockName( 'formatAmount' ),
+		} );
+
+		useBudgetRecommendation.mockReturnValue( {
+			hasResolved: true,
+			recommendedDailyBudget: 15,
+		} );
+	} );
+
+	it( 'Should extend adapter to meet the required states of ads campaign form', () => {
+		const children = jest.fn();
+		const countryCodes = [ 'US', 'JP', 'TW' ];
+
+		render(
+			<CampaignAssetsForm
+				validate={ alwaysValid }
+				countryCodes={ countryCodes }
+			>
+				{ children }
+			</CampaignAssetsForm>
+		);
+
+		const formContextSchema = expect.objectContaining( {
+			adapter: expect.objectContaining( {
+				countryCodes,
+			} ),
+		} );
+
+		expect( children ).toHaveBeenLastCalledWith( formContextSchema );
+	} );
+
 	it( 'Should extend adapter to meet the required states or functions of assets form', () => {
 		const children = jest.fn();
 

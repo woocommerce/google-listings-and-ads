@@ -1,3 +1,8 @@
+/**
+ * External dependencies
+ */
+import loadsh from 'lodash';
+
 const proxyFulfill = ( instance, options ) => {
 	return new Proxy( instance.originalTarget || instance, {
 		get( target, property ) {
@@ -445,6 +450,35 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Mock the budget metrics.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async mockBudgetMetrics( payload ) {
+		const mergedPayload = loadsh.merge(
+			{
+				currency: 'USD',
+				budget: 15,
+				country: 'US',
+				metrics: {
+					cost: 105,
+					conversions: 4.3,
+					conversions_value: 172.3137664794922,
+				},
+			},
+			payload
+		);
+
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/campaigns\/budget-metrics\b/,
+			mergedPayload,
+			200,
+			[ 'GET' ]
+		);
+	}
+
+	/**
 	 * Mock the request to connect Jetpack
 	 *
 	 * @param {string} url
@@ -643,14 +677,14 @@ export default class MockRequests {
 	/**
 	 * Mock MC as connected.
 	 *
-	 * @param {number} [id=1234]
-	 * @param {boolean} [notificationServiceEnabled=false]
-	 * @param {null|'approved'|'error'|'disapproved'} [wpcomRestApiStatus='approved']
+	 * @param {number} id
+	 * @param {boolean} notificationServiceEnabled
+	 * @param {null|'approved'|'error'|'dissaproved'} wpcomRestApiStatus
 	 */
 	async mockMCConnected(
 		id = 1234,
 		notificationServiceEnabled = false,
-		wpcomRestApiStatus = 'approved'
+		wpcomRestApiStatus = null
 	) {
 		await this.fulfillMCConnection( {
 			id,
@@ -662,19 +696,11 @@ export default class MockRequests {
 
 	/**
 	 * Mock MC as not connected.
-	 *
-	 * @param {boolean} [notificationServiceEnabled=false]
-	 * @param {null|'approved'|'error'|'disapproved'} [wpcomRestApiStatus=null]
 	 */
-	async mockMCNotConnected(
-		notificationServiceEnabled = false,
-		wpcomRestApiStatus = null
-	) {
+	async mockMCNotConnected() {
 		await this.fulfillMCConnection( {
 			id: 0,
 			status: 'disconnected',
-			notification_service_enabled: notificationServiceEnabled,
-			wpcom_rest_api_status: wpcomRestApiStatus,
 		} );
 	}
 

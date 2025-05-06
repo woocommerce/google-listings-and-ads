@@ -312,7 +312,7 @@ class Merchant implements OptionsAwareInterface {
 	 *
 	 * @param int $ads_id Google Ads ID to link.
 	 *
-	 * @return bool
+	 * @return bool True if the link invitation is waiting for acceptance. False if the link is already active.
 	 * @throws ExceptionWithResponseData When unable to retrieve or update account data.
 	 */
 	public function link_ads_id( int $ads_id ): bool {
@@ -322,7 +322,7 @@ class Merchant implements OptionsAwareInterface {
 		// Stop early if we already have a link setup.
 		foreach ( $ads_links as $link ) {
 			if ( $ads_id === absint( $link->getAdsId() ) ) {
-				return false;
+				return $link->getStatus() !== 'active';
 			}
 		}
 

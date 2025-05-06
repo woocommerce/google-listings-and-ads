@@ -35,7 +35,6 @@ import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
 } from '~/utils/tracks';
-import useBudgetRecommendation from '~/hooks/useBudgetRecommendation';
 import useNavigateAwayPromptEffect from '~/hooks/useNavigateAwayPromptEffect';
 
 const eventName = 'gla_paid_campaign_step';
@@ -86,8 +85,7 @@ const EditPaidAdsCampaign = () => {
 	} = useAppSelectDispatch( 'getCampaignAssetGroups', id );
 	const campaign = campaigns?.find( ( el ) => el.id === id );
 	const assetEntityGroup = assetEntityGroups?.at( 0 );
-	const { highestDailyBudget, hasFinishedResolution } =
-		useBudgetRecommendation( campaign?.displayCountries );
+
 	useEffect( () => {
 		if ( campaign && campaign.type !== CAMPAIGN_TYPE_PMAX ) {
 			getHistory().replace( dashboardURL );
@@ -110,11 +108,7 @@ const EditPaidAdsCampaign = () => {
 		getHistory().push( url );
 	};
 
-	if (
-		! loaded ||
-		! hasResolvedAssetEntityGroups ||
-		! hasFinishedResolution
-	) {
+	if ( ! loaded || ! hasResolvedAssetEntityGroups ) {
 		return (
 			<>
 				<TopBar
@@ -232,7 +226,7 @@ const EditPaidAdsCampaign = () => {
 				initialCampaign={ {
 					amount: campaign.amount,
 				} }
-				recommendedDailyBudget={ highestDailyBudget }
+				countryCodes={ campaign.displayCountries }
 				assetEntityGroup={ assetEntityGroup }
 				onSubmit={ handleSubmit }
 				onChange={ handleOnChange }
@@ -248,7 +242,6 @@ const EditPaidAdsCampaign = () => {
 							),
 							content: (
 								<AdsCampaign
-									campaign={ campaign }
 									context={ eventContext }
 									headerTitle={ __(
 										'Edit your campaign',

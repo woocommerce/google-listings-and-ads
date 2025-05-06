@@ -38,7 +38,6 @@ filterPropertiesMap.set( FILTER_ONBOARDING, [ 'context', 'step' ] );
  */
 export const CONTEXT_EXTENSION_ONBOARDING = 'setup-mc';
 export const CONTEXT_ADS_ONBOARDING = 'setup-ads';
-export const CONTEXT_SETTINGS = 'settings';
 
 /**
  * When table pagination is changed by entering page via "Go to page" input.

@@ -427,11 +427,39 @@ class AccountServiceTest extends UnitTest {
 
 		$this->merchant->expects( $this->once() )
 			->method( 'link_ads_id' )
-			->with( self::TEST_ACCOUNT_ID );
+			->with( self::TEST_ACCOUNT_ID )
+			->willReturn( true );
 
 		$this->ads->expects( $this->once() )
 			->method( 'accept_merchant_link' )
 			->with( self::TEST_MERCHANT_ID );
+
+		$this->assertEquals( [ 'id' => self::TEST_ACCOUNT_ID ], $this->account->setup_account() );
+	}
+
+	public function test_setup_account_step_link_merchant_already_linked() {
+		$this->options->expects( $this->any() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->willReturn( self::TEST_MERCHANT_ID );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'link_merchant' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->merchant->expects( $this->once() )
+			->method( 'link_ads_id' )
+			->with( self::TEST_ACCOUNT_ID )
+			->willReturn( false );
+
+		$this->ads->expects( $this->never() )->method( 'accept_merchant_link' );
 
 		$this->assertEquals( [ 'id' => self::TEST_ACCOUNT_ID ], $this->account->setup_account() );
 	}

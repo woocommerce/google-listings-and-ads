@@ -17,4 +17,21 @@
 	.components-input-control__suffix {
 		margin-right: $grid-unit-20;
 	}
+
+	.components-tip {
+		padding: $grid-unit-15 $grid-unit-20;
+		background-color: #f0f6fc;
+
+		> p {
+			line-height: $gla-line-height-smaller;
+			font-size: $gla-font-smaller;
+			color: $black;
+		}
+
+		> svg {
+			align-self: initial;
+			margin: $grid-unit-05 $grid-unit-05 * 2.5 0 0;
+			fill: $gray-900;
+		}
+	}
 }
