@@ -52,7 +52,9 @@ const PriceBenchmark = () => {
 			<ProductComparisonChart />
 
 			<Card className="gla-price-benchmark__card">
+			{dataViewLoaded && (
 				<PriceBenchmarkSuggestions isDataViewReady={ dataViewLoaded } />
+			)}
 			</Card>
 		</div>
 	);

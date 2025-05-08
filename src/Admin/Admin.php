@@ -146,14 +146,14 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 				],
 				'dataViewsScriptUrl'       => add_query_arg(
 					[
-						'vesrion' => (string) filemtime( "{$this->get_root_dir()}/js/build/wp-dataviews.js" ),
+						'vesrion' => (string) filemtime( "{$this->get_root_dir()}/js/build/wp-dataviews-shim.js" ),
 					],
 					(
 						new ScriptAsset(
 							'gla-data-views',
-							'js/build/wp-dataviews',
+							'js/build/wp-dataviews-shim',
 							[],
-							(string) filemtime( "{$this->get_root_dir()}/js/build/wp-dataviews.js" ),
+							(string) filemtime( "{$this->get_root_dir()}/js/build/wp-dataviews-shim.js" ),
 						)
 					)->get_uri(),
 				),

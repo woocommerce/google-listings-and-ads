@@ -71,6 +71,11 @@ const webpackConfig = {
 		new WooCommerceDependencyExtractionWebpackPlugin( {
 			externalizedReport:
 				! hasReactFastRefresh && '../../.externalized.json',
+			requestToExternal: ( request ) => {
+				if ( request.startsWith( '@wordpress/dataviews/wp' ) ) {
+					return null;
+				}
+			},
 		} ),
 		new MiniCSSExtractPlugin( {
 			filename: '[name].css',
@@ -79,7 +84,11 @@ const webpackConfig = {
 	],
 	entry: () => ( {
 		...defaultConfig.entry(),
-		'wp-dataviews': path.resolve( process.cwd(), 'js/src', 'wp-dataviews' ),
+		'wp-dataviews-shim': path.resolve(
+			process.cwd(),
+			'js/src/globals',
+			'wp-dataviews-shim'
+		),
 		index: path.resolve( process.cwd(), 'js/src', 'index.js' ),
 		'product-attributes': path.resolve(
 			process.cwd(),
@@ -126,8 +135,7 @@ const webpackConfig = {
 	},
 	externals: {
 		...( defaultConfig.externals || {} ),
-		'@wordpress/dataviews': [ 'wp', 'dataviews' ],
-		'@wordpress/dataviews/build-wp': [ 'wp', 'dataviews' ],
+		'@gla/wp-dataviews-shim': 'wp.dataviews',
 	},
 };
 
