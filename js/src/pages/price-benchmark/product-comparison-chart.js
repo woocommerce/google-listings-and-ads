@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { isEmpty } from 'lodash';
 
 /**
  * Internal dependencies
@@ -23,7 +24,11 @@ import HorizontalStackedBar from '~/components/horizontal-stacked-bar';
 const ProductComparisonChart = () => {
 	const { summary, hasFinishedResolution } = usePriceBenchmarkSummary();
 
-	if ( ! hasFinishedResolution || ! summary ) {
+	if (
+		! hasFinishedResolution ||
+		( summary && isEmpty( summary ) ) ||
+		summary.total_products === 0
+	) {
 		return null;
 	}
 

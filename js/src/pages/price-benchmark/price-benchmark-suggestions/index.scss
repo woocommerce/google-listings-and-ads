@@ -4,30 +4,26 @@
 		border-bottom: 1px dashed currentcolor;
 	}
 
-	th:not(:first-child):not(:has(.gla-price-benchmark__label--align-left)) {
-		text-align: right;
-	}
-
-	td > .dataviews-view-table__cell-content-wrapper:not(:has(.gla-badge)) {
-		justify-content: flex-end;
-	}
-
 	.dataviews-view-table tr td:first-child,
 	.dataviews-view-table tr th:first-child {
 		overflow: hidden;
 	}
 
-	.woocommerce-table__table.is-loading {
-
-		.woocommerce-table__header,
-		.woocommerce-table__item {
-			&:not(:first-child) {
-				text-align: right;
-			}
-		}
-	}
-
 	.gla-price-benchmark-suggestions__image {
 		width: 100%;
+	}
+
+	th:has(.gla-price-benchmark-suggestions__action) {
+		text-align: right;
+	}
+
+	td:has(.gla-price-benchmark-suggestions__action) {
+		.dataviews-view-table__cell-content-wrapper {
+			justify-content: flex-end;
+		}
+
+		.app-button {
+			padding: $grid-unit-05 $grid-unit-10;
+		}
 	}
 }

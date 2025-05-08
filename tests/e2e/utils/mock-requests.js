@@ -881,4 +881,20 @@ export default class MockRequests {
 			methods
 		);
 	}
+
+	/**
+	 * Fulfills a mock request for the price benchmark summary endpoint.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned.
+	 * @param {number} [status=200] - The HTTP status code to be returned. Defaults to 200.
+	 * @return {Promise<void>} A promise that resolves when the request is fulfilled.
+	 */
+	async fulfillPriceBenchmarkSummary( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/price-benchmarks\/summary\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
 }

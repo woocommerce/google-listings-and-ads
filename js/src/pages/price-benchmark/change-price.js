@@ -49,7 +49,7 @@ const ChangePrice = ( { productId } ) => {
 
 	return (
 		<>
-			<AppButton onClick={ openModal } variant="link">
+			<AppButton onClick={ openModal } variant="tertiary" size="compact">
 				{ __( 'Change price', 'google-listings-and-ads' ) }
 			</AppButton>
 

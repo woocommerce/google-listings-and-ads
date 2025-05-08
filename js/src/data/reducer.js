@@ -74,13 +74,7 @@ const DEFAULT_STATE = {
 	gtinMigrationStatus: null,
 	price_benchmark: {
 		suggestions: [],
-		summary: {
-			total_products: 0,
-			price_similar: 2,
-			price_higher: 60,
-			price_lower: 30,
-			price_unknown: 8,
-		},
+		summary: {},
 	},
 };
 

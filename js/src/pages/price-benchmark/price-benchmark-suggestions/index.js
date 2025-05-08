@@ -144,9 +144,18 @@ const METRICS_TABLE_FIELDS = [
 		enableHiding: false,
 		enableSorting: false,
 		enableGlobalSearch: false,
+		header: (
+			<span className="gla-price-benchmark-suggestions__action">
+				{ LABELS[ LABEL_ACTION ].title }
+			</span>
+		),
 		label: LABELS[ LABEL_ACTION ].title,
 		render: ( { item } ) => {
-			return <ChangePrice productId={ item?.product?.id } />;
+			return (
+				<div className="gla-price-benchmark-suggestions__action">
+					<ChangePrice productId={ item?.product?.id } />
+				</div>
+			);
 		},
 	},
 ];

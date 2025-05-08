@@ -37,6 +37,77 @@ test.describe( 'Price Benchmark Page', () => {
 		await page.close();
 	} );
 
+	test.describe( 'Price Comparison Chart Functionality', () => {
+		test.beforeEach( async () => {
+			await priceBenchmarkPage.goto();
+		} );
+
+		test( 'Does not render the chart if there are no products', async () => {
+			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions( [] );
+			await priceBenchmarkPage.fulfillPriceBenchmarkSummary( {
+				price_higher: 0,
+				price_lower: 0,
+				price_similar: 0,
+				price_unknown: 0,
+				total_products: 0,
+			} );
+
+			const emptyStateNotice = page.locator(
+				'.gla-price-benchmark__empty-metrics'
+			);
+
+			await expect( emptyStateNotice ).toBeVisible();
+
+			const comparisonChartElement = page.locator(
+				'.gla-price-benchmark__comparison-chart'
+			);
+			await expect( comparisonChartElement ).not.toBeVisible();
+		} );
+
+		test( "Does not render the chart if there's an API error", async () => {
+			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions(
+				priceBenchmarkSuggestionsData
+			);
+			await priceBenchmarkPage.fulfillPriceBenchmarkSummary(
+				{
+					message: 'Forbidden.',
+				},
+				403
+			);
+
+			const errorMessage = page.locator(
+				'.components-snackbar__content'
+			);
+			await expect( errorMessage ).toBeVisible();
+			await expect( errorMessage ).toContainText(
+				'There was an error getting the price benchmark summary. Forbidden.'
+			);
+
+			const comparisonChartElement = page.locator(
+				'.gla-price-benchmark__comparison-chart'
+			);
+			await expect( comparisonChartElement ).not.toBeVisible();
+		} );
+
+		test( 'Render the chart if there are products', async () => {
+			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions(
+				priceBenchmarkSuggestionsData
+			);
+			await priceBenchmarkPage.fulfillPriceBenchmarkSummary( {
+				price_higher: 10,
+				price_lower: 20,
+				price_similar: 30,
+				price_unknown: 40,
+				total_products: 100,
+			} );
+
+			const comparisonChartElement = page.locator(
+				'.gla-price-benchmark__comparison-chart'
+			);
+			await expect( comparisonChartElement ).toBeVisible();
+		} );
+	} );
+
 	test.describe( 'Price Benchmark Suggestions Functionality', () => {
 		test.beforeEach( async () => {
 			await priceBenchmarkPage.goto();
