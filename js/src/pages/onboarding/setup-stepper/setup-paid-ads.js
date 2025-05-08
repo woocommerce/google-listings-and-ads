@@ -90,7 +90,7 @@ export default function SetupPaidAds() {
 
 	const createContinueButton = ( formContext ) => {
 		const { isValidForm, values } = formContext;
-		const { amount } = values;
+		const { dailyBudget } = values;
 
 		const disabled =
 			completing === ACTION_SKIP || ! isValidForm || ! isBillingCompleted;
@@ -99,7 +99,7 @@ export default function SetupPaidAds() {
 			setCompleting( ACTION_COMPLETE );
 			const onBeforeFinish = handleSetupComplete.bind(
 				null,
-				amount,
+				dailyBudget,
 				countryCodes
 			);
 
@@ -115,7 +115,7 @@ export default function SetupPaidAds() {
 				text={ __( 'Complete setup', 'google-listings-and-ads' ) }
 				eventName="gla_onboarding_complete_with_paid_ads_button_click"
 				eventProps={ {
-					budget: amount,
+					budget: dailyBudget,
 					audiences: countryCodes?.join( ',' ),
 				} }
 			/>

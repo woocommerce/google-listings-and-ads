@@ -31,6 +31,11 @@ describe( 'CampaignAssetsForm', () => {
 		useBudgetRecommendation.mockReturnValue( {
 			hasResolved: true,
 			recommendedDailyBudget: 15,
+			data: {
+				recommended: { dailyBudget: 15 },
+				high: { dailyBudget: 30 },
+				low: { dailyBudget: 5 },
+			},
 		} );
 	} );
 
@@ -50,6 +55,11 @@ describe( 'CampaignAssetsForm', () => {
 		const formContextSchema = expect.objectContaining( {
 			adapter: expect.objectContaining( {
 				countryCodes,
+				budgetRecommendation: {
+					recommended: { dailyBudget: 15 },
+					high: { dailyBudget: 30 },
+					low: { dailyBudget: 5 },
+				},
 			} ),
 		} );
 
@@ -121,5 +131,283 @@ describe( 'CampaignAssetsForm', () => {
 		await user.click( resetButton );
 
 		expect( inspect ).toHaveBeenLastCalledWith( 0 );
+	} );
+
+	it( 'Should resolve the default dailyBudget for the initial form values', () => {
+		const children = jest.fn();
+
+		render(
+			<CampaignAssetsForm
+				validate={ alwaysValid }
+				initialCampaign={ { amount: 10 } }
+			>
+				{ children }
+			</CampaignAssetsForm>
+		);
+
+		const formContextSchema = expect.objectContaining( {
+			values: expect.objectContaining( {
+				amount: 10,
+				dailyBudget: 15,
+				level: 'recommended',
+			} ),
+		} );
+
+		expect( children ).toHaveBeenLastCalledWith( formContextSchema );
+	} );
+
+	it( 'Should resolve the available level for the initial form values', () => {
+		useBudgetRecommendation.mockReturnValue( {
+			hasResolved: true,
+			recommendedDailyBudget: 15,
+			data: {
+				recommended: { dailyBudget: 15 },
+			},
+		} );
+
+		const children = jest.fn();
+
+		render(
+			<CampaignAssetsForm
+				validate={ alwaysValid }
+				initialCampaign={ { amount: 10, level: 'high' } }
+			>
+				{ children }
+			</CampaignAssetsForm>
+		);
+
+		const formContextSchema = expect.objectContaining( {
+			values: expect.objectContaining( {
+				amount: 10,
+				dailyBudget: 15,
+				level: 'recommended',
+			} ),
+		} );
+
+		expect( children ).toHaveBeenLastCalledWith( formContextSchema );
+	} );
+
+	it( 'Should fall back to the custom level for the initial form values when there is no level available', () => {
+		useBudgetRecommendation.mockReturnValue( {
+			hasResolved: true,
+			recommendedDailyBudget: 15,
+			data: {},
+		} );
+
+		const children = jest.fn();
+
+		render(
+			<CampaignAssetsForm
+				validate={ alwaysValid }
+				initialCampaign={ { amount: 10, level: 'high' } }
+			>
+				{ children }
+			</CampaignAssetsForm>
+		);
+
+		const formContextSchema = expect.objectContaining( {
+			values: expect.objectContaining( {
+				amount: 10,
+				dailyBudget: 10,
+				level: 'custom',
+			} ),
+		} );
+
+		expect( children ).toHaveBeenLastCalledWith( formContextSchema );
+	} );
+
+	it( 'Should resolve the dailyBudget from the custom level for the initial form values', () => {
+		const children = jest.fn();
+
+		render(
+			<CampaignAssetsForm
+				validate={ alwaysValid }
+				initialCampaign={ { amount: 10, level: 'custom' } }
+			>
+				{ children }
+			</CampaignAssetsForm>
+		);
+
+		const formContextSchema = expect.objectContaining( {
+			values: expect.objectContaining( {
+				amount: 10,
+				dailyBudget: 10,
+				level: 'custom',
+			} ),
+		} );
+
+		expect( children ).toHaveBeenLastCalledWith( formContextSchema );
+	} );
+
+	it( 'Should resolve dailyBudget when calling back onChange with form values', async () => {
+		const user = userEvent.setup();
+		const inspect = jest.fn();
+
+		render(
+			<CampaignAssetsForm
+				validate={ alwaysValid }
+				initialCampaign={ { amount: 10 } }
+				onChange={ inspect }
+			>
+				{ ( { setValue } ) => {
+					const handleClick = ( e ) => {
+						setValue( 'level', e.target.textContent );
+					};
+					return (
+						<>
+							<button onClick={ handleClick }>custom</button>
+							<button onClick={ handleClick }>high</button>
+							<button onClick={ handleClick }>low</button>
+							<button onClick={ handleClick }>recommended</button>
+						</>
+					);
+				} }
+			</CampaignAssetsForm>
+		);
+
+		expect( inspect ).toHaveBeenCalledTimes( 0 );
+
+		await user.click( screen.getByRole( 'button', { name: 'custom' } ) );
+		expect( inspect ).toHaveBeenCalledTimes( 1 );
+		expect( inspect ).toHaveBeenLastCalledWith(
+			{
+				name: 'level',
+				value: 'custom',
+			},
+			expect.objectContaining( {
+				amount: 10,
+				dailyBudget: 10,
+				level: 'custom',
+			} ),
+			true
+		);
+
+		await user.click( screen.getByRole( 'button', { name: 'high' } ) );
+		expect( inspect ).toHaveBeenCalledTimes( 2 );
+		expect( inspect ).toHaveBeenLastCalledWith(
+			{
+				name: 'level',
+				value: 'high',
+			},
+			expect.objectContaining( {
+				amount: 10,
+				dailyBudget: 30,
+				level: 'high',
+			} ),
+			true
+		);
+
+		await user.click( screen.getByRole( 'button', { name: 'low' } ) );
+		expect( inspect ).toHaveBeenCalledTimes( 3 );
+		expect( inspect ).toHaveBeenLastCalledWith(
+			{
+				name: 'level',
+				value: 'low',
+			},
+			expect.objectContaining( {
+				amount: 10,
+				dailyBudget: 5,
+				level: 'low',
+			} ),
+			true
+		);
+
+		await user.click(
+			screen.getByRole( 'button', { name: 'recommended' } )
+		);
+		expect( inspect ).toHaveBeenCalledTimes( 4 );
+		expect( inspect ).toHaveBeenLastCalledWith(
+			{
+				name: 'level',
+				value: 'recommended',
+			},
+			expect.objectContaining( {
+				amount: 10,
+				dailyBudget: 15,
+				level: 'recommended',
+			} ),
+			true
+		);
+	} );
+
+	it( 'Should resolve dailyBudget when calling back onSubmit with form values', async () => {
+		const user = userEvent.setup();
+		const inspect = jest.fn();
+
+		render(
+			<CampaignAssetsForm
+				validate={ alwaysValid }
+				initialCampaign={ { amount: 10 } }
+				onSubmit={ inspect }
+			>
+				{ ( { setValue, handleSubmit } ) => {
+					const handleClick = ( e ) => {
+						setValue( 'level', e.target.textContent );
+					};
+					return (
+						<>
+							<button onClick={ handleClick }>custom</button>
+							<button onClick={ handleClick }>high</button>
+							<button onClick={ handleClick }>low</button>
+							<button onClick={ handleClick }>recommended</button>
+							<button onClick={ handleSubmit }>submit</button>
+						</>
+					);
+				} }
+			</CampaignAssetsForm>
+		);
+
+		const submitButton = screen.getByRole( 'button', { name: 'submit' } );
+		expect( inspect ).toHaveBeenCalledTimes( 0 );
+
+		await user.click( screen.getByRole( 'button', { name: 'custom' } ) );
+		await user.click( submitButton );
+		expect( inspect ).toHaveBeenCalledTimes( 1 );
+		expect( inspect ).toHaveBeenLastCalledWith(
+			expect.objectContaining( {
+				amount: 10,
+				dailyBudget: 10,
+				level: 'custom',
+			} ),
+			expect.any( Object )
+		);
+
+		await user.click( screen.getByRole( 'button', { name: 'high' } ) );
+		await user.click( submitButton );
+		expect( inspect ).toHaveBeenCalledTimes( 2 );
+		expect( inspect ).toHaveBeenLastCalledWith(
+			expect.objectContaining( {
+				amount: 10,
+				dailyBudget: 30,
+				level: 'high',
+			} ),
+			expect.any( Object )
+		);
+
+		await user.click( screen.getByRole( 'button', { name: 'low' } ) );
+		await user.click( submitButton );
+		expect( inspect ).toHaveBeenCalledTimes( 3 );
+		expect( inspect ).toHaveBeenLastCalledWith(
+			expect.objectContaining( {
+				amount: 10,
+				dailyBudget: 5,
+				level: 'low',
+			} ),
+			expect.any( Object )
+		);
+
+		await user.click(
+			screen.getByRole( 'button', { name: 'recommended' } )
+		);
+		await user.click( submitButton );
+		expect( inspect ).toHaveBeenCalledTimes( 4 );
+		expect( inspect ).toHaveBeenLastCalledWith(
+			expect.objectContaining( {
+				amount: 10,
+				dailyBudget: 15,
+				level: 'recommended',
+			} ),
+			expect.any( Object )
+		);
 	} );
 } );

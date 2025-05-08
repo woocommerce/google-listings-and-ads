@@ -53,9 +53,6 @@ let setupBudgetPage = null;
 let page = null;
 
 test.describe( 'Set up Ads account', () => {
-	// The campaign budget
-	let budget = null;
-
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		dashboardPage = new DashboardPage( page );
@@ -366,17 +363,47 @@ test.describe( 'Set up Ads account', () => {
 	test.describe( 'Create Ads with billing data already setup', () => {
 		test.describe( 'Set the budget', async () => {
 			test( 'Continue button should be disabled if budget is 0', async () => {
-				budget = '0';
-				await setupBudgetPage.fillBudget( budget );
+				await setupBudgetPage.fillBudget( '0' );
 
 				await expect(
 					setupBudgetPage.getCreateCampaignButton()
 				).toBeDisabled();
 			} );
 
-			test( 'Continue button should be disabled if budget is less than recommended value', async () => {
-				budget = '2';
-				await setupBudgetPage.fillBudget( budget );
+			test( 'Continue button should be enabled when selecting an option from the recommendations, even if the entered value is invalid', async () => {
+				await setupBudgetPage.fillBudget( '0' );
+				await expect(
+					setupBudgetPage.getCreateCampaignButton()
+				).toBeDisabled();
+
+				await page.getByLabel( 'low' ).click();
+				await expect(
+					setupBudgetPage.getCreateCampaignButton()
+				).toBeEnabled();
+
+				await page.getByLabel( 'custom' ).click();
+				await expect(
+					setupBudgetPage.getCreateCampaignButton()
+				).toBeDisabled();
+
+				await page.getByLabel( 'high' ).click();
+				await expect(
+					setupBudgetPage.getCreateCampaignButton()
+				).toBeEnabled();
+
+				await page.getByLabel( 'custom' ).click();
+				await expect(
+					setupBudgetPage.getCreateCampaignButton()
+				).toBeDisabled();
+
+				await page.getByLabel( 'recommended' ).click();
+				await expect(
+					setupBudgetPage.getCreateCampaignButton()
+				).toBeEnabled();
+			} );
+
+			test( 'Continue button should be disabled if budget is less than 30% of the recommended value', async () => {
+				await setupBudgetPage.fillBudget( '2' );
 
 				await expect(
 					setupBudgetPage.getCreateCampaignButton()
@@ -384,8 +411,7 @@ test.describe( 'Set up Ads account', () => {
 			} );
 
 			test( 'User is notified of the minimum value', async () => {
-				budget = '4';
-				await setupBudgetPage.fillBudget( budget );
+				await setupBudgetPage.fillBudget( '4' );
 				await setupBudgetPage.getBudgetInput().blur();
 
 				await expect(
@@ -396,12 +422,21 @@ test.describe( 'Set up Ads account', () => {
 			} );
 
 			test( 'Continue button should be enabled if budget is above the recommended value', async () => {
-				budget = '6';
-				await setupBudgetPage.fillBudget( budget );
+				await setupBudgetPage.fillBudget( '5' );
 
 				await expect(
 					setupBudgetPage.getCreateCampaignButton()
 				).toBeEnabled();
+			} );
+
+			test( 'Display the recommended budget if the budget is valid but lower than the lowest recommended value', async () => {
+				await setupBudgetPage.fillBudget( '6' );
+
+				await expect(
+					page.getByText(
+						`Your budget is lower than other advertisers' budgets, which may affect performance. For best results, we recommend at least €15.00 per day.`
+					)
+				).toBeVisible();
 			} );
 		} );
 

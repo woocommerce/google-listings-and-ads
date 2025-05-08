@@ -18,9 +18,7 @@ export default class SetupBudget extends MockRequests {
 	 * @return {import('@playwright/test').Locator} The budget input box.
 	 */
 	getBudgetInput() {
-		return this.page
-			.locator( '.gla-budget-section__card-body__cost' )
-			.getByLabel( 'Daily average cost' );
+		return this.page.getByRole( 'textbox' );
 	}
 
 	/**
@@ -86,8 +84,8 @@ export default class SetupBudget extends MockRequests {
 	 * @return {Promise<void>}
 	 */
 	async fillBudget( budget = '0' ) {
-		const input = this.getBudgetInput();
-		await input.fill( budget );
+		await this.page.getByLabel( 'custom' ).click();
+		await this.getBudgetInput().fill( budget );
 	}
 
 	/**
