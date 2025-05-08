@@ -62,6 +62,37 @@ function convertAssetEntityGroupToFormValues( assetEntityGroup = {} ) {
 	return formValues;
 }
 
+function injectDailyBudget( values, budgetRecommendation ) {
+	return Object.defineProperty( values, 'dailyBudget', {
+		enumerable: true,
+		get() {
+			if ( this.level === 'custom' ) {
+				return this.amount;
+			}
+			return budgetRecommendation[ this.level ].dailyBudget;
+		},
+	} );
+}
+
+function resolveInitialCampaign(
+	initialCampaign,
+	defaultCampaign,
+	budgetRecommendation
+) {
+	const values = {
+		...defaultCampaign,
+		...initialCampaign,
+	};
+
+	if ( values.level !== 'custom' && ! budgetRecommendation[ values.level ] ) {
+		values.level = budgetRecommendation.recommended
+			? 'recommended'
+			: 'custom';
+	}
+
+	return injectDailyBudget( values, budgetRecommendation );
+}
+
 /**
  * Renders a form based on AdaptiveForm for managing campaign and assets.
  *
@@ -84,8 +115,11 @@ export default function CampaignAssetsForm( {
 	const [ baseAssetGroup, setBaseAssetGroup ] = useState( initialAssetGroup );
 	const [ hasImportedAssets, setHasImportedAssets ] = useState( false );
 	const { formatAmount } = useAdsCurrency();
-	const { recommendedDailyBudget, hasResolved } =
-		useBudgetRecommendation( countryCodes );
+	const {
+		data: budgetRecommendation,
+		recommendedDailyBudget,
+		hasResolved,
+	} = useBudgetRecommendation( countryCodes );
 
 	if ( ! hasResolved ) {
 		return null;
@@ -97,6 +131,7 @@ export default function CampaignAssetsForm( {
 
 		return {
 			countryCodes,
+			budgetRecommendation,
 			// Currently, the PMax Assets feature in this extension has functional limits, therefore,
 			// it needs to distinguish whether the `assetEntityGroup` is "empty" or not in order to
 			// provide different special business logic.
@@ -137,16 +172,31 @@ export default function CampaignAssetsForm( {
 		} );
 	};
 
+	const handleChange = function ( ...args ) {
+		injectDailyBudget( args[ 1 ], budgetRecommendation );
+
+		if ( adaptiveFormProps.onChange ) {
+			return adaptiveFormProps.onChange.apply( this, args );
+		}
+	};
+
 	return (
 		<AdaptiveForm
 			initialValues={ {
-				amount: recommendedDailyBudget,
-				...initialCampaign,
+				...resolveInitialCampaign(
+					initialCampaign,
+					{
+						level: 'recommended',
+						amount: recommendedDailyBudget,
+					},
+					budgetRecommendation
+				),
 				...initialAssetGroup,
 			} }
 			validate={ validateCampaignWithMinimumAmount }
 			extendAdapter={ extendAdapter }
 			{ ...adaptiveFormProps }
+			onChange={ handleChange }
 		/>
 	);
 }

@@ -367,6 +367,22 @@ test.describe( 'Configure product listings', () => {
 		test.beforeAll( async () => {
 			await productListingsPage.checkRecommendedShippingRateRadioButton();
 			await productListingsPage.fillEstimatedShippingTimes( '14', '20' );
+			await productListingsPage.fulfillBudgetRecommendations( {
+				currency: 'USD',
+				recommendations: [
+					{
+						level: 'Recommended',
+						country: 'US',
+						daily_budget: 15,
+						metrics: {
+							cost: 105,
+							conversions: 2.2,
+							conversions_value: 89.98,
+						},
+					},
+				],
+			} );
+			await productListingsPage.mockBudgetMetrics();
 			await productListingsPage.fulfillBillingStatusRequest( {
 				status: 'pending',
 			} );

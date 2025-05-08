@@ -286,25 +286,21 @@ test.describe( 'Complete your campaign', () => {
 				await completeCampaign.goto();
 			} );
 
-			test.describe( 'Set up budget', () => {
-				test( '"Daily average cost" input should have recommended value set', async () => {
-					const dailyAverageCostInput =
-						setupBudgetPage.getBudgetInput();
-					await expect( dailyAverageCostInput ).toHaveValue(
-						'100.00'
-					);
+			test.describe( 'Set up custom budget', () => {
+				test( 'The input in the "Set custom budget" option should have been set to the recommended value by default', async () => {
+					await page.getByLabel( 'custom' ).click();
+					await expect(
+						setupBudgetPage.getBudgetInput()
+					).toHaveValue( '100.00' );
 				} );
 			} );
 
-			test.describe( 'Validate budget percent', () => {
+			test.describe( 'Validate budget percent for the custom budget', () => {
 				test( 'should see validation error if lower than the 30%', async () => {
 					await setupBudgetPage.fillBudget( '10' );
 					await setupBudgetPage.getBudgetInput().blur();
-					const error = page.locator(
-						'.components-base-control__help'
-					);
 
-					await expect( error ).toHaveText(
+					await expect( page.getByRole( 'alert' ) ).toHaveText(
 						'Please make sure daily average cost is at least NT$30.00'
 					);
 				} );
@@ -312,11 +308,8 @@ test.describe( 'Complete your campaign', () => {
 				test( 'should see validation error if slightly less than the 30%', async () => {
 					await setupBudgetPage.fillBudget( '29.99' );
 					await setupBudgetPage.getBudgetInput().blur();
-					const error = page.locator(
-						'.components-base-control__help'
-					);
 
-					await expect( error ).toHaveText(
+					await expect( page.getByRole( 'alert' ) ).toHaveText(
 						'Please make sure daily average cost is at least NT$30.00'
 					);
 				} );
@@ -325,30 +318,25 @@ test.describe( 'Complete your campaign', () => {
 					await setupBudgetPage.fillBudget( '30' );
 					await setupBudgetPage.getBudgetInput().blur();
 
-					const error = page.locator(
-						'.components-base-control__help'
-					);
-					await expect( error ).not.toBeVisible();
+					await expect( page.getByRole( 'alert' ) ).not.toBeVisible();
 				} );
 
 				test( 'should not see validation error if slightly greater than 30%', async () => {
 					await setupBudgetPage.fillBudget( '30.5' );
 					await setupBudgetPage.getBudgetInput().blur();
 
-					const error = page.locator(
-						'.components-base-control__help'
-					);
-					await expect( error ).not.toBeVisible();
+					await expect( page.getByRole( 'alert' ) ).not.toBeVisible();
 				} );
 
-				test( 'should not see validation error if greater than 30%', async () => {
+				test( 'should display the recommended budget if the budget is valid but lower than the lowest recommended value', async () => {
 					await setupBudgetPage.fillBudget( '40' );
 					await setupBudgetPage.getBudgetInput().blur();
 
-					const error = page.locator(
-						'.components-base-control__help'
-					);
-					await expect( error ).not.toBeVisible();
+					await expect(
+						page.getByText(
+							`Your budget is lower than other advertisers' budgets, which may affect performance. For best results, we recommend at least NT$100.00 per day.`
+						)
+					).toBeVisible();
 				} );
 			} );
 
@@ -449,6 +437,40 @@ test.describe( 'Complete your campaign', () => {
 					const setupSuccessModal =
 						completeCampaign.getSetupSuccessModal();
 					await expect( setupSuccessModal ).toBeVisible();
+				} );
+			} );
+
+			test.describe( 'Budget recommendations', () => {
+				test.beforeAll( async () => {
+					await page.evaluate( () => window.sessionStorage.clear() );
+					await setupAdsAccountPage.mockAdsAccountIncomplete();
+					await setupBudgetPage.fulfillBillingStatusRequest( {
+						status: 'approved',
+					} );
+					await completeCampaign.mockCompleteAdsSetup();
+					await completeCampaign.goto();
+				} );
+
+				test( 'The recommended option is selected by default', async () => {
+					await expect(
+						page.getByLabel( 'recommended' )
+					).toBeChecked();
+				} );
+
+				test( 'Create a campaign with a selected option from the budget recommendations', async () => {
+					const highOption = page.getByLabel( 'high' );
+
+					await highOption.click();
+					await expect( highOption ).toBeChecked();
+
+					const campaignCreation =
+						setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
+							'200',
+							[ 'US', 'TW', 'GB' ]
+						);
+
+					await completeCampaign.clickCompleteSetupButton();
+					await campaignCreation;
 				} );
 			} );
 		} );

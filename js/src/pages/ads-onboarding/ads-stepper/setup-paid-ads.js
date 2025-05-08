@@ -49,14 +49,14 @@ const SetupPaidAds = () => {
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 
 	const handleSubmit = ( values ) => {
-		const { amount } = values;
+		const { dailyBudget } = values;
 
 		recordGlaEvent( 'gla_launch_paid_campaign_button_click', {
 			audiences: countryCodes.join( ',' ),
-			budget: amount,
+			budget: dailyBudget,
 		} );
 
-		handleSetupComplete( amount, countryCodes, () => {
+		handleSetupComplete( dailyBudget, countryCodes, () => {
 			// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.
 			const nextPath = getNewPath(
 				{ guide: 'campaign-creation-success' },

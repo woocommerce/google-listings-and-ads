@@ -159,7 +159,7 @@ const EditPaidAdsCampaign = () => {
 	};
 
 	const handleOnChange = ( value, allValues ) => {
-		const isAmountChanged = allValues.amount !== campaign.amount;
+		const isAmountChanged = allValues.dailyBudget !== campaign.amount;
 
 		const isDisplayUrlPathChanged =
 			!! assetEntityGroup &&
@@ -180,7 +180,7 @@ const EditPaidAdsCampaign = () => {
 
 	const handleSubmit = async ( values, enhancer ) => {
 		const { action } = enhancer.submitter.dataset;
-		const { amount } = values;
+		const { dailyBudget: amount } = values;
 		setIsSubmit( true );
 		try {
 			await updateAdsCampaign( campaign.id, { amount } );
@@ -224,6 +224,7 @@ const EditPaidAdsCampaign = () => {
 			/>
 			<CampaignAssetsForm
 				initialCampaign={ {
+					level: 'custom',
 					amount: campaign.amount,
 				} }
 				countryCodes={ campaign.displayCountries }
