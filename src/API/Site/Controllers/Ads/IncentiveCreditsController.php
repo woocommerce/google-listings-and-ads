@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Exception;
@@ -37,7 +38,7 @@ class IncentiveCreditsController extends BaseController implements ContainerAwar
 			'ads/incentive-credits',
 			[
 				[
-					'methods'             => 'GET',
+					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_incentive_credits_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
