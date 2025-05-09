@@ -3,6 +3,7 @@
  */
 import classnames from 'classnames';
 import { __ } from '@wordpress/i18n';
+import { forwardRef } from '@wordpress/element';
 import { Tooltip } from '@wordpress/components';
 import { Link } from '@woocommerce/components';
 import GridiconInfoOutline from 'gridicons/dist/info-outline';
@@ -11,6 +12,14 @@ import GridiconInfoOutline from 'gridicons/dist/info-outline';
  * Internal dependencies
  */
 import styles from './budget-setup.module.scss';
+
+const InfoIcon = forwardRef( function ( props, ref ) {
+	return (
+		<span { ...props } ref={ ref }>
+			<GridiconInfoOutline size={ 16 } />
+		</span>
+	);
+} );
 
 /**
  * Renders the header for the budget setup component.
@@ -41,7 +50,7 @@ export default function BudgetSetupHeader() {
 						</>
 					}
 				>
-					<GridiconInfoOutline size={ 16 } />
+					<InfoIcon />
 				</Tooltip>
 			</span>
 			<span className={ styles.metricsItem }>
@@ -53,7 +62,7 @@ export default function BudgetSetupHeader() {
 						'google-listings-and-ads'
 					) }
 				>
-					<GridiconInfoOutline size={ 16 } />
+					<InfoIcon />
 				</Tooltip>
 			</span>
 			<span className={ styles.metricsItem }>
@@ -65,7 +74,7 @@ export default function BudgetSetupHeader() {
 						'google-listings-and-ads'
 					) }
 				>
-					<GridiconInfoOutline size={ 16 } />
+					<InfoIcon />
 				</Tooltip>
 			</span>
 		</div>
