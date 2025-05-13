@@ -46,8 +46,11 @@ function BudgetMetrics( { formatAmount, metrics } ) {
  *
  * Please note that this component relies on a CampaignAssetsForm's context and custom adapter,
  * so it expects a `CampaignAssetsForm` to exist in its parents.
+ *
+ * @param {Object} props React props.
+ * @param {boolean} [props.hideRecommendations=false]
  */
-export default function BudgetSetup() {
+export default function BudgetSetup( { hideRecommendations = false } ) {
 	const formContext = useAdaptiveFormContext();
 	const { adapter, getInputProps, values } = formContext;
 	const { countryCodes, budgetRecommendation } = adapter;
@@ -63,7 +66,10 @@ export default function BudgetSetup() {
 	}, [ debouncedSetBudget, amount ] );
 
 	const options = [ 'high', 'recommended', 'low' ].reduce( ( acc, level ) => {
-		const item = budgetRecommendation?.[ level ];
+		const item = hideRecommendations
+			? null
+			: budgetRecommendation?.[ level ];
+
 		if ( item ) {
 			const dailyBudget = formatAmount( item.dailyBudget );
 
@@ -90,6 +96,7 @@ export default function BudgetSetup() {
 	const { help, ...amountInputProps } = getInputProps( 'amount' );
 	const shouldNoticeRecommendedBudget =
 		! help &&
+		! hideRecommendations &&
 		budgetRecommendation?.recommended &&
 		values.amount < budgetRecommendation?.low?.dailyBudget;
 
@@ -98,6 +105,7 @@ export default function BudgetSetup() {
 		return classnames(
 			styles.row,
 			level === 'custom' && styles.customRow,
+			hideRecommendations && styles.hideRecommendations,
 			selected && styles.rowSelected
 		);
 	};
