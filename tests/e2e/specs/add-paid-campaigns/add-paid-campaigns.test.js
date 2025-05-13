@@ -99,6 +99,7 @@ test.describe( 'Set up Ads account', () => {
 			],
 		} );
 		await setupBudgetPage.mockBudgetMetrics();
+		await setupBudgetPage.mockAdsIncentiveCredits();
 		await dashboardPage.mockRequests();
 		await dashboardPage.goto();
 	} );
@@ -441,6 +442,19 @@ test.describe( 'Set up Ads account', () => {
 		} );
 
 		test( 'It should show the campaign creation success message', async () => {
+			await setupBudgetPage.fillBudget( '6' );
+			await setupBudgetPage.getCreateCampaignButton().click();
+
+			const cancelButton = page.getByRole( 'button', { name: 'Cancel' } );
+			await expect(
+				page.getByText( 'This offer won’t last long!' )
+			).toBeVisible();
+			await expect( cancelButton ).toBeEnabled();
+
+			await cancelButton.click();
+
+			await expect( cancelButton ).not.toBeVisible();
+
 			// Mock the campaign creation request.
 			const campaignCreation =
 				setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
