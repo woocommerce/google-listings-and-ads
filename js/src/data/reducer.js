@@ -73,6 +73,7 @@ const DEFAULT_STATE = {
 	},
 	gtinMigrationStatus: null,
 	price_benchmark: {
+		metrics: [],
 		suggestions: [],
 		summary: {},
 	},
@@ -558,6 +559,22 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				state,
 				'price_benchmark.suggestions',
 				newSuggestionsState
+			);
+		}
+
+		case TYPES.RECEIVE_PRICE_BENCHMARK_PRODUCT_METRICS: {
+			const { data } = action;
+
+			if ( ! data[ 0 ] ) {
+				return state;
+			}
+
+			const productMetrics = data[ 0 ];
+
+			return setIn(
+				state,
+				[ 'price_benchmark', 'metrics', productMetrics.product.id ],
+				productMetrics
 			);
 		}
 

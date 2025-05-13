@@ -1280,3 +1280,15 @@ export function* receivePriceBenchmarkSuggestionsRegularPrice(
 		},
 	};
 }
+
+/**
+ * Generator function to create an action for receiving price benchmark product metrics.
+ *
+ * @param {Object} data - The data containing price benchmark product metrics.
+ */
+export function* receivePriceBenchmarkProductMetrics( data ) {
+	return {
+		type: TYPES.RECEIVE_PRICE_BENCHMARK_PRODUCT_METRICS,
+		data,
+	};
+}

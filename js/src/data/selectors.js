@@ -425,3 +425,14 @@ export const getPriceBenchmarkSummary = ( state ) => {
 export const getPriceBenchmarkSuggestions = ( state ) => {
 	return state.price_benchmark.suggestions;
 };
+
+/**
+ * Retrieves the price benchmark metrics for a specific product.
+ *
+ * @param {Object} state - The state object containing price benchmark data.
+ * @param {string} productId - The ID of the product to retrieve metrics for.
+ * @return {Object|null} The metrics for the specified product, or null if not available.
+ */
+export const getPriceBenchmarkProductMetrics = ( state, productId ) => {
+	return state.price_benchmark.metrics[ productId ] || null;
+};

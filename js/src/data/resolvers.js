@@ -49,6 +49,7 @@ import {
 	receiveStoreCategories,
 	receiveTour,
 	receiveGtinMigrationStatus,
+	receivePriceBenchmarkProductMetrics,
 } from './actions';
 
 /**
@@ -598,4 +599,22 @@ export function* getPriceBenchmarkSummary() {
  */
 export function* getPriceBenchmarkSuggestions() {
 	yield fetchPriceBenchmarkSuggestions();
+}
+
+export function* getPriceBenchmarkProductMetrics( productId ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/price-benchmarks/${ productId }`,
+		} );
+
+		yield receivePriceBenchmarkProductMetrics( response );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the product metrics.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }
