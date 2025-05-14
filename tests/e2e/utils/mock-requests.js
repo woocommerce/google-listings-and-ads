@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import loadsh from 'lodash';
+import lodash from 'lodash';
 
 const proxyFulfill = ( instance, options ) => {
 	return new Proxy( instance.originalTarget || instance, {
@@ -441,7 +441,7 @@ export default class MockRequests {
 	 * @return {Promise<void>}
 	 */
 	async fulfillBudgetRecommendations( payload ) {
-		const mergedPayload = loadsh.merge(
+		const mergedPayload = lodash.merge(
 			{
 				currency: 'USD',
 				recommendations: [
@@ -495,7 +495,7 @@ export default class MockRequests {
 	 * @return {Promise<void>}
 	 */
 	async mockBudgetMetrics( payload ) {
-		const mergedPayload = loadsh.merge(
+		const mergedPayload = lodash.merge(
 			{
 				currency: 'USD',
 				budget: 15,
@@ -524,7 +524,7 @@ export default class MockRequests {
 	 * @return {Promise<void>}
 	 */
 	async mockAdsIncentiveCredits( payload ) {
-		const mergedPayload = loadsh.merge(
+		const mergedPayload = lodash.merge(
 			{
 				ads_currency: 'USD',
 				currency: 'USD',
