@@ -16,6 +16,7 @@ import AppInputPriceControl from '~/components/app-input-price-control';
 import BudgetSetupHeader from './budget-setup-header';
 import BudgetRadioControl from './budget-radio-control';
 import LowBudgetNotice from './low-budget-notice';
+import round from '~/utils/round';
 import styles from './budget-setup.module.scss';
 
 const i18nLevel = {
@@ -23,6 +24,17 @@ const i18nLevel = {
 	high: __( 'High', 'google-listings-and-ads' ),
 	recommended: __( 'Recommended', 'google-listings-and-ads' ),
 };
+
+function isBelowLowRecommendation( amount, recommendation, precision ) {
+	if (
+		! recommendation?.low?.dailyBudget ||
+		! Number.isInteger( precision )
+	) {
+		return false;
+	}
+
+	return amount < round( recommendation.low.dailyBudget, precision );
+}
 
 function BudgetMetrics( { formatAmount, metrics } ) {
 	return (
@@ -55,7 +67,7 @@ export default function BudgetSetup( { hideRecommendations = false } ) {
 	const { adapter, getInputProps, values } = formContext;
 	const { countryCodes, budgetRecommendation } = adapter;
 	const { amount } = values;
-	const { formatAmount } = useAdsCurrency();
+	const { adsCurrencyConfig, formatAmount } = useAdsCurrency();
 
 	const [ budget, setBudget ] = useState( amount );
 	const debouncedSetBudget = useDebounce( setBudget, 1000 );
@@ -98,7 +110,11 @@ export default function BudgetSetup( { hideRecommendations = false } ) {
 		! help &&
 		! hideRecommendations &&
 		budgetRecommendation?.recommended &&
-		values.amount < budgetRecommendation?.low?.dailyBudget;
+		isBelowLowRecommendation(
+			amount,
+			budgetRecommendation,
+			adsCurrencyConfig.precision
+		);
 
 	const getRowClassName = ( level ) => {
 		const selected = level === values.level;
