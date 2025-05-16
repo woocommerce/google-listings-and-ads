@@ -3,12 +3,14 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getNewPath } from '@woocommerce/navigation';
+import { useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
 import AdsCampaign from '~/components/paid-ads/ads-campaign';
+import BudgetIncentivePrompt from '~/components/paid-ads/budget-incentive-prompt';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 import useAdminUrl from '~/hooks/useAdminUrl';
 import useNavigateAwayPromptEffect from '~/hooks/useNavigateAwayPromptEffect';
@@ -43,10 +45,38 @@ function HookNavigateAwayPrompt() {
  * @fires gla_launch_paid_campaign_button_click on submit
  */
 const SetupPaidAds = () => {
+	const budgetPromptRef = useRef();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const [ handleSetupComplete, isSubmitting ] = useAdsSetupCompleteCallback();
 	const adminUrl = useAdminUrl();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
+
+	const renderSubmitButton = ( formContext ) => {
+		const handleClick = () => {
+			budgetPromptRef.current
+				.resolve( formContext.values.dailyBudget )
+				.then( ( amount ) => {
+					if ( amount === null ) {
+						formContext.handleSubmit();
+					} else if ( Number.isFinite( amount ) ) {
+						formContext.setValues( { level: 'custom', amount } );
+					}
+				} );
+		};
+
+		return (
+			<AppButton
+				variant="primary"
+				text={ __( 'Create campaign', 'google-listings-and-ads' ) }
+				disabled={
+					! formContext.isValidForm ||
+					billingStatus?.status !== APPROVED
+				}
+				loading={ isSubmitting }
+				onClick={ handleClick }
+			/>
+		);
+	};
 
 	const handleSubmit = ( values ) => {
 		const { dailyBudget } = values;
@@ -82,21 +112,11 @@ const SetupPaidAds = () => {
 					'google-listings-and-ads'
 				) }
 				context="setup-ads"
-				continueButton={ ( formContext ) => (
-					<AppButton
-						isPrimary
-						text={ __(
-							'Create campaign',
-							'google-listings-and-ads'
-						) }
-						disabled={
-							! formContext.isValidForm ||
-							billingStatus?.status !== APPROVED
-						}
-						loading={ isSubmitting }
-						onClick={ formContext.handleSubmit }
-					/>
-				) }
+				continueButton={ renderSubmitButton }
+			/>
+			<BudgetIncentivePrompt
+				ref={ budgetPromptRef }
+				countryCodes={ countryCodes }
 			/>
 		</CampaignAssetsForm>
 	);

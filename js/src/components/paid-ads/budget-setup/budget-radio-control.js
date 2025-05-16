@@ -16,12 +16,14 @@ import styles from './budget-setup.module.scss';
  * @param {JSX.Element} props.label The label for the radio control.
  * @param {string} props.value The value of the radio control.
  * @param {string} props.selected The current selected value.
+ * @param {string} [props.className] Additional CSS class name to be appended to RadioControl.
  * @param {Object} props.rest Additional props to pass to the RadioControl.
  */
 export default function BudgetRadioControl( {
 	label,
 	value,
 	selected,
+	className,
 	...rest
 } ) {
 	return (
@@ -29,6 +31,7 @@ export default function BudgetRadioControl( {
 		<label className={ styles.radioGroup }>
 			<RadioControl
 				{ ...rest }
+				className={ classnames( styles.radio, className ) }
 				checked={ selected === value }
 				options={ [ { value } ] }
 				hideLabelFromVision

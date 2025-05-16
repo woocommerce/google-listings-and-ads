@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useState, useRef } from '@wordpress/element';
 import { noop } from 'lodash';
 
 /**
@@ -12,11 +12,13 @@ import useAdminUrl from '~/hooks/useAdminUrl';
 import useAdsSetupCompleteCallback from '~/hooks/useAdsSetupCompleteCallback';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import AdsCampaign from '~/components/paid-ads/ads-campaign';
+import BudgetIncentivePrompt from '~/components/paid-ads/budget-incentive-prompt';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import AppButton from '~/components/app-button';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 import { getProductFeedUrl } from '~/utils/urls';
 import { handleApiError } from '~/utils/handleError';
+import { recordGlaEvent } from '~/utils/tracks';
 import { useAppDispatch } from '~/data';
 import { GUIDE_NAMES, GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
@@ -38,6 +40,7 @@ import AppSpinner from '~/components/app-spinner';
  * @fires gla_onboarding_complete_with_paid_ads_button_click
  */
 export default function SetupPaidAds() {
+	const budgetPromptRef = useRef();
 	const adminUrl = useAdminUrl();
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
@@ -90,34 +93,28 @@ export default function SetupPaidAds() {
 
 	const createContinueButton = ( formContext ) => {
 		const { isValidForm, values } = formContext;
-		const { dailyBudget } = values;
-
 		const disabled =
 			completing === ACTION_SKIP || ! isValidForm || ! isBillingCompleted;
 
-		const handleCompleteClick = async () => {
-			setCompleting( ACTION_COMPLETE );
-			const onBeforeFinish = handleSetupComplete.bind(
-				null,
-				dailyBudget,
-				countryCodes
-			);
-
-			await finishOnboardingSetup( onBeforeFinish );
+		const handleClick = () => {
+			budgetPromptRef.current
+				.resolve( values.dailyBudget )
+				.then( ( amount ) => {
+					if ( amount === null ) {
+						formContext.handleSubmit();
+					} else if ( Number.isFinite( amount ) ) {
+						formContext.setValues( { level: 'custom', amount } );
+					}
+				} );
 		};
 
 		return (
 			<AppButton
 				isPrimary
 				disabled={ disabled }
-				onClick={ handleCompleteClick }
+				onClick={ handleClick }
 				loading={ completing === ACTION_COMPLETE }
 				text={ __( 'Complete setup', 'google-listings-and-ads' ) }
-				eventName="gla_onboarding_complete_with_paid_ads_button_click"
-				eventProps={ {
-					budget: dailyBudget,
-					audiences: countryCodes?.join( ',' ),
-				} }
 			/>
 		);
 	};
@@ -130,6 +127,23 @@ export default function SetupPaidAds() {
 		return <AppSpinner />;
 	}
 
+	const handleSubmit = async ( values ) => {
+		const { dailyBudget } = values;
+		const onBeforeFinish = handleSetupComplete.bind(
+			null,
+			dailyBudget,
+			countryCodes
+		);
+
+		setCompleting( ACTION_COMPLETE );
+		recordGlaEvent( 'gla_onboarding_complete_with_paid_ads_button_click', {
+			budget: dailyBudget,
+			audiences: countryCodes.join( ',' ),
+		} );
+
+		await finishOnboardingSetup( onBeforeFinish );
+	};
+
 	return (
 		<CampaignAssetsForm
 			initialCampaign={ paidAds }
@@ -137,6 +151,7 @@ export default function SetupPaidAds() {
 			onChange={ ( _, values ) => {
 				clientSession.setCampaign( values );
 			} }
+			onSubmit={ handleSubmit }
 		>
 			<AdsCampaign
 				headerTitle={ __(
@@ -146,6 +161,10 @@ export default function SetupPaidAds() {
 				continueButton={ createContinueButton }
 				skipButton={ createSkipButton }
 				context="setup-mc"
+			/>
+			<BudgetIncentivePrompt
+				ref={ budgetPromptRef }
+				countryCodes={ countryCodes }
 			/>
 		</CampaignAssetsForm>
 	);

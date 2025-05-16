@@ -104,5 +104,14 @@
  * @property {AdsBudgetMetricsEntity} [metrics] The estimated metrics for the budget.
  */
 
+/**
+ * @typedef {Object} AdsIncentiveCredits
+ * @property {string} adsCurrency The currency of the current connected Google Ads account.
+ * @property {string} currency The currency of the credits.
+ * @property {string} country The country code of the credits.
+ * @property {number} spending The minimum spending required to be eligible for the credits.
+ * @property {number} credit The credits will be given back.
+ */
+
 // This export is required for JSDoc in other files to import the type definitions from this file.
 export default {};

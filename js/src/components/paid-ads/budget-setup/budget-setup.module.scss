@@ -1,6 +1,6 @@
 .container {
 	display: grid;
-	grid-template-columns: [radio] 24fr [option] 156fr [metrics-start] 140fr 140fr 140fr;
+	grid-template-columns: [radio] auto [option] 156fr [metrics-start] repeat(3, 140fr);
 	align-items: center;
 	padding-bottom: $grid-unit-20;
 	border-bottom: 1px solid $gray-200;
@@ -49,6 +49,12 @@
 		height: 1px;
 		margin: $grid-unit-20 0;
 		background-color: $gray-200;
+	}
+}
+
+.hideRecommendations {
+	.radio {
+		display: none;
 	}
 }
 

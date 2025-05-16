@@ -86,43 +86,9 @@ test.describe( 'Complete your campaign', () => {
 				[ 'GET' ]
 			),
 
-			completeCampaign.fulfillBudgetRecommendations( {
-				currency: 'USD',
-				recommendations: [
-					{
-						level: 'Recommended',
-						country: 'US',
-						daily_budget: 15,
-						metrics: {
-							cost: 105,
-							conversions: 2.2,
-							conversions_value: 89.98,
-						},
-					},
-					{
-						level: 'High',
-						country: 'US',
-						daily_budget: 20.5,
-						metrics: {
-							cost: 143.5,
-							conversions: 2.5,
-							conversions_value: 98.59,
-						},
-					},
-					{
-						level: 'Low',
-						country: 'US',
-						daily_budget: 7,
-						metrics: {
-							cost: 49,
-							conversions: 2,
-							conversions_value: 80.48,
-						},
-					},
-				],
-			} ),
-
+			completeCampaign.fulfillBudgetRecommendations(),
 			setupBudgetPage.mockBudgetMetrics(),
+			setupBudgetPage.mockAdsIncentiveCredits(),
 
 			// The following mocks are requests will happen after completing the onboarding
 			completeCampaign.mockSuccessfulSettingsSyncRequest(),
@@ -441,23 +407,23 @@ test.describe( 'Complete your campaign', () => {
 			} );
 
 			test.describe( 'Budget recommendations', () => {
-				test.beforeAll( async () => {
+				test.beforeEach( async () => {
 					await page.evaluate( () => window.sessionStorage.clear() );
 					await setupAdsAccountPage.mockAdsAccountIncomplete();
 					await setupBudgetPage.fulfillBillingStatusRequest( {
 						status: 'approved',
 					} );
 					await completeCampaign.mockCompleteAdsSetup();
+					await completeCampaign.fulfillBudgetRecommendations();
 					await completeCampaign.goto();
 				} );
 
-				test( 'The recommended option is selected by default', async () => {
+				test( 'Create a campaign with a selected option from the budget recommendations', async () => {
+					// The recommended option is selected by default
 					await expect(
 						page.getByLabel( 'recommended' )
 					).toBeChecked();
-				} );
 
-				test( 'Create a campaign with a selected option from the budget recommendations', async () => {
 					const highOption = page.getByLabel( 'high' );
 
 					await highOption.click();
@@ -465,7 +431,46 @@ test.describe( 'Complete your campaign', () => {
 
 					const campaignCreation =
 						setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
-							'200',
+							'20.5',
+							[ 'US', 'TW', 'GB' ]
+						);
+
+					await completeCampaign.clickCompleteSetupButton();
+					await campaignCreation;
+				} );
+
+				test( 'Suggest a higher budget for getting back free credits', async () => {
+					await setupBudgetPage.fillBudget( '8' );
+					await completeCampaign.clickCompleteSetupButton();
+
+					const confirmButton = page.getByRole( 'button', {
+						name: 'Change budget',
+					} );
+
+					await expect(
+						page.getByText( 'This offer won’t last long!' )
+					).toBeVisible();
+					await expect( confirmButton ).toBeEnabled();
+
+					await setupBudgetPage.getBudgetInput().fill( '8.33' );
+
+					await expect( confirmButton ).toBeDisabled();
+
+					await setupBudgetPage.getBudgetInput().fill( '8.5' );
+
+					await expect( confirmButton ).toBeEnabled();
+
+					await confirmButton.click();
+
+					await expect( confirmButton ).not.toBeVisible();
+
+					await expect(
+						setupBudgetPage.getBudgetInput()
+					).toHaveValue( '8.50' );
+
+					const campaignCreation =
+						setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
+							'8.5',
 							[ 'US', 'TW', 'GB' ]
 						);
 
