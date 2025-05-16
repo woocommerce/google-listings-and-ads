@@ -306,11 +306,11 @@ describe( 'BudgetSetup', () => {
 
 		const input = screen.getByRole( 'textbox' );
 		await user.clear( input );
-		await user.type( input, '7' );
+		await user.type( input, '7.23' );
 
 		expect( container ).toHaveTextContent( notice );
 
-		await user.type( input, '.5' );
+		await user.keyboard( '{End}{Backspace}4' );
 
 		expect( container ).not.toHaveTextContent( notice );
 	} );
