@@ -594,7 +594,9 @@ export function* getPriceBenchmarkSummary() {
 }
 
 /**
- * Generator function to fetch price benchmark suggestions for a given product.
+ * Resolver for getting the Price Benchmark suggestions.
+ * If the productId is not provided, it will fetch the suggestions for all products.
+ * If the productId is provided, it will fetch the suggestions for that specific product.
  *
  * @param {number|string} productId - The ID of the product to fetch suggestions for.
  */
