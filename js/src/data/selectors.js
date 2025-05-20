@@ -417,11 +417,31 @@ export const getPriceBenchmarkSummary = ( state ) => {
 };
 
 /**
- * Retrieves the price benchmark suggestions from the state.
+ * Retrieves price benchmark suggestions from the state.
  *
- * @param {Object} state - The state object containing price benchmark data.
- * @return {Array} The array of price benchmark suggestions.
+ * If a productId is provided, returns the first suggestion for the specified product
+ * that contains both 'clicks' and 'conversions' properties. If no such suggestion exists,
+ * returns undefined. If no productId is provided, returns all suggestions.
+ *
+ * @param {Object} state - The Redux state containing price benchmark suggestions.
+ * @param {number|string} [productId] - The ID of the product to filter suggestions for.
+ * @return {Object|Object[]|undefined} The matching suggestion object, all suggestions, or undefined if not found.
  */
-export const getPriceBenchmarkSuggestions = ( state ) => {
+export const getPriceBenchmarkSuggestions = ( state, productId ) => {
+	if ( productId ) {
+		const product = state.price_benchmark.suggestions.filter(
+			( suggestion ) =>
+				suggestion.product.id === productId &&
+				'clicks' in suggestion &&
+				'conversions' in suggestion
+		);
+
+		if ( ! product.length ) {
+			return undefined;
+		}
+
+		return product[ 0 ];
+	}
+
 	return state.price_benchmark.suggestions;
 };

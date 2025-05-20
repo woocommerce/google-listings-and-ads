@@ -28,7 +28,7 @@ import AppModal from '~/components/app-modal';
 import PriceInputFooter from './price-input-footer';
 import AppSpinner from '~/components/app-spinner';
 import Badge from '~/components/badge';
-import usePriceBenchmarkSuggestionsProduct from '~/hooks/usePriceBenchmarkSuggestionsProduct';
+import usePriceBenchmarkSuggestions from '~/hooks/usePriceBenchmarkSuggestions';
 import useProduct from '~/hooks/useProduct';
 import './index.scss';
 
@@ -50,20 +50,8 @@ const ChangePriceModal = ( { productId, onRequestClose, onPriceChange } ) => {
 		product: productDetails,
 		hasFinishedResolution: hasResolvedProduct,
 	} = useProduct( productId );
-	const { product, hasFinishedResolution } =
-		usePriceBenchmarkSuggestionsProduct( productId );
-	const {
-		effectiveness,
-		regular_price: regularPrice,
-		price_on_google: priceOnGoogle,
-		price_gap: priceGap,
-		suggested_price: suggestedPrice,
-		clicks,
-		conversions,
-		predicted_clicks_change: predictedClicksChange,
-		predicted_conversions_change: predictedConversionsChange,
-		product: { id, title, thumbnail },
-	} = product || {};
+	const { data, hasFinishedResolution } =
+		usePriceBenchmarkSuggestions( productId );
 
 	const appModalProps = {
 		title: __( 'Change Price', 'google-listings-and-ads' ),
@@ -95,6 +83,19 @@ const ChangePriceModal = ( { productId, onRequestClose, onPriceChange } ) => {
 			</AppModal>
 		);
 	}
+
+	const {
+		effectiveness,
+		regular_price: regularPrice,
+		price_on_google: priceOnGoogle,
+		price_gap: priceGap,
+		suggested_price: suggestedPrice,
+		clicks,
+		conversions,
+		predicted_clicks_change: predictedClicksChange,
+		predicted_conversions_change: predictedConversionsChange,
+		product: { id, title, thumbnail },
+	} = data || {};
 
 	const salesPrice = Number.parseFloat( productDetails.sale_price );
 	const isOnSale = productDetails.on_sale;

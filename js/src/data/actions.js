@@ -1229,15 +1229,22 @@ export function* fetchPriceBenchmarkSummary() {
 /**
  * Action to fetch the Price Benchmark suggestions.
  */
-export function* fetchPriceBenchmarkSuggestions() {
+export function* fetchPriceBenchmarkSuggestions( productId ) {
 	try {
+		let path = `${ API_NAMESPACE }/mc/price-benchmarks`;
+
+		if ( productId ) {
+			path = `${ path }/${ productId }`;
+		}
+
 		const data = yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/price-benchmarks`,
+			path,
 		} );
 
 		return {
 			type: TYPES.RECEIVE_PRICE_BENCHMARK_SUGGESTIONS,
 			data,
+			productId,
 		};
 	} catch ( error ) {
 		const errorMessage = error.message;

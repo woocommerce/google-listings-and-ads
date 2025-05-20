@@ -175,7 +175,7 @@ const TABLE_FIELDS_MOBILE = [ 'action' ];
  */
 const PriceBenchmarkSuggestions = ( { isViewportMobile } ) => {
 	const { DataViews, filterSortAndPaginate } = window.wp.dataviews;
-	const { suggestions, hasFinishedResolution } =
+	const { data: suggestions, hasFinishedResolution } =
 		usePriceBenchmarkSuggestions();
 
 	const [ view, setView ] = useState( {

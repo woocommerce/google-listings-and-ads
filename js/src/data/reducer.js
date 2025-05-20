@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { setWith, clone } from 'lodash';
+import { setWith, clone, keyBy } from 'lodash';
 
 /**
  * Internal dependencies
@@ -534,8 +534,59 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_PRICE_BENCHMARK_SUGGESTIONS: {
-			const { data } = action;
-			return setIn( state, 'price_benchmark.suggestions', data );
+			const { data, productId } = action;
+
+			if ( ! productId ) {
+				// Merge the new suggestions with the existing ones in case we have the same product in both arrays.
+				// This is a bit tricky because we need to merge the objects based on the product ID.
+				const map = keyBy(
+					state.price_benchmark.suggestions,
+					'product.id'
+				);
+
+				// For each item in the new data either merge with existing or add new
+				data.forEach( ( item ) => {
+					if ( item.product?.id ) {
+						if ( map[ item.product.id ] ) {
+							// If item exists in first array, merge properties
+							map[ item.product.id ] = {
+								...map[ item.product.id ],
+								...item,
+							};
+						} else {
+							// If item doesn't exist, add it
+							map[ item.product.id ] = item;
+						}
+					}
+				} );
+
+				const mergedData = Object.values( map );
+				return setIn(
+					state,
+					'price_benchmark.suggestions',
+					mergedData
+				);
+			}
+
+			const updatedSuggestions = [ ...state.price_benchmark.suggestions ];
+			const productIndex = updatedSuggestions.findIndex(
+				( { product } ) => product.id === productId
+			);
+
+			if ( productIndex >= 0 ) {
+				updatedSuggestions[ productIndex ] = {
+					...updatedSuggestions[ productIndex ],
+					...data,
+				};
+			} else {
+				updatedSuggestions.push( data );
+			}
+
+			return setIn(
+				state,
+				'price_benchmark.suggestions',
+				updatedSuggestions
+			);
 		}
 
 		case TYPES.RECEIVE_PRICE_BENCHMARK_SUGGESTIONS_REGULAR_PRICE: {

@@ -10,18 +10,21 @@ import { STORE_KEY } from '~/data/constants';
 
 const selectorName = 'getPriceBenchmarkSuggestions';
 
-const usePriceBenchmarkSuggestions = () => {
-	return useSelect( ( select ) => {
-		const selector = select( STORE_KEY );
+const usePriceBenchmarkSuggestions = ( productId ) => {
+	return useSelect(
+		( select ) => {
+			const selector = select( STORE_KEY );
 
-		return {
-			suggestions: selector[ selectorName ](),
-			hasFinishedResolution: selector.hasFinishedResolution(
-				selectorName,
-				[]
-			),
-		};
-	}, [] );
+			return {
+				data: selector[ selectorName ]( productId ),
+				hasFinishedResolution: selector.hasFinishedResolution(
+					selectorName,
+					[ productId ]
+				),
+			};
+		},
+		[ productId ]
+	);
 };
 
 export default usePriceBenchmarkSuggestions;
