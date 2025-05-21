@@ -1,0 +1,16 @@
+{
+	"product": {
+		"id": 33,
+		"thumbnail": "https://live.staticflickr.com/5725/21726228300_51333bd62c_b.jpg",
+		"title": "Abstract Geometric Poster"
+	},
+	"effectiveness": 3,
+	"regular_price": 25.0,
+	"price_on_google": 20.0,
+	"price_gap": 5.0,
+	"suggested_price": 20.0,
+	"clicks": 30,
+	"conversions": 3,
+	"predicted_clicks_change": "0.12609300017356873",
+	"predicted_conversions_change": "2.3431060314178467"
+}
