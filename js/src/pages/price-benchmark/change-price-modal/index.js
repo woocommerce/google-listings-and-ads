@@ -58,18 +58,8 @@ const ChangePriceModal = ( { productId, onRequestClose, onPriceChange } ) => {
 		onRequestClose,
 		className: 'gla-change-price-modal',
 	};
-	console.log(
-		'ChangePriceModal',
-		data,
-		hasResolvedProduct,
-		hasFinishedResolution
-	);
 
-	if (
-		! hasResolvedProduct ||
-		! hasFinishedResolution ||
-		data === undefined
-	) {
+	if ( ! hasResolvedProduct || ! hasFinishedResolution ) {
 		return (
 			<AppModal { ...appModalProps }>
 				<AppSpinner />
@@ -93,7 +83,6 @@ const ChangePriceModal = ( { productId, onRequestClose, onPriceChange } ) => {
 			</AppModal>
 		);
 	}
-	console.log( 'data', data );
 
 	const {
 		effectiveness,
