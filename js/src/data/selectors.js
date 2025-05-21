@@ -430,11 +430,23 @@ export const getPriceBenchmarkSummary = ( state ) => {
 export const getPriceBenchmarkSuggestions = ( state, productId ) => {
 	if ( productId ) {
 		const product = state.price_benchmark.suggestions.filter(
-			( suggestion ) =>
-				suggestion.product.id === productId &&
-				'clicks' in suggestion &&
-				'conversions' in suggestion
+			( suggestion ) => {
+				if ( suggestion.product.id === 33 ) {
+					console.log(
+						'Suggestion',
+						JSON.stringify( suggestion ),
+						'clicks' in suggestion,
+						'conversions' in suggestion
+					);
+				}
+				return (
+					suggestion.product.id === productId &&
+					'clicks' in suggestion &&
+					'conversions' in suggestion
+				);
+			}
 		);
+		console.log( 'productive', product );
 
 		if ( ! product.length ) {
 			return undefined;

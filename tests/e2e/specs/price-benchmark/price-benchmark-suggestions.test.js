@@ -8,6 +8,7 @@ import { expect, test } from '@playwright/test';
  */
 import { clearOnboardedMerchant } from '../../utils/api';
 import priceBenchmarkSuggestionsData from '../../utils/__fixtures__/price-benchmark-suggestions.json';
+import priceBenchmarkProductSuggestionsData from '../../utils/__fixtures__/price-benchmark-product-suggestions.json';
 import PriceBenchmarkPage from '../../utils/pages/price-benchmark';
 
 test.use( { storageState: process.env.ADMINSTATE } );
@@ -172,9 +173,9 @@ test.describe( 'Price Benchmark Page', () => {
 		} );
 
 		test( 'Shows 10 results per page by default', async () => {
-			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions( [
-				...priceBenchmarkSuggestionsData,
-			] );
+			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions(
+				priceBenchmarkSuggestionsData
+			);
 
 			const tableRows = page.locator( 'table tbody tr' );
 			await expect( tableRows ).toHaveCount( 10 );
@@ -227,16 +228,18 @@ test.describe( 'Price Benchmark Page', () => {
 	test.describe( 'Change Price Modal Functionality', () => {
 		test( 'Clicking "Change Price" link renders the modal', async () => {
 			await priceBenchmarkPage.goto();
-
-			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions( [
-				...priceBenchmarkSuggestionsData,
-			] );
-
+			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions(
+				priceBenchmarkSuggestionsData
+			);
 			await priceBenchmarkPage.fulfillWCProduct(
 				{
 					regular_price: '100.00',
 				},
 				[ 'GET' ]
+			);
+			await priceBenchmarkPage.fulfillPriceBenchmarkProductSuggestions(
+				33,
+				priceBenchmarkProductSuggestionsData
 			);
 
 			const changePriceLink =
@@ -258,6 +261,24 @@ test.describe( 'Price Benchmark Page', () => {
 		} );
 
 		test( 'Displays error message when user inputs a negative price', async () => {
+			await priceBenchmarkPage.goto();
+			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions(
+				priceBenchmarkSuggestionsData
+			);
+			await priceBenchmarkPage.fulfillPriceBenchmarkProductSuggestions(
+				33,
+				priceBenchmarkProductSuggestionsData
+			);
+
+			await priceBenchmarkPage.fulfillWCProduct(
+				{
+					regular_price: '100.00',
+					sale_price: '90.00',
+					on_sale: true,
+				},
+				[ 'GET' ]
+			);
+
 			// Open the modal again
 			const changePriceLink =
 				await priceBenchmarkPage.getFirstProductChangePriceLink();
@@ -279,10 +300,13 @@ test.describe( 'Price Benchmark Page', () => {
 
 		test( 'Clicking "Change Price" button with a valid price closes the modal and updates the table', async () => {
 			await priceBenchmarkPage.goto();
-
-			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions( [
-				...priceBenchmarkSuggestionsData,
-			] );
+			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions(
+				priceBenchmarkSuggestionsData
+			);
+			await priceBenchmarkPage.fulfillPriceBenchmarkProductSuggestions(
+				33,
+				priceBenchmarkProductSuggestionsData
+			);
 
 			await priceBenchmarkPage.fulfillWCProduct(
 				{
@@ -329,10 +353,13 @@ test.describe( 'Price Benchmark Page', () => {
 		test.describe( 'Sales Price Functionality', () => {
 			test( 'Displays "Product is currently on sale" text when there is a sale price', async () => {
 				await priceBenchmarkPage.goto();
-
-				await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions( [
-					...priceBenchmarkSuggestionsData,
-				] );
+				await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions(
+					priceBenchmarkSuggestionsData
+				);
+				await priceBenchmarkPage.fulfillPriceBenchmarkProductSuggestions(
+					33,
+					priceBenchmarkProductSuggestionsData
+				);
 
 				await priceBenchmarkPage.fulfillWCProduct(
 					{
@@ -397,10 +424,13 @@ test.describe( 'Price Benchmark Page', () => {
 
 			test( 'Does not display "Product is currently on sale" text when there is no sale price', async () => {
 				await priceBenchmarkPage.goto();
-
-				await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions( [
-					...priceBenchmarkSuggestionsData,
-				] );
+				await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions(
+					priceBenchmarkSuggestionsData
+				);
+				await priceBenchmarkPage.fulfillPriceBenchmarkProductSuggestions(
+					33,
+					priceBenchmarkProductSuggestionsData
+				);
 
 				await priceBenchmarkPage.fulfillWCProduct(
 					{
@@ -424,10 +454,13 @@ test.describe( 'Price Benchmark Page', () => {
 
 			test( 'Does not display "Product is currently on sale" text when the product is not on sale but has a sale price', async () => {
 				await priceBenchmarkPage.goto();
-
-				await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions( [
-					...priceBenchmarkSuggestionsData,
-				] );
+				await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions(
+					priceBenchmarkSuggestionsData
+				);
+				await priceBenchmarkPage.fulfillPriceBenchmarkProductSuggestions(
+					33,
+					priceBenchmarkProductSuggestionsData
+				);
 
 				await priceBenchmarkPage.fulfillWCProduct(
 					{
@@ -456,9 +489,9 @@ test.describe( 'Price Benchmark Page', () => {
 	test.describe( 'Price Benchmark Suggestions Banner', () => {
 		test( 'Shows the banner when the user is not onboarded', async () => {
 			await priceBenchmarkPage.goto();
-			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions( [
-				...priceBenchmarkSuggestionsData,
-			] );
+			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions(
+				priceBenchmarkSuggestionsData
+			);
 
 			const banner = page.locator(
 				'.gla-price-benchmark-suggestions-banner'
@@ -476,9 +509,9 @@ test.describe( 'Price Benchmark Page', () => {
 
 		test( 'Hides the banner when dismissed', async () => {
 			await priceBenchmarkPage.fulfillUsersPreferences();
-			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions( [
-				...priceBenchmarkSuggestionsData,
-			] );
+			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions(
+				priceBenchmarkSuggestionsData
+			);
 
 			const banner = page.locator(
 				'.gla-price-benchmark-suggestions-banner'

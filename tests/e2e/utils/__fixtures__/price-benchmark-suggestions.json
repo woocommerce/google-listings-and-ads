@@ -9,11 +9,7 @@
 		"regular_price": 25.0,
 		"price_on_google": 20.0,
 		"price_gap": 5.0,
-		"suggested_price": 20.0,
-		"clicks": 30,
-		"conversions": 3,
-		"predicted_clicks_change": "0.12609300017356873",
-		"predicted_conversions_change": "2.3431060314178467"
+		"suggested_price": 20.0
 	},
 	{
 		"product": {
@@ -25,11 +21,7 @@
 		"regular_price": 30.0,
 		"price_on_google": 27.0,
 		"price_gap": 3.0,
-		"suggested_price": 28.0,
-		"clicks": 45,
-		"conversions": 5,
-		"predicted_clicks_change": "0.15432100012345678",
-		"predicted_conversions_change": "1.9876543210987654"
+		"suggested_price": 28.0
 	},
 	{
 		"product": {
@@ -41,11 +33,7 @@
 		"regular_price": 35.0,
 		"price_on_google": 36.0,
 		"price_gap": -1.0,
-		"suggested_price": 34.0,
-		"clicks": 25,
-		"conversions": 2,
-		"predicted_clicks_change": "0.09876543210987654",
-		"predicted_conversions_change": "1.543210987654321"
+		"suggested_price": 34.0
 	},
 	{
 		"product": {
@@ -57,11 +45,7 @@
 		"regular_price": 40.0,
 		"price_on_google": 32.0,
 		"price_gap": 8.0,
-		"suggested_price": 33.0,
-		"clicks": 60,
-		"conversions": 7,
-		"predicted_clicks_change": "0.23456789012345678",
-		"predicted_conversions_change": "3.456789012345678"
+		"suggested_price": 33.0
 	},
 	{
 		"product": {
@@ -73,11 +57,7 @@
 		"regular_price": 22.0,
 		"price_on_google": 21.0,
 		"price_gap": 1.0,
-		"suggested_price": 22.0,
-		"clicks": 35,
-		"conversions": 4,
-		"predicted_clicks_change": "0.11223344556677889",
-		"predicted_conversions_change": "2.1234567890123456"
+		"suggested_price": 22.0
 	},
 	{
 		"product": {
@@ -89,11 +69,7 @@
 		"regular_price": 55.0,
 		"price_on_google": 42.0,
 		"price_gap": 13.0,
-		"suggested_price": 45.0,
-		"clicks": 20,
-		"conversions": 1,
-		"predicted_clicks_change": "0.07654321098765432",
-		"predicted_conversions_change": "1.2345678901234567"
+		"suggested_price": 45.0
 	},
 	{
 		"product": {
@@ -105,11 +81,7 @@
 		"regular_price": 18.0,
 		"price_on_google": 19.0,
 		"price_gap": -1.0,
-		"suggested_price": 17.0,
-		"clicks": 50,
-		"conversions": 6,
-		"predicted_clicks_change": "0.19876543210987654",
-		"predicted_conversions_change": "2.8765432109876543"
+		"suggested_price": 17.0
 	},
 	{
 		"product": {
@@ -121,11 +93,7 @@
 		"regular_price": 60.0,
 		"price_on_google": 48.0,
 		"price_gap": 12.0,
-		"suggested_price": 50.0,
-		"clicks": 15,
-		"conversions": 0,
-		"predicted_clicks_change": "0.0543210987654321",
-		"predicted_conversions_change": "0.9876543210987654"
+		"suggested_price": 50.0
 	},
 	{
 		"product": {
@@ -137,11 +105,7 @@
 		"regular_price": 28.0,
 		"price_on_google": 30.0,
 		"price_gap": -2.0,
-		"suggested_price": 29.0,
-		"clicks": 40,
-		"conversions": 3,
-		"predicted_clicks_change": "0.13456789012345678",
-		"predicted_conversions_change": "1.7654321098765432"
+		"suggested_price": 29.0
 	},
 	{
 		"product": {
@@ -153,11 +117,7 @@
 		"regular_price": 45.0,
 		"price_on_google": 40.0,
 		"price_gap": 5.0,
-		"suggested_price": 42.0,
-		"clicks": 55,
-		"conversions": 8,
-		"predicted_clicks_change": "0.24567890123456789",
-		"predicted_conversions_change": "3.9876543210987654"
+		"suggested_price": 42.0
 	},
 	{
 		"product": {
@@ -169,11 +129,7 @@
 		"regular_price": 35.0,
 		"price_on_google": 29.0,
 		"price_gap": 6.0,
-		"suggested_price": 30.0,
-		"clicks": 70,
-		"conversions": 10,
-		"predicted_clicks_change": "0.34567890123456789",
-		"predicted_conversions_change": "4.567890123456789"
+		"suggested_price": 30.0
 	},
 	{
 		"product": {
@@ -185,11 +141,7 @@
 		"regular_price": 27.0,
 		"price_on_google": 25.0,
 		"price_gap": 2.0,
-		"suggested_price": 26.0,
-		"clicks": 10,
-		"conversions": 1,
-		"predicted_clicks_change": "0.04321098765432109",
-		"predicted_conversions_change": "0.8765432109876543"
+		"suggested_price": 26.0
 	},
 	{
 		"product": {
@@ -201,11 +153,7 @@
 		"regular_price": 32.0,
 		"price_on_google": 34.0,
 		"price_gap": -2.0,
-		"suggested_price": 33.0,
-		"clicks": 30,
-		"conversions": 2,
-		"predicted_clicks_change": "0.12345678901234567",
-		"predicted_conversions_change": "1.6543210987654321"
+		"suggested_price": 33.0
 	},
 	{
 		"product": {
@@ -217,11 +165,7 @@
 		"regular_price": 50.0,
 		"price_on_google": 37.0,
 		"price_gap": 13.0,
-		"suggested_price": 39.0,
-		"clicks": 65,
-		"conversions": 9,
-		"predicted_clicks_change": "0.29876543210987654",
-		"predicted_conversions_change": "4.123456789012345"
+		"suggested_price": 39.0
 	},
 	{
 		"product": {
@@ -233,10 +177,6 @@
 		"regular_price": 38.0,
 		"price_on_google": 34.0,
 		"price_gap": 4.0,
-		"suggested_price": 35.0,
-		"clicks": 50,
-		"conversions": 6,
-		"predicted_clicks_change": "0.19876543210987654",
-		"predicted_conversions_change": "2.8765432109876543"
+		"suggested_price": 35.0
 	}
 ]
