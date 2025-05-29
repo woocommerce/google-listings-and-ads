@@ -2,11 +2,7 @@
  * External dependencies
  */
 import { getHistory } from '@woocommerce/navigation';
-import {
-	createInterpolateElement,
-	useEffect,
-	useCallback,
-} from '@wordpress/element';
+import { createInterpolateElement, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -18,13 +14,30 @@ import AppButton from '~/components/app-button';
 import AddPaidCampaignButton from '~/components/paid-ads/add-paid-campaign-button';
 import { glaData, GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '~/constants';
 import localStorage from '~/utils/localStorage';
-import { getProductFeedUrl } from '~/utils/urls';
+import { getProductFeedUrl, getSettingsUrl } from '~/utils/urls';
 import wooLogoURL from '~/images/logo/woocommerce-logo.svg';
 import googleLogoURL from '~/images/logo/google-logo.svg';
 import { recordGlaEvent } from '~/utils/tracks';
 import './index.scss';
 
 const EVENT_NAME = 'gla_modal_closed';
+
+const handleGuideFinish = ( e ) => {
+	getHistory().replace( getProductFeedUrl() );
+
+	// Since there is no built-in way to distinguish the modal/guide is closed by what action,
+	// here is a workaround by identifying the close button's data-aciton attribute.
+	let action = 'dismiss';
+
+	if ( e ) {
+		const target = e.currentTarget || e.target;
+		action = target.dataset.action || action;
+	}
+	recordGlaEvent( EVENT_NAME, {
+		context: GUIDE_NAMES.SUBMISSION_SUCCESS,
+		action,
+	} );
+};
 
 const image = (
 	<div className="gla-submission-success-guide__logo-block">
@@ -85,6 +98,78 @@ const pages = [
 				</p>
 			</GuidePageContent>
 		),
+		// Actions should be undefined if glaData.adsSetupComplete is false, else render the button.
+		action: glaData.adsSetupComplete ? (
+			<AppButton
+				isPrimary
+				data-action="view-product-feed"
+				onClick={ handleGuideFinish }
+			>
+				{ __( 'View product feed', 'google-listings-and-ads' ) }
+			</AppButton>
+		) : undefined,
+	},
+	{
+		image,
+		content: (
+			<GuidePageContent
+				title={ __(
+					'Improve conversion tracking accuracy to improve campaign performance',
+					'google-listings-and-ads'
+				) }
+			>
+				<p>
+					{ __(
+						'Set up Enhanced Conversions, a feature designed to improve your measurement accuracy by collecting privacy-conscious data without the need for third-party cookies.',
+						'google-listings-and-ads'
+					) }
+				</p>
+				<p>
+					{ createInterpolateElement(
+						__(
+							'<link>Learn more</link> about Enhanced Conversions.',
+							'google-listings-and-ads'
+						),
+						{
+							link: (
+								<ContentLink
+									href="https://woocommerce.com/document/google-listings-and-ads/enhanced-conversions/"
+									context="enhanced-conversions"
+								/>
+							),
+						}
+					) }
+				</p>
+			</GuidePageContent>
+		),
+		actions: (
+			<AppButton
+				isPrimary
+				data-action="view-enhanced-conversions-settings"
+				eventName={ EVENT_NAME }
+				eventProps={ {
+					context: GUIDE_NAMES.SUBMISSION_SUCCESS,
+					action: 'view-enhanced-conversions-settings',
+				} }
+				onClick={ () => {
+					handleGuideFinish();
+					window.location.href = getSettingsUrl();
+				} }
+				aria-label={ __(
+					'Set up Enhanced Conversions',
+					'google-listings-and-ads'
+				) }
+				title={ __(
+					'Set up Enhanced Conversions',
+					'google-listings-and-ads'
+				) }
+			>
+				{ __(
+					'Set up Enhanced Conversions',
+					'google-listings-and-ads'
+				) }
+			</AppButton>
+		),
 	},
 	{
 		image,
@@ -119,29 +204,36 @@ const pages = [
 				</cite>
 			</GuidePageContent>
 		),
+		actions: (
+			<>
+				<div className="gla-submission-success-guide__space_holder" />
+				<AppButton
+					isSecondary
+					data-action="maybe-later"
+					onClick={ handleGuideFinish }
+				>
+					{ __( 'Maybe later', 'google-listings-and-ads' ) }
+				</AppButton>
+				<AddPaidCampaignButton
+					isPrimary
+					isSecondary={ false }
+					isSmall={ false }
+					eventName={ EVENT_NAME }
+					eventProps={ {
+						context: GUIDE_NAMES.SUBMISSION_SUCCESS,
+						action: 'create-paid-campaign',
+					} }
+				>
+					{ __( 'Create campaign', 'google-listings-and-ads' ) }
+				</AddPaidCampaignButton>
+			</>
+		),
 	},
 ];
 
 if ( glaData.adsSetupComplete ) {
 	pages.pop();
 }
-
-const handleGuideFinish = ( e ) => {
-	getHistory().replace( getProductFeedUrl() );
-
-	// Since there is no built-in way to distinguish the modal/guide is closed by what action,
-	// here is a workaround by identifying the close button's data-aciton attribute.
-	let action = 'dismiss';
-
-	if ( e ) {
-		const target = e.currentTarget || e.target;
-		action = target.dataset.action || action;
-	}
-	recordGlaEvent( EVENT_NAME, {
-		context: GUIDE_NAMES.SUBMISSION_SUCCESS,
-		action,
-	} );
-};
 
 /**
  * Modal window to greet the user at Product Feed, after successful completion of onboarding.
@@ -166,51 +258,11 @@ const SubmissionSuccessGuide = () => {
 		);
 	}, [] );
 
-	const renderFinish = useCallback( () => {
-		if ( glaData.adsSetupComplete ) {
-			return (
-				<AppButton
-					isPrimary
-					data-action="view-product-feed"
-					onClick={ handleGuideFinish }
-				>
-					{ __( 'View product feed', 'google-listings-and-ads' ) }
-				</AppButton>
-			);
-		}
-
-		return (
-			<>
-				<div className="gla-submission-success-guide__space_holder" />
-				<AppButton
-					isSecondary
-					data-action="maybe-later"
-					onClick={ handleGuideFinish }
-				>
-					{ __( 'Maybe later', 'google-listings-and-ads' ) }
-				</AppButton>
-				<AddPaidCampaignButton
-					isPrimary
-					isSecondary={ false }
-					isSmall={ false }
-					eventName={ EVENT_NAME }
-					eventProps={ {
-						context: GUIDE_NAMES.SUBMISSION_SUCCESS,
-						action: 'create-paid-campaign',
-					} }
-				>
-					{ __( 'Create campaign', 'google-listings-and-ads' ) }
-				</AddPaidCampaignButton>
-			</>
-		);
-	}, [] );
-
 	return (
 		<Guide
 			className="gla-submission-success-guide"
 			backButtonText={ __( 'Back', 'google-listings-and-ads' ) }
 			pages={ pages }
-			renderFinish={ renderFinish }
 			onFinish={ handleGuideFinish }
 		/>
 	);
