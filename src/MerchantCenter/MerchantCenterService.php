@@ -140,7 +140,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 * Whether push is enabled for a specific data type.
 	 * This method checks if push synchronization is enabled for a specific data type
 	 * (products, coupons, shipping, settings) in the Merchant Center.
-	 * 
+	 *
 	 * This differs from should_push() which checks if the Merchant Center is ready
 	 * for syncing in general, while this method checks if a specific data type
 	 * has been enabled for push operations.
