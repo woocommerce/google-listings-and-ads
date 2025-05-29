@@ -356,6 +356,10 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 			->method( 'is_ready_for_syncing' )
 			->willReturn( $mc_status );
 
+		$this->merchant_center->expects( $this->any() )
+			->method( 'is_enabled_for_datatype' )
+			->willReturn( $mc_status );
+
 		$this->notification_service->expects( $this->any() )
 			->method( 'is_ready' )
 			->willReturn( $notifications_status );
