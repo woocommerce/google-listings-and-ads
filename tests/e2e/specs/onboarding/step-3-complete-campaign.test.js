@@ -456,6 +456,44 @@ test.describe( 'Complete your campaign', () => {
 				await expect( setupSuccessModal ).toBeVisible();
 			} );
 
+			test( 'should have three prompts in the setup success modal', async () => {
+				const guideControls = page.getByRole( 'list', {
+					name: 'Guide controls',
+				} );
+				const guideControlsItems =
+					guideControls.getByRole( 'listitem' );
+				await expect( guideControlsItems ).toHaveCount( 3 );
+			} );
+
+			test( 'should see the "Enhance Conversion" prompt in the setup success modal', async () => {
+				const guideControls = page.getByRole( 'list', {
+					name: 'Guide controls',
+				} );
+				const guideControlsItems =
+					guideControls.getByRole( 'listitem' );
+
+				// click on second item in the guide controls list.
+				await guideControlsItems.nth( 1 ).click();
+				await expect(
+					page.getByText(
+						'Improve conversion tracking accuracy to improve campaign performance'
+					)
+				).toBeVisible();
+			} );
+
+			test( 'should see the "Set up Enhance Conversions" button in the setup success modal', async () => {
+				const enhanceConversionButton = page.getByRole( 'button', {
+					name: 'Set up Enhanced Conversions',
+				} );
+				await expect( enhanceConversionButton ).toBeVisible();
+
+				const dataAction =
+					await enhanceConversionButton.getAttribute( 'data-action' );
+				expect( dataAction ).toBe(
+					'view-enhanced-conversions-settings'
+				);
+			} );
+
 			test( 'should see buttons on Dashboard for Google Ads onboarding', async () => {
 				await page.keyboard.press( 'Escape' );
 				await page.getByRole( 'tab', { name: 'Dashboard' } ).click();
