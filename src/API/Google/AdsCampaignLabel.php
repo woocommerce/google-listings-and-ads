@@ -150,7 +150,7 @@ class AdsCampaignLabel implements OptionsAwareInterface {
 	 *
 	 * @param array $operations The operations to mutate.
 	 *
-	 * @throws ApiException — Thrown if the API call fails.
+	 * @throws ApiException Thrown if the API call fails.
 	 */
 	protected function mutate( array $operations ) {
 		$request = new MutateGoogleAdsRequest();
