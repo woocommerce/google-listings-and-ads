@@ -17,8 +17,9 @@ import useNavigateAwayPromptEffect from '~/hooks/useNavigateAwayPromptEffect';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useAdsSetupCompleteCallback from '~/hooks/useAdsSetupCompleteCallback';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
+import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
-import { recordGlaEvent } from '~/utils/tracks';
+import { FILTER_BUDGET_RECOMMENDATIONS, recordGlaEvent } from '~/utils/tracks';
 import AppSpinner from '~/components/app-spinner';
 import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 
@@ -50,6 +51,9 @@ const SetupPaidAds = () => {
 	const [ handleSetupComplete, isSubmitting ] = useAdsSetupCompleteCallback();
 	const adminUrl = useAdminUrl();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
+	const getEventProps = useEventPropertiesFilter(
+		FILTER_BUDGET_RECOMMENDATIONS
+	);
 
 	const renderSubmitButton = ( formContext ) => {
 		const handleClick = () => {
@@ -79,12 +83,16 @@ const SetupPaidAds = () => {
 	};
 
 	const handleSubmit = ( values ) => {
-		const { dailyBudget } = values;
+		const { level, dailyBudget } = values;
 
-		recordGlaEvent( 'gla_launch_paid_campaign_button_click', {
-			audiences: countryCodes.join( ',' ),
-			budget: dailyBudget,
-		} );
+		recordGlaEvent(
+			'gla_launch_paid_campaign_button_click',
+			getEventProps( {
+				level,
+				audiences: countryCodes.join( ',' ),
+				budget: dailyBudget,
+			} )
+		);
 
 		handleSetupComplete( dailyBudget, countryCodes, () => {
 			// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.

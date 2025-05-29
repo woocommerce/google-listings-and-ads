@@ -13,6 +13,8 @@ import validateCampaign from '~/components/paid-ads/validateCampaign';
 import validateAssetGroup from '~/components/paid-ads/validateAssetGroup';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
 import useBudgetRecommendation from '~/hooks/useBudgetRecommendation';
+import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
+import { FILTER_BUDGET_RECOMMENDATIONS } from '~/utils/tracks';
 
 /**
  * @typedef {import('~/components/types.js').CampaignFormValues} CampaignFormValues
@@ -120,6 +122,11 @@ export default function CampaignAssetsForm( {
 		recommendedDailyBudget,
 		hasResolved,
 	} = useBudgetRecommendation( countryCodes );
+
+	useEventPropertiesFilter(
+		FILTER_BUDGET_RECOMMENDATIONS,
+		budgetRecommendation?.eventProps
+	);
 
 	if ( ! hasResolved ) {
 		return null;

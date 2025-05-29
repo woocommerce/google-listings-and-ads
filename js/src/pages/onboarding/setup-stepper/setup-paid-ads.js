@@ -16,9 +16,10 @@ import BudgetIncentivePrompt from '~/components/paid-ads/budget-incentive-prompt
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import AppButton from '~/components/app-button';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
+import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import { getProductFeedUrl } from '~/utils/urls';
 import { handleApiError } from '~/utils/handleError';
-import { recordGlaEvent } from '~/utils/tracks';
+import { FILTER_BUDGET_RECOMMENDATIONS, recordGlaEvent } from '~/utils/tracks';
 import { useAppDispatch } from '~/data';
 import { GUIDE_NAMES, GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
@@ -30,8 +31,11 @@ import AppSpinner from '~/components/app-spinner';
  * Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
  *
  * @event gla_onboarding_complete_with_paid_ads_button_click
+ * @property {string} level The selected level of the budget recommendation, e.g. 'low', 'medium', 'high', 'custom'.
  * @property {number} budget The budget for the campaign
  * @property {string} audiences The targeted audiences for the campaign
+ * @property {string} source The data source of the budget recommendations, e.g. 'google-ads-api', 'fallback-database'.
+ * @property {number} recommended_budget The recommended daily budget displayed to merchants regardless of the final amount they choose.
  */
 
 /**
@@ -47,6 +51,9 @@ export default function SetupPaidAds() {
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const { syncSettings } = useAppDispatch();
+	const getEventProps = useEventPropertiesFilter(
+		FILTER_BUDGET_RECOMMENDATIONS
+	);
 
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
@@ -128,7 +135,7 @@ export default function SetupPaidAds() {
 	}
 
 	const handleSubmit = async ( values ) => {
-		const { dailyBudget } = values;
+		const { level, dailyBudget } = values;
 		const onBeforeFinish = handleSetupComplete.bind(
 			null,
 			dailyBudget,
@@ -136,10 +143,15 @@ export default function SetupPaidAds() {
 		);
 
 		setCompleting( ACTION_COMPLETE );
-		recordGlaEvent( 'gla_onboarding_complete_with_paid_ads_button_click', {
-			budget: dailyBudget,
-			audiences: countryCodes.join( ',' ),
-		} );
+
+		recordGlaEvent(
+			'gla_onboarding_complete_with_paid_ads_button_click',
+			getEventProps( {
+				level,
+				budget: dailyBudget,
+				audiences: countryCodes.join( ',' ),
+			} )
+		);
 
 		await finishOnboardingSetup( onBeforeFinish );
 	};
