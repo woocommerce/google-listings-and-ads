@@ -20,20 +20,35 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  */
 export function adaptAdsBudgetRecommendation( data ) {
 	const validLevelKeys = [ 'recommended', 'high', 'low' ];
-	const { currency } = data;
+	const { currency, source } = data;
+	const eventProps = { source, metrics_availability: 'all' };
+	const availabilities = [];
 
-	return data.recommendations.reduce( ( payload, item ) => {
+	const reducer = ( payload, item ) => {
 		const { level, ...adaptingData } = item;
 		const key = level.toLowerCase();
 
 		if ( validLevelKeys.includes( key ) ) {
+			availabilities.push( adaptingData.metrics );
 			adaptingData.currency = currency;
 			payload[ key ] =
 				convertKeysFromSnakeCaseToCamelCase( adaptingData );
 		}
 
 		return payload;
-	}, {} );
+	};
+
+	const result = data.recommendations.reduce( reducer, { eventProps } );
+
+	if ( availabilities.filter( Boolean ).length === 0 ) {
+		eventProps.metrics_availability = 'none';
+	} else if ( ! availabilities.every( Boolean ) ) {
+		eventProps.metrics_availability = 'partial';
+	}
+
+	eventProps.recommended_budget = result.recommended.dailyBudget;
+
+	return result;
 }
 
 /**

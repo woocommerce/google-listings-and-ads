@@ -14,6 +14,7 @@ describe( 'adaptAdsBudgetRecommendation', () => {
 	beforeEach( () => {
 		input = {
 			currency: 'USD',
+			source: 'google-ads-api',
 			recommendations: [
 				{
 					level: 'Recommended',
@@ -85,6 +86,11 @@ describe( 'adaptAdsBudgetRecommendation', () => {
 			recommended,
 			high,
 			low,
+			eventProps: {
+				source: 'google-ads-api',
+				metrics_availability: 'all',
+				recommended_budget: 15,
+			},
 		} );
 	} );
 
@@ -96,7 +102,43 @@ describe( 'adaptAdsBudgetRecommendation', () => {
 		expect( adaptAdsBudgetRecommendation( input ) ).toEqual( {
 			recommended,
 			high,
+			eventProps: {
+				source: 'google-ads-api',
+				metrics_availability: 'all',
+				recommended_budget: 15,
+			},
 		} );
+	} );
+
+	it( 'Adapts the metrics availability for partially available metrics', () => {
+		input.recommendations[ 2 ].metrics = null;
+		let eventProps = adaptAdsBudgetRecommendation( input ).eventProps;
+
+		expect( eventProps.metrics_availability ).toEqual( 'partial' );
+
+		input.recommendations.pop();
+		eventProps = adaptAdsBudgetRecommendation( input ).eventProps;
+
+		expect( eventProps.metrics_availability ).toEqual( 'all' );
+
+		input.recommendations[ 0 ].metrics = null;
+		eventProps = adaptAdsBudgetRecommendation( input ).eventProps;
+
+		expect( eventProps.metrics_availability ).toEqual( 'partial' );
+
+		input.recommendations.pop();
+		eventProps = adaptAdsBudgetRecommendation( input ).eventProps;
+
+		expect( eventProps.metrics_availability ).toEqual( 'none' );
+	} );
+
+	it( 'Adapts the metrics availability for no available metrics', () => {
+		input.recommendations.forEach( ( item ) => {
+			item.metrics = null;
+		} );
+		const { eventProps } = adaptAdsBudgetRecommendation( input );
+
+		expect( eventProps.metrics_availability ).toEqual( 'none' );
 	} );
 } );
 
