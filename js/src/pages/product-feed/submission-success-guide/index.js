@@ -132,7 +132,7 @@ const pages = [
 						{
 							link: (
 								<ContentLink
-									href="https://woocommerce.com/document/google-listings-and-ads/enhanced-conversions/"
+									href="https://support.google.com/google-ads/answer/9888656"
 									context="enhanced-conversions"
 								/>
 							),
