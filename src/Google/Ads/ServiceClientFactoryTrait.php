@@ -2,7 +2,7 @@
 declare( strict_types=1 );
 
 /**
- * Overrides vendor/googleads/google-ads-php/src/Google/Ads/GoogleAds/Lib/V18/ServiceClientFactoryTrait.php
+ * Overrides vendor/googleads/google-ads-php/src/Google/Ads/GoogleAds/Lib/V19/ServiceClientFactoryTrait.php
  *
  * phpcs:disable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
  * phpcs:disable WordPress.NamingConventions.ValidVariableName
@@ -13,24 +13,24 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads;
 
 use Google\Ads\GoogleAds\Constants;
 use Google\Ads\GoogleAds\Lib\ConfigurationTrait;
-use Google\Ads\GoogleAds\V18\Services\Client\AccountLinkServiceClient;
-use Google\Ads\GoogleAds\V18\Services\Client\AdGroupAdLabelServiceClient;
-use Google\Ads\GoogleAds\V18\Services\Client\AdGroupAdServiceClient;
-use Google\Ads\GoogleAds\V18\Services\Client\AdGroupCriterionServiceClient;
-use Google\Ads\GoogleAds\V18\Services\Client\AdGroupServiceClient;
-use Google\Ads\GoogleAds\V18\Services\Client\AdServiceClient;
-use Google\Ads\GoogleAds\V18\Services\Client\AssetGroupListingGroupFilterServiceClient;
-use Google\Ads\GoogleAds\V18\Services\Client\AssetGroupServiceClient;
-use Google\Ads\GoogleAds\V18\Services\Client\BillingSetupServiceClient;
-use Google\Ads\GoogleAds\V18\Services\Client\CampaignBudgetServiceClient;
-use Google\Ads\GoogleAds\V18\Services\Client\CampaignCriterionServiceClient;
-use Google\Ads\GoogleAds\V18\Services\Client\CampaignServiceClient;
-use Google\Ads\GoogleAds\V18\Services\Client\ConversionActionServiceClient;
-use Google\Ads\GoogleAds\V18\Services\Client\CustomerServiceClient;
-use Google\Ads\GoogleAds\V18\Services\Client\CustomerUserAccessServiceClient;
-use Google\Ads\GoogleAds\V18\Services\Client\GeoTargetConstantServiceClient;
-use Google\Ads\GoogleAds\V18\Services\Client\GoogleAdsServiceClient;
-use Google\Ads\GoogleAds\V18\Services\Client\ProductLinkInvitationServiceClient;
+use Google\Ads\GoogleAds\V19\Services\Client\AccountLinkServiceClient;
+use Google\Ads\GoogleAds\V19\Services\Client\AdGroupAdLabelServiceClient;
+use Google\Ads\GoogleAds\V19\Services\Client\AdGroupAdServiceClient;
+use Google\Ads\GoogleAds\V19\Services\Client\AdGroupCriterionServiceClient;
+use Google\Ads\GoogleAds\V19\Services\Client\AdGroupServiceClient;
+use Google\Ads\GoogleAds\V19\Services\Client\AdServiceClient;
+use Google\Ads\GoogleAds\V19\Services\Client\AssetGroupListingGroupFilterServiceClient;
+use Google\Ads\GoogleAds\V19\Services\Client\AssetGroupServiceClient;
+use Google\Ads\GoogleAds\V19\Services\Client\BillingSetupServiceClient;
+use Google\Ads\GoogleAds\V19\Services\Client\CampaignBudgetServiceClient;
+use Google\Ads\GoogleAds\V19\Services\Client\CampaignCriterionServiceClient;
+use Google\Ads\GoogleAds\V19\Services\Client\CampaignServiceClient;
+use Google\Ads\GoogleAds\V19\Services\Client\ConversionActionServiceClient;
+use Google\Ads\GoogleAds\V19\Services\Client\CustomerServiceClient;
+use Google\Ads\GoogleAds\V19\Services\Client\CustomerUserAccessServiceClient;
+use Google\Ads\GoogleAds\V19\Services\Client\GeoTargetConstantServiceClient;
+use Google\Ads\GoogleAds\V19\Services\Client\GoogleAdsServiceClient;
+use Google\Ads\GoogleAds\V19\Services\Client\ProductLinkInvitationServiceClient;
 
 /**
  * Contains service client factory methods.
