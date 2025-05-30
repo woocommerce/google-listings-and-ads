@@ -98,7 +98,6 @@ const pages = [
 				</p>
 			</GuidePageContent>
 		),
-		// Actions should be undefined if glaData.adsSetupComplete is false, else render the button.
 		action: glaData.adsSetupComplete ? (
 			<AppButton
 				isPrimary

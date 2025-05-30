@@ -456,44 +456,6 @@ test.describe( 'Complete your campaign', () => {
 				await expect( setupSuccessModal ).toBeVisible();
 			} );
 
-			test( 'should have three prompts in the setup success modal', async () => {
-				const guideControls = page.getByRole( 'list', {
-					name: 'Guide controls',
-				} );
-				const guideControlsItems =
-					guideControls.getByRole( 'listitem' );
-				await expect( guideControlsItems ).toHaveCount( 3 );
-			} );
-
-			test( 'should see the "Enhance Conversion" prompt in the setup success modal', async () => {
-				const guideControls = page.getByRole( 'list', {
-					name: 'Guide controls',
-				} );
-				const guideControlsItems =
-					guideControls.getByRole( 'listitem' );
-
-				// click on second item in the guide controls list.
-				await guideControlsItems.nth( 1 ).click();
-				await expect(
-					page.getByText(
-						'Improve conversion tracking accuracy to improve campaign performance'
-					)
-				).toBeVisible();
-			} );
-
-			test( 'should see the "Set up Enhance Conversions" button in the setup success modal', async () => {
-				const enhanceConversionButton = page.getByRole( 'button', {
-					name: 'Set up Enhanced Conversions',
-				} );
-				await expect( enhanceConversionButton ).toBeVisible();
-
-				const dataAction =
-					await enhanceConversionButton.getAttribute( 'data-action' );
-				expect( dataAction ).toBe(
-					'view-enhanced-conversions-settings'
-				);
-			} );
-
 			test( 'should see buttons on Dashboard for Google Ads onboarding', async () => {
 				await page.keyboard.press( 'Escape' );
 				await page.getByRole( 'tab', { name: 'Dashboard' } ).click();
@@ -530,6 +492,64 @@ test.describe( 'Complete your campaign', () => {
 					/path=%2Fgoogle%2Fsetup-mc&google-mc=connected/
 				);
 			} );
+		} );
+	} );
+
+	test.describe( 'Enhanced conversion prompt should appear as last step in setup success modal', () => {
+		test.beforeAll( async () => {
+			await page.evaluate( () => window.sessionStorage.clear() );
+			await setupAdsAccountPage.mockAdsAccountConnected();
+			await completeCampaign.mockCompleteAdsSetup();
+			await completeCampaign.goto();
+			await completeCampaign.clickSkipPaidAdsCreationButton();
+			await completeCampaign.clickCompleteSetupModalButton();
+		} );
+
+		test( 'should see the setup success modal', async () => {
+			const setupSuccessModal = completeCampaign.getSetupSuccessModal();
+			await expect( setupSuccessModal ).toBeVisible();
+		} );
+
+		test( 'should have three prompts in the setup success modal', async () => {
+			const guideControls = page.getByRole( 'list', {
+				name: 'Guide controls',
+			} );
+			const guideControlsItems = guideControls.getByRole( 'listitem' );
+			await expect( guideControlsItems ).toHaveCount( 3 );
+		} );
+
+		test( 'should see the "Enhance Conversion" prompt in the setup success modal', async () => {
+			const guideControls = page.getByRole( 'list', {
+				name: 'Guide controls',
+			} );
+			const guideControlsItems = guideControls.getByRole( 'listitem' );
+			await guideControlsItems.nth( 1 ).click();
+			await expect(
+				page.getByText(
+					'Improve conversion tracking accuracy to improve campaign performance'
+				)
+			).toBeVisible();
+		} );
+
+		test( 'should see the "Set up Enhance Conversions" button in the setup success modal', async () => {
+			const enhanceConversionButton = page.getByRole( 'button', {
+				name: 'Set up Enhanced Conversions',
+			} );
+			await expect( enhanceConversionButton ).toBeVisible();
+
+			const dataAction =
+				await enhanceConversionButton.getAttribute( 'data-action' );
+			expect( dataAction ).toBe( 'view-enhanced-conversions-settings' );
+		} );
+
+		test( 'should navigate to settings page when clicking "Set up Enhanced Conversions" button', async () => {
+			const enhanceConversionButton = page.getByRole( 'button', {
+				name: 'Set up Enhanced Conversions',
+			} );
+			await enhanceConversionButton.click();
+
+			await page.waitForURL( /path=%2Fgoogle%2Fsettings/ );
+			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fsettings/ );
 		} );
 	} );
 
