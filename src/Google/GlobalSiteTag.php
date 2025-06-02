@@ -282,6 +282,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			<?php
 				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				echo $this->get_gtag_config( $ads_conversion_id );
+
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo $this->get_enhanced_conversion_tag();
 			?>
 		</script>
 
@@ -601,5 +604,79 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			$this->get_version(),
 			false
 		);
+	}
+
+	/**
+	 * Set user data config when Enhanced Conversions is enabled.
+	 *
+	 * @return string|null
+	 */
+	protected function get_enhanced_conversion_tag() {
+		// TODO: Check enhanced conversion option status when implemented.
+		// $enhanced_conversions =$this->options->get( OptionsInterface::ADS_ENHANCED_CONVERSION_STATUS );
+		$enhanced_conversions = true;
+
+		if ( ! $enhanced_conversions ) {
+			return;
+		}
+
+		// Retrieve user data from the current session.
+		$customer = WC()->session->get('customer');
+
+		$ec_data  = [];
+
+		// Add email address to enhanced conversion data.
+		if ( ! empty( $customer['email'] )  ) {
+			$ec_data['sha256_email_address'] = esc_js( $this->normalize_and_hash( $customer['email'] ) );
+		}
+
+		// Add phone number if available.
+		if ( ! empty( $customer['phone'] ) ) {
+			$ec_data['sha256_phone_number'] = esc_js( $this->normalize_and_hash( $customer['phone'] ) );
+		}
+
+		// Add address details if available.
+		if ( ! empty( $customer['first_name'] ) && ! empty( $customer['last_name'] ) && ! empty( $customer['postcode'] ) && ! empty( $customer['country'] ) ) {
+			$ec_data['address'] = [
+				'sha256_first_name' => esc_js( $this->normalize_and_hash( $customer['first_name'] ) ),
+				'sha256_last_name'  => esc_js( $this->normalize_and_hash( $customer['last_name'] ) ),
+				'postal_code'       => $customer['postcode'],
+				'country'           => $customer['country'],
+			];
+
+			if ( ! empty( $customer['address'] ) ) {
+				$ec_data['street'] = $customer['address'];
+			}
+
+			if ( ! empty( $customer['city'] ) ) {
+				$ec_data['city'] = $customer['city'];
+			}
+
+			if ( ! empty( $customer['state'] ) ) {
+				$ec_data['region'] = $customer['state'];
+			}
+		}
+
+		if ( empty( $ec_data ) ) {
+			return;
+		}
+
+		// Return the tag.
+		return sprintf('
+			gtag("set", "user_data", %s);',
+			json_encode( $ec_data ),
+		);
+	}
+
+	/**
+	 * Normalize and hash ehanced conversion data.
+	 *
+	 * @param string $value The value to hash.
+	 * @param string $algo The hashing algorithm to use.
+	 *
+	 * @return string
+	 */
+	private function normalize_and_hash( $value, $algo = 'sha256' ): string {
+		return hash( $algo, strtolower( trim( $value ) ) );
 	}
 }
