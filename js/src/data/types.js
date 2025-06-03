@@ -94,6 +94,7 @@
  * @property {AdsBudgetRecommendationEntity} recommended The recommended budget.
  * @property {AdsBudgetRecommendationEntity} [high] The high budget recommendation.
  * @property {AdsBudgetRecommendationEntity} [low] The low budget recommendation.
+ * @property {Object} eventProps The relevant event properties.
  */
 
 /**

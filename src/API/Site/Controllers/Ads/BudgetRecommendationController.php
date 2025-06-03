@@ -112,6 +112,9 @@ class BudgetRecommendationController extends BaseController implements Container
 			$budget_recommendations = $this->container->get( BudgetRecommendations::class );
 			$recommendations        = $budget_recommendations->get_recommendations( $country_codes );
 
+			// For the frontend side to track the source of the recommendations.
+			$source = 'google-ads-api';
+
 			// Fetch fallback recommendation from the database.
 			$fallback_recommendation = $this->get_fallback_recommendation( $country_codes, $currency );
 			if ( $fallback_recommendation ) {
@@ -120,6 +123,7 @@ class BudgetRecommendationController extends BaseController implements Container
 				// Swap recommended if not set or if fallback is higher.
 				if ( empty( $recommendations[0] ) || ( ! empty( $recommendations[0]['daily_budget'] ) && $recommendations[0]['daily_budget'] < $fallback_budget ) ) {
 					$recommendations[0] = $fallback_recommendation[0];
+					$source             = 'fallback-database';
 
 					// Fetch metrics from the API for the fallback budget (only when we are going to use the fallback).
 					$budget_metrics   = $this->container->get( BudgetMetrics::class );
@@ -155,6 +159,7 @@ class BudgetRecommendationController extends BaseController implements Container
 				[
 					'currency'        => $currency,
 					'recommendations' => $recommendations,
+					'source'          => $source,
 				],
 				$request
 			);
@@ -246,6 +251,12 @@ class BudgetRecommendationController extends BaseController implements Container
 						],
 					],
 				],
+			],
+			'source'          => [
+				'type'        => 'string',
+				'enum'        => [ 'google-ads-api', 'fallback-database' ],
+				'description' => __( 'Data source of the budget recommendations, either from Google Ads API or fallback database.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
 			],
 		];
 	}

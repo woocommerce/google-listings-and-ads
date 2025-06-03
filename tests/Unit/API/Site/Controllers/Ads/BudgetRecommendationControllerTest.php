@@ -119,6 +119,7 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 					'level'        => 'Recommended',
 				],
 			],
+			'source'          => 'fallback-database',
 		];
 
 		$this->ads->expects( $this->once() )
@@ -143,6 +144,7 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 		$expected_response_data = [
 			'currency'        => 'GBP',
 			'recommendations' => self::RECOMMENDATION_DATA,
+			'source'          => 'google-ads-api',
 		];
 
 		$this->ads->expects( $this->once() )
@@ -185,6 +187,7 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 					'level'        => 'Recommended',
 				],
 			],
+			'source'          => 'fallback-database',
 		];
 
 		$this->ads->expects( $this->once() )
@@ -244,6 +247,7 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 					'level'        => 'High',
 				],
 			],
+			'source'          => 'fallback-database',
 		];
 
 		$this->ads->expects( $this->once() )
@@ -301,6 +305,7 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 					'level'        => 'High',
 				],
 			],
+			'source'          => 'fallback-database',
 		];
 
 		$this->ads->expects( $this->once() )

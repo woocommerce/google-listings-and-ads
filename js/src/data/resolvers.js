@@ -27,7 +27,7 @@ import {
 	adaptAdsCampaign,
 	adaptAssetGroup,
 } from './adapters';
-import { fetchWithHeaders, awaitPromise } from './controls';
+import { fetchWithHeaders, awaitPromise, recordGlaDataEvent } from './controls';
 
 import {
 	fetchShippingRates,
@@ -541,12 +541,18 @@ export function* getAdsBudgetRecommendations( countryCodes ) {
 	const path = addQueryArgs( endpoint, query );
 
 	try {
-		const { data } = yield fetchWithHeaders( { path } );
+		let { data } = yield fetchWithHeaders( { path } );
+		data = adaptAdsBudgetRecommendation( data );
+
+		yield recordGlaDataEvent(
+			TYPES.RECEIVE_ADS_BUDGET_RECOMMENDATIONS,
+			data
+		);
 
 		return {
 			type: TYPES.RECEIVE_ADS_BUDGET_RECOMMENDATIONS,
 			countryCodesKey,
-			data: adaptAdsBudgetRecommendation( data ),
+			data,
 		};
 	} catch ( response ) {
 		// Intentionally silence the specific in case the no budget recommendations are found from the API.
@@ -577,6 +583,8 @@ export function* getAdsBudgetMetrics( countryCodes, budget ) {
 			),
 		} );
 
+		yield recordGlaDataEvent( TYPES.RECEIVE_ADS_BUDGET_METRICS, data );
+
 		return {
 			type: TYPES.RECEIVE_ADS_BUDGET_METRICS,
 			key: getAdsBudgetMetricsKey( countryCodes, budget ),
@@ -585,6 +593,11 @@ export function* getAdsBudgetMetrics( countryCodes, budget ) {
 	} catch ( response ) {
 		// No related budget metrics.
 		if ( response.status === 404 ) {
+			// Records the case of data unavailability.
+			yield recordGlaDataEvent(
+				TYPES.RECEIVE_ADS_BUDGET_METRICS,
+				response
+			);
 			return;
 		}
 
