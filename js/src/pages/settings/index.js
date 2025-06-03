@@ -21,6 +21,7 @@ import EditStoreAddress from './edit-store-address';
 import EnableNewProductSyncNotice from '~/components/enable-new-product-sync-notice';
 import MainTabNav from '~/components/main-tab-nav';
 import RebrandingTour from '~/components/tours/rebranding-tour';
+import { SetupEnhancedConversions } from './enhanced-conversions';
 import './index.scss';
 
 const pageClassName = 'gla-settings';
@@ -65,6 +66,7 @@ const Settings = () => {
 			<EnableNewProductSyncNotice />
 			<MainTabNav />
 			<RebrandingTour />
+			<SetupEnhancedConversions />
 			<ContactInformationPreview />
 			<SetupTaxRate />
 			<LinkedAccounts />

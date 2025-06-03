@@ -769,6 +769,30 @@ export function* updateAdsCampaign( id, data ) {
 }
 
 /**
+ * Update the enhanced conversions status.
+ *
+ * @param {boolean} status The status of the enhanced conversions.
+ * @return {Object} Action object to update the enhanced conversions status.
+ */
+export function* updateEnhancedConversionsStatus( status ) {
+	try {
+		return {
+			type: TYPES.UPDATE_ADS_ENHANCED_CONVERSION,
+			status,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error updating the enhanced conversions status.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
+/**
  * Delete an ads campaign by ID.
  *
  * @param {number} id The ID of the ads campaign to be deleted.
