@@ -97,4 +97,33 @@ test.describe( 'Settings', () => {
 			).toHaveAttribute( 'value', optionValue );
 		} );
 	} );
+
+	test.describe( 'Enhanced Conversion Setting', () => {
+		test( 'should show the "Enhanced Conversion" setting card', async () => {
+			await settingsPage.goto();
+			await expect(
+				page.getByRole( 'heading', { name: 'Settings' } )
+			).toBeVisible();
+			await expect(
+				page.getByRole( 'heading', {
+					name: 'Improve conversion accuracy',
+				} )
+			).toBeVisible();
+		} );
+
+		test( 'should toggle the "Enhanced Conversion" setting', async () => {
+			const once = settingsPage.withFulfillTimes( 1 );
+			await once.fulfillRequest( /\/ads\/settings/, { enabled: false } );
+			await settingsPage.goto();
+			const checkbox = page.getByRole( 'checkbox', {
+				name: 'Send Enhanced Conversions data to Google Ads',
+			} );
+
+			await expect( checkbox ).toBeVisible();
+			await expect( checkbox ).not.toBeChecked();
+
+			await checkbox.check();
+			await expect( checkbox ).toBeChecked();
+		} );
+	} );
 } );

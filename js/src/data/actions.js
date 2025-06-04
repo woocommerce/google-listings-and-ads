@@ -776,6 +776,14 @@ export function* updateAdsCampaign( id, data ) {
  */
 export function* updateEnhancedConversionsStatus( status ) {
 	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/settings`,
+			method: 'POST',
+			data: {
+				status,
+			},
+		} );
+
 		return {
 			type: TYPES.UPDATE_ADS_ENHANCED_CONVERSION,
 			status,
