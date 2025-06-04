@@ -621,12 +621,12 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		}
 
 		// Retrieve user data from the current session.
-		$customer = WC()->session->get('customer');
+		$customer = WC()->session->get( 'customer' );
 
-		$ec_data  = [];
+		$ec_data = [];
 
 		// Add email address to enhanced conversion data.
-		if ( ! empty( $customer['email'] )  ) {
+		if ( ! empty( $customer['email'] ) ) {
 			$ec_data['sha256_email_address'] = esc_js( $this->normalize_and_hash( $customer['email'] ) );
 		}
 
@@ -662,9 +662,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		}
 
 		// Return the tag.
-		return sprintf('
-			gtag("set", "user_data", %s);',
-			json_encode( $ec_data ),
+		return sprintf(
+			'gtag("set", "user_data", %s);',
+			wp_json_encode( $ec_data ),
 		);
 	}
 
