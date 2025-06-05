@@ -32,6 +32,7 @@ class BudgetRecommendationsTest extends UnitTest {
 	protected $recommendations;
 
 	protected const TEST_ADS_ID         = 1234567890;
+	protected const TEST_MC_ID          = 9876543210;
 	protected const TEST_RECOMMENDATION = [
 		'daily_budget' => 12,
 		'metrics'      => [
@@ -59,6 +60,7 @@ class BudgetRecommendationsTest extends UnitTest {
 		$this->recommendations->set_transients_object( $this->transients );
 
 		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
+		$this->options->method( 'get_merchant_id' )->willReturn( self::TEST_MC_ID );
 	}
 
 	public function test_get_recommendations_cached() {

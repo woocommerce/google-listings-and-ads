@@ -32,6 +32,7 @@ class BudgetMetricsTest extends UnitTest {
 	protected $metrics;
 
 	protected const TEST_ADS_ID  = 1234567890;
+	protected const TEST_MC_ID   = 9876543210;
 	protected const TEST_METRICS = [
 		'cost'              => 84,
 		'conversions'       => 6.1,
@@ -54,6 +55,7 @@ class BudgetMetricsTest extends UnitTest {
 		$this->metrics->set_transients_object( $this->transients );
 
 		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
+		$this->options->method( 'get_merchant_id' )->willReturn( self::TEST_MC_ID );
 	}
 
 	public function test_get_metrics_cached() {

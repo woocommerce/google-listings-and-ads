@@ -72,17 +72,18 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 
 		$request = new GenerateRecommendationsRequest(
 			[
-				'customer_id'              => $this->options->get_ads_id(),
-				'recommendation_types'     => [ RecommendationType::CAMPAIGN_BUDGET ],
-				'advertising_channel_type' => AdvertisingChannelType::PERFORMANCE_MAX,
-				'positive_locations_ids'   => array_keys( $location_ids ),
-				'country_codes'            => $country_codes,
-				'bidding_info'             => new BiddingInfo(
+				'customer_id'                => $this->options->get_ads_id(),
+				'merchant_center_account_id' => $this->options->get_merchant_id(),
+				'recommendation_types'       => [ RecommendationType::CAMPAIGN_BUDGET ],
+				'advertising_channel_type'   => AdvertisingChannelType::PERFORMANCE_MAX,
+				'positive_locations_ids'     => array_keys( $location_ids ),
+				'country_codes'              => $country_codes,
+				'bidding_info'               => new BiddingInfo(
 					[
 						'bidding_strategy_type' => BiddingStrategyType::MAXIMIZE_CONVERSION_VALUE,
 					]
 				),
-				'asset_group_info'         => [
+				'asset_group_info'           => [
 					new AssetGroupInfo(
 						[
 							'final_url' => $this->get_site_url(),
