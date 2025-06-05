@@ -26,7 +26,7 @@ const handleGuideFinish = ( e ) => {
 	getHistory().replace( getProductFeedUrl() );
 
 	// Since there is no built-in way to distinguish the modal/guide is closed by what action,
-	// here is a workaround by identifying the close button's data-aciton attribute.
+	// here is a workaround by identifying the close button's data-action attribute.
 	let action = 'dismiss';
 
 	if ( e ) {
@@ -37,6 +37,11 @@ const handleGuideFinish = ( e ) => {
 		context: GUIDE_NAMES.SUBMISSION_SUCCESS,
 		action,
 	} );
+};
+
+const setupEnhancedConversionsOnClick = () => {
+	handleGuideFinish();
+	window.location.href = getSettingsUrl();
 };
 
 const image = (
@@ -150,18 +155,7 @@ const pages = [
 					context: GUIDE_NAMES.SUBMISSION_SUCCESS,
 					action: 'view-enhanced-conversions-settings',
 				} }
-				onClick={ () => {
-					handleGuideFinish();
-					window.location.href = getSettingsUrl();
-				} }
-				aria-label={ __(
-					'Set up Enhanced Conversions',
-					'google-listings-and-ads'
-				) }
-				title={ __(
-					'Set up Enhanced Conversions',
-					'google-listings-and-ads'
-				) }
+				onClick={ setupEnhancedConversionsOnClick }
 			>
 				{ __(
 					'Set up Enhanced Conversions',
@@ -205,7 +199,6 @@ const pages = [
 		),
 		actions: (
 			<>
-				<div className="gla-submission-success-guide__space_holder" />
 				<AppButton
 					isSecondary
 					data-action="maybe-later"
@@ -240,7 +233,7 @@ if ( glaData.adsSetupComplete ) {
  * Show this guide modal by visiting the path with a specific query `guide=submission-success`.
  * For example: `/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fproduct-feed&guide=submission-success`.
  *
- * @fires gla_modal_closed with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss'`
+ * @fires gla_modal_closed with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
  * @fires gla_modal_open with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
  */
 const SubmissionSuccessGuide = () => {

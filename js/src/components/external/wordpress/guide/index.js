@@ -132,6 +132,14 @@ export default function Guide( {
 							{ backButtonText || __( 'Previous' ) }
 						</Button>
 					) }
+					{ hasActions && (
+						<>
+							<div className="gla-submission-success-guide__space_holder" />
+							<div className="components-guide__actions">
+								{ pages[ currentPage ].actions }
+							</div>
+						</>
+					) }
 					{ canGoForward && (
 						<Button
 							className="components-guide__forward-button"
@@ -141,14 +149,6 @@ export default function Guide( {
 						</Button>
 					) }
 					{ finishBlock }
-					{ hasActions && (
-						<>
-							<div className="gla-submission-success-guide__space_holder" />
-							<div className="components-guide__actions">
-								{ pages[ currentPage ].actions }
-							</div>
-						</>
-					) }
 				</div>
 			</div>
 		</Modal>
