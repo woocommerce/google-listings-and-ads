@@ -1,7 +1,8 @@
 /**
  * External dependencies
  */
-import { CheckboxControl } from '@wordpress/components';
+import { CheckboxControl, Notice } from '@wordpress/components';
+import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -18,6 +19,16 @@ import Section from '~/components/section';
 const SetupEnhancedConversions = () => {
 	const [ isEnabled, , toggleEnhancedConversions ] =
 		useEnableEnhancedConversions();
+
+	const [ isNoticeVisible, setIsNoticeVisible ] = useState( false );
+	const [ isSaving, setIsSaving ] = useState( false );
+
+	const onChangeECState = async () => {
+		setIsSaving( true );
+		await toggleEnhancedConversions();
+		setIsNoticeVisible( true );
+		setIsSaving( false );
+	};
 
 	return (
 		<Section
@@ -52,14 +63,27 @@ const SetupEnhancedConversions = () => {
 							'Send Enhanced Conversions data to Google Ads',
 							'google-listings-and-ads'
 						) }
-						checked={ isEnabled }
-						onChange={ toggleEnhancedConversions }
+						checked={ isEnabled && ! isSaving }
+						disabled={ isSaving }
+						onChange={ onChangeECState }
 						value={ isEnabled }
 						help={ __(
 							'Please make sure to follow the documentation to enable Enhanced Conversions. The feature needs to be enabled both here on WooCommerce and on your Google Ads account.',
 							'google-listings-and-ads'
 						) }
 					/>
+					{ isNoticeVisible && (
+						<Notice
+							status="success"
+							isDismissible={ true }
+							onRemove={ () => setIsNoticeVisible( false ) }
+						>
+							{ __(
+								'Enhanced Conversions status updated successfully.',
+								'google-listings-and-ads'
+							) }
+						</Notice>
+					) }
 				</Section.Card.Body>
 			</Section.Card>
 		</Section>
