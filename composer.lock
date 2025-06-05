@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5bdc5991107f1d2bf22d3825d7255f05",
+    "content-hash": "a0044f7d43e40c5c39292eabfff73ded",
     "packages": [
         {
             "name": "firebase/php-jwt",
@@ -437,16 +437,16 @@
         },
         {
             "name": "googleads/google-ads-php",
-            "version": "dev-legacy-v27.2.0",
+            "version": "dev-legacy-v28.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleads/google-ads-php.git",
-                "reference": "d72d7e9a049bd5331ed3b70e33f615a6cd0bb881"
+                "reference": "c4b6287faac4f2da523b6d4b3eca053cd182fd9b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleads/google-ads-php/zipball/d72d7e9a049bd5331ed3b70e33f615a6cd0bb881",
-                "reference": "d72d7e9a049bd5331ed3b70e33f615a6cd0bb881",
+                "url": "https://api.github.com/repos/googleads/google-ads-php/zipball/c4b6287faac4f2da523b6d4b3eca053cd182fd9b",
+                "reference": "c4b6287faac4f2da523b6d4b3eca053cd182fd9b",
                 "shasum": ""
             },
             "require": {
@@ -494,9 +494,9 @@
             "homepage": "https://github.com/googleads/google-ads-php",
             "support": {
                 "issues": "https://github.com/googleads/google-ads-php/issues",
-                "source": "https://github.com/googleads/google-ads-php/tree/legacy-v27.2.0"
+                "source": "https://github.com/googleads/google-ads-php/tree/legacy-v28.0.0"
             },
-            "time": "2025-05-14T20:09:08+00:00"
+            "time": "2025-06-10T09:11:44+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",

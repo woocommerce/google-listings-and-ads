@@ -26,7 +26,7 @@ class GoogleAdsCleanupServices {
 	 *
 	 * @var string
 	 */
-	protected $version = 'V19';
+	protected $version = 'V20';
 
 	/**
 	 * @var Event Composer event.
@@ -54,9 +54,9 @@ class GoogleAdsCleanupServices {
 	protected $avoid_cleanup = [
 		// Some methods like `ResourceNames::forGeoTargetConstant` are changed to use
 		// `BatchJobServiceClient` class instead of `GoogleAdsServiceClient` when
-		// upgrading to v19, so we need to keep this service. See:
-		// - https://github.com/googleads/google-ads-php/blob/v27.2.0/src/Google/Ads/GoogleAds/Util/V18/ResourceNames.php#L1704-L1710
-		// - https://github.com/googleads/google-ads-php/blob/v27.2.0/src/Google/Ads/GoogleAds/Util/V19/ResourceNames.php#L1433-L1439
+		// upgrading from v18 to v20, so we need to keep this service. See:
+		// - https://github.com/googleads/google-ads-php/blob/v28.0.0/src/Google/Ads/GoogleAds/Util/V18/ResourceNames.php#L1704-L1710
+		// - https://github.com/googleads/google-ads-php/blob/v28.0.0/src/Google/Ads/GoogleAds/Util/V20/ResourceNames.php#L1433-L1439
 		'BatchJob',
 	];
 
