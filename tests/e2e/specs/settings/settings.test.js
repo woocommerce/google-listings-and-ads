@@ -98,7 +98,9 @@ test.describe( 'Settings', () => {
 
 		test( 'should toggle the "Enhanced Conversion" setting', async () => {
 			const once = settingsPage.withFulfillTimes( 1 );
-			await once.fulfillRequest( /\/ads\/settings/, { enabled: false } );
+			await once.fulfillRequest( /\/ads\/settings/, {
+				enhanced_conversions_enabled: true,
+			} );
 			await settingsPage.goto();
 			const checkbox = page.getByRole( 'checkbox', {
 				name: 'Send Enhanced Conversions data to Google Ads',
