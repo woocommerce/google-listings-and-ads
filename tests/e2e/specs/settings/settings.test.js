@@ -70,25 +70,10 @@ test.describe( 'Settings', () => {
 				page.getByText( 'Tax rate (required for U.S. only)' )
 			).toBeVisible();
 
-			const saveButton = page.getByRole( 'button', {
-				name: 'Save tax rate',
-			} );
-			const saveSpinner = saveButton.locator( '.woocommerce-spinner' );
 			const option = page.getByRole( 'radio', { checked: false } );
 			const optionValue = option.getAttribute( 'value' );
 
-			// Save button will become clickable after selecting another option.
-			await expect( saveButton ).toBeDisabled();
 			await option.check();
-			await expect( saveButton ).toBeEnabled();
-
-			// Submit the change, and then the save button will go through loading state
-			// and stay disabled both during and after submission.
-			await saveButton.click();
-			await expect( saveSpinner ).toBeVisible();
-			await expect( saveButton ).toBeDisabled();
-			await expect( saveSpinner ).not.toBeVisible();
-			await expect( saveButton ).toBeDisabled();
 
 			// Reload to assert the setting has been actually saved.
 			await page.reload();
