@@ -687,8 +687,8 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 */
 	private function format_phone_to_international( $phone, $country ) {
 		// Get the calling code for the customers country.
-		$WC_Countries = new WC_Countries();
-		$calling_code = $WC_Countries->get_country_calling_code( $country );
+		$countries    = new WC_Countries();
+		$calling_code = $countries->get_country_calling_code( $country );
 
 		// Cannot create a international number if there is no valid call code.
 		if ( empty( $calling_code ) ) {
