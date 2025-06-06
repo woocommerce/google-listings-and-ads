@@ -151,10 +151,4 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Tweak - Move the API Pull statuses from Google Merchant Center account card to Google account card for the Settings page.
 * Update - Remove the button that disables the API Pull from the Settings page.
 
-= 2.9.11 - 2025-04-15 =
-* Fix - Ads merchant linking failure display issue & improve retry mechanism.
-* Fix - Compatibility issue with WordPress 6.8 and WooCommerce 9.8, which may cause all pages not to display properly.
-* Tweak - WC 9.8 compatibility.
-* Tweak - WP 6.8 compatibility.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
