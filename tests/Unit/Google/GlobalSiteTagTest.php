@@ -127,9 +127,12 @@ class GlobalSiteTagTest extends UnitTest {
 		$email      = 'test@mail.test';
 		$email_hash = hash( 'sha256', strtolower( trim( $email ) ) );
 
-		WC()->session->set( 'customer', [
-			'email' => $email,
-		] );
+		WC()->session->set(
+			'customer',
+			[
+				'email' => $email,
+			]
+		);
 
 		// Get the enhanvced conversion tag.
 		$gtag = $this->tag->get_enhanced_conversion_tag();
@@ -144,11 +147,14 @@ class GlobalSiteTagTest extends UnitTest {
 		$phone      = '01629 582299';
 		$phone_hash = hash( 'sha256', strtolower( trim( '+441629582299' ) ) );
 
-		WC()->session->set( 'customer', [
-			'email'   => 'test@mail.test',
-			'phone'   => $phone,
-			'country' => 'GB',
-		] );
+		WC()->session->set(
+			'customer',
+			[
+				'email'   => 'test@mail.test',
+				'phone'   => $phone,
+				'country' => 'GB',
+			]
+		);
 
 		// Get the enhanvced conversion tag.
 		$gtag = $this->tag->get_enhanced_conversion_tag();
@@ -163,10 +169,13 @@ class GlobalSiteTagTest extends UnitTest {
 		$phone      = '01629 582299';
 		$phone_hash = hash( 'sha256', strtolower( trim( '+441629582299' ) ) );
 
-		WC()->session->set( 'customer', [
-			'phone'   => $phone,
-			'country' => 'GB',
-		] );
+		WC()->session->set(
+			'customer',
+			[
+				'phone'   => $phone,
+				'country' => 'GB',
+			]
+		);
 
 		// Get the enhanvced conversion tag.
 		$gtag = $this->tag->get_enhanced_conversion_tag();
@@ -183,13 +192,16 @@ class GlobalSiteTagTest extends UnitTest {
 		$last_hash  = hash( 'sha256', strtolower( trim( $last ) ) );
 		$postcode   = 'DE4 3GX';
 
-		WC()->session->set( 'customer', [
-			'email'      => 'test@mail.test',
-			'first_name' => $first,
-			'last_name'  => $last,
-			'postcode'   => $postcode,
-			'country'    => 'GB',
-		] );
+		WC()->session->set(
+			'customer',
+			[
+				'email'      => 'test@mail.test',
+				'first_name' => $first,
+				'last_name'  => $last,
+				'postcode'   => $postcode,
+				'country'    => 'GB',
+			]
+		);
 
 		// Get the enhanvced conversion tag.
 		$gtag = $this->tag->get_enhanced_conversion_tag();
