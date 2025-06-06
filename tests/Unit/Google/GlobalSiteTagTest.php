@@ -110,4 +110,97 @@ class GlobalSiteTagTest extends UnitTest {
 		$order = wc_get_order( $order->get_id() );
 		$this->assertSame( 1, (int) $order->get_meta( '_gla_tracked', true ) );
 	}
+
+	public function test_enhanced_conversion_data_is_null_when_no_customer_data() {
+		// Setup empty customer data.
+		WC()->session->set( 'customer', [] );
+
+		// Get the enhanced conversion tag.
+		$gtag = $this->tag->get_enhanced_conversion_tag();
+
+		// Tag should be empty with no customer data.
+		$this->assertEmpty( $gtag );
+	}
+
+	public function test_enhanced_conversion_data_is_set_with_customer_email() {
+		// Setup test customer with email address only.
+		$email      = 'test@mail.test';
+		$email_hash = hash( 'sha256', strtolower( trim( $email ) ) );
+
+		WC()->session->set( 'customer', [
+			'email' => $email,
+		] );
+
+		// Get the enhanvced conversion tag.
+		$gtag = $this->tag->get_enhanced_conversion_tag();
+
+		// Confirm the hashed email and key is present.
+		$this->assertStringContainsString( 'sha256_email_address', $gtag );
+		$this->assertStringContainsString( $email_hash, $gtag );
+	}
+
+	public function test_enhanced_conversion_data_is_set_with_customer_phone() {
+		// Test GB phone number with hashed e614 format.
+		$phone      = '01629 582299';
+		$phone_hash = hash( 'sha256', strtolower( trim( '+441629582299' ) ) );
+
+		WC()->session->set( 'customer', [
+			'email'   => 'test@mail.test',
+			'phone'   => $phone,
+			'country' => 'GB',
+		] );
+
+		// Get the enhanvced conversion tag.
+		$gtag = $this->tag->get_enhanced_conversion_tag();
+
+		// Confirm the hashed phone and key is present.
+		$this->assertStringContainsString( 'sha256_phone_number', $gtag );
+		$this->assertStringContainsString( $phone_hash, $gtag );
+	}
+
+	public function test_enhanced_conversion_data_is_empty_when_only_customer_phone_available() {
+		// Test GB phone number with hashed e614 format.
+		$phone      = '01629 582299';
+		$phone_hash = hash( 'sha256', strtolower( trim( '+441629582299' ) ) );
+
+		WC()->session->set( 'customer', [
+			'phone'   => $phone,
+			'country' => 'GB',
+		] );
+
+		// Get the enhanvced conversion tag.
+		$gtag = $this->tag->get_enhanced_conversion_tag();
+
+		// Confirm the hashed phone and key is present.
+		$this->assertEmpty( $gtag );
+	}
+
+	public function test_enhanced_conversion_data_is_set_with_customer_address() {
+		// Test GB address with hashed names.
+		$first      = 'Test';
+		$last       = 'Customer';
+		$first_hash = hash( 'sha256', strtolower( trim( $first ) ) );
+		$last_hash  = hash( 'sha256', strtolower( trim( $last ) ) );
+		$postcode   = 'DE4 3GX';
+
+		WC()->session->set( 'customer', [
+			'email'      => 'test@mail.test',
+			'first_name' => $first,
+			'last_name'  => $last,
+			'postcode'   => $postcode,
+			'country'    => 'GB',
+		] );
+
+		// Get the enhanvced conversion tag.
+		$gtag = $this->tag->get_enhanced_conversion_tag();
+
+		// Confirm the hashed values and keys are present.
+		$this->assertStringContainsString( 'sha256_first_name', $gtag );
+		$this->assertStringContainsString( 'sha256_last_name', $gtag );
+		$this->assertStringContainsString( 'postal_code', $gtag );
+		$this->assertStringContainsString( 'country', $gtag );
+		$this->assertStringContainsString( $first_hash, $gtag );
+		$this->assertStringContainsString( $last_hash, $gtag );
+		$this->assertStringContainsString( $postcode, $gtag );
+	}
 }
