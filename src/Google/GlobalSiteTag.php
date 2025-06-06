@@ -24,6 +24,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use WC_Product;
+use WC_Countries;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -630,9 +631,13 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			$ec_data['sha256_email_address'] = esc_js( $this->normalize_and_hash( $customer['email'] ) );
 		}
 
-		// Add phone number if available.
-		if ( ! empty( $customer['phone'] ) ) {
-			$ec_data['sha256_phone_number'] = esc_js( $this->normalize_and_hash( $customer['phone'] ) );
+		// Add phone number if available, requires country code for correct format.
+		if ( ! empty( $customer['phone'] ) && ! empty( $customer['country'] ) ) {
+			$phone = $this->format_phone_to_international( $customer['phone'], $customer['country'] );
+
+			if ( ! empty( $phone ) ) {
+				$ec_data['sha256_phone_number'] = esc_js( $this->normalize_and_hash( $phone ) );
+			}
 		}
 
 		// Add address details if available.
@@ -666,6 +671,37 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			'gtag("set", "user_data", %s);',
 			wp_json_encode( $ec_data ),
 		);
+	}
+
+	/**
+	 * Converts a customers phone number to E.164 format.
+	 *
+	 * @param string $phone The customer entered phone number.
+	 * @param string $country The customer country code.
+	 * @return string
+	 */
+	private function format_phone_to_international( $phone, $country ) {
+		// Get the calling code for the customers country.
+		$WC_Countries = new WC_Countries();
+		$calling_code = $WC_Countries->get_country_calling_code( $country );
+
+		// Cannot create a international number if there is no valid call code.
+		if ( empty( $calling_code ) ) {
+			return '';
+		}
+
+		// Remove any non-digit characters and the leading 0 from the phone number.
+		$phone = ltrim( preg_replace( '/[^0-9]/', '', $phone ), '0' );
+
+		// Prepend the calling code.
+		$phone = $calling_code . $phone;
+
+		// Validate the number is the correct length.
+		if ( strlen( $phone ) < 11 || strlen( $phone ) > 15 ) {
+			return '';
+		}
+
+		return $phone;
 	}
 
 	/**
