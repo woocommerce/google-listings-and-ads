@@ -612,7 +612,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 *
 	 * @return string|null
 	 */
-	protected function get_enhanced_conversion_tag() {
+	public function get_enhanced_conversion_tag() {
 		// TODO: Check enhanced conversion option status when implemented.
 		// $enhanced_conversions =$this->options->get( OptionsInterface::ADS_ENHANCED_CONVERSION_STATUS );
 		$enhanced_conversions = true;
@@ -629,15 +629,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		// Add email address to enhanced conversion data.
 		if ( ! empty( $customer['email'] ) ) {
 			$ec_data['sha256_email_address'] = esc_js( $this->normalize_and_hash( $customer['email'] ) );
-		}
-
-		// Add phone number if available, requires country code for correct format.
-		if ( ! empty( $customer['phone'] ) && ! empty( $customer['country'] ) ) {
-			$phone = $this->format_phone_to_international( $customer['phone'], $customer['country'] );
-
-			if ( ! empty( $phone ) ) {
-				$ec_data['sha256_phone_number'] = esc_js( $this->normalize_and_hash( $phone ) );
-			}
 		}
 
 		// Add address details if available.
@@ -659,6 +650,20 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 			if ( ! empty( $customer['state'] ) ) {
 				$ec_data['region'] = $customer['state'];
+			}
+		}
+
+		// Phone number can only be added when emaill and/or address is present.
+		if ( empty( $ec_data ) ) {
+			return;
+		}
+
+		// Add phone number if available, requires country code for correct format.
+		if ( ! empty( $customer['phone'] ) && ! empty( $customer['country'] ) ) {
+			$phone = $this->format_phone_to_international( $customer['phone'], $customer['country'] );
+
+			if ( ! empty( $phone ) ) {
+				$ec_data['sha256_phone_number'] = esc_js( $this->normalize_and_hash( $phone ) );
 			}
 		}
 
