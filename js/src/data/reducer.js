@@ -525,14 +525,10 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, 'gtinMigrationStatus', data?.status );
 		}
 
-		case TYPES.UPDATE_ADS_ENHANCED_CONVERSION: {
-			const { status: enableEnhancedConversions } = action;
+		case TYPES.UPDATE_ADS_ENHANCED_CONVERSIONS: {
+			const { status } = action;
 
-			return setIn(
-				state,
-				'ads.enable_enhanced_conversions',
-				enableEnhancedConversions
-			);
+			return setIn( state, 'ads.enable_enhanced_conversions', status );
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

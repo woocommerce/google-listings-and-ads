@@ -83,7 +83,7 @@ test.describe( 'Settings', () => {
 		} );
 	} );
 
-	test.describe( 'Enhanced Conversion Setting', () => {
+	test.describe( 'Enhanced Conversions Setting', () => {
 		test( 'should show the "Enhanced Conversion" setting card', async () => {
 			await settingsPage.goto();
 			await expect(
@@ -116,21 +116,18 @@ test.describe( 'Settings', () => {
 		test( 'should show the "Enhanced Conversion" setting saved success notice', async () => {
 			// Get the notice with class 'components-notice is-success'
 			const notice = page.locator(
-				'.components-notice.is-success:has-text("Enhanced Conversions status updated successfully.")'
+				'.components-snackbar:has-text("Enhanced Conversions status updated successfully.")'
 			);
 			await expect( notice ).toBeVisible();
 		} );
 
 		test( 'should dismiss the "Enhanced Conversion" setting saved success notice', async () => {
 			const notice = page.locator(
-				'.components-notice.is-success:has-text("Enhanced Conversions status updated successfully.")'
+				'.components-snackbar:has-text("Enhanced Conversions status updated successfully.")'
 			);
 			await expect( notice ).toBeVisible();
 
-			const dismissButton = notice.getByRole( 'button', {
-				name: 'Close',
-			} );
-			await dismissButton.click();
+			await notice.click();
 			await expect( notice ).not.toBeVisible();
 		} );
 	} );

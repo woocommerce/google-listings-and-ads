@@ -33,7 +33,7 @@ const TaxRate = ( { handleSubmit } ) => {
 
 	const { onChange, ...inputProps } = getInputProps( 'tax_rate' );
 
-	const onToggle = ( value ) => {
+	const handleOnChange = ( value ) => {
 		onChange( value );
 		handleSubmit();
 	};
@@ -76,7 +76,7 @@ const TaxRate = ( { handleSubmit } ) => {
 							value="destination"
 							collapsible
 							disabled={ isSubmitting }
-							onChange={ onToggle }
+							onChange={ handleOnChange }
 						>
 							<RadioHelperText>
 								{ __(
@@ -94,7 +94,7 @@ const TaxRate = ( { handleSubmit } ) => {
 							value="manual"
 							collapsible
 							disabled={ isSubmitting }
-							onChange={ onToggle }
+							onChange={ handleOnChange }
 						>
 							<RadioHelperText>
 								{ createInterpolateElement(

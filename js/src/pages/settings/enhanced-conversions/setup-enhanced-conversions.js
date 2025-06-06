@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { CheckboxControl, Notice } from '@wordpress/components';
+import { CheckboxControl } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
@@ -10,24 +10,32 @@ import { __ } from '@wordpress/i18n';
  */
 import AppDocumentationLink from '~/components/app-documentation-link';
 import { useEnableEnhancedConversions } from './useEnableEnhancedConversions';
-
-/**
- * Internal dependencies
- */
 import Section from '~/components/section';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 
 const SetupEnhancedConversions = () => {
-	const [ isEnabled, , toggleEnhancedConversions ] =
+	const [ isEnabled, toggleEnhancedConversions ] =
 		useEnableEnhancedConversions();
-
-	const [ isNoticeVisible, setIsNoticeVisible ] = useState( false );
 	const [ isSaving, setIsSaving ] = useState( false );
+	const { createNotice } = useDispatchCoreNotices();
 
-	const onChangeECState = async () => {
-		setIsSaving( true );
-		await toggleEnhancedConversions();
-		setIsNoticeVisible( true );
-		setIsSaving( false );
+	const handleOnChange = async () => {
+		try {
+			setIsSaving( true );
+			await toggleEnhancedConversions();
+
+			createNotice(
+				'success',
+				__(
+					'Enhanced Conversions status updated successfully.',
+					'google-listings-and-ads'
+				)
+			);
+		} catch ( error ) {
+			// Silently fail because the error is handled in the hook.
+		} finally {
+			setIsSaving( false );
+		}
 	};
 
 	return (
@@ -56,34 +64,21 @@ const SetupEnhancedConversions = () => {
 				</div>
 			}
 		>
-			<Section.Card className="gla-settings-enhanced-conversions">
+			<Section.Card>
 				<Section.Card.Body>
 					<CheckboxControl
 						label={ __(
 							'Send Enhanced Conversions data to Google Ads',
 							'google-listings-and-ads'
 						) }
-						checked={ isEnabled && ! isSaving }
+						checked={ isEnabled }
 						disabled={ isSaving }
-						onChange={ onChangeECState }
-						value={ isEnabled }
+						onChange={ handleOnChange }
 						help={ __(
 							'Please make sure to follow the documentation to enable Enhanced Conversions. The feature needs to be enabled both here on WooCommerce and on your Google Ads account.',
 							'google-listings-and-ads'
 						) }
 					/>
-					{ isNoticeVisible && (
-						<Notice
-							status="success"
-							isDismissible={ true }
-							onRemove={ () => setIsNoticeVisible( false ) }
-						>
-							{ __(
-								'Enhanced Conversions status updated successfully.',
-								'google-listings-and-ads'
-							) }
-						</Notice>
-					) }
 				</Section.Card.Body>
 			</Section.Card>
 		</Section>

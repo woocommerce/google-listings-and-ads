@@ -785,7 +785,7 @@ export function* updateEnhancedConversionsStatus( status ) {
 		} );
 
 		return {
-			type: TYPES.UPDATE_ADS_ENHANCED_CONVERSION,
+			type: TYPES.UPDATE_ADS_ENHANCED_CONVERSIONS,
 			status,
 		};
 	} catch ( error ) {
