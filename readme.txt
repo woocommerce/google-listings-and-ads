@@ -5,7 +5,7 @@ Requires at least: 6.1
 Tested up to: 6.8
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.9.13
+Stable tag: 2.9.14
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -139,6 +139,10 @@ You can only select the countries that you’re targeting on Google Merchant Cen
 To allow your products to appear in all relevant locations, make sure you’ve correctly [configured your shipping](https://support.google.com/merchants/answer/6069284) for countries where your products can be delivered. Keep in mind that shipping services can cover multiple countries. [Learn more about multi-country shipping](https://support.google.com/merchants/answer/6069284#multicountryshipping).
 
 == Changelog ==
+
+= 2.9.14 - 2025-06-06 =
+* Tweak - WC 9.9 compatibility.
+* Tweak - WP 6.8 compatibility.
 
 = 2.9.13 - 2025-04-29 =
 * Update - Revert the changes related to the Grant API Pull Access in Onboarding feature made in version 2.9.12.
