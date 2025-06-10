@@ -142,7 +142,6 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 = 2.9.14 - 2025-06-06 =
 * Tweak - WC 9.9 compatibility.
-* Tweak - WP 6.8 compatibility.
 
 = 2.9.13 - 2025-04-29 =
 * Update - Revert the changes related to the Grant API Pull Access in Onboarding feature made in version 2.9.12.
