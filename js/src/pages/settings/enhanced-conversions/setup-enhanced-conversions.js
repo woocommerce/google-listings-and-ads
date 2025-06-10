@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { CheckboxControl } from '@wordpress/components';
-import { useState } from '@wordpress/element';
+import { useCallback, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -12,12 +12,17 @@ import AppDocumentationLink from '~/components/app-documentation-link';
 import { useEnableEnhancedConversions } from './useEnableEnhancedConversions';
 import Section from '~/components/section';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import { useAppDispatch } from '~/data';
 
 const SetupEnhancedConversions = () => {
-	const [ isEnabled, toggleEnhancedConversions ] =
-		useEnableEnhancedConversions();
+	const isEnabled = useEnableEnhancedConversions();
 	const [ isSaving, setIsSaving ] = useState( false );
 	const { createNotice } = useDispatchCoreNotices();
+	const { updateEnhancedConversionsStatus } = useAppDispatch();
+
+	const toggleEnhancedConversions = useCallback( async () => {
+		await updateEnhancedConversionsStatus( ! isEnabled );
+	}, [ updateEnhancedConversionsStatus, isEnabled ] );
 
 	const handleOnChange = async () => {
 		try {

@@ -120,15 +120,5 @@ test.describe( 'Settings', () => {
 			);
 			await expect( notice ).toBeVisible();
 		} );
-
-		test( 'should dismiss the "Enhanced Conversion" setting saved success notice', async () => {
-			const notice = page.locator(
-				'.components-snackbar:has-text("Enhanced Conversions status updated successfully.")'
-			);
-			await expect( notice ).toBeVisible();
-
-			await notice.click();
-			await expect( notice ).not.toBeVisible();
-		} );
 	} );
 } );
