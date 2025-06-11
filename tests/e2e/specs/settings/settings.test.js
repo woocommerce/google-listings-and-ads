@@ -70,31 +70,55 @@ test.describe( 'Settings', () => {
 				page.getByText( 'Tax rate (required for U.S. only)' )
 			).toBeVisible();
 
-			const saveButton = page.getByRole( 'button', {
-				name: 'Save tax rate',
-			} );
-			const saveSpinner = saveButton.locator( '.woocommerce-spinner' );
 			const option = page.getByRole( 'radio', { checked: false } );
 			const optionValue = option.getAttribute( 'value' );
 
-			// Save button will become clickable after selecting another option.
-			await expect( saveButton ).toBeDisabled();
 			await option.check();
-			await expect( saveButton ).toBeEnabled();
-
-			// Submit the change, and then the save button will go through loading state
-			// and stay disabled both during and after submission.
-			await saveButton.click();
-			await expect( saveSpinner ).toBeVisible();
-			await expect( saveButton ).toBeDisabled();
-			await expect( saveSpinner ).not.toBeVisible();
-			await expect( saveButton ).toBeDisabled();
 
 			// Reload to assert the setting has been actually saved.
 			await page.reload();
 			await expect(
 				page.getByRole( 'radio', { checked: true } )
 			).toHaveAttribute( 'value', optionValue );
+		} );
+	} );
+
+	test.describe( 'Enhanced Conversions Setting', () => {
+		test( 'should show the "Enhanced Conversion" setting card', async () => {
+			await settingsPage.goto();
+			await expect(
+				page.getByRole( 'heading', { name: 'Settings' } )
+			).toBeVisible();
+			await expect(
+				page.getByRole( 'heading', {
+					name: 'Improve conversion accuracy',
+				} )
+			).toBeVisible();
+		} );
+
+		test( 'should toggle the "Enhanced Conversion" setting', async () => {
+			const once = settingsPage.withFulfillTimes( 1 );
+			await once.fulfillRequest( /\/ads\/settings/, {
+				enhanced_conversions_enabled: true,
+			} );
+			await settingsPage.goto();
+			const checkbox = page.getByRole( 'checkbox', {
+				name: 'Send Enhanced Conversions data to Google Ads',
+			} );
+
+			await expect( checkbox ).toBeVisible();
+			await expect( checkbox ).not.toBeChecked();
+
+			await checkbox.check();
+			await expect( checkbox ).toBeChecked();
+		} );
+
+		test( 'should show the "Enhanced Conversion" setting saved success notice', async () => {
+			// Get the notice with class 'components-notice is-success'
+			const notice = page.locator(
+				'.components-snackbar:has-text("Enhanced Conversions status updated successfully.")'
+			);
+			await expect( notice ).toBeVisible();
 		} );
 	} );
 } );

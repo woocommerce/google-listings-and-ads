@@ -73,6 +73,7 @@ describe( 'reducer', () => {
 					step: null,
 				},
 				budgetRecommendations: {},
+				enable_enhanced_conversions: false,
 			},
 			gtinMigrationStatus: null,
 		} );
