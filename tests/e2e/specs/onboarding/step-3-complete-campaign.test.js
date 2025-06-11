@@ -551,7 +551,7 @@ test.describe( 'Complete your campaign', () => {
 			} );
 		} );
 
-		test.describe( 'Ads setup is completed', async () => {
+		test.describe( 'Ads setup is complete', async () => {
 			test.beforeAll( async () => {
 				await completeCampaign.goto();
 				await completeCampaign.clickSkipPaidAdsCreationButton();
