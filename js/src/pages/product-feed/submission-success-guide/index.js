@@ -39,9 +39,9 @@ const handleGuideFinish = ( e ) => {
 	} );
 };
 
-const setupEnhancedConversionsOnClick = () => {
+const handleSetupEnhancedConversionsOnClick = () => {
 	handleGuideFinish();
-	window.location.href = getSettingsUrl();
+	getHistory().push( getSettingsUrl() );
 };
 
 const image = (
@@ -155,7 +155,7 @@ const pages = [
 					context: GUIDE_NAMES.SUBMISSION_SUCCESS,
 					action: 'view-enhanced-conversions-settings',
 				} }
-				onClick={ setupEnhancedConversionsOnClick }
+				onClick={ handleSetupEnhancedConversionsOnClick }
 			>
 				{ __(
 					'Set up Enhanced Conversions',

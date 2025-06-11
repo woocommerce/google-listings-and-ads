@@ -501,7 +501,6 @@ test.describe( 'Complete your campaign', () => {
 				window.sessionStorage.clear();
 			} );
 			await setupAdsAccountPage.mockAdsAccountConnected();
-			await completeCampaign.mockCompleteAdsSetup();
 			await completeCampaign.goto();
 			await completeCampaign.clickSkipPaidAdsCreationButton();
 			await completeCampaign.clickCompleteSetupModalButton();
@@ -512,7 +511,7 @@ test.describe( 'Complete your campaign', () => {
 			await expect( setupSuccessModal ).toBeVisible();
 		} );
 
-		test.describe( 'Should be second step when ads setup is incomplete', () => {
+		test.describe( 'Ads setup is incomplete', () => {
 			test( 'should have three prompts in the setup success modal', async () => {
 				const guideControls = page.getByRole( 'list', {
 					name: 'Guide controls',
@@ -552,7 +551,7 @@ test.describe( 'Complete your campaign', () => {
 			} );
 		} );
 
-		test.describe( 'should be the last step when ads setup is complete', async () => {
+		test.describe( 'Ads setup is completed', async () => {
 			test.beforeAll( async () => {
 				await completeCampaign.goto();
 				await completeCampaign.clickSkipPaidAdsCreationButton();
@@ -584,6 +583,9 @@ test.describe( 'Complete your campaign', () => {
 
 			await page.waitForURL( /path=%2Fgoogle%2Fsettings/ );
 			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fsettings/ );
+
+			const setupSuccessModal = completeCampaign.getSetupSuccessModal();
+			await expect( setupSuccessModal ).not.toBeVisible();
 		} );
 	} );
 
