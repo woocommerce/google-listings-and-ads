@@ -37,7 +37,7 @@ const SetupEnhancedConversions = () => {
 				)
 			);
 		} catch ( error ) {
-			// Silently fail because the error is handled in the hook.
+			// Silently fail because the error is handled within `updateEnhancedConversionsStatus` action.
 		} finally {
 			setIsSaving( false );
 		}
