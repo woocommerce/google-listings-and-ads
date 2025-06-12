@@ -83,6 +83,7 @@ class NotificationsServiceTest extends UnitTest {
 		);
 
 		add_filter( 'woocommerce_gla_notifications_enabled', '__return_true' );
+		add_filter( 'woocommerce_gla_is_pull_enabled_for_datatype', '__return_true' );
 	}
 
 	/**
@@ -214,6 +215,19 @@ class NotificationsServiceTest extends UnitTest {
 	}
 
 	/**
+	 * Test notify() function logs an error when disabled for a datatype
+	 */
+	public function test_notify_show_error_when_disabled_for_datatype() {
+		$this->service = $this->get_mock();
+		remove_filter( 'woocommerce_gla_is_pull_enabled_for_datatype', '__return_true' );
+		add_filter( 'woocommerce_gla_is_pull_enabled_for_datatype', '__return_false' );
+		$this->service->expects( $this->never() )->method( 'do_request' );
+		$this->assertFalse( $this->service->notify( 'product.create', 1 ) );
+		$this->assertEquals( did_action( 'woocommerce_gla_error' ), 1 );
+		remove_filter( 'woocommerce_gla_is_pull_enabled_for_datatype', '__return_false' );
+	}
+
+	/**
 	 * Test notify() function logs an error when WPCOM Auth is not healthy
 	 */
 	public function test_notify_show_error_when_wpcom_not_healthy() {
@@ -226,7 +240,7 @@ class NotificationsServiceTest extends UnitTest {
 	public function test_is_ready_not_calling_status_api_if_with_health_check_is_false() {
 		$this->service = $this->get_mock( true, true, false );
 		$this->account->expects( $this->never() )->method( 'is_wpcom_api_status_healthy' );
-		$this->assertTrue( $this->service->is_ready( false ) );
+		$this->assertTrue( $this->service->is_ready( null, false ) );
 	}
 
 	public function test_is_ready_calling_status_api_if_with_health_check_is_true() {

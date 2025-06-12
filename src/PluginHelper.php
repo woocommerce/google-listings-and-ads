@@ -224,4 +224,30 @@ trait PluginHelper {
 			return str_replace( $separators, '', $numeric_string );
 		}
 	}
+
+	/**
+	 * Returns enabled or disabled based on a boolean value.
+	 *
+	 * Returns "enabled" for truthy
+	 * Returns "disabled" for falsy.
+	 *
+	 * @param bool $value The value to check.
+	 * @return string
+	 */
+	protected function enabled_or_disabled( bool $value ): string {
+		return $value ? 'Enabled' : 'Disabled';
+	}
+
+	/**
+	 * Returns Yes or No based on a boolean value.
+	 *
+	 * Returns "yes" for truthy
+	 * Returns "no" for falsy.
+	 *
+	 * @param bool $value The value to check.
+	 * @return string
+	 */
+	protected function yes_or_no( bool $value ): string {
+		return $value ? 'Yes' : 'No';
+	}
 }

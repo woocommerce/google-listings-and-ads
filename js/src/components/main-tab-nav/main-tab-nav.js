@@ -30,6 +30,11 @@ let tabs = [
 		href: getNewPath( {}, '/google/product-feed', {} ),
 	},
 	{
+		key: 'price-benchmark',
+		title: __( 'Price Benchmark', 'google-listings-and-ads' ),
+		href: getNewPath( {}, '/google/price-benchmark', {} ),
+	},
+	{
 		key: 'attribute-mapping',
 		title: __( 'Attributes', 'google-listings-and-ads' ),
 		href: getNewPath( {}, '/google/attribute-mapping', {} ),

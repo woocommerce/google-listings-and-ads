@@ -1,0 +1,310 @@
+{
+	"results": [
+		{
+			"productView": {
+				"offerId": "gla_37",
+				"title": "WordPress Pennant",
+				"currencyCode": "USD",
+				"priceMicros": "20000000",
+				"id": "online:en:US:gla_37"
+			},
+			"priceInsights": {
+				"suggestedPriceMicros": "19000000",
+				"suggestedPriceCurrencyCode": "USD",
+				"predictedImpressionsChangeFraction": "0.12609300017356873",
+				"predictedClicksChangeFraction": "0.508745014667511",
+				"predictedConversionsChangeFraction": "0.343106031417846",
+				"effectiveness": "HIGH"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_36",
+				"title": "Logo Collection",
+				"currencyCode": "USD",
+				"priceMicros": "18000000",
+				"id": "online:en:US:gla_36"
+			},
+			"priceInsights": {
+				"suggestedPriceMicros": "17500000",
+				"suggestedPriceCurrencyCode": "USD",
+				"predictedImpressionsChangeFraction": "0.09723400012458974",
+				"predictedClicksChangeFraction": "0.267823012356781",
+				"predictedConversionsChangeFraction": "0.287654321098765",
+				"effectiveness": "MEDIUM"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_35",
+				"title": "Beanie with Logo",
+				"currencyCode": "USD",
+				"priceMicros": "17000000",
+				"id": "online:en:US:gla_35"
+			},
+			"priceInsights": {
+				"suggestedPriceMicros": "16500000",
+				"suggestedPriceCurrencyCode": "USD",
+				"predictedImpressionsChangeFraction": "0.08976500023145628",
+				"predictedClicksChangeFraction": "0.212345678912345",
+				"predictedConversionsChangeFraction": "0.223456789012345",
+				"effectiveness": "LOW"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_34",
+				"title": "T-Shirt with Logo",
+				"currencyCode": "USD",
+				"priceMicros": "18000000",
+				"id": "online:en:US:gla_34"
+			},
+			"priceInsights": {
+				"suggestedPriceMicros": "17800000",
+				"suggestedPriceCurrencyCode": "USD",
+				"predictedImpressionsChangeFraction": "0.07654300098765432",
+				"predictedClicksChangeFraction": "0.234567890123456",
+				"predictedConversionsChangeFraction": "0.187654321012345",
+				"effectiveness": "EFFECTIVENESS_UNSPECIFIED"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_27",
+				"title": "Single",
+				"currencyCode": "USD",
+				"priceMicros": "2000000",
+				"id": "online:en:US:gla_27"
+			},
+			"priceInsights": {
+				"suggestedPriceMicros": "1900000",
+				"suggestedPriceCurrencyCode": "USD",
+				"predictedImpressionsChangeFraction": "0.14532100078965432",
+				"predictedClicksChangeFraction": "0.487654321098765",
+				"predictedConversionsChangeFraction": "0.401234567890123",
+				"effectiveness": "HIGH"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_26",
+				"title": "Album",
+				"currencyCode": "USD",
+				"priceMicros": "15000000",
+				"id": "online:en:US:gla_26"
+			},
+			"priceInsights": {
+				"suggestedPriceMicros": "14500000",
+				"suggestedPriceCurrencyCode": "USD",
+				"predictedImpressionsChangeFraction": "0.12345678901234567",
+				"predictedClicksChangeFraction": "0.456789012345678",
+				"predictedConversionsChangeFraction": "0.278901234567890",
+				"effectiveness": "MEDIUM"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_25",
+				"title": "Polo",
+				"currencyCode": "USD",
+				"priceMicros": "20000000",
+				"id": "online:en:US:gla_25"
+			},
+			"priceInsights": {
+				"suggestedPriceMicros": "19500000",
+				"suggestedPriceCurrencyCode": "USD",
+				"predictedImpressionsChangeFraction": "0.15678901234567890",
+				"predictedClicksChangeFraction": "0.343210987654321",
+				"predictedConversionsChangeFraction": "0.289012345678901",
+				"effectiveness": "LOW"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_24",
+				"title": "Long Sleeve Tee",
+				"currencyCode": "USD",
+				"priceMicros": "25000000",
+				"id": "online:en:US:gla_24"
+			},
+			"priceInsights": {
+				"suggestedPriceMicros": "24500000",
+				"suggestedPriceCurrencyCode": "USD",
+				"predictedImpressionsChangeFraction": "0.16789012345678901",
+				"predictedClicksChangeFraction": "0.367890123456789",
+				"predictedConversionsChangeFraction": "0.290123456789012",
+				"effectiveness": "EFFECTIVENESS_UNSPECIFIED"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_23",
+				"title": "Hoodie with Zipper",
+				"currencyCode": "USD",
+				"priceMicros": "45000000",
+				"id": "online:en:US:gla_23"
+			},
+			"priceInsights": {
+				"suggestedPriceMicros": "43500000",
+				"suggestedPriceCurrencyCode": "USD",
+				"predictedImpressionsChangeFraction": "0.13456789012345678",
+				"predictedClicksChangeFraction": "0.323456789012345",
+				"predictedConversionsChangeFraction": "0.276543210987654",
+				"effectiveness": "MEDIUM"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_22",
+				"title": "Hoodie with Pocket",
+				"currencyCode": "USD",
+				"priceMicros": "35000000",
+				"id": "online:en:US:gla_22"
+			},
+			"priceInsights": {
+				"suggestedPriceMicros": "34000000",
+				"suggestedPriceCurrencyCode": "USD",
+				"predictedImpressionsChangeFraction": "0.14321098765432109",
+				"predictedClicksChangeFraction": "0.331234567890123",
+				"predictedConversionsChangeFraction": "0.254321098765432",
+				"effectiveness": "HIGH"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_21",
+				"title": "Sunglasses",
+				"currencyCode": "USD",
+				"priceMicros": "90000000",
+				"id": "online:en:US:gla_21"
+			},
+			"priceInsights": {
+				"suggestedPriceMicros": "88000000",
+				"suggestedPriceCurrencyCode": "USD",
+				"predictedImpressionsChangeFraction": "0.19876543210987654",
+				"predictedClicksChangeFraction": "0.445678901234567",
+				"predictedConversionsChangeFraction": "0.356789012345678",
+				"effectiveness": "LOW"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_20",
+				"title": "Cap",
+				"currencyCode": "USD",
+				"priceMicros": "16000000",
+				"id": "online:en:US:gla_20"
+			},
+			"priceInsights": {
+				"suggestedPriceMicros": "15500000",
+				"suggestedPriceCurrencyCode": "USD",
+				"predictedImpressionsChangeFraction": "0.17654321098765432",
+				"predictedClicksChangeFraction": "0.387654321098765",
+				"predictedConversionsChangeFraction": "0.321098765432109",
+				"effectiveness": "EFFECTIVENESS_UNSPECIFIED"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_19",
+				"title": "Belt",
+				"currencyCode": "USD",
+				"priceMicros": "55000000",
+				"id": "online:en:US:gla_19"
+			},
+			"priceInsights": {
+				"suggestedPriceMicros": "54000000",
+				"suggestedPriceCurrencyCode": "USD",
+				"predictedImpressionsChangeFraction": "0.18765432109876543",
+				"predictedClicksChangeFraction": "0.398765432109876",
+				"predictedConversionsChangeFraction": "0.332109876543210",
+				"effectiveness": "MEDIUM"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_18",
+				"title": "Beanie",
+				"currencyCode": "USD",
+				"priceMicros": "18000000",
+				"id": "online:en:US:gla_18"
+			},
+			"priceInsights": {
+				"suggestedPriceMicros": "17500000",
+				"suggestedPriceCurrencyCode": "USD",
+				"predictedImpressionsChangeFraction": "0.16543210987654321",
+				"predictedClicksChangeFraction": "0.354321098765432",
+				"predictedConversionsChangeFraction": "0.210987654321098",
+				"effectiveness": "LOW"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_17",
+				"title": "T-Shirt",
+				"currencyCode": "USD",
+				"priceMicros": "18000000",
+				"id": "online:en:US:gla_17"
+			},
+			"priceInsights": {
+				"suggestedPriceMicros": "17000000",
+				"suggestedPriceCurrencyCode": "USD",
+				"predictedImpressionsChangeFraction": "0.17890123456789012",
+				"predictedClicksChangeFraction": "0.375678901234567",
+				"predictedConversionsChangeFraction": "0.234567890123456",
+				"effectiveness": "HIGH"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_16",
+				"title": "Hoodie with Logo",
+				"currencyCode": "USD",
+				"priceMicros": "45000000",
+				"id": "online:en:US:gla_16"
+			},
+			"priceInsights": {
+				"suggestedPriceMicros": "44000000",
+				"suggestedPriceCurrencyCode": "USD",
+				"predictedImpressionsChangeFraction": "0.16789012345678901",
+				"predictedClicksChangeFraction": "0.369876543210987",
+				"predictedConversionsChangeFraction": "0.298765432109876",
+				"effectiveness": "EFFECTIVENESS_UNSPECIFIED"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_15",
+				"title": "Hoodie",
+				"currencyCode": "USD",
+				"priceMicros": "42000000",
+				"id": "online:en:US:gla_15"
+			},
+			"priceInsights": {
+				"suggestedPriceMicros": "41000000",
+				"suggestedPriceCurrencyCode": "USD",
+				"predictedImpressionsChangeFraction": "0.15678901234567890",
+				"predictedClicksChangeFraction": "0.343210987654321",
+				"predictedConversionsChangeFraction": "0.298765432109876",
+				"effectiveness": "MEDIUM"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_14",
+				"title": "V-Neck T-Shirt",
+				"currencyCode": "USD",
+				"priceMicros": "15000000",
+				"id": "online:en:US:gla_14"
+			},
+			"priceInsights": {
+				"suggestedPriceMicros": "14500000",
+				"suggestedPriceCurrencyCode": "USD",
+				"predictedImpressionsChangeFraction": "0.18765432109876543",
+				"predictedClicksChangeFraction": "0.398765432109876",
+				"predictedConversionsChangeFraction": "0.256789012345678",
+				"effectiveness": "LOW"
+			}
+		}
+	]
+}

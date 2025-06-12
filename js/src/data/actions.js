@@ -23,6 +23,7 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * @typedef {import('~/data/types.js').AssetEntityGroupUpdateBody} AssetEntityGroupUpdateBody
  * @typedef {import('~/data/types.js').AdsIncentiveCredits} AdsIncentiveCredits
  * @typedef {import('./selectors').Tour} Tour
+ * @typedef {import('./selectors').PriceBenchmarkQueryParams} PriceBenchmarkQueryParams
  */
 
 /**
@@ -1214,4 +1215,17 @@ export function* fetchGoogleAdsAccountStatus() {
 			)
 		);
 	}
+}
+
+export function* receivePriceBenchmarkSuggestionsProductPrice(
+	productId,
+	productPrice
+) {
+	return {
+		type: TYPES.RECEIVE_PRICE_BENCHMARK_SUGGESTIONS_PRODUCT_PRICE,
+		data: {
+			productId,
+			productPrice,
+		},
+	};
 }

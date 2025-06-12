@@ -194,7 +194,7 @@ class SyncerHooks implements Service, Registerable {
 	protected function handle_update_coupon( WC_Coupon $coupon ) {
 		$coupon_id = $coupon->get_id();
 
-		if ( $this->notifications_service->is_ready() ) {
+		if ( $this->notifications_service->is_ready( NotificationsService::DATATYPE_COUPON ) ) {
 			$this->handle_update_coupon_notification( $coupon );
 		}
 
@@ -277,7 +277,7 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $coupon_id
 	 */
 	protected function handle_delete_coupon( int $coupon_id ) {
-		if ( $this->notifications_service->is_ready() ) {
+		if ( $this->notifications_service->is_ready( NotificationsService::DATATYPE_COUPON ) ) {
 			$this->maybe_send_delete_notification( $coupon_id );
 		}
 

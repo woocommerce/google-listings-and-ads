@@ -1,0 +1,29 @@
+@import "@wordpress/dataviews/build-style/style.css";
+
+.gla-price-benchmark__comparison-chart {
+	margin: $grid-unit-40 0;
+}
+
+.gla-price-benchmark__comparison-chart__loading-skeleton {
+	min-height: 98px;
+
+	span {
+		@include placeholder;
+	}
+}
+
+.gla-price-benchmark__tooltip {
+
+	&.components-tooltip {
+		max-width: 224px;
+	}
+}
+
+.gla-price-benchmark-suggestions__faq {
+	color: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+
+	&:hover,
+	&:focus {
+		color: var(--wp-components-color-accent-darker-20, var(--wp-admin-theme-color-darker-20, #183ad6));
+	}
+}

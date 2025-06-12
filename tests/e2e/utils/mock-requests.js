@@ -544,6 +544,44 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the price benchmark suggestions request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillPriceBenchmarkSuggestions( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/price-benchmarks(?:\/\d+)?(?:\?(?:[^#]*))?\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Fulfill the price benchmark product suggestions request for a specific product.
+	 *
+	 * @param {string|number} productId - The ID of the product to get price benchmark data for.
+	 * @param {Object} payload - The mock response payload.
+	 * @param {number} [status=200] - The HTTP status code to return.
+	 * @return {Promise<void>}
+	 */
+	async fulfillPriceBenchmarkProductSuggestions(
+		productId,
+		payload,
+		status = 200
+	) {
+		await this.fulfillRequest(
+			new RegExp(
+				`\\/wc\\/gla\\/mc\\/price-benchmarks\\/${ productId }\\b`
+			),
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
 	 * Mock the request to connect Jetpack
 	 *
 	 * @param {string} url
@@ -941,6 +979,44 @@ export default class MockRequests {
 			payload,
 			200,
 			methods
+		);
+	}
+
+	async fulfillUsersPreferences( payload = {} ) {
+		await this.fulfillRequest( /\/wp\/v2\/users\/me(\?|$)/, payload, 200, [
+			'POST',
+		] );
+	}
+
+	/**
+	 * Mocks the fulfillment of requests to the WooCommerce products API endpoint.
+	 *
+	 * @param {Object} payload - The mock response payload to return for the request.
+	 * @param {Array<string>} [methods=[]] - Optional array of HTTP methods to mock. Defaults to an empty array.
+	 * @return {Promise<void>} A promise that resolves when the request is fulfilled.
+	 */
+	async fulfillWCProduct( payload, methods = [] ) {
+		await this.fulfillRequest(
+			/\/wc\/v3\/products(\/.*)?\b/,
+			payload,
+			200,
+			methods
+		);
+	}
+
+	/**
+	 * Fulfills a mock request for the price benchmark summary endpoint.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned.
+	 * @param {number} [status=200] - The HTTP status code to be returned. Defaults to 200.
+	 * @return {Promise<void>} A promise that resolves when the request is fulfilled.
+	 */
+	async fulfillPriceBenchmarkSummary( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/price-benchmarks\/summary\b/,
+			payload,
+			status,
+			[ 'GET' ]
 		);
 	}
 }

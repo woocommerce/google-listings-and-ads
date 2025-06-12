@@ -60,6 +60,7 @@ import {
 
 /**
  * @typedef {import('~/data/actions').CountryCode} CountryCode
+ * @typedef {import('./selectors').PriceBenchmarkQueryParams} PriceBenchmarkQueryParams
  */
 
 function* handleResponseError( response, leadingMessage ) {
@@ -630,6 +631,86 @@ export function* getGtinMigrationStatus() {
 			error,
 			__(
 				'There was an error getting the GTIN Migration Status.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Resolver for getting the Price Benchmark summary.
+ */
+export function* getPriceBenchmarkSummary() {
+	try {
+		const { data } = yield fetchWithHeaders( {
+			path: `${ API_NAMESPACE }/mc/price-benchmarks/summary`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_PRICE_BENCHMARK_SUMMARY,
+			data,
+		};
+	} catch ( response ) {
+		// Intentionally silence the specific in case the the account is not authorized to view the price benchmark suggestions.
+		if ( response.status === 403 ) {
+			return {
+				type: TYPES.RECEIVE_PRICE_BENCHMARK_SUMMARY,
+				data: [],
+			};
+		}
+
+		const bodyPromise = response?.json() || response?.text();
+		const error = yield awaitPromise( bodyPromise );
+
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the price benchmark summary.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Resolver for getting the Price Benchmark suggestions.
+ *
+ * @param {PriceBenchmarkQueryParams} args The query parameters for fetching price benchmark suggestions.
+ */
+export function* getPriceBenchmarkSuggestions( args ) {
+	try {
+		let path = `${ API_NAMESPACE }/mc/price-benchmarks`;
+		if ( args.product_id ) {
+			path = `${ path }/${ args.product_id }`;
+		} else {
+			path = addQueryArgs( path, args );
+		}
+
+		const { data } = yield fetchWithHeaders( {
+			path,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_PRICE_BENCHMARK_SUGGESTIONS,
+			data,
+			args,
+		};
+	} catch ( response ) {
+		// Intentionally silence the specific in case the the account is not authorized to view the price benchmark suggestions.
+		if ( response.status === 403 ) {
+			return {
+				type: TYPES.RECEIVE_PRICE_BENCHMARK_SUGGESTIONS,
+				data: [],
+			};
+		}
+
+		const bodyPromise = response?.json() || response?.text();
+		const error = yield awaitPromise( bodyPromise );
+
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the price benchmark suggestions.',
 				'google-listings-and-ads'
 			)
 		);

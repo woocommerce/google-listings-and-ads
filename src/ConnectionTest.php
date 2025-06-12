@@ -683,7 +683,7 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 							<th><label>Notification Service Enabled:</label></th>
 							<td>
 								<p>
-									<code><?php echo $notification_service->is_enabled() ? 'yes' : 'no' ?></code>
+									<code><?php echo $this->yes_or_no( $notification_service->is_enabled() ); ?></code>
 								</p>
 							</td>
 						</tr>
@@ -691,7 +691,43 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 							<th><label>Notification Service Ready:</label></th>
 							<td>
 								<p>
-									<code><?php echo $notification_service->is_ready() ? 'yes' : 'no' ?></code>
+									<code><?php echo $this->yes_or_no( $notification_service->is_ready() ); ?></code>
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th><label>Products API PULL Sync:</label></th>
+							<td>
+								<p>
+
+									<code><?php echo $this->enabled_or_disabled( $notification_service->is_pull_enabled_for_datatype( NotificationsService::DATATYPE_PRODUCT ) ); ?></code>
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th><label>Coupons API PULL Sync:</label></th>
+							<td>
+								<p>
+
+									<code><?php echo $this->enabled_or_disabled( $notification_service->is_pull_enabled_for_datatype( NotificationsService::DATATYPE_COUPON ) ); ?></code>
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th><label>Shipping API PULL Sync:</label></th>
+							<td>
+								<p>
+
+									<code><?php echo $this->enabled_or_disabled( $notification_service->is_pull_enabled_for_datatype( NotificationsService::DATATYPE_SHIPPING ) ); ?></code>
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th><label>Settings API PULL Sync:</label></th>
+							<td>
+								<p>
+
+									<code><?php echo $this->enabled_or_disabled( $notification_service->is_pull_enabled_for_datatype( NotificationsService::DATATYPE_SETTINGS ) ); ?></code>
 								</p>
 							</td>
 						</tr>
@@ -1193,7 +1229,7 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 
 			$this->response .= sprintf(
 				'Attempting to accept Tos. Successful? %s<br>Response body: %s',
-				$result->accepted() ? 'Yes' : 'No',
+				$this->yes_or_no( $result->accepted() ),
 				$result->message()
 			);
 		}
@@ -1203,7 +1239,7 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 
 			$this->response .= sprintf(
 				'Tos Accepted? %s<br>Response body: %s',
-				$accepted->accepted() ? 'Yes' : 'No',
+				$this->yes_or_no( $result->accepted() ),
 				$accepted->message()
 			);
 		}

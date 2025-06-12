@@ -1,0 +1,256 @@
+{
+	"results": [
+		{
+			"productView": {
+				"offerId": "gla_37",
+				"title": "WordPress Pennant",
+				"currencyCode": "USD",
+				"priceMicros": "20000000",
+				"id": "online:en:US:gla_37"
+			},
+			"priceCompetitiveness": {
+				"countryCode": "US",
+				"benchmarkPriceCurrencyCode": "USD",
+				"benchmarkPriceMicros": "19500000"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_36",
+				"title": "Logo Collection",
+				"currencyCode": "USD",
+				"priceMicros": "18000000",
+				"id": "online:en:US:gla_36"
+			},
+			"priceCompetitiveness": {
+				"countryCode": "US",
+				"benchmarkPriceCurrencyCode": "USD",
+				"benchmarkPriceMicros": "18500000"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_35",
+				"title": "Beanie with Logo",
+				"currencyCode": "USD",
+				"priceMicros": "17000000",
+				"id": "online:en:US:gla_35"
+			},
+			"priceCompetitiveness": {
+				"countryCode": "US",
+				"benchmarkPriceCurrencyCode": "USD",
+				"benchmarkPriceMicros": "18500000"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_34",
+				"title": "T-Shirt with Logo",
+				"currencyCode": "USD",
+				"priceMicros": "18000000",
+				"id": "online:en:US:gla_34"
+			},
+			"priceCompetitiveness": {
+				"countryCode": "US",
+				"benchmarkPriceCurrencyCode": "USD",
+				"benchmarkPriceMicros": "18000000"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_27",
+				"title": "Single",
+				"currencyCode": "USD",
+				"priceMicros": "2000000",
+				"id": "online:en:US:gla_27"
+			},
+			"priceCompetitiveness": {
+				"countryCode": "US",
+				"benchmarkPriceCurrencyCode": "USD",
+				"benchmarkPriceMicros": "2500000"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_26",
+				"title": "Album",
+				"currencyCode": "USD",
+				"priceMicros": "15000000",
+				"id": "online:en:US:gla_26"
+			},
+			"priceCompetitiveness": {
+				"countryCode": "US",
+				"benchmarkPriceCurrencyCode": "USD",
+				"benchmarkPriceMicros": "14000000"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_25",
+				"title": "Polo",
+				"currencyCode": "USD",
+				"priceMicros": "20000000",
+				"id": "online:en:US:gla_25"
+			},
+			"priceCompetitiveness": {
+				"countryCode": "US",
+				"benchmarkPriceCurrencyCode": "USD",
+				"benchmarkPriceMicros": "19000000"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_24",
+				"title": "Long Sleeve Tee",
+				"currencyCode": "USD",
+				"priceMicros": "25000000",
+				"id": "online:en:US:gla_24"
+			},
+			"priceCompetitiveness": {
+				"countryCode": "US",
+				"benchmarkPriceCurrencyCode": "USD",
+				"benchmarkPriceMicros": "27500000"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_23",
+				"title": "Hoodie with Zipper",
+				"currencyCode": "USD",
+				"priceMicros": "45000000",
+				"id": "online:en:US:gla_23"
+			},
+			"priceCompetitiveness": {
+				"countryCode": "US",
+				"benchmarkPriceCurrencyCode": "USD",
+				"benchmarkPriceMicros": "44000000"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_22",
+				"title": "Hoodie with Pocket",
+				"currencyCode": "USD",
+				"priceMicros": "35000000",
+				"id": "online:en:US:gla_22"
+			},
+			"priceCompetitiveness": {
+				"countryCode": "US",
+				"benchmarkPriceCurrencyCode": "USD",
+				"benchmarkPriceMicros": "45000000"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_21",
+				"title": "Sunglasses",
+				"currencyCode": "USD",
+				"priceMicros": "90000000",
+				"id": "online:en:US:gla_21"
+			},
+			"priceCompetitiveness": {
+				"countryCode": "US",
+				"benchmarkPriceCurrencyCode": "USD",
+				"benchmarkPriceMicros": "95000000"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_20",
+				"title": "Cap",
+				"currencyCode": "USD",
+				"priceMicros": "16000000",
+				"id": "online:en:US:gla_20"
+			},
+			"priceCompetitiveness": {
+				"countryCode": "US",
+				"benchmarkPriceCurrencyCode": "USD",
+				"benchmarkPriceMicros": "16200000"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_19",
+				"title": "Belt",
+				"currencyCode": "USD",
+				"priceMicros": "55000000",
+				"id": "online:en:US:gla_19"
+			},
+			"priceCompetitiveness": {
+				"countryCode": "US",
+				"benchmarkPriceCurrencyCode": "USD",
+				"benchmarkPriceMicros": "58000000"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_18",
+				"title": "Beanie",
+				"currencyCode": "USD",
+				"priceMicros": "18000000",
+				"id": "online:en:US:gla_18"
+			},
+			"priceCompetitiveness": {
+				"countryCode": "US",
+				"benchmarkPriceCurrencyCode": "USD",
+				"benchmarkPriceMicros": "17000000"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_17",
+				"title": "T-Shirt",
+				"currencyCode": "USD",
+				"priceMicros": "18000000",
+				"id": "online:en:US:gla_17"
+			},
+			"priceCompetitiveness": {
+				"countryCode": "US",
+				"benchmarkPriceCurrencyCode": "USD",
+				"benchmarkPriceMicros": "18000000"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_16",
+				"title": "Hoodie with Logo",
+				"currencyCode": "USD",
+				"priceMicros": "45000000",
+				"id": "online:en:US:gla_16"
+			},
+			"priceCompetitiveness": {
+				"countryCode": "US",
+				"benchmarkPriceCurrencyCode": "USD",
+				"benchmarkPriceMicros": "42000000"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_15",
+				"title": "Hoodie",
+				"currencyCode": "USD",
+				"priceMicros": "42000000",
+				"id": "online:en:US:gla_15"
+			},
+			"priceCompetitiveness": {
+				"countryCode": "US",
+				"benchmarkPriceCurrencyCode": "USD",
+				"benchmarkPriceMicros": "40000000"
+			}
+		},
+		{
+			"productView": {
+				"offerId": "gla_14",
+				"title": "V-Neck T-Shirt",
+				"currencyCode": "USD",
+				"priceMicros": "15000000",
+				"id": "online:en:US:gla_14"
+			},
+			"priceCompetitiveness": {
+				"countryCode": "US",
+				"benchmarkPriceCurrencyCode": "USD",
+				"benchmarkPriceMicros": "16500000"
+			}
+		}
+	]
+}

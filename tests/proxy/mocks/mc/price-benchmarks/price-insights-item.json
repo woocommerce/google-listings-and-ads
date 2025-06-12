@@ -1,0 +1,21 @@
+{
+	"results": [
+		{
+			"productView": {
+				"offerId": "gla_37",
+				"title": "WordPress Pennant",
+				"currencyCode": "USD",
+				"priceMicros": "20000000",
+				"id": "online:en:US:gla_37"
+			},
+			"priceInsights": {
+				"suggestedPriceMicros": "19000000",
+				"suggestedPriceCurrencyCode": "USD",
+				"predictedImpressionsChangeFraction": "0.12609300017356873",
+				"predictedClicksChangeFraction": "0.508745014667511",
+				"predictedConversionsChangeFraction": "0.343106031417846",
+				"effectiveness": "HIGH"
+			}
+		}
+	]
+}

@@ -1,0 +1,66 @@
+.gla-price-benchmark-suggestions-banner {
+
+	&.components-card {
+		margin: $grid-unit-40 0;
+	}
+
+	.gla-price-benchmark-suggestions-banner__body {
+		align-items: center;
+		column-gap: $grid-unit-20;
+		display: grid;
+		grid-template-columns: 120px 1fr;
+		row-gap: $grid-unit-10;
+
+		@include break-medium {
+			grid-template-columns: 164px 1fr;
+			grid-template-areas:
+				"graphic text"
+				"graphic footer";
+			row-gap: 0;
+		}
+	}
+
+	.gla-price-benchmark-suggestions-banner__graphic {
+
+		@include break-medium {
+			grid-area: graphic;
+		}
+
+		img {
+			display: block;
+			width: 100%;
+		}
+	}
+
+	.gla-price-benchmark-suggestions-banner__text {
+		align-items: start;
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		gap: $grid-unit-10;
+
+		h3 {
+			font-size: 16px;
+			font-weight: 600;
+			line-height: 24px;
+			margin: 0;
+		}
+	}
+
+	.gla-price-benchmark-suggestions-banner__footer {
+		align-items: start;
+		display: flex;
+		flex-direction: column;
+		gap: $grid-unit-20;
+		grid-column: span 2;
+
+		@include break-medium {
+			grid-area: footer;
+		}
+
+		p {
+			margin: 0;
+			max-width: 700px;
+		}
+	}
+}

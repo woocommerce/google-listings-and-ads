@@ -1,0 +1,12 @@
+.gla-change-price-modal__metric-value {
+	.gla-change-price-modal__metric-value-title {
+		color: $gray-700;
+		margin-bottom: $grid-unit-10;
+	}
+
+	.gla-change-price-modal__metric-value-value {
+		font-size: $gla-font-small-medium;
+		font-weight: 600;
+		line-height: $gla-line-height-medium-large;
+	}
+}

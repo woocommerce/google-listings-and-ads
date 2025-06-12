@@ -340,6 +340,7 @@ When a documentation link is clicked.
 	- with `{ context: "reports-products", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
 	- with `{ context: "reports-programs", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
 - [`EditStoreAddress`](../../js/src/pages/settings/edit-store-address.js#L41) with `{ context: "settings-store-address", link_id: "contact-information-read-more", href: "https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#contact-information" }`
+- [`FaqLink`](../../js/src/pages/price-benchmark/faq-link.js#L20) with `{ context: 'price-benchmark-suggestions', link_id: 'price-benchmark-suggestions-faq' }` and the URL.
 - [`Faqs`](../../js/src/components/paid-ads/asset-group/faqs.js#L72) with `{ context: 'assets-faq', linkId: 'assets-faq-about-ad-formats-available-in-different-campaign-types', href: 'https://support.google.com/google-ads/answer/1722124' }`.
 - [`Faqs`](../../js/src/pages/get-started/faqs/index.js#L428)
 	- with `{ context: 'faqs', linkId: 'general-requirements', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#general-requirements' }`.
@@ -589,6 +590,22 @@ Clicking on the "Yes, I want a new account" button in the warning modal for crea
 #### Emitters
 - [`WarningModal`](../../js/src/components/google-mc-account-card/warning-modal/index.js#L29)
 
+### [`gla_modal_closed`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L44)
+
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the event is triggered.
+`product_id` | `number` | The ID of the product whose price is being changed.
+`action` | `string` | The action taken to close the modal.
+#### Emitters
+- [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
+- [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
+- [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L67) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
+- [`Dashboard`](../../js/src/pages/dashboard/index.js#L33) when CES modal is closed.
+- [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
+- [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L155) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss'`
+
 ### [`gla_modal_closed`](../../js/src/utils/tracks.js#L241)
 A modal is closed.
 #### Properties
@@ -598,6 +615,8 @@ A modal is closed.
 `action` | `string` | Indicates the modal is closed by what action (e.g. `maybe-later`\|`dismiss` \| `create-another-campaign`)    - `maybe-later` is used when the "Maybe later" button on the modal is clicked    - `dismiss` is used when the modal is dismissed by clicking on "X" icon, overlay, generic "Cancel" button, or pressing ESC    - `create-another-campaign` is used when the button "Create another campaign" is clicked    - `create-paid-campaign` is used when the button "Create paid campaign" is clicked    - `confirm` is used when the button "Confirm", "Save"  or similar generic "Accept" button is clicked
 #### Emitters
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
+- [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
+- [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L67) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
 - [`Dashboard`](../../js/src/pages/dashboard/index.js#L33) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L155) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss'`
@@ -612,6 +631,19 @@ Clicking on a text link within the modal content
 #### Emitters
 - [`ContentLink`](../../js/src/components/guide-page-content/index.js#L46) with given `context, href`
 
+### [`gla_modal_open`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L38)
+
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the event is triggered.
+`product_id` | `number` | The ID of the product whose price is being changed.
+#### Emitters
+- [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is open with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal' }`
+- [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L67) with `{ context: 'price-benchmark-change-price-modal' }` and the product ID.
+- [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `context: REQUEST_REVIEW`
+- [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L155) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
+
 ### [`gla_modal_open`](../../js/src/utils/tracks.js#L254)
 A modal is open
 #### Properties
@@ -620,6 +652,7 @@ A modal is open
 `context` | `string` | Indicates which modal is open
 #### Emitters
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is open with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal' }`
+- [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L67) with `{ context: 'price-benchmark-change-price-modal' }` and the product ID.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L155) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
@@ -670,6 +703,40 @@ Triggered when moving to another step during creating/editing a campaign.
 - [`EditPaidAdsCampaign`](../../js/src/pages/edit-paid-ads-campaign/index.js#L69)
 	- with `{ context: 'edit-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
 	- with `{ context: 'edit-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
+
+### [`gla_price_benchmarks_change_price_clicked`](../../js/src/pages/price-benchmark/change-price.js#L19)
+
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the event is triggered.
+`product_id` | `number` | The ID of the product whose price is being changed.
+#### Emitters
+- [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal' }` and the product ID.
+
+### [`gla_price_benchmarks_change_price_edited`](../../js/src/pages/price-benchmark/change-price-modal/price-input-footer.js#L19)
+
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the event is triggered.
+`product_id` | `number` | The ID of the product whose price is being changed.
+`previous_price` | `number` | The previous price of the product.
+`recommended_price` | `number` | The recommended price for the product.
+`changed_price` | `number` | The new price set for the product.
+`currency` | `string` | The currency of the product price.
+#### Emitters
+- [`PriceInputFooter`](../../js/src/pages/price-benchmark/change-price-modal/price-input-footer.js#L48)
+
+### [`gla_price_benchmarks_shown`](../../js/src/pages/price-benchmark/price-benchmark-suggestions/index.js#L167)
+
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context of the event.
+`suggestions` | `number` | The number of suggestions shown.
+#### Emitters
+- [`PriceBenchmarkSuggestions`](../../js/src/pages/price-benchmark/price-benchmark-suggestions/index.js#L187) with `{ context: 'price-benchmark-suggestions' }` and the suggestions count.
 
 ### [`gla_request_review`](../../js/src/pages/product-feed/review-request/review-request-modal.js#L19)
 Triggered when request review button is clicked

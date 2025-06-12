@@ -102,6 +102,15 @@
 		</properties>
 	</rule>
 
+	<!-- Array key values get very long. Let's keep 'em aligned, eh? -->
+	<!-- See: https://github.com/WordPress/WordPress-Coding-Standards/wiki/Customizable-sniff-properties#wordpressarraysmultiplestatementalignment-maximum-column -->
+	<rule ref="WordPress.Arrays.MultipleStatementAlignment">
+		<properties>
+			<property name="maxColumn" value="80"/>
+		</properties>
+	</rule>
+
+
 	<!-- Check the main PHP file and everything in src/ -->
 	<arg name="extensions" value="php"/>
 	<file>./src</file>
