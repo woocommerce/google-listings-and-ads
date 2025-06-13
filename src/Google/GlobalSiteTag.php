@@ -641,15 +641,15 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			];
 
 			if ( ! empty( $customer['address'] ) ) {
-				$ec_data['street'] = $customer['address'];
+				$ec_data['address']['street'] = $customer['address'];
 			}
 
 			if ( ! empty( $customer['city'] ) ) {
-				$ec_data['city'] = $customer['city'];
+				$ec_data['address']['city'] = $customer['city'];
 			}
 
 			if ( ! empty( $customer['state'] ) ) {
-				$ec_data['region'] = $customer['state'];
+				$ec_data['address']['region'] = $customer['state'];
 			}
 		}
 
