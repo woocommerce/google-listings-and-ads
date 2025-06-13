@@ -31,7 +31,7 @@ use Google\Ads\GoogleAds\V20\Services\Client\CustomerUserAccessServiceClient;
 use Google\Ads\GoogleAds\V20\Services\Client\GeoTargetConstantServiceClient;
 use Google\Ads\GoogleAds\V20\Services\Client\GoogleAdsServiceClient;
 use Google\Ads\GoogleAds\V20\Services\Client\ProductLinkInvitationServiceClient;
-use Google\Ads\GoogleAds\V18\Services\Client\RecommendationServiceClient;
+use Google\Ads\GoogleAds\V20\Services\Client\RecommendationServiceClient;
 
 /**
  * Contains service client factory methods.
