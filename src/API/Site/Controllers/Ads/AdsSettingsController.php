@@ -22,7 +22,7 @@ class AdsSettingsController extends BaseOptionsController {
 	/**
 	 * AdsSettingsController constructor.
 	 *
-	 * @param RESTServer   $server
+	 * @param RESTServer $server
 	 */
 	public function __construct( RESTServer $server ) {
 		parent::__construct( $server );
@@ -44,7 +44,7 @@ class AdsSettingsController extends BaseOptionsController {
 					'methods'             => TransportMethods::EDITABLE,
 					'callback'            => $this->get_settings_endpoint_edit_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_endpoint_params()
+					'args'                => $this->get_endpoint_params(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
