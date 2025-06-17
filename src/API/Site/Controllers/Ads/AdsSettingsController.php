@@ -125,7 +125,7 @@ class AdsSettingsController extends BaseOptionsController {
 	 */
 	protected function get_endpoint_params(): array {
 		return [
-			'enhanced_conversions_enabled' => [
+			OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED => [
 				'type'        => 'boolean',
 				'description' => __(
 					'Whether enhanced conversions are enabled.',
@@ -142,7 +142,7 @@ class AdsSettingsController extends BaseOptionsController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'enhanced_conversions_enabled' => [
+			OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED => [
 				'type'        => 'boolean',
 				'description' => __(
 					'Whether enhanced conversions are enabled.',
