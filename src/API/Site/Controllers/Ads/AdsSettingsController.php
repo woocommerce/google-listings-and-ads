@@ -82,7 +82,7 @@ class AdsSettingsController extends BaseOptionsController {
 				$settings[ $key ] = $this->options->get( $key, $default );
 			}
 
-			return $settings;
+			return new WP_REST_Response( $settings );
 		};
 	}
 
@@ -114,7 +114,7 @@ class AdsSettingsController extends BaseOptionsController {
 				$settings[ $key ] = $value;
 			}
 
-			return $settings;
+			return new WP_REST_Response( $settings );
 		};
 	}
 
