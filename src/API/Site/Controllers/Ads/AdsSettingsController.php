@@ -87,7 +87,7 @@ class AdsSettingsController extends BaseOptionsController {
 	}
 
 	/**
-	 * Get a callback for editing the settings endpoint.
+	 * Get a callback for editing the ads settings endpoint.
 	 *
 	 * @return callable
 	 */
@@ -102,7 +102,7 @@ class AdsSettingsController extends BaseOptionsController {
 					continue;
 				}
 
-				$result = $this->options->update( $key, $value );
+				$result = $this->options->update( $key, (bool) $value );
 
 				if ( false === $result ) {
 					return new WP_REST_Response(
@@ -119,7 +119,7 @@ class AdsSettingsController extends BaseOptionsController {
 	}
 
 	/**
-	 * Get requests parameters for the settings endpoint.
+	 * Get requests parameters for the ads settings endpoint.
 	 *
 	 * @return array
 	 */
@@ -136,7 +136,7 @@ class AdsSettingsController extends BaseOptionsController {
 	}
 
 	/**
-	 * Get the schema for settings endpoints.
+	 * Get the schema for ads settings endpoints.
 	 *
 	 * @return array
 	 */
