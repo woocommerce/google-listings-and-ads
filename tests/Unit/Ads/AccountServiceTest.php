@@ -97,6 +97,7 @@ class AccountServiceTest extends UnitTest {
 	];
 	protected const TEST_DISCONNECTED_DATA = [
 		'id'       => 0,
+		'ocid'     => null,
 		'currency' => null,
 		'symbol'   => '$',
 		'status'   => 'disconnected',
