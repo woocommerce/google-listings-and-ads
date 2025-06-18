@@ -61,4 +61,17 @@ class AdsSettingsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( $expected, $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
 	}
+
+	public function test_edit_settings_fail() {
+		$query = [
+			'enhanced_conversions_enabled' => false,
+		];
+
+		$this->options->expects( $this->once() )->method( 'update' )->with( OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED, false )->willReturn( false );
+
+		$response = $this->do_request( self::ROUTE_SETTINGS, 'POST', $query );
+
+		$this->assertEquals( 'Unable to update setting.', $response->get_data() );
+		$this->assertEquals( 400, $response->get_status() );
+	}
 }

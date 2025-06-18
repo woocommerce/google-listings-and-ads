@@ -97,7 +97,7 @@ class AdsSettingsController extends BaseOptionsController {
 				if ( false === $result ) {
 					return new WP_REST_Response(
 						__( 'Unable to update setting.', 'google-listings-and-ads' ),
-						403
+						400
 					);
 				}
 
