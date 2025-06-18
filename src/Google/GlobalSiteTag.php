@@ -614,7 +614,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 */
 	public function get_enhanced_conversion_tag() {
 		// TODO: Check enhanced conversion option status when implemented.
-		// $enhanced_conversions =$this->options->get( OptionsInterface::ADS_ENHANCED_CONVERSION_STATUS );
+		// $enhanced_conversions = $this->options->get( OptionsInterface::ADS_ENHANCED_CONVERSION_STATUS );
 		$enhanced_conversions = true;
 
 		if ( ! $enhanced_conversions ) {
@@ -628,14 +628,14 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 		// Add email address to enhanced conversion data.
 		if ( ! empty( $customer['email'] ) ) {
-			$ec_data['sha256_email_address'] = esc_js( $this->normalize_and_hash( $customer['email'] ) );
+			$ec_data['sha256_email_address'] = $this->normalize_and_hash( $customer['email'] );
 		}
 
 		// Add address details if available.
 		if ( ! empty( $customer['first_name'] ) && ! empty( $customer['last_name'] ) && ! empty( $customer['postcode'] ) && ! empty( $customer['country'] ) ) {
 			$ec_data['address'] = [
-				'sha256_first_name' => esc_js( $this->normalize_and_hash( $customer['first_name'] ) ),
-				'sha256_last_name'  => esc_js( $this->normalize_and_hash( $customer['last_name'] ) ),
+				'sha256_first_name' => $this->normalize_and_hash( $customer['first_name'] ),
+				'sha256_last_name'  => $this->normalize_and_hash( $customer['last_name'] ),
 				'postal_code'       => $customer['postcode'],
 				'country'           => $customer['country'],
 			];
@@ -663,7 +663,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			$phone = $this->format_phone_to_international( $customer['phone'], $customer['country'] );
 
 			if ( ! empty( $phone ) ) {
-				$ec_data['sha256_phone_number'] = esc_js( $this->normalize_and_hash( $phone ) );
+				$ec_data['sha256_phone_number'] = $this->normalize_and_hash( $phone );
 			}
 		}
 
