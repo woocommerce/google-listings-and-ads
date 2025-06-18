@@ -1,4 +1,6 @@
 .gla-asset-group-section {
+	margin-bottom: $grid-unit-20;
+
 	&__optional-label,
 	&__primary-description {
 		font-weight: normal;
@@ -16,6 +18,19 @@
 		> svg {
 			fill: #007cba;
 			align-self: initial;
+		}
+	}
+
+	&__primary-description {
+
+		ul {
+			list-style-type: disc;
+			margin: 0 0 $grid-unit-10;
+			padding-left: $grid-unit-20;
+		}
+
+		li {
+			margin: 0;
 		}
 	}
 }

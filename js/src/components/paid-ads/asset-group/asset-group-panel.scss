@@ -1,4 +1,4 @@
-.gla-asset-group-card {
+.gla-asset-group-panel {
 	.components-external-link {
 		margin-left: $grid-unit-05;
 	}
@@ -51,5 +51,11 @@
 			padding-left: $grid-unit-20;
 			padding-right: $grid-unit-20;
 		}
+	}
+}
+
+.gla-asset-group-panel-section {
+	.gla-section__body {
+		gap: 0;
 	}
 }
