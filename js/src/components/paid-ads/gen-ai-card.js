@@ -37,12 +37,10 @@ const GenAICard = () => {
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const queryArgs = {};
 
-	if ( googleAdsAccount?.id ) {
+	if ( googleAdsAccount?.ocid ) {
+		queryArgs.ocid = googleAdsAccount.ocid;
+	} else if ( googleAdsAccount?.id ) {
 		queryArgs.ecid = googleAdsAccount.id;
-	}
-
-	if ( googleAdsAccount?.ociId ) {
-		queryArgs.ocid = googleAdsAccount.ociId;
 	}
 
 	const recommendationsURL = addQueryArgs(
@@ -105,7 +103,6 @@ const GenAICard = () => {
 									googleAdsAccount.status !== 'connected'
 								}
 								target="_blank"
-								rel="noopener noreferrer"
 								isSecondary
 							>
 								{ __(
