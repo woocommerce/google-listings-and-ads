@@ -6,7 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
 use WP_REST_Response;
 
@@ -18,15 +17,6 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
 class AdsSettingsController extends BaseOptionsController {
-
-	/**
-	 * AdsSettingsController constructor.
-	 *
-	 * @param RESTServer $server
-	 */
-	public function __construct( RESTServer $server ) {
-		parent::__construct( $server );
-	}
 
 	/**
 	 * Register rest routes with WordPress.
