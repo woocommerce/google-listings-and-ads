@@ -84,12 +84,14 @@ class AccountServiceTest extends UnitTest {
 	];
 	protected const TEST_CONNECTED_DATA    = [
 		'id'       => self::TEST_ACCOUNT_ID,
+		'ocid'     => self::TEST_ACCOUNT_OCID,
 		'currency' => 'EUR',
 		'symbol'   => '€',
 		'status'   => 'connected',
 	];
 	protected const TEST_INCOMPLETE_DATA   = [
 		'id'       => self::TEST_ACCOUNT_ID,
+		'ocid'     => self::TEST_ACCOUNT_OCID,
 		'currency' => 'EUR',
 		'symbol'   => '€',
 		'status'   => 'incomplete',
