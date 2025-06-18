@@ -26,8 +26,8 @@ import { render, screen } from '@testing-library/react';
 import AssetGroupSection from '~/components/paid-ads/asset-group/asset-group-section';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 
-jest.mock( '~/components/paid-ads/asset-group/asset-group-card', () =>
-	jest.fn( ( props ) => <div { ...props } /> ).mockName( 'AssetGroupCard' )
+jest.mock( '~/components/paid-ads/asset-group/asset-group-panel', () =>
+	jest.fn( ( props ) => <div { ...props } /> ).mockName( 'AssetGroupPanel' )
 );
 
 describe( 'AssetGroupSection', () => {
