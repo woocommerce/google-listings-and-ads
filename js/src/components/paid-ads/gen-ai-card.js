@@ -16,7 +16,6 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-
 import Badge from '~/components/badge';
 import Section from '~/components/section';
 import AppButton from '~/components/app-button';
