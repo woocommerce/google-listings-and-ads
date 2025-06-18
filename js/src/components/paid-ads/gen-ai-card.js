@@ -92,9 +92,7 @@ const GenAICard = () => {
 							</div>
 
 							<AppButton
-								icon={
-									<Icon icon={ externalIcon } size={ 20 } />
-								}
+								icon={ <Icon icon={ externalIcon } /> }
 								iconPosition="right"
 								href={ recommendationsURL }
 								disabled={
