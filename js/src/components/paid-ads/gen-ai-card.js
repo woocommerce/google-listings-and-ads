@@ -9,6 +9,7 @@ import {
 	CardBody,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { addQueryArgs } from '@wordpress/url';
 import { external as externalIcon } from '@wordpress/icons';
 import { createInterpolateElement } from '@wordpress/element';
 
@@ -34,6 +35,20 @@ import './gen-ai-card.scss';
  */
 const GenAICard = () => {
 	const { googleAdsAccount } = useGoogleAdsAccount();
+	const queryArgs = {};
+
+	if ( googleAdsAccount?.id ) {
+		queryArgs.ecid = googleAdsAccount.id;
+	}
+
+	if ( googleAdsAccount?.ociId ) {
+		queryArgs.ocid = googleAdsAccount.ociId;
+	}
+
+	const recommendationsURL = addQueryArgs(
+		'https://ads.google.com/aw/recommendations',
+		queryArgs
+	);
 
 	return (
 		<Section.Card className="gla-gen-ai-card">
@@ -84,7 +99,7 @@ const GenAICard = () => {
 									<Icon icon={ externalIcon } size={ 20 } />
 								}
 								iconPosition="right"
-								href={ `https://ads.google.com/aw/recommendations?ecid=${ googleAdsAccount?.id }` }
+								href={ recommendationsURL }
 								disabled={
 									! googleAdsAccount ||
 									googleAdsAccount.status !== 'connected'
