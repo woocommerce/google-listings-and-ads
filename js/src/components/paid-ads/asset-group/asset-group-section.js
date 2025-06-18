@@ -14,6 +14,7 @@ import Section from '~/components/section';
 import FinalUrlCard from './final-url-card';
 import AssetGroupCard from './asset-group-card';
 import AppDocumentationLink from '~/components/app-documentation-link';
+import GenAICard from '../gen-ai-card';
 import './asset-group-section.scss';
 
 /**
@@ -79,6 +80,7 @@ export default function AssetGroupSection() {
 					) }
 				</Tip>
 			) }
+			<GenAICard />
 			<AssetGroupCard />
 		</Section>
 	);
