@@ -122,7 +122,6 @@ export default function CampaignAssetsForm( {
 		useBudgetRecommendation( countryCodes );
 
 	const budgetRecommendation = budgetRecommendationData || {};
-	const recommendedDailyBudget = budgetRecommendation.recommendedDailyBudget;
 
 	useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS,
@@ -175,7 +174,7 @@ export default function CampaignAssetsForm( {
 
 	const validateCampaignWithMinimumAmount = ( values ) => {
 		return validateCampaign( values, {
-			dailyBudget: recommendedDailyBudget,
+			dailyBudget: budgetRecommendation.dailyBudgetBaseline,
 			formatAmount,
 		} );
 	};
@@ -195,7 +194,7 @@ export default function CampaignAssetsForm( {
 					initialCampaign,
 					{
 						level: 'recommended',
-						amount: recommendedDailyBudget,
+						amount: budgetRecommendation.recommendedDailyBudget,
 					},
 					budgetRecommendation
 				),

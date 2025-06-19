@@ -271,9 +271,9 @@ describe( 'BudgetSetup', () => {
 		jest.clearAllTimers();
 	} );
 
-	it( 'should show help message when the entered custom budget is less than 30% of the recommended one', async () => {
+	it( 'should show help message when the entered custom budget is less than 30% of the daily budget baseline', async () => {
 		const user = userEvent.setup();
-		const message = 'Please make sure daily average cost is at least $5.00';
+		const message = 'Please make sure daily average cost is at least $4.00';
 
 		render( <Wrapper /> );
 
@@ -283,19 +283,19 @@ describe( 'BudgetSetup', () => {
 
 		const input = screen.getByRole( 'textbox' );
 		await user.clear( input );
-		await user.type( input, '4.99' );
+		await user.type( input, '3.99' );
 		await user.tab();
 
 		expect( screen.getByText( message ) ).toBeInTheDocument();
 
 		await user.clear( input );
-		await user.type( input, '5' );
+		await user.type( input, '4' );
 		await user.tab();
 
 		expect( screen.queryByText( message ) ).not.toBeInTheDocument();
 	} );
 
-	it( 'should notice the recommended budget when the custom budget is lower than the lowest recommended one and not less than 30% of the recommended one', async () => {
+	it( 'should notice the recommended budget when the custom budget is lower than the lowest recommended one and not less than 30% of the daily budget baseline', async () => {
 		const user = userEvent.setup();
 		const notice = `Your budget is lower than other advertisers' budgets, which may affect performance. For best results, we recommend at least $15.00 per day.`;
 

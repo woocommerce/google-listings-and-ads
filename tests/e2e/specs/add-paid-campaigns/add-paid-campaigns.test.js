@@ -404,7 +404,7 @@ test.describe( 'Set up Ads account', () => {
 				).toBeEnabled();
 			} );
 
-			test( 'Continue button should be disabled if budget is less than 30% of the recommended value', async () => {
+			test( 'Continue button should be disabled if budget is less than 30% of the daily budget baseline', async () => {
 				await setupBudgetPage.fillBudget( '2' );
 
 				await expect(
@@ -413,12 +413,12 @@ test.describe( 'Set up Ads account', () => {
 			} );
 
 			test( 'User is notified of the minimum value', async () => {
-				await setupBudgetPage.fillBudget( '4' );
+				await setupBudgetPage.fillBudget( '3' );
 				await setupBudgetPage.getBudgetInput().blur();
 
 				await expect(
 					page.getByText(
-						'Please make sure daily average cost is at least €5.00'
+						'Please make sure daily average cost is at least €4.00'
 					)
 				).toBeVisible();
 			} );
