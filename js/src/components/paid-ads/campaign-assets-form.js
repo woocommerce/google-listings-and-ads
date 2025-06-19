@@ -9,6 +9,7 @@ import { isPlainObject } from 'lodash';
  */
 import { ASSET_GROUP_KEY, ASSET_FORM_KEY } from '~/constants';
 import AdaptiveForm from '~/components/adaptive-form';
+import AppSpinner from '~/components/app-spinner';
 import validateCampaign from '~/components/paid-ads/validateCampaign';
 import validateAssetGroup from '~/components/paid-ads/validateAssetGroup';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
@@ -131,7 +132,7 @@ export default function CampaignAssetsForm( {
 	);
 
 	if ( ! hasResolved ) {
-		return null;
+		return <AppSpinner />;
 	}
 
 	const extendAdapter = ( formContext ) => {
