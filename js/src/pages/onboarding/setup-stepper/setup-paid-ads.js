@@ -31,7 +31,7 @@ import AppSpinner from '~/components/app-spinner';
  * Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
  *
  * @event gla_onboarding_complete_with_paid_ads_button_click
- * @property {string} level The selected level of the budget recommendation, e.g. 'low', 'medium', 'high', 'custom'.
+ * @property {string} level The selected level of the budget recommendation, e.g. 'low', 'recommended', 'high', 'custom'.
  * @property {number} budget The budget for the campaign
  * @property {string} audiences The targeted audiences for the campaign
  * @property {string} source The data source of the budget recommendations, e.g. 'google-ads-api', 'fallback-database'.
