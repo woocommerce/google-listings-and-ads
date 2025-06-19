@@ -13,10 +13,12 @@ import StepContentHeader from '~/components/stepper/step-content-header';
 import StepContentFooter from '~/components/stepper/step-content-footer';
 import StepContentActions from '~/components/stepper/step-content-actions';
 import AppButton from '~/components/app-button';
-import AssetGroupSection from './asset-group-section';
 import Faqs from './faqs';
 import { recordGlaEvent } from '~/utils/tracks';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
+import AssetGroupHeader from './asset-group-header';
+import AssetGroupEditor from './asset-group-editor';
+import './asset-group.scss';
 
 export const ACTION_SUBMIT_CAMPAIGN_AND_ASSETS = 'submit-campaign-and-assets';
 export const ACTION_SUBMIT_CAMPAIGN_ONLY = 'submit-campaign-only';
@@ -117,7 +119,9 @@ export default function AssetGroup( { campaign } ) {
 					'google-listings-and-ads'
 				) }
 			/>
-			<AssetGroupSection />
+
+			<AssetGroupHeader />
+			<AssetGroupEditor />
 
 			<StepContentFooter>
 				<StepContentActions>
