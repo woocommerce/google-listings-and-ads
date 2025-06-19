@@ -111,15 +111,16 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 		];
 
 		$expected_response_data = [
-			'currency'        => 'TWD',
-			'recommendations' => [
+			'currency'              => 'TWD',
+			'recommendations'       => [
 				[
 					'daily_budget' => 330.0,
 					'country'      => 'TW',
 					'level'        => 'Recommended',
 				],
 			],
-			'source'          => 'fallback-database',
+			'daily_budget_baseline' => 330.0,
+			'source'                => 'fallback-database',
 		];
 
 		$this->ads->expects( $this->once() )
@@ -142,9 +143,10 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 		];
 
 		$expected_response_data = [
-			'currency'        => 'GBP',
-			'recommendations' => self::RECOMMENDATION_DATA,
-			'source'          => 'google-ads-api',
+			'currency'              => 'GBP',
+			'recommendations'       => self::RECOMMENDATION_DATA,
+			'daily_budget_baseline' => 0,
+			'source'                => 'google-ads-api',
 		];
 
 		$this->ads->expects( $this->once() )
@@ -179,15 +181,16 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 		];
 
 		$expected_response_data = [
-			'currency'        => 'GBP',
-			'recommendations' => [
+			'currency'              => 'GBP',
+			'recommendations'       => [
 				[
 					'daily_budget' => 15.0,
 					'country'      => 'GB',
 					'level'        => 'Recommended',
 				],
 			],
-			'source'          => 'fallback-database',
+			'daily_budget_baseline' => 15.0,
+			'source'                => 'fallback-database',
 		];
 
 		$this->ads->expects( $this->once() )
@@ -228,8 +231,8 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 		];
 
 		$expected_response_data = [
-			'currency'        => 'GBP',
-			'recommendations' => [
+			'currency'              => 'GBP',
+			'recommendations'       => [
 				[
 					'daily_budget' => 13.2,
 					'country'      => 'GB',
@@ -247,7 +250,8 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 					'level'        => 'High',
 				],
 			],
-			'source'          => 'fallback-database',
+			'daily_budget_baseline' => 13.2,
+			'source'                => 'fallback-database',
 		];
 
 		$this->ads->expects( $this->once() )
@@ -287,8 +291,8 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 		];
 
 		$expected_response_data = [
-			'currency'        => 'GBP',
-			'recommendations' => [
+			'currency'              => 'GBP',
+			'recommendations'       => [
 				[
 					'daily_budget' => 13.2,
 					'country'      => 'GB',
@@ -305,7 +309,8 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 					'level'        => 'High',
 				],
 			],
-			'source'          => 'fallback-database',
+			'daily_budget_baseline' => 13.2,
+			'source'                => 'fallback-database',
 		];
 
 		$this->ads->expects( $this->once() )

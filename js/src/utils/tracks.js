@@ -173,7 +173,7 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  * Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign in the Google Ads setup flow.
  *
  * @event gla_launch_paid_campaign_button_click
- * @property {string} level The selected level of the budget recommendation, e.g. 'low', 'medium', 'high', 'custom'.
+ * @property {string} level The selected level of the budget recommendation, e.g. 'low', 'recommended', 'high', 'custom'.
  * @property {string} audiences Country codes of the paid campaign audience countries, e.g. `'US,JP,AU'`. This means the campaign is created with the multi-country targeting feature. Before this feature support, it was implemented as 'audience'.
  * @property {number} budget Daily average cost of the paid campaign
  * @property {string} source The data source of the budget recommendations, e.g. 'google-ads-api', 'fallback-database'.

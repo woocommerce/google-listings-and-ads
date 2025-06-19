@@ -15,6 +15,7 @@ describe( 'adaptAdsBudgetRecommendation', () => {
 		input = {
 			currency: 'USD',
 			source: 'google-ads-api',
+			daily_budget_baseline: 13,
 			recommendations: [
 				{
 					level: 'Recommended',
@@ -86,6 +87,8 @@ describe( 'adaptAdsBudgetRecommendation', () => {
 			recommended,
 			high,
 			low,
+			dailyBudgetBaseline: 13,
+			recommendedDailyBudget: 15,
 			eventProps: {
 				source: 'google-ads-api',
 				metrics_availability: 'all',
@@ -102,6 +105,8 @@ describe( 'adaptAdsBudgetRecommendation', () => {
 		expect( adaptAdsBudgetRecommendation( input ) ).toEqual( {
 			recommended,
 			high,
+			dailyBudgetBaseline: 13,
+			recommendedDailyBudget: 15,
 			eventProps: {
 				source: 'google-ads-api',
 				metrics_availability: 'all',

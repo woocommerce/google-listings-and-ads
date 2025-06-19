@@ -23,8 +23,9 @@ jest.mock( '~/hooks/useGoogleAdsAccount', () =>
 jest.mock( '~/hooks/useBudgetRecommendation', () =>
 	jest.fn().mockReturnValue( {
 		hasResolved: true,
-		recommendedDailyBudget: 15,
 		data: {
+			dailyBudgetBaseline: 13,
+			recommendedDailyBudget: 15,
 			recommended: {
 				currency: 'USD',
 				country: 'US',

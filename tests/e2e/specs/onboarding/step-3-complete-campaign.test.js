@@ -215,11 +215,12 @@ test.describe( 'Complete your campaign', () => {
 				await setupAdsAccountPage.mockAdsAccountConnected();
 				await setupBudgetPage.fulfillBudgetRecommendations( {
 					currency: 'TWD',
+					daily_budget_baseline: 100,
 					recommendations: [
 						{
 							level: 'Recommended',
 							country: 'TW',
-							daily_budget: 100,
+							daily_budget: 120,
 							metrics: {
 								cost: 700,
 								conversions: 2.2,
@@ -257,7 +258,7 @@ test.describe( 'Complete your campaign', () => {
 					await page.getByLabel( 'custom' ).click();
 					await expect(
 						setupBudgetPage.getBudgetInput()
-					).toHaveValue( '100.00' );
+					).toHaveValue( '120.00' );
 				} );
 			} );
 
@@ -300,7 +301,7 @@ test.describe( 'Complete your campaign', () => {
 
 					await expect(
 						page.getByText(
-							`Your budget is lower than other advertisers' budgets, which may affect performance. For best results, we recommend at least NT$100.00 per day.`
+							`Your budget is lower than other advertisers' budgets, which may affect performance. For best results, we recommend at least NT$120.00 per day.`
 						)
 					).toBeVisible();
 				} );

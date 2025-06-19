@@ -9,6 +9,7 @@ import { isPlainObject } from 'lodash';
  */
 import { ASSET_GROUP_KEY, ASSET_FORM_KEY } from '~/constants';
 import AdaptiveForm from '~/components/adaptive-form';
+import AppSpinner from '~/components/app-spinner';
 import validateCampaign from '~/components/paid-ads/validateCampaign';
 import validateAssetGroup from '~/components/paid-ads/validateAssetGroup';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
@@ -117,11 +118,10 @@ export default function CampaignAssetsForm( {
 	const [ baseAssetGroup, setBaseAssetGroup ] = useState( initialAssetGroup );
 	const [ hasImportedAssets, setHasImportedAssets ] = useState( false );
 	const { formatAmount } = useAdsCurrency();
-	const {
-		data: budgetRecommendation,
-		recommendedDailyBudget,
-		hasResolved,
-	} = useBudgetRecommendation( countryCodes );
+	const { data: budgetRecommendationData, hasResolved } =
+		useBudgetRecommendation( countryCodes );
+
+	const budgetRecommendation = budgetRecommendationData || {};
 
 	useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS,
@@ -129,7 +129,7 @@ export default function CampaignAssetsForm( {
 	);
 
 	if ( ! hasResolved ) {
-		return null;
+		return <AppSpinner />;
 	}
 
 	const extendAdapter = ( formContext ) => {
@@ -174,7 +174,7 @@ export default function CampaignAssetsForm( {
 
 	const validateCampaignWithMinimumAmount = ( values ) => {
 		return validateCampaign( values, {
-			dailyBudget: recommendedDailyBudget,
+			dailyBudget: budgetRecommendation.dailyBudgetBaseline,
 			formatAmount,
 		} );
 	};
@@ -194,7 +194,7 @@ export default function CampaignAssetsForm( {
 					initialCampaign,
 					{
 						level: 'recommended',
-						amount: recommendedDailyBudget,
+						amount: budgetRecommendation.recommendedDailyBudget,
 					},
 					budgetRecommendation
 				),

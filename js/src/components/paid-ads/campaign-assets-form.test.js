@@ -30,8 +30,9 @@ describe( 'CampaignAssetsForm', () => {
 
 		useBudgetRecommendation.mockReturnValue( {
 			hasResolved: true,
-			recommendedDailyBudget: 15,
 			data: {
+				dailyBudgetBaseline: 13,
+				recommendedDailyBudget: 15,
 				recommended: { dailyBudget: 15 },
 				high: { dailyBudget: 30 },
 				low: { dailyBudget: 5 },
@@ -56,6 +57,8 @@ describe( 'CampaignAssetsForm', () => {
 			adapter: expect.objectContaining( {
 				countryCodes,
 				budgetRecommendation: {
+					dailyBudgetBaseline: 13,
+					recommendedDailyBudget: 15,
 					recommended: { dailyBudget: 15 },
 					high: { dailyBudget: 30 },
 					low: { dailyBudget: 5 },
@@ -159,8 +162,9 @@ describe( 'CampaignAssetsForm', () => {
 	it( 'Should resolve the available level for the initial form values', () => {
 		useBudgetRecommendation.mockReturnValue( {
 			hasResolved: true,
-			recommendedDailyBudget: 15,
 			data: {
+				dailyBudgetBaseline: 13,
+				recommendedDailyBudget: 15,
 				recommended: { dailyBudget: 15 },
 			},
 		} );
@@ -190,8 +194,10 @@ describe( 'CampaignAssetsForm', () => {
 	it( 'Should fall back to the custom level for the initial form values when there is no level available', () => {
 		useBudgetRecommendation.mockReturnValue( {
 			hasResolved: true,
-			recommendedDailyBudget: 15,
-			data: {},
+			data: {
+				dailyBudgetBaseline: 13,
+				recommendedDailyBudget: 15,
+			},
 		} );
 
 		const children = jest.fn();
@@ -209,6 +215,34 @@ describe( 'CampaignAssetsForm', () => {
 			values: expect.objectContaining( {
 				amount: 10,
 				dailyBudget: 10,
+				level: 'custom',
+			} ),
+		} );
+
+		expect( children ).toHaveBeenLastCalledWith( formContextSchema );
+	} );
+
+	it( 'Should fall back to the custom level for the initial form values when budget recommendation responds with 404 not found', () => {
+		useBudgetRecommendation.mockReturnValue( {
+			hasResolved: true,
+			data: null,
+		} );
+
+		const children = jest.fn();
+
+		render(
+			<CampaignAssetsForm
+				validate={ alwaysValid }
+				initialCampaign={ { amount: 20, level: 'low' } }
+			>
+				{ children }
+			</CampaignAssetsForm>
+		);
+
+		const formContextSchema = expect.objectContaining( {
+			values: expect.objectContaining( {
+				amount: 20,
+				dailyBudget: 20,
 				level: 'custom',
 			} ),
 		} );

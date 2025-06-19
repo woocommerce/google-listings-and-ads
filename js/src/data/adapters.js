@@ -15,40 +15,40 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
 /**
  * Adapts the ads budget recommendation data received from API.
  *
- * @param {Object} data The ads budget recommendation data to be adapted.
+ * @param {Object} rawData The ads budget recommendation data to be adapted.
  * @return {AdsBudgetRecommendation} Ads budget recommendation data.
  */
-export function adaptAdsBudgetRecommendation( data ) {
+export function adaptAdsBudgetRecommendation( rawData ) {
 	const validLevelKeys = [ 'recommended', 'high', 'low' ];
-	const { currency, source } = data;
-	const eventProps = { source, metrics_availability: 'all' };
 	const availabilities = [];
+	const { currency, source, recommendations, ...data } =
+		convertKeysFromSnakeCaseToCamelCase( rawData );
 
-	const reducer = ( payload, item ) => {
-		const { level, ...adaptingData } = item;
+	recommendations.forEach( ( item ) => {
+		const { level, ...adaptingItem } = item;
 		const key = level.toLowerCase();
 
 		if ( validLevelKeys.includes( key ) ) {
-			availabilities.push( adaptingData.metrics );
-			adaptingData.currency = currency;
-			payload[ key ] =
-				convertKeysFromSnakeCaseToCamelCase( adaptingData );
+			availabilities.push( adaptingItem.metrics );
+			adaptingItem.currency = currency;
+			data[ key ] = adaptingItem;
 		}
+	} );
 
-		return payload;
+	data.recommendedDailyBudget = data.recommended.dailyBudget;
+	data.eventProps = {
+		source,
+		recommended_budget: data.recommendedDailyBudget,
+		metrics_availability: 'all',
 	};
 
-	const result = data.recommendations.reduce( reducer, { eventProps } );
-
 	if ( availabilities.filter( Boolean ).length === 0 ) {
-		eventProps.metrics_availability = 'none';
+		data.eventProps.metrics_availability = 'none';
 	} else if ( ! availabilities.every( Boolean ) ) {
-		eventProps.metrics_availability = 'partial';
+		data.eventProps.metrics_availability = 'partial';
 	}
 
-	eventProps.recommended_budget = result.recommended.dailyBudget;
-
-	return result;
+	return data;
 }
 
 /**

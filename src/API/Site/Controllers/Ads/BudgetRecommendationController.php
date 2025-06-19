@@ -115,10 +115,15 @@ class BudgetRecommendationController extends BaseController implements Container
 			// For the frontend side to track the source of the recommendations.
 			$source = 'google-ads-api';
 
+			// The fallback recommendation is still needed to ensure there is a
+			// baseline budget for validating the minimum value.
+			$budget_baseline = 0;
+
 			// Fetch fallback recommendation from the database.
 			$fallback_recommendation = $this->get_fallback_recommendation( $country_codes, $currency );
 			if ( $fallback_recommendation ) {
 				$fallback_budget = $fallback_recommendation[0]['daily_budget'] ?? 0;
+				$budget_baseline = $fallback_budget;
 
 				// Swap recommended if not set or if fallback is higher.
 				if ( empty( $recommendations[0] ) || ( ! empty( $recommendations[0]['daily_budget'] ) && $recommendations[0]['daily_budget'] < $fallback_budget ) ) {
@@ -157,9 +162,10 @@ class BudgetRecommendationController extends BaseController implements Container
 
 			return $this->prepare_item_for_response(
 				[
-					'currency'        => $currency,
-					'recommendations' => $recommendations,
-					'source'          => $source,
+					'currency'              => $currency,
+					'recommendations'       => $recommendations,
+					'daily_budget_baseline' => $budget_baseline,
+					'source'                => $source,
 				],
 				$request
 			);
@@ -205,13 +211,13 @@ class BudgetRecommendationController extends BaseController implements Container
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'currency'        => [
+			'currency'              => [
 				'type'              => 'string',
 				'description'       => __( 'The currency to use for the shipping rate.', 'google-listings-and-ads' ),
 				'context'           => [ 'view' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'recommendations' => [
+			'recommendations'       => [
 				'type'  => 'array',
 				'items' => [
 					'type'       => 'object',
@@ -252,7 +258,12 @@ class BudgetRecommendationController extends BaseController implements Container
 					],
 				],
 			],
-			'source'          => [
+			'daily_budget_baseline' => [
+				'type'        => 'number',
+				'description' => __( 'The baseline daily budget for a country.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+			],
+			'source'                => [
 				'type'        => 'string',
 				'enum'        => [ 'google-ads-api', 'fallback-database' ],
 				'description' => __( 'Data source of the budget recommendations, either from Google Ads API or fallback database.', 'google-listings-and-ads' ),
