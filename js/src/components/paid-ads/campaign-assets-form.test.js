@@ -216,6 +216,34 @@ describe( 'CampaignAssetsForm', () => {
 		expect( children ).toHaveBeenLastCalledWith( formContextSchema );
 	} );
 
+	it( 'Should fall back to the custom level for the initial form values when budget recommendation responds with 404 not found', () => {
+		useBudgetRecommendation.mockReturnValue( {
+			hasResolved: true,
+			data: null,
+		} );
+
+		const children = jest.fn();
+
+		render(
+			<CampaignAssetsForm
+				validate={ alwaysValid }
+				initialCampaign={ { amount: 20, level: 'low' } }
+			>
+				{ children }
+			</CampaignAssetsForm>
+		);
+
+		const formContextSchema = expect.objectContaining( {
+			values: expect.objectContaining( {
+				amount: 20,
+				dailyBudget: 20,
+				level: 'custom',
+			} ),
+		} );
+
+		expect( children ).toHaveBeenLastCalledWith( formContextSchema );
+	} );
+
 	it( 'Should resolve the dailyBudget from the custom level for the initial form values', () => {
 		const children = jest.fn();
 

@@ -118,10 +118,12 @@ export default function CampaignAssetsForm( {
 	const [ hasImportedAssets, setHasImportedAssets ] = useState( false );
 	const { formatAmount } = useAdsCurrency();
 	const {
-		data: budgetRecommendation,
+		data: budgetRecommendationData,
 		recommendedDailyBudget,
 		hasResolved,
 	} = useBudgetRecommendation( countryCodes );
+
+	const budgetRecommendation = budgetRecommendationData || {};
 
 	useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS,
