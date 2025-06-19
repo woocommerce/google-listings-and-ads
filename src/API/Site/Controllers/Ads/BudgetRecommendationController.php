@@ -116,7 +116,7 @@ class BudgetRecommendationController extends BaseController implements Container
 			$source = 'google-ads-api';
 
 			// The fallback recommendation is still needed to ensure there is a
-			// baseline budget for validatting the minimum value.
+			// baseline budget for validating the minimum value.
 			$budget_baseline = 0;
 
 			// Fetch fallback recommendation from the database.
