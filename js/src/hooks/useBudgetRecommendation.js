@@ -17,7 +17,6 @@ import useCountryCodesForBudgetQuery from './useCountryCodesForBudgetQuery';
 /**
  * @typedef {Object} BudgetRecommendationPayload
  * @property {AdsBudgetRecommendation|null} data The budget recommendation data.
- * @property {number|null} recommendedDailyBudget The recommended daily budget. `null` if not yet fetched.
  * @property {boolean} hasResolved Whether the data fetching is finished.
  */
 
@@ -38,12 +37,6 @@ const useBudgetRecommendation = ( countryCodes ) => {
 				select( STORE_KEY );
 
 			const data = getAdsBudgetRecommendations( resolvedCountryCodes );
-			let recommendedDailyBudget = null;
-
-			if ( data ) {
-				recommendedDailyBudget = data.recommended.dailyBudget;
-			}
-
 			const hasResolved = resolvedCountryCodes.length
 				? hasFinishedResolution( 'getAdsBudgetRecommendations', [
 						resolvedCountryCodes,
@@ -52,7 +45,6 @@ const useBudgetRecommendation = ( countryCodes ) => {
 
 			return {
 				data,
-				recommendedDailyBudget,
 				hasResolved,
 			};
 		},

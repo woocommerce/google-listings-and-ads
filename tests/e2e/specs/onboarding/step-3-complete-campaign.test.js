@@ -215,6 +215,7 @@ test.describe( 'Complete your campaign', () => {
 				await setupAdsAccountPage.mockAdsAccountConnected();
 				await setupBudgetPage.fulfillBudgetRecommendations( {
 					currency: 'TWD',
+					daily_budget_baseline: 100,
 					recommendations: [
 						{
 							level: 'Recommended',

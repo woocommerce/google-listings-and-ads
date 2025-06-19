@@ -65,6 +65,7 @@ test.describe( 'Set up Ads account', () => {
 		} );
 		await setupBudgetPage.fulfillBudgetRecommendations( {
 			currency: 'EUR',
+			daily_budget_baseline: 12,
 			recommendations: [
 				{
 					level: 'Recommended',

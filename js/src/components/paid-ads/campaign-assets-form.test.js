@@ -30,8 +30,9 @@ describe( 'CampaignAssetsForm', () => {
 
 		useBudgetRecommendation.mockReturnValue( {
 			hasResolved: true,
-			recommendedDailyBudget: 15,
 			data: {
+				dailyBudgetBaseline: 13,
+				recommendedDailyBudget: 15,
 				recommended: { dailyBudget: 15 },
 				high: { dailyBudget: 30 },
 				low: { dailyBudget: 5 },
@@ -56,6 +57,8 @@ describe( 'CampaignAssetsForm', () => {
 			adapter: expect.objectContaining( {
 				countryCodes,
 				budgetRecommendation: {
+					dailyBudgetBaseline: 13,
+					recommendedDailyBudget: 15,
 					recommended: { dailyBudget: 15 },
 					high: { dailyBudget: 30 },
 					low: { dailyBudget: 5 },
@@ -159,8 +162,9 @@ describe( 'CampaignAssetsForm', () => {
 	it( 'Should resolve the available level for the initial form values', () => {
 		useBudgetRecommendation.mockReturnValue( {
 			hasResolved: true,
-			recommendedDailyBudget: 15,
 			data: {
+				dailyBudgetBaseline: 13,
+				recommendedDailyBudget: 15,
 				recommended: { dailyBudget: 15 },
 			},
 		} );
@@ -190,8 +194,10 @@ describe( 'CampaignAssetsForm', () => {
 	it( 'Should fall back to the custom level for the initial form values when there is no level available', () => {
 		useBudgetRecommendation.mockReturnValue( {
 			hasResolved: true,
-			recommendedDailyBudget: 15,
-			data: {},
+			data: {
+				dailyBudgetBaseline: 13,
+				recommendedDailyBudget: 15,
+			},
 		} );
 
 		const children = jest.fn();

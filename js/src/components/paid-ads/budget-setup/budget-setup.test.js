@@ -44,6 +44,8 @@ jest.mock( '~/hooks/useBudgetMetrics', () =>
 
 function mockBudgetRecommendation( ...availableKeys ) {
 	const data = {
+		dailyBudgetBaseline: 12,
+		recommendedDailyBudget: 15,
 		high: {
 			currency: 'USD',
 			country: 'US',
@@ -86,7 +88,6 @@ function mockBudgetRecommendation( ...availableKeys ) {
 
 	useBudgetRecommendation.mockReturnValue( {
 		hasResolved: true,
-		recommendedDailyBudget: 15,
 		data,
 	} );
 }
