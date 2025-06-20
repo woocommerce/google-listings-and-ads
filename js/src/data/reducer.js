@@ -70,6 +70,7 @@ const DEFAULT_STATE = {
 			step: null,
 		},
 		budgetRecommendations: {},
+		enable_enhanced_conversions: false,
 	},
 	gtinMigrationStatus: null,
 };
@@ -522,6 +523,12 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		case TYPES.RECEIVE_GTIN_MIGRATION_STATUS: {
 			const { data } = action;
 			return setIn( state, 'gtinMigrationStatus', data?.status );
+		}
+
+		case TYPES.UPDATE_ADS_ENHANCED_CONVERSIONS: {
+			const { status } = action;
+
+			return setIn( state, 'ads.enable_enhanced_conversions', status );
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

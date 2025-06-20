@@ -769,6 +769,38 @@ export function* updateAdsCampaign( id, data ) {
 }
 
 /**
+ * Update the enhanced conversions status.
+ *
+ * @param {boolean} status The status of the enhanced conversions.
+ * @return {Object} Action object to update the enhanced conversions status.
+ */
+export function* updateEnhancedConversionsStatus( status ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/settings`,
+			method: 'POST',
+			data: {
+				status,
+			},
+		} );
+
+		return {
+			type: TYPES.UPDATE_ADS_ENHANCED_CONVERSIONS,
+			status,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error updating the enhanced conversions status.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
+/**
  * Delete an ads campaign by ID.
  *
  * @param {number} id The ID of the ads campaign to be deleted.

@@ -2,11 +2,7 @@
  * External dependencies
  */
 import { getHistory } from '@woocommerce/navigation';
-import {
-	createInterpolateElement,
-	useEffect,
-	useCallback,
-} from '@wordpress/element';
+import { createInterpolateElement, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -18,13 +14,35 @@ import AppButton from '~/components/app-button';
 import AddPaidCampaignButton from '~/components/paid-ads/add-paid-campaign-button';
 import { glaData, GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '~/constants';
 import localStorage from '~/utils/localStorage';
-import { getProductFeedUrl } from '~/utils/urls';
+import { getProductFeedUrl, getSettingsUrl } from '~/utils/urls';
 import wooLogoURL from '~/images/logo/woocommerce-logo.svg';
 import googleLogoURL from '~/images/logo/google-logo.svg';
 import { recordGlaEvent } from '~/utils/tracks';
 import './index.scss';
 
 const EVENT_NAME = 'gla_modal_closed';
+
+const handleGuideFinish = ( e ) => {
+	getHistory().replace( getProductFeedUrl() );
+
+	// Since there is no built-in way to distinguish the modal/guide is closed by what action,
+	// here is a workaround by identifying the close button's data-action attribute.
+	let action = 'dismiss';
+
+	if ( e ) {
+		const target = e.currentTarget || e.target;
+		action = target.dataset.action || action;
+	}
+	recordGlaEvent( EVENT_NAME, {
+		context: GUIDE_NAMES.SUBMISSION_SUCCESS,
+		action,
+	} );
+};
+
+const handleSetupEnhancedConversionsOnClick = () => {
+	handleGuideFinish();
+	getHistory().push( getSettingsUrl() );
+};
 
 const image = (
 	<div className="gla-submission-success-guide__logo-block">
@@ -85,6 +103,66 @@ const pages = [
 				</p>
 			</GuidePageContent>
 		),
+		action: glaData.adsSetupComplete ? (
+			<AppButton
+				isPrimary
+				data-action="view-product-feed"
+				onClick={ handleGuideFinish }
+			>
+				{ __( 'View product feed', 'google-listings-and-ads' ) }
+			</AppButton>
+		) : undefined,
+	},
+	{
+		image,
+		content: (
+			<GuidePageContent
+				title={ __(
+					'Improve conversion tracking accuracy to improve campaign performance',
+					'google-listings-and-ads'
+				) }
+			>
+				<p>
+					{ __(
+						'Set up Enhanced Conversions, a feature designed to improve your measurement accuracy by collecting privacy-conscious data without the need for third-party cookies.',
+						'google-listings-and-ads'
+					) }
+				</p>
+				<p>
+					{ createInterpolateElement(
+						__(
+							'<link>Learn more</link> about Enhanced Conversions.',
+							'google-listings-and-ads'
+						),
+						{
+							link: (
+								<ContentLink
+									href="https://support.google.com/google-ads/answer/9888656"
+									context="enhanced-conversions"
+								/>
+							),
+						}
+					) }
+				</p>
+			</GuidePageContent>
+		),
+		actions: (
+			<AppButton
+				isPrimary
+				data-action="view-enhanced-conversions-settings"
+				eventName={ EVENT_NAME }
+				eventProps={ {
+					context: GUIDE_NAMES.SUBMISSION_SUCCESS,
+					action: 'view-enhanced-conversions-settings',
+				} }
+				onClick={ handleSetupEnhancedConversionsOnClick }
+			>
+				{ __(
+					'Set up Enhanced Conversions',
+					'google-listings-and-ads'
+				) }
+			</AppButton>
+		),
 	},
 	{
 		image,
@@ -119,69 +197,8 @@ const pages = [
 				</cite>
 			</GuidePageContent>
 		),
-	},
-];
-
-if ( glaData.adsSetupComplete ) {
-	pages.pop();
-}
-
-const handleGuideFinish = ( e ) => {
-	getHistory().replace( getProductFeedUrl() );
-
-	// Since there is no built-in way to distinguish the modal/guide is closed by what action,
-	// here is a workaround by identifying the close button's data-aciton attribute.
-	let action = 'dismiss';
-
-	if ( e ) {
-		const target = e.currentTarget || e.target;
-		action = target.dataset.action || action;
-	}
-	recordGlaEvent( EVENT_NAME, {
-		context: GUIDE_NAMES.SUBMISSION_SUCCESS,
-		action,
-	} );
-};
-
-/**
- * Modal window to greet the user at Product Feed, after successful completion of onboarding.
- *
- * Show this guide modal by visiting the path with a specific query `guide=submission-success`.
- * For example: `/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fproduct-feed&guide=submission-success`.
- *
- * @fires gla_modal_closed with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss'`
- * @fires gla_modal_open with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
- */
-const SubmissionSuccessGuide = () => {
-	useEffect( () => {
-		recordGlaEvent( 'gla_modal_open', {
-			context: GUIDE_NAMES.SUBMISSION_SUCCESS,
-		} );
-
-		// Set a flag in local storage to indicate the CES prompt can be shown
-		// when the user enters product feed for the first time after setting up.
-		localStorage.set(
-			LOCAL_STORAGE_KEYS.CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN,
-			true
-		);
-	}, [] );
-
-	const renderFinish = useCallback( () => {
-		if ( glaData.adsSetupComplete ) {
-			return (
-				<AppButton
-					isPrimary
-					data-action="view-product-feed"
-					onClick={ handleGuideFinish }
-				>
-					{ __( 'View product feed', 'google-listings-and-ads' ) }
-				</AppButton>
-			);
-		}
-
-		return (
+		actions: (
 			<>
-				<div className="gla-submission-success-guide__space_holder" />
 				<AppButton
 					isSecondary
 					data-action="maybe-later"
@@ -202,6 +219,34 @@ const SubmissionSuccessGuide = () => {
 					{ __( 'Create campaign', 'google-listings-and-ads' ) }
 				</AddPaidCampaignButton>
 			</>
+		),
+	},
+];
+
+if ( glaData.adsSetupComplete ) {
+	pages.pop();
+}
+
+/**
+ * Modal window to greet the user at Product Feed, after successful completion of onboarding.
+ *
+ * Show this guide modal by visiting the path with a specific query `guide=submission-success`.
+ * For example: `/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fproduct-feed&guide=submission-success`.
+ *
+ * @fires gla_modal_closed with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
+ * @fires gla_modal_open with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
+ */
+const SubmissionSuccessGuide = () => {
+	useEffect( () => {
+		recordGlaEvent( 'gla_modal_open', {
+			context: GUIDE_NAMES.SUBMISSION_SUCCESS,
+		} );
+
+		// Set a flag in local storage to indicate the CES prompt can be shown
+		// when the user enters product feed for the first time after setting up.
+		localStorage.set(
+			LOCAL_STORAGE_KEYS.CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN,
+			true
 		);
 	}, [] );
 
@@ -210,7 +255,6 @@ const SubmissionSuccessGuide = () => {
 			className="gla-submission-success-guide"
 			backButtonText={ __( 'Back', 'google-listings-and-ads' ) }
 			pages={ pages }
-			renderFinish={ renderFinish }
 			onFinish={ handleGuideFinish }
 		/>
 	);
