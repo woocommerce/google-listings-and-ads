@@ -15,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\AccountController as AdsAccountController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\AdsSettingsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\BudgetRecommendationController as AdsBudgetRecommendationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\CampaignController as AdsCampaignController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\ReportsController as AdsReportsController;
@@ -146,6 +147,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( RestAPIAuthController::class, OAuthService::class, MerchantAccountService::class );
 		$this->share( GTINMigrationController::class, JobRepository::class );
 		$this->share( SyncController::class, NotificationsService::class );
+		$this->share( AdsSettingsController::class );
 	}
 
 	/**
