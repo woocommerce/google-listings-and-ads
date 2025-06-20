@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
@@ -40,6 +41,9 @@ class GlobalSiteTagTest extends UnitTest {
 	/** @var GlobalSiteTag $tag */
 	protected $tag;
 
+	/** @var GlobalSiteTag $tag */
+	protected $options;
+
 	protected const TEST_CONVERSION_ID    = 'test_id';
 	protected const TEST_CONVERSION_LABEL = 'test_conversion_label';
 
@@ -49,6 +53,7 @@ class GlobalSiteTagTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
+		$this->options        = $this->createMock( OptionsInterface::class );
 		$this->assets_handler = $this->createMock( AssetsHandlerInterface::class );
 		$this->gtag_js        = $this->createMock( GoogleGtagJs::class );
 		$this->product_helper = $this->createMock( ProductHelper::class );
@@ -56,6 +61,7 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->wp             = $this->createMock( WP::class );
 
 		$this->tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp );
+		$this->tag->set_options_object( $this->options );
 	}
 
 	public function test_conversion_and_purchase_event_not_order_received_page() {
@@ -115,6 +121,8 @@ class GlobalSiteTagTest extends UnitTest {
 		// Setup empty customer data.
 		WC()->session->set( 'customer', [] );
 
+		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
+
 		// Get the enhanced conversion tag.
 		$gtag = $this->tag->get_enhanced_conversion_tag();
 
@@ -133,6 +141,8 @@ class GlobalSiteTagTest extends UnitTest {
 				'email' => $email,
 			]
 		);
+
+		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
 
 		// Get the enhanvced conversion tag.
 		$gtag = $this->tag->get_enhanced_conversion_tag();
@@ -156,6 +166,8 @@ class GlobalSiteTagTest extends UnitTest {
 			]
 		);
 
+		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
+
 		// Get the enhanvced conversion tag.
 		$gtag = $this->tag->get_enhanced_conversion_tag();
 
@@ -176,6 +188,8 @@ class GlobalSiteTagTest extends UnitTest {
 				'country' => 'GB',
 			]
 		);
+
+		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
 
 		// Get the enhanvced conversion tag.
 		$gtag = $this->tag->get_enhanced_conversion_tag();
@@ -202,6 +216,8 @@ class GlobalSiteTagTest extends UnitTest {
 				'country'    => 'GB',
 			]
 		);
+
+		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
 
 		// Get the enhanvced conversion tag.
 		$gtag = $this->tag->get_enhanced_conversion_tag();
