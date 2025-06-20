@@ -613,9 +613,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @return string|null
 	 */
 	public function get_enhanced_conversion_tag() {
-		// TODO: Check enhanced conversion option status when implemented.
-		// $enhanced_conversions = $this->options->get( OptionsInterface::ADS_ENHANCED_CONVERSION_STATUS );
-		$enhanced_conversions = true;
+		$enhanced_conversions = $this->options->get( OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED );
 
 		if ( ! $enhanced_conversions ) {
 			return;
