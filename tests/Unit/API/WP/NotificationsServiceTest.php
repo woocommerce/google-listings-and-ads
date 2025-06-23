@@ -244,9 +244,8 @@ class NotificationsServiceTest extends UnitTest {
 	 * Mocks the service
 	 *
 	 * @param bool $mc_ready
-	 * @param bool $wpcom_authorized
 	 * @param bool $is_wpcom_api_status_healthy
-	 * @return TransformerService
+	 * @return NotificationsService
 	 */
 	public function get_mock( $mc_ready = true, $is_wpcom_api_status_healthy = true ) {
 		$this->merchant_center = $this->createMock( MerchantCenterService::class );
