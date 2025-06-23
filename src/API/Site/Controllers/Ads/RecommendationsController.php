@@ -63,12 +63,12 @@ class RecommendationsController extends BaseController {
 	 */
 	public function get_collection_params(): array {
 		return [
-			'type'    => [
+			'type' => [
 				'type'        => 'string',
 				'description' => __( 'Filter recommendations by type', 'google-listings-and-ads' ),
 				'required'    => false,
 			],
-			'id'      => [
+			'id'   => [
 				'type'        => 'integer',
 				'description' => __( 'Filter recommendations by unique id', 'google-listings-and-ads' ),
 				'required'    => false,
@@ -133,7 +133,7 @@ class RecommendationsController extends BaseController {
 				}
 
 				// Filter by id if provided.
-				$id   = $request->get_param( 'id' );
+				$id = $request->get_param( 'id' );
 				if ( $id ) {
 					$recommendations = array_filter(
 						$recommendations,
@@ -157,23 +157,23 @@ class RecommendationsController extends BaseController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'id' => [
+			'id'              => [
 				'type'        => 'integer',
 				'description' => __( 'Recommendation ID.', 'google-listings-and-ads' ),
 			],
-			'type' => [
+			'type'            => [
 				'type'        => 'string',
 				'description' => __( 'Recommendation type.', 'google-listings-and-ads' ),
 			],
-			'resource_name' => [
+			'resource_name'   => [
 				'type'        => 'string',
 				'description' => __( 'Resource name of the recommendation.', 'google-listings-and-ads' ),
 			],
-			'campaign_id' => [
+			'campaign_id'     => [
 				'type'        => 'integer',
 				'description' => __( 'Campaign ID associated with the recommendation.', 'google-listings-and-ads' ),
 			],
-			'campaign_name' => [
+			'campaign_name'   => [
 				'type'        => 'string',
 				'description' => __( 'Campaign name associated with the recommendation.', 'google-listings-and-ads' ),
 			],
@@ -182,7 +182,7 @@ class RecommendationsController extends BaseController {
 				'description' => __( 'Status of the campaign.', 'google-listings-and-ads' ),
 				'enum'        => [ 'ENABLED', 'PAUSED', 'REMOVED', 'UNKNOWN', 'UNSPECIFIED' ],
 			],
-			'last_synced' => [
+			'last_synced'     => [
 				'type'        => 'string',
 				'format'      => 'date-time',
 				'description' => __( 'Last synced date and time.', 'google-listings-and-ads' ),
