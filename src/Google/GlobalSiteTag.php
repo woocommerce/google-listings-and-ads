@@ -651,7 +651,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			}
 		}
 
-		// Phone number can only be added when emaill and/or address is present.
+		// Phone number can only be added when email and/or address is present.
 		if ( empty( $ec_data ) ) {
 			return;
 		}
@@ -672,7 +672,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		// Return the tag.
 		return sprintf(
 			'gtag("set", "user_data", %s);',
-			wp_json_encode( $ec_data ),
+			wp_json_encode( $ec_data )
 		);
 	}
 
@@ -708,7 +708,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	}
 
 	/**
-	 * Normalize and hash ehanced conversion data.
+	 * Normalize and hash enhanced conversion data.
 	 *
 	 * @param string $value The value to hash.
 	 * @param string $algo The hashing algorithm to use.
