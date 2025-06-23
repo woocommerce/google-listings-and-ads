@@ -619,8 +619,8 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			return;
 		}
 
-		// Retrieve user data from the current session.
-		$customer = WC()->session->get( 'customer' );
+		// Retrieve user data from the current session, returns an empty array if not set.
+		$customer = WC()->session->get( 'customer', [] );
 
 		$ec_data = [];
 
