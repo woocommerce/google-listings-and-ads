@@ -152,5 +152,4 @@ interface OptionsInterface {
 	 * @return int
 	 */
 	public function get_ads_id(): int;
-
 }

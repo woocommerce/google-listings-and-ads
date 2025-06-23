@@ -206,5 +206,4 @@ final class Options implements OptionsInterface, Service {
 	protected function prefix_name( string $name ): string {
 		return "{$this->get_slug()}_{$name}";
 	}
-
 }
