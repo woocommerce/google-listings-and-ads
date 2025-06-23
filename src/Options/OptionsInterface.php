@@ -153,10 +153,4 @@ interface OptionsInterface {
 	 */
 	public function get_ads_id(): int;
 
-	/**
-	 * If the WPCOM API is authorized
-	 *
-	 * @return bool
-	 */
-	public function is_wpcom_api_authorized(): bool;
 }
