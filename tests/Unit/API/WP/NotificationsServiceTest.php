@@ -191,15 +191,6 @@ class NotificationsServiceTest extends UnitTest {
 		$this->assertEquals( did_action( 'woocommerce_gla_error' ), 1 );
 	}
 
-	/**
-	 * Test notify() function logs an error when WPCOM Auth is not authorized
-	 */
-	public function test_notify_show_error_when_wpcom_not_authorized() {
-		$this->service = $this->get_mock( true, false );
-		$this->service->expects( $this->never() )->method( 'do_request' );
-		$this->assertFalse( $this->service->notify( 'product.create', 1 ) );
-		$this->assertEquals( did_action( 'woocommerce_gla_error' ), 1 );
-	}
 
 	/**
 	 * Test notify() function logs an error when disabled
@@ -231,14 +222,14 @@ class NotificationsServiceTest extends UnitTest {
 	 * Test notify() function logs an error when WPCOM Auth is not healthy
 	 */
 	public function test_notify_show_error_when_wpcom_not_healthy() {
-		$this->service = $this->get_mock( true, true, false );
+		$this->service = $this->get_mock( true, false );
 		$this->service->expects( $this->never() )->method( 'do_request' );
 		$this->assertFalse( $this->service->notify( 'product.create', 1 ) );
 		$this->assertEquals( did_action( 'woocommerce_gla_error' ), 1 );
 	}
 
 	public function test_is_ready_not_calling_status_api_if_with_health_check_is_false() {
-		$this->service = $this->get_mock( true, true, false );
+		$this->service = $this->get_mock( true, false );
 		$this->account->expects( $this->never() )->method( 'is_wpcom_api_status_healthy' );
 		$this->assertTrue( $this->service->is_ready( null, false ) );
 	}
@@ -257,13 +248,12 @@ class NotificationsServiceTest extends UnitTest {
 	 * @param bool $is_wpcom_api_status_healthy
 	 * @return TransformerService
 	 */
-	public function get_mock( $mc_ready = true, $wpcom_authorized = true, $is_wpcom_api_status_healthy = true ) {
+	public function get_mock( $mc_ready = true, $is_wpcom_api_status_healthy = true ) {
 		$this->merchant_center = $this->createMock( MerchantCenterService::class );
 		$this->merchant_center->method( 'is_ready_for_syncing' )->willReturn( $mc_ready );
 		$this->account = $this->createMock( AccountService::class );
 		$this->account->method( 'is_wpcom_api_status_healthy' )->willReturn( $is_wpcom_api_status_healthy );
 		$this->options = $this->createMock( OptionsInterface::class );
-		$this->options->method( 'is_wpcom_api_authorized' )->willReturn( $wpcom_authorized );
 
 		/** @var NotificationsService $mock */
 		$mock = $this->getMockBuilder( NotificationsService::class )
