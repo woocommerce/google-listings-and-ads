@@ -71,6 +71,7 @@ const DEFAULT_STATE = {
 			step: null,
 		},
 		budgetRecommendations: {},
+		recommendations: {},
 	},
 	gtinMigrationStatus: null,
 	price_benchmark: {
@@ -604,6 +605,16 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 					product_price: productPrice,
 				},
 			} );
+		}
+
+		case TYPES.RECEIVE_ADS_RECOMMENDATIONS: {
+			const { recommendations, recommendationType } = action;
+
+			return setIn(
+				state,
+				[ 'ads', 'recommendations', recommendationType ],
+				recommendations
+			);
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.
