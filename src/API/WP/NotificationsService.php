@@ -130,7 +130,6 @@ class NotificationsService implements Service, OptionsAwareInterface {
 				'message'                     => 'Notification was not sent because the Notification Service is not ready or the topic is not valid.',
 				'data_type'                   => $this->get_datatype_from_topic( $topic ),
 				'topic_is_valid'              => $this->yes_or_no( $is_valid_topic ),
-				'wpcom_authorized'            => $this->yes_or_no( $this->options->is_wpcom_api_authorized() ),
 				'wpcom_healthy'               => $this->yes_or_no( $this->account_service->is_wpcom_api_status_healthy() ),
 				'mc_sync_ready'               => $this->yes_or_no( $this->merchant_center->is_ready_for_syncing() ),
 				'notification_service_status' => $this->enabled_or_disabled( $this->is_enabled() ),
@@ -206,14 +205,14 @@ class NotificationsService implements Service, OptionsAwareInterface {
 
 	/**
 	 * If the Notifications are ready
-	 * This happens when the WPCOM API is Authorized and the feature is enabled.
+	 * This happens when the feature is enabled and Merchant Center is ready for syncing.
 	 *
 	 * @param string|null $data_type The data type to check.
 	 * @param bool        $with_health_check If true. Performs a remote request to WPCOM API to get the status.
 	 *        * @return bool
 	 */
 	public function is_ready( string $data_type = null, bool $with_health_check = true ): bool {
-		$is_ready = $this->options->is_wpcom_api_authorized() && $this->is_enabled() && $this->merchant_center->is_ready_for_syncing() && ( $with_health_check === false || $this->account_service->is_wpcom_api_status_healthy() );
+		$is_ready = $this->is_enabled() && $this->merchant_center->is_ready_for_syncing() && ( $with_health_check === false || $this->account_service->is_wpcom_api_status_healthy() );
 		return $is_ready && ( is_null( $data_type ) || $this->is_pull_enabled_for_datatype( $data_type ) );
 	}
 
