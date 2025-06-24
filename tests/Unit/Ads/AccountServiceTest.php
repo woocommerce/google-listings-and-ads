@@ -164,10 +164,12 @@ class AccountServiceTest extends UnitTest {
 		$this->options->method( 'get' )
 			->withConsecutive(
 				[ OptionsInterface::ADS_ACCOUNT_OCID ],
+				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ],
 				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ]
 			)
 			->willReturnOnConsecutiveCalls(
 				self::TEST_ACCOUNT_OCID,
+				self::TEST_CURRENCY,
 				self::TEST_CURRENCY
 			);
 
@@ -182,10 +184,12 @@ class AccountServiceTest extends UnitTest {
 		$this->options->method( 'get' )
 			->withConsecutive(
 				[ OptionsInterface::ADS_ACCOUNT_OCID ],
+				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ],
 				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ]
 			)
 			->willReturnOnConsecutiveCalls(
 				self::TEST_ACCOUNT_OCID,
+				self::TEST_CURRENCY,
 				self::TEST_CURRENCY
 			);
 
