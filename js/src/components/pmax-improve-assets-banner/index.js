@@ -72,7 +72,8 @@ const PMaxImproveAssetsBanner = () => {
 	}
 
 	const highestAmountCampaign = pmaxCampaigns.reduce(
-		( max, campaign ) => ( campaign.amount > max.amount ? campaign : max ),
+		( max, campaign ) =>
+			( campaign.amount ?? 0 ) > ( max.amount ?? 0 ) ? campaign : max,
 		pmaxCampaigns[ 0 ]
 	);
 	const { id, name } = highestAmountCampaign;
@@ -110,7 +111,7 @@ const PMaxImproveAssetsBanner = () => {
 				{ sprintf(
 					// translators: %s: The PMAX campaign name with the highest spending.
 					__(
-						'Unlock more sales for your campaign, %s, by focusing on improving your campaign assets.Better assets directly increase your ad strength, allowing for a wider variety of ad combinations to be shown across Google.',
+						'Unlock more sales for your campaign, %s, by focusing on improving your campaign assets. Better assets directly increase your ad strength, allowing for a wider variety of ad combinations to be shown across Google.',
 						'google-listings-and-ads'
 					),
 					name
