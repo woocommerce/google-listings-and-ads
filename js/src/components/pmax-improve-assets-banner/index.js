@@ -44,7 +44,6 @@ const PMaxImproveAssetsBanner = () => {
 	const { recommendations } = useAdsRecommendations(
 		PMAX_IMPROVE_PERFORMANCE_MAX_AD_STRENGTH
 	);
-	console.log( recommendations, adsCampaignsData );
 
 	if ( expiry !== undefined ) {
 		if ( Date.now() < expiry ) {
@@ -76,6 +75,14 @@ const PMaxImproveAssetsBanner = () => {
 		pmaxCampaigns[ 0 ]
 	);
 	const { id, name } = highestAmountCampaign;
+
+	const hasHighestSpendingCampaignRecommendation = recommendations.some(
+		( recommendation ) => recommendation.campaign_id === id
+	);
+
+	if ( ! hasHighestSpendingCampaignRecommendation ) {
+		return null;
+	}
 
 	const dismissBanner = () => {
 		set( PREFERENCES_STORE_NAMESPACE, PREFERENCE_BANNER_KEY, {
