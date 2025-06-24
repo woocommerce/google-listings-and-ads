@@ -620,7 +620,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		}
 
 		// Retrieve user data from the current session, returns an empty array if not set.
-		$customer = $this->wc->get_customer_details();;
+		$customer = $this->wc->get_customer_details();
 
 		$ec_data = [];
 

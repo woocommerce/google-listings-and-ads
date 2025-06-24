@@ -237,7 +237,7 @@ class WC {
 	 *
 	 * @return array
 	 */
-	public static function get_customer_details() {
+	public function get_customer_details() {
 		return WCCore()->session->get( 'customer', [] );
 	}
 }

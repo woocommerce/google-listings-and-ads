@@ -119,7 +119,9 @@ class GlobalSiteTagTest extends UnitTest {
 
 	public function test_enhanced_conversion_data_is_null_when_no_customer_data() {
 		// Setup empty customer data.
-		WC()->session->set( 'customer', [] );
+		$this->wc->expects( $this->once() )
+			->method( 'get_customer_details' )
+			->willReturn( [] );
 
 		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
 
@@ -135,12 +137,9 @@ class GlobalSiteTagTest extends UnitTest {
 		$email      = 'test@mail.test';
 		$email_hash = hash( 'sha256', strtolower( trim( $email ) ) );
 
-		WC()->session->set(
-			'customer',
-			[
-				'email' => $email,
-			]
-		);
+		$this->wc->expects( $this->once() )
+			->method( 'get_customer_details' )
+			->willReturn( [ 'email' => $email ] );
 
 		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
 
@@ -157,14 +156,15 @@ class GlobalSiteTagTest extends UnitTest {
 		$phone      = '01629 582299';
 		$phone_hash = hash( 'sha256', strtolower( trim( '+441629582299' ) ) );
 
-		WC()->session->set(
-			'customer',
-			[
-				'email'   => 'test@mail.test',
-				'phone'   => $phone,
-				'country' => 'GB',
-			]
-		);
+		$customer_mock = [
+			'email'   => 'test@mail.test',
+			'phone'   => $phone,
+			'country' => 'GB',
+		];
+
+		$this->wc->expects( $this->once() )
+			->method( 'get_customer_details' )
+			->willReturn( $customer_mock );
 
 		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
 
@@ -181,13 +181,14 @@ class GlobalSiteTagTest extends UnitTest {
 		$phone      = '01629 582299';
 		$phone_hash = hash( 'sha256', strtolower( trim( '+441629582299' ) ) );
 
-		WC()->session->set(
-			'customer',
-			[
-				'phone'   => $phone,
-				'country' => 'GB',
-			]
-		);
+		$customer_mock = [
+			'phone'   => $phone,
+			'country' => 'GB',
+		];
+
+		$this->wc->expects( $this->once() )
+			->method( 'get_customer_details' )
+			->willReturn( $customer_mock );
 
 		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
 
@@ -206,16 +207,17 @@ class GlobalSiteTagTest extends UnitTest {
 		$last_hash  = hash( 'sha256', strtolower( trim( $last ) ) );
 		$postcode   = 'DE4 3GX';
 
-		WC()->session->set(
-			'customer',
-			[
-				'email'      => 'test@mail.test',
-				'first_name' => $first,
-				'last_name'  => $last,
-				'postcode'   => $postcode,
-				'country'    => 'GB',
-			]
-		);
+		$customer_mock = [
+			'email'      => 'test@mail.test',
+			'first_name' => $first,
+			'last_name'  => $last,
+			'postcode'   => $postcode,
+			'country'    => 'GB',
+		];
+
+		$this->wc->expects( $this->once() )
+			->method( 'get_customer_details' )
+			->willReturn( $customer_mock );
 
 		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
 
