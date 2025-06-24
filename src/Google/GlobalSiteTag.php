@@ -620,7 +620,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		}
 
 		// Retrieve user data from the current session, returns an empty array if not set.
-		$customer = WC()->session->get( 'customer', [] );
+		$customer = $this->wc->get_customer_details();;
 
 		$ec_data = [];
 
@@ -663,10 +663,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			if ( ! empty( $phone ) ) {
 				$ec_data['sha256_phone_number'] = $this->normalize_and_hash( $phone );
 			}
-		}
-
-		if ( empty( $ec_data ) ) {
-			return;
 		}
 
 		// Return the tag.
