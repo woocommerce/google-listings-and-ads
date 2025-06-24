@@ -14,6 +14,7 @@ import {
 	CAMPAIGN_TYPE_PMAX,
 	PREFERENCES_STORE_NAMESPACE,
 	PMAX_IMPROVE_PERFORMANCE_MAX_AD_STRENGTH,
+	DAY_IN_SECONDS,
 } from '~/constants';
 import { getEditCampaignUrl } from '~/utils/urls';
 import AppButton from '~/components/app-button';
@@ -86,7 +87,7 @@ const PMaxImproveAssetsBanner = () => {
 
 	const dismissBanner = () => {
 		set( PREFERENCES_STORE_NAMESPACE, PREFERENCE_BANNER_KEY, {
-			expiry: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days
+			expiry: Date.now() + DAY_IN_SECONDS * 30 * 1000, // 30 days in ms
 		} );
 	};
 

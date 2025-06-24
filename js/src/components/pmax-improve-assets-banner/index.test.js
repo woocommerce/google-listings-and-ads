@@ -10,7 +10,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
  * Internal dependencies
  */
 import { getEditCampaignUrl } from '~/utils/urls';
-import { PREFERENCES_STORE_NAMESPACE } from '~/constants';
+import { PREFERENCES_STORE_NAMESPACE, DAY_IN_SECONDS } from '~/constants';
 import PMaxImproveAssetsBanner from './index';
 import usePreference from '~/hooks/usePreference';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
@@ -198,7 +198,7 @@ describe( 'PMaxImproveAssetsBanner', () => {
 
 		fireEvent.click( improveAssetsButton );
 
-		const expectedExpiry = MOCK_NOW + 30 * 24 * 60 * 60 * 1000; // 30 days
+		const expectedExpiry = MOCK_NOW + DAY_IN_SECONDS * 30 * 1000; // 30 days
 
 		expect( setMock ).toHaveBeenCalledWith(
 			PREFERENCES_STORE_NAMESPACE,
