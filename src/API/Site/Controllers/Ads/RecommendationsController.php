@@ -66,6 +66,8 @@ class RecommendationsController extends BaseController {
 			'type' => [
 				'type'        => 'string',
 				'description' => __( 'Filter recommendations by type', 'google-listings-and-ads' ),
+				// This could also use a callback to get the set of supported recommendation types from the `AdsRecommendations` service.
+				'enum'        => array( 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH' ),
 				'required'    => false,
 			],
 			'id'   => [
@@ -94,11 +96,6 @@ class RecommendationsController extends BaseController {
 				}
 
 				$type = $request->get_param( 'type' );
-
-				// Only support filtering by type IMPROVE_PERFORMANCE_MAX_AD_STRENGTH for now.
-				if ( $type && $type !== 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH' ) {
-					return new Response( [] );
-				}
 
 				// TODO: Replace this with real data from AdsRecommendations service.
 				$recommendations = [
