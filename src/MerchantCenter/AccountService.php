@@ -679,7 +679,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 				$status = [ 'is_healthy' => false ];
 			} else {
 				$status = json_decode( wp_remote_retrieve_body( $integration_remote_request_response ), true ) ?? [ 'is_healthy' => false ];
-				
+
 				/*
 				 * Since we switched from OAuth to client credentials,
 				 * WPCOM's partner token validation returns false. Inject true status until
