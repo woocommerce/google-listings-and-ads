@@ -48,7 +48,7 @@ class RecommendationsController extends BaseController {
 				[
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_recommendations_callback(),
-					//'permission_callback' => $this->get_permission_callback(),
+					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_collection_params(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
@@ -67,7 +67,7 @@ class RecommendationsController extends BaseController {
 				'type'        => 'string',
 				'description' => __( 'Filter recommendations by type', 'google-listings-and-ads' ),
 				// This could also use a callback to get the set of supported recommendation types from the `AdsRecommendations` service.
-				'enum'        => array( 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH' ),
+				'enum'        => [ 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH' ],
 				'required'    => false,
 			],
 			'id'   => [
@@ -95,8 +95,6 @@ class RecommendationsController extends BaseController {
 					);
 				}
 
-				$type = $request->get_param( 'type' );
-
 				// TODO: Replace this with real data from AdsRecommendations service.
 				$recommendations = [
 					[
@@ -120,6 +118,7 @@ class RecommendationsController extends BaseController {
 				];
 
 				// If type is set, filter by type (only IMPROVE_PERFORMANCE_MAX_AD_STRENGTH is supported).
+				$type = $request->get_param( 'type' );
 				if ( $type ) {
 					$recommendations = array_filter(
 						$recommendations,
@@ -140,13 +139,12 @@ class RecommendationsController extends BaseController {
 					);
 				}
 
-				// Prepare each recommendation for response using the schema.
-				$response_data = [];
+				$prepared = [];
 				foreach ( $recommendations as $recommendation ) {
-					$response_data[] = $this->prepare_item_for_response( $recommendation, $request );
+					$prepared[] = $this->prepare_item_for_response( $recommendation, $request );
 				}
 
-				return new Response( array_values( $response_data ) );
+				return new Response( $prepared );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
