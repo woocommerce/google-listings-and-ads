@@ -48,7 +48,7 @@ class RecommendationsController extends BaseController {
 				[
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_recommendations_callback(),
-					'permission_callback' => $this->get_permission_callback(),
+					//'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_collection_params(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
@@ -140,7 +140,13 @@ class RecommendationsController extends BaseController {
 					);
 				}
 
-				return new Response( array_values( $recommendations ) );
+				// Prepare each recommendation for response using the schema.
+				$response_data = [];
+				foreach ( $recommendations as $recommendation ) {
+					$response_data[] = $this->prepare_item_for_response( $recommendation, $request );
+				}
+
+				return new Response( array_values( $response_data ) );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
