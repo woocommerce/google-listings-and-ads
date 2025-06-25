@@ -867,7 +867,7 @@ class AccountServiceTest extends UnitTest {
 			->getMock();
 		$account_mock->set_container( $this->container );
 		$account_mock->set_options_object( $this->options );
-		
+	
 		// Mock the health check to return true (simulating client credentials success)
 		$account_mock->expects( $this->any() )
 			->method( 'is_wpcom_api_status_healthy' )
