@@ -103,7 +103,7 @@ class AdsAssetTest extends UnitTest {
 	public function test_convert_youtube_video_asset() {
 		$data = [
 			'field_type' => AssetFieldType::YOUTUBE_VIDEO,
-			'content'    => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+			'content'    => 'dQw4w9WgXcQ',
 			'id'         => self::TEST_ASSET_ID,
 		];
 
