@@ -780,7 +780,7 @@ export function* updateEnhancedConversionsStatus( status ) {
 			path: `${ API_NAMESPACE }/ads/settings`,
 			method: 'POST',
 			data: {
-				status,
+				enhanced_conversions_enabled: status,
 			},
 		} );
 
