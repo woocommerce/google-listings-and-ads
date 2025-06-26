@@ -26,7 +26,7 @@ export default function AssetGroupHeader() {
 
 	return (
 		<Section
-			className="gla-asset-group-section"
+			className="gla-asset-group-section gla-asset-group-section__header"
 			title={ createInterpolateElement(
 				__(
 					'Add additional assets <optional>(Optional)</optional>',
