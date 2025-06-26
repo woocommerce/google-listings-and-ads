@@ -55,7 +55,6 @@ const MerchantCenterAccountInfoCard = ( { googleMCAccount } ) => {
 				)
 			}
 		>
-
 			{ showErrorNotificationsNotice && (
 				<AppNotice status="warning" isDismissible={ false }>
 					{ __(
