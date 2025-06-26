@@ -768,6 +768,13 @@ export function* updateAdsCampaign( id, data ) {
 	}
 }
 
+export function* recieveEnhancedConversionsStatus( enhancedConversionsStatus ) {
+	return {
+		type: TYPES.RECEIVE_ADS_ENHANCED_CONVERSIONS,
+		enhancedConversionsStatus,
+	};
+}
+
 /**
  * Update the enhanced conversions status.
  *
