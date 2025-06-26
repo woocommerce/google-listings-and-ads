@@ -74,7 +74,7 @@ const AssetGroupImagesSection = ( {
 				</div>
 			}
 		>
-			<div className="gla-asset-group__fields">
+			<div className="gla-asset-group-section__content">
 				{ ASSET_IMAGE_SPECS.map( ( spec ) => {
 					const initialImageUrls = initialValues[ spec.key ];
 					const imageProps = getInputProps( spec.key );

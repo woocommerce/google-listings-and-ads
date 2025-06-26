@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
-import { Tip } from '@wordpress/components';
+import { Tip, Flex, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -26,7 +26,7 @@ export default function AssetGroupHeader() {
 
 	return (
 		<Section
-			className="gla-asset-group-section gla-asset-group-section__header"
+			className="gla-asset-group-section"
 			title={ createInterpolateElement(
 				__(
 					'Add additional assets <optional>(Optional)</optional>',
@@ -58,24 +58,34 @@ export default function AssetGroupHeader() {
 				</>
 			}
 		>
-			<FinalUrlCard
-				initialFinalUrl={
-					adapter.baseAssetGroup[ ASSET_FORM_KEY.FINAL_URL ]
-				}
-				onAssetsChange={ adapter.resetAssetGroup }
-				// Currently, the PMax Assets feature in this extension doesn't offer the function
-				// to change the Final URL of the non-empty asset entity group, so it hides the
-				// reselect button in the card footer.
-				hideFooter={ ! adapter.isEmptyAssetEntityGroup }
-			/>
-			{ showTip && (
-				<Tip>
-					{ __(
-						'We auto-populated assets directly from your Final URL. We encourage you to edit or add more in order to best showcase your business.',
-						'google-listings-and-ads'
+			<div className="gla-asset-group-section__content">
+				<Flex direction="column" gap={ 4 }>
+					<FlexItem>
+						<FinalUrlCard
+							initialFinalUrl={
+								adapter.baseAssetGroup[
+									ASSET_FORM_KEY.FINAL_URL
+								]
+							}
+							onAssetsChange={ adapter.resetAssetGroup }
+							// Currently, the PMax Assets feature in this extension doesn't offer the function
+							// to change the Final URL of the non-empty asset entity group, so it hides the
+							// reselect button in the card footer.
+							hideFooter={ ! adapter.isEmptyAssetEntityGroup }
+						/>
+					</FlexItem>
+					{ showTip && (
+						<FlexItem>
+							<Tip>
+								{ __(
+									'We auto-populated assets directly from your Final URL. We encourage you to edit or add more in order to best showcase your business.',
+									'google-listings-and-ads'
+								) }
+							</Tip>
+						</FlexItem>
 					) }
-				</Tip>
-			) }
+				</Flex>
+			</div>
 		</Section>
 	);
 }

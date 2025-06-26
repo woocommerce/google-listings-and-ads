@@ -100,7 +100,7 @@ const AssetGroupTextSection = ( {
 				</div>
 			}
 		>
-			<div className="gla-asset-group__fields">
+			<div className="gla-asset-group-section__content">
 				{ ASSET_TEXT_SPECS.map( ( spec ) => {
 					const initialTexts = [ initialValues[ spec.key ] ].flat();
 					const textProps = getInputProps( spec.key );

@@ -32,17 +32,19 @@ const AssetGroupVideosSection = () => {
 				</div>
 			}
 		>
-			<Placeholder
-				icon="video-alt3"
-				label={ __( 'Videos', 'google-listings-and-ads' ) }
-			>
-				<p>
-					{ __(
-						'YouTube Videos Selector',
-						'google-listings-and-ads'
-					) }
-				</p>
-			</Placeholder>
+			<div className="gla-asset-group-section__content">
+				<Placeholder
+					icon="video-alt3"
+					label={ __( 'Videos', 'google-listings-and-ads' ) }
+				>
+					<p>
+						{ __(
+							'YouTube Videos Selector',
+							'google-listings-and-ads'
+						) }
+					</p>
+				</Placeholder>
+			</div>
 		</Section>
 	);
 };

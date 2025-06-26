@@ -33,4 +33,18 @@
 			margin: 0;
 		}
 	}
+
+	.gla-asset-group-section__content {
+		.gla-asset-field {
+			&:first-child {
+				border-top-left-radius: 7px;
+				border-top-right-radius: 7px;
+			}
+
+			&:last-child {
+				border-bottom-left-radius: 7px;
+				border-bottom-right-radius: 7px;
+			}
+		}
+	}
 }
