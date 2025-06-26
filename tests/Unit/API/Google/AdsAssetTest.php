@@ -100,6 +100,16 @@ class AdsAssetTest extends UnitTest {
 		$this->assertAssetTypeConversion( $data );
 	}
 
+	public function test_convert_youtube_video_asset() {
+		$data = [
+			'field_type' => AssetFieldType::YOUTUBE_VIDEO,
+			'content'    => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+			'id'         => self::TEST_ASSET_ID,
+		];
+
+		$this->assertAssetTypeConversion( $data );
+	}
+
 	public function test_create_assets_text_asset() {
 		$data = [
 			'id'         => self::TEMPORARY_ID,
