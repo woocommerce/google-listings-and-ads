@@ -74,36 +74,38 @@ const AssetGroupImagesSection = ( {
 				</div>
 			}
 		>
-			{ ASSET_IMAGE_SPECS.map( ( spec ) => {
-				const initialImageUrls = initialValues[ spec.key ];
-				const imageProps = getInputProps( spec.key );
+			<div className="gla-asset-group__fields">
+				{ ASSET_IMAGE_SPECS.map( ( spec ) => {
+					const initialImageUrls = initialValues[ spec.key ];
+					const imageProps = getInputProps( spec.key );
 
-				return (
-					<AssetField
-						key={ spec.key }
-						ref={ refFirstErrorField.bind( spec.key ) }
-						heading={ spec.heading }
-						subheading={ spec.subheading }
-						help={ spec.help }
-						numOfIssues={ getNumOfIssues( spec.key ) }
-						markOptional={ spec.min === 0 }
-						disabled={ ! isSelectedFinalUrl }
-						initialExpanded={ isSelectedFinalUrl }
-					>
-						<ImagesSelector
-							initialImageUrls={ initialImageUrls }
-							maxNumberOfImages={ spec.getMax( values ) }
-							reachedMaxNumberTip={ spec.getMaxNumberTip(
-								values
-							) }
-							imageConfig={ spec.imageConfig }
-							onChange={ imageProps.onChange }
+					return (
+						<AssetField
+							key={ spec.key }
+							ref={ refFirstErrorField.bind( spec.key ) }
+							heading={ spec.heading }
+							subheading={ spec.subheading }
+							help={ spec.help }
+							numOfIssues={ getNumOfIssues( spec.key ) }
+							markOptional={ spec.min === 0 }
+							disabled={ ! isSelectedFinalUrl }
+							initialExpanded={ isSelectedFinalUrl }
 						>
-							{ renderErrors( spec.key ) }
-						</ImagesSelector>
-					</AssetField>
-				);
-			} ) }
+							<ImagesSelector
+								initialImageUrls={ initialImageUrls }
+								maxNumberOfImages={ spec.getMax( values ) }
+								reachedMaxNumberTip={ spec.getMaxNumberTip(
+									values
+								) }
+								imageConfig={ spec.imageConfig }
+								onChange={ imageProps.onChange }
+							>
+								{ renderErrors( spec.key ) }
+							</ImagesSelector>
+						</AssetField>
+					);
+				} ) }
+			</div>
 		</Section>
 	);
 };

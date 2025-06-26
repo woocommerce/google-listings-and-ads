@@ -100,119 +100,128 @@ const AssetGroupTextSection = ( {
 				</div>
 			}
 		>
-			{ ASSET_TEXT_SPECS.map( ( spec ) => {
-				const initialTexts = [ initialValues[ spec.key ] ].flat();
-				const textProps = getInputProps( spec.key );
-
-				return (
-					<AssetField
-						key={ spec.key }
-						ref={ refFirstErrorField.bind( spec.key ) }
-						heading={ spec.heading }
-						subheading={
-							<>
-								{ spec.subheading }
-								{ isSelectedFinalUrl && spec.extraSubheading }
-							</>
-						}
-						help={ spec.help }
-						numOfIssues={ getNumOfIssues( spec.key ) }
-						disabled={ ! isSelectedFinalUrl }
-						initialExpanded={ isSelectedFinalUrl }
-					>
-						<TextsEditor
-							initialTexts={ initialTexts }
-							minNumberOfTexts={ spec.min }
-							maxNumberOfTexts={ spec.max }
-							maxCharacterCounts={ spec.maxCharacterCounts }
-							placeholder={ spec.capitalizedName }
-							addButtonText={ spec.addButtonText }
-							onChange={ ( texts ) => {
-								if ( spec.requiredSingleValue ) {
-									textProps.onChange( texts[ 0 ] );
-								} else {
-									textProps.onChange( texts );
-								}
-							} }
-						>
-							{ renderErrors( spec.key ) }
-						</TextsEditor>
-					</AssetField>
-				);
-			} ) }
-			<AssetField
-				className="gla-asset-field-call-to-action"
-				heading={ __( 'Call to action', 'google-listings-and-ads' ) }
-				help={ __(
-					'Select a call to action that aligns with your goals, or use automated call to action which allows Google to automatically choose the most relevant call to action for you.',
-					'google-listings-and-ads'
-				) }
-				disabled={ ! isSelectedFinalUrl }
-				initialExpanded={ isSelectedFinalUrl }
-			>
-				<SelectControl
-					options={ ctaOptions }
-					value={ ctaProps.value || ctaOptions[ 0 ].value }
-					onChange={ ctaProps.onChange }
-				/>
-			</AssetField>
-			<AssetField
-				ref={ refFirstErrorField.bind(
-					ASSET_FORM_KEY.DISPLAY_URL_PATH
-				) }
-				className="gla-asset-field-display-url-path"
-				heading={ __( 'Display URL Path', 'google-listings-and-ads' ) }
-				subheading={ hostname }
-				help={
-					<>
-						<div>
-							{ __(
-								`The display URL gives potential customers a clear idea of what webpage they'll reach once they click your ad, so your path text should describe your ad's landing page.`,
-								'google-listings-and-ads'
-							) }
-						</div>
-						<div>
-							{ __(
-								`To create your display URL, Google Ads will combine the domain (for example, "www.google.com" in www.google.com/nonprofits) from your final URL and the path text (for example, "nonprofits" in www.google.com/nonprofits).`,
-								'google-listings-and-ads'
-							) }
-						</div>
-					</>
-				}
-				numOfIssues={ getNumOfIssues(
-					ASSET_FORM_KEY.DISPLAY_URL_PATH
-				) }
-				markOptional
-				disabled={ ! isSelectedFinalUrl }
-				initialExpanded={ isSelectedFinalUrl }
-			>
-				{ ASSET_DISPLAY_URL_PATH_SPECS.map( ( spec, index ) => {
-					const paths = values[ ASSET_FORM_KEY.DISPLAY_URL_PATH ];
+			<div className="gla-asset-group__fields">
+				{ ASSET_TEXT_SPECS.map( ( spec ) => {
+					const initialTexts = [ initialValues[ spec.key ] ].flat();
+					const textProps = getInputProps( spec.key );
 
 					return (
-						<Fragment key={ index }>
-							<span className="gla-asset-field-display-url-path__slash">
-								/
-							</span>
-							<AppInputControl
-								className="gla-asset-field-display-url-path__text-input"
-								kindCharacterCount="google-ads"
-								maxCharacterCount={ spec.maxCharacterCount }
-								value={ paths[ index ] || '' }
-								onChange={ ( value ) => {
-									const nextValue = paths.slice();
-									nextValue[ index ] = value;
-									setValue(
-										ASSET_FORM_KEY.DISPLAY_URL_PATH,
-										nextValue
-									);
+						<AssetField
+							key={ spec.key }
+							ref={ refFirstErrorField.bind( spec.key ) }
+							heading={ spec.heading }
+							subheading={
+								<>
+									{ spec.subheading }
+									{ isSelectedFinalUrl &&
+										spec.extraSubheading }
+								</>
+							}
+							help={ spec.help }
+							numOfIssues={ getNumOfIssues( spec.key ) }
+							disabled={ ! isSelectedFinalUrl }
+							initialExpanded={ isSelectedFinalUrl }
+						>
+							<TextsEditor
+								initialTexts={ initialTexts }
+								minNumberOfTexts={ spec.min }
+								maxNumberOfTexts={ spec.max }
+								maxCharacterCounts={ spec.maxCharacterCounts }
+								placeholder={ spec.capitalizedName }
+								addButtonText={ spec.addButtonText }
+								onChange={ ( texts ) => {
+									if ( spec.requiredSingleValue ) {
+										textProps.onChange( texts[ 0 ] );
+									} else {
+										textProps.onChange( texts );
+									}
 								} }
-							/>
-						</Fragment>
+							>
+								{ renderErrors( spec.key ) }
+							</TextsEditor>
+						</AssetField>
 					);
 				} ) }
-				{ renderErrors( ASSET_FORM_KEY.DISPLAY_URL_PATH ) }
-			</AssetField>
+				<AssetField
+					className="gla-asset-field-call-to-action"
+					heading={ __(
+						'Call to action',
+						'google-listings-and-ads'
+					) }
+					help={ __(
+						'Select a call to action that aligns with your goals, or use automated call to action which allows Google to automatically choose the most relevant call to action for you.',
+						'google-listings-and-ads'
+					) }
+					disabled={ ! isSelectedFinalUrl }
+					initialExpanded={ isSelectedFinalUrl }
+				>
+					<SelectControl
+						options={ ctaOptions }
+						value={ ctaProps.value || ctaOptions[ 0 ].value }
+						onChange={ ctaProps.onChange }
+					/>
+				</AssetField>
+				<AssetField
+					ref={ refFirstErrorField.bind(
+						ASSET_FORM_KEY.DISPLAY_URL_PATH
+					) }
+					className="gla-asset-field-display-url-path"
+					heading={ __(
+						'Display URL Path',
+						'google-listings-and-ads'
+					) }
+					subheading={ hostname }
+					help={
+						<>
+							<div>
+								{ __(
+									`The display URL gives potential customers a clear idea of what webpage they'll reach once they click your ad, so your path text should describe your ad's landing page.`,
+									'google-listings-and-ads'
+								) }
+							</div>
+							<div>
+								{ __(
+									`To create your display URL, Google Ads will combine the domain (for example, "www.google.com" in www.google.com/nonprofits) from your final URL and the path text (for example, "nonprofits" in www.google.com/nonprofits).`,
+									'google-listings-and-ads'
+								) }
+							</div>
+						</>
+					}
+					numOfIssues={ getNumOfIssues(
+						ASSET_FORM_KEY.DISPLAY_URL_PATH
+					) }
+					markOptional
+					disabled={ ! isSelectedFinalUrl }
+					initialExpanded={ isSelectedFinalUrl }
+				>
+					{ ASSET_DISPLAY_URL_PATH_SPECS.map( ( spec, index ) => {
+						const paths = values[ ASSET_FORM_KEY.DISPLAY_URL_PATH ];
+
+						return (
+							<Fragment key={ index }>
+								<span className="gla-asset-field-display-url-path__slash">
+									/
+								</span>
+								<AppInputControl
+									className="gla-asset-field-display-url-path__text-input"
+									kindCharacterCount="google-ads"
+									maxCharacterCount={ spec.maxCharacterCount }
+									value={ paths[ index ] || '' }
+									onChange={ ( value ) => {
+										const nextValue = paths.slice();
+										nextValue[ index ] = value;
+										setValue(
+											ASSET_FORM_KEY.DISPLAY_URL_PATH,
+											nextValue
+										);
+									} }
+								/>
+							</Fragment>
+						);
+					} ) }
+					{ renderErrors( ASSET_FORM_KEY.DISPLAY_URL_PATH ) }
+				</AssetField>
+			</div>
 		</Section>
 	);
 };
