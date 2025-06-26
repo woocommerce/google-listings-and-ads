@@ -1039,6 +1039,8 @@ trait GoogleAdsClientTrait {
 					return CallToActionType::UNSPECIFIED;
 				}
 				return CallToActionType::label( $asset->getCallToActionAsset()->getCallToAction() );
+			case AssetFieldType::YOUTUBE_VIDEO:
+				return $asset->getYoutubeVideoAsset()->getYoutubeVideoId();
 			default:
 				return '';
 		}

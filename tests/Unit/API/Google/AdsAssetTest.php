@@ -132,6 +132,20 @@ class AdsAssetTest extends UnitTest {
 		$this->assertEquals( $this->generate_asset_resource_name( $data['id'] ), $this->asset->create_assets( [ $data ] )[0] );
 	}
 
+	/**
+	 * @group youtube
+	 */
+	public function test_create_assets_youtube_video_asset() {
+		$data = [
+			'id'         => self::TEMPORARY_ID,
+			'field_type' => AssetFieldType::YOUTUBE_VIDEO,
+			'content'    => 'dQw4w9WgXcQ',
+		];
+
+		$this->generate_asset_mutate_mock( 'create', $data );
+		$this->assertEquals( $this->generate_asset_resource_name( $data['id'] ), $this->asset->create_assets( [ $data ] )[0] );
+	}
+
 	public function test_create_assets_image_asset() {
 		$data = [
 			'id'         => self::TEMPORARY_ID,
