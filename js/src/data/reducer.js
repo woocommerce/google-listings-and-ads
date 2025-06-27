@@ -525,7 +525,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, 'gtinMigrationStatus', data?.status );
 		}
 
-		case TYPES.UPDATE_ADS_ENHANCED_CONVERSIONS: {
+		case TYPES.RECEIVE_ADS_ENHANCED_CONVERSIONS: {
 			const { status } = action;
 
 			return setIn( state, 'ads.enable_enhanced_conversions', status );
