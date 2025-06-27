@@ -1,5 +1,10 @@
 *** Google for WooCommerce Changelog ***
 
+= 3.0.0 - 2025-06-17 =
+* Add - API Push/Pull Sync control endpoint Implementation.
+* Add - Price Benchmarks: Competitive pricing analysis and price recommendations from Google.
+* Tweak - WC 9.9 compatibility.
+
 = 2.9.13 - 2025-04-29 =
 * Update - Revert the changes related to the Grant API Pull Access in Onboarding feature made in version 2.9.12.
 

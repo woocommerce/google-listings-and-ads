@@ -1,0 +1,132 @@
+.gla-change-price-modal {
+	.gla-change-price-modal__content {
+		display: flex;
+		gap: $grid-unit-30;
+		flex-direction: column;
+
+		@include break-large {
+			flex-direction: row;
+			gap: $grid-unit-50;
+		}
+
+		.gla-tooltip__children-container {
+			border-bottom: 1px dashed currentcolor;
+		}
+	}
+
+	.gla-change-price-modal__product {
+		display: flex;
+		gap: $grid-unit-20;
+		flex-wrap: nowrap;
+
+		@include break-large {
+			flex-direction: column;
+			width: 156px;
+		}
+
+		p {
+			margin: 0;
+
+			span {
+				color: $gray-700;
+			}
+		}
+	}
+
+	.gla-change-price-modal__product-image {
+		img {
+			aspect-ratio: 1 / 1;
+			display: block;
+			object-fit: cover;
+			max-width: 48px;
+			width: 100%;
+
+			@include break-large {
+				max-width: 100%;
+			}
+		}
+	}
+
+	.gla-change-price-modal__product-title {
+		font-size: $gla-font-small-medium;
+		line-height: $gla-line-height-medium-large;
+	}
+
+	.gla-change-price-modal__metrics-grid {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: $grid-unit-20;
+		row-gap: $grid-unit-30;
+	}
+
+	.gla-change-price-modal__metrics {
+		flex: 1;
+	}
+
+	.gla-change-price-modal__separator {
+		border: 1px solid $gray-100;
+		grid-column: -1 / 1;
+		margin: 0;
+		width: 100%;
+	}
+
+	.components-notice.is-warning {
+		grid-column: -1 / 1;
+	}
+
+	.gla-change-price-modal-price-input-footer {
+		align-items: flex-start;
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: $grid-unit-20;
+
+		@include break-large {
+			width: calc(100% - 156px - $grid-unit-50);
+		}
+
+		label.components-input-control__label {
+			color: $gray-900 !important;
+			font-size: $gla-font-base;
+			line-height: $gla-line-height-medium;
+			text-transform: capitalize;
+		}
+
+		.components-input-control__container {
+			min-height: 36px;
+		}
+
+		.components-input-control {
+			margin: 0;
+		}
+
+		.app-button {
+			// To align with the input
+			margin-top: 28px;
+			width: 100%;
+		}
+	}
+
+	.gla-change-price-modal-price-input-footer__price--error {
+		div.components-input-control__backdrop {
+			color: $alert-red;
+		}
+
+		.components-base-control__help {
+			color: $alert-red;
+		}
+	}
+
+	.gla-change-price-modal__sales-price {
+
+		.gla-price-benchmark__label {
+			color: $alert-red;
+		}
+	}
+
+	.app-modal__footer {
+
+		@include break-small {
+			margin-top: $grid-unit;
+		}
+	}
+}

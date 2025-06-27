@@ -71,6 +71,11 @@ const webpackConfig = {
 		new WooCommerceDependencyExtractionWebpackPlugin( {
 			externalizedReport:
 				! hasReactFastRefresh && '../../.externalized.json',
+			requestToExternal: ( request ) => {
+				if ( request.startsWith( '@wordpress/dataviews' ) ) {
+					return null;
+				}
+			},
 		} ),
 		new MiniCSSExtractPlugin( {
 			filename: '[name].css',
@@ -79,6 +84,11 @@ const webpackConfig = {
 	],
 	entry: () => ( {
 		...defaultConfig.entry(),
+		'wp-dataviews-shim': path.resolve(
+			process.cwd(),
+			'js/src/shims',
+			'wp-dataviews.js'
+		),
 		index: path.resolve( process.cwd(), 'js/src', 'index.js' ),
 		'product-attributes': path.resolve(
 			process.cwd(),

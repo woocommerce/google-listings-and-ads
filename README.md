@@ -23,7 +23,7 @@ The best place to get support is the [WordPress.org Google for WooCommerce forum
 
 If you have a WooCommerce.com account, you can [start a chat or open a ticket on WooCommerce.com](https://woocommerce.com/my-account/contact-support/).
 
-## Prerequisites
+### L-2 support policy
 
 We aim to support the latest two minor versions of WordPress, WooCommerce, and PHP. (L-2 policy)
 
@@ -31,7 +31,7 @@ We aim to support the latest two minor versions of WordPress, WooCommerce, and P
 -   WooCommerce 7.9+
 -   PHP 7.4+ (64 bits)
 
-## Browsers supported
+### Browsers supported
 
 As per [WordPress Core Handbook](https://make.wordpress.org/core/handbook/best-practices/browser-support/) we currently support:
 
@@ -50,6 +50,7 @@ As per [WordPress Core Handbook](https://make.wordpress.org/core/handbook/best-p
 ## Development
 
 After cloning the repo, install dependencies:
+
 -   `nvm use` to be sure you're using the recommended node version in `.nvmrc`
 -   `npm install` to install JavaScript dependencies.
 -   `composer install` to gather PHP dependencies.
@@ -65,7 +66,7 @@ Notice this repository has `engine-strict=true` directive set. That means you ca
 
 The `engines` in package.json includes npm `^9` to allow dependabot to update our dependencies. However, it's not the version intended to be used in development.
 
--   See https://github.com/dependabot/dependabot-core/issues/9277
+-   See <https://github.com/dependabot/dependabot-core/issues/9277>
 
 ## Working with DEWP
 
@@ -73,7 +74,7 @@ The Dependency Extraction Webpack Plugin makes working with frontend dependencie
 
 ## Helper Scripts
 
-There are a number of helper scripts exposed via our package.json (below list is not exhaustive, you can view the [package.json file directly](https://github.com/woocommerce/google-listings-and-ads/blob/trunk/package.json#L11) to see all):
+There are a number of helper scripts exposed via our package.json (below list is not exhaustive, you can view the [package.json](./package.json#L90) file directly to see all):
 
 -   `npm run lint:js` : Run eslint over the javascript files
 -   `npm run lint:css` : Run stylelint over the javascript files
@@ -95,13 +96,7 @@ Install [`composer`](https://getcomposer.org/), `git`, `npm`, `svn`, and either 
 Change to the plugin root directory and type:
 
 ```bash
-$ composer install
-```
-
-Change to the plugin root directory and type:
-
-```bash
-$ npm install && npm run dev
+composer install
 ```
 
 ### Install Test Dependencies
@@ -111,13 +106,13 @@ To run the unit tests you need WordPress, [WooCommerce](https://github.com/wooco
 Install them using the `install-wp-tests.sh` script:
 
 ```bash
-$ ./bin/install-wp-tests.sh <db-name> <db-user> <db-pass> <db-host>
+./bin/install-wp-tests.sh <db-name> <db-user> <db-pass> <db-host>
 ```
 
 Example:
 
 ```bash
-$ ./bin/install-wp-tests.sh wordpress_tests root root localhost
+./bin/install-wp-tests.sh wordpress_tests root root localhost
 ```
 
 This script installs the test dependencies into your system's temporary directory and also creates a test database.
@@ -133,7 +128,7 @@ You can also specify the path to their directories by setting the following envi
 Change to the plugin root directory and type:
 
 ```bash
-$ vendor/bin/phpunit
+vendor/bin/phpunit
 ```
 
 The tests will execute and you'll be presented with a summary.
@@ -144,7 +139,7 @@ E2E testing uses [wp-env](https://developer.wordpress.org/block-editor/reference
 
 Make sure Docker is running in your machine, and run the following:
 
-`npm run wp-env:up` - This will automatically download and run WordPress in a Docker container. You can access it at http://localhost:8889 (Username: admin, Password: password).
+`npm run wp-env:up` - This will automatically download and run WordPress in a Docker container. You can access it at <http://localhost:8889> (Username: admin, Password: password).
 
 To install the PlayWright browser locally you can run:
 `npx playwright install chromium`
@@ -152,6 +147,7 @@ To install the PlayWright browser locally you can run:
 Run E2E testing:
 
 -   `npm run test:e2e` to run the test in headless mode.
+-   `npm run test:e2e -- --ui` to run the test in UI mode, which is convenient for development and debugging.
 -   `npm run test:e2e-dev` to run the tests in Chromium browser.
 
 To remove the Docker container and images (this will **delete everything** in the WordPress Docker container):
@@ -161,41 +157,46 @@ To remove the Docker container and images (this will **delete everything** in th
 :warning: Currently, the E2E testing on GitHub Actions is only run automatically after opening a PR with `release/*` branches or pushing changes to `release/*` branches. To run it manually, please visit [here](../../actions/workflows/e2e-tests.yml) and follow [this instruction](https://docs.github.com/en/actions/managing-workflow-runs/manually-running-a-workflow?tool=webui) to do so.
 
 ### Test other WordPress versions
+
 By default the latest version of WordPress will be installed. `WP_ENV_CORE` can be used to install a specific version.
 
-```
+```bash
 WP_ENV_CORE=WordPress/WordPress#6.2.2 npm run wp-env:up
 ```
 
 This does not work with Release Candidate versions as the tag is not available. Instead we can bring the `wp-env:up` with the latest version and then upgrade WordPress through WP CLI.
 
-```
+```bash
 npm run -- wp-env run tests-cli -- wp core update --version=6.3-RC3
 npm run -- wp-env run tests-cli -- wp core update-db
 ```
 
 ### Test other WooCommerce versions
+
 WooCommerce is installed through WP CLI so we can use this to update to a newer version like a release candidate.
 
-```
+```bash
 npm run -- wp-env run tests-cli -- wp plugin update woocommerce --version=8.0.0-rc.1
 npm run -- wp-env run tests-cli -- wp wc update
 ```
 
-### Google Ads API Client Library 
+### Google Ads API Client Library
 
 The new Google Ads API Client Library version is now available with PHP 7.4 support under this "legacy" branch.
 
-We are using it in [composer](https://github.com/woocommerce/google-listings-and-ads/blob/develop/composer.json#L15) 
-in order to support PHP 7.4.
+We are using it in [composer](./composer.json#L12) in order to support PHP 7.4.
 
 Going forward, Google will always add the prefix "legacy-" for the branch supporting PHP 7.4.
 
 ## Docs
 
-- [Usage Tracking](./src/Tracking/README.md)
-- [Hooks defined or used in GLA](./src/Hooks/README.md)
-- [gtag consent mode & cookie banners](./docs/gtag-consent-mode.md)
+-   [Make a local development site publicly accessible](https://github.com/woocommerce/google-listings-and-ads/wiki/Hack-for-working-locally-with-APIs#make-a-local-development-site-publicly-accessible)
+-   [Use Ads account without setting billing data](https://github.com/woocommerce/google-listings-and-ads/wiki/Hack-for-working-locally-with-APIs#use-ads-account-without-setting-billing-data)
+-   [Usage Tracking](./src/Tracking/README.md)
+-   [Hooks defined or used in GLA](./src/Hooks/README.md)
+-   [gtag consent mode & cookie banners](./docs/gtag-consent-mode.md)
+-   [Mocking the API responses of this plugin via filters](./tests/mocks/mocking.md)
+-   [Mocking the API responses of Connect Server via a local proxy](./tests/proxy/README.md)
 
 <p align="center">
 	<br/><br/>

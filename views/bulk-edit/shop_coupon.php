@@ -21,8 +21,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<select class="change_channel_visibility change_to" name="change_channel_visibility">
 						<?php
 						$options = [
-							'' => __( '— No change —', 'google-listings-and-ads' ),
-							ChannelVisibility::SYNC_AND_SHOW => __( 'Show coupon', 'google-listings-and-ads' ),
+							''                                    => __( '— No change —', 'google-listings-and-ads' ),
+							ChannelVisibility::SYNC_AND_SHOW      => __( 'Show coupon', 'google-listings-and-ads' ),
 							ChannelVisibility::DONT_SYNC_AND_SHOW => __( 'Don\'t show coupon', 'google-listings-and-ads' ),
 						];
 						foreach ( $options as $key => $value ) {

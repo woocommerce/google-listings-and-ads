@@ -313,7 +313,10 @@ class ProductHelper implements Service, HelperNotificationInterface {
 		// Support a fully numeric ID both with and without the `gla_` prefix.
 		$wc_product_id = 0;
 		$pattern       = '/^(' . preg_quote( $this->get_slug(), '/' ) . '_)?(\d+)$/';
+		$wc_pattern    = '/^(woocommerce_gpf_)?(\d+)$/';
 		if ( preg_match( $pattern, $mc_product_id, $matches ) ) {
+			$wc_product_id = (int) $matches[2];
+		} elseif ( preg_match( $wc_pattern, $mc_product_id, $matches ) ) {
 			$wc_product_id = (int) $matches[2];
 		}
 

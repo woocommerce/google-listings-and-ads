@@ -21,6 +21,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\Admin\PageController;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\ScriptAsset;
 
 /**
  * Class Admin
@@ -143,6 +144,19 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 					'mcId'    => $this->options->get_merchant_id() ?: null,
 					'adsId'   => $this->options->get_ads_id() ?: null,
 				],
+				'dataViewsScriptUrl'       => add_query_arg(
+					[
+						'version' => (string) filemtime( "{$this->get_root_dir()}/js/build/wp-dataviews-shim.js" ),
+					],
+					(
+						new ScriptAsset(
+							'gla-data-views-shim',
+							'js/build/wp-dataviews-shim',
+							[],
+							(string) filemtime( "{$this->get_root_dir()}/js/build/wp-dataviews-shim.js" ),
+						)
+					)->get_uri(),
+				),
 			]
 		);
 

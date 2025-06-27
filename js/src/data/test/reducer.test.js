@@ -76,6 +76,13 @@ describe( 'reducer', () => {
 				enable_enhanced_conversions: false,
 			},
 			gtinMigrationStatus: null,
+			price_benchmark: {
+				suggestions: {
+					items: {},
+					queries: {},
+				},
+				summary: {},
+			},
 		} );
 
 		prepareState = prepareImmutableState.bind( null, defaultState );

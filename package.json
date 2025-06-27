@@ -1,7 +1,7 @@
 {
 	"name": "google-listings-and-ads",
 	"title": "Google for WooCommerce",
-	"version": "2.9.13",
+	"version": "3.0.0",
 	"description": "Google for WooCommerce",
 	"author": "Automattic",
 	"license": "GPL-3.0-or-later",
@@ -32,6 +32,7 @@
 		"@wordpress/compose": "^6.19.13",
 		"@wordpress/data": "^9.12.13",
 		"@wordpress/data-controls": "^3.11.13",
+		"@wordpress/dataviews": "^4.17.0",
 		"@wordpress/date": "^4.42.13",
 		"@wordpress/dom": "^3.42.13",
 		"@wordpress/element": "^5.19.13",
@@ -41,6 +42,7 @@
 		"@wordpress/icons": "^9.33.13",
 		"@wordpress/primitives": "^3.40.13",
 		"@wordpress/url": "^3.43.13",
+		"@wordpress/viewport": "^6.22.0",
 		"classnames": "^2.5.1",
 		"gridicons": "^3.4.2",
 		"lodash": "^4.17.21",
@@ -150,6 +152,10 @@
 			{
 				"path": "./js/build/vendors.js",
 				"maxSize": "8.3 kB"
+			},
+			{
+				"path": "./js/build/wp-dataviews-shim.js",
+				"maxSize": "277.00 kB"
 			},
 			{
 				"path": "./js/build/*.css",

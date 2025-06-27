@@ -18,6 +18,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantPriceBenchmarks;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
@@ -121,6 +122,8 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( Merchant::class, ShoppingContent::class );
 		$this->share( MerchantMetrics::class, ShoppingContent::class, GoogleAdsClient::class, WP::class, TransientsInterface::class );
 		$this->share( MerchantReport::class, ShoppingContent::class, ProductHelper::class );
+
+		$this->share( MerchantPriceBenchmarks::class, ShoppingContent::class );
 
 		$this->share( SiteVerification::class );
 

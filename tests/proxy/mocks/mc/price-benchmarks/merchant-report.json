@@ -1,0 +1,213 @@
+{
+	"results": [
+		{
+			"segments": {
+				"offerId": "gla_37"
+			},
+			"metrics": {
+				"clicks": "3",
+				"conversions": 0,
+				"impressions": "5",
+				"ctr": 0.6
+			}
+		},
+		{
+			"segments": {
+				"offerId": "gla_36"
+			},
+			"metrics": {
+				"clicks": "2",
+				"conversions": 0,
+				"impressions": "4",
+				"ctr": 0.5
+			}
+		},
+		{
+			"segments": {
+				"offerId": "gla_35"
+			},
+			"metrics": {
+				"clicks": "1",
+				"conversions": 0,
+				"impressions": "3",
+				"ctr": 0.33
+			}
+		},
+		{
+			"segments": {
+				"offerId": "gla_34"
+			},
+			"metrics": {
+				"clicks": "2",
+				"conversions": 0,
+				"impressions": "6",
+				"ctr": 0.33
+			}
+		},
+		{
+			"segments": {
+				"offerId": "gla_33"
+			},
+			"metrics": {
+				"clicks": "1",
+				"conversions": 0,
+				"impressions": "3",
+				"ctr": 0.33
+			}
+		},
+		{
+			"segments": {
+				"offerId": "gla_27"
+			},
+			"metrics": {
+				"clicks": "5",
+				"conversions": 1,
+				"impressions": "10",
+				"ctr": 0.5
+			}
+		},
+		{
+			"segments": {
+				"offerId": "gla_26"
+			},
+			"metrics": {
+				"clicks": "8",
+				"conversions": 2,
+				"impressions": "20",
+				"ctr": 0.4
+			}
+		},
+		{
+			"segments": {
+				"offerId": "gla_25"
+			},
+			"metrics": {
+				"clicks": "6",
+				"conversions": 1,
+				"impressions": "15",
+				"ctr": 0.4
+			}
+		},
+		{
+			"segments": {
+				"offerId": "gla_24"
+			},
+			"metrics": {
+				"clicks": "10",
+				"conversions": 2,
+				"impressions": "25",
+				"ctr": 0.4
+			}
+		},
+		{
+			"segments": {
+				"offerId": "gla_23"
+			},
+			"metrics": {
+				"clicks": "12",
+				"conversions": 3,
+				"impressions": "30",
+				"ctr": 0.4
+			}
+		},
+		{
+			"segments": {
+				"offerId": "gla_22"
+			},
+			"metrics": {
+				"clicks": "15",
+				"conversions": 4,
+				"impressions": "35",
+				"ctr": 0.43
+			}
+		},
+		{
+			"segments": {
+				"offerId": "gla_21"
+			},
+			"metrics": {
+				"clicks": "20",
+				"conversions": 5,
+				"impressions": "50",
+				"ctr": 0.4
+			}
+		},
+		{
+			"segments": {
+				"offerId": "gla_20"
+			},
+			"metrics": {
+				"clicks": "18",
+				"conversions": 4,
+				"impressions": "45",
+				"ctr": 0.4
+			}
+		},
+		{
+			"segments": {
+				"offerId": "gla_19"
+			},
+			"metrics": {
+				"clicks": "16",
+				"conversions": 3,
+				"impressions": "40",
+				"ctr": 0.4
+			}
+		},
+		{
+			"segments": {
+				"offerId": "gla_18"
+			},
+			"metrics": {
+				"clicks": "14",
+				"conversions": 3,
+				"impressions": "35",
+				"ctr": 0.4
+			}
+		},
+		{
+			"segments": {
+				"offerId": "gla_17"
+			},
+			"metrics": {
+				"clicks": "12",
+				"conversions": 2,
+				"impressions": "30",
+				"ctr": 0.4
+			}
+		},
+		{
+			"segments": {
+				"offerId": "gla_16"
+			},
+			"metrics": {
+				"clicks": "10",
+				"conversions": 2,
+				"impressions": "25",
+				"ctr": 0.4
+			}
+		},
+		{
+			"segments": {
+				"offerId": "gla_15"
+			},
+			"metrics": {
+				"clicks": "8",
+				"conversions": 1,
+				"impressions": "20",
+				"ctr": 0.4
+			}
+		},
+		{
+			"segments": {
+				"offerId": "gla_14"
+			},
+			"metrics": {
+				"clicks": "6",
+				"conversions": 1,
+				"impressions": "15",
+				"ctr": 0.4
+			}
+		}
+	]
+}

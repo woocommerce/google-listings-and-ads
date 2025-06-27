@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
 	port: process.env.PROXY_PORT || 5555,
-	host: 'localhost',
+	host: process.env.PROXY_HOST || 'localhost',
 	connectServer:
 		process.env.WOOCOMMERCE_CONNECT_SERVER || 'https://api.woocommerce.com',
 	proxyMode: process.env.PROXY_MODE || 'default',

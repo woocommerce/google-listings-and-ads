@@ -17,7 +17,7 @@ const init = async () => {
 		path: '/{path*}',
 		config: {
 			handler: ( request, h ) => {
-				const response = handler.checkRequest( request );
+				const response = handler.checkRequest( request, h );
 				if ( response ) {
 					if ( config.logResponses ) {
 						// eslint-disable-next-line no-console

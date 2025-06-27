@@ -1,0 +1,30 @@
+.gla-price-benchmark__empty-metrics {
+	background: $white;
+	color: $gray-700;
+	margin: 0 auto;
+	max-width: 454px;
+	padding: $grid-unit-30;
+	text-align: center;
+
+	@include break-large {
+		padding: ($grid-unit-80 + $grid-unit-20) 0;
+	}
+
+	.gla-price-benchmark__empty-metrics-graphic {
+		margin-bottom: $grid-unit-30;
+
+		img {
+			display: block;
+			margin: 0 auto;
+		}
+	}
+
+	p {
+		font-size: 16px;
+		margin: 0;
+
+		&:not(:first-child) {
+			margin-top: $grid-unit-20;
+		}
+	}
+}

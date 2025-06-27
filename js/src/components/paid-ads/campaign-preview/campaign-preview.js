@@ -7,6 +7,7 @@ import {
 	useCallback,
 	useEffect,
 	useImperativeHandle,
+	createRef,
 	forwardRef,
 } from '@wordpress/element';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
@@ -68,14 +69,17 @@ const bestsellingQuery = {
 	order: 'desc',
 };
 
-const mockups = [
+const mockupPairs = [
 	MockupShopping,
 	MockupYouTube,
 	MockupSearch,
 	MockupMap,
 	MockupDisplay,
 	MockupGmail,
-];
+].map( ( Mockup ) => {
+	const nodeRef = createRef();
+	return [ nodeRef, Mockup ];
+} );
 
 function resolvePreviewProduct( products = [] ) {
 	const currencyFactory = CurrencyFactory( getSetting( 'currency' ) );
@@ -119,7 +123,8 @@ function CampaignPreview( { autoplay = true }, ref ) {
 
 	const moveBy = useCallback( ( step ) => {
 		setIndex( ( currentIndex ) => {
-			return ( currentIndex + step + mockups.length ) % mockups.length;
+			const numPairs = mockupPairs.length;
+			return ( currentIndex + step + numPairs ) % numPairs;
 		} );
 	}, [] );
 
@@ -144,17 +149,18 @@ function CampaignPreview( { autoplay = true }, ref ) {
 		);
 	}
 
-	const Mockup = mockups[ index ];
+	const [ nodeRef, Mockup ] = mockupPairs[ index ];
 	const product = resolvePreviewProduct( data?.products );
 
 	return (
 		<TransitionGroup className="gla-campaign-preview">
 			<CSSTransition
+				nodeRef={ nodeRef }
 				key={ index }
 				classNames="gla-campaign-preview__transition-blur"
 				timeout={ 500 }
 			>
-				<Mockup product={ product } />
+				<Mockup ref={ nodeRef } product={ product } />
 			</CSSTransition>
 		</TransitionGroup>
 	);

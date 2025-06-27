@@ -3,13 +3,14 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { Stepper } from '@woocommerce/components';
-import { getQuery, getHistory, getNewPath } from '@woocommerce/navigation';
+import { getHistory, getNewPath } from '@woocommerce/navigation';
 import { useEffect, useState } from '@wordpress/element';
 import { isEqual } from 'lodash';
 /**
  * Internal dependencies
  */
 import useLayout from '~/hooks/useLayout';
+import useQuery from '~/hooks/useQuery';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import useAppSelectDispatch from '~/hooks/useAppSelectDispatch';
 import { useAppDispatch } from '~/data';
@@ -43,8 +44,7 @@ const eventContext = 'edit-ads';
 const dashboardURL = getDashboardUrl();
 const helpButton = <HelpIconButton eventContext={ eventContext } />;
 
-function getCurrentStep() {
-	const { step } = getQuery();
+function getCurrentStep( step ) {
 	if ( Object.values( STEP ).includes( step ) ) {
 		return step;
 	}
@@ -77,7 +77,9 @@ const EditPaidAdsCampaign = () => {
 		updateCampaignAssetGroup,
 	} = useAppDispatch();
 
-	const id = Number( getQuery().programId );
+	const query = useQuery();
+	const id = Number( query.programId );
+
 	const { loaded, data: campaigns } = useAdsCampaigns();
 	const {
 		hasFinishedResolution: hasResolvedAssetEntityGroups,
@@ -94,7 +96,7 @@ const EditPaidAdsCampaign = () => {
 		}
 	}, [ campaign ] );
 
-	const step = getCurrentStep();
+	const step = getCurrentStep( query.step );
 
 	useNavigateAwayPromptEffect(
 		__(
@@ -106,7 +108,7 @@ const EditPaidAdsCampaign = () => {
 	);
 
 	const setStep = ( nextStep ) => {
-		const url = getNewPath( { ...getQuery(), step: nextStep } );
+		const url = getNewPath( { ...query, step: nextStep } );
 		getHistory().push( url );
 	};
 
@@ -238,7 +240,7 @@ const EditPaidAdsCampaign = () => {
 				onChange={ handleOnChange }
 			>
 				<Stepper
-					currentStep={ getCurrentStep() }
+					currentStep={ step }
 					steps={ [
 						{
 							key: STEP.CAMPAIGN,

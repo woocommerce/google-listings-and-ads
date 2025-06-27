@@ -8,6 +8,7 @@ import createSelector from 'rememo';
  * Internal dependencies
  */
 import { STORE_KEY } from './constants';
+import { generateKeyFromObject } from '~/utils/generateKeyFromObject';
 import {
 	getReportQuery,
 	getReportKey,
@@ -55,6 +56,16 @@ export const getSettings = ( state ) => {
  * @typedef {Object} Tour
  * @property {string} id The tour ID
  * @property {boolean} checked True if the tour was checked by the user.
+ */
+
+/**
+ * @typedef {Object} PriceBenchmarkQueryParams
+ * @property {string} [product_id] The product ID to get the price benchmark for.
+ * @property {string} [order] The sort direction (e.g. 'asc' or 'desc').
+ * @property {string} [orderby] The field to sort by.
+ * @property {string} [search] The search query string.
+ * @property {number} [page] The current page number.
+ * @property {number} [per_page] The number of items per page.
  */
 
 /**
@@ -415,4 +426,55 @@ export const getAdsBudgetRecommendations = ( state, countryCodes = [] ) => {
  */
 export const getGtinMigrationStatus = ( state ) => {
 	return state.gtinMigrationStatus;
+};
+
+/**
+ * Retrieves the price benchmark summary from the state.
+ *
+ * @param {Object} state - The state object containing price benchmark data.
+ * @return {Object} The price benchmark summary.
+ */
+export const getPriceBenchmarkSummary = ( state ) => {
+	return state.price_benchmark.summary;
+};
+
+/**
+ * Retrieves the price benchmark suggestions from the state. If `product_id` is provided in the arguments,
+ * it returns the suggestions for that specific product. Otherwise, it generates a key from the arguments
+ * and retrieves the suggestions based on that key.
+ *
+ * @param {Object} state - The state object containing price benchmark data.
+ * @param {PriceBenchmarkQueryParams} args - Arguments to generate the key for suggestions.
+ * @return {Object} The price benchmark suggestions and meta.
+ */
+export const getPriceBenchmarkSuggestions = createSelector(
+	( state, args ) => {
+		if ( args.product_id ) {
+			return state.price_benchmark.suggestions.items[ args.product_id ];
+		}
+
+		const key = generateKeyFromObject( args );
+		const itemsById = state.price_benchmark.suggestions.items;
+		const ids =
+			state.price_benchmark.suggestions.queries[ key ]?.items || [];
+		return {
+			items: ids.map( ( id ) => itemsById[ id ] ).filter( Boolean ),
+			meta: state.price_benchmark.suggestions.queries[ key ]?.meta,
+		};
+	},
+	( state, args ) => [
+		state.price_benchmark.suggestions,
+		generateKeyFromObject( args ),
+	]
+);
+
+/**
+ * Retrieves the price benchmark suggestion for a specific product.
+ *
+ * @param {Object} state - The Redux state object containing price benchmark data.
+ * @param {string|number} productId - The unique identifier of the product.
+ * @return {Object} The price benchmark suggestion for the specified product, or undefined if not found.
+ */
+export const getPriceBenchmarkSuggestion = ( state, productId ) => {
+	return state.price_benchmark.suggestions.items[ productId ];
 };

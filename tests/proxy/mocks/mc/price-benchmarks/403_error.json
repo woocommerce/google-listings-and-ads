@@ -1,0 +1,21 @@
+{
+	"error": {
+		"code": 403,
+		"message": "Market Insights not enabled for account *REDACTED*. For more information check https://support.google.com/merchants/answer/9625913",
+		"errors": [
+			{
+				"message": "Market Insights not enabled for account *REDACTED*. For more information check https://support.google.com/merchants/answer/9625913",
+				"domain": "global",
+				"reason": "forbidden"
+			}
+		],
+		"status": "PERMISSION_DENIED",
+		"details": [
+			{
+				"@type": "type.googleapis.com/google.rpc.ErrorInfo",
+				"reason": "forbidden",
+				"domain": "global"
+			}
+		]
+	}
+}

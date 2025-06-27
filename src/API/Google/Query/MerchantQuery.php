@@ -77,6 +77,14 @@ abstract class MerchantQuery extends Query {
 		}
 
 		/** @var SearchResponse $this->results */
-		$this->results = $this->client->reports->search( $this->id, $request );
+		$results = $this->client->reports->search( $this->id, $request );
+
+		/**
+		 * Filter the search response prior to setting the property.
+		 *
+		 * @param SearchResponse $results The search response.
+		 * @param SearchRequest  $request The search request.
+		 */
+		$this->results = apply_filters( 'gla_merchant_query_response', $results, $request );
 	}
 }

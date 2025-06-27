@@ -5,7 +5,7 @@ Requires at least: 6.1
 Tested up to: 6.8
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.9.13
+Stable tag: 3.0.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -140,6 +140,11 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.0.0 - 2025-06-17 =
+* Add - API Push/Pull Sync control endpoint Implementation.
+* Add - Price Benchmarks: Competitive pricing analysis and price recommendations from Google.
+* Tweak - WC 9.9 compatibility.
+
 = 2.9.13 - 2025-04-29 =
 * Update - Revert the changes related to the Grant API Pull Access in Onboarding feature made in version 2.9.12.
 
@@ -150,11 +155,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Tweak - Enable API Pull authorization to be granted before connecting to Google Merchant Center.
 * Tweak - Move the API Pull statuses from Google Merchant Center account card to Google account card for the Settings page.
 * Update - Remove the button that disables the API Pull from the Settings page.
-
-= 2.9.11 - 2025-04-15 =
-* Fix - Ads merchant linking failure display issue & improve retry mechanism.
-* Fix - Compatibility issue with WordPress 6.8 and WooCommerce 9.8, which may cause all pages not to display properly.
-* Tweak - WC 9.8 compatibility.
-* Tweak - WP 6.8 compatibility.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

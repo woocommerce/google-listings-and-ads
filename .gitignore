@@ -14,6 +14,7 @@ tests/php-coverage
 tests/e2e/test-results
 
 # Directories/files that may appear in your environment
+.wp-env.override.json
 .DS_Store
 Thumbs.db
 wp-cli.local.yml

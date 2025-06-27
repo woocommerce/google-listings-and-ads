@@ -15,11 +15,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductMetaQueryHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantPriceBenchmarksQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\AttributeMappingRulesTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\BudgetRecommendationTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantPriceBenchmarksTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
@@ -49,20 +51,22 @@ class DBServiceProvider extends AbstractServiceProvider {
 	 * @var array
 	 */
 	protected $provides = [
-		AttributeMappingRulesTable::class => true,
-		AttributeMappingRulesQuery::class => true,
-		ShippingRateTable::class          => true,
-		ShippingRateQuery::class          => true,
-		ShippingTimeTable::class          => true,
-		ShippingTimeQuery::class          => true,
-		BudgetRecommendationTable::class  => true,
-		BudgetRecommendationQuery::class  => true,
-		MerchantIssueTable::class         => true,
-		MerchantIssueQuery::class         => true,
-		ProductFeedQueryHelper::class     => true,
-		ProductMetaQueryHelper::class     => true,
-		MigrationInterface::class         => true,
-		Migrator::class                   => true,
+		AttributeMappingRulesTable::class   => true,
+		AttributeMappingRulesQuery::class   => true,
+		ShippingRateTable::class            => true,
+		ShippingRateQuery::class            => true,
+		ShippingTimeTable::class            => true,
+		ShippingTimeQuery::class            => true,
+		BudgetRecommendationTable::class    => true,
+		BudgetRecommendationQuery::class    => true,
+		MerchantIssueTable::class           => true,
+		MerchantIssueQuery::class           => true,
+		MerchantPriceBenchmarksTable::class => true,
+		MerchantPriceBenchmarksQuery::class => true,
+		ProductFeedQueryHelper::class       => true,
+		ProductMetaQueryHelper::class       => true,
+		MigrationInterface::class           => true,
+		Migrator::class                     => true,
 	];
 
 	/**
@@ -95,6 +99,8 @@ class DBServiceProvider extends AbstractServiceProvider {
 		$this->add_query_class( ShippingTimeQuery::class, ShippingTimeTable::class );
 		$this->share_table_class( MerchantIssueTable::class );
 		$this->add_query_class( MerchantIssueQuery::class, MerchantIssueTable::class );
+		$this->share_table_class( MerchantPriceBenchmarksTable::class );
+		$this->add_query_class( MerchantPriceBenchmarksQuery::class, MerchantPriceBenchmarksTable::class );
 
 		$this->share_with_tags( ProductFeedQueryHelper::class, wpdb::class, ProductRepository::class );
 		$this->share_with_tags( ProductMetaQueryHelper::class, wpdb::class );
