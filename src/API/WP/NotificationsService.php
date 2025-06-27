@@ -77,6 +77,13 @@ class NotificationsService implements Service, OptionsAwareInterface {
 	private $notification_url;
 
 	/**
+	 * The WordPress.com blog ID
+	 *
+	 * @var int $blog_id
+	 */
+	private $blog_id;
+
+	/**
 	 * The Merchant center service
 	 *
 	 * @var MerchantCenterService $merchant_center
@@ -97,10 +104,10 @@ class NotificationsService implements Service, OptionsAwareInterface {
 	 * @param AccountService        $account_service
 	 */
 	public function __construct( MerchantCenterService $merchant_center, AccountService $account_service ) {
-		$blog_id                = Jetpack_Options::get_option( 'id' );
+		$this->blog_id          = Jetpack_Options::get_option( 'id' );
 		$this->merchant_center  = $merchant_center;
 		$this->account_service  = $account_service;
-		$this->notification_url = "https://public-api.wordpress.com/wpcom/v2/sites/{$blog_id}/partners/google/notifications";
+		$this->notification_url = "https://public-api.wordpress.com/wpcom/v2/sites/{$this->blog_id}/partners/google/notifications";
 	}
 
 	/**
@@ -148,7 +155,13 @@ class NotificationsService implements Service, OptionsAwareInterface {
 				'x-woocommerce-topic' => $topic,
 				'Content-Type'        => 'application/json',
 			],
-			'body'    => array_merge( $data, [ 'item_id' => $item_id ] ),
+			'body'    => array_merge(
+				$data,
+				[
+					'item_id' => $item_id,
+					'blog_id' => $this->blog_id,
+				]
+			),
 			'url'     => $this->get_notification_url(),
 		];
 
