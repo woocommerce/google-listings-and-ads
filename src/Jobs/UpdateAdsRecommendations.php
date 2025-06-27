@@ -15,9 +15,6 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class UpdateAdsRecommendations
  *
- *
- * Note: The job will not start if it is already running or if the Google Merchant Center account is not connected.
- *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
 class UpdateAdsRecommendations extends AbstractActionSchedulerJob implements RecurringJobInterface, StartOnHookInterface {
@@ -32,6 +29,7 @@ class UpdateAdsRecommendations extends AbstractActionSchedulerJob implements Rec
 	 * @param ActionSchedulerInterface  $action_scheduler
 	 * @param ActionSchedulerJobMonitor $monitor
 	 * @param AdsRecommendationsService $recommendations
+	 * @param AccountService            $account
 	 */
 	public function __construct(
 		ActionSchedulerInterface $action_scheduler,
