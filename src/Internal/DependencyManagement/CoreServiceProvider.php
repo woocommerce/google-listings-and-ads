@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Attribu
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\VariationsAttributes;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\ChannelVisibilityBlock;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\ProductBlocksService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsRecommendationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AccountService as AdsAccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
@@ -182,6 +183,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ZoneMethodsParser::class         => true,
 		LocationRatesProcessor::class    => true,
 		ShippingZone::class              => true,
+		AdsRecommendationsService::class => true,
 		AdsAccountService::class         => true,
 		MerchantAccountService::class    => true,
 		MarketingChannelRegistrar::class => true,
@@ -236,6 +238,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			->invokeMethod( 'set_merchant_center_object', [ MerchantCenterService::class ] );
 
 		// Set up Ads service, and inflect classes that need it.
+		$this->share_with_tags( AdsRecommendationsService::class );
 		$this->share_with_tags( AdsAccountState::class );
 		$this->share_with_tags( AdsService::class, AdsAccountState::class );
 		$this->getContainer()
