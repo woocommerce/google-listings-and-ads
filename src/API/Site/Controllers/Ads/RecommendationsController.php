@@ -102,7 +102,7 @@ class RecommendationsController extends BaseController implements ContainerAware
 
 				/** @var AdsRecommendationsService $query */
 				$query           = $this->container->get( AdsRecommendationsService::class );
-				$recommendations = $query->get_google_recommendations();
+				$recommendations = $query->get_recommendations();
 
 				$prepared = [];
 				foreach ( $recommendations as $recommendation ) {

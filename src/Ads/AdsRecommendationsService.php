@@ -78,9 +78,10 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 				'id'              => (int) ( $item['recommendation_id'] ?? 0 ),
 				'type'            => $item['recommendation_type'] ?? '',
 				'resource_name'   => $item['recommendation_resource_name'] ?? '',
-				'campaign_id'     => $item['recommendation_campaign_id'] ?? '',
+				'campaign_id'     => (int) ( $item['recommendation_campaign_id'] ?? 0 ),
 				'campaign_name'   => $item['recommendation_campaign_name'] ?? '',
 				'campaign_status' => $item['recommendation_campaign_status'] ?? '',
+				'customer_id'     => (int) ( $item['recommendation_customer_id'] ?? 0 ),
 				'last_synced'     => isset( $item['recommendation_last_synced'] )
 					? gmdate( 'c', strtotime( $item['recommendation_last_synced'] ) )
 					: null,
