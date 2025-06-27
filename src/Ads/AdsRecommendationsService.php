@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Ads;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
@@ -11,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AdsRecommendationsQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsRecommendationsQuery as GoogleAdsRecommendationsQuery;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -19,9 +21,26 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Ads
  */
-class AdsRecommendationsService implements ContainerAwareInterface, Service {
+class AdsRecommendationsService implements ContainerAwareInterface, OptionsAwareInterface, Service {
 
 	use ContainerAwareTrait;
+	use OptionsAwareTrait;
+
+	/**
+	 * The Google Ads Client.
+	 *
+	 * @var GoogleAdsClient
+	 */
+	protected $client;
+
+	/**
+	 * Ads constructor.
+	 *
+	 * @param GoogleAdsClient $client
+	 */
+	public function __construct( GoogleAdsClient $client ) {
+		$this->client = $client;
+	}
 
 	/**
 	 * Retrieves recommendations from the database for the specified type and ID.
@@ -56,14 +75,14 @@ class AdsRecommendationsService implements ContainerAwareInterface, Service {
 
 		foreach ( $result as $item ) {
 			$recommendations[] = [
-				'id'             => (int) ( $item['recommendation_id'] ?? 0 ),
-				'type'           => $item['recommendation_type'] ?? '',
-				'resource_name'  => $item['recommendation_resource_name'] ?? '',
-				'campaign_id'    => $item['recommendation_campaign_id'] ?? '',
-				'campaign_name'  => $item['recommendation_campaign_name'] ?? '',
-				'campaign_status'=> $item['recommendation_campaign_status'] ?? '',
-				'last_synced'    => isset( $item['recommendation_last_synced'] )
-					? date( 'c', strtotime( $item['recommendation_last_synced'] ) )
+				'id'              => (int) ( $item['recommendation_id'] ?? 0 ),
+				'type'            => $item['recommendation_type'] ?? '',
+				'resource_name'   => $item['recommendation_resource_name'] ?? '',
+				'campaign_id'     => $item['recommendation_campaign_id'] ?? '',
+				'campaign_name'   => $item['recommendation_campaign_name'] ?? '',
+				'campaign_status' => $item['recommendation_campaign_status'] ?? '',
+				'last_synced'     => isset( $item['recommendation_last_synced'] )
+					? gmdate( 'c', strtotime( $item['recommendation_last_synced'] ) )
 					: null,
 			];
 		}
@@ -73,5 +92,29 @@ class AdsRecommendationsService implements ContainerAwareInterface, Service {
 			return [];
 		}
 		return $recommendations;
+	}
+
+	/**
+	 * Retrieves recommendations from the Google Ads API.
+	 *
+	 * @param array $args Query arguments.
+	 * @return array Array of recommendations.
+	 *
+	 * @throws Exception If the merchant price benchmarks data can't be retrieved.
+	 */
+	public function get_google_recommendations( $args ): array {
+		try {
+			$response = ( new GoogleAdsRecommendationsQuery( $args ) )
+			->set_client( $this->client, $this->options->get_ads_id() )
+			->get_results();
+
+			if ( empty( $response ) ) {
+				return [];
+			}
+
+			return $response;
+		} catch ( GoogleException $e ) {
+			throw new Exception( __( 'Unable to retrieve Google Ads recommendations.', 'google-listings-and-ads' ) . $e->getMessage(), $e->getCode() );
+		}
 	}
 }

@@ -23,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class RecommendationsController extends BaseController implements ContainerAwareInterface {
 
-    use ContainerAwareTrait;
+	use ContainerAwareTrait;
 
 	/**
 	 * Service used to access / update Ads account data.
@@ -53,7 +53,7 @@ class RecommendationsController extends BaseController implements ContainerAware
 				[
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_recommendations_callback(),
-					//'permission_callback' => $this->get_permission_callback(),
+					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_collection_params(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
@@ -100,9 +100,9 @@ class RecommendationsController extends BaseController implements ContainerAware
 					);
 				}
 
-                /** @var AdsRecommendationsService $query */
-		        $query = $this->container->get( AdsRecommendationsService::class );
-                $recommendations = $query->get_recommendations();
+				/** @var AdsRecommendationsService $query */
+				$query           = $this->container->get( AdsRecommendationsService::class );
+				$recommendations = $query->get_google_recommendations();
 
 				$prepared = [];
 				foreach ( $recommendations as $recommendation ) {

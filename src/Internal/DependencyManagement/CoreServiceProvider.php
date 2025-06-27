@@ -238,7 +238,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			->invokeMethod( 'set_merchant_center_object', [ MerchantCenterService::class ] );
 
 		// Set up Ads service, and inflect classes that need it.
-		$this->share_with_tags( AdsRecommendationsService::class );
 		$this->share_with_tags( AdsAccountState::class );
 		$this->share_with_tags( AdsService::class, AdsAccountState::class );
 		$this->getContainer()
