@@ -115,6 +115,7 @@ class NotificationsServiceTest extends UnitTest {
 			],
 			'body'    => [
 				'item_id' => $item_id,
+				'blog_id' => self::DUMMY_BLOG_ID,
 			],
 			'url'     => $this->service->get_notification_url(),
 		];
