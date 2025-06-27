@@ -85,7 +85,6 @@ test.describe( 'Settings', () => {
 
 	test.describe( 'Enhanced Conversions Setting', () => {
 		test( 'should show the "Enhanced Conversion" setting card', async () => {
-			await settingsPage.goto();
 			await expect(
 				page.getByRole( 'heading', { name: 'Settings' } )
 			).toBeVisible();
@@ -96,21 +95,44 @@ test.describe( 'Settings', () => {
 			).toBeVisible();
 		} );
 
-		test( 'should toggle the "Enhanced Conversion" setting', async () => {
-			const once = settingsPage.withFulfillTimes( 1 );
-			await once.fulfillRequest( /\/ads\/settings/, {
-				enhanced_conversions_enabled: true,
-			} );
-			await settingsPage.goto();
-			const checkbox = page.getByRole( 'checkbox', {
-				name: 'Send Enhanced Conversions data to Google Ads',
-			} );
+		test( 'checkbox should be unchecked by default', async () => {
+			const checkbox = settingsPage.getEnhancedConversionsCheckbox();
 
-			await expect( checkbox ).toBeVisible();
 			await expect( checkbox ).not.toBeChecked();
+		} );
 
-			await checkbox.check();
+		test( 'checkbox should be checked when the setting is enabled', async () => {
+			await settingsPage.mockEnhancedConversionsStatus( true );
+			await page.reload();
+
+			const checkbox = settingsPage.getEnhancedConversionsCheckbox();
+
 			await expect( checkbox ).toBeChecked();
+		} );
+
+		test( 'should send POST request to disable Enhanced Conversions when enabled with the correct payload', async () => {
+			const requestPromise =
+				settingsPage.registerEnhancedConversionsStatusRequests();
+
+			await settingsPage.mockEnhancedConversionsStatus( false, [
+				'POST',
+			] );
+
+			const checkbox = settingsPage.getEnhancedConversionsCheckbox();
+			await expect( checkbox ).toBeChecked();
+
+			await checkbox.click();
+
+			const request = await requestPromise;
+			const requestPayload = await request.postDataJSON();
+			const response = await request.response();
+			const responseBody = await response.json();
+			const payload = {
+				enhanced_conversions_enabled: false,
+			};
+
+			expect( requestPayload ).toEqual( payload );
+			expect( responseBody ).toEqual( payload );
 		} );
 
 		test( 'should show the "Enhanced Conversion" setting saved success notice', async () => {

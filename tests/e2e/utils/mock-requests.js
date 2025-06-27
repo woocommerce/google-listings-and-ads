@@ -844,4 +844,20 @@ export default class MockRequests {
 			methods
 		);
 	}
+
+	/**
+	 * Mocks the API response for the enhanced conversions status setting.
+	 *
+	 * @param {boolean} [status=false] - The desired status for enhanced conversions (enabled or disabled).
+	 * @param {Array} [methods=['GET']] - The HTTP methods to fulfill the request.
+	 * @return {Promise<void>} Resolves when the mock request has been fulfilled.
+	 */
+	async mockEnhancedConversionsStatus( status = false, methods = [ 'GET' ] ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/settings\b/,
+			{ enhanced_conversions_enabled: status },
+			200,
+			methods
+		);
+	}
 }

@@ -526,14 +526,6 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_ADS_ENHANCED_CONVERSIONS: {
-			return setIn(
-				state,
-				'ads.enable_enhanced_conversions',
-				action.status
-			);
-		}
-
-		case TYPES.UPDATE_ADS_ENHANCED_CONVERSIONS: {
 			const { status } = action;
 
 			return setIn( state, 'ads.enable_enhanced_conversions', status );

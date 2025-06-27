@@ -47,6 +47,7 @@ import {
 	receiveStoreCategories,
 	receiveTour,
 	receiveGtinMigrationStatus,
+	receiveEnhancedConversionsStatus,
 } from './actions';
 
 /**
@@ -584,13 +585,18 @@ export function* getGtinMigrationStatus() {
 	}
 }
 
-export function* getEnhancedConversionsStatus() {
+/**
+ * Resolver to fetch the enhanced conversions status.
+ */
+export function* getEnableEnhancedConversions() {
 	try {
 		const response = yield apiFetch( {
 			path: `${ API_NAMESPACE }/ads/settings`,
 		} );
 
-		yield recieveEnhancedConversionsStatus( response );
+		yield receiveEnhancedConversionsStatus(
+			Boolean( response.enhanced_conversions_enabled )
+		);
 	} catch ( error ) {
 		handleApiError(
 			error,

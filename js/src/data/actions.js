@@ -768,10 +768,10 @@ export function* updateAdsCampaign( id, data ) {
 	}
 }
 
-export function* recieveEnhancedConversionsStatus( enhancedConversionsStatus ) {
+export function receiveEnhancedConversionsStatus( status ) {
 	return {
 		type: TYPES.RECEIVE_ADS_ENHANCED_CONVERSIONS,
-		enhancedConversionsStatus,
+		status,
 	};
 }
 
@@ -791,10 +791,7 @@ export function* updateEnhancedConversionsStatus( status ) {
 			},
 		} );
 
-		return {
-			type: TYPES.UPDATE_ADS_ENHANCED_CONVERSIONS,
-			status,
-		};
+		return receiveEnhancedConversionsStatus( status );
 	} catch ( error ) {
 		handleApiError(
 			error,
