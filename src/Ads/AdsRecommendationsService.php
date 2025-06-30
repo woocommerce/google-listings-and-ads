@@ -101,7 +101,7 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 	 * @param array $args Query arguments.
 	 * @return array Array of recommendations.
 	 *
-	 * @throws Exception If the merchant price benchmarks data can't be retrieved.
+	 * @throws Exception If the recommendations data can't be retrieved.
 	 */
 	public function get_google_recommendations( $args ): array {
 		try {
@@ -116,6 +116,50 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 			return $response;
 		} catch ( GoogleException $e ) {
 			throw new Exception( __( 'Unable to retrieve Google Ads recommendations.', 'google-listings-and-ads' ) . $e->getMessage(), $e->getCode() );
+		}
+	}
+
+	/**
+	 * Updates recommendations in the database.
+	 *
+	 * @param array $args Query arguments to fetch recommendations.
+	 *
+	 * @throws Exception If there is an error while updating recommendations.
+	 */
+	public function update_recommendations( $args ): void {
+		try {
+			$recommendations = $this->get_google_recommendations( $args );
+
+			if ( empty( $recommendations ) ) {
+				return;
+			}
+
+			/** @var AdsRecommendationsQuery $query */
+			$query = $this->container->get( AdsRecommendationsQuery::class );
+
+			// Clear existing data before updating.
+			$query->reload_data();
+
+			// Map and insert recommendations into the DB table.
+			foreach ( $recommendations['results'] as $result ) {
+				$rec      = $result['recommendation'] ?? [];
+				$campaign = $rec['campaign'] ?? [];
+				$customer = $rec['customer'] ?? [];
+
+				$data = [
+					'recommendation_type'            => $rec['type'] ?? '',
+					'recommendation_resource_name'   => $rec['resource_name'] ?? '',
+					'recommendation_campaign_id'     => isset( $campaign['id'] ) ? (int) $campaign['id'] : 0,
+					'recommendation_campaign_name'   => $campaign['name'] ?? '',
+					'recommendation_campaign_status' => $campaign['status'] ?? '',
+					'recommendation_customer_id'     => isset( $customer['id'] ) ? (int) $customer['id'] : 0,
+					'recommendation_last_synced'     => gmdate( 'Y-m-d H:i:s' ),
+				];
+
+				$query->insert( $data );
+			}
+		} catch ( \Exception $e ) {
+			do_action( 'woocommerce_gla_debug_message', $e->getMessage(), __METHOD__ );
 		}
 	}
 }

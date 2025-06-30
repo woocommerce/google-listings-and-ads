@@ -117,16 +117,16 @@ class UpdateAdsRecommendationsTest extends UnitTest {
 		$this->assertTrue( $this->job->is_scheduled() );
 	}
 
-	public function test_process_items_get_google_recommendations() {
+	public function test_process_items_update_recommendations() {
 		$this->recommendations->expects( $this->once() )
-			->method( 'get_google_recommendations' )
+			->method( 'update_recommendations' )
 			->with( [] );
 
 		$this->job->process_items( [] );
 	}
 
 	public function test_process_items_throws_exception_on_failure() {
-		$this->recommendations->method( 'get_google_recommendations' )
+		$this->recommendations->method( 'update_recommendations' )
 			->willThrowException( new \Exception( 'API error' ) );
 
 		$this->expectException( JobException::class );
