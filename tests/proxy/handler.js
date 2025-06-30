@@ -22,7 +22,10 @@ module.exports.checkRequest = ( request, h ) => {
 		if ( body.query.includes( 'recommendation' ) ) {
 			if ( config.logResponses ) {
 				// eslint-disable-next-line no-console
-				console.log( 'Returning mock recommendations for query: ', body.query );
+				console.log(
+					'Returning mock recommendations for query: ',
+					body.query
+				);
 			}
 			return require( './mocks/ads/recommendations/results.json' );
 		}

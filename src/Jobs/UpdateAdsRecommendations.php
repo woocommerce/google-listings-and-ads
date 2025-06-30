@@ -24,6 +24,11 @@ class UpdateAdsRecommendations extends AbstractActionSchedulerJob implements Rec
 	protected $recommendations;
 
 	/**
+	 * @var AccountService
+	 */
+	protected $account;
+
+	/**
 	 * UpdateAdsRecommendations constructor.
 	 *
 	 * @param ActionSchedulerInterface  $action_scheduler
