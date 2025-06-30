@@ -136,6 +136,10 @@ jest.mock( '~/components/tours/rebranding-tour', () =>
 	jest.fn().mockReturnValue( null ).mockName( 'RebrandingTour' )
 );
 
+jest.mock( '~/components/experience-rating-banner', () =>
+	jest.fn().mockName( 'ExperienceRatingBanner' )
+);
+
 /**
  * External dependencies
  */

@@ -1,0 +1,19 @@
+.gla-experience-rating-banner {
+	.gla-experience-rating-banner__text {
+		margin: 0 0 $grid-unit-20;
+	}
+
+	.gla-experience-rating-banner__actions {
+		display: flex;
+		gap: $grid-unit-15;
+	}
+}
+
+.gla-experience-rating-banner__feedback-modal {
+	.app-modal__footer {
+
+		.components-button.is-primary {
+			justify-content: center;
+		}
+	}
+}

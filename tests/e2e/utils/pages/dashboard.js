@@ -3,6 +3,8 @@
  */
 import { LOAD_STATE } from '../constants';
 import MockRequests from '../mock-requests';
+import adsReportProductsData from '../__fixtures__/ads-report-products.json';
+import mcProductStatistics from '../__fixtures__/mc-product-statistics.json';
 
 /**
  * Dashboard page object class.
@@ -57,19 +59,8 @@ export default class DashboardPage extends MockRequests {
 			next_page: null,
 		} );
 
-		await this.fulfillAdsReportProgram( {
-			products: null,
-			campaigns: null,
-			intervals: null,
-			totals: {
-				sales: 0,
-				conversions: 0,
-				spend: 0,
-				clicks: 0,
-				impressions: 0,
-			},
-			next_page: null,
-		} );
+		await this.fulfillAdsReportProgram( adsReportProductsData );
+		await this.fulfillProductStatisticsRequest( mcProductStatistics );
 
 		await this.fulfillTargetAudience( {
 			location: 'selected',
@@ -93,6 +84,8 @@ export default class DashboardPage extends MockRequests {
 			symbol: '$',
 			status: 'disconnected',
 		} );
+
+		await this.fulfillAdsReportProducts( adsReportProductsData );
 	}
 
 	/**

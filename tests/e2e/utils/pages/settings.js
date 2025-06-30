@@ -3,6 +3,8 @@
  */
 import MockRequests from '../mock-requests';
 import { LOAD_STATE } from '../constants';
+import adsReportProductsData from '../__fixtures__/ads-report-products.json';
+import mcProductStatistics from '../__fixtures__/mc-product-statistics.json';
 
 export default class SettingsPage extends MockRequests {
 	/**
@@ -47,6 +49,8 @@ export default class SettingsPage extends MockRequests {
 		await this.mockContactInformation();
 		await this.mockSuccessfulSettingsSyncRequest();
 		await this.mockEnhancedConversionsStatus();
+		await this.fulfillAdsReportProducts( adsReportProductsData );
+		await this.fulfillProductStatisticsRequest( mcProductStatistics );
 	}
 
 	/**
