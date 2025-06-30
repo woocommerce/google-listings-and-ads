@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query
  */
-class AdsRecommendationsQuery extends Query {
+class AdsRecommendationsQuery extends AdsQuery {
 
 	/**
 	 * Client which handles the query.
