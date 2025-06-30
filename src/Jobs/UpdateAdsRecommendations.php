@@ -91,7 +91,7 @@ class UpdateAdsRecommendations extends AbstractActionSchedulerJob implements Rec
 	public function process_items( array $items ) {
 		try {
 			// Fetch price benchmarks from the API.
-			$this->recommendations->get_google_recommendations();
+			$this->recommendations->get_google_recommendations( $items );
 		} catch ( Throwable $e ) {
 			throw new JobException( 'Error updating ads recommendations: ' . $e->getMessage() );
 		}
