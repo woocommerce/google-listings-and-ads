@@ -3,6 +3,8 @@
  */
 import { LOAD_STATE } from '../constants';
 import MockRequests from '../mock-requests';
+import adsReportProductsData from '../__fixtures__/ads-report-products.json';
+import mcProductStatistics from '../__fixtures__/mc-product-statistics.json';
 
 /**
  * ProductFeed page object class.
@@ -52,6 +54,9 @@ export default class PriceBenchmarkPage extends MockRequests {
 				total: 0,
 				loading: false,
 			} ),
+
+			this.fulfillAdsReportProducts( adsReportProductsData ),
+			this.fulfillProductStatisticsRequest( mcProductStatistics ),
 
 			this.mockJetpackConnected(),
 			this.mockGoogleConnected(),

@@ -11,6 +11,7 @@ import AttributeMappingDescription from './attribute-mapping-description';
 import AttributeMappingTable from './attribute-mapping-table';
 import MainTabNav from '~/components/main-tab-nav';
 import RebrandingTour from '~/components/tours/rebranding-tour';
+import ExperienceRatingBanner from '~/components/experience-rating-banner';
 import './index.scss';
 
 /**
@@ -21,6 +22,7 @@ import './index.scss';
 const AttributeMapping = () => {
 	return (
 		<div className="gla-attribute-mapping">
+			<ExperienceRatingBanner />
 			<MainTabNav />
 			<RebrandingTour />
 			<Section

@@ -8,6 +8,8 @@ import { Locator } from '@playwright/test';
  */
 import MockRequests from '../mock-requests';
 import { LOAD_STATE } from '../constants';
+import adsReportProductsData from '../__fixtures__/ads-report-products.json';
+import mcProductStatistics from '../__fixtures__/mc-product-statistics.json';
 
 export default class ShippingPage extends MockRequests {
 	/**
@@ -38,6 +40,9 @@ export default class ShippingPage extends MockRequests {
 			locale: 'en_US',
 			language: 'English',
 		} );
+
+		await this.fulfillAdsReportProducts( adsReportProductsData );
+		await this.fulfillProductStatisticsRequest( mcProductStatistics );
 	}
 
 	/**
