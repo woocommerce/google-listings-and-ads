@@ -23,6 +23,7 @@ import hasUnsavedShippingRates from './hasUnsavedShippingRates';
 import useSaveShippingRates from '~/hooks/useSaveShippingRates';
 import useSaveShippingTimes from '~/hooks/useSaveShippingTimes';
 import createErrorMessageForRejectedPromises from '~/utils/createErrorMessageForRejectedPromises';
+import ExperienceRatingBanner from '~/components/experience-rating-banner';
 import { handleApiError } from '~/utils/handleError';
 import { recordGlaEvent } from '~/utils/tracks';
 
@@ -192,6 +193,7 @@ export default function Shipping() {
 
 	return (
 		<>
+			<ExperienceRatingBanner />
 			<MainTabNav />
 			<SetupFreeListings
 				targetAudience={ initialAudience }

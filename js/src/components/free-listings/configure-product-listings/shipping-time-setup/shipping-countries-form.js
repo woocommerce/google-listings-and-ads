@@ -47,7 +47,7 @@ export default function ShippingCountriesForm( {
 	}
 
 	// Given the limitations of `<Form>` component we can communicate up only onChange.
-	// Therefore we loose the infromation whether it was add, change, delete.
+	// Therefore we loose the information whether it was add, change, delete.
 	// In autosave/setup MC case, we would have to either re-calculate to deduct that information,
 	// or fix that in `<Form>` component.
 	function handleDelete( deletedCountries ) {

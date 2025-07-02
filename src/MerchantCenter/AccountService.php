@@ -347,6 +347,9 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 							$merchant->claimwebsite();
 						}
 						break;
+					case 'sdi_update':
+						$middleware->update_sdi_merchant_account();
+						break;
 					case 'link_ads':
 						// Continue to next step if Ads account is not connected yet.
 						if ( ! $this->options->get_ads_id() ) {

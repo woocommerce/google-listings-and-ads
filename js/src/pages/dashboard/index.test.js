@@ -60,6 +60,10 @@ jest.mock( '~/components/customer-effort-score-prompt', () => () => (
 	<div>{ CES_PROMPT_TEXT }</div>
 ) );
 
+jest.mock( '~/components/experience-rating-banner', () =>
+	jest.fn().mockName( 'ExperienceRatingBanner' )
+);
+
 beforeAll( () => {
 	// Used in the js/src/hooks/useMenuEffect.js dependency
 	window.wpNavMenuClassChange = jest.fn();

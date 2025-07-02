@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { forwardRef } from '@wordpress/element';
 import GridiconExternal from 'gridicons/dist/external';
 
 /**
@@ -22,9 +23,9 @@ import youTubeLogoURL from '~/images/campaign-preview/youtube-logo.svg';
  * @param {Object} props React props.
  * @param {AdPreviewData} props.product Data for compositing ad preview mockups.
  */
-export default function MockupYouTube( { product } ) {
+function MockupYouTube( { product }, ref ) {
 	return (
-		<div className="gla-ads-mockup">
+		<div ref={ ref } className="gla-ads-mockup">
 			<div className="gla-ads-mockup__youtube-header">
 				<img
 					height="16"
@@ -56,3 +57,7 @@ export default function MockupYouTube( { product } ) {
 		</div>
 	);
 }
+
+MockupYouTube.displayName = 'MockupYouTube';
+
+export default forwardRef( MockupYouTube );

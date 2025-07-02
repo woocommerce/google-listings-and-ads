@@ -152,7 +152,7 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  * @event gla_filter
  * @property {string} report Name of the report (e.g. `"reports-products"`)
  * @property {string} filter Value of the filter (e.g. `"all" | "single-product" | "compare-products"`)
- * @property {string | undefined} variationFilter Value of the variation filter (e.g. `undefined | "single-variation" | "compare-variations"`)
+ * @property {string} [filter_variation] Value of the variation filter (e.g. `"single-variation" | "compare-variations"`)
  */
 
 /**

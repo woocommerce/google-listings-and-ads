@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { forwardRef } from '@wordpress/element';
 import GridiconChevronRight from 'gridicons/dist/chevron-right';
 
 /**
@@ -21,9 +22,9 @@ import adCornerButtonsImageURL from '~/images/campaign-preview/ad-corner-buttons
  * @param {Object} props React props.
  * @param {AdPreviewData} props.product Data for compositing ad preview mockups.
  */
-export default function MockupDisplay( { product } ) {
+function MockupDisplay( { product }, ref ) {
 	return (
-		<div className="gla-ads-mockup gla-ads-mockup-display">
+		<div ref={ ref } className="gla-ads-mockup gla-ads-mockup-display">
 			<div className="gla-ads-mockup__display-placeholders">
 				<Placeholder stroke="thinner" color="gray-300" />
 				<Placeholder stroke="thinner" color="gray-300" width="146" />
@@ -58,3 +59,7 @@ export default function MockupDisplay( { product } ) {
 		</div>
 	);
 }
+
+MockupDisplay.displayName = 'MockupDisplay';
+
+export default forwardRef( MockupDisplay );
