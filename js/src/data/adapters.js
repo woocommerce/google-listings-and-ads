@@ -9,8 +9,55 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * @typedef {import('~/data/actions').Campaign} Campaign
  * @typedef {import('~/data/types.js').AssetEntityGroup} AssetEntityGroup
  * @typedef {import('~/data/types.js').AdsBudgetRecommendation} AdsBudgetRecommendation
+ * @typedef {import('~/data/types.js').AdsBudgetRecommendationEntity} AdsBudgetRecommendationEntity
  * @typedef {import('~/data/types.js').AdsBudgetMetrics} AdsBudgetMetrics
  */
+
+/**
+ * A workaround to eliminate recommendations when conversion-related metrics
+ * are identical. It only keeps the lowest-budget one, taking its place as
+ * "recommended" level. Otherwise, it returns the original recommendations.
+ *
+ * Currently, Google Ads API might return the exact same forecast metrics, so
+ * this workaround is intended to avoid user confusion. It only keeps the
+ * lowest budget since that would have the best ROAS.
+ *
+ * @param {Array<AdsBudgetRecommendationEntity>} rawRecommendations The raw budget recommendations.
+ * @return {Array<AdsBudgetRecommendationEntity>} The eliminated or original recommendations.
+ */
+function eliminateIdenticalMetrics( rawRecommendations ) {
+	const recommendations = rawRecommendations.filter(
+		( item ) => item.metrics
+	);
+
+	if ( recommendations.length <= 1 ) {
+		return rawRecommendations;
+	}
+
+	let lowest = recommendations[ 0 ];
+
+	for ( let i = 1; i < recommendations.length; i += 1 ) {
+		const item = recommendations[ i ];
+
+		if (
+			item.metrics.conversions === lowest.metrics.conversions &&
+			item.metrics.conversionsValue === lowest.metrics.conversionsValue
+		) {
+			if ( item.dailyBudget < lowest.dailyBudget ) {
+				lowest = item;
+			}
+		} else {
+			return rawRecommendations;
+		}
+	}
+
+	return [
+		{
+			...lowest,
+			level: 'recommended',
+		},
+	];
+}
 
 /**
  * Adapts the ads budget recommendation data received from API.
@@ -24,7 +71,7 @@ export function adaptAdsBudgetRecommendation( rawData ) {
 	const { currency, source, recommendations, ...data } =
 		convertKeysFromSnakeCaseToCamelCase( rawData );
 
-	recommendations.forEach( ( item ) => {
+	eliminateIdenticalMetrics( recommendations ).forEach( ( item ) => {
 		const { level, ...adaptingItem } = item;
 		const key = level.toLowerCase();
 
