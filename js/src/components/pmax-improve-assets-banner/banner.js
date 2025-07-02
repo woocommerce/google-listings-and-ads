@@ -61,7 +61,7 @@ const Banner = ( { onBannerDismissed } ) => {
 		};
 	}, [ adsCampaignsData ] );
 
-	if ( ! highestAmountCampaign ) {
+	if ( ! highestAmountCampaign || ! recommendations?.length ) {
 		return null;
 	}
 
