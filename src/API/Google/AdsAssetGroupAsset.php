@@ -108,7 +108,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 			$asset_group_assets = [];
 			$asset_results      = ( new AdsAssetGroupAssetQuery() )
 				->set_client( $this->client, $this->options->get_ads_id() )
-				->add_columns( [ 'asset_group.id', 'asset.youtube_video_asset.youtube_video_id' ] )
+				->add_columns( [ 'asset_group.id' ] )
 				->where( 'asset_group.id', $asset_groups_ids, 'IN' )
 				->where( 'asset_group_asset.field_type', $fields, 'IN' )
 				->where( 'asset_group_asset.status', 'REMOVED', '!=' )
@@ -168,7 +168,6 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 						'asset_group.id',
 						'asset_group.path1',
 						'asset_group.path2',
-						'asset.youtube_video_asset.youtube_video_id',
 					]
 				)
 				->where( 'asset_group.final_urls', [ trailingslashit( $url ), untrailingslashit( $url ) ], 'CONTAINS ANY' )
