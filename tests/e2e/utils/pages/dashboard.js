@@ -93,6 +93,8 @@ export default class DashboardPage extends MockRequests {
 			symbol: '$',
 			status: 'disconnected',
 		} );
+
+		await this.mockAdsRecommendations();
 	}
 
 	/**

@@ -1,26 +1,16 @@
 /**
  * External dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
 import { useDispatch } from '@wordpress/data';
-import { Notice } from '@wordpress/components';
-import { getHistory } from '@woocommerce/navigation';
+import { useEffect, useCallback } from '@wordpress/element';
 import { store as preferencesStore } from '@wordpress/preferences';
 
 /**
  * Internal dependencies
  */
-import {
-	CAMPAIGN_TYPE_PMAX,
-	PREFERENCES_STORE_NAMESPACE,
-	PMAX_IMPROVE_PERFORMANCE_MAX_AD_STRENGTH,
-	DAY_IN_SECONDS,
-} from '~/constants';
-import { getEditCampaignUrl } from '~/utils/urls';
-import AppButton from '~/components/app-button';
+import { PREFERENCES_STORE_NAMESPACE, DAY_IN_SECONDS } from '~/constants';
 import usePreference from '~/hooks/usePreference';
-import useAdsCampaigns from '~/hooks/useAdsCampaigns';
-import useAdsRecommendations from '~/hooks/useAdsRecommendations';
+import Banner from './banner';
 import './index.scss';
 
 const PREFERENCE_BANNER_KEY = 'pmax-improve-assets-banner';
@@ -41,94 +31,27 @@ const PREFERENCE_BANNER_KEY = 'pmax-improve-assets-banner';
 const PMaxImproveAssetsBanner = () => {
 	const { set } = useDispatch( preferencesStore );
 	const { expiry } = usePreference( PREFERENCE_BANNER_KEY ) || {};
-	const { data: adsCampaignsData } = useAdsCampaigns();
-	const { recommendations } = useAdsRecommendations(
-		PMAX_IMPROVE_PERFORMANCE_MAX_AD_STRENGTH
-	);
 
-	if ( expiry !== undefined ) {
-		if ( Date.now() < expiry ) {
-			// Do not render the banner if not expired
-			return null;
+	useEffect( () => {
+		if ( expiry !== undefined && Date.now() >= expiry ) {
+			set( PREFERENCES_STORE_NAMESPACE, PREFERENCE_BANNER_KEY, {
+				expiry: undefined,
+			} );
 		}
+	}, [ expiry, set ] );
 
-		// If expired, reset the preference
-		set( PREFERENCES_STORE_NAMESPACE, PREFERENCE_BANNER_KEY, {
-			expiry: undefined, // Reset to undefined to show the banner again
-		} );
-	}
-
-	if ( ! adsCampaignsData || ! recommendations?.length ) {
-		return null;
-	}
-
-	const pmaxCampaigns = adsCampaignsData.filter(
-		( { type, status } ) =>
-			type === CAMPAIGN_TYPE_PMAX && status === 'enabled'
-	);
-
-	if ( ! pmaxCampaigns.length ) {
-		return null;
-	}
-
-	const highestAmountCampaign = pmaxCampaigns.reduce(
-		( max, campaign ) =>
-			( campaign.amount ?? 0 ) > ( max.amount ?? 0 ) ? campaign : max,
-		pmaxCampaigns[ 0 ]
-	);
-	const { id, name } = highestAmountCampaign;
-
-	const hasHighestSpendingCampaignRecommendation = recommendations.some(
-		( recommendation ) => recommendation.campaign_id === id
-	);
-
-	if ( ! hasHighestSpendingCampaignRecommendation ) {
-		return null;
-	}
-
-	const dismissBanner = () => {
+	const handleOnBannerDismissed = useCallback( () => {
 		set( PREFERENCES_STORE_NAMESPACE, PREFERENCE_BANNER_KEY, {
 			expiry: Date.now() + DAY_IN_SECONDS * 30 * 1000, // 30 days in ms
 		} );
-	};
+	}, [ set ] );
 
-	const handleOnImproveAssets = () => {
-		dismissBanner();
+	// Do not show the banner if the expiry is set and not yet expired
+	if ( expiry !== undefined && Date.now() < expiry ) {
+		return null;
+	}
 
-		// Navigate to the edit campaign page for the PMAX campaign with the highest spending.
-		const editCampaignUrl = getEditCampaignUrl( id, 'asset-group' );
-		getHistory().push( editCampaignUrl );
-	};
-
-	return (
-		<Notice
-			className="gla-pmax-improve-assets-banner"
-			status="info"
-			isDismissible={ true }
-			onRemove={ dismissBanner }
-		>
-			<p className="gla-pmax-improve-assets-banner__text">
-				{ sprintf(
-					// translators: %s: The PMAX campaign name with the highest spending.
-					__(
-						'Unlock more sales for your campaign, %s, by focusing on improving your campaign assets. Better assets directly increase your ad strength, allowing for a wider variety of ad combinations to be shown across Google.',
-						'google-listings-and-ads'
-					),
-					name
-				) }
-			</p>
-
-			<div className="gla-pmax-improve-assets-banner__actions">
-				<AppButton onClick={ handleOnImproveAssets } isSecondary>
-					{ __( 'Improve Assets', 'google-listings-and-ads' ) }
-				</AppButton>
-
-				<AppButton isTertiary onClick={ dismissBanner }>
-					{ __( 'Dismiss', 'google-listings-and-ads' ) }
-				</AppButton>
-			</div>
-		</Notice>
-	);
+	return <Banner onBannerDismissed={ handleOnBannerDismissed } />;
 };
 
 export default PMaxImproveAssetsBanner;

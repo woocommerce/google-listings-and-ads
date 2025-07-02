@@ -883,6 +883,12 @@ export default class MockRequests {
 		);
 	}
 
+	/**
+	 * Mocks the fulfillment of a POST request to update the current user's preferences.
+	 *
+	 * @param {Object} [payload={}] - The payload to return as the response body.
+	 * @return {Promise<void>} Resolves when the mock request has been fulfilled.
+	 */
 	async fulfillUsersPreferences( payload = {} ) {
 		await this.fulfillRequest( /\/wp\/v2\/users\/me(\?|$)/, payload, 200, [
 			'POST',
@@ -915,6 +921,29 @@ export default class MockRequests {
 	async fulfillPriceBenchmarkSummary( payload, status = 200 ) {
 		await this.fulfillRequest(
 			/\/wc\/gla\/mc\/price-benchmarks\/summary\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Mocks the API request for Google Ads recommendations of a specific type.
+	 *
+	 * @param {Array} [payload=[]] - The mock response payload to return.
+	 * @param {string} [type='IMPROVE_PERFORMANCE_MAX_AD_STRENGTH'] - The type of recommendation to mock.
+	 * @param {number} [status=200] - The HTTP status code to return.
+	 * @return {Promise<void>} Resolves when the mock is set up.
+	 */
+	async mockAdsRecommendations(
+		payload = [],
+		type = 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
+		status = 200
+	) {
+		await this.fulfillRequest(
+			new RegExp(
+				`\\/wc\\/gla\\/ads\\/recommendations\\?type=${ type }\\b`
+			),
 			payload,
 			status,
 			[ 'GET' ]
