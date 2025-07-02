@@ -113,7 +113,7 @@ const GenAICard = () => {
 						<img
 							src={ genAIImageURL }
 							alt={ __(
-								'Drawing of a person who successfuly launched a campaign',
+								'Drawing of a person who successfully launched a campaign',
 								'google-listings-and-ads'
 							) }
 							width="212"
