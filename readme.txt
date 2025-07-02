@@ -1,7 +1,7 @@
 === Google for WooCommerce ===
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, product feed, ads, listings
-Requires at least: 6.1
+Requires at least: 6.6
 Tested up to: 6.8
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
@@ -51,8 +51,8 @@ Once you’re running Google Ads campaigns, the Google tag feature in the extens
 
 = Minimum Requirements =
 
-* WordPress 6.1 or greater
-* WooCommerce 7.9 or greater
+* WordPress 6.6 or greater
+* WooCommerce 9.7 or greater
 * PHP version 7.4 or greater
 * PHP Architecture 64 bits
 * MySQL version 5.6 or greater
