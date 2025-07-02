@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\Jetpack\Connection\Manager;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsRecommendationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
@@ -69,28 +70,29 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 * @var array
 	 */
 	protected $provides = [
-		Client::class                 => true,
-		ShoppingContent::class        => true,
-		GoogleAdsClient::class        => true,
-		GuzzleClient::class           => true,
-		Middleware::class             => true,
-		Merchant::class               => true,
-		MerchantMetrics::class        => true,
-		Ads::class                    => true,
-		AdsAssetGroup::class          => true,
-		AdsCampaign::class            => true,
-		AdsCampaignBudget::class      => true,
-		AdsCampaignLabel::class       => true,
-		AdsConversionAction::class    => true,
-		AdsReport::class              => true,
-		AdsAssetGroupAsset::class     => true,
-		AdsAsset::class               => true,
-		'connect_server_root'         => true,
-		Connection::class             => true,
-		GoogleProductService::class   => true,
-		GooglePromotionService::class => true,
-		SiteVerification::class       => true,
-		Settings::class               => true,
+		Client::class                    => true,
+		ShoppingContent::class           => true,
+		GoogleAdsClient::class           => true,
+		GuzzleClient::class              => true,
+		Middleware::class                => true,
+		Merchant::class                  => true,
+		MerchantMetrics::class           => true,
+		Ads::class                       => true,
+		AdsAssetGroup::class             => true,
+		AdsCampaign::class               => true,
+		AdsCampaignBudget::class         => true,
+		AdsCampaignLabel::class          => true,
+		AdsConversionAction::class       => true,
+		AdsReport::class                 => true,
+		AdsRecommendationsService::class => true,
+		AdsAssetGroupAsset::class        => true,
+		AdsAsset::class                  => true,
+		'connect_server_root'            => true,
+		Connection::class                => true,
+		GoogleProductService::class      => true,
+		GooglePromotionService::class    => true,
+		SiteVerification::class          => true,
+		Settings::class                  => true,
 	];
 
 	/**
@@ -118,6 +120,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( AdsCampaignLabel::class, GoogleAdsClient::class );
 		$this->share( AdsConversionAction::class, GoogleAdsClient::class );
 		$this->share( AdsReport::class, GoogleAdsClient::class );
+		$this->share( AdsRecommendationsService::class, GoogleAdsClient::class );
 
 		$this->share( Merchant::class, ShoppingContent::class );
 		$this->share( MerchantMetrics::class, ShoppingContent::class, GoogleAdsClient::class, WP::class, TransientsInterface::class );
