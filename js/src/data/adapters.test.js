@@ -145,6 +145,123 @@ describe( 'adaptAdsBudgetRecommendation', () => {
 
 		expect( eventProps.metrics_availability ).toEqual( 'none' );
 	} );
+
+	describe( 'eliminateIdenticalMetrics', () => {
+		const eliminatedRecommended = structuredClone( recommended );
+		const eliminatedHigh = structuredClone( high );
+		const eliminatedLow = structuredClone( low );
+
+		beforeEach( () => {
+			const conversions = 3.56;
+			const conversionsValue = 71.55541399333742;
+
+			input.recommendations.forEach( ( item ) => {
+				item.metrics.conversions = conversions;
+				item.metrics.conversions_value = conversionsValue;
+			} );
+
+			[ eliminatedRecommended, eliminatedHigh, eliminatedLow ].forEach(
+				( item ) => {
+					item.metrics.conversions = conversions;
+					item.metrics.conversionsValue = conversionsValue;
+				}
+			);
+		} );
+
+		it( 'Should eliminate the budget recommendations to keep the lowest-budget one when conversion-related metrics are identical', () => {
+			expect( adaptAdsBudgetRecommendation( input ) ).toEqual( {
+				recommended: eliminatedLow,
+				dailyBudgetBaseline: 13,
+				recommendedDailyBudget: 7,
+				eventProps: {
+					source: 'google-ads-api',
+					metrics_availability: 'all',
+					recommended_budget: 7,
+				},
+			} );
+
+			input.recommendations.pop();
+
+			expect( adaptAdsBudgetRecommendation( input ) ).toEqual( {
+				recommended: eliminatedRecommended,
+				dailyBudgetBaseline: 13,
+				recommendedDailyBudget: 15,
+				eventProps: {
+					source: 'google-ads-api',
+					metrics_availability: 'all',
+					recommended_budget: 15,
+				},
+			} );
+		} );
+
+		it( 'Should not eliminate when only some of the recommendations have the same metrics', () => {
+			input.recommendations[ 2 ].metrics.conversions = 2.5;
+
+			expect( adaptAdsBudgetRecommendation( input ) ).toEqual( {
+				recommended: eliminatedRecommended,
+				high: eliminatedHigh,
+				low: {
+					...eliminatedLow,
+					metrics: {
+						...eliminatedLow.metrics,
+						conversions: 2.5,
+					},
+				},
+				dailyBudgetBaseline: 13,
+				recommendedDailyBudget: 15,
+				eventProps: {
+					source: 'google-ads-api',
+					metrics_availability: 'all',
+					recommended_budget: 15,
+				},
+			} );
+		} );
+
+		it( 'Should not eliminate if the number of recommendations having metrics is less than 2', () => {
+			input.recommendations[ 1 ].metrics = null;
+			input.recommendations[ 2 ].metrics = null;
+
+			const expected = {
+				recommended: eliminatedRecommended,
+				high: {
+					...eliminatedHigh,
+					metrics: null,
+				},
+				low: {
+					...eliminatedLow,
+					metrics: null,
+				},
+				dailyBudgetBaseline: 13,
+				recommendedDailyBudget: 15,
+				eventProps: {
+					source: 'google-ads-api',
+					metrics_availability: 'partial',
+					recommended_budget: 15,
+				},
+			};
+
+			expect( adaptAdsBudgetRecommendation( input ) ).toEqual( expected );
+
+			input.recommendations.pop();
+
+			expect( adaptAdsBudgetRecommendation( input ) ).toEqual( {
+				...expected,
+				low: undefined,
+			} );
+
+			input.recommendations.pop();
+
+			expect( adaptAdsBudgetRecommendation( input ) ).toEqual( {
+				...expected,
+				high: undefined,
+				low: undefined,
+				eventProps: {
+					...expected.eventProps,
+					metrics_availability: 'all',
+				},
+			} );
+		} );
+	} );
 } );
 
 describe( 'adaptAdsBudgetMetrics', () => {
