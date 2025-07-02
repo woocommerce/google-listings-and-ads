@@ -1,0 +1,13 @@
+{
+	"timestamp": 1751036728,
+	"statistics": {
+		"active": 0,
+		"expiring": 0,
+		"pending": 0,
+		"disapproved": 0,
+		"not_synced": 0
+	},
+	"scheduled_sync": 0,
+	"loading": false,
+	"error": null
+}

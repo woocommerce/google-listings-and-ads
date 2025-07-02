@@ -17,7 +17,7 @@ import './edit-program-prompt-modal.scss';
  * Triggered when "continue" to edit program button is clicked.
  *
  * @event gla_dashboard_edit_program_click
- * @property {string} programId program id
+ * @property {string} program_id program id
  * @property {string} url URL for editing the program (paid campaign)
  */
 
@@ -39,7 +39,7 @@ const EditProgramPromptModal = ( { programId, onRequestClose } ) => {
 		getHistory().push( url );
 
 		recordGlaEvent( 'gla_dashboard_edit_program_click', {
-			programId,
+			program_id: programId,
 			url,
 		} );
 	};

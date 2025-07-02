@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { forwardRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -31,9 +32,9 @@ function MailItem() {
  * @param {Object} props React props.
  * @param {AdPreviewData} props.product Data for compositing ad preview mockups.
  */
-export default function MockupGmail( { product } ) {
+function MockupGmail( { product }, ref ) {
 	return (
-		<div className="gla-ads-mockup gla-ads-mockup-gmail">
+		<div ref={ ref } className="gla-ads-mockup gla-ads-mockup-gmail">
 			<div className="gla-ads-mockup__gmail-header">
 				<img
 					height="15"
@@ -51,3 +52,7 @@ export default function MockupGmail( { product } ) {
 		</div>
 	);
 }
+
+MockupGmail.displayName = 'MockupGmail';
+
+export default forwardRef( MockupGmail );

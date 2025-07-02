@@ -75,9 +75,7 @@ const ProductsReportFilters = ( props ) => {
 		recordGlaEvent( 'gla_filter', {
 			report: trackEventId,
 			filter: data.filter || 'all',
-			// wc-admin does not send it
-			// https://github.com/woocommerce/woocommerce-admin/issues/6221
-			filterVariations: data[ 'filter-variations' ],
+			filter_variation: data[ 'filter-variations' ],
 		} );
 
 	/**
