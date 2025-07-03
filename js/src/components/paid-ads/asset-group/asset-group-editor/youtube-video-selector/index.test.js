@@ -12,14 +12,7 @@ import YoutubeVideoSelector from './index';
 
 jest.mock( './youtube-video-input-control', () => ( props ) => (
 	<button
-		onClick={ () =>
-			props.onVideoAdded &&
-			props.onVideoAdded( {
-				title: 'Test Video',
-				thumbnail: 'thumb.jpg',
-				url: 'https://youtube.com/v/test',
-			} )
-		}
+		onClick={ () => props.onVideoAdded && props.onVideoAdded( 'video1' ) }
 	>
 		Add Video
 	</button>
@@ -29,18 +22,7 @@ jest.mock( '~/components/app-tooltip', () =>
 	jest.fn( ( props ) => <div { ...props } /> ).mockName( 'AppTooltip' )
 );
 
-const initialVideos = [
-	{
-		title: 'Video 1',
-		thumbnail: 'thumb1.jpg',
-		url: 'https://youtube.com/v/1',
-	},
-	{
-		title: 'Video 2',
-		thumbnail: 'thumb2.jpg',
-		url: 'https://youtube.com/v/2',
-	},
-];
+const initialVideos = [ 'video1', 'video2' ];
 
 describe( 'YoutubeVideoSelector', () => {
 	it( 'renders with initial videos', () => {
@@ -52,8 +34,14 @@ describe( 'YoutubeVideoSelector', () => {
 		);
 
 		const images = screen.getAllByRole( 'img' );
-		expect( images[ 0 ] ).toHaveAttribute( 'src', 'thumb1.jpg' );
-		expect( images[ 1 ] ).toHaveAttribute( 'src', 'thumb2.jpg' );
+		expect( images[ 0 ] ).toHaveAttribute(
+			'src',
+			'https://img.youtube.com/vi/video1/mqdefault.jpg'
+		);
+		expect( images[ 1 ] ).toHaveAttribute(
+			'src',
+			'https://img.youtube.com/vi/video2/mqdefault.jpg'
+		);
 	} );
 
 	it( 'calls onChange when a video is added', () => {
@@ -64,30 +52,18 @@ describe( 'YoutubeVideoSelector', () => {
 
 		fireEvent.click( getByRole( 'button', { name: 'Add Video' } ) );
 
-		expect( onChange ).toHaveBeenCalledWith( [
-			{
-				title: 'Test Video',
-				thumbnail: 'thumb.jpg',
-				url: 'https://youtube.com/v/test',
-			},
-		] );
+		expect( onChange ).toHaveBeenCalledWith( [ 'video1' ] );
 	} );
 
 	it( 'does not add duplicate videos', () => {
 		const onChange = jest.fn();
-		render(
+		const { getByRole } = render(
 			<YoutubeVideoSelector
-				initialVideos={ [
-					{
-						title: 'Test Video',
-						thumbnail: 'thumb.jpg',
-						url: 'https://youtube.com/v/test',
-					},
-				] }
+				initialVideos={ [ 'video1' ] }
 				onChange={ onChange }
 			/>
 		);
-		fireEvent.click( screen.getByText( 'Add Video' ) );
+		fireEvent.click( getByRole( 'button', { name: 'Add Video' } ) );
 
 		expect( onChange ).toHaveBeenCalledTimes( 0 );
 	} );
@@ -151,7 +127,7 @@ describe( 'YoutubeVideoSelector', () => {
 			getAllByRole( 'button', { name: 'View video' } )[ 0 ]
 		);
 		expect( window.open ).toHaveBeenCalledWith(
-			'https://youtube.com/v/1',
+			'https://youtube.com/v/video1',
 			'_blank',
 			'noopener,noreferrer'
 		);
