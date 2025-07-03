@@ -58,7 +58,9 @@ const AssetGroupVideosSection = ( { initialValues, isSelectedFinalUrl } ) => {
 				>
 					<YoutubeVideoSelector
 						onChange={ onChange }
-						initialVideos={ initialValues[ASSET_FORM_KEY.YOUTUBE_VIDEO] }
+						initialVideos={
+							initialValues[ ASSET_FORM_KEY.YOUTUBE_VIDEO ]
+						}
 					/>
 				</AssetField>
 			</div>
