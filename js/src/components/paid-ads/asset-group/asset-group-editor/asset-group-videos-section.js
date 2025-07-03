@@ -6,6 +6,8 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { useAdaptiveFormContext } from '~/components/adaptive-form';
+import { ASSET_FORM_KEY } from '~/constants';
 import AssetField from './asset-field';
 import Section from '~/components/section';
 import YoutubeVideoSelector from './youtube-video-selector';
@@ -20,6 +22,10 @@ import AppDocumentationLink from '~/components/app-documentation-link';
  * @return {JSX.Element} The rendered AssetGroupVideosSection component.
  */
 const AssetGroupVideosSection = ( { isSelectedFinalUrl } ) => {
+	const { values, getInputProps } = useAdaptiveFormContext();
+	const videoProps = getInputProps( ASSET_FORM_KEY.VIDEO );
+
+	console.log( videoProps );
 	return (
 		<Section
 			title={ __( 'Videos', 'google-listings-and-ads' ) }
@@ -50,7 +56,7 @@ const AssetGroupVideosSection = ( { isSelectedFinalUrl } ) => {
 					initialExpanded={ isSelectedFinalUrl }
 					markOptional
 				>
-					<YoutubeVideoSelector />
+					<YoutubeVideoSelector onChange={ videoProps.onChange } />
 				</AssetField>
 			</div>
 		</Section>

@@ -92,7 +92,6 @@ function AssetField(
 
 	const shouldExpand = expanded && ! disabled;
 
-	console.log( 'should expand', shouldExpand, expanded, disabled );
 	return (
 		<div className={ wrapperClassName } ref={ containerRef }>
 			<header className="gla-asset-field__header">
