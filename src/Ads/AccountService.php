@@ -77,6 +77,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 
 		$status = [
 			'id'       => $id,
+			'ocid'     => $this->options->get( OptionsInterface::ADS_ACCOUNT_OCID ),
 			'currency' => $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ),
 			'symbol'   => html_entity_decode( get_woocommerce_currency_symbol( $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ), ENT_QUOTES ),
 			'status'   => $id ? 'connected' : 'disconnected',
