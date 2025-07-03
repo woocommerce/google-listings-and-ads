@@ -9,6 +9,7 @@ import {
 	useRef,
 	useImperativeHandle,
 	forwardRef,
+	useEffect,
 } from '@wordpress/element';
 import { chevronUp, chevronDown } from '@wordpress/icons';
 import { Pill } from '@woocommerce/components';
@@ -55,7 +56,7 @@ function AssetField(
 	ref
 ) {
 	const containerRef = useRef();
-	const [ expanded, setExpanded ] = useState( initialExpanded );
+	const [ expanded, setExpanded ] = useState( false );
 
 	const isReducedMotion = useReducedMotion();
 
@@ -68,6 +69,10 @@ function AssetField(
 			} );
 		},
 	} ) );
+
+	useEffect( () => {
+		setExpanded( initialExpanded );
+	}, [ initialExpanded ] );
 
 	const handleToggle = () => {
 		setExpanded( ! expanded );
@@ -87,6 +92,7 @@ function AssetField(
 
 	const shouldExpand = expanded && ! disabled;
 
+	console.log( 'should expand', shouldExpand, expanded, disabled );
 	return (
 		<div className={ wrapperClassName } ref={ containerRef }>
 			<header className="gla-asset-field__header">
