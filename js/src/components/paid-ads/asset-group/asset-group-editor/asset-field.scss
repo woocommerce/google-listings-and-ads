@@ -100,4 +100,10 @@
 			padding-top: $grid-unit-20;
 		}
 	}
+
+	&.gla-asset-field-videos {
+		.components-input-control .components-input-control__container .components-input-control__input {
+			height: $gla-size-control-height;
+		}
+	}
 }

@@ -106,6 +106,7 @@ export const ASSET_KEY = {
 	LONG_HEADLINE: 'long_headline',
 	DESCRIPTION: 'description',
 	CALL_TO_ACTION_SELECTION: 'call_to_action_selection',
+	VIDEO: 'video',
 };
 
 export const ASSET_GROUP_KEY = {

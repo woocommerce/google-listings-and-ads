@@ -111,7 +111,9 @@ export default function AssetGroupEditor() {
 				renderErrors={ renderErrors }
 			/>
 
-			<AssetGroupVideosSection />
+			<AssetGroupVideosSection
+				isSelectedFinalUrl={ isSelectedFinalUrl }
+			/>
 		</div>
 	);
 }

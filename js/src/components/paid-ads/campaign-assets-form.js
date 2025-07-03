@@ -31,6 +31,7 @@ const emptyAssetGroup = {
 	[ ASSET_FORM_KEY.DESCRIPTION ]: [],
 	[ ASSET_FORM_KEY.CALL_TO_ACTION_SELECTION ]: null,
 	[ ASSET_FORM_KEY.DISPLAY_URL_PATH ]: [],
+	[ ASSET_FORM_KEY.VIDEO ]: [],
 };
 
 /**
