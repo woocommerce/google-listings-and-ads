@@ -8,8 +8,8 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import AppTooltip from '~/components/app-tooltip';
-import AddAssetItemButton from './add-asset-item-button';
-import MediaSelector from './media-selector';
+import AddAssetItemButton from '../add-asset-item-button';
+import MediaSelector from '../media-selector';
 import YouTubeVideoInputControl from './youtube-video-input-control';
 
 /**
@@ -81,9 +81,13 @@ export default function YoutubeVideoSelector( {
 	};
 
 	const handleRemoveVideo = ( videoToRemove ) => {
-		setVideos( ( prevVideos ) =>
-			prevVideos.filter( ( video ) => video.url !== videoToRemove.url )
-		);
+		setVideos( ( prevVideos ) => {
+			const updatedVideos = prevVideos.filter(
+				( video ) => video.url !== videoToRemove.url
+			);
+			onChange( updatedVideos );
+			return updatedVideos;
+		} );
 	};
 
 	const handleOnMediumClick = ( event, video = null ) => {

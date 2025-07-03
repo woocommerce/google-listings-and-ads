@@ -60,7 +60,13 @@ const YouTubeVideoInputControl = ( { onVideoAdded } ) => {
 				) }`
 			);
 			if ( ! response.ok ) {
-				throw new Error( 'Failed to fetch video details' );
+				setError(
+					__(
+						'Failed to fetch video details',
+						'google-listings-and-ads'
+					)
+				);
+				return;
 			}
 			const data = await response.json();
 			const videoDetails = {

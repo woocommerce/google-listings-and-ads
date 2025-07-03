@@ -22,10 +22,9 @@ import AppDocumentationLink from '~/components/app-documentation-link';
  * @return {JSX.Element} The rendered AssetGroupVideosSection component.
  */
 const AssetGroupVideosSection = ( { isSelectedFinalUrl } ) => {
-	const { values, getInputProps } = useAdaptiveFormContext();
-	const videoProps = getInputProps( ASSET_FORM_KEY.VIDEO );
+	const { getInputProps } = useAdaptiveFormContext();
+	const { value, onChange } = getInputProps( ASSET_FORM_KEY.VIDEO );
 
-	console.log( videoProps );
 	return (
 		<Section
 			title={ __( 'Videos', 'google-listings-and-ads' ) }
@@ -56,7 +55,10 @@ const AssetGroupVideosSection = ( { isSelectedFinalUrl } ) => {
 					initialExpanded={ isSelectedFinalUrl }
 					markOptional
 				>
-					<YoutubeVideoSelector onChange={ videoProps.onChange } />
+					<YoutubeVideoSelector
+						onChange={ onChange }
+						initialVideos={ value }
+					/>
 				</AssetField>
 			</div>
 		</Section>
