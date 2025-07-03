@@ -23,7 +23,7 @@ import AppDocumentationLink from '~/components/app-documentation-link';
  */
 const AssetGroupVideosSection = ( { isSelectedFinalUrl } ) => {
 	const { getInputProps } = useAdaptiveFormContext();
-	const { value, onChange } = getInputProps( ASSET_FORM_KEY.VIDEO );
+	const { value, onChange } = getInputProps( ASSET_FORM_KEY.YOUTUBE_VIDEO );
 
 	return (
 		<Section
