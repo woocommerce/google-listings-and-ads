@@ -48,6 +48,7 @@ export const ACTION_SUBMIT_CAMPAIGN_ONLY = 'submit-campaign-only';
  * @property {string} number_of_call_to_action_selection Same as above.
  * @property {string} number_of_final_url Same as above.
  * @property {string} number_of_display_url_path Same as above.
+ * @property {string} number_of_youtube_videos Same as above.
  */
 
 /**

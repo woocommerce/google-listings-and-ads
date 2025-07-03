@@ -2,7 +2,7 @@
  * External dependencies
  */
 import classNames from 'classnames';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 import { useEffect, useState } from '@wordpress/element';
 
@@ -31,6 +31,16 @@ const isValidYouTubeUrl = ( url ) => {
 	return true;
 };
 
+/**
+ * Extracts the YouTube video ID from a given URL.
+ *
+ * Supports standard YouTube URLs (e.g., https://www.youtube.com/watch?v=VIDEO_ID)
+ * and shortened URLs (e.g., https://youtu.be/VIDEO_ID). Falls back to a regex
+ * extraction if URL parsing fails.
+ *
+ * @param {string} url - The YouTube video URL.
+ * @return {string|null} The extracted YouTube video ID, or null if not found.
+ */
 const extractYouTubeId = ( url ) => {
 	try {
 		const parsed = new URL( url );
@@ -49,13 +59,13 @@ const extractYouTubeId = ( url ) => {
 		);
 		return match ? match[ 1 ] : null;
 	}
+
 	return null;
 };
 
 const YouTubeVideoInputControl = ( { onVideoAdded } ) => {
 	const [ url, setUrl ] = useState( '' );
 	const [ error, setError ] = useState( null );
-	const [ loading, setLoading ] = useState( false );
 
 	useEffect( () => {
 		if ( url === '' ) {
@@ -65,43 +75,25 @@ const YouTubeVideoInputControl = ( { onVideoAdded } ) => {
 
 	const handleOnClick = async () => {
 		setError( null );
-		setLoading( true );
 
-		try {
-			if ( ! isValidYouTubeUrl( url ) ) {
-				setError(
-					__( 'Invalid YouTube URL', 'google-listings-and-ads' )
-				);
-				return;
-			}
+		if ( ! isValidYouTubeUrl( url ) ) {
+			setError( __( 'Invalid YouTube URL', 'google-listings-and-ads' ) );
+			return;
+		}
 
-			const videoId = extractYouTubeId( url );
-			if ( ! videoId ) {
-				setError(
-					__(
-						'Failed to get the video ID from the URL.',
-						'google-listings-and-ads'
-					)
-				);
-				return;
-			}
-
-			onVideoAdded( videoId );
-			setUrl( '' );
-		} catch ( e ) {
+		const videoId = extractYouTubeId( url );
+		if ( ! videoId ) {
 			setError(
-				sprintf(
-					/* translators: %s is the error message */
-					__(
-						'Failed to fetch video details. Please check the URL and try again. Error: %s',
-						'google-listings-and-ads'
-					),
-					e.message
+				__(
+					'Failed to get the video ID from the URL.',
+					'google-listings-and-ads'
 				)
 			);
-		} finally {
-			setLoading( false );
+			return;
 		}
+
+		onVideoAdded( videoId );
+		setUrl( '' );
 	};
 
 	return (
@@ -125,7 +117,6 @@ const YouTubeVideoInputControl = ( { onVideoAdded } ) => {
 						onClick={ handleOnClick }
 						variant="secondary"
 						disabled={ ! url }
-						loading={ loading }
 					>
 						{ __( 'Add Video', 'google-listings-and-ads' ) }
 					</AppButton>

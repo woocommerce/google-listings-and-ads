@@ -112,6 +112,7 @@ export default function AssetGroupEditor() {
 			/>
 
 			<AssetGroupVideosSection
+				initialValues={ initialValues }
 				isSelectedFinalUrl={ isSelectedFinalUrl }
 			/>
 		</div>

@@ -17,13 +17,14 @@ import AppDocumentationLink from '~/components/app-documentation-link';
  * Renders the videos section of the asset group editor, allowing users to add YouTube videos to their asset group.
  *
  * @param {Object} props - Component props.
- * @param {boolean} props.isSelectedFinalUrl - Indicates if a final URL is selected.
+ * @param {Object} props.initialValues - The initial values for the asset group, including YouTube video IDs.
+ * @param {boolean} props.isSelectedFinalUrl - Indicates if the final URL is selected.
  *
  * @return {JSX.Element} The rendered AssetGroupVideosSection component.
  */
-const AssetGroupVideosSection = ( { isSelectedFinalUrl } ) => {
+const AssetGroupVideosSection = ( { initialValues, isSelectedFinalUrl } ) => {
 	const { getInputProps } = useAdaptiveFormContext();
-	const { value, onChange } = getInputProps( ASSET_FORM_KEY.YOUTUBE_VIDEO );
+	const { onChange } = getInputProps( ASSET_FORM_KEY.YOUTUBE_VIDEO );
 
 	return (
 		<Section
@@ -57,7 +58,7 @@ const AssetGroupVideosSection = ( { isSelectedFinalUrl } ) => {
 				>
 					<YoutubeVideoSelector
 						onChange={ onChange }
-						initialVideos={ value }
+						initialVideos={ initialValues[ASSET_FORM_KEY.YOUTUBE_VIDEO] }
 					/>
 				</AssetField>
 			</div>

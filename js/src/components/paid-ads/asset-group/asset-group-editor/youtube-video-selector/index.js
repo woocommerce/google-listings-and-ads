@@ -19,7 +19,7 @@ import YouTubeVideoInputControl from './youtube-video-input-control';
  * @param {Array<string>} props.initialVideos The initial videos.
  * @param {number} [props.maxNumberOfVideos=5] The maximum number of videos. 5 by default.
  * @param {string} [props.reachedMaxNumberTip] The tooltip content floating on the add button when reaching the max number of videos.
- * @param {(videos: Array<string>) => void} props.onChange Callback function to be called when the videos are changed.
+ * @param {(videos: Array<string>) => void} props.onChange Callback function to be called when the videos IDs are changed.
  */
 export default function YoutubeVideoSelector( {
 	initialVideos = [],
@@ -64,35 +64,46 @@ export default function YoutubeVideoSelector( {
 			return;
 		}
 
-		// if ( ! videos.some( ( video ) => video.url === videoDetails.url ) ) {
-		// 	const updatedVideos = [ ...videos, videoDetails ];
-		// 	setVideos( updatedVideos );
-		// 	onChange( updatedVideos );
-		// }
+		if ( videoIds.includes( videoId ) ) {
+			setShowInputControl( false );
+			return;
+		}
+
+		setVideoIds( ( previousVideoIds ) => {
+			const updatedVideoIds = [ ...previousVideoIds, videoId ];
+			onChange( updatedVideoIds );
+			return updatedVideoIds;
+		} );
 
 		setShowInputControl( false );
 	};
 
 	const handleRemoveVideo = ( videoToRemove ) => {
-		// setVideoIds( ( prevVideos ) => {
-		// 	const updatedVideos = prevVideos.filter(
-		// 		( video ) => video.url !== videoToRemove.url
-		// 	);
-		// 	onChange( updatedVideos );
-		// 	return updatedVideos;
-		// } );
+		setVideoIds( ( prevVideos ) => {
+			const updatedVideoIds = prevVideos.filter(
+				( videoId ) => videoId !== videoToRemove.id
+			);
+			onChange( updatedVideoIds );
+			return updatedVideoIds;
+		} );
 	};
 
-	const handleOnMediumClick = ( event, videoId ) => {
+	const handleOnMediumClick = ( event, video ) => {
 		if ( video?.url ) {
 			window.open( video.url, '_blank', 'noopener,noreferrer' );
 		}
 	};
 
+	const videos = videoIds.map( ( videoId ) => ( {
+		id: videoId,
+		url: `https://youtube.com/v/${ videoId }`,
+		thumbnail: `https://img.youtube.com/vi/${ videoId }/mqdefault.jpg`,
+	} ) );
+
 	return (
 		<div className="gla-youtube-video-selector">
 			<MediaSelector
-				media={ videoIds }
+				media={ videos }
 				onRemoveMedia={ handleRemoveVideo }
 				onMediumClick={ handleOnMediumClick }
 				mediaAspectRatio="landscape"
