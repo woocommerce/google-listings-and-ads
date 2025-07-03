@@ -22,7 +22,10 @@ import AppButton from '~/components/app-button';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import genAIImageURL from '~/images/pmax-assets-improvements/gen-ai.svg';
+import { GOOGLE_ADS_ACCOUNT_STATUS } from '~/constants';
 import './gen-ai-card.scss';
+
+const { CONNECTED, INCOMPLETE } = GOOGLE_ADS_ACCOUNT_STATUS;
 
 /**
  * GenAICard component displays a promotional card for Google AI-powered asset generation
@@ -34,6 +37,9 @@ import './gen-ai-card.scss';
  */
 const GenAICard = () => {
 	const { googleAdsAccount } = useGoogleAdsAccount();
+	const hasAdsAccount = [ CONNECTED, INCOMPLETE ].includes(
+		googleAdsAccount?.status
+	);
 	const queryArgs = {};
 
 	if ( googleAdsAccount?.ocid ) {
@@ -95,10 +101,7 @@ const GenAICard = () => {
 								icon={ <Icon icon={ externalIcon } /> }
 								iconPosition="right"
 								href={ recommendationsURL }
-								disabled={
-									! googleAdsAccount ||
-									googleAdsAccount.status !== 'connected'
-								}
+								disabled={ ! hasAdsAccount }
 								target="_blank"
 								isSecondary
 							>
