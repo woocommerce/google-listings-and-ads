@@ -13,20 +13,13 @@ import MediaSelector from '../media-selector';
 import YouTubeVideoInputControl from './youtube-video-input-control';
 
 /**
- * @typedef {Object} AssetVideoConfig
- * @property {string} title The title of the video.
- * @property {string} thumbnail The thumbnail URL of the video.
- * @property {string} url The URL of the video.
- */
-
-/**
  * Renders a selector for YouTube videos.
  *
  * @param {Object} props React props.
- * @param {AssetVideoConfig[]} props.initialVideos The initial videos.
+ * @param {Array<string>} props.initialVideos The initial videos.
  * @param {number} [props.maxNumberOfVideos=5] The maximum number of videos. 5 by default.
  * @param {string} [props.reachedMaxNumberTip] The tooltip content floating on the add button when reaching the max number of videos.
- * @param {(videos: Array<AssetVideoConfig>) => void} props.onChange Callback function to be called when the videos are changed.
+ * @param {(videos: Array<string>) => void} props.onChange Callback function to be called when the videos are changed.
  */
 export default function YoutubeVideoSelector( {
 	initialVideos = [],
@@ -34,7 +27,7 @@ export default function YoutubeVideoSelector( {
 	reachedMaxNumberTip,
 	onChange,
 } ) {
-	const [ videos, setVideos ] = useState( [ ...initialVideos ] );
+	const [ videoIds, setVideoIds ] = useState( [ ...initialVideos ] );
 	const [ showInputControl, setShowInputControl ] = useState( true );
 
 	const handleAddYoutubeVideoClick = () => {
@@ -42,7 +35,7 @@ export default function YoutubeVideoSelector( {
 	};
 
 	const renderAddButton = () => {
-		const disabled = videos.length >= maxNumberOfVideos;
+		const disabled = videoIds.length >= maxNumberOfVideos;
 		const button = (
 			<AddAssetItemButton
 				disabled={ disabled }
@@ -66,31 +59,31 @@ export default function YoutubeVideoSelector( {
 		return button;
 	};
 
-	const handleOnVideoAdded = ( videoDetails ) => {
-		if ( videoDetails ) {
-			if (
-				! videos.some( ( video ) => video.url === videoDetails.url )
-			) {
-				const updatedVideos = [ ...videos, videoDetails ];
-				setVideos( updatedVideos );
-				onChange( updatedVideos );
-			}
-
-			setShowInputControl( false );
+	const handleOnVideoAdded = ( videoId ) => {
+		if ( ! videoId ) {
+			return;
 		}
+
+		// if ( ! videos.some( ( video ) => video.url === videoDetails.url ) ) {
+		// 	const updatedVideos = [ ...videos, videoDetails ];
+		// 	setVideos( updatedVideos );
+		// 	onChange( updatedVideos );
+		// }
+
+		setShowInputControl( false );
 	};
 
 	const handleRemoveVideo = ( videoToRemove ) => {
-		setVideos( ( prevVideos ) => {
-			const updatedVideos = prevVideos.filter(
-				( video ) => video.url !== videoToRemove.url
-			);
-			onChange( updatedVideos );
-			return updatedVideos;
-		} );
+		// setVideoIds( ( prevVideos ) => {
+		// 	const updatedVideos = prevVideos.filter(
+		// 		( video ) => video.url !== videoToRemove.url
+		// 	);
+		// 	onChange( updatedVideos );
+		// 	return updatedVideos;
+		// } );
 	};
 
-	const handleOnMediumClick = ( event, video = null ) => {
+	const handleOnMediumClick = ( event, videoId ) => {
 		if ( video?.url ) {
 			window.open( video.url, '_blank', 'noopener,noreferrer' );
 		}
@@ -99,7 +92,7 @@ export default function YoutubeVideoSelector( {
 	return (
 		<div className="gla-youtube-video-selector">
 			<MediaSelector
-				media={ videos }
+				media={ videoIds }
 				onRemoveMedia={ handleRemoveVideo }
 				onMediumClick={ handleOnMediumClick }
 				mediaAspectRatio="landscape"

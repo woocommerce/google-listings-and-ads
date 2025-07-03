@@ -31,6 +31,27 @@ const isValidYouTubeUrl = ( url ) => {
 	return true;
 };
 
+const extractYouTubeId = ( url ) => {
+	try {
+		const parsed = new URL( url );
+		// Standard: https://www.youtube.com/watch?v=VIDEO_ID
+		if ( parsed.hostname.includes( 'youtube.com' ) ) {
+			return parsed.searchParams.get( 'v' );
+		}
+		// Short: https://youtu.be/VIDEO_ID
+		if ( parsed.hostname === 'youtu.be' ) {
+			return parsed.pathname.slice( 1 );
+		}
+	} catch {
+		// fallback to regex if URL parsing fails
+		const match = url.match(
+			/(?:youtube\.com.*[?&]v=|youtu\.be\/)([\w-]{11})/
+		);
+		return match ? match[ 1 ] : null;
+	}
+	return null;
+};
+
 const YouTubeVideoInputControl = ( { onVideoAdded } ) => {
 	const [ url, setUrl ] = useState( '' );
 	const [ error, setError ] = useState( null );
@@ -54,28 +75,18 @@ const YouTubeVideoInputControl = ( { onVideoAdded } ) => {
 				return;
 			}
 
-			const response = await fetch(
-				`https://www.youtube.com/oembed?format=json&url=${ encodeURIComponent(
-					url
-				) }`
-			);
-			if ( ! response.ok ) {
+			const videoId = extractYouTubeId( url );
+			if ( ! videoId ) {
 				setError(
 					__(
-						'Failed to fetch video details',
+						'Failed to get the video ID from the URL.',
 						'google-listings-and-ads'
 					)
 				);
 				return;
 			}
-			const data = await response.json();
-			const videoDetails = {
-				title: data.title,
-				thumbnail: data.thumbnail_url,
-				url,
-			};
 
-			onVideoAdded( videoDetails );
+			onVideoAdded( videoId );
 			setUrl( '' );
 		} catch ( e ) {
 			setError(
