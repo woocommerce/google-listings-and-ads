@@ -24,6 +24,8 @@ class NotificationManager implements Service, Registerable {
         // Hook into admin_menu with a high priority (e.g., 20) to ensure
         // all other menu items have been registered by WooCommerce and other plugins.
         add_action( 'admin_menu', [ $this, 'display_aggregated_notification_pill' ], 20 );
+
+		add_action( 'admin_footer', [ $this, 'persist_pill'], 10 );
     }
 
     /**
@@ -66,7 +68,7 @@ class NotificationManager implements Service, Registerable {
 				return isset( $page['parent'] ) && $page['parent'] === $marketing_menu_slug;
 			}
 		);
-		
+
 		$is_marketing_page = false;
 
 		foreach ( $marketing_menu_pages as $page ) {
@@ -125,4 +127,60 @@ class NotificationManager implements Service, Registerable {
             }
         }
     }
+
+	private function is_analytics_page() {
+		$current_page_slug = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
+		if ( $current_page_slug !== 'wc-admin' ) {
+			return false;
+		}
+
+		$current_page_path = isset( $_GET['path'] ) ? sanitize_text_field( wp_unslash( $_GET['path'] ) ) : '';
+		$parts = explode('/', ltrim($current_page_path, '/'));
+
+		if ( isset( $parts[0] ) && $parts[0] === 'analytics' ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	public function persist_pill(): void {
+		if ( ! $this->is_marketing_page() && ! $this->is_analytics_page() ) {
+			return;
+		}
+		?>
+		<script>
+			(function() {
+				const marketingMenu = document.getElementById('toplevel_page_woocommerce-marketing');
+				const topMenu = document.querySelector('.toplevel_page_woocommerce-marketing > a > .wp-menu-name');
+				const badge = document.querySelector('#toplevel_page_woocommerce-marketing .update-plugins');
+
+				function moveBadge() {
+					if (marketingMenu.classList.contains('wp-has-current-submenu')) {
+						const subMenu = document.querySelector('[href="admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard"]');
+
+						if (subMenu && !subMenu.contains(badge)) {
+							subMenu.textContent.trimEnd();
+							subMenu.textContent += ' ';
+							subMenu.appendChild(badge);
+						}
+					} else {
+						if (!topMenu.contains(badge)) {
+							topMenu.textContent.trimEnd();
+							topMenu.textContent += ' ';
+							topMenu.appendChild(badge);
+						}
+					}
+				};
+
+				const observer = new MutationObserver(function() {
+					moveBadge();
+				});
+
+				// Start observing the target node for configured mutations
+				observer.observe(marketingMenu, { attributes: true, attributeFilter: ['class'] });
+			})();
+		</script>
+		<?php
+	}
 }
