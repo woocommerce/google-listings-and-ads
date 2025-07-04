@@ -22,7 +22,7 @@ import useAdsCampaigns from '~/hooks/useAdsCampaigns';
  *   - {Object|null} campaign: The highest spending enabled PMax campaign with a recommendation, or null if none.
  *   - {boolean} hasFinishedResolution: Whether the recommendations resolution has completed.
  */
-const usePmaxAssetOptimizationRecommendedCampaign = () => {
+const useRecommendedPMaxCampaign = () => {
 	const { data: adsCampaignsData, loaded } = useAdsCampaigns();
 
 	const { highestAmountCampaign } = useMemo( () => {
@@ -103,4 +103,4 @@ const usePmaxAssetOptimizationRecommendedCampaign = () => {
 	);
 };
 
-export default usePmaxAssetOptimizationRecommendedCampaign;
+export default useRecommendedPMaxCampaign;

@@ -10,7 +10,7 @@ import { getHistory } from '@woocommerce/navigation';
  */
 import { getEditCampaignUrl } from '~/utils/urls';
 import AppButton from '~/components/app-button';
-import usePmaxAssetOptimizationRecommendedCampaign from '~/hooks/usePmaxAssetOptimizationRecommendedCampaign';
+import useRecommendedPMaxCampaign from '~/hooks/useRecommendedPMaxCampaign';
 import './index.scss';
 
 /**
@@ -28,8 +28,7 @@ import './index.scss';
  * @return {JSX.Element|null} The banner component, or null if not applicable.
  */
 const Banner = ( { onBannerDismissed } ) => {
-	const { campaign, hasFinishedResolution } =
-		usePmaxAssetOptimizationRecommendedCampaign();
+	const { campaign, hasFinishedResolution } = useRecommendedPMaxCampaign();
 
 	if ( ! campaign || ! hasFinishedResolution ) {
 		return null;

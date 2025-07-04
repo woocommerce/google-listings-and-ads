@@ -7,7 +7,7 @@ import { useSelect } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import usePmaxAssetOptimizationRecommendedCampaign from './usePmaxAssetOptimizationRecommendedCampaign';
+import useRecommendedPMaxCampaign from './useRecommendedPMaxCampaign';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 
 jest.mock( '@wordpress/data/src/components/use-select', () => jest.fn() );
@@ -66,9 +66,7 @@ describe( 'usePmaxAssetOptimizationRecommendedCampaign', () => {
 			hasFinishedResolution: false,
 		} ) );
 
-		const { result } = renderHook( () =>
-			usePmaxAssetOptimizationRecommendedCampaign()
-		);
+		const { result } = renderHook( () => useRecommendedPMaxCampaign() );
 		expect( result.current ).toEqual( {
 			campaign: null,
 			hasFinishedResolution: false,
@@ -95,9 +93,7 @@ describe( 'usePmaxAssetOptimizationRecommendedCampaign', () => {
 			} ) );
 		} );
 
-		const { result } = renderHook( () =>
-			usePmaxAssetOptimizationRecommendedCampaign()
-		);
+		const { result } = renderHook( () => useRecommendedPMaxCampaign() );
 		expect( result.current ).toEqual( {
 			campaign: null,
 			hasFinishedResolution: true,
@@ -116,9 +112,7 @@ describe( 'usePmaxAssetOptimizationRecommendedCampaign', () => {
 			} ) );
 		} );
 
-		const { result } = renderHook( () =>
-			usePmaxAssetOptimizationRecommendedCampaign()
-		);
+		const { result } = renderHook( () => useRecommendedPMaxCampaign() );
 		expect( result.current ).toEqual( {
 			campaign: null,
 			hasFinishedResolution: true,
@@ -137,9 +131,7 @@ describe( 'usePmaxAssetOptimizationRecommendedCampaign', () => {
 			} ) );
 		} );
 
-		const { result } = renderHook( () =>
-			usePmaxAssetOptimizationRecommendedCampaign()
-		);
+		const { result } = renderHook( () => useRecommendedPMaxCampaign() );
 		expect( result.current ).toEqual( {
 			campaign: null,
 			hasFinishedResolution: false,
@@ -158,9 +150,7 @@ describe( 'usePmaxAssetOptimizationRecommendedCampaign', () => {
 			} ) );
 		} );
 
-		const { result } = renderHook( () =>
-			usePmaxAssetOptimizationRecommendedCampaign()
-		);
+		const { result } = renderHook( () => useRecommendedPMaxCampaign() );
 		expect( result.current ).toEqual( {
 			campaign: null,
 			hasFinishedResolution: true,
@@ -179,9 +169,7 @@ describe( 'usePmaxAssetOptimizationRecommendedCampaign', () => {
 			} ) );
 		} );
 
-		const { result } = renderHook( () =>
-			usePmaxAssetOptimizationRecommendedCampaign()
-		);
+		const { result } = renderHook( () => useRecommendedPMaxCampaign() );
 		expect( result.current ).toEqual( {
 			campaign: mockedCampaigns[ 1 ],
 			hasFinishedResolution: true,
