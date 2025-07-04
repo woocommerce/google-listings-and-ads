@@ -43,12 +43,5 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 				);
 			}
 		);
-
-		add_filter( 'google_for_woocommerce_admin_menu_notification_count', [ $this, 'contribute_to_total_notification_count' ] );
 	}
-
-	public function contribute_to_total_notification_count( int $current_count ): int {
-        $current_count += 1;
-        return $current_count;
-    }
 }
