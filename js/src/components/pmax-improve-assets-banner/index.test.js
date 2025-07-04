@@ -13,8 +13,7 @@ import { getEditCampaignUrl } from '~/utils/urls';
 import { PREFERENCES_STORE_NAMESPACE, DAY_IN_SECONDS } from '~/constants';
 import PMaxImproveAssetsBanner from './index';
 import usePreference from '~/hooks/usePreference';
-import useAdsCampaigns from '~/hooks/useAdsCampaigns';
-import useAdsRecommendations from '~/hooks/useAdsRecommendations';
+import usePmaxAssetOptimizationRecommendedCampaign from '~/hooks/usePmaxAssetOptimizationRecommendedCampaign';
 
 jest.mock( '@woocommerce/components', () => ( {
 	...jest.requireActual( '@woocommerce/components' ),
@@ -44,43 +43,15 @@ jest.mock( '~/hooks/usePreference', () =>
 	jest.fn().mockName( 'usePreference' )
 );
 
-jest.mock( '~/hooks/useAdsCampaigns', () =>
-	jest.fn().mockName( 'useAdsCampaigns' )
-);
-
-jest.mock( '~/hooks/useAdsRecommendations', () =>
-	jest.fn().mockName( 'useAdsRecommendations' )
+jest.mock( '~/hooks/usePmaxAssetOptimizationRecommendedCampaign', () =>
+	jest.fn().mockName( 'usePmaxAssetOptimizationRecommendedCampaign' )
 );
 
 jest.mock( '~/utils/urls', () => ( {
 	getEditCampaignUrl: jest.fn( () => '/edit/2/asset-group' ),
 } ) );
 
-const baseCampaigns = [
-	{
-		id: 1,
-		name: 'Campaign 1',
-		type: 'performance_max',
-		status: 'enabled',
-		amount: 100,
-	},
-	{
-		id: 2,
-		name: 'Campaign 2',
-		type: 'performance_max',
-		status: 'enabled',
-		amount: 200,
-	},
-	{
-		id: 3,
-		name: 'Campaign 3',
-		type: 'SEARCH',
-		status: 'enabled',
-		amount: 300,
-	},
-];
-
-const recommendations = [ { campaign_id: 2, campaign_name: 'Spring sale' } ];
+const recommendedCampaign = { id: 2, name: 'Campaign 2' };
 
 describe( 'PMaxImproveAssetsBanner', () => {
 	beforeEach( () => {
@@ -89,16 +60,20 @@ describe( 'PMaxImproveAssetsBanner', () => {
 
 	it( 'renders nothing if expiry is not expired', () => {
 		usePreference.mockReturnValue( { expiry: Date.now() + 100000 } );
-		useAdsCampaigns.mockReturnValue( { data: baseCampaigns } );
-		useAdsRecommendations.mockReturnValue( { recommendations } );
+		usePmaxAssetOptimizationRecommendedCampaign.mockReturnValue( {
+			campaign: recommendedCampaign,
+			hasFinishedResolution: true,
+		} );
 		const { container } = render( <PMaxImproveAssetsBanner /> );
 		expect( container.firstChild ).toBeNull();
 	} );
 
 	it( 'resets expiry if expired and renders banner', () => {
 		usePreference.mockReturnValue( { expiry: Date.now() - 1000 } );
-		useAdsCampaigns.mockReturnValue( { data: baseCampaigns } );
-		useAdsRecommendations.mockReturnValue( { recommendations } );
+		usePmaxAssetOptimizationRecommendedCampaign.mockReturnValue( {
+			campaign: recommendedCampaign,
+			hasFinishedResolution: true,
+		} );
 		render( <PMaxImproveAssetsBanner /> );
 		expect(
 			screen.getByRole( 'button', { name: 'Improve Assets' } )
@@ -108,62 +83,56 @@ describe( 'PMaxImproveAssetsBanner', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'renders nothing if no campaigns data', () => {
+	it( 'renders nothing if no recommended campaign', () => {
 		usePreference.mockReturnValue( {} );
-		useAdsCampaigns.mockReturnValue( { data: null } );
-		useAdsRecommendations.mockReturnValue( { recommendations } );
-		const { container } = render( <PMaxImproveAssetsBanner /> );
-		expect( container.firstChild ).toBeNull();
-	} );
-
-	it( 'renders nothing if no recommendations', () => {
-		usePreference.mockReturnValue( {} );
-		useAdsCampaigns.mockReturnValue( { data: baseCampaigns } );
-		useAdsRecommendations.mockReturnValue( { recommendations: [] } );
-		const { container } = render( <PMaxImproveAssetsBanner /> );
-		expect( container.firstChild ).toBeNull();
-	} );
-
-	it( 'renders nothing if no enabled PMAX campaigns', () => {
-		usePreference.mockReturnValue( {} );
-		useAdsCampaigns.mockReturnValue( { data: baseCampaigns } );
-		useAdsCampaigns.mockReturnValue( {
-			data: [
-				{
-					id: 3,
-					name: 'Campaign 3',
-					type: 'shopping',
-					status: 'enabled',
-					amount: 300,
-				},
-			],
-		} );
-		useAdsRecommendations.mockReturnValue( { recommendations } );
-		const { container } = render( <PMaxImproveAssetsBanner /> );
-		expect( container.firstChild ).toBeNull();
-	} );
-
-	it( 'renders nothing if no recommendation for highest-spending campaign', () => {
-		usePreference.mockReturnValue( {} );
-		useAdsCampaigns.mockReturnValue( {
-			data: baseCampaigns,
-		} );
-
-		useAdsRecommendations.mockReturnValue( {
-			recommendations: [
-				{ id: 1, campaign_id: 1, campaign_name: 'Spring Campaign' },
-			],
+		usePmaxAssetOptimizationRecommendedCampaign.mockReturnValue( {
+			campaign: null,
+			hasFinishedResolution: true,
 		} );
 		const { container } = render( <PMaxImproveAssetsBanner /> );
 		expect( container.firstChild ).toBeNull();
 	} );
+
+	// it( 'renders nothing if no enabled PMAX campaigns', () => {
+	// 	usePreference.mockReturnValue( {} );
+	// 	useAdsCampaigns.mockReturnValue( { data: baseCampaigns } );
+	// 	useAdsCampaigns.mockReturnValue( {
+	// 		data: [
+	// 			{
+	// 				id: 3,
+	// 				name: 'Campaign 3',
+	// 				type: 'shopping',
+	// 				status: 'enabled',
+	// 				amount: 300,
+	// 			},
+	// 		],
+	// 	} );
+	// 	useAdsRecommendations.mockReturnValue( { recommendations } );
+	// 	const { container } = render( <PMaxImproveAssetsBanner /> );
+	// 	expect( container.firstChild ).toBeNull();
+	// } );
+
+	// it( 'renders nothing if no recommendation for highest-spending campaign', () => {
+	// 	usePreference.mockReturnValue( {} );
+	// 	useAdsCampaigns.mockReturnValue( {
+	// 		data: baseCampaigns,
+	// 	} );
+
+	// 	useAdsRecommendations.mockReturnValue( {
+	// 		recommendations: [
+	// 			{ id: 1, campaign_id: 1, campaign_name: 'Spring Campaign' },
+	// 		],
+	// 	} );
+	// 	const { container } = render( <PMaxImproveAssetsBanner /> );
+	// 	expect( container.firstChild ).toBeNull();
+	// } );
 
 	it( 'renders banner for highest-spending enabled PMAX campaign with recommendation', () => {
 		usePreference.mockReturnValue( {} );
-		useAdsCampaigns.mockReturnValue( {
-			data: baseCampaigns,
+		usePmaxAssetOptimizationRecommendedCampaign.mockReturnValue( {
+			campaign: recommendedCampaign,
+			hasFinishedResolution: true,
 		} );
-		useAdsRecommendations.mockReturnValue( { recommendations } );
 		render( <PMaxImproveAssetsBanner /> );
 		expect(
 			screen.getByText(
@@ -185,8 +154,10 @@ describe( 'PMaxImproveAssetsBanner', () => {
 		const historyPush = jest.fn().mockName( 'getHistory().push' );
 		getHistory.mockReturnValue( { push: historyPush } );
 		usePreference.mockReturnValue( {} );
-		useAdsCampaigns.mockReturnValue( { data: baseCampaigns } );
-		useAdsRecommendations.mockReturnValue( { recommendations } );
+		usePmaxAssetOptimizationRecommendedCampaign.mockReturnValue( {
+			campaign: recommendedCampaign,
+			hasFinishedResolution: true,
+		} );
 
 		const MOCK_NOW = 1_700_000_000_000;
 		jest.spyOn( Date, 'now' ).mockReturnValue( MOCK_NOW );

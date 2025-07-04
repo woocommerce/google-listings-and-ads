@@ -4,19 +4,13 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { Notice } from '@wordpress/components';
 import { getHistory } from '@woocommerce/navigation';
-import { useMemo } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import {
-	CAMPAIGN_TYPE_PMAX,
-	PMAX_IMPROVE_PERFORMANCE_MAX_AD_STRENGTH,
-} from '~/constants';
 import { getEditCampaignUrl } from '~/utils/urls';
 import AppButton from '~/components/app-button';
-import useAdsCampaigns from '~/hooks/useAdsCampaigns';
-import useAdsRecommendations from '~/hooks/useAdsRecommendations';
+import usePmaxAssetOptimizationRecommendedCampaign from '~/hooks/usePmaxAssetOptimizationRecommendedCampaign';
 import './index.scss';
 
 /**
@@ -34,46 +28,14 @@ import './index.scss';
  * @return {JSX.Element|null} The banner component, or null if not applicable.
  */
 const Banner = ( { onBannerDismissed } ) => {
-	const { data: adsCampaignsData } = useAdsCampaigns();
-	const { recommendations } = useAdsRecommendations(
-		PMAX_IMPROVE_PERFORMANCE_MAX_AD_STRENGTH
-	);
-	const { highestAmountCampaign } = useMemo( () => {
-		const pmaxCampaigns = ( adsCampaignsData || [] ).filter(
-			( { type, status } ) =>
-				type === CAMPAIGN_TYPE_PMAX && status === 'enabled'
-		);
+	const { campaign, hasFinishedResolution } =
+		usePmaxAssetOptimizationRecommendedCampaign();
 
-		if ( ! pmaxCampaigns.length ) {
-			return {
-				highestAmountCampaign: null,
-			};
-		}
-
-		const filteredHighestAmountCampaign = pmaxCampaigns.reduce(
-			( max, campaign ) =>
-				( campaign.amount ?? 0 ) > ( max.amount ?? 0 ) ? campaign : max,
-			pmaxCampaigns[ 0 ]
-		);
-
-		return {
-			highestAmountCampaign: filteredHighestAmountCampaign,
-		};
-	}, [ adsCampaignsData ] );
-
-	if ( ! highestAmountCampaign || ! recommendations?.length ) {
+	if ( ! campaign || ! hasFinishedResolution ) {
 		return null;
 	}
 
-	const { id, name } = highestAmountCampaign;
-
-	const hasHighestSpendingCampaignRecommendation = recommendations.some(
-		( recommendation ) => recommendation.campaign_id === id
-	);
-
-	if ( ! hasHighestSpendingCampaignRecommendation ) {
-		return null;
-	}
+	const { id, name } = campaign;
 
 	const handleOnImproveAssets = () => {
 		onBannerDismissed();
