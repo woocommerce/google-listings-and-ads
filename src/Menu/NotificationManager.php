@@ -25,6 +25,7 @@ class NotificationManager implements Service, Registerable {
         // all other menu items have been registered by WooCommerce and other plugins.
         add_action( 'admin_menu', [ $this, 'display_aggregated_notification_pill' ], 20 );
 
+		// Persist the pill across menu switches between the Marketing and Analytics menus.
 		add_action( 'admin_footer', [ $this, 'persist_pill'], 10 );
     }
 
@@ -128,7 +129,12 @@ class NotificationManager implements Service, Registerable {
         }
     }
 
-	private function is_analytics_page() {
+	/**
+	 * Determines if the current admin page is the Analytics.
+	 *
+	 * @return bool True if the current menu item is the Analytics menu or one of it's sub menus.
+	 */
+	private function is_analytics_page(): bool {
 		$current_page_slug = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
 		if ( $current_page_slug !== 'wc-admin' ) {
 			return false;
@@ -144,6 +150,9 @@ class NotificationManager implements Service, Registerable {
 		return false;
 	}
 
+	/**
+	 * Persist the pill in the correct location when switching between the Marketing/Analytics menus.
+	 */
 	public function persist_pill(): void {
 		if ( ! $this->is_marketing_page() && ! $this->is_analytics_page() ) {
 			return;
@@ -155,29 +164,30 @@ class NotificationManager implements Service, Registerable {
 				const topMenu = document.querySelector('.toplevel_page_woocommerce-marketing > a > .wp-menu-name');
 				const badge = document.querySelector('#toplevel_page_woocommerce-marketing .update-plugins');
 
-				function moveBadge() {
+				const observer = new MutationObserver(function() {
 					if (marketingMenu.classList.contains('wp-has-current-submenu')) {
 						const subMenu = document.querySelector('[href="admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard"]');
 
 						if (subMenu && !subMenu.contains(badge)) {
+							// Ensure there is white space betweem the bade and menu title for visual consistency.
 							subMenu.textContent.trimEnd();
 							subMenu.textContent += ' ';
+
+							// Move the bade to the correct location.
 							subMenu.appendChild(badge);
 						}
 					} else {
-						if (!topMenu.contains(badge)) {
+						if (topMenu && !topMenu.contains(badge)) {
+							// Ensure there is white space betweem the bade and menu title for visual consistency.
 							topMenu.textContent.trimEnd();
 							topMenu.textContent += ' ';
+
+							// Move the bade to the correct location.
 							topMenu.appendChild(badge);
 						}
 					}
-				};
-
-				const observer = new MutationObserver(function() {
-					moveBadge();
 				});
 
-				// Start observing the target node for configured mutations
 				observer.observe(marketingMenu, { attributes: true, attributeFilter: ['class'] });
 			})();
 		</script>
