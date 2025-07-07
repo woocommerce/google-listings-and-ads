@@ -38,4 +38,15 @@ class AdsRecommendationsQuery extends Query {
 	protected function sanitize_value( string $column, $value ) {
 		return $value;
 	}
+
+	/**
+	 * Reload merchant price benchmarks data.
+	 *
+	 * @return void
+	 */
+	public function reload_data(): void {
+		if ( $this->table->exists() ) {
+			$this->table->truncate();
+		}
+	}
 }
