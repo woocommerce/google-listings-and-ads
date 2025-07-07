@@ -14,6 +14,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AdsRecommendationsQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsRecommendationsQuery as GoogleAdsRecommendationsQuery;
 
+// use the Recommendation Resource so it is included in the vendor folder for the middleware, even though its not directly used.
+use Google\Ads\GoogleAds\V18\Resources\Recommendation;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -109,11 +112,45 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 			->set_client( $this->client, $this->options->get_ads_id() )
 			->get_results();
 
-			if ( empty( $response ) ) {
+			$result = [];
+			foreach ( $response->iterateAllElements() as $row ) {
+				if ( ! $row->hasRecommendation() ) {
+					continue;
+				}
+
+				$recommendation = $row->getRecommendation();
+
+				// Skip if recommendation is not valid.
+				if ( ! $recommendation instanceof Recommendation ) {
+					continue;
+				}
+
+				$campaign = $row->getCampaign();
+				$customer = $row->getCustomer();
+
+				$result[] = [
+					/**
+					 * Note: The 'id' field below refers to the Recommendation resource's ID property, not the field name itself.
+					 * Reference: https://github.com/googleads/google-ads-php/blob/main/src/Google/Ads/GoogleAds/V18/Resources/Recommendation.php#L25-L30
+					 *
+					 * We use the static name for the recommendation type instead of `$recommendation->getType()`
+					 * to ensure consistency and avoid potential issues with dynamic values or API changes.
+					 */
+					'recommendation_type'            => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
+					'recommendation_resource_name'   => method_exists( $recommendation, 'getResourceName' ) ? $recommendation->getResourceName() : '',
+					'recommendation_campaign_id'     => $campaign->getId(),
+					'recommendation_campaign_name'   => $campaign->getName(),
+					'recommendation_campaign_status' => $campaign->getStatus(),
+					'recommendation_customer_id'     => $customer->getId(),
+					'recommendation_last_synced'     => gmdate( 'Y-m-d H:i:s' ),
+				];
+			}
+
+			if ( empty( $result ) ) {
 				return [];
 			}
 
-			return $response;
+			return $result;
 		} catch ( GoogleException $e ) {
 			throw new Exception( __( 'Unable to retrieve Google Ads recommendations.', 'google-listings-and-ads' ) . $e->getMessage(), $e->getCode() );
 		}
