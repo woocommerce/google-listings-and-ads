@@ -3,7 +3,7 @@
         {
             "recommendation": {
                 "type": "IMPROVE_PERFORMANCE_MAX_AD_STRENGTH",
-                "resource_name": "customers/123/recommendations/1",
+                "resource_name": "customers/123/recommendations/1"
             },
             "campaign": {
                 "id": "1",
