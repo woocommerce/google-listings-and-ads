@@ -178,7 +178,7 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 			$query->reload_data();
 
 			// Insert recommendations into the DB table.
-			foreach ( $recommendations['results'] as $recommendation ) {
+			foreach ( $recommendations as $recommendation ) {
 				$query->insert( $recommendation );
 			}
 		} catch ( \Exception $e ) {
