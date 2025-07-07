@@ -177,23 +177,9 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 			// Clear existing data before updating.
 			$query->reload_data();
 
-			// Map and insert recommendations into the DB table.
-			foreach ( $recommendations['results'] as $result ) {
-				$rec      = $result['recommendation'] ?? [];
-				$campaign = $rec['campaign'] ?? [];
-				$customer = $rec['customer'] ?? [];
-
-				$data = [
-					'recommendation_type'            => $rec['type'] ?? '',
-					'recommendation_resource_name'   => $rec['resource_name'] ?? '',
-					'recommendation_campaign_id'     => isset( $campaign['id'] ) ? (int) $campaign['id'] : 0,
-					'recommendation_campaign_name'   => $campaign['name'] ?? '',
-					'recommendation_campaign_status' => $campaign['status'] ?? '',
-					'recommendation_customer_id'     => isset( $customer['id'] ) ? (int) $customer['id'] : 0,
-					'recommendation_last_synced'     => gmdate( 'Y-m-d H:i:s' ),
-				];
-
-				$query->insert( $data );
+			// Insert recommendations into the DB table.
+			foreach ( $recommendations['results'] as $recommendation ) {
+				$query->insert( $recommendation );
 			}
 		} catch ( \Exception $e ) {
 			do_action( 'woocommerce_gla_debug_message', $e->getMessage(), __METHOD__ );
