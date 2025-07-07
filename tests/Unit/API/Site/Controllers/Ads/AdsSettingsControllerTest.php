@@ -54,7 +54,21 @@ class AdsSettingsControllerTest extends RESTControllerUnitTest {
 			'enhanced_conversions_enabled' => false,
 		];
 
+		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
 		$this->options->expects( $this->once() )->method( 'update' )->with( OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED, false )->willReturn( true );
+
+		$response = $this->do_request( self::ROUTE_SETTINGS, 'POST', $expected );
+
+		$this->assertEquals( $expected, $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_edit_settings_with_same_value() {
+		$expected = [
+			'enhanced_conversions_enabled' => false,
+		];
+
+		$this->options->expects( $this->once() )->method( 'get' )->willReturn( false );
 
 		$response = $this->do_request( self::ROUTE_SETTINGS, 'POST', $expected );
 
@@ -67,6 +81,7 @@ class AdsSettingsControllerTest extends RESTControllerUnitTest {
 			'enhanced_conversions_enabled' => false,
 		];
 
+		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
 		$this->options->expects( $this->once() )->method( 'update' )->with( OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED, false )->willReturn( false );
 
 		$response = $this->do_request( self::ROUTE_SETTINGS, 'POST', $query );
