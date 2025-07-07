@@ -92,9 +92,9 @@ class AdsSettingsController extends BaseOptionsController {
 					continue;
 				}
 
-				$stored = (bool) $this->options->get( $key );
+				$stored = $this->options->get( $key );
 
-				if ( ! is_null( $stored ) && $stored === $value ) {
+				if ( ! is_null( $stored ) && (bool) $stored === $value ) {
 					$settings[ $key ] = $value;
 					continue;
 				}
