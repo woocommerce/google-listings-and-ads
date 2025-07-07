@@ -13,6 +13,7 @@ import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import Section from '~/components/section';
 import FinalUrlCard from './final-url-card';
 import AppDocumentationLink from '~/components/app-documentation-link';
+import GenAICard from '../../gen-ai-card';
 
 /**
  * Renders the header section for the asset group form where the user selects the URL to manage the assets for.
@@ -61,29 +62,39 @@ export default function AssetGroupHeader() {
 			<div className="gla-asset-group-section__content">
 				<Flex direction="column" gap={ 4 }>
 					<FlexItem>
-						<FinalUrlCard
-							initialFinalUrl={
-								adapter.baseAssetGroup[
-									ASSET_FORM_KEY.FINAL_URL
-								]
-							}
-							onAssetsChange={ adapter.resetAssetGroup }
-							// Currently, the PMax Assets feature in this extension doesn't offer the function
-							// to change the Final URL of the non-empty asset entity group, so it hides the
-							// reselect button in the card footer.
-							hideFooter={ ! adapter.isEmptyAssetEntityGroup }
-						/>
+						<Flex direction="column" gap={ 4 }>
+							<FlexItem>
+								<FinalUrlCard
+									initialFinalUrl={
+										adapter.baseAssetGroup[
+											ASSET_FORM_KEY.FINAL_URL
+										]
+									}
+									onAssetsChange={ adapter.resetAssetGroup }
+									// Currently, the PMax Assets feature in this extension doesn't offer the function
+									// to change the Final URL of the non-empty asset entity group, so it hides the
+									// reselect button in the card footer.
+									hideFooter={
+										! adapter.isEmptyAssetEntityGroup
+									}
+								/>
+							</FlexItem>
+							{ showTip && (
+								<FlexItem>
+									<Tip>
+										{ __(
+											'We auto-populated assets directly from your Final URL. We encourage you to edit or add more in order to best showcase your business.',
+											'google-listings-and-ads'
+										) }
+									</Tip>
+								</FlexItem>
+							) }
+						</Flex>
 					</FlexItem>
-					{ showTip && (
-						<FlexItem>
-							<Tip>
-								{ __(
-									'We auto-populated assets directly from your Final URL. We encourage you to edit or add more in order to best showcase your business.',
-									'google-listings-and-ads'
-								) }
-							</Tip>
-						</FlexItem>
-					) }
+
+					<FlexItem>
+						<GenAICard />
+					</FlexItem>
 				</Flex>
 			</div>
 		</Section>
