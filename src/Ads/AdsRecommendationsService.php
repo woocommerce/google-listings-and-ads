@@ -125,7 +125,15 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 				$campaign = $row->getCampaign();
 				$customer = $row->getCustomer();
 
+				$recommendation_id            = 0;
+				$recommendation_resource_name = method_exists( $recommendation, 'getResourceName' ) ? $recommendation->getResourceName() : '';
+				if ( $recommendation_resource_name ) {
+					$resource_name     = explode( '/', $recommendation_resource_name );
+					$recommendation_id = (int) end( $resource_name );
+				}
+
 				$result[] = [
+					'recommendation_id'              => $recommendation_id,
 					/**
 					 * Note: The 'id' field below refers to the Recommendation resource's ID property, not the field name itself.
 					 * Reference: https://github.com/googleads/google-ads-php/blob/main/src/Google/Ads/GoogleAds/V18/Resources/Recommendation.php#L25-L30
@@ -134,7 +142,7 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 					 * to ensure consistency and avoid potential issues with dynamic values or API changes.
 					 */
 					'recommendation_type'            => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
-					'recommendation_resource_name'   => method_exists( $recommendation, 'getResourceName' ) ? $recommendation->getResourceName() : '',
+					'recommendation_resource_name'   => $recommendation_resource_name,
 					'recommendation_campaign_id'     => $campaign->getId(),
 					'recommendation_campaign_name'   => $campaign->getName(),
 					'recommendation_campaign_status' => $campaign->getStatus(),
