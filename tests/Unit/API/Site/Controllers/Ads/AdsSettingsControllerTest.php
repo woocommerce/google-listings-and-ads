@@ -76,6 +76,19 @@ class AdsSettingsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	public function test_edit_settings_with_null_option_value() {
+		$expected = [
+			'enhanced_conversions_enabled' => false,
+		];
+
+		$this->options->expects( $this->once() )->method( 'get' )->willReturn( null );
+
+		$response = $this->do_request( self::ROUTE_SETTINGS, 'POST', $expected );
+
+		$this->assertEquals( $expected, $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
 	public function test_edit_settings_fail() {
 		$query = [
 			'enhanced_conversions_enabled' => false,
