@@ -14,6 +14,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AdsRecommendationsQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsRecommendationsQuery as GoogleAdsRecommendationsQuery;
 
+// use the Recommendation Resource so it is included in the vendor folder for the middleware, even though its not directly used.
+use Google\Ads\GoogleAds\V18\Resources\Recommendation;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -88,10 +91,6 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 			];
 		}
 
-		// If no recommendations found, return an empty array.
-		if ( empty( $recommendations ) ) {
-			return [];
-		}
 		return $recommendations;
 	}
 
@@ -109,11 +108,50 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 			->set_client( $this->client, $this->options->get_ads_id() )
 			->get_results();
 
-			if ( empty( $response ) ) {
-				return [];
+			$result      = [];
+			$last_synced = gmdate( 'Y-m-d H:i:s' );
+			foreach ( $response->iterateAllElements() as $row ) {
+				if ( ! $row->hasRecommendation() ) {
+					continue;
+				}
+
+				$recommendation = $row->getRecommendation();
+
+				// Skip if recommendation is not valid.
+				if ( ! $recommendation instanceof Recommendation ) {
+					continue;
+				}
+
+				$campaign = $row->getCampaign();
+				$customer = $row->getCustomer();
+
+				$recommendation_id            = 0;
+				$recommendation_resource_name = method_exists( $recommendation, 'getResourceName' ) ? $recommendation->getResourceName() : '';
+				if ( $recommendation_resource_name ) {
+					$resource_name     = explode( '/', $recommendation_resource_name );
+					$recommendation_id = (int) end( $resource_name );
+				}
+
+				$result[] = [
+					'recommendation_id'              => $recommendation_id,
+					/**
+					 * Note: The 'id' field below refers to the Recommendation resource's ID property, not the field name itself.
+					 * Reference: https://github.com/googleads/google-ads-php/blob/main/src/Google/Ads/GoogleAds/V18/Resources/Recommendation.php#L25-L30
+					 *
+					 * We use the static name for the recommendation type instead of `$recommendation->getType()`
+					 * to ensure consistency and avoid potential issues with dynamic values or API changes.
+					 */
+					'recommendation_type'            => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
+					'recommendation_resource_name'   => $recommendation_resource_name,
+					'recommendation_campaign_id'     => $campaign->getId(),
+					'recommendation_campaign_name'   => $campaign->getName(),
+					'recommendation_campaign_status' => $campaign->getStatus(),
+					'recommendation_customer_id'     => $customer->getId(),
+					'recommendation_last_synced'     => $last_synced,
+				];
 			}
 
-			return $response;
+			return $result;
 		} catch ( GoogleException $e ) {
 			throw new Exception( __( 'Unable to retrieve Google Ads recommendations.', 'google-listings-and-ads' ) . $e->getMessage(), $e->getCode() );
 		}
@@ -140,23 +178,9 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 			// Clear existing data before updating.
 			$query->reload_data();
 
-			// Map and insert recommendations into the DB table.
-			foreach ( $recommendations['results'] as $result ) {
-				$rec      = $result['recommendation'] ?? [];
-				$campaign = $rec['campaign'] ?? [];
-				$customer = $rec['customer'] ?? [];
-
-				$data = [
-					'recommendation_type'            => $rec['type'] ?? '',
-					'recommendation_resource_name'   => $rec['resource_name'] ?? '',
-					'recommendation_campaign_id'     => isset( $campaign['id'] ) ? (int) $campaign['id'] : 0,
-					'recommendation_campaign_name'   => $campaign['name'] ?? '',
-					'recommendation_campaign_status' => $campaign['status'] ?? '',
-					'recommendation_customer_id'     => isset( $customer['id'] ) ? (int) $customer['id'] : 0,
-					'recommendation_last_synced'     => gmdate( 'Y-m-d H:i:s' ),
-				];
-
-				$query->insert( $data );
+			// Insert recommendations into the DB table.
+			foreach ( $recommendations as $recommendation ) {
+				$query->insert( $recommendation );
 			}
 		} catch ( \Exception $e ) {
 			do_action( 'woocommerce_gla_debug_message', $e->getMessage(), __METHOD__ );

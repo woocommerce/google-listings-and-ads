@@ -24,7 +24,7 @@ class AdsRecommendationsTable extends Table {
 	protected function get_install_query(): string {
 		return "
 CREATE TABLE `{$this->get_sql_safe_name()}` (
-	recommendation_id bigint(20) NOT NULL AUTO_INCREMENT,
+	recommendation_id bigint(20) NOT NULL,
 	recommendation_type varchar(64) NOT NULL,
 	recommendation_resource_name varchar(255) NOT NULL,
 	recommendation_campaign_id bigint(20) NOT NULL,

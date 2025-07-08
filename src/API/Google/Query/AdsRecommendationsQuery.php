@@ -5,6 +5,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 
+// use the Recommendation Resource so it is included in the vendor folder for the middleware, even though its not directly used.
+use Google\Ads\GoogleAds\V18\Resources\Recommendation;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -15,46 +18,12 @@ defined( 'ABSPATH' ) || exit;
 class AdsRecommendationsQuery extends AdsQuery {
 
 	/**
-	 * Client which handles the query.
-	 *
-	 * @var GoogleAdsClient
-	 */
-	protected $client = null;
-
-	/**
-	 * Ads Account ID.
-	 *
-	 * @var int
-	 */
-	protected $id = null;
-
-	/**
 	 * AdsRecommendationsQuery constructor.
 	 */
 	public function __construct() {
 		parent::__construct( 'recommendation' );
 		$this->set_initial_columns();
 		$this->where( 'recommendation.type', 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH' );
-	}
-
-	/**
-	 * Set the client which will handle the query.
-	 *
-	 * @param GoogleAdsClient $client Client instance.
-	 * @param int             $id     Account ID.
-	 *
-	 * @return QueryInterface
-	 * @throws InvalidProperty If the ID is empty.
-	 */
-	public function set_client( GoogleAdsClient $client, int $id ): QueryInterface {
-		if ( empty( $id ) ) {
-			throw InvalidProperty::not_null( get_class( $this ), 'id' );
-		}
-
-		$this->client = $client;
-		$this->id     = $id;
-
-		return $this;
 	}
 
 	/**
