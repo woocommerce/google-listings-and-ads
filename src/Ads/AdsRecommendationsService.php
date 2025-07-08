@@ -108,7 +108,8 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 			->set_client( $this->client, $this->options->get_ads_id() )
 			->get_results();
 
-			$result = [];
+			$result      = [];
+			$last_synced = gmdate( 'Y-m-d H:i:s' );
 			foreach ( $response->iterateAllElements() as $row ) {
 				if ( ! $row->hasRecommendation() ) {
 					continue;
@@ -138,7 +139,7 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 					'recommendation_campaign_name'   => $campaign->getName(),
 					'recommendation_campaign_status' => $campaign->getStatus(),
 					'recommendation_customer_id'     => $customer->getId(),
-					'recommendation_last_synced'     => gmdate( 'Y-m-d H:i:s' ),
+					'recommendation_last_synced'     => $last_synced,
 				];
 			}
 
