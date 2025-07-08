@@ -91,10 +91,6 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 			];
 		}
 
-		// If no recommendations found, return an empty array.
-		if ( empty( $recommendations ) ) {
-			return [];
-		}
 		return $recommendations;
 	}
 
@@ -144,10 +140,6 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 					'recommendation_customer_id'     => $customer->getId(),
 					'recommendation_last_synced'     => gmdate( 'Y-m-d H:i:s' ),
 				];
-			}
-
-			if ( empty( $result ) ) {
-				return [];
 			}
 
 			return $result;
