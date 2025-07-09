@@ -6,6 +6,10 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Menu;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\Admin\PageController;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 
 /**
  * Class NotificationManager
@@ -17,6 +21,22 @@ use Automattic\WooCommerce\Admin\PageController;
  */
 class NotificationManager implements Service, Registerable {
 
+	use PluginHelper;
+
+	/**
+	 * @var AssetsHandlerInterface
+	 */
+	protected $assets_handler;
+
+	/**
+	 * NotificationManager constructor.
+	 *
+	 * @param AssetsHandlerInterface $assets_handler
+	 */
+	public function __construct( AssetsHandlerInterface $assets_handler ) {
+		$this->assets_handler = $assets_handler;
+	}
+
 	/**
 	 * Register the service, hooking into admin_menu to display notifications.
 	 */
@@ -25,8 +45,43 @@ class NotificationManager implements Service, Registerable {
 		// all other menu items have been registered by WooCommerce and other plugins.
 		add_action( 'admin_menu', [ $this, 'display_aggregated_notification_pill' ], 20 );
 
-		// Persist the pill across menu switches between the Marketing and Analytics menus.
-		add_action( 'admin_footer', [ $this, 'persist_pill' ], 10 );
+		// Register assets.
+		$this->register_assets();
+	}
+
+	/**
+	 * Register assets.
+	 *
+	 * @return void
+	 */
+	private function register_assets() {
+		$notification_manager = new AdminScriptWithBuiltDependenciesAsset(
+			'notification-manager',
+			'js/build/notification-manager',
+			"{$this->get_root_dir()}/js/build/notification-manager.asset.php",
+			new BuiltScriptDependencyArray(
+				[
+					'dependencies' => [],
+					'version'      => $this->get_version(),
+				]
+			),
+			function () {
+				return PageController::is_admin_page();
+			}
+		);
+
+		$this->assets_handler->register( $notification_manager );
+
+		add_action(
+			'admin_enqueue_scripts',
+			function () use ( $notification_manager ) {
+				if ( ! $this->is_marketing_page() && ! $this->is_analytics_page() ) {
+					return;
+				}
+
+				$this->assets_handler->enqueue( $notification_manager );
+			}
+		);
 	}
 
 	/**
@@ -148,49 +203,5 @@ class NotificationManager implements Service, Registerable {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Persist the pill in the correct location when switching between the Marketing/Analytics menus.
-	 */
-	public function persist_pill(): void {
-		if ( ! $this->is_marketing_page() && ! $this->is_analytics_page() ) {
-			return;
-		}
-		?>
-		<script>
-			(function() {
-				const marketingMenu = document.getElementById('toplevel_page_woocommerce-marketing');
-				const topMenu = document.querySelector('.toplevel_page_woocommerce-marketing > a > .wp-menu-name');
-				const badge = document.querySelector('#toplevel_page_woocommerce-marketing .update-plugins');
-
-				const observer = new MutationObserver(function() {
-					if (marketingMenu.classList.contains('wp-has-current-submenu')) {
-						const subMenu = document.querySelector('[href="admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard"]');
-
-						if (subMenu && !subMenu.contains(badge)) {
-							// Ensure there is white space between the badge and menu title for visual consistency.
-							subMenu.textContent.trimEnd();
-							subMenu.textContent += ' ';
-
-							// Move the badge to the correct location.
-							subMenu.appendChild(badge);
-						}
-					} else {
-						if (topMenu && !topMenu.contains(badge)) {
-							// Ensure there is white space between the badge and menu title for visual consistency.
-							topMenu.textContent.trimEnd();
-							topMenu.textContent += ' ';
-
-							// Move the badge to the correct location.
-							topMenu.appendChild(badge);
-						}
-					}
-				});
-
-				observer.observe(marketingMenu, { attributes: true, attributeFilter: ['class'] });
-			})();
-		</script>
-		<?php
 	}
 }
