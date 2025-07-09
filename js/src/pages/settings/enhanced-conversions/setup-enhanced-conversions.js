@@ -50,9 +50,11 @@ const SetupEnhancedConversions = () => {
 		>
 			{ ! hasFinishedResolution && <SpinnerCard /> }
 
-			{ hasFinishedResolution && hasGoogleAdsConnection ? (
+			{ hasFinishedResolution && hasGoogleAdsConnection && (
 				<ActiveEnhancedConversionCard />
-			) : (
+			) }
+
+			{ hasFinishedResolution && ! hasGoogleAdsConnection && (
 				<DisabledEnhancedConversionCard />
 			) }
 		</Section>

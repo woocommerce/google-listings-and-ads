@@ -10,7 +10,6 @@ import { Fragment, useCallback, useState } from '@wordpress/element';
  */
 import { useAppDispatch } from '~/data';
 import Section from '~/components/section';
-import SpinnerCard from '~/components/spinner-card';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useEnableEnhancedConversions from './useEnableEnhancedConversions';
 
@@ -48,10 +47,12 @@ const ActiveEnhancedConversionCard = () => {
 		}
 	};
 
+	if ( ! hasFinishedResolution ) {
+		return null;
+	}
+
 	return (
 		<Fragment>
-			{ ! hasFinishedResolution && <SpinnerCard /> }
-
 			{ hasFinishedResolution && (
 				<Section.Card>
 					<Section.Card.Body>
