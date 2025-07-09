@@ -61,11 +61,11 @@ class NotificationManager implements Service, Registerable {
 		);
 
 		$page_controller_pages = PageController::get_instance()->get_pages();
-		$marketing_menu_slug   = 'woocommerce-marketing';
+		$marketing_menu_slug   = Dashboard::MARKETING_MENU_SLUG;
 
 		$marketing_menu_pages = array_filter(
 			$page_controller_pages,
-			function ( $page ) use ( $marketing_menu_slug ) {
+			static function ( $page ) use ( $marketing_menu_slug ) {
 				return isset( $page['parent'] ) && $page['parent'] === $marketing_menu_slug;
 			}
 		);
@@ -169,20 +169,20 @@ class NotificationManager implements Service, Registerable {
 						const subMenu = document.querySelector('[href="admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard"]');
 
 						if (subMenu && !subMenu.contains(badge)) {
-							// Ensure there is white space betweem the bade and menu title for visual consistency.
+							// Ensure there is white space between the badge and menu title for visual consistency.
 							subMenu.textContent.trimEnd();
 							subMenu.textContent += ' ';
 
-							// Move the bade to the correct location.
+							// Move the badge to the correct location.
 							subMenu.appendChild(badge);
 						}
 					} else {
 						if (topMenu && !topMenu.contains(badge)) {
-							// Ensure there is white space betweem the bade and menu title for visual consistency.
+							// Ensure there is white space between the badge and menu title for visual consistency.
 							topMenu.textContent.trimEnd();
 							topMenu.textContent += ' ';
 
-							// Move the bade to the correct location.
+							// Move the badge to the correct location.
 							topMenu.appendChild(badge);
 						}
 					}
