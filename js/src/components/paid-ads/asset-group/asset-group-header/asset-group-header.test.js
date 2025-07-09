@@ -23,23 +23,19 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import AssetGroupSection from '~/components/paid-ads/asset-group/asset-group-section';
+import AssetGroupHeader from './asset-group-header';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 
-jest.mock( '~/components/paid-ads/asset-group/asset-group-card', () =>
-	jest.fn( ( props ) => <div { ...props } /> ).mockName( 'AssetGroupCard' )
-);
-
-describe( 'AssetGroupSection', () => {
+describe( 'AssetGroupHeader', () => {
 	test( 'Component renders', () => {
-		render( <AssetGroupSection /> );
+		render( <AssetGroupHeader /> );
 		expect(
 			screen.getByText( /Add additional assets/i )
 		).toBeInTheDocument();
 	} );
 
 	test( 'Component not showing Tip if there are no imported assets', () => {
-		render( <AssetGroupSection /> );
+		render( <AssetGroupHeader /> );
 		expect(
 			screen.queryByText(
 				'We auto-populated assets directly from your Final URL. We encourage you to edit or add more in order to best showcase your business.'
@@ -58,7 +54,7 @@ describe( 'AssetGroupSection', () => {
 				},
 			};
 		} );
-		render( <AssetGroupSection /> );
+		render( <AssetGroupHeader /> );
 		expect(
 			screen.getByText(
 				'We auto-populated assets directly from your Final URL. We encourage you to edit or add more in order to best showcase your business.'
