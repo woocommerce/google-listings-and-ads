@@ -4,6 +4,7 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { Notice } from '@wordpress/components';
 import { getHistory } from '@woocommerce/navigation';
+import { useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -12,6 +13,31 @@ import { getEditCampaignUrl } from '~/utils/urls';
 import AppButton from '~/components/app-button';
 import useRecommendedPMaxCampaign from '~/hooks/useRecommendedPMaxCampaign';
 import './index.scss';
+import { PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT } from '~/constants';
+import { recordGlaEvent } from '~/utils/tracks';
+
+/**
+ * Track the event when the banner is shown.
+ *
+ * @event gla_pmax_assets_improvements_banner_shown
+ * @property {string} context The context in which the banner is shown, e.g. `"pmax_assets_improvements_banner"`.
+ */
+
+/**
+ * Track the event when the "Improve Assets" button is clicked.
+ *
+ * @event gla_pmax_assets_improvements_improve_assets_clicked
+ * @property {string} context The context in which the button is clicked, e.g. `"pmax_assets_improvements_banner"`.
+ * @property {number} campaign_id The ID of the PMAX campaign for which assets are being improved.
+ */
+
+/**
+ * Track the event when the banner is dismissed.
+ *
+ * @event gla_pmax_assets_improvements_dismiss_clicked
+ * @property {string} context The context in which the banner is dismissed, e.g. `"pmax_assets_improvements_banner"`.
+ * @property {number} campaign_id The ID of the PMAX campaign for which the banner is dismissed.
+ */
 
 /**
  * Displays a dismissible banner prompting users to improve assets for their highest-spending enabled Performance Max (PMAX) campaign.
@@ -26,9 +52,19 @@ import './index.scss';
  * @param {Function} props.onBannerDismissed Callback function to call when the banner is dismissed.
  *
  * @return {JSX.Element|null} The banner component, or null if not applicable.
+ *
+ * @fires gla_pmax_assets_improvements_banner_shown when the banner is displayed.
+ * @fires gla_pmax_assets_improvements_improve_assets_clicked when the "Improve Assets" button is clicked.
+ * @fires gla_pmax_assets_improvements_dismiss_clicked when the banner is dismissed.
  */
 const Banner = ( { onBannerDismissed } ) => {
 	const { campaign, hasFinishedResolution } = useRecommendedPMaxCampaign();
+
+	useEffect( () => {
+		recordGlaEvent( 'gla_pmax_assets_improvements_banner_shown', {
+			context: PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT,
+		} );
+	}, [] );
 
 	if ( ! campaign || ! hasFinishedResolution ) {
 		return null;
@@ -39,9 +75,23 @@ const Banner = ( { onBannerDismissed } ) => {
 	const handleOnImproveAssets = () => {
 		onBannerDismissed();
 
+		recordGlaEvent( 'gla_pmax_assets_improvements_improve_assets_clicked', {
+			context: PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT,
+			campaign_id: id,
+		} );
+
 		// Navigate to the edit campaign page for the PMAX campaign with the highest spending.
 		const editCampaignUrl = getEditCampaignUrl( id, 'asset-group' );
 		getHistory().push( editCampaignUrl );
+	};
+
+	const handDismiss = () => {
+		onBannerDismissed();
+
+		recordGlaEvent( 'gla_pmax_assets_improvements_dismiss_clicked', {
+			context: PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT,
+			campaign_id: id,
+		} );
 	};
 
 	return (
@@ -67,7 +117,7 @@ const Banner = ( { onBannerDismissed } ) => {
 					{ __( 'Improve Assets', 'google-listings-and-ads' ) }
 				</AppButton>
 
-				<AppButton isTertiary onClick={ onBannerDismissed }>
+				<AppButton isTertiary onClick={ handDismiss }>
 					{ __( 'Dismiss', 'google-listings-and-ads' ) }
 				</AppButton>
 			</div>
