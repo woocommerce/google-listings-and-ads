@@ -10,7 +10,6 @@ import { getQuery, getHistory } from '@woocommerce/navigation';
 import { API_RESPONSE_CODES } from '~/constants';
 import useMenuEffect from '~/hooks/useMenuEffect';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
-import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useUpdateRestAPIAuthorizeStatusByUrlQuery from '~/hooks/useUpdateRestAPIAuthorizeStatusByUrlQuery';
 import { subpaths, getReconnectAccountUrl } from '~/utils/urls';
 import { ContactInformationPreview } from '~/components/contact-information';
@@ -36,7 +35,6 @@ const Settings = () => {
 	useUpdateRestAPIAuthorizeStatusByUrlQuery();
 
 	const { google } = useGoogleAccount();
-	const { hasGoogleAdsConnection } = useGoogleAdsAccount();
 	const isReconnectGooglePage = subpath === subpaths.reconnectGoogleAccount;
 
 	// This page wouldn't get any 401 response when losing Google account access,
@@ -70,7 +68,7 @@ const Settings = () => {
 			<EnableNewProductSyncNotice />
 			<MainTabNav />
 			<RebrandingTour />
-			{ hasGoogleAdsConnection && <SetupEnhancedConversions /> }
+			<SetupEnhancedConversions />
 			<ContactInformationPreview />
 			<SetupTaxRate />
 			<LinkedAccounts />

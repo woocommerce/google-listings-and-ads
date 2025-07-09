@@ -151,7 +151,7 @@ test.describe( 'Settings', () => {
 				await settingsPage.goto();
 			} );
 
-			test( 'should not show the "Enhanced Conversion" setting card', async () => {
+			test( 'should show the "Enhanced Conversion" setting card', async () => {
 				await expect(
 					page.getByRole( 'heading', { name: 'Settings' } )
 				).toBeVisible();
@@ -159,7 +159,22 @@ test.describe( 'Settings', () => {
 					page.getByRole( 'heading', {
 						name: 'Improve conversion accuracy',
 					} )
-				).not.toBeVisible();
+				).toBeVisible();
+			} );
+
+			test( 'checkbox should be unchecked and disabled by default', async () => {
+				const checkbox = settingsPage.getEnhancedConversionsCheckbox();
+
+				await expect( checkbox ).not.toBeChecked();
+				await expect( checkbox ).toBeDisabled();
+			} );
+
+			test( 'should show the message that Google Ads account is not connected', async () => {
+				await expect(
+					page.getByText(
+						'Google Ads account is not connected. Please connect your Google Ads account to use this feature.'
+					)
+				).toBeVisible();
 			} );
 		} );
 	} );
