@@ -1,35 +1,49 @@
-(function() {
-	const marketingMenu = document.getElementById('toplevel_page_woocommerce-marketing');
-	const topMenu = document.querySelector('.toplevel_page_woocommerce-marketing > a > .wp-menu-name');
-	const badge = document.querySelector('#toplevel_page_woocommerce-marketing .update-plugins');
+/* global MutationObserver */
+( function () {
+	const badge = document.querySelector(
+		'#toplevel_page_woocommerce-marketing .update-plugins'
+	);
 
-	if (!badge) {
+	if ( ! badge ) {
 		return;
 	}
 
-	const observer = new MutationObserver(function() {
-		if (marketingMenu.classList.contains('wp-has-current-submenu')) {
-			const subMenu = document.querySelector('[href="admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard"]');
+	const marketingMenu = document.getElementById(
+		'toplevel_page_woocommerce-marketing'
+	);
 
-			if (subMenu && !subMenu.contains(badge)) {
+	const observer = new MutationObserver( function () {
+		if ( marketingMenu.classList.contains( 'wp-has-current-submenu' ) ) {
+			const subMenu = document.querySelector(
+				'[href="admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard"]'
+			);
+
+			if ( subMenu && ! subMenu.contains( badge ) ) {
 				// Ensure there is white space between the badge and menu title for visual consistency.
 				subMenu.textContent.trimEnd();
 				subMenu.textContent += ' ';
 
 				// Move the badge to the correct location.
-				subMenu.appendChild(badge);
+				subMenu.appendChild( badge );
 			}
 		} else {
-			if (topMenu && !topMenu.contains(badge)) {
+			const topMenu = document.querySelector(
+				'.toplevel_page_woocommerce-marketing > a > .wp-menu-name'
+			);
+
+			if ( topMenu && ! topMenu.contains( badge ) ) {
 				// Ensure there is white space between the badge and menu title for visual consistency.
 				topMenu.textContent.trimEnd();
 				topMenu.textContent += ' ';
 
 				// Move the badge to the correct location.
-				topMenu.appendChild(badge);
+				topMenu.appendChild( badge );
 			}
 		}
-	});
+	} );
 
-	observer.observe(marketingMenu, { attributes: true, attributeFilter: ['class'] });
-})();
+	observer.observe( marketingMenu, {
+		attributes: true,
+		attributeFilter: [ 'class' ],
+	} );
+} )();
