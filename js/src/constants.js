@@ -138,3 +138,6 @@ export const PRICE_BENCHMARK_CHART_COLORS = {
 // @wordpress/preferences namespace
 export const PREFERENCES_STORE_NAMESPACE =
 	'woocommerce/google-listings-and-ads';
+
+export const PMAX_IMPROVE_PERFORMANCE_MAX_AD_STRENGTH =
+	'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH';
