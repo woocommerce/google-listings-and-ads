@@ -172,7 +172,7 @@ test.describe( 'Settings', () => {
 			test( 'should show the message that Google Ads account is not connected', async () => {
 				await expect(
 					page.getByText(
-						'Google Ads account is not connected. Please connect your Google Ads account to use this feature.'
+						'Please connect your Google Ads account in order to use Enhanced Conversions data.'
 					)
 				).toBeVisible();
 			} );

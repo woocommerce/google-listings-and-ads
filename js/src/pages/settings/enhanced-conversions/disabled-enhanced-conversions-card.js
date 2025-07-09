@@ -26,7 +26,7 @@ const DisabledEnhancedConversionCard = () => {
 					checked={ false }
 					disabled={ true }
 					help={ __(
-						'Google Ads account is not connected. Please connect your Google Ads account to use this feature.',
+						'Please connect your Google Ads account in order to use Enhanced Conversions data.',
 						'google-listings-and-ads'
 					) }
 				/>
