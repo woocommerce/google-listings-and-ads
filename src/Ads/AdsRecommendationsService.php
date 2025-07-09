@@ -127,10 +127,11 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 
 				$recommendation_id            = 0;
 				$recommendation_resource_name = $recommendation->getResourceName();
-				if ( $recommendation_resource_name ) {
-					$resource_name     = explode( '/', $recommendation_resource_name );
-					$recommendation_id = (int) end( $resource_name );
+				if ( empty( $recommendation_resource_name ) ) {
+					continue;
 				}
+				$resource_name     = explode( '/', $recommendation_resource_name );
+				$recommendation_id = (int) end( $resource_name );
 
 				$result[] = [
 					'recommendation_id'              => $recommendation_id,
