@@ -188,23 +188,23 @@ Clicking on the button to disconnect the Google Ads account.
 #### Emitters
 - [`BillingSetupCard`](../../js/src/components/paid-ads/billing-card/billing-setup-card.js#L39) When the user clicks on the button to set up billing in Google Ads.
 
-### [`gla_app_ratings_close`](../../js/src/components/experience-rating-banner/index.js#L44)
+### [`gla_app_ratings_close`](../../js/src/components/experience-rating-banner/banner.js#L41)
 When the feedback modal is closed by the user.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | The context in which the event is triggered.
 #### Emitters
-- [`ExperienceRatingBanner`](../../js/src/components/experience-rating-banner/index.js#L72) When the feedback modal is closed.
+- [`Banner`](../../js/src/components/experience-rating-banner/banner.js#L69) When the feedback modal is closed.
 
-### [`gla_app_ratings_good_clicked`](../../js/src/components/experience-rating-banner/index.js#L37)
+### [`gla_app_ratings_good_clicked`](../../js/src/components/experience-rating-banner/banner.js#L34)
 When the user clicks the "Good" button on the banner.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | The context in which the event is triggered.
 #### Emitters
-- [`ExperienceRatingBanner`](../../js/src/components/experience-rating-banner/index.js#L72) When the "Good" button is clicked.
+- [`Banner`](../../js/src/components/experience-rating-banner/banner.js#L69) When the "Good" button is clicked.
 
 ### [`gla_app_ratings_maybe_later_clicked`](../../js/src/components/experience-rating-banner/feedback-modal.js#L16)
 
@@ -215,14 +215,14 @@ When the user clicks the "Good" button on the banner.
 #### Emitters
 - [`FeedbackModal`](../../js/src/components/experience-rating-banner/feedback-modal.js#L39) Fired when the user clicks the "Maybe later" button.
 
-### [`gla_app_ratings_need_help_clicked`](../../js/src/components/experience-rating-banner/index.js#L51)
+### [`gla_app_ratings_need_help_clicked`](../../js/src/components/experience-rating-banner/banner.js#L48)
 When the user clicks the "Need help" button on the banner.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | The context in which the event is triggered.
 #### Emitters
-- [`ExperienceRatingBanner`](../../js/src/components/experience-rating-banner/index.js#L72) When the "Need help" button is clicked.
+- [`Banner`](../../js/src/components/experience-rating-banner/banner.js#L69) When the "Need help" button is clicked.
 
 ### [`gla_app_ratings_rate_clicked`](../../js/src/components/experience-rating-banner/feedback-modal.js#L21)
 
@@ -233,14 +233,14 @@ When the user clicks the "Need help" button on the banner.
 #### Emitters
 - [`FeedbackModal`](../../js/src/components/experience-rating-banner/feedback-modal.js#L39) Fired when the user clicks the "Rate us" button.
 
-### [`gla_app_ratings_shown`](../../js/src/components/experience-rating-banner/index.js#L30)
+### [`gla_app_ratings_shown`](../../js/src/components/experience-rating-banner/banner.js#L27)
 When the experience rating banner is displayed to the user.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | The context in which the event is triggered.
 #### Emitters
-- [`ExperienceRatingBanner`](../../js/src/components/experience-rating-banner/index.js#L72) When the banner is shown.
+- [`Banner`](../../js/src/components/experience-rating-banner/banner.js#L69) When the banner is shown.
 
 ### [`gla_attribute_mapping_create_rule`](../../js/src/pages/attribute-mapping/attribute-mapping-rule-modal.js#L32)
 Creates the rule successfully
