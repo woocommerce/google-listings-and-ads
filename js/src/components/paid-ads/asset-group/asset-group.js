@@ -79,7 +79,8 @@ export default function AssetGroup( { campaign } ) {
 			audiences: audiences.join( ',' ),
 			budget: values.amount.toString(),
 			assets_validation: isValidAssetGroup ? 'valid' : 'invalid',
-			campaign_id: isCreation ? 'unknown' : campaign?.id,
+			campaign_id: isCreation ? 'new' : campaign?.id,
+			number_of_youtube_videos: values.youtube_video.length,
 		};
 
 		if ( ! finalUrl ) {
