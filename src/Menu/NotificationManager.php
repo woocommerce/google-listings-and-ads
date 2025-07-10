@@ -75,11 +75,9 @@ class NotificationManager implements Service, Registerable {
 		add_action(
 			'admin_enqueue_scripts',
 			function () use ( $notification_manager ) {
-				if ( ! $this->is_marketing_page() && ! $this->is_analytics_page() ) {
-					return;
+				if ( $this->is_marketing_page() || $this->is_analytics_page() ) {
+					$this->assets_handler->enqueue( $notification_manager );
 				}
-
-				$this->assets_handler->enqueue( $notification_manager );
 			}
 		);
 	}
