@@ -43,6 +43,7 @@ const Survey = () => {
 
 							{ option.hasTextInput && inputProps.checked && (
 								<AppInputControl
+									name={ `${ option.value }_text` }
 									{ ...getInputProps(
 										`${ option.value }_text`
 									) }

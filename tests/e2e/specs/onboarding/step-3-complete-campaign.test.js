@@ -474,6 +474,82 @@ test.describe( 'Complete your campaign', () => {
 					await expect( createCampaignButton ).toBeEnabled();
 				} );
 			} );
+
+			test.describe( 'With WooCommerce tracking enabled', () => {
+				test.beforeAll( async () => {
+					// Reset the showing status for the "Set up paid ads" section.
+					await page.evaluate( () => window.sessionStorage.clear() );
+					await setupAdsAccountPage.mockAdsAccountIncomplete();
+					await completeCampaign.goto();
+					// Mock WC Tracks as enabled
+					await page.evaluate( () => {
+						if ( window.wcTracks ) {
+							window.wcTracks.isEnabled = true;
+						} else {
+							window.wcTracks = { isEnabled: true };
+						}
+					} );
+					await completeCampaign.clickSkipPaidAdsCreationButton();
+				} );
+
+				test( 'should display SkipPaidAdsSurveyModal when WC Tracks is enabled', async () => {
+					const skipPaidAdsSurveyModal =
+						completeCampaign.getSkipPaidAdsSurveyModal();
+					await expect( skipPaidAdsSurveyModal ).toBeVisible();
+					// Optionally, check for a survey element inside the modal
+					await expect(
+						page.getByRole( 'button', {
+							name: 'Send and complete setup',
+						} )
+					).toBeVisible();
+				} );
+
+				test( 'should show a text box when clicking the "I don’t want ads on Google" option', async () => {
+					await page
+						.getByRole( 'checkbox', {
+							name: 'I don’t want ads on Google',
+						} )
+						.check();
+
+					await expect(
+						page.locator(
+							'input[name="i_dont_want_ads_on_google_text"]'
+						)
+					).toBeVisible();
+				} );
+
+				test( 'should show a text box when clicking the "I’ll create ads later" option', async () => {
+					await page
+						.getByRole( 'checkbox', {
+							name: 'I’ll create ads later',
+						} )
+						.check();
+
+					await expect(
+						page.locator(
+							'input[name="ill_create_ads_later_text"]'
+						)
+					).toBeVisible();
+				} );
+
+				test( 'should show a text box when clicking the "Other" option', async () => {
+					await page
+						.getByRole( 'checkbox', { name: 'Other' } )
+						.check();
+
+					await expect(
+						page.locator( 'input[name="other_text"]' )
+					).toBeVisible();
+				} );
+
+				test( 'should send survey and complete setup', async () => {
+					await completeCampaign.clickSendAndCompleteSetupModalButton();
+					await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
+					expect( page.url() ).toMatch(
+						/path=%2Fgoogle%2Fproduct-feed/
+					);
+				} );
+			} );
 		} );
 
 		test.describe( 'User does not skip paid ads creation', () => {
