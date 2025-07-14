@@ -167,7 +167,7 @@ const AssetGroupTextSection = ( {
 					) }
 					className="gla-asset-field-display-url-path"
 					heading={ __(
-						'Display URL Path',
+						'Display URL path',
 						'google-listings-and-ads'
 					) }
 					subheading={ hostname }

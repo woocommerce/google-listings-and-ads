@@ -83,7 +83,7 @@ export default function AssetGroupHeader() {
 								<FlexItem>
 									<Tip>
 										{ __(
-											'We auto-populated assets directly from your Final URL. We encourage you to edit or add more in order to best showcase your business.',
+											"We've used your final URL to auto-populate some assets for you. For the best results, we recommend that you add more assets.",
 											'google-listings-and-ads'
 										) }
 									</Tip>
