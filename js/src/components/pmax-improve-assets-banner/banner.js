@@ -13,30 +13,32 @@ import { getEditCampaignUrl } from '~/utils/urls';
 import AppButton from '~/components/app-button';
 import useRecommendedPMaxCampaign from '~/hooks/useRecommendedPMaxCampaign';
 import './index.scss';
-import { PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT } from '~/constants';
 import { recordGlaEvent } from '~/utils/tracks';
 
+const PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT =
+	'pmax_assets_improvements_banner';
+
 /**
- * Track the event when the banner is shown.
+ * When the banner is shown.
  *
  * @event gla_pmax_assets_improvements_banner_shown
- * @property {string} context The context in which the banner is shown, e.g. `"pmax_assets_improvements_banner"`.
+ * @property {string} context The context in which the banner is shown. Set to 'pmax_assets_improvements_banner'.
  */
 
 /**
- * Track the event when the "Improve Assets" button is clicked.
+ * When the "Improve Assets" button is clicked.
  *
  * @event gla_pmax_assets_improvements_improve_assets_clicked
- * @property {string} context The context in which the button is clicked, e.g. `"pmax_assets_improvements_banner"`.
+ * @property {string} context The context in which the banner is shown. Set to 'pmax_assets_improvements_banner'.
  * @property {number} campaign_id The ID of the PMAX campaign for which assets are being improved.
  */
 
 /**
- * Track the event when the banner is dismissed.
+ * When the banner is dismissed.
  *
  * @event gla_pmax_assets_improvements_dismiss_clicked
- * @property {string} context The context in which the banner is dismissed, e.g. `"pmax_assets_improvements_banner"`.
- * @property {number} campaign_id The ID of the PMAX campaign for which the banner is dismissed.
+ * @property {string} context The context in which the banner was dismissed. Set to 'pmax_assets_improvements_banner'.
+ * @property {number} campaign_id The ID of the PMAX campaign for which the banner was dismissed.
  */
 
 /**
@@ -61,10 +63,12 @@ const Banner = ( { onBannerDismissed } ) => {
 	const { campaign, hasFinishedResolution } = useRecommendedPMaxCampaign();
 
 	useEffect( () => {
-		recordGlaEvent( 'gla_pmax_assets_improvements_banner_shown', {
-			context: PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT,
-		} );
-	}, [] );
+		if ( campaign && hasFinishedResolution ) {
+			recordGlaEvent( 'gla_pmax_assets_improvements_banner_shown', {
+				context: PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT,
+			} );
+		}
+	}, [ campaign, hasFinishedResolution ] );
 
 	if ( ! campaign || ! hasFinishedResolution ) {
 		return null;
@@ -85,7 +89,7 @@ const Banner = ( { onBannerDismissed } ) => {
 		getHistory().push( editCampaignUrl );
 	};
 
-	const handDismiss = () => {
+	const handleDismiss = () => {
 		onBannerDismissed();
 
 		recordGlaEvent( 'gla_pmax_assets_improvements_dismiss_clicked', {
@@ -117,7 +121,7 @@ const Banner = ( { onBannerDismissed } ) => {
 					{ __( 'Improve Assets', 'google-listings-and-ads' ) }
 				</AppButton>
 
-				<AppButton isTertiary onClick={ handDismiss }>
+				<AppButton isTertiary onClick={ handleDismiss }>
 					{ __( 'Dismiss', 'google-listings-and-ads' ) }
 				</AppButton>
 			</div>

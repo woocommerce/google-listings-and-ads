@@ -37,6 +37,7 @@ export const ACTION_SUBMIT_CAMPAIGN_ONLY = 'submit-campaign-only';
  * @property {string} audiences Country codes of the campaign audience countries, e.g. `US,JP,AU`.
  * @property {string} budget Daily average cost of the campaign.
  * @property {string} assets_validation Whether all asset values are valid or at least one invalid. Possible values: `valid`, `invalid`, `unknown`.
+ * @property {string} campaign_id The ID of the campaign being created or edited, or `new` if it's a new campaign.
  * @property {string} number_of_business_name The number of this asset in string type or `unknown`.
  * @property {string} number_of_marketing_image Same as above.
  * @property {string} number_of_square_marketing_image Same as above.
@@ -80,7 +81,6 @@ export default function AssetGroup( { campaign } ) {
 			budget: values.amount.toString(),
 			assets_validation: isValidAssetGroup ? 'valid' : 'invalid',
 			campaign_id: isCreation ? 'new' : campaign?.id,
-			number_of_youtube_videos: values.youtube_video.length,
 		};
 
 		if ( ! finalUrl ) {
