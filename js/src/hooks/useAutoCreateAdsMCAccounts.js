@@ -33,6 +33,12 @@ const useShouldCreateAdsAccount = () => {
 		return null;
 	}
 
+	console.log( 'Has connection', hasConnection );
+	console.log( 'Accounts length', accounts?.length );
+	console.log(
+		'Should create Ads account',
+		! hasConnection && accounts?.length === 0
+	);
 	return ! hasConnection && accounts?.length === 0;
 };
 

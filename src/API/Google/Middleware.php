@@ -289,7 +289,7 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			}
 
 			$user = wp_get_current_user();
-			$tos  = $this->mark_tos_accepted( 'google-ads', $user->user_email );
+			$tos  = $this->mark_tos_accepted( 'google-ads', 'testgin12434@gmail.com' );
 			if ( ! $tos->accepted() ) {
 				throw new Exception( __( 'Unable to log accepted TOS', 'google-listings-and-ads' ) );
 			}
@@ -443,9 +443,15 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			);
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
+			var_dump('client exception');
+			print_r( $this->get_tos_url( $service ));
+			print_r( $e->getMessage() );
+			print_r( $email );
 			return new TosAccepted( false, $e->getMessage() );
 		} catch ( Exception $e ) {
 			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+			var_dump('GLA exception');
+			var_dump( $e->getMessage() );
 			return new TosAccepted( false, $e->getMessage() );
 		}
 	}

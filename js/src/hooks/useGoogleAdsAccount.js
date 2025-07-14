@@ -37,15 +37,25 @@ const useGoogleAdsAccount = () => {
 			const isResolvingGoogleAdsAccount = selector.isResolving(
 				googleAdsAccountSelector
 			);
+			console.log( acc );
 
 			// The "incomplete" status means there is a connected account but billing is not yet set
 			// so it's considered as `true`.
 			// The main reason for not using a naming like `isGoogleAdsConnected` here is to make
 			// a slight distinction from the "connected" status.
-			const hasGoogleAdsConnection = [
-				GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED,
-				GOOGLE_ADS_ACCOUNT_STATUS.INCOMPLETE,
-			].includes( acc?.status );
+			// const hasGoogleAdsConnection = [
+			// 	GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED,
+			// 	GOOGLE_ADS_ACCOUNT_STATUS.INCOMPLETE,
+			// ].includes( acc?.status );
+
+			let hasGoogleAdsConnection = false;
+			if (
+				( acc?.status === GOOGLE_ADS_ACCOUNT_STATUS.INCOMPLETE &&
+					acc?.step === 'billing' ) ||
+				acc?.status === GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED
+			) {
+				hasGoogleAdsConnection = true;
+			}
 
 			return {
 				googleAdsAccount: acc,
