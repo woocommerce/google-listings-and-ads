@@ -430,43 +430,49 @@ test.describe( 'Complete your campaign', () => {
 
 	test.describe( 'Ask user for confirmation when clicking "Skip this step for now"', () => {
 		test.describe( 'User skips paid ads creation', () => {
-			test.beforeAll( async () => {
-				// Reset the showing status for the "Set up paid ads" section.
-				await page.evaluate( () => window.sessionStorage.clear() );
-				await setupAdsAccountPage.mockAdsAccountIncomplete();
-				await completeCampaign.goto();
-				await completeCampaign.clickSkipPaidAdsCreationButton();
-			} );
+			test.describe( 'With WooCommerce tracking disabled', () => {
+				test.beforeAll( async () => {
+					// Reset the showing status for the "Set up paid ads" section.
+					await page.evaluate( () => window.sessionStorage.clear() );
+					await setupAdsAccountPage.mockAdsAccountIncomplete();
+					await completeCampaign.goto();
+					await completeCampaign.clickSkipPaidAdsCreationButton();
+				} );
 
-			test( 'should see the modal', async () => {
-				const skipPaidAdsModal =
-					completeCampaign.getSkipPaidAdsCreationModal();
-				await expect( skipPaidAdsModal ).toBeVisible();
-			} );
+				test( 'should see the modal', async () => {
+					const skipPaidAdsModal =
+						completeCampaign.getSkipPaidAdsCreationModal();
+					await expect( skipPaidAdsModal ).toBeVisible();
+				} );
 
-			test( 'should see the url contains product-feed if the user skips', async () => {
-				await completeCampaign.clickCompleteSetupModalButton();
-				await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
-				expect( page.url() ).toMatch( /path=%2Fgoogle%2Fproduct-feed/ );
-			} );
+				test( 'should see the url contains product-feed if the user skips', async () => {
+					await completeCampaign.clickCompleteSetupModalButton();
+					await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
+					expect( page.url() ).toMatch(
+						/path=%2Fgoogle%2Fproduct-feed/
+					);
+				} );
 
-			test( 'should see the setup success modal', async () => {
-				const setupSuccessModal =
-					completeCampaign.getSetupSuccessModal();
-				await expect( setupSuccessModal ).toBeVisible();
-			} );
+				test( 'should see the setup success modal', async () => {
+					const setupSuccessModal =
+						completeCampaign.getSetupSuccessModal();
+					await expect( setupSuccessModal ).toBeVisible();
+				} );
 
-			test( 'should see buttons on Dashboard for Google Ads onboarding', async () => {
-				await page.keyboard.press( 'Escape' );
-				await page.getByRole( 'tab', { name: 'Dashboard' } ).click();
-				const { addPaidCampaignButton, createCampaignButton } =
-					dashboardPage;
+				test( 'should see buttons on Dashboard for Google Ads onboarding', async () => {
+					await page.keyboard.press( 'Escape' );
+					await page
+						.getByRole( 'tab', { name: 'Dashboard' } )
+						.click();
+					const { addPaidCampaignButton, createCampaignButton } =
+						dashboardPage;
 
-				await expect( addPaidCampaignButton ).toBeVisible();
-				await expect( addPaidCampaignButton ).toBeEnabled();
+					await expect( addPaidCampaignButton ).toBeVisible();
+					await expect( addPaidCampaignButton ).toBeEnabled();
 
-				await expect( createCampaignButton ).toBeVisible();
-				await expect( createCampaignButton ).toBeEnabled();
+					await expect( createCampaignButton ).toBeVisible();
+					await expect( createCampaignButton ).toBeEnabled();
+				} );
 			} );
 		} );
 

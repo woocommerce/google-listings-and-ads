@@ -12,7 +12,9 @@ import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 import AppButton from '~/components/app-button';
 import SkipPaidAdsConfirmationModal from './skip-paid-ads-confirmation-modal';
+import isWCTracksEnabled from '~/utils/isWCTracksEnabled';
 import { recordGlaEvent } from '~/utils/tracks';
+import SkipPaidAdsSurveyModal from './skip-paid-ads-survey-modal';
 
 /**
  * Clicking on the skip paid ads button to complete the onboarding flow.
@@ -38,6 +40,7 @@ export default function SkipButton( {
 	] = useState( false );
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
+	const wcTracksEnabled = isWCTracksEnabled();
 
 	const handleOnSkipClick = () => {
 		setShowSkipPaidAdsConfirmationModal( true );
@@ -71,10 +74,21 @@ export default function SkipButton( {
 			/>
 
 			{ showSkipPaidAdsConfirmationModal && (
-				<SkipPaidAdsConfirmationModal
-					onRequestClose={ handleCancelSkipPaidAdsClick }
-					onSkipCreatePaidAds={ handleSkipCreatePaidAds }
-				/>
+				<>
+					{ wcTracksEnabled && (
+						<SkipPaidAdsSurveyModal
+							onRequestClose={ handleCancelSkipPaidAdsClick }
+							onSkipCreatePaidAds={ handleSkipCreatePaidAds }
+						/>
+					) }
+
+					{ ! wcTracksEnabled && (
+						<SkipPaidAdsConfirmationModal
+							onRequestClose={ handleCancelSkipPaidAdsClick }
+							onSkipCreatePaidAds={ handleSkipCreatePaidAds }
+						/>
+					) }
+				</>
 			) }
 		</>
 	);
