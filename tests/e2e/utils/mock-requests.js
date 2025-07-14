@@ -150,6 +150,19 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the Ads Report Products request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillAdsReportProducts( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/reports\/products\b/,
+			payload
+		);
+	}
+
+	/**
 	 * Fulfill the Target Audience request.
 	 *
 	 * @param {Object} payload
@@ -699,6 +712,25 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Mock MC as incomplete.
+	 * @param {number} id
+	 * @param {string} step
+	 * @param {boolean} notificationServiceEnabled
+	 */
+	async mockMCIncomplete(
+		id = 1234,
+		step = 'accounts',
+		notificationServiceEnabled = false
+	) {
+		await this.fulfillMCConnection( {
+			id,
+			status: 'incomplete',
+			step,
+			notification_service_enabled: notificationServiceEnabled,
+		} );
+	}
+
+	/**
 	 * Mock MC as not connected.
 	 */
 	async mockMCNotConnected() {
@@ -883,6 +915,12 @@ export default class MockRequests {
 		);
 	}
 
+	/**
+	 * Mocks a POST request to the `/wp/v2/users/me` endpoint to fulfill user preferences.
+	 *
+	 * @param {Object} [payload={}] - The payload to return as the mocked response.
+	 * @return {Promise<void>} Resolves when the mock request has been fulfilled.
+	 */
 	async fulfillUsersPreferences( payload = {} ) {
 		await this.fulfillRequest( /\/wp\/v2\/users\/me(\?|$)/, payload, 200, [
 			'POST',
@@ -915,6 +953,21 @@ export default class MockRequests {
 	async fulfillPriceBenchmarkSummary( payload, status = 200 ) {
 		await this.fulfillRequest(
 			/\/wc\/gla\/mc\/price-benchmarks\/summary\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Fulfills a mock request for the shipping times endpoint.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned.
+	 * @return {Promise<void>} A promise that resolves when the request is fulfilled.
+	 */
+	async fulfillShippingTimes( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/shipping\/times\b/,
 			payload,
 			status,
 			[ 'GET' ]

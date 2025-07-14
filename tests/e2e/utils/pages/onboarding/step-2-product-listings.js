@@ -199,6 +199,17 @@ export default class ProductListingsPage extends MockRequests {
 	}
 
 	/**
+	 * Get estimated shipping rates null error.
+	 *
+	 * @return {import('@playwright/test').Locator} Get estimated shipping rates null error.
+	 */
+	getEstimatedShippingTimesNullError() {
+		return this.getEstimatedShippingTimesCard().getByText(
+			'Please specify estimated shipping times for all the countries, and the time cannot be less than 0.'
+		);
+	}
+
+	/**
 	 * Get "Free shipping for all orders" tag.
 	 *
 	 * @return {import('@playwright/test').Locator} Get "Free shipping for all orders" tag.
