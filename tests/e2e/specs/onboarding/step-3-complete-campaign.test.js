@@ -513,7 +513,7 @@ test.describe( 'Complete your campaign', () => {
 
 					await expect(
 						page.locator(
-							'input[name="i_dont_want_ads_on_google_text"]'
+							'textarea[name="i_dont_want_ads_on_google_text"]'
 						)
 					).toBeVisible();
 				} );
@@ -527,7 +527,7 @@ test.describe( 'Complete your campaign', () => {
 
 					await expect(
 						page.locator(
-							'input[name="ill_create_ads_later_text"]'
+							'textarea[name="ill_create_ads_later_text"]'
 						)
 					).toBeVisible();
 				} );
@@ -538,7 +538,7 @@ test.describe( 'Complete your campaign', () => {
 						.check();
 
 					await expect(
-						page.locator( 'input[name="other_text"]' )
+						page.locator( 'textarea[name="other_text"]' )
 					).toBeVisible();
 				} );
 
