@@ -9,8 +9,8 @@ import { __ } from '@wordpress/i18n';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
 import AppDocumentationLink from '~/components/app-documentation-link';
-import isWCTracksEnabled from '~/utils/isWCTracksEnabled';
 import SurveyModal from './survey-modal';
+import isWCTracksEnabled from '~/utils/isWCTracksEnabled';
 
 /**
  * @fires gla_documentation_link_click with `{ context: 'skip-paid-ads-modal', link_id: 'paid-ads-with-performance-max-campaigns-learn-more', href: 'https://support.google.com/google-ads/answer/10724817' }`
