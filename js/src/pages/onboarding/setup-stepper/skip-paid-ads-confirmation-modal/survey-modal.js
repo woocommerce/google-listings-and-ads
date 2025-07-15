@@ -16,7 +16,7 @@ import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import Survey from './survey';
-import './index.scss';
+import './survey-modal.scss';
 
 /**
  * Send survey responses when the user skips the paid ads setup.
