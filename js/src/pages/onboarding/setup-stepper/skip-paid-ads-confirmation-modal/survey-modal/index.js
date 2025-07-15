@@ -19,7 +19,7 @@ import Survey from './survey';
 import './index.scss';
 
 /**
- * Toggling display of table columns
+ * Send survey responses when the user skips the paid ads setup.
  *
  * @event gla_skip_campaign_creation_survey
  * @property {string} context Name of the context where the survey was triggered (e.g. 'skip-paid-ads-survey-modal').
@@ -44,7 +44,7 @@ import './index.scss';
  * @fires gla_documentation_link_click with `{ context: 'skip-paid-ads-survey-modal', link_id: 'paid-ads-with-performance-max-campaigns-learn-more', href: 'https://support.google.com/google-ads/answer/10724817' }`
  * @fires gla_skip_campaign_creation_survey with the survey responses and context 'skip-paid-ads-survey-modal'.
  */
-const SkipPaidAdsSurveyModal = ( { onRequestClose, onSkipCreatePaidAds } ) => {
+const SurveyModal = ( { onRequestClose, onSkipCreatePaidAds } ) => {
 	const formRef = useRef();
 
 	const initialFormValues = OPTIONS.reduce( ( accumulator, option ) => {
@@ -52,7 +52,7 @@ const SkipPaidAdsSurveyModal = ( { onRequestClose, onSkipCreatePaidAds } ) => {
 			return {
 				...accumulator,
 				[ option.value ]: false,
-				[ `${ option.value }__text` ]: '',
+				[ `${ option.value }__text` ]: '', // This is to handle the text input for options that require additional explanation.
 			};
 		}
 
@@ -66,11 +66,14 @@ const SkipPaidAdsSurveyModal = ( { onRequestClose, onSkipCreatePaidAds } ) => {
 		<AdaptiveForm ref={ formRef } initialValues={ initialFormValues }>
 			{ ( formContext ) => {
 				const handleSendAndCompleteSetupClick = async () => {
-					const { values } = formContext;
-					recordGlaEvent( 'gla_skip_campaign_creation_survey', {
-						...values,
-						context: 'skip-paid-ads-survey-modal',
-					} );
+					const { values, isDirty } = formContext;
+
+					if ( isDirty ) {
+						recordGlaEvent( 'gla_skip_campaign_creation_survey', {
+							...values,
+							context: 'skip-paid-ads-survey-modal',
+						} );
+					}
 
 					onSkipCreatePaidAds();
 				};
@@ -208,4 +211,4 @@ const SkipPaidAdsSurveyModal = ( { onRequestClose, onSkipCreatePaidAds } ) => {
 	);
 };
 
-export default SkipPaidAdsSurveyModal;
+export default SurveyModal;

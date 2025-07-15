@@ -2,14 +2,13 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { CheckboxControl } from '@wordpress/components';
+import { CheckboxControl, TextareaControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import { OPTIONS } from './constants';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
-import AppInputControl from '~/components/app-input-control';
 import './survey.scss';
 
 /**
@@ -42,12 +41,19 @@ const Survey = () => {
 							/>
 
 							{ option.hasTextInput && inputProps.checked && (
-								<AppInputControl
-									name={ `${ option.value }_text` }
-									{ ...getInputProps(
-										`${ option.value }_text`
-									) }
-								/>
+								<div className="gla-skip-paid-ads-survey-modal__text-input">
+									<TextareaControl
+										placeholder={ __(
+											'Tell us why (optional)',
+											'google-listings-and-ads'
+										) }
+										name={ `${ option.value }_text` }
+										{ ...getInputProps(
+											`${ option.value }_text`
+										) }
+										rows={ 2 }
+									/>
+								</div>
 							) }
 						</li>
 					);
