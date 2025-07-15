@@ -420,6 +420,7 @@ When a documentation link is clicked.
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
 - [`ShippingTimeSection`](../../js/src/components/free-listings/configure-product-listings/shipping-time-section.js#L17) with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
+- [`SurveyModal`](../../js/src/pages/onboarding/setup-stepper/skip-paid-ads-confirmation-modal/survey-modal/index.js#L47) with `{ context: 'skip-paid-ads-survey-modal', link_id: 'paid-ads-with-performance-max-campaigns-learn-more', href: 'https://support.google.com/google-ads/answer/10724817' }`
 - [`TermsModal`](../../js/src/components/google-ads-account-card/terms-modal/index.js#L36)
 	- with `{ context: 'setup-ads', link_id: 'shopping-ads-policies', href: 'https://support.google.com/merchants/answer/6149970' }`
 	- with `{ context: 'setup-ads', link_id: 'google-ads-terms-of-service', href: 'https://support.google.com/adspolicy/answer/54818' }`
@@ -860,6 +861,24 @@ Setup Merchant Center
 	- with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button', action: 'go-to-step2' | 'go-to-step3' }`.
 	- with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
 - [`SetupTopBar`](../../js/src/pages/onboarding/setup-top-bar.js#L17) with `{ triggered_by: 'back-button', action: 'leave' }`.
+
+### [`gla_skip_campaign_creation_survey`](../../js/src/pages/onboarding/setup-stepper/skip-paid-ads-confirmation-modal/survey-modal/index.js#L21)
+Send survey responses when the user skips the paid ads setup.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Name of the context where the survey was triggered (e.g. 'skip-paid-ads-survey-modal').
+`i_already_have_ads_on_google` | `boolean` | Indicates if the user already has ads on Google.
+`i_dont_have_the_budget_to_create_ads_now` | `boolean` | Indicates if the user doesn't have the budget to create ads now.
+`ive_tried_google_ads_before_without_success` | `boolean` | Indicates if the user has tried Google ads before without success.
+`i_dont_want_ads_on_google` | `boolean` | Indicates if the user doesn't want ads on Google.
+`i_dont_want_ads_on_google_text` | `string` | Text input for the reason why the user doesn't want ads on Google.
+`ill_create_ads_later` | `boolean` | Indicates if the user will create ads later.
+`ill_create_ads_later_text` | `string` | Text input for the reason why the user will create ads later.
+`other` | `boolean` | Indicates if the user has another reason.
+`other_text` | `string` | Text input for the user's other reason.
+#### Emitters
+- [`SurveyModal`](../../js/src/pages/onboarding/setup-stepper/skip-paid-ads-confirmation-modal/survey-modal/index.js#L47) with the survey responses and context 'skip-paid-ads-survey-modal'.
 
 ### [`gla_submit_campaign_button_click`](../../js/src/components/paid-ads/asset-group/asset-group.js#L28)
 Clicking on the submit button on the campaign creation or editing page.
