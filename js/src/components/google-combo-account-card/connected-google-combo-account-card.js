@@ -28,6 +28,7 @@ import useGoogleAdsAccountStatus from '~/hooks/useGoogleAdsAccountStatus';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useUpsertAdsAccount from '~/hooks/useUpsertAdsAccount';
 import showAdsConversionNotice from '~/utils/showAdsConversionNotice';
+import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
 import './connected-google-combo-account-card.scss';
 
 /**
@@ -54,7 +55,8 @@ const ConnectedGoogleComboAccountCard = () => {
 		hasFinishedResolution,
 	} = useGoogleMCAccount();
 	const { invalidateResolution } = useAppDispatch();
-	const { googleAdsAccount, hasGoogleAdsConnection } = useGoogleAdsAccount();
+	const { googleAdsAccount } = useGoogleAdsAccount();
+	const { isGoogleAdsReady } = useGoogleAdsAccountReady();
 	const { hasAccess, step } = useGoogleAdsAccountStatus();
 	const [ upsertAdsAccount, { action, loading } ] = useUpsertAdsAccount();
 
@@ -113,17 +115,16 @@ const ConnectedGoogleComboAccountCard = () => {
 	// After creating a new account, it may not show up in the existing accounts list
 	// immediately. In this case, we show the ConnectAds component in edit mode unless
 	// we're showing the claim notice in the upper card.
-	const canShowConnectAds =
-		hasGoogleAdsConnection || hasExistingGoogleAdsAccounts;
+	const canShowConnectAds = isGoogleAdsReady || hasExistingGoogleAdsAccounts;
 	const showConnectAds =
-		canShowConnectAds && ( editMode || ! hasGoogleAdsConnection );
+		canShowConnectAds && ( editMode || ! isGoogleAdsReady );
 
 	// When Ads and MC are disconnected in edit mode, exit edit mode.
 	useEffect( () => {
-		if ( editMode && ! hasGoogleMCConnection && ! hasGoogleAdsConnection ) {
+		if ( editMode && ! hasGoogleMCConnection && ! isGoogleAdsReady ) {
 			setEditMode( false );
 		}
-	}, [ editMode, hasGoogleAdsConnection, hasGoogleMCConnection ] );
+	}, [ editMode, isGoogleAdsReady, hasGoogleMCConnection ] );
 
 	if ( ! hasDetermined ) {
 		return <SpinnerCard />;

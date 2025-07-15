@@ -11,6 +11,7 @@ import useExistingGoogleAdsAccounts from './useExistingGoogleAdsAccounts';
 import useGoogleMCAccount from './useGoogleMCAccount';
 import useExistingGoogleMCAccounts from './useExistingGoogleMCAccounts';
 import useUpsertAdsAccount from '~/hooks/useUpsertAdsAccount';
+import useGoogleAdsAccountReady from './useGoogleAdsAccountReady';
 import {
 	CREATING_ADS_ACCOUNT,
 	CREATING_BOTH_ACCOUNTS,
@@ -18,10 +19,7 @@ import {
 } from '~/components/google-combo-account-card/constants';
 
 const useShouldCreateAdsAccount = () => {
-	const {
-		hasFinishedResolution: hasResolvedAccount,
-		hasGoogleAdsConnection: hasConnection,
-	} = useGoogleAdsAccount();
+	const { isGoogleAdsReady } = useGoogleAdsAccountReady();
 
 	const {
 		hasFinishedResolution: hasResolvedExistingAccounts,
@@ -29,17 +27,17 @@ const useShouldCreateAdsAccount = () => {
 	} = useExistingGoogleAdsAccounts();
 
 	// Return null if the account hasn't been resolved or the existing accounts haven't been resolved
-	if ( ! hasResolvedAccount || ! hasResolvedExistingAccounts ) {
+	if ( ! hasResolvedExistingAccounts ) {
 		return null;
 	}
 
-	console.log( 'Has connection', hasConnection );
+	console.log( 'Has connection', isGoogleAdsReady );
 	console.log( 'Accounts length', accounts?.length );
 	console.log(
 		'Should create Ads account',
-		! hasConnection && accounts?.length === 0
+		! isGoogleAdsReady && accounts?.length === 0
 	);
-	return ! hasConnection && accounts?.length === 0;
+	return ! isGoogleAdsReady && accounts?.length === 0;
 };
 
 const useShouldCreateMCAccount = () => {

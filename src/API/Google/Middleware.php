@@ -280,6 +280,7 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function create_ads_account(): array {
 		try {
+			// throw new Exception( 'Limit reached', 406 );
 			$country = $this->container->get( WC::class )->get_base_country();
 
 			/** @var GoogleHelper $google_helper */
@@ -289,7 +290,7 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			}
 
 			$user = wp_get_current_user();
-			$tos  = $this->mark_tos_accepted( 'google-ads', 'testgin12434@gmail.com' );
+			$tos  = $this->mark_tos_accepted( 'google-ads', 'asvin10upgla3@gmail.com' );
 			if ( ! $tos->accepted() ) {
 				throw new Exception( __( 'Unable to log accepted TOS', 'google-listings-and-ads' ) );
 			}

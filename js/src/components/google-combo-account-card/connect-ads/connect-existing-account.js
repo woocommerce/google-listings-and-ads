@@ -44,10 +44,10 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 	} );
 
 	useEffect( () => {
-		if ( hasGoogleAdsConnection ) {
+		if ( isGoogleAdsReady && googleAdsAccount?.id ) {
 			setValue( googleAdsAccount.id );
 		}
-	}, [ googleAdsAccount, hasGoogleAdsConnection ] );
+	}, [ googleAdsAccount, isGoogleAdsReady ] );
 
 	const handleConnectClick = async () => {
 		if ( ! value ) {
@@ -101,7 +101,7 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 
 		return (
 			<ConnectAccountButton
-				disabled={ hasGoogleAdsConnection }
+				disabled={ isGoogleAdsReady }
 				accountID={ value }
 				onClick={ handleConnectClick }
 			/>
@@ -130,7 +130,7 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 					value={ value }
 					onChange={ setValue }
 					autoSelectFirstOption
-					nonInteractive={ hasGoogleAdsConnection }
+					nonInteractive={ isGoogleAdsReady }
 				/>
 			}
 			actions={
