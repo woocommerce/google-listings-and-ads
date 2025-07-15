@@ -80,7 +80,7 @@ export default function AssetGroup( { campaign } ) {
 			audiences: audiences.join( ',' ),
 			budget: values.amount.toString(),
 			assets_validation: isValidAssetGroup ? 'valid' : 'invalid',
-			campaign_id: isCreation ? 'new' : campaign?.id,
+			campaign_id: isCreation ? 'new' : campaign.id,
 		};
 
 		if ( ! finalUrl ) {

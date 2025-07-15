@@ -10,10 +10,10 @@ import { useEffect } from '@wordpress/element';
  * Internal dependencies
  */
 import { getEditCampaignUrl } from '~/utils/urls';
+import { recordGlaEvent } from '~/utils/tracks';
 import AppButton from '~/components/app-button';
 import useRecommendedPMaxCampaign from '~/hooks/useRecommendedPMaxCampaign';
 import './index.scss';
-import { recordGlaEvent } from '~/utils/tracks';
 
 const PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT =
 	'pmax_assets_improvements_banner';
