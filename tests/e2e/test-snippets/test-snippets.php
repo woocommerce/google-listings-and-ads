@@ -40,3 +40,17 @@ add_filter(
 		return $value_options;
 	}
 );
+
+/**
+ * Incremement PMax notifiation count.
+ *
+ * @param integer $current_count
+ * @return integer
+ */
+add_filter(
+	'google_for_woocommerce_admin_menu_notification_count',
+	function( int $current_count ) {
+		++$current_count;
+		return $current_count;
+	}
+);
