@@ -106,11 +106,6 @@ const webpackConfig = {
 			'js/src/wp-consent-api',
 			'index.js'
 		),
-		'notification-manager': path.resolve(
-			process.cwd(),
-			'js/src/notification-manager',
-			'index.js'
-		),
 	} ),
 	output: {
 		...defaultConfig.output,
