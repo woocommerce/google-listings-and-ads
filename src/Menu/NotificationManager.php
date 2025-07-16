@@ -54,7 +54,7 @@ class NotificationManager implements Service, Registerable {
 	 *
 	 * @return void
 	 */
-	private function register_assets() {
+	private function register_assets(): void {
 		$notification_manager = new AdminScriptWithBuiltDependenciesAsset(
 			'notification-manager',
 			'js/build/notification-manager',
@@ -90,7 +90,7 @@ class NotificationManager implements Service, Registerable {
 	 *
 	 * @return bool True if the current page is a Marketing child page, false otherwise.
 	 */
-	private function is_marketing_page() {
+	private function is_marketing_page(): bool {
 		global $pagenow;
 
 		$current_page_slug = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
