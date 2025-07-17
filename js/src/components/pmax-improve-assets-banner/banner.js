@@ -52,6 +52,7 @@ const PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT =
  * Clicking "Improve Assets" navigates to the asset group edit page for the highest-spending PMAX campaign.
  * @param {Object} props Component properties.
  * @param {Function} props.onBannerDismissed Callback function to call when the banner is dismissed.
+ * @param {Function} props.onBannerShown Callback function to call when the banner is shown.
  *
  * @return {JSX.Element|null} The banner component, or null if not applicable.
  *
@@ -59,7 +60,7 @@ const PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT =
  * @fires gla_pmax_assets_improvements_improve_assets_clicked when the "Improve Assets" button is clicked.
  * @fires gla_pmax_assets_improvements_dismiss_clicked when the banner is dismissed.
  */
-const Banner = ( { onBannerDismissed } ) => {
+const Banner = ( { onBannerDismissed, onBannerShown } ) => {
 	const { campaign, hasFinishedResolution } = useRecommendedPMaxCampaign();
 
 	useEffect( () => {
@@ -69,6 +70,12 @@ const Banner = ( { onBannerDismissed } ) => {
 			} );
 		}
 	}, [ campaign, hasFinishedResolution ] );
+
+	useEffect( () => {
+		if ( campaign && hasFinishedResolution ) {
+			onBannerShown();
+		}
+	}, [ campaign, hasFinishedResolution, onBannerShown ] );
 
 	if ( ! campaign || ! hasFinishedResolution ) {
 		return null;
