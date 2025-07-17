@@ -38,7 +38,7 @@ const PMaxImproveAssetsBanner = () => {
 		if ( expiry !== undefined && Date.now() >= expiry ) {
 			set( PREFERENCES_STORE_NAMESPACE, PREFERENCE_BANNER_KEY, {
 				expiry: undefined,
-				hasRecommendation: true,
+				hasRecommendation: undefined,
 			} );
 		}
 	}, [ expiry, set ] );
