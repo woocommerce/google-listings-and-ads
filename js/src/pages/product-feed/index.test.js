@@ -34,6 +34,10 @@ jest.mock( '~/utils/localStorage', () => {
 
 jest.mock( '~/utils/isWCTracksEnabled', () => jest.fn() );
 
+jest.mock( '~/components/experience-rating-banner', () =>
+	jest.fn().mockName( 'ExperienceRatingBanner' )
+);
+
 const SUBMISSION_SUCCESS_GUIDE_TEXT =
 	'You’ve successfully set up Google for WooCommerce! 🎉';
 const CES_PROMPT_TEXT = 'How easy was it to set up Google for WooCommerce?';
@@ -41,6 +45,10 @@ const CES_PROMPT_TEXT = 'How easy was it to set up Google for WooCommerce?';
 jest.mock( '~/components/customer-effort-score-prompt', () => () => (
 	<div>{ CES_PROMPT_TEXT }</div>
 ) );
+
+jest.mock( '~/components/experience-rating-banner', () =>
+	jest.fn().mockName( 'ExperienceRatingBanner' )
+);
 
 beforeAll( () => {
 	// Used in the js/src/hooks/useMenuEffect.js dependency

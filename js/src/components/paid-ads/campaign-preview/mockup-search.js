@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { forwardRef } from '@wordpress/element';
 import { Flex } from '@wordpress/components';
 
 /**
@@ -23,9 +24,9 @@ import googleLogoURL from '~/images/logo/google-logo.svg';
  * @param {Object} props React props.
  * @param {AdPreviewData} props.product Data for compositing ad preview mockups.
  */
-export default function MockupSearch( { product } ) {
+function MockupSearch( { product }, ref ) {
 	return (
-		<div className="gla-ads-mockup gla-ads-mockup-search">
+		<div ref={ ref } className="gla-ads-mockup gla-ads-mockup-search">
 			<div className="gla-ads-mockup__search-header">
 				<img
 					height="22"
@@ -78,3 +79,7 @@ export default function MockupSearch( { product } ) {
 		</div>
 	);
 }
+
+MockupSearch.displayName = 'MockupSearch';
+
+export default forwardRef( MockupSearch );

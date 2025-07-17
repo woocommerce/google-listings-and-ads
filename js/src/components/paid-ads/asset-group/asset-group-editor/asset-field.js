@@ -9,6 +9,7 @@ import {
 	useRef,
 	useImperativeHandle,
 	forwardRef,
+	useEffect,
 } from '@wordpress/element';
 import { chevronUp, chevronDown } from '@wordpress/icons';
 import { Pill } from '@woocommerce/components';
@@ -55,7 +56,7 @@ function AssetField(
 	ref
 ) {
 	const containerRef = useRef();
-	const [ expanded, setExpanded ] = useState( initialExpanded );
+	const [ expanded, setExpanded ] = useState( false );
 
 	const isReducedMotion = useReducedMotion();
 
@@ -68,6 +69,10 @@ function AssetField(
 			} );
 		},
 	} ) );
+
+	useEffect( () => {
+		setExpanded( initialExpanded );
+	}, [ initialExpanded ] );
 
 	const handleToggle = () => {
 		setExpanded( ! expanded );

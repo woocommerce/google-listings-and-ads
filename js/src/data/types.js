@@ -26,6 +26,7 @@
  * @property {string[]} logo The URLs of the logo images.
  * @property {string[]} display_url_path The path part of the display URL on the ad.
  * @property {string | null} call_to_action_selection The call-to-action text on the ad to let users know what the ad will get them to do. `null` if not selected.
+ * @property {string[]} youtube_video The YouTube video IDs.
  */
 
 /**
@@ -45,6 +46,7 @@
  * @property {AssetEntity[]} [portrait_marketing_image] The URLs of the portrait images.
  * @property {AssetEntity[]} [logo] The URLs of the logo images.
  * @property {AssetEntity} [call_to_action_selection] The call-to-action text on the ad to let users know what the ad will get them to do. `null` if not selected.
+ * @property {AssetEntity} [youtube_video] The YouTube video ID.
  */
 
 /**

@@ -73,6 +73,7 @@ describe( 'reducer', () => {
 					step: null,
 				},
 				budgetRecommendations: {},
+				recommendations: {},
 			},
 			gtinMigrationStatus: null,
 			price_benchmark: {

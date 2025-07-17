@@ -1,7 +1,7 @@
 {
 	"name": "google-listings-and-ads",
 	"title": "Google for WooCommerce",
-	"version": "3.0.0",
+	"version": "3.1.0",
 	"description": "Google for WooCommerce",
 	"author": "Automattic",
 	"license": "GPL-3.0-or-later",
@@ -40,6 +40,7 @@
 		"@wordpress/html-entities": "^3.42.13",
 		"@wordpress/i18n": "^4.42.13",
 		"@wordpress/icons": "^9.33.13",
+		"@wordpress/preferences": "^4.25.0",
 		"@wordpress/primitives": "^3.40.13",
 		"@wordpress/url": "^3.43.13",
 		"@wordpress/viewport": "^6.22.0",

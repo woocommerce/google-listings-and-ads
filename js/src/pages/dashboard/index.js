@@ -25,6 +25,8 @@ import CreatePaidAdsCampaign from '~/pages/create-paid-ads-campaign';
 import { CTA_CREATE_ANOTHER_CAMPAIGN, CTA_CONFIRM } from './constants';
 import { recordGlaEvent } from '~/utils/tracks';
 import RebrandingTour from '~/components/tours/rebranding-tour';
+import PMaxImproveAssetsBanner from '~/components/pmax-improve-assets-banner';
+import ExperienceRatingBanner from '~/components/experience-rating-banner';
 import './index.scss';
 
 /**
@@ -84,6 +86,8 @@ const Dashboard = () => {
 	return (
 		<>
 			<div className="gla-dashboard">
+				<PMaxImproveAssetsBanner />
+				<ExperienceRatingBanner />
 				<DifferentCurrencyNotice context="dashboard" />
 				<MainTabNav />
 				<RebrandingTour />

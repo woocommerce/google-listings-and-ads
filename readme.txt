@@ -5,7 +5,7 @@ Requires at least: 6.1
 Tested up to: 6.8
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.0.0
+Stable tag: 3.1.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -140,6 +140,14 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.1.0 - 2025-07-01 =
+* Add - A new endpoint for Google-triggered account linking.
+* Add - Notice to gather feedback and request ratings from merchants.
+* Add - Reintroduce account:connect functionality for Google account linking.
+* Fix - Prevent the user from continuing if the minimum shipping time is not set.
+* Fix - The API error of querying campaign assets by an invalid ID after saving a campaign with assets.
+* Tweak - WC 10.0 compatibility.
+
 = 3.0.0 - 2025-06-17 =
 * Add - API Push/Pull Sync control endpoint Implementation.
 * Add - Price Benchmarks: Competitive pricing analysis and price recommendations from Google.
@@ -147,13 +155,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 = 2.9.13 - 2025-04-29 =
 * Update - Revert the changes related to the Grant API Pull Access in Onboarding feature made in version 2.9.12.
-
-= 2.9.12 - 2025-04-22 =
-* Add - During onboarding, it requires granting access to Google's WordPress.com application to synchronize product data with Google.
-* Add - Event tracking of how users process the WPCOM app authorization for the API Pull feature.
-* Fix - The interlink between Google Merchant Center and Google Ads accounts may not be completed.
-* Tweak - Enable API Pull authorization to be granted before connecting to Google Merchant Center.
-* Tweak - Move the API Pull statuses from Google Merchant Center account card to Google account card for the Settings page.
-* Update - Remove the button that disables the API Pull from the Settings page.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
