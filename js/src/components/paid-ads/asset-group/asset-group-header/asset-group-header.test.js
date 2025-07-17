@@ -38,7 +38,7 @@ describe( 'AssetGroupHeader', () => {
 		render( <AssetGroupHeader /> );
 		expect(
 			screen.queryByText(
-				'We auto-populated assets directly from your Final URL. We encourage you to edit or add more in order to best showcase your business.'
+				"We've used your final URL to auto-populate some assets for you. For the best results, we recommend that you add more assets."
 			)
 		).not.toBeInTheDocument();
 	} );
@@ -57,7 +57,7 @@ describe( 'AssetGroupHeader', () => {
 		render( <AssetGroupHeader /> );
 		expect(
 			screen.getByText(
-				'We auto-populated assets directly from your Final URL. We encourage you to edit or add more in order to best showcase your business.'
+				"We've used your final URL to auto-populate some assets for you. For the best results, we recommend that you add more assets."
 			)
 		).toBeInTheDocument();
 	} );

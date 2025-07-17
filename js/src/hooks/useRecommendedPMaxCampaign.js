@@ -66,10 +66,10 @@ const useRecommendedPMaxCampaign = () => {
 				[ PMAX_IMPROVE_PERFORMANCE_MAX_AD_STRENGTH ]
 			);
 
-			if ( ! hasResolvedRecommendations && recommendations === null ) {
+			if ( recommendations === null ) {
 				return {
 					campaign: null,
-					hasFinishedResolution: false,
+					hasFinishedResolution: hasResolvedRecommendations,
 				};
 			}
 
