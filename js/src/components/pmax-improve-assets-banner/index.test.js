@@ -51,6 +51,10 @@ jest.mock( '~/utils/urls', () => ( {
 	getEditCampaignUrl: jest.fn( () => '/edit/2/asset-group' ),
 } ) );
 
+jest.mock( '~/utils/tracks', () => ( {
+	recordGlaEvent: jest.fn(),
+} ) );
+
 const recommendedCampaign = { id: 2, name: 'Campaign 2' };
 
 describe( 'PMaxImproveAssetsBanner', () => {

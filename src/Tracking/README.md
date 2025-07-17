@@ -583,14 +583,14 @@ Clicking on a Google Merchant Center link.
 #### Emitters
 - [`HelpIconButton`](../../js/src/components/help-icon-button/index.js#L31)
 
-### [`gla_import_assets_by_final_url_button_click`](../../js/src/components/paid-ads/asset-group/assets-loader.js#L80)
+### [`gla_import_assets_by_final_url_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-header/assets-loader.js#L80)
 Clicking on the "Scan for assets" button.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `type` | `string` | The type of the selected Final URL suggestion to be imported. Possible values: `post`, `term`, `homepage`.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/assets-loader.js#L96)
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-header/assets-loader.js#L96)
 
 ### [`gla_launch_paid_campaign_button_click`](../../js/src/utils/tracks.js#L167)
 Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign in the Google Ads setup flow.
@@ -656,7 +656,7 @@ Clicking on the "Yes, I want a new account" button in the warning modal for crea
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
 - [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
-- [`Dashboard`](../../js/src/pages/dashboard/index.js#L34) when CES modal is closed.
+- [`Dashboard`](../../js/src/pages/dashboard/index.js#L35) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L155) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss'`
 
@@ -671,7 +671,7 @@ A modal is closed.
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
 - [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
-- [`Dashboard`](../../js/src/pages/dashboard/index.js#L34) when CES modal is closed.
+- [`Dashboard`](../../js/src/pages/dashboard/index.js#L35) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L155) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss'`
 
@@ -758,6 +758,35 @@ Triggered when moving to another step during creating/editing a campaign.
 	- with `{ context: 'edit-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
 	- with `{ context: 'edit-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
 
+### [`gla_pmax_assets_improvements_banner_shown`](../../js/src/components/pmax-improve-assets-banner/banner.js#L21)
+When the banner is shown.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the banner is shown. Set to 'pmax_assets_improvements_banner'.
+#### Emitters
+- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L62) when the banner is displayed.
+
+### [`gla_pmax_assets_improvements_dismiss_clicked`](../../js/src/components/pmax-improve-assets-banner/banner.js#L36)
+When the banner is dismissed.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the banner was dismissed. Set to 'pmax_assets_improvements_banner'.
+`campaign_id` | `number` | The ID of the PMAX campaign for which the banner was dismissed.
+#### Emitters
+- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L62) when the banner is dismissed.
+
+### [`gla_pmax_assets_improvements_improve_assets_clicked`](../../js/src/components/pmax-improve-assets-banner/banner.js#L28)
+When the "Improve Assets" button is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the banner is shown. Set to 'pmax_assets_improvements_banner'.
+`campaign_id` | `number` | The ID of the PMAX campaign for which assets are being improved.
+#### Emitters
+- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L62) when the "Improve Assets" button is clicked.
+
 ### [`gla_price_benchmarks_change_price_clicked`](../../js/src/pages/price-benchmark/change-price.js#L19)
 
 #### Properties
@@ -817,10 +846,10 @@ Triggered when the request review is successful
 #### Emitters
 - [`ReviewRequestModal`](../../js/src/pages/product-feed/review-request/review-request-modal.js#L58)
 
-### [`gla_reselect_another_final_url_button_click`](../../js/src/components/paid-ads/asset-group/final-url-card.js#L23)
+### [`gla_reselect_another_final_url_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-header/final-url-card.js#L23)
 Clicking on the "Or, select another page" button.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/final-url-card.js#L39)
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-header/final-url-card.js#L39)
 
 ### [`gla_setup_ads`](../../js/src/utils/tracks.js#L193)
 Triggered on events during ads onboarding
@@ -861,7 +890,7 @@ Setup Merchant Center
 	- with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
 - [`SetupTopBar`](../../js/src/pages/onboarding/setup-top-bar.js#L17) with `{ triggered_by: 'back-button', action: 'leave' }`.
 
-### [`gla_submit_campaign_button_click`](../../js/src/components/paid-ads/asset-group/asset-group.js#L28)
+### [`gla_submit_campaign_button_click`](../../js/src/components/paid-ads/asset-group/asset-group.js#L30)
 Clicking on the submit button on the campaign creation or editing page.
  If a value is recorded as `unknown`, it's because no assets are imported and therefore unknown.
 #### Properties
@@ -872,6 +901,7 @@ Clicking on the submit button on the campaign creation or editing page.
 `audiences` | `string` | Country codes of the campaign audience countries, e.g. `US,JP,AU`.
 `budget` | `string` | Daily average cost of the campaign.
 `assets_validation` | `string` | Whether all asset values are valid or at least one invalid. Possible values: `valid`, `invalid`, `unknown`.
+`campaign_id` | `string` | The ID of the campaign being created or edited, or `new` if it's a new campaign.
 `number_of_business_name` | `string` | The number of this asset in string type or `unknown`.
 `number_of_marketing_image` | `string` | Same as above.
 `number_of_square_marketing_image` | `string` | Same as above.
@@ -883,8 +913,9 @@ Clicking on the submit button on the campaign creation or editing page.
 `number_of_call_to_action_selection` | `string` | Same as above.
 `number_of_final_url` | `string` | Same as above.
 `number_of_display_url_path` | `string` | Same as above.
+`number_of_youtube_videos` | `string` | Same as above.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group.js#L62)
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group.js#L66)
 
 ### [`gla_table_go_to_page`](../../js/src/utils/tracks.js#L42)
 When table pagination is changed by entering page via "Go to page" input.
