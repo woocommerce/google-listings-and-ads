@@ -44,9 +44,6 @@ class NotificationManager implements Service, Registerable {
 		// Hook into admin_menu with a high priority (e.g., 20) to ensure
 		// all other menu items have been registered by WooCommerce and other plugins.
 		add_action( 'admin_menu', [ $this, 'display_aggregated_notification_pill' ], 20 );
-
-		// Register assets.
-		$this->register_assets();
 	}
 
 	/**
@@ -151,6 +148,9 @@ class NotificationManager implements Service, Registerable {
 
 		// Only proceed if there's at least one notification.
 		if ( $total_notification_count > 0 ) {
+			// Register assets.
+			$this->register_assets();
+
 			$badge_html = ' <span class="update-plugins count-' . $total_notification_count . '"><span class="update-count">' . $total_notification_count . '</span></span>';
 
 			// Determine if the current page being loaded is within the Marketing section.
