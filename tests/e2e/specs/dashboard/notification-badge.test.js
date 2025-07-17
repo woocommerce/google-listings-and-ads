@@ -45,7 +45,7 @@ test.describe( 'Notification Badge', () => {
 	} );
 
 	test.describe( 'Should display badge', () => {
-		test( 'Show notification badge on Marketing menu by default', async ( {
+		test( 'On Marketing menu by default', async ( {
 			browser,
 		} ) => {
 			page = await browser.newPage();
@@ -62,7 +62,7 @@ test.describe( 'Notification Badge', () => {
 			expect( badge ).toBeVisible();
 		} );
 
-		test( 'Show notification badge on Google for WooCommerce when inside sub-menu', () => {
+		test( 'In Google for WooCommerce sub-menu when Marketing menu is expanded', () => {
 			const badge = dashboardPage.page
 				.getByRole( 'link', { name: 'Google for WooCommerce' } )
 				.locator( 'span.update-plugins' )
@@ -71,7 +71,7 @@ test.describe( 'Notification Badge', () => {
 			expect( badge ).toBeVisible();
 		} );
 
-		test( 'Notification badge moves to the correct location on menu change', async () => {
+		test( 'On Marketing menu when switched to Analytics menu', async () => {
 			const badge = dashboardPage.page
 				.getByRole( 'link', { name: 'Google for WooCommerce' } )
 				.locator( 'span.update-plugins' )
@@ -92,8 +92,8 @@ test.describe( 'Notification Badge', () => {
 		} );
 	} );
 
-	test.describe( 'Should not display badge', () => {
-		test( 'Does not show notification badge on Marketing menu when there are no notifications', async ( {
+	test.describe( 'Should not display', () => {
+		test( 'On Marketing menu when there are no notifications', async ( {
 			browser,
 		} ) => {
 			page = await browser.newPage();
