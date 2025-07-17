@@ -45,9 +45,7 @@ test.describe( 'Notification Badge', () => {
 	} );
 
 	test.describe( 'Should display badge', () => {
-		test( 'On Marketing menu by default', async ( {
-			browser,
-		} ) => {
+		test( 'On Marketing menu by default', async ( { browser } ) => {
 			page = await browser.newPage();
 
 			await page.goto( '/wp-admin/index.php', {
