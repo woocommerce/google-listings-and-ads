@@ -92,7 +92,18 @@ class AdsSettingsController extends BaseOptionsController {
 					continue;
 				}
 
-				$result = $this->options->update( $key, (bool) $value );
+				$stored = $this->options->get( $key );
+
+				if ( is_null( $stored ) ) {
+					$this->options->add( $key, $value );
+					$settings[ $key ] = $value;
+					continue;
+				} elseif ( (bool) $stored === $value ) {
+					$settings[ $key ] = $value;
+					continue;
+				}
+
+				$result = $this->options->update( $key, $value );
 
 				if ( false === $result ) {
 					return new WP_REST_Response(
