@@ -100,6 +100,16 @@ class AdsAssetTest extends UnitTest {
 		$this->assertAssetTypeConversion( $data );
 	}
 
+	public function test_convert_youtube_video_asset() {
+		$data = [
+			'field_type' => AssetFieldType::YOUTUBE_VIDEO,
+			'content'    => 'dQw4w9WgXcQ',
+			'id'         => self::TEST_ASSET_ID,
+		];
+
+		$this->assertAssetTypeConversion( $data );
+	}
+
 	public function test_create_assets_text_asset() {
 		$data = [
 			'id'         => self::TEMPORARY_ID,
@@ -116,6 +126,20 @@ class AdsAssetTest extends UnitTest {
 			'id'         => self::TEMPORARY_ID,
 			'field_type' => AssetFieldType::CALL_TO_ACTION_SELECTION,
 			'content'    => CallToActionType::SHOP_NOW,
+		];
+
+		$this->generate_asset_mutate_mock( 'create', $data );
+		$this->assertEquals( $this->generate_asset_resource_name( $data['id'] ), $this->asset->create_assets( [ $data ] )[0] );
+	}
+
+	/**
+	 * @group youtube
+	 */
+	public function test_create_assets_youtube_video_asset() {
+		$data = [
+			'id'         => self::TEMPORARY_ID,
+			'field_type' => AssetFieldType::YOUTUBE_VIDEO,
+			'content'    => 'dQw4w9WgXcQ',
 		];
 
 		$this->generate_asset_mutate_mock( 'create', $data );
