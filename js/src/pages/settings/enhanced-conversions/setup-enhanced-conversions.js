@@ -9,10 +9,11 @@ import { useCallback, useState } from '@wordpress/element';
  * Internal dependencies
  */
 import { useAppDispatch } from '~/data';
+import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import Section from '~/components/section';
+import AppDocumentationLink from '~/components/app-documentation-link';
 import SpinnerCard from '~/components/spinner-card';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
-import AppDocumentationLink from '~/components/app-documentation-link';
 import useEnableEnhancedConversions from './useEnableEnhancedConversions';
 
 /**
@@ -21,7 +22,14 @@ import useEnableEnhancedConversions from './useEnableEnhancedConversions';
  * @fires gla_documentation_link_click with `{ context: 'setup-enhanced-conversions', link_id: 'enhanced-conversions-read-more', href: 'https://support.google.com/google-ads/answer/9888656' }`
  */
 const SetupEnhancedConversions = () => {
-	const { isEnabled, hasFinishedResolution } = useEnableEnhancedConversions();
+	const {
+		hasGoogleAdsConnection,
+		hasFinishedResolution: hasResolvedGoogleAdsAccount,
+	} = useGoogleAdsAccount();
+	const {
+		isEnabled,
+		hasFinishedResolution: hasResolvedEnableEnhancedConversion,
+	} = useEnableEnhancedConversions();
 	const [ isSaving, setIsSaving ] = useState( false );
 	const { createNotice } = useDispatchCoreNotices();
 	const { updateEnhancedConversionsStatus } = useAppDispatch();
@@ -49,6 +57,22 @@ const SetupEnhancedConversions = () => {
 		}
 	};
 
+	let helpText = __(
+		'Please make sure to follow the documentation to enable Enhanced Conversions. The feature needs to be enabled both here on WooCommerce and on your Google Ads account.',
+		'google-listings-and-ads'
+	);
+
+	if ( ! hasGoogleAdsConnection ) {
+		helpText = __(
+			'Please connect your Google Ads account in order to use Enhanced Conversions data.',
+			'google-listings-and-ads'
+		);
+	}
+
+	const loaded =
+		hasResolvedGoogleAdsAccount && hasResolvedEnableEnhancedConversion;
+	const disabledCheckbox = ! hasGoogleAdsConnection || isSaving;
+
 	return (
 		<Section
 			title={ __(
@@ -75,9 +99,9 @@ const SetupEnhancedConversions = () => {
 				</div>
 			}
 		>
-			{ ! hasFinishedResolution && <SpinnerCard /> }
+			{ ! loaded && <SpinnerCard /> }
 
-			{ hasFinishedResolution && (
+			{ loaded && (
 				<Section.Card>
 					<Section.Card.Body>
 						<CheckboxControl
@@ -86,12 +110,9 @@ const SetupEnhancedConversions = () => {
 								'google-listings-and-ads'
 							) }
 							checked={ isEnabled }
-							disabled={ isSaving }
+							disabled={ disabledCheckbox }
 							onChange={ handleOnChange }
-							help={ __(
-								'Please make sure to follow the documentation to enable Enhanced Conversions. The feature needs to be enabled both here on WooCommerce and on your Google Ads account.',
-								'google-listings-and-ads'
-							) }
+							help={ helpText }
 						/>
 					</Section.Card.Body>
 				</Section.Card>
