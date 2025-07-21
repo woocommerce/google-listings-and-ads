@@ -5,7 +5,7 @@ Requires at least: 6.1
 Tested up to: 6.8
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.1.0
+Stable tag: 3.1.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -140,6 +140,10 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.1.1 - 2025-07-08 =
+* Fix - Do not render experience rating banner if Ads account is disconnected.
+* Fix - Fixed undefined array key warnings in Price Benchmarks feature.
+
 = 3.1.0 - 2025-07-01 =
 * Add - A new endpoint for Google-triggered account linking.
 * Add - Notice to gather feedback and request ratings from merchants.
@@ -152,8 +156,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Add - API Push/Pull Sync control endpoint Implementation.
 * Add - Price Benchmarks: Competitive pricing analysis and price recommendations from Google.
 * Tweak - WC 9.9 compatibility.
-
-= 2.9.13 - 2025-04-29 =
-* Update - Revert the changes related to the Grant API Pull Access in Onboarding feature made in version 2.9.12.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantPriceBenchmar
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantPriceBenchmarksQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantPriceBenchmarksTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PriceBenchmarks;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
@@ -34,6 +35,9 @@ class PriceBenchmarksTest extends UnitTest {
 
 	/** @var  MerchantPriceBenchmarksTable */
 	protected static $price_benchmarks_table;
+
+	/** @var ProductHelper $product_helper */
+	protected $product_helper;
 
 	/** @var array */
 	protected static $test_products = [];
@@ -134,6 +138,8 @@ class PriceBenchmarksTest extends UnitTest {
 
 		$this->container = new Container();
 
+		$this->product_helper = $this->createMock( ProductHelper::class );
+
 		// Set up the price benchmarks class with our mock
 		$this->price_benchmarks                = new PriceBenchmarks();
 		$this->price_benchmark_query           = new MerchantPriceBenchmarksQuery( $wpdb, self::$price_benchmarks_table );
@@ -141,6 +147,7 @@ class PriceBenchmarksTest extends UnitTest {
 
 		$this->container->addShared( MerchantPriceBenchmarksQuery::class, $this->price_benchmark_query );
 		$this->container->addShared( MerchantPriceBenchmarks::class, $this->price_benchmarks_api_middleware );
+		$this->container->addShared( ProductHelper::class, $this->product_helper );
 		$this->price_benchmarks->set_container( $this->container );
 
 		// Set up test data
@@ -366,5 +373,180 @@ class PriceBenchmarksTest extends UnitTest {
 		// Assert expectations.
 		$this->assertCount( 0, $result['results'] );
 		$this->assertEquals( 0, $result['total'] );
+	}
+
+	/**
+	 * Test get_price_benchmarks_response returns correct mapping for all data present.
+	 */
+	public function test_get_price_benchmarks_response_maps_all_data(): void {
+		$benchmark_data      = [
+			[
+				'offer_id'                      => 'offer_1',
+				'id'                            => 'mc_1',
+				'country_code'                  => 'US',
+				'benchmark_price_currency_code' => 'USD',
+				'price_micros'                  => 10000000,
+				'benchmark_price_micros'        => 9000000,
+			],
+		];
+		$price_insights_data = [
+			[
+				'offer_id'                              => 'offer_1',
+				'suggested_price_micros'                => 9500000,
+				'suggested_price_currency_code'         => 'USD',
+				'predicted_impressions_change_fraction' => 0.1,
+				'predicted_clicks_change_fraction'      => 0.2,
+				'predicted_conversions_change_fraction' => 0.3,
+				'effectiveness'                         => 'HIGH',
+			],
+		];
+		$performance_data    = [
+			[
+				'offer_id'    => 'offer_1',
+				'clicks'      => 10,
+				'impressions' => 100,
+				'ctr'         => 0.1,
+				'conversions' => 2,
+			],
+		];
+
+		$this->price_benchmarks_api_middleware->method( 'get_price_comparisons_data' )->willReturn( $benchmark_data );
+		$this->price_benchmarks_api_middleware->method( 'get_price_insights_data' )->willReturn( $price_insights_data );
+		$this->price_benchmarks_api_middleware->method( 'get_merchant_performance_data' )->willReturn( $performance_data );
+
+		$this->product_helper->method( 'get_wc_product_id' )->willReturn( 123 );
+
+		// Use Reflection to access protected method
+		$reflection = new \ReflectionClass( $this->price_benchmarks );
+		$method     = $reflection->getMethod( 'get_price_benchmarks_response' );
+		$method->setAccessible( true );
+
+		$result = $method->invoke( $this->price_benchmarks, [] );
+
+		$this->assertIsArray( $result );
+		$this->assertCount( 1, $result );
+		$row = $result['123'];
+
+		$this->assertEquals( 123, $row['product_id'] );
+		$this->assertEquals( 'mc_1', $row['mc_product_id'] );
+		$this->assertEquals( 'offer_1', $row['mc_product_offer_id'] );
+		$this->assertEquals( 'US', $row['mc_price_country_code'] );
+		$this->assertEquals( 'USD', $row['mc_product_currency_code'] );
+		$this->assertEquals( 10000000, $row['mc_product_price_micros'] );
+		$this->assertEquals( 9000000, $row['mc_price_benchmark_price_micros'] );
+		$this->assertEquals( 'USD', $row['mc_price_benchmark_price_currency_code'] );
+		$this->assertEquals( 9500000, $row['mc_insights_suggested_price_micros'] );
+		$this->assertEquals( 'USD', $row['mc_insights_suggested_price_currency_code'] );
+		$this->assertEquals( 0.1, $row['mc_insights_predicted_impressions_change_fraction'] );
+		$this->assertEquals( 0.2, $row['mc_insights_predicted_clicks_change_fraction'] );
+		$this->assertEquals( 0.3, $row['mc_insights_predicted_conversions_change_fraction'] );
+		$this->assertEquals( 3, $row['mc_insights_effectiveness'] );
+		$this->assertEquals( 10, $row['mc_metrics_clicks'] );
+		$this->assertEquals( 100, $row['mc_metrics_impressions'] );
+		$this->assertEquals( 0.1, $row['mc_metrics_ctr'] );
+		$this->assertEquals( 2, $row['mc_metrics_conversions'] );
+		$this->assertEquals( 3, $row['price_compared_with_benchmark'] );
+	}
+
+	/**
+	 * Test get_price_benchmarks_response handles missing price insights and performance data.
+	 */
+	public function test_get_price_benchmarks_response_handles_missing_insights_and_performance(): void {
+		$benchmark_data = [
+			[
+				'offer_id'                      => 'offer_2',
+				'id'                            => 'mc_2',
+				'country_code'                  => 'US',
+				'benchmark_price_currency_code' => 'USD',
+				'price_micros'                  => 5000000,
+				'benchmark_price_micros'        => 5000000,
+			],
+		];
+
+		$this->price_benchmarks_api_middleware->method( 'get_price_comparisons_data' )->willReturn( $benchmark_data );
+		$this->price_benchmarks_api_middleware->method( 'get_price_insights_data' )->willReturn( [] );
+		$this->price_benchmarks_api_middleware->method( 'get_merchant_performance_data' )->willReturn( [] );
+
+		$this->product_helper->method( 'get_wc_product_id' )->willReturn( 456 );
+
+		$reflection = new \ReflectionClass( $this->price_benchmarks );
+		$method     = $reflection->getMethod( 'get_price_benchmarks_response' );
+		$method->setAccessible( true );
+
+		$result = $method->invoke( $this->price_benchmarks, [] );
+
+		$this->assertIsArray( $result );
+		$this->assertCount( 1, $result );
+		$row = $result['456'];
+
+		$this->assertEquals( 456, $row['product_id'] );
+		$this->assertEquals( 'mc_2', $row['mc_product_id'] );
+		$this->assertEquals( 'offer_2', $row['mc_product_offer_id'] );
+		$this->assertEquals( 'US', $row['mc_price_country_code'] );
+		$this->assertEquals( 'USD', $row['mc_product_currency_code'] );
+		$this->assertEquals( 5000000, $row['mc_product_price_micros'] );
+		$this->assertEquals( 5000000, $row['mc_price_benchmark_price_micros'] );
+		$this->assertEquals( 'USD', $row['mc_price_benchmark_price_currency_code'] );
+		$this->assertEquals( '', $row['mc_insights_suggested_price_micros'] );
+		$this->assertEquals( '', $row['mc_insights_suggested_price_currency_code'] );
+		$this->assertEquals( 0, $row['mc_insights_predicted_impressions_change_fraction'] );
+		$this->assertEquals( 0, $row['mc_insights_predicted_clicks_change_fraction'] );
+		$this->assertEquals( 0, $row['mc_insights_predicted_conversions_change_fraction'] );
+		$this->assertEquals( 0, $row['mc_insights_effectiveness'] );
+		$this->assertEquals( 0, $row['mc_metrics_clicks'] );
+		$this->assertEquals( 0, $row['mc_metrics_impressions'] );
+		$this->assertEquals( 0, $row['mc_metrics_ctr'] );
+		$this->assertEquals( 0, $row['mc_metrics_conversions'] );
+		$this->assertEquals( 2, $row['price_compared_with_benchmark'] );
+	}
+
+	/**
+	 * Test get_price_benchmarks_response returns empty array if no benchmark data.
+	 */
+	public function test_get_price_benchmarks_response_returns_empty_if_no_benchmark_data(): void {
+		$this->price_benchmarks_api_middleware->method( 'get_price_comparisons_data' )->willReturn( [] );
+		$this->price_benchmarks_api_middleware->method( 'get_price_insights_data' )->willReturn( [] );
+		$this->price_benchmarks_api_middleware->method( 'get_merchant_performance_data' )->willReturn( [] );
+
+		$reflection = new \ReflectionClass( $this->price_benchmarks );
+		$method     = $reflection->getMethod( 'get_price_benchmarks_response' );
+		$method->setAccessible( true );
+
+		$result = $method->invoke( $this->price_benchmarks, [] );
+
+		$this->assertIsArray( $result );
+		$this->assertCount( 0, $result );
+	}
+
+	/**
+	 * Test get_price_benchmarks_response returns empty array if product id is zero.
+	 */
+	public function test_get_price_benchmarks_response_bail_early_when_product_id_zero(): void {
+		$benchmark_data = [
+			[
+				'offer_id'                      => 'offer_0',
+				'id'                            => 'mc_1',
+				'country_code'                  => 'US',
+				'benchmark_price_currency_code' => 'USD',
+				'price_micros'                  => 10000000,
+				'benchmark_price_micros'        => 9000000,
+			],
+		];
+
+		$this->price_benchmarks_api_middleware->method( 'get_price_comparisons_data' )->willReturn( $benchmark_data );
+		$this->price_benchmarks_api_middleware->method( 'get_price_insights_data' )->willReturn( [] );
+		$this->price_benchmarks_api_middleware->method( 'get_merchant_performance_data' )->willReturn( [] );
+
+		$this->product_helper->method( 'get_wc_product_id' )->willReturn( 0 );
+
+		// Use Reflection to access protected method
+		$reflection = new \ReflectionClass( $this->price_benchmarks );
+		$method     = $reflection->getMethod( 'get_price_benchmarks_response' );
+		$method->setAccessible( true );
+
+		$result = $method->invoke( $this->price_benchmarks, [] );
+
+		$this->assertIsArray( $result );
+		$this->assertCount( 0, $result );
 	}
 }
