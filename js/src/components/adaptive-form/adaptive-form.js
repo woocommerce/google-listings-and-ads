@@ -126,13 +126,7 @@ function AdaptiveForm( { onSubmit, extendAdapter, children, ...props }, ref ) {
 
 	return (
 		<Form { ...props } ref={ formRef }>
-			{ ( {
-				setValue,
-				setValues,
-				getInputProps,
-				handleSubmit,
-				...formContext
-			} ) => {
+			{ ( { setValue, getInputProps, handleSubmit, ...formContext } ) => {
 				// Since WC 6.9, the original Form is re-implemented as Functional component from
 				// Class component. But when `setValue` is called, the closure of `values` is
 				// referenced to the currently rendered snapshot states instead of a reference
@@ -153,8 +147,8 @@ function AdaptiveForm( { onSubmit, extendAdapter, children, ...props }, ref ) {
 					// Ref:
 					// - https://github.com/woocommerce/woocommerce/blob/7.1.0/packages/js/components/src/form/form.tsx#L209-L211
 					// - https://github.com/woocommerce/woocommerce/blob/7.1.0/packages/js/components/src/form/form.tsx#L182-L197
-					if ( setValues ) {
-						setValues( { [ name ]: value } );
+					if ( formContext.setValues ) {
+						formContext.setValues( { [ name ]: value } );
 					} else {
 						// WC < 7.1 goes here as `setValues` was introduced in 7.1.
 						setValue( name, value );

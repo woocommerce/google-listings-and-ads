@@ -7,48 +7,48 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import { STORE_KEY } from '~/data/constants';
-import getHighestBudget from '~/utils/getHighestBudget';
+import useCountryCodesForBudgetQuery from './useCountryCodesForBudgetQuery';
 
 /**
- * @typedef { import("~/data/actions").CountryCode } CountryCode
+ * @typedef {import('~/data/actions').CountryCode} CountryCode
+ * @typedef {import('~/data/types.js').AdsBudgetRecommendation} AdsBudgetRecommendation
  */
 
 /**
- * A hook to fetch the budget recommendations and the highest recommendation therein
- * for the given countries.
+ * @typedef {Object} BudgetRecommendationPayload
+ * @property {AdsBudgetRecommendation|null} data The budget recommendation data.
+ * @property {boolean} hasResolved Whether the data fetching is finished.
+ */
+
+/**
+ * A hook to fetch the budget recommendations for the given countries. If the
+ * store country is included in the country codes, it will be moved to the
+ * first position in the array as the primary country.
  *
  * @param {Array<CountryCode>} [countryCodes] An array of country codes. If empty, the fetch will not be triggered.
- * @return {Object} Budget recommendation.
+ * @return {BudgetRecommendationPayload} Budget recommendation.
  */
 const useBudgetRecommendation = ( countryCodes ) => {
+	const resolvedCountryCodes = useCountryCodesForBudgetQuery( countryCodes );
+
 	return useSelect(
 		( select ) => {
 			const { getAdsBudgetRecommendations, hasFinishedResolution } =
 				select( STORE_KEY );
 
-			const data = getAdsBudgetRecommendations( countryCodes );
-			let highestDailyBudget = 0;
-			let highestDailyBudgetCountryCode;
-
-			if ( data ) {
-				const { recommendations } = data;
-				( {
-					daily_budget: highestDailyBudget,
-					country: highestDailyBudgetCountryCode,
-				} = getHighestBudget( recommendations ) );
-			}
+			const data = getAdsBudgetRecommendations( resolvedCountryCodes );
+			const hasResolved = resolvedCountryCodes.length
+				? hasFinishedResolution( 'getAdsBudgetRecommendations', [
+						resolvedCountryCodes,
+				  ] )
+				: false;
 
 			return {
 				data,
-				highestDailyBudget,
-				highestDailyBudgetCountryCode,
-				hasFinishedResolution: hasFinishedResolution(
-					'getAdsBudgetRecommendations',
-					[ countryCodes ]
-				),
+				hasResolved,
 			};
 		},
-		[ countryCodes ]
+		[ resolvedCountryCodes ]
 	);
 };
 

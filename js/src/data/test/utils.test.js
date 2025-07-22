@@ -6,6 +6,9 @@ import {
 	getReportKey,
 	calculateDelta,
 	mapReportFieldsToPerformance,
+	getCountryCodesKey,
+	getAdsBudgetMetricsKey,
+	convertKeysFromSnakeCaseToCamelCase,
 	freeFields,
 	paidFields,
 	MISSING_FREE_LISTINGS_DATA,
@@ -260,6 +263,78 @@ describe( 'mapReportFieldsToPerformance', () => {
 			a: {
 				missingFreeListingsData: MISSING_FREE_LISTINGS_DATA.FOR_REQUEST,
 			},
+		} );
+	} );
+} );
+
+describe( 'getCountryCodesKey', () => {
+	it( 'should return an empty string when no country codes are provided', () => {
+		expect( getCountryCodesKey() ).toBe( '' );
+	} );
+
+	it( 'should return a key', () => {
+		expect( getCountryCodesKey( [ 'US' ] ) ).toBe( 'us' );
+		expect( getCountryCodesKey( [ 'US', 'CA' ] ) ).toBe( 'us_ca' );
+		expect( getCountryCodesKey( [ 'US', 'CA', 'JP' ] ) ).toBe( 'us_ca_jp' );
+		expect( getCountryCodesKey( [ 'CA', 'JP', 'US' ] ) ).toBe( 'ca_jp_us' );
+	} );
+} );
+
+describe( 'getAdsBudgetMetricsKey', () => {
+	it( 'should return a key', () => {
+		expect( getAdsBudgetMetricsKey( [ 'US' ], 15 ) ).toBe( 'us::15' );
+		expect( getAdsBudgetMetricsKey( [ 'US', 'CA' ], 16.0 ) ).toBe(
+			'us_ca::16'
+		);
+		expect( getAdsBudgetMetricsKey( [ 'US', 'CA', 'JP' ], 1.23 ) ).toBe(
+			'us_ca_jp::1#23'
+		);
+		expect( getAdsBudgetMetricsKey( [ 'CA', 'JP', 'US' ], 99.99 ) ).toBe(
+			'ca_jp_us::99#99'
+		);
+	} );
+} );
+
+describe( 'convertKeysFromSnakeCaseToCamelCase', () => {
+	it( 'should recursively convert snake case keys to camel case', () => {
+		const input = {
+			snake_case_key: 'value',
+			nested_object: {
+				another_snake_case_key: 'another_value',
+				anotherCamelCaseKey: 'anotherValue',
+			},
+			array_of_objects: [
+				{
+					snake_case_key_in_array: 'value_in_array',
+					camelCaseKeyInArray: 'valueInArray',
+				},
+			],
+			camelCaseKey: 'value',
+		};
+
+		expect( convertKeysFromSnakeCaseToCamelCase( input ) ).toEqual( {
+			snakeCaseKey: 'value',
+			nestedObject: {
+				anotherSnakeCaseKey: 'another_value',
+				anotherCamelCaseKey: 'anotherValue',
+			},
+			arrayOfObjects: [
+				{
+					snakeCaseKeyInArray: 'value_in_array',
+					camelCaseKeyInArray: 'valueInArray',
+				},
+			],
+			camelCaseKey: 'value',
+		} );
+	} );
+
+	it( 'should not convert the starting _[a-z]', () => {
+		const input = {
+			_snake_case_key: 'value',
+		};
+
+		expect( convertKeysFromSnakeCaseToCamelCase( input ) ).toEqual( {
+			_snakeCaseKey: 'value',
 		} );
 	} );
 } );

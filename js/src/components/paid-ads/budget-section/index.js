@@ -2,54 +2,27 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { Tip } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import Section from '~/components/section';
-import getMonthlyMaxEstimated from './getMonthlyMaxEstimated';
+import Subsection from '~/components/subsection';
+import BudgetSetup from '../budget-setup';
 import './index.scss';
-import BudgetRecommendation from './budget-recommendation';
-import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
-import AppInputPriceControl from '~/components/app-input-price-control';
 
 /**
- * @typedef {import('~/data/actions').CountryCode} CountryCode
- */
-
-const nonInteractableProps = {
-	noPointerEvents: true,
-	readOnly: true,
-	tabIndex: -1,
-};
-
-/**
- * Renders <Section> and <Section.Card> UI with campaign budget inputs.
+ * Renders a UI for setting up the campaign budget.
  *
  * @param {Object} props React props.
- * @param {Object} props.formProps Form props forwarded from `Form` component.
- * @param {Array<CountryCode>|undefined} props.countryCodes Country codes to fetch budget recommendations for.
- * @param {boolean} [props.disabled=false] Whether display the Card in disabled style.
  * @param {JSX.Element} [props.children] Extra content to be rendered under the card of budget inputs.
  */
-const BudgetSection = ( {
-	formProps,
-	countryCodes,
-	disabled = false,
-	children,
-} ) => {
-	const { getInputProps, values } = formProps;
-	const { amount } = values;
-	const { googleAdsAccount } = useGoogleAdsAccount();
-	const monthlyMaxEstimated = getMonthlyMaxEstimated( amount );
-	// Display the currency code that will be used by Google Ads, but still use the store's currency formatting settings.
-	const currency = googleAdsAccount?.currency;
-
+const BudgetSection = ( { children } ) => {
 	return (
 		<div className="gla-budget-section">
 			<Section
 				verticalGap={ 4 }
-				disabled={ disabled }
 				title={ __( 'Set your budget', 'google-listings-and-ads' ) }
 				description={
 					<p>
@@ -62,32 +35,27 @@ const BudgetSection = ( {
 			>
 				<Section.Card>
 					<Section.Card.Body className="gla-budget-section__card-body">
-						<div className="gla-budget-section__card-body__cost">
-							<AppInputPriceControl
-								label={ __(
-									'Daily average cost',
+						<div>
+							<Subsection.Title>
+								{ __(
+									'Average daily budget',
 									'google-listings-and-ads'
 								) }
-								suffix={ currency }
-								{ ...getInputProps( 'amount' ) }
-								{ ...( disabled && nonInteractableProps ) }
-							/>
-							<AppInputPriceControl
-								disabled
-								label={ __(
-									'Monthly max, estimated',
+							</Subsection.Title>
+							<Subsection.Subtitle>
+								{ __(
+									'These values are based on your settings and the budgets of similar advertisers.',
 									'google-listings-and-ads'
 								) }
-								suffix={ currency }
-								value={ monthlyMaxEstimated }
-							/>
+							</Subsection.Subtitle>
 						</div>
-						{ countryCodes?.length > 0 && (
-							<BudgetRecommendation
-								countryCodes={ countryCodes }
-								dailyAverageCost={ amount }
-							/>
-						) }
+						<BudgetSetup />
+						<Tip>
+							{ __(
+								'We recommend running campaigns at least 1 month so it can learn to optimize for your business.',
+								'google-listings-and-ads'
+							) }
+						</Tip>
 					</Section.Card.Body>
 				</Section.Card>
 				{ children }

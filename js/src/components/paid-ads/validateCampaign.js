@@ -26,6 +26,11 @@ const BUDGET_MIN_PERCENT = 0.3;
 const validateCampaign = ( values, opts ) => {
 	const errors = {};
 
+	// Only the amount entered by the user needs to be verified.
+	if ( values.level !== 'custom' ) {
+		return errors;
+	}
+
 	if (
 		Number.isFinite( values.amount ) &&
 		Number.isFinite( opts.dailyBudget ) &&
