@@ -22,7 +22,7 @@ defined( 'ABSPATH' ) || exit;
  * ContainerAware used for:
  * - Middleware
  *
- * @since x.x.x
+ * @since 3.2.0
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
