@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { forwardRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -21,9 +22,9 @@ import googleShoppingLogoURL from '~/images/campaign-preview/google-shopping-log
  * @param {Object} props React props.
  * @param {AdPreviewData} props.product Data for compositing ad preview mockups.
  */
-export default function MockupShopping( { product } ) {
+function MockupShopping( { product }, ref ) {
 	return (
-		<div className="gla-ads-mockup">
+		<div ref={ ref } className="gla-ads-mockup">
 			<div className="gla-ads-mockup__tab-list">
 				<Placeholder stroke="thicker" />
 				<Placeholder stroke="thicker" />
@@ -53,3 +54,7 @@ export default function MockupShopping( { product } ) {
 		</div>
 	);
 }
+
+MockupShopping.displayName = 'MockupShopping';
+
+export default forwardRef( MockupShopping );

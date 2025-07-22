@@ -3,6 +3,8 @@
  */
 import MockRequests from '../mock-requests';
 import { LOAD_STATE } from '../constants';
+import adsReportProductsData from '../__fixtures__/ads-report-products.json';
+import mcProductStatistics from '../__fixtures__/mc-product-statistics.json';
 
 export default class SettingsPage extends MockRequests {
 	/**
@@ -46,6 +48,9 @@ export default class SettingsPage extends MockRequests {
 		await this.mockAdsAccountConnected();
 		await this.mockContactInformation();
 		await this.mockSuccessfulSettingsSyncRequest();
+
+		await this.fulfillAdsReportProducts( adsReportProductsData );
+		await this.fulfillProductStatisticsRequest( mcProductStatistics );
 	}
 
 	/**
@@ -70,7 +75,7 @@ export default class SettingsPage extends MockRequests {
 	 */
 	getGrantAccessBtn() {
 		return this.page.getByRole( 'button', {
-			name: 'Get early access',
+			name: 'Grant access',
 			exact: true,
 		} );
 	}

@@ -12,7 +12,7 @@ import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
 import WarningIcon from '~/components/warning-icon';
 import { useAppDispatch } from '~/data';
-import { ALL_ACCOUNTS, ADS_ACCOUNT, API_DATA_FETCH_FEATURE } from './constants';
+import { ALL_ACCOUNTS, ADS_ACCOUNT } from './constants';
 
 const textDict = {
 	[ ALL_ACCOUNTS ]: {
@@ -62,24 +62,6 @@ const textDict = {
 			),
 			__(
 				'Some configurations for Google Ads created through WooCommerce may be lost. This cannot be undone.',
-				'google-listings-and-ads'
-			),
-		],
-	},
-	[ API_DATA_FETCH_FEATURE ]: {
-		title: __( 'Disable data fetching', 'google-listings-and-ads' ),
-		confirmButton: __( 'Disable data fetching', 'google-listings-and-ads' ),
-		confirmation: __(
-			'Yes, I want to disable the data fetching feature.',
-			'google-listings-and-ads'
-		),
-		contents: [
-			__(
-				'I understand that I am disabling the data fetching feature from this WooCommerce extension.',
-				'google-listings-and-ads'
-			),
-			__(
-				'Any ongoing campaigns and configuration will continue to run. They will be pushed to Google as in the previous versions of this extension.',
 				'google-listings-and-ads'
 			),
 		],

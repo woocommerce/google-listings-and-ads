@@ -4,15 +4,17 @@
 import Programs from './programs';
 import Products from './products';
 import getSelectedReportKey from '~/utils/getSelectedReportKey';
+import ExperienceRatingBanner from '~/components/experience-rating-banner';
 
 const Reports = () => {
 	const reportKey = getSelectedReportKey();
 
-	if ( reportKey === 'products' ) {
-		return <Products />;
-	}
-
-	return <Programs />;
+	return (
+		<>
+			<ExperienceRatingBanner />
+			{ reportKey === 'products' ? <Products /> : <Programs /> }
+		</>
+	);
 };
 
 export default Reports;

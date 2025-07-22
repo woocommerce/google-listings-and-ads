@@ -161,6 +161,7 @@ test.describe( 'Configure product listings', () => {
 
 	test.describe( 'Shipping rate is simple', () => {
 		test.beforeAll( async () => {
+			await productListingsPage.fulfillShippingTimes( [] );
 			await page.reload();
 
 			// Check another shipping rate first in case the simple shipping rate radio button is already checked.
@@ -217,6 +218,13 @@ test.describe( 'Configure product listings', () => {
 			const minimumOrderForFreeShippingText =
 				productListingsPage.getMinimumOrderForFreeShippingText();
 			await expect( minimumOrderForFreeShippingText ).toBeVisible();
+		} );
+
+		test( 'should show error message if min or max shipping time is not set', async () => {
+			await productListingsPage.clickContinueButton();
+			const estimatedTimesError =
+				productListingsPage.getEstimatedShippingTimesNullError();
+			await expect( estimatedTimesError ).toBeVisible();
 		} );
 
 		test( 'should show error message if min shipping time is bigger than max time', async () => {

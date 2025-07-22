@@ -188,6 +188,60 @@ Clicking on the button to disconnect the Google Ads account.
 #### Emitters
 - [`BillingSetupCard`](../../js/src/components/paid-ads/billing-card/billing-setup-card.js#L39) When the user clicks on the button to set up billing in Google Ads.
 
+### [`gla_app_ratings_close`](../../js/src/components/experience-rating-banner/banner.js#L41)
+When the feedback modal is closed by the user.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the event is triggered.
+#### Emitters
+- [`Banner`](../../js/src/components/experience-rating-banner/banner.js#L69) When the feedback modal is closed.
+
+### [`gla_app_ratings_good_clicked`](../../js/src/components/experience-rating-banner/banner.js#L34)
+When the user clicks the "Good" button on the banner.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the event is triggered.
+#### Emitters
+- [`Banner`](../../js/src/components/experience-rating-banner/banner.js#L69) When the "Good" button is clicked.
+
+### [`gla_app_ratings_maybe_later_clicked`](../../js/src/components/experience-rating-banner/feedback-modal.js#L16)
+
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the event is triggered.
+#### Emitters
+- [`FeedbackModal`](../../js/src/components/experience-rating-banner/feedback-modal.js#L39) Fired when the user clicks the "Maybe later" button.
+
+### [`gla_app_ratings_need_help_clicked`](../../js/src/components/experience-rating-banner/banner.js#L48)
+When the user clicks the "Need help" button on the banner.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the event is triggered.
+#### Emitters
+- [`Banner`](../../js/src/components/experience-rating-banner/banner.js#L69) When the "Need help" button is clicked.
+
+### [`gla_app_ratings_rate_clicked`](../../js/src/components/experience-rating-banner/feedback-modal.js#L21)
+
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the event is triggered.
+#### Emitters
+- [`FeedbackModal`](../../js/src/components/experience-rating-banner/feedback-modal.js#L39) Fired when the user clicks the "Rate us" button.
+
+### [`gla_app_ratings_shown`](../../js/src/components/experience-rating-banner/banner.js#L27)
+When the experience rating banner is displayed to the user.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the event is triggered.
+#### Emitters
+- [`Banner`](../../js/src/components/experience-rating-banner/banner.js#L69) When the banner is shown.
+
 ### [`gla_attribute_mapping_create_rule`](../../js/src/pages/attribute-mapping/attribute-mapping-rule-modal.js#L32)
 Creates the rule successfully
 #### Properties
@@ -284,7 +338,7 @@ Triggered when "continue" to edit program button is clicked.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`programId` | `string` | program id
+`program_id` | `string` | program id
 `url` | `string` | URL for editing the program (paid campaign)
 #### Emitters
 - [`EditProgramPromptModal`](../../js/src/pages/dashboard/all-programs-table-card/edit-program-button/edit-program-prompt-modal.js#L31) when "Continue to edit" is clicked.
@@ -304,11 +358,6 @@ Triggered when datepicker (date ranger picker) is updated,
 - [`AppDateRangeFilterPicker`](../../js/src/pages/dashboard/app-date-range-filter-picker/index.js#L27) with `report: props.trackEventReportId` and `data` given by `DateRangeFilterPicker`'s `onRangeSelect` callback.
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L41)
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
-
-### [`gla_disable_product_sync_click`](../../js/src/components/google-mc-account-card/merchant-center-account-info-card.js#L34)
-Clicking on the button to disable the new product sync (API Pull).
-#### Emitters
-- [`MerchantCenterAccountInfoCard`](../../js/src/components/google-mc-account-card/merchant-center-account-info-card.js#L48)
 
 ### [`gla_disconnected_accounts`](../../js/src/pages/settings/linked-accounts.js#L31)
 Accounts are disconnected from the Setting page
@@ -422,7 +471,7 @@ Clicking on the button to start enabling the new product sync (API Pull).
 `page` | `string` | Indicates which page this event happened
 `context` | `string` | Indicates where or which the button triggered this event
 #### Emitters
-- [`EnableNewProductSyncButton`](../../js/src/components/enable-new-product-sync-button.js#L31) with `{ page: 'settings', context: 'banner' | 'mc_card' }`
+- [`EnableNewProductSyncButton`](../../js/src/components/enable-new-product-sync-button.js#L31) with `{ page: 'settings', context: 'mc_card' }`
 
 ### [`gla_faq`](../../js/src/components/faqs-panel/index.js#L22)
 Clicking on faq item to collapse or expand it.
@@ -470,7 +519,7 @@ Triggered when changing products & variations filter,
 | ---- | ---- | ----------- |
 `report` | `string` | Name of the report (e.g. `"reports-products"`)
 `filter` | `string` | Value of the filter (e.g. `"all" \| "single-product" \| "compare-products"`)
-`variationFilter` | `string \| undefined` | Value of the variation filter (e.g. `undefined \| "single-variation" \| "compare-variations"`)
+`filter_variation` | `string` | Value of the variation filter (e.g. `"single-variation" \| "compare-variations"`)
 #### Emitters
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L41)
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
@@ -484,10 +533,10 @@ Clicking on the link to view free ad credit value by country.
 #### Emitters
 - [`FreeAdCredit`](../../js/src/components/free-ad-credit/index.js#L27) with `{ context: 'setup-ads' }`.
 
-### [`gla_free_campaign_edited`](../../js/src/pages/shipping/index.js#L29)
+### [`gla_free_campaign_edited`](../../js/src/pages/shipping/index.js#L30)
 Saving changes of audience and/or shipping settings to the free listings.
 #### Emitters
-- [`exports`](../../js/src/pages/shipping/index.js#L45)
+- [`exports`](../../js/src/pages/shipping/index.js#L46)
 
 ### [`gla_google_account_connect_button_click`](../../js/src/utils/tracks.js#L175)
 Clicking on the button to connect Google account.
@@ -590,7 +639,7 @@ Clicking on the "Yes, I want a new account" button in the warning modal for crea
 #### Emitters
 - [`WarningModal`](../../js/src/components/google-mc-account-card/warning-modal/index.js#L29)
 
-### [`gla_modal_closed`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L44)
+### [`gla_modal_closed`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L51)
 
 #### Properties
 | name | type | description |
@@ -601,8 +650,8 @@ Clicking on the "Yes, I want a new account" button in the warning modal for crea
 #### Emitters
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
 - [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
-- [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L67) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
-- [`Dashboard`](../../js/src/pages/dashboard/index.js#L33) when CES modal is closed.
+- [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
+- [`Dashboard`](../../js/src/pages/dashboard/index.js#L34) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L155) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss'`
 
@@ -616,8 +665,8 @@ A modal is closed.
 #### Emitters
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
 - [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
-- [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L67) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
-- [`Dashboard`](../../js/src/pages/dashboard/index.js#L33) when CES modal is closed.
+- [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
+- [`Dashboard`](../../js/src/pages/dashboard/index.js#L34) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L155) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss'`
 
@@ -631,7 +680,7 @@ Clicking on a text link within the modal content
 #### Emitters
 - [`ContentLink`](../../js/src/components/guide-page-content/index.js#L46) with given `context, href`
 
-### [`gla_modal_open`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L38)
+### [`gla_modal_open`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L45)
 
 #### Properties
 | name | type | description |
@@ -640,7 +689,7 @@ Clicking on a text link within the modal content
 `product_id` | `number` | The ID of the product whose price is being changed.
 #### Emitters
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is open with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal' }`
-- [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L67) with `{ context: 'price-benchmark-change-price-modal' }` and the product ID.
+- [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal' }` and the product ID.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L155) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
@@ -652,7 +701,7 @@ A modal is open
 `context` | `string` | Indicates which modal is open
 #### Emitters
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is open with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal' }`
-- [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L67) with `{ context: 'price-benchmark-change-price-modal' }` and the product ID.
+- [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal' }` and the product ID.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L155) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
@@ -714,7 +763,7 @@ Triggered when moving to another step during creating/editing a campaign.
 #### Emitters
 - [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal' }` and the product ID.
 
-### [`gla_price_benchmarks_change_price_edited`](../../js/src/pages/price-benchmark/change-price-modal/price-input-footer.js#L19)
+### [`gla_price_benchmarks_change_price_edited`](../../js/src/pages/price-benchmark/change-price-modal/price-input-footer.js#L23)
 
 #### Properties
 | name | type | description |
@@ -725,10 +774,11 @@ Triggered when moving to another step during creating/editing a campaign.
 `recommended_price` | `number` | The recommended price for the product.
 `changed_price` | `number` | The new price set for the product.
 `currency` | `string` | The currency of the product price.
+`gtin` | `string` | The global unique identifier (e.g., GTIN) for the product.
 #### Emitters
-- [`PriceInputFooter`](../../js/src/pages/price-benchmark/change-price-modal/price-input-footer.js#L48)
+- [`PriceInputFooter`](../../js/src/pages/price-benchmark/change-price-modal/price-input-footer.js#L52)
 
-### [`gla_price_benchmarks_shown`](../../js/src/pages/price-benchmark/price-benchmark-suggestions/index.js#L167)
+### [`gla_price_benchmarks_shown`](../../js/src/pages/price-benchmark/price-benchmark-suggestions/index.js#L179)
 
 #### Properties
 | name | type | description |
@@ -736,7 +786,7 @@ Triggered when moving to another step during creating/editing a campaign.
 `context` | `string` | The context of the event.
 `suggestions` | `number` | The number of suggestions shown.
 #### Emitters
-- [`PriceBenchmarkSuggestions`](../../js/src/pages/price-benchmark/price-benchmark-suggestions/index.js#L187) with `{ context: 'price-benchmark-suggestions' }` and the suggestions count.
+- [`PriceBenchmarkSuggestions`](../../js/src/pages/price-benchmark/price-benchmark-suggestions/index.js#L199) with `{ context: 'price-benchmark-suggestions' }` and the suggestions count.
 
 ### [`gla_request_review`](../../js/src/pages/product-feed/review-request/review-request-modal.js#L19)
 Triggered when request review button is clicked
