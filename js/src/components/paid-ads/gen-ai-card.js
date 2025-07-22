@@ -1,17 +1,11 @@
 /**
  * External dependencies
  */
-import {
-	Icon,
-	Flex,
-	FlexItem,
-	FlexBlock,
-	CardBody,
-} from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import { external as externalIcon } from '@wordpress/icons';
 import { createInterpolateElement } from '@wordpress/element';
+import { Icon, Flex, FlexBlock, CardBody } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -112,7 +106,7 @@ const GenAICard = () => {
 							</AppButton>
 						</Flex>
 					</FlexBlock>
-					<FlexItem>
+					<FlexBlock>
 						<img
 							src={ genAIImageURL }
 							alt={ __(
@@ -122,7 +116,7 @@ const GenAICard = () => {
 							width="212"
 							height="212"
 						/>
-					</FlexItem>
+					</FlexBlock>
 				</Flex>
 			</CardBody>
 		</Section.Card>
