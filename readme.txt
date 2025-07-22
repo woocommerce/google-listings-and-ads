@@ -152,9 +152,4 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix - The API error of querying campaign assets by an invalid ID after saving a campaign with assets.
 * Tweak - WC 10.0 compatibility.
 
-= 3.0.0 - 2025-06-17 =
-* Add - API Push/Pull Sync control endpoint Implementation.
-* Add - Price Benchmarks: Competitive pricing analysis and price recommendations from Google.
-* Tweak - WC 9.9 compatibility.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
