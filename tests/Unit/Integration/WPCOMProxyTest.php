@@ -2,6 +2,7 @@
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Integration;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\RestApi\UnitTests\Helpers\CouponHelper;
@@ -438,25 +439,33 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_settings_without_gla_syncable_param() {
-		$response = $this->do_request( '/wc/v3/settings/general', 'GET' );
+		$response = $this->do_request( '/wc/v3/settings/google-for-woocommerce', 'GET' );
 
 		$this->assertEquals( 200, $response->get_status() );
 
 		$response_mapped = $this->maps_the_response_with_the_item_id( $response );
 
-		$this->assertArrayNotHasKey( 'gla_target_audience', $response_mapped );
+		$this->assertArrayNotHasKey( 'gla_google_connected', $response_mapped );
+		$this->assertArrayNotHasKey( 'gla_language', $response_mapped );
+		$this->assertArrayNotHasKey( 'gla_merchant_center', $response_mapped );
+		$this->assertArrayNotHasKey( 'gla_shipping_rates', $response_mapped );
 		$this->assertArrayNotHasKey( 'gla_shipping_times', $response_mapped );
+		$this->assertArrayNotHasKey( 'gla_target_audience', $response_mapped );
 	}
 
 	public function test_get_settings_with_gla_syncable_param() {
-		$response = $this->do_request( '/wc/v3/settings/general', 'GET', [ 'gla_syncable' => '1' ] );
+		$response = $this->do_request( '/wc/v3/settings/google-for-woocommerce', 'GET', [ 'gla_syncable' => '1' ] );
 
 		$this->assertEquals( 200, $response->get_status() );
 
 		$response_mapped = $this->maps_the_response_with_the_item_id( $response );
 
-		$this->assertArrayHasKey( 'gla_target_audience', $response_mapped );
+		$this->assertArrayHasKey( 'gla_google_connected', $response_mapped );
+		$this->assertArrayHasKey( 'gla_language', $response_mapped );
+		$this->assertArrayHasKey( 'gla_merchant_center', $response_mapped );
+		$this->assertArrayHasKey( 'gla_shipping_rates', $response_mapped );
 		$this->assertArrayHasKey( 'gla_shipping_times', $response_mapped );
+		$this->assertArrayHasKey( 'gla_target_audience', $response_mapped );
 	}
 
 	public function test_get_empty_settings_for_shipping_zone_methods_as_object() {
@@ -471,6 +480,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 		];
 
 		$proxy = new WPCOMProxy(
+			$this->container->get( ShippingRateQuery::class ),
 			$this->container->get( ShippingTimeQuery::class ),
 			$this->container->get( AttributeManager::class )
 		);

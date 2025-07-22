@@ -359,11 +359,6 @@ Triggered when datepicker (date ranger picker) is updated,
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L41)
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
 
-### [`gla_disable_product_sync_click`](../../js/src/components/google-mc-account-card/merchant-center-account-info-card.js#L34)
-Clicking on the button to disable the new product sync (API Pull).
-#### Emitters
-- [`MerchantCenterAccountInfoCard`](../../js/src/components/google-mc-account-card/merchant-center-account-info-card.js#L48)
-
 ### [`gla_disconnected_accounts`](../../js/src/pages/settings/linked-accounts.js#L31)
 Accounts are disconnected from the Setting page
 #### Properties
@@ -476,7 +471,7 @@ Clicking on the button to start enabling the new product sync (API Pull).
 `page` | `string` | Indicates which page this event happened
 `context` | `string` | Indicates where or which the button triggered this event
 #### Emitters
-- [`EnableNewProductSyncButton`](../../js/src/components/enable-new-product-sync-button.js#L31) with `{ page: 'settings', context: 'banner' | 'mc_card' }`
+- [`EnableNewProductSyncButton`](../../js/src/components/enable-new-product-sync-button.js#L31) with `{ page: 'settings', context: 'mc_card' }`
 
 ### [`gla_faq`](../../js/src/components/faqs-panel/index.js#L22)
 Clicking on faq item to collapse or expand it.

@@ -206,13 +206,4 @@ final class Options implements OptionsInterface, Service {
 	protected function prefix_name( string $name ): string {
 		return "{$this->get_slug()}_{$name}";
 	}
-
-	/**
-	 * Checks if WPCOM API is Authorized.
-	 *
-	 * @return bool
-	 */
-	public function is_wpcom_api_authorized(): bool {
-		return $this->get( self::WPCOM_REST_API_STATUS ) === 'approved';
-	}
 }
