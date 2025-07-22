@@ -145,7 +145,7 @@ class NotificationManager implements Service, Registerable {
 		// Initialize the count and apply the filter to get the total aggregated count.
 		// All parts of the plugin (and other plugins) that need to add to the notification
 		// should hook into this filter.
-		$total_notification_count = apply_filters( 'google_for_woocommerce_admin_menu_notification_count', 0 );
+		$total_notification_count = apply_filters( 'google_for_woocommerce_admin_menu_notification_count', $this->initial_notification_count() );
 
 		// Only proceed if there's at least one notification.
 		if ( $total_notification_count > 0 ) {
@@ -189,16 +189,16 @@ class NotificationManager implements Service, Registerable {
 	 * Filter the notification count for the admin menu.
 	 *
 	 * This method checks the user's persisted preferences to determine if there are any recommendations.
-	 * If there are recommendations, it increments the count by 1; otherwise, it returns
+	 * If there are recommendations, it increments the count by 1; otherwise, it returns 0.
 	 *
-	 * @param int $count The current notification count.
 	 * @return int The updated notification count, which is either 1 (if there are recommendations) or 0 (if there are no recommendations).
 	 */
-	public function filter_notification_count( int $count ): int {
+	public function initial_notification_count(): int {
+		$count = 0;
 		$preferences = get_user_meta( get_current_user_id(), 'wp_persisted_preferences', true );
 
 		if ( is_array( $preferences ) && isset( $preferences['woocommerce/google-listings-and-ads']['pmax-improve-assets-banner']['hasRecommendations'] ) && $preferences['woocommerce/google-listings-and-ads']['pmax-improve-assets-banner']['hasRecommendations'] ) {
-			return ++$count;
+			$count = $count + 1;
 		}
 
 		return $count;
