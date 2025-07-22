@@ -49,7 +49,7 @@ test.describe( 'Settings - WPCOM REST API', () => {
 		await expect( button ).not.toBeVisible();
 	} );
 
-	test( 'When REST API is Error it shows a waring notice in MC and allows to grant access', async () => {
+	test( 'When REST API is Error it shows a warning notice in MC and allows to grant access', async () => {
 		await settingsPage.goto();
 		await settingsPage.mockMCConnected( 1234, true, 'error' );
 		const mockAuthURL = 'https://example.com';
