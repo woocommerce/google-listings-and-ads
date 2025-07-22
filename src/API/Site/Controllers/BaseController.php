@@ -187,6 +187,22 @@ abstract class BaseController extends WC_REST_Controller implements Registerable
 	}
 
 	/**
+	 * Get the callback to sanitize a price value.
+	 *
+	 * Supports positive integers and floats.
+	 * Maximum number length is 10 digits + 8 decimals.
+	 *
+	 * @since 3.2.0
+	 *
+	 * @return callable
+	 */
+	protected function get_sanitize_price_callback(): callable {
+		return function ( $price ) {
+			return preg_match( '/^[0-9]{0,10}(\.[0-9]{0,8})?$/', (string) $price ) ? (float) $price : false;
+		};
+	}
+
+	/**
 	 * Get the item schema properties for the controller.
 	 *
 	 * @return array

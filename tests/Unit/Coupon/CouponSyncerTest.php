@@ -154,6 +154,10 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 			->willReturn( true );
 		$merchant_center->expects( $this->once() )
 			->method( 'should_push' )
+			->willReturn( true );
+		$merchant_center->expects( $this->once() )
+			->method( 'is_enabled_for_datatype' )
+			->with( 'coupons' )
 			->willReturn( false );
 		$this->coupon_syncer = $this->get_coupon_syncer( [ 'merchant_center' => $merchant_center ] );
 
@@ -170,6 +174,10 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 			->willReturn( true );
 		$merchant_center->expects( $this->once() )
 			->method( 'should_push' )
+			->willReturn( true );
+		$merchant_center->expects( $this->once() )
+			->method( 'is_enabled_for_datatype' )
+			->with( 'coupons' )
 			->willReturn( false );
 		$this->coupon_syncer = $this->get_coupon_syncer( [ 'merchant_center' => $merchant_center ] );
 
@@ -233,6 +241,10 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 			->willReturn( true );
 		$this->merchant_center->expects( $this->any() )
 			->method( 'is_promotion_supported_country' )
+			->willReturn( true );
+		$this->merchant_center->expects( $this->any() )
+			->method( 'is_enabled_for_datatype' )
+			->with( 'coupons' )
 			->willReturn( true );
 
 		$this->target_audience = $this->createMock( TargetAudience::class );

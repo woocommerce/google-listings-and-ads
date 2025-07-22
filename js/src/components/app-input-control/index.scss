@@ -11,16 +11,6 @@
 		}
 	}
 
-	/**
-	 * Hack to prevent the <InputControl> component from still having the focused border style
-	 * when clicking on <input> or <label> even already setting `readonly` attribute on <input>.
-	 *
-	 * Ref: https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4012.0.8/packages/components/src/input-control/styles/input-control-styles.js#L238-L247
-	 */
-	&--no-pointer-events {
-		pointer-events: none;
-	}
-
 	&__character-count {
 		margin-top: calc($grid-unit-05 / 2);
 		text-align: right;

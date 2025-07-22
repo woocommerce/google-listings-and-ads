@@ -14,6 +14,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsConversionAction;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetMetrics;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetRecommendations;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
@@ -46,7 +48,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\RequestInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\ResponseInterface;
-use Google\Ads\GoogleAds\Util\V18\GoogleAdsFailures;
+use Google\Ads\GoogleAds\Util\V20\GoogleAdsFailures;
 use Jetpack_Options;
 
 defined( 'ABSPATH' ) || exit;
@@ -85,6 +87,8 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		AdsReport::class              => true,
 		AdsAssetGroupAsset::class     => true,
 		AdsAsset::class               => true,
+		BudgetMetrics::class          => true,
+		BudgetRecommendations::class  => true,
 		'connect_server_root'         => true,
 		Connection::class             => true,
 		GoogleProductService::class   => true,
@@ -118,6 +122,8 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( AdsCampaignLabel::class, GoogleAdsClient::class );
 		$this->share( AdsConversionAction::class, GoogleAdsClient::class );
 		$this->share( AdsReport::class, GoogleAdsClient::class );
+		$this->share( BudgetMetrics::class, GoogleAdsClient::class );
+		$this->share( BudgetRecommendations::class, GoogleAdsClient::class );
 
 		$this->share( Merchant::class, ShoppingContent::class );
 		$this->share( MerchantMetrics::class, ShoppingContent::class, GoogleAdsClient::class, WP::class, TransientsInterface::class );

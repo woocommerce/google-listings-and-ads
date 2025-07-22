@@ -73,6 +73,7 @@ describe( 'reducer', () => {
 					step: null,
 				},
 				budgetRecommendations: {},
+				budgetMetrics: {},
 			},
 			gtinMigrationStatus: null,
 			price_benchmark: {
@@ -842,31 +843,91 @@ describe( 'reducer', () => {
 		const path = 'ads.budgetRecommendations';
 
 		it( 'should receive a budget recommendation', () => {
-			const recommendation = {
-				countryCodesKey: 'mu_sg',
-				currency: 'MUR',
-				recommendations: [
-					{
-						country: 'MU',
-						daily_budget: 15,
-					},
-					{
-						country: 'SG',
-						daily_budget: 10,
-					},
-				],
-			};
-
 			const action = {
 				type: TYPES.RECEIVE_ADS_BUDGET_RECOMMENDATIONS,
-				...recommendation,
+				countryCodesKey: 'mu_sg',
+				data: {
+					recommended: {
+						currency: 'MUR',
+						country: 'MU',
+						dailyBudget: 15,
+						metrics: {
+							cost: 105,
+							conversions: 2.2,
+							conversionsValue: 89.98,
+						},
+					},
+					high: {
+						currency: 'MUR',
+						country: 'MU',
+						dailyBudget: 20.5,
+						metrics: {
+							cost: 143.5,
+							conversions: 2.5,
+							conversionsValue: 98.59,
+						},
+					},
+					low: {
+						currency: 'MUR',
+						country: 'MU',
+						dailyBudget: 7,
+						metrics: {
+							cost: 49,
+							conversions: 2,
+							conversionsValue: 80.48,
+						},
+					},
+				},
 			};
 			const state = reducer( prepareState(), action );
 
-			expect( state ).toHaveProperty( `${ path }.mu_sg`, {
-				currency: recommendation.currency,
-				recommendations: recommendation.recommendations,
-			} );
+			expect( state ).toHaveProperty( `${ path }.mu_sg`, action.data );
+		} );
+	} );
+
+	describe( 'Ads Budget Metrics', () => {
+		const path = 'ads.budgetMetrics';
+
+		it( 'should receive budget metrics', () => {
+			const action1 = {
+				type: TYPES.RECEIVE_ADS_BUDGET_METRICS,
+				key: 'us_jp::20#5',
+				data: {
+					currency: 'USD',
+					budget: 20.5,
+					country: 'US',
+					metrics: {
+						cost: 143.5,
+						conversions: 2.5,
+						conversionsValue: 98.59,
+					},
+				},
+			};
+			const action2 = {
+				type: TYPES.RECEIVE_ADS_BUDGET_METRICS,
+				key: 'us_jp::15',
+				data: {
+					currency: 'USD',
+					budget: 15,
+					country: 'US',
+					metrics: {
+						cost: 105,
+						conversions: 2.2,
+						conversionsValue: 89.98,
+					},
+				},
+			};
+			let state = reducer( prepareState(), action1 );
+			state = reducer( reducer( prepareState(), action1 ), action2 );
+
+			expect( state ).toHaveProperty(
+				`${ path }.us_jp::20#5`,
+				action1.data
+			);
+			expect( state ).toHaveProperty(
+				`${ path }.us_jp::15`,
+				action2.data
+			);
 		} );
 	} );
 

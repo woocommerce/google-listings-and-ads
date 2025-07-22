@@ -9,14 +9,19 @@ import { isPlainObject } from 'lodash';
  */
 import { ASSET_GROUP_KEY, ASSET_FORM_KEY } from '~/constants';
 import AdaptiveForm from '~/components/adaptive-form';
+import AppSpinner from '~/components/app-spinner';
 import validateCampaign from '~/components/paid-ads/validateCampaign';
 import validateAssetGroup from '~/components/paid-ads/validateAssetGroup';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
+import useBudgetRecommendation from '~/hooks/useBudgetRecommendation';
+import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
+import { FILTER_BUDGET_RECOMMENDATIONS } from '~/utils/tracks';
 
 /**
  * @typedef {import('~/components/types.js').CampaignFormValues} CampaignFormValues
  * @typedef {import('~/components/types.js').AssetGroupFormValues} AssetGroupFormValues
  * @typedef {import('~/data/types.js').AssetEntityGroup} AssetEntityGroup
+ * @typedef {import('~/data/actions').CountryCode} CountryCode
  */
 
 const emptyAssetGroup = {
@@ -60,6 +65,37 @@ function convertAssetEntityGroupToFormValues( assetEntityGroup = {} ) {
 	return formValues;
 }
 
+function injectDailyBudget( values, budgetRecommendation ) {
+	return Object.defineProperty( values, 'dailyBudget', {
+		enumerable: true,
+		get() {
+			if ( this.level === 'custom' ) {
+				return this.amount;
+			}
+			return budgetRecommendation[ this.level ].dailyBudget;
+		},
+	} );
+}
+
+function resolveInitialCampaign(
+	initialCampaign,
+	defaultCampaign,
+	budgetRecommendation
+) {
+	const values = {
+		...defaultCampaign,
+		...initialCampaign,
+	};
+
+	if ( values.level !== 'custom' && ! budgetRecommendation[ values.level ] ) {
+		values.level = budgetRecommendation.recommended
+			? 'recommended'
+			: 'custom';
+	}
+
+	return injectDailyBudget( values, budgetRecommendation );
+}
+
 /**
  * Renders a form based on AdaptiveForm for managing campaign and assets.
  *
@@ -67,12 +103,12 @@ function convertAssetEntityGroupToFormValues( assetEntityGroup = {} ) {
  * @param {Object} props React props.
  * @param {CampaignFormValues} props.initialCampaign Initial campaign values.
  * @param {AssetEntityGroup} [props.assetEntityGroup] The asset entity group to be used in initializing the form values for editing.
- * @param {number} props.recommendedDailyBudget The recommended daily budget for the campaign. The minimum campaign amount will be set to 30% of this value.
+ * @param {Array<CountryCode>} props.countryCodes Country codes to fetch budget recommendations.
  */
 export default function CampaignAssetsForm( {
 	initialCampaign,
 	assetEntityGroup,
-	recommendedDailyBudget,
+	countryCodes,
 	...adaptiveFormProps
 } ) {
 	const initialAssetGroup = useMemo( () => {
@@ -82,12 +118,27 @@ export default function CampaignAssetsForm( {
 	const [ baseAssetGroup, setBaseAssetGroup ] = useState( initialAssetGroup );
 	const [ hasImportedAssets, setHasImportedAssets ] = useState( false );
 	const { formatAmount } = useAdsCurrency();
+	const { data: budgetRecommendationData, hasResolved } =
+		useBudgetRecommendation( countryCodes );
+
+	const budgetRecommendation = budgetRecommendationData || {};
+
+	useEventPropertiesFilter(
+		FILTER_BUDGET_RECOMMENDATIONS,
+		budgetRecommendation?.eventProps
+	);
+
+	if ( ! hasResolved ) {
+		return <AppSpinner />;
+	}
 
 	const extendAdapter = ( formContext ) => {
 		const assetGroupErrors = validateAssetGroup( formContext.values );
 		const finalUrl = assetEntityGroup?.[ ASSET_GROUP_KEY.FINAL_URL ];
 
 		return {
+			countryCodes,
+			budgetRecommendation,
 			// Currently, the PMax Assets feature in this extension has functional limits, therefore,
 			// it needs to distinguish whether the `assetEntityGroup` is "empty" or not in order to
 			// provide different special business logic.
@@ -123,20 +174,36 @@ export default function CampaignAssetsForm( {
 
 	const validateCampaignWithMinimumAmount = ( values ) => {
 		return validateCampaign( values, {
-			dailyBudget: recommendedDailyBudget,
+			dailyBudget: budgetRecommendation.dailyBudgetBaseline,
 			formatAmount,
 		} );
+	};
+
+	const handleChange = function ( ...args ) {
+		injectDailyBudget( args[ 1 ], budgetRecommendation );
+
+		if ( adaptiveFormProps.onChange ) {
+			return adaptiveFormProps.onChange.apply( this, args );
+		}
 	};
 
 	return (
 		<AdaptiveForm
 			initialValues={ {
-				...initialCampaign,
+				...resolveInitialCampaign(
+					initialCampaign,
+					{
+						level: 'recommended',
+						amount: budgetRecommendation.recommendedDailyBudget,
+					},
+					budgetRecommendation
+				),
 				...initialAssetGroup,
 			} }
 			validate={ validateCampaignWithMinimumAmount }
 			extendAdapter={ extendAdapter }
 			{ ...adaptiveFormProps }
+			onChange={ handleChange }
 		/>
 	);
 }

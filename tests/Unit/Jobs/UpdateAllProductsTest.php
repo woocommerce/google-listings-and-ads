@@ -130,6 +130,10 @@ class UpdateAllProductsTest extends UnitTest {
 			->method( 'has_scheduled_action' )
 			->willReturn( false );
 
+		$this->merchant_center
+			->method( 'is_enabled_for_datatype' )
+			->willReturn( true );
+
 		/*
 		 * We expect only single call to `has_scheduled_action` when scheduling
 		 * the batch and no calls further since batch is empty.
@@ -165,6 +169,10 @@ class UpdateAllProductsTest extends UnitTest {
 				[ self::PROCESS_ITEM_HOOK, [ $filtered_product_list->get_product_ids() ] ]
 			);
 
+		$this->merchant_center
+			->method( 'is_enabled_for_datatype' )
+			->willReturn( true );
+
 		$this->job->schedule();
 
 		do_action( self::CREATE_BATCH_HOOK, 1 );
@@ -196,6 +204,10 @@ class UpdateAllProductsTest extends UnitTest {
 		$this->action_scheduler
 			->method( 'has_scheduled_action' )
 			->willReturn( false );
+
+		$this->merchant_center
+			->method( 'is_enabled_for_datatype' )
+			->willReturn( true );
 
 		$this->job->schedule();
 
@@ -231,6 +243,10 @@ class UpdateAllProductsTest extends UnitTest {
 			->method( 'has_scheduled_action' )
 			->willReturn( false );
 
+		$this->merchant_center
+			->method( 'is_enabled_for_datatype' )
+			->willReturn( true );
+
 		$this->job->schedule();
 
 		do_action( self::CREATE_BATCH_HOOK, 1 );
@@ -264,6 +280,10 @@ class UpdateAllProductsTest extends UnitTest {
 			->method( 'find_sync_ready_products' )
 			->withConsecutive( [ [], 2, 0 ], [ [], 2, 2 ], [ [], 2, 4 ] )
 			->willReturnOnConsecutiveCalls( $batch_a, $batch_b, $batch_c );
+
+		$this->merchant_center
+			->method( 'is_enabled_for_datatype' )
+			->willReturn( true );
 
 		$this->job->schedule();
 
@@ -335,6 +355,18 @@ class UpdateAllProductsTest extends UnitTest {
 			->method( 'schedule_single' )
 			->with( gmdate( 'U' ) + 100, self::CREATE_BATCH_HOOK, [ 1 ] );
 
+		$this->merchant_center
+			->method( 'is_enabled_for_datatype' )
+			->willReturn( true );
+
 		$this->job->schedule_delayed( 100 );
+	}
+
+	public function test_cannot_schedule_when_mc_push_is_blocked() {
+		$this->merchant_center
+			->method( 'is_enabled_for_datatype' )
+			->willReturn( false );
+
+		$this->assertFalse( $this->job->can_schedule() );
 	}
 }
