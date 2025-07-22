@@ -74,7 +74,7 @@ class ShippingRateQuery extends Query {
 	 * Fetches all shipping rate data using `get_results()`, processes it,
 	 * and returns an associative array in a format suitable for JSON responses.
 	 *
-	 * @since x.x.x
+	 * @since 3.2.0
 	 *
 	 * @return array Associative array of shipping rates indexed by country codes.
 	 *               Each entry contains:

@@ -192,7 +192,7 @@ abstract class BaseController extends WC_REST_Controller implements Registerable
 	 * Supports positive integers and floats.
 	 * Maximum number length is 10 digits + 8 decimals.
 	 *
-	 * @since x.x.x
+	 * @since 3.2.0
 	 *
 	 * @return callable
 	 */
