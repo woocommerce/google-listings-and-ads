@@ -15,7 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingCo
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\SearchResponse;
 use DateTime;
 use Exception;
-use Google\Ads\GoogleAds\V18\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V20\Services\GoogleAdsRow;
 use Google\ApiCore\PagedListResponse;
 
 /**
