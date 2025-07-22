@@ -198,7 +198,7 @@ class NotificationManager implements Service, Registerable {
 		$preferences = get_user_meta( get_current_user_id(), 'wp_persisted_preferences', true );
 
 		if ( is_array( $preferences ) && isset( $preferences['woocommerce/google-listings-and-ads']['pmax-improve-assets-banner']['hasRecommendations'] ) && $preferences['woocommerce/google-listings-and-ads']['pmax-improve-assets-banner']['hasRecommendations'] ) {
-			$count = $count + 1;
+			return ++$count;
 		}
 
 		return $count;
