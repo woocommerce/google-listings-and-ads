@@ -194,7 +194,7 @@ class NotificationManager implements Service, Registerable {
 	 * @return int The updated notification count, which is either 1 (if there are recommendations) or 0 (if there are no recommendations).
 	 */
 	public function initial_notification_count(): int {
-		$count = 0;
+		$count       = 0;
 		$preferences = get_user_meta( get_current_user_id(), 'wp_persisted_preferences', true );
 
 		if ( is_array( $preferences ) && isset( $preferences['woocommerce/google-listings-and-ads']['pmax-improve-assets-banner']['hasRecommendations'] ) && $preferences['woocommerce/google-listings-and-ads']['pmax-improve-assets-banner']['hasRecommendations'] ) {
