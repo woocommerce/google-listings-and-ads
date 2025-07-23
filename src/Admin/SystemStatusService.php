@@ -111,41 +111,43 @@ class SystemStatusService implements Service, Registerable {
 			}
 
 			$data_type_label = ucfirst( str_replace( '_', ' ', $data_type ) );
+			$pull_enabled = isset( $modes['pull'] ) && $modes['pull'];
+			$push_enabled = isset( $modes['push'] ) && $modes['push'];
 			
+			// API Pull row
 			?>
 			<tr>
-				<td data-export-label="<?php echo esc_attr( $data_type_label . ' Sync Mode' ); ?>">
-					<?php echo esc_html( sprintf( '%s Sync Mode:', $data_type_label ) ); ?>
+				<td data-export-label="<?php echo esc_attr( $data_type_label . ' API Pull' ); ?>">
+					<?php echo esc_html( sprintf( '%s API Pull:', $data_type_label ) ); ?>
 				</td>
 				<td class="help">
-					<?php echo wc_help_tip( sprintf( 'Shows the current API Pull and MC Push sync settings for %s data.', strtolower( $data_type_label ) ) ); ?>
+					<?php echo wc_help_tip( sprintf( 'Shows if API Pull sync is enabled for %s data.', strtolower( $data_type_label ) ) ); ?>
 				</td>
 				<td>
-					<?php
-					$pull_enabled = isset( $modes['pull'] ) && $modes['pull'];
-					$push_enabled = isset( $modes['push'] ) && $modes['push'];
-					
-					$pull_status_text = $pull_enabled ? 'Enabled' : 'Disabled';
-					$push_status_text = $push_enabled ? 'Enabled' : 'Disabled';
-					
-					// Create a concise status that matches WooCommerce export patterns
-					$status_summary = sprintf( 'API Pull: %s / MC Push: %s', $pull_status_text, $push_status_text );
-					
-					if ( $pull_enabled && $push_enabled ) {
-						$class = 'yes';
-						$icon = 'dashicons-yes';
-					} elseif ( ! $pull_enabled && ! $push_enabled ) {
-						$class = 'error';
-						$icon = 'dashicons-warning';
-					} else {
-						$class = 'error'; // Mixed state
-						$icon = 'dashicons-warning';
-					}
-					?>
-					<mark class="<?php echo esc_attr( $class ); ?>">
-						<span class="dashicons <?php echo esc_attr( $icon ); ?>"></span>
-						<?php echo esc_html( $status_summary ); ?>
-					</mark>
+					<?php if ( $pull_enabled ) : ?>
+						<mark class="yes"><span class="dashicons dashicons-yes"></span> Enabled</mark>
+					<?php else : ?>
+						<mark class="error"><span class="dashicons dashicons-warning"></span> Disabled</mark>
+					<?php endif; ?>
+				</td>
+			</tr>
+			<?php
+			
+			// MC Push row
+			?>
+			<tr>
+				<td data-export-label="<?php echo esc_attr( $data_type_label . ' MC Push' ); ?>">
+					<?php echo esc_html( sprintf( '%s MC Push:', $data_type_label ) ); ?>
+				</td>
+				<td class="help">
+					<?php echo wc_help_tip( sprintf( 'Shows if MC Push sync is enabled for %s data.', strtolower( $data_type_label ) ) ); ?>
+				</td>
+				<td>
+					<?php if ( $push_enabled ) : ?>
+						<mark class="yes"><span class="dashicons dashicons-yes"></span> Enabled</mark>
+					<?php else : ?>
+						<mark class="error"><span class="dashicons dashicons-warning"></span> Disabled</mark>
+					<?php endif; ?>
 				</td>
 			</tr>
 			<?php
