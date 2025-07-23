@@ -77,7 +77,7 @@ class SystemStatusService implements Service, Registerable {
 			?>
 			<tr>
 				<td data-export-label="Sync Mode Status"><?php esc_html_e( 'Sync Mode Status:', 'google-listings-and-ads' ); ?></td>
-				<td class="help"><?php echo wc_help_tip( 'Current sync mode configuration status.' ); ?></td>
+				<td class="help"><?php echo wp_kses_post( wc_help_tip( 'Current sync mode configuration status.' ) ); ?></td>
 				<td>
 					<mark class="error">
 						<span class="dashicons dashicons-warning"></span> 
@@ -93,7 +93,7 @@ class SystemStatusService implements Service, Registerable {
 			?>
 			<tr>
 				<td data-export-label="Sync Mode Status"><?php esc_html_e( 'Sync Mode Status:', 'google-listings-and-ads' ); ?></td>
-				<td class="help"><?php echo wc_help_tip( 'Current sync mode configuration status.' ); ?></td>
+				<td class="help"><?php echo wp_kses_post( wc_help_tip( 'Current sync mode configuration status.' ) ); ?></td>
 				<td>
 					<mark class="error">
 						<span class="dashicons dashicons-warning"></span> 
@@ -111,9 +111,9 @@ class SystemStatusService implements Service, Registerable {
 			}
 
 			$data_type_label = ucfirst( str_replace( '_', ' ', $data_type ) );
-			$pull_enabled = isset( $modes['pull'] ) && $modes['pull'];
-			$push_enabled = isset( $modes['push'] ) && $modes['push'];
-			
+			$pull_enabled    = isset( $modes['pull'] ) && $modes['pull'];
+			$push_enabled    = isset( $modes['push'] ) && $modes['push'];
+
 			// API Pull row
 			?>
 			<tr>
@@ -121,7 +121,7 @@ class SystemStatusService implements Service, Registerable {
 					<?php echo esc_html( sprintf( '%s API Pull:', $data_type_label ) ); ?>
 				</td>
 				<td class="help">
-					<?php echo wc_help_tip( sprintf( 'Shows if API Pull sync is enabled for %s data.', strtolower( $data_type_label ) ) ); ?>
+					<?php echo wp_kses_post( wc_help_tip( sprintf( 'Shows if API Pull sync is enabled for %s data.', strtolower( $data_type_label ) ) ) ); ?>
 				</td>
 				<td>
 					<?php if ( $pull_enabled ) : ?>
@@ -132,7 +132,7 @@ class SystemStatusService implements Service, Registerable {
 				</td>
 			</tr>
 			<?php
-			
+
 			// MC Push row
 			?>
 			<tr>
@@ -140,7 +140,7 @@ class SystemStatusService implements Service, Registerable {
 					<?php echo esc_html( sprintf( '%s MC Push:', $data_type_label ) ); ?>
 				</td>
 				<td class="help">
-					<?php echo wc_help_tip( sprintf( 'Shows if MC Push sync is enabled for %s data.', strtolower( $data_type_label ) ) ); ?>
+					<?php echo wp_kses_post( wc_help_tip( sprintf( 'Shows if MC Push sync is enabled for %s data.', strtolower( $data_type_label ) ) ) ); ?>
 				</td>
 				<td>
 					<?php if ( $push_enabled ) : ?>
