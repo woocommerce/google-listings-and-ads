@@ -10,53 +10,61 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Exception;
-use Google\Ads\GoogleAds\Util\V18\ResourceNames;
-use Google\Ads\GoogleAds\V18\Common\LocationInfo;
-use Google\Ads\GoogleAds\V18\Common\Metrics;
-use Google\Ads\GoogleAds\V18\Common\Segments;
-use Google\Ads\GoogleAds\V18\Common\TagSnippet;
-use Google\Ads\GoogleAds\V18\Common\ImageAsset;
-use Google\Ads\GoogleAds\V18\Common\TextAsset;
-use Google\Ads\GoogleAds\V18\Common\CallToActionAsset;
-use Google\Ads\GoogleAds\V18\Common\ImageDimension;
-use Google\Ads\GoogleAds\V18\Enums\AccessRoleEnum\AccessRole;
-use Google\Ads\GoogleAds\V18\Enums\CampaignStatusEnum\CampaignStatus as AdsCampaignStatus;
-use Google\Ads\GoogleAds\V18\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType as AdsCampaignType;
-use Google\Ads\GoogleAds\V18\Enums\AssetTypeEnum\AssetType;
-use Google\Ads\GoogleAds\V18\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
-use Google\Ads\GoogleAds\V18\Enums\TrackingCodeTypeEnum\TrackingCodeType;
-use Google\Ads\GoogleAds\V18\Resources\BillingSetup;
-use Google\Ads\GoogleAds\V18\Resources\Campaign;
-use Google\Ads\GoogleAds\V18\Resources\Label;
-use Google\Ads\GoogleAds\V18\Resources\Asset;
-use Google\Ads\GoogleAds\V18\Resources\AssetGroup;
-use Google\Ads\GoogleAds\V18\Resources\AssetGroupAsset;
-use Google\Ads\GoogleAds\V18\Services\AssetGroupAssetOperation;
-use Google\Ads\GoogleAds\V18\Resources\CampaignBudget;
-use Google\Ads\GoogleAds\V18\Resources\CampaignCriterion;
-use Google\Ads\GoogleAds\V18\Resources\Campaign\ShoppingSetting;
-use Google\Ads\GoogleAds\V18\Resources\ConversionAction;
-use Google\Ads\GoogleAds\V18\Resources\Customer;
-use Google\Ads\GoogleAds\V18\Resources\CustomerUserAccess;
-use Google\Ads\GoogleAds\V18\Resources\ShoppingPerformanceView;
-use Google\Ads\GoogleAds\V18\Services\Client\ConversionActionServiceClient;
-use Google\Ads\GoogleAds\V18\Services\Client\CustomerServiceClient;
-use Google\Ads\GoogleAds\V18\Services\Client\ProductLinkInvitationServiceClient;
-use Google\Ads\GoogleAds\V18\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V18\Services\Client\GoogleAdsServiceClient;
-use Google\Ads\GoogleAds\V18\Services\ListAccessibleCustomersResponse;
-use Google\Ads\GoogleAds\V18\Services\MutateCampaignResult;
-use Google\Ads\GoogleAds\V18\Services\MutateLabelResult;
-use Google\Ads\GoogleAds\V18\Services\MutateConversionActionResult;
-use Google\Ads\GoogleAds\V18\Services\MutateConversionActionsRequest;
-use Google\Ads\GoogleAds\V18\Services\MutateConversionActionsResponse;
-use Google\Ads\GoogleAds\V18\Services\MutateGoogleAdsRequest;
-use Google\Ads\GoogleAds\V18\Services\MutateGoogleAdsResponse;
-use Google\Ads\GoogleAds\V18\Services\MutateOperationResponse;
-use Google\Ads\GoogleAds\V18\Services\MutateOperation;
-use Google\Ads\GoogleAds\V18\Services\MutateAssetGroupResult;
-use Google\Ads\GoogleAds\V18\Services\MutateAssetResult;
-use Google\Ads\GoogleAds\V18\Services\SearchGoogleAdsResponse;
+use Google\Ads\GoogleAds\Util\V20\ResourceNames;
+use Google\Ads\GoogleAds\V20\Common\LocationInfo;
+use Google\Ads\GoogleAds\V20\Common\Metrics;
+use Google\Ads\GoogleAds\V20\Common\Segments;
+use Google\Ads\GoogleAds\V20\Common\TagSnippet;
+use Google\Ads\GoogleAds\V20\Common\ImageAsset;
+use Google\Ads\GoogleAds\V20\Common\TextAsset;
+use Google\Ads\GoogleAds\V20\Common\CallToActionAsset;
+use Google\Ads\GoogleAds\V20\Common\ImageDimension;
+use Google\Ads\GoogleAds\V20\Enums\AccessRoleEnum\AccessRole;
+use Google\Ads\GoogleAds\V20\Enums\CampaignStatusEnum\CampaignStatus as AdsCampaignStatus;
+use Google\Ads\GoogleAds\V20\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType as AdsCampaignType;
+use Google\Ads\GoogleAds\V20\Enums\AssetTypeEnum\AssetType;
+use Google\Ads\GoogleAds\V20\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
+use Google\Ads\GoogleAds\V20\Enums\TrackingCodeTypeEnum\TrackingCodeType;
+use Google\Ads\GoogleAds\V20\Resources\BillingSetup;
+use Google\Ads\GoogleAds\V20\Resources\Campaign;
+use Google\Ads\GoogleAds\V20\Resources\Label;
+use Google\Ads\GoogleAds\V20\Resources\Asset;
+use Google\Ads\GoogleAds\V20\Resources\AssetGroup;
+use Google\Ads\GoogleAds\V20\Resources\AssetGroupAsset;
+use Google\Ads\GoogleAds\V20\Services\AssetGroupAssetOperation;
+use Google\Ads\GoogleAds\V20\Resources\CampaignBudget;
+use Google\Ads\GoogleAds\V20\Resources\CampaignCriterion;
+use Google\Ads\GoogleAds\V20\Resources\Campaign\ShoppingSetting;
+use Google\Ads\GoogleAds\V20\Resources\ConversionAction;
+use Google\Ads\GoogleAds\V20\Resources\Customer;
+use Google\Ads\GoogleAds\V20\Resources\CustomerUserAccess;
+use Google\Ads\GoogleAds\V20\Resources\GeoTargetConstant;
+use Google\Ads\GoogleAds\V20\Resources\Recommendation;
+use Google\Ads\GoogleAds\V20\Resources\Recommendation\CampaignBudgetRecommendation;
+use Google\Ads\GoogleAds\V20\Resources\Recommendation\CampaignBudgetRecommendation\CampaignBudgetRecommendationOption;
+use Google\Ads\GoogleAds\V20\Resources\Recommendation\RecommendationImpact;
+use Google\Ads\GoogleAds\V20\Resources\Recommendation\RecommendationMetrics;
+use Google\Ads\GoogleAds\V20\Resources\ShoppingPerformanceView;
+use Google\Ads\GoogleAds\V20\Services\Client\ConversionActionServiceClient;
+use Google\Ads\GoogleAds\V20\Services\Client\CustomerServiceClient;
+use Google\Ads\GoogleAds\V20\Services\Client\GoogleAdsServiceClient;
+use Google\Ads\GoogleAds\V20\Services\Client\ProductLinkInvitationServiceClient;
+use Google\Ads\GoogleAds\V20\Services\Client\RecommendationServiceClient;
+use Google\Ads\GoogleAds\V20\Services\GenerateRecommendationsResponse;
+use Google\Ads\GoogleAds\V20\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V20\Services\ListAccessibleCustomersResponse;
+use Google\Ads\GoogleAds\V20\Services\MutateCampaignResult;
+use Google\Ads\GoogleAds\V20\Services\MutateLabelResult;
+use Google\Ads\GoogleAds\V20\Services\MutateConversionActionResult;
+use Google\Ads\GoogleAds\V20\Services\MutateConversionActionsRequest;
+use Google\Ads\GoogleAds\V20\Services\MutateConversionActionsResponse;
+use Google\Ads\GoogleAds\V20\Services\MutateGoogleAdsRequest;
+use Google\Ads\GoogleAds\V20\Services\MutateGoogleAdsResponse;
+use Google\Ads\GoogleAds\V20\Services\MutateOperationResponse;
+use Google\Ads\GoogleAds\V20\Services\MutateOperation;
+use Google\Ads\GoogleAds\V20\Services\MutateAssetGroupResult;
+use Google\Ads\GoogleAds\V20\Services\MutateAssetResult;
+use Google\Ads\GoogleAds\V20\Services\SearchGoogleAdsResponse;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\Page;
 use Google\ApiCore\PagedListResponse;
@@ -79,6 +87,9 @@ trait GoogleAdsClientTrait {
 	/** @var MockObject|GoogleAdsClient $client */
 	protected $client;
 
+	/** @var MockObject|RecommendationServiceClient $recommendation_service */
+	protected $recommendation_service;
+
 	/** @var MockObject|GoogleAdsServiceClient $service_client */
 	protected $service_client;
 
@@ -100,6 +111,9 @@ trait GoogleAdsClientTrait {
 
 		$this->conversion_action_service = $this->createMock( ConversionActionServiceClient::class );
 		$this->client->method( 'getConversionActionServiceClient' )->willReturn( $this->conversion_action_service );
+
+		$this->recommendation_service = $this->createMock( RecommendationServiceClient::class );
+		$this->client->method( 'getRecommendationServiceClient' )->willReturn( $this->recommendation_service );
 	}
 
 	/**
@@ -1063,5 +1077,77 @@ trait GoogleAdsClientTrait {
 		}
 
 		return $asset_group_asset_operations;
+	}
+
+	/**
+	 * Generates a list of mocked recommendations.
+	 *
+	 * @param array $mocked_list
+	 * @param mixed $return_other_recommendation_type
+	 */
+	protected function generate_recommendations_mock( array $mocked_list, $return_other_recommendation_type = false ) {
+		if ( empty( $mocked_list ) ) {
+			$recommendation_list = [];
+		} elseif ( $return_other_recommendation_type ) {
+			$recommendation = $this->createMock( Recommendation::class );
+			$recommendation->method( 'getCampaignBudgetRecommendation' )->willReturn( null );
+			$recommendation_list = [ $recommendation ];
+		} else {
+			$budget_options = [];
+			foreach ( $mocked_list as $mock ) {
+				$metrics = $this->createMock( RecommendationMetrics::class );
+				$metrics->method( 'getCostMicros' )->willReturn( $this->to_micro( $mock['metrics']['cost'] ) );
+				$metrics->method( 'getConversions' )->willReturn( $mock['metrics']['conversions'] );
+				$metrics->method( 'getConversionsValue' )->willReturn( $mock['metrics']['conversions_value'] );
+
+				$impact = $this->createMock( RecommendationImpact::class );
+				$impact->method( 'getPotentialMetrics' )->willReturn( $metrics );
+
+				$budget_option = $this->createMock( CampaignBudgetRecommendationOption::class );
+				$budget_option->method( 'getBudgetAmountMicros' )->willReturn( $this->to_micro( $mock['daily_budget'] ) );
+				$budget_option->method( 'getImpact' )->willReturn( $impact );
+
+				$budget_options[] = $budget_option;
+			}
+
+			$budget_recommendation = $this->createMock( CampaignBudgetRecommendation::class );
+			$budget_recommendation->method( 'getBudgetOptions' )->willReturn( $budget_options );
+			$budget_recommendation->method( 'getRecommendedBudgetAmountMicros' )->willReturn( $this->to_micro( $mocked_list[0]['daily_budget'] ) );
+
+			$recommendation = $this->createMock( Recommendation::class );
+			$recommendation->method( 'getCampaignBudgetRecommendation' )->willReturn( $budget_recommendation );
+			$recommendation_list = [ $recommendation ];
+		}
+
+		$recommendations = $this->createMock( GenerateRecommendationsResponse::class );
+		$recommendations->method( 'getRecommendations' )->willReturn( $recommendation_list );
+
+		$this->recommendation_service->method( 'generateRecommendations' )->willReturn( $recommendations );
+	}
+
+	/**
+	 * Generates a mocked exception when recommendations are requested.
+	 *
+	 * @param ApiException $exception
+	 */
+	protected function generate_recommendations_mock_exception( ApiException $exception ) {
+		$this->recommendation_service->method( 'generateRecommendations' )->willThrowException( $exception );
+	}
+
+	/**
+	 * Generates a mocked response for location IDs.
+	 *
+	 * @param array $locations List of locations.
+	 */
+	protected function generate_location_ids_mock( array $locations ) {
+		foreach ( $locations as $id => $location ) {
+			$geo_target = $this->createMock( GeoTargetConstant::class );
+			$geo_target->method( 'getId' )->willReturn( $id );
+			$geo_target->method( 'getCountryCode' )->willReturn( $location );
+
+			$locations[ $id ] = ( new GoogleAdsRow() )->setGeoTargetConstant( $geo_target );
+		}
+
+		$this->generate_ads_query_mock( array_values( $locations ) );
 	}
 }

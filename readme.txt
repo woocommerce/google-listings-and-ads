@@ -5,7 +5,7 @@ Requires at least: 6.1
 Tested up to: 6.8
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.1.1
+Stable tag: 3.2.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -140,6 +140,21 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.2.0 - 2025-07-22 =
+* Add - Block shipping, products, and coupons synchronization when push synchronization is disabled.
+* Add - Budget Metrics endpoint for fetching metrics with a custom budget.
+* Add - Controller for fetching incentive credits from Middleware.
+* Add - Event tracking for budget recommendations and metrics.
+* Add - Fetch budget recommendations from the Google Ads API.
+* Add - Include blog ID to all notification messages.
+* Add - New endpoint for synchronizing listing settings with Google.
+* Add - Provide the recommendations and metrics when setting a campaign budget.
+* Add - Show a prompt for suggesting a higher budget to get back free ad credits before completing the onboarding and ads onboarding.
+* Tweak - Restrict Budget Metrics to positive numbers.
+* Update - Google Ads API from v18 to v20.
+* Update - Remove WPCOM API authorization check as authorization is granted by default.
+* Update - Remove opt-in/opt-out UI controls for product data sync.
+
 = 3.1.1 - 2025-07-08 =
 * Fix - Do not render experience rating banner if Ads account is disconnected.
 * Fix - Fixed undefined array key warnings in Price Benchmarks feature.
@@ -151,10 +166,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix - Prevent the user from continuing if the minimum shipping time is not set.
 * Fix - The API error of querying campaign assets by an invalid ID after saving a campaign with assets.
 * Tweak - WC 10.0 compatibility.
-
-= 3.0.0 - 2025-06-17 =
-* Add - API Push/Pull Sync control endpoint Implementation.
-* Add - Price Benchmarks: Competitive pricing analysis and price recommendations from Google.
-* Tweak - WC 9.9 compatibility.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

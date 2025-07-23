@@ -3,11 +3,112 @@
  */
 import { ASSET_TEXT_SPECS } from '~/components/paid-ads/assetSpecs';
 import getCharacterCounter from '~/utils/getCharacterCounter';
+import { convertKeysFromSnakeCaseToCamelCase } from './utils';
 
 /**
  * @typedef {import('~/data/actions').Campaign} Campaign
  * @typedef {import('~/data/types.js').AssetEntityGroup} AssetEntityGroup
+ * @typedef {import('~/data/types.js').AdsBudgetRecommendation} AdsBudgetRecommendation
+ * @typedef {import('~/data/types.js').AdsBudgetRecommendationEntity} AdsBudgetRecommendationEntity
+ * @typedef {import('~/data/types.js').AdsBudgetMetrics} AdsBudgetMetrics
  */
+
+/**
+ * A workaround to eliminate recommendations when conversion-related metrics
+ * are identical. It only keeps the lowest-budget one, taking its place as
+ * "recommended" level. Otherwise, it returns the original recommendations.
+ *
+ * Currently, Google Ads API might return the exact same forecast metrics, so
+ * this workaround is intended to avoid user confusion. It only keeps the
+ * lowest budget since that would have the best ROAS.
+ *
+ * @param {Array<AdsBudgetRecommendationEntity>} rawRecommendations The raw budget recommendations.
+ * @return {Array<AdsBudgetRecommendationEntity>} The eliminated or original recommendations.
+ */
+function eliminateIdenticalMetrics( rawRecommendations ) {
+	const recommendations = rawRecommendations.filter(
+		( item ) => item.metrics
+	);
+
+	if ( recommendations.length <= 1 ) {
+		return rawRecommendations;
+	}
+
+	let lowest = recommendations[ 0 ];
+
+	for ( let i = 1; i < recommendations.length; i += 1 ) {
+		const item = recommendations[ i ];
+
+		if (
+			item.metrics.conversions === lowest.metrics.conversions &&
+			item.metrics.conversionsValue === lowest.metrics.conversionsValue
+		) {
+			if ( item.dailyBudget < lowest.dailyBudget ) {
+				lowest = item;
+			}
+		} else {
+			return rawRecommendations;
+		}
+	}
+
+	return [
+		{
+			...lowest,
+			level: 'recommended',
+		},
+	];
+}
+
+/**
+ * Adapts the ads budget recommendation data received from API.
+ *
+ * @param {Object} rawData The ads budget recommendation data to be adapted.
+ * @return {AdsBudgetRecommendation} Ads budget recommendation data.
+ */
+export function adaptAdsBudgetRecommendation( rawData ) {
+	const validLevelKeys = [ 'recommended', 'high', 'low' ];
+	const availabilities = [];
+	const { currency, source, recommendations, ...data } =
+		convertKeysFromSnakeCaseToCamelCase( rawData );
+
+	eliminateIdenticalMetrics( recommendations ).forEach( ( item ) => {
+		const { level, ...adaptingItem } = item;
+		const key = level.toLowerCase();
+
+		if ( validLevelKeys.includes( key ) ) {
+			availabilities.push( adaptingItem.metrics );
+			adaptingItem.currency = currency;
+			data[ key ] = adaptingItem;
+		}
+	} );
+
+	data.recommendedDailyBudget = data.recommended.dailyBudget;
+	data.eventProps = {
+		source,
+		recommended_budget: data.recommendedDailyBudget,
+		metrics_availability: 'all',
+	};
+
+	if ( availabilities.filter( Boolean ).length === 0 ) {
+		data.eventProps.metrics_availability = 'none';
+	} else if ( ! availabilities.every( Boolean ) ) {
+		data.eventProps.metrics_availability = 'partial';
+	}
+
+	return data;
+}
+
+/**
+ * Adapts the ads budget metrics data received from API.
+ *
+ * @param {Object} data The ads budget metrics data to be adapted.
+ * @return {AdsBudgetMetrics} Ads budget metrics data.
+ */
+export function adaptAdsBudgetMetrics( data ) {
+	const { budget, ...adaptingData } = data;
+	adaptingData.dailyBudget = budget;
+	return convertKeysFromSnakeCaseToCamelCase( adaptingData );
+}
 
 /**
  * Adapts the campaign entity received from API.

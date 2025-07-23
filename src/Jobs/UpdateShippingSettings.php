@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 
 defined( 'ABSPATH' ) || exit;
@@ -21,6 +22,7 @@ defined( 'ABSPATH' ) || exit;
  * @since 2.1.0
  */
 class UpdateShippingSettings extends AbstractActionSchedulerJob {
+
 	/**
 	 * @var MerchantCenterService
 	 */
@@ -97,7 +99,7 @@ class UpdateShippingSettings extends AbstractActionSchedulerJob {
 	 * @return bool
 	 */
 	protected function can_sync_shipping(): bool {
-		// Confirm that the Merchant Center account is connected and the user has chosen for the shipping rates to be synced from WooCommerce settings.
-		return $this->merchant_center->is_connected() && $this->google_settings->should_get_shipping_rates_from_woocommerce();
+		// Confirm that the Merchant Center account is connected, the user has chosen for the shipping rates to be synced from WooCommerce settings and the Push Sync is enabled for Shipping.
+		return $this->merchant_center->is_connected() && $this->google_settings->should_get_shipping_rates_from_woocommerce() && $this->merchant_center->is_enabled_for_datatype( NotificationsService::DATATYPE_SHIPPING );
 	}
 }

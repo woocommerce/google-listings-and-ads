@@ -2,7 +2,7 @@
 declare( strict_types=1 );
 
 /**
- * Overrides vendor/googleads/google-ads-php/src/Google/Ads/GoogleAds/Lib/V18/GoogleAdsClient.php
+ * Overrides vendor/googleads/google-ads-php/src/Google/Ads/GoogleAds/Lib/V20/GoogleAdsClient.php
  *
  * phpcs:disable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
  * phpcs:disable WordPress.NamingConventions.ValidVariableName

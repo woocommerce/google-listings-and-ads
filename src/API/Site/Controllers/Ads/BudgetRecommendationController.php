@@ -4,10 +4,14 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetMetrics;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetRecommendations;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
@@ -18,16 +22,17 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class BudgetRecommendationController
  *
+ * ContainerAware used for:
+ * - BudgetMetrics
+ * - BudgetRecommendations
+ * - BudgetRecommendationQuery
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
-class BudgetRecommendationController extends BaseController implements ISO3166AwareInterface {
+class BudgetRecommendationController extends BaseController implements ContainerAwareInterface, ISO3166AwareInterface {
 
+	use ContainerAwareTrait;
 	use CountryCodeTrait;
-
-	/**
-	 * @var BudgetRecommendationQuery
-	 */
-	protected $budget_recommendation_query;
 
 	/**
 	 * @var Ads
@@ -37,14 +42,12 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 	/**
 	 * BudgetRecommendationController constructor.
 	 *
-	 * @param RESTServer                $rest_server
-	 * @param BudgetRecommendationQuery $budget_recommendation_query
-	 * @param Ads                       $ads
+	 * @param RESTServer $rest_server
+	 * @param Ads        $ads
 	 */
-	public function __construct( RESTServer $rest_server, BudgetRecommendationQuery $budget_recommendation_query, Ads $ads ) {
+	public function __construct( RESTServer $rest_server, Ads $ads ) {
 		parent::__construct( $rest_server );
-		$this->budget_recommendation_query = $budget_recommendation_query;
-		$this->ads                         = $ads;
+		$this->ads = $ads;
 	}
 
 	/**
@@ -105,11 +108,46 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 				);
 			}
 
-			$recommendations = $this
-				->budget_recommendation_query
-				->where( 'country', $country_codes, 'IN' )
-				->where( 'currency', $currency )
-				->get_results();
+			// Try to fetch recommendations from the Google Ads API.
+			$budget_recommendations = $this->container->get( BudgetRecommendations::class );
+			$recommendations        = $budget_recommendations->get_recommendations( $country_codes );
+
+			// For the frontend side to track the source of the recommendations.
+			$source = 'google-ads-api';
+
+			// The fallback recommendation is still needed to ensure there is a
+			// baseline budget for validating the minimum value.
+			$budget_baseline = 0;
+
+			// Fetch fallback recommendation from the database.
+			$fallback_recommendation = $this->get_fallback_recommendation( $country_codes, $currency );
+			if ( $fallback_recommendation ) {
+				$fallback_budget = $fallback_recommendation[0]['daily_budget'] ?? 0;
+				$budget_baseline = $fallback_budget;
+
+				// Swap recommended if not set or if fallback is higher.
+				if ( empty( $recommendations[0] ) || ( ! empty( $recommendations[0]['daily_budget'] ) && $recommendations[0]['daily_budget'] < $fallback_budget ) ) {
+					$recommendations[0] = $fallback_recommendation[0];
+					$source             = 'fallback-database';
+
+					// Fetch metrics from the API for the fallback budget (only when we are going to use the fallback).
+					$budget_metrics   = $this->container->get( BudgetMetrics::class );
+					$fallback_metrics = $budget_metrics->get_metrics( $fallback_budget, $country_codes );
+					if ( $fallback_metrics ) {
+						$recommendations[0]['metrics'] = $fallback_metrics;
+					}
+
+					// Remove high recommendation if fallback is higher.
+					if ( ! empty( $recommendations[1]['daily_budget'] ) && $recommendations[1]['daily_budget'] < $fallback_budget ) {
+						unset( $recommendations[1] );
+					}
+
+					// Remove low recommendation if fallback is higher.
+					if ( ! empty( $recommendations[2]['daily_budget'] ) && $recommendations[2]['daily_budget'] < $fallback_budget ) {
+						unset( $recommendations[2] );
+					}
+				}
+			}
 
 			if ( ! $recommendations ) {
 				return new Response(
@@ -122,24 +160,48 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 				);
 			}
 
-			$returned_recommendations = array_map(
-				function ( $recommendation ) {
-					return [
-						'country'      => $recommendation['country'],
-						'daily_budget' => (int) $recommendation['daily_budget'],
-					];
-				},
-				$recommendations
-			);
-
 			return $this->prepare_item_for_response(
 				[
-					'currency'        => $currency,
-					'recommendations' => $returned_recommendations,
+					'currency'              => $currency,
+					'recommendations'       => $recommendations,
+					'daily_budget_baseline' => $budget_baseline,
+					'source'                => $source,
 				],
 				$request
 			);
 		};
+	}
+
+	/**
+	 * Returns a fallback recommendation from the database for the primary country (first in the list).
+	 *
+	 * @param array  $country_codes List of countries to include.
+	 * @param string $currency      Currency to use for recommendations.
+	 *
+	 * @return array|null Recommendation for the primary country.
+	 */
+	protected function get_fallback_recommendation( array $country_codes, string $currency ): ?array {
+		$query           = $this->container->get( BudgetRecommendationQuery::class );
+		$primary_country = reset( $country_codes );
+		$recommendations = $query
+			->where( 'country', $primary_country )
+			->where( 'currency', $currency )
+			->get_results();
+
+		if ( ! $recommendations ) {
+			return null;
+		}
+
+		return array_map(
+			function ( $recommendation ) {
+				return [
+					'daily_budget' => (float) $recommendation['daily_budget'],
+					'country'      => $recommendation['country'],
+					'level'        => __( 'Recommended', 'google-listings-and-ads' ),
+				];
+			},
+			$recommendations
+		);
 	}
 
 	/**
@@ -149,13 +211,13 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'currency'        => [
+			'currency'              => [
 				'type'              => 'string',
 				'description'       => __( 'The currency to use for the shipping rate.', 'google-listings-and-ads' ),
 				'context'           => [ 'view' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'recommendations' => [
+			'recommendations'       => [
 				'type'  => 'array',
 				'items' => [
 					'type'       => 'object',
@@ -169,8 +231,43 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 							'type'        => 'number',
 							'description' => __( 'The recommended daily budget for a country.', 'google-listings-and-ads' ),
 						],
+						'level'        => [
+							'type'        => 'string',
+							'description' => __( 'Label for the recommendation level: High, Recommended, Low', 'google-listings-and-ads' ),
+						],
+						'metrics'      => [
+							'type'       => 'object',
+							'properties' => [
+								'cost'              => [
+									'type'        => 'number',
+									'description' => __( 'Estimated average amount you will spend weekly during the month.', 'google-listings-and-ads' ),
+									'context'     => [ 'view' ],
+								],
+								'conversions'       => [
+									'type'        => 'number',
+									'description' => __( 'Estimated number of conversions (unit sales) for a typical week.', 'google-listings-and-ads' ),
+									'context'     => [ 'view' ],
+								],
+								'conversions_value' => [
+									'type'        => 'number',
+									'description' => __( 'Estimated total value of all the conversions (sales volume) your campaign will generate in a week.', 'google-listings-and-ads' ),
+									'context'     => [ 'view' ],
+								],
+							],
+						],
 					],
 				],
+			],
+			'daily_budget_baseline' => [
+				'type'        => 'number',
+				'description' => __( 'The baseline daily budget for a country.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+			],
+			'source'                => [
+				'type'        => 'string',
+				'enum'        => [ 'google-ads-api', 'fallback-database' ],
+				'description' => __( 'Data source of the budget recommendations, either from Google Ads API or fallback database.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
 			],
 		];
 	}

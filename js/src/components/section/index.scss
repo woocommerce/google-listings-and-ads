@@ -16,6 +16,7 @@
 	&__header {
 		@include break-small {
 			width: 33%;
+			max-width: 328px;
 			padding-top: var(--main-gap);
 		}
 

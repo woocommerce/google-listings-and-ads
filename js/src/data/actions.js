@@ -17,9 +17,11 @@ import {
 import { handleApiError } from '~/utils/handleError';
 import { adaptAdsCampaign } from './adapters';
 import { isWCIos, isWCAndroid } from '~/utils/isMobileApp';
+import { convertKeysFromSnakeCaseToCamelCase } from './utils';
 
 /**
  * @typedef {import('~/data/types.js').AssetEntityGroupUpdateBody} AssetEntityGroupUpdateBody
+ * @typedef {import('~/data/types.js').AdsIncentiveCredits} AdsIncentiveCredits
  * @typedef {import('./selectors').Tour} Tour
  * @typedef {import('./selectors').PriceBenchmarkQueryParams} PriceBenchmarkQueryParams
  */
@@ -699,6 +701,18 @@ export function* saveTargetAudience( targetAudience ) {
 		type: TYPES.SAVE_TARGET_AUDIENCE,
 		target_audience: targetAudience,
 	};
+}
+
+/**
+ * Fetch the incentive credits of Google Ads.
+ *
+ * @return {Promise<AdsIncentiveCredits>} The incentive credits of Google Ads.
+ * @throws Will throw an error if the request failed.
+ */
+export function* fetchAdsIncentiveCredits() {
+	const path = `${ API_NAMESPACE }/ads/incentive-credits`;
+	const response = yield apiFetch( { path } );
+	return convertKeysFromSnakeCaseToCamelCase( response );
 }
 
 /**
