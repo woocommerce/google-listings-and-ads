@@ -44,7 +44,6 @@ class NotificationManager implements Service, Registerable {
 		// Hook into admin_menu with a high priority (e.g., 20) to ensure
 		// all other menu items have been registered by WooCommerce and other plugins.
 		add_action( 'admin_menu', [ $this, 'display_aggregated_notification_pill' ], 20 );
-		add_filter( 'google_for_woocommerce_admin_menu_notification_count', [ $this, 'filter_notification_count' ] );
 	}
 
 	/**
@@ -186,16 +185,14 @@ class NotificationManager implements Service, Registerable {
 	}
 
 	/**
-	 * Filter the notification count for the admin menu.
-	 *
-	 * This method checks the user's persisted preferences to determine if there are any recommendations.
-	 * If there are recommendations, it increments the count by 1; otherwise, it returns 0.
+	 * Returns the initial notification count for the admin menu.
 	 *
 	 * @return int The updated notification count, which is either 1 (if there are recommendations) or 0 (if there are no recommendations).
 	 */
 	public function initial_notification_count(): int {
+		global $wpdb;
 		$count       = 0;
-		$preferences = get_user_meta( get_current_user_id(), 'wp_persisted_preferences', true );
+		$preferences = get_user_meta( get_current_user_id(), "{$wpdb->prefix}persisted_preferences", true );
 
 		if ( is_array( $preferences ) && isset( $preferences['woocommerce/google-listings-and-ads']['pmax-improve-assets-banner']['hasRecommendations'] ) && $preferences['woocommerce/google-listings-and-ads']['pmax-improve-assets-banner']['hasRecommendations'] ) {
 			return ++$count;
