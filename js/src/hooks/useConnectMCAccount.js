@@ -28,6 +28,17 @@ const useConnectMCAccount = ( value ) => {
 			await fetchMCAccounts( { parse: false } );
 			invalidateResolution( 'getGoogleMCAccount', [] );
 		} catch ( e ) {
+			if ( e?.code === 'fetch_error' ) {
+				createNotice(
+					'error',
+					__(
+						'Unable to update your Google Merchant Center contact information. You are probably offline.',
+						'google-listings-and-ads'
+					)
+				);
+				return;
+			}
+
 			if ( ! [ 409, 403 ].includes( e.status ) ) {
 				const body = await e.json();
 				const message =
