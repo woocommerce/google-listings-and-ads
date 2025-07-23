@@ -125,22 +125,27 @@ class SystemStatusService implements Service, Registerable {
 					$pull_enabled = isset( $modes['pull'] ) && $modes['pull'];
 					$push_enabled = isset( $modes['push'] ) && $modes['push'];
 					
-					$pull_status = $pull_enabled ? '✔ Enabled' : '❌ Disabled';
-					$push_status = $push_enabled ? '✔ Enabled' : '❌ Disabled';
-					$pull_class  = $pull_enabled ? 'yes' : 'error';
-					$push_class  = $push_enabled ? 'yes' : 'error';
+					$pull_status_text = $pull_enabled ? 'Enabled' : 'Disabled';
+					$push_status_text = $push_enabled ? 'Enabled' : 'Disabled';
 					
-					// Format for both display and text export
-					$status_text = sprintf(
-						'API Pull: %s, MC Push: %s',
-						$pull_enabled ? 'Enabled' : 'Disabled',
-						$push_enabled ? 'Enabled' : 'Disabled'
-					);
+					// Create a concise status that matches WooCommerce export patterns
+					$status_summary = sprintf( 'API Pull: %s / MC Push: %s', $pull_status_text, $push_status_text );
+					
+					if ( $pull_enabled && $push_enabled ) {
+						$class = 'yes';
+						$icon = 'dashicons-yes';
+					} elseif ( ! $pull_enabled && ! $push_enabled ) {
+						$class = 'error';
+						$icon = 'dashicons-warning';
+					} else {
+						$class = 'error'; // Mixed state
+						$icon = 'dashicons-warning';
+					}
 					?>
-					<span data-export-label="<?php echo esc_attr( $status_text ); ?>">
-						<mark class="<?php echo esc_attr( $pull_class ); ?>"><?php echo esc_html( $pull_status ); ?></mark> / 
-						<mark class="<?php echo esc_attr( $push_class ); ?>"><?php echo esc_html( $push_status ); ?></mark>
-					</span>
+					<mark class="<?php echo esc_attr( $class ); ?>">
+						<span class="dashicons <?php echo esc_attr( $icon ); ?>"></span>
+						<?php echo esc_html( $status_summary ); ?>
+					</mark>
 				</td>
 			</tr>
 			<?php
