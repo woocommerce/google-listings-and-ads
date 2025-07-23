@@ -125,27 +125,22 @@ class SystemStatusService implements Service, Registerable {
 					$pull_enabled = isset( $modes['pull'] ) && $modes['pull'];
 					$push_enabled = isset( $modes['push'] ) && $modes['push'];
 					
-					$pull_status = $pull_enabled ? 'Enabled' : 'Disabled';
-					$push_status = $push_enabled ? 'Enabled' : 'Disabled';
+					$pull_status = $pull_enabled ? '✔ Enabled' : '❌ Disabled';
+					$push_status = $push_enabled ? '✔ Enabled' : '❌ Disabled';
 					$pull_class  = $pull_enabled ? 'yes' : 'error';
 					$push_class  = $push_enabled ? 'yes' : 'error';
-					$pull_icon   = $pull_enabled ? 'dashicons-yes' : 'dashicons-warning';
-					$push_icon   = $push_enabled ? 'dashicons-yes' : 'dashicons-warning';
+					
+					// Format for both display and text export
+					$status_text = sprintf(
+						'API Pull: %s, MC Push: %s',
+						$pull_enabled ? 'Enabled' : 'Disabled',
+						$push_enabled ? 'Enabled' : 'Disabled'
+					);
 					?>
-					<div style="margin-bottom: 5px;">
-						<strong><?php esc_html_e( 'API Pull:', 'google-listings-and-ads' ); ?></strong> 
-						<mark class="<?php echo esc_attr( $pull_class ); ?>">
-							<span class="dashicons <?php echo esc_attr( $pull_icon ); ?>"></span> 
-							<?php echo esc_html( $pull_status ); ?>
-						</mark>
-					</div>
-					<div>
-						<strong><?php esc_html_e( 'MC Push:', 'google-listings-and-ads' ); ?></strong> 
-						<mark class="<?php echo esc_attr( $push_class ); ?>">
-							<span class="dashicons <?php echo esc_attr( $push_icon ); ?>"></span> 
-							<?php echo esc_html( $push_status ); ?>
-						</mark>
-					</div>
+					<span data-export-label="<?php echo esc_attr( $status_text ); ?>">
+						<mark class="<?php echo esc_attr( $pull_class ); ?>"><?php echo esc_html( $pull_status ); ?></mark> / 
+						<mark class="<?php echo esc_attr( $push_class ); ?>"><?php echo esc_html( $push_status ); ?></mark>
+					</span>
 				</td>
 			</tr>
 			<?php
