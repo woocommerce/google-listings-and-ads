@@ -71,6 +71,7 @@ const DEFAULT_STATE = {
 			step: null,
 		},
 		budgetRecommendations: {},
+		enable_enhanced_conversions: false,
 		budgetMetrics: {},
 	},
 	gtinMigrationStatus: null,
