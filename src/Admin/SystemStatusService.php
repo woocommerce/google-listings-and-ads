@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  * Class SystemStatusService
  * This class adds Google for WooCommerce information to the WooCommerce System Status Report
  *
- * @since 3.2.0
+ * @since x.x.x
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin
  */
 class SystemStatusService implements Service, Registerable {
