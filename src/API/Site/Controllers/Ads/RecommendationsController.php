@@ -110,7 +110,8 @@ class RecommendationsController extends BaseController implements ContainerAware
 
 				$result = [];
 				foreach ( $recommendations as $recommendation ) {
-					$result[] = $this->prepare_item_for_response( $recommendation, $request );
+					$data     = $this->prepare_item_for_response( $recommendation, $request );
+					$result[] = $this->prepare_response_for_collection( $data );
 				}
 
 				return new Response( $result );

@@ -84,10 +84,8 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 		$data = $response->get_data();
 		$this->assertIsArray( $data );
 		$this->assertCount( 2, $data );
-		$this->assertInstanceOf( Response::class, $data[0] );
-		$this->assertInstanceOf( Response::class, $data[1] );
-		$this->assertEquals( 1, $data[0]->get_data()['id'] );
-		$this->assertEquals( 2, $data[1]->get_data()['id'] );
+		$this->assertEquals( 1, $data[0]['id'] );
+		$this->assertEquals( 2, $data[1]['id'] );
 	}
 
 	public function test_get_recommendations_returns_empty_array_when_no_recommendations() {
@@ -177,8 +175,7 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 		$this->assertIsArray( $data );
 		$this->assertCount( 2, $data );
 		foreach ( $data as $key => $rec ) {
-			$this->assertInstanceOf( Response::class, $data[ $key ] );
-			$this->assertEquals( 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH', $rec->get_data()['type'] );
+			$this->assertEquals( 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH', $rec['type'] );
 		}
 	}
 
@@ -230,7 +227,6 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 		$data = $response->get_data();
 		$this->assertIsArray( $data );
 		$this->assertCount( 1, $data );
-		$this->assertInstanceOf( Response::class, $data[0] );
-		$this->assertEquals( 2, $data[0]->get_data()['id'] );
+		$this->assertEquals( 2, $data[0]['id'] );
 	}
 }
