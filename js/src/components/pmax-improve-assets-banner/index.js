@@ -25,20 +25,20 @@ const PREFERENCE_BANNER_KEY = 'pmax-improve-assets-banner';
  *
  * When dismissed, the banner will not reappear until the expiry time elapses.
  * Clicking "Improve Assets" navigates to the asset group edit page for the highest-spending PMAX campaign.
- * Another property, "hasRecommendation" is used to track if there are any recommendations available.
+ * Another property, "hasRecommendations" is used to track if there are any recommendations available.
  *
  * @return {JSX.Element|null} The banner component, or null if not applicable.
  */
 const PMaxImproveAssetsBanner = () => {
 	const { set } = useDispatch( preferencesStore );
-	const { expiry, hasRecommendation } =
+	const { expiry, hasRecommendations } =
 		usePreference( PREFERENCE_BANNER_KEY ) || {};
 
 	useEffect( () => {
 		if ( expiry !== undefined && Date.now() >= expiry ) {
 			set( PREFERENCES_STORE_NAMESPACE, PREFERENCE_BANNER_KEY, {
 				expiry: undefined,
-				hasRecommendation: undefined,
+				hasRecommendations: undefined,
 			} );
 		}
 	}, [ expiry, set ] );
@@ -46,19 +46,19 @@ const PMaxImproveAssetsBanner = () => {
 	const handleOnBannerDismissed = useCallback( () => {
 		set( PREFERENCES_STORE_NAMESPACE, PREFERENCE_BANNER_KEY, {
 			expiry: Date.now() + DAY_IN_SECONDS * 30 * 1000, // 30 days in ms
-			hasRecommendation: undefined,
+			hasRecommendations: undefined,
 		} );
 	}, [ set ] );
 
 	const handleOnBannerShown = useCallback( () => {
-		if ( hasRecommendation ) {
+		if ( hasRecommendations ) {
 			return;
 		}
 		set( PREFERENCES_STORE_NAMESPACE, PREFERENCE_BANNER_KEY, {
 			expiry,
-			hasRecommendation: true,
+			hasRecommendations: true,
 		} );
-	}, [ set, hasRecommendation, expiry ] );
+	}, [ set, hasRecommendations, expiry ] );
 
 	// Do not show the banner if the expiry is set and not yet expired
 	if ( expiry !== undefined && Date.now() < expiry ) {
