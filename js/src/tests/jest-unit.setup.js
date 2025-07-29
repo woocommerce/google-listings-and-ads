@@ -33,6 +33,12 @@ jest.mock( '~/hooks/useDispatchCoreNotices', () =>
 		.mockReturnValue( { createNotice: () => {} } )
 );
 
+// Avoid tests that depend on `handleError` utils needing to mock global.console individually.
+// To test real console calls, please refer to ~/utils/handleError.test.js
+jest.mock( '~/utils/console', () => ( {
+	logError: jest.fn().mockName( 'console.error' ),
+} ) );
+
 // Mock the glaData here because the `globals` object in the jest config must
 // be JSON-serializable, which cannot preserve `undefined` values.
 global.glaData = {
