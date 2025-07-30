@@ -71,6 +71,7 @@ const DEFAULT_STATE = {
 			step: null,
 		},
 		budgetRecommendations: {},
+		enable_enhanced_conversions: false,
 		budgetMetrics: {},
 	},
 	gtinMigrationStatus: null,
@@ -533,6 +534,12 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		case TYPES.RECEIVE_GTIN_MIGRATION_STATUS: {
 			const { data } = action;
 			return setIn( state, 'gtinMigrationStatus', data?.status );
+		}
+
+		case TYPES.RECEIVE_ADS_ENHANCED_CONVERSIONS: {
+			const { status } = action;
+
+			return setIn( state, 'ads.enable_enhanced_conversions', status );
 		}
 
 		case TYPES.RECEIVE_PRICE_BENCHMARK_SUMMARY: {

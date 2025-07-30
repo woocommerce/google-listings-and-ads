@@ -56,6 +56,7 @@ import {
 	receiveStoreCategories,
 	receiveTour,
 	receiveGtinMigrationStatus,
+	receiveEnhancedConversionsStatus,
 } from './actions';
 
 /**
@@ -631,6 +632,29 @@ export function* getGtinMigrationStatus() {
 			error,
 			__(
 				'There was an error getting the GTIN Migration Status.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Resolver to fetch the enhanced conversions status.
+ */
+export function* getEnableEnhancedConversions() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/settings`,
+		} );
+
+		yield receiveEnhancedConversionsStatus(
+			Boolean( response.enhanced_conversions_enabled )
+		);
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the enhanced conversions status.',
 				'google-listings-and-ads'
 			)
 		);

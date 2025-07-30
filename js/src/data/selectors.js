@@ -173,6 +173,17 @@ export const getAdsCampaigns = ( state, query ) => {
 };
 
 /**
+ * Get the enhanced conversions setting.
+ * This setting indicates whether enhanced conversions are enabled for the Google Ads account.
+ *
+ * @param {Object} state The current store state will be injected by `wp.data`.
+ * @return {boolean} The enhanced conversions setting. Returns `true` if enabled, `false` otherwise.
+ */
+export const getEnableEnhancedConversions = ( state ) => {
+	return state.ads.enable_enhanced_conversions;
+};
+
+/**
  * Gets the asset groups by the given campaign ID.
  *
  * @param {Object} state The current store state will be injected by `wp.data`.

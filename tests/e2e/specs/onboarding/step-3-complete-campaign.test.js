@@ -549,6 +549,100 @@ test.describe( 'Complete your campaign', () => {
 		} );
 	} );
 
+	test.describe( 'Enhanced conversion prompt', () => {
+		test.beforeAll( async () => {
+			await page.evaluate( () => {
+				window.sessionStorage.clear();
+			} );
+			await setupAdsAccountPage.mockAdsAccountConnected();
+			await completeCampaign.goto();
+			await completeCampaign.clickSkipPaidAdsCreationButton();
+			await completeCampaign.clickCompleteSetupModalButton();
+		} );
+
+		test( 'should see the setup success modal', async () => {
+			const setupSuccessModal = completeCampaign.getSetupSuccessModal();
+			await expect( setupSuccessModal ).toBeVisible();
+		} );
+
+		test.describe( 'Ads setup is incomplete', () => {
+			test( 'should have three prompts in the setup success modal', async () => {
+				const guideControls = page.getByRole( 'list', {
+					name: 'Guide controls',
+				} );
+				const guideControlsItems =
+					guideControls.getByRole( 'listitem' );
+				await expect( guideControlsItems ).toHaveCount( 3 );
+			} );
+
+			test( 'should see the "Enhanced Conversions" prompt in the setup success modal', async () => {
+				const guideControls = page.getByRole( 'list', {
+					name: 'Guide controls',
+				} );
+				const guideControlsItems =
+					guideControls.getByRole( 'listitem' );
+				await guideControlsItems.nth( 1 ).click();
+				await expect(
+					page.getByText(
+						'Improve conversion tracking accuracy to improve campaign performance'
+					)
+				).toBeVisible();
+			} );
+
+			test( 'should see the "Set up Enhanced Conversions" button in the setup success modal', async () => {
+				const enhancedConversionsButton = page.getByRole( 'button', {
+					name: 'Set up Enhanced Conversions',
+				} );
+				await expect( enhancedConversionsButton ).toBeVisible();
+
+				const dataAction =
+					await enhancedConversionsButton.getAttribute(
+						'data-action'
+					);
+				expect( dataAction ).toBe(
+					'view-enhanced-conversions-settings'
+				);
+			} );
+		} );
+
+		test.describe( 'Ads setup is complete', async () => {
+			test.beforeAll( async () => {
+				await completeCampaign.goto();
+				await completeCampaign.clickSkipPaidAdsCreationButton();
+				await completeCampaign.clickCompleteSetupModalButton();
+				await page.waitForNavigation( {
+					waitUntil: 'domcontentloaded',
+				} );
+				await page.evaluate( () => {
+					window.glaData.adsSetupComplete = true;
+				} );
+			} );
+
+			test( 'should have two prompts in the setup success modal', async () => {
+				const guideControls = page.getByRole( 'list', {
+					name: 'Guide controls',
+				} );
+				const guideControlsItems =
+					guideControls.getByRole( 'listitem' );
+				await guideControlsItems.nth( 1 ).click();
+				await expect( guideControlsItems ).toHaveCount( 2 );
+			} );
+		} );
+
+		test( 'should navigate to settings page when clicking "Set up Enhanced Conversions" button', async () => {
+			const enhancedConversionsButton = page.getByRole( 'button', {
+				name: 'Set up Enhanced Conversions',
+			} );
+			await enhancedConversionsButton.click();
+
+			await page.waitForURL( /path=%2Fgoogle%2Fsettings/ );
+			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fsettings/ );
+
+			const setupSuccessModal = completeCampaign.getSetupSuccessModal();
+			await expect( setupSuccessModal ).not.toBeVisible();
+		} );
+	} );
+
 	test.describe( 'Free Ad Credit', () => {
 		test( 'should see the Free Ad Credit section always', async () => {
 			await setupAdsAccountPage.mockAdsAccountConnected();
