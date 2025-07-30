@@ -28,7 +28,7 @@ import { handleApiError } from '~/utils/handleError';
 import { recordGlaEvent } from '~/utils/tracks';
 
 /**
- * Saving changes of audience and/or shipping settings to the free listings.
+ * Saving changes of audience and/or shipping settings to the product feed.
  *
  * @event gla_free_campaign_edited
  */
@@ -37,7 +37,7 @@ import { recordGlaEvent } from '~/utils/tracks';
  * Page component to edit audience and shipping settings.
  *
  * Note that:
- * - This page used to be called "Edit free listings" page.
+ * - This page used to be called "Edit product feed" page.
  * - Although it's presented on UI as "Shipping" page,
  *   it actually contains other Merchant Center settings.
  *

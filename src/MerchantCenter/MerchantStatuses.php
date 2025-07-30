@@ -1022,15 +1022,15 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		 * Code 'merchant_quality_low' for matching the original issue.
 		 * Ref: https://developers.google.com/shopping-content/guides/account-issues#merchant_quality_low
 		 *
-		 * Issue string "Account isn't eligible for free listings" for matching
+		 * Issue string "Account isn't eligible for free listings" or "Account isn't eligible for product feed" for matching
 		 * the updated copy after Free and Enhanced Listings merge.
 		 *
 		 * TODO: Remove the condition of matching the $issue['issue']
 		 *       if its issue code is the same as 'merchant_quality_low'
 		 *       after Google replaces the issue title on their side.
 		 */
-		if ( 'merchant_quality_low' === $issue['code'] || "Account isn't eligible for free listings" === $issue['issue'] ) {
-			$issue['issue']      = 'Show products on additional surfaces across Google through free listings';
+		if ( 'merchant_quality_low' === $issue['code'] || "Account isn't eligible for free listings" === $issue['issue'] || "Account isn't eligible for product feed" === $issue['issue'] ) {
+			$issue['issue']      = 'Show products on additional surfaces across Google through product feed';
 			$issue['severity']   = self::SEVERITY_WARNING;
 			$issue['action_url'] = 'https://support.google.com/merchants/answer/9199328?hl=en';
 		}
