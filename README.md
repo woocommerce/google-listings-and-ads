@@ -6,7 +6,7 @@
 [![JavaScript and CSS Linting](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-css-linting.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-css-linting.yml)
 [![Build](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/build.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/build.yml)
 
-A native integration with Google offering free listings and Performance Max ads to WooCommerce merchants.
+A native integration with Google offering product feed and Performance Max ads to WooCommerce merchants.
 
 -   [WooCommerce.com product page](https://woocommerce.com/products/google-listings-and-ads/)
 -   [WordPress.org plugin page](https://wordpress.org/plugins/google-listings-and-ads/)

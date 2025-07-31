@@ -548,7 +548,7 @@ Triggered when changing products & variations filter,
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
 
 ### [`gla_free_campaign_edited`](../../js/src/pages/shipping/index.js#L30)
-Saving changes of audience and/or shipping settings to the free listings.
+Saving changes of audience and/or shipping settings to the product feed.
 #### Emitters
 - [`exports`](../../js/src/pages/shipping/index.js#L46)
 

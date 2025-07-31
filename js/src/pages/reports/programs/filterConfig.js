@@ -12,7 +12,7 @@ import { FREE_LISTINGS_PROGRAM_ID, REPORT_PROGRAM_PARAM } from '~/constants';
 const freeListingsPrograms = [
 	{
 		id: FREE_LISTINGS_PROGRAM_ID,
-		name: __( 'Free Listings', 'google-listings-and-ads' ),
+		name: __( 'Product Feed', 'google-listings-and-ads' ),
 	},
 ];
 const freeListingsProgramsIds = new Set(

@@ -50,7 +50,7 @@ const ProductStatusHelpPopover = () => {
 			<p>
 				{ createInterpolateElement(
 					__(
-						'<strong>‘Active’ products</strong> are fully approved and eligible to appear in free listings on Google.',
+						'<strong>‘Active’ products</strong> are fully approved and eligible to appear in product feed on Google.',
 						'google-listings-and-ads'
 					),
 					map
