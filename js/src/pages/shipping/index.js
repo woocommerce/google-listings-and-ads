@@ -37,7 +37,7 @@ import { recordGlaEvent } from '~/utils/tracks';
  * Page component to edit audience and shipping settings.
  *
  * Note that:
- * - This page used to be called "Edit product feed" page.
+ * - This page used to be called "Edit free listings" page.
  * - Although it's presented on UI as "Shipping" page,
  *   it actually contains other Merchant Center settings.
  *
