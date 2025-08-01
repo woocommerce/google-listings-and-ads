@@ -19,6 +19,7 @@ use Google\Ads\GoogleAds\V20\Common\ImageAsset;
 use Google\Ads\GoogleAds\V20\Common\TextAsset;
 use Google\Ads\GoogleAds\V20\Common\CallToActionAsset;
 use Google\Ads\GoogleAds\V20\Common\ImageDimension;
+use Google\Ads\GoogleAds\V20\Common\YoutubeVideoAsset;
 use Google\Ads\GoogleAds\V20\Enums\AccessRoleEnum\AccessRole;
 use Google\Ads\GoogleAds\V20\Enums\CampaignStatusEnum\CampaignStatus as AdsCampaignStatus;
 use Google\Ads\GoogleAds\V20\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType as AdsCampaignType;

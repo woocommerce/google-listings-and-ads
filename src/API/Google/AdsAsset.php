@@ -16,6 +16,7 @@ use Google\Ads\GoogleAds\Util\V20\ResourceNames;
 use Google\Ads\GoogleAds\V20\Common\TextAsset;
 use Google\Ads\GoogleAds\V20\Common\ImageAsset;
 use Google\Ads\GoogleAds\V20\Common\CallToActionAsset;
+use Google\Ads\GoogleAds\V20\Common\YoutubeVideoAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Google\ApiCore\ApiException;
 use Exception;
