@@ -7,15 +7,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AdsRecommendationsQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsRecommendationsQuery as GoogleAdsRecommendationsQuery;
-
-// use the Recommendation Resource so it is included in the vendor folder for the middleware, even though its not directly used.
-use Google\Ads\GoogleAds\V18\Resources\Recommendation;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as GoogleException;
+use Google\Ads\GoogleAds\V20\Resources\Recommendation;
+use Exception;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -137,7 +135,7 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 					'recommendation_id'              => $recommendation_id,
 					/**
 					 * Note: The 'id' field below refers to the Recommendation resource's ID property, not the field name itself.
-					 * Reference: https://github.com/googleads/google-ads-php/blob/main/src/Google/Ads/GoogleAds/V18/Resources/Recommendation.php#L25-L30
+					 * Reference: https://github.com/googleads/google-ads-php/blob/main/src/Google/Ads/GoogleAds/V20/Resources/Recommendation.php#L25-L30
 					 *
 					 * We use the static name for the recommendation type instead of `$recommendation->getType()`
 					 * to ensure consistency and avoid potential issues with dynamic values or API changes.
