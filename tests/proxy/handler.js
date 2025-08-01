@@ -18,6 +18,17 @@ module.exports.checkRequest = ( request, h ) => {
 
 			return require( `./mocks/ads/reports/${ file }${ page }.json` );
 		}
+
+		if ( body.query.includes( 'recommendation' ) ) {
+			if ( config.logResponses ) {
+				// eslint-disable-next-line no-console
+				console.log(
+					'Returning mock recommendations for query: ',
+					body.query
+				);
+			}
+			return require( './mocks/ads/recommendations/results.json' );
+		}
 	}
 
 	// Mock responses for the Merchant Center API reports search.

@@ -484,3 +484,14 @@ export const getPriceBenchmarkSuggestions = createSelector(
 export const getPriceBenchmarkSuggestion = ( state, productId ) => {
 	return state.price_benchmark.suggestions.items[ productId ];
 };
+
+/**
+ * Retrieves ad recommendations of a specific type from the state.
+ *
+ * @param {Object} state - The Redux state object containing ads data.
+ * @param {string} type - The type of ad recommendations to retrieve.
+ * @return {Object|null} The recommendations for the specified type, or null if not found.
+ */
+export const getAdsRecommendations = ( state, type ) => {
+	return state.ads.recommendations[ type ] || null;
+};

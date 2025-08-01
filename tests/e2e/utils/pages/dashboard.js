@@ -85,6 +85,7 @@ export default class DashboardPage extends MockRequests {
 			status: 'disconnected',
 		} );
 
+		await this.mockAdsRecommendations();
 		await this.fulfillAdsReportProducts( adsReportProductsData );
 	}
 
