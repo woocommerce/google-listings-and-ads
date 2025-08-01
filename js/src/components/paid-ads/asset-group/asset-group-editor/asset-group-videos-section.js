@@ -33,6 +33,12 @@ const AssetGroupVideosSection = ( { initialValues, isSelectedFinalUrl } ) => {
 			description={
 				<div className="gla-asset-group-section__primary-description">
 					<p>
+						{ __(
+							'Recommended but optional',
+							'google-listings-and-ads'
+						) }
+					</p>
+					<p>
 						<AppDocumentationLink
 							context="asset-group"
 							linkId="asset-group-videos-learn-more"
