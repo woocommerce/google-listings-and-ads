@@ -118,7 +118,7 @@ export default function AssetGroup( { campaign } ) {
 					'google-listings-and-ads'
 				) }
 				description={ __(
-					'Drive greater performance by adding text and image assets to create personalized and engaging ads',
+					'Drive greater performance by adding text, image, and video assets to create more personalized and engaging ads.',
 					'google-listings-and-ads'
 				) }
 			/>
