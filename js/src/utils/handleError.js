@@ -8,6 +8,7 @@ import { __, _x } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { NOTICES_STORE_KEY } from '~/data/constants';
+import { logError } from './console';
 
 /**
  * @typedef {Object} ApiError
@@ -78,6 +79,5 @@ export function handleApiError( error, leadingMessage, fallbackMessage ) {
 		dispatch( NOTICES_STORE_KEY ).createNotice( 'error', message );
 	}
 
-	// eslint-disable-next-line no-console
-	console.error( error );
+	logError( error );
 }

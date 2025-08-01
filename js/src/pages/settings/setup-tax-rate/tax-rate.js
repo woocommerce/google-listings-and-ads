@@ -23,13 +23,20 @@ import VerticalGapLayout from '~/components/vertical-gap-layout';
  * Renders the options of tax rate.
  *
  * @param {Object} props React props.
- * @param {JSX.Element} [props.children] Children to be rendered below the card.
+ * @param {JSX.Element} [props.handleSubmit] Function to handle form submission.
  */
-const TaxRate = ( { children } ) => {
+const TaxRate = ( { handleSubmit } ) => {
 	const {
 		getInputProps,
 		adapter: { isSubmitting },
 	} = useAdaptiveFormContext();
+
+	const { onChange, ...inputProps } = getInputProps( 'tax_rate' );
+
+	const handleOnChange = ( value ) => {
+		onChange( value );
+		handleSubmit();
+	};
 
 	return (
 		<Section
@@ -61,7 +68,7 @@ const TaxRate = ( { children } ) => {
 				<Section.Card.Body>
 					<VerticalGapLayout size="large">
 						<AppRadioContentControl
-							{ ...getInputProps( 'tax_rate' ) }
+							{ ...inputProps }
 							label={ __(
 								'My store uses destination-based tax rates.',
 								'google-listings-and-ads'
@@ -69,6 +76,7 @@ const TaxRate = ( { children } ) => {
 							value="destination"
 							collapsible
 							disabled={ isSubmitting }
+							onChange={ handleOnChange }
 						>
 							<RadioHelperText>
 								{ __(
@@ -78,7 +86,7 @@ const TaxRate = ( { children } ) => {
 							</RadioHelperText>
 						</AppRadioContentControl>
 						<AppRadioContentControl
-							{ ...getInputProps( 'tax_rate' ) }
+							{ ...inputProps }
 							label={ __(
 								'My store does not use destination-based tax rates.',
 								'google-listings-and-ads'
@@ -86,6 +94,7 @@ const TaxRate = ( { children } ) => {
 							value="manual"
 							collapsible
 							disabled={ isSubmitting }
+							onChange={ handleOnChange }
 						>
 							<RadioHelperText>
 								{ createInterpolateElement(
@@ -108,7 +117,6 @@ const TaxRate = ( { children } ) => {
 					</VerticalGapLayout>
 				</Section.Card.Body>
 			</Section.Card>
-			{ children }
 		</Section>
 	);
 };

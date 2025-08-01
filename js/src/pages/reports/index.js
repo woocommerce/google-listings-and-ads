@@ -53,7 +53,7 @@ export default Reports;
 
 /**
  * @typedef {Object} ProgramsReportData
- * @property {Array<ProgramsData>} freeListings Free listings data
+ * @property {Array<ProgramsData>} freeListings Product feed data
  * @property {Array<ProgramsData>} campaigns Ad campaigns data.
  * @property {Array<IntervalsData> | null} intervals Intervals data.
  * @property {PerformanceData} totals Performance data.

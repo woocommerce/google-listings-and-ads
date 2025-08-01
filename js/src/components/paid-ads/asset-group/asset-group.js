@@ -78,7 +78,7 @@ export default function AssetGroup( { campaign } ) {
 			context: isCreation ? 'campaign-creation' : 'campaign-editing',
 			action: event.target.dataset.action,
 			audiences: audiences.join( ',' ),
-			budget: values.amount.toString(),
+			budget: values.dailyBudget.toString(),
 			assets_validation: isValidAssetGroup ? 'valid' : 'invalid',
 			campaign_id: isCreation ? 'new' : campaign.id,
 		};

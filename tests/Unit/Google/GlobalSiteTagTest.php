@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
@@ -40,6 +41,9 @@ class GlobalSiteTagTest extends UnitTest {
 	/** @var GlobalSiteTag $tag */
 	protected $tag;
 
+	/** @var GlobalSiteTag $tag */
+	protected $options;
+
 	protected const TEST_CONVERSION_ID    = 'test_id';
 	protected const TEST_CONVERSION_LABEL = 'test_conversion_label';
 
@@ -49,6 +53,7 @@ class GlobalSiteTagTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
+		$this->options        = $this->createMock( OptionsInterface::class );
 		$this->assets_handler = $this->createMock( AssetsHandlerInterface::class );
 		$this->gtag_js        = $this->createMock( GoogleGtagJs::class );
 		$this->product_helper = $this->createMock( ProductHelper::class );
@@ -56,6 +61,7 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->wp             = $this->createMock( WP::class );
 
 		$this->tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp );
+		$this->tag->set_options_object( $this->options );
 	}
 
 	public function test_conversion_and_purchase_event_not_order_received_page() {
@@ -109,5 +115,122 @@ class GlobalSiteTagTest extends UnitTest {
 		// Reload order and confirm tracked meta is set.
 		$order = wc_get_order( $order->get_id() );
 		$this->assertSame( 1, (int) $order->get_meta( '_gla_tracked', true ) );
+	}
+
+	public function test_enhanced_conversion_data_is_null_when_no_customer_data() {
+		// Setup empty customer data.
+		$this->wc->expects( $this->once() )
+			->method( 'get_customer_details' )
+			->willReturn( [] );
+
+		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
+
+		// Get the enhanced conversion tag.
+		$gtag = $this->tag->get_enhanced_conversion_tag();
+
+		// Tag should be empty with no customer data.
+		$this->assertEmpty( $gtag );
+	}
+
+	public function test_enhanced_conversion_data_is_set_with_customer_email() {
+		// Setup test customer with email address only.
+		$email      = 'test@mail.test';
+		$email_hash = hash( 'sha256', strtolower( trim( $email ) ) );
+
+		$this->wc->expects( $this->once() )
+			->method( 'get_customer_details' )
+			->willReturn( [ 'email' => $email ] );
+
+		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
+
+		// Get the enhanvced conversion tag.
+		$gtag = $this->tag->get_enhanced_conversion_tag();
+
+		// Confirm the hashed email and key is present.
+		$this->assertStringContainsString( 'sha256_email_address', $gtag );
+		$this->assertStringContainsString( $email_hash, $gtag );
+	}
+
+	public function test_enhanced_conversion_data_is_set_with_customer_phone() {
+		// Test GB phone number with hashed e614 format.
+		$phone      = '01629 582299';
+		$phone_hash = hash( 'sha256', strtolower( trim( '+441629582299' ) ) );
+
+		$customer_mock = [
+			'email'   => 'test@mail.test',
+			'phone'   => $phone,
+			'country' => 'GB',
+		];
+
+		$this->wc->expects( $this->once() )
+			->method( 'get_customer_details' )
+			->willReturn( $customer_mock );
+
+		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
+
+		// Get the enhanvced conversion tag.
+		$gtag = $this->tag->get_enhanced_conversion_tag();
+
+		// Confirm the hashed phone and key is present.
+		$this->assertStringContainsString( 'sha256_phone_number', $gtag );
+		$this->assertStringContainsString( $phone_hash, $gtag );
+	}
+
+	public function test_enhanced_conversion_data_is_empty_when_only_customer_phone_available() {
+		// Test GB phone number with hashed e614 format.
+		$phone      = '01629 582299';
+		$phone_hash = hash( 'sha256', strtolower( trim( '+441629582299' ) ) );
+
+		$customer_mock = [
+			'phone'   => $phone,
+			'country' => 'GB',
+		];
+
+		$this->wc->expects( $this->once() )
+			->method( 'get_customer_details' )
+			->willReturn( $customer_mock );
+
+		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
+
+		// Get the enhanvced conversion tag.
+		$gtag = $this->tag->get_enhanced_conversion_tag();
+
+		// Confirm the hashed phone and key is present.
+		$this->assertEmpty( $gtag );
+	}
+
+	public function test_enhanced_conversion_data_is_set_with_customer_address() {
+		// Test GB address with hashed names.
+		$first      = 'Test';
+		$last       = 'Customer';
+		$first_hash = hash( 'sha256', strtolower( trim( $first ) ) );
+		$last_hash  = hash( 'sha256', strtolower( trim( $last ) ) );
+		$postcode   = 'DE4 3GX';
+
+		$customer_mock = [
+			'email'      => 'test@mail.test',
+			'first_name' => $first,
+			'last_name'  => $last,
+			'postcode'   => $postcode,
+			'country'    => 'GB',
+		];
+
+		$this->wc->expects( $this->once() )
+			->method( 'get_customer_details' )
+			->willReturn( $customer_mock );
+
+		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
+
+		// Get the enhanvced conversion tag.
+		$gtag = $this->tag->get_enhanced_conversion_tag();
+
+		// Confirm the hashed values and keys are present.
+		$this->assertStringContainsString( 'sha256_first_name', $gtag );
+		$this->assertStringContainsString( 'sha256_last_name', $gtag );
+		$this->assertStringContainsString( 'postal_code', $gtag );
+		$this->assertStringContainsString( 'country', $gtag );
+		$this->assertStringContainsString( $first_hash, $gtag );
+		$this->assertStringContainsString( $last_hash, $gtag );
+		$this->assertStringContainsString( $postcode, $gtag );
 	}
 }

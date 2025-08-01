@@ -7,13 +7,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignLabe
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Google\Ads\GoogleAds\Util\V18\ResourceNames;
-use Google\Ads\GoogleAds\V18\Resources\Label;
-use Google\Ads\GoogleAds\V18\Resources\CampaignLabel;
-use Google\Ads\GoogleAds\V18\Services\LabelOperation;
-use Google\Ads\GoogleAds\V18\Services\CampaignLabelOperation;
-use Google\Ads\GoogleAds\V18\Services\MutateOperation;
-use Google\Ads\GoogleAds\V18\Services\MutateGoogleAdsRequest;
+use Google\Ads\GoogleAds\Util\V20\ResourceNames;
+use Google\Ads\GoogleAds\V20\Resources\Label;
+use Google\Ads\GoogleAds\V20\Resources\CampaignLabel;
+use Google\Ads\GoogleAds\V20\Services\LabelOperation;
+use Google\Ads\GoogleAds\V20\Services\CampaignLabelOperation;
+use Google\Ads\GoogleAds\V20\Services\MutateOperation;
+use Google\Ads\GoogleAds\V20\Services\MutateGoogleAdsRequest;
 
 /**
  * Class AdsCampaignLabel
@@ -150,7 +150,7 @@ class AdsCampaignLabel implements OptionsAwareInterface {
 	 *
 	 * @param array $operations The operations to mutate.
 	 *
-	 * @throws ApiException — Thrown if the API call fails.
+	 * @throws ApiException Thrown if the API call fails.
 	 */
 	protected function mutate( array $operations ) {
 		$request = new MutateGoogleAdsRequest();

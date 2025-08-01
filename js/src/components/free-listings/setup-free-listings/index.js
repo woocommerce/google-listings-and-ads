@@ -58,7 +58,7 @@ const alwaysTrue = () => true;
 const { Fill, Slot } = createSlotFill( 'gla/SetupFreeListings/SubmitButton' );
 
 /**
- * Setup step to configure free listings.
+ * Setup step to configure product feed.
  *
  * Note that this component requires to specify the location where it wants to
  * render its submit button via `<SetupFreeListings.SubmitButton />`.

@@ -14,6 +14,7 @@ import {
 	getReportKey,
 	getPerformanceQuery,
 	getCountryCodesKey,
+	getAdsBudgetMetricsKey,
 } from './utils';
 
 /**
@@ -169,6 +170,17 @@ export const getAdsCampaigns = ( state, query ) => {
 	}
 
 	return state.ads_campaigns;
+};
+
+/**
+ * Get the enhanced conversions setting.
+ * This setting indicates whether enhanced conversions are enabled for the Google Ads account.
+ *
+ * @param {Object} state The current store state will be injected by `wp.data`.
+ * @return {boolean} The enhanced conversions setting. Returns `true` if enabled, `false` otherwise.
+ */
+export const getEnableEnhancedConversions = ( state ) => {
+	return state.ads.enable_enhanced_conversions;
 };
 
 /**
@@ -405,6 +417,11 @@ export const getGoogleAdsAccountStatus = ( state ) => {
 export const getAdsBudgetRecommendations = ( state, countryCodes = [] ) => {
 	const key = getCountryCodesKey( countryCodes );
 	return state.ads.budgetRecommendations[ key ] || null;
+};
+
+export const getAdsBudgetMetrics = ( state, countryCodes, budget ) => {
+	const key = getAdsBudgetMetricsKey( countryCodes, budget );
+	return state.ads.budgetMetrics[ key ] || null;
 };
 
 /**

@@ -475,6 +475,20 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
+	 * Get the server endpoint URL
+	 *
+	 * @since 3.2.0
+	 *
+	 * @param string $name Resource name.
+	 *
+	 * @return string
+	 */
+	protected function get_server_url( string $name = '' ): string {
+		$url = $this->container->get( 'connect_server_root' );
+		return $name ? trailingslashit( $url ) . $name : $url;
+	}
+
+	/**
 	 * Get the Google Shopping Data Integration auth endpoint URL
 	 *
 	 * @return string
@@ -663,6 +677,82 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 
 			throw new Exception(
 				$this->client_exception_message( $e, __( 'Error authenticating Google Partner APP.', 'google-listings-and-ads' ) ),
+				$e->getCode()
+			);
+		}
+	}
+
+	/**
+	 * Fetch incentive credits from the Google Ads API.
+	 *
+	 * @since 3.2.0
+	 *
+	 * @return array The incentive credits data.
+	 * @throws Exception When an error occurs during the request.
+	 */
+	public function get_incentive_credits(): array {
+		$country = $this->container->get( WC::class )->get_base_country();
+
+		try {
+			/** @var Client $client */
+			$client = $this->container->get( Client::class );
+
+			// Send GET request to the incentive credits endpoint using the stores base country.
+			$result = $client->get(
+				$this->get_server_url( 'google/ads/incentive-credits' ),
+				[
+					'query' => [
+						'countries' => $country,
+					],
+				]
+			);
+
+			$response = json_decode( $result->getBody()->getContents(), true );
+
+			if ( 200 !== $result->getStatusCode() ) {
+				do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
+				$error = $response['message'] ?? __( 'Invalid response when fetching incentive credits.', 'google-listings-and-ads' );
+				throw new Exception( $error, $result->getStatusCode() );
+			}
+
+			if ( ! empty( $response['offers'] ) && is_array( $response['offers'] ) ) {
+				$offers               = $response['offers'];
+				$ads_currency         = $this->container->get( Ads::class )->get_ads_currency();
+				$store_currency       = $this->container->get( WC::class )->get_woocommerce_currency();
+				$ads_currency_index   = -1;
+				$store_currency_index = -1;
+				$index_key            = -1;
+
+				// Loop through all offers and locate Ads currency and store currency as a fallback.
+				foreach ( $offers as $index => $offer ) {
+					if ( $offer['currency'] === $ads_currency ) {
+						$ads_currency_index = $index;
+					}
+					if ( $offer['currency'] === $store_currency ) {
+						$store_currency_index = $index;
+					}
+				}
+
+				// Ads account currency is prioritized.
+				if ( $ads_currency_index !== -1 ) {
+					$index_key = $ads_currency_index;
+				} elseif ( $store_currency_index !== -1 ) {
+					$index_key = $store_currency_index;
+				} else {
+					$index_key = array_key_first( $offers );
+				}
+
+				// Include Ads account currency in the response.
+				$offers[ $index_key ]['ads_currency'] = $ads_currency;
+				return $offers[ $index_key ];
+			}
+
+			return [];
+		} catch ( ClientExceptionInterface $e ) {
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
+
+			throw new Exception(
+				$this->client_exception_message( $e, __( 'Error fetching incentive credits.', 'google-listings-and-ads' ) ),
 				$e->getCode()
 			);
 		}

@@ -72,7 +72,7 @@ const ProgramsReport = () => {
 
 	const metricsGroup = useMemo( () => {
 		const hasFieldInResults = loaded && Object.keys( totals ).length > 0;
-		// Until ~Q4 2021, free listings, may not have all metrics.
+		// Until ~Q4 2021, product feed, may not have all metrics.
 		// Anticipate all requested fields to come, show available once loaded.
 		const available = hasFieldInResults
 			? performanceMetrics.filter( ( { key } ) =>
