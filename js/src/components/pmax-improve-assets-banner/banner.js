@@ -34,7 +34,7 @@ const PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT =
  */
 
 /**
- * When the banner is dismissed.
+ * When the banner is dismissed by clicking the "Dismiss" button or the close icon.
  *
  * @event gla_pmax_assets_improvements_dismiss_clicked
  * @property {string} context The context in which the banner was dismissed. Set to 'pmax_assets_improvements_banner'.
@@ -110,7 +110,7 @@ const Banner = ( { onBannerDismissed, onBannerShown } ) => {
 			className="gla-pmax-improve-assets-banner"
 			status="info"
 			isDismissible={ true }
-			onRemove={ onBannerDismissed }
+			onRemove={ handleDismiss }
 		>
 			<p className="gla-pmax-improve-assets-banner__text">
 				{ sprintf(
