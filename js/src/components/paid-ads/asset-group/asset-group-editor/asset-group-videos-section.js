@@ -61,6 +61,42 @@ const AssetGroupVideosSection = ( { initialValues, isSelectedFinalUrl } ) => {
 					disabled={ ! isSelectedFinalUrl }
 					initialExpanded={ isSelectedFinalUrl }
 					markOptional
+					help={
+						<>
+							<p>
+								{ __(
+									'You can add up to a maximum of 5 YouTube video assets.',
+									'google-listings-and-ads'
+								) }
+							</p>
+							<p>
+								{ __(
+									'Only valid YouTube URLs are accepted, such as:',
+									'google-listings-and-ads'
+								) }
+							</p>
+							<ul>
+								<li>
+									{
+										'https://www.youtube.com/watch?v=VIDEO_ID'
+									}
+								</li>
+								<li>{ 'https://youtu.be/VIDEO_ID' }</li>
+							</ul>
+							<p>
+								{ __(
+									'Clicking a video thumbnail will open a preview in a new browser tab.',
+									'google-listings-and-ads'
+								) }
+							</p>
+							<p>
+								{ __(
+									'To remove a video, hover over the thumbnail and click the "X" icon.',
+									'google-listings-and-ads'
+								) }
+							</p>
+						</>
+					}
 				>
 					<YoutubeVideoSelector
 						onChange={ onChange }

@@ -105,5 +105,17 @@
 		.components-input-control .components-input-control__container .components-input-control__input {
 			height: $gla-size-control-height;
 		}
+
+		.gla-asset-field__help-popover__content {
+			ul {
+				color: $gray-900;
+				list-style: disc;
+				padding-left: $grid-unit-20;
+			}
+
+			p {
+				margin: 0;
+			}
+		}
 	}
 }
