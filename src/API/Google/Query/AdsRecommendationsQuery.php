@@ -3,11 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
-
-// use the Recommendation Resource so it is included in the vendor folder for the middleware, even though its not directly used.
-use Google\Ads\GoogleAds\V18\Resources\Recommendation;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
