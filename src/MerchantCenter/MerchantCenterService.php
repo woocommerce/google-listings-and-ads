@@ -126,7 +126,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	}
 
 	/**
-	 * Whether we should push data into MC. Only is MC is ready for syncing.
+	 * Whether we should push data into MC. Only if MC is ready for syncing.
 	 *
 	 * @see is_ready_for_syncing
 	 * @return bool
