@@ -159,12 +159,4 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix - Do not render experience rating banner if Ads account is disconnected.
 * Fix - Fixed undefined array key warnings in Price Benchmarks feature.
 
-= 3.1.0 - 2025-07-01 =
-* Add - A new endpoint for Google-triggered account linking.
-* Add - Notice to gather feedback and request ratings from merchants.
-* Add - Reintroduce account:connect functionality for Google account linking.
-* Fix - Prevent the user from continuing if the minimum shipping time is not set.
-* Fix - The API error of querying campaign assets by an invalid ID after saving a campaign with assets.
-* Tweak - WC 10.0 compatibility.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
