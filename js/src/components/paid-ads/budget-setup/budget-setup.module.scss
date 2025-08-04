@@ -1,0 +1,137 @@
+.container {
+	display: grid;
+	grid-template-columns: [radio] auto [option] 156fr [metrics-start] repeat(3, 140fr);
+	align-items: center;
+	padding-bottom: $grid-unit-20;
+	border-bottom: 1px solid $gray-200;
+	line-height: 16px;
+	color: $gray-700;
+
+	:global(.gridicon) {
+		fill: currentcolor;
+	}
+}
+
+.header {
+	.metricsItem {
+		max-width: 100px;
+	}
+
+	:global(.gridicon) {
+		margin-left: $grid-unit-05;
+		vertical-align: middle;
+		cursor: help;
+	}
+}
+
+.row,
+.metricsGroup,
+.radioGroup {
+	display: contents;
+}
+
+.row {
+	font-size: $gla-font-smaller;
+
+	label {
+		font-size: 15px;
+		font-weight: 500;
+		color: $black;
+	}
+
+	&:not(.customRow) .metricsItem {
+		grid-row-end: span 2;
+	}
+
+	&::before {
+		content: "";
+		grid-column: 1 / -1;
+		height: 1px;
+		margin: $grid-unit-20 0;
+		background-color: $gray-200;
+	}
+}
+
+.hideRecommendations {
+	.radio {
+		display: none;
+	}
+}
+
+.rowSelected .metricsItem {
+	font-weight: 600;
+	color: $black;
+}
+
+.customRow {
+	.customInput,
+	.metricsItem {
+		padding-top: $grid-unit-20;
+	}
+}
+
+.option {
+	align-content: center;
+	min-height: 20px;
+}
+
+.metricsGroup {
+	.metricsItem:first-child {
+		grid-column-start: metrics-start;
+	}
+}
+
+.customOption {
+	grid-column: option / -1;
+}
+
+.customInput {
+	grid-column-start: option;
+	padding-right: $grid-unit-40;
+}
+
+.customHelp,
+.customNotice {
+	grid-column: option / -1;
+}
+
+.customHelp {
+	padding-top: $grid-unit-10;
+	color: $alert-red;
+}
+
+.customNotice {
+	padding-top: $grid-unit-30;
+	color: #755100;
+}
+
+.tooltip {
+	max-width: 250px;
+	padding: $grid-unit-10;
+	text-align: left;
+
+	a {
+		margin-left: $grid-unit-05;
+		color: currentcolor;
+	}
+}
+
+.dayUnit {
+	font-size: $gla-font-smaller;
+}
+
+.helper {
+	grid-column-start: option;
+	display: inline-flex;
+	padding-top: $grid-unit-05 * 1.5;
+	font-size: $gla-font-base;
+}
+
+.highlightRecommended {
+	margin-top: $grid-unit-05;
+	padding: $grid-unit-05 $grid-unit-10;
+	border-radius: 2px;
+	background-color: #eceefb;
+	font-size: $gla-font-smaller;
+	color: #1f2c70;
+}

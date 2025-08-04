@@ -3,10 +3,12 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
@@ -65,7 +67,9 @@ class Settings implements ContainerAwareInterface {
 	 * Sync the shipping settings with Google.
 	 */
 	public function sync_shipping() {
-		if ( ! $this->should_sync_shipping() ) {
+		/** @var MerchantCenterService $merchant_center */
+		$merchant_center = $this->container->get( MerchantCenterService::class );
+		if ( ! $this->should_sync_shipping() || ! $merchant_center->is_enabled_for_datatype( NotificationsService::DATATYPE_SHIPPING ) ) {
 			return;
 		}
 

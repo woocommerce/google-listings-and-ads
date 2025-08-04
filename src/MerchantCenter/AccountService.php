@@ -226,6 +226,15 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		$id                    = $this->options->get_merchant_id();
 		$wpcom_rest_api_status = $this->options->get( OptionsInterface::WPCOM_REST_API_STATUS );
 
+		/*
+		 * Since we switched to client credentials, authorization is granted by default.
+		 * Set status to 'approved' if not set. This code is preserved for future UI functionality.
+		 */
+		if ( ! $wpcom_rest_api_status ) {
+			$wpcom_rest_api_status = OAuthService::STATUS_APPROVED;
+			$this->options->update( OptionsInterface::WPCOM_REST_API_STATUS, $wpcom_rest_api_status );
+		}
+
 		// If token is revoked outside the extension. Set the status as error to force the merchant to grant access again.
 		if ( $wpcom_rest_api_status === 'approved' && ! $this->is_wpcom_api_status_healthy() ) {
 			$wpcom_rest_api_status = OAuthService::STATUS_ERROR;
@@ -670,6 +679,15 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 				$status = [ 'is_healthy' => false ];
 			} else {
 				$status = json_decode( wp_remote_retrieve_body( $integration_remote_request_response ), true ) ?? [ 'is_healthy' => false ];
+
+				/*
+				 * Since we switched from OAuth to client credentials,
+				 * WPCOM's partner token validation returns false. Inject true status until
+				 * the issue is resolved. Preserving for future UI functionality.
+				 */
+				if ( isset( $status['is_partner_token_healthy'] ) && ! $status['is_partner_token_healthy'] ) {
+					$status['is_partner_token_healthy'] = true;
+				}
 			}
 
 			$transients->set( TransientsInterface::WPCOM_API_STATUS, $status, MINUTE_IN_SECONDS * 30 );

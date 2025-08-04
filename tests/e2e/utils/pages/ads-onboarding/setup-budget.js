@@ -18,18 +18,7 @@ export default class SetupBudget extends MockRequests {
 	 * @return {import('@playwright/test').Locator} The budget input box.
 	 */
 	getBudgetInput() {
-		return this.page
-			.locator( '.gla-budget-section__card-body__cost' )
-			.getByLabel( 'Daily average cost' );
-	}
-
-	/**
-	 * Get lower budget tip.
-	 *
-	 * @return {import('@playwright/test').Locator} The lower budget tip.
-	 */
-	getLowerBudgetTip() {
-		return this.page.locator( '.gla-budget-recommendation__low-budget' );
+		return this.page.getByRole( 'textbox' ).first();
 	}
 
 	/**
@@ -95,8 +84,8 @@ export default class SetupBudget extends MockRequests {
 	 * @return {Promise<void>}
 	 */
 	async fillBudget( budget = '0' ) {
-		const input = this.getBudgetInput();
-		await input.fill( budget );
+		await this.page.getByLabel( 'custom' ).click();
+		await this.getBudgetInput().fill( budget );
 	}
 
 	/**
@@ -144,7 +133,7 @@ export default class SetupBudget extends MockRequests {
 			return (
 				request.url().includes( '/gla/ads/campaigns' ) &&
 				request.method() === 'POST' &&
-				request.postDataJSON().amount === parseInt( budget, 10 ) &&
+				request.postDataJSON().amount === Number( budget ) &&
 				targetLocations.every( ( item ) =>
 					request.postDataJSON().targeted_locations.includes( item )
 				)

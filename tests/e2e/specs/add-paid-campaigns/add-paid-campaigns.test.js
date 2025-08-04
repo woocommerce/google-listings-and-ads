@@ -53,9 +53,6 @@ let setupBudgetPage = null;
 let page = null;
 
 test.describe( 'Set up Ads account', () => {
-	// The campaign budget
-	let budget = null;
-
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		dashboardPage = new DashboardPage( page );
@@ -68,13 +65,42 @@ test.describe( 'Set up Ads account', () => {
 		} );
 		await setupBudgetPage.fulfillBudgetRecommendations( {
 			currency: 'EUR',
+			daily_budget_baseline: 12,
 			recommendations: [
 				{
+					level: 'Recommended',
 					country: 'FR',
 					daily_budget: 15,
+					metrics: {
+						cost: 105,
+						conversions: 2.2,
+						conversions_value: 89.98,
+					},
+				},
+				{
+					level: 'High',
+					country: 'FR',
+					daily_budget: 20.5,
+					metrics: {
+						cost: 143.5,
+						conversions: 2.5,
+						conversions_value: 98.59,
+					},
+				},
+				{
+					level: 'Low',
+					country: 'FR',
+					daily_budget: 7,
+					metrics: {
+						cost: 49,
+						conversions: 2,
+						conversions_value: 80.48,
+					},
 				},
 			],
 		} );
+		await setupBudgetPage.mockBudgetMetrics();
+		await setupBudgetPage.mockAdsIncentiveCredits();
 		await dashboardPage.mockRequests();
 		await dashboardPage.goto();
 	} );
@@ -339,17 +365,47 @@ test.describe( 'Set up Ads account', () => {
 	test.describe( 'Create Ads with billing data already setup', () => {
 		test.describe( 'Set the budget', async () => {
 			test( 'Continue button should be disabled if budget is 0', async () => {
-				budget = '0';
-				await setupBudgetPage.fillBudget( budget );
+				await setupBudgetPage.fillBudget( '0' );
 
 				await expect(
 					setupBudgetPage.getCreateCampaignButton()
 				).toBeDisabled();
 			} );
 
-			test( 'Continue button should be disabled if budget is less than recommended value', async () => {
-				budget = '2';
-				await setupBudgetPage.fillBudget( budget );
+			test( 'Continue button should be enabled when selecting an option from the recommendations, even if the entered value is invalid', async () => {
+				await setupBudgetPage.fillBudget( '0' );
+				await expect(
+					setupBudgetPage.getCreateCampaignButton()
+				).toBeDisabled();
+
+				await page.getByLabel( 'low' ).click();
+				await expect(
+					setupBudgetPage.getCreateCampaignButton()
+				).toBeEnabled();
+
+				await page.getByLabel( 'custom' ).click();
+				await expect(
+					setupBudgetPage.getCreateCampaignButton()
+				).toBeDisabled();
+
+				await page.getByLabel( 'high' ).click();
+				await expect(
+					setupBudgetPage.getCreateCampaignButton()
+				).toBeEnabled();
+
+				await page.getByLabel( 'custom' ).click();
+				await expect(
+					setupBudgetPage.getCreateCampaignButton()
+				).toBeDisabled();
+
+				await page.getByLabel( 'recommended' ).click();
+				await expect(
+					setupBudgetPage.getCreateCampaignButton()
+				).toBeEnabled();
+			} );
+
+			test( 'Continue button should be disabled if budget is less than 30% of the daily budget baseline', async () => {
+				await setupBudgetPage.fillBudget( '2' );
 
 				await expect(
 					setupBudgetPage.getCreateCampaignButton()
@@ -357,34 +413,49 @@ test.describe( 'Set up Ads account', () => {
 			} );
 
 			test( 'User is notified of the minimum value', async () => {
-				budget = '4';
-				await setupBudgetPage.fillBudget( budget );
+				await setupBudgetPage.fillBudget( '3' );
 				await setupBudgetPage.getBudgetInput().blur();
 
 				await expect(
 					page.getByText(
-						'Please make sure daily average cost is at least €5.00'
+						'Please make sure daily average cost is at least €4.00'
 					)
 				).toBeVisible();
 			} );
 
 			test( 'Continue button should be enabled if budget is above the recommended value', async () => {
-				budget = '6';
-				await setupBudgetPage.fillBudget( budget );
+				await setupBudgetPage.fillBudget( '5' );
 
 				await expect(
 					setupBudgetPage.getCreateCampaignButton()
 				).toBeEnabled();
 			} );
 
-			test( 'Budget Recommendation should be visible', async () => {
+			test( 'Display the recommended budget if the budget is valid but lower than the lowest recommended value', async () => {
+				await setupBudgetPage.fillBudget( '6' );
+
 				await expect(
-					page.getByText( 'set a daily budget of 15 EUR' )
+					page.getByText(
+						`Your budget is lower than other advertisers' budgets, which may affect performance. For best results, we recommend at least €15.00 per day.`
+					)
 				).toBeVisible();
 			} );
 		} );
 
 		test( 'It should show the campaign creation success message', async () => {
+			await setupBudgetPage.fillBudget( '6' );
+			await setupBudgetPage.getCreateCampaignButton().click();
+
+			const cancelButton = page.getByRole( 'button', { name: 'Cancel' } );
+			await expect(
+				page.getByText( 'This offer won’t last long!' )
+			).toBeVisible();
+			await expect( cancelButton ).toBeEnabled();
+
+			await cancelButton.click();
+
+			await expect( cancelButton ).not.toBeVisible();
+
 			// Mock the campaign creation request.
 			const campaignCreation =
 				setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(

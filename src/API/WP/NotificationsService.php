@@ -77,6 +77,13 @@ class NotificationsService implements Service, OptionsAwareInterface {
 	private $notification_url;
 
 	/**
+	 * The WordPress.com blog ID
+	 *
+	 * @var int $blog_id
+	 */
+	private $blog_id;
+
+	/**
 	 * The Merchant center service
 	 *
 	 * @var MerchantCenterService $merchant_center
@@ -97,10 +104,10 @@ class NotificationsService implements Service, OptionsAwareInterface {
 	 * @param AccountService        $account_service
 	 */
 	public function __construct( MerchantCenterService $merchant_center, AccountService $account_service ) {
-		$blog_id                = Jetpack_Options::get_option( 'id' );
+		$this->blog_id          = Jetpack_Options::get_option( 'id' );
 		$this->merchant_center  = $merchant_center;
 		$this->account_service  = $account_service;
-		$this->notification_url = "https://public-api.wordpress.com/wpcom/v2/sites/{$blog_id}/partners/google/notifications";
+		$this->notification_url = "https://public-api.wordpress.com/wpcom/v2/sites/{$this->blog_id}/partners/google/notifications";
 	}
 
 	/**
@@ -130,7 +137,6 @@ class NotificationsService implements Service, OptionsAwareInterface {
 				'message'                     => 'Notification was not sent because the Notification Service is not ready or the topic is not valid.',
 				'data_type'                   => $this->get_datatype_from_topic( $topic ),
 				'topic_is_valid'              => $this->yes_or_no( $is_valid_topic ),
-				'wpcom_authorized'            => $this->yes_or_no( $this->options->is_wpcom_api_authorized() ),
 				'wpcom_healthy'               => $this->yes_or_no( $this->account_service->is_wpcom_api_status_healthy() ),
 				'mc_sync_ready'               => $this->yes_or_no( $this->merchant_center->is_ready_for_syncing() ),
 				'notification_service_status' => $this->enabled_or_disabled( $this->is_enabled() ),
@@ -149,7 +155,13 @@ class NotificationsService implements Service, OptionsAwareInterface {
 				'x-woocommerce-topic' => $topic,
 				'Content-Type'        => 'application/json',
 			],
-			'body'    => array_merge( $data, [ 'item_id' => $item_id ] ),
+			'body'    => array_merge(
+				$data,
+				[
+					'item_id' => $item_id,
+					'blog_id' => $this->blog_id,
+				]
+			),
 			'url'     => $this->get_notification_url(),
 		];
 
@@ -206,14 +218,14 @@ class NotificationsService implements Service, OptionsAwareInterface {
 
 	/**
 	 * If the Notifications are ready
-	 * This happens when the WPCOM API is Authorized and the feature is enabled.
+	 * This happens when the feature is enabled and Merchant Center is ready for syncing.
 	 *
 	 * @param string|null $data_type The data type to check.
 	 * @param bool        $with_health_check If true. Performs a remote request to WPCOM API to get the status.
 	 *        * @return bool
 	 */
 	public function is_ready( string $data_type = null, bool $with_health_check = true ): bool {
-		$is_ready = $this->options->is_wpcom_api_authorized() && $this->is_enabled() && $this->merchant_center->is_ready_for_syncing() && ( $with_health_check === false || $this->account_service->is_wpcom_api_status_healthy() );
+		$is_ready = $this->is_enabled() && $this->merchant_center->is_ready_for_syncing() && ( $with_health_check === false || $this->account_service->is_wpcom_api_status_healthy() );
 		return $is_ready && ( is_null( $data_type ) || $this->is_pull_enabled_for_datatype( $data_type ) );
 	}
 

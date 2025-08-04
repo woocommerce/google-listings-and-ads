@@ -100,7 +100,7 @@ const AllProgramsTableCard = ( props ) => {
 	const data = [
 		{
 			id: FREE_LISTINGS_PROGRAM_ID,
-			title: __( 'Free listings', 'google-listings-and-ads' ),
+			title: __( 'Product feed', 'google-listings-and-ads' ),
 			dailyBudget: __( 'Free', 'google-listings-and-ads' ),
 			country: (
 				<CountryColumn

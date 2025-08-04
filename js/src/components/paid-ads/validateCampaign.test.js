@@ -20,7 +20,10 @@ describe( 'validateCampaign', () => {
 
 	beforeEach( () => {
 		// Initial values
-		values = { amount: 0 };
+		values = {
+			amount: 0,
+			level: 'custom',
+		};
 	} );
 
 	it( 'When all checks are passed, should return an empty object', () => {
@@ -34,10 +37,36 @@ describe( 'validateCampaign', () => {
 		expect( errors ).toStrictEqual( {} );
 	} );
 
-	it( 'should indicate multiple unpassed checks by setting properties in the returned object', () => {
-		const errors = validateCampaign( values, validateCampaignOptions );
+	it( 'When the level is not custom, should skip the amount validation', () => {
+		const opts = {
+			dailyBudget: 100,
+			formatAmount: mockFormatAmount,
+		};
 
-		expect( errors ).toHaveProperty( 'amount' );
+		expect( validateCampaign( values, opts ) ).toHaveProperty( 'amount' );
+
+		values.level = 'recommended';
+		expect( validateCampaign( values, opts ) ).toStrictEqual( {} );
+
+		values.amount = 1;
+		expect( validateCampaign( values, opts ) ).toStrictEqual( {} );
+
+		values.level = 'high';
+		values.amount = 0;
+		expect( validateCampaign( values, opts ) ).toStrictEqual( {} );
+
+		values.amount = 1;
+		expect( validateCampaign( values, opts ) ).toStrictEqual( {} );
+
+		values.level = 'low';
+		values.amount = 0;
+		expect( validateCampaign( values, opts ) ).toStrictEqual( {} );
+
+		values.amount = 1;
+		expect( validateCampaign( values, opts ) ).toStrictEqual( {} );
+
+		values.amount = null;
+		expect( validateCampaign( values, opts ) ).toStrictEqual( {} );
 	} );
 
 	it( 'When the amount is not a number, should not pass', () => {

@@ -78,7 +78,7 @@ export default function AssetGroup( { campaign } ) {
 			context: isCreation ? 'campaign-creation' : 'campaign-editing',
 			action: event.target.dataset.action,
 			audiences: audiences.join( ',' ),
-			budget: values.amount.toString(),
+			budget: values.dailyBudget.toString(),
 			assets_validation: isValidAssetGroup ? 'valid' : 'invalid',
 			campaign_id: isCreation ? 'new' : campaign.id,
 		};
@@ -118,7 +118,7 @@ export default function AssetGroup( { campaign } ) {
 					'google-listings-and-ads'
 				) }
 				description={ __(
-					'Drive greater performance by adding text and image assets to create personalized and engaging ads',
+					'Drive greater performance by adding text, image, and video assets to create more personalized and engaging ads.',
 					'google-listings-and-ads'
 				) }
 			/>

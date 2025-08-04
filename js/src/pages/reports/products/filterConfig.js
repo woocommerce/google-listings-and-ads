@@ -195,7 +195,7 @@ const reportSourceConfig = {
 		},
 		{
 			value: REPORT_SOURCE_FREE,
-			label: __( 'Free listings', 'google-listings-and-ads' ),
+			label: __( 'Product feed', 'google-listings-and-ads' ),
 		},
 	],
 	showFilters: ( { hasPaidSource } ) => hasPaidSource,

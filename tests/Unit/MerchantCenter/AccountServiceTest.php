@@ -860,6 +860,19 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_get_connected_status_incomplete() {
+		// Create partial mock to mock is_wpcom_api_status_healthy method
+		$account_mock = $this->getMockBuilder( AccountService::class )
+			->setConstructorArgs( [ $this->state ] )
+			->onlyMethods( [ 'is_wpcom_api_status_healthy' ] )
+			->getMock();
+		$account_mock->set_container( $this->container );
+		$account_mock->set_options_object( $this->options );
+
+		// Mock the health check to return true (simulating client credentials success)
+		$account_mock->expects( $this->any() )
+			->method( 'is_wpcom_api_status_healthy' )
+			->willReturn( true );
+
 		$this->options->expects( $this->once() )
 			->method( 'get_merchant_id' )
 			->willReturn( self::TEST_ACCOUNT_ID );
@@ -878,9 +891,9 @@ class AccountServiceTest extends UnitTest {
 				'status'                       => 'incomplete',
 				'step'                         => 'verify',
 				'notification_service_enabled' => true,
-				'wpcom_rest_api_status'        => null,
+				'wpcom_rest_api_status'        => 'approved',  // Updated to reflect new client credentials logic
 			],
-			$this->account->get_connected_status()
+			$account_mock->get_connected_status()
 		);
 	}
 

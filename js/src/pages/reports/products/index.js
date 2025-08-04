@@ -74,7 +74,7 @@ const ProductsReport = ( { hasPaidSource } ) => {
 		: REPORT_SOURCE_FREE;
 
 	// Show only available data.
-	// Until ~Q4 2021, free listings, may not have all metrics.
+	// Until ~Q4 2021, product feed, may not have all metrics.
 	const metrics = useMetricsWithFormatter(
 		type === REPORT_SOURCE_PAID ? paidMetrics : freeMetrics
 	);

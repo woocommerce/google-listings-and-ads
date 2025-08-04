@@ -90,7 +90,7 @@ const FeaturesCard = () => {
 						variant="body"
 					>
 						{ __(
-							'When your products are added and approved, they’ll be eligible for free listings, reaching shoppers across Google’s network.',
+							'When your products are added and approved, they’ll be eligible for product feed, reaching shoppers across Google’s network.',
 							'google-listings-and-ads'
 						) }
 					</Text>

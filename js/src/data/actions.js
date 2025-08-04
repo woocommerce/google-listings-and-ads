@@ -17,9 +17,11 @@ import {
 import { handleApiError } from '~/utils/handleError';
 import { adaptAdsCampaign } from './adapters';
 import { isWCIos, isWCAndroid } from '~/utils/isMobileApp';
+import { convertKeysFromSnakeCaseToCamelCase } from './utils';
 
 /**
  * @typedef {import('~/data/types.js').AssetEntityGroupUpdateBody} AssetEntityGroupUpdateBody
+ * @typedef {import('~/data/types.js').AdsIncentiveCredits} AdsIncentiveCredits
  * @typedef {import('./selectors').Tour} Tour
  * @typedef {import('./selectors').PriceBenchmarkQueryParams} PriceBenchmarkQueryParams
  */
@@ -702,6 +704,18 @@ export function* saveTargetAudience( targetAudience ) {
 }
 
 /**
+ * Fetch the incentive credits of Google Ads.
+ *
+ * @return {Promise<AdsIncentiveCredits>} The incentive credits of Google Ads.
+ * @throws Will throw an error if the request failed.
+ */
+export function* fetchAdsIncentiveCredits() {
+	const path = `${ API_NAMESPACE }/ads/incentive-credits`;
+	const response = yield apiFetch( { path } );
+	return convertKeysFromSnakeCaseToCamelCase( response );
+}
+
+/**
  * Create a new ads campaign.
  *
  * @param {number} amount Daily average cost of the paid ads campaign.
@@ -765,6 +779,42 @@ export function* updateAdsCampaign( id, data ) {
 	} catch ( error ) {
 		handleApiError( error );
 
+		throw error;
+	}
+}
+
+export function receiveEnhancedConversionsStatus( status ) {
+	return {
+		type: TYPES.RECEIVE_ADS_ENHANCED_CONVERSIONS,
+		status,
+	};
+}
+
+/**
+ * Update the enhanced conversions status.
+ *
+ * @param {boolean} status The status of the enhanced conversions.
+ * @return {Object} Action object to update the enhanced conversions status.
+ */
+export function* updateEnhancedConversionsStatus( status ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/settings`,
+			method: 'POST',
+			data: {
+				enhanced_conversions_enabled: status,
+			},
+		} );
+
+		return receiveEnhancedConversionsStatus( status );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error updating the enhanced conversions status.',
+				'google-listings-and-ads'
+			)
+		);
 		throw error;
 	}
 }
