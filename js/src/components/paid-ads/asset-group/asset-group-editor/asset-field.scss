@@ -120,10 +120,10 @@
 		.gla-asset-field__help-popover__content-group {
 			display: flex;
 			flex-direction: column;
-			gap: 0;
+			gap: $grid-unit-05;
 
-			p {
-				margin: 0;
+			li + li {
+				margin-top: $grid-unit-05;
 			}
 		}
 	}
