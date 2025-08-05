@@ -108,10 +108,19 @@
 
 		.gla-asset-field__help-popover__content {
 			ul {
-				color: $gray-900;
 				list-style: disc;
 				padding-left: $grid-unit-20;
 			}
+
+			p {
+				margin: 0;
+			}
+		}
+
+		.gla-asset-field__help-popover__content-group {
+			display: flex;
+			flex-direction: column;
+			gap: 0;
 
 			p {
 				margin: 0;
