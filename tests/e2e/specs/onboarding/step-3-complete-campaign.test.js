@@ -409,7 +409,6 @@ test.describe( 'Complete your campaign', () => {
 
 			test.describe( 'Budget recommendations', () => {
 				test.beforeEach( async () => {
-					await page.evaluate( () => window.sessionStorage.clear() );
 					await setupAdsAccountPage.mockAdsAccountIncomplete();
 					await setupBudgetPage.fulfillBillingStatusRequest( {
 						status: 'approved',
@@ -417,6 +416,7 @@ test.describe( 'Complete your campaign', () => {
 					await completeCampaign.mockCompleteAdsSetup();
 					await completeCampaign.fulfillBudgetRecommendations();
 					await completeCampaign.goto();
+					await page.evaluate( () => window.sessionStorage.clear() );
 				} );
 
 				test( 'Create a campaign with a selected option from the budget recommendations', async () => {
@@ -487,10 +487,10 @@ test.describe( 'Complete your campaign', () => {
 			test.describe( 'With WooCommerce tracking disabled', () => {
 				test.beforeAll( async () => {
 					// Reset the showing status for the "Set up paid ads" section.
-					await page.evaluate( () => window.sessionStorage.clear() );
 					await setupAdsAccountPage.mockAdsAccountIncomplete();
 					await completeCampaign.goto();
 					await completeCampaign.clickSkipPaidAdsCreationButton();
+					await page.evaluate( () => window.sessionStorage.clear() );
 				} );
 
 				test( 'should see the modal', async () => {
@@ -692,7 +692,7 @@ test.describe( 'Complete your campaign', () => {
 				await completeCampaign.goto();
 				await completeCampaign.clickSkipPaidAdsCreationButton();
 				await completeCampaign.clickCompleteSetupModalButton();
-				await page.waitForNavigation( {
+				await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/, {
 					waitUntil: 'domcontentloaded',
 				} );
 				await page.evaluate( () => {
