@@ -31,44 +31,53 @@ const PREFERENCE_BANNER_KEY = 'pmax-improve-assets-banner';
  */
 const PMaxImproveAssetsBanner = () => {
 	const { set } = useDispatch( preferencesStore );
-	const { expiry, hasRecommendations } =
+	const { actionTime, actionType } =
 		usePreference( PREFERENCE_BANNER_KEY ) || {};
 
-	useEffect( () => {
-		if ( expiry !== undefined && Date.now() >= expiry ) {
-			set( PREFERENCES_STORE_NAMESPACE, PREFERENCE_BANNER_KEY, {
-				expiry: undefined,
-				hasRecommendations: undefined,
-			} );
-		}
-	}, [ expiry, set ] );
+	// useEffect( () => {
+	// 	if ( expiry !== undefined && Date.now() >= expiry ) {
+	// 		set( PREFERENCES_STORE_NAMESPACE, PREFERENCE_BANNER_KEY, {
+	// 			actionTime: undefined,
+	// 			actionType: undefined,
+	// 		} );
+	// 	}
+	// }, [ actionTime, actionType, set ] );
 
 	const handleOnBannerDismissed = useCallback( () => {
 		set( PREFERENCES_STORE_NAMESPACE, PREFERENCE_BANNER_KEY, {
-			expiry: Date.now() + DAY_IN_SECONDS * 30 * 1000, // 30 days in ms
-			hasRecommendations: undefined,
+			actionType: 'dismiss',
+			actionTime: Date.now(),
+		} );
+	}, [ set ] );
+
+	const handleOnBannerActioned = useCallback( () => {
+		set( PREFERENCES_STORE_NAMESPACE, PREFERENCE_BANNER_KEY, {
+			actionType: 'editAssets',
+			actionTime: Date.now(),
 		} );
 	}, [ set ] );
 
 	const handleOnBannerShown = useCallback( () => {
-		if ( hasRecommendations ) {
-			return;
-		}
-		set( PREFERENCES_STORE_NAMESPACE, PREFERENCE_BANNER_KEY, {
-			expiry,
-			hasRecommendations: true,
-		} );
-	}, [ set, hasRecommendations, expiry ] );
+		// if ( hasRecommendations ) {
+		// 	return;
+		// }
+		// set( PREFERENCES_STORE_NAMESPACE, PREFERENCE_BANNER_KEY, {
+		// 	actionTime: undefined,
+		// 	actionType: undefined,
+		// } );
+	}, [ set, actionTime, actionType ] );
 
-	// Do not show the banner if the expiry is set and not yet expired
-	if ( expiry !== undefined && Date.now() < expiry ) {
+	// Don't display the banner if the banner has been dismissed less than 30 days ago.
+	if ( actionType === 'dismiss' && Date.now() + 30 * DAY_IN_SECONDS * 1000 > actionTime ) {
 		return null;
 	}
+
 
 	return (
 		<Banner
 			onBannerDismissed={ handleOnBannerDismissed }
 			onBannerShown={ handleOnBannerShown }
+			onBannerActioned={ handleOnBannerActioned }
 		/>
 	);
 };

@@ -60,7 +60,7 @@ const PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT =
  * @fires gla_pmax_assets_improvements_improve_assets_clicked when the "Improve Assets" button is clicked.
  * @fires gla_pmax_assets_improvements_dismiss_clicked when the banner is dismissed.
  */
-const Banner = ( { onBannerDismissed, onBannerShown } ) => {
+const Banner = ( { onBannerDismissed, onBannerActioned, onBannerShown } ) => {
 	const { campaign, hasFinishedResolution } = useRecommendedPMaxCampaign();
 
 	useEffect( () => {
@@ -84,7 +84,7 @@ const Banner = ( { onBannerDismissed, onBannerShown } ) => {
 	const { id, name } = campaign;
 
 	const handleOnImproveAssets = () => {
-		onBannerDismissed();
+		onBannerActioned();
 
 		recordGlaEvent( 'gla_pmax_assets_improvements_improve_assets_clicked', {
 			context: PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT,
