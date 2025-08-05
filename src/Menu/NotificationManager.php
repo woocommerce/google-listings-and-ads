@@ -6,8 +6,11 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Menu;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\Admin\PageController;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsRecommendationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 
@@ -19,9 +22,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray
  * Manages the display of a single, aggregated notification pill in the admin menu.
  * It relies on a filter to gather the total count from various contributors.
  */
-class NotificationManager implements Service, Registerable {
+class NotificationManager implements ContainerAwareInterface, Service, Registerable {
 
 	use PluginHelper;
+	use ContainerAwareTrait;
 
 	/**
 	 * @var AssetsHandlerInterface
@@ -191,10 +195,33 @@ class NotificationManager implements Service, Registerable {
 	 */
 	public function initial_notification_count(): int {
 		global $wpdb;
-		$count       = 0;
+		$count = 0;
+
+		$query           = $this->container->get( AdsRecommendationsService::class );
+		$recommendations = $query->get_recommendations();
+
+		// Return early if there are no recommendations.
+		if ( empty( $recommendations ) ) {
+			return $count;
+		}
+
+		// Check recommendation dates and user preference.
 		$preferences = get_user_meta( get_current_user_id(), "{$wpdb->prefix}persisted_preferences", true );
 
-		if ( is_array( $preferences ) && isset( $preferences['woocommerce/google-listings-and-ads']['pmax-improve-assets-banner']['hasRecommendations'] ) && $preferences['woocommerce/google-listings-and-ads']['pmax-improve-assets-banner']['hasRecommendations'] ) {
+		// If the user has not interacted with a recommendation yet.
+		if ( ! is_array( $preferences ) || ! isset( $preferences['woocommerce/google-listings-and-ads']['pmax-improve-assets-banner']['actionType'] ) || ! isset( $preferences['woocommerce/google-listings-and-ads']['pmax-improve-assets-banner']['actionTime'] ) ) {
+			return ++$count;
+		}
+
+		$action_type = $preferences['woocommerce/google-listings-and-ads']['pmax-improve-assets-banner']['actionType'];
+		$action_time = $preferences['woocommerce/google-listings-and-ads']['pmax-improve-assets-banner']['actionTime'];
+		$check_time  = time() + ( 30 * DAY_IN_SECONDS );
+
+		if ( 'editAssets' === $action_type ) {
+			$check_time = strtotime( $recommendations[0]['last_sync'] );
+		}
+
+		if ( $check_time > $action_time ) {
 			return ++$count;
 		}
 
