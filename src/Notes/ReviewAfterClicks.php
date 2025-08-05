@@ -73,7 +73,7 @@ class ReviewAfterClicks extends AbstractNote implements MerchantCenterAwareInter
 		$note->set_title(
 			sprintf(
 				/* translators: %s number of clicks */
-				__( 'You’ve gotten %s+ clicks on your free listings! 🎉', 'google-listings-and-ads' ),
+				__( 'You’ve gotten %s+ clicks on your product feed! 🎉', 'google-listings-and-ads' ),
 				$this->wp->number_format_i18n( $clicks_count_rounded )
 			)
 		);

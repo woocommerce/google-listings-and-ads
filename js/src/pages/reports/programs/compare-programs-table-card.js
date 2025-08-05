@@ -39,7 +39,7 @@ const CompareProgramsTableCard = ( {
 	...restProps
 } ) => {
 	/**
-	 * Glue freeListings and campaigns together, hardcode Free Listings name and id.
+	 * Glue freeListings and campaigns together, hardcode Product Feed name and id.
 	 *
 	 * @type {Array<ProgramsData>}
 	 */
@@ -50,11 +50,11 @@ const CompareProgramsTableCard = ( {
 		if ( ! freeListings || freeListings.length === 0 ) {
 			return campaigns;
 		}
-		// For V1 we assume, there is only one "Free listings" object.
+		// For V1 we assume, there is only one "Product Feed" object.
 		const mergedPrograms = [
 			{
 				...freeListings[ 0 ],
-				name: __( 'Free Listings', 'google-listings-and-ads' ),
+				name: __( 'Product Feed', 'google-listings-and-ads' ),
 				id: FREE_LISTINGS_PROGRAM_ID,
 			},
 			...campaigns,

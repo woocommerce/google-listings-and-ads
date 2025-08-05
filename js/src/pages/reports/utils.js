@@ -118,7 +118,7 @@ export function sumToPerformance(
 				missingFreeListingsData =
 					MISSING_FREE_LISTINGS_DATA.FOR_REQUEST;
 			} else {
-				// There is free listings data, sum with paid one.
+				// There is product feed data, sum with paid one.
 				// `freeTotals` doesn't have fallback because it will only be number or undefined type,
 				// and the undefined has been checked above.
 				value = ( paidTotals[ key ] || 0 ) + freeTotals[ key ];

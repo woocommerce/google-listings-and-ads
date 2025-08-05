@@ -53,7 +53,7 @@ function FeedStatus() {
 			label={
 				<span className="gla-success">
 					{ __(
-						'Free listings setup completed',
+						'Product feed setup completed',
 						'google-listings-and-ads'
 					) }
 				</span>

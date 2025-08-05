@@ -37,7 +37,7 @@ class CompleteSetup extends AbstractNote implements MerchantCenterAwareInterface
 	 */
 	public function get_entry(): NoteEntry {
 		$note = new NoteEntry();
-		$note->set_title( __( 'Reach more shoppers with free listings on Google', 'google-listings-and-ads' ) );
+		$note->set_title( __( 'Reach more shoppers with product feed on Google', 'google-listings-and-ads' ) );
 		$note->set_content( __( 'Finish setting up Google for WooCommerce to list your products on Google for free and promote them with ads.', 'google-listings-and-ads' ) );
 		$note->set_content_data( new stdClass() );
 		$note->set_type( NoteEntry::E_WC_ADMIN_NOTE_INFORMATIONAL );

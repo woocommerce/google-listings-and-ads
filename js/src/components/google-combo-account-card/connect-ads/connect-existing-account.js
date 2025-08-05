@@ -11,13 +11,13 @@ import AccountCard from '~/components/account-card';
 import ConnectExistingAccountActions from './connect-existing-account-actions';
 import LoadingLabel from '~/components/loading-label';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import { useAppDispatch } from '~/data';
 import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
 import AdsAccountSelectControl from '~/components/ads-account-select-control';
 import ConnectedIconLabel from '~/components/connected-icon-label';
 import { ConnectAccountButton } from '~/components/google-ads-account-card';
+import { handleApiError } from '~/utils/handleError';
 
 /**
  * Renders an account card to connect to an existing Google Ads account.
@@ -28,7 +28,6 @@ import { ConnectAccountButton } from '~/components/google-ads-account-card';
 const ConnectExistingAccount = ( { onCreateClick } ) => {
 	const [ value, setValue ] = useState();
 	const [ isLoading, setLoading ] = useState( false );
-	const { createNotice } = useDispatchCoreNotices();
 	const { fetchGoogleAdsAccountStatus } = useAppDispatch();
 	const { isGoogleAdsReady } = useGoogleAdsAccountReady();
 	const {
@@ -60,8 +59,9 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 			await fetchGoogleAdsAccountStatus();
 			await refetchGoogleAdsAccount();
 		} catch ( error ) {
-			createNotice(
-				'error',
+			handleApiError(
+				error,
+				null,
 				__(
 					'Unable to connect your Google Ads account. Please try again later.',
 					'google-listings-and-ads'

@@ -25,7 +25,7 @@ class MerchantFreeListingReportQuery extends MerchantReportQuery {
 	 * @return $this
 	 */
 	public function filter( array $ids ): QueryInterface {
-		// No filtering available for free listings.
+		// No filtering available for product feed.
 		return $this;
 	}
 }

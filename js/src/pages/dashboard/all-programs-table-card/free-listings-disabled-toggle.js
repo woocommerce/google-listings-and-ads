@@ -14,7 +14,7 @@ const FreeListingsDisabledToggle = () => {
 	return (
 		<AppTooltip
 			text={ __(
-				'Free listings cannot be paused through WooCommerce. Go to Google Merchant Center for advanced settings.',
+				'Product feed cannot be paused through WooCommerce. Go to Google Merchant Center for advanced settings.',
 				'google-listings-and-ads'
 			) }
 		>

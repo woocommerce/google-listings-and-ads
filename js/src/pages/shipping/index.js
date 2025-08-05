@@ -28,7 +28,7 @@ import { handleApiError } from '~/utils/handleError';
 import { recordGlaEvent } from '~/utils/tracks';
 
 /**
- * Saving changes of audience and/or shipping settings to the free listings.
+ * Saving changes of audience and/or shipping settings to the product feed.
  *
  * @event gla_free_campaign_edited
  */

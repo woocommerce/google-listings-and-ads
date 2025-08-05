@@ -5,7 +5,7 @@ Requires at least: 6.1
 Tested up to: 6.8
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.2.0
+Stable tag: 3.3.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -140,6 +140,12 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.3.0 - 2025-08-05 =
+* Add – Enhanced Conversions support for Google Ads.
+* Add – Survey users when campaign creation is skipped during onboarding.
+* Tweak - Display a more detailed error message when failing to link Google Ads account.
+* Tweak – Replace "free listings" with "product feed".
+
 = 3.2.0 - 2025-07-22 =
 * Add - Block shipping, products, and coupons synchronization when push synchronization is disabled.
 * Add - Budget Metrics endpoint for fetching metrics with a custom budget.
@@ -158,13 +164,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 = 3.1.1 - 2025-07-08 =
 * Fix - Do not render experience rating banner if Ads account is disconnected.
 * Fix - Fixed undefined array key warnings in Price Benchmarks feature.
-
-= 3.1.0 - 2025-07-01 =
-* Add - A new endpoint for Google-triggered account linking.
-* Add - Notice to gather feedback and request ratings from merchants.
-* Add - Reintroduce account:connect functionality for Google account linking.
-* Fix - Prevent the user from continuing if the minimum shipping time is not set.
-* Fix - The API error of querying campaign assets by an invalid ID after saving a campaign with assets.
-* Tweak - WC 10.0 compatibility.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

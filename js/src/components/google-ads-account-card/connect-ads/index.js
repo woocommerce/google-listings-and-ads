@@ -17,10 +17,10 @@ import LoadingLabel from '~/components/loading-label';
 import Section from '~/components/section';
 import Subsection from '~/components/subsection';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import AdsAccountSelectControl from '~/components/ads-account-select-control';
 import { useAppDispatch } from '~/data';
+import { handleApiError } from '~/utils/handleError';
 import './index.scss';
 
 /**
@@ -39,7 +39,6 @@ const ConnectAds = ( props ) => {
 		data: { id: value },
 	} );
 	const { refetchGoogleAdsAccount } = useGoogleAdsAccount();
-	const { createNotice } = useDispatchCoreNotices();
 	const { fetchGoogleAdsAccountStatus } = useAppDispatch();
 
 	/**
@@ -62,8 +61,9 @@ const ConnectAds = ( props ) => {
 			await refetchGoogleAdsAccount();
 		} catch ( error ) {
 			setLoading( false );
-			createNotice(
-				'error',
+			handleApiError(
+				error,
+				null,
 				__(
 					'Unable to connect your Google Ads account. Please try again later.',
 					'google-listings-and-ads'

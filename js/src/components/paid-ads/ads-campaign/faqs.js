@@ -46,7 +46,7 @@ const faqItems = [
 			<>
 				<div>
 					{ __(
-						'If you’re selling in the US, then eligible free listings can appear in search results across Google Search, Google Images, and the Google Shopping tab. If you’re selling outside the US, free listings will appear on the Shopping tab.',
+						'If you’re selling in the US, then eligible product feed can appear in search results across Google Search, Google Images, and the Google Shopping tab. If you’re selling outside the US, product feed will appear on the Shopping tab.',
 						'google-listings-and-ads'
 					) }
 				</div>
