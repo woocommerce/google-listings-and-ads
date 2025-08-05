@@ -69,20 +69,20 @@ const AssetGroupVideosSection = ( { initialValues, isSelectedFinalUrl } ) => {
 									'google-listings-and-ads'
 								) }
 							</p>
-							<p>
-								{ __(
-									'Only valid YouTube URLs are accepted, such as:',
-									'google-listings-and-ads'
-								) }
-							</p>
-							<ul>
-								<li>
-									{
-										'https://www.youtube.com/watch?v=VIDEO_ID'
-									}
-								</li>
-								<li>{ 'https://youtu.be/VIDEO_ID' }</li>
-							</ul>
+							<div className="gla-asset-field__help-popover__content-group">
+								<p>
+									{ __(
+										'Only valid YouTube URLs are accepted, such as:',
+										'google-listings-and-ads'
+									) }
+								</p>
+								<ul>
+									<li>
+										https://www.youtube.com/watch?v=VIDEO_ID
+									</li>
+									<li>https://youtu.be/VIDEO_ID</li>
+								</ul>
+							</div>
 							<p>
 								{ __(
 									'Clicking a video thumbnail will open a preview in a new browser tab.',
