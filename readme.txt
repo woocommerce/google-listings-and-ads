@@ -140,12 +140,6 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
-= 3.3.0 - 2025-08-04 =
-* Add – Enhanced Conversions support for Google Ads.
-* Add – Survey users when campaign creation is skipped during onboarding.
-* Tweak - Display a more detailed error message when failing to link Google Ads account.
-* Tweak – Replace "free listings" with "product feed".
-
 = 3.2.0 - 2025-07-22 =
 * Add - Block shipping, products, and coupons synchronization when push synchronization is disabled.
 * Add - Budget Metrics endpoint for fetching metrics with a custom budget.
