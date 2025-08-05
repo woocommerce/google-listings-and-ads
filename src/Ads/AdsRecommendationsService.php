@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Ads;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
@@ -70,6 +71,14 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 
 		if ( $id ) {
 			$query->where( 'recommendation_id', $id );
+		} else {
+			// Only return recommendations for the highest spend campaign.
+			$ads_campaign = $this->container->get( AdsCampaign::class );
+			$campaign     = $ads_campaign->get_highest_spend_campaign();
+
+			if ( ! empty( $campaign ) ) {
+				$query->where( 'recommendation_campaign_id', $campaign['id'] );
+			}
 		}
 
 		$result = $query->get_results();
