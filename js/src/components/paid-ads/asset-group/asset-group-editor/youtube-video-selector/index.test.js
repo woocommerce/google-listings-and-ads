@@ -38,7 +38,7 @@ describe( 'YoutubeVideoSelector', () => {
 			'src',
 			'https://img.youtube.com/vi/video1/mqdefault.jpg'
 		);
-		expect( images[ 1 ] ).toHaveAttribute(
+		expect( images[ 2 ] ).toHaveAttribute(
 			'src',
 			'https://img.youtube.com/vi/video2/mqdefault.jpg'
 		);

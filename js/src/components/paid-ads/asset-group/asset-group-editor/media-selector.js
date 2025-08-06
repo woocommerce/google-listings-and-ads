@@ -8,6 +8,7 @@ import GridiconCrossCircle from 'gridicons/dist/cross-circle';
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
+import youtubeIconURL from '~/images/pmax-assets-improvements/youtube-icon.svg';
 import './media-selector.scss';
 
 const ARIA_LABEL_CLICK = {
@@ -63,6 +64,19 @@ const MediaSelector = ( {
 									alt={ medium.alt }
 									src={ medium.thumbnail || medium.url }
 								/>
+
+								{ mediaType === 'video' && (
+									<img
+										className="gla-media-selector__youtube-icon"
+										src={ youtubeIconURL }
+										alt={ __(
+											'YouTube icon',
+											'google-listings-and-ads'
+										) }
+										width={ 32 }
+										height={ 24 }
+									/>
+								) }
 							</AppButton>
 							<AppButton
 								className="gla-media-selector__remove-medium-button"

@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUn
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPCOMProxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\AttributeMappingRulesTable;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
 use WC_Meta_Data;
@@ -33,8 +34,10 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 		$this->container = woogle_get_container();
-		// Since the shipping time tables and attributeMappingRules aren't set up in the test environment, we install them to prevent warnings.
+		// Since the tables for shipping rate, time, and attribute mapping rules
+		// aren't set up in the test environment, install them to prevent warnings.
 		$this->container->get( AttributeMappingRulesTable::class )->install();
+		$this->container->get( ShippingRateTable::class )->install();
 		$this->container->get( ShippingTimeTable::class )->install();
 		do_action( 'rest_api_init' );
 	}
