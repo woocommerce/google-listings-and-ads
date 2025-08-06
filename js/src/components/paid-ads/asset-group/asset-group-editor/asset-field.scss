@@ -105,5 +105,26 @@
 		.components-input-control .components-input-control__container .components-input-control__input {
 			height: $gla-size-control-height;
 		}
+
+		.gla-asset-field__help-popover__content {
+			ul {
+				list-style: disc;
+				padding-left: $grid-unit-20;
+			}
+
+			p {
+				margin: 0;
+			}
+		}
+
+		.gla-asset-field__help-popover__content-group {
+			display: flex;
+			flex-direction: column;
+			gap: $grid-unit-05;
+
+			li + li {
+				margin-top: $grid-unit-05;
+			}
+		}
 	}
 }
