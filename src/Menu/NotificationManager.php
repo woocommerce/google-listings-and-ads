@@ -213,15 +213,9 @@ class NotificationManager implements ContainerAwareInterface, Service, Registera
 			return ++$count;
 		}
 
-		$action_type = $preferences['woocommerce/google-listings-and-ads']['pmax-improve-assets-banner']['actionType'];
 		$action_time = $preferences['woocommerce/google-listings-and-ads']['pmax-improve-assets-banner']['actionTime'];
-		$check_time  = time() + ( 30 * DAY_IN_SECONDS );
 
-		if ( 'editAssets' === $action_type ) {
-			$check_time = strtotime( $recommendations[0]['last_sync'] );
-		}
-
-		if ( $check_time > $action_time ) {
+		if ( time() > $action_time + ( 30 * DAY_IN_SECONDS ) ) {
 			return ++$count;
 		}
 

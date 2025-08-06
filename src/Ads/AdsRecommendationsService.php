@@ -70,6 +70,9 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 		if ( $id ) {
 			$query->where( 'recommendation_id', $id );
 		} else {
+			// Only return recommendations from the past 7 days.
+			$query->where( 'recommendation_last_synced', gmdate( 'Y-m-d H:i:s', time() - ( 7 * DAY_IN_SECONDS ) ), '>' );
+
 			// Only return recommendations for the highest spend campaign.
 			$ads_campaign = $this->container->get( AdsCampaign::class );
 			$campaign     = $ads_campaign->get_highest_spend_campaign();
