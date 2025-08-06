@@ -50,17 +50,17 @@ const PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT =
  *
  * When dismissed, the banner will not reappear until the expiry time elapses.
  * Clicking "Improve Assets" navigates to the asset group edit page for the highest-spending PMAX campaign.
- * @param {Object} props Component properties.
- * @param {Function} props.onBannerDismissed Callback function to call when the banner is dismissed.
- * @param {Function} props.onBannerShown Callback function to call when the banner is shown.
- *
- * @return {JSX.Element|null} The banner component, or null if not applicable.
  *
  * @fires gla_pmax_assets_improvements_banner_shown when the banner is displayed.
  * @fires gla_pmax_assets_improvements_improve_assets_clicked when the "Improve Assets" button is clicked.
  * @fires gla_pmax_assets_improvements_dismiss_clicked when the banner is dismissed.
+ *
+ * @param {Object} props Component properties.
+ * @param {Function} props.onBannerDismissed Callback function to call when the banner is dismissed.
+ * @param {Function} props.onBannerActioned Callback function to call when the "Improve Assets" button is clicked.
+ * @return {JSX.Element|null} The banner component, or null if not applicable.
  */
-const Banner = ( { onBannerDismissed, onBannerActioned, onBannerShown } ) => {
+const Banner = ( { onBannerDismissed, onBannerActioned } ) => {
 	const { campaign, hasFinishedResolution } = useRecommendedPMaxCampaign();
 
 	useEffect( () => {
@@ -71,17 +71,11 @@ const Banner = ( { onBannerDismissed, onBannerActioned, onBannerShown } ) => {
 		}
 	}, [ campaign, hasFinishedResolution ] );
 
-	useEffect( () => {
-		if ( campaign && hasFinishedResolution ) {
-			onBannerShown();
-		}
-	}, [ campaign, hasFinishedResolution, onBannerShown ] );
-
 	if ( ! campaign || ! hasFinishedResolution ) {
 		return null;
 	}
 
-	const { id, name } = campaign;
+	const { campaign_id: id, campaign_name: name } = campaign;
 
 	const handleOnImproveAssets = () => {
 		onBannerActioned();
