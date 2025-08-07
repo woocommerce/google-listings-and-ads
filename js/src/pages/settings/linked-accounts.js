@@ -44,7 +44,7 @@ export default function LinkedAccounts() {
 	const { google } = useGoogleAccount();
 	const { googleMCAccount } = useGoogleMCAccount();
 	const { googleAdsAccount } = useGoogleAdsAccount();
-	console.log( googleMCAccount );
+
 	const isLoading = ! (
 		jetpack &&
 		google &&
