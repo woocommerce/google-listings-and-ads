@@ -382,32 +382,27 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @return array
 	 */
 	public function get_highest_spend_campaign(): array {
-		$highest_spend_campaign = [];
-
 		try {
 			$campaigns = $this->get_campaigns();
 		} catch ( Exception $e ) {
-			return $highest_spend_campaign;
+			return [];
 		}
 
-		foreach ( $campaigns as $campaign ) {
-			// Skip campaign if not enabled.
-			if ( CampaignStatus::ENABLED !== $campaign['status'] ) {
-				continue;
-			}
+		return array_reduce(
+			$campaigns,
+			function ( $highest, $campaign ) {
+				if ( empty( $highest ) ) {
+					return $campaign;
+				}
 
-			// Set the first campaign found as the highest campaign.
-			if ( empty( $highest_spend_campaign ) ) {
-				$highest_spend_campaign = $campaign;
-				continue;
-			}
+				if ( CampaignStatus::ENABLED === $campaign['status'] && $campaign['amount'] > $highest['amount'] ) {
+					return $campaign;
+				}
 
-			if ( $campaign['amount'] > $highest_spend_campaign['amount'] ) {
-				$highest_spend_campaign = $campaign;
-			}
-		}
-
-		return $highest_spend_campaign;
+				return $highest;
+			},
+			[]
+		);
 	}
 
 	/**
