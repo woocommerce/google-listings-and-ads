@@ -377,18 +377,29 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
-	 * Retrieve the campaign with the highest spend amount.
+	 * Retrieve the enabled campaign with the highest spend amount.
 	 *
 	 * @return array
 	 */
 	public function get_highest_spend_campaign(): array {
-		$campaigns = $this->get_campaigns();
-
 		$highest_spend_campaign = [];
 
+		try {
+			$campaigns = $this->get_campaigns();
+		} catch ( Exception $e ) {
+			return $highest_spend_campaign;
+		}
+
 		foreach ( $campaigns as $campaign ) {
+			// Skip campaign if not enabled.
+			if ( CampaignStatus::ENABLED !== $campaign['status'] ) {
+				continue;
+			}
+
+			// Set the first campaign found as the highest campaign.
 			if ( empty( $highest_spend_campaign ) ) {
 				$highest_spend_campaign = $campaign;
+				continue;
 			}
 
 			if ( $campaign['amount'] > $highest_spend_campaign['amount'] ) {
