@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use WC_Product;
 use WP_REST_Response;
 use WP_REST_Request;
@@ -60,6 +61,11 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 	protected $attribute_manager;
 
 	/**
+	 * @var ProductRepository
+	 */
+	protected $product_repository;
+
+	/**
 	 * The protected resources. Only items with visibility set to sync-and-show will be returned.
 	 */
 	protected const PROTECTED_RESOURCES = [
@@ -77,14 +83,16 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 	/**
 	 * WPCOMProxy constructor.
 	 *
-	 * @param ShippingRateQuery $shipping_rate_query   The ShippingRateQuery object.
+	 * @param ShippingRateQuery $shipping_rate_query The ShippingRateQuery object.
 	 * @param ShippingTimeQuery $shipping_time_query The ShippingTimeQuery object.
 	 * @param AttributeManager  $attribute_manager   The AttributeManager object.
+	 * @param ProductRepository $product_repository  The ProductRepository object.
 	 */
-	public function __construct( ShippingRateQuery $shipping_rate_query, ShippingTimeQuery $shipping_time_query, AttributeManager $attribute_manager ) {
+	public function __construct( ShippingRateQuery $shipping_rate_query, ShippingTimeQuery $shipping_time_query, AttributeManager $attribute_manager, ProductRepository $product_repository ) {
 		$this->shipping_rate_query = $shipping_rate_query;
 		$this->shipping_time_query = $shipping_time_query;
 		$this->attribute_manager   = $attribute_manager;
+		$this->product_repository  = $product_repository;
 	}
 
 	/**
@@ -95,37 +103,33 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 	public const KEY_VISIBILITY = '_wc_gla_visibility';
 
 	/**
-	 * The Post types to be filtered.
+	 * Get the post types to be filtered.
 	 *
-	 * @var array
+	 * @return array
 	 */
-	public static $post_types_to_filter = [
-		'product'           => [
-			'meta_query' => [
-				[
-					'key'     => self::KEY_VISIBILITY,
-					'value'   => ChannelVisibility::SYNC_AND_SHOW,
-					'compare' => '=',
+	private function get_post_types_to_filter() {
+		return [
+			'product'           => [
+				'meta_query' => $this->product_repository->get_sync_ready_products_meta_query( true ),
+			],
+			'shop_coupon'       => [
+				'meta_query' => [
+					[
+						'key'     => self::KEY_VISIBILITY,
+						'value'   => ChannelVisibility::SYNC_AND_SHOW,
+						'compare' => '=',
+					],
+					[
+						'key'     => 'customer_email',
+						'compare' => 'NOT EXISTS',
+					],
 				],
 			],
-		],
-		'shop_coupon'       => [
-			'meta_query' => [
-				[
-					'key'     => self::KEY_VISIBILITY,
-					'value'   => ChannelVisibility::SYNC_AND_SHOW,
-					'compare' => '=',
-				],
-				[
-					'key'     => 'customer_email',
-					'compare' => 'NOT EXISTS',
-				],
+			'product_variation' => [
+				'meta_query' => null,
 			],
-		],
-		'product_variation' => [
-			'meta_query' => null,
-		],
-	];
+		];
+	}
 
 	/**
 	 * Register all filters.
@@ -143,7 +147,7 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 		$this->register_callbacks();
 		$this->add_g4w_settings();
 
-		foreach ( array_keys( self::$post_types_to_filter ) as $object_type ) {
+		foreach ( array_keys( $this->get_post_types_to_filter() ) as $object_type ) {
 			$this->register_object_types_filter( $object_type );
 		}
 	}
@@ -352,12 +356,19 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 			return $response;
 		}
 
-		$meta_data = $response->get_data()['meta_data'] ?? [];
+		// Product is opt-out but coupon is opt-in
+		$is_syncable = $pieces['resource'] === 'products';
+		$meta_data   = $response->get_data()['meta_data'] ?? [];
 
 		foreach ( $meta_data as $meta ) {
-			if ( $meta->key === self::KEY_VISIBILITY && $meta->value === ChannelVisibility::SYNC_AND_SHOW ) {
-				return $response;
+			if ( $meta->key === self::KEY_VISIBILITY ) {
+				$is_syncable = $meta->value === ChannelVisibility::SYNC_AND_SHOW;
+				break;
 			}
+		}
+
+		if ( $is_syncable ) {
+			return $response;
 		}
 
 		return new WP_REST_Response(
@@ -386,13 +397,19 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 		}
 
 		$post_type         = $args['post_type'];
-		$post_type_filters = self::$post_types_to_filter[ $post_type ];
+		$post_type_filters = $this->get_post_types_to_filter()[ $post_type ];
 
 		if ( ! isset( $post_type_filters['meta_query'] ) || ! is_array( $post_type_filters['meta_query'] ) ) {
 			return $args;
 		}
 
-		$args['meta_query'] = [ ...$args['meta_query'] ?? [], ...$post_type_filters['meta_query'] ];
+		$meta_query = $post_type_filters['meta_query'];
+
+		if ( empty( $args['meta_query'] ) ) {
+			$args['meta_query'] = $meta_query;
+		} else {
+			array_push( $args['meta_query'], $meta_query );
+		}
 
 		return $args;
 	}
