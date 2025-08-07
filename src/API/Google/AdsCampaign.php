@@ -391,11 +391,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 		return array_reduce(
 			$campaigns,
 			function ( $highest, $campaign ) {
-				if ( empty( $highest ) ) {
-					return $campaign;
-				}
-
-				if ( CampaignStatus::ENABLED === $campaign['status'] && $campaign['amount'] > $highest['amount'] ) {
+				if ( CampaignStatus::ENABLED === $campaign['status'] && ( empty( $highest ) || $campaign['amount'] > $highest['amount'] ) ) {
 					return $campaign;
 				}
 
