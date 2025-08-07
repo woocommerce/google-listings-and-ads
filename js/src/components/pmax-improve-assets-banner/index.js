@@ -9,6 +9,7 @@ import { store as preferencesStore } from '@wordpress/preferences';
  * Internal dependencies
  */
 import { PREFERENCES_STORE_NAMESPACE, DAY_IN_SECONDS } from '~/constants';
+import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import usePreference from '~/hooks/usePreference';
 import Banner from './banner';
 import './index.scss';
@@ -23,17 +24,17 @@ const ACTION_TYPES = {
  * Displays a dismissible banner prompting users to improve assets for their highest-spending enabled Performance Max (PMAX) campaign.
  *
  * The banner is shown only if:
- * - The preference expiry is undefined or expired.
- * - There are enabled PMAX campaigns.
+ * - The preference actionTime is not set or has expired.
  * - There are relevant asset improvement recommendations.
+ * - The user has a connected Google Ads account.
  *
  * When dismissed, the banner will not reappear until the expiry time elapses.
  * Clicking "Improve Assets" navigates to the asset group edit page for the highest-spending PMAX campaign.
- * Another property, "hasRecommendations" is used to track if there are any recommendations available.
  *
  * @return {JSX.Element|null} The banner component, or null if not applicable.
  */
 const PMaxImproveAssetsBanner = () => {
+	const { hasGoogleAdsConnection } = useGoogleAdsAccount();
 	const { set } = useDispatch( preferencesStore );
 	const { actionTime, actionType } =
 		usePreference( PREFERENCE_BANNER_KEY ) || {};
@@ -54,9 +55,10 @@ const PMaxImproveAssetsBanner = () => {
 
 	// Don't display the banner if the banner has been dismissed less than 30 days ago.
 	if (
-		( actionType === ACTION_TYPES.DISMISS ||
+		! hasGoogleAdsConnection ||
+		( ( actionType === ACTION_TYPES.DISMISS ||
 			actionType === ACTION_TYPES.EDIT_ASSETS ) &&
-		Date.now() < actionTime + 30 * DAY_IN_SECONDS * 1000
+			Date.now() < actionTime + 30 * DAY_IN_SECONDS * 1000 )
 	) {
 		return null;
 	}

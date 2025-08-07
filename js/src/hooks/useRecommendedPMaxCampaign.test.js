@@ -18,25 +18,34 @@ jest.mock( '@wordpress/data', () => ( {
 
 const mockedRecommendations = [
 	{
-		id: 1,
-		name: 'Campaign 1',
-		type: 'performance_max',
-		status: 'enabled',
-		amount: 100,
+		id: 111,
+		type: 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
+		resource_name:
+			'customers/{customer_id}/recommendations/{recommendation_id}',
+		campaign_id: 111,
+		campaign_name: 'Spring Campaign',
+		campaign_status: 'ENABLED',
+		last_synced: '2024-06-01T12:34:56Z',
 	},
 	{
-		id: 2,
-		name: 'Campaign 2',
-		type: 'performance_max',
-		status: 'enabled',
-		amount: 200,
+		id: 222,
+		type: 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
+		resource_name:
+			'customers/{customer_id}/recommendations/{recommendation_id}',
+		campaign_id: 222,
+		campaign_name: 'Summer Campaign',
+		campaign_status: 'ENABLED',
+		last_synced: '2024-06-02T12:34:56Z',
 	},
 	{
-		id: 3,
-		name: 'Campaign 3',
-		type: 'SEARCH',
-		status: 'enabled',
-		amount: 300,
+		id: 333,
+		type: 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
+		resource_name:
+			'customers/{customer_id}/recommendations/{recommendation_id}',
+		campaign_id: 333,
+		campaign_name: 'Winter Campaign',
+		campaign_status: 'ENABLED',
+		last_synced: '2024-06-03T12:34:56Z',
 	},
 ];
 
@@ -70,7 +79,7 @@ describe( 'usePmaxAssetOptimizationRecommendedCampaign', () => {
 
 		const { result } = renderHook( () => useRecommendedPMaxCampaign() );
 		expect( result.current ).toEqual( {
-			campaign: mockedRecommendations[ 1 ],
+			campaign: mockedRecommendations[ 0 ],
 			hasFinishedResolution: true,
 		} );
 	} );
