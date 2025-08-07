@@ -57,10 +57,9 @@ const PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT =
  *
  * @param {Object} props Component properties.
  * @param {Function} props.onBannerDismissed Callback function to call when the banner is dismissed.
- * @param {Function} props.onBannerActioned Callback function to call when the "Improve Assets" button is clicked.
  * @return {JSX.Element|null} The banner component, or null if not applicable.
  */
-const Banner = ( { onBannerDismissed, onBannerActioned } ) => {
+const Banner = ( { onBannerDismissed } ) => {
 	const { campaign, hasFinishedResolution } = useRecommendedPMaxCampaign();
 
 	useEffect( () => {
@@ -75,18 +74,21 @@ const Banner = ( { onBannerDismissed, onBannerActioned } ) => {
 		return null;
 	}
 
-	const { campaign_id: id, campaign_name: name } = campaign;
+	const { campaign_id, campaign_name } = campaign;
 
 	const handleOnImproveAssets = () => {
-		onBannerActioned();
+		onBannerDismissed();
 
 		recordGlaEvent( 'gla_pmax_assets_improvements_improve_assets_clicked', {
 			context: PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT,
-			campaign_id: id,
+			campaign_id,
 		} );
 
 		// Navigate to the edit campaign page for the PMAX campaign with the highest spending.
-		const editCampaignUrl = getEditCampaignUrl( id, 'asset-group' );
+		const editCampaignUrl = getEditCampaignUrl(
+			campaign_id,
+			'asset-group'
+		);
 		getHistory().push( editCampaignUrl );
 	};
 
@@ -95,7 +97,7 @@ const Banner = ( { onBannerDismissed, onBannerActioned } ) => {
 
 		recordGlaEvent( 'gla_pmax_assets_improvements_dismiss_clicked', {
 			context: PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT,
-			campaign_id: id,
+			campaign_id,
 		} );
 	};
 
@@ -113,7 +115,7 @@ const Banner = ( { onBannerDismissed, onBannerActioned } ) => {
 						'Unlock more sales for your campaign, %s, by focusing on improving your campaign assets. Better assets directly increase your ad strength, allowing for a wider variety of ad combinations to be shown across Google.',
 						'google-listings-and-ads'
 					),
-					name
+					campaign_name
 				) }
 			</p>
 

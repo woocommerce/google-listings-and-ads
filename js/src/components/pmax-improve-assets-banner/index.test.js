@@ -166,7 +166,7 @@ describe( 'PMaxImproveAssetsBanner', () => {
 			'pmax-improve-assets-banner',
 			{
 				actionTime: MOCK_NOW,
-				actionType: 'editAssets',
+				actionType: 'dismiss',
 			}
 		);
 

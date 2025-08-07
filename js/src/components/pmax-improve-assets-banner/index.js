@@ -15,10 +15,7 @@ import Banner from './banner';
 import './index.scss';
 
 const PREFERENCE_BANNER_KEY = 'pmax-improve-assets-banner';
-const ACTION_TYPES = {
-	EDIT_ASSETS: 'editAssets',
-	DISMISS: 'dismiss',
-};
+const ACTION_TYPE_DISMISS = 'dismiss';
 
 /**
  * Displays a dismissible banner prompting users to improve assets for their highest-spending enabled Performance Max (PMAX) campaign.
@@ -41,34 +38,22 @@ const PMaxImproveAssetsBanner = () => {
 
 	const handleOnBannerDismissed = useCallback( () => {
 		set( PREFERENCES_STORE_NAMESPACE, PREFERENCE_BANNER_KEY, {
-			actionType: ACTION_TYPES.DISMISS,
+			actionType: ACTION_TYPE_DISMISS,
 			actionTime: Date.now(),
 		} );
 	}, [ set ] );
 
-	const handleOnBannerActioned = useCallback( () => {
-		set( PREFERENCES_STORE_NAMESPACE, PREFERENCE_BANNER_KEY, {
-			actionType: ACTION_TYPES.EDIT_ASSETS,
-			actionTime: Date.now(),
-		} );
-	}, [ set ] );
-
-	// Don't display the banner if the banner has been dismissed less than 30 days ago.
+	// Don't display the banner if the banner has been dismissed less than 30 days ago
+	// or there is no Google Ads connection.
 	if (
 		! hasGoogleAdsConnection ||
-		( ( actionType === ACTION_TYPES.DISMISS ||
-			actionType === ACTION_TYPES.EDIT_ASSETS ) &&
+		( actionType === ACTION_TYPE_DISMISS &&
 			Date.now() < actionTime + 30 * DAY_IN_SECONDS * 1000 )
 	) {
 		return null;
 	}
 
-	return (
-		<Banner
-			onBannerDismissed={ handleOnBannerDismissed }
-			onBannerActioned={ handleOnBannerActioned }
-		/>
-	);
+	return <Banner onBannerDismissed={ handleOnBannerDismissed } />;
 };
 
 export default PMaxImproveAssetsBanner;
