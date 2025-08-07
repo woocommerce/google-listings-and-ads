@@ -11,9 +11,6 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
  */
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import ConnectedIconLabel from '~/components/connected-icon-label';
-import { GOOGLE_WPCOM_APP_CONNECTED_STATUS } from '~/constants';
-import EnableNewProductSyncButton from '~/components/enable-new-product-sync-button';
-import AppNotice from '~/components/app-notice';
 
 /**
  * @typedef {import('~/data/types.js').GoogleMCAccount} GoogleMCAccount
