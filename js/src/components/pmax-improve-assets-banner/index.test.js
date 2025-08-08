@@ -10,10 +10,11 @@ import { render, screen, fireEvent } from '@testing-library/react';
  * Internal dependencies
  */
 import { getEditCampaignUrl } from '~/utils/urls';
-import { PREFERENCES_STORE_NAMESPACE, DAY_IN_SECONDS } from '~/constants';
+import { PREFERENCES_STORE_NAMESPACE } from '~/constants';
 import PMaxImproveAssetsBanner from './index';
 import usePreference from '~/hooks/usePreference';
 import useRecommendedPMaxCampaign from '~/hooks/useRecommendedPMaxCampaign';
+import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 
 jest.mock( '@woocommerce/components', () => ( {
 	...jest.requireActual( '@woocommerce/components' ),
@@ -39,6 +40,10 @@ jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest.fn(),
 } ) );
 
+jest.mock( '~/hooks/useGoogleAdsAccount', () =>
+	jest.fn().mockName( 'useGoogleAdsAccount' )
+);
+
 jest.mock( '~/hooks/usePreference', () =>
 	jest.fn().mockName( 'usePreference' )
 );
@@ -55,14 +60,31 @@ jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn(),
 } ) );
 
-const recommendedCampaign = { id: 2, name: 'Campaign 2' };
+const recommendedCampaign = { campaign_id: 2, campaign_name: 'Campaign 2' };
 
 describe( 'PMaxImproveAssetsBanner', () => {
 	beforeEach( () => {
 		useDispatch.mockReturnValue( { set: () => null } );
+		useGoogleAdsAccount.mockReturnValue( { hasGoogleAdsConnection: true } );
 	} );
 
 	it( 'renders nothing if expiry is not expired', () => {
+		usePreference.mockReturnValue( {
+			actionTime: Date.now() + 100000,
+			actionType: 'dismiss',
+		} );
+		useRecommendedPMaxCampaign.mockReturnValue( {
+			campaign: recommendedCampaign,
+			hasFinishedResolution: true,
+		} );
+		const { container } = render( <PMaxImproveAssetsBanner /> );
+		expect( container.firstChild ).toBeNull();
+	} );
+
+	it( 'renders nothing if Google Ads account is not connected', () => {
+		useGoogleAdsAccount.mockReturnValue( {
+			hasGoogleAdsConnection: false,
+		} );
 		usePreference.mockReturnValue( { expiry: Date.now() + 100000 } );
 		useRecommendedPMaxCampaign.mockReturnValue( {
 			campaign: recommendedCampaign,
@@ -72,7 +94,7 @@ describe( 'PMaxImproveAssetsBanner', () => {
 		expect( container.firstChild ).toBeNull();
 	} );
 
-	it( 'resets expiry if expired and renders banner', () => {
+	it( 'renders banner if expired', () => {
 		usePreference.mockReturnValue( { expiry: Date.now() - 1000 } );
 		useRecommendedPMaxCampaign.mockReturnValue( {
 			campaign: recommendedCampaign,
@@ -139,13 +161,12 @@ describe( 'PMaxImproveAssetsBanner', () => {
 
 		fireEvent.click( improveAssetsButton );
 
-		const expectedExpiry = MOCK_NOW + DAY_IN_SECONDS * 30 * 1000; // 30 days
-
 		expect( setMock ).toHaveBeenCalledWith(
 			PREFERENCES_STORE_NAMESPACE,
 			'pmax-improve-assets-banner',
 			{
-				expiry: expectedExpiry,
+				actionTime: MOCK_NOW,
+				actionType: 'dismiss',
 			}
 		);
 

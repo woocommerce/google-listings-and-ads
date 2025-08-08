@@ -50,17 +50,16 @@ const PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT =
  *
  * When dismissed, the banner will not reappear until the expiry time elapses.
  * Clicking "Improve Assets" navigates to the asset group edit page for the highest-spending PMAX campaign.
- * @param {Object} props Component properties.
- * @param {Function} props.onBannerDismissed Callback function to call when the banner is dismissed.
- * @param {Function} props.onBannerShown Callback function to call when the banner is shown.
- *
- * @return {JSX.Element|null} The banner component, or null if not applicable.
  *
  * @fires gla_pmax_assets_improvements_banner_shown when the banner is displayed.
  * @fires gla_pmax_assets_improvements_improve_assets_clicked when the "Improve Assets" button is clicked.
  * @fires gla_pmax_assets_improvements_dismiss_clicked when the banner is dismissed.
+ *
+ * @param {Object} props Component properties.
+ * @param {Function} props.onBannerDismissed Callback function to call when the banner is dismissed.
+ * @return {JSX.Element|null} The banner component, or null if not applicable.
  */
-const Banner = ( { onBannerDismissed, onBannerShown } ) => {
+const Banner = ( { onBannerDismissed } ) => {
 	const { campaign, hasFinishedResolution } = useRecommendedPMaxCampaign();
 
 	useEffect( () => {
@@ -71,28 +70,25 @@ const Banner = ( { onBannerDismissed, onBannerShown } ) => {
 		}
 	}, [ campaign, hasFinishedResolution ] );
 
-	useEffect( () => {
-		if ( campaign && hasFinishedResolution ) {
-			onBannerShown();
-		}
-	}, [ campaign, hasFinishedResolution, onBannerShown ] );
-
 	if ( ! campaign || ! hasFinishedResolution ) {
 		return null;
 	}
 
-	const { id, name } = campaign;
+	const { campaign_id, campaign_name } = campaign;
 
 	const handleOnImproveAssets = () => {
 		onBannerDismissed();
 
 		recordGlaEvent( 'gla_pmax_assets_improvements_improve_assets_clicked', {
 			context: PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT,
-			campaign_id: id,
+			campaign_id,
 		} );
 
 		// Navigate to the edit campaign page for the PMAX campaign with the highest spending.
-		const editCampaignUrl = getEditCampaignUrl( id, 'asset-group' );
+		const editCampaignUrl = getEditCampaignUrl(
+			campaign_id,
+			'asset-group'
+		);
 		getHistory().push( editCampaignUrl );
 	};
 
@@ -101,7 +97,7 @@ const Banner = ( { onBannerDismissed, onBannerShown } ) => {
 
 		recordGlaEvent( 'gla_pmax_assets_improvements_dismiss_clicked', {
 			context: PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT,
-			campaign_id: id,
+			campaign_id,
 		} );
 	};
 
@@ -119,7 +115,7 @@ const Banner = ( { onBannerDismissed, onBannerShown } ) => {
 						'Unlock more sales for your campaign, %s, by focusing on improving your campaign assets. Better assets directly increase your ad strength, allowing for a wider variety of ad combinations to be shown across Google.',
 						'google-listings-and-ads'
 					),
-					name
+					campaign_name
 				) }
 			</p>
 
