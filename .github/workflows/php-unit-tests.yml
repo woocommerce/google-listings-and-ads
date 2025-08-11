@@ -42,7 +42,7 @@ jobs:
       wc-versions: ${{ steps.wc.outputs.versions }}
       latest-wc-version: ${{ fromJson(steps.wc.outputs.versions)[0] }}
     steps:
-      - name: Get Release versions from Wordpress
+      - name: Get Release versions from WordPress
         id: wp
         uses: woocommerce/grow/get-plugin-releases@actions-v2
         with:

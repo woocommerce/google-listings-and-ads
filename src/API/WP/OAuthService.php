@@ -123,7 +123,7 @@ class OAuthService implements Service, OptionsAwareInterface, Deactivateable, Co
 	/**
 	 * Calls an API by Google via WCS to get required information in order to form an auth URL.
 	 *
-	 * @return array{client_id: string, redirect_uri: string, nonce: string} An associative array contains required information that is retrived from Google.
+	 * @return array{client_id: string, redirect_uri: string, nonce: string} An associative array contains required information that is retrieved from Google.
 	 * client_id:    Google's WPCOM app client ID, will be used to form the authorization URL.
 	 * redirect_uri: A Google's URL that will be redirected to when the merchant approve the app access. Note that it needs to be matched with the Google WPCOM app client settings.
 	 * nonce:        A string returned by Google that we will put it in the auth URL and the redirect_uri. Google will use it to verify the call.

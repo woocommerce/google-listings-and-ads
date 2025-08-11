@@ -28,7 +28,7 @@ function forAnyCategoryAndDateReference( callback ) {
 }
 
 describe( 'getReportQuery', () => {
-	test( "should foward the `orderby` query parameter if it's one of supported fields for given type", () => {
+	test( "should forward the `orderby` query parameter if it's one of supported fields for given type", () => {
 		forAnyCategoryAndDateReference( ( category, dateReference ) => {
 			for ( const orderby of freeFields ) {
 				expect(

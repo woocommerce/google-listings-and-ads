@@ -52,7 +52,7 @@ const DifferentCurrencyNotice = ( { context } ) => {
 				{
 					adsCurrency: <strong>{ googleAdsAccount.currency }</strong>,
 					storeCurrency: <strong>{ storeCurrency }</strong>,
-					// `ExternalIcon` is not addd here as that should be done uniformly across all `AppDocumentationLink`s:
+					// `ExternalIcon` is not add here as that should be done uniformly across all `AppDocumentationLink`s:
 					// https://github.com/woocommerce/google-listings-and-ads/issues/984
 					readMoreLink: (
 						<AppDocumentationLink

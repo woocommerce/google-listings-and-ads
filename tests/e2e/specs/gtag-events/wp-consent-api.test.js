@@ -22,11 +22,11 @@ test.describe( 'WP Consent API Integration', () => {
 		await clearConversionID();
 	} );
 
-	test( 'window.wp_consent_type is set to `optin`', async ( { page } ) => {
+	test( 'window.wp_consent_type is set to `option`', async ( { page } ) => {
 		await page.goto( 'shop' );
 
 		const consentType = await page.evaluate( () => window.wp_consent_type );
-		await expect( consentType ).toEqual( 'optin' );
+		await expect( consentType ).toEqual( 'option' );
 	} );
 
 	test( 'Consent update granting `analytics_storage` is sent when WP Consent API `statistics` category is `allowed`', async ( {

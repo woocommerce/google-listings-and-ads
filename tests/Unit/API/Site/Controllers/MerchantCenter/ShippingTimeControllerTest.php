@@ -27,7 +27,7 @@ class ShippingTimeControllerTest extends RESTControllerUnitTest {
 	protected $iso_provider;
 
 	/** @var MockObject|ShippingTimeQuery $conversion_action */
-	protected $shiping_time_query;
+	protected $shipping_time_query;
 
 	protected const ROUTE_SHIPPING_TIMES = '/wc/gla/mc/shipping/times';
 
@@ -36,11 +36,11 @@ class ShippingTimeControllerTest extends RESTControllerUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->shiping_time_query = $this->createMock( ShippingTimeQuery::class );
+		$this->shipping_time_query = $this->createMock( ShippingTimeQuery::class );
 		$this->iso_provider       = $this->createMock( ISO3166DataProvider::class );
 
 		$this->container = new Container();
-		$this->container->addShared( ShippingTimeQuery::class, $this->shiping_time_query );
+		$this->container->addShared( ShippingTimeQuery::class, $this->shipping_time_query );
 
 		$this->controller = new ShippingTimeController( $this->server );
 		$this->controller->set_container( $this->container );
@@ -49,13 +49,13 @@ class ShippingTimeControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_shipping_times() {
-		$this->shiping_time_query->expects( $this->once() )
+		$this->shipping_time_query->expects( $this->once() )
 			->method( 'set_limit' )
 			->willReturn(
-				$this->shiping_time_query
+				$this->shipping_time_query
 			);
 
-		$this->shiping_time_query->expects( $this->once() )
+		$this->shipping_time_query->expects( $this->once() )
 			->method( 'get_results' )
 			->willReturn(
 				[
@@ -95,20 +95,20 @@ class ShippingTimeControllerTest extends RESTControllerUnitTest {
 			'max_time'     => 10,
 		];
 
-		$this->shiping_time_query->expects( $this->once() )
+		$this->shipping_time_query->expects( $this->once() )
 			->method( 'where' )
 			->with( 'country', 'US' )
 			->willReturn(
-				$this->shiping_time_query
+				$this->shipping_time_query
 			);
 
-		$this->shiping_time_query->expects( $this->once() )
+		$this->shipping_time_query->expects( $this->once() )
 			->method( 'get_results' )
 			->willReturn(
 				[]
 			);
 
-		$this->shiping_time_query->expects( $this->once() )
+		$this->shipping_time_query->expects( $this->once() )
 			->method( 'insert' )
 			->with(
 				[
@@ -118,7 +118,7 @@ class ShippingTimeControllerTest extends RESTControllerUnitTest {
 				]
 			);
 
-		$this->shiping_time_query->expects( $this->never() )
+		$this->shipping_time_query->expects( $this->never() )
 			->method( 'update' );
 
 		$response = $this->do_request( self::ROUTE_SHIPPING_TIMES, 'POST', $payload );
@@ -135,14 +135,14 @@ class ShippingTimeControllerTest extends RESTControllerUnitTest {
 			'max_time'     => 10,
 		];
 
-		$this->shiping_time_query->expects( $this->once() )
+		$this->shipping_time_query->expects( $this->once() )
 			->method( 'where' )
 			->with( 'country', 'US' )
 			->willReturn(
-				$this->shiping_time_query
+				$this->shipping_time_query
 			);
 
-		$this->shiping_time_query->expects( $this->exactly( 2 ) )
+		$this->shipping_time_query->expects( $this->exactly( 2 ) )
 			->method( 'get_results' )
 			->willReturn(
 				[
@@ -155,7 +155,7 @@ class ShippingTimeControllerTest extends RESTControllerUnitTest {
 				]
 			);
 
-		$this->shiping_time_query->expects( $this->once() )
+		$this->shipping_time_query->expects( $this->once() )
 			->method( 'update' )
 			->with(
 				[
@@ -168,7 +168,7 @@ class ShippingTimeControllerTest extends RESTControllerUnitTest {
 				]
 			);
 
-		$this->shiping_time_query->expects( $this->never() )
+		$this->shipping_time_query->expects( $this->never() )
 			->method( 'insert' );
 
 		$response = $this->do_request( self::ROUTE_SHIPPING_TIMES, 'POST', $payload );
@@ -185,7 +185,7 @@ class ShippingTimeControllerTest extends RESTControllerUnitTest {
 			'max_time'     => 10,
 		];
 
-		$this->shiping_time_query->expects( $this->once() )
+		$this->shipping_time_query->expects( $this->once() )
 			->method( 'where' )
 			->with( 'country', 'US' )
 			->willThrowException(
@@ -200,14 +200,14 @@ class ShippingTimeControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_shipping_time_country() {
-		$this->shiping_time_query->expects( $this->once() )
+		$this->shipping_time_query->expects( $this->once() )
 			->method( 'where' )
 			->with( 'country', 'ES' )
 			->willReturn(
-				$this->shiping_time_query
+				$this->shipping_time_query
 			);
 
-		$this->shiping_time_query->expects( $this->exactly( 1 ) )
+		$this->shipping_time_query->expects( $this->exactly( 1 ) )
 			->method( 'get_results' )
 			->willReturn(
 				[
@@ -233,14 +233,14 @@ class ShippingTimeControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_shipping_time_country_not_found() {
-		$this->shiping_time_query->expects( $this->once() )
+		$this->shipping_time_query->expects( $this->once() )
 			->method( 'where' )
 			->with( 'country', 'ES' )
 			->willReturn(
-				$this->shiping_time_query
+				$this->shipping_time_query
 			);
 
-		$this->shiping_time_query->expects( $this->exactly( 1 ) )
+		$this->shipping_time_query->expects( $this->exactly( 1 ) )
 			->method( 'get_results' )
 			->willReturn(
 				[]
@@ -254,7 +254,7 @@ class ShippingTimeControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_delete_shipping_time_country() {
-		$this->shiping_time_query->expects( $this->once() )
+		$this->shipping_time_query->expects( $this->once() )
 			->method( 'delete' )
 			->with( 'country', 'ES' );
 
@@ -266,7 +266,7 @@ class ShippingTimeControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_delete_shipping_time_country_invalid_query() {
-		$this->shiping_time_query->expects( $this->once() )
+		$this->shipping_time_query->expects( $this->once() )
 			->method( 'delete' )
 			->with( 'country', 'ES' )
 			->willThrowException(

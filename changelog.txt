@@ -693,7 +693,7 @@
 * Tweak - WC 6.6 compatibility.
 
 = 1.13.4 - 2022-06-07 =
-* Fix - Adding Github Actions for storybook.
+* Fix - Adding GitHub Actions for storybook.
 * Fix - Do not show error notice when Merchant Center review request API call failed.
 * Fix - Do not store URL matches transient until fully connected.
 * Fix - Fix GitHub Workflow paths.
