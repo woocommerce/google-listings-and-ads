@@ -169,7 +169,7 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 
 	return (
 		<AppModal
-			overflow="visible"
+			overflow="auto"
 			onRequestClose={ handleClose }
 			className="gla-attribute-mapping__rule-modal"
 			title={
