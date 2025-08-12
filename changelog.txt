@@ -1,5 +1,13 @@
 *** Google for WooCommerce Changelog ***
 
+= 3.3.1 - 2025-08-12 =
+* Fix - Avoid errors when unnecessarily revoking WPCOM connection during deactivation.
+* Fix - Avoid scheduling the job to synchronize all products with Google Merchant Center when the plugin is initialized for the first time.
+* Fix - Modal overflow on small viewports.
+* Fix - Remove error message related to granting access for API pull.
+* Fix - Remove unnecessary kebab menu from setup task.
+* Update - The filtering for synchronizable products data by channel visibility in API Pull mode is now opt-out, changed from its previous opt-in setting.
+
 = 3.3.0 - 2025-08-05 =
 * Add – Enhanced Conversions support for Google Ads.
 * Add – Survey users when campaign creation is skipped during onboarding.
