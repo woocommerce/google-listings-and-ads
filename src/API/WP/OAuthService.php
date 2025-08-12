@@ -238,7 +238,10 @@ class OAuthService implements Service, OptionsAwareInterface, Deactivateable, Co
 	public function deactivate(): void {
 		// Try to revoke the token on deactivation. If no token is available, it will throw an exception which we can ignore.
 		try {
-			$this->revoke_wpcom_api_auth();
+			// Attempt to revoke the WPCOM token if setup is complete.
+			if ( $this->is_jetpack_connected() ) {
+				$this->revoke_wpcom_api_auth();
+			}
 		} catch ( Exception $e ) {
 			do_action(
 				'woocommerce_gla_error',
