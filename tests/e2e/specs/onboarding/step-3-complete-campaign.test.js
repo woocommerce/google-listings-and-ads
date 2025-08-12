@@ -486,11 +486,9 @@ test.describe( 'Complete your campaign', () => {
 		test.describe( 'User skips paid ads creation', () => {
 			test.describe( 'With WooCommerce tracking disabled', () => {
 				test.beforeAll( async () => {
-					// Reset the showing status for the "Set up paid ads" section.
 					await setupAdsAccountPage.mockAdsAccountIncomplete();
 					await completeCampaign.goto();
 					await completeCampaign.clickSkipPaidAdsCreationButton();
-					await page.evaluate( () => window.sessionStorage.clear() );
 				} );
 
 				test( 'should see the modal', async () => {
