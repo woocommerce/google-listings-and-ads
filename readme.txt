@@ -161,8 +161,4 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Update - Remove WPCOM API authorization check as authorization is granted by default.
 * Update - Remove opt-in/opt-out UI controls for product data sync.
 
-= 3.1.1 - 2025-07-08 =
-* Fix - Do not render experience rating banner if Ads account is disconnected.
-* Fix - Fixed undefined array key warnings in Price Benchmarks feature.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
