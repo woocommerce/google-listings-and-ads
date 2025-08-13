@@ -71,6 +71,9 @@ jobs:
           - php: 8.3
             wp-version: latest
             wc-versions: latest
+          - php: 7.4
+            wp-version: ${{ fromJson(needs.GetMatrix.outputs.wp-versions)[2] }} # L-2 WP Version support
+            wc-versions: ${{ fromJson(needs.GetMatrix.outputs.wc-versions)[2] }} # L-2 WC Version support
 
     steps:
       - name: Checkout repository
