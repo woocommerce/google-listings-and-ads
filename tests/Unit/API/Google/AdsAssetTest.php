@@ -24,6 +24,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
  */
+#[\AllowDynamicProperties]
 class AdsAssetTest extends UnitTest {
 
 	use GoogleAdsClientTrait;
