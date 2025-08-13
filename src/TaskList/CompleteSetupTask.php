@@ -75,15 +75,6 @@ class CompleteSetupTask extends Task implements Service, Registerable, MerchantC
 	}
 
 	/**
-	 * Always dismissable.
-	 *
-	 * @return bool
-	 */
-	public function is_dismissable() {
-		return true;
-	}
-
-	/**
 	 * Get completion status.
 	 * Forwards from the merchant center setup status.
 	 *

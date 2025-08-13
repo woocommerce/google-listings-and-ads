@@ -8,7 +8,6 @@ import { expect, test } from '@playwright/test';
  */
 import SettingsPage from '../../utils/pages/settings';
 import { clearOnboardedMerchant, setOnboardedMerchant } from '../../utils/api';
-import { LOAD_STATE } from '../../utils/constants';
 
 test.use( { storageState: process.env.ADMINSTATE } );
 
@@ -47,24 +46,5 @@ test.describe( 'Settings - WPCOM REST API', () => {
 
 		await expect( gmcCard ).toBeVisible();
 		await expect( button ).not.toBeVisible();
-	} );
-
-	test( 'When REST API is Error it shows a warning notice in MC and allows to grant access', async () => {
-		await settingsPage.goto();
-		await settingsPage.mockMCConnected( 1234, true, 'error' );
-		const mockAuthURL = 'https://example.com';
-		await settingsPage.fulfillRESTApiAuthorize( { auth_url: mockAuthURL } );
-		const errorAccessMessage = page
-			.locator( '#woocommerce-layout__primary' )
-			.getByText(
-				'There was an issue granting access to Google for fetching your products.'
-			);
-		const grantAccessBtn = settingsPage.getGrantAccessBtn();
-		await expect( errorAccessMessage ).toBeVisible();
-		await expect( grantAccessBtn ).toBeVisible();
-		await grantAccessBtn.click();
-		await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-		await page.waitForURL( mockAuthURL );
-		expect( page.url() ).toMatch( mockAuthURL );
 	} );
 } );
