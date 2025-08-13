@@ -70,6 +70,12 @@ use Google\ApiCore\Page;
 use Google\ApiCore\PagedListResponse;
 
 /**
+ * Local subclass of Asset for tests to allow dynamic properties without PHP 8.2 warnings.
+ */
+#[\AllowDynamicProperties]
+class TestAsset extends Asset {}
+
+/**
  * Trait GoogleAdsClient
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait
@@ -911,7 +917,7 @@ trait GoogleAdsClientTrait {
 	 * @return Asset|null The generated asset.
 	 */
 	protected function generate_asset( $asset ) {
-		$ads_asset = new Asset();
+		$ads_asset = new TestAsset();
 
 		switch ( $asset['field_type'] ) {
 			case AssetFieldType::LOGO:
