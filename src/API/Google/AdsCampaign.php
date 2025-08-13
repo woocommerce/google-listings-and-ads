@@ -27,7 +27,6 @@ use Google\Ads\GoogleAds\V20\Services\CampaignOperation;
 use Google\Ads\GoogleAds\V20\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V20\Services\MutateGoogleAdsRequest;
 use Google\Ads\GoogleAds\V20\Services\MutateOperation;
-use Google\Ads\GoogleAds\V21\Enums\EuPoliticalAdvertisingStatusEnum\EuPoliticalAdvertisingStatus;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 use Exception;
@@ -304,8 +303,6 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$campaign_fields['status'] = CampaignStatus::number( $params['status'] );
 			}
 
-			$campaign_fields['contains_eu_political_advertising'] = EuPoliticalAdvertisingStatus::DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING;
-
 			if ( ! empty( $params['amount'] ) ) {
 				$operations[] = $this->budget->edit_operation( $campaign_id, $params['amount'] );
 			}
@@ -459,20 +456,19 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	protected function create_operation( string $campaign_name, string $country ): MutateOperation {
 		$campaign = new Campaign(
 			[
-				'resource_name'                     => $this->temporary_resource_name(),
-				'name'                              => $campaign_name,
-				'advertising_channel_type'          => AdvertisingChannelType::PERFORMANCE_MAX,
-				'status'                            => CampaignStatus::number( 'enabled' ),
-				'campaign_budget'                   => $this->budget->temporary_resource_name(),
-				'maximize_conversion_value'         => new MaximizeConversionValue(),
-				'url_expansion_opt_out'             => false,
-				'shopping_setting'                  => new ShoppingSetting(
+				'resource_name'             => $this->temporary_resource_name(),
+				'name'                      => $campaign_name,
+				'advertising_channel_type'  => AdvertisingChannelType::PERFORMANCE_MAX,
+				'status'                    => CampaignStatus::number( 'enabled' ),
+				'campaign_budget'           => $this->budget->temporary_resource_name(),
+				'maximize_conversion_value' => new MaximizeConversionValue(),
+				'url_expansion_opt_out'     => false,
+				'shopping_setting'          => new ShoppingSetting(
 					[
 						'merchant_id' => $this->options->get_merchant_id(),
 						'feed_label'  => $country,
 					]
 				),
-				'contains_eu_political_advertising' => EuPoliticalAdvertisingStatus::DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING,
 			]
 		);
 
