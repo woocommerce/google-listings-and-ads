@@ -27,6 +27,7 @@ use Google\Ads\GoogleAds\V20\Services\CampaignOperation;
 use Google\Ads\GoogleAds\V20\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V20\Services\MutateGoogleAdsRequest;
 use Google\Ads\GoogleAds\V20\Services\MutateOperation;
+use Google\Ads\GoogleAds\V21\Enums\EuPoliticalAdvertisingStatusEnum\EuPoliticalAdvertisingStatus;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 use Exception;
@@ -303,6 +304,8 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$campaign_fields['status'] = CampaignStatus::number( $params['status'] );
 			}
 
+			$campaign_fields['contains_eu_political_advertising'] = EuPoliticalAdvertisingStatus::DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING;
+
 			if ( ! empty( $params['amount'] ) ) {
 				$operations[] = $this->budget->edit_operation( $campaign_id, $params['amount'] );
 			}
@@ -469,6 +472,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 						'feed_label'  => $country,
 					]
 				),
+				'contains_eu_political_advertising' => EuPoliticalAdvertisingStatus::DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING,
 			]
 		);
 
