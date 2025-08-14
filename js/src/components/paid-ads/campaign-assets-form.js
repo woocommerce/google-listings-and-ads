@@ -158,12 +158,18 @@ export default function CampaignAssetsForm( {
 					: initialAssetGroup;
 				let hasNonEmptyAssets = false;
 
+				const updatedContextValues = {};
 				Object.keys( emptyAssetGroup ).forEach( ( key ) => {
 					if ( assetGroup && assetGroup[ key ]?.length ) {
 						hasNonEmptyAssets = true;
 					}
-					formContext.setValue( key, nextAssetGroup[ key ] );
+
+					updatedContextValues[ key ] = nextAssetGroup[ key ];
 				} );
+
+				if ( Object.keys( updatedContextValues ).length ) {
+					formContext.setValues( updatedContextValues );
+				}
 
 				setHasImportedAssets( hasNonEmptyAssets );
 				setBaseAssetGroup( nextAssetGroup );
