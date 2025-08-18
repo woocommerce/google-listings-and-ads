@@ -56,6 +56,7 @@ import {
 	receiveStoreCategories,
 	receiveTour,
 	receiveGtinMigrationStatus,
+	receiveAdsRecommendations,
 	receiveEnhancedConversionsStatus,
 } from './actions';
 
@@ -735,6 +736,29 @@ export function* getPriceBenchmarkSuggestions( args ) {
 			error,
 			__(
 				'There was an error getting the price benchmark suggestions.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Resolver for getting the Ads recommendations.
+ */
+export function* getAdsRecommendations( type ) {
+	try {
+		const response = yield apiFetch( {
+			path: addQueryArgs( `${ API_NAMESPACE }/ads/recommendations`, {
+				type,
+			} ),
+		} );
+
+		yield receiveAdsRecommendations( response, type );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the Ads recommendations.',
 				'google-listings-and-ads'
 			)
 		);
