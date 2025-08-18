@@ -772,17 +772,17 @@ When the banner is shown.
 | ---- | ---- | ----------- |
 `context` | `string` | The context in which the banner is shown. Set to 'pmax_assets_improvements_banner'.
 #### Emitters
-- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L62) when the banner is displayed.
+- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L63) when the banner is displayed.
 
 ### [`gla_pmax_assets_improvements_dismiss_clicked`](../../js/src/components/pmax-improve-assets-banner/banner.js#L36)
-When the banner is dismissed.
+When the banner is dismissed by clicking the "Dismiss" button or the close icon.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | The context in which the banner was dismissed. Set to 'pmax_assets_improvements_banner'.
 `campaign_id` | `number` | The ID of the PMAX campaign for which the banner was dismissed.
 #### Emitters
-- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L62) when the banner is dismissed.
+- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L63) when the banner is dismissed.
 
 ### [`gla_pmax_assets_improvements_improve_assets_clicked`](../../js/src/components/pmax-improve-assets-banner/banner.js#L28)
 When the "Improve Assets" button is clicked.
@@ -792,7 +792,7 @@ When the "Improve Assets" button is clicked.
 `context` | `string` | The context in which the banner is shown. Set to 'pmax_assets_improvements_banner'.
 `campaign_id` | `number` | The ID of the PMAX campaign for which assets are being improved.
 #### Emitters
-- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L62) when the "Improve Assets" button is clicked.
+- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L63) when the "Improve Assets" button is clicked.
 
 ### [`gla_price_benchmarks_change_price_clicked`](../../js/src/pages/price-benchmark/change-price.js#L19)
 
@@ -915,7 +915,7 @@ Send survey responses when the user skips the paid ads setup.
 #### Emitters
 - [`SurveyModal`](../../js/src/pages/onboarding/setup-stepper/skip-paid-ads-confirmation-modal/survey-modal.js#L47) with the survey responses and context 'skip-paid-ads-survey-modal'.
 
-### [`gla_submit_campaign_button_click`](../../js/src/components/paid-ads/asset-group/asset-group.js#L28)
+### [`gla_submit_campaign_button_click`](../../js/src/components/paid-ads/asset-group/asset-group.js#L30)
 Clicking on the submit button on the campaign creation or editing page.
  If a value is recorded as `unknown`, it's because no assets are imported and therefore unknown.
 #### Properties
