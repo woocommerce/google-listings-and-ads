@@ -137,3 +137,5 @@ export const PRICE_BENCHMARK_CHART_COLORS = {
 // @wordpress/preferences namespace
 export const PREFERENCES_STORE_NAMESPACE =
 	'woocommerce/google-listings-and-ads';
+
+export const RAISE_CAMPAIGN_BUDGET = 'RAISE_CAMPAIGN_BUDGET';

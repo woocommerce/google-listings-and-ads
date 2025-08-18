@@ -3,7 +3,7 @@
  */
 import classnames from 'classnames';
 import { __, sprintf } from '@wordpress/i18n';
-import { Flex, FlexBlock } from '@wordpress/components';
+import { Flex } from '@wordpress/components';
 import { getQuery, onQueryChange } from '@woocommerce/navigation';
 
 /**
@@ -24,6 +24,7 @@ import ProgramToggle from './program-toggle';
 import FreeListingsDisabledToggle from './free-listings-disabled-toggle';
 import CampaignAssetsTour from '~/components/tours/campaign-assets-tour';
 import BudgetRecommendationBadge from './budget-recommendation-badge';
+import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
 
 const PROGRAMS_TABLE_CARD_CLASS_NAME = 'gla-all-programs-table-card';
 const CAMPAIGN_EDIT_BUTTON_CLASS_NAME = 'gla-campaign-edit-button';
@@ -81,6 +82,8 @@ const AllProgramsTableCard = ( props ) => {
 	const { data: finalCountryCodesData } =
 		useTargetAudienceFinalCountryCodes();
 	const { data: adsCampaignsData } = useAdsCampaigns();
+	const { campaigns: raiseBudgetRecommendationCampaigns } =
+		useRaiseBudgetRecommendations();
 	const map = useCountryKeyNameMap();
 
 	if ( ! finalCountryCodesData || ! adsCampaignsData ) {
@@ -98,6 +101,12 @@ const AllProgramsTableCard = ( props ) => {
 			<CampaignAssetsTour referenceElementCssSelector={ selector } />
 		);
 	}
+
+	const hasRaiseBudgetRecommendation = ( campaignId ) => {
+		return raiseBudgetRecommendationCampaigns.some(
+			( recommendation ) => recommendation.campaign_id === campaignId
+		);
+	};
 
 	const data = [
 		{
@@ -119,7 +128,10 @@ const AllProgramsTableCard = ( props ) => {
 				title: (
 					<Flex gap={ 2 } align="center" justify="flex-start" wrap>
 						{ el.name }
-						<BudgetRecommendationBadge />
+
+						{ hasRaiseBudgetRecommendation( el.id ) && (
+							<BudgetRecommendationBadge />
+						) }
 					</Flex>
 				),
 				dailyBudget: formatAmount( el.amount, true ),
