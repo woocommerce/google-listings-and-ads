@@ -1,7 +1,6 @@
 .gla-asset-field {
 	padding: $grid-unit-30;
 	box-shadow: 0 0 0 1px rgb(0 0 0 / 10%);
-	border-radius: 2px;
 	background-color: $white;
 
 	&--is-disabled {
@@ -99,6 +98,33 @@
 
 		&:not(:empty) {
 			padding-top: $grid-unit-20;
+		}
+	}
+
+	&.gla-asset-field-videos {
+		.components-input-control .components-input-control__container .components-input-control__input {
+			height: $gla-size-control-height;
+		}
+
+		.gla-asset-field__help-popover__content {
+			ul {
+				list-style: disc;
+				padding-left: $grid-unit-20;
+			}
+
+			p {
+				margin: 0;
+			}
+		}
+
+		.gla-asset-field__help-popover__content-group {
+			display: flex;
+			flex-direction: column;
+			gap: $grid-unit-05;
+
+			li + li {
+				margin-top: $grid-unit-05;
+			}
 		}
 	}
 }

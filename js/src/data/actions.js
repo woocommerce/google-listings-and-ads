@@ -1265,3 +1265,14 @@ export function* receivePriceBenchmarkSuggestionsProductPrice(
 		},
 	};
 }
+
+export function* receiveAdsRecommendations(
+	recommendations,
+	recommendationType
+) {
+	return {
+		type: TYPES.RECEIVE_ADS_RECOMMENDATIONS,
+		recommendations,
+		recommendationType,
+	};
+}

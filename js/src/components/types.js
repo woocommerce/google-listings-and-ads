@@ -19,6 +19,7 @@
  * @property {Array<string>} description - The descriptions of the ad.
  * @property {string | null} call_to_action_selection - The call to action selection aligning the goal of the ad.
  * @property {Array<string>} display_url_path - The path parts of the URL displayed on the ad.
+ * @property {Array<string>} youtube_video - The YouTube video IDs.
  */
 
 // This export is required for JSDoc in other files to import the type definitions from this file.

@@ -21,6 +21,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\AttributeMapping;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Dashboard;
+use Automattic\WooCommerce\GoogleListingsAndAds\Menu\NotificationManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GetStarted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\ProductFeed;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports;
@@ -57,6 +58,7 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		ConnectionTest::class      => true,
 		CouponBulkEdit::class      => true,
 		Dashboard::class           => true,
+		NotificationManager::class => true,
 		GetStarted::class          => true,
 		MetaBoxInterface::class    => true,
 		MetaBoxInitializer::class  => true,
@@ -101,6 +103,7 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 
 		$this->share_with_tags( AttributeMapping::class );
 		$this->share_with_tags( Dashboard::class );
+		$this->share_with_tags( NotificationManager::class, AssetsHandlerInterface::class );
 		$this->share_with_tags( GetStarted::class );
 		$this->share_with_tags( ProductFeed::class );
 		$this->share_with_tags( Reports::class );
