@@ -27,6 +27,7 @@ import { recordGlaEvent } from '~/utils/tracks';
 import RebrandingTour from '~/components/tours/rebranding-tour';
 import PMaxImproveAssetsBanner from '~/components/pmax-improve-assets-banner';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
+import RaiseBudgetRecommendationBanner from '~/components/raise-budget-recommendation-banner';
 import './index.scss';
 
 /**
@@ -86,6 +87,7 @@ const Dashboard = () => {
 	return (
 		<>
 			<div className="gla-dashboard">
+				<RaiseBudgetRecommendationBanner />
 				<PMaxImproveAssetsBanner />
 				<ExperienceRatingBanner />
 				<DifferentCurrencyNotice context="dashboard" />

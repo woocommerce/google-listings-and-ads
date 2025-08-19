@@ -2,89 +2,92 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { Notice } from '@wordpress/components';
-import { getHistory } from '@woocommerce/navigation';
+import { Notice, Flex, FlexBlock, FlexItem } from '@wordpress/components';
 import { useEffect } from '@wordpress/element';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
 import { getEditCampaignUrl } from '~/utils/urls';
 import { recordGlaEvent } from '~/utils/tracks';
+import Badge from '~/components/badge';
 import AppButton from '~/components/app-button';
-import useRecommendedPMaxCampaign from '~/hooks/useRecommendedPMaxCampaign';
+import useBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
 import './index.scss';
 
-const PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT =
-	'pmax_assets_improvements_banner';
+const RAISE_BUDGET_RECOMMENDATION_BANNER_CONTEXT =
+	'raise_budget_recommendation_banner';
 
 /**
  * When the banner is shown.
  *
- * @event gla_pmax_assets_improvements_banner_shown
- * @property {string} context The context in which the banner is shown. Set to 'pmax_assets_improvements_banner'.
+ * @event gla_raise_budget_recommendation_banner_shown
+ * @property {string} context The context in which the banner is shown. Set to 'raise_budget_recommendation_banner'.
  */
 
 /**
- * When the "Improve Assets" button is clicked.
+ * When the "View recommendation" button is clicked.
  *
- * @event gla_pmax_assets_improvements_improve_assets_clicked
- * @property {string} context The context in which the banner is shown. Set to 'pmax_assets_improvements_banner'.
- * @property {number} campaign_id The ID of the PMAX campaign for which assets are being improved.
+ * @event gla_raise_budget_recommendation_banner_view_recommendation_clicked
+ * @property {string} context The context in which the banner is shown. Set to 'raise_budget_recommendation_banner'.
+ * @property {number} campaign_id The ID of the campaign for which the recommendation is being viewed.
  */
 
 /**
  * When the banner is dismissed by clicking the "Dismiss" button or the close icon.
  *
- * @event gla_pmax_assets_improvements_dismiss_clicked
- * @property {string} context The context in which the banner was dismissed. Set to 'pmax_assets_improvements_banner'.
- * @property {number} campaign_id The ID of the PMAX campaign for which the banner was dismissed.
+ * @event gla_raise_budget_recommendation_dismiss_clicked
+ * @property {string} context The context in which the banner was dismissed. Set to 'raise_budget_recommendation_banner'.
+ * @property {number} campaign_id The ID of the campaign for which the banner was dismissed.
  */
 
 /**
- * Displays a dismissible banner prompting users to improve assets for their highest-spending enabled Performance Max (PMAX) campaign.
+ * Displays a dismissible banner prompting users to raise the budget of a campaign.
  *
  * The banner is shown only if:
- * - There are enabled PMAX campaigns.
- * - There are relevant asset improvement recommendations.
+ * - There are enabled campaigns.
+ * - There are relevant budget increase recommendations.
  *
  * When dismissed, the banner will not reappear until the expiry time elapses.
- * Clicking "Improve Assets" navigates to the asset group edit page for the highest-spending PMAX campaign.
+ * Clicking "View recommendation" navigates to the recommendation details page for the campaign.
  *
- * @fires gla_pmax_assets_improvements_banner_shown when the banner is displayed.
- * @fires gla_pmax_assets_improvements_improve_assets_clicked when the "Improve Assets" button is clicked.
- * @fires gla_pmax_assets_improvements_dismiss_clicked when the banner is dismissed.
+ * @fires gla_raise_budget_recommendation_banner_shown when the banner is displayed.
+ * @fires gla_raise_budget_recommendation_banner_view_recommendation_clicked when the "View recommendation" button is clicked.
+ * @fires gla_raise_budget_recommendation_dismiss_clicked when the banner is dismissed.
  *
  * @param {Object} props Component properties.
  * @param {Function} props.onBannerDismissed Callback function to call when the banner is dismissed.
  * @return {JSX.Element|null} The banner component, or null if not applicable.
  */
 const Banner = ( { onBannerDismissed } ) => {
-	const { campaign, hasFinishedResolution } = useRecommendedPMaxCampaign();
+	const { campaigns, hasFinishedResolution } = useBudgetRecommendations();
 
 	useEffect( () => {
-		if ( campaign && hasFinishedResolution ) {
-			recordGlaEvent( 'gla_pmax_assets_improvements_banner_shown', {
-				context: PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT,
+		if ( campaigns.length && hasFinishedResolution ) {
+			recordGlaEvent( 'gla_raise_budget_recommendation_banner_shown', {
+				context: RAISE_BUDGET_RECOMMENDATION_BANNER_CONTEXT,
 			} );
 		}
-	}, [ campaign, hasFinishedResolution ] );
+	}, [ campaigns, hasFinishedResolution ] );
 
-	if ( ! campaign || ! hasFinishedResolution ) {
+	if ( ! campaigns.length || ! hasFinishedResolution ) {
 		return null;
 	}
 
-	const { campaign_id, campaign_name } = campaign;
+	const { campaign_id, campaign_name } = campaigns[ 0 ];
 
-	const handleOnImproveAssets = () => {
+	const handleOnViewRecommendation = () => {
 		onBannerDismissed();
 
-		recordGlaEvent( 'gla_pmax_assets_improvements_improve_assets_clicked', {
-			context: PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT,
-			campaign_id,
-		} );
+		recordGlaEvent(
+			'gla_raise_budget_recommendation_banner_view_recommendation_clicked',
+			{
+				context: RAISE_BUDGET_RECOMMENDATION_BANNER_CONTEXT,
+				campaign_id,
+			}
+		);
 
-		// Navigate to the edit campaign page for the PMAX campaign with the highest spending.
 		const editCampaignUrl = getEditCampaignUrl(
 			campaign_id,
 			'asset-group'
@@ -95,33 +98,73 @@ const Banner = ( { onBannerDismissed } ) => {
 	const handleDismiss = () => {
 		onBannerDismissed();
 
-		recordGlaEvent( 'gla_pmax_assets_improvements_dismiss_clicked', {
-			context: PMAX_ASSETS_IMPROVEMENTS_BANNER_CONTEXT,
-			campaign_id,
-		} );
+		recordGlaEvent(
+			'gla_raise_budget_recommendation_banner_dismiss_clicked',
+			{
+				context: RAISE_BUDGET_RECOMMENDATION_BANNER_CONTEXT,
+				campaign_id,
+			}
+		);
 	};
 
 	return (
 		<Notice
-			className="gla-pmax-improve-assets-banner"
-			status="info"
+			className="gla-raise-budget-recommendation-banner"
 			isDismissible={ true }
 			onRemove={ handleDismiss }
 		>
-			<p className="gla-pmax-improve-assets-banner__text">
-				{ sprintf(
-					// translators: %s: The PMAX campaign name with the highest spending.
-					__(
-						'Unlock more sales for your campaign, %s, by focusing on improving your campaign assets. Better assets directly increase your ad strength, allowing for a wider variety of ad combinations to be shown across Google.',
-						'google-listings-and-ads'
-					),
-					campaign_name
-				) }
-			</p>
+			<header className="gla-raise-budget-recommendation-banner__header">
+				<Badge intent="info">+9%</Badge>
+			</header>
 
-			<div className="gla-pmax-improve-assets-banner__actions">
-				<AppButton onClick={ handleOnImproveAssets } isSecondary>
-					{ __( 'Improve Assets', 'google-listings-and-ads' ) }
+			<Flex
+				className="gla-raise-budget-recommendation-banner__body"
+				direction={ [ 'column', 'row' ] }
+				gap={ 6 }
+				align="stretch"
+			>
+				<FlexBlock>
+					<p className="gla-raise-budget-recommendation-banner__title">
+						{ sprintf(
+							// translators: %s: The campaign name with with budget recommendation.
+							__(
+								'You missed conversion value in “%s” campaign because you’re limited by budget. Increasing your budget can result in more conversion value.',
+								'google-listings-and-ads'
+							),
+							campaign_name
+						) }
+					</p>
+					<p>
+						{ __(
+							'Recommended because you missed out potential traffic last week based on data from the ad auctions you participated in.',
+							'google-listings-and-ads'
+						) }
+					</p>
+				</FlexBlock>
+
+				{ /* <FlexItem className="gla-raise-budget-recommendation-banner__estimates">
+					<p>
+						{ __(
+							'Projected weekly estimates',
+							'google-listings-and-ads'
+						) }
+					</p>
+
+					<p className="gla-raise-budget-recommendation-banner__estimates-value">
+						+7.99K
+						<span>
+							{ __(
+								'Conversion value',
+								'google-listings-and-ads'
+							) }
+						</span>
+					</p>
+				</FlexItem> */ }
+			</Flex>
+
+			<div className="gla-raise-budget-recommendation-banner__actions">
+				<AppButton onClick={ handleOnViewRecommendation } isSecondary>
+					{ __( 'View recommendation', 'google-listings-and-ads' ) }
 				</AppButton>
 
 				<AppButton isTertiary onClick={ handleDismiss }>

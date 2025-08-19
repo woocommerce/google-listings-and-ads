@@ -1,0 +1,56 @@
+.gla-raise-budget-recommendation-banner {
+	border-left-color: transparent;
+	padding: $grid-unit-20;
+
+	@media (min-width: $break-large) {
+		padding: $grid-unit-30 $grid-unit-40;
+	}
+
+	.gla-raise-budget-recommendation-banner__body {
+		margin-top: $grid-unit-20;
+		margin-bottom: $grid-unit-20;
+	}
+
+	.gla-raise-budget-recommendation-banner__title {
+		font-size: 16px;
+		font-weight: 600;
+		line-height: 24px;
+	}
+
+	.gla-raise-budget-recommendation-banner__actions {
+		display: flex;
+		gap: $grid-unit-15;
+	}
+
+	.gla-raise-budget-recommendation-banner__estimates {
+		padding-left: $grid-unit-30;
+		border-left: 1px solid $gray-400;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+	}
+
+	.gla-raise-budget-recommendation-banner__estimates-value {
+		color: $alert-green;
+		font-size: $gla-font-large;
+		line-height: 28px;
+		font-weight: 600;
+
+		span {
+			display: block;
+			font-size: 11px;
+			font-weight: 500;
+			margin-top: $grid-unit-10;
+			line-height: 20px;
+			text-transform: uppercase;
+		}
+	}
+
+	:where(p) {
+		margin: 0;
+
+		& + p {
+			margin-top: $grid-unit-10;
+		}
+	}
+}

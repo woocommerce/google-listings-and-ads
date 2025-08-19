@@ -18,15 +18,15 @@ const PREFERENCE_BANNER_KEY = 'raise-buget-recommendation-banner';
 const ACTION_TYPE_DISMISS = 'dismiss';
 
 /**
- * Displays a dismissible banner prompting users to improve assets for their highest-spending enabled Performance Max (PMAX) campaign.
+ * Displays a dismissible banner prompting users to increase the budget for a campaign based on recommendations.
  *
  * The banner is shown only if:
  * - The preference actionTime is not set or has expired.
- * - There are relevant asset improvement recommendations.
+ * - There are relevant budget increase recommendations.
  * - The user has a connected Google Ads account.
  *
  * When dismissed, the banner will not reappear until the expiry time elapses.
- * Clicking "Improve Assets" navigates to the asset group edit page for the highest-spending PMAX campaign.
+ * Clicking "View recommendation" navigates to the asset group edit page for the recommended campaign.
  *
  * @return {JSX.Element|null} The banner component, or null if not applicable.
  */
