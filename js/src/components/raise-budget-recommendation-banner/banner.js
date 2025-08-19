@@ -13,7 +13,7 @@ import { getEditCampaignUrl } from '~/utils/urls';
 import { recordGlaEvent } from '~/utils/tracks';
 import Badge from '~/components/badge';
 import AppButton from '~/components/app-button';
-import useBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
+import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
 import './index.scss';
 
 const RAISE_BUDGET_RECOMMENDATION_BANNER_CONTEXT =
@@ -61,7 +61,8 @@ const RAISE_BUDGET_RECOMMENDATION_BANNER_CONTEXT =
  * @return {JSX.Element|null} The banner component, or null if not applicable.
  */
 const Banner = ( { onBannerDismissed } ) => {
-	const { campaigns, hasFinishedResolution } = useBudgetRecommendations();
+	const { campaigns, hasFinishedResolution } =
+		useRaiseBudgetRecommendations();
 
 	useEffect( () => {
 		if ( campaigns.length && hasFinishedResolution ) {

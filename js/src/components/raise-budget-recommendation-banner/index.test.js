@@ -11,9 +11,9 @@ import { render, screen, fireEvent } from '@testing-library/react';
  */
 import { getEditCampaignUrl } from '~/utils/urls';
 import { PREFERENCES_STORE_NAMESPACE, DAY_IN_SECONDS } from '~/constants';
-import PMaxImproveAssetsBanner from './index';
+import RaiseBudgetRecommendationBanner from './index';
 import usePreference from '~/hooks/usePreference';
-import useRecommendedPMaxCampaign from '~/hooks/useRecommendedPMaxCampaign';
+import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 
 jest.mock( '@woocommerce/components', () => ( {
@@ -23,6 +23,15 @@ jest.mock( '@woocommerce/components', () => ( {
 
 jest.mock( '@wordpress/components', () => ( {
 	Notice: ( { children, className } ) => (
+		<div className={ className }>{ children }</div>
+	),
+	Flex: ( { children, className } ) => (
+		<div className={ className }>{ children }</div>
+	),
+	FlexBlock: ( { children, className } ) => (
+		<div className={ className }>{ children }</div>
+	),
+	FlexItem: ( { children, className } ) => (
 		<div className={ className }>{ children }</div>
 	),
 } ) );
@@ -48,8 +57,8 @@ jest.mock( '~/hooks/usePreference', () =>
 	jest.fn().mockName( 'usePreference' )
 );
 
-jest.mock( '~/hooks/useRecommendedPMaxCampaign', () =>
-	jest.fn().mockName( 'useRecommendedPMaxCampaign' )
+jest.mock( '~/hooks/useRaiseBudgetRecommendations', () =>
+	jest.fn().mockName( 'useRaiseBudgetRecommendations' )
 );
 
 jest.mock( '~/utils/urls', () => ( {
@@ -60,9 +69,12 @@ jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn(),
 } ) );
 
-const recommendedCampaign = { campaign_id: 2, campaign_name: 'Campaign 2' };
+const mockedCampaigns = [
+	{ campaign_id: 2, campaign_name: 'Campaign 2' },
+	{ campaign_id: 3, campaign_name: 'Campaign 3' },
+];
 
-describe( 'PMaxImproveAssetsBanner', () => {
+describe( 'RaiseBudgetRecommendationBanner', () => {
 	beforeEach( () => {
 		useDispatch.mockReturnValue( { set: () => null } );
 		useGoogleAdsAccount.mockReturnValue( { hasGoogleAdsConnection: true } );
@@ -73,11 +85,11 @@ describe( 'PMaxImproveAssetsBanner', () => {
 			actionTime: Date.now() + 100000,
 			actionType: 'dismiss',
 		} );
-		useRecommendedPMaxCampaign.mockReturnValue( {
-			campaign: recommendedCampaign,
+		useRaiseBudgetRecommendations.mockReturnValue( {
+			campaigns: mockedCampaigns,
 			hasFinishedResolution: true,
 		} );
-		const { container } = render( <PMaxImproveAssetsBanner /> );
+		const { container } = render( <RaiseBudgetRecommendationBanner /> );
 		expect( container.firstChild ).toBeNull();
 	} );
 
@@ -85,12 +97,12 @@ describe( 'PMaxImproveAssetsBanner', () => {
 		useGoogleAdsAccount.mockReturnValue( {
 			hasGoogleAdsConnection: false,
 		} );
-		usePreference.mockReturnValue( {} );
-		useRecommendedPMaxCampaign.mockReturnValue( {
-			campaign: recommendedCampaign,
+		usePreference.mockReturnValue( { expiry: Date.now() + 100000 } );
+		useRaiseBudgetRecommendations.mockReturnValue( {
+			campaigns: mockedCampaigns,
 			hasFinishedResolution: true,
 		} );
-		const { container } = render( <PMaxImproveAssetsBanner /> );
+		const { container } = render( <RaiseBudgetRecommendationBanner /> );
 		expect( container.firstChild ).toBeNull();
 	} );
 
@@ -99,74 +111,55 @@ describe( 'PMaxImproveAssetsBanner', () => {
 			actionTime: Date.now() - 30 * DAY_IN_SECONDS * 1000,
 			actionType: 'dismiss',
 		} );
-		useRecommendedPMaxCampaign.mockReturnValue( {
-			campaign: recommendedCampaign,
+		useRaiseBudgetRecommendations.mockReturnValue( {
+			campaigns: mockedCampaigns,
 			hasFinishedResolution: true,
 		} );
-		render( <PMaxImproveAssetsBanner /> );
+		render( <RaiseBudgetRecommendationBanner /> );
+
 		expect(
-			screen.getByRole( 'button', { name: 'Improve Assets' } )
+			screen.getByRole( 'button', { name: 'View recommendation' } )
 		).toBeInTheDocument();
 		expect(
 			screen.getByRole( 'button', { name: 'Dismiss' } )
 		).toBeInTheDocument();
 	} );
 
-	it( 'renders nothing if no recommended campaign', () => {
+	it( 'renders nothing if no recommended campaigns', () => {
 		usePreference.mockReturnValue( {} );
-		useRecommendedPMaxCampaign.mockReturnValue( {
-			campaign: null,
+		useRaiseBudgetRecommendations.mockReturnValue( {
+			campaigns: [],
 			hasFinishedResolution: true,
 		} );
-		const { container } = render( <PMaxImproveAssetsBanner /> );
+		const { container } = render( <RaiseBudgetRecommendationBanner /> );
 		expect( container.firstChild ).toBeNull();
 	} );
 
-	it( 'renders banner for highest-spending enabled PMAX campaign with recommendation', () => {
-		usePreference.mockReturnValue( {} );
-		useRecommendedPMaxCampaign.mockReturnValue( {
-			campaign: recommendedCampaign,
-			hasFinishedResolution: true,
-		} );
-		render( <PMaxImproveAssetsBanner /> );
-		expect(
-			screen.getByText(
-				/Unlock more sales for your campaign, Campaign 2/
-			)
-		).toBeInTheDocument();
-		expect(
-			screen.getByRole( 'button', { name: 'Improve Assets' } )
-		).toBeInTheDocument();
-		expect(
-			screen.getByRole( 'button', { name: 'Dismiss' } )
-		).toBeInTheDocument();
-	} );
-
-	it( 'navigates to edit campaign and sets expiry when Improve Assets is clicked', () => {
+	it( 'navigates to edit campaign and sets expiry when View Recommendation button is clicked', () => {
 		const setMock = jest.fn();
 		useDispatch.mockReturnValue( { set: setMock } );
 
 		const historyPush = jest.fn().mockName( 'getHistory().push' );
 		getHistory.mockReturnValue( { push: historyPush } );
 		usePreference.mockReturnValue( {} );
-		useRecommendedPMaxCampaign.mockReturnValue( {
-			campaign: recommendedCampaign,
+		useRaiseBudgetRecommendations.mockReturnValue( {
+			campaigns: mockedCampaigns,
 			hasFinishedResolution: true,
 		} );
 
 		const MOCK_NOW = 1_700_000_000_000;
 		jest.spyOn( Date, 'now' ).mockReturnValue( MOCK_NOW );
 
-		render( <PMaxImproveAssetsBanner /> );
-		const improveAssetsButton = screen.getByRole( 'button', {
-			name: 'Improve Assets',
+		render( <RaiseBudgetRecommendationBanner /> );
+		const viewRecommendationButton = screen.getByRole( 'button', {
+			name: 'View recommendation',
 		} );
 
-		fireEvent.click( improveAssetsButton );
+		fireEvent.click( viewRecommendationButton );
 
 		expect( setMock ).toHaveBeenCalledWith(
 			PREFERENCES_STORE_NAMESPACE,
-			'pmax-improve-assets-banner',
+			'raise-budget-recommendation-banner',
 			{
 				actionTime: MOCK_NOW,
 				actionType: 'dismiss',

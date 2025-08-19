@@ -14,7 +14,7 @@ import usePreference from '~/hooks/usePreference';
 import Banner from './banner';
 import './index.scss';
 
-const PREFERENCE_BANNER_KEY = 'raise-buget-recommendation-banner';
+const PREFERENCE_BANNER_KEY = 'raise-budget-recommendation-banner';
 const ACTION_TYPE_DISMISS = 'dismiss';
 
 /**
