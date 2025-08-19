@@ -340,4 +340,13 @@ class WP {
 	public function wp_print_inline_script_tag( string $data, array $attributes = [] ) {
 		return wp_print_inline_script_tag( $data, $attributes );
 	}
+
+	/**
+	 * Determines whether WordPress is currently serving a REST API request.
+	 *
+	 * @return bool True if it's a WordPress REST API request, false otherwise.
+	 */
+	public function wp_is_serving_rest_request(): bool {
+		return wp_is_serving_rest_request();
+	}
 }

@@ -16,6 +16,7 @@ use Google\Ads\GoogleAds\Util\V20\ResourceNames;
 use Google\Ads\GoogleAds\V20\Common\TextAsset;
 use Google\Ads\GoogleAds\V20\Common\ImageAsset;
 use Google\Ads\GoogleAds\V20\Common\CallToActionAsset;
+use Google\Ads\GoogleAds\V20\Common\YoutubeVideoAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Google\ApiCore\ApiException;
 use Exception;
@@ -114,6 +115,8 @@ class AdsAsset implements OptionsAwareInterface {
 			case AssetFieldType::DESCRIPTION:
 			case AssetFieldType::BUSINESS_NAME:
 				return AssetType::TEXT;
+			case AssetFieldType::YOUTUBE_VIDEO:
+				return AssetType::YOUTUBE_VIDEO;
 			default:
 				throw new Exception( 'Asset Field type not supported' );
 		}
@@ -238,6 +241,9 @@ class AdsAsset implements OptionsAwareInterface {
 			case AssetType::TEXT:
 				$asset->setTextAsset( new TextAsset( [ 'text' => $data['content'] ] ) );
 				break;
+			case AssetType::YOUTUBE_VIDEO:
+				$asset->setYoutubeVideoAsset( new YoutubeVideoAsset( [ 'youtube_video_id' => $data['content'] ] ) );
+				break;
 			default:
 				throw new Exception( 'Asset type not supported' );
 		}
@@ -268,6 +274,8 @@ class AdsAsset implements OptionsAwareInterface {
 					return CallToActionType::UNSPECIFIED;
 				}
 				return CallToActionType::label( $asset->getCallToActionAsset()->getCallToAction() );
+			case AssetType::YOUTUBE_VIDEO:
+				return $asset->getYoutubeVideoAsset()->getYoutubeVideoId();
 			default:
 				return '';
 		}

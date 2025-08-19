@@ -45,7 +45,7 @@ const reportsPath = pagePaths.reports;
  */
 export const getEditCampaignUrl = ( programId, initialStep ) => {
 	return getNewPath(
-		{ subpath: subpaths.editCampaign, programId, initialStep },
+		{ subpath: subpaths.editCampaign, programId, step: initialStep },
 		dashboardPath
 	);
 };

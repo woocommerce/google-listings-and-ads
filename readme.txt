@@ -1,11 +1,11 @@
 === Google for WooCommerce ===
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, product feed, ads, listings
-Requires at least: 6.1
+Requires at least: 6.6
 Tested up to: 6.8
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.3.1
+Stable tag: 3.4.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -51,8 +51,8 @@ Once you’re running Google Ads campaigns, the Google tag feature in the extens
 
 = Minimum Requirements =
 
-* WordPress 6.1 or greater
-* WooCommerce 7.9 or greater
+* WordPress 6.6 or greater
+* WooCommerce 9.7 or greater
 * PHP version 7.4 or greater
 * PHP Architecture 64 bits
 * MySQL version 5.6 or greater
@@ -140,6 +140,12 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.4.0 - 2025-08-19 =
+* Add - Help merchants improve the assets for their PMax campaigns.
+* Dev – Update E2E tests ahead of Woo 10.1 release.
+* Fix – Use `wp_is_serving_rest_request()` to detect if we are handling a REST API request.
+* Tweak - WC 10.1 compatibility.
+
 = 3.3.1 - 2025-08-12 =
 * Fix - Avoid errors when unnecessarily revoking WPCOM connection during deactivation.
 * Fix - Avoid scheduling the job to synchronize all products with Google Merchant Center when the plugin is initialized for the first time.
@@ -153,20 +159,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Add – Survey users when campaign creation is skipped during onboarding.
 * Tweak - Display a more detailed error message when failing to link Google Ads account.
 * Tweak – Replace "free listings" with "product feed".
-
-= 3.2.0 - 2025-07-22 =
-* Add - Block shipping, products, and coupons synchronization when push synchronization is disabled.
-* Add - Budget Metrics endpoint for fetching metrics with a custom budget.
-* Add - Controller for fetching incentive credits from Middleware.
-* Add - Event tracking for budget recommendations and metrics.
-* Add - Fetch budget recommendations from the Google Ads API.
-* Add - Include blog ID to all notification messages.
-* Add - New endpoint for synchronizing listing settings with Google.
-* Add - Provide the recommendations and metrics when setting a campaign budget.
-* Add - Show a prompt for suggesting a higher budget to get back free ad credits before completing the onboarding and ads onboarding.
-* Tweak - Restrict Budget Metrics to positive numbers.
-* Update - Google Ads API from v18 to v20.
-* Update - Remove WPCOM API authorization check as authorization is granted by default.
-* Update - Remove opt-in/opt-out UI controls for product data sync.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

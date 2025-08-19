@@ -17,6 +17,6 @@ class AdsAssetGroupAssetQuery extends AdsQuery {
 	 */
 	public function __construct() {
 		parent::__construct( 'asset_group_asset' );
-		$this->columns( [ 'asset.id', 'asset.name', 'asset.type', 'asset.text_asset.text', 'asset.image_asset.full_size.url', 'asset.call_to_action_asset.call_to_action', 'asset_group_asset.field_type' ] );
+		$this->columns( [ 'asset.id', 'asset.name', 'asset.type', 'asset.text_asset.text', 'asset.image_asset.full_size.url', 'asset.call_to_action_asset.call_to_action', 'asset_group_asset.field_type', 'asset.youtube_video_asset.youtube_video_id' ] );
 	}
 }
