@@ -60,6 +60,10 @@ jest.mock( '~/components/customer-effort-score-prompt', () => () => (
 	<div>{ CES_PROMPT_TEXT }</div>
 ) );
 
+jest.mock( '~/components/pmax-improve-assets-banner', () =>
+	jest.fn().mockName( 'PMaxImproveAssetsBanner' )
+);
+
 jest.mock( '~/components/experience-rating-banner', () =>
 	jest.fn().mockName( 'ExperienceRatingBanner' )
 );

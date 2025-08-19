@@ -1,0 +1,92 @@
+.gla-media-selector {
+	&__medium-list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $grid-unit-15;
+
+		&:not(:empty) {
+			margin-bottom: $grid-unit-20;
+		}
+	}
+
+	&__item {
+		position: relative;
+		display: flex;
+	}
+
+	&__medium {
+		max-width: 100%;
+		max-height: 100%;
+	}
+
+	// Prevent the button styles from overriding by AutomateWoo.
+	.gla-admin-page & {
+
+		&__medium-button {
+			justify-content: center;
+			width: 100px;
+			height: 100px;
+			padding: 0;
+			border: 1px solid $gray-200;
+			border-radius: 2px;
+			overflow: hidden;
+			background-color: $white;
+			position: relative;
+		}
+
+		&__remove-medium-button {
+			display: none;
+			position: absolute;
+			top: 0;
+			right: 0;
+			transform: translate(50%, -50%);
+			color: $gray-500;
+
+			// Fill in the background color under the SVG icon.
+			&::after {
+				content: "";
+				position: absolute;
+				z-index: -1;
+				width: 30%;
+				height: 30%;
+				margin: auto;
+				background-color: $white;
+			}
+		}
+
+		&__item:hover .gla-media-selector__remove-medium-button {
+			display: flex;
+		}
+	}
+
+	.components-popover__content {
+		width: $gla-popover-width;
+		white-space: normal;
+		text-align: left;
+
+		> div {
+			padding: 0.25em 0.5em;
+		}
+	}
+
+	&.gla-media-selector--has-video-media-type {
+		.gla-media-selector__medium-button {
+			width: 178px;
+			height: 100px;
+		}
+
+		.gla-media-selector__medium {
+			aspect-ratio: 16 / 9;
+			object-fit: cover;
+			width: 178px;
+		}
+	}
+
+	.gla-media-selector__youtube-icon {
+		display: block;
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+	}
+}

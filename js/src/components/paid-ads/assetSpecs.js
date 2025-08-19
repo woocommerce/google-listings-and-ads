@@ -50,6 +50,10 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 			'Plural asset field name as the heading',
 			'google-listings-and-ads'
 		),
+		subheading: __(
+			'We recommend adding at least 4 landscape images. A single image is required.',
+			'google-listings-and-ads'
+		),
 		helpSubheading: _x(
 			'Landscape image (1.91:1)',
 			'Asset field name with its aspect ratio as the subheading within a help tip',
@@ -75,6 +79,10 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 			'Plural asset field name as the heading',
 			'google-listings-and-ads'
 		),
+		subheading: __(
+			'We recommend adding at least 4 square images. A single image is required.',
+			'google-listings-and-ads'
+		),
 		helpSubheading: _x(
 			'Square image (1:1)',
 			'Asset field name with its aspect ratio as the subheading within a help tip',
@@ -98,6 +106,10 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 		heading: _x(
 			'Portrait images',
 			'Plural asset field name as the heading',
+			'google-listings-and-ads'
+		),
+		subheading: __(
+			'Improve campaign performance with at least 2 portrait images.',
 			'google-listings-and-ads'
 		),
 		helpSubheading: _x(
@@ -126,6 +138,10 @@ const ASSET_LOGO_SPECS = [
 		heading: _x(
 			'Logo',
 			'Plural asset field name as the heading',
+			'google-listings-and-ads'
+		),
+		subheading: __(
+			'At least 1 version of your logo is required.',
 			'google-listings-and-ads'
 		),
 		helpSubheading: _x(
@@ -190,6 +206,10 @@ const ASSET_TEXT_SPECS = [
 			'Plural asset field name as the heading',
 			'google-listings-and-ads'
 		),
+		subheading: __(
+			'For the best results, add at least 5 headlines. A minimum of 3 are required.',
+			'google-listings-and-ads'
+		),
 		extraSubheading: (
 			<ExternalLink href="https://support.google.com/google-ads/answer/6167101">
 				{ __(
@@ -227,6 +247,10 @@ const ASSET_TEXT_SPECS = [
 		heading: _x(
 			'Long headlines',
 			'Plural asset field name as the heading',
+			'google-listings-and-ads'
+		),
+		subheading: __(
+			'We recommend using 5 long headlines. A single long headline is required.',
 			'google-listings-and-ads'
 		),
 		addButtonText: __( 'Add long headline', 'google-listings-and-ads' ),
@@ -271,6 +295,10 @@ const ASSET_TEXT_SPECS = [
 		heading: _x(
 			'Descriptions',
 			'Plural asset field name as the heading',
+			'google-listings-and-ads'
+		),
+		subheading: __(
+			'We recommend adding at least 5 different descriptions. At least 2 are required.',
 			'google-listings-and-ads'
 		),
 		addButtonText: __( 'Add description', 'google-listings-and-ads' ),
@@ -323,34 +351,6 @@ const ASSET_TEXT_SPECS = [
 			__( '%1$s and %2$s', 'google-listings-and-ads' ),
 			strings.slice( 0, -1 ).join( separator ),
 			strings.at( -1 )
-		);
-	}
-
-	function getSubheading( spec, shownAsSharedMax ) {
-		if ( shownAsSharedMax ) {
-			if ( spec.min === 0 ) {
-				return;
-			}
-
-			return sprintf(
-				// translators: 1: The minimal number of this item.
-				__( 'At least %d required', 'google-listings-and-ads' ),
-				spec.min
-			);
-		}
-
-		if ( spec.requiredSingleValue ) {
-			return;
-		}
-
-		return sprintf(
-			// translators: 1: The minimal number of this item. 2: The maximum number of this item.
-			__(
-				'At least %1$d required. Add up to %2$d.',
-				'google-listings-and-ads'
-			),
-			spec.min,
-			spec.max
 		);
 	}
 
@@ -505,7 +505,6 @@ const ASSET_TEXT_SPECS = [
 				spec.max = sharedMax;
 			}
 
-			spec.subheading = getSubheading( spec, shownAsSharedMax );
 			spec.help = help;
 
 			spec.getMax = getMax.bind( spec, sharedMax, specs );
@@ -517,7 +516,6 @@ const ASSET_TEXT_SPECS = [
 
 	ASSET_TEXT_SPECS.forEach( ( spec ) => {
 		spec.requiredSingleValue = spec.min === 1 && spec.max === 1;
-		spec.subheading = getSubheading( spec );
 	} );
 }
 
