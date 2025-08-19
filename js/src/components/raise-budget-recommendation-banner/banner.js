@@ -142,7 +142,7 @@ const Banner = ( { onBannerDismissed } ) => {
 					</p>
 				</FlexBlock>
 
-				{ /* <FlexItem className="gla-raise-budget-recommendation-banner__estimates">
+				<FlexItem className="gla-raise-budget-recommendation-banner__estimates">
 					<p>
 						{ __(
 							'Projected weekly estimates',
@@ -159,7 +159,7 @@ const Banner = ( { onBannerDismissed } ) => {
 							) }
 						</span>
 					</p>
-				</FlexItem> */ }
+				</FlexItem>
 			</Flex>
 
 			<div className="gla-raise-budget-recommendation-banner__actions">
