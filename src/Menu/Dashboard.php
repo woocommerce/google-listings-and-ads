@@ -20,6 +20,8 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 
 	public const PATH = '/google/dashboard';
 
+	public const MARKETING_MENU_SLUG = 'woocommerce-marketing';
+
 	/**
 	 * Register a service.
 	 */
@@ -35,7 +37,7 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 					[
 						'id'     => 'google-listings-and-ads',
 						'title'  => __( 'Google for WooCommerce', 'google-listings-and-ads' ),
-						'parent' => 'woocommerce-marketing',
+						'parent' => self::MARKETING_MENU_SLUG,
 						'path'   => self::PATH,
 					]
 				);

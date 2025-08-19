@@ -1,5 +1,11 @@
 *** Google for WooCommerce Changelog ***
 
+= 3.4.0 - 2025-08-19 =
+* Add - Help merchants improve the assets for their PMax campaigns.
+* Dev – Update E2E tests ahead of Woo 10.1 release.
+* Fix – Use `wp_is_serving_rest_request()` to detect if we are handling a REST API request.
+* Tweak - WC 10.1 compatibility.
+
 = 3.3.1 - 2025-08-12 =
 * Fix - Avoid errors when unnecessarily revoking WPCOM connection during deactivation.
 * Fix - Avoid scheduling the job to synchronize all products with Google Merchant Center when the plugin is initialized for the first time.
