@@ -19,6 +19,7 @@ import {
 	getReportKey,
 	getCountryCodesKey,
 	getAdsBudgetMetricsKey,
+	arrayToUnderscoreKey,
 } from './utils';
 import { handleApiError } from '~/utils/handleError';
 import {
@@ -745,15 +746,16 @@ export function* getPriceBenchmarkSuggestions( args ) {
 /**
  * Resolver for getting the Ads recommendations.
  */
-export function* getAdsRecommendations( type ) {
+export function* getAdsRecommendations( types ) {
 	try {
 		const response = yield apiFetch( {
 			path: addQueryArgs( `${ API_NAMESPACE }/ads/recommendations`, {
-				type,
+				types,
 			} ),
 		} );
 
-		yield receiveAdsRecommendations( response, type );
+		const typesKey = arrayToUnderscoreKey( types );
+		yield receiveAdsRecommendations( response, typesKey );
 	} catch ( error ) {
 		handleApiError(
 			error,
