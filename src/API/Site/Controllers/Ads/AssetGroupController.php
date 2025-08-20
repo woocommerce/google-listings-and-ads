@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class for handling API requests related to the asset groups.
- * See https://developers.google.com/google-ads/api/reference/rpc/v18/AssetGroup
+ * See https://developers.google.com/google-ads/api/reference/rpc/v20/AssetGroup
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
@@ -247,6 +247,7 @@ class AssetGroupController extends BaseController {
 						AssetFieldType::DESCRIPTION              => $this->get_schema_field_type_asset(),
 						AssetFieldType::LONG_HEADLINE            => $this->get_schema_field_type_asset(),
 						AssetFieldType::CALL_TO_ACTION_SELECTION => $this->get_schema_field_type_asset(),
+						AssetFieldType::YOUTUBE_VIDEO            => $this->get_schema_field_type_asset(),
 					],
 				],
 			],
@@ -299,6 +300,7 @@ class AssetGroupController extends BaseController {
 						AssetFieldType::LOGO,
 						AssetFieldType::CALL_TO_ACTION_SELECTION,
 						AssetFieldType::PORTRAIT_MARKETING_IMAGE,
+						AssetFieldType::YOUTUBE_VIDEO,
 					],
 				],
 			],

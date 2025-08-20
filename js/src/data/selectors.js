@@ -14,6 +14,7 @@ import {
 	getReportKey,
 	getPerformanceQuery,
 	getCountryCodesKey,
+	getAdsBudgetMetricsKey,
 } from './utils';
 
 /**
@@ -169,6 +170,17 @@ export const getAdsCampaigns = ( state, query ) => {
 	}
 
 	return state.ads_campaigns;
+};
+
+/**
+ * Get the enhanced conversions setting.
+ * This setting indicates whether enhanced conversions are enabled for the Google Ads account.
+ *
+ * @param {Object} state The current store state will be injected by `wp.data`.
+ * @return {boolean} The enhanced conversions setting. Returns `true` if enabled, `false` otherwise.
+ */
+export const getEnableEnhancedConversions = ( state ) => {
+	return state.ads.enable_enhanced_conversions;
 };
 
 /**
@@ -407,6 +419,11 @@ export const getAdsBudgetRecommendations = ( state, countryCodes = [] ) => {
 	return state.ads.budgetRecommendations[ key ] || null;
 };
 
+export const getAdsBudgetMetrics = ( state, countryCodes, budget ) => {
+	const key = getAdsBudgetMetricsKey( countryCodes, budget );
+	return state.ads.budgetMetrics[ key ] || null;
+};
+
 /**
  * Return the GTIN Migration status.
  *
@@ -466,4 +483,15 @@ export const getPriceBenchmarkSuggestions = createSelector(
  */
 export const getPriceBenchmarkSuggestion = ( state, productId ) => {
 	return state.price_benchmark.suggestions.items[ productId ];
+};
+
+/**
+ * Retrieves ad recommendations of a specific type from the state.
+ *
+ * @param {Object} state - The Redux state object containing ads data.
+ * @param {string} type - The type of ad recommendations to retrieve.
+ * @return {Object|null} The recommendations for the specified type, or null if not found.
+ */
+export const getAdsRecommendations = ( state, type ) => {
+	return state.ads.recommendations[ type ] || null;
 };

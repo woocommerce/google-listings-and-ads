@@ -126,7 +126,7 @@ export default function SummarySection() {
 			</SummaryCard>
 			<SummaryCard
 				title={ __(
-					'Free Listings (Limited Visibility)',
+					'Product Feed (Limited Visibility)',
 					'google-listings-and-ads'
 				) }
 			>

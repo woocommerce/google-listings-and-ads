@@ -231,4 +231,13 @@ class WC {
 	public function wc_get_container(): Container {
 		return wc_get_container();
 	}
+
+	/**
+	 * Get the customer's shipping and billing info from the session.
+	 *
+	 * @return array
+	 */
+	public function get_customer_details() {
+		return WCCore()->session->get( 'customer', [] );
+	}
 }

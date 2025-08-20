@@ -19,10 +19,15 @@ export const hooks = createHooks();
 
 export const NAMESPACE = 'tracking';
 export const FILTER_ONBOARDING = 'FILTER_ONBOARDING';
+export const FILTER_BUDGET_RECOMMENDATIONS = 'FILTER_BUDGET_RECOMMENDATIONS';
 
 export const filterPropertiesMap = new Map();
 
 filterPropertiesMap.set( FILTER_ONBOARDING, [ 'context', 'step' ] );
+filterPropertiesMap.set( FILTER_BUDGET_RECOMMENDATIONS, [
+	'source',
+	'recommended_budget',
+] );
 
 /*
  * Please be aware of when to use these context values
@@ -168,8 +173,11 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  * Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign in the Google Ads setup flow.
  *
  * @event gla_launch_paid_campaign_button_click
+ * @property {string} level The selected level of the budget recommendation, e.g. 'low', 'recommended', 'high', 'custom'.
  * @property {string} audiences Country codes of the paid campaign audience countries, e.g. `'US,JP,AU'`. This means the campaign is created with the multi-country targeting feature. Before this feature support, it was implemented as 'audience'.
- * @property {string} budget Daily average cost of the paid campaign
+ * @property {number} budget Daily average cost of the paid campaign
+ * @property {string} source The data source of the budget recommendations, e.g. 'google-ads-api', 'fallback-database'.
+ * @property {number} recommended_budget The recommended daily budget displayed to merchants regardless of the final amount they choose.
  */
 
 /**

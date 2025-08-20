@@ -141,7 +141,7 @@ class MerchantReport implements OptionsAwareInterface {
 
 
 	/**
-	 * Get report data for free listings.
+	 * Get report data for product feed.
 	 *
 	 * @param string $type Report type (free_listings or products).
 	 * @param array  $args Query arguments.

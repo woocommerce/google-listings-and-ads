@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
@@ -365,13 +366,28 @@ class ProductSyncer implements Service {
 		if ( ! $this->merchant_center->should_push() ) {
 			do_action(
 				'woocommerce_gla_error',
-				'Cannot push any products because they are being fetched automatically.',
+				'Cannot push any products because your store is not ready for syncing.',
 				__METHOD__
 			);
 
 			throw new ProductSyncerException(
 				__(
-					'Pushing products will not run if the automatic data fetching is enabled. Please review your configuration in Google Listing and Ads settings.',
+					'Pushing products will not run if the store is not ready for syncing.',
+					'google-listings-and-ads'
+				)
+			);
+		}
+
+		if ( ! $this->merchant_center->is_enabled_for_datatype( NotificationsService::DATATYPE_PRODUCT ) ) {
+			do_action(
+				'woocommerce_gla_error',
+				'Cannot push any products because the syncing feature has been disabled on your store.',
+				__METHOD__
+			);
+
+			throw new ProductSyncerException(
+				__(
+					'Pushing products will not run if the PUSH Sync functionality has been disabled.',
 					'google-listings-and-ads'
 				)
 			);

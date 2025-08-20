@@ -19,27 +19,15 @@ const baseClassName = 'app-input-control';
  *
  * @param {Object} props React props to be forwarded to {@link InputControl}.
  * @param {string} [props.className] Additional CSS class name to be appended.
- * @param {boolean} [props.noPointerEvents=false] Whether disabled all pointer events. It will attach `pointer-events: none;` onto wrapper if true.
  * @param {number} [props.maxCharacterCount=0] The maximum number of character counter for showing a label below the input element to inform whether the input has exceeded the limit. 0 by default and it means no limit and no label is shown. When using this prop, it must also set the `kindCharacterCount`.
  * @param {'google-ads'} [props.kindCharacterCount] Kind of character counter to be used.
  * @param {import('react').MutableRefObject<HTMLInputElement>} ref React ref to be forwarded to the input element within this component.
  */
 const AppInputControl = (
-	{
-		className,
-		noPointerEvents = false,
-		maxCharacterCount = 0,
-		kindCharacterCount,
-		...rest
-	},
+	{ className, maxCharacterCount = 0, kindCharacterCount, ...rest },
 	ref
 ) => {
 	const wrapperClassNames = [ baseClassName, className ];
-
-	if ( noPointerEvents ) {
-		wrapperClassNames.push( `${ baseClassName }--no-pointer-events` );
-	}
-
 	let countText;
 
 	if ( maxCharacterCount > 0 && kindCharacterCount ) {

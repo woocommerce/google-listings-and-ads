@@ -1,5 +1,6 @@
 /**
  * @typedef {Object} CampaignData
+ * @param {string|undefined} level Selected level option of the campaign.
  * @property {number|undefined} amount Daily average cost of the paid ads campaign.
  */
 
@@ -10,10 +11,9 @@ const { sessionStorage } = window;
 const clientSession = {
 	/**
 	 * @param {CampaignData} data Campaign data to be stored.
-	 * @param {number|undefined} data.amount Daily average cost of the campaign.
 	 */
-	setCampaign( { amount } ) {
-		const json = JSON.stringify( { amount } );
+	setCampaign( { level, amount } ) {
+		const json = JSON.stringify( { level, amount } );
 		sessionStorage.setItem( KEY_PAID_ADS, json );
 	},
 

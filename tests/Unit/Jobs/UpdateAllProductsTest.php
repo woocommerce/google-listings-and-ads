@@ -51,6 +51,12 @@ class UpdateAllProductsTest extends UnitTest {
 	/** @var MockObject|MerchantCenterService $merchant_center */
 	protected $merchant_center;
 
+	/** @var bool $is_ready_for_syncing */
+	protected $is_ready_for_syncing;
+
+	/** @var bool $is_enabled_for_datatype */
+	protected $is_enabled_for_datatype;
+
 	/** @var UpdateAllProducts $job */
 	protected $job;
 
@@ -87,9 +93,23 @@ class UpdateAllProductsTest extends UnitTest {
 			$this->merchant_statuses
 		);
 
+		$this->is_ready_for_syncing = true;
 		$this->merchant_center
 			->method( 'is_ready_for_syncing' )
-			->willReturn( true );
+			->willReturnCallback(
+				function () {
+					return $this->is_ready_for_syncing;
+				}
+			);
+
+		$this->is_enabled_for_datatype = true;
+		$this->merchant_center
+			->method( 'is_enabled_for_datatype' )
+			->willReturnCallback(
+				function () {
+					return $this->is_enabled_for_datatype;
+				}
+			);
 
 		$this->merchant_center
 			->method( 'should_push' )
@@ -336,5 +356,21 @@ class UpdateAllProductsTest extends UnitTest {
 			->with( gmdate( 'U' ) + 100, self::CREATE_BATCH_HOOK, [ 1 ] );
 
 		$this->job->schedule_delayed( 100 );
+	}
+
+	public function test_can_schedule() {
+		$this->assertTrue( $this->job->can_schedule() );
+	}
+
+	public function test_cannot_schedule_when_mc_is_not_ready_for_syncing() {
+		$this->is_ready_for_syncing = false;
+
+		$this->assertFalse( $this->job->can_schedule() );
+	}
+
+	public function test_cannot_schedule_when_mc_push_is_blocked() {
+		$this->is_enabled_for_datatype = false;
+
+		$this->assertFalse( $this->job->can_schedule() );
 	}
 }

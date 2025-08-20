@@ -208,7 +208,7 @@ class SyncerHooksTest extends UnitTest {
 		$zone->save();
 	}
 
-	public function test_saving_shipping_zone_doesnt_schedule_notifications_when_enabled() {
+	public function test_saving_shipping_zone_schedule_notifications_when_enabled() {
 		$this->mock_sync_ready_flags_and_register_hooks( true, true );
 
 		$this->notification_service->expects( $this->once() )
@@ -281,6 +281,11 @@ class SyncerHooksTest extends UnitTest {
 					[ UpdateShippingSettings::class, $this->update_shipping_job ],
 				]
 			);
+
+		$this->merchant_center->expects( $this->any() )
+			->method( 'is_enabled_for_datatype' )
+			->with( 'shipping' )
+			->willReturn( true );
 
 		add_filter( 'woocommerce_gla_notifications_enabled', '__return_false' );
 

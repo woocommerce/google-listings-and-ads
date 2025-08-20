@@ -2,14 +2,12 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Flex } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import Section from '~/components/section';
 import AppSpinner from '~/components/app-spinner';
-import AppButton from '~/components/app-button';
 import AdaptiveForm from '~/components/adaptive-form';
 import TaxRate from './tax-rate';
 import useSettings from '~/hooks/useSettings';
@@ -101,27 +99,7 @@ export default function SetupTaxRate() {
 			onSubmit={ handleSubmit }
 		>
 			{ ( formContext ) => {
-				const { values, isValidForm } = formContext;
-				const taxRate = values.tax_rate;
-				const disabled = ! isValidForm || taxRate === settings.tax_rate;
-
-				return (
-					<TaxRate>
-						<Flex justify="flex-end">
-							<AppButton
-								isPrimary
-								disabled={ disabled }
-								loading={ formContext.adapter.isSubmitting }
-								onClick={ formContext.handleSubmit }
-							>
-								{ __(
-									'Save tax rate',
-									'google-listings-and-ads'
-								) }
-							</AppButton>
-						</Flex>
-					</TaxRate>
-				);
+				return <TaxRate handleSubmit={ formContext.handleSubmit } />;
 			} }
 		</AdaptiveForm>
 	);

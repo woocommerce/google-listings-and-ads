@@ -68,7 +68,7 @@ class Redirect implements Activateable, Service, Registerable, OptionsAwareInter
 	 */
 	public function activate(): void {
 		// Do not take any action if activated in a REST request (via wc-admin).
-		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+		if ( $this->wp->wp_is_serving_rest_request() ) {
 			return;
 		}
 

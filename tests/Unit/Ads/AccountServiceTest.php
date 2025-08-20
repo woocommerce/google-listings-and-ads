@@ -84,12 +84,14 @@ class AccountServiceTest extends UnitTest {
 	];
 	protected const TEST_CONNECTED_DATA    = [
 		'id'       => self::TEST_ACCOUNT_ID,
+		'ocid'     => self::TEST_ACCOUNT_OCID,
 		'currency' => 'EUR',
 		'symbol'   => '€',
 		'status'   => 'connected',
 	];
 	protected const TEST_INCOMPLETE_DATA   = [
 		'id'       => self::TEST_ACCOUNT_ID,
+		'ocid'     => self::TEST_ACCOUNT_OCID,
 		'currency' => 'EUR',
 		'symbol'   => '€',
 		'status'   => 'incomplete',
@@ -97,6 +99,7 @@ class AccountServiceTest extends UnitTest {
 	];
 	protected const TEST_DISCONNECTED_DATA = [
 		'id'       => 0,
+		'ocid'     => null,
 		'currency' => null,
 		'symbol'   => '$',
 		'status'   => 'disconnected',
@@ -159,8 +162,16 @@ class AccountServiceTest extends UnitTest {
 			->willReturn( self::TEST_ACCOUNT_ID );
 
 		$this->options->method( 'get' )
-			->with( OptionsInterface::ADS_ACCOUNT_CURRENCY )
-			->willReturn( self::TEST_CURRENCY );
+			->withConsecutive(
+				[ OptionsInterface::ADS_ACCOUNT_OCID ],
+				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ],
+				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ]
+			)
+			->willReturnOnConsecutiveCalls(
+				self::TEST_ACCOUNT_OCID,
+				self::TEST_CURRENCY,
+				self::TEST_CURRENCY
+			);
 
 		$this->assertEquals( self::TEST_CONNECTED_DATA, $this->account->get_connected_account() );
 	}
@@ -171,8 +182,16 @@ class AccountServiceTest extends UnitTest {
 			->willReturn( self::TEST_ACCOUNT_ID );
 
 		$this->options->method( 'get' )
-			->with( OptionsInterface::ADS_ACCOUNT_CURRENCY )
-			->willReturn( self::TEST_CURRENCY );
+			->withConsecutive(
+				[ OptionsInterface::ADS_ACCOUNT_OCID ],
+				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ],
+				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ]
+			)
+			->willReturnOnConsecutiveCalls(
+				self::TEST_ACCOUNT_OCID,
+				self::TEST_CURRENCY,
+				self::TEST_CURRENCY
+			);
 
 		$this->state->expects( $this->once() )
 			->method( 'last_incomplete_step' )
@@ -194,6 +213,16 @@ class AccountServiceTest extends UnitTest {
 		$this->options->expects( $this->once() )
 			->method( 'get_ads_id' )
 			->willReturn( 0 );
+
+		$this->options->method( 'get' )
+			->withConsecutive(
+				[ OptionsInterface::ADS_ACCOUNT_OCID ],
+				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ]
+			)
+			->willReturnOnConsecutiveCalls(
+				null,
+				null
+			);
 
 		$this->assertEquals( self::TEST_DISCONNECTED_DATA, $this->account->get_connected_account() );
 	}
@@ -725,7 +754,7 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_disconnect() {
-		$this->options->expects( $this->exactly( 8 ) )
+		$this->options->expects( $this->exactly( 9 ) )
 			->method( 'delete' )
 			->withConsecutive(
 				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ],
@@ -733,6 +762,7 @@ class AccountServiceTest extends UnitTest {
 				[ OptionsInterface::ADS_ACCOUNT_STATE ],
 				[ OptionsInterface::ADS_BILLING_URL ],
 				[ OptionsInterface::ADS_CONVERSION_ACTION ],
+				[ OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED ],
 				[ OptionsInterface::ADS_ID ],
 				[ OptionsInterface::ADS_SETUP_COMPLETED_AT ],
 				[ OptionsInterface::CAMPAIGN_CONVERT_STATUS ]
