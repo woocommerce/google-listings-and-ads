@@ -7,7 +7,7 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import { STORE_KEY } from '~/data/constants';
-import { RAISE_CAMPAIGN_BUDGET } from '~/constants';
+import { CAMPAIGN_BUDGET, MARGINAL_ROI_CAMPAIGN_BUDGET } from '~/constants';
 import useGoogleAdsAccount from './useGoogleAdsAccount';
 
 /**
@@ -31,36 +31,39 @@ import useGoogleAdsAccount from './useGoogleAdsAccount';
 const useRaiseBudgetRecommendations = () => {
 	const { hasGoogleAdsConnection, hasFinishedResolution } =
 		useGoogleAdsAccount();
+	return useSelect(
+		( select ) => {
+			if ( ! hasGoogleAdsConnection ) {
+				return {
+					campaigns: [],
+					hasFinishedResolution,
+				};
+			}
 
-	return useSelect( ( select ) => {
-		if ( ! hasGoogleAdsConnection ) {
+			const selector = select( STORE_KEY );
+			const campaigns = selector.getAdsRecommendations( [
+				CAMPAIGN_BUDGET,
+				MARGINAL_ROI_CAMPAIGN_BUDGET,
+			] );
+			const hasResolvedRecommendations = selector.hasFinishedResolution(
+				'getAdsRecommendations',
+				[ CAMPAIGN_BUDGET, MARGINAL_ROI_CAMPAIGN_BUDGET ]
+			);
+
+			if ( ! campaigns?.length ) {
+				return {
+					campaigns: [],
+					hasFinishedResolution: hasResolvedRecommendations,
+				};
+			}
+
 			return {
-				campaigns: [],
-				hasFinishedResolution,
+				campaigns,
+				hasFinishedResolution: true,
 			};
-		}
-
-		const selector = select( STORE_KEY );
-		const campaigns = selector.getAdsRecommendations(
-			RAISE_CAMPAIGN_BUDGET
-		);
-		const hasResolvedRecommendations = selector.hasFinishedResolution(
-			'getAdsRecommendations',
-			[ RAISE_CAMPAIGN_BUDGET ]
-		);
-
-		if ( ! campaigns?.length ) {
-			return {
-				campaigns: [],
-				hasFinishedResolution: hasResolvedRecommendations,
-			};
-		}
-
-		return {
-			campaigns,
-			hasFinishedResolution: true,
-		};
-	}, [] );
+		},
+		[ hasFinishedResolution, hasGoogleAdsConnection ]
+	);
 };
 
 export default useRaiseBudgetRecommendations;
