@@ -26,7 +26,7 @@ const useRecommendedPMaxCampaign = () => {
 			'getAdsRecommendations',
 			[ [ PMAX_IMPROVE_PERFORMANCE_MAX_AD_STRENGTH ] ]
 		);
-		console.log( hasResolvedRecommendations );
+
 		if ( ! recommendations?.length ) {
 			return {
 				campaign: null,
