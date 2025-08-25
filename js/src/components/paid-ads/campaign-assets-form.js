@@ -73,6 +73,10 @@ function injectDailyBudget( values, budgetRecommendation ) {
 			if ( this.level === 'custom' ) {
 				return this.amount;
 			}
+
+			if ( this.level === 'current' ) {
+				return this.currentAmount;
+			}
 			return budgetRecommendation[ this.level ].dailyBudget;
 		},
 	} );
@@ -89,9 +93,10 @@ function resolveInitialCampaign(
 	};
 
 	if ( values.level !== 'custom' && ! budgetRecommendation[ values.level ] ) {
-		values.level = budgetRecommendation.recommended
-			? 'recommended'
-			: 'custom';
+		values.level =
+			budgetRecommendation.recommended && values.level !== 'current'
+				? 'recommended'
+				: 'current';
 	}
 
 	return injectDailyBudget( values, budgetRecommendation );

@@ -32,8 +32,8 @@ jest.mock( '~/hooks/useBudgetMetrics', () =>
 				country: 'US',
 				dailyBudget,
 				metrics: {
-					// Multiply by 8 rather than 7 to distinguish from the recommended one
-					cost: dailyBudget * 8,
+					// Multiply by 7 because custom budget would show the same metrics as the recommended ones.
+					cost: dailyBudget * 7,
 					conversions: 2.1,
 					conversionsValue: 99.99,
 				},
@@ -108,7 +108,9 @@ describe( 'BudgetSetup', () => {
 		mockBudgetRecommendation();
 
 		Wrapper = ( { initLevel, initAmount, hideRecommendations } ) => {
-			const initialCampaign = {};
+			const initialCampaign = {
+				currentAmount: 9.86,
+			};
 			if ( initLevel ) {
 				initialCampaign.level = initLevel;
 			}
@@ -204,18 +206,14 @@ describe( 'BudgetSetup', () => {
 
 		const customOption = getOption( 'custom' );
 		expect( customOption ).not.toBeChecked();
-		expect( screen.queryByRole( 'textbox' ) ).not.toBeInTheDocument();
-		expect( screen.queryByText( '2.1' ) ).not.toBeInTheDocument();
-		expect( screen.queryByText( '$99.99' ) ).not.toBeInTheDocument();
-		expect( screen.queryByText( '$120.00' ) ).not.toBeInTheDocument();
 
 		await user.click( customOption );
 
 		expect( customOption ).toBeChecked();
 		expect( screen.getByRole( 'textbox' ) ).toBeInTheDocument();
-		expect( screen.getByText( '2.1' ) ).toBeInTheDocument();
-		expect( screen.getByText( '$99.99' ) ).toBeInTheDocument();
-		expect( screen.getByText( '$120.00' ) ).toBeInTheDocument();
+		expect( screen.getAllByText( '2.1' ) ).toHaveLength( 2 );
+		expect( screen.getAllByText( '$99.99' ) ).toHaveLength( 2 );
+		expect( screen.getAllByText( '$105.00' ) ).toHaveLength( 2 );
 	} );
 
 	it( 'should reflect the initial level and amount given by the form context to set the pre-selected option and custom budget value', async () => {

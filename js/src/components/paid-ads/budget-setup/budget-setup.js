@@ -22,6 +22,7 @@ import styles from './budget-setup.module.scss';
 const i18nLevel = {
 	low: __( 'Low', 'google-listings-and-ads' ),
 	high: __( 'High', 'google-listings-and-ads' ),
+	current: __( 'Current', 'google-listings-and-ads' ),
 	recommended: __( 'Recommended', 'google-listings-and-ads' ),
 };
 
@@ -66,11 +67,15 @@ export default function BudgetSetup( { hideRecommendations = false } ) {
 	const formContext = useAdaptiveFormContext();
 	const { adapter, getInputProps, values } = formContext;
 	const { countryCodes, budgetRecommendation } = adapter;
-	const { amount } = values;
+	const { amount, currentAmount } = values;
 	const { adsCurrencyConfig, formatAmount } = useAdsCurrency();
 
 	const [ budget, setBudget ] = useState( amount );
 	const debouncedSetBudget = useDebounce( setBudget, 1000 );
+	const { data: currentMetrics } = useBudgetMetrics(
+		countryCodes,
+		currentAmount
+	);
 	const { data } = useBudgetMetrics( countryCodes, budget );
 
 	useEffect( () => {
@@ -151,6 +156,32 @@ export default function BudgetSetup( { hideRecommendations = false } ) {
 					</div>
 				);
 			} ) }
+
+			{ currentAmount && (
+				<div className={ getRowClassName( 'current' ) }>
+					<BudgetRadioControl
+						{ ...getInputProps( 'level' ) }
+						value="current"
+						label={
+							<>
+								{ formatAmount( currentAmount ) }
+								<span className={ styles.dayUnit }>
+									/{ __( 'day', 'google-listings-and-ads' ) }
+								</span>
+							</>
+						}
+					/>
+					<BudgetMetrics
+						formatAmount={ formatAmount }
+						metrics={ currentMetrics?.metrics }
+					/>
+					<div className={ styles.helper }>
+						<span>
+							{ __( 'Current', 'google-listings-and-ads' ) }
+						</span>
+					</div>
+				</div>
+			) }
 
 			<div className={ getRowClassName( 'custom' ) }>
 				<BudgetRadioControl
