@@ -331,4 +331,18 @@ describe( 'BudgetSetup', () => {
 
 		expect( container ).toHaveTextContent( notice );
 	} );
+
+	it( 'should set custom budget input to the same value as the Recommended row when clicking "Set custom budget"', async () => {
+		const user = userEvent.setup();
+		render( <Wrapper initLevel="current" /> );
+
+		expect( getOption( 'current' ) ).toBeChecked();
+
+		await user.click( getOption( 'custom' ) );
+
+		expect( getOption( 'custom' ) ).toBeChecked();
+
+		const input = screen.getByRole( 'textbox' );
+		expect( input ).toHaveValue( '15.00' );
+	} );
 } );
