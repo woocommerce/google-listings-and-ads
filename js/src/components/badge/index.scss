@@ -35,4 +35,8 @@
 		white-space: nowrap;
 		text-overflow: ellipsis;
 	}
+
+	:where(svg) {
+		fill: currentcolor;
+	}
 }
