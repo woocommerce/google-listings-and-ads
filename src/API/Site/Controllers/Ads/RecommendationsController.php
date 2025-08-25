@@ -53,7 +53,7 @@ class RecommendationsController extends BaseController implements ContainerAware
 				[
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_recommendations_callback(),
-					'permission_callback' => $this->get_permission_callback(),
+					//'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_collection_params(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
@@ -73,11 +73,6 @@ class RecommendationsController extends BaseController implements ContainerAware
 				'description' => __( 'Filter recommendations by type', 'google-listings-and-ads' ),
 				// This could also use a callback to get the set of supported recommendation types from the `AdsRecommendations` service.
 				'enum'        => [ 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH', 'CAMPAIGN_BUDGET', 'MARGINAL_ROI_CAMPAIGN_BUDGET' ],
-				'required'    => false,
-			],
-			'id'   => [
-				'type'        => 'integer',
-				'description' => __( 'Filter recommendations by unique id', 'google-listings-and-ads' ),
 				'required'    => false,
 			],
 		];
@@ -104,9 +99,8 @@ class RecommendationsController extends BaseController implements ContainerAware
 				$query = $this->container->get( AdsRecommendationsService::class );
 
 				$type = $request->get_param( 'type' ) ?? 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH';
-				$id   = (int) $request->get_param( 'id' );
 
-				$recommendations = $query->get_recommendations( $type, $id );
+				$recommendations = $query->get_recommendations( $type );
 
 				$result = [];
 				foreach ( $recommendations as $recommendation ) {

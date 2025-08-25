@@ -48,10 +48,9 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 	 * Retrieves recommendations from the database for the specified type and ID.
 	 *
 	 * @param string $type Optional. Type of recommendation to retrieve. Currently supports only 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH'.
-	 * @param int    $id   Optional. Recommendation ID to filter by. Default 0.
 	 * @return array Array of recommendations.
 	 */
-	public function get_recommendations( string $type = '', int $id = 0 ): array {
+	public function get_recommendations( string $type = '' ): array {
 		/** @var AdsRecommendationsQuery $query */
 		$query = $this->container->get( AdsRecommendationsQuery::class );
 
@@ -67,16 +66,12 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 			return [];
 		}
 
-		if ( $id ) {
-			$query->where( 'recommendation_id', $id );
-		} else {
-			// Only return recommendations for the highest spend campaign.
-			$ads_campaign = $this->container->get( AdsCampaign::class );
-			$campaign     = $ads_campaign->get_highest_spend_campaign();
+		// Only return recommendations for the highest spend campaign.
+		$ads_campaign = $this->container->get( AdsCampaign::class );
+		$campaign     = $ads_campaign->get_highest_spend_campaign();
 
-			if ( ! empty( $campaign ) ) {
-				$query->where( 'recommendation_campaign_id', $campaign['id'] );
-			}
+		if ( ! empty( $campaign ) ) {
+			$query->where( 'recommendation_campaign_id', $campaign['id'] );
 		}
 
 		$result = $query->get_results();
