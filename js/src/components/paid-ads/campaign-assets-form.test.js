@@ -191,7 +191,7 @@ describe( 'CampaignAssetsForm', () => {
 		expect( children ).toHaveBeenLastCalledWith( formContextSchema );
 	} );
 
-	it.only( 'Should fall back to the current level for the initial form values when there is no level available', () => {
+	it( 'Should fall back to the current level for the initial form values when there is no level available', () => {
 		useBudgetRecommendation.mockReturnValue( {
 			hasResolved: true,
 			data: {
@@ -208,7 +208,6 @@ describe( 'CampaignAssetsForm', () => {
 				initialCampaign={ {
 					amount: 10,
 					currentAmount: 12,
-					level: 'current',
 				} }
 			>
 				{ children }
@@ -219,7 +218,7 @@ describe( 'CampaignAssetsForm', () => {
 			values: expect.objectContaining( {
 				amount: 10,
 				currentAmount: 12,
-				dailyBudget: 10,
+				dailyBudget: 12,
 				level: 'current',
 			} ),
 		} );
@@ -227,7 +226,7 @@ describe( 'CampaignAssetsForm', () => {
 		expect( children ).toHaveBeenLastCalledWith( formContextSchema );
 	} );
 
-	it( 'Should fall back to the custom level for the initial form values when budget recommendation responds with 404 not found', () => {
+	it( 'Should fall back to the current level for the initial form values when budget recommendation responds with 404 not found', () => {
 		useBudgetRecommendation.mockReturnValue( {
 			hasResolved: true,
 			data: null,
@@ -238,7 +237,7 @@ describe( 'CampaignAssetsForm', () => {
 		render(
 			<CampaignAssetsForm
 				validate={ alwaysValid }
-				initialCampaign={ { amount: 20, level: 'low' } }
+				initialCampaign={ { amount: 20, currentAmount: 12 } }
 			>
 				{ children }
 			</CampaignAssetsForm>
@@ -247,8 +246,9 @@ describe( 'CampaignAssetsForm', () => {
 		const formContextSchema = expect.objectContaining( {
 			values: expect.objectContaining( {
 				amount: 20,
-				dailyBudget: 20,
-				level: 'custom',
+				currentAmount: 12,
+				dailyBudget: 12,
+				level: 'current',
 			} ),
 		} );
 
