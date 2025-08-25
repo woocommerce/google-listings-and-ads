@@ -68,11 +68,13 @@ class RecommendationsController extends BaseController implements ContainerAware
 	 */
 	public function get_collection_params(): array {
 		return [
-			'type' => [
-				'type'        => 'string',
-				'description' => __( 'Filter recommendations by type', 'google-listings-and-ads' ),
-				// This could also use a callback to get the set of supported recommendation types from the `AdsRecommendations` service.
-				'enum'        => [ 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH', 'CAMPAIGN_BUDGET', 'MARGINAL_ROI_CAMPAIGN_BUDGET' ],
+			'types' => [
+				'type'        => 'array',
+				'description' => __( 'Filter recommendations by one or more types', 'google-listings-and-ads' ),
+				'items'       => [
+					'type' => 'string',
+					'enum' => [ 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH', 'CAMPAIGN_BUDGET', 'MARGINAL_ROI_CAMPAIGN_BUDGET' ],
+				],
 				'required'    => false,
 			],
 		];
@@ -98,7 +100,10 @@ class RecommendationsController extends BaseController implements ContainerAware
 				/** @var AdsRecommendationsService $query */
 				$query = $this->container->get( AdsRecommendationsService::class );
 
-				$type = $request->get_param( 'type' ) ?? 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH';
+				$type = $request->get_param( 'type' ) ?? [ 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH' ];
+				if ( is_string( $type ) ) {
+					$type = array_map( 'trim', explode( ',', $type ) );
+				}
 
 				$recommendations = $query->get_recommendations( $type );
 

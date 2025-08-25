@@ -47,24 +47,18 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 	/**
 	 * Retrieves recommendations from the database for the specified type and ID.
 	 *
-	 * @param string $type Optional. Type of recommendation to retrieve. Currently supports only 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH'.
+	 * @param array $type Optional. Type of recommendation to retrieve.
 	 * @return array Array of recommendations.
 	 */
-	public function get_recommendations( string $type = '' ): array {
+	public function get_recommendations( array $type = [] ): array {
 		/** @var AdsRecommendationsQuery $query */
 		$query = $this->container->get( AdsRecommendationsQuery::class );
 
-		if ( '' === $type ) {
+		if ( empty( $type ) ) {
 			$type = 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH';
 		}
 
-		// Filter by type if valid.
-		if ( $type === 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH' ) {
-			$query->where( 'recommendation_type', $type );
-		} else {
-			// If type is not valid, return an empty array.
-			return [];
-		}
+		$query->where( 'recommendation_type', $type, 'IN' );
 
 		// Only return recommendations for the highest spend campaign.
 		$ads_campaign = $this->container->get( AdsCampaign::class );
