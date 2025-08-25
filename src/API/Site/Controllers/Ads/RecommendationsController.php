@@ -72,7 +72,7 @@ class RecommendationsController extends BaseController implements ContainerAware
 				'type'        => 'string',
 				'description' => __( 'Filter recommendations by type', 'google-listings-and-ads' ),
 				// This could also use a callback to get the set of supported recommendation types from the `AdsRecommendations` service.
-				'enum'        => [ 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH' ],
+				'enum'        => [ 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH', 'CAMPAIGN_BUDGET', 'MARGINAL_ROI_CAMPAIGN_BUDGET' ],
 				'required'    => false,
 			],
 			'id'   => [
