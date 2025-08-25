@@ -10,6 +10,7 @@ import createSelector from 'rememo';
 import { STORE_KEY } from './constants';
 import { generateKeyFromObject } from '~/utils/generateKeyFromObject';
 import {
+	arrayToUnderscoreKey,
 	getReportQuery,
 	getReportKey,
 	getPerformanceQuery,
@@ -489,9 +490,10 @@ export const getPriceBenchmarkSuggestion = ( state, productId ) => {
  * Retrieves ad recommendations of a specific type from the state.
  *
  * @param {Object} state - The Redux state object containing ads data.
- * @param {string} type - The type of ad recommendations to retrieve.
+ * @param {Array<string>} types - The types of ad recommendations to retrieve.
  * @return {Object|null} The recommendations for the specified type, or null if not found.
  */
-export const getAdsRecommendations = ( state, type ) => {
-	return state.ads.recommendations[ type ] || null;
+export const getAdsRecommendations = ( state, types ) => {
+	const key = arrayToUnderscoreKey( types );
+	return state.ads.recommendations[ key ] || null;
 };
