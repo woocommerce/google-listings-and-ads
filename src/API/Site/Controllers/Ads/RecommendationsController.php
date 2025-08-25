@@ -26,6 +26,17 @@ class RecommendationsController extends BaseController implements ContainerAware
 	use ContainerAwareTrait;
 
 	/**
+	 * Allowed recommendation types.
+	 *
+	 * @var array
+	 */
+	protected $allow_recommendations_types = [
+		'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
+		'CAMPAIGN_BUDGET',
+		'MARGINAL_ROI_CAMPAIGN_BUDGET',
+	];
+
+	/**
 	 * Service used to access / update Ads account data.
 	 *
 	 * @var AccountService
@@ -68,13 +79,18 @@ class RecommendationsController extends BaseController implements ContainerAware
 	 */
 	public function get_collection_params(): array {
 		return [
-			'types' => [
+			'types'       => [
 				'type'        => 'array',
 				'description' => __( 'Filter recommendations by one or more types', 'google-listings-and-ads' ),
 				'items'       => [
 					'type' => 'string',
-					'enum' => [ 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH', 'CAMPAIGN_BUDGET', 'MARGINAL_ROI_CAMPAIGN_BUDGET' ],
+					'enum' => $this->allow_recommendations_types,
 				],
+				'required'    => false,
+			],
+			'campaign_id' => [
+				'type'        => 'integer',
+				'description' => __( 'Filter recommendations by campaign id', 'google-listings-and-ads' ),
 				'required'    => false,
 			],
 		];
@@ -100,12 +116,15 @@ class RecommendationsController extends BaseController implements ContainerAware
 				/** @var AdsRecommendationsService $query */
 				$query = $this->container->get( AdsRecommendationsService::class );
 
-				$type = $request->get_param( 'type' ) ?? [ 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH' ];
+				$type = $request->get_param( 'type' ) ?? $this->allow_recommendations_types;
 				if ( is_string( $type ) ) {
 					$type = array_map( 'trim', explode( ',', $type ) );
 				}
+				// Filter $type to only allow allowed recommendation types.
+				$type        = array_values( array_intersect( (array) $type, $this->allow_recommendations_types ) );
+				$campaign_id = (int) $request->get_param( 'campaign_id' );
 
-				$recommendations = $query->get_recommendations( $type );
+				$recommendations = $query->get_recommendations( $type, $campaign_id );
 
 				$result = [];
 				foreach ( $recommendations as $recommendation ) {

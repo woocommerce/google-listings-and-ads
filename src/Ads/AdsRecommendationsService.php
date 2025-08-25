@@ -47,10 +47,11 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 	/**
 	 * Retrieves recommendations from the database for the specified type and ID.
 	 *
-	 * @param array $type Optional. Type of recommendation to retrieve.
+	 * @param array $type        Optional. Type of recommendation to retrieve.
+	 * @param int   $campaign_id Optional. Campaign ID to filter by. Default 0.
 	 * @return array Array of recommendations.
 	 */
-	public function get_recommendations( array $type = [] ): array {
+	public function get_recommendations( array $type = [], int $campaign_id = 0 ): array {
 		/** @var AdsRecommendationsQuery $query */
 		$query = $this->container->get( AdsRecommendationsQuery::class );
 
@@ -60,12 +61,16 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 
 		$query->where( 'recommendation_type', $type, 'IN' );
 
-		// Only return recommendations for the highest spend campaign.
-		$ads_campaign = $this->container->get( AdsCampaign::class );
-		$campaign     = $ads_campaign->get_highest_spend_campaign();
+		if ( $campaign_id ) {
+			$query->where( 'recommendation_campaign_id', $campaign_id );
+		} else {
+			// Only return recommendations for the highest spend campaign.
+			$ads_campaign = $this->container->get( AdsCampaign::class );
+			$campaign     = $ads_campaign->get_highest_spend_campaign();
 
-		if ( ! empty( $campaign ) ) {
-			$query->where( 'recommendation_campaign_id', $campaign['id'] );
+			if ( ! empty( $campaign ) ) {
+				$query->where( 'recommendation_campaign_id', $campaign['id'] );
+			}
 		}
 
 		$result = $query->get_results();
