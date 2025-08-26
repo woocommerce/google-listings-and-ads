@@ -154,10 +154,4 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix - Remove unnecessary kebab menu from setup task.
 * Update - The filtering for synchronizable products data by channel visibility in API Pull mode is now opt-out, changed from its previous opt-in setting.
 
-= 3.3.0 - 2025-08-05 =
-* Add – Enhanced Conversions support for Google Ads.
-* Add – Survey users when campaign creation is skipped during onboarding.
-* Tweak - Display a more detailed error message when failing to link Google Ads account.
-* Tweak – Replace "free listings" with "product feed".
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
