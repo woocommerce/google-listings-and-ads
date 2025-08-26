@@ -1,9 +1,13 @@
 *** Google for WooCommerce Changelog ***
 
+= 3.4.1 - 2025-08-26 =
+* Fix - Replaced multiple `setValue` calls with a single `setValues` call to eliminate race conditions during form initialization and reduce inconsistent validation behavior.
+* Tweak - Reduce the cache time for product statuses and issues from 12 hours to 30 minutes.
+
 = 3.4.0 - 2025-08-19 =
 * Add - Help merchants improve the assets for their PMax campaigns.
-* Dev – Update E2E tests ahead of Woo 10.1 release.
-* Fix – Use `wp_is_serving_rest_request()` to detect if we are handling a REST API request.
+* Dev - Update E2E tests ahead of Woo 10.1 release.
+* Fix - Use `wp_is_serving_rest_request()` to detect if we are handling a REST API request.
 * Tweak - WC 10.1 compatibility.
 
 = 3.3.1 - 2025-08-12 =
@@ -15,10 +19,10 @@
 * Update - The filtering for synchronizable products data by channel visibility in API Pull mode is now opt-out, changed from its previous opt-in setting.
 
 = 3.3.0 - 2025-08-05 =
-* Add – Enhanced Conversions support for Google Ads.
-* Add – Survey users when campaign creation is skipped during onboarding.
+* Add - Enhanced Conversions support for Google Ads.
+* Add - Survey users when campaign creation is skipped during onboarding.
 * Tweak - Display a more detailed error message when failing to link Google Ads account.
-* Tweak – Replace "free listings" with "product feed".
+* Tweak - Replace "free listings" with "product feed".
 
 = 3.2.0 - 2025-07-22 =
 * Add - Block shipping, products, and coupons synchronization when push synchronization is disabled.
@@ -884,7 +888,7 @@
 * Add - The partial authorization feature of Google account to the onboarding setup, Google Ads setup and reconnection pages.
 * Add - Accept login_hint when generating OAuth URL.
 * Add - Review request inbox notification after 10 conversions and 100 free listing clicks
-* Update – Add support for retrieving the name and domain from the Google API
+* Update - Add support for retrieving the name and domain from the Google API
 * Fix - Add support for Norwegian language, nb and nn
 * Fix - Report tabs lose active state when changing chart.
 * Tweak - Update `in_stock` and `out_of_stock` availability enums
