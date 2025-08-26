@@ -50,7 +50,7 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 	 * @param array $args {
 	 *     Optional. Arguments to filter recommendations.
 	 *
-	 *     @type array $types       Types of recommendations to retrieve.
+	 *     @type array $type        Type of recommendations to retrieve.
 	 *     @type int   $campaign_id Campaign ID to filter recommendations.
 	 * }
 	 * @return array Array of recommendations.
@@ -62,13 +62,17 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 			'MARGINAL_ROI_CAMPAIGN_BUDGET',
 		];
 
-		$types       = isset( $args['types'] ) && is_array( $args['types'] ) ? array_intersect( $args['types'], $allowed_types ) : $allowed_types;
-		$campaign_id = isset( $args['campaign_id'] ) ? (int) $args['campaign_id'] : 0;
-
 		/** @var AdsRecommendationsQuery $query */
 		$query = $this->container->get( AdsRecommendationsQuery::class );
 
-		$query->where( 'recommendation_type', $types, 'IN' );
+		$type        = isset( $args['type'] ) && is_array( $args['type'] ) ? array_intersect( $args['type'], $allowed_types ) : [];
+		$campaign_id = isset( $args['campaign_id'] ) ? (int) $args['campaign_id'] : 0;
+
+		if ( empty( $type ) ) {
+			return [];
+		}
+
+		$query->where( 'recommendation_type', $type, 'IN' );
 
 		if ( $campaign_id ) {
 			$query->where( 'recommendation_campaign_id', $campaign_id );
