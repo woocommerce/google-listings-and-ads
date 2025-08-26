@@ -64,7 +64,7 @@ class RecommendationsController extends BaseController implements ContainerAware
 				[
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_recommendations_callback(),
-					//'permission_callback' => $this->get_permission_callback(),
+					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_collection_params(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
@@ -125,8 +125,8 @@ class RecommendationsController extends BaseController implements ContainerAware
 				$campaign_id = (int) $request->get_param( 'campaign_id' );
 
 				$args = [
-					'types'      => $type,
-					'campaign_id'=> $campaign_id,
+					'types'       => $type,
+					'campaign_id' => $campaign_id,
 				];
 
 				$recommendations = $query->get_recommendations( $args );

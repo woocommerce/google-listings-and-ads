@@ -62,7 +62,7 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 			'MARGINAL_ROI_CAMPAIGN_BUDGET',
 		];
 
-		$types      = isset( $args['types'] ) && is_array( $args['types'] ) ? array_intersect( $args['types'], $allowed_types ) : $allowed_types;
+		$types       = isset( $args['types'] ) && is_array( $args['types'] ) ? array_intersect( $args['types'], $allowed_types ) : $allowed_types;
 		$campaign_id = isset( $args['campaign_id'] ) ? (int) $args['campaign_id'] : 0;
 
 		/** @var AdsRecommendationsQuery $query */
