@@ -140,6 +140,10 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.4.1 - 2025-08-26 =
+* Fix - Replaced multiple `setValue` calls with a single `setValues` call to eliminate race conditions during form initialization and reduce inconsistent validation behavior.
+* Tweak - Reduce the cache time for product statuses and issues from 12 hours to 30 minutes.
+
 = 3.4.0 - 2025-08-19 =
 * Add - Help merchants improve the assets for their PMax campaigns.
 * Dev – Update E2E tests ahead of Woo 10.1 release.
