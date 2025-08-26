@@ -124,7 +124,12 @@ class RecommendationsController extends BaseController implements ContainerAware
 				$type        = array_values( array_intersect( (array) $type, $this->allow_recommendations_types ) );
 				$campaign_id = (int) $request->get_param( 'campaign_id' );
 
-				$recommendations = $query->get_recommendations( $type, $campaign_id );
+				$args = [
+					'types'      => $type,
+					'campaign_id'=> $campaign_id,
+				];
+
+				$recommendations = $query->get_recommendations( $args );
 
 				$result = [];
 				foreach ( $recommendations as $recommendation ) {
