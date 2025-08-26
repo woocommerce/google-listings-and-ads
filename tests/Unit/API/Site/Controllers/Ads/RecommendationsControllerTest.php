@@ -88,6 +88,56 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 2, $data[1]['id'] );
 	}
 
+	public function test_get_recommendations_returns_all_three_recommendations_type() {
+		$this->account->method( 'get_connected_account' )
+			->willReturn( [ 'status' => 'connected' ] );
+
+		$mock_recommendations_data = [
+			[
+				'id'              => 1,
+				'type'            => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
+				'resource_name'   => 'customers/123/recommendations/1',
+				'campaign_id'     => 100,
+				'campaign_name'   => 'Test Campaign',
+				'campaign_status' => 'ENABLED',
+				'last_synced'     => gmdate( 'c' ),
+			],
+			[
+				'id'              => 2,
+				'type'            => 'CAMPAIGN_BUDGET',
+				'resource_name'   => 'customers/123/recommendations/2',
+				'campaign_id'     => 101,
+				'campaign_name'   => 'Another Campaign',
+				'campaign_status' => 'PAUSED',
+				'last_synced'     => gmdate( 'c' ),
+			],
+			[
+				'id'              => 3,
+				'type'            => 'MARGINAL_ROI_CAMPAIGN_BUDGET',
+				'resource_name'   => 'customers/123/recommendations/3',
+				'campaign_id'     => 103,
+				'campaign_name'   => 'Another Campaign 03',
+				'campaign_status' => 'PAUSED',
+				'last_synced'     => gmdate( 'c' ),
+			],
+		];
+
+		$this->recommendations->expects( $this->once() )
+			->method( 'get_recommendations' )
+			->willReturn( $mock_recommendations_data );
+
+		$response = $this->do_request( self::ROUTE_RECOMMENDATIONS, 'GET' );
+
+		$this->assertEquals( 200, $response->get_status() );
+
+		$data = $response->get_data();
+		$this->assertIsArray( $data );
+		$this->assertCount( 3, $data );
+		$this->assertEquals( 1, $data[0]['id'] );
+		$this->assertEquals( 2, $data[1]['id'] );
+		$this->assertEquals( 3, $data[2]['id'] );
+	}
+
 	public function test_get_recommendations_returns_empty_array_when_no_recommendations() {
 		$this->account->method( 'get_connected_account' )
 			->willReturn( [ 'status' => 'connected' ] );
@@ -179,7 +229,70 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 		}
 	}
 
-	public function test_get_recommendations_filter_by_id_returns_single_recommendation() {
+	public function test_get_recommendations_filter_by_multiple_type_returns_only_matching() {
+		$this->account->method( 'get_connected_account' )
+			->willReturn( [ 'status' => 'connected' ] );
+
+		$filter_by_type = [
+			'type' => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH, MARGINAL_ROI_CAMPAIGN_BUDGET',
+		];
+
+		$mock_recommendations_data = [
+			[
+				'id'              => 1,
+				'type'            => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
+				'resource_name'   => 'customers/123/recommendations/1',
+				'campaign_id'     => 100,
+				'campaign_name'   => 'Test Campaign',
+				'campaign_status' => 'ENABLED',
+				'last_synced'     => gmdate( 'c' ),
+			],
+			[
+				'id'              => 2,
+				'type'            => 'MARGINAL_ROI_CAMPAIGN_BUDGET',
+				'resource_name'   => 'customers/123/recommendations/2',
+				'campaign_id'     => 101,
+				'campaign_name'   => 'Another Campaign',
+				'campaign_status' => 'PAUSED',
+				'last_synced'     => gmdate( 'c' ),
+			],
+			[
+				'id'              => 3,
+				'type'            => 'CAMPAIGN_BUDGET',
+				'resource_name'   => 'customers/124/recommendations/3',
+				'campaign_id'     => 103,
+				'campaign_name'   => 'Another Campaign 03',
+				'campaign_status' => 'PAUSED',
+				'last_synced'     => gmdate( 'c' ),
+			],
+		];
+
+		// Only return the recommendation matching the filter.
+		$types              = array_map( 'trim', explode( ',', $filter_by_type['type'] ) );
+		$filtered_mock_data = array_filter(
+			$mock_recommendations_data,
+			function ( $rec ) use ( $types ) {
+				return in_array( $rec['type'], $types, true );
+			}
+		);
+
+		$this->recommendations->expects( $this->once() )
+			->method( 'get_recommendations' )
+			->willReturn( $filtered_mock_data );
+
+		// Filter by a type that does not exist in the stubbed recommendations.
+		$response = $this->do_request( self::ROUTE_RECOMMENDATIONS, 'GET', $filter_by_type );
+
+		$this->assertEquals( 200, $response->get_status() );
+
+		$data = $response->get_data();
+		$this->assertIsArray( $data );
+		$this->assertCount( 2, $data );
+		$this->assertSame( 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH', $data[0]['type'] );
+		$this->assertSame( 'MARGINAL_ROI_CAMPAIGN_BUDGET', $data[1]['type'] );
+	}
+
+	public function test_get_recommendations_filter_by_campaign_id_returns_single_recommendation() {
 		$this->account->method( 'get_connected_account' )
 			->willReturn( [ 'status' => 'connected' ] );
 
@@ -204,15 +317,15 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 			],
 		];
 
-		$filter_by_id = [
-			'id' => 2,
+		$filter_by_campaign_id = [
+			'campaign_id' => 101,
 		];
 
 		// Only return the recommendation matching the filter.
 		$filtered_mock_data = array_filter(
 			$mock_recommendations_data,
-			function ( $rec ) use ( $filter_by_id ) {
-				return $rec['id'] === $filter_by_id['id'];
+			function ( $rec ) use ( $filter_by_campaign_id ) {
+				return $rec['campaign_id'] === $filter_by_campaign_id['campaign_id'];
 			}
 		);
 
@@ -220,13 +333,13 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 			->method( 'get_recommendations' )
 			->willReturn( array_values( $filtered_mock_data ) );
 
-		$response = $this->do_request( self::ROUTE_RECOMMENDATIONS, 'GET', $filter_by_id );
+		$response = $this->do_request( self::ROUTE_RECOMMENDATIONS, 'GET', $filter_by_campaign_id );
 
 		$this->assertEquals( 200, $response->get_status() );
 
 		$data = $response->get_data();
 		$this->assertIsArray( $data );
 		$this->assertCount( 1, $data );
-		$this->assertEquals( 2, $data[0]['id'] );
+		$this->assertEquals( 101, $data[0]['campaign_id'] );
 	}
 }
