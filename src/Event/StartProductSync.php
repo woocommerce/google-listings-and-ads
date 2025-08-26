@@ -48,6 +48,15 @@ class StartProductSync implements Registerable, Service {
 				$this->on_rules_change();
 			}
 		);
+
+		add_action(
+			'woocommerce_gla_sync_mode_updated',
+			function ( $prev_sync_mode, $sync_mode ) {
+				$this->on_sync_mode_updated( $prev_sync_mode, $sync_mode );
+			},
+			10,
+			2
+		);
 	}
 
 	/**
@@ -67,5 +76,18 @@ class StartProductSync implements Registerable, Service {
 	protected function on_rules_change() {
 		$update = $this->job_repository->get( UpdateAllProducts::class );
 		$update->schedule_delayed( 1800 ); // 30 minutes
+	}
+
+	/**
+	 * If the Push mode of product sync is switched to enable, schedule a job to sync all products.
+	 *
+	 * @param array $prev_sync_mode The previous sync mode.
+	 * @param array $sync_mode The current sync mode.
+	 */
+	protected function on_sync_mode_updated( $prev_sync_mode, $sync_mode ) {
+		if ( $prev_sync_mode['products']['push'] === false && $sync_mode['products']['push'] === true ) {
+			$update = $this->job_repository->get( UpdateAllProducts::class );
+			$update->schedule();
+		}
 	}
 }
