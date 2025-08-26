@@ -5,7 +5,7 @@ Requires at least: 6.6
 Tested up to: 6.8
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.4.0
+Stable tag: 3.4.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -140,6 +140,10 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.4.1 - 2025-08-26 =
+* Fix - Replaced multiple `setValue` calls with a single `setValues` call to eliminate race conditions during form initialization and reduce inconsistent validation behavior.
+* Tweak - Reduce the cache time for product statuses and issues from 12 hours to 30 minutes.
+
 = 3.4.0 - 2025-08-19 =
 * Add - Help merchants improve the assets for their PMax campaigns.
 * Dev – Update E2E tests ahead of Woo 10.1 release.
@@ -153,11 +157,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix - Remove error message related to granting access for API pull.
 * Fix - Remove unnecessary kebab menu from setup task.
 * Update - The filtering for synchronizable products data by channel visibility in API Pull mode is now opt-out, changed from its previous opt-in setting.
-
-= 3.3.0 - 2025-08-05 =
-* Add – Enhanced Conversions support for Google Ads.
-* Add – Survey users when campaign creation is skipped during onboarding.
-* Tweak - Display a more detailed error message when failing to link Google Ads account.
-* Tweak – Replace "free listings" with "product feed".
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
