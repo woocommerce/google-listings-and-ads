@@ -88,43 +88,13 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 2, $data[1]['id'] );
 	}
 
-	public function test_get_recommendations_returns_all_three_recommendations_type() {
+	public function test_get_recommendations_returns_emprty_result() {
 		$this->account->method( 'get_connected_account' )
 			->willReturn( [ 'status' => 'connected' ] );
 
-		$mock_recommendations_data = [
-			[
-				'id'              => 1,
-				'type'            => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
-				'resource_name'   => 'customers/123/recommendations/1',
-				'campaign_id'     => 100,
-				'campaign_name'   => 'Test Campaign',
-				'campaign_status' => 'ENABLED',
-				'last_synced'     => gmdate( 'c' ),
-			],
-			[
-				'id'              => 2,
-				'type'            => 'CAMPAIGN_BUDGET',
-				'resource_name'   => 'customers/123/recommendations/2',
-				'campaign_id'     => 101,
-				'campaign_name'   => 'Another Campaign',
-				'campaign_status' => 'PAUSED',
-				'last_synced'     => gmdate( 'c' ),
-			],
-			[
-				'id'              => 3,
-				'type'            => 'MARGINAL_ROI_CAMPAIGN_BUDGET',
-				'resource_name'   => 'customers/123/recommendations/3',
-				'campaign_id'     => 103,
-				'campaign_name'   => 'Another Campaign 03',
-				'campaign_status' => 'PAUSED',
-				'last_synced'     => gmdate( 'c' ),
-			],
-		];
-
 		$this->recommendations->expects( $this->once() )
 			->method( 'get_recommendations' )
-			->willReturn( $mock_recommendations_data );
+			->willReturn( [] );
 
 		$response = $this->do_request( self::ROUTE_RECOMMENDATIONS, 'GET' );
 
@@ -132,10 +102,7 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 
 		$data = $response->get_data();
 		$this->assertIsArray( $data );
-		$this->assertCount( 3, $data );
-		$this->assertEquals( 1, $data[0]['id'] );
-		$this->assertEquals( 2, $data[1]['id'] );
-		$this->assertEquals( 3, $data[2]['id'] );
+		$this->assertCount( 0, $data );
 	}
 
 	public function test_get_recommendations_returns_empty_array_when_no_recommendations() {

@@ -116,7 +116,7 @@ class RecommendationsController extends BaseController implements ContainerAware
 				/** @var AdsRecommendationsService $query */
 				$query = $this->container->get( AdsRecommendationsService::class );
 
-				$type = $request->get_param( 'type' ) ?? [ 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH' ];
+				$type = $request->get_param( 'type' ) ?? [];
 				if ( is_string( $type ) ) {
 					$type = array_map( 'trim', explode( ',', $type ) );
 				}
