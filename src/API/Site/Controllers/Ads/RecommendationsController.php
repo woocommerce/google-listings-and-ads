@@ -82,6 +82,10 @@ class RecommendationsController extends BaseController implements ContainerAware
 				'description' => __( 'Filter recommendations by campaign id', 'google-listings-and-ads' ),
 				'required'    => false,
 			],
+			'details'     => [
+				'type'        => 'array',
+				'description' => __( 'Additional details related to the recommendation', 'google-listings-and-ads' ),
+			],
 		];
 	}
 
