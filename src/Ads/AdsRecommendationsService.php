@@ -68,7 +68,7 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 		/** @var AdsRecommendationsQuery $query */
 		$query = $this->container->get( AdsRecommendationsQuery::class );
 
-		$type        = isset( $args['type'] ) && is_array( $args['type'] ) ? array_intersect( $args['type'], self::VALID_RECOMMENDATION_TYPES ) : [];
+		$type        = isset( $args['type'] ) && is_array( $args['type'] ) ? get_valid_recommendation_types( $args['type'] ) : [];
 		$campaign_id = isset( $args['campaign_id'] ) ? (int) $args['campaign_id'] : 0;
 
 		if ( empty( $type ) ) {
@@ -109,6 +109,20 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 		}
 
 		return $recommendations;
+	}
+
+	/**
+	 * Filters the provided recommendation types to only include valid types.
+	 *
+	 * @param array $type Array of recommendation types to filter.
+	 * @return array Filtered array containing only valid recommendation types.
+	 */
+	public static function get_valid_recommendation_types( array $type ): array {
+		if ( empty( $type ) ) {
+			return [];
+		}
+
+		return array_intersect( $type, self::VALID_RECOMMENDATION_TYPES );
 	}
 
 	/**

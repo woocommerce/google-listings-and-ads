@@ -109,8 +109,9 @@ class RecommendationsController extends BaseController implements ContainerAware
 				if ( is_string( $type ) ) {
 					$type = array_map( 'trim', explode( ',', $type ) );
 				}
-				// Filter $type to only allow allowed recommendation types.
-				$type        = array_values( array_intersect( (array) $type, AdsRecommendationsService::VALID_RECOMMENDATION_TYPES ) );
+
+				// Filter $type to only allow valid recommendation types.
+				$type        = AdsRecommendationsService::get_valid_recommendation_types( $type );
 				$campaign_id = (int) $request->get_param( 'campaign_id' );
 
 				$args = [
