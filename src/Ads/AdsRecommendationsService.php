@@ -29,6 +29,15 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 	use OptionsAwareTrait;
 
 	/**
+	 * Allowed recommendation types.
+	 */
+	public const VALID_RECOMMENDATION_TYPES = [
+		'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
+		'CAMPAIGN_BUDGET',
+		'MARGINAL_ROI_CAMPAIGN_BUDGET',
+	];
+
+	/**
 	 * The Google Ads Client.
 	 *
 	 * @var GoogleAdsClient
@@ -56,16 +65,10 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 	 * @return array Array of recommendations.
 	 */
 	public function get_recommendations( array $args = [] ): array {
-		$allowed_types = [
-			'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
-			'CAMPAIGN_BUDGET',
-			'MARGINAL_ROI_CAMPAIGN_BUDGET',
-		];
-
 		/** @var AdsRecommendationsQuery $query */
 		$query = $this->container->get( AdsRecommendationsQuery::class );
 
-		$type        = isset( $args['type'] ) && is_array( $args['type'] ) ? array_intersect( $args['type'], $allowed_types ) : [];
+		$type        = isset( $args['type'] ) && is_array( $args['type'] ) ? array_intersect( $args['type'], self::VALID_RECOMMENDATION_TYPES ) : [];
 		$campaign_id = isset( $args['campaign_id'] ) ? (int) $args['campaign_id'] : 0;
 
 		if ( empty( $type ) ) {

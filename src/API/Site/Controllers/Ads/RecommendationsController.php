@@ -26,17 +26,6 @@ class RecommendationsController extends BaseController implements ContainerAware
 	use ContainerAwareTrait;
 
 	/**
-	 * Allowed recommendation types.
-	 *
-	 * @var array
-	 */
-	protected $allow_recommendations_types = [
-		'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
-		'CAMPAIGN_BUDGET',
-		'MARGINAL_ROI_CAMPAIGN_BUDGET',
-	];
-
-	/**
 	 * Service used to access / update Ads account data.
 	 *
 	 * @var AccountService
@@ -84,7 +73,7 @@ class RecommendationsController extends BaseController implements ContainerAware
 				'description' => __( 'Filter recommendations by one or more types', 'google-listings-and-ads' ),
 				'items'       => [
 					'type' => 'string',
-					'enum' => $this->allow_recommendations_types,
+					'enum' => AdsRecommendationsService::VALID_RECOMMENDATION_TYPES,
 				],
 				'required'    => true,
 			],
@@ -121,7 +110,7 @@ class RecommendationsController extends BaseController implements ContainerAware
 					$type = array_map( 'trim', explode( ',', $type ) );
 				}
 				// Filter $type to only allow allowed recommendation types.
-				$type        = array_values( array_intersect( (array) $type, $this->allow_recommendations_types ) );
+				$type        = array_values( array_intersect( (array) $type, AdsRecommendationsService::VALID_RECOMMENDATION_TYPES ) );
 				$campaign_id = (int) $request->get_param( 'campaign_id' );
 
 				$args = [
