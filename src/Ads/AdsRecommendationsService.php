@@ -68,7 +68,7 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 		/** @var AdsRecommendationsQuery $query */
 		$query = $this->container->get( AdsRecommendationsQuery::class );
 
-		$type        = isset( $args['type'] ) && is_array( $args['type'] ) ? get_valid_recommendation_types( $args['type'] ) : [];
+		$type        = isset( $args['type'] ) && is_array( $args['type'] ) ? self::get_valid_recommendation_types( $args['type'] ) : [];
 		$campaign_id = isset( $args['campaign_id'] ) ? (int) $args['campaign_id'] : 0;
 
 		if ( empty( $type ) ) {
