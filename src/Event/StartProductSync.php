@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class StartProductSync
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Event
  */
 class StartProductSync implements Registerable, Service {
 	/**
