@@ -86,7 +86,7 @@ class RecommendationsController extends BaseController implements ContainerAware
 					'type' => 'string',
 					'enum' => $this->allow_recommendations_types,
 				],
-				'required'    => false,
+				'required'    => true,
 			],
 			'campaign_id' => [
 				'type'        => 'integer',

@@ -48,6 +48,16 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 		$this->controller->register();
 	}
 
+	public function test_get_recommendations_returns_emprty_result() {
+		$this->account->method( 'get_connected_account' )
+			->willReturn( [ 'status' => 'connected' ] );
+
+		$response = $this->do_request( self::ROUTE_RECOMMENDATIONS, 'GET' );
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( 'rest_missing_callback_param', $response->get_data()['code'] );
+	}
+
 	public function test_get_recommendations_returns_all_recommendations() {
 		$this->account->method( 'get_connected_account' )
 			->willReturn( [ 'status' => 'connected' ] );
@@ -77,7 +87,11 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 			->method( 'get_recommendations' )
 			->willReturn( $mock_recommendations_data );
 
-		$response = $this->do_request( self::ROUTE_RECOMMENDATIONS, 'GET' );
+		$filter_by_type = [
+			'type' => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
+		];
+
+		$response = $this->do_request( self::ROUTE_RECOMMENDATIONS, 'GET', $filter_by_type );
 
 		$this->assertEquals( 200, $response->get_status() );
 
@@ -88,24 +102,7 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 2, $data[1]['id'] );
 	}
 
-	public function test_get_recommendations_returns_emprty_result() {
-		$this->account->method( 'get_connected_account' )
-			->willReturn( [ 'status' => 'connected' ] );
-
-		$this->recommendations->expects( $this->once() )
-			->method( 'get_recommendations' )
-			->willReturn( [] );
-
-		$response = $this->do_request( self::ROUTE_RECOMMENDATIONS, 'GET' );
-
-		$this->assertEquals( 200, $response->get_status() );
-
-		$data = $response->get_data();
-		$this->assertIsArray( $data );
-		$this->assertCount( 0, $data );
-	}
-
-	public function test_get_recommendations_returns_empty_array_when_no_recommendations() {
+	public function test_get_recommendations_returns_empty_array_when_filter_by_non_existent_type() {
 		$this->account->method( 'get_connected_account' )
 			->willReturn( [ 'status' => 'connected' ] );
 
@@ -124,7 +121,11 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 		$this->account->method( 'get_connected_account' )
 			->willReturn( [ 'status' => 'not_connected' ] );
 
-		$response = $this->do_request( self::ROUTE_RECOMMENDATIONS, 'GET' );
+		$filter_by_type = [
+			'type' => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
+		];
+
+		$response = $this->do_request( self::ROUTE_RECOMMENDATIONS, 'GET', $filter_by_type );
 
 		$this->assertEquals( 403, $response->get_status() );
 
@@ -286,6 +287,7 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 
 		$filter_by_campaign_id = [
 			'campaign_id' => 101,
+			'type'        => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
 		];
 
 		// Only return the recommendation matching the filter.
