@@ -29,6 +29,15 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 	use OptionsAwareTrait;
 
 	/**
+	 * Allowed recommendation types.
+	 */
+	public const VALID_RECOMMENDATION_TYPES = [
+		'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
+		'CAMPAIGN_BUDGET',
+		'MARGINAL_ROI_CAMPAIGN_BUDGET',
+	];
+
+	/**
 	 * The Google Ads Client.
 	 *
 	 * @var GoogleAdsClient
@@ -45,30 +54,31 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 	}
 
 	/**
-	 * Retrieves recommendations from the database for the specified type and ID.
+	 * Retrieves recommendations from the database for the specified type and campaign ID.
 	 *
-	 * @param string $type Optional. Type of recommendation to retrieve. Currently supports only 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH'.
-	 * @param int    $id   Optional. Recommendation ID to filter by. Default 0.
+	 * @param array $args {
+	 *     Optional. Arguments to filter recommendations.
+	 *
+	 *     @type array $type        Type of recommendations to retrieve.
+	 *     @type int   $campaign_id Campaign ID to filter recommendations.
+	 * }
 	 * @return array Array of recommendations.
 	 */
-	public function get_recommendations( string $type = '', int $id = 0 ): array {
+	public function get_recommendations( array $args = [] ): array {
 		/** @var AdsRecommendationsQuery $query */
 		$query = $this->container->get( AdsRecommendationsQuery::class );
 
-		if ( '' === $type ) {
-			$type = 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH';
-		}
+		$type        = isset( $args['type'] ) && is_array( $args['type'] ) ? self::get_valid_recommendation_types( $args['type'] ) : [];
+		$campaign_id = isset( $args['campaign_id'] ) ? (int) $args['campaign_id'] : 0;
 
-		// Filter by type if valid.
-		if ( $type === 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH' ) {
-			$query->where( 'recommendation_type', $type );
-		} else {
-			// If type is not valid, return an empty array.
+		if ( empty( $type ) ) {
 			return [];
 		}
 
-		if ( $id ) {
-			$query->where( 'recommendation_id', $id );
+		$query->where( 'recommendation_type', $type, 'IN' );
+
+		if ( $campaign_id ) {
+			$query->where( 'recommendation_campaign_id', $campaign_id );
 		} else {
 			// Only return recommendations for the highest spend campaign.
 			$ads_campaign = $this->container->get( AdsCampaign::class );
@@ -99,6 +109,20 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 		}
 
 		return $recommendations;
+	}
+
+	/**
+	 * Filters the provided recommendation types to only include valid types.
+	 *
+	 * @param array $type Array of recommendation types to filter.
+	 * @return array Filtered array containing only valid recommendation types.
+	 */
+	public static function get_valid_recommendation_types( array $type ): array {
+		if ( empty( $type ) ) {
+			return [];
+		}
+
+		return array_intersect( $type, self::VALID_RECOMMENDATION_TYPES );
 	}
 
 	/**

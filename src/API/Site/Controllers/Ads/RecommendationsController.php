@@ -68,17 +68,23 @@ class RecommendationsController extends BaseController implements ContainerAware
 	 */
 	public function get_collection_params(): array {
 		return [
-			'type' => [
-				'type'        => 'string',
-				'description' => __( 'Filter recommendations by type', 'google-listings-and-ads' ),
-				// This could also use a callback to get the set of supported recommendation types from the `AdsRecommendations` service.
-				'enum'        => [ 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH' ],
+			'type'        => [
+				'type'        => 'array',
+				'description' => __( 'Filter recommendations by one or more types', 'google-listings-and-ads' ),
+				'items'       => [
+					'type' => 'string',
+					'enum' => AdsRecommendationsService::VALID_RECOMMENDATION_TYPES,
+				],
+				'required'    => true,
+			],
+			'campaign_id' => [
+				'type'        => 'integer',
+				'description' => __( 'Filter recommendations by campaign id', 'google-listings-and-ads' ),
 				'required'    => false,
 			],
-			'id'   => [
-				'type'        => 'integer',
-				'description' => __( 'Filter recommendations by unique id', 'google-listings-and-ads' ),
-				'required'    => false,
+			'details'     => [
+				'type'        => 'array',
+				'description' => __( 'Additional details related to the recommendation', 'google-listings-and-ads' ),
 			],
 		];
 	}
@@ -103,10 +109,21 @@ class RecommendationsController extends BaseController implements ContainerAware
 				/** @var AdsRecommendationsService $query */
 				$query = $this->container->get( AdsRecommendationsService::class );
 
-				$type = $request->get_param( 'type' ) ?? 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH';
-				$id   = (int) $request->get_param( 'id' );
+				$type = $request->get_param( 'type' ) ?? [];
+				if ( is_string( $type ) ) {
+					$type = array_map( 'trim', explode( ',', $type ) );
+				}
 
-				$recommendations = $query->get_recommendations( $type, $id );
+				// Filter $type to only allow valid recommendation types.
+				$type        = AdsRecommendationsService::get_valid_recommendation_types( $type );
+				$campaign_id = (int) $request->get_param( 'campaign_id' );
+
+				$args = [
+					'type'        => $type,
+					'campaign_id' => $campaign_id,
+				];
+
+				$recommendations = $query->get_recommendations( $args );
 
 				$result = [];
 				foreach ( $recommendations as $recommendation ) {
