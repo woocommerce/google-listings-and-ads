@@ -18,13 +18,30 @@ const emptyMessage = __(
 );
 
 /**
- * Renders a report chart.
- *
- * @param {Object} props React props.
- * @param {Array<Metric>} props.metrics Metrics to display.
- * @param {boolean} props.loaded Whether the data have been loaded.
- * @param {Array<IntervalsData>} props.intervals Report's intervals data.
+ * Utility to format Date as YYYY-MM-DD
  */
+function formatDate( date ) {
+	const year = date.getFullYear();
+	const month = String( date.getMonth() + 1 ).padStart( 2, '0' );
+	const day = String( date.getDate() ).padStart( 2, '0' );
+	return `${ year }-${ month }-${ day }`;
+}
+
+/**
+ * Utility to generate all dates between start and end (inclusive)
+ */
+function generateDateRange( start, end ) {
+	const dates = [];
+	const current = new Date( start );
+	const endDate = new Date( end );
+
+	while ( current <= endDate ) {
+		dates.push( formatDate( current ) );
+		current.setDate( current.getDate() + 1 );
+	}
+	return dates;
+}
+
 export default function ChartSection( { metrics, loaded, intervals } ) {
 	const query = useUrlQuery();
 	const storeCurrencyConfig = useStoreCurrency();
@@ -40,25 +57,37 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 
 	const { key, label, isCurrency = false, formatFn } = visibleMetric;
 
-	// Preferably we would use the currency of the selected metric to be used on y axis.
-	// But due to https://github.com/woocommerce/woocommerce-admin/issues/7694 Chart will not react on changes.
-	// Therefore, we will use sotre's one without the symbol, to slightly reduce the merchants confusion.
 	const visibleCurrency = { ...storeCurrencyConfig, symbol: '' };
-
 	const chartType = getChartTypeForQuery( query );
 	const valueType = isCurrency ? 'currency' : 'number';
 	const localizedFormatFn = formatFn.bind( visibleMetric );
 
 	const chartData = useMemo( () => {
-		if ( ! loaded ) {
+		if ( ! loaded || ! intervals.length ) {
 			return [];
 		}
 
-		return intervals.map( ( { interval, subtotals } ) => {
+		// Map existing intervals for quick lookup
+		const intervalMap = intervals.reduce(
+			( acc, { interval, subtotals } ) => {
+				acc[ interval ] = subtotals;
+				return acc;
+			},
+			{}
+		);
+
+		// Generate full date range
+		const startDate = intervals[ 0 ].interval;
+		const endDate = intervals[ intervals.length - 1 ].interval;
+		const allDates = generateDateRange( startDate, endDate );
+
+		// Build chart data ensuring all dates are included
+		return allDates.map( ( date ) => {
+			const subtotals = intervalMap[ date ] || { [ key ]: 0 };
 			return {
-				date: interval,
+				date,
 				[ label ]: {
-					value: subtotals[ key ],
+					value: subtotals[ key ] ?? 0,
 					label,
 				},
 			};
