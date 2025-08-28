@@ -3,6 +3,7 @@
  */
 import classnames from 'classnames';
 import { __, sprintf } from '@wordpress/i18n';
+import { Flex } from '@wordpress/components';
 import { getQuery, onQueryChange } from '@woocommerce/navigation';
 
 /**
@@ -22,6 +23,8 @@ import AddPaidCampaignButton from '~/components/paid-ads/add-paid-campaign-butto
 import ProgramToggle from './program-toggle';
 import FreeListingsDisabledToggle from './free-listings-disabled-toggle';
 import CampaignAssetsTour from '~/components/tours/campaign-assets-tour';
+import BudgetRecommendationBadge from './budget-recommendation-badge';
+import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
 
 const PROGRAMS_TABLE_CARD_CLASS_NAME = 'gla-all-programs-table-card';
 const CAMPAIGN_EDIT_BUTTON_CLASS_NAME = 'gla-campaign-edit-button';
@@ -79,6 +82,8 @@ const AllProgramsTableCard = ( props ) => {
 	const { data: finalCountryCodesData } =
 		useTargetAudienceFinalCountryCodes();
 	const { data: adsCampaignsData } = useAdsCampaigns();
+	const { campaigns: raiseBudgetRecommendationCampaigns } =
+		useRaiseBudgetRecommendations();
 	const map = useCountryKeyNameMap();
 
 	if ( ! finalCountryCodesData || ! adsCampaignsData ) {
@@ -97,6 +102,12 @@ const AllProgramsTableCard = ( props ) => {
 		);
 	}
 
+	const hasRaiseBudgetRecommendation = ( campaignId ) => {
+		return raiseBudgetRecommendationCampaigns.some(
+			( recommendation ) => recommendation.campaign_id === campaignId
+		);
+	};
+
 	const data = [
 		{
 			id: FREE_LISTINGS_PROGRAM_ID,
@@ -114,7 +125,15 @@ const AllProgramsTableCard = ( props ) => {
 		...adsCampaignsData.map( ( el ) => {
 			return {
 				id: el.id,
-				title: el.name,
+				title: (
+					<Flex gap={ 2 } align="center" justify="flex-start" wrap>
+						{ el.name }
+
+						{ hasRaiseBudgetRecommendation( el.id ) && (
+							<BudgetRecommendationBadge />
+						) }
+					</Flex>
+				),
 				dailyBudget: formatAmount( el.amount, true ),
 				country: (
 					<CountryColumn
