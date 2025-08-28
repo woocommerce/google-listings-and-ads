@@ -19,6 +19,7 @@ use Google\Ads\GoogleAds\V20\Common\ImageAsset;
 use Google\Ads\GoogleAds\V20\Common\TextAsset;
 use Google\Ads\GoogleAds\V20\Common\CallToActionAsset;
 use Google\Ads\GoogleAds\V20\Common\ImageDimension;
+use Google\Ads\GoogleAds\V20\Common\YoutubeVideoAsset;
 use Google\Ads\GoogleAds\V20\Enums\AccessRoleEnum\AccessRole;
 use Google\Ads\GoogleAds\V20\Enums\CampaignStatusEnum\CampaignStatus as AdsCampaignStatus;
 use Google\Ads\GoogleAds\V20\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType as AdsCampaignType;
@@ -939,6 +940,10 @@ trait GoogleAdsClientTrait {
 				$ads_asset->setCallToActionAsset( new CallToActionAsset( [ 'call_to_action' => CallToActionType::number( $asset['content'] ) ] ) );
 				$ads_asset->setType( AssetType::CALL_TO_ACTION );
 				return $ads_asset;
+			case AssetFieldType::YOUTUBE_VIDEO:
+				$ads_asset->setYoutubeVideoAsset( new YoutubeVideoAsset( [ 'youtube_video_id' => $asset['content'] ] ) );
+				$ads_asset->setType( AssetType::YOUTUBE_VIDEO );
+				return $ads_asset;
 			default:
 				return null;
 		}
@@ -1048,6 +1053,8 @@ trait GoogleAdsClientTrait {
 					return CallToActionType::UNSPECIFIED;
 				}
 				return CallToActionType::label( $asset->getCallToActionAsset()->getCallToAction() );
+			case AssetFieldType::YOUTUBE_VIDEO:
+				return $asset->getYoutubeVideoAsset()->getYoutubeVideoId();
 			default:
 				return '';
 		}

@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Attribu
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\VariationsAttributes;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\ChannelVisibilityBlock;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\ProductBlocksService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsRecommendationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AccountService as AdsAccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
@@ -183,6 +184,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ZoneMethodsParser::class         => true,
 		LocationRatesProcessor::class    => true,
 		ShippingZone::class              => true,
+		AdsRecommendationsService::class => true,
 		AdsAccountService::class         => true,
 		MerchantAccountService::class    => true,
 		MarketingChannelRegistrar::class => true,

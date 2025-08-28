@@ -36,6 +36,7 @@ const emptyAssetGroup = {
 	[ ASSET_FORM_KEY.DESCRIPTION ]: [],
 	[ ASSET_FORM_KEY.CALL_TO_ACTION_SELECTION ]: null,
 	[ ASSET_FORM_KEY.DISPLAY_URL_PATH ]: [],
+	[ ASSET_FORM_KEY.YOUTUBE_VIDEO ]: [],
 };
 
 /**
@@ -158,12 +159,18 @@ export default function CampaignAssetsForm( {
 					: initialAssetGroup;
 				let hasNonEmptyAssets = false;
 
-				Object.keys( emptyAssetGroup ).forEach( ( key ) => {
-					if ( assetGroup && assetGroup[ key ]?.length ) {
-						hasNonEmptyAssets = true;
-					}
-					formContext.setValue( key, nextAssetGroup[ key ] );
-				} );
+				const updatedContextValues = Object.fromEntries(
+					Object.keys( emptyAssetGroup ).map( ( key ) => {
+						if ( assetGroup?.[ key ]?.length ) {
+							hasNonEmptyAssets = true;
+						}
+						return [ key, nextAssetGroup[ key ] ];
+					} )
+				);
+
+				if ( Object.keys( updatedContextValues ).length ) {
+					formContext.setValues( updatedContextValues );
+				}
 
 				setHasImportedAssets( hasNonEmptyAssets );
 				setBaseAssetGroup( nextAssetGroup );

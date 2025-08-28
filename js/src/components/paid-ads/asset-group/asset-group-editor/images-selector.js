@@ -4,16 +4,14 @@
 import { __ } from '@wordpress/i18n';
 import { noop } from 'lodash';
 import { useState, useEffect, useRef } from '@wordpress/element';
-import GridiconCrossCircle from 'gridicons/dist/cross-circle';
 
 /**
  * Internal dependencies
  */
-import AppButton from '~/components/app-button';
 import useCroppedImageSelector from '~/hooks/useCroppedImageSelector';
 import AppTooltip from '~/components/app-tooltip';
 import AddAssetItemButton from './add-asset-item-button';
-import './images-selector.scss';
+import MediaSelector from './media-selector';
 
 /**
  * @typedef {Object} AssetImageConfig
@@ -55,7 +53,7 @@ export default function ImagesSelector( {
 	};
 	updateImagesRef.current = updateImages;
 
-	const removeImage = ( deletedImage ) => {
+	const handleRemoveImage = ( deletedImage ) => {
 		if ( deletedImage.id === awaitingActionImage?.id ) {
 			setAwaitingActionImage( null );
 		}
@@ -70,7 +68,7 @@ export default function ImagesSelector( {
 
 	const handle = useCroppedImageSelector( {
 		...imageConfig,
-		onDelete: removeImage,
+		onDelete: handleRemoveImage,
 		onSelect( image ) {
 			const nextImages = [ ...images ];
 
@@ -97,7 +95,7 @@ export default function ImagesSelector( {
 		},
 	} );
 
-	const handleUpsertImageClick = ( event, image = null ) => {
+	const handleMediumClick = ( event, image = null ) => {
 		setAwaitingActionImage( image );
 		handle.openSelector( image?.id );
 	};
@@ -109,7 +107,7 @@ export default function ImagesSelector( {
 			<AddAssetItemButton
 				disabled={ disabled }
 				text={ __( 'Add image', 'google-listings-and-ads' ) }
-				onClick={ handleUpsertImageClick }
+				onClick={ handleMediumClick }
 			/>
 		);
 
@@ -126,43 +124,12 @@ export default function ImagesSelector( {
 
 	return (
 		<div className="gla-images-selector">
-			<div className="gla-images-selector__image-list">
-				{ images.map( ( image ) => {
-					return (
-						<div
-							key={ image.url }
-							className="gla-images-selector__image-item"
-						>
-							<AppButton
-								className="gla-images-selector__replace-image-button"
-								aria-label={ __(
-									'Replace image',
-									'google-listings-and-ads'
-								) }
-								onClick={ () =>
-									handleUpsertImageClick( null, image )
-								}
-							>
-								<img
-									className="gla-images-selector__image"
-									alt={ image.alt }
-									src={ image.url }
-								/>
-							</AppButton>
-							<AppButton
-								className="gla-images-selector__remove-image-button"
-								aria-label={ __(
-									'Remove image',
-									'google-listings-and-ads'
-								) }
-								icon={ <GridiconCrossCircle /> }
-								iconSize={ 20 }
-								onClick={ () => removeImage( image ) }
-							/>
-						</div>
-					);
-				} ) }
-			</div>
+			<MediaSelector
+				media={ images }
+				onMediumClick={ handleMediumClick }
+				onRemoveMedia={ handleRemoveImage }
+			/>
+
 			{ children }
 			{ renderAddButton() }
 		</div>

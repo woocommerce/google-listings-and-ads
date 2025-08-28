@@ -1075,6 +1075,29 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Mocks the API request for Google Ads recommendations of a specific type.
+	 *
+	 * @param {Array} [payload=[]] - The mock response payload to return.
+	 * @param {string} [type='IMPROVE_PERFORMANCE_MAX_AD_STRENGTH'] - The type of recommendation to mock.
+	 * @param {number} [status=200] - The HTTP status code to return.
+	 * @return {Promise<void>} Resolves when the mock is set up.
+	 */
+	async mockAdsRecommendations(
+		payload = [],
+		type = 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
+		status = 200
+	) {
+		await this.fulfillRequest(
+			new RegExp(
+				`\\/wc\\/gla\\/ads\\/recommendations\\?type=${ type }\\b`
+			),
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
 	 * Fulfills a mock request for the shipping times endpoint.
 	 *
 	 * @param {Object} payload - The mock response payload to be returned.
