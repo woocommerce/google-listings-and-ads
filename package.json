@@ -1,7 +1,7 @@
 {
 	"name": "google-listings-and-ads",
 	"title": "Google for WooCommerce",
-	"version": "3.4.0",
+	"version": "3.4.1",
 	"description": "Google for WooCommerce",
 	"author": "Automattic",
 	"license": "GPL-3.0-or-later",
@@ -63,7 +63,7 @@
 		"@wordpress/env": "^10.28.0",
 		"@wordpress/jest-preset-default": "^11.29.0",
 		"@wordpress/prettier-config": "^3.15.0",
-		"@wordpress/scripts": "^27.9.0",
+		"@wordpress/scripts": "^30.22.0",
 		"axios": "^1.7.2",
 		"bundlewatch": "^0.4.0",
 		"eslint": "^8.57.0",
@@ -76,7 +76,7 @@
 		"prettier": "npm:wp-prettier@^3.0.3",
 		"react": "^18",
 		"react-dom": "^18",
-		"stylelint-config-standard-scss": "^3.0.0",
+		"stylelint-config-standard-scss": "^15.0.1",
 		"typescript": "^5.5.4",
 		"woocommerce-grow-jsdoc": "https://gitpkg.now.sh/woocommerce/grow/packages/js/jsdoc?eabdb5c3e6f089499a9bc62ec2e5e2251d7b23ca"
 	},
@@ -86,7 +86,12 @@
 		},
 		"@woocommerce/components": {
 			"@woocommerce/csv-export@<1.9.0": "^1.9.0"
-		}
+		},
+		"d3-color": "^3.1.0",
+		"d3-interpolate": "^3.0.1",
+		"d3-scale": "^4.0.2",
+		"d3-scale-chromatic": "^3.0.0",
+		"path-to-regexp": "^6.3.0"
 	},
 	"scripts": {
 		"prearchive": "rm -rf vendor && composer install --no-dev && composer dump-autoload -o",

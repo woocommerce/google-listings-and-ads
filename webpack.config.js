@@ -163,7 +163,8 @@ const sassTest = /\.(sc|sa)ss$/;
 const updatedSassOptions = {
 	sourceMap: ! isProduction,
 	sassOptions: {
-		includePaths: [ 'js/src/css/abstracts' ],
+		includePaths: [ path.resolve( __dirname, 'js/src/css/abstracts' ) ],
+		loadPaths: [ path.resolve( __dirname, 'js/src/css/abstracts' ) ],
 	},
 	additionalData:
 		'@use "sass:color";' +
