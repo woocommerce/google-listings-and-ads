@@ -138,6 +138,9 @@ class SyncController extends BaseOptionsController {
 				$new_sync_mode = array_replace_recursive( $sync_mode, $new_params );
 
 				$this->options->update( OptionsInterface::API_PULL_SYNC_MODE, $new_sync_mode );
+
+				do_action( 'woocommerce_gla_sync_mode_updated', $sync_mode, $new_sync_mode );
+
 				return $this->prepare_item_for_response( $this->options->get( OptionsInterface::API_PULL_SYNC_MODE ), $request );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
