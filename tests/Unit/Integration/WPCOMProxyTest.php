@@ -4,6 +4,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Integration;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\RestApi\UnitTests\Helpers\CouponHelper;
@@ -26,6 +27,7 @@ use WP_REST_Request;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Integration
  */
 class WPCOMProxyTest extends RESTControllerUnitTest {
+	use PluginHelper;
 
 	/**
 	 * @var ContainerInterface
@@ -505,6 +507,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 
 		$response_mapped = $this->maps_the_response_with_the_item_id( $response );
 
+		$this->assertArrayNotHasKey( 'gla_plugin_version', $response_mapped );
 		$this->assertArrayNotHasKey( 'gla_google_connected', $response_mapped );
 		$this->assertArrayNotHasKey( 'gla_language', $response_mapped );
 		$this->assertArrayNotHasKey( 'gla_merchant_center', $response_mapped );
@@ -520,12 +523,15 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 
 		$response_mapped = $this->maps_the_response_with_the_item_id( $response );
 
+		$this->assertArrayHasKey( 'gla_plugin_version', $response_mapped );
 		$this->assertArrayHasKey( 'gla_google_connected', $response_mapped );
 		$this->assertArrayHasKey( 'gla_language', $response_mapped );
 		$this->assertArrayHasKey( 'gla_merchant_center', $response_mapped );
 		$this->assertArrayHasKey( 'gla_shipping_rates', $response_mapped );
 		$this->assertArrayHasKey( 'gla_shipping_times', $response_mapped );
 		$this->assertArrayHasKey( 'gla_target_audience', $response_mapped );
+
+		$this->assertEquals( $this->get_version(), $response_mapped['gla_plugin_version']['value'] );
 	}
 
 	public function test_get_empty_settings_for_shipping_zone_methods_as_object() {

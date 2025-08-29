@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use WC_Product;
@@ -38,6 +39,7 @@ defined( 'ABSPATH' ) || exit;
 class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 
 	use OptionsAwareTrait;
+	use PluginHelper;
 
 	/**
 	 * The ShippingRateQuery object.
@@ -202,6 +204,11 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 
 					$data = $response->get_data();
 
+					$data[] = [
+						'id'    => 'gla_plugin_version',
+						'label' => 'Google for WooCommerce: Current plugin version',
+						'value' => $this->get_version(),
+					];
 					$data[] = [
 						'id'    => 'gla_google_connected',
 						'label' => 'Google for WooCommerce: Is Google account connected?',
