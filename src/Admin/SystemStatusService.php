@@ -46,11 +46,6 @@ class SystemStatusService implements Service, Registerable {
 	 * Add Google for WooCommerce section to System Status Report
 	 */
 	public function add_system_status_section(): void {
-		// Check if the notifications service is available to prevent fatal errors
-		if ( ! $this->notifications_service ) {
-			return;
-		}
-
 		?>
 		<table class="wc_status_table widefat" cellspacing="0">
 			<thead>
