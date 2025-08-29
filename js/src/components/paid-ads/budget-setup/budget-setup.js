@@ -72,6 +72,7 @@ export default function BudgetSetup( { hideRecommendations = false } ) {
 	const [ budget, setBudget ] = useState( amount );
 	const debouncedSetBudget = useDebounce( setBudget, 1000 );
 	const { data } = useBudgetMetrics( countryCodes, budget );
+	console.log( countryCodes, budget, data );
 
 	useEffect( () => {
 		debouncedSetBudget( amount );

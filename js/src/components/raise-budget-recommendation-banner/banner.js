@@ -11,6 +11,9 @@ import { getHistory } from '@woocommerce/navigation';
  */
 import { getEditCampaignUrl } from '~/utils/urls';
 import { recordGlaEvent } from '~/utils/tracks';
+import DeltaValue from '~/components/delta-value';
+import useBudgetMetrics from '~/hooks/useBudgetMetrics';
+import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import Badge from '~/components/badge';
 import AppButton from '~/components/app-button';
 import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
@@ -61,22 +64,30 @@ const RAISE_BUDGET_RECOMMENDATION_BANNER_CONTEXT =
  * @return {JSX.Element|null} The banner component, or null if not applicable.
  */
 const Banner = ( { onBannerDismissed } ) => {
-	const { campaigns, hasFinishedResolution } =
+	const { campaigns: recommendedCampaigns, hasFinishedResolution } =
 		useRaiseBudgetRecommendations();
+	const { data: allCampaigns } = useAdsCampaigns();
+	const recommendedCampaign = recommendedCampaigns?.[ 0 ] || {};
+	const { campaign_id, campaign_name } = recommendedCampaign;
+	const campaign = allCampaigns?.find( ( el ) => el.id === campaign_id );
+	const { data: budgetMetricsData } = useBudgetMetrics(
+		campaign?.targeted_locations,
+		campaign?.amount
+	);
+
+	console.log( budgetMetricsData );
 
 	useEffect( () => {
-		if ( campaigns.length && hasFinishedResolution ) {
+		if ( campaign && budgetMetricsData ) {
 			recordGlaEvent( 'gla_raise_budget_recommendation_banner_shown', {
 				context: RAISE_BUDGET_RECOMMENDATION_BANNER_CONTEXT,
 			} );
 		}
-	}, [ campaigns, hasFinishedResolution ] );
+	}, [ campaign, budgetMetricsData ] );
 
-	if ( ! campaigns.length || ! hasFinishedResolution ) {
+	if ( ! campaign || ! budgetMetricsData ) {
 		return null;
 	}
-
-	const { campaign_id, campaign_name } = campaigns[ 0 ];
 
 	const handleOnViewRecommendation = () => {
 		onBannerDismissed();
@@ -108,6 +119,14 @@ const Banner = ( { onBannerDismissed } ) => {
 		);
 	};
 
+	const percentageIncrease = Math.round(
+		( ( recommendedCampaign.weekly_conversions -
+			budgetMetricsData.metrics.conversions ) /
+			budgetMetricsData.metrics.conversions ) *
+			100
+	);
+
+	console.log( recommendedCampaign, budgetMetricsData );
 	return (
 		<Notice
 			className="gla-raise-budget-recommendation-banner"
@@ -115,7 +134,9 @@ const Banner = ( { onBannerDismissed } ) => {
 			onRemove={ handleDismiss }
 		>
 			<header className="gla-raise-budget-recommendation-banner__header">
-				<Badge intent="info">+9%</Badge>
+				<Badge intent="info">
+					<DeltaValue amount={ percentageIncrease } suffix="%" />
+				</Badge>
 			</header>
 
 			<Flex
