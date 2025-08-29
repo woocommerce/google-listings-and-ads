@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -27,12 +28,19 @@ class SystemStatusService implements Service, Registerable {
 	private $notifications_service;
 
 	/**
+	 * @var MerchantCenterService $merchant_center
+	 */
+	private $merchant_center;
+
+	/**
 	 * SystemStatusService constructor
 	 *
-	 * @param NotificationsService $notifications_service
+	 * @param NotificationsService  $notifications_service
+	 * @param MerchantCenterService $merchant_center
 	 */
-	public function __construct( NotificationsService $notifications_service ) {
+	public function __construct( NotificationsService $notifications_service, MerchantCenterService $merchant_center ) {
 		$this->notifications_service = $notifications_service;
+		$this->merchant_center       = $merchant_center;
 	}
 
 	/**
@@ -100,14 +108,17 @@ class SystemStatusService implements Service, Registerable {
 			return;
 		}
 
+		$is_pull_ready = $this->notifications_service->is_ready();
+		$is_push_ready = $this->merchant_center->is_ready_for_syncing();
+
 		foreach ( $sync_mode as $data_type => $modes ) {
 			if ( ! is_array( $modes ) ) {
 				continue;
 			}
 
 			$data_type_label = ucfirst( str_replace( '_', ' ', $data_type ) );
-			$pull_enabled    = isset( $modes['pull'] ) && $modes['pull'];
-			$push_enabled    = isset( $modes['push'] ) && $modes['push'];
+			$pull_enabled    = $is_pull_ready && isset( $modes['pull'] ) && $modes['pull'];
+			$push_enabled    = $is_push_ready && isset( $modes['push'] ) && $modes['push'];
 
 			// API Pull row
 			?>
@@ -116,7 +127,7 @@ class SystemStatusService implements Service, Registerable {
 					<?php echo esc_html( sprintf( '%s API Pull:', $data_type_label ) ); ?>
 				</td>
 				<td class="help">
-					<?php echo wp_kses_post( wc_help_tip( sprintf( 'Shows if API Pull sync is enabled for %s data.', strtolower( $data_type_label ) ) ) ); ?>
+					<?php echo wp_kses_post( wc_help_tip( sprintf( 'Shows if API Pull sync is ready and enabled for %s data.', strtolower( $data_type_label ) ) ) ); ?>
 				</td>
 				<td>
 					<?php if ( $pull_enabled ) : ?>
@@ -135,7 +146,7 @@ class SystemStatusService implements Service, Registerable {
 					<?php echo esc_html( sprintf( '%s MC Push:', $data_type_label ) ); ?>
 				</td>
 				<td class="help">
-					<?php echo wp_kses_post( wc_help_tip( sprintf( 'Shows if MC Push sync is enabled for %s data.', strtolower( $data_type_label ) ) ) ); ?>
+					<?php echo wp_kses_post( wc_help_tip( sprintf( 'Shows if MC Push sync is ready and enabled for %s data.', strtolower( $data_type_label ) ) ) ); ?>
 				</td>
 				<td>
 					<?php if ( $push_enabled ) : ?>

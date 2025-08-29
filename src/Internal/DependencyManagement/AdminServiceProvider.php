@@ -111,6 +111,6 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		$this->share_with_tags( SetupAds::class );
 		$this->share_with_tags( SetupMerchantCenter::class );
 		$this->share_with_tags( Shipping::class );
-		$this->share_with_tags( SystemStatusService::class, NotificationsService::class );
+		$this->share_with_tags( SystemStatusService::class, NotificationsService::class, MerchantCenterService::class );
 	}
 }
