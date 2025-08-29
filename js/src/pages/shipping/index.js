@@ -44,13 +44,18 @@ import { recordGlaEvent } from '~/utils/tracks';
  * @fires gla_free_campaign_edited
  */
 export default function Shipping() {
-	const { targetAudience: savedTargetAudience, getFinalCountries } =
-		useTargetAudienceFinalCountryCodes();
+	const {
+		targetAudience: savedTargetAudience,
+		getFinalCountries,
+		loading,
+		loaded,
+	} = useTargetAudienceFinalCountryCodes();
 
 	const {
 		settings: savedSettings,
 		saveSettings,
 		syncSettings,
+		hasFinishedResolution: hasResolvedSettings,
 	} = useSettings();
 
 	const { saveTargetAudience } = useAppDispatch();
@@ -186,29 +191,35 @@ export default function Shipping() {
 		}
 	};
 
-	const initialAudience = targetAudience?.countries ? targetAudience : null;
-	const initialSettings = settings?.shipping_rate ? settings : null;
-	const initialRates = hasResolvedShippingRates ? savedShippingRates : null;
-	const initialTimes = hasResolvedShippingTimes ? savedShippingTimes : null;
+	const initialAudience = targetAudience?.countries ? targetAudience : {};
+	const initialSettings = settings?.shipping_rate ? settings : {};
+	const initialRates = hasResolvedShippingRates ? savedShippingRates : {};
+	const initialTimes = hasResolvedShippingTimes ? savedShippingTimes : {};
 
 	return (
 		<>
 			<ExperienceRatingBanner />
 			<MainTabNav />
-			<SetupFreeListings
-				targetAudience={ initialAudience }
-				resolveFinalCountries={ getFinalCountries }
-				onTargetAudienceChange={ updateTargetAudience }
-				settings={ initialSettings }
-				onSettingsChange={ updateSettings }
-				shippingRates={ initialRates }
-				onShippingRatesChange={ updateShippingRates }
-				shippingTimes={ initialTimes }
-				onShippingTimesChange={ updateShippingTimes }
-				onRequestSubmit={ handleRequestSubmit }
-				onContinue={ handleSetupFreeListingsContinue }
-				submitLabel={ __( 'Save changes', 'google-listings-and-ads' ) }
-			/>
+
+			{ hasResolvedShippingRates && hasResolvedShippingTimes && (
+				<SetupFreeListings
+					targetAudience={ initialAudience }
+					resolveFinalCountries={ getFinalCountries }
+					onTargetAudienceChange={ updateTargetAudience }
+					settings={ initialSettings }
+					onSettingsChange={ updateSettings }
+					shippingRates={ initialRates }
+					onShippingRatesChange={ updateShippingRates }
+					shippingTimes={ initialTimes }
+					onShippingTimesChange={ updateShippingTimes }
+					onRequestSubmit={ handleRequestSubmit }
+					onContinue={ handleSetupFreeListingsContinue }
+					submitLabel={ __(
+						'Save changes',
+						'google-listings-and-ads'
+					) }
+				/>
+			) }
 			<Flex justify="flex-end">
 				<SetupFreeListings.SubmitButton />
 			</Flex>

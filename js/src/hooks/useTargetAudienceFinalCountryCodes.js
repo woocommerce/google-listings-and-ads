@@ -31,19 +31,26 @@ import useMCCountries from '~/hooks/useMCCountries';
  *
  */
 const useTargetAudienceFinalCountryCodes = () => {
-	const { data: supportedCountries, isResolving: countriesLoading } =
-		useMCCountries();
+	const {
+		data: supportedCountries,
+		isResolving: countriesLoading,
+		hasFinishedResolution: countriesLoaded,
+	} = useMCCountries();
 
 	function mapSelect( select ) {
-		const { getTargetAudience, isResolving } = select( STORE_KEY );
+		const { getTargetAudience, isResolving, hasFinishedResolution } =
+			select( STORE_KEY );
 		const storedTargetAudience = getTargetAudience();
 		const targetAudienceLoading = isResolving( 'getTargetAudience' );
+		const targetAudienceLoaded =
+			hasFinishedResolution( 'getTargetAudience' );
 
 		/**
 		 * Flag to indicate that the data is loading.
 		 *
 		 * @type {boolean}
 		 */
+		const loaded = targetAudienceLoaded && countriesLoaded;
 		const loading = targetAudienceLoading || countriesLoading;
 		const allCountries =
 			supportedCountries && Object.keys( supportedCountries );
@@ -70,6 +77,7 @@ const useTargetAudienceFinalCountryCodes = () => {
 		const data = getFinalCountries( storedTargetAudience );
 
 		return {
+			loaded,
 			loading,
 			data,
 			targetAudience: storedTargetAudience,
@@ -77,7 +85,11 @@ const useTargetAudienceFinalCountryCodes = () => {
 		};
 	}
 
-	return useSelect( mapSelect, [ supportedCountries, countriesLoading ] );
+	return useSelect( mapSelect, [
+		supportedCountries,
+		countriesLoading,
+		countriesLoaded,
+	] );
 };
 
 export default useTargetAudienceFinalCountryCodes;
