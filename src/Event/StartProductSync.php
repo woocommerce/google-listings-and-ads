@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupProductsJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
+use Throwable;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -85,7 +86,21 @@ class StartProductSync implements Registerable, Service {
 	 * @param array $sync_mode The current sync mode.
 	 */
 	protected function on_sync_mode_updated( $prev_sync_mode, $sync_mode ) {
-		if ( $prev_sync_mode['products']['push'] === false && $sync_mode['products']['push'] === true ) {
+		// It's possible that the incoming modes don't have the expected structure
+		// for example, due to the `woocommerce_gla_sync_mode` filter.
+		try {
+			$prev_push    = $prev_sync_mode['products']['push'] ?? null;
+			$current_push = $sync_mode['products']['push'] ?? null;
+		} catch ( Throwable $e ) {
+			do_action(
+				'woocommerce_gla_debug_message',
+				'One or more of the incoming sync mode structures are invalid.',
+				__METHOD__
+			);
+			return;
+		}
+
+		if ( $prev_push === false && $current_push === true ) {
 			$update = $this->job_repository->get( UpdateAllProducts::class );
 			$update->schedule();
 		}

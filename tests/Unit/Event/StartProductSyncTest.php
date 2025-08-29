@@ -79,4 +79,27 @@ class StartProductSyncTest extends UnitTest {
 			[ 'products' => [ 'push' => false ] ]
 		);
 	}
+
+	public function test_on_sync_mode_updated_receiving_unexpected_structure() {
+		$this->update_all_products->expects( $this->never() )->method( 'schedule' );
+
+		$prev_sync_mode = [ 'products' => [ 'push' => false ] ];
+		$sync_mode      = [ 'products' => [ 'push' => true ] ];
+
+		do_action( 'woocommerce_gla_sync_mode_updated', $prev_sync_mode, 'abc' );
+		do_action( 'woocommerce_gla_sync_mode_updated', $prev_sync_mode, 123 );
+		do_action( 'woocommerce_gla_sync_mode_updated', $prev_sync_mode, false );
+		do_action( 'woocommerce_gla_sync_mode_updated', $prev_sync_mode, [] );
+		do_action( 'woocommerce_gla_sync_mode_updated', $prev_sync_mode, new \stdClass() );
+		do_action( 'woocommerce_gla_sync_mode_updated', $prev_sync_mode, [ 'products' => [] ] );
+		do_action( 'woocommerce_gla_sync_mode_updated', $prev_sync_mode, [ 'products' => new \stdClass() ] );
+
+		do_action( 'woocommerce_gla_sync_mode_updated', 'abc', $sync_mode );
+		do_action( 'woocommerce_gla_sync_mode_updated', 123, $sync_mode );
+		do_action( 'woocommerce_gla_sync_mode_updated', false, $sync_mode );
+		do_action( 'woocommerce_gla_sync_mode_updated', [], $sync_mode );
+		do_action( 'woocommerce_gla_sync_mode_updated', new \stdClass(), $sync_mode );
+		do_action( 'woocommerce_gla_sync_mode_updated', [ 'products' => [] ], $sync_mode );
+		do_action( 'woocommerce_gla_sync_mode_updated', [ 'products' => new \stdClass() ], $sync_mode );
+	}
 }
