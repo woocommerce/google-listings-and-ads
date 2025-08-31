@@ -103,9 +103,9 @@ class DebugLogger implements Service, Registerable, Conditional {
 		$this->logger->log(
 			$level,
 			sprintf( '%s %s', $method, $message ),
-			[
-				'source' => 'google-listings-and-ads',
-			]
+				[
+					'source' => 'google-for-woocommerce',
+				]
 		);
 	}
 }
