@@ -7,7 +7,7 @@ const setCurrentConsentState = () => {
 	// eslint-disable-next-line camelcase -- `wp_has_consent` is defined by the WP Consent API plugin.
 	if ( typeof wp_has_consent === 'function' ) {
 		if ( window.wp_consent_type === undefined ) {
-			window.wp_consent_type = 'option';
+			window.wp_consent_type = 'optin';
 		}
 
 		const consentState = {};
