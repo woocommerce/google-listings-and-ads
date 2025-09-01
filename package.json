@@ -91,7 +91,7 @@
 		"d3-interpolate": "^3.0.1",
 		"d3-scale": "^4.0.2",
 		"d3-scale-chromatic": "^3.0.0",
-		"path-to-regexp": "^6.3.0"
+		"path-to-regexp": "^0.1.7"
 	},
 	"scripts": {
 		"prearchive": "rm -rf vendor && composer install --no-dev && composer dump-autoload -o",
