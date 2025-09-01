@@ -37,7 +37,7 @@ class ShippingTimeControllerTest extends RESTControllerUnitTest {
 		parent::setUp();
 
 		$this->shipping_time_query = $this->createMock( ShippingTimeQuery::class );
-		$this->iso_provider       = $this->createMock( ISO3166DataProvider::class );
+		$this->iso_provider        = $this->createMock( ISO3166DataProvider::class );
 
 		$this->container = new Container();
 		$this->container->addShared( ShippingTimeQuery::class, $this->shipping_time_query );
