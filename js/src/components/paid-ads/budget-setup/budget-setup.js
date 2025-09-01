@@ -15,6 +15,7 @@ import useAdsCurrency from '~/hooks/useAdsCurrency';
 import AppInputPriceControl from '~/components/app-input-price-control';
 import BudgetSetupHeader from './budget-setup-header';
 import BudgetRadioControl from './budget-radio-control';
+import DailyBudgetLabel from './daily-budget-label';
 import LowBudgetNotice from './low-budget-notice';
 import round from '~/utils/round';
 import styles from './budget-setup.module.scss';
@@ -66,8 +67,8 @@ function BudgetMetrics( { formatAmount, metrics } ) {
 export default function BudgetSetup( { hideRecommendations = false } ) {
 	const formContext = useAdaptiveFormContext();
 	const { adapter, getInputProps, values } = formContext;
-	const { countryCodes, budgetRecommendation } = adapter;
-	const { amount, currentAmount } = values;
+	const { countryCodes, currentAmount, budgetRecommendation } = adapter;
+	const { amount } = values;
 	const { adsCurrencyConfig, formatAmount } = useAdsCurrency();
 
 	const [ budget, setBudget ] = useState( amount );
@@ -96,14 +97,7 @@ export default function BudgetSetup( { hideRecommendations = false } ) {
 				radioProps: {
 					...getInputProps( 'level' ),
 					value: level,
-					label: (
-						<>
-							{ dailyBudget }
-							<span className={ styles.dayUnit }>
-								/{ __( 'day', 'google-listings-and-ads' ) }
-							</span>
-						</>
-					),
+					label: <DailyBudgetLabel amount={ dailyBudget } />,
 				},
 			} );
 		}
@@ -163,12 +157,9 @@ export default function BudgetSetup( { hideRecommendations = false } ) {
 						{ ...getInputProps( 'level' ) }
 						value="current"
 						label={
-							<>
-								{ formatAmount( currentAmount ) }
-								<span className={ styles.dayUnit }>
-									/{ __( 'day', 'google-listings-and-ads' ) }
-								</span>
-							</>
+							<DailyBudgetLabel
+								amount={ formatAmount( currentAmount ) }
+							/>
 						}
 					/>
 					<BudgetMetrics
