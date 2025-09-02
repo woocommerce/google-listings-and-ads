@@ -14,6 +14,7 @@ import validateCampaign from '~/components/paid-ads/validateCampaign';
 import validateAssetGroup from '~/components/paid-ads/validateAssetGroup';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
 import useBudgetRecommendation from '~/hooks/useBudgetRecommendation';
+import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import { FILTER_BUDGET_RECOMMENDATIONS } from '~/utils/tracks';
 
@@ -129,7 +130,14 @@ export default function CampaignAssetsForm( {
 		budgetRecommendation?.eventProps
 	);
 
-	if ( ! hasResolved ) {
+	// Check if campaign is being edited and get its budget recommendations.
+	const campaignId = initialCampaign?.id;
+	const {
+		campaigns: raiseBudgetRecommendations,
+		hasFinishedResolution: hasResolvedRaiseBudgetRecommendations,
+	} = useRaiseBudgetRecommendations( { campaign_id: campaignId } );
+
+	if ( ! hasResolved || ! hasResolvedRaiseBudgetRecommendations ) {
 		return <AppSpinner />;
 	}
 

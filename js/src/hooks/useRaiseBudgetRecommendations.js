@@ -24,11 +24,14 @@ import useGoogleAdsAccount from './useGoogleAdsAccount';
 /**
  * Retrieves campaigns with budget recommendations to raise.
  *
+ * @param {Object} params Parameters for fetching recommendations.
+ * @param {number} params.campaign_id The ID of the campaign to fetch recommendations for.
+ *
  * @return {Object} An object containing:
  *   - {Array<CampaignRecommendation>} campaigns: An array of campaigns with budget recommendations, or an empty array if none.
  *   - {boolean} hasFinishedResolution: Whether the recommendations resolution has completed.
  */
-const useRaiseBudgetRecommendations = () => {
+const useRaiseBudgetRecommendations = ( { campaign_id } ) => {
 	const { hasGoogleAdsConnection, hasFinishedResolution } =
 		useGoogleAdsAccount();
 	return useSelect(
@@ -41,13 +44,16 @@ const useRaiseBudgetRecommendations = () => {
 			}
 
 			const selector = select( STORE_KEY );
-			const campaigns = selector.getAdsRecommendations( [
-				CAMPAIGN_BUDGET,
-				MARGINAL_ROI_CAMPAIGN_BUDGET,
-			] );
+			const campaigns = selector.getAdsRecommendations(
+				[ CAMPAIGN_BUDGET, MARGINAL_ROI_CAMPAIGN_BUDGET ],
+				campaign_id
+			);
 			const hasResolvedRecommendations = selector.hasFinishedResolution(
 				'getAdsRecommendations',
-				[ CAMPAIGN_BUDGET, MARGINAL_ROI_CAMPAIGN_BUDGET ]
+				[
+					[ CAMPAIGN_BUDGET, MARGINAL_ROI_CAMPAIGN_BUDGET ],
+					campaign_id,
+				]
 			);
 
 			if ( ! campaigns?.length ) {
@@ -62,7 +68,7 @@ const useRaiseBudgetRecommendations = () => {
 				hasFinishedResolution: true,
 			};
 		},
-		[ hasFinishedResolution, hasGoogleAdsConnection ]
+		[ campaign_id, hasFinishedResolution, hasGoogleAdsConnection ]
 	);
 };
 

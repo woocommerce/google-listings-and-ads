@@ -746,16 +746,18 @@ export function* getPriceBenchmarkSuggestions( args ) {
 /**
  * Resolver for getting the Ads recommendations.
  */
-export function* getAdsRecommendations( types ) {
+export function* getAdsRecommendations( types, campaign_id = null ) {
 	try {
 		const response = yield apiFetch( {
 			path: addQueryArgs( `${ API_NAMESPACE }/ads/recommendations`, {
 				types,
+				campaign_id,
 			} ),
 		} );
 
-		const typesKey = arrayToUnderscoreKey( types );
-		yield receiveAdsRecommendations( response, typesKey );
+		const key = campaign_id ? [ campaign_id, ...types ] : types;
+		const typesKey = arrayToUnderscoreKey( key );
+		yield receiveAdsRecommendations( response?.results, typesKey );
 	} catch ( error ) {
 		handleApiError(
 			error,
