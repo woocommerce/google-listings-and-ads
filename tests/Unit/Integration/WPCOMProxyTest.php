@@ -573,6 +573,50 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 		$this->assertEquals( true, $response_mapped['gla_google_connected']['value'] );
 	}
 
+	public function test_get_settings_with_connected_google_merchant_center_account() {
+		$options = [
+			'shipping_rate' => 'flat',
+			'shipping_time' => 'flat',
+			'tax_rate'      => 'destination',
+		];
+
+		$this->options
+			->method( 'get' )
+			->willReturnCallback(
+				function ( $name, $default_value = null ) use ( $options ) {
+					if ( $name === OptionsInterface::MERCHANT_CENTER ) {
+						return $options;
+					}
+					return $default_value;
+				}
+			);
+
+		$this->merchant_center
+			->method( 'is_connected' )
+			->willReturn( true );
+
+		$response        = $this->do_request( '/wc/v3/settings/google-for-woocommerce', 'GET', [ 'gla_syncable' => '1' ] );
+		$response_mapped = $this->maps_the_response_with_the_item_id( $response );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( $options, $response_mapped['gla_merchant_center']['value'] );
+	}
+
+	/**
+	 * Fall back to null in case the WP option value doesn't exist
+	 */
+	public function test_get_settings_with_connected_google_merchant_center_account_but_getting_fallback() {
+		$this->merchant_center
+			->method( 'is_connected' )
+			->willReturn( true );
+
+		$response        = $this->do_request( '/wc/v3/settings/google-for-woocommerce', 'GET', [ 'gla_syncable' => '1' ] );
+		$response_mapped = $this->maps_the_response_with_the_item_id( $response );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( null, $response_mapped['gla_merchant_center']['value'] );
+	}
+
 	public function test_get_empty_settings_for_shipping_zone_methods_as_object() {
 		$request = new WP_REST_Request( 'GET', '/wc/v3/shipping/zones/4/methods' );
 

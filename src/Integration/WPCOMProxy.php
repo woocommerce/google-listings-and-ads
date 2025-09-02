@@ -182,6 +182,10 @@ class WPCOMProxy implements Service, Registerable, ContainerAwareInterface, Opti
 					/** @var ShippingTimeQuery $shipping_time_query */
 					$shipping_time_query = $this->container->get( ShippingTimeQuery::class );
 
+					$merchant_center = $merchant_center_service->is_connected()
+						? $this->options->get( OptionsInterface::MERCHANT_CENTER, null )
+						: null;
+
 					$data = $response->get_data();
 
 					$data[] = [
@@ -202,7 +206,7 @@ class WPCOMProxy implements Service, Registerable, ContainerAwareInterface, Opti
 					$data[] = [
 						'id'    => 'gla_merchant_center',
 						'label' => 'Google for WooCommerce: Merchant Center settings',
-						'value' => $this->options->get( OptionsInterface::MERCHANT_CENTER, null ),
+						'value' => $merchant_center,
 					];
 					$data[] = [
 						'id'    => 'gla_shipping_rates',
