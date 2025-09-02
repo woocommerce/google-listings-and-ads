@@ -65,31 +65,16 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 	 * @return array Array of recommendations.
 	 */
 	public function get_recommendations( array $args = [] ): array {
-		/** @var AdsRecommendationsQuery $query */
-		$query = $this->container->get( AdsRecommendationsQuery::class );
+		// Make sure a valid type is passed.
+		$types = isset( $args['type'] ) && is_array( $args['type'] ) ? self::get_valid_recommendation_types( $args['type'] ) : [];
 
-		$type        = isset( $args['type'] ) && is_array( $args['type'] ) ? self::get_valid_recommendation_types( $args['type'] ) : [];
-		$campaign_id = isset( $args['campaign_id'] ) ? (int) $args['campaign_id'] : 0;
-
-		if ( empty( $type ) ) {
+		if ( empty( $types ) ) {
 			return [];
 		}
 
-		$query->where( 'recommendation_type', $type, 'IN' );
+		// TODO: get query results from transient.
 
-		if ( $campaign_id ) {
-			$query->where( 'recommendation_campaign_id', $campaign_id );
-		} else {
-			// Only return recommendations for the highest spend campaign.
-			$ads_campaign = $this->container->get( AdsCampaign::class );
-			$campaign     = $ads_campaign->get_highest_spend_campaign();
-
-			if ( ! empty( $campaign ) ) {
-				$query->where( 'recommendation_campaign_id', $campaign['id'] );
-			}
-		}
-
-		$result = $query->get_results();
+		$result = $this->get_google_recommendations( $args );
 
 		$recommendations = [];
 
@@ -102,6 +87,7 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 				'campaign_name'   => $item['recommendation_campaign_name'] ?? '',
 				'campaign_status' => $item['recommendation_campaign_status'] ?? '',
 				'customer_id'     => (int) ( $item['recommendation_customer_id'] ?? 0 ),
+				'details'         => $item['recommendation_details'],
 				'last_synced'     => isset( $item['recommendation_last_synced'] )
 					? gmdate( 'c', strtotime( $item['recommendation_last_synced'] ) )
 					: null,
@@ -126,6 +112,36 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 	}
 
 	/**
+	 * Returns additional columns by the recommendation type.
+	 *
+	 * @param array $type The recommendation types.
+	 * @return array Additional columns for that recommendation type.
+	 */
+	private function get_additional_columns_for_recommendation_type( array $types ): array {
+		$columns = [
+			'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH' => [],
+			'CAMPAIGN_BUDGET'                     => [
+				'recommendation_campaign_budget_recommendations' => 'recommendation.campaign_budget_recommendation',
+			],
+			'MARGINAL_ROI_CAMPAIGN_BUDGET'        => [
+				'recommendation_campaign_budget_recommendations' => 'recommendation.marginal_roi_campaign_budget_recommendation',
+			],
+		];
+
+		$add = [];
+
+		foreach ( $types as $type ) {
+			if ( ! isset( $columns[ $type ] ) ) {
+				continue;
+			}
+
+			$add = array_merge( $add, $columns[ $type ] );
+		}
+
+		return $add;
+	}
+
+	/**
 	 * Retrieves recommendations from the Google Ads API.
 	 *
 	 * @param array $args Query arguments.
@@ -135,12 +151,33 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 	 */
 	public function get_google_recommendations( $args ): array {
 		try {
-			$response = ( new GoogleAdsRecommendationsQuery( $args ) )
-			->set_client( $this->client, $this->options->get_ads_id() )
-			->get_results();
+			$query = ( new GoogleAdsRecommendationsQuery() )
+			->set_client( $this->client, $this->options->get_ads_id() );
 
+			$types       = isset( $args['type'] ) && is_array( $args['type'] ) ? self::get_valid_recommendation_types( $args['type'] ) : [];
+			$campaign_id = isset( $args['campaign_id'] ) ? (int) $args['campaign_id'] : 0;
+
+			if ( empty( $types ) ) {
+				return [];
+			}
+
+			$query->where( 'recommendation.type', $types, 'IN' );
+
+			if ( ! empty( $campaign_id ) ) {
+				$query->where( 'campaign.id', $campaign_id );
+			}
+
+			// Add additional columns based on the recommendation type.
+			$columns = $this->get_additional_columns_for_recommendation_type( $types );
+
+			if ( ! empty( $columns ) ) {
+				$query->add_columns( $columns );
+			}
+
+			$response    = $query->get_results();
 			$result      = [];
 			$last_synced = gmdate( 'Y-m-d H:i:s' );
+
 			foreach ( $response->iterateAllElements() as $row ) {
 				if ( ! $row->hasRecommendation() ) {
 					continue;
@@ -155,6 +192,16 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 
 				$campaign = $row->getCampaign();
 				$customer = $row->getCustomer();
+
+				$recommendation_type    = $recommendation->getType();
+				$recommendation_details = [];
+
+				// Add recommendation details depending on the type.
+				if ( in_array( $recommendation_type, [ 'CAMPAIGN_BUDGET', 'MARGINAL_ROI_CAMPAIGN_BUDGET' ] ) ) {
+					$recommendation_details = [
+						'campaign_budget_recommendation' => $recommendation->getCampaignBudgetRecommendation(),
+					];
+				}
 
 				$recommendation_resource_name = $recommendation->getResourceName();
 				if ( empty( $recommendation_resource_name ) ) {
@@ -173,12 +220,13 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 					 * We use the static name for the recommendation type instead of `$recommendation->getType()`
 					 * to ensure consistency and avoid potential issues with dynamic values or API changes.
 					 */
-					'recommendation_type'            => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
+					'recommendation_type'            => $recommendation_type,
 					'recommendation_resource_name'   => $recommendation_resource_name,
 					'recommendation_campaign_id'     => $campaign->getId(),
 					'recommendation_campaign_name'   => $campaign->getName(),
 					'recommendation_campaign_status' => $campaign->getStatus(),
 					'recommendation_customer_id'     => $customer->getId(),
+					'recommendation_details'         => $recommendation_details,
 					'recommendation_last_synced'     => $last_synced,
 				];
 			}
