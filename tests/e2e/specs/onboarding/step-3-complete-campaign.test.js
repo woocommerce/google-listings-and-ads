@@ -86,23 +86,9 @@ test.describe( 'Complete your campaign', () => {
 				[ 'GET' ]
 			),
 
-			completeCampaign.fulfillBudgetRecommendations( {
-				currency: 'USD',
-				recommendations: [
-					{
-						country: 'US',
-						daily_budget: 10,
-					},
-					{
-						country: 'TW',
-						daily_budget: 8,
-					},
-					{
-						country: 'GB',
-						daily_budget: 20,
-					},
-				],
-			} ),
+			completeCampaign.fulfillBudgetRecommendations(),
+			setupBudgetPage.mockBudgetMetrics(),
+			setupBudgetPage.mockAdsIncentiveCredits(),
 
 			// The following mocks are requests will happen after completing the onboarding
 			completeCampaign.mockSuccessfulSettingsSyncRequest(),
@@ -229,18 +215,37 @@ test.describe( 'Complete your campaign', () => {
 				await setupAdsAccountPage.mockAdsAccountConnected();
 				await setupBudgetPage.fulfillBudgetRecommendations( {
 					currency: 'TWD',
+					daily_budget_baseline: 100,
 					recommendations: [
 						{
+							level: 'Recommended',
 							country: 'TW',
-							daily_budget: 8,
+							daily_budget: 120,
+							metrics: {
+								cost: 700,
+								conversions: 2.2,
+								conversions_value: 89.98,
+							},
 						},
 						{
-							country: 'US',
-							daily_budget: 100,
+							level: 'High',
+							country: 'TW',
+							daily_budget: 200,
+							metrics: {
+								cost: 1400,
+								conversions: 2.5,
+								conversions_value: 98.59,
+							},
 						},
 						{
-							country: 'GB',
-							daily_budget: 20,
+							level: 'Low',
+							country: 'TW',
+							daily_budget: 50,
+							metrics: {
+								cost: 350,
+								conversions: 2,
+								conversions_value: 80.48,
+							},
 						},
 					],
 				} );
@@ -248,37 +253,21 @@ test.describe( 'Complete your campaign', () => {
 				await completeCampaign.goto();
 			} );
 
-			test.describe( 'Set up budget', () => {
-				test( '"Daily average cost" input should have highest value set', async () => {
-					const dailyAverageCostInput =
-						setupBudgetPage.getBudgetInput();
-					await expect( dailyAverageCostInput ).toHaveValue(
-						'100.00'
-					);
-				} );
-
-				test( 'should see the low budget tip when the budget is set lower than the recommended value', async () => {
-					await setupBudgetPage.fillBudget( '99.99' );
-					const lowBudgetTip = setupBudgetPage.getLowerBudgetTip();
-					await expect( lowBudgetTip ).toBeVisible();
-				} );
-
-				test( 'should not see the low budget tip when the budget is not set lower than the recommended value', async () => {
-					await setupBudgetPage.fillBudget( '100' );
-					const lowBudgetTip = setupBudgetPage.getLowerBudgetTip();
-					await expect( lowBudgetTip ).not.toBeVisible();
+			test.describe( 'Set up custom budget', () => {
+				test( 'The input in the "Set custom budget" option should have been set to the recommended value by default', async () => {
+					await page.getByLabel( 'custom' ).click();
+					await expect(
+						setupBudgetPage.getBudgetInput()
+					).toHaveValue( '120.00' );
 				} );
 			} );
 
-			test.describe( 'Validate budget percent', () => {
+			test.describe( 'Validate budget percent for the custom budget', () => {
 				test( 'should see validation error if lower than the 30%', async () => {
 					await setupBudgetPage.fillBudget( '10' );
 					await setupBudgetPage.getBudgetInput().blur();
-					const error = page.locator(
-						'.components-base-control__help'
-					);
 
-					await expect( error ).toHaveText(
+					await expect( page.getByRole( 'alert' ) ).toHaveText(
 						'Please make sure daily average cost is at least NT$30.00'
 					);
 				} );
@@ -286,11 +275,8 @@ test.describe( 'Complete your campaign', () => {
 				test( 'should see validation error if slightly less than the 30%', async () => {
 					await setupBudgetPage.fillBudget( '29.99' );
 					await setupBudgetPage.getBudgetInput().blur();
-					const error = page.locator(
-						'.components-base-control__help'
-					);
 
-					await expect( error ).toHaveText(
+					await expect( page.getByRole( 'alert' ) ).toHaveText(
 						'Please make sure daily average cost is at least NT$30.00'
 					);
 				} );
@@ -299,30 +285,25 @@ test.describe( 'Complete your campaign', () => {
 					await setupBudgetPage.fillBudget( '30' );
 					await setupBudgetPage.getBudgetInput().blur();
 
-					const error = page.locator(
-						'.components-base-control__help'
-					);
-					await expect( error ).not.toBeVisible();
+					await expect( page.getByRole( 'alert' ) ).not.toBeVisible();
 				} );
 
 				test( 'should not see validation error if slightly greater than 30%', async () => {
 					await setupBudgetPage.fillBudget( '30.5' );
 					await setupBudgetPage.getBudgetInput().blur();
 
-					const error = page.locator(
-						'.components-base-control__help'
-					);
-					await expect( error ).not.toBeVisible();
+					await expect( page.getByRole( 'alert' ) ).not.toBeVisible();
 				} );
 
-				test( 'should not see validation error if greater than 30%', async () => {
+				test( 'should display the recommended budget if the budget is valid but lower than the lowest recommended value', async () => {
 					await setupBudgetPage.fillBudget( '40' );
 					await setupBudgetPage.getBudgetInput().blur();
 
-					const error = page.locator(
-						'.components-base-control__help'
-					);
-					await expect( error ).not.toBeVisible();
+					await expect(
+						page.getByText(
+							`Your budget is lower than other advertisers' budgets, which may affect performance. For best results, we recommend at least NT$120.00 per day.`
+						)
+					).toBeVisible();
 				} );
 			} );
 
@@ -425,48 +406,201 @@ test.describe( 'Complete your campaign', () => {
 					await expect( setupSuccessModal ).toBeVisible();
 				} );
 			} );
+
+			test.describe( 'Budget recommendations', () => {
+				test.beforeEach( async () => {
+					await setupAdsAccountPage.mockAdsAccountIncomplete();
+					await setupBudgetPage.fulfillBillingStatusRequest( {
+						status: 'approved',
+					} );
+					await completeCampaign.mockCompleteAdsSetup();
+					await completeCampaign.fulfillBudgetRecommendations();
+					await completeCampaign.goto();
+					await page.evaluate( () => window.sessionStorage.clear() );
+				} );
+
+				test( 'Create a campaign with a selected option from the budget recommendations', async () => {
+					// The recommended option is selected by default
+					await expect(
+						page.getByLabel( 'recommended' )
+					).toBeChecked();
+
+					const highOption = page.getByLabel( 'high' );
+
+					await highOption.click();
+					await expect( highOption ).toBeChecked();
+
+					const campaignCreation =
+						setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
+							'20.5',
+							[ 'US', 'TW', 'GB' ]
+						);
+
+					await completeCampaign.clickCompleteSetupButton();
+					await campaignCreation;
+				} );
+
+				test( 'Suggest a higher budget for getting back free credits', async () => {
+					await setupBudgetPage.fillBudget( '8' );
+					await completeCampaign.clickCompleteSetupButton();
+
+					const confirmButton = page.getByRole( 'button', {
+						name: 'Change budget',
+					} );
+
+					await expect(
+						page.getByText( 'This offer won’t last long!' )
+					).toBeVisible();
+					await expect( confirmButton ).toBeEnabled();
+
+					await setupBudgetPage.getBudgetInput().fill( '8.33' );
+
+					await expect( confirmButton ).toBeDisabled();
+
+					await setupBudgetPage.getBudgetInput().fill( '8.5' );
+
+					await expect( confirmButton ).toBeEnabled();
+
+					await confirmButton.click();
+
+					await expect( confirmButton ).not.toBeVisible();
+
+					await expect(
+						setupBudgetPage.getBudgetInput()
+					).toHaveValue( '8.50' );
+
+					const campaignCreation =
+						setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
+							'8.5',
+							[ 'US', 'TW', 'GB' ]
+						);
+
+					await completeCampaign.clickCompleteSetupButton();
+					await campaignCreation;
+				} );
+			} );
 		} );
 	} );
 
 	test.describe( 'Ask user for confirmation when clicking "Skip this step for now"', () => {
 		test.describe( 'User skips paid ads creation', () => {
-			test.beforeAll( async () => {
-				// Reset the showing status for the "Set up paid ads" section.
-				await page.evaluate( () => window.sessionStorage.clear() );
-				await setupAdsAccountPage.mockAdsAccountIncomplete();
-				await completeCampaign.goto();
-				await completeCampaign.clickSkipPaidAdsCreationButton();
+			test.describe( 'With WooCommerce tracking disabled', () => {
+				test.beforeAll( async () => {
+					await setupAdsAccountPage.mockAdsAccountIncomplete();
+					await completeCampaign.goto();
+					await completeCampaign.clickSkipPaidAdsCreationButton();
+				} );
+
+				test( 'should see the modal', async () => {
+					const skipPaidAdsModal =
+						completeCampaign.getSkipPaidAdsCreationModal();
+					await expect( skipPaidAdsModal ).toBeVisible();
+				} );
+
+				test( 'should see the url contains product-feed if the user skips', async () => {
+					await completeCampaign.clickCompleteSetupModalButton();
+					await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
+					expect( page.url() ).toMatch(
+						/path=%2Fgoogle%2Fproduct-feed/
+					);
+				} );
+
+				test( 'should see the setup success modal', async () => {
+					const setupSuccessModal =
+						completeCampaign.getSetupSuccessModal();
+					await expect( setupSuccessModal ).toBeVisible();
+				} );
+
+				test( 'should see buttons on Dashboard for Google Ads onboarding', async () => {
+					await page.keyboard.press( 'Escape' );
+					await page
+						.getByRole( 'tab', { name: 'Dashboard' } )
+						.click();
+					const { addPaidCampaignButton, createCampaignButton } =
+						dashboardPage;
+
+					await expect( addPaidCampaignButton ).toBeVisible();
+					await expect( addPaidCampaignButton ).toBeEnabled();
+
+					await expect( createCampaignButton ).toBeVisible();
+					await expect( createCampaignButton ).toBeEnabled();
+				} );
 			} );
 
-			test( 'should see the modal', async () => {
-				const skipPaidAdsModal =
-					completeCampaign.getSkipPaidAdsCreationModal();
-				await expect( skipPaidAdsModal ).toBeVisible();
-			} );
+			test.describe( 'With WooCommerce tracking enabled', () => {
+				test.beforeAll( async () => {
+					// Reset the showing status for the "Set up paid ads" section.
+					await page.evaluate( () => window.sessionStorage.clear() );
+					await setupAdsAccountPage.mockAdsAccountIncomplete();
+					await completeCampaign.goto();
+					// Mock WC Tracks as enabled
+					await page.evaluate( () => {
+						if ( window.wcTracks ) {
+							window.wcTracks.isEnabled = true;
+						} else {
+							window.wcTracks = { isEnabled: true };
+						}
+					} );
+					await completeCampaign.clickSkipPaidAdsCreationButton();
+				} );
 
-			test( 'should see the url contains product-feed if the user skips', async () => {
-				await completeCampaign.clickCompleteSetupModalButton();
-				await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
-				expect( page.url() ).toMatch( /path=%2Fgoogle%2Fproduct-feed/ );
-			} );
+				test( 'should display SkipPaidAdsSurveyModal when WC Tracks is enabled', async () => {
+					const skipPaidAdsSurveyModal =
+						completeCampaign.getSkipPaidAdsSurveyModal();
+					await expect( skipPaidAdsSurveyModal ).toBeVisible();
+					// Optionally, check for a survey element inside the modal
+					await expect(
+						page.getByRole( 'button', {
+							name: 'Send and complete setup',
+						} )
+					).toBeVisible();
+				} );
 
-			test( 'should see the setup success modal', async () => {
-				const setupSuccessModal =
-					completeCampaign.getSetupSuccessModal();
-				await expect( setupSuccessModal ).toBeVisible();
-			} );
+				test( 'should show a text box when clicking the "I don’t want ads on Google" option', async () => {
+					await page
+						.getByRole( 'checkbox', {
+							name: 'I don’t want ads on Google',
+						} )
+						.check();
 
-			test( 'should see buttons on Dashboard for Google Ads onboarding', async () => {
-				await page.keyboard.press( 'Escape' );
-				await page.getByRole( 'tab', { name: 'Dashboard' } ).click();
-				const { addPaidCampaignButton, createCampaignButton } =
-					dashboardPage;
+					await expect(
+						page.locator(
+							'textarea[name="i_dont_want_ads_on_google_text"]'
+						)
+					).toBeVisible();
+				} );
 
-				await expect( addPaidCampaignButton ).toBeVisible();
-				await expect( addPaidCampaignButton ).toBeEnabled();
+				test( 'should show a text box when clicking the "I’ll create ads later" option', async () => {
+					await page
+						.getByRole( 'checkbox', {
+							name: 'I’ll create ads later',
+						} )
+						.check();
 
-				await expect( createCampaignButton ).toBeVisible();
-				await expect( createCampaignButton ).toBeEnabled();
+					await expect(
+						page.locator(
+							'textarea[name="ill_create_ads_later_text"]'
+						)
+					).toBeVisible();
+				} );
+
+				test( 'should show a text box when clicking the "Other" option', async () => {
+					await page
+						.getByRole( 'checkbox', { name: 'Other' } )
+						.check();
+
+					await expect(
+						page.locator( 'textarea[name="other_text"]' )
+					).toBeVisible();
+				} );
+
+				test( 'should send survey and complete setup', async () => {
+					await completeCampaign.clickSendAndCompleteSetupModalButton();
+					await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
+					expect( page.url() ).toMatch(
+						/path=%2Fgoogle%2Fproduct-feed/
+					);
+				} );
 			} );
 		} );
 
@@ -492,6 +626,100 @@ test.describe( 'Complete your campaign', () => {
 					/path=%2Fgoogle%2Fsetup-mc&google-mc=connected/
 				);
 			} );
+		} );
+	} );
+
+	test.describe( 'Enhanced conversion prompt', () => {
+		test.beforeAll( async () => {
+			await page.evaluate( () => {
+				window.sessionStorage.clear();
+			} );
+			await setupAdsAccountPage.mockAdsAccountConnected();
+			await completeCampaign.goto();
+			await completeCampaign.clickSkipPaidAdsCreationButton();
+			await completeCampaign.clickCompleteSetupModalButton();
+		} );
+
+		test( 'should see the setup success modal', async () => {
+			const setupSuccessModal = completeCampaign.getSetupSuccessModal();
+			await expect( setupSuccessModal ).toBeVisible();
+		} );
+
+		test.describe( 'Ads setup is incomplete', () => {
+			test( 'should have three prompts in the setup success modal', async () => {
+				const guideControls = page.getByRole( 'list', {
+					name: 'Guide controls',
+				} );
+				const guideControlsItems =
+					guideControls.getByRole( 'listitem' );
+				await expect( guideControlsItems ).toHaveCount( 3 );
+			} );
+
+			test( 'should see the "Enhanced Conversions" prompt in the setup success modal', async () => {
+				const guideControls = page.getByRole( 'list', {
+					name: 'Guide controls',
+				} );
+				const guideControlsItems =
+					guideControls.getByRole( 'listitem' );
+				await guideControlsItems.nth( 1 ).click();
+				await expect(
+					page.getByText(
+						'Improve conversion tracking accuracy to improve campaign performance'
+					)
+				).toBeVisible();
+			} );
+
+			test( 'should see the "Set up Enhanced Conversions" button in the setup success modal', async () => {
+				const enhancedConversionsButton = page.getByRole( 'button', {
+					name: 'Set up Enhanced Conversions',
+				} );
+				await expect( enhancedConversionsButton ).toBeVisible();
+
+				const dataAction =
+					await enhancedConversionsButton.getAttribute(
+						'data-action'
+					);
+				expect( dataAction ).toBe(
+					'view-enhanced-conversions-settings'
+				);
+			} );
+		} );
+
+		test.describe( 'Ads setup is complete', async () => {
+			test.beforeAll( async () => {
+				await completeCampaign.goto();
+				await completeCampaign.clickSkipPaidAdsCreationButton();
+				await completeCampaign.clickCompleteSetupModalButton();
+				await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/, {
+					waitUntil: 'domcontentloaded',
+				} );
+				await page.evaluate( () => {
+					window.glaData.adsSetupComplete = true;
+				} );
+			} );
+
+			test( 'should have two prompts in the setup success modal', async () => {
+				const guideControls = page.getByRole( 'list', {
+					name: 'Guide controls',
+				} );
+				const guideControlsItems =
+					guideControls.getByRole( 'listitem' );
+				await guideControlsItems.nth( 1 ).click();
+				await expect( guideControlsItems ).toHaveCount( 2 );
+			} );
+		} );
+
+		test( 'should navigate to settings page when clicking "Set up Enhanced Conversions" button', async () => {
+			const enhancedConversionsButton = page.getByRole( 'button', {
+				name: 'Set up Enhanced Conversions',
+			} );
+			await enhancedConversionsButton.click();
+
+			await page.waitForURL( /path=%2Fgoogle%2Fsettings/ );
+			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fsettings/ );
+
+			const setupSuccessModal = completeCampaign.getSetupSuccessModal();
+			await expect( setupSuccessModal ).not.toBeVisible();
 		} );
 	} );
 

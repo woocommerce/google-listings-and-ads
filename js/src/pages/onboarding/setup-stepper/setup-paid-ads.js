@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useState, useRef } from '@wordpress/element';
 import { noop } from 'lodash';
 
 /**
@@ -12,25 +12,30 @@ import useAdminUrl from '~/hooks/useAdminUrl';
 import useAdsSetupCompleteCallback from '~/hooks/useAdsSetupCompleteCallback';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import AdsCampaign from '~/components/paid-ads/ads-campaign';
+import BudgetIncentivePrompt from '~/components/paid-ads/budget-incentive-prompt';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import AppButton from '~/components/app-button';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
+import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import { getProductFeedUrl } from '~/utils/urls';
 import { handleApiError } from '~/utils/handleError';
+import { FILTER_BUDGET_RECOMMENDATIONS, recordGlaEvent } from '~/utils/tracks';
 import { useAppDispatch } from '~/data';
 import { GUIDE_NAMES, GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
 import SkipButton from './skip-button';
 import clientSession from './clientSession';
-import useBudgetRecommendation from '~/hooks/useBudgetRecommendation';
 import AppSpinner from '~/components/app-spinner';
 
 /**
  * Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
  *
  * @event gla_onboarding_complete_with_paid_ads_button_click
+ * @property {string} level The selected level of the budget recommendation, e.g. 'low', 'recommended', 'high', 'custom'.
  * @property {number} budget The budget for the campaign
  * @property {string} audiences The targeted audiences for the campaign
+ * @property {string} source The data source of the budget recommendations, e.g. 'google-ads-api', 'fallback-database'.
+ * @property {number} recommended_budget The recommended daily budget displayed to merchants regardless of the final amount they choose.
  */
 
 /**
@@ -39,14 +44,16 @@ import AppSpinner from '~/components/app-spinner';
  * @fires gla_onboarding_complete_with_paid_ads_button_click
  */
 export default function SetupPaidAds() {
+	const budgetPromptRef = useRef();
 	const adminUrl = useAdminUrl();
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
-	const { highestDailyBudget, hasFinishedResolution } =
-		useBudgetRecommendation( countryCodes );
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const { syncSettings } = useAppDispatch();
+	const getEventProps = useEventPropertiesFilter(
+		FILTER_BUDGET_RECOMMENDATIONS
+	);
 
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
@@ -93,56 +100,70 @@ export default function SetupPaidAds() {
 
 	const createContinueButton = ( formContext ) => {
 		const { isValidForm, values } = formContext;
-		const { amount } = values;
-
 		const disabled =
 			completing === ACTION_SKIP || ! isValidForm || ! isBillingCompleted;
 
-		const handleCompleteClick = async () => {
-			setCompleting( ACTION_COMPLETE );
-			const onBeforeFinish = handleSetupComplete.bind(
-				null,
-				amount,
-				countryCodes
-			);
-
-			await finishOnboardingSetup( onBeforeFinish );
+		const handleClick = () => {
+			budgetPromptRef.current
+				.resolve( values.dailyBudget )
+				.then( ( amount ) => {
+					if ( amount === null ) {
+						formContext.handleSubmit();
+					} else if ( Number.isFinite( amount ) ) {
+						formContext.setValues( { level: 'custom', amount } );
+					}
+				} );
 		};
 
 		return (
 			<AppButton
 				isPrimary
 				disabled={ disabled }
-				onClick={ handleCompleteClick }
+				onClick={ handleClick }
 				loading={ completing === ACTION_COMPLETE }
 				text={ __( 'Complete setup', 'google-listings-and-ads' ) }
-				eventName="gla_onboarding_complete_with_paid_ads_button_click"
-				eventProps={ {
-					budget: amount,
-					audiences: countryCodes?.join( ',' ),
-				} }
 			/>
 		);
 	};
 
 	const paidAds = {
-		amount: highestDailyBudget,
 		...clientSession.getCampaign(),
 	};
 
-	if ( ! hasFinishedResolution || ! countryCodes ) {
+	if ( ! countryCodes ) {
 		return <AppSpinner />;
 	}
+
+	const handleSubmit = async ( values ) => {
+		const { level, dailyBudget } = values;
+		const onBeforeFinish = handleSetupComplete.bind(
+			null,
+			dailyBudget,
+			countryCodes
+		);
+
+		setCompleting( ACTION_COMPLETE );
+
+		recordGlaEvent(
+			'gla_onboarding_complete_with_paid_ads_button_click',
+			getEventProps( {
+				level,
+				budget: dailyBudget,
+				audiences: countryCodes.join( ',' ),
+			} )
+		);
+
+		await finishOnboardingSetup( onBeforeFinish );
+	};
 
 	return (
 		<CampaignAssetsForm
 			initialCampaign={ paidAds }
-			recommendedDailyBudget={ highestDailyBudget }
+			countryCodes={ countryCodes }
 			onChange={ ( _, values ) => {
-				if ( values.amount >= highestDailyBudget ) {
-					clientSession.setCampaign( values );
-				}
+				clientSession.setCampaign( values );
 			} }
+			onSubmit={ handleSubmit }
 		>
 			<AdsCampaign
 				headerTitle={ __(
@@ -152,6 +173,10 @@ export default function SetupPaidAds() {
 				continueButton={ createContinueButton }
 				skipButton={ createSkipButton }
 				context="setup-mc"
+			/>
+			<BudgetIncentivePrompt
+				ref={ budgetPromptRef }
+				countryCodes={ countryCodes }
 			/>
 		</CampaignAssetsForm>
 	);

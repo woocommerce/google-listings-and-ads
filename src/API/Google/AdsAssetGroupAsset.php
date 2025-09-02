@@ -7,13 +7,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAssetGroupAs
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Google\Ads\GoogleAds\V18\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V18\Resources\AssetGroupAsset;
+use Google\Ads\GoogleAds\V20\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V20\Resources\AssetGroupAsset;
 use Google\ApiCore\ApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
-use Google\Ads\GoogleAds\V18\Services\MutateOperation;
-use Google\Ads\GoogleAds\V18\Services\AssetGroupAssetOperation;
-use Google\Ads\GoogleAds\Util\V18\ResourceNames;
+use Google\Ads\GoogleAds\V20\Services\MutateOperation;
+use Google\Ads\GoogleAds\V20\Services\AssetGroupAssetOperation;
+use Google\Ads\GoogleAds\Util\V20\ResourceNames;
 
 
 
@@ -22,7 +22,7 @@ use Google\Ads\GoogleAds\Util\V18\ResourceNames;
  * Class AdsAssetGroupAsset
  *
  * Use to get assets group assets for specific asset groups.
- * https://developers.google.com/google-ads/api/reference/rpc/v18/AssetGroupAsset
+ * https://developers.google.com/google-ads/api/reference/rpc/v20/AssetGroupAsset
  *
  * @since 2.4.0
  *
@@ -82,6 +82,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 			AssetFieldType::name( AssetFieldType::MARKETING_IMAGE ),
 			AssetFieldType::name( AssetFieldType::SQUARE_MARKETING_IMAGE ),
 			AssetFieldType::name( AssetFieldType::PORTRAIT_MARKETING_IMAGE ),
+			AssetFieldType::name( AssetFieldType::YOUTUBE_VIDEO ),
 		];
 	}
 
@@ -162,7 +163,13 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 			// Search urls with and without trailing slash.
 			$asset_results = ( new AdsAssetGroupAssetQuery() )
 				->set_client( $this->client, $this->options->get_ads_id() )
-				->add_columns( [ 'asset_group.id', 'asset_group.path1', 'asset_group.path2' ] )
+				->add_columns(
+					[
+						'asset_group.id',
+						'asset_group.path1',
+						'asset_group.path2',
+					]
+				)
 				->where( 'asset_group.final_urls', [ trailingslashit( $url ), untrailingslashit( $url ) ], 'CONTAINS ANY' )
 				->where( 'asset_group_asset.field_type', $this->get_asset_field_types_query(), 'IN' )
 				->where( 'asset_group_asset.status', 'REMOVED', '!=' )

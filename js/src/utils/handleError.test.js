@@ -14,6 +14,11 @@ jest.mock( '@wordpress/data', () => {
 	};
 } );
 
+// Set back to the actual module to assert that it indeed calls console's methods
+jest.mock( '~/utils/console', () => ( {
+	...jest.requireActual( '~/utils/console' ),
+} ) );
+
 describe( 'resolveErrorMessage', () => {
 	it( 'When the arguments do not have any available messages, it should return "Unknown error occurred."', () => {
 		const message = resolveErrorMessage( {}, null, null );

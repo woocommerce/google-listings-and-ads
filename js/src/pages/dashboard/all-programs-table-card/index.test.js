@@ -91,10 +91,10 @@ describe( 'AllProgramsTableCard', () => {
 		};
 	} );
 
-	it( 'Should render the free listings row with a checked toggle in the disabled state', () => {
+	it( 'Should render the product feed row with a checked toggle in the disabled state', () => {
 		render( <AllProgramsTableCard /> );
 
-		const row = screen.getByRole( 'row', { name: /free listings/i } );
+		const row = screen.getByRole( 'row', { name: /product feed/i } );
 		const checkbox = within( row ).getByRole( 'checkbox' );
 
 		expect( row ).toBeInTheDocument();
@@ -102,10 +102,10 @@ describe( 'AllProgramsTableCard', () => {
 		expect( checkbox ).toBeDisabled();
 	} );
 
-	it( 'Should render the free listings row without the edit and remove buttons', () => {
+	it( 'Should render the product feed row without the edit and remove buttons', () => {
 		render( <AllProgramsTableCard /> );
 
-		const row = screen.getByRole( 'row', { name: /free listings/i } );
+		const row = screen.getByRole( 'row', { name: /product feed/i } );
 		const editButton = getEditButton( row );
 		const removeButton = getRemoveButton( row );
 
@@ -113,10 +113,10 @@ describe( 'AllProgramsTableCard', () => {
 		expect( removeButton ).not.toBeInTheDocument();
 	} );
 
-	it( 'Should render the free listings row with a free daily budget text', () => {
+	it( 'Should render the product feed row with a free daily budget text', () => {
 		render( <AllProgramsTableCard /> );
 
-		const row = screen.getByRole( 'row', { name: /free listings/i } );
+		const row = screen.getByRole( 'row', { name: /product feed/i } );
 		const budget = within( row ).getByRole( 'cell', { name: /free/i } );
 
 		expect( budget ).toBeInTheDocument();

@@ -32,7 +32,7 @@ const faqItems = [
 			<>
 				<p>
 					{ __(
-						'Google Merchant Center helps you sync your store and product data with Google and makes the information available for both free listings on the Shopping tab and Google Shopping Ads. That means everything about your stores and products is available to shoppers when they search on a Google property.',
+						'Google Merchant Center helps you sync your store and product data with Google and makes the information available for both product feed on the Shopping tab and Google Shopping Ads. That means everything about your stores and products is available to shoppers when they search on a Google property.',
 						'google-listings-and-ads'
 					) }
 				</p>

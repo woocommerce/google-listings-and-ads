@@ -97,7 +97,6 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 			'ads_setup_started'               => $ads_service->is_setup_started() ? 'yes' : 'no',
 			'ads_customer_id'                 => $this->options->get_ads_id(),
 			'ads_campaign_count'              => $merchant_metrics->get_campaign_count(),
-			'wpcom_api_authorized'            => $this->options->is_wpcom_api_authorized(),
 		];
 	}
 

@@ -13,6 +13,7 @@ test.use( { storageState: process.env.ADMINSTATE } );
 test.describe.configure( { mode: 'serial' } );
 
 test.describe( 'Product Block Editor integration', () => {
+	test.skip( 'Experimental block editor is deprecated in v10.1.0' );
 	/**
 	 * @type {Page}
 	 */

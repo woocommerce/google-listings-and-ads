@@ -1,3 +1,8 @@
+/**
+ * External dependencies
+ */
+import lodash from 'lodash';
+
 const proxyFulfill = ( instance, options ) => {
 	return new Proxy( instance.originalTarget || instance, {
 		get( target, property ) {
@@ -449,9 +454,103 @@ export default class MockRequests {
 	 * @return {Promise<void>}
 	 */
 	async fulfillBudgetRecommendations( payload ) {
+		const mergedPayload = lodash.merge(
+			{
+				currency: 'USD',
+				recommendations: [
+					{
+						level: 'Recommended',
+						country: 'US',
+						daily_budget: 15,
+						metrics: {
+							cost: 105,
+							conversions: 2.2,
+							conversions_value: 89.98,
+						},
+					},
+					{
+						level: 'High',
+						country: 'US',
+						daily_budget: 20.5,
+						metrics: {
+							cost: 143.5,
+							conversions: 2.5,
+							conversions_value: 98.59,
+						},
+					},
+					{
+						level: 'Low',
+						country: 'US',
+						daily_budget: 7,
+						metrics: {
+							cost: 49,
+							conversions: 2,
+							conversions_value: 80.48,
+						},
+					},
+				],
+			},
+			payload
+		);
+
 		await this.fulfillRequest(
 			/\/wc\/gla\/ads\/campaigns\/budget-recommendation\b/,
-			payload,
+			mergedPayload,
+			200,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Mock the budget metrics.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async mockBudgetMetrics( payload ) {
+		const mergedPayload = lodash.merge(
+			{
+				currency: 'USD',
+				budget: 15,
+				country: 'US',
+				metrics: {
+					cost: 105,
+					conversions: 4.3,
+					conversions_value: 172.3137664794922,
+				},
+			},
+			payload
+		);
+
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/campaigns\/budget-metrics\b/,
+			mergedPayload,
+			200,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Mock the Ads incentive credits.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async mockAdsIncentiveCredits( payload ) {
+		const mergedPayload = lodash.merge(
+			{
+				ads_currency: 'USD',
+				currency: 'USD',
+				country: 'US',
+				spending: 500,
+				credit: 500,
+			},
+			payload
+		);
+
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/incentive-credits\b/,
+			mergedPayload,
 			200,
 			[ 'GET' ]
 		);
@@ -916,6 +1015,22 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Mocks the API response for the enhanced conversions status setting.
+	 *
+	 * @param {boolean} [status=false] - The desired status for enhanced conversions (enabled or disabled).
+	 * @param {Array} [methods=['GET']] - The HTTP methods to fulfill the request.
+	 * @return {Promise<void>} Resolves when the mock request has been fulfilled.
+	 */
+	async mockEnhancedConversionsStatus( status = false, methods = [ 'GET' ] ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/settings\b/,
+			{ enhanced_conversions_enabled: status },
+			200,
+			methods
+		);
+	}
+
+	/**
 	 * Mocks a POST request to the `/wp/v2/users/me` endpoint to fulfill user preferences.
 	 *
 	 * @param {Object} [payload={}] - The payload to return as the mocked response.
@@ -953,6 +1068,29 @@ export default class MockRequests {
 	async fulfillPriceBenchmarkSummary( payload, status = 200 ) {
 		await this.fulfillRequest(
 			/\/wc\/gla\/mc\/price-benchmarks\/summary\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Mocks the API request for Google Ads recommendations of a specific type.
+	 *
+	 * @param {Array} [payload=[]] - The mock response payload to return.
+	 * @param {string} [type='IMPROVE_PERFORMANCE_MAX_AD_STRENGTH'] - The type of recommendation to mock.
+	 * @param {number} [status=200] - The HTTP status code to return.
+	 * @return {Promise<void>} Resolves when the mock is set up.
+	 */
+	async mockAdsRecommendations(
+		payload = [],
+		type = 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
+		status = 200
+	) {
+		await this.fulfillRequest(
+			new RegExp(
+				`\\/wc\\/gla\\/ads\\/recommendations\\?type=${ type }\\b`
+			),
 			payload,
 			status,
 			[ 'GET' ]

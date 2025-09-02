@@ -57,8 +57,8 @@ const MetricNumber = ( {
 	const infos = [];
 	const ariaInfos = [];
 
-	// Until ~Q4 2021, metrics for all programs, may lack data for free listings.
-	// And Free Listings API may not respond with data.
+	// Until ~Q4 2021, metrics for all programs, may lack data for product feed.
+	// And Product Feed API may not respond with data.
 	if ( missingFreeListingsData !== MISSING_FREE_LISTINGS_DATA.NONE ) {
 		const text = __(
 			'This data is currently available for Google Ads campaigns only.',
@@ -69,7 +69,7 @@ const MetricNumber = ( {
 	}
 	if ( missingFreeListingsData === MISSING_FREE_LISTINGS_DATA.FOR_REQUEST ) {
 		const text = __(
-			'Please try again later, or go to <googleMerchantCenterLink /> to track your performance for Google Free Listings.',
+			'Please try again later, or go to <googleMerchantCenterLink /> to track your performance for Google Product Feed.',
 			'google-listings-and-ads'
 		);
 

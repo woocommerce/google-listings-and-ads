@@ -1,11 +1,11 @@
 === Google for WooCommerce ===
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, product feed, ads, listings
-Requires at least: 6.1
+Requires at least: 6.6
 Tested up to: 6.8
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.1.1
+Stable tag: 3.4.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -51,8 +51,8 @@ Once you’re running Google Ads campaigns, the Google tag feature in the extens
 
 = Minimum Requirements =
 
-* WordPress 6.1 or greater
-* WooCommerce 7.9 or greater
+* WordPress 6.6 or greater
+* WooCommerce 9.7 or greater
 * PHP version 7.4 or greater
 * PHP Architecture 64 bits
 * MySQL version 5.6 or greater
@@ -140,21 +140,21 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
-= 3.1.1 - 2025-07-08 =
-* Fix - Do not render experience rating banner if Ads account is disconnected.
-* Fix - Fixed undefined array key warnings in Price Benchmarks feature.
+= 3.4.2 - 2025-09-02 =
+* Add - Display the statuses of synchronization modes with Google Merchant Center in WooCommerce System Status Report.
+* Tweak -  Adjust the value of the Merchant Center setting in the WPCOM proxy endpoint to null before completing onboarding so that Google service can recognize whether the Merchant Center account has been disconnected.
+* Tweak - Renamed the log file name from `google-listings-and-ads` to `google-for-woocommerce`.
+* Update - Include the current plugin version in the WPCOM proxy endpoint for Google service to recognize which plugin version is being used.
+* Update - Schedule resynchronization for all products via the Push mode when the Push mode of product synchronization is switched to enable.
 
-= 3.1.0 - 2025-07-01 =
-* Add - A new endpoint for Google-triggered account linking.
-* Add - Notice to gather feedback and request ratings from merchants.
-* Add - Reintroduce account:connect functionality for Google account linking.
-* Fix - Prevent the user from continuing if the minimum shipping time is not set.
-* Fix - The API error of querying campaign assets by an invalid ID after saving a campaign with assets.
-* Tweak - WC 10.0 compatibility.
+= 3.4.1 - 2025-08-26 =
+* Fix - Replaced multiple `setValue` calls with a single `setValues` call to eliminate race conditions during form initialization and reduce inconsistent validation behavior.
+* Tweak - Reduce the cache time for product statuses and issues from 12 hours to 30 minutes.
 
-= 3.0.0 - 2025-06-17 =
-* Add - API Push/Pull Sync control endpoint Implementation.
-* Add - Price Benchmarks: Competitive pricing analysis and price recommendations from Google.
-* Tweak - WC 9.9 compatibility.
+= 3.4.0 - 2025-08-19 =
+* Add - Help merchants improve the assets for their PMax campaigns.
+* Dev – Update E2E tests ahead of Woo 10.1 release.
+* Fix – Use `wp_is_serving_rest_request()` to detect if we are handling a REST API request.
+* Tweak - WC 10.1 compatibility.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

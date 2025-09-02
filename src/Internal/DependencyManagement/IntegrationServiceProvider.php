@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\IntegrationInitializer;
@@ -49,7 +48,7 @@ class IntegrationServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( WooCommerceProductBundles::class, AttributeManager::class );
 		$this->share_with_tags( WooCommercePreOrders::class, ProductHelper::class );
 		$this->conditionally_share_with_tags( JetpackWPCOM::class );
-		$this->share_with_tags( WPCOMProxy::class, ShippingTimeQuery::class, AttributeManager::class );
+		$this->share_with_tags( WPCOMProxy::class );
 
 		$this->share_with_tags(
 			IntegrationInitializer::class,

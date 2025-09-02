@@ -225,6 +225,11 @@ class SyncerHooks implements Service, Registerable {
 				continue;
 			}
 
+			// Only proceed with product syncing if PUSH is enabled for this data type
+			if ( ! $this->merchant_center->is_enabled_for_datatype( NotificationsService::DATATYPE_PRODUCT ) ) {
+				continue;
+			}
+
 			// Schedule an update job if product sync is enabled.
 			if ( $this->product_helper->is_sync_ready( $product ) ) {
 				$this->product_helper->mark_as_pending( $product );
@@ -294,6 +299,11 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $product_id
 	 */
 	protected function handle_delete_product( int $product_id ) {
+		// Only proceed with product deletion if PUSH is enabled for this data type
+		if ( ! $this->merchant_center->is_enabled_for_datatype( NotificationsService::DATATYPE_PRODUCT ) ) {
+			return;
+		}
+
 		if ( isset( $this->delete_requests_map[ $product_id ] ) ) {
 			$product_id_map = BatchProductIDRequestEntry::convert_to_id_map( $this->delete_requests_map[ $product_id ] )->get();
 			if ( ! empty( $product_id_map ) && ! $this->is_already_scheduled_to_delete( $product_id ) ) {
@@ -350,6 +360,11 @@ class SyncerHooks implements Service, Registerable {
 			 * This is because we want to avoid that the product is not in the database anymore when the scheduled action runs.
 			 */
 			$this->maybe_send_delete_notification( $product_id );
+		}
+
+		// Only proceed with product syncing if PUSH is enabled for this data type
+		if ( ! $this->merchant_center->is_enabled_for_datatype( NotificationsService::DATATYPE_PRODUCT ) ) {
+			return;
 		}
 
 		$product = $this->wc->maybe_get_product( $product_id );

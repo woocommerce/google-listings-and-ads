@@ -71,6 +71,9 @@ const DEFAULT_STATE = {
 			step: null,
 		},
 		budgetRecommendations: {},
+		recommendations: {},
+		enable_enhanced_conversions: false,
+		budgetMetrics: {},
 	},
 	gtinMigrationStatus: null,
 	price_benchmark: {
@@ -515,21 +518,29 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_ADS_BUDGET_RECOMMENDATIONS: {
-			const { countryCodesKey, currency, recommendations } = action;
+			const { countryCodesKey, data } = action;
 
 			return setIn(
 				state,
 				[ 'ads', 'budgetRecommendations', countryCodesKey ],
-				{
-					currency,
-					recommendations,
-				}
+				data
 			);
+		}
+
+		case TYPES.RECEIVE_ADS_BUDGET_METRICS: {
+			const { key, data } = action;
+			return setIn( state, [ 'ads', 'budgetMetrics', key ], data );
 		}
 
 		case TYPES.RECEIVE_GTIN_MIGRATION_STATUS: {
 			const { data } = action;
 			return setIn( state, 'gtinMigrationStatus', data?.status );
+		}
+
+		case TYPES.RECEIVE_ADS_ENHANCED_CONVERSIONS: {
+			const { status } = action;
+
+			return setIn( state, 'ads.enable_enhanced_conversions', status );
 		}
 
 		case TYPES.RECEIVE_PRICE_BENCHMARK_SUMMARY: {
@@ -604,6 +615,16 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 					product_price: productPrice,
 				},
 			} );
+		}
+
+		case TYPES.RECEIVE_ADS_RECOMMENDATIONS: {
+			const { recommendations, recommendationType } = action;
+
+			return setIn(
+				state,
+				[ 'ads', 'recommendations', recommendationType ],
+				recommendations
+			);
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

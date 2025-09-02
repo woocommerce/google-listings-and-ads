@@ -18,9 +18,9 @@ import LinkedAccounts from './linked-accounts';
 import ReconnectWPComAccount from './reconnect-wpcom-account';
 import ReconnectGoogleAccount from './reconnect-google-account';
 import EditStoreAddress from './edit-store-address';
-import EnableNewProductSyncNotice from '~/components/enable-new-product-sync-notice';
 import MainTabNav from '~/components/main-tab-nav';
 import RebrandingTour from '~/components/tours/rebranding-tour';
+import SetupEnhancedConversions from './enhanced-conversions/setup-enhanced-conversions';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
 import './index.scss';
 
@@ -64,9 +64,9 @@ const Settings = () => {
 	return (
 		<div className={ pageClassName }>
 			<ExperienceRatingBanner />
-			<EnableNewProductSyncNotice />
 			<MainTabNav />
 			<RebrandingTour />
+			<SetupEnhancedConversions />
 			<ContactInformationPreview />
 			<SetupTaxRate />
 			<LinkedAccounts />

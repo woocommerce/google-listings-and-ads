@@ -45,11 +45,18 @@ class ShippingTimeQuery extends Query {
 	}
 
 	/**
-	 * Get all shipping times.
+	 * Retrieves all available shipping times and organizes them by country.
+	 *
+	 * Fetches all shipping time data using `get_results()`, processes it,
+	 * and returns an associative array in a format suitable for JSON responses.
 	 *
 	 * @since 2.8.0
 	 *
-	 * @return array
+	 * @return array Associative array of shipping times indexed by country codes.
+	 *               Each entry contains:
+	 *               - `country_code` (string): The country code.
+	 *               - `time` (string): The minimum shipping time.
+	 *               - `max_time` (string): The maximum shipping time.
 	 */
 	public function get_all_shipping_times() {
 		$times = $this->get_results();
