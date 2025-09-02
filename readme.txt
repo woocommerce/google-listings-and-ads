@@ -150,12 +150,4 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix – Use `wp_is_serving_rest_request()` to detect if we are handling a REST API request.
 * Tweak - WC 10.1 compatibility.
 
-= 3.3.1 - 2025-08-12 =
-* Fix - Avoid errors when unnecessarily revoking WPCOM connection during deactivation.
-* Fix - Avoid scheduling the job to synchronize all products with Google Merchant Center when the plugin is initialized for the first time.
-* Fix - Modal overflow on small viewports.
-* Fix - Remove error message related to granting access for API pull.
-* Fix - Remove unnecessary kebab menu from setup task.
-* Update - The filtering for synchronizable products data by channel visibility in API Pull mode is now opt-out, changed from its previous opt-in setting.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
