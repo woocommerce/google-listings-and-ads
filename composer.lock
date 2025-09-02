@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e62060260839a2787993aa09ae25e8dc",
+    "content-hash": "34bf83c9b42bffe4e88d69b8031e6cfc",
     "packages": [
         {
             "name": "firebase/php-jwt",
@@ -437,21 +437,21 @@
         },
         {
             "name": "googleads/google-ads-php",
-            "version": "dev-legacy-v31.0.0",
+            "version": "dev-legacy-v31.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleads/google-ads-php.git",
-                "reference": "778dab2fd2123549ae24a509a082d2416db364ac"
+                "reference": "e217e6176fb5d72ff51f9c47e91b8e71bbf21dfb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleads/google-ads-php/zipball/778dab2fd2123549ae24a509a082d2416db364ac",
-                "reference": "778dab2fd2123549ae24a509a082d2416db364ac",
+                "url": "https://api.github.com/repos/googleads/google-ads-php/zipball/e217e6176fb5d72ff51f9c47e91b8e71bbf21dfb",
+                "reference": "e217e6176fb5d72ff51f9c47e91b8e71bbf21dfb",
                 "shasum": ""
             },
             "require": {
                 "google/gax": "^1.19.1",
-                "google/protobuf": "3.21.5 || >=4.26 <=4.30.0",
+                "google/protobuf": "^3.21.5 || >=4.26 <=4.30.0",
                 "grpc/grpc": ">=1.36.0 <=1.57.0",
                 "monolog/monolog": "^1.26 || ^2.0 || ^3.0",
                 "php": ">=7.4"
@@ -494,9 +494,9 @@
             "homepage": "https://github.com/googleads/google-ads-php",
             "support": {
                 "issues": "https://github.com/googleads/google-ads-php/issues",
-                "source": "https://github.com/googleads/google-ads-php/tree/legacy-v31.0.0"
+                "source": "https://github.com/googleads/google-ads-php/tree/legacy-v31.0.1"
             },
-            "time": "2025-08-06T20:41:54+00:00"
+            "time": "2025-08-28T15:13:29+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
