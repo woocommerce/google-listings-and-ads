@@ -5,7 +5,7 @@ Requires at least: 6.6
 Tested up to: 6.8
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.4.1
+Stable tag: 3.4.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -140,6 +140,13 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.4.2 - 2025-09-02 =
+* Add - Display the statuses of synchronization modes with Google Merchant Center in WooCommerce System Status Report.
+* Tweak -  Adjust the value of the Merchant Center setting in the WPCOM proxy endpoint to null before completing onboarding so that Google service can recognize whether the Merchant Center account has been disconnected.
+* Tweak - Renamed the log file name from `google-listings-and-ads` to `google-for-woocommerce`.
+* Update - Include the current plugin version in the WPCOM proxy endpoint for Google service to recognize which plugin version is being used.
+* Update - Schedule resynchronization for all products via the Push mode when the Push mode of product synchronization is switched to enable.
+
 = 3.4.1 - 2025-08-26 =
 * Fix - Replaced multiple `setValue` calls with a single `setValues` call to eliminate race conditions during form initialization and reduce inconsistent validation behavior.
 * Tweak - Reduce the cache time for product statuses and issues from 12 hours to 30 minutes.
@@ -149,13 +156,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Dev – Update E2E tests ahead of Woo 10.1 release.
 * Fix – Use `wp_is_serving_rest_request()` to detect if we are handling a REST API request.
 * Tweak - WC 10.1 compatibility.
-
-= 3.3.1 - 2025-08-12 =
-* Fix - Avoid errors when unnecessarily revoking WPCOM connection during deactivation.
-* Fix - Avoid scheduling the job to synchronize all products with Google Merchant Center when the plugin is initialized for the first time.
-* Fix - Modal overflow on small viewports.
-* Fix - Remove error message related to granting access for API pull.
-* Fix - Remove unnecessary kebab menu from setup task.
-* Update - The filtering for synchronizable products data by channel visibility in API Pull mode is now opt-out, changed from its previous opt-in setting.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

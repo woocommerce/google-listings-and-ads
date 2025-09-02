@@ -349,4 +349,40 @@ class WP {
 	public function wp_is_serving_rest_request(): bool {
 		return wp_is_serving_rest_request();
 	}
+
+	/**
+	 * Wrapper of get_option.
+	 *
+	 * @param mixed ...$arguments
+	 */
+	public function get_option( ...$arguments ) {
+		return get_option( ...$arguments );
+	}
+
+	/**
+	 * Wrapper of add_option.
+	 *
+	 * @param mixed ...$arguments
+	 */
+	public function add_option( ...$arguments ) {
+		return add_option( ...$arguments );
+	}
+
+	/**
+	 * Wrapper of update_option.
+	 *
+	 * @param mixed ...$arguments
+	 */
+	public function update_option( ...$arguments ) {
+		return update_option( ...$arguments );
+	}
+
+	/**
+	 * Wrapper of delete_option.
+	 *
+	 * @param mixed ...$arguments
+	 */
+	public function delete_option( ...$arguments ) {
+		return delete_option( ...$arguments );
+	}
 }
