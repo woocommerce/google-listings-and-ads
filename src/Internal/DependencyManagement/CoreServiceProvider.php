@@ -93,6 +93,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WPAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRatesProcessor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingSuggestionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ZoneMethodsParser;
@@ -242,6 +243,10 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->getContainer()
 			->inflector( MerchantCenterAwareInterface::class )
 			->invokeMethod( 'set_merchant_center_object', [ MerchantCenterService::class ] );
+
+		$this->getContainer()
+			->inflector( WPAwareInterface::class )
+			->invokeMethod( 'set_wp_proxy_object', [ WP::class ] );
 
 		// Set up Ads service, and inflect classes that need it.
 		$this->share_with_tags( AdsAccountState::class );

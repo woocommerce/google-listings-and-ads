@@ -68,6 +68,9 @@ jobs:
         wp-version: [ latest ]
         wc-versions: ${{ fromJson(needs.GetMatrix.outputs.wc-versions) }}
         include:
+          - php: 8.4
+            wp-version: latest
+            wc-versions: latest
           - php: 8.3
             wp-version: latest
             wc-versions: latest

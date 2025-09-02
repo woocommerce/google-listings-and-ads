@@ -4,6 +4,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Integration;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\RestApi\UnitTests\Helpers\CouponHelper;
@@ -14,7 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPCOMProxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\AttributeMappingRulesTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use WC_Meta_Data;
 use WP_REST_Response;
 use WP_REST_Request;
@@ -26,20 +29,44 @@ use WP_REST_Request;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Integration
  */
 class WPCOMProxyTest extends RESTControllerUnitTest {
+	use PluginHelper;
 
 	/**
-	 * @var ContainerInterface
+	 * @var Container
 	 */
 	protected $container;
 
+	/** @var Stub|OptionsInterface $options */
+	protected $options;
+
+	/** @var Stub|MerchantCenterService $merchant_center */
+	protected $merchant_center;
+
 	public function setUp(): void {
 		parent::setUp();
-		$this->container = woogle_get_container();
+
+		$plugin_container = woogle_get_container();
 		// Since the tables for shipping rate, time, and attribute mapping rules
 		// aren't set up in the test environment, install them to prevent warnings.
-		$this->container->get( AttributeMappingRulesTable::class )->install();
-		$this->container->get( ShippingRateTable::class )->install();
-		$this->container->get( ShippingTimeTable::class )->install();
+		$plugin_container->get( AttributeMappingRulesTable::class )->install();
+		$plugin_container->get( ShippingRateTable::class )->install();
+		$plugin_container->get( ShippingTimeTable::class )->install();
+
+		$this->options         = $this->createStub( OptionsInterface::class );
+		$this->merchant_center = $this->createStub( MerchantCenterService::class );
+
+		$this->container = new Container();
+		$this->container->addShared( ShippingRateQuery::class, $plugin_container->get( ShippingRateQuery::class ) );
+		$this->container->addShared( ShippingTimeQuery::class, $plugin_container->get( ShippingTimeQuery::class ) );
+		$this->container->addShared( AttributeManager::class, $plugin_container->get( AttributeManager::class ) );
+		$this->container->addShared( ProductRepository::class, $plugin_container->get( ProductRepository::class ) );
+		$this->container->addShared( MerchantCenterService::class, $this->merchant_center );
+
+		$this->controller = new WPCOMProxy();
+		$this->controller->set_container( $this->container );
+		$this->controller->set_options_object( $this->options );
+		$this->controller->register();
+
 		do_action( 'rest_api_init' );
 	}
 
@@ -505,6 +532,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 
 		$response_mapped = $this->maps_the_response_with_the_item_id( $response );
 
+		$this->assertArrayNotHasKey( 'gla_plugin_version', $response_mapped );
 		$this->assertArrayNotHasKey( 'gla_google_connected', $response_mapped );
 		$this->assertArrayNotHasKey( 'gla_language', $response_mapped );
 		$this->assertArrayNotHasKey( 'gla_merchant_center', $response_mapped );
@@ -520,12 +548,73 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 
 		$response_mapped = $this->maps_the_response_with_the_item_id( $response );
 
+		$this->assertArrayHasKey( 'gla_plugin_version', $response_mapped );
 		$this->assertArrayHasKey( 'gla_google_connected', $response_mapped );
 		$this->assertArrayHasKey( 'gla_language', $response_mapped );
 		$this->assertArrayHasKey( 'gla_merchant_center', $response_mapped );
 		$this->assertArrayHasKey( 'gla_shipping_rates', $response_mapped );
 		$this->assertArrayHasKey( 'gla_shipping_times', $response_mapped );
 		$this->assertArrayHasKey( 'gla_target_audience', $response_mapped );
+
+		$this->assertEquals( $this->get_version(), $response_mapped['gla_plugin_version']['value'] );
+		$this->assertEquals( false, $response_mapped['gla_google_connected']['value'] );
+		$this->assertEquals( null, $response_mapped['gla_merchant_center']['value'] );
+	}
+
+	public function test_get_settings_with_connected_google_account() {
+		$this->merchant_center
+			->method( 'is_google_connected' )
+			->willReturn( true );
+
+		$response        = $this->do_request( '/wc/v3/settings/google-for-woocommerce', 'GET', [ 'gla_syncable' => '1' ] );
+		$response_mapped = $this->maps_the_response_with_the_item_id( $response );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( true, $response_mapped['gla_google_connected']['value'] );
+	}
+
+	public function test_get_settings_with_connected_google_merchant_center_account() {
+		$options = [
+			'shipping_rate' => 'flat',
+			'shipping_time' => 'flat',
+			'tax_rate'      => 'destination',
+		];
+
+		$this->options
+			->method( 'get' )
+			->willReturnCallback(
+				function ( $name, $default_value = null ) use ( $options ) {
+					if ( $name === OptionsInterface::MERCHANT_CENTER ) {
+						return $options;
+					}
+					return $default_value;
+				}
+			);
+
+		$this->merchant_center
+			->method( 'is_connected' )
+			->willReturn( true );
+
+		$response        = $this->do_request( '/wc/v3/settings/google-for-woocommerce', 'GET', [ 'gla_syncable' => '1' ] );
+		$response_mapped = $this->maps_the_response_with_the_item_id( $response );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( $options, $response_mapped['gla_merchant_center']['value'] );
+	}
+
+	/**
+	 * Fall back to null in case the WP option value doesn't exist
+	 */
+	public function test_get_settings_with_connected_google_merchant_center_account_but_getting_fallback() {
+		$this->merchant_center
+			->method( 'is_connected' )
+			->willReturn( true );
+
+		$response        = $this->do_request( '/wc/v3/settings/google-for-woocommerce', 'GET', [ 'gla_syncable' => '1' ] );
+		$response_mapped = $this->maps_the_response_with_the_item_id( $response );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( null, $response_mapped['gla_merchant_center']['value'] );
 	}
 
 	public function test_get_empty_settings_for_shipping_zone_methods_as_object() {
@@ -539,13 +628,6 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 			],
 		];
 
-		$proxy = new WPCOMProxy(
-			$this->container->get( ShippingRateQuery::class ),
-			$this->container->get( ShippingTimeQuery::class ),
-			$this->container->get( AttributeManager::class ),
-			$this->container->get( ProductRepository::class )
-		);
-
 		$this->assertEquals(
 			[
 				[
@@ -553,7 +635,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 					'settings' => (object) [],
 				],
 			],
-			$proxy->prepare_data( $data, $request )
+			$this->controller->prepare_data( $data, $request )
 		);
 
 		// If the request is not for shipping zone methods, the data should not be modified.
@@ -566,7 +648,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 					'settings' => [],
 				],
 			],
-			$proxy->prepare_data( $data, $request )
+			$this->controller->prepare_data( $data, $request )
 		);
 	}
 
