@@ -88,7 +88,7 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 			->willReturn( $mock_recommendations_data );
 
 		$filter_by_type = [
-			'type' => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
+			'types' => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
 		];
 
 		$response = $this->do_request( self::ROUTE_RECOMMENDATIONS, 'GET', $filter_by_type );
@@ -107,7 +107,7 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 			->willReturn( [ 'status' => 'connected' ] );
 
 		$filter_by_type = [
-			'type' => 'NON_EXISTENT_TYPE',
+			'types' => 'NON_EXISTENT_TYPE',
 		];
 
 		// Filter by a type that does not exist in the stubbed recommendations.
@@ -122,7 +122,7 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 			->willReturn( [ 'status' => 'not_connected' ] );
 
 		$filter_by_type = [
-			'type' => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
+			'types' => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
 		];
 
 		$response = $this->do_request( self::ROUTE_RECOMMENDATIONS, 'GET', $filter_by_type );
@@ -139,7 +139,7 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 			->willReturn( [ 'status' => 'connected' ] );
 
 		$filter_by_type = [
-			'type' => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
+			'types' => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
 		];
 
 		$mock_recommendations_data = [
@@ -176,7 +176,7 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 		$filtered_mock_data = array_filter(
 			$mock_recommendations_data,
 			function ( $rec ) use ( $filter_by_type ) {
-				return $rec['type'] === $filter_by_type['type'];
+				return $rec['type'] === $filter_by_type['types'];
 			}
 		);
 
@@ -202,7 +202,7 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 			->willReturn( [ 'status' => 'connected' ] );
 
 		$filter_by_type = [
-			'type' => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH, MARGINAL_ROI_CAMPAIGN_BUDGET',
+			'types' => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH, MARGINAL_ROI_CAMPAIGN_BUDGET',
 		];
 
 		$mock_recommendations_data = [
@@ -236,7 +236,7 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 		];
 
 		// Only return the recommendation matching the filter.
-		$types              = array_map( 'trim', explode( ',', $filter_by_type['type'] ) );
+		$types              = array_map( 'trim', explode( ',', $filter_by_type['types'] ) );
 		$filtered_mock_data = array_filter(
 			$mock_recommendations_data,
 			function ( $rec ) use ( $types ) {
@@ -287,7 +287,7 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 
 		$filter_by_campaign_id = [
 			'campaign_id' => 101,
-			'type'        => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
+			'types'       => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
 		];
 
 		// Only return the recommendation matching the filter.
