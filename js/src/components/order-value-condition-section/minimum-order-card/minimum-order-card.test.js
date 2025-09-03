@@ -179,7 +179,7 @@ describe( 'MinimumOrderCard', () => {
 			expectedValue[ 2 ].options.free_shipping_threshold = 507;
 			expect( onChange ).toHaveBeenCalledWith( expectedValue );
 		} );
-		test( 'When a set of countries is changed for a minimum order value in an existing group, calls the `onChange` callback with the new value containing `shippingRate.options.free_shipping_threshold`s set to the given value for new countries, and `undefied` for old ones', async () => {
+		test( 'When a set of countries is changed for a minimum order value in an existing group, calls the `onChange` callback with the new value containing `shippingRate.options.free_shipping_threshold`s set to the given value for new countries, and `undefined` for old ones', async () => {
 			const user = userEvent.setup();
 
 			// Open group/"Edit" modal.
@@ -211,7 +211,7 @@ describe( 'MinimumOrderCard', () => {
 			expectedValue[ 1 ].options.free_shipping_threshold = undefined;
 			expect( onChange ).toHaveBeenCalledWith( expectedValue );
 		} );
-		test( 'When a set of countries and threshold are changed for an existing group, calls the `onChange` callback with the new value containing `shippingRate.options.free_shipping_threshold`s set to the given value for new countries, and `undefied` for old ones', async () => {
+		test( 'When a set of countries and threshold are changed for an existing group, calls the `onChange` callback with the new value containing `shippingRate.options.free_shipping_threshold`s set to the given value for new countries, and `undefined` for old ones', async () => {
 			const user = userEvent.setup();
 
 			// Open group/"Edit" modal.

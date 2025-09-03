@@ -93,7 +93,7 @@ describe( 'getDifferentShippingTimes', () => {
 	} );
 
 	it( 'returns array containing edited shipping times from shippingTimes1', () => {
-		const shipingTimes1 = [
+		const shippingTimes1 = [
 			{
 				countryCode: 'US',
 				time: 16,
@@ -109,7 +109,7 @@ describe( 'getDifferentShippingTimes', () => {
 			},
 		];
 
-		const shipingTimes2 = [
+		const shippingTimes2 = [
 			{
 				countryCode: 'US',
 				time: 16,
@@ -125,8 +125,8 @@ describe( 'getDifferentShippingTimes', () => {
 		];
 
 		const result = getDifferentShippingTimes(
-			shipingTimes1,
-			shipingTimes2
+			shippingTimes1,
+			shippingTimes2
 		);
 
 		expect( result ).toStrictEqual( [

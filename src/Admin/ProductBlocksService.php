@@ -112,7 +112,7 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 	}
 
 	/**
-	 * Action hanlder for the 'init' hook.
+	 * Action handler for the 'init' hook.
 	 */
 	public function hook_init(): void {
 		$build_path = "{$this->get_root_dir()}/js/build";
@@ -122,7 +122,7 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 	}
 
 	/**
-	 * Action hanlder for the "woocommerce_block_template_area_{$template_area}_after_add_block_{$block_id}" hook.
+	 * Action handler for the "woocommerce_block_template_area_{$template_area}_after_add_block_{$block_id}" hook.
 	 *
 	 * @param BlockInterface $block The block just added to get its root template to add this extension's group and blocks.
 	 */

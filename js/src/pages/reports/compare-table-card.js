@@ -24,7 +24,7 @@ import AppTableCard from '~/components/app-table-card';
  * @param {string} props.compareParam Query parameter to indicate comparing mode.
  * @param {Array<Metric>} props.metrics Metrics to display.
  * @param {boolean} props.isLoading Whether the data is still being loaded.
- * @param {string} props.compareButonTitle Title for "Compare" button.
+ * @param {string} props.compareButtonTitle Title for "Compare" button.
  * @param {Array<ReportData>} props.data Report's data to be shown.
  * @param {string} props.nameHeader Column header for the name property.
  * @param {(row: ReportData) => JSX.Element} props.nameCell Function to rendername cell.
@@ -37,7 +37,7 @@ const CompareTableCard = ( {
 	compareParam,
 	metrics,
 	isLoading,
-	compareButonTitle,
+	compareButtonTitle,
 	data,
 	nameHeader,
 	nameCell,
@@ -182,7 +182,7 @@ const CompareTableCard = ( {
 				<AppButton
 					isSecondary
 					disabled={ isLoading || selectedRows.size <= 1 }
-					title={ compareButonTitle }
+					title={ compareButtonTitle }
 					onClick={ compareSelected }
 				>
 					{ __( 'Compare', 'google-listings-and-ads' ) }
