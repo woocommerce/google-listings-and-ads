@@ -5,7 +5,7 @@ import getDifferentShippingRates from './getDifferentShippingRates';
 
 describe( 'getDifferentShippingRates', () => {
 	it( 'returns empty array when shippingRates1 and shippingRates2 are the same', () => {
-		const shipingRates1 = [
+		const shippingRates1 = [
 			{
 				country: 'US',
 				currency: 'USD',
@@ -22,7 +22,7 @@ describe( 'getDifferentShippingRates', () => {
 			},
 		];
 
-		const shipingRates2 = [
+		const shippingRates2 = [
 			{
 				id: '1',
 				country: 'US',
@@ -42,15 +42,15 @@ describe( 'getDifferentShippingRates', () => {
 		];
 
 		const result = getDifferentShippingRates(
-			shipingRates1,
-			shipingRates2
+			shippingRates1,
+			shippingRates2
 		);
 
 		expect( result ).toStrictEqual( [] );
 	} );
 
 	it( 'returns array containing newly added shipping rates from shippingRates1', () => {
-		const shipingRates1 = [
+		const shippingRates1 = [
 			{
 				country: 'US',
 				currency: 'USD',
@@ -85,7 +85,7 @@ describe( 'getDifferentShippingRates', () => {
 			},
 		];
 
-		const shipingRates2 = [
+		const shippingRates2 = [
 			{
 				id: '1',
 				country: 'US',
@@ -105,8 +105,8 @@ describe( 'getDifferentShippingRates', () => {
 		];
 
 		const result = getDifferentShippingRates(
-			shipingRates1,
-			shipingRates2
+			shippingRates1,
+			shippingRates2
 		);
 
 		expect( result ).toStrictEqual( [
@@ -130,7 +130,7 @@ describe( 'getDifferentShippingRates', () => {
 	} );
 
 	it( 'returns array containing edited shipping rates from shippingRates1', () => {
-		const shipingRates1 = [
+		const shippingRates1 = [
 			{
 				country: 'US',
 				currency: 'USD',
@@ -155,7 +155,7 @@ describe( 'getDifferentShippingRates', () => {
 			},
 		];
 
-		const shipingRates2 = [
+		const shippingRates2 = [
 			{
 				id: '1',
 				country: 'US',
@@ -184,8 +184,8 @@ describe( 'getDifferentShippingRates', () => {
 		];
 
 		const result = getDifferentShippingRates(
-			shipingRates1,
-			shipingRates2
+			shippingRates1,
+			shippingRates2
 		);
 
 		expect( result ).toStrictEqual( [

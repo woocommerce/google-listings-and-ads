@@ -199,7 +199,7 @@ test.describe( 'Price Benchmark Page', () => {
 			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions( [] );
 			await priceBenchmarkPage.fulfillPriceBenchmarkSummary(
 				{
-					message: 'An error occured.',
+					message: 'An error occurred.',
 				},
 				404
 			);
@@ -209,7 +209,7 @@ test.describe( 'Price Benchmark Page', () => {
 			);
 			await expect( errorMessage ).toBeVisible();
 			await expect( errorMessage ).toContainText(
-				'There was an error getting the price benchmark summary. An error occured.'
+				'There was an error getting the price benchmark summary. An error occurred.'
 			);
 		} );
 	} );

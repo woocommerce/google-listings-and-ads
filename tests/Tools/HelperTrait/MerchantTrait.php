@@ -60,7 +60,7 @@ trait MerchantTrait {
 		$address = new AccountAddress();
 		$address->setCountry( 'US' );
 		$address->setRegion( 'California' );
-		$address->setLocality( 'San Fransisco' );
+		$address->setLocality( 'San Francisco' );
 		$address->setStreetAddress( '123 Main St.' );
 		$address->setPostalCode( '12345' );
 

@@ -32,7 +32,7 @@ abstract class AbstractNote implements Note, OptionsAwareInterface {
 	/**
 	 * Get note data store.
 	 *
-	 * @see \Automattic\WooCommerce\Admin\Notes\DataStore for relavent data store.
+	 * @see \Automattic\WooCommerce\Admin\Notes\DataStore for relevant data store.
 	 *
 	 * @return WC_Data_Store
 	 */
