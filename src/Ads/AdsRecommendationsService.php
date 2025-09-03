@@ -64,7 +64,7 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 	 * @param array $args {
 	 *     Optional. Arguments to filter recommendations.
 	 *
-	 *     @type array $type        Type of recommendations to retrieve.
+	 *     @type array $types       Type of recommendations to retrieve.
 	 *     @type int   $campaign_id Campaign ID to filter recommendations.
 	 * }
 	 * @return array Array of recommendations.
@@ -78,7 +78,7 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 		}
 
 		$transient = $this->transients->get( TransientsInterface::ADS_RECOMMENDATIONS );
-		$cache_key  = md5( json_encode( $args ) );
+		$cache_key = md5( wp_json_encode( $args ) );
 
 		if ( $transient && ! empty( $transient[ $cache_key ] ) ) {
 			return $transient[ $cache_key ];
@@ -126,7 +126,7 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 	/**
 	 * Returns additional columns by the recommendation type.
 	 *
-	 * @param array $type The recommendation types.
+	 * @param array $types The recommendation types.
 	 * @return array Additional columns for that recommendation type.
 	 */
 	private function get_additional_columns_for_recommendation_type( array $types ): array {
@@ -209,37 +209,37 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 				$recommendation_details = [];
 
 				// Add recommendation details depending on the type.
-				if ( in_array( $recommendation_type, [ 'CAMPAIGN_BUDGET', 'MARGINAL_ROI_CAMPAIGN_BUDGET' ] ) ) {
+				if ( in_array( $recommendation_type, [ 'CAMPAIGN_BUDGET', 'MARGINAL_ROI_CAMPAIGN_BUDGET' ], true ) ) {
 					$budget_recommendation = $recommendation->getCampaignBudgetRecommendation();
 					$budget_options        = [];
 
 					foreach ( $budget_recommendation->getBudgetOptions() as $option ) {
-						$impact = $option->getImpact();
-						$base = $impact->getBaseMetrics();
+						$impact    = $option->getImpact();
+						$base      = $impact->getBaseMetrics();
 						$potential = $impact->getPotentialMetrics();
 
 						$budget_options[] = [
 							'budget_amount_micros' => $option->getBudgetAmountMicros(),
-							"impact" => [
-								"base_metrics" => [
-									"cost_micros" => $base->getCostMicros(),
-									"conversions" => $base->getConversions(),
-									"conversions_value" => $base->getConversionsValue(),
+							'impact'               => [
+								'base_metrics'      => [
+									'cost_micros'       => $base->getCostMicros(),
+									'conversions'       => $base->getConversions(),
+									'conversions_value' => $base->getConversionsValue(),
 								],
-								"potential_metrics" => [
-									"cost_micros" => $potential->getCostMicros(),
-									"conversions" => $potential->getConversions(),
-									"conversions_value" => $potential->getConversionsValue(),
+								'potential_metrics' => [
+									'cost_micros'       => $potential->getCostMicros(),
+									'conversions'       => $potential->getConversions(),
+									'conversions_value' => $potential->getConversionsValue(),
 								],
-							]
+							],
 						];
 					}
 
 					$recommendation_details = [
 						'campaign_budget_recommendation' => [
-							'current_budget_amount_micros' => $budget_recommendation->getCurrentBudgetAmountMicros(),
+							'current_budget_amount_micros'     => $budget_recommendation->getCurrentBudgetAmountMicros(),
 							'recommended_budget_amount_micros' => $budget_recommendation->getRecommendedBudgetAmountMicros(),
-							'budget_options' => $budget_options,
+							'budget_options'                   => $budget_options,
 						],
 					];
 				}

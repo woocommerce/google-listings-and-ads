@@ -28,7 +28,9 @@ module.exports.checkRequest = ( request, h ) => {
 				);
 			}
 
-			if ( body.query.includes( 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH' ) ) {
+			if (
+				body.query.includes( 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH' )
+			) {
 				return require( './mocks/ads/recommendations/pmax-asset.json' );
 			}
 

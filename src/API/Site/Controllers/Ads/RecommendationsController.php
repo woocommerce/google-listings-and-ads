@@ -166,7 +166,7 @@ class RecommendationsController extends BaseController implements ContainerAware
 				'description' => __( 'Status of the campaign.', 'google-listings-and-ads' ),
 				'enum'        => [ 'ENABLED', 'PAUSED', 'REMOVED', 'UNKNOWN', 'UNSPECIFIED' ],
 			],
-			'details'     => [
+			'details'         => [
 				'type'        => 'array',
 				'description' => __( 'Additional details related to the recommendation', 'google-listings-and-ads' ),
 			],
