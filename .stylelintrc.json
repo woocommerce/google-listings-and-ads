@@ -1,14 +1,13 @@
 {
 	"extends": [
-		"stylelint-config-standard-scss",
-		"@wordpress/stylelint-config"
+		"@wordpress/stylelint-config/scss-stylistic"
 	],
 	"rules": {
 		"at-rule-empty-line-before": null,
 		"at-rule-no-unknown": null,
 		"comment-empty-line-before": null,
 		"declaration-property-unit-allowed-list": null,
-		"declaration-block-no-redundant-longhand-properties": null,
+		"@stylistic/max-line-length": null,
 		"font-weight-notation": null,
 		"no-descending-specificity": null,
 		"rule-empty-line-before": null,
