@@ -76,7 +76,6 @@
 		"prettier": "npm:wp-prettier@^3.0.3",
 		"react": "^18",
 		"react-dom": "^18",
-		"stylelint-config-standard-scss": "^15.0.1",
 		"typescript": "^5.5.4",
 		"woocommerce-grow-jsdoc": "https://gitpkg.now.sh/woocommerce/grow/packages/js/jsdoc?eabdb5c3e6f089499a9bc62ec2e5e2251d7b23ca"
 	},
