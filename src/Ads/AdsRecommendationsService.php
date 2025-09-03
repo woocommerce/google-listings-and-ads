@@ -12,6 +12,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AdsRecommendationsQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsRecommendationsQuery as GoogleAdsRecommendationsQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as GoogleException;
 use Google\Ads\GoogleAds\V20\Resources\Recommendation;
 use Google\Ads\GoogleAds\V20\Enums\RecommendationTypeEnum\RecommendationType;
@@ -24,10 +27,11 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Ads
  */
-class AdsRecommendationsService implements ContainerAwareInterface, OptionsAwareInterface, Service {
+class AdsRecommendationsService implements ContainerAwareInterface, OptionsAwareInterface, TransientsAwareInterface, Service {
 
 	use ContainerAwareTrait;
 	use OptionsAwareTrait;
+	use TransientsAwareTrait;
 
 	/**
 	 * Allowed recommendation types.
@@ -73,7 +77,12 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 			return [];
 		}
 
-		// TODO: get query results from transient.
+		$transient = $this->transients->get( TransientsInterface::ADS_RECOMMENDATIONS );
+		$cache_key  = md5( json_encode( $args ) );
+
+		if ( $transient && ! empty( $transient[ $cache_key ] ) ) {
+			return $transient[ $cache_key ];
+		}
 
 		$result = $this->get_google_recommendations( $args );
 
@@ -94,6 +103,8 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 					: null,
 			];
 		}
+
+		$this->transients->set( TransientsInterface::ADS_RECOMMENDATIONS, [ $cache_key => $recommendations ], HOUR_IN_SECONDS * 12 );
 
 		return $recommendations;
 	}
