@@ -15,7 +15,7 @@ import getDifferentShippingRates from '~/utils/getDifferentShippingRates';
  *
  * - deleted shipping rates.
  * - newly added shipping rates.
- * - edited shiping rates.
+ * - edited shipping rates.
  *
  * Notes:
  *

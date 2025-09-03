@@ -73,7 +73,7 @@ class CouponHelper implements Service, HelperNotificationInterface {
 
 	/**
 	 * Mark a coupon as synced. This function accepts nullable $google_id,
-	 * which guarantees version compatibility for Alpha, Beta and stable verison promtoion APIs.
+	 * which guarantees version compatibility for Alpha, Beta and stable version promtoion APIs.
 	 *
 	 * @param WC_Coupon   $coupon
 	 * @param string|null $google_id

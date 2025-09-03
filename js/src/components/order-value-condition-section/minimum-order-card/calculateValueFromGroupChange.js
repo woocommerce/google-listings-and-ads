@@ -6,7 +6,7 @@
 /**
  * Returns new shipping rates value, with updated group.
  *
- * Will set `shipingRate.options.free_shipping_threshold` to `newGroup.threshold`
+ * Will set `shippingRate.options.free_shipping_threshold` to `newGroup.threshold`
  * for the shipping rate countries that are listed in `newGroup.countries` (if provided),
  * and set `threshold` to `undefined` for the countries which were in `oldGroup.countries` (if provided),
  * but not in the new.
