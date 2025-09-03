@@ -118,7 +118,7 @@
 		"outdated:nondewp": "npm outdated --color=always | grep --color=never --invert -E \"^(.\\[31m|.\\[33m)?(`cat .externalized.json | sed 's/[][\"]//g'| sed 's/,/|/g'`)\"",
 		"packages-update": "wp-scripts packages-update",
 		"start": "wp-scripts start --webpack-src-dir=js/src/blocks",
-		"start:hot": "npm run dev -- --config ./webpack-development.config.js && npm start -- --hot --allowed-hosts all",
+		"start:hot": "npm run dev -- --config ./webpack-development.config.js && wp-scripts start --hot --allowed-hosts all",
 		"test:e2e": "npx playwright test --config=tests/e2e/config/playwright.config.js",
 		"test:e2e-dev": "npx playwright test --config=tests/e2e/config/playwright.config.js --debug",
 		"test:js": "wp-scripts test-unit-js --coverage",
