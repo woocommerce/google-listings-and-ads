@@ -104,7 +104,7 @@ class DebugLogger implements Service, Registerable, Conditional {
 			$level,
 			sprintf( '%s %s', $method, $message ),
 			[
-				'source' => 'google-listings-and-ads',
+				'source' => 'google-for-woocommerce',
 			]
 		);
 	}
