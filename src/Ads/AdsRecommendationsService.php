@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AdsRecommendationsQuery
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsRecommendationsQuery as GoogleAdsRecommendationsQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as GoogleException;
 use Google\Ads\GoogleAds\V20\Resources\Recommendation;
+use Google\Ads\GoogleAds\V20\Enums\RecommendationTypeEnum\RecommendationType;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -66,7 +67,7 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 	 */
 	public function get_recommendations( array $args = [] ): array {
 		// Make sure a valid type is passed.
-		$types = isset( $args['type'] ) && is_array( $args['type'] ) ? self::get_valid_recommendation_types( $args['type'] ) : [];
+		$types = isset( $args['types'] ) && is_array( $args['types'] ) ? self::get_valid_recommendation_types( $args['types'] ) : [];
 
 		if ( empty( $types ) ) {
 			return [];
@@ -154,7 +155,7 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 			$query = ( new GoogleAdsRecommendationsQuery() )
 			->set_client( $this->client, $this->options->get_ads_id() );
 
-			$types       = isset( $args['type'] ) && is_array( $args['type'] ) ? self::get_valid_recommendation_types( $args['type'] ) : [];
+			$types       = isset( $args['types'] ) && is_array( $args['types'] ) ? self::get_valid_recommendation_types( $args['types'] ) : [];
 			$campaign_id = isset( $args['campaign_id'] ) ? (int) $args['campaign_id'] : 0;
 
 			if ( empty( $types ) ) {
@@ -193,13 +194,42 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 				$campaign = $row->getCampaign();
 				$customer = $row->getCustomer();
 
-				$recommendation_type    = $recommendation->getType();
+				$recommendation_type    = RecommendationType::name( $recommendation->getType() );
 				$recommendation_details = [];
 
 				// Add recommendation details depending on the type.
 				if ( in_array( $recommendation_type, [ 'CAMPAIGN_BUDGET', 'MARGINAL_ROI_CAMPAIGN_BUDGET' ] ) ) {
+					$budget_recommendation = $recommendation->getCampaignBudgetRecommendation();
+					$budget_options        = [];
+
+					foreach ( $budget_recommendation->getBudgetOptions() as $option ) {
+						$impact = $option->getImpact();
+						$base = $impact->getBaseMetrics();
+						$potential = $impact->getPotentialMetrics();
+
+						$budget_options[] = [
+							'budget_amount_micros' => $option->getBudgetAmountMicros(),
+							"impact" => [
+								"base_metrics" => [
+									"cost_micros" => $base->getCostMicros(),
+									"conversions" => $base->getConversions(),
+									"conversions_value" => $base->getConversionsValue(),
+								],
+								"potential_metrics" => [
+									"cost_micros" => $potential->getCostMicros(),
+									"conversions" => $potential->getConversions(),
+									"conversions_value" => $potential->getConversionsValue(),
+								],
+							]
+						];
+					}
+
 					$recommendation_details = [
-						'campaign_budget_recommendation' => $recommendation->getCampaignBudgetRecommendation(),
+						'campaign_budget_recommendation' => [
+							'current_budget_amount_micros' => $budget_recommendation->getCurrentBudgetAmountMicros(),
+							'recommended_budget_amount_micros' => $budget_recommendation->getRecommendedBudgetAmountMicros(),
+							'budget_options' => $budget_options,
+						],
 					];
 				}
 
