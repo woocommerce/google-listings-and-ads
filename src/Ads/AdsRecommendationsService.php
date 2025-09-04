@@ -133,10 +133,10 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 		$columns = [
 			'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH' => [],
 			'CAMPAIGN_BUDGET'                     => [
-				'recommendation_campaign_budget_recommendations' => 'recommendation.campaign_budget_recommendation',
+				'recommendation_campaign_budget_recommendation' => 'recommendation.campaign_budget_recommendation',
 			],
 			'MARGINAL_ROI_CAMPAIGN_BUDGET'        => [
-				'recommendation_campaign_budget_recommendations' => 'recommendation.marginal_roi_campaign_budget_recommendation',
+				'recommendation_marginal_roi_campaign_budget_recommendation' => 'recommendation.marginal_roi_campaign_budget_recommendation',
 			],
 		];
 
@@ -212,6 +212,15 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 				if ( in_array( $recommendation_type, [ 'CAMPAIGN_BUDGET', 'MARGINAL_ROI_CAMPAIGN_BUDGET' ], true ) ) {
 					$budget_recommendation = $recommendation->getCampaignBudgetRecommendation();
 					$budget_options        = [];
+
+					// If MARGINAL_ROI_CAMPAIGN_BUDGET type get the correct budget recommendation.
+					if ( $recommendation->hasMarginalRoiCampaignBudgetRecommendation() ) {
+						$budget_recommendation = $recommendation->getMarginalRoiCampaignBudgetRecommendation();
+					}
+
+					if ( ! $budget_recommendation ) {
+						continue;
+					}
 
 					foreach ( $budget_recommendation->getBudgetOptions() as $option ) {
 						$impact    = $option->getImpact();

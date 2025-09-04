@@ -1,9 +1,9 @@
 {
 	"results": [
-        {
-            "recommendation": {
-                "type": "CAMPAIGN_BUDGET",
-                "resource_name": "customers/123/recommendations/1",
+		{
+			"recommendation": {
+				"type": "CAMPAIGN_BUDGET",
+				"resource_name": "customers/123/recommendations/1",
 				"campaign_budget_recommendation": {
 					"current_budget_amount_micros": "5000000", 
 					"recommended_budget_amount_micros": "8000000",
@@ -70,15 +70,95 @@
 						}
 					]
 				}
-            },
-            "campaign": {
-                "id": "1",
-                "name": "Test Campaign",
-                "status": "ENABLED"
-            },
-            "customer": {
-                "id": "1"
-            }
-        }
-    ]
+			},
+			"campaign": {
+				"id": "100",
+				"name": "Test Campaign",
+				"status": "ENABLED"
+			},
+			"customer": {
+				"id": "123"
+			}
+		},
+		{
+			"recommendation": {
+				"type": "MARGINAL_ROI_CAMPAIGN_BUDGET",
+				"resource_name": "customers/456/recommendations/2",
+				"marginal_roi_campaign_budget_recommendation": {
+					"current_budget_amount_micros": "2000000", 
+					"recommended_budget_amount_micros": "9000000",
+					"budget_options": [
+						{
+							"budget_amount_micros": 100000000,
+							"impact": {
+								"base_metrics": {
+									"cost_micros": 700000000,
+									"conversions": 12,
+									"conversions_value": 481.12592352792007
+								},
+								"potential_metrics": {
+									"cost_micros": 700000000,
+									"conversions": 12,
+									"conversions_value": 481.12592352792007
+								}
+							}
+						},
+						{
+							"budget_amount_micros": 43120000,
+							"impact": {
+								"base_metrics": {
+									"cost_micros": 700000000,
+									"conversions": 12,
+									"conversions_value": 481.12592352792007
+								},
+								"potential_metrics": {
+									"cost_micros": 301840000,
+									"conversions": 10.8,
+									"conversions_value": 433.37067044358912
+								}
+							}
+						},
+						{
+							"budget_amount_micros": 53900000,
+							"impact": {
+								"base_metrics": {
+									"cost_micros": 700000000,
+									"conversions": 12,
+									"conversions_value": 481.12592352792007
+								},
+								"potential_metrics": {
+									"cost_micros": 377300000,
+									"conversions": 11.4,
+									"conversions_value": 456.78674456853338
+								}
+							}
+						},
+						{
+							"budget_amount_micros": 64680000,
+							"impact": {
+								"base_metrics": {
+									"cost_micros": 700000000,
+									"conversions": 12,
+									"conversions_value": 481.12592352792007
+								},
+								"potential_metrics": {
+									"cost_micros": 452760000,
+									"conversions": 11.9,
+									"conversions_value": 475.17892021524108
+								}
+							}
+						}
+					]
+				}
+			},
+			"campaign": {
+				"id": "200",
+				"name": "Test Campaign 2",
+				"status": "ENABLED"
+			},
+			"customer": {
+				"id": "456"
+			}
+		}
+	]
 }
