@@ -158,7 +158,7 @@ export default function Shipping() {
 				]
 			);
 
-			// Sync data once our changes are saved, even partially succesfully.
+			// Sync data once our changes are saved, even partially successfully.
 			await syncSettings();
 
 			if ( errorMessage ) {

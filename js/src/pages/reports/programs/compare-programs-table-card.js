@@ -82,7 +82,7 @@ const CompareProgramsTableCard = ( {
 	return (
 		<CompareTableCard
 			title={ __( 'Programs', 'google-listings-and-ads' ) }
-			compareButonTitle={ __(
+			compareButtonTitle={ __(
 				'Select one or more programs to compare',
 				'google-listings-and-ads'
 			) }

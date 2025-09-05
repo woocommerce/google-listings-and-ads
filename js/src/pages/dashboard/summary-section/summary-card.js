@@ -12,7 +12,7 @@ import Text from '~/components/app-text';
  * Returns a Card with the given content.
  *
  * @param {Object} props React props
- * @param {string} props.title Card titile.
+ * @param {string} props.title Card title.
  * @param {Array<JSX.Element>} props.children Children to be rendered as cards body.
  *
  * @return {Card} Card with title and content.

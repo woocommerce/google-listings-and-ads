@@ -224,7 +224,7 @@ class NotificationsService implements Service, OptionsAwareInterface {
 	 * @param bool        $with_health_check If true. Performs a remote request to WPCOM API to get the status.
 	 *        * @return bool
 	 */
-	public function is_ready( string $data_type = null, bool $with_health_check = true ): bool {
+	public function is_ready( ?string $data_type = null, bool $with_health_check = true ): bool {
 		$is_ready = $this->is_enabled() && $this->merchant_center->is_ready_for_syncing() && ( $with_health_check === false || $this->account_service->is_wpcom_api_status_healthy() );
 		return $is_ready && ( is_null( $data_type ) || $this->is_pull_enabled_for_datatype( $data_type ) );
 	}
