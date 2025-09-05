@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AdsRecommendationsQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsRecommendationsQuery as GoogleAdsRecommendationsQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
@@ -32,6 +33,7 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 	use ContainerAwareTrait;
 	use OptionsAwareTrait;
 	use TransientsAwareTrait;
+	use MicroTrait;
 
 	/**
 	 * Allowed recommendation types.
@@ -224,31 +226,23 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 
 					foreach ( $budget_recommendation->getBudgetOptions() as $option ) {
 						$impact    = $option->getImpact();
-						$base      = $impact->getBaseMetrics();
 						$potential = $impact->getPotentialMetrics();
 
 						$budget_options[] = [
-							'budget_amount_micros' => $option->getBudgetAmountMicros(),
-							'impact'               => [
-								'base_metrics'      => [
-									'cost_micros'       => $base->getCostMicros(),
-									'conversions'       => $base->getConversions(),
-									'conversions_value' => $base->getConversionsValue(),
-								],
-								'potential_metrics' => [
-									'cost_micros'       => $potential->getCostMicros(),
-									'conversions'       => $potential->getConversions(),
-									'conversions_value' => $potential->getConversionsValue(),
-								],
+							'budget_amount' => $this->from_micro( $option->getBudgetAmountMicros() ),
+							'metrics'       => [
+								'cost'              => $this->from_micro( $potential->getCostMicros() ),
+								'conversions'       => $potential->getConversions(),
+								'conversions_value' => $potential->getConversionsValue(),
 							],
 						];
 					}
 
 					$recommendation_details = [
 						'campaign_budget_recommendation' => [
-							'current_budget_amount_micros'     => $budget_recommendation->getCurrentBudgetAmountMicros(),
-							'recommended_budget_amount_micros' => $budget_recommendation->getRecommendedBudgetAmountMicros(),
-							'budget_options'                   => $budget_options,
+							'current_budget_amount'     => $this->from_micro( $budget_recommendation->getCurrentBudgetAmountMicros() ),
+							'recommended_budget_amount' => $this->from_micro( $budget_recommendation->getRecommendedBudgetAmountMicros() ),
+							'budget_options'            => $budget_options,
 						],
 					];
 				}
