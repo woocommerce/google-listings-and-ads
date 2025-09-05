@@ -17,6 +17,7 @@ import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import Badge from '~/components/badge';
 import AppButton from '~/components/app-button';
 import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
+import formatNumber from '~/utils/formatNumber';
 import './index.scss';
 
 const RAISE_BUDGET_RECOMMENDATION_BANNER_CONTEXT =
@@ -64,8 +65,7 @@ const RAISE_BUDGET_RECOMMENDATION_BANNER_CONTEXT =
  * @return {JSX.Element|null} The banner component, or null if not applicable.
  */
 const Banner = ( { onBannerDismissed } ) => {
-	const { campaigns: recommendedCampaigns, hasFinishedResolution } =
-		useRaiseBudgetRecommendations();
+	const { campaigns: recommendedCampaigns } = useRaiseBudgetRecommendations();
 	const { data: allCampaigns } = useAdsCampaigns();
 	const recommendedCampaign = recommendedCampaigns?.[ 0 ] || {};
 	const { campaign_id, campaign_name } = recommendedCampaign;
@@ -74,8 +74,6 @@ const Banner = ( { onBannerDismissed } ) => {
 		campaign?.targeted_locations,
 		campaign?.amount
 	);
-
-	console.log( budgetMetricsData );
 
 	useEffect( () => {
 		if ( campaign && budgetMetricsData ) {
@@ -119,14 +117,21 @@ const Banner = ( { onBannerDismissed } ) => {
 		);
 	};
 
+	const recommendedCampaignMetrics =
+		recommendedCampaign?.details?.campaign_budget_recommendation?.budget_options?.find(
+			( { level } ) => level.toLowerCase() === 'recommended'
+		)?.metrics;
 	const percentageIncrease = Math.round(
-		( ( recommendedCampaign.weekly_conversions -
+		( ( recommendedCampaignMetrics.conversions -
 			budgetMetricsData.metrics.conversions ) /
 			budgetMetricsData.metrics.conversions ) *
 			100
 	);
+	const conversionValueIncrease = formatNumber(
+		recommendedCampaignMetrics.conversions_value -
+			budgetMetricsData.metrics.conversionsValue
+	);
 
-	console.log( recommendedCampaign, budgetMetricsData );
 	return (
 		<Notice
 			className="gla-raise-budget-recommendation-banner"
@@ -173,7 +178,10 @@ const Banner = ( { onBannerDismissed } ) => {
 					</p>
 
 					<p className="gla-raise-budget-recommendation-banner__estimates-value">
-						+7.99K
+						{ conversionValueIncrease && (
+							<span>+{ conversionValueIncrease }</span>
+						) }
+
 						<span>
 							{ __(
 								'Conversion value',
