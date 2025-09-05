@@ -53,7 +53,9 @@ jest.mock( '~/hooks/useRecommendedPMaxCampaign', () =>
 );
 
 jest.mock( '~/utils/urls', () => ( {
-	getEditCampaignUrl: jest.fn( () => '/edit/2/asset-group' ),
+	getEditCampaignUrl: jest.fn(
+		( programId ) => `/edit/${ programId }/asset-group`
+	),
 } ) );
 
 jest.mock( '~/utils/tracks', () => ( {

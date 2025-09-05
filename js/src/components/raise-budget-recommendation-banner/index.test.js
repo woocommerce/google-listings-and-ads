@@ -14,7 +14,9 @@ import { PREFERENCES_STORE_NAMESPACE, DAY_IN_SECONDS } from '~/constants';
 import RaiseBudgetRecommendationBanner from './index';
 import usePreference from '~/hooks/usePreference';
 import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
-import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
+import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
+import useBudgetMetrics from '~/hooks/useBudgetMetrics';
+import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 
 jest.mock( '@woocommerce/components', () => ( {
 	...jest.requireActual( '@woocommerce/components' ),
@@ -49,8 +51,12 @@ jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest.fn(),
 } ) );
 
-jest.mock( '~/hooks/useGoogleAdsAccount', () =>
-	jest.fn().mockName( 'useGoogleAdsAccount' )
+jest.mock( '~/hooks/useGoogleAdsAccountReady', () =>
+	jest.fn().mockName( 'useGoogleAdsAccountReady' )
+);
+
+jest.mock( '~/hooks/useAdsCampaigns', () =>
+	jest.fn().mockName( 'useAdsCampaigns' )
 );
 
 jest.mock( '~/hooks/usePreference', () =>
@@ -61,23 +67,171 @@ jest.mock( '~/hooks/useRaiseBudgetRecommendations', () =>
 	jest.fn().mockName( 'useRaiseBudgetRecommendations' )
 );
 
+jest.mock( '~/hooks/useBudgetMetrics', () =>
+	jest.fn().mockName( 'useBudgetMetrics' )
+);
+
 jest.mock( '~/utils/urls', () => ( {
-	getEditCampaignUrl: jest.fn( () => '/edit/2/asset-group' ),
+	getEditCampaignUrl: jest.fn(
+		( programId ) => `/edit/${ programId }/asset-group`
+	),
 } ) );
 
 jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn(),
 } ) );
 
-const mockedCampaigns = [
-	{ campaign_id: 2, campaign_name: 'Campaign 2' },
-	{ campaign_id: 3, campaign_name: 'Campaign 3' },
+const mockedRecommendedCampaigns = [
+	{
+		id: 1,
+		type: 'CAMPAIGN_BUDGET',
+		resource_name:
+			'customers/{customer_id}/recommendations/{recommendation_id}',
+		campaign_id: 1,
+		campaign_name: 'Campaign Name',
+		campaign_status: 'ENABLED',
+		customer_id: 11,
+		details: {
+			campaign_budget_recommendation: {
+				current_budget_amount: 20,
+				recommended_budget_amount: 31,
+				budget_options: [
+					{
+						metrics: {
+							cost: '139.964209',
+							conversions: 4,
+							conversions_value: 545.7408447265625,
+						},
+						budget_amount: '20',
+						level: 'current',
+					},
+					{
+						metrics: {
+							cost: '181.971258',
+							conversions: 4.828944206237793,
+							conversions_value: 622.085021972656,
+						},
+						budget_amount: '26',
+						level: 'Low',
+					},
+					{
+						metrics: {
+							cost: '216961447',
+							conversions: 5.398608684539795,
+							conversions_value: 679.2435913085938,
+						},
+						budget_amount: '31',
+						level: 'Recommended',
+					},
+					{
+						metrics: {
+							cost: '251946304',
+							conversions: 5.776357173919678,
+							conversions_value: 731.874328613281,
+						},
+						budget_amount: '36',
+						level: 'High',
+					},
+				],
+			},
+		},
+		last_synced: '2024-06-01T12:34:56Z',
+	},
+	{
+		id: 2,
+		type: 'CAMPAIGN_BUDGET',
+		resource_name:
+			'customers/{customer_id}/recommendations/{recommendation_id}',
+		campaign_id: 2,
+		campaign_name: 'Campaign Name 2',
+		campaign_status: 'ENABLED',
+		customer_id: 22,
+		details: {
+			campaign_budget_recommendation: {
+				current_budget_amount: 20,
+				recommended_budget_amount: 31,
+				budget_options: [
+					{
+						metrics: {
+							cost: '139.964209',
+							conversions: 4,
+							conversions_value: 545.7408447265625,
+						},
+						budget_amount: '20',
+						level: 'current',
+					},
+					{
+						metrics: {
+							cost: '181.971258',
+							conversions: 4.828944206237793,
+							conversions_value: 622.085021972656,
+						},
+						budget_amount: '26',
+						level: 'Low',
+					},
+					{
+						metrics: {
+							cost: '216961447',
+							conversions: 5.398608684539795,
+							conversions_value: 679.2435913085938,
+						},
+						budget_amount: '31',
+						level: 'Recommended',
+					},
+					{
+						metrics: {
+							cost: '251946304',
+							conversions: 5.776357173919678,
+							conversions_value: 731.874328613281,
+						},
+						budget_amount: '36',
+						level: 'High',
+					},
+				],
+			},
+		},
+		last_synced: '2024-06-01T12:34:56Z',
+	},
+];
+
+const mockedBudgetMetricsData = {
+	currency: 'USD',
+	budget: 11,
+	country: 'MU',
+	metrics: {
+		cost: 77,
+		conversions: 2,
+		conversions_value: 78.690507740539033,
+	},
+};
+
+const mockedAdsCampaigns = [
+	{
+		id: 1,
+		name: 'Campaign 2025-08-05 16:37:24',
+		status: 'enabled',
+		type: 'performance_max',
+		amount: 11,
+		country: 'MU',
+		targeted_locations: [ 'MU' ],
+	},
+	{
+		id: 2,
+		name: 'Campaign 2025-08-07 13:55:56',
+		status: 'enabled',
+		type: 'performance_max',
+		amount: 159.84,
+		country: 'MU',
+		targeted_locations: [ 'MU', 'ZW' ],
+	},
 ];
 
 describe( 'RaiseBudgetRecommendationBanner', () => {
 	beforeEach( () => {
 		useDispatch.mockReturnValue( { set: () => null } );
-		useGoogleAdsAccount.mockReturnValue( { hasGoogleAdsConnection: true } );
+		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: true } );
+		useBudgetMetrics.mockReturnValue( { data: mockedBudgetMetricsData } );
+		useAdsCampaigns.mockReturnValue( { data: mockedAdsCampaigns } );
 	} );
 
 	it( 'renders nothing if expiry is not expired', () => {
@@ -86,7 +240,7 @@ describe( 'RaiseBudgetRecommendationBanner', () => {
 			actionType: 'dismiss',
 		} );
 		useRaiseBudgetRecommendations.mockReturnValue( {
-			campaigns: mockedCampaigns,
+			campaigns: mockedRecommendedCampaigns,
 			hasFinishedResolution: true,
 		} );
 		const { container } = render( <RaiseBudgetRecommendationBanner /> );
@@ -94,12 +248,10 @@ describe( 'RaiseBudgetRecommendationBanner', () => {
 	} );
 
 	it( 'renders nothing if Google Ads account is not connected', () => {
-		useGoogleAdsAccount.mockReturnValue( {
-			hasGoogleAdsConnection: false,
-		} );
+		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: false } );
 		usePreference.mockReturnValue( { expiry: Date.now() + 100000 } );
 		useRaiseBudgetRecommendations.mockReturnValue( {
-			campaigns: mockedCampaigns,
+			campaigns: mockedRecommendedCampaigns,
 			hasFinishedResolution: true,
 		} );
 		const { container } = render( <RaiseBudgetRecommendationBanner /> );
@@ -112,7 +264,7 @@ describe( 'RaiseBudgetRecommendationBanner', () => {
 			actionType: 'dismiss',
 		} );
 		useRaiseBudgetRecommendations.mockReturnValue( {
-			campaigns: mockedCampaigns,
+			campaigns: mockedRecommendedCampaigns,
 			hasFinishedResolution: true,
 		} );
 		render( <RaiseBudgetRecommendationBanner /> );
@@ -143,7 +295,7 @@ describe( 'RaiseBudgetRecommendationBanner', () => {
 		getHistory.mockReturnValue( { push: historyPush } );
 		usePreference.mockReturnValue( {} );
 		useRaiseBudgetRecommendations.mockReturnValue( {
-			campaigns: mockedCampaigns,
+			campaigns: mockedRecommendedCampaigns,
 			hasFinishedResolution: true,
 		} );
 
@@ -167,7 +319,7 @@ describe( 'RaiseBudgetRecommendationBanner', () => {
 		);
 
 		expect( setMock ).toHaveBeenCalled();
-		expect( getEditCampaignUrl ).toHaveBeenCalledWith( 2, 'asset-group' );
-		expect( historyPush ).toHaveBeenCalledWith( '/edit/2/asset-group' );
+		expect( getEditCampaignUrl ).toHaveBeenCalledWith( 1, 'asset-group' );
+		expect( historyPush ).toHaveBeenCalledWith( '/edit/1/asset-group' );
 	} );
 } );
