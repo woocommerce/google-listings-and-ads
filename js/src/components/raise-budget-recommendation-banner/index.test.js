@@ -148,8 +148,8 @@ const mockedRecommendedCampaigns = [
 		customer_id: 22,
 		details: {
 			campaign_budget_recommendation: {
-				current_budget_amount: 20,
-				recommended_budget_amount: 31,
+				current_budget_amount: 10,
+				recommended_budget_amount: 21,
 				budget_options: [
 					{
 						metrics: {

@@ -67,7 +67,13 @@ const RAISE_BUDGET_RECOMMENDATION_BANNER_CONTEXT =
 const Banner = ( { onBannerDismissed } ) => {
 	const { campaigns: recommendedCampaigns } = useRaiseBudgetRecommendations();
 	const { data: allCampaigns } = useAdsCampaigns();
-	const recommendedCampaign = recommendedCampaigns?.[ 0 ] || {};
+	// Order recommendations by current budget amount in descending order.
+	const orderedRecommendedCampaigns = recommendedCampaigns.sort(
+		( a, b ) =>
+			b.details.campaign_budget_recommendation.current_budget_amount -
+			a.details.campaign_budget_recommendation.current_budget_amount
+	);
+	const recommendedCampaign = orderedRecommendedCampaigns?.[ 0 ] || {};
 	const { campaign_id, campaign_name } = recommendedCampaign;
 	const campaign = allCampaigns?.find( ( el ) => el.id === campaign_id );
 	const { data: budgetMetricsData } = useBudgetMetrics(
@@ -138,11 +144,13 @@ const Banner = ( { onBannerDismissed } ) => {
 			isDismissible={ true }
 			onRemove={ handleDismiss }
 		>
-			<header className="gla-raise-budget-recommendation-banner__header">
-				<Badge intent="info">
-					<DeltaValue amount={ percentageIncrease } suffix="%" />
-				</Badge>
-			</header>
+			{ percentageIncrease && (
+				<header className="gla-raise-budget-recommendation-banner__header">
+					<Badge intent="info">
+						<DeltaValue amount={ percentageIncrease } suffix="%" />
+					</Badge>
+				</header>
+			) }
 
 			<Flex
 				className="gla-raise-budget-recommendation-banner__body"
@@ -169,27 +177,27 @@ const Banner = ( { onBannerDismissed } ) => {
 					</p>
 				</FlexBlock>
 
-				<FlexItem className="gla-raise-budget-recommendation-banner__estimates">
-					<p>
-						{ __(
-							'Projected weekly estimates',
-							'google-listings-and-ads'
-						) }
-					</p>
-
-					<p className="gla-raise-budget-recommendation-banner__estimates-value">
-						{ conversionValueIncrease && (
-							<span>+{ conversionValueIncrease }</span>
-						) }
-
-						<span>
+				{ conversionValueIncrease && (
+					<FlexItem className="gla-raise-budget-recommendation-banner__estimates">
+						<p>
 							{ __(
-								'Conversion value',
+								'Projected weekly estimates',
 								'google-listings-and-ads'
 							) }
-						</span>
-					</p>
-				</FlexItem>
+						</p>
+
+						<p className="gla-raise-budget-recommendation-banner__estimates-value">
+							<span>+{ conversionValueIncrease }</span>
+
+							<span>
+								{ __(
+									'Conversion value',
+									'google-listings-and-ads'
+								) }
+							</span>
+						</p>
+					</FlexItem>
+				) }
 			</Flex>
 
 			<div className="gla-raise-budget-recommendation-banner__actions">
