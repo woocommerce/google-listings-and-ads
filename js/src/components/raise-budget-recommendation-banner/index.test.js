@@ -287,6 +287,28 @@ describe( 'RaiseBudgetRecommendationBanner', () => {
 		expect( container.firstChild ).toBeNull();
 	} );
 
+	it( 'renders nothing if no ads campaigns', () => {
+		usePreference.mockReturnValue( {} );
+		useRaiseBudgetRecommendations.mockReturnValue( {
+			campaigns: mockedRecommendedCampaigns,
+			hasFinishedResolution: true,
+		} );
+		useAdsCampaigns.mockReturnValue( { data: [] } );
+		const { container } = render( <RaiseBudgetRecommendationBanner /> );
+		expect( container.firstChild ).toBeNull();
+	} );
+
+	it( 'renders nothing if no budget metrics', () => {
+		usePreference.mockReturnValue( {} );
+		useRaiseBudgetRecommendations.mockReturnValue( {
+			campaigns: mockedRecommendedCampaigns,
+			hasFinishedResolution: true,
+		} );
+		useBudgetMetrics.mockReturnValue( { data: null } );
+		const { container } = render( <RaiseBudgetRecommendationBanner /> );
+		expect( container.firstChild ).toBeNull();
+	} );
+
 	it( 'navigates to edit campaign and sets expiry when View Recommendation button is clicked', () => {
 		const setMock = jest.fn();
 		useDispatch.mockReturnValue( { set: setMock } );
