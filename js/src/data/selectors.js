@@ -322,19 +322,19 @@ export const getReport = createRegistrySelector(
 );
 
 /**
- * @typedef {Object} PerformaceData
+ * @typedef {Object} PerformanceData
  * @property {boolean} loaded Whether the data have been loaded.
- * @property {Object|null} data The programs performace data of specified parameters. It would return `null` before the data is fetched.
+ * @property {Object|null} data The programs performance data of specified parameters. It would return `null` before the data is fetched.
  */
 /**
- * Select programs performace data according to parameters.
+ * Select programs performance data according to parameters.
  *
  * @param  {Object} state The current store state will be injected by `wp.data`.
  * @param  {string} type Type of report, 'free' or 'paid'.
  * @param  {Object} query Query parameters in the URL.
  * @param  {string} dateReference Which date range to use, 'primary' or 'secondary'.
  *
- * @return {PerformaceData} Performace data.
+ * @return {PerformanceData} Performance data.
  */
 export const getDashboardPerformance = createRegistrySelector(
 	( select ) => ( state, type, query, dateReference ) => {
