@@ -68,14 +68,14 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 		/** @var AdsRecommendationsQuery $query */
 		$query = $this->container->get( AdsRecommendationsQuery::class );
 
-		$type        = isset( $args['type'] ) && is_array( $args['type'] ) ? self::get_valid_recommendation_types( $args['type'] ) : [];
+		$types       = isset( $args['types'] ) && is_array( $args['types'] ) ? self::get_valid_recommendation_types( $args['types'] ) : [];
 		$campaign_id = isset( $args['campaign_id'] ) ? (int) $args['campaign_id'] : 0;
 
-		if ( empty( $type ) ) {
+		if ( empty( $types ) ) {
 			return [];
 		}
 
-		$query->where( 'recommendation_type', $type, 'IN' );
+		$query->where( 'recommendation_type', $types, 'IN' );
 
 		if ( $campaign_id ) {
 			$query->where( 'recommendation_campaign_id', $campaign_id );
@@ -114,15 +114,15 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 	/**
 	 * Filters the provided recommendation types to only include valid types.
 	 *
-	 * @param array $type Array of recommendation types to filter.
+	 * @param array $types Array of recommendation types to filter.
 	 * @return array Filtered array containing only valid recommendation types.
 	 */
-	public static function get_valid_recommendation_types( array $type ): array {
-		if ( empty( $type ) ) {
+	public static function get_valid_recommendation_types( array $types ): array {
+		if ( empty( $types ) ) {
 			return [];
 		}
 
-		return array_intersect( $type, self::VALID_RECOMMENDATION_TYPES );
+		return array_intersect( $types, self::VALID_RECOMMENDATION_TYPES );
 	}
 
 	/**
