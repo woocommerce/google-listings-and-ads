@@ -224,12 +224,28 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 						continue;
 					}
 
+					$current_budget     = $budget_recommendation->getCurrentBudgetAmountMicros();
+					$recommended_budget = $budget_recommendation->getRecommendedBudgetAmountMicros();
+
 					foreach ( $budget_recommendation->getBudgetOptions() as $option ) {
-						$impact    = $option->getImpact();
-						$potential = $impact->getPotentialMetrics();
+						$impact        = $option->getImpact();
+						$potential     = $impact->getPotentialMetrics();
+						$budget_amount = $option->getBudgetAmountMicros();
+
+						// Determine budget option level.
+						$level = __( 'Low', 'google-listings-and-ads' );
+
+						if ( $budget_amount === $current_budget ) {
+							$level = __( 'Current', 'google-listings-and-ads' );
+						} elseif ( $budget_amount === $recommended_budget ) {
+							$level = __( 'Recommended', 'google-listings-and-ads' );
+						} elseif ( $budget_amount > $recommended_budget ) {
+							$level = __( 'High', 'google-listings-and-ads' );
+						}
 
 						$budget_options[] = [
-							'budget_amount' => $this->from_micro( $option->getBudgetAmountMicros() ),
+							'budget_amount' => $this->from_micro( $budget_amount ),
+							'level'         => $level,
 							'metrics'       => [
 								'cost'              => $this->from_micro( $potential->getCostMicros() ),
 								'conversions'       => $potential->getConversions(),
@@ -240,8 +256,8 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 
 					$recommendation_details = [
 						'campaign_budget_recommendation' => [
-							'current_budget_amount'     => $this->from_micro( $budget_recommendation->getCurrentBudgetAmountMicros() ),
-							'recommended_budget_amount' => $this->from_micro( $budget_recommendation->getRecommendedBudgetAmountMicros() ),
+							'current_budget_amount'     => $this->from_micro( $current_budget ),
+							'recommended_budget_amount' => $this->from_micro( $recommended_budget ),
 							'budget_options'            => $budget_options,
 						],
 					];
