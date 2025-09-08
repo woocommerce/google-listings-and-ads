@@ -48,7 +48,7 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 		$this->controller->register();
 	}
 
-	public function test_get_recommendations_returns_emprty_result() {
+	public function test_get_recommendations_returns_empty_result() {
 		$this->account->method( 'get_connected_account' )
 			->willReturn( [ 'status' => 'connected' ] );
 
@@ -70,6 +70,7 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 				'campaign_id'     => 100,
 				'campaign_name'   => 'Test Campaign',
 				'campaign_status' => 'ENABLED',
+				'details'         => [],
 				'last_synced'     => gmdate( 'c' ),
 			],
 			[
@@ -79,6 +80,7 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 				'campaign_id'     => 101,
 				'campaign_name'   => 'Another Campaign',
 				'campaign_status' => 'PAUSED',
+				'details'         => [],
 				'last_synced'     => gmdate( 'c' ),
 			],
 		];
@@ -150,6 +152,7 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 				'campaign_id'     => 100,
 				'campaign_name'   => 'Test Campaign',
 				'campaign_status' => 'ENABLED',
+				'details'         => [],
 				'last_synced'     => gmdate( 'c' ),
 			],
 			[
@@ -159,6 +162,7 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 				'campaign_id'     => 101,
 				'campaign_name'   => 'Another Campaign',
 				'campaign_status' => 'PAUSED',
+				'details'         => [],
 				'last_synced'     => gmdate( 'c' ),
 			],
 			[
@@ -168,6 +172,7 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 				'campaign_id'     => 103,
 				'campaign_name'   => 'Another Campaign 03',
 				'campaign_status' => 'PAUSED',
+				'details'         => [],
 				'last_synced'     => gmdate( 'c' ),
 			],
 		];
@@ -213,6 +218,7 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 				'campaign_id'     => 100,
 				'campaign_name'   => 'Test Campaign',
 				'campaign_status' => 'ENABLED',
+				'details'         => [],
 				'last_synced'     => gmdate( 'c' ),
 			],
 			[
@@ -222,6 +228,7 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 				'campaign_id'     => 101,
 				'campaign_name'   => 'Another Campaign',
 				'campaign_status' => 'PAUSED',
+				'details'         => [],
 				'last_synced'     => gmdate( 'c' ),
 			],
 			[
@@ -231,6 +238,7 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 				'campaign_id'     => 103,
 				'campaign_name'   => 'Another Campaign 03',
 				'campaign_status' => 'PAUSED',
+				'details'         => [],
 				'last_synced'     => gmdate( 'c' ),
 			],
 		];
@@ -272,6 +280,7 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 				'campaign_id'     => 100,
 				'campaign_name'   => 'Test Campaign',
 				'campaign_status' => 'ENABLED',
+				'details'         => [],
 				'last_synced'     => gmdate( 'c' ),
 			],
 			[
@@ -281,6 +290,7 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 				'campaign_id'     => 101,
 				'campaign_name'   => 'Another Campaign',
 				'campaign_status' => 'PAUSED',
+				'details'         => [],
 				'last_synced'     => gmdate( 'c' ),
 			],
 		];
