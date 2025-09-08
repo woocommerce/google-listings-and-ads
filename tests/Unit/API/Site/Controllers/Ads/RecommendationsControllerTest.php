@@ -335,45 +335,45 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 				'campaign_name'   => 'Another Campaign',
 				'campaign_status' => 'ENABLED',
 				'details'         => [
-					"campaign_budget_recommendation" => [
-						"current_budget_amount" => 20,
-						"recommended_budget_amount" => 31,
-						"budget_options" => [
+					'campaign_budget_recommendation' => [
+						'current_budget_amount'     => 20,
+						'recommended_budget_amount' => 31,
+						'budget_options'            => [
 							[
-								"metrics" => [
-									"cost" => "139.964209",
-									"conversions" => 4,
-									"conversions_value" => 545.7408447265625,
+								'budget_amount' => 20,
+								'level'         => 'Current',
+								'metrics'       => [
+									'cost'              => 139.964209,
+									'conversions'       => 4,
+									'conversions_value' => 545.7408447265625,
 								],
-								"budget_amount" => "20",
-								"level" => "Current",
 							],
 							[
-								"metrics" => [
-									"cost" => "181.971258",
-									"conversions" => 4.828944206237793,
-									"conversions_value" => 622.0850219726562,
+								'budget_amount' => 26,
+								'level'         => 'Low',
+								'metrics'       => [
+									'cost'              => 181.971258,
+									'conversions'       => 4.828944206237793,
+									'conversions_value' => 622.0850219726562,
 								],
-								"budget_amount" => "26",
-								"level" => "Low",
 							],
 							[
-								"metrics" => [
-									"cost" => "216961447",
-									"conversions" => 5.398608684539795,
-									"conversions_value" => 679.2435913085938,
+								'budget_amount' => 31,
+								'level'         => 'Recommended',
+								'metrics'       => [
+									'cost'              => 216961447,
+									'conversions'       => 5.398608684539795,
+									'conversions_value' => 679.2435913085938,
 								],
-								"budget_amount" => "31",
-								"level" => "Recommended",
 							],
 							[
-								"metrics" => [
-									"cost" => "251946304",
-									"conversions" => 5.776357173919678,
-									"conversions_value" => 731.8743286132812,
+								'budget_amount' => 36,
+								'level'         => 'High',
+								'metrics'       => [
+									'cost'              => 251946304,
+									'conversions'       => 5.776357173919678,
+									'conversions_value' => 731.8743286132812,
 								],
-								"budget_amount" => "36",
-								"level" => "High",
 							],
 						],
 					],
@@ -388,45 +388,45 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 				'campaign_name'   => 'Another Campaign 02',
 				'campaign_status' => 'ENABLED',
 				'details'         => [
-					"campaign_budget_recommendation" => [
-						"current_budget_amount" => 20,
-						"recommended_budget_amount" => 31,
-						"budget_options" => [
+					'campaign_budget_recommendation' => [
+						'current_budget_amount'     => 20,
+						'recommended_budget_amount' => 31,
+						'budget_options'            => [
 							[
-								"metrics" => [
-									"cost" => "139.964209",
-									"conversions" => 4,
-									"conversions_value" => 545.7408447265625,
+								'budget_amount' => 20,
+								'level'         => 'Current',
+								'metrics'       => [
+									'cost'              => 139.964209,
+									'conversions'       => 4,
+									'conversions_value' => 545.7408447265625,
 								],
-								"budget_amount" => "20",
-								"level" => "Current",
 							],
 							[
-								"metrics" => [
-									"cost" => "181.971258",
-									"conversions" => 4.828944206237793,
-									"conversions_value" => 622.0850219726562,
+								'budget_amount' => 26,
+								'level'         => 'Low',
+								'metrics'       => [
+									'cost'              => 181.971258,
+									'conversions'       => 4.828944206237793,
+									'conversions_value' => 622.0850219726562,
 								],
-								"budget_amount" => "26",
-								"level" => "Low",
 							],
 							[
-								"metrics" => [
-									"cost" => "216961447",
-									"conversions" => 5.398608684539795,
-									"conversions_value" => 679.2435913085938,
+								'budget_amount' => 31,
+								'level'         => 'Recommended',
+								'metrics'       => [
+									'cost'              => 216961447,
+									'conversions'       => 5.398608684539795,
+									'conversions_value' => 679.2435913085938,
 								],
-								"budget_amount" => "31",
-								"level" => "Recommended",
 							],
 							[
-								"metrics" => [
-									"cost" => "251946304",
-									"conversions" => 5.776357173919678,
-									"conversions_value" => 731.8743286132812,
+								'budget_amount' => 36,
+								'level'         => 'High',
+								'metrics'       => [
+									'cost'              => 251946304,
+									'conversions'       => 5.776357173919678,
+									'conversions_value' => 731.8743286132812,
 								],
-								"budget_amount" => "36",
-								"level" => "High",
 							],
 						],
 					],
