@@ -349,4 +349,10 @@ describe( 'BudgetSetup', () => {
 		const input = screen.getByRole( 'textbox' );
 		expect( input ).toHaveValue( '15.00' );
 	} );
+
+	it( 'should not render "current" row when no current amount is given', () => {
+		render( <Wrapper /> );
+
+		expect( queryOption( 'current' ) ).not.toBeInTheDocument();
+	} );
 } );
