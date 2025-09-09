@@ -163,7 +163,7 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		$this->assertEquals( $expected, $this->asset_group_asset->get_assets_by_final_url( 'https://example.com' ) );
 	}
 
-	public function test_get_asset_groups_assets_by_final_url_firt_result() {
+	public function test_get_asset_groups_assets_by_final_url_first_result() {
 		$asset_1 = [
 			'id'      => self::TEST_ASSET_ID,
 			'content' => 'Test Asset',

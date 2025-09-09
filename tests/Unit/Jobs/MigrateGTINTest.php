@@ -177,7 +177,7 @@ class MigrateGTINTest extends UnitTest {
 		do_action( self::PROCESS_ITEM_HOOK, [ 1 ] );
 	}
 
-	public function test_process_items_sucessfully_updates_gtin() {
+	public function test_process_items_successfully_updates_gtin() {
 		$product = WC_Helper_Product::create_simple_product();
 		$this->product_repository
 			->expects( $this->once() )

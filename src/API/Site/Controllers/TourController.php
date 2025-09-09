@@ -113,7 +113,7 @@ class TourController extends BaseOptionsController {
 	/**
 	 * Get the tours
 	 *
-	 * @return array|null The tours saved in databse
+	 * @return array|null The tours saved in database
 	 */
 	private function get_tours(): ?array {
 		return $this->options->get( OptionsInterface::TOURS );

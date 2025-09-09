@@ -68,7 +68,7 @@ class RecommendationsController extends BaseController implements ContainerAware
 	 */
 	public function get_collection_params(): array {
 		return [
-			'type'        => [
+			'types'       => [
 				'type'        => 'array',
 				'description' => __( 'Filter recommendations by one or more types', 'google-listings-and-ads' ),
 				'items'       => [
@@ -109,17 +109,17 @@ class RecommendationsController extends BaseController implements ContainerAware
 				/** @var AdsRecommendationsService $query */
 				$query = $this->container->get( AdsRecommendationsService::class );
 
-				$type = $request->get_param( 'type' ) ?? [];
-				if ( is_string( $type ) ) {
-					$type = array_map( 'trim', explode( ',', $type ) );
+				$types = $request->get_param( 'types' ) ?? [];
+				if ( is_string( $types ) ) {
+					$types = array_map( 'trim', explode( ',', $types ) );
 				}
 
 				// Filter $type to only allow valid recommendation types.
-				$type        = AdsRecommendationsService::get_valid_recommendation_types( $type );
+				$types       = AdsRecommendationsService::get_valid_recommendation_types( $types );
 				$campaign_id = (int) $request->get_param( 'campaign_id' );
 
 				$args = [
-					'type'        => $type,
+					'types'       => $types,
 					'campaign_id' => $campaign_id,
 				];
 
