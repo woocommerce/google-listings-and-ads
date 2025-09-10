@@ -24,14 +24,15 @@ import useGoogleAdsAccount from './useGoogleAdsAccount';
 /**
  * Retrieves campaigns with budget recommendations to raise.
  *
- * @param {Object} params Parameters for fetching recommendations.
- * @param {number} params.campaign_id The ID of the campaign to fetch recommendations for.
+ * @param {Object} args Parameters.
+ * @param {number} args.campaign_id The ID of the campaign to fetch recommendations for.
  *
  * @return {Object} An object containing:
  *   - {Array<CampaignRecommendation>} campaigns: An array of campaigns with budget recommendations, or an empty array if none.
  *   - {boolean} hasFinishedResolution: Whether the recommendations resolution has completed.
  */
-const useRaiseBudgetRecommendations = ( { campaign_id = null } ) => {
+const useRaiseBudgetRecommendations = ( args = {} ) => {
+	const { campaign_id = null } = args;
 	const { hasGoogleAdsConnection, hasFinishedResolution } =
 		useGoogleAdsAccount();
 	return useSelect(

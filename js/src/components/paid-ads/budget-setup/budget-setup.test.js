@@ -23,6 +23,12 @@ jest.mock( '~/hooks/useBudgetRecommendation', () =>
 	jest.fn().mockName( 'useBudgetRecommendation' )
 );
 
+jest.mock( '~/hooks/useRaiseBudgetRecommendations', () =>
+	jest.fn().mockReturnValue( {
+		hasFinishedResolution: true,
+	} )
+);
+
 jest.mock( '~/hooks/useBudgetMetrics', () =>
 	jest.fn().mockImplementation( ( countryCodes, dailyBudget ) => {
 		return {
