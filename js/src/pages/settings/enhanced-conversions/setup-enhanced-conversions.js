@@ -15,6 +15,7 @@ import AppDocumentationLink from '~/components/app-documentation-link';
 import SpinnerCard from '~/components/spinner-card';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useEnableEnhancedConversions from './useEnableEnhancedConversions';
+import { SetupGoogleTagGateway } from '../google-tag-gateway';
 
 /**
  * Renders the settings section for Enhanced Conversions setup.
@@ -104,6 +105,8 @@ const SetupEnhancedConversions = () => {
 			{ loaded && (
 				<Section.Card>
 					<Section.Card.Body>
+						<SetupGoogleTagGateway />
+
 						<CheckboxControl
 							label={ __(
 								'Send Enhanced Conversions data to Google Ads',

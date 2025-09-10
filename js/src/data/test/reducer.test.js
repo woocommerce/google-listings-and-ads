@@ -75,6 +75,7 @@ describe( 'reducer', () => {
 				budgetRecommendations: {},
 				recommendations: {},
 				enable_enhanced_conversions: false,
+				enable_google_tag_gateway: null,
 				budgetMetrics: {},
 			},
 			gtinMigrationStatus: null,
