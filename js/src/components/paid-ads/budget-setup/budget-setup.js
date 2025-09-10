@@ -13,6 +13,7 @@ import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useBudgetMetrics from '~/hooks/useBudgetMetrics';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
 import AppInputPriceControl from '~/components/app-input-price-control';
+import BudgetBadge from './budget-badge';
 import BudgetSetupHeader from './budget-setup-header';
 import BudgetRadioControl from './budget-radio-control';
 import LowBudgetNotice from './low-budget-notice';
@@ -44,6 +45,9 @@ function BudgetMetrics( { formatAmount, metrics } ) {
 			</span>
 			<span className={ styles.metricsItem }>
 				{ metrics ? formatAmount( metrics.conversionsValue ) : null }
+				{ metrics?.uplift && parseInt( metrics.uplift, 10 ) !== 0 && (
+					<BudgetBadge amount={ metrics.uplift } />
+				) }
 			</span>
 			<span className={ styles.metricsItem }>
 				{ metrics ? formatAmount( metrics.cost ) : null }

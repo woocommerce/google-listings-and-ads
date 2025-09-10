@@ -27,6 +27,7 @@ import {
 	adaptAdsBudgetMetrics,
 	adaptAdsCampaign,
 	adaptAssetGroup,
+	adaptRaiseAdsBudgetRecommendations,
 } from './adapters';
 import { fetchWithHeaders, awaitPromise, recordGlaDataEvent } from './controls';
 
@@ -757,7 +758,8 @@ export function* getAdsRecommendations( types, campaign_id = null ) {
 
 		const key = campaign_id ? [ campaign_id, ...types ] : types;
 		const typesKey = arrayToUnderscoreKey( key );
-		yield receiveAdsRecommendations( response?.results, typesKey );
+		const data = adaptRaiseAdsBudgetRecommendations( response );
+		yield receiveAdsRecommendations( data, typesKey );
 	} catch ( error ) {
 		handleApiError(
 			error,

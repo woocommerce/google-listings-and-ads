@@ -83,7 +83,7 @@ const AllProgramsTableCard = ( props ) => {
 		useTargetAudienceFinalCountryCodes();
 	const { data: adsCampaignsData } = useAdsCampaigns();
 	const { campaigns: raiseBudgetRecommendationCampaigns } =
-		useRaiseBudgetRecommendations();
+		useRaiseBudgetRecommendations( {} );
 	const map = useCountryKeyNameMap();
 
 	if ( ! finalCountryCodesData || ! adsCampaignsData ) {

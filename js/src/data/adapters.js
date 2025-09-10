@@ -11,6 +11,7 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * @typedef {import('~/data/types.js').AdsBudgetRecommendation} AdsBudgetRecommendation
  * @typedef {import('~/data/types.js').AdsBudgetRecommendationEntity} AdsBudgetRecommendationEntity
  * @typedef {import('~/data/types.js').AdsBudgetMetrics} AdsBudgetMetrics
+ * @typedef {import('~/data/types.js').RaiseAdsBudgetRecommendations} RaiseAdsBudgetRecommendations
  */
 
 /**
@@ -196,4 +197,56 @@ export function adaptAssetGroup( assetGroup ) {
 		...assetGroup,
 		assets,
 	};
+}
+
+/**
+ * Adapts the raise ads budget recommendations data received from API.
+ *
+ * @param {Array<Object>} rawData The raise ads budget recommendations data to be adapted.
+ * @return {Array<RaiseAdsBudgetRecommendations>} Raise ads budget recommendations data.
+ */
+export function adaptRaiseAdsBudgetRecommendations( rawData ) {
+	// Ensure that rawData is non-empty array.
+	if ( ! Array.isArray( rawData ) || rawData.length === 0 ) {
+		return [];
+	}
+
+	const validLevelKeys = [ 'recommended', 'high', 'low', 'current' ];
+	const availabilities = [];
+	const finalData = [];
+
+	rawData.forEach( ( item ) => {
+		const camelCaseItem = convertKeysFromSnakeCaseToCamelCase( item );
+		const recommendations =
+			camelCaseItem?.details?.campaignBudgetRecommendation?.budgetOptions;
+
+		if (
+			! Array.isArray( recommendations ) ||
+			recommendations.length === 0
+		) {
+			return;
+		}
+
+		const { source, currency, details, ...data } = camelCaseItem;
+
+		eliminateIdenticalMetrics( recommendations ).forEach(
+			( metricItem ) => {
+				const { level, ...adaptingItem } = metricItem;
+				const key = level.toLowerCase();
+
+				if ( validLevelKeys.includes( key ) ) {
+					adaptingItem.dailyBudget = adaptingItem.budgetAmount;
+					adaptingItem.currency = currency;
+					availabilities.push( adaptingItem.metrics );
+					data[ key ] = adaptingItem;
+				}
+			}
+		);
+
+		data.recommendedDailyBudget = data.recommended.dailyBudget;
+
+		finalData.push( data );
+	} );
+
+	return finalData;
 }

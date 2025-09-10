@@ -31,7 +31,7 @@ import useGoogleAdsAccount from './useGoogleAdsAccount';
  *   - {Array<CampaignRecommendation>} campaigns: An array of campaigns with budget recommendations, or an empty array if none.
  *   - {boolean} hasFinishedResolution: Whether the recommendations resolution has completed.
  */
-const useRaiseBudgetRecommendations = ( { campaign_id } ) => {
+const useRaiseBudgetRecommendations = ( { campaign_id = null } ) => {
 	const { hasGoogleAdsConnection, hasFinishedResolution } =
 		useGoogleAdsAccount();
 	return useSelect(

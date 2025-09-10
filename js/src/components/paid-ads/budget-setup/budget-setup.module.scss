@@ -135,3 +135,23 @@
 	font-size: $gla-font-smaller;
 	color: #1f2c70;
 }
+
+.budgetBadge {
+	margin-left: $grid-unit-10;
+}
+
+.budgetBadgeNegative {
+	background-color: $gla-badge-negative-bg;
+
+	:global(.gla-delta-value--negative) {
+		color: $gla-badge-negative-color;
+	}
+}
+
+.budgetBadgePositive {
+	background-color: $gla-badge-positive-bg;
+
+	:global(.gla-delta-value--positive) {
+		color: $gla-badge-positive-color;
+	}
+}
