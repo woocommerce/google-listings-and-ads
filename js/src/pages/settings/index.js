@@ -22,6 +22,7 @@ import MainTabNav from '~/components/main-tab-nav';
 import RebrandingTour from '~/components/tours/rebranding-tour';
 import SetupEnhancedConversions from './enhanced-conversions/setup-enhanced-conversions';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
+import ImproveDataStrength from './improve-data-strength';
 import './index.scss';
 
 const pageClassName = 'gla-settings';
@@ -66,7 +67,7 @@ const Settings = () => {
 			<ExperienceRatingBanner />
 			<MainTabNav />
 			<RebrandingTour />
-			<SetupEnhancedConversions />
+			<ImproveDataStrength />
 			<ContactInformationPreview />
 			<SetupTaxRate />
 			<LinkedAccounts />
