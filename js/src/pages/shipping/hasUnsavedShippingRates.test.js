@@ -68,7 +68,7 @@ describe( 'hasUnsavedShippingRates', () => {
 		expect( hasUnsavedShippingRates( rates, savedRates ) ).toBe( true );
 	} );
 
-	// (Test each property in an atomical way.)
+	// (Test each property in an atomic way.)
 	it.each( [
 		[ 'currency', 'AUD' ],
 		[ 'rate', 50.88 ],
