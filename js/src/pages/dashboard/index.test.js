@@ -16,7 +16,6 @@ import { getQuery } from '@woocommerce/navigation';
 import Dashboard from './';
 import isWCTracksEnabled from '~/utils/isWCTracksEnabled';
 import RebrandingTour from '~/components/tours/rebranding-tour';
-import GoogleTagGatewayTour from '~/components/tours/google-tag-gateway-tour';
 import { GUIDE_NAMES } from '~/constants';
 
 jest.mock( '~/hooks/useGTINMigrationStatus', () =>
