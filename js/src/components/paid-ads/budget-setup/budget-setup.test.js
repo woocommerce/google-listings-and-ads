@@ -11,6 +11,7 @@ import userEvent from '@testing-library/user-event';
 import BudgetSetup from './budget-setup';
 import CampaignAssetsForm from '../campaign-assets-form';
 import useBudgetRecommendation from '~/hooks/useBudgetRecommendation';
+import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
 import useBudgetMetrics from '~/hooks/useBudgetMetrics';
 
 jest.mock( '~/hooks/useGoogleAdsAccount', () =>
@@ -24,9 +25,7 @@ jest.mock( '~/hooks/useBudgetRecommendation', () =>
 );
 
 jest.mock( '~/hooks/useRaiseBudgetRecommendations', () =>
-	jest.fn().mockReturnValue( {
-		hasFinishedResolution: true,
-	} )
+	jest.fn().mockName( 'useRaiseBudgetRecommendations' )
 );
 
 jest.mock( '~/hooks/useBudgetMetrics', () =>
@@ -95,6 +94,11 @@ function mockBudgetRecommendation( ...availableKeys ) {
 	useBudgetRecommendation.mockReturnValue( {
 		hasResolved: true,
 		data,
+	} );
+
+	useRaiseBudgetRecommendations.mockReturnValue( {
+		campaigns: [],
+		hasFinishedResolution: true,
 	} );
 }
 
