@@ -68,12 +68,12 @@
 		padding: $grid-unit-30 $grid-unit-15;
 		margin: 0 $grid-unit-50;
 
-		& svg {
+		svg {
 			fill: $gray-900;
 			margin-right: $grid-unit-15;
 		}
 
-		& p {
+		p {
 			font-size: $helptext-font-size;
 			color: $gray-600;
 		}
@@ -93,7 +93,7 @@
 			padding: $grid-unit-30 $grid-unit-05;
 			margin: 0 $grid-unit-30;
 
-			& svg {
+			svg {
 				align-self: flex-start;
 			}
 		}
