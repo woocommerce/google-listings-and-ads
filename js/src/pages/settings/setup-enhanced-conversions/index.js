@@ -69,29 +69,6 @@ const SetupEnhancedConversions = () => {
 		return <AppSpinner />;
 	}
 
-	let helpText = createInterpolateElement(
-		__(
-			'Enhanced Conversions is a feature designed to improve your measurement accuracy by collecting privacy-conscious data without the need for third-party cookies. <readMoreLink>Read more</readMoreLink>.',
-			'google-listings-and-ads'
-		),
-		{
-			readMoreLink: (
-				<AppDocumentationLink
-					href="https://support.google.com/google-ads/answer/9888656"
-					context="setup-enhanced-conversions"
-					linkId="enhanced-conversions-read-more"
-				/>
-			),
-		}
-	);
-
-	if ( ! hasGoogleAdsConnection ) {
-		helpText = __(
-			'Please connect your Google Ads account in order to use Enhanced Conversions data.',
-			'google-listings-and-ads'
-		);
-	}
-
 	return (
 		<div className="gla-settings-enhanced-conversions">
 			<CheckboxControl
@@ -102,7 +79,21 @@ const SetupEnhancedConversions = () => {
 				checked={ isEnabled }
 				disabled={ disabledCheckbox }
 				onChange={ handleOnChange }
-				help={ helpText }
+				help={ createInterpolateElement(
+					__(
+						'Enhanced Conversions is a feature designed to improve your measurement accuracy by collecting privacy-conscious data without the need for third-party cookies. <readMoreLink>Read more</readMoreLink>.',
+						'google-listings-and-ads'
+					),
+					{
+						readMoreLink: (
+							<AppDocumentationLink
+								href="https://support.google.com/google-ads/answer/9888656"
+								context="setup-enhanced-conversions"
+								linkId="enhanced-conversions-read-more"
+							/>
+						),
+					}
+				) }
 			/>
 
 			<Tip>
