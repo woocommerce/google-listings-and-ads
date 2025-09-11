@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since x.x.x
  */
-class Migration20240813T1653383133 extends AbstractMigration {
+class Migration20250910T1653383133 extends AbstractMigration {
 
 	/**
 	 * @var AdsRecommendationsTable
