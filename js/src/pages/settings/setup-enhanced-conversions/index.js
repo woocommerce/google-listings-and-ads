@@ -18,7 +18,7 @@ import AppDocumentationLink from '~/components/app-documentation-link';
 import AppSpinner from '~/components/app-spinner';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useEnableEnhancedConversions from './useEnableEnhancedConversions';
-import './setup-enhanced-conversions.scss';
+import './index.scss';
 
 /**
  * Renders the settings section for Enhanced Conversions setup.
