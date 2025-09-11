@@ -12,7 +12,6 @@ import round from '~/utils/round';
 import styles from './budget-setup.module.scss';
 
 export default function BudgetBadge( { amount } ) {
-	const prefix = round( amount ) >= 0 ? '+' : '-';
 	const isNegative = round( amount ) < 0;
 	const isPositive = round( amount ) > 0;
 
@@ -24,12 +23,7 @@ export default function BudgetBadge( { amount } ) {
 				[ styles.budgetBadgeNeutral ]: ! isNegative && ! isPositive,
 			} ) }
 		>
-			<DeltaValue
-				amount={ round( amount ) }
-				prefix={ prefix }
-				suffix="%"
-				decimalPlaces={ 0 }
-			/>
+			<DeltaValue amount={ round( amount ) } suffix="%" />
 		</Badge>
 	);
 }

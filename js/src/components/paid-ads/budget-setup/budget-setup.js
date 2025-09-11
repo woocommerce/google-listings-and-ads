@@ -45,7 +45,7 @@ function BudgetMetrics( { formatAmount, metrics } ) {
 			</span>
 			<span className={ styles.metricsItem }>
 				{ metrics ? formatAmount( metrics.conversionsValue ) : null }
-				{ metrics?.uplift && parseInt( metrics.uplift, 10 ) !== 0 && (
+				{ Number( metrics?.uplift ) !== 0 && (
 					<BudgetBadge amount={ metrics.uplift } />
 				) }
 			</span>
