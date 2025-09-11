@@ -296,34 +296,4 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 			throw new Exception( __( 'Unable to retrieve Google Ads recommendations.', 'google-listings-and-ads' ) . $e->getMessage(), $e->getCode() );
 		}
 	}
-
-	/**
-	 * Updates recommendations in the database.
-	 *
-	 * @param array $args Query arguments to fetch recommendations.
-	 *
-	 * @throws Exception If there is an error while updating recommendations.
-	 */
-	public function update_recommendations( $args ): void {
-		try {
-			$recommendations = $this->get_google_recommendations( $args );
-
-			if ( empty( $recommendations ) ) {
-				return;
-			}
-
-			/** @var AdsRecommendationsQuery $query */
-			$query = $this->container->get( AdsRecommendationsQuery::class );
-
-			// Clear existing data before updating.
-			$query->reload_data();
-
-			// Insert recommendations into the DB table.
-			foreach ( $recommendations as $recommendation ) {
-				$query->insert( $recommendation );
-			}
-		} catch ( \Exception $e ) {
-			do_action( 'woocommerce_gla_debug_message', $e->getMessage(), __METHOD__ );
-		}
-	}
 }
