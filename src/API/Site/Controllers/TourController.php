@@ -34,26 +34,16 @@ class TourController extends BaseOptionsController {
 	 */
 	public function register_routes(): void {
 		/**
-		 * GET The tour visualizations
+		 * POST Update the tour visualizations
 		 */
 		$this->register_route(
-			"/tours/(?P<id>{$this->get_tour_id_regex()})",
+			'/tours',
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_tours_read_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
-				'schema' => $this->get_api_response_schema_callback(),
-			],
-		);
-
-		/**
-		 * POST Update the tour visualizations
-		 */
-		$this->register_route(
-			'/tours',
-			[
 				[
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->get_tours_create_callback(),
@@ -73,8 +63,7 @@ class TourController extends BaseOptionsController {
 	protected function get_tours_read_callback(): callable {
 		return function ( Request $request ) {
 			try {
-				$tour_id = $request->get_url_params()['id'];
-				return $this->prepare_item_for_response( $this->get_tour( $tour_id ), $request );
+				return new Response( $this->get_tours() );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
