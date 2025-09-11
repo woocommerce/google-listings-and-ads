@@ -13,6 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUn
  * @group Tours
  */
 class ToursControllerTest extends RESTControllerUnitTest {
+
 	protected const TEST_TOUR_ID = 'test';
 	protected const ROUTE        = '/wc/gla/tours';
 
