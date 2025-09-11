@@ -7,7 +7,7 @@ import {
 	useState,
 	createInterpolateElement,
 } from '@wordpress/element';
-import { Card, CardBody, CheckboxControl } from '@wordpress/components';
+import { CheckboxControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
