@@ -547,4 +547,22 @@ describe( 'adaptRaiseAdsBudgetRecommendations', () => {
 			expected
 		);
 	} );
+
+	it( 'returns an empty array when the input is an array of invalid items', () => {
+		const input = [
+			{
+				id: 12345,
+				campaign_name: 'Test Campaign',
+				details: {
+					campaign_budget_recommendation: {
+						current_budget_amount: 15,
+						recommended_budget_amount: 25,
+						budget_options: [],
+					},
+				},
+			},
+		];
+
+		expect( adaptRaiseAdsBudgetRecommendations( input ) ).toEqual( [] );
+	} );
 } );

@@ -224,7 +224,7 @@ export function adaptRaiseAdsBudgetRecommendations( rawData ) {
 			! Array.isArray( recommendations ) ||
 			recommendations.length === 0
 		) {
-			return;
+			return [];
 		}
 
 		const { source, details, ...data } = camelCaseItem;
