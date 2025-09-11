@@ -455,4 +455,96 @@ describe( 'adaptRaiseAdsBudgetRecommendations', () => {
 			expected
 		);
 	} );
+
+	it( 'skips invalid budget options and adapts the valid ones', () => {
+		const input = [
+			{
+				id: 12345,
+				campaign_name: 'Test Campaign',
+				details: {
+					campaign_budget_recommendation: {
+						current_budget_amount: 15,
+						recommended_budget_amount: 25,
+						budget_options: [
+							{
+								metrics: {
+									cost: '181.971258',
+									conversions: 4.828944206237793,
+									conversions_value: 622.08,
+								},
+								budget_amount: '26',
+								level: 'Low',
+							},
+							{
+								metrics: {
+									cost: '216961447',
+									conversions: 5.398608684539795,
+									conversions_value: 679.24,
+								},
+								budget_amount: '31',
+								level: 'Recommended',
+							},
+							{
+								metrics: {
+									cost: '251946304',
+									conversions: 5.776357173919678,
+									conversions_value: 731.87,
+								},
+								budget_amount: '36',
+								level: 'High',
+							},
+							{
+								metrics: {
+									cost: '251946304',
+									conversions: 5.776357173919678,
+									conversions_value: 731.87,
+								},
+								budget_amount: '36',
+								level: 'Base',
+							},
+						],
+					},
+				},
+			},
+		];
+
+		const expected = [
+			{
+				id: 12345,
+				campaignName: 'Test Campaign',
+				low: {
+					metrics: {
+						cost: '181.971258',
+						conversions: 4.828944206237793,
+						conversionsValue: 622.08,
+					},
+					budgetAmount: '26',
+					dailyBudget: '26',
+				},
+				high: {
+					metrics: {
+						cost: '251946304',
+						conversions: 5.776357173919678,
+						conversionsValue: 731.87,
+					},
+					budgetAmount: '36',
+					dailyBudget: '36',
+				},
+				recommended: {
+					metrics: {
+						cost: '216961447',
+						conversions: 5.398608684539795,
+						conversionsValue: 679.24,
+					},
+					budgetAmount: '31',
+					dailyBudget: '31',
+				},
+				recommendedDailyBudget: '31',
+			},
+		];
+
+		expect( adaptRaiseAdsBudgetRecommendations( input ) ).toEqual(
+			expected
+		);
+	} );
 } );
