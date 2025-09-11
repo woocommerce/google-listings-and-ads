@@ -388,7 +388,7 @@ export const getStoreCategories = ( state ) => {
  * Retrieves the tours data from the state object.
  *
  * @param {Object} state - The Redux state object.
- * @return {Array<Tour>} The tours data from the state. It will be `null` if not yet fetched or fetched but doesn't exist.
+ * @return {Object.<string, Tour>} The tours data from the state. It will be `null` if not yet fetched or fetched but doesn't exist.
  */
 export const getTours = ( state ) => {
 	return state.tours || null;

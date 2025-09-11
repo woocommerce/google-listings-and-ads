@@ -54,7 +54,6 @@ import {
 	receiveMappingAttributes,
 	receiveMappingRules,
 	receiveStoreCategories,
-	receiveTour,
 	receiveTours,
 	receiveGtinMigrationStatus,
 	receiveAdsRecommendations,

@@ -1169,7 +1169,7 @@ export function* receiveStoreCategories( storeCategories ) {
 /**
  * Action to receive the tours.
  *
- * @param {Array<Tour>} tours The tours to receive.
+ * @param {Object.<string, Tour>} tours The tours to receive.
  */
 export function* receiveTours( tours ) {
 	return {
