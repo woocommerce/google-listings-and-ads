@@ -38,6 +38,8 @@ function isBelowLowRecommendation( amount, recommendation, precision ) {
 }
 
 function BudgetMetrics( { formatAmount, metrics } ) {
+	const renderUplift = metrics?.uplift && Number( metrics?.uplift ) !== 0;
+
 	return (
 		<div className={ styles.metricsGroup }>
 			<span className={ styles.metricsItem }>
@@ -45,9 +47,7 @@ function BudgetMetrics( { formatAmount, metrics } ) {
 			</span>
 			<span className={ styles.metricsItem }>
 				{ metrics ? formatAmount( metrics.conversionsValue ) : null }
-				{ metrics?.uplift && Number( metrics?.uplift ) !== 0 && (
-					<BudgetBadge amount={ metrics.uplift } />
-				) }
+				{ !! renderUplift && <BudgetBadge amount={ metrics.uplift } /> }
 			</span>
 			<span className={ styles.metricsItem }>
 				{ metrics ? formatAmount( metrics.cost ) : null }
