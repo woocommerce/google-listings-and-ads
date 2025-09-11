@@ -227,7 +227,7 @@ export function adaptRaiseAdsBudgetRecommendations( rawData ) {
 			return;
 		}
 
-		const { source, currency, details, ...data } = camelCaseItem;
+		const { source, details, ...data } = camelCaseItem;
 
 		eliminateIdenticalMetrics( recommendations ).forEach(
 			( metricItem ) => {
@@ -236,7 +236,6 @@ export function adaptRaiseAdsBudgetRecommendations( rawData ) {
 
 				if ( validLevelKeys.includes( key ) ) {
 					adaptingItem.dailyBudget = adaptingItem.budgetAmount;
-					adaptingItem.currency = currency;
 					availabilities.push( adaptingItem.metrics );
 					data[ key ] = adaptingItem;
 				}
