@@ -17,7 +17,6 @@ import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import Badge from '~/components/badge';
 import AppButton from '~/components/app-button';
 import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
-import formatNumber from '~/utils/formatNumber';
 import './index.scss';
 
 const RAISE_BUDGET_RECOMMENDATION_BANNER_CONTEXT =

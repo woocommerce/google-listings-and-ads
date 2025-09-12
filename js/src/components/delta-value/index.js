@@ -17,7 +17,7 @@ import './index.scss';
  * @param {Object} props - The component props.
  * @param {number} props.amount - The numeric value to be displayed. Determines if the value is positive, negative, or zero.
  * @param {string} [props.suffix=''] - An optional string to append to the formatted value.
- * @param {boolean} [props.fancyFormatting=false] - If true, formats the number using compact notation (e.g., 1.5k, 2M).
+ * @param {boolean} [props.compactNotation=false] - If true, formats the number using compact notation (e.g., 1.5k, 2M).
  *
  * @return {JSX.Element} A span element containing the formatted delta value with appropriate CSS classes applied.
  */
