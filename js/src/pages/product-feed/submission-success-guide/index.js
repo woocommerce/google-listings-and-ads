@@ -118,30 +118,14 @@ const pages = [
 		content: (
 			<GuidePageContent
 				title={ __(
-					'Improve conversion tracking accuracy to improve campaign performance',
+					'Improve campaign measurement with privacy-focused tools',
 					'google-listings-and-ads'
 				) }
 			>
 				<p>
 					{ __(
-						'Set up Enhanced Conversions, a feature designed to improve your measurement accuracy by collecting privacy-conscious data without the need for third-party cookies.',
+						'Your account already uses Google Tag Gateway to strengthen measurement accuracy. You can also enable Enhanced Conversions to further improve tracking with privacy-conscious data.',
 						'google-listings-and-ads'
-					) }
-				</p>
-				<p>
-					{ createInterpolateElement(
-						__(
-							'<link>Learn more</link> about Enhanced Conversions.',
-							'google-listings-and-ads'
-						),
-						{
-							link: (
-								<ContentLink
-									href="https://support.google.com/google-ads/answer/9888656"
-									context="enhanced-conversions"
-								/>
-							),
-						}
 					) }
 				</p>
 			</GuidePageContent>
@@ -149,16 +133,15 @@ const pages = [
 		actions: (
 			<AppButton
 				isPrimary
-				data-action="view-enhanced-conversions-settings"
 				eventName={ EVENT_NAME }
 				eventProps={ {
 					context: GUIDE_NAMES.SUBMISSION_SUCCESS,
-					action: 'view-enhanced-conversions-settings',
+					action: 'manage-measurement-settings',
 				} }
 				onClick={ handleSetupEnhancedConversionsOnClick }
 			>
 				{ __(
-					'Set up Enhanced Conversions',
+					'Manage measurement settings',
 					'google-listings-and-ads'
 				) }
 			</AppButton>
