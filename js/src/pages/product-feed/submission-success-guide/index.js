@@ -133,6 +133,7 @@ const pages = [
 		actions: (
 			<AppButton
 				isPrimary
+				data-action="manage-measurement-settings"
 				eventName={ EVENT_NAME }
 				eventProps={ {
 					context: GUIDE_NAMES.SUBMISSION_SUCCESS,

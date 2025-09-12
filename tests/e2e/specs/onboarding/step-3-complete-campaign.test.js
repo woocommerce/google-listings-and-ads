@@ -629,7 +629,7 @@ test.describe( 'Complete your campaign', () => {
 		} );
 	} );
 
-	test.describe( 'Enhanced conversion prompt', () => {
+	test.describe( 'Improve campaign measurement prompt', () => {
 		test.beforeAll( async () => {
 			await page.evaluate( () => {
 				window.sessionStorage.clear();
@@ -655,7 +655,7 @@ test.describe( 'Complete your campaign', () => {
 				await expect( guideControlsItems ).toHaveCount( 3 );
 			} );
 
-			test( 'should see the "Enhanced Conversions" prompt in the setup success modal', async () => {
+			test( 'should see the "Improve campaign measurement with privacy-focused tools" prompt in the setup success modal', async () => {
 				const guideControls = page.getByRole( 'list', {
 					name: 'Guide controls',
 				} );
@@ -664,24 +664,20 @@ test.describe( 'Complete your campaign', () => {
 				await guideControlsItems.nth( 1 ).click();
 				await expect(
 					page.getByText(
-						'Improve conversion tracking accuracy to improve campaign performance'
+						'Improve campaign measurement with privacy-focused tools'
 					)
 				).toBeVisible();
 			} );
 
-			test( 'should see the "Set up Enhanced Conversions" button in the setup success modal', async () => {
-				const enhancedConversionsButton = page.getByRole( 'button', {
-					name: 'Set up Enhanced Conversions',
+			test( 'should see the "Manage measurement settings" button in the setup success modal', async () => {
+				const manageMeasurementButton = page.getByRole( 'button', {
+					name: 'Manage measurement settings',
 				} );
-				await expect( enhancedConversionsButton ).toBeVisible();
+				await expect( manageMeasurementButton ).toBeVisible();
 
 				const dataAction =
-					await enhancedConversionsButton.getAttribute(
-						'data-action'
-					);
-				expect( dataAction ).toBe(
-					'view-enhanced-conversions-settings'
-				);
+					await manageMeasurementButton.getAttribute( 'data-action' );
+				expect( dataAction ).toBe( 'manage-measurement-settings' );
 			} );
 		} );
 
@@ -709,11 +705,11 @@ test.describe( 'Complete your campaign', () => {
 			} );
 		} );
 
-		test( 'should navigate to settings page when clicking "Set up Enhanced Conversions" button', async () => {
-			const enhancedConversionsButton = page.getByRole( 'button', {
-				name: 'Set up Enhanced Conversions',
+		test( 'should navigate to settings page when clicking "Manage measurement settings" button', async () => {
+			const manageMeasurementButton = page.getByRole( 'button', {
+				name: 'Manage measurement settings',
 			} );
-			await enhancedConversionsButton.click();
+			await manageMeasurementButton.click();
 
 			await page.waitForURL( /path=%2Fgoogle%2Fsettings/ );
 			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fsettings/ );
