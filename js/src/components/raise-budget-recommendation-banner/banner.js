@@ -133,10 +133,9 @@ const Banner = ( { onBannerDismissed } ) => {
 			budgetMetricsData.metrics.conversions ) *
 			100
 	);
-	const conversionValueIncrease = formatNumber(
+	const conversionValueIncrease =
 		recommendedCampaignMetrics.conversions_value -
-			budgetMetricsData.metrics.conversionsValue
-	);
+		budgetMetricsData.metrics.conversionsValue;
 
 	return (
 		<Notice
@@ -187,7 +186,12 @@ const Banner = ( { onBannerDismissed } ) => {
 						</p>
 
 						<p className="gla-raise-budget-recommendation-banner__estimates-value">
-							<span>+{ conversionValueIncrease }</span>
+							<span>
+								<DeltaValue
+									amount={ conversionValueIncrease }
+									compactNotation
+								/>
+							</span>
 
 							<span>
 								{ __(
