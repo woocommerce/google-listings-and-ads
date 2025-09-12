@@ -87,11 +87,11 @@ const Dashboard = () => {
 	return (
 		<>
 			<div className="gla-dashboard">
-				<RaiseBudgetRecommendationBanner />
 				<PMaxImproveAssetsBanner />
 				<ExperienceRatingBanner />
 				<DifferentCurrencyNotice context="dashboard" />
 				<MainTabNav />
+				<RaiseBudgetRecommendationBanner />
 				<RebrandingTour />
 				<div className="gla-dashboard__filter">
 					<AppDateRangeFilterPicker
