@@ -26,7 +26,8 @@ class Migration20250910T1653383133 extends AbstractMigration {
 	/**
 	 * Migration constructor.
 	 *
-	 * @param \wpdb                   $wpdb
+	 * @param \wpdb           $wpdb
+	 * @param ActionScheduler $action_scheduler
 	 */
 	public function __construct( \wpdb $wpdb, ActionScheduler $action_scheduler ) {
 		parent::__construct( $wpdb );
@@ -49,7 +50,7 @@ class Migration20250910T1653383133 extends AbstractMigration {
 	 */
 	public function apply(): void {
 		// Remove the ads_recommendation table if it exists.
-		$this->wpdb->query( "DROP TABLE IF EXISTS {$this->wpdb->prefix}gla_ads_recommendations" );
+		$this->wpdb->query( "DROP TABLE IF EXISTS {$this->wpdb->prefix}gla_ads_recommendations" ); // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		if ( function_exists( 'as_unschedule_all_actions' ) ) {
 			// Remove any scheduled actions that use the ads recommendations table.
