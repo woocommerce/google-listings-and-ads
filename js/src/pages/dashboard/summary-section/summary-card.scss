@@ -1,5 +1,5 @@
 .gla-summary-card {
-	& > div:last-child {
+	> div:last-child {
 		// Make card contents within a row have the same height
 		flex: 1;
 	}
@@ -26,7 +26,7 @@
 		min-height: 117px;
 		gap: $grid-unit-20;
 
-		& > * {
+		> * {
 			margin: 0;
 		}
 	}
