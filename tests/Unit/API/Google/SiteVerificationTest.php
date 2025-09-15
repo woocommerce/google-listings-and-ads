@@ -30,7 +30,7 @@ class SiteVerificationTest extends UnitTest {
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
-	/** @var MockObject|SiteVerficationService $verification_service */
+	/** @var MockObject|SiteVerificationService $verification_service */
 	protected $verification_service;
 
 	/** @var SiteVerification $verification */

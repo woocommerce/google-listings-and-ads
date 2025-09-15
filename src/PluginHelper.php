@@ -215,7 +215,7 @@ trait PluginHelper {
 		$separators = [ wc_get_price_decimal_separator(), wc_get_price_thousand_separator(), $locale['thousands_sep'], $locale['mon_thousands_sep'], $locale['decimal_point'], $locale['mon_decimal_point'], ',' ];
 
 		if ( wc_get_price_decimals() > 0 ) {
-			// Replace all posible separators with dots.
+			// Replace all possible separators with dots.
 			$numeric_string = str_replace( $separators, '.', $numeric_string );
 			// Leave only the last dot that is the decimal separator.
 			return (string) preg_replace( '/\.(?=.*\.)/', '', $numeric_string );

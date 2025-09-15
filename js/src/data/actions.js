@@ -51,7 +51,7 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * @property {string} name Campaign name.
  * @property {'enabled'|'paused'|'removed'} status Campaign is currently running, has been paused or removed.
  * @property {number} amount Amount of daily budget for running ads.
- * @property {CountryCode} country The sales country of this campain.
+ * @property {CountryCode} country The sales country of this campaign.
  *   Please note that this is a targeting country for advertising,
  *   but it is NOT set up via the location-based method.
  * @property {Array<CountryCode>} targeted_locations The location-based targeting countries associated with this campaign for advertising.
@@ -191,7 +191,7 @@ export function* upsertShippingRates( shippingRates ) {
 /**
  * Delete shipping rates.
  *
- * @param {Array<string>} ids IDs of shiping rates to be deleted.
+ * @param {Array<string>} ids IDs of shipping rates to be deleted.
  * @return {Object} Action object to delete shipping rates.
  * @throws Will throw an error if the request failed.
  */
