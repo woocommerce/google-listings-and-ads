@@ -321,4 +321,160 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 		$this->assertCount( 1, $data );
 		$this->assertEquals( 101, $data[0]['campaign_id'] );
 	}
+
+	public function test_get_recommendations_includes_correct_details_property() {
+		$this->account->method( 'get_connected_account' )
+			->willReturn( [ 'status' => 'connected' ] );
+
+		$mock_recommendations_data = [
+			[
+				'id'              => 1,
+				'type'            => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
+				'resource_name'   => 'customers/123/recommendations/1',
+				'campaign_id'     => 100,
+				'campaign_name'   => 'Test Campaign',
+				'campaign_status' => 'ENABLED',
+				'details'         => [],
+				'last_synced'     => gmdate( 'c' ),
+			],
+			[
+				'id'              => 2,
+				'type'            => 'MARGINAL_ROI_CAMPAIGN_BUDGET',
+				'resource_name'   => 'customers/123/recommendations/2',
+				'campaign_id'     => 101,
+				'campaign_name'   => 'Another Campaign',
+				'campaign_status' => 'ENABLED',
+				'details'         => [
+					'campaign_budget_recommendation' => [
+						'current_budget_amount'     => 20,
+						'recommended_budget_amount' => 31,
+						'budget_options'            => [
+							[
+								'budget_amount' => 20,
+								'level'         => 'Current',
+								'metrics'       => [
+									'cost'              => 139.964209,
+									'conversions'       => 4,
+									'conversions_value' => 545.7408447265625,
+								],
+							],
+							[
+								'budget_amount' => 26,
+								'level'         => 'Low',
+								'metrics'       => [
+									'cost'              => 181.971258,
+									'conversions'       => 4.828944206237793,
+									'conversions_value' => 622.0850219726562,
+								],
+							],
+							[
+								'budget_amount' => 31,
+								'level'         => 'Recommended',
+								'metrics'       => [
+									'cost'              => 216961447,
+									'conversions'       => 5.398608684539795,
+									'conversions_value' => 679.2435913085938,
+								],
+							],
+							[
+								'budget_amount' => 36,
+								'level'         => 'High',
+								'metrics'       => [
+									'cost'              => 251946304,
+									'conversions'       => 5.776357173919678,
+									'conversions_value' => 731.8743286132812,
+								],
+							],
+						],
+					],
+				],
+				'last_synced'     => gmdate( 'c' ),
+			],
+			[
+				'id'              => 3,
+				'type'            => 'CAMPAIGN_BUDGET',
+				'resource_name'   => 'customers/124/recommendations/3',
+				'campaign_id'     => 102,
+				'campaign_name'   => 'Another Campaign 02',
+				'campaign_status' => 'ENABLED',
+				'details'         => [
+					'campaign_budget_recommendation' => [
+						'current_budget_amount'     => 20,
+						'recommended_budget_amount' => 31,
+						'budget_options'            => [
+							[
+								'budget_amount' => 20,
+								'level'         => 'Current',
+								'metrics'       => [
+									'cost'              => 139.964209,
+									'conversions'       => 4,
+									'conversions_value' => 545.7408447265625,
+								],
+							],
+							[
+								'budget_amount' => 26,
+								'level'         => 'Low',
+								'metrics'       => [
+									'cost'              => 181.971258,
+									'conversions'       => 4.828944206237793,
+									'conversions_value' => 622.0850219726562,
+								],
+							],
+							[
+								'budget_amount' => 31,
+								'level'         => 'Recommended',
+								'metrics'       => [
+									'cost'              => 216961447,
+									'conversions'       => 5.398608684539795,
+									'conversions_value' => 679.2435913085938,
+								],
+							],
+							[
+								'budget_amount' => 36,
+								'level'         => 'High',
+								'metrics'       => [
+									'cost'              => 251946304,
+									'conversions'       => 5.776357173919678,
+									'conversions_value' => 731.8743286132812,
+								],
+							],
+						],
+					],
+				],
+				'last_synced'     => gmdate( 'c' ),
+			],
+		];
+
+		$filter_types = [
+			'types' => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH, MARGINAL_ROI_CAMPAIGN_BUDGET, CAMPAIGN_BUDGET',
+		];
+
+		$this->recommendations->expects( $this->once() )
+			->method( 'get_recommendations' )
+			->willReturn( array_values( $mock_recommendations_data ) );
+
+		$response = $this->do_request( self::ROUTE_RECOMMENDATIONS, 'GET', $filter_types );
+
+		$this->assertEquals( 200, $response->get_status() );
+
+		$data = $response->get_data();
+		$this->assertIsArray( $data );
+		$this->assertCount( 3, $data );
+
+		$this->assertEquals( 100, $data[0]['campaign_id'] );
+		$this->assertEquals( 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH', $data[0]['type'] );
+		$this->assertEmpty( $data[0]['details'] );
+
+		$this->assertEquals( 101, $data[1]['campaign_id'] );
+		$this->assertEquals( 'MARGINAL_ROI_CAMPAIGN_BUDGET', $data[1]['type'] );
+		$this->assertIsArray( $data[1]['details'] );
+		$this->assertIsArray( $data[1]['details']['campaign_budget_recommendation'] );
+		$this->assertIsArray( $data[1]['details']['campaign_budget_recommendation']['budget_options'] );
+
+		$this->assertEquals( 102, $data[2]['campaign_id'] );
+		$this->assertEquals( 'CAMPAIGN_BUDGET', $data[2]['type'] );
+		$this->assertIsArray( $data[2]['details'] );
+		$this->assertIsArray( $data[2]['details']['campaign_budget_recommendation'] );
+		$this->assertIsArray( $data[2]['details']['campaign_budget_recommendation']['budget_options'] );
+	}
 }

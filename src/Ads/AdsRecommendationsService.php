@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AdsRecommendationsQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsRecommendationsQuery as GoogleAdsRecommendationsQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
@@ -32,6 +33,7 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 	use ContainerAwareTrait;
 	use OptionsAwareTrait;
 	use TransientsAwareTrait;
+	use MicroTrait;
 
 	/**
 	 * Allowed recommendation types.
@@ -222,33 +224,41 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 						continue;
 					}
 
+					$current_budget     = $budget_recommendation->getCurrentBudgetAmountMicros();
+					$recommended_budget = $budget_recommendation->getRecommendedBudgetAmountMicros();
+
 					foreach ( $budget_recommendation->getBudgetOptions() as $option ) {
-						$impact    = $option->getImpact();
-						$base      = $impact->getBaseMetrics();
-						$potential = $impact->getPotentialMetrics();
+						$impact        = $option->getImpact();
+						$potential     = $impact->getPotentialMetrics();
+						$budget_amount = $option->getBudgetAmountMicros();
+
+						// Determine budget option level.
+						$level = __( 'Low', 'google-listings-and-ads' );
+
+						if ( $budget_amount === $current_budget ) {
+							$level = __( 'Current', 'google-listings-and-ads' );
+						} elseif ( $budget_amount === $recommended_budget ) {
+							$level = __( 'Recommended', 'google-listings-and-ads' );
+						} elseif ( $budget_amount > $recommended_budget ) {
+							$level = __( 'High', 'google-listings-and-ads' );
+						}
 
 						$budget_options[] = [
-							'budget_amount_micros' => $option->getBudgetAmountMicros(),
-							'impact'               => [
-								'base_metrics'      => [
-									'cost_micros'       => $base->getCostMicros(),
-									'conversions'       => $base->getConversions(),
-									'conversions_value' => $base->getConversionsValue(),
-								],
-								'potential_metrics' => [
-									'cost_micros'       => $potential->getCostMicros(),
-									'conversions'       => $potential->getConversions(),
-									'conversions_value' => $potential->getConversionsValue(),
-								],
+							'budget_amount' => $this->from_micro( $budget_amount ),
+							'level'         => $level,
+							'metrics'       => [
+								'cost'              => $this->from_micro( $potential->getCostMicros() ),
+								'conversions'       => $potential->getConversions(),
+								'conversions_value' => $potential->getConversionsValue(),
 							],
 						];
 					}
 
 					$recommendation_details = [
 						'campaign_budget_recommendation' => [
-							'current_budget_amount_micros'     => $budget_recommendation->getCurrentBudgetAmountMicros(),
-							'recommended_budget_amount_micros' => $budget_recommendation->getRecommendedBudgetAmountMicros(),
-							'budget_options'                   => $budget_options,
+							'current_budget_amount'     => $this->from_micro( $current_budget ),
+							'recommended_budget_amount' => $this->from_micro( $recommended_budget ),
+							'budget_options'            => $budget_options,
 						],
 					];
 				}
