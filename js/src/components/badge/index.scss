@@ -30,6 +30,11 @@
 		color: $gla-color-green-70;
 	}
 
+	&:where(.is-info) {
+		background-color: $gla-color-blue-0;
+		color: $gla-color-blue-70;
+	}
+
 	.gla-badge__content {
 		overflow: hidden;
 		white-space: nowrap;
