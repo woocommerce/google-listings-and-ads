@@ -174,7 +174,7 @@ export default function CampaignAssetsForm( {
 	const {
 		campaigns: raiseBudgetRecommendations,
 		hasFinishedResolution: hasResolvedRaiseBudgetRecommendations,
-	} = useRaiseBudgetRecommendations( { campaign_id: campaignId } );
+	} = useRaiseBudgetRecommendations( campaignId );
 
 	if ( ! hasResolved || ! hasResolvedRaiseBudgetRecommendations ) {
 		return <AppSpinner />;
@@ -185,7 +185,7 @@ export default function CampaignAssetsForm( {
 			? injectUpliftData(
 					raiseBudgetRecommendations[ 0 ],
 					budgetRecommendation
-			  ) || budgetRecommendation
+			  )
 			: budgetRecommendation;
 
 	const extendAdapter = ( formContext ) => {
@@ -260,7 +260,6 @@ export default function CampaignAssetsForm( {
 						amount: selectedBudgetRecommendation.recommendedDailyBudget,
 					},
 					selectedBudgetRecommendation,
-					isEditing,
 					budgetRecommendation
 				),
 				...initialAssetGroup,

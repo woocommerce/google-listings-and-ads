@@ -749,16 +749,27 @@ export function* getPriceBenchmarkSuggestions( args ) {
  */
 export function* getAdsRecommendations( types, campaign_id = null ) {
 	try {
+		const params = {
+			types,
+		};
+
+		// campaign_id should be added to the query only if it's defined.
+		if ( campaign_id ) {
+			params.campaign_id = campaign_id;
+		}
+
 		const response = yield apiFetch( {
-			path: addQueryArgs( `${ API_NAMESPACE }/ads/recommendations`, {
-				types,
-				campaign_id,
-			} ),
+			path: addQueryArgs(
+				`${ API_NAMESPACE }/ads/recommendations`,
+				params
+			),
 		} );
 
-		const key = campaign_id ? [ campaign_id, ...types ] : types;
+		const key = [ campaign_id, ...types ].filter( Boolean );
 		const typesKey = arrayToUnderscoreKey( key );
-		const data = adaptRaiseAdsBudgetRecommendations( response );
+		const data = campaign_id
+			? adaptRaiseAdsBudgetRecommendations( response )
+			: response;
 		yield receiveAdsRecommendations( data, typesKey );
 	} catch ( error ) {
 		handleApiError(

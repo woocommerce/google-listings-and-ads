@@ -61,16 +61,15 @@ function eliminateIdenticalMetrics( rawRecommendations ) {
 }
 
 /**
- * Adapts the ads budget recommendation data received from API.
+ * Adapts raw budget recommendation data.
  *
- * @param {Object} rawData The ads budget recommendation data to be adapted.
- * @return {AdsBudgetRecommendation} Ads budget recommendation data.
+ * @param {Array<Object>} recommendations The array of recommendations to be adapted.
+ * @return {Object} An object containing adapted recommendations by level and a list of available metrics.
  */
-export function adaptAdsBudgetRecommendation( rawData ) {
-	const validLevelKeys = [ 'recommended', 'high', 'low' ];
+function adaptBudgetRecommendations( recommendations ) {
+	const validLevelKeys = [ 'recommended', 'high', 'low', 'current' ];
+	const adaptedData = {};
 	const availabilities = [];
-	const { currency, source, recommendations, ...data } =
-		convertKeysFromSnakeCaseToCamelCase( rawData );
 
 	eliminateIdenticalMetrics( recommendations ).forEach( ( item ) => {
 		const { level, ...adaptingItem } = item;
@@ -78,10 +77,32 @@ export function adaptAdsBudgetRecommendation( rawData ) {
 
 		if ( validLevelKeys.includes( key ) ) {
 			availabilities.push( adaptingItem.metrics );
-			adaptingItem.currency = currency;
-			data[ key ] = adaptingItem;
+			adaptedData[ key ] = adaptingItem;
 		}
 	} );
+
+	return { adaptedData, availabilities };
+}
+
+/**
+ * Adapts the ads budget recommendation data received from API.
+ *
+ * @param {Object} rawData The ads budget recommendation data to be adapted.
+ * @return {AdsBudgetRecommendation} Ads budget recommendation data.
+ */
+export function adaptAdsBudgetRecommendation( rawData ) {
+	const { currency, source, recommendations, ...data } =
+		convertKeysFromSnakeCaseToCamelCase( rawData );
+
+	const { adaptedData, availabilities } =
+		adaptBudgetRecommendations( recommendations );
+
+	// Add currency to each adapted item at the call site
+	Object.keys( adaptedData ).forEach( ( key ) => {
+		adaptedData[ key ].currency = currency;
+	} );
+
+	Object.assign( data, adaptedData );
 
 	data.recommendedDailyBudget = data.recommended.dailyBudget;
 	data.eventProps = {
@@ -206,13 +227,10 @@ export function adaptAssetGroup( assetGroup ) {
  * @return {Array<RaiseAdsBudgetRecommendations>} Raise ads budget recommendations data.
  */
 export function adaptRaiseAdsBudgetRecommendations( rawData ) {
-	// Ensure that rawData is non-empty array.
 	if ( ! Array.isArray( rawData ) || rawData.length === 0 ) {
 		return [];
 	}
 
-	const validLevelKeys = [ 'recommended', 'high', 'low', 'current' ];
-	const availabilities = [];
 	const finalData = [];
 
 	rawData.forEach( ( item ) => {
@@ -224,23 +242,18 @@ export function adaptRaiseAdsBudgetRecommendations( rawData ) {
 			! Array.isArray( recommendations ) ||
 			recommendations.length === 0
 		) {
-			return [];
+			return;
 		}
 
+		const { adaptedData } = adaptBudgetRecommendations( recommendations );
+
+		// Add dailyBudget to each adapted item at the call site
+		Object.keys( adaptedData ).forEach( ( key ) => {
+			adaptedData[ key ].dailyBudget = adaptedData[ key ].budgetAmount;
+		} );
+
 		const { source, details, ...data } = camelCaseItem;
-
-		eliminateIdenticalMetrics( recommendations ).forEach(
-			( metricItem ) => {
-				const { level, ...adaptingItem } = metricItem;
-				const key = level.toLowerCase();
-
-				if ( validLevelKeys.includes( key ) ) {
-					adaptingItem.dailyBudget = adaptingItem.budgetAmount;
-					availabilities.push( adaptingItem.metrics );
-					data[ key ] = adaptingItem;
-				}
-			}
-		);
+		Object.assign( data, adaptedData );
 
 		data.recommendedDailyBudget = data.recommended.dailyBudget;
 

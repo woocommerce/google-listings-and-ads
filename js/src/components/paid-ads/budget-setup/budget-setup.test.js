@@ -47,14 +47,14 @@ jest.mock( '~/hooks/useBudgetMetrics', () =>
 	} )
 );
 
-function mockRaiseBudgetRecommendationsData( { nilData } ) {
-	if ( nilData ) {
-		useRaiseBudgetRecommendations.mockReturnValue( {
-			campaigns: [],
-			hasFinishedResolution: true,
-		} );
-	}
+function mockEmptyRaiseBudgetRecommendationsData() {
+	useRaiseBudgetRecommendations.mockReturnValue( {
+		campaigns: [],
+		hasFinishedResolution: true,
+	} );
+}
 
+function mockRaiseBudgetRecommendationsData() {
 	const data = {
 		dailyBudgetBaseline: 12,
 		recommendedDailyBudget: 15,
@@ -148,7 +148,7 @@ function mockBudgetRecommendation( ...availableKeys ) {
 		data,
 	} );
 
-	mockRaiseBudgetRecommendationsData( { nilData: true } );
+	mockEmptyRaiseBudgetRecommendationsData();
 }
 
 describe( 'BudgetSetup', () => {
@@ -404,7 +404,7 @@ describe( 'BudgetSetup', () => {
 
 	describe( 'Edit campaign', () => {
 		beforeEach( () => {
-			mockRaiseBudgetRecommendationsData( { nilData: false } );
+			mockRaiseBudgetRecommendationsData();
 		} );
 
 		it( 'should display the uplift badge for each recommendation option based on the raise data', () => {
@@ -459,7 +459,7 @@ describe( 'BudgetSetup', () => {
 			expect( screen.getByLabelText( '$20.56/day' ) ).toBeInTheDocument();
 			expect( screen.getByText( '$147.89' ) ).toBeInTheDocument();
 
-			mockRaiseBudgetRecommendationsData( { nilData: true } );
+			mockEmptyRaiseBudgetRecommendationsData();
 			rerender( <Wrapper campaignID={ 1234 } /> );
 
 			expect( getOption( 'high' ) ).toBeInTheDocument();
