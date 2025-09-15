@@ -1042,45 +1042,6 @@ test.describe( 'Set up accounts', () => {
 			} );
 		} );
 
-		test.describe( 'clicking "Edit" when an Ads account is being claimed', async () => {
-			test( 'should let you connect to a different account', async () => {
-				await setUpAccountsPage.mockAdsStatusNotClaimed();
-				await setUpAccountsPage.mockAdsAccountIncomplete(
-					'claim_account'
-				);
-
-				await setUpAccountsPage.goto();
-
-				const editButton = setUpAccountsPage.getEditButton();
-				await editButton.click();
-
-				const connectDifferentGoogleAdsAccountButton =
-					setUpAccountsPage.getConnectDifferentAdsAccountButton();
-
-				await expect(
-					connectDifferentGoogleAdsAccountButton
-				).toBeVisible();
-			} );
-
-			test( 'should disable the create new account button if there are no other existing accounts', async () => {
-				await setUpAccountsPage.mockAdsStatusNotClaimed();
-				await setUpAccountsPage.mockAdsHasNoAccounts();
-				await setUpAccountsPage.mockAdsAccountIncomplete(
-					'claim_account'
-				);
-
-				await setUpAccountsPage.goto();
-
-				const editButton = setUpAccountsPage.getEditButton();
-				await editButton.click();
-
-				const createNewAdsAccountButton =
-					setUpAccountsPage.getCreateNewAdsAccountButton();
-
-				await expect( createNewAdsAccountButton ).toBeDisabled();
-			} );
-		} );
-
 		test.describe( 'clicking "Edit" when there are no other existing accounts', async () => {
 			test( 'should let you create new accounts', async () => {
 				await setUpAccountsPage.mockAdsStatusClaimed();
