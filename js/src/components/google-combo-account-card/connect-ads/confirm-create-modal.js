@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -23,9 +24,13 @@ import './confirm-create-modal.scss';
  */
 const ConfirmCreateModal = ( { onContinue, onRequestClose } ) => {
 	const { disconnectGoogleAdsAccount } = useAppDispatch();
+	const [ isDisconnecting, setDisconnecting ] = useState( false );
 
 	const handleOnClick = () => {
-		disconnectGoogleAdsAccount( true ).then( () => onContinue() );
+		setDisconnecting( true );
+		disconnectGoogleAdsAccount( true )
+			.then( () => onContinue() )
+			.catch( () => setDisconnecting( false ) );
 	};
 
 	return (
@@ -36,7 +41,12 @@ const ConfirmCreateModal = ( { onContinue, onRequestClose } ) => {
 				'google-listings-and-ads'
 			) }
 			buttons={ [
-				<AppButton key="confirm" isSecondary onClick={ handleOnClick }>
+				<AppButton
+					key="confirm"
+					isSecondary
+					onClick={ handleOnClick }
+					loading={ isDisconnecting }
+				>
 					{ __(
 						'Yes, I want a new account',
 						'google-listings-and-ads'
