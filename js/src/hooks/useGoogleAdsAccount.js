@@ -47,18 +47,6 @@ const useGoogleAdsAccount = () => {
 				GOOGLE_ADS_ACCOUNT_STATUS.INCOMPLETE,
 			].includes( acc?.status );
 
-			// let hasGoogleAdsConnection = false;
-			// // Need to review since the step can be link_merchant as well when we need to create a new account.
-			// if (
-			// 	( acc?.status === GOOGLE_ADS_ACCOUNT_STATUS.INCOMPLETE &&
-			// 		acc?.step === 'billing' ) ||
-			// 	( acc?.status === GOOGLE_ADS_ACCOUNT_STATUS.INCOMPLETE &&
-			// 		acc?.step === 'link_merchant' ) ||
-			// 	acc?.status === GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED
-			// ) {
-			// 	hasGoogleAdsConnection = true;
-			// }
-
 			return {
 				googleAdsAccount: acc,
 				isResolving: isResolvingGoogleAdsAccount,
