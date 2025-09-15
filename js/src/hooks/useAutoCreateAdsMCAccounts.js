@@ -31,12 +31,6 @@ const useShouldCreateAdsAccount = () => {
 		return null;
 	}
 
-	console.log( 'Has connection', isGoogleAdsReady );
-	console.log( 'Accounts length', accounts?.length );
-	console.log(
-		'Should create Ads account',
-		! isGoogleAdsReady && accounts?.length === 0
-	);
 	return ! isGoogleAdsReady && accounts?.length === 0;
 };
 

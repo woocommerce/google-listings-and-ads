@@ -33,7 +33,7 @@ const useUpsertAdsAccount = () => {
 
 	const isCreation = ! googleAdsAccount?.id;
 
-	const [ fetchCreateAccount, result ] = useApiFetchCallback( {
+	const [ fetchCreateAccount ] = useApiFetchCallback( {
 		path: `${ API_NAMESPACE }/ads/accounts`,
 		method: 'POST',
 		data: {
@@ -41,15 +41,12 @@ const useUpsertAdsAccount = () => {
 		},
 	} );
 
-	console.log( 'result', result );
-
 	const upsertAdsAccount = useCallback( async () => {
 		setCurrentAction( isCreation ? 'create' : 'update' );
 
 		try {
 			await fetchCreateAccount( { parse: false } );
 		} catch ( e ) {
-			console.log( 'Error creating Google Ads account', e );
 			// For status code 428, we want to allow users to continue and proceed,
 			// so we swallow the error for status code 428,
 			// and only display error message and exit this function for non-428 error.
@@ -69,7 +66,6 @@ const useUpsertAdsAccount = () => {
 			}
 		}
 
-		console.log( 'all processed' );
 		// Update Google Ads data in the data store after posting an account update.
 		await Promise.all( [
 			fetchGoogleAdsAccount(),

@@ -118,6 +118,7 @@ const ConnectedGoogleComboAccountCard = () => {
 	const canShowConnectAds = isGoogleAdsReady || hasExistingGoogleAdsAccounts;
 	const showConnectAds =
 		canShowConnectAds && ( editMode || ! isGoogleAdsReady );
+	console.log( canShowConnectAds );
 
 	// When Ads and MC are disconnected in edit mode, exit edit mode.
 	useEffect( () => {
