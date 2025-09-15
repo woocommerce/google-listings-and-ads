@@ -30,12 +30,8 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 	const [ isLoading, setLoading ] = useState( false );
 	const { fetchGoogleAdsAccountStatus } = useAppDispatch();
 	const { isGoogleAdsReady } = useGoogleAdsAccountReady();
-	const {
-		googleAdsAccount,
-		hasFinishedResolution,
-		hasGoogleAdsConnection,
-		refetchGoogleAdsAccount,
-	} = useGoogleAdsAccount();
+	const { googleAdsAccount, hasFinishedResolution, refetchGoogleAdsAccount } =
+		useGoogleAdsAccount();
 	const [ connectGoogleAdsAccount ] = useApiFetchCallback( {
 		path: '/wc/gla/ads/accounts',
 		method: 'POST',
@@ -136,7 +132,7 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 			actions={
 				<ConnectExistingAccountActions
 					disabled={ isLoading }
-					isConnected={ hasGoogleAdsConnection }
+					isConnected={ isGoogleAdsReady }
 					onCreateNewClick={ onCreateClick }
 					onDisconnected={ handleDisconnected }
 				/>
