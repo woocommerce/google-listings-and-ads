@@ -14,7 +14,7 @@ import { PREFERENCES_STORE_NAMESPACE } from '~/constants';
 import PMaxImproveAssetsBanner from './index';
 import usePreference from '~/hooks/usePreference';
 import useRecommendedPMaxCampaign from '~/hooks/useRecommendedPMaxCampaign';
-import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
+import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
 
 jest.mock( '@woocommerce/components', () => ( {
 	...jest.requireActual( '@woocommerce/components' ),
@@ -40,8 +40,8 @@ jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest.fn(),
 } ) );
 
-jest.mock( '~/hooks/useGoogleAdsAccount', () =>
-	jest.fn().mockName( 'useGoogleAdsAccount' )
+jest.mock( '~/hooks/useGoogleAdsAccountReady', () =>
+	jest.fn().mockName( 'useGoogleAdsAccountReady' )
 );
 
 jest.mock( '~/hooks/usePreference', () =>
@@ -65,7 +65,7 @@ const recommendedCampaign = { campaign_id: 2, campaign_name: 'Campaign 2' };
 describe( 'PMaxImproveAssetsBanner', () => {
 	beforeEach( () => {
 		useDispatch.mockReturnValue( { set: () => null } );
-		useGoogleAdsAccount.mockReturnValue( { hasGoogleAdsConnection: true } );
+		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: true } );
 	} );
 
 	it( 'renders nothing if expiry is not expired', () => {
@@ -82,9 +82,7 @@ describe( 'PMaxImproveAssetsBanner', () => {
 	} );
 
 	it( 'renders nothing if Google Ads account is not connected', () => {
-		useGoogleAdsAccount.mockReturnValue( {
-			hasGoogleAdsConnection: false,
-		} );
+		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: false } );
 		usePreference.mockReturnValue( { expiry: Date.now() + 100000 } );
 		useRecommendedPMaxCampaign.mockReturnValue( {
 			campaign: recommendedCampaign,

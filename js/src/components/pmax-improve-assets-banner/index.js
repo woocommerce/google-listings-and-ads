@@ -9,7 +9,7 @@ import { store as preferencesStore } from '@wordpress/preferences';
  * Internal dependencies
  */
 import { PREFERENCES_STORE_NAMESPACE, DAY_IN_SECONDS } from '~/constants';
-import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
+import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
 import usePreference from '~/hooks/usePreference';
 import Banner from './banner';
 import './index.scss';
@@ -31,7 +31,7 @@ const ACTION_TYPE_DISMISS = 'dismiss';
  * @return {JSX.Element|null} The banner component, or null if not applicable.
  */
 const PMaxImproveAssetsBanner = () => {
-	const { hasGoogleAdsConnection } = useGoogleAdsAccount();
+	const { isGoogleAdsReady } = useGoogleAdsAccountReady();
 	const { set } = useDispatch( preferencesStore );
 	const { actionTime, actionType } =
 		usePreference( PREFERENCE_BANNER_KEY ) || {};
@@ -46,7 +46,7 @@ const PMaxImproveAssetsBanner = () => {
 	// Don't display the banner if the banner has been dismissed less than 30 days ago
 	// or there is no Google Ads connection.
 	if (
-		! hasGoogleAdsConnection ||
+		! isGoogleAdsReady ||
 		( actionType === ACTION_TYPE_DISMISS &&
 			Date.now() < actionTime + 30 * DAY_IN_SECONDS * 1000 )
 	) {

@@ -73,6 +73,7 @@ export default class AppRatingsOverview extends MockRequests {
 			this.mockJetpackConnected(),
 			this.mockGoogleConnected(),
 			this.mockAdsAccountConnected(),
+			this.mockAdsStatusClaimed(),
 			this.mockMCConnected(),
 		] );
 	}
