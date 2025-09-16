@@ -5,7 +5,7 @@ Requires at least: 6.6
 Tested up to: 6.8
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.4.2
+Stable tag: 3.4.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -140,6 +140,14 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.4.3 - 2025-09-16 =
+* Dev - Update NPM packages with security issues.
+* Dev - Update NPM packages with security issues.
+* Fix - Improve focus handling in `TreeSelectControl`.
+* Fix - Use `isGoogleAdsReady` property instead of `hasGoogleAdsConnection` to check for a connected Ads account.
+* Tweak - WC 10.2 compatibility.
+* Update - Incorporate API changes for EU political advertising.
+
 = 3.4.2 - 2025-09-02 =
 * Add - Display the statuses of synchronization modes with Google Merchant Center in WooCommerce System Status Report.
 * Tweak -  Adjust the value of the Merchant Center setting in the WPCOM proxy endpoint to null before completing onboarding so that Google service can recognize whether the Merchant Center account has been disconnected.
@@ -150,11 +158,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 = 3.4.1 - 2025-08-26 =
 * Fix - Replaced multiple `setValue` calls with a single `setValues` call to eliminate race conditions during form initialization and reduce inconsistent validation behavior.
 * Tweak - Reduce the cache time for product statuses and issues from 12 hours to 30 minutes.
-
-= 3.4.0 - 2025-08-19 =
-* Add - Help merchants improve the assets for their PMax campaigns.
-* Dev – Update E2E tests ahead of Woo 10.1 release.
-* Fix – Use `wp_is_serving_rest_request()` to detect if we are handling a REST API request.
-* Tweak - WC 10.1 compatibility.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
