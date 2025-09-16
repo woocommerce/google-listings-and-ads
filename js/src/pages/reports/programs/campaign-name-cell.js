@@ -14,7 +14,7 @@ import './campaign-name-cell.scss';
  *
  * @param {Object} props React props.
  * @param {string} props.name Campaign Name
- * @param {boolean} props.isConverted Weather the campaign is converted
+ * @param {boolean} props.isConverted Whether the campaign is converted
  * @return {JSX.Element} element with the migration tooltip or the campaign name
  */
 const CampaignNameCell = ( { isConverted, name } ) => {

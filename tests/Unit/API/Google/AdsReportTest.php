@@ -391,7 +391,7 @@ class AdsReportTest extends UnitTest {
 			],
 			'intervals'  => [
 				[
-					'interval'  => '2021-49', // Fourty-ninth week of 2021.
+					'interval'  => '2021-49', // Forty-ninth week of 2021.
 					'subtotals' => [
 						'clicks' => 734,
 					],

@@ -764,7 +764,7 @@ class AssetSuggestionsService implements Service {
 	 * @param string $title page|term title
 	 * @param string $url page|term url
 	 *
-	 * @return array response formated.
+	 * @return array response formatted.
 	 */
 	protected function format_final_url_response( int $id, string $type, string $title, string $url ): array {
 		return [
