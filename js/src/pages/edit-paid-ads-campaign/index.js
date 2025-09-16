@@ -226,11 +226,10 @@ const EditPaidAdsCampaign = () => {
 			/>
 			<CampaignAssetsForm
 				initialCampaign={ {
-					level: 'custom',
-					amount: campaign.amount,
-					id: campaign.id,
+					level: 'current',
 				} }
 				countryCodes={ campaign.displayCountries }
+				currentAmount={ campaign.amount }
 				assetEntityGroup={ assetEntityGroup }
 				onSubmit={ handleSubmit }
 				onChange={ handleOnChange }

@@ -7,7 +7,7 @@ import round from '~/utils/round';
 import styles from './budget-setup.module.scss';
 
 /**
- * Component to display a budget badge with the given amount.
+ * Renders a badge displaying the percentage change in budget.
  *
  * @param {Object} props The component props.
  * @param {number} props.amount The amount to display in the badge.

@@ -75,6 +75,10 @@ function injectDailyBudget( values, budgetRecommendation ) {
 			if ( this.level === 'custom' ) {
 				return this.amount;
 			}
+
+			if ( this.level === 'current' ) {
+				return null;
+			}
 			return budgetRecommendation[ this.level ].dailyBudget;
 		},
 	} );
@@ -128,9 +132,10 @@ function resolveInitialCampaign(
 	};
 
 	if ( values.level !== 'custom' && ! budgetRecommendation[ values.level ] ) {
-		values.level = budgetRecommendation.recommended
-			? 'recommended'
-			: 'custom';
+		values.level =
+			budgetRecommendation.recommended && values.level !== 'current'
+				? 'recommended'
+				: 'current';
 	}
 
 	return injectDailyBudget( values, budgetRecommendation );
@@ -144,11 +149,13 @@ function resolveInitialCampaign(
  * @param {CampaignFormValues} props.initialCampaign Initial campaign values.
  * @param {AssetEntityGroup} [props.assetEntityGroup] The asset entity group to be used in initializing the form values for editing.
  * @param {Array<CountryCode>} props.countryCodes Country codes to fetch budget recommendations.
+ * @param {number} [props.currentAmount] Current daily budget amount of the campaign.
  */
 export default function CampaignAssetsForm( {
 	initialCampaign,
 	assetEntityGroup,
 	countryCodes,
+	currentAmount,
 	...adaptiveFormProps
 } ) {
 	const initialAssetGroup = useMemo( () => {
@@ -202,6 +209,7 @@ export default function CampaignAssetsForm( {
 			isEmptyAssetEntityGroup: ! finalUrl,
 			baseAssetGroup,
 			assetGroupErrors,
+			currentAmount,
 			/*
 			  In order to show a Tip in the UI when assets are imported we created the hasImportedAssets
 			  property. When the Final URL changes resetAssetGroup is called with the new Asset Group,

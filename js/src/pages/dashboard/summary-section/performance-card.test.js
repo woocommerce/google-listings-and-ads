@@ -8,6 +8,10 @@ import { render } from '@testing-library/react';
  */
 import PerformanceCard from './performance-card';
 
+jest.mock( '~/components/raise-budget-recommendation-banner', () =>
+	jest.fn().mockName( 'RaiseBudgetRecommendationBanner' )
+);
+
 describe( 'Performance Card', () => {
 	it( 'Renders given no data message', () => {
 		const { queryByText } = render(

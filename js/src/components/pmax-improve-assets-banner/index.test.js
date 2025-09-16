@@ -10,11 +10,11 @@ import { render, screen, fireEvent } from '@testing-library/react';
  * Internal dependencies
  */
 import { getEditCampaignUrl } from '~/utils/urls';
-import { PREFERENCES_STORE_NAMESPACE } from '~/constants';
+import { PREFERENCES_STORE_NAMESPACE, DAY_IN_SECONDS } from '~/constants';
 import PMaxImproveAssetsBanner from './index';
 import usePreference from '~/hooks/usePreference';
 import useRecommendedPMaxCampaign from '~/hooks/useRecommendedPMaxCampaign';
-import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
+import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
 
 jest.mock( '@woocommerce/components', () => ( {
 	...jest.requireActual( '@woocommerce/components' ),
@@ -40,8 +40,8 @@ jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest.fn(),
 } ) );
 
-jest.mock( '~/hooks/useGoogleAdsAccount', () =>
-	jest.fn().mockName( 'useGoogleAdsAccount' )
+jest.mock( '~/hooks/useGoogleAdsAccountReady', () =>
+	jest.fn().mockName( 'useGoogleAdsAccountReady' )
 );
 
 jest.mock( '~/hooks/usePreference', () =>
@@ -53,7 +53,9 @@ jest.mock( '~/hooks/useRecommendedPMaxCampaign', () =>
 );
 
 jest.mock( '~/utils/urls', () => ( {
-	getEditCampaignUrl: jest.fn( () => '/edit/2/asset-group' ),
+	getEditCampaignUrl: jest.fn(
+		( programId ) => `/edit/${ programId }/asset-group`
+	),
 } ) );
 
 jest.mock( '~/utils/tracks', () => ( {
@@ -65,7 +67,7 @@ const recommendedCampaign = { campaign_id: 2, campaign_name: 'Campaign 2' };
 describe( 'PMaxImproveAssetsBanner', () => {
 	beforeEach( () => {
 		useDispatch.mockReturnValue( { set: () => null } );
-		useGoogleAdsAccount.mockReturnValue( { hasGoogleAdsConnection: true } );
+		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: true } );
 	} );
 
 	it( 'renders nothing if expiry is not expired', () => {
@@ -82,10 +84,8 @@ describe( 'PMaxImproveAssetsBanner', () => {
 	} );
 
 	it( 'renders nothing if Google Ads account is not connected', () => {
-		useGoogleAdsAccount.mockReturnValue( {
-			hasGoogleAdsConnection: false,
-		} );
-		usePreference.mockReturnValue( { expiry: Date.now() + 100000 } );
+		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: false } );
+		usePreference.mockReturnValue( {} );
 		useRecommendedPMaxCampaign.mockReturnValue( {
 			campaign: recommendedCampaign,
 			hasFinishedResolution: true,
@@ -95,7 +95,10 @@ describe( 'PMaxImproveAssetsBanner', () => {
 	} );
 
 	it( 'renders banner if expired', () => {
-		usePreference.mockReturnValue( { expiry: Date.now() - 1000 } );
+		usePreference.mockReturnValue( {
+			actionTime: Date.now() - 30 * DAY_IN_SECONDS * 1000,
+			actionType: 'dismiss',
+		} );
 		useRecommendedPMaxCampaign.mockReturnValue( {
 			campaign: recommendedCampaign,
 			hasFinishedResolution: true,

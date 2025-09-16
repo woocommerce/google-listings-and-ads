@@ -197,7 +197,7 @@ describe( 'CampaignAssetsForm', () => {
 		expect( children ).toHaveBeenLastCalledWith( formContextSchema );
 	} );
 
-	it( 'Should fall back to the custom level for the initial form values when there is no level available', () => {
+	it( 'Should show the current level as selected one when editing a paid campaign', () => {
 		useBudgetRecommendation.mockReturnValue( {
 			hasResolved: true,
 			data: {
@@ -211,7 +211,10 @@ describe( 'CampaignAssetsForm', () => {
 		render(
 			<CampaignAssetsForm
 				validate={ alwaysValid }
-				initialCampaign={ { amount: 10, level: 'high' } }
+				initialCampaign={ {
+					amount: 10,
+				} }
+				currentAmount={ 10 }
 			>
 				{ children }
 			</CampaignAssetsForm>
@@ -220,36 +223,8 @@ describe( 'CampaignAssetsForm', () => {
 		const formContextSchema = expect.objectContaining( {
 			values: expect.objectContaining( {
 				amount: 10,
-				dailyBudget: 10,
-				level: 'custom',
-			} ),
-		} );
-
-		expect( children ).toHaveBeenLastCalledWith( formContextSchema );
-	} );
-
-	it( 'Should fall back to the custom level for the initial form values when budget recommendation responds with 404 not found', () => {
-		useBudgetRecommendation.mockReturnValue( {
-			hasResolved: true,
-			data: null,
-		} );
-
-		const children = jest.fn();
-
-		render(
-			<CampaignAssetsForm
-				validate={ alwaysValid }
-				initialCampaign={ { amount: 20, level: 'low' } }
-			>
-				{ children }
-			</CampaignAssetsForm>
-		);
-
-		const formContextSchema = expect.objectContaining( {
-			values: expect.objectContaining( {
-				amount: 20,
-				dailyBudget: 20,
-				level: 'custom',
+				dailyBudget: null,
+				level: 'current',
 			} ),
 		} );
 
