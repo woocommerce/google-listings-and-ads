@@ -140,6 +140,14 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.4.3 - 2025-09-16 =
+* Dev - Update NPM packages with security issues.
+* Dev - Update NPM packages with security issues.
+* Fix - Improve focus handling in `TreeSelectControl`.
+* Fix - Use `isGoogleAdsReady` property instead of `hasGoogleAdsConnection` to check for a connected Ads account.
+* Tweak - WC 10.2 compatibility.
+* Update - Incorporate API changes for EU political advertising.
+
 = 3.4.2 - 2025-09-02 =
 * Add - Display the statuses of synchronization modes with Google Merchant Center in WooCommerce System Status Report.
 * Tweak -  Adjust the value of the Merchant Center setting in the WPCOM proxy endpoint to null before completing onboarding so that Google service can recognize whether the Merchant Center account has been disconnected.
