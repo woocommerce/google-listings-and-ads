@@ -109,22 +109,6 @@ class TourController extends BaseOptionsController {
 	}
 
 	/**
-	 * Get the tour by Id
-	 *
-	 * @param string $tour_id The tour ID
-	 * @return array The tour
-	 * @throws Exception In case the tour is not found.
-	 */
-	private function get_tour( string $tour_id ): array {
-		$tours = $this->get_tours();
-		if ( ! isset( $tours[ $tour_id ] ) ) {
-			throw new Exception( __( 'Tour not found', 'google-listings-and-ads' ), 404 );
-		}
-
-		return $tours[ $tour_id ];
-	}
-
-	/**
 	 * Get the item schema properties for the controller.
 	 *
 	 * @return array The Schema properties
