@@ -33,9 +33,6 @@ class TourController extends BaseOptionsController {
 	 * Register rest routes with WordPress.
 	 */
 	public function register_routes(): void {
-		/**
-		 * POST Update the tour visualizations
-		 */
 		$this->register_route(
 			'/tours',
 			[
