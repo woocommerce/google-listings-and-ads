@@ -493,7 +493,8 @@ export const getPriceBenchmarkSuggestion = ( state, productId ) => {
  * @param {Array<string>} types - The types of ad recommendations to retrieve.
  * @return {Object|null} The recommendations for the specified type, or null if not found.
  */
-export const getAdsRecommendations = ( state, types ) => {
-	const key = arrayToUnderscoreKey( types );
+export const getAdsRecommendations = ( state, types, campaign_id = null ) => {
+	const keyToHash = campaign_id ? [ campaign_id, ...types ] : types;
+	const key = arrayToUnderscoreKey( keyToHash );
 	return state.ads.recommendations[ key ] || null;
 };

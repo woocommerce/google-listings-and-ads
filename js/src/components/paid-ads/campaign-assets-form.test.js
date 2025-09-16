@@ -20,6 +20,12 @@ jest.mock( '~/hooks/useBudgetRecommendation', () =>
 	jest.fn().mockName( 'useBudgetRecommendation' )
 );
 
+jest.mock( '~/hooks/useRaiseBudgetRecommendations', () =>
+	jest.fn().mockReturnValue( {
+		hasFinishedResolution: true,
+	} )
+);
+
 const alwaysValid = () => ( {} );
 
 describe( 'CampaignAssetsForm', () => {

@@ -13,6 +13,7 @@ import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useBudgetMetrics from '~/hooks/useBudgetMetrics';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
 import AppInputPriceControl from '~/components/app-input-price-control';
+import BudgetBadge from './budget-badge';
 import BudgetSetupHeader from './budget-setup-header';
 import BudgetRadioControl from './budget-radio-control';
 import DailyBudgetLabel from './daily-budget-label';
@@ -39,6 +40,8 @@ function isBelowLowRecommendation( amount, recommendation, precision ) {
 }
 
 function BudgetMetrics( { formatAmount, metrics } ) {
+	const renderUplift = metrics?.uplift && Number( metrics?.uplift ) !== 0;
+
 	return (
 		<div className={ styles.metricsGroup }>
 			<span className={ styles.metricsItem }>
@@ -46,6 +49,7 @@ function BudgetMetrics( { formatAmount, metrics } ) {
 			</span>
 			<span className={ styles.metricsItem }>
 				{ metrics ? formatAmount( metrics.conversionsValue ) : null }
+				{ !! renderUplift && <BudgetBadge amount={ metrics.uplift } /> }
 			</span>
 			<span className={ styles.metricsItem }>
 				{ metrics ? formatAmount( metrics.cost ) : null }
