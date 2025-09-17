@@ -70,7 +70,7 @@ class BudgetRecommendationsTest extends UnitTest {
 
 		$this->transients->expects( $this->once() )
 			->method( 'get' )
-			->with( TransientsInterface::ADS_RECOMMENDATIONS )
+			->with( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS )
 			->willReturn( $recommendations );
 
 		$this->assertEquals( $recommendations['us'], $this->recommendations->get_recommendations( [ 'US' ] ) );
@@ -84,7 +84,7 @@ class BudgetRecommendationsTest extends UnitTest {
 			->method( 'get' )
 			->willReturnCallback(
 				function ( string $transient ) use ( $invoked_count ) {
-					if ( 1 === $invoked_count->getInvocationCount() && $transient === TransientsInterface::ADS_RECOMMENDATIONS ) {
+					if ( 1 === $invoked_count->getInvocationCount() && $transient === TransientsInterface::ADS_BUDGET_RECOMMENDATIONS ) {
 						return false;
 					}
 
