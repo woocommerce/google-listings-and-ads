@@ -77,8 +77,9 @@ function injectDailyBudget( values, budgetRecommendation ) {
 			}
 
 			if ( this.level === 'current' ) {
-				return null;
+				return this.currentAmount;
 			}
+
 			return budgetRecommendation[ this.level ].dailyBudget;
 		},
 	} );
