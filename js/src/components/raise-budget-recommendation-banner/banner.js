@@ -103,10 +103,7 @@ const Banner = ( { onBannerDismissed } ) => {
 			}
 		);
 
-		const editCampaignUrl = getEditCampaignUrl(
-			campaign_id,
-			'asset-group'
-		);
+		const editCampaignUrl = getEditCampaignUrl( campaign_id );
 		getHistory().push( editCampaignUrl );
 	};
 
