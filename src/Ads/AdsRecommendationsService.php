@@ -3,15 +3,13 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Ads;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AdsRecommendationsQuery;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsRecommendationsQuery as GoogleAdsRecommendationsQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsRecommendationsQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareTrait;
@@ -165,7 +163,7 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 	 */
 	public function get_google_recommendations( $args ): array {
 		try {
-			$query = ( new GoogleAdsRecommendationsQuery() )
+			$query = ( new AdsRecommendationsQuery() )
 			->set_client( $this->client, $this->options->get_ads_id() );
 
 			$types       = isset( $args['types'] ) && is_array( $args['types'] ) ? self::get_valid_recommendation_types( $args['types'] ) : [];
@@ -294,36 +292,6 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 			return $result;
 		} catch ( GoogleException $e ) {
 			throw new Exception( __( 'Unable to retrieve Google Ads recommendations.', 'google-listings-and-ads' ) . $e->getMessage(), $e->getCode() );
-		}
-	}
-
-	/**
-	 * Updates recommendations in the database.
-	 *
-	 * @param array $args Query arguments to fetch recommendations.
-	 *
-	 * @throws Exception If there is an error while updating recommendations.
-	 */
-	public function update_recommendations( $args ): void {
-		try {
-			$recommendations = $this->get_google_recommendations( $args );
-
-			if ( empty( $recommendations ) ) {
-				return;
-			}
-
-			/** @var AdsRecommendationsQuery $query */
-			$query = $this->container->get( AdsRecommendationsQuery::class );
-
-			// Clear existing data before updating.
-			$query->reload_data();
-
-			// Insert recommendations into the DB table.
-			foreach ( $recommendations as $recommendation ) {
-				$query->insert( $recommendation );
-			}
-		} catch ( \Exception $e ) {
-			do_action( 'woocommerce_gla_debug_message', $e->getMessage(), __METHOD__ );
 		}
 	}
 }

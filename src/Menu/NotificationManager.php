@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\Admin\PageController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsRecommendationsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
@@ -197,8 +198,22 @@ class NotificationManager implements ContainerAwareInterface, Service, Registera
 		global $wpdb;
 		$count = 0;
 
-		$query           = $this->container->get( AdsRecommendationsService::class );
-		$recommendations = $query->get_recommendations();
+		$query        = $this->container->get( AdsRecommendationsService::class );
+		$ads_campaign = $this->container->get( AdsCampaign::class );
+		$campaign     = $ads_campaign->get_highest_spend_campaign();
+
+		// Return early if there is no highest spend campaign.
+		if ( empty( $campaign ) || ! isset( $campaign['id'] ) ) {
+			return $count;
+		}
+
+		// Check IMPROVE_PERFORMANCE_MAX_AD_STRENGTH recommendations for highest spend campaign.
+		$recommendations = $query->get_recommendations(
+			[
+				'types'       => [ 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH' ],
+				'campaign_id' => $campaign['id'],
+			]
+		);
 
 		// Return early if there are no recommendations.
 		if ( empty( $recommendations ) ) {

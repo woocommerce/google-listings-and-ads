@@ -2,7 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -11,6 +11,7 @@ import userEvent from '@testing-library/user-event';
 import BudgetSetup from './budget-setup';
 import CampaignAssetsForm from '../campaign-assets-form';
 import useBudgetRecommendation from '~/hooks/useBudgetRecommendation';
+import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
 import useBudgetMetrics from '~/hooks/useBudgetMetrics';
 
 jest.mock( '~/hooks/useGoogleAdsAccount', () =>
@@ -21,6 +22,10 @@ jest.mock( '~/hooks/useGoogleAdsAccount', () =>
 
 jest.mock( '~/hooks/useBudgetRecommendation', () =>
 	jest.fn().mockName( 'useBudgetRecommendation' )
+);
+
+jest.mock( '~/hooks/useRaiseBudgetRecommendations', () =>
+	jest.fn().mockName( 'useRaiseBudgetRecommendations' )
 );
 
 jest.mock( '~/hooks/useBudgetMetrics', () =>
@@ -41,6 +46,58 @@ jest.mock( '~/hooks/useBudgetMetrics', () =>
 		};
 	} )
 );
+
+function mockEmptyRaiseBudgetRecommendationsData() {
+	useRaiseBudgetRecommendations.mockReturnValue( {
+		campaigns: [],
+		hasFinishedResolution: true,
+	} );
+}
+
+function mockRaiseBudgetRecommendationsData() {
+	const data = {
+		dailyBudgetBaseline: 12,
+		recommendedDailyBudget: 15,
+		high: {
+			currency: 'USD',
+			country: 'US',
+			dailyBudget: 20.555,
+			metrics: {
+				cost: 143.885,
+				conversions: 2.5,
+				conversionsValue: 147.891,
+				uplift: 50,
+			},
+		},
+		recommended: {
+			currency: 'USD',
+			country: 'US',
+			dailyBudget: 15,
+			metrics: {
+				cost: 105,
+				conversions: 2.2,
+				conversionsValue: 80.9892,
+				uplift: -10,
+			},
+		},
+		low: {
+			currency: 'USD',
+			country: 'US',
+			dailyBudget: 7.2449,
+			metrics: {
+				cost: 50.7143,
+				conversions: 2,
+				conversionsValue: 80,
+				uplift: 0.33,
+			},
+		},
+	};
+
+	useRaiseBudgetRecommendations.mockReturnValue( {
+		campaigns: [ data ],
+		hasFinishedResolution: true,
+	} );
+}
 
 function mockBudgetRecommendation( ...availableKeys ) {
 	const data = {
@@ -90,6 +147,8 @@ function mockBudgetRecommendation( ...availableKeys ) {
 		hasResolved: true,
 		data,
 	} );
+
+	mockEmptyRaiseBudgetRecommendationsData();
 }
 
 describe( 'BudgetSetup', () => {
@@ -108,6 +167,7 @@ describe( 'BudgetSetup', () => {
 		mockBudgetRecommendation();
 
 		Wrapper = ( {
+			campaignID,
 			initLevel,
 			initAmount,
 			hideRecommendations,
@@ -120,6 +180,10 @@ describe( 'BudgetSetup', () => {
 			if ( Number.isFinite( initAmount ) ) {
 				initialCampaign.amount = initAmount;
 			}
+			if ( campaignID ) {
+				initialCampaign.id = campaignID;
+			}
+
 			return (
 				<CampaignAssetsForm
 					initialCampaign={ initialCampaign }
@@ -354,5 +418,79 @@ describe( 'BudgetSetup', () => {
 		render( <Wrapper /> );
 
 		expect( queryOption( 'current' ) ).not.toBeInTheDocument();
+	} );
+
+	describe( 'Edit campaign', () => {
+		beforeEach( () => {
+			mockRaiseBudgetRecommendationsData();
+		} );
+
+		it( 'should display the uplift badge for each recommendation option based on the raise data', () => {
+			const { container } = render( <Wrapper campaignID={ 1234 } /> );
+
+			const positiveBadgeElement = container.querySelector(
+				'.gla-delta-value--positive'
+			);
+			expect( positiveBadgeElement ).toBeInTheDocument();
+			expect(
+				within( positiveBadgeElement ).getByText( '+50%' )
+			).toBeInTheDocument();
+
+			const negativeBadgeElement = container.querySelector(
+				'.gla-delta-value--negative'
+			);
+			expect( negativeBadgeElement ).toBeInTheDocument();
+			expect(
+				within( negativeBadgeElement ).getByText( '-10%' )
+			).toBeInTheDocument();
+		} );
+
+		it( 'should display raise budget recommendation data if available', () => {
+			render( <Wrapper campaignID={ 1234 } /> );
+
+			expect( getOption( 'high' ) ).toBeInTheDocument();
+			expect( screen.getByText( 'High' ) ).toBeInTheDocument();
+			expect( screen.getByLabelText( '$20.56/day' ) ).toBeInTheDocument();
+			expect( screen.getByText( '2.5' ) ).toBeInTheDocument();
+			expect( screen.getByText( '$147.89' ) ).toBeInTheDocument();
+			expect( screen.getByText( '$143.89' ) ).toBeInTheDocument();
+
+			expect( getOption( 'recommended' ) ).toBeInTheDocument();
+			expect( screen.getByText( 'Recommended' ) ).toBeInTheDocument();
+			expect( screen.getByLabelText( '$15.00/day' ) ).toBeInTheDocument();
+			expect( screen.getByText( '2.2' ) ).toBeInTheDocument();
+			expect( screen.getByText( '$80.99' ) ).toBeInTheDocument();
+			expect( screen.getByText( '$105.00' ) ).toBeInTheDocument();
+
+			expect( getOption( 'low' ) ).toBeInTheDocument();
+			expect( screen.getByText( 'Low' ) ).toBeInTheDocument();
+			expect( screen.getByLabelText( '$7.24/day' ) ).toBeInTheDocument();
+			expect( screen.getByText( '2' ) ).toBeInTheDocument();
+			expect( screen.getByText( '$80.00' ) ).toBeInTheDocument();
+			expect( screen.getByText( '$50.71' ) ).toBeInTheDocument();
+		} );
+
+		it( 'should fallback to the regular budget recommendation data if no raise data is available', () => {
+			const { rerender } = render( <Wrapper campaignID={ 1234 } /> );
+
+			expect( getOption( 'high' ) ).toBeInTheDocument();
+			expect( screen.getByLabelText( '$20.56/day' ) ).toBeInTheDocument();
+			expect( screen.getByText( '$147.89' ) ).toBeInTheDocument();
+
+			mockEmptyRaiseBudgetRecommendationsData();
+			rerender( <Wrapper campaignID={ 1234 } /> );
+
+			expect( getOption( 'high' ) ).toBeInTheDocument();
+			expect( screen.getByLabelText( '$20.56/day' ) ).toBeInTheDocument();
+			expect( screen.getByText( '$143.89' ) ).toBeInTheDocument();
+
+			expect( getOption( 'recommended' ) ).toBeInTheDocument();
+			expect( screen.getByLabelText( '$15.00/day' ) ).toBeInTheDocument();
+			expect( screen.getByText( '$105.00' ) ).toBeInTheDocument();
+
+			expect( getOption( 'low' ) ).toBeInTheDocument();
+			expect( screen.getByLabelText( '$7.24/day' ) ).toBeInTheDocument();
+			expect( screen.getByText( '$50.71' ) ).toBeInTheDocument();
+		} );
 	} );
 } );
