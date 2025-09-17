@@ -228,9 +228,9 @@ const EditPaidAdsCampaign = () => {
 				initialCampaign={ {
 					level: 'current',
 					id: campaign.id,
+					currentAmount: campaign.amount,
 				} }
 				countryCodes={ campaign.displayCountries }
-				currentAmount={ campaign.amount }
 				assetEntityGroup={ assetEntityGroup }
 				onSubmit={ handleSubmit }
 				onChange={ handleOnChange }

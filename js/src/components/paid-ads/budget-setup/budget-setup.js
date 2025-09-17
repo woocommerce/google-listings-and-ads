@@ -71,8 +71,8 @@ function BudgetMetrics( { formatAmount, metrics } ) {
 export default function BudgetSetup( { hideRecommendations = false } ) {
 	const formContext = useAdaptiveFormContext();
 	const { adapter, getInputProps, values } = formContext;
-	const { countryCodes, currentAmount, budgetRecommendation } = adapter;
-	const { amount } = values;
+	const { countryCodes, budgetRecommendation } = adapter;
+	const { amount, currentAmount } = values;
 	const { adsCurrencyConfig, formatAmount } = useAdsCurrency();
 
 	const [ budget, setBudget ] = useState( amount );

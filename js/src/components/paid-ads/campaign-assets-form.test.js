@@ -213,8 +213,8 @@ describe( 'CampaignAssetsForm', () => {
 				validate={ alwaysValid }
 				initialCampaign={ {
 					amount: 10,
+					currentAmount: 10,
 				} }
-				currentAmount={ 10 }
 			>
 				{ children }
 			</CampaignAssetsForm>
@@ -223,7 +223,8 @@ describe( 'CampaignAssetsForm', () => {
 		const formContextSchema = expect.objectContaining( {
 			values: expect.objectContaining( {
 				amount: 10,
-				dailyBudget: null,
+				currentAmount: 10,
+				dailyBudget: 10,
 				level: 'current',
 			} ),
 		} );

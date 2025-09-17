@@ -171,15 +171,21 @@ describe( 'BudgetSetup', () => {
 			initLevel,
 			initAmount,
 			hideRecommendations,
-			...rest
 		} ) => {
 			const initialCampaign = {};
 			if ( initLevel ) {
 				initialCampaign.level = initLevel;
 			}
+
 			if ( Number.isFinite( initAmount ) ) {
 				initialCampaign.amount = initAmount;
+				initialCampaign.currentAmount = initAmount;
 			}
+
+			if ( initLevel === 'current' && Number.isFinite( initAmount ) ) {
+				initialCampaign.currentAmount = initAmount;
+			}
+
 			if ( campaignID ) {
 				initialCampaign.id = campaignID;
 			}
@@ -188,7 +194,6 @@ describe( 'BudgetSetup', () => {
 				<CampaignAssetsForm
 					initialCampaign={ initialCampaign }
 					countryCodes={ countries }
-					{ ...rest }
 				>
 					<BudgetSetup hideRecommendations={ hideRecommendations } />
 				</CampaignAssetsForm>
@@ -402,7 +407,7 @@ describe( 'BudgetSetup', () => {
 
 	it( 'should set custom budget input to the same value as the Recommended row when clicking "Set custom budget"', async () => {
 		const user = userEvent.setup();
-		render( <Wrapper initLevel="current" currentAmount={ 9.86 } /> );
+		render( <Wrapper initLevel="current" initAmount={ 15 } /> );
 
 		expect( getOption( 'current' ) ).toBeChecked();
 
