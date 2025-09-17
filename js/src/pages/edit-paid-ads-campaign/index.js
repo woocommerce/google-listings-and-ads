@@ -231,7 +231,6 @@ const EditPaidAdsCampaign = () => {
 					currentAmount: campaign.amount,
 				} }
 				countryCodes={ campaign.displayCountries }
-				currentAmount={ campaign.amount }
 				assetEntityGroup={ assetEntityGroup }
 				onSubmit={ handleSubmit }
 				onChange={ handleOnChange }

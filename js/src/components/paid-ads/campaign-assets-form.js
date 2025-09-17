@@ -150,13 +150,11 @@ function resolveInitialCampaign(
  * @param {CampaignFormValues} props.initialCampaign Initial campaign values.
  * @param {AssetEntityGroup} [props.assetEntityGroup] The asset entity group to be used in initializing the form values for editing.
  * @param {Array<CountryCode>} props.countryCodes Country codes to fetch budget recommendations.
- * @param {number} [props.currentAmount] Current daily budget amount of the campaign.
  */
 export default function CampaignAssetsForm( {
 	initialCampaign,
 	assetEntityGroup,
 	countryCodes,
-	currentAmount,
 	...adaptiveFormProps
 } ) {
 	const initialAssetGroup = useMemo( () => {
@@ -210,7 +208,6 @@ export default function CampaignAssetsForm( {
 			isEmptyAssetEntityGroup: ! finalUrl,
 			baseAssetGroup,
 			assetGroupErrors,
-			currentAmount,
 			/*
 			  In order to show a Tip in the UI when assets are imported we created the hasImportedAssets
 			  property. When the Final URL changes resetAssetGroup is called with the new Asset Group,
