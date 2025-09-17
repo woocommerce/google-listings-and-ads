@@ -227,6 +227,7 @@ const EditPaidAdsCampaign = () => {
 			<CampaignAssetsForm
 				initialCampaign={ {
 					level: 'current',
+					id: campaign.id,
 				} }
 				countryCodes={ campaign.displayCountries }
 				currentAmount={ campaign.amount }
