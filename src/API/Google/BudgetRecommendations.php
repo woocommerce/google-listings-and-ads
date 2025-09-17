@@ -61,7 +61,7 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 	 */
 	public function get_recommendations( array $country_codes ): ?array {
 		$cache_key = strtolower( join( '-', $country_codes ) );
-		$transient = $this->transients->get( TransientsInterface::ADS_RECOMMENDATIONS );
+		$transient = $this->transients->get( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS );
 
 		// Check if we have the budget recommendations cached in the transient.
 		if ( $transient && ! empty( $transient[ $cache_key ] ) ) {
@@ -103,9 +103,8 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 				}
 
 				// Parse all the returned recommendations and assign to the first country.
-				$recommendations         = $this->parse_recommendations( $campaign_budget_recommendation, reset( $country_codes ) );
-				$transient[ $cache_key ] = $recommendations;
-				$this->transients->set( TransientsInterface::ADS_RECOMMENDATIONS, $transient, HOUR_IN_SECONDS * 12 );
+				$recommendations = $this->parse_recommendations( $campaign_budget_recommendation, reset( $country_codes ) );
+				$this->transients->set( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS, [ $cache_key => $recommendations ], HOUR_IN_SECONDS * 12 );
 				return $recommendations;
 			}
 		} catch ( ApiException $e ) {
