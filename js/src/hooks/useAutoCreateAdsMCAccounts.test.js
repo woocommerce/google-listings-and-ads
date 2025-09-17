@@ -7,7 +7,7 @@ import { act, renderHook } from '@testing-library/react';
  * Internal dependencies
  */
 import useAutoCreateAdsMCAccounts from './useAutoCreateAdsMCAccounts';
-import useGoogleAdsAccount from './useGoogleAdsAccount';
+import useGoogleAdsAccountReady from './useGoogleAdsAccountReady';
 import useExistingGoogleAdsAccounts from './useExistingGoogleAdsAccounts';
 import useGoogleMCAccount from './useGoogleMCAccount';
 import useExistingGoogleMCAccounts from './useExistingGoogleMCAccounts';
@@ -16,7 +16,7 @@ import useUpsertAdsAccount from './useUpsertAdsAccount';
 
 jest.mock( './useCreateMCAccount' );
 jest.mock( './useUpsertAdsAccount' );
-jest.mock( './useGoogleAdsAccount' );
+jest.mock( './useGoogleAdsAccountReady' );
 jest.mock( './useExistingGoogleAdsAccounts' );
 jest.mock( './useGoogleMCAccount' );
 jest.mock( './useExistingGoogleMCAccounts' );
@@ -29,9 +29,9 @@ describe( 'useAutoCreateAdsMCAccounts hook', () => {
 		createMCAccount = jest.fn( () => Promise.resolve() );
 		upsertAdsAccount = jest.fn( () => Promise.resolve() );
 
-		useGoogleAdsAccount.mockReturnValue( {
+		useGoogleAdsAccountReady.mockReturnValue( {
 			hasFinishedResolution: true,
-			hasGoogleAdsConnection: false,
+			isGoogleAdsReady: false,
 		} );
 
 		useExistingGoogleAdsAccounts.mockReturnValue( {
