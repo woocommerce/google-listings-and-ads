@@ -14,7 +14,7 @@ interface TransientsInterface {
 	public const ADS_CAMPAIGN_COUNT         = 'ads_campaign_count';
 	public const ADS_LOCATION_IDS           = 'ads_location_ids';
 	public const ADS_METRICS                = 'ads_metrics';
-	public const ADS_BUDGET_RECOMMENDATIONS = 'ads_recommendations';
+	public const ADS_BUDGET_RECOMMENDATIONS = 'ads_budget_recommendations';
 	public const ADS_RECOMMENDATIONS        = 'ads_recommendations';
 	public const FREE_LISTING_METRICS       = 'free_listing_metrics';
 	public const MC_ACCOUNT_REVIEW          = 'mc_account_review';
