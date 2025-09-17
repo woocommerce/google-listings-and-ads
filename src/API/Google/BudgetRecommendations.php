@@ -103,8 +103,9 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 				}
 
 				// Parse all the returned recommendations and assign to the first country.
-				$recommendations = $this->parse_recommendations( $campaign_budget_recommendation, reset( $country_codes ) );
-				$this->transients->set( TransientsInterface::ADS_RECOMMENDATIONS, [ $cache_key => $recommendations ], HOUR_IN_SECONDS * 12 );
+				$recommendations         = $this->parse_recommendations( $campaign_budget_recommendation, reset( $country_codes ) );
+				$transient[ $cache_key ] = $recommendations;
+				$this->transients->set( TransientsInterface::ADS_RECOMMENDATIONS, $transient, HOUR_IN_SECONDS * 12 );
 				return $recommendations;
 			}
 		} catch ( ApiException $e ) {

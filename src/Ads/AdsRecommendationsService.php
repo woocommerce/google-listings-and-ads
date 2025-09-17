@@ -104,7 +104,8 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 			];
 		}
 
-		$this->transients->set( TransientsInterface::ADS_RECOMMENDATIONS, [ $cache_key => $recommendations ], HOUR_IN_SECONDS * 12 );
+		$transient[ $cache_key ] = $recommendations;
+		$this->transients->set( TransientsInterface::ADS_RECOMMENDATIONS, $transient, HOUR_IN_SECONDS * 12 );
 
 		return $recommendations;
 	}
