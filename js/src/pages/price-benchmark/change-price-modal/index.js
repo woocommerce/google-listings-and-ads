@@ -77,6 +77,7 @@ const ChangePriceModal = ( { productId, onRequestClose, onPriceChange } ) => {
 		product: productDetails,
 		hasFinishedResolution: hasResolvedProduct,
 	} = useProduct( productId );
+
 	const { data, hasFinishedResolution } = usePriceBenchmarkSuggestions( {
 		product_id: productId,
 	} );
@@ -141,11 +142,16 @@ const ChangePriceModal = ( { productId, onRequestClose, onPriceChange } ) => {
 		predicted_conversions_change: predictedConversionsChange,
 		product: { id, title, thumbnail },
 	} = data;
+	const {
+		type,
+		parent_id: parentId,
+		sale_price: salePrice,
+		on_sale: isOnSale,
+	} = productDetails;
+	const salesPrice = Number.parseFloat( salePrice );
 
-	const salesPrice = Number.parseFloat( productDetails.sale_price );
-	const isOnSale = productDetails.on_sale;
 	const editProductUrl = addQueryArgs( `${ adminUrl }post.php`, {
-		post: productId,
+		post: type === 'variation' && parentId ? parentId : productId,
 		action: 'edit',
 	} );
 
