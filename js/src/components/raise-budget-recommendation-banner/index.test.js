@@ -72,9 +72,7 @@ jest.mock( '~/hooks/useBudgetMetrics', () =>
 );
 
 jest.mock( '~/utils/urls', () => ( {
-	getEditCampaignUrl: jest.fn(
-		( programId ) => `/edit/${ programId }/asset-group`
-	),
+	getEditCampaignUrl: jest.fn( ( programId ) => `/edit/${ programId }` ),
 } ) );
 
 jest.mock( '~/utils/tracks', () => ( {
@@ -341,7 +339,7 @@ describe( 'RaiseBudgetRecommendationBanner', () => {
 		);
 
 		expect( setMock ).toHaveBeenCalled();
-		expect( getEditCampaignUrl ).toHaveBeenCalledWith( 1, 'asset-group' );
-		expect( historyPush ).toHaveBeenCalledWith( '/edit/1/asset-group' );
+		expect( getEditCampaignUrl ).toHaveBeenCalledWith( 1 );
+		expect( historyPush ).toHaveBeenCalledWith( '/edit/1' );
 	} );
 } );
