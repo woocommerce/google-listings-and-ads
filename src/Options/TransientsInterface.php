@@ -24,18 +24,18 @@ interface TransientsInterface {
 	public const WPCOM_API_STATUS           = 'wpcom_api_status';
 
 	public const VALID_OPTIONS = [
-		self::ADS_BUDGET_METRICS          => true,
-		self::ADS_CAMPAIGN_COUNT          => true,
-		self::ADS_LOCATION_IDS            => true,
-		self::ADS_METRICS                 => true,
-		self::ADS_RECOMMENDATIONS         => true,
-		self::ADS_BUDGET_RECOMMENDATIONS  => true,
-		self::FREE_LISTING_METRICS        => true,
-		self::MC_ACCOUNT_REVIEW           => true,
-		self::MC_IS_SUBACCOUNT            => true,
-		self::MC_STATUSES                 => true,
-		self::URL_MATCHES                 => true,
-		self::WPCOM_API_STATUS            => true,
+		self::ADS_BUDGET_METRICS         => true,
+		self::ADS_CAMPAIGN_COUNT         => true,
+		self::ADS_LOCATION_IDS           => true,
+		self::ADS_METRICS                => true,
+		self::ADS_RECOMMENDATIONS        => true,
+		self::ADS_BUDGET_RECOMMENDATIONS => true,
+		self::FREE_LISTING_METRICS       => true,
+		self::MC_ACCOUNT_REVIEW          => true,
+		self::MC_IS_SUBACCOUNT           => true,
+		self::MC_STATUSES                => true,
+		self::URL_MATCHES                => true,
+		self::WPCOM_API_STATUS           => true,
 	];
 
 	/**
