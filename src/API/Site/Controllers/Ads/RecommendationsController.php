@@ -93,15 +93,6 @@ class RecommendationsController extends BaseController implements ContainerAware
 	protected function get_recommendations_callback(): callable {
 		return function ( Request $request ) {
 			try {
-				// Checks if the ads account is connected; exits early if not connected to prevent further execution.
-				$account_status = $this->account->get_connected_account();
-				if ( isset( $account_status['status'] ) && 'connected' !== $account_status['status'] ) {
-					return new Response(
-						[ 'message' => __( 'No connected Ads account found.', 'google-listings-and-ads' ) ],
-						403
-					);
-				}
-
 				/** @var AdsRecommendationsService $query */
 				$query = $this->container->get( AdsRecommendationsService::class );
 
