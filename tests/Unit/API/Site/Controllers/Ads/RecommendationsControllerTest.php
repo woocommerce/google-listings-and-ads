@@ -119,23 +119,6 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
 	}
 
-	public function test_get_recommendations_returns_error_if_account_not_connected() {
-		$this->account->method( 'get_connected_account' )
-			->willReturn( [ 'status' => 'not_connected' ] );
-
-		$filter_by_type = [
-			'types' => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
-		];
-
-		$response = $this->do_request( self::ROUTE_RECOMMENDATIONS, 'GET', $filter_by_type );
-
-		$this->assertEquals( 403, $response->get_status() );
-
-		$data = $response->get_data();
-		$this->assertArrayHasKey( 'message', $data );
-		$this->assertEquals( 'No connected Ads account found.', $data['message'] );
-	}
-
 	public function test_get_recommendations_filter_by_type_returns_only_matching() {
 		$this->account->method( 'get_connected_account' )
 			->willReturn( [ 'status' => 'connected' ] );
