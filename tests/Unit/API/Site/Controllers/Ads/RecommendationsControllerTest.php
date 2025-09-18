@@ -49,9 +49,6 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_recommendations_returns_empty_result() {
-		$this->account->method( 'get_connected_account' )
-			->willReturn( [ 'status' => 'connected' ] );
-
 		$response = $this->do_request( self::ROUTE_RECOMMENDATIONS, 'GET' );
 
 		$this->assertEquals( 400, $response->get_status() );
@@ -59,9 +56,6 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_recommendations_returns_all_recommendations() {
-		$this->account->method( 'get_connected_account' )
-			->willReturn( [ 'status' => 'connected' ] );
-
 		$mock_recommendations_data = [
 			[
 				'id'              => 1,
@@ -105,9 +99,6 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_recommendations_returns_empty_array_when_filter_by_non_existent_type() {
-		$this->account->method( 'get_connected_account' )
-			->willReturn( [ 'status' => 'connected' ] );
-
 		$filter_by_type = [
 			'types' => 'NON_EXISTENT_TYPE',
 		];
@@ -120,9 +111,6 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_recommendations_filter_by_type_returns_only_matching() {
-		$this->account->method( 'get_connected_account' )
-			->willReturn( [ 'status' => 'connected' ] );
-
 		$filter_by_type = [
 			'types' => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
 		];
@@ -186,9 +174,6 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_recommendations_filter_by_multiple_type_returns_only_matching() {
-		$this->account->method( 'get_connected_account' )
-			->willReturn( [ 'status' => 'connected' ] );
-
 		$filter_by_type = [
 			'types' => 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH, MARGINAL_ROI_CAMPAIGN_BUDGET',
 		];
@@ -252,9 +237,6 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_recommendations_filter_by_campaign_id_returns_single_recommendation() {
-		$this->account->method( 'get_connected_account' )
-			->willReturn( [ 'status' => 'connected' ] );
-
 		$mock_recommendations_data = [
 			[
 				'id'              => 1,
@@ -306,9 +288,6 @@ class RecommendationsControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_recommendations_includes_correct_details_property() {
-		$this->account->method( 'get_connected_account' )
-			->willReturn( [ 'status' => 'connected' ] );
-
 		$mock_recommendations_data = [
 			[
 				'id'              => 1,
