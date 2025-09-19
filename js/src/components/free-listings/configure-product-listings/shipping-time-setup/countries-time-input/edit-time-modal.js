@@ -24,7 +24,7 @@ import MinMaxShippingTimes from '../min-max-shipping-times';
  * @param {AggregatedShippingTime} props.time
  * @param {(newTime: AggregatedShippingTime, deletedCountries: Array<CountryCode>) => void} props.onSubmit Called once the time is submitted.
  * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
- * @param {Function} props.onRequestClose Called when the form is requested ot be closed.
+ * @param {Function} props.onRequestClose Called when the form is requested to be closed.
  */
 const EditTimeModal = ( {
 	audienceCountries,

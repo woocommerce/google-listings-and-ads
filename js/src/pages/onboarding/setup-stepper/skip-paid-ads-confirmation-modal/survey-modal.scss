@@ -23,7 +23,7 @@
 		font-size: $gla-font-base;
 		margin: 0;
 
-		& + p {
+		+ p {
 			margin-top: $grid-unit-10;
 		}
 	}

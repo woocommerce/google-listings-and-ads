@@ -19,7 +19,7 @@ import './choose-audience-section.scss';
  * Section form to choose audience.
  *
  * To be used in onboarding and further editing.
- * Does not provide any save strategy, this is to be bound externaly.
+ * Does not provide any save strategy, this is to be bound externally.
  */
 const ChooseAudienceSection = () => {
 	const {

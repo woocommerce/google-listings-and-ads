@@ -12,7 +12,7 @@ import AppButton from '~/components/app-button';
  */
 
 /**
- * Returns a Card's content with performance matrics according to the given data.
+ * Returns a Card's content with performance metrics according to the given data.
  *
  * @param {Object} props React props
  * @param {boolean} props.loaded Was the data loaded?
