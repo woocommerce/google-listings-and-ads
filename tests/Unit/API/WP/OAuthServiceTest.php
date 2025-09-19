@@ -107,8 +107,25 @@ class OAuthServiceTest extends UnitTest {
 		$this->service->set_container( $this->container );
 	}
 
+	public function test_deactivate_does_not_call_wpcom_api_when_jetpack_not_connected() {
+		$this->assertInstanceOf( Deactivateable::class, $this->service );
+
+		$this->jp->expects( $this->never() )
+			->method( 'remote_request' );
+
+		$this->account_service->expects( $this->never() )
+			->method( 'reset_wpcom_api_authorization_data' );
+
+		$this->service->deactivate();
+
+		$this->assertEquals( 0, did_action( 'woocommerce_gla_error' ) );
+	}
+
 	public function test_deactivation_ok() {
 		$this->assertInstanceOf( Deactivateable::class, $this->service );
+
+		// Mock the options to return true for Jetpack connected.
+		$this->options->expects( $this->once() )->method( 'get' )->with( OptionsInterface::JETPACK_CONNECTED )->willReturn( true );
 
 		$this->jp->expects( $this->once() )
 			->method( 'remote_request' )->willReturn(
@@ -126,6 +143,9 @@ class OAuthServiceTest extends UnitTest {
 
 	public function test_deactivation_with_wp_error() {
 		$this->assertInstanceOf( Deactivateable::class, $this->service );
+
+		// Mock the options to return true for Jetpack connected.
+		$this->options->expects( $this->once() )->method( 'get' )->with( OptionsInterface::JETPACK_CONNECTED )->willReturn( true );
 
 		$this->jp->expects( $this->once() )
 			->method( 'remote_request' )->willReturn( new WP_Error( 'error', 'error message' ) );

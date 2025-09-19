@@ -57,7 +57,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * The lifetime of the status-related data.
 	 */
-	public const STATUS_LIFETIME = 12 * HOUR_IN_SECONDS;
+	public const STATUS_LIFETIME = 30 * MINUTE_IN_SECONDS;
 
 	/**
 	 * The types of issues.
@@ -1030,7 +1030,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		 *       after Google replaces the issue title on their side.
 		 */
 		if ( 'merchant_quality_low' === $issue['code'] || "Account isn't eligible for free listings" === $issue['issue'] ) {
-			$issue['issue']      = 'Show products on additional surfaces across Google through free listings';
+			$issue['issue']      = 'Show products on additional surfaces across Google through product feed';
 			$issue['severity']   = self::SEVERITY_WARNING;
 			$issue['action_url'] = 'https://support.google.com/merchants/answer/9199328?hl=en';
 		}

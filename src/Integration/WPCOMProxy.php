@@ -7,11 +7,16 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use WC_Product;
 use WP_REST_Response;
 use WP_REST_Request;
@@ -30,34 +35,22 @@ defined( 'ABSPATH' ) || exit;
  * Its primary purpose is to prevent global endpoints from being cluttered with additional data
  * and to conceal undocumented implementation details of the integration between the G4W plugin and WPCOM proxy.
  *
+ * ContainerAware used to access:
+ * - AttributeManager
+ * - MerchantCenterService
+ * - ProductRepository
+ * - ShippingRateQuery
+ * - ShippingTimeQuery
+ *
  * @since 2.8.0
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Integration
  */
-class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
+class WPCOMProxy implements Service, Registerable, ContainerAwareInterface, OptionsAwareInterface {
 
+	use ContainerAwareTrait;
 	use OptionsAwareTrait;
-
-	/**
-	 * The ShippingRateQuery object.
-	 *
-	 * @var ShippingRateQuery
-	 */
-	protected $shipping_rate_query;
-
-	/**
-	 * The ShippingTimeQuery object.
-	 *
-	 * @var ShippingTimeQuery
-	 */
-	protected $shipping_time_query;
-
-	/**
-	 * The AttributeManager object.
-	 *
-	 * @var AttributeManager
-	 */
-	protected $attribute_manager;
+	use PluginHelper;
 
 	/**
 	 * The protected resources. Only items with visibility set to sync-and-show will be returned.
@@ -75,19 +68,6 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 	protected const SETTINGS_GROUP = 'google-for-woocommerce';
 
 	/**
-	 * WPCOMProxy constructor.
-	 *
-	 * @param ShippingRateQuery $shipping_rate_query   The ShippingRateQuery object.
-	 * @param ShippingTimeQuery $shipping_time_query The ShippingTimeQuery object.
-	 * @param AttributeManager  $attribute_manager   The AttributeManager object.
-	 */
-	public function __construct( ShippingRateQuery $shipping_rate_query, ShippingTimeQuery $shipping_time_query, AttributeManager $attribute_manager ) {
-		$this->shipping_rate_query = $shipping_rate_query;
-		$this->shipping_time_query = $shipping_time_query;
-		$this->attribute_manager   = $attribute_manager;
-	}
-
-	/**
 	 * The meta key used to filter the items.
 	 *
 	 * @var string
@@ -95,37 +75,36 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 	public const KEY_VISIBILITY = '_wc_gla_visibility';
 
 	/**
-	 * The Post types to be filtered.
+	 * Get the post types to be filtered.
 	 *
-	 * @var array
+	 * @return array
 	 */
-	public static $post_types_to_filter = [
-		'product'           => [
-			'meta_query' => [
-				[
-					'key'     => self::KEY_VISIBILITY,
-					'value'   => ChannelVisibility::SYNC_AND_SHOW,
-					'compare' => '=',
+	private function get_post_types_to_filter() {
+		/** @var ProductRepository $product_repository */
+		$product_repository = $this->container->get( ProductRepository::class );
+
+		return [
+			'product'           => [
+				'meta_query' => $product_repository->get_sync_ready_products_meta_query( true ),
+			],
+			'shop_coupon'       => [
+				'meta_query' => [
+					[
+						'key'     => self::KEY_VISIBILITY,
+						'value'   => ChannelVisibility::SYNC_AND_SHOW,
+						'compare' => '=',
+					],
+					[
+						'key'     => 'customer_email',
+						'compare' => 'NOT EXISTS',
+					],
 				],
 			],
-		],
-		'shop_coupon'       => [
-			'meta_query' => [
-				[
-					'key'     => self::KEY_VISIBILITY,
-					'value'   => ChannelVisibility::SYNC_AND_SHOW,
-					'compare' => '=',
-				],
-				[
-					'key'     => 'customer_email',
-					'compare' => 'NOT EXISTS',
-				],
+			'product_variation' => [
+				'meta_query' => null,
 			],
-		],
-		'product_variation' => [
-			'meta_query' => null,
-		],
-	];
+		];
+	}
 
 	/**
 	 * Register all filters.
@@ -143,7 +122,7 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 		$this->register_callbacks();
 		$this->add_g4w_settings();
 
-		foreach ( array_keys( self::$post_types_to_filter ) as $object_type ) {
+		foreach ( array_keys( $this->get_post_types_to_filter() ) as $object_type ) {
 			$this->register_object_types_filter( $object_type );
 		}
 	}
@@ -196,12 +175,28 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 
 				if ( $request->get_route() === '/wc/v3/settings/' . self::SETTINGS_GROUP ) {
 
+					/** @var MerchantCenterService $merchant_center */
+					$merchant_center_service = $this->container->get( MerchantCenterService::class );
+					/** @var ShippingRateQuery $shipping_rate_query */
+					$shipping_rate_query = $this->container->get( ShippingRateQuery::class );
+					/** @var ShippingTimeQuery $shipping_time_query */
+					$shipping_time_query = $this->container->get( ShippingTimeQuery::class );
+
+					$merchant_center = $merchant_center_service->is_connected()
+						? $this->options->get( OptionsInterface::MERCHANT_CENTER, null )
+						: null;
+
 					$data = $response->get_data();
 
 					$data[] = [
+						'id'    => 'gla_plugin_version',
+						'label' => 'Google for WooCommerce: Current plugin version',
+						'value' => $this->get_version(),
+					];
+					$data[] = [
 						'id'    => 'gla_google_connected',
 						'label' => 'Google for WooCommerce: Is Google account connected?',
-						'value' => rest_sanitize_boolean( $this->options->get( OptionsInterface::GOOGLE_CONNECTED, false ) ),
+						'value' => $merchant_center_service->is_google_connected(),
 					];
 					$data[] = [
 						'id'    => 'gla_language',
@@ -211,17 +206,17 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 					$data[] = [
 						'id'    => 'gla_merchant_center',
 						'label' => 'Google for WooCommerce: Merchant Center settings',
-						'value' => $this->options->get( OptionsInterface::MERCHANT_CENTER, null ),
+						'value' => $merchant_center,
 					];
 					$data[] = [
 						'id'    => 'gla_shipping_rates',
 						'label' => 'Google for WooCommerce: Shipping Rates',
-						'value' => (object) $this->shipping_rate_query->get_all_shipping_rates(),
+						'value' => (object) $shipping_rate_query->get_all_shipping_rates(),
 					];
 					$data[] = [
 						'id'    => 'gla_shipping_times',
 						'label' => 'Google for WooCommerce: Shipping Times',
-						'value' => (object) $this->shipping_time_query->get_all_shipping_times(),
+						'value' => (object) $shipping_time_query->get_all_shipping_times(),
 					];
 					$data[] = [
 						'id'    => 'gla_target_audience',
@@ -352,12 +347,19 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 			return $response;
 		}
 
-		$meta_data = $response->get_data()['meta_data'] ?? [];
+		// Product is opt-out but coupon is opt-in
+		$is_syncable = $pieces['resource'] === 'products';
+		$meta_data   = $response->get_data()['meta_data'] ?? [];
 
 		foreach ( $meta_data as $meta ) {
-			if ( $meta->key === self::KEY_VISIBILITY && $meta->value === ChannelVisibility::SYNC_AND_SHOW ) {
-				return $response;
+			if ( $meta->key === self::KEY_VISIBILITY ) {
+				$is_syncable = $meta->value === ChannelVisibility::SYNC_AND_SHOW;
+				break;
 			}
+		}
+
+		if ( $is_syncable ) {
+			return $response;
 		}
 
 		return new WP_REST_Response(
@@ -386,13 +388,19 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 		}
 
 		$post_type         = $args['post_type'];
-		$post_type_filters = self::$post_types_to_filter[ $post_type ];
+		$post_type_filters = $this->get_post_types_to_filter()[ $post_type ];
 
 		if ( ! isset( $post_type_filters['meta_query'] ) || ! is_array( $post_type_filters['meta_query'] ) ) {
 			return $args;
 		}
 
-		$args['meta_query'] = [ ...$args['meta_query'] ?? [], ...$post_type_filters['meta_query'] ];
+		$meta_query = $post_type_filters['meta_query'];
+
+		if ( empty( $args['meta_query'] ) ) {
+			$args['meta_query'] = $meta_query;
+		} else {
+			array_push( $args['meta_query'], $meta_query );
+		}
 
 		return $args;
 	}
@@ -418,7 +426,10 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 		$resource = $this->get_route_pieces( $request )['resource'] ?? null;
 
 		if ( $item instanceof WC_Product && ( $resource === 'products' || $resource === 'variations' ) ) {
-			$attr = $this->attribute_manager->get_all_aggregated_values( $item );
+			/** @var AttributeManager $attribute_manager */
+			$attribute_manager = $this->container->get( AttributeManager::class );
+
+			$attr = $attribute_manager->get_all_aggregated_values( $item );
 			// In case of empty array, convert to object to keep the response consistent.
 			$data['gla_attributes'] = (object) $attr;
 

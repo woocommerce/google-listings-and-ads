@@ -32,7 +32,7 @@ const CompareProductsTableCard = ( {
 	return (
 		<CompareTableCard
 			title={ __( 'Products', 'google-listings-and-ads' ) }
-			compareButonTitle={ __(
+			compareButtonTitle={ __(
 				'Select one or more products to compare',
 				'google-listings-and-ads'
 			) }

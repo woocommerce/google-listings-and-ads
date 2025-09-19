@@ -19,6 +19,7 @@ use Google\Ads\GoogleAds\V20\Common\ImageAsset;
 use Google\Ads\GoogleAds\V20\Common\TextAsset;
 use Google\Ads\GoogleAds\V20\Common\CallToActionAsset;
 use Google\Ads\GoogleAds\V20\Common\ImageDimension;
+use Google\Ads\GoogleAds\V20\Common\YoutubeVideoAsset;
 use Google\Ads\GoogleAds\V20\Enums\AccessRoleEnum\AccessRole;
 use Google\Ads\GoogleAds\V20\Enums\CampaignStatusEnum\CampaignStatus as AdsCampaignStatus;
 use Google\Ads\GoogleAds\V20\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType as AdsCampaignType;
@@ -311,17 +312,17 @@ trait GoogleAdsClientTrait {
 						$this->assertEquals( $resource_name_label, $label->getResourceName() );
 
 						$operation      = $results['campaign_label_operation']->getCampaignLabelOperation();
-						$campaing_label = $operation->getCreate();
-						$this->assertEquals( $resource_name_label, $campaing_label->getLabel() );
-						$this->assertEquals( ResourceNames::forCampaign( $this->ads_id, $campaign_id ), $campaing_label->getCampaign() );
+						$campaign_label = $operation->getCreate();
+						$this->assertEquals( $resource_name_label, $campaign_label->getLabel() );
+						$this->assertEquals( ResourceNames::forCampaign( $this->ads_id, $campaign_id ), $campaign_label->getCampaign() );
 
 					} else {
 						$this->assertEquals( 1, count( $operations ) );
 						$operation           = $results['campaign_label_operation']->getCampaignLabelOperation();
-						$campaing_label      = $operation->getCreate();
+						$campaign_label      = $operation->getCreate();
 						$resource_name_label = ResourceNames::forLabel( $this->ads_id, $label_id );
-						$this->assertEquals( $resource_name_label, $campaing_label->getLabel() );
-						$this->assertEquals( ResourceNames::forCampaign( $this->ads_id, $campaign_id ), $campaing_label->getCampaign() );
+						$this->assertEquals( $resource_name_label, $campaign_label->getLabel() );
+						$this->assertEquals( ResourceNames::forCampaign( $this->ads_id, $campaign_id ), $campaign_label->getCampaign() );
 					}
 
 					return $response;
@@ -939,6 +940,10 @@ trait GoogleAdsClientTrait {
 				$ads_asset->setCallToActionAsset( new CallToActionAsset( [ 'call_to_action' => CallToActionType::number( $asset['content'] ) ] ) );
 				$ads_asset->setType( AssetType::CALL_TO_ACTION );
 				return $ads_asset;
+			case AssetFieldType::YOUTUBE_VIDEO:
+				$ads_asset->setYoutubeVideoAsset( new YoutubeVideoAsset( [ 'youtube_video_id' => $asset['content'] ] ) );
+				$ads_asset->setType( AssetType::YOUTUBE_VIDEO );
+				return $ads_asset;
 			default:
 				return null;
 		}
@@ -1048,6 +1053,8 @@ trait GoogleAdsClientTrait {
 					return CallToActionType::UNSPECIFIED;
 				}
 				return CallToActionType::label( $asset->getCallToActionAsset()->getCallToAction() );
+			case AssetFieldType::YOUTUBE_VIDEO:
+				return $asset->getYoutubeVideoAsset()->getYoutubeVideoId();
 			default:
 				return '';
 		}

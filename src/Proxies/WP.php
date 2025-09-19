@@ -340,4 +340,49 @@ class WP {
 	public function wp_print_inline_script_tag( string $data, array $attributes = [] ) {
 		return wp_print_inline_script_tag( $data, $attributes );
 	}
+
+	/**
+	 * Determines whether WordPress is currently serving a REST API request.
+	 *
+	 * @return bool True if it's a WordPress REST API request, false otherwise.
+	 */
+	public function wp_is_serving_rest_request(): bool {
+		return wp_is_serving_rest_request();
+	}
+
+	/**
+	 * Wrapper of get_option.
+	 *
+	 * @param mixed ...$arguments
+	 */
+	public function get_option( ...$arguments ) {
+		return get_option( ...$arguments );
+	}
+
+	/**
+	 * Wrapper of add_option.
+	 *
+	 * @param mixed ...$arguments
+	 */
+	public function add_option( ...$arguments ) {
+		return add_option( ...$arguments );
+	}
+
+	/**
+	 * Wrapper of update_option.
+	 *
+	 * @param mixed ...$arguments
+	 */
+	public function update_option( ...$arguments ) {
+		return update_option( ...$arguments );
+	}
+
+	/**
+	 * Wrapper of delete_option.
+	 *
+	 * @param mixed ...$arguments
+	 */
+	public function delete_option( ...$arguments ) {
+		return delete_option( ...$arguments );
+	}
 }

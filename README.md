@@ -6,7 +6,7 @@
 [![JavaScript and CSS Linting](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-css-linting.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-css-linting.yml)
 [![Build](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/build.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/build.yml)
 
-A native integration with Google offering free listings and Performance Max ads to WooCommerce merchants.
+A native integration with Google offering product feed and Performance Max ads to WooCommerce merchants.
 
 -   [WooCommerce.com product page](https://woocommerce.com/products/google-listings-and-ads/)
 -   [WordPress.org plugin page](https://wordpress.org/plugins/google-listings-and-ads/)
@@ -27,8 +27,8 @@ If you have a WooCommerce.com account, you can [start a chat or open a ticket on
 
 We aim to support the latest two minor versions of WordPress, WooCommerce, and PHP. (L-2 policy)
 
--   WordPress 6.1+
--   WooCommerce 7.9+
+-   WordPress 6.6+
+-   WooCommerce 9.7+
 -   PHP 7.4+ (64 bits)
 
 ### Browsers supported

@@ -90,6 +90,40 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		$this->assertContainsOnly( 'integer', $results );
 	}
 
+	public function test_get_sync_ready_products_meta_query() {
+		$this->assertEquals(
+			[
+				'relation' => 'OR',
+				[
+					'key'     => 'visibility',
+					'compare' => 'NOT EXISTS',
+				],
+				[
+					'key'     => 'visibility',
+					'compare' => '!=',
+					'value'   => 'dont-sync-and-show',
+				],
+			],
+			$this->product_repository->get_sync_ready_products_meta_query()
+		);
+
+		$this->assertEquals(
+			[
+				'relation' => 'OR',
+				[
+					'key'     => '_wc_gla_visibility',
+					'compare' => 'NOT EXISTS',
+				],
+				[
+					'key'     => '_wc_gla_visibility',
+					'compare' => '!=',
+					'value'   => 'dont-sync-and-show',
+				],
+			],
+			$this->product_repository->get_sync_ready_products_meta_query( true )
+		);
+	}
+
 	public function test_find_passes_query_args() {
 		$product_1 = WC_Helper_Product::create_simple_product();
 		$product_1->set_status( 'draft' );

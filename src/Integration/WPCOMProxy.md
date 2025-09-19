@@ -7,6 +7,11 @@ Following is the desired and expected structure of `/settings/google-for-woocomm
 ```js
 [
     {
+        "id": "gla_plugin_version",
+        "label": "Google for WooCommerce: Current plugin version",
+        "value": WC_GLA_VERSION,
+    },
+    {
         "id": "gla_google_connected",
         "label": "Google for WooCommerce: Is Google account connected?",
         "value": ( true | false )

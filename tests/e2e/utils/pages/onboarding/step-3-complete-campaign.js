@@ -182,6 +182,17 @@ export default class CompleteCampaign extends MockRequests {
 	}
 
 	/**
+	 * Retrieves the skip paid ads survey modal element.
+	 *
+	 * @return {import('@playwright/test').Locator} Locator for the modal containing the text "Why do you want to skip ads?".
+	 */
+	getSkipPaidAdsSurveyModal() {
+		return this.page.locator( '.components-modal__content' ).filter( {
+			hasText: 'Why do you want to skip ads?',
+		} );
+	}
+
+	/**
 	 * Retrieves the setup success modal element.
 	 *
 	 * @return {import('@playwright/test').Locator} Locator for the modal containing the text "You’ve successfully set up Google for WooCommerce!".
@@ -190,5 +201,28 @@ export default class CompleteCampaign extends MockRequests {
 		return this.page.locator( '.components-modal__content' ).filter( {
 			hasText: 'You’ve successfully set up Google for WooCommerce!',
 		} );
+	}
+
+	/**
+	 * Retrieves the "Send and complete setup" button from the skip paid ads survey modal.
+	 *
+	 * @return {import('@playwright/test').Locator} Locator for the "Send and complete setup" button.
+	 */
+	getSendAndCompleteSetupModalButton() {
+		return this.page.getByRole( 'button', {
+			name: 'Send and complete setup',
+			exact: true,
+		} );
+	}
+
+	/**
+	 * Clicks the "Send and complete setup" button in the skip paid ads survey modal.
+	 *
+	 * @return {Promise<void>} Resolves when the click action is completed and the page has loaded.
+	 */
+	async clickSendAndCompleteSetupModalButton() {
+		const button = this.getSendAndCompleteSetupModalButton();
+		await button.click();
+		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	}
 }

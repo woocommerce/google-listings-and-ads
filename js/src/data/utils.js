@@ -16,7 +16,7 @@ import round from '~/utils/round';
 export const freeFields = [ 'clicks', 'impressions' ];
 export const paidFields = [ 'sales', 'conversions', 'spend', ...freeFields ];
 /**
- * Reasons why the free listings data may be missing.
+ * Reasons why the product feed data may be missing.
  *
  * @enum {number}
  */
@@ -152,7 +152,7 @@ export function calculateDelta( value, base ) {
  *
  * @param {number} [value] The primary report field fetched from report API.
  * @param {number} [base] The secondary report field fetched from report API.
- * @param {MISSING_FREE_LISTINGS_DATA} [missingFreeListingsData] Flag indicating whether the data miss entries from Free Listings.
+ * @param {MISSING_FREE_LISTINGS_DATA} [missingFreeListingsData] Flag indicating whether the data miss entries from Product Feed.
  * @return {PerformanceData} The calculated performance data of each metric.
  */
 export const fieldsToPerformance = (
@@ -270,5 +270,5 @@ export function convertKeysFromSnakeCaseToCamelCase( data ) {
  * @property {number} value Value of the current period.
  * @property {number} prevValue Value of the previous period.
  * @property {number} delta The delta of the current value compared to the previous value.
- * @property {MISSING_FREE_LISTINGS_DATA} [missingFreeListingsData] Flag indicating whether the data miss entries from Free Listings.
+ * @property {MISSING_FREE_LISTINGS_DATA} [missingFreeListingsData] Flag indicating whether the data miss entries from Product Feed.
  */

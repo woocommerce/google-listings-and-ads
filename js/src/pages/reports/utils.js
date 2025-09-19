@@ -39,9 +39,9 @@ export function getIdsFromQuery( queryString = '' ) {
  * @param {Object} [totals1={}]
  * @param {Object} [totals2={}]
  *
- * @return {Object} New object with given properies.
+ * @return {Object} New object with given properties.
  */
-function sumProperies( metrics, totals1 = {}, totals2 = {} ) {
+function sumProperties( metrics, totals1 = {}, totals2 = {} ) {
 	return metrics.reduce( ( sum, metric ) => {
 		sum[ metric ] = ( totals1[ metric ] || 0 ) + ( totals2[ metric ] || 0 );
 		return sum;
@@ -77,7 +77,7 @@ export function aggregateIntervals( intervals1, intervals2 ) {
 	// We assume subtotals has the consistent schema across all intervals, and the `paidFields` is the superset.
 	const result = allIntervals.map( ( interval ) => ( {
 		interval,
-		subtotals: sumProperies(
+		subtotals: sumProperties(
 			paidFields,
 			intervals1Map.get( interval ),
 			intervals2Map.get( interval )
@@ -118,7 +118,7 @@ export function sumToPerformance(
 				missingFreeListingsData =
 					MISSING_FREE_LISTINGS_DATA.FOR_REQUEST;
 			} else {
-				// There is free listings data, sum with paid one.
+				// There is product feed data, sum with paid one.
 				// `freeTotals` doesn't have fallback because it will only be number or undefined type,
 				// and the undefined has been checked above.
 				value = ( paidTotals[ key ] || 0 ) + freeTotals[ key ];

@@ -106,6 +106,11 @@ const webpackConfig = {
 			'js/src/wp-consent-api',
 			'index.js'
 		),
+		'notification-manager': path.resolve(
+			process.cwd(),
+			'js/src/notification-manager',
+			'index.js'
+		),
 	} ),
 	output: {
 		...defaultConfig.output,
@@ -158,7 +163,7 @@ const sassTest = /\.(sc|sa)ss$/;
 const updatedSassOptions = {
 	sourceMap: ! isProduction,
 	sassOptions: {
-		includePaths: [ 'js/src/css/abstracts' ],
+		loadPaths: [ path.resolve( __dirname, 'js/src/css/abstracts' ) ],
 	},
 	additionalData:
 		'@use "sass:color";' +

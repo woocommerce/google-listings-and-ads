@@ -71,6 +71,8 @@ const DEFAULT_STATE = {
 			step: null,
 		},
 		budgetRecommendations: {},
+		recommendations: {},
+		enable_enhanced_conversions: false,
 		budgetMetrics: {},
 	},
 	gtinMigrationStatus: null,
@@ -535,6 +537,12 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, 'gtinMigrationStatus', data?.status );
 		}
 
+		case TYPES.RECEIVE_ADS_ENHANCED_CONVERSIONS: {
+			const { status } = action;
+
+			return setIn( state, 'ads.enable_enhanced_conversions', status );
+		}
+
 		case TYPES.RECEIVE_PRICE_BENCHMARK_SUMMARY: {
 			const { data } = action;
 			return setIn( state, 'price_benchmark.summary', data );
@@ -607,6 +615,16 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 					product_price: productPrice,
 				},
 			} );
+		}
+
+		case TYPES.RECEIVE_ADS_RECOMMENDATIONS: {
+			const { recommendations, recommendationType } = action;
+
+			return setIn(
+				state,
+				[ 'ads', 'recommendations', recommendationType ],
+				recommendations
+			);
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

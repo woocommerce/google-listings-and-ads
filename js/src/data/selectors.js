@@ -173,6 +173,17 @@ export const getAdsCampaigns = ( state, query ) => {
 };
 
 /**
+ * Get the enhanced conversions setting.
+ * This setting indicates whether enhanced conversions are enabled for the Google Ads account.
+ *
+ * @param {Object} state The current store state will be injected by `wp.data`.
+ * @return {boolean} The enhanced conversions setting. Returns `true` if enabled, `false` otherwise.
+ */
+export const getEnableEnhancedConversions = ( state ) => {
+	return state.ads.enable_enhanced_conversions;
+};
+
+/**
  * Gets the asset groups by the given campaign ID.
  *
  * @param {Object} state The current store state will be injected by `wp.data`.
@@ -310,19 +321,19 @@ export const getReport = createRegistrySelector(
 );
 
 /**
- * @typedef {Object} PerformaceData
+ * @typedef {Object} PerformanceData
  * @property {boolean} loaded Whether the data have been loaded.
- * @property {Object|null} data The programs performace data of specified parameters. It would return `null` before the data is fetched.
+ * @property {Object|null} data The programs performance data of specified parameters. It would return `null` before the data is fetched.
  */
 /**
- * Select programs performace data according to parameters.
+ * Select programs performance data according to parameters.
  *
  * @param  {Object} state The current store state will be injected by `wp.data`.
  * @param  {string} type Type of report, 'free' or 'paid'.
  * @param  {Object} query Query parameters in the URL.
  * @param  {string} dateReference Which date range to use, 'primary' or 'secondary'.
  *
- * @return {PerformaceData} Performace data.
+ * @return {PerformanceData} Performance data.
  */
 export const getDashboardPerformance = createRegistrySelector(
 	( select ) => ( state, type, query, dateReference ) => {
@@ -472,4 +483,15 @@ export const getPriceBenchmarkSuggestions = createSelector(
  */
 export const getPriceBenchmarkSuggestion = ( state, productId ) => {
 	return state.price_benchmark.suggestions.items[ productId ];
+};
+
+/**
+ * Retrieves ad recommendations of a specific type from the state.
+ *
+ * @param {Object} state - The Redux state object containing ads data.
+ * @param {string} type - The type of ad recommendations to retrieve.
+ * @return {Object|null} The recommendations for the specified type, or null if not found.
+ */
+export const getAdsRecommendations = ( state, type ) => {
+	return state.ads.recommendations[ type ] || null;
 };

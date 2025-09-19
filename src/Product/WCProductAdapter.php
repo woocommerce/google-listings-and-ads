@@ -158,7 +158,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		 * @param WCProductAdapter $this       The Adapted Google product object. All WooCommerce product properties
 		 *                                     are already mapped to this object.
 		 *
-		 * @see \Google\Service\ShoppingContent\Product for the list of product properties that can be overriden.
+		 * @see \Google\Service\ShoppingContent\Product for the list of product properties that can be overridden.
 		 * @see WCProductAdapter::map_gla_attributes for the docuementation of `woocommerce_gla_product_attribute_value_{$attribute_id}`
 		 *                                           filter, which allows modifying some attributes such as GTIN, MPN, etc.
 		 *
@@ -217,7 +217,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		return $this;
 	}
 	/**
-	 * Covert WooCommerce product categories to product_type, which follows Google requirements:
+	 * Convert WooCommerce product categories to product_type, which follows Google requirements:
 	 * https://support.google.com/merchants/answer/6324406?hl=en#
 	 *
 	 * @param int[] $category_ids

@@ -13,10 +13,12 @@ import StepContentHeader from '~/components/stepper/step-content-header';
 import StepContentFooter from '~/components/stepper/step-content-footer';
 import StepContentActions from '~/components/stepper/step-content-actions';
 import AppButton from '~/components/app-button';
-import AssetGroupSection from './asset-group-section';
 import Faqs from './faqs';
 import { recordGlaEvent } from '~/utils/tracks';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
+import AssetGroupHeader from './asset-group-header';
+import AssetGroupEditor from './asset-group-editor';
+import './asset-group.scss';
 
 export const ACTION_SUBMIT_CAMPAIGN_AND_ASSETS = 'submit-campaign-and-assets';
 export const ACTION_SUBMIT_CAMPAIGN_ONLY = 'submit-campaign-only';
@@ -35,6 +37,7 @@ export const ACTION_SUBMIT_CAMPAIGN_ONLY = 'submit-campaign-only';
  * @property {string} audiences Country codes of the campaign audience countries, e.g. `US,JP,AU`.
  * @property {string} budget Daily average cost of the campaign.
  * @property {string} assets_validation Whether all asset values are valid or at least one invalid. Possible values: `valid`, `invalid`, `unknown`.
+ * @property {string} campaign_id The ID of the campaign being created or edited, or `new` if it's a new campaign.
  * @property {string} number_of_business_name The number of this asset in string type or `unknown`.
  * @property {string} number_of_marketing_image Same as above.
  * @property {string} number_of_square_marketing_image Same as above.
@@ -46,6 +49,7 @@ export const ACTION_SUBMIT_CAMPAIGN_ONLY = 'submit-campaign-only';
  * @property {string} number_of_call_to_action_selection Same as above.
  * @property {string} number_of_final_url Same as above.
  * @property {string} number_of_display_url_path Same as above.
+ * @property {string} number_of_youtube_videos Same as above.
  */
 
 /**
@@ -76,6 +80,7 @@ export default function AssetGroup( { campaign } ) {
 			audiences: audiences.join( ',' ),
 			budget: values.dailyBudget.toString(),
 			assets_validation: isValidAssetGroup ? 'valid' : 'invalid',
+			campaign_id: isCreation ? 'new' : campaign.id,
 		};
 
 		if ( ! finalUrl ) {
@@ -113,11 +118,13 @@ export default function AssetGroup( { campaign } ) {
 					'google-listings-and-ads'
 				) }
 				description={ __(
-					'Drive greater performance by adding text and image assets to create personalized and engaging ads',
+					'Drive greater performance by adding text, image, and video assets to create more personalized and engaging ads.',
 					'google-listings-and-ads'
 				) }
 			/>
-			<AssetGroupSection />
+
+			<AssetGroupHeader />
+			<AssetGroupEditor />
 
 			<StepContentFooter>
 				<StepContentActions>

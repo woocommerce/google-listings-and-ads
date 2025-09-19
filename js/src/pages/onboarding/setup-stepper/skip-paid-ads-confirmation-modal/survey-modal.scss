@@ -1,0 +1,48 @@
+.gla-skip-paid-ads-survey-modal {
+	width: 840px;
+}
+
+.gla-skip-paid-ads-survey-modal__benefits {
+	font-size: $gla-font-base;
+	background-color: $gla-color-gray-0;
+	padding: $grid-unit-30;
+
+	.gla-skip-paid-ads-survey-modal__benefits-title,
+	.gla-skip-paid-ads-survey-modal__benefits-item-title {
+		font-size: $gla-font-base;
+		font-weight: 600;
+		margin: 0 0 $grid-unit-10;
+	}
+
+	.gla-skip-paid-ads-survey-modal__benefits-title {
+		margin: 0 0 $grid-unit-20;
+	}
+
+	p {
+		color: $gray-700;
+		font-size: $gla-font-base;
+		margin: 0;
+
+		+ p {
+			margin-top: $grid-unit-10;
+		}
+	}
+
+	.gla-skip-paid-ads-survey-modal__benefits-list,
+	li {
+		margin: 0;
+	}
+
+	li + li {
+		margin-top: $grid-unit-20;
+	}
+
+	a[data-link-type="external"] {
+		align-items: center;
+		display: inline-flex;
+
+		svg {
+			fill: currentcolor;
+		}
+	}
+}

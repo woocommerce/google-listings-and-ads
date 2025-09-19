@@ -987,7 +987,7 @@ export default class MockRequests {
 	}
 
 	/**
-	 * Mock the successful settings sync requesst.
+	 * Mock the successful settings sync request.
 	 *
 	 * @return {Promise<void>}
 	 */
@@ -1009,6 +1009,22 @@ export default class MockRequests {
 		await this.fulfillRequest(
 			/\/wc\/gla\/rest-api\/authorize\b/,
 			payload,
+			200,
+			methods
+		);
+	}
+
+	/**
+	 * Mocks the API response for the enhanced conversions status setting.
+	 *
+	 * @param {boolean} [status=false] - The desired status for enhanced conversions (enabled or disabled).
+	 * @param {Array} [methods=['GET']] - The HTTP methods to fulfill the request.
+	 * @return {Promise<void>} Resolves when the mock request has been fulfilled.
+	 */
+	async mockEnhancedConversionsStatus( status = false, methods = [ 'GET' ] ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/settings\b/,
+			{ enhanced_conversions_enabled: status },
 			200,
 			methods
 		);
@@ -1052,6 +1068,29 @@ export default class MockRequests {
 	async fulfillPriceBenchmarkSummary( payload, status = 200 ) {
 		await this.fulfillRequest(
 			/\/wc\/gla\/mc\/price-benchmarks\/summary\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Mocks the API request for Google Ads recommendations of a specific type.
+	 *
+	 * @param {Array} [payload=[]] - The mock response payload to return.
+	 * @param {string} [type='IMPROVE_PERFORMANCE_MAX_AD_STRENGTH'] - The type of recommendation to mock.
+	 * @param {number} [status=200] - The HTTP status code to return.
+	 * @return {Promise<void>} Resolves when the mock is set up.
+	 */
+	async mockAdsRecommendations(
+		payload = [],
+		type = 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH',
+		status = 200
+	) {
+		await this.fulfillRequest(
+			new RegExp(
+				`\\/wc\\/gla\\/ads\\/recommendations\\?type=${ type }\\b`
+			),
 			payload,
 			status,
 			[ 'GET' ]

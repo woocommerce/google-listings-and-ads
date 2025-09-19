@@ -51,7 +51,7 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * @property {string} name Campaign name.
  * @property {'enabled'|'paused'|'removed'} status Campaign is currently running, has been paused or removed.
  * @property {number} amount Amount of daily budget for running ads.
- * @property {CountryCode} country The sales country of this campain.
+ * @property {CountryCode} country The sales country of this campaign.
  *   Please note that this is a targeting country for advertising,
  *   but it is NOT set up via the location-based method.
  * @property {Array<CountryCode>} targeted_locations The location-based targeting countries associated with this campaign for advertising.
@@ -191,7 +191,7 @@ export function* upsertShippingRates( shippingRates ) {
 /**
  * Delete shipping rates.
  *
- * @param {Array<string>} ids IDs of shiping rates to be deleted.
+ * @param {Array<string>} ids IDs of shipping rates to be deleted.
  * @return {Object} Action object to delete shipping rates.
  * @throws Will throw an error if the request failed.
  */
@@ -783,6 +783,42 @@ export function* updateAdsCampaign( id, data ) {
 	}
 }
 
+export function receiveEnhancedConversionsStatus( status ) {
+	return {
+		type: TYPES.RECEIVE_ADS_ENHANCED_CONVERSIONS,
+		status,
+	};
+}
+
+/**
+ * Update the enhanced conversions status.
+ *
+ * @param {boolean} status The status of the enhanced conversions.
+ * @return {Object} Action object to update the enhanced conversions status.
+ */
+export function* updateEnhancedConversionsStatus( status ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/settings`,
+			method: 'POST',
+			data: {
+				enhanced_conversions_enabled: status,
+			},
+		} );
+
+		return receiveEnhancedConversionsStatus( status );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error updating the enhanced conversions status.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
 /**
  * Delete an ads campaign by ID.
  *
@@ -1227,5 +1263,16 @@ export function* receivePriceBenchmarkSuggestionsProductPrice(
 			productId,
 			productPrice,
 		},
+	};
+}
+
+export function* receiveAdsRecommendations(
+	recommendations,
+	recommendationType
+) {
+	return {
+		type: TYPES.RECEIVE_ADS_RECOMMENDATIONS,
+		recommendations,
+		recommendationType,
 	};
 }

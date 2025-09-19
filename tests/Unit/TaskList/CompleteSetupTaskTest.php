@@ -67,7 +67,7 @@ class CompleteSetupTaskTest extends UnitTest {
 	}
 
 	public function test_dismissable() {
-		$this->assertTrue( $this->task->is_dismissable() );
+		$this->assertFalse( $this->task->is_dismissable() );
 	}
 
 	public function test_is_complete_and_mc_setup_not_complete() {

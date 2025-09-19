@@ -194,10 +194,12 @@ class ProductRepository implements Service {
 	}
 
 	/**
+	 * @param bool $prefixed Whether to prefix the meta query keys. Default is false.
+	 *
 	 * @return array
 	 */
-	protected function get_sync_ready_products_meta_query(): array {
-		return [
+	public function get_sync_ready_products_meta_query( bool $prefixed = false ): array {
+		$meta_query = [
 			'relation' => 'OR',
 			[
 				'key'     => ProductMetaHandler::KEY_VISIBILITY,
@@ -209,6 +211,12 @@ class ProductRepository implements Service {
 				'value'   => ChannelVisibility::DONT_SYNC_AND_SHOW,
 			],
 		];
+
+		if ( $prefixed ) {
+			$meta_query = $this->meta_handler->prefix_meta_query_keys( $meta_query );
+		}
+
+		return $meta_query;
 	}
 
 	/**

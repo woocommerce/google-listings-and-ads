@@ -48,7 +48,7 @@ export default class SettingsPage extends MockRequests {
 		await this.mockAdsAccountConnected();
 		await this.mockContactInformation();
 		await this.mockSuccessfulSettingsSyncRequest();
-
+		await this.mockEnhancedConversionsStatus();
 		await this.fulfillAdsReportProducts( adsReportProductsData );
 		await this.fulfillProductStatisticsRequest( mcProductStatistics );
 	}
@@ -78,5 +78,29 @@ export default class SettingsPage extends MockRequests {
 			name: 'Grant access',
 			exact: true,
 		} );
+	}
+
+	/**
+	 * Get the Enhanced Conversions checkbox.
+	 *
+	 * @return {Promise<import('@playwright/test').Locator>} The Enhanced Conversions checkbox
+	 */
+	getEnhancedConversionsCheckbox() {
+		return this.page.getByRole( 'checkbox', {
+			name: 'Send Enhanced Conversions data to Google Ads',
+		} );
+	}
+
+	/**
+	 * Register the request when the enhanced conversions checkbox is checked or unchecked.
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	async registerEnhancedConversionsStatusRequests() {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/ads/settings' ) &&
+				request.method() === 'POST'
+		);
 	}
 }

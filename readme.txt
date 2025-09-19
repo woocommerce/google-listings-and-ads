@@ -1,11 +1,11 @@
 === Google for WooCommerce ===
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, product feed, ads, listings
-Requires at least: 6.1
+Requires at least: 6.6
 Tested up to: 6.8
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.2.0
+Stable tag: 3.4.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -51,8 +51,8 @@ Once you’re running Google Ads campaigns, the Google tag feature in the extens
 
 = Minimum Requirements =
 
-* WordPress 6.1 or greater
-* WooCommerce 7.9 or greater
+* WordPress 6.6 or greater
+* WooCommerce 9.7 or greater
 * PHP version 7.4 or greater
 * PHP Architecture 64 bits
 * MySQL version 5.6 or greater
@@ -140,31 +140,23 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
-= 3.2.0 - 2025-07-22 =
-* Add - Block shipping, products, and coupons synchronization when push synchronization is disabled.
-* Add - Budget Metrics endpoint for fetching metrics with a custom budget.
-* Add - Controller for fetching incentive credits from Middleware.
-* Add - Event tracking for budget recommendations and metrics.
-* Add - Fetch budget recommendations from the Google Ads API.
-* Add - Include blog ID to all notification messages.
-* Add - New endpoint for synchronizing listing settings with Google.
-* Add - Provide the recommendations and metrics when setting a campaign budget.
-* Add - Show a prompt for suggesting a higher budget to get back free ad credits before completing the onboarding and ads onboarding.
-* Tweak - Restrict Budget Metrics to positive numbers.
-* Update - Google Ads API from v18 to v20.
-* Update - Remove WPCOM API authorization check as authorization is granted by default.
-* Update - Remove opt-in/opt-out UI controls for product data sync.
+= 3.4.3 - 2025-09-16 =
+* Dev - Update NPM packages with security issues.
+* Dev - Update NPM packages with security issues.
+* Fix - Improve focus handling in `TreeSelectControl`.
+* Fix - Use `isGoogleAdsReady` property instead of `hasGoogleAdsConnection` to check for a connected Ads account.
+* Tweak - WC 10.2 compatibility.
+* Update - Incorporate API changes for EU political advertising.
 
-= 3.1.1 - 2025-07-08 =
-* Fix - Do not render experience rating banner if Ads account is disconnected.
-* Fix - Fixed undefined array key warnings in Price Benchmarks feature.
+= 3.4.2 - 2025-09-02 =
+* Add - Display the statuses of synchronization modes with Google Merchant Center in WooCommerce System Status Report.
+* Tweak -  Adjust the value of the Merchant Center setting in the WPCOM proxy endpoint to null before completing onboarding so that Google service can recognize whether the Merchant Center account has been disconnected.
+* Tweak - Renamed the log file name from `google-listings-and-ads` to `google-for-woocommerce`.
+* Update - Include the current plugin version in the WPCOM proxy endpoint for Google service to recognize which plugin version is being used.
+* Update - Schedule resynchronization for all products via the Push mode when the Push mode of product synchronization is switched to enable.
 
-= 3.1.0 - 2025-07-01 =
-* Add - A new endpoint for Google-triggered account linking.
-* Add - Notice to gather feedback and request ratings from merchants.
-* Add - Reintroduce account:connect functionality for Google account linking.
-* Fix - Prevent the user from continuing if the minimum shipping time is not set.
-* Fix - The API error of querying campaign assets by an invalid ID after saving a campaign with assets.
-* Tweak - WC 10.0 compatibility.
+= 3.4.1 - 2025-08-26 =
+* Fix - Replaced multiple `setValue` calls with a single `setValues` call to eliminate race conditions during form initialization and reduce inconsistent validation behavior.
+* Tweak - Reduce the cache time for product statuses and issues from 12 hours to 30 minutes.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

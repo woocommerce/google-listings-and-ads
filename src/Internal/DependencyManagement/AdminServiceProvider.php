@@ -11,7 +11,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\CouponChannelVisib
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Redirect;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\SystemStatusService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\ConnectionTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
@@ -21,6 +23,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\AttributeMapping;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Dashboard;
+use Automattic\WooCommerce\GoogleListingsAndAds\Menu\NotificationManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GetStarted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\ProductFeed;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports;
@@ -57,6 +60,7 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		ConnectionTest::class      => true,
 		CouponBulkEdit::class      => true,
 		Dashboard::class           => true,
+		NotificationManager::class => true,
 		GetStarted::class          => true,
 		MetaBoxInterface::class    => true,
 		MetaBoxInitializer::class  => true,
@@ -67,6 +71,7 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		SetupAds::class            => true,
 		SetupMerchantCenter::class => true,
 		Shipping::class            => true,
+		SystemStatusService::class => true,
 		Service::class             => true,
 	];
 
@@ -101,6 +106,7 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 
 		$this->share_with_tags( AttributeMapping::class );
 		$this->share_with_tags( Dashboard::class );
+		$this->share_with_tags( NotificationManager::class, AssetsHandlerInterface::class );
 		$this->share_with_tags( GetStarted::class );
 		$this->share_with_tags( ProductFeed::class );
 		$this->share_with_tags( Reports::class );
@@ -108,5 +114,6 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		$this->share_with_tags( SetupAds::class );
 		$this->share_with_tags( SetupMerchantCenter::class );
 		$this->share_with_tags( Shipping::class );
+		$this->share_with_tags( SystemStatusService::class, NotificationsService::class, MerchantCenterService::class );
 	}
 }

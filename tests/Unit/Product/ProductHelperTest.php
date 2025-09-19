@@ -47,11 +47,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	protected $wc;
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_mark_as_synced( WC_Product $product ) {
+	public function test_mark_as_synced( string $callback ) {
+		$product        = call_user_func( $callback );
 		$google_product = $this->generate_google_product_mock();
 
 		$this->target_audience->expects( $this->any() )
@@ -75,11 +76,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_mark_as_synced_keeps_existing_google_ids( WC_Product $product ) {
+	public function test_mark_as_synced_keeps_existing_google_ids( string $callback ) {
+		$product        = call_user_func( $callback );
 		$google_product = $this->generate_google_product_mock();
 
 		$this->product_meta->update_google_ids( $product, [ 'AU' => 'online:en:AU:gla_1' ] );
@@ -96,11 +98,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_mark_as_synced_deletes_errors_when_main_target_countries_synced( WC_Product $product ) {
+	public function test_mark_as_synced_deletes_errors_when_main_target_countries_synced( string $callback ) {
+		$product        = call_user_func( $callback );
 		$google_product = $this->generate_google_product_mock();
 
 		$this->target_audience->expects( $this->any() )
@@ -120,11 +123,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_mark_as_synced_doesnt_delete_errors_unless_main_target_countries_synced( WC_Product $product ) {
+	public function test_mark_as_synced_doesnt_delete_errors_unless_main_target_countries_synced( string $callback ) {
+		$product        = call_user_func( $callback );
 		$google_product = $this->generate_google_product_mock();
 
 		$this->target_audience->expects( $this->any() )
@@ -206,11 +210,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_mark_as_unsynced( WC_Product $product ) {
+	public function test_mark_as_unsynced( string $callback ) {
+		$product = call_user_func( $callback );
 		// First mark the product as synced to update its meta data
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
 
@@ -291,11 +296,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_remove_google_id( WC_Product $product ) {
+	public function test_remove_google_id( string $callback ) {
+		$product = call_user_func( $callback );
 		$this->product_meta->update_google_ids(
 			$product,
 			[
@@ -310,11 +316,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_remove_google_id_marks_as_unsynced_if_empty_ids( WC_Product $product ) {
+	public function test_remove_google_id_marks_as_unsynced_if_empty_ids( string $callback ) {
+		$product = call_user_func( $callback );
 		$this->product_meta->update_google_ids( $product, [ 'US' => 'online:en:US:gla_1' ] );
 
 		$this->product_helper->remove_google_id( $product, 'online:en:US:gla_1' );
@@ -324,12 +331,13 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_mark_as_invalid( WC_Product $product ) {
-		$errors = [
+	public function test_mark_as_invalid( string $callback ) {
+		$product = call_user_func( $callback );
+		$errors  = [
 			'Error 1',
 			'Error 2',
 		];
@@ -348,12 +356,13 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_mark_as_invalid_updates_failed_sync_attempts_if_internal_error_exists( WC_Product $product ) {
-		$errors = [
+	public function test_mark_as_invalid_updates_failed_sync_attempts_if_internal_error_exists( string $callback ) {
+		$product = call_user_func( $callback );
+		$errors  = [
 			'Error 1',
 			'Error 2',
 			GoogleProductService::INTERNAL_ERROR_REASON => 'Internal error',
@@ -429,11 +438,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_mark_as_pending( WC_Product $product ) {
+	public function test_mark_as_pending( string $callback ) {
+		$product = call_user_func( $callback );
 		$this->product_helper->mark_as_pending( $product );
 
 		$this->assertEquals( SyncStatus::PENDING, $this->product_meta->get_sync_status( $product ) );
@@ -470,11 +480,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_get_synced_google_product_ids( WC_Product $product ) {
+	public function test_get_synced_google_product_ids( string $callback ) {
+		$product = call_user_func( $callback );
 		$this->product_meta->update_google_ids( $product, [ 'US' => 'online:en:US:gla_1' ] );
 
 		$this->assertEquals( [ 'US' => 'online:en:US:gla_1' ], $this->product_helper->get_synced_google_product_ids( $product ) );
@@ -585,22 +596,24 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_is_product_synced( WC_Product $product ) {
+	public function test_is_product_synced( string $callback ) {
+		$product = call_user_func( $callback );
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
 		$is_product_synced = $this->product_helper->is_product_synced( $product );
 		$this->assertTrue( $is_product_synced );
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_is_product_synced_return_false_if_no_google_id( WC_Product $product ) {
+	public function test_is_product_synced_return_false_if_no_google_id( string $callback ) {
+		$product = call_user_func( $callback );
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
 		$this->product_meta->delete_google_ids( $product );
 		$is_product_synced = $this->product_helper->is_product_synced( $product );
@@ -608,11 +621,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_is_product_synced_return_false_if_no_synced_at( WC_Product $product ) {
+	public function test_is_product_synced_return_false_if_no_synced_at( string $callback ) {
+		$product = call_user_func( $callback );
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
 		$this->product_meta->delete_synced_at( $product );
 		$is_product_synced = $this->product_helper->is_product_synced( $product );
@@ -620,11 +634,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_is_sync_ready_visible_published( WC_Product $product ) {
+	public function test_is_sync_ready_visible_published( string $callback ) {
+		$product = call_user_func( $callback );
 		$product->set_status( 'publish' );
 		$product->save();
 		$this->product_meta->update_visibility( $product, ChannelVisibility::SYNC_AND_SHOW );
@@ -633,11 +648,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_is_sync_ready_not_visible_published( WC_Product $product ) {
+	public function test_is_sync_ready_not_visible_published( string $callback ) {
+		$product = call_user_func( $callback );
 		$product->set_status( 'publish' );
 		$product->save();
 		$this->product_meta->update_visibility( $product, ChannelVisibility::DONT_SYNC_AND_SHOW );
@@ -646,11 +662,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_is_sync_ready_visible_not_published( WC_Product $product ) {
+	public function test_is_sync_ready_visible_not_published( string $callback ) {
+		$product = call_user_func( $callback );
 		$product->set_status( 'draft' );
 		$product->save();
 		$this->product_meta->update_visibility( $product, ChannelVisibility::SYNC_AND_SHOW );
@@ -818,44 +835,48 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_is_sync_failed_recently( WC_Product $product ) {
+	public function test_is_sync_failed_recently( string $callback ) {
+		$product = call_user_func( $callback );
 		$this->product_meta->update_failed_sync_attempts( $product, ProductSyncer::FAILURE_THRESHOLD + 5 );
 		$this->product_meta->update_sync_failed_at( $product, strtotime( '+1 year' ) );
 		$this->assertTrue( $this->product_helper->is_sync_failed_recently( $product ) );
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_is_sync_failed_recently_less_than_threshold( WC_Product $product ) {
+	public function test_is_sync_failed_recently_less_than_threshold( string $callback ) {
+		$product = call_user_func( $callback );
 		$this->product_meta->update_failed_sync_attempts( $product, ProductSyncer::FAILURE_THRESHOLD - 1 );
 		$this->product_meta->update_sync_failed_at( $product, strtotime( '+1 year' ) );
 		$this->assertFalse( $this->product_helper->is_sync_failed_recently( $product ) );
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_is_sync_failed_recently_old_failure_but_more_than_threshold( WC_Product $product ) {
+	public function test_is_sync_failed_recently_old_failure_but_more_than_threshold( string $callback ) {
+		$product = call_user_func( $callback );
 		$this->product_meta->update_failed_sync_attempts( $product, ProductSyncer::FAILURE_THRESHOLD + 5 );
 		$this->product_meta->update_sync_failed_at( $product, strtotime( '-1 year' ) );
 		$this->assertFalse( $this->product_helper->is_sync_failed_recently( $product ) );
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_get_channel_visibility( WC_Product $product ) {
+	public function test_get_channel_visibility( string $callback ) {
+		$product = call_user_func( $callback );
 		$this->product_meta->update_visibility( $product, ChannelVisibility::DONT_SYNC_AND_SHOW );
 		$result = $this->product_helper->get_channel_visibility( $product );
 		$this->assertEquals( ChannelVisibility::DONT_SYNC_AND_SHOW, $result );
@@ -885,11 +906,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_update_channel_visibility( WC_Product $product ) {
+	public function test_update_channel_visibility( string $callback ) {
+		$product = call_user_func( $callback );
 		$this->assertNull( $this->product_meta->get_visibility( $product ) );
 
 		$this->product_helper->update_channel_visibility( $product, ChannelVisibility::SYNC_AND_SHOW );
@@ -915,11 +937,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_update_channel_visibility_wont_update_if_invalid_value( WC_Product $product ) {
+	public function test_update_channel_visibility_wont_update_if_invalid_value( string $callback ) {
+		$product = call_user_func( $callback );
 		$this->assertNull( $this->product_meta->get_visibility( $product ) );
 		$this->product_helper->update_channel_visibility( $product, 'phpunit-test-disallowed-value' );
 		$this->assertNull( $this->product_meta->get_visibility( $product ) );
@@ -945,21 +968,23 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_get_sync_status( WC_Product $product ) {
+	public function test_get_sync_status( string $callback ) {
+		$product = call_user_func( $callback );
 		$this->product_meta->update_sync_status( $product, SyncStatus::SYNCED );
 		$this->assertEquals( SyncStatus::SYNCED, $this->product_helper->get_sync_status( $product ) );
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_get_mc_status( WC_Product $product ) {
+	public function test_get_mc_status( string $callback ) {
+		$product = call_user_func( $callback );
 		$this->product_meta->update_mc_status( $product, MCStatus::APPROVED );
 		$this->assertEquals( MCStatus::APPROVED, $this->product_helper->get_mc_status( $product ) );
 	}
@@ -1068,12 +1093,13 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_get_validation_errors( WC_Product $product ) {
-		$errors = [
+	public function test_get_validation_errors( string $callback ) {
+		$product = call_user_func( $callback );
+		$errors  = [
 			1111 => [
 				'Variation Error 1',
 				'Variation Error 2',
@@ -1102,12 +1128,13 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_get_validation_errors_returns_as_is_if_keys_arent_product_ids( WC_Product $product ) {
-		$errors = [
+	public function test_get_validation_errors_returns_as_is_if_keys_arent_product_ids( string $callback ) {
+		$product = call_user_func( $callback );
+		$errors  = [
 			[
 				'Variation Error 1',
 				'Variation Error 2',
@@ -1131,11 +1158,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_increment_failed_delete_attempt( WC_Product $product ) {
+	public function test_increment_failed_delete_attempt( string $callback ) {
+		$product = call_user_func( $callback );
 		$this->product_meta->update_failed_delete_attempts( $product, 1 );
 		$this->product_helper->increment_failed_delete_attempt( $product );
 
@@ -1143,11 +1171,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_is_delete_failed_threshold_reached( WC_Product $product ) {
+	public function test_is_delete_failed_threshold_reached( string $callback ) {
+		$product = call_user_func( $callback );
 		$this->product_meta->update_failed_delete_attempts( $product, 4 );
 		$this->assertFalse( $this->product_helper->is_delete_failed_threshold_reached( $product ) );
 
@@ -1157,11 +1186,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_increment_failed_update_attempt( WC_Product $product ) {
+	public function test_increment_failed_update_attempt( string $callback ) {
+		$product = call_user_func( $callback );
 		$this->product_meta->update_failed_sync_attempts( $product, 99 );
 
 		$this->product_helper->increment_failed_update_attempt( $product );
@@ -1170,11 +1200,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param string $callback
 	 *
-	 * @dataProvider return_test_products
+	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_is_update_failed_threshold_reached( WC_Product $product ) {
+	public function test_is_update_failed_threshold_reached( string $callback ) {
+		$product = call_user_func( $callback );
 		$this->product_meta->update_failed_sync_attempts( $product, 4 );
 		$this->assertFalse( $this->product_helper->is_update_failed_threshold_reached( $product ) );
 
@@ -1374,13 +1405,18 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
+	 * - Variation products are provided separately to related tests.
+	 * - Return callables to make the data provider itself efficient and without
+	 *   side effects. Especially when using `--filter` to run test suites, all
+	 *   data provider methods will still be called regardless of whether the
+	 *   decorated test cases are included or not.
+	 *
 	 * @return array
 	 */
-	public function return_test_products(): array {
-		// variation products are provided separately to related tests
+	public function return_test_product_callbacks(): array {
 		return [
-			[ WC_Helper_Product::create_simple_product() ],
-			[ WC_Helper_Product::create_variation_product() ], // WC_Product_Variable
+			[ 'WC_Helper_Product::create_simple_product' ],
+			[ 'WC_Helper_Product::create_variation_product' ], // WC_Product_Variable
 		];
 	}
 
