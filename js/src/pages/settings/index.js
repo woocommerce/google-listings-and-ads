@@ -20,7 +20,6 @@ import ReconnectGoogleAccount from './reconnect-google-account';
 import EditStoreAddress from './edit-store-address';
 import MainTabNav from '~/components/main-tab-nav';
 import RebrandingTour from '~/components/tours/rebranding-tour';
-import SetupEnhancedConversions from './enhanced-conversions/setup-enhanced-conversions';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
 import ImproveDataStrength from './improve-data-strength';
 import './index.scss';
