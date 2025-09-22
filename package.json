@@ -1,7 +1,7 @@
 {
 	"name": "google-listings-and-ads",
 	"title": "Google for WooCommerce",
-	"version": "3.4.2",
+	"version": "3.4.3",
 	"description": "Google for WooCommerce",
 	"author": "Automattic",
 	"license": "GPL-3.0-or-later",
@@ -60,10 +60,10 @@
 		"@testing-library/user-event": "^14.5.2",
 		"@woocommerce/dependency-extraction-webpack-plugin": "^3.0.1",
 		"@woocommerce/eslint-plugin": "^2.3.0",
-		"@wordpress/env": "^10.4.0",
+		"@wordpress/env": "^10.28.0",
 		"@wordpress/jest-preset-default": "^11.29.0",
 		"@wordpress/prettier-config": "^3.15.0",
-		"@wordpress/scripts": "^27.9.0",
+		"@wordpress/scripts": "^30.22.0",
 		"axios": "^1.7.2",
 		"bundlewatch": "^0.4.0",
 		"eslint": "^8.57.0",
@@ -76,7 +76,6 @@
 		"prettier": "npm:wp-prettier@^3.0.3",
 		"react": "^18",
 		"react-dom": "^18",
-		"stylelint-config-standard-scss": "^3.0.0",
 		"typescript": "^5.5.4",
 		"woocommerce-grow-jsdoc": "https://gitpkg.now.sh/woocommerce/grow/packages/js/jsdoc?eabdb5c3e6f089499a9bc62ec2e5e2251d7b23ca"
 	},
@@ -86,6 +85,11 @@
 		},
 		"@woocommerce/components": {
 			"@woocommerce/csv-export@<1.9.0": "^1.9.0"
+		},
+		"d3-scale": "^4.0.2",
+		"d3-scale-chromatic": "^3.0.0",
+		"express": {
+			"path-to-regexp@<0.1.12": "^0.1.12"
 		}
 	},
 	"scripts": {
@@ -113,7 +117,7 @@
 		"outdated:nondewp": "npm outdated --color=always | grep --color=never --invert -E \"^(.\\[31m|.\\[33m)?(`cat .externalized.json | sed 's/[][\"]//g'| sed 's/,/|/g'`)\"",
 		"packages-update": "wp-scripts packages-update",
 		"start": "wp-scripts start --webpack-src-dir=js/src/blocks",
-		"start:hot": "npm run dev -- --config ./webpack-development.config.js && npm start -- --hot --allowed-hosts all",
+		"start:hot": "npm run dev -- --config ./webpack-development.config.js && wp-scripts start --hot --allowed-hosts all",
 		"test:e2e": "npx playwright test --config=tests/e2e/config/playwright.config.js",
 		"test:e2e-dev": "npx playwright test --config=tests/e2e/config/playwright.config.js --debug",
 		"test:js": "wp-scripts test-unit-js --coverage",
