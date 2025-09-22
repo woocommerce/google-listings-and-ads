@@ -3,7 +3,7 @@
  */
 import Banner from './banner';
 import usePreference from '~/hooks/usePreference';
-import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
+import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import { BANNER_DISMISSED_KEY } from './constants';
 import './index.scss';
@@ -16,11 +16,11 @@ import './index.scss';
  * @return {JSX.Element|null} The ExperienceRatingBanner component, or null if dismissed or Ads account is disconnected or the MC account is not ready.
  */
 const ExperienceRatingBanner = () => {
-	const { hasGoogleAdsConnection } = useGoogleAdsAccount();
+	const { isGoogleAdsReady } = useGoogleAdsAccountReady();
 	const { isReady: isMCAccountReady } = useGoogleMCAccount();
 	const isDismissed = usePreference( BANNER_DISMISSED_KEY );
 
-	if ( ! hasGoogleAdsConnection || ! isMCAccountReady || isDismissed ) {
+	if ( ! isGoogleAdsReady || ! isMCAccountReady || isDismissed ) {
 		return null;
 	}
 

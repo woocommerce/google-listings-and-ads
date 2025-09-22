@@ -433,7 +433,11 @@ const TreeSelectControl = ( {
 		}
 
 		setInputControlValue( '' );
-		if ( ! nodesExpanded.includes( option.parent ) ) {
+		if (
+			! option.hasChildren &&
+			option.parent &&
+			! nodesExpanded.includes( option.parent )
+		) {
 			controlRef.current.focus();
 		}
 	};
