@@ -9,6 +9,7 @@
 		"ext-json": "*",
 		"google/apiclient": "^2.16",
 		"google/apiclient-services": "^0.350.0",
+		"google/gtg-ads": "@dev",
 		"googleads/google-ads-php": "dev-legacy-v31.0.1",
 		"league/container": "^4.2",
 		"league/iso3166": "^4.1",
@@ -89,5 +90,14 @@
 			"ShoppingContent",
 			"SiteVerification"
 		]
-	}
+	},
+	"repositories": [
+		{
+			"type": "path",
+			"url": "../fpm-library",
+			"options": {
+				"symlink": false
+			}
+		}
+	]
 }
