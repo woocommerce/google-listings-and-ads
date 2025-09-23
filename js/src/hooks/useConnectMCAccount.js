@@ -32,7 +32,7 @@ const useConnectMCAccount = ( value ) => {
 				createNotice(
 					'error',
 					__(
-						'Unable to connect to your Google Merchant Center account. You are probably offline.',
+						'Unable to connect your Google Merchant Center account. Please check your connection and try again.',
 						'google-listings-and-ads'
 					)
 				);
@@ -44,7 +44,7 @@ const useConnectMCAccount = ( value ) => {
 				const message =
 					body.message ||
 					__(
-						'Unable to connect your Google Merchant Center account. Please check your connection and try again.',
+						'Unable to connect Merchant Center account. Please try again later.',
 						'google-listings-and-ads'
 					);
 				createNotice( 'error', message );
