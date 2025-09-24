@@ -10,8 +10,8 @@ import { getHistory } from '@woocommerce/navigation';
  */
 import useTour from '~/hooks/useTour';
 import { getSettingsUrl } from '~/utils/urls';
-import './google-tag-gateway-tour.scss';
 import { recordGlaEvent } from '~/utils/tracks';
+import './google-tag-gateway-tour.scss';
 
 const TOUR_ID = 'google-tag-gateway-tour';
 const CONTEXT = 'google_tag_gateway_tour';
