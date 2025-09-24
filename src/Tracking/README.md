@@ -434,7 +434,8 @@ When a documentation link is clicked.
 - [`ProductStatusHelpPopover`](../../js/src/pages/product-feed/product-statistics/product-status-help-popover.js#L16) with `{ context: 'product-feed', link_id: 'product-sync-statuses', href: 'https://support.google.com/merchants/answer/160491' }`
 - [`ReclaimUrlCard`](../../js/src/components/google-mc-account-card/reclaim-url-card/index.js#L42) with `{ context: 'setup-mc', link_id: 'claim-url', href: 'https://support.google.com/merchants/answer/176793' }`
 - [`RequestFullAccessGoogleAccountCard`](../../js/src/components/google-account-card/request-full-access-google-account-card.js#L26) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions' }`
-- [`SetupEnhancedConversions`](../../js/src/pages/settings/enhanced-conversions/setup-enhanced-conversions.js#L24) with `{ context: 'setup-enhanced-conversions', link_id: 'enhanced-conversions-read-more', href: 'https://support.google.com/google-ads/answer/9888656' }`
+- [`SetupEnhancedConversions`](../../js/src/pages/settings/setup-enhanced-conversions/index.js#L28) with `{ context: 'setup-enhanced-conversions', link_id: 'enhanced-conversions-read-more', href: 'https://support.google.com/google-ads/answer/9888656' }`
+- [`SetupGoogleTagGateway`](../../js/src/pages/settings/setup-google-tag-gateway.js#L28) with `{ context: 'setup-google-tag-gateway', link_id: 'google-tag-gateway-read-more', href: 'https://support.google.com/google-ads/answer/16214371' }`
 - [`ShippingRateSection`](../../js/src/components/shipping-rate-section/shipping-rate-section.js#L25)
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
@@ -772,7 +773,7 @@ When the banner is shown.
 | ---- | ---- | ----------- |
 `context` | `string` | The context in which the banner is shown. Set to 'pmax_assets_improvements_banner'.
 #### Emitters
-- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L63) when the banner is displayed.
+- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L62) when the banner is displayed.
 
 ### [`gla_pmax_assets_improvements_dismiss_clicked`](../../js/src/components/pmax-improve-assets-banner/banner.js#L36)
 When the banner is dismissed by clicking the "Dismiss" button or the close icon.
@@ -782,7 +783,7 @@ When the banner is dismissed by clicking the "Dismiss" button or the close icon.
 `context` | `string` | The context in which the banner was dismissed. Set to 'pmax_assets_improvements_banner'.
 `campaign_id` | `number` | The ID of the PMAX campaign for which the banner was dismissed.
 #### Emitters
-- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L63) when the banner is dismissed.
+- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L62) when the banner is dismissed.
 
 ### [`gla_pmax_assets_improvements_improve_assets_clicked`](../../js/src/components/pmax-improve-assets-banner/banner.js#L28)
 When the "Improve Assets" button is clicked.
@@ -792,7 +793,7 @@ When the "Improve Assets" button is clicked.
 `context` | `string` | The context in which the banner is shown. Set to 'pmax_assets_improvements_banner'.
 `campaign_id` | `number` | The ID of the PMAX campaign for which assets are being improved.
 #### Emitters
-- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L63) when the "Improve Assets" button is clicked.
+- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L62) when the "Improve Assets" button is clicked.
 
 ### [`gla_price_benchmarks_change_price_clicked`](../../js/src/pages/price-benchmark/change-price.js#L19)
 
