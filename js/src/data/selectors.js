@@ -493,3 +493,13 @@ export const getPriceBenchmarkSuggestion = ( state, productId ) => {
 export const getAdsRecommendations = ( state, type ) => {
 	return state.ads.recommendations[ type ] || null;
 };
+
+/**
+ * Selector to retrieve the status of the Google Tag Gateway enablement.
+ *
+ * @param {Object} state - The Redux state object.
+ * @return {boolean} True if Google Tag Gateway is enabled, otherwise false.
+ */
+export const getEnableGoogleTagGateway = ( state ) => {
+	return state.ads.enable_google_tag_gateway;
+};

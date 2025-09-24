@@ -178,4 +178,75 @@ test.describe( 'Settings', () => {
 			} );
 		} );
 	} );
+
+	test.describe( 'Google Tag Gateway Setting', () => {
+		test.describe( 'When ads account is connected', () => {
+			test.beforeAll( async () => {
+				await settingsPage.mockAdsAccountConnected();
+				await settingsPage.goto();
+			} );
+
+			test( 'checkbox should be unchecked by default', async () => {
+				const checkbox = settingsPage.getGoogleTagGatewayCheckbox();
+
+				await expect( checkbox ).not.toBeChecked();
+			} );
+
+			test( 'checkbox should be checked when the setting is enabled', async () => {
+				await settingsPage.mockGoogleTagGatewayStatus( true );
+				await page.reload();
+
+				const checkbox = settingsPage.getGoogleTagGatewayCheckbox();
+
+				await expect( checkbox ).toBeChecked();
+			} );
+
+			test( 'should send POST request to disable Google Tag Gateway when enabled with the correct payload', async () => {
+				const requestPromise =
+					settingsPage.registerGoogleTagGatewayStatusRequests();
+
+				await settingsPage.mockGoogleTagGatewayStatus( false, [
+					'POST',
+				] );
+
+				const checkbox = settingsPage.getGoogleTagGatewayCheckbox();
+				await expect( checkbox ).toBeChecked();
+
+				await checkbox.click();
+
+				const request = await requestPromise;
+				const requestPayload = await request.postDataJSON();
+				const response = await request.response();
+				const responseBody = await response.json();
+				const payload = {
+					google_tag_gateway_enabled: false,
+				};
+
+				expect( requestPayload ).toEqual( payload );
+				expect( responseBody ).toEqual( payload );
+			} );
+
+			test( 'should show the "Google Tag Gateway" setting saved success notice', async () => {
+				// Get the notice with class 'components-notice is-success'
+				const notice = page.locator(
+					'.components-snackbar:has-text("Google Tag Gateway status updated successfully.")'
+				);
+				await expect( notice ).toBeVisible();
+			} );
+		} );
+
+		test.describe( 'When ads account is not connected', () => {
+			test.beforeAll( async () => {
+				await settingsPage.mockAdsAccountDisconnected();
+				await settingsPage.goto();
+			} );
+
+			test( 'checkbox should be unchecked and disabled by default', async () => {
+				const checkbox = settingsPage.getGoogleTagGatewayCheckbox();
+
+				await expect( checkbox ).not.toBeChecked();
+				await expect( checkbox ).toBeDisabled();
+			} );
+		} );
+	} );
 } );

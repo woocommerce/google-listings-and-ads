@@ -58,6 +58,7 @@ import {
 	receiveGtinMigrationStatus,
 	receiveAdsRecommendations,
 	receiveEnhancedConversionsStatus,
+	receiveGoogleTagGatewayStatus,
 } from './actions';
 
 /**
@@ -751,6 +752,29 @@ export function* getAdsRecommendations( type ) {
 			error,
 			__(
 				'There was an error getting the Ads recommendations.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Resolver to fetch the Google Tag Gateway status.
+ */
+export function* getEnableGoogleTagGateway() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/settings`,
+		} );
+
+		yield receiveGoogleTagGatewayStatus(
+			Boolean( response.google_tag_gateway_enabled )
+		);
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the Google Tag Gateway status.',
 				'google-listings-and-ads'
 			)
 		);

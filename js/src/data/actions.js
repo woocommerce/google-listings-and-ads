@@ -1276,3 +1276,38 @@ export function* receiveAdsRecommendations(
 		recommendationType,
 	};
 }
+
+export function receiveGoogleTagGatewayStatus( status ) {
+	return {
+		type: TYPES.RECEIVE_ADS_GOOGLE_TAG_GATEWAY,
+		status,
+	};
+}
+
+/**
+ * Updates the Google Tag Gateway status.
+ *
+ * @param {boolean} status - The desired status for the Google Tag Gateway (enabled or disabled).
+ */
+export function* updateGoogleTagGatewayStatus( status ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/settings`,
+			method: 'POST',
+			data: {
+				google_tag_gateway_enabled: status,
+			},
+		} );
+
+		return receiveGoogleTagGatewayStatus( status );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error updating the Google Tag Gateway status.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
