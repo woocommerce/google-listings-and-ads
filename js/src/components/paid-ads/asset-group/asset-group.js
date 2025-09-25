@@ -50,6 +50,8 @@ export const ACTION_SUBMIT_CAMPAIGN_ONLY = 'submit-campaign-only';
  * @property {string} number_of_final_url Same as above.
  * @property {string} number_of_display_url_path Same as above.
  * @property {string} number_of_youtube_videos Same as above.
+ * @property {boolean} has_raise_budget_recommendation Whether there is a budget recommendation that suggests raising the budget.
+ * @property {string} level The budget recommendation level selected by the user. Possible values: `low`, `current`, `recommended`, `high`, or `custom`.
  */
 
 /**
@@ -81,10 +83,20 @@ export default function AssetGroup( { campaign } ) {
 			budget: values.dailyBudget.toString(),
 			assets_validation: isValidAssetGroup ? 'valid' : 'invalid',
 			campaign_id: isCreation ? 'new' : campaign.id,
+			level: values.level,
 		};
 
 		if ( ! finalUrl ) {
 			eventProps.assets_validation = 'unknown';
+		}
+
+		eventProps.has_raise_budget_recommendation = false;
+		if ( [ 'high', 'recommended', 'low' ].includes( values.level ) ) {
+			eventProps.has_raise_budget_recommendation =
+				adapter.budgetRecommendation[ values.level ].metrics?.uplift &&
+				Number(
+					adapter.budgetRecommendation[ values.level ].metrics?.uplift
+				) !== 0;
 		}
 
 		Object.values( ASSET_FORM_KEY ).forEach( ( key ) => {

@@ -10,6 +10,7 @@ import { useDebounce } from '@wordpress/compose';
  * Internal dependencies
  */
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
+import { recordGlaEvent } from '~/utils/tracks';
 import useBudgetMetrics from '~/hooks/useBudgetMetrics';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
 import AppInputPriceControl from '~/components/app-input-price-control';
@@ -59,11 +60,20 @@ function BudgetMetrics( { formatAmount, metrics } ) {
 }
 
 /**
+ * @event gla_raise_budget_recommendation_option_selected
+ * @property {string} context The context where the event is fired. Value: `budget-setup`.
+ * @property {string} level The budget recommendation level selected by the user. Possible values: `low`, `recommended`, or `high`.
+ * @property {string} budget The daily budget amount selected by the user.
+ */
+
+/**
  * Renders a UI for selecting a campaign budget from recommendations or
  * entering a custom campaign budget.
  *
  * Please note that this component relies on a CampaignAssetsForm's context and custom adapter,
  * so it expects a `CampaignAssetsForm` to exist in its parents.
+ *
+ * @fires gla_raise_budget_recommendation_option_selected when a budget recommendation option with uplift is selected.
  *
  * @param {Object} props React props.
  * @param {boolean} [props.hideRecommendations=false]
@@ -87,6 +97,8 @@ export default function BudgetSetup( { hideRecommendations = false } ) {
 		debouncedSetBudget( amount );
 	}, [ debouncedSetBudget, amount ] );
 
+	const { help, ...amountInputProps } = getInputProps( 'amount' );
+
 	const options = [ 'high', 'recommended', 'low' ].reduce( ( acc, level ) => {
 		const item = hideRecommendations
 			? null
@@ -94,12 +106,30 @@ export default function BudgetSetup( { hideRecommendations = false } ) {
 
 		if ( item ) {
 			const dailyBudget = formatAmount( item.dailyBudget );
+			const { onChange, ...restInputProps } = getInputProps( 'level' );
 
 			acc.push( {
 				level,
 				metrics: item.metrics,
 				radioProps: {
-					...getInputProps( 'level' ),
+					...restInputProps,
+					onChange: ( value ) => {
+						if (
+							item.metrics?.uplift &&
+							Number( item.metrics?.uplift ) !== 0
+						) {
+							recordGlaEvent(
+								'gla_raise_budget_recommendation_option_selected',
+								{
+									context: 'budget-setup',
+									level: value,
+									budget: dailyBudget,
+								}
+							);
+						}
+
+						onChange( value );
+					},
 					value: level,
 					label: <DailyBudgetLabel amount={ dailyBudget } />,
 				},
@@ -108,7 +138,6 @@ export default function BudgetSetup( { hideRecommendations = false } ) {
 		return acc;
 	}, [] );
 
-	const { help, ...amountInputProps } = getInputProps( 'amount' );
 	const shouldNoticeRecommendedBudget =
 		! help &&
 		! hideRecommendations &&
@@ -206,6 +235,7 @@ export default function BudgetSetup( { hideRecommendations = false } ) {
 								{ help }
 							</div>
 						) }
+
 						{ shouldNoticeRecommendedBudget && (
 							<LowBudgetNotice
 								className={ styles.customNotice }
