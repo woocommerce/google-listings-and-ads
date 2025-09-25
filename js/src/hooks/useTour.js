@@ -47,6 +47,7 @@ const useTour = ( tourId ) => {
 	return {
 		tourChecked,
 		setTourChecked,
+		hasFinishedResolution: tours.hasFinishedResolution,
 	};
 };
 
