@@ -94,7 +94,7 @@
 	"repositories": [
 		{
 			"type": "path",
-			"url": "../gtg",
+			"url": "gtg",
 			"options": {
 				"symlink": false
 			}
