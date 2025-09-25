@@ -94,7 +94,7 @@
 	"repositories": [
 		{
 			"type": "path",
-			"url": "../fpm-library",
+			"url": "../gtg",
 			"options": {
 				"symlink": false
 			}
