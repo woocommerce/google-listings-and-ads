@@ -19,6 +19,7 @@ interface OptionsInterface {
 	public const ADS_BILLING_URL                           = 'ads_billing_url';
 	public const ADS_ID                                    = 'ads_id';
 	public const ADS_CONVERSION_ACTION                     = 'ads_conversion_action';
+	public const ADS_GTG_ENABLED						   = 'google_tag_gateway_enabled';
 	public const ADS_SETUP_COMPLETED_AT                    = 'ads_setup_completed_at';
 	public const CAMPAIGN_CONVERT_STATUS                   = 'campaign_convert_status';
 	public const CLAIMED_URL_HASH                          = 'claimed_url_hash';
@@ -55,6 +56,7 @@ interface OptionsInterface {
 		self::ADS_ACCOUNT_OCID                          => true,
 		self::ADS_ACCOUNT_STATE                         => true,
 		self::ADS_ENHANCED_CONVERSIONS_ENABLED          => true,
+		self::ADS_GTG_ENABLED                           => true,
 		self::ADS_BILLING_URL                           => true,
 		self::ADS_ID                                    => true,
 		self::ADS_CONVERSION_ACTION                     => true,
