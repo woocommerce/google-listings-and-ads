@@ -19,7 +19,7 @@ interface OptionsInterface {
 	public const ADS_BILLING_URL                           = 'ads_billing_url';
 	public const ADS_ID                                    = 'ads_id';
 	public const ADS_CONVERSION_ACTION                     = 'ads_conversion_action';
-	public const ADS_GTG_ENABLED						   = 'google_tag_gateway_enabled';
+	public const ADS_GTG_ENABLED                           = 'google_tag_gateway_enabled';
 	public const ADS_SETUP_COMPLETED_AT                    = 'ads_setup_completed_at';
 	public const CAMPAIGN_CONVERT_STATUS                   = 'campaign_convert_status';
 	public const CLAIMED_URL_HASH                          = 'claimed_url_hash';
