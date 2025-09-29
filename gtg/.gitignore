@@ -1,0 +1,10 @@
+# Composer
+composer.lock
+vendor
+
+# PHPUnit
+.phpunit.result.cache
+phpunit.xml
+
+# Node
+node_modules

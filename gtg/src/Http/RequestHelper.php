@@ -1,0 +1,288 @@
+<?php
+
+/**
+ * Class Google\GoogleTagGatewayLibrary\Http\RequestHelper
+ *
+ * @package   Google\GoogleTagGatewayLibrary
+ * @copyright 2024 Google LLC
+ * @license   https://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
+ */
+
+namespace Google\GoogleTagGatewayLibrary\Http;
+
+/**
+ * Isolates network requests and other methods like exit to inject into classes.
+ */
+class RequestHelper
+{
+    /**
+     * Helper method to exit the script early and send back a status code.
+     *
+     * @param int $statusCode
+     */
+    public function invalidRequest(int $statusCode): void
+    {
+        http_response_code($statusCode);
+        exit();
+    }
+
+    /**
+     * Set the headers from a headers array.
+     *
+     * @param string[] $headers
+     */
+    public function setHeaders(array $headers): void
+    {
+        foreach ($headers as $header) {
+            if (!empty($header)) {
+                header($header);
+            }
+        }
+    }
+
+    /**
+     * Sanitizes a path to a URL path.
+     *
+     * This function performs two critical actions:
+     * 1. Extract ONLY the path component, discarding any scheme, host, port,
+     *    user, pass, query, or fragment.
+     *    Primary defense against Server-Side Request Forgery (SSRF).
+     * 2. Normalize the path to resolve directory traversal segments like
+     *    '.' and '..'.
+     *    Prevents path traversal attacks.
+     *
+     * @param string $pathInput The raw path string.
+     * @return string|false The sanitized and normalized URL path.
+     */
+    public static function sanitizePathForUrl(string $pathInput): string
+    {
+        if (empty($pathInput)) {
+            return false;
+        }
+        // Normalize directory separators to forward slashes for Windows like directories.
+        $path = str_replace('\\', '/', $pathInput);
+
+        // 2. Normalize the path to resolve '..' and '.' segments.
+        $parts = [];
+        // Explode the path into segments. filter removes empty segments (e.g., from '//').
+        $segments = explode('/', trim($path, '/'));
+
+        foreach ($segments as $segment) {
+            if ($segment === '.' || $segment === '') {
+                // Ignore current directory and empty segments.
+                continue;
+            }
+            if ($segment === '..') {
+                // Go up one level by removing the last part.
+                if (array_pop($parts) === null) {
+                    // If we try and traverse too far back, outside of the root
+                    // directory, this is likely an invalid configuration so
+                    // return false to have caller handle this error.
+                    return false;
+                }
+            } else {
+                // Add the segment to our clean path.
+                $parts[] = rawurlencode($segment);
+            }
+        }
+
+        // Rebuild the final path.
+        $sanitizedPath = implode('/', $parts);
+
+        return '/' . $sanitizedPath;
+    }
+
+    /**
+     * Helper method to send requests depending on the PHP environment.
+     *
+     * @param string $method
+     * @param string $url
+     * @param array $headers
+     * @param string $body
+     *
+     * @return array{
+     *      body: string,
+     *      headers: string[],
+     *      statusCode: int,
+     * }
+     */
+    public function sendRequest(
+        string $method,
+        string $url,
+        array $headers = [],
+        ?string $body = null
+    ): array {
+        if ($this->isCurlInstalled()) {
+            $response = $this->sendCurlRequest($method, $url, $headers, $body);
+        } else {
+            $response = $this->sendFileGetContents($method, $url, $headers, $body);
+        }
+        return $response;
+    }
+
+    /**
+     * Send a request using curl.
+     *
+     * @param string $method
+     * @param string $url
+     * @param array $headers
+     * @param string $body
+     *
+     * @return array{
+     *      body: string,
+     *      headers: string[],
+     *      statusCode: int,
+     * }
+     */
+    protected function sendCurlRequest(
+        string $method,
+        string $url,
+        array $headers = [],
+        ?string $body = null
+    ): array {
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_URL, $url);
+
+        $method = strtoupper($method);
+        switch ($method) {
+            case 'GET':
+                curl_setopt($ch, CURLOPT_HTTPGET, true);
+                break;
+            case 'POST':
+                curl_setopt($ch, CURLOPT_POST, true);
+                break;
+            default:
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+                break;
+        }
+
+        if (!empty($headers)) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        }
+
+        if (!empty($body)) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+        }
+
+        $result = curl_exec($ch);
+
+        $statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        $headersString = substr($result, 0, $headerSize);
+        $headers = explode("\r\n", $headersString);
+        $headers = $this->normalizeHeaders($headers);
+
+        $body = substr($result, $headerSize);
+
+        curl_close($ch);
+
+        return array(
+            'body' => $body,
+            'headers' => $headers,
+            'statusCode' => $statusCode,
+        );
+    }
+
+    /**
+     * Send a request using file_get_contents.
+     *
+     * @param string $method
+     * @param string $url
+     * @param array $headers
+     * @param string $body
+     *
+     * @return array{
+     *      body: string,
+     *      headers: string[],
+     *      statusCode: int,
+     * }
+     */
+    protected function sendFileGetContents(
+        string $method,
+        string $url,
+        array $headers = [],
+        ?string $body = null
+    ): array {
+        $httpContext = [
+            'method' => strtoupper($method),
+            'follow_location' => 0,
+            'max_redirects' => 0,
+            'ignore_errors' => true,
+        ];
+        if (!empty($headers)) {
+            $httpContext['header'] = implode("\r\n", $headers);
+        }
+        if (!empty($body)) {
+            $httpContext['content'] = $body;
+        }
+
+        $streamContext = stream_context_create(['http' => $httpContext]);
+
+        // Calling file_get_contents will set the variable $http_response_header
+        // within the local scope.
+        $result = file_get_contents($url, false, $streamContext);
+
+        /** @var string[] $headers */
+        $headers = $http_response_header ?? [];
+
+        $statusCode = 200;
+        if (!empty($headers)) {
+            // The first element in the headers array will be the HTTP version
+            // and status code used, parse out the status code and remove this
+            // value from the headers.
+            preg_match('/HTTP\/\d\.\d\s+(\d+)/', $headers[0], $statusHeader);
+            $statusCode = intval($statusHeader[1]) ?? 200;
+        }
+        $headers = $this->normalizeHeaders($headers);
+
+        return array(
+            'body' => $result,
+            'headers' => $headers,
+            'statusCode' => $statusCode,
+        );
+    }
+
+    protected function isCurlInstalled(): bool
+    {
+        return extension_loaded('curl');
+    }
+
+    /** @param string[] $headers */
+    protected function normalizeHeaders(array $headers): array
+    {
+        if (empty($headers)) {
+            return $headers;
+        }
+
+        // The first element in the headers array will be the HTTP version
+        // and status code used, this value is not needed in the headers.
+        array_shift($headers);
+        return $headers;
+    }
+
+    /**
+     * Takes a URL query string which has not been encoded and ensures its
+     * key/value pairs are encoded.
+     *
+     * @param string $queryString Query string to encode.
+     * @return string The new query string encoded.
+     */
+    public static function encodeQueryString(string $queryString): string
+    {
+        $pairs = explode('&', $queryString);
+        $encodedQuery = [];
+
+        foreach ($pairs as $pair) {
+            list($key, $value) = array_pad(explode('=', $pair, 2), 2, '');
+            $key = rawurlencode($key);
+            $value = rawurlencode($value);
+
+            $encodedQuery[] = "{$key}={$value}";
+        }
+        return implode('&', $encodedQuery);
+    }
+}
