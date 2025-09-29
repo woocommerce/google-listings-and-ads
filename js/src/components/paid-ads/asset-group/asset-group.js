@@ -18,6 +18,7 @@ import { recordGlaEvent } from '~/utils/tracks';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import AssetGroupHeader from './asset-group-header';
 import AssetGroupEditor from './asset-group-editor';
+import useActionedCampaignsCache from '~/hooks/useActionedCampaignsCache';
 import './asset-group.scss';
 
 export const ACTION_SUBMIT_CAMPAIGN_AND_ASSETS = 'submit-campaign-and-assets';
@@ -70,8 +71,25 @@ export default function AssetGroup( { campaign } ) {
 	const { isValidForm, handleSubmit, adapter, values } =
 		useAdaptiveFormContext();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
+	const { upsertActionedCampaign } = useActionedCampaignsCache();
 	const { isValidAssetGroup, isSubmitting, isSubmitted, submitter } = adapter;
 	const currentAction = submitter?.dataset.action;
+
+	const hasRaiseBudgetRecommendation = () => {
+		if (
+			[ 'high', 'recommended', 'low' ].includes( values.level ) &&
+			isCreation
+		) {
+			return (
+				adapter.budgetRecommendation[ values.level ].metrics?.uplift &&
+				Number(
+					adapter.budgetRecommendation[ values.level ].metrics?.uplift
+				) !== 0
+			);
+		}
+
+		return false;
+	};
 
 	function recordSubmissionClickEvent( event ) {
 		const audiences = isCreation ? countryCodes : campaign.displayCountries;
@@ -90,14 +108,8 @@ export default function AssetGroup( { campaign } ) {
 			eventProps.assets_validation = 'unknown';
 		}
 
-		eventProps.has_raise_budget_recommendation = false;
-		if ( [ 'high', 'recommended', 'low' ].includes( values.level ) ) {
-			eventProps.has_raise_budget_recommendation =
-				adapter.budgetRecommendation[ values.level ].metrics?.uplift &&
-				Number(
-					adapter.budgetRecommendation[ values.level ].metrics?.uplift
-				) !== 0;
-		}
+		eventProps.has_raise_budget_recommendation =
+			hasRaiseBudgetRecommendation();
 
 		Object.values( ASSET_FORM_KEY ).forEach( ( key ) => {
 			const name = `number_of_${ key }`;
@@ -108,14 +120,22 @@ export default function AssetGroup( { campaign } ) {
 		recordGlaEvent( 'gla_submit_campaign_button_click', eventProps );
 	}
 
+	const recordActionedCampaign = () => {
+		if ( hasRaiseBudgetRecommendation() ) {
+			upsertActionedCampaign( campaign.id );
+		}
+	};
+
 	const handleSkipClick = ( event ) => {
 		handleSubmit( event );
+		recordActionedCampaign();
 		recordSubmissionClickEvent( event );
 	};
 
 	const handleLaunchClick = ( event ) => {
 		if ( isValidAssetGroup ) {
 			handleSubmit( event );
+			recordActionedCampaign();
 		} else {
 			adapter.showValidation();
 		}

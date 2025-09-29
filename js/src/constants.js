@@ -29,6 +29,8 @@ export const GUIDE_NAMES = {
 export const LOCAL_STORAGE_KEYS = {
 	CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN:
 		'gla-can-onboarding-setup-ces-prompt-open',
+	RAISE_BUDGET_RECOMMENDATIONS_ACTIONED_CAMPAIGNS:
+		'gla-raise-budget-recommendations-actioned-campaigns',
 };
 
 export const API_RESPONSE_CODES = {
