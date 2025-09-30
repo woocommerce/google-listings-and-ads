@@ -226,6 +226,11 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 					$current_budget     = $budget_recommendation->getCurrentBudgetAmountMicros();
 					$recommended_budget = $budget_recommendation->getRecommendedBudgetAmountMicros();
 
+					// Skip recommendation if the recommended budget is lower than the current budget.
+					if ( $recommended_budget <= $current_budget ) {
+						continue;
+					}
+
 					foreach ( $budget_recommendation->getBudgetOptions() as $option ) {
 						$impact        = $option->getImpact();
 						$potential     = $impact->getPotentialMetrics();
