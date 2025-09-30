@@ -18,7 +18,7 @@ import { recordGlaEvent } from '~/utils/tracks';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import AssetGroupHeader from './asset-group-header';
 import AssetGroupEditor from './asset-group-editor';
-import useActionedCampaignsCache from '~/hooks/useActionedCampaignsCache';
+import { upsertActionedCampaign } from '~/utils/actionedCampaignsCache';
 import './asset-group.scss';
 
 export const ACTION_SUBMIT_CAMPAIGN_AND_ASSETS = 'submit-campaign-and-assets';
@@ -71,7 +71,6 @@ export default function AssetGroup( { campaign } ) {
 	const { isValidForm, handleSubmit, adapter, values } =
 		useAdaptiveFormContext();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
-	const { upsertActionedCampaign } = useActionedCampaignsCache();
 	const { isValidAssetGroup, isSubmitting, isSubmitted, submitter } = adapter;
 	const currentAction = submitter?.dataset.action;
 
