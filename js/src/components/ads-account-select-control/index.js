@@ -10,6 +10,7 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
 import AppSelectControl from '~/components/app-select-control';
 import useExistingGoogleAdsAccounts from '~/hooks/useExistingGoogleAdsAccounts';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
+import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
 
 /**
  * @param {Object} props The component props
@@ -17,14 +18,15 @@ import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
  */
 const AdsAccountSelectControl = ( props ) => {
 	const { existingAccounts } = useExistingGoogleAdsAccounts();
-	const { googleAdsAccount, hasGoogleAdsConnection } = useGoogleAdsAccount();
+	const { googleAdsAccount } = useGoogleAdsAccount();
+	const { isGoogleAdsReady } = useGoogleAdsAccountReady();
 
 	const accountIdExists = existingAccounts?.some(
 		( existingAccount ) => existingAccount.id === googleAdsAccount?.id
 	);
 
 	// If the account ID is not in the list of existing accounts, fake the select options by displaying the connected account ID only.
-	if ( ! accountIdExists && hasGoogleAdsConnection ) {
+	if ( ! accountIdExists && isGoogleAdsReady ) {
 		const domain = new URL( getSetting( 'homeUrl' ) ).host;
 
 		return (
