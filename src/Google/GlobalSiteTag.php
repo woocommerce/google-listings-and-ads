@@ -119,6 +119,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$ads_conversion_label = $conversion_action['conversion_label'];
 
 		if ( ! empty( $ads_conversion_id ) ) {
+			$this->gtg_adapter->update(
+				[
+					'tagId' => $conversion_action['conversion_id'],
+				]
+			);
 			$this->gtg_adapter->initialize();
 		}
 
@@ -148,21 +153,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			'wp_body_open',
 			function () {
 				$this->display_page_view_event_snippet();
-			}
-		);
-
-		add_action(
-			'woocommerce_gla_options_updated_' . OptionsInterface::ADS_CONVERSION_ACTION,
-			function () {
-				$conversion_action = $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
-
-				if ( $conversion_action['conversion_id'] ) {
-					$this->gtg_adapter->update(
-						[
-							'tagId' => $conversion_action['conversion_id'],
-						]
-					);
-				}
 			}
 		);
 
