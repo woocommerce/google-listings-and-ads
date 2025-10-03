@@ -23,6 +23,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
+use Google\GoogleTagGatewayLibrary\Wordpress\Adapter;
 use WC_Product;
 use WC_Countries;
 
@@ -51,6 +52,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @var GoogleGtagJs
 	 */
 	protected $gtag_js;
+
+	/**
+	 * @var Adapter
+	 */
+	protected $gtg_adapter;
 
 	/**
 	 * @var ProductHelper
@@ -95,6 +101,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$this->product_helper = $product_helper;
 		$this->wc             = $wc;
 		$this->wp             = $wp;
+		$this->gtg_adapter    = Adapter::create();
 	}
 
 	/**
@@ -110,6 +117,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 		$ads_conversion_id    = $conversion_action['conversion_id'];
 		$ads_conversion_label = $conversion_action['conversion_label'];
+
+		if ( ! empty( $ads_conversion_id ) ) {
+			$this->gtg_adapter->initialize();
+		}
 
 		add_action(
 			'wp_head',
@@ -137,6 +148,21 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			'wp_body_open',
 			function () {
 				$this->display_page_view_event_snippet();
+			}
+		);
+
+		add_action(
+			'woocommerce_gla_options_updated_' . OptionsInterface::ADS_CONVERSION_ACTION,
+			function () {
+				$conversion_action = $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
+
+				if ( $conversion_action['conversion_id'] ) {
+					$this->gtg_adapter->update(
+						[
+							'tagId' => $conversion_action['conversion_id'],
+						]
+					);
+				}
 			}
 		);
 
