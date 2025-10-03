@@ -253,12 +253,18 @@ class GlobalSiteTagTest extends UnitTest {
 			public function initialize() { $this->initialize_called = true; }
 		};
 
-		$ref  = new \ReflectionClass( $this->tag );
+		$light_tag = new class( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp ) extends GlobalSiteTag {
+			protected function register_assets() {}
+			protected function product_data_hooks() {}
+		};
+		$light_tag->set_options_object( $this->options );
+
+		$ref  = new \ReflectionClass( $light_tag );
 		$prop = $ref->getProperty( 'gtg_adapter' );
 		$prop->setAccessible( true );
-		$prop->setValue( $this->tag, $adapter );
+		$prop->setValue( $light_tag, $adapter );
 
-		$this->tag->register();
+		$light_tag->register();
 
 		Assert::assertTrue( $adapter->update_called, 'Adapter::update should be called.' );
 		Assert::assertTrue( $adapter->initialize_called, 'Adapter::initialize should be called.' );
@@ -283,12 +289,18 @@ class GlobalSiteTagTest extends UnitTest {
 			public function initialize() { $this->initialize_called = true; }
 		};
 
-		$ref  = new \ReflectionClass( $this->tag );
+		$light_tag = new class( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp ) extends GlobalSiteTag {
+			protected function register_assets() {}
+			protected function product_data_hooks() {}
+		};
+		$light_tag->set_options_object( $this->options );
+
+		$ref  = new \ReflectionClass( $light_tag );
 		$prop = $ref->getProperty( 'gtg_adapter' );
 		$prop->setAccessible( true );
-		$prop->setValue( $this->tag, $adapter );
+		$prop->setValue( $light_tag, $adapter );
 
-		$this->tag->register();
+		$light_tag->register();
 
 		Assert::assertFalse( $adapter->update_called, 'Adapter::update should NOT be called when conversion id empty.' );
 		Assert::assertFalse( $adapter->initialize_called, 'Adapter::initialize should NOT be called when conversion id empty.' );
