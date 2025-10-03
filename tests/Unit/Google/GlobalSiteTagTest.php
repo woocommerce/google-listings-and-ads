@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Helper_Order;
 
@@ -232,5 +233,64 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->assertStringContainsString( $first_hash, $gtag );
 		$this->assertStringContainsString( $last_hash, $gtag );
 		$this->assertStringContainsString( $postcode, $gtag );
+	}
+
+	public function test_register_initializes_gtg_adapter_with_conversion_id() {
+		$conversion_action = [
+			'conversion_id'    => 'AW-123456789',
+			'conversion_label' => 'abcDEFghi',
+		];
+
+		$this->options->method( 'get' )
+			->with( OptionsInterface::ADS_CONVERSION_ACTION )
+			->willReturn( $conversion_action );
+
+		$adapter = new class() {
+			public $updateCalled = false;
+			public $initializeCalled = false;
+			public $updateArgs = [];
+			public function update( $args ) { $this->updateCalled = true; $this->updateArgs = $args; }
+			public function initialize() { $this->initializeCalled = true; }
+		};
+
+		$ref  = new \ReflectionClass( $this->tag );
+		$prop = $ref->getProperty( 'gtg_adapter' );
+		$prop->setAccessible( true );
+		$prop->setValue( $this->tag, $adapter );
+
+		$this->tag->register();
+
+		Assert::assertTrue( $adapter->updateCalled, 'Adapter::update should be called.' );
+		Assert::assertTrue( $adapter->initializeCalled, 'Adapter::initialize should be called.' );
+		Assert::assertSame( $conversion_action['conversion_id'], $adapter->updateArgs['tagId'] );
+		Assert::assertSame( '/wc/google/metrics/', $adapter->updateArgs['measurementPath'] );
+	}
+
+	public function test_register_does_not_initialize_gtg_adapter_without_conversion_id() {
+		$conversion_action = [
+			'conversion_id'    => '', // Empty ID should short-circuit.
+			'conversion_label' => 'abcDEFghi',
+		];
+
+		$this->options->method( 'get' )
+			->with( OptionsInterface::ADS_CONVERSION_ACTION )
+			->willReturn( $conversion_action );
+
+		$adapter = new class() {
+			public $updateCalled = false;
+			public $initializeCalled = false;
+			public function update( $args ) { $this->updateCalled = true; }
+			public function initialize() { $this->initializeCalled = true; }
+		};
+
+		$ref  = new \ReflectionClass( $this->tag );
+		$prop = $ref->getProperty( 'gtg_adapter' );
+		$prop->setAccessible( true );
+		$prop->setValue( $this->tag, $adapter );
+
+		$this->tag->register();
+
+		Assert::assertFalse( $adapter->updateCalled, 'Adapter::update should NOT be called when conversion id empty.' );
+		Assert::assertFalse( $adapter->initializeCalled, 'Adapter::initialize should NOT be called when conversion id empty.' );
 	}
 }
