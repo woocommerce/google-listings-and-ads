@@ -136,7 +136,7 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 			actions={
 				<ConnectExistingAccountActions
 					disabled={ isLoading }
-					isConnected={ isGoogleAdsReady }
+					isConnected={ isGoogleAdsReady || hasGoogleAdsConnection }
 					onCreateNewClick={ onCreateClick }
 					onDisconnected={ handleDisconnected }
 				/>
