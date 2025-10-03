@@ -121,7 +121,8 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		if ( ! empty( $ads_conversion_id ) ) {
 			$this->gtg_adapter->update(
 				[
-					'tagId' => $conversion_action['conversion_id'],
+					'tagId'           => $conversion_action['conversion_id'],
+					'measurementPath' => '/wc/google/metrics/'
 				]
 			);
 			$this->gtg_adapter->initialize();
