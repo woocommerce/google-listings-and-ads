@@ -77,7 +77,6 @@ const ChangePriceModal = ( { productId, onRequestClose, onPriceChange } ) => {
 		product: productDetails,
 		hasFinishedResolution: hasResolvedProduct,
 	} = useProduct( productId );
-
 	const { data, hasFinishedResolution } = usePriceBenchmarkSuggestions( {
 		product_id: productId,
 	} );
