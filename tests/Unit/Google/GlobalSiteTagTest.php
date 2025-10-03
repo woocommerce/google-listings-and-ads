@@ -245,7 +245,7 @@ class GlobalSiteTagTest extends UnitTest {
 			->with( OptionsInterface::ADS_CONVERSION_ACTION )
 			->willReturn( $conversion_action );
 
-		$adapter = new class() {
+		$adapter = new class () {
 			public $update_called     = false;
 			public $initialize_called = false;
 			public $update_args       = [];
@@ -253,7 +253,7 @@ class GlobalSiteTagTest extends UnitTest {
 			public function initialize() { $this->initialize_called = true; }
 		};
 
-		$light_tag = new class( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp ) extends GlobalSiteTag {
+		$light_tag = new class ( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp ) extends GlobalSiteTag {
 			protected function register_assets() {}
 			protected function product_data_hooks() {}
 		};
@@ -274,7 +274,7 @@ class GlobalSiteTagTest extends UnitTest {
 
 	public function test_register_does_not_initialize_gtg_adapter_without_conversion_id() {
 		$conversion_action = [
-			'conversion_id'    => '', // Empty ID should short-circuit.
+			'conversion_id'    => '',
 			'conversion_label' => 'abcDEFghi',
 		];
 
@@ -282,11 +282,15 @@ class GlobalSiteTagTest extends UnitTest {
 			->with( OptionsInterface::ADS_CONVERSION_ACTION )
 			->willReturn( $conversion_action );
 
-		$adapter = new class() {
+		$adapter = new class () {
 			public $update_called     = false;
 			public $initialize_called = false;
-			public function update( $args ) { $this->update_called = true; }
-			public function initialize() { $this->initialize_called = true; }
+			public function update( $args ) {
+				$this->update_called = true;
+			}
+			public function initialize() {
+				$this->initialize_called = true;
+			}
 		};
 
 		$light_tag = new class( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp ) extends GlobalSiteTag {
