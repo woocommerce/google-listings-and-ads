@@ -208,7 +208,7 @@ describe( 'AllProgramsTableCard', () => {
 		render( <AllProgramsTableCard /> );
 
 		const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
-		const [ shoppingRow, pmaxRow ] = rows;
+		const [ pmaxRow, shoppingRow ] = rows;
 		const className = 'gla-campaign-edit-button';
 
 		expect( getEditButton( shoppingRow ) ).not.toHaveClass( className );
