@@ -245,15 +245,21 @@ class GlobalSiteTagTest extends UnitTest {
 			->with( OptionsInterface::ADS_CONVERSION_ACTION )
 			->willReturn( $conversion_action );
 
-		$adapter = new class () {
+		$adapter = new class() { // phpcs:disable PSR12.Classes.AnonClassDeclaration.SpaceAfterKeyword
 			public $update_called     = false;
 			public $initialize_called = false;
 			public $update_args       = [];
-			public function update( $args ) { $this->update_called = true; $this->update_args = $args; }
-			public function initialize() { $this->initialize_called = true; }
+			public function update( $args ) {
+				$this->update_called = true;
+				$this->update_args   = $args;
+			}
+			public function initialize() {
+				$this->initialize_called = true;
+			}
 		};
 
-		$light_tag = new class ( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp ) extends GlobalSiteTag {
+		// phpcs:disable PSR12.Classes.AnonClassDeclaration.SpaceAfterKeyword
+		$light_tag = new class($this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp) extends GlobalSiteTag {
 			protected function register_assets() {}
 			protected function product_data_hooks() {}
 		};
@@ -282,7 +288,7 @@ class GlobalSiteTagTest extends UnitTest {
 			->with( OptionsInterface::ADS_CONVERSION_ACTION )
 			->willReturn( $conversion_action );
 
-		$adapter = new class () {
+		$adapter = new class() { // phpcs:disable PSR12.Classes.AnonClassDeclaration.SpaceAfterKeyword
 			public $update_called     = false;
 			public $initialize_called = false;
 			public function update( $args ) {
@@ -293,7 +299,8 @@ class GlobalSiteTagTest extends UnitTest {
 			}
 		};
 
-		$light_tag = new class( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp ) extends GlobalSiteTag {
+		// phpcs:disable PSR12.Classes.AnonClassDeclaration.SpaceAfterKeyword
+		$light_tag = new class($this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp) extends GlobalSiteTag {
 			protected function register_assets() {}
 			protected function product_data_hooks() {}
 		};
