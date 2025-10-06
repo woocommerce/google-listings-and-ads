@@ -2,7 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { screen, within, render } from '@testing-library/react';
+import { screen, within, render, fireEvent } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -28,7 +28,7 @@ jest.mock( '~/hooks/useCountryKeyNameMap', () =>
 
 jest.mock( '~/hooks/useAdsCurrency', () =>
 	jest.fn().mockReturnValue( {
-		formatAmount: jest.fn().mockName( 'formatAmount' ),
+		formatAmount: jest.fn( ( value ) => value ),
 	} )
 );
 
@@ -76,6 +76,16 @@ describe( 'AllProgramsTableCard', () => {
 
 	const getRemoveButton = ( container ) =>
 		within( container ).queryByRole( 'button', { name: /remove/i } );
+
+	const clickHeader = ( label, times = 1 ) => {
+		const header = screen.getByRole( 'columnheader', {
+			name: new RegExp( label, 'i' ),
+		} );
+		const button = within( header ).getByRole( 'button' );
+		for ( let i = 0; i < times; i++ ) {
+			fireEvent.click( button );
+		}
+	};
 
 	let mockCampaigns;
 
@@ -227,5 +237,126 @@ describe( 'AllProgramsTableCard', () => {
 
 		expect( tour ).toBeInTheDocument();
 		expect( CampaignAssetsTour ).toHaveBeenCalledWith( expectedProps, {} );
+	} );
+
+	describe( 'Sorting functionality', () => {
+		beforeEach( () => {
+			mockCampaigns(
+				pmaxCampaign,
+				pmaxCampaignDisabled,
+				shoppingCampaign
+			);
+		} );
+
+		it( 'should sort campaigns by title descending', () => {
+			render( <AllProgramsTableCard /> );
+
+			clickHeader( 'Program' );
+
+			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
+			const titles = rows.map(
+				( row ) =>
+					within( row ).getByRole( 'rowheader', {
+						name: /campaign/i,
+					} ).textContent
+			);
+			expect( titles ).toEqual( [
+				'Shopping Campaign',
+				'PMax Campaign',
+				'Disabled PMax Campaign',
+			] );
+		} );
+
+		it( 'should sort campaigns by title ascending', () => {
+			render( <AllProgramsTableCard /> );
+
+			clickHeader( 'Program', 2 );
+
+			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
+			const titles = rows.map(
+				( row ) =>
+					within( row ).getByRole( 'rowheader', {
+						name: /campaign/i,
+					} ).textContent
+			);
+			expect( titles ).toEqual( [
+				'Disabled PMax Campaign',
+				'PMax Campaign',
+				'Shopping Campaign',
+			] );
+		} );
+
+		it( 'should sort campaigns by dailyBudget descending', () => {
+			render( <AllProgramsTableCard /> );
+			clickHeader( 'Daily budget' );
+			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
+			const budgets = rows.map(
+				( row ) => within( row ).getAllByRole( 'cell' )[ 1 ].textContent
+			);
+
+			expect( budgets ).toEqual( [ '50', '30', '20' ] );
+		} );
+
+		it( 'should sort campaigns by dailyBudget ascending', () => {
+			render( <AllProgramsTableCard /> );
+			clickHeader( 'Daily budget', 2 );
+			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
+			const budgets = rows.map(
+				( row ) => within( row ).getAllByRole( 'cell' )[ 1 ].textContent
+			);
+			expect( budgets ).toEqual( [ '20', '30', '50' ] );
+		} );
+
+		it( 'should sort campaigns by enabled status descending', () => {
+			render( <AllProgramsTableCard /> );
+			clickHeader( 'Enabled' );
+			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
+			const statuses = rows.map( ( row ) => {
+				const checkbox = within( row ).getByRole( 'checkbox' );
+				return checkbox.checked;
+			} );
+			expect( statuses ).toEqual( [ true, true, false ] );
+		} );
+
+		it( 'should sort campaigns by enabled status ascending', () => {
+			render( <AllProgramsTableCard /> );
+			clickHeader( 'Enabled', 2 );
+			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
+			const statuses = rows.map( ( row ) => {
+				const checkbox = within( row ).getByRole( 'checkbox' );
+				return checkbox.checked;
+			} );
+			expect( statuses ).toEqual( [ false, true, true ] );
+		} );
+
+		it( 'should sort campaigns by country descending', () => {
+			render( <AllProgramsTableCard /> );
+			clickHeader( 'Country' );
+			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
+			const countries = rows.map( ( row ) => {
+				const cell = within( row ).getAllByRole( 'cell' )[ 0 ];
+				return cell.textContent;
+			} );
+			expect( countries ).toEqual( [
+				'United States (US) + 1 more',
+				'United States (US)',
+				'Japan',
+			] );
+		} );
+
+		it( 'should sort campaigns by country ascending', () => {
+			render( <AllProgramsTableCard /> );
+			clickHeader( 'Country', 2 );
+			const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
+			const countries = rows.map( ( row ) => {
+				const cell = within( row ).getAllByRole( 'cell' )[ 0 ];
+				return cell.textContent;
+			} );
+			expect( countries ).toEqual( [
+				'Japan',
+				'United States (US)',
+				'United States (US) + 1 more',
+			] );
+		} );
 	} );
 } );

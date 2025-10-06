@@ -84,10 +84,10 @@ const AllProgramsTableCard = ( props ) => {
 				switch ( sortOptions.key ) {
 					case 'country':
 						aValue = Array.isArray( programA.displayCountries )
-							? programA.displayCountries[ 0 ]
+							? programA.displayCountries.join( '-' )
 							: '';
 						bValue = Array.isArray( programB.displayCountries )
-							? programB.displayCountries[ 0 ]
+							? programB.displayCountries.join( '-' )
 							: '';
 						break;
 					case 'title':
