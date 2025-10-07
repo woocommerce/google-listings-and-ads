@@ -44,18 +44,13 @@ import { recordGlaEvent } from '~/utils/tracks';
  * @fires gla_free_campaign_edited
  */
 export default function Shipping() {
-	const {
-		targetAudience: savedTargetAudience,
-		getFinalCountries,
-		loading,
-		loaded,
-	} = useTargetAudienceFinalCountryCodes();
+	const { targetAudience: savedTargetAudience, getFinalCountries } =
+		useTargetAudienceFinalCountryCodes();
 
 	const {
 		settings: savedSettings,
 		saveSettings,
 		syncSettings,
-		hasFinishedResolution: hasResolvedSettings,
 	} = useSettings();
 
 	const { saveTargetAudience } = useAppDispatch();
