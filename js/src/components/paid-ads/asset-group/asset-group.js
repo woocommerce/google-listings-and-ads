@@ -77,7 +77,7 @@ export default function AssetGroup( { campaign } ) {
 	const hasRaiseBudgetRecommendation = () => {
 		if (
 			[ 'high', 'recommended', 'low' ].includes( values.level ) &&
-			isCreation
+			! isCreation
 		) {
 			return (
 				adapter.budgetRecommendation[ values.level ].metrics?.uplift &&
