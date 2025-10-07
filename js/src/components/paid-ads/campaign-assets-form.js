@@ -93,7 +93,7 @@ function injectUpliftData( budgetRecommendation, baseBudgetRecommendation ) {
 		if (
 			budgetRecommendation?.[ level ] &&
 			baseBudgetRecommendation?.[ level ] &&
-			budgetRecommendation[ level ].metrics?.conversionsValue
+			budgetRecommendation[ level ]?.metrics?.conversionsValue
 		) {
 			const baseConversionsValue =
 				baseBudgetRecommendation[ level ].metrics.conversionsValue;
