@@ -25,7 +25,7 @@ const useConnectMCAccount = ( value ) => {
 		}
 
 		try {
-			await fetchMCAccounts();
+			await fetchMCAccounts( { parse: false } );
 			invalidateResolution( 'getGoogleMCAccount', [] );
 		} catch ( e ) {
 			if ( e?.code === 'fetch_error' ) {

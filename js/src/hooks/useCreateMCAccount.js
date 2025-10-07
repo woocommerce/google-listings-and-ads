@@ -22,6 +22,7 @@ const useCreateMCAccount = () => {
 		try {
 			await fetchCreateMCAccount( {
 				data: result.error?.id && { id: result.error.id },
+				parse: false,
 			} );
 			invalidateResolution( 'getGoogleMCAccount', [] );
 		} catch ( e ) {
