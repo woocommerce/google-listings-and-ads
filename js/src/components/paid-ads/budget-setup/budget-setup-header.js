@@ -34,7 +34,7 @@ export default function BudgetSetupHeader() {
 					text={
 						<>
 							{ __(
-								'The estimated total value of all the conversions (sales volume) your campaign will generate in a week.',
+								'The estimated number of conversions (unit sales) for a typical week. This number may vary based on change in your weekly spend.',
 								'google-listings-and-ads'
 							) }
 							<Link
@@ -58,7 +58,7 @@ export default function BudgetSetupHeader() {
 				<Tooltip
 					className={ styles.tooltip }
 					text={ __(
-						'The estimated number of conversions (unit sales) for a typical week. This number may vary based on change in your weekly spend.',
+						'The estimated total value of all the conversions (sales volume) your campaign will generate in a week.',
 						'google-listings-and-ads'
 					) }
 				>
