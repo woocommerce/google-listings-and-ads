@@ -133,19 +133,14 @@ const useApiFetchCallback = ( options, initialState = defaultState ) => {
 
 	const enhancedApiFetch = useCallback(
 		async ( overwriteOptions ) => {
-			const allowedKeys = [ 'data', 'query' ];
-			const filteredOverwriteOptions = Object.keys(
-				overwriteOptions || {}
-			)
-				.filter( ( key ) => allowedKeys.includes( key ) )
-				.reduce( ( obj, key ) => {
-					obj[ key ] = overwriteOptions[ key ];
-					return obj;
-				}, {} );
-
 			const mergedOptions = {
 				...optionsRefValue,
-				...filteredOverwriteOptions,
+				...( overwriteOptions.data
+					? { data: overwriteOptions.data }
+					: {} ),
+				...( overwriteOptions.query
+					? { query: overwriteOptions.query }
+					: {} ),
 			};
 
 			dispatch( { type: TYPES.START, options: mergedOptions } );
