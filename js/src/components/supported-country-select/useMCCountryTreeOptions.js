@@ -27,7 +27,7 @@ const EMPTY_ARRAY = [];
  */
 export default function useMCCountryTreeOptions( countryCodes ) {
 	const {
-		data: { countries = {}, continents = {} },
+		data: { countries, continents },
 		hasFinishedResolution,
 	} = useAppSelectDispatch( 'getMCCountriesAndContinents' );
 
@@ -36,7 +36,6 @@ export default function useMCCountryTreeOptions( countryCodes ) {
 			return EMPTY_ARRAY;
 		}
 
-		console.log( countries, countryCodes );
 		const outputCountryCodes = countryCodes || Object.keys( countries );
 
 		function selectCountryOptions( mcCountryCodes ) {
