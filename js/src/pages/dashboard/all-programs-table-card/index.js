@@ -26,6 +26,7 @@ import FreeListingsDisabledToggle from './free-listings-disabled-toggle';
 import CampaignAssetsTour from '~/components/tours/campaign-assets-tour';
 import BudgetRecommendationBadge from './budget-recommendation-badge';
 import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
+import { getActionedCampaigns } from '~/utils/actionedCampaignsCache';
 import { recordGlaEvent } from '~/utils/tracks';
 
 const PROGRAMS_TABLE_CARD_CLASS_NAME = 'gla-all-programs-table-card';
@@ -96,6 +97,7 @@ const AllProgramsTableCard = ( props ) => {
 	const { campaigns: raiseBudgetRecommendationCampaigns } =
 		useRaiseBudgetRecommendations();
 	const map = useCountryKeyNameMap();
+	const actionedCampaignsCache = getActionedCampaigns();
 
 	useEffect( () => {
 		if (
@@ -139,6 +141,10 @@ const AllProgramsTableCard = ( props ) => {
 	}
 
 	const hasRaiseBudgetRecommendation = ( campaignId ) => {
+		if ( actionedCampaignsCache.includes( `${ campaignId }` ) ) {
+			return false;
+		}
+
 		return raiseBudgetRecommendationCampaigns.some(
 			( recommendation ) => recommendation.campaign_id === campaignId
 		);
