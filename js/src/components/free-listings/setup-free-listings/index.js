@@ -250,9 +250,6 @@ const SetupFreeListings = ( {
 									isPrimary
 									loading={ adapter.isSubmitting }
 									onClick={ handleSubmitClick }
-									disabled={
-										adapter.isSubmitting || ! isValidForm
-									}
 								>
 									{ submitLabel }
 								</AppButton>
