@@ -987,7 +987,7 @@ export default class MockRequests {
 	}
 
 	/**
-	 * Mock the successful settings sync requesst.
+	 * Mock the successful settings sync request.
 	 *
 	 * @return {Promise<void>}
 	 */

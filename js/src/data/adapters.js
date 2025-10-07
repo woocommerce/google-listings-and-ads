@@ -136,7 +136,7 @@ export function adaptAdsCampaign( campaign ) {
  * assets that have a smaller maximum character count for the first text.
  *
  * This may cause the fetched first text to exceed the smaller maximum count.
- * For example, udpating headline assets with
+ * For example, updating headline assets with
  * [
  *   'My Shop',
  *   '12345678901234567890 Foo Shop',

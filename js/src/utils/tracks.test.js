@@ -65,7 +65,7 @@ describe( 'tracks', () => {
 			} );
 		} );
 
-		it( 'should attatch base tracking properties: version, Goggle Merchant Center account ID, and Google Ads account ID', () => {
+		it( 'should attach base tracking properties: version, Goggle Merchant Center account ID, and Google Ads account ID', () => {
 			trackingFn( 'clicked', { button: 'confirm' } );
 
 			updateMcId( 123 );

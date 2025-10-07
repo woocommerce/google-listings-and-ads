@@ -23,7 +23,7 @@ const useMCProductStatistics = () => {
 	const { data, hasFinishedResolution, invalidateResolution, ...rest } =
 		useAppSelectDispatch( 'getMCProductStatistics' );
 
-	// Weather the AS job is still processing the data.
+	// Whether the AS job is still processing the data.
 	const isCalculatingStats =
 		hasFinishedResolution && data?.loading ? true : false;
 	const hasStats = hasFinishedResolution && data?.statistics ? true : false;

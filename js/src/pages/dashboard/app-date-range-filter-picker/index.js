@@ -17,7 +17,7 @@ const isoDateFormat = 'YYYY-MM-DD';
  * fires applicable track events.
  *
  * @param {Object} props
- * @param {string} [props.trackEventReportId] An id to be used as `report` propert in fired events.
+ * @param {string} [props.trackEventReportId] An id to be used as `report` property in fired events.
  * 												If not given, no track event will be fired.
  *
  * @return {import('@woocommerce/components').DateRangeFilterPicker} Customized DateRangeFilterPicker.

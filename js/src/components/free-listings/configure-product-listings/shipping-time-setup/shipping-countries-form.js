@@ -58,7 +58,7 @@ export default function ShippingCountriesForm( {
 		);
 	}
 	function handleAdd( { countries, time, maxTime } ) {
-		// Split aggregated time, to individial times per country.
+		// Split aggregated time, to individual times per country.
 		const addedIndividualTimes = countries.map( ( countryCode ) => ( {
 			countryCode,
 			time,

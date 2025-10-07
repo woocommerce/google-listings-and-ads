@@ -29,7 +29,7 @@ describe( 'createProgramsFilterConfig', () => {
 			// Not easily testable with Jest:
 			// expect( initialOptions ).to.be.not.fulfilled;
 
-			// Use the initial options promise, and assert it will eventually be resolved with programs that wil come.
+			// Use the initial options promise, and assert it will eventually be resolved with programs that will come.
 			const initialOptionsAssertion = initialOptions().then(
 				( programs ) => {
 					// The promise from the initial config should resolve with first loaded data.
@@ -145,7 +145,7 @@ describe( 'createProgramsFilterConfig', () => {
 			// Not easily testable with Jest:
 			// expect( initialOptions ).to.be.not.fulfilled;
 
-			// Use the initial options promise, and assert it will eventually be resolved with programs that wil come.
+			// Use the initial options promise, and assert it will eventually be resolved with programs that will come.
 			const initialOptionsAssertion = initialGetLabels(
 				'' + programA.id
 			).then( ( labels ) => {

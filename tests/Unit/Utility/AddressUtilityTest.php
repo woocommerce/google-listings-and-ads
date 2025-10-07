@@ -21,14 +21,14 @@ class AddressUtilityTest extends UnitTest {
 		$address_1 = new AccountAddress();
 		$address_1->setCountry( 'US' );
 		$address_1->setRegion( 'California' );
-		$address_1->setLocality( 'San Fransisco' );
+		$address_1->setLocality( 'San Francisco' );
 		$address_1->setStreetAddress( '123 Main St.' );
 		$address_1->setPostalCode( '12345' );
 
 		$address_2 = new AccountAddress();
 		$address_2->setCountry( 'US' );
 		$address_2->setRegion( 'California' );
-		$address_2->setLocality( 'San Fransisco' );
+		$address_2->setLocality( 'San Francisco' );
 		$address_2->setStreetAddress( '123 Main St.' );
 		$address_2->setPostalCode( '12345' );
 
@@ -46,14 +46,14 @@ class AddressUtilityTest extends UnitTest {
 		$address_1 = new AccountAddress();
 		$address_1->setCountry( 'US' );
 		$address_1->setRegion( 'California' );
-		$address_1->setLocality( 'San Fransisco' );
+		$address_1->setLocality( 'San Francisco' );
 		$address_1->setStreetAddress( '123 Main St.' );
 		$address_1->setPostalCode( '12345' );
 
 		$address_2 = new AccountAddress();
 		$address_2->setCountry( 'CA' );
 		$address_2->setRegion( 'California' );
-		$address_2->setLocality( 'San Fransisco' );
+		$address_2->setLocality( 'San Francisco' );
 		$address_2->setStreetAddress( '123 Main St.' );
 		$address_2->setPostalCode( '12345' );
 
@@ -64,14 +64,14 @@ class AddressUtilityTest extends UnitTest {
 		$address_1 = new AccountAddress();
 		$address_1->setCountry( 'US' );
 		$address_1->setRegion( 'California' );
-		$address_1->setLocality( 'San Fransisco' );
+		$address_1->setLocality( 'San Francisco' );
 		$address_1->setStreetAddress( '123 Main St.' );
 		$address_1->setPostalCode( '12345' );
 
 		$address_2 = new AccountAddress();
 		$address_2->setCountry( 'US' );
 		$address_2->setRegion( 'Washington' );
-		$address_2->setLocality( 'San Fransisco' );
+		$address_2->setLocality( 'San Francisco' );
 		$address_2->setStreetAddress( '123 Main St.' );
 		$address_2->setPostalCode( '12345' );
 
@@ -82,7 +82,7 @@ class AddressUtilityTest extends UnitTest {
 		$address_1 = new AccountAddress();
 		$address_1->setCountry( 'US' );
 		$address_1->setRegion( 'California' );
-		$address_1->setLocality( 'San Fransisco' );
+		$address_1->setLocality( 'San Francisco' );
 		$address_1->setStreetAddress( '123 Main St.' );
 		$address_1->setPostalCode( '12345' );
 
@@ -100,14 +100,14 @@ class AddressUtilityTest extends UnitTest {
 		$address_1 = new AccountAddress();
 		$address_1->setCountry( 'US' );
 		$address_1->setRegion( 'California' );
-		$address_1->setLocality( 'San Fransisco' );
+		$address_1->setLocality( 'San Francisco' );
 		$address_1->setStreetAddress( '123 Main St.' );
 		$address_1->setPostalCode( '12345' );
 
 		$address_2 = new AccountAddress();
 		$address_2->setCountry( 'US' );
 		$address_2->setRegion( 'California' );
-		$address_2->setLocality( 'San Fransisco' );
+		$address_2->setLocality( 'San Francisco' );
 		$address_2->setStreetAddress( 'Route 123' );
 		$address_2->setPostalCode( '12345' );
 
@@ -118,14 +118,14 @@ class AddressUtilityTest extends UnitTest {
 		$address_1 = new AccountAddress();
 		$address_1->setCountry( 'US' );
 		$address_1->setRegion( 'California' );
-		$address_1->setLocality( 'San Fransisco' );
+		$address_1->setLocality( 'San Francisco' );
 		$address_1->setStreetAddress( '123 Main St.' );
 		$address_1->setPostalCode( '12345' );
 
 		$address_2 = new AccountAddress();
 		$address_2->setCountry( 'US' );
 		$address_2->setRegion( 'California' );
-		$address_2->setLocality( 'San Fransisco' );
+		$address_2->setLocality( 'San Francisco' );
 		$address_2->setStreetAddress( '123 Main St.' );
 		$address_2->setPostalCode( '67890' );
 
