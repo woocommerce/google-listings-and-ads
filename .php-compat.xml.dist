@@ -62,7 +62,44 @@
         <exclude name="PHPCompatibility.FunctionUse.NewFunctions.spl_autoload_unregisterFound"/>
         <exclude name="PHPCompatibility.FunctionUse.NewFunctions.spl_autoload_functionsFound"/>
 
+
+        <!-- Polyfills from the Symphony package -->
+
+        <!-- https://github.com/symfony/polyfill-php80/blob/main/bootstrap.php -->
+        <exclude name="PHPCompatibility.FunctionUse.NewFunctions.fdivFound"/>
+        <exclude name="PHPCompatibility.FunctionUse.NewFunctions.get_resource_idFound"/>
+        <exclude name="PHPCompatibility.FunctionUse.NewFunctions.preg_last_error_msgFound"/>
+        <exclude name="PHPCompatibility.FunctionUse.NewFunctions.str_containsFound"/>
+        <exclude name="PHPCompatibility.FunctionUse.NewFunctions.str_ends_withFound"/>
+        <exclude name="PHPCompatibility.FunctionUse.NewFunctions.str_starts_withFound"/>
+        <exclude name="PHPCompatibility.Constants.NewConstants.filter_validate_boolFound"/>
+        <exclude name="PHPCompatibility.FunctionUse.NewFunctions.get_debug_typeFound"/>
+
+        <!-- https://github.com/symfony/polyfill-php80/tree/main/Resources/stubs -->
+        <exclude name="PHPCompatibility.Interfaces.NewInterfaces.stringableFound"/>
+        <exclude name="PHPCompatibility.Classes.NewClasses.attributeFound"/>
+        <exclude name="PHPCompatibility.Classes.NewClasses.phptokenFound"/>
+        <exclude name="PHPCompatibility.Classes.NewClasses.unhandledmatcherrorFound"/>
+        <exclude name="PHPCompatibility.Classes.NewClasses.valueerrorFound"/>
+
+        <!-- https://github.com/symfony/polyfill-php74/blob/main/bootstrap.php -->
+        <exclude name="PHPCompatibility.FunctionUse.NewFunctions.get_mangled_object_varsFound"/>
+        <exclude name="PHPCompatibility.FunctionUse.NewFunctions.mb_str_splitFound"/>
+        <exclude name="PHPCompatibility.FunctionUse.NewFunctions.password_algosFound"/>
     </rule>
+
+
+    <!-- Prevent false positives being thrown when run over the code of polyfill-php74 itself. -->
+    <rule ref="PHPCompatibility.Constants.NewConstants.password_bcryptFound">
+        <exclude-pattern>/polyfill[_-]php74/Php74\.php$</exclude-pattern>
+    </rule>
+    <rule ref="PHPCompatibility.Constants.NewConstants.password_argon2iFound">
+        <exclude-pattern>/polyfill[_-]php74/Php74\.php$</exclude-pattern>
+    </rule>
+    <rule ref="PHPCompatibility.Constants.NewConstants.password_argon2idFound">
+        <exclude-pattern>/polyfill[_-]php74/Php74\.php$</exclude-pattern>
+    </rule>
+
 
     <!-- This is a problem in the Google vendor library -->
     <rule ref="Internal.LineEndings.Mixed">
