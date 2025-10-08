@@ -21,6 +21,7 @@ languages
 node_modules
 vendor
 legacy
+gtg
 
 # from .gitignore file.
 .DS_Store
