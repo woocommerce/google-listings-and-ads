@@ -100,6 +100,10 @@
         <exclude-pattern>/polyfill[_-]php74/Php74\.php$</exclude-pattern>
     </rule>
 
+    <!-- Prevent false positives being thrown when run over the code of polyfill-ctype itself. -->
+    <rule ref="PHPCompatibility.FunctionDeclarations.NewParamTypeDeclarations.mixedFound">
+        <exclude-pattern>/polyfill-ctype/bootstrap80.php</exclude-pattern>
+    </rule>
 
     <!-- This is a problem in the Google vendor library -->
     <rule ref="Internal.LineEndings.Mixed">
