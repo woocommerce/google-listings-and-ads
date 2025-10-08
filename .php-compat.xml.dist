@@ -8,6 +8,7 @@
 	<config name="testVersion" value="7.4-8.4"/>
 	<file>.</file>
 	<arg name="extensions" value="php,inc" />
+    <arg name="basepath" value="." />
 
     <rule ref="PHPCompatibility">
         <!--
@@ -60,6 +61,12 @@
         <exclude name="PHPCompatibility.FunctionUse.NewFunctions.spl_autoload_registerFound"/>
         <exclude name="PHPCompatibility.FunctionUse.NewFunctions.spl_autoload_unregisterFound"/>
         <exclude name="PHPCompatibility.FunctionUse.NewFunctions.spl_autoload_functionsFound"/>
+
+    </rule>
+
+    <!-- This is a problem in the Google vendor library -->
+    <rule ref="Internal.LineEndings.Mixed">
+        <exclude-pattern>**/vendor/**</exclude-pattern>
     </rule>
 
 </ruleset>
