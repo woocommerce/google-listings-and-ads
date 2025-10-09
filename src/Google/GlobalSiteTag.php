@@ -54,11 +54,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	protected $gtag_js;
 
 	/**
-	 * @var Adapter
-	 */
-	protected $gtg_adapter;
-
-	/**
 	 * @var ProductHelper
 	 */
 	protected $product_helper;
@@ -101,7 +96,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$this->product_helper = $product_helper;
 		$this->wc             = $wc;
 		$this->wp             = $wp;
-		$this->gtg_adapter    = Adapter::create();
 	}
 
 	/**
@@ -118,14 +112,15 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$ads_conversion_id    = $conversion_action['conversion_id'];
 		$ads_conversion_label = $conversion_action['conversion_label'];
 
-		if ( ! empty( $ads_conversion_id ) ) {
-			$this->gtg_adapter->update(
+		if ( $this->is_gtg_enabled() ) {
+			$gtg_adapter = Adapter::create();
+			$gtg_adapter->update(
 				[
 					'tagId'           => $conversion_action['conversion_id'],
 					'measurementPath' => '/wc/google/metrics/',
 				]
 			);
-			$this->gtg_adapter->initialize();
+			$gtg_adapter->initialize();
 		}
 
 		add_action(
@@ -282,6 +277,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @param string $ads_conversion_id Google Ads account conversion ID.
 	 */
 	protected function display_global_site_tag( string $ads_conversion_id ) {
+		if ( $this->is_gtg_enabled() ) {
+			return;
+		}
+
 		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 		?>
 
@@ -730,5 +729,14 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 */
 	private function normalize_and_hash( $value, $algo = 'sha256' ): string {
 		return hash( $algo, strtolower( trim( $value ) ) );
+	}
+
+	/**
+	 * Checks if the GTG is enabled in settings.
+	 *
+	 * @return bool
+	 */
+	private function is_gtg_enabled(): bool {
+		return (bool) $this->options->get( OptionsInterface::ADS_GTG_ENABLED );	
 	}
 }
