@@ -257,7 +257,7 @@ class GlobalSiteTagTest extends UnitTest {
 				]
 			);
 
-		$light_tag = new class ($this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp) extends GlobalSiteTag {
+		$light_tag = new class ($this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp) extends GlobalSiteTag { // phpcs:disable PSR12.Classes.AnonClassDeclaration.SpaceAfterKeyword
 			protected function register_assets() {}
 			protected function product_data_hooks() {}
 		};
@@ -282,7 +282,7 @@ class GlobalSiteTagTest extends UnitTest {
 				]
 			);
 
-		$light_tag = new class ($this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp) extends GlobalSiteTag {
+		$light_tag = new class ($this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp) extends GlobalSiteTag { // phpcs:disable PSR12.Classes.AnonClassDeclaration.SpaceAfterKeyword
 			protected function register_assets() {}
 			protected function product_data_hooks() {}
 		};
