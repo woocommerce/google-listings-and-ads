@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useMemo } from '@wordpress/element';
+import { format } from '@wordpress/date';
 import { Chart } from '@woocommerce/components';
 import { getChartTypeForQuery } from '@woocommerce/date';
 
@@ -18,17 +19,11 @@ const emptyMessage = __(
 );
 
 /**
- * Utility to format Date as YYYY-MM-DD
- */
-function formatDate( date ) {
-	const year = date.getFullYear();
-	const month = String( date.getMonth() + 1 ).padStart( 2, '0' );
-	const day = String( date.getDate() ).padStart( 2, '0' );
-	return `${ year }-${ month }-${ day }`;
-}
-
-/**
  * Utility to generate all dates between start and end (inclusive)
+ *
+ * @param {string} start - Start date in YYYY-MM-DD format.
+ * @param {string} end - End date in YYYY-MM-DD format.
+ * @return {string[]} Array of date strings in YYYY-MM-DD format.
  */
 function generateDateRange( start, end ) {
 	const dates = [];
@@ -36,7 +31,7 @@ function generateDateRange( start, end ) {
 	const endDate = new Date( end );
 
 	while ( current <= endDate ) {
-		dates.push( formatDate( current ) );
+		dates.push( format( 'Y-m-d', current ) );
 		current.setDate( current.getDate() + 1 );
 	}
 	return dates;
@@ -57,6 +52,7 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 
 	const { key, label, isCurrency = false, formatFn } = visibleMetric;
 
+	// Preferably we would use the currency of the selected metric to be used on y axis.
 	const visibleCurrency = { ...storeCurrencyConfig, symbol: '' };
 	const chartType = getChartTypeForQuery( query );
 	const valueType = isCurrency ? 'currency' : 'number';
