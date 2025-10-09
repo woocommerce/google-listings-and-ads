@@ -2,20 +2,23 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { CheckboxControl } from '@wordpress/components';
-import { useCallback, useState } from '@wordpress/element';
+import { CheckboxControl, Tip } from '@wordpress/components';
+import {
+	useCallback,
+	useState,
+	createInterpolateElement,
+} from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { useAppDispatch } from '~/data';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
-import Section from '~/components/section';
 import AppDocumentationLink from '~/components/app-documentation-link';
-import SpinnerCard from '~/components/spinner-card';
+import AppSpinner from '~/components/app-spinner';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useEnableEnhancedConversions from './useEnableEnhancedConversions';
-import { SetupGoogleTagGateway } from '../google-tag-gateway';
+import './index.scss';
 
 /**
  * Renders the settings section for Enhanced Conversions setup.
@@ -58,69 +61,48 @@ const SetupEnhancedConversions = () => {
 		}
 	};
 
-	let helpText = __(
-		'Please make sure to follow the documentation to enable Enhanced Conversions. The feature needs to be enabled both here on WooCommerce and on your Google Ads account.',
-		'google-listings-and-ads'
-	);
-
-	if ( ! hasGoogleAdsConnection ) {
-		helpText = __(
-			'Please connect your Google Ads account in order to use Enhanced Conversions data.',
-			'google-listings-and-ads'
-		);
-	}
-
 	const loaded =
 		hasResolvedGoogleAdsAccount && hasResolvedEnableEnhancedConversion;
 	const disabledCheckbox = ! hasGoogleAdsConnection || isSaving;
 
+	if ( ! loaded ) {
+		return <AppSpinner />;
+	}
+
 	return (
-		<Section
-			title={ __(
-				'Improve conversion accuracy',
-				'google-listings-and-ads'
-			) }
-			description={
-				<div>
-					<p>
-						{ __(
-							'Enhanced Conversions is a feature designed to improve your measurement accuracy by collecting privacy-conscious data without the need for third-party cookies.',
-							'google-listings-and-ads'
-						) }
-					</p>
-					<p>
-						<AppDocumentationLink
-							href="https://support.google.com/google-ads/answer/9888656"
-							context="setup-enhanced-conversions"
-							linkId="enhanced-conversions-read-more"
-						>
-							{ __( 'Read more', 'google-listings-and-ads' ) }
-						</AppDocumentationLink>
-					</p>
-				</div>
-			}
-		>
-			{ ! loaded && <SpinnerCard /> }
+		<div className="gla-settings-enhanced-conversions">
+			<CheckboxControl
+				label={ __(
+					'Send Enhanced Conversions data to Google Ads',
+					'google-listings-and-ads'
+				) }
+				checked={ isEnabled }
+				disabled={ disabledCheckbox }
+				onChange={ handleOnChange }
+				help={ createInterpolateElement(
+					__(
+						'Enhanced Conversions is a feature designed to improve your measurement accuracy by collecting privacy-conscious data without the need for third-party cookies. <readMoreLink>Read more</readMoreLink>.',
+						'google-listings-and-ads'
+					),
+					{
+						readMoreLink: (
+							<AppDocumentationLink
+								href="https://support.google.com/google-ads/answer/9888656"
+								context="setup-enhanced-conversions"
+								linkId="enhanced-conversions-read-more"
+							/>
+						),
+					}
+				) }
+			/>
 
-			{ loaded && (
-				<Section.Card>
-					<Section.Card.Body>
-						<SetupGoogleTagGateway />
-
-						<CheckboxControl
-							label={ __(
-								'Send Enhanced Conversions data to Google Ads',
-								'google-listings-and-ads'
-							) }
-							checked={ isEnabled }
-							disabled={ disabledCheckbox }
-							onChange={ handleOnChange }
-							help={ helpText }
-						/>
-					</Section.Card.Body>
-				</Section.Card>
-			) }
-		</Section>
+			<Tip>
+				{ __(
+					'Please make sure to follow the documentation to enable Enhanced Conversions. The feature needs to be enabled both here on WooCommerce and on your Google Ads account.',
+					'google-listings-and-ads'
+				) }
+			</Tip>
+		</div>
 	);
 };
 

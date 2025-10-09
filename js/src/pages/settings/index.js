@@ -20,8 +20,8 @@ import ReconnectGoogleAccount from './reconnect-google-account';
 import EditStoreAddress from './edit-store-address';
 import MainTabNav from '~/components/main-tab-nav';
 import RebrandingTour from '~/components/tours/rebranding-tour';
-import SetupEnhancedConversions from './enhanced-conversions/setup-enhanced-conversions';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
+import ImproveDataStrengthSection from './improve-data-strength-section';
 import './index.scss';
 
 const pageClassName = 'gla-settings';
@@ -66,7 +66,7 @@ const Settings = () => {
 			<ExperienceRatingBanner />
 			<MainTabNav />
 			<RebrandingTour />
-			<SetupEnhancedConversions />
+			<ImproveDataStrengthSection />
 			<ContactInformationPreview />
 			<SetupTaxRate />
 			<LinkedAccounts />

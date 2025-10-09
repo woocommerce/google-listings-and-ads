@@ -83,65 +83,109 @@ test.describe( 'Settings', () => {
 		} );
 	} );
 
-	test.describe( 'Enhanced Conversions Setting', () => {
+	test.describe( 'Improve Data Strength ', () => {
 		test.describe( 'When ads account is connected', () => {
-			test( 'should show the "Enhanced Conversion" setting card', async () => {
-				await expect(
-					page.getByRole( 'heading', { name: 'Settings' } )
-				).toBeVisible();
-				await expect(
-					page.getByRole( 'heading', {
-						name: 'Improve conversion accuracy',
-					} )
-				).toBeVisible();
+			test.describe( 'Enhanced Conversions Setting', () => {
+				test( 'checkbox should be unchecked by default', async () => {
+					const checkbox =
+						settingsPage.getEnhancedConversionsCheckbox();
+
+					await expect( checkbox ).not.toBeChecked();
+				} );
+
+				test( 'checkbox should be checked when the setting is enabled', async () => {
+					await settingsPage.mockEnhancedConversionsStatus( true );
+					await page.reload();
+
+					const checkbox =
+						settingsPage.getEnhancedConversionsCheckbox();
+
+					await expect( checkbox ).toBeChecked();
+				} );
+
+				test( 'should send POST request to disable Enhanced Conversions when enabled with the correct payload', async () => {
+					const requestPromise =
+						settingsPage.registerEnhancedConversionsStatusRequests();
+
+					await settingsPage.mockEnhancedConversionsStatus( false, [
+						'POST',
+					] );
+
+					const checkbox =
+						settingsPage.getEnhancedConversionsCheckbox();
+					await expect( checkbox ).toBeChecked();
+
+					await checkbox.click();
+
+					const request = await requestPromise;
+					const requestPayload = await request.postDataJSON();
+					const response = await request.response();
+					const responseBody = await response.json();
+					const payload = {
+						enhanced_conversions_enabled: false,
+					};
+
+					expect( requestPayload ).toEqual( payload );
+					expect( responseBody ).toEqual( payload );
+				} );
+
+				test( 'should show the "Enhanced Conversion" setting saved success notice', async () => {
+					// Get the notice with class 'components-notice is-success'
+					const notice = page.locator(
+						'.components-snackbar:has-text("Enhanced Conversions status updated successfully.")'
+					);
+					await expect( notice ).toBeVisible();
+				} );
 			} );
 
-			test( 'checkbox should be unchecked by default', async () => {
-				const checkbox = settingsPage.getEnhancedConversionsCheckbox();
+			test.describe( 'Google Tag Gateway Setting', () => {
+				test( 'checkbox should be unchecked by default', async () => {
+					const checkbox = settingsPage.getGoogleTagGatewayCheckbox();
 
-				await expect( checkbox ).not.toBeChecked();
-			} );
+					await expect( checkbox ).not.toBeChecked();
+				} );
 
-			test( 'checkbox should be checked when the setting is enabled', async () => {
-				await settingsPage.mockEnhancedConversionsStatus( true );
-				await page.reload();
+				test( 'checkbox should be checked when the setting is enabled', async () => {
+					await settingsPage.mockGoogleTagGatewayStatus( true );
+					await page.reload();
 
-				const checkbox = settingsPage.getEnhancedConversionsCheckbox();
+					const checkbox = settingsPage.getGoogleTagGatewayCheckbox();
 
-				await expect( checkbox ).toBeChecked();
-			} );
+					await expect( checkbox ).toBeChecked();
+				} );
 
-			test( 'should send POST request to disable Enhanced Conversions when enabled with the correct payload', async () => {
-				const requestPromise =
-					settingsPage.registerEnhancedConversionsStatusRequests();
+				test( 'should send POST request to disable Google Tag Gateway when enabled with the correct payload', async () => {
+					const requestPromise =
+						settingsPage.registerGoogleTagGatewayStatusRequests();
 
-				await settingsPage.mockEnhancedConversionsStatus( false, [
-					'POST',
-				] );
+					await settingsPage.mockGoogleTagGatewayStatus( false, [
+						'POST',
+					] );
 
-				const checkbox = settingsPage.getEnhancedConversionsCheckbox();
-				await expect( checkbox ).toBeChecked();
+					const checkbox = settingsPage.getGoogleTagGatewayCheckbox();
+					await expect( checkbox ).toBeChecked();
 
-				await checkbox.click();
+					await checkbox.click();
 
-				const request = await requestPromise;
-				const requestPayload = await request.postDataJSON();
-				const response = await request.response();
-				const responseBody = await response.json();
-				const payload = {
-					enhanced_conversions_enabled: false,
-				};
+					const request = await requestPromise;
+					const requestPayload = await request.postDataJSON();
+					const response = await request.response();
+					const responseBody = await response.json();
+					const payload = {
+						google_tag_gateway_enabled: false,
+					};
 
-				expect( requestPayload ).toEqual( payload );
-				expect( responseBody ).toEqual( payload );
-			} );
+					expect( requestPayload ).toEqual( payload );
+					expect( responseBody ).toEqual( payload );
+				} );
 
-			test( 'should show the "Enhanced Conversion" setting saved success notice', async () => {
-				// Get the notice with class 'components-notice is-success'
-				const notice = page.locator(
-					'.components-snackbar:has-text("Enhanced Conversions status updated successfully.")'
-				);
-				await expect( notice ).toBeVisible();
+				test( 'should show the "Google Tag Gateway" setting saved success notice', async () => {
+					// Get the notice with class 'components-notice is-success'
+					const notice = page.locator(
+						'.components-snackbar:has-text("Google Tag Gateway status updated successfully.")'
+					);
+					await expect( notice ).toBeVisible();
+				} );
 			} );
 		} );
 
@@ -149,103 +193,33 @@ test.describe( 'Settings', () => {
 			test.beforeAll( async () => {
 				await settingsPage.mockAdsAccountDisconnected();
 				await settingsPage.goto();
-			} );
-
-			test( 'should show the "Enhanced Conversion" setting card', async () => {
-				await expect(
-					page.getByRole( 'heading', { name: 'Settings' } )
-				).toBeVisible();
-				await expect(
-					page.getByRole( 'heading', {
-						name: 'Improve conversion accuracy',
-					} )
-				).toBeVisible();
-			} );
-
-			test( 'checkbox should be unchecked and disabled by default', async () => {
-				const checkbox = settingsPage.getEnhancedConversionsCheckbox();
-
-				await expect( checkbox ).not.toBeChecked();
-				await expect( checkbox ).toBeDisabled();
 			} );
 
 			test( 'should show the message that Google Ads account is not connected', async () => {
 				await expect(
 					page.getByText(
-						'Please connect your Google Ads account in order to use Enhanced Conversions data.'
+						'Connect your Google Ads account to enable Enhanced Conversions data and Google Tag Gateway.'
 					)
 				).toBeVisible();
 			} );
-		} );
-	} );
 
-	test.describe( 'Google Tag Gateway Setting', () => {
-		test.describe( 'When ads account is connected', () => {
-			test.beforeAll( async () => {
-				await settingsPage.mockAdsAccountConnected();
-				await settingsPage.goto();
+			test.describe( 'Enhanced Conversions Setting', () => {
+				test( 'checkbox should be unchecked and disabled by default', async () => {
+					const checkbox =
+						settingsPage.getEnhancedConversionsCheckbox();
+
+					await expect( checkbox ).not.toBeChecked();
+					await expect( checkbox ).toBeDisabled();
+				} );
 			} );
 
-			test( 'checkbox should be unchecked by default', async () => {
-				const checkbox = settingsPage.getGoogleTagGatewayCheckbox();
+			test.describe( 'Google Tag Gateway Setting', () => {
+				test( 'checkbox should be unchecked and disabled by default', async () => {
+					const checkbox = settingsPage.getGoogleTagGatewayCheckbox();
 
-				await expect( checkbox ).not.toBeChecked();
-			} );
-
-			test( 'checkbox should be checked when the setting is enabled', async () => {
-				await settingsPage.mockGoogleTagGatewayStatus( true );
-				await page.reload();
-
-				const checkbox = settingsPage.getGoogleTagGatewayCheckbox();
-
-				await expect( checkbox ).toBeChecked();
-			} );
-
-			test( 'should send POST request to disable Google Tag Gateway when enabled with the correct payload', async () => {
-				const requestPromise =
-					settingsPage.registerGoogleTagGatewayStatusRequests();
-
-				await settingsPage.mockGoogleTagGatewayStatus( false, [
-					'POST',
-				] );
-
-				const checkbox = settingsPage.getGoogleTagGatewayCheckbox();
-				await expect( checkbox ).toBeChecked();
-
-				await checkbox.click();
-
-				const request = await requestPromise;
-				const requestPayload = await request.postDataJSON();
-				const response = await request.response();
-				const responseBody = await response.json();
-				const payload = {
-					google_tag_gateway_enabled: false,
-				};
-
-				expect( requestPayload ).toEqual( payload );
-				expect( responseBody ).toEqual( payload );
-			} );
-
-			test( 'should show the "Google Tag Gateway" setting saved success notice', async () => {
-				// Get the notice with class 'components-notice is-success'
-				const notice = page.locator(
-					'.components-snackbar:has-text("Google Tag Gateway status updated successfully.")'
-				);
-				await expect( notice ).toBeVisible();
-			} );
-		} );
-
-		test.describe( 'When ads account is not connected', () => {
-			test.beforeAll( async () => {
-				await settingsPage.mockAdsAccountDisconnected();
-				await settingsPage.goto();
-			} );
-
-			test( 'checkbox should be unchecked and disabled by default', async () => {
-				const checkbox = settingsPage.getGoogleTagGatewayCheckbox();
-
-				await expect( checkbox ).not.toBeChecked();
-				await expect( checkbox ).toBeDisabled();
+					await expect( checkbox ).not.toBeChecked();
+					await expect( checkbox ).toBeDisabled();
+				} );
 			} );
 		} );
 	} );
