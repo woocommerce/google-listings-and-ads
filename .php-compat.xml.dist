@@ -110,4 +110,90 @@
         <exclude-pattern>**/vendor/**</exclude-pattern>
     </rule>
 
+    <!-- Prevent false positives for files that run on PHP 8.0+  -->
+     <rule ref="PHPCompatibility.Classes.NewTypedProperties.mixedFound">
+        <exclude-pattern>**/vendor/google/auth/src/Cache/TypedItem.php</exclude-pattern>
+     </rule>
+
+    <rule ref="PHPCompatibility.FunctionDeclarations.NewReturnTypeDeclarations.mixedFound">
+        <exclude-pattern>**/vendor/google/auth/src/Cache/TypedItem.php</exclude-pattern>
+    </rule>
+
+    <rule ref="PHPCompatibility.FunctionDeclarations.NewReturnTypeDeclarations.staticFound">
+        <exclude-pattern>**/vendor/google/auth/src/Cache/TypedItem.php</exclude-pattern>
+    </rule>
+
+    <rule ref="PHPCompatibility.Classes.NewConstructorPropertyPromotion.Found">
+        <exclude-pattern>**/vendor/google/auth/src/Cache/TypedItem.php</exclude-pattern>
+    </rule>
+
+    <rule ref="PHPCompatibility.FunctionDeclarations.NewParamTypeDeclarations.mixedFound">
+        <exclude-pattern>**/vendor/google/auth/src/Cache/TypedItem.php</exclude-pattern>
+    </rule>
+
+    <rule ref="PHPCompatibility.Classes.NewClasses.weakmapFound">
+        <exclude-pattern>**/vendor/monolog/monolog/src/Monolog/Logger.php</exclude-pattern>
+    </rule>
+
+    <rule ref="PHPCompatibility.Classes.NewClasses.fiberFound">
+        <exclude-pattern>**/vendor/monolog/monolog/src/Monolog/Logger.php</exclude-pattern>
+    </rule>
+
+    <!-- Prevent false positives for non-required extension -->
+    <rule ref="PHPCompatibility.Extensions.RemovedExtensions.mcryptDeprecatedRemoved">
+        <exclude-pattern>**/vendor/phpseclib/phpseclib/**</exclude-pattern>
+    </rule>
+
+    <rule ref="PHPCompatibility.FunctionUse.RemovedFunctions.mcrypt_generic_initDeprecatedRemoved">
+        <exclude-pattern>**/vendor/phpseclib/phpseclib/**</exclude-pattern>
+    </rule>
+
+    <rule ref="PHPCompatibility.FunctionUse.RemovedFunctions.mcrypt_genericDeprecatedRemoved">
+        <exclude-pattern>**/vendor/phpseclib/phpseclib/**</exclude-pattern>
+    </rule>
+
+    <rule ref="PHPCompatibility.FunctionUse.RemovedFunctions.mcrypt_list_algorithmsDeprecatedRemoved">
+        <exclude-pattern>**/vendor/phpseclib/phpseclib/**</exclude-pattern>
+    </rule>
+
+    <rule ref="PHPCompatibility.FunctionUse.RemovedFunctions.mcrypt_module_closeDeprecatedRemoved">
+        <exclude-pattern>**/vendor/phpseclib/phpseclib/**</exclude-pattern>
+    </rule>
+
+    <rule ref="PHPCompatibility.FunctionUse.RemovedFunctions.mcrypt_module_openDeprecatedRemoved">
+        <exclude-pattern>**/vendor/phpseclib/phpseclib/**</exclude-pattern>
+    </rule>
+
+    <rule ref="PHPCompatibility.FunctionUse.RemovedFunctions.mcrypt_module_closeDeprecatedRemoved">
+        <exclude-pattern>**/vendor/phpseclib/phpseclib/**</exclude-pattern>
+    </rule>
+
+    <rule ref="PHPCompatibility.FunctionUse.RemovedFunctions.mdecrypt_genericDeprecatedRemoved">
+        <exclude-pattern>**/vendor/phpseclib/phpseclib/**</exclude-pattern>
+    </rule>
+
+    <rule ref="PHPCompatibility.Constants.RemovedConstants.mcrypt_mode_ecbDeprecatedRemoved">
+        <exclude-pattern>**/vendor/phpseclib/phpseclib/**</exclude-pattern>
+    </rule>
+
+    <rule ref="PHPCompatibility.Constants.RemovedConstants.mcrypt_mode_cbcDeprecatedRemoved">
+        <exclude-pattern>**/vendor/phpseclib/phpseclib/**</exclude-pattern>
+    </rule>
+
+    <rule ref="PHPCompatibility.Constants.RemovedConstants.mcrypt_mode_nofbDeprecatedRemoved">
+        <exclude-pattern>**/vendor/phpseclib/phpseclib/**</exclude-pattern>
+    </rule>
+
+    <rule ref="PHPCompatibility.Constants.RemovedConstants.mcrypt_mode_cfbDeprecatedRemoved">
+        <exclude-pattern>**/vendor/phpseclib/phpseclib/**</exclude-pattern>
+    </rule>
+
+    <rule ref="PHPCompatibility.Constants.RemovedConstants.mcrypt_mode_ofbDeprecatedRemoved">
+        <exclude-pattern>**/vendor/phpseclib/phpseclib/**</exclude-pattern>
+    </rule>
+
+    <rule ref="PHPCompatibility.Constants.RemovedConstants.mcrypt_mode_streamDeprecatedRemoved">
+        <exclude-pattern>**/vendor/phpseclib/phpseclib/**</exclude-pattern>
+    </rule>
+
 </ruleset>
