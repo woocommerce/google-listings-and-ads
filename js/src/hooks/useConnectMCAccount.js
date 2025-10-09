@@ -28,6 +28,17 @@ const useConnectMCAccount = ( value ) => {
 			await fetchMCAccounts( { parse: false } );
 			invalidateResolution( 'getGoogleMCAccount', [] );
 		} catch ( e ) {
+			if ( e?.code === 'fetch_error' ) {
+				createNotice(
+					'error',
+					__(
+						'Unable to connect your Google Merchant Center account. Please check your connection and try again.',
+						'google-listings-and-ads'
+					)
+				);
+				return;
+			}
+
 			if ( ! [ 409, 403 ].includes( e.status ) ) {
 				const body = await e.json();
 				const message =
