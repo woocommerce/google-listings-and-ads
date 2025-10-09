@@ -737,6 +737,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @return bool
 	 */
 	private function is_gtg_enabled(): bool {
-		return (bool) $this->options->get( OptionsInterface::ADS_GTG_ENABLED );	
+		return (bool) $this->options->get( OptionsInterface::ADS_GTG_ENABLED );
 	}
 }

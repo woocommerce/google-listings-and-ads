@@ -42,7 +42,7 @@ class GlobalSiteTagTest extends UnitTest {
 	/** @var GlobalSiteTag $tag */
 	protected $tag;
 
-	/** @var GlobalSiteTag $tag */
+	/** @var OptionsInterface $options */
 	protected $options;
 
 	protected const TEST_CONVERSION_ID    = 'test_id';
@@ -120,17 +120,18 @@ class GlobalSiteTagTest extends UnitTest {
 
 	public function test_enhanced_conversion_data_is_null_when_no_customer_data() {
 		// Setup empty customer data.
-		$this->wc->expects( $this->once() )
-			->method( 'get_customer_details' )
+		$this->wc->method( 'get_customer_details' )
 			->willReturn( [] );
 
-		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
+		/** @var MockObject|OptionsInterface $options_mock */
+		$options_mock = $this->options;
+		$options_mock->method( 'get' )->willReturn( true );
 
 		// Get the enhanced conversion tag.
 		$gtag = $this->tag->get_enhanced_conversion_tag();
 
 		// Tag should be empty with no customer data.
-		$this->assertEmpty( $gtag );
+		Assert::assertEmpty( $gtag );
 	}
 
 	public function test_enhanced_conversion_data_is_set_with_customer_email() {
@@ -138,18 +139,19 @@ class GlobalSiteTagTest extends UnitTest {
 		$email      = 'test@mail.test';
 		$email_hash = hash( 'sha256', strtolower( trim( $email ) ) );
 
-		$this->wc->expects( $this->once() )
-			->method( 'get_customer_details' )
+		$this->wc->method( 'get_customer_details' )
 			->willReturn( [ 'email' => $email ] );
 
-		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
+		/** @var MockObject|OptionsInterface $options_mock */
+		$options_mock = $this->options;
+		$options_mock->method( 'get' )->willReturn( true );
 
 		// Get the enhanvced conversion tag.
 		$gtag = $this->tag->get_enhanced_conversion_tag();
 
 		// Confirm the hashed email and key is present.
-		$this->assertStringContainsString( 'sha256_email_address', $gtag );
-		$this->assertStringContainsString( $email_hash, $gtag );
+		Assert::assertStringContainsString( 'sha256_email_address', $gtag );
+		Assert::assertStringContainsString( $email_hash, $gtag );
 	}
 
 	public function test_enhanced_conversion_data_is_set_with_customer_phone() {
@@ -163,18 +165,19 @@ class GlobalSiteTagTest extends UnitTest {
 			'country' => 'GB',
 		];
 
-		$this->wc->expects( $this->once() )
-			->method( 'get_customer_details' )
+		$this->wc->method( 'get_customer_details' )
 			->willReturn( $customer_mock );
 
-		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
+		/** @var MockObject|OptionsInterface $options_mock */
+		$options_mock = $this->options;
+		$options_mock->method( 'get' )->willReturn( true );
 
 		// Get the enhanvced conversion tag.
 		$gtag = $this->tag->get_enhanced_conversion_tag();
 
 		// Confirm the hashed phone and key is present.
-		$this->assertStringContainsString( 'sha256_phone_number', $gtag );
-		$this->assertStringContainsString( $phone_hash, $gtag );
+		Assert::assertStringContainsString( 'sha256_phone_number', $gtag );
+		Assert::assertStringContainsString( $phone_hash, $gtag );
 	}
 
 	public function test_enhanced_conversion_data_is_empty_when_only_customer_phone_available() {
@@ -187,17 +190,18 @@ class GlobalSiteTagTest extends UnitTest {
 			'country' => 'GB',
 		];
 
-		$this->wc->expects( $this->once() )
-			->method( 'get_customer_details' )
+		$this->wc->method( 'get_customer_details' )
 			->willReturn( $customer_mock );
 
-		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
+		/** @var MockObject|OptionsInterface $options_mock */
+		$options_mock = $this->options;
+		$options_mock->method( 'get' )->willReturn( true );
 
 		// Get the enhanvced conversion tag.
 		$gtag = $this->tag->get_enhanced_conversion_tag();
 
 		// Confirm the hashed phone and key is present.
-		$this->assertEmpty( $gtag );
+		Assert::assertEmpty( $gtag );
 	}
 
 	public function test_enhanced_conversion_data_is_set_with_customer_address() {
@@ -216,23 +220,24 @@ class GlobalSiteTagTest extends UnitTest {
 			'country'    => 'GB',
 		];
 
-		$this->wc->expects( $this->once() )
-			->method( 'get_customer_details' )
+		$this->wc->method( 'get_customer_details' )
 			->willReturn( $customer_mock );
 
-		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
+		/** @var MockObject|OptionsInterface $options_mock */
+		$options_mock = $this->options;
+		$options_mock->method( 'get' )->willReturn( true );
 
 		// Get the enhanvced conversion tag.
 		$gtag = $this->tag->get_enhanced_conversion_tag();
 
 		// Confirm the hashed values and keys are present.
-		$this->assertStringContainsString( 'sha256_first_name', $gtag );
-		$this->assertStringContainsString( 'sha256_last_name', $gtag );
-		$this->assertStringContainsString( 'postal_code', $gtag );
-		$this->assertStringContainsString( 'country', $gtag );
-		$this->assertStringContainsString( $first_hash, $gtag );
-		$this->assertStringContainsString( $last_hash, $gtag );
-		$this->assertStringContainsString( $postcode, $gtag );
+		Assert::assertStringContainsString( 'sha256_first_name', $gtag );
+		Assert::assertStringContainsString( 'sha256_last_name', $gtag );
+		Assert::assertStringContainsString( 'postal_code', $gtag );
+		Assert::assertStringContainsString( 'country', $gtag );
+		Assert::assertStringContainsString( $first_hash, $gtag );
+		Assert::assertStringContainsString( $last_hash, $gtag );
+		Assert::assertStringContainsString( $postcode, $gtag );
 	}
 
 	public function test_register_initializes_gtg_adapter_with_conversion_id() {
@@ -242,7 +247,9 @@ class GlobalSiteTagTest extends UnitTest {
 		];
 
 		// Provide return values for both calls in register(): ADS_CONVERSION_ACTION and ADS_GTG_ENABLED.
-		$this->options->method( 'get' )
+		/** @var MockObject|OptionsInterface $options_mock */
+		$options_mock = $this->options;
+		$options_mock->method( 'get' )
 			->willReturnMap(
 				[
 					[ OptionsInterface::ADS_CONVERSION_ACTION, null, $conversion_action ],
@@ -250,7 +257,7 @@ class GlobalSiteTagTest extends UnitTest {
 				]
 			);
 
-		$light_tag = new class($this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp) extends GlobalSiteTag {
+		$light_tag = new class ($this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp) extends GlobalSiteTag {
 			protected function register_assets() {}
 			protected function product_data_hooks() {}
 		};
@@ -265,7 +272,9 @@ class GlobalSiteTagTest extends UnitTest {
 
 	public function test_register_does_not_initialize_gtg_adapter_without_conversion_id() {
 		// Simulate missing conversion_action (null)
-		$this->options->method( 'get' )
+		/** @var MockObject|OptionsInterface $options_mock */
+		$options_mock = $this->options;
+		$options_mock->method( 'get' )
 			->willReturnMap(
 				[
 					[ OptionsInterface::ADS_CONVERSION_ACTION, null, null ],
@@ -273,7 +282,7 @@ class GlobalSiteTagTest extends UnitTest {
 				]
 			);
 
-		$light_tag = new class($this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp) extends GlobalSiteTag {
+		$light_tag = new class ($this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp) extends GlobalSiteTag {
 			protected function register_assets() {}
 			protected function product_data_hooks() {}
 		};
