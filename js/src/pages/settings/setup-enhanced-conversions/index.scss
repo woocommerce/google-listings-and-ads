@@ -1,0 +1,14 @@
+.gla-settings-enhanced-conversions {
+
+	.components-tip {
+		background-color: $gla-color-blue-0;
+		color: $black;
+		padding: $grid-unit-20;
+		margin-top: $grid-unit-20;
+
+		svg {
+			align-self: start;
+			fill: $gray-900;
+		}
+	}
+}
