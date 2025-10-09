@@ -1031,6 +1031,23 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Mocks the Google Tag Gateway status.
+	 *
+	 * @async
+	 * @param {boolean} [status=false] - The desired status of the Google Tag Gateway (enabled or disabled).
+	 * @param {string[]} [methods=['GET']] - The HTTP methods to intercept (e.g., ['GET', 'POST']).
+	 * @return {Promise<void>} Resolves when the mock request has been fulfilled.
+	 */
+	async mockGoogleTagGatewayStatus( status = false, methods = [ 'GET' ] ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/settings\b/,
+			{ google_tag_gateway_enabled: status },
+			200,
+			methods
+		);
+	}
+
+	/**
 	 * Mocks a POST request to the `/wp/v2/users/me` endpoint to fulfill user preferences.
 	 *
 	 * @param {Object} [payload={}] - The payload to return as the mocked response.
