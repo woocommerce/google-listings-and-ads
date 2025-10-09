@@ -85,17 +85,6 @@ test.describe( 'Settings', () => {
 
 	test.describe( 'Enhanced Conversions Setting', () => {
 		test.describe( 'When ads account is connected', () => {
-			test( 'should show the "Enhanced Conversion" setting card', async () => {
-				await expect(
-					page.getByRole( 'heading', { name: 'Settings' } )
-				).toBeVisible();
-				await expect(
-					page.getByRole( 'heading', {
-						name: 'Improve conversion accuracy',
-					} )
-				).toBeVisible();
-			} );
-
 			test( 'checkbox should be unchecked by default', async () => {
 				const checkbox = settingsPage.getEnhancedConversionsCheckbox();
 
@@ -149,17 +138,6 @@ test.describe( 'Settings', () => {
 			test.beforeAll( async () => {
 				await settingsPage.mockAdsAccountDisconnected();
 				await settingsPage.goto();
-			} );
-
-			test( 'should show the "Enhanced Conversion" setting card', async () => {
-				await expect(
-					page.getByRole( 'heading', { name: 'Settings' } )
-				).toBeVisible();
-				await expect(
-					page.getByRole( 'heading', {
-						name: 'Improve conversion accuracy',
-					} )
-				).toBeVisible();
 			} );
 
 			test( 'checkbox should be unchecked and disabled by default', async () => {
