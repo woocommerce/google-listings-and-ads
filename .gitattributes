@@ -3,6 +3,7 @@
 .gitignore export-ignore
 .github export-ignore
 bin export-ignore
+gtg export-ignore
 tests export-ignore
 js/src export-ignore
 js/build-dev export-ignore

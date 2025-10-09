@@ -73,6 +73,7 @@ const DEFAULT_STATE = {
 		budgetRecommendations: {},
 		recommendations: {},
 		enable_enhanced_conversions: false,
+		enable_google_tag_gateway: null,
 		budgetMetrics: {},
 	},
 	gtinMigrationStatus: null,
@@ -625,6 +626,12 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				[ 'ads', 'recommendations', recommendationType ],
 				recommendations
 			);
+		}
+
+		case TYPES.RECEIVE_ADS_GOOGLE_TAG_GATEWAY: {
+			const { status } = action;
+
+			return setIn( state, 'ads.enable_google_tag_gateway', status );
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

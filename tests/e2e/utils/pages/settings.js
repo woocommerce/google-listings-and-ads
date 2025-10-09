@@ -92,11 +92,35 @@ export default class SettingsPage extends MockRequests {
 	}
 
 	/**
+	 * Returns the checkbox element for enabling the Google tag gateway for advertisers.
+	 *
+	 * @return {Promise<import('@playwright/test').Locator>} Locator for the Google tag gateway checkbox.
+	 */
+	getGoogleTagGatewayCheckbox() {
+		return this.page.getByRole( 'checkbox', {
+			name: 'Enable Google tag gateway for advertisers',
+		} );
+	}
+
+	/**
 	 * Register the request when the enhanced conversions checkbox is checked or unchecked.
 	 *
 	 * @return {Promise<import('@playwright/test').Request>} The request.
 	 */
 	async registerEnhancedConversionsStatusRequests() {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/ads/settings' ) &&
+				request.method() === 'POST'
+		);
+	}
+
+	/**
+	 * Register the request when the Google Tag Gateway checkbox is checked or unchecked.
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	async registerGoogleTagGatewayStatusRequests() {
 		return this.page.waitForRequest(
 			( request ) =>
 				request.url().includes( '/gla/ads/settings' ) &&
