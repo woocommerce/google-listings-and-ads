@@ -37,6 +37,14 @@ function generateDateRange( start, end ) {
 	return dates;
 }
 
+/**
+ * Renders a report chart.
+ *
+ * @param {Object} props React props.
+ * @param {Array<Metric>} props.metrics Metrics to display.
+ * @param {boolean} props.loaded Whether the data have been loaded.
+ * @param {Array<IntervalsData>} props.intervals Report's intervals data.
+ */
 export default function ChartSection( { metrics, loaded, intervals } ) {
 	const query = useUrlQuery();
 	const storeCurrencyConfig = useStoreCurrency();
@@ -53,6 +61,8 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 	const { key, label, isCurrency = false, formatFn } = visibleMetric;
 
 	// Preferably we would use the currency of the selected metric to be used on y axis.
+	// But due to https://github.com/woocommerce/woocommerce-admin/issues/7694 Chart will not react on changes.
+	// Therefore, we will use sotre's one without the symbol, to slightly reduce the merchants confusion.
 	const visibleCurrency = { ...storeCurrencyConfig, symbol: '' };
 	const chartType = getChartTypeForQuery( query );
 	const valueType = isCurrency ? 'currency' : 'number';
