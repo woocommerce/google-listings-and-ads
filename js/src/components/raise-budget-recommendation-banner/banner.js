@@ -12,7 +12,6 @@ import { getHistory } from '@woocommerce/navigation';
 import { getEditCampaignUrl } from '~/utils/urls';
 import { recordGlaEvent } from '~/utils/tracks';
 import DeltaValue from '~/components/delta-value';
-import useBudgetMetrics from '~/hooks/useBudgetMetrics';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import Badge from '~/components/badge';
 import AppButton from '~/components/app-button';
@@ -75,20 +74,16 @@ const Banner = ( { onBannerDismissed } ) => {
 	const recommendedCampaign = orderedRecommendedCampaigns?.[ 0 ] || {};
 	const { campaign_id, campaign_name } = recommendedCampaign;
 	const campaign = allCampaigns?.find( ( el ) => el.id === campaign_id );
-	const { data: budgetMetricsData } = useBudgetMetrics(
-		campaign?.targeted_locations,
-		campaign?.amount
-	);
 
 	useEffect( () => {
-		if ( campaign && budgetMetricsData ) {
+		if ( campaign ) {
 			recordGlaEvent( 'gla_raise_budget_recommendation_banner_shown', {
 				context: RAISE_BUDGET_RECOMMENDATION_BANNER_CONTEXT,
 			} );
 		}
-	}, [ campaign, budgetMetricsData ] );
+	}, [ campaign ] );
 
-	if ( ! campaign || ! budgetMetricsData ) {
+	if ( ! campaign ) {
 		return null;
 	}
 
@@ -123,15 +118,19 @@ const Banner = ( { onBannerDismissed } ) => {
 		recommendedCampaign?.details?.campaign_budget_recommendation?.budget_options?.find(
 			( { level } ) => level.toLowerCase() === 'recommended'
 		)?.metrics;
+	const currentCampaignMetrics =
+		recommendedCampaign?.details?.campaign_budget_recommendation?.budget_options?.find(
+			( { level } ) => level.toLowerCase() === 'current'
+		)?.metrics;
 	const percentageIncrease = Math.round(
 		( ( recommendedCampaignMetrics.conversions -
-			budgetMetricsData.metrics.conversions ) /
-			budgetMetricsData.metrics.conversions ) *
+			currentCampaignMetrics.conversions ) /
+			currentCampaignMetrics.conversions ) *
 			100
 	);
 	const conversionValueIncrease =
 		recommendedCampaignMetrics.conversions_value -
-		budgetMetricsData.metrics.conversionsValue;
+		currentCampaignMetrics.conversions_value;
 
 	return (
 		<Notice
@@ -185,7 +184,7 @@ const Banner = ( { onBannerDismissed } ) => {
 							<span>
 								<DeltaValue
 									amount={ conversionValueIncrease }
-									compactNotation
+									isPrice
 								/>
 							</span>
 
