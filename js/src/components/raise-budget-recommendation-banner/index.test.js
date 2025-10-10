@@ -15,7 +15,6 @@ import RaiseBudgetRecommendationBanner from './index';
 import usePreference from '~/hooks/usePreference';
 import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
 import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
-import useBudgetMetrics from '~/hooks/useBudgetMetrics';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 
 jest.mock( '@woocommerce/components', () => ( {
@@ -67,8 +66,10 @@ jest.mock( '~/hooks/useRaiseBudgetRecommendations', () =>
 	jest.fn().mockName( 'useRaiseBudgetRecommendations' )
 );
 
-jest.mock( '~/hooks/useBudgetMetrics', () =>
-	jest.fn().mockName( 'useBudgetMetrics' )
+jest.mock( '~/hooks/useAdsCurrency', () =>
+	jest.fn().mockReturnValue( {
+		formatAmount: jest.fn().mockName( 'formatAmount' ),
+	} )
 );
 
 jest.mock( '~/utils/urls', () => ( {
@@ -192,17 +193,6 @@ const mockedRecommendedCampaigns = [
 	},
 ];
 
-const mockedBudgetMetricsData = {
-	currency: 'USD',
-	budget: 11,
-	country: 'MU',
-	metrics: {
-		cost: 77,
-		conversions: 2,
-		conversions_value: 78.690507740539033,
-	},
-};
-
 const mockedAdsCampaigns = [
 	{
 		id: 1,
@@ -228,7 +218,6 @@ describe( 'RaiseBudgetRecommendationBanner', () => {
 	beforeEach( () => {
 		useDispatch.mockReturnValue( { set: () => null } );
 		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: true } );
-		useBudgetMetrics.mockReturnValue( { data: mockedBudgetMetricsData } );
 		useAdsCampaigns.mockReturnValue( { data: mockedAdsCampaigns } );
 	} );
 
@@ -292,17 +281,6 @@ describe( 'RaiseBudgetRecommendationBanner', () => {
 			hasFinishedResolution: true,
 		} );
 		useAdsCampaigns.mockReturnValue( { data: [] } );
-		const { container } = render( <RaiseBudgetRecommendationBanner /> );
-		expect( container.firstChild ).toBeNull();
-	} );
-
-	it( 'renders nothing if no budget metrics', () => {
-		usePreference.mockReturnValue( {} );
-		useRaiseBudgetRecommendations.mockReturnValue( {
-			campaigns: mockedRecommendedCampaigns,
-			hasFinishedResolution: true,
-		} );
-		useBudgetMetrics.mockReturnValue( { data: null } );
 		const { container } = render( <RaiseBudgetRecommendationBanner /> );
 		expect( container.firstChild ).toBeNull();
 	} );

@@ -73,17 +73,37 @@ const Banner = ( { onBannerDismissed } ) => {
 	);
 	const recommendedCampaign = orderedRecommendedCampaigns?.[ 0 ] || {};
 	const { campaign_id, campaign_name } = recommendedCampaign;
-	const campaign = allCampaigns?.find( ( el ) => el.id === campaign_id );
+	const recommendedCampaignMetrics =
+		recommendedCampaign?.details?.campaign_budget_recommendation?.budget_options?.find(
+			( { level } ) => level.toLowerCase() === 'recommended'
+		)?.metrics;
+	const currentCampaignMetrics =
+		recommendedCampaign?.details?.campaign_budget_recommendation?.budget_options?.find(
+			( { level } ) => level.toLowerCase() === 'current'
+		)?.metrics;
+
+	// Check if the campaign with the given ID exists in the list of all campaigns.
+	const existingCampaign = allCampaigns?.find(
+		( el ) => el.id === campaign_id
+	);
 
 	useEffect( () => {
-		if ( campaign ) {
+		if (
+			existingCampaign &&
+			recommendedCampaignMetrics &&
+			currentCampaignMetrics
+		) {
 			recordGlaEvent( 'gla_raise_budget_recommendation_banner_shown', {
 				context: RAISE_BUDGET_RECOMMENDATION_BANNER_CONTEXT,
 			} );
 		}
-	}, [ campaign ] );
+	}, [
+		existingCampaign,
+		recommendedCampaignMetrics,
+		currentCampaignMetrics,
+	] );
 
-	if ( ! campaign ) {
+	if ( ! existingCampaign ) {
 		return null;
 	}
 
@@ -114,14 +134,6 @@ const Banner = ( { onBannerDismissed } ) => {
 		);
 	};
 
-	const recommendedCampaignMetrics =
-		recommendedCampaign?.details?.campaign_budget_recommendation?.budget_options?.find(
-			( { level } ) => level.toLowerCase() === 'recommended'
-		)?.metrics;
-	const currentCampaignMetrics =
-		recommendedCampaign?.details?.campaign_budget_recommendation?.budget_options?.find(
-			( { level } ) => level.toLowerCase() === 'current'
-		)?.metrics;
 	const percentageIncrease = Math.round(
 		( ( recommendedCampaignMetrics.conversions -
 			currentCampaignMetrics.conversions ) /
