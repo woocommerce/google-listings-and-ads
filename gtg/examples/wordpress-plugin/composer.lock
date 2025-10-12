@@ -1,0 +1,73 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "3f104cc40caeac09dd40272978ea73f9",
+    "packages": [
+        {
+            "name": "google/gtg-ads",
+            "version": "dev-rename",
+            "dist": {
+                "type": "path",
+                "url": "../..",
+                "reference": "b69ae5de9de47177d67a8ce08973f421082e31d8"
+            },
+            "require": {
+                "php": ">=7.4"
+            },
+            "require-dev": {
+                "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+                "phpcompatibility/php-compatibility": "^9.3",
+                "phpunit/phpunit": "^9 || ^10 || ^11",
+                "squizlabs/php_codesniffer": "^3.7"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Google\\GoogleTagGatewayLibrary\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Google\\GoogleTagGatewayLibrary\\Tests\\": "tests/phpunit/"
+                },
+                "classmap": [
+                    "src/measurement.php"
+                ]
+            },
+            "scripts": {
+                "lint": [
+                    "phpcs"
+                ],
+                "fix": [
+                    "phpcbf"
+                ],
+                "test": [
+                    "phpunit"
+                ]
+            },
+            "license": [
+                "Apache-2.0"
+            ],
+            "description": "Set up Google tag gateway for advertisers with PHP.",
+            "homepage": "https://developers.google.com/tag-platform/tag-manager/gateway/setup-guide?setup=manual",
+            "transport-options": {
+                "symlink": false,
+                "relative": true
+            }
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "google/gtg-ads": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {},
+    "plugin-api-version": "2.6.0"
+}
