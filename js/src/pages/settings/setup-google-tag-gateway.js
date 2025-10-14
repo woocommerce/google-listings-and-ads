@@ -13,6 +13,7 @@ import { CheckboxControl } from '@wordpress/components';
  * Internal dependencies
  */
 import { useAppDispatch } from '~/data';
+import { recordGlaEvent } from '~/utils/tracks';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import AppSpinner from '~/components/app-spinner';
@@ -22,7 +23,7 @@ import useEnableGoogleTagGateway from '~/hooks/useEnableGoogleTagGateway';
 /**
  * Renders the settings section for Google Tag Gateway setup.
  *
- * @fires gla_documentation_link_click with `{ context: 'setup-google-tag-gateway', link_id: 'google-tag-gateway-read-more', href: 'https://support.google.com/google-ads/answer/9888656' }`
+ * @fires gla_documentation_link_click with `{ context: 'setup-google-tag-gateway', link_id: 'google-tag-gateway-read-more', href: 'https://support.google.com/google-ads/answer/16214371' }`
  */
 const SetupGoogleTagGateway = () => {
 	const {
@@ -41,7 +42,7 @@ const SetupGoogleTagGateway = () => {
 		await updateGoogleTagGatewayStatus( ! isEnabled );
 	}, [ updateGoogleTagGatewayStatus, isEnabled ] );
 
-	const handleOnChange = async () => {
+	const handleOnChange = async ( checked ) => {
 		try {
 			setIsSaving( true );
 			await toggleGoogleTagGateway();
@@ -53,6 +54,10 @@ const SetupGoogleTagGateway = () => {
 					'google-listings-and-ads'
 				)
 			);
+			recordGlaEvent( 'gla_enable_google_tag_gateway', {
+				status: checked,
+				context: 'setup-google-tag-gateway',
+			} );
 		} catch ( error ) {
 			// Silently fail because the error is handled within `updateGoogleTagGatewayStatus` action.
 		} finally {
@@ -85,8 +90,8 @@ const SetupGoogleTagGateway = () => {
 				{
 					readMoreLink: (
 						<AppDocumentationLink
-							href="https://support.google.com/google-ads/answer/9841530"
-							context={ 'setup-google-tag-gateway' }
+							href="https://support.google.com/google-ads/answer/16214371"
+							context="setup-google-tag-gateway"
 							linkId="google-tag-gateway-read-more"
 						/>
 					),
