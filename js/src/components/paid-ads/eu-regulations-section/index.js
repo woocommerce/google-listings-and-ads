@@ -13,6 +13,10 @@ import Section from '~/components/section';
 
 /**
  * Displays the EU regulations section if any EU country is selected.
+ * If no EU country is selected, nothing is rendered.
+ *
+ * @param {Object} props React props.
+ * @param {'setup-mc'|'setup-ads'|'create-ads'|'edit-ads'} props.context A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  */
 const EuRegulationsSection = ( { context } ) => {
 	const {
@@ -23,11 +27,7 @@ const EuRegulationsSection = ( { context } ) => {
 		adapter: { countryCodes },
 	} = useAdaptiveFormContext();
 
-	if (
-		! hasFinishedResolution ||
-		! countryCodes.length ||
-		context === 'edit_ads'
-	) {
+	if ( ! hasFinishedResolution || ! countryCodes.length ) {
 		return null;
 	}
 

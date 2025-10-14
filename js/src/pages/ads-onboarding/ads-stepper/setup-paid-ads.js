@@ -83,7 +83,11 @@ const SetupPaidAds = () => {
 	};
 
 	const handleSubmit = ( values ) => {
-		const { level, dailyBudget } = values;
+		const {
+			level,
+			dailyBudget,
+			contains_eu_political_advertising: hasConfirmedNoEuPoliticalContent,
+		} = values;
 
 		recordGlaEvent(
 			'gla_launch_paid_campaign_button_click',
@@ -94,14 +98,19 @@ const SetupPaidAds = () => {
 			} )
 		);
 
-		handleSetupComplete( dailyBudget, countryCodes, () => {
-			// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.
-			const nextPath = getNewPath(
-				{ guide: 'campaign-creation-success' },
-				'/google/dashboard'
-			);
-			window.location.href = adminUrl + nextPath;
-		} );
+		handleSetupComplete(
+			dailyBudget,
+			countryCodes,
+			hasConfirmedNoEuPoliticalContent,
+			() => {
+				// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.
+				const nextPath = getNewPath(
+					{ guide: 'campaign-creation-success' },
+					'/google/dashboard'
+				);
+				window.location.href = adminUrl + nextPath;
+			}
+		);
 	};
 
 	if ( ! countryCodes ) {

@@ -15,9 +15,12 @@ import AppDocumentationLink from '~/components/app-documentation-link';
 
 /**
  * Displays a checkbox to confirm whether political content is advertised.
- * @fires gla_documentation_link_click with `{ context: 'setup-mc', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595?hl=en' }`
- * @fires gla_documentation_link_click with `{ context: 'setup-ads', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595?hl=en' }`
- * @fires gla_documentation_link_click with `{ context: 'create-ads', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595?hl=en' }`
+ * @fires gla_documentation_link_click with `{ context: 'setup-mc', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
+ * @fires gla_documentation_link_click with `{ context: 'setup-ads', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
+ * @fires gla_documentation_link_click with `{ context: 'create-ads', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
+ *
+ * @param {Object} props React props.
+ * @param {'setup-mc'|'setup-ads'|'create-ads'|'edit-ads'} props.context A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  */
 const EuPoliticalContentCard = ( { context } ) => {
 	const { getInputProps } = useAdaptiveFormContext();
@@ -39,7 +42,7 @@ const EuPoliticalContentCard = ( { context } ) => {
 							{
 								link: (
 									<AppDocumentationLink
-										href="https://support.google.com/adspolicy/answer/6014595?hl=en"
+										href="https://support.google.com/adspolicy/answer/6014595"
 										linkId="eu-political-content"
 										context={ context }
 									/>
