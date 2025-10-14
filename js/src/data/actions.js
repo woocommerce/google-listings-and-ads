@@ -744,7 +744,7 @@ export function* createAdsCampaign(
 			data: {
 				amount,
 				targeted_locations: countryCodes,
-				contains_eu_political_advertising:
+				eu_political_advertising_confirmation:
 					hasConfirmedNoEuPoliticalContent,
 				label,
 			},

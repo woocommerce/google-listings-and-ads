@@ -24,7 +24,7 @@ import AppDocumentationLink from '~/components/app-documentation-link';
  */
 const EuPoliticalContentCard = ( { context } ) => {
 	const { getInputProps } = useAdaptiveFormContext();
-	const inputProps = getInputProps( 'contains_eu_political_advertising' );
+	const inputProps = getInputProps( 'hasConfirmedNoEuPoliticalContent' );
 
 	return (
 		<Section.Card className="gla-eu-political-content-card">
@@ -34,6 +34,7 @@ const EuPoliticalContentCard = ( { context } ) => {
 				</Section.Card.Title>
 				<VerticalGapLayout size="large">
 					<CheckboxControl
+						{ ...inputProps }
 						label={ createInterpolateElement(
 							__(
 								'I confirm I don’t advertise political content as defined by Google’s <link>EU political content policy</link>.',
@@ -49,7 +50,6 @@ const EuPoliticalContentCard = ( { context } ) => {
 								),
 							}
 						) }
-						{ ...inputProps }
 						help={ __(
 							'Required if you include EU countries in your selected locations.',
 							'google-listings-and-ads'

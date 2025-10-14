@@ -83,11 +83,7 @@ const SetupPaidAds = () => {
 	};
 
 	const handleSubmit = ( values ) => {
-		const {
-			level,
-			dailyBudget,
-			contains_eu_political_advertising: hasConfirmedNoEuPoliticalContent,
-		} = values;
+		const { level, dailyBudget, hasConfirmedNoEuPoliticalContent } = values;
 
 		recordGlaEvent(
 			'gla_launch_paid_campaign_button_click',

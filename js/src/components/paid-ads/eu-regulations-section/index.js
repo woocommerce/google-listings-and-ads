@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { useAdaptiveFormContext } from '~/components/adaptive-form';
+import useTargetAudience from '~/hooks/useTargetAudience';
 import useAppSelectDispatch from '~/hooks/useAppSelectDispatch';
 import EuPoliticalContentCard from './eu-political-content-card';
 import Section from '~/components/section';
@@ -21,18 +21,23 @@ import Section from '~/components/section';
 const EuRegulationsSection = ( { context } ) => {
 	const {
 		data: { continents },
-		hasFinishedResolution,
+		hasFinishedResolution: hasResolvedCountriesAndContinents,
 	} = useAppSelectDispatch( 'getMCCountriesAndContinents' );
-	const {
-		adapter: { countryCodes },
-	} = useAdaptiveFormContext();
+	const { data, hasFinishedResolution: hasResolvedTargetAudience } =
+		useTargetAudience();
 
-	if ( ! hasFinishedResolution || ! countryCodes.length ) {
+	if ( ! hasResolvedCountriesAndContinents || ! hasResolvedTargetAudience ) {
+		return null;
+	}
+
+	const { countries } = data;
+
+	if ( ! countries.length ) {
 		return null;
 	}
 
 	const euCountries = continents.EU.countries || [];
-	const isAnyEUCountrySelected = countryCodes.some( ( countryCode ) =>
+	const isAnyEUCountrySelected = countries.some( ( countryCode ) =>
 		euCountries.includes( countryCode )
 	);
 

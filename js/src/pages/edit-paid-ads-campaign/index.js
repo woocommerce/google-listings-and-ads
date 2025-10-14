@@ -228,6 +228,7 @@ const EditPaidAdsCampaign = () => {
 				initialCampaign={ {
 					level: 'custom',
 					amount: campaign.amount,
+					hasConfirmedNoEuPoliticalContent: true, // @TODO: need to get this value from the API.
 				} }
 				countryCodes={ campaign.displayCountries }
 				assetEntityGroup={ assetEntityGroup }
