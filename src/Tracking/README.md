@@ -412,6 +412,10 @@ When a documentation link is clicked.
 	- with `{ context: "reports-products", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
 	- with `{ context: "reports-programs", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
 - [`EditStoreAddress`](../../js/src/pages/settings/edit-store-address.js#L41) with `{ context: "settings-store-address", link_id: "contact-information-read-more", href: "https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#contact-information" }`
+- [`EuPoliticalContentCard`](../../js/src/components/paid-ads/eu-regulations-section/eu-political-content-card.js#L25)
+	- with `{ context: 'setup-mc', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
+	- with `{ context: 'setup-ads', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
+	- with `{ context: 'create-ads', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
 - [`FaqLink`](../../js/src/pages/price-benchmark/faq-link.js#L20) with `{ context: 'price-benchmark-suggestions', link_id: 'price-benchmark-suggestions-faq' }` and the URL.
 - [`Faqs`](../../js/src/components/paid-ads/asset-group/faqs.js#L72) with `{ context: 'assets-faq', linkId: 'assets-faq-about-ad-formats-available-in-different-campaign-types', href: 'https://support.google.com/google-ads/answer/1722124' }`.
 - [`Faqs`](../../js/src/pages/get-started/faqs/index.js#L428)
@@ -446,7 +450,7 @@ When a documentation link is clicked.
 - [`TermsModal`](../../js/src/components/google-mc-account-card/terms-modal/index.js#L29) with `{ context: 'setup-mc', link_id: 'google-mc-terms-of-service', href: 'https://support.google.com/merchants/answer/160173' }`
 - [`UnsupportedCountry`](../../js/src/pages/get-started/unsupported-notices/index.js#L73) with `{ context: "get-started", link_id: "supported-countries" }`
 - [`UnsupportedLanguage`](../../js/src/pages/get-started/unsupported-notices/index.js#L30) with `{ context: 'get-started', link_id: 'supported-languages', href: 'https://support.google.com/merchants/answer/160637' }`
-- [`exports`](../../js/src/components/paid-ads/ads-campaign/ads-campaign.js#L39) with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
+- [`exports`](../../js/src/components/paid-ads/ads-campaign/ads-campaign.js#L40) with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
 
 ### [`gla_edit_mc_store_address`](../../js/src/components/contact-information/store-address-card.js#L166)
 Trigger when store address edit button is clicked.
@@ -544,7 +548,7 @@ Saving changes of audience and/or shipping settings to the product feed.
 #### Emitters
 - [`exports`](../../js/src/pages/shipping/index.js#L46)
 
-### [`gla_google_account_connect_button_click`](../../js/src/utils/tracks.js#L183)
+### [`gla_google_account_connect_button_click`](../../js/src/utils/tracks.js#L184)
 Clicking on the button to connect Google account.
 #### Properties
 | name | type | description |
@@ -564,7 +568,7 @@ Clicking on the "connect to a different Google account" button.
 #### Emitters
 - [`SwitchAccountButton`](../../js/src/components/google-account-card/switch-account-button.js#L25)
 
-### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L193)
+### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L194)
 Clicking on a Google Merchant Center link.
 #### Properties
 | name | type | description |
@@ -603,6 +607,7 @@ Triggered when the "Launch paid campaign" button is clicked to add a new paid ca
 `budget` | `number` | Daily average cost of the paid campaign
 `source` | `string` | The data source of the budget recommendations, e.g. 'google-ads-api', 'fallback-database'.
 `recommended_budget` | `number` | The recommended daily budget displayed to merchants regardless of the final amount they choose.
+`has_confirmed_no_eu_political_content` | `boolean` | Whether the user has confirmed that the ads campaign does not contain EU political content.
 #### Emitters
 - [`SetupPaidAds`](../../js/src/pages/ads-onboarding/ads-stepper/setup-paid-ads.js#L48) on submit
 
@@ -664,7 +669,7 @@ Clicking on the "Yes, I want a new account" button in the warning modal for crea
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L239) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
-### [`gla_modal_closed`](../../js/src/utils/tracks.js#L249)
+### [`gla_modal_closed`](../../js/src/utils/tracks.js#L250)
 A modal is closed.
 #### Properties
 | name | type | description |
@@ -702,7 +707,7 @@ Clicking on a text link within the modal content
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L239) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
-### [`gla_modal_open`](../../js/src/utils/tracks.js#L262)
+### [`gla_modal_open`](../../js/src/utils/tracks.js#L263)
 A modal is open
 #### Properties
 | name | type | description |
@@ -749,7 +754,7 @@ Clicking on the button to open the invitation page for claiming the newly create
 #### Emitters
 - [`ClaimAccountButton`](../../js/src/components/google-ads-account-card/claim-account-button.js#L32) When the user clicks on the button to claim the account.
 
-### [`gla_paid_campaign_step`](../../js/src/utils/tracks.js#L209)
+### [`gla_paid_campaign_step`](../../js/src/utils/tracks.js#L210)
 Triggered when moving to another step during creating/editing a campaign.
 #### Properties
 | name | type | description |
@@ -772,7 +777,7 @@ When the banner is shown.
 | ---- | ---- | ----------- |
 `context` | `string` | The context in which the banner is shown. Set to 'pmax_assets_improvements_banner'.
 #### Emitters
-- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L63) when the banner is displayed.
+- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L62) when the banner is displayed.
 
 ### [`gla_pmax_assets_improvements_dismiss_clicked`](../../js/src/components/pmax-improve-assets-banner/banner.js#L36)
 When the banner is dismissed by clicking the "Dismiss" button or the close icon.
@@ -782,7 +787,7 @@ When the banner is dismissed by clicking the "Dismiss" button or the close icon.
 `context` | `string` | The context in which the banner was dismissed. Set to 'pmax_assets_improvements_banner'.
 `campaign_id` | `number` | The ID of the PMAX campaign for which the banner was dismissed.
 #### Emitters
-- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L63) when the banner is dismissed.
+- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L62) when the banner is dismissed.
 
 ### [`gla_pmax_assets_improvements_improve_assets_clicked`](../../js/src/components/pmax-improve-assets-banner/banner.js#L28)
 When the "Improve Assets" button is clicked.
@@ -792,7 +797,7 @@ When the "Improve Assets" button is clicked.
 `context` | `string` | The context in which the banner is shown. Set to 'pmax_assets_improvements_banner'.
 `campaign_id` | `number` | The ID of the PMAX campaign for which assets are being improved.
 #### Emitters
-- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L63) when the "Improve Assets" button is clicked.
+- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L62) when the "Improve Assets" button is clicked.
 
 ### [`gla_price_benchmarks_change_price_clicked`](../../js/src/pages/price-benchmark/change-price.js#L19)
 
@@ -858,7 +863,7 @@ Clicking on the "Or, select another page" button.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-header/final-url-card.js#L39)
 
-### [`gla_setup_ads`](../../js/src/utils/tracks.js#L201)
+### [`gla_setup_ads`](../../js/src/utils/tracks.js#L202)
 Triggered on events during ads onboarding
 #### Properties
 | name | type | description |

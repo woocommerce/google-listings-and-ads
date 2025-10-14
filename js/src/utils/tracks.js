@@ -178,6 +178,7 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  * @property {number} budget Daily average cost of the paid campaign
  * @property {string} source The data source of the budget recommendations, e.g. 'google-ads-api', 'fallback-database'.
  * @property {number} recommended_budget The recommended daily budget displayed to merchants regardless of the final amount they choose.
+ * @property {boolean} has_confirmed_no_eu_political_content Whether the user has confirmed that the ads campaign does not contain EU political content.
  */
 
 /**

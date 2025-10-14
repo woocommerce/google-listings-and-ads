@@ -91,6 +91,8 @@ const SetupPaidAds = () => {
 				level,
 				audiences: countryCodes.join( ',' ),
 				budget: dailyBudget,
+				has_confirmed_no_eu_political_content:
+					hasConfirmedNoEuPoliticalContent,
 			} )
 		);
 
