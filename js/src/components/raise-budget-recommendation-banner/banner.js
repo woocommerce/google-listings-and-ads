@@ -65,11 +65,12 @@ const RAISE_BUDGET_RECOMMENDATION_BANNER_CONTEXT =
 const Banner = ( { onBannerDismissed } ) => {
 	const { campaigns: recommendedCampaigns } = useRaiseBudgetRecommendations();
 	const { data: allCampaigns } = useAdsCampaigns();
+
 	// Order recommendations by current budget amount in descending order.
 	const orderedRecommendedCampaigns = recommendedCampaigns.sort(
 		( a, b ) =>
-			b.details.campaign_budget_recommendation.current_budget_amount -
-			a.details.campaign_budget_recommendation.current_budget_amount
+			b?.details?.campaign_budget_recommendation?.current_budget_amount -
+			a?.details?.campaign_budget_recommendation?.current_budget_amount
 	);
 	const recommendedCampaign = orderedRecommendedCampaigns?.[ 0 ] || {};
 	const { campaign_id, campaign_name } = recommendedCampaign;
@@ -81,6 +82,12 @@ const Banner = ( { onBannerDismissed } ) => {
 		recommendedCampaign?.details?.campaign_budget_recommendation?.budget_options?.find(
 			( { level } ) => level.toLowerCase() === 'current'
 		)?.metrics;
+	const hasRecommendedMetrics =
+		recommendedCampaignMetrics &&
+		Object.keys( recommendedCampaignMetrics ).length > 0;
+	const hasCurrentMetrics =
+		currentCampaignMetrics &&
+		Object.keys( currentCampaignMetrics ).length > 0;
 
 	// Check if the campaign with the given ID exists in the list of all campaigns.
 	const existingCampaign = allCampaigns?.find(
@@ -88,22 +95,18 @@ const Banner = ( { onBannerDismissed } ) => {
 	);
 
 	useEffect( () => {
-		if (
-			existingCampaign &&
-			recommendedCampaignMetrics &&
-			currentCampaignMetrics
-		) {
+		if ( existingCampaign && hasRecommendedMetrics && hasCurrentMetrics ) {
 			recordGlaEvent( 'gla_raise_budget_recommendation_banner_shown', {
 				context: RAISE_BUDGET_RECOMMENDATION_BANNER_CONTEXT,
 			} );
 		}
-	}, [
-		existingCampaign,
-		recommendedCampaignMetrics,
-		currentCampaignMetrics,
-	] );
+	}, [ existingCampaign, hasRecommendedMetrics, hasCurrentMetrics ] );
 
-	if ( ! existingCampaign ) {
+	if (
+		! existingCampaign ||
+		! hasRecommendedMetrics ||
+		! hasCurrentMetrics
+	) {
 		return null;
 	}
 
@@ -143,6 +146,10 @@ const Banner = ( { onBannerDismissed } ) => {
 	const conversionValueIncrease =
 		recommendedCampaignMetrics.conversions_value -
 		currentCampaignMetrics.conversions_value;
+
+	if ( percentageIncrease <= 0 || conversionValueIncrease <= 0 ) {
+		return null;
+	}
 
 	return (
 		<Notice
