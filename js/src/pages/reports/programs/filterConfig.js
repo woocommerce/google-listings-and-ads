@@ -70,6 +70,10 @@ export const createProgramsFilterConfig = () => {
 	};
 
 	async function getLabels( param ) {
+		if ( param === undefined ) {
+			return [];
+		}
+
 		// Get program id(s) from query parameter.
 		const ids = new Set( getIdsFromQuery( param ) );
 		let programs;
