@@ -12,7 +12,6 @@ import { getHistory } from '@woocommerce/navigation';
 import { getEditCampaignUrl } from '~/utils/urls';
 import { recordGlaEvent } from '~/utils/tracks';
 import DeltaValue from '~/components/delta-value';
-import useBudgetMetrics from '~/hooks/useBudgetMetrics';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import Badge from '~/components/badge';
 import AppButton from '~/components/app-button';
@@ -66,29 +65,48 @@ const RAISE_BUDGET_RECOMMENDATION_BANNER_CONTEXT =
 const Banner = ( { onBannerDismissed } ) => {
 	const { campaigns: recommendedCampaigns } = useRaiseBudgetRecommendations();
 	const { data: allCampaigns } = useAdsCampaigns();
+
 	// Order recommendations by current budget amount in descending order.
 	const orderedRecommendedCampaigns = recommendedCampaigns.sort(
 		( a, b ) =>
-			b.details.campaign_budget_recommendation.current_budget_amount -
-			a.details.campaign_budget_recommendation.current_budget_amount
+			b?.details?.campaign_budget_recommendation?.current_budget_amount -
+			a?.details?.campaign_budget_recommendation?.current_budget_amount
 	);
 	const recommendedCampaign = orderedRecommendedCampaigns?.[ 0 ] || {};
 	const { campaign_id, campaign_name } = recommendedCampaign;
-	const campaign = allCampaigns?.find( ( el ) => el.id === campaign_id );
-	const { data: budgetMetricsData } = useBudgetMetrics(
-		campaign?.targeted_locations,
-		campaign?.amount
+	const recommendedCampaignMetrics =
+		recommendedCampaign?.details?.campaign_budget_recommendation?.budget_options?.find(
+			( { level } ) => level.toLowerCase() === 'recommended'
+		)?.metrics;
+	const currentCampaignMetrics =
+		recommendedCampaign?.details?.campaign_budget_recommendation?.budget_options?.find(
+			( { level } ) => level.toLowerCase() === 'current'
+		)?.metrics;
+	const hasRecommendedMetrics =
+		recommendedCampaignMetrics &&
+		Object.keys( recommendedCampaignMetrics ).length > 0;
+	const hasCurrentMetrics =
+		currentCampaignMetrics &&
+		Object.keys( currentCampaignMetrics ).length > 0;
+
+	// Check if the campaign with the given ID exists in the list of all campaigns.
+	const existingCampaign = allCampaigns?.find(
+		( el ) => el.id === campaign_id
 	);
 
 	useEffect( () => {
-		if ( campaign && budgetMetricsData ) {
+		if ( existingCampaign && hasRecommendedMetrics && hasCurrentMetrics ) {
 			recordGlaEvent( 'gla_raise_budget_recommendation_banner_shown', {
 				context: RAISE_BUDGET_RECOMMENDATION_BANNER_CONTEXT,
 			} );
 		}
-	}, [ campaign, budgetMetricsData ] );
+	}, [ existingCampaign, hasRecommendedMetrics, hasCurrentMetrics ] );
 
-	if ( ! campaign || ! budgetMetricsData ) {
+	if (
+		! existingCampaign ||
+		! hasRecommendedMetrics ||
+		! hasCurrentMetrics
+	) {
 		return null;
 	}
 
@@ -119,19 +137,19 @@ const Banner = ( { onBannerDismissed } ) => {
 		);
 	};
 
-	const recommendedCampaignMetrics =
-		recommendedCampaign?.details?.campaign_budget_recommendation?.budget_options?.find(
-			( { level } ) => level.toLowerCase() === 'recommended'
-		)?.metrics;
 	const percentageIncrease = Math.round(
 		( ( recommendedCampaignMetrics.conversions -
-			budgetMetricsData.metrics.conversions ) /
-			budgetMetricsData.metrics.conversions ) *
+			currentCampaignMetrics.conversions ) /
+			currentCampaignMetrics.conversions ) *
 			100
 	);
 	const conversionValueIncrease =
 		recommendedCampaignMetrics.conversions_value -
-		budgetMetricsData.metrics.conversionsValue;
+		currentCampaignMetrics.conversions_value;
+
+	if ( percentageIncrease <= 0 || conversionValueIncrease <= 0 ) {
+		return null;
+	}
 
 	return (
 		<Notice
@@ -185,7 +203,7 @@ const Banner = ( { onBannerDismissed } ) => {
 							<span>
 								<DeltaValue
 									amount={ conversionValueIncrease }
-									compactNotation
+									isPrice
 								/>
 							</span>
 

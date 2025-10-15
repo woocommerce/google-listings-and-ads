@@ -15,8 +15,8 @@ import RaiseBudgetRecommendationBanner from './index';
 import usePreference from '~/hooks/usePreference';
 import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
 import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
-import useBudgetMetrics from '~/hooks/useBudgetMetrics';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
+import mockedRecommendedCampaigns from '../../../../tests/mocks/ads/recommendations/raise-buget-recommendations.json';
 
 jest.mock( '@woocommerce/components', () => ( {
 	...jest.requireActual( '@woocommerce/components' ),
@@ -67,8 +67,10 @@ jest.mock( '~/hooks/useRaiseBudgetRecommendations', () =>
 	jest.fn().mockName( 'useRaiseBudgetRecommendations' )
 );
 
-jest.mock( '~/hooks/useBudgetMetrics', () =>
-	jest.fn().mockName( 'useBudgetMetrics' )
+jest.mock( '~/hooks/useAdsCurrency', () =>
+	jest.fn().mockReturnValue( {
+		formatAmount: jest.fn( ( amount ) => `$${ amount.toFixed( 2 ) }` ),
+	} )
 );
 
 jest.mock( '~/utils/urls', () => ( {
@@ -79,133 +81,9 @@ jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn(),
 } ) );
 
-const mockedRecommendedCampaigns = [
-	{
-		id: 1,
-		type: 'CAMPAIGN_BUDGET',
-		resource_name:
-			'customers/{customer_id}/recommendations/{recommendation_id}',
-		campaign_id: 1,
-		campaign_name: 'Campaign Name',
-		campaign_status: 'ENABLED',
-		customer_id: 11,
-		details: {
-			campaign_budget_recommendation: {
-				current_budget_amount: 20,
-				recommended_budget_amount: 31,
-				budget_options: [
-					{
-						metrics: {
-							cost: '139.964209',
-							conversions: 4,
-							conversions_value: 545.7408447265625,
-						},
-						budget_amount: '20',
-						level: 'current',
-					},
-					{
-						metrics: {
-							cost: '181.971258',
-							conversions: 4.828944206237793,
-							conversions_value: 622.085021972656,
-						},
-						budget_amount: '26',
-						level: 'Low',
-					},
-					{
-						metrics: {
-							cost: '216961447',
-							conversions: 5.398608684539795,
-							conversions_value: 679.2435913085938,
-						},
-						budget_amount: '31',
-						level: 'Recommended',
-					},
-					{
-						metrics: {
-							cost: '251946304',
-							conversions: 5.776357173919678,
-							conversions_value: 731.874328613281,
-						},
-						budget_amount: '36',
-						level: 'High',
-					},
-				],
-			},
-		},
-		last_synced: '2024-06-01T12:34:56Z',
-	},
-	{
-		id: 2,
-		type: 'CAMPAIGN_BUDGET',
-		resource_name:
-			'customers/{customer_id}/recommendations/{recommendation_id}',
-		campaign_id: 2,
-		campaign_name: 'Campaign Name 2',
-		campaign_status: 'ENABLED',
-		customer_id: 22,
-		details: {
-			campaign_budget_recommendation: {
-				current_budget_amount: 10,
-				recommended_budget_amount: 21,
-				budget_options: [
-					{
-						metrics: {
-							cost: '139.964209',
-							conversions: 4,
-							conversions_value: 545.7408447265625,
-						},
-						budget_amount: '20',
-						level: 'current',
-					},
-					{
-						metrics: {
-							cost: '181.971258',
-							conversions: 4.828944206237793,
-							conversions_value: 622.085021972656,
-						},
-						budget_amount: '26',
-						level: 'Low',
-					},
-					{
-						metrics: {
-							cost: '216961447',
-							conversions: 5.398608684539795,
-							conversions_value: 679.2435913085938,
-						},
-						budget_amount: '31',
-						level: 'Recommended',
-					},
-					{
-						metrics: {
-							cost: '251946304',
-							conversions: 5.776357173919678,
-							conversions_value: 731.874328613281,
-						},
-						budget_amount: '36',
-						level: 'High',
-					},
-				],
-			},
-		},
-		last_synced: '2024-06-01T12:34:56Z',
-	},
-];
-
-const mockedBudgetMetricsData = {
-	currency: 'USD',
-	budget: 11,
-	country: 'MU',
-	metrics: {
-		cost: 77,
-		conversions: 2,
-		conversions_value: 78.690507740539033,
-	},
-};
-
 const mockedAdsCampaigns = [
 	{
-		id: 1,
+		id: 23022682227,
 		name: 'Campaign 2025-08-05 16:37:24',
 		status: 'enabled',
 		type: 'performance_max',
@@ -214,8 +92,8 @@ const mockedAdsCampaigns = [
 		targeted_locations: [ 'MU' ],
 	},
 	{
-		id: 2,
-		name: 'Campaign 2025-08-07 13:55:56',
+		id: 22978452364,
+		name: 'Campaign 2025-09-02 10:00:52',
 		status: 'enabled',
 		type: 'performance_max',
 		amount: 159.84,
@@ -228,7 +106,6 @@ describe( 'RaiseBudgetRecommendationBanner', () => {
 	beforeEach( () => {
 		useDispatch.mockReturnValue( { set: () => null } );
 		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: true } );
-		useBudgetMetrics.mockReturnValue( { data: mockedBudgetMetricsData } );
 		useAdsCampaigns.mockReturnValue( { data: mockedAdsCampaigns } );
 	} );
 
@@ -296,13 +173,83 @@ describe( 'RaiseBudgetRecommendationBanner', () => {
 		expect( container.firstChild ).toBeNull();
 	} );
 
-	it( 'renders nothing if no budget metrics', () => {
+	it( 'renders the correct values in the banner', () => {
 		usePreference.mockReturnValue( {} );
 		useRaiseBudgetRecommendations.mockReturnValue( {
 			campaigns: mockedRecommendedCampaigns,
 			hasFinishedResolution: true,
 		} );
-		useBudgetMetrics.mockReturnValue( { data: null } );
+		render( <RaiseBudgetRecommendationBanner /> );
+
+		expect(
+			screen.getByText(
+				'You missed conversion value in “Campaign 2025-09-02 10:00:52” campaign because you’re limited by budget. Increasing your budget can result in more conversion value.'
+			)
+		).toBeInTheDocument();
+		expect( screen.getByText( '+50%' ) ).toBeInTheDocument();
+		expect( screen.getByText( '+$1275.00' ) ).toBeInTheDocument();
+	} );
+
+	it( 'does not render the banner if there is negative conversion', () => {
+		usePreference.mockReturnValue( {} );
+		useRaiseBudgetRecommendations.mockReturnValue( {
+			campaigns: [
+				{
+					id: 1,
+					type: 'CAMPAIGN_BUDGET',
+					resource_name: 'customers/123/recommendations/1',
+					campaign_id: 22978452364,
+					campaign_name: 'Campaign 2025-09-02 10:00:52',
+					campaign_status: 'enabled',
+					details: {
+						campaign_budget_recommendation: {
+							current_budget_amount: 170,
+							recommended_budget_amount: 255,
+							budget_options: [
+								{
+									budget_amount: 170,
+									level: 'Current',
+									metrics: {
+										cost: 2190,
+										conversions: 8,
+										conversions_value: 3020,
+									},
+								},
+								{
+									budget_amount: 221,
+									level: 'Low',
+									metrics: {
+										cost: 1547,
+										conversions: 5.2000000000000002,
+										conversions_value: 1723.8,
+									},
+								},
+								{
+									budget_amount: 255,
+									level: 'Recommended',
+									metrics: {
+										cost: 1785,
+										conversions: 6,
+										conversions_value: 2295,
+									},
+								},
+								{
+									budget_amount: 306,
+									level: 'High',
+									metrics: {
+										cost: 2142,
+										conversions: 7.2000000000000002,
+										conversions_value: 3304.8000000000002,
+									},
+								},
+							],
+						},
+					},
+					last_synced: '2025-10-14T07:15:41+00:00',
+				},
+			],
+			hasFinishedResolution: true,
+		} );
 		const { container } = render( <RaiseBudgetRecommendationBanner /> );
 		expect( container.firstChild ).toBeNull();
 	} );
@@ -339,7 +286,7 @@ describe( 'RaiseBudgetRecommendationBanner', () => {
 		);
 
 		expect( setMock ).toHaveBeenCalled();
-		expect( getEditCampaignUrl ).toHaveBeenCalledWith( 1 );
-		expect( historyPush ).toHaveBeenCalledWith( '/edit/1' );
+		expect( getEditCampaignUrl ).toHaveBeenCalledWith( 22978452364 );
+		expect( historyPush ).toHaveBeenCalledWith( '/edit/22978452364' );
 	} );
 } );

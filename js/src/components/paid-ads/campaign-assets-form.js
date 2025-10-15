@@ -85,18 +85,19 @@ function injectDailyBudget( values, budgetRecommendation ) {
 	} );
 }
 
-function injectUpliftData( budgetRecommendation, baseBudgetRecommendation ) {
+function injectUpliftData( budgetRecommendation ) {
+	const currentConversionsValue =
+		budgetRecommendation?.current?.metrics?.conversionsValue;
+
+	if ( ! currentConversionsValue ) {
+		return budgetRecommendation;
+	}
+
 	const validLevelKeys = [ 'high', 'recommended', 'low' ];
 
 	validLevelKeys.forEach( ( level ) => {
 		// Check if budget recommendation and base budget recommendation have valid levels and `conversionsValue` is present within the metrics.
-		if (
-			budgetRecommendation?.[ level ] &&
-			baseBudgetRecommendation?.[ level ] &&
-			budgetRecommendation[ level ]?.metrics?.conversionsValue
-		) {
-			const baseConversionsValue =
-				baseBudgetRecommendation[ level ].metrics.conversionsValue;
+		if ( budgetRecommendation?.[ level ]?.metrics?.conversionsValue ) {
 			const newConversionsValue =
 				budgetRecommendation[ level ].metrics.conversionsValue;
 
@@ -106,11 +107,11 @@ function injectUpliftData( budgetRecommendation, baseBudgetRecommendation ) {
 				{
 					enumerable: true,
 					value:
-						baseConversionsValue > 0
+						currentConversionsValue > 0
 							? round(
 									( ( newConversionsValue -
-										baseConversionsValue ) /
-										baseConversionsValue ) *
+										currentConversionsValue ) /
+										currentConversionsValue ) *
 										100
 							  )
 							: null,
