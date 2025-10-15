@@ -58,7 +58,7 @@ class TourController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_tours_read_callback(): callable {
-		return function ( Request $request ) {
+		return function () {
 			try {
 				return new Response( $this->get_tours() );
 			} catch ( Exception $e ) {
