@@ -21,10 +21,6 @@ import { FREE_LISTINGS_PROGRAM_ID, CAMPAIGN_TYPE_PMAX } from '~/constants';
 import AddPaidCampaignButton from '~/components/paid-ads/add-paid-campaign-button';
 import ProgramToggle from './program-toggle';
 import FreeListingsDisabledToggle from './free-listings-disabled-toggle';
-import CampaignAssetsTour from '~/components/tours/campaign-assets-tour';
-
-const PROGRAMS_TABLE_CARD_CLASS_NAME = 'gla-all-programs-table-card';
-const CAMPAIGN_EDIT_BUTTON_CLASS_NAME = 'gla-campaign-edit-button';
 
 const headers = [
 	{
@@ -85,18 +81,6 @@ const AllProgramsTableCard = ( props ) => {
 		return <AppSpinner />;
 	}
 
-	const pmaxCampaigns = adsCampaignsData.filter(
-		( { type } ) => type === CAMPAIGN_TYPE_PMAX
-	);
-	let campaignAssetsTour = null;
-
-	if ( pmaxCampaigns.length ) {
-		const selector = `.${ PROGRAMS_TABLE_CARD_CLASS_NAME } .${ CAMPAIGN_EDIT_BUTTON_CLASS_NAME }`;
-		campaignAssetsTour = (
-			<CampaignAssetsTour referenceElementCssSelector={ selector } />
-		);
-	}
-
 	const data = [
 		{
 			id: FREE_LISTINGS_PROGRAM_ID,
@@ -130,7 +114,7 @@ const AllProgramsTableCard = ( props ) => {
 
 	const tableCard = (
 		<AppTableCard
-			className={ PROGRAMS_TABLE_CARD_CLASS_NAME }
+			className="gla-all-programs-table-card"
 			title={ __( 'Programs', 'google-listings-and-ads' ) }
 			actions={
 				<AddPaidCampaignButton
@@ -142,7 +126,7 @@ const AllProgramsTableCard = ( props ) => {
 			rows={ data.map( ( el ) => {
 				const isFreeListings = el.id === FREE_LISTINGS_PROGRAM_ID;
 				const editButtonClassName = classnames( {
-					[ CAMPAIGN_EDIT_BUTTON_CLASS_NAME ]:
+					'gla-campaign-edit-button':
 						! isFreeListings && ! el.disabledEdit,
 				} );
 
@@ -180,12 +164,7 @@ const AllProgramsTableCard = ( props ) => {
 		/>
 	);
 
-	return (
-		<>
-			{ campaignAssetsTour }
-			{ tableCard }
-		</>
-	);
+	return tableCard;
 };
 
 export default AllProgramsTableCard;

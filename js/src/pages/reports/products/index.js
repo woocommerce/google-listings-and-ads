@@ -124,7 +124,6 @@ const ProductsReportPage = () => {
 		<>
 			<DifferentCurrencyNotice context="reports-products" />
 			<MainTabNav />
-			<RebrandingTour />
 			<ReportsNavigation />
 			{ loaded ? (
 				<ProductsReport hasPaidSource={ hasPaidSource } />

@@ -104,7 +104,6 @@ const ProgramsReport = () => {
 		<>
 			<DifferentCurrencyNotice context={ trackEventId } />
 			<MainTabNav />
-			<RebrandingTour />
 			<ReportsNavigation />
 			<ProgramsReportFilters
 				query={ getQuery() }

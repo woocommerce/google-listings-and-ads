@@ -50,7 +50,6 @@ const ProductFeed = () => {
 		<>
 			<ExperienceRatingBanner />
 			<MainTabNav />
-			<RebrandingTour />
 			{ isSubmissionSuccessOpen && <SubmissionSuccessGuide /> }
 			{ canCESPromptOpen && (
 				<CustomerEffortScorePrompt

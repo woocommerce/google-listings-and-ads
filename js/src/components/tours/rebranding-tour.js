@@ -11,7 +11,7 @@ import { TourKit } from '@woocommerce/components';
 import useTour from '~/hooks/useTour';
 import './rebranding-tour.scss';
 
-export const TOUR_ID = 'rebranding-tour';
+const TOUR_ID = 'rebranding-tour';
 
 /**
  * Renders the tour for notifying about the new extension rebranding

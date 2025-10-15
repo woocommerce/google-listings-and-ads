@@ -24,10 +24,10 @@ import EditPaidAdsCampaign from '~/pages/edit-paid-ads-campaign';
 import CreatePaidAdsCampaign from '~/pages/create-paid-ads-campaign';
 import { CTA_CREATE_ANOTHER_CAMPAIGN, CTA_CONFIRM } from './constants';
 import { recordGlaEvent } from '~/utils/tracks';
-import RebrandingTour from '~/components/tours/rebranding-tour';
 import PMaxImproveAssetsBanner from '~/components/pmax-improve-assets-banner';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
 import GoogleTagGatewayTour from '~/components/tours/google-tag-gateway-tour';
+import { Slot, Fill } from '~/components/tours';
 import './index.scss';
 
 /**
@@ -91,7 +91,6 @@ const Dashboard = () => {
 				<ExperienceRatingBanner />
 				<DifferentCurrencyNotice context="dashboard" />
 				<MainTabNav />
-				<RebrandingTour />
 				<GoogleTagGatewayTour />
 				<div className="gla-dashboard__filter">
 					<AppDateRangeFilterPicker
@@ -128,6 +127,8 @@ const Dashboard = () => {
 					eventContext={ GUIDE_NAMES.CAMPAIGN_CREATION_SUCCESS }
 				/>
 			) }
+
+			<Slot />
 		</>
 	);
 };

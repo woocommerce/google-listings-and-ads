@@ -8,22 +8,27 @@ import GridiconTrending from 'gridicons/dist/trending';
 /**
  * Internal dependencies
  */
+import { CAMPAIGN_TYPE_PMAX } from '~/constants';
+import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import useTour from '~/hooks/useTour';
 import './campaign-assets-tour.scss';
 
-export const TOUR_ID = 'dashboard-feature--campaign-assets';
+const TOUR_ID = 'dashboard-feature--campaign-assets';
+const DESKTOP_CSS_SELECTOR =
+	'.gla-all-programs-table-card .gla-campaign-edit-button';
 
 /**
  * Renders the tour for notifying the new feature of campaign assets
  * if its flag is not yet set to hidden.
- *
- * @param {Object} props React props
- * @param {string} props.referenceElementCssSelector The CSS selector to find the first DOM to render this tour nearby.
  */
-export default function CampaignAssetsTour( { referenceElementCssSelector } ) {
+export default function CampaignAssetsTour() {
+	const { data: adsCampaignsData } = useAdsCampaigns();
+	const pmaxCampaigns = adsCampaignsData.filter(
+		( { type } ) => type === CAMPAIGN_TYPE_PMAX
+	);
 	const { tourChecked, setTourChecked } = useTour( TOUR_ID );
 
-	if ( tourChecked ) {
+	if ( tourChecked || ! pmaxCampaigns.length ) {
 		return null;
 	}
 
@@ -31,7 +36,7 @@ export default function CampaignAssetsTour( { referenceElementCssSelector } ) {
 		steps: [
 			{
 				referenceElements: {
-					desktop: referenceElementCssSelector,
+					desktop: DESKTOP_CSS_SELECTOR,
 				},
 				meta: {
 					heading: (

@@ -4,6 +4,11 @@
 import { createHigherOrderComponent } from '@wordpress/compose';
 
 /**
+ * Internal dependencies
+ */
+import Tours from '~/components/tours';
+
+/**
  * A higher-order component for wrapping the app shell on top of the GLA admin page.
  * Cross-page shared things could be handled here.
  *
@@ -15,6 +20,8 @@ const withAdminPageShell = createHigherOrderComponent(
 			// gla-admin-page is for scoping particular styles to a GLA admin page.
 			<div className="gla-admin-page">
 				<Page { ...props } />
+
+				<Tours />
 			</div>
 		);
 	},

@@ -65,7 +65,6 @@ const Settings = () => {
 		<div className={ pageClassName }>
 			<ExperienceRatingBanner />
 			<MainTabNav />
-			<RebrandingTour />
 			<ImproveDataStrengthSection />
 			<ContactInformationPreview />
 			<SetupTaxRate />
