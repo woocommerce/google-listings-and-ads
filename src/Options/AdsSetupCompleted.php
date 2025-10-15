@@ -30,6 +30,7 @@ class AdsSetupCompleted implements OptionsAwareInterface, Registerable, Service 
 			'woocommerce_gla_ads_setup_completed',
 			function () {
 				$this->set_completed_timestamp();
+				$this->enable_gtg_and_complete_tour();
 			}
 		);
 	}
@@ -39,5 +40,22 @@ class AdsSetupCompleted implements OptionsAwareInterface, Registerable, Service 
 	 */
 	protected function set_completed_timestamp() {
 		$this->options->update( self::OPTION, time() );
+	}
+
+	/**
+	 * Enables Google Tag Gateway and mark the tour as completed.
+	 */
+	protected function enable_gtg_and_complete_tour() {
+		$is_gtg_configured = $this->options->get( OptionsInterface::ADS_GTG_ENABLED );
+
+		if ( null === $is_gtg_configured ) {
+			$this->options->update( OptionsInterface::ADS_GTG_ENABLED, true );
+		}
+
+		$tours = $this->options->get( OptionsInterface::TOURS, [] );
+		if ( is_array( $tours ) ) {
+			$tours['google-tag-gateway-tour'] = true;
+			$this->options->update( OptionsInterface::TOURS, $tours );
+		}
 	}
 }

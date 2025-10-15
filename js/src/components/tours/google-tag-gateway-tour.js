@@ -13,12 +13,31 @@ import useTour from '~/hooks/useTour';
 import { getSettingsUrl } from '~/utils/urls';
 import { TOUR_ID as CAMPAIGN_ASSETS_TOUR_ID } from './campaign-assets-tour';
 import { TOUR_ID as REBRANDING_TOUR_ID } from './rebranding-tour';
+import { recordGlaEvent } from '~/utils/tracks';
 import './google-tag-gateway-tour.scss';
 
 const TOUR_ID = 'google-tag-gateway-tour';
+const CONTEXT = 'google_tag_gateway_tour';
+
+/**
+ * When the tour is shown.
+ *
+ * @event gla_google_tag_gateway_tour_shown
+ * @property {string} context The tour context, e.g. "google_tag_gateway_tour"
+ */
+
+/**
+ * When the tour is closed.
+ *
+ * @event gla_google_tag_gateway_tour_close_button_click
+ * @property {string} context The tour context, e.g. "google_tag_gateway_tour"
+ * @property {string} source The source of the close event, e.g. "done-btn" | "close-btn" | "skip-btn"
+ */
 
 /**
  * Renders the tour for notifying about the new Google Tag Gateway feature.
+ * @fires gla_google_tag_gateway_tour_shown with `{ context: "google_tag_gateway_tour" }`
+ * @fires gla_google_tag_gateway_tour_close_button_click with `{ context: "google_tag_gateway_tour", source: "done-btn" | "close-btn" | "skip-btn" }`
  */
 export default function GoogleTagGatewayTour() {
 	const {
@@ -91,10 +110,22 @@ export default function GoogleTagGatewayTour() {
 		options: {
 			classNames: 'gla-admin-page,gla-google-tag-gateway-tour',
 			effects: { overlay: false },
+			callbacks: {
+				onStepView: () => {
+					recordGlaEvent( 'gla_google_tag_gateway_tour_shown', {
+						context: CONTEXT,
+					} );
+				},
+			},
 		},
 		placement: 'bottom-end',
 		closeHandler: ( steps, currentStepIndex, source ) => {
 			setTourChecked( true );
+
+			recordGlaEvent( 'gla_google_tag_gateway_tour_close_button_click', {
+				context: CONTEXT,
+				source,
+			} );
 
 			if ( source === 'done-btn' ) {
 				getHistory().push( getSettingsUrl() );

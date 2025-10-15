@@ -434,7 +434,8 @@ When a documentation link is clicked.
 - [`ProductStatusHelpPopover`](../../js/src/pages/product-feed/product-statistics/product-status-help-popover.js#L16) with `{ context: 'product-feed', link_id: 'product-sync-statuses', href: 'https://support.google.com/merchants/answer/160491' }`
 - [`ReclaimUrlCard`](../../js/src/components/google-mc-account-card/reclaim-url-card/index.js#L42) with `{ context: 'setup-mc', link_id: 'claim-url', href: 'https://support.google.com/merchants/answer/176793' }`
 - [`RequestFullAccessGoogleAccountCard`](../../js/src/components/google-account-card/request-full-access-google-account-card.js#L26) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions' }`
-- [`SetupEnhancedConversions`](../../js/src/pages/settings/enhanced-conversions/setup-enhanced-conversions.js#L24) with `{ context: 'setup-enhanced-conversions', link_id: 'enhanced-conversions-read-more', href: 'https://support.google.com/google-ads/answer/9888656' }`
+- [`SetupEnhancedConversions`](../../js/src/pages/settings/setup-enhanced-conversions/index.js#L28) with `{ context: 'setup-enhanced-conversions', link_id: 'enhanced-conversions-read-more', href: 'https://support.google.com/google-ads/answer/9888656' }`
+- [`SetupGoogleTagGateway`](../../js/src/pages/settings/setup-google-tag-gateway.js#L28) with `{ context: 'setup-google-tag-gateway', link_id: 'google-tag-gateway-read-more', href: 'https://support.google.com/google-ads/answer/16214371' }`
 - [`ShippingRateSection`](../../js/src/components/shipping-rate-section/shipping-rate-section.js#L25)
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
@@ -575,6 +576,25 @@ Clicking on a Google Merchant Center link.
 - [`FreePerformanceCard`](../../js/src/pages/dashboard/summary-section/index.js#L23) with `{ context: 'dashboard' }`
 - [`MetricNumber`](../../js/src/pages/reports/metric-number.js#L42) with `{ context: 'reports' }`
 
+### [`gla_google_tag_gateway_tour_close_button_click`](../../js/src/components/tours/google-tag-gateway-tour.js#L26)
+When the tour is closed.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The tour context, e.g. "google_tag_gateway_tour"
+`source` | `string` | The source of the close event, e.g. "done-btn" \| "close-btn" \| "skip-btn"
+#### Emitters
+- [`exports`](../../js/src/components/tours/google-tag-gateway-tour.js#L39) with `{ context: "google_tag_gateway_tour", source: "done-btn" | "close-btn" | "skip-btn" }`
+
+### [`gla_google_tag_gateway_tour_shown`](../../js/src/components/tours/google-tag-gateway-tour.js#L19)
+When the tour is shown.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The tour context, e.g. "google_tag_gateway_tour"
+#### Emitters
+- [`exports`](../../js/src/components/tours/google-tag-gateway-tour.js#L39) with `{ context: "google_tag_gateway_tour" }`
+
 ### [`gla_help_click`](../../js/src/components/help-icon-button/index.js#L13)
 "Help" button is clicked.
 #### Properties
@@ -660,7 +680,7 @@ Clicking on the "Yes, I want a new account" button in the warning modal for crea
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
 - [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
-- [`Dashboard`](../../js/src/pages/dashboard/index.js#L35) when CES modal is closed.
+- [`Dashboard`](../../js/src/pages/dashboard/index.js#L36) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L239) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
@@ -675,7 +695,7 @@ A modal is closed.
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
 - [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
-- [`Dashboard`](../../js/src/pages/dashboard/index.js#L35) when CES modal is closed.
+- [`Dashboard`](../../js/src/pages/dashboard/index.js#L36) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L239) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
@@ -772,7 +792,7 @@ When the banner is shown.
 | ---- | ---- | ----------- |
 `context` | `string` | The context in which the banner is shown. Set to 'pmax_assets_improvements_banner'.
 #### Emitters
-- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L63) when the banner is displayed.
+- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L62) when the banner is displayed.
 
 ### [`gla_pmax_assets_improvements_dismiss_clicked`](../../js/src/components/pmax-improve-assets-banner/banner.js#L36)
 When the banner is dismissed by clicking the "Dismiss" button or the close icon.
@@ -782,7 +802,7 @@ When the banner is dismissed by clicking the "Dismiss" button or the close icon.
 `context` | `string` | The context in which the banner was dismissed. Set to 'pmax_assets_improvements_banner'.
 `campaign_id` | `number` | The ID of the PMAX campaign for which the banner was dismissed.
 #### Emitters
-- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L63) when the banner is dismissed.
+- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L62) when the banner is dismissed.
 
 ### [`gla_pmax_assets_improvements_improve_assets_clicked`](../../js/src/components/pmax-improve-assets-banner/banner.js#L28)
 When the "Improve Assets" button is clicked.
@@ -792,7 +812,7 @@ When the "Improve Assets" button is clicked.
 `context` | `string` | The context in which the banner is shown. Set to 'pmax_assets_improvements_banner'.
 `campaign_id` | `number` | The ID of the PMAX campaign for which assets are being improved.
 #### Emitters
-- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L63) when the "Improve Assets" button is clicked.
+- [`Banner`](../../js/src/components/pmax-improve-assets-banner/banner.js#L62) when the "Improve Assets" button is clicked.
 
 ### [`gla_price_benchmarks_change_price_clicked`](../../js/src/pages/price-benchmark/change-price.js#L19)
 
