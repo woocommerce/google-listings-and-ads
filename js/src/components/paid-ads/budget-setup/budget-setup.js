@@ -99,6 +99,10 @@ export default function BudgetSetup( { hideRecommendations = false } ) {
 
 	const { help, ...amountInputProps } = getInputProps( 'amount' );
 
+	// The current level metrics from raise budget recommendations.
+	const raiseBudgetCurrentLevelMetrics =
+		budgetRecommendation?.current?.metrics;
+
 	const options = [ 'high', 'recommended', 'low' ].reduce( ( acc, level ) => {
 		const item = hideRecommendations
 			? null
@@ -197,7 +201,10 @@ export default function BudgetSetup( { hideRecommendations = false } ) {
 					/>
 					<BudgetMetrics
 						formatAmount={ formatAmount }
-						metrics={ currentMetrics?.metrics }
+						metrics={
+							raiseBudgetCurrentLevelMetrics ||
+							currentMetrics?.metrics
+						}
 					/>
 					<div className={ styles.helper }>
 						<span>

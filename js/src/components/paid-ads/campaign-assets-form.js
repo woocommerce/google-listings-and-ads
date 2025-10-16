@@ -189,10 +189,7 @@ export default function CampaignAssetsForm( {
 
 	const selectedBudgetRecommendation =
 		isEditing && raiseBudgetRecommendations.length
-			? injectUpliftData(
-					raiseBudgetRecommendations[ 0 ],
-					budgetRecommendation
-			  )
+			? injectUpliftData( raiseBudgetRecommendations[ 0 ] )
 			: budgetRecommendation;
 
 	const extendAdapter = ( formContext ) => {
