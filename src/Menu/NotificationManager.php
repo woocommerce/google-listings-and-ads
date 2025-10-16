@@ -50,6 +50,7 @@ class NotificationManager implements ContainerAwareInterface, Service, Registera
 		// all other menu items have been registered by WooCommerce and other plugins.
 		add_action( 'admin_menu', [ $this, 'display_aggregated_notification_pill' ], 20 );
 
+		add_filter( 'google_for_woocommerce_admin_menu_notification_count', [ $this, 'performance_max_ad_strength_count' ] );
 		add_filter( 'google_for_woocommerce_admin_menu_notification_count', [ $this, 'raise_budget_recommendations_count' ] );
 	}
 
@@ -151,7 +152,7 @@ class NotificationManager implements ContainerAwareInterface, Service, Registera
 		// Initialize the count and apply the filter to get the total aggregated count.
 		// All parts of the plugin (and other plugins) that need to add to the notification
 		// should hook into this filter.
-		$total_notification_count = apply_filters( 'google_for_woocommerce_admin_menu_notification_count', $this->initial_notification_count() );
+		$total_notification_count = apply_filters( 'google_for_woocommerce_admin_menu_notification_count', 0 );
 
 		// Only proceed if there's at least one notification.
 		if ( $total_notification_count > 0 ) {
@@ -194,11 +195,11 @@ class NotificationManager implements ContainerAwareInterface, Service, Registera
 	/**
 	 * Returns the initial notification count for the admin menu.
 	 *
+	 * @param int $count The initial count.
 	 * @return int The updated notification count, which is either 1 (if there are recommendations) or 0 (if there are no recommendations).
 	 */
-	public function initial_notification_count(): int {
+	public function performance_max_ad_strength_count( int $count ): int {
 		global $wpdb;
-		$count = 0;
 
 		$query        = $this->container->get( AdsRecommendationsService::class );
 		$ads_campaign = $this->container->get( AdsCampaign::class );
