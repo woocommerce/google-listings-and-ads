@@ -49,6 +49,7 @@ class AdsSettingsController extends BaseOptionsController {
 	protected function get_allowed_options(): array {
 		return [
 			OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED => false,
+			OptionsInterface::ADS_GTG_ENABLED => false,
 		];
 	}
 
