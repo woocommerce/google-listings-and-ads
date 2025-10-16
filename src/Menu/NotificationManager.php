@@ -49,6 +49,8 @@ class NotificationManager implements ContainerAwareInterface, Service, Registera
 		// Hook into admin_menu with a high priority (e.g., 20) to ensure
 		// all other menu items have been registered by WooCommerce and other plugins.
 		add_action( 'admin_menu', [ $this, 'display_aggregated_notification_pill' ], 20 );
+
+		add_filter( 'google_for_woocommerce_admin_menu_notification_count', [ $this, 'raise_budget_recommendations_count' ] );
 	}
 
 	/**
@@ -229,6 +231,47 @@ class NotificationManager implements ContainerAwareInterface, Service, Registera
 		}
 
 		$action_time = $preferences['woocommerce/google-listings-and-ads']['pmax-improve-assets-banner']['actionTime'];
+
+		if ( time() > $action_time + ( 30 * DAY_IN_SECONDS ) ) {
+			return ++$count;
+		}
+
+		return $count;
+	}
+
+	/**
+	 * Returns the count for Raise Budget Recommendations.
+	 *
+	 * @param int $count The initial count.
+	 * @return int The updated notification count for Raise Budget Recommendations.
+	 */
+	public function raise_budget_recommendations_count( int $count ): int {
+		global $wpdb;
+
+		$query           = $this->container->get( AdsRecommendationsService::class );
+		$recommendations = $query->get_recommendations(
+			[
+				'types'       => [
+					'CAMPAIGN_BUDGET',
+					'MARGINAL_ROI_CAMPAIGN_BUDGET',
+				],
+				'campaign_id' => 0,
+			]
+		);
+
+		if ( empty( $recommendations ) ) {
+			return $count;
+		}
+
+		// Check recommendation dates and user preference.
+		$preferences = get_user_meta( get_current_user_id(), "{$wpdb->prefix}persisted_preferences", true );
+
+		// If the user has not interacted with a recommendation yet.
+		if ( ! is_array( $preferences ) || ! isset( $preferences['woocommerce/google-listings-and-ads']['raise-budget-recommendation-banner']['actionType'] ) || ! isset( $preferences['woocommerce/google-listings-and-ads']['raise-budget-recommendation-banner']['actionTime'] ) ) {
+			return ++$count;
+		}
+
+		$action_time = $preferences['woocommerce/google-listings-and-ads']['raise-budget-recommendation-banner']['actionTime'];
 
 		if ( time() > $action_time + ( 30 * DAY_IN_SECONDS ) ) {
 			return ++$count;
