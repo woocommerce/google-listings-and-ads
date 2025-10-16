@@ -90,10 +90,6 @@ const AllProgramsTableCard = ( props ) => {
 							? programB.displayCountries.join( '-' )
 							: '';
 						break;
-					case 'title':
-						aValue = aValue ? aValue.toLowerCase() : '';
-						bValue = bValue ? bValue.toLowerCase() : '';
-						break;
 					case 'dailyBudget':
 						aValue = Number( aValue );
 						bValue = Number( bValue );
@@ -106,12 +102,21 @@ const AllProgramsTableCard = ( props ) => {
 						break;
 				}
 
-				if ( aValue < bValue ) {
-					return sortOptions.direction === 'asc' ? -1 : 1;
+				const direction = sortOptions.direction === 'asc' ? 1 : -1;
+				if (
+					typeof aValue === 'string' &&
+					typeof bValue === 'string'
+				) {
+					return (
+						String( aValue ).localeCompare( String( bValue ) ) *
+						direction
+					);
 				}
 
-				if ( aValue > bValue ) {
-					return sortOptions.direction === 'asc' ? 1 : -1;
+				if ( aValue < bValue ) {
+					return -1 * direction;
+				} else if ( aValue > bValue ) {
+					return 1 * direction;
 				}
 
 				return 0;
