@@ -50,9 +50,14 @@ const EuPoliticalContentCard = ( { context } ) => {
 								),
 							}
 						) }
-						help={ __(
-							'Required if you include EU countries in your selected locations.',
-							'google-listings-and-ads'
+						help={ createInterpolateElement(
+							__(
+								'If selected, <strong>your ads will not run in the EU</strong> unless you complete Google’s political advertiser verification.',
+								'google-listings-and-ads'
+							),
+							{
+								strong: <strong />,
+							}
 						) }
 					/>
 				</VerticalGapLayout>
