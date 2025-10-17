@@ -14,7 +14,7 @@ namespace Google\GoogleTagGatewayLibrary\Http;
 final class ServerRequestContext
 {
     /**
-     * Server set assosiative array. Noramlly the same as $_SERVER.
+     * Server set associative array. Normally the same as $_SERVER.
      *
      * @var array
      */
@@ -89,7 +89,7 @@ final class ServerRequestContext
         $headers = [];
 
         // Extra headers not prefixed with `HTTP_`
-        $extra_headers = [
+        $extraHeaders = [
             "CONTENT_TYPE" => 'content-type',
             "CONTENT_LENGTH" => 'content-length',
             "CONTENT_MD5" => 'content-md5',
@@ -110,8 +110,8 @@ final class ServerRequestContext
                 # Format header key as lowercase with `-` as word separator.
                 # For example: cache-control
                 $headerKey = strtolower(str_replace('_', '-', substr($key, 5)));
-            } elseif (isset($extra_headers[$key])) {
-                $headerKey = $extra_headers[$key];
+            } elseif (isset($extraHeaders[$key])) {
+                $headerKey = $extraHeaders[$key];
             }
 
             if (empty($headerKey) || empty($value)) {
@@ -157,7 +157,7 @@ final class ServerRequestContext
         return $geo;
     }
 
-    /** Get the tag id query parmeter from the request.  */
+    /** Get the tag id query parameter from the request.  */
     public function getTagId()
     {
         $tagId = $this->queryParams['id'] ?? '';
@@ -170,7 +170,7 @@ final class ServerRequestContext
         return $tagId;
     }
 
-    /** Get the destination query parmeter from the request.  */
+    /** Get the destination query parameter from the request.  */
     public function getDestination()
     {
         $path = $this->queryParams['s'] ?? '';
@@ -190,7 +190,7 @@ final class ServerRequestContext
         $containsQueryParameters = strpos($path, '?') !== false;
         if ($containsQueryParameters) {
             list($path, $query) = explode('?', $path, 2);
-            $path .= '?' . RequestHelper::encodeQueryString($query);
+            $path .= '?' . RequestHelper::encodeQueryParameter($query);
         }
 
         if (!empty($params)) {
@@ -202,7 +202,7 @@ final class ServerRequestContext
         return $path;
     }
 
-    /**Get the measurement path query parmaeter from the request.  */
+    /**Get the measurement path query parameter from the request.  */
     public function getMeasurementPath()
     {
         return $this->queryParams['mpath'] ?? '';

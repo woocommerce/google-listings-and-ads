@@ -1,0 +1,16 @@
+<phpunit
+        bootstrap="vendor/autoload.php"
+        backupGlobals="false"
+        processIsolation="false"
+        colors="true">
+    <testsuites>
+        <testsuite name="Google tag gateway library test suite">
+            <directory suffix=".php">./tests/phpunit/unit/</directory>
+        </testsuite>
+    </testsuites>
+    <php>
+        <ini name="error_reporting" value="32767" />
+        <ini name="display_errors" value="1" />
+        <ini name="display_startup_errors" value="1" />
+    </php>
+</phpunit>

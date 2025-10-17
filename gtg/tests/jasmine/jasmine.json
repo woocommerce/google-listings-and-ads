@@ -1,0 +1,15 @@
+{
+  "spec_dir": "tests/jasmine",
+  "spec_files": [
+    "**/*_test.ts"
+  ],
+  "helpers": [
+    "helpers/**/*.ts"
+  ],
+  "env": {
+    "failSpecWithNoExpectations": false,
+    "stopSpecOnExpectationFailure": false,
+    "stopOnSpecFailure": false,
+    "random": false
+  }
+}
