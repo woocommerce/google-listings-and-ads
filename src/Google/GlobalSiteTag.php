@@ -26,15 +26,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray
 use Google\GoogleTagGatewayLibrary\Wordpress\Adapter;
 use WC_Product;
 use WC_Countries;
-use function is_page;
-use function is_cart;
-use function is_order_received_page;
-use function wc_get_order;
-use function wc_get_product;
-use function wc_get_price_to_display;
-use function wc_get_price_decimals;
-use function wc_get_price_including_tax;
-use function wc_get_price_excluding_tax;
 
 defined( 'ABSPATH' ) || exit;
 
