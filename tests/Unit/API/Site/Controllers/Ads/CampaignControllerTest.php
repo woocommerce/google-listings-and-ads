@@ -223,7 +223,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'country'                               => self::BASE_COUNTRY,
 			'name'                                  => 'New Campaign',
 			'amount'                                => 20,
-			'targeted_locations'                    => [    'US', 'GB', 'TW' ],
+			'targeted_locations'                    => [ 'US', 'GB', 'TW' ],
 			'eu_political_advertising_confirmation' => false,
 		];
 
