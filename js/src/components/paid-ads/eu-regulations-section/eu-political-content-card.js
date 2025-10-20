@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
-import { CheckboxControl } from '@wordpress/components';
+import { CheckboxControl, Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -50,16 +50,20 @@ const EuPoliticalContentCard = ( { context } ) => {
 								),
 							}
 						) }
-						help={ createInterpolateElement(
-							__(
-								'If selected, <strong>your ads will not run in the EU</strong> unless you complete Google’s political advertiser verification.',
-								'google-listings-and-ads'
-							),
-							{
-								strong: <strong />,
-							}
+						help={ __(
+							'If selected, your ads will not run in the EU unless you complete Google’s political advertiser verification.',
+							'google-listings-and-ads'
 						) }
 					/>
+
+					{ inputProps.checked && (
+						<Notice status="error" isDismissible={ false }>
+							{ __(
+								'Your ads will not run in the EU',
+								'google-listings-and-ads'
+							) }
+						</Notice>
+					) }
 				</VerticalGapLayout>
 			</Section.Card.Body>
 		</Section.Card>
