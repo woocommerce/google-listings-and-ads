@@ -408,6 +408,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => false,
+				'default'           => false,
 			],
 		];
 	}
