@@ -182,10 +182,17 @@ const EditPaidAdsCampaign = () => {
 
 	const handleSubmit = async ( values, enhancer ) => {
 		const { action } = enhancer.submitter.dataset;
-		const { dailyBudget: amount } = values;
+		const {
+			dailyBudget: amount,
+			hasConfirmedNoEuPoliticalContent:
+				eu_political_advertising_confirmation,
+		} = values;
 		setIsSubmit( true );
 		try {
-			await updateAdsCampaign( campaign.id, { amount } );
+			await updateAdsCampaign( campaign.id, {
+				amount,
+				eu_political_advertising_confirmation,
+			} );
 
 			if ( action === ACTION_SUBMIT_CAMPAIGN_AND_ASSETS ) {
 				let existingAssetEntityGroup = assetEntityGroup;
@@ -228,7 +235,8 @@ const EditPaidAdsCampaign = () => {
 				initialCampaign={ {
 					level: 'custom',
 					amount: campaign.amount,
-					hasConfirmedNoEuPoliticalContent: true, // @TODO: need to get this value from the API.
+					hasConfirmedNoEuPoliticalContent:
+						campaign.eu_political_advertising_confirmation,
 				} }
 				countryCodes={ campaign.displayCountries }
 				assetEntityGroup={ assetEntityGroup }
