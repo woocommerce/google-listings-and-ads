@@ -26,15 +26,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray
 use Google\GoogleTagGatewayLibrary\Wordpress\Adapter;
 use WC_Product;
 use WC_Countries;
-use function is_page;
-use function is_cart;
-use function is_order_received_page;
-use function wc_get_order;
-use function wc_get_product;
-use function wc_get_price_to_display;
-use function wc_get_price_decimals;
-use function wc_get_price_including_tax;
-use function wc_get_price_excluding_tax;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -122,48 +113,17 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$ads_conversion_label = $conversion_action['conversion_label'];
 
 		if ( $this->is_gtg_enabled() ) {
-			$gtg_adapter = Adapter::create();
-
-			// We need rewrite rule added before flush; do everything in a single early init.
 			add_action(
 				'init',
-				function () use ( $conversion_action, $gtg_adapter ) {
-					// Skip during WP-CLI operations.
-					if ( defined( 'WP_CLI' ) && WP_CLI ) {
-						return;
-					}
-
-					$tag_id      = $conversion_action['conversion_id'];
-					$mpath       = '/wc/google/metrics/';
-					$prev_tag_id = get_option( 'googletaggateway_tag_id' );
-					$prev_mpath  = get_option( 'googletaggateway_measurement_path' );
-
+				function () use ( $conversion_action ) {
+					$gtg_adapter = Adapter::create();
+					$gtg_adapter->initialize();
 					$gtg_adapter->update(
 						[
-							'tagId'           => $tag_id,
-							'measurementPath' => $mpath,
+							'tagId'           => $conversion_action['conversion_id'],
+							'measurementPath' => '/wc/google/metrics/',
 						]
 					);
-
-					// Force immediate rule insertion (Adapter::initialize schedules one via add_action again).
-					$gtg_adapter->initialize();
-
-					global $wp_rewrite;
-					$rules = is_object( $wp_rewrite ) ? $wp_rewrite->wp_rewrite_rules() : [];
-					$found = false;
-					if ( is_array( $rules ) ) {
-						foreach ( array_keys( $rules ) as $rule_regex ) {
-							if ( preg_match( '/^\(wc\\/google\\/metrics\)\(\\\/?\.\*\)$/', $rule_regex ) ) {
-								$found = true;
-								break;
-							}
-						}
-					}
-
-					// Only flush when values changed OR rule missing.
-					if ( $prev_tag_id !== $tag_id || $prev_mpath !== $mpath || ! $found ) {
-						flush_rewrite_rules( true );
-					}
 				},
 				9
 			);
