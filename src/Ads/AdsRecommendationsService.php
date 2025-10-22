@@ -70,6 +70,11 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 	 * @return array Array of recommendations.
 	 */
 	public function get_recommendations( array $args = [] ): array {
+		// Return early if no connected ads account.
+		if ( empty( $this->options->get_ads_id() ) ) {
+			return [];
+		}
+
 		// Make sure a valid type is passed.
 		$types = isset( $args['types'] ) && is_array( $args['types'] ) ? self::get_valid_recommendation_types( $args['types'] ) : [];
 
@@ -84,7 +89,13 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 			return $transient[ $cache_key ];
 		}
 
-		$result = $this->get_google_recommendations( $args );
+		try {
+			$result = $this->get_google_recommendations( $args );
+		} catch ( \Exception $e ) {
+			do_action( 'woocommerce_gla_debug_message', $e->getMessage(), __METHOD__ );
+
+			return [];
+		}
 
 		$recommendations = [];
 
