@@ -283,6 +283,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @param string $ads_conversion_id Google Ads account conversion ID.
 	 */
 	protected function display_global_site_tag( string $ads_conversion_id ) {
+
 		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 		?>
 
@@ -741,6 +742,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @return bool
 	 */
 	private function is_gtg_enabled(): bool {
+		return true;
 		return (bool) $this->options->get( OptionsInterface::ADS_GTG_ENABLED );
 	}
 }
