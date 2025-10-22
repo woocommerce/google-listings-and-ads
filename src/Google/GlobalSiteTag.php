@@ -113,20 +113,14 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$ads_conversion_label = $conversion_action['conversion_label'];
 
 		if ( $this->is_gtg_enabled() ) {
-			add_action(
-				'init',
-				function () use ( $conversion_action ) {
-					$gtg_adapter = Adapter::create();
-					$gtg_adapter->initialize();
-					$gtg_adapter->update(
-						[
-							'tagId'           => $conversion_action['conversion_id'],
-							'measurementPath' => '/wc/google/metrics/',
-						]
-					);
-				},
-				9
+			$gtg_adapter = Adapter::create();
+			$gtg_adapter->update(
+				[
+					'tagId'           => $conversion_action['conversion_id'],
+					'measurementPath' => '/wc/google/metrics/',
+				]
 			);
+			$gtg_adapter->initialize();
 		}
 
 		add_action(
@@ -283,14 +277,15 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @param string $ads_conversion_id Google Ads account conversion ID.
 	 */
 	protected function display_global_site_tag( string $ads_conversion_id ) {
+		if ( $this->is_gtg_enabled() ) {
+			return;
+		}
 
 		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 		?>
 
 		<!-- Global site tag (gtag.js) - Google Ads: <?php echo esc_js( $ads_conversion_id ); ?> - Google for WooCommerce -->
-		<?php if ( ! $this->is_gtg_enabled() ) { ?>
-			<script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_js( $ads_conversion_id ); ?>"></script>
-		<?php } ?>
+		<script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_js( $ads_conversion_id ); ?>"></script>
 		<script>
 			window.dataLayer = window.dataLayer || [];
 			function gtag() { dataLayer.push(arguments); }
@@ -742,7 +737,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @return bool
 	 */
 	private function is_gtg_enabled(): bool {
-		return true;
 		return (bool) $this->options->get( OptionsInterface::ADS_GTG_ENABLED );
 	}
 }
