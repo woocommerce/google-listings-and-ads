@@ -70,11 +70,6 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 	 * @return array Array of recommendations.
 	 */
 	public function get_recommendations( array $args = [] ): array {
-		// Return early if no connected ads account.
-		if ( empty( $this->options->get_ads_id() ) ) {
-			return [];
-		}
-
 		// Make sure a valid type is passed.
 		$types = isset( $args['types'] ) && is_array( $args['types'] ) ? self::get_valid_recommendation_types( $args['types'] ) : [];
 
@@ -174,9 +169,16 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 	 * @throws Exception If the recommendations data can't be retrieved.
 	 */
 	public function get_google_recommendations( $args ): array {
+		// Return early if no connected ads account.
+		$ads_id = $this->options->get_ads_id();
+
+		if ( empty( $ads_id ) ) {
+			return [];
+		}
+
 		try {
 			$query = ( new AdsRecommendationsQuery() )
-			->set_client( $this->client, $this->options->get_ads_id() );
+			->set_client( $this->client, $ads_id );
 
 			$types       = isset( $args['types'] ) && is_array( $args['types'] ) ? self::get_valid_recommendation_types( $args['types'] ) : [];
 			$campaign_id = isset( $args['campaign_id'] ) ? (int) $args['campaign_id'] : 0;
