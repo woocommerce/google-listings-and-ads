@@ -118,23 +118,25 @@ class AdsCampaignTest extends UnitTest {
 
 		$campaigns_data = [
 			[
-				'id'                 => self::TEST_CAMPAIGN_ID,
-				'name'               => 'Campaign One',
-				'status'             => 'paused',
-				'type'               => 'shopping',
-				'amount'             => 10,
-				'country'            => 'US',
-				'targeted_locations' => [ 'TW' ],
+				'id'                                    => self::TEST_CAMPAIGN_ID,
+				'name'                                  => 'Campaign One',
+				'status'                                => 'paused',
+				'type'                                  => 'shopping',
+				'amount'                                => 10,
+				'country'                               => 'US',
+				'targeted_locations'                    => [ 'TW' ],
+				'eu_political_advertising_confirmation' => false,
 			],
-			[
-				'id'                 => 5678901234,
-				'name'               => 'Campaign Two',
-				'status'             => 'enabled',
-				'type'               => 'performance_max',
-				'amount'             => 20,
-				'country'            => 'UK',
-				'targeted_locations' => [ 'HK', 'GB' ],
-			],
+			 [
+				'id'                                    => 5678901234,
+				'name'                                  => 'Campaign Two',
+				'status'                                => 'enabled',
+				'type'                                  => 'performance_max',
+				'amount'                                => 20,
+				'country'                               => 'UK',
+				'targeted_locations'                    => [ 'HK', 'GB' ],
+				'eu_political_advertising_confirmation' => false,
+			 ],
 		];
 
 		$this->generate_ads_campaign_query_mock( $campaigns_data, $campaign_criterion_data );
@@ -144,23 +146,25 @@ class AdsCampaignTest extends UnitTest {
 	public function test_get_campaigns_with_limited_results() {
 		$campaigns_data = [
 			[
-				'id'                 => self::TEST_CAMPAIGN_ID,
-				'name'               => 'Campaign One',
-				'status'             => 'paused',
-				'type'               => 'shopping',
-				'amount'             => 10,
-				'country'            => 'US',
-				'targeted_locations' => [],
+				'id'                                    => self::TEST_CAMPAIGN_ID,
+				'name'                                  => 'Campaign One',
+				'status'                                => 'paused',
+				'type'                                  => 'shopping',
+				'amount'                                => 10,
+				'country'                               => 'US',
+				'targeted_locations'                    => [],
+				'eu_political_advertising_confirmation' => false,
 			],
-			[
-				'id'                 => 5678901234,
-				'name'               => 'Campaign Two',
-				'status'             => 'enabled',
-				'type'               => 'performance_max',
-				'amount'             => 20,
-				'country'            => 'UK',
-				'targeted_locations' => [],
-			],
+			 [
+				'id'                                    => 5678901234,
+				'name'                                  => 'Campaign Two',
+				'status'                                => 'enabled',
+				'type'                                  => 'performance_max',
+				'amount'                                => 20,
+				'country'                               => 'UK',
+				'targeted_locations'                    => [],
+				'eu_political_advertising_confirmation' => false,
+			 ],
 		];
 
 		$this->generate_ads_campaign_query_mock( $campaigns_data, [] );
@@ -192,23 +196,25 @@ class AdsCampaignTest extends UnitTest {
 
 		$campaigns_data = [
 			[
-				'id'                 => self::TEST_CAMPAIGN_ID,
-				'name'               => 'Campaign One',
-				'status'             => 'paused',
-				'type'               => 'shopping',
-				'amount'             => 10,
-				'country'            => 'US',
-				'targeted_locations' => [],
+				'id'                                    => self::TEST_CAMPAIGN_ID,
+				'name'                                  => 'Campaign One',
+				'status'                                => 'paused',
+				'type'                                  => 'shopping',
+				'amount'                                => 10,
+				'country'                               => 'US',
+				'targeted_locations'                    => [],
+				'eu_political_advertising_confirmation' => false,
 			],
-			[
-				'id'                 => 5678901234,
-				'name'               => 'Campaign Two',
-				'status'             => 'enabled',
-				'type'               => 'performance_max',
-				'amount'             => 20,
-				'country'            => 'UK',
-				'targeted_locations' => [],
-			],
+			 [
+				'id'                                    => 5678901234,
+				'name'                                  => 'Campaign Two',
+				'status'                                => 'enabled',
+				'type'                                  => 'performance_max',
+				'amount'                                => 20,
+				'country'                               => 'UK',
+				'targeted_locations'                    => [],
+				'eu_political_advertising_confirmation' => false,
+			 ],
 		];
 
 		$this->generate_ads_campaign_query_mock( $campaigns_data, $campaign_criterion_data );
@@ -284,13 +290,14 @@ class AdsCampaignTest extends UnitTest {
 		];
 
 		$campaign_data = [
-			'id'                 => self::TEST_CAMPAIGN_ID,
-			'name'               => 'Single Campaign',
-			'status'             => 'enabled',
-			'type'               => 'performance_max',
-			'amount'             => 10,
-			'country'            => 'US',
-			'targeted_locations' => [ 'TW' ],
+			'id'                                    => self::TEST_CAMPAIGN_ID,
+			'name'                                  => 'Single Campaign',
+			'status'                                => 'enabled',
+			'type'                                  => 'performance_max',
+			'amount'                                => 10,
+			'country'                               => 'US',
+			'targeted_locations'                    => [ 'TW' ],
+			'eu_political_advertising_confirmation' => false,
 		];
 
 		$this->generate_ads_campaign_query_mock( [ $campaign_data ], [ $campaign_criterion_data ] );
@@ -317,9 +324,10 @@ class AdsCampaignTest extends UnitTest {
 
 	public function test_create_campaign() {
 		$campaign_data = [
-			'name'               => 'New Campaign',
-			'amount'             => 20,
-			'targeted_locations' => [ 'US', 'GB' ],
+			'name'                                  => 'New Campaign',
+			'amount'                                => 20,
+			'targeted_locations'                    => [ 'US', 'GB' ],
+			'eu_political_advertising_confirmation' => false,
 		];
 
 		$this->wc->expects( $this->once() )
@@ -328,12 +336,13 @@ class AdsCampaignTest extends UnitTest {
 
 		$this->generate_campaign_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
 
-		$expected = [
-			'id'      => self::TEST_CAMPAIGN_ID,
-			'status'  => 'enabled',
-			'type'    => 'performance_max',
-			'country' => self::BASE_COUNTRY,
-		] + $campaign_data;
+		 $expected = [
+			'id'                                    => self::TEST_CAMPAIGN_ID,
+			'status'                                => 'enabled',
+			'type'                                  => 'performance_max',
+			'country'                               => self::BASE_COUNTRY,
+			'eu_political_advertising_confirmation' => false,
+		 ] + $campaign_data;
 
 		$this->transients->expects( $this->once() )->method( 'delete' )->with( TransientsInterface::ADS_CAMPAIGN_COUNT );
 
@@ -344,11 +353,12 @@ class AdsCampaignTest extends UnitTest {
 	}
 
 	public function test_create_campaign_null_location_id() {
-		$campaign_data = [
-			'name'               => 'New Campaign',
-			'amount'             => 20,
-			'targeted_locations' => [ 'Null location' ],
-		];
+		 $campaign_data = [
+			'name'                                  => 'New Campaign',
+			'amount'                                => 20,
+			'targeted_locations'                    => [ 'Null location' ],
+			'eu_political_advertising_confirmation' => false,
+		 ];
 
 		$this->wc->expects( $this->once() )
 			->method( 'get_base_country' )
@@ -370,11 +380,12 @@ class AdsCampaignTest extends UnitTest {
 	}
 
 	public function test_create_campaign_exception_duplicate_campaign_name() {
-		$campaign_data = [
-			'name'               => 'Invalid Campaign',
-			'amount'             => 20,
-			'targeted_locations' => [ 'US', 'GB' ],
-		];
+		 $campaign_data = [
+			'name'                                  => 'Invalid Campaign',
+			'amount'                                => 20,
+			'targeted_locations'                    => [ 'US', 'GB' ],
+			'eu_political_advertising_confirmation' => false,
+		 ];
 
 		$errors = [
 			'errors' => [
@@ -410,10 +421,11 @@ class AdsCampaignTest extends UnitTest {
 
 	public function test_create_campaign_exception_invalid_location_id() {
 		$campaign_data = [
-			'name'               => 'New Campaign',
-			'amount'             => 20,
-			'targeted_locations' => [ 'Invalid location' ],
-		];
+			'name'                                  => 'New Campaign',
+			'amount'                                => 20,
+			'targeted_locations'                    => [ 'Invalid location' ],
+			'eu_political_advertising_confirmation' => false,
+		 ];
 
 		$errors = [
 			'errors' => [
@@ -669,11 +681,12 @@ class AdsCampaignTest extends UnitTest {
 
 	public function test_create_campaign_with_label() {
 		$campaign_data = [
-			'name'               => 'New Campaign',
-			'amount'             => 20,
-			'targeted_locations' => [ 'US', 'GB' ],
-			'label'              => 'wc-gla',
-		];
+			'name'                                  => 'New Campaign',
+			'amount'                                => 20,
+			'targeted_locations'                    => [ 'US', 'GB' ],
+			'label'                                 => 'wc-gla',
+			'eu_political_advertising_confirmation' => false,
+		 ];
 
 		$this->wc->expects( $this->once() )
 			->method( 'get_base_country' )
@@ -701,11 +714,12 @@ class AdsCampaignTest extends UnitTest {
 
 	public function test_create_campaign_throws_exception() {
 		$campaign_data = [
-			'name'               => 'New Campaign',
-			'amount'             => 20,
-			'targeted_locations' => [ 'US', 'GB' ],
-			'label'              => 'wc-gla',
-		];
+			'name'                                  => 'New Campaign',
+			'amount'                                => 20,
+			'targeted_locations'                    => [ 'US', 'GB' ],
+			'label'                                 => 'wc-gla',
+			'eu_political_advertising_confirmation' => false,
+		 ];
 
 		$this->wc->expects( $this->once() )
 			->method( 'get_base_country' )
