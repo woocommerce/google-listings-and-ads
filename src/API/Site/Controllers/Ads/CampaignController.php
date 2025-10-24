@@ -294,6 +294,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 			'name',
 			'status',
 			'amount',
+			'eu_political_advertising_confirmation',
 		];
 
 		$fields = array_intersect_key( $this->get_schema_properties(), array_flip( $allowed ) );
