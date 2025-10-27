@@ -37,7 +37,6 @@ const Survey = () => {
 				{ OPTIONS.map( ( option ) => {
 					const inputProps = getInputProps( option.value );
 
-					console.log( 'option', option, inputProps );
 					return (
 						<li key={ option.value }>
 							{ option.optionType === 'select' && (
