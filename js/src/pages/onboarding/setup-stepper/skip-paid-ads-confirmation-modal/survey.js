@@ -2,7 +2,12 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { CheckboxControl, TextareaControl } from '@wordpress/components';
+import {
+	CheckboxControl,
+	SelectControl,
+	Notice,
+	TextareaControl,
+} from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -32,28 +37,71 @@ const Survey = () => {
 				{ OPTIONS.map( ( option ) => {
 					const inputProps = getInputProps( option.value );
 
+					console.log( 'option', option, inputProps );
 					return (
 						<li key={ option.value }>
-							<CheckboxControl
-								label={ option.label }
-								value={ option.value }
-								{ ...inputProps }
-							/>
-
-							{ option.hasTextInput && inputProps.checked && (
-								<div className="gla-skip-paid-ads-survey-modal__text-input">
-									<TextareaControl
-										placeholder={ __(
-											'Tell us why (optional)',
-											'google-listings-and-ads'
-										) }
-										name={ `${ option.value }_text` }
-										{ ...getInputProps(
-											`${ option.value }_text`
-										) }
-										rows={ 2 }
+							{ option.optionType === 'select' && (
+								<>
+									<SelectControl
+										options={ option.options }
+										label={ option.label }
+										value={ option.value }
+										{ ...inputProps }
 									/>
-								</div>
+
+									{ inputProps.value === 'other' && (
+										<TextareaControl
+											placeholder={
+												option.otherInputTextPlaceholder
+											}
+											name={ `${ option.value }_text` }
+											{ ...getInputProps(
+												`${ option.value }_text`
+											) }
+											rows={ 2 }
+										/>
+									) }
+								</>
+							) }
+
+							{ option.optionType === 'checkbox' && (
+								<>
+									<CheckboxControl
+										label={ option.label }
+										value={ option.value }
+										{ ...inputProps }
+									/>
+
+									{ inputProps.checked && (
+										<>
+											{ option.hasTextInput && (
+												<div className="gla-skip-paid-ads-survey-modal__text-input">
+													<TextareaControl
+														placeholder={ __(
+															'Tell us why (optional)',
+															'google-listings-and-ads'
+														) }
+														name={ `${ option.value }_text` }
+														{ ...getInputProps(
+															`${ option.value }_text`
+														) }
+														rows={ 2 }
+													/>
+												</div>
+											) }
+
+											{ option.notice && (
+												<Notice
+													status="info"
+													isDismissible={ false }
+													className="gla-skip-paid-ads-survey-modal__notice"
+												>
+													{ option.notice }
+												</Notice>
+											) }
+										</>
+									) }
+								</>
 							) }
 						</li>
 					);

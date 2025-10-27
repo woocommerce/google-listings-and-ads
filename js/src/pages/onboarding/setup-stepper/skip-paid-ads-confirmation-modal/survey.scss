@@ -4,7 +4,14 @@
 		font-weight: 600;
 	}
 
+	.gla-skip-paid-ads-survey-modal__notice,
 	.gla-skip-paid-ads-survey-modal__text-input {
 		margin-left: $grid-unit-30;
+	}
+
+	.gla-skip-paid-ads-survey-modal__notice {
+		background-color: $gray-100;
+		padding-top: $grid-unit-10;
+		padding-bottom: $grid-unit-10;
 	}
 }

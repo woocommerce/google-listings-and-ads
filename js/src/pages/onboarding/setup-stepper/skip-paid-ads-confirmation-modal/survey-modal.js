@@ -23,6 +23,8 @@ import './survey-modal.scss';
  *
  * @event gla_skip_campaign_creation_survey
  * @property {string} context Name of the context where the survey was triggered (e.g. 'skip-paid-ads-survey-modal').
+ * @property {string} your_role The role of the user (e.g. 'owner', 'developer', 'agency', 'marketing_lead', 'other').
+ * @property {string} your_role_text Text input for the user's role if 'other' is selected.
  * @property {boolean} i_already_have_ads_on_google Indicates if the user already has ads on Google.
  * @property {boolean} i_dont_have_the_budget_to_create_ads_now Indicates if the user doesn't have the budget to create ads now.
  * @property {boolean} ive_tried_google_ads_before_without_success Indicates if the user has tried Google ads before without success.
@@ -30,6 +32,7 @@ import './survey-modal.scss';
  * @property {string} i_dont_want_ads_on_google_text Text input for the reason why the user doesn't want ads on Google.
  * @property {boolean} ill_create_ads_later Indicates if the user will create ads later.
  * @property {string} ill_create_ads_later_text Text input for the reason why the user will create ads later.
+ * @property {boolean} i_dont_have_time Indicates if the user doesn't have time.
  * @property {boolean} other Indicates if the user has another reason.
  * @property {string} other_text Text input for the user's other reason.
  */
@@ -52,7 +55,7 @@ const SurveyModal = ( { onRequestClose, onSkipCreatePaidAds } ) => {
 			return {
 				...accumulator,
 				[ option.value ]: false,
-				[ `${ option.value }__text` ]: '', // This is to handle the text input for options that require additional explanation.
+				[ `${ option.value }_text` ]: '', // This is to handle the text input for options that require additional explanation.
 			};
 		}
 
