@@ -147,7 +147,7 @@ const SurveyModal = ( { onRequestClose, onSkipCreatePaidAds } ) => {
 													</h4>
 													<p>
 														{ __(
-															'Reach new audiences across Google Search, YouTube, and Discover using Google’s AI.',
+															"Let Google's AI find and connect you with converting customers across Search, Maps, YouTube, and more.",
 															'google-listings-and-ads'
 														) }
 													</p>
