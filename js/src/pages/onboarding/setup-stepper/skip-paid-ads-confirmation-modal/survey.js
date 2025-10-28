@@ -40,7 +40,7 @@ const Survey = () => {
 					return (
 						<li key={ option.value }>
 							{ option.optionType === 'select' && (
-								<>
+								<div className="gla-skip-paid-ads-survey-modal__select">
 									<SelectControl
 										options={ option.options }
 										label={ option.label }
@@ -60,11 +60,11 @@ const Survey = () => {
 											rows={ 2 }
 										/>
 									) }
-								</>
+								</div>
 							) }
 
 							{ option.optionType === 'checkbox' && (
-								<>
+								<div>
 									<CheckboxControl
 										label={ option.label }
 										value={ option.value }
@@ -100,7 +100,7 @@ const Survey = () => {
 											) }
 										</>
 									) }
-								</>
+								</div>
 							) }
 						</li>
 					);
