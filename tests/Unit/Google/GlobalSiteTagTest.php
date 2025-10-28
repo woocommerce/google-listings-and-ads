@@ -131,7 +131,7 @@ class GlobalSiteTagTest extends UnitTest {
 		$gtag = $this->tag->get_enhanced_conversion_tag();
 
 		// Tag should be empty with no customer data.
-		Assert::assertEmpty( $gtag );
+		$this->assertEmpty( $gtag );
 	}
 
 	public function test_enhanced_conversion_data_is_set_with_customer_email() {
@@ -150,8 +150,8 @@ class GlobalSiteTagTest extends UnitTest {
 		$gtag = $this->tag->get_enhanced_conversion_tag();
 
 		// Confirm the hashed email and key is present.
-		Assert::assertStringContainsString( 'sha256_email_address', $gtag );
-		Assert::assertStringContainsString( $email_hash, $gtag );
+		$this->assertStringContainsString( 'sha256_email_address', $gtag );
+		$this->assertStringContainsString( $email_hash, $gtag );
 	}
 
 	public function test_enhanced_conversion_data_is_set_with_customer_phone() {
@@ -176,8 +176,8 @@ class GlobalSiteTagTest extends UnitTest {
 		$gtag = $this->tag->get_enhanced_conversion_tag();
 
 		// Confirm the hashed phone and key is present.
-		Assert::assertStringContainsString( 'sha256_phone_number', $gtag );
-		Assert::assertStringContainsString( $phone_hash, $gtag );
+		$this->assertStringContainsString( 'sha256_phone_number', $gtag );
+		$this->assertStringContainsString( $phone_hash, $gtag );
 	}
 
 	public function test_enhanced_conversion_data_is_empty_when_only_customer_phone_available() {
@@ -201,7 +201,7 @@ class GlobalSiteTagTest extends UnitTest {
 		$gtag = $this->tag->get_enhanced_conversion_tag();
 
 		// Confirm the hashed phone and key is present.
-		Assert::assertEmpty( $gtag );
+		$this->assertEmpty( $gtag );
 	}
 
 	public function test_enhanced_conversion_data_is_set_with_customer_address() {
@@ -231,13 +231,13 @@ class GlobalSiteTagTest extends UnitTest {
 		$gtag = $this->tag->get_enhanced_conversion_tag();
 
 		// Confirm the hashed values and keys are present.
-		Assert::assertStringContainsString( 'sha256_first_name', $gtag );
-		Assert::assertStringContainsString( 'sha256_last_name', $gtag );
-		Assert::assertStringContainsString( 'postal_code', $gtag );
-		Assert::assertStringContainsString( 'country', $gtag );
-		Assert::assertStringContainsString( $first_hash, $gtag );
-		Assert::assertStringContainsString( $last_hash, $gtag );
-		Assert::assertStringContainsString( $postcode, $gtag );
+		$this->assertStringContainsString( 'sha256_first_name', $gtag );
+		$this->assertStringContainsString( 'sha256_last_name', $gtag );
+		$this->assertStringContainsString( 'postal_code', $gtag );
+		$this->assertStringContainsString( 'country', $gtag );
+		$this->assertStringContainsString( $first_hash, $gtag );
+		$this->assertStringContainsString( $last_hash, $gtag );
+		$this->assertStringContainsString( $postcode, $gtag );
 	}
 
 	public function test_register_initializes_gtg_adapter_with_conversion_id() {
@@ -267,7 +267,7 @@ class GlobalSiteTagTest extends UnitTest {
 		// ensures register() completes without throwing when a valid conversion action exists
 		// and GTG is enabled.
 		$light_tag->register();
-		Assert::assertTrue( true );
+		$this->assertTrue( true );
 	}
 
 	public function test_register_does_not_initialize_gtg_adapter_without_conversion_id() {
@@ -290,6 +290,6 @@ class GlobalSiteTagTest extends UnitTest {
 
 		// register() should early-return and not attempt to use Adapter at all.
 		$light_tag->register();
-		Assert::assertTrue( true );
+		$this->assertTrue( true );
 	}
 }
