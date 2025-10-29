@@ -37,14 +37,14 @@ export default function useAdsSetupCompleteCallback() {
 		(
 			amount,
 			countryCodes,
-			hasConfirmedNoEuPoliticalContent,
+			hasConfirmedEuPoliticalContent,
 			onCompleted
 		) => {
 			setLoading( true );
 			return createAdsCampaign(
 				amount,
 				countryCodes,
-				hasConfirmedNoEuPoliticalContent
+				hasConfirmedEuPoliticalContent
 			)
 				.then( completeAdsSetup )
 				.then( onCompleted )

@@ -184,7 +184,7 @@ const EditPaidAdsCampaign = () => {
 		const { action } = enhancer.submitter.dataset;
 		const {
 			dailyBudget: amount,
-			hasConfirmedNoEuPoliticalContent:
+			hasConfirmedEuPoliticalContent:
 				eu_political_advertising_confirmation,
 		} = values;
 		setIsSubmit( true );
@@ -235,7 +235,7 @@ const EditPaidAdsCampaign = () => {
 				initialCampaign={ {
 					level: 'custom',
 					amount: campaign.amount,
-					hasConfirmedNoEuPoliticalContent:
+					hasConfirmedEuPoliticalContent:
 						campaign.eu_political_advertising_confirmation,
 				} }
 				countryCodes={ campaign.displayCountries }

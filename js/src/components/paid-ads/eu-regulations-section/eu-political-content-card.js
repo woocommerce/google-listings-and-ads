@@ -15,16 +15,16 @@ import AppDocumentationLink from '~/components/app-documentation-link';
 
 /**
  * Displays a checkbox to confirm whether political content is advertised.
- * @fires gla_documentation_link_click with `{ context: 'setup-mc', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
  * @fires gla_documentation_link_click with `{ context: 'setup-ads', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
  * @fires gla_documentation_link_click with `{ context: 'create-ads', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
+ * @fires gla_documentation_link_click with `{ context: 'edit-ads', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
  *
  * @param {Object} props React props.
- * @param {'setup-mc'|'setup-ads'|'create-ads'|'edit-ads'} props.context A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
+ * @param {'setup-ads'|'create-ads'|'edit-ads'} props.context A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  */
 const EuPoliticalContentCard = ( { context } ) => {
 	const { getInputProps } = useAdaptiveFormContext();
-	const inputProps = getInputProps( 'hasConfirmedNoEuPoliticalContent' );
+	const inputProps = getInputProps( 'hasConfirmedEuPoliticalContent' );
 
 	return (
 		<Section.Card className="gla-eu-political-content-card">
@@ -37,7 +37,7 @@ const EuPoliticalContentCard = ( { context } ) => {
 						{ ...inputProps }
 						label={ createInterpolateElement(
 							__(
-								'I confirm I don’t advertise political content as defined by Google’s <link>EU political content policy</link>.',
+								"My ads include political content as defined by Google's <link>EU political content policy</link>.",
 								'google-listings-and-ads'
 							),
 							{
@@ -51,7 +51,7 @@ const EuPoliticalContentCard = ( { context } ) => {
 							}
 						) }
 						help={ __(
-							'If selected, your ads will not run in the EU unless you complete Google’s political advertiser verification.',
+							"If selected, your ads will not run in the EU unless you complete Google's political advertiser verification.",
 							'google-listings-and-ads'
 						) }
 					/>

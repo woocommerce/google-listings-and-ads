@@ -83,7 +83,7 @@ const SetupPaidAds = () => {
 	};
 
 	const handleSubmit = ( values ) => {
-		const { level, dailyBudget, hasConfirmedNoEuPoliticalContent } = values;
+		const { level, dailyBudget, hasConfirmedEuPoliticalContent } = values;
 
 		recordGlaEvent(
 			'gla_launch_paid_campaign_button_click',
@@ -91,15 +91,15 @@ const SetupPaidAds = () => {
 				level,
 				audiences: countryCodes.join( ',' ),
 				budget: dailyBudget,
-				has_confirmed_no_eu_political_content:
-					hasConfirmedNoEuPoliticalContent,
+				has_confirmed_eu_political_content:
+					hasConfirmedEuPoliticalContent,
 			} )
 		);
 
 		handleSetupComplete(
 			dailyBudget,
 			countryCodes,
-			hasConfirmedNoEuPoliticalContent,
+			hasConfirmedEuPoliticalContent,
 			() => {
 				// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.
 				const nextPath = getNewPath(

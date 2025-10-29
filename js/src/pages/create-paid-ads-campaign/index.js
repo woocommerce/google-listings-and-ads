@@ -76,14 +76,14 @@ const CreatePaidAdsCampaign = () => {
 		const { action } = enhancer.submitter.dataset;
 
 		try {
-			const { dailyBudget, hasConfirmedNoEuPoliticalContent } = values;
+			const { dailyBudget, hasConfirmedEuPoliticalContent } = values;
 
 			// Avoid re-creating a new campaign if the subsequent asset group update is failed.
 			if ( createdCampaignIdRef.current === null ) {
 				const payload = await createAdsCampaign(
 					dailyBudget,
 					countryCodes,
-					hasConfirmedNoEuPoliticalContent
+					hasConfirmedEuPoliticalContent
 				);
 				createdCampaignIdRef.current = payload.createdCampaign.id;
 			}

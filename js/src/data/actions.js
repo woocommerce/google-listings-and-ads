@@ -720,14 +720,14 @@ export function* fetchAdsIncentiveCredits() {
  *
  * @param {number} amount Daily average cost of the paid ads campaign.
  * @param {Array<CountryCode>} countryCodes Country code of the paid ads campaign audience country. Example: 'US'.
- * @param {boolean} [hasConfirmedNoEuPoliticalContent=false] Whether the user has confirmed that the ads campaign does not contain EU political content.
+ * @param {boolean} [hasConfirmedEuPoliticalContent=false] Whether the user has confirmed that the ads campaign contains EU political content.
  *
  * @throws { { message: string } } Will throw an error if the campaign creation fails.
  */
 export function* createAdsCampaign(
 	amount,
 	countryCodes,
-	hasConfirmedNoEuPoliticalContent = false
+	hasConfirmedEuPoliticalContent = false
 ) {
 	let label = 'wc-web';
 
@@ -745,7 +745,7 @@ export function* createAdsCampaign(
 				amount,
 				targeted_locations: countryCodes,
 				eu_political_advertising_confirmation:
-					hasConfirmedNoEuPoliticalContent,
+					hasConfirmedEuPoliticalContent,
 				label,
 			},
 		} );

@@ -16,7 +16,7 @@ import Section from '~/components/section';
  * If no EU country is selected, nothing is rendered.
  *
  * @param {Object} props React props.
- * @param {'setup-mc'|'setup-ads'|'create-ads'|'edit-ads'} props.context A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
+ * @param {'setup-ads'|'create-ads'|'edit-ads'} props.context A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  */
 const EuRegulationsSection = ( { context } ) => {
 	const {
