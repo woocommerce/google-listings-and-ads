@@ -270,8 +270,7 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->assertTrue( true );
 	}
 
-	public function test_register_does_not_initialize_gtg_adapter_without_conversion_id() {
-		// Simulate missing conversion_action (null)
+	public function test_register_exits_early_without_conversion_action() {
 		/** @var MockObject|OptionsInterface $options_mock */
 		$options_mock = $this->options;
 		$options_mock->method( 'get' )
@@ -282,14 +281,18 @@ class GlobalSiteTagTest extends UnitTest {
 				]
 			);
 
-		$light_tag = new class($this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp) extends GlobalSiteTag { // phpcs:disable PSR12.Classes.AnonClassDeclaration.SpaceAfterKeyword
-			protected function register_assets() {}
-			protected function product_data_hooks() {}
+		$instrumented = new class($this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp) extends GlobalSiteTag { // phpcs:disable PSR12.Classes.AnonClassDeclaration.SpaceAfterKeyword
+			public $register_assets_called = false;
+			public $product_data_hooks_called = false;
+			protected function register_assets() { $this->register_assets_called = true; }
+			protected function product_data_hooks() { $this->product_data_hooks_called = true; }
 		};
-		$light_tag->set_options_object( $this->options );
+		$instrumented->set_options_object( $this->options );
 
-		// register() should early-return and not attempt to use Adapter at all.
-		$light_tag->register();
-		$this->assertTrue( true );
+		$instrumented->register();
+
+		$this->assertFalse( $instrumented->register_assets_called, 'register_assets() should not run when conversion action missing.' );
+		$this->assertFalse( $instrumented->product_data_hooks_called, 'product_data_hooks() should not run when conversion action missing.' );
+		$this->assertFalse( has_filter( 'woocommerce_loop_add_to_cart_link' ), 'Product data filter unexpectedly added.' );
 	}
 }
