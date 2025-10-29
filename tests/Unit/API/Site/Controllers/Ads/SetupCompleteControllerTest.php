@@ -72,7 +72,7 @@ class SetupCompleteControllerTest extends RESTControllerUnitTest {
 			->withConsecutive(
 				[ \Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface::ADS_SETUP_COMPLETED_AT, $this->isType( 'int' ) ],
 				[ \Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface::ADS_GTG_ENABLED, true ],
-				[ \Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface::TOURS, [ 'google-tag-gateway-tour' => true ] ]
+				[ \Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface::TOURS, [ 'google-tag-gateway-tour' => [ 'id' => 'google-tag-gateway-tour', 'checked' => true ] ] ]
 			);
 
 		$this->ads_setup_controller->set_options_object( $options );
