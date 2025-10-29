@@ -13,7 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUn
  */
 class FeaturesControllerTest extends RESTControllerUnitTest {
 
-	protected const ROUTE        = '/wc/gla/features';
+	protected const ROUTE = '/wc/gla/features';
 
 	protected const TEST_FEATURES = [
 		'version'  => 1,
@@ -25,7 +25,6 @@ class FeaturesControllerTest extends RESTControllerUnitTest {
 			],
 		],
 	];
-
 
 	/**
 	 * @var OptionsInterface
