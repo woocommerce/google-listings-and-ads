@@ -281,10 +281,12 @@ class GlobalSiteTagTest extends UnitTest {
 			);
 
 		$instrumented = new class($this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp) extends GlobalSiteTag { // phpcs:disable PSR12.Classes.AnonClassDeclaration.SpaceAfterKeyword
-			public $register_assets_called = false;
+			public $register_assets_called    = false;
 			public $product_data_hooks_called = false;
-			protected function register_assets() { $this->register_assets_called = true; }
-			protected function product_data_hooks() { $this->product_data_hooks_called = true; }
+			protected function register_assets() {
+				$this->register_assets_called = true; }
+			protected function product_data_hooks() {
+				$this->product_data_hooks_called = true; }
 		};
 		$instrumented->set_options_object( $this->options );
 
