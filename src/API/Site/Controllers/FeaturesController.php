@@ -41,7 +41,7 @@ class FeaturesController extends BaseOptionsController {
 				[
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_features_read_callback(),
-					// 'permission_callback' => $this->get_permission_callback(),
+					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_schema_properties(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
@@ -55,7 +55,7 @@ class FeaturesController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_features_read_callback(): callable {
-		return function ( Request $request ) {
+		return function () {
 			return $this->options->get( OptionsInterface::WCS_FEATURE_FLAGS, [] );
 		};
 	}
