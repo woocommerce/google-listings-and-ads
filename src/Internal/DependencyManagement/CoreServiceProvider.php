@@ -23,6 +23,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\RESTControllers;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WCS\ConnectionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
@@ -191,6 +192,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		MarketingChannelRegistrar::class => true,
 		OAuthService::class              => true,
 		WPCLIMigrationGTIN::class        => true,
+		ConnectionService::class         => true,
 	];
 
 	/**

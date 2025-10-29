@@ -4,6 +4,9 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\WCS;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -12,7 +15,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\WCS
  */
-class ConnectionService implements Service {
+class ConnectionService implements Service, OptionsAwareInterface {
+
+	use OptionsAwareTrait;
+
 	/**
 	 * Return an array of feature flags from the external API.
 	 *
@@ -30,5 +36,16 @@ class ConnectionService implements Service {
 				],
 			],
 		];
+	}
+
+	/**
+	 * Update the feature flags option in the database.
+	 *
+	 * @return void
+	 */
+	public function update_feature_flags(): void {
+		$features = $this->features();
+
+		$this->options->update( OptionsInterface::WCS_FEATURE_FLAGS, $features );
 	}
 }
