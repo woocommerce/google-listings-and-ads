@@ -756,7 +756,7 @@ test.describe( 'Complete your campaign', () => {
 
 			await completeCampaign.goto();
 			const checkbox = page.getByRole( 'checkbox', {
-				name: 'I confirm I don’t advertise political content as defined by Google’s EU political content policy.',
+				name: "My ads include political content as defined by Google's EU political content policy.",
 			} );
 			await expect( checkbox ).toBeVisible();
 		} );
