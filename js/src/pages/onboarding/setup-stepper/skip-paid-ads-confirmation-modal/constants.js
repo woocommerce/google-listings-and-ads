@@ -46,7 +46,7 @@ export const OPTIONS = [
 		hasTextInput: false,
 		optionType: 'checkbox',
 		notice: __(
-			'Setup takes less than 1 minute',
+			'Are you sure? Setup takes less than 1 minute.',
 			'google-listings-and-ads'
 		),
 	},
