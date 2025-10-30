@@ -106,9 +106,17 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 		add_action(
 			'woocommerce_product_options_inventory_product_data',
 			function () {
-				echo '<div id="gla-backorder-availability-notice" class="inline notice woocommerce-message show_if_simple show_if_variable" style="display:none;">';
-				echo '<p><strong>Reminder:</strong> Please do not forget to set the availability date.</p>';
-				echo '</div>';
+				$notice_id = 'gla-backorder-availability-notice';
+				$classes   = 'inline woocommerce-message show_if_simple show_if_variable';
+				$style     = 'display:none;';
+				printf(
+					'<div id="%1$s" class="%2$s" style="%3$s"><p><strong>%4$s</strong> %5$s</p></div>',
+					esc_attr( $notice_id ),
+					esc_attr( $classes ),
+					esc_attr( $style ),
+					esc_html__( 'Reminder:', 'google-listings-and-ads' ),
+					esc_html__( 'Please do not forget to set the availability date.', 'google-listings-and-ads' )
+				);
 			}
 		);
 	}
@@ -216,6 +224,14 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 		$assets[] = ( new AdminStyleAsset(
 			'gla-product-attributes-css',
 			'js/build/product-attributes',
+			[],
+			'',
+			$product_condition
+		) );
+
+		$assets[] = ( new AdminStyleAsset(
+			'gla-product-edit-css',
+			'js/build/product-edit',
 			[],
 			'',
 			$product_condition

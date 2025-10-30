@@ -3,6 +3,11 @@
  */
 import $ from 'jquery';
 
+/**
+ * Internal dependencies
+ */
+import './index.scss';
+
 $( document ).on( 'ready', () => {
 	const NOTICE_SELECTOR = '#gla-backorder-availability-notice';
 
