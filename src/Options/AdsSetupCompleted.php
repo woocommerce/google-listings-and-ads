@@ -54,7 +54,10 @@ class AdsSetupCompleted implements OptionsAwareInterface, Registerable, Service 
 
 		$tours = $this->options->get( OptionsInterface::TOURS, [] );
 		if ( is_array( $tours ) ) {
-			$tours['google-tag-gateway-tour'] = true;
+			$tours['google-tag-gateway-tour'] = [
+				'id'      => 'google-tag-gateway-tour',
+				'checked' => true,
+			];
 			$this->options->update( OptionsInterface::TOURS, $tours );
 		}
 	}
