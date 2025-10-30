@@ -95,6 +95,11 @@ const webpackConfig = {
 			'js/src/product-attributes',
 			'index.js'
 		),
+		'product-edit': path.resolve(
+			process.cwd(),
+			'js/src/product-edit',
+			'index.js'
+		),
 		blocks: path.join( __dirname, 'js/src/blocks/index.js' ),
 		'gtag-events': path.resolve(
 			process.cwd(),

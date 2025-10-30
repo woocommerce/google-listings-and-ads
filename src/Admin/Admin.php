@@ -103,6 +103,14 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 		);
 
 		add_action( 'admin_init', [ $this, 'privacy_policy' ] );
+		add_action(
+			'woocommerce_product_options_inventory_product_data',
+			function () {
+				echo '<div id="gla-backorder-availability-notice" class="inline notice woocommerce-message show_if_simple show_if_variable" style="display:none;">';
+				echo '<p><strong>Reminder:</strong> Please do not forget to set the availability date.</p>';
+				echo '</div>';
+			}
+		);
 	}
 
 	/**
@@ -190,6 +198,20 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 				'applicableProductTypes' => ProductSyncer::get_supported_product_types(),
 			]
 		);
+
+		// Custom product edit enhancement script (built via webpack entry 'product-edit').
+		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
+			'gla-product-edit',
+			'js/build/product-edit',
+			"{$this->get_root_dir()}/js/build/product-edit.asset.php",
+			new BuiltScriptDependencyArray(
+				[
+					'dependencies' => [],
+					'version'      => file_exists( "{$this->get_root_dir()}/js/build/product-edit.js" ) ? (string) filemtime( "{$this->get_root_dir()}/js/build/product-edit.js" ) : $this->get_version(),
+				]
+			),
+			$product_condition
+		) );
 
 		$assets[] = ( new AdminStyleAsset(
 			'gla-product-attributes-css',
