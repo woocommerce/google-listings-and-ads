@@ -73,6 +73,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaignTwoWeeks as S
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCouponSharing as SetupCouponSharingNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsSetupCompleted;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Features;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
@@ -193,6 +194,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		OAuthService::class              => true,
 		WPCLIMigrationGTIN::class        => true,
 		ConnectionService::class         => true,
+		Features::class                  => true,
 	];
 
 	/**
@@ -357,7 +359,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( GenericEvents::class );
 		$this->share_with_tags( SiteClaimEvents::class );
 		$this->share_with_tags( SiteVerificationEvents::class );
-		$this->share_with_tags( ConnectionService::class );
+		$this->share_with_tags( Features::class );
+		$this->share_with_tags( ConnectionService::class, Features::class );
 
 		$this->conditionally_share_with_tags( InstallTimestamp::class );
 		$this->conditionally_share_with_tags( ClearProductStatsCache::class, MerchantStatuses::class );

@@ -4,9 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\WCS;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Features;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -15,19 +13,29 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\WCS
  */
-class ConnectionService implements Service, OptionsAwareInterface {
+class ConnectionService implements Service {
 
-	use OptionsAwareTrait;
+	/** @var Features */
+	protected $features;
+
+	/**
+	 * Constructor
+	 *
+	 * @param Features $features
+	 */
+	public function __construct( Features $features ) {
+		$this->features = $features;
+	}
 
 	/**
 	 * Return an array of feature flags from the external API.
 	 *
 	 * @return array
 	 */
-	public function features(): array {
+	public function get_features(): array {
 		// TODO: Replace hardcoded values with request to external API.
 		return [
-			'version'  => 1,
+			'version'  => gmdate( 'c' ),
 			'features' => [
 				'google_tag_gateway' => [
 					'enabled'    => true,
@@ -44,8 +52,8 @@ class ConnectionService implements Service, OptionsAwareInterface {
 	 * @return void
 	 */
 	public function update_feature_flags(): void {
-		$features = $this->features();
+		$feature_flags = $this->get_features();
 
-		$this->options->update( OptionsInterface::WCS_FEATURE_FLAGS, $features );
+		$this->features->update( $feature_flags );
 	}
 }
