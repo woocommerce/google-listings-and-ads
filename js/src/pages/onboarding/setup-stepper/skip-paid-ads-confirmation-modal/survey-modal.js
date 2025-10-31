@@ -181,7 +181,7 @@ const SurveyModal = ( { onRequestClose, onSkipCreatePaidAds } ) => {
 													</p>
 													<p>
 														<AppDocumentationLink
-															href="https://support.google.com/google-ads/answer/10724817"
+															href="https://woocommerce.com/document/google-for-woocommerce/get-started/google-performance-max-campaigns/"
 															context="skip-paid-ads-survey-modal"
 															linkId="paid-ads-with-performance-max-campaigns-learn-more"
 														>
