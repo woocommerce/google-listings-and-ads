@@ -1,3 +1,5 @@
+/* global MutationObserver */
+
 /**
  * External dependencies
  */
