@@ -251,17 +251,23 @@ class GlobalSiteTagTest extends UnitTest {
 				]
 			);
 
-		$light_tag = new class($this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp) extends GlobalSiteTag { // phpcs:disable PSR12.Classes.AnonClassDeclaration.SpaceAfterKeyword
-			protected function register_assets() {}
-			protected function product_data_hooks() {}
+		$instrumented = new class($this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp) extends GlobalSiteTag { // phpcs:disable PSR12.Classes.AnonClassDeclaration.SpaceAfterKeyword
+			public $register_assets_called    = false;
+			public $product_data_hooks_called = false;
+			protected function register_assets() {
+				$this->register_assets_called = true; }
+			protected function product_data_hooks() {
+				$this->product_data_hooks_called = true; }
 		};
-		$light_tag->set_options_object( $this->options );
+		$instrumented->set_options_object( $this->options );
 
 		// We can't directly intercept the external Adapter static creation now. This test simply
 		// ensures register() completes without throwing when a valid conversion action exists
 		// and GTG is enabled.
-		$light_tag->register();
-		$this->assertTrue( true );
+		$instrumented->register();
+
+		$this->assertTrue( $instrumented->register_assets_called );
+		$this->assertTrue( $instrumented->product_data_hooks_called );
 	}
 
 	public function test_register_exits_early_without_conversion_action() {
