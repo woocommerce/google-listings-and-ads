@@ -3,6 +3,8 @@
  */
 import classnames from 'classnames';
 import { __, sprintf } from '@wordpress/i18n';
+import { Flex } from '@wordpress/components';
+import { useEffect } from '@wordpress/element';
 import { getQuery, onQueryChange } from '@woocommerce/navigation';
 
 /**
@@ -22,6 +24,10 @@ import AddPaidCampaignButton from '~/components/paid-ads/add-paid-campaign-butto
 import ProgramToggle from './program-toggle';
 import FreeListingsDisabledToggle from './free-listings-disabled-toggle';
 import CampaignAssetsTour from '~/components/tours/campaign-assets-tour';
+import BudgetRecommendationBadge from './budget-recommendation-badge';
+import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
+import { getActionedCampaigns } from '~/utils/actionedCampaignsCache';
+import { recordGlaEvent } from '~/utils/tracks';
 
 const PROGRAMS_TABLE_CARD_CLASS_NAME = 'gla-all-programs-table-card';
 const CAMPAIGN_EDIT_BUTTON_CLASS_NAME = 'gla-campaign-edit-button';
@@ -65,10 +71,19 @@ function CountryColumn( { countryCodes, countryNameMap } ) {
 }
 
 /**
+ * When there are campaigns with budget recommendations in the table.
+ *
+ * @event gla_raise_budget_recommendation_badge_campaigns
+ * @property {string} context The context in which the banner was dismissed. Set to 'programs-table-card'.
+ * @property {Array<number>} campaign_ids The IDs of the campaigns with budget recommendations.
+ */
+
+/**
  * All programs table.
  *
  * @see AppTableCard
  *
+ * @fires gla_raise_budget_recommendation_badge_campaigns when there are campaigns with budget recommendations in the table.
  * @param {Object} [props] Properties to be forwarded to AppTableCard.
  */
 const AllProgramsTableCard = ( props ) => {
@@ -79,7 +94,35 @@ const AllProgramsTableCard = ( props ) => {
 	const { data: finalCountryCodesData } =
 		useTargetAudienceFinalCountryCodes();
 	const { data: adsCampaignsData } = useAdsCampaigns();
+	const { campaigns: raiseBudgetRecommendationCampaigns } =
+		useRaiseBudgetRecommendations();
 	const map = useCountryKeyNameMap();
+	const actionedCampaignsCache = getActionedCampaigns();
+
+	useEffect( () => {
+		if (
+			! adsCampaignsData?.length ||
+			! raiseBudgetRecommendationCampaigns?.length
+		) {
+			return;
+		}
+
+		const raiseBudgetRecommendationCampaignIds = new Set(
+			raiseBudgetRecommendationCampaigns.map( ( obj ) => obj.campaign_id )
+		);
+		const existingRecommendedCampaignIds = adsCampaignsData
+			.filter( ( campaignData ) =>
+				raiseBudgetRecommendationCampaignIds.has( campaignData.id )
+			)
+			.map( ( campaignData ) => campaignData.id );
+
+		if ( existingRecommendedCampaignIds.length ) {
+			recordGlaEvent( 'gla_raise_budget_recommendation_badge_campaigns', {
+				context: 'programs-table-card',
+				campaign_ids: existingRecommendedCampaignIds,
+			} );
+		}
+	}, [ adsCampaignsData, raiseBudgetRecommendationCampaigns ] );
 
 	if ( ! finalCountryCodesData || ! adsCampaignsData ) {
 		return <AppSpinner />;
@@ -96,6 +139,16 @@ const AllProgramsTableCard = ( props ) => {
 			<CampaignAssetsTour referenceElementCssSelector={ selector } />
 		);
 	}
+
+	const hasRaiseBudgetRecommendation = ( campaignId ) => {
+		if ( actionedCampaignsCache.includes( `${ campaignId }` ) ) {
+			return false;
+		}
+
+		return raiseBudgetRecommendationCampaigns.some(
+			( recommendation ) => recommendation.campaign_id === campaignId
+		);
+	};
 
 	const data = [
 		{
@@ -114,7 +167,15 @@ const AllProgramsTableCard = ( props ) => {
 		...adsCampaignsData.map( ( el ) => {
 			return {
 				id: el.id,
-				title: el.name,
+				title: (
+					<Flex gap={ 2 } align="center" justify="flex-start" wrap>
+						{ el.name }
+
+						{ hasRaiseBudgetRecommendation( el.id ) && (
+							<BudgetRecommendationBadge />
+						) }
+					</Flex>
+				),
 				dailyBudget: formatAmount( el.amount, true ),
 				country: (
 					<CountryColumn
