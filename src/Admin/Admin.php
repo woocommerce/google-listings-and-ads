@@ -106,10 +106,10 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 		add_action(
 			'woocommerce_product_options_inventory_product_data',
 			function () {
-				$notice_id = 'gla-backorder-availability-notice';
-				$classes   = 'inline woocommerce-message show_if_simple show_if_variable';
-				$style     = 'display:none;';
-				$tab_label = esc_html__( 'tab', 'google-listings-and-ads' );
+				$notice_id  = 'gla-backorder-availability-notice';
+				$classes    = 'inline woocommerce-message show_if_simple show_if_variable';
+				$style      = 'display:none;';
+				$tab_label  = esc_html__( 'tab', 'google-listings-and-ads' );
 				$tab_anchor = sprintf( '<a href="#">%s</a>', $tab_label );
 				printf(
 					'<div id="%1$s" class="%2$s" style="%3$s"><p><strong>%4$s</strong> %5$s</p></div>',
