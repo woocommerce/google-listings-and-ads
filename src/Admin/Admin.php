@@ -109,13 +109,15 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 				$notice_id = 'gla-backorder-availability-notice';
 				$classes   = 'inline woocommerce-message show_if_simple show_if_variable';
 				$style     = 'display:none;';
+				$tab_label = esc_html__( 'tab', 'google-listings-and-ads' );
+				$tab_anchor = sprintf( '<a href="#">%s</a>', $tab_label );
 				printf(
 					'<div id="%1$s" class="%2$s" style="%3$s"><p><strong>%4$s</strong> %5$s</p></div>',
 					esc_attr( $notice_id ),
 					esc_attr( $classes ),
 					esc_attr( $style ),
 					esc_html__( 'Reminder:', 'google-listings-and-ads' ),
-					esc_html__( 'Please do not forget to set the availability date.', 'google-listings-and-ads' )
+					wp_kses_post( sprintf( /* translators: %s: anchor tag linking to tab */ esc_html__( 'Please ensure that the availability date is set for backordered products. You can set it in "Google for WooCommerce" %s.', 'google-listings-and-ads' ), $tab_anchor ) )
 				);
 			}
 		);
@@ -207,7 +209,6 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			]
 		);
 
-		// Custom product edit enhancement script (built via webpack entry 'product-edit').
 		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
 			'gla-product-edit',
 			'js/build/product-edit',

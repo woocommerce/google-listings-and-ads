@@ -85,6 +85,19 @@ register_deactivation_hook(
 	}
 );
 
+// Load plugin text domain at the recommended action timing.
+add_action(
+	'init',
+	function () {
+		// phpcs:ignore WordPress.WP.I18n.load_plugin_textdomain_text_domain
+		load_plugin_textdomain(
+			'google-listings-and-ads',
+			false,
+			basename( __DIR__ ) . '/languages'
+		);
+	}
+);
+
 /**
  * Get our main container object.
  *

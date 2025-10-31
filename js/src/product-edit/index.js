@@ -143,4 +143,17 @@ $( document ).on( 'ready', () => {
 
 	// Detect product type switch (reliable)
 	$( document ).on( 'change', '#product-type', onProductTypeSwitch );
+
+	// Anchor redirect: ensure clicking the tab anchor navigates correctly.
+	$( document ).on(
+		'click',
+		'#gla-backorder-availability-notice a',
+		function ( e ) {
+			e.preventDefault();
+
+			$( '.product_data_tabs a[href="#gla_attributes"]' ).trigger(
+				'click'
+			);
+		}
+	);
 } );
