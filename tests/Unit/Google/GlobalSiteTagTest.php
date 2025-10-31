@@ -119,12 +119,11 @@ class GlobalSiteTagTest extends UnitTest {
 
 	public function test_enhanced_conversion_data_is_null_when_no_customer_data() {
 		// Setup empty customer data.
-		$this->wc->method( 'get_customer_details' )
+		$this->wc->expects( $this->once() )
+			->method( 'get_customer_details' )
 			->willReturn( [] );
 
-		/** @var MockObject|OptionsInterface $options_mock */
-		$options_mock = $this->options;
-		$options_mock->method( 'get' )->willReturn( true );
+		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
 
 		// Get the enhanced conversion tag.
 		$gtag = $this->tag->get_enhanced_conversion_tag();
@@ -138,12 +137,11 @@ class GlobalSiteTagTest extends UnitTest {
 		$email      = 'test@mail.test';
 		$email_hash = hash( 'sha256', strtolower( trim( $email ) ) );
 
-		$this->wc->method( 'get_customer_details' )
+		$this->wc->expects( $this->once() )
+			->method( 'get_customer_details' )
 			->willReturn( [ 'email' => $email ] );
 
-		/** @var MockObject|OptionsInterface $options_mock */
-		$options_mock = $this->options;
-		$options_mock->method( 'get' )->willReturn( true );
+		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
 
 		// Get the enhanvced conversion tag.
 		$gtag = $this->tag->get_enhanced_conversion_tag();
@@ -164,12 +162,11 @@ class GlobalSiteTagTest extends UnitTest {
 			'country' => 'GB',
 		];
 
-		$this->wc->method( 'get_customer_details' )
+		$this->wc->expects( $this->once() )
+			->method( 'get_customer_details' )
 			->willReturn( $customer_mock );
 
-		/** @var MockObject|OptionsInterface $options_mock */
-		$options_mock = $this->options;
-		$options_mock->method( 'get' )->willReturn( true );
+		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
 
 		// Get the enhanvced conversion tag.
 		$gtag = $this->tag->get_enhanced_conversion_tag();
@@ -189,12 +186,11 @@ class GlobalSiteTagTest extends UnitTest {
 			'country' => 'GB',
 		];
 
-		$this->wc->method( 'get_customer_details' )
+		$this->wc->expects( $this->once() )
+			->method( 'get_customer_details' )
 			->willReturn( $customer_mock );
 
-		/** @var MockObject|OptionsInterface $options_mock */
-		$options_mock = $this->options;
-		$options_mock->method( 'get' )->willReturn( true );
+		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
 
 		// Get the enhanvced conversion tag.
 		$gtag = $this->tag->get_enhanced_conversion_tag();
@@ -219,12 +215,11 @@ class GlobalSiteTagTest extends UnitTest {
 			'country'    => 'GB',
 		];
 
-		$this->wc->method( 'get_customer_details' )
+		$this->wc->expects( $this->once() )
+			->method( 'get_customer_details' )
 			->willReturn( $customer_mock );
 
-		/** @var MockObject|OptionsInterface $options_mock */
-		$options_mock = $this->options;
-		$options_mock->method( 'get' )->willReturn( true );
+		$this->options->expects( $this->once() )->method( 'get' )->willReturn( true );
 
 		// Get the enhanvced conversion tag.
 		$gtag = $this->tag->get_enhanced_conversion_tag();
