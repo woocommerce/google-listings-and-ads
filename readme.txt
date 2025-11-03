@@ -155,8 +155,4 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Update - Include the current plugin version in the WPCOM proxy endpoint for Google service to recognize which plugin version is being used.
 * Update - Schedule resynchronization for all products via the Push mode when the Push mode of product synchronization is switched to enable.
 
-= 3.4.1 - 2025-08-26 =
-* Fix - Replaced multiple `setValue` calls with a single `setValues` call to eliminate race conditions during form initialization and reduce inconsistent validation behavior.
-* Tweak - Reduce the cache time for product statuses and issues from 12 hours to 30 minutes.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
