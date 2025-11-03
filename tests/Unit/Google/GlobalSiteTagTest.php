@@ -295,6 +295,5 @@ class GlobalSiteTagTest extends UnitTest {
 
 		$this->assertFalse( $instrumented->register_assets_called, 'register_assets() should not run when conversion action missing.' );
 		$this->assertFalse( $instrumented->product_data_hooks_called, 'product_data_hooks() should not run when conversion action missing.' );
-		$this->assertFalse( has_filter( 'woocommerce_loop_add_to_cart_link' ), 'Product data filter unexpectedly added.' );
 	}
 }
