@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Migration20250910T1653383133
  *
- * Migration class to to remove the ads recommendation table.
+ * Migration class to remove the ads recommendation table.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration
  *
