@@ -1268,12 +1268,12 @@ export function* receivePriceBenchmarkSuggestionsProductPrice(
 
 export function* receiveAdsRecommendations(
 	recommendations,
-	recommendationType
+	recommendationTypes
 ) {
 	return {
 		type: TYPES.RECEIVE_ADS_RECOMMENDATIONS,
 		recommendations,
-		recommendationType,
+		recommendationTypes,
 	};
 }
 
