@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { noop } from 'lodash';
 import { useState } from '@wordpress/element';
 
 /**
