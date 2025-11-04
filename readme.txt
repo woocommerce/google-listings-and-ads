@@ -140,8 +140,8 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
-= 3.5.0 - 2025-11-03 =
-* Add - Add additional options to the skip paid ads survey.
+= 3.5.0 - 2025-11-04 =
+* Add - Additional options to the skip paid ads survey.
 * Add - Recommendation for improving conversions by raising budgets.
 * Fix - Alignment issue on Reports page.
 * Fix - Error when syncing bundled products.
