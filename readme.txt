@@ -5,7 +5,7 @@ Requires at least: 6.6
 Tested up to: 6.8
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.4.3
+Stable tag: 3.5.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -140,6 +140,16 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.5.0 - 2025-11-04 =
+* Add - Additional options to the skip paid ads survey.
+* Add - Recommendation for improving conversions by raising budgets.
+* Fix - Alignment issue on Reports page.
+* Fix - Error when syncing bundled products.
+* Fix - MC connection stuck in loading state when connection is interrupted.
+* Fix - Prevent floating point precision errors when converting to micro units by rounding before casting to integer.
+* Fix - Remove ads account status check from `ads/recommendations` endpoint.
+* Tweak - WC 10.3 compatibility.
+
 = 3.4.3 - 2025-09-16 =
 * Dev - Update NPM packages with security issues.
 * Dev - Update NPM packages with security issues.
@@ -154,9 +164,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Tweak - Renamed the log file name from `google-listings-and-ads` to `google-for-woocommerce`.
 * Update - Include the current plugin version in the WPCOM proxy endpoint for Google service to recognize which plugin version is being used.
 * Update - Schedule resynchronization for all products via the Push mode when the Push mode of product synchronization is switched to enable.
-
-= 3.4.1 - 2025-08-26 =
-* Fix - Replaced multiple `setValue` calls with a single `setValues` call to eliminate race conditions during form initialization and reduce inconsistent validation behavior.
-* Tweak - Reduce the cache time for product statuses and issues from 12 hours to 30 minutes.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

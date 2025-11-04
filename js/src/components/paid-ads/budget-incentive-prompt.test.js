@@ -20,6 +20,12 @@ jest.mock( '~/hooks/useGoogleAdsAccount', () =>
 		.mockReturnValue( { googleAdsAccount: { code: 'USD', symbol: '$' } } )
 );
 
+jest.mock( '~/hooks/useRaiseBudgetRecommendations', () =>
+	jest.fn().mockReturnValue( {
+		hasFinishedResolution: true,
+	} )
+);
+
 jest.mock( '~/hooks/useBudgetRecommendation', () =>
 	jest.fn().mockReturnValue( {
 		hasResolved: true,
