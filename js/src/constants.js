@@ -85,6 +85,11 @@ export const GOOGLE_ADS_BILLING_STATUS = {
 	CANCELLED: 'cancelled',
 };
 
+export const YOUTUBE_ACCOUNT_STATUS = {
+	CONNECTED: 'connected',
+	DISCONNECTED: 'disconnected',
+};
+
 // Attribute Mapping
 export const CATEGORY_CONDITION_SELECT_TYPES = {
 	ALL: 'ALL',
