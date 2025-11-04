@@ -1268,11 +1268,32 @@ export function* receivePriceBenchmarkSuggestionsProductPrice(
 
 export function* receiveAdsRecommendations(
 	recommendations,
-	recommendationTypes
+	recommendationType
 ) {
 	return {
 		type: TYPES.RECEIVE_ADS_RECOMMENDATIONS,
 		recommendations,
-		recommendationTypes,
+		recommendationType,
 	};
+}
+
+export function* fetchYouTubeAccount() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/youtube/connection`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_YOUTUBE,
+			account: response,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading YouTube account info.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }

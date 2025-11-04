@@ -19,7 +19,6 @@ import {
 	getReportKey,
 	getCountryCodesKey,
 	getAdsBudgetMetricsKey,
-	arrayToUnderscoreKey,
 } from './utils';
 import { handleApiError } from '~/utils/handleError';
 import {
@@ -27,7 +26,6 @@ import {
 	adaptAdsBudgetMetrics,
 	adaptAdsCampaign,
 	adaptAssetGroup,
-	adaptRaiseAdsBudgetRecommendations,
 } from './adapters';
 import { fetchWithHeaders, awaitPromise, recordGlaDataEvent } from './controls';
 
@@ -46,6 +44,7 @@ import {
 	receiveGoogleMCContactInformation,
 	fetchTargetAudience,
 	fetchMCSetup,
+	fetchYouTubeAccount,
 	receiveGoogleAccountAccess,
 	receiveReport,
 	receiveMCProductStatistics,
@@ -747,30 +746,15 @@ export function* getPriceBenchmarkSuggestions( args ) {
 /**
  * Resolver for getting the Ads recommendations.
  */
-export function* getAdsRecommendations( types, campaign_id = null ) {
+export function* getAdsRecommendations( type ) {
 	try {
-		const params = {
-			types,
-		};
-
-		// campaign_id should be added to the query only if it's defined.
-		if ( campaign_id ) {
-			params.campaign_id = campaign_id;
-		}
-
 		const response = yield apiFetch( {
-			path: addQueryArgs(
-				`${ API_NAMESPACE }/ads/recommendations`,
-				params
-			),
+			path: addQueryArgs( `${ API_NAMESPACE }/ads/recommendations`, {
+				type,
+			} ),
 		} );
 
-		const key = [ campaign_id, ...types ].filter( Boolean );
-		const typesKey = arrayToUnderscoreKey( key );
-		const data = campaign_id
-			? adaptRaiseAdsBudgetRecommendations( response )
-			: response;
-		yield receiveAdsRecommendations( data, typesKey );
+		yield receiveAdsRecommendations( response, type );
 	} catch ( error ) {
 		handleApiError(
 			error,
@@ -781,3 +765,14 @@ export function* getAdsRecommendations( types, campaign_id = null ) {
 		);
 	}
 }
+
+export function* getYouTubeAccount() {
+	yield fetchYouTubeAccount();
+}
+
+getYouTubeAccount.shouldInvalidate = ( action ) => {
+	return (
+		action.type === TYPES.DISCONNECT_ACCOUNTS_YOUTUBE &&
+		action.invalidateRelatedState
+	);
+};

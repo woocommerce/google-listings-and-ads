@@ -33,6 +33,7 @@ const DEFAULT_STATE = {
 			existing_ads: null,
 			ads_billing_status: null,
 			google_access: null,
+			youtube: null,
 		},
 		contact: null,
 		mapping: {
@@ -618,13 +619,17 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_ADS_RECOMMENDATIONS: {
-			const { recommendations, recommendationTypes } = action;
+			const { recommendations, recommendationType } = action;
 
 			return setIn(
 				state,
-				[ 'ads', 'recommendations', recommendationTypes ],
+				[ 'ads', 'recommendations', recommendationType ],
 				recommendations
 			);
+		}
+
+		case TYPES.RECEIVE_ACCOUNTS_YOUTUBE: {
+			return setIn( state, 'mc.accounts.youtube', action.account );
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

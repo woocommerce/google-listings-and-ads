@@ -39,6 +39,7 @@ describe( 'reducer', () => {
 					existing_ads: null,
 					ads_billing_status: null,
 					google_access: null,
+					youtube: null,
 				},
 				mapping: {
 					attributes: [],
