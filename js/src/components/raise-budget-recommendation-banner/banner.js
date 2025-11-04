@@ -174,7 +174,7 @@ const Banner = ( { onBannerDismissed } ) => {
 				<FlexBlock>
 					<p className="gla-raise-budget-recommendation-banner__title">
 						{ sprintf(
-							// translators: %s: The campaign name with with budget recommendation.
+							// translators: %s: The campaign name with budget recommendation.
 							__(
 								'You missed conversion value in “%s” campaign because you’re limited by budget. Increasing your budget can result in more conversion value.',
 								'google-listings-and-ads'

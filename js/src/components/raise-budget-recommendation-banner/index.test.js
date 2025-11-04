@@ -16,7 +16,7 @@ import usePreference from '~/hooks/usePreference';
 import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
 import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
-import mockedRecommendedCampaigns from '../../../../tests/mocks/ads/recommendations/raise-buget-recommendations.json';
+import mockedRecommendedCampaigns from '../../../../tests/mocks/ads/recommendations/raise-budget-recommendations.json';
 
 jest.mock( '@woocommerce/components', () => ( {
 	...jest.requireActual( '@woocommerce/components' ),

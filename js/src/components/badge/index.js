@@ -19,7 +19,7 @@ import './index.scss';
  * @param {Object} props - The component props.
  * @param {string} [props.className] - Additional CSS classes to apply to the badge.
  * @param {'default'|'warning'|'success'|'info'|'error'} [props.intent='default'] - The intent of the badge, which determines its styling.
- *                                            Possible values include 'default', 'success', 'info', 'warning ,'error', etc.
+ *                                            Possible values include 'default', 'success', 'info', 'warning', 'error', etc.
  * @param {JSX.Element} props.children - The content to display inside the badge.
  * @param {Object} [props.props] - Additional props to spread onto the badge element.
  * @return {JSX.Element} The rendered badge component.
