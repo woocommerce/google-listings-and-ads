@@ -51,6 +51,7 @@ export default class SettingsPage extends MockRequests {
 		await this.mockEnhancedConversionsStatus();
 		await this.fulfillAdsReportProducts( adsReportProductsData );
 		await this.fulfillProductStatisticsRequest( mcProductStatistics );
+		await this.mockYouTubeAccountNotConnected();
 	}
 
 	/**

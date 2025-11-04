@@ -178,4 +178,27 @@ test.describe( 'Settings', () => {
 			} );
 		} );
 	} );
+
+	test.describe( 'YouTube Shopping', () => {
+		test( 'should show connect button when account is not connected', async () => {
+			await settingsPage.goto();
+
+			const connectButton = page.getByRole( 'button', {
+				name: 'Connect YouTube channel',
+			} );
+
+			await expect( connectButton ).toBeVisible();
+		} );
+
+		test( 'should show disconnect button when account is connected', async () => {
+			await settingsPage.mockYouTubeShoppingConnectedStatus( true );
+			await settingsPage.goto();
+
+			const disconnectButton = page.getByRole( 'button', {
+				name: 'Disconnect YouTube channel',
+			} );
+
+			await expect( disconnectButton ).toBeVisible();
+		} );
+	} );
 } );
