@@ -27,6 +27,7 @@ const ConnectedYouTubeAccountCard = ( { youTubeAccount } ) => {
 	if ( youTubeAccount?.channel?.id ) {
 		accountCardProps = {
 			description: youTubeAccount.channel.label,
+			indicator: <ConnectedIconLabel />,
 		};
 	} else {
 		accountCardProps = {
@@ -42,11 +43,7 @@ const ConnectedYouTubeAccountCard = ( { youTubeAccount } ) => {
 	}
 
 	return (
-		<AccountCard
-			appearance={ APPEARANCE.YOUTUBE }
-			indicator={ <ConnectedIconLabel /> }
-			{ ...accountCardProps }
-		>
+		<AccountCard appearance={ APPEARANCE.YOUTUBE } { ...accountCardProps }>
 			<Section.Card.Footer>
 				<DisconnectAccount />
 			</Section.Card.Footer>

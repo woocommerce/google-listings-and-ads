@@ -13,6 +13,9 @@ export default class SettingsPage extends MockRequests {
 	constructor( page ) {
 		super( page );
 		this.page = page;
+		this.youTubeCard = this.page.locator(
+			'.gla-account-card:nth-child(4)'
+		);
 	}
 
 	/**
