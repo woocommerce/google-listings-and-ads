@@ -52,6 +52,10 @@ jest.mock( '@woocommerce/navigation', () => {
 
 jest.mock( '~/utils/isWCTracksEnabled', () => jest.fn() );
 
+jest.mock( '~/components/tours/youtube-shopping-tour', () =>
+	jest.fn().mockName( 'YouTubeShoppingTour' )
+);
+
 const CAMPAIGN_CREATION_SUCCESS_GUIDE_TEXT =
 	"You've set up a Performance Max Campaign!";
 const CES_PROMPT_TEXT = 'How easy was it to create a Google Ad campaign?';
