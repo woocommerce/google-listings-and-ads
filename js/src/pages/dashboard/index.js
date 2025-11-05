@@ -28,6 +28,7 @@ import RebrandingTour from '~/components/tours/rebranding-tour';
 import PMaxImproveAssetsBanner from '~/components/pmax-improve-assets-banner';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
 import RaiseBudgetRecommendationBanner from '~/components/raise-budget-recommendation-banner';
+import YouTubeShoppingTour from '~/components/tours/youtube-shopping-tour';
 import './index.scss';
 
 /**
@@ -93,6 +94,7 @@ const Dashboard = () => {
 				<MainTabNav />
 				<RaiseBudgetRecommendationBanner />
 				<RebrandingTour />
+				<YouTubeShoppingTour />
 				<div className="gla-dashboard__filter">
 					<AppDateRangeFilterPicker
 						trackEventReportId={ trackEventReportId }
