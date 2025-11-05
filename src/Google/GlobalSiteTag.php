@@ -76,6 +76,13 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	protected $products = [];
 
 	/**
+	 * GTG Adapter instance.
+	 *
+	 * @var Adapter|null
+	 */
+	protected $gtag_adapter = null;
+
+	/**
 	 * Global Site Tag constructor.
 	 *
 	 * @param AssetsHandlerInterface $assets_handler
@@ -112,22 +119,29 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$ads_conversion_id    = $conversion_action['conversion_id'];
 		$ads_conversion_label = $conversion_action['conversion_label'];
 
-		if ( $this->is_gtg_enabled() ) {
-			add_action(
-				'init',
-				static function () use ( $ads_conversion_id ) {
-					$gtg_adapter = Adapter::create();
-					$gtg_adapter->initialize();
-					$gtg_adapter->update(
+		$this->gtag_adapter = Adapter::create();
+
+		// Initialize GTG Adapter if enabled and this is a front end request.
+		if ( $this->wp->is_front_end_request() && $this->is_gtg_enabled() ) {
+			$this->gtag_adapter->initialize();
+		}
+
+		$gtag_option_name = $this->get_slug() . '_' . OptionsInterface::ADS_GTG_ENABLED;
+		add_action(
+			'update_option_' . $gtag_option_name,
+			function ( $old_value, $value ) use ( $ads_conversion_id ) {
+				if ( $value ) {
+					$this->gtag_adapter->update(
 						[
-							'tagId'           => $ads_conversion_id,
-							'measurementPath' => '/wc/google/metrics/',
+							'tagId' => $ads_conversion_id,
 						]
 					);
-				},
-				9
-			);
-		}
+				}
+				// @todo: Remove rewrites when GTG is disabled.
+			},
+			10,
+			3
+		);
 
 		add_action(
 			'wp_head',
