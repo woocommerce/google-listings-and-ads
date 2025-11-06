@@ -26,9 +26,17 @@ const TimeStepper = ( {
 	const debounceTime = 600;
 
 	useEffect( () => {
+		if ( time === null ) {
+			if ( field === 'time' ) {
+				handleBlur( 1, 'time' );
+			} else if ( field === 'maxTime' ) {
+				handleBlur( 5, 'maxTime' );
+			}
+		}
+
 		// If the time is 0, we want to display an empty string to show the "Same Day" delivery placeholder.
 		setValue( time === 0 ? '' : time );
-	}, [ time ] );
+	}, [ time, field, handleBlur ] );
 
 	function onIncrement( increment ) {
 		const newValue = parseFloat( value || 0 ) + increment;
