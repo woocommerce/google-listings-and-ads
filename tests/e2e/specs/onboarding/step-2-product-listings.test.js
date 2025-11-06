@@ -222,7 +222,7 @@ test.describe( 'Configure product listings', () => {
 
 		test( 'should have minTime as 1 and maxTime as 5 set by default', async () => {
 			const estimatedTimesInputBox =
-				await productListingsPage.getEstimatedShippingTimesValues();
+				await productListingsPage.getEstimatedShippingTimesInputBox();
 			const minTime = await estimatedTimesInputBox.first().inputValue();
 			const maxTime = await estimatedTimesInputBox.nth( 1 ).inputValue();
 
