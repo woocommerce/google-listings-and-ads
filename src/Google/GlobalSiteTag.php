@@ -131,6 +131,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			'update_option_' . $gtag_option_name,
 			function ( $old_value, $value ) use ( $ads_conversion_id ) {
 				if ( $value ) {
+					// Ensure save_mod_rewrite_rules is loaded.
+					require_once ABSPATH . 'wp-admin/includes/misc.php';
+
 					$this->gtag_adapter->update(
 						[
 							'tagId' => $ads_conversion_id,
