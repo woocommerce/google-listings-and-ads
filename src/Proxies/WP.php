@@ -385,4 +385,13 @@ class WP {
 	public function delete_option( ...$arguments ) {
 		return delete_option( ...$arguments );
 	}
+
+	/**
+	 * Determines whether the current request is a front-end request.
+	 *
+	 * @return bool True if it's a front-end request, false otherwise.
+	 */
+	public function is_front_end_request(): bool {
+		return ! is_admin() && ! $this->wp_is_serving_rest_request() && ! $this->wp_doing_ajax();
+	}
 }
