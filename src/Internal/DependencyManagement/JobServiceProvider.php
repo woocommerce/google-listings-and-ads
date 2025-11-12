@@ -54,7 +54,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Event\StartProductSync;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateFeatureFlags;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PriceBenchmarks;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product;
@@ -203,8 +202,6 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_action_scheduler_job( UpdateMerchantPriceBenchmarks::class, MerchantCenterService::class, PriceBenchmarks::class );
 
 		$this->share_action_scheduler_job( UpdateAdsRecommendations::class, AdsRecommendationsService::class, AccountService::class );
-
-		$this->share_action_scheduler_job( UpdateFeatureFlags::class, ConnectionService::class );
 	}
 
 	/**
