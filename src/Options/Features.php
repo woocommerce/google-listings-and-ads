@@ -138,7 +138,7 @@ class Features implements Service, TransientsAwareInterface {
 		$site_id = get_home_url();
 
 		// Create a numeric hash using the site ID and feature name.
-		$hash = crc32( $site_id . ':' . $feature );
+		$hash = abs( crc32( $site_id . ':' . $feature ) );
 
 		// Return the site percentage rollout.
 		return $hash % 100;
