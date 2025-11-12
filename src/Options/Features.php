@@ -138,12 +138,23 @@ class Features implements Service, TransientsAwareInterface {
 	/**
 	 * Return the site percentage rollout for a specific feature.
 	 *
+	 * Generates a deterministic percentage value (0–99) used for feature rollout decisions.
+	 *
+	 * Provides a consistent value to determine whether a site falls within a feature rollout
+	 * group based on a target percentage. The same site and feature will always produce
+	 * the same value, allowing predictable rollouts on the client-side without relying on external state.
+	 *
+	 * Example:
+	 *   Enable a feature for 25% of sites:
+	 *   if ( $this->get_site_percentage_rollout( 'feature_slug' ) < 25 ) { ... }
+	 *
 	 * @param string $feature
+	 * @param string $site_id
 	 * @return integer
 	 */
-	protected function get_site_percentage_rollout( string $feature ): int {
+	public function get_site_percentage_rollout( string $feature, $site_id = null ): int {
 		// Get the unique ID for the site.
-		$site_id = get_home_url();
+		$site_id = $site_id ?? get_home_url();
 
 		// Create a numeric hash using the site ID and feature name.
 		$hash = abs( crc32( $site_id . ':' . $feature ) );

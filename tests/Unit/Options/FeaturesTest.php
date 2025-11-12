@@ -61,9 +61,9 @@ class FeaturesTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->connection  = $this->createMock( ConnectionService::class );
+		$this->connection = $this->createMock( ConnectionService::class );
 		$this->transients = $this->createMock( TransientsInterface::class );
-		$this->features = new Features( $this->connection );
+		$this->features   = new Features( $this->connection );
 		$this->features->set_transients_object( $this->transients );
 	}
 
@@ -76,7 +76,6 @@ class FeaturesTest extends UnitTest {
 		$this->connection->expects( $this->once() )
 			->method( 'get_features' )
 			->willReturn( self::TEST_INPUT_DATA );
-
 
 		$features = $this->features->get_features();
 
@@ -132,5 +131,23 @@ class FeaturesTest extends UnitTest {
 		$feature  = $this->features->get_features( Features::GOOGLE_TAG_GATEWAY );
 
 		$this->assertEquals( $feature, $expected );
+	}
+
+	public function test_percentage_rollout_distribution_is_uniform() {
+		$buckets = array_fill( 0, 100, 0 );
+
+		// Simulate 10,000 different sites
+		for ( $i = 0; $i < 10000; $i++ ) {
+			$site_id = "https://example{$i}.com";
+			$bucket  = $this->features->get_site_percentage_rollout( 'test_feature', $site_id );
+
+			++$buckets[ $bucket ];
+		}
+
+		// Expect roughly 100 per bucket, allow 25% variance
+		foreach ( $buckets as $count ) {
+			$this->assertGreaterThan( 75, $count );
+			$this->assertLessThan( 125, $count );
+		}
 	}
 }

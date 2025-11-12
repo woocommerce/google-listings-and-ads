@@ -54,7 +54,6 @@ class FeaturesControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_features_for_single_feature() {
-
 		$expected = self::TEST_FEATURES['features'][ Features::GOOGLE_TAG_GATEWAY ];
 
 		$this->features->expects( $this->once() )
