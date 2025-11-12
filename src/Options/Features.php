@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WCS\ConnectionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 
 /**
@@ -10,9 +11,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Options
  */
-class Features implements Service, OptionsAwareInterface {
+class Features implements Service, TransientsAwareInterface {
 
-	use OptionsAwareTrait;
+	use TransientsAwareTrait;
+
+	/** @var ConnectionService */
+	protected $connection;
 
 	/** @var string Google Tag Gateway feature ID */
 	public const GOOGLE_TAG_GATEWAY = 'google_tag_gateway';
@@ -23,12 +27,37 @@ class Features implements Service, OptionsAwareInterface {
 	];
 
 	/**
-	 * Return the option name.
+	 * Constructor.
+	 *
+	 * @param ConnectionService $connection
+	 */
+	public function __construct( ConnectionService $connection ) {
+		$this->connection = $connection;
+	}
+
+	/**
+	 * Return the transient name.
 	 *
 	 * @return string
 	 */
-	protected function option_name(): string {
-		return OptionsInterface::WCS_FEATURE_FLAGS;
+	protected function transient_name(): string {
+		return TransientsInterface::WCS_FEATURE_FLAGS;
+	}
+
+	/**
+	 * Get the feature flag configuration.
+	 *
+	 * @return array
+	 */
+	public function get_features(): array {
+		$features = $this->transients->get( $this->transient_name() );
+
+		if ( ! is_null( $features ) ) {
+			return $features;
+		}
+
+		// Get the latest
+		return $this->update_features();
 	}
 
 	/**
@@ -38,7 +67,7 @@ class Features implements Service, OptionsAwareInterface {
 	 * @return boolean True if the feature is enabled, false if disabled.
 	 */
 	public function is_enabled( string $feature ): bool {
-		$option = $this->options->get( $this->option_name() );
+		$option = $this->get_features();
 
 		if ( isset( $option['features'][ $feature ]['enabled'] ) ) {
 			return $option['features'][ $feature ]['enabled'];
@@ -50,10 +79,12 @@ class Features implements Service, OptionsAwareInterface {
 	/**
 	 * Update the feature flags option from the WCS API.
 	 *
-	 * @param array $features
-	 * @return void
+	 * @return array
 	 */
-	public function update( array $features ) {
+	protected function update_features() {
+		// Get the latest feature flags from WCS.
+		$features = $this->connection->get_features();
+
 		// Create the new option array.
 		$option = [
 			'version'  => isset( $features['version'] ) ? $features['version'] : gmdate( 'c' ),
@@ -90,8 +121,10 @@ class Features implements Service, OptionsAwareInterface {
 			}
 		}
 
-		// Update the option in the database.
-		$this->options->update( $this->option_name(), $option );
+		// Update the transient in the database.
+		$this->transients->set( $this->transient_name(), $option, MINUTE_IN_SECONDS * 5 );
+
+		return $option;
 	}
 
 	/**

@@ -3,7 +3,7 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\FeaturesController;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Features;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 
 /**
@@ -27,16 +27,15 @@ class FeaturesControllerTest extends RESTControllerUnitTest {
 	];
 
 	/**
-	 * @var OptionsInterface
+	 * @var Features
 	 */
-	private OptionsInterface $options;
+	private Features $features;
 
 	public function setUp(): void {
 		parent::setUp();
-		$this->options    = $this->createMock( OptionsInterface::class );
-		$this->controller = new FeaturesController( $this->server );
+		$this->features   = $this->createMock( Features::class );
+		$this->controller = new FeaturesController( $this->server, $this->features );
 		$this->controller->register();
-		$this->controller->set_options_object( $this->options );
 	}
 
 	public function test_register_route() {
@@ -44,8 +43,8 @@ class FeaturesControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_features_route() {
-		$this->options->expects( $this->once() )
-			->method( 'get' )->willReturn( self::TEST_FEATURES );
+		$this->features->expects( $this->once() )
+			->method( 'get_features' )->willReturn( self::TEST_FEATURES );
 
 		$response = $this->do_request( self::ROUTE );
 

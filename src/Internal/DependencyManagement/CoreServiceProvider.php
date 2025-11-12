@@ -359,8 +359,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( GenericEvents::class );
 		$this->share_with_tags( SiteClaimEvents::class );
 		$this->share_with_tags( SiteVerificationEvents::class );
-		$this->share_with_tags( Features::class );
-		$this->share_with_tags( ConnectionService::class, Features::class );
+		$this->share_with_tags( ConnectionService::class );
+		$this->share_with_tags( Features::class, ConnectionService::class );
 
 		$this->conditionally_share_with_tags( InstallTimestamp::class );
 		$this->conditionally_share_with_tags( ClearProductStatsCache::class, MerchantStatuses::class );

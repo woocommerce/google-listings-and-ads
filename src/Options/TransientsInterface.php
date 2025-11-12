@@ -21,6 +21,7 @@ interface TransientsInterface {
 	public const MC_STATUSES          = 'mc_statuses';
 	public const URL_MATCHES          = 'url_matches';
 	public const WPCOM_API_STATUS     = 'wpcom_api_status';
+	public const WCS_FEATURE_FLAGS    = 'wcs_feature_flags';
 
 	public const VALID_OPTIONS = [
 		self::ADS_BUDGET_METRICS   => true,
@@ -34,6 +35,7 @@ interface TransientsInterface {
 		self::MC_STATUSES          => true,
 		self::URL_MATCHES          => true,
 		self::WPCOM_API_STATUS     => true,
+		self::WCS_FEATURE_FLAGS    => true,
 	];
 
 	/**

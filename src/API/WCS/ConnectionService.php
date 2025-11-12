@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\WCS;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\Features;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -15,18 +14,6 @@ defined( 'ABSPATH' ) || exit;
  */
 class ConnectionService implements Service {
 
-	/** @var Features */
-	protected $features;
-
-	/**
-	 * Constructor
-	 *
-	 * @param Features $features
-	 */
-	public function __construct( Features $features ) {
-		$this->features = $features;
-	}
-
 	/**
 	 * Return an array of feature flags from the external API.
 	 *
@@ -34,7 +21,7 @@ class ConnectionService implements Service {
 	 */
 	public function get_features(): array {
 		// TODO: Replace hardcoded values with request to external API.
-		return [
+		$features = [
 			'version'  => gmdate( 'c' ),
 			'features' => [
 				'google_tag_gateway' => [
@@ -44,16 +31,7 @@ class ConnectionService implements Service {
 				],
 			],
 		];
-	}
 
-	/**
-	 * Update the feature flags option in the database.
-	 *
-	 * @return void
-	 */
-	public function update_feature_flags(): void {
-		$feature_flags = $this->get_features();
-
-		$this->features->update( $feature_flags );
+		return apply_filters( 'woocommerce_gla_wcs_feature_flags', $features );
 	}
 }

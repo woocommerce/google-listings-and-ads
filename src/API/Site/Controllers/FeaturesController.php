@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Features;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
 use Exception;
@@ -17,15 +17,20 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers
  */
-class FeaturesController extends BaseOptionsController {
+class FeaturesController extends BaseController {
+
+	/** @var Features */
+	protected $features;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param RESTServer $server
 	 */
-	public function __construct( RESTServer $server ) {
+	public function __construct( RESTServer $server, Features $features ) {
 		parent::__construct( $server );
+
+		$this->features = $features;
 	}
 
 	/**
@@ -56,7 +61,7 @@ class FeaturesController extends BaseOptionsController {
 	 */
 	protected function get_features_read_callback(): callable {
 		return function () {
-			return $this->options->get( OptionsInterface::WCS_FEATURE_FLAGS, [] );
+			return $this->features->get_features();
 		};
 	}
 
