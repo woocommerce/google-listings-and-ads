@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\YouTu
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -22,13 +23,19 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 
 	use ContainerAwareTrait;
 
+	/** @var Connection */
+	protected $connection;
+
 	/**
 	 * AccountController constructor.
 	 *
 	 * @param RESTServer $server
+	 * @param Connection $connection
 	 */
-	public function __construct( RESTServer $server ) {
+	public function __construct( RESTServer $server, Connection $connection ) {
 		parent::__construct( $server );
+
+		$this->connection = $connection;
 	}
 
 	/**
@@ -70,15 +77,17 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 	 */
 	protected function get_connect_callback(): callable {
 		return function () {
-			// @TODO: Call WCS to get the correct OAuth URL with $this->container->get( 'connect_server_root' );
-
-			// Create return URL to pass to WCS.
-			$return_url = admin_url( 'admin.php?page=wc-admin&path=/google/settings' );
-
-			// Return the OAuth URL in the response.
-			return [
-				'url' => $return_url,
-			];
+			try {
+				return [
+					'url' => $this->connection->connect(
+						admin_url(
+							'admin.php?page=wc-admin&path=/google/settings'
+						)
+					),
+				];
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
 		};
 	}
 
@@ -89,7 +98,7 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 	 */
 	protected function get_disconnect_callback(): callable {
 		return function () {
-			// @TODO: Make disconnect request to WCS with $this->container->get( 'connect_server_root' );
+			$this->connection->disconnect();
 
 			return [
 				'status'  => 'success',
@@ -105,12 +114,16 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 	 */
 	protected function get_connected_callback(): callable {
 		return function () {
-			// @TODO: Get connection status from WCS with $this->container->get( 'connect_server_root' );
+			try {
+				$status = $this->connection->get_status();
 
-			return [
-				'status'  => 'disconnected',
-				'channel' => [],
-			];
+				return [
+					'status'  => isset( $status['status'] ) ? $status['status'] : 'disconnected',
+					'channel' => isset( $status['channel'] ) ? $status['channel'] : [],
+				];
+			} catch ( Exception $e ) {
+				$this->response_from_exception( $e );
+			}
 		};
 	}
 
