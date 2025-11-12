@@ -47,17 +47,25 @@ class Features implements Service, TransientsAwareInterface {
 	/**
 	 * Get the feature flag configuration.
 	 *
+	 * @param string $feature
 	 * @return array
 	 */
-	public function get_features(): array {
-		$features = $this->transients->get( $this->transient_name() );
+	public function get_features( string $feature = '' ): array {
+		$configuration = $this->transients->get( $this->transient_name() );
 
-		if ( ! is_null( $features ) ) {
-			return $features;
+		if ( is_null( $configuration ) ) {
+			$configuration = $this->update_features();
 		}
 
-		// Get the latest
-		return $this->update_features();
+		if ( empty( $feature ) ) {
+			return $configuration;
+		}
+
+		if ( ! in_array( $feature, self::VALID_FEATURES, true ) || ! isset( $configuration['features'][ $feature ] ) ) {
+			return [];
+		}
+
+		return $configuration['features'][ $feature ];
 	}
 
 	/**

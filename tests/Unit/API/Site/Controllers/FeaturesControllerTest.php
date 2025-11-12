@@ -44,11 +44,27 @@ class FeaturesControllerTest extends RESTControllerUnitTest {
 
 	public function test_get_features_route() {
 		$this->features->expects( $this->once() )
-			->method( 'get_features' )->willReturn( self::TEST_FEATURES );
+			->method( 'get_features' )
+			->willReturn( self::TEST_FEATURES );
 
 		$response = $this->do_request( self::ROUTE );
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( self::TEST_FEATURES, $response->get_data() );
+	}
+
+	public function test_get_features_for_single_feature() {
+
+		$expected = self::TEST_FEATURES['features'][ Features::GOOGLE_TAG_GATEWAY ];
+
+		$this->features->expects( $this->once() )
+			->method( 'get_features' )
+			->with( Features::GOOGLE_TAG_GATEWAY )
+			->willReturn( $expected );
+
+		$response = $this->do_request( self::ROUTE, 'GET', [ 'feature' => 'google_tag_gateway' ] );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( $expected, $response->get_data() );
 	}
 }

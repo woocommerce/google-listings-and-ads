@@ -26,6 +26,7 @@ class FeaturesController extends BaseController {
 	 * Constructor.
 	 *
 	 * @param RESTServer $server
+	 * @param Features   $features
 	 */
 	public function __construct( RESTServer $server, Features $features ) {
 		parent::__construct( $server );
@@ -60,8 +61,8 @@ class FeaturesController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_features_read_callback(): callable {
-		return function () {
-			return $this->features->get_features();
+		return function ( Request $request ) {
+			return $this->features->get_features( $request->get_param( 'feature' ) ?? '' );
 		};
 	}
 
@@ -71,7 +72,14 @@ class FeaturesController extends BaseController {
 	 * @return array The Schema properties
 	 */
 	protected function get_schema_properties(): array {
-		return [];
+		return [
+			'feature' => [
+				'type'        => 'string',
+				'description' => __( 'Filter feature flags by a single feature', 'google-listings-and-ads' ),
+				'enum'        => Features::VALID_FEATURES,
+				'required'    => false,
+			],
+		];
 	}
 
 	/**

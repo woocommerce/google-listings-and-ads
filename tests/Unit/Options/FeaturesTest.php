@@ -121,4 +121,16 @@ class FeaturesTest extends UnitTest {
 		$this->assertTrue( $this->features->is_enabled( Features::GOOGLE_TAG_GATEWAY ) );
 		$this->assertFalse( $this->features->is_enabled( 'test_feature' ) );
 	}
+
+	public function test_features_returns_single_feature() {
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->with( TransientsInterface::WCS_FEATURE_FLAGS )
+			->willReturn( self::TEST_OUTPUT_DATA );
+
+		$expected = self::TEST_OUTPUT_DATA['features'][ Features::GOOGLE_TAG_GATEWAY ];
+		$feature  = $this->features->get_features( Features::GOOGLE_TAG_GATEWAY );
+
+		$this->assertEquals( $feature, $expected );
+	}
 }
