@@ -85,6 +85,7 @@ describe( 'reducer', () => {
 				},
 				summary: {},
 			},
+			detailed_errors: [],
 		} );
 
 		prepareState = prepareImmutableState.bind( null, defaultState );
@@ -965,5 +966,105 @@ describe( 'reducer', () => {
 				expect( state ).toHaveProperty( path, payload );
 			}
 		);
+	} );
+
+	describe( 'Detailed errors', () => {
+		const path = 'detailed_errors';
+
+		it( 'should append a detailed error entry with slot, type and fallback', () => {
+			const action = {
+				type: TYPES.RECEIVE_DETAILED_ERROR,
+				errorSlot: 'shipping_rates',
+				errorType: 'merchant_center',
+				errorFallback: 'Something went wrong',
+				error: { message: 'Original error' },
+			};
+			const state = reducer( prepareState(), action );
+
+			expect( state ).toHaveProperty( path );
+			expect( state.detailed_errors ).toHaveLength( 1 );
+			expect( state.detailed_errors[ 0 ] ).toMatchObject( {
+				message: 'Original error',
+				slot: 'shipping_rates',
+				type: 'merchant_center',
+				fallback: 'Something went wrong',
+			} );
+		} );
+
+		it( 'should append multiple detailed error entries preserving order', () => {
+			const first = reducer( prepareState(), {
+				type: TYPES.RECEIVE_DETAILED_ERROR,
+				errorSlot: 'slot_a',
+				errorType: 'general',
+				error: { code: 'A', message: 'Err A' },
+			} );
+			const second = reducer( first, {
+				type: TYPES.RECEIVE_DETAILED_ERROR,
+				errorSlot: 'slot_b',
+				errorType: 'ads',
+				errorFallback: 'Fallback B',
+				error: { code: 'B' },
+			} );
+
+			expect( second.detailed_errors ).toHaveLength( 2 );
+			expect( second.detailed_errors[ 0 ] ).toMatchObject( {
+				code: 'A',
+				message: 'Err A',
+				slot: 'slot_a',
+				type: 'general',
+				fallback: undefined,
+			} );
+			expect( second.detailed_errors[ 1 ] ).toMatchObject( {
+				code: 'B',
+				slot: 'slot_b',
+				type: 'ads',
+				fallback: 'Fallback B',
+			} );
+		} );
+
+		it( 'should clear a detailed error entry by slot', () => {
+			const withErrors = reducer( prepareState(), {
+				type: TYPES.RECEIVE_DETAILED_ERROR,
+				errorSlot: 'slot_a',
+				errorType: 'general',
+				error: { code: 'A' },
+			} );
+			const withMoreErrors = reducer( withErrors, {
+				type: TYPES.RECEIVE_DETAILED_ERROR,
+				errorSlot: 'slot_b',
+				errorType: 'general',
+				error: { code: 'B' },
+			} );
+
+			const cleared = reducer( withMoreErrors, {
+				type: TYPES.CLEAR_DETAILED_ERROR_BY_SLOT,
+				errorSlot: 'slot_a',
+			} );
+
+			expect( cleared.detailed_errors ).toHaveLength( 1 );
+			expect( cleared.detailed_errors[ 0 ] ).toMatchObject( {
+				code: 'B',
+				slot: 'slot_b',
+			} );
+		} );
+
+		it( 'should do nothing when clearing a non-existent slot', () => {
+			const withError = reducer( prepareState(), {
+				type: TYPES.RECEIVE_DETAILED_ERROR,
+				errorSlot: 'slot_a',
+				errorType: 'general',
+				error: { code: 'A' },
+			} );
+			const cleared = reducer( withError, {
+				type: TYPES.CLEAR_DETAILED_ERROR_BY_SLOT,
+				errorSlot: 'slot_b',
+			} );
+
+			expect( cleared.detailed_errors ).toHaveLength( 1 );
+			expect( cleared.detailed_errors[ 0 ] ).toMatchObject( {
+				code: 'A',
+				slot: 'slot_a',
+			} );
+		} );
 	} );
 } );

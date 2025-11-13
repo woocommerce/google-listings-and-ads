@@ -1276,3 +1276,43 @@ export function* receiveAdsRecommendations(
 		recommendationTypes,
 	};
 }
+
+/**
+ * Action containing detailed error information.
+ *
+ * @generator
+ * @param {string} errorSlot - Unique key identifying the error (e.g., field name or error code).
+ * @param {Error|Object|null} error - The original error object or additional error details.
+ * @param {string|null} [errorFallback=null] - Optional fallback error message if the original error lacks a message.
+ * @param {'ads'|'merchant_center'|'general'} errorType - High-level error category or type.
+ * @return {{type: string, errorSlot: string, errorType: string, error: (Error|Object|null)}}
+ *          Redux action with type `TYPES.RECEIVE_DETAILED_ERROR` and the provided error payload.
+ */
+export function* receiveDetailedError(
+	errorSlot,
+	error,
+	errorFallback = null,
+	errorType = 'general'
+) {
+	return {
+		type: TYPES.RECEIVE_DETAILED_ERROR,
+		errorSlot,
+		errorType,
+		errorFallback,
+		error,
+	};
+}
+
+/**
+ * Clears error information for a specific error slot.
+ *
+ * @generator
+ * @param {string} errorSlot - Unique key identifying the error to be cleared.
+ * @return {{type: string, errorSlot: string}} Redux action with type `TYPES.CLEAR_DETAILED_ERROR_BY_SLOT`.
+ */
+export function* clearDetailedErrorBySlot( errorSlot ) {
+	return {
+		type: TYPES.CLEAR_DETAILED_ERROR_BY_SLOT,
+		errorSlot,
+	};
+}
