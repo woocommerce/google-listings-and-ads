@@ -46,6 +46,7 @@ import {
 	receiveGoogleMCContactInformation,
 	fetchTargetAudience,
 	fetchMCSetup,
+	fetchYouTubeAccount,
 	receiveGoogleAccountAccess,
 	receiveReport,
 	receiveMCProductStatistics,
@@ -781,3 +782,14 @@ export function* getAdsRecommendations( types, campaign_id = null ) {
 		);
 	}
 }
+
+export function* getYouTubeAccount() {
+	yield fetchYouTubeAccount();
+}
+
+getYouTubeAccount.shouldInvalidate = ( action ) => {
+	return (
+		action.type === TYPES.DISCONNECT_ACCOUNTS_YOUTUBE &&
+		action.invalidateRelatedState
+	);
+};
