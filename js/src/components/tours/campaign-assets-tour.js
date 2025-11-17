@@ -11,7 +11,7 @@ import GridiconTrending from 'gridicons/dist/trending';
 import useTour from '~/hooks/useTour';
 import './campaign-assets-tour.scss';
 
-const TOUR_ID = 'dashboard-feature--campaign-assets';
+export const TOUR_ID = 'dashboard-feature--campaign-assets';
 
 /**
  * Renders the tour for notifying the new feature of campaign assets

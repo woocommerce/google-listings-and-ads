@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useRef } from '@wordpress/element';
 import { TourKit } from '@woocommerce/components';
 import { getHistory } from '@woocommerce/navigation';
 
@@ -10,6 +11,8 @@ import { getHistory } from '@woocommerce/navigation';
  */
 import useTour from '~/hooks/useTour';
 import { getSettingsUrl } from '~/utils/urls';
+import { TOUR_ID as CAMPAIGN_ASSETS_TOUR_ID } from './campaign-assets-tour';
+import { TOUR_ID as REBRANDING_TOUR_ID } from './rebranding-tour';
 import { recordGlaEvent } from '~/utils/tracks';
 import './google-tag-gateway-tour.scss';
 
@@ -37,9 +40,42 @@ const CONTEXT = 'google_tag_gateway_tour';
  * @fires gla_google_tag_gateway_tour_close_button_click with `{ context: "google_tag_gateway_tour", source: "done-btn" | "close-btn" | "skip-btn" }`
  */
 export default function GoogleTagGatewayTour() {
+	const {
+		tourChecked: campaignAssetsTourChecked,
+		hasFinishedResolution: hasResolvedCampaignAssetsTour,
+	} = useTour( CAMPAIGN_ASSETS_TOUR_ID );
+	const {
+		tourChecked: rebrandingTourChecked,
+		hasFinishedResolution: hasResolvedRebrandingTour,
+	} = useTour( REBRANDING_TOUR_ID );
 	const { tourChecked, setTourChecked } = useTour( TOUR_ID );
 
-	if ( tourChecked ) {
+	const tourCheckedRefs = useRef();
+
+	if (
+		! tourCheckedRefs.current &&
+		hasResolvedRebrandingTour &&
+		hasResolvedCampaignAssetsTour
+	) {
+		tourCheckedRefs.current = {
+			campaignAssets: campaignAssetsTourChecked,
+			rebranding: rebrandingTourChecked,
+		};
+	}
+
+	if (
+		tourChecked ||
+		! tourCheckedRefs.current.campaignAssets ||
+		! tourCheckedRefs.current.rebranding
+	) {
+		return null;
+	}
+
+	if (
+		tourChecked ||
+		! campaignAssetsTourChecked ||
+		! rebrandingTourChecked
+	) {
 		return null;
 	}
 

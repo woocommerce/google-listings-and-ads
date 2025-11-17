@@ -1167,14 +1167,14 @@ export function* receiveStoreCategories( storeCategories ) {
 }
 
 /**
- * Action to receive the tour.
+ * Action to receive the tours.
  *
- * @param {Tour} tour The tour to receive.
+ * @param {Object.<string, Tour>} tours The tours to receive.
  */
-export function* receiveTour( tour ) {
+export function* receiveTours( tours ) {
 	return {
-		type: TYPES.RECEIVE_TOUR,
-		tour,
+		type: TYPES.RECEIVE_TOURS,
+		tours,
 	};
 }
 
