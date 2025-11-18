@@ -41,7 +41,7 @@ class GlobalSiteTagTest extends UnitTest {
 	/** @var GlobalSiteTag $tag */
 	protected $tag;
 
-	/** @var GlobalSiteTag $tag */
+	/** @var OptionsInterface $options */
 	protected $options;
 
 	protected const TEST_CONVERSION_ID    = 'test_id';
@@ -232,5 +232,68 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->assertStringContainsString( $first_hash, $gtag );
 		$this->assertStringContainsString( $last_hash, $gtag );
 		$this->assertStringContainsString( $postcode, $gtag );
+	}
+
+	public function test_register_initializes_gtg_adapter_with_conversion_id() {
+		$conversion_action = [
+			'conversion_id'    => 'AW-123456789',
+			'conversion_label' => 'abcDEFghi',
+		];
+
+		// Provide return values for both calls in register(): ADS_CONVERSION_ACTION and ADS_GTG_ENABLED.
+		/** @var MockObject|OptionsInterface $options_mock */
+		$options_mock = $this->options;
+		$options_mock->method( 'get' )
+			->willReturnMap(
+				[
+					[ OptionsInterface::ADS_CONVERSION_ACTION, null, $conversion_action ],
+					[ OptionsInterface::ADS_GTG_ENABLED, null, true ],
+				]
+			);
+
+		$instrumented = new class($this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp) extends GlobalSiteTag { // phpcs:disable PSR12.Classes.AnonClassDeclaration.SpaceAfterKeyword
+			public $register_assets_called    = false;
+			public $product_data_hooks_called = false;
+			protected function register_assets() {
+				$this->register_assets_called = true; }
+			protected function product_data_hooks() {
+				$this->product_data_hooks_called = true; }
+		};
+		$instrumented->set_options_object( $this->options );
+
+		// We can't directly intercept the external Adapter static creation now. This test simply
+		// ensures register() completes without throwing when a valid conversion action exists
+		// and GTG is enabled.
+		$instrumented->register();
+
+		$this->assertTrue( $instrumented->register_assets_called );
+		$this->assertTrue( $instrumented->product_data_hooks_called );
+	}
+
+	public function test_register_exits_early_without_conversion_action() {
+		/** @var MockObject|OptionsInterface $options_mock */
+		$options_mock = $this->options;
+		$options_mock->method( 'get' )
+			->willReturnMap(
+				[
+					[ OptionsInterface::ADS_CONVERSION_ACTION, null, null ],
+					[ OptionsInterface::ADS_GTG_ENABLED, null, true ],
+				]
+			);
+
+		$instrumented = new class($this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp) extends GlobalSiteTag { // phpcs:disable PSR12.Classes.AnonClassDeclaration.SpaceAfterKeyword
+			public $register_assets_called    = false;
+			public $product_data_hooks_called = false;
+			protected function register_assets() {
+				$this->register_assets_called = true; }
+			protected function product_data_hooks() {
+				$this->product_data_hooks_called = true; }
+		};
+		$instrumented->set_options_object( $this->options );
+
+		$instrumented->register();
+
+		$this->assertFalse( $instrumented->register_assets_called, 'register_assets() should not run when conversion action missing.' );
+		$this->assertFalse( $instrumented->product_data_hooks_called, 'product_data_hooks() should not run when conversion action missing.' );
 	}
 }

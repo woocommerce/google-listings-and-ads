@@ -23,6 +23,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
+use Google\GoogleTagGatewayLibrary\Wordpress\Adapter;
 use WC_Product;
 use WC_Countries;
 
@@ -75,6 +76,13 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	protected $products = [];
 
 	/**
+	 * GTG Adapter instance.
+	 *
+	 * @var Adapter|null
+	 */
+	protected $gtag_adapter = null;
+
+	/**
 	 * Global Site Tag constructor.
 	 *
 	 * @param AssetsHandlerInterface $assets_handler
@@ -110,6 +118,33 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 		$ads_conversion_id    = $conversion_action['conversion_id'];
 		$ads_conversion_label = $conversion_action['conversion_label'];
+
+		$this->gtag_adapter = Adapter::create();
+
+		// Initialize GTG Adapter if enabled and this is a front end request.
+		if ( $this->wp->is_front_end_request() && $this->is_gtg_enabled() ) {
+			$this->gtag_adapter->initialize();
+		}
+
+		$gtag_option_name = $this->get_slug() . '_' . OptionsInterface::ADS_GTG_ENABLED;
+		add_action(
+			'update_option_' . $gtag_option_name,
+			function ( $old_value, $value ) use ( $ads_conversion_id ) {
+				if ( $value ) {
+					// Ensure save_mod_rewrite_rules is loaded.
+					require_once ABSPATH . 'wp-admin/includes/misc.php';
+
+					$this->gtag_adapter->update(
+						[
+							'tagId' => $ads_conversion_id,
+						]
+					);
+				}
+				// @todo: Remove rewrites when GTG is disabled.
+			},
+			10,
+			3
+		);
 
 		add_action(
 			'wp_head',
@@ -269,7 +304,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		?>
 
 		<!-- Global site tag (gtag.js) - Google Ads: <?php echo esc_js( $ads_conversion_id ); ?> - Google for WooCommerce -->
+		<?php if ( ! $this->is_gtg_enabled() ) { ?>
 		<script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_js( $ads_conversion_id ); ?>"></script>
+		<?php } ?>
 		<script>
 			window.dataLayer = window.dataLayer || [];
 			function gtag() { dataLayer.push(arguments); }
@@ -713,5 +750,14 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 */
 	private function normalize_and_hash( $value, $algo = 'sha256' ): string {
 		return hash( $algo, strtolower( trim( $value ) ) );
+	}
+
+	/**
+	 * Checks if the GTG is enabled in settings.
+	 *
+	 * @return bool
+	 */
+	private function is_gtg_enabled(): bool {
+		return (bool) $this->options->get( OptionsInterface::ADS_GTG_ENABLED );
 	}
 }

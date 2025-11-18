@@ -265,24 +265,26 @@ class RequestHelper
     }
 
     /**
-     * Takes a URL query string which has not been encoded and ensures its
-     * key/value pairs are encoded.
+     * Takes a single URL query parameter which has not been encoded and
+     * ensures its key & value are encoded.
      *
-     * @param string $queryString Query string to encode.
-     * @return string The new query string encoded.
+     * @param string $parameter Query parameter to encode.
+     * @return string The new query parameter encoded.
      */
-    public static function encodeQueryString(string $queryString): string
+    public static function encodeQueryParameter(string $parameter): string
     {
-        $pairs = explode('&', $queryString);
-        $encodedQuery = [];
+        list($key, $value) = explode('=', $parameter, 2) + ['', ''];
+        // We just manually encode to avoid any nuances that may occur as a
+        // result of `http_build_query`. One such nuance is that
+        // `http_build_query` will add an index to query parameters that
+        // are repeated through an array. We would only be able to store
+        // repeated values as an array as associative arrays cannot have the
+        // same key multiple times. This makes `http_build_query`
+        // undesirable as we should pass parameters through as they come in
+        // and not modify them or change the key.
+        $key = rawurlencode($key);
+        $value = rawurlencode($value);
 
-        foreach ($pairs as $pair) {
-            list($key, $value) = array_pad(explode('=', $pair, 2), 2, '');
-            $key = rawurlencode($key);
-            $value = rawurlencode($value);
-
-            $encodedQuery[] = "{$key}={$value}";
-        }
-        return implode('&', $encodedQuery);
+        return "{$key}={$value}";
     }
 }
