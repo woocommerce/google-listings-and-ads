@@ -11,6 +11,42 @@ import TimeStepper from './';
 
 describe( 'TimeStepper', () => {
 	const audienceCountries = [ 'US' ];
+
+	it( 'Should not apply default onboarding values when shipping times already exist (time)', () => {
+		const handleBlur = jest.fn();
+		const handleIncrement = jest.fn();
+
+		const { getByDisplayValue } = render(
+			<TimeStepper
+				time={ 2 }
+				handleBlur={ handleBlur }
+				handleIncrement={ handleIncrement }
+				audienceCountries={ [ 'IN' ] }
+			/>
+		);
+
+		expect( getByDisplayValue( '2' ) ).toBeInTheDocument();
+		expect( handleBlur ).not.toHaveBeenCalled();
+	} );
+
+	it( 'Should not apply default onboarding values when max shipping time already exists (maxTime)', () => {
+		const handleBlur = jest.fn();
+		const handleIncrement = jest.fn();
+
+		const { getByDisplayValue } = render(
+			<TimeStepper
+				time={ 7 }
+				handleBlur={ handleBlur }
+				handleIncrement={ handleIncrement }
+				field="maxTime"
+				audienceCountries={ [ 'IN' ] }
+			/>
+		);
+
+		expect( getByDisplayValue( '7' ) ).toBeInTheDocument();
+		expect( handleBlur ).not.toHaveBeenCalled();
+	} );
+
 	it( 'Should increase value when clicking on the plus button', async () => {
 		const handleBlur = jest.fn();
 		const handleIncrement = jest.fn();
