@@ -13,7 +13,7 @@ import AppInputNumberControl from '~/components/app-input-number-control';
 import './index.scss';
 
 const TimeStepper = ( {
-	audienceCountries=[],
+	audienceCountries = [],
 	step = 1,
 	min = 0,
 	max = 250, // Google's UI in the MC shows a maximum limit of 250 days, though the API doesn’t appear to have any such restriction.

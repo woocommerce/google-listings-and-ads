@@ -10,6 +10,7 @@ import { render, fireEvent, waitFor } from '@testing-library/react';
 import TimeStepper from './';
 
 describe( 'TimeStepper', () => {
+	const audienceCountries = [ 'US' ];
 	it( 'Should increase value when clicking on the plus button', async () => {
 		const handleBlur = jest.fn();
 		const handleIncrement = jest.fn();
@@ -19,6 +20,7 @@ describe( 'TimeStepper', () => {
 				time={ 1 }
 				handleBlur={ handleBlur }
 				handleIncrement={ handleIncrement }
+				audienceCountries={ audienceCountries }
 			/>
 		);
 
@@ -41,6 +43,7 @@ describe( 'TimeStepper', () => {
 				time={ 4 }
 				handleBlur={ handleBlur }
 				handleIncrement={ handleIncrement }
+				audienceCountries={ audienceCountries }
 			/>
 		);
 
@@ -63,6 +66,7 @@ describe( 'TimeStepper', () => {
 				time={ 0 }
 				handleBlur={ handleBlur }
 				handleIncrement={ handleIncrement }
+				audienceCountries={ audienceCountries }
 			/>
 		);
 
