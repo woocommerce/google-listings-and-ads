@@ -84,6 +84,7 @@ const CountriesTimeInput = ( {
 					maxTime={ maxTime }
 					handleBlur={ handleBlur }
 					handleIncrement={ handleIncrement }
+					audienceCountries={ audienceCountries }
 				/>
 			</FlexItem>
 		</Flex>
