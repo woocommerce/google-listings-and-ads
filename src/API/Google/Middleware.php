@@ -516,9 +516,17 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @return string
 	 */
 	protected function get_sdi_endpoint(): string {
+		/**
+		 * Reason for using `urlencode` to encode the site URL:
+		 *
+		 * This plugin doesn't natively support linking a Google Merchant
+		 * Center account and the Google Shopping Data Integration API using a
+		 * merchant URL with paths. However, some merchants still use the
+		 * plugin's WP filter `woocommerce_gla_site_url` to achieve this.
+		*/
 		return $this->container->get( 'connect_server_root' )
 			. 'google/google-sdi/v1/credentials/partners/WOO_COMMERCE/merchants/'
-			. $this->strip_url_protocol( $this->get_site_url() )
+			. urlencode( $this->strip_url_protocol( $this->get_site_url() ) )
 			. '/';
 	}
 
