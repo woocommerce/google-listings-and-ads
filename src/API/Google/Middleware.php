@@ -517,7 +517,7 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	protected function get_sdi_endpoint(): string {
 		/**
-		 * Reason for using `urlencode` to encode the site URL:
+		 * Reason for using `rawurlencode` to encode the site URL:
 		 *
 		 * This plugin doesn't natively support linking a Google Merchant
 		 * Center account and the Google Shopping Data Integration API using a
@@ -526,7 +526,7 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 		*/
 		return $this->container->get( 'connect_server_root' )
 			. 'google/google-sdi/v1/credentials/partners/WOO_COMMERCE/merchants/'
-			. urlencode( $this->strip_url_protocol( $this->get_site_url() ) )
+			. rawurlencode( $this->strip_url_protocol( $this->get_site_url() ) )
 			. '/';
 	}
 
