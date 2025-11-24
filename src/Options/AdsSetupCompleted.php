@@ -20,6 +20,20 @@ class AdsSetupCompleted implements OptionsAwareInterface, Registerable, Service 
 	protected const OPTION = OptionsInterface::ADS_SETUP_COMPLETED_AT;
 
 	/**
+	 * @var Features
+	 */
+	protected $features;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param Features $features
+	 */
+	public function __construct( Features $features ) {
+		$this->features = $features;
+	}
+
+	/**
 	 * Register a service.
 	 *
 	 * TODO: call `do_action( 'woocommerce_gla_ads_settings_sync' );` when the initial Google Ads account,
@@ -49,7 +63,7 @@ class AdsSetupCompleted implements OptionsAwareInterface, Registerable, Service 
 		$is_gtg_configured = $this->options->get( OptionsInterface::ADS_GTG_ENABLED );
 
 		if ( null === $is_gtg_configured ) {
-			$this->options->update( OptionsInterface::ADS_GTG_ENABLED, true );
+			$this->options->update( OptionsInterface::ADS_GTG_ENABLED, $this->features->default_value( Features::GOOGLE_TAG_GATEWAY ) );
 		}
 
 		$tours = $this->options->get( OptionsInterface::TOURS, [] );
