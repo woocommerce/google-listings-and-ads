@@ -14,6 +14,7 @@ import AppButton from '~/components/app-button';
  * Clicking on the button to disconnect the YouTube account.
  *
  * @event gla_youtube_account_disconnect_button_click
+ * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
  */
 
 /**
@@ -40,7 +41,7 @@ const DisconnectAccount = () => {
 				'google-listings-and-ads'
 			) }
 			eventName="gla_youtube_account_disconnect_button_click"
-			eventProps={ {} }
+			eventProps={ { context: 'settings-youtube' } }
 			onClick={ handleSwitch }
 			isDestructive
 			isLink
