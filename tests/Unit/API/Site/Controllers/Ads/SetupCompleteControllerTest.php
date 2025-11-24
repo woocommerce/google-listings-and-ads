@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\SetupCompleteController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsSetupCompleted;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Features;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\TrackingTrait;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -21,6 +22,9 @@ class SetupCompleteControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|MerchantMetrics $metrics */
 	protected $metrics;
 
+	/** @var MockObject|Features $features */
+	protected $features;
+
 	/** @var SetupCompleteController $controller */
 	protected $controller;
 
@@ -32,7 +36,8 @@ class SetupCompleteControllerTest extends RESTControllerUnitTest {
 		parent::setUp();
 
 		$this->metrics              = $this->createMock( MerchantMetrics::class );
-		$this->ads_setup_controller = new AdsSetupCompleted();
+		$this->features             = $this->createMock( Features::class );
+		$this->ads_setup_controller = new AdsSetupCompleted( $this->features );
 		$this->controller           = new SetupCompleteController( $this->server, $this->metrics );
 		$this->controller->register();
 	}
@@ -66,6 +71,11 @@ class SetupCompleteControllerTest extends RESTControllerUnitTest {
 					[ \Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface::TOURS, [], [] ],
 				]
 			);
+
+		$this->features->expects( $this->once() )
+			->method( 'default_value' )
+			->with( Features::GOOGLE_TAG_GATEWAY )
+			->willReturn( true );
 
 		$options->expects( $this->exactly( 3 ) )
 			->method( 'update' )

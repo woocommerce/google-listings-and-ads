@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Features;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
@@ -44,6 +45,9 @@ class GlobalSiteTagTest extends UnitTest {
 	/** @var OptionsInterface $options */
 	protected $options;
 
+	/** @var Features $features */
+	protected $features;
+
 	protected const TEST_CONVERSION_ID    = 'test_id';
 	protected const TEST_CONVERSION_LABEL = 'test_conversion_label';
 
@@ -59,8 +63,9 @@ class GlobalSiteTagTest extends UnitTest {
 		$this->product_helper = $this->createMock( ProductHelper::class );
 		$this->wc             = $this->createMock( WC::class );
 		$this->wp             = $this->createMock( WP::class );
+		$this->features       = $this->createMock( Features::class );
 
-		$this->tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp );
+		$this->tag = new GlobalSiteTag( $this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $this->features );
 		$this->tag->set_options_object( $this->options );
 	}
 
@@ -251,7 +256,7 @@ class GlobalSiteTagTest extends UnitTest {
 				]
 			);
 
-		$instrumented = new class($this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp) extends GlobalSiteTag { // phpcs:disable PSR12.Classes.AnonClassDeclaration.SpaceAfterKeyword
+		$instrumented = new class($this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $this->features) extends GlobalSiteTag { // phpcs:disable PSR12.Classes.AnonClassDeclaration.SpaceAfterKeyword
 			public $register_assets_called    = false;
 			public $product_data_hooks_called = false;
 			protected function register_assets() {
@@ -281,7 +286,7 @@ class GlobalSiteTagTest extends UnitTest {
 				]
 			);
 
-		$instrumented = new class($this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp) extends GlobalSiteTag { // phpcs:disable PSR12.Classes.AnonClassDeclaration.SpaceAfterKeyword
+		$instrumented = new class($this->assets_handler, $this->gtag_js, $this->product_helper, $this->wc, $this->wp, $this->features) extends GlobalSiteTag { // phpcs:disable PSR12.Classes.AnonClassDeclaration.SpaceAfterKeyword
 			public $register_assets_called    = false;
 			public $product_data_hooks_called = false;
 			protected function register_assets() {
