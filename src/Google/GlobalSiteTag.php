@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Assets\ScriptWithBuiltDependenci
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Features;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -69,6 +70,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	protected $wp;
 
 	/**
+	 * @var Features
+	 */
+	protected $features;
+
+	/**
 	 * Additional product data used for tracking add_to_cart events.
 	 *
 	 * @var array
@@ -90,19 +96,22 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @param ProductHelper          $product_helper
 	 * @param WC                     $wc
 	 * @param WP                     $wp
+	 * @param Features               $features
 	 */
 	public function __construct(
 		AssetsHandlerInterface $assets_handler,
 		GoogleGtagJs $gtag_js,
 		ProductHelper $product_helper,
 		WC $wc,
-		WP $wp
+		WP $wp,
+		Features $features
 	) {
 		$this->assets_handler = $assets_handler;
 		$this->gtag_js        = $gtag_js;
 		$this->product_helper = $product_helper;
 		$this->wc             = $wc;
 		$this->wp             = $wp;
+		$this->features       = $features;
 	}
 
 	/**
@@ -758,6 +767,12 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @return bool
 	 */
 	private function is_gtg_enabled(): bool {
-		return (bool) $this->options->get( OptionsInterface::ADS_GTG_ENABLED );
+		// Disable GTG if the feature flag has marked it as disabled.
+		if ( ! $this->features->is_enabled( Features::GOOGLE_TAG_GATEWAY ) ) {
+			return false;
+		}
+
+		// Check the user option passing the feature flag default value.
+		return (bool) $this->options->get( OptionsInterface::ADS_GTG_ENABLED, $this->features->default_value( Features::GOOGLE_TAG_GATEWAY ) );
 	}
 }

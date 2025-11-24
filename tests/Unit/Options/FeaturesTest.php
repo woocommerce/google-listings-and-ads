@@ -121,6 +121,25 @@ class FeaturesTest extends UnitTest {
 		$this->assertFalse( $this->features->is_enabled( 'test_feature' ) );
 	}
 
+	public function test_default_value_returns_the_correct_value_for_feature() {
+		$option = self::TEST_OUTPUT_DATA;
+
+		$option['features']['test_feature'] = [
+			'enabled'    => true,
+			'attributes' => [
+				'default' => false,
+			],
+		];
+
+		$this->transients->expects( $this->any() )
+			->method( 'get' )
+			->with( TransientsInterface::WCS_FEATURE_FLAGS )
+			->willReturn( $option );
+
+		$this->assertEquals( true, $this->features->default_value( Features::GOOGLE_TAG_GATEWAY ) );
+		$this->assertEquals( false, $this->features->default_value( 'test_feature' ) );
+	}
+
 	public function test_features_returns_single_feature() {
 		$this->transients->expects( $this->once() )
 			->method( 'get' )

@@ -274,7 +274,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( EventTracking::class );
 		$this->share_with_tags( RESTControllers::class );
 		$this->share_with_tags( CompleteSetupTask::class );
-		$this->conditionally_share_with_tags( GlobalSiteTag::class, AssetsHandlerInterface::class, GoogleGtagJs::class, ProductHelper::class, WC::class, WP::class );
+		$this->conditionally_share_with_tags( GlobalSiteTag::class, AssetsHandlerInterface::class, GoogleGtagJs::class, ProductHelper::class, WC::class, WP::class, Features::class );
 		$this->share_with_tags( SiteVerificationMeta::class );
 		$this->conditionally_share_with_tags( MerchantSetupCompleted::class );
 		$this->conditionally_share_with_tags( AdsSetupCompleted::class );

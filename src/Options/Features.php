@@ -75,13 +75,29 @@ class Features implements Service, TransientsAwareInterface {
 	 * @return boolean True if the feature is enabled, false if disabled.
 	 */
 	public function is_enabled( string $feature ): bool {
-		$option = $this->get_features();
+		$config = $this->get_features( $feature );
 
-		if ( isset( $option['features'][ $feature ]['enabled'] ) ) {
-			return $option['features'][ $feature ]['enabled'];
+		if ( isset( $config['enabled'] ) ) {
+			return $config['enabled'];
 		}
 
 		return false;
+	}
+
+	/**
+	 * Return the default value for a feature.
+	 *
+	 * @param string $feature
+	 * @return mixed
+	 */
+	public function default_value( string $feature ) {
+		$config = $this->get_features( $feature );
+
+		if ( isset( $config['attributes']['default'] ) ) {
+			return $config['attributes']['default'];
+		}
+
+		return null;
 	}
 
 	/**
