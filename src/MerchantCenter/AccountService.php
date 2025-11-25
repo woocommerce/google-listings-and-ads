@@ -29,6 +29,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
 use Exception;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterApiException;
 use Jetpack_Options;
 
 defined( 'ABSPATH' ) || exit;
@@ -140,6 +141,16 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 			$this->state->update( $state );
 		} catch ( ExceptionWithResponseData $e ) {
 			throw $e;
+		} catch ( MerchantCenterApiException $e ) {
+			// Wrap structured merchant center API exception.
+			throw $this->prepare_exception(
+				$e->getMessage(),
+				[
+					'code'   => $e->get_error_code(),
+					'errors' => $e->get_errors_objects(),
+				],
+				$e->getCode() ?: 400
+			);
 		} catch ( Exception $e ) {
 			throw $this->prepare_exception( $e->getMessage(), [], $e->getCode() );
 		}
@@ -164,6 +175,15 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 			return $this->setup_account_steps();
 		} catch ( ExceptionWithResponseData | ApiNotReady $e ) {
 			throw $e;
+		} catch ( MerchantCenterApiException $e ) {
+			throw $this->prepare_exception(
+				$e->getMessage(),
+				[
+					'code'   => $e->get_error_code(),
+					'errors' => $e->get_errors_objects(),
+				],
+				$e->getCode() ?: 400
+			);
 		} catch ( Exception $e ) {
 			throw $this->prepare_exception( $e->getMessage(), [], $e->getCode() );
 		}
@@ -465,7 +485,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		/** @var Merchant $merchant */
 		$merchant = $this->container->get( Merchant::class );
 
-		/** @var Account $account */
+		// Account object from Google ShoppingContent service.
 		$account     = $merchant->get_account( $merchant_id );
 		$account_url = $account->getWebsiteUrl() ?: '';
 

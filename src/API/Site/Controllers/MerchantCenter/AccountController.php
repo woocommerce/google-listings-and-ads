@@ -171,6 +171,23 @@ class AccountController extends BaseController {
 			} catch ( ApiNotReady $e ) {
 				return $this->get_time_to_wait_response( $e );
 			} catch ( Exception $e ) {
+				if ( $e instanceof \Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData ) {
+					$data = $e->get_response_data();
+					if ( isset( $data['code'], $data['errors'] ) ) {
+						$status = $e->getCode() ?: 400;
+						return new Response(
+							[
+								'code'    => $data['code'],
+								'message' => $e->getMessage(),
+								'data'    => [
+									'status' => $status,
+									'errors' => $data['errors'],
+								],
+							],
+							$status
+						);
+					}
+				}
 				return $this->response_from_exception( $e );
 			}
 		};

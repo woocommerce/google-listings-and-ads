@@ -4,6 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterErrorCode;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidTerm;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidDomainName;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
@@ -154,6 +156,18 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
 			$message = $this->client_exception_message( $e, __( 'Error creating account', 'google-listings-and-ads' ) );
+			$status  = $e->getCode() ?: 400;
+			$errors  = [];
+			if ( $e instanceof \Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException ) {
+				$raw = json_decode( $e->getResponse()->getBody()->getContents(), true );
+				if ( is_array( $raw ) && ! empty( $raw['errors'] ) && is_array( $raw['errors'] ) ) {
+					foreach ( $raw['errors'] as $err ) {
+						if ( isset( $err['code'], $err['message'] ) ) {
+							$errors[ (string) $err['code'] ] = (string) $err['message'];
+						}
+					}
+				}
+			}
 
 			if ( preg_match( '/terms?.* are|is not allowed/', $message ) ) {
 				throw InvalidTerm::contains_invalid_terms( $name );
@@ -168,7 +182,16 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			}
 
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
-			throw new Exception( $message, $e->getCode() );
+			if ( empty( $errors ) ) {
+				$errors[ MerchantCenterErrorCode::ACCOUNT_CREATE_FAILED ] = $message;
+			}
+			throw new MerchantCenterApiException(
+				$message,
+				$status,
+				MerchantCenterErrorCode::ACCOUNT_CREATE_FAILED,
+				$errors,
+				$e
+			);
 		}
 	}
 
@@ -218,10 +241,28 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
-
-			throw new Exception(
-				$this->client_exception_message( $e, __( 'Error linking merchant to MCA', 'google-listings-and-ads' ) ),
-				$e->getCode()
+			$message = $this->client_exception_message( $e, __( 'Error linking merchant to MCA', 'google-listings-and-ads' ) );
+			$status  = $e->getCode() ?: 400;
+			$errors  = [];
+			if ( $e instanceof \Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException ) {
+				$raw = json_decode( $e->getResponse()->getBody()->getContents(), true );
+				if ( is_array( $raw ) && ! empty( $raw['errors'] ) && is_array( $raw['errors'] ) ) {
+					foreach ( $raw['errors'] as $err ) {
+						if ( isset( $err['code'], $err['message'] ) ) {
+							$errors[ (string) $err['code'] ] = (string) $err['message'];
+						}
+					}
+				}
+			}
+			if ( empty( $errors ) ) {
+				$errors[ MerchantCenterErrorCode::ACCOUNT_LINK_FAILED ] = $message;
+			}
+			throw new MerchantCenterApiException(
+				$message,
+				$status,
+				MerchantCenterErrorCode::ACCOUNT_LINK_FAILED,
+				$errors,
+				$e
 			);
 		}
 	}
@@ -264,10 +305,28 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 			do_action( 'woocommerce_gla_site_claim_failure', [ 'details' => 'google_manager' ] );
-
-			throw new Exception(
-				$this->client_exception_message( $e, __( 'Error claiming website', 'google-listings-and-ads' ) ),
-				$e->getCode()
+			$message = $this->client_exception_message( $e, __( 'Error claiming website', 'google-listings-and-ads' ) );
+			$status  = $e->getCode() ?: 400;
+			$errors  = [];
+			if ( $e instanceof \Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException ) {
+				$raw = json_decode( $e->getResponse()->getBody()->getContents(), true );
+				if ( is_array( $raw ) && ! empty( $raw['errors'] ) && is_array( $raw['errors'] ) ) {
+					foreach ( $raw['errors'] as $err ) {
+						if ( isset( $err['code'], $err['message'] ) ) {
+							$errors[ (string) $err['code'] ] = (string) $err['message'];
+						}
+					}
+				}
+			}
+			if ( empty( $errors ) ) {
+				$errors[ MerchantCenterErrorCode::ACCOUNT_CLAIM_WEBSITE_FAILED ] = $message;
+			}
+			throw new MerchantCenterApiException(
+				$message,
+				$status,
+				MerchantCenterErrorCode::ACCOUNT_CLAIM_WEBSITE_FAILED,
+				$errors,
+				$e
 			);
 		}
 	}

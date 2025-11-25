@@ -123,6 +123,33 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 406, $response->get_status() );
 	}
 
+	public function test_create_account_with_structured_error_response() {
+		$code_constant = \Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterErrorCode::ACCOUNT_CREATE_FAILED;
+		$this->account->expects( $this->once() )
+			->method( 'setup_account' )
+			->willThrowException(
+				new ExceptionWithResponseData(
+					'creation failed',
+					400,
+					null,
+					[
+						'code'   => $code_constant,
+						'errors' => [ [ 'code' => $code_constant, 'message' => 'creation failed' ] ],
+					]
+				)
+			);
+
+		$response = $this->do_request( self::ROUTE_ACCOUNTS, 'POST' );
+
+		$data = $response->get_data();
+		$this->assertEquals( $code_constant, $data['code'] );
+		$this->assertEquals( 'creation failed', $data['message'] );
+		$this->assertEquals( 400, $data['data']['status'] );
+		$this->assertIsArray( $data['data']['errors'] );
+		$this->assertEquals( $code_constant, $data['data']['errors'][0]['code'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
 	public function test_create_account_with_time_to_wait() {
 		$this->account->expects( $this->once() )
 			->method( 'setup_account' )
