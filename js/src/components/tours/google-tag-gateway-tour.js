@@ -10,6 +10,7 @@ import { getHistory } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import useTour from '~/hooks/useTour';
+import useEnableGoogleTagGateway from '~/hooks/useEnableGoogleTagGateway';
 import { getSettingsUrl } from '~/utils/urls';
 import { TOUR_ID as CAMPAIGN_ASSETS_TOUR_ID } from './campaign-assets-tour';
 import { TOUR_ID as REBRANDING_TOUR_ID } from './rebranding-tour';
@@ -49,6 +50,10 @@ export default function GoogleTagGatewayTour() {
 		hasFinishedResolution: hasResolvedRebrandingTour,
 	} = useTour( REBRANDING_TOUR_ID );
 	const { tourChecked, setTourChecked } = useTour( TOUR_ID );
+	const {
+		isEnabled,
+		hasFinishedResolution: hasResolvedEnableGoogleTagGateway,
+	} = useEnableGoogleTagGateway();
 
 	const tourCheckedRefs = useRef();
 
@@ -65,6 +70,8 @@ export default function GoogleTagGatewayTour() {
 
 	if (
 		tourChecked ||
+		isEnabled ||
+		! hasResolvedEnableGoogleTagGateway ||
 		! tourCheckedRefs.current.campaignAssets ||
 		! tourCheckedRefs.current.rebranding
 	) {
