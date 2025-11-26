@@ -195,13 +195,35 @@ export function mapReportFieldsToPerformance(
 }
 
 /**
+ * Converts an array of strings into a single underscore-separated, lowercase string.
+ *
+ * @param {string[]} [arr=[]] - The array of strings to convert.
+ * @return {string} The underscore-separated, lowercase string.
+ */
+export const arrayToUnderscoreKey = ( arr = [] ) => {
+	return arr
+		.map(
+			( str ) =>
+				String( str )
+					.normalize( 'NFKD' )
+					.replace( /[\u0300-\u036f]/g, '' ) // remove accents
+					.trim()
+					.toLowerCase()
+					.replace( /[^a-z0-9_ ]/g, '' ) // allow underscores
+					.replace( /\s+/g, '_' ) // replace spaces with underscores
+					.replace( /_+/g, '_' ) // collapse multiple underscores
+		)
+		.join( '_' );
+};
+
+/**
  * Generates a unique key (slug) from an array of country codes.
  *
  * @param {Array<CountryCode>} [countryCodes] - An array of country code strings.
  * @return {string} An underscore-separated, lowercase string representing the given country codes.
  */
 export function getCountryCodesKey( countryCodes = [] ) {
-	return countryCodes.join( '_' ).toLowerCase();
+	return arrayToUnderscoreKey( countryCodes );
 }
 
 /**
