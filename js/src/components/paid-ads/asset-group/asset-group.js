@@ -18,6 +18,7 @@ import { recordGlaEvent } from '~/utils/tracks';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import AssetGroupHeader from './asset-group-header';
 import AssetGroupEditor from './asset-group-editor';
+import { upsertActionedCampaign } from '~/utils/actionedCampaignsCache';
 import './asset-group.scss';
 
 export const ACTION_SUBMIT_CAMPAIGN_AND_ASSETS = 'submit-campaign-and-assets';
@@ -50,6 +51,8 @@ export const ACTION_SUBMIT_CAMPAIGN_ONLY = 'submit-campaign-only';
  * @property {string} number_of_final_url Same as above.
  * @property {string} number_of_display_url_path Same as above.
  * @property {string} number_of_youtube_videos Same as above.
+ * @property {boolean} has_raise_budget_recommendation Whether there is a budget recommendation that suggests raising the budget.
+ * @property {string} level The budget recommendation level selected by the user. Possible values: `low`, `current`, `recommended`, `high`, or `custom`.
  */
 
 /**
@@ -71,6 +74,22 @@ export default function AssetGroup( { campaign } ) {
 	const { isValidAssetGroup, isSubmitting, isSubmitted, submitter } = adapter;
 	const currentAction = submitter?.dataset.action;
 
+	const hasRaiseBudgetRecommendation = () => {
+		if (
+			[ 'high', 'recommended', 'low' ].includes( values.level ) &&
+			! isCreation
+		) {
+			return (
+				adapter.budgetRecommendation[ values.level ].metrics?.uplift &&
+				Number(
+					adapter.budgetRecommendation[ values.level ].metrics?.uplift
+				) !== 0
+			);
+		}
+
+		return false;
+	};
+
 	function recordSubmissionClickEvent( event ) {
 		const audiences = isCreation ? countryCodes : campaign.displayCountries;
 		const finalUrl = values[ ASSET_FORM_KEY.FINAL_URL ];
@@ -81,11 +100,15 @@ export default function AssetGroup( { campaign } ) {
 			budget: values.dailyBudget.toString(),
 			assets_validation: isValidAssetGroup ? 'valid' : 'invalid',
 			campaign_id: isCreation ? 'new' : campaign.id,
+			level: values.level,
 		};
 
 		if ( ! finalUrl ) {
 			eventProps.assets_validation = 'unknown';
 		}
+
+		eventProps.has_raise_budget_recommendation =
+			hasRaiseBudgetRecommendation();
 
 		Object.values( ASSET_FORM_KEY ).forEach( ( key ) => {
 			const name = `number_of_${ key }`;
@@ -96,14 +119,22 @@ export default function AssetGroup( { campaign } ) {
 		recordGlaEvent( 'gla_submit_campaign_button_click', eventProps );
 	}
 
+	const recordActionedCampaign = () => {
+		if ( hasRaiseBudgetRecommendation() ) {
+			upsertActionedCampaign( campaign.id );
+		}
+	};
+
 	const handleSkipClick = ( event ) => {
 		handleSubmit( event );
+		recordActionedCampaign();
 		recordSubmissionClickEvent( event );
 	};
 
 	const handleLaunchClick = ( event ) => {
 		if ( isValidAssetGroup ) {
 			handleSubmit( event );
+			recordActionedCampaign();
 		} else {
 			adapter.showValidation();
 		}
