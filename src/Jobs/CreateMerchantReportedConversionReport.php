@@ -4,48 +4,50 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\Services\YouTubeOrders;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\RowBuilder\OrderItemRowBuilder;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\Writer\CsvExportWriter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\AbstractBatchedActionSchedulerJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use WC_Order;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class CreateYouTubeOrderIdsCache
+ * Class CreateMerchantReportedConversionReport
  *
  * Create a cache of Order IDs for a specific day that have a YouTube attribution source.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  * @since 2.2.0
  */
-class CreateYouTubeOrderIdsCache extends AbstractBatchedActionSchedulerJob implements RecurringJobInterface, OptionsAwareInterface {
+class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedulerJob implements OptionsAwareInterface {
 	use OptionsAwareTrait;
 
 	/**
-	 * @var YouTubeOrders
+	 * @var OrderItemRowBuilder
 	 */
-	protected $youtube_orders;
+	protected $row_builder;
 
 	/**
-	 * @var JobRepository
+	 * @var CsvExportWriter
 	 */
-	protected $job_repository;
+	protected $writer;
 
 	/**
-	 * CreateYouTubeOrderIdsCache constructor.
+	 * CreateMerchantReportedConversionReport constructor.
 	 *
 	 * @param ActionSchedulerInterface  $action_scheduler
 	 * @param ActionSchedulerJobMonitor $monitor
-	 * @param YouTubeOrders             $youtube_orders
-	 * @param JobRepository             $job_repository
+	 * @param OrderItemRowBuilder       $row_builder
+	 * @param CsvExportWriter           $writer
 	 */
-	public function __construct( ActionSchedulerInterface $action_scheduler, ActionSchedulerJobMonitor $monitor, YouTubeOrders $youtube_orders, JobRepository $job_repository ) {
+	public function __construct( ActionSchedulerInterface $action_scheduler, ActionSchedulerJobMonitor $monitor, OrderItemRowBuilder $row_builder, CsvExportWriter $writer ) {
 		parent::__construct( $action_scheduler, $monitor );
-		$this->youtube_orders = $youtube_orders;
-		$this->job_repository = $job_repository;
+		$this->row_builder = $row_builder;
+		$this->writer      = $writer;
 	}
 
 	/**
@@ -54,7 +56,7 @@ class CreateYouTubeOrderIdsCache extends AbstractBatchedActionSchedulerJob imple
 	 * @return string
 	 */
 	public function get_name(): string {
-		return 'create_youtube_order_ids_cache';
+		return 'create_youtube_merchant_reported_conversions_report';
 	}
 
 	/**
@@ -72,7 +74,7 @@ class CreateYouTubeOrderIdsCache extends AbstractBatchedActionSchedulerJob imple
 	}
 
 	/**
-	 * Get the date to capture orders for.
+	 * Get the date to create a report for.
 	 *
 	 * @return string
 	 */
@@ -95,7 +97,11 @@ class CreateYouTubeOrderIdsCache extends AbstractBatchedActionSchedulerJob imple
 	 * @return int[]
 	 */
 	public function get_batch( int $batch_number ): array {
-		return $this->youtube_orders->find_orders( $this->get_date(), $this->get_batch_size(), $this->get_query_offset( $batch_number ) );
+		// Get the order IDs from the Options.
+		$youtube_cache = $this->options->get( OptionsInterface::YOUTUBE_ORDER_IDS_CACHE, [] );
+
+		// Return the current batch to process.
+		return array_slice( $youtube_cache[ $this->get_date() ], $this->get_query_offset( $batch_number ), $this->get_batch_size() );
 	}
 
 	/**
@@ -104,21 +110,21 @@ class CreateYouTubeOrderIdsCache extends AbstractBatchedActionSchedulerJob imple
 	 * @param int[] $items A single batch of WooCommerce Order IDs from the get_batch() method.
 	 */
 	protected function process_items( array $items ) {
-		// Get the date for the orders.
-		$date = $this->get_date();
+		$filename = 'youtube-merchant-conversion-report-' . $this->get_date();
 
-		// Get the existing order IDs cache.
-		$youtube_cache = $this->options->get( OptionsInterface::YOUTUBE_ORDER_IDS_CACHE, [] );
+		$file = $this->writer->create_file( $filename );
 
-		// Create the date key if not already set.
-		if ( ! isset( $youtube_cache[ $date ] ) || ! is_array( $youtube_cache[ $date ] ) ) {
-			$youtube_cache[ $date ] = [];
+		foreach ( $items as $order_id ) {
+			$order = new WC_Order( $order_id );
+
+			foreach ( $order->get_items() as $line_item ) {
+				$row = $this->row_builder->build_row( $line_item );
+
+				if ( is_array( $row ) ) {
+					$this->writer->append_row( $file, $row );
+				}
+			}
 		}
-
-		// Update the order IDs in the option cache.
-		$youtube_cache[ $date ] = array_unique( array_merge( $youtube_cache[ $date ], $items ) );
-
-		$this->options->update( OptionsInterface::YOUTUBE_ORDER_IDS_CACHE, $youtube_cache );
 	}
 
 	/**
@@ -128,11 +134,7 @@ class CreateYouTubeOrderIdsCache extends AbstractBatchedActionSchedulerJob imple
 	 *                                If equal to 1 then no items were processed by the job.
 	 */
 	protected function handle_complete( int $final_batch_number ) {
-		/**
-		 * @var CreateMerchantReportedConversionReport
-		*/
-		$job = $this->job_repository->get( CreateMerchantReportedConversionReport::class );
-		$job->schedule();
+		// @TODO: Send CSV to WCS and cleanup.
 	}
 
 	/**
@@ -142,14 +144,5 @@ class CreateYouTubeOrderIdsCache extends AbstractBatchedActionSchedulerJob imple
 	 */
 	public function get_start_hook(): StartHook {
 		return new StartHook( "{$this->get_hook_base_name()}start" );
-	}
-
-	/**
-	 * Return the recurring job's interval in seconds.
-	 *
-	 * @return int
-	 */
-	public function get_interval(): int {
-		return 24 * 60 * 60; // 24 hours
 	}
 }
