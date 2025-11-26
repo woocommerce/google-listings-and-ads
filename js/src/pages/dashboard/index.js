@@ -28,6 +28,7 @@ import RebrandingTour from '~/components/tours/rebranding-tour';
 import PMaxImproveAssetsBanner from '~/components/pmax-improve-assets-banner';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
 import GoogleTagGatewayTour from '~/components/tours/google-tag-gateway-tour';
+import RaiseBudgetRecommendationBanner from '~/components/raise-budget-recommendation-banner';
 import './index.scss';
 
 /**
@@ -91,6 +92,7 @@ const Dashboard = () => {
 				<ExperienceRatingBanner />
 				<DifferentCurrencyNotice context="dashboard" />
 				<MainTabNav />
+				<RaiseBudgetRecommendationBanner />
 				<RebrandingTour />
 				<GoogleTagGatewayTour />
 				<div className="gla-dashboard__filter">

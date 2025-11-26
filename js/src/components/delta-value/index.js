@@ -6,6 +6,7 @@ import classnames from 'classnames';
 /**
  * Internal dependencies
  */
+import useAdsCurrency from '~/hooks/useAdsCurrency';
 import './index.scss';
 
 /**
@@ -16,10 +17,12 @@ import './index.scss';
  * @param {Object} props - The component props.
  * @param {number} props.amount - The numeric value to be displayed. Determines if the value is positive, negative, or zero.
  * @param {string} [props.suffix=''] - An optional string to append to the formatted value.
+ * @param {boolean} [props.isPrice=false] - If true, formats the number as a price (e.g., adds a currency symbol).
  *
  * @return {JSX.Element} A span element containing the formatted delta value with appropriate CSS classes applied.
  */
-const DeltaValue = ( { amount = 0, suffix = '' } ) => {
+const DeltaValue = ( { amount = 0, suffix = '', isPrice = false } ) => {
+	const { formatAmount } = useAdsCurrency();
 	let value = amount;
 	if ( isNaN( amount ) ) {
 		value = 0;
@@ -28,6 +31,10 @@ const DeltaValue = ( { amount = 0, suffix = '' } ) => {
 	const isPositive = value > 0;
 
 	let formattedValue = `${ parseInt( value, 10 ) }${ String( suffix ) }`;
+	if ( isPrice ) {
+		formattedValue = `${ formatAmount( value ) }${ String( suffix ) }`;
+	}
+
 	if ( isPositive ) {
 		formattedValue = `+${ formattedValue }`;
 	}

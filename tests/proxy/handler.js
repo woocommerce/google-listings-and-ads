@@ -27,7 +27,14 @@ module.exports.checkRequest = ( request, h ) => {
 					body.query
 				);
 			}
-			return require( './mocks/ads/recommendations/results.json' );
+
+			if (
+				body.query.includes( 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH' )
+			) {
+				return require( './mocks/ads/recommendations/pmax-asset.json' );
+			}
+
+			return require( './mocks/ads/recommendations/campaign-budget.json' );
 		}
 	}
 
