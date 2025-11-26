@@ -134,7 +134,12 @@ class AccountControllerTest extends RESTControllerUnitTest {
 					null,
 					[
 						'code'   => $code_constant,
-						'errors' => [ [ 'code' => $code_constant, 'message' => 'creation failed' ] ],
+						'errors' => [
+							[
+								'code'    => $code_constant,
+								'message' => 'creation failed',
+							],
+						],
 					]
 				)
 			);
