@@ -35,11 +35,18 @@ class MerchantCenterApiException extends Exception {
 		$this->errors     = ! empty( $errors ) ? $errors : [ $error_code => $message ];
 	}
 
+	/**
+	 * Get the error code.
+	 *
+	 * @return string
+	 */
 	public function get_error_code(): string {
 		return $this->error_code;
 	}
 
 	/**
+	 * Get the detailed errors.
+	 *
 	 * @return array<string,string>
 	 */
 	public function get_errors(): array {
@@ -49,12 +56,16 @@ class MerchantCenterApiException extends Exception {
 	/**
 	 * Format errors as list of objects for REST response.
 	 *
-	 * @return array<int,array<string,string>>
+	 * @return array
 	 */
 	public function get_errors_objects(): array {
 		$formatted = [];
+
 		foreach ( $this->errors as $code => $message ) {
-			$formatted[] = [ 'code' => $code, 'message' => $message ];
+			$formatted[] = [
+				'code'    => $code,
+				'message' => $message,
+			];
 		}
 		return $formatted;
 	}

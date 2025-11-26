@@ -22,6 +22,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerExceptionInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\NotFoundExceptionInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException;
 use DateTime;
 use Exception;
 
@@ -158,7 +159,7 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			$message = $this->client_exception_message( $e, __( 'Error creating account', 'google-listings-and-ads' ) );
 			$status  = $e->getCode() ?: 400;
 			$errors  = [];
-			if ( $e instanceof \Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException ) {
+			if ( $e instanceof BadResponseException ) {
 				$raw = json_decode( $e->getResponse()->getBody()->getContents(), true );
 				if ( is_array( $raw ) && ! empty( $raw['errors'] ) && is_array( $raw['errors'] ) ) {
 					foreach ( $raw['errors'] as $err ) {
@@ -244,7 +245,7 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			$message = $this->client_exception_message( $e, __( 'Error linking merchant to MCA', 'google-listings-and-ads' ) );
 			$status  = $e->getCode() ?: 400;
 			$errors  = [];
-			if ( $e instanceof \Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException ) {
+			if ( $e instanceof BadResponseException ) {
 				$raw = json_decode( $e->getResponse()->getBody()->getContents(), true );
 				if ( is_array( $raw ) && ! empty( $raw['errors'] ) && is_array( $raw['errors'] ) ) {
 					foreach ( $raw['errors'] as $err ) {
@@ -308,7 +309,7 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			$message = $this->client_exception_message( $e, __( 'Error claiming website', 'google-listings-and-ads' ) );
 			$status  = $e->getCode() ?: 400;
 			$errors  = [];
-			if ( $e instanceof \Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException ) {
+			if ( $e instanceof BadResponseException ) {
 				$raw = json_decode( $e->getResponse()->getBody()->getContents(), true );
 				if ( is_array( $raw ) && ! empty( $raw['errors'] ) && is_array( $raw['errors'] ) ) {
 					foreach ( $raw['errors'] as $err ) {

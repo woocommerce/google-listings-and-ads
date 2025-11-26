@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ApiNotReady;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Exception;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
@@ -171,7 +172,7 @@ class AccountController extends BaseController {
 			} catch ( ApiNotReady $e ) {
 				return $this->get_time_to_wait_response( $e );
 			} catch ( Exception $e ) {
-				if ( $e instanceof \Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData ) {
+				if ( $e instanceof ExceptionWithResponseData ) {
 					$data = $e->get_response_data();
 					if ( isset( $data['code'], $data['errors'] ) ) {
 						$status = $e->getCode() ?: 400;

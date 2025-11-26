@@ -24,10 +24,14 @@ class MerchantCenterErrorCode {
 	 * @return bool
 	 */
 	public static function is_valid( string $code ): bool {
-		return in_array( $code, [
-			self::ACCOUNT_CREATE_FAILED,
-			self::ACCOUNT_LINK_FAILED,
-			self::ACCOUNT_CLAIM_WEBSITE_FAILED,
-		], true );
+		return in_array(
+			$code,
+			[
+				self::ACCOUNT_CREATE_FAILED,
+				self::ACCOUNT_LINK_FAILED,
+				self::ACCOUNT_CLAIM_WEBSITE_FAILED,
+			],
+			true
+		);
 	}
 }
