@@ -523,6 +523,13 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 		 * Center account and the Google Shopping Data Integration API using a
 		 * merchant URL with paths. However, some merchants still use the
 		 * plugin's WP filter `woocommerce_gla_site_url` to achieve this.
+		 *
+		 * However, a site URL containing paths will cause API routing errors
+		 * if it's not encoded, due to the unexpected appearance of `/`.
+		 * For example, when the URL is 'wp.test/ja/shop',
+		 * `[...]/merchants/wp.test/ja/shop/account:connect` will cause an API error.
+		 * The encoded `[...]/merchants/wp.test%2Fja%2Fshop/account:connect` will
+		 * point to the correct route.
 		*/
 		return $this->container->get( 'connect_server_root' )
 			. 'google/google-sdi/v1/credentials/partners/WOO_COMMERCE/merchants/'
