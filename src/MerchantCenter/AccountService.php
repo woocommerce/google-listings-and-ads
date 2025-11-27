@@ -138,7 +138,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 			$middleware->link_merchant_account( $account_id );
 			$state['set_id']['status'] = MerchantAccountState::STEP_DONE;
 			$this->state->update( $state );
-	} catch ( ExceptionWithResponseData $e ) {
+		} catch ( ExceptionWithResponseData $e ) {
 			throw $e;
 		} catch ( Exception $e ) {
 			// Map middleware API errors to fixed API_ERROR structure.
@@ -151,7 +151,10 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 				$message = is_array( $error ) && isset( $error['message'] ) ? (string) $error['message'] : $e->getMessage();
 				throw $this->prepare_exception(
 					$message,
-					[ 'code' => 'API_ERROR', 'error' => $error ],
+					[
+						'code'  => 'API_ERROR',
+						'error' => $error,
+					],
 					$e->getCode() ?: 400
 				);
 			}
@@ -176,7 +179,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 
 		try {
 			return $this->setup_account_steps();
-	} catch ( ExceptionWithResponseData | ApiNotReady $e ) {
+		} catch ( ExceptionWithResponseData | ApiNotReady $e ) {
 			throw $e;
 		} catch ( Exception $e ) {
 			if ( $e->getPrevious() instanceof BadResponseException ) {
@@ -188,7 +191,10 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 				$message = is_array( $error ) && isset( $error['message'] ) ? (string) $error['message'] : $e->getMessage();
 				throw $this->prepare_exception(
 					$message,
-					[ 'code' => 'API_ERROR', 'error' => $error ],
+					[
+						'code'  => 'API_ERROR',
+						'error' => $error,
+					],
 					$e->getCode() ?: 400
 				);
 			}
