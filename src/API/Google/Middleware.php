@@ -4,8 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterApiException;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterErrorCode;
+// Removed custom Merchant Center exceptions; AccountService maps errors to API_ERROR.
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidTerm;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidDomainName;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
@@ -183,16 +182,8 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			}
 
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
-			if ( empty( $errors ) ) {
-				$errors[ MerchantCenterErrorCode::ACCOUNT_CREATE_FAILED ] = $message;
-			}
-			throw new MerchantCenterApiException(
-				$message,
-				$status,
-				MerchantCenterErrorCode::ACCOUNT_CREATE_FAILED,
-				$errors,
-				$e
-			);
+			// Throw a plain exception; AccountService will convert to API_ERROR and parse payload.
+			throw new Exception( $message, $status, $e );
 		}
 	}
 
@@ -255,16 +246,7 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 					}
 				}
 			}
-			if ( empty( $errors ) ) {
-				$errors[ MerchantCenterErrorCode::ACCOUNT_LINK_FAILED ] = $message;
-			}
-			throw new MerchantCenterApiException(
-				$message,
-				$status,
-				MerchantCenterErrorCode::ACCOUNT_LINK_FAILED,
-				$errors,
-				$e
-			);
+			throw new Exception( $message, $status, $e );
 		}
 	}
 
@@ -319,16 +301,7 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 					}
 				}
 			}
-			if ( empty( $errors ) ) {
-				$errors[ MerchantCenterErrorCode::ACCOUNT_CLAIM_WEBSITE_FAILED ] = $message;
-			}
-			throw new MerchantCenterApiException(
-				$message,
-				$status,
-				MerchantCenterErrorCode::ACCOUNT_CLAIM_WEBSITE_FAILED,
-				$errors,
-				$e
-			);
+			throw new Exception( $message, $status, $e );
 		}
 	}
 

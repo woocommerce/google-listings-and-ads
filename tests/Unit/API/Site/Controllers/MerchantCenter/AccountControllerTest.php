@@ -124,7 +124,6 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_create_account_with_structured_error_response() {
-		$code_constant = \Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterErrorCode::ACCOUNT_CREATE_FAILED;
 		$this->account->expects( $this->once() )
 			->method( 'setup_account' )
 			->willThrowException(
@@ -133,12 +132,11 @@ class AccountControllerTest extends RESTControllerUnitTest {
 					400,
 					null,
 					[
-						'code'   => $code_constant,
-						'errors' => [
-							[
-								'code'    => $code_constant,
-								'message' => 'creation failed',
-							],
+						'code'  => 'API_ERROR',
+						'error' => [
+							'message' => 'creation failed',
+							'status'  => 400,
+							'details' => [ 'reason' => 'invalid' ],
 						],
 					]
 				)
@@ -147,11 +145,10 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_ACCOUNTS, 'POST' );
 
 		$data = $response->get_data();
-		$this->assertEquals( $code_constant, $data['code'] );
+		$this->assertEquals( 'API_ERROR', $data['code'] );
 		$this->assertEquals( 'creation failed', $data['message'] );
-		$this->assertEquals( 400, $data['data']['status'] );
-		$this->assertIsArray( $data['data']['errors'] );
-		$this->assertEquals( $code_constant, $data['data']['errors'][0]['code'] );
+		$this->assertIsArray( $data['data'] );
+		$this->assertEquals( 'creation failed', $data['data']['message'] );
 		$this->assertEquals( 400, $response->get_status() );
 	}
 

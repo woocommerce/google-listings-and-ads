@@ -173,17 +173,16 @@ class AccountController extends BaseController {
 				return $this->get_time_to_wait_response( $e );
 			} catch ( Exception $e ) {
 				if ( $e instanceof ExceptionWithResponseData ) {
-					$data = $e->get_response_data();
-					if ( isset( $data['code'], $data['errors'] ) ) {
-						$status = $e->getCode() ?: 400;
+					$data    = $e->get_response_data();
+					$status  = $e->getCode() ?: 400;
+					$error   = is_array( $data ) ? ( $data['error'] ?? [] ) : [];
+					$message = is_array( $error ) && isset( $error['message'] ) ? (string) $error['message'] : $e->getMessage();
+					if ( isset( $data['code'] ) && 'API_ERROR' === $data['code'] ) {
 						return new Response(
 							[
-								'code'    => $data['code'],
-								'message' => $e->getMessage(),
-								'data'    => [
-									'status' => $status,
-									'errors' => $data['errors'],
-								],
+								'code'    => 'API_ERROR',
+								'message' => $message,
+								'data'    => $error,
 							],
 							$status
 						);

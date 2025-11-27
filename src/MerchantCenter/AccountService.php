@@ -27,7 +27,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException;
 use Exception;
 use Jetpack_Options;
 
@@ -138,19 +138,23 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 			$middleware->link_merchant_account( $account_id );
 			$state['set_id']['status'] = MerchantAccountState::STEP_DONE;
 			$this->state->update( $state );
-		} catch ( ExceptionWithResponseData $e ) {
+	} catch ( ExceptionWithResponseData $e ) {
 			throw $e;
-		} catch ( MerchantCenterApiException $e ) {
-			// Wrap structured merchant center API exception.
-			throw $this->prepare_exception(
-				$e->getMessage(),
-				[
-					'code'   => $e->get_error_code(),
-					'errors' => $e->get_errors_objects(),
-				],
-				$e->getCode() ?: 400
-			);
 		} catch ( Exception $e ) {
+			// Map middleware API errors to fixed API_ERROR structure.
+			if ( $e->getPrevious() instanceof BadResponseException ) {
+				/** @var BadResponseException $prev */
+				$prev    = $e->getPrevious();
+				$body    = method_exists( $prev, 'getResponse' ) && $prev->getResponse() ? (string) $prev->getResponse()->getBody() : '';
+				$decoded = json_decode( $body, true );
+				$error   = is_array( $decoded ) ? ( $decoded['error'] ?? [] ) : [];
+				$message = is_array( $error ) && isset( $error['message'] ) ? (string) $error['message'] : $e->getMessage();
+				throw $this->prepare_exception(
+					$message,
+					[ 'code' => 'API_ERROR', 'error' => $error ],
+					$e->getCode() ?: 400
+				);
+			}
 			throw $this->prepare_exception( $e->getMessage(), [], $e->getCode() );
 		}
 	}
@@ -172,18 +176,22 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 
 		try {
 			return $this->setup_account_steps();
-		} catch ( ExceptionWithResponseData | ApiNotReady $e ) {
+	} catch ( ExceptionWithResponseData | ApiNotReady $e ) {
 			throw $e;
-		} catch ( MerchantCenterApiException $e ) {
-			throw $this->prepare_exception(
-				$e->getMessage(),
-				[
-					'code'   => $e->get_error_code(),
-					'errors' => $e->get_errors_objects(),
-				],
-				$e->getCode() ?: 400
-			);
 		} catch ( Exception $e ) {
+			if ( $e->getPrevious() instanceof BadResponseException ) {
+				/** @var BadResponseException $prev */
+				$prev    = $e->getPrevious();
+				$body    = method_exists( $prev, 'getResponse' ) && $prev->getResponse() ? (string) $prev->getResponse()->getBody() : '';
+				$decoded = json_decode( $body, true );
+				$error   = is_array( $decoded ) ? ( $decoded['error'] ?? [] ) : [];
+				$message = is_array( $error ) && isset( $error['message'] ) ? (string) $error['message'] : $e->getMessage();
+				throw $this->prepare_exception(
+					$message,
+					[ 'code' => 'API_ERROR', 'error' => $error ],
+					$e->getCode() ?: 400
+				);
+			}
 			throw $this->prepare_exception( $e->getMessage(), [], $e->getCode() );
 		}
 	}
