@@ -17,7 +17,7 @@ const useConnectMCAccount = ( value ) => {
 		method: 'POST',
 		data: { id: value },
 	} );
-	const { invalidateResolution } = useAppDispatch();
+	const { invalidateResolution, receiveDetailedError } = useAppDispatch();
 
 	const handleConnectClick = async () => {
 		if ( ! value ) {
@@ -39,14 +39,14 @@ const useConnectMCAccount = ( value ) => {
 				return;
 			}
 
-			if ( ! [ 409, 403 ].includes( e.status ) ) {
+			if ( e?.status >= 400 && e?.status < 600 ) {
 				const body = await e.json();
-				const message =
-					body.message ||
-					__(
-						'Unable to connect Merchant Center account. Please try again later.',
-						'google-listings-and-ads'
-					);
+				receiveDetailedError( 'CONNECT_MC_ACCOUNT', body );
+			} else {
+				const message = __(
+					'Unable to connect Merchant Center account. Please try again later.',
+					'google-listings-and-ads'
+				);
 				createNotice( 'error', message );
 			}
 		}
