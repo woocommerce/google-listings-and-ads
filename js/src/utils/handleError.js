@@ -81,24 +81,3 @@ export function handleApiError( error, leadingMessage, fallbackMessage ) {
 
 	logError( error );
 }
-
-/**
- * Gets formatted error message from the error object.
- * @param {ApiError} error The error object.
- * @param {string} fallbackMessage Fallback message if error message is not available.
- * @return {{title: string, description: string|undefined}} Formatted error message with title and description.
- */
-export function getFormattedErrorMessage( error, fallbackMessage ) {
-	const { error: errorData, message } = error || {};
-
-	const title =
-		message ||
-		fallbackMessage ||
-		__( 'Unknown error occurred.', 'google-listings-and-ads' );
-
-	const description = errorData?.details
-		? errorData.details[ 0 ].errors[ 0 ].message
-		: error?.errors[ 0 ]?.message;
-
-	return { title, description };
-}
