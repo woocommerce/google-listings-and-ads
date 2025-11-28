@@ -1283,22 +1283,13 @@ export function* receiveAdsRecommendations(
  * @generator
  * @param {string} errorSlot - Unique key identifying the error (e.g., field name or error code).
  * @param {Error|Object|null} error - The original error object or additional error details.
- * @param {string|null} [errorFallback=null] - Optional fallback error message if the original error lacks a message.
- * @param {'ads'|'merchant_center'|'general'} errorType - High-level error category or type.
  * @return {{type: string, errorSlot: string, errorType: string, error: (Error|Object|null)}}
  *          Redux action with type `TYPES.RECEIVE_DETAILED_ERROR` and the provided error payload.
  */
-export function* receiveDetailedError(
-	errorSlot,
-	error,
-	errorFallback = null,
-	errorType = 'general'
-) {
+export function* receiveDetailedError( errorSlot, error ) {
 	return {
 		type: TYPES.RECEIVE_DETAILED_ERROR,
 		errorSlot,
-		errorType,
-		errorFallback,
 		error,
 	};
 }

@@ -629,7 +629,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_DETAILED_ERROR: {
-			const { errorSlot, errorType, error, errorFallback } = action;
+			const { errorSlot, error } = action;
 
 			return setIn( state, 'detailed_errors', [
 				...state.detailed_errors,
@@ -637,8 +637,6 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				{
 					...error,
 					slot: errorSlot,
-					type: errorType,
-					fallback: errorFallback,
 				},
 			] );
 		}
