@@ -134,6 +134,13 @@ class AdsSettingsController extends BaseOptionsController {
 					'google-listings-and-ads'
 				),
 			],
+			OptionsInterface::ADS_GTG_ENABLED                  => [
+				'type'        => 'boolean',
+				'description' => __(
+					'Whether Google Tag Gateway is enabled.',
+					'google-listings-and-ads'
+				),
+			],
 		];
 	}
 
@@ -148,6 +155,14 @@ class AdsSettingsController extends BaseOptionsController {
 				'type'        => 'boolean',
 				'description' => __(
 					'Whether enhanced conversions are enabled.',
+					'google-listings-and-ads'
+				),
+				'context'     => [ 'view', 'edit' ],
+			],
+			OptionsInterface::ADS_GTG_ENABLED                   => [
+				'type'        => 'boolean',
+				'description' => __(
+					'Whether Google Tag Gateway is enabled.',
 					'google-listings-and-ads'
 				),
 				'context'     => [ 'view', 'edit' ],
