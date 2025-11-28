@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WCS\ConnectionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Exception;
 
 /**
  * Class Features
@@ -106,8 +107,13 @@ class Features implements Service, TransientsAwareInterface {
 	 * @return array
 	 */
 	protected function update_features() {
-		// Get the latest feature flags from WCS.
-		$features = $this->connection->get_features();
+		try {
+			// Get the latest feature flags from WCS.
+			$features = $this->connection->get_features();
+		} catch ( Exception $e ) {
+			// If WCS API fails, return an empty array.
+			return [];
+		}
 
 		// Create the new option array.
 		$option = [
