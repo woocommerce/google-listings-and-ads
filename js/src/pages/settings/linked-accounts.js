@@ -14,6 +14,7 @@ import useJetpackAccount from '~/hooks/useJetpackAccount';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
+import useYouTubeAccount from '~/hooks/useYouTubeAccount';
 import AppButton from '~/components/app-button';
 import SpinnerCard from '~/components/spinner-card';
 import { ConnectedWPComAccountCard } from '~/components/wpcom-account-card';
@@ -25,6 +26,7 @@ import LinkedAccountsSectionWrapper from './linked-accounts-section-wrapper';
 import DisconnectModal, { ALL_ACCOUNTS, ADS_ACCOUNT } from './disconnect-modal';
 import { GOOGLE_ADS_ACCOUNT_STATUS } from '~/constants';
 import { queueRecordGlaEvent } from '~/utils/tracks';
+import YouTubeAccountCard from '~/components/youtube-account-card';
 
 const { CONNECTED, INCOMPLETE } = GOOGLE_ADS_ACCOUNT_STATUS;
 
@@ -44,13 +46,16 @@ export default function LinkedAccounts() {
 	const { google } = useGoogleAccount();
 	const { googleMCAccount } = useGoogleMCAccount();
 	const { googleAdsAccount } = useGoogleAdsAccount();
+	const { youTubeAccount } = useYouTubeAccount();
 
 	const isLoading = ! (
 		jetpack &&
 		google &&
 		googleMCAccount &&
-		googleAdsAccount
+		googleAdsAccount &&
+		youTubeAccount
 	);
+
 	const hasAdsAccount = [ CONNECTED, INCOMPLETE ].includes(
 		googleAdsAccount?.status
 	);
@@ -107,13 +112,16 @@ export default function LinkedAccounts() {
 									onClick={ openDisconnectAdsAccountModal }
 								>
 									{ __(
-										'Disconnect Google Ads account only',
+										'Disconnect Google Ads account',
 										'google-listings-and-ads'
 									) }
 								</AppButton>
 							</Section.Card.Footer>
 						</ConnectedGoogleAdsAccountCard>
 					) }
+
+					<YouTubeAccountCard youTubeAccount={ youTubeAccount } />
+
 					<Flex justify="flex-end">
 						<AppButton
 							isPrimary

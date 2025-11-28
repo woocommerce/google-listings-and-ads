@@ -33,6 +33,7 @@ const DEFAULT_STATE = {
 			existing_ads: null,
 			ads_billing_status: null,
 			google_access: null,
+			youtube: null,
 		},
 		contact: null,
 		mapping: {
@@ -487,10 +488,14 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, 'store_categories', storeCategories );
 		}
 
-		case TYPES.RECEIVE_TOUR:
 		case TYPES.UPSERT_TOUR: {
 			const { tour } = action;
 			return setIn( state, [ 'tours', tour.id ], tour );
+		}
+
+		case TYPES.RECEIVE_TOURS: {
+			const { tours } = action;
+			return setIn( state, 'tours', tours );
 		}
 
 		case TYPES.HYDRATE_PREFETCHED_DATA: {
@@ -625,6 +630,10 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				[ 'ads', 'recommendations', recommendationTypes ],
 				recommendations
 			);
+		}
+
+		case TYPES.RECEIVE_ACCOUNTS_YOUTUBE: {
+			return setIn( state, 'mc.accounts.youtube', action.account );
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

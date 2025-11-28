@@ -46,6 +46,7 @@ import {
 	receiveGoogleMCContactInformation,
 	fetchTargetAudience,
 	fetchMCSetup,
+	fetchYouTubeAccount,
 	receiveGoogleAccountAccess,
 	receiveReport,
 	receiveMCProductStatistics,
@@ -56,7 +57,7 @@ import {
 	receiveMappingAttributes,
 	receiveMappingRules,
 	receiveStoreCategories,
-	receiveTour,
+	receiveTours,
 	receiveGtinMigrationStatus,
 	receiveAdsRecommendations,
 	receiveEnhancedConversionsStatus,
@@ -488,28 +489,20 @@ export function* getStoreCategories() {
 }
 
 /**
- * Resolver for getting the tour.
- *
- * @param {string} tourId The tour to get
+ * Resolver for getting all tours.
  */
-export function* getTour( tourId ) {
+export function* getTours() {
 	try {
 		const { data } = yield fetchWithHeaders( {
-			path: `${ API_NAMESPACE }/tours/${ tourId }`,
+			path: `${ API_NAMESPACE }/tours`,
 		} );
 
-		yield receiveTour( data );
+		yield receiveTours( data );
 	} catch ( response ) {
-		// Intentionally silence the specific error since the tour API will respond with
-		// a 404 error if the querying tour ID doesn't exist.
-		if ( response.status === 404 ) {
-			return;
-		}
-
 		yield handleResponseError(
 			response,
 			__(
-				'There was an error getting the tour.',
+				'There was an error getting the tours.',
 				'google-listings-and-ads'
 			)
 		);
@@ -781,3 +774,14 @@ export function* getAdsRecommendations( types, campaign_id = null ) {
 		);
 	}
 }
+
+export function* getYouTubeAccount() {
+	yield fetchYouTubeAccount();
+}
+
+getYouTubeAccount.shouldInvalidate = ( action ) => {
+	return (
+		action.type === TYPES.DISCONNECT_ACCOUNTS_YOUTUBE &&
+		action.invalidateRelatedState
+	);
+};

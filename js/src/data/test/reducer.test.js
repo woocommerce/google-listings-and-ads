@@ -39,6 +39,7 @@ describe( 'reducer', () => {
 					existing_ads: null,
 					ads_billing_status: null,
 					google_access: null,
+					youtube: null,
 				},
 				mapping: {
 					attributes: [],
@@ -817,8 +818,8 @@ describe( 'reducer', () => {
 		it( 'should receive a tour', () => {
 			const tour = { id: 'test', checked: false };
 			const state = reducer( prepareState(), {
-				type: TYPES.RECEIVE_TOUR,
-				tour,
+				type: TYPES.RECEIVE_TOURS,
+				tours: { test: tour },
 			} );
 
 			expect( state ).toHaveProperty( [ path, tour.id ], tour );
@@ -828,8 +829,8 @@ describe( 'reducer', () => {
 			const tour = { id: 'test', checked: false };
 			const tourUpdated = { id: 'test', checked: true };
 			const prevState = reducer( prepareState(), {
-				type: TYPES.RECEIVE_TOUR,
-				tour,
+				type: TYPES.RECEIVE_TOURS,
+				tours: { test: tour },
 			} );
 
 			const state = reducer( prevState, {
