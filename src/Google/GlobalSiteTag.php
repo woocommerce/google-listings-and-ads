@@ -140,6 +140,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			'update_option_' . $gtag_option_name,
 			function ( $old_value, $value ) use ( $ads_conversion_id ) {
 				if ( $value ) {
+					// Allow the user option value to be updated but do not enable GTG if feature is disabled.
+					if ( ! $this->features->is_enabled( Features::GOOGLE_TAG_GATEWAY ) ) {
+						return;
+					}
+
 					// Ensure save_mod_rewrite_rules is loaded.
 					require_once ABSPATH . 'wp-admin/includes/misc.php';
 
