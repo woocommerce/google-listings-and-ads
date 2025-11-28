@@ -120,6 +120,6 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @return string
 	 */
 	protected function get_connection_url(): string {
-		return "{$this->container->get( 'connect_server_root' )}youtube/connection";
+		return "{$this->container->get( 'connect_server_root' )}google/connection/youtube";
 	}
 }
