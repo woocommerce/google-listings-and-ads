@@ -1297,3 +1297,31 @@ export function* fetchYouTubeAccount() {
 		);
 	}
 }
+
+/**
+ * Disconnect the connected YouTube account.
+ *
+ * @throws Will throw an error if the request failed.
+ */
+export function* disconnectYouTubeAccount() {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/youtube/connection`,
+			method: 'DELETE',
+		} );
+
+		return {
+			type: TYPES.DISCONNECT_ACCOUNTS_YOUTUBE,
+			invalidateRelatedState: true,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'Unable to disconnect your YouTube account.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
