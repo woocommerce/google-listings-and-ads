@@ -971,12 +971,10 @@ describe( 'reducer', () => {
 	describe( 'Detailed errors', () => {
 		const path = 'detailed_errors';
 
-		it( 'should append a detailed error entry with slot, type and fallback', () => {
+		it( 'should append a detailed error entry with slot', () => {
 			const action = {
 				type: TYPES.RECEIVE_DETAILED_ERROR,
 				errorSlot: 'shipping_rates',
-				errorType: 'merchant_center',
-				errorFallback: 'Something went wrong',
 				error: { message: 'Original error' },
 			};
 			const state = reducer( prepareState(), action );
@@ -986,8 +984,6 @@ describe( 'reducer', () => {
 			expect( state.detailed_errors[ 0 ] ).toMatchObject( {
 				message: 'Original error',
 				slot: 'shipping_rates',
-				type: 'merchant_center',
-				fallback: 'Something went wrong',
 			} );
 		} );
 
@@ -995,14 +991,11 @@ describe( 'reducer', () => {
 			const first = reducer( prepareState(), {
 				type: TYPES.RECEIVE_DETAILED_ERROR,
 				errorSlot: 'slot_a',
-				errorType: 'general',
 				error: { code: 'A', message: 'Err A' },
 			} );
 			const second = reducer( first, {
 				type: TYPES.RECEIVE_DETAILED_ERROR,
 				errorSlot: 'slot_b',
-				errorType: 'ads',
-				errorFallback: 'Fallback B',
 				error: { code: 'B' },
 			} );
 
@@ -1011,14 +1004,10 @@ describe( 'reducer', () => {
 				code: 'A',
 				message: 'Err A',
 				slot: 'slot_a',
-				type: 'general',
-				fallback: undefined,
 			} );
 			expect( second.detailed_errors[ 1 ] ).toMatchObject( {
 				code: 'B',
 				slot: 'slot_b',
-				type: 'ads',
-				fallback: 'Fallback B',
 			} );
 		} );
 
@@ -1026,13 +1015,11 @@ describe( 'reducer', () => {
 			const withErrors = reducer( prepareState(), {
 				type: TYPES.RECEIVE_DETAILED_ERROR,
 				errorSlot: 'slot_a',
-				errorType: 'general',
 				error: { code: 'A' },
 			} );
 			const withMoreErrors = reducer( withErrors, {
 				type: TYPES.RECEIVE_DETAILED_ERROR,
 				errorSlot: 'slot_b',
-				errorType: 'general',
 				error: { code: 'B' },
 			} );
 
@@ -1052,7 +1039,6 @@ describe( 'reducer', () => {
 			const withError = reducer( prepareState(), {
 				type: TYPES.RECEIVE_DETAILED_ERROR,
 				errorSlot: 'slot_a',
-				errorType: 'general',
 				error: { code: 'A' },
 			} );
 			const cleared = reducer( withError, {
