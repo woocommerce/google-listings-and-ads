@@ -159,7 +159,7 @@ class AdsSettingsController extends BaseOptionsController {
 				),
 				'context'     => [ 'view', 'edit' ],
 			],
-			OptionsInterface::ADS_GTG_ENABLED                   => [
+			OptionsInterface::ADS_GTG_ENABLED                  => [
 				'type'        => 'boolean',
 				'description' => __(
 					'Whether Google Tag Gateway is enabled.',
