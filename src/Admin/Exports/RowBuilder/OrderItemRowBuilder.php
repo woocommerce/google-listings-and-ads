@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\RowBuilder;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\Contracts\ExportableRowBuilderInterface;
 use WC_Order_Item;
+use WC_Order_Refund;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -26,8 +27,19 @@ class OrderItemRowBuilder implements ExportableRowBuilderInterface {
 			return null;
 		}
 
-		$order   = $item->get_order();
-		$product = $item->get_product();
+		$order = $item->get_order();
+
+		// Determine if the order is a refund.
+		$is_refund = $order instanceof WC_Order_Refund;
+		$refund    = null;
+
+		if ( $is_refund ) {
+			$refund = $order;
+			$order  = wc_get_order( $order->get_parent_id() );
+		}
+
+		// Refunds use negative quantity.
+		$quantity = absint( $item->get_quantity() );
 
 		return [
 			/**
@@ -37,7 +49,7 @@ class OrderItemRowBuilder implements ExportableRowBuilderInterface {
 			 *
 			 * @param string
 			 */
-			'transaction_type'           => $order->get_type() === 'shop_order' ? 'purchase' : 'refund',
+			'transaction_type'           => $is_refund ? 'refund' : 'purchase',
 
 			/**
 			 * The Google Merchant Center ID.
@@ -59,7 +71,7 @@ class OrderItemRowBuilder implements ExportableRowBuilderInterface {
 			 *
 			 * @param string
 			 */
-			'item_id'                    => (string) $item->get_id(),
+			'item_id'                    => $item->get_variation_id(),
 
 			/**
 			 * The name of the product
@@ -83,7 +95,7 @@ class OrderItemRowBuilder implements ExportableRowBuilderInterface {
 			/**
 			 * The date of the refund.
 			 *
-			 * Should only be present on transactions of type "refund" and represents the datew hen the refund
+			 * Should only be present on transactions of type "refund" and represents the date when the refund
 			 * was successfully accepted (i.e the date when merchant receives & processes the return)
 			 *
 			 * Must be in ISO 8601 format with timezone offset
@@ -92,7 +104,7 @@ class OrderItemRowBuilder implements ExportableRowBuilderInterface {
 			 *
 			 * @param string
 			 */
-			'refund_date'                => $order->get_date_modified()->date( 'c' ),
+			'refund_date'                => $is_refund ? $refund->get_date_created()->date('c') : '',
 
 			/**
 			 * The number of items of this product in this transaction.
@@ -101,7 +113,7 @@ class OrderItemRowBuilder implements ExportableRowBuilderInterface {
 			 *
 			 * @param int
 			 */
-			'quantity'                   => $item->get_quantity(),
+			'quantity'                   => $quantity,
 
 			/**
 			 * Item unit price.
@@ -115,7 +127,7 @@ class OrderItemRowBuilder implements ExportableRowBuilderInterface {
 			 *
 			 * @param float
 			 */
-			'item_unit_price'            => $product->get_regular_price(),
+			'item_unit_price'            => $item->get_subtotal() / $quantity,
 
 			/**
 			 * Item unit disconted price.
@@ -134,7 +146,7 @@ class OrderItemRowBuilder implements ExportableRowBuilderInterface {
 			 *
 			 * @param float
 			 */
-			'item_unit_discounted_price' => $item->get_total() / $item->get_quantity(),
+			'item_unit_discounted_price' => $item->get_total() / $quantity,
 
 			/**
 			 * Item Price.
@@ -153,7 +165,7 @@ class OrderItemRowBuilder implements ExportableRowBuilderInterface {
 			 *
 			 * @param float
 			 */
-			'item_price'                 => $product->get_regular_price() * $item->get_quantity(),
+			'item_price'                 => $item->get_subtotal(),
 
 			/**
 			 * Item discounted price.
@@ -223,7 +235,7 @@ class OrderItemRowBuilder implements ExportableRowBuilderInterface {
 			 *
 			 * @param float
 			 */
-			'transaction_total'          => $order->get_total(),
+			'transaction_total'          => abs( (float) $order->get_total() ),
 
 			/**
 			 * Currency code.
