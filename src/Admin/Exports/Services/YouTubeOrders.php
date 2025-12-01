@@ -21,7 +21,26 @@ class YouTubeOrders implements Service {
 	 * @param integer $offset
 	 * @return array
 	 */
-	public function find_orders( string $date = '', int $limit = -1, int $offset = 1 ): array {
+	public function find_orders( string $date = '', int $limit = -1, int $offset = 0 ): array {
+		// Use yesterdays date if no date passed.
+		$date = empty( $date ) ? gmdate( 'Y-m-d', strtotime( '-1 day' ) ) : $date;
+
+		// combine IDs from purchase and refund queries.
+		$purchases = $this->find_purchases( $date, $limit, $offset );
+		$refunds   = $this->find_refunds( $date, $limit, $offset );
+
+		return array_unique( array_merge( $purchases, $refunds ) );
+	}
+
+	/**
+	 * Return an array of WooCommerce purchase order IDs for the Merchant Conversions Report CSV.
+	 *
+	 * @param string  $date
+	 * @param integer $limit
+	 * @param integer $offset
+	 * @return array
+	 */
+	private function find_purchases( string $date = '', int $limit = -1, int $offset = 0 ): array {
 		// Use yesterdays date if no date passed.
 		$date = empty( $date ) ? gmdate( 'Y-m-d', strtotime( '-1 day' ) ) : $date;
 
@@ -30,10 +49,8 @@ class YouTubeOrders implements Service {
 			'date_created' => $date,
 			'limit'        => $limit,
 			'offset'       => $offset,
-			'type'         => [
-				'shop_order',
-				'shop_order_refund',
-			],
+			'return'       => 'ids',
+			'type'         => 'shop_order',
 			'meta_query'   => [
 				[
 					'key'     => '_wc_order_attribution_utm_source',
@@ -43,14 +60,45 @@ class YouTubeOrders implements Service {
 			],
 		];
 
-		$orders = wc_get_orders( $query );
+		return wc_get_orders( $query );
+	}
 
-		// Map order objects to an array of IDs.
-		return array_map(
-			function ( $order ) {
-				return $order->get_ID();
+	/**
+	 * Return an array of refund order IDs for the Merchant Conversions Report CSV.
+	 *
+	 * @param string $date
+	 * @param integer $limit
+	 * @param integer $offset
+	 * @return array
+	 */
+	private function find_refunds( string $date = '', int $limit = -1, int $offset = 0 ): array {
+		// Use yesterdays date if no date passed.
+		$date = empty( $date ) ? gmdate( 'Y-m-d', strtotime( '-1 day' ) ) : $date;
+
+		$query = [
+			'date_created' => $date,
+			'limit'        => $limit,
+			'offset'       => $offset,
+			'type'         => 'shop_order_refund',
+		];
+
+		// Get all refunds for the specific day.
+		$refunds = wc_get_orders( $query );
+
+		// Check the parent order for the youtube attribution.
+		$refund_ids = array_map(
+			function( $refund ) {
+				$order = wc_get_order( $refund->get_parent_id() );
+
+				if ( 'youtube' === $order->get_meta( '_wc_order_attribution_utm_source' ) ) {
+					return $refund->get_id();
+				}
+
+				return null;
 			},
-			$orders
+			$refunds
 		);
+
+		return array_filter( $refund_ids );
 	}
 }
