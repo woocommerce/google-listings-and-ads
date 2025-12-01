@@ -66,7 +66,7 @@ class YouTubeOrders implements Service {
 	/**
 	 * Return an array of refund order IDs for the Merchant Conversions Report CSV.
 	 *
-	 * @param string $date
+	 * @param string  $date
 	 * @param integer $limit
 	 * @param integer $offset
 	 * @return array
@@ -87,7 +87,7 @@ class YouTubeOrders implements Service {
 
 		// Check the parent order for the youtube attribution.
 		$refund_ids = array_map(
-			function( $refund ) {
+			function ( $refund ) {
 				$order = wc_get_order( $refund->get_parent_id() );
 
 				if ( 'youtube' === $order->get_meta( '_wc_order_attribution_utm_source' ) ) {

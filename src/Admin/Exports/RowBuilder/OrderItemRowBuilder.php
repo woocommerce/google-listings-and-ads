@@ -104,7 +104,7 @@ class OrderItemRowBuilder implements ExportableRowBuilderInterface {
 			 *
 			 * @param string
 			 */
-			'refund_date'                => $is_refund ? $refund->get_date_created()->date('c') : '',
+			'refund_date'                => $is_refund ? $refund->get_date_created()->date( 'c' ) : '',
 
 			/**
 			 * The number of items of this product in this transaction.
@@ -127,7 +127,7 @@ class OrderItemRowBuilder implements ExportableRowBuilderInterface {
 			 *
 			 * @param float
 			 */
-			'item_unit_price'            => $item->get_subtotal() / $quantity,
+			'item_unit_price'            => absint( $item->get_subtotal() ) / $quantity,
 
 			/**
 			 * Item unit disconted price.
@@ -146,7 +146,7 @@ class OrderItemRowBuilder implements ExportableRowBuilderInterface {
 			 *
 			 * @param float
 			 */
-			'item_unit_discounted_price' => $item->get_total() / $quantity,
+			'item_unit_discounted_price' => absint( $item->get_total() ) / $quantity,
 
 			/**
 			 * Item Price.
@@ -165,7 +165,7 @@ class OrderItemRowBuilder implements ExportableRowBuilderInterface {
 			 *
 			 * @param float
 			 */
-			'item_price'                 => $item->get_subtotal(),
+			'item_price'                 => absint( $item->get_subtotal() ),
 
 			/**
 			 * Item discounted price.
@@ -183,7 +183,7 @@ class OrderItemRowBuilder implements ExportableRowBuilderInterface {
 			 *
 			 * @param float
 			 */
-			'item_discounted_price'      => $item->get_total(),
+			'item_discounted_price'      => absint( $item->get_total() ),
 
 			/**
 			 * Coupons.
@@ -311,7 +311,7 @@ class OrderItemRowBuilder implements ExportableRowBuilderInterface {
 			 *
 			 * @param string
 			 */
-			'reversal_reason'            => '',
+			'reversal_reason'            => $is_refund ? $refund->get_reason() : '',
 		];
 	}
 }

@@ -172,6 +172,6 @@ class OrderItemRowBuilderTest extends UnitTest {
 		$this->assertEquals( $row['attribution_id'], 'YT-TEST-ID' );
 		$this->assertEquals( $row['country_code'], 'US' );
 		$this->assertEquals( $row['subaccount_id'], '' );
-		$this->assertEquals( $row['reversal_reason'], '' );
+		$this->assertEquals( $row['reversal_reason'], 'Test refund' );
 	}
 }
