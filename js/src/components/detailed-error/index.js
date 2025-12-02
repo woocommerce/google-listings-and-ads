@@ -15,10 +15,9 @@ import './index.scss';
 
 const DetailedError = ( { errorSlots, className } ) => {
 	const { createNotice } = useDispatchCoreNotices();
-	const hasShownNoticeRef = useRef( false );
+	const hasShownNoticeRef = useRef();
 	const error = useDetailedErrorBySlots( errorSlots );
 
-	// If there's no mapped detailed error, show a core notice once, but do it in an effect
 	useEffect( () => {
 		if ( error && ! hasShownNoticeRef.current ) {
 			hasShownNoticeRef.current = true;
@@ -32,14 +31,22 @@ const DetailedError = ( { errorSlots, className } ) => {
 		return null;
 	}
 
-	const { title, description } = getFormattedErrorMessage( error );
+	const { error: errorData } = error;
+	const { title, description } = getFormattedErrorMessage( errorData );
 
 	return (
 		<div className={ classNames( 'gla-detailed-error', className ) }>
-			<h4 className="gla-detailed-error__title">
-				<img src={ warningIconUrl } alt="" width={ 16 } height={ 16 } />
-				<span>{ title }</span>
-			</h4>
+			<div className="gla-detailed-error__title">
+				<span>
+					<img
+						src={ warningIconUrl }
+						alt=""
+						width={ 16 }
+						height={ 16 }
+					/>
+				</span>
+				<h4>{ title }</h4>
+			</div>
 			<p className="gla-detailed-error__description">{ description }</p>
 		</div>
 	);

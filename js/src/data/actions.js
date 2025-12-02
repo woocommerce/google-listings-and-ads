@@ -1280,16 +1280,14 @@ export function* receiveAdsRecommendations(
 /**
  * Action containing detailed error information.
  *
- * @generator
- * @param {string} errorSlot - Unique key identifying the error (e.g., field name or error code).
+ * @param {string} slot - Unique key identifying the error (e.g., field name or error code).
  * @param {Error|Object|null} error - The original error object or additional error details.
- * @return {{type: string, errorSlot: string, errorType: string, error: (Error|Object|null)}}
- *          Redux action with type `TYPES.RECEIVE_DETAILED_ERROR` and the provided error payload.
+ * @return {{type: string, slot: string, error: Error|Object|null}} Redux action with type `TYPES.RECEIVE_DETAILED_ERROR`.
  */
-export function* receiveDetailedError( errorSlot, error ) {
+export function* receiveDetailedError( slot, error ) {
 	return {
 		type: TYPES.RECEIVE_DETAILED_ERROR,
-		errorSlot,
+		slot,
 		error,
 	};
 }
@@ -1298,12 +1296,12 @@ export function* receiveDetailedError( errorSlot, error ) {
  * Clears error information for a specific error slot.
  *
  * @generator
- * @param {string} errorSlot - Unique key identifying the error to be cleared.
- * @return {{type: string, errorSlot: string}} Redux action with type `TYPES.CLEAR_DETAILED_ERROR_BY_SLOT`.
+ * @param {string} slot - Unique key identifying the error to be cleared.
+ * @return {{type: string, slot: string}} Redux action with type `TYPES.CLEAR_DETAILED_ERROR_BY_SLOT`.
  */
-export function* clearDetailedErrorBySlot( errorSlot ) {
+export function* clearDetailedErrorBySlot( slot ) {
 	return {
 		type: TYPES.CLEAR_DETAILED_ERROR_BY_SLOT,
-		errorSlot,
+		slot,
 	};
 }

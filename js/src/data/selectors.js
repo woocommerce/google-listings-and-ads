@@ -508,18 +508,15 @@ export const getAdsRecommendations = ( state, types, campaign_id = null ) => {
  *
  * @param {Object} state - State containing detailed errors.
  * @param {Array<Object|null>} state.detailed_errors - Array of error objects (may contain null/undefined).
- * @param {Array<string|number>} errorSlots - Array of slot identifiers to match against each error's `slot`.
- * @return {Array<Object>|null} Array of matching error objects, or null when `errorSlots` is not a non-empty array.
+ * @param {Array<string|number>} slots - Array of slot identifiers to match against each error's `slot`.
+ * @return {Array<Object>} Array of matching error objects, or null when `slots` is not a non-empty array.
  */
-export const getDetailedErrorBySlots = ( state, errorSlots ) => {
-	if ( ! Array.isArray( errorSlots ) || errorSlots.length === 0 ) {
-		return null;
+export const getDetailedErrorBySlots = ( state, slots ) => {
+	if ( ! Array.isArray( slots ) || slots.length === 0 ) {
+		return [];
 	}
 
 	return state.detailed_errors.filter( ( error ) => {
-		if ( ! error ) {
-			return false;
-		}
-		return errorSlots.includes( error.slot );
+		return slots.includes( error?.slot );
 	} );
 };
