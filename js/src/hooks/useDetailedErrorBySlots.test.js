@@ -21,21 +21,14 @@ const createError = ( slot, overrides = {} ) => ( {
 } );
 
 const actions = {
-	receiveDetailedError: (
-		errorSlot,
-		error,
-		errorFallback = null,
-		errorType = 'general'
-	) => ( {
+	receiveDetailedError: ( slot, error ) => ( {
 		type: TYPES.RECEIVE_DETAILED_ERROR,
-		errorSlot,
-		errorType,
-		errorFallback,
+		slot,
 		error,
 	} ),
-	clearDetailedErrorBySlot: ( errorSlot ) => ( {
+	clearDetailedErrorBySlot: ( slot ) => ( {
 		type: TYPES.CLEAR_DETAILED_ERROR_BY_SLOT,
-		errorSlot,
+		slot,
 	} ),
 };
 
@@ -55,7 +48,6 @@ describe( 'useDetailedErrorBySlots', () => {
 	} );
 
 	it( 'returns first matching error when multiple slots provided', () => {
-		// Dispatch two errors (order: slot_b then slot_a)
 		dispatch( STORE_KEY ).receiveDetailedError(
 			'slot_b',
 			createError( 'slot_b' )
@@ -69,7 +61,11 @@ describe( 'useDetailedErrorBySlots', () => {
 		);
 		expect( result.current ).toMatchObject( {
 			slot: 'slot_b',
-			code: 'code_slot_b',
+			error: {
+				code: 'code_slot_b',
+				message: 'Error for slot_b',
+				slot: 'slot_b',
+			},
 		} );
 	} );
 

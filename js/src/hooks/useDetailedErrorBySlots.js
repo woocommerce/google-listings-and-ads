@@ -10,11 +10,11 @@ import { STORE_KEY } from '~/data/constants';
 
 const selectorName = 'getDetailedErrorBySlots';
 
-const useDetailedErrorBySlots = ( errorSlots ) => {
+const useDetailedErrorBySlots = ( slots ) => {
 	return useSelect(
 		( select ) => {
 			const selector = select( STORE_KEY );
-			const errors = selector[ selectorName ]( errorSlots );
+			const errors = selector[ selectorName ]( slots );
 
 			if ( ! errors || errors.length === 0 ) {
 				return null;
@@ -22,7 +22,7 @@ const useDetailedErrorBySlots = ( errorSlots ) => {
 
 			return errors[ 0 ];
 		},
-		[ errorSlots ]
+		[ slots ]
 	);
 };
 
