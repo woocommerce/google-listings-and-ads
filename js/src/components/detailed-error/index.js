@@ -35,11 +35,17 @@ const DetailedError = ( { errorSlots, className } ) => {
 
 	return (
 		<div className={ classNames( 'gla-detailed-error', className ) }>
-			<h4 className="gla-detailed-error__title">
-				<img src={ warningIconUrl } alt="" width={ 16 } height={ 16 } />
-
-				<span>{ title }</span>
-			</h4>
+			<div className="gla-detailed-error__title">
+				<span>
+					<img
+						src={ warningIconUrl }
+						alt=""
+						width={ 16 }
+						height={ 16 }
+					/>
+				</span>
+				<h4>{ title }</h4>
+			</div>
 			<p className="gla-detailed-error__description">{ description }</p>
 		</div>
 	);
