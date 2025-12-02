@@ -8,30 +8,26 @@ import { useEffect, useRef } from '@wordpress/element';
  * Internal dependencies
  */
 import { getFormattedErrorMessage } from '~/utils/handleError';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useDetailedErrorBySlots from '~/hooks/useDetailedErrorBySlots';
 import warningIconUrl from '~/images/icons/warning.svg';
 import './index.scss';
 
 const DetailedError = ( { errorSlots, className } ) => {
-	const { createNotice } = useDispatchCoreNotices();
 	const hasShownNoticeRef = useRef();
 	const error = useDetailedErrorBySlots( errorSlots );
 
 	useEffect( () => {
 		if ( error && ! hasShownNoticeRef.current ) {
 			hasShownNoticeRef.current = true;
-			if ( error?.fallback ) {
-				createNotice( 'error', error.fallback );
-			}
 		}
-	}, [ error, createNotice ] );
+	}, [ error ] );
 
 	if ( ! error ) {
 		return null;
 	}
 
-	const { title, description } = getFormattedErrorMessage( error );
+	const { error: errorData } = error;
+	const { title, description } = getFormattedErrorMessage( errorData );
 
 	return (
 		<div className={ classNames( 'gla-detailed-error', className ) }>
