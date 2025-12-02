@@ -629,27 +629,24 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_DETAILED_ERROR: {
-			const { errorSlot, error } = action;
+			const { slot, error } = action;
 
 			return setIn( state, 'detailed_errors', [
 				...state.detailed_errors,
-
 				{
-					...error,
-					slot: errorSlot,
+					error,
+					slot,
 				},
 			] );
 		}
 
 		case TYPES.CLEAR_DETAILED_ERROR_BY_SLOT: {
-			const { errorSlot } = action;
+			const { slot } = action;
 
 			return setIn(
 				state,
 				'detailed_errors',
-				state.detailed_errors.filter(
-					( error ) => error.slot !== errorSlot
-				)
+				state.detailed_errors.filter( ( error ) => error.slot !== slot )
 			);
 		}
 
