@@ -130,7 +130,7 @@ class OrderItemRowBuilder implements ExportableRowBuilderInterface {
 			'item_unit_price'            => absint( $item->get_subtotal() ) / $quantity,
 
 			/**
-			 * Item unit disconted price.
+			 * Item unit discounted price.
 			 *
 			 * Discounted price of 1 unit of this item (i.e. sale price of 1 unit of this item,
 			 * but before transaction level discounts. If the item is not on sale, this

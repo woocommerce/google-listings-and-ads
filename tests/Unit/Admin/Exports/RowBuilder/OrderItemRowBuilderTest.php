@@ -18,15 +18,15 @@ use WC_Order_Item_Coupon;
  */
 class OrderItemRowBuilderTest extends UnitTest {
 	/** @var OrderItemRowBuilder $builder */
-	protected $builder;
+	protected static $builder;
 
-	public function setUp(): void {
-		parent::setUp();
-		$this->builder = new OrderItemRowBuilder();
+	public static function setUpBeforeClass(): void {
+		parent::setUpBeforeClass();
+		self::$builder = new OrderItemRowBuilder();
 	}
 
 	public function test_returns_null_if_instance_not_wc_order_item() {
-		$row = $this->builder->build_row( [] );
+		$row = self::$builder->build_row( [] );
 
 		$this->assertNull( $row );
 	}
@@ -73,7 +73,7 @@ class OrderItemRowBuilderTest extends UnitTest {
 		$order->save();
 
 		// Build the CSV row.
-		$row = $this->builder->build_row( $item );
+		$row = self::$builder->build_row( $item );
 
 		// Assert.
 		$this->assertEquals( $row['transaction_type'], 'purchase' );
@@ -149,7 +149,7 @@ class OrderItemRowBuilderTest extends UnitTest {
 		$refund_item = array_values( $refund->get_items() )[0];
 
 		// Build the CSV row.
-		$row = $this->builder->build_row( $refund_item );
+		$row = self::$builder->build_row( $refund_item );
 
 		// Assert.
 		$this->assertEquals( $row['transaction_type'], 'refund' );

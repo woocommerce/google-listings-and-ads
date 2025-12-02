@@ -63,7 +63,7 @@ class CsvExportWriter {
 
 			if ( ! $this->fs->is_dir( $dir_path ) ) {
 				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
-				throw new RuntimeException( 'Failed to create export directory: ' . $dir_path );
+				throw new RuntimeException( sprintf( 'Failed to create export directory: %s', esc_html( $dir_path ) ) );
 			}
 		}
 
@@ -78,7 +78,7 @@ class CsvExportWriter {
 
 		if ( ! $success ) {
 			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
-			throw new RuntimeException( 'Failed to create CSV file: ' . $file );
+			throw new RuntimeException( sprintf( 'Failed to create CSV file: %s', esc_html( $file ) ) );
 		}
 
 		return $file;
