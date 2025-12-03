@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\Admin\PageController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsRecommendationsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
@@ -48,6 +49,9 @@ class NotificationManager implements ContainerAwareInterface, Service, Registera
 		// Hook into admin_menu with a high priority (e.g., 20) to ensure
 		// all other menu items have been registered by WooCommerce and other plugins.
 		add_action( 'admin_menu', [ $this, 'display_aggregated_notification_pill' ], 20 );
+
+		add_filter( 'google_for_woocommerce_admin_menu_notification_count', [ $this, 'performance_max_ad_strength_count' ] );
+		add_filter( 'google_for_woocommerce_admin_menu_notification_count', [ $this, 'raise_budget_recommendations_count' ] );
 	}
 
 	/**
@@ -148,7 +152,7 @@ class NotificationManager implements ContainerAwareInterface, Service, Registera
 		// Initialize the count and apply the filter to get the total aggregated count.
 		// All parts of the plugin (and other plugins) that need to add to the notification
 		// should hook into this filter.
-		$total_notification_count = apply_filters( 'google_for_woocommerce_admin_menu_notification_count', $this->initial_notification_count() );
+		$total_notification_count = apply_filters( 'google_for_woocommerce_admin_menu_notification_count', 0 );
 
 		// Only proceed if there's at least one notification.
 		if ( $total_notification_count > 0 ) {
@@ -191,14 +195,28 @@ class NotificationManager implements ContainerAwareInterface, Service, Registera
 	/**
 	 * Returns the initial notification count for the admin menu.
 	 *
+	 * @param int $count The initial count.
 	 * @return int The updated notification count, which is either 1 (if there are recommendations) or 0 (if there are no recommendations).
 	 */
-	public function initial_notification_count(): int {
+	public function performance_max_ad_strength_count( int $count ): int {
 		global $wpdb;
-		$count = 0;
 
-		$query           = $this->container->get( AdsRecommendationsService::class );
-		$recommendations = $query->get_recommendations();
+		$query        = $this->container->get( AdsRecommendationsService::class );
+		$ads_campaign = $this->container->get( AdsCampaign::class );
+		$campaign     = $ads_campaign->get_highest_spend_campaign();
+
+		// Return early if there is no highest spend campaign.
+		if ( empty( $campaign ) || ! isset( $campaign['id'] ) ) {
+			return $count;
+		}
+
+		// Check IMPROVE_PERFORMANCE_MAX_AD_STRENGTH recommendations for highest spend campaign.
+		$recommendations = $query->get_recommendations(
+			[
+				'types'       => [ 'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH' ],
+				'campaign_id' => $campaign['id'],
+			]
+		);
 
 		// Return early if there are no recommendations.
 		if ( empty( $recommendations ) ) {
@@ -214,6 +232,47 @@ class NotificationManager implements ContainerAwareInterface, Service, Registera
 		}
 
 		$action_time = $preferences['woocommerce/google-listings-and-ads']['pmax-improve-assets-banner']['actionTime'];
+
+		if ( time() > $action_time + ( 30 * DAY_IN_SECONDS ) ) {
+			return ++$count;
+		}
+
+		return $count;
+	}
+
+	/**
+	 * Returns the count for Raise Budget Recommendations.
+	 *
+	 * @param int $count The initial count.
+	 * @return int The updated notification count for Raise Budget Recommendations.
+	 */
+	public function raise_budget_recommendations_count( int $count ): int {
+		global $wpdb;
+
+		$query           = $this->container->get( AdsRecommendationsService::class );
+		$recommendations = $query->get_recommendations(
+			[
+				'types'       => [
+					'CAMPAIGN_BUDGET',
+					'MARGINAL_ROI_CAMPAIGN_BUDGET',
+				],
+				'campaign_id' => 0,
+			]
+		);
+
+		if ( empty( $recommendations ) ) {
+			return $count;
+		}
+
+		// Check recommendation dates and user preference.
+		$preferences = get_user_meta( get_current_user_id(), "{$wpdb->prefix}persisted_preferences", true );
+
+		// If the user has not interacted with a recommendation yet.
+		if ( ! is_array( $preferences ) || ! isset( $preferences['woocommerce/google-listings-and-ads']['raise-budget-recommendation-banner']['actionType'] ) || ! isset( $preferences['woocommerce/google-listings-and-ads']['raise-budget-recommendation-banner']['actionTime'] ) ) {
+			return ++$count;
+		}
+
+		$action_time = $preferences['woocommerce/google-listings-and-ads']['raise-budget-recommendation-banner']['actionTime'];
 
 		if ( time() > $action_time + ( 30 * DAY_IN_SECONDS ) ) {
 			return ++$count;

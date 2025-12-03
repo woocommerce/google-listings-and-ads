@@ -175,7 +175,7 @@ class WooCommerceProductBundles implements IntegrationInterface {
 			return $price;
 		}
 
-		return $tax_excluded ? $product->get_bundle_regular_price_excluding_tax() : $product->get_bundle_regular_price_including_tax();
+		return $tax_excluded ? (float) $product->get_bundle_regular_price_excluding_tax() : (float) $product->get_bundle_regular_price_including_tax();
 	}
 
 	/**
@@ -188,8 +188,8 @@ class WooCommerceProductBundles implements IntegrationInterface {
 			return $sale_price;
 		}
 
-		$regular_price = $tax_excluded ? $product->get_bundle_regular_price_excluding_tax() : $product->get_bundle_regular_price_including_tax();
-		$price         = $tax_excluded ? $product->get_bundle_price_excluding_tax() : $product->get_bundle_price_including_tax();
+		$regular_price = $tax_excluded ? (float) $product->get_bundle_regular_price_excluding_tax() : (float) $product->get_bundle_regular_price_including_tax();
+		$price         = $tax_excluded ? (float) $product->get_bundle_price_excluding_tax() : (float) $product->get_bundle_price_including_tax();
 
 		// return current price as the sale price if it's lower than the regular price.
 		if ( $price < $regular_price ) {

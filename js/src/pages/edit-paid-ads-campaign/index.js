@@ -233,8 +233,9 @@ const EditPaidAdsCampaign = () => {
 			/>
 			<CampaignAssetsForm
 				initialCampaign={ {
-					level: 'custom',
-					amount: campaign.amount,
+					level: 'current',
+					id: campaign.id,
+					currentAmount: campaign.amount,
 					hasConfirmedEuPoliticalContent:
 						campaign.eu_political_advertising_confirmation,
 				} }

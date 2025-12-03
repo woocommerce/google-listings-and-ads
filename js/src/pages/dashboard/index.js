@@ -27,6 +27,7 @@ import { recordGlaEvent } from '~/utils/tracks';
 import RebrandingTour from '~/components/tours/rebranding-tour';
 import PMaxImproveAssetsBanner from '~/components/pmax-improve-assets-banner';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
+import RaiseBudgetRecommendationBanner from '~/components/raise-budget-recommendation-banner';
 import './index.scss';
 
 /**
@@ -90,6 +91,7 @@ const Dashboard = () => {
 				<ExperienceRatingBanner />
 				<DifferentCurrencyNotice context="dashboard" />
 				<MainTabNav />
+				<RaiseBudgetRecommendationBanner />
 				<RebrandingTour />
 				<div className="gla-dashboard__filter">
 					<AppDateRangeFilterPicker

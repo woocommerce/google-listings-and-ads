@@ -29,6 +29,8 @@ export const GUIDE_NAMES = {
 export const LOCAL_STORAGE_KEYS = {
 	CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN:
 		'gla-can-onboarding-setup-ces-prompt-open',
+	RAISE_BUDGET_RECOMMENDATIONS_ACTIONED_CAMPAIGNS:
+		'gla-raise-budget-recommendations-actioned-campaigns',
 };
 
 export const API_RESPONSE_CODES = {
@@ -139,5 +141,7 @@ export const PRICE_BENCHMARK_CHART_COLORS = {
 export const PREFERENCES_STORE_NAMESPACE =
 	'woocommerce/google-listings-and-ads';
 
+export const CAMPAIGN_BUDGET = 'CAMPAIGN_BUDGET';
+export const MARGINAL_ROI_CAMPAIGN_BUDGET = 'MARGINAL_ROI_CAMPAIGN_BUDGET';
 export const PMAX_IMPROVE_PERFORMANCE_MAX_AD_STRENGTH =
 	'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH';

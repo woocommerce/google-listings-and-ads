@@ -487,10 +487,14 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, 'store_categories', storeCategories );
 		}
 
-		case TYPES.RECEIVE_TOUR:
 		case TYPES.UPSERT_TOUR: {
 			const { tour } = action;
 			return setIn( state, [ 'tours', tour.id ], tour );
+		}
+
+		case TYPES.RECEIVE_TOURS: {
+			const { tours } = action;
+			return setIn( state, 'tours', tours );
 		}
 
 		case TYPES.HYDRATE_PREFETCHED_DATA: {
@@ -618,11 +622,11 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_ADS_RECOMMENDATIONS: {
-			const { recommendations, recommendationType } = action;
+			const { recommendations, recommendationTypes } = action;
 
 			return setIn(
 				state,
-				[ 'ads', 'recommendations', recommendationType ],
+				[ 'ads', 'recommendations', recommendationTypes ],
 				recommendations
 			);
 		}
