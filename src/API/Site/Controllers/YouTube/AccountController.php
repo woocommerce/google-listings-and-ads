@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Avifinfo\Chan_Prop;
 use Exception;
 use WP_REST_Request as Request;
 
@@ -115,14 +116,30 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 	protected function get_connected_callback(): callable {
 		return function () {
 			try {
-				$status = $this->connection->get_status();
+				$status     = $this->connection->get_status();
+				$connection = isset( $status['status'] ) ? $status['status'] : 'disconnected';
+				$channel    = [];
+
+				// Get channel information if connected.
+				if ( 'connected' === $connection ) {
+					$channels = $this->connection->get_channels();
+
+					if ( isset( $channels['items'] ) && ! empty( $channels['items'] ) ) {
+						$details = array_shift( $channels['items'] );
+
+						$channel = [
+							'id'    => $details['id'],
+							'label' => $details['snippet']['title'],
+						];
+					}
+				}
 
 				return [
-					'status'  => isset( $status['status'] ) ? $status['status'] : 'disconnected',
-					'channel' => isset( $status['channel'] ) ? $status['channel'] : [],
+					'status'  => $connection,
+					'channel' => $channel,
 				];
 			} catch ( Exception $e ) {
-				$this->response_from_exception( $e );
+				return $this->response_from_exception( $e );
 			}
 		};
 	}

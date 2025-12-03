@@ -115,11 +115,48 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
+	 * Get the YouTube channel details.
+	 *
+	 * @return array
+	 * @throws Exception When a ClientException is caught or the response contains an error.
+	 */
+	public function get_channels() {
+		try {
+			/** @var Client $client */
+			$client   = $this->container->get( Client::class );
+			$result   = $client->get( $this->get_data_url() . '/channels?part=snippet&mine=true' );
+			$response = json_decode( $result->getBody()->getContents(), true );
+
+			if ( 200 === $result->getStatusCode() ) {
+				return $response;
+			}
+
+			do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
+
+			$message = $response['message'] ?? __( 'Invalid response when retrieving channels', 'google-listings-and-ads' );
+			throw new Exception( $message, $result->getStatusCode() );
+		} catch ( ClientExceptionInterface $e ) {
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
+
+			throw new Exception( $this->client_exception_message( $e, __( 'Error retrieving channels', 'google-listings-and-ads' ) ) );
+		}
+	}
+
+	/**
 	 * Get the YouTube connection URL.
 	 *
 	 * @return string
 	 */
 	protected function get_connection_url(): string {
 		return "{$this->container->get( 'connect_server_root' )}google/connection/youtube";
+	}
+
+	/**
+	 * Get the YouTube data proxy URL.
+	 *
+	 * @return string
+	 */
+	protected function get_data_url(): string {
+		return "{$this->container->get( 'connect_server_root' )}google/youtube/v3";
 	}
 }
