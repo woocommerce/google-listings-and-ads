@@ -71,11 +71,7 @@ export const getSettings = ( state ) => {
  */
 
 /**
- * Error object returned from the API.
- *
- * @typedef {Object} ApiError
- * @property {string} code Error code.
- * @property {string} message Error message.
+ * @typedef {import('./actions').ApiError} ApiError
  */
 
 /**
