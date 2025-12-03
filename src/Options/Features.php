@@ -69,6 +69,24 @@ class Features implements Service, TransientsAwareInterface {
 	}
 
 	/**
+	 * Return an array of enabled features.
+	 *
+	 * @return array
+	 */
+	public function get_enabled_features(): array {
+		$option  = $this->get_features();
+		$enabled = [];
+
+		foreach ( $option['features'] as $name => $attributes ) {
+			if ( true === $attributes['enabled'] ) {
+				$enabled[] = $name;
+			}
+		}
+
+		return $enabled;
+	}
+
+	/**
 	 * Check if a feature is enabled.
 	 *
 	 * @param string $feature
