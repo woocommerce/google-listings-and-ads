@@ -1289,7 +1289,7 @@ export function* receiveAdsRecommendations(
  * Action containing detailed error information.
  *
  * @param {string} slot - Unique key identifying the error (e.g., field name or error code).
- * @param {Error|Object|null} error - The original error object or additional error details.
+ * @param {ApiError|null} error - The original error object or additional error details.
  * @return {{type: string, slot: string, error: ApiError|null}} Redux action with type `TYPES.RECEIVE_DETAILED_ERROR`.
  */
 export function* receiveDetailedError( slot, error ) {
