@@ -70,7 +70,7 @@ const image = (
 	</div>
 );
 
-const gtgEnabled = isFeatureEnabled( FEATURES.GOOGLE_TAG_GATEWAY );
+const gtgFeatureEnabled = isFeatureEnabled( FEATURES.GOOGLE_TAG_GATEWAY );
 const pages = [
 	{
 		image,
@@ -130,13 +130,13 @@ const pages = [
 				) }
 			>
 				<p>
-					{ gtgEnabled &&
+					{ gtgFeatureEnabled &&
 						__(
 							'Your account already uses Google Tag Gateway to strengthen measurement accuracy. You can also enable Enhanced Conversions to further improve tracking with privacy-conscious data.',
 							'google-listings-and-ads'
 						) }
 
-					{ ! gtgEnabled &&
+					{ ! gtgFeatureEnabled &&
 						__(
 							'Set up Enhanced Conversions, a feature designed to improve your measurement accuracy by collecting privacy-conscious data without the need for third-party cookies.',
 							'google-listings-and-ads'

@@ -42,7 +42,7 @@ const CONTEXT = 'google_tag_gateway_tour';
  * @fires gla_google_tag_gateway_tour_close_button_click with `{ context: "google_tag_gateway_tour", source: "done-btn" | "close-btn" | "skip-btn" }`
  */
 export default function GoogleTagGatewayTour() {
-	const gtgEnabled = useFeature( FEATURES.GOOGLE_TAG_GATEWAY );
+	const gtgFeatureEnabled = useFeature( FEATURES.GOOGLE_TAG_GATEWAY );
 	const {
 		tourChecked: campaignAssetsTourChecked,
 		hasFinishedResolution: hasResolvedCampaignAssetsTour,
@@ -55,7 +55,7 @@ export default function GoogleTagGatewayTour() {
 
 	const tourCheckedRefs = useRef();
 
-	if ( ! gtgEnabled ) {
+	if ( ! gtgFeatureEnabled ) {
 		return null;
 	}
 

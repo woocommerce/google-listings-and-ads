@@ -7,7 +7,7 @@ import { Flex, Notice } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { FEATURES } from '~/constants';
+import { FEATURES, glaData } from '~/constants';
 import Section from '~/components/section';
 import SetupEnhancedConversions from './setup-enhanced-conversions';
 import SetupGoogleTagGateway from './setup-google-tag-gateway';
@@ -27,7 +27,7 @@ const ImproveDataStrengthSection = () => {
 		hasFinishedResolution: hasResolvedGoogleAdsAccount,
 	} = useGoogleAdsAccount();
 
-	const gtgEnabled = useFeature( FEATURES.GOOGLE_TAG_GATEWAY );
+	const gtgFeatureEnabled = useFeature( FEATURES.GOOGLE_TAG_GATEWAY );
 
 	return (
 		<Section
@@ -52,14 +52,21 @@ const ImproveDataStrengthSection = () => {
 									status="warning"
 									isDismissible={ false }
 								>
-									{ __(
-										'Connect your Google Ads account to enable Enhanced Conversions data and Google Tag Gateway.',
-										'google-listings-and-ads'
-									) }
+									{ gtgFeatureEnabled &&
+										__(
+											'Connect your Google Ads account to enable Enhanced Conversions data and Google Tag Gateway.',
+											'google-listings-and-ads'
+										) }
+
+									{ ! gtgFeatureEnabled &&
+										__(
+											'Connect your Google Ads account to enable Enhanced Conversions data.',
+											'google-listings-and-ads'
+										) }
 								</Notice>
 							) }
 
-						{ gtgEnabled && <SetupGoogleTagGateway /> }
+						{ gtgFeatureEnabled && <SetupGoogleTagGateway /> }
 
 						<SetupEnhancedConversions />
 					</Flex>
