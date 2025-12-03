@@ -81,7 +81,7 @@ const SetupEnhancedConversions = () => {
 				onChange={ handleOnChange }
 				help={ createInterpolateElement(
 					__(
-						'Enhanced Conversions is a feature designed to improve your measurement accuracy by collecting privacy-conscious data without the need for third-party cookies. <readMoreLink>Read more</readMoreLink>.',
+						'Enhanced Conversions is a feature designed to improve your measurement accuracy by collecting privacy-conscious data without the need for third-party cookies. <readMoreLink>Read more</readMoreLink>',
 						'google-listings-and-ads'
 					),
 					{
