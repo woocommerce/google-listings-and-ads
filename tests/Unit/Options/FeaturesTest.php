@@ -133,6 +133,21 @@ class FeaturesTest extends UnitTest {
 		$this->assertEquals( $feature, $expected );
 	}
 
+	public function test_get_enabled_features_returns_correct_feature_names() {
+		$option = self::TEST_OUTPUT_DATA;
+
+		$option['features']['test_feature'] = [
+			'enabled' => false,
+		];
+
+		$this->transients->expects( $this->any() )
+			->method( 'get' )
+			->with( TransientsInterface::WCS_FEATURE_FLAGS )
+			->willReturn( $option );
+
+		$this->assertEquals( [ Features::GOOGLE_TAG_GATEWAY ], $this->features->get_enabled_features() );
+	}
+
 	public function test_percentage_rollout_distribution_is_uniform() {
 		$buckets = array_fill( 0, 100, 0 );
 
