@@ -12,12 +12,18 @@ import Guide from '~/components/external/wordpress/guide';
 import GuidePageContent, { ContentLink } from '~/components/guide-page-content';
 import AppButton from '~/components/app-button';
 import AddPaidCampaignButton from '~/components/paid-ads/add-paid-campaign-button';
-import { glaData, GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '~/constants';
+import {
+	glaData,
+	GUIDE_NAMES,
+	LOCAL_STORAGE_KEYS,
+	FEATURES,
+} from '~/constants';
 import localStorage from '~/utils/localStorage';
 import { getProductFeedUrl, getSettingsUrl } from '~/utils/urls';
 import wooLogoURL from '~/images/logo/woocommerce-logo.svg';
 import googleLogoURL from '~/images/logo/google-logo.svg';
 import { recordGlaEvent } from '~/utils/tracks';
+import { isFeatureEnabled } from '~/utils/isFeatureEnabled';
 import './index.scss';
 
 const EVENT_NAME = 'gla_modal_closed';
@@ -64,6 +70,7 @@ const image = (
 	</div>
 );
 
+const gtgEnabled = isFeatureEnabled( FEATURES.GOOGLE_TAG_GATEWAY );
 const pages = [
 	{
 		image,
@@ -123,10 +130,17 @@ const pages = [
 				) }
 			>
 				<p>
-					{ __(
-						'Your account already uses Google Tag Gateway to strengthen measurement accuracy. You can also enable Enhanced Conversions to further improve tracking with privacy-conscious data.',
-						'google-listings-and-ads'
-					) }
+					{ gtgEnabled &&
+						__(
+							'Your account already uses Google Tag Gateway to strengthen measurement accuracy. You can also enable Enhanced Conversions to further improve tracking with privacy-conscious data.',
+							'google-listings-and-ads'
+						) }
+
+					{ ! gtgEnabled &&
+						__(
+							'Set up Enhanced Conversions, a feature designed to improve your measurement accuracy by collecting privacy-conscious data without the need for third-party cookies.',
+							'google-listings-and-ads'
+						) }
 				</p>
 			</GuidePageContent>
 		),
