@@ -79,11 +79,20 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_connected() {
+		// Mock status response.
 		$status = [
-			'status'  => 'connected',
-			'channel' => [
-				'id'   => 1234,
-				'name' => 'Channel 1',
+			'status' => 'connected',
+		];
+
+		// Mock channels response.
+		$channels = [
+			'items' => [
+				[
+					'id'      => 1234,
+					'snippet' => [
+						'title' => 'Channel 1',
+					],
+				],
 			],
 		];
 
@@ -91,10 +100,20 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			->method( 'get_status' )
 			->willReturn( $status );
 
+		$this->connection->expects( $this->once() )
+			->method( 'get_channels' )
+			->willReturn( $channels );
+
 		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
 
 		$this->assertEquals(
-			$status,
+			[
+				'status'  => 'connected',
+				'channel' => [
+					'id'    => 1234,
+					'label' => 'Channel 1',
+				],
+			],
 			$response->get_data()
 		);
 		$this->assertEquals( 200, $response->get_status() );
