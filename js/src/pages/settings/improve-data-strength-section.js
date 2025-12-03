@@ -7,7 +7,7 @@ import { Flex, Notice } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { FEATURES, glaData } from '~/constants';
+import { FEATURES } from '~/constants';
 import Section from '~/components/section';
 import SetupEnhancedConversions from './setup-enhanced-conversions';
 import SetupGoogleTagGateway from './setup-google-tag-gateway';
