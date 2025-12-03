@@ -22,6 +22,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\Admin\PageController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\ScriptAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Features;
 
 /**
  * Class Admin
@@ -54,18 +55,25 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 	protected $ads;
 
 	/**
+	 * @var Features
+	 */
+	protected $features;
+
+	/**
 	 * Admin constructor.
 	 *
 	 * @param AssetsHandlerInterface $assets_handler
 	 * @param ViewFactory            $view_factory
 	 * @param MerchantCenterService  $merchant_center
 	 * @param AdsService             $ads
+	 * @param Features               $features
 	 */
-	public function __construct( AssetsHandlerInterface $assets_handler, ViewFactory $view_factory, MerchantCenterService $merchant_center, AdsService $ads ) {
+	public function __construct( AssetsHandlerInterface $assets_handler, ViewFactory $view_factory, MerchantCenterService $merchant_center, AdsService $ads, Features $features ) {
 		$this->assets_handler  = $assets_handler;
 		$this->view_factory    = $view_factory;
 		$this->merchant_center = $merchant_center;
 		$this->ads             = $ads;
+		$this->features        = $features;
 	}
 
 	/**
@@ -139,7 +147,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 				'dateFormat'               => get_option( 'date_format' ),
 				'timeFormat'               => get_option( 'time_format' ),
 				'siteLogoUrl'              => wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ), 'full' ),
-				'enabledFeatures'          => [ 'google_tag_gateway' ], // @TODO: Dynamically populate enabled features.
+				'enabledFeatures'          => $this->features->get_enabled_features(),
 				'initialWpData'            => [
 					'version' => $this->get_version(),
 					'mcId'    => $this->options->get_merchant_id() ?: null,
