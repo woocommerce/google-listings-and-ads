@@ -62,7 +62,7 @@ export function resolveErrorMessage( error, leadingMessage, fallbackMessage ) {
  *
  * Please note that authorization errors will be only printed by `console.error`.
  *
- * @param {ApiError} error The error got from an API response.
+ * @param {Object} error The error got from an API response.
  * @param {string} [leadingMessage] Optional leading message.
  * @param {string} [fallbackMessage] Optional fallback message if API error message is not available.
  */
@@ -84,17 +84,15 @@ export function handleApiError( error, leadingMessage, fallbackMessage ) {
 
 /**
  * Gets formatted error message from the error object.
- * @param {ApiError} error The error object.
- * @param {string} fallbackMessage Fallback message if error message is not available.
+ * @param {ApiError} detailedError The error object.
  * @return {{title: string, description: string|undefined}} Formatted error message with title and description.
  */
-export function getFormattedErrorMessage( error, fallbackMessage ) {
-	const { error: errorData, message } = error || {};
+export function getFormattedErrorMessage( detailedError ) {
+	const { error } = detailedError || {};
+	const { error: errorData, message } = error;
 
 	const title =
-		message ||
-		fallbackMessage ||
-		__( 'Unknown error occurred.', 'google-listings-and-ads' );
+		message || __( 'Unknown error occurred.', 'google-listings-and-ads' );
 
 	const description = errorData?.details
 		? errorData.details[ 0 ].errors[ 0 ].message
