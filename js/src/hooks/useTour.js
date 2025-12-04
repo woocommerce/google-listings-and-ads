@@ -28,11 +28,11 @@ import useAppSelectDispatch from '~/hooks/useAppSelectDispatch';
  * @return {TourHook} The tour Hook
  */
 const useTour = ( tourId ) => {
-	const tour = useAppSelectDispatch( 'getTour', tourId );
+	const tours = useAppSelectDispatch( 'getTours' );
 	const { upsertTour } = useAppDispatch();
-
-	const checked = tour.data?.checked;
-	const tourChecked = ! tour.hasFinishedResolution || Boolean( checked );
+	const tour = tours?.data?.[ tourId ];
+	const checked = tour?.checked;
+	const tourChecked = ! tours.hasFinishedResolution || Boolean( checked );
 
 	const setTourChecked = useCallback(
 		( nextChecked ) => {

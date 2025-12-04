@@ -2,7 +2,6 @@
  * External dependencies
  */
 import classNames from 'classnames';
-import { useEffect, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -13,21 +12,13 @@ import warningIconUrl from '~/images/icons/warning.svg';
 import './index.scss';
 
 const DetailedError = ( { errorSlots, className } ) => {
-	const hasShownNoticeRef = useRef();
 	const error = useDetailedErrorBySlots( errorSlots );
-
-	useEffect( () => {
-		if ( error && ! hasShownNoticeRef.current ) {
-			hasShownNoticeRef.current = true;
-		}
-	}, [ error ] );
 
 	if ( ! error ) {
 		return null;
 	}
 
-	const { error: errorData } = error;
-	const { title, description } = getFormattedErrorMessage( errorData );
+	const { title, description } = getFormattedErrorMessage( error );
 
 	return (
 		<div className={ classNames( 'gla-detailed-error', className ) }>

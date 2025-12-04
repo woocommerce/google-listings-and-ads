@@ -44,6 +44,14 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  */
 
 /**
+ * Error object returned from the API.
+ *
+ * @typedef {Object} ApiError
+ * @property {string} code Error code.
+ * @property {string} message Error message.
+ */
+
+/**
  * Campaign data.
  *
  * @typedef {Object} Campaign
@@ -1167,14 +1175,14 @@ export function* receiveStoreCategories( storeCategories ) {
 }
 
 /**
- * Action to receive the tour.
+ * Action to receive the tours.
  *
- * @param {Tour} tour The tour to receive.
+ * @param {Object.<string, Tour>} tours The tours to receive.
  */
-export function* receiveTour( tour ) {
+export function* receiveTours( tours ) {
 	return {
-		type: TYPES.RECEIVE_TOUR,
-		tour,
+		type: TYPES.RECEIVE_TOURS,
+		tours,
 	};
 }
 
@@ -1281,8 +1289,8 @@ export function* receiveAdsRecommendations(
  * Action containing detailed error information.
  *
  * @param {string} slot - Unique key identifying the error (e.g., field name or error code).
- * @param {Error|Object|null} error - The original error object or additional error details.
- * @return {{type: string, slot: string, error: Error|Object|null}} Redux action with type `TYPES.RECEIVE_DETAILED_ERROR`.
+ * @param {ApiError|null} error - The original error object or additional error details.
+ * @return {{type: string, slot: string, error: ApiError|null}} Redux action with type `TYPES.RECEIVE_DETAILED_ERROR`.
  */
 export function* receiveDetailedError( slot, error ) {
 	return {
@@ -1295,7 +1303,6 @@ export function* receiveDetailedError( slot, error ) {
 /**
  * Clears error information for a specific error slot.
  *
- * @generator
  * @param {string} slot - Unique key identifying the error to be cleared.
  * @return {{type: string, slot: string}} Redux action with type `TYPES.CLEAR_DETAILED_ERROR_BY_SLOT`.
  */
