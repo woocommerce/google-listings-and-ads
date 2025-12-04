@@ -67,7 +67,7 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 			await refetchGoogleAdsAccount();
 		} catch ( error ) {
 			receiveDetailedError( ERROR_SLOT, {
-				status: error.status,
+				...error,
 				code: error.statusText,
 				title: __( 'Connection Failed', 'google-listings-and-ads' ),
 			} );
