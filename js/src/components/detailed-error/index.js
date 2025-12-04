@@ -2,30 +2,17 @@
  * External dependencies
  */
 import classNames from 'classnames';
-import { useEffect, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { getFormattedErrorMessage } from '~/utils/handleError';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useDetailedErrorBySlots from '~/hooks/useDetailedErrorBySlots';
 import warningIconUrl from '~/images/icons/warning.svg';
 import './index.scss';
 
 const DetailedError = ( { errorSlots, className } ) => {
-	const { createNotice } = useDispatchCoreNotices();
-	const hasShownNoticeRef = useRef();
 	const error = useDetailedErrorBySlots( errorSlots );
-
-	useEffect( () => {
-		if ( error && ! hasShownNoticeRef.current ) {
-			hasShownNoticeRef.current = true;
-			if ( error?.fallback ) {
-				createNotice( 'error', error.fallback );
-			}
-		}
-	}, [ error, createNotice ] );
 
 	if ( ! error ) {
 		return null;
