@@ -25,11 +25,34 @@ class YouTubeOrders implements Service {
 		// Use yesterdays date if no date passed.
 		$date = empty( $date ) ? gmdate( 'Y-m-d', strtotime( '-1 day' ) ) : $date;
 
-		// combine IDs from purchase and refund queries.
-		$purchases = $this->find_purchases( $date, $limit, $offset );
-		$refunds   = $this->find_refunds( $date, $limit, $offset );
+		// Fetch all orders and refunds for the date without meta filtering.
+		// We'll filter by meta during the loop to leverage meta caching.
+		$purchase_ids = $this->find_purchases( $date, $limit, $offset );
+		$refund_ids   = $this->find_refunds( $date, $limit, $offset );
 
-		return array_unique( array_merge( $purchases, $refunds ) );
+		// Filter orders and refunds by YouTube attribution meta.
+		$filtered_order_ids = [];
+
+		// Filter purchases
+		foreach ( $purchase_ids as $purchase_id ) {
+			$order = wc_get_order( $purchase_id );
+			if ( $order && 'youtube' === $order->get_meta( '_wc_order_attribution_utm_source' ) ) {
+				$filtered_order_ids[] = $purchase_id;
+			}
+		}
+
+		// Filter refunds
+		foreach ( $refund_ids as $refund_id ) {
+			$refund = wc_get_order( $refund_id );
+			if ( $refund && 'shop_order_refund' === $refund->get_type() ) {
+				$parent_order = wc_get_order( $refund->get_parent_id() );
+				if ( $parent_order && 'youtube' === $parent_order->get_meta( '_wc_order_attribution_utm_source' ) ) {
+					$filtered_order_ids[] = $refund_id;
+				}
+			}
+		}
+
+		return array_unique( $filtered_order_ids );
 	}
 
 	/**
@@ -44,20 +67,12 @@ class YouTubeOrders implements Service {
 		// Use yesterdays date if no date passed.
 		$date = empty( $date ) ? gmdate( 'Y-m-d', strtotime( '-1 day' ) ) : $date;
 
-		// Query orders with the YouTube attribution source.
 		$query = [
 			'date_created' => $date,
 			'limit'        => $limit,
 			'offset'       => $offset,
 			'return'       => 'ids',
 			'type'         => 'shop_order',
-			'meta_query'   => [
-				[
-					'key'     => '_wc_order_attribution_utm_source',
-					'value'   => 'youtube',
-					'compare' => '=',
-				],
-			],
 		];
 
 		return wc_get_orders( $query );
@@ -79,26 +94,12 @@ class YouTubeOrders implements Service {
 			'date_created' => $date,
 			'limit'        => $limit,
 			'offset'       => $offset,
+			'return'       => 'ids',
 			'type'         => 'shop_order_refund',
 		];
 
 		// Get all refunds for the specific day.
-		$refunds = wc_get_orders( $query );
-
-		// Check the parent order for the youtube attribution.
-		$refund_ids = array_map(
-			function ( $refund ) {
-				$order = wc_get_order( $refund->get_parent_id() );
-
-				if ( 'youtube' === $order->get_meta( '_wc_order_attribution_utm_source' ) ) {
-					return $refund->get_id();
-				}
-
-				return null;
-			},
-			$refunds
-		);
-
-		return array_filter( $refund_ids );
+		// Meta filtering will be done in find_orders() to leverage meta caching.
+		return wc_get_orders( $query );
 	}
 }
