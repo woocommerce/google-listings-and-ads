@@ -12,8 +12,14 @@ import { logError } from './console';
 
 /**
  * @typedef {Object} ApiError
+ * @property {number} [code] The HTTP response status code.
  * @property {string} [message] The error reason.
- * @property {number} [statusCode] The HTTP response status code.
+ */
+
+/**
+ * @typedef {Object} DetailedApiError
+ * @property {ApiError} error The error data.
+ * @property {string} [slot] The ad slot where the error occurred.
  */
 
 // Functions in this module use optional chaining to access `error` because the
@@ -84,7 +90,7 @@ export function handleApiError( error, leadingMessage, fallbackMessage ) {
 
 /**
  * Gets formatted error message from the error object.
- * @param {ApiError} detailedError The error object.
+ * @param {DetailedApiError} detailedError The error object.
  * @return {{title: string, description: string|undefined}} Formatted error message with title and description.
  */
 export function getFormattedErrorMessage( detailedError ) {
