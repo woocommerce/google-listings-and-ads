@@ -78,11 +78,7 @@ class Features implements Service, TransientsAwareInterface {
 	public function is_enabled( string $feature ): bool {
 		$config = $this->get_features( $feature );
 
-		if ( isset( $config['enabled'] ) ) {
-			return $config['enabled'];
-		}
-
-		return false;
+		return $config['enabled'] ?? false;
 	}
 
 	/**
@@ -94,11 +90,7 @@ class Features implements Service, TransientsAwareInterface {
 	public function default_value( string $feature ) {
 		$config = $this->get_features( $feature );
 
-		if ( isset( $config['attributes']['default'] ) ) {
-			return $config['attributes']['default'];
-		}
-
-		return null;
+		return $config['attributes']['default'] ?? null;
 	}
 
 	/**
@@ -108,10 +100,8 @@ class Features implements Service, TransientsAwareInterface {
 	 */
 	protected function update_features() {
 		try {
-			// Get the latest feature flags from WCS.
 			$features = $this->connection->get_features();
 		} catch ( Exception $e ) {
-			// If WCS API fails, return an empty array.
 			return [];
 		}
 
