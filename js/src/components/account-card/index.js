@@ -215,11 +215,9 @@ export default function AccountCard( {
 							{ indicator }
 						</div>
 					) }
-					{ errorSlots && (
-						<div className="gla-account-card__error">
-							<DetailedError errorSlots={ errorSlots } />
-						</div>
-					) }
+					<div className="gla-account-card__error">
+						<DetailedError errorSlots={ errorSlots } />
+					</div>
 					{ actions && (
 						<div className="gla-account-card__actions">
 							{ actions }
