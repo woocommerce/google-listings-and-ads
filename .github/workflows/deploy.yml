@@ -46,7 +46,7 @@ jobs:
           version: ${{ github.event.inputs.version }}
           node_version: '20'
           npm_version: '10'
-          simulate: ${{ github.event.inputs.simulate }}
+          simulate: true # Hard coding until after we've verified everything is working as expected.
           github_release: ${{ github.event.inputs.deploy_github }}
           wporg_release: ${{ github.event.inputs.deploy_wporg }}
           wporg_username: ${{ secrets.WPORG_USERNAME }}
