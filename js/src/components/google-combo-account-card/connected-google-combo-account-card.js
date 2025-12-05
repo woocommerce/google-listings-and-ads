@@ -202,7 +202,7 @@ const ConnectedGoogleComboAccountCard = () => {
 				}
 				expandedDetail
 				errorSlots={
-					! creatingWhich
+					! ( showConnectAds && showConnectMC )
 						? [
 								ERROR_SLOTS.GOOGLE_ADS_CONNECTION,
 								ERROR_SLOTS.GOOGLE_MC_CONNECTION,
