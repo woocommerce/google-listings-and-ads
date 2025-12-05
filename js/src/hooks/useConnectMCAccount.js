@@ -39,9 +39,11 @@ const useConnectMCAccount = ( value ) => {
 				return;
 			}
 
-			if ( e?.status >= 400 && e?.status < 600 ) {
-				const body = await e.json();
-				receiveDetailedError( 'CONNECT_MC_ACCOUNT', body );
+			if ( e?.code === 'API_ERROR' ) {
+				receiveDetailedError( 'CONNECT_MC_ACCOUNT', {
+					...e,
+					title: __( 'Connection Failed', 'google-listings-and-ads' ),
+				} );
 			} else {
 				const message = __(
 					'Unable to connect Merchant Center account. Please try again later.',

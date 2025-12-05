@@ -18,8 +18,7 @@ const DetailedError = ( { errorSlots, className } ) => {
 		return null;
 	}
 
-	const { error: errorData } = error;
-	const { title, description } = getFormattedErrorMessage( errorData );
+	const { title, description } = getFormattedErrorMessage( error );
 
 	return (
 		<div className={ classNames( 'gla-detailed-error', className ) }>

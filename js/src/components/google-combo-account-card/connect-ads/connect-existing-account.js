@@ -145,7 +145,7 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 					onDisconnected={ handleDisconnected }
 				/>
 			}
-			errorSlots={ [ 'CONNECT_ADS_ACCOUNT' ] }
+			errorSlots={ [ ERROR_SLOT ] }
 		/>
 	);
 };

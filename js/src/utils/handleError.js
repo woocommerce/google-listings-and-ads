@@ -97,6 +97,8 @@ export function getFormattedErrorMessage( detailedError ) {
 	const { error } = detailedError || {};
 	const { error: errorData, message } = error;
 
+	console.log( 'errorData', errorData );
+
 	const title =
 		message || __( 'Unknown error occurred.', 'google-listings-and-ads' );
 
