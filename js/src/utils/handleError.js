@@ -68,7 +68,7 @@ export function resolveErrorMessage( error, leadingMessage, fallbackMessage ) {
  *
  * Please note that authorization errors will be only printed by `console.error`.
  *
- * @param {Object} error The error got from an API response.
+ * @param {ApiError} error The error got from an API response.
  * @param {string} [leadingMessage] Optional leading message.
  * @param {string} [fallbackMessage] Optional fallback message if API error message is not available.
  */
