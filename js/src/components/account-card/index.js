@@ -15,6 +15,7 @@ import googleMCLogoURL from '~/images/logo/google-merchant-center-logo.svg';
 import googleAdsLogoURL from '~/images/logo/google-ads-logo.svg';
 import wpLogoURL from '~/images/logo/wp-logo.svg';
 import finalUrlIconURL from '~/images/final-url-icon.svg';
+import DetailedError from '~/components/detailed-error';
 import './index.scss';
 
 /**
@@ -143,6 +144,7 @@ const indicatorAlignStyleName = {
  * @param {JSX.Element} [props.detail] Detail content below the card description.
  * @param {boolean} [props.expandedDetail=false] Whether to expand the detail content.
  * @param {JSX.Element} [props.actions] Actions content below the card detail.
+ * @param {Array<string>} [props.errorSlots] Error slots passed to DetailedError component.
  * @param {Array<JSX.Element>} [props.children] Children to be rendered if needs more content within the card.
  * @param {Object} [props.restProps] Props to be forwarded to Section.Card.
  */
@@ -160,6 +162,7 @@ export default function AccountCard( {
 	detail,
 	expandedDetail = false,
 	actions,
+	errorSlots,
 	children,
 	...restProps
 } ) {
@@ -212,6 +215,9 @@ export default function AccountCard( {
 							{ indicator }
 						</div>
 					) }
+					<div className="gla-account-card__error">
+						<DetailedError errorSlots={ errorSlots } />
+					</div>
 					{ actions && (
 						<div className="gla-account-card__actions">
 							{ actions }
