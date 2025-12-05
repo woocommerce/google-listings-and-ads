@@ -53,7 +53,7 @@
 	}
 
 	&__actions {
-		grid-area: 3/2/auto/span 2;
+		grid-area: auto/2/auto/span 2;
 		margin-top: $grid-unit-15;
 	}
 
@@ -117,5 +117,10 @@
 				margin: $grid-unit-10;
 			}
 		}
+	}
+
+	.gla-account-card__error {
+		grid-area: auto/2/auto/span 1;
+		margin-top: $grid-unit-10;
 	}
 }
