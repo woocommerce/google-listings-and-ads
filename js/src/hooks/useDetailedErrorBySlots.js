@@ -23,10 +23,12 @@ const selectorName = 'getDetailedErrorBySlots';
 const useDetailedErrorBySlots = ( slots ) => {
 	return useSelect(
 		( select ) => {
+			// Guard against undefined or non-array inputs.
+			const safeSlots = Array.isArray( slots ) ? slots : [];
 			const selector = select( STORE_KEY );
-			const allErrors = selector[ selectorName ]( slots ) || [];
+			const allErrors = selector[ selectorName ]( safeSlots ) || [];
 
-			const firstErrorsPerSlot = slots.reduce( ( acc, slot ) => {
+			const firstErrorsPerSlot = safeSlots.reduce( ( acc, slot ) => {
 				const firstForSlot = allErrors.find(
 					( err ) => err && err.slot === slot
 				);
