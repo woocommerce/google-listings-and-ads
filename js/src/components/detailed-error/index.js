@@ -2,6 +2,7 @@
  * External dependencies
  */
 import classNames from 'classnames';
+import { Fragment } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -12,29 +13,38 @@ import warningIconUrl from '~/images/icons/warning.svg';
 import './index.scss';
 
 const DetailedError = ( { errorSlots, className } ) => {
-	const error = useDetailedErrorBySlots( errorSlots );
+	const errors = useDetailedErrorBySlots( errorSlots );
 
-	if ( ! error ) {
+	if ( ! errors || errors.length === 0 ) {
 		return null;
 	}
 
-	const { title, description } = getFormattedErrorMessage( error );
+	const formattedErrors = getFormattedErrorMessage( errors );
 
 	return (
-		<div className={ classNames( 'gla-detailed-error', className ) }>
-			<div className="gla-detailed-error__title">
-				<span>
-					<img
-						src={ warningIconUrl }
-						alt=""
-						width={ 16 }
-						height={ 16 }
-					/>
-				</span>
-				<h4>{ title }</h4>
-			</div>
-			<p className="gla-detailed-error__description">{ description }</p>
-		</div>
+		<Fragment>
+			{ formattedErrors.map( ( { title, description }, idx ) => (
+				<div
+					key={ idx }
+					className={ classNames( 'gla-detailed-error', className ) }
+				>
+					<div className="gla-detailed-error__title">
+						<span>
+							<img
+								src={ warningIconUrl }
+								alt=""
+								width={ 16 }
+								height={ 16 }
+							/>
+						</span>
+						<h4>{ title }</h4>
+					</div>
+					<p className="gla-detailed-error__description">
+						{ description }
+					</p>
+				</div>
+			) ) }
+		</Fragment>
 	);
 };
 

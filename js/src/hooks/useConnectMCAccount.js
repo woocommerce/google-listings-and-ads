@@ -9,6 +9,7 @@ import { __ } from '@wordpress/i18n';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import { useAppDispatch } from '~/data';
+import { ERROR_SLOTS } from '~/data/constants';
 
 const useConnectMCAccount = ( value ) => {
 	const { createNotice } = useDispatchCoreNotices();
@@ -40,7 +41,7 @@ const useConnectMCAccount = ( value ) => {
 			}
 
 			if ( e?.code === 'API_ERROR' ) {
-				receiveDetailedError( 'CONNECT_MC_ACCOUNT', {
+				receiveDetailedError( ERROR_SLOTS.GOOGLE_MC_CONNECTION, {
 					...e,
 					title: __( 'Connection Failed', 'google-listings-and-ads' ),
 				} );

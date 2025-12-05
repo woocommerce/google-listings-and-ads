@@ -89,22 +89,26 @@ export function handleApiError( error, leadingMessage, fallbackMessage ) {
 }
 
 /**
- * Gets formatted error message from the error object.
- * @param {DetailedApiError} detailedError The error object.
- * @return {{title: string, description: string|undefined}} Formatted error message with title and description.
+ * Gets formatted error messages from a list of error objects.
+ *
+ * @param {Array<DetailedApiError>} detailedErrors The list of error objects.
+ * @return {Array<{title: string, description: string|undefined}>} Array of formatted error messages with title and description.
  */
-export function getFormattedErrorMessage( detailedError ) {
-	const { error } = detailedError || {};
-	const { error: errorData, message } = error;
+export function getFormattedErrorMessage( detailedErrors ) {
+	const errors = Array.isArray( detailedErrors ) ? detailedErrors : [];
 
-	console.log( 'errorData', errorData );
+	return errors.filter( Boolean ).map( ( detailedError ) => {
+		const { error } = detailedError || {};
+		const { error: errorData, message } = error || {};
 
-	const title =
-		message || __( 'Unknown error occurred.', 'google-listings-and-ads' );
+		const title =
+			message ||
+			__( 'Unknown error occurred.', 'google-listings-and-ads' );
 
-	const description = errorData?.details
-		? errorData.details[ 0 ].errors[ 0 ].message
-		: error?.errors[ 0 ]?.message;
+		const description = errorData?.details
+			? errorData.details[ 0 ]?.errors?.[ 0 ]?.message
+			: error?.errors?.[ 0 ]?.message;
 
-	return { title, description };
+		return { title, description };
+	} );
 }

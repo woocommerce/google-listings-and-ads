@@ -28,6 +28,7 @@ import useGoogleAdsAccountStatus from '~/hooks/useGoogleAdsAccountStatus';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useUpsertAdsAccount from '~/hooks/useUpsertAdsAccount';
 import showAdsConversionNotice from '~/utils/showAdsConversionNotice';
+import { ERROR_SLOTS } from '~/data/constants';
 import './connected-google-combo-account-card.scss';
 
 /**
@@ -200,6 +201,14 @@ const ConnectedGoogleComboAccountCard = () => {
 					/>
 				}
 				expandedDetail
+				errorSlots={
+					! creatingWhich
+						? [
+								ERROR_SLOTS.GOOGLE_ADS_CONNECTION,
+								ERROR_SLOTS.GOOGLE_MC_CONNECTION,
+						  ]
+						: []
+				}
 			/>
 
 			{ showConnectAds && (
