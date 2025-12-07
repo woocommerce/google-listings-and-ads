@@ -18,6 +18,7 @@ import BudgetSection from '../budget-section';
 import { CampaignPreviewCard } from '../campaign-preview';
 import Faqs from './faqs';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
+import EuRegulationsSection from '../eu-regulations-section';
 
 /**
  * @typedef {import('~/components/adaptive-form/adaptive-form-context').AdaptiveFormContext} AdaptiveFormContext
@@ -88,6 +89,8 @@ export default function AdsCampaign( {
 				{ showBillingCard && <BillingCard /> }
 				{ showCampaignPreviewCard && <CampaignPreviewCard /> }
 			</BudgetSection>
+
+			<EuRegulationsSection context={ context } />
 
 			<StepContentFooter>
 				<StepContentActions>
