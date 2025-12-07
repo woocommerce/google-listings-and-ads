@@ -158,11 +158,4 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Tweak - WC 10.2 compatibility.
 * Update - Incorporate API changes for EU political advertising.
 
-= 3.4.2 - 2025-09-02 =
-* Add - Display the statuses of synchronization modes with Google Merchant Center in WooCommerce System Status Report.
-* Tweak -  Adjust the value of the Merchant Center setting in the WPCOM proxy endpoint to null before completing onboarding so that Google service can recognize whether the Merchant Center account has been disconnected.
-* Tweak - Renamed the log file name from `google-listings-and-ads` to `google-for-woocommerce`.
-* Update - Include the current plugin version in the WPCOM proxy endpoint for Google service to recognize which plugin version is being used.
-* Update - Schedule resynchronization for all products via the Push mode when the Push mode of product synchronization is switched to enable.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
