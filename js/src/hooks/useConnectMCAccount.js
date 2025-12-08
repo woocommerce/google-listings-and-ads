@@ -18,7 +18,11 @@ const useConnectMCAccount = ( value ) => {
 		method: 'POST',
 		data: { id: value },
 	} );
-	const { invalidateResolution, receiveDetailedError } = useAppDispatch();
+	const {
+		invalidateResolution,
+		receiveDetailedError,
+		clearDetailedErrorBySlot,
+	} = useAppDispatch();
 
 	const handleConnectClick = async () => {
 		if ( ! value ) {
@@ -26,6 +30,7 @@ const useConnectMCAccount = ( value ) => {
 		}
 
 		try {
+			clearDetailedErrorBySlot( ERROR_SLOTS.GOOGLE_MC_CONNECTION );
 			await fetchMCAccounts( { parse: false } );
 			invalidateResolution( 'getGoogleMCAccount', [] );
 		} catch ( e ) {
