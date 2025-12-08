@@ -240,10 +240,10 @@ class YouTubeOrdersTest extends UnitTest {
 			$order->set_date_created( strtotime( $date . ' ' . ( 12 + $i ) . ':00:00' ) );
 			$order->save();
 			$this->orders[] = $order;
-			$order_ids[] = $order->get_id();
+			$order_ids[]    = $order->get_id();
 		}
 
-		$result_all = $this->youtube_orders->find_orders( $date );
+		$result_all    = $this->youtube_orders->find_orders( $date );
 		$result_offset = $this->youtube_orders->find_orders( $date, -1, 2 );
 
 		// Results with offset should be different from results without offset.
@@ -289,7 +289,7 @@ class YouTubeOrdersTest extends UnitTest {
 	}
 
 	public function test_find_orders_handles_refunds_created_on_different_date_than_parent() {
-		$order_date = gmdate( 'Y-m-d', strtotime( '-2 days' ) );
+		$order_date  = gmdate( 'Y-m-d', strtotime( '-2 days' ) );
 		$refund_date = gmdate( 'Y-m-d' );
 
 		// Create parent order with YouTube attribution from 2 days ago.

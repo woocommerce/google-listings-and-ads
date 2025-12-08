@@ -150,7 +150,7 @@ class CsvExportWriterTest extends UnitTest {
 	}
 
 	public function test_append_row_creates_header_when_file_empty() {
-		$filename = 'test-append-header';
+		$filename  = 'test-append-header';
 		$file_path = $this->writer->create_file( $filename );
 
 		$row = [
@@ -160,7 +160,8 @@ class CsvExportWriterTest extends UnitTest {
 
 		$this->writer->append_row( $file_path, $row );
 
-		$content = file_get_contents( $file_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_file_get_contents
+		global $wp_filesystem;
+		$content = $wp_filesystem->get_contents( $file_path );
 		$this->assertStringContainsString( 'column1', $content );
 		$this->assertStringContainsString( 'column2', $content );
 		$this->assertStringContainsString( 'value1', $content );
@@ -168,7 +169,7 @@ class CsvExportWriterTest extends UnitTest {
 	}
 
 	public function test_append_row_appends_data_rows() {
-		$filename = 'test-append-rows';
+		$filename  = 'test-append-rows';
 		$file_path = $this->writer->create_file( $filename );
 
 		$row1 = [
@@ -184,7 +185,8 @@ class CsvExportWriterTest extends UnitTest {
 		$this->writer->append_row( $file_path, $row1 );
 		$this->writer->append_row( $file_path, $row2 );
 
-		$content = file_get_contents( $file_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_file_get_contents
+		global $wp_filesystem;
+		$content = $wp_filesystem->get_contents( $file_path );
 		$lines   = explode( "\n", trim( $content ) );
 
 		// Should have header + 2 data rows.
@@ -205,14 +207,15 @@ class CsvExportWriterTest extends UnitTest {
 
 		$this->writer->append_row( $file_path, $row );
 
-		$content = file_get_contents( $file_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_file_get_contents
+		global $wp_filesystem;
+		$content = $wp_filesystem->get_contents( $file_path );
 		$this->assertStringContainsString( '&test', $content );
 		$this->assertStringContainsString( '"quoted"', $content );
 		$this->assertStringContainsString( '<tag>', $content );
 	}
 
 	public function test_append_row_handles_csv_escaping() {
-		$filename = 'test-csv-escaping';
+		$filename  = 'test-csv-escaping';
 		$file_path = $this->writer->create_file( $filename );
 
 		$row = [
@@ -223,7 +226,8 @@ class CsvExportWriterTest extends UnitTest {
 
 		$this->writer->append_row( $file_path, $row );
 
-		$content = file_get_contents( $file_path );
+		global $wp_filesystem;
+		$content = $wp_filesystem->get_contents( $file_path );
 		// Verify the CSV is properly formatted (fputcsv handles escaping).
 		$this->assertNotEmpty( $content );
 		// The content should be valid CSV format.
@@ -232,7 +236,7 @@ class CsvExportWriterTest extends UnitTest {
 	}
 
 	public function test_append_row_handles_empty_values() {
-		$filename = 'test-empty-values';
+		$filename  = 'test-empty-values';
 		$file_path = $this->writer->create_file( $filename );
 
 		$row = [
@@ -243,7 +247,8 @@ class CsvExportWriterTest extends UnitTest {
 
 		$this->writer->append_row( $file_path, $row );
 
-		$content = file_get_contents( $file_path );
+		global $wp_filesystem;
+		$content = $wp_filesystem->get_contents( $file_path );
 		$this->assertStringContainsString( 'value1', $content );
 		// Empty values should still create CSV columns.
 		$lines = explode( "\n", trim( $content ) );
@@ -251,7 +256,7 @@ class CsvExportWriterTest extends UnitTest {
 	}
 
 	public function test_append_row_handles_non_string_values() {
-		$filename = 'test-non-string-values';
+		$filename  = 'test-non-string-values';
 		$file_path = $this->writer->create_file( $filename );
 
 		$row = [
@@ -262,13 +267,14 @@ class CsvExportWriterTest extends UnitTest {
 
 		$this->writer->append_row( $file_path, $row );
 
-		$content = file_get_contents( $file_path );
+		global $wp_filesystem;
+		$content = $wp_filesystem->get_contents( $file_path );
 		$this->assertStringContainsString( '123', $content );
 		$this->assertStringContainsString( '45.67', $content );
 	}
 
 	public function test_generate_url_creates_correct_url() {
-		$filename = 'test-url';
+		$filename  = 'test-url';
 		$file_path = $this->writer->create_file( $filename );
 
 		$url = $this->writer->generate_url( $file_path );
@@ -279,7 +285,7 @@ class CsvExportWriterTest extends UnitTest {
 	}
 
 	public function test_generate_url_handles_path_conversion() {
-		$filename = 'test-path-conversion';
+		$filename  = 'test-path-conversion';
 		$file_path = $this->writer->create_file( $filename );
 
 		$url = $this->writer->generate_url( $file_path );
@@ -291,7 +297,7 @@ class CsvExportWriterTest extends UnitTest {
 	}
 
 	public function test_append_row_preserves_existing_content() {
-		$filename = 'test-preserve-content';
+		$filename  = 'test-preserve-content';
 		$file_path = $this->writer->create_file( $filename );
 
 		$row1 = [
@@ -305,10 +311,11 @@ class CsvExportWriterTest extends UnitTest {
 		];
 
 		$this->writer->append_row( $file_path, $row1 );
-		$content_after_first = file_get_contents( $file_path );
+		global $wp_filesystem;
+		$content_after_first = $wp_filesystem->get_contents( $file_path );
 
 		$this->writer->append_row( $file_path, $row2 );
-		$content_after_second = file_get_contents( $file_path );
+		$content_after_second = $wp_filesystem->get_contents( $file_path );
 
 		// Second append should include first row.
 		$this->assertStringContainsString( 'val1', $content_after_second );
@@ -317,7 +324,7 @@ class CsvExportWriterTest extends UnitTest {
 	}
 
 	public function test_append_row_handles_special_characters() {
-		$filename = 'test-special-chars';
+		$filename  = 'test-special-chars';
 		$file_path = $this->writer->create_file( $filename );
 
 		$row = [
@@ -328,7 +335,8 @@ class CsvExportWriterTest extends UnitTest {
 
 		$this->writer->append_row( $file_path, $row );
 
-		$content = file_get_contents( $file_path );
+		global $wp_filesystem;
+		$content = $wp_filesystem->get_contents( $file_path );
 		$this->assertNotEmpty( $content );
 		// Verify UTF-8 encoding is preserved.
 		$this->assertEquals( 'UTF-8', mb_detect_encoding( $content, 'UTF-8', true ) );
