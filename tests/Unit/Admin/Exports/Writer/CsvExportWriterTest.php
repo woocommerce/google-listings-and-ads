@@ -231,7 +231,7 @@ class CsvExportWriterTest extends UnitTest {
 		// Verify the CSV is properly formatted (fputcsv handles escaping).
 		$this->assertNotEmpty( $content );
 		// The content should be valid CSV format.
-		$lines = str_getcsv( $content, "\n" );
+		$lines = str_getcsv( $content, "\n", '"', '\\' );
 		$this->assertGreaterThanOrEqual( 1, count( $lines ) );
 	}
 
