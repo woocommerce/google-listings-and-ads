@@ -334,4 +334,3 @@ class YouTubeOrdersTest extends UnitTest {
 		$this->assertContains( $refund->get_id(), $result );
 	}
 }
-

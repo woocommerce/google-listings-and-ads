@@ -327,4 +327,3 @@ class CsvExportWriterTest extends UnitTest {
 		$this->assertEquals( 'UTF-8', mb_detect_encoding( $content, 'UTF-8', true ) );
 	}
 }
-
