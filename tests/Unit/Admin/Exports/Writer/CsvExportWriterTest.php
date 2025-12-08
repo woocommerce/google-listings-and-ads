@@ -69,7 +69,7 @@ class CsvExportWriterTest extends UnitTest {
 	}
 
 	public function test_create_file_creates_export_directory() {
-		$filename = 'test-export';
+		$filename  = 'test-export';
 		$file_path = $this->writer->create_file( $filename );
 
 		$this->assertStringContainsString( 'gla-exports', $file_path );
@@ -78,7 +78,7 @@ class CsvExportWriterTest extends UnitTest {
 	}
 
 	public function test_create_file_returns_existing_file_path() {
-		$filename = 'existing-export';
+		$filename    = 'existing-export';
 		$file_path_1 = $this->writer->create_file( $filename );
 		$file_path_2 = $this->writer->create_file( $filename );
 
@@ -110,7 +110,7 @@ class CsvExportWriterTest extends UnitTest {
 
 		$mock_fs = $this->createMock( \WP_Filesystem_Direct::class );
 		$mock_fs->method( 'is_dir' )->willReturn( false );
-		$wp_filesystem = $mock_fs;
+		$wp_filesystem = $mock_fs; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
 		// Create a new writer instance to use the mocked filesystem.
 		$writer = new CsvExportWriter();
@@ -121,7 +121,7 @@ class CsvExportWriterTest extends UnitTest {
 		try {
 			$writer->create_file( 'test' );
 		} finally {
-			$wp_filesystem = $original_fs;
+			$wp_filesystem = $original_fs; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 		}
 	}
 
@@ -134,7 +134,7 @@ class CsvExportWriterTest extends UnitTest {
 		$mock_fs->method( 'is_dir' )->willReturn( true );
 		$mock_fs->method( 'exists' )->willReturn( false );
 		$mock_fs->method( 'put_contents' )->willReturn( false );
-		$wp_filesystem = $mock_fs;
+		$wp_filesystem = $mock_fs; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
 		// Create a new writer instance to use the mocked filesystem.
 		$writer = new CsvExportWriter();
@@ -145,7 +145,7 @@ class CsvExportWriterTest extends UnitTest {
 		try {
 			$writer->create_file( 'test' );
 		} finally {
-			$wp_filesystem = $original_fs;
+			$wp_filesystem = $original_fs; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 		}
 	}
 
@@ -160,7 +160,7 @@ class CsvExportWriterTest extends UnitTest {
 
 		$this->writer->append_row( $file_path, $row );
 
-		$content = file_get_contents( $file_path );
+		$content = file_get_contents( $file_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_file_get_contents
 		$this->assertStringContainsString( 'column1', $content );
 		$this->assertStringContainsString( 'column2', $content );
 		$this->assertStringContainsString( 'value1', $content );
@@ -184,8 +184,8 @@ class CsvExportWriterTest extends UnitTest {
 		$this->writer->append_row( $file_path, $row1 );
 		$this->writer->append_row( $file_path, $row2 );
 
-		$content = file_get_contents( $file_path );
-		$lines = explode( "\n", trim( $content ) );
+		$content = file_get_contents( $file_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_file_get_contents
+		$lines   = explode( "\n", trim( $content ) );
 
 		// Should have header + 2 data rows.
 		$this->assertCount( 3, $lines );
@@ -194,7 +194,7 @@ class CsvExportWriterTest extends UnitTest {
 	}
 
 	public function test_append_row_handles_html_entity_decoding() {
-		$filename = 'test-html-entities';
+		$filename  = 'test-html-entities';
 		$file_path = $this->writer->create_file( $filename );
 
 		$row = [
@@ -205,7 +205,7 @@ class CsvExportWriterTest extends UnitTest {
 
 		$this->writer->append_row( $file_path, $row );
 
-		$content = file_get_contents( $file_path );
+		$content = file_get_contents( $file_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_file_get_contents
 		$this->assertStringContainsString( '&test', $content );
 		$this->assertStringContainsString( '"quoted"', $content );
 		$this->assertStringContainsString( '<tag>', $content );
@@ -294,8 +294,15 @@ class CsvExportWriterTest extends UnitTest {
 		$filename = 'test-preserve-content';
 		$file_path = $this->writer->create_file( $filename );
 
-		$row1 = [ 'col1' => 'val1', 'col2' => 'val2' ];
-		$row2 = [ 'col1' => 'val3', 'col2' => 'val4' ];
+		$row1 = [
+			'col1' => 'val1',
+			'col2' => 'val2',
+		];
+
+		$row2 = [
+			'col1' => 'val3',
+			'col2' => 'val4',
+		];
 
 		$this->writer->append_row( $file_path, $row1 );
 		$content_after_first = file_get_contents( $file_path );
