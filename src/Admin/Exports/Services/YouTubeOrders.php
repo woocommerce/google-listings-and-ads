@@ -32,23 +32,39 @@ class YouTubeOrders implements Service {
 
 		// Filter orders and refunds by YouTube attribution meta.
 		$filtered_order_ids = [];
+		$refund_parent_ids  = [];
 
-		// Filter purchases
-		foreach ( $purchase_ids as $purchase_id ) {
-			$order = wc_get_order( $purchase_id );
-			if ( $order && 'youtube' === $order->get_meta( '_wc_order_attribution_utm_source' ) ) {
-				$filtered_order_ids[] = $purchase_id;
-			}
-		}
-
-		// Filter refunds
+		// Filter refunds first to collect parent order IDs
 		foreach ( $refund_ids as $refund_id ) {
 			$refund = wc_get_order( $refund_id );
 			if ( $refund && 'shop_order_refund' === $refund->get_type() ) {
-				$parent_order = wc_get_order( $refund->get_parent_id() );
-				if ( $parent_order && 'youtube' === $parent_order->get_meta( '_wc_order_attribution_utm_source' ) ) {
-					$filtered_order_ids[] = $refund_id;
+				try {
+					$parent_id = $refund->get_parent_id();
+					if ( ! $parent_id ) {
+						continue;
+					}
+					$parent_order = wc_get_order( $parent_id );
+					if ( $parent_order && 'youtube' === $parent_order->get_meta( '_wc_order_attribution_utm_source' ) ) {
+						$filtered_order_ids[] = $refund_id;
+						$refund_parent_ids[]  = $parent_id;
+					}
+				} catch ( \Exception $e ) {
+					// Skip refunds with invalid parent IDs.
+					continue;
 				}
+			}
+		}
+
+		// Filter purchases, excluding parent orders that have refunds on the same date
+		foreach ( $purchase_ids as $purchase_id ) {
+			// Skip if this purchase is a parent of a refund on the same date
+			if ( in_array( $purchase_id, $refund_parent_ids, true ) ) {
+				continue;
+			}
+
+			$order = wc_get_order( $purchase_id );
+			if ( $order && 'youtube' === $order->get_meta( '_wc_order_attribution_utm_source' ) ) {
+				$filtered_order_ids[] = $purchase_id;
 			}
 		}
 

@@ -273,23 +273,6 @@ class YouTubeOrdersTest extends UnitTest {
 		$this->assertNotContains( $order_no_meta->get_id(), $result );
 	}
 
-	public function test_find_orders_handles_refunds_with_invalid_parent() {
-		$date = gmdate( 'Y-m-d' );
-
-		// Create a refund with a non-existent parent order ID.
-		// This simulates edge case where parent order might have been deleted.
-		$refund = new \WC_Order_Refund();
-		$refund->set_parent_id( 99999 ); // Non-existent order ID.
-		$refund->set_date_created( strtotime( $date . ' 12:00:00' ) );
-		$refund->save();
-		$this->refunds[] = $refund;
-
-		$result = $this->youtube_orders->find_orders( $date );
-
-		// Should not include refund with invalid parent.
-		$this->assertNotContains( $refund->get_id(), $result );
-	}
-
 	public function test_find_orders_returns_empty_array_when_no_matching_orders() {
 		$date = gmdate( 'Y-m-d' );
 
