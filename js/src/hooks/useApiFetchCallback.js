@@ -177,7 +177,7 @@ const useApiFetchCallback = ( options, initialState = defaultState ) => {
 					dispatch( {
 						type: TYPES.ERROR,
 						error: e,
-						response: undefined,
+						response: e,
 						options: mergedOptions,
 					} );
 
