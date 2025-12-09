@@ -93,5 +93,4 @@ class YouTubeOrders implements Service {
 
 		return array_unique( $filtered_order_ids );
 	}
-
 }

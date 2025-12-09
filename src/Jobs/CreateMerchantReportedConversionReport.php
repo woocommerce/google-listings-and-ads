@@ -142,7 +142,7 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 						$line_items = [];
 						foreach ( $parent_items as $parent_item ) {
 							// Create a copy of the item and set it to belong to the refund
-							$item_class = get_class( $parent_item );
+							$item_class  = get_class( $parent_item );
 							$refund_item = new $item_class();
 							$refund_item->set_id( 0 );
 							$refund_item->set_props( $parent_item->get_data() );
