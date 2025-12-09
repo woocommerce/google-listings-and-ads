@@ -417,6 +417,27 @@ class MiddlewareTest extends UnitTest {
 		$this->assertEquals( 'Please reconnect your Jetpack account.', $tos->message() );
 	}
 
+	public function test_get_sdi_merchant_update_endpoint() {
+		$this->assertEquals(
+			$this->middleware->get_sdi_merchant_update_endpoint(),
+			'https://connect-server.test/google/google-sdi/v1/credentials/partners/WOO_COMMERCE/merchants/example.org/account:connect'
+		);
+	}
+
+	public function test_get_sdi_merchant_update_endpoint_with_site_url_having_path() {
+		add_filter(
+			'woocommerce_gla_site_url',
+			function ( $home_url ) {
+				return 'http://example.org/shop';
+			}
+		);
+
+		$this->assertEquals(
+			$this->middleware->get_sdi_merchant_update_endpoint(),
+			'https://connect-server.test/google/google-sdi/v1/credentials/partners/WOO_COMMERCE/merchants/example.org%2Fshop/account:connect'
+		);
+	}
+
 	public function test_get_sdi_auth_endpoint() {
 		$this->assertEquals(
 			$this->middleware->get_sdi_auth_endpoint(),
