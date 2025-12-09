@@ -12,7 +12,7 @@ import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 export default function useYouTubeSetupCompleteCallback() {
 	const { createNotice } = useDispatchCoreNotices();
 	const [ fetchCompleteYouTubeSetup, result ] = useApiFetchCallback( {
-		path: `/wc/gla/youtube/setup/complete`,
+		path: '/wc/gla/youtube/setup/complete',
 		method: 'POST',
 	} );
 
