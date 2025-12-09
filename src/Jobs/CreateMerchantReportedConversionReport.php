@@ -154,11 +154,11 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 							}
 							// Set negative totals for refund
 							if ( method_exists( $parent_item, 'get_total' ) && method_exists( $refund_item, 'set_total' ) ) {
-								$parent_total = call_user_func( array( $parent_item, 'get_total' ) );
+								$parent_total = call_user_func( [ $parent_item, 'get_total' ] );
 								$refund_item->set_total( -abs( (float) $parent_total ) );
 							}
 							if ( method_exists( $parent_item, 'get_subtotal' ) && method_exists( $refund_item, 'set_subtotal' ) ) {
-								$parent_subtotal = call_user_func( array( $parent_item, 'get_subtotal' ) );
+								$parent_subtotal = call_user_func( [ $parent_item, 'get_subtotal' ] );
 								$refund_item->set_subtotal( -abs( (float) $parent_subtotal ) );
 							}
 							$line_items[] = $refund_item;
