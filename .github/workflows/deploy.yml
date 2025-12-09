@@ -54,3 +54,23 @@ jobs:
           deploy_pat: ${{ secrets.ORG_DEPLOY_SECRET }}
           partner_user: ${{ secrets.ORG_PARTNER_USER }}
           partner_secret: ${{ secrets.ORG_PARTNER_DEPLOY_SECRET }}
+
+      - name: Copy build zip and preview changes
+        run: |
+          TEMP_DIR=$(php -r 'echo sys_get_temp_dir();')
+          SIMULATE=${{ github.event.inputs.simulate }}
+
+          cd "$TEMP_DIR/google-listings-and-ads"
+          cp google-listings-and-ads.zip ${{ github.workspace }}
+
+          # Show git diff if it's a dry run
+          if [ "$SIMULATE" == "true" ]; then
+            git --no-pager diff
+          fi
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: google-listings-and-ads.zip
+          path: ${{ github.workspace }}/google-listings-and-ads.zip
+          retention-days: 1
