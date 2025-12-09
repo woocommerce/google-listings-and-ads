@@ -99,9 +99,15 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 	public function get_batch( int $batch_number ): array {
 		// Get the order IDs from the Options.
 		$youtube_cache = $this->options->get( OptionsInterface::YOUTUBE_ORDER_IDS_CACHE, [] );
+		$date          = $this->get_date();
+
+		// Return empty array if cache doesn't exist for this date.
+		if ( ! isset( $youtube_cache[ $date ] ) || ! is_array( $youtube_cache[ $date ] ) ) {
+			return [];
+		}
 
 		// Return the current batch to process.
-		return array_slice( $youtube_cache[ $this->get_date() ], $this->get_query_offset( $batch_number ), $this->get_batch_size() );
+		return array_slice( $youtube_cache[ $date ], $this->get_query_offset( $batch_number ), $this->get_batch_size() );
 	}
 
 	/**
