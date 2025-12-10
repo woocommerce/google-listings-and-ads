@@ -115,7 +115,7 @@ class ServiceBasedMerchantState implements Service, Registerable, OptionsAwareIn
 
 		$service_based = ! $this->has_physical_products();
 
-        $this->options->update( OptionsInterface::IS_SERVICE_BASED_MERCHANT, $service_based );
+		$this->options->update( OptionsInterface::IS_SERVICE_BASED_MERCHANT, $service_based );
 		return $service_based;
 	}
 
@@ -189,7 +189,8 @@ class ServiceBasedMerchantState implements Service, Registerable, OptionsAwareIn
 			}
 
 			$offset += self::BATCH_SIZE;
-		} while ( count( $products ) === self::BATCH_SIZE );
+			$products_count = count( $products );
+		} while ( $products_count === self::BATCH_SIZE );
 
 		return false;
 	}
@@ -206,4 +207,3 @@ class ServiceBasedMerchantState implements Service, Registerable, OptionsAwareIn
 		return $this->transients->delete( TransientsInterface::HAS_PHYSICAL_PRODUCTS );
 	}
 }
-

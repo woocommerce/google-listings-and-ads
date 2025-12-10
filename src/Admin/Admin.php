@@ -130,7 +130,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
-					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/index.js" ),
+					'version'      => (string) ( file_exists( "{$this->get_root_dir()}/js/build/index.js" ) ? filemtime( "{$this->get_root_dir()}/js/build/index.js" ) : time() ),
 				]
 			),
 			$wc_admin_condition
@@ -154,18 +154,18 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 				],
 				'dataViewsScriptUrl'       => add_query_arg(
 					[
-						'version' => (string) filemtime( "{$this->get_root_dir()}/js/build/wp-dataviews-shim.js" ),
+						'version' => (string) ( file_exists( "{$this->get_root_dir()}/js/build/wp-dataviews-shim.js" ) ? filemtime( "{$this->get_root_dir()}/js/build/wp-dataviews-shim.js" ) : time() ),
 					],
 					(
 						new ScriptAsset(
 							'gla-data-views-shim',
 							'js/build/wp-dataviews-shim',
 							[],
-							(string) filemtime( "{$this->get_root_dir()}/js/build/wp-dataviews-shim.js" ),
+							(string) ( file_exists( "{$this->get_root_dir()}/js/build/wp-dataviews-shim.js" ) ? filemtime( "{$this->get_root_dir()}/js/build/wp-dataviews-shim.js" ) : time() ),
 						)
 					)->get_uri(),
 				),
-				'serviceBasedMerchant'      => $this->service_based_merchant_state->is_service_based_merchant(),
+				'serviceBasedMerchant'     => $this->service_based_merchant_state->is_service_based_merchant(),
 			]
 		);
 
@@ -173,7 +173,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			'google-listings-and-ads-css',
 			'/js/build/index',
 			defined( 'WC_ADMIN_PLUGIN_FILE' ) ? [ 'wc-admin-app' ] : [],
-			(string) filemtime( "{$this->get_root_dir()}/js/build/index.css" ),
+			(string) ( file_exists( "{$this->get_root_dir()}/js/build/index.css" ) ? filemtime( "{$this->get_root_dir()}/js/build/index.css" ) : time() ),
 			$wc_admin_condition
 		) );
 
@@ -189,7 +189,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
-					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/product-attributes.js" ),
+					'version'      => (string) ( file_exists( "{$this->get_root_dir()}/js/build/product-attributes.js" ) ? filemtime( "{$this->get_root_dir()}/js/build/product-attributes.js" ) : time() ),
 				]
 			),
 			$product_condition
