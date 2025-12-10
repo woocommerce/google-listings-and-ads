@@ -34,9 +34,18 @@ export default function useAdsSetupCompleteCallback() {
 	}, [ createNotice ] );
 
 	const handleFinishSetup = useCallback(
-		( amount, countryCodes, onCompleted ) => {
+		(
+			amount,
+			countryCodes,
+			hasConfirmedEuPoliticalContent,
+			onCompleted
+		) => {
 			setLoading( true );
-			return createAdsCampaign( amount, countryCodes )
+			return createAdsCampaign(
+				amount,
+				countryCodes,
+				hasConfirmedEuPoliticalContent
+			)
 				.then( completeAdsSetup )
 				.then( onCompleted )
 				.catch( () => setLoading( false ) );

@@ -28,11 +28,10 @@ describe( 'useTour', () => {
 
 		useAppDispatch.mockImplementation( () => ( { upsertTour } ) );
 
-		useAppSelectDispatch.mockImplementation( ( _, id ) => {
-			const tour = tourMap.get( id );
+		useAppSelectDispatch.mockImplementation( () => {
 			return {
-				data: tour || null,
-				hasFinishedResolution: tourMap.has( id ),
+				data: Object.fromEntries( tourMap ),
+				hasFinishedResolution: tourMap.size > 0,
 			};
 		} );
 

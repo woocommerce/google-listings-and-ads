@@ -720,10 +720,15 @@ export function* fetchAdsIncentiveCredits() {
  *
  * @param {number} amount Daily average cost of the paid ads campaign.
  * @param {Array<CountryCode>} countryCodes Country code of the paid ads campaign audience country. Example: 'US'.
+ * @param {boolean} [hasConfirmedEuPoliticalContent=false] Whether the user has confirmed that the ads campaign contains EU political content.
  *
  * @throws { { message: string } } Will throw an error if the campaign creation fails.
  */
-export function* createAdsCampaign( amount, countryCodes ) {
+export function* createAdsCampaign(
+	amount,
+	countryCodes,
+	hasConfirmedEuPoliticalContent = false
+) {
 	let label = 'wc-web';
 
 	if ( isWCIos() ) {
@@ -739,6 +744,8 @@ export function* createAdsCampaign( amount, countryCodes ) {
 			data: {
 				amount,
 				targeted_locations: countryCodes,
+				eu_political_advertising_confirmation:
+					hasConfirmedEuPoliticalContent,
 				label,
 			},
 		} );
@@ -1167,14 +1174,14 @@ export function* receiveStoreCategories( storeCategories ) {
 }
 
 /**
- * Action to receive the tour.
+ * Action to receive the tours.
  *
- * @param {Tour} tour The tour to receive.
+ * @param {Object.<string, Tour>} tours The tours to receive.
  */
-export function* receiveTour( tour ) {
+export function* receiveTours( tours ) {
 	return {
-		type: TYPES.RECEIVE_TOUR,
-		tour,
+		type: TYPES.RECEIVE_TOURS,
+		tours,
 	};
 }
 
