@@ -376,24 +376,74 @@ class ServiceBasedMerchantStateTest extends ContainerAwareUnitTest {
 		$this->assertEquals( 10, has_action( 'woocommerce_delete_product_transients', [ $this->service_based_merchant_state, 'clear_cache_on_product_change' ] ) );
 	}
 
-	public function test_clear_cache_on_product_change_clears_cache() {
-		$this->transients->expects( $this->once() )
+	public function test_clear_cache_on_product_change_clears_cache_and_deletes_option() {
+		// Create a physical product for recalculation
+		$physical_product = WC_Helper_Product::create_simple_product();
+		$physical_product->set_virtual( false );
+		$physical_product->save();
+
+		$this->transients->expects( $this->exactly( 2 ) )
 			->method( 'delete' )
 			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS )
 			->willReturn( true );
+
+		// Option should be deleted
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT );
+
+		// Cache operations for recalculation (cache miss after clear, then set)
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS )
+			->willReturn( null );
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS, 1, \HOUR_IN_SECONDS );
+
+		// Option should be updated with recalculated value
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT, false );
 
 		$this->service_based_merchant_state->clear_cache_on_product_change( 123 );
+
+		// Cleanup
+		$physical_product->delete( true );
 	}
 
-	public function test_maybe_clear_cache_on_post_change_clears_cache_for_products() {
-		// Create a product post.
-		$product    = WC_Helper_Product::create_simple_product();
+	public function test_maybe_clear_cache_on_post_change_clears_cache_and_deletes_option_for_products() {
+		// Create a physical product post.
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_virtual( false );
+		$product->save();
 		$product_id = $product->get_id();
 
-		$this->transients->expects( $this->once() )
+		$this->transients->expects( $this->exactly( 2 ) )
 			->method( 'delete' )
 			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS )
 			->willReturn( true );
+
+		// Option should be deleted
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT );
+
+		// Cache operations for recalculation (cache miss after clear, then set)
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS )
+			->willReturn( null );
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS, 1, \HOUR_IN_SECONDS );
+
+		// Option should be updated with recalculated value
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT, false );
 
 		$this->service_based_merchant_state->maybe_clear_cache_on_post_change( $product_id );
 
@@ -414,15 +464,37 @@ class ServiceBasedMerchantStateTest extends ContainerAwareUnitTest {
 		wp_delete_post( $post_id, true );
 	}
 
-	public function test_product_update_hook_clears_cache() {
+	public function test_product_update_hook_clears_cache_and_deletes_option() {
 		$this->service_based_merchant_state->register();
 
 		$product = WC_Helper_Product::create_simple_product();
+		$product->set_virtual( false );
+		$product->save();
 
-		$this->transients->expects( $this->once() )
+		$this->transients->expects( $this->exactly( 2 ) )
 			->method( 'delete' )
 			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS )
 			->willReturn( true );
+
+		// Option should be deleted
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT );
+
+		// Cache operations for recalculation
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS )
+			->willReturn( null );
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS, 1, \HOUR_IN_SECONDS );
+
+		// Option should be updated with recalculated value
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT, false );
 
 		// Trigger the update hook.
 		do_action( 'woocommerce_update_product', $product->get_id(), $product );
@@ -434,15 +506,37 @@ class ServiceBasedMerchantStateTest extends ContainerAwareUnitTest {
 		$product->delete( true );
 	}
 
-	public function test_product_new_hook_clears_cache() {
+	public function test_product_new_hook_clears_cache_and_deletes_option() {
 		$this->service_based_merchant_state->register();
 
 		$product = WC_Helper_Product::create_simple_product();
+		$product->set_virtual( false );
+		$product->save();
 
-		$this->transients->expects( $this->once() )
+		$this->transients->expects( $this->exactly( 2 ) )
 			->method( 'delete' )
 			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS )
 			->willReturn( true );
+
+		// Option should be deleted
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT );
+
+		// Cache operations for recalculation
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS )
+			->willReturn( null );
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS, 1, \HOUR_IN_SECONDS );
+
+		// Option should be updated with recalculated value
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT, false );
 
 		// Trigger the new product hook with both arguments that WooCommerce passes.
 		do_action( 'woocommerce_new_product', $product->get_id(), $product );
@@ -454,41 +548,215 @@ class ServiceBasedMerchantStateTest extends ContainerAwareUnitTest {
 		$product->delete( true );
 	}
 
-	public function test_product_delete_hook_clears_cache() {
+	public function test_product_delete_hook_clears_cache_and_deletes_option() {
 		$this->service_based_merchant_state->register();
 
-		$product    = WC_Helper_Product::create_simple_product();
+		// Create a physical product
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_virtual( false );
+		$product->save();
 		$product_id = $product->get_id();
 
-		$this->transients->expects( $this->once() )
+		// Get the current state before deletion to determine expected result
+		// If there are other physical products in the database, the result will be different
+		$products_before    = wc_get_products(
+			[
+				'limit'  => -1,
+				'status' => 'publish',
+			]
+		);
+		$has_other_physical = false;
+		foreach ( $products_before as $p ) {
+			if ( $p->get_id() !== $product_id && ! $p->is_virtual() && $p->needs_shipping() ) {
+				$has_other_physical = true;
+				break;
+			}
+		}
+
+		$this->transients->expects( $this->exactly( 2 ) )
 			->method( 'delete' )
 			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS )
 			->willReturn( true );
 
-		// Unregister product hooks before triggering delete to avoid double-triggering.
+		// Option should be deleted
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT );
+
+		// Cache operations for recalculation
+		// Note: deleted_post hook fires AFTER deletion, so the product no longer exists
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS )
+			->willReturn( null );
+
+		// Expected result depends on whether there are other physical products
+		$expected_has_physical  = $has_other_physical ? 1 : 0;
+		$expected_service_based = ! $has_other_physical;
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS, $expected_has_physical, \HOUR_IN_SECONDS );
+
+		// Option should be updated with recalculated value
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT, $expected_service_based );
+
+		// Unregister product hooks and before_delete_post before deleting to avoid double-triggering.
+		// wp_delete_post fires before_delete_post (product still exists) and deleted_post (product deleted).
+		// We only want to test deleted_post, so unregister before_delete_post.
+		remove_action( 'woocommerce_new_product', [ $this->service_based_merchant_state, 'clear_cache_on_product_change' ], 10 );
+		remove_action( 'woocommerce_update_product', [ $this->service_based_merchant_state, 'clear_cache_on_product_change' ], 10 );
+		remove_action( 'before_delete_post', [ $this->service_based_merchant_state, 'maybe_clear_cache_on_post_change' ], 10 );
+
+		// Actually delete the product (this will trigger the deleted_post hook)
+		// The deleted_post hook fires AFTER deletion, so the product no longer exists
+		wp_delete_post( $product_id, true );
+
+		// Unregister all remaining hooks.
+		$this->unregister_all_hooks();
+	}
+
+	public function test_woocommerce_delete_product_transients_hook_clears_cache_and_deletes_option() {
+		$this->service_based_merchant_state->register();
+
+		// Create a physical product for recalculation
+		$physical_product = WC_Helper_Product::create_simple_product();
+		$physical_product->set_virtual( false );
+		$physical_product->save();
+
+		$this->transients->expects( $this->exactly( 2 ) )
+			->method( 'delete' )
+			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS )
+			->willReturn( true );
+
+		// Option should be deleted
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT );
+
+		// Cache operations for recalculation
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS )
+			->willReturn( null );
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS, 1, \HOUR_IN_SECONDS );
+
+		// Option should be updated with recalculated value
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT, false );
+
+		// Trigger the WooCommerce transient clearing hook.
+		do_action( 'woocommerce_delete_product_transients', 0 );
+
+		// Unregister all hooks before cleanup to avoid triggering them during product deletion.
+		$this->unregister_all_hooks();
+
+		// Cleanup
+		$physical_product->delete( true );
+	}
+
+	public function test_wp_trash_post_hook_clears_cache_and_deletes_option() {
+		$this->service_based_merchant_state->register();
+
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_virtual( false );
+		$product->save();
+		$product_id = $product->get_id();
+
+		$this->transients->expects( $this->exactly( 2 ) )
+			->method( 'delete' )
+			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS )
+			->willReturn( true );
+
+		// Option should be deleted
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT );
+
+		// Cache operations for recalculation
+		// Note: wp_trash_post hook fires BEFORE trashing, so the product still exists as published
+		// However, we want to test that the hook triggers recalculation
+		// Since the product still exists when the hook fires, it will find 1 physical product
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS )
+			->willReturn( null );
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS, 1, \HOUR_IN_SECONDS );
+
+		// Option should be updated with recalculated value
+		// The product still exists when the hook fires, so service_based = false
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT, false );
+
+		// Unregister product hooks before trashing to avoid double-triggering.
 		remove_action( 'woocommerce_new_product', [ $this->service_based_merchant_state, 'clear_cache_on_product_change' ], 10 );
 		remove_action( 'woocommerce_update_product', [ $this->service_based_merchant_state, 'clear_cache_on_product_change' ], 10 );
 
-		// Trigger the delete hook with both arguments that WordPress passes.
-		$post = get_post( $product_id );
-		do_action( 'deleted_post', $product_id, $post );
+		// Actually trash the product (this will trigger the wp_trash_post hook)
+		// The wp_trash_post hook fires BEFORE the post is trashed
+		wp_trash_post( $product_id );
+
+		// Unregister all remaining hooks before cleanup.
+		$this->unregister_all_hooks();
+
+		// Cleanup - delete permanently since it's already trashed.
+		wp_delete_post( $product_id, true );
+	}
+
+	public function test_untrashed_post_hook_clears_cache_and_deletes_option() {
+		$this->service_based_merchant_state->register();
+
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_virtual( false );
+		$product->save();
+		$product_id = $product->get_id();
+
+		$this->transients->expects( $this->exactly( 2 ) )
+			->method( 'delete' )
+			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS )
+			->willReturn( true );
+
+		// Option should be deleted
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT );
+
+		// Cache operations for recalculation
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS )
+			->willReturn( null );
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS, 1, \HOUR_IN_SECONDS );
+
+		// Option should be updated with recalculated value
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT, false );
+
+		// Unregister product hooks before triggering untrash to avoid double-triggering.
+		remove_action( 'woocommerce_new_product', [ $this->service_based_merchant_state, 'clear_cache_on_product_change' ], 10 );
+		remove_action( 'woocommerce_update_product', [ $this->service_based_merchant_state, 'clear_cache_on_product_change' ], 10 );
+
+		// Trigger the untrash hook with both arguments that WordPress passes (post_id, previous_status).
+		do_action( 'untrashed_post', $product_id, 'publish' );
 
 		// Unregister all remaining hooks before cleanup.
 		$this->unregister_all_hooks();
 
 		// Cleanup.
 		$product->delete( true );
-	}
-
-	public function test_woocommerce_delete_product_transients_hook_clears_cache() {
-		$this->service_based_merchant_state->register();
-
-		$this->transients->expects( $this->once() )
-			->method( 'delete' )
-			->with( TransientsInterface::HAS_PHYSICAL_PRODUCTS )
-			->willReturn( true );
-
-		// Trigger the WooCommerce transient clearing hook.
-		do_action( 'woocommerce_delete_product_transients', 0 );
 	}
 }
