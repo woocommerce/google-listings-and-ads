@@ -101,20 +101,6 @@ jobs:
       - name: Install WP tests
         run: ./bin/install-wp-tests.sh wordpress_test root root localhost ${{ matrix.wp-version }} ${{ matrix.wc-versions }}
 
-      - name: Install Composer dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader --dev
-
-      - name: Prepare node
-        uses: woocommerce/grow/prepare-node@actions-v2
-        with:
-          node-version-file: ".nvmrc"
-
-      - name: Install npm dependencies
-        run: npm ci
-
-      - name: Build assets
-        run: npm run build
-
       - if: env.generate_coverage != 'true'
         name: Run PHP unit tests
         run: composer test-unit
@@ -161,20 +147,5 @@ jobs:
           INPUT_WC_RC_VERSION: ${{ inputs.wc-rc-version }}
         run: ./bin/install-wp-tests.sh wordpress_test root root localhost "${INPUT_WP_RC_VERSION}" "${INPUT_WC_RC_VERSION}"
 
-      - name: Install Composer dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader --dev
-
-      - name: Prepare node
-        uses: woocommerce/grow/prepare-node@actions-v2
-        with:
-          node-version-file: ".nvmrc"
-
-      - name: Install npm dependencies
-        run: npm ci
-
-      - name: Build assets
-        run: npm run build
-
       - name: Run PHP unit tests
         run: composer test-unit
-     
