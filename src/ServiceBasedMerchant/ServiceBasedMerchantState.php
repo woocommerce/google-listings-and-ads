@@ -188,7 +188,7 @@ class ServiceBasedMerchantState implements Service, Registerable, OptionsAwareIn
 				}
 			}
 
-			$offset += self::BATCH_SIZE;
+			$offset        += self::BATCH_SIZE;
 			$products_count = count( $products );
 		} while ( $products_count === self::BATCH_SIZE );
 
