@@ -234,8 +234,13 @@ export default class MockRequests {
 	 * @param {Object} payload
 	 * @return {Promise<void>}
 	 */
-	async fulfillMCConnection( payload ) {
-		await this.fulfillRequest( /\/wc\/gla\/mc\/connection\b/, payload );
+	async fulfillMCConnection( payload, status = 200, methods = [ 'GET' ] ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/connection\b/,
+			payload,
+			status,
+			methods
+		);
 	}
 
 	/**
@@ -773,6 +778,19 @@ export default class MockRequests {
 		);
 	}
 
+	async mockAdsAccountCreationError( message ) {
+		await this.fulfillAdsAccounts(
+			{
+				code: 'API_ERROR',
+				message: message
+					? message
+					: 'There was an error connecting to Ads account.',
+			},
+			500,
+			[ 'POST' ]
+		);
+	}
+
 	/**
 	 * Mock the Ads accounts response.
 	 *
@@ -931,6 +949,22 @@ export default class MockRequests {
 			status,
 			step,
 		} );
+	}
+
+	async mockMCAccountConnectionError(
+		message = 'There was an error connecting MC Account.'
+	) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/accounts\b/,
+			{
+				code: 'API_ERROR',
+				message: message
+					? message
+					: 'There was an error connecting to MC account.',
+			},
+			499,
+			[ 'POST' ]
+		);
 	}
 
 	/**

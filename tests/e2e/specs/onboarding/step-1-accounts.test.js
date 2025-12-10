@@ -148,6 +148,79 @@ test.describe( 'Set up accounts', () => {
 		} );
 	} );
 
+	test.describe( 'Display the errors', () => {
+		test.beforeEach( async () => {
+			// Mock Jetpack as not connected
+			await setUpAccountsPage.mockJetpackConnected();
+
+			// Mock google as not connected.
+			// When pending even WPORG will not render yet.
+			// If not mocked will fail and render nothing,
+			// as Jetpack is mocked only on the client-side.
+			await setUpAccountsPage.mockGoogleConnected();
+
+			await setUpAccountsPage.goto();
+		} );
+
+		test( 'In Google Ads account card when connecting existing account', async () => {
+			await setUpAccountsPage.mockMCConnected();
+
+			await setUpAccountsPage.fulfillAdsAccounts( [
+				{
+					id: 111111,
+				},
+			] );
+
+			// Mock Ads account creation error
+			await setUpAccountsPage.mockAdsAccountCreationError();
+
+			const googleAccountCard =
+				setUpAccountsPage.getGoogleAdsAccountCard();
+
+			const adsAccountDropdown = googleAccountCard.locator( 'select' );
+			await adsAccountDropdown.selectOption( '111111' );
+
+			const connectButton = googleAccountCard.getByRole( 'button', {
+				name: 'Connect',
+			} );
+
+			await connectButton.click();
+
+			await expect(
+				googleAccountCard.getByText(
+					'There was an error connecting to Ads account.'
+				)
+			).toBeVisible();
+		} );
+
+		test( 'In Merchant Center account card when connecting existing account', async () => {
+			await Promise.all( [
+				setUpAccountsPage.mockJetpackConnected(),
+				setUpAccountsPage.mockMCNotConnected(),
+				setUpAccountsPage.mockAdsAccountConnected(),
+				setUpAccountsPage.mockContactInformation(),
+				setUpAccountsPage.mockAdsStatusClaimed(),
+				setUpAccountsPage.mockMCHasAccounts(),
+				setUpAccountsPage.mockMCCreateAccountWebsiteNotClaimed(),
+				setUpAccountsPage.mockMCAccountConnectionError(),
+			] );
+
+			const getMCAccountCard = setUpAccountsPage.getMCAccountCard();
+			const mcAccountsSelect = setUpAccountsPage.getMCAccountsSelect();
+			await mcAccountsSelect.selectOption( {
+				label: 'MC Account 2 ・ https://example.com (23456)',
+			} );
+			const connectButton = setUpAccountsPage.getConnectButton();
+			await connectButton.click();
+
+			await expect(
+				getMCAccountCard.getByText(
+					'There was an error connecting MC Account.'
+				)
+			).toBeVisible();
+		} );
+	} );
+
 	test.describe( 'Connect Google account', () => {
 		test.beforeAll( async () => {
 			// Mock Jetpack as not connected
