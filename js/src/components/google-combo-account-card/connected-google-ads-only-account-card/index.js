@@ -10,11 +10,11 @@ import { useState, useEffect } from '@wordpress/element';
 import { useAppDispatch } from '~/data';
 import { SwitchAccountButton } from '~/components/google-account-card';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
-import ConnectAds from './connect-ads';
-import AccountDetails from './account-details';
-import ConnectedAdsAccountDetail from './connected-ads-account-detail';
+import ConnectAds from '../connect-ads';
+import AccountDetails from '../account-details';
+import ConnectedAdsAccountDetail from '../connected-ads-account-detail';
 import Indicator from './indicator';
-import getAccountCreationTexts from './getAccountCreationTexts';
+import getAccountCreationTexts from '../getAccountCreationTexts';
 import SpinnerCard from '~/components/spinner-card';
 import useAutoCreateAdsAccount from '~/hooks/useAutoCreateAdsAccount';
 import useExistingGoogleAdsAccounts from '~/hooks/useExistingGoogleAdsAccounts';
@@ -23,7 +23,7 @@ import useGoogleAdsAccountStatus from '~/hooks/useGoogleAdsAccountStatus';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useUpsertAdsAccount from '~/hooks/useUpsertAdsAccount';
 import showAdsConversionNotice from '~/utils/showAdsConversionNotice';
-import './connected-google-combo-account-card.scss';
+import './index.scss';
 
 /**
  * Renders a Google account card UI with connected account information.
@@ -98,7 +98,7 @@ const ConnectedGoogleAdsOnlyAccountCard = () => {
 	const getCardActions = () => {
 		if ( editMode ) {
 			return (
-				<div className="gla-google-combo-account-card__description-actions">
+				<div className="gla-connected-google-ads-only-account-card__description-actions">
 					{ switchAccountButton }
 					<AppButton isTertiary onClick={ handleCancelClick }>
 						{ __( 'Cancel', 'google-listings-and-ads' ) }
@@ -110,7 +110,7 @@ const ConnectedGoogleAdsOnlyAccountCard = () => {
 		// When not in edit mode, only show the edit button if clicking the
 		// button would change the visibility of the ConnectAds card.
 		return (
-			<div className="gla-google-combo-account-card__description-actions">
+			<div className="gla-connected-google-ads-only-account-card__description-actions">
 				{ showConnectAds || ! canShowConnectAds ? (
 					switchAccountButton
 				) : (
@@ -134,11 +134,11 @@ const ConnectedGoogleAdsOnlyAccountCard = () => {
 		showAdsConversionNotice( googleAdsAccount );
 
 	return (
-		<div className="gla-google-combo-account-card-wrapper">
+		<div className="gla-connected-google-ads-only-account-card-wrapper">
 			<AccountCard
 				appearance={ APPEARANCE.GOOGLE }
 				alignIcon="top"
-				className="gla-google-combo-account-card gla-google-combo-account-card--connected gla-google-combo-service-account-card--google"
+				className="gla-connected-google-ads-only-account-card gla-connected-google-ads-only-account-card--connected gla-connected-google-ads-only-account-card--google"
 				description={ text || <AccountDetails /> }
 				actions={ getCardActions() }
 				helper={ subText }

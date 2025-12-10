@@ -241,6 +241,17 @@ export default class SetUpAccountsPage extends MockRequests {
 	}
 
 	/**
+	 * Get service-based Merchant Google account card.
+	 *
+	 * @return {import('@playwright/test').Locator} Get service-based Merchant Google account card.
+	 */
+	getServiceBasedMerchantGoogleAccountCard() {
+		return this.page.locator(
+			'.gla-connected-google-ads-only-account-card--google'
+		);
+	}
+
+	/**
 	 * Get Google Ads account card.
 	 *
 	 * @return {import('@playwright/test').Locator} Get Google Ads account card.
