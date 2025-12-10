@@ -140,7 +140,7 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
-= 3.5.1 - 2025-12-09 =
+= 3.5.1 - 2025-12-10 =
 * Add - EU political content confirmation checkbox for EU-based advertisers.
 * Fix - Button misaligned after navigating between tabs.
 * Fix - Correct the product edit URL to properly handle product variations in the Price Benchmark modal.
