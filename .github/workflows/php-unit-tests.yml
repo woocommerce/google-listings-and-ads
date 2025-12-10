@@ -101,6 +101,9 @@ jobs:
       - name: Install WP tests
         run: ./bin/install-wp-tests.sh wordpress_test root root localhost ${{ matrix.wp-version }} ${{ matrix.wc-versions }}
 
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
       - name: Prepare node
         uses: woocommerce/grow/prepare-node@actions-v2
         with:
@@ -157,6 +160,9 @@ jobs:
           INPUT_WP_RC_VERSION: ${{ inputs.wp-rc-version }}
           INPUT_WC_RC_VERSION: ${{ inputs.wc-rc-version }}
         run: ./bin/install-wp-tests.sh wordpress_test root root localhost "${INPUT_WP_RC_VERSION}" "${INPUT_WC_RC_VERSION}"
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Prepare node
         uses: woocommerce/grow/prepare-node@actions-v2
