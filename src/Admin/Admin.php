@@ -20,6 +20,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\View\ViewException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\ServiceBasedMerchant\ServiceBasedMerchantState;
 use Automattic\WooCommerce\Admin\PageController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\ScriptAsset;
 
@@ -54,18 +55,25 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 	protected $ads;
 
 	/**
+	 * @var ServiceBasedMerchantState
+	 */
+	protected $service_based_merchant_state;
+
+	/**
 	 * Admin constructor.
 	 *
-	 * @param AssetsHandlerInterface $assets_handler
-	 * @param ViewFactory            $view_factory
-	 * @param MerchantCenterService  $merchant_center
-	 * @param AdsService             $ads
+	 * @param AssetsHandlerInterface    $assets_handler
+	 * @param ViewFactory               $view_factory
+	 * @param MerchantCenterService     $merchant_center
+	 * @param AdsService                $ads
+	 * @param ServiceBasedMerchantState $service_based_merchant_state
 	 */
-	public function __construct( AssetsHandlerInterface $assets_handler, ViewFactory $view_factory, MerchantCenterService $merchant_center, AdsService $ads ) {
-		$this->assets_handler  = $assets_handler;
-		$this->view_factory    = $view_factory;
-		$this->merchant_center = $merchant_center;
-		$this->ads             = $ads;
+	public function __construct( AssetsHandlerInterface $assets_handler, ViewFactory $view_factory, MerchantCenterService $merchant_center, AdsService $ads, ServiceBasedMerchantState $service_based_merchant_state ) {
+		$this->assets_handler               = $assets_handler;
+		$this->view_factory                 = $view_factory;
+		$this->merchant_center              = $merchant_center;
+		$this->ads                          = $ads;
+		$this->service_based_merchant_state = $service_based_merchant_state;
 	}
 
 	/**
@@ -157,6 +165,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 						)
 					)->get_uri(),
 				),
+				'serviceBasedMerchant'      => $this->service_based_merchant_state->is_service_based_merchant(),
 			]
 		);
 

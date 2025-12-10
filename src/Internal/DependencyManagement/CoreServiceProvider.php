@@ -94,6 +94,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WPAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\ServiceBasedMerchant\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRatesProcessor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingSuggestionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ZoneMethodsParser;
@@ -191,6 +192,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		MarketingChannelRegistrar::class => true,
 		OAuthService::class              => true,
 		WPCLIMigrationGTIN::class        => true,
+		ServiceBasedMerchantState::class => true,
 	];
 
 	/**
@@ -298,6 +300,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( ProductBlocksService::class, AssetsHandlerInterface::class, ChannelVisibilityBlock::class, AttributeManager::class, MerchantCenterService::class );
 
 		$this->share_with_tags( MerchantAccountState::class );
+		$this->share_with_tags( ServiceBasedMerchantState::class );
 		$this->share_with_tags( MerchantStatuses::class );
 		$this->share_with_tags( PriceBenchmarks::class );
 		$this->share_with_tags( PhoneVerification::class, Merchant::class, WP::class, ISOUtility::class );

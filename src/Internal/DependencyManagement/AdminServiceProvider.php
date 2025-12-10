@@ -34,6 +34,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Shipping;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\ServiceBasedMerchant\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\View\PHPViewFactory;
@@ -88,7 +89,8 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 			AssetsHandlerInterface::class,
 			PHPViewFactory::class,
 			MerchantCenterService::class,
-			AdsService::class
+			AdsService::class,
+			ServiceBasedMerchantState::class
 		);
 		$this->share_with_tags( PHPViewFactory::class );
 		$this->share_with_tags( Redirect::class, WP::class );
