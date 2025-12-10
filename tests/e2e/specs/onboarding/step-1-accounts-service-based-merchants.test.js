@@ -46,12 +46,9 @@ const ADS_ACCOUNTS = [
 test.describe( 'Set up accounts for service based merchants', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
-		await page.addInitScript( () => {
-			window.glaData = Object.assign( {}, window.glaData || {}, {
-				serviceBasedMerchant: true,
-			} );
+		setUpAccountsPage = new SetUpAccountsPage( page, {
+			serviceBasedMerchant: true,
 		} );
-		setUpAccountsPage = new SetUpAccountsPage( page );
 	} );
 
 	test.afterAll( async () => {
