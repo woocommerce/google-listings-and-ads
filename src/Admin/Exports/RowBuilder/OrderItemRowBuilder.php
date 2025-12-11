@@ -64,14 +64,14 @@ class OrderItemRowBuilder implements ExportableRowBuilderInterface {
 			 *
 			 * @param string
 			 */
-			'transaction_id'             => (string) $order->get_id(),
+			'transaction_id'             => $is_refund ? (string) $refund->get_id() : (string) $order->get_id(),
 
 			/**
 			 * Merchant specific identifier of the product.
 			 *
 			 * @param string
 			 */
-			'item_id'                    => $item->get_variation_id(),
+			'item_id'                    => $item->get_product_id(),
 
 			/**
 			 * The name of the product

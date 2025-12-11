@@ -78,7 +78,7 @@ class OrderItemRowBuilderTest extends UnitTest {
 		// Assert.
 		$this->assertEquals( $row['transaction_type'], 'purchase' );
 		$this->assertEquals( $row['transaction_id'], $order->get_id() );
-		$this->assertEquals( $row['item_id'], $item->get_variation_id() );
+		$this->assertEquals( $row['item_id'], $item->get_product_id() );
 		$this->assertEquals( $row['item_name'], $product->get_name() );
 		$this->assertEquals( $row['transaction_date'], $order->get_date_created()->format( 'c' ) );
 		$this->assertEquals( $row['refund_date'], '' );
@@ -153,8 +153,8 @@ class OrderItemRowBuilderTest extends UnitTest {
 
 		// Assert.
 		$this->assertEquals( $row['transaction_type'], 'refund' );
-		$this->assertEquals( $row['transaction_id'], $order->get_id() );
-		$this->assertEquals( $row['item_id'], $item->get_variation_id() );
+		$this->assertEquals( $row['transaction_id'], $refund->get_id() );
+		$this->assertEquals( $row['item_id'], $item->get_product_id() );
 		$this->assertEquals( $row['item_name'], $product->get_name() );
 		$this->assertEquals( $row['transaction_date'], $order->get_date_created()->format( 'c' ) );
 		$this->assertEquals( $row['refund_date'], $refund->get_date_created()->date( 'c' ) );

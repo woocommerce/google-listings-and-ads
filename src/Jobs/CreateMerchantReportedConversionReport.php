@@ -11,7 +11,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use WC_Order;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -129,43 +128,6 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 
 			// Get items from the order
 			$line_items = $order->get_items();
-
-			// If this is a refund with no items, create refund items from parent order's items
-			if ( $order instanceof \WC_Order_Refund && empty( $line_items ) ) {
-				$parent_id = $order->get_parent_id();
-				if ( $parent_id ) {
-					$parent_order = wc_get_order( $parent_id );
-					if ( $parent_order ) {
-						$parent_items = $parent_order->get_items();
-
-						// Create temporary refund items from parent order items
-						$line_items = [];
-						foreach ( $parent_items as $parent_item ) {
-							// Create a copy of the item and set it to belong to the refund
-							$item_class  = get_class( $parent_item );
-							$refund_item = new $item_class();
-							$refund_item->set_id( 0 );
-							$refund_item->set_props( $parent_item->get_data() );
-							// Set order_id AFTER set_props to ensure it points to the refund, not the parent
-							$refund_item->set_order_id( $order->get_id() );
-							// Set negative quantity for refund
-							if ( method_exists( $refund_item, 'set_quantity' ) ) {
-								$refund_item->set_quantity( -absint( $parent_item->get_quantity() ) );
-							}
-							// Set negative totals for refund
-							if ( method_exists( $parent_item, 'get_total' ) && method_exists( $refund_item, 'set_total' ) ) {
-								$parent_total = call_user_func( [ $parent_item, 'get_total' ] );
-								$refund_item->set_total( -abs( (float) $parent_total ) );
-							}
-							if ( method_exists( $parent_item, 'get_subtotal' ) && method_exists( $refund_item, 'set_subtotal' ) ) {
-								$parent_subtotal = call_user_func( [ $parent_item, 'get_subtotal' ] );
-								$refund_item->set_subtotal( -abs( (float) $parent_subtotal ) );
-							}
-							$line_items[] = $refund_item;
-						}
-					}
-				}
-			}
 
 			foreach ( $line_items as $line_item ) {
 				$row = $this->row_builder->build_row( $line_item );
