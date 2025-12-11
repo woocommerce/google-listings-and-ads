@@ -141,7 +141,6 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		} catch ( ExceptionWithResponseData $e ) {
 			throw $e;
 		} catch ( Exception $e ) {
-			// Map middleware API errors to fixed API_ERROR structure.
 			if ( $e->getPrevious() instanceof BadResponseException ) {
 				/** @var BadResponseException $prev */
 				$prev    = $e->getPrevious();
@@ -498,7 +497,6 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		/** @var Merchant $merchant */
 		$merchant = $this->container->get( Merchant::class );
 
-		// Account object from Google ShoppingContent service.
 		$account     = $merchant->get_account( $merchant_id );
 		$account_url = $account->getWebsiteUrl() ?: '';
 

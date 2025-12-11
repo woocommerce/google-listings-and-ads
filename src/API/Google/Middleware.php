@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
-// Removed custom Merchant Center exceptions; AccountService maps errors to API_ERROR.
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidTerm;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidDomainName;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
@@ -182,7 +181,7 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			}
 
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
-			// Throw a plain exception; AccountService will convert to API_ERROR and parse payload.
+
 			throw new Exception( $message, $status, $e );
 		}
 	}
