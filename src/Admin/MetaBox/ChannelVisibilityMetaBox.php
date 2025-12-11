@@ -126,6 +126,7 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 			'sync_status'        => $this->meta_handler->get_sync_status( $product ),
 			'issues'             => $this->product_helper->get_validation_errors( $product ),
 			'is_setup_complete'  => $this->merchant_center->is_setup_complete(),
+			'is_connected'       => $this->merchant_center->is_connected(),
 			'get_started_url'    => $this->get_start_url(),
 		];
 	}

@@ -20,8 +20,15 @@ $channel_visibility = $this->channel_visibility;
 $field_id = $this->field_id;
 /** @var bool */
 $is_setup_complete = $this->is_setup_complete;
+/** @var bool */
+$is_connected = $this->is_connected;
 /** @var string */
 $get_started_url = $this->get_started_url;
+
+// Hide metabox if Merchant Center is not connected.
+if ( ! $is_connected ) {
+	return;
+}
 
 /** @var string $sync_status */
 if ( SyncStatus::HAS_ERRORS === $this->sync_status ) {
