@@ -32,7 +32,10 @@ test.describe( 'Classic Product Editor integration', () => {
 		await editorUtils.gotoAddProductPage();
 
 		await expect( editorUtils.getPluginTab() ).toBeHidden();
-		await expect( editorUtils.getChannelVisibilityMetaBox() ).toBeHidden();
+		// Metabox should not exist in DOM when Merchant Center is not connected.
+		await expect( editorUtils.getChannelVisibilityMetaBox() ).toHaveCount(
+			0
+		);
 
 		// Resume the plugin to onboarded status so that the next test can carry over.
 		await api.setOnboardedMerchant();
