@@ -293,6 +293,25 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function edit_campaign( int $campaign_id, array $params ): int {
 		try {
+			// Check edge case: campaign created with MC but MC is now disconnected.
+			$existing_campaign = $this->get_campaign( $campaign_id );
+			$merchant_id       = $this->options->get_merchant_id();
+
+			// If campaign exists, has a country from shopping_setting, but MC is disconnected, throw error.
+			if ( ! empty( $existing_campaign ) && ! empty( $existing_campaign['country'] ) && $merchant_id === 0 ) {
+				throw new ExceptionWithResponseData(
+					__( 'Cannot edit campaign: This campaign was created with a Merchant Center account, but the account is now disconnected. Please reconnect your Merchant Center account to edit this campaign.', 'google-listings-and-ads' ),
+					400,
+					null,
+					[
+						'errors' => [
+							'MERCHANT_CENTER_DISCONNECTED' => __( 'Merchant Center account is disconnected', 'google-listings-and-ads' ),
+						],
+						'id'     => $campaign_id,
+					]
+				);
+			}
+
 			$operations      = [];
 			$campaign_fields = [];
 
@@ -480,31 +499,36 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * Returns a campaign create operation.
 	 *
-	 * @param string $campaign_name
-	 * @param string $country
-	 * @param bool   $is_eu_political
+	 * @param string      $campaign_name
+	 * @param string|null $country
+	 * @param bool        $is_eu_political
 	 *
 	 * @return MutateOperation
 	 */
-	protected function create_operation( string $campaign_name, string $country, bool $is_eu_political ): MutateOperation {
-		$campaign = new Campaign(
-			[
-				'resource_name'                     => $this->temporary_resource_name(),
-				'name'                              => $campaign_name,
-				'advertising_channel_type'          => AdvertisingChannelType::PERFORMANCE_MAX,
-				'status'                            => CampaignStatus::number( 'enabled' ),
-				'campaign_budget'                   => $this->budget->temporary_resource_name(),
-				'maximize_conversion_value'         => new MaximizeConversionValue(),
-				'url_expansion_opt_out'             => false,
-				'shopping_setting'                  => new ShoppingSetting(
-					[
-						'merchant_id' => $this->options->get_merchant_id(),
-						'feed_label'  => $country,
-					]
-				),
-				'contains_eu_political_advertising' => $is_eu_political ? EuPoliticalAdvertisingStatus::CONTAINS_EU_POLITICAL_ADVERTISING : EuPoliticalAdvertisingStatus::DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING,
-			]
-		);
+	protected function create_operation( string $campaign_name, ?string $country, bool $is_eu_political ): MutateOperation {
+		$merchant_id = $this->options->get_merchant_id();
+		$campaign_data = [
+			'resource_name'                     => $this->temporary_resource_name(),
+			'name'                              => $campaign_name,
+			'advertising_channel_type'          => AdvertisingChannelType::PERFORMANCE_MAX,
+			'status'                            => CampaignStatus::number( 'enabled' ),
+			'campaign_budget'                   => $this->budget->temporary_resource_name(),
+			'maximize_conversion_value'         => new MaximizeConversionValue(),
+			'url_expansion_opt_out'             => false,
+			'contains_eu_political_advertising' => $is_eu_political ? EuPoliticalAdvertisingStatus::CONTAINS_EU_POLITICAL_ADVERTISING : EuPoliticalAdvertisingStatus::DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING,
+		];
+
+		// Only include shopping_setting if Merchant Center account is connected.
+		if ( $merchant_id > 0 && $country !== null ) {
+			$campaign_data['shopping_setting'] = new ShoppingSetting(
+				[
+					'merchant_id' => $merchant_id,
+					'feed_label'  => $country,
+				]
+			);
+		}
+
+		$campaign = new Campaign( $campaign_data );
 
 		$operation = ( new CampaignOperation() )->setCreate( $campaign );
 		return ( new MutateOperation() )->setCampaignOperation( $operation );
