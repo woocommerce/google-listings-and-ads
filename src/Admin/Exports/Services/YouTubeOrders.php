@@ -35,14 +35,9 @@ class YouTubeOrders implements Service {
 		];
 
 		// Get all orders and refunds for the specific day.
-		// Meta filtering will be done in find_orders() to leverage meta caching.
-		$order_ids = wc_get_orders( $query );
+		$order_ids      = wc_get_orders( $query );
+		$youtube_orders = [];
 
-		// Filter orders and refunds by YouTube attribution meta.
-		$filtered_order_ids = [];
-		$refund_parent_ids  = [];
-
-		// First pass: process refunds to collect parent order IDs
 		foreach ( $order_ids as $order_id ) {
 			$order = wc_get_order( $order_id );
 
@@ -50,47 +45,19 @@ class YouTubeOrders implements Service {
 				continue;
 			}
 
+			$source = $order->get_meta( '_wc_order_attribution_utm_source' );
+
+			// Check refund parent orders for youtube attribution meta.
 			if ( $order instanceof WC_Order_Refund ) {
-				try {
-					$parent_id = $order->get_parent_id();
-					if ( ! $parent_id ) {
-						continue;
-					}
-					$parent_order = wc_get_order( $parent_id );
-					if ( ! $parent_order ) {
-						continue;
-					}
-					if ( 'youtube' === $parent_order->get_meta( '_wc_order_attribution_utm_source' ) ) {
-						$filtered_order_ids[] = $order_id;
-						$refund_parent_ids[]  = $parent_id;
-					}
-				} catch ( \Exception $e ) {
-					// Skip refunds with invalid parent IDs.
-					continue;
-				}
+				$parent = wc_get_order( $order->get_parent_id() );
+				$source = $parent->get_meta( '_wc_order_attribution_utm_source' );
+			}
+
+			if ( 'youtube' === $source ) {
+				$youtube_orders[] = $order_id;
 			}
 		}
 
-		// Second pass: process regular orders, excluding parent orders that have refunds on the same date
-		foreach ( $order_ids as $order_id ) {
-			// Skip if this order is a parent of a refund on the same date
-			if ( in_array( $order_id, $refund_parent_ids, true ) ) {
-				continue;
-			}
-
-			$order = wc_get_order( $order_id );
-			if ( ! $order ) {
-				continue;
-			}
-
-			if ( ! ( $order instanceof WC_Order_Refund ) ) {
-				$utm_source = $order->get_meta( '_wc_order_attribution_utm_source' );
-				if ( 'youtube' === $utm_source ) {
-					$filtered_order_ids[] = $order_id;
-				}
-			}
-		}
-
-		return array_unique( $filtered_order_ids );
+		return $youtube_orders;
 	}
 }

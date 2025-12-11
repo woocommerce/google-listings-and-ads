@@ -112,7 +112,7 @@ class YouTubeOrdersTest extends UnitTest {
 		$this->assertNotContains( $refund_no_youtube->get_id(), $result );
 	}
 
-	public function test_find_orders_combines_purchases_and_refunds() {
+	public function test_find_orders_includes_purchases_and_refunds() {
 		$date = gmdate( 'Y-m-d' );
 
 		// Create purchase order with YouTube attribution.
@@ -144,8 +144,9 @@ class YouTubeOrdersTest extends UnitTest {
 		$result = $this->youtube_orders->find_orders( $date );
 
 		$this->assertContains( $order->get_id(), $result );
+		$this->assertContains( $parent_order->get_id(), $result );
 		$this->assertContains( $refund->get_id(), $result );
-		$this->assertCount( 2, $result );
+		$this->assertCount( 3, $result );
 	}
 
 	public function test_find_orders_returns_unique_order_ids() {
