@@ -183,10 +183,13 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			$converted_campaigns = [];
 
 			// Get only the first element from campaign results
-			foreach ( $campaign_results->iterateAllElements() as $row ) {
-				$campaign                               = $this->convert_campaign( $row );
-				$converted_campaigns[ $campaign['id'] ] = $campaign;
-				break;
+			$elements = $campaign_results->iterateAllElements();
+			if ( $elements !== null ) {
+				foreach ( $elements as $row ) {
+					$campaign                               = $this->convert_campaign( $row );
+					$converted_campaigns[ $campaign['id'] ] = $campaign;
+					break;
+				}
 			}
 
 			if ( ! empty( $converted_campaigns ) ) {
@@ -506,7 +509,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @return MutateOperation
 	 */
 	protected function create_operation( string $campaign_name, ?string $country, bool $is_eu_political ): MutateOperation {
-		$merchant_id = $this->options->get_merchant_id();
+		$merchant_id   = $this->options->get_merchant_id();
 		$campaign_data = [
 			'resource_name'                     => $this->temporary_resource_name(),
 			'name'                              => $campaign_name,
