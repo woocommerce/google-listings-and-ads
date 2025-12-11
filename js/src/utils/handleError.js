@@ -97,16 +97,12 @@ export function handleApiError( error, leadingMessage, fallbackMessage ) {
 export function getFormattedErrorMessage( detailedErrors ) {
 	const errors = Array.isArray( detailedErrors ) ? detailedErrors : [];
 
-	return errors.filter( Boolean ).map( ( detailedError ) => {
-		const { error } = detailedError || {};
-		const { error: errorData, message } = error || {};
-
+	return errors.filter( Boolean ).map( ( { error } ) => {
 		const title =
-			message ||
-			__( 'Unknown error occurred.', 'google-listings-and-ads' );
+			error.title || __( 'Unknown Error', 'google-listings-and-ads' );
 
-		const description = errorData?.details
-			? errorData.details[ 0 ]?.errors?.[ 0 ]?.message
+		const description = error?.details
+			? error.details[ 0 ]?.errors?.[ 0 ]?.message
 			: error?.errors?.[ 0 ]?.message;
 
 		return { title, description };

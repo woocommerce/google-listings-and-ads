@@ -39,7 +39,7 @@ const useCreateMCAccount = () => {
 			}
 			if ( e?.code === 'API_ERROR' ) {
 				receiveDetailedError( ERROR_SLOTS.GOOGLE_MC_CONNECTION, {
-					...e,
+					...e.data.error,
 					title: __( 'Connection Failed', 'google-listings-and-ads' ),
 				} );
 			} else {
