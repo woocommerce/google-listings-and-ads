@@ -17,6 +17,7 @@ import checkErrors from '~/components/free-listings/configure-product-listings/c
 import getOfferFreeShippingInitialValue from '~/utils/getOfferFreeShippingInitialValue';
 import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
 import FormContent from './form-content';
+import { targetAudienceFields } from '../choose-audience-section/constants';
 
 /**
  * @typedef {import('~/data/actions').TargetAudienceData } TargetAudienceData
@@ -24,8 +25,6 @@ import FormContent from './form-content';
  * @typedef {import('~/data/actions').ShippingTime} ShippingTime
  * @typedef {import('~/data/actions').CountryCode} CountryCode
  */
-
-const targetAudienceFields = [ 'locale', 'language', 'location', 'countries' ];
 
 /**
  * Field names for settings.

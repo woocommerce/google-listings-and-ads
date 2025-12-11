@@ -9,10 +9,16 @@ import { getHistory, getNewPath } from '@woocommerce/navigation';
 import AppSpinner from '~/components/app-spinner';
 import SavedSetupStepper from './saved-setup-stepper';
 import useMCSetup from '~/hooks/useMCSetup';
-import stepNameKeyMap from './stepNameKeyMap';
+import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
+import SavedServiceBasedMerchantSetupStepper from './saved-service-based-merchant-setup-stepper';
+import {
+	STEP_NAME_KEY_MAP,
+	SERVICE_BASED_STEP_NAME_KEY_MAP,
+} from './constants';
 
 const SetupStepper = () => {
 	const { hasFinishedResolution, data: mcSetup } = useMCSetup();
+	const serviceBasedMerchant = useServiceBasedMerchant();
 
 	if ( ! hasFinishedResolution && ! mcSetup ) {
 		return <AppSpinner />;
@@ -31,7 +37,15 @@ const SetupStepper = () => {
 		return null;
 	}
 
-	return <SavedSetupStepper savedStep={ stepNameKeyMap[ step ] } />;
+	if ( serviceBasedMerchant ) {
+		return (
+			<SavedServiceBasedMerchantSetupStepper
+				savedStep={ SERVICE_BASED_STEP_NAME_KEY_MAP[ step ] }
+			/>
+		);
+	}
+
+	return <SavedSetupStepper savedStep={ STEP_NAME_KEY_MAP[ step ] } />;
 };
 
 export default SetupStepper;

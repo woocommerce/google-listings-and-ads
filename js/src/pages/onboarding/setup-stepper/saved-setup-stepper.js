@@ -21,7 +21,7 @@ import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import SetupAccounts from './setup-accounts';
 import SetupListings from './setup-listings';
 import SetupPaidAds from './setup-paid-ads';
-import stepNameKeyMap from './stepNameKeyMap';
+import { STEP_NAME_KEY_MAP } from './constants';
 import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
@@ -97,11 +97,11 @@ const SavedSetupStepper = ( { savedStep } ) => {
 	};
 
 	const handleSetupAccountsContinue = () => {
-		continueStep( stepNameKeyMap.product_listings );
+		continueStep( STEP_NAME_KEY_MAP.product_listings );
 	};
 
 	const handleSetupListingsContinue = () => {
-		continueStep( stepNameKeyMap.paid_ads );
+		continueStep( STEP_NAME_KEY_MAP.paid_ads );
 	};
 
 	const handleStepClick = ( stepKey ) => {
@@ -138,7 +138,7 @@ const SavedSetupStepper = ( { savedStep } ) => {
 			currentStep={ step }
 			steps={ [
 				{
-					key: stepNameKeyMap.accounts,
+					key: STEP_NAME_KEY_MAP.accounts,
 					label: __(
 						'Set up your accounts',
 						'google-listings-and-ads'
@@ -151,7 +151,7 @@ const SavedSetupStepper = ( { savedStep } ) => {
 					onClick: handleStepClick,
 				},
 				{
-					key: stepNameKeyMap.product_listings,
+					key: STEP_NAME_KEY_MAP.product_listings,
 					label: __(
 						'Configure product listings',
 						'google-listings-and-ads'
@@ -201,7 +201,7 @@ const SavedSetupStepper = ( { savedStep } ) => {
 					onClick: handleStepClick,
 				},
 				{
-					key: stepNameKeyMap.paid_ads,
+					key: STEP_NAME_KEY_MAP.paid_ads,
 					label: __( 'Create a campaign', 'google-listings-and-ads' ),
 					content: <SetupPaidAds />,
 					onClick: handleStepClick,
