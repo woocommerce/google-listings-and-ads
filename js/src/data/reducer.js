@@ -83,6 +83,7 @@ const DEFAULT_STATE = {
 		},
 		summary: {},
 	},
+	detailed_errors: [],
 };
 
 /**
@@ -487,10 +488,14 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, 'store_categories', storeCategories );
 		}
 
-		case TYPES.RECEIVE_TOUR:
 		case TYPES.UPSERT_TOUR: {
 			const { tour } = action;
 			return setIn( state, [ 'tours', tour.id ], tour );
+		}
+
+		case TYPES.RECEIVE_TOURS: {
+			const { tours } = action;
+			return setIn( state, 'tours', tours );
 		}
 
 		case TYPES.HYDRATE_PREFETCHED_DATA: {
@@ -624,6 +629,28 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				state,
 				[ 'ads', 'recommendations', recommendationTypes ],
 				recommendations
+			);
+		}
+
+		case TYPES.RECEIVE_DETAILED_ERROR: {
+			const { slot, error } = action;
+
+			return setIn( state, 'detailed_errors', [
+				...state.detailed_errors,
+				{
+					error,
+					slot,
+				},
+			] );
+		}
+
+		case TYPES.CLEAR_DETAILED_ERROR_BY_SLOT: {
+			const { slot } = action;
+
+			return setIn(
+				state,
+				'detailed_errors',
+				state.detailed_errors.filter( ( error ) => error.slot !== slot )
 			);
 		}
 

@@ -12,8 +12,14 @@ import { logError } from './console';
 
 /**
  * @typedef {Object} ApiError
+ * @property {number} [code] The HTTP response status code.
  * @property {string} [message] The error reason.
- * @property {number} [statusCode] The HTTP response status code.
+ */
+
+/**
+ * @typedef {Object} DetailedApiError
+ * @property {ApiError} error The error data.
+ * @property {string} [slot] The ad slot where the error occurred.
  */
 
 // Functions in this module use optional chaining to access `error` because the
@@ -80,4 +86,23 @@ export function handleApiError( error, leadingMessage, fallbackMessage ) {
 	}
 
 	logError( error );
+}
+
+/**
+ * Gets formatted error message from the error object.
+ * @param {DetailedApiError} detailedError The error object.
+ * @return {{title: string, description: string|undefined}} Formatted error message with title and description.
+ */
+export function getFormattedErrorMessage( detailedError ) {
+	const { error } = detailedError || {};
+	const { error: errorData, message } = error;
+
+	const title =
+		message || __( 'Unknown error occurred.', 'google-listings-and-ads' );
+
+	const description = errorData?.details
+		? errorData.details[ 0 ].errors[ 0 ].message
+		: error?.errors[ 0 ]?.message;
+
+	return { title, description };
 }

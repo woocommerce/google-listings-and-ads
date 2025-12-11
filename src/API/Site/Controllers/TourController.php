@@ -33,27 +33,14 @@ class TourController extends BaseOptionsController {
 	 * Register rest routes with WordPress.
 	 */
 	public function register_routes(): void {
-		/**
-		 * GET The tour visualizations
-		 */
 		$this->register_route(
-			"/tours/(?P<id>{$this->get_tour_id_regex()})",
+			'/tours',
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_tours_read_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
-				'schema' => $this->get_api_response_schema_callback(),
-			],
-		);
-
-		/**
-		 * POST Update the tour visualizations
-		 */
-		$this->register_route(
-			'/tours',
-			[
 				[
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->get_tours_create_callback(),
@@ -71,10 +58,9 @@ class TourController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_tours_read_callback(): callable {
-		return function ( Request $request ) {
+		return function () {
 			try {
-				$tour_id = $request->get_url_params()['id'];
-				return $this->prepare_item_for_response( $this->get_tour( $tour_id ), $request );
+				return new Response( $this->get_tours() );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
@@ -117,22 +103,6 @@ class TourController extends BaseOptionsController {
 	 */
 	private function get_tours(): ?array {
 		return $this->options->get( OptionsInterface::TOURS );
-	}
-
-	/**
-	 * Get the tour by Id
-	 *
-	 * @param string $tour_id The tour ID
-	 * @return array The tour
-	 * @throws Exception In case the tour is not found.
-	 */
-	private function get_tour( string $tour_id ): array {
-		$tours = $this->get_tours();
-		if ( ! isset( $tours[ $tour_id ] ) ) {
-			throw new Exception( __( 'Tour not found', 'google-listings-and-ads' ), 404 );
-		}
-
-		return $tours[ $tour_id ];
 	}
 
 	/**
