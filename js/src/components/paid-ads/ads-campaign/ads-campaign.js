@@ -51,7 +51,10 @@ export default function AdsCampaign( {
 		context === 'edit-ads';
 	// only show the billing card during onboarding or setup Ads flow.
 	// For creating/editing a campaign, we assume billing is already set up.
-	const showBillingCard = context === 'setup-mc' || context === 'setup-ads';
+	const showBillingCard =
+		context === 'setup-mc' ||
+		context === 'setup-ads' ||
+		context === 'setup-service-based';
 
 	let description = createInterpolateElement(
 		__(
