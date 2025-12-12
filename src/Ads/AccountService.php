@@ -208,7 +208,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 						$e->getCode() ?: 400,
 						null,
 						[
-							'code'  => 'API_ERROR',
+							'code' => 'API_ERROR',
 							'data' => $decoded,
 						]
 					);
