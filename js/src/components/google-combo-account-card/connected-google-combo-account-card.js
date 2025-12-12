@@ -181,6 +181,14 @@ const ConnectedGoogleComboAccountCard = () => {
 		showAdsConversionNotice( googleAdsAccount );
 
 	const showAddressCard = hasFinishedResolution && isGoogleMCReady;
+	const errorSlots = [];
+
+	if ( ! showConnectAds ) {
+		errorSlots.push( ERROR_SLOTS.GOOGLE_ADS_CONNECTION );
+	}
+	if ( ! showConnectMC ) {
+		errorSlots.push( ERROR_SLOTS.GOOGLE_MC_CONNECTION );
+	}
 
 	return (
 		<div className="gla-google-combo-account-card-wrapper">
@@ -201,14 +209,7 @@ const ConnectedGoogleComboAccountCard = () => {
 					/>
 				}
 				expandedDetail
-				errorSlots={
-					! showConnectAds && ! showConnectMC
-						? [
-								ERROR_SLOTS.GOOGLE_ADS_CONNECTION,
-								ERROR_SLOTS.GOOGLE_MC_CONNECTION,
-						  ]
-						: []
-				}
+				errorSlots={ errorSlots }
 			/>
 
 			{ showConnectAds && (

@@ -209,7 +209,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 						null,
 						[
 							'code'  => 'API_ERROR',
-							'error' => $decoded,
+							'data' => $decoded,
 						]
 					);
 				}

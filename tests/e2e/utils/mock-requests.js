@@ -784,7 +784,8 @@ export default class MockRequests {
 				code: 'API_ERROR',
 				message: 'There was an error connecting to Ads account.',
 				data: {
-					code: 400,
+					statusCode: 400,
+					message: 'Unable to accept link for the customer account',
 					error: {
 						code: 400,
 						message: 'Request contains an invalid argument.',
@@ -820,7 +821,7 @@ export default class MockRequests {
 					},
 				},
 			},
-			500,
+			400,
 			[ 'POST' ]
 		);
 	}
@@ -996,7 +997,8 @@ export default class MockRequests {
 					? message
 					: 'There was an error connecting to MC account.',
 				data: {
-					code: 400,
+					statusCode: 400,
+					message: 'Unable to link merchant center account',
 					error: {
 						code: 400,
 						message:
