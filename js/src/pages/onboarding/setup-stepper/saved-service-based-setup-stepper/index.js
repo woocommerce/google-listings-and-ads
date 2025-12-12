@@ -11,26 +11,17 @@ import { useState, useEffect, useRef } from '@wordpress/element';
  * Internal dependencies
  */
 import { useAppDispatch } from '~/data';
-import useAdminUrl from '~/hooks/useAdminUrl';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
-import useTargetAudienceWithSuggestions from './useTargetAudienceWithSuggestions';
-import BudgetIncentivePrompt from '~/components/paid-ads/budget-incentive-prompt';
-import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
+import useTargetAudienceWithSuggestions from '../useTargetAudienceWithSuggestions';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
-import SetupServiceBasedAccounts from './setup-service-based-accounts';
-import AdsCampaign from '~/components/paid-ads/ads-campaign';
-import AppButton from '~/components/app-button';
-import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
-import SkipButton from './skip-button';
-import clientSession from './clientSession';
+import SetupServiceBasedAccounts from '../setup-service-based-accounts';
+import CreateCampaign from './create-campaign';
+import OptimizeCampaign from './optimize-campaign';
 import convertToAssetGroupUpdateBody from '~/components/paid-ads/convertToAssetGroupUpdateBody';
-import AssetGroup, {
-	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
-} from '~/components/paid-ads/asset-group';
-import { SERVICE_BASED_STEP_NAME_KEY_MAP, ACTION_SKIP } from './constants';
+import { ACTION_SUBMIT_CAMPAIGN_AND_ASSETS } from '~/components/paid-ads/asset-group';
+import { SERVICE_BASED_STEP_NAME_KEY_MAP } from '../constants';
 import { API_NAMESPACE } from '~/data/constants';
-import { GUIDE_NAMES, GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import { getDashboardUrl } from '~/utils/urls';
 import {
 	recordStepperChangeEvent,
@@ -40,27 +31,23 @@ import {
 } from '~/utils/tracks';
 
 /**
+ * Renders the stepper for service-based merchants.
+ *
  * @param {Object} props React props
  * @param {string} [props.savedStep] A saved step overriding the current step
  * @fires gla_setup_mc with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button', action: 'go-to-step2' | 'go-to-step3' }`.
  * @fires gla_setup_mc with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
  */
-const SavedServiceBasedMerchantSetupStepper = ( { savedStep } ) => {
-	const budgetPromptRef = useRef();
+const SavedServiceBasedSetupStepper = ( { savedStep } ) => {
 	const createdCampaignIdRef = useRef( null );
-	const adminUrl = useAdminUrl();
 	const [ step, setStep ] = useState( savedStep );
-	const [ completing, setCompleting ] = useState( null );
 	const [ selectedDailyBudget, setSelectedDailyBudget ] = useState( null );
 	const { createNotice } = useDispatchCoreNotices();
-	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const { data: suggestedAudience } = useTargetAudienceWithSuggestions();
 	const { data: countryCodes, targetAudience } =
 		useTargetAudienceFinalCountryCodes();
 	const { saveTargetAudience, createAdsCampaign, updateCampaignAssetGroup } =
 		useAppDispatch();
-	const isBillingCompleted =
-		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_SERVICE_BASED_ONBOARDING,
@@ -102,20 +89,14 @@ const SavedServiceBasedMerchantSetupStepper = ( { savedStep } ) => {
 		}
 	};
 
-	const handleOnCreateCampaignContinueClick = ( formContext ) => {
-		const level = formContext.values.level;
-		let userDailyBudget = formContext.values.amount;
-
-		if ( level !== 'custom' ) {
-			userDailyBudget =
-				formContext.adapter.budgetRecommendation[ level ].dailyBudget;
-		}
-
-		setSelectedDailyBudget( userDailyBudget );
-
+	const handleOnCreateCampaignContinue = ( budget ) => {
+		setSelectedDailyBudget( budget );
 		setStep( SERVICE_BASED_STEP_NAME_KEY_MAP.optimize_campaign );
 	};
 
+	/**
+	 * Handles the submission of the optimize campaign step.
+	 */
 	const handleSubmit = async ( values, enhancer ) => {
 		const { action } = enhancer.submitter.dataset;
 
@@ -161,60 +142,6 @@ const SavedServiceBasedMerchantSetupStepper = ( { savedStep } ) => {
 		getHistory().push( getDashboardUrl( { campaign: 'saved' } ) );
 	};
 
-	const handleSkipCreatePaidAds = async () => {
-		setCompleting( ACTION_SKIP );
-
-		// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.
-		const query = { guide: GUIDE_NAMES.SUBMISSION_SUCCESS };
-		window.location.href = adminUrl + getDashboardUrl( query );
-	};
-
-	const createSkipButton = ( formContext ) => {
-		const { isValidForm } = formContext;
-
-		return (
-			<SkipButton
-				isValidForm={ isValidForm }
-				onSkipCreatePaidAds={ handleSkipCreatePaidAds }
-				loading={ completing === ACTION_SKIP }
-			/>
-		);
-	};
-
-	const createContinueButton = ( formContext ) => {
-		const { isValidForm, values } = formContext;
-		const disabled =
-			completing === ACTION_SKIP || ! isValidForm || ! isBillingCompleted;
-
-		const handleClick = () => {
-			budgetPromptRef.current
-				.resolve( values.dailyBudget )
-				.then( ( amount ) => {
-					if ( Number.isFinite( amount ) ) {
-						formContext.setValues( {
-							level: 'custom',
-							amount,
-						} );
-					}
-
-					handleOnCreateCampaignContinueClick( formContext );
-				} );
-		};
-
-		return (
-			<AppButton
-				isPrimary
-				disabled={ disabled }
-				onClick={ handleClick }
-				text={ __( 'Continue', 'google-listings-and-ads' ) }
-			/>
-		);
-	};
-
-	const paidAds = {
-		...clientSession.getCampaign(),
-	};
-
 	return (
 		<Stepper
 			className="gla-setup-stepper"
@@ -237,27 +164,9 @@ const SavedServiceBasedMerchantSetupStepper = ( { savedStep } ) => {
 					key: SERVICE_BASED_STEP_NAME_KEY_MAP.create_campaign,
 					label: __( 'Create a campaign', 'google-listings-and-ads' ),
 					content: (
-						<CampaignAssetsForm
-							countryCodes={ countryCodes }
-							initialCampaign={ paidAds }
-							onChange={ ( _, values ) => {
-								clientSession.setCampaign( values );
-							} }
-						>
-							<AdsCampaign
-								headerTitle={ __(
-									'Create your campaign',
-									'google-listings-and-ads'
-								) }
-								context={ CONTEXT_SERVICE_BASED_ONBOARDING }
-								skipButton={ createSkipButton }
-								continueButton={ createContinueButton }
-							/>
-							<BudgetIncentivePrompt
-								ref={ budgetPromptRef }
-								countryCodes={ countryCodes }
-							/>
-						</CampaignAssetsForm>
+						<CreateCampaign
+							onContinue={ handleOnCreateCampaignContinue }
+						/>
 					),
 					onClick: handleStepClick,
 				},
@@ -267,18 +176,11 @@ const SavedServiceBasedMerchantSetupStepper = ( { savedStep } ) => {
 						'Optimize your campaign',
 						'google-listings-and-ads'
 					),
-					content: (
-						<CampaignAssetsForm
-							onSubmit={ handleSubmit }
-							countryCodes={ countryCodes }
-						>
-							<AssetGroup />
-						</CampaignAssetsForm>
-					),
+					content: <OptimizeCampaign onSubmit={ handleSubmit } />,
 				},
 			] }
 		/>
 	);
 };
 
-export default SavedServiceBasedMerchantSetupStepper;
+export default SavedServiceBasedSetupStepper;

@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Fragment } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -18,7 +17,7 @@ const ClaimAccount = () => {
 	useWindowFocusCallbackIntervalEffect( fetchGoogleAdsAccountStatus, 30 );
 
 	return (
-		<Fragment>
+		<>
 			<p className="gla-ads-claim-account-notice">
 				{ __(
 					'Claim your new Google Ads account to complete this setup.',
@@ -29,7 +28,7 @@ const ClaimAccount = () => {
 			<Section.Card.Footer>
 				<DisconnectAccount />
 			</Section.Card.Footer>
-		</Fragment>
+		</>
 	);
 };
 

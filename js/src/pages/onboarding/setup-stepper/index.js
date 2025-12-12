@@ -10,7 +10,7 @@ import AppSpinner from '~/components/app-spinner';
 import SavedSetupStepper from './saved-setup-stepper';
 import useMCSetup from '~/hooks/useMCSetup';
 import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
-import SavedServiceBasedMerchantSetupStepper from './saved-service-based-merchant-setup-stepper';
+import SavedServiceBasedSetupStepper from './saved-service-based-setup-stepper';
 import {
 	STEP_NAME_KEY_MAP,
 	SERVICE_BASED_STEP_NAME_KEY_MAP,
@@ -39,7 +39,7 @@ const SetupStepper = () => {
 
 	if ( serviceBasedMerchant ) {
 		return (
-			<SavedServiceBasedMerchantSetupStepper
+			<SavedServiceBasedSetupStepper
 				savedStep={ SERVICE_BASED_STEP_NAME_KEY_MAP[ step ] }
 			/>
 		);
