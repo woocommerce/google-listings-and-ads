@@ -142,21 +142,9 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 			throw $e;
 		} catch ( Exception $e ) {
 			if ( $e->getPrevious() instanceof BadResponseException ) {
-				/** @var BadResponseException $prev */
-				$prev    = $e->getPrevious();
-				$body    = method_exists( $prev, 'getResponse' ) && $prev->getResponse() ? (string) $prev->getResponse()->getBody() : '';
-				$decoded = json_decode( $body, true );
-				$error   = is_array( $decoded ) ? ( $decoded['error'] ?? [] ) : [];
-				$message = is_array( $error ) && isset( $error['message'] ) ? (string) $error['message'] : $e->getMessage();
-				throw $this->prepare_exception(
-					$message,
-					[
-						'code'  => 'API_ERROR',
-						'error' => $decoded,
-					],
-					$e->getCode() ?: 400
-				);
+				throw $this->prepare_api_error_exception( $e->getPrevious() );
 			}
+
 			throw $this->prepare_exception( $e->getMessage(), [], $e->getCode() );
 		}
 	}
@@ -182,20 +170,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 			throw $e;
 		} catch ( Exception $e ) {
 			if ( $e->getPrevious() instanceof BadResponseException ) {
-				/** @var BadResponseException $prev */
-				$prev    = $e->getPrevious();
-				$body    = method_exists( $prev, 'getResponse' ) && $prev->getResponse() ? (string) $prev->getResponse()->getBody() : '';
-				$decoded = json_decode( $body, true );
-				$error   = is_array( $decoded ) ? ( $decoded['error'] ?? [] ) : [];
-				$message = is_array( $error ) && isset( $error['message'] ) ? (string) $error['message'] : $e->getMessage();
-				throw $this->prepare_exception(
-					$message,
-					[
-						'code'  => 'API_ERROR',
-						'error' => $decoded,
-					],
-					$e->getCode() ?: 400
-				);
+				throw $this->prepare_api_error_exception( $e->getPrevious() );
 			}
 			throw $this->prepare_exception( $e->getMessage(), [], $e->getCode() );
 		}
@@ -581,6 +556,30 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		}
 
 		return new ExceptionWithResponseData( $message, $code ?: 400, null, $data );
+	}
+
+	/**
+	 * Prepares an API error Exception to be thrown with Merchant data.
+	 *
+	 * @param BadResponseException $e The caught exception.
+	 *
+	 * @return ExceptionWithResponseData
+	 */
+	private function prepare_api_error_exception( BadResponseException $e ) {
+		/** @var BadResponseException $prev */
+		$prev    = $e->getPrevious();
+		$body    = method_exists( $prev, 'getResponse' ) && $prev->getResponse() ? (string) $prev->getResponse()->getBody() : '';
+		$decoded = json_decode( $body, true );
+		$error   = is_array( $decoded ) ? ( $decoded['error'] ?? [] ) : [];
+		$message = is_array( $error ) && isset( $error['message'] ) ? (string) $error['message'] : $e->getMessage();
+		return $this->prepare_exception(
+			$message,
+			[
+				'code'  => 'API_ERROR',
+				'error' => $decoded,
+			],
+			$e->getCode() ?: 400
+		);
 	}
 
 	/**
