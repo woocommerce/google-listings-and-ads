@@ -778,13 +778,47 @@ export default class MockRequests {
 		);
 	}
 
-	async mockAdsAccountCreationError( message ) {
+	async mockAdsAccountCreationError() {
 		await this.fulfillAdsAccounts(
 			{
 				code: 'API_ERROR',
-				message: message
-					? message
-					: 'There was an error connecting to Ads account.',
+				message: 'There was an error connecting to Ads account.',
+				data: {
+					code: 400,
+					error: {
+						code: 400,
+						message: 'Request contains an invalid argument.',
+						status: 'INVALID_ARGUMENT',
+						details: [
+							{
+								'@type':
+									'type.googleapis.com/google.ads.googleads.v20.errors.GoogleAdsFailure',
+								errors: [
+									{
+										errorCode: {
+											managerLinkError:
+												'TOO_MANY_MANAGERS',
+										},
+										message:
+											'Client is already linked to too many managers.',
+										trigger: {
+											int64Value: '6530335391',
+										},
+										location: {
+											fieldPathElements: [
+												{
+													fieldName: 'operations',
+													index: 0,
+												},
+											],
+										},
+									},
+								],
+								requestId: 'T-Ayj9dDBlp2VI4yuiq3Kw',
+							},
+						],
+					},
+				},
 			},
 			500,
 			[ 'POST' ]
@@ -961,6 +995,22 @@ export default class MockRequests {
 				message: message
 					? message
 					: 'There was an error connecting to MC account.',
+				data: {
+					code: 400,
+					error: {
+						code: 400,
+						message:
+							'You do not have necessary permissions to perform this action.',
+						errors: [
+							{
+								message:
+									'You do not have necessary permissions to perform this action.',
+								domain: 'global',
+								reason: 'invalid',
+							},
+						],
+					},
+				},
 			},
 			499,
 			[ 'POST' ]

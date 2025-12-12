@@ -158,6 +158,7 @@ test.describe( 'Set up accounts', () => {
 			// If not mocked will fail and render nothing,
 			// as Jetpack is mocked only on the client-side.
 			await setUpAccountsPage.mockGoogleConnected();
+			await setUpAccountsPage.mockContactInformation();
 
 			await setUpAccountsPage.goto();
 		} );
@@ -188,7 +189,7 @@ test.describe( 'Set up accounts', () => {
 
 			await expect(
 				googleAccountCard.getByText(
-					'There was an error connecting to Ads account.'
+					'Client is already linked to too many managers.'
 				)
 			).toBeVisible();
 		} );
@@ -198,7 +199,6 @@ test.describe( 'Set up accounts', () => {
 				setUpAccountsPage.mockJetpackConnected(),
 				setUpAccountsPage.mockMCNotConnected(),
 				setUpAccountsPage.mockAdsAccountConnected(),
-				setUpAccountsPage.mockContactInformation(),
 				setUpAccountsPage.mockAdsStatusClaimed(),
 				setUpAccountsPage.mockMCHasAccounts(),
 				setUpAccountsPage.mockMCCreateAccountWebsiteNotClaimed(),
@@ -215,7 +215,7 @@ test.describe( 'Set up accounts', () => {
 
 			await expect(
 				getMCAccountCard.getByText(
-					'There was an error connecting MC Account.'
+					'You do not have necessary permissions to perform this action.'
 				)
 			).toBeVisible();
 		} );

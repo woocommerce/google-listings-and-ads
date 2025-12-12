@@ -203,7 +203,15 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 					$error   = is_array( $decoded ) ? ( $decoded['error'] ?? [] ) : [];
 					$message = is_array( $error ) && isset( $error['message'] ) ? (string) $error['message'] : $e->getMessage();
 
-					throw new ExceptionWithResponseData( $message, $e->getCode() ?: 400, null, [ 'code' => 'API_ERROR', 'error' => $decoded ] );
+					throw new ExceptionWithResponseData(
+						$message,
+						$e->getCode() ?: 400,
+						null,
+						[
+							'code'  => 'API_ERROR',
+							'error' => $decoded,
+						]
+					);
 				}
 
 				throw $e;
