@@ -45,17 +45,14 @@ const useConnectMCAccount = ( value ) => {
 				return;
 			}
 
-			if ( e?.code === 'API_ERROR' ) {
+			if (
+				e?.code === 'API_ERROR' &&
+				! [ 409, 403 ].includes( e.data?.statusCode )
+			) {
 				receiveDetailedError( ERROR_SLOTS.GOOGLE_MC_CONNECTION, {
 					...e.data.error,
 					title: __( 'Connection Failed', 'google-listings-and-ads' ),
 				} );
-			} else {
-				const message = __(
-					'Unable to connect Merchant Center account. Please try again later.',
-					'google-listings-and-ads'
-				);
-				createNotice( 'error', message );
 			}
 		}
 	};
