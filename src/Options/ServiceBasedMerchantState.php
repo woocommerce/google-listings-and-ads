@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -11,7 +10,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
-use WC_Product;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -20,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\ServiceBasedMerchant
  */
-class ServiceBasedMerchantState implements Service, Registerable, OptionsAwareInterface, TransientsAwareInterface {
+class ServiceBasedMerchantState implements Service, OptionsAwareInterface, TransientsAwareInterface {
 
 	use OptionsAwareTrait;
 	use TransientsAwareTrait;
@@ -38,67 +36,6 @@ class ServiceBasedMerchantState implements Service, Registerable, OptionsAwareIn
 	 * @var int
 	 */
 	private const CACHE_EXPIRATION = HOUR_IN_SECONDS;
-
-	/**
-	 * Register hooks to clear cache when products are updated.
-	 */
-	public function register(): void {
-		// Clear cache when products are added or updated.
-		// Note: woocommerce_update_product passes (int $product_id, WC_Product $product)
-		add_action( 'woocommerce_new_product', [ $this, 'clear_cache_on_product_change' ], 10 );
-		add_action( 'woocommerce_update_product', [ $this, 'clear_cache_on_product_change' ], 10, 2 );
-		add_action( 'woocommerce_new_product_variation', [ $this, 'clear_cache_on_product_change' ], 10 );
-		add_action( 'woocommerce_update_product_variation', [ $this, 'clear_cache_on_product_change' ], 10, 2 );
-
-		// Clear cache when products are deleted or trashed.
-		add_action( 'wp_trash_post', [ $this, 'maybe_clear_cache_on_post_change' ], 10, 2 );
-		add_action( 'before_delete_post', [ $this, 'maybe_clear_cache_on_post_change' ], 10 );
-		add_action( 'deleted_post', [ $this, 'maybe_clear_cache_on_post_change' ], 10 );
-
-		// Clear cache when products are restored from trash.
-		add_action( 'untrashed_post', [ $this, 'maybe_clear_cache_on_post_change' ], 10, 2 );
-
-		// Clear cache when WooCommerce clears product transients.
-		add_action( 'woocommerce_delete_product_transients', [ $this, 'clear_cache_on_product_change' ], 10 );
-	}
-
-	/**
-	 * Clear cache when a product is changed.
-	 *
-	 * @param int|WC_Product  $product_id_or_object Product ID or product object.
-	 * @param WC_Product|null $product Optional product object (passed by woocommerce_update_product hook).
-	 */
-	public function clear_cache_on_product_change( $product_id_or_object, $product = null ): void {
-		// Handle both single parameter (product_id) and two parameters (product_id, product) from hooks
-		if ( $product instanceof WC_Product ) {
-			$product_id = $product->get_id();
-		} elseif ( is_numeric( $product_id_or_object ) ) {
-			$product_id = $product_id_or_object;
-		} else {
-			$product_id = $product_id_or_object->get_id();
-		}
-
-		$this->clear_physical_products_cache();
-		// Delete the option so it gets recalculated on next check, or recalculate now
-		$this->options->delete( OptionsInterface::IS_SERVICE_BASED_MERCHANT );
-		$this->calculate_service_based_merchant();
-	}
-
-	/**
-	 * Clear cache when a post is changed, but only if it's a product.
-	 *
-	 * @param int    $post_id         Post ID.
-	 * @param string $previous_status Optional previous status (passed by wp_trash_post/untrashed_post hooks).
-	 */
-	public function maybe_clear_cache_on_post_change( int $post_id, $previous_status = null ): void {
-		$post_type = get_post_type( $post_id );
-		if ( 'product' === $post_type ) {
-			$this->clear_physical_products_cache();
-			// Delete the option so it gets recalculated on next check, or recalculate now
-			$this->options->delete( OptionsInterface::IS_SERVICE_BASED_MERCHANT );
-			$this->calculate_service_based_merchant();
-		}
-	}
 
 	/**
 	 * Check if the store is service-based.
@@ -128,9 +65,6 @@ class ServiceBasedMerchantState implements Service, Registerable, OptionsAwareIn
 	 * @return bool True if service-based, false otherwise.
 	 */
 	public function calculate_service_based_merchant(): bool {
-		// Clear the cache before calculating to ensure fresh data.
-		$this->clear_physical_products_cache();
-
 		$service_based = ! $this->has_physical_products();
 
 		$this->options->update( OptionsInterface::IS_SERVICE_BASED_MERCHANT, $service_based );
@@ -215,19 +149,7 @@ class ServiceBasedMerchantState implements Service, Registerable, OptionsAwareIn
 	}
 
 	/**
-	 * Clear the cached result of has_physical_products.
-	 *
-	 * This should be called when products are added, updated, or deleted
-	 * to ensure the cache stays accurate.
-	 *
-	 * @return bool True if the cache was cleared, false otherwise.
-	 */
-	public function clear_physical_products_cache(): bool {
-		return $this->transients->delete( TransientsInterface::HAS_PHYSICAL_PRODUCTS );
-	}
-
-	/**
-	 * Reset the service-based merchant status by clearing both the option and cache.
+	 * Reset the service-based merchant status by clearing the option.
 	 *
 	 * This forces a recalculation on the next call to is_service_based_merchant().
 	 *
@@ -235,6 +157,5 @@ class ServiceBasedMerchantState implements Service, Registerable, OptionsAwareIn
 	 */
 	public function reset_service_based_merchant_status(): void {
 		$this->options->delete( OptionsInterface::IS_SERVICE_BASED_MERCHANT );
-		$this->clear_physical_products_cache();
 	}
 }
