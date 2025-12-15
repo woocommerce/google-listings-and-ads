@@ -644,7 +644,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 		$request->setCustomerId( $this->options->get_ads_id() );
 		$request->setMutateOperations( $operations );
 		$responses = $this->client->getGoogleAdsServiceClient()->mutate( $request );
-		foreach ( $responses->getMutateOperationResponses() as $response ) {
+		foreach ( $responses->getMutateOperationResponses() ?? [] as $response ) {
 			if ( 'campaign_result' === $response->getResponse() ) {
 				$campaign_result = $response->getCampaignResult();
 				return $this->parse_campaign_id( $campaign_result->getResourceName() );
