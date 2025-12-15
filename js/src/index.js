@@ -15,6 +15,7 @@ import './css/index.scss';
 import withAdminPageShell from '~/components/withAdminPageShell';
 import './data';
 import { addBaseEventProperties } from '~/utils/tracks';
+import { glaData } from '~/constants';
 
 const Dashboard = lazy( () =>
 	import( /* webpackChunkName: "dashboard" */ './pages/dashboard' )
@@ -81,7 +82,7 @@ const registerPluginAdminPages = () => {
 			__( 'Google for WooCommerce', 'google-listings-and-ads' ),
 		];
 
-		const pluginAdminPages = [
+		let pluginAdminPages = [
 			{
 				breadcrumbs: [ ...initialBreadcrumbs ],
 				container: GetStartedPage,
@@ -168,6 +169,21 @@ const registerPluginAdminPages = () => {
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
 		];
+
+		// When there is no connected MC account, restrict navigation to Ads-related and core onboarding routes only.
+		const hasMC = Boolean( glaData?.mcSetupComplete );
+		if ( ! hasMC ) {
+			const allowedPaths = new Set( [
+				'/google/start',
+				'/google/setup-mc',
+				'/google/setup-ads',
+				'/google/dashboard',
+				'/google/settings',
+			] );
+			pluginAdminPages = pluginAdminPages.filter( ( p ) =>
+				allowedPaths.has( p.path )
+			);
+		}
 
 		pluginAdminPages.forEach( ( page ) => {
 			page.container = withAdminPageShell( page.container );

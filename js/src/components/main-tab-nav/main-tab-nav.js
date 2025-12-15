@@ -8,12 +8,13 @@ import { getNewPath, getPath } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { glaData } from '~/constants';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import AppTabNav from '~/components/app-tab-nav';
 import useMenuEffect from '~/hooks/useMenuEffect';
 import GtinMigrationBanner from '~/components/gtin-migration-banner';
 import { getShippingUrl } from '~/utils/urls';
 
-let tabs = [
+const ALL_TABS = [
 	{
 		key: 'dashboard',
 		title: __( 'Dashboard', 'google-listings-and-ads' ),
@@ -51,21 +52,30 @@ let tabs = [
 	},
 ];
 
-// Hide reports tab.
-if ( ! glaData.enableReports ) {
-	tabs = tabs.filter( ( { key } ) => key !== 'reports' );
-}
-
-const getSelectedTabKey = () => {
+const getSelectedTabKey = ( tabs ) => {
 	const path = getPath();
-
 	return tabs.find( ( el ) => path.includes( el.key ) )?.key;
 };
 
 const MainTabNav = () => {
 	useMenuEffect();
 
-	const selectedKey = getSelectedTabKey();
+	const { hasGoogleMCConnection } = useGoogleMCAccount();
+	const hasMC = hasGoogleMCConnection || glaData.mcSetupComplete;
+
+	// Start with all tabs, apply reports visibility, then service-based merchant restriction.
+	let tabs = ALL_TABS;
+	if ( ! glaData.enableReports ) {
+		tabs = tabs.filter( ( { key } ) => key !== 'reports' );
+	}
+
+	if ( ! hasMC ) {
+		tabs = tabs.filter( ( { key } ) =>
+			[ 'dashboard', 'settings' ].includes( key )
+		);
+	}
+
+	const selectedKey = getSelectedTabKey( tabs );
 
 	return (
 		<>

@@ -23,7 +23,7 @@ import { MerchantCenterAccountInfoCard } from '~/components/google-mc-account-ca
 import Section from '~/components/section';
 import LinkedAccountsSectionWrapper from './linked-accounts-section-wrapper';
 import DisconnectModal, { ALL_ACCOUNTS, ADS_ACCOUNT } from './disconnect-modal';
-import { GOOGLE_ADS_ACCOUNT_STATUS } from '~/constants';
+import { GOOGLE_ADS_ACCOUNT_STATUS, glaData } from '~/constants';
 import { queueRecordGlaEvent } from '~/utils/tracks';
 
 const { CONNECTED, INCOMPLETE } = GOOGLE_ADS_ACCOUNT_STATUS;
@@ -42,14 +42,16 @@ export default function LinkedAccounts() {
 	const adminUrl = useAdminUrl();
 	const { jetpack } = useJetpackAccount();
 	const { google } = useGoogleAccount();
-	const { googleMCAccount } = useGoogleMCAccount();
+	const { googleMCAccount, hasGoogleMCConnection } = useGoogleMCAccount();
 	const { googleAdsAccount } = useGoogleAdsAccount();
+
+	const hasMC = hasGoogleMCConnection || glaData?.mcSetupComplete;
 
 	const isLoading = ! (
 		jetpack &&
 		google &&
-		googleMCAccount &&
-		googleAdsAccount
+		googleAdsAccount &&
+		( hasMC ? googleMCAccount : true )
 	);
 	const hasAdsAccount = [ CONNECTED, INCOMPLETE ].includes(
 		googleAdsAccount?.status
@@ -92,9 +94,11 @@ export default function LinkedAccounts() {
 						googleAccount={ google }
 						hideAccountSwitch
 					/>
-					<MerchantCenterAccountInfoCard
-						googleMCAccount={ googleMCAccount }
-					/>
+					{ hasMC && (
+						<MerchantCenterAccountInfoCard
+							googleMCAccount={ googleMCAccount }
+						/>
+					) }
 					{ hasAdsAccount && (
 						<ConnectedGoogleAdsAccountCard
 							googleAdsAccount={ googleAdsAccount }
