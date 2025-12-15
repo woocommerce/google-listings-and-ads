@@ -4,12 +4,10 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\ChannelVisibilityMetaBox;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\AdminConditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -33,21 +31,15 @@ class MetaBoxInitializer implements Service, Registerable, Conditional {
 	protected $meta_boxes;
 
 	/**
-	 * @var MerchantCenterService
-	 */
-	protected $merchant_center;
-
-	/**
 	 * MetaBoxInitializer constructor.
 	 *
 	 * @param Admin                 $admin
 	 * @param MetaBoxInterface[]    $meta_boxes
 	 * @param MerchantCenterService $merchant_center
 	 */
-	public function __construct( Admin $admin, array $meta_boxes, MerchantCenterService $merchant_center ) {
+	public function __construct( Admin $admin, array $meta_boxes ) {
 		$this->admin           = $admin;
 		$this->meta_boxes      = $meta_boxes;
-		$this->merchant_center = $merchant_center;
 	}
 
 	/**
@@ -61,13 +53,6 @@ class MetaBoxInitializer implements Service, Registerable, Conditional {
 	 * Registers the meta boxes.
 	 */
 	public function register_meta_boxes() {
-		foreach ( $this->meta_boxes as $meta_box ) {
-			// Skip ChannelVisibilityMetaBox if Merchant Center is not connected.
-			if ( $meta_box instanceof ChannelVisibilityMetaBox && ! $this->merchant_center->is_connected() ) {
-				continue;
-			}
-
-			$this->admin->add_meta_box( $meta_box );
-		}
+		array_walk( $this->meta_boxes, [ $this->admin, 'add_meta_box' ] );
 	}
 }
