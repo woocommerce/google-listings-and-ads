@@ -31,14 +31,13 @@ class ConnectionService implements Service, ContainerAwareInterface {
 	public function get_features(): array {
 		try {
 			/** @var Client $client */
-			$client = $this->container->get( Client::class );
-			$result = $client->get( $this->get_connection_url() );
+			$client   = $this->container->get( Client::class );
+			$result   = $client->get( $this->get_connection_url() );
+			$response = json_decode( $result->getBody()->getContents(), true );
 
-			if ( 200 !== $result->getStatusCode() ) {
+			if ( 200 !== $result->getStatusCode() || ! is_array( $response ) ) {
 				throw new Exception( __( 'Unable to connect to the feature flags API', 'google-listings-and-ads' ) );
 			}
-
-			$response = json_decode( $result->getBody()->getContents(), true );
 
 			return apply_filters( 'woocommerce_gla_wcs_feature_flags', $response );
 		} catch ( ClientExceptionInterface $e ) {
