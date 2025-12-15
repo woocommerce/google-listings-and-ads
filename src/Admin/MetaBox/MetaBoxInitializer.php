@@ -35,11 +35,10 @@ class MetaBoxInitializer implements Service, Registerable, Conditional {
 	 *
 	 * @param Admin                 $admin
 	 * @param MetaBoxInterface[]    $meta_boxes
-	 * @param MerchantCenterService $merchant_center
 	 */
 	public function __construct( Admin $admin, array $meta_boxes ) {
-		$this->admin           = $admin;
-		$this->meta_boxes      = $meta_boxes;
+		$this->admin      = $admin;
+		$this->meta_boxes = $meta_boxes;
 	}
 
 	/**
