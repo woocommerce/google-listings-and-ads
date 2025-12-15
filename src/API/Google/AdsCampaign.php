@@ -296,25 +296,6 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function edit_campaign( int $campaign_id, array $params ): int {
 		try {
-			// Check edge case: campaign created with MC but MC is now disconnected.
-			$existing_campaign = $this->get_campaign( $campaign_id );
-			$merchant_id       = $this->options->get_merchant_id();
-
-			// If campaign exists, has a country from shopping_setting, but MC is disconnected, throw error.
-			if ( ! empty( $existing_campaign ) && ! empty( $existing_campaign['country'] ) && $merchant_id === 0 ) {
-				throw new ExceptionWithResponseData(
-					__( 'Cannot edit campaign: This campaign was created with a Merchant Center account, but the account is now disconnected. Please reconnect your Merchant Center account to edit this campaign.', 'google-listings-and-ads' ),
-					400,
-					null,
-					[
-						'errors' => [
-							'MERCHANT_CENTER_DISCONNECTED' => __( 'Merchant Center account is disconnected', 'google-listings-and-ads' ),
-						],
-						'id'     => $campaign_id,
-					]
-				);
-			}
-
 			$operations      = [];
 			$campaign_fields = [];
 
