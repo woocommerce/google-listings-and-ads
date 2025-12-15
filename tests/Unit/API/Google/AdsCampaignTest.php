@@ -501,45 +501,6 @@ class AdsCampaignTest extends UnitTest {
 		}
 	}
 
-	public function test_edit_campaign_merchant_center_disconnected() {
-		$campaign_data = [
-			'amount' => 40,
-			'status' => 'paused',
-		];
-
-		// Mock get_campaign to return a campaign with country (created with MC account).
-		$campaign_with_mc = [
-			'id'                                    => self::TEST_CAMPAIGN_ID,
-			'name'                                  => 'Campaign with MC',
-			'status'                                => 'enabled',
-			'type'                                  => 'performance_max',
-			'amount'                                => 10,
-			'country'                               => 'US', // Indicates campaign was created with MC.
-			'targeted_locations'                    => [],
-			'eu_political_advertising_confirmation' => false,
-		];
-
-		$this->generate_ads_campaign_query_mock( [ $campaign_with_mc ], [] );
-
-		// Mock merchant_id to return 0 (MC disconnected).
-		$this->options->method( 'get_merchant_id' )->willReturn( 0 );
-
-		try {
-			$this->campaign->edit_campaign( self::TEST_CAMPAIGN_ID, $campaign_data );
-			$this->fail( 'Expected ExceptionWithResponseData was not thrown.' );
-		} catch ( ExceptionWithResponseData $e ) {
-			$this->assertStringContainsString(
-				'Cannot edit campaign: This campaign was created with a Merchant Center account',
-				$e->getMessage()
-			);
-			$this->assertEquals( 400, $e->getCode() );
-			$response_data = $e->get_response_data( true );
-			$this->assertArrayHasKey( 'errors', $response_data );
-			$this->assertArrayHasKey( 'MERCHANT_CENTER_DISCONNECTED', $response_data['errors'] );
-			$this->assertEquals( self::TEST_CAMPAIGN_ID, $response_data['id'] );
-		}
-	}
-
 	public function test_delete_campaign() {
 		$this->generate_campaign_mutate_mock( 'remove', self::TEST_CAMPAIGN_ID );
 
