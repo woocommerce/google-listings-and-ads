@@ -294,6 +294,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 			'name',
 			'status',
 			'amount',
+			'eu_political_advertising_confirmation',
 		];
 
 		$fields = array_intersect_key( $this->get_schema_properties(), array_flip( $allowed ) );
@@ -340,41 +341,41 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'id'                 => [
+			'id'                                    => [
 				'type'        => 'integer',
 				'description' => __( 'ID number.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
-			'name'               => [
+			'name'                                  => [
 				'type'              => 'string',
 				'description'       => __( 'Descriptive campaign name.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => false,
 			],
-			'status'             => [
+			'status'                                => [
 				'type'              => 'string',
 				'enum'              => CampaignStatus::labels(),
 				'description'       => __( 'Campaign status.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'type'               => [
+			'type'                                  => [
 				'type'              => 'string',
 				'enum'              => CampaignType::labels(),
 				'description'       => __( 'Campaign type.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'amount'             => [
+			'amount'                                => [
 				'type'              => 'number',
 				'description'       => __( 'Daily budget amount in the local currency.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => true,
 			],
-			'country'            => [
+			'country'                               => [
 				'type'              => 'string',
 				'description'       => __( 'Country code of sale country in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
@@ -382,7 +383,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				'validate_callback' => $this->get_supported_country_code_validate_callback(),
 				'readonly'          => true,
 			],
-			'targeted_locations' => [
+			'targeted_locations'                    => [
 				'type'              => 'array',
 				'description'       => __( 'The locations that an Ads campaign is targeting in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
@@ -394,13 +395,21 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 					'type' => 'string',
 				],
 			],
-			'label'              => [
+			'label'                                 => [
 				'type'              => 'string',
 				'description'       => __( 'The name of the label to assign to the campaign.', 'google-listings-and-ads' ),
 				'context'           => [ 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => false,
 
+			],
+			'eu_political_advertising_confirmation' => [
+				'type'              => 'boolean',
+				'description'       => __( 'Whether the Campaign has political content as defined by Google\'s EU political content policy.', 'google-listings-and-ads' ),
+				'context'           => [ 'view', 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'required'          => false,
+				'default'           => false,
 			],
 		];
 	}

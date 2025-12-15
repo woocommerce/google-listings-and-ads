@@ -237,10 +237,14 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	public function activate_global_site_tag( string $ads_conversion_id ) {
 		if ( $this->gtag_js->is_adding_framework() ) {
 			if ( $this->gtag_js->ga4w_v2 ) {
+				$inline_script  = $this->get_gtag_config( $ads_conversion_id );
+				$inline_script .= "\n" . $this->get_enhanced_conversion_tag();
+
 				$this->wp->wp_add_inline_script(
 					'woocommerce-google-analytics-integration',
-					$this->get_gtag_config( $ads_conversion_id )
+					$inline_script
 				);
+
 			} else {
 				// Legacy code to support Google Analytics for WooCommerce version < 2.0.0.
 				add_filter(

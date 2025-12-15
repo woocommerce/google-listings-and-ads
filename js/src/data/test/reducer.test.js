@@ -422,6 +422,34 @@ describe( 'reducer', () => {
 		} );
 	} );
 
+	describe( 'YouTube account connection', () => {
+		const path = 'mc.accounts.youtube';
+
+		it( 'should return with received YouTube account connection', () => {
+			const action = {
+				type: TYPES.RECEIVE_ACCOUNTS_YOUTUBE,
+				account: {
+					status: 'connected',
+					channel: { id: 'abc', label: 'ABC' },
+				},
+			};
+			const state = reducer( prepareState(), action );
+
+			expect( state ).toHaveProperty( path, action.account );
+		} );
+
+		it( 'should return with default YouTube account connection when getting disconnect action', () => {
+			const originalState = prepareState( path, {
+				status: 'connected',
+				channel: { id: 'abc', label: 'ABC' },
+			} );
+			const action = { type: TYPES.DISCONNECT_ACCOUNTS_YOUTUBE };
+			const state = reducer( originalState, action );
+
+			expect( state ).toHaveProperty( path, get( defaultState, path ) );
+		} );
+	} );
+
 	describe( 'Countries and continents supported by Merchant Center', () => {
 		it( 'should return with received countries and continents', () => {
 			const data = {

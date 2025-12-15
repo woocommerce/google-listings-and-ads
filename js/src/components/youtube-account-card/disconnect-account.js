@@ -25,11 +25,10 @@ const DisconnectAccount = () => {
 	const { disconnectYouTubeAccount } = useAppDispatch();
 	const [ isDisconnecting, setDisconnecting ] = useState( false );
 
-	const handleSwitch = () => {
+	const handleSwitch = async () => {
 		setDisconnecting( true );
-		disconnectYouTubeAccount( true ).catch( () =>
-			setDisconnecting( false )
-		);
+		await disconnectYouTubeAccount();
+		setDisconnecting( false );
 	};
 
 	return (
