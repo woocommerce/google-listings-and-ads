@@ -465,9 +465,6 @@ class AdsCampaignTest extends UnitTest {
 			'status' => 'paused',
 		];
 
-		// Mock get_campaign to return a campaign without country (no MC account).
-		$this->generate_ads_campaign_query_mock( [], [] );
-
 		$this->generate_campaign_mutate_mock( 'update', self::TEST_CAMPAIGN_ID );
 
 		$this->assertEquals(
@@ -480,9 +477,6 @@ class AdsCampaignTest extends UnitTest {
 		$campaign_data = [
 			'amount' => 0.001,
 		];
-
-		// Mock get_campaign to return a campaign without country (no MC account).
-		$this->generate_ads_campaign_query_mock( [], [] );
 
 		$this->generate_campaign_mutate_mock_exception( new ApiException( 'invalid', 3, 'INVALID_ARGUMENT' ) );
 
