@@ -33,8 +33,8 @@ class MetaBoxInitializer implements Service, Registerable, Conditional {
 	/**
 	 * MetaBoxInitializer constructor.
 	 *
-	 * @param Admin                 $admin
-	 * @param MetaBoxInterface[]    $meta_boxes
+	 * @param Admin              $admin
+	 * @param MetaBoxInterface[] $meta_boxes
 	 */
 	public function __construct( Admin $admin, array $meta_boxes ) {
 		$this->admin      = $admin;
