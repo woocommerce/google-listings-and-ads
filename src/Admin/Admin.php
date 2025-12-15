@@ -20,7 +20,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\View\ViewException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\ServiceBasedMerchant\ServiceBasedMerchantState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\Admin\PageController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\ScriptAsset;
 
@@ -130,7 +130,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
-					'version'      => (string) ( file_exists( "{$this->get_root_dir()}/js/build/index.js" ) ? filemtime( "{$this->get_root_dir()}/js/build/index.js" ) : time() ),
+					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/index.js" ),
 				]
 			),
 			$wc_admin_condition
@@ -154,14 +154,14 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 				],
 				'dataViewsScriptUrl'       => add_query_arg(
 					[
-						'version' => (string) ( file_exists( "{$this->get_root_dir()}/js/build/wp-dataviews-shim.js" ) ? filemtime( "{$this->get_root_dir()}/js/build/wp-dataviews-shim.js" ) : time() ),
+						'version' => (string) filemtime( "{$this->get_root_dir()}/js/build/wp-dataviews-shim.js" ),
 					],
 					(
 						new ScriptAsset(
 							'gla-data-views-shim',
 							'js/build/wp-dataviews-shim',
 							[],
-							(string) ( file_exists( "{$this->get_root_dir()}/js/build/wp-dataviews-shim.js" ) ? filemtime( "{$this->get_root_dir()}/js/build/wp-dataviews-shim.js" ) : time() ),
+							(string) filemtime( "{$this->get_root_dir()}/js/build/wp-dataviews-shim.js" ),
 						)
 					)->get_uri(),
 				),
@@ -173,7 +173,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			'google-listings-and-ads-css',
 			'/js/build/index',
 			defined( 'WC_ADMIN_PLUGIN_FILE' ) ? [ 'wc-admin-app' ] : [],
-			(string) ( file_exists( "{$this->get_root_dir()}/js/build/index.css" ) ? filemtime( "{$this->get_root_dir()}/js/build/index.css" ) : time() ),
+			(string) filemtime( "{$this->get_root_dir()}/js/build/index.css" ),
 			$wc_admin_condition
 		) );
 
@@ -189,7 +189,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
-					'version'      => (string) ( file_exists( "{$this->get_root_dir()}/js/build/product-attributes.js" ) ? filemtime( "{$this->get_root_dir()}/js/build/product-attributes.js" ) : time() ),
+					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/product-attributes.js" ),
 				]
 			),
 			$product_condition

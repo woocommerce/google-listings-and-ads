@@ -1,11 +1,11 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\ServiceBasedMerchant;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Options;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\ServiceBasedMerchant\ServiceBasedMerchantState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Helper_Product;
@@ -14,7 +14,7 @@ use WC_Product;
 /**
  * Class ServiceBasedMerchantStateTest
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\ServiceBasedMerchant
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Options
  */
 class ServiceBasedMerchantStateTest extends ContainerAwareUnitTest {
 
