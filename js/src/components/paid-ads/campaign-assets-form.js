@@ -14,8 +14,10 @@ import validateCampaign from '~/components/paid-ads/validateCampaign';
 import validateAssetGroup from '~/components/paid-ads/validateAssetGroup';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
 import useBudgetRecommendation from '~/hooks/useBudgetRecommendation';
+import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import { FILTER_BUDGET_RECOMMENDATIONS } from '~/utils/tracks';
+import round from '~/utils/round';
 
 /**
  * @typedef {import('~/components/types.js').CampaignFormValues} CampaignFormValues
@@ -73,9 +75,52 @@ function injectDailyBudget( values, budgetRecommendation ) {
 			if ( this.level === 'custom' ) {
 				return this.amount;
 			}
+
+			if ( this.level === 'current' ) {
+				return this.currentAmount;
+			}
+
 			return budgetRecommendation[ this.level ].dailyBudget;
 		},
 	} );
+}
+
+function injectUpliftData( budgetRecommendation ) {
+	const currentConversionsValue =
+		budgetRecommendation?.current?.metrics?.conversionsValue;
+
+	if ( ! currentConversionsValue ) {
+		return budgetRecommendation;
+	}
+
+	const validLevelKeys = [ 'high', 'recommended', 'low' ];
+
+	validLevelKeys.forEach( ( level ) => {
+		// Check if budget recommendation and base budget recommendation have valid levels and `conversionsValue` is present within the metrics.
+		if ( budgetRecommendation?.[ level ]?.metrics?.conversionsValue ) {
+			const newConversionsValue =
+				budgetRecommendation[ level ].metrics.conversionsValue;
+
+			Object.defineProperty(
+				budgetRecommendation[ level ].metrics,
+				'uplift',
+				{
+					enumerable: true,
+					value:
+						currentConversionsValue > 0
+							? round(
+									( ( newConversionsValue -
+										currentConversionsValue ) /
+										currentConversionsValue ) *
+										100
+							  )
+							: null,
+				}
+			);
+		}
+	} );
+
+	return budgetRecommendation;
 }
 
 function resolveInitialCampaign(
@@ -89,9 +134,10 @@ function resolveInitialCampaign(
 	};
 
 	if ( values.level !== 'custom' && ! budgetRecommendation[ values.level ] ) {
-		values.level = budgetRecommendation.recommended
-			? 'recommended'
-			: 'custom';
+		values.level =
+			budgetRecommendation.recommended && values.level !== 'current'
+				? 'recommended'
+				: 'current';
 	}
 
 	return injectDailyBudget( values, budgetRecommendation );
@@ -129,9 +175,22 @@ export default function CampaignAssetsForm( {
 		budgetRecommendation?.eventProps
 	);
 
-	if ( ! hasResolved ) {
+	// Check if campaign is being edited and get its budget recommendations.
+	const campaignId = initialCampaign?.id;
+	const isEditing = Boolean( campaignId );
+	const {
+		campaigns: raiseBudgetRecommendations,
+		hasFinishedResolution: hasResolvedRaiseBudgetRecommendations,
+	} = useRaiseBudgetRecommendations( campaignId );
+
+	if ( ! hasResolved || ! hasResolvedRaiseBudgetRecommendations ) {
 		return <AppSpinner />;
 	}
+
+	const selectedBudgetRecommendation =
+		isEditing && raiseBudgetRecommendations.length
+			? injectUpliftData( raiseBudgetRecommendations[ 0 ] )
+			: budgetRecommendation;
 
 	const extendAdapter = ( formContext ) => {
 		const assetGroupErrors = validateAssetGroup( formContext.values );
@@ -139,7 +198,8 @@ export default function CampaignAssetsForm( {
 
 		return {
 			countryCodes,
-			budgetRecommendation,
+			budgetRecommendation: selectedBudgetRecommendation,
+			isEditing,
 			// Currently, the PMax Assets feature in this extension has functional limits, therefore,
 			// it needs to distinguish whether the `assetEntityGroup` is "empty" or not in order to
 			// provide different special business logic.
@@ -187,7 +247,7 @@ export default function CampaignAssetsForm( {
 	};
 
 	const handleChange = function ( ...args ) {
-		injectDailyBudget( args[ 1 ], budgetRecommendation );
+		injectDailyBudget( args[ 1 ], selectedBudgetRecommendation );
 
 		if ( adaptiveFormProps.onChange ) {
 			return adaptiveFormProps.onChange.apply( this, args );
@@ -201,8 +261,9 @@ export default function CampaignAssetsForm( {
 					initialCampaign,
 					{
 						level: 'recommended',
-						amount: budgetRecommendation.recommendedDailyBudget,
+						amount: selectedBudgetRecommendation.recommendedDailyBudget,
 					},
+					selectedBudgetRecommendation,
 					budgetRecommendation
 				),
 				...initialAssetGroup,

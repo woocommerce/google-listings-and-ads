@@ -623,11 +623,11 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_ADS_RECOMMENDATIONS: {
-			const { recommendations, recommendationType } = action;
+			const { recommendations, recommendationTypes } = action;
 
 			return setIn(
 				state,
-				[ 'ads', 'recommendations', recommendationType ],
+				[ 'ads', 'recommendations', recommendationTypes ],
 				recommendations
 			);
 		}

@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Google\GoogleTagGatewayLibrary\Wordpress\Adapter;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -64,6 +65,16 @@ class AdsSetupCompleted implements OptionsAwareInterface, Registerable, Service 
 
 		if ( null === $is_gtg_configured ) {
 			$this->options->update( OptionsInterface::ADS_GTG_ENABLED, $this->features->default_value( Features::GOOGLE_TAG_GATEWAY ) );
+			$conversion_action = $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
+
+			if ( $conversion_action && isset( $conversion_action['conversion_id'] ) ) {
+				$gtag_adapter = Adapter::create();
+				$gtag_adapter->update(
+					[
+						'tagId' => $conversion_action['conversion_id'],
+					]
+				);
+			}
 		}
 
 		$tours = $this->options->get( OptionsInterface::TOURS, [] );

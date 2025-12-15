@@ -1,7 +1,7 @@
 {
 	"name": "google-listings-and-ads",
 	"title": "Google for WooCommerce",
-	"version": "3.4.3",
+	"version": "3.5.0",
 	"description": "Google for WooCommerce",
 	"author": "Automattic",
 	"license": "GPL-3.0-or-later",
@@ -53,7 +53,7 @@
 	"devDependencies": {
 		"@hapi/h2o2": "^10.0.4",
 		"@hapi/hapi": "^21.3.10",
-		"@playwright/test": "^1.45.3",
+		"@playwright/test": "^1.56.1",
 		"@testing-library/dom": "^10.4.0",
 		"@testing-library/jest-dom": "^5.17.0",
 		"@testing-library/react": "^16.0.0",
@@ -77,7 +77,7 @@
 		"react": "^18",
 		"react-dom": "^18",
 		"typescript": "^5.5.4",
-		"woocommerce-grow-jsdoc": "https://gitpkg.now.sh/woocommerce/grow/packages/js/jsdoc?eabdb5c3e6f089499a9bc62ec2e5e2251d7b23ca"
+		"woocommerce-grow-jsdoc": "git+https://github.com/woocommerce/grow#jsdoc-v1"
 	},
 	"overrides": {
 		"@woocommerce/eslint-plugin": {
@@ -148,7 +148,7 @@
 			},
 			{
 				"path": "./js/build/index.js",
-				"maxSize": "18.64 kB"
+				"maxSize": "18.90 kB"
 			},
 			{
 				"path": "./js/build/commons.js",
@@ -168,7 +168,7 @@
 			},
 			{
 				"path": "./google-listings-and-ads.zip",
-				"maxSize": "8.29 mB",
+				"maxSize": "8.57 mB",
 				"compression": "none"
 			}
 		],
