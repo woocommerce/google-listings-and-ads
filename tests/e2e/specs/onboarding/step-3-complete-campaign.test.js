@@ -10,6 +10,7 @@ import SetupBudgetPage from '../../utils/pages/ads-onboarding/setup-budget';
 import CompleteCampaign from '../../utils/pages/onboarding/step-3-complete-campaign';
 import SetupAdsAccountPage from '../../utils/pages/ads-onboarding/setup-ads-accounts';
 import DashboardPage from '../../utils/pages/dashboard';
+import { setOnboardedMerchant } from '../../utils/api';
 import {
 	checkFAQExpandable,
 	getFAQPanelTitle,
@@ -53,6 +54,7 @@ test.describe( 'Complete your campaign', () => {
 		dashboardPage = new DashboardPage( page );
 		completeCampaign = new CompleteCampaign( page );
 		setupAdsAccountPage = new SetupAdsAccountPage( page );
+		await setOnboardedMerchant();
 		await Promise.all( [
 			// Mock Jetpack as connected
 			completeCampaign.mockJetpackConnected(),
