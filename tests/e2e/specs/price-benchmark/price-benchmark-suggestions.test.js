@@ -6,7 +6,7 @@ import { expect, test } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import { clearOnboardedMerchant } from '../../utils/api';
+import { clearOnboardedMerchant, setOnboardedMerchant } from '../../utils/api';
 import priceBenchmarkSuggestionsData from '../../utils/__fixtures__/price-benchmark-suggestions.json';
 import priceBenchmarkProductSuggestionsData from '../../utils/__fixtures__/price-benchmark-product-suggestions.json';
 import PriceBenchmarkPage from '../../utils/pages/price-benchmark';
@@ -38,6 +38,7 @@ test.describe( 'Price Benchmark Page', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		priceBenchmarkPage = new PriceBenchmarkPage( page );
+		await setOnboardedMerchant();
 		await priceBenchmarkPage.mockRequests();
 	} );
 
