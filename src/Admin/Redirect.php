@@ -98,12 +98,12 @@ class Redirect implements Activateable, Service, Registerable, OptionsAwareInter
 		}
 
 		// If setup ISNT complete then redirect from dashboard to onboarding
-		if ( ! $this->merchant_center->is_setup_complete() && $this->is_current_wc_admin_page( self::PATHS['dashboard'] ) ) {
+		if ( ! boolval( $this->options->get( OptionsInterface::ONBOARDING_COMPLETED_AT ) ) && $this->is_current_wc_admin_page( self::PATHS['dashboard'] ) ) {
 			return $this->redirect_to( self::PATHS['get_started'] );
 		}
 
 		// If setup IS complete then redirect from onboarding to dashboard
-		if ( $this->merchant_center->is_setup_complete() && $this->is_current_wc_admin_page( self::PATHS['get_started'] ) ) {
+		if ( boolval( $this->options->get( OptionsInterface::ONBOARDING_COMPLETED_AT ) ) && $this->is_current_wc_admin_page( self::PATHS['get_started'] ) ) {
 			return $this->redirect_to( self::PATHS['dashboard'] );
 		}
 
@@ -117,7 +117,7 @@ class Redirect implements Activateable, Service, Registerable, OptionsAwareInter
 	 */
 	protected function maybe_redirect_after_activation(): bool {
 		// Do not redirect if setup is already complete
-		if ( $this->merchant_center->is_setup_complete() ) {
+		if ( boolval( $this->options->get( OptionsInterface::ONBOARDING_COMPLETED_AT ) ) ) {
 			$this->options->update( self::OPTION, 'no' );
 			return false;
 		}
