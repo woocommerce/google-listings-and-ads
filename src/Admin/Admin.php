@@ -147,7 +147,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 				'dateFormat'               => get_option( 'date_format' ),
 				'timeFormat'               => get_option( 'time_format' ),
 				'siteLogoUrl'              => wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ), 'full' ),
-				'serviceBasedMerchant'     => true, // @TODO: Update with BEE logic.
+				'serviceBasedMerchant'     => $this->service_based_merchant_state->is_service_based_merchant(),
 				'initialWpData'            => [
 					'version' => $this->get_version(),
 					'mcId'    => $this->options->get_merchant_id() ?: null,
@@ -165,8 +165,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 							(string) filemtime( "{$this->get_root_dir()}/js/build/wp-dataviews-shim.js" ),
 						)
 					)->get_uri(),
-				),
-				'serviceBasedMerchant'     => $this->service_based_merchant_state->is_service_based_merchant(),
+				)
 			]
 		);
 
