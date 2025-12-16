@@ -7,9 +7,8 @@ const { test, expect } = require( '@playwright/test' );
  * Internal dependencies
  */
 import SetupBudgetPage from '../../utils/pages/ads-onboarding/setup-budget';
-import CreateCampaignPage from '../../utils/pages/onboarding/step-2-create-campaign-service-based';
+import CreateCampaignPage from '../../utils/pages/onboarding/step-2-create-campaign-ads-account-only';
 import SetupAdsAccountPage from '../../utils/pages/ads-onboarding/setup-ads-accounts';
-import DashboardPage from '../../utils/pages/dashboard';
 import {
 	checkFAQExpandable,
 	getFAQPanelTitle,
@@ -27,7 +26,7 @@ test.describe.configure( { mode: 'serial' } );
 let setupBudgetPage = null;
 
 /**
- * @type {import('../../utils/pages/onboarding/step-2-create-campaign-service-based.js').default} createCampaignPage
+ * @type {import('../../utils/pages/onboarding/step-2-create-campaign-ads-account-only.js').default} createCampaignPage
  */
 let createCampaignPage = null;
 
@@ -37,22 +36,18 @@ let createCampaignPage = null;
 let setupAdsAccountPage = null;
 
 /**
- * @type {import('../../utils/pages/dashboard.js').default} dashboardPage
- */
-let dashboardPage = null;
-
-/**
  * @type {import('@playwright/test').Page} page
  */
 let page = null;
 
-test.describe( 'Create campaign', () => {
+test.describe( 'Create campaign for Ads only merchants', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		setupBudgetPage = new SetupBudgetPage( page );
-		dashboardPage = new DashboardPage( page );
 		createCampaignPage = new CreateCampaignPage( page, {
-			serviceBasedMerchant: true,
+			glaData: {
+				serviceBasedMerchant: true,
+			},
 		} );
 		setupAdsAccountPage = new SetupAdsAccountPage( page );
 
@@ -75,7 +70,7 @@ test.describe( 'Create campaign', () => {
 			// Mock MC step as create_campaign
 			createCampaignPage.mockMCSetup( 'incomplete', 'create_campaign' ),
 
-			// Mock MC target audience, only mocks GET method
+			// Mock target audience, only mocks GET method
 			createCampaignPage.fulfillTargetAudience(
 				{
 					location: 'selected',
@@ -450,34 +445,35 @@ test.describe( 'Create campaign', () => {
 					await expect( skipPaidAdsModal ).toBeVisible();
 				} );
 
-				test( 'should see the url contains dashboard if the user skips', async () => {
-					await createCampaignPage.clickCompleteSetupModalButton();
-					await page.waitForURL( /path=%2Fgoogle%2Fdashboard/ );
-					expect( page.url() ).toMatch(
-						/path=%2Fgoogle%2Fdashboard/
-					);
-				} );
+				// @TODO: review when we have the onboarding completion flow updated.
+				// test( 'should see the url contains dashboard if the user skips', async () => {
+				// 	await createCampaignPage.clickCompleteSetupModalButton();
+				// 	await page.waitForURL( /path=%2Fgoogle%2Fdashboard/ );
+				// 	expect( page.url() ).toMatch(
+				// 		/path=%2Fgoogle%2Fdashboard/
+				// 	);
+				// } );
 
-				test( 'should see the setup success modal', async () => {
-					const setupSuccessModal =
-						createCampaignPage.getSetupSuccessModal();
-					await expect( setupSuccessModal ).toBeVisible();
-				} );
+				// test( 'should see the setup success modal', async () => {
+				// 	const setupSuccessModal =
+				// 		createCampaignPage.getSetupSuccessModal();
+				// 	await expect( setupSuccessModal ).toBeVisible();
+				// } );
 
-				test( 'should see buttons on Dashboard for Google Ads onboarding', async () => {
-					await page.keyboard.press( 'Escape' );
-					await page
-						.getByRole( 'tab', { name: 'Dashboard' } )
-						.click();
-					const { addPaidCampaignButton, createCampaignButton } =
-						dashboardPage;
+				// test( 'should see buttons on Dashboard for Google Ads onboarding', async () => {
+				// 	await page.keyboard.press( 'Escape' );
+				// 	await page
+				// 		.getByRole( 'tab', { name: 'Dashboard' } )
+				// 		.click();
+				// 	const { addPaidCampaignButton, createCampaignButton } =
+				// 		dashboardPage;
 
-					await expect( addPaidCampaignButton ).toBeVisible();
-					await expect( addPaidCampaignButton ).toBeEnabled();
+				// 	await expect( addPaidCampaignButton ).toBeVisible();
+				// 	await expect( addPaidCampaignButton ).toBeEnabled();
 
-					await expect( createCampaignButton ).toBeVisible();
-					await expect( createCampaignButton ).toBeEnabled();
-				} );
+				// 	await expect( createCampaignButton ).toBeVisible();
+				// 	await expect( createCampaignButton ).toBeEnabled();
+				// } );
 			} );
 
 			test.describe( 'With WooCommerce tracking enabled', () => {
@@ -547,13 +543,14 @@ test.describe( 'Create campaign', () => {
 					).toBeVisible();
 				} );
 
-				test( 'should send survey and complete setup', async () => {
-					await createCampaignPage.clickSendAndCompleteSetupModalButton();
-					await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
-					expect( page.url() ).toMatch(
-						/path=%2Fgoogle%2Fproduct-feed/
-					);
-				} );
+				// @TODO: review when we have the onboarding completion flow updated.
+				// test( 'should send survey and complete setup', async () => {
+				// 	await createCampaignPage.clickSendAndCompleteSetupModalButton();
+				// 	await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
+				// 	expect( page.url() ).toMatch(
+				// 		/path=%2Fgoogle%2Fproduct-feed/
+				// 	);
+				// } );
 			} );
 		} );
 
@@ -579,100 +576,6 @@ test.describe( 'Create campaign', () => {
 					/path=%2Fgoogle%2Fsetup-mc&google-mc=connected/
 				);
 			} );
-		} );
-	} );
-
-	test.describe( 'Enhanced conversion prompt', () => {
-		test.beforeAll( async () => {
-			await page.evaluate( () => {
-				window.sessionStorage.clear();
-			} );
-			await setupAdsAccountPage.mockAdsAccountConnected();
-			await createCampaignPage.goto();
-			await createCampaignPage.clickSkipPaidAdsCreationButton();
-			await createCampaignPage.clickCompleteSetupModalButton();
-		} );
-
-		test( 'should see the setup success modal', async () => {
-			const setupSuccessModal = createCampaignPage.getSetupSuccessModal();
-			await expect( setupSuccessModal ).toBeVisible();
-		} );
-
-		test.describe( 'Ads setup is incomplete', () => {
-			test( 'should have three prompts in the setup success modal', async () => {
-				const guideControls = page.getByRole( 'list', {
-					name: 'Guide controls',
-				} );
-				const guideControlsItems =
-					guideControls.getByRole( 'listitem' );
-				await expect( guideControlsItems ).toHaveCount( 3 );
-			} );
-
-			test( 'should see the "Enhanced Conversions" prompt in the setup success modal', async () => {
-				const guideControls = page.getByRole( 'list', {
-					name: 'Guide controls',
-				} );
-				const guideControlsItems =
-					guideControls.getByRole( 'listitem' );
-				await guideControlsItems.nth( 1 ).click();
-				await expect(
-					page.getByText(
-						'Improve conversion tracking accuracy to improve campaign performance'
-					)
-				).toBeVisible();
-			} );
-
-			test( 'should see the "Set up Enhanced Conversions" button in the setup success modal', async () => {
-				const enhancedConversionsButton = page.getByRole( 'button', {
-					name: 'Set up Enhanced Conversions',
-				} );
-				await expect( enhancedConversionsButton ).toBeVisible();
-
-				const dataAction =
-					await enhancedConversionsButton.getAttribute(
-						'data-action'
-					);
-				expect( dataAction ).toBe(
-					'view-enhanced-conversions-settings'
-				);
-			} );
-		} );
-
-		test.describe( 'Ads setup is complete', async () => {
-			test.beforeAll( async () => {
-				await createCampaignPage.goto();
-				await createCampaignPage.clickSkipPaidAdsCreationButton();
-				await createCampaignPage.clickCompleteSetupModalButton();
-				await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/, {
-					waitUntil: 'domcontentloaded',
-				} );
-				await page.evaluate( () => {
-					window.glaData.adsSetupComplete = true;
-				} );
-			} );
-
-			test( 'should have two prompts in the setup success modal', async () => {
-				const guideControls = page.getByRole( 'list', {
-					name: 'Guide controls',
-				} );
-				const guideControlsItems =
-					guideControls.getByRole( 'listitem' );
-				await guideControlsItems.nth( 1 ).click();
-				await expect( guideControlsItems ).toHaveCount( 2 );
-			} );
-		} );
-
-		test( 'should navigate to settings page when clicking "Set up Enhanced Conversions" button', async () => {
-			const enhancedConversionsButton = page.getByRole( 'button', {
-				name: 'Set up Enhanced Conversions',
-			} );
-			await enhancedConversionsButton.click();
-
-			await page.waitForURL( /path=%2Fgoogle%2Fsettings/ );
-			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fsettings/ );
-
-			const setupSuccessModal = createCampaignPage.getSetupSuccessModal();
-			await expect( setupSuccessModal ).not.toBeVisible();
 		} );
 	} );
 

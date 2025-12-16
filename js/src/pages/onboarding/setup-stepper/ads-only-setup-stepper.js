@@ -13,16 +13,18 @@ import { useState, useEffect, useRef } from '@wordpress/element';
 import { useAppDispatch } from '~/data';
 import useAdminUrl from '~/hooks/useAdminUrl';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
-import useTargetAudienceWithSuggestions from '../useTargetAudienceWithSuggestions';
+import useTargetAudienceWithSuggestions from './useTargetAudienceWithSuggestions';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
-import SetupServiceBasedAccounts from '../setup-service-based-accounts';
-import OptimizeCampaign from './optimize-campaign';
-import SetupPaidAds from '../setup-paid-ads';
+import SetupAdsOnlyAccounts from './setup-ads-only-accounts';
+import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
+import AssetGroup, {
+	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
+} from '~/components/paid-ads/asset-group';
+import SetupPaidAds from './setup-paid-ads';
 import convertToAssetGroupUpdateBody from '~/components/paid-ads/convertToAssetGroupUpdateBody';
 import { GUIDE_NAMES } from '~/constants';
-import { ACTION_SUBMIT_CAMPAIGN_AND_ASSETS } from '~/components/paid-ads/asset-group';
-import { SERVICE_BASED_STEP_NAME_KEY_MAP } from '../constants';
+import { SERVICE_BASED_STEP_NAME_KEY_MAP } from './constants';
 import { API_NAMESPACE } from '~/data/constants';
 import { getDashboardUrl } from '~/utils/urls';
 import {
@@ -33,20 +35,21 @@ import {
 } from '~/utils/tracks';
 
 /**
- * Renders the stepper for service-based merchants.
+ * Renders an Ads only stepper which is for service based merchants who only need to set up ads.
  *
  * @param {Object} props React props
  * @param {string} [props.savedStep] A saved step overriding the current step
  * @fires gla_setup_mc with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button', action: 'go-to-step2' | 'go-to-step3' }`.
  * @fires gla_setup_mc with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
  */
-const SavedServiceBasedSetupStepper = ( { savedStep } ) => {
-	const createdCampaignIdRef = useRef( null );
+const AdsOnlySetupStepper = ( { savedStep } ) => {
+	const createdCampaignRef = useRef( null );
 	const adminUrl = useAdminUrl();
 	const [ step, setStep ] = useState( savedStep );
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: suggestedAudience } = useTargetAudienceWithSuggestions();
-	const { targetAudience } = useTargetAudienceFinalCountryCodes();
+	const { data: countryCodes, targetAudience } =
+		useTargetAudienceFinalCountryCodes();
 	const { saveTargetAudience, updateCampaignAssetGroup } = useAppDispatch();
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
@@ -90,7 +93,7 @@ const SavedServiceBasedSetupStepper = ( { savedStep } ) => {
 	};
 
 	const handleSetupPaidAdsComplete = ( payload ) => {
-		createdCampaignIdRef.current = payload.createdCampaign.id;
+		createdCampaignRef.current = payload.createdCampaign;
 		setStep( SERVICE_BASED_STEP_NAME_KEY_MAP.optimize_campaign );
 	};
 
@@ -107,7 +110,7 @@ const SavedServiceBasedSetupStepper = ( { savedStep } ) => {
 
 		try {
 			if ( action === ACTION_SUBMIT_CAMPAIGN_AND_ASSETS ) {
-				const id = createdCampaignIdRef.current;
+				const id = createdCampaignRef.current.id;
 				const path = `${ API_NAMESPACE }/ads/campaigns/asset-groups?campaign_id=${ id }`;
 
 				const [ assetEntityGroup ] = await apiFetch( { path } );
@@ -148,7 +151,7 @@ const SavedServiceBasedSetupStepper = ( { savedStep } ) => {
 						'google-listings-and-ads'
 					),
 					content: (
-						<SetupServiceBasedAccounts
+						<SetupAdsOnlyAccounts
 							onContinue={ handleSetupAccountsContinue }
 						/>
 					),
@@ -176,11 +179,20 @@ const SavedServiceBasedSetupStepper = ( { savedStep } ) => {
 						'Optimize your campaign',
 						'google-listings-and-ads'
 					),
-					content: <OptimizeCampaign onSubmit={ handleSubmit } />,
+					content: (
+						<CampaignAssetsForm
+							onSubmit={ handleSubmit }
+							countryCodes={ countryCodes }
+						>
+							<AssetGroup
+								campaign={ createdCampaignRef.current }
+							/>
+						</CampaignAssetsForm>
+					),
 				},
 			] }
 		/>
 	);
 };
 
-export default SavedServiceBasedSetupStepper;
+export default AdsOnlySetupStepper;

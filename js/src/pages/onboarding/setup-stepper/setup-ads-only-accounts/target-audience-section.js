@@ -19,7 +19,7 @@ import ChooseAudienceSection from '~/components/free-listings/choose-audience-se
  */
 
 /**
- * Renders the Target Audience section form for service based merchant setup.
+ * Renders the Target Audience section form for Ads only merchant setup flow.
  *
  * @param {Object} props
  * @param {TargetAudienceData} props.targetAudience Target audience value data to be initialed the form, if not given AppSpinner will be rendered.} param0

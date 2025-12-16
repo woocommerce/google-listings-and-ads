@@ -41,10 +41,10 @@ export default class MockRequests {
 	/**
 	 * @param {import('@playwright/test').Page} page
 	 */
-	constructor( page, { serviceBasedMerchant = false } = {} ) {
+	constructor( page, { glaData = {} } = {} ) {
 		this.page = page;
 
-		if ( serviceBasedMerchant ) {
+		if ( Object.keys( glaData ).length > 0 ) {
 			this.page.addInitScript( () => {
 				// Use a setter so PHP's inline script goes through our override
 				( () => {
@@ -57,9 +57,7 @@ export default class MockRequests {
 						},
 						set( value ) {
 							// Merge the PHP-injected object with our property
-							_glaData = Object.assign( {}, value, {
-								serviceBasedMerchant: true,
-							} );
+							_glaData = Object.assign( {}, value, glaData );
 						},
 					} );
 				} )();
@@ -1128,6 +1126,76 @@ export default class MockRequests {
 	async fulfillShippingTimes( payload, status = 200 ) {
 		await this.fulfillRequest(
 			/\/wc\/gla\/mc\/shipping\/times\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Fulfills a mock request for the final URL suggestions endpoint for campaign assets.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned.
+	 * @return {Promise<void>} A promise that resolves when the request is fulfilled.
+	 */
+	async fulfillFinalUrlSuggestions( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/assets\/final-url\/suggestions\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Mocks a request for final URL suggestions.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned.
+	 * @param {number} [status=200] - The HTTP status code to be returned. Defaults to 200.
+	 * @return {Promise<void>} A promise that resolves when the request is mocked.
+	 */
+	async mockFinalUrlSuggestions( payload, status = 200 ) {
+		await this.fulfillFinalUrlSuggestions( payload, status );
+	}
+
+	/**
+	 * Fulfills a mock request for the asset suggestions endpoint.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned.
+	 * @param {number} [status=200] - The HTTP status code to be returned.
+	 * @return {Promise<void>} A promise that resolves when the request is fulfilled.
+	 */
+	async fulfillAssetSuggestions( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/assets\/suggestions\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Mocks a request for asset suggestions.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned.
+	 */
+	async mockAssetSuggestions( payload, status = 200 ) {
+		await this.fulfillAssetSuggestions( payload, status );
+	}
+
+	/**
+	 * Fulfills a mock request for the asset groups of a specific campaign.
+	 *
+	 * @param {string|number} campaignId - The ID of the campaign to get asset groups for.
+	 * @param {Object} payload - The mock response payload to be returned.
+	 * @param {number} [status=200] - The HTTP status code to be returned.
+	 * @return {Promise<void>} A promise that resolves when the request is fulfilled.
+	 */
+	async fulfillAssetGroupsForCampaign( campaignId, payload, status = 200 ) {
+		await this.fulfillRequest(
+			new RegExp(
+				`\\/wc\\/gla\\/ads\\/campaigns\\/asset-groups\\?.*campaign_id=${ campaignId }\\b`
+			),
 			payload,
 			status,
 			[ 'GET' ]

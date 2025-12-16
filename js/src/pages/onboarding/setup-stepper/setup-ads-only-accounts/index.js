@@ -26,7 +26,7 @@ import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCo
 import { useAppDispatch } from '~/data';
 import './index.scss';
 
-const SetupServiceBasedAccounts = ( props ) => {
+const SetupAdsOnlyAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
 	const { jetpack } = useJetpackAccount();
 	const { google } = useGoogleAccount();
@@ -124,4 +124,4 @@ const SetupServiceBasedAccounts = ( props ) => {
 	);
 };
 
-export default SetupServiceBasedAccounts;
+export default SetupAdsOnlyAccounts;

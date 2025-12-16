@@ -5,7 +5,7 @@ import { LOAD_STATE } from '../../constants';
 import CompleteCampaign from './step-3-complete-campaign';
 
 /**
- * Configure product listings page object class.
+ * Create campaign page object class.
  */
 export default class CreateCampaign extends CompleteCampaign {
 	/**

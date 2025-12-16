@@ -7,10 +7,10 @@ import { getHistory, getNewPath } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import AppSpinner from '~/components/app-spinner';
+import AdsOnlySetupStepper from './ads-only-setup-stepper';
 import SavedSetupStepper from './saved-setup-stepper';
 import useMCSetup from '~/hooks/useMCSetup';
 import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
-import SavedServiceBasedSetupStepper from './saved-service-based-setup-stepper';
 import {
 	STEP_NAME_KEY_MAP,
 	SERVICE_BASED_STEP_NAME_KEY_MAP,
@@ -39,7 +39,7 @@ const SetupStepper = () => {
 
 	if ( serviceBasedMerchant ) {
 		return (
-			<SavedServiceBasedSetupStepper
+			<AdsOnlySetupStepper
 				savedStep={ SERVICE_BASED_STEP_NAME_KEY_MAP[ step ] }
 			/>
 		);

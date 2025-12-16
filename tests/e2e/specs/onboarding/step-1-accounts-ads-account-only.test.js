@@ -43,11 +43,13 @@ const ADS_ACCOUNTS = [
 	},
 ];
 
-test.describe( 'Set up accounts for service based merchants', () => {
+test.describe( 'Set up accounts for Ads only merchants', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		setUpAccountsPage = new SetUpAccountsPage( page, {
-			serviceBasedMerchant: true,
+			glaData: {
+				serviceBasedMerchant: true,
+			},
 		} );
 	} );
 
