@@ -16,6 +16,25 @@ export default class DashboardPage extends MockRequests {
 	constructor( page ) {
 		super( page );
 		this.page = page;
+
+		// Main tab navigation helper used by tests.
+		this.mainTabNav = {
+			/**
+			 * Get the visible tab titles from the main navigation.
+			 * @return {Promise<string[]>} An array of tab titles in display order.
+			 */
+			getTabTitles: async () => {
+				const tabs = this.page.locator( '.app-tab-nav [role="tab"]' );
+				try {
+					await tabs.first().waitFor( { state: 'visible' } );
+				} catch ( e ) {
+					// ignore if not visible yet; we'll still attempt to read contents
+				}
+				return ( await tabs.allTextContents() ).map( ( t ) =>
+					t.trim()
+				);
+			},
+		};
 		this.googleAdsSummaryCard = this.page.locator(
 			'.gla-dashboard__performance .gla-summary-card:nth-child(1)'
 		);
