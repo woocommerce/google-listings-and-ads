@@ -41,8 +41,30 @@ export default class MockRequests {
 	/**
 	 * @param {import('@playwright/test').Page} page
 	 */
-	constructor( page ) {
+	constructor( page, { serviceBasedMerchant = false } = {} ) {
 		this.page = page;
+
+		if ( serviceBasedMerchant ) {
+			this.page.addInitScript( () => {
+				// Use a setter so PHP's inline script goes through our override
+				( () => {
+					let _glaData;
+
+					Object.defineProperty( window, 'glaData', {
+						configurable: true,
+						get() {
+							return _glaData;
+						},
+						set( value ) {
+							// Merge the PHP-injected object with our property
+							_glaData = Object.assign( {}, value, {
+								serviceBasedMerchant: true,
+							} );
+						},
+					} );
+				} )();
+			} );
+		}
 	}
 
 	/**

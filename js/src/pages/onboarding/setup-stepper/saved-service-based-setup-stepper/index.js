@@ -11,14 +11,16 @@ import { useState, useEffect, useRef } from '@wordpress/element';
  * Internal dependencies
  */
 import { useAppDispatch } from '~/data';
+import useAdminUrl from '~/hooks/useAdminUrl';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import useTargetAudienceWithSuggestions from '../useTargetAudienceWithSuggestions';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import SetupServiceBasedAccounts from '../setup-service-based-accounts';
-import CreateCampaign from './create-campaign';
 import OptimizeCampaign from './optimize-campaign';
+import SetupPaidAds from '../setup-paid-ads';
 import convertToAssetGroupUpdateBody from '~/components/paid-ads/convertToAssetGroupUpdateBody';
+import { GUIDE_NAMES } from '~/constants';
 import { ACTION_SUBMIT_CAMPAIGN_AND_ASSETS } from '~/components/paid-ads/asset-group';
 import { SERVICE_BASED_STEP_NAME_KEY_MAP } from '../constants';
 import { API_NAMESPACE } from '~/data/constants';
@@ -40,14 +42,12 @@ import {
  */
 const SavedServiceBasedSetupStepper = ( { savedStep } ) => {
 	const createdCampaignIdRef = useRef( null );
+	const adminUrl = useAdminUrl();
 	const [ step, setStep ] = useState( savedStep );
-	const [ selectedDailyBudget, setSelectedDailyBudget ] = useState( null );
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: suggestedAudience } = useTargetAudienceWithSuggestions();
-	const { data: countryCodes, targetAudience } =
-		useTargetAudienceFinalCountryCodes();
-	const { saveTargetAudience, createAdsCampaign, updateCampaignAssetGroup } =
-		useAppDispatch();
+	const { targetAudience } = useTargetAudienceFinalCountryCodes();
+	const { saveTargetAudience, updateCampaignAssetGroup } = useAppDispatch();
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_SERVICE_BASED_ONBOARDING,
@@ -89,9 +89,14 @@ const SavedServiceBasedSetupStepper = ( { savedStep } ) => {
 		}
 	};
 
-	const handleOnCreateCampaignContinue = ( budget ) => {
-		setSelectedDailyBudget( budget );
+	const handleSetupPaidAdsComplete = ( payload ) => {
+		createdCampaignIdRef.current = payload.createdCampaign.id;
 		setStep( SERVICE_BASED_STEP_NAME_KEY_MAP.optimize_campaign );
+	};
+
+	const handleSetupPaidAdsSkipped = () => {
+		const query = { guide: GUIDE_NAMES.SUBMISSION_SUCCESS };
+		window.location.href = adminUrl + getDashboardUrl( query );
 	};
 
 	/**
@@ -101,17 +106,6 @@ const SavedServiceBasedSetupStepper = ( { savedStep } ) => {
 		const { action } = enhancer.submitter.dataset;
 
 		try {
-			// Avoid re-creating a new campaign if the subsequent asset group update is failed.
-			if ( createdCampaignIdRef.current === null ) {
-				const { hasConfirmedEuPoliticalContent } = values;
-				const payload = await createAdsCampaign(
-					selectedDailyBudget,
-					countryCodes,
-					hasConfirmedEuPoliticalContent
-				);
-				createdCampaignIdRef.current = payload.createdCampaign.id;
-			}
-
 			if ( action === ACTION_SUBMIT_CAMPAIGN_AND_ASSETS ) {
 				const id = createdCampaignIdRef.current;
 				const path = `${ API_NAMESPACE }/ads/campaigns/asset-groups?campaign_id=${ id }`;
@@ -164,8 +158,14 @@ const SavedServiceBasedSetupStepper = ( { savedStep } ) => {
 					key: SERVICE_BASED_STEP_NAME_KEY_MAP.create_campaign,
 					label: __( 'Create a campaign', 'google-listings-and-ads' ),
 					content: (
-						<CreateCampaign
-							onContinue={ handleOnCreateCampaignContinue }
+						<SetupPaidAds
+							redirectToProductFeed={ false }
+							completeSetupButtonLabel={ __(
+								'Continue',
+								'google-listings-and-ads'
+							) }
+							onSetupComplete={ handleSetupPaidAdsComplete }
+							onSetupSkipped={ handleSetupPaidAdsSkipped }
 						/>
 					),
 					onClick: handleStepClick,

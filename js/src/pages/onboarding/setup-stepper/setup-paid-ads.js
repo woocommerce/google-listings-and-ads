@@ -8,7 +8,6 @@ import { noop } from 'lodash';
 /**
  * Internal dependencies
  */
-import useAdminUrl from '~/hooks/useAdminUrl';
 import useAdsSetupCompleteCallback from '~/hooks/useAdsSetupCompleteCallback';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import AdsCampaign from '~/components/paid-ads/ads-campaign';
@@ -17,11 +16,11 @@ import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import AppButton from '~/components/app-button';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
-import { getProductFeedUrl } from '~/utils/urls';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import { handleApiError } from '~/utils/handleError';
 import { FILTER_BUDGET_RECOMMENDATIONS, recordGlaEvent } from '~/utils/tracks';
 import { useAppDispatch } from '~/data';
-import { GUIDE_NAMES, GOOGLE_ADS_BILLING_STATUS } from '~/constants';
+import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
 import SkipButton from './skip-button';
 import clientSession from './clientSession';
@@ -41,11 +40,22 @@ import AppSpinner from '~/components/app-spinner';
 /**
  * Renders the onboarding step for setting up the paid ads (Google Ads account and paid campaign)
  * or skipping it, and then completing the onboarding flow.
+ * @param {Object} props React props
+ * @param {string}   [props.completeSetupButtonLabel] Label for the complete setup button.
+ * @param {Function} [props.onSetupComplete] Callback fired when the setup is finished.
+ * @param {Function} [props.onSetupSkipped] Callback fired when the setup is skipped.
  * @fires gla_onboarding_complete_with_paid_ads_button_click
  */
-export default function SetupPaidAds() {
+export default function SetupPaidAds( {
+	completeSetupButtonLabel = __(
+		'Complete setup',
+		'google-listings-and-ads'
+	),
+	onSetupComplete = noop,
+	onSetupSkipped = noop,
+} ) {
 	const budgetPromptRef = useRef();
-	const adminUrl = useAdminUrl();
+	const { isReady: isMCAccountReady } = useGoogleMCAccount();
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
@@ -60,8 +70,19 @@ export default function SetupPaidAds() {
 
 	const finishOnboardingSetup = async ( onBeforeFinish = noop ) => {
 		try {
-			await syncSettings();
-			await onBeforeFinish();
+			// Sync settings only if there is a connected MC account.
+			if ( isMCAccountReady ) {
+				await syncSettings();
+			}
+
+			const response = await onBeforeFinish();
+
+			if ( response ) {
+				onSetupComplete( response );
+				return;
+			}
+
+			onSetupSkipped();
 		} catch ( e ) {
 			setCompleting( null );
 
@@ -72,12 +93,7 @@ export default function SetupPaidAds() {
 					'google-listings-and-ads'
 				)
 			);
-			return;
 		}
-
-		// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.
-		const query = { guide: GUIDE_NAMES.SUBMISSION_SUCCESS };
-		window.location.href = adminUrl + getProductFeedUrl( query );
 	};
 
 	const handleSkipCreatePaidAds = async () => {
@@ -121,7 +137,7 @@ export default function SetupPaidAds() {
 				disabled={ disabled }
 				onClick={ handleClick }
 				loading={ completing === ACTION_COMPLETE }
-				text={ __( 'Complete setup', 'google-listings-and-ads' ) }
+				text={ completeSetupButtonLabel }
 			/>
 		);
 	};

@@ -1,56 +1,42 @@
 /**
  * External dependencies
  */
-import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
-import { Stepper } from '@woocommerce/components';
-import { getHistory } from '@woocommerce/navigation';
-import { useState, useEffect, useRef } from '@wordpress/element';
+import { useState, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import { useAppDispatch } from '~/data';
 import useAdminUrl from '~/hooks/useAdminUrl';
-import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
-import useTargetAudienceWithSuggestions from '../useTargetAudienceWithSuggestions';
 import BudgetIncentivePrompt from '~/components/paid-ads/budget-incentive-prompt';
+import useAdsSetupCompleteCallback from '~/hooks/useAdsSetupCompleteCallback';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
-import SetupServiceBasedAccounts from '../setup-service-based-accounts';
 import AdsCampaign from '~/components/paid-ads/ads-campaign';
 import AppButton from '~/components/app-button';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import SkipButton from '../skip-button';
 import clientSession from '../clientSession';
-import convertToAssetGroupUpdateBody from '~/components/paid-ads/convertToAssetGroupUpdateBody';
-import AssetGroup, {
-	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
-} from '~/components/paid-ads/asset-group';
-import { SERVICE_BASED_STEP_NAME_KEY_MAP, ACTION_SKIP } from '../constants';
-import { API_NAMESPACE } from '~/data/constants';
+import { ACTION_SKIP } from '../constants';
 import { GUIDE_NAMES, GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import { getDashboardUrl } from '~/utils/urls';
-import {
-	recordStepperChangeEvent,
-	recordStepContinueEvent,
-	FILTER_ONBOARDING,
-	CONTEXT_SERVICE_BASED_ONBOARDING,
-} from '~/utils/tracks';
+import { CONTEXT_SERVICE_BASED_ONBOARDING } from '~/utils/tracks';
 
+/**
+ * Renders the create campaign step for service based onboarding setup stepper.
+ * @param {Object}   props			  Component props.
+ * @param {Function} props.onContinue Callback fired when the continue button is clicked.
+ */
 const CreateCampaign = ( { onContinue } ) => {
 	const adminUrl = useAdminUrl();
 	const budgetPromptRef = useRef();
+	const [ handleSetupComplete, isSubmitting ] = useAdsSetupCompleteCallback();
 	const [ completing, setCompleting ] = useState( null );
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
-	const isBillingCompleted =
-		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 
-	const paidAds = {
-		...clientSession.getCampaign(),
-	};
+	const isBillingCompleted =
+		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
 	const handleSkipCreatePaidAds = async () => {
 		setCompleting( ACTION_SKIP );
@@ -68,39 +54,51 @@ const CreateCampaign = ( { onContinue } ) => {
 				isValidForm={ isValidForm }
 				onSkipCreatePaidAds={ handleSkipCreatePaidAds }
 				loading={ completing === ACTION_SKIP }
+				disabled={ isSubmitting }
 			/>
 		);
 	};
 
-	const handleOnCreateCampaignContinueClick = ( formContext ) => {
-		const level = formContext.values.level;
-		let userDailyBudget = formContext.values.amount;
-
-		if ( level !== 'custom' ) {
-			userDailyBudget =
-				formContext.adapter.budgetRecommendation[ level ].dailyBudget;
-		}
-
-		onContinue( userDailyBudget );
-	};
-
 	const createContinueButton = ( formContext ) => {
-		const { isValidForm, values } = formContext;
+		const { isValidForm, values, enhancer, adapter } = formContext;
 		const disabled =
 			completing === ACTION_SKIP || ! isValidForm || ! isBillingCompleted;
 
 		const handleClick = () => {
 			budgetPromptRef.current
 				.resolve( values.dailyBudget )
-				.then( ( amount ) => {
-					if ( Number.isFinite( amount ) ) {
+				.then( async ( amount ) => {
+					if ( amount === null ) {
+						const { hasConfirmedEuPoliticalContent, level } =
+							values;
+						const { budgetRecommendation } = adapter;
+
+						try {
+							let dailyBudget = amount;
+
+							if ( level !== 'custom' ) {
+								dailyBudget =
+									budgetRecommendation?.[ level ]
+										?.dailyBudget;
+							}
+
+							handleSetupComplete(
+								dailyBudget,
+								countryCodes,
+								hasConfirmedEuPoliticalContent,
+								( response ) => {
+									onContinue( response?.createdCampaign?.id );
+								}
+							);
+						} catch ( error ) {
+							enhancer.signalFailedSubmission();
+						}
+					} else if ( Number.isFinite( amount ) ) {
 						formContext.setValues( {
 							level: 'custom',
 							amount,
 						} );
 					}
-
-					handleOnCreateCampaignContinueClick( formContext );
 				} );
 		};
 
@@ -109,11 +107,15 @@ const CreateCampaign = ( { onContinue } ) => {
 				isPrimary
 				disabled={ disabled }
 				onClick={ handleClick }
+				loading={ isSubmitting }
 				text={ __( 'Continue', 'google-listings-and-ads' ) }
 			/>
 		);
 	};
 
+	const paidAds = {
+		...clientSession.getCampaign(),
+	};
 	return (
 		<CampaignAssetsForm
 			countryCodes={ countryCodes }

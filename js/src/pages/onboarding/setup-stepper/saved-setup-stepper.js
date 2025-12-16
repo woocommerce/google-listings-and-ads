@@ -9,6 +9,7 @@ import { useState, useEffect } from '@wordpress/element';
  * Internal dependencies
  */
 import { useAppDispatch } from '~/data';
+import useAdminUrl from '~/hooks/useAdminUrl';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import useTargetAudienceWithSuggestions from './useTargetAudienceWithSuggestions';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
@@ -22,6 +23,8 @@ import SetupAccounts from './setup-accounts';
 import SetupListings from './setup-listings';
 import SetupPaidAds from './setup-paid-ads';
 import { STEP_NAME_KEY_MAP } from './constants';
+import { GUIDE_NAMES } from '~/constants';
+import { getProductFeedUrl } from '~/utils/urls';
 import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
@@ -37,7 +40,7 @@ import {
  */
 const SavedSetupStepper = ( { savedStep } ) => {
 	const [ step, setStep ] = useState( savedStep );
-
+	const adminUrl = useAdminUrl();
 	const { settings, saveSettings } = useSettings();
 	const { data: suggestedAudience } = useTargetAudienceWithSuggestions();
 	const { targetAudience, getFinalCountries } =
@@ -110,6 +113,11 @@ const SavedSetupStepper = ( { savedStep } ) => {
 			recordStepperChangeEvent( 'gla_setup_mc', stepKey );
 			setStep( stepKey );
 		}
+	};
+
+	const redirectToProductFeed = () => {
+		const query = { guide: GUIDE_NAMES.SUBMISSION_SUCCESS };
+		window.location.href = adminUrl + getProductFeedUrl( query );
 	};
 
 	/**
@@ -203,7 +211,12 @@ const SavedSetupStepper = ( { savedStep } ) => {
 				{
 					key: STEP_NAME_KEY_MAP.paid_ads,
 					label: __( 'Create a campaign', 'google-listings-and-ads' ),
-					content: <SetupPaidAds />,
+					content: (
+						<SetupPaidAds
+							onSetupComplete={ redirectToProductFeed }
+							onSetupSkipped={ redirectToProductFeed }
+						/>
+					),
 					onClick: handleStepClick,
 				},
 			] }
