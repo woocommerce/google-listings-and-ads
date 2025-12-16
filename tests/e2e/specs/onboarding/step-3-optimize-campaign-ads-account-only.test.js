@@ -9,7 +9,6 @@ const { test, expect } = require( '@playwright/test' );
 import SetupBudgetPage from '../../utils/pages/ads-onboarding/setup-budget';
 import CreateCampaignPage from '../../utils/pages/onboarding/step-2-create-campaign-ads-account-only';
 import SetupAdsAccountPage from '../../utils/pages/ads-onboarding/setup-ads-accounts';
-import DashboardPage from '../../utils/pages/dashboard';
 import OptimizeCampaignPage from '../../utils/pages/onboarding/step-3-optimize-campaign-ads-account-only';
 
 test.use( { storageState: process.env.ADMINSTATE } );
@@ -30,11 +29,6 @@ let createCampaignPage = null;
  * @type {import('../../utils/pages/ads-onboarding/setup-ads-accounts.js').default} setupAdsAccountPage
  */
 let setupAdsAccountPage = null;
-
-/**
- * @type {import('../../utils/pages/dashboard.js').default} dashboardPage
- */
-const dashboardPage = null;
 
 /**
  * @type {import('../../utils/pages/onboarding/step-3-optimize-campaign-ads-account-only.js').default} optimizeCampaignPage
