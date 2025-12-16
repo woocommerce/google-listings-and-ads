@@ -177,5 +177,36 @@ test.describe( 'Settings', () => {
 				).toBeVisible();
 			} );
 		} );
+
+		test.describe( 'Service Based Merchants Setup', () => {
+			test.beforeAll( async () => {
+				await settingsPage.mockMCNotConnected();
+				await settingsPage.goto();
+
+				await page.evaluate( () => {
+					window.glaData.serviceBasedMerchant = true;
+					window.glaData.mcSetupComplete = false;
+				} );
+			} );
+
+			test.afterAll( async () => {
+				await clearOnboardedMerchant();
+				await page.close();
+			} );
+
+			test( 'should not show Google Merchant Center account card', async () => {
+				// There should not be a `gla-account-card` with text 'Google Merchant Center'.
+				const gmcCard = page.locator(
+					'.gla-account-card:has-text("Google Merchant Center")'
+				);
+				await expect( gmcCard ).not.toBeVisible();
+			} );
+
+			test( 'should not show the tax rate setup section', async () => {
+				await expect(
+					page.getByText( 'Tax rate (required for U.S. only)' )
+				).not.toBeVisible();
+			} );
+		} );
 	} );
 } );
