@@ -44,11 +44,6 @@ test.describe( 'Limited UI elements for Service-based Merchants', () => {
 	test.afterAll( async () => {
 		await clearOnboardedMerchant();
 		await page.close();
-
-		await dashboardPage.goto();
-		await page.evaluate( () => {
-			window.glaData.mcSetupComplete = true;
-		} );
 	} );
 
 	test.describe( 'Should display limited elements', () => {
