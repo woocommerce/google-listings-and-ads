@@ -197,9 +197,11 @@ test.describe( 'Settings', () => {
 
 			test( 'should show the message that Google Ads account is not connected', async () => {
 				await expect(
-					page.getByText(
-						'Connect your Google Ads account to enable Enhanced Conversions data and Google Tag Gateway.'
-					)
+					page
+						.getByText(
+							'Connect your Google Ads account to enable Enhanced Conversions data and Google Tag Gateway.'
+						)
+						.first()
 				).toBeVisible();
 			} );
 
@@ -221,6 +223,32 @@ test.describe( 'Settings', () => {
 					await expect( checkbox ).toBeDisabled();
 				} );
 			} );
+		} );
+
+		test( 'When GTG feature flag is off, Google Tag Gateway setting should not be rendered', async () => {
+			await page.addInitScript( () => {
+				let internalGlaData;
+
+				// Intercept all future assignments to window.glaData
+				Object.defineProperty( window, 'glaData', {
+					configurable: true,
+					get() {
+						return internalGlaData;
+					},
+					set( value ) {
+						value = value || {};
+						value.enabledFeatures = [];
+						internalGlaData = value;
+					},
+				} );
+			} );
+			await settingsPage.goto();
+
+			await expect(
+				settingsPage.getEnhancedConversionsCheckbox()
+			).toBeVisible();
+			const checkbox = settingsPage.getGoogleTagGatewayCheckbox();
+			await expect( checkbox ).not.toBeVisible();
 		} );
 	} );
 } );
