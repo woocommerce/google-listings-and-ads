@@ -165,7 +165,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 							(string) filemtime( "{$this->get_root_dir()}/js/build/wp-dataviews-shim.js" ),
 						)
 					)->get_uri(),
-				)
+				),
 			]
 		);
 
