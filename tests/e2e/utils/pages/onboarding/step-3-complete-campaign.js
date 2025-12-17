@@ -11,8 +11,8 @@ export default class CompleteCampaign extends MockRequests {
 	/**
 	 * @param {import('@playwright/test').Page} page
 	 */
-	constructor( page, { serviceBasedMerchant = false } = {} ) {
-		super( page, { serviceBasedMerchant } );
+	constructor( page, { glaData = {} } = {} ) {
+		super( page, { glaData } );
 		this.page = page;
 	}
 

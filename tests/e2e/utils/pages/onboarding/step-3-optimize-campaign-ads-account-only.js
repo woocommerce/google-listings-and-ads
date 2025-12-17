@@ -11,8 +11,8 @@ export default class OptimizeCampaign extends MockRequests {
 	/**
 	 * @param {import('@playwright/test').Page} page
 	 */
-	constructor( page, { serviceBasedMerchant = false } = {} ) {
-		super( page, { serviceBasedMerchant } );
+	constructor( page ) {
+		super( page, { glaData: { serviceBasedMerchant: true } } );
 		this.page = page;
 	}
 

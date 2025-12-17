@@ -12,7 +12,7 @@ export default class CreateCampaign extends CompleteCampaign {
 	 * @param {import('@playwright/test').Page} page
 	 */
 	constructor( page ) {
-		super( page, { serviceBasedMerchant: true } );
+		super( page, { glaData: { serviceBasedMerchant: true } } );
 		this.page = page;
 	}
 

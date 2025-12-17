@@ -43,25 +43,17 @@ export default class MockRequests {
 	 */
 	constructor( page, { glaData = {} } = {} ) {
 		this.page = page;
-
 		if ( Object.keys( glaData ).length > 0 ) {
-			this.page.addInitScript( () => {
-				// Use a setter so PHP's inline script goes through our override
-				( () => {
-					let _glaData;
-
-					Object.defineProperty( window, 'glaData', {
-						configurable: true,
-						get() {
-							return _glaData;
-						},
-						set( value ) {
-							// Merge the PHP-injected object with our property
-							_glaData = Object.assign( {}, value, glaData );
-						},
-					} );
-				} )();
-			} );
+			this.page.addInitScript( ( injectedGlaData ) => {
+				let _glaData;
+				Object.defineProperty( window, 'glaData', {
+					configurable: true,
+					get: () => _glaData,
+					set: ( value ) => {
+						_glaData = { ...( value || {} ), ...injectedGlaData };
+					},
+				} );
+			}, glaData );
 		}
 	}
 
