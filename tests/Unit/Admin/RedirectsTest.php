@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\Admin\PageController;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class RedirectsTest extends TestCase {
@@ -43,7 +44,7 @@ class RedirectsTest extends TestCase {
 
 	/**
 	 * Test `maybe_redirect` to confirm that merchant is only redirected to onboarding if:
-	 * 1. Merchant center setup is not complete
+	 * 1. Onboarding is not complete
 	 * 2. They are attempting to access the dashboard
 	 *
 	 * @return void
@@ -51,25 +52,38 @@ class RedirectsTest extends TestCase {
 	public function test_maybe_redirect_to_onboarding(): void {
 		$redirect_instance = $this->get_redirect_instance( [ 'is_current_wc_admin_page', 'redirect_to' ] );
 
-		$this->merchant_center->method( 'is_setup_complete' )
-			->willReturn( false );
+		// Set up options mock: onboarding not complete, no redirect flag set
+		$this->options->method( 'get' )
+			->willReturnCallback(
+				function ( $name ) {
+					if ( $name === OptionsInterface::ONBOARDING_COMPLETED_AT ) {
+						return false; // Onboarding not complete
+					}
+					if ( $name === OptionsInterface::REDIRECT_TO_ONBOARDING ) {
+						return 'no'; // No redirect flag
+					}
+					return null;
+				}
+			);
 
-		$this->assertFalse( $redirect_instance->maybe_redirect() );
-
+		// Set up page check: on dashboard page
 		$redirect_instance->method( 'is_current_wc_admin_page' )
-			->with( Dashboard::PATH )
-			->willReturn( true );
+			->willReturnCallback(
+				function ( $path ) {
+					return $path === Dashboard::PATH;
+				}
+			);
 
 		$redirect_instance->expects( $this->once() )
 			->method( 'redirect_to' )
 			->with( GetStarted::PATH );
 
-		$this->assertNull( $redirect_instance->maybe_redirect() );
+		$redirect_instance->maybe_redirect();
 	}
 
 	/**
 	 * Test `maybe_redirect` to confirm that merchant is only redirected to the dashboard if:
-	 * 1. Merchant center setup is complete
+	 * 1. Onboarding is complete
 	 * 2. They are attempting to access the onboarding screen
 	 *
 	 * @return void
@@ -77,20 +91,150 @@ class RedirectsTest extends TestCase {
 	public function test_maybe_redirect_to_dashboard(): void {
 		$redirect_instance = $this->get_redirect_instance( [ 'is_current_wc_admin_page', 'redirect_to' ] );
 
-		$this->merchant_center->method( 'is_setup_complete' )
-			->willReturn( true );
+		// Set up options mock: onboarding complete, no redirect flag set
+		$this->options->method( 'get' )
+			->willReturnCallback(
+				function ( $name ) {
+					if ( $name === OptionsInterface::ONBOARDING_COMPLETED_AT ) {
+						return time(); // Onboarding complete (truthy timestamp)
+					}
+					if ( $name === OptionsInterface::REDIRECT_TO_ONBOARDING ) {
+						return 'no'; // No redirect flag
+					}
+					return null;
+				}
+			);
 
-		$this->assertFalse( $redirect_instance->maybe_redirect() );
-
+		// Set up page check: not on dashboard, but on get_started page
 		$redirect_instance->method( 'is_current_wc_admin_page' )
-			->with( GetStarted::PATH )
-			->willReturn( true );
+			->willReturnCallback(
+				function ( $path ) {
+					if ( $path === Dashboard::PATH ) {
+						return false; // Not on dashboard
+					}
+					if ( $path === GetStarted::PATH ) {
+						return true; // On get_started page
+					}
+					return false;
+				}
+			);
 
 		$redirect_instance->expects( $this->once() )
 			->method( 'redirect_to' )
 			->with( Dashboard::PATH );
 
 		$this->assertNull( $redirect_instance->maybe_redirect() );
+	}
+
+	/**
+	 * Test `maybe_redirect_after_activation` when onboarding is already complete.
+	 * Should not redirect and should clear the redirect flag.
+	 *
+	 * @return void
+	 */
+	public function test_maybe_redirect_after_activation_onboarding_complete(): void {
+		$redirect_instance = $this->get_redirect_instance( [ 'is_current_wc_admin_page', 'redirect_to' ] );
+
+		// Set up options mock: onboarding complete, redirect flag set
+		$this->options->method( 'get' )
+			->willReturnCallback(
+				function ( $name ) {
+					if ( $name === OptionsInterface::ONBOARDING_COMPLETED_AT ) {
+						return time(); // Onboarding complete
+					}
+					if ( $name === OptionsInterface::REDIRECT_TO_ONBOARDING ) {
+						return 'yes'; // Redirect flag set
+					}
+					return null;
+				}
+			);
+
+		// Should update the redirect flag to 'no'
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::REDIRECT_TO_ONBOARDING, 'no' );
+
+		// Should not redirect
+		$redirect_instance->expects( $this->never() )
+			->method( 'redirect_to' );
+
+		$this->assertFalse( $redirect_instance->maybe_redirect() );
+	}
+
+	/**
+	 * Test `maybe_redirect_after_activation` when already on get_started page.
+	 * Should not redirect and should clear the redirect flag.
+	 *
+	 * @return void
+	 */
+	public function test_maybe_redirect_after_activation_on_get_started_page(): void {
+		$redirect_instance = $this->get_redirect_instance( [ 'is_current_wc_admin_page', 'redirect_to' ] );
+
+		// Set up options mock: onboarding not complete, redirect flag set
+		$this->options->method( 'get' )
+			->willReturnCallback(
+				function ( $name ) {
+					if ( $name === OptionsInterface::ONBOARDING_COMPLETED_AT ) {
+						return false; // Onboarding not complete
+					}
+					if ( $name === OptionsInterface::REDIRECT_TO_ONBOARDING ) {
+						return 'yes'; // Redirect flag set
+					}
+					return null;
+				}
+			);
+
+		// Set up page check: on get_started page
+		$redirect_instance->method( 'is_current_wc_admin_page' )
+			->with( GetStarted::PATH )
+			->willReturn( true );
+
+		// Should update the redirect flag to 'no'
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::REDIRECT_TO_ONBOARDING, 'no' );
+
+		// Should not redirect
+		$redirect_instance->expects( $this->never() )
+			->method( 'redirect_to' );
+
+		$this->assertFalse( $redirect_instance->maybe_redirect() );
+	}
+
+	/**
+	 * Test `maybe_redirect_after_activation` when onboarding is not complete and not on get_started page.
+	 * Should redirect to get_started page.
+	 *
+	 * @return void
+	 */
+	public function test_maybe_redirect_after_activation_redirects_to_onboarding(): void {
+		$redirect_instance = $this->get_redirect_instance( [ 'is_current_wc_admin_page', 'redirect_to' ] );
+
+		// Set up options mock: onboarding not complete, redirect flag set
+		$this->options->method( 'get' )
+			->willReturnCallback(
+				function ( $name ) {
+					if ( $name === OptionsInterface::ONBOARDING_COMPLETED_AT ) {
+						return false; // Onboarding not complete
+					}
+					if ( $name === OptionsInterface::REDIRECT_TO_ONBOARDING ) {
+						return 'yes'; // Redirect flag set
+					}
+					return null;
+				}
+			);
+
+		// Set up page check: not on get_started page
+		$redirect_instance->method( 'is_current_wc_admin_page' )
+			->with( GetStarted::PATH )
+			->willReturn( false );
+
+		// Should redirect to get_started
+		$redirect_instance->expects( $this->once() )
+			->method( 'redirect_to' )
+			->with( GetStarted::PATH );
+
+		$this->assertTrue( $redirect_instance->maybe_redirect() );
 	}
 
 	/**

@@ -26,7 +26,7 @@ class OnboardingController extends BaseController {
 			'google/onboarding/complete',
 			[
 				[
-					'methods'             => TransportMethods::CREATABLE, 
+					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->get_complete_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
