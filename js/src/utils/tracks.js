@@ -43,7 +43,7 @@ filterPropertiesMap.set( FILTER_BUDGET_RECOMMENDATIONS, [
  */
 export const CONTEXT_EXTENSION_ONBOARDING = 'setup-mc';
 export const CONTEXT_ADS_ONBOARDING = 'setup-ads';
-export const CONTEXT_SERVICE_BASED_ONBOARDING = 'setup-service-based';
+export const CONTEXT_ADS_ONLY_ONBOARDING = 'setup-ads-only';
 
 /**
  * When table pagination is changed by entering page via "Go to page" input.

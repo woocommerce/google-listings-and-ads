@@ -54,8 +54,9 @@ export default function useAdsSetupCompleteCallback() {
 
 				return payload;
 			} catch ( error ) {
-				setLoading( false );
 				throw error;
+			} finally {
+				setLoading( false );
 			}
 		},
 		[ createAdsCampaign, completeAdsSetup ]

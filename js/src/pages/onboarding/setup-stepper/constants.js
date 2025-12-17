@@ -6,7 +6,7 @@ export const STEP_NAME_KEY_MAP = {
 	paid_ads: '3',
 };
 
-export const SERVICE_BASED_STEP_NAME_KEY_MAP = {
+export const ADS_ONLY_STEP_NAME_KEY_MAP = {
 	accounts: '1',
 	create_campaign: '2',
 	optimize_campaign: '3',

@@ -23,14 +23,14 @@ const faqItems = [
 ];
 
 /**
- * @fires gla_faq with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-wp-account', action: 'expand' }`.
- * @fires gla_faq with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-wp-account', action: 'collapse' }`.
+ * @fires gla_faq with `{ context: 'setup-ads-only', id: 'why-do-i-need-a-wp-account', action: 'expand' }`.
+ * @fires gla_faq with `{ context: 'setup-ads-only', id: 'why-do-i-need-a-wp-account', action: 'collapse' }`.
  */
 const Faqs = () => {
 	return (
 		<FaqsPanel
 			trackName="gla_faq"
-			context="setup-service-based-accounts"
+			context="setup-ads-only"
 			faqItems={ faqItems }
 		/>
 	);

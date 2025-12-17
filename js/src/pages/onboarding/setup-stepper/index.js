@@ -11,10 +11,7 @@ import AdsOnlySetupStepper from './ads-only-setup-stepper';
 import SavedSetupStepper from './saved-setup-stepper';
 import useMCSetup from '~/hooks/useMCSetup';
 import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
-import {
-	STEP_NAME_KEY_MAP,
-	SERVICE_BASED_STEP_NAME_KEY_MAP,
-} from './constants';
+import { STEP_NAME_KEY_MAP, ADS_ONLY_STEP_NAME_KEY_MAP } from './constants';
 
 const SetupStepper = () => {
 	const { hasFinishedResolution, data: mcSetup } = useMCSetup();
@@ -40,7 +37,10 @@ const SetupStepper = () => {
 	if ( serviceBasedMerchant ) {
 		return (
 			<AdsOnlySetupStepper
-				savedStep={ SERVICE_BASED_STEP_NAME_KEY_MAP[ step ] }
+				savedStep={
+					ADS_ONLY_STEP_NAME_KEY_MAP[ step ] ||
+					ADS_ONLY_STEP_NAME_KEY_MAP.accounts
+				}
 			/>
 		);
 	}

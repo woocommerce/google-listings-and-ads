@@ -41,18 +41,20 @@ import AppSpinner from '~/components/app-spinner';
  * Renders the onboarding step for setting up the paid ads (Google Ads account and paid campaign)
  * or skipping it, and then completing the onboarding flow.
  * @param {Object} props React props
- * @param {string}   [props.completeSetupButtonLabel] Label for the complete setup button.
+ * @param {'setup-mc'|'setup-ads-only'} props.context A context indicating which page this component is used on.
  * @param {Function} [props.onSetupComplete] Callback fired when the setup is finished.
  * @param {Function} [props.onSetupSkipped] Callback fired when the setup is skipped.
+ * @param {string}   [props.completeSetupButtonLabel] Label for the complete setup button.
  * @fires gla_onboarding_complete_with_paid_ads_button_click
  */
 export default function SetupPaidAds( {
+	context = 'setup-mc',
+	onSetupComplete = noop,
+	onSetupSkipped = noop,
 	completeSetupButtonLabel = __(
 		'Complete setup',
 		'google-listings-and-ads'
 	),
-	onSetupComplete = noop,
-	onSetupSkipped = noop,
 } ) {
 	const budgetPromptRef = useRef();
 	const { isReady: isMCAccountReady } = useGoogleMCAccount();
@@ -189,7 +191,7 @@ export default function SetupPaidAds( {
 				) }
 				continueButton={ createContinueButton }
 				skipButton={ createSkipButton }
-				context="setup-mc"
+				context={ context }
 			/>
 			<BudgetIncentivePrompt
 				ref={ budgetPromptRef }

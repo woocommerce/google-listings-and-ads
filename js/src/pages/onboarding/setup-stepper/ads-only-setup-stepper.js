@@ -24,14 +24,14 @@ import AssetGroup, {
 import SetupPaidAds from './setup-paid-ads';
 import convertToAssetGroupUpdateBody from '~/components/paid-ads/convertToAssetGroupUpdateBody';
 import { GUIDE_NAMES } from '~/constants';
-import { SERVICE_BASED_STEP_NAME_KEY_MAP } from './constants';
+import { ADS_ONLY_STEP_NAME_KEY_MAP } from './constants';
 import { API_NAMESPACE } from '~/data/constants';
 import { getDashboardUrl } from '~/utils/urls';
 import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
 	FILTER_ONBOARDING,
-	CONTEXT_SERVICE_BASED_ONBOARDING,
+	CONTEXT_ADS_ONLY_ONBOARDING,
 } from '~/utils/tracks';
 
 /**
@@ -53,7 +53,7 @@ const AdsOnlySetupStepper = ( { savedStep } ) => {
 	const { saveTargetAudience, updateCampaignAssetGroup } = useAppDispatch();
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
-		context: CONTEXT_SERVICE_BASED_ONBOARDING,
+		context: CONTEXT_ADS_ONLY_ONBOARDING,
 		step,
 	} );
 
@@ -81,7 +81,7 @@ const AdsOnlySetupStepper = ( { savedStep } ) => {
 	};
 
 	const handleSetupAccountsContinue = () => {
-		continueStep( SERVICE_BASED_STEP_NAME_KEY_MAP.create_campaign );
+		continueStep( ADS_ONLY_STEP_NAME_KEY_MAP.create_campaign );
 	};
 
 	const handleStepClick = ( stepKey ) => {
@@ -94,7 +94,7 @@ const AdsOnlySetupStepper = ( { savedStep } ) => {
 
 	const handleSetupPaidAdsComplete = ( payload ) => {
 		createdCampaignRef.current = payload.createdCampaign;
-		setStep( SERVICE_BASED_STEP_NAME_KEY_MAP.optimize_campaign );
+		setStep( ADS_ONLY_STEP_NAME_KEY_MAP.optimize_campaign );
 	};
 
 	const handleSetupPaidAdsSkipped = () => {
@@ -145,7 +145,7 @@ const AdsOnlySetupStepper = ( { savedStep } ) => {
 			currentStep={ step }
 			steps={ [
 				{
-					key: SERVICE_BASED_STEP_NAME_KEY_MAP.accounts,
+					key: ADS_ONLY_STEP_NAME_KEY_MAP.accounts,
 					label: __(
 						'Set up your accounts',
 						'google-listings-and-ads'
@@ -158,23 +158,23 @@ const AdsOnlySetupStepper = ( { savedStep } ) => {
 					onClick: handleStepClick,
 				},
 				{
-					key: SERVICE_BASED_STEP_NAME_KEY_MAP.create_campaign,
+					key: ADS_ONLY_STEP_NAME_KEY_MAP.create_campaign,
 					label: __( 'Create a campaign', 'google-listings-and-ads' ),
 					content: (
 						<SetupPaidAds
-							redirectToProductFeed={ false }
+							context={ CONTEXT_ADS_ONLY_ONBOARDING }
+							onSetupComplete={ handleSetupPaidAdsComplete }
+							onSetupSkipped={ handleSetupPaidAdsSkipped }
 							completeSetupButtonLabel={ __(
 								'Continue',
 								'google-listings-and-ads'
 							) }
-							onSetupComplete={ handleSetupPaidAdsComplete }
-							onSetupSkipped={ handleSetupPaidAdsSkipped }
 						/>
 					),
 					onClick: handleStepClick,
 				},
 				{
-					key: SERVICE_BASED_STEP_NAME_KEY_MAP.optimize_campaign,
+					key: ADS_ONLY_STEP_NAME_KEY_MAP.optimize_campaign,
 					label: __(
 						'Optimize your campaign',
 						'google-listings-and-ads'
