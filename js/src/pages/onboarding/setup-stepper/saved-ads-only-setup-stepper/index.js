@@ -13,10 +13,10 @@ import { useState, useEffect, useRef } from '@wordpress/element';
 import { useAppDispatch } from '~/data';
 import useAdminUrl from '~/hooks/useAdminUrl';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
-import useTargetAudienceWithSuggestions from './useTargetAudienceWithSuggestions';
+import useTargetAudienceWithSuggestions from '../useTargetAudienceWithSuggestions';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
-import SetupAdsOnlyAccounts from './setup-ads-only-accounts';
+import SetupAccounts from './setup-accounts';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import AssetGroup, {
 	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
@@ -24,7 +24,7 @@ import AssetGroup, {
 import SetupPaidAds from './setup-paid-ads';
 import convertToAssetGroupUpdateBody from '~/components/paid-ads/convertToAssetGroupUpdateBody';
 import { GUIDE_NAMES } from '~/constants';
-import { ADS_ONLY_STEP_NAME_KEY_MAP } from './constants';
+import { ADS_ONLY_STEP_NAME_KEY_MAP } from '../constants';
 import { API_NAMESPACE } from '~/data/constants';
 import { getDashboardUrl } from '~/utils/urls';
 import {
@@ -42,15 +42,17 @@ import {
  * @fires gla_setup_mc with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button', action: 'go-to-step2' | 'go-to-step3' }`.
  * @fires gla_setup_mc with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
  */
-const AdsOnlySetupStepper = ( { savedStep } ) => {
-	const createdCampaignRef = useRef( null );
+const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
+	const futureCampaignValuesRef = useRef( null );
+	const createdCampaignIdRef = useRef( null );
 	const adminUrl = useAdminUrl();
 	const [ step, setStep ] = useState( savedStep );
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: suggestedAudience } = useTargetAudienceWithSuggestions();
 	const { data: countryCodes, targetAudience } =
 		useTargetAudienceFinalCountryCodes();
-	const { saveTargetAudience, updateCampaignAssetGroup } = useAppDispatch();
+	const { saveTargetAudience, createAdsCampaign, updateCampaignAssetGroup } =
+		useAppDispatch();
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_ADS_ONLY_ONBOARDING,
@@ -92,11 +94,6 @@ const AdsOnlySetupStepper = ( { savedStep } ) => {
 		}
 	};
 
-	const handleSetupPaidAdsComplete = ( payload ) => {
-		createdCampaignRef.current = payload.createdCampaign;
-		setStep( ADS_ONLY_STEP_NAME_KEY_MAP.optimize_campaign );
-	};
-
 	const handleSetupPaidAdsSkipped = () => {
 		const query = { guide: GUIDE_NAMES.SUBMISSION_SUCCESS };
 		window.location.href = adminUrl + getDashboardUrl( query );
@@ -109,8 +106,19 @@ const AdsOnlySetupStepper = ( { savedStep } ) => {
 		const { action } = enhancer.submitter.dataset;
 
 		try {
+			// Avoid re-creating a new campaign if the subsequent asset group update is failed.
+			if ( createdCampaignIdRef.current === null ) {
+				const payload = await createAdsCampaign(
+					futureCampaignValuesRef.current.dailyBudget,
+					countryCodes,
+					futureCampaignValuesRef.current
+						.hasConfirmedEuPoliticalContent
+				);
+				createdCampaignIdRef.current = payload.createdCampaign.id;
+			}
+
 			if ( action === ACTION_SUBMIT_CAMPAIGN_AND_ASSETS ) {
-				const id = createdCampaignRef.current.id;
+				const id = createdCampaignIdRef.current;
 				const path = `${ API_NAMESPACE }/ads/campaigns/asset-groups?campaign_id=${ id }`;
 
 				const [ assetEntityGroup ] = await apiFetch( { path } );
@@ -139,6 +147,11 @@ const AdsOnlySetupStepper = ( { savedStep } ) => {
 		getHistory().push( getDashboardUrl( { campaign: 'saved' } ) );
 	};
 
+	const handleSetupPaidAdsSubmit = ( values ) => {
+		futureCampaignValuesRef.current = values;
+		setStep( ADS_ONLY_STEP_NAME_KEY_MAP.optimize_campaign );
+	};
+
 	return (
 		<Stepper
 			className="gla-setup-stepper"
@@ -151,7 +164,7 @@ const AdsOnlySetupStepper = ( { savedStep } ) => {
 						'google-listings-and-ads'
 					),
 					content: (
-						<SetupAdsOnlyAccounts
+						<SetupAccounts
 							onContinue={ handleSetupAccountsContinue }
 						/>
 					),
@@ -161,15 +174,7 @@ const AdsOnlySetupStepper = ( { savedStep } ) => {
 					key: ADS_ONLY_STEP_NAME_KEY_MAP.create_campaign,
 					label: __( 'Create a campaign', 'google-listings-and-ads' ),
 					content: (
-						<SetupPaidAds
-							context={ CONTEXT_ADS_ONLY_ONBOARDING }
-							onSetupComplete={ handleSetupPaidAdsComplete }
-							onSetupSkipped={ handleSetupPaidAdsSkipped }
-							completeSetupButtonLabel={ __(
-								'Continue',
-								'google-listings-and-ads'
-							) }
-						/>
+						<SetupPaidAds onSubmit={ handleSetupPaidAdsSubmit } />
 					),
 					onClick: handleStepClick,
 				},
@@ -184,9 +189,7 @@ const AdsOnlySetupStepper = ( { savedStep } ) => {
 							onSubmit={ handleSubmit }
 							countryCodes={ countryCodes }
 						>
-							<AssetGroup
-								campaign={ createdCampaignRef.current }
-							/>
+							<AssetGroup />
 						</CampaignAssetsForm>
 					),
 				},
@@ -195,4 +198,4 @@ const AdsOnlySetupStepper = ( { savedStep } ) => {
 	);
 };
 
-export default AdsOnlySetupStepper;
+export default SavedAdsOnlySetupStepper;

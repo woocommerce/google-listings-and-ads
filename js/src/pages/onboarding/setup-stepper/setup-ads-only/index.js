@@ -26,7 +26,7 @@ import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCo
 import { useAppDispatch } from '~/data';
 import './index.scss';
 
-const SetupAdsOnlyAccounts = ( props ) => {
+const SetupAdsOnly = ( props ) => {
 	const { onContinue = () => {} } = props;
 	const { jetpack } = useJetpackAccount();
 	const { google } = useGoogleAccount();
@@ -84,7 +84,7 @@ const SetupAdsOnlyAccounts = ( props ) => {
 				) }
 			/>
 			<Section
-				className="gla-setup-service-based-accounts-section"
+				className="gla-setup-ads-only-section"
 				title={ __( 'Connect accounts', 'google-listings-and-ads' ) }
 				description={ __(
 					'The following accounts are required to use the Google for WooCommerce plugin.',
@@ -117,11 +117,11 @@ const SetupAdsOnlyAccounts = ( props ) => {
 					/>
 				</StepContentActions>
 			</StepContentFooter>
-			<Section className="gla-setup-service-based-accounts-section__faqs">
+			<Section className="gla-setup-ads-only-section__faqs">
 				<Faqs />
 			</Section>
 		</StepContent>
 	);
 };
 
-export default SetupAdsOnlyAccounts;
+export default SetupAdsOnly;

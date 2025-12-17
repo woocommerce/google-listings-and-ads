@@ -7,7 +7,7 @@ import { getHistory, getNewPath } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import AppSpinner from '~/components/app-spinner';
-import AdsOnlySetupStepper from './ads-only-setup-stepper';
+import SavedAdsOnlySetupStepper from './saved-ads-only-setup-stepper';
 import SavedSetupStepper from './saved-setup-stepper';
 import useMCSetup from '~/hooks/useMCSetup';
 import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
@@ -36,7 +36,7 @@ const SetupStepper = () => {
 
 	if ( serviceBasedMerchant ) {
 		return (
-			<AdsOnlySetupStepper
+			<SavedAdsOnlySetupStepper
 				savedStep={
 					ADS_ONLY_STEP_NAME_KEY_MAP[ step ] ||
 					ADS_ONLY_STEP_NAME_KEY_MAP.accounts

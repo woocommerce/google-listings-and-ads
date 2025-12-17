@@ -34,30 +34,21 @@ export default function useAdsSetupCompleteCallback() {
 	}, [ createNotice ] );
 
 	const handleFinishSetup = useCallback(
-		async (
+		(
 			amount,
 			countryCodes,
 			hasConfirmedEuPoliticalContent,
 			onCompleted
 		) => {
 			setLoading( true );
-
-			try {
-				const payload = await createAdsCampaign(
-					amount,
-					countryCodes,
-					hasConfirmedEuPoliticalContent
-				);
-
-				await completeAdsSetup();
-				await onCompleted?.( payload );
-
-				return payload;
-			} catch ( error ) {
-				throw error;
-			} finally {
-				setLoading( false );
-			}
+			return createAdsCampaign(
+				amount,
+				countryCodes,
+				hasConfirmedEuPoliticalContent
+			)
+				.then( completeAdsSetup )
+				.then( onCompleted )
+				.catch( () => setLoading( false ) );
 		},
 		[ createAdsCampaign, completeAdsSetup ]
 	);
