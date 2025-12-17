@@ -90,4 +90,3 @@ class ChannelVisibilityMetaBoxTest extends UnitTest {
 		];
 	}
 }
-
