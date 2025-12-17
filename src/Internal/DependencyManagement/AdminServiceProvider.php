@@ -6,7 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagem
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\BulkEdit\BulkEditInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\BulkEdit\CouponBulkEdit;
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\ChannelVisibilityMetaBox;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\CouponChannelVisibilityMetaBox;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInterface;
@@ -33,6 +32,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupMerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Shipping;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ChannelVisibilityMetaBox;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
