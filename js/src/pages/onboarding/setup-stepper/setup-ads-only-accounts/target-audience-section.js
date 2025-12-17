@@ -7,7 +7,7 @@ import { useRef } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { targetAudienceFields } from '~/components/free-listings/choose-audience-section/constants';
+import { TARGET_AUDIENCE_FIELDS } from '~/components/free-listings/choose-audience-section/constants';
 import AppSpinner from '~/components/app-spinner';
 import AdaptiveForm from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
@@ -38,8 +38,8 @@ const TargetAudienceSection = ( {
 	}
 
 	const handleChange = ( change, values ) => {
-		if ( targetAudienceFields.includes( change.name ) ) {
-			onTargetAudienceChange( pick( values, targetAudienceFields ) );
+		if ( TARGET_AUDIENCE_FIELDS.includes( change.name ) ) {
+			onTargetAudienceChange( pick( values, TARGET_AUDIENCE_FIELDS ) );
 		}
 	};
 
