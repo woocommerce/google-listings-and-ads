@@ -112,9 +112,7 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 
 			const id = createdCampaignIdRef.current;
 			const path = `${ API_NAMESPACE }/ads/campaigns/asset-groups?campaign_id=${ id }`;
-
 			const [ assetEntityGroup ] = await apiFetch( { path } );
-
 			const body = convertToAssetGroupUpdateBody(
 				assetEntityGroup,
 				values
