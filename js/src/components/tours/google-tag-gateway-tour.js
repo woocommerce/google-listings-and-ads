@@ -9,12 +9,14 @@ import { getHistory } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
+import { FEATURES } from '~/constants';
 import useTour from '~/hooks/useTour';
 import useEnableGoogleTagGateway from '~/hooks/useEnableGoogleTagGateway';
 import { getSettingsUrl } from '~/utils/urls';
 import { TOUR_ID as CAMPAIGN_ASSETS_TOUR_ID } from './campaign-assets-tour';
 import { TOUR_ID as REBRANDING_TOUR_ID } from './rebranding-tour';
 import { recordGlaEvent } from '~/utils/tracks';
+import useFeature from '~/hooks/useFeature';
 import './google-tag-gateway-tour.scss';
 
 const TOUR_ID = 'google-tag-gateway-tour';
@@ -41,6 +43,7 @@ const CONTEXT = 'google_tag_gateway_tour';
  * @fires gla_google_tag_gateway_tour_close_button_click with `{ context: "google_tag_gateway_tour", source: "done-btn" | "close-btn" | "skip-btn" }`
  */
 export default function GoogleTagGatewayTour() {
+	const gtgFeatureEnabled = useFeature( FEATURES.GOOGLE_TAG_GATEWAY );
 	const {
 		tourChecked: campaignAssetsTourChecked,
 		hasFinishedResolution: hasResolvedCampaignAssetsTour,
@@ -56,6 +59,10 @@ export default function GoogleTagGatewayTour() {
 	} = useEnableGoogleTagGateway();
 
 	const tourCheckedRefs = useRef();
+
+	if ( ! gtgFeatureEnabled ) {
+		return null;
+	}
 
 	if (
 		! tourCheckedRefs.current &&
