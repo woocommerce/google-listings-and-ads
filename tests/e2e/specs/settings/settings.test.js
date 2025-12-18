@@ -180,18 +180,11 @@ test.describe( 'Settings', () => {
 
 		test.describe( 'When there is no connected Google Merchant Center account', () => {
 			test.beforeAll( async () => {
+				await settingsPage.mockJetpackConnected();
+				await settingsPage.mockGoogleConnected();
+				await settingsPage.mockAdsAccountConnected();
 				await settingsPage.mockMCNotConnected();
 				await settingsPage.goto();
-
-				await page.evaluate( () => {
-					window.glaData.serviceBasedMerchant = true;
-					window.glaData.mcSetupComplete = false;
-				} );
-			} );
-
-			test.afterAll( async () => {
-				await clearOnboardedMerchant();
-				await page.close();
 			} );
 
 			test( 'should not show Google Merchant Center account card', async () => {
