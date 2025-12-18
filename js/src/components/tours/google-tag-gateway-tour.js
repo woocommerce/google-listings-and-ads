@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useRef } from '@wordpress/element';
 import { TourKit } from '@woocommerce/components';
 import { getHistory } from '@woocommerce/navigation';
 
@@ -11,6 +10,7 @@ import { getHistory } from '@woocommerce/navigation';
  */
 import { FEATURES } from '~/constants';
 import useTour from '~/hooks/useTour';
+import useEnableGoogleTagGateway from '~/hooks/useEnableGoogleTagGateway';
 import { getSettingsUrl } from '~/utils/urls';
 import { TOUR_ID as CAMPAIGN_ASSETS_TOUR_ID } from './campaign-assets-tour';
 import { TOUR_ID as REBRANDING_TOUR_ID } from './rebranding-tour';
@@ -52,34 +52,18 @@ export default function GoogleTagGatewayTour() {
 		hasFinishedResolution: hasResolvedRebrandingTour,
 	} = useTour( REBRANDING_TOUR_ID );
 	const { tourChecked, setTourChecked } = useTour( TOUR_ID );
-
-	const tourCheckedRefs = useRef();
-
-	if ( ! gtgFeatureEnabled ) {
-		return null;
-	}
+	const {
+		isEnabled,
+		hasFinishedResolution: hasResolvedEnableGoogleTagGateway,
+	} = useEnableGoogleTagGateway();
 
 	if (
-		! tourCheckedRefs.current &&
-		hasResolvedRebrandingTour &&
-		hasResolvedCampaignAssetsTour
-	) {
-		tourCheckedRefs.current = {
-			campaignAssets: campaignAssetsTourChecked,
-			rebranding: rebrandingTourChecked,
-		};
-	}
-
-	if (
+		! gtgFeatureEnabled ||
+		! hasResolvedCampaignAssetsTour ||
+		! hasResolvedRebrandingTour ||
+		! hasResolvedEnableGoogleTagGateway ||
 		tourChecked ||
-		! tourCheckedRefs.current.campaignAssets ||
-		! tourCheckedRefs.current.rebranding
-	) {
-		return null;
-	}
-
-	if (
-		tourChecked ||
+		isEnabled ||
 		! campaignAssetsTourChecked ||
 		! rebrandingTourChecked
 	) {
