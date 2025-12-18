@@ -18,9 +18,8 @@ import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCo
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import SetupAccounts from './setup-accounts';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
-import AssetGroup, {
-	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
-} from '~/components/paid-ads/asset-group';
+import SkipButton from '../skip-button';
+import AssetGroup from '~/components/paid-ads/asset-group';
 import SetupPaidAds from './setup-paid-ads';
 import convertToAssetGroupUpdateBody from '~/components/paid-ads/convertToAssetGroupUpdateBody';
 import { GUIDE_NAMES } from '~/constants';
@@ -192,7 +191,9 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 							onSubmit={ handleSubmit }
 							countryCodes={ countryCodes }
 						>
-							<AssetGroup />
+							<AssetGroup
+								context={ CONTEXT_ADS_ONLY_ONBOARDING }
+							/>
 						</CampaignAssetsForm>
 					),
 				},

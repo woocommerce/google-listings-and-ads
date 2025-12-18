@@ -29,6 +29,28 @@ export default class OptimizeCampaign extends MockRequests {
 	}
 
 	/**
+	 * Get create campaign button.
+	 *
+	 * @return {import('@playwright/test').Locator} Get create campaign button.
+	 */
+	getCreateCampaignButton() {
+		return this.page.getByRole( 'button', {
+			name: 'Create campaign',
+			exact: true,
+		} );
+	}
+
+	/**
+	 * Click create campaign button.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async clickCreateCampaignButton() {
+		const createCampaignButton = this.getCreateCampaignButton();
+		await createCampaignButton.click();
+	}
+
+	/**
 	 * Get final URL select dropdown.
 	 *
 	 * @return {import('@playwright/test').Locator} Get final URL select dropdown.
