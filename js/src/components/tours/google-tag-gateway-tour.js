@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useRef } from '@wordpress/element';
 import { TourKit } from '@woocommerce/components';
 import { getHistory } from '@woocommerce/navigation';
 
@@ -58,35 +57,13 @@ export default function GoogleTagGatewayTour() {
 		hasFinishedResolution: hasResolvedEnableGoogleTagGateway,
 	} = useEnableGoogleTagGateway();
 
-	const tourCheckedRefs = useRef();
-
-	if ( ! gtgFeatureEnabled ) {
-		return null;
-	}
-
 	if (
-		! tourCheckedRefs.current &&
-		hasResolvedRebrandingTour &&
-		hasResolvedCampaignAssetsTour
-	) {
-		tourCheckedRefs.current = {
-			campaignAssets: campaignAssetsTourChecked,
-			rebranding: rebrandingTourChecked,
-		};
-	}
-
-	if (
+		! gtgFeatureEnabled ||
+		! hasResolvedCampaignAssetsTour ||
+		! hasResolvedRebrandingTour ||
+		! hasResolvedEnableGoogleTagGateway ||
 		tourChecked ||
 		isEnabled ||
-		! hasResolvedEnableGoogleTagGateway ||
-		! tourCheckedRefs.current.campaignAssets ||
-		! tourCheckedRefs.current.rebranding
-	) {
-		return null;
-	}
-
-	if (
-		tourChecked ||
 		! campaignAssetsTourChecked ||
 		! rebrandingTourChecked
 	) {
