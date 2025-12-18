@@ -83,6 +83,28 @@ class Redirect implements Activateable, Service, Registerable, OptionsAwareInter
 	}
 
 	/**
+	 * Check if onboarding is complete.
+	 * For backwards compatibility, checks MC setup if ONBOARDING_COMPLETED_AT is not set.
+	 *
+	 * @return bool
+	 */
+	protected function is_onboarding_complete(): bool {
+		$onboarding_completed_at = $this->options->get( OptionsInterface::ONBOARDING_COMPLETED_AT );
+
+		if ( null !== $onboarding_completed_at ) {
+			return boolval( $onboarding_completed_at );
+		}
+
+		if ( $this->merchant_center->is_setup_complete() ) {
+			$mc_setup_completed_at = $this->options->get( OptionsInterface::MC_SETUP_COMPLETED_AT );
+			$this->options->update( OptionsInterface::ONBOARDING_COMPLETED_AT, $mc_setup_completed_at );
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Checks if merchant should be redirected to the onboarding page if it is not.
 	 *
 	 * @return void
@@ -98,12 +120,12 @@ class Redirect implements Activateable, Service, Registerable, OptionsAwareInter
 		}
 
 		// If setup ISNT complete then redirect from dashboard to onboarding
-		if ( ! boolval( $this->options->get( OptionsInterface::ONBOARDING_COMPLETED_AT ) ) && $this->is_current_wc_admin_page( self::PATHS['dashboard'] ) ) {
+		if ( ! $this->is_onboarding_complete() && $this->is_current_wc_admin_page( self::PATHS['dashboard'] ) ) {
 			return $this->redirect_to( self::PATHS['get_started'] );
 		}
 
 		// If setup IS complete then redirect from onboarding to dashboard
-		if ( boolval( $this->options->get( OptionsInterface::ONBOARDING_COMPLETED_AT ) ) && $this->is_current_wc_admin_page( self::PATHS['get_started'] ) ) {
+		if ( $this->is_onboarding_complete() && $this->is_current_wc_admin_page( self::PATHS['get_started'] ) ) {
 			return $this->redirect_to( self::PATHS['dashboard'] );
 		}
 
@@ -117,7 +139,7 @@ class Redirect implements Activateable, Service, Registerable, OptionsAwareInter
 	 */
 	protected function maybe_redirect_after_activation(): bool {
 		// Do not redirect if setup is already complete
-		if ( boolval( $this->options->get( OptionsInterface::ONBOARDING_COMPLETED_AT ) ) ) {
+		if ( $this->is_onboarding_complete() ) {
 			$this->options->update( self::OPTION, 'no' );
 			return false;
 		}

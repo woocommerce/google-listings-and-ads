@@ -238,6 +238,49 @@ class RedirectsTest extends TestCase {
 	}
 
 	/**
+	 * Test `is_onboarding_complete` backfills ONBOARDING_COMPLETED_AT from MC_SETUP_COMPLETED_AT
+	 * for existing users who completed setup before the ONBOARDING_COMPLETED_AT option existed.
+	 *
+	 * @return void
+	 */
+	public function test_is_onboarding_complete_backfills_from_mc_setup(): void {
+		$redirect_instance = $this->get_redirect_instance();
+		$mc_timestamp      = 1234567890;
+
+		// Set up options mock: ONBOARDING_COMPLETED_AT is null, MC_SETUP_COMPLETED_AT is set
+		$this->options->method( 'get' )
+			->willReturnCallback(
+				function ( $name ) use ( $mc_timestamp ) {
+					if ( $name === OptionsInterface::ONBOARDING_COMPLETED_AT ) {
+						return null; // Not set yet
+					}
+					if ( $name === OptionsInterface::MC_SETUP_COMPLETED_AT ) {
+						return $mc_timestamp; // Existing user has MC setup complete
+					}
+					return null;
+				}
+			);
+
+		// Set up merchant center mock: setup is complete
+		$this->merchant_center->method( 'is_setup_complete' )
+			->willReturn( true );
+
+		// Should update ONBOARDING_COMPLETED_AT with MC_SETUP_COMPLETED_AT timestamp
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::ONBOARDING_COMPLETED_AT, $mc_timestamp );
+
+		// Call the protected method using reflection
+		$reflection = new \ReflectionClass( $redirect_instance );
+		$method     = $reflection->getMethod( 'is_onboarding_complete' );
+		$method->setAccessible( true );
+
+		$result = $method->invoke( $redirect_instance );
+
+		$this->assertTrue( $result );
+	}
+
+	/**
 	 * Test is_current_wc_admin_page:
 	 */
 	public function test_is_current_wc_admin_page(): void {
