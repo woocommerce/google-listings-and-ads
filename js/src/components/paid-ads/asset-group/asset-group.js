@@ -14,7 +14,7 @@ import StepContentFooter from '~/components/stepper/step-content-footer';
 import StepContentActions from '~/components/stepper/step-content-actions';
 import AppButton from '~/components/app-button';
 import Faqs from './faqs';
-import { recordGlaEvent } from '~/utils/tracks';
+import { CONTEXT_ADS_ONLY_ONBOARDING, recordGlaEvent } from '~/utils/tracks';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import AssetGroupHeader from './asset-group-header';
 import AssetGroupEditor from './asset-group-editor';
@@ -63,10 +63,11 @@ export const ACTION_SUBMIT_CAMPAIGN_ONLY = 'submit-campaign-only';
  *
  * @param {Object} props React props.
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
+ * @param {string} [props.context] Context string for tracking events.
  *
  * @fires gla_submit_campaign_button_click
  */
-export default function AssetGroup( { campaign } ) {
+export default function AssetGroup( { campaign, context } ) {
 	const isCreation = ! campaign;
 	const { isValidForm, handleSubmit, adapter, values } =
 		useAdaptiveFormContext();
@@ -159,7 +160,9 @@ export default function AssetGroup( { campaign } ) {
 
 			<StepContentFooter>
 				<StepContentActions>
-					{ ( isCreation || adapter.isEmptyAssetEntityGroup ) && (
+					{ ( isCreation ||
+						adapter.isEmptyAssetEntityGroup ||
+						context !== CONTEXT_ADS_ONLY_ONBOARDING ) && (
 						// Currently, the PMax Assets feature in this extension doesn't offer the function
 						// to delete the asset entity group, so it needs to hide the skip button if the editing
 						// asset group is not considered empty.

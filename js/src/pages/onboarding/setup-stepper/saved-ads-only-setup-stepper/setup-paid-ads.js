@@ -22,8 +22,11 @@ import AppSpinner from '~/components/app-spinner';
 /**
  * Renders the onboarding step for setting up the paid ads (Google Ads account and paid campaign)
  * or skipping it, and then completing the onboarding flow.
+ * @param {Object} props
+ * @param {Function} props.onSubmit Callback fired when the form is submitted.
+ * @param {Function} props.onSkip Callback fired when the user chooses to skip creating paid ads.
  */
-export default function SetupPaidAds( { onSubmit } ) {
+export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const budgetPromptRef = useRef();
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
@@ -34,8 +37,7 @@ export default function SetupPaidAds( { onSubmit } ) {
 
 	const handleSkipCreatePaidAds = async () => {
 		setCompleting( ACTION_SKIP );
-
-		// await finishOnboardingSetup();
+		onSkip();
 	};
 
 	const createSkipButton = ( formContext ) => {

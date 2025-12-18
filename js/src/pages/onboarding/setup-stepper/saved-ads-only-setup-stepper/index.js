@@ -39,8 +39,8 @@ import {
  *
  * @param {Object} props React props
  * @param {string} [props.savedStep] A saved step overriding the current step
- * @fires gla_setup_mc with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button', action: 'go-to-step2' | 'go-to-step3' }`.
- * @fires gla_setup_mc with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
+ * @fires gla_setup_ads_only with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button', action: 'go-to-step2' | 'go-to-step3' }`.
+ * @fires gla_setup_ads_only with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
  */
 const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 	const futureCampaignValuesRef = useRef( null );
@@ -78,7 +78,7 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 	const continueStep = ( to ) => {
 		const from = step;
 
-		recordStepContinueEvent( 'gla_setup_merchant_based', from, to );
+		recordStepContinueEvent( 'gla_setup_ads_only', from, to );
 		setStep( to );
 	};
 
@@ -89,22 +89,15 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 	const handleStepClick = ( stepKey ) => {
 		// Only allow going back to the previous steps.
 		if ( Number( stepKey ) < Number( step ) ) {
-			recordStepperChangeEvent( 'gla_setup_merchant_based', stepKey );
+			recordStepperChangeEvent( 'gla_setup_ads_only', stepKey );
 			setStep( stepKey );
 		}
-	};
-
-	const handleSetupPaidAdsSkipped = () => {
-		const query = { guide: GUIDE_NAMES.SUBMISSION_SUCCESS };
-		window.location.href = adminUrl + getDashboardUrl( query );
 	};
 
 	/**
 	 * Handles the submission of the optimize campaign step.
 	 */
 	const handleSubmit = async ( values, enhancer ) => {
-		const { action } = enhancer.submitter.dataset;
-
 		try {
 			// Avoid re-creating a new campaign if the subsequent asset group update is failed.
 			if ( createdCampaignIdRef.current === null ) {
@@ -117,19 +110,17 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 				createdCampaignIdRef.current = payload.createdCampaign.id;
 			}
 
-			if ( action === ACTION_SUBMIT_CAMPAIGN_AND_ASSETS ) {
-				const id = createdCampaignIdRef.current;
-				const path = `${ API_NAMESPACE }/ads/campaigns/asset-groups?campaign_id=${ id }`;
+			const id = createdCampaignIdRef.current;
+			const path = `${ API_NAMESPACE }/ads/campaigns/asset-groups?campaign_id=${ id }`;
 
-				const [ assetEntityGroup ] = await apiFetch( { path } );
+			const [ assetEntityGroup ] = await apiFetch( { path } );
 
-				const body = convertToAssetGroupUpdateBody(
-					assetEntityGroup,
-					values
-				);
+			const body = convertToAssetGroupUpdateBody(
+				assetEntityGroup,
+				values
+			);
 
-				await updateCampaignAssetGroup( assetEntityGroup.id, body );
-			}
+			await updateCampaignAssetGroup( assetEntityGroup.id, body );
 
 			createNotice(
 				'success',
@@ -150,6 +141,17 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 	const handleSetupPaidAdsSubmit = ( values ) => {
 		futureCampaignValuesRef.current = values;
 		setStep( ADS_ONLY_STEP_NAME_KEY_MAP.optimize_campaign );
+	};
+
+	const finishOnboardingSetup = async () => {
+		// make API call to finish onboarding
+	};
+
+	const handleSetupPaidAdsSkipped = async () => {
+		await finishOnboardingSetup();
+
+		const query = { guide: GUIDE_NAMES.SUBMISSION_SUCCESS };
+		window.location.href = adminUrl + getDashboardUrl( query );
 	};
 
 	return (
@@ -174,7 +176,10 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 					key: ADS_ONLY_STEP_NAME_KEY_MAP.create_campaign,
 					label: __( 'Create a campaign', 'google-listings-and-ads' ),
 					content: (
-						<SetupPaidAds onSubmit={ handleSetupPaidAdsSubmit } />
+						<SetupPaidAds
+							onSubmit={ handleSetupPaidAdsSubmit }
+							onSkip={ handleSetupPaidAdsSkipped }
+						/>
 					),
 					onClick: handleStepClick,
 				},
