@@ -43,11 +43,13 @@ const ADS_ACCOUNTS = [
 	},
 ];
 
-test.describe( 'Set up accounts for service based merchants', () => {
+test.describe( 'Set up accounts for Ads only merchants', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		setUpAccountsPage = new SetUpAccountsPage( page, {
-			serviceBasedMerchant: true,
+			glaData: {
+				serviceBasedMerchant: true,
+			},
 		} );
 	} );
 
@@ -81,9 +83,9 @@ test.describe( 'Set up accounts for service based merchants', () => {
 	} );
 
 	test.describe( 'FAQ panels', () => {
-		test( 'should see two questions in FAQ', async () => {
+		test( 'should see one question in FAQ', async () => {
 			const faqTitles = getFAQPanelTitle( page );
-			await expect( faqTitles ).toHaveCount( 2 );
+			await expect( faqTitles ).toHaveCount( 1 );
 		} );
 
 		test( 'should not see FAQ rows when FAQ titles are not clicked', async () => {
@@ -506,7 +508,6 @@ test.describe( 'Set up accounts for service based merchants', () => {
 
 		test( 'should see the accounts card connected', async () => {
 			await setUpAccountsPage.mockAdsStatusClaimed();
-
 			await page.reload();
 
 			const googleAccountCard =
@@ -517,6 +518,12 @@ test.describe( 'Set up accounts for service based merchants', () => {
 					exact: true,
 				} )
 			).toBeVisible();
+		} );
+
+		test( 'should see the choose audience section after claiming the account', async () => {
+			const chooseAudienceSection =
+				setUpAccountsPage.getChooseAudienceSection();
+			await expect( chooseAudienceSection ).toBeVisible();
 		} );
 	} );
 
@@ -529,18 +536,66 @@ test.describe( 'Set up accounts for service based merchants', () => {
 			await setUpAccountsPage.mockGoogleConnected();
 		} );
 
-		test.describe( 'When only Ads is connected', async () => {
-			test.beforeAll( async () => {
-				await setUpAccountsPage.mockAdsAccountConnected();
+		test( 'should be disabled when Ads is not connected', async () => {
+			await setUpAccountsPage.mockAdsAccountDisconnected();
+			await setUpAccountsPage.goto();
 
-				await setUpAccountsPage.goto();
-			} );
+			const continueButton = await setUpAccountsPage.getContinueButton();
+			await expect( continueButton ).toBeDisabled();
+		} );
 
-			test( 'should see "Continue" button is disabled when only Ads is connected', async () => {
-				const continueButton =
-					await setUpAccountsPage.getContinueButton();
-				await expect( continueButton ).toBeDisabled();
-			} );
+		test( 'should be disabled when Ads is connected and no countries are selected', async () => {
+			await setUpAccountsPage.mockAdsAccountConnected();
+			await setUpAccountsPage.mockAdsAccountsResponse( ADS_ACCOUNTS );
+			await setUpAccountsPage.fulfillTargetAudience(
+				{
+					location: 'selected',
+					countries: [],
+					locale: '',
+					language: 'English',
+				},
+				[ 'GET' ]
+			);
+			await setUpAccountsPage.goto();
+
+			const continueButton = await setUpAccountsPage.getContinueButton();
+			await expect( continueButton ).toBeDisabled();
+		} );
+
+		test( 'should be enabled when Ads is connected and all countries are selected', async () => {
+			await setUpAccountsPage.mockAdsAccountConnected();
+			await setUpAccountsPage.mockAdsAccountsResponse( ADS_ACCOUNTS );
+			await setUpAccountsPage.fulfillTargetAudience(
+				{
+					location: 'all',
+					countries: [],
+					locale: '',
+					language: 'English',
+				},
+				[ 'GET' ]
+			);
+			await setUpAccountsPage.goto();
+
+			const continueButton = await setUpAccountsPage.getContinueButton();
+			await expect( continueButton ).toBeEnabled();
+		} );
+
+		test( 'should be enabled when Ads is connected and at least one country is selected', async () => {
+			await setUpAccountsPage.mockAdsAccountConnected();
+			await setUpAccountsPage.mockAdsAccountsResponse( ADS_ACCOUNTS );
+			await setUpAccountsPage.fulfillTargetAudience(
+				{
+					location: 'selected',
+					countries: [ 'MU', 'US' ],
+					locale: '',
+					language: 'English',
+				},
+				[ 'GET' ]
+			);
+			await setUpAccountsPage.goto();
+
+			const continueButton = await setUpAccountsPage.getContinueButton();
+			await expect( continueButton ).toBeEnabled();
 		} );
 	} );
 
