@@ -41,16 +41,14 @@ import {
  * @fires gla_setup_ads_only with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
  */
 const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
-	const futureCampaignValuesRef = useRef( null );
-	const createdCampaignIdRef = useRef( null );
+	const createdCampaignRef = useRef( null );
 	const adminUrl = useAdminUrl();
 	const [ step, setStep ] = useState( savedStep );
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: suggestedAudience } = useTargetAudienceWithSuggestions();
 	const { data: countryCodes, targetAudience } =
 		useTargetAudienceFinalCountryCodes();
-	const { saveTargetAudience, createAdsCampaign, updateCampaignAssetGroup } =
-		useAppDispatch();
+	const { saveTargetAudience, updateCampaignAssetGroup } = useAppDispatch();
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_ADS_ONLY_ONBOARDING,
@@ -97,18 +95,11 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 	 */
 	const handleSubmit = async ( values, enhancer ) => {
 		try {
-			// Avoid re-creating a new campaign if the subsequent asset group update is failed.
-			if ( createdCampaignIdRef.current === null ) {
-				const payload = await createAdsCampaign(
-					futureCampaignValuesRef.current.dailyBudget,
-					countryCodes,
-					futureCampaignValuesRef.current
-						.hasConfirmedEuPoliticalContent
-				);
-				createdCampaignIdRef.current = payload.createdCampaign.id;
+			const { id } = createdCampaignRef.current;
+			if ( ! id ) {
+				return;
 			}
 
-			const id = createdCampaignIdRef.current;
 			const path = `${ API_NAMESPACE }/ads/campaigns/asset-groups?campaign_id=${ id }`;
 			const [ assetEntityGroup ] = await apiFetch( { path } );
 			const body = convertToAssetGroupUpdateBody(
@@ -134,8 +125,8 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 		getHistory().push( getDashboardUrl( { campaign: 'saved' } ) );
 	};
 
-	const handleSetupPaidAdsSubmit = ( values ) => {
-		futureCampaignValuesRef.current = values;
+	const handleSetupPaidAdsSubmit = ( payload ) => {
+		createdCampaignRef.current = payload.createdCampaign;
 		setStep( ADS_ONLY_STEP_NAME_KEY_MAP.optimize_campaign );
 	};
 
@@ -192,6 +183,7 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 						>
 							<AssetGroup
 								context={ CONTEXT_ADS_ONLY_ONBOARDING }
+								campaign={ createdCampaignRef.current }
 							/>
 						</CampaignAssetsForm>
 					),

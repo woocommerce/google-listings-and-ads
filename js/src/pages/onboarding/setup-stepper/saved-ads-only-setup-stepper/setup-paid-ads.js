@@ -7,14 +7,18 @@ import { useState, useRef } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import useAdsSetupCompleteCallback from '~/hooks/useAdsSetupCompleteCallback';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import AdsCampaign from '~/components/paid-ads/ads-campaign';
 import BudgetIncentivePrompt from '~/components/paid-ads/budget-incentive-prompt';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import AppButton from '~/components/app-button';
+import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
+import { handleApiError } from '~/utils/handleError';
 import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
-import { ACTION_COMPLETE, ACTION_SKIP } from '../constants';
+import { ACTION_CONTINUE, ACTION_SKIP } from '../constants';
+import { FILTER_BUDGET_RECOMMENDATIONS, recordGlaEvent } from '~/utils/tracks';
 import SkipButton from '../skip-button';
 import clientSession from '../clientSession';
 import AppSpinner from '~/components/app-spinner';
@@ -31,6 +35,10 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
+	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
+	const getEventProps = useEventPropertiesFilter(
+		FILTER_BUDGET_RECOMMENDATIONS
+	);
 
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
@@ -47,7 +55,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 			<SkipButton
 				isValidForm={ isValidForm }
 				onSkipCreatePaidAds={ handleSkipCreatePaidAds }
-				disabled={ completing === ACTION_COMPLETE }
+				disabled={ completing === ACTION_CONTINUE }
 				loading={ completing === ACTION_SKIP }
 			/>
 		);
@@ -75,7 +83,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 				isPrimary
 				disabled={ disabled }
 				onClick={ handleClick }
-				loading={ completing === ACTION_COMPLETE }
+				loading={ completing === ACTION_CONTINUE }
 				text={ __( 'Continue', 'google-listings-and-ads' ) }
 			/>
 		);
@@ -89,6 +97,41 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 		return <AppSpinner />;
 	}
 
+	const handleSubmit = async ( values ) => {
+		setCompleting( ACTION_CONTINUE );
+		const { level, dailyBudget, hasConfirmedEuPoliticalContent } = values;
+
+		recordGlaEvent(
+			'gla_ads_only_onboarding_complete_with_paid_ads_button_click',
+			getEventProps( {
+				level,
+				budget: dailyBudget,
+				audiences: countryCodes.join( ',' ),
+			} )
+		);
+
+		try {
+			handleSetupComplete(
+				dailyBudget,
+				countryCodes,
+				hasConfirmedEuPoliticalContent,
+				( createdCampaign ) => {
+					onSubmit( createdCampaign );
+				}
+			);
+		} catch ( error ) {
+			setCompleting( null );
+
+			handleApiError(
+				error,
+				__(
+					'Unable to complete your setup.',
+					'google-listings-and-ads'
+				)
+			);
+		}
+	};
+
 	return (
 		<CampaignAssetsForm
 			initialCampaign={ paidAds }
@@ -96,7 +139,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 			onChange={ ( _, values ) => {
 				clientSession.setCampaign( values );
 			} }
-			onSubmit={ onSubmit }
+			onSubmit={ handleSubmit }
 		>
 			<AdsCampaign
 				headerTitle={ __(

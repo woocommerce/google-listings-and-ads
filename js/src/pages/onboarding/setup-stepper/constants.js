@@ -1,5 +1,6 @@
 export const ACTION_COMPLETE = 'complete-ads';
 export const ACTION_SKIP = 'skip-ads';
+export const ACTION_CONTINUE = 'continue-ads';
 export const STEP_NAME_KEY_MAP = {
 	accounts: '1',
 	product_listings: '2',

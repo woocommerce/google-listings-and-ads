@@ -107,17 +107,17 @@ test.describe( 'Optimize campaign for Ads only merchants', () => {
 
 	test.describe( 'Optimize campaign', () => {
 		test( 'Create Campaign button should be disabled if no URL selected', async () => {
-			const createCampaignButton =
-				optimizeCampaignPage.getCreateCampaignButton();
-			await expect( createCampaignButton ).toBeDisabled();
+			const saveChangesButton =
+				optimizeCampaignPage.getSaveChangesButton();
+			await expect( saveChangesButton ).toBeDisabled();
 		} );
 
 		test( 'Selecting final URL enables Create Campaign button', async () => {
 			await optimizeCampaignPage.selectUrlOption();
 
-			const createCampaignButton =
-				optimizeCampaignPage.getCreateCampaignButton();
-			await expect( createCampaignButton ).toBeEnabled();
+			const saveChangesButton =
+				optimizeCampaignPage.getSaveChangesButton();
+			await expect( saveChangesButton ).toBeEnabled();
 		} );
 
 		test( 'Selecting the "Or, select a different Final URL" button disables the Create Campaign button', async () => {
@@ -125,25 +125,9 @@ test.describe( 'Optimize campaign for Ads only merchants', () => {
 				optimizeCampaignPage.getSelectDifferentFinalUrlButton();
 			await selectDifferentFinalUrlButton.click();
 
-			const createCampaignButton =
-				optimizeCampaignPage.getCreateCampaignButton();
-			await expect( createCampaignButton ).toBeDisabled();
-		} );
-
-		test( 'Clicking the "Create Campaign" button creates a campaign and navigates to the dashboard', async () => {
-			await optimizeCampaignPage.selectUrlOption();
-			const campaignCreation =
-				setupBudgetPage.awaitForCampaignCreationRequest( '15', [
-					'US',
-					'TW',
-					'GB',
-				] );
-
-			await optimizeCampaignPage.clickCreateCampaignButton();
-			await campaignCreation;
-
-			await page.waitForURL( /path=%2Fgoogle%2Fdashboard/ );
-			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fdashboard/ );
+			const saveChangesButton =
+				optimizeCampaignPage.getSaveChangesButton();
+			await expect( saveChangesButton ).toBeDisabled();
 		} );
 
 		test( 'Clicking the "Skip this step" button navigates to the dashboard', async () => {

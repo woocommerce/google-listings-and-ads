@@ -367,26 +367,26 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 					await page.evaluate( () => window.sessionStorage.clear() );
 				} );
 
-				// test( 'Create a campaign with a selected option from the budget recommendations', async () => {
-				// 	// The recommended option is selected by default
-				// 	await expect(
-				// 		page.getByLabel( 'recommended' )
-				// 	).toBeChecked();
+				test( 'Create a campaign with a selected option from the budget recommendations', async () => {
+					// The recommended option is selected by default
+					await expect(
+						page.getByLabel( 'recommended' )
+					).toBeChecked();
 
-				// 	const highOption = page.getByLabel( 'high' );
+					const highOption = page.getByLabel( 'high' );
 
-				// 	await highOption.click();
-				// 	await expect( highOption ).toBeChecked();
+					await highOption.click();
+					await expect( highOption ).toBeChecked();
 
-				// 	const campaignCreation =
-				// 		setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
-				// 			'20.5',
-				// 			[ 'US', 'TW', 'GB' ]
-				// 		);
+					const campaignCreation =
+						setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
+							'20.5',
+							[ 'US', 'TW', 'GB' ]
+						);
 
-				// 	await createCampaignPage.clickContinueButton();
-				// 	await campaignCreation;
-				// } );
+					await createCampaignPage.clickContinueButton();
+					await campaignCreation;
+				} );
 
 				test( 'Suggest a higher budget for getting back free credits', async () => {
 					await setupBudgetPage.fillBudget( '8' );
@@ -416,6 +416,15 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 					await expect(
 						setupBudgetPage.getBudgetInput()
 					).toHaveValue( '8.50' );
+
+					const campaignCreation =
+						setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
+							'8.5',
+							[ 'US', 'TW', 'GB' ]
+						);
+
+					await createCampaignPage.clickContinueButton();
+					await campaignCreation;
 				} );
 			} );
 		} );
