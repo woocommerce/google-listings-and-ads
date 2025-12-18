@@ -27,18 +27,15 @@ let dashboardPage = null;
  */
 let page = null;
 
-test.describe( 'Limited UI elements for Service-based Merchants', () => {
+test.describe( 'Limited UI elements visibility for Ads only setup', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		dashboardPage = new DashboardPage( page );
 		await setOnboardedMerchant();
 		await dashboardPage.mockRequests();
+		await dashboardPage.mockMCNotConnected();
 		await setCompletedAdsSetup();
 		await dashboardPage.goto();
-
-		await page.evaluate( () => {
-			window.glaData.mcSetupComplete = false;
-		} );
 	} );
 
 	test.afterAll( async () => {

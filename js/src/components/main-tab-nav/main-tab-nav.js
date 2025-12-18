@@ -14,7 +14,7 @@ import useMenuEffect from '~/hooks/useMenuEffect';
 import GtinMigrationBanner from '~/components/gtin-migration-banner';
 import { getShippingUrl } from '~/utils/urls';
 
-const ALL_TABS = [
+let tabs = [
 	{
 		key: 'dashboard',
 		title: __( 'Dashboard', 'google-listings-and-ads' ),
@@ -52,24 +52,21 @@ const ALL_TABS = [
 	},
 ];
 
-const getSelectedTabKey = ( tabs ) => {
+const getSelectedTabKey = ( allTabs ) => {
 	const path = getPath();
-	return tabs.find( ( el ) => path.includes( el.key ) )?.key;
+	return allTabs.find( ( el ) => path.includes( el.key ) )?.key;
 };
 
 const MainTabNav = () => {
 	useMenuEffect();
 
 	const { hasGoogleMCConnection } = useGoogleMCAccount();
-	const hasMC = hasGoogleMCConnection || glaData.mcSetupComplete;
 
-	// Start with all tabs, apply reports visibility, then service-based merchant restriction.
-	let tabs = ALL_TABS;
 	if ( ! glaData.enableReports ) {
 		tabs = tabs.filter( ( { key } ) => key !== 'reports' );
 	}
 
-	if ( ! hasMC ) {
+	if ( ! hasGoogleMCConnection ) {
 		tabs = tabs.filter( ( { key } ) =>
 			[ 'dashboard', 'settings' ].includes( key )
 		);

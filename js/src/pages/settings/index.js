@@ -7,7 +7,7 @@ import { getQuery, getHistory } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import { API_RESPONSE_CODES, glaData } from '~/constants';
+import { API_RESPONSE_CODES } from '~/constants';
 import useMenuEffect from '~/hooks/useMenuEffect';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useUpdateRestAPIAuthorizeStatusByUrlQuery from '~/hooks/useUpdateRestAPIAuthorizeStatusByUrlQuery';
@@ -22,8 +22,8 @@ import MainTabNav from '~/components/main-tab-nav';
 import RebrandingTour from '~/components/tours/rebranding-tour';
 import SetupEnhancedConversions from './enhanced-conversions/setup-enhanced-conversions';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
-import './index.scss';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
+import './index.scss';
 
 const pageClassName = 'gla-settings';
 
@@ -37,7 +37,6 @@ const Settings = () => {
 	const { google } = useGoogleAccount();
 	const isReconnectGooglePage = subpath === subpaths.reconnectGoogleAccount;
 	const { hasGoogleMCConnection } = useGoogleMCAccount();
-	const hasMC = hasGoogleMCConnection || glaData?.mcSetupComplete;
 
 	// This page wouldn't get any 401 response when losing Google account access,
 	// so we still need to detect it here.
@@ -70,8 +69,12 @@ const Settings = () => {
 			<MainTabNav />
 			<RebrandingTour />
 			<SetupEnhancedConversions />
-			{ hasMC && <ContactInformationPreview /> }
-			{ hasMC && <SetupTaxRate /> }
+			{ hasGoogleMCConnection && (
+				<>
+					<ContactInformationPreview />
+					<SetupTaxRate />
+				</>
+			) }
 			<LinkedAccounts />
 		</div>
 	);

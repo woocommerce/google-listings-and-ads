@@ -171,8 +171,7 @@ const registerPluginAdminPages = () => {
 		];
 
 		// When there is no connected MC account, restrict navigation to Ads-related and core onboarding routes only.
-		const hasMC = Boolean( glaData?.mcSetupComplete );
-		if ( ! hasMC ) {
+		if ( ! glaData.mcSetupComplete ) {
 			const allowedPaths = new Set( [
 				'/google/start',
 				'/google/setup-mc',
@@ -180,8 +179,8 @@ const registerPluginAdminPages = () => {
 				'/google/dashboard',
 				'/google/settings',
 			] );
-			pluginAdminPages = pluginAdminPages.filter( ( p ) =>
-				allowedPaths.has( p.path )
+			pluginAdminPages = pluginAdminPages.filter( ( page ) =>
+				allowedPaths.has( page.path )
 			);
 		}
 

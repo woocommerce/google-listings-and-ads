@@ -178,7 +178,7 @@ test.describe( 'Settings', () => {
 			} );
 		} );
 
-		test.describe( 'Service Based Merchants Setup', () => {
+		test.describe( 'When there is no connected Google Merchant Center account', () => {
 			test.beforeAll( async () => {
 				await settingsPage.mockMCNotConnected();
 				await settingsPage.goto();
