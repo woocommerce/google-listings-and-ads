@@ -45,7 +45,7 @@ test.describe( 'Limited UI elements visibility for Ads only setup', () => {
 
 	test.describe( 'Should display limited elements', () => {
 		test( 'Should display only "Dashboard" and "Settings" tabs in the main navigation', async () => {
-			const tabs = await dashboardPage.mainTabNav.getTabTitles();
+			const tabs = await dashboardPage.getTabTitles();
 			expect( tabs ).toEqual( [ 'Dashboard', 'Settings' ] );
 		} );
 	} );
