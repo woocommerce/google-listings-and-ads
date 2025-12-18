@@ -142,7 +142,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 			throw $e;
 		} catch ( Exception $e ) {
 			if ( $e->getPrevious() instanceof BadResponseException ) {
-				throw $this->prepare_api_error_exception( $e->getPrevious() );
+				throw $this->prepare_api_error_exception( $e );
 			}
 
 			throw $this->prepare_exception( $e->getMessage(), [], $e->getCode() );
@@ -170,7 +170,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 			throw $e;
 		} catch ( Exception $e ) {
 			if ( $e->getPrevious() instanceof BadResponseException ) {
-				throw $this->prepare_api_error_exception( $e->getPrevious() );
+				throw $this->prepare_api_error_exception( $e );
 			}
 			throw $this->prepare_exception( $e->getMessage(), [], $e->getCode() );
 		}
@@ -561,11 +561,11 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 	/**
 	 * Prepares an API error Exception to be thrown with Merchant data.
 	 *
-	 * @param BadResponseException $e The caught exception.
+	 * @param Exception $e The caught exception.
 	 *
 	 * @return ExceptionWithResponseData
 	 */
-	private function prepare_api_error_exception( BadResponseException $e ) {
+	private function prepare_api_error_exception( Exception $e ) {
 		/** @var BadResponseException $prev */
 		$prev    = $e->getPrevious();
 		$body    = method_exists( $prev, 'getResponse' ) && $prev->getResponse() ? (string) $prev->getResponse()->getBody() : '';
