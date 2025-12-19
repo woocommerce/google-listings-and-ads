@@ -48,7 +48,8 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 	const { data: suggestedAudience } = useTargetAudienceWithSuggestions();
 	const { data: countryCodes, targetAudience } =
 		useTargetAudienceFinalCountryCodes();
-	const { saveTargetAudience, updateCampaignAssetGroup } = useAppDispatch();
+	const { saveTargetAudience, updateCampaignAssetGroup, completeOnboarding } =
+		useAppDispatch();
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_ADS_ONLY_ONBOARDING,
@@ -109,6 +110,8 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 
 			await updateCampaignAssetGroup( assetEntityGroup.id, body );
 
+			// Complete onboarding after saving the asset group successfully.
+			await completeOnboarding();
 			createNotice(
 				'success',
 				__(
@@ -116,6 +119,10 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 					'google-listings-and-ads'
 				)
 			);
+
+			// Redirect to dashboard with success guide after completion.
+			const query = { guide: GUIDE_NAMES.SUBMISSION_SUCCESS };
+			window.location.href = adminUrl + getDashboardUrl( query );
 		} catch ( e ) {
 			enhancer.signalFailedSubmission();
 			return;
@@ -131,7 +138,7 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 	};
 
 	const finishOnboardingSetup = async () => {
-		// make API call to finish onboarding
+		await completeOnboarding();
 	};
 
 	const handleSetupPaidAdsSkipped = async () => {

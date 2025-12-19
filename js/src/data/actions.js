@@ -359,6 +359,20 @@ export function* syncSettings() {
 	} );
 }
 
+/**
+ * Mark onboarding as complete for service-based merchants.
+ *
+ * Calls the site endpoint defined in OnboardingController.
+ *
+ * @throws Will throw an error if the request failed.
+ */
+export function* completeOnboarding() {
+	yield apiFetch( {
+		path: `${ API_NAMESPACE }/google/onboarding/complete`,
+		method: 'POST',
+	} );
+}
+
 export function* fetchJetpackAccount() {
 	try {
 		const response = yield apiFetch( {
