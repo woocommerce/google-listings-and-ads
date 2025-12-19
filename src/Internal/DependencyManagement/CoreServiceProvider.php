@@ -74,6 +74,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantSetupCompleted;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -191,6 +192,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		MarketingChannelRegistrar::class => true,
 		OAuthService::class              => true,
 		WPCLIMigrationGTIN::class        => true,
+		OnboardingCompleted::class       => true,
 	];
 
 	/**
@@ -378,6 +380,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			$this->share_with_tags( GLAChannel::class, MerchantCenterService::class, AdsCampaign::class, Ads::class, MerchantStatuses::class, ProductSyncStats::class );
 			$this->share_with_tags( MarketingChannelRegistrar::class, GLAChannel::class, WC::class );
 		}
+
+		$this->share_with_tags( OnboardingCompleted::class );
 
 		// ClI Classes
 		$this->conditionally_share_with_tags( WPCLIMigrationGTIN::class, ProductRepository::class, AttributeManager::class );
