@@ -11,8 +11,8 @@ export default class SetUpAccountsPage extends MockRequests {
 	/**
 	 * @param {import('@playwright/test').Page} page
 	 */
-	constructor( page ) {
-		super( page );
+	constructor( page, { glaData = {} } = {} ) {
+		super( page, { glaData } );
 		this.page = page;
 	}
 
@@ -241,6 +241,17 @@ export default class SetUpAccountsPage extends MockRequests {
 	}
 
 	/**
+	 * Get service-based Merchant Google account card.
+	 *
+	 * @return {import('@playwright/test').Locator} Get service-based Merchant Google account card.
+	 */
+	getServiceBasedMerchantGoogleAccountCard() {
+		return this.page.locator(
+			'.gla-connected-google-ads-only-account-card--google'
+		);
+	}
+
+	/**
 	 * Get Google Ads account card.
 	 *
 	 * @return {import('@playwright/test').Locator} Get Google Ads account card.
@@ -393,6 +404,15 @@ export default class SetUpAccountsPage extends MockRequests {
 	 */
 	getStoreAddressCard() {
 		return this.page.locator( '.gla-store-address-card' );
+	}
+
+	/**
+	 * Get choose audience section.
+	 *
+	 * @return {import('@playwright/test').Locator} Get choose audience section.
+	 */
+	getChooseAudienceSection() {
+		return this.page.locator( '.gla-choose-audience-section' );
 	}
 
 	/**
