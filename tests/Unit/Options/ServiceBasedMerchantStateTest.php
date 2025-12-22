@@ -38,7 +38,7 @@ class ServiceBasedMerchantStateTest extends ContainerAwareUnitTest {
 
 		$result = $this->service_based_merchant_state->is_service_based_merchant();
 
-		$this->assertEquals( 'yes', $result );
+		$this->assertTrue( $result );
 	}
 
 	public function test_is_service_based_merchant_calculates_when_option_is_null() {
@@ -60,7 +60,7 @@ class ServiceBasedMerchantStateTest extends ContainerAwareUnitTest {
 		$result = $this->service_based_merchant_state->is_service_based_merchant();
 
 		// Has physical products, so NOT service-based
-		$this->assertEquals( 'no', $result );
+		$this->assertFalse( $result );
 
 		// Cleanup
 		$physical_product->delete( true );
@@ -126,5 +126,33 @@ class ServiceBasedMerchantStateTest extends ContainerAwareUnitTest {
 		// Cleanup
 		$physical_product->delete( true );
 		$virtual_product->delete( true );
+	}
+
+	public function test_has_physical_products_handles_batch_processing() {
+		$products = [];
+
+		// Create 150 virtual products (exceeds BATCH_SIZE of 100)
+		for ( $i = 0; $i < 150; $i++ ) {
+			$virtual_product = WC_Helper_Product::create_simple_product();
+			$virtual_product->set_virtual( true );
+			$virtual_product->save();
+			$products[] = $virtual_product;
+		}
+
+		// Create 1 physical product at the end
+		$physical_product = WC_Helper_Product::create_simple_product();
+		$physical_product->set_virtual( false );
+		$physical_product->save();
+		$products[] = $physical_product;
+
+		$result = $this->service_based_merchant_state->has_physical_products();
+
+		// Should process multiple batches and find the physical product
+		$this->assertTrue( $result );
+
+		// Cleanup
+		foreach ( $products as $product ) {
+			$product->delete( true );
+		}
 	}
 }
