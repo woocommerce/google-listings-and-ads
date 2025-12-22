@@ -177,29 +177,29 @@ test.describe( 'Settings', () => {
 				).toBeVisible();
 			} );
 		} );
+	} );
 
-		test.describe( 'When there is no connected Google Merchant Center account', () => {
-			test.beforeAll( async () => {
-				await settingsPage.mockJetpackConnected();
-				await settingsPage.mockGoogleConnected();
-				await settingsPage.mockAdsAccountConnected();
-				await settingsPage.mockMCNotConnected();
-				await settingsPage.goto();
-			} );
+	test.describe( 'No connected Google Merchant Center account', () => {
+		test.beforeAll( async () => {
+			await settingsPage.mockJetpackConnected();
+			await settingsPage.mockGoogleConnected();
+			await settingsPage.mockAdsAccountConnected();
+			await settingsPage.mockMCNotConnected();
+			await settingsPage.goto();
+		} );
 
-			test( 'should not show Google Merchant Center account card', async () => {
-				// There should not be a `gla-account-card` with text 'Google Merchant Center'.
-				const gmcCard = page.locator(
-					'.gla-account-card:has-text("Google Merchant Center")'
-				);
-				await expect( gmcCard ).not.toBeVisible();
-			} );
+		test( 'should not show Google Merchant Center account card', async () => {
+			// There should not be a `gla-account-card` with text 'Google Merchant Center'.
+			const gmcCard = page.locator(
+				'.gla-account-card:has-text("Google Merchant Center")'
+			);
+			await expect( gmcCard ).not.toBeVisible();
+		} );
 
-			test( 'should not show the tax rate setup section', async () => {
-				await expect(
-					page.getByText( 'Tax rate (required for U.S. only)' )
-				).not.toBeVisible();
-			} );
+		test( 'should not show the tax rate setup section', async () => {
+			await expect(
+				page.getByText( 'Tax rate (required for U.S. only)' )
+			).not.toBeVisible();
 		} );
 	} );
 } );
