@@ -41,6 +41,17 @@ class ServiceBasedMerchantStateTest extends ContainerAwareUnitTest {
 		$this->assertTrue( $result );
 	}
 
+	public function test_is_service_based_merchant_returns_false() {
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT )
+			->willReturn( 'no' );
+
+		$result = $this->service_based_merchant_state->is_service_based_merchant();
+
+		$this->assertFalse( $result );
+	}
+
 	public function test_is_service_based_merchant_calculates_when_option_is_null() {
 		// Create a physical product that requires shipping
 		$physical_product = WC_Helper_Product::create_simple_product();
