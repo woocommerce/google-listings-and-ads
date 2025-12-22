@@ -39,12 +39,12 @@ class ServiceBasedMerchantState implements Service, OptionsAwareInterface {
 
 		// If option is null, calculate it now.
 		if ( null === $option_value ) {
-			$service_based = ! $this->has_physical_products();
+			$service_based = ! $this->has_physical_products() ? 'yes' : 'no';
 			$this->options->update( OptionsInterface::IS_SERVICE_BASED_MERCHANT, $service_based );
-			return $service_based;
+			return 'yes' === $service_based;
 		}
 
-		return (bool) $option_value;
+		return 'yes' === $option_value;
 	}
 
 	/**

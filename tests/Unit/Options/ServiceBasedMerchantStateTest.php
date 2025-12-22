@@ -34,11 +34,11 @@ class ServiceBasedMerchantStateTest extends ContainerAwareUnitTest {
 		$this->options->expects( $this->once() )
 			->method( 'get' )
 			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT )
-			->willReturn( true );
+			->willReturn( 'yes' );
 
 		$result = $this->service_based_merchant_state->is_service_based_merchant();
 
-		$this->assertTrue( $result );
+		$this->assertEquals( 'yes', $result );
 	}
 
 	public function test_is_service_based_merchant_calculates_when_option_is_null() {
@@ -55,12 +55,12 @@ class ServiceBasedMerchantStateTest extends ContainerAwareUnitTest {
 		// Should calculate and save when option is null
 		$this->options->expects( $this->once() )
 			->method( 'update' )
-			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT, false );
+			->with( OptionsInterface::IS_SERVICE_BASED_MERCHANT, 'no' );
 
 		$result = $this->service_based_merchant_state->is_service_based_merchant();
 
 		// Has physical products, so NOT service-based
-		$this->assertFalse( $result );
+		$this->assertEquals( 'no', $result );
 
 		// Cleanup
 		$physical_product->delete( true );
