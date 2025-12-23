@@ -42,7 +42,6 @@ class OnboardingController extends BaseController {
 	protected function get_complete_callback(): callable {
 		return function ( Request $request ) {
 			do_action( 'woocommerce_gla_onboarding_completed' );
-			do_action( 'woocommerce_gla_track_event', 'onboarding_complete', [] );
 
 			return new Response(
 				[
