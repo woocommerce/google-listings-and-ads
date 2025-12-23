@@ -65,9 +65,7 @@ class ServiceBasedMerchantState implements Service, OptionsAwareInterface {
 			);
 
 			foreach ( $products as $product ) {
-				// Check if product is not virtual and requires shipping.
-				// Note: needs_shipping() returns !is_virtual(), so this check is essentially: !is_virtual
-				if ( ! $product->is_virtual() && $product->needs_shipping() ) {
+				if ( $product->needs_shipping() ) {
 					return true;
 				}
 			}
