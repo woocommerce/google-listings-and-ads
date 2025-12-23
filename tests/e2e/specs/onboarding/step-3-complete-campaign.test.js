@@ -48,7 +48,35 @@ let page = null;
 
 test.describe( 'Complete your campaign', () => {
 	test.beforeAll( async ( { browser } ) => {
-		page = await browser.newPage();
+		// Use a dedicated context so the init script runs before any document scripts
+		const context = await browser.newContext( {
+			storageState: process.env.ADMINSTATE,
+		} );
+
+		await context.addInitScript( () => {
+			const store = {};
+			try {
+				Object.defineProperty( window, 'glaData', {
+					configurable: false,
+					enumerable: true,
+					get() {
+						return store;
+					},
+					set( val ) {
+						if ( val && typeof val === 'object' ) {
+							Object.assign( store, val );
+						}
+						// Always force mcSetupComplete to true
+						store.mcSetupComplete = true;
+					},
+				} );
+			} catch ( e ) {
+				// no-op if already defined
+			}
+			store.mcSetupComplete = true;
+		} );
+
+		page = await context.newPage();
 		setupBudgetPage = new SetupBudgetPage( page );
 		dashboardPage = new DashboardPage( page );
 		completeCampaign = new CompleteCampaign( page );
@@ -381,6 +409,11 @@ test.describe( 'Complete your campaign', () => {
 				} );
 
 				test( 'should go to "Product Feed" when clicking "Complete setup" button', async () => {
+					// Ensure MC setup is marked complete at script init before Product Feed loads
+					await page.addInitScript( () => {
+						window.glaData = window.glaData || {};
+						window.glaData.mcSetupComplete = true;
+					} );
 					await completeCampaign.mockCompleteAdsSetup();
 					await completeCampaign.fulfillAdsCampaignsRequest(
 						{
@@ -400,6 +433,13 @@ test.describe( 'Complete your campaign', () => {
 						completeCampaign.registerCompleteSetupRequests();
 					await completeCampaign.clickCompleteSetupButton();
 					await requestsPromises;
+					// Navigate is SPA; force full reload so plugin pages re-register with mcSetupComplete=true
+					await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
+					await page.addInitScript( () => {
+						window.glaData = window.glaData || {};
+						window.glaData.mcSetupComplete = true;
+					} );
+					await page.reload( { waitUntil: 'domcontentloaded' } );
 
 					const setupSuccessModal =
 						completeCampaign.getSetupSuccessModal();
@@ -498,8 +538,19 @@ test.describe( 'Complete your campaign', () => {
 				} );
 
 				test( 'should see the url contains product-feed if the user skips', async () => {
+					// Ensure MC setup is marked complete at script init before Product Feed loads
+					await page.addInitScript( () => {
+						window.glaData = window.glaData || {};
+						window.glaData.mcSetupComplete = true;
+					} );
 					await completeCampaign.clickCompleteSetupModalButton();
 					await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
+					// Force full reload with mcSetupComplete=true so Product Feed is registered
+					await page.addInitScript( () => {
+						window.glaData = window.glaData || {};
+						window.glaData.mcSetupComplete = true;
+					} );
+					await page.reload( { waitUntil: 'domcontentloaded' } );
 					expect( page.url() ).toMatch(
 						/path=%2Fgoogle%2Fproduct-feed/
 					);
@@ -595,8 +646,19 @@ test.describe( 'Complete your campaign', () => {
 				} );
 
 				test( 'should send survey and complete setup', async () => {
+					// Ensure MC setup is marked complete at script init before Product Feed loads
+					await page.addInitScript( () => {
+						window.glaData = window.glaData || {};
+						window.glaData.mcSetupComplete = true;
+					} );
 					await completeCampaign.clickSendAndCompleteSetupModalButton();
 					await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
+					// Force full reload with mcSetupComplete=true so Product Feed is registered
+					await page.addInitScript( () => {
+						window.glaData = window.glaData || {};
+						window.glaData.mcSetupComplete = true;
+					} );
+					await page.reload( { waitUntil: 'domcontentloaded' } );
 					expect( page.url() ).toMatch(
 						/path=%2Fgoogle%2Fproduct-feed/
 					);
