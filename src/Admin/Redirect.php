@@ -6,8 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Activateable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -21,9 +20,8 @@ use Automattic\WooCommerce\Admin\PageController;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin
  */
-class Redirect implements Activateable, Service, Registerable, OptionsAwareInterface, MerchantCenterAwareInterface {
+class Redirect implements Activateable, Service, Registerable, OptionsAwareInterface {
 
-	use MerchantCenterAwareTrait;
 	use OptionsAwareTrait;
 
 	protected const OPTION = OptionsInterface::REDIRECT_TO_ONBOARDING;
@@ -39,12 +37,19 @@ class Redirect implements Activateable, Service, Registerable, OptionsAwareInter
 	protected $wp;
 
 	/**
+	 * @var OnboardingCompleted
+	 */
+	protected $onboarding_completed;
+
+	/**
 	 * Redirect constructor.
 	 *
-	 * @param WP $wp
+	 * @param WP                  $wp
+	 * @param OnboardingCompleted $onboarding_completed
 	 */
-	public function __construct( WP $wp ) {
-		$this->wp = $wp;
+	public function __construct( WP $wp, OnboardingCompleted $onboarding_completed ) {
+		$this->wp                   = $wp;
+		$this->onboarding_completed = $onboarding_completed;
 	}
 
 	/**
@@ -83,28 +88,6 @@ class Redirect implements Activateable, Service, Registerable, OptionsAwareInter
 	}
 
 	/**
-	 * Check if onboarding is complete.
-	 * For backwards compatibility, checks MC setup if ONBOARDING_COMPLETED_AT is not set.
-	 *
-	 * @return bool
-	 */
-	protected function is_onboarding_complete(): bool {
-		$onboarding_completed_at = $this->options->get( OptionsInterface::ONBOARDING_COMPLETED_AT );
-
-		if ( null !== $onboarding_completed_at ) {
-			return boolval( $onboarding_completed_at );
-		}
-
-		if ( $this->merchant_center->is_setup_complete() ) {
-			$mc_setup_completed_at = $this->options->get( OptionsInterface::MC_SETUP_COMPLETED_AT );
-			$this->options->update( OptionsInterface::ONBOARDING_COMPLETED_AT, $mc_setup_completed_at );
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
 	 * Checks if merchant should be redirected to the onboarding page if it is not.
 	 *
 	 * @return void
@@ -120,12 +103,12 @@ class Redirect implements Activateable, Service, Registerable, OptionsAwareInter
 		}
 
 		// If setup ISNT complete then redirect from dashboard to onboarding
-		if ( ! $this->is_onboarding_complete() && $this->is_current_wc_admin_page( self::PATHS['dashboard'] ) ) {
+		if ( ! $this->onboarding_completed->is_onboarding_complete() && $this->is_current_wc_admin_page( self::PATHS['dashboard'] ) ) {
 			return $this->redirect_to( self::PATHS['get_started'] );
 		}
 
 		// If setup IS complete then redirect from onboarding to dashboard
-		if ( $this->is_onboarding_complete() && $this->is_current_wc_admin_page( self::PATHS['get_started'] ) ) {
+		if ( $this->onboarding_completed->is_onboarding_complete() && $this->is_current_wc_admin_page( self::PATHS['get_started'] ) ) {
 			return $this->redirect_to( self::PATHS['dashboard'] );
 		}
 
@@ -139,7 +122,7 @@ class Redirect implements Activateable, Service, Registerable, OptionsAwareInter
 	 */
 	protected function maybe_redirect_after_activation(): bool {
 		// Do not redirect if setup is already complete
-		if ( $this->is_onboarding_complete() ) {
+		if ( $this->onboarding_completed->is_onboarding_complete() ) {
 			$this->options->update( self::OPTION, 'no' );
 			return false;
 		}

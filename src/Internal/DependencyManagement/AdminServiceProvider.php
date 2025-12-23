@@ -33,6 +33,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupMerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Shipping;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
@@ -88,10 +89,11 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 			AssetsHandlerInterface::class,
 			PHPViewFactory::class,
 			MerchantCenterService::class,
-			AdsService::class
+			AdsService::class,
+			OnboardingCompleted::class
 		);
 		$this->share_with_tags( PHPViewFactory::class );
-		$this->share_with_tags( Redirect::class, WP::class );
+		$this->share_with_tags( Redirect::class, WP::class, OnboardingCompleted::class );
 
 		// Share bulk edit views
 		$this->share_with_tags( CouponBulkEdit::class, CouponMetaHandler::class, MerchantCenterService::class, TargetAudience::class );
