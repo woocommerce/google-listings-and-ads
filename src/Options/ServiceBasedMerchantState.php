@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class ServiceBasedMerchantState
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\ServiceBasedMerchant
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Options
  */
 class ServiceBasedMerchantState implements Service, OptionsAwareInterface {
 
