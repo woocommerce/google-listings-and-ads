@@ -532,7 +532,6 @@ test.describe( 'Complete your campaign', () => {
 					// Reset the showing status for the "Set up paid ads" section.
 					await page.evaluate( () => window.sessionStorage.clear() );
 					await setupAdsAccountPage.mockAdsAccountIncomplete();
-					await setupAdsAccountPage.mockMCConnected();
 					await completeCampaign.goto();
 					// Mock WC Tracks as enabled
 					await page.evaluate( () => {
