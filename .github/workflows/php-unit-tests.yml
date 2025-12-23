@@ -47,11 +47,9 @@ jobs:
         uses: woocommerce/grow/get-plugin-releases@actions-v2
         with:
           slug: wordpress
-      - name: Get Release versions from WooCommerce
+      - name: Temporarily hardcode wc-versions
         id: wc
-        uses: woocommerce/grow/get-plugin-releases@actions-v2
-        with:
-          slug: woocommerce
+        run: echo "versions=['10.4.3', '10.3.6', '10.2.2']" >> $GITHUB_OUTPUT
 
   UnitTests:
     if: github.event_name != 'workflow_dispatch'
