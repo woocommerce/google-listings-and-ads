@@ -409,11 +409,6 @@ test.describe( 'Complete your campaign', () => {
 				} );
 
 				test( 'should go to "Product Feed" when clicking "Complete setup" button', async () => {
-					// Ensure MC setup is marked complete at script init before Product Feed loads
-					await page.addInitScript( () => {
-						window.glaData = window.glaData || {};
-						window.glaData.mcSetupComplete = true;
-					} );
 					await completeCampaign.mockCompleteAdsSetup();
 					await completeCampaign.fulfillAdsCampaignsRequest(
 						{
@@ -538,18 +533,8 @@ test.describe( 'Complete your campaign', () => {
 				} );
 
 				test( 'should see the url contains product-feed if the user skips', async () => {
-					// Ensure MC setup is marked complete at script init before Product Feed loads
-					await page.addInitScript( () => {
-						window.glaData = window.glaData || {};
-						window.glaData.mcSetupComplete = true;
-					} );
 					await completeCampaign.clickCompleteSetupModalButton();
 					await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
-					// Force full reload with mcSetupComplete=true so Product Feed is registered
-					await page.addInitScript( () => {
-						window.glaData = window.glaData || {};
-						window.glaData.mcSetupComplete = true;
-					} );
 					await page.reload( { waitUntil: 'domcontentloaded' } );
 					expect( page.url() ).toMatch(
 						/path=%2Fgoogle%2Fproduct-feed/
@@ -646,18 +631,8 @@ test.describe( 'Complete your campaign', () => {
 				} );
 
 				test( 'should send survey and complete setup', async () => {
-					// Ensure MC setup is marked complete at script init before Product Feed loads
-					await page.addInitScript( () => {
-						window.glaData = window.glaData || {};
-						window.glaData.mcSetupComplete = true;
-					} );
 					await completeCampaign.clickSendAndCompleteSetupModalButton();
 					await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
-					// Force full reload with mcSetupComplete=true so Product Feed is registered
-					await page.addInitScript( () => {
-						window.glaData = window.glaData || {};
-						window.glaData.mcSetupComplete = true;
-					} );
 					await page.reload( { waitUntil: 'domcontentloaded' } );
 					expect( page.url() ).toMatch(
 						/path=%2Fgoogle%2Fproduct-feed/
