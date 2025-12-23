@@ -48,8 +48,8 @@ export default function LinkedAccounts() {
 	const isLoading = ! (
 		jetpack &&
 		google &&
-		googleAdsAccount &&
-		googleMCAccount
+		googleMCAccount &&
+		googleAdsAccount
 	);
 	const hasAdsAccount = [ CONNECTED, INCOMPLETE ].includes(
 		googleAdsAccount?.status
@@ -92,11 +92,13 @@ export default function LinkedAccounts() {
 						googleAccount={ google }
 						hideAccountSwitch
 					/>
+
 					{ hasGoogleMCConnection && (
 						<MerchantCenterAccountInfoCard
 							googleMCAccount={ googleMCAccount }
 						/>
 					) }
+
 					{ hasAdsAccount && (
 						<ConnectedGoogleAdsAccountCard
 							googleAdsAccount={ googleAdsAccount }
@@ -116,6 +118,7 @@ export default function LinkedAccounts() {
 							</Section.Card.Footer>
 						</ConnectedGoogleAdsAccountCard>
 					) }
+
 					<Flex justify="flex-end">
 						<AppButton
 							isPrimary
