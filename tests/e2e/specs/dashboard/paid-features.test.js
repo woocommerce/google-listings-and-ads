@@ -31,7 +31,12 @@ let page = null;
 test.describe( 'Paid Feature Listing', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
-		dashboardPage = new DashboardPage( page );
+		dashboardPage = new DashboardPage( page, {
+			glaData: {
+				mcSetupComplete: true,
+				serviceBasedMerchant: false,
+			},
+		} );
 		await setOnboardedMerchant();
 		await dashboardPage.mockRequests();
 		await dashboardPage.goto();
