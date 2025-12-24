@@ -48,6 +48,11 @@ test.describe( 'Paid Feature Listing', () => {
 	} );
 
 	test( 'Paid Features Listing is visible if ads campaign setup is not complete', async () => {
+		// Set adsSetupComplete to false in glaData using initScript
+		await page.addInitScript( ( glaData ) => {
+			glaData.adsSetupComplete = false;
+		} );
+
 		await expect( dashboardPage.googleAdsSummaryCard ).toContainText(
 			'Google Ads'
 		);

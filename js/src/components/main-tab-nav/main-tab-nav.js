@@ -61,12 +61,13 @@ const MainTabNav = () => {
 	useMenuEffect();
 
 	const { hasGoogleMCConnection } = useGoogleMCAccount();
+	const hasMC = glaData.mcSetupComplete || hasGoogleMCConnection;
 
 	if ( ! glaData.enableReports ) {
 		tabs = tabs.filter( ( { key } ) => key !== 'reports' );
 	}
 
-	if ( ! hasGoogleMCConnection ) {
+	if ( ! hasMC ) {
 		tabs = tabs.filter( ( { key } ) =>
 			[ 'dashboard', 'settings' ].includes( key )
 		);
