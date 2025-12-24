@@ -35,6 +35,7 @@ test.describe( 'Paid Feature Listing', () => {
 			glaData: {
 				mcSetupComplete: true,
 				serviceBasedMerchant: false,
+				adsSetupComplete: false,
 			},
 		} );
 		await setOnboardedMerchant();
@@ -48,11 +49,6 @@ test.describe( 'Paid Feature Listing', () => {
 	} );
 
 	test( 'Paid Features Listing is visible if ads campaign setup is not complete', async () => {
-		// Set adsSetupComplete to false in glaData using initScript
-		await page.addInitScript( ( glaData ) => {
-			glaData.adsSetupComplete = false;
-		} );
-
 		await expect( dashboardPage.googleAdsSummaryCard ).toContainText(
 			'Google Ads'
 		);
@@ -96,6 +92,14 @@ test.describe( 'Paid Feature Listing', () => {
 			await expect( dashboardPage.paidFeatures ).toBeVisible();
 		} );
 		test( 'When at least one campaign present', async () => {
+			// Re-instantiate DashboardPage with adsSetupComplete=true so init script sets it before app loads
+			dashboardPage = new DashboardPage( page, {
+				glaData: {
+					mcSetupComplete: true,
+					serviceBasedMerchant: false,
+					adsSetupComplete: true,
+				},
+			} );
 			await dashboardPage.fulfillAdsCampaignsRequest( [
 				{
 					id: 111111111,

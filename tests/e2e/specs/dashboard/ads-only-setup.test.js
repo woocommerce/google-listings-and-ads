@@ -30,7 +30,12 @@ let page = null;
 test.describe( 'Limited UI elements visibility for Ads only setup', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
-		dashboardPage = new DashboardPage( page );
+		dashboardPage = new DashboardPage( page, {
+			glaData: {
+				mcSetupComplete: false,
+				serviceBasedMerchant: true,
+			},
+		} );
 		await setOnboardedMerchant();
 		await dashboardPage.mockRequests();
 		await dashboardPage.mockMCNotConnected();
