@@ -13,8 +13,8 @@ export default class PriceBenchmarkPage extends MockRequests {
 	/**
 	 * @param {import('@playwright/test').Page} page
 	 */
-	constructor( page ) {
-		super( page );
+	constructor( page, { glaData = {} } = {} ) {
+		super( page, { glaData } );
 		this.page = page;
 	}
 
