@@ -48,37 +48,14 @@ let page = null;
 
 test.describe( 'Complete your campaign', () => {
 	test.beforeAll( async ( { browser } ) => {
-		// Use a dedicated context so the init script runs before any document scripts
-		const context = await browser.newContext( {
-			storageState: process.env.ADMINSTATE,
-		} );
-
-		await context.addInitScript( () => {
-			const store = {};
-			try {
-				Object.defineProperty( window, 'glaData', {
-					configurable: false,
-					enumerable: true,
-					get() {
-						return store;
-					},
-					set( val ) {
-						if ( val && typeof val === 'object' ) {
-							Object.assign( store, val );
-						}
-						// Always force mcSetupComplete to true
-						store.mcSetupComplete = true;
-					},
-				} );
-			} catch ( e ) {
-				// no-op if already defined
-			}
-			store.mcSetupComplete = true;
-		} );
-
-		page = await context.newPage();
+		page = await browser.newPage();
 		setupBudgetPage = new SetupBudgetPage( page );
-		dashboardPage = new DashboardPage( page );
+		dashboardPage = new DashboardPage( page, {
+			glaData: {
+				mcSetupComplete: true,
+				serviceBasedMerchant: false,
+			},
+		} );
 		completeCampaign = new CompleteCampaign( page );
 		setupAdsAccountPage = new SetupAdsAccountPage( page );
 		await Promise.all( [
@@ -428,13 +405,6 @@ test.describe( 'Complete your campaign', () => {
 						completeCampaign.registerCompleteSetupRequests();
 					await completeCampaign.clickCompleteSetupButton();
 					await requestsPromises;
-					// Navigate is SPA; force full reload so plugin pages re-register with mcSetupComplete=true
-					await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
-					await page.addInitScript( () => {
-						window.glaData = window.glaData || {};
-						window.glaData.mcSetupComplete = true;
-					} );
-					await page.reload( { waitUntil: 'domcontentloaded' } );
 
 					const setupSuccessModal =
 						completeCampaign.getSetupSuccessModal();
@@ -535,7 +505,6 @@ test.describe( 'Complete your campaign', () => {
 				test( 'should see the url contains product-feed if the user skips', async () => {
 					await completeCampaign.clickCompleteSetupModalButton();
 					await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
-					await page.reload( { waitUntil: 'domcontentloaded' } );
 					expect( page.url() ).toMatch(
 						/path=%2Fgoogle%2Fproduct-feed/
 					);
@@ -633,7 +602,6 @@ test.describe( 'Complete your campaign', () => {
 				test( 'should send survey and complete setup', async () => {
 					await completeCampaign.clickSendAndCompleteSetupModalButton();
 					await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
-					await page.reload( { waitUntil: 'domcontentloaded' } );
 					expect( page.url() ).toMatch(
 						/path=%2Fgoogle%2Fproduct-feed/
 					);
