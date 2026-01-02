@@ -12,6 +12,7 @@ import { useState, useEffect, useRef } from '@wordpress/element';
  */
 import { useAppDispatch } from '~/data';
 import useAdminUrl from '~/hooks/useAdminUrl';
+import useCompleteAdsSetup from '~/hooks/useCompleteAdsSetup';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import useTargetAudienceWithSuggestions from '../useTargetAudienceWithSuggestions';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
@@ -45,6 +46,7 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 	const adminUrl = useAdminUrl();
 	const [ step, setStep ] = useState( savedStep );
 	const { createNotice } = useDispatchCoreNotices();
+	const { completeAdsSetup } = useCompleteAdsSetup();
 	const { data: suggestedAudience } = useTargetAudienceWithSuggestions();
 	const { data: countryCodes, targetAudience } =
 		useTargetAudienceFinalCountryCodes();
@@ -137,12 +139,9 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 		setStep( ADS_ONLY_STEP_NAME_KEY_MAP.optimize_campaign );
 	};
 
-	const finishOnboardingSetup = async () => {
-		await completeOnboarding();
-	};
-
 	const handleSetupPaidAdsSkipped = async () => {
-		await finishOnboardingSetup();
+		await completeAdsSetup();
+		await completeOnboarding();
 
 		const query = { guide: GUIDE_NAMES.SUBMISSION_SUCCESS };
 		window.location.href = adminUrl + getDashboardUrl( query );

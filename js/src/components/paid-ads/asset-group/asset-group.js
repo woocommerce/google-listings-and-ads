@@ -6,6 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { useAppDispatch } from '~/data';
 import { ASSET_FORM_KEY } from '~/constants';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import StepContent from '~/components/stepper/step-content';
@@ -20,6 +21,7 @@ import AssetGroupHeader from './asset-group-header';
 import AssetGroupEditor from './asset-group-editor';
 import { upsertActionedCampaign } from '~/utils/actionedCampaignsCache';
 import './asset-group.scss';
+import useCompleteAdsSetup from '~/hooks/useCompleteAdsSetup';
 
 export const ACTION_SUBMIT_CAMPAIGN_AND_ASSETS = 'submit-campaign-and-assets';
 export const ACTION_SUBMIT_CAMPAIGN_ONLY = 'submit-campaign-only';
@@ -70,6 +72,8 @@ export default function AssetGroup( { campaign } ) {
 	const isCreation = ! campaign;
 	const { isValidForm, handleSubmit, adapter, values } =
 		useAdaptiveFormContext();
+	const { completeOnboarding } = useAppDispatch();
+	const { completeAdsSetup } = useCompleteAdsSetup();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const { isValidAssetGroup, isSubmitting, isSubmitted, submitter } = adapter;
 	const currentAction = submitter?.dataset.action;
@@ -125,7 +129,9 @@ export default function AssetGroup( { campaign } ) {
 		}
 	};
 
-	const handleSkipClick = ( event ) => {
+	const handleSkipClick = async ( event ) => {
+		await completeAdsSetup();
+		await completeOnboarding();
 		handleSubmit( event );
 		recordActionedCampaign();
 		recordSubmissionClickEvent( event );
