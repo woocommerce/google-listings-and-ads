@@ -44,14 +44,12 @@ jobs:
     steps:
       - name: Get Release versions from WordPress
         id: wp
-        # uses: woocommerce/grow/get-plugin-releases@actions-v2
-        uses: woocommerce/grow/get-plugin-releases@add/actions-get-plugin-releases-from-github-test-build
+        uses: woocommerce/grow/get-plugin-releases@actions-v2
         with:
           slug: wordpress
       - name: Get Release versions from WooCommerce
         id: wc
-        # uses: woocommerce/grow/get-plugin-releases@actions-v2
-        uses: woocommerce/grow/get-plugin-releases@add/actions-get-plugin-releases-from-github-test-build
+        uses: woocommerce/grow/get-plugin-releases@actions-v2
         with:
           source: github
           slug: woocommerce/woocommerce
