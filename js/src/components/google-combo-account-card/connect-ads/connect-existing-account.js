@@ -30,7 +30,7 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 	const [ isLoading, setLoading ] = useState( false );
 	const {
 		fetchGoogleAdsAccountStatus,
-		clearDetailedErrorBySlot,
+		clearDetailedErrorBySlots,
 		receiveDetailedError,
 	} = useAppDispatch();
 	const { isGoogleAdsReady } = useGoogleAdsAccountReady();
@@ -57,7 +57,7 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 			return;
 		}
 
-		clearDetailedErrorBySlot( ERROR_SLOTS.GOOGLE_ADS_CONNECTION );
+		clearDetailedErrorBySlots( [ ERROR_SLOTS.GOOGLE_ADS_CONNECTION ] );
 
 		setLoading( true );
 		try {
