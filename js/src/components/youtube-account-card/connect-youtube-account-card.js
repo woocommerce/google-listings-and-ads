@@ -17,7 +17,7 @@ import useApiFetchCallback from '~/hooks/useApiFetchCallback';
  * Clicking on the button to connect YouTube account.
  *
  * @event gla_youtube_account_connect_button_click
- * @property {string} context Indicates from which page the button was clicked. Possible value: 'setup-youtube'.
+ * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
  */
 
 /**
@@ -59,7 +59,7 @@ const ConnectYouTubeAccountCard = () => {
 					isSecondary
 					loading={ loading || data }
 					eventName="gla_youtube_account_connect_button_click"
-					eventProps={ { context: 'setup-youtube' } }
+					eventProps={ { context: 'settings-youtube' } }
 					onClick={ handleConnectClick }
 				>
 					{ __( 'Connect', 'google-listings-and-ads' ) }
