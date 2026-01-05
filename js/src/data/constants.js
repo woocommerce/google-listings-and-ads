@@ -18,7 +18,6 @@ export const EMPTY_ASSET_ENTITY_GROUP = {
 };
 
 export const ERROR_SLOTS = {
-	GOOGLE_MC_CONNECTION: 'google_mc_connection',
-	GOOGLE_ADS_CONNECTION: 'google_ads_connection',
-	ADS_ACCOUNT_UPSERT: 'ads_account_upsert',
+	GOOGLE_MC_CONNECTION: 'setup-mc-google_mc_connection',
+	GOOGLE_ADS_CONNECTION: 'setup-ads-google_ads_connection',
 };

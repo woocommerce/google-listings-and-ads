@@ -2,7 +2,6 @@
  * External dependencies
  */
 import classNames from 'classnames';
-import { Fragment } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -22,7 +21,7 @@ const DetailedError = ( { errorSlots, className } ) => {
 	const formattedErrors = getFormattedErrorMessage( errors );
 
 	return (
-		<Fragment>
+		<>
 			{ formattedErrors.map( ( { title, description }, idx ) => (
 				<div
 					key={ idx }
@@ -44,7 +43,7 @@ const DetailedError = ( { errorSlots, className } ) => {
 					</p>
 				</div>
 			) ) }
-		</Fragment>
+		</>
 	);
 };
 

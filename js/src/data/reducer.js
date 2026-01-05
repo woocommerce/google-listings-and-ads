@@ -645,12 +645,15 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.CLEAR_DETAILED_ERROR_BY_SLOT: {
-			const { slot } = action;
+			const { slots } = action;
+			const toClear = new Set( slots );
 
 			return setIn(
 				state,
 				'detailed_errors',
-				state.detailed_errors.filter( ( error ) => error.slot !== slot )
+				state.detailed_errors.filter(
+					( error ) => ! toClear.has( error.slot )
+				)
 			);
 		}
 
