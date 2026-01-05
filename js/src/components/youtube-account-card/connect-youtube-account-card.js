@@ -3,15 +3,18 @@
  */
 import { __ } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
+import { ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import { API_NAMESPACE } from '~/data/constants';
+import { recordGlaEvent } from '~/utils/tracks';
 import AppButton from '~/components/app-button';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
+import './connect-youtube-account-card.scss';
 
 /**
  * Clicking on the button to connect YouTube account.
@@ -20,8 +23,11 @@ import useApiFetchCallback from '~/hooks/useApiFetchCallback';
  * @property {string} context Indicates from which page the button was clicked. Possible value: 'setup-youtube'.
  */
 
+const TERMS_URL = 'https://www.youtube.com/t/merchant_terms';
+
 /**
  * @fires gla_youtube_account_connect_button_click
+ * @fires gla_documentation_link_click with `{ context: 'settings-connect-youtube-account-card', link_id: 'youtube-merchant-terms' }` and the URL.
  */
 const ConnectYouTubeAccountCard = () => {
 	const { createNotice } = useDispatchCoreNotices();
@@ -47,13 +53,33 @@ const ConnectYouTubeAccountCard = () => {
 		}
 	};
 
+	const handleClick = () => {
+		recordGlaEvent( 'gla_documentation_link_click', {
+			context: 'settings-connect-youtube-account-card',
+			link_id: 'youtube-merchant-terms',
+			href: TERMS_URL,
+		} );
+	};
+
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.YOUTUBE }
-			description={ __(
-				'Sign in to view your channels.',
-				'google-listings-and-ads'
-			) }
+			description={
+				<div className="gla-connect-youtube-account-card__description">
+					<p>
+						{ __(
+							'Sign in to view your channels.',
+							'google-listings-and-ads'
+						) }
+					</p>
+					<ExternalLink onClick={ handleClick } href={ TERMS_URL }>
+						{ __(
+							'YouTube Merchant Terms',
+							'google-listings-and-ads'
+						) }
+					</ExternalLink>
+				</div>
+			}
 			indicator={
 				<AppButton
 					isSecondary
