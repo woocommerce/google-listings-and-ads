@@ -1079,19 +1079,23 @@ Clicking on the button to connect WordPress.com account.
 #### Emitters
 - [`ConnectWPComAccountCard`](../../js/src/components/wpcom-account-card/connect-wpcom-account-card.js#L27)
 
-### [`gla_youtube_account_connect_button_click`](../../js/src/components/youtube-account-card/connect-youtube-account-card.js#L19)
+### [`gla_youtube_account_connect_button_click`](../../js/src/components/youtube-account-card/connect-youtube-account-card.js#L16)
 Clicking on the button to connect YouTube account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`context` | `string` | Indicates from which page the button was clicked. Possible value: 'setup-youtube'.
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
 #### Emitters
-- [`ConnectYouTubeAccountCard`](../../js/src/components/youtube-account-card/connect-youtube-account-card.js#L32)
+- [`ConnectYouTubeAccountCard`](../../js/src/components/youtube-account-card/connect-youtube-account-card.js#L26)
 
 ### [`gla_youtube_account_disconnect_button_click`](../../js/src/components/youtube-account-card/disconnect-account.js#L13)
 Clicking on the button to disconnect the YouTube account.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
 #### Emitters
-- [`DisconnectAccount`](../../js/src/components/youtube-account-card/disconnect-account.js#L24) When the user clicks on the button to disconnect the YouTube account.
+- [`DisconnectAccount`](../../js/src/components/youtube-account-card/disconnect-account.js#L25) When the user clicks on the button to disconnect the YouTube account.
 
 ### [`gla_youtube_shopping_tour_close_button_click`](../../js/src/components/tours/youtube-shopping-tour.js#L26)
 When the tour is closed.
