@@ -279,7 +279,7 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 					}
 				}
 			}
-			throw new Exception( $message, $status, $e );
+			throw new Exception( $message, $status );
 		}
 	}
 

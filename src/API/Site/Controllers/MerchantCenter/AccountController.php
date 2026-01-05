@@ -174,10 +174,10 @@ class AccountController extends BaseController {
 			} catch ( Exception $e ) {
 				if ( $e instanceof ExceptionWithResponseData ) {
 					$data    = $e->get_response_data();
-					$status  = $e->getCode() ?: 400;
-					$error   = is_array( $data ) ? ( $data['error'] ?? [] ) : [];
-					$message = is_array( $error ) && isset( $error['message'] ) ? (string) $error['message'] : $e->getMessage();
 					if ( isset( $data['code'] ) && 'API_ERROR' === $data['code'] ) {
+						$status  = $e->getCode() ?: 400;
+						$error   = is_array( $data ) ? ( $data['error'] ?? [] ) : [];
+						$message = is_array( $error ) && isset( $error['message'] ) ? (string) $error['message'] : $e->getMessage();
 						return new Response(
 							[
 								'code'    => 'API_ERROR',
