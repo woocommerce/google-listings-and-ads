@@ -442,13 +442,40 @@ test.describe( 'Set up Ads account', () => {
 			} );
 		} );
 
+		test( 'Campaign creation succeeds with Merchant Center account', async () => {
+			await setupBudgetPage.fillBudget( '6' );
+
+			const campaignCreation =
+				setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
+					'6',
+					[ 'US' ]
+				);
+
+			await setupBudgetPage.getCreateCampaignButton().click();
+
+			await campaignCreation;
+
+			await page.waitForURL(
+				'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard&guide=campaign-creation-success',
+				{
+					waitUntil: LOAD_STATE.DOM_CONTENT_LOADED,
+				}
+			);
+
+			await expect(
+				page.getByRole( 'heading', {
+					name: "You've set up a Performance Max Campaign!",
+				} )
+			).toBeVisible();
+		} );
+
 		test( 'It should show the campaign creation success message', async () => {
 			await setupBudgetPage.fillBudget( '6' );
 			await setupBudgetPage.getCreateCampaignButton().click();
 
 			const cancelButton = page.getByRole( 'button', { name: 'Cancel' } );
 			await expect(
-				page.getByText( 'This offer won’t last long!' )
+				page.getByText( "This offer won't last long!" )
 			).toBeVisible();
 			await expect( cancelButton ).toBeEnabled();
 
