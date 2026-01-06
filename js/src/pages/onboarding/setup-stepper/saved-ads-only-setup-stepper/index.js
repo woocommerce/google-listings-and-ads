@@ -190,6 +190,7 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 							<AssetGroup
 								context={ CONTEXT_ADS_ONLY_ONBOARDING }
 								campaign={ createdCampaignRef.current }
+								onSkipClick={ handleSetupPaidAdsSkipped }
 							/>
 						</CampaignAssetsForm>
 					),

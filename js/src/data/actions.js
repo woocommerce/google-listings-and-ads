@@ -367,10 +367,20 @@ export function* syncSettings() {
  * @throws Will throw an error if the request failed.
  */
 export function* completeOnboarding() {
-	yield apiFetch( {
-		path: `${ API_NAMESPACE }/google/onboarding/complete`,
-		method: 'POST',
-	} );
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/google/onboarding/complete`,
+			method: 'POST',
+		} );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error completing onboarding.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }
 
 export function* fetchJetpackAccount() {
