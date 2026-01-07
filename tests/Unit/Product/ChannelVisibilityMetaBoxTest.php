@@ -89,4 +89,17 @@ class ChannelVisibilityMetaBoxTest extends UnitTest {
 			'not_connected' => [ false ],
 		];
 	}
+
+	/**
+	 * @dataProvider data_provider_is_connected
+	 *
+	 * @param bool $is_connected
+	 */
+	public function test_can_register_returns_merchant_center_connection_status( bool $is_connected ) {
+		$this->merchant_center
+			->method( 'is_connected' )
+			->willReturn( $is_connected );
+
+		$this->assertSame( $is_connected, $this->channel_visibility_meta_box->can_register() );
+	}
 }

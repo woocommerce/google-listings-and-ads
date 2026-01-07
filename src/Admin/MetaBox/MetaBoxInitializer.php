@@ -9,7 +9,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\ChannelVisibilityMetaBox;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -62,8 +61,7 @@ class MetaBoxInitializer implements Service, Registerable, Conditional {
 	 */
 	public function register_meta_boxes() {
 		foreach ( $this->meta_boxes as $meta_box ) {
-			// Skip ChannelVisibilityMetaBox if Merchant Center is not connected.
-			if ( $meta_box instanceof ChannelVisibilityMetaBox && ! $this->merchant_center->is_connected() ) {
+			if ( ! $meta_box->can_register() ) {
 				continue;
 			}
 

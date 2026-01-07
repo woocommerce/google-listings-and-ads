@@ -105,6 +105,15 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	}
 
 	/**
+	 * Check whether this meta box can be registered.
+	 *
+	 * @return bool Whether the meta box can be registered.
+	 */
+	public function can_register(): bool {
+		return $this->merchant_center->is_connected();
+	}
+
+	/**
 	 * Returns an array of variables to be used in the view.
 	 *
 	 * @param WP_Post $post The WordPress post object the box is loaded for.
