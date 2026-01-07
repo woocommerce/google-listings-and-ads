@@ -741,4 +741,47 @@ test.describe( 'Complete your campaign', () => {
 			).toBeVisible();
 		} );
 	} );
+
+	test.describe( 'EU Regulations section', () => {
+		test( 'Displays the EU Regulations checkbox if the target audience contains an EU country', async () => {
+			await completeCampaign.fulfillTargetAudience(
+				{
+					location: 'selected',
+					countries: [ 'GB' ],
+					locale: 'en_US',
+					language: 'English',
+				},
+				[ 'GET' ]
+			);
+
+			await completeCampaign.goto();
+			const checkbox = page.getByRole( 'checkbox', {
+				name: "My ads include political content as defined by Google's EU political content policy.",
+			} );
+			await expect( checkbox ).toBeVisible();
+		} );
+
+		test( 'Does not display the EU Regulations section if the target audience does not contain an EU country', async () => {
+			await completeCampaign.fulfillTargetAudience(
+				{
+					location: 'selected',
+					countries: [ 'MU' ],
+					locale: 'en_US',
+					language: 'English',
+				},
+				[ 'GET' ]
+			);
+
+			await completeCampaign.goto();
+			await page
+				.getByText( 'Create a campaign to advertise your products', {
+					exact: true,
+				} )
+				.waitFor( { state: 'visible' } );
+
+			await expect(
+				page.getByText( 'EU regulations' )
+			).not.toBeVisible();
+		} );
+	} );
 } );

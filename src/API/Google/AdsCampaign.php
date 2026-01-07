@@ -236,7 +236,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			// Operations must be in a specific order to match the temporary ID's.
 			$operations = array_merge(
 				[ $this->budget->create_operation( $params['name'], $params['amount'] ) ],
-				[ $this->create_operation( $params['name'], $base_country ) ],
+				[ $this->create_operation( $params['name'], $base_country, $params['eu_political_advertising_confirmation'] ) ],
 				$this->container->get( AdsAssetGroup::class )->create_operations(
 					$this->temporary_resource_name(),
 					$params['name']
@@ -304,7 +304,11 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$campaign_fields['status'] = CampaignStatus::number( $params['status'] );
 			}
 
-			$campaign_fields['contains_eu_political_advertising'] = EuPoliticalAdvertisingStatus::DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING;
+			if ( isset( $params['eu_political_advertising_confirmation'] ) && true === $params['eu_political_advertising_confirmation'] ) {
+				$campaign_fields['contains_eu_political_advertising'] = EuPoliticalAdvertisingStatus::CONTAINS_EU_POLITICAL_ADVERTISING;
+			} else {
+				$campaign_fields['contains_eu_political_advertising'] = EuPoliticalAdvertisingStatus::DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING;
+			}
 
 			if ( ! empty( $params['amount'] ) ) {
 				$operations[] = $this->budget->edit_operation( $campaign_id, $params['amount'] );
@@ -478,10 +482,11 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 *
 	 * @param string $campaign_name
 	 * @param string $country
+	 * @param bool   $is_eu_political
 	 *
 	 * @return MutateOperation
 	 */
-	protected function create_operation( string $campaign_name, string $country ): MutateOperation {
+	protected function create_operation( string $campaign_name, string $country, bool $is_eu_political ): MutateOperation {
 		$campaign = new Campaign(
 			[
 				'resource_name'                     => $this->temporary_resource_name(),
@@ -497,7 +502,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 						'feed_label'  => $country,
 					]
 				),
-				'contains_eu_political_advertising' => EuPoliticalAdvertisingStatus::DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING,
+				'contains_eu_political_advertising' => $is_eu_political ? EuPoliticalAdvertisingStatus::CONTAINS_EU_POLITICAL_ADVERTISING : EuPoliticalAdvertisingStatus::DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING,
 			]
 		);
 
@@ -550,6 +555,12 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			'status'             => CampaignStatus::label( $campaign->getStatus() ),
 			'type'               => CampaignType::label( $campaign->getAdvertisingChannelType() ),
 			'targeted_locations' => [],
+		];
+
+		$eu_political_enum = $campaign->getContainsEuPoliticalAdvertising();
+
+		$data += [
+			'eu_political_advertising_confirmation' => EuPoliticalAdvertisingStatus::CONTAINS_EU_POLITICAL_ADVERTISING === $eu_political_enum ? true : false,
 		];
 
 		$budget = $row->getCampaignBudget();
