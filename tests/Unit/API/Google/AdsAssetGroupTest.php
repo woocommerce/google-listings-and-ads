@@ -57,7 +57,10 @@ class AdsAssetGroupTest extends UnitTest {
 		$this->asset_group->set_options_object( $this->options );
 	}
 
-	public function test_create_operations() {
+	public function test_create_operations_with_merchant_center() {
+		// Mock merchant_id > 0 to simulate Merchant Center connected
+		$this->options->method( 'get_merchant_id' )->willReturn( 12345 );
+
 		$campaign_resource_name    = $this->generate_campaign_resource_name( self::TEST_CAMPAIGN_ID );
 		$asset_group_resource_name = $this->generate_asset_group_resource_name( -3 );
 
@@ -65,6 +68,9 @@ class AdsAssetGroupTest extends UnitTest {
 			$campaign_resource_name,
 			'New Campaign'
 		);
+
+		// Should return 2 operations: asset group + listing group filter
+		$this->assertCount( 2, $operations );
 
 		$operation_asset_group = $operations[0]->getAssetGroupOperation();
 		$this->assertTrue( $operation_asset_group->hasCreate() );
@@ -79,10 +85,34 @@ class AdsAssetGroupTest extends UnitTest {
 		$this->assertTrue( $operation_listing_group->hasCreate() );
 
 		$listing_group = $operation_listing_group->getCreate();
-		$this->assertEquals( 'New Campaign Asset Group', $asset_group->getName() );
 		$this->assertEquals( $asset_group_resource_name, $listing_group->getAssetGroup() );
 		$this->assertEquals( ListingGroupFilterType::UNIT_INCLUDED, $listing_group->getType() );
 		$this->assertEquals( ListingGroupFilterListingSource::SHOPPING, $listing_group->getListingSource() );
+	}
+
+	public function test_create_operations_without_merchant_center() {
+		// Mock merchant_id = 0 to simulate no Merchant Center
+		$this->options->method( 'get_merchant_id' )->willReturn( 0 );
+
+		$campaign_resource_name    = $this->generate_campaign_resource_name( self::TEST_CAMPAIGN_ID );
+		$asset_group_resource_name = $this->generate_asset_group_resource_name( -3 );
+
+		$operations = $this->asset_group->create_operations(
+			$campaign_resource_name,
+			'New Campaign'
+		);
+
+		// Should return only 1 operation: asset group (no listing group filter)
+		$this->assertCount( 1, $operations );
+
+		$operation_asset_group = $operations[0]->getAssetGroupOperation();
+		$this->assertTrue( $operation_asset_group->hasCreate() );
+
+		$asset_group = $operation_asset_group->getCreate();
+		$this->assertEquals( 'New Campaign Asset Group', $asset_group->getName() );
+		$this->assertEquals( $campaign_resource_name, $asset_group->getCampaign() );
+		$this->assertEquals( $asset_group_resource_name, $asset_group->getResourceName() );
+		$this->assertEquals( AssetGroupStatus::ENABLED, $asset_group->getStatus() );
 	}
 
 	public function test_get_asset_groups_by_campaign_id_with_assets() {
@@ -251,8 +281,44 @@ class AdsAssetGroupTest extends UnitTest {
 		}
 	}
 
-	public function test_create_asset_group() {
+	public function test_create_asset_group_with_merchant_center() {
+		// Mock merchant_id > 0 to simulate Merchant Center connected
+		$this->options->method( 'get_merchant_id' )->willReturn( 12345 );
+
 		$this->generate_asset_group_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
+
+		$this->assertEquals(
+			self::TEST_CAMPAIGN_ID,
+			$this->asset_group->create_asset_group( self::TEST_CAMPAIGN_ID )
+		);
+	}
+
+	public function test_create_asset_group_without_merchant_center() {
+		// Mock merchant_id = 0 to simulate no Merchant Center
+		$this->options->method( 'get_merchant_id' )->willReturn( 0 );
+
+		// For create without MC, we need to update the mock to expect only 1 operation
+		$asset_group_resource_name = $this->generate_asset_group_resource_name( self::TEST_CAMPAIGN_ID );
+		$asset_group_result        = $this->createMock( \Google\Ads\GoogleAds\V20\Services\MutateAssetGroupResult::class );
+		$asset_group_result->method( 'getResourceName' )->willReturn( $asset_group_resource_name );
+
+		$response = ( new \Google\Ads\GoogleAds\V20\Services\MutateGoogleAdsResponse() )->setMutateOperationResponses(
+			[
+				( new \Google\Ads\GoogleAds\V20\Services\MutateOperationResponse() )->setAssetGroupResult( $asset_group_result ),
+			]
+		);
+
+		$this->service_client->expects( $this->once() )
+			->method( 'mutate' )
+			->willReturnCallback(
+				function ( $request ) use ( $response ) {
+					$operations = $request->getMutateOperations();
+					// Should only have 1 operation (asset group, no listing group filter)
+					$this->assertCount( 1, $operations );
+					$this->assertEquals( 'asset_group_operation', $operations[0]->getOperation() );
+					return $response;
+				}
+			);
 
 		$this->assertEquals(
 			self::TEST_CAMPAIGN_ID,
