@@ -4,7 +4,9 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\OnboardingController;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
+use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Class OnboardingControllerTest
@@ -16,6 +18,9 @@ class OnboardingControllerTest extends RESTControllerUnitTest {
 	/** @var OnboardingController $controller */
 	protected $controller;
 
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
 	protected const ROUTE_COMPLETE = '/wc/gla/google/onboarding/complete';
 
 	/**
@@ -24,7 +29,9 @@ class OnboardingControllerTest extends RESTControllerUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
+		$this->options    = $this->createMock( OptionsInterface::class );
 		$this->controller = new OnboardingController( $this->server );
+		$this->controller->set_options_object( $this->options );
 		$this->controller->register();
 	}
 
@@ -59,5 +66,21 @@ class OnboardingControllerTest extends RESTControllerUnitTest {
 	public function test_route_registered(): void {
 		$routes = $this->server->get_routes();
 		$this->assertArrayHasKey( self::ROUTE_COMPLETE, $routes );
+	}
+
+	/**
+	 * Test deleting onboarding completion successfully.
+	 */
+	public function test_delete_onboarding_completion(): void {
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::ONBOARDING_COMPLETED_AT )
+			->willReturn( true );
+
+		$response = $this->do_request( self::ROUTE_COMPLETE, 'DELETE' );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( 'success', $response->get_data()['status'] );
+		$this->assertEquals( 'Successfully deleted onboarding completion status', $response->get_data()['message'] );
 	}
 }
