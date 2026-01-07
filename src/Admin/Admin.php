@@ -17,6 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use Automattic\WooCommerce\GoogleListingsAndAds\View\ViewException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -54,18 +55,25 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 	protected $ads;
 
 	/**
+	 * @var OnboardingCompleted
+	 */
+	protected $onboarding_completed;
+
+	/**
 	 * Admin constructor.
 	 *
 	 * @param AssetsHandlerInterface $assets_handler
 	 * @param ViewFactory            $view_factory
 	 * @param MerchantCenterService  $merchant_center
 	 * @param AdsService             $ads
+	 * @param OnboardingCompleted    $onboarding_completed
 	 */
-	public function __construct( AssetsHandlerInterface $assets_handler, ViewFactory $view_factory, MerchantCenterService $merchant_center, AdsService $ads ) {
-		$this->assets_handler  = $assets_handler;
-		$this->view_factory    = $view_factory;
-		$this->merchant_center = $merchant_center;
-		$this->ads             = $ads;
+	public function __construct( AssetsHandlerInterface $assets_handler, ViewFactory $view_factory, MerchantCenterService $merchant_center, AdsService $ads, OnboardingCompleted $onboarding_completed ) {
+		$this->assets_handler       = $assets_handler;
+		$this->view_factory         = $view_factory;
+		$this->merchant_center      = $merchant_center;
+		$this->ads                  = $ads;
+		$this->onboarding_completed = $onboarding_completed;
 	}
 
 	/**
@@ -135,6 +143,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 				'mcSupportedLanguage'      => $this->merchant_center->is_language_supported(),
 				'adsCampaignConvertStatus' => $this->options->get( OptionsInterface::CAMPAIGN_CONVERT_STATUS ),
 				'adsSetupComplete'         => $this->ads->is_setup_complete(),
+				'onboardingComplete'       => $this->onboarding_completed->is_onboarding_complete(),
 				'enableReports'            => $this->enableReports(),
 				'dateFormat'               => get_option( 'date_format' ),
 				'timeFormat'               => get_option( 'time_format' ),
