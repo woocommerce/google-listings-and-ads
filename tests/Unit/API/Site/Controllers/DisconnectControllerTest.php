@@ -22,7 +22,7 @@ class DisconnectControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
-	protected const ROUTE_CONNECTIONS = '/wc/gla/connections';
+	protected const ROUTE_CONNECTIONS         = '/wc/gla/connections';
 	protected const ROUTE_ONBOARDING_COMPLETE = '/wc/gla/google/onboarding/complete';
 
 	/**
@@ -32,7 +32,7 @@ class DisconnectControllerTest extends RESTControllerUnitTest {
 		parent::setUp();
 
 		// Register OnboardingController so it can be called by DisconnectController
-		$this->options = $this->createMock( OptionsInterface::class );
+		$this->options         = $this->createMock( OptionsInterface::class );
 		$onboarding_controller = new OnboardingController( $this->server );
 		$onboarding_controller->set_options_object( $this->options );
 		$onboarding_controller->register();
@@ -77,4 +77,3 @@ class DisconnectControllerTest extends RESTControllerUnitTest {
 		);
 	}
 }
-
