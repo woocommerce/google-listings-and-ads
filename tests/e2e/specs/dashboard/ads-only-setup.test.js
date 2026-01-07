@@ -38,6 +38,7 @@ test.describe( 'Limited UI elements visibility for Ads only setup', () => {
 		} );
 		await setOnboardedMerchant();
 		await dashboardPage.mockRequests();
+
 		await dashboardPage.mockMCNotConnected();
 		await setCompletedAdsSetup();
 		await dashboardPage.goto();
@@ -52,6 +53,14 @@ test.describe( 'Limited UI elements visibility for Ads only setup', () => {
 		test( 'Should display only "Dashboard" and "Settings" tabs in the main navigation', async () => {
 			const tabs = await dashboardPage.getTabTitles();
 			expect( tabs ).toEqual( [ 'Dashboard', 'Settings' ] );
+		} );
+
+		test( 'Should not display "Product Feed (Limited Visibility)" card', async () => {
+			// Get all the summary cards with `gla-summary-card` class.
+			const summaryCards = await dashboardPage.getSummaryCards();
+			expect( summaryCards ).not.toContain(
+				'Product Feed (Limited Visibility)'
+			);
 		} );
 	} );
 } );

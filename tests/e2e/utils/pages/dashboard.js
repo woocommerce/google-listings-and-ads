@@ -57,6 +57,10 @@ export default class DashboardPage extends MockRequests {
 		await this.page.close();
 	}
 
+	async getSummaryCards() {
+		return this.page.locator( '.gla-summary-card' );
+	}
+
 	/**
 	 * Mock all requests related to external accounts such as Merchant Center, Google, etc.
 	 *
@@ -100,6 +104,22 @@ export default class DashboardPage extends MockRequests {
 			symbol: '$',
 			status: 'disconnected',
 		} );
+
+		await this.fulfillAdsCampaignsRequest(
+			[
+				{
+					id: 111111111,
+					name: 'Test Campaign',
+					status: 'enabled',
+					type: 'performance_max',
+					amount: '20.00',
+					country: 'US',
+					targeted_locations: [ 'US' ],
+				},
+			],
+			200,
+			[ 'GET' ]
+		);
 
 		await this.mockAdsRecommendations();
 		await this.fulfillAdsReportProducts( adsReportProductsData );
