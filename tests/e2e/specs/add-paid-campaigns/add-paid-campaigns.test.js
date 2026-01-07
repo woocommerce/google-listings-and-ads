@@ -475,7 +475,7 @@ test.describe( 'Set up Ads account', () => {
 
 			const cancelButton = page.getByRole( 'button', { name: 'Cancel' } );
 			await expect(
-				page.getByText( "This offer won't last long!" )
+				page.getByText( 'This offer won’t last long!' )
 			).toBeVisible();
 			await expect( cancelButton ).toBeEnabled();
 

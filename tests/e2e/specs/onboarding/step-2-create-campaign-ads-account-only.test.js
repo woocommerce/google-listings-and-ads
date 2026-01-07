@@ -409,7 +409,7 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 					} );
 
 					await expect(
-						page.getByText( "This offer won't last long!" )
+						page.getByText( 'This offer won’t last long!' )
 					).toBeVisible();
 					await expect( confirmButton ).toBeEnabled();
 
