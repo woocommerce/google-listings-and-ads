@@ -25,6 +25,7 @@ use Google\Protobuf\FieldMask;
 use Exception;
 use DateTime;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 
 /**
  * Class AdsAssetGroup
@@ -40,6 +41,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 
 	use ExceptionTrait;
 	use OptionsAwareTrait;
+	use PluginHelper;
 
 	/**
 	 * Temporary ID to use within a batch job.
@@ -160,14 +162,20 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 * @return MutateOperation
 	 */
 	protected function asset_group_create_operation( string $campaign_resource_name, string $campaign_name ): MutateOperation {
-		$asset_group = new AssetGroup(
-			[
-				'resource_name' => $this->temporary_resource_name(),
-				'name'          => $campaign_name . ' Asset Group',
-				'campaign'      => $campaign_resource_name,
-				'status'        => AssetGroupStatus::ENABLED,
-			]
-		);
+		$merchant_id = $this->options->get_merchant_id();
+
+		$asset_group_data = [
+			'resource_name' => $this->temporary_resource_name(),
+			'name'          => $campaign_name . ' Asset Group',
+			'campaign'      => $campaign_resource_name,
+			'status'        => AssetGroupStatus::ENABLED,
+		];
+
+		if ( $merchant_id <= 0 ) {
+			$asset_group_data['final_urls'] = [ $this->get_site_url() ];
+		}
+
+		$asset_group = new AssetGroup( $asset_group_data );
 
 		$operation = ( new AssetGroupOperation() )->setCreate( $asset_group );
 		return ( new MutateOperation() )->setAssetGroupOperation( $operation );
