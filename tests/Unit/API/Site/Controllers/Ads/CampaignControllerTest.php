@@ -65,22 +65,24 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 	public function test_get_campaigns() {
 		$campaigns_data = [
 			[
-				'id'                 => self::TEST_CAMPAIGN_ID,
-				'name'               => 'Campaign One',
-				'status'             => 'paused',
-				'type'               => 'shopping',
-				'amount'             => 10,
-				'country'            => 'US',
-				'targeted_locations' => [],
+				'id'                                    => self::TEST_CAMPAIGN_ID,
+				'name'                                  => 'Campaign One',
+				'status'                                => 'paused',
+				'type'                                  => 'shopping',
+				'amount'                                => 10,
+				'country'                               => 'US',
+				'targeted_locations'                    => [],
+				'eu_political_advertising_confirmation' => false,
 			],
 			[
-				'id'                 => 5678901234,
-				'name'               => 'Campaign Two',
-				'status'             => 'enabled',
-				'type'               => 'performance_max',
-				'amount'             => 20,
-				'country'            => 'UK',
-				'targeted_locations' => [],
+				'id'                                    => 5678901234,
+				'name'                                  => 'Campaign Two',
+				'status'                                => 'enabled',
+				'type'                                  => 'performance_max',
+				'amount'                                => 20,
+				'country'                               => 'UK',
+				'targeted_locations'                    => [],
+				'eu_political_advertising_confirmation' => false,
 			],
 		];
 
@@ -97,43 +99,47 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 	public function test_get_campaigns_converted_names() {
 		$campaigns_data = [
 			[
-				'id'                 => self::TEST_CAMPAIGN_ID,
-				'name'               => 'Test Campaign',
-				'status'             => 'removed',
-				'type'               => 'shopping',
-				'amount'             => 10,
-				'country'            => 'US',
-				'targeted_locations' => [],
+				'id'                                    => self::TEST_CAMPAIGN_ID,
+				'name'                                  => 'Test Campaign',
+				'status'                                => 'removed',
+				'type'                                  => 'shopping',
+				'amount'                                => 10,
+				'country'                               => 'US',
+				'targeted_locations'                    => [],
+				'eu_political_advertising_confirmation' => false,
 			],
 			[
-				'id'                 => 5678901234,
-				'name'               => 'PMax: Test Campaign',
-				'status'             => 'enabled',
-				'type'               => 'performance_max',
-				'amount'             => 20,
-				'country'            => 'UK',
-				'targeted_locations' => [],
+				'id'                                    => 5678901234,
+				'name'                                  => 'PMax: Test Campaign',
+				'status'                                => 'enabled',
+				'type'                                  => 'performance_max',
+				'amount'                                => 20,
+				'country'                               => 'UK',
+				'targeted_locations'                    => [],
+				'eu_political_advertising_confirmation' => false,
 			],
 		];
 
 		$expected = [
 			[
-				'id'                 => self::TEST_CAMPAIGN_ID,
-				'name'               => 'Test Campaign',
-				'status'             => 'removed',
-				'type'               => 'shopping',
-				'amount'             => 10,
-				'country'            => 'US',
-				'targeted_locations' => [],
+				'id'                                    => self::TEST_CAMPAIGN_ID,
+				'name'                                  => 'Test Campaign',
+				'status'                                => 'removed',
+				'type'                                  => 'shopping',
+				'amount'                                => 10,
+				'country'                               => 'US',
+				'targeted_locations'                    => [],
+				'eu_political_advertising_confirmation' => false,
 			],
 			[
-				'id'                 => 5678901234,
-				'name'               => 'PMax: Test Campaign',
-				'status'             => 'enabled',
-				'type'               => 'performance_max',
-				'amount'             => 20,
-				'country'            => 'UK',
-				'targeted_locations' => [],
+				'id'                                    => 5678901234,
+				'name'                                  => 'PMax: Test Campaign',
+				'status'                                => 'enabled',
+				'type'                                  => 'performance_max',
+				'amount'                                => 20,
+				'country'                               => 'UK',
+				'targeted_locations'                    => [],
+				'eu_political_advertising_confirmation' => false,
 			],
 		];
 
@@ -172,10 +178,11 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		];
 
 		$expected = [
-			'id'      => self::TEST_CAMPAIGN_ID,
-			'status'  => 'enabled',
-			'type'    => 'performance_max',
-			'country' => self::BASE_COUNTRY,
+			'id'                                    => self::TEST_CAMPAIGN_ID,
+			'status'                                => 'enabled',
+			'type'                                  => 'performance_max',
+			'country'                               => self::BASE_COUNTRY,
+			'eu_political_advertising_confirmation' => false,
 		] + array_diff_key( $campaign_data, [ 'label' => 'wc-web' ] );
 
 		$this->ads_campaign->expects( $this->once() )
@@ -210,13 +217,14 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		];
 
 		$expected = [
-			'id'                 => self::TEST_CAMPAIGN_ID,
-			'status'             => 'enabled',
-			'type'               => 'performance_max',
-			'country'            => self::BASE_COUNTRY,
-			'name'               => 'New Campaign',
-			'amount'             => 20,
-			'targeted_locations' => [ 'US', 'GB', 'TW' ],
+			'id'                                    => self::TEST_CAMPAIGN_ID,
+			'status'                                => 'enabled',
+			'type'                                  => 'performance_max',
+			'country'                               => self::BASE_COUNTRY,
+			'name'                                  => 'New Campaign',
+			'amount'                                => 20,
+			'targeted_locations'                    => [ 'US', 'GB', 'TW' ],
+			'eu_political_advertising_confirmation' => false,
 		];
 
 		$this->ads_campaign->expects( $this->once() )
@@ -250,11 +258,12 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		];
 
 		$expected = [
-			'name'    => 'Campaign 2022-02-22 02:22:02',
-			'id'      => self::TEST_CAMPAIGN_ID,
-			'status'  => 'enabled',
-			'type'    => 'performance_max',
-			'country' => self::BASE_COUNTRY,
+			'name'                                  => 'Campaign 2022-02-22 02:22:02',
+			'id'                                    => self::TEST_CAMPAIGN_ID,
+			'status'                                => 'enabled',
+			'type'                                  => 'performance_max',
+			'country'                               => self::BASE_COUNTRY,
+			'eu_political_advertising_confirmation' => false,
 		] + $campaign_data;
 
 		$this->ads_campaign->expects( $this->once() )
@@ -349,13 +358,14 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 	public function test_get_campaign() {
 		$campaign_data = [
-			'id'                 => self::TEST_CAMPAIGN_ID,
-			'name'               => 'Campaign Name',
-			'status'             => 'enabled',
-			'type'               => 'performance_max',
-			'amount'             => 10,
-			'country'            => 'US',
-			'targeted_locations' => [],
+			'id'                                    => self::TEST_CAMPAIGN_ID,
+			'name'                                  => 'Campaign Name',
+			'status'                                => 'enabled',
+			'type'                                  => 'performance_max',
+			'amount'                                => 10,
+			'country'                               => 'US',
+			'targeted_locations'                    => [],
+			'eu_political_advertising_confirmation' => false,
 		];
 
 		$this->ads_campaign->expects( $this->once() )
