@@ -362,8 +362,6 @@ export function* syncSettings() {
 /**
  * Mark onboarding as complete for service-based merchants.
  *
- * Calls the site endpoint defined in OnboardingController.
- *
  * @throws Will throw an error if the request failed.
  */
 export function* completeOnboarding() {

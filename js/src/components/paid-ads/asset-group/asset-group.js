@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -63,12 +64,16 @@ export const ACTION_SUBMIT_CAMPAIGN_ONLY = 'submit-campaign-only';
  *
  * @param {Object} props React props.
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
- * @param {string} props.context The context where this component is used.
- * @param {Function} props.onSkipClick Callback function to be called when the skip button is clicked.
+ * @param {string} [props.context] The context where this component is used.
+ * @param {Function} [props.onSkipClick=noop] Callback function to be called when the skip button is clicked.
  *
  * @fires gla_submit_campaign_button_click
  */
-export default function AssetGroup( { campaign, context, onSkipClick } ) {
+export default function AssetGroup( {
+	campaign,
+	context,
+	onSkipClick = noop,
+} ) {
 	const isCreation = ! campaign;
 	const { isValidForm, handleSubmit, adapter, values } =
 		useAdaptiveFormContext();
@@ -134,7 +139,7 @@ export default function AssetGroup( { campaign, context, onSkipClick } ) {
 		recordActionedCampaign();
 		recordSubmissionClickEvent( event );
 
-		onSkipClick?.();
+		onSkipClick();
 	};
 
 	const handleLaunchClick = ( event ) => {

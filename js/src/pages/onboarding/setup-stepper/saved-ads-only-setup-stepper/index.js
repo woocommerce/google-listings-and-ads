@@ -121,10 +121,6 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 					'google-listings-and-ads'
 				)
 			);
-
-			// Redirect to dashboard with success guide after completion.
-			const query = { guide: GUIDE_NAMES.SUBMISSION_SUCCESS };
-			window.location.href = adminUrl + getDashboardUrl( query );
 		} catch ( e ) {
 			enhancer.signalFailedSubmission();
 			return;
