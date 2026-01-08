@@ -193,7 +193,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		MarketingChannelRegistrar::class => true,
 		OAuthService::class              => true,
 		WPCLIMigrationGTIN::class        => true,
-    OnboardingCompleted::class       => true,
+		OnboardingCompleted::class       => true,
 		ServiceBasedMerchantState::class => true,
 	];
 

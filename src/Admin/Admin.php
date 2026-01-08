@@ -75,7 +75,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 	 * @param OnboardingCompleted       $onboarding_completed
 	 * @param ServiceBasedMerchantState $service_based_merchant_state
 	 */
-	public function __construct( AssetsHandlerInterface $assets_handler, ViewFactory $view_factory, MerchantCenterService $merchant_center, AdsService $ads, ServiceBasedMerchantState $service_based_merchant_state ) {
+	public function __construct( AssetsHandlerInterface $assets_handler, ViewFactory $view_factory, MerchantCenterService $merchant_center, AdsService $ads, OnboardingCompleted $onboarding_completed, ServiceBasedMerchantState $service_based_merchant_state ) {
 		$this->assets_handler               = $assets_handler;
 		$this->view_factory                 = $view_factory;
 		$this->merchant_center              = $merchant_center;
