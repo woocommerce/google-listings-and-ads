@@ -10,6 +10,10 @@ import SetupBudgetPage from '../../utils/pages/ads-onboarding/setup-budget';
 import CreateCampaignPage from '../../utils/pages/onboarding/step-2-create-campaign-ads-account-only';
 import SetupAdsAccountPage from '../../utils/pages/ads-onboarding/setup-ads-accounts';
 import OptimizeCampaignPage from '../../utils/pages/onboarding/step-3-optimize-campaign-ads-account-only';
+import {
+	setServiceBasedMerchant,
+	clearServiceBasedMerchant,
+} from '../../utils/api';
 
 test.use( { storageState: process.env.ADMINSTATE } );
 
@@ -94,11 +98,12 @@ test.describe( 'Optimize campaign for Ads only merchants', () => {
 		setupAdsAccountPage = new SetupAdsAccountPage( page );
 		optimizeCampaignPage = new OptimizeCampaignPage( page );
 		await optimizeCampaignPage.fulfillAssetGroupsForCampaign();
-
+		await setServiceBasedMerchant();
 		await goToOptimizeStep();
 	} );
 
 	test.afterAll( async () => {
+		await clearServiceBasedMerchant();
 		await createCampaignPage.closePage();
 	} );
 

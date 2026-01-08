@@ -16,7 +16,6 @@ export default class DashboardPage extends MockRequests {
 	constructor( page ) {
 		super( page );
 		this.page = page;
-
 		this.googleAdsSummaryCard = this.page.locator(
 			'.gla-dashboard__performance .gla-summary-card:nth-child(1)'
 		);

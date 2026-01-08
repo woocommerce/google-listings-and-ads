@@ -12,6 +12,7 @@ import {
 	setCompletedAdsSetup,
 	setCompleteMCSetup,
 	clearCompleteMCSetup,
+	clearCompletedAdsSetup,
 } from '../../utils/api';
 import DashboardPage from '../../utils/pages/dashboard';
 
@@ -45,6 +46,7 @@ test.describe( 'Limited UI elements visibility for Ads only setup', () => {
 	test.afterAll( async () => {
 		await clearOnboardedMerchant();
 		await setCompleteMCSetup();
+		await clearCompletedAdsSetup();
 		await page.close();
 	} );
 
