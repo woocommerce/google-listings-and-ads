@@ -49,7 +49,10 @@ jobs:
           slug: wordpress
       - name: Temporarily hardcode wc-versions
         id: wc
-        run: echo "versions=['10.4.3', '10.3.6', '10.2.2']" >> $GITHUB_OUTPUT
+        uses: woocommerce/grow/get-plugin-releases@actions-v2
+        with:
+          source: github
+          slug: woocommerce/woocommerce
 
   UnitTests:
     if: github.event_name != 'workflow_dispatch'
@@ -147,4 +150,3 @@ jobs:
 
       - name: Run PHP unit tests
         run: composer test-unit
-     

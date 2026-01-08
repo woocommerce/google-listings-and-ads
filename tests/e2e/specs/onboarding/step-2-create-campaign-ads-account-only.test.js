@@ -388,6 +388,18 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 					await campaignCreation;
 				} );
 
+				test( 'Campaign creation succeeds without Merchant Center account', async () => {
+					await setupBudgetPage.fillBudget( '120' );
+					const campaignCreation =
+						setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
+							'120',
+							[ 'US', 'TW', 'GB' ]
+						);
+					await createCampaignPage.clickContinueButton();
+					await campaignCreation;
+					await expect( page.getByRole( 'heading' ) ).toBeVisible();
+				} );
+
 				test( 'Suggest a higher budget for getting back free credits', async () => {
 					await setupBudgetPage.fillBudget( '8' );
 					await createCampaignPage.clickContinueButton();
