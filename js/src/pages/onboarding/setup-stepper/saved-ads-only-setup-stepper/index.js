@@ -114,7 +114,6 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 			await createAdsWithAssetsCampaign(
 				dailyBudget,
 				countryCodes,
-				values[ ASSET_FORM_KEY.FINAL_URL ],
 				assets,
 				hasConfirmedEuPoliticalContent
 			);
