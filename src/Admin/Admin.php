@@ -60,7 +60,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 	 */
 	protected $onboarding_completed;
 
-  /**
+	/**
 	 * @var ServiceBasedMerchantState
 	 */
 	protected $service_based_merchant_state;

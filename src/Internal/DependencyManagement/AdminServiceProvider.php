@@ -91,8 +91,8 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 			PHPViewFactory::class,
 			MerchantCenterService::class,
 			AdsService::class,
-			OnboardingCompleted::class
-			ServiceBasedMerchantState::class
+			OnboardingCompleted::class,
+			ServiceBasedMerchantState::class,
 		);
 		$this->share_with_tags( PHPViewFactory::class );
 		$this->share_with_tags( Redirect::class, WP::class, OnboardingCompleted::class );
