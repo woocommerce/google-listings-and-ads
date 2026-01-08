@@ -97,6 +97,7 @@ test.describe( 'Optimize campaign for Ads only merchants', () => {
 		} );
 		setupAdsAccountPage = new SetupAdsAccountPage( page );
 		optimizeCampaignPage = new OptimizeCampaignPage( page );
+		await optimizeCampaignPage.fulfillAssetGroupsForCampaign();
 
 		await goToOptimizeStep();
 	} );
@@ -133,6 +134,17 @@ test.describe( 'Optimize campaign for Ads only merchants', () => {
 		test( 'Clicking the "Skip this step" button navigates to the dashboard', async () => {
 			await goToOptimizeStep();
 			await optimizeCampaignPage.clickSkipThisStepButton();
+
+			await page.waitForURL( /path=%2Fgoogle%2Fdashboard/ );
+			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fdashboard/ );
+		} );
+
+		test( 'Clicking Save changes button navigates to the dashboard with campaign=saved query param', async () => {
+			await goToOptimizeStep();
+			await optimizeCampaignPage.selectUrlOption();
+			const saveChangesButton =
+				optimizeCampaignPage.getSaveChangesButton();
+			await saveChangesButton.click();
 
 			await page.waitForURL( /path=%2Fgoogle%2Fdashboard/ );
 			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fdashboard/ );
