@@ -415,12 +415,14 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 			'final_url'                             => [
 				'type'        => 'string',
 				'description' => __( 'Final URL', 'google-listings-and-ads' ),
-				'context'     => [ 'view' ],
-
+				'context'     => [ 'edit' ],
+				'required'    => false,
 			],
 			'assets'                                => [
 				'type'        => 'array',
 				'description' => __( 'Asset is a part of an ad which can be shared across multiple ads. It can be an image, headlines, descriptions, etc.', 'google-listings-and-ads' ),
+				'context'     => [ 'edit' ],
+				'required'    => false,
 				'items'       => [
 					'type'       => 'object',
 					'properties' => [
