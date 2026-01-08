@@ -17,10 +17,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers
  */
-class OnboardingController extends BaseController implements OptionsAwareInterface {
+class OnboardingController extends BaseOptionsController {
 
 	use EmptySchemaPropertiesTrait;
-	use OptionsAwareTrait;
 
 	/**
 	 * Register rest routes with WordPress.
