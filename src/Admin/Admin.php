@@ -156,8 +156,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 				'dateFormat'               => get_option( 'date_format' ),
 				'timeFormat'               => get_option( 'time_format' ),
 				'siteLogoUrl'              => wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ), 'full' ),
-				// 'serviceBasedMerchant'     => $this->service_based_merchant_state->is_service_based_merchant(),
-				'serviceBasedMerchant'     => true,
+				'serviceBasedMerchant'     => $this->service_based_merchant_state->is_service_based_merchant(),
 				'initialWpData'            => [
 					'version' => $this->get_version(),
 					'mcId'    => $this->options->get_merchant_id() ?: null,
