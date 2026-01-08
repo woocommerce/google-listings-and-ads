@@ -491,6 +491,9 @@ test.describe( 'Complete your campaign', () => {
 		test.describe( 'User skips paid ads creation', () => {
 			test.describe( 'With WooCommerce tracking disabled', () => {
 				test.beforeAll( async () => {
+					await dashboardPage.fulfillAdsCampaignsRequest( [], 200, [
+						'GET',
+					] );
 					await setupAdsAccountPage.mockAdsAccountIncomplete();
 					await completeCampaign.goto();
 					await completeCampaign.clickSkipPaidAdsCreationButton();
@@ -657,7 +660,7 @@ test.describe( 'Complete your campaign', () => {
 				} );
 				const guideControlsItems =
 					guideControls.getByRole( 'listitem' );
-				await expect( guideControlsItems ).toHaveCount( 3 );
+				await expect( guideControlsItems ).toHaveCount( 2 );
 			} );
 
 			test( 'should see the "Enhanced Conversions" prompt in the setup success modal', async () => {

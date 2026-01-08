@@ -31,13 +31,7 @@ let page = null;
 test.describe( 'Paid Feature Listing', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
-		dashboardPage = new DashboardPage( page, {
-			glaData: {
-				mcSetupComplete: true,
-				serviceBasedMerchant: false,
-				adsSetupComplete: false,
-			},
-		} );
+		dashboardPage = new DashboardPage( page );
 		await setOnboardedMerchant();
 		await dashboardPage.mockRequests();
 		await dashboardPage.goto();
@@ -92,14 +86,6 @@ test.describe( 'Paid Feature Listing', () => {
 			await expect( dashboardPage.paidFeatures ).toBeVisible();
 		} );
 		test( 'When at least one campaign present', async () => {
-			// Re-instantiate DashboardPage with adsSetupComplete=true so init script sets it before app loads
-			dashboardPage = new DashboardPage( page, {
-				glaData: {
-					mcSetupComplete: true,
-					serviceBasedMerchant: false,
-					adsSetupComplete: true,
-				},
-			} );
 			await dashboardPage.fulfillAdsCampaignsRequest( [
 				{
 					id: 111111111,

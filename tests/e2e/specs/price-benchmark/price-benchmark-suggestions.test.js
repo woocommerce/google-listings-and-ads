@@ -40,7 +40,6 @@ test.describe( 'Price Benchmark Page', () => {
 		priceBenchmarkPage = new PriceBenchmarkPage( page, {
 			glaData: {
 				mcSetupComplete: true,
-				serviceBasedMerchant: false,
 			},
 		} );
 		await priceBenchmarkPage.mockRequests();

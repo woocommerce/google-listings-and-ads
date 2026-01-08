@@ -58,7 +58,7 @@ test.describe( 'Limited UI elements visibility for Ads only setup', () => {
 		test( 'Should not display "Product Feed (Limited Visibility)" card', async () => {
 			// Get all the summary cards with `gla-summary-card` class.
 			const summaryCards = await dashboardPage.getSummaryCards();
-			expect( summaryCards ).not.toContain(
+			expect( summaryCards ).not.toContainText(
 				'Product Feed (Limited Visibility)'
 			);
 		} );
