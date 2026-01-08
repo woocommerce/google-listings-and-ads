@@ -819,7 +819,7 @@ export function* createAdsWithAssetsCampaign(
 				eu_political_advertising_confirmation:
 					hasConfirmedEuPoliticalContent,
 				label,
-				finalUrl,
+				final_url: finalUrl,
 				assets,
 			},
 		} );
