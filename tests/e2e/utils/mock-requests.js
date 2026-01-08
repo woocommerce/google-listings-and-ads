@@ -41,20 +41,8 @@ export default class MockRequests {
 	/**
 	 * @param {import('@playwright/test').Page} page
 	 */
-	constructor( page, { glaData = {} } = {} ) {
+	constructor( page ) {
 		this.page = page;
-		if ( Object.keys( glaData ).length > 0 ) {
-			this.page.addInitScript( ( injectedGlaData ) => {
-				let _glaData;
-				Object.defineProperty( window, 'glaData', {
-					configurable: true,
-					get: () => _glaData,
-					set: ( value ) => {
-						_glaData = { ...( value || {} ), ...injectedGlaData };
-					},
-				} );
-			}, glaData );
-		}
 	}
 
 	/**

@@ -10,6 +10,8 @@ import {
 	clearOnboardedMerchant,
 	setOnboardedMerchant,
 	setCompletedAdsSetup,
+	setCompleteMCSetup,
+	clearCompleteMCSetup,
 } from '../../utils/api';
 import DashboardPage from '../../utils/pages/dashboard';
 
@@ -30,13 +32,9 @@ let page = null;
 test.describe( 'Limited UI elements visibility for Ads only setup', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
-		dashboardPage = new DashboardPage( page, {
-			glaData: {
-				mcSetupComplete: false,
-				serviceBasedMerchant: true,
-			},
-		} );
+		dashboardPage = new DashboardPage( page );
 		await setOnboardedMerchant();
+		await clearCompleteMCSetup();
 		await dashboardPage.mockRequests();
 
 		await dashboardPage.mockMCNotConnected();
@@ -46,6 +44,7 @@ test.describe( 'Limited UI elements visibility for Ads only setup', () => {
 
 	test.afterAll( async () => {
 		await clearOnboardedMerchant();
+		await setCompleteMCSetup();
 		await page.close();
 	} );
 

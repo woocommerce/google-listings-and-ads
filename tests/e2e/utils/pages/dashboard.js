@@ -13,8 +13,8 @@ export default class DashboardPage extends MockRequests {
 	/**
 	 * @param {import('@playwright/test').Page} page
 	 */
-	constructor( page, { glaData = {} } = {} ) {
-		super( page, { glaData } );
+	constructor( page ) {
+		super( page );
 		this.page = page;
 
 		this.googleAdsSummaryCard = this.page.locator(

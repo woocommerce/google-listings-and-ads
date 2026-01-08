@@ -15,6 +15,7 @@ import {
 	getFAQPanelRow,
 	checkBillingAdsPopup,
 } from '../../utils/page';
+import { setServiceBasedMerchant } from '../../utils/api';
 
 test.use( { storageState: process.env.ADMINSTATE } );
 
@@ -44,11 +45,7 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		setupBudgetPage = new SetupBudgetPage( page );
-		createCampaignPage = new CreateCampaignPage( page, {
-			glaData: {
-				serviceBasedMerchant: true,
-			},
-		} );
+		createCampaignPage = new CreateCampaignPage( page );
 		setupAdsAccountPage = new SetupAdsAccountPage( page );
 
 		await Promise.all( [
@@ -84,6 +81,7 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 			createCampaignPage.fulfillBudgetRecommendations(),
 			setupBudgetPage.mockBudgetMetrics(),
 			setupBudgetPage.mockAdsIncentiveCredits(),
+			setServiceBasedMerchant(),
 		] );
 
 		await createCampaignPage.goto();

@@ -90,11 +90,7 @@ test.describe( 'Optimize campaign for Ads only merchants', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		setupBudgetPage = new SetupBudgetPage( page );
-		createCampaignPage = new CreateCampaignPage( page, {
-			glaData: {
-				serviceBasedMerchant: true,
-			},
-		} );
+		createCampaignPage = new CreateCampaignPage( page );
 		setupAdsAccountPage = new SetupAdsAccountPage( page );
 		optimizeCampaignPage = new OptimizeCampaignPage( page );
 		await optimizeCampaignPage.fulfillAssetGroupsForCampaign();
