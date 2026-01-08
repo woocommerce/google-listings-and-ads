@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -14,7 +15,7 @@ import StepContentFooter from '~/components/stepper/step-content-footer';
 import StepContentActions from '~/components/stepper/step-content-actions';
 import AppButton from '~/components/app-button';
 import Faqs from './faqs';
-import { recordGlaEvent } from '~/utils/tracks';
+import { recordGlaEvent, CONTEXT_ADS_ONLY_ONBOARDING } from '~/utils/tracks';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import AssetGroupHeader from './asset-group-header';
 import AssetGroupEditor from './asset-group-editor';
@@ -63,10 +64,16 @@ export const ACTION_SUBMIT_CAMPAIGN_ONLY = 'submit-campaign-only';
  *
  * @param {Object} props React props.
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
+ * @param {string} [props.context] The context where this component is used.
+ * @param {Function} [props.onSkipClick=noop] Callback function to be called when the skip button is clicked.
  *
  * @fires gla_submit_campaign_button_click
  */
-export default function AssetGroup( { campaign } ) {
+export default function AssetGroup( {
+	campaign,
+	context,
+	onSkipClick = noop,
+} ) {
 	const isCreation = ! campaign;
 	const { isValidForm, handleSubmit, adapter, values } =
 		useAdaptiveFormContext();
@@ -125,10 +132,14 @@ export default function AssetGroup( { campaign } ) {
 		}
 	};
 
-	const handleSkipClick = ( event ) => {
-		handleSubmit( event );
+	const handleSkipClick = async ( event ) => {
+		if ( context !== CONTEXT_ADS_ONLY_ONBOARDING ) {
+			handleSubmit( event );
+		}
 		recordActionedCampaign();
 		recordSubmissionClickEvent( event );
+
+		onSkipClick();
 	};
 
 	const handleLaunchClick = ( event ) => {
