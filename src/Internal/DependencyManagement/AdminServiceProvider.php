@@ -35,6 +35,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterSer
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\View\PHPViewFactory;
@@ -90,7 +91,8 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 			PHPViewFactory::class,
 			MerchantCenterService::class,
 			AdsService::class,
-			OnboardingCompleted::class
+			OnboardingCompleted::class,
+			ServiceBasedMerchantState::class,
 		);
 		$this->share_with_tags( PHPViewFactory::class );
 		$this->share_with_tags( Redirect::class, WP::class, OnboardingCompleted::class );
