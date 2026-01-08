@@ -21,7 +21,6 @@ import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import AssetGroup from '~/components/paid-ads/asset-group';
 import SetupPaidAds from './setup-paid-ads';
 import convertToAssetGroupUpdateBody from '~/components/paid-ads/convertToAssetGroupUpdateBody';
-import useAdsWithAssetsSetupCompleteCallback from '~/hooks/useAdsWithAssetsSetupCompleteCallback';
 import { GUIDE_NAMES, ASSET_FORM_KEY } from '~/constants';
 import { ADS_ONLY_STEP_NAME_KEY_MAP } from '../constants';
 import { getDashboardUrl } from '~/utils/urls';
@@ -49,8 +48,11 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 	const { data: suggestedAudience } = useTargetAudienceWithSuggestions();
 	const { data: countryCodes, targetAudience } =
 		useTargetAudienceFinalCountryCodes();
-	const { saveTargetAudience, completeOnboarding } = useAppDispatch();
-	const [ handleFinishSetup ] = useAdsWithAssetsSetupCompleteCallback();
+	const {
+		saveTargetAudience,
+		createAdsWithAssetsCampaign,
+		completeOnboarding,
+	} = useAppDispatch();
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_ADS_ONLY_ONBOARDING,
@@ -96,17 +98,20 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 	 * Handles the submission of the optimize campaign step.
 	 */
 	const handleSubmit = async ( values, enhancer ) => {
-		console.log(
-			'Submitting saved ads only setup stepper with values:',
-			values
-		);
 		try {
 			const { dailyBudget, hasConfirmedEuPoliticalContent } =
 				paidAdValues;
 
-			const assets = convertToAssetGroupUpdateBody( {}, values );
+			const assets = convertToAssetGroupUpdateBody(
+				{
+					final_url: '',
+					display_url_path: [ '', '' ],
+					assets: {},
+				},
+				values
+			);
 
-			handleFinishSetup(
+			await createAdsWithAssetsCampaign(
 				dailyBudget,
 				countryCodes,
 				values[ ASSET_FORM_KEY.FINAL_URL ],
@@ -115,6 +120,7 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 			);
 
 			// Complete onboarding after creating the campaign.
+			await completeAdsSetup();
 			await completeOnboarding();
 			createNotice(
 				'success',
@@ -124,7 +130,6 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 				)
 			);
 		} catch ( e ) {
-			console.log( 'error', e );
 			enhancer.signalFailedSubmission();
 			return;
 		}

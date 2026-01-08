@@ -784,7 +784,7 @@ export function* createAdsCampaign(
 }
 
 /**
- * Create a new ads campaign.
+ * Create a new ads campaign with assets.
  *
  * @param {number} amount Daily average cost of the paid ads campaign.
  * @param {Array<CountryCode>} countryCodes Country code of the paid ads campaign audience country. Example: 'US'.
