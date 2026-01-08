@@ -21,7 +21,7 @@ import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import AssetGroup from '~/components/paid-ads/asset-group';
 import SetupPaidAds from './setup-paid-ads';
 import convertToAssetGroupUpdateBody from '~/components/paid-ads/convertToAssetGroupUpdateBody';
-import { GUIDE_NAMES, ASSET_FORM_KEY } from '~/constants';
+import { GUIDE_NAMES } from '~/constants';
 import { ADS_ONLY_STEP_NAME_KEY_MAP } from '../constants';
 import { getDashboardUrl } from '~/utils/urls';
 import {
