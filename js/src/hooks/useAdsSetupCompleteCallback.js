@@ -27,9 +27,7 @@ export default function useAdsSetupCompleteCallback() {
 				countryCodes,
 				hasConfirmedEuPoliticalContent
 			)
-				.then( ( campaignResult ) => {
-					return completeAdsSetup().then( () => campaignResult );
-				} )
+				.then( completeAdsSetup )
 				.then( onCompleted )
 				.catch( () => setLoading( false ) );
 		},
