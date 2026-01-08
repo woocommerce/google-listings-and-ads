@@ -1,11 +1,10 @@
 /**
  * External dependencies
  */
-import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 import { Stepper } from '@woocommerce/components';
 import { getHistory } from '@woocommerce/navigation';
-import { useState, useEffect, useRef } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -22,9 +21,9 @@ import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import AssetGroup from '~/components/paid-ads/asset-group';
 import SetupPaidAds from './setup-paid-ads';
 import convertToAssetGroupUpdateBody from '~/components/paid-ads/convertToAssetGroupUpdateBody';
-import { GUIDE_NAMES } from '~/constants';
+import useAdsWithAssetsSetupCompleteCallback from '~/hooks/useAdsWithAssetsSetupCompleteCallback';
+import { GUIDE_NAMES, ASSET_FORM_KEY } from '~/constants';
 import { ADS_ONLY_STEP_NAME_KEY_MAP } from '../constants';
-import { API_NAMESPACE } from '~/data/constants';
 import { getDashboardUrl } from '~/utils/urls';
 import {
 	recordStepperChangeEvent,
@@ -42,16 +41,16 @@ import {
  * @fires gla_setup_ads_only with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
  */
 const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
-	const createdCampaignRef = useRef( null );
 	const adminUrl = useAdminUrl();
 	const [ step, setStep ] = useState( savedStep );
+	const [ paidAdValues, setPaidAdValues ] = useState( {} );
 	const { createNotice } = useDispatchCoreNotices();
 	const { completeAdsSetup } = useCompleteAdsSetup();
 	const { data: suggestedAudience } = useTargetAudienceWithSuggestions();
 	const { data: countryCodes, targetAudience } =
 		useTargetAudienceFinalCountryCodes();
-	const { saveTargetAudience, updateCampaignAssetGroup, completeOnboarding } =
-		useAppDispatch();
+	const { saveTargetAudience, completeOnboarding } = useAppDispatch();
+	const [ handleFinishSetup ] = useAdsWithAssetsSetupCompleteCallback();
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_ADS_ONLY_ONBOARDING,
@@ -97,22 +96,25 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 	 * Handles the submission of the optimize campaign step.
 	 */
 	const handleSubmit = async ( values, enhancer ) => {
+		console.log(
+			'Submitting saved ads only setup stepper with values:',
+			values
+		);
 		try {
-			const { id } = createdCampaignRef.current;
-			if ( ! id ) {
-				return;
-			}
+			const { dailyBudget, hasConfirmedEuPoliticalContent } =
+				paidAdValues;
 
-			const path = `${ API_NAMESPACE }/ads/campaigns/asset-groups?campaign_id=${ id }`;
-			const [ assetEntityGroup ] = await apiFetch( { path } );
-			const body = convertToAssetGroupUpdateBody(
-				assetEntityGroup,
-				values
+			const assets = convertToAssetGroupUpdateBody( {}, values );
+
+			handleFinishSetup(
+				dailyBudget,
+				countryCodes,
+				values[ ASSET_FORM_KEY.FINAL_URL ],
+				assets,
+				hasConfirmedEuPoliticalContent
 			);
 
-			await updateCampaignAssetGroup( assetEntityGroup.id, body );
-
-			// Complete onboarding after saving the asset group successfully.
+			// Complete onboarding after creating the campaign.
 			await completeOnboarding();
 			createNotice(
 				'success',
@@ -122,6 +124,7 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 				)
 			);
 		} catch ( e ) {
+			console.log( 'error', e );
 			enhancer.signalFailedSubmission();
 			return;
 		}
@@ -130,8 +133,8 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 		getHistory().push( getDashboardUrl( { campaign: 'saved' } ) );
 	};
 
-	const handleSetupPaidAdsSubmit = ( payload ) => {
-		createdCampaignRef.current = payload.createdCampaign;
+	const handleSetupPaidAdsSubmit = ( values ) => {
+		setPaidAdValues( values );
 		setStep( ADS_ONLY_STEP_NAME_KEY_MAP.optimize_campaign );
 	};
 
@@ -185,7 +188,6 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 						>
 							<AssetGroup
 								context={ CONTEXT_ADS_ONLY_ONBOARDING }
-								campaign={ createdCampaignRef.current }
 								onSkipClick={ handleSetupPaidAdsSkipped }
 							/>
 						</CampaignAssetsForm>
