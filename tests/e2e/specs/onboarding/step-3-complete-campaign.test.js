@@ -660,7 +660,7 @@ test.describe( 'Complete your campaign', () => {
 				} );
 				const guideControlsItems =
 					guideControls.getByRole( 'listitem' );
-				await expect( guideControlsItems ).toHaveCount( 2 );
+				await expect( guideControlsItems ).toHaveCount( 3 );
 			} );
 
 			test( 'should see the "Enhanced Conversions" prompt in the setup success modal', async () => {
