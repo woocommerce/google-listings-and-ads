@@ -154,7 +154,6 @@ class CouponChannelVisibilityMetaBox extends SubmittableMetaBox {
 			'channel_visibility'   => $this->coupon_helper->get_channel_visibility( $coupon ),
 			'sync_status'          => $this->meta_handler->get_sync_status( $coupon ),
 			'issues'               => $this->coupon_helper->get_validation_errors( $coupon ),
-			'is_setup_complete'    => $this->merchant_center->is_setup_complete(),
 			'is_channel_supported' => $this->merchant_center->is_promotion_supported_country( $target_country ),
 			'get_started_url'      => $this->get_start_url(),
 		];
