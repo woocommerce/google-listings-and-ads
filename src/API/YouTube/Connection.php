@@ -159,4 +159,118 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	protected function get_data_url(): string {
 		return "{$this->container->get( 'connect_server_root' )}google/youtube/v3";
 	}
+
+	/**
+	 * Get the YouTube Shopping conversion report URL.
+	 *
+	 * @return string
+	 */
+	protected function get_shopping_url(): string {
+		return "{$this->container->get( 'connect_server_root' )}google/youtube/shopping/report/conversion/";
+	}
+
+	/**
+	 * Upload conversion report CSV files to the WCS endpoint.
+	 *
+	 * @param array  $file_paths Array of full paths to CSV files to upload.
+	 * @param string $date       The date for the report in Y-m-d format.
+	 *
+	 * @return array Results array with 'success', 'uploaded', 'failed', and 'errors' keys.
+	 *
+	 * @throws Exception When file cannot be read or upload fails.
+	 */
+	public function upload_reports( array $file_paths, string $date ): array {
+		$results = [
+			'success'  => true,
+			'uploaded' => 0,
+			'failed'   => 0,
+			'errors'   => [],
+		];
+
+		global $wp_filesystem;
+		if ( ! $wp_filesystem ) {
+			require_once ABSPATH . '/wp-admin/includes/file.php';
+			WP_Filesystem();
+		}
+
+		foreach ( $file_paths as $file_path ) {
+			try {
+				// Extract part number from filename.
+				// Pattern: youtube-merchant-conversion-report-2026-01-05-1.csv
+				// Must match part number AFTER the date (YYYY-MM-DD), not the day from the date itself.
+				$part = null;
+				if ( preg_match( '/youtube-merchant-conversion-report-\d{4}-\d{2}-\d{2}-(\d+)\.csv$/', basename( $file_path ), $matches ) ) {
+					$part = (int) $matches[1];
+				}
+
+				// Build endpoint URL.
+				$endpoint = $this->get_shopping_url() . $date;
+				if ( null !== $part ) {
+					$endpoint .= '/' . $part;
+				}
+
+				// Read file contents.
+				$file_contents = $wp_filesystem->get_contents( $file_path );
+
+				if ( false === $file_contents ) {
+					throw new Exception(
+						sprintf(
+							/* translators: %s: file path */
+							__( 'Unable to read file: %s', 'google-listings-and-ads' ),
+							$file_path
+						)
+					);
+				}
+
+				// Send PUT request.
+				/** @var Client $client */
+				$client = $this->container->get( Client::class );
+				$result = $client->put(
+					$endpoint,
+					[
+						'body'    => $file_contents,
+						'headers' => [
+							'Content-Type' => 'text/csv',
+						],
+					]
+				);
+
+				$status_code = $result->getStatusCode();
+				if ( 200 === $status_code || 201 === $status_code ) {
+					++$results['uploaded'];
+				} else {
+					$results['success'] = false;
+					++$results['failed'];
+					$results['errors'][] = sprintf(
+						/* translators: 1: file path, 2: HTTP status code */
+						__( 'Upload failed for %1$s: HTTP %2$s', 'google-listings-and-ads' ),
+						$file_path,
+						$status_code
+					);
+				}
+			} catch ( ClientExceptionInterface $e ) {
+				$results['success'] = false;
+				++$results['failed'];
+				$results['errors'][] = sprintf(
+					/* translators: 1: file path, 2: error message */
+					__( 'Error uploading %1$s: %2$s', 'google-listings-and-ads' ),
+					$file_path,
+					$e->getMessage()
+				);
+				do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
+			} catch ( Exception $e ) {
+				$results['success'] = false;
+				++$results['failed'];
+				$results['errors'][] = sprintf(
+					/* translators: 1: file path, 2: error message */
+					__( 'Error uploading %1$s: %2$s', 'google-listings-and-ads' ),
+					$file_path,
+					$e->getMessage()
+				);
+				do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+			}
+		}
+
+		return $results;
+	}
 }

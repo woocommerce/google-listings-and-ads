@@ -148,4 +148,35 @@ class CsvExportWriter {
 
 		return trailingslashit( $upload_dir['baseurl'] ) . ltrim( $relative, '/' );
 	}
+
+	/**
+	 * Get the size of a file in bytes.
+	 *
+	 * @param string $file_path Full path to the file.
+	 * @return int File size in bytes, or 0 if file doesn't exist.
+	 */
+	public function get_file_size( string $file_path ): int {
+		if ( ! $this->fs->exists( $file_path ) ) {
+			return 0;
+		}
+
+		// Clear PHP's stat cache to get accurate size after recent writes.
+		clearstatcache( true, $file_path );
+
+		return (int) $this->fs->size( $file_path );
+	}
+
+	/**
+	 * Delete a file.
+	 *
+	 * @param string $file_path Full path to the file.
+	 * @return bool True on success, false on failure.
+	 */
+	public function delete_file( string $file_path ): bool {
+		if ( ! $this->fs->exists( $file_path ) ) {
+			return false;
+		}
+
+		return $this->fs->delete( $file_path );
+	}
 }

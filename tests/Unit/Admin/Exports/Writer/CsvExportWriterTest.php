@@ -341,4 +341,58 @@ class CsvExportWriterTest extends UnitTest {
 		// Verify UTF-8 encoding is preserved.
 		$this->assertEquals( 'UTF-8', mb_detect_encoding( $content, 'UTF-8', true ) );
 	}
+
+	public function test_get_file_size_returns_correct_size() {
+		$filename  = 'test-file-size';
+		$file_path = $this->writer->create_file( $filename );
+
+		$row = [
+			'column1' => 'value1',
+			'column2' => 'value2',
+		];
+
+		$this->writer->append_row( $file_path, $row );
+
+		$size = $this->writer->get_file_size( $file_path );
+
+		$this->assertGreaterThan( 0, $size );
+		$this->assertEquals( filesize( $file_path ), $size );
+	}
+
+	public function test_get_file_size_returns_zero_for_empty_file() {
+		$filename  = 'test-empty-file-size';
+		$file_path = $this->writer->create_file( $filename );
+
+		$size = $this->writer->get_file_size( $file_path );
+
+		$this->assertEquals( 0, $size );
+	}
+
+	public function test_get_file_size_returns_zero_for_nonexistent_file() {
+		$fake_path = $this->test_upload_dir . '/gla-exports/nonexistent-file.csv';
+
+		$size = $this->writer->get_file_size( $fake_path );
+
+		$this->assertEquals( 0, $size );
+	}
+
+	public function test_delete_file_removes_file() {
+		$filename  = 'test-delete-file';
+		$file_path = $this->writer->create_file( $filename );
+
+		$this->assertFileExists( $file_path );
+
+		$result = $this->writer->delete_file( $file_path );
+
+		$this->assertTrue( $result );
+		$this->assertFileDoesNotExist( $file_path );
+	}
+
+	public function test_delete_file_returns_false_for_nonexistent_file() {
+		$fake_path = $this->test_upload_dir . '/gla-exports/nonexistent-file.csv';
+
+		$result = $this->writer->delete_file( $fake_path );
+
+		$this->assertFalse( $result );
+	}
 }

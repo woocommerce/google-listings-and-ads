@@ -207,6 +207,7 @@ class ClientTest extends UnitTest {
 
 		$this->invoke_handler( 'add_auth_header' )(
 			function ( $request, $options ) {
+				unset( $options );
 				$this->assertStringStartsWith( 'X_JP_Auth token=', $request->getHeader( 'Authorization' )[0] );
 			}
 		)( $request, [] );
@@ -239,6 +240,7 @@ class ClientTest extends UnitTest {
 
 		$this->invoke_handler( 'add_plugin_version_header' )(
 			function ( $request, $options ) {
+				unset( $options );
 				$this->assertEquals( $this->get_client_name(), $request->getHeader( 'x-client-name' )[0] );
 				$this->assertEquals( $this->get_version(), $request->getHeader( 'x-client-version' )[0] );
 			}
