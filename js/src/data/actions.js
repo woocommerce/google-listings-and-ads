@@ -784,6 +784,58 @@ export function* createAdsCampaign(
 }
 
 /**
+ * Create a new ads campaign.
+ *
+ * @param {number} amount Daily average cost of the paid ads campaign.
+ * @param {Array<CountryCode>} countryCodes Country code of the paid ads campaign audience country. Example: 'US'.
+ * @param {string} finalUrl Final URL of the ads campaign.
+ * @param {AssetEntityGroupUpdateBody} assets Assets of the ads campaign.
+ * @param {boolean} [hasConfirmedEuPoliticalContent=false] Whether the user has confirmed that the ads campaign contains EU political content.
+ *
+ * @throws { { message: string } } Will throw an error if the campaign creation fails.
+ */
+export function* createAdsWithAssetsCampaign(
+	amount,
+	countryCodes,
+	finalUrl,
+	assets,
+	hasConfirmedEuPoliticalContent = false
+) {
+	let label = 'wc-web';
+
+	if ( isWCIos() ) {
+		label = 'wc-ios';
+	} else if ( isWCAndroid() ) {
+		label = 'wc-android';
+	}
+
+	try {
+		const createdCampaign = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/campaigns`,
+			method: 'POST',
+			data: {
+				amount,
+				targeted_locations: countryCodes,
+				eu_political_advertising_confirmation:
+					hasConfirmedEuPoliticalContent,
+				label,
+				finalUrl,
+				assets,
+			},
+		} );
+
+		return {
+			type: TYPES.CREATE_ADS_CAMPAIGN,
+			createdCampaign: adaptAdsCampaign( createdCampaign ),
+		};
+	} catch ( error ) {
+		handleApiError( error );
+
+		throw error;
+	}
+}
+
+/**
  * Update the given data properties to an ads campaign.
  *
  * @param {number} id The ID of the ads campaign to be updated.
