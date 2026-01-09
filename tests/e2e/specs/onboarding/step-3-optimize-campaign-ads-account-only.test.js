@@ -109,17 +109,17 @@ test.describe( 'Optimize campaign for Ads only merchants', () => {
 
 	test.describe( 'Optimize campaign', () => {
 		test( 'Create Campaign button should be disabled if no URL selected', async () => {
-			const saveChangesButton =
-				optimizeCampaignPage.getSaveChangesButton();
-			await expect( saveChangesButton ).toBeDisabled();
+			const createCampaignButton =
+				optimizeCampaignPage.getCreateCampaignButton();
+			await expect( createCampaignButton ).toBeDisabled();
 		} );
 
 		test( 'Selecting final URL enables Create Campaign button', async () => {
 			await optimizeCampaignPage.selectUrlOption();
 
-			const saveChangesButton =
-				optimizeCampaignPage.getSaveChangesButton();
-			await expect( saveChangesButton ).toBeEnabled();
+			const createCampaignButton =
+				optimizeCampaignPage.getCreateCampaignButton();
+			await expect( createCampaignButton ).toBeEnabled();
 		} );
 
 		test( 'Selecting the "Or, select a different Final URL" button disables the Create Campaign button', async () => {
@@ -127,9 +127,9 @@ test.describe( 'Optimize campaign for Ads only merchants', () => {
 				optimizeCampaignPage.getSelectDifferentFinalUrlButton();
 			await selectDifferentFinalUrlButton.click();
 
-			const saveChangesButton =
-				optimizeCampaignPage.getSaveChangesButton();
-			await expect( saveChangesButton ).toBeDisabled();
+			const createCampaignButton =
+				optimizeCampaignPage.getCreateCampaignButton();
+			await expect( createCampaignButton ).toBeDisabled();
 		} );
 
 		test( 'Clicking the "Skip this step" button navigates to the dashboard', async () => {
@@ -140,12 +140,19 @@ test.describe( 'Optimize campaign for Ads only merchants', () => {
 			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fdashboard/ );
 		} );
 
-		test( 'Clicking Save changes button navigates to the dashboard with campaign=saved query param', async () => {
+		test( 'Clicking the "Create Campaign" button navigates to the dashboard', async () => {
 			await goToOptimizeStep();
 			await optimizeCampaignPage.selectUrlOption();
-			const saveChangesButton =
-				optimizeCampaignPage.getSaveChangesButton();
-			await saveChangesButton.click();
+			const createCampaignButton =
+				optimizeCampaignPage.getCreateCampaignButton();
+
+			const campaignCreation =
+				setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
+					'15',
+					[ 'US', 'TW', 'GB' ]
+				);
+			await createCampaignButton.click();
+			await campaignCreation;
 
 			await page.waitForURL( /path=%2Fgoogle%2Fdashboard/ );
 			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fdashboard/ );

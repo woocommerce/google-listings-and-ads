@@ -364,90 +364,50 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 				} );
 			} );
 
-			// test.describe( 'Budget recommendations', () => {
-			// 	test.beforeEach( async () => {
-			// 		await setupAdsAccountPage.mockAdsAccountIncomplete();
-			// 		await setupBudgetPage.fulfillBillingStatusRequest( {
-			// 			status: 'approved',
-			// 		} );
-			// 		await createCampaignPage.mockCompleteAdsSetup();
-			// 		await createCampaignPage.fulfillBudgetRecommendations();
-			// 		await createCampaignPage.goto();
-			// 		await page.evaluate( () => window.sessionStorage.clear() );
-			// 	} );
+			test.describe( 'Budget recommendations', () => {
+				test.beforeEach( async () => {
+					await setupAdsAccountPage.mockAdsAccountIncomplete();
+					await setupBudgetPage.fulfillBillingStatusRequest( {
+						status: 'approved',
+					} );
+					await createCampaignPage.mockCompleteAdsSetup();
+					await createCampaignPage.fulfillBudgetRecommendations();
+					await createCampaignPage.goto();
+					await page.evaluate( () => window.sessionStorage.clear() );
+				} );
 
-			// 	test( 'Create a campaign with a selected option from the budget recommendations', async () => {
-			// 		// The recommended option is selected by default
-			// 		await expect(
-			// 			page.getByLabel( 'recommended' )
-			// 		).toBeChecked();
+				test( 'Suggest a higher budget for getting back free credits', async () => {
+					await setupBudgetPage.fillBudget( '8' );
+					await createCampaignPage.clickContinueButton();
 
-			// 		const highOption = page.getByLabel( 'high' );
+					const confirmButton = page.getByRole( 'button', {
+						name: 'Change budget',
+					} );
 
-			// 		await highOption.click();
-			// 		await expect( highOption ).toBeChecked();
+					await expect(
+						page.getByText( 'This offer won’t last long!' )
+					).toBeVisible();
+					await expect( confirmButton ).toBeEnabled();
 
-			// 		const campaignCreation =
-			// 			setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
-			// 				'20.5',
-			// 				[ 'US', 'TW', 'GB' ]
-			// 			);
+					await setupBudgetPage.getBudgetInput().fill( '8.33' );
 
-			// 		await createCampaignPage.clickContinueButton();
-			// 		await campaignCreation;
-			// 	} );
+					await expect( confirmButton ).toBeDisabled();
 
-			// 	test( 'Campaign creation succeeds without Merchant Center account', async () => {
-			// 		await setupBudgetPage.fillBudget( '120' );
-			// 		const campaignCreation =
-			// 			setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
-			// 				'120',
-			// 				[ 'US', 'TW', 'GB' ]
-			// 			);
-			// 		await createCampaignPage.clickContinueButton();
-			// 		await campaignCreation;
-			// 		await expect( page.getByRole( 'heading' ) ).toBeVisible();
-			// 	} );
+					await setupBudgetPage.getBudgetInput().fill( '8.5' );
 
-			// 	test( 'Suggest a higher budget for getting back free credits', async () => {
-			// 		await setupBudgetPage.fillBudget( '8' );
-			// 		await createCampaignPage.clickContinueButton();
+					await expect( confirmButton ).toBeEnabled();
 
-			// 		const confirmButton = page.getByRole( 'button', {
-			// 			name: 'Change budget',
-			// 		} );
+					await confirmButton.click();
 
-			// 		await expect(
-			// 			page.getByText( 'This offer won’t last long!' )
-			// 		).toBeVisible();
-			// 		await expect( confirmButton ).toBeEnabled();
+					await expect( confirmButton ).not.toBeVisible();
 
-			// 		await setupBudgetPage.getBudgetInput().fill( '8.33' );
+					await expect(
+						setupBudgetPage.getBudgetInput()
+					).toHaveValue( '8.50' );
 
-			// 		await expect( confirmButton ).toBeDisabled();
-
-			// 		await setupBudgetPage.getBudgetInput().fill( '8.5' );
-
-			// 		await expect( confirmButton ).toBeEnabled();
-
-			// 		await confirmButton.click();
-
-			// 		await expect( confirmButton ).not.toBeVisible();
-
-			// 		await expect(
-			// 			setupBudgetPage.getBudgetInput()
-			// 		).toHaveValue( '8.50' );
-
-			// 		const campaignCreation =
-			// 			setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
-			// 				'8.5',
-			// 				[ 'US', 'TW', 'GB' ]
-			// 			);
-
-			// 		await createCampaignPage.clickContinueButton();
-			// 		await campaignCreation;
-			// 	} );
-			// } );
+					await createCampaignPage.clickContinueButton();
+				} );
+			} );
 		} );
 	} );
 
