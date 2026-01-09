@@ -42,22 +42,22 @@ const { CONNECTED, INCOMPLETE } = GOOGLE_ADS_ACCOUNT_STATUS;
  */
 export default function LinkedAccounts() {
 	const adminUrl = useAdminUrl();
-	const { jetpack, hasFinishedResolution: jetpackResolved } =
+	const { jetpack, hasFinishedResolution: hasResolvedJetpackAccount } =
 		useJetpackAccount();
-	const { google, hasFinishedResolution: googleResolved } =
+	const { google, hasFinishedResolution: hasResolvedGoogleAccount } =
 		useGoogleAccount();
-	const { googleMCAccount, hasFinishedResolution: mcResolved } =
+	const { googleMCAccount, hasFinishedResolution: hasResolvedMCAccount } =
 		useGoogleMCAccount();
-	const { googleAdsAccount, hasFinishedResolution: adsResolved } =
+	const { googleAdsAccount, hasFinishedResolution: hasResolvedAdsAccount } =
 		useGoogleAdsAccount();
-	const { hasFinishedResolution: youtubeResolved } = useYouTubeAccount();
-
+	const { hasFinishedResolution: hasResolvedYouTubeAccount } =
+		useYouTubeAccount();
 	const isLoading = ! (
-		jetpackResolved &&
-		googleResolved &&
-		mcResolved &&
-		adsResolved &&
-		youtubeResolved
+		hasResolvedJetpackAccount &&
+		hasResolvedGoogleAccount &&
+		hasResolvedMCAccount &&
+		hasResolvedAdsAccount &&
+		hasResolvedYouTubeAccount
 	);
 
 	const hasAdsAccount = [ CONNECTED, INCOMPLETE ].includes(
