@@ -140,7 +140,12 @@ test.describe( 'Optimize campaign for Ads only merchants', () => {
 			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fdashboard/ );
 		} );
 
-		test( 'Clicking the "Create Campaign" button navigates to the dashboard', async () => {
+		test( 'should see the setup success modal', async () => {
+			const setupSuccessModal = createCampaignPage.getSetupSuccessModal();
+			await expect( setupSuccessModal ).toBeVisible();
+		} );
+
+		test( 'Clicking the "Create Campaign" button navigates to the dashboard and should see the setup success modal', async () => {
 			await goToOptimizeStep();
 			await optimizeCampaignPage.selectUrlOption();
 			const createCampaignButton =
@@ -156,6 +161,9 @@ test.describe( 'Optimize campaign for Ads only merchants', () => {
 
 			await page.waitForURL( /path=%2Fgoogle%2Fdashboard/ );
 			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fdashboard/ );
+
+			const setupSuccessModal = createCampaignPage.getSetupSuccessModal();
+			await expect( setupSuccessModal ).toBeVisible();
 		} );
 	} );
 } );
