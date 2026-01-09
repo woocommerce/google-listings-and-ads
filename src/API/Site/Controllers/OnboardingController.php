@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 
@@ -14,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers
  */
-class OnboardingController extends BaseController {
+class OnboardingController extends BaseOptionsController {
 
 	use EmptySchemaPropertiesTrait;
 
@@ -28,6 +29,11 @@ class OnboardingController extends BaseController {
 				[
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->get_complete_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+				[
+					'methods'             => TransportMethods::DELETABLE,
+					'callback'            => $this->get_delete_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 			]
@@ -46,7 +52,26 @@ class OnboardingController extends BaseController {
 			return new Response(
 				[
 					'status'  => 'success',
-					'message' => __( 'Successfully onboarded service based merchant', 'google-listings-and-ads' ),
+					'message' => __( 'Successfully onboarded service based merchant.', 'google-listings-and-ads' ),
+				],
+				200
+			);
+		};
+	}
+
+	/**
+	 * Get the callback for deleting onboarding completion.
+	 *
+	 * @return callable
+	 */
+	protected function get_delete_callback(): callable {
+		return function ( Request $request ) {
+			$this->options->delete( OptionsInterface::ONBOARDING_COMPLETED_AT );
+
+			return new Response(
+				[
+					'status'  => 'success',
+					'message' => __( 'Successfully deleted onboarding completion status.', 'google-listings-and-ads' ),
 				],
 				200
 			);
