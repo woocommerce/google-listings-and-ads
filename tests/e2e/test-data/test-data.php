@@ -127,6 +127,10 @@ function set_onboarded_merchant() {
 		OptionsInterface::GOOGLE_CONNECTED,
 		true
 	);
+	$options->update(
+		OptionsInterface::ONBOARDING_COMPLETED_AT,
+		1693215209
+	);
 }
 
 /**
@@ -138,6 +142,7 @@ function clear_onboarded_merchant() {
 	$options->delete( OptionsInterface::REDIRECT_TO_ONBOARDING );
 	$options->delete( OptionsInterface::MC_SETUP_COMPLETED_AT );
 	$options->delete( OptionsInterface::GOOGLE_CONNECTED );
+	$options->delete( OptionsInterface::ONBOARDING_COMPLETED_AT );
 }
 
 /**
