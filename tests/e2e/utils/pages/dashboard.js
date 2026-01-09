@@ -13,9 +13,10 @@ export default class DashboardPage extends MockRequests {
 	/**
 	 * @param {import('@playwright/test').Page} page
 	 */
-	constructor( page ) {
-		super( page );
+	constructor( page, { glaData = {} } = {} ) {
+		super( page, { glaData } );
 		this.page = page;
+
 		this.googleAdsSummaryCard = this.page.locator(
 			'.gla-dashboard__performance .gla-summary-card:nth-child(1)'
 		);
@@ -33,12 +34,31 @@ export default class DashboardPage extends MockRequests {
 	}
 
 	/**
+	 * Get the visible tab titles from the main navigation.
+	 *
+	 * @return {Promise<string[]>} An array of tab titles in display order.
+	 */
+	async getTabTitles() {
+		const tabs = this.page.locator( '.app-tab-nav [role="tab"]' );
+		try {
+			await tabs.first().waitFor( { state: 'visible' } );
+		} catch ( e ) {
+			// Do nothing if tabs are not visible
+		}
+		return ( await tabs.allTextContents() ).map( ( t ) => t.trim() );
+	}
+
+	/**
 	 * Close the current page.
 	 *
 	 * @return {Promise<void>}
 	 */
 	async closePage() {
 		await this.page.close();
+	}
+
+	async getSummaryCards() {
+		return this.page.locator( '.gla-summary-card' );
 	}
 
 	/**
@@ -84,6 +104,22 @@ export default class DashboardPage extends MockRequests {
 			symbol: '$',
 			status: 'disconnected',
 		} );
+
+		await this.fulfillAdsCampaignsRequest(
+			[
+				{
+					id: 111111111,
+					name: 'Test Campaign',
+					status: 'enabled',
+					type: 'performance_max',
+					amount: '20.00',
+					country: 'US',
+					targeted_locations: [ 'US' ],
+				},
+			],
+			200,
+			[ 'GET' ]
+		);
 
 		await this.mockAdsRecommendations();
 		await this.fulfillAdsReportProducts( adsReportProductsData );

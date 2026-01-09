@@ -50,7 +50,12 @@ test.describe( 'Complete your campaign', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		setupBudgetPage = new SetupBudgetPage( page );
-		dashboardPage = new DashboardPage( page );
+		dashboardPage = new DashboardPage( page, {
+			glaData: {
+				mcSetupComplete: true,
+				serviceBasedMerchant: false,
+			},
+		} );
 		completeCampaign = new CompleteCampaign( page );
 		setupAdsAccountPage = new SetupAdsAccountPage( page );
 		await Promise.all( [
@@ -486,6 +491,9 @@ test.describe( 'Complete your campaign', () => {
 		test.describe( 'User skips paid ads creation', () => {
 			test.describe( 'With WooCommerce tracking disabled', () => {
 				test.beforeAll( async () => {
+					await dashboardPage.fulfillAdsCampaignsRequest( [], 200, [
+						'GET',
+					] );
 					await setupAdsAccountPage.mockAdsAccountIncomplete();
 					await completeCampaign.goto();
 					await completeCampaign.clickSkipPaidAdsCreationButton();

@@ -37,7 +37,11 @@ test.describe( 'Price Benchmark Page', () => {
 	// Global setup - runs once for all tests
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
-		priceBenchmarkPage = new PriceBenchmarkPage( page );
+		priceBenchmarkPage = new PriceBenchmarkPage( page, {
+			glaData: {
+				mcSetupComplete: true,
+			},
+		} );
 		await priceBenchmarkPage.mockRequests();
 	} );
 
