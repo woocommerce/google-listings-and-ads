@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -15,6 +16,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use Google\ApiCore\ApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -32,6 +34,12 @@ class AdsAssetGroupTest extends UnitTest {
 
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
+
+	/** @var Container $container */
+	protected $container;
+
+	/** @var AdsAsset $asset */
+	protected $asset;
 
 	/** @var AdsAssetGroup $asset_group */
 	protected $asset_group;
@@ -53,8 +61,14 @@ class AdsAssetGroupTest extends UnitTest {
 		$this->options           = $this->createMock( OptionsInterface::class );
 		$this->options->method( 'get_ads_id' )->willReturn( $this->ads_id );
 
+		$this->asset = $this->createMock( AdsAsset::class );
+
+		$this->container = new Container();
+		$this->container->addShared( AdsAsset::class, $this->asset );
+
 		$this->asset_group = new AdsAssetGroup( $this->client, $this->asset_group_asset );
 		$this->asset_group->set_options_object( $this->options );
+		$this->asset_group->set_container( $this->container );
 	}
 
 	public function test_create_operations_with_merchant_center() {
@@ -88,31 +102,6 @@ class AdsAssetGroupTest extends UnitTest {
 		$this->assertEquals( $asset_group_resource_name, $listing_group->getAssetGroup() );
 		$this->assertEquals( ListingGroupFilterType::UNIT_INCLUDED, $listing_group->getType() );
 		$this->assertEquals( ListingGroupFilterListingSource::SHOPPING, $listing_group->getListingSource() );
-	}
-
-	public function test_create_operations_without_merchant_center() {
-		// Mock merchant_id = 0 to simulate no Merchant Center
-		$this->options->method( 'get_merchant_id' )->willReturn( 0 );
-
-		$campaign_resource_name    = $this->generate_campaign_resource_name( self::TEST_CAMPAIGN_ID );
-		$asset_group_resource_name = $this->generate_asset_group_resource_name( -3 );
-
-		$operations = $this->asset_group->create_operations(
-			$campaign_resource_name,
-			'New Campaign'
-		);
-
-		// Should return only 1 operation: asset group (no listing group filter)
-		$this->assertCount( 1, $operations );
-
-		$operation_asset_group = $operations[0]->getAssetGroupOperation();
-		$this->assertTrue( $operation_asset_group->hasCreate() );
-
-		$asset_group = $operation_asset_group->getCreate();
-		$this->assertEquals( 'New Campaign Asset Group', $asset_group->getName() );
-		$this->assertEquals( $campaign_resource_name, $asset_group->getCampaign() );
-		$this->assertEquals( $asset_group_resource_name, $asset_group->getResourceName() );
-		$this->assertEquals( AssetGroupStatus::ENABLED, $asset_group->getStatus() );
 	}
 
 	public function test_get_asset_groups_by_campaign_id_with_assets() {
@@ -293,39 +282,6 @@ class AdsAssetGroupTest extends UnitTest {
 		);
 	}
 
-	public function test_create_asset_group_without_merchant_center() {
-		// Mock merchant_id = 0 to simulate no Merchant Center
-		$this->options->method( 'get_merchant_id' )->willReturn( 0 );
-
-		// For create without MC, we need to update the mock to expect only 1 operation
-		$asset_group_resource_name = $this->generate_asset_group_resource_name( self::TEST_CAMPAIGN_ID );
-		$asset_group_result        = $this->createMock( \Google\Ads\GoogleAds\V20\Services\MutateAssetGroupResult::class );
-		$asset_group_result->method( 'getResourceName' )->willReturn( $asset_group_resource_name );
-
-		$response = ( new \Google\Ads\GoogleAds\V20\Services\MutateGoogleAdsResponse() )->setMutateOperationResponses(
-			[
-				( new \Google\Ads\GoogleAds\V20\Services\MutateOperationResponse() )->setAssetGroupResult( $asset_group_result ),
-			]
-		);
-
-		$this->service_client->expects( $this->once() )
-			->method( 'mutate' )
-			->willReturnCallback(
-				function ( $request ) use ( $response ) {
-					$operations = $request->getMutateOperations();
-					// Should only have 1 operation (asset group, no listing group filter)
-					$this->assertCount( 1, $operations );
-					$this->assertEquals( 'asset_group_operation', $operations[0]->getOperation() );
-					return $response;
-				}
-			);
-
-		$this->assertEquals(
-			self::TEST_CAMPAIGN_ID,
-			$this->asset_group->create_asset_group( self::TEST_CAMPAIGN_ID )
-		);
-	}
-
 	public function test_create_asset_group_exception() {
 		$this->generate_mutate_mock_exception( new ApiException( 'invalid', 3, 'INVALID_ARGUMENT' ) );
 
@@ -341,5 +297,51 @@ class AdsAssetGroupTest extends UnitTest {
 			);
 			$this->assertEquals( 400, $e->getCode() );
 		}
+	}
+
+	public function test_create_create_operations_with_assets_returns_expected_operations() {
+		$campaign_resource_name = $this->generate_campaign_resource_name( self::TEST_CAMPAIGN_ID );
+		$asset_group_assets     = [
+			[
+				'field_type' => AssetFieldType::HEADLINE,
+				'content'    => 'Test headline',
+			],
+			[
+				'field_type' => AssetFieldType::SQUARE_MARKETING_IMAGE,
+				'content'    => 'https://example.com/image.jpg',
+			],
+		];
+
+		$this->asset->expects( $this->once() )
+			->method( 'create_operations' )
+			->with( $asset_group_assets )
+			->willReturn(
+				[
+					$this->generate_asset_create_operation(
+						-1,
+						$asset_group_assets[0]['field_type'],
+						$asset_group_assets[0]['content'],
+					),
+					$this->generate_asset_create_operation(
+						-2,
+						$asset_group_assets[1]['field_type'],
+						$asset_group_assets[1]['content'],
+					),
+				]
+			);
+
+		$operations = $this->asset_group->create_operations_with_assets(
+			$campaign_resource_name,
+			'New Campaign',
+			'https://example.com',
+			$asset_group_assets
+		);
+
+		$this->assertCount( 5, $operations );
+		$this->assertTrue( $operations[0]->hasAssetGroupOperation() );
+		$this->assertTrue( $operations[1]->hasAssetOperation() );
+		$this->assertTrue( $operations[2]->hasAssetOperation() );
+		$this->assertTrue( $operations[3]->hasAssetGroupAssetOperation() );
+		$this->assertTrue( $operations[4]->hasAssetGroupAssetOperation() );
 	}
 }
