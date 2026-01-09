@@ -817,7 +817,7 @@ export function* createAdsWithAssetsCampaign(
 				eu_political_advertising_confirmation:
 					hasConfirmedEuPoliticalContent,
 				label,
-				final_url: assets.finalUrl,
+				final_url: assets.final_url,
 				assets: assets.assets,
 				path1: assets.path1,
 				path2: assets.path2,
