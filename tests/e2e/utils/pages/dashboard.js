@@ -104,22 +104,6 @@ export default class DashboardPage extends MockRequests {
 			status: 'disconnected',
 		} );
 
-		await this.fulfillAdsCampaignsRequest(
-			[
-				{
-					id: 111111111,
-					name: 'Test Campaign',
-					status: 'enabled',
-					type: 'performance_max',
-					amount: '20.00',
-					country: 'US',
-					targeted_locations: [ 'US' ],
-				},
-			],
-			200,
-			[ 'GET' ]
-		);
-
 		await this.mockAdsRecommendations();
 		await this.fulfillAdsReportProducts( adsReportProductsData );
 	}
