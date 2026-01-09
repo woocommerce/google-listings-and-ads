@@ -788,7 +788,6 @@ export function* createAdsCampaign(
  *
  * @param {number} amount Daily average cost of the paid ads campaign.
  * @param {Array<CountryCode>} countryCodes Country code of the paid ads campaign audience country. Example: 'US'.
- * @param {string} finalUrl Final URL of the ads campaign.
  * @param {AssetEntityGroupUpdateBody} assets Assets of the ads campaign.
  * @param {boolean} [hasConfirmedEuPoliticalContent=false] Whether the user has confirmed that the ads campaign contains EU political content.
  *
@@ -797,7 +796,6 @@ export function* createAdsCampaign(
 export function* createAdsWithAssetsCampaign(
 	amount,
 	countryCodes,
-	finalUrl,
 	assets,
 	hasConfirmedEuPoliticalContent = false
 ) {
@@ -819,8 +817,10 @@ export function* createAdsWithAssetsCampaign(
 				eu_political_advertising_confirmation:
 					hasConfirmedEuPoliticalContent,
 				label,
-				final_url: finalUrl,
-				assets,
+				final_url: assets.final_url,
+				assets: assets.assets,
+				path1: assets.path1,
+				path2: assets.path2,
 			},
 		} );
 

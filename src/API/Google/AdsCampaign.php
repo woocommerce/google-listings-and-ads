@@ -236,18 +236,43 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 
 			$location_ids = array_filter( $location_ids );
 
-			// Operations must be in a specific order to match the temporary ID's.
-			$operations = array_merge(
-				[ $this->budget->create_operation( $params['name'], $params['amount'] ) ],
-				[ $this->create_operation( $params['name'], $base_country, $params['eu_political_advertising_confirmation'] ) ],
-				$this->container->get( AdsAssetGroup::class )->create_operations(
+			// Create budget operations.
+			$budget_operations = [ $this->budget->create_operation( $params['name'], $params['amount'] ) ];
+
+			// Create campaign operations.
+			$campaign_operations = [ $this->create_operation( $params['name'], $base_country, $params['eu_political_advertising_confirmation'] ) ];
+
+			// Create asset group operations.
+			$ad_asset_group = $this->container->get( AdsAssetGroup::class );
+
+			// If final URL and assets are passed create operations for those.
+			if ( isset( $params['final_url'] ) && isset( $params['assets'] ) ) {
+				$asset_group_operations = $ad_asset_group->create_operations_with_assets(
+					$this->temporary_resource_name(),
+					$params['name'],
+					$params['final_url'],
+					$params['assets']
+				);
+			} else {
+				// Create "empty" asset group operations.
+				$asset_group_operations = $ad_asset_group->create_operations(
 					$this->temporary_resource_name(),
 					$params['name']
-				),
-				$this->criterion->create_operations(
-					$this->temporary_resource_name(),
-					$location_ids
-				)
+				);
+			}
+
+			// Location/Targeting criteria operations.
+			$criteria_operations = $this->criterion->create_operations(
+				$this->temporary_resource_name(),
+				$location_ids
+			);
+
+			// Operations must be in a specific order to match the temporary ID's.
+			$operations = array_merge(
+				$budget_operations,
+				$campaign_operations,
+				$asset_group_operations,
+				$criteria_operations
 			);
 
 			$campaign_id = $this->mutate( $operations );
