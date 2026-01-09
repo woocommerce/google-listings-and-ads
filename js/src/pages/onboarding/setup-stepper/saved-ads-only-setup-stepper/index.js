@@ -94,6 +94,11 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 		}
 	};
 
+	const redirectToDashboard = () => {
+		const query = { guide: GUIDE_NAMES.SUBMISSION_SUCCESS };
+		window.location.href = adminUrl + getDashboardUrl( query );
+	};
+
 	/**
 	 * Handles the submission of the optimize campaign step.
 	 */
@@ -134,8 +139,7 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 			return;
 		}
 
-		// Add a query param `campaign=saved` to the dashboard URL to indicate that the campaign was successfully created and saved.
-		getHistory().push( getDashboardUrl( { campaign: 'saved' } ) );
+		redirectToDashboard();
 	};
 
 	const handleSetupPaidAdsSubmit = ( values ) => {
@@ -147,8 +151,7 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 		await completeAdsSetup();
 		await completeOnboarding();
 
-		const query = { guide: GUIDE_NAMES.SUBMISSION_SUCCESS };
-		window.location.href = adminUrl + getDashboardUrl( query );
+		redirectToDashboard();
 	};
 
 	return (
