@@ -4,8 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
@@ -54,7 +52,7 @@ class OnboardingController extends BaseOptionsController {
 			return new Response(
 				[
 					'status'  => 'success',
-					'message' => __( 'Successfully onboarded service based merchant', 'google-listings-and-ads' ),
+					'message' => __( 'Successfully onboarded service based merchant.', 'google-listings-and-ads' ),
 				],
 				200
 			);
@@ -73,7 +71,7 @@ class OnboardingController extends BaseOptionsController {
 			return new Response(
 				[
 					'status'  => 'success',
-					'message' => __( 'Successfully deleted onboarding completion status', 'google-listings-and-ads' ),
+					'message' => __( 'Successfully deleted onboarding completion status.', 'google-listings-and-ads' ),
 				],
 				200
 			);

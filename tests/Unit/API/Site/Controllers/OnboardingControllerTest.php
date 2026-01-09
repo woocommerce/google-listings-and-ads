@@ -21,7 +21,7 @@ class OnboardingControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
-	protected const ROUTE_COMPLETE = '/wc/gla/google/onboarding/complete';
+	protected const ROUTE_ONBOARDING_COMPLETE = '/wc/gla/google/onboarding/complete';
 
 	/**
 	 * Runs before each test is executed.
@@ -50,11 +50,16 @@ class OnboardingControllerTest extends RESTControllerUnitTest {
 			}
 		);
 
-		$response = $this->do_request( self::ROUTE_COMPLETE, 'POST' );
+		$response = $this->do_request( self::ROUTE_ONBOARDING_COMPLETE, 'POST' );
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertEquals( 'success', $response->get_data()['status'] );
-		$this->assertEquals( 'Successfully onboarded service based merchant', $response->get_data()['message'] );
+		$this->assertEquals(
+			[
+				'status'  => 'success',
+				'message' => 'Successfully onboarded service based merchant.',
+			],
+			$response->get_data()
+		);
 
 		// Verify action was fired
 		$this->assertTrue( $onboarding_completed_fired, 'woocommerce_gla_onboarding_completed action should be fired' );
@@ -65,7 +70,7 @@ class OnboardingControllerTest extends RESTControllerUnitTest {
 	 */
 	public function test_route_registered(): void {
 		$routes = $this->server->get_routes();
-		$this->assertArrayHasKey( self::ROUTE_COMPLETE, $routes );
+		$this->assertArrayHasKey( self::ROUTE_ONBOARDING_COMPLETE, $routes );
 	}
 
 	/**
@@ -77,10 +82,15 @@ class OnboardingControllerTest extends RESTControllerUnitTest {
 			->with( OptionsInterface::ONBOARDING_COMPLETED_AT )
 			->willReturn( true );
 
-		$response = $this->do_request( self::ROUTE_COMPLETE, 'DELETE' );
+		$response = $this->do_request( self::ROUTE_ONBOARDING_COMPLETE, 'DELETE' );
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertEquals( 'success', $response->get_data()['status'] );
-		$this->assertEquals( 'Successfully deleted onboarding completion status', $response->get_data()['message'] );
+		$this->assertEquals(
+			[
+				'status'  => 'success',
+				'message' => 'Successfully deleted onboarding completion status.',
+			],
+			$response->get_data()
+		);
 	}
 }
