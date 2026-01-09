@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Stepper } from '@woocommerce/components';
-import { getHistory } from '@woocommerce/navigation';
 import { useState, useEffect } from '@wordpress/element';
 
 /**

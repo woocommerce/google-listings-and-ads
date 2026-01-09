@@ -13,7 +13,6 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
  */
 import './data';
 import withAdminPageShell from '~/components/withAdminPageShell';
-import { glaData } from '~/constants';
 import { addBaseEventProperties } from '~/utils/tracks';
 import './css/index.scss';
 
