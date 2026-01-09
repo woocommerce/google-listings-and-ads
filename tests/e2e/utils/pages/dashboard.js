@@ -56,6 +56,11 @@ export default class DashboardPage extends MockRequests {
 		await this.page.close();
 	}
 
+	/**
+	 * Get summary cards on the dashboard.
+	 *
+	 * @return {Promise<import('@playwright/test').Locator>} Locator for summary cards.
+	 */
 	async getSummaryCards() {
 		return this.page.locator( '.gla-summary-card' );
 	}
