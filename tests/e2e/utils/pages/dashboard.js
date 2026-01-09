@@ -13,10 +13,9 @@ export default class DashboardPage extends MockRequests {
 	/**
 	 * @param {import('@playwright/test').Page} page
 	 */
-	constructor( page, { glaData = {} } = {} ) {
-		super( page, { glaData } );
+	constructor( page ) {
+		super( page );
 		this.page = page;
-
 		this.googleAdsSummaryCard = this.page.locator(
 			'.gla-dashboard__performance .gla-summary-card:nth-child(1)'
 		);
@@ -57,6 +56,11 @@ export default class DashboardPage extends MockRequests {
 		await this.page.close();
 	}
 
+	/**
+	 * Get summary cards on the dashboard.
+	 *
+	 * @return {Promise<import('@playwright/test').Locator>} Locator for summary cards.
+	 */
 	async getSummaryCards() {
 		return this.page.locator( '.gla-summary-card' );
 	}
@@ -104,22 +108,6 @@ export default class DashboardPage extends MockRequests {
 			symbol: '$',
 			status: 'disconnected',
 		} );
-
-		await this.fulfillAdsCampaignsRequest(
-			[
-				{
-					id: 111111111,
-					name: 'Test Campaign',
-					status: 'enabled',
-					type: 'performance_max',
-					amount: '20.00',
-					country: 'US',
-					targeted_locations: [ 'US' ],
-				},
-			],
-			200,
-			[ 'GET' ]
-		);
 
 		await this.mockAdsRecommendations();
 		await this.fulfillAdsReportProducts( adsReportProductsData );

@@ -8,6 +8,10 @@ import {
 	getFAQPanelRow,
 	checkFAQExpandable,
 } from '../../utils/page';
+import {
+	setServiceBasedMerchant,
+	clearServiceBasedMerchant,
+} from '../../utils/api';
 
 /**
  * External dependencies
@@ -46,14 +50,12 @@ const ADS_ACCOUNTS = [
 test.describe( 'Set up accounts for Ads only merchants', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
-		setUpAccountsPage = new SetUpAccountsPage( page, {
-			glaData: {
-				serviceBasedMerchant: true,
-			},
-		} );
+		setUpAccountsPage = new SetUpAccountsPage( page );
+		await setServiceBasedMerchant();
 	} );
 
 	test.afterAll( async () => {
+		await clearServiceBasedMerchant();
 		await setUpAccountsPage.closePage();
 	} );
 

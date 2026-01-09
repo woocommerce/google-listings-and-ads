@@ -69,6 +69,22 @@ function register_routes() {
 	);
 	register_rest_route(
 		'wc/v3',
+		'gla-test/mc-completed',
+		[
+			[
+				'methods'             => 'POST',
+				'callback'            => __NAMESPACE__ . '\set_mc_completed_at',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+			[
+				'methods'             => 'DELETE',
+				'callback'            => __NAMESPACE__ . '\clear_mc_completed_at',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+		],
+	);
+	register_rest_route(
+		'wc/v3',
 		'gla-test/notifications-ready',
 		[
 			[
@@ -103,6 +119,23 @@ function register_routes() {
 			[
 				'methods'             => 'POST',
 				'callback'            => __NAMESPACE__ . '\set_hidden_gtin_version',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+		],
+	);
+
+	register_rest_route(
+		'wc/v3',
+		'gla-test/service-based-merchant',
+		[
+			[
+				'methods'             => 'POST',
+				'callback'            => __NAMESPACE__ . '\set_service_based_merchant',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+			[
+				'methods'             => 'DELETE',
+				'callback'            => __NAMESPACE__ . '\clear_service_based_merchant',
 				'permission_callback' => __NAMESPACE__ . '\permissions',
 			],
 		],
@@ -146,6 +179,30 @@ function clear_onboarded_merchant() {
 }
 
 /**
+ * Set the service based merchant option.
+ */
+function set_service_based_merchant() {
+	/** @var OptionsInterface $options */
+	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->update(
+		OptionsInterface::IS_SERVICE_BASED_MERCHANT,
+		'yes'
+	);
+}
+
+/**
+ * Clear a previously set service based merchant option.
+ */
+function clear_service_based_merchant() {
+	/** @var OptionsInterface $options */
+	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->update(
+		OptionsInterface::IS_SERVICE_BASED_MERCHANT,
+		'no'
+	);
+}
+
+/**
  * Set the ADS_SETUP_COMPLETED_AT option.
  */
 function set_ads_completed_at() {
@@ -164,6 +221,27 @@ function clear_ads_completed_at() {
 	/** @var OptionsInterface $options */
 	$options = woogle_get_container()->get( OptionsInterface::class );
 	$options->delete( OptionsInterface::ADS_SETUP_COMPLETED_AT );
+}
+
+/**
+ * Set the MC_SETUP_COMPLETED_AT option.
+ */
+function set_mc_completed_at() {
+	/** @var OptionsInterface $options */
+	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->update(
+		OptionsInterface::MC_SETUP_COMPLETED_AT,
+		1693215209
+	);
+}
+
+/**
+ * Clear a previously set MC_SETUP_COMPLETED_AT option.
+ */
+function clear_mc_completed_at() {
+	/** @var OptionsInterface $options */
+	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->delete( OptionsInterface::MC_SETUP_COMPLETED_AT );
 }
 
 /**

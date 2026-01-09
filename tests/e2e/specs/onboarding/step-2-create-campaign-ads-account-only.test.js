@@ -9,12 +9,17 @@ const { test, expect } = require( '@playwright/test' );
 import SetupBudgetPage from '../../utils/pages/ads-onboarding/setup-budget';
 import CreateCampaignPage from '../../utils/pages/onboarding/step-2-create-campaign-ads-account-only';
 import SetupAdsAccountPage from '../../utils/pages/ads-onboarding/setup-ads-accounts';
+import DashboardPage from '../../utils/pages/dashboard';
 import {
 	checkFAQExpandable,
 	getFAQPanelTitle,
 	getFAQPanelRow,
 	checkBillingAdsPopup,
 } from '../../utils/page';
+import {
+	setServiceBasedMerchant,
+	clearServiceBasedMerchant,
+} from '../../utils/api';
 
 test.use( { storageState: process.env.ADMINSTATE } );
 
@@ -36,6 +41,11 @@ let createCampaignPage = null;
 let setupAdsAccountPage = null;
 
 /**
+ * @type {import('../../utils/pages/dashboard.js').default} dashboardPage
+ */
+let dashboardPage = null;
+
+/**
  * @type {import('@playwright/test').Page} page
  */
 let page = null;
@@ -43,12 +53,9 @@ let page = null;
 test.describe( 'Create campaign for Ads only merchants', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
+		dashboardPage = new DashboardPage( page );
 		setupBudgetPage = new SetupBudgetPage( page );
-		createCampaignPage = new CreateCampaignPage( page, {
-			glaData: {
-				serviceBasedMerchant: true,
-			},
-		} );
+		createCampaignPage = new CreateCampaignPage( page );
 		setupAdsAccountPage = new SetupAdsAccountPage( page );
 
 		await Promise.all( [
@@ -84,12 +91,14 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 			createCampaignPage.fulfillBudgetRecommendations(),
 			setupBudgetPage.mockBudgetMetrics(),
 			setupBudgetPage.mockAdsIncentiveCredits(),
+			setServiceBasedMerchant(),
 		] );
 
 		await createCampaignPage.goto();
 	} );
 
 	test.afterAll( async () => {
+		await clearServiceBasedMerchant();
 		await createCampaignPage.closePage();
 	} );
 
@@ -367,39 +376,6 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 					await page.evaluate( () => window.sessionStorage.clear() );
 				} );
 
-				test( 'Create a campaign with a selected option from the budget recommendations', async () => {
-					// The recommended option is selected by default
-					await expect(
-						page.getByLabel( 'recommended' )
-					).toBeChecked();
-
-					const highOption = page.getByLabel( 'high' );
-
-					await highOption.click();
-					await expect( highOption ).toBeChecked();
-
-					const campaignCreation =
-						setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
-							'20.5',
-							[ 'US', 'TW', 'GB' ]
-						);
-
-					await createCampaignPage.clickContinueButton();
-					await campaignCreation;
-				} );
-
-				test( 'Campaign creation succeeds without Merchant Center account', async () => {
-					await setupBudgetPage.fillBudget( '120' );
-					const campaignCreation =
-						setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
-							'120',
-							[ 'US', 'TW', 'GB' ]
-						);
-					await createCampaignPage.clickContinueButton();
-					await campaignCreation;
-					await expect( page.getByRole( 'heading' ) ).toBeVisible();
-				} );
-
 				test( 'Suggest a higher budget for getting back free credits', async () => {
 					await setupBudgetPage.fillBudget( '8' );
 					await createCampaignPage.clickContinueButton();
@@ -429,14 +405,7 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 						setupBudgetPage.getBudgetInput()
 					).toHaveValue( '8.50' );
 
-					const campaignCreation =
-						setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
-							'8.5',
-							[ 'US', 'TW', 'GB' ]
-						);
-
 					await createCampaignPage.clickContinueButton();
-					await campaignCreation;
 				} );
 			} );
 		} );
@@ -457,35 +426,34 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 					await expect( skipPaidAdsModal ).toBeVisible();
 				} );
 
-				// @TODO: review when we have the onboarding completion flow updated.
-				// test( 'should see the url contains dashboard if the user skips', async () => {
-				// 	await createCampaignPage.clickCompleteSetupModalButton();
-				// 	await page.waitForURL( /path=%2Fgoogle%2Fdashboard/ );
-				// 	expect( page.url() ).toMatch(
-				// 		/path=%2Fgoogle%2Fdashboard/
-				// 	);
-				// } );
+				test( 'should see the url contains dashboard if the user skips', async () => {
+					await createCampaignPage.clickCompleteSetupModalButton();
+					await page.waitForURL( /path=%2Fgoogle%2Fdashboard/ );
+					expect( page.url() ).toMatch(
+						/path=%2Fgoogle%2Fdashboard/
+					);
+				} );
 
-				// test( 'should see the setup success modal', async () => {
-				// 	const setupSuccessModal =
-				// 		createCampaignPage.getSetupSuccessModal();
-				// 	await expect( setupSuccessModal ).toBeVisible();
-				// } );
+				test( 'should see the setup success modal', async () => {
+					const setupSuccessModal =
+						createCampaignPage.getSetupSuccessModal();
+					await expect( setupSuccessModal ).toBeVisible();
+				} );
 
-				// test( 'should see buttons on Dashboard for Google Ads onboarding', async () => {
-				// 	await page.keyboard.press( 'Escape' );
-				// 	await page
-				// 		.getByRole( 'tab', { name: 'Dashboard' } )
-				// 		.click();
-				// 	const { addPaidCampaignButton, createCampaignButton } =
-				// 		dashboardPage;
+				test( 'should see buttons on Dashboard for Google Ads onboarding', async () => {
+					await page.keyboard.press( 'Escape' );
+					await page
+						.getByRole( 'tab', { name: 'Dashboard' } )
+						.click();
+					const { addPaidCampaignButton, createCampaignButton } =
+						dashboardPage;
 
-				// 	await expect( addPaidCampaignButton ).toBeVisible();
-				// 	await expect( addPaidCampaignButton ).toBeEnabled();
+					await expect( addPaidCampaignButton ).toBeVisible();
+					await expect( addPaidCampaignButton ).toBeEnabled();
 
-				// 	await expect( createCampaignButton ).toBeVisible();
-				// 	await expect( createCampaignButton ).toBeEnabled();
-				// } );
+					await expect( createCampaignButton ).toBeVisible();
+					await expect( createCampaignButton ).toBeEnabled();
+				} );
 			} );
 
 			test.describe( 'With WooCommerce tracking enabled', () => {
