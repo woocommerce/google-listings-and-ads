@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -15,6 +16,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use Google\ApiCore\ApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -32,6 +34,12 @@ class AdsAssetGroupTest extends UnitTest {
 
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
+
+	/** @var Container $container */
+	protected $container;
+
+	/** @var AdsAsset $asset */
+	protected $asset;
 
 	/** @var AdsAssetGroup $asset_group */
 	protected $asset_group;
@@ -53,8 +61,14 @@ class AdsAssetGroupTest extends UnitTest {
 		$this->options           = $this->createMock( OptionsInterface::class );
 		$this->options->method( 'get_ads_id' )->willReturn( $this->ads_id );
 
+		$this->asset = $this->createMock( AdsAsset::class );
+
+		$this->container = new Container();
+		$this->container->addShared( AdsAsset::class, $this->asset );
+
 		$this->asset_group = new AdsAssetGroup( $this->client, $this->asset_group_asset );
 		$this->asset_group->set_options_object( $this->options );
+		$this->asset_group->set_container( $this->container );
 	}
 
 	public function test_create_operations_with_merchant_center() {
@@ -283,5 +297,51 @@ class AdsAssetGroupTest extends UnitTest {
 			);
 			$this->assertEquals( 400, $e->getCode() );
 		}
+	}
+
+	public function test_create_create_operations_with_assets_returns_expected_operations() {
+		$campaign_resource_name = $this->generate_campaign_resource_name( self::TEST_CAMPAIGN_ID );
+		$asset_group_assets     = [
+			[
+				'field_type' => AssetFieldType::HEADLINE,
+				'content'    => 'Test headline',
+			],
+			[
+				'field_type' => AssetFieldType::SQUARE_MARKETING_IMAGE,
+				'content'    => 'https://example.com/image.jpg',
+			],
+		];
+
+		$this->asset->expects( $this->once() )
+			->method( 'create_operations' )
+			->with( $asset_group_assets )
+			->willReturn(
+				[
+					$this->generate_asset_create_operation(
+						-1,
+						$asset_group_assets[0]['field_type'],
+						$asset_group_assets[0]['content'],
+					),
+					$this->generate_asset_create_operation(
+						-2,
+						$asset_group_assets[1]['field_type'],
+						$asset_group_assets[1]['content'],
+					),
+				]
+			);
+
+		$operations = $this->asset_group->create_operations_with_assets(
+			$campaign_resource_name,
+			'New Campaign',
+			'https://example.com',
+			$asset_group_assets
+		);
+
+		$this->assertCount( 5, $operations );
+		$this->assertTrue( $operations[0]->hasAssetGroupOperation() );
+		$this->assertTrue( $operations[1]->hasAssetOperation() );
+		$this->assertTrue( $operations[2]->hasAssetOperation() );
+		$this->assertTrue( $operations[3]->hasAssetGroupAssetOperation() );
+		$this->assertTrue( $operations[4]->hasAssetGroupAssetOperation() );
 	}
 }
