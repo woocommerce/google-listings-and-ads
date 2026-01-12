@@ -26,9 +26,9 @@ const actions = {
 		slot,
 		error,
 	} ),
-	clearDetailedErrorBySlot: ( slot ) => ( {
+	clearDetailedErrorBySlots: ( slots ) => ( {
 		type: TYPES.CLEAR_DETAILED_ERROR_BY_SLOT,
-		slot,
+		slots,
 	} ),
 };
 
@@ -110,7 +110,7 @@ describe( 'useDetailedErrorBySlots', () => {
 			useDetailedErrorBySlots( [ 'slot_a' ] )
 		);
 		expect( result.current ).toHaveLength( 1 );
-		dispatch( STORE_KEY ).clearDetailedErrorBySlot( 'slot_a' );
+		dispatch( STORE_KEY ).clearDetailedErrorBySlots( [ 'slot_a' ] );
 		rerender();
 		expect( result.current ).toEqual( [] );
 		errorSpy.mockRestore();
