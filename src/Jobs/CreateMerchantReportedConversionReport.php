@@ -32,10 +32,9 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 	protected const MAX_FILE_SIZE = 10485760;
 
 	/**
-	 * File size threshold to trigger new file creation, including safety margin.
-	 * Set to 10000 (10KB) for testing; change to 9961472 (9.5MB) for production.
+	 * File size threshold to trigger new file creation (~9.5MB safety margin).
 	 */
-	protected const FILE_SIZE_THRESHOLD = 10000;
+	protected const FILE_SIZE_THRESHOLD = 9961472;
 
 	/**
 	 * Lock timeout in seconds (1 hour).
