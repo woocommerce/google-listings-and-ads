@@ -64,6 +64,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection as YouTubeConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductFeedQueryHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
@@ -160,7 +161,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( RecommendationsController::class, AdsAccountService::class );
 		$this->share( AdsSettingsController::class );
 		$this->share( ConnectController::class, Middleware::class, OptionsInterface::class );
-		$this->share( YouTubeAccountController::class, YouTubeConnection::class );
+		$this->share( YouTubeAccountController::class, YouTubeConnection::class, Client::class );
 	}
 
 	/**
