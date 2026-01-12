@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\YouTube\Acc
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\ResponseInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\StreamInterface;
@@ -27,6 +28,12 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|Client $client */
 	protected $client;
 
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
+	/** @var Container $container */
+	protected $container;
+
 	/** @var AccountController $controller */
 	protected $controller;
 
@@ -39,8 +46,15 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 		$this->connection = $this->createMock( Connection::class );
 		$this->client     = $this->createMock( Client::class );
+		$this->options    = $this->createMock( OptionsInterface::class );
+		$this->container  = new Container();
+
+		// Add connect_server_root to container.
+		$this->container->addShared( 'connect_server_root', 'https://api.woocommerce.com/' );
+
 		$this->controller = new AccountController( $this->server, $this->connection, $this->client );
-		$this->controller->set_options_object( $this->createMock( OptionsInterface::class ) );
+		$this->controller->set_options_object( $this->options );
+		$this->controller->set_container( $this->container );
 		$this->controller->register();
 	}
 
@@ -159,13 +173,10 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		);
 
 		// Mock options to return merchant center data.
-		$options = $this->createMock( OptionsInterface::class );
-		$options->expects( $this->once() )
+		$this->options->expects( $this->once() )
 			->method( 'get' )
 			->with( OptionsInterface::MERCHANT_CENTER )
 			->willReturn( [ 'id' => 1234567890 ] );
-
-		$this->controller->set_options_object( $options );
 
 		// Mock successful WCS response.
 		$stream = $this->createMock( StreamInterface::class );
@@ -220,23 +231,19 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		);
 
 		// Mock options to return merchant center data.
-		$options = $this->createMock( OptionsInterface::class );
-		$options->expects( $this->once() )
+		$this->options->expects( $this->once() )
 			->method( 'get' )
 			->with( OptionsInterface::MERCHANT_CENTER )
 			->willReturn( [ 'id' => 1234567890 ] );
 
-		$this->controller->set_options_object( $options );
-
-		// Mock client exception.
-		$client_exception = $this->createMock( ClientExceptionInterface::class );
-		$client_exception->expects( $this->any() )
-			->method( 'getMessage' )
-			->willReturn( 'Client error occurred' );
-
+		// Mock client exception - the ExceptionTrait will handle any ClientExceptionInterface.
 		$this->client->expects( $this->once() )
 			->method( 'post' )
-			->willThrowException( $client_exception );
+			->will(
+				$this->throwException(
+					$this->getMockBuilder( ClientExceptionInterface::class )->getMock()
+				)
+			);
 
 		$response = $this->do_request( self::ROUTE_SETUP_COMPLETE, 'POST' );
 
@@ -261,13 +268,10 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		);
 
 		// Mock options to return empty merchant center data.
-		$options = $this->createMock( OptionsInterface::class );
-		$options->expects( $this->once() )
+		$this->options->expects( $this->once() )
 			->method( 'get' )
 			->with( OptionsInterface::MERCHANT_CENTER )
 			->willReturn( [] );
-
-		$this->controller->set_options_object( $options );
 
 		$response = $this->do_request( self::ROUTE_SETUP_COMPLETE, 'POST' );
 
