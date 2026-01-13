@@ -20,73 +20,31 @@ describe( 'GenAICard', () => {
 		jest.clearAllMocks();
 	} );
 
-	const getGenAIButton = () =>
-		screen.queryByRole( 'button', {
-			name: /Generate Assets with GenAI/i,
-		} ) ||
-		screen.queryByRole( 'link', { name: /Generate Assets with GenAI/i } );
-
 	describe( 'Generate assets with GenAI button', () => {
-		it( 'disables the button if googleAdsAccount is missing', () => {
+		it( 'Card should have title "Review Your AI Suggestions"', () => {
 			useGoogleAdsAccount.mockReturnValue( {} );
 			render( <GenAICard /> );
-			expect( getGenAIButton() ).toBeDisabled();
+
+			expect(
+				screen.getByText( 'Review Your AI Suggestions' )
+			).toBeInTheDocument();
 		} );
 
-		it( 'disables the button if googleAdsAccount.status is not "connected"', () => {
-			useGoogleAdsAccount.mockReturnValue( {
-				googleAdsAccount: { id: '123', ocid: '456', status: 'pending' },
-			} );
+		it( 'Card should have the expected description', () => {
+			useGoogleAdsAccount.mockReturnValue( {} );
 			render( <GenAICard /> );
-			expect( getGenAIButton() ).toBeDisabled();
+
+			expect(
+				screen.getByText(
+					'Google AI analyzed your campaign’s URL to automatically generate your ad assets. Please review the suggested text and images below to ensure they align with your brand.'
+				)
+			).toBeInTheDocument();
 		} );
 
-		it( 'enables the button if googleAdsAccount.status is "connected"', () => {
-			useGoogleAdsAccount.mockReturnValue( {
-				googleAdsAccount: {
-					id: '123',
-					ocid: '456',
-					status: 'connected',
-				},
-			} );
-			render( <GenAICard /> );
-			expect( getGenAIButton() ).not.toBeDisabled();
-		} );
-
-		it( 'generates the correct recommendations URL when both ecid and ocid are available', () => {
-			useGoogleAdsAccount.mockReturnValue( {
-				googleAdsAccount: {
-					id: '123',
-					ocid: '456',
-					status: 'connected',
-				},
-			} );
-			render( <GenAICard /> );
-			const button = getGenAIButton();
-			expect( button ).toHaveAttribute(
-				'href',
-				expect.stringContaining( 'ocid=456' )
-			);
-			expect( button ).not.toHaveAttribute(
-				'href',
-				expect.stringContaining( 'ecid=' )
-			);
-		} );
-
-		it( 'generates the correct recommendations URL with only ecid', () => {
-			useGoogleAdsAccount.mockReturnValue( {
-				googleAdsAccount: { id: '123', status: 'connected' },
-			} );
-			render( <GenAICard /> );
-			const button = getGenAIButton();
-			expect( button ).toHaveAttribute(
-				'href',
-				expect.stringContaining( 'ecid=123' )
-			);
-			expect( button ).not.toHaveAttribute(
-				'href',
-				expect.stringContaining( 'ocid=' )
-			);
+		it( 'Match the snapshot', () => {
+			useGoogleAdsAccount.mockReturnValue( {} );
+			const { asFragment } = render( <GenAICard /> );
+			expect( asFragment() ).toMatchSnapshot();
 		} );
 	} );
 } );
