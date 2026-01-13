@@ -83,6 +83,7 @@ const DEFAULT_STATE = {
 		},
 		summary: {},
 	},
+	gen_ai_assets: {},
 };
 
 /**
@@ -629,6 +630,18 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				[ 'ads', 'recommendations', recommendationTypes ],
 				recommendations
 			);
+		}
+
+		case TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS: {
+			const { url, data } = action;
+
+			return setIn( state, [ 'gen_ai_assets', url, 'media' ], data );
+		}
+
+		case TYPES.RECEIVE_GEN_AI_TEXT_ASSETS: {
+			const { url, data } = action;
+
+			return setIn( state, [ 'gen_ai_assets', url, 'text' ], data );
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

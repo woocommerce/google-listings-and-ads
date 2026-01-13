@@ -1283,3 +1283,107 @@ export function* receiveAdsRecommendations(
 		recommendationTypes,
 	};
 }
+
+/**
+ * Fetches Gen AI media assets. If no asset type is provided, it will fetch all asset types.
+ *
+ * @param {string} url The final URL for which to generate media assets.
+ * @param {'marketing_image'|'square_marketing_image'|'portrait_marketing_image'|undefined} [assetType] - The type of media asset to retrieve.
+ * @return {Object} Action object to save generated media assets.
+ * @throws Will throw an error if the request failed.
+ */
+export function* fetchGenAIMediaAssets( url, assetType ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/assets/generate-images`,
+			method: REQUEST_ACTIONS.POST,
+			data: {
+				final_url: url,
+				type: assetType,
+			},
+		} );
+
+		const items = response.items || [];
+		const formattedData = items.reduce(
+			( accumulator, { temporary_image_url, type } ) => {
+				if ( assetType && type !== assetType ) {
+					return accumulator;
+				}
+
+				if ( ! temporary_image_url ) {
+					return accumulator;
+				}
+
+				accumulator[ type ] = accumulator[ type ] || [];
+				accumulator[ type ].push( temporary_image_url );
+				return accumulator;
+			},
+			{}
+		);
+
+		return {
+			type: TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS,
+			url,
+			data: formattedData,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error generating media assets.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
+/**
+ * Fetches Gen AI text assets. If no asset type is provided, it will fetch all asset types.
+ *
+ * @param {string} url The final URL for which to generate text assets.
+ * @param {'headline'|'long_headline'|'description'|undefined} [assetType] - The type of text asset to retrieve.
+ * @return {Object} Action object to save generated text assets.
+ */
+export function* fetchGenAITextAssets( url, assetType ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/assets/generate-text`,
+			method: REQUEST_ACTIONS.POST,
+			data: {
+				final_url: url,
+				type: assetType,
+			},
+		} );
+
+		const items = response.items || [];
+		const formattedData = items.reduce( ( accumulator, { text, type } ) => {
+			if ( assetType && type !== assetType ) {
+				return accumulator;
+			}
+
+			if ( ! text ) {
+				return accumulator;
+			}
+
+			accumulator[ type ] = accumulator[ type ] || [];
+			accumulator[ type ].push( text );
+			return accumulator;
+		}, {} );
+
+		return {
+			type: TYPES.RECEIVE_GEN_AI_TEXT_ASSETS,
+			url,
+			data: formattedData,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error generating text assets.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
