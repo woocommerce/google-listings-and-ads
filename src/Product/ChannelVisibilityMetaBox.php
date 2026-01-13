@@ -1,15 +1,13 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\SubmittableMetaBox;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WC_Product;
 use WP_Post;
@@ -19,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class ChannelVisibilityMetaBox
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
 class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 
@@ -107,6 +105,15 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	}
 
 	/**
+	 * Check whether this meta box can be registered.
+	 *
+	 * @return bool Whether the meta box can be registered.
+	 */
+	public function can_register(): bool {
+		return $this->merchant_center->is_connected();
+	}
+
+	/**
 	 * Returns an array of variables to be used in the view.
 	 *
 	 * @param WP_Post $post The WordPress post object the box is loaded for.
@@ -125,7 +132,7 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 			'channel_visibility' => $this->product_helper->get_channel_visibility( $product ),
 			'sync_status'        => $this->meta_handler->get_sync_status( $product ),
 			'issues'             => $this->product_helper->get_validation_errors( $product ),
-			'is_setup_complete'  => $this->merchant_center->is_setup_complete(),
+			'is_connected'       => $this->merchant_center->is_connected(),
 			'get_started_url'    => $this->get_start_url(),
 		];
 	}

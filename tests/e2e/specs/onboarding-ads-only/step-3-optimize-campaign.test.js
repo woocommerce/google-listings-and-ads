@@ -10,6 +10,10 @@ import SetupBudgetPage from '../../utils/pages/ads-onboarding/setup-budget';
 import CreateCampaignPage from '../../utils/pages/onboarding/step-2-create-campaign-ads-account-only';
 import SetupAdsAccountPage from '../../utils/pages/ads-onboarding/setup-ads-accounts';
 import OptimizeCampaignPage from '../../utils/pages/onboarding/step-3-optimize-campaign-ads-account-only';
+import {
+	setServiceBasedMerchant,
+	clearServiceBasedMerchant,
+} from '../../utils/api';
 
 test.use( { storageState: process.env.ADMINSTATE } );
 
@@ -90,34 +94,32 @@ test.describe( 'Optimize campaign for Ads only merchants', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		setupBudgetPage = new SetupBudgetPage( page );
-		createCampaignPage = new CreateCampaignPage( page, {
-			glaData: {
-				serviceBasedMerchant: true,
-			},
-		} );
+		createCampaignPage = new CreateCampaignPage( page );
 		setupAdsAccountPage = new SetupAdsAccountPage( page );
 		optimizeCampaignPage = new OptimizeCampaignPage( page );
-
+		await optimizeCampaignPage.fulfillAssetGroupsForCampaign();
+		await setServiceBasedMerchant();
 		await goToOptimizeStep();
 	} );
 
 	test.afterAll( async () => {
+		await clearServiceBasedMerchant();
 		await createCampaignPage.closePage();
 	} );
 
 	test.describe( 'Optimize campaign', () => {
 		test( 'Create Campaign button should be disabled if no URL selected', async () => {
-			const saveChangesButton =
-				optimizeCampaignPage.getSaveChangesButton();
-			await expect( saveChangesButton ).toBeDisabled();
+			const createCampaignButton =
+				optimizeCampaignPage.getCreateCampaignButton();
+			await expect( createCampaignButton ).toBeDisabled();
 		} );
 
 		test( 'Selecting final URL enables Create Campaign button', async () => {
 			await optimizeCampaignPage.selectUrlOption();
 
-			const saveChangesButton =
-				optimizeCampaignPage.getSaveChangesButton();
-			await expect( saveChangesButton ).toBeEnabled();
+			const createCampaignButton =
+				optimizeCampaignPage.getCreateCampaignButton();
+			await expect( createCampaignButton ).toBeEnabled();
 		} );
 
 		test( 'Selecting the "Or, select a different Final URL" button disables the Create Campaign button', async () => {
@@ -125,9 +127,9 @@ test.describe( 'Optimize campaign for Ads only merchants', () => {
 				optimizeCampaignPage.getSelectDifferentFinalUrlButton();
 			await selectDifferentFinalUrlButton.click();
 
-			const saveChangesButton =
-				optimizeCampaignPage.getSaveChangesButton();
-			await expect( saveChangesButton ).toBeDisabled();
+			const createCampaignButton =
+				optimizeCampaignPage.getCreateCampaignButton();
+			await expect( createCampaignButton ).toBeDisabled();
 		} );
 
 		test( 'Clicking the "Skip this step" button navigates to the dashboard', async () => {
@@ -136,6 +138,32 @@ test.describe( 'Optimize campaign for Ads only merchants', () => {
 
 			await page.waitForURL( /path=%2Fgoogle%2Fdashboard/ );
 			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fdashboard/ );
+		} );
+
+		test( 'should see the setup success modal', async () => {
+			const setupSuccessModal = createCampaignPage.getSetupSuccessModal();
+			await expect( setupSuccessModal ).toBeVisible();
+		} );
+
+		test( 'Clicking the "Create Campaign" button navigates to the dashboard and should see the setup success modal', async () => {
+			await goToOptimizeStep();
+			await optimizeCampaignPage.selectUrlOption();
+			const createCampaignButton =
+				optimizeCampaignPage.getCreateCampaignButton();
+
+			const campaignCreation =
+				setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
+					'15',
+					[ 'US', 'TW', 'GB' ]
+				);
+			await createCampaignButton.click();
+			await campaignCreation;
+
+			await page.waitForURL( /path=%2Fgoogle%2Fdashboard/ );
+			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fdashboard/ );
+
+			const setupSuccessModal = createCampaignPage.getSetupSuccessModal();
+			await expect( setupSuccessModal ).toBeVisible();
 		} );
 	} );
 } );

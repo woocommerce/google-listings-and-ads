@@ -42,7 +42,7 @@ export default function LinkedAccounts() {
 	const adminUrl = useAdminUrl();
 	const { jetpack } = useJetpackAccount();
 	const { google } = useGoogleAccount();
-	const { googleMCAccount } = useGoogleMCAccount();
+	const { googleMCAccount, hasGoogleMCConnection } = useGoogleMCAccount();
 	const { googleAdsAccount } = useGoogleAdsAccount();
 
 	const isLoading = ! (
@@ -92,9 +92,13 @@ export default function LinkedAccounts() {
 						googleAccount={ google }
 						hideAccountSwitch
 					/>
-					<MerchantCenterAccountInfoCard
-						googleMCAccount={ googleMCAccount }
-					/>
+
+					{ hasGoogleMCConnection && (
+						<MerchantCenterAccountInfoCard
+							googleMCAccount={ googleMCAccount }
+						/>
+					) }
+
 					{ hasAdsAccount && (
 						<ConnectedGoogleAdsAccountCard
 							googleAdsAccount={ googleAdsAccount }
@@ -114,6 +118,7 @@ export default function LinkedAccounts() {
 							</Section.Card.Footer>
 						</ConnectedGoogleAdsAccountCard>
 					) }
+
 					<Flex justify="flex-end">
 						<AppButton
 							isPrimary
