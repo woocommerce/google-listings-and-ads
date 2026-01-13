@@ -9,6 +9,8 @@ import GridiconCrossSmall from 'gridicons/dist/cross-small';
 /**
  * Internal dependencies
  */
+import { useAppDispatch } from '~/data';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import AppButton from '~/components/app-button';
 import AppInputControl from '~/components/app-input-control';
 import AssetItemActionButton, {
@@ -27,9 +29,66 @@ function normalizeNumberOfTexts( texts, minNumberOfTexts, maxNumberOfTexts ) {
 }
 
 /**
+ * Result returned by fillEmptyAssetSlotsWithUniqueValues.
+ *
+ * @typedef {Object} FillEmptyAssetSlotsResult
+ * @property {string[]} assets Updated asset list.
+ * @property {number} updatedCount Number of empty ("") slots that were filled.
+ */
+
+/**
+ * Fill empty asset slots (represented by empty strings "") with unique
+ * generated values.
+ *
+ * Existing non-empty values are preserved.
+ * Empty slots that cannot be filled remain as "".
+ *
+ * @param {string[]} currentAssets Current asset values, where "" represents an empty slot.
+ * @param {string[]} generatedAssets Newly generated candidate asset values.
+ *
+ * @return {FillEmptyAssetSlotsResult} Result containing updated assets and count of filled slots.
+ */
+export function fillEmptyAssetSlotsWithUniqueValues(
+	currentAssets,
+	generatedAssets
+) {
+	const existingAssetValues = new Set( currentAssets.filter( Boolean ) );
+
+	let generatedIndex = 0;
+	let updatedCount = 0;
+
+	const assets = currentAssets.map( ( assetValue ) => {
+		if ( assetValue !== '' ) {
+			return assetValue;
+		}
+
+		while (
+			generatedIndex < generatedAssets.length &&
+			existingAssetValues.has( generatedAssets[ generatedIndex ] )
+		) {
+			generatedIndex++;
+		}
+
+		if ( generatedIndex < generatedAssets.length ) {
+			const nextGeneratedValue = generatedAssets[ generatedIndex ];
+			existingAssetValues.add( nextGeneratedValue );
+			generatedIndex++;
+			updatedCount++;
+			return nextGeneratedValue;
+		}
+
+		return '';
+	} );
+
+	return { assets, updatedCount };
+}
+
+/**
  * Renders a list of text inputs for managing the single type of asset texts.
  *
  * @param {Object} props React props.
+ * @param {string} props.assetKey Key of the text asset.
+ * @param {string} props.finalUrl The final URL for the ad.
  * @param {string[]} [props.initialTexts=[]] Initial texts.
  * @param {number} [props.minNumberOfTexts=0] Minimum number of texts.
  * @param {number} [props.maxNumberOfTexts=0] Maximum number of texts.
@@ -42,6 +101,8 @@ function normalizeNumberOfTexts( texts, minNumberOfTexts, maxNumberOfTexts ) {
  * @param {(texts: Array<string>) => void} [props.onChange] Callback function to be called when the texts are changed.
  */
 export default function TextsEditor( {
+	assetKey,
+	finalUrl,
 	initialTexts = [],
 	minNumberOfTexts = 0,
 	maxNumberOfTexts = 0,
@@ -54,7 +115,10 @@ export default function TextsEditor( {
 	onChange = noop,
 } ) {
 	const updateTextsRef = useRef();
+	const { createNotice } = useDispatchCoreNotices();
+	const { fetchGenAITextAssets } = useAppDispatch();
 	const [ texts, setTexts ] = useState( initialTexts );
+	const [ isGeneratingAssets, setIsGeneratingAssets ] = useState( false );
 
 	const updateTexts = ( nextTexts ) => {
 		setTexts( nextTexts );
@@ -93,6 +157,43 @@ export default function TextsEditor( {
 
 	const handleAddClick = () => {
 		updateTexts( texts.concat( '' ) );
+	};
+
+	const handleGenerateClick = async () => {
+		setIsGeneratingAssets( true );
+
+		try {
+			const response = await fetchGenAITextAssets( finalUrl, assetKey );
+			const generatedTextAssets = response?.data?.[ assetKey ] ?? [];
+
+			const { assets: updatedTexts, updatedCount } =
+				fillEmptyAssetSlotsWithUniqueValues(
+					texts,
+					generatedTextAssets
+				);
+
+			if ( updatedCount > 0 ) {
+				updateTexts( updatedTexts );
+			} else {
+				createNotice(
+					'info',
+					__(
+						'No texts were generated. Please try again.',
+						'google-listings-and-ads'
+					)
+				);
+			}
+		} catch ( error ) {
+			createNotice(
+				'error',
+				__(
+					'Something went wrong while generating texts. Please try again.',
+					'google-listings-and-ads'
+				)
+			);
+		} finally {
+			setIsGeneratingAssets( false );
+		}
 	};
 
 	const normalizedMaxCharacterCounts = [ maxCharacterCounts ].flat();
@@ -164,6 +265,8 @@ export default function TextsEditor( {
 				<AssetItemActionButton
 					action={ ACTION_TYPES.GENERATE }
 					text={ generateButtonText }
+					onClick={ handleGenerateClick }
+					loading={ isGeneratingAssets }
 				/>
 			) }
 		</div>

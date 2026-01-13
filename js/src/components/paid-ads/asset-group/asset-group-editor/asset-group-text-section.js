@@ -129,6 +129,8 @@ const AssetGroupTextSection = ( {
 								maxCharacterCounts={ spec.maxCharacterCounts }
 								placeholder={ spec.capitalizedName }
 								addButtonText={ spec.addButtonText }
+								finalUrl={ finalUrl }
+								assetKey={ spec.key }
 								generateButtonPluralText={
 									spec.generateButtonPluralText
 								}

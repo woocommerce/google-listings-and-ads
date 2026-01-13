@@ -22,14 +22,16 @@ const ACTION_ICONS = {
 
 export default function AssetItemActionButton( {
 	action = ACTION_TYPES.ADD,
+	loading,
 	...props
 } ) {
 	return (
 		<AppButton
 			className="gla-asset-item-action-button"
 			isLink
-			icon={ ACTION_ICONS[ action ] }
+			icon={ ! loading ? ACTION_ICONS[ action ] : null }
 			iconSize={ 16 }
+			loading={ loading }
 			{ ...props }
 		/>
 	);
