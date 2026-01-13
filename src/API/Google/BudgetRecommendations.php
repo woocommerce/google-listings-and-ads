@@ -12,13 +12,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareInterface
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
-use Google\Ads\GoogleAds\V20\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
-use Google\Ads\GoogleAds\V20\Enums\BiddingStrategyTypeEnum\BiddingStrategyType;
-use Google\Ads\GoogleAds\V20\Enums\RecommendationTypeEnum\RecommendationType;
-use Google\Ads\GoogleAds\V20\Resources\Recommendation\CampaignBudgetRecommendation;
-use Google\Ads\GoogleAds\V20\Services\GenerateRecommendationsRequest;
-use Google\Ads\GoogleAds\V20\Services\GenerateRecommendationsRequest\AssetGroupInfo;
-use Google\Ads\GoogleAds\V20\Services\GenerateRecommendationsRequest\BiddingInfo;
+use Google\Ads\GoogleAds\V21\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
+use Google\Ads\GoogleAds\V21\Enums\BiddingStrategyTypeEnum\BiddingStrategyType;
+use Google\Ads\GoogleAds\V21\Enums\RecommendationTypeEnum\RecommendationType;
+use Google\Ads\GoogleAds\V21\Resources\Recommendation\CampaignBudgetRecommendation;
+use Google\Ads\GoogleAds\V21\Services\GenerateRecommendationsRequest;
+use Google\Ads\GoogleAds\V21\Services\GenerateRecommendationsRequest\AssetGroupInfo;
+use Google\Ads\GoogleAds\V21\Services\GenerateRecommendationsRequest\BiddingInfo;
 use Google\ApiCore\ApiException;
 
 /**

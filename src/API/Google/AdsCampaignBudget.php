@@ -9,11 +9,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Google\Ads\GoogleAds\Util\FieldMasks;
-use Google\Ads\GoogleAds\Util\V20\ResourceNames;
-use Google\Ads\GoogleAds\V20\Resources\CampaignBudget;
-use Google\Ads\GoogleAds\V20\Services\CampaignBudgetOperation;
-use Google\Ads\GoogleAds\V20\Services\Client\CampaignBudgetServiceClient;
-use Google\Ads\GoogleAds\V20\Services\MutateOperation;
+use Google\Ads\GoogleAds\Util\V21\ResourceNames;
+use Google\Ads\GoogleAds\V21\Resources\CampaignBudget;
+use Google\Ads\GoogleAds\V21\Services\CampaignBudgetOperation;
+use Google\Ads\GoogleAds\V21\Services\Client\CampaignBudgetServiceClient;
+use Google\Ads\GoogleAds\V21\Services\MutateOperation;
 use Google\ApiCore\ValidationException;
 use Exception;
 
