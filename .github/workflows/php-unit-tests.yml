@@ -47,7 +47,7 @@ jobs:
         uses: woocommerce/grow/get-plugin-releases@actions-v2
         with:
           slug: wordpress
-      - name: Temporarily hardcode wc-versions
+      - name: Get Release versions from WooCommerce
         id: wc
         uses: woocommerce/grow/get-plugin-releases@actions-v2
         with:
