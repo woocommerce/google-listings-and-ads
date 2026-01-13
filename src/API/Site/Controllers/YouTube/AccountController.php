@@ -4,14 +4,11 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\YouTube;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\ExceptionTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
@@ -26,17 +23,12 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\YouTube
  */
-class AccountController extends BaseOptionsController implements ContainerAwareInterface {
+class AccountController extends BaseController implements ContainerAwareInterface {
 
 	use ContainerAwareTrait;
-	use ExceptionTrait;
-	use PluginHelper;
 
 	/** @var Connection */
 	protected $connection;
-
-	/** @var Client */
-	protected $client;
 
 	/**
 	 * AccountController constructor.
@@ -45,11 +37,10 @@ class AccountController extends BaseOptionsController implements ContainerAwareI
 	 * @param Connection $connection
 	 * @param Client     $client
 	 */
-	public function __construct( RESTServer $server, Connection $connection, Client $client ) {
+	public function __construct( RESTServer $server, Connection $connection ) {
 		parent::__construct( $server );
 
 		$this->connection = $connection;
-		$this->client     = $client;
 	}
 
 	/**
@@ -175,66 +166,22 @@ class AccountController extends BaseOptionsController implements ContainerAwareI
 	protected function get_setup_complete_callback(): callable {
 		return function () {
 			try {
-				// Get store information.
-				$store_name = get_bloginfo( 'name' );
-				$store_url  = $this->strip_url_protocol( $this->get_site_url() );
+				return $result = $this->connection->third_party_link();
 
-				// Get Merchant Center ID.
-				$merchant_center = $this->options->get( OptionsInterface::MERCHANT_CENTER );
-				if ( empty( $merchant_center['id'] ) ) {
-					throw new Exception(
-						__( 'Merchant Center account is not configured.', 'google-listings-and-ads' ),
-						400
-					);
-				}
-
-				$merchant_id = (string) $merchant_center['id'];
-
-				// Build request body.
-				$body = [
-					'snippet' => [
-						'type'               => 'channelToStoreLink',
-						'channelToStoreLink' => [
-							'storeName'  => $store_name,
-							'storeUrl'   => $store_url,
-							'merchantId' => $merchant_id,
-						],
-					],
-				];
-
-				// Make request to WCS proxy.
-				$result = $this->client->post(
-					$this->get_third_party_links_url(),
-					[
-						'body' => wp_json_encode( $body ),
-					]
-				);
-
-				$response = json_decode( $result->getBody()->getContents(), true );
-
-				if ( 200 === $result->getStatusCode() ) {
+				if ( isset( $result['status']['linkedStatus'] ) && 'linked' === $result['status']['linkedStatus'] ) {
 					return [
 						'status'  => 'success',
 						'message' => __( 'Successfully completed YouTube setup.', 'google-listings-and-ads' ),
 					];
 				}
 
-				do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
+				do_action( 'woocommerce_gla_guzzle_invalid_response', $result, __METHOD__ );
 
-				$message = $response['message'] ?? __( 'Unable to complete YouTube setup.', 'google-listings-and-ads' );
-				throw new Exception( $message, $result->getStatusCode() );
+				throw new Exception( __( '2 Unable to complete YouTube setup.', 'google-listings-and-ads' ), 400 );
 			} catch ( ClientExceptionInterface $e ) {
 				do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
-				return $this->response_from_exception(
-					new Exception(
-						$this->client_exception_message(
-							$e,
-							__( 'Unable to complete YouTube setup.', 'google-listings-and-ads' )
-						),
-						400
-					)
-				);
+				return $this->response_from_exception( $e );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
