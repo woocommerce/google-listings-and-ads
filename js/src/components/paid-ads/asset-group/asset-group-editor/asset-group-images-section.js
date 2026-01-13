@@ -11,6 +11,7 @@ import ImagesSelector from './images-selector';
 import AssetField from './asset-field';
 import Section from '~/components/section';
 import AppDocumentationLink from '~/components/app-documentation-link';
+import GenAIImagesNotice from '../../gen-ai-images-notice';
 import { ASSET_IMAGE_SPECS } from '../../assetSpecs';
 
 /**
@@ -74,6 +75,7 @@ const AssetGroupImagesSection = ( {
 				</div>
 			}
 		>
+			<GenAIImagesNotice />
 			<div className="gla-asset-group-section__content">
 				{ ASSET_IMAGE_SPECS.map( ( spec ) => {
 					const initialImageUrls = initialValues[ spec.key ];
