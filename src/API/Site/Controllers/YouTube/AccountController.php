@@ -35,7 +35,6 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 	 *
 	 * @param RESTServer $server
 	 * @param Connection $connection
-	 * @param Client     $client
 	 */
 	public function __construct( RESTServer $server, Connection $connection ) {
 		parent::__construct( $server );
