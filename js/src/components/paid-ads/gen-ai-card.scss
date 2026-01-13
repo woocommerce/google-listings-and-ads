@@ -1,4 +1,6 @@
 .gla-gen-ai-card {
+	font-family: "SF Pro Text", $default-font;
+
 	:where(.gla-gen-ai-card__wrapper) {
 		flex-direction: column-reverse;
 
@@ -10,12 +12,35 @@
 	:where(.gla-section-card-title) {
 		font-size: 16px;
 		margin-bottom: 8px;
+
+		div {
+			font-family: "SF Pro Display", $default-font;
+		}
 	}
 
-	img {
-		display: block;
-		max-height: 100%;
-		margin: 0 auto;
-		max-width: 100%;
+	:where(.is-success) {
+		width: 100%;
+
+		:where(.components-notice__content) {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+		}
+	}
+
+	:where(.gla-gen-ai-card__image-block) {
+		flex: 0 0 92px;
+
+		@media (min-width: $break-small) {
+			margin-top: 0;
+			margin-left: 24px;
+		}
+
+		img {
+			display: block;
+			max-height: 100%;
+			margin: 0 auto;
+			max-width: 100%;
+		}
 	}
 }
