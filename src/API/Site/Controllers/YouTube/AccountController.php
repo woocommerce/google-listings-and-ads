@@ -166,7 +166,7 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 	protected function get_setup_complete_callback(): callable {
 		return function () {
 			try {
-				return $result = $this->connection->third_party_link();
+				$result = $this->connection->third_party_link();
 
 				if ( isset( $result['status']['linkedStatus'] ) && 'linked' === $result['status']['linkedStatus'] ) {
 					return [
@@ -177,7 +177,7 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 
 				do_action( 'woocommerce_gla_guzzle_invalid_response', $result, __METHOD__ );
 
-				throw new Exception( __( '2 Unable to complete YouTube setup.', 'google-listings-and-ads' ), 400 );
+				throw new Exception( __( 'Unable to complete YouTube setup.', 'google-listings-and-ads' ), 400 );
 			} catch ( ClientExceptionInterface $e ) {
 				do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
@@ -186,15 +186,6 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 				return $this->response_from_exception( $e );
 			}
 		};
-	}
-
-	/**
-	 * Get the YouTube Third Party Links URL.
-	 *
-	 * @return string
-	 */
-	protected function get_third_party_links_url(): string {
-		return "{$this->container->get( 'connect_server_root' )}google/youtube/v3/thirdPartyLinks?part=snippet";
 	}
 
 	/**

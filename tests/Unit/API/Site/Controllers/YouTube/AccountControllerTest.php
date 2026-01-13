@@ -4,13 +4,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\YouTube\AccountController;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\ResponseInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\StreamInterface;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -25,15 +19,6 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|Connection $connection */
 	protected $connection;
 
-	/** @var MockObject|Client $client */
-	protected $client;
-
-	/** @var MockObject|OptionsInterface $options */
-	protected $options;
-
-	/** @var Container $container */
-	protected $container;
-
 	/** @var AccountController $controller */
 	protected $controller;
 
@@ -45,16 +30,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		parent::setUp();
 
 		$this->connection = $this->createMock( Connection::class );
-		$this->client     = $this->createMock( Client::class );
-		$this->options    = $this->createMock( OptionsInterface::class );
-		$this->container  = new Container();
-
-		// Add connect_server_root to container.
-		$this->container->addShared( 'connect_server_root', 'https://api.woocommerce.com/' );
-
-		$this->controller = new AccountController( $this->server, $this->connection, $this->client );
-		$this->controller->set_options_object( $this->options );
-		$this->controller->set_container( $this->container );
+		$this->controller = new AccountController( $this->server, $this->connection );
 		$this->controller->register();
 	}
 
@@ -103,7 +79,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
-	public function test_connected() {
+	public function test_connection() {
 		// Mock status response.
 		$status = [
 			'status' => 'connected',
@@ -158,50 +134,15 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_setup_complete_success() {
-		// Mock WordPress functions.
-		add_filter(
-			'pre_option_blogname',
-			function () {
-				return 'Test Store';
-			}
-		);
-		add_filter(
-			'home_url',
-			function () {
-				return 'https://test-store.example';
-			}
-		);
-
-		// Mock options to return merchant center data.
-		$this->options->expects( $this->once() )
-			->method( 'get' )
-			->with( OptionsInterface::MERCHANT_CENTER )
-			->willReturn( [ 'id' => 1234567890 ] );
-
-		// Mock successful WCS response.
-		$stream = $this->createMock( StreamInterface::class );
-		$stream->expects( $this->once() )
-			->method( 'getContents' )
+		$this->connection->expects( $this->once() )
+			->method( 'third_party_link' )
 			->willReturn(
-				wp_json_encode(
-					[
-						'kind'   => 'youtube#thirdPartyLink',
-						'status' => [ 'linkStatus' => 'linked' ],
-					]
-				)
+				[
+					'status' => [
+						'linkedStatus' => 'linked'
+					],
+				]
 			);
-
-		$response = $this->createMock( ResponseInterface::class );
-		$response->expects( $this->once() )
-			->method( 'getStatusCode' )
-			->willReturn( 200 );
-		$response->expects( $this->once() )
-			->method( 'getBody' )
-			->willReturn( $stream );
-
-		$this->client->expects( $this->once() )
-			->method( 'post' )
-			->willReturn( $response );
 
 		$response = $this->do_request( self::ROUTE_SETUP_COMPLETE, 'POST' );
 
@@ -216,34 +157,9 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_setup_complete_with_client_error() {
-		// Mock WordPress functions.
-		add_filter(
-			'pre_option_blogname',
-			function () {
-				return 'Test Store';
-			}
-		);
-		add_filter(
-			'home_url',
-			function () {
-				return 'https://test-store.example';
-			}
-		);
-
-		// Mock options to return merchant center data.
-		$this->options->expects( $this->once() )
-			->method( 'get' )
-			->with( OptionsInterface::MERCHANT_CENTER )
-			->willReturn( [ 'id' => 1234567890 ] );
-
-		// Mock client exception - the ExceptionTrait will handle any ClientExceptionInterface.
-		$this->client->expects( $this->once() )
-			->method( 'post' )
-			->will(
-				$this->throwException(
-					$this->getMockBuilder( ClientExceptionInterface::class )->getMock()
-				)
-			);
+		$this->connection->expects( $this->once() )
+			->method( 'third_party_link' )
+			->willThrowException( new Exception( 'Unable to complete YouTube setup.' ) );
 
 		$response = $this->do_request( self::ROUTE_SETUP_COMPLETE, 'POST' );
 
@@ -253,25 +169,9 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_setup_complete_with_merchant_center_not_configured() {
-		// Mock WordPress functions.
-		add_filter(
-			'pre_option_blogname',
-			function () {
-				return 'Test Store';
-			}
-		);
-		add_filter(
-			'home_url',
-			function () {
-				return 'https://test-store.example';
-			}
-		);
-
-		// Mock options to return empty merchant center data.
-		$this->options->expects( $this->once() )
-			->method( 'get' )
-			->with( OptionsInterface::MERCHANT_CENTER )
-			->willReturn( [] );
+		$this->connection->expects( $this->once() )
+			->method( 'third_party_link' )
+			->willThrowException( new Exception( 'Merchant Center account is not configured.' ) );
 
 		$response = $this->do_request( self::ROUTE_SETUP_COMPLETE, 'POST' );
 
