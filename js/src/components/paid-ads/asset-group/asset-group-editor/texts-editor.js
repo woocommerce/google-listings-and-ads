@@ -11,7 +11,9 @@ import GridiconCrossSmall from 'gridicons/dist/cross-small';
  */
 import AppButton from '~/components/app-button';
 import AppInputControl from '~/components/app-input-control';
-import AddAssetItemButton from './add-asset-item-button';
+import AssetItemActionButton, {
+	ACTION_TYPES,
+} from './asset-item-action-button';
 import './texts-editor.scss';
 
 function normalizeNumberOfTexts( texts, minNumberOfTexts, maxNumberOfTexts ) {
@@ -33,6 +35,8 @@ function normalizeNumberOfTexts( texts, minNumberOfTexts, maxNumberOfTexts ) {
  * @param {number} [props.maxNumberOfTexts=0] Maximum number of texts.
  * @param {number|number[]} props.maxCharacterCounts Maximum number of characters for each text. If the limits are the same, a single number can be used instead of an array.
  * @param {string} props.addButtonText Text for the button to add a new text input.
+ * @param {string} [props.generateButtonPluralText] Text for the button to generate texts using AI.
+ * @param {string} [props.generateButtonSingularText] Text for the button to generate a single text using AI.
  * @param {string} [props.placeholder] Placeholder text.
  * @param {JSX.Element} [props.children] Content to be rendered above the add button.
  * @param {(texts: Array<string>) => void} [props.onChange] Callback function to be called when the texts are changed.
@@ -43,6 +47,8 @@ export default function TextsEditor( {
 	maxNumberOfTexts = 0,
 	maxCharacterCounts,
 	addButtonText,
+	generateButtonPluralText,
+	generateButtonSingularText,
 	placeholder,
 	children,
 	onChange = noop,
@@ -90,6 +96,14 @@ export default function TextsEditor( {
 	};
 
 	const normalizedMaxCharacterCounts = [ maxCharacterCounts ].flat();
+	const emptyFieldsCount = texts.filter( ( value ) => value === '' ).length;
+	let generateButtonText;
+
+	if ( emptyFieldsCount === 1 && generateButtonSingularText ) {
+		generateButtonText = generateButtonSingularText;
+	} else if ( emptyFieldsCount > 1 && generateButtonPluralText ) {
+		generateButtonText = generateButtonPluralText;
+	}
 
 	return (
 		<div className="gla-texts-editor">
@@ -133,7 +147,7 @@ export default function TextsEditor( {
 				} ) }
 			</div>
 			{ children }
-			<AddAssetItemButton
+			<AssetItemActionButton
 				hidden={
 					minNumberOfTexts > 0 &&
 					minNumberOfTexts === maxNumberOfTexts
@@ -145,6 +159,13 @@ export default function TextsEditor( {
 				text={ addButtonText }
 				onClick={ handleAddClick }
 			/>
+
+			{ emptyFieldsCount > 0 && (
+				<AssetItemActionButton
+					action={ ACTION_TYPES.GENERATE }
+					text={ generateButtonText }
+				/>
+			) }
 		</div>
 	);
 }
