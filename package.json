@@ -148,7 +148,11 @@
 			},
 			{
 				"path": "./js/build/index.js",
+<<<<<<< HEAD
 				"maxSize": "18.88 kB"
+=======
+				"maxSize": "18.85 kB"
+>>>>>>> feature/GOOWOO-313-youtube-shopping
 			},
 			{
 				"path": "./js/build/commons.js",
