@@ -115,7 +115,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DateTimeUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ImageUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\Writer\CsvExportWriter;
-use Automattic\WooCommerce\GoogleListingsAndAds\Utility\WPCLIGenerateSampleConversionReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\WPCLIMigrationGTIN;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -194,7 +193,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		MarketingChannelRegistrar::class           => true,
 		OAuthService::class                        => true,
 		WPCLIMigrationGTIN::class                  => true,
-		WPCLIGenerateSampleConversionReport::class => true,
 	];
 
 	/**
@@ -386,6 +384,5 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		// ClI Classes
 		$this->conditionally_share_with_tags( WPCLIMigrationGTIN::class, ProductRepository::class, AttributeManager::class );
-		$this->conditionally_share_with_tags( WPCLIGenerateSampleConversionReport::class, CsvExportWriter::class );
 	}
 }

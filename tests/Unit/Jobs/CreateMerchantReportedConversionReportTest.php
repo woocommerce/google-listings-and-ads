@@ -123,7 +123,7 @@ class CreateMerchantReportedConversionReportTest extends UnitTest {
 		$this->options->method( 'get' )
 			->willReturnMap(
 				[
-					[ OptionsInterface::MERCHANT_CONVERSION_EXPORT_FILES, [], $export_state ],
+					[ OptionsInterface::YOUTUBE_EXPORT_FILES, [], $export_state ],
 					[ OptionsInterface::YOUTUBE_ORDER_IDS_CACHE, [], $youtube_cache ],
 				]
 			);
@@ -153,7 +153,7 @@ class CreateMerchantReportedConversionReportTest extends UnitTest {
 				function ( $key, $value ) use ( &$update_count ) {
 					++$update_count;
 					if ( 1 === $update_count ) {
-						$this->assertEquals( OptionsInterface::MERCHANT_CONVERSION_EXPORT_FILES, $key );
+						$this->assertEquals( OptionsInterface::YOUTUBE_EXPORT_FILES, $key );
 						$this->assertArrayNotHasKey( self::TEST_DATE, $value );
 					}
 					if ( 2 === $update_count ) {
@@ -184,7 +184,7 @@ class CreateMerchantReportedConversionReportTest extends UnitTest {
 		$this->options->method( 'get' )
 			->willReturnMap(
 				[
-					[ OptionsInterface::MERCHANT_CONVERSION_EXPORT_FILES, [], $export_state ],
+					[ OptionsInterface::YOUTUBE_EXPORT_FILES, [], $export_state ],
 				]
 			);
 

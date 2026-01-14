@@ -50,7 +50,7 @@ interface OptionsInterface {
 	public const GTIN_MIGRATION_STATUS                     = 'gtin_migration_status';
 	public const API_PULL_SYNC_MODE                        = 'api_pull_sync_mode';
 	public const YOUTUBE_ORDER_IDS_CACHE                   = 'youtube_export_order_ids';
-	public const MERCHANT_CONVERSION_EXPORT_FILES          = 'merchant_conversion_export_files';
+	public const YOUTUBE_EXPORT_FILES                      = 'youtube_export_files';
 
 	public const VALID_OPTIONS = [
 		self::ADS_ACCOUNT_CURRENCY                      => true,
@@ -91,7 +91,7 @@ interface OptionsInterface {
 		self::GTIN_MIGRATION_STATUS                     => true,
 		self::API_PULL_SYNC_MODE                        => true,
 		self::YOUTUBE_ORDER_IDS_CACHE                   => true,
-		self::MERCHANT_CONVERSION_EXPORT_FILES          => true,
+		self::YOUTUBE_EXPORT_FILES                      => true,
 	];
 
 	public const OPTION_TYPES = [

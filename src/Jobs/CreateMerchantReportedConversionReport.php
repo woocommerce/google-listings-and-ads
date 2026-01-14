@@ -139,7 +139,7 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 		$date = $this->get_date();
 
 		// Get or initialise file state.
-		$export_state = $this->options->get( OptionsInterface::MERCHANT_CONVERSION_EXPORT_FILES, [] );
+		$export_state = $this->options->get( OptionsInterface::YOUTUBE_EXPORT_FILES, [] );
 		if ( ! isset( $export_state[ $date ] ) ) {
 			$export_state[ $date ] = [
 				'files'        => [],
@@ -156,7 +156,7 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 			$export_state[ $date ]['current_file'] = $file_path;
 			$export_state[ $date ]['files'][]      = $file_path;
 
-			$this->options->update( OptionsInterface::MERCHANT_CONVERSION_EXPORT_FILES, $export_state );
+			$this->options->update( OptionsInterface::YOUTUBE_EXPORT_FILES, $export_state );
 		}
 
 		foreach ( $items as $order_id ) {
@@ -181,7 +181,7 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 				$export_state[ $date ]['current_file'] = $file_path;
 				$export_state[ $date ]['files'][]      = $file_path;
 
-				$this->options->update( OptionsInterface::MERCHANT_CONVERSION_EXPORT_FILES, $export_state );
+				$this->options->update( OptionsInterface::YOUTUBE_EXPORT_FILES, $export_state );
 			}
 
 			// Get items from the order.
@@ -210,7 +210,7 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 		$date = $this->get_date();
 
 		// Get file state.
-		$export_state = $this->options->get( OptionsInterface::MERCHANT_CONVERSION_EXPORT_FILES, [] );
+		$export_state = $this->options->get( OptionsInterface::YOUTUBE_EXPORT_FILES, [] );
 
 		if ( isset( $export_state[ $date ] ) && ! empty( $export_state[ $date ]['files'] ) ) {
 			$file_paths = $export_state[ $date ]['files'];
@@ -226,7 +226,7 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 
 				// Remove file state for this date.
 				unset( $export_state[ $date ] );
-				$this->options->update( OptionsInterface::MERCHANT_CONVERSION_EXPORT_FILES, $export_state );
+				$this->options->update( OptionsInterface::YOUTUBE_EXPORT_FILES, $export_state );
 
 				// Remove order IDs cache for this date.
 				$youtube_cache = $this->options->get( OptionsInterface::YOUTUBE_ORDER_IDS_CACHE, [] );
