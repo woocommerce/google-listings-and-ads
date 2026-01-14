@@ -1135,6 +1135,7 @@ export default class MockRequests {
 	async mockYouTubeAccountNotConnected() {
 		await this.fulfillYouTubeAccountConnection( {
 			status: 'disconnected',
+			channel: [],
 		} );
 	}
 
@@ -1173,7 +1174,7 @@ export default class MockRequests {
 	async mockYouTubeAccountNoChannels() {
 		await this.fulfillYouTubeAccountConnection( {
 			status: 'connected',
-			channel: null,
+			channel: [],
 		} );
 	}
 }

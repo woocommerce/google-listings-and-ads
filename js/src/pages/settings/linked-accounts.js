@@ -42,18 +42,22 @@ const { CONNECTED, INCOMPLETE } = GOOGLE_ADS_ACCOUNT_STATUS;
  */
 export default function LinkedAccounts() {
 	const adminUrl = useAdminUrl();
-	const { jetpack } = useJetpackAccount();
-	const { google } = useGoogleAccount();
-	const { googleMCAccount } = useGoogleMCAccount();
-	const { googleAdsAccount } = useGoogleAdsAccount();
-	const { youTubeAccount } = useYouTubeAccount();
-
+	const { jetpack, hasFinishedResolution: hasResolvedJetpackAccount } =
+		useJetpackAccount();
+	const { google, hasFinishedResolution: hasResolvedGoogleAccount } =
+		useGoogleAccount();
+	const { googleMCAccount, hasFinishedResolution: hasResolvedMCAccount } =
+		useGoogleMCAccount();
+	const { googleAdsAccount, hasFinishedResolution: hasResolvedAdsAccount } =
+		useGoogleAdsAccount();
+	const { hasFinishedResolution: hasResolvedYouTubeAccount } =
+		useYouTubeAccount();
 	const isLoading = ! (
-		jetpack &&
-		google &&
-		googleMCAccount &&
-		googleAdsAccount &&
-		youTubeAccount
+		hasResolvedJetpackAccount &&
+		hasResolvedGoogleAccount &&
+		hasResolvedMCAccount &&
+		hasResolvedAdsAccount &&
+		hasResolvedYouTubeAccount
 	);
 
 	const hasAdsAccount = [ CONNECTED, INCOMPLETE ].includes(
@@ -120,7 +124,7 @@ export default function LinkedAccounts() {
 						</ConnectedGoogleAdsAccountCard>
 					) }
 
-					<YouTubeAccountCard youTubeAccount={ youTubeAccount } />
+					<YouTubeAccountCard />
 
 					<Flex justify="flex-end">
 						<AppButton
