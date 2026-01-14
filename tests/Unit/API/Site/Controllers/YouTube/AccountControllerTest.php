@@ -22,8 +22,9 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	/** @var AccountController $controller */
 	protected $controller;
 
-	protected const ROUTE_CONNECT    = '/wc/gla/youtube/connect';
-	protected const ROUTE_CONNECTION = '/wc/gla/youtube/connection';
+	protected const ROUTE_CONNECT        = '/wc/gla/youtube/connect';
+	protected const ROUTE_CONNECTION     = '/wc/gla/youtube/connection';
+	protected const ROUTE_SETUP_COMPLETE = '/wc/gla/youtube/setup/complete';
 
 	public function setUp(): void {
 		parent::setUp();
@@ -78,7 +79,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
-	public function test_connected() {
+	public function test_connection() {
 		// Mock status response.
 		$status = [
 			'status' => 'connected',
@@ -130,5 +131,54 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			$response->get_data()
 		);
 		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_setup_complete_success() {
+		$this->connection->expects( $this->once() )
+			->method( 'third_party_link' )
+			->willReturn(
+				[
+					'status' => [
+						'linkedStatus' => 'linked',
+					],
+				]
+			);
+
+		$response = $this->do_request( self::ROUTE_SETUP_COMPLETE, 'POST' );
+
+		$this->assertEquals(
+			[
+				'status'  => 'success',
+				'message' => 'Successfully completed YouTube setup.',
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_setup_complete_with_client_error() {
+		$this->connection->expects( $this->once() )
+			->method( 'third_party_link' )
+			->willThrowException( new Exception( 'Unable to complete YouTube setup.' ) );
+
+		$response = $this->do_request( self::ROUTE_SETUP_COMPLETE, 'POST' );
+
+		$data = $response->get_data();
+		$this->assertArrayHasKey( 'message', $data );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_setup_complete_with_merchant_center_not_configured() {
+		$this->connection->expects( $this->once() )
+			->method( 'third_party_link' )
+			->willThrowException( new Exception( 'Merchant Center account is not configured.' ) );
+
+		$response = $this->do_request( self::ROUTE_SETUP_COMPLETE, 'POST' );
+
+		$this->assertEquals(
+			[ 'message' => 'Merchant Center account is not configured.' ],
+			$response->get_data()
+		);
+		$this->assertEquals( 400, $response->get_status() );
 	}
 }

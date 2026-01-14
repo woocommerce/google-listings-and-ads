@@ -3,13 +3,16 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\YouTube;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\ExceptionTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
-use Avifinfo\Chan_Prop;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
 use Exception;
 use WP_REST_Request as Request;
 
@@ -65,6 +68,16 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 				[
 					'methods'             => TransportMethods::DELETABLE,
 					'callback'            => $this->get_disconnect_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
+		$this->register_route(
+			'youtube/setup/complete',
+			[
+				[
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->get_setup_complete_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 			]
@@ -138,6 +151,36 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 					'status'  => $connection,
 					'channel' => $channel,
 				];
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
+	 * Get the callback function for completing YouTube setup.
+	 *
+	 * @return callable
+	 */
+	protected function get_setup_complete_callback(): callable {
+		return function () {
+			try {
+				$result = $this->connection->third_party_link();
+
+				if ( isset( $result['status']['linkedStatus'] ) && 'linked' === $result['status']['linkedStatus'] ) {
+					return [
+						'status'  => 'success',
+						'message' => __( 'Successfully completed YouTube setup.', 'google-listings-and-ads' ),
+					];
+				}
+
+				do_action( 'woocommerce_gla_guzzle_invalid_response', $result, __METHOD__ );
+
+				throw new Exception( __( 'Unable to complete YouTube setup.', 'google-listings-and-ads' ), 400 );
+			} catch ( ClientExceptionInterface $e ) {
+				do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
+
+				return $this->response_from_exception( $e );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
