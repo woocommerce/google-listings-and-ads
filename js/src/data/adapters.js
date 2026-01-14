@@ -262,3 +262,33 @@ export function adaptRaiseAdsBudgetRecommendations( rawData ) {
 
 	return finalData;
 }
+
+/**
+ * Formats raw API items into a grouped object by type.
+ * @param {Array}  items The raw items array from API.
+ * @param {string} valueKey The key to extract (e.g., 'text' or 'temporary_image_url').
+ * @param {string} [filterType] Optional type to filter by.
+ * @return {Object} Groups of assets keyed by their type.
+ */
+export function adaptGenAIAssets( items = [], valueKey, filterType ) {
+	const data = {};
+
+	for ( const item of items ) {
+		const { type, [ valueKey ]: value } = item;
+
+		// Skip if:
+		// 1. We have a filter and it doesn't match
+		// 2. The value for the specified key is empty/null
+		if ( ( filterType && type !== filterType ) || ! value ) {
+			continue;
+		}
+
+		if ( ! data[ type ] ) {
+			data[ type ] = [];
+		}
+
+		data[ type ].push( value );
+	}
+
+	return data;
+}
