@@ -81,15 +81,13 @@ class Merchant implements OptionsAwareInterface {
 	/**
 	 * Claim a website for the user's Merchant Center account.
 	 *
-	 * @param bool $overwrite Whether to include the overwrite directive.
 	 * @return bool
 	 * @throws Exception If the website claim fails.
 	 */
-	public function claimwebsite( bool $overwrite = false ): bool {
+	public function claimwebsite(): bool {
 		try {
-			$id     = $this->options->get_merchant_id();
-			$params = $overwrite ? [ 'overwrite' => true ] : [];
-			$this->service->accounts->claimwebsite( $id, $id, $params );
+			$id = $this->options->get_merchant_id();
+			$this->service->accounts->claimwebsite( $id, $id );
 			do_action( 'woocommerce_gla_site_claim_success', [ 'details' => 'google_proxy' ] );
 		} catch ( GoogleException $e ) {
 			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
