@@ -58,7 +58,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CreateYouTubeOrderIdsCache;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PriceBenchmarks;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection as YouTubeConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping;
@@ -205,7 +205,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( CsvExportWriter::class );
 
 		$this->share_action_scheduler_job( CreateYouTubeOrderIdsCache::class, YouTubeOrders::class, JobRepository::class );
-		$this->share_action_scheduler_job( CreateMerchantReportedConversionReport::class, OrderItemRowBuilder::class, CsvExportWriter::class, YouTube\Connection::class );
+		$this->share_action_scheduler_job( CreateMerchantReportedConversionReport::class, OrderItemRowBuilder::class, CsvExportWriter::class, YouTubeConnection::class );
 
 		$this->share_action_scheduler_job( UpdateMerchantProductStatuses::class, MerchantCenterService::class, MerchantReport::class, MerchantStatuses::class );
 
