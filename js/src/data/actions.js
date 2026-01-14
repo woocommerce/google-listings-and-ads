@@ -1302,6 +1302,15 @@ export function* fetchYouTubeAccount() {
 				'google-listings-and-ads'
 			)
 		);
+
+		// Set a default disconnected state to ensure loading state resolves
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_YOUTUBE,
+			account: {
+				status: 'disconnected',
+				channel: [],
+			},
+		};
 	}
 }
 
