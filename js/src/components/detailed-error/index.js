@@ -22,9 +22,9 @@ const DetailedError = ( { errorSlots, className } ) => {
 
 	return (
 		<>
-			{ formattedErrors.map( ( { title, description }, idx ) => (
+			{ formattedErrors.map( ( { title, description } ) => (
 				<div
-					key={ idx }
+					key={ `${ title }-${ description }` }
 					className={ classNames( 'gla-detailed-error', className ) }
 				>
 					<div className="gla-detailed-error__title">
