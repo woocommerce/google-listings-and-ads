@@ -80,76 +80,6 @@ class CreateMerchantReportedConversionReportTest extends UnitTest {
 		parent::tearDown();
 	}
 
-	public function test_schedule_sets_lock_option() {
-		$this->options->expects( $this->once() )
-			->method( 'get' )
-			->with( OptionsInterface::MERCHANT_CONVERSION_EXPORT_LOCK )
-			->willReturn( null );
-
-		$this->options->expects( $this->once() )
-			->method( 'update' )
-			->with(
-				OptionsInterface::MERCHANT_CONVERSION_EXPORT_LOCK,
-				$this->callback(
-					function ( $value ) {
-						// Should be a recent timestamp.
-						return is_int( $value ) && $value > time() - 10;
-					}
-				)
-			);
-
-		$this->action_scheduler->expects( $this->once() )
-			->method( 'schedule_immediate' );
-
-		$this->job->schedule();
-	}
-
-	public function test_schedule_skips_when_lock_active_and_not_expired() {
-		// Lock set 30 minutes ago (within 1 hour timeout).
-		$lock_time = time() - 1800;
-
-		$this->options->expects( $this->once() )
-			->method( 'get' )
-			->with( OptionsInterface::MERCHANT_CONVERSION_EXPORT_LOCK )
-			->willReturn( $lock_time );
-
-		// Should NOT update lock or schedule.
-		$this->options->expects( $this->never() )
-			->method( 'update' );
-
-		$this->action_scheduler->expects( $this->never() )
-			->method( 'schedule_immediate' );
-
-		$this->job->schedule();
-	}
-
-	public function test_schedule_clears_expired_lock_and_proceeds() {
-		// Lock set 2 hours ago (expired).
-		$lock_time = time() - 7200;
-
-		$this->options->expects( $this->once() )
-			->method( 'get' )
-			->with( OptionsInterface::MERCHANT_CONVERSION_EXPORT_LOCK )
-			->willReturn( $lock_time );
-
-		// Should update lock with new timestamp.
-		$this->options->expects( $this->once() )
-			->method( 'update' )
-			->with(
-				OptionsInterface::MERCHANT_CONVERSION_EXPORT_LOCK,
-				$this->callback(
-					function ( $value ) {
-						return is_int( $value ) && $value > time() - 10;
-					}
-				)
-			);
-
-		$this->action_scheduler->expects( $this->once() )
-			->method( 'schedule_immediate' );
-
-		$this->job->schedule();
-	}
-
 	public function test_get_batch_returns_order_ids_from_cache() {
 		$order_ids = [ 100, 101, 102, 103, 104 ];
 
@@ -234,11 +164,6 @@ class CreateMerchantReportedConversionReportTest extends UnitTest {
 				}
 			);
 
-		// Should delete lock.
-		$this->options->expects( $this->once() )
-			->method( 'delete' )
-			->with( OptionsInterface::MERCHANT_CONVERSION_EXPORT_LOCK );
-
 		// Call handle_complete through reflection since it's protected.
 		$method = new \ReflectionMethod( CreateMerchantReportedConversionReport::class, 'handle_complete' );
 		$method->setAccessible( true );
@@ -283,37 +208,9 @@ class CreateMerchantReportedConversionReportTest extends UnitTest {
 		$this->options->expects( $this->never() )
 			->method( 'update' );
 
-		// Should still delete lock.
-		$this->options->expects( $this->once() )
-			->method( 'delete' )
-			->with( OptionsInterface::MERCHANT_CONVERSION_EXPORT_LOCK );
-
 		$method = new \ReflectionMethod( CreateMerchantReportedConversionReport::class, 'handle_complete' );
 		$method->setAccessible( true );
 		$method->invoke( $this->job, 5 );
-	}
-
-	public function test_handle_complete_removes_lock_even_with_no_files() {
-		// No files generated.
-		$this->options->method( 'get' )
-			->willReturnMap(
-				[
-					[ OptionsInterface::MERCHANT_CONVERSION_EXPORT_FILES, [], [] ],
-				]
-			);
-
-		// Should not call upload.
-		$this->connection->expects( $this->never() )
-			->method( 'upload_reports' );
-
-		// Should still delete lock.
-		$this->options->expects( $this->once() )
-			->method( 'delete' )
-			->with( OptionsInterface::MERCHANT_CONVERSION_EXPORT_LOCK );
-
-		$method = new \ReflectionMethod( CreateMerchantReportedConversionReport::class, 'handle_complete' );
-		$method->setAccessible( true );
-		$method->invoke( $this->job, 1 );
 	}
 
 	public function test_get_name_returns_correct_job_name() {

@@ -37,11 +37,6 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 	protected const FILE_SIZE_THRESHOLD = 9961472;
 
 	/**
-	 * Lock timeout in seconds (1 hour).
-	 */
-	protected const LOCK_TIMEOUT = 3600;
-
-	/**
 	 * @var OrderItemRowBuilder
 	 */
 	protected $row_builder;
@@ -70,34 +65,6 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 		$this->row_builder = $row_builder;
 		$this->writer      = $writer;
 		$this->connection  = $connection;
-	}
-
-	/**
-	 * Schedule the job with lock protection.
-	 *
-	 * Prevents concurrent execution by checking for an active lock.
-	 * If a lock exists but has expired (> LOCK_TIMEOUT), it's considered stale
-	 * and the job proceeds.
-	 *
-	 * @param array $args Optional arguments to pass to the job.
-	 */
-	public function schedule( array $args = [] ): void {
-		$lock_timestamp = $this->options->get( OptionsInterface::MERCHANT_CONVERSION_EXPORT_LOCK );
-
-		if ( $lock_timestamp ) {
-			$elapsed = time() - (int) $lock_timestamp;
-			if ( $elapsed < self::LOCK_TIMEOUT ) {
-				// Job already running, don't schedule.
-				return;
-			}
-			// Lock expired, assume previous job timed out - proceed.
-		}
-
-		// Set lock.
-		$this->options->update( OptionsInterface::MERCHANT_CONVERSION_EXPORT_LOCK, time() );
-
-		// Proceed with scheduling.
-		parent::schedule( $args );
 	}
 
 	/**
@@ -279,9 +246,6 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 				);
 			}
 		}
-
-		// Always remove lock to allow future runs.
-		$this->options->delete( OptionsInterface::MERCHANT_CONVERSION_EXPORT_LOCK );
 	}
 
 	/**
