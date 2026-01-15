@@ -24,7 +24,6 @@ export default function GenAIImagePicker( { assetKey, onAddSelectedImages } ) {
 	const addedImageUrls = values[ assetKey ] || [];
 	const { final_url: finalUrl } = values;
 	const { assets } = useGenAIMediaAssets( finalUrl, assetKey );
-
 	const [ selectedImages, setSelectedImages ] = useState( [] );
 
 	const handleOnAddSelectedImages = () => {
