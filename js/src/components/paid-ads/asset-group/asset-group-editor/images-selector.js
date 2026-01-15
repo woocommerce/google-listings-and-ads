@@ -10,7 +10,7 @@ import { useState, useEffect, useRef } from '@wordpress/element';
  */
 import useCroppedImageSelector from '~/hooks/useCroppedImageSelector';
 import AppTooltip from '~/components/app-tooltip';
-import AddAssetItemButton from './add-asset-item-button';
+import AssetItemActionButton from './asset-item-action-button';
 import MediaSelector from './media-selector';
 import GenAIImagePicker from './gen-ai-image-picker';
 
@@ -116,7 +116,7 @@ export default function ImagesSelector( {
 		const disabled =
 			maxNumberOfImages !== -1 && images.length >= maxNumberOfImages;
 		const button = (
-			<AddAssetItemButton
+			<AssetItemActionButton
 				disabled={ disabled }
 				text={ __( 'Add image', 'google-listings-and-ads' ) }
 				onClick={ handleMediumClick }

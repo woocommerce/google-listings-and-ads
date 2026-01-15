@@ -238,6 +238,14 @@ const ASSET_TEXT_SPECS = [
 			'The headline is the first line of your ad and is most likely the first thing people notice, so consider including words that people may have entered in their Google search.',
 			'google-listings-and-ads'
 		),
+		generateButtonPluralText: __(
+			'Generate headlines',
+			'google-listings-and-ads'
+		),
+		generateButtonSingularText: __(
+			'Generate headline',
+			'google-listings-and-ads'
+		),
 	},
 	{
 		key: ASSET_FORM_KEY.LONG_HEADLINE,
@@ -284,6 +292,14 @@ const ASSET_TEXT_SPECS = [
 					) }
 				</div>
 			</>
+		),
+		generateButtonPluralText: __(
+			'Generate long headlines',
+			'google-listings-and-ads'
+		),
+		generateButtonSingularText: __(
+			'Generate long headline',
+			'google-listings-and-ads'
 		),
 	},
 
@@ -332,6 +348,14 @@ const ASSET_TEXT_SPECS = [
 					) }
 				</div>
 			</>
+		),
+		generateButtonPluralText: __(
+			'Generate descriptions',
+			'google-listings-and-ads'
+		),
+		generateButtonSingularText: __(
+			'Generate description',
+			'google-listings-and-ads'
 		),
 	},
 ];
