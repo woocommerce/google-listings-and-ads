@@ -19,6 +19,14 @@ import AppButton from '~/components/app-button';
 import AIIcon from '~/images/ai-icon.svg?inline';
 import './index.scss';
 
+/**
+ * GenAIImagePicker component.
+ * Allows users to pick AI-generated images based on the final URL and the spec type.
+ *
+ * @param {Object} props Component props.
+ * @param {string} props.assetKey Asset key.
+ * @param {Function} props.onAddSelectedImages Callback to add selected images.
+ */
 export default function GenAIImagePicker( { assetKey, onAddSelectedImages } ) {
 	const { values } = useAdaptiveFormContext();
 	const addedImageUrls = values[ assetKey ] || [];
@@ -28,7 +36,6 @@ export default function GenAIImagePicker( { assetKey, onAddSelectedImages } ) {
 
 	const handleOnAddSelectedImages = () => {
 		onAddSelectedImages( selectedImages );
-		setSelectedImages( [] );
 	};
 
 	const toggleImageSelection = ( src ) => {
@@ -39,7 +46,7 @@ export default function GenAIImagePicker( { assetKey, onAddSelectedImages } ) {
 		);
 	};
 
-	if ( ! assets || assets.length === 0 ) {
+	if ( ! assets || assets.length === 0 || ! finalUrl ) {
 		return null;
 	}
 
@@ -67,6 +74,7 @@ export default function GenAIImagePicker( { assetKey, onAddSelectedImages } ) {
 					wrap
 				>
 					{ assets.map( ( src ) => {
+						// Hide the image if it's already been added to the asset group.
 						if ( addedImageUrls.includes( src ) ) {
 							return null;
 						}
@@ -79,7 +87,7 @@ export default function GenAIImagePicker( { assetKey, onAddSelectedImages } ) {
 								<AppButton
 									className="gla-gen-ai-image-picker__medium-button"
 									aria-label={ __(
-										'Select image',
+										'Select this image',
 										'google-listings-and-ads'
 									) }
 									onClick={ () =>
@@ -99,7 +107,6 @@ export default function GenAIImagePicker( { assetKey, onAddSelectedImages } ) {
 									onChange={ () =>
 										toggleImageSelection( src )
 									}
-									value={ src }
 								/>
 							</FlexItem>
 						);
