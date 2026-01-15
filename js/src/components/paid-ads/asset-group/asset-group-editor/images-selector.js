@@ -12,6 +12,7 @@ import useCroppedImageSelector from '~/hooks/useCroppedImageSelector';
 import AppTooltip from '~/components/app-tooltip';
 import AddAssetItemButton from './add-asset-item-button';
 import MediaSelector from './media-selector';
+import GenAIImagePicker from './gen-ai-image-picker';
 
 /**
  * @typedef {Object} AssetImageConfig
@@ -25,6 +26,7 @@ import MediaSelector from './media-selector';
  * Renders a selector for asset images.
  *
  * @param {Object} props React props.
+ * @param {string} props.assetKey The asset key.
  * @param {AssetImageConfig} props.imageConfig The config of the asset image.
  * @param {string[]} props.initialImageUrls The initial image URLs.
  * @param {number} [props.maxNumberOfImages=-1] The maximum number of images. -1 by default and it means unlimited number.
@@ -33,6 +35,7 @@ import MediaSelector from './media-selector';
  * @param {(urls: Array<string>) => void} [props.onChange] Callback function to be called when the texts are changed.
  */
 export default function ImagesSelector( {
+	assetKey,
 	imageConfig,
 	initialImageUrls = [],
 	maxNumberOfImages = -1,
@@ -100,6 +103,15 @@ export default function ImagesSelector( {
 		handle.openSelector( image?.id );
 	};
 
+	const handleOnAddSelectedImages = ( selectedImageUrls ) => {
+		const selectedImages = selectedImageUrls.map( ( url ) => ( {
+			url,
+			id: url,
+			alt: '',
+		} ) );
+		updateImages( [ ...images, ...selectedImages ] );
+	};
+
 	const renderAddButton = () => {
 		const disabled =
 			maxNumberOfImages !== -1 && images.length >= maxNumberOfImages;
@@ -128,6 +140,16 @@ export default function ImagesSelector( {
 				media={ images }
 				onMediumClick={ handleMediumClick }
 				onRemoveMedia={ handleRemoveImage }
+			/>
+
+			<GenAIImagePicker
+				assetKey={ assetKey }
+				onAddSelectedImages={ handleOnAddSelectedImages }
+				images={ [
+					'https://picsum.photos/200',
+					'https://picsum.photos/210',
+					'https://picsum.photos/220',
+				] }
 			/>
 
 			{ children }

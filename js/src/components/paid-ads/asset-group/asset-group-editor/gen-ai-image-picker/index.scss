@@ -3,6 +3,10 @@
 	padding: $grid-unit-30;
 	margin: 0 0 $grid-unit-40 0;
 
+	&:has(.gla-gen-ai-image-picker__images:empty) {
+		display: none;
+	}
+
 	.gla-gen-ai-image-picker__image {
 		position: relative;
 	}
@@ -18,6 +22,7 @@
 		background-color: $white;
 		position: relative;
 		display: block;
+
 	}
 
 	.gla-gen-ai-image-picker__checkbox {

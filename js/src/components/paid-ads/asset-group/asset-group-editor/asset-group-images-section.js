@@ -11,7 +11,6 @@ import ImagesSelector from './images-selector';
 import AssetField from './asset-field';
 import Section from '~/components/section';
 import AppDocumentationLink from '~/components/app-documentation-link';
-import GenAIImagePicker from './gen-ai-image-picker';
 import { ASSET_IMAGE_SPECS } from '../../assetSpecs';
 
 /**
@@ -95,6 +94,7 @@ const AssetGroupImagesSection = ( {
 							initialExpanded={ isSelectedFinalUrl }
 						>
 							<ImagesSelector
+								assetKey={ spec.key }
 								initialImageUrls={ initialImageUrls }
 								maxNumberOfImages={ spec.getMax( values ) }
 								reachedMaxNumberTip={ spec.getMaxNumberTip(
@@ -103,16 +103,6 @@ const AssetGroupImagesSection = ( {
 								imageConfig={ spec.imageConfig }
 								onChange={ imageProps.onChange }
 							>
-								<GenAIImagePicker
-									assetKey={ spec.key }
-									finalUrl={ finalUrl }
-									images={ [
-										'https://picsum.photos/200',
-										'https://picsum.photos/210',
-										'https://picsum.photos/220',
-									] }
-								/>
-
 								{ renderErrors( spec.key ) }
 							</ImagesSelector>
 						</AssetField>

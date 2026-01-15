@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { noop } from 'lodash';
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import {
@@ -14,17 +13,22 @@ import {
 /**
  * Internal dependencies
  */
+import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import AppButton from '~/components/app-button';
 import AIIcon from '~/images/ai-icon.svg?inline';
 import './index.scss';
 
 export default function GenAIImagePicker( {
 	assetKey,
-	finalUrl,
 	images,
-	onAddSelectedImages = noop,
+	onAddSelectedImages,
 } ) {
+	const { values } = useAdaptiveFormContext();
+	const addedImageUrls = values[ assetKey ] || [];
+	const { final_url: finalUrl } = values;
+
 	const [ selectedImages, setSelectedImages ] = useState( [] );
+
 	const handleOnAddSelectedImages = () => {
 		onAddSelectedImages( selectedImages );
 		setSelectedImages( [] );
@@ -55,35 +59,50 @@ export default function GenAIImagePicker( {
 			</FlexBlock>
 
 			<FlexBlock>
-				<Flex gap={ 4 } justify="start" wrap>
-					{ images.map( ( src ) => (
-						<FlexItem
-							key={ src }
-							className="gla-gen-ai-image-picker__image"
-						>
-							<AppButton
-								className="gla-gen-ai-image-picker__medium-button"
-								aria-label={ __(
-									'Select image',
-									'google-listings-and-ads'
-								) }
-								onClick={ () => toggleImageSelection( src ) }
-							>
-								<img
-									className="gla-media-selector__medium"
-									src={ src }
-									alt=""
-								/>
-							</AppButton>
+				<Flex
+					gap={ 4 }
+					justify="start"
+					className="gla-gen-ai-image-picker__images"
+					wrap
+				>
+					{ images.map( ( src ) => {
+						if ( addedImageUrls.includes( src ) ) {
+							return null;
+						}
 
-							<CheckboxControl
-								className="gla-gen-ai-image-picker__checkbox"
-								checked={ selectedImages.includes( src ) }
-								onChange={ () => toggleImageSelection( src ) }
-								value={ src }
-							/>
-						</FlexItem>
-					) ) }
+						return (
+							<FlexItem
+								key={ src }
+								className="gla-gen-ai-image-picker__image"
+							>
+								<AppButton
+									className="gla-gen-ai-image-picker__medium-button"
+									aria-label={ __(
+										'Select image',
+										'google-listings-and-ads'
+									) }
+									onClick={ () =>
+										toggleImageSelection( src )
+									}
+								>
+									<img
+										className="gla-media-selector__medium"
+										src={ src }
+										alt=""
+									/>
+								</AppButton>
+
+								<CheckboxControl
+									className="gla-gen-ai-image-picker__checkbox"
+									checked={ selectedImages.includes( src ) }
+									onChange={ () =>
+										toggleImageSelection( src )
+									}
+									value={ src }
+								/>
+							</FlexItem>
+						);
+					} ) }
 				</Flex>
 			</FlexBlock>
 
