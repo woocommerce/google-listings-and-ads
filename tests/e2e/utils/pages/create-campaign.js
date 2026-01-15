@@ -124,7 +124,9 @@ export default class CreateCampaignPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get Add headline button.
 	 */
 	getAddHeadlineButton() {
-		return this.page.getByRole( 'button', { name: 'Add headline' } );
+		return this.page
+			.getByRole( 'button', { name: 'Add text' } )
+			.filter( { hasText: 'Add headline' } );
 	}
 
 	/**
@@ -133,7 +135,9 @@ export default class CreateCampaignPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get Add long headline button.
 	 */
 	getAddLongHeadlineButton() {
-		return this.page.getByRole( 'button', { name: 'Add long headline' } );
+		return this.page
+			.getByRole( 'button', { name: 'Add text' } )
+			.filter( { hasText: 'Add long headline' } );
 	}
 
 	/**
@@ -142,7 +146,9 @@ export default class CreateCampaignPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get Add description button.
 	 */
 	getAddDescriptionButton() {
-		return this.page.getByRole( 'button', { name: 'Add description' } );
+		return this.page
+			.getByRole( 'button', { name: 'Add text' } )
+			.filter( { hasText: 'Add description' } );
 	}
 
 	/**
