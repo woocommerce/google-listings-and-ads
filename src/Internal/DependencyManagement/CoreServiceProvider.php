@@ -114,6 +114,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Utility\AddressUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DateTimeUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ImageUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\Writer\CsvExportWriter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\WPCLIMigrationGTIN;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
