@@ -500,11 +500,11 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				'maximize_conversion_value'         => new MaximizeConversionValue(),
 				'asset_automation_settings'         => [
 					new AssetAutomationSetting(
-					[
-						'asset_automation_type'   => AssetAutomationType::FINAL_URL_EXPANSION_TEXT_ASSET_AUTOMATION,
-						'asset_automation_status' => AssetAutomationStatus::OPTED_IN
-					]
-				)
+						[
+							'asset_automation_type'   => AssetAutomationType::FINAL_URL_EXPANSION_TEXT_ASSET_AUTOMATION,
+							'asset_automation_status' => AssetAutomationStatus::OPTED_IN,
+						]
+					),
 				],
 				'shopping_setting'                  => new ShoppingSetting(
 					[
