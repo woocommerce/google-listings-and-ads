@@ -28,6 +28,9 @@ use Google\Ads\GoogleAds\V22\Services\CampaignOperation;
 use Google\Ads\GoogleAds\V22\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V22\Services\MutateGoogleAdsRequest;
 use Google\Ads\GoogleAds\V22\Services\MutateOperation;
+use Google\Ads\GoogleAds\V22\Resources\Campaign\AssetAutomationSetting;
+use Google\Ads\GoogleAds\V22\Enums\AssetAutomationTypeEnum\AssetAutomationType;
+use Google\Ads\GoogleAds\V22\Enums\AssetAutomationStatusEnum\AssetAutomationStatus;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 use Exception;
@@ -495,7 +498,14 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				'status'                            => CampaignStatus::number( 'enabled' ),
 				'campaign_budget'                   => $this->budget->temporary_resource_name(),
 				'maximize_conversion_value'         => new MaximizeConversionValue(),
-				'url_expansion_opt_out'             => false,
+				'asset_automation_settings'         => [
+					new AssetAutomationSetting(
+					[
+						'asset_automation_type'   => AssetAutomationType::FINAL_URL_EXPANSION_TEXT_ASSET_AUTOMATION,
+						'asset_automation_status' => AssetAutomationStatus::OPTED_IN
+					]
+				)
+				],
 				'shopping_setting'                  => new ShoppingSetting(
 					[
 						'merchant_id' => $this->options->get_merchant_id(),
