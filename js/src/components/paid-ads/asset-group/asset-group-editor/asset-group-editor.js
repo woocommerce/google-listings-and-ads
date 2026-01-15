@@ -104,6 +104,7 @@ export default function AssetGroupEditor() {
 			/>
 
 			<AssetGroupImagesSection
+				finalUrl={ finalUrl }
 				getNumOfIssues={ getNumOfIssues }
 				initialValues={ initialValues }
 				isSelectedFinalUrl={ isSelectedFinalUrl }

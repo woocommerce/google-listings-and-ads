@@ -11,6 +11,7 @@ import ImagesSelector from './images-selector';
 import AssetField from './asset-field';
 import Section from '~/components/section';
 import AppDocumentationLink from '~/components/app-documentation-link';
+import GenAIImagePicker from './gen-ai-image-picker';
 import { ASSET_IMAGE_SPECS } from '../../assetSpecs';
 
 /**
@@ -18,6 +19,7 @@ import { ASSET_IMAGE_SPECS } from '../../assetSpecs';
  * specified asset image specs.
  *
  * @param {Object} props - Component props.
+ * @param {string} props.finalUrl - The final URL for the ad.
  * @param {Object} props.initialValues - Initial values for the image fields, keyed by asset spec key.
  * @param {Function} props.refFirstErrorField - Function to bind refs for the first error field.
  * @param {boolean} props.isSelectedFinalUrl - Indicates if the final URL is selected, enabling/disabling fields.
@@ -27,6 +29,7 @@ import { ASSET_IMAGE_SPECS } from '../../assetSpecs';
  * @return {JSX.Element} The rendered AssetGroupImagesSection component.
  */
 const AssetGroupImagesSection = ( {
+	finalUrl,
 	initialValues,
 	refFirstErrorField,
 	isSelectedFinalUrl,
@@ -100,6 +103,16 @@ const AssetGroupImagesSection = ( {
 								imageConfig={ spec.imageConfig }
 								onChange={ imageProps.onChange }
 							>
+								<GenAIImagePicker
+									assetKey={ spec.key }
+									finalUrl={ finalUrl }
+									images={ [
+										'https://picsum.photos/200',
+										'https://picsum.photos/210',
+										'https://picsum.photos/220',
+									] }
+								/>
+
 								{ renderErrors( spec.key ) }
 							</ImagesSelector>
 						</AssetField>
