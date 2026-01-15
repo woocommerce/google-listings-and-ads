@@ -18,7 +18,6 @@ import { ASSET_IMAGE_SPECS } from '../../assetSpecs';
  * specified asset image specs.
  *
  * @param {Object} props - Component props.
- * @param {string} props.finalUrl - The final URL for the ad.
  * @param {Object} props.initialValues - Initial values for the image fields, keyed by asset spec key.
  * @param {Function} props.refFirstErrorField - Function to bind refs for the first error field.
  * @param {boolean} props.isSelectedFinalUrl - Indicates if the final URL is selected, enabling/disabling fields.
@@ -28,7 +27,6 @@ import { ASSET_IMAGE_SPECS } from '../../assetSpecs';
  * @return {JSX.Element} The rendered AssetGroupImagesSection component.
  */
 const AssetGroupImagesSection = ( {
-	finalUrl,
 	initialValues,
 	refFirstErrorField,
 	isSelectedFinalUrl,
@@ -102,6 +100,7 @@ const AssetGroupImagesSection = ( {
 								) }
 								imageConfig={ spec.imageConfig }
 								onChange={ imageProps.onChange }
+								generateButtonText={ spec.generateButtonText }
 							>
 								{ renderErrors( spec.key ) }
 							</ImagesSelector>

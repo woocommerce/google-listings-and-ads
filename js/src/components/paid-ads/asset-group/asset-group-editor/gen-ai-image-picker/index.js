@@ -14,18 +14,16 @@ import {
  * Internal dependencies
  */
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
+import useGenAIMediaAssets from '~/hooks/useGenAIMediaAssets';
 import AppButton from '~/components/app-button';
 import AIIcon from '~/images/ai-icon.svg?inline';
 import './index.scss';
 
-export default function GenAIImagePicker( {
-	assetKey,
-	images,
-	onAddSelectedImages,
-} ) {
+export default function GenAIImagePicker( { assetKey, onAddSelectedImages } ) {
 	const { values } = useAdaptiveFormContext();
 	const addedImageUrls = values[ assetKey ] || [];
 	const { final_url: finalUrl } = values;
+	const { assets } = useGenAIMediaAssets( finalUrl, assetKey );
 
 	const [ selectedImages, setSelectedImages ] = useState( [] );
 
@@ -41,6 +39,10 @@ export default function GenAIImagePicker( {
 				: [ ...previousImages, src ]
 		);
 	};
+
+	if ( ! assets || assets.length === 0 ) {
+		return null;
+	}
 
 	return (
 		<Flex className="gla-gen-ai-image-picker" direction="column" gap={ 4 }>
@@ -65,7 +67,7 @@ export default function GenAIImagePicker( {
 					className="gla-gen-ai-image-picker__images"
 					wrap
 				>
-					{ images.map( ( src ) => {
+					{ assets.map( ( src ) => {
 						if ( addedImageUrls.includes( src ) ) {
 							return null;
 						}

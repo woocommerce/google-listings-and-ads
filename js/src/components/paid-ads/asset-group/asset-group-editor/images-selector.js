@@ -8,9 +8,14 @@ import { useState, useEffect, useRef } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import { useAppDispatch } from '~/data';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useCroppedImageSelector from '~/hooks/useCroppedImageSelector';
 import AppTooltip from '~/components/app-tooltip';
-import AssetItemActionButton from './asset-item-action-button';
+import AssetItemActionButton, {
+	ACTION_TYPES,
+} from './asset-item-action-button';
 import MediaSelector from './media-selector';
 import GenAIImagePicker from './gen-ai-image-picker';
 
@@ -29,6 +34,7 @@ import GenAIImagePicker from './gen-ai-image-picker';
  * @param {string} props.assetKey The asset key.
  * @param {AssetImageConfig} props.imageConfig The config of the asset image.
  * @param {string[]} props.initialImageUrls The initial image URLs.
+ * @param {string} props.generateButtonText The text for the generate button.
  * @param {number} [props.maxNumberOfImages=-1] The maximum number of images. -1 by default and it means unlimited number.
  * @param {string} [props.reachedMaxNumberTip] The tooltip content floating on the add button when reaching the max number of images.
  * @param {JSX.Element} [props.children] Content to be rendered above the add button.
@@ -38,13 +44,18 @@ export default function ImagesSelector( {
 	assetKey,
 	imageConfig,
 	initialImageUrls = [],
+	generateButtonText,
 	maxNumberOfImages = -1,
 	reachedMaxNumberTip,
 	children,
 	onChange = noop,
 } ) {
+	const { values } = useAdaptiveFormContext();
 	const updateImagesRef = useRef();
+	const [ isGeneratingAssets, setIsGeneratingAssets ] = useState( false );
 	const [ awaitingActionImage, setAwaitingActionImage ] = useState( null );
+	const { fetchGenAIMediaAssets } = useAppDispatch();
+	const { createNotice } = useDispatchCoreNotices();
 	const [ images, setImages ] = useState( () =>
 		// The asset images fetched from Google Ads are only URLs.
 		initialImageUrls.map( ( url ) => ( { url, id: url, alt: '' } ) )
@@ -134,6 +145,25 @@ export default function ImagesSelector( {
 		return button;
 	};
 
+	const handleGenerateClick = async () => {
+		setIsGeneratingAssets( true );
+
+		try {
+			const { final_url: finalUrl } = values;
+			await fetchGenAIMediaAssets( finalUrl, assetKey );
+		} catch ( error ) {
+			createNotice(
+				'error',
+				__(
+					'Something went wrong while generating texts. Please try again.',
+					'google-listings-and-ads'
+				)
+			);
+		} finally {
+			setIsGeneratingAssets( false );
+		}
+	};
+
 	return (
 		<div className="gla-images-selector">
 			<MediaSelector
@@ -145,15 +175,19 @@ export default function ImagesSelector( {
 			<GenAIImagePicker
 				assetKey={ assetKey }
 				onAddSelectedImages={ handleOnAddSelectedImages }
-				images={ [
-					'https://picsum.photos/200',
-					'https://picsum.photos/210',
-					'https://picsum.photos/220',
-				] }
 			/>
 
 			{ children }
 			{ renderAddButton() }
+
+			{ generateButtonText && (
+				<AssetItemActionButton
+					action={ ACTION_TYPES.GENERATE }
+					text={ generateButtonText }
+					onClick={ handleGenerateClick }
+					loading={ isGeneratingAssets }
+				/>
+			) }
 		</div>
 	);
 }
