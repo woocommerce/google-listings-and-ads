@@ -94,6 +94,9 @@ trait GoogleAdsClientTrait {
 	/** @var MockObject|GoogleAdsServiceClient $service_client */
 	protected $service_client;
 
+	/** @var MockObject|\Google\Ads\GoogleAds\V22\Services\Client\AssetGenerationServiceClient $asset_generation_service */
+	protected $asset_generation_service;
+
 	/** @var int $ads_id */
 	protected $ads_id;
 
@@ -115,6 +118,9 @@ trait GoogleAdsClientTrait {
 
 		$this->recommendation_service = $this->createMock( RecommendationServiceClient::class );
 		$this->client->method( 'getRecommendationServiceClient' )->willReturn( $this->recommendation_service );
+
+		$this->asset_generation_service = $this->createMock( \Google\Ads\GoogleAds\V22\Services\Client\AssetGenerationServiceClient::class );
+		$this->client->method( 'getAssetGenerationServiceClient' )->willReturn( $this->asset_generation_service );
 	}
 
 	/**
@@ -1156,5 +1162,81 @@ trait GoogleAdsClientTrait {
 		}
 
 		$this->generate_ads_query_mock( array_values( $locations ) );
+	}
+
+	/**
+	 * Generates a mocked response for text asset generation.
+	 *
+	 * @param array $text_assets Array of text assets with 'text' and 'type' keys (type in uppercase like 'HEADLINE').
+	 */
+	protected function generate_text_assets_mock( array $text_assets ) {
+		$type_mapping = [
+			'HEADLINE'      => AssetFieldType::HEADLINE,
+			'LONG_HEADLINE' => AssetFieldType::LONG_HEADLINE,
+			'DESCRIPTION'   => AssetFieldType::DESCRIPTION,
+		];
+
+		$text_asset_objects = [];
+		foreach ( $text_assets as $asset ) {
+			$text_asset = $this->createMock( \Google\Ads\GoogleAds\V22\Services\TextAsset::class );
+			$text_asset->method( 'getText' )->willReturn( $asset['text'] );
+			// Convert uppercase type string to enum number.
+			$type_label  = $type_mapping[ $asset['type'] ] ?? AssetFieldType::HEADLINE;
+			$type_number = AssetFieldType::number( $type_label );
+			$text_asset->method( 'getAssetFieldType' )->willReturn( $type_number );
+			$text_asset_objects[] = $text_asset;
+		}
+
+		$response = $this->createMock( \Google\Ads\GoogleAds\V22\Services\GenerateTextResponse::class );
+		$response->method( 'getTextAssets' )->willReturn( $text_asset_objects );
+
+		$this->asset_generation_service->method( 'generateTextAssets' )->willReturn( $response );
+	}
+
+	/**
+	 * Generates a mocked exception when text assets are requested.
+	 *
+	 * @param ApiException $exception
+	 */
+	protected function generate_text_assets_mock_exception( ApiException $exception ) {
+		$this->asset_generation_service->method( 'generateTextAssets' )->willThrowException( $exception );
+	}
+
+	/**
+	 * Generates a mocked response for image asset generation.
+	 *
+	 * @param array $image_assets Array of image assets with 'temporary_image_url' and 'type' keys (type in uppercase like 'MARKETING_IMAGE').
+	 */
+	protected function generate_image_assets_mock( array $image_assets ) {
+		$type_mapping = [
+			'MARKETING_IMAGE'          => AssetFieldType::MARKETING_IMAGE,
+			'SQUARE_MARKETING_IMAGE'   => AssetFieldType::SQUARE_MARKETING_IMAGE,
+			'PORTRAIT_MARKETING_IMAGE' => AssetFieldType::PORTRAIT_MARKETING_IMAGE,
+		];
+
+		$image_asset_objects = [];
+		foreach ( $image_assets as $asset ) {
+			$image_asset = $this->createMock( \Google\Ads\GoogleAds\V22\Services\ImageAsset::class );
+			$image_asset->method( 'getTemporaryImageUrl' )->willReturn( $asset['temporary_image_url'] );
+			// Convert uppercase type string to enum number.
+			$type_label  = $type_mapping[ $asset['type'] ] ?? AssetFieldType::MARKETING_IMAGE;
+			$type_number = AssetFieldType::number( $type_label );
+			$image_asset->method( 'getAssetFieldType' )->willReturn( $type_number );
+			$image_asset_objects[] = $image_asset;
+		}
+
+		$response = $this->createMock( \Google\Ads\GoogleAds\V22\Services\GenerateImagesResponse::class );
+		$response->method( 'getImageAssets' )->willReturn( $image_asset_objects );
+
+		$this->asset_generation_service->method( 'generateImages' )->willReturn( $response );
+	}
+
+	/**
+	 * Generates a mocked exception when image assets are requested.
+	 *
+	 * @param ApiException $exception
+	 */
+	protected function generate_image_assets_mock_exception( ApiException $exception ) {
+		$this->asset_generation_service->method( 'generateImages' )->willThrowException( $exception );
 	}
 }

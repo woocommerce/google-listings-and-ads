@@ -32,6 +32,7 @@ use Google\Ads\GoogleAds\V20\Services\Client\GeoTargetConstantServiceClient;
 use Google\Ads\GoogleAds\V20\Services\Client\GoogleAdsServiceClient;
 use Google\Ads\GoogleAds\V20\Services\Client\ProductLinkInvitationServiceClient;
 use Google\Ads\GoogleAds\V20\Services\Client\RecommendationServiceClient;
+use Google\Ads\GoogleAds\V22\Services\Client\AssetGenerationServiceClient;
 
 /**
  * Contains service client factory methods.
@@ -208,5 +209,12 @@ trait ServiceClientFactoryTrait {
 	 */
 	public function getRecommendationServiceClient(): RecommendationServiceClient {
 		return new RecommendationServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return AssetGenerationServiceClient
+	 */
+	public function getAssetGenerationServiceClient(): AssetGenerationServiceClient {
+		return new AssetGenerationServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 }
