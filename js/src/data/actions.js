@@ -1299,7 +1299,7 @@ export function* fetchGenAIMediaAssets( url, assetType ) {
 			method: REQUEST_ACTIONS.POST,
 			data: {
 				final_url: url,
-				type: assetType,
+				types: assetType ? [ assetType ] : undefined,
 			},
 		} );
 
@@ -1352,7 +1352,7 @@ export function* fetchGenAITextAssets( url, assetType ) {
 			method: REQUEST_ACTIONS.POST,
 			data: {
 				final_url: url,
-				type: assetType,
+				types: assetType ? [ assetType ] : undefined,
 			},
 		} );
 

@@ -253,7 +253,6 @@ export default function TextsEditor( {
 					minNumberOfTexts > 0 &&
 					minNumberOfTexts === maxNumberOfTexts
 				}
-				aria-label={ __( 'Add text', 'google-listings-and-ads' ) }
 				disabled={
 					maxNumberOfTexts > 0 && texts.length >= maxNumberOfTexts
 				}
