@@ -7,13 +7,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignLabe
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Google\Ads\GoogleAds\Util\V21\ResourceNames;
-use Google\Ads\GoogleAds\V21\Resources\Label;
-use Google\Ads\GoogleAds\V21\Resources\CampaignLabel;
-use Google\Ads\GoogleAds\V21\Services\LabelOperation;
-use Google\Ads\GoogleAds\V21\Services\CampaignLabelOperation;
-use Google\Ads\GoogleAds\V21\Services\MutateOperation;
-use Google\Ads\GoogleAds\V21\Services\MutateGoogleAdsRequest;
+use Google\Ads\GoogleAds\Util\V22\ResourceNames;
+use Google\Ads\GoogleAds\V22\Resources\Label;
+use Google\Ads\GoogleAds\V22\Resources\CampaignLabel;
+use Google\Ads\GoogleAds\V22\Services\LabelOperation;
+use Google\Ads\GoogleAds\V22\Services\CampaignLabelOperation;
+use Google\Ads\GoogleAds\V22\Services\MutateOperation;
+use Google\Ads\GoogleAds\V22\Services\MutateGoogleAdsRequest;
 
 /**
  * Class AdsCampaignLabel
