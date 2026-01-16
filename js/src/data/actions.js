@@ -15,7 +15,7 @@ import {
 	EMPTY_ASSET_ENTITY_GROUP,
 } from './constants';
 import { handleApiError } from '~/utils/handleError';
-import { adaptAdsCampaign } from './adapters';
+import { adaptAdsCampaign, adaptGenAIAssets } from './adapters';
 import { isWCIos, isWCAndroid } from '~/utils/isMobileApp';
 import { convertKeysFromSnakeCaseToCamelCase } from './utils';
 
@@ -1303,22 +1303,10 @@ export function* fetchGenAIMediaAssets( url, assetType ) {
 			},
 		} );
 
-		const items = response.items || [];
-		const formattedData = items.reduce(
-			( accumulator, { temporary_image_url, type } ) => {
-				if ( assetType && type !== assetType ) {
-					return accumulator;
-				}
-
-				if ( ! temporary_image_url ) {
-					return accumulator;
-				}
-
-				accumulator[ type ] = accumulator[ type ] || [];
-				accumulator[ type ].push( temporary_image_url );
-				return accumulator;
-			},
-			{}
+		const formattedData = adaptGenAIAssets(
+			response.items,
+			'temporary_image_url',
+			assetType
 		);
 
 		return {
@@ -1356,20 +1344,11 @@ export function* fetchGenAITextAssets( url, assetType ) {
 			},
 		} );
 
-		const items = response.items || [];
-		const formattedData = items.reduce( ( accumulator, { text, type } ) => {
-			if ( assetType && type !== assetType ) {
-				return accumulator;
-			}
-
-			if ( ! text ) {
-				return accumulator;
-			}
-
-			accumulator[ type ] = accumulator[ type ] || [];
-			accumulator[ type ].push( text );
-			return accumulator;
-		}, {} );
+		const formattedData = adaptGenAIAssets(
+			response.items,
+			'text',
+			assetType
+		);
 
 		return {
 			type: TYPES.RECEIVE_GEN_AI_TEXT_ASSETS,
