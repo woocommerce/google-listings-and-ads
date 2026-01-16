@@ -115,12 +115,18 @@ export default function ImagesSelector( {
 	};
 
 	const handleOnAddSelectedImages = ( selectedImageUrls ) => {
-		const selectedImages = selectedImageUrls.map( ( url ) => ( {
-			url,
-			id: url,
-			alt: '',
-		} ) );
-		updateImages( [ ...images, ...selectedImages ] );
+		const nextImages = [ ...images ];
+		const selectedImages = selectedImageUrls
+			.filter(
+				( url ) => ! nextImages.some( ( img ) => img?.url === url )
+			)
+			.map( ( url ) => ( {
+				url,
+				id: url,
+				alt: '',
+			} ) );
+
+		updateImages( [ ...nextImages, ...selectedImages ] );
 	};
 
 	const renderAddButton = () => {
@@ -155,7 +161,7 @@ export default function ImagesSelector( {
 			createNotice(
 				'error',
 				__(
-					'Something went wrong while generating texts. Please try again.',
+					'Something went wrong while generating images. Please try again.',
 					'google-listings-and-ads'
 				)
 			);

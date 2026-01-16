@@ -1197,4 +1197,20 @@ export default class MockRequests {
 			[ 'POST' ]
 		);
 	}
+
+	/**
+	 * Fulfill generate image assets request.
+	 *
+	 * @param {Object} payload - The response payload to return.
+	 * @param {number} status - The HTTP status in the response.
+	 * @return {Promise<void>}
+	 */
+	async fulfillGenerateImageAssetsRequest( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/assets\/generate-images\b/,
+			payload,
+			status,
+			[ 'POST' ]
+		);
+	}
 }
