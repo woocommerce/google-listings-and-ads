@@ -128,409 +128,409 @@ test.describe( 'Add paid campaign', () => {
 		await expect( dashboardPage.addPaidCampaignButton ).toBeEnabled();
 	} );
 
-	// test.describe( 'With Ads account not connected', async () => {
-	// 	test.describe( 'Set up your accounts page', async () => {
-	// 		test.beforeAll( async () => {
-	// 			await setupAdsAccounts.mockAdsAccountsResponse( [] );
-	// 			await dashboardPage.addPaidCampaignButton.click();
-	// 			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-	// 		} );
-
-	// 		test( 'Page header should be "Set up your accounts"', async () => {
-	// 			await expect(
-	// 				page.getByRole( 'heading', {
-	// 					name: 'Set up your accounts',
-	// 				} )
-	// 			).toBeVisible();
-	// 			await expect(
-	// 				page.getByText(
-	// 					'Connect your Google account and your Google Ads account to set up a Performance Max campaign.'
-	// 				)
-	// 			).toBeVisible();
-	// 		} );
-
-	// 		test( 'Google Account should show as connected', async () => {
-	// 			await expect(
-	// 				page.getByText(
-	// 					'This Google account is connected to your store’s product feed.'
-	// 				)
-	// 			).toBeVisible();
-	// 		} );
-
-	// 		test( 'Continue Button should be disabled', async () => {
-	// 			await expect(
-	// 				setupAdsAccounts.getContinueButton()
-	// 			).toBeDisabled();
-	// 		} );
-	// 	} );
-
-	// 	test.describe( 'Add campaigns with no Ads account', async () => {
-	// 		test( 'Create an account should be visible', async () => {
-	// 			const createAccountButton = page.getByRole( 'button', {
-	// 				name: 'Create account',
-	// 			} );
-
-	// 			await expect( createAccountButton ).toBeVisible();
-
-	// 			await expect(
-	// 				setupAdsAccounts.getContinueButton()
-	// 			).toBeDisabled();
-
-	// 			await expect(
-	// 				page.getByText(
-	// 					'Required to set up conversion measurement and create campaigns.'
-	// 				)
-	// 			).toBeVisible();
-
-	// 			await createAccountButton.click();
-	// 		} );
-
-	// 		test( 'Create account button should be disable if the ToS have not been accepted.', async () => {
-	// 			await expect(
-	// 				page.getByRole( 'heading', {
-	// 					name: 'Create Google Ads Account',
-	// 				} )
-	// 			).toBeVisible();
-
-	// 			await expect(
-	// 				page.getByText(
-	// 					'By creating a Google Ads account, you agree to the following terms and conditions:'
-	// 				)
-	// 			).toBeVisible();
-
-	// 			await expect(
-	// 				setupAdsAccounts.getCreateAdsAccountButtonModal()
-	// 			).toBeDisabled();
-	// 		} );
-
-	// 		test( 'Accept terms and conditions to enable the create account button', async () => {
-	// 			await setupAdsAccounts.getAcceptTermCreateAccount().check();
-
-	// 			await expect(
-	// 				setupAdsAccounts.getCreateAdsAccountButtonModal()
-	// 			).toBeEnabled();
-	// 		} );
-
-	// 		test( 'Create an Ads account', async () => {
-	// 			// Intercept Ads connection request.
-	// 			const connectAdsAccountRequest =
-	// 				setupAdsAccounts.registerConnectAdsAccountRequests();
-
-	// 			await setupAdsAccounts.mockAdsAccountsResponse( ADS_ACCOUNTS );
-
-	// 			// Mock request to fulfill Ads connection.
-	// 			await setupAdsAccounts.fulfillAdsConnection( {
-	// 				id: ADS_ACCOUNTS[ 0 ].id,
-	// 				currency: 'USD',
-	// 				symbol: '$',
-	// 				status: 'incomplete',
-	// 				step: 'account_access',
-	// 			} );
-
-	// 			await setupAdsAccounts.mockAdsStatusNotClaimed();
-
-	// 			await setupAdsAccounts.getCreateAdsAccountButtonModal().click();
-
-	// 			await connectAdsAccountRequest;
-
-	// 			const modal = setupAdsAccounts.getAcceptAccountModal();
-	// 			await expect( modal ).toBeVisible();
-	// 		} );
-
-	// 		test( 'Show Unclaimed Ads account', async () => {
-	// 			await setupAdsAccounts.clickCloseAcceptAccountButtonFromModal();
-
-	// 			const claimButton = setupAdsAccounts.getAdsClaimAccountButton();
-	// 			const claimText = setupAdsAccounts.getAdsClaimAccountText();
-
-	// 			await expect( claimButton ).toBeVisible();
-	// 			await expect( claimText ).toBeVisible();
-
-	// 			await expect(
-	// 				setupAdsAccounts.getContinueButton()
-	// 			).toBeDisabled();
-	// 		} );
-
-	// 		test( 'Show Claimed Ads account', async () => {
-	// 			// Intercept Ads connection request.
-	// 			await setupAdsAccounts.fulfillAdsConnection( {
-	// 				id: ADS_ACCOUNTS[ 0 ].id,
-	// 				currency: 'USD',
-	// 				symbol: '$',
-	// 				status: 'connected',
-	// 				step: '',
-	// 			} );
-
-	// 			await setupAdsAccounts.mockAdsStatusClaimed();
-
-	// 			await page.dispatchEvent( 'body', 'blur' );
-	// 			await page.dispatchEvent( 'body', 'focus' );
-
-	// 			await expect(
-	// 				setupAdsAccounts.getContinueButton()
-	// 			).toBeEnabled();
-
-	// 			await expect(
-	// 				page.getByRole( 'link', {
-	// 					name: `Account ${ ADS_ACCOUNTS[ 0 ].id }`,
-	// 				} )
-	// 			).toBeVisible();
-
-	// 			await expect(
-	// 				setupAdsAccounts.getContinueButton()
-	// 			).toBeEnabled();
-	// 		} );
-	// 	} );
-
-	// 	test.describe( 'Add campaigns with existing Ads accounts', () => {
-	// 		test.beforeAll( async () => {
-	// 			await setupAdsAccounts.mockAdsAccountsResponse( ADS_ACCOUNTS );
-	// 			//Disconnect the account from the previous test
-	// 			setupAdsAccounts.fulfillAdsConnection( {
-	// 				id: ADS_ACCOUNTS[ 1 ].id,
-	// 				currency: 'EUR',
-	// 				symbol: '\u20ac',
-	// 				status: 'disconnected',
-	// 			} );
-
-	// 			await page.reload();
-	// 		} );
-
-	// 		test( 'Select one existing account', async () => {
-	// 			const adsAccountSelected = `${ ADS_ACCOUNTS[ 1 ].id }`;
-
-	// 			await setupAdsAccounts.selectAnExistingAdsAccount(
-	// 				adsAccountSelected
-	// 			);
-
-	// 			//Intercept Ads connection request
-	// 			const connectAdsAccountRequest =
-	// 				setupAdsAccounts.registerConnectAdsAccountRequests(
-	// 					adsAccountSelected
-	// 				);
-
-	// 			//Mock request to fulfill Ads connection
-	// 			setupAdsAccounts.fulfillAdsConnection( {
-	// 				id: ADS_ACCOUNTS[ 1 ].id,
-	// 				currency: 'EUR',
-	// 				symbol: '\u20ac',
-	// 				status: 'connected',
-	// 			} );
-
-	// 			await setupAdsAccounts.clickConnectAds();
-	// 			await connectAdsAccountRequest;
-
-	// 			await expect(
-	// 				setupAdsAccounts.getContinueButton()
-	// 			).toBeEnabled();
-	// 		} );
-	// 	} );
-
-	// 	test.describe( 'Create your campaign', () => {
-	// 		test( 'Continue to create your campaign', async () => {
-	// 			await setupAdsAccounts.clickContinue();
-	// 			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-	// 			await expect(
-	// 				page.getByRole( 'heading', {
-	// 					name: 'Create your campaign',
-	// 				} )
-	// 			).toBeVisible();
-
-	// 			await expect(
-	// 				page.getByRole( 'heading', { name: 'Set your budget' } )
-	// 			).toBeVisible();
-
-	// 			await expect(
-	// 				page.getByRole( 'link', {
-	// 					name: 'See what your ads will look like.',
-	// 				} )
-	// 			).toBeVisible();
-	// 		} );
-
-	// 		test.describe( 'Preview product ad', () => {
-	// 			test( 'Preview product ad should be visible', async () => {
-	// 				await expect(
-	// 					page.getByText( 'Preview product ad' )
-	// 				).toBeVisible();
-	// 				await expect(
-	// 					page.getByText(
-	// 						"Each of your product variants will have its own ad. Previews shown here are examples and don't include all possible formats."
-	// 					)
-	// 				).toBeVisible();
-	// 			} );
-
-	// 			test( 'Change image buttons should be enabled', async () => {
-	// 				const buttonsToChangeImage = page.locator(
-	// 					'.gla-campaign-preview-card__moving-button'
-	// 				);
-
-	// 				expect( buttonsToChangeImage ).toHaveCount( 2 );
-
-	// 				for ( const button of await buttonsToChangeImage.all() ) {
-	// 					await expect( button ).toBeEnabled();
-	// 				}
-	// 			} );
-	// 		} );
-
-	// 		test.describe( 'FAQ panels', () => {
-	// 			test( 'should see five questions in FAQ', async () => {
-	// 				const faqTitles = getFAQPanelTitle( page );
-	// 				await expect( faqTitles ).toHaveCount( 5 );
-	// 			} );
-
-	// 			test( 'should not see FAQ rows when FAQ titles are not clicked', async () => {
-	// 				const faqRows = getFAQPanelRow( page );
-	// 				await expect( faqRows ).toHaveCount( 0 );
-	// 			} );
-
-	// 			// eslint-disable-next-line jest/expect-expect
-	// 			test( 'should see FAQ rows when all FAQ titles are clicked', async () => {
-	// 				await checkFAQExpandable( page );
-	// 			} );
-	// 		} );
-	// 	} );
-
-	// 	test.describe( 'Create Ads with billing data already setup', () => {
-	// 		test.describe( 'Set the budget', async () => {
-	// 			test( 'Continue button should be disabled if budget is 0', async () => {
-	// 				await setupBudgetPage.fillBudget( '0' );
-
-	// 				await expect(
-	// 					setupBudgetPage.getCreateCampaignButton()
-	// 				).toBeDisabled();
-	// 			} );
-
-	// 			test( 'Continue button should be enabled when selecting an option from the recommendations, even if the entered value is invalid', async () => {
-	// 				await setupBudgetPage.fillBudget( '0' );
-	// 				await expect(
-	// 					setupBudgetPage.getCreateCampaignButton()
-	// 				).toBeDisabled();
-
-	// 				await page.getByLabel( 'low' ).click();
-	// 				await expect(
-	// 					setupBudgetPage.getCreateCampaignButton()
-	// 				).toBeEnabled();
-
-	// 				await page.getByLabel( 'custom' ).click();
-	// 				await expect(
-	// 					setupBudgetPage.getCreateCampaignButton()
-	// 				).toBeDisabled();
-
-	// 				await page.getByLabel( 'high' ).click();
-	// 				await expect(
-	// 					setupBudgetPage.getCreateCampaignButton()
-	// 				).toBeEnabled();
-
-	// 				await page.getByLabel( 'custom' ).click();
-	// 				await expect(
-	// 					setupBudgetPage.getCreateCampaignButton()
-	// 				).toBeDisabled();
-
-	// 				await page.getByLabel( 'recommended' ).click();
-	// 				await expect(
-	// 					setupBudgetPage.getCreateCampaignButton()
-	// 				).toBeEnabled();
-	// 			} );
-
-	// 			test( 'Continue button should be disabled if budget is less than 30% of the daily budget baseline', async () => {
-	// 				await setupBudgetPage.fillBudget( '2' );
-
-	// 				await expect(
-	// 					setupBudgetPage.getCreateCampaignButton()
-	// 				).toBeDisabled();
-	// 			} );
-
-	// 			test( 'User is notified of the minimum value', async () => {
-	// 				await setupBudgetPage.fillBudget( '3' );
-	// 				await setupBudgetPage.getBudgetInput().blur();
-
-	// 				await expect(
-	// 					page.getByText(
-	// 						'Please make sure daily average cost is at least €4.00'
-	// 					)
-	// 				).toBeVisible();
-	// 			} );
-
-	// 			test( 'Continue button should be enabled if budget is above the recommended value', async () => {
-	// 				await setupBudgetPage.fillBudget( '5' );
-
-	// 				await expect(
-	// 					setupBudgetPage.getCreateCampaignButton()
-	// 				).toBeEnabled();
-	// 			} );
-
-	// 			test( 'Display the recommended budget if the budget is valid but lower than the lowest recommended value', async () => {
-	// 				await setupBudgetPage.fillBudget( '6' );
-
-	// 				await expect(
-	// 					page.getByText(
-	// 						`Your budget is lower than other advertisers' budgets, which may affect performance. For best results, we recommend at least €15.00 per day.`
-	// 					)
-	// 				).toBeVisible();
-	// 			} );
-	// 		} );
-
-	// 		test( 'It should show the campaign creation success message', async () => {
-	// 			await setupBudgetPage.fillBudget( '6' );
-	// 			await setupBudgetPage.getCreateCampaignButton().click();
-
-	// 			const cancelButton = page.getByRole( 'button', {
-	// 				name: 'Cancel',
-	// 			} );
-	// 			await expect(
-	// 				page.getByText( 'This offer won’t last long!' )
-	// 			).toBeVisible();
-	// 			await expect( cancelButton ).toBeEnabled();
-
-	// 			await cancelButton.click();
-
-	// 			await expect( cancelButton ).not.toBeVisible();
-
-	// 			// Mock the campaign creation request.
-	// 			const campaignCreation =
-	// 				setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
-	// 					'6',
-	// 					[ 'US' ]
-	// 				);
-
-	// 			await setupBudgetPage.getCreateCampaignButton().click();
-
-	// 			await campaignCreation;
-
-	// 			//It should redirect to the dashboard page
-	// 			await page.waitForURL(
-	// 				'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard&guide=campaign-creation-success',
-	// 				{
-	// 					waitUntil: LOAD_STATE.DOM_CONTENT_LOADED,
-	// 				}
-	// 			);
-
-	// 			await expect(
-	// 				page.getByRole( 'heading', {
-	// 					name: "You've set up a Performance Max Campaign!",
-	// 				} )
-	// 			).toBeVisible();
-
-	// 			await expect(
-	// 				page.getByRole( 'button', {
-	// 					name: 'Create another campaign',
-	// 				} )
-	// 			).toBeEnabled();
-
-	// 			await expect(
-	// 				page.getByRole( 'button', {
-	// 					name: 'Got It',
-	// 				} )
-	// 			).toBeEnabled();
-
-	// 			await page
-	// 				.getByRole( 'button', {
-	// 					name: 'Got It',
-	// 				} )
-	// 				.click();
-	// 		} );
-	// 	} );
-	// } );
+	test.describe( 'With Ads account not connected', async () => {
+		test.describe( 'Set up your accounts page', async () => {
+			test.beforeAll( async () => {
+				await setupAdsAccounts.mockAdsAccountsResponse( [] );
+				await dashboardPage.addPaidCampaignButton.click();
+				await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+			} );
+
+			test( 'Page header should be "Set up your accounts"', async () => {
+				await expect(
+					page.getByRole( 'heading', {
+						name: 'Set up your accounts',
+					} )
+				).toBeVisible();
+				await expect(
+					page.getByText(
+						'Connect your Google account and your Google Ads account to set up a Performance Max campaign.'
+					)
+				).toBeVisible();
+			} );
+
+			test( 'Google Account should show as connected', async () => {
+				await expect(
+					page.getByText(
+						'This Google account is connected to your store’s product feed.'
+					)
+				).toBeVisible();
+			} );
+
+			test( 'Continue Button should be disabled', async () => {
+				await expect(
+					setupAdsAccounts.getContinueButton()
+				).toBeDisabled();
+			} );
+		} );
+
+		test.describe( 'Add campaigns with no Ads account', async () => {
+			test( 'Create an account should be visible', async () => {
+				const createAccountButton = page.getByRole( 'button', {
+					name: 'Create account',
+				} );
+
+				await expect( createAccountButton ).toBeVisible();
+
+				await expect(
+					setupAdsAccounts.getContinueButton()
+				).toBeDisabled();
+
+				await expect(
+					page.getByText(
+						'Required to set up conversion measurement and create campaigns.'
+					)
+				).toBeVisible();
+
+				await createAccountButton.click();
+			} );
+
+			test( 'Create account button should be disable if the ToS have not been accepted.', async () => {
+				await expect(
+					page.getByRole( 'heading', {
+						name: 'Create Google Ads Account',
+					} )
+				).toBeVisible();
+
+				await expect(
+					page.getByText(
+						'By creating a Google Ads account, you agree to the following terms and conditions:'
+					)
+				).toBeVisible();
+
+				await expect(
+					setupAdsAccounts.getCreateAdsAccountButtonModal()
+				).toBeDisabled();
+			} );
+
+			test( 'Accept terms and conditions to enable the create account button', async () => {
+				await setupAdsAccounts.getAcceptTermCreateAccount().check();
+
+				await expect(
+					setupAdsAccounts.getCreateAdsAccountButtonModal()
+				).toBeEnabled();
+			} );
+
+			test( 'Create an Ads account', async () => {
+				// Intercept Ads connection request.
+				const connectAdsAccountRequest =
+					setupAdsAccounts.registerConnectAdsAccountRequests();
+
+				await setupAdsAccounts.mockAdsAccountsResponse( ADS_ACCOUNTS );
+
+				// Mock request to fulfill Ads connection.
+				await setupAdsAccounts.fulfillAdsConnection( {
+					id: ADS_ACCOUNTS[ 0 ].id,
+					currency: 'USD',
+					symbol: '$',
+					status: 'incomplete',
+					step: 'account_access',
+				} );
+
+				await setupAdsAccounts.mockAdsStatusNotClaimed();
+
+				await setupAdsAccounts.getCreateAdsAccountButtonModal().click();
+
+				await connectAdsAccountRequest;
+
+				const modal = setupAdsAccounts.getAcceptAccountModal();
+				await expect( modal ).toBeVisible();
+			} );
+
+			test( 'Show Unclaimed Ads account', async () => {
+				await setupAdsAccounts.clickCloseAcceptAccountButtonFromModal();
+
+				const claimButton = setupAdsAccounts.getAdsClaimAccountButton();
+				const claimText = setupAdsAccounts.getAdsClaimAccountText();
+
+				await expect( claimButton ).toBeVisible();
+				await expect( claimText ).toBeVisible();
+
+				await expect(
+					setupAdsAccounts.getContinueButton()
+				).toBeDisabled();
+			} );
+
+			test( 'Show Claimed Ads account', async () => {
+				// Intercept Ads connection request.
+				await setupAdsAccounts.fulfillAdsConnection( {
+					id: ADS_ACCOUNTS[ 0 ].id,
+					currency: 'USD',
+					symbol: '$',
+					status: 'connected',
+					step: '',
+				} );
+
+				await setupAdsAccounts.mockAdsStatusClaimed();
+
+				await page.dispatchEvent( 'body', 'blur' );
+				await page.dispatchEvent( 'body', 'focus' );
+
+				await expect(
+					setupAdsAccounts.getContinueButton()
+				).toBeEnabled();
+
+				await expect(
+					page.getByRole( 'link', {
+						name: `Account ${ ADS_ACCOUNTS[ 0 ].id }`,
+					} )
+				).toBeVisible();
+
+				await expect(
+					setupAdsAccounts.getContinueButton()
+				).toBeEnabled();
+			} );
+		} );
+
+		test.describe( 'Add campaigns with existing Ads accounts', () => {
+			test.beforeAll( async () => {
+				await setupAdsAccounts.mockAdsAccountsResponse( ADS_ACCOUNTS );
+				//Disconnect the account from the previous test
+				setupAdsAccounts.fulfillAdsConnection( {
+					id: ADS_ACCOUNTS[ 1 ].id,
+					currency: 'EUR',
+					symbol: '\u20ac',
+					status: 'disconnected',
+				} );
+
+				await page.reload();
+			} );
+
+			test( 'Select one existing account', async () => {
+				const adsAccountSelected = `${ ADS_ACCOUNTS[ 1 ].id }`;
+
+				await setupAdsAccounts.selectAnExistingAdsAccount(
+					adsAccountSelected
+				);
+
+				//Intercept Ads connection request
+				const connectAdsAccountRequest =
+					setupAdsAccounts.registerConnectAdsAccountRequests(
+						adsAccountSelected
+					);
+
+				//Mock request to fulfill Ads connection
+				setupAdsAccounts.fulfillAdsConnection( {
+					id: ADS_ACCOUNTS[ 1 ].id,
+					currency: 'EUR',
+					symbol: '\u20ac',
+					status: 'connected',
+				} );
+
+				await setupAdsAccounts.clickConnectAds();
+				await connectAdsAccountRequest;
+
+				await expect(
+					setupAdsAccounts.getContinueButton()
+				).toBeEnabled();
+			} );
+		} );
+
+		test.describe( 'Create your campaign', () => {
+			test( 'Continue to create your campaign', async () => {
+				await setupAdsAccounts.clickContinue();
+				await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+				await expect(
+					page.getByRole( 'heading', {
+						name: 'Create your campaign',
+					} )
+				).toBeVisible();
+
+				await expect(
+					page.getByRole( 'heading', { name: 'Set your budget' } )
+				).toBeVisible();
+
+				await expect(
+					page.getByRole( 'link', {
+						name: 'See what your ads will look like.',
+					} )
+				).toBeVisible();
+			} );
+
+			test.describe( 'Preview product ad', () => {
+				test( 'Preview product ad should be visible', async () => {
+					await expect(
+						page.getByText( 'Preview product ad' )
+					).toBeVisible();
+					await expect(
+						page.getByText(
+							"Each of your product variants will have its own ad. Previews shown here are examples and don't include all possible formats."
+						)
+					).toBeVisible();
+				} );
+
+				test( 'Change image buttons should be enabled', async () => {
+					const buttonsToChangeImage = page.locator(
+						'.gla-campaign-preview-card__moving-button'
+					);
+
+					expect( buttonsToChangeImage ).toHaveCount( 2 );
+
+					for ( const button of await buttonsToChangeImage.all() ) {
+						await expect( button ).toBeEnabled();
+					}
+				} );
+			} );
+
+			test.describe( 'FAQ panels', () => {
+				test( 'should see five questions in FAQ', async () => {
+					const faqTitles = getFAQPanelTitle( page );
+					await expect( faqTitles ).toHaveCount( 5 );
+				} );
+
+				test( 'should not see FAQ rows when FAQ titles are not clicked', async () => {
+					const faqRows = getFAQPanelRow( page );
+					await expect( faqRows ).toHaveCount( 0 );
+				} );
+
+				// eslint-disable-next-line jest/expect-expect
+				test( 'should see FAQ rows when all FAQ titles are clicked', async () => {
+					await checkFAQExpandable( page );
+				} );
+			} );
+		} );
+
+		test.describe( 'Create Ads with billing data already setup', () => {
+			test.describe( 'Set the budget', async () => {
+				test( 'Continue button should be disabled if budget is 0', async () => {
+					await setupBudgetPage.fillBudget( '0' );
+
+					await expect(
+						setupBudgetPage.getCreateCampaignButton()
+					).toBeDisabled();
+				} );
+
+				test( 'Continue button should be enabled when selecting an option from the recommendations, even if the entered value is invalid', async () => {
+					await setupBudgetPage.fillBudget( '0' );
+					await expect(
+						setupBudgetPage.getCreateCampaignButton()
+					).toBeDisabled();
+
+					await page.getByLabel( 'low' ).click();
+					await expect(
+						setupBudgetPage.getCreateCampaignButton()
+					).toBeEnabled();
+
+					await page.getByLabel( 'custom' ).click();
+					await expect(
+						setupBudgetPage.getCreateCampaignButton()
+					).toBeDisabled();
+
+					await page.getByLabel( 'high' ).click();
+					await expect(
+						setupBudgetPage.getCreateCampaignButton()
+					).toBeEnabled();
+
+					await page.getByLabel( 'custom' ).click();
+					await expect(
+						setupBudgetPage.getCreateCampaignButton()
+					).toBeDisabled();
+
+					await page.getByLabel( 'recommended' ).click();
+					await expect(
+						setupBudgetPage.getCreateCampaignButton()
+					).toBeEnabled();
+				} );
+
+				test( 'Continue button should be disabled if budget is less than 30% of the daily budget baseline', async () => {
+					await setupBudgetPage.fillBudget( '2' );
+
+					await expect(
+						setupBudgetPage.getCreateCampaignButton()
+					).toBeDisabled();
+				} );
+
+				test( 'User is notified of the minimum value', async () => {
+					await setupBudgetPage.fillBudget( '3' );
+					await setupBudgetPage.getBudgetInput().blur();
+
+					await expect(
+						page.getByText(
+							'Please make sure daily average cost is at least €4.00'
+						)
+					).toBeVisible();
+				} );
+
+				test( 'Continue button should be enabled if budget is above the recommended value', async () => {
+					await setupBudgetPage.fillBudget( '5' );
+
+					await expect(
+						setupBudgetPage.getCreateCampaignButton()
+					).toBeEnabled();
+				} );
+
+				test( 'Display the recommended budget if the budget is valid but lower than the lowest recommended value', async () => {
+					await setupBudgetPage.fillBudget( '6' );
+
+					await expect(
+						page.getByText(
+							`Your budget is lower than other advertisers' budgets, which may affect performance. For best results, we recommend at least €15.00 per day.`
+						)
+					).toBeVisible();
+				} );
+			} );
+
+			test( 'It should show the campaign creation success message', async () => {
+				await setupBudgetPage.fillBudget( '6' );
+				await setupBudgetPage.getCreateCampaignButton().click();
+
+				const cancelButton = page.getByRole( 'button', {
+					name: 'Cancel',
+				} );
+				await expect(
+					page.getByText( 'This offer won’t last long!' )
+				).toBeVisible();
+				await expect( cancelButton ).toBeEnabled();
+
+				await cancelButton.click();
+
+				await expect( cancelButton ).not.toBeVisible();
+
+				// Mock the campaign creation request.
+				const campaignCreation =
+					setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
+						'6',
+						[ 'US' ]
+					);
+
+				await setupBudgetPage.getCreateCampaignButton().click();
+
+				await campaignCreation;
+
+				//It should redirect to the dashboard page
+				await page.waitForURL(
+					'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard&guide=campaign-creation-success',
+					{
+						waitUntil: LOAD_STATE.DOM_CONTENT_LOADED,
+					}
+				);
+
+				await expect(
+					page.getByRole( 'heading', {
+						name: "You've set up a Performance Max Campaign!",
+					} )
+				).toBeVisible();
+
+				await expect(
+					page.getByRole( 'button', {
+						name: 'Create another campaign',
+					} )
+				).toBeEnabled();
+
+				await expect(
+					page.getByRole( 'button', {
+						name: 'Got It',
+					} )
+				).toBeEnabled();
+
+				await page
+					.getByRole( 'button', {
+						name: 'Got It',
+					} )
+					.click();
+			} );
+		} );
+	} );
 
 	test.describe( 'With connected Ads account', async () => {
 		test.beforeAll( async () => {
