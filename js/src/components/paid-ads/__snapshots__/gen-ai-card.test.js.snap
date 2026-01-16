@@ -16,7 +16,7 @@ exports[`GenAICard Generate assets with GenAI button Match the snapshot 1`] = `
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex gla-gen-ai-card__wrapper css-epv6bi-View-Flex-base-ItemsColumn e19lxcc00"
+          class="components-flex css-11kn0n8-View-Flex-base-ItemsColumn e19lxcc00"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -55,21 +55,39 @@ exports[`GenAICard Generate assets with GenAI button Match the snapshot 1`] = `
                 <div
                   class="components-notice__content"
                 >
-                  <svg
-                    aria-hidden="true"
-                    focusable="false"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    width="24"
-                    xmlns="http://www.w3.org/2000/svg"
+                  <div
+                    class="components-flex css-1u4qd2t-View-Flex-base-ItemsRow e19lxcc00"
+                    data-wp-c16t="true"
+                    data-wp-component="Flex"
                   >
-                    <path
-                      d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
-                    />
-                  </svg>
-                  <p>
-                    Text assets were auto-populated with Google AI
-                  </p>
+                    <div
+                      class="components-flex-item css-1wj1jhv-View-Item-sx-Base e19lxcc00"
+                      data-wp-c16t="true"
+                      data-wp-component="FlexItem"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        focusable="false"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
+                        />
+                      </svg>
+                    </div>
+                    <div
+                      class="components-flex-item components-flex-block css-1oh0tc9-View-Item-sx-Base-block e19lxcc00"
+                      data-wp-c16t="true"
+                      data-wp-component="FlexBlock"
+                    >
+                      <p>
+                        Text assets were auto-populated with Google AI
+                      </p>
+                    </div>
+                  </div>
                   <div
                     class="components-notice__actions"
                   />
@@ -78,13 +96,15 @@ exports[`GenAICard Generate assets with GenAI button Match the snapshot 1`] = `
             </div>
           </div>
           <div
-            class="components-flex-item gla-gen-ai-card__image-block css-1xomaer-View-Item-sx-Base e19lxcc00"
+            class="components-flex-item css-1xomaer-View-Item-sx-Base e19lxcc00"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
             <img
               alt="Google's Gen AI illustration"
+              decoding="async"
               height="90"
+              loading="lazy"
               src="SvgrURL"
               width="92"
             />
