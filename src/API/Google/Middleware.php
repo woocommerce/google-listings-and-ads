@@ -15,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DateTimeUtility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\TosAccepted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerExceptionInterface;
@@ -33,6 +34,7 @@ defined( 'ABSPATH' ) || exit;
  * - Client
  * - DateTimeUtility
  * - GoogleHelper
+ * - ISOUtility
  * - Merchant
  * - WC
  * - WP
@@ -128,13 +130,22 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
+
+			/** @var ISOUtility $iso_utility */
+			$iso_utility = $this->container->get( ISOUtility::class );
+
+			/** @var WP $wp */
+			$wp = $this->container->get( WP::class );
+
 			$result = $client->post(
 				$this->get_manager_url( 'create-merchant' ),
 				[
 					'body' => wp_json_encode(
 						[
-							'name'       => $name,
-							'websiteUrl' => $site_url,
+							'name'         => $name,
+							'websiteUrl'   => $site_url,
+							'timeZone'     => $this->get_site_timezone_string(),
+							'languageCode' => $iso_utility->wp_locale_to_bcp47( $wp->get_user_locale() ),
 						]
 					),
 				]
