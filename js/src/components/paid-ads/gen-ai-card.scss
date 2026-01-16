@@ -1,24 +1,20 @@
 .gla-gen-ai-card {
-	:where(.gla-gen-ai-card__wrapper) {
-		@media (min-width: $break-small) {
-			flex-direction: row;
-		}
-	}
-
 	:where(.gla-section-card-title) {
 		font-size: 16px;
-		margin-bottom: 8px;
+	}
+
+	.components-notice__content {
+		:where(svg) {
+			display: block;
+			fill: $gla-color-green-70;
+		}
+
+		p {
+			margin: 0;
+		}
 	}
 
 	:where(.is-success) {
-		padding-top: 0;
-		padding-bottom: 0;
 		width: 100%;
-
-		:where(.components-notice__content) {
-			display: flex;
-			align-items: center;
-			gap: 12px;
-		}
 	}
 }

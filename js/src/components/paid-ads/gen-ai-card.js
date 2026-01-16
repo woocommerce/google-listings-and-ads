@@ -15,7 +15,6 @@ import {
  * Internal dependencies
  */
 import Section from '~/components/section';
-import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import genAIImageURL from '~/images/pmax-assets-improvements/gen-ai.svg';
 import './gen-ai-card.scss';
 
@@ -28,23 +27,13 @@ import './gen-ai-card.scss';
  * @return {JSX.Element} The rendered GenAICard component.
  */
 const GenAICard = () => {
-	const { googleAdsAccount } = useGoogleAdsAccount();
-	const queryArgs = {};
-
-	if ( googleAdsAccount?.ocid ) {
-		queryArgs.ocid = googleAdsAccount.ocid;
-	} else if ( googleAdsAccount?.id ) {
-		queryArgs.ecid = googleAdsAccount.id;
-	}
-
 	return (
 		<Section.Card className="gla-gen-ai-card">
 			<CardBody size="large">
 				<Flex
 					align="center"
 					gap={ 6 }
-					direction={ [ 'column', 'row' ] }
-					className="gla-gen-ai-card__wrapper"
+					direction={ [ 'column-reverse', 'row' ] }
 				>
 					<FlexBlock>
 						<Flex direction="column" gap={ 4 } align="start">
@@ -66,27 +55,36 @@ const GenAICard = () => {
 							</div>
 
 							<Notice status="success" isDismissible={ false }>
-								<Icon
-									icon={ check }
-									width={ 24 }
-									height={ 24 }
-								/>
-								<p>
-									{ __(
-										'Text assets were auto-populated with Google AI',
-										'google-listings-and-ads'
-									) }
-								</p>
+								<Flex>
+									<FlexItem>
+										<Icon
+											icon={ check }
+											width={ 24 }
+											height={ 24 }
+										/>
+									</FlexItem>
+
+									<FlexBlock>
+										<p>
+											{ __(
+												'Text assets were auto-populated with Google AI',
+												'google-listings-and-ads'
+											) }
+										</p>
+									</FlexBlock>
+								</Flex>
 							</Notice>
 						</Flex>
 					</FlexBlock>
-					<FlexItem className="gla-gen-ai-card__image-block">
+					<FlexItem>
 						<img
 							src={ genAIImageURL }
 							alt={ __(
 								"Google's Gen AI illustration",
 								'google-listings-and-ads'
 							) }
+							loading="lazy"
+							decoding="async"
 							width="92"
 							height="90"
 						/>
