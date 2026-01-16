@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+// eslint-disable-next-line import/named, @woocommerce/dependency-group
 import { Flex, FlexBlock, ProgressBar } from '@wordpress/components';
 
 /**
