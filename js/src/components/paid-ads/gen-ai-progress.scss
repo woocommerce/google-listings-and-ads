@@ -1,0 +1,24 @@
+.gen-ai-progress {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    padding: $grid-unit-80 0;
+
+    :where(.gen-ai-progress__bar) {
+        max-width: 520px;
+        height: 4px;
+        width: 100%;
+
+        > div:first-child {
+            background-color: #3858E9;
+        }
+    }
+
+    :where(.gen-ai-progress__text-content) {
+        text-align: center;
+
+        h2{
+            font-size: $gla-font-small-medium;
+        }
+    }
+}
