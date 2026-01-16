@@ -11,11 +11,13 @@ import GridiconCrossSmall from 'gridicons/dist/cross-small';
  */
 import { useAppDispatch } from '~/data';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import useGenAITextAssets from '~/hooks/useGenAITextAssets';
 import AppButton from '~/components/app-button';
 import AppInputControl from '~/components/app-input-control';
 import AssetItemActionButton, {
 	ACTION_TYPES,
 } from './asset-item-action-button';
+import AIIcon from '~/images/ai-icon.svg?inline';
 import './texts-editor.scss';
 
 function normalizeNumberOfTexts( texts, minNumberOfTexts, maxNumberOfTexts ) {
@@ -119,6 +121,10 @@ export default function TextsEditor( {
 	const { fetchGenAITextAssets } = useAppDispatch();
 	const [ texts, setTexts ] = useState( initialTexts );
 	const [ isGeneratingAssets, setIsGeneratingAssets ] = useState( false );
+	const { assets: genAITextAssets } = useGenAITextAssets(
+		finalUrl,
+		assetKey
+	);
 
 	const updateTexts = ( nextTexts ) => {
 		setTexts( nextTexts );
@@ -227,6 +233,15 @@ export default function TextsEditor( {
 								placeholder={ placeholder }
 								data-index={ index }
 								onChange={ handleChange }
+								suffix={
+									genAITextAssets?.includes( text ) && (
+										<AIIcon
+											width={ 24 }
+											height={ 24 }
+											className="gla-texts-editor__ai-icon"
+										/>
+									)
+								}
 							/>
 							<div className="gla-texts-editor__remove-text-button-anchor">
 								{ index + 1 > minNumberOfTexts && (
