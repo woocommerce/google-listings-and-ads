@@ -2,7 +2,14 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Flex, FlexBlock, CardBody, Notice } from '@wordpress/components';
+import { Icon, check } from '@wordpress/icons';
+import {
+	Flex,
+	FlexBlock,
+	FlexItem,
+	CardBody,
+	Notice,
+} from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -10,7 +17,6 @@ import { Flex, FlexBlock, CardBody, Notice } from '@wordpress/components';
 import Section from '~/components/section';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import genAIImageURL from '~/images/pmax-assets-improvements/gen-ai.svg';
-import genAICheckMark from '~/images/pmax-assets-improvements/gen-ai-check-notice.svg';
 import './gen-ai-card.scss';
 
 /**
@@ -43,7 +49,9 @@ const GenAICard = () => {
 					<FlexBlock>
 						<Flex direction="column" gap={ 4 } align="start">
 							<div>
-								<Section.Card.Title>
+								<Section.Card.Title
+									direction={ [ 'column-reverse', 'row' ] }
+								>
 									{ __(
 										'Review Your AI Suggestions',
 										'google-listings-and-ads'
@@ -58,35 +66,31 @@ const GenAICard = () => {
 							</div>
 
 							<Notice status="success" isDismissible={ false }>
-								<img
-									src={ genAICheckMark }
-									alt={ __(
-										'Checkmark indicating success',
-										'google-listings-and-ads'
-									) }
-									width="24"
-									height="24"
+								<Icon
+									icon={ check }
+									width={ 24 }
+									height={ 24 }
 								/>
-								<div>
+								<p>
 									{ __(
-										'Text assets were auto-populate with Google AI',
+										'Text assets were auto-populated with Google AI',
 										'google-listings-and-ads'
 									) }
-								</div>
+								</p>
 							</Notice>
 						</Flex>
 					</FlexBlock>
-					<FlexBlock className="gla-gen-ai-card__image-block">
+					<FlexItem className="gla-gen-ai-card__image-block">
 						<img
 							src={ genAIImageURL }
 							alt={ __(
-								'Drawing of a person who successfully launched a campaign',
+								"Google's Gen AI illustration",
 								'google-listings-and-ads'
 							) }
 							width="92"
 							height="90"
 						/>
-					</FlexBlock>
+					</FlexItem>
 				</Flex>
 			</CardBody>
 		</Section.Card>
