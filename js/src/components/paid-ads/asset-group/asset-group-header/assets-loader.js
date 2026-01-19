@@ -4,7 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
-import { useState, useRef } from '@wordpress/element';
+import { useState, useRef, useEffect } from '@wordpress/element';
 import { Spinner } from '@woocommerce/components';
 
 /**
@@ -105,6 +105,31 @@ export default function AssetsLoader( { onAssetsLoaded } ) {
 	const [ fetching, setFetching ] = useState( false );
 	const { createNotice } = useDispatchCoreNotices();
 
+	// Reusable loader for suggested assets by final URL descriptor.
+	const loadSuggestedAssets = ( { id, type } ) => {
+		setFetching( true );
+		return fetchSuggestedAssets( id, type )
+			.then( ( assets ) => {
+				onAssetsLoaded( assets );
+			} )
+			.catch( () => {
+				setFetching( false );
+				createNotice(
+					'error',
+					__(
+						'Unable to load assets data from the selected page.',
+						'google-listings-and-ads'
+					)
+				);
+			} );
+	};
+
+	// On mount, prefetch suggested assets for homepage.
+	useEffect( () => {
+		loadSuggestedAssets( { id: -1, type: 'homepage' } );
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [] );
+
 	// To have the searching state and keep the entered search value, this handler needs to
 	// be called immediately after keying values. Therefore, it also needs to implement the
 	// debounce here.
@@ -154,21 +179,7 @@ export default function AssetsLoader( { onAssetsLoaded } ) {
 
 	const handleClick = async () => {
 		const { finalUrl } = selectedOptions[ 0 ];
-
-		setFetching( true );
-
-		fetchSuggestedAssets( finalUrl.id, finalUrl.type )
-			.then( onAssetsLoaded )
-			.catch( () => {
-				setFetching( false );
-				createNotice(
-					'error',
-					__(
-						'Unable to load assets data from the selected page.',
-						'google-listings-and-ads'
-					)
-				);
-			} );
+		loadSuggestedAssets( { id: finalUrl.id, type: finalUrl.type } );
 	};
 
 	const { finalUrl } = selectedOptions[ 0 ] || {};
