@@ -1,24 +1,24 @@
 .gen-ai-progress {
-    align-items: center;
-    display: flex;
-    flex-direction: column;
-    padding: $grid-unit-80 0;
+	--wp-components-color-foreground: #3858e9;
+	text-align: center;
+	padding: $grid-unit-80 0;
 
-    :where(.gen-ai-progress__bar) {
-        max-width: 520px;
-        height: 4px;
-        width: 100%;
+	.gen-ai-progress__bar {
+		height: $grid-unit-05;
+		width: 100%;
+	}
 
-        > div:first-child {
-            background-color: #3858E9;
-        }
-    }
+	.gen-ai-progress__text-content {
+		margin: $grid-unit-40 auto $grid-unit-20;
+		max-width: 520px;
 
-    :where(.gen-ai-progress__text-content) {
-        text-align: center;
+		h2 {
+			font-size: $gla-font-small-medium;
+			margin: 0 0 $grid-unit-20;
+		}
 
-        h2{
-            font-size: $gla-font-small-medium;
-        }
-    }
+		p {
+			margin: $grid-unit-20 0 0;
+		}
+	}
 }
