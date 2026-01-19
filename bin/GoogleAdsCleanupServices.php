@@ -54,7 +54,7 @@ class GoogleAdsCleanupServices {
 	protected $avoid_cleanup = [
 		// ConversionValueRuleService is now used in `ResourceNames::forGeoTargetConstant` in V22.
 		// instead of the previous BatchJobServiceClient. See:
- 		// - https://github.com/googleads/google-ads-php/blob/v28.0.0/src/Google/Ads/GoogleAds/Util/V20/ResourceNames.php#L1433-L1439
+		// - https://github.com/googleads/google-ads-php/blob/v28.0.0/src/Google/Ads/GoogleAds/Util/V20/ResourceNames.php#L1433-L1439
 		// - https://github.com/googleads/google-ads-php/blob/v31.1.0/src/Google/Ads/GoogleAds/Util/V22/ResourceNames.php#L1460
 		'ConversionValueRule',
 	];
