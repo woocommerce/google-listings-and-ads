@@ -635,7 +635,12 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		case TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS: {
 			const { url, data } = action;
 
-			return setIn( state, [ 'gen_ai_assets', url, 'media' ], data );
+			const existingMedia = state.gen_ai_assets?.[ url ]?.media ?? {};
+
+			return setIn( state, [ 'gen_ai_assets', url, 'media' ], {
+				...existingMedia,
+				...data,
+			} );
 		}
 
 		case TYPES.RECEIVE_GEN_AI_TEXT_ASSETS: {
