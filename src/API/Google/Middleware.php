@@ -166,16 +166,23 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 		} catch ( ClientExceptionInterface $e ) {
 			$message = $this->client_exception_message( $e, __( 'Error creating account', 'google-listings-and-ads' ) );
 
-			if ( preg_match( '/terms?.* are|is not allowed/', $message ) ) {
+			// Content API for Shopping: Invalid account name terms.
+			// Merchant API: Account name validation failed.
+			if ( preg_match( '/terms?.* are|is not allowed/', $message ) ||
+				preg_match( '/the account did not pass validation/i', $message ) ) {
 				throw InvalidTerm::contains_invalid_terms( $name );
 			}
 
+			$site_url = $this->strip_url_protocol( esc_url_raw( $this->get_site_url() ) );
+
+			// Content API for Shopping: Invalid top-level domain name.
 			if ( strpos( $message, 'URL ends with an invalid top-level domain name' ) !== false ) {
-				throw InvalidDomainName::create_account_failed_invalid_top_level_domain_name(
-					$this->strip_url_protocol(
-						esc_url_raw( $this->get_site_url() )
-					)
-				);
+				throw InvalidDomainName::create_account_failed_invalid_top_level_domain_name( $site_url );
+			}
+
+			// Merchant API: Invalid homepage URL.
+			if ( strpos( $message, 'Unable to set homepage URL' ) !== false ) {
+				throw InvalidDomainName::create_account_failed_invalid_homepage_url( $site_url );
 			}
 
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
@@ -613,11 +620,7 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @return string
 	 */
 	protected function default_account_name(): string {
-		return sprintf(
-			/* translators: 1: current date in the format Y-m-d */
-			__( 'Account %1$s', 'google-listings-and-ads' ),
-			( new DateTime() )->format( 'Y-m-d' )
-		);
+		return 'Account ' . gmdate( 'dMy' );
 	}
 
 	/**

@@ -203,6 +203,25 @@ class MiddlewareTest extends UnitTest {
 		$this->middleware->create_merchant_account();
 	}
 
+	public function test_create_merchant_account_merchant_api_name_error() {
+		$this->generate_create_account_exception_mock(
+			'The account did not pass validation',
+			[ 'id' => self::TEST_MERCHANT_ID ]
+		);
+
+		$this->assertEquals( self::TEST_MERCHANT_ID, $this->middleware->create_merchant_account() );
+	}
+
+	public function test_create_merchant_account_merchant_api_invalid_homepage_url() {
+		$this->generate_create_account_exception_mock(
+			'Unable to set homepage URL'
+		);
+
+		$this->expectException( InvalidDomainName::class );
+		$this->expectExceptionMessage( 'The homepage URL' );
+		$this->middleware->create_merchant_account();
+	}
+
 	public function test_create_merchant_account_exception() {
 		$this->generate_create_account_exception_mock( 'error' );
 
