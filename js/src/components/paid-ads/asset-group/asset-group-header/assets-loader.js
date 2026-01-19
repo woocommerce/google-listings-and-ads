@@ -105,26 +105,20 @@ export default function AssetsLoader( { onAssetsLoaded } ) {
 	const [ fetching, setFetching ] = useState( false );
 	const { createNotice } = useDispatchCoreNotices();
 
-	// Reusable loader for suggested assets by final URL descriptor.
-	const loadSuggestedAssets = ( { id, type } ) => {
+	const loadSuggestedAssets = async ( { id, type } ) => {
 		setFetching( true );
-		return fetchSuggestedAssets( id, type )
-			.then( ( assets ) => {
-				onAssetsLoaded( assets );
-			} )
-			.catch( () => {
-				setFetching( false );
-				createNotice(
-					'error',
-					__(
-						'Unable to load assets data from the selected page.',
-						'google-listings-and-ads'
-					)
-				);
-			} );
+		try {
+			const assets = await fetchSuggestedAssets( id, type );
+			onAssetsLoaded( assets );
+		} catch ( error ) {
+			setFetching( false );
+			createNotice(
+				'error',
+				__( 'Unable to load assets data.', 'google-listings-and-ads' )
+			);
+		}
 	};
 
-	// On mount, prefetch suggested assets for homepage.
 	useEffect( () => {
 		loadSuggestedAssets( { id: -1, type: 'homepage' } );
 		// eslint-disable-next-line react-hooks/exhaustive-deps
