@@ -38,13 +38,13 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_generate_text_with_defaults() {
-		// Service expects uppercase types.
+		// Service expects lowercase types.
 		$this->service->expects( $this->once() )
 			->method( 'generate_text' )
 			->with(
 				[
 					'final_url'         => self::TEST_SITE_URL,
-					'asset_field_types' => [ 'HEADLINE', 'LONG_HEADLINE', 'DESCRIPTION' ],
+					'asset_field_types' => [ 'headline', 'long_headline', 'description' ],
 				]
 			)
 			->willReturn(
@@ -87,7 +87,7 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 			->with(
 				[
 					'final_url'         => 'https://custom-url.com',
-					'asset_field_types' => [ 'HEADLINE', 'LONG_HEADLINE', 'DESCRIPTION' ],
+					'asset_field_types' => [ 'headline', 'long_headline', 'description' ],
 				]
 			)
 			->willReturn(
@@ -117,7 +117,7 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 			->with(
 				[
 					'final_url'         => self::TEST_SITE_URL,
-					'asset_field_types' => [ 'HEADLINE' ],
+					'asset_field_types' => [ 'headline' ],
 				]
 			)
 			->willReturn(
@@ -148,7 +148,7 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 			->with(
 				$this->callback(
 					function ( $args ) {
-						return $args['asset_field_types'] === [ 'HEADLINE', 'DESCRIPTION' ];
+						return $args['asset_field_types'] === [ 'headline', 'description' ];
 					}
 				)
 			)
@@ -262,7 +262,7 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 			->with(
 				[
 					'final_url'         => self::TEST_SITE_URL,
-					'asset_field_types' => [ 'MARKETING_IMAGE' ],
+					'asset_field_types' => [ 'marketing_image' ],
 				]
 			)
 			->willReturn(
@@ -293,7 +293,7 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 			->with(
 				$this->callback(
 					function ( $args ) {
-						return $args['asset_field_types'] === [ 'MARKETING_IMAGE', 'SQUARE_MARKETING_IMAGE' ];
+						return $args['asset_field_types'] === [ 'marketing_image', 'square_marketing_image' ];
 					}
 				)
 			)

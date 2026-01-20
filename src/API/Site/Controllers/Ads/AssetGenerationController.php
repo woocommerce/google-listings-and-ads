@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAssetGenerationService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ResponseFromExceptionTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
@@ -87,7 +88,11 @@ class AssetGenerationController extends BaseController {
 				'type'              => 'array',
 				'items'             => [
 					'type' => 'string',
-					'enum' => [ 'headline', 'long_headline', 'description' ],
+					'enum' => [
+						AssetFieldType::HEADLINE,
+						AssetFieldType::LONG_HEADLINE,
+						AssetFieldType::DESCRIPTION,
+					],
 				],
 				'sanitize_callback' => function ( $types ) {
 					return array_map( 'sanitize_text_field', $types );
@@ -115,7 +120,11 @@ class AssetGenerationController extends BaseController {
 				'type'              => 'array',
 				'items'             => [
 					'type' => 'string',
-					'enum' => [ 'marketing_image', 'square_marketing_image', 'portrait_marketing_image' ],
+					'enum' => [
+						AssetFieldType::MARKETING_IMAGE,
+						AssetFieldType::SQUARE_MARKETING_IMAGE,
+						AssetFieldType::PORTRAIT_MARKETING_IMAGE,
+					],
 				],
 				'sanitize_callback' => function ( $types ) {
 					return array_map( 'sanitize_text_field', $types );
@@ -136,14 +145,11 @@ class AssetGenerationController extends BaseController {
 				$final_url = $request->get_param( 'final_url' ) ?: $this->get_site_url();
 				$types     = $request->get_param( 'types' ) ?: [ 'headline', 'long_headline', 'description' ];
 
-				// Convert lowercase types to uppercase for service.
-				$uppercase_types = $this->convert_types_to_uppercase( $types );
-
-				// Call service.
+				// Call service with lowercase types.
 				$items = $this->service->generate_text(
 					[
 						'final_url'         => $final_url,
-						'asset_field_types' => $uppercase_types,
+						'asset_field_types' => $types,
 					]
 				);
 
@@ -166,13 +172,10 @@ class AssetGenerationController extends BaseController {
 				$final_url = $request->get_param( 'final_url' ) ?: $this->get_site_url();
 				$types     = $request->get_param( 'types' ) ?: [];
 
-				// Convert lowercase types to uppercase for service (if provided).
-				$uppercase_types = ! empty( $types ) ? $this->convert_types_to_uppercase( $types ) : [];
-
-				// Call service.
+				// Call service with lowercase types.
 				$args = [ 'final_url' => $final_url ];
-				if ( ! empty( $uppercase_types ) ) {
-					$args['asset_field_types'] = $uppercase_types;
+				if ( ! empty( $types ) ) {
+					$args['asset_field_types'] = $types;
 				}
 				$items = $this->service->generate_images( $args );
 
@@ -182,16 +185,6 @@ class AssetGenerationController extends BaseController {
 				return $this->response_from_exception( $e );
 			}
 		};
-	}
-
-	/**
-	 * Convert types to uppercase.
-	 *
-	 * @param array $types Array of lowercase type strings.
-	 * @return array Array of uppercase type strings.
-	 */
-	protected function convert_types_to_uppercase( array $types ): array {
-		return array_map( 'strtoupper', $types );
 	}
 
 	/**
