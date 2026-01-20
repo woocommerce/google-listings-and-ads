@@ -87,7 +87,8 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 		}
 
 		// Convert asset field types from lowercase strings to enum numbers.
-		$asset_field_types = $this->convert_text_types_to_enums( $types );
+		$allowed_types     = [ AssetFieldType::HEADLINE, AssetFieldType::LONG_HEADLINE, AssetFieldType::DESCRIPTION ];
+		$asset_field_types = $this->convert_types_to_enums( $types, $allowed_types );
 
 		$request = new GenerateTextRequest(
 			[
@@ -142,7 +143,8 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 		// Convert asset field types from lowercase strings to enum numbers (if provided).
 		$asset_field_types = [];
 		if ( ! empty( $args['asset_field_types'] ) ) {
-			$asset_field_types = $this->convert_image_types_to_enums( $args['asset_field_types'] );
+			$allowed_types     = [ AssetFieldType::MARKETING_IMAGE, AssetFieldType::SQUARE_MARKETING_IMAGE, AssetFieldType::PORTRAIT_MARKETING_IMAGE ];
+			$asset_field_types = $this->convert_types_to_enums( $args['asset_field_types'], $allowed_types );
 		}
 
 		$request_data = [
@@ -187,12 +189,13 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	}
 
 	/**
-	 * Convert text asset field types from lowercase strings to enum numbers.
+	 * Convert asset field types from lowercase strings to enum numbers.
 	 *
-	 * @param array $types Array of lowercase type strings (headline, long_headline, description).
+	 * @param array $types Array of lowercase type strings.
+	 * @param array $allowed_types Optional. Array of AssetFieldType constants to filter by.
 	 * @return array Array of enum numbers.
 	 */
-	protected function convert_text_types_to_enums( array $types ): array {
+	protected function convert_types_to_enums( array $types, array $allowed_types = [] ): array {
 		$enums = [];
 		foreach ( $types as $type ) {
 			if ( ! isset( self::TYPE_MAPPING[ $type ] ) ) {
@@ -200,33 +203,13 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 			}
 
 			$internal_type = self::TYPE_MAPPING[ $type ];
-			// Only include text types.
-			if ( in_array( $internal_type, [ AssetFieldType::HEADLINE, AssetFieldType::LONG_HEADLINE, AssetFieldType::DESCRIPTION ], true ) ) {
-				$enums[] = AssetFieldType::number( $internal_type );
-			}
-		}
 
-		return $enums;
-	}
-
-	/**
-	 * Convert image asset field types from lowercase strings to enum numbers.
-	 *
-	 * @param array $types Array of lowercase type strings (marketing_image, square_marketing_image, portrait_marketing_image).
-	 * @return array Array of enum numbers.
-	 */
-	protected function convert_image_types_to_enums( array $types ): array {
-		$enums = [];
-		foreach ( $types as $type ) {
-			if ( ! isset( self::TYPE_MAPPING[ $type ] ) ) {
+			// Filter by allowed types if specified.
+			if ( ! empty( $allowed_types ) && ! in_array( $internal_type, $allowed_types, true ) ) {
 				continue;
 			}
 
-			$internal_type = self::TYPE_MAPPING[ $type ];
-			// Only include image types.
-			if ( in_array( $internal_type, [ AssetFieldType::MARKETING_IMAGE, AssetFieldType::SQUARE_MARKETING_IMAGE, AssetFieldType::PORTRAIT_MARKETING_IMAGE ], true ) ) {
-				$enums[] = AssetFieldType::number( $internal_type );
-			}
+			$enums[] = AssetFieldType::number( $internal_type );
 		}
 
 		return $enums;
