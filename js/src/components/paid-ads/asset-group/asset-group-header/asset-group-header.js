@@ -23,7 +23,11 @@ import GenAICard from '../../gen-ai-card';
  */
 export default function AssetGroupHeader() {
 	const { adapter } = useAdaptiveFormContext();
-	const showTip = adapter.hasImportedAssets;
+	const {
+		hasImportedAssets,
+		hasAISuggestedTextAssets,
+		hasAISuggestedMediaAssets,
+	} = adapter;
 
 	return (
 		<Section
@@ -79,7 +83,7 @@ export default function AssetGroupHeader() {
 									}
 								/>
 							</FlexItem>
-							{ showTip && (
+							{ hasImportedAssets && (
 								<FlexItem>
 									<Tip>
 										{ __(
@@ -92,9 +96,11 @@ export default function AssetGroupHeader() {
 						</Flex>
 					</FlexItem>
 
-					<FlexItem>
-						<GenAICard />
-					</FlexItem>
+					{ hasAISuggestedTextAssets && hasAISuggestedMediaAssets && (
+						<FlexItem>
+							<GenAICard />
+						</FlexItem>
+					) }
 				</Flex>
 			</div>
 		</Section>

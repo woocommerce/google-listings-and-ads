@@ -16,6 +16,7 @@ import useAdsCurrency from '~/hooks/useAdsCurrency';
 import useBudgetRecommendation from '~/hooks/useBudgetRecommendation';
 import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
+import { useAppDispatch } from '~/data';
 import { FILTER_BUDGET_RECOMMENDATIONS } from '~/utils/tracks';
 import round from '~/utils/round';
 
@@ -40,6 +41,18 @@ const emptyAssetGroup = {
 	[ ASSET_FORM_KEY.DISPLAY_URL_PATH ]: [],
 	[ ASSET_FORM_KEY.YOUTUBE_VIDEO ]: [],
 };
+
+const REQUIRED_TEXT_ASSET_KEYS = [
+	ASSET_FORM_KEY.LONG_HEADLINE,
+	ASSET_FORM_KEY.HEADLINE,
+	ASSET_FORM_KEY.DESCRIPTION,
+];
+
+const REQUIRED_MEDIA_ASSET_KEYS = [
+	ASSET_FORM_KEY.MARKETING_IMAGE,
+	ASSET_FORM_KEY.SQUARE_MARKETING_IMAGE,
+	ASSET_FORM_KEY.PORTRAIT_MARKETING_IMAGE,
+];
 
 /**
  * Converts the asset entity group data to the assets form values.
@@ -143,6 +156,30 @@ function resolveInitialCampaign(
 	return injectDailyBudget( values, budgetRecommendation );
 }
 
+function hasValidAIGeneratedAssets( assetKeys, data ) {
+	if ( ! data || typeof data !== 'object' ) {
+		return false;
+	}
+
+	// Ensure object isn't empty
+	if ( Object.keys( data ).length === 0 ) {
+		return false;
+	}
+
+	// Ensure required keys exist + contain at least 1 non-empty string
+	return assetKeys.every( ( key ) => {
+		const value = data[ key ];
+
+		return (
+			Array.isArray( value ) &&
+			value.length > 0 &&
+			value.some(
+				( item ) => typeof item === 'string' && item.trim().length > 0
+			)
+		);
+	} );
+}
+
 /**
  * Renders a form based on AdaptiveForm for managing campaign and assets.
  *
@@ -158,12 +195,19 @@ export default function CampaignAssetsForm( {
 	countryCodes,
 	...adaptiveFormProps
 } ) {
+	const { fetchGenAIMediaAssets, fetchGenAITextAssets } = useAppDispatch();
+	const [ isFetchingGenAIAssets, setIsFetchingGenAIAssets ] =
+		useState( false );
 	const initialAssetGroup = useMemo( () => {
 		return convertAssetEntityGroupToFormValues( assetEntityGroup );
 	}, [ assetEntityGroup ] );
 
 	const [ baseAssetGroup, setBaseAssetGroup ] = useState( initialAssetGroup );
 	const [ hasImportedAssets, setHasImportedAssets ] = useState( false );
+	const [ hasAISuggestedTextAssets, setHasAISuggestedTextAssets ] =
+		useState( false );
+	const [ hasAISuggestedMediaAssets, setHasAISuggestedMediaAssets ] =
+		useState( false );
 	const { formatAmount } = useAdsCurrency();
 	const { data: budgetRecommendationData, hasResolved } =
 		useBudgetRecommendation( countryCodes );
@@ -234,7 +278,36 @@ export default function CampaignAssetsForm( {
 
 				setHasImportedAssets( hasNonEmptyAssets );
 				setBaseAssetGroup( nextAssetGroup );
+				setHasAISuggestedTextAssets( false );
+				setHasAISuggestedMediaAssets( false );
 				formContext.adapter.hideValidation();
+			},
+			isFetchingGenAIAssets,
+			hasAISuggestedTextAssets,
+			hasAISuggestedMediaAssets,
+			async fetchGenAIAssets() {
+				try {
+					setIsFetchingGenAIAssets( true );
+					const { data: textAssetsData } =
+						await fetchGenAITextAssets( finalUrl );
+					const { data: mediaAssetsData } =
+						await fetchGenAIMediaAssets( finalUrl );
+
+					const hasSuggestedTextAssets = hasValidAIGeneratedAssets(
+						REQUIRED_TEXT_ASSET_KEYS,
+						textAssetsData
+					);
+
+					const hasSuggestedMediaAssets = hasValidAIGeneratedAssets(
+						REQUIRED_MEDIA_ASSET_KEYS,
+						mediaAssetsData
+					);
+
+					setHasAISuggestedTextAssets( hasSuggestedTextAssets );
+					setHasAISuggestedMediaAssets( hasSuggestedMediaAssets );
+				} finally {
+					setIsFetchingGenAIAssets( false );
+				}
 			},
 		};
 	};

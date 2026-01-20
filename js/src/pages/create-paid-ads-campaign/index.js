@@ -152,16 +152,21 @@ const CreatePaidAdsCampaign = () => {
 										'google-listings-and-ads'
 									) }
 									context={ eventContext }
-									continueButton={ ( formContext ) => (
-										<ContinueButton
-											formProps={ formContext }
-											onClick={ () => {
-												handleContinueClick(
-													STEP.ASSET_GROUP
-												);
-											} }
-										/>
-									) }
+									continueButton={ ( formContext ) => {
+										const { adapter } = formContext;
+
+										return (
+											<ContinueButton
+												formProps={ formContext }
+												onClick={ () => {
+													adapter.fetchGenAIAssets();
+													handleContinueClick(
+														STEP.ASSET_GROUP
+													);
+												} }
+											/>
+										);
+									} }
 								/>
 							),
 							onClick: handleStepperClick,
