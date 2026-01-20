@@ -6,7 +6,12 @@ import { expect, test } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import { clearOnboardedMerchant, setOnboardedMerchant } from '../../utils/api';
+import {
+	clearCompletedAdsSetup,
+	clearOnboardedMerchant,
+	setOnboardedMerchant,
+	setCompletedAdsSetup,
+} from '../../utils/api';
 import DashboardPage from '../../utils/pages/dashboard';
 import SetupAdsAccountsPage from '../../utils/pages/ads-onboarding/setup-ads-accounts';
 import SetupBudgetPage from '../../utils/pages/ads-onboarding/setup-budget';
@@ -498,6 +503,91 @@ test.describe( 'Set up Ads account', () => {
 					name: 'Got It',
 				} )
 				.click();
+
+			await expect( page.getByRole( 'dialog' ) ).not.toBeVisible();
+		} );
+	} );
+
+	test.describe( 'Create campaign after ads setup is completed', async () => {
+		test.beforeAll( async () => {
+			await setCompletedAdsSetup();
+			await dashboardPage.mockAdsAccountConnected();
+			await dashboardPage.fulfillAdsCampaignsRequest( [
+				{
+					id: 111111111,
+					name: 'Test Campaign',
+					status: 'enabled',
+					type: 'performance_max',
+					amount: 1,
+					country: 'US',
+					targeted_locations: [ 'US' ],
+				},
+			] );
+			await dashboardPage.fulfillAssetsSuggestions( {
+				logo: [],
+				business_name: 'test-business-entity-01',
+				square_marketing_image: [ 'https://placehold.co/600x600.png' ],
+				marketing_image: [ 'https://placehold.co/1200x628.png' ],
+				portrait_marketing_image: [
+					'https://placehold.co/600x750.png',
+					'https://placehold.co/600x750.png',
+				],
+				call_to_action_selection: 'contact_us',
+				final_url: 'https://example.com',
+				youtube_video: [],
+				display_url_path: [ 'test', 'path' ],
+				headline: [
+					'Sample Headline One',
+					'Sample Headline Two',
+					'Sample Headline Three',
+				],
+				description: [
+					'This is a primary test description for the asset.',
+					'This is a secondary test description for the asset.',
+				],
+				long_headline: [
+					'This is a sample long headline for testing purposes',
+				],
+			} );
+			await page.addInitScript( () => {
+				// Ensure global exists and set the flag as early as possible.
+				window.glaData = window.glaData || {};
+				window.glaData.adsSetupComplete = true;
+			} );
+			await dashboardPage.goto();
+			await page.reload( { waitUntil: LOAD_STATE.DOM_CONTENT_LOADED } );
+		} );
+
+		test.afterAll( async () => {
+			await clearCompletedAdsSetup();
+		} );
+
+		test( 'Heading should be "Create your campaign"', async () => {
+			await dashboardPage.addPaidCampaignButton.click();
+			await expect(
+				page.getByRole( 'heading', {
+					level: 1,
+					name: 'Create your campaign',
+				} )
+			).toBeVisible();
+		} );
+
+		test( 'Next step should be "Optimize your campaign"', async () => {
+			await page.getByRole( 'button', { name: 'Continue' } ).click();
+			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+
+			await expect(
+				page.getByRole( 'heading', {
+					level: 1,
+					name: 'Optimize your campaign',
+				} )
+			).toBeVisible();
+
+			// Get Final URL card having class `gla-final-url-card`
+			const finalUrlCard = page.locator( '.gla-final-url-card' );
+
+			// Card should contain the link with url `https://example.com`
+			await expect( finalUrlCard ).toContainText( 'https://example.com' );
 		} );
 	} );
 } );

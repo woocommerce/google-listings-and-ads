@@ -1111,4 +1111,13 @@ export default class MockRequests {
 			[ 'GET' ]
 		);
 	}
+
+	async fulfillAssetsSuggestions( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/assets\/suggestions\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
 }
