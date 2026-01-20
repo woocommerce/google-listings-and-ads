@@ -80,15 +80,14 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 
 		$final_url = $args['final_url'] ?? $this->get_site_url();
 
-		// Set default types if not provided.
-		$types = $args['asset_field_types'] ?? [];
-		if ( empty( $types ) ) {
-			$types = [ 'headline', 'long_headline', 'description' ];
+		// Validate that asset field types are provided.
+		if ( empty( $args['asset_field_types'] ) ) {
+			throw new Exception( __( 'Asset field types are required for text generation.', 'google-listings-and-ads' ) );
 		}
 
 		// Convert asset field types from lowercase strings to enum numbers.
 		$allowed_types     = [ AssetFieldType::HEADLINE, AssetFieldType::LONG_HEADLINE, AssetFieldType::DESCRIPTION ];
-		$asset_field_types = $this->convert_types_to_enums( $types, $allowed_types );
+		$asset_field_types = $this->convert_types_to_enums( $args['asset_field_types'], $allowed_types );
 
 		$request = new GenerateTextRequest(
 			[
