@@ -64,7 +64,12 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 
 		$this->generate_text_assets_mock( $expected_text_assets );
 
-		$result = $this->service->generate_text( [] );
+		$result = $this->service->generate_text(
+			[
+				'final_url'         => self::TEST_SITE_URL,
+				'asset_field_types' => [ 'headline', 'long_headline', 'description' ],
+			]
+		);
 
 		$this->assertEquals( $expected_text_assets, $result );
 	}
@@ -80,7 +85,16 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 
 		$this->generate_text_assets_mock( $expected_text_assets );
 
-		$result = $this->service->generate_text( [ 'final_url' => $final_url ] );
+		$result = $this->service->generate_text(
+			[
+				'final_url'         => $final_url,
+				'asset_field_types' => [
+					'headline',
+					'long_headline',
+					'description',
+				],
+			]
+		);
 
 		$this->assertEquals( $expected_text_assets, $result );
 	}
@@ -108,7 +122,11 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'Unable to generate text assets' );
 
-		$this->service->generate_text( [] );
+		$this->service->generate_text(
+			[
+				'asset_field_types' => [ 'headline' ],
+			]
+		);
 		$this->assertEquals( 1, did_action( 'woocommerce_gla_ads_client_exception' ) );
 	}
 
@@ -119,6 +137,13 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 		$this->expectExceptionMessage( 'Ads account ID is required' );
 
 		$this->service->generate_text( [] );
+	}
+
+	public function test_generate_text_no_types_provided() {
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Asset field types are required for text generation' );
+
+		$this->service->generate_text( [ 'final_url' => 'https://example.com' ] );
 	}
 
 	public function test_generate_images_with_defaults() {
