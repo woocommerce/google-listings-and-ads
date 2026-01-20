@@ -95,7 +95,7 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 
 		$this->generate_text_assets_mock( $expected_text_assets );
 
-		$result = $this->service->generate_text( [ 'asset_field_types' => [ 'HEADLINE' ] ] );
+		$result = $this->service->generate_text( [ 'asset_field_types' => [ 'headline' ] ] );
 
 		$this->assertEquals( $expected_text_assets, $result );
 	}
@@ -170,7 +170,7 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 
 		$this->generate_image_assets_mock( $expected_image_assets );
 
-		$result = $this->service->generate_images( [ 'asset_field_types' => [ 'MARKETING_IMAGE' ] ] );
+		$result = $this->service->generate_images( [ 'asset_field_types' => [ 'marketing_image' ] ] );
 
 		$this->assertEquals( $expected_image_assets, $result );
 	}
