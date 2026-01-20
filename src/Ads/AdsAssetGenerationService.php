@@ -38,17 +38,17 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	protected $client;
 
 	/**
-	 * Mapping from uppercase input strings to AssetFieldType constants.
+	 * Mapping from lowercase input strings to AssetFieldType constants.
 	 *
 	 * @var array
 	 */
 	protected const TYPE_MAPPING = [
-		'HEADLINE'                 => AssetFieldType::HEADLINE,
-		'LONG_HEADLINE'            => AssetFieldType::LONG_HEADLINE,
-		'DESCRIPTION'              => AssetFieldType::DESCRIPTION,
-		'MARKETING_IMAGE'          => AssetFieldType::MARKETING_IMAGE,
-		'SQUARE_MARKETING_IMAGE'   => AssetFieldType::SQUARE_MARKETING_IMAGE,
-		'PORTRAIT_MARKETING_IMAGE' => AssetFieldType::PORTRAIT_MARKETING_IMAGE,
+		'headline'                 => AssetFieldType::HEADLINE,
+		'long_headline'            => AssetFieldType::LONG_HEADLINE,
+		'description'              => AssetFieldType::DESCRIPTION,
+		'marketing_image'          => AssetFieldType::MARKETING_IMAGE,
+		'square_marketing_image'   => AssetFieldType::SQUARE_MARKETING_IMAGE,
+		'portrait_marketing_image' => AssetFieldType::PORTRAIT_MARKETING_IMAGE,
 	];
 
 	/**
@@ -67,7 +67,7 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	 *     Optional. Arguments for generating text assets.
 	 *
 	 *     @type string $final_url        The final URL - defaults to the Site URL.
-	 *     @type array  $asset_field_types Can be one or more of: HEADLINE, LONG_HEADLINE, DESCRIPTION.
+	 *     @type array  $asset_field_types Can be one or more of: headline, long_headline, description.
 	 * }
 	 * @return array Array of generated text objects with 'text' and 'type' keys.
 	 * @throws Exception If the text assets can't be generated.
@@ -80,8 +80,14 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 
 		$final_url = $args['final_url'] ?? $this->get_site_url();
 
-		// Convert asset field types from uppercase strings to enum numbers.
-		$asset_field_types = $this->convert_text_types_to_enums( $args['asset_field_types'] ?? [] );
+		// Set default types if not provided.
+		$types = $args['asset_field_types'] ?? [];
+		if ( empty( $types ) ) {
+			$types = [ 'headline', 'long_headline', 'description' ];
+		}
+
+		// Convert asset field types from lowercase strings to enum numbers.
+		$asset_field_types = $this->convert_text_types_to_enums( $types );
 
 		$request = new GenerateTextRequest(
 			[
@@ -120,7 +126,7 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	 *     Optional. Arguments for generating image assets.
 	 *
 	 *     @type string $final_url        The final URL - defaults to the Site URL.
-	 *     @type array  $asset_field_types Can be one or more of: MARKETING_IMAGE, SQUARE_MARKETING_IMAGE, PORTRAIT_MARKETING_IMAGE.
+	 *     @type array  $asset_field_types Can be one or more of: marketing_image, square_marketing_image, portrait_marketing_image.
 	 * }
 	 * @return array Array of generated image objects with 'temporary_image_url' and 'type' keys.
 	 * @throws Exception If the image assets can't be generated.
@@ -133,7 +139,7 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 
 		$final_url = $args['final_url'] ?? $this->get_site_url();
 
-		// Convert asset field types from uppercase strings to enum numbers (if provided).
+		// Convert asset field types from lowercase strings to enum numbers (if provided).
 		$asset_field_types = [];
 		if ( ! empty( $args['asset_field_types'] ) ) {
 			$asset_field_types = $this->convert_image_types_to_enums( $args['asset_field_types'] );
@@ -181,21 +187,12 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	}
 
 	/**
-	 * Convert text asset field types from uppercase strings to enum numbers.
+	 * Convert text asset field types from lowercase strings to enum numbers.
 	 *
-	 * @param array $types Array of uppercase type strings (HEADLINE, LONG_HEADLINE, DESCRIPTION).
-	 * @return array Array of enum numbers. Defaults to all text types if empty.
+	 * @param array $types Array of lowercase type strings (headline, long_headline, description).
+	 * @return array Array of enum numbers.
 	 */
 	protected function convert_text_types_to_enums( array $types ): array {
-		if ( empty( $types ) ) {
-			// Default to all text types.
-			return [
-				AssetFieldType::number( AssetFieldType::HEADLINE ),
-				AssetFieldType::number( AssetFieldType::LONG_HEADLINE ),
-				AssetFieldType::number( AssetFieldType::DESCRIPTION ),
-			];
-		}
-
 		$enums = [];
 		foreach ( $types as $type ) {
 			if ( ! isset( self::TYPE_MAPPING[ $type ] ) ) {
@@ -213,9 +210,9 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	}
 
 	/**
-	 * Convert image asset field types from uppercase strings to enum numbers.
+	 * Convert image asset field types from lowercase strings to enum numbers.
 	 *
-	 * @param array $types Array of uppercase type strings (MARKETING_IMAGE, SQUARE_MARKETING_IMAGE, PORTRAIT_MARKETING_IMAGE).
+	 * @param array $types Array of lowercase type strings (marketing_image, square_marketing_image, portrait_marketing_image).
 	 * @return array Array of enum numbers.
 	 */
 	protected function convert_image_types_to_enums( array $types ): array {
