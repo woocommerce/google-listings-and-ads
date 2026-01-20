@@ -64,9 +64,12 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 
 		$this->generate_text_assets_mock( $expected_text_assets );
 
-		$result = $this->service->generate_text( [
-			'asset_field_types' => [ 'headline', 'long_headline', 'description' ],
-		] );
+		$result = $this->service->generate_text(
+			[
+				'final_url'         => self::TEST_SITE_URL,
+				'asset_field_types' => [ 'headline', 'long_headline', 'description' ],
+			]
+		);
 
 		$this->assertEquals( $expected_text_assets, $result );
 	}
@@ -82,10 +85,16 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 
 		$this->generate_text_assets_mock( $expected_text_assets );
 
-		$result = $this->service->generate_text( [
-			'final_url'         => $final_url,
-			'asset_field_types' => [ 'headline', 'long_headline', 'description' ],
-		] );
+		$result = $this->service->generate_text(
+			[
+				'final_url'         => $final_url,
+				'asset_field_types' => [
+					'headline',
+					'long_headline',
+					'description',
+				],
+			]
+		);
 
 		$this->assertEquals( $expected_text_assets, $result );
 	}
@@ -113,9 +122,11 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'Unable to generate text assets' );
 
-		$this->service->generate_text( [
-			'asset_field_types' => [ 'headline' ],
-		] );
+		$this->service->generate_text(
+			[
+				'asset_field_types' => [ 'headline' ],
+			]
+		);
 		$this->assertEquals( 1, did_action( 'woocommerce_gla_ads_client_exception' ) );
 	}
 
