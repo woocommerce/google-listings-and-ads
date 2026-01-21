@@ -240,6 +240,43 @@ export default function CampaignAssetsForm( {
 		const assetGroupErrors = validateAssetGroup( formContext.values );
 		const finalUrl = assetEntityGroup?.[ ASSET_GROUP_KEY.FINAL_URL ];
 
+		const fetchGenAIAssets = async ( url, assetGroupValues ) => {
+			try {
+				setIsFetchingGenAIAssets( true );
+				const { data: textAssetsData } =
+					await fetchGenAITextAssets( url );
+				const { data: mediaAssetsData } =
+					await fetchGenAIMediaAssets( url );
+
+				const hasSuggestedTextAssets = hasValidAIGeneratedAssets(
+					REQUIRED_TEXT_ASSET_KEYS,
+					textAssetsData
+				);
+
+				const hasSuggestedMediaAssets = hasValidAIGeneratedAssets(
+					REQUIRED_MEDIA_ASSET_KEYS,
+					mediaAssetsData
+				);
+
+				const nextValues = {
+					...( hasSuggestedTextAssets ? textAssetsData : {} ),
+					...( hasSuggestedMediaAssets ? mediaAssetsData : {} ),
+				};
+
+				if ( Object.keys( nextValues ).length ) {
+					formContext.setValues( {
+						...assetGroupValues,
+						...nextValues,
+					} );
+				}
+
+				setHasAISuggestedTextAssets( hasSuggestedTextAssets );
+				setHasAISuggestedMediaAssets( hasSuggestedMediaAssets );
+			} finally {
+				setIsFetchingGenAIAssets( false );
+			}
+		};
+
 		return {
 			countryCodes,
 			budgetRecommendation: selectedBudgetRecommendation,
@@ -280,35 +317,20 @@ export default function CampaignAssetsForm( {
 				setBaseAssetGroup( nextAssetGroup );
 				setHasAISuggestedTextAssets( false );
 				setHasAISuggestedMediaAssets( false );
+
+				if ( nextAssetGroup.final_url ) {
+					fetchGenAIAssets(
+						nextAssetGroup.final_url,
+						updatedContextValues
+					);
+				}
+
 				formContext.adapter.hideValidation();
 			},
 			isFetchingGenAIAssets,
 			hasAISuggestedTextAssets,
 			hasAISuggestedMediaAssets,
-			async fetchGenAIAssets() {
-				try {
-					setIsFetchingGenAIAssets( true );
-					const { data: textAssetsData } =
-						await fetchGenAITextAssets( finalUrl );
-					const { data: mediaAssetsData } =
-						await fetchGenAIMediaAssets( finalUrl );
-
-					const hasSuggestedTextAssets = hasValidAIGeneratedAssets(
-						REQUIRED_TEXT_ASSET_KEYS,
-						textAssetsData
-					);
-
-					const hasSuggestedMediaAssets = hasValidAIGeneratedAssets(
-						REQUIRED_MEDIA_ASSET_KEYS,
-						mediaAssetsData
-					);
-
-					setHasAISuggestedTextAssets( hasSuggestedTextAssets );
-					setHasAISuggestedMediaAssets( hasSuggestedMediaAssets );
-				} finally {
-					setIsFetchingGenAIAssets( false );
-				}
-			},
+			fetchGenAIAssets,
 		};
 	};
 
