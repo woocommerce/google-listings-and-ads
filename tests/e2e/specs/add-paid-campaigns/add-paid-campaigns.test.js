@@ -668,10 +668,6 @@ test.describe( 'Add paid campaign', () => {
 						} );
 
 						test.describe( 'Success', () => {
-							test.beforeEach( async () => {
-								createCampaignPage.mockGenerateTextAssetsSuccess();
-							} );
-
 							test( 'Clicking generate headline fills empty headline inputs', async () => {
 								const headlineInputsValues =
 									await createCampaignPage.getHeadlineInputsValues();
@@ -748,10 +744,6 @@ test.describe( 'Add paid campaign', () => {
 						} );
 
 						test.describe( 'Success', () => {
-							test.beforeEach( async () => {
-								createCampaignPage.mockGenerateTextAssetsSuccess();
-							} );
-
 							test( 'Clicking generate long headline fills empty long headline inputs', async () => {
 								const longHeadlineInputsValues =
 									await createCampaignPage.getLongHeadlineInputsValues();
@@ -827,10 +819,6 @@ test.describe( 'Add paid campaign', () => {
 						} );
 
 						test.describe( 'Success', () => {
-							test.beforeEach( async () => {
-								createCampaignPage.mockGenerateTextAssetsSuccess();
-							} );
-
 							test( 'Clicking generate description fills empty description inputs', async () => {
 								const descriptionInputsValues =
 									await createCampaignPage.getDescriptionInputsValues();
@@ -886,6 +874,319 @@ test.describe( 'Add paid campaign', () => {
 								page,
 								'No texts were generated. Please try again.'
 							);
+						} );
+					} );
+				} );
+
+				test.describe( 'Image Assets', () => {
+					test.describe( 'Landscape images', () => {
+						test.describe( 'Visibility', () => {
+							test( 'Generate landscape images button is visible', async () => {
+								const generateLandscapeImagesButton =
+									createCampaignPage.getGenerateLandscapeImagesButton();
+								await expect(
+									generateLandscapeImagesButton
+								).toBeVisible();
+							} );
+
+							test( 'There is only one image loaded for the campaign', async () => {
+								const campaignImages =
+									createCampaignPage.getCampaignLandscapeImageItems();
+								await expect( campaignImages ).toHaveCount( 1 );
+							} );
+						} );
+
+						test.describe( 'Generate action', () => {
+							test.beforeEach( async () => {
+								createCampaignPage.mockGenerateImageAssetsSuccess();
+							} );
+
+							test( 'Clicking generate landscape images sends the correct POST request', async () => {
+								const generateRequest =
+									createCampaignPage.awaitForGenerateImageRequest(
+										'https://woo.com/shop/',
+										[ 'marketing_image' ]
+									);
+
+								const generateLandscapeImagesButton =
+									createCampaignPage.getGenerateLandscapeImagesButton();
+								await generateLandscapeImagesButton.click();
+								await generateRequest;
+							} );
+						} );
+
+						test.describe( 'Success', () => {
+							test( 'Image picker is displayed', async () => {
+								const imagePicker =
+									createCampaignPage.getLandscapeImagesSectionImagePicker();
+								await expect( imagePicker ).toBeVisible();
+							} );
+
+							test( 'Image picker renders generated images', async () => {
+								const generatedImages =
+									createCampaignPage.getLandscapeGeneratedImages();
+								await expect( generatedImages ).toHaveCount(
+									4
+								);
+							} );
+						} );
+
+						test.describe( 'No generated assets', () => {
+							test.beforeEach( async () => {
+								createCampaignPage.mockEmptyGenerateImageAssets();
+							} );
+
+							test( 'Hides the image picker if there are no generated images', async () => {
+								const generateLandscapeImagesButton =
+									createCampaignPage.getGenerateLandscapeImagesButton();
+								await generateLandscapeImagesButton.click();
+
+								const imagePicker =
+									createCampaignPage.getLandscapeImagesSectionImagePicker();
+								await expect( imagePicker ).not.toBeVisible();
+							} );
+						} );
+					} );
+
+					test.describe( 'Image Picker', () => {
+						test.beforeEach( async () => {
+							createCampaignPage.mockGenerateImageAssetsSuccess();
+						} );
+
+						test( '"Add selected images" button is disabled if no image is selected', async () => {
+							const generateLandscapeImagesButton =
+								createCampaignPage.getGenerateLandscapeImagesButton();
+							await generateLandscapeImagesButton.click();
+
+							const addSelectedImagesButton =
+								createCampaignPage.getLandscapeImagePickerAddSelectedImagesButton();
+							await expect(
+								addSelectedImagesButton
+							).toBeDisabled();
+						} );
+
+						test( 'Clicking an image enables the "Add selected images" button', async () => {
+							const generatedImages =
+								createCampaignPage.getLandscapeGeneratedImages();
+							generatedImages.first().click();
+
+							const addSelectedImagesButton =
+								createCampaignPage.getLandscapeImagePickerAddSelectedImagesButton();
+							await expect(
+								addSelectedImagesButton
+							).toBeEnabled();
+						} );
+
+						test( 'Clicking the "Add selected images" button adds the selected images to the campaign and remove them from the image picker ', async () => {
+							let generatedImages =
+								createCampaignPage.getLandscapeGeneratedImages();
+							const firstGeneratedImageUrl = await generatedImages
+								.first()
+								.locator( 'img' )
+								.getAttribute( 'src' );
+							const addSelectedImagesButton =
+								createCampaignPage.getLandscapeImagePickerAddSelectedImagesButton();
+							await addSelectedImagesButton.click();
+
+							generatedImages =
+								createCampaignPage.getLandscapeGeneratedImages();
+							await expect( generatedImages ).toHaveCount( 3 );
+
+							const campaignImages =
+								createCampaignPage.getCampaignLandscapeImageItems();
+							const campaignLastImageUrl = await campaignImages
+								.last()
+								.locator( 'img' )
+								.getAttribute( 'src' );
+							expect( campaignLastImageUrl ).toEqual(
+								firstGeneratedImageUrl
+							);
+							await expect( campaignImages ).toHaveCount( 2 );
+						} );
+
+						test( 'Adding all generated images hides the image picker', async () => {
+							const generatedImages =
+								createCampaignPage.getLandscapeGeneratedImages();
+							await generatedImages.nth( 0 ).click();
+							await generatedImages.nth( 1 ).click();
+							await generatedImages.nth( 2 ).click();
+
+							const addSelectedImagesButton =
+								createCampaignPage.getLandscapeImagePickerAddSelectedImagesButton();
+							await addSelectedImagesButton.click();
+
+							const imagePicker =
+								createCampaignPage.getLandscapeImagesSectionImagePicker();
+							await expect( imagePicker ).not.toBeVisible();
+
+							const campaignImages =
+								createCampaignPage.getCampaignLandscapeImageItems();
+							await expect( campaignImages ).toHaveCount( 5 );
+						} );
+
+						test( 'Removing an image from the campaign shows it back in the image picker', async () => {
+							const campaignImageItems =
+								createCampaignPage.getCampaignLandscapeImageItems();
+							const lastCampaignImageItem =
+								campaignImageItems.last();
+							await lastCampaignImageItem.hover();
+							const lastCampaignImageUrl =
+								await lastCampaignImageItem
+									.locator( 'img' )
+									.getAttribute( 'src' );
+
+							const removeButton = lastCampaignImageItem.locator(
+								'.gla-media-selector__remove-medium-button'
+							);
+							await removeButton.click();
+
+							const imagePicker =
+								createCampaignPage.getLandscapeImagesSectionImagePicker();
+							await expect( imagePicker ).toBeVisible();
+
+							const generatedImages =
+								createCampaignPage.getLandscapeGeneratedImages();
+							const firstGeneratedImageUrl = await generatedImages
+								.first()
+								.locator( 'img' )
+								.getAttribute( 'src' );
+							expect( firstGeneratedImageUrl ).toEqual(
+								lastCampaignImageUrl
+							);
+						} );
+					} );
+				} );
+
+				test.describe( 'Square images', () => {
+					test.describe( 'Visibility', () => {
+						test( 'Generate square images button is visible', async () => {
+							const generateSquareImagesButton =
+								createCampaignPage.getGenerateSquareImagesButton();
+							await expect(
+								generateSquareImagesButton
+							).toBeVisible();
+						} );
+
+						test( 'There is only one image loaded for the campaign', async () => {
+							const campaignImages =
+								createCampaignPage.getCampaignSquareImageItems();
+							await expect( campaignImages ).toHaveCount( 1 );
+						} );
+					} );
+
+					test.describe( 'Generate action', () => {
+						test.beforeEach( async () => {
+							createCampaignPage.mockGenerateImageAssetsSuccess();
+						} );
+
+						test( 'Clicking generate square images sends the correct POST request', async () => {
+							const generateRequest =
+								createCampaignPage.awaitForGenerateImageRequest(
+									'https://woo.com/shop/',
+									[ 'square_marketing_image' ]
+								);
+
+							const generateSquareImagesButton =
+								createCampaignPage.getGenerateSquareImagesButton();
+							await generateSquareImagesButton.click();
+							await generateRequest;
+						} );
+					} );
+
+					test.describe( 'Success', () => {
+						test( 'Image picker is displayed', async () => {
+							const imagePicker =
+								createCampaignPage.getSquareImagesSectionImagePicker();
+							await expect( imagePicker ).toBeVisible();
+						} );
+
+						test( 'Image picker renders generated images', async () => {
+							const generatedImages =
+								createCampaignPage.getSquareGeneratedImages();
+							await expect( generatedImages ).toHaveCount( 3 );
+						} );
+					} );
+
+					test.describe( 'No generated assets', () => {
+						test.beforeEach( async () => {
+							createCampaignPage.mockEmptyGenerateImageAssets();
+						} );
+
+						test( 'Hides the image picker if there are no generated images', async () => {
+							const generateSquareImagesButton =
+								createCampaignPage.getGenerateSquareImagesButton();
+							await generateSquareImagesButton.click();
+
+							const imagePicker =
+								createCampaignPage.getSquareImagesSectionImagePicker();
+							await expect( imagePicker ).not.toBeVisible();
+						} );
+					} );
+				} );
+
+				test.describe( 'Portrait images', () => {
+					test.describe( 'Visibility', () => {
+						test( 'Generate portrait images button is visible', async () => {
+							const generatePortraitImagesButton =
+								createCampaignPage.getGeneratePortraitImagesButton();
+							await expect(
+								generatePortraitImagesButton
+							).toBeVisible();
+						} );
+
+						test( 'There are no images loaded for the campaign', async () => {
+							const campaignImages =
+								createCampaignPage.getCampaignPortraitImageItems();
+							await expect( campaignImages ).toHaveCount( 0 );
+						} );
+					} );
+
+					test.describe( 'Generate action', () => {
+						test.beforeEach( async () => {
+							createCampaignPage.mockGenerateImageAssetsSuccess();
+						} );
+
+						test( 'Clicking generate portrait images sends the correct POST request', async () => {
+							const generateRequest =
+								createCampaignPage.awaitForGenerateImageRequest(
+									'https://woo.com/shop/',
+									[ 'portrait_marketing_image' ]
+								);
+
+							const generatePortraitImagesButton =
+								createCampaignPage.getGeneratePortraitImagesButton();
+							await generatePortraitImagesButton.click();
+							await generateRequest;
+						} );
+					} );
+
+					test.describe( 'Success', () => {
+						test( 'Image picker is displayed', async () => {
+							const imagePicker =
+								createCampaignPage.getPortraitImagesSectionImagePicker();
+							await expect( imagePicker ).toBeVisible();
+						} );
+
+						test( 'Image picker renders generated images', async () => {
+							const generatedImages =
+								createCampaignPage.getPortraitGeneratedImages();
+							await expect( generatedImages ).toHaveCount( 2 );
+						} );
+					} );
+
+					test.describe( 'No generated assets', () => {
+						test.beforeEach( async () => {
+							createCampaignPage.mockEmptyGenerateImageAssets();
+						} );
+
+						test( 'Hides the image picker if there are no generated images', async () => {
+							const generatePortraitImagesButton =
+								createCampaignPage.getGeneratePortraitImagesButton();
+							await generatePortraitImagesButton.click();
+
+							const imagePicker =
+								createCampaignPage.getPortraitImagesSectionImagePicker();
+							await expect( imagePicker ).not.toBeVisible();
 						} );
 					} );
 				} );

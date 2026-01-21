@@ -107,6 +107,7 @@ const AssetGroupImagesSection = ( {
 									initialExpanded={ isSelectedFinalUrl }
 								>
 									<ImagesSelector
+										assetKey={ spec.key }
 										initialImageUrls={ initialImageUrls }
 										maxNumberOfImages={ spec.getMax(
 											values
@@ -116,6 +117,9 @@ const AssetGroupImagesSection = ( {
 										) }
 										imageConfig={ spec.imageConfig }
 										onChange={ imageProps.onChange }
+										generateButtonText={
+											spec.generateButtonText
+										}
 									>
 										{ renderErrors( spec.key ) }
 									</ImagesSelector>
