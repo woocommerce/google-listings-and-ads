@@ -833,6 +833,29 @@ test.describe( 'Add paid campaign', () => {
 						} );
 					} );
 
+					test.describe( 'AI Icon', () => {
+						test( 'is visible next to generated text assets and not visible if changed', async () => {
+							const descriptionInputs =
+								createCampaignPage.getDescriptionInputs();
+							const lastDescriptionInput =
+								descriptionInputs.last();
+
+							// Move one level up
+							const row = lastDescriptionInput.locator( '..' );
+							const aiIcon = row.locator(
+								'.gla-texts-editor__ai-icon'
+							);
+
+							await expect( aiIcon ).toHaveCount( 1 );
+
+							await lastDescriptionInput.fill(
+								'Custom description text'
+							);
+
+							await expect( aiIcon ).toHaveCount( 0 );
+						} );
+					} );
+
 					test.describe( 'Error', () => {
 						test.beforeEach( async () => {
 							createCampaignPage.mockEmptyGenerateTextAssets();
