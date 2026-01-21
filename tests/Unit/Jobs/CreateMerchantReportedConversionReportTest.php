@@ -219,4 +219,89 @@ class CreateMerchantReportedConversionReportTest extends UnitTest {
 			$this->job->get_name()
 		);
 	}
+
+	public function test_process_items_logs_error_on_exception() {
+		$order_ids = [ 100 ];
+
+		// Set up empty export state.
+		$this->options->method( 'get' )
+			->with( OptionsInterface::YOUTUBE_EXPORT_FILES, [] )
+			->willReturn( [] );
+
+		// Make writer throw an exception when creating file.
+		$this->writer->method( 'create_file' )
+			->willThrowException( new \Exception( 'Failed to create CSV file: Permission denied' ) );
+
+		// Track that do_action was called with the error.
+		$error_logged = false;
+		add_action(
+			'woocommerce_gla_error',
+			function ( $message, $method ) use ( &$error_logged ) {
+				$error_logged = true;
+				$this->assertStringContainsString( 'YouTube merchant conversion report generation failed', $message );
+				$this->assertStringContainsString( self::TEST_DATE, $message );
+				$this->assertStringContainsString( 'Permission denied', $message );
+				$this->assertEquals( 'Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CreateMerchantReportedConversionReport::process_items', $method );
+			},
+			10,
+			2
+		);
+
+		// Call process_items through reflection since it's protected.
+		$method = new \ReflectionMethod( CreateMerchantReportedConversionReport::class, 'process_items' );
+		$method->setAccessible( true );
+
+		// Expect exception to be re-thrown after logging.
+		$this->expectException( \Exception::class );
+		$this->expectExceptionMessage( 'Failed to create CSV file: Permission denied' );
+
+		try {
+			$method->invoke( $this->job, $order_ids );
+		} finally {
+			// Verify error was logged.
+			$this->assertTrue( $error_logged, 'Error should be logged via do_action' );
+			remove_all_actions( 'woocommerce_gla_error' );
+		}
+	}
+
+	public function test_process_items_logs_error_when_options_update_fails() {
+		$order_ids = [ 100 ];
+
+		// Make options->get work initially.
+		$this->options->method( 'get' )
+			->with( OptionsInterface::YOUTUBE_EXPORT_FILES, [] )
+			->willReturn( [] );
+
+		// Make create_file succeed but options->update throw exception.
+		$this->writer->method( 'create_file' )
+			->willReturn( '/path/to/report.csv' );
+
+		$this->options->method( 'update' )
+			->willThrowException( new \Exception( 'Failed to update options in database' ) );
+
+		// Track that error was logged.
+		$error_logged = false;
+		add_action(
+			'woocommerce_gla_error',
+			function ( $message ) use ( &$error_logged ) {
+				$error_logged = true;
+				$this->assertStringContainsString( 'YouTube merchant conversion report generation failed', $message );
+				$this->assertStringContainsString( 'Failed to update options in database', $message );
+			},
+			10,
+			2
+		);
+
+		$method = new \ReflectionMethod( CreateMerchantReportedConversionReport::class, 'process_items' );
+		$method->setAccessible( true );
+
+		$this->expectException( \Exception::class );
+
+		try {
+			$method->invoke( $this->job, $order_ids );
+		} finally {
+			$this->assertTrue( $error_logged, 'Options update error should be logged' );
+			remove_all_actions( 'woocommerce_gla_error' );
+		}
+	}
 }
