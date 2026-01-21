@@ -341,6 +341,186 @@ export default class CreateCampaignPage extends MockRequests {
 	}
 
 	/**
+	 * Get landscape images section.
+	 *
+	 * @return {import('@playwright/test').Locator} Get landscape images section.
+	 */
+	getLandscapeImagesSection() {
+		return this.page
+			.locator(
+				'.gla-asset-field:has(:where(.gla-asset-field__heading):has-text("Landscape images"))'
+			)
+			.first();
+	}
+
+	/**
+	 * Get generate landscape images button.
+	 *
+	 * @return {import('@playwright/test').Locator} Get generate landscape images button.
+	 */
+	getGenerateLandscapeImagesButton() {
+		return this.page.getByRole( 'button', {
+			name: 'Generate landscape images',
+		} );
+	}
+
+	/**
+	 * Get landscape images section image picker.
+	 *
+	 * @return {import('@playwright/test').Locator} Get landscape images section image picker.
+	 */
+	getLandscapeImagesSectionImagePicker() {
+		const landscapeImagesSection = this.getLandscapeImagesSection();
+		return landscapeImagesSection.locator( '.gla-gen-ai-image-picker' );
+	}
+
+	/**
+	 * Get landscape generated images.
+	 *
+	 * @return {import('@playwright/test').Locator} Get landscape generated images.
+	 */
+	getLandscapeGeneratedImages() {
+		const landscapeImagesSection = this.getLandscapeImagesSection();
+		return landscapeImagesSection.locator(
+			'.gla-gen-ai-image-picker__medium-button'
+		);
+	}
+
+	/**
+	 * Get landscape image picker add selected images button.
+	 *
+	 * @return {import('@playwright/test').Locator} Get landscape image picker add selected images button.
+	 */
+	getLandscapeImagePickerAddSelectedImagesButton() {
+		const landscapeImagesSection = this.getLandscapeImagesSection();
+		return landscapeImagesSection.getByRole( 'button', {
+			name: 'Add selected images',
+		} );
+	}
+
+	/**
+	 * Get landscape campaign images.
+	 *
+	 * @return {import('@playwright/test').Locator} Get landscape campaign images.
+	 */
+	getCampaignLandscapeImageItems() {
+		const landscapeImagesSection = this.getLandscapeImagesSection();
+		return landscapeImagesSection.locator( '.gla-media-selector__item' );
+	}
+
+	/**
+	 * Get square images section.
+	 *
+	 * @return {import('@playwright/test').Locator} Get square images section.
+	 */
+	getSquareImagesSection() {
+		return this.page
+			.locator(
+				'.gla-asset-field:has(:where(.gla-asset-field__heading):has-text("Square images"))'
+			)
+			.first();
+	}
+
+	/**
+	 * Get square campaign images.
+	 *
+	 * @return {import('@playwright/test').Locator} Get square campaign images.
+	 */
+	getCampaignSquareImageItems() {
+		const squareImagesSection = this.getSquareImagesSection();
+		return squareImagesSection.locator( '.gla-media-selector__item' );
+	}
+
+	/**
+	 * Get square images section image picker.
+	 *
+	 * @return {import('@playwright/test').Locator} Get square images section image picker.
+	 */
+	getSquareImagesSectionImagePicker() {
+		const squareImagesSection = this.getSquareImagesSection();
+		return squareImagesSection.locator( '.gla-gen-ai-image-picker' );
+	}
+
+	/**
+	 * Get generate square images button.
+	 *
+	 * @return {import('@playwright/test').Locator} Get generate square images button.
+	 */
+	getGenerateSquareImagesButton() {
+		return this.page.getByRole( 'button', {
+			name: 'Generate square images',
+		} );
+	}
+
+	/**
+	 * Get square generated images.
+	 *
+	 * @return {import('@playwright/test').Locator} Get square generated images.
+	 */
+	getSquareGeneratedImages() {
+		const squareImagesSection = this.getSquareImagesSection();
+		return squareImagesSection.locator(
+			'.gla-gen-ai-image-picker__medium-button'
+		);
+	}
+
+	/**
+	 * Get portrait section.
+	 *
+	 * @return {import('@playwright/test').Locator} Get portrait images section.
+	 */
+	getPortraitImagesSection() {
+		return this.page
+			.locator(
+				'.gla-asset-field:has(:where(.gla-asset-field__heading):has-text("Portrait images"))'
+			)
+			.first();
+	}
+
+	/**
+	 * Get generate portrait images button.
+	 *
+	 * @return {import('@playwright/test').Locator} Get generate portrait images button.
+	 */
+	getGeneratePortraitImagesButton() {
+		return this.page.getByRole( 'button', {
+			name: 'Generate portrait images',
+		} );
+	}
+
+	/**
+	 * Get portrait campaign images.
+	 *
+	 * @return {import('@playwright/test').Locator} Get portrait campaign images.
+	 */
+	getCampaignPortraitImageItems() {
+		const portraitImagesSection = this.getPortraitImagesSection();
+		return portraitImagesSection.locator( '.gla-media-selector__item' );
+	}
+
+	/**
+	 * Get portrait images section image picker.
+	 *
+	 * @return {import('@playwright/test').Locator} Get portrait images section image picker.
+	 */
+	getPortraitImagesSectionImagePicker() {
+		const portraitImagesSection = this.getPortraitImagesSection();
+		return portraitImagesSection.locator( '.gla-gen-ai-image-picker' );
+	}
+
+	/**
+	 * Get portrait generated images.
+	 *
+	 * @return {import('@playwright/test').Locator} Get portrait generated images.
+	 */
+	getPortraitGeneratedImages() {
+		const portraitImagesSection = this.getPortraitImagesSection();
+		return portraitImagesSection.locator(
+			'.gla-gen-ai-image-picker__medium-button'
+		);
+	}
+
+	/**
 	 * Select URL option.
 	 *
 	 * @return {Promise<void>}
@@ -521,6 +701,102 @@ export default class CreateCampaignPage extends MockRequests {
 		await this.fulfillGenerateTextAssetsRequest( {
 			final_url: 'https://woo.com/shop/',
 			items: [],
+		} );
+	}
+
+	/**
+	 * Mock generate media assets success response.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockGenerateImageAssetsSuccess() {
+		await this.fulfillGenerateImageAssetsRequest( {
+			final_url: 'https://woo.com/shop/',
+			items: [
+				{
+					temporary_image_url:
+						'https://placehold.co/400x225?text=Marketing+Image+1',
+					type: 'marketing_image',
+				},
+				{
+					temporary_image_url:
+						'https://placehold.co/400x225?text=Marketing+Image+2',
+					type: 'marketing_image',
+				},
+				{
+					temporary_image_url:
+						'https://placehold.co/400x225?text=Marketing+Image+3',
+					type: 'marketing_image',
+				},
+				{
+					temporary_image_url:
+						'https://placehold.co/400x225?text=Marketing+Image+4',
+					type: 'marketing_image',
+				},
+				{
+					temporary_image_url:
+						'https://placehold.co/200x200?text=Square+Marketing+Image+1',
+					type: 'square_marketing_image',
+				},
+				{
+					temporary_image_url:
+						'https://placehold.co/200x200?text=Square+Marketing+Image+2',
+					type: 'square_marketing_image',
+				},
+				{
+					temporary_image_url:
+						'https://placehold.co/200x200?text=Square+Marketing+Image+3',
+					type: 'square_marketing_image',
+				},
+				{
+					temporary_image_url:
+						'https://placehold.co/200x300?text=Portrait+Marketing+Image+1',
+					type: 'portrait_marketing_image',
+				},
+				{
+					temporary_image_url:
+						'https://placehold.co/200x300?text=Portrait+Marketing+Image+2',
+					type: 'portrait_marketing_image',
+				},
+			],
+		} );
+	}
+
+	/**
+	 * Mock generate image assets empty response.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockEmptyGenerateImageAssets() {
+		await this.fulfillGenerateImageAssetsRequest( {
+			final_url: 'https://woo.com/shop/',
+			items: [],
+		} );
+	}
+
+	/**
+	 * Await for the generate image assets request.
+	 *
+	 * @param {string} finalUrl The final URL.
+	 * @param {Array} types The requested asset types.
+	 * @return {Promise<Request>} The request.
+	 */
+	async awaitForGenerateImageRequest( finalUrl, types ) {
+		return this.page.waitForRequest( ( request ) => {
+			if (
+				! request.url().includes( '/gla/ads/assets/generate-images' ) ||
+				request.method() !== 'POST'
+			) {
+				return false;
+			}
+
+			const payload = request.postDataJSON();
+
+			return (
+				payload.final_url === finalUrl &&
+				Array.isArray( payload.types ) &&
+				types.every( ( type ) => payload.types.includes( type ) )
+			);
 		} );
 	}
 }

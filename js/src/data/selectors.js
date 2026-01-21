@@ -503,17 +503,17 @@ export const getAdsRecommendations = ( state, types, campaign_id = null ) => {
  * @param {Object} state - The Redux state object containing GenAI assets data.
  * @param {string} url - The URL associated with the GenAI assets.
  * @param {'marketing_image'|'square_marketing_image'|'portrait_marketing_image'|undefined} [assetType] - The type of media asset to retrieve.
- * @return {Object|null} The media assets for the specified URL and type, or null if not found.
+ * @return {Array<string>} The media assets for the specified URL and type, or an empty array if not found.
  */
 export const getGenAIMediaAssets = ( state, url, assetType ) => {
 	const mediaAssets = state.gen_ai_assets?.[ url ]?.media;
 
 	if ( ! url || ! mediaAssets ) {
-		return null;
+		return [];
 	}
 
 	if ( assetType ) {
-		return mediaAssets[ assetType ] ?? null;
+		return mediaAssets[ assetType ] ?? [];
 	}
 
 	return mediaAssets;
@@ -525,17 +525,17 @@ export const getGenAIMediaAssets = ( state, url, assetType ) => {
  * @param {Object} state - The Redux state object containing GenAI assets data.
  * @param {string} url - The URL associated with the GenAI assets.
  * @param {'headline'|'long_headline'|'description'|undefined} [assetType] - The type of text asset to retrieve.
- * @return {Object|null} The text assets for the specified URL and type, or null if not found.
+ * @return {Array<string>} The text assets for the specified URL and type, or an empty array if not found.
  */
 export const getGenAITextAssets = ( state, url, assetType ) => {
 	const textAssets = state.gen_ai_assets?.[ url ]?.text;
 
 	if ( ! url || ! textAssets ) {
-		return null;
+		return [];
 	}
 
 	if ( assetType ) {
-		return textAssets[ assetType ] ?? null;
+		return textAssets[ assetType ] ?? [];
 	}
 
 	return textAssets;
