@@ -4,7 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
-import { useState, useRef, useEffect } from '@wordpress/element';
+import { useState, useRef, useEffect, useCallback } from '@wordpress/element';
 import { Spinner } from '@woocommerce/components';
 
 /**
@@ -15,6 +15,8 @@ import AppButton from '~/components/app-button';
 import SearchableSelectControl from '~/components/searchable-select-control';
 import { API_NAMESPACE } from '~/data/constants';
 import './assets-loader.scss';
+
+let HAS_LOADED_HOMEPAGE_ASSETS = false;
 
 /**
  * @typedef {import('~/data/types.js').SuggestedAssets} SuggestedAssets
@@ -105,24 +107,34 @@ export default function AssetsLoader( { onAssetsLoaded } ) {
 	const [ fetching, setFetching ] = useState( false );
 	const { createNotice } = useDispatchCoreNotices();
 
-	const loadSuggestedAssets = async ( { id, type } ) => {
-		setFetching( true );
-		try {
-			const assets = await fetchSuggestedAssets( id, type );
-			onAssetsLoaded( assets );
-		} catch ( error ) {
-			setFetching( false );
-			createNotice(
-				'error',
-				__( 'Unable to load assets data.', 'google-listings-and-ads' )
-			);
-		}
-	};
+	const loadSuggestedAssets = useCallback(
+		async ( { id, type } ) => {
+			setFetching( true );
+			try {
+				const assets = await fetchSuggestedAssets( id, type );
+				onAssetsLoaded( assets );
+			} catch ( error ) {
+				setFetching( false );
+				createNotice(
+					'error',
+					__(
+						'Unable to load assets data.',
+						'google-listings-and-ads'
+					)
+				);
+			}
+		},
+		[ onAssetsLoaded, createNotice ]
+	);
 
 	useEffect( () => {
-		loadSuggestedAssets( { id: -1, type: 'homepage' } );
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [] );
+		if ( HAS_LOADED_HOMEPAGE_ASSETS ) {
+			return;
+		}
+
+		HAS_LOADED_HOMEPAGE_ASSETS = true;
+		loadSuggestedAssets( { id: 0, type: 'homepage' } );
+	}, [ loadSuggestedAssets ] );
 
 	// To have the searching state and keep the entered search value, this handler needs to
 	// be called immediately after keying values. Therefore, it also needs to implement the
