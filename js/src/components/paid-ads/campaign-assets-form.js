@@ -260,7 +260,6 @@ export default function CampaignAssetsForm( {
 
 				const nextValues = {
 					...( hasSuggestedTextAssets ? textAssetsData : {} ),
-					...( hasSuggestedMediaAssets ? mediaAssetsData : {} ),
 				};
 
 				if ( Object.keys( nextValues ).length ) {

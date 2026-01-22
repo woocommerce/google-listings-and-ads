@@ -625,7 +625,7 @@ export default class CreateCampaignPage extends MockRequests {
 			items: [
 				// Headlines
 				{
-					text: 'Shop the Latest Deals',
+					text: 'Latest Deals',
 					type: 'headline',
 				},
 				{
