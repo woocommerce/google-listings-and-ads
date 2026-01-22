@@ -32,19 +32,27 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
+		// Mock the site URL filter to return TEST_SITE_URL.
+		add_filter(
+			'woocommerce_gla_site_url',
+			function () {
+				return self::TEST_SITE_URL;
+			}
+		);
+
 		$this->service    = $this->createMock( AdsAssetGenerationService::class );
 		$this->controller = new AssetGenerationController( $this->server, $this->service );
 		$this->controller->register();
 	}
 
 	public function test_generate_text_with_defaults() {
-		// Service expects lowercase types.
+		// Service expects empty array when no types provided (service handles defaults).
 		$this->service->expects( $this->once() )
 			->method( 'generate_text' )
 			->with(
 				[
 					'final_url'         => self::TEST_SITE_URL,
-					'asset_field_types' => [ 'headline', 'long_headline', 'description' ],
+					'asset_field_types' => [],
 				]
 			)
 			->willReturn(
@@ -87,7 +95,7 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 			->with(
 				[
 					'final_url'         => 'https://custom-url.com',
-					'asset_field_types' => [ 'headline', 'long_headline', 'description' ],
+					'asset_field_types' => [],
 				]
 			)
 			->willReturn(

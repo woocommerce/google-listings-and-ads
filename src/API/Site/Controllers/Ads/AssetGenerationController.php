@@ -80,12 +80,14 @@ class AssetGenerationController extends BaseController {
 			'final_url' => [
 				'description'       => __( 'The final URL for asset generation', 'google-listings-and-ads' ),
 				'type'              => 'string',
+				'default'           => '',
 				'sanitize_callback' => 'esc_url_raw',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'types'     => [
 				'description'       => __( 'Asset types to generate', 'google-listings-and-ads' ),
 				'type'              => 'array',
+				'default'           => [],
 				'items'             => [
 					'type' => 'string',
 					'enum' => [
@@ -112,18 +114,21 @@ class AssetGenerationController extends BaseController {
 			'final_url' => [
 				'description'       => __( 'The final URL for asset generation', 'google-listings-and-ads' ),
 				'type'              => 'string',
+				'default'           => '',
 				'sanitize_callback' => 'esc_url_raw',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'types'     => [
 				'description'       => __( 'Asset types to generate', 'google-listings-and-ads' ),
 				'type'              => 'array',
+				'default'           => [],
 				'items'             => [
 					'type' => 'string',
 					'enum' => [
 						AssetFieldType::MARKETING_IMAGE,
 						AssetFieldType::SQUARE_MARKETING_IMAGE,
 						AssetFieldType::PORTRAIT_MARKETING_IMAGE,
+						AssetFieldType::TALL_PORTRAIT_MARKETING_IMAGE,
 					],
 				],
 				'sanitize_callback' => function ( $types ) {
@@ -143,7 +148,7 @@ class AssetGenerationController extends BaseController {
 		return function ( Request $request ) {
 			try {
 				$final_url = $request->get_param( 'final_url' ) ?: $this->get_site_url();
-				$types     = $request->get_param( 'types' ) ?: [ 'headline', 'long_headline', 'description' ];
+				$types     = $request->get_param( 'types' ) ?: [];
 
 				// Call service with lowercase types.
 				$items = $this->service->generate_text(
