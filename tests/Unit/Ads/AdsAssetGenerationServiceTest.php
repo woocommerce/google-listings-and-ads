@@ -131,7 +131,10 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 	}
 
 	public function test_generate_text_no_ads_id() {
-		$this->options->method( 'get_ads_id' )->willReturn( null );
+		// Create a new options mock that returns 0 for get_ads_id
+		$options = $this->createMock( OptionsInterface::class );
+		$options->method( 'get_ads_id' )->willReturn( 0 );
+		$this->service->set_options_object( $options );
 
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'Ads account ID is required' );
@@ -139,11 +142,27 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 		$this->service->generate_text( [] );
 	}
 
-	public function test_generate_text_no_types_provided() {
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Asset field types are required for text generation' );
+	public function test_generate_text_uses_defaults_when_no_types_provided() {
+		$expected_text_assets = [
+			[
+				'text' => 'Default headline',
+				'type' => 'HEADLINE',
+			],
+			[
+				'text' => 'Default long headline',
+				'type' => 'LONG_HEADLINE',
+			],
+			[
+				'text' => 'Default description',
+				'type' => 'DESCRIPTION',
+			],
+		];
 
-		$this->service->generate_text( [ 'final_url' => 'https://example.com' ] );
+		$this->generate_text_assets_mock( $expected_text_assets );
+
+		$result = $this->service->generate_text( [ 'final_url' => 'https://example.com' ] );
+
+		$this->assertEquals( $expected_text_assets, $result );
 	}
 
 	public function test_generate_images_with_defaults() {
@@ -213,7 +232,10 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 	}
 
 	public function test_generate_images_no_ads_id() {
-		$this->options->method( 'get_ads_id' )->willReturn( null );
+		// Create a new options mock that returns 0 for get_ads_id
+		$options = $this->createMock( OptionsInterface::class );
+		$options->method( 'get_ads_id' )->willReturn( 0 );
+		$this->service->set_options_object( $options );
 
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'Ads account ID is required' );

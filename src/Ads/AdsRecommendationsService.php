@@ -15,8 +15,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareInterface
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as GoogleException;
-use Google\Ads\GoogleAds\V20\Resources\Recommendation;
-use Google\Ads\GoogleAds\V20\Enums\RecommendationTypeEnum\RecommendationType;
+use Google\Ads\GoogleAds\V22\Resources\Recommendation;
+use Google\Ads\GoogleAds\V22\Enums\RecommendationTypeEnum\RecommendationType;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;

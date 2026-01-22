@@ -20,6 +20,19 @@ jest.mock( '~/components/app-tooltip', () =>
 	jest.fn( ( props ) => <div { ...props } /> ).mockName( 'AppTooltip' )
 );
 
+jest.mock( '~/components/adaptive-form', () => ( {
+	useAdaptiveFormContext: jest
+		.fn()
+		.mockName( 'useAdaptiveFormContext' )
+		.mockImplementation( () => {
+			return {
+				values: {
+					final_url: 'https://example.com',
+				},
+			};
+		} ),
+} ) );
+
 describe( 'ImagesSelector', () => {
 	const imageConfig = {
 		minWidth: 150,
