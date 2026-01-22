@@ -64,6 +64,10 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 			'Lowercase asset field name',
 			'google-listings-and-ads'
 		),
+		generateButtonText: __(
+			'Generate landscape images',
+			'google-listings-and-ads'
+		),
 	},
 	{
 		key: ASSET_FORM_KEY.SQUARE_MARKETING_IMAGE,
@@ -93,6 +97,10 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 			'Lowercase asset field name',
 			'google-listings-and-ads'
 		),
+		generateButtonText: __(
+			'Generate square images',
+			'google-listings-and-ads'
+		),
 	},
 	{
 		key: ASSET_FORM_KEY.PORTRAIT_MARKETING_IMAGE,
@@ -120,6 +128,10 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 		lowercaseName: _x(
 			'portrait',
 			'Lowercase asset field name',
+			'google-listings-and-ads'
+		),
+		generateButtonText: __(
+			'Generate portrait images',
 			'google-listings-and-ads'
 		),
 	},
@@ -238,6 +250,14 @@ const ASSET_TEXT_SPECS = [
 			'The headline is the first line of your ad and is most likely the first thing people notice, so consider including words that people may have entered in their Google search.',
 			'google-listings-and-ads'
 		),
+		generateButtonPluralText: __(
+			'Generate headlines',
+			'google-listings-and-ads'
+		),
+		generateButtonSingularText: __(
+			'Generate headline',
+			'google-listings-and-ads'
+		),
 	},
 	{
 		key: ASSET_FORM_KEY.LONG_HEADLINE,
@@ -284,6 +304,14 @@ const ASSET_TEXT_SPECS = [
 					) }
 				</div>
 			</>
+		),
+		generateButtonPluralText: __(
+			'Generate long headlines',
+			'google-listings-and-ads'
+		),
+		generateButtonSingularText: __(
+			'Generate long headline',
+			'google-listings-and-ads'
 		),
 	},
 
@@ -332,6 +360,14 @@ const ASSET_TEXT_SPECS = [
 					) }
 				</div>
 			</>
+		),
+		generateButtonPluralText: __(
+			'Generate descriptions',
+			'google-listings-and-ads'
+		),
+		generateButtonSingularText: __(
+			'Generate description',
+			'google-listings-and-ads'
 		),
 	},
 ];
