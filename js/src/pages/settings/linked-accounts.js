@@ -104,18 +104,22 @@ export default function LinkedAccounts() {
 							googleAdsAccount={ googleAdsAccount }
 							hideAccountSwitch
 						>
-							<Section.Card.Footer>
-								<AppButton
-									isDestructive
-									isLink
-									onClick={ openDisconnectAdsAccountModal }
-								>
-									{ __(
-										'Disconnect Google Ads account only',
-										'google-listings-and-ads'
-									) }
-								</AppButton>
-							</Section.Card.Footer>
+							{ hasGoogleMCConnection && (
+								<Section.Card.Footer>
+									<AppButton
+										isDestructive
+										isLink
+										onClick={
+											openDisconnectAdsAccountModal
+										}
+									>
+										{ __(
+											'Disconnect Google Ads account only',
+											'google-listings-and-ads'
+										) }
+									</AppButton>
+								</Section.Card.Footer>
+							) }
 						</ConnectedGoogleAdsAccountCard>
 					) }
 
