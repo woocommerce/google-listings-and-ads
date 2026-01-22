@@ -169,19 +169,14 @@ trait ExceptionTrait {
 	}
 
 	/**
-	 * Returns a list of detailed errors from a WCS API ClientException.
+	 * Extract errors from a WCS API response array.
 	 *
-	 * @param ClientExceptionInterface $exception Exception to check.
+	 * @param array $response WCS API response array.
 	 *
 	 * @return array
 	 */
-	protected function get_wcs_exception_errors( ClientExceptionInterface $exception ): array {
-		if ( ! $exception instanceof BadResponseException ) {
-			return [];
-		}
-
-		$response = json_decode( $exception->getResponse()->getBody()->getContents(), true );
-		$errors   = [];
+	protected function extract_wcs_errors_from_response( array $response ): array {
+		$errors = [];
 
 		// Handle nested error structure (YouTube API format)
 		if ( isset( $response['error'] ) ) {
@@ -203,6 +198,41 @@ trait ExceptionTrait {
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * Returns a list of detailed errors from a WCS API ClientException.
+	 *
+	 * @param ClientExceptionInterface $exception Exception to check.
+	 * @param array|null               $response  Optional pre-extracted response array.
+	 *
+	 * @return array
+	 */
+	protected function get_wcs_exception_errors( ClientExceptionInterface $exception, ?array $response = null ): array {
+		if ( ! $exception instanceof BadResponseException ) {
+			return [];
+		}
+
+		if ( null === $response ) {
+			$response = json_decode( $exception->getResponse()->getBody()->getContents(), true );
+		}
+
+		return $this->extract_wcs_errors_from_response( $response );
+	}
+
+	/**
+	 * Extract WCS response from a ClientException.
+	 *
+	 * @param ClientExceptionInterface $exception Exception to check.
+	 *
+	 * @return array|null
+	 */
+	protected function get_wcs_response_from_exception( ClientExceptionInterface $exception ): ?array {
+		if ( ! $exception instanceof BadResponseException ) {
+			return null;
+		}
+
+		return json_decode( $exception->getResponse()->getBody()->getContents(), true );
 	}
 
 	/**

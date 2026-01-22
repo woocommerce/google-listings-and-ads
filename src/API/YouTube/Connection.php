@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
 use Exception;
 
@@ -190,28 +191,44 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 
 			// Extract error message, with fallback
 			$message = $response['error']['message'] ??
-					$response['message'] ??
-					__( 'Unable to complete YouTube setup.', 'google-listings-and-ads' );
+				$response['message'] ??
+				__( 'Unable to complete YouTube setup.', 'google-listings-and-ads' );
 
 			throw new ExceptionWithResponseData(
 				$message,
 				$result->getStatusCode(),
 				null,
-				[ 'response' => $response ]
+				[
+					'errors'   => $this->extract_wcs_errors_from_response( $response ),
+					'response' => $response,
+				]
 			);
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
-			$errors  = $this->get_wcs_exception_errors( $e );
+			// Extract response once to avoid reading stream multiple times
+			$full_response = $this->get_wcs_response_from_exception( $e );
+
+			// Log full response for debugging (avoids truncation in exception message)
+			if ( null !== $full_response ) {
+				do_action( 'woocommerce_gla_guzzle_invalid_response', $full_response, __METHOD__ );
+			}
+
+			$errors  = $this->get_wcs_exception_errors( $e, $full_response );
 			$message = ! empty( $errors )
-			? reset( $errors )
-			: __( 'Unable to complete YouTube setup.', 'google-listings-and-ads' );
+				? reset( $errors )
+				: __( 'Unable to complete YouTube setup.', 'google-listings-and-ads' );
+
+			$response_data = [ 'errors' => $errors ];
+			if ( null !== $full_response ) {
+				$response_data['response'] = $full_response;
+			}
 
 			throw new ExceptionWithResponseData(
 				$message,
 				$e->getCode(),
 				$e,
-				[ 'errors' => $errors ]
+				$response_data
 			);
 		}
 	}

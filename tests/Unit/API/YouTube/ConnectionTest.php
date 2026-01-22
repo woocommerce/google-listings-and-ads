@@ -396,8 +396,10 @@ class ConnectionTest extends UnitTest {
 			$this->assertEquals( 403, $e->getCode() );
 			$response_data = $e->get_response_data();
 			$this->assertArrayHasKey( 'errors', $response_data );
+			$this->assertArrayHasKey( 'response', $response_data );
 			$this->assertArrayHasKey( 'CHANNEL_NOT_ELIGIBLE', $response_data['errors'] );
 			$this->assertEquals( 'The channel is not eligible for the linking program.', $response_data['errors']['CHANNEL_NOT_ELIGIBLE'] );
+			$this->assertArrayHasKey( 'error', $response_data['response'] );
 		}
 	}
 
@@ -426,6 +428,10 @@ class ConnectionTest extends UnitTest {
 			$this->fail( 'Expected ExceptionWithResponseData to be thrown' );
 		} catch ( ExceptionWithResponseData $e ) {
 			$this->assertEquals( 'Some error occurred', $e->getMessage() );
+			$response_data = $e->get_response_data();
+			$this->assertArrayHasKey( 'errors', $response_data );
+			$this->assertArrayHasKey( 'response', $response_data );
+			$this->assertEquals( 'Some error occurred', $response_data['errors']['ERROR'] );
 		}
 	}
 
@@ -450,6 +456,9 @@ class ConnectionTest extends UnitTest {
 			$this->fail( 'Expected ExceptionWithResponseData to be thrown' );
 		} catch ( ExceptionWithResponseData $e ) {
 			$this->assertEquals( 'Unable to complete YouTube setup.', $e->getMessage() );
+			$response_data = $e->get_response_data();
+			$this->assertArrayHasKey( 'errors', $response_data );
+			$this->assertArrayHasKey( 'response', $response_data );
 		}
 	}
 
@@ -490,8 +499,10 @@ class ConnectionTest extends UnitTest {
 			$this->assertEquals( 'Channel not eligible', $e->getMessage() );
 			$response_data = $e->get_response_data();
 			$this->assertArrayHasKey( 'errors', $response_data );
+			$this->assertArrayHasKey( 'response', $response_data );
 			$this->assertArrayHasKey( 'CHANNEL_NOT_ELIGIBLE', $response_data['errors'] );
 			$this->assertEquals( 'Channel not eligible', $response_data['errors']['CHANNEL_NOT_ELIGIBLE'] );
+			$this->assertArrayHasKey( 'error', $response_data['response'] );
 		}
 	}
 
