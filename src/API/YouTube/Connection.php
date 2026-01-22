@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\ExceptionTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -187,14 +188,30 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 
 			do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
 
-			$message = $response['message'] ?? __( 'Unable to complete YouTube setup.', 'google-listings-and-ads' );
-			throw new Exception( $message, $result->getStatusCode() );
+			// Extract error message, with fallback
+			$message = $response['error']['message'] ??
+					$response['message'] ??
+					__( 'Unable to complete YouTube setup.', 'google-listings-and-ads' );
+
+			throw new ExceptionWithResponseData(
+				$message,
+				$result->getStatusCode(),
+				null,
+				[ 'response' => $response ]
+			);
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
-			throw new Exception(
-				$this->client_exception_message( $e, __( 'Unable to complete YouTube setup.', 'google-listings-and-ads' ) ),
-				$e->getCode()
+			$errors  = $this->get_wcs_exception_errors( $e );
+			$message = ! empty( $errors )
+			? reset( $errors )
+			: __( 'Unable to complete YouTube setup.', 'google-listings-and-ads' );
+
+			throw new ExceptionWithResponseData(
+				$message,
+				$e->getCode(),
+				$e,
+				[ 'errors' => $errors ]
 			);
 		}
 	}

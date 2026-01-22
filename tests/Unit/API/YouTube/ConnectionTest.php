@@ -4,8 +4,11 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\YouTube;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Handler\MockHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
@@ -54,6 +57,11 @@ class ConnectionTest extends UnitTest {
 
 		$this->connection = new Connection();
 		$this->connection->set_container( $this->container );
+
+		// Mock options for third_party_link tests.
+		$options = $this->createMock( OptionsInterface::class );
+		$options->method( 'get_merchant_id' )->willReturn( 123456789 );
+		$this->connection->set_options_object( $options );
 	}
 
 	public function tearDown(): void {
@@ -324,6 +332,191 @@ class ConnectionTest extends UnitTest {
 		$this->assertEquals( 2, $results['uploaded'] );
 		$this->assertEquals( 1, $results['failed'] );
 		$this->assertCount( 1, $results['errors'] );
+	}
+
+	public function test_third_party_link_success() {
+		$response_body = wp_json_encode(
+			[
+				'status' => [
+					'linkedStatus' => 'linked',
+				],
+			]
+		);
+
+		$mock_handler = new MockHandler(
+			[
+				new Response( 200, [], $response_body ),
+			]
+		);
+		$handlers     = HandlerStack::create( $mock_handler );
+		$client       = new Client( [ 'handler' => $handlers ] );
+		$this->container->add( Client::class, $client );
+
+		$result = $this->connection->third_party_link();
+
+		$this->assertIsArray( $result );
+		$this->assertEquals( 'linked', $result['status']['linkedStatus'] );
+	}
+
+	public function test_third_party_link_extracts_nested_error_message() {
+		$response_body = wp_json_encode(
+			[
+				'error' => [
+					'code'    => 403,
+					'message' => 'The channel is not eligible for the linking program.',
+					'errors'  => [
+						[
+							'message' => 'The channel is not eligible for the linking program.',
+							'domain'  => 'youtube.thirdPartyLink',
+							'reason'  => 'CHANNEL_NOT_ELIGIBLE',
+						],
+					],
+				],
+			]
+		);
+
+		$mock_handler = new MockHandler(
+			[
+				new BadResponseException(
+					'Client error',
+					new Request( 'POST', 'https://example.com' ),
+					new Response( 403, [], $response_body )
+				),
+			]
+		);
+		$handlers     = HandlerStack::create( $mock_handler );
+		$client       = new Client( [ 'handler' => $handlers ] );
+		$this->container->add( Client::class, $client );
+
+		try {
+			$this->connection->third_party_link();
+			$this->fail( 'Expected ExceptionWithResponseData to be thrown' );
+		} catch ( ExceptionWithResponseData $e ) {
+			$this->assertEquals( 'The channel is not eligible for the linking program.', $e->getMessage() );
+			$this->assertEquals( 403, $e->getCode() );
+			$response_data = $e->get_response_data();
+			$this->assertArrayHasKey( 'errors', $response_data );
+			$this->assertArrayHasKey( 'CHANNEL_NOT_ELIGIBLE', $response_data['errors'] );
+			$this->assertEquals( 'The channel is not eligible for the linking program.', $response_data['errors']['CHANNEL_NOT_ELIGIBLE'] );
+		}
+	}
+
+	public function test_third_party_link_falls_back_to_message_field() {
+		$response_body = wp_json_encode(
+			[
+				'message' => 'Some error occurred',
+			]
+		);
+
+		$mock_handler = new MockHandler(
+			[
+				new BadResponseException(
+					'Client error',
+					new Request( 'POST', 'https://example.com' ),
+					new Response( 400, [], $response_body )
+				),
+			]
+		);
+		$handlers     = HandlerStack::create( $mock_handler );
+		$client       = new Client( [ 'handler' => $handlers ] );
+		$this->container->add( Client::class, $client );
+
+		try {
+			$this->connection->third_party_link();
+			$this->fail( 'Expected ExceptionWithResponseData to be thrown' );
+		} catch ( ExceptionWithResponseData $e ) {
+			$this->assertEquals( 'Some error occurred', $e->getMessage() );
+		}
+	}
+
+	public function test_third_party_link_uses_default_message_when_no_error_field() {
+		$response_body = wp_json_encode( [ 'status' => 'error' ] );
+
+		$mock_handler = new MockHandler(
+			[
+				new BadResponseException(
+					'Client error',
+					new Request( 'POST', 'https://example.com' ),
+					new Response( 400, [], $response_body )
+				),
+			]
+		);
+		$handlers     = HandlerStack::create( $mock_handler );
+		$client       = new Client( [ 'handler' => $handlers ] );
+		$this->container->add( Client::class, $client );
+
+		try {
+			$this->connection->third_party_link();
+			$this->fail( 'Expected ExceptionWithResponseData to be thrown' );
+		} catch ( ExceptionWithResponseData $e ) {
+			$this->assertEquals( 'Unable to complete YouTube setup.', $e->getMessage() );
+		}
+	}
+
+	public function test_third_party_link_handles_client_exception_with_wcs_errors() {
+		$error_response = wp_json_encode(
+			[
+				'error' => [
+					'code'    => 403,
+					'message' => 'Channel not eligible',
+					'errors'  => [
+						[
+							'message' => 'Channel not eligible',
+							'domain'  => 'youtube.thirdPartyLink',
+							'reason'  => 'CHANNEL_NOT_ELIGIBLE',
+						],
+					],
+				],
+			]
+		);
+
+		$mock_handler = new MockHandler(
+			[
+				new BadResponseException(
+					'Bad Request',
+					new Request( 'POST', 'https://example.com' ),
+					new Response( 403, [], $error_response )
+				),
+			]
+		);
+		$handlers     = HandlerStack::create( $mock_handler );
+		$client       = new Client( [ 'handler' => $handlers ] );
+		$this->container->add( Client::class, $client );
+
+		try {
+			$this->connection->third_party_link();
+			$this->fail( 'Expected ExceptionWithResponseData to be thrown' );
+		} catch ( ExceptionWithResponseData $e ) {
+			$this->assertEquals( 'Channel not eligible', $e->getMessage() );
+			$response_data = $e->get_response_data();
+			$this->assertArrayHasKey( 'errors', $response_data );
+			$this->assertArrayHasKey( 'CHANNEL_NOT_ELIGIBLE', $response_data['errors'] );
+			$this->assertEquals( 'Channel not eligible', $response_data['errors']['CHANNEL_NOT_ELIGIBLE'] );
+		}
+	}
+
+	public function test_third_party_link_handles_client_exception_without_wcs_errors() {
+		$mock_handler = new MockHandler(
+			[
+				new RequestException(
+					'Connection timeout',
+					new Request( 'POST', 'https://example.com' )
+				),
+			]
+		);
+		$handlers     = HandlerStack::create( $mock_handler );
+		$client       = new Client( [ 'handler' => $handlers ] );
+		$this->container->add( Client::class, $client );
+
+		try {
+			$this->connection->third_party_link();
+			$this->fail( 'Expected ExceptionWithResponseData to be thrown' );
+		} catch ( ExceptionWithResponseData $e ) {
+			$this->assertEquals( 'Unable to complete YouTube setup.', $e->getMessage() );
+			$response_data = $e->get_response_data();
+			$this->assertArrayHasKey( 'errors', $response_data );
+			$this->assertEmpty( $response_data['errors'] );
+		}
 	}
 
 	/**

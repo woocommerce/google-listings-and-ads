@@ -153,10 +153,56 @@ trait ExceptionTrait {
 	protected function client_exception_message( ClientExceptionInterface $exception, string $default_error ): string {
 		if ( $exception instanceof BadResponseException ) {
 			$response = json_decode( $exception->getResponse()->getBody()->getContents(), true );
-			$message  = $response['message'] ?? false;
-			return $message ? $default_error . ': ' . $message : $default_error;
+
+			// Try to extract error.message first (YouTube/WCS error structure)
+			if ( isset( $response['error'] ) && isset( $response['error']['message'] ) ) {
+				return $response['error']['message'];
+			}
+
+			// Fallback to response.message (some WCS endpoints use this)
+			if ( isset( $response['message'] ) ) {
+				return $response['message'];
+			}
 		}
+
 		return $default_error;
+	}
+
+	/**
+	 * Returns a list of detailed errors from a WCS API ClientException.
+	 *
+	 * @param ClientExceptionInterface $exception Exception to check.
+	 *
+	 * @return array
+	 */
+	protected function get_wcs_exception_errors( ClientExceptionInterface $exception ): array {
+		if ( ! $exception instanceof BadResponseException ) {
+			return [];
+		}
+
+		$response = json_decode( $exception->getResponse()->getBody()->getContents(), true );
+		$errors   = [];
+
+		// Handle nested error structure (YouTube API format)
+		if ( isset( $response['error'] ) ) {
+			// Add individual errors with their reasons as keys
+			if ( isset( $response['error']['errors'] ) && is_array( $response['error']['errors'] ) ) {
+				foreach ( $response['error']['errors'] as $error ) {
+					$reason            = $error['reason'] ?? 'ERROR';
+					$errors[ $reason ] = $error['message'] ?? '';
+				}
+			}
+
+			// Also include the main error message if available
+			if ( isset( $response['error']['message'] ) ) {
+				$errors['ERROR'] = $response['error']['message'];
+			}
+		} elseif ( isset( $response['message'] ) ) {
+			// Handle flat message structure (some WCS endpoints)
+			$errors['ERROR'] = $response['message'];
+		}
+
+		return $errors;
 	}
 
 	/**
