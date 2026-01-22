@@ -146,6 +146,8 @@ class AssetGenerationController extends BaseController {
 	 */
 	protected function get_generate_text_callback(): callable {
 		return function ( Request $request ) {
+			set_time_limit( 90 ); // AI text generation can take time.
+
 			try {
 				$final_url = $request->get_param( 'final_url' ) ?: $this->get_site_url();
 				$types     = $request->get_param( 'types' ) ?: [];
@@ -173,6 +175,8 @@ class AssetGenerationController extends BaseController {
 	 */
 	protected function get_generate_images_callback(): callable {
 		return function ( Request $request ) {
+			set_time_limit( 90 ); // AI image generation can take time.
+
 			try {
 				$final_url = $request->get_param( 'final_url' ) ?: $this->get_site_url();
 				$types     = $request->get_param( 'types' ) ?: [];
