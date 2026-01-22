@@ -6,13 +6,13 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import Section from '~/components/section';
-import { glaData } from '~/constants';
 
 export default function LinkedAccountsSectionWrapper( props ) {
-	const { serviceBasedMerchant } = glaData;
+	const { hasGoogleMCConnection } = useGoogleMCAccount();
 
-	const description = serviceBasedMerchant
+	const description = hasGoogleMCConnection
 		? __(
 				'A WordPress.com account, Google account and Google Ads account are required to use this extension in WooCommerce.',
 				'google-listings-and-ads'
