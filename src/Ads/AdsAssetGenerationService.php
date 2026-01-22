@@ -31,11 +31,18 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	use PluginHelper;
 
 	/**
+	 * The Asset Generation Service Client.
+	 *
+	 * @var \Google\Ads\GoogleAds\V22\Services\Client\AssetGenerationServiceClient
+	 */
+	protected $client;
+
+	/**
 	 * The Google Ads Client.
 	 *
 	 * @var GoogleAdsClient
 	 */
-	protected $client;
+	protected $google_ads_client;
 
 	/**
 	 * Mapping from lowercase input strings to AssetFieldType constants.
@@ -43,12 +50,13 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	 * @var array
 	 */
 	protected const TYPE_MAPPING = [
-		'headline'                 => AssetFieldType::HEADLINE,
-		'long_headline'            => AssetFieldType::LONG_HEADLINE,
-		'description'              => AssetFieldType::DESCRIPTION,
-		'marketing_image'          => AssetFieldType::MARKETING_IMAGE,
-		'square_marketing_image'   => AssetFieldType::SQUARE_MARKETING_IMAGE,
-		'portrait_marketing_image' => AssetFieldType::PORTRAIT_MARKETING_IMAGE,
+		'headline'                      => AssetFieldType::HEADLINE,
+		'long_headline'                 => AssetFieldType::LONG_HEADLINE,
+		'description'                   => AssetFieldType::DESCRIPTION,
+		'marketing_image'               => AssetFieldType::MARKETING_IMAGE,
+		'square_marketing_image'        => AssetFieldType::SQUARE_MARKETING_IMAGE,
+		'portrait_marketing_image'      => AssetFieldType::PORTRAIT_MARKETING_IMAGE,
+		'tall_portrait_marketing_image' => AssetFieldType::TALL_PORTRAIT_MARKETING_IMAGE,
 	];
 
 	/**
@@ -57,7 +65,8 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	 * @param GoogleAdsClient $client The Google Ads client.
 	 */
 	public function __construct( GoogleAdsClient $client ) {
-		$this->client = $client;
+		$this->google_ads_client = $client;
+		$this->client            = $client->getAssetGenerationServiceClient();
 	}
 
 	/**
@@ -80,9 +89,9 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 
 		$final_url = $args['final_url'] ?? $this->get_site_url();
 
-		// Validate that asset field types are provided.
+		// Default to all text types if not specified.
 		if ( empty( $args['asset_field_types'] ) ) {
-			throw new Exception( __( 'Asset field types are required for text generation.', 'google-listings-and-ads' ) );
+			$args['asset_field_types'] = [ 'headline', 'long_headline', 'description' ];
 		}
 
 		// Convert asset field types from lowercase strings to enum numbers.
@@ -99,11 +108,10 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 		);
 
 		try {
-			$service_client = $this->client->getAssetGenerationServiceClient();
-			$response       = $service_client->generateTextAssets( $request );
+			$response = $this->client->generateText( $request );
 
 			$results = [];
-			foreach ( $response->getTextAssets() as $text_asset ) {
+			foreach ( $response->getGeneratedText() as $text_asset ) {
 				$asset_field_type_number = $text_asset->getAssetFieldType();
 				$asset_field_type_label  = AssetFieldType::label( $asset_field_type_number );
 				$results[]               = [
@@ -126,7 +134,7 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	 *     Optional. Arguments for generating image assets.
 	 *
 	 *     @type string $final_url        The final URL - defaults to the Site URL.
-	 *     @type array  $asset_field_types Can be one or more of: marketing_image, square_marketing_image, portrait_marketing_image.
+	 *     @type array  $asset_field_types Can be one or more of: marketing_image, square_marketing_image, portrait_marketing_image, tall_portrait_marketing_image.
 	 * }
 	 * @return array Array of generated image objects with 'temporary_image_url' and 'type' keys.
 	 * @throws Exception If the image assets can't be generated.
@@ -142,22 +150,19 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 		// Convert asset field types from lowercase strings to enum numbers (if provided).
 		$asset_field_types = [];
 		if ( ! empty( $args['asset_field_types'] ) ) {
-			$allowed_types     = [ AssetFieldType::MARKETING_IMAGE, AssetFieldType::SQUARE_MARKETING_IMAGE, AssetFieldType::PORTRAIT_MARKETING_IMAGE ];
+			$allowed_types     = [ AssetFieldType::MARKETING_IMAGE, AssetFieldType::SQUARE_MARKETING_IMAGE, AssetFieldType::PORTRAIT_MARKETING_IMAGE, AssetFieldType::TALL_PORTRAIT_MARKETING_IMAGE ];
 			$asset_field_types = $this->convert_types_to_enums( $args['asset_field_types'], $allowed_types );
 		}
 
 		$request_data = [
 			'customer_id'              => $customer_id,
-			'generation_type'          => 'final_url_generation',
 			'advertising_channel_type' => AdvertisingChannelType::PERFORMANCE_MAX,
+			'final_url_generation'     => new FinalUrlImageGenerationInput(
+				[
+					'final_url' => $final_url,
+				]
+			),
 		];
-
-		// Add final_url_generation_input.
-		$request_data['final_url_generation_input'] = new FinalUrlImageGenerationInput(
-			[
-				'final_url' => $final_url,
-			]
-		);
 
 		// Add asset_field_types only if provided.
 		if ( ! empty( $asset_field_types ) ) {
@@ -167,15 +172,14 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 		$request = new GenerateImagesRequest( $request_data );
 
 		try {
-			$service_client = $this->client->getAssetGenerationServiceClient();
-			$response       = $service_client->generateImages( $request );
+			$response = $this->client->generateImages( $request );
 
 			$results = [];
-			foreach ( $response->getImageAssets() as $image_asset ) {
+			foreach ( $response->getGeneratedImages() as $image_asset ) {
 				$asset_field_type_number = $image_asset->getAssetFieldType();
 				$asset_field_type_label  = AssetFieldType::label( $asset_field_type_number );
 				$results[]               = [
-					'temporary_image_url' => $image_asset->getTemporaryImageUrl(),
+					'temporary_image_url' => $image_asset->getImageTemporaryUrl(),
 					'type'                => AssetFieldType::name( $asset_field_type_label ),
 				];
 			}
