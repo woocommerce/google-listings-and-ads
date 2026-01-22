@@ -29,6 +29,7 @@ import PMaxImproveAssetsBanner from '~/components/pmax-improve-assets-banner';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
 import RaiseBudgetRecommendationBanner from '~/components/raise-budget-recommendation-banner';
 import SubmissionSuccessGuide from '~/pages/product-feed/submission-success-guide';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import './index.scss';
 
 /**
@@ -36,6 +37,7 @@ import './index.scss';
  */
 const Dashboard = () => {
 	const [ isCESPromptOpen, setCESPromptOpen ] = useState( false );
+	const { hasGoogleMCConnection } = useGoogleMCAccount();
 
 	const handleCampaignCreationSuccessGuideClose = useCallback(
 		( e, specifiedAction ) => {
@@ -100,7 +102,9 @@ const Dashboard = () => {
 					<AppDateRangeFilterPicker
 						trackEventReportId={ trackEventReportId }
 					/>
-					{ enableReports && <ReportsLink /> }
+					{ enableReports && hasGoogleMCConnection && (
+						<ReportsLink />
+					) }
 				</div>
 				<div className="gla-dashboard__performance">
 					<SummarySection />
