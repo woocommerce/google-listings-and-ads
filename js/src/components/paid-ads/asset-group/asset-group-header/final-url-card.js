@@ -17,8 +17,8 @@ import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AppButton from '~/components/app-button';
 import AssetsLoader from './assets-loader';
 import { API_NAMESPACE } from '~/data/constants';
-import './final-url-card.scss';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import './final-url-card.scss';
 
 /**
  * @typedef {import('~/data/types.js').SuggestedAssets} SuggestedAssets
