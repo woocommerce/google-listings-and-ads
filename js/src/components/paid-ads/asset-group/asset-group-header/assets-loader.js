@@ -4,19 +4,16 @@
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
-import { useState, useRef, useEffect, useCallback } from '@wordpress/element';
+import { useState, useRef } from '@wordpress/element';
 import { Spinner } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import AppButton from '~/components/app-button';
 import SearchableSelectControl from '~/components/searchable-select-control';
 import { API_NAMESPACE } from '~/data/constants';
 import './assets-loader.scss';
-
-let HAS_LOADED_HOMEPAGE_ASSETS = false;
 
 /**
  * @typedef {import('~/data/types.js').SuggestedAssets} SuggestedAssets
@@ -31,12 +28,6 @@ function allowAllResults() {
 function fetchFinalUrls( search ) {
 	const endPoint = `${ API_NAMESPACE }/assets/final-url/suggestions`;
 	const query = { search };
-	return apiFetch( { path: addQueryArgs( endPoint, query ) } );
-}
-
-function fetchSuggestedAssets( id, type ) {
-	const endPoint = `${ API_NAMESPACE }/assets/suggestions`;
-	const query = { id, type };
 	return apiFetch( { path: addQueryArgs( endPoint, query ) } );
 }
 
@@ -91,11 +82,12 @@ function mapFinalUrlsToOptions( finalUrls, search ) {
  * and then loading the suggested assets.
  *
  * @param {Object} props React props.
- * @param {(suggestedAssets: SuggestedAssets) => void} props.onAssetsLoaded Callback function when the suggested assets are loaded.
+ * @param {boolean} props.isFetching Whether the assets are currently being fetched.
+ * @param {Function} props.loadSuggestedAssets Function to load suggested assets.
  *
  * @fires gla_import_assets_by_final_url_button_click
  */
-export default function AssetsLoader( { onAssetsLoaded } ) {
+export default function AssetsLoader( { isFetching, loadSuggestedAssets } ) {
 	const cacheRef = useRef( {} );
 	const latestSearchRef = useRef();
 
@@ -104,37 +96,6 @@ export default function AssetsLoader( { onAssetsLoaded } ) {
 	// Ref: https://github.com/woocommerce/woocommerce/blob/6.9.0/packages/js/components/src/select-control/index.js#L137-L141
 	const [ selectedOptions, setSelectedOptions ] = useState( [] );
 	const [ searching, setSearching ] = useState( false );
-	const [ fetching, setFetching ] = useState( false );
-	const { createNotice } = useDispatchCoreNotices();
-
-	const loadSuggestedAssets = useCallback(
-		async ( { id, type } ) => {
-			setFetching( true );
-			try {
-				const assets = await fetchSuggestedAssets( id, type );
-				onAssetsLoaded( assets );
-			} catch ( error ) {
-				setFetching( false );
-				createNotice(
-					'error',
-					__(
-						'Unable to load assets data.',
-						'google-listings-and-ads'
-					)
-				);
-			}
-		},
-		[ onAssetsLoaded, createNotice ]
-	);
-
-	useEffect( () => {
-		if ( HAS_LOADED_HOMEPAGE_ASSETS ) {
-			return;
-		}
-
-		HAS_LOADED_HOMEPAGE_ASSETS = true;
-		loadSuggestedAssets( { id: 0, type: 'homepage' } );
-	}, [ loadSuggestedAssets ] );
 
 	// To have the searching state and keep the entered search value, this handler needs to
 	// be called immediately after keying values. Therefore, it also needs to implement the
@@ -204,7 +165,7 @@ export default function AssetsLoader( { onAssetsLoaded } ) {
 				isSearchable
 				hideBeforeSearch
 				excludeSelectedOptions={ false }
-				disabled={ fetching }
+				disabled={ isFetching }
 				options={ [] } // The actual options will be provided via the callback results of `onSearch`.
 				selected={ selectedOptions }
 				onSearch={ debouncedHandleSearch }
@@ -214,12 +175,12 @@ export default function AssetsLoader( { onAssetsLoaded } ) {
 			<AppButton
 				isSecondary
 				text={
-					fetching ? '' : __( 'Select', 'google-listings-and-ads' )
+					isFetching ? '' : __( 'Select', 'google-listings-and-ads' )
 				}
 				eventName="gla_import_assets_by_final_url_button_click"
 				eventProps={ { type: finalUrl?.type } }
 				disabled={ ! finalUrl }
-				loading={ fetching }
+				loading={ isFetching }
 				onClick={ handleClick }
 			/>
 		</>

@@ -1,9 +1,11 @@
 /**
  * External dependencies
  */
+import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
+import { addQueryArgs } from '@wordpress/url';
 import classnames from 'classnames';
-import { useState } from '@wordpress/element';
+import { useCallback, useEffect, useRef, useState } from '@wordpress/element';
 import { ExternalLink } from '@wordpress/components';
 
 /**
@@ -14,7 +16,9 @@ import Section from '~/components/section';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AppButton from '~/components/app-button';
 import AssetsLoader from './assets-loader';
+import { API_NAMESPACE } from '~/data/constants';
 import './final-url-card.scss';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 
 /**
  * @typedef {import('~/data/types.js').SuggestedAssets} SuggestedAssets
@@ -25,6 +29,12 @@ import './final-url-card.scss';
  *
  * @event gla_reselect_another_final_url_button_click
  */
+
+function fetchSuggestedAssets( id, type ) {
+	const endPoint = `${ API_NAMESPACE }/assets/suggestions`;
+	const query = { id, type };
+	return apiFetch( { path: addQueryArgs( endPoint, query ) } );
+}
 
 /**
  * Renders the Card UI for managing the final URL and getting the suggested assets.
@@ -41,7 +51,10 @@ export default function FinalUrlCard( {
 	initialFinalUrl,
 	hideFooter = false,
 } ) {
+	const [ fetching, setFetching ] = useState( false );
 	const [ finalUrl, setFinalUrl ] = useState( initialFinalUrl || null );
+	const didInitialLoadRef = useRef( false );
+	const { createNotice } = useDispatchCoreNotices();
 
 	const description = finalUrl ? (
 		<ExternalLink href={ finalUrl }>{ finalUrl }</ExternalLink>
@@ -52,10 +65,13 @@ export default function FinalUrlCard( {
 		)
 	);
 
-	const handleAssetsLoaded = ( suggestedAssets ) => {
-		setFinalUrl( suggestedAssets[ ASSET_GROUP_KEY.FINAL_URL ] );
-		onAssetsChange( suggestedAssets );
-	};
+	const handleAssetsLoaded = useCallback(
+		( suggestedAssets ) => {
+			setFinalUrl( suggestedAssets[ ASSET_GROUP_KEY.FINAL_URL ] );
+			onAssetsChange( suggestedAssets );
+		},
+		[ onAssetsChange ]
+	);
 
 	const handleReselectClick = () => {
 		setFinalUrl( null );
@@ -66,6 +82,36 @@ export default function FinalUrlCard( {
 		'gla-final-url-card': true,
 		'gla-final-url-card--has-selected-url': finalUrl,
 	} );
+
+	const loadSuggestedAssets = useCallback(
+		async ( { id, type } ) => {
+			setFetching( true );
+			try {
+				const assets = await fetchSuggestedAssets( id, type );
+				handleAssetsLoaded( assets );
+			} catch ( error ) {
+				createNotice(
+					'error',
+					__(
+						'Unable to load assets data.',
+						'google-listings-and-ads'
+					)
+				);
+			} finally {
+				setFetching( false );
+			}
+		},
+		[ createNotice, handleAssetsLoaded ]
+	);
+
+	useEffect( () => {
+		if ( didInitialLoadRef.current ) {
+			return;
+		}
+
+		didInitialLoadRef.current = true;
+		loadSuggestedAssets( { id: 0, type: 'homepage' } );
+	}, [ loadSuggestedAssets ] );
 
 	return (
 		<AccountCard
@@ -86,7 +132,10 @@ export default function FinalUrlCard( {
 						onClick={ handleReselectClick }
 					/>
 				) : (
-					<AssetsLoader onAssetsLoaded={ handleAssetsLoaded } />
+					<AssetsLoader
+						isFetching={ fetching }
+						loadSuggestedAssets={ loadSuggestedAssets }
+					/>
 				) }
 			</Section.Card.Footer>
 		</AccountCard>
