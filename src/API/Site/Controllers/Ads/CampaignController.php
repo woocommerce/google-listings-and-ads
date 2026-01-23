@@ -295,6 +295,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 			'status',
 			'amount',
 			'eu_political_advertising_confirmation',
+			'brand_guidelines_enabled',
 		];
 
 		$fields = array_intersect_key( $this->get_schema_properties(), array_flip( $allowed ) );
@@ -406,6 +407,14 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 			'eu_political_advertising_confirmation' => [
 				'type'              => 'boolean',
 				'description'       => __( 'Whether the Campaign has political content as defined by Google\'s EU political content policy.', 'google-listings-and-ads' ),
+				'context'           => [ 'view', 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'required'          => false,
+				'default'           => false,
+			],
+			'brand_guidelines_enabled'              => [
+				'type'              => 'boolean',
+				'description'       => __( 'Whether Brand Guidelines are enabled for this Performance Max campaign.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => false,

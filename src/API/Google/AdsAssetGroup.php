@@ -64,6 +64,13 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	protected $asset_group_asset;
 
 	/**
+	 * The AdsCampaign class.
+	 *
+	 * @var AdsCampaign
+	 */
+	protected $campaign;
+
+	/**
 	 * List of asset group resource names.
 	 *
 	 * @var string[]
@@ -75,10 +82,12 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 *
 	 * @param GoogleAdsClient    $client
 	 * @param AdsAssetGroupAsset $asset_group_asset
+	 * @param AdsCampaign        $campaign
 	 */
-	public function __construct( GoogleAdsClient $client, AdsAssetGroupAsset $asset_group_asset ) {
+	public function __construct( GoogleAdsClient $client, AdsAssetGroupAsset $asset_group_asset, AdsCampaign $campaign ) {
 		$this->client            = $client;
 		$this->asset_group_asset = $asset_group_asset;
+		$this->campaign          = $campaign;
 	}
 
 	/**
@@ -288,6 +297,36 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Get campaign information from asset group ID.
+	 *
+	 * @param int $asset_group_id The asset group ID.
+	 *
+	 * @return array Campaign information with 'id' and 'brand_guidelines_enabled' keys.
+	 */
+	protected function get_campaign_info_by_asset_group_id( int $asset_group_id ): array {
+		try {
+			$results = ( new AdsAssetGroupQuery() )
+				->set_client( $this->client, $this->options->get_ads_id() )
+				->add_columns( [ 'campaign.id', 'campaign.brand_guidelines_enabled' ] )
+				->where( 'asset_group.id', $asset_group_id, '=' )
+				->get_results();
+
+			foreach ( $results->iterateAllElements() as $row ) {
+				$campaign = $row->getCampaign();
+				return [
+					'id'                       => $campaign->getId(),
+					'brand_guidelines_enabled' => $campaign->getBrandGuidelinesEnabled(),
+				];
+			}
+
+			return [];
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+			return [];
+		}
+	}
+
+	/**
 	 * Edit an asset group.
 	 *
 	 * @param int   $asset_group_id The asset group ID.
@@ -310,6 +349,15 @@ class AdsAssetGroup implements OptionsAwareInterface {
 			if ( ! empty( $data ) ) {
 				// If the asset group does not contain a final URL, it is required to update first the asset group with the final URL and then the assets.
 				$operations = [ $this->edit_operation( $asset_group_id, $data ), ...$operations ];
+			}
+
+			// Check if Brand Guidelines is enabled for this asset group's campaign.
+			$campaign_info = $this->get_campaign_info_by_asset_group_id( $asset_group_id );
+			if ( ! empty( $campaign_info['brand_guidelines_enabled'] ) && ! empty( $campaign_info['id'] ) ) {
+				// Get brand asset link operations from the campaign.
+				$brand_operations = $this->campaign->get_brand_asset_link_operations( $campaign_info['id'] );
+				// Prepend brand asset operations before other operations.
+				$operations = array_merge( $brand_operations, $operations );
 			}
 
 			if ( ! empty( $operations ) ) {

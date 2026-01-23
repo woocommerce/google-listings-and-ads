@@ -186,12 +186,15 @@ const EditPaidAdsCampaign = () => {
 			dailyBudget: amount,
 			hasConfirmedEuPoliticalContent:
 				eu_political_advertising_confirmation,
+			hasBrandGuidelinesEnabled:
+				brand_guidelines_enabled,
 		} = values;
 		setIsSubmit( true );
 		try {
 			await updateAdsCampaign( campaign.id, {
 				amount,
 				eu_political_advertising_confirmation,
+				brand_guidelines_enabled,
 			} );
 
 			if ( action === ACTION_SUBMIT_CAMPAIGN_AND_ASSETS ) {
@@ -238,6 +241,8 @@ const EditPaidAdsCampaign = () => {
 					currentAmount: campaign.amount,
 					hasConfirmedEuPoliticalContent:
 						campaign.eu_political_advertising_confirmation,
+					hasBrandGuidelinesEnabled:
+						campaign.brand_guidelines_enabled,
 				} }
 				countryCodes={ campaign.displayCountries }
 				assetEntityGroup={ assetEntityGroup }

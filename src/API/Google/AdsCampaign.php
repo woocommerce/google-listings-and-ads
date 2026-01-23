@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignCriterionQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignAssetQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
@@ -31,6 +32,9 @@ use Google\Ads\GoogleAds\V20\Services\MutateOperation;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 use Exception;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignAsset;
 
 /**
  * Class AdsCampaign (Performance Max Campaign)
@@ -88,6 +92,11 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	protected $campaign_label;
 
 	/**
+	 * @var AdsCampaignAsset $campaign_asset
+	 */
+	protected $campaign_asset;
+
+	/**
 	 * AdsCampaign constructor.
 	 *
 	 * @param GoogleAdsClient      $client
@@ -95,13 +104,15 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @param AdsCampaignCriterion $criterion
 	 * @param GoogleHelper         $google_helper
 	 * @param AdsCampaignLabel     $campaign_label
+	 * @param AdsCampaignAsset     $campaign_asset
 	 */
-	public function __construct( GoogleAdsClient $client, AdsCampaignBudget $budget, AdsCampaignCriterion $criterion, GoogleHelper $google_helper, AdsCampaignLabel $campaign_label ) {
+	public function __construct( GoogleAdsClient $client, AdsCampaignBudget $budget, AdsCampaignCriterion $criterion, GoogleHelper $google_helper, AdsCampaignLabel $campaign_label, AdsCampaignAsset $campaign_asset ) {
 		$this->client         = $client;
 		$this->budget         = $budget;
 		$this->criterion      = $criterion;
 		$this->google_helper  = $google_helper;
 		$this->campaign_label = $campaign_label;
+		$this->campaign_asset = $campaign_asset;
 	}
 
 	/**
@@ -308,6 +319,12 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$campaign_fields['contains_eu_political_advertising'] = EuPoliticalAdvertisingStatus::CONTAINS_EU_POLITICAL_ADVERTISING;
 			} else {
 				$campaign_fields['contains_eu_political_advertising'] = EuPoliticalAdvertisingStatus::DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING;
+			}
+
+			// Prepend brand asset link operations when Brand Guidelines are enabled.
+			if ( isset( $params['brand_guidelines_enabled'] ) && true === $params['brand_guidelines_enabled'] ) {
+				$brand_asset_operations = $this->get_brand_asset_link_operations( $campaign_id );
+				$operations             = array_merge( $brand_asset_operations, $operations );
 			}
 
 			if ( ! empty( $params['amount'] ) ) {
@@ -561,6 +578,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 
 		$data += [
 			'eu_political_advertising_confirmation' => EuPoliticalAdvertisingStatus::CONTAINS_EU_POLITICAL_ADVERTISING === $eu_political_enum ? true : false,
+			'brand_guidelines_enabled'              => $campaign->getBrandGuidelinesEnabled(),
 		];
 
 		$budget = $row->getCampaignBudget();
@@ -662,6 +680,118 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 		} catch ( ValidationException $e ) {
 			throw new Exception( __( 'Invalid campaign ID', 'google-listings-and-ads' ) );
 		}
+	}
+
+	/**
+	 * Build campaign asset link operations for Brand Guidelines.
+	 *
+	 * @param int $campaign_id Campaign ID.
+	 * @return MutateOperation[]
+	 */
+	public function get_brand_asset_link_operations( int $campaign_id ): array {
+		try {
+			// Fetch assets from the first asset group.
+			$asset_groups = $this->container->get( AdsAssetGroup::class )->get_asset_groups_by_campaign_id( $campaign_id, true );
+			if ( empty( $asset_groups ) ) {
+				return [];
+			}
+
+			// Handle both object and array for asset group
+			$first_asset_group  = $asset_groups[0];
+			$asset_group_assets = is_object( $first_asset_group )
+				? ( $first_asset_group->assets ?? [] )
+				: ( $first_asset_group['assets'] ?? [] );
+
+			$business_ids = [];
+			$logo_ids     = [];
+
+			// Convert to array if it's an object
+			if ( is_object( $asset_group_assets ) ) {
+				$asset_group_assets = (array) $asset_group_assets;
+			}
+
+			// Try both the constant value and string key for business name
+			foreach ( [ AssetFieldType::BUSINESS_NAME, 'BUSINESS_NAME' ] as $key ) {
+				if ( ! empty( $asset_group_assets[ $key ] ) ) {
+					$business_asset = $asset_group_assets[ $key ];
+					$business_id    = is_object( $business_asset ) ? ( $business_asset->id ?? null ) : ( $business_asset['id'] ?? null );
+					if ( $business_id ) {
+						$business_ids[] = $business_id;
+						break;
+					}
+				}
+			}
+
+			// Try both the constant value and string key for logo
+			foreach ( [ AssetFieldType::LOGO, 'LOGO' ] as $key ) {
+				if ( ! empty( $asset_group_assets[ $key ] ) ) {
+					$logos = $asset_group_assets[ $key ];
+					// Handle both single object/array and array of objects/arrays
+					if ( is_object( $logos ) || ( is_array( $logos ) && isset( $logos['id'] ) ) ) {
+						$logos = [ $logos ];
+					}
+					foreach ( (array) $logos as $logo ) {
+						$logo_id = is_object( $logo ) ? ( $logo->id ?? null ) : ( $logo['id'] ?? null );
+						if ( $logo_id ) {
+							$logo_ids[] = $logo_id;
+						}
+					}
+					break;
+				}
+			}
+
+			// Existing campaign assets - we'll remove old brand assets and add new ones.
+			$existing_assets = ( new AdsCampaignAssetQuery() )
+				->set_client( $this->client, $this->options->get_ads_id() )
+				->where( 'campaign.id', $campaign_id, '=' )
+				->get_results();
+
+			$operations = [];
+
+			// Only proceed if we have new assets to link
+			if ( empty( $business_ids ) && empty( $logo_ids ) ) {
+				return [];
+			}
+
+			foreach ( $existing_assets->iterateAllElements() as $row ) {
+				$asset = $row->getCampaignAsset();
+				if ( ! $asset ) {
+					continue;
+				}
+
+				$field_type = AssetFieldType::label( $asset->getFieldType() );
+
+				// Remove existing business name assets only if we have new business names
+				if ( ! empty( $business_ids ) && AssetFieldType::BUSINESS_NAME === $field_type ) {
+					$operations[] = $this->campaign_asset->create_remove_operation( $asset->getResourceName() );
+				}
+
+				// Remove existing logo/marketing image assets only if we have new logos
+				if ( ! empty( $logo_ids ) && ( AssetFieldType::LOGO === $field_type || 'MARKETING_IMAGE' === $field_type ) ) {
+					$operations[] = $this->campaign_asset->create_remove_operation( $asset->getResourceName() );
+				}
+			}
+
+			// Add new asset link operations.
+			$new_operations = $this->campaign_asset->create_link_operations( $campaign_id, $business_ids, $logo_ids );
+			$operations     = array_merge( $operations, $new_operations );
+
+			return $operations;
+		} catch ( Exception $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+			return [];
+		}
+	}
+
+	/**
+	 * Parse asset ID from resource name.
+	 *
+	 * @param string $resource_name Resource name containing ID.
+	 * @return int|null
+	 */
+	protected function parse_asset_id_from_resource_name( string $resource_name ): ?int {
+		$parts = explode( '/', $resource_name );
+		return ! empty( $parts ) ? absint( end( $parts ) ) : null;
 	}
 
 	/**
