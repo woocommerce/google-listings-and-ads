@@ -14,11 +14,16 @@ jest.mock( '~/components/adaptive-form', () => ( {
 		} ),
 } ) );
 
+jest.mock(
+	'~/components/paid-ads/asset-group/asset-group-header/final-url-card',
+	() => () => <div className="gla-final-url-card" />
+);
+
 /**
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -27,27 +32,23 @@ import AssetGroupHeader from './asset-group-header';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 
 describe( 'AssetGroupHeader', () => {
-	test( 'Component renders', async () => {
+	test( 'Component renders', () => {
 		render( <AssetGroupHeader /> );
-		await waitFor( () => {
-			expect(
-				screen.getByText( /Add additional assets/i )
-			).toBeInTheDocument();
-		} );
+		expect(
+			screen.getByText( /Add additional assets/i )
+		).toBeInTheDocument();
 	} );
 
-	test( 'Component not showing Tip if there are no imported assets', async () => {
+	test( 'Component not showing Tip if there are no imported assets', () => {
 		render( <AssetGroupHeader /> );
-		await waitFor( () => {
-			expect(
-				screen.queryByText(
-					"We've used your final URL to auto-populate some assets for you. For the best results, we recommend that you add more assets."
-				)
-			).not.toBeInTheDocument();
-		} );
+		expect(
+			screen.queryByText(
+				"We've used your final URL to auto-populate some assets for you. For the best results, we recommend that you add more assets."
+			)
+		).not.toBeInTheDocument();
 	} );
 
-	test( 'Component showing Tip if there are imported assets', async () => {
+	test( 'Component showing Tip if there are imported assets', () => {
 		useAdaptiveFormContext.mockImplementation( () => {
 			return {
 				adapter: {
@@ -59,12 +60,10 @@ describe( 'AssetGroupHeader', () => {
 			};
 		} );
 		render( <AssetGroupHeader /> );
-		await waitFor( () => {
-			expect(
-				screen.getByText(
-					"We've used your final URL to auto-populate some assets for you. For the best results, we recommend that you add more assets."
-				)
-			).toBeInTheDocument();
-		} );
+		expect(
+			screen.getByText(
+				"We've used your final URL to auto-populate some assets for you. For the best results, we recommend that you add more assets."
+			)
+		).toBeInTheDocument();
 	} );
 } );
