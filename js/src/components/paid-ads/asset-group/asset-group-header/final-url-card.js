@@ -31,9 +31,12 @@ import './final-url-card.scss';
  */
 
 function fetchSuggestedAssets( id, type ) {
-	const endPoint = `${ API_NAMESPACE }/assets/suggestions`;
-	const query = { id, type };
-	return apiFetch( { path: addQueryArgs( endPoint, query ) } );
+	const path = addQueryArgs( `${ API_NAMESPACE }/assets/suggestions`, {
+		id,
+		type,
+	} );
+
+	return apiFetch( { path } );
 }
 
 /**
