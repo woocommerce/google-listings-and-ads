@@ -73,6 +73,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'brand_guidelines_enabled'              => false,
 			],
 			[
 				'id'                                    => 5678901234,
@@ -83,6 +84,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'brand_guidelines_enabled'              => false,
 			],
 		];
 
@@ -107,6 +109,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'brand_guidelines_enabled'              => false,
 			],
 			[
 				'id'                                    => 5678901234,
@@ -117,6 +120,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'brand_guidelines_enabled'              => false,
 			],
 		];
 
@@ -130,6 +134,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'brand_guidelines_enabled'              => false,
 			],
 			[
 				'id'                                    => 5678901234,
@@ -140,6 +145,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'brand_guidelines_enabled'              => false,
 			],
 		];
 
@@ -183,6 +189,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'type'                                  => 'performance_max',
 			'country'                               => self::BASE_COUNTRY,
 			'eu_political_advertising_confirmation' => false,
+			'brand_guidelines_enabled'              => false,
 		] + array_diff_key( $campaign_data, [ 'label' => 'wc-web' ] );
 
 		$this->ads_campaign->expects( $this->once() )
@@ -225,6 +232,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'amount'                                => 20,
 			'targeted_locations'                    => [ 'US', 'GB', 'TW' ],
 			'eu_political_advertising_confirmation' => false,
+			'brand_guidelines_enabled'              => false,
 		];
 
 		$this->ads_campaign->expects( $this->once() )
@@ -264,6 +272,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'type'                                  => 'performance_max',
 			'country'                               => self::BASE_COUNTRY,
 			'eu_political_advertising_confirmation' => false,
+			'brand_guidelines_enabled'              => false,
 		] + $campaign_data;
 
 		$this->ads_campaign->expects( $this->once() )
@@ -366,6 +375,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'country'                               => 'US',
 			'targeted_locations'                    => [],
 			'eu_political_advertising_confirmation' => false,
+			'brand_guidelines_enabled'              => false,
 		];
 
 		$this->ads_campaign->expects( $this->once() )
