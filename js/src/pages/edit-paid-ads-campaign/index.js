@@ -186,8 +186,7 @@ const EditPaidAdsCampaign = () => {
 			dailyBudget: amount,
 			hasConfirmedEuPoliticalContent:
 				eu_political_advertising_confirmation,
-			hasBrandGuidelinesEnabled:
-				brand_guidelines_enabled,
+			hasBrandGuidelinesEnabled: brand_guidelines_enabled,
 		} = values;
 		setIsSubmit( true );
 		try {

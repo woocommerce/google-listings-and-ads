@@ -728,7 +728,7 @@ export function* createAdsCampaign(
 	amount,
 	countryCodes,
 	hasConfirmedEuPoliticalContent = false,
-	hasBrandGuidelinesEnabled = false,
+	hasBrandGuidelinesEnabled = false
 ) {
 	let label = 'wc-web';
 
@@ -747,8 +747,7 @@ export function* createAdsCampaign(
 				targeted_locations: countryCodes,
 				eu_political_advertising_confirmation:
 					hasConfirmedEuPoliticalContent,
-				brand_guidelines_enabled:
-					hasBrandGuidelinesEnabled,
+				brand_guidelines_enabled: hasBrandGuidelinesEnabled,
 				label,
 			},
 		} );
