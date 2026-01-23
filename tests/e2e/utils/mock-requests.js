@@ -1213,20 +1213,4 @@ export default class MockRequests {
 			[ 'POST' ]
 		);
 	}
-
-	/**
-	 * Mocks the API request for asset suggestions.
-	 *
-	 * @param {Object} payload - The mock response payload to return.
-	 * @param {number} [status=200] - The HTTP status code to return.
-	 * @return {Promise<void>} Resolves when the mock request has been fulfilled.
-	 */
-	async fulfillAssetsSuggestions( payload, status = 200 ) {
-		await this.fulfillRequest(
-			/\/wc\/gla\/assets\/suggestions\b/,
-			payload,
-			status,
-			[ 'GET' ]
-		);
-	}
 }
