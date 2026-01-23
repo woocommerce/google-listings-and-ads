@@ -82,12 +82,12 @@ function mapFinalUrlsToOptions( finalUrls, search ) {
  * and then loading the suggested assets.
  *
  * @param {Object} props React props.
- * @param {boolean} props.isFetching Whether the assets are currently being fetched.
- * @param {Function} props.loadSuggestedAssets Function to load suggested assets.
+ * @param {boolean} props.loading Whether the assets are being loaded.
+ * @param {Function} props.onSelectFinalUrl Callback when a final URL is selected.
  *
  * @fires gla_import_assets_by_final_url_button_click
  */
-export default function AssetsLoader( { isFetching, loadSuggestedAssets } ) {
+export default function AssetsLoader( { loading, onSelectFinalUrl } ) {
 	const cacheRef = useRef( {} );
 	const latestSearchRef = useRef();
 
@@ -146,7 +146,7 @@ export default function AssetsLoader( { isFetching, loadSuggestedAssets } ) {
 
 	const handleClick = async () => {
 		const { finalUrl } = selectedOptions[ 0 ];
-		loadSuggestedAssets( { id: finalUrl.id, type: finalUrl.type } );
+		onSelectFinalUrl( finalUrl );
 	};
 
 	const { finalUrl } = selectedOptions[ 0 ] || {};
@@ -165,7 +165,7 @@ export default function AssetsLoader( { isFetching, loadSuggestedAssets } ) {
 				isSearchable
 				hideBeforeSearch
 				excludeSelectedOptions={ false }
-				disabled={ isFetching }
+				disabled={ loading }
 				options={ [] } // The actual options will be provided via the callback results of `onSearch`.
 				selected={ selectedOptions }
 				onSearch={ debouncedHandleSearch }
@@ -175,12 +175,12 @@ export default function AssetsLoader( { isFetching, loadSuggestedAssets } ) {
 			<AppButton
 				isSecondary
 				text={
-					isFetching ? '' : __( 'Select', 'google-listings-and-ads' )
+					loading ? '' : __( 'Select', 'google-listings-and-ads' )
 				}
 				eventName="gla_import_assets_by_final_url_button_click"
 				eventProps={ { type: finalUrl?.type } }
 				disabled={ ! finalUrl }
-				loading={ isFetching }
+				loading={ loading }
 				onClick={ handleClick }
 			/>
 		</>

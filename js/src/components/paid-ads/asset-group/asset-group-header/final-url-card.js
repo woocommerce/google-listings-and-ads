@@ -53,7 +53,7 @@ export default function FinalUrlCard( {
 } ) {
 	const [ fetching, setFetching ] = useState( false );
 	const [ finalUrl, setFinalUrl ] = useState( initialFinalUrl || null );
-	const didInitialLoadRef = useRef( false );
+	const hasLoadedInitialHomepageAssetsRef = useRef( false );
 	const { createNotice } = useDispatchCoreNotices();
 
 	const description = finalUrl ? (
@@ -105,15 +105,26 @@ export default function FinalUrlCard( {
 	);
 
 	useEffect( () => {
-		if ( didInitialLoadRef.current ) {
+		if ( hasLoadedInitialHomepageAssetsRef.current ) {
 			return;
 		}
 
-		didInitialLoadRef.current = true;
+		hasLoadedInitialHomepageAssetsRef.current = true;
 
-		// When the type `homepage` is passed, `id` is ignore, but because of typing, we need to pass it as zero.
+		// Load homepage assets on first render by passing `id: 0` and a `type` other than `post` or `term`.
+		// `id` is a required parameter, but it is ignored when loading homepage assets.
+		// Related: https://github.com/woocommerce/google-listings-and-ads/blob/d23bdb504bce1ed8a10a4bd92608aeb5137fbe60/src/Ads/AssetSuggestionsService.php#L210-L216
 		loadSuggestedAssets( { id: 0, type: 'homepage' } );
 	}, [ loadSuggestedAssets ] );
+
+	const handleSelectFinalUrl = ( selectedFinalUrl ) => {
+		const { id, type } = selectedFinalUrl;
+
+		loadSuggestedAssets( {
+			id,
+			type,
+		} );
+	};
 
 	return (
 		<AccountCard
@@ -135,8 +146,8 @@ export default function FinalUrlCard( {
 					/>
 				) : (
 					<AssetsLoader
-						isFetching={ fetching }
-						loadSuggestedAssets={ loadSuggestedAssets }
+						loading={ fetching }
+						onSelectFinalUrl={ handleSelectFinalUrl }
 					/>
 				) }
 			</Section.Card.Footer>
