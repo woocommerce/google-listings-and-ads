@@ -37,52 +37,55 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 	const [ termsAccepted, setTermsAccepted ] = useState( false );
 	const { serviceBasedMerchant } = glaData;
 
-	const description = serviceBasedMerchant
-		? __( 'Required to sync with Google Ads.', 'google-listings-and-ads' )
-		: __(
-				'Required to sync with Google Merchant Center and Google Ads.',
-				'google-listings-and-ads'
-		  );
-
-	// Build the terms label. If serviceBasedMerchant is true, omit Merchant Center link.
-	const termsLabel = serviceBasedMerchant
-		? createInterpolateElement(
-				__(
+	const cardContent = serviceBasedMerchant
+		? {
+				description: __(
+					'Required to sync with Google Ads.',
+					'google-listings-and-ads'
+				),
+				termsMessage: __(
 					'I accept the terms and conditions of <linkAds>Google Ads</linkAds>',
 					'google-listings-and-ads'
 				),
-				{
-					linkAds: (
-						<AppDocumentationLink
-							context="setup-ads"
-							linkId="google-ads-terms-of-service"
-							href="https://support.google.com/adspolicy/answer/54818"
-						/>
-					),
-				}
-		  )
-		: createInterpolateElement(
-				__(
+		  }
+		: {
+				description: __(
+					'Required to sync with Google Merchant Center and Google Ads.',
+					'google-listings-and-ads'
+				),
+				termsMessage: __(
 					'I accept the terms and conditions of <linkMerchant>Merchant Center</linkMerchant> and <linkAds>Google Ads</linkAds>',
 					'google-listings-and-ads'
 				),
-				{
-					linkMerchant: (
-						<AppDocumentationLink
-							context="setup-mc-accounts"
-							linkId="google-mc-terms-of-service"
-							href="https://support.google.com/merchants/answer/160173"
-						/>
-					),
-					linkAds: (
-						<AppDocumentationLink
-							context="setup-ads"
-							linkId="google-ads-terms-of-service"
-							href="https://support.google.com/adspolicy/answer/54818"
-						/>
-					),
-				}
-		  );
+		  };
+
+	const linkAds = (
+		<AppDocumentationLink
+			context="setup-ads"
+			linkId="google-ads-terms-of-service"
+			href="https://support.google.com/adspolicy/answer/54818"
+		/>
+	);
+
+	const termsComponents = serviceBasedMerchant
+		? {
+				linkAds,
+		  }
+		: {
+				linkAds,
+				linkMerchant: (
+					<AppDocumentationLink
+						context="setup-mc-accounts"
+						linkId="google-mc-terms-of-service"
+						href="https://support.google.com/merchants/answer/160173"
+					/>
+				),
+		  };
+
+	const termsLabel = createInterpolateElement(
+		cardContent.termsMessage,
+		termsComponents
+	);
 
 	return (
 		<AccountCard
@@ -92,7 +95,7 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 			className="gla-google-combo-service-account-card--google"
 			description={
 				<>
-					<p>{ description }</p>
+					<p>{ cardContent.description }</p>
 					<CheckboxControl
 						label={ termsLabel }
 						checked={ termsAccepted }
