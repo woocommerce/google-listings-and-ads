@@ -521,6 +521,15 @@ export default class CreateCampaignPage extends MockRequests {
 	}
 
 	/**
+	 * Get final URL card.
+	 *
+	 * @return {import('@playwright/test').Locator} Get final URL card.
+	 */
+	getFinalUrlCard() {
+		return this.page.locator( '.gla-final-url-card' );
+	}
+
+	/**
 	 * Select URL option.
 	 *
 	 * @return {Promise<void>}
