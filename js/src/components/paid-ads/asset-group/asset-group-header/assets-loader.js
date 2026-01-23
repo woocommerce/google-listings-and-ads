@@ -19,6 +19,16 @@ import './assets-loader.scss';
  * @typedef {import('~/data/types.js').SuggestedAssets} SuggestedAssets
  */
 
+/**
+ * A selectable final URL option.
+ *
+ * @typedef {Object} FinalUrl
+ * @property {number} id The entity ID (e.g. post/term ID).
+ * @property {string} type The final URL type.
+ * @property {string} title Display title for the final URL.
+ * @property {string} url Absolute final URL.
+ */
+
 function allowAllResults() {
 	// Make it result in `new RegExp('.', 'i')` to avoid any custom results in
 	// the mapFinalUrlsToOptions function being filtered out.
@@ -83,7 +93,7 @@ function mapFinalUrlsToOptions( finalUrls, search ) {
  *
  * @param {Object} props React props.
  * @param {boolean} props.loading Whether the assets are being loaded.
- * @param {Function} props.onSelectFinalUrl Callback when a final URL is selected.
+ * @param {(finalUrl: FinalUrl) => void} props.onSelectFinalUrl Callback fired when a final URL is selected. Receives the selected final URL as the first argument.
  *
  * @fires gla_import_assets_by_final_url_button_click
  */
