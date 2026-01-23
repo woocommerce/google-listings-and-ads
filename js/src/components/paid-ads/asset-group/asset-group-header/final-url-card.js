@@ -30,15 +30,6 @@ import './final-url-card.scss';
  * @event gla_reselect_another_final_url_button_click
  */
 
-function fetchSuggestedAssets( id, type ) {
-	const path = addQueryArgs( `${ API_NAMESPACE }/assets/suggestions`, {
-		id,
-		type,
-	} );
-
-	return apiFetch( { path } );
-}
-
 /**
  * Renders the Card UI for managing the final URL and getting the suggested assets.
  *
@@ -89,8 +80,17 @@ export default function FinalUrlCard( {
 	const loadSuggestedAssets = useCallback(
 		async ( { id, type } ) => {
 			setFetching( true );
+
 			try {
-				const assets = await fetchSuggestedAssets( id, type );
+				const path = addQueryArgs(
+					`${ API_NAMESPACE }/assets/suggestions`,
+					{
+						id,
+						type,
+					}
+				);
+
+				const assets = await apiFetch( { path } );
 				handleAssetsLoaded( assets );
 			} catch ( error ) {
 				createNotice(
