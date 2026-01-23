@@ -110,6 +110,8 @@ export default function FinalUrlCard( {
 		}
 
 		didInitialLoadRef.current = true;
+
+		// When the type `homepage` is passed, `id` is ignore, but because of typing, we need to pass it as zero.
 		loadSuggestedAssets( { id: 0, type: 'homepage' } );
 	}, [ loadSuggestedAssets ] );
 
