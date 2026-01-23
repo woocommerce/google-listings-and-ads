@@ -81,27 +81,82 @@ class Merchant implements OptionsAwareInterface {
 	/**
 	 * Claim a website for the user's Merchant Center account.
 	 *
-	 * @param bool $overwrite Whether to include the overwrite directive.
 	 * @return bool
 	 * @throws Exception If the website claim fails.
 	 */
-	public function claimwebsite( bool $overwrite = false ): bool {
+	public function claimwebsite(): bool {
 		try {
-			$id     = $this->options->get_merchant_id();
-			$params = $overwrite ? [ 'overwrite' => true ] : [];
-			$this->service->accounts->claimwebsite( $id, $id, $params );
+			$id = $this->options->get_merchant_id();
+			$this->service->accounts->claimwebsite( $id, $id );
 			do_action( 'woocommerce_gla_site_claim_success', [ 'details' => 'google_proxy' ] );
 		} catch ( GoogleException $e ) {
 			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
 			do_action( 'woocommerce_gla_site_claim_failure', [ 'details' => 'google_proxy' ] );
 
-			$error_message = __( 'Unable to claim website.', 'google-listings-and-ads' );
-			if ( 403 === $e->getCode() ) {
-				$error_message = __( 'Website already claimed, use overwrite to complete the process.', 'google-listings-and-ads' );
+			if ( $this->is_website_claim_conflict_error( $e ) ) {
+				// Use 403 to maintain compatibility with AccountService which relies on this code to identify claim conflicts.
+				throw new Exception(
+					__( 'Website already claimed, use overwrite to complete the process.', 'google-listings-and-ads' ),
+					403
+				);
 			}
-			throw new Exception( $error_message, $e->getCode() );
+
+			throw new Exception(
+				__( 'Unable to claim website.', 'google-listings-and-ads' ),
+				$e->getCode()
+			);
 		}
 		return true;
+	}
+
+	/**
+	 * Check if the exception indicates a website claim conflict error.
+	 *
+	 * This handles Content API error format by checking structured error data.
+	 * The API used to return 403, but now returns 400 with specific error details.
+	 *
+	 * Content API error structure:
+	 * - code: 400
+	 * - errors[].domain: "content.ContentErrorDomain"
+	 * - errors[].message: contains "overwrite"
+	 *
+	 * TODO: When migrating to Merchant API, it may have a different error format.
+	 * Possible fields to check:
+	 * - code: 400
+	 * - status: "FAILED_PRECONDITION"
+	 * - details[].metadata.REASON: "INVALID_TRANSITION_CLAIMED_DESCENDANTS"
+	 *
+	 * @param GoogleException $e The exception to check.
+	 * @return bool True if the error indicates a claim conflict.
+	 */
+	private function is_website_claim_conflict_error( GoogleException $e ): bool {
+		$code = $e->getCode();
+
+		// The API used to return 403, kept here in case some undiscovered conditions still return it.
+		if ( $code === 403 ) {
+			return true;
+		}
+
+		if ( $code !== 400 ) {
+			return false;
+		}
+
+		// Check structured error data from Content API.
+		if ( $e instanceof GoogleServiceException ) {
+			$errors = $e->getErrors();
+			if ( is_array( $errors ) ) {
+				foreach ( $errors as $error ) {
+					$is_content_api_domain = isset( $error['domain'] ) && $error['domain'] === 'content.ContentErrorDomain';
+					$has_overwrite_message = isset( $error['message'] ) && stripos( $error['message'], 'overwrite' ) !== false;
+
+					if ( $is_content_api_domain && $has_overwrite_message ) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**

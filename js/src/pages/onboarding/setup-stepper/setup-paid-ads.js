@@ -135,11 +135,12 @@ export default function SetupPaidAds() {
 	}
 
 	const handleSubmit = async ( values ) => {
-		const { level, dailyBudget } = values;
+		const { level, dailyBudget, hasConfirmedEuPoliticalContent } = values;
 		const onBeforeFinish = handleSetupComplete.bind(
 			null,
 			dailyBudget,
-			countryCodes
+			countryCodes,
+			hasConfirmedEuPoliticalContent
 		);
 
 		setCompleting( ACTION_COMPLETE );

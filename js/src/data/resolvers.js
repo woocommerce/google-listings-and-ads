@@ -19,6 +19,7 @@ import {
 	getReportKey,
 	getCountryCodesKey,
 	getAdsBudgetMetricsKey,
+	arrayToUnderscoreKey,
 } from './utils';
 import { handleApiError } from '~/utils/handleError';
 import {
@@ -26,6 +27,7 @@ import {
 	adaptAdsBudgetMetrics,
 	adaptAdsCampaign,
 	adaptAssetGroup,
+	adaptRaiseAdsBudgetRecommendations,
 } from './adapters';
 import { fetchWithHeaders, awaitPromise, recordGlaDataEvent } from './controls';
 
@@ -54,7 +56,7 @@ import {
 	receiveMappingAttributes,
 	receiveMappingRules,
 	receiveStoreCategories,
-	receiveTour,
+	receiveTours,
 	receiveGtinMigrationStatus,
 	receiveAdsRecommendations,
 	receiveEnhancedConversionsStatus,
@@ -486,28 +488,20 @@ export function* getStoreCategories() {
 }
 
 /**
- * Resolver for getting the tour.
- *
- * @param {string} tourId The tour to get
+ * Resolver for getting all tours.
  */
-export function* getTour( tourId ) {
+export function* getTours() {
 	try {
 		const { data } = yield fetchWithHeaders( {
-			path: `${ API_NAMESPACE }/tours/${ tourId }`,
+			path: `${ API_NAMESPACE }/tours`,
 		} );
 
-		yield receiveTour( data );
+		yield receiveTours( data );
 	} catch ( response ) {
-		// Intentionally silence the specific error since the tour API will respond with
-		// a 404 error if the querying tour ID doesn't exist.
-		if ( response.status === 404 ) {
-			return;
-		}
-
 		yield handleResponseError(
 			response,
 			__(
-				'There was an error getting the tour.',
+				'There was an error getting the tours.',
 				'google-listings-and-ads'
 			)
 		);
@@ -745,15 +739,30 @@ export function* getPriceBenchmarkSuggestions( args ) {
 /**
  * Resolver for getting the Ads recommendations.
  */
-export function* getAdsRecommendations( type ) {
+export function* getAdsRecommendations( types, campaign_id = null ) {
 	try {
+		const params = {
+			types,
+		};
+
+		// campaign_id should be added to the query only if it's defined.
+		if ( campaign_id ) {
+			params.campaign_id = campaign_id;
+		}
+
 		const response = yield apiFetch( {
-			path: addQueryArgs( `${ API_NAMESPACE }/ads/recommendations`, {
-				type,
-			} ),
+			path: addQueryArgs(
+				`${ API_NAMESPACE }/ads/recommendations`,
+				params
+			),
 		} );
 
-		yield receiveAdsRecommendations( response, type );
+		const key = [ campaign_id, ...types ].filter( Boolean );
+		const typesKey = arrayToUnderscoreKey( key );
+		const data = campaign_id
+			? adaptRaiseAdsBudgetRecommendations( response )
+			: response;
+		yield receiveAdsRecommendations( data, typesKey );
 	} catch ( error ) {
 		handleApiError(
 			error,

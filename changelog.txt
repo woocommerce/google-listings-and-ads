@@ -1,5 +1,27 @@
 *** Google for WooCommerce Changelog ***
 
+= 3.5.1 - 2025-12-10 =
+* Add - EU political content confirmation checkbox for EU-based advertisers.
+* Fix - Button misaligned after navigating between tabs.
+* Fix - Correct the product edit URL to properly handle product variations in the Price Benchmark modal.
+* Fix - Fill missing intervals in products chart.
+* Fix - Prevent “Free Listings” from being automatically added after unselecting all campaigns in the comparison filter.
+* Fix - Setup enhanced conversion data when gtag is added by the Google Analytics extension.
+* Tweak - Make it possible to complete the onboarding flow using a site URL with paths.
+* Tweak - WC 10.4 compatibility.
+* Tweak - WP 6.9 compatibility.
+* Update - Modify `wc/gla/tours` API endpoint to retrieve all tours at once.
+
+= 3.5.0 - 2025-11-04 =
+* Add - Additional options to the skip paid ads survey.
+* Add - Recommendation for improving conversions by raising budgets.
+* Fix - Alignment issue on Reports page.
+* Fix - Error when syncing bundled products.
+* Fix - MC connection stuck in loading state when connection is interrupted.
+* Fix - Prevent floating point precision errors when converting to micro units by rounding before casting to integer.
+* Fix - Remove ads account status check from `ads/recommendations` endpoint.
+* Tweak - WC 10.3 compatibility.
+
 = 3.4.3 - 2025-09-16 =
 * Dev - Update NPM packages with security issues.
 * Dev - Update NPM packages with security issues.

@@ -11,6 +11,7 @@ import AllProgramsTableCard from './';
 import CampaignAssetsTour from '~/components/tours/campaign-assets-tour';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
+import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
 
 jest.mock( '~/components/tours/campaign-assets-tour', () =>
 	jest
@@ -42,6 +43,43 @@ jest.mock( '~/hooks/useTargetAudienceFinalCountryCodes', () =>
 jest.mock( '~/hooks/useAdsCampaigns', () =>
 	jest.fn().mockName( 'useAdsCampaigns' )
 );
+
+jest.mock( '~/hooks/useRaiseBudgetRecommendations', () =>
+	jest.fn().mockName( 'useRaiseBudgetRecommendations' )
+);
+
+const mockedRecommendations = [
+	{
+		id: 10,
+		type: 'CAMPAIGN_BUDGET',
+		resource_name:
+			'customers/{customer_id}/recommendations/{recommendation_id}',
+		campaign_id: 10,
+		campaign_name: 'Spring Campaign',
+		campaign_status: 'ENABLED',
+		last_synced: '2024-06-01T12:34:56Z',
+	},
+	{
+		id: 11,
+		type: 'MARGINAL_ROI_CAMPAIGN_BUDGET',
+		resource_name:
+			'customers/{customer_id}/recommendations/{recommendation_id}',
+		campaign_id: 11,
+		campaign_name: 'Summer Campaign',
+		campaign_status: 'ENABLED',
+		last_synced: '2024-06-02T12:34:56Z',
+	},
+	{
+		id: 122,
+		type: 'MARGINAL_ROI_CAMPAIGN_BUDGET',
+		resource_name:
+			'customers/{customer_id}/recommendations/{recommendation_id}',
+		campaign_id: 122,
+		campaign_name: 'Winter Campaign',
+		campaign_status: 'ENABLED',
+		last_synced: '2024-06-03T12:34:56Z',
+	},
+];
 
 describe( 'AllProgramsTableCard', () => {
 	const pmaxCampaign = {
@@ -88,6 +126,12 @@ describe( 'AllProgramsTableCard', () => {
 	};
 
 	let mockCampaigns;
+
+	beforeAll( () => {
+		useRaiseBudgetRecommendations.mockReturnValue( {
+			campaigns: mockedRecommendations,
+		} );
+	} );
 
 	beforeEach( () => {
 		let mockedCampaigns = [];
@@ -239,6 +283,18 @@ describe( 'AllProgramsTableCard', () => {
 		expect( CampaignAssetsTour ).toHaveBeenCalledWith( expectedProps, {} );
 	} );
 
+	it( 'Should render the Raise Budget Recommendation badge when there are recommendations', () => {
+		mockCampaigns( shoppingCampaign, pmaxCampaign, pmaxCampaignDisabled );
+
+		render( <AllProgramsTableCard /> );
+
+		const rows = screen.getAllByRole( 'row', { name: /campaign/i } );
+
+		expect( rows[ 0 ] ).toHaveTextContent( 'Budget recommendation' );
+		expect( rows[ 1 ] ).toHaveTextContent( 'Budget recommendation' );
+		expect( rows[ 2 ] ).not.toHaveTextContent( 'Budget recommendation' );
+	} );
+
 	describe( 'Sorting functionality', () => {
 		beforeEach( () => {
 			mockCampaigns(
@@ -262,8 +318,8 @@ describe( 'AllProgramsTableCard', () => {
 			);
 			expect( titles ).toEqual( [
 				'Shopping Campaign',
-				'PMax Campaign',
-				'Disabled PMax Campaign',
+				'PMax Campaign Budget recommendation',
+				'Disabled PMax Campaign Budget recommendation',
 			] );
 		} );
 
@@ -280,8 +336,8 @@ describe( 'AllProgramsTableCard', () => {
 					} ).textContent
 			);
 			expect( titles ).toEqual( [
-				'Disabled PMax Campaign',
-				'PMax Campaign',
+				'Disabled PMax Campaign Budget recommendation',
+				'PMax Campaign Budget recommendation',
 				'Shopping Campaign',
 			] );
 		} );

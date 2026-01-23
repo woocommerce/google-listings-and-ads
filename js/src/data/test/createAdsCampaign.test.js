@@ -42,6 +42,7 @@ describe( 'createAdsCampaign', () => {
 			method: 'POST',
 			data: {
 				amount: 100,
+				eu_political_advertising_confirmation: false,
 				targeted_locations: [ 'ES' ],
 				label: 'wc-web',
 			},
@@ -63,6 +64,7 @@ describe( 'createAdsCampaign', () => {
 			method: 'POST',
 			data: {
 				amount: 100,
+				eu_political_advertising_confirmation: false,
 				targeted_locations: [ 'ES' ],
 				label: 'wc-ios',
 			},
@@ -84,6 +86,7 @@ describe( 'createAdsCampaign', () => {
 			method: 'POST',
 			data: {
 				amount: 100,
+				eu_political_advertising_confirmation: false,
 				targeted_locations: [ 'ES' ],
 				label: 'wc-android',
 			},

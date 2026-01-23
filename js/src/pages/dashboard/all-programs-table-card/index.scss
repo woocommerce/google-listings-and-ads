@@ -1,20 +1,22 @@
-.gla-all-programs-table-card {
-	.components-card__header {
-		.woocommerce-table__actions {
-			justify-content: flex-end;
+.gla-dashboard__programs {
+	.gla-all-programs-table-card {
+		.components-card__header {
+			.woocommerce-table__actions {
+				justify-content: flex-end;
+			}
 		}
-	}
 
-	.components-card-footer {
-		.woocommerce-pagination {
-			display: none;
+		.components-card-footer {
+			.woocommerce-pagination {
+				display: none;
+			}
 		}
-	}
 
-	.program-actions {
-		display: flex;
-		justify-content: space-between;
-		gap: $grid-unit-15;
+		.program-actions {
+			display: flex;
+			justify-content: space-between;
+			gap: $grid-unit-15;
+		}
 	}
 
 	.woocommerce-table__header.is-left-aligned.is-sortable {
