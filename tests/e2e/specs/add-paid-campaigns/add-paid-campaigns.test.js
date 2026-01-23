@@ -528,6 +528,8 @@ test.describe( 'Add paid campaign', () => {
 						name: 'Got It',
 					} )
 					.click();
+
+				await expect( page.getByRole( 'dialog' ) ).not.toBeVisible();
 			} );
 		} );
 	} );
@@ -572,18 +574,11 @@ test.describe( 'Add paid campaign', () => {
 		} );
 
 		test.describe( 'Optimize your campaign step', async () => {
-			test( 'Create Campaign button should be disabled if no URL selected', async () => {
-				const createCampaignButton =
-					createCampaignPage.getCreateCampaignButton();
-				await expect( createCampaignButton ).toBeDisabled();
-			} );
-
-			test( 'Selecting final URL enables Create Campaign button', async () => {
-				await createCampaignPage.selectUrlOption();
-
-				const createCampaignButton =
-					createCampaignPage.getCreateCampaignButton();
-				await expect( createCampaignButton ).toBeEnabled();
+			test( 'Final URL should be selected to homepage by default', async () => {
+				const finalUrlCard = createCampaignPage.getFinalUrlCard();
+				await expect( finalUrlCard ).toContainText(
+					'https://woo.com/shop/'
+				);
 			} );
 
 			test( 'Selecting the "Or, select a different Final URL" button disables the Create Campaign button', async () => {
@@ -596,7 +591,7 @@ test.describe( 'Add paid campaign', () => {
 				await expect( createCampaignButton ).toBeDisabled();
 			} );
 
-			test( 'Selecting the Final URL again enables the Create Campaign button', async () => {
+			test( 'Selecting final URL enables Create Campaign button', async () => {
 				await createCampaignPage.selectUrlOption();
 
 				const createCampaignButton =
