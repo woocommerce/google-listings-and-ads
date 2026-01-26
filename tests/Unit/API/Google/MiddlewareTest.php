@@ -427,7 +427,7 @@ class MiddlewareTest extends UnitTest {
 	public function test_get_sdi_merchant_update_endpoint_with_site_url_having_path() {
 		add_filter(
 			'woocommerce_gla_site_url',
-			function ( $home_url ) { //phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
+			function ( $home_url ) {
 				return 'http://example.org/shop';
 			}
 		);
