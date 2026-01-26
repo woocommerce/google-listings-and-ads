@@ -17,6 +17,14 @@ import {
 import AppDocumentationLink from '../app-documentation-link';
 import { glaData } from '~/constants';
 
+const linkAds = (
+	<AppDocumentationLink
+		context="setup-ads"
+		linkId="google-ads-terms-of-service"
+		href="https://support.google.com/adspolicy/answer/54818"
+	/>
+);
+
 /**
  * Renders a card to connect to Google Account.
  *
@@ -43,48 +51,36 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 					'Required to sync with Google Ads.',
 					'google-listings-and-ads'
 				),
-				termsMessage: __(
+				terms: __(
 					'I accept the terms and conditions of <linkAds>Google Ads</linkAds>',
 					'google-listings-and-ads'
 				),
+				components: { linkAds },
 		  }
 		: {
 				description: __(
 					'Required to sync with Google Merchant Center and Google Ads.',
 					'google-listings-and-ads'
 				),
-				termsMessage: __(
+				terms: __(
 					'I accept the terms and conditions of <linkMerchant>Merchant Center</linkMerchant> and <linkAds>Google Ads</linkAds>',
 					'google-listings-and-ads'
 				),
-		  };
-
-	const linkAds = (
-		<AppDocumentationLink
-			context="setup-ads"
-			linkId="google-ads-terms-of-service"
-			href="https://support.google.com/adspolicy/answer/54818"
-		/>
-	);
-
-	const termsComponents = serviceBasedMerchant
-		? {
-				linkAds,
-		  }
-		: {
-				linkAds,
-				linkMerchant: (
-					<AppDocumentationLink
-						context="setup-mc-accounts"
-						linkId="google-mc-terms-of-service"
-						href="https://support.google.com/merchants/answer/160173"
-					/>
-				),
+				components: {
+					linkAds,
+					linkMerchant: (
+						<AppDocumentationLink
+							context="setup-mc-accounts"
+							linkId="google-mc-terms-of-service"
+							href="https://support.google.com/merchants/answer/160173"
+						/>
+					),
+				},
 		  };
 
 	const termsLabel = createInterpolateElement(
-		cardContent.termsMessage,
-		termsComponents
+		cardContent.terms,
+		cardContent.components
 	);
 
 	return (
