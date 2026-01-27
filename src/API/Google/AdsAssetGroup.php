@@ -338,7 +338,20 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 */
 	public function edit_asset_group( int $asset_group_id, array $data, array $assets = [] ): int {
 		try {
-			$operations = $this->asset_group_asset->edit_operations( $asset_group_id, $assets );
+
+			$is_brand_guidelines_enabled = false;
+			// Check if Brand Guidelines is enabled for this asset group's campaign.
+			$campaign_info = $this->get_campaign_info_by_asset_group_id( $asset_group_id );
+			if ( ! empty( $campaign_info['brand_guidelines_enabled'] ) && ! empty( $campaign_info['id'] ) ) {
+				// Get brand asset link operations from the campaign.
+				// $brand_operations = $this->campaign->get_brand_asset_link_operations( $campaign_info['id'] );
+				// // Prepend brand asset operations before other operations.
+				// $operations = array_merge( $brand_operations, $operations );
+				$is_brand_guidelines_enabled = true;
+
+			}
+
+			$operations = $this->asset_group_asset->edit_operations( $asset_group_id, $assets, $is_brand_guidelines_enabled );
 
 			// PMax only supports one final URL but it is required to be an array.
 			if ( ! empty( $data['final_url'] ) ) {
@@ -349,15 +362,6 @@ class AdsAssetGroup implements OptionsAwareInterface {
 			if ( ! empty( $data ) ) {
 				// If the asset group does not contain a final URL, it is required to update first the asset group with the final URL and then the assets.
 				$operations = [ $this->edit_operation( $asset_group_id, $data ), ...$operations ];
-			}
-
-			// Check if Brand Guidelines is enabled for this asset group's campaign.
-			$campaign_info = $this->get_campaign_info_by_asset_group_id( $asset_group_id );
-			if ( ! empty( $campaign_info['brand_guidelines_enabled'] ) && ! empty( $campaign_info['id'] ) ) {
-				// Get brand asset link operations from the campaign.
-				$brand_operations = $this->campaign->get_brand_asset_link_operations( $campaign_info['id'] );
-				// Prepend brand asset operations before other operations.
-				$operations = array_merge( $brand_operations, $operations );
 			}
 
 			if ( ! empty( $operations ) ) {

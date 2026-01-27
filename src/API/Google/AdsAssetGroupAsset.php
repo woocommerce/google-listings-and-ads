@@ -308,13 +308,14 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	/**
 	 * Edit assets group assets.
 	 *
-	 * @param int   $asset_group_id The asset group id.
-	 * @param array $assets The assets to create.
+	 * @param int   $asset_group_id              The asset group id.
+	 * @param array $assets                      The assets to create.
+	 * @param bool  $is_brand_guidelines_enabled Whether brand guidelines is enabled for the asset group's campaign.
 	 *
 	 * @return array The asset group asset operations.
 	 * @throws Exception If the asset type is not supported.
 	 */
-	public function edit_operations( int $asset_group_id, array $assets ): array {
+	public function edit_operations( int $asset_group_id, array $assets, bool $is_brand_guidelines_enabled ): array {
 		if ( empty( $assets ) ) {
 			return [];
 		}
@@ -334,6 +335,23 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 		// See: https://youtu.be/9KaVjqW5tVM?t=103
 		for ( $i = 0; $i < $total_assets; $i++ ) {
 			$asset_group_assets_operations[] = $this->create_operation( $asset_group_id, $assets_for_creation[ $i ]['field_type'], $asset_arns[ $i ] );
+		}
+
+		if ( $is_brand_guidelines_enabled ) {
+			foreach ( $assets as $asset ) {
+				if (
+					(
+						isset( $asset['field_type'] ) &&
+						'business_name' === $asset['field_type']
+					) ||
+					(
+						isset( $asset['field_type'] ) &&
+						'logo' === $asset['field_type']
+					)
+				) {
+					$delete_asset_group_assets_operations[] = $this->delete_operation( $asset_group_id, $asset['field_type'], $asset['id'] );
+				}
+			}
 		}
 
 		foreach ( $this->get_assets_to_be_deleted( $assets ) as $asset ) {
