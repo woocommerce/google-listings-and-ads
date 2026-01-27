@@ -132,21 +132,12 @@ test.describe( 'Optimize campaign for Ads only merchants', () => {
 			await expect( createCampaignButton ).toBeDisabled();
 		} );
 
-		test( 'Clicking the "Skip this step" button navigates to the dashboard', async () => {
-			await goToOptimizeStep();
-			await optimizeCampaignPage.clickSkipThisStepButton();
-
-			await page.waitForURL( /path=%2Fgoogle%2Fdashboard/ );
-			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fdashboard/ );
-		} );
-
-		test( 'should see the setup success modal', async () => {
-			const setupSuccessModal = createCampaignPage.getSetupSuccessModal();
-			await expect( setupSuccessModal ).toBeVisible();
+		test( '"Skip this step" button should not be present in the last step of onboarding', async () => {
+			const skipThisStepButton = page.locator( 'text="Skip this step"' );
+			await expect( skipThisStepButton ).toHaveCount( 0 );
 		} );
 
 		test( 'Clicking the "Create Campaign" button navigates to the dashboard and should see the setup success modal', async () => {
-			await goToOptimizeStep();
 			await optimizeCampaignPage.selectUrlOption();
 			const createCampaignButton =
 				optimizeCampaignPage.getCreateCampaignButton();
