@@ -50,15 +50,15 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 		$expected_text_assets = [
 			[
 				'text' => 'Generated headline text example.',
-				'type' => 'HEADLINE',
+				'type' => 'headline',
 			],
 			[
 				'text' => 'Generated long headline text example.',
-				'type' => 'LONG_HEADLINE',
+				'type' => 'long_headline',
 			],
 			[
 				'text' => 'Generated description text example.',
-				'type' => 'DESCRIPTION',
+				'type' => 'description',
 			],
 		];
 
@@ -79,7 +79,7 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 		$expected_text_assets = [
 			[
 				'text' => 'Custom headline',
-				'type' => 'HEADLINE',
+				'type' => 'headline',
 			],
 		];
 
@@ -103,7 +103,7 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 		$expected_text_assets = [
 			[
 				'text' => 'Headline only',
-				'type' => 'HEADLINE',
+				'type' => 'headline',
 			],
 		];
 
@@ -146,15 +146,15 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 		$expected_text_assets = [
 			[
 				'text' => 'Default headline',
-				'type' => 'HEADLINE',
+				'type' => 'headline',
 			],
 			[
 				'text' => 'Default long headline',
-				'type' => 'LONG_HEADLINE',
+				'type' => 'long_headline',
 			],
 			[
 				'text' => 'Default description',
-				'type' => 'DESCRIPTION',
+				'type' => 'description',
 			],
 		];
 
@@ -169,15 +169,15 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 		$expected_image_assets = [
 			[
 				'temporary_image_url' => 'https://example.com/temporary_image_url-marketing.jpg',
-				'type'                => 'MARKETING_IMAGE',
+				'type'                => 'marketing_image',
 			],
 			[
 				'temporary_image_url' => 'https://example.com/temporary_image_url-square.jpg',
-				'type'                => 'SQUARE_MARKETING_IMAGE',
+				'type'                => 'square_marketing_image',
 			],
 			[
 				'temporary_image_url' => 'https://example.com/temporary_image_url-portrait.jpg',
-				'type'                => 'PORTRAIT_MARKETING_IMAGE',
+				'type'                => 'portrait_marketing_image',
 			],
 		];
 
@@ -193,7 +193,7 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 		$expected_image_assets = [
 			[
 				'temporary_image_url' => 'https://example.com/custom-image.jpg',
-				'type'                => 'MARKETING_IMAGE',
+				'type'                => 'marketing_image',
 			],
 		];
 
@@ -208,7 +208,7 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 		$expected_image_assets = [
 			[
 				'temporary_image_url' => 'https://example.com/marketing-image.jpg',
-				'type'                => 'MARKETING_IMAGE',
+				'type'                => 'marketing_image',
 			],
 		];
 

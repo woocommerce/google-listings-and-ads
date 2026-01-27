@@ -59,15 +59,15 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 				[
 					[
 						'text' => 'Test headline',
-						'type' => 'HEADLINE',
+						'type' => 'headline',
 					],
 					[
 						'text' => 'Test long headline',
-						'type' => 'LONG_HEADLINE',
+						'type' => 'long_headline',
 					],
 					[
 						'text' => 'Test description',
-						'type' => 'DESCRIPTION',
+						'type' => 'description',
 					],
 				]
 			);
@@ -102,7 +102,7 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 				[
 					[
 						'text' => 'Custom headline',
-						'type' => 'HEADLINE',
+						'type' => 'headline',
 					],
 				]
 			);
@@ -132,7 +132,7 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 				[
 					[
 						'text' => 'Headline only',
-						'type' => 'HEADLINE',
+						'type' => 'headline',
 					],
 				]
 			);
@@ -164,11 +164,11 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 				[
 					[
 						'text' => 'Test',
-						'type' => 'HEADLINE',
+						'type' => 'headline',
 					],
 					[
 						'text' => 'Test',
-						'type' => 'DESCRIPTION',
+						'type' => 'description',
 					],
 				]
 			);
@@ -205,15 +205,15 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 				[
 					[
 						'temporary_image_url' => 'https://example.com/image-marketing.jpg',
-						'type'                => 'MARKETING_IMAGE',
+						'type'                => 'marketing_image',
 					],
 					[
 						'temporary_image_url' => 'https://example.com/image-square.jpg',
-						'type'                => 'SQUARE_MARKETING_IMAGE',
+						'type'                => 'square_marketing_image',
 					],
 					[
 						'temporary_image_url' => 'https://example.com/image-portrait.jpg',
-						'type'                => 'PORTRAIT_MARKETING_IMAGE',
+						'type'                => 'portrait_marketing_image',
 					],
 				]
 			);
@@ -246,7 +246,7 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 				[
 					[
 						'temporary_image_url' => 'https://example.com/custom-image.jpg',
-						'type'                => 'MARKETING_IMAGE',
+						'type'                => 'marketing_image',
 					],
 				]
 			);
@@ -277,7 +277,7 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 				[
 					[
 						'temporary_image_url' => 'https://example.com/image.jpg',
-						'type'                => 'MARKETING_IMAGE',
+						'type'                => 'marketing_image',
 					],
 				]
 			);
@@ -309,11 +309,11 @@ class AssetGenerationControllerTest extends RESTControllerUnitTest {
 				[
 					[
 						'temporary_image_url' => 'https://example.com/image1.jpg',
-						'type'                => 'MARKETING_IMAGE',
+						'type'                => 'marketing_image',
 					],
 					[
 						'temporary_image_url' => 'https://example.com/image2.jpg',
-						'type'                => 'SQUARE_MARKETING_IMAGE',
+						'type'                => 'square_marketing_image',
 					],
 				]
 			);

@@ -49,7 +49,7 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	 *
 	 * @var array
 	 */
-	protected const VALID_TEXT_TYPES = [
+	public const VALID_TEXT_TYPES = [
 		AssetFieldType::HEADLINE,
 		AssetFieldType::LONG_HEADLINE,
 		AssetFieldType::DESCRIPTION,
@@ -60,7 +60,7 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	 *
 	 * @var array
 	 */
-	protected const VALID_IMAGE_TYPES = [
+	public const VALID_IMAGE_TYPES = [
 		AssetFieldType::MARKETING_IMAGE,
 		AssetFieldType::SQUARE_MARKETING_IMAGE,
 		AssetFieldType::PORTRAIT_MARKETING_IMAGE,
@@ -122,7 +122,7 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 				$asset_field_type_label  = AssetFieldType::label( $asset_field_type_number );
 				$results[]               = [
 					'text' => $text_asset->getText(),
-					'type' => AssetFieldType::name( $asset_field_type_label ),
+					'type' => $asset_field_type_label,
 				];
 			}
 
@@ -185,7 +185,7 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 				$asset_field_type_label  = AssetFieldType::label( $asset_field_type_number );
 				$results[]               = [
 					'temporary_image_url' => $image_asset->getImageTemporaryUrl(),
-					'type'                => AssetFieldType::name( $asset_field_type_label ),
+					'type'                => $asset_field_type_label,
 				];
 			}
 

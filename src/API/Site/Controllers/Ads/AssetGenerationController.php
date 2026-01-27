@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAssetGenerationService;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ResponseFromExceptionTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
@@ -54,6 +53,7 @@ class AssetGenerationController extends BaseController {
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_generate_text_params(),
 				],
+				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
 
@@ -66,6 +66,7 @@ class AssetGenerationController extends BaseController {
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_generate_images_params(),
 				],
+				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
 	}
@@ -90,11 +91,7 @@ class AssetGenerationController extends BaseController {
 				'default'           => [],
 				'items'             => [
 					'type' => 'string',
-					'enum' => [
-						AssetFieldType::HEADLINE,
-						AssetFieldType::LONG_HEADLINE,
-						AssetFieldType::DESCRIPTION,
-					],
+					'enum' => AdsAssetGenerationService::VALID_TEXT_TYPES,
 				],
 				'sanitize_callback' => function ( $types ) {
 					return array_map( 'sanitize_text_field', $types );
@@ -124,11 +121,7 @@ class AssetGenerationController extends BaseController {
 				'default'           => [],
 				'items'             => [
 					'type' => 'string',
-					'enum' => [
-						AssetFieldType::MARKETING_IMAGE,
-						AssetFieldType::SQUARE_MARKETING_IMAGE,
-						AssetFieldType::PORTRAIT_MARKETING_IMAGE,
-					],
+					'enum' => AdsAssetGenerationService::VALID_IMAGE_TYPES,
 				],
 				'sanitize_callback' => function ( $types ) {
 					return array_map( 'sanitize_text_field', $types );
@@ -159,8 +152,10 @@ class AssetGenerationController extends BaseController {
 					]
 				);
 
-				// Format response with lowercase types.
-				return $this->format_response( $final_url, $items );
+				return [
+					'final_url' => $final_url,
+					'items'     => $items,
+				];
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
@@ -187,33 +182,16 @@ class AssetGenerationController extends BaseController {
 				}
 				$items = $this->service->generate_images( $args );
 
-				// Format response with lowercase types.
-				return $this->format_response( $final_url, $items );
+				return [
+					'final_url' => $final_url,
+					'items'     => $items,
+				];
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
 		};
 	}
 
-	/**
-	 * Format the response with final_url and items.
-	 *
-	 * @param string $final_url    The final URL.
-	 * @param array  $service_items Items from the service (with uppercase types).
-	 * @return array Formatted response with lowercase types.
-	 */
-	protected function format_response( string $final_url, array $service_items ): array {
-		$items = [];
-		foreach ( $service_items as $item ) {
-			$item['type'] = strtolower( $item['type'] );
-			$items[]      = $item;
-		}
-
-		return [
-			'final_url' => $final_url,
-			'items'     => $items,
-		];
-	}
 
 	/**
 	 * Get the item schema properties for the controller.
