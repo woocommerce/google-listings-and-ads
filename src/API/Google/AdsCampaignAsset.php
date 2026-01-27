@@ -64,12 +64,12 @@ class AdsCampaignAsset implements OptionsAwareInterface {
 			);
 		}
 
-		// Link logo assets (MARKETING_IMAGE field type for PMax).
+		// Link logo assets (LOGO field type for Brand Guidelines campaign assets).
 		foreach ( $logo_ids as $asset_id ) {
 			$operations[] = $this->create_campaign_asset_operation(
 				$campaign_resource,
 				$asset_id,
-				AssetFieldTypeEnum::MARKETING_IMAGE
+				AssetFieldTypeEnum::LOGO
 			);
 		}
 

@@ -42,6 +42,7 @@ describe( 'createAdsCampaign', () => {
 			method: 'POST',
 			data: {
 				amount: 100,
+				brand_guidelines_enabled: false,
 				eu_political_advertising_confirmation: false,
 				targeted_locations: [ 'ES' ],
 				label: 'wc-web',
@@ -64,6 +65,7 @@ describe( 'createAdsCampaign', () => {
 			method: 'POST',
 			data: {
 				amount: 100,
+				brand_guidelines_enabled: false,
 				eu_political_advertising_confirmation: false,
 				targeted_locations: [ 'ES' ],
 				label: 'wc-ios',
@@ -86,9 +88,33 @@ describe( 'createAdsCampaign', () => {
 			method: 'POST',
 			data: {
 				amount: 100,
+				brand_guidelines_enabled: false,
 				eu_political_advertising_confirmation: false,
 				targeted_locations: [ 'ES' ],
 				label: 'wc-android',
+			},
+		} );
+	} );
+
+	it( 'When hasBrandGuidelinesEnabled is true, the request data should include brand_guidelines_enabled: true', async () => {
+		navigatorGetter.mockReturnValue(
+			'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+		);
+
+		const { result } = renderHook( () => useAppDispatch() );
+
+		await result.current.createAdsCampaign( 100, [ 'ES' ], false, true );
+
+		expect( mockFetch ).toHaveBeenCalledTimes( 1 );
+		expect( mockFetch ).toHaveBeenCalledWith( {
+			path: '/wc/gla/ads/campaigns',
+			method: 'POST',
+			data: {
+				amount: 100,
+				brand_guidelines_enabled: true,
+				eu_political_advertising_confirmation: false,
+				targeted_locations: [ 'ES' ],
+				label: 'wc-web',
 			},
 		} );
 	} );

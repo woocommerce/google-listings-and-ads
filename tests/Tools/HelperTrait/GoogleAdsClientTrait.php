@@ -421,6 +421,7 @@ trait GoogleAdsClientTrait {
 		$campaign->method( 'getStatus' )->willReturn( CampaignStatus::number( $data['status'] ) );
 		$campaign->method( 'getAdvertisingChannelType' )->willReturn( CampaignType::number( $data['type'] ) );
 		$campaign->method( 'getShoppingSetting' )->willReturn( $setting );
+		$campaign->method( 'getBrandGuidelinesEnabled' )->willReturn( $data['brand_guidelines_enabled'] ?? false );
 
 		$budget = $this->createMock( CampaignBudget::class );
 		$budget->method( 'getAmountMicros' )->willReturn( $this->to_micro( $data['amount'] ) );

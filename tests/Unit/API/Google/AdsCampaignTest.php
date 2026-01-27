@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignCriterion;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignLabel;
@@ -59,6 +60,9 @@ class AdsCampaignTest extends UnitTest {
 	/** @var MockObject|AdsCampaignLabel $campaign_label */
 	protected $campaign_label;
 
+	/** @var MockObject|AdsCampaignAsset $campaign_asset */
+	protected $campaign_asset;
+
 	/** @var WC $wc */
 	protected $wc;
 
@@ -76,6 +80,7 @@ class AdsCampaignTest extends UnitTest {
 		$this->asset_group    = $this->createMock( AdsAssetGroup::class );
 		$this->budget         = $this->createMock( AdsCampaignBudget::class );
 		$this->campaign_label = $this->createMock( AdsCampaignLabel::class );
+		$this->campaign_asset = $this->createMock( AdsCampaignAsset::class );
 		$this->criterion      = new AdsCampaignCriterion();
 		$this->options        = $this->createMock( OptionsInterface::class );
 		$this->transients     = $this->createMock( TransientsInterface::class );
@@ -88,7 +93,7 @@ class AdsCampaignTest extends UnitTest {
 		$this->container->addShared( TransientsInterface::class, $this->transients );
 		$this->container->addShared( WC::class, $this->wc );
 
-		$this->campaign = new AdsCampaign( $this->client, $this->budget, $this->criterion, $this->google_helper, $this->campaign_label );
+		$this->campaign = new AdsCampaign( $this->client, $this->budget, $this->criterion, $this->google_helper, $this->campaign_label, $this->campaign_asset );
 		$this->campaign->set_options_object( $this->options );
 		$this->campaign->set_container( $this->container );
 
@@ -122,20 +127,22 @@ class AdsCampaignTest extends UnitTest {
 				'name'                                  => 'Campaign One',
 				'status'                                => 'paused',
 				'type'                                  => 'shopping',
-				'amount'                                => 10,
+				'amount'                                => 10.0,
 				'country'                               => 'US',
 				'targeted_locations'                    => [ 'TW' ],
 				'eu_political_advertising_confirmation' => false,
+				'brand_guidelines_enabled'              => false,
 			],
 			[
 				'id'                                    => 5678901234,
 				'name'                                  => 'Campaign Two',
 				'status'                                => 'enabled',
 				'type'                                  => 'performance_max',
-				'amount'                                => 20,
+				'amount'                                => 20.0,
 				'country'                               => 'UK',
 				'targeted_locations'                    => [ 'HK', 'GB' ],
 				'eu_political_advertising_confirmation' => false,
+				'brand_guidelines_enabled'              => false,
 			],
 		];
 
@@ -150,20 +157,22 @@ class AdsCampaignTest extends UnitTest {
 				'name'                                  => 'Campaign One',
 				'status'                                => 'paused',
 				'type'                                  => 'shopping',
-				'amount'                                => 10,
+				'amount'                                => 10.0,
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'brand_guidelines_enabled'              => false,
 			],
 			[
 				'id'                                    => 5678901234,
 				'name'                                  => 'Campaign Two',
 				'status'                                => 'enabled',
 				'type'                                  => 'performance_max',
-				'amount'                                => 20,
+				'amount'                                => 20.0,
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'brand_guidelines_enabled'              => false,
 			],
 		];
 
@@ -200,20 +209,22 @@ class AdsCampaignTest extends UnitTest {
 				'name'                                  => 'Campaign One',
 				'status'                                => 'paused',
 				'type'                                  => 'shopping',
-				'amount'                                => 10,
+				'amount'                                => 10.0,
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'brand_guidelines_enabled'              => false,
 			],
 			[
 				'id'                                    => 5678901234,
 				'name'                                  => 'Campaign Two',
 				'status'                                => 'enabled',
 				'type'                                  => 'performance_max',
-				'amount'                                => 20,
+				'amount'                                => 20.0,
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'brand_guidelines_enabled'              => false,
 			],
 		];
 
@@ -294,10 +305,11 @@ class AdsCampaignTest extends UnitTest {
 			'name'                                  => 'Single Campaign',
 			'status'                                => 'enabled',
 			'type'                                  => 'performance_max',
-			'amount'                                => 10,
+			'amount'                                => 10.0,
 			'country'                               => 'US',
 			'targeted_locations'                    => [ 'TW' ],
 			'eu_political_advertising_confirmation' => false,
+			'brand_guidelines_enabled'              => false,
 		];
 
 		$this->generate_ads_campaign_query_mock( [ $campaign_data ], [ $campaign_criterion_data ] );

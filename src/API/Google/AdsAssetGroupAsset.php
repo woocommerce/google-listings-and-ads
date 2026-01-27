@@ -349,7 +349,10 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 						'logo' === $asset['field_type']
 					)
 				) {
-					$delete_asset_group_assets_operations[] = $this->delete_operation( $asset_group_id, $asset['field_type'], $asset['id'] );
+					// Only delete existing asset group assets that have an id (skip placeholders / never-linked assets).
+					if ( ! empty( $asset['id'] ) ) {
+						$delete_asset_group_assets_operations[] = $this->delete_operation( $asset_group_id, $asset['field_type'], (int) $asset['id'] );
+					}
 				}
 			}
 		}

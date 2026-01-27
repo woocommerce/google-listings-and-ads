@@ -37,6 +37,7 @@ import {
 	recordStepContinueEvent,
 } from '~/utils/tracks';
 import useNavigateAwayPromptEffect from '~/hooks/useNavigateAwayPromptEffect';
+import useStoreCountry from '~/hooks/useStoreCountry';
 
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'edit-ads';
@@ -87,6 +88,7 @@ const EditPaidAdsCampaign = () => {
 	} = useAppSelectDispatch( 'getCampaignAssetGroups', id );
 	const campaign = campaigns?.find( ( el ) => el.id === id );
 	const assetEntityGroup = assetEntityGroups?.at( 0 );
+	const { code: storeCountryCode } = useStoreCountry();
 
 	useEffect( () => {
 		if ( campaign && campaign.type !== CAMPAIGN_TYPE_PMAX ) {
@@ -222,6 +224,15 @@ const EditPaidAdsCampaign = () => {
 		getHistory().push( getDashboardUrl() );
 	};
 
+	let countryCodes = [];
+	if ( campaign.displayCountries?.length ) {
+		countryCodes = campaign.displayCountries;
+	} else if ( campaign.country ) {
+		countryCodes = [ campaign.country ];
+	} else if ( storeCountryCode ) {
+		countryCodes = [ storeCountryCode ];
+	}
+
 	return (
 		<>
 			<TopBar
@@ -243,7 +254,7 @@ const EditPaidAdsCampaign = () => {
 					hasBrandGuidelinesEnabled:
 						campaign.brand_guidelines_enabled,
 				} }
-				countryCodes={ campaign.displayCountries }
+				countryCodes={ countryCodes }
 				assetEntityGroup={ assetEntityGroup }
 				onSubmit={ handleSubmit }
 				onChange={ handleOnChange }

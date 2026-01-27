@@ -22,6 +22,7 @@ class AdsCampaignAssetQuery extends AdsQuery {
 				'campaign.id',
 				'campaign_asset.field_type',
 				'campaign_asset.asset',
+				'campaign_asset.status',
 			]
 		);
 	}

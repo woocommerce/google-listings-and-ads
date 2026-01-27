@@ -190,6 +190,7 @@ class AdsAssetGroupTest extends UnitTest {
 				)
 			);
 
+		$this->generate_ads_query_mock( [] );
 		$this->generate_asset_group_mutate_mock( 'update', self::TEST_ASSET_GROUP_ID, true );
 
 		$this->assertEquals(
@@ -204,6 +205,7 @@ class AdsAssetGroupTest extends UnitTest {
 			'path2' => 'mypath2',
 		];
 
+		$this->generate_ads_query_mock( [] );
 		$this->generate_asset_group_mutate_mock( 'update', self::TEST_ASSET_GROUP_ID );
 
 		$this->assertEquals(
@@ -217,6 +219,7 @@ class AdsAssetGroupTest extends UnitTest {
 			'path2' => 123456,
 		];
 
+		$this->generate_ads_query_mock( [] );
 		$this->generate_mutate_mock_exception( new ApiException( 'invalid', 3, 'INVALID_ARGUMENT' ) );
 
 		try {
@@ -239,6 +242,7 @@ class AdsAssetGroupTest extends UnitTest {
 			'path2' => 123456,
 		];
 
+		$this->generate_ads_query_mock( [] );
 		$this->generate_mutate_mock_exception( new ApiException( 'Request entity too large', 413, 'UNRECOGNIZED_STATUS' ) );
 
 		try {
