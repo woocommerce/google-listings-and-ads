@@ -128,7 +128,6 @@ class AssetGenerationController extends BaseController {
 						AssetFieldType::MARKETING_IMAGE,
 						AssetFieldType::SQUARE_MARKETING_IMAGE,
 						AssetFieldType::PORTRAIT_MARKETING_IMAGE,
-						AssetFieldType::TALL_PORTRAIT_MARKETING_IMAGE,
 					],
 				],
 				'sanitize_callback' => function ( $types ) {
