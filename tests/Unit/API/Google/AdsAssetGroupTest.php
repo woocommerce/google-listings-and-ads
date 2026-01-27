@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
@@ -36,6 +37,9 @@ class AdsAssetGroupTest extends UnitTest {
 	/** @var AdsAssetGroup $asset_group */
 	protected $asset_group;
 
+	/** @var MockObject|AdsCampaign $ads_campaign */
+	protected $ads_campaign;
+
 	protected const TEST_CAMPAIGN_ID      = 1234567890;
 	protected const TEST_ASSET_GROUP_ID   = 5566778899;
 	protected const TEST_ASSET_GROUP_ID_2 = 5566778777;
@@ -51,9 +55,10 @@ class AdsAssetGroupTest extends UnitTest {
 
 		$this->asset_group_asset = $this->createMock( AdsAssetGroupAsset::class );
 		$this->options           = $this->createMock( OptionsInterface::class );
+		$this->ads_campaign      = $this->createMock( AdsCampaign::class );
 		$this->options->method( 'get_ads_id' )->willReturn( $this->ads_id );
 
-		$this->asset_group = new AdsAssetGroup( $this->client, $this->asset_group_asset );
+		$this->asset_group = new AdsAssetGroup( $this->client, $this->asset_group_asset, $this->ads_campaign );
 		$this->asset_group->set_options_object( $this->options );
 	}
 
