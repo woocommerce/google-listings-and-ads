@@ -1,6 +1,9 @@
 /**
  * External dependencies
  */
+import apiFetch from '@wordpress/api-fetch';
+import { __ } from '@wordpress/i18n';
+import { addQueryArgs } from '@wordpress/url';
 import { useState, useMemo } from '@wordpress/element';
 import { isPlainObject } from 'lodash';
 
@@ -16,8 +19,10 @@ import useAdsCurrency from '~/hooks/useAdsCurrency';
 import useBudgetRecommendation from '~/hooks/useBudgetRecommendation';
 import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import { useAppDispatch } from '~/data';
 import { FILTER_BUDGET_RECOMMENDATIONS } from '~/utils/tracks';
+import { API_NAMESPACE } from '~/data/constants';
 import round from '~/utils/round';
 
 /**
@@ -196,8 +201,7 @@ export default function CampaignAssetsForm( {
 	...adaptiveFormProps
 } ) {
 	const { fetchGenAIMediaAssets, fetchGenAITextAssets } = useAppDispatch();
-	const [ isFetchingGenAIAssets, setIsFetchingGenAIAssets ] =
-		useState( false );
+	const [ isFetchingAssets, setIsFetchingAssets ] = useState( false );
 	const initialAssetGroup = useMemo( () => {
 		return convertAssetEntityGroupToFormValues( assetEntityGroup );
 	}, [ assetEntityGroup ] );
@@ -211,6 +215,7 @@ export default function CampaignAssetsForm( {
 	const { formatAmount } = useAdsCurrency();
 	const { data: budgetRecommendationData, hasResolved } =
 		useBudgetRecommendation( countryCodes );
+	const { createNotice } = useDispatchCoreNotices();
 
 	const budgetRecommendation = budgetRecommendationData || {};
 
@@ -240,13 +245,26 @@ export default function CampaignAssetsForm( {
 		const assetGroupErrors = validateAssetGroup( formContext.values );
 		const finalUrl = assetEntityGroup?.[ ASSET_GROUP_KEY.FINAL_URL ];
 
-		const fetchGenAIAssets = async ( url, assetGroupValues ) => {
+		const fetchAssets = async ( id, type ) => {
 			try {
-				setIsFetchingGenAIAssets( true );
-				const { data: textAssetsData } =
-					await fetchGenAITextAssets( url );
-				const { data: mediaAssetsData } =
-					await fetchGenAIMediaAssets( url );
+				setIsFetchingAssets( true );
+
+				const path = addQueryArgs(
+					`${ API_NAMESPACE }/assets/suggestions`,
+					{
+						id,
+						type,
+					}
+				);
+
+				const assetSuggestions = await apiFetch( { path } );
+				const url = assetSuggestions[ ASSET_GROUP_KEY.FINAL_URL ];
+
+				const [ { data: textAssetsData }, { data: mediaAssetsData } ] =
+					await Promise.all( [
+						fetchGenAITextAssets( url ),
+						fetchGenAIMediaAssets( url ),
+					] );
 
 				const hasSuggestedTextAssets = hasValidAIGeneratedAssets(
 					REQUIRED_TEXT_ASSET_KEYS,
@@ -258,21 +276,23 @@ export default function CampaignAssetsForm( {
 					mediaAssetsData
 				);
 
-				const nextValues = {
-					...( hasSuggestedTextAssets ? textAssetsData : {} ),
-				};
-
-				if ( Object.keys( nextValues ).length ) {
-					formContext.setValues( {
-						...assetGroupValues,
-						...nextValues,
-					} );
-				}
-
 				setHasAISuggestedTextAssets( hasSuggestedTextAssets );
 				setHasAISuggestedMediaAssets( hasSuggestedMediaAssets );
+
+				return {
+					...assetSuggestions,
+					...( hasSuggestedTextAssets ? textAssetsData : {} ),
+				};
+			} catch ( error ) {
+				createNotice(
+					'error',
+					__(
+						'Unable to load assets data.',
+						'google-listings-and-ads'
+					)
+				);
 			} finally {
-				setIsFetchingGenAIAssets( false );
+				setIsFetchingAssets( false );
 			}
 		};
 
@@ -317,19 +337,12 @@ export default function CampaignAssetsForm( {
 				setHasAISuggestedTextAssets( false );
 				setHasAISuggestedMediaAssets( false );
 
-				if ( nextAssetGroup.final_url ) {
-					fetchGenAIAssets(
-						nextAssetGroup.final_url,
-						updatedContextValues
-					);
-				}
-
 				formContext.adapter.hideValidation();
 			},
-			isFetchingGenAIAssets,
+			isFetchingAssets,
 			hasAISuggestedTextAssets,
 			hasAISuggestedMediaAssets,
-			fetchGenAIAssets,
+			fetchAssets,
 		};
 	};
 

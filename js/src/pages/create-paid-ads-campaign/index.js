@@ -153,13 +153,10 @@ const CreatePaidAdsCampaign = () => {
 									) }
 									context={ eventContext }
 									continueButton={ ( formContext ) => {
-										const { adapter } = formContext;
-
 										return (
 											<ContinueButton
 												formProps={ formContext }
 												onClick={ () => {
-													adapter.fetchGenAIAssets();
 													handleContinueClick(
 														STEP.ASSET_GROUP
 													);

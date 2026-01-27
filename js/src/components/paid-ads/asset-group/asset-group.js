@@ -77,7 +77,7 @@ export default function AssetGroup( { campaign } ) {
 		isSubmitting,
 		isSubmitted,
 		submitter,
-		isFetchingGenAIAssets,
+		isFetchingAssets,
 	} = adapter;
 	const currentAction = submitter?.dataset.action;
 
@@ -161,11 +161,10 @@ export default function AssetGroup( { campaign } ) {
 				) }
 			/>
 
-			{ isFetchingGenAIAssets && <GenAIProgress /> }
+			<AssetGroupHeader />
 
-			{ ! isFetchingGenAIAssets && (
+			{ ! isFetchingAssets && (
 				<>
-					<AssetGroupHeader />
 					<AssetGroupEditor />
 
 					<StepContentFooter>
