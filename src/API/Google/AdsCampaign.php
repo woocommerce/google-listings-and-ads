@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignCriterionQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignAssetQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAssetQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
@@ -20,6 +21,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V20\ResourceNames;
 use Google\Ads\GoogleAds\V20\Common\MaximizeConversionValue;
+use Google\Ads\GoogleAds\V20\Enums\AssetTypeEnum\AssetType as AdsAssetType;
 use Google\Ads\GoogleAds\V20\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
 use Google\Ads\GoogleAds\V20\Resources\Campaign;
 use Google\Ads\GoogleAds\V20\Enums\EuPoliticalAdvertisingStatusEnum\EuPoliticalAdvertisingStatus;
@@ -690,93 +692,132 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function get_brand_asset_link_operations( int $campaign_id ): array {
 		try {
-			// Fetch assets from the first asset group.
-			$asset_groups = $this->container->get( AdsAssetGroup::class )->get_asset_groups_by_campaign_id( $campaign_id, true );
-			if ( empty( $asset_groups ) ) {
+			// First check if campaign already has the required assets
+			$campaign_assets = ( new AdsCampaignAssetQuery() )
+				->set_client( $this->client, $this->options->get_ads_id() )
+				->where( 'campaign.id', $campaign_id, '=' )
+				->where( 'campaign_asset.status', 'REMOVED', '!=' )
+				->get_results();
+
+			$has_business_name = false;
+			$has_logo          = false;
+
+			foreach ( $campaign_assets->iterateAllElements() as $row ) {
+				$campaign_asset = $row->getCampaignAsset();
+				if ( ! $campaign_asset ) {
+					continue;
+				}
+
+				$field_type = AssetFieldType::label( $campaign_asset->getFieldType() );
+
+				if ( AssetFieldType::BUSINESS_NAME === $field_type ) {
+					$has_business_name = true;
+				}
+
+				if ( AssetFieldType::LOGO === $field_type ) {
+					$has_logo = true;
+				}
+
+				if ( $has_business_name && $has_logo ) {
+					return [];
+				}
+			}
+
+			$needs_business_name = ! $has_business_name;
+			$needs_logo          = ! $has_logo;
+
+			if ( ! $needs_business_name && ! $needs_logo ) {
 				return [];
 			}
 
-			// Handle both object and array for asset group
-			$first_asset_group  = $asset_groups[0];
-			$asset_group_assets = is_object( $first_asset_group )
-				? ( $first_asset_group->assets ?? [] )
-				: ( $first_asset_group['assets'] ?? [] );
+			// Query for account-level assets: TEXT assets for business name, IMAGE assets for logos
+			// Use string enum names in the WHERE clause, not numeric values
+			$account_assets = ( new AdsAssetQuery() )
+				->set_client( $this->client, $this->options->get_ads_id() )
+				->where( 'asset.type', [ 'TEXT', 'IMAGE' ], 'IN' )
+				->where( 'asset.status', 'REMOVED', '!=' )
+				->get_results();
 
 			$business_ids = [];
 			$logo_ids     = [];
 
-			// Convert to array if it's an object
-			if ( is_object( $asset_group_assets ) ) {
-				$asset_group_assets = (array) $asset_group_assets;
-			}
-
-			// Try both the constant value and string key for business name
-			foreach ( [ AssetFieldType::BUSINESS_NAME, 'BUSINESS_NAME' ] as $key ) {
-				if ( ! empty( $asset_group_assets[ $key ] ) ) {
-					$business_asset = $asset_group_assets[ $key ];
-					$business_id    = is_object( $business_asset ) ? ( $business_asset->id ?? null ) : ( $business_asset['id'] ?? null );
-					if ( $business_id ) {
-						$business_ids[] = $business_id;
-						break;
-					}
-				}
-			}
-
-			// Try both the constant value and string key for logo
-			foreach ( [ AssetFieldType::LOGO, 'LOGO' ] as $key ) {
-				if ( ! empty( $asset_group_assets[ $key ] ) ) {
-					$logos = $asset_group_assets[ $key ];
-					// Handle both single object/array and array of objects/arrays
-					if ( is_object( $logos ) || ( is_array( $logos ) && isset( $logos['id'] ) ) ) {
-						$logos = [ $logos ];
-					}
-					foreach ( (array) $logos as $logo ) {
-						$logo_id = is_object( $logo ) ? ( $logo->id ?? null ) : ( $logo['id'] ?? null );
-						if ( $logo_id ) {
-							$logo_ids[] = $logo_id;
-						}
-					}
-					break;
-				}
-			}
-
-			// Existing campaign assets - we'll remove old brand assets and add new ones.
-			$existing_assets = ( new AdsCampaignAssetQuery() )
-				->set_client( $this->client, $this->options->get_ads_id() )
-				->where( 'campaign.id', $campaign_id, '=' )
-				->get_results();
-
-			$operations = [];
-
-			// Only proceed if we have new assets to link
-			if ( empty( $business_ids ) && empty( $logo_ids ) ) {
-				return [];
-			}
-
-			foreach ( $existing_assets->iterateAllElements() as $row ) {
-				$asset = $row->getCampaignAsset();
+			foreach ( $account_assets->iterateAllElements() as $row ) {
+				$asset = $row->getAsset();
 				if ( ! $asset ) {
 					continue;
 				}
 
-				$field_type = AssetFieldType::label( $asset->getFieldType() );
+				$type = AdsAssetType::name( $asset->getType() );
 
-				// Remove existing business name assets only if we have new business names
-				if ( ! empty( $business_ids ) && AssetFieldType::BUSINESS_NAME === $field_type ) {
-					$operations[] = $this->campaign_asset->create_remove_operation( $asset->getResourceName() );
+				// TEXT assets can be business name (prefer if available)
+				if ( $needs_business_name && 'TEXT' === $type && empty( $business_ids ) ) {
+					$business_ids[] = $asset->getId();
 				}
 
-				// Remove existing logo/marketing image assets only if we have new logos
-				if ( ! empty( $logo_ids ) && ( AssetFieldType::LOGO === $field_type || 'MARKETING_IMAGE' === $field_type ) ) {
-					$operations[] = $this->campaign_asset->create_remove_operation( $asset->getResourceName() );
+				// IMAGE assets are logos
+				if ( $needs_logo && 'IMAGE' === $type ) {
+					$logo_ids[] = $asset->getId();
+				}
+
+				if ( ( ! $needs_business_name || ! empty( $business_ids ) ) && ( ! $needs_logo || ! empty( $logo_ids ) ) ) {
+					break;
 				}
 			}
 
-			// Add new asset link operations.
-			$new_operations = $this->campaign_asset->create_link_operations( $campaign_id, $business_ids, $logo_ids );
-			$operations     = array_merge( $operations, $new_operations );
+			// If we couldn't find the required assets at account level, try fetching from asset group
+			if ( ( $needs_business_name && empty( $business_ids ) ) || ( $needs_logo && empty( $logo_ids ) ) ) {
+				$asset_groups = $this->container->get( AdsAssetGroup::class )->get_asset_groups_by_campaign_id( $campaign_id, true );
 
-			return $operations;
+				if ( ! empty( $asset_groups ) ) {
+					$first_asset_group  = $asset_groups[0];
+					$asset_group_assets = is_object( $first_asset_group )
+						? ( $first_asset_group->assets ?? [] )
+						: ( $first_asset_group['assets'] ?? [] );
+
+					if ( is_object( $asset_group_assets ) ) {
+						$asset_group_assets = (array) $asset_group_assets;
+					}
+
+					// Try to get business name from asset group if still needed
+					if ( $needs_business_name && empty( $business_ids ) ) {
+						foreach ( [ AssetFieldType::BUSINESS_NAME, 'BUSINESS_NAME' ] as $key ) {
+							if ( ! empty( $asset_group_assets[ $key ] ) ) {
+								$business_asset = $asset_group_assets[ $key ];
+								$business_id    = is_object( $business_asset ) ? ( $business_asset->id ?? null ) : ( $business_asset['id'] ?? null );
+								if ( $business_id ) {
+									$business_ids[] = $business_id;
+									break;
+								}
+							}
+						}
+					}
+
+					// Try to get logos from asset group if still needed
+					if ( $needs_logo && empty( $logo_ids ) ) {
+						foreach ( [ AssetFieldType::LOGO, 'LOGO' ] as $key ) {
+							if ( ! empty( $asset_group_assets[ $key ] ) ) {
+								$logos = $asset_group_assets[ $key ];
+								if ( is_object( $logos ) || ( is_array( $logos ) && isset( $logos['id'] ) ) ) {
+									$logos = [ $logos ];
+								}
+								foreach ( (array) $logos as $logo ) {
+									$logo_id = is_object( $logo ) ? ( $logo->id ?? null ) : ( $logo['id'] ?? null );
+									if ( $logo_id ) {
+										$logo_ids[] = $logo_id;
+									}
+								}
+								break;
+							}
+						}
+					}
+				}
+			}
+
+			if ( empty( $business_ids ) && empty( $logo_ids ) ) {
+				return [];
+			}
+
+			return $this->campaign_asset->create_link_operations( $campaign_id, $business_ids, $logo_ids );
 		} catch ( Exception $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 			return [];
