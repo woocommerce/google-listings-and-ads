@@ -96,13 +96,6 @@ class AssetFieldType extends StatusMapping {
 	public const PORTRAIT_MARKETING_IMAGE = 'portrait_marketing_image';
 
 	/**
-	 * The asset is linked for use as a tall portrait marketing image.
-	 *
-	 * @var string
-	 */
-	public const TALL_PORTRAIT_MARKETING_IMAGE = 'tall_portrait_marketing_image';
-
-	/**
 	 * The asset is linked for use as a landscape logo.
 	 *
 	 * @var string
@@ -129,21 +122,20 @@ class AssetFieldType extends StatusMapping {
 	 * @var string
 	 */
 	protected const MAPPING = [
-		AdsAssetFieldType::UNSPECIFIED                   => self::UNSPECIFIED,
-		AdsAssetFieldType::UNKNOWN                       => self::UNKNOWN,
-		AdsAssetFieldType::HEADLINE                      => self::HEADLINE,
-		AdsAssetFieldType::DESCRIPTION                   => self::DESCRIPTION,
-		AdsAssetFieldType::MARKETING_IMAGE               => self::MARKETING_IMAGE,
-		AdsAssetFieldType::LONG_HEADLINE                 => self::LONG_HEADLINE,
-		AdsAssetFieldType::BUSINESS_NAME                 => self::BUSINESS_NAME,
-		AdsAssetFieldType::SQUARE_MARKETING_IMAGE        => self::SQUARE_MARKETING_IMAGE,
-		AdsAssetFieldType::LOGO                          => self::LOGO,
-		AdsAssetFieldType::CALL_TO_ACTION_SELECTION      => self::CALL_TO_ACTION_SELECTION,
-		AdsAssetFieldType::PORTRAIT_MARKETING_IMAGE      => self::PORTRAIT_MARKETING_IMAGE,
-		AdsAssetFieldType::TALL_PORTRAIT_MARKETING_IMAGE => self::TALL_PORTRAIT_MARKETING_IMAGE,
-		AdsAssetFieldType::LANDSCAPE_LOGO                => self::LANDSCAPE_LOGO,
-		AdsAssetFieldType::YOUTUBE_VIDEO                 => self::YOUTUBE_VIDEO,
-		AdsAssetFieldType::MEDIA_BUNDLE                  => self::MEDIA_BUNDLE,
+		AdsAssetFieldType::UNSPECIFIED              => self::UNSPECIFIED,
+		AdsAssetFieldType::UNKNOWN                  => self::UNKNOWN,
+		AdsAssetFieldType::HEADLINE                 => self::HEADLINE,
+		AdsAssetFieldType::DESCRIPTION              => self::DESCRIPTION,
+		AdsAssetFieldType::MARKETING_IMAGE          => self::MARKETING_IMAGE,
+		AdsAssetFieldType::LONG_HEADLINE            => self::LONG_HEADLINE,
+		AdsAssetFieldType::BUSINESS_NAME            => self::BUSINESS_NAME,
+		AdsAssetFieldType::SQUARE_MARKETING_IMAGE   => self::SQUARE_MARKETING_IMAGE,
+		AdsAssetFieldType::LOGO                     => self::LOGO,
+		AdsAssetFieldType::CALL_TO_ACTION_SELECTION => self::CALL_TO_ACTION_SELECTION,
+		AdsAssetFieldType::PORTRAIT_MARKETING_IMAGE => self::PORTRAIT_MARKETING_IMAGE,
+		AdsAssetFieldType::LANDSCAPE_LOGO           => self::LANDSCAPE_LOGO,
+		AdsAssetFieldType::YOUTUBE_VIDEO            => self::YOUTUBE_VIDEO,
+		AdsAssetFieldType::MEDIA_BUNDLE             => self::MEDIA_BUNDLE,
 
 	];
 

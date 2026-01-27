@@ -45,18 +45,25 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	protected $google_ads_client;
 
 	/**
-	 * Mapping from lowercase input strings to AssetFieldType constants.
+	 * Valid text asset field types.
 	 *
 	 * @var array
 	 */
-	protected const TYPE_MAPPING = [
-		'headline'                      => AssetFieldType::HEADLINE,
-		'long_headline'                 => AssetFieldType::LONG_HEADLINE,
-		'description'                   => AssetFieldType::DESCRIPTION,
-		'marketing_image'               => AssetFieldType::MARKETING_IMAGE,
-		'square_marketing_image'        => AssetFieldType::SQUARE_MARKETING_IMAGE,
-		'portrait_marketing_image'      => AssetFieldType::PORTRAIT_MARKETING_IMAGE,
-		'tall_portrait_marketing_image' => AssetFieldType::TALL_PORTRAIT_MARKETING_IMAGE,
+	protected const VALID_TEXT_TYPES = [
+		AssetFieldType::HEADLINE,
+		AssetFieldType::LONG_HEADLINE,
+		AssetFieldType::DESCRIPTION,
+	];
+
+	/**
+	 * Valid image asset field types.
+	 *
+	 * @var array
+	 */
+	protected const VALID_IMAGE_TYPES = [
+		AssetFieldType::MARKETING_IMAGE,
+		AssetFieldType::SQUARE_MARKETING_IMAGE,
+		AssetFieldType::PORTRAIT_MARKETING_IMAGE,
 	];
 
 	/**
@@ -95,8 +102,7 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 		}
 
 		// Convert asset field types from lowercase strings to enum numbers.
-		$allowed_types     = [ AssetFieldType::HEADLINE, AssetFieldType::LONG_HEADLINE, AssetFieldType::DESCRIPTION ];
-		$asset_field_types = $this->convert_types_to_enums( $args['asset_field_types'], $allowed_types );
+		$asset_field_types = $this->convert_types_to_enums( $args['asset_field_types'], self::VALID_TEXT_TYPES );
 
 		$request = new GenerateTextRequest(
 			[
@@ -134,7 +140,7 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	 *     Optional. Arguments for generating image assets.
 	 *
 	 *     @type string $final_url        The final URL - defaults to the Site URL.
-	 *     @type array  $asset_field_types Can be one or more of: marketing_image, square_marketing_image, portrait_marketing_image, tall_portrait_marketing_image.
+	 *     @type array  $asset_field_types Can be one or more of: marketing_image, square_marketing_image, portrait_marketing_image.
 	 * }
 	 * @return array Array of generated image objects with 'temporary_image_url' and 'type' keys.
 	 * @throws Exception If the image assets can't be generated.
@@ -150,8 +156,7 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 		// Convert asset field types from lowercase strings to enum numbers (if provided).
 		$asset_field_types = [];
 		if ( ! empty( $args['asset_field_types'] ) ) {
-			$allowed_types     = [ AssetFieldType::MARKETING_IMAGE, AssetFieldType::SQUARE_MARKETING_IMAGE, AssetFieldType::PORTRAIT_MARKETING_IMAGE, AssetFieldType::TALL_PORTRAIT_MARKETING_IMAGE ];
-			$asset_field_types = $this->convert_types_to_enums( $args['asset_field_types'], $allowed_types );
+			$asset_field_types = $this->convert_types_to_enums( $args['asset_field_types'], self::VALID_IMAGE_TYPES );
 		}
 
 		$request_data = [
@@ -201,18 +206,12 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	protected function convert_types_to_enums( array $types, array $allowed_types = [] ): array {
 		$enums = [];
 		foreach ( $types as $type ) {
-			if ( ! isset( self::TYPE_MAPPING[ $type ] ) ) {
-				continue;
-			}
-
-			$internal_type = self::TYPE_MAPPING[ $type ];
-
 			// Filter by allowed types if specified.
-			if ( ! empty( $allowed_types ) && ! in_array( $internal_type, $allowed_types, true ) ) {
+			if ( ! empty( $allowed_types ) && ! in_array( $type, $allowed_types, true ) ) {
 				continue;
 			}
 
-			$enums[] = AssetFieldType::number( $internal_type );
+			$enums[] = AssetFieldType::number( $type );
 		}
 
 		return $enums;

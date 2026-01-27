@@ -1212,10 +1212,9 @@ trait GoogleAdsClientTrait {
 	 */
 	protected function generate_image_assets_mock( array $image_assets ) {
 		$type_mapping = [
-			'MARKETING_IMAGE'               => AssetFieldType::MARKETING_IMAGE,
-			'SQUARE_MARKETING_IMAGE'        => AssetFieldType::SQUARE_MARKETING_IMAGE,
-			'PORTRAIT_MARKETING_IMAGE'      => AssetFieldType::PORTRAIT_MARKETING_IMAGE,
-			'TALL_PORTRAIT_MARKETING_IMAGE' => AssetFieldType::TALL_PORTRAIT_MARKETING_IMAGE,
+			'MARKETING_IMAGE'          => AssetFieldType::MARKETING_IMAGE,
+			'SQUARE_MARKETING_IMAGE'   => AssetFieldType::SQUARE_MARKETING_IMAGE,
+			'PORTRAIT_MARKETING_IMAGE' => AssetFieldType::PORTRAIT_MARKETING_IMAGE,
 		];
 
 		$image_asset_objects = [];
