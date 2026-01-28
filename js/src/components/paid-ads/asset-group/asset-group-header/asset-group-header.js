@@ -36,6 +36,7 @@ export default function AssetGroupHeader() {
 		hasAISuggestedMediaAssets,
 		fetchAssets,
 		isFetchingAssets,
+		isEditing,
 	} = adapter;
 
 	const fetchCampaignAssets = useCallback(
@@ -47,11 +48,11 @@ export default function AssetGroupHeader() {
 	);
 
 	useEffect( () => {
-		console.log( adapter.baseAssetGroup[ ASSET_FORM_KEY.FINAL_URL ] );
 		async function loadAssets() {
 			if (
 				hasLoadedInitialHomepageAssetsRef.current ||
-				adapter.baseAssetGroup[ ASSET_FORM_KEY.FINAL_URL ]
+				adapter.baseAssetGroup[ ASSET_FORM_KEY.FINAL_URL ] ||
+				isEditing
 			) {
 				return;
 			}

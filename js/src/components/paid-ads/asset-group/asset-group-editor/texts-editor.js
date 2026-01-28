@@ -221,7 +221,7 @@ export default function TextsEditor( {
 				onClick={ handleAddClick }
 			/>
 
-			{ emptyFieldsCount > 0 && (
+			{ emptyFieldsCount > 0 && generateButtonText && (
 				<AssetItemActionButton
 					action={ ACTION_TYPES.GENERATE }
 					text={ generateButtonText }

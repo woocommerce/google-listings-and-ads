@@ -220,7 +220,6 @@ const EditPaidAdsCampaign = () => {
 		getHistory().push( getDashboardUrl() );
 	};
 
-	assetEntityGroup.final_url = 'https://asvin-10upv2.ngrok.app/shop/';
 	return (
 		<>
 			<TopBar
