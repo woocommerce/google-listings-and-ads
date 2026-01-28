@@ -5,8 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Menu;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
 
 /**
@@ -14,10 +12,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Menu
  */
-class GetStarted implements Service, Registerable, MerchantCenterAwareInterface {
+class GetStarted implements Service, Registerable {
 
 	use MenuFixesTrait;
-	use MerchantCenterAwareTrait;
 
 	public const PATH = '/google/start';
 
