@@ -18,7 +18,6 @@ import { recordGlaEvent } from '~/utils/tracks';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import AssetGroupHeader from './asset-group-header';
 import AssetGroupEditor from './asset-group-editor';
-import GenAIProgress from '../gen-ai-progress';
 import { upsertActionedCampaign } from '~/utils/actionedCampaignsCache';
 import './asset-group.scss';
 
