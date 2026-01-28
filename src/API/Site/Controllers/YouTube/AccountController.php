@@ -167,7 +167,7 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 			try {
 				$result = $this->connection->third_party_link();
 
-				if ( isset( $result['status']['linkedStatus'] ) && 'linked' === $result['status']['linkedStatus'] ) {
+				if ( isset( $result['status']['linkStatus'] ) && 'linked' === $result['status']['linkStatus'] ) {
 					return [
 						'status'  => 'success',
 						'message' => __( 'Successfully completed YouTube setup.', 'google-listings-and-ads' ),
