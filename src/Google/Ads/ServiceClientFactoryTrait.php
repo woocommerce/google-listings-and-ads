@@ -19,6 +19,7 @@ use Google\Ads\GoogleAds\V22\Services\Client\AdGroupAdServiceClient;
 use Google\Ads\GoogleAds\V22\Services\Client\AdGroupCriterionServiceClient;
 use Google\Ads\GoogleAds\V22\Services\Client\AdGroupServiceClient;
 use Google\Ads\GoogleAds\V22\Services\Client\AdServiceClient;
+use Google\Ads\GoogleAds\V22\Services\Client\AssetGenerationServiceClient;
 use Google\Ads\GoogleAds\V22\Services\Client\AssetGroupListingGroupFilterServiceClient;
 use Google\Ads\GoogleAds\V22\Services\Client\AssetGroupServiceClient;
 use Google\Ads\GoogleAds\V22\Services\Client\BillingSetupServiceClient;
@@ -208,5 +209,12 @@ trait ServiceClientFactoryTrait {
 	 */
 	public function getRecommendationServiceClient(): RecommendationServiceClient {
 		return new RecommendationServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return AssetGenerationServiceClient
+	 */
+	public function getAssetGenerationServiceClient(): AssetGenerationServiceClient {
+		return new AssetGenerationServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 }
