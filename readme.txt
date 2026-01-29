@@ -5,7 +5,7 @@ Requires at least: 6.6
 Tested up to: 6.9
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.5.1
+Stable tag: 3.5.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -140,6 +140,12 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.5.2 - 2026-01-29 =
+* Add - Sorting functionality in `AllProgramsTableCard` to allow users to reorder columns by key attributes.
+* Fix - Resolve an issue where website claim conflicts were not detected correctly during Google Merchant Center account setup in the onboarding flow.
+* Update - Add `timeZone` and `languageCode` fields to create-merchant request for Merchant API compatibility.
+* Update - Allow legacy conversion events to be disabled via a filter.
+
 = 3.5.1 - 2025-12-10 =
 * Add - EU political content confirmation checkbox for EU-based advertisers.
 * Fix - Button misaligned after navigating between tabs.
@@ -161,13 +167,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix - Prevent floating point precision errors when converting to micro units by rounding before casting to integer.
 * Fix - Remove ads account status check from `ads/recommendations` endpoint.
 * Tweak - WC 10.3 compatibility.
-
-= 3.4.3 - 2025-09-16 =
-* Dev - Update NPM packages with security issues.
-* Dev - Update NPM packages with security issues.
-* Fix - Improve focus handling in `TreeSelectControl`.
-* Fix - Use `isGoogleAdsReady` property instead of `hasGoogleAdsConnection` to check for a connected Ads account.
-* Tweak - WC 10.2 compatibility.
-* Update - Incorporate API changes for EU political advertising.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
