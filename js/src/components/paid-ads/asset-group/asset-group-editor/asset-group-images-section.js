@@ -35,7 +35,7 @@ const AssetGroupImagesSection = ( {
 	renderErrors,
 } ) => {
 	const { values, getInputProps, adapter } = useAdaptiveFormContext();
-	const showTip = adapter.hasImportedAssets;
+	const showTip = adapter.hasAISuggestedMediaAssets;
 
 	return (
 		<Section

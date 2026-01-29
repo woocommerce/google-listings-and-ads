@@ -539,6 +539,8 @@ test.describe( 'Add paid campaign', () => {
 			await setCompletedAdsSetup();
 			await createCampaignPage.mockRequests();
 			await createCampaignPage.mockOptimizeCampaignRequests();
+			await createCampaignPage.mockGenerateTextAssetsSuccess();
+			await createCampaignPage.mockGenerateImageAssetsSuccess();
 			createCampaignPage.goto();
 		} );
 
@@ -612,34 +614,20 @@ test.describe( 'Add paid campaign', () => {
 							} );
 
 							test( 'Generate headline button is visible when at least one input is empty', async () => {
-								const addHeadlineButton =
-									createCampaignPage.getAddHeadlineButton();
-								await addHeadlineButton.click();
-
 								const generateHeadlineButton =
 									createCampaignPage.getGenerateHeadlineButton();
 								await expect(
 									generateHeadlineButton
-								).toBeVisible();
-
-								const generateHeadlinesButton =
-									createCampaignPage.getGenerateHeadlinesButton();
-								await expect(
-									generateHeadlinesButton
 								).not.toBeVisible();
 
-								const headlineInputsValues =
-									await createCampaignPage.getHeadlineInputsValues();
+								const headlineInputs =
+									await createCampaignPage.getHeadlineInputs();
+								const lastHeadlineInput = headlineInputs.last();
+								await lastHeadlineInput.fill( '' );
 
 								await expect(
-									headlineInputsValues
-								).toHaveLength( 4 );
-
-								const lastValue =
-									headlineInputsValues[
-										headlineInputsValues.length - 1
-									];
-								expect( lastValue ).toBe( '' );
+									generateHeadlineButton
+								).toBeVisible();
 							} );
 						} );
 
@@ -671,7 +659,7 @@ test.describe( 'Add paid campaign', () => {
 										headlineInputsValues.length - 1
 									];
 								expect( lastValue ).toBe(
-									'Shop the Latest Deals'
+									'Fast Shipping Available'
 								);
 							} );
 						} );
@@ -688,34 +676,21 @@ test.describe( 'Add paid campaign', () => {
 							} );
 
 							test( 'Generate long headline button is visible when at least one input is empty', async () => {
-								const addLongHeadlineButton =
-									createCampaignPage.getAddLongHeadlineButton();
-								await addLongHeadlineButton.click();
-
 								const generateLongHeadlineButton =
 									createCampaignPage.getGenerateLongHeadlineButton();
 								await expect(
 									generateLongHeadlineButton
-								).toBeVisible();
-
-								const generateLongHeadlinesButton =
-									createCampaignPage.getGenerateLongHeadlinesButton();
-								await expect(
-									generateLongHeadlinesButton
 								).not.toBeVisible();
 
-								const longHeadlineInputsValues =
-									await createCampaignPage.getLongHeadlineInputsValues();
+								const longHeadlineInputs =
+									await createCampaignPage.getLongHeadlineInputs();
+								const lastLongHeadlineInput =
+									longHeadlineInputs.last();
+								await lastLongHeadlineInput.fill( '' );
 
 								await expect(
-									longHeadlineInputsValues
-								).toHaveLength( 2 );
-
-								const lastValue =
-									longHeadlineInputsValues[
-										longHeadlineInputsValues.length - 1
-									];
-								expect( lastValue ).toBe( '' );
+									generateLongHeadlineButton
+								).toBeVisible();
 							} );
 						} );
 
@@ -747,7 +722,7 @@ test.describe( 'Add paid campaign', () => {
 										longHeadlineInputsValues.length - 1
 									];
 								expect( lastValue ).toBe(
-									'Discover quality products at great prices'
+									'Smart shopping starts right here'
 								);
 							} );
 						} );
@@ -764,33 +739,21 @@ test.describe( 'Add paid campaign', () => {
 							} );
 
 							test( 'Generate description button is visible when at least one input is empty', async () => {
-								const addDescriptionButton =
-									createCampaignPage.getAddDescriptionButton();
-								await addDescriptionButton.click();
-
 								const generateDescriptionButton =
 									createCampaignPage.getGenerateDescriptionButton();
 								await expect(
 									generateDescriptionButton
-								).toBeVisible();
-
-								const generateDescriptionsButton =
-									createCampaignPage.getGenerateDescriptionsButton();
-								await expect(
-									generateDescriptionsButton
 								).not.toBeVisible();
 
-								const descriptionInputsValues =
-									await createCampaignPage.getDescriptionInputsValues();
-								await expect(
-									descriptionInputsValues
-								).toHaveLength( 3 );
+								const descriptionInputs =
+									await createCampaignPage.getDescriptionInputs();
+								const lastDescriptionInput =
+									descriptionInputs.last();
+								await lastDescriptionInput.fill( '' );
 
-								const lastValue =
-									descriptionInputsValues[
-										descriptionInputsValues.length - 1
-									];
-								expect( lastValue ).toBe( '' );
+								await expect(
+									generateDescriptionButton
+								).toBeVisible();
 							} );
 						} );
 
@@ -822,7 +785,7 @@ test.describe( 'Add paid campaign', () => {
 										descriptionInputsValues.length - 1
 									];
 								expect( lastValue ).toBe(
-									'Browse top picks and enjoy exclusive savings.'
+									'Quality products backed by great support.'
 								);
 							} );
 						} );
@@ -857,9 +820,11 @@ test.describe( 'Add paid campaign', () => {
 						} );
 
 						test( 'Displays error message when there are no more generated text', async () => {
-							const addDescriptionButton =
-								createCampaignPage.getAddDescriptionButton();
-							await addDescriptionButton.click();
+							const descriptionInputs =
+								await createCampaignPage.getDescriptionInputs();
+							const lastDescriptionInput =
+								descriptionInputs.last();
+							await lastDescriptionInput.fill( '' );
 
 							const generateDescriptionButton =
 								createCampaignPage.getGenerateDescriptionButton();
@@ -923,22 +888,6 @@ test.describe( 'Add paid campaign', () => {
 								await expect( generatedImages ).toHaveCount(
 									4
 								);
-							} );
-						} );
-
-						test.describe( 'No generated assets', () => {
-							test.beforeEach( async () => {
-								createCampaignPage.mockEmptyGenerateImageAssets();
-							} );
-
-							test( 'Hides the image picker if there are no generated images', async () => {
-								const generateLandscapeImagesButton =
-									createCampaignPage.getGenerateLandscapeImagesButton();
-								await generateLandscapeImagesButton.click();
-
-								const imagePicker =
-									createCampaignPage.getLandscapeImagesSectionImagePicker();
-								await expect( imagePicker ).not.toBeVisible();
 							} );
 						} );
 					} );
@@ -1101,22 +1050,6 @@ test.describe( 'Add paid campaign', () => {
 							await expect( generatedImages ).toHaveCount( 3 );
 						} );
 					} );
-
-					test.describe( 'No generated assets', () => {
-						test.beforeEach( async () => {
-							createCampaignPage.mockEmptyGenerateImageAssets();
-						} );
-
-						test( 'Hides the image picker if there are no generated images', async () => {
-							const generateSquareImagesButton =
-								createCampaignPage.getGenerateSquareImagesButton();
-							await generateSquareImagesButton.click();
-
-							const imagePicker =
-								createCampaignPage.getSquareImagesSectionImagePicker();
-							await expect( imagePicker ).not.toBeVisible();
-						} );
-					} );
 				} );
 
 				test.describe( 'Portrait images', () => {
@@ -1166,22 +1099,6 @@ test.describe( 'Add paid campaign', () => {
 							const generatedImages =
 								createCampaignPage.getPortraitGeneratedImages();
 							await expect( generatedImages ).toHaveCount( 2 );
-						} );
-					} );
-
-					test.describe( 'No generated assets', () => {
-						test.beforeEach( async () => {
-							createCampaignPage.mockEmptyGenerateImageAssets();
-						} );
-
-						test( 'Hides the image picker if there are no generated images', async () => {
-							const generatePortraitImagesButton =
-								createCampaignPage.getGeneratePortraitImagesButton();
-							await generatePortraitImagesButton.click();
-
-							const imagePicker =
-								createCampaignPage.getPortraitImagesSectionImagePicker();
-							await expect( imagePicker ).not.toBeVisible();
 						} );
 					} );
 				} );

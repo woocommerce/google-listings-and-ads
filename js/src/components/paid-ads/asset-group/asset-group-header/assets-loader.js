@@ -92,12 +92,11 @@ function mapFinalUrlsToOptions( finalUrls, search ) {
  * and then loading the suggested assets.
  *
  * @param {Object} props React props.
- * @param {boolean} props.loading Whether the assets are being loaded.
  * @param {(finalUrl: FinalUrl) => void} props.onSelectFinalUrl Callback fired when a final URL is selected. Receives the selected final URL as the first argument.
  *
  * @fires gla_import_assets_by_final_url_button_click
  */
-export default function AssetsLoader( { loading, onSelectFinalUrl } ) {
+export default function AssetsLoader( { onSelectFinalUrl } ) {
 	const cacheRef = useRef( {} );
 	const latestSearchRef = useRef();
 
@@ -175,7 +174,6 @@ export default function AssetsLoader( { loading, onSelectFinalUrl } ) {
 				isSearchable
 				hideBeforeSearch
 				excludeSelectedOptions={ false }
-				disabled={ loading }
 				options={ [] } // The actual options will be provided via the callback results of `onSearch`.
 				selected={ selectedOptions }
 				onSearch={ debouncedHandleSearch }
@@ -184,13 +182,10 @@ export default function AssetsLoader( { loading, onSelectFinalUrl } ) {
 			/>
 			<AppButton
 				isSecondary
-				text={
-					loading ? '' : __( 'Select', 'google-listings-and-ads' )
-				}
+				text={ __( 'Select', 'google-listings-and-ads' ) }
 				eventName="gla_import_assets_by_final_url_button_click"
 				eventProps={ { type: finalUrl?.type } }
 				disabled={ ! finalUrl }
-				loading={ loading }
 				onClick={ handleClick }
 			/>
 		</>
