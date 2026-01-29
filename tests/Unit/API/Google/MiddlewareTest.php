@@ -15,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GuzzleClientTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DateTimeUtility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -39,6 +40,9 @@ class MiddlewareTest extends UnitTest {
 
 	/** @var MockObject|GoogleHelper $google_helper */
 	protected $google_helper;
+
+	/** @var MockObject|ISOUtility $iso_utility */
+	protected $iso_utility;
 
 	/** @var MockObject|Merchant $merchant */
 	protected $merchant;
@@ -98,6 +102,7 @@ class MiddlewareTest extends UnitTest {
 		$this->ads           = $this->createMock( Ads::class );
 		$this->date_utility  = $this->createMock( DateTimeUtility::class );
 		$this->google_helper = $this->createMock( GoogleHelper::class );
+		$this->iso_utility   = $this->createMock( ISOUtility::class );
 		$this->merchant      = $this->createMock( Merchant::class );
 		$this->options       = $this->createMock( OptionsInterface::class );
 		$this->transients    = $this->createMock( TransientsInterface::class );
@@ -107,6 +112,7 @@ class MiddlewareTest extends UnitTest {
 		$this->container->addShared( Ads::class, $this->ads );
 		$this->container->addShared( DateTimeUtility::class, $this->date_utility );
 		$this->container->addShared( GoogleHelper::class, $this->google_helper );
+		$this->container->addShared( ISOUtility::class, $this->iso_utility );
 		$this->container->addShared( Merchant::class, $this->merchant );
 		$this->container->addShared( TransientsInterface::class, $this->transients );
 		$this->container->addShared( WC::class, $this->wc );
@@ -197,6 +203,25 @@ class MiddlewareTest extends UnitTest {
 		$this->middleware->create_merchant_account();
 	}
 
+	public function test_create_merchant_account_merchant_api_name_error() {
+		$this->generate_create_account_exception_mock(
+			'The account did not pass validation',
+			[ 'id' => self::TEST_MERCHANT_ID ]
+		);
+
+		$this->assertEquals( self::TEST_MERCHANT_ID, $this->middleware->create_merchant_account() );
+	}
+
+	public function test_create_merchant_account_merchant_api_invalid_homepage_url() {
+		$this->generate_create_account_exception_mock(
+			'Unable to set homepage URL'
+		);
+
+		$this->expectException( InvalidDomainName::class );
+		$this->expectExceptionMessage( 'The homepage URL' );
+		$this->middleware->create_merchant_account();
+	}
+
 	public function test_create_merchant_account_exception() {
 		$this->generate_create_account_exception_mock( 'error' );
 
@@ -216,11 +241,18 @@ class MiddlewareTest extends UnitTest {
 	}
 
 	public function test_create_merchant_account() {
-		$this->generate_create_account_mock(
-			[ 'id' => self::TEST_MERCHANT_ID ]
-		);
+		$test_timezone = 'America/New_York';
+		$test_bcp47    = 'en-US';
+
+		$this->wp->method( 'wp_timezone_string' )->willReturn( $test_timezone );
+		$this->date_utility->method( 'maybe_convert_tz_string' )->willReturn( $test_timezone );
+		$this->iso_utility->method( 'wp_locale_to_bcp47' )->willReturn( $test_bcp47 );
+
+		$this->generate_create_account_mock( [ 'id' => self::TEST_MERCHANT_ID ] );
 
 		$this->assertEquals( self::TEST_MERCHANT_ID, $this->middleware->create_merchant_account() );
+		$this->assertEquals( $test_timezone, $this->captured_request_body['timeZone'] );
+		$this->assertEquals( $test_bcp47, $this->captured_request_body['languageCode'] );
 	}
 
 	public function test_link_merchant_account() {
