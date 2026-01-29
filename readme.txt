@@ -162,12 +162,4 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix - Remove ads account status check from `ads/recommendations` endpoint.
 * Tweak - WC 10.3 compatibility.
 
-= 3.4.3 - 2025-09-16 =
-* Dev - Update NPM packages with security issues.
-* Dev - Update NPM packages with security issues.
-* Fix - Improve focus handling in `TreeSelectControl`.
-* Fix - Use `isGoogleAdsReady` property instead of `hasGoogleAdsConnection` to check for a connected Ads account.
-* Tweak - WC 10.2 compatibility.
-* Update - Incorporate API changes for EU political advertising.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
