@@ -139,7 +139,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			->willReturn(
 				[
 					'status' => [
-						'linkedStatus' => 'linked',
+						'linkStatus' => 'linked',
 					],
 				]
 			);
