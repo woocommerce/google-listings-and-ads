@@ -91,7 +91,7 @@ const registerPluginAdminPages = () => {
 			{
 				breadcrumbs: [
 					...initialBreadcrumbs,
-					__( 'Setup Merchant Center', 'google-listings-and-ads' ),
+					__( 'Setup your accounts', 'google-listings-and-ads' ),
 				],
 				container: Onboarding,
 				path: '/google/setup-mc',

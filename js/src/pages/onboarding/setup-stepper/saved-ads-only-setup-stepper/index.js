@@ -172,7 +172,7 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 				},
 				{
 					key: ADS_ONLY_STEP_NAME_KEY_MAP.create_campaign,
-					label: __( 'Create a campaign', 'google-listings-and-ads' ),
+					label: __( 'Set your budget', 'google-listings-and-ads' ),
 					content: (
 						<SetupPaidAds
 							onSubmit={ handleSetupPaidAdsSubmit }
@@ -184,7 +184,7 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 				{
 					key: ADS_ONLY_STEP_NAME_KEY_MAP.optimize_campaign,
 					label: __(
-						'Optimize your campaign',
+						'Create your campaign',
 						'google-listings-and-ads'
 					),
 					content: (
