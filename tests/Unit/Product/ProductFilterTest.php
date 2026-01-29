@@ -79,7 +79,7 @@ class ProductFilterTest extends ContainerAwareUnitTest {
 	public function test_filter_sync_ready_products_with_pre_filter() {
 		add_filter(
 			'woocommerce_gla_get_sync_ready_products_pre_filter',
-			function ( $products ) {
+			function ( $products ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
 				return [];
 			}
 		);
@@ -96,7 +96,7 @@ class ProductFilterTest extends ContainerAwareUnitTest {
 	public function test_filter_sync_ready_products_with_post_filter() {
 		add_filter(
 			'woocommerce_gla_get_sync_ready_products_filter',
-			function ( $products ) {
+			function ( $products ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
 				return [];
 			}
 		);
