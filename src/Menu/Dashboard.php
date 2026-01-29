@@ -25,7 +25,7 @@ class Dashboard implements Service, Registerable {
 	 *
 	 * @var OnboardingCompleted
 	 */
-	private OnboardingCompleted $onboarding_completed;
+	private $onboarding_completed;
 
 	/**
 	 * Dashboard constructor.

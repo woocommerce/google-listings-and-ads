@@ -26,7 +26,7 @@ class GetStarted implements Service, Registerable {
 	private OnboardingCompleted $onboarding_completed;
 
 	/**
-	 * Dashboard constructor.
+	 * GetStarted constructor.
 	 *
 	 * @param OnboardingCompleted $onboarding_completed Onboarding completed status.
 	 */
