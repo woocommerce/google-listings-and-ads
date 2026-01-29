@@ -111,7 +111,6 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			->method( 'get_channels' )
 			->willReturn( $channels );
 
-
 		$this->options->expects( $this->once() )
 			->method( 'get' )
 			->with( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK, false )
@@ -119,7 +118,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 				[
 					'status' => [
 						'linkStatus' => 'linked',
-					]
+					],
 				]
 			);
 
