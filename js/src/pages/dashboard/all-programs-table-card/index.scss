@@ -18,4 +18,8 @@
 			gap: $grid-unit-15;
 		}
 	}
+
+	.woocommerce-table__header.is-left-aligned.is-sortable {
+		padding-left: $grid-unit-15;
+	}
 }
