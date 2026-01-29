@@ -66,7 +66,7 @@ export default function AssetGroupHeader() {
 		}
 
 		loadAssets();
-	}, [ fetchCampaignAssets, adapter.baseAssetGroup ] );
+	}, [ fetchCampaignAssets, adapter.baseAssetGroup, isEditing ] );
 
 	if ( isFetchingAssets ) {
 		return <GenAIProgress />;
