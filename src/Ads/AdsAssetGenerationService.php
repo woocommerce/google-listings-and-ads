@@ -9,6 +9,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\ExceptionTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Google\Ads\GoogleAds\V22\Services\GenerateTextRequest;
 use Google\Ads\GoogleAds\V22\Services\GenerateImagesRequest;
 use Google\Ads\GoogleAds\V22\Services\FinalUrlImageGenerationInput;
@@ -29,6 +31,7 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 
 	use OptionsAwareTrait;
 	use PluginHelper;
+	use ExceptionTrait;
 
 	/**
 	 * The Asset Generation Service Client.
@@ -129,7 +132,16 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 			return $results;
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
-			throw new Exception( __( 'Unable to generate text assets.', 'google-listings-and-ads' ) . ' ' . $e->getMessage(), $e->getCode() );
+
+			$errors = $this->get_exception_errors( $e );
+
+			throw new ExceptionWithResponseData(
+				/* translators: %s Error message */
+				sprintf( __( 'Unable to generate text assets: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				$e,
+				[ 'errors' => $errors ]
+			);
 		}
 	}
 
@@ -192,7 +204,16 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 			return $results;
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
-			throw new Exception( __( 'Unable to generate image assets.', 'google-listings-and-ads' ) . ' ' . $e->getMessage(), $e->getCode() );
+
+			$errors = $this->get_exception_errors( $e );
+
+			throw new ExceptionWithResponseData(
+				/* translators: %s Error message */
+				sprintf( __( 'Unable to generate image assets: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				$e,
+				[ 'errors' => $errors ]
+			);
 		}
 	}
 
