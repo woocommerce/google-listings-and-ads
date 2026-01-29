@@ -5,7 +5,7 @@ Requires at least: 6.6
 Tested up to: 6.9
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.5.1
+Stable tag: 3.5.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -139,6 +139,12 @@ You can only select the countries that you’re targeting on Google Merchant Cen
 To allow your products to appear in all relevant locations, make sure you’ve correctly [configured your shipping](https://support.google.com/merchants/answer/6069284) for countries where your products can be delivered. Keep in mind that shipping services can cover multiple countries. [Learn more about multi-country shipping](https://support.google.com/merchants/answer/6069284#multicountryshipping).
 
 == Changelog ==
+
+= 3.5.2 - 2026-01-29 =
+* Add - Sorting functionality in `AllProgramsTableCard` to allow users to reorder columns by key attributes.
+* Fix - Resolve an issue where website claim conflicts were not detected correctly during Google Merchant Center account setup in the onboarding flow.
+* Update - Add `timeZone` and `languageCode` fields to create-merchant request for Merchant API compatibility.
+* Update - Allow legacy conversion events to be disabled via a filter.
 
 = 3.5.1 - 2025-12-10 =
 * Add - EU political content confirmation checkbox for EU-based advertisers.
