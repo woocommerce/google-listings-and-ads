@@ -51,6 +51,7 @@ interface OptionsInterface {
 	public const API_PULL_SYNC_MODE                        = 'api_pull_sync_mode';
 	public const YOUTUBE_ORDER_IDS_CACHE                   = 'youtube_export_order_ids';
 	public const YOUTUBE_EXPORT_FILES                      = 'youtube_export_files';
+	public const YOUTUBE_THIRD_PARTY_LINK                  = 'youtube_third_party_link';
 
 	public const VALID_OPTIONS = [
 		self::ADS_ACCOUNT_CURRENCY                      => true,
@@ -92,6 +93,7 @@ interface OptionsInterface {
 		self::API_PULL_SYNC_MODE                        => true,
 		self::YOUTUBE_ORDER_IDS_CACHE                   => true,
 		self::YOUTUBE_EXPORT_FILES                      => true,
+		self::YOUTUBE_THIRD_PARTY_LINK                  => true,
 	];
 
 	public const OPTION_TYPES = [
