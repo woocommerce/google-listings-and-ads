@@ -3,17 +3,21 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Notice } from '@wordpress/components';
+import { useReducedMotion } from '@wordpress/compose';
+import { useEffect, useRef } from '@wordpress/element';
+import { getQuery, getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
+import { getSettingsUrl } from '~/utils/urls';
+import { YOUTUBE_ACCOUNT_STATUS } from '~/constants';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import ConnectedIconLabel from '~/components/connected-icon-label';
 import Section from '~/components/section';
 import DisconnectAccount from './disconnect-account';
 import AppButton from '~/components/app-button';
 import useYouTubeSetupCompleteCallback from '~/hooks/useYouTubeSetupCompleteCallback';
-import { YOUTUBE_ACCOUNT_STATUS } from '~/constants';
 
 /**
  * @typedef { import('./youtube-account-card.js').YouTubeAccount } YouTubeAccount
@@ -36,10 +40,41 @@ import { YOUTUBE_ACCOUNT_STATUS } from '~/constants';
  * @param {YouTubeAccount} props.youTubeAccount The connected YouTube account.
  */
 const ConnectedYouTubeAccountCard = ( { youTubeAccount } ) => {
+	const isReducedMotion = useReducedMotion();
+	const isYouTubeOAuthReturn = getQuery()?.youtube === 'connected';
+	const hasCompletedSetupRef = useRef( false );
+	const containerRef = useRef();
 	const [ handleFinishSetup, { loading, error } ] =
 		useYouTubeSetupCompleteCallback();
 	const shouldLinkYouTubeAccount =
 		youTubeAccount.status === YOUTUBE_ACCOUNT_STATUS.INCOMPLETE;
+
+	useEffect( () => {
+		async function completeSetup() {
+			containerRef.current.scrollIntoView( {
+				behavior: isReducedMotion ? 'auto' : 'smooth',
+				inline: 'nearest',
+				block: 'nearest',
+			} );
+
+			hasCompletedSetupRef.current = true;
+			await handleFinishSetup();
+			getHistory().replace( getSettingsUrl() );
+		}
+
+		if (
+			isYouTubeOAuthReturn &&
+			shouldLinkYouTubeAccount &&
+			! hasCompletedSetupRef.current
+		) {
+			completeSetup();
+		}
+	}, [
+		isYouTubeOAuthReturn,
+		handleFinishSetup,
+		shouldLinkYouTubeAccount,
+		isReducedMotion,
+	] );
 
 	let accountCardProps = {
 		description: youTubeAccount.channel.label,
@@ -65,23 +100,27 @@ const ConnectedYouTubeAccountCard = ( { youTubeAccount } ) => {
 					{ error.message }
 				</Notice>
 			) : undefined,
-			description: __(
-				'Your YouTube account is connected, but setup isn’t complete yet.',
-				'google-listings-and-ads'
-			),
+			description: loading
+				? __( 'Please wait…', 'google-listings-and-ads' )
+				: __(
+						'Your YouTube account is connected, but setup isn’t complete yet.',
+						'google-listings-and-ads'
+				  ),
 		};
 	}
 
 	return (
-		<AccountCard
-			appearance={ APPEARANCE.YOUTUBE }
-			expandedDetail
-			{ ...accountCardProps }
-		>
-			<Section.Card.Footer>
-				<DisconnectAccount />
-			</Section.Card.Footer>
-		</AccountCard>
+		<div ref={ containerRef }>
+			<AccountCard
+				appearance={ APPEARANCE.YOUTUBE }
+				expandedDetail
+				{ ...accountCardProps }
+			>
+				<Section.Card.Footer>
+					<DisconnectAccount />
+				</Section.Card.Footer>
+			</AccountCard>
+		</div>
 	);
 };
 
