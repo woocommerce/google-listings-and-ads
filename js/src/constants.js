@@ -88,6 +88,7 @@ export const GOOGLE_ADS_BILLING_STATUS = {
 export const YOUTUBE_ACCOUNT_STATUS = {
 	CONNECTED: 'connected',
 	DISCONNECTED: 'disconnected',
+	INCOMPLETE: 'incomplete',
 };
 
 // Attribute Mapping
