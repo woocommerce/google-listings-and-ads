@@ -1,23 +1,20 @@
 /**
  * External dependencies
  */
-import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
-import { addQueryArgs } from '@wordpress/url';
 import classnames from 'classnames';
-import { useCallback, useEffect, useRef, useState } from '@wordpress/element';
+import { useCallback, useEffect, useState } from '@wordpress/element';
 import { ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import { ASSET_GROUP_KEY } from '~/constants';
+import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import Section from '~/components/section';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import AppButton from '~/components/app-button';
 import AssetsLoader from './assets-loader';
-import { API_NAMESPACE } from '~/data/constants';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import './final-url-card.scss';
 
 /**
@@ -45,10 +42,9 @@ export default function FinalUrlCard( {
 	initialFinalUrl,
 	hideFooter = false,
 } ) {
-	const [ fetching, setFetching ] = useState( false );
-	const [ finalUrl, setFinalUrl ] = useState( initialFinalUrl || null );
-	const hasLoadedInitialHomepageAssetsRef = useRef( false );
-	const { createNotice } = useDispatchCoreNotices();
+	const { adapter } = useAdaptiveFormContext();
+	const [ finalUrl, setFinalUrl ] = useState( null );
+	const { fetchAssets } = adapter;
 
 	const description = finalUrl ? (
 		<ExternalLink href={ finalUrl }>{ finalUrl }</ExternalLink>
@@ -58,6 +54,10 @@ export default function FinalUrlCard( {
 			'google-listings-and-ads'
 		)
 	);
+
+	useEffect( () => {
+		setFinalUrl( initialFinalUrl );
+	}, [ initialFinalUrl ] );
 
 	const handleAssetsLoaded = useCallback(
 		( suggestedAssets ) => {
@@ -72,61 +72,23 @@ export default function FinalUrlCard( {
 		onAssetsChange( null );
 	};
 
+	const fetchCampaignAssets = useCallback(
+		async ( id, type ) => {
+			const suggestedAssets = await fetchAssets( id, type );
+			handleAssetsLoaded( suggestedAssets );
+		},
+		[ fetchAssets, handleAssetsLoaded ]
+	);
+
 	const className = classnames( {
 		'gla-final-url-card': true,
 		'gla-final-url-card--has-selected-url': finalUrl,
 	} );
 
-	const loadSuggestedAssets = useCallback(
-		async ( { id, type } ) => {
-			setFetching( true );
-
-			try {
-				const path = addQueryArgs(
-					`${ API_NAMESPACE }/assets/suggestions`,
-					{
-						id,
-						type,
-					}
-				);
-
-				const assets = await apiFetch( { path } );
-				handleAssetsLoaded( assets );
-			} catch ( error ) {
-				createNotice(
-					'error',
-					__(
-						'Unable to load assets data.',
-						'google-listings-and-ads'
-					)
-				);
-			} finally {
-				setFetching( false );
-			}
-		},
-		[ createNotice, handleAssetsLoaded ]
-	);
-
-	useEffect( () => {
-		if ( hasLoadedInitialHomepageAssetsRef.current ) {
-			return;
-		}
-
-		hasLoadedInitialHomepageAssetsRef.current = true;
-
-		// Load homepage assets on first render by passing `id: 0` and a `type` other than `post` or `term`.
-		// `id` is a required parameter, but it is ignored when loading homepage assets.
-		// Related: https://github.com/woocommerce/google-listings-and-ads/blob/d23bdb504bce1ed8a10a4bd92608aeb5137fbe60/src/Ads/AssetSuggestionsService.php#L210-L216
-		loadSuggestedAssets( { id: 0, type: 'homepage' } );
-	}, [ loadSuggestedAssets ] );
-
-	const handleSelectFinalUrl = ( selectedFinalUrl ) => {
+	const handleSelectFinalUrl = async ( selectedFinalUrl ) => {
 		const { id, type } = selectedFinalUrl;
 
-		loadSuggestedAssets( {
-			id,
-			type,
-		} );
+		await fetchCampaignAssets( id, type );
 	};
 
 	return (
@@ -148,10 +110,7 @@ export default function FinalUrlCard( {
 						onClick={ handleReselectClick }
 					/>
 				) : (
-					<AssetsLoader
-						loading={ fetching }
-						onSelectFinalUrl={ handleSelectFinalUrl }
-					/>
+					<AssetsLoader onSelectFinalUrl={ handleSelectFinalUrl } />
 				) }
 			</Section.Card.Footer>
 		</AccountCard>
