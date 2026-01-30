@@ -3,18 +3,17 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\YouTube;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\ExceptionTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
 use Exception;
-use WP_REST_Request as Request;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -23,9 +22,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\YouTube
  */
-class AccountController extends BaseController implements ContainerAwareInterface {
+class AccountController extends BaseController implements ContainerAwareInterface, OptionsAwareInterface {
 
 	use ContainerAwareTrait;
+	use OptionsAwareTrait;
 
 	/** @var Connection */
 	protected $connection;
@@ -113,6 +113,7 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 	protected function get_disconnect_callback(): callable {
 		return function () {
 			$this->connection->disconnect();
+			$this->options->delete( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK );
 
 			return [
 				'status'  => 'success',
@@ -145,6 +146,11 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 							'label' => $details['snippet']['title'],
 						];
 					}
+
+					// Check third party link status.
+					if ( ! $this->options->get( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK, false ) ) {
+						$connection = 'incomplete';
+					}
 				}
 
 				return [
@@ -167,7 +173,9 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 			try {
 				$result = $this->connection->third_party_link();
 
-				if ( isset( $result['status']['linkedStatus'] ) && 'linked' === $result['status']['linkedStatus'] ) {
+				if ( isset( $result['status']['linkStatus'] ) && 'linked' === $result['status']['linkStatus'] ) {
+					$this->options->add( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK, $result );
+
 					return [
 						'status'  => 'success',
 						'message' => __( 'Successfully completed YouTube setup.', 'google-listings-and-ads' ),
