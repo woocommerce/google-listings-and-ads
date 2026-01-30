@@ -230,7 +230,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 		$plugin_links = [];
 
 		// Display settings url if setup is complete otherwise link to get started page
-		if ( $this->merchant_center->is_setup_complete() ) {
+		if ( $this->onboarding_completed->is_onboarding_complete() ) {
 			$plugin_links[] = sprintf(
 				'<a href="%1$s">%2$s</a>',
 				esc_attr( $this->get_settings_url() ),
