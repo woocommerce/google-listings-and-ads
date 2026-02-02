@@ -1170,13 +1170,13 @@ trait GoogleAdsClientTrait {
 	/**
 	 * Generates a mocked response for text asset generation.
 	 *
-	 * @param array $text_assets Array of text assets with 'text' and 'type' keys (type in uppercase like 'HEADLINE').
+	 * @param array $text_assets Array of text assets with 'text' and 'type' keys (type in lowercase like 'headline').
 	 */
 	protected function generate_text_assets_mock( array $text_assets ) {
 		$type_mapping = [
-			'HEADLINE'      => AssetFieldType::HEADLINE,
-			'LONG_HEADLINE' => AssetFieldType::LONG_HEADLINE,
-			'DESCRIPTION'   => AssetFieldType::DESCRIPTION,
+			'headline'      => AssetFieldType::HEADLINE,
+			'long_headline' => AssetFieldType::LONG_HEADLINE,
+			'description'   => AssetFieldType::DESCRIPTION,
 		];
 
 		$text_asset_objects = [];
@@ -1208,13 +1208,13 @@ trait GoogleAdsClientTrait {
 	/**
 	 * Generates a mocked response for image asset generation.
 	 *
-	 * @param array $image_assets Array of image assets with 'temporary_image_url' and 'type' keys (type in uppercase like 'MARKETING_IMAGE').
+	 * @param array $image_assets Array of image assets with 'temporary_image_url' and 'type' keys (type in lowercase like 'marketing_image').
 	 */
 	protected function generate_image_assets_mock( array $image_assets ) {
 		$type_mapping = [
-			'MARKETING_IMAGE'          => AssetFieldType::MARKETING_IMAGE,
-			'SQUARE_MARKETING_IMAGE'   => AssetFieldType::SQUARE_MARKETING_IMAGE,
-			'PORTRAIT_MARKETING_IMAGE' => AssetFieldType::PORTRAIT_MARKETING_IMAGE,
+			'marketing_image'          => AssetFieldType::MARKETING_IMAGE,
+			'square_marketing_image'   => AssetFieldType::SQUARE_MARKETING_IMAGE,
+			'portrait_marketing_image' => AssetFieldType::PORTRAIT_MARKETING_IMAGE,
 		];
 
 		$image_asset_objects = [];

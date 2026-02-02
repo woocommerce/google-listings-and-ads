@@ -9,6 +9,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\ExceptionTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Google\Ads\GoogleAds\V22\Services\GenerateTextRequest;
 use Google\Ads\GoogleAds\V22\Services\GenerateImagesRequest;
 use Google\Ads\GoogleAds\V22\Services\FinalUrlImageGenerationInput;
@@ -29,6 +31,7 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 
 	use OptionsAwareTrait;
 	use PluginHelper;
+	use ExceptionTrait;
 
 	/**
 	 * The Asset Generation Service Client.
@@ -49,7 +52,7 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	 *
 	 * @var array
 	 */
-	protected const VALID_TEXT_TYPES = [
+	public const VALID_TEXT_TYPES = [
 		AssetFieldType::HEADLINE,
 		AssetFieldType::LONG_HEADLINE,
 		AssetFieldType::DESCRIPTION,
@@ -60,7 +63,7 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	 *
 	 * @var array
 	 */
-	protected const VALID_IMAGE_TYPES = [
+	public const VALID_IMAGE_TYPES = [
 		AssetFieldType::MARKETING_IMAGE,
 		AssetFieldType::SQUARE_MARKETING_IMAGE,
 		AssetFieldType::PORTRAIT_MARKETING_IMAGE,
@@ -122,14 +125,23 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 				$asset_field_type_label  = AssetFieldType::label( $asset_field_type_number );
 				$results[]               = [
 					'text' => $text_asset->getText(),
-					'type' => AssetFieldType::name( $asset_field_type_label ),
+					'type' => $asset_field_type_label,
 				];
 			}
 
 			return $results;
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
-			throw new Exception( __( 'Unable to generate text assets.', 'google-listings-and-ads' ) . ' ' . $e->getMessage(), $e->getCode() );
+
+			$errors = $this->get_exception_errors( $e );
+
+			throw new ExceptionWithResponseData(
+				/* translators: %s Error message */
+				sprintf( __( 'Unable to generate text assets: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				$e,
+				[ 'errors' => $errors ]
+			);
 		}
 	}
 
@@ -185,14 +197,23 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 				$asset_field_type_label  = AssetFieldType::label( $asset_field_type_number );
 				$results[]               = [
 					'temporary_image_url' => $image_asset->getImageTemporaryUrl(),
-					'type'                => AssetFieldType::name( $asset_field_type_label ),
+					'type'                => $asset_field_type_label,
 				];
 			}
 
 			return $results;
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
-			throw new Exception( __( 'Unable to generate image assets.', 'google-listings-and-ads' ) . ' ' . $e->getMessage(), $e->getCode() );
+
+			$errors = $this->get_exception_errors( $e );
+
+			throw new ExceptionWithResponseData(
+				/* translators: %s Error message */
+				sprintf( __( 'Unable to generate image assets: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				$e,
+				[ 'errors' => $errors ]
+			);
 		}
 	}
 
