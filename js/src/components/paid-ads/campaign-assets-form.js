@@ -284,6 +284,9 @@ export default function CampaignAssetsForm( {
 					...( hasSuggestedTextAssets ? textAssetsData : {} ),
 				};
 			} catch ( error ) {
+				setHasAISuggestedTextAssets( false );
+				setHasAISuggestedMediaAssets( false );
+
 				createNotice(
 					'error',
 					__(
@@ -334,8 +337,6 @@ export default function CampaignAssetsForm( {
 
 				setHasImportedAssets( hasNonEmptyAssets );
 				setBaseAssetGroup( nextAssetGroup );
-				setHasAISuggestedTextAssets( false );
-				setHasAISuggestedMediaAssets( false );
 
 				formContext.adapter.hideValidation();
 			},
