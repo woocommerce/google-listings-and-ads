@@ -14,6 +14,7 @@ import Section from '~/components/section';
 import FinalUrlCard from './final-url-card';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import GenAICard from '../../gen-ai-card';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 
 /**
  * Renders the header section for the asset group form where the user selects the URL to manage the assets for.
@@ -23,12 +24,11 @@ import GenAICard from '../../gen-ai-card';
  */
 export default function AssetGroupHeader() {
 	const { adapter } = useAdaptiveFormContext();
+	const { hasGoogleMCConnection } = useGoogleMCAccount();
 	const showTip = adapter.hasImportedAssets;
 
-	return (
-		<Section
-			className="gla-asset-group-section"
-			title={ createInterpolateElement(
+	const title = hasGoogleMCConnection
+		? createInterpolateElement(
 				__(
 					'Add additional assets <optional>(Optional)</optional>',
 					'google-listings-and-ads'
@@ -38,12 +38,18 @@ export default function AssetGroupHeader() {
 						<span className="gla-asset-group-section__optional-label" />
 					),
 				}
-			) }
+		  )
+		: __( 'Add additional assets', 'google-listings-and-ads' );
+
+	return (
+		<Section
+			className="gla-asset-group-section"
+			title={ title }
 			description={
 				<>
 					<p className="gla-asset-group-section__primary-description">
 						{ __(
-							'Upload text and image assets to effectively reach and engage your target shoppers. Google will mix and match your assets, continually testing combinations to create personalized and optimal shopping experiences.',
+							'Upload text and image assets to effectively reach and engage your target customers. Google will mix and match your assets, continually testing combinations to create a personalized and optimal experience.',
 							'google-listings-and-ads'
 						) }
 					</p>

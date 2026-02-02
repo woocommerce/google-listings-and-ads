@@ -20,6 +20,7 @@ import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCo
 import AssetGroupHeader from './asset-group-header';
 import AssetGroupEditor from './asset-group-editor';
 import { upsertActionedCampaign } from '~/utils/actionedCampaignsCache';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import './asset-group.scss';
 
 export const ACTION_SUBMIT_CAMPAIGN_AND_ASSETS = 'submit-campaign-and-assets';
@@ -78,6 +79,7 @@ export default function AssetGroup( {
 	const { isValidForm, handleSubmit, adapter, values } =
 		useAdaptiveFormContext();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
+	const { hasGoogleMCConnection } = useGoogleMCAccount();
 	const { isValidAssetGroup, isSubmitting, isSubmitted, submitter } = adapter;
 	const currentAction = submitter?.dataset.action;
 
@@ -170,31 +172,33 @@ export default function AssetGroup( {
 
 			<StepContentFooter>
 				<StepContentActions>
-					{ ( isCreation || adapter.isEmptyAssetEntityGroup ) && (
-						// Currently, the PMax Assets feature in this extension doesn't offer the function
-						// to delete the asset entity group, so it needs to hide the skip button if the editing
-						// asset group is not considered empty.
-						<AppButton
-							isTertiary
-							data-action={ ACTION_SUBMIT_CAMPAIGN_ONLY }
-							disabled={
-								! isValidForm ||
-								isSubmitted ||
-								currentAction ===
-									ACTION_SUBMIT_CAMPAIGN_AND_ASSETS
-							}
-							loading={
-								isSubmitting &&
-								currentAction === ACTION_SUBMIT_CAMPAIGN_ONLY
-							}
-							onClick={ handleSkipClick }
-						>
-							{ __(
-								'Skip this step',
-								'google-listings-and-ads'
-							) }
-						</AppButton>
-					) }
+					{ ( isCreation || adapter.isEmptyAssetEntityGroup ) &&
+						hasGoogleMCConnection && (
+							// Currently, the PMax Assets feature in this extension doesn't offer the function
+							// to delete the asset entity group, so it needs to hide the skip button if the editing
+							// asset group is not considered empty.
+							<AppButton
+								isTertiary
+								data-action={ ACTION_SUBMIT_CAMPAIGN_ONLY }
+								disabled={
+									! isValidForm ||
+									isSubmitted ||
+									currentAction ===
+										ACTION_SUBMIT_CAMPAIGN_AND_ASSETS
+								}
+								loading={
+									isSubmitting &&
+									currentAction ===
+										ACTION_SUBMIT_CAMPAIGN_ONLY
+								}
+								onClick={ handleSkipClick }
+							>
+								{ __(
+									'Skip this step',
+									'google-listings-and-ads'
+								) }
+							</AppButton>
+						) }
 					<AppButton
 						isPrimary
 						data-action={ ACTION_SUBMIT_CAMPAIGN_AND_ASSETS }

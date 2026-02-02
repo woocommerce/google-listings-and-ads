@@ -109,9 +109,9 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		$this->share_with_tags( ConnectionTest::class );
 
 		$this->share_with_tags( AttributeMapping::class );
-		$this->share_with_tags( Dashboard::class );
+		$this->share_with_tags( Dashboard::class, OnboardingCompleted::class );
 		$this->share_with_tags( NotificationManager::class, AssetsHandlerInterface::class );
-		$this->share_with_tags( GetStarted::class );
+		$this->share_with_tags( GetStarted::class, OnboardingCompleted::class );
 		$this->share_with_tags( ProductFeed::class );
 		$this->share_with_tags( Reports::class );
 		$this->share_with_tags( Settings::class );
