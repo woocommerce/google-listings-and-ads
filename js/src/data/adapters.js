@@ -3,7 +3,10 @@
  */
 import { ASSET_TEXT_SPECS } from '~/components/paid-ads/assetSpecs';
 import getCharacterCounter from '~/utils/getCharacterCounter';
-import { convertKeysFromSnakeCaseToCamelCase } from './utils';
+import {
+	convertKeysFromSnakeCaseToCamelCase,
+	applyAssetTextCharacterLimits,
+} from './utils';
 
 /**
  * @typedef {import('~/data/actions').Campaign} Campaign
@@ -267,7 +270,7 @@ export function adaptRaiseAdsBudgetRecommendations( rawData ) {
  * Formats raw API items into a grouped object by type.
  * @param {Array}  items The raw items array from API.
  * @param {string} valueKey The key to extract (e.g., 'text' or 'temporary_image_url').
- * @param {string} [filterType] Optional type to filter by.
+ * @param {string} [filterType] Optional type to filter by. Possible values can be headline, description, long_headline, marketing_image, square_marketing_image, portrait_marketing_image.
  * @return {Object} Groups of assets keyed by their type.
  */
 export function adaptGenAIAssets( items = [], valueKey, filterType ) {
@@ -288,6 +291,10 @@ export function adaptGenAIAssets( items = [], valueKey, filterType ) {
 		}
 
 		data[ type ].push( value );
+	}
+
+	if ( valueKey === 'text' ) {
+		return applyAssetTextCharacterLimits( data, ASSET_TEXT_SPECS );
 	}
 
 	return data;

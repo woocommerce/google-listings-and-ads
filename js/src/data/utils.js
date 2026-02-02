@@ -264,6 +264,90 @@ export function convertKeysFromSnakeCaseToCamelCase( data ) {
 }
 
 /**
+ * Applies character limits to asset texts based on provided specifications.
+ *
+ * @param {Object<string, string[]>} assets The asset texts to apply character limits to.
+ * @param {Array<Object>} specs The specifications defining character limits for each asset type.
+ * @return {Object<string, string[]>} The asset texts with character limits applied.
+ */
+export function applyAssetTextCharacterLimits( assets, specs ) {
+	return Object.fromEntries(
+		Object.entries( assets ).map( ( [ type, values ] ) => {
+			const spec = specs.find( ( s ) => s.key === type );
+			if ( ! spec ) {
+				return [ type, values ];
+			}
+
+			const limits = Array.isArray( spec.maxCharacterCounts )
+				? spec.maxCharacterCounts
+				: Array.from(
+						{ length: values.length },
+						() => spec.maxCharacterCounts
+				  );
+
+			const ellipsis = '…';
+
+			// Prepare positions with numeric limits (we’ll fill these first).
+			const positions = limits
+				.map( ( max, index ) =>
+					typeof max === 'number' ? { index, max } : null
+				)
+				.filter( Boolean );
+
+			// Sort positions by max ascending (tightest slots first).
+			positions.sort( ( a, b ) => a.max - b.max );
+
+			// Keep texts with their original index so ties preserve original order.
+			const texts = values.map( ( text, index ) => ( { text, index } ) );
+
+			// Sort texts by length ascending (shortest first).
+			// Tie-breaker keeps original order.
+			texts.sort(
+				( a, b ) => a.text.length - b.text.length || a.index - b.index
+			);
+
+			const out = new Array( values.length );
+			const usedTextIndexes = new Set();
+
+			// Assign shortest texts to tightest positions.
+			for ( let i = 0; i < positions.length; i++ ) {
+				const { index: posIndex, max } = positions[ i ];
+				const picked = texts[ i ];
+
+				if ( ! picked ) {
+					break;
+				}
+
+				usedTextIndexes.add( picked.index );
+
+				if ( picked.text.length <= max ) {
+					out[ posIndex ] = picked.text;
+				} else {
+					const sliceLength = Math.max( max - ellipsis.length, 0 );
+					out[ posIndex ] =
+						picked.text.slice( 0, sliceLength ) + ellipsis;
+				}
+			}
+
+			// Fill any remaining slots (including positions without max limits)
+			// with remaining texts in original order.
+			const remainingTexts = values.filter(
+				( _, i ) => ! usedTextIndexes.has( i )
+			);
+
+			let r = 0;
+			for ( let i = 0; i < out.length; i++ ) {
+				if ( out[ i ] === undefined ) {
+					out[ i ] = remainingTexts[ r++ ];
+				}
+			}
+
+			return [ type, out ];
+		} )
+	);
+}
+
+/**
  * Report fields fetched from report API.
  *
  * @typedef {Object} ReportFieldsSchema
