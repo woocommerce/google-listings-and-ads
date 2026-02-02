@@ -383,9 +383,23 @@ class AdsAssetGroup implements OptionsAwareInterface {
 				}
 			}
 
+			// Prefer Brand Guidelines message so it shows in wp-admin instead of generic "Invalid argument".
+			$brand_guidelines_codes = [
+				'BRAND_ASSETS_NOT_LINKED_AT_CAMPAIGN_LEVEL',
+				'REQUIRED_BUSINESS_NAME_ASSET_NOT_LINKED',
+				'REQUIRED_LOGO_ASSET_NOT_LINKED',
+			];
+			$display_message        = reset( $errors );
+			foreach ( $brand_guidelines_codes as $code_key ) {
+				if ( ! empty( $errors[ $code_key ] ) ) {
+					$display_message = $errors[ $code_key ];
+					break;
+				}
+			}
+
 			throw new ExceptionWithResponseData(
 			/* translators: %s Error message */
-				sprintf( __( 'Error editing asset group: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				sprintf( __( 'Error editing asset group: %s', 'google-listings-and-ads' ), $display_message ),
 				$code,
 				null,
 				[

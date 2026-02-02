@@ -912,7 +912,13 @@ export function* updateCampaignAssetGroup( assetGroupId, body ) {
 			'google-listings-and-ads'
 		);
 
-		handleApiError( error, null, fallbackMessage );
+		// Use API response message when present (e.g. Brand Guidelines error) so it shows in wp-admin.
+		const errorWithMessage =
+			error?.message && typeof error.message === 'string'
+				? error
+				: { ...error, message: error?.message ?? fallbackMessage };
+
+		handleApiError( errorWithMessage, null, fallbackMessage );
 		throw error;
 	}
 }
