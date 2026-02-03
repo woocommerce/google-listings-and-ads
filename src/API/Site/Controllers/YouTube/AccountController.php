@@ -147,7 +147,17 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 						];
 					}
 
-					// Check third party link status.
+					/**
+					 * Check third party link.
+					 *
+					 * Check that the channel is elidgable for YouTube Shopping and the store has been linked.
+					 * This step is required for the plugin functionality to work.
+					 *
+					 * Connection status:
+					 * - Disconnected - Google account not connected with the Google Cloud app.
+					 * - Incomplete - Google account connected to Google Cloud app, store not linked to YouTube channel.
+					 * - Complete - Google account connected, store linked to YouTube channel.
+					 */
 					if ( ! $this->options->get( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK, false ) ) {
 						$connection = 'incomplete';
 					}
@@ -174,7 +184,7 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 				$result = $this->connection->third_party_link();
 
 				if ( isset( $result['status']['linkStatus'] ) && 'linked' === $result['status']['linkStatus'] ) {
-					$this->options->add( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK, $result );
+					$this->options->update( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK, $result );
 
 					return [
 						'status'  => 'success',

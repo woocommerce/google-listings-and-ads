@@ -195,8 +195,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 
 			$response = json_decode( $e->getResponse()->getBody()->getContents(), true );
 
-			$message = $response['message'] ?? __( 'Unable to complete YouTube setup.', 'google-listings-and-ads' );
-			$message = $response['error']['message'] ?? $message;
+			$message = $response['error']['message'] ?? $response['message'] ?? __( 'Unable to complete YouTube setup.', 'google-listings-and-ads' );
 
 			throw new ExceptionWithResponseData( $message, $e->getCode(), $e, $response );
 		}
