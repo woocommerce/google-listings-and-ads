@@ -280,13 +280,13 @@ class WCCouponAdapterTest extends UnitTest {
 		$coupon->set_product_ids( [ $product_3_id ] );
 
 		// Include brand 1 (product 1 and 2) for the coupon.
-		update_post_meta( $coupon->get_id(), 'product_brands', [ $brand_1['term_id'] ] );
+		update_post_meta( $coupon->get_id(), 'product_brands', $brand_1['term_id'] );
 
 		// Exclude product 2 for the coupon.
 		$coupon->set_excluded_product_ids( [ $product_2_id ] );
 
 		// Exclude brand 2 (product 3) for the coupon.
-		update_post_meta( $coupon->get_id(), 'exclude_product_brands', [ $brand_2['term_id'] ] );
+		update_post_meta( $coupon->get_id(), 'exclude_product_brands', $brand_2['term_id'] );
 
 		$coupon->save();
 
