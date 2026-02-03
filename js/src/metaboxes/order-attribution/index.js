@@ -1,12 +1,16 @@
 /**
  * External dependencies
  */
-import { createRoot } from '@wordpress/element';
+import { createRoot, lazy } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import OrderAttributionSlot from './order-attribution-slot';
+const OrderAttributionSlot = lazy( () =>
+	import(
+		/* webpackChunkName: "order-attribution-slot" */ './order-attribution-slot'
+	)
+);
 
 document.addEventListener( 'DOMContentLoaded', () => {
 	const orderAttributionBox = document.querySelector(
