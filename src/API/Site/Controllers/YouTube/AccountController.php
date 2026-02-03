@@ -150,7 +150,7 @@ class AccountController extends BaseController implements ContainerAwareInterfac
 					/**
 					 * Check third party link.
 					 *
-					 * Check that the channel is elidgable for YouTube Shopping and the store has been linked.
+					 * Check that the channel is eligible for YouTube Shopping and the store has been linked.
 					 * This step is required for the plugin functionality to work.
 					 *
 					 * Connection status:
