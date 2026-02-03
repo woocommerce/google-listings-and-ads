@@ -25,5 +25,5 @@ document.addEventListener( 'DOMContentLoaded', () => {
 	const root = createRoot( glaElement );
 	root.render( <OrderAttributionSlot /> );
 
-	orderAttributionBox.appendChild( glaElement );
+	orderAttributionBox.prepend( glaElement );
 } );
