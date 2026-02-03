@@ -385,7 +385,6 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 	/**
 	 *
 	 * @param string $targetCountry
-	 *
      *            phpcs:disable WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
 	 */
 	public function setTargetCountry( $targetCountry ) {
