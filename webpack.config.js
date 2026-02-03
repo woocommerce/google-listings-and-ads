@@ -96,6 +96,7 @@ const webpackConfig = {
 			'index.js'
 		),
 		blocks: path.join( __dirname, 'js/src/blocks/index.js' ),
+		metaboxes: path.join( __dirname, 'js/src/metaboxes/index.js' ),
 		'gtag-events': path.resolve(
 			process.cwd(),
 			'js/src/gtag-events',

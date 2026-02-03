@@ -199,6 +199,43 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			$product_condition
 		) );
 
+		$wc_orders_condition = function () {
+			$screen = get_current_screen();
+			return ( null !== $screen && 'woocommerce_page_wc-orders' === $screen->id );
+		};
+
+		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
+			'gla-wc-orders',
+			'js/build/metaboxes',
+			"{$this->get_root_dir()}/js/build/metaboxes.asset.php",
+			new BuiltScriptDependencyArray(
+				[
+					'dependencies' => [],
+					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/metaboxes.js" ),
+				]
+			),
+			$wc_orders_condition
+		) )->add_inline_script(
+			'glaData',
+			[
+				'slug'             => $this->get_slug(),
+				'adsSetupComplete' => $this->ads->is_setup_complete(),
+				'initialWpData'    => [
+					'version' => $this->get_version(),
+					'mcId'    => $this->options->get_merchant_id() ?: null,
+					'adsId'   => $this->options->get_ads_id() ?: null,
+				],
+			]
+		);
+
+		$assets[] = ( new AdminStyleAsset(
+			'gla-metaboxes-css',
+			'js/build/metaboxes',
+			[],
+			'',
+			$wc_orders_condition
+		) );
+
 		return $assets;
 	}
 
