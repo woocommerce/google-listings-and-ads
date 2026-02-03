@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { createRoot, lazy } from '@wordpress/element';
+import { createRoot, lazy, Suspense } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -23,7 +23,11 @@ document.addEventListener( 'DOMContentLoaded', () => {
 	const glaElement = document.createElement( 'div' );
 
 	const root = createRoot( glaElement );
-	root.render( <OrderAttributionSlot /> );
+	root.render(
+		<Suspense>
+			<OrderAttributionSlot />
+		</Suspense>
+	);
 
 	orderAttributionBox.prepend( glaElement );
 } );
