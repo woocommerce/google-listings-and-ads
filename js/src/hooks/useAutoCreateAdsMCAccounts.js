@@ -6,10 +6,10 @@ import { useEffect, useState, useRef } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import useGoogleAdsAccount from './useGoogleAdsAccount';
 import useExistingGoogleAdsAccounts from './useExistingGoogleAdsAccounts';
 import useGoogleMCAccount from './useGoogleMCAccount';
 import useExistingGoogleMCAccounts from './useExistingGoogleMCAccounts';
+import useGoogleAdsAccountReady from './useGoogleAdsAccountReady';
 import useUpsertAdsAccount from '~/hooks/useUpsertAdsAccount';
 import {
 	CREATING_ADS_ACCOUNT,
@@ -18,10 +18,7 @@ import {
 } from '~/components/google-combo-account-card/constants';
 
 const useShouldCreateAdsAccount = () => {
-	const {
-		hasFinishedResolution: hasResolvedAccount,
-		hasGoogleAdsConnection: hasConnection,
-	} = useGoogleAdsAccount();
+	const { isGoogleAdsAccountReady } = useGoogleAdsAccountReady();
 
 	const {
 		hasFinishedResolution: hasResolvedExistingAccounts,
@@ -29,11 +26,11 @@ const useShouldCreateAdsAccount = () => {
 	} = useExistingGoogleAdsAccounts();
 
 	// Return null if the account hasn't been resolved or the existing accounts haven't been resolved
-	if ( ! hasResolvedAccount || ! hasResolvedExistingAccounts ) {
+	if ( ! hasResolvedExistingAccounts ) {
 		return null;
 	}
 
-	return ! hasConnection && accounts?.length === 0;
+	return ! isGoogleAdsAccountReady && accounts?.length === 0;
 };
 
 const useShouldCreateMCAccount = () => {

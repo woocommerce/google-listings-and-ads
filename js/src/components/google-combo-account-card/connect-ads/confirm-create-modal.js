@@ -2,10 +2,12 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
+import { useAppDispatch } from '~/data';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
 import WarningIcon from '~/components/warning-icon';
@@ -21,6 +23,16 @@ import './confirm-create-modal.scss';
  * @return {JSX.Element} Confirmation modal.
  */
 const ConfirmCreateModal = ( { onContinue, onRequestClose } ) => {
+	const { disconnectGoogleAdsAccount } = useAppDispatch();
+	const [ isDisconnecting, setDisconnecting ] = useState( false );
+
+	const handleOnClick = () => {
+		setDisconnecting( true );
+		disconnectGoogleAdsAccount( true )
+			.then( () => onContinue() )
+			.catch( () => setDisconnecting( false ) );
+	};
+
 	return (
 		<AppModal
 			className="gla-ads-warning-modal"
@@ -29,7 +41,12 @@ const ConfirmCreateModal = ( { onContinue, onRequestClose } ) => {
 				'google-listings-and-ads'
 			) }
 			buttons={ [
-				<AppButton key="confirm" isSecondary onClick={ onContinue }>
+				<AppButton
+					key="confirm"
+					onClick={ handleOnClick }
+					loading={ isDisconnecting }
+					isSecondary
+				>
 					{ __(
 						'Yes, I want a new account',
 						'google-listings-and-ads'
