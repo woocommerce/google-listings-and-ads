@@ -20,6 +20,21 @@ const GET_STARTED_URL = getGetStartedUrl();
 const CREATE_CAMPAIGN_URL = getCreateCampaignUrl();
 const BASE_EVENT_PROPS = addBaseEventProperties( {} );
 
+const hasRecentPaidCampaigns = ( campaigns ) => {
+	const fourteenDaysAgo = new Date();
+	fourteenDaysAgo.setDate( fourteenDaysAgo.getDate() - 14 );
+
+	return campaigns.some( ( campaign ) => {
+		const campaignDate = new Date( campaign.start_date );
+
+		return (
+			campaign.status === 'enabled' &&
+			campaign.type === 'performance_max' &&
+			campaignDate >= fourteenDaysAgo
+		);
+	} );
+};
+
 const CONTENT = adsSetupComplete
 	? {
 			title: __(
@@ -70,7 +85,11 @@ const CONTENT = adsSetupComplete
 const OrderAttributionSlot = () => {
 	const { data: campaigns, loading } = useAdsCampaigns();
 
-	if ( loading || ( Array.isArray( campaigns ) && campaigns.length > 0 ) ) {
+	if ( loading || ! Array.isArray( campaigns ) ) {
+		return null;
+	}
+
+	if ( hasRecentPaidCampaigns( campaigns ) ) {
 		return null;
 	}
 
