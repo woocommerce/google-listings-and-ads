@@ -30,7 +30,12 @@ const YouTubeAccountCard = () => {
 		return <SpinnerCard />;
 	}
 
-	if ( youTubeAccount?.status === YOUTUBE_ACCOUNT_STATUS.CONNECTED ) {
+	if (
+		[
+			YOUTUBE_ACCOUNT_STATUS.CONNECTED,
+			YOUTUBE_ACCOUNT_STATUS.INCOMPLETE,
+		].includes( youTubeAccount?.status )
+	) {
 		return (
 			<ConnectedYouTubeAccountCard youTubeAccount={ youTubeAccount } />
 		);

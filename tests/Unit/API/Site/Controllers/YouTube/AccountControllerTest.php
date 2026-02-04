@@ -4,6 +4,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\YouTube\AccountController;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -22,6 +23,9 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	/** @var AccountController $controller */
 	protected $controller;
 
+	/** @var OptionsInterface */
+	protected $options;
+
 	protected const ROUTE_CONNECT        = '/wc/gla/youtube/connect';
 	protected const ROUTE_CONNECTION     = '/wc/gla/youtube/connection';
 	protected const ROUTE_SETUP_COMPLETE = '/wc/gla/youtube/setup/complete';
@@ -29,8 +33,10 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
+		$this->options    = $this->createMock( OptionsInterface::class );
 		$this->connection = $this->createMock( Connection::class );
 		$this->controller = new AccountController( $this->server, $this->connection );
+		$this->controller->set_options_object( $this->options );
 		$this->controller->register();
 	}
 
@@ -105,11 +111,66 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			->method( 'get_channels' )
 			->willReturn( $channels );
 
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK, false )
+			->willReturn(
+				[
+					'status' => [
+						'linkStatus' => 'linked',
+					],
+				]
+			);
+
 		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
 
 		$this->assertEquals(
 			[
 				'status'  => 'connected',
+				'channel' => [
+					'id'    => 1234,
+					'label' => 'Channel 1',
+				],
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_incomplete() {
+		$this->connection->expects( $this->once() )
+			->method( 'get_status' )
+			->willReturn(
+				[
+					'status' => 'connected',
+				]
+			);
+
+		$this->connection->expects( $this->once() )
+			->method( 'get_channels' )
+			->willReturn(
+				[
+					'items' => [
+						[
+							'id'      => 1234,
+							'snippet' => [
+								'title' => 'Channel 1',
+							],
+						],
+					],
+				]
+			);
+
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK, false )
+			->willReturn( false );
+
+		$response = $this->do_request( self::ROUTE_CONNECTION, 'GET' );
+
+		$this->assertEquals(
+			[
+				'status'  => 'incomplete',
 				'channel' => [
 					'id'    => 1234,
 					'label' => 'Channel 1',
@@ -139,7 +200,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			->willReturn(
 				[
 					'status' => [
-						'linkedStatus' => 'linked',
+						'linkStatus' => 'linked',
 					],
 				]
 			);
