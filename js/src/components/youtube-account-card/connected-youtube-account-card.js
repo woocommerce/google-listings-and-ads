@@ -3,72 +3,124 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Notice } from '@wordpress/components';
-import { getQuery, getHistory } from '@woocommerce/navigation';
+import { useReducedMotion } from '@wordpress/compose';
 import { useEffect, useRef } from '@wordpress/element';
+import { getQuery, getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
+import { getSettingsUrl } from '~/utils/urls';
+import { YOUTUBE_ACCOUNT_STATUS } from '~/constants';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import ConnectedIconLabel from '~/components/connected-icon-label';
 import Section from '~/components/section';
 import DisconnectAccount from './disconnect-account';
+import AppButton from '~/components/app-button';
 import useYouTubeSetupCompleteCallback from '~/hooks/useYouTubeSetupCompleteCallback';
-import { getSettingsUrl } from '~/utils/urls';
 
 /**
  * @typedef { import('./youtube-account-card.js').YouTubeAccount } YouTubeAccount
  */
 
 /**
+ * Clicking on the button to link the YouTube account.
+ *
+ * @event gla_link_youtube_account_button_click
+ * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
+ */
+
+/**
  * Component to display a connected YouTube account.
  * Detects if setup completion is needed via URL query (youtube=connected) and triggers it.
+ *
+ * @fires gla_link_youtube_account_button_click When the user clicks on the button to link the YouTube account.
  *
  * @param {Object} props
  * @param {YouTubeAccount} props.youTubeAccount The connected YouTube account.
  */
 const ConnectedYouTubeAccountCard = ( { youTubeAccount } ) => {
-	const youTubeConnected = getQuery()?.youtube === 'connected';
-	const [ handleFinishSetup ] = useYouTubeSetupCompleteCallback();
+	const isReducedMotion = useReducedMotion();
+	const isYouTubeOAuthReturn = getQuery()?.youtube === 'connected';
 	const hasCompletedSetupRef = useRef( false );
+	const containerRef = useRef();
+	const [ handleFinishSetup, { loading, error } ] =
+		useYouTubeSetupCompleteCallback();
+	const shouldLinkYouTubeAccount =
+		youTubeAccount.status === YOUTUBE_ACCOUNT_STATUS.INCOMPLETE;
 
 	useEffect( () => {
 		async function completeSetup() {
+			containerRef.current.scrollIntoView( {
+				behavior: isReducedMotion ? 'auto' : 'smooth',
+				inline: 'nearest',
+				block: 'nearest',
+			} );
+
 			hasCompletedSetupRef.current = true;
 			await handleFinishSetup();
 			getHistory().replace( getSettingsUrl() );
 		}
 
-		if ( youTubeConnected && ! hasCompletedSetupRef.current ) {
+		if (
+			isYouTubeOAuthReturn &&
+			shouldLinkYouTubeAccount &&
+			! hasCompletedSetupRef.current
+		) {
 			completeSetup();
 		}
-	}, [ youTubeConnected, handleFinishSetup ] );
+	}, [
+		isYouTubeOAuthReturn,
+		handleFinishSetup,
+		shouldLinkYouTubeAccount,
+		isReducedMotion,
+	] );
 
-	let accountCardProps = {};
-	if ( youTubeAccount?.channel?.id ) {
+	let accountCardProps = {
+		description: youTubeAccount.channel.label,
+		indicator: <ConnectedIconLabel />,
+	};
+
+	if ( shouldLinkYouTubeAccount ) {
 		accountCardProps = {
-			description: youTubeAccount.channel.label,
-			indicator: <ConnectedIconLabel />,
-		};
-	} else {
-		accountCardProps = {
-			actions: (
-				<Notice status="error" isDismissible={ false }>
-					{ __(
-						'No channels found (or permission not granted).',
-						'google-listings-and-ads'
-					) }
-				</Notice>
+			indicator: (
+				<AppButton
+					eventName="gla_link_youtube_account_button_click"
+					eventProps={ { context: 'settings-youtube' } }
+					onClick={ handleFinishSetup }
+					disabled={ loading }
+					loading={ loading }
+					isSecondary
+				>
+					{ __( 'Complete setup', 'google-listings-and-ads' ) }
+				</AppButton>
 			),
+			detail: error?.message ? (
+				<Notice status="error" isDismissible={ false }>
+					{ error.message }
+				</Notice>
+			) : undefined,
+			description: loading
+				? __( 'Please wait…', 'google-listings-and-ads' )
+				: __(
+						'Your YouTube account is connected, but setup isn’t complete yet.',
+						'google-listings-and-ads'
+				  ),
 		};
 	}
 
 	return (
-		<AccountCard appearance={ APPEARANCE.YOUTUBE } { ...accountCardProps }>
-			<Section.Card.Footer>
-				<DisconnectAccount />
-			</Section.Card.Footer>
-		</AccountCard>
+		<div ref={ containerRef }>
+			<AccountCard
+				appearance={ APPEARANCE.YOUTUBE }
+				expandedDetail
+				{ ...accountCardProps }
+			>
+				<Section.Card.Footer>
+					<DisconnectAccount />
+				</Section.Card.Footer>
+			</AccountCard>
+		</div>
 	);
 };
 
