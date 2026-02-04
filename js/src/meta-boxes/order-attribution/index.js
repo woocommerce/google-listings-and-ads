@@ -6,10 +6,8 @@ import { createRoot, lazy, Suspense } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-const OrderAttributionSlot = lazy( () =>
-	import(
-		/* webpackChunkName: "order-attribution-slot" */ './order-attribution-slot'
-	)
+const GoogleAdsPromo = lazy( () =>
+	import( /* webpackChunkName: "google-ads-promo" */ './google-ads-promo' )
 );
 
 document.addEventListener( 'DOMContentLoaded', () => {
@@ -25,7 +23,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
 	const root = createRoot( glaElement );
 	root.render(
 		<Suspense>
-			<OrderAttributionSlot />
+			<GoogleAdsPromo />
 		</Suspense>
 	);
 

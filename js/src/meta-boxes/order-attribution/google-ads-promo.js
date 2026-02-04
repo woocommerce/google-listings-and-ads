@@ -13,7 +13,7 @@ import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import { glaData } from '~/constants';
 import { getGetStartedUrl, getCreateCampaignUrl } from '~/utils/urls';
 import { addBaseEventProperties } from '~/utils/tracks';
-import './order-attribution-slot.scss';
+import './google-ads-promo.scss';
 
 const { adsSetupComplete } = glaData;
 const GET_STARTED_URL = getGetStartedUrl();
@@ -48,7 +48,7 @@ const CONTENT = adsSetupComplete
 			cta: (
 				<AppButton
 					href={ CREATE_CAMPAIGN_URL }
-					eventName="gla_order_attribution_create_campaign_click"
+					eventName="gla_google_ads_promo_create_campaign_click"
 					eventProps={ BASE_EVENT_PROPS }
 					isSecondary
 				>
@@ -68,7 +68,7 @@ const CONTENT = adsSetupComplete
 			cta: (
 				<AppButton
 					href={ GET_STARTED_URL }
-					eventName="gla_order_attribution_get_started_click"
+					eventName="gla_google_ads_promo_get_started_click"
 					eventProps={ BASE_EVENT_PROPS }
 					isSecondary
 				>
@@ -78,11 +78,11 @@ const CONTENT = adsSetupComplete
 	  };
 
 /**
- * Order Attribution Slot component.
+ * Google Ads Promo component.
  *
- * @return {JSX.Element|null} The Order Attribution Slot component or null.
+ * @return {JSX.Element|null} The Google Ads Promo component or null.
  */
-const OrderAttributionSlot = () => {
+const GoogleAdsPromo = () => {
 	const { data: campaigns, loading } = useAdsCampaigns();
 
 	if ( loading || ! Array.isArray( campaigns ) ) {
@@ -96,11 +96,7 @@ const OrderAttributionSlot = () => {
 	const { title, description, cta } = CONTENT;
 
 	return (
-		<Flex
-			className="gla-order-attribution-slot"
-			direction="column"
-			gap={ 4 }
-		>
+		<Flex className="gla-google-ads-promo" direction="column" gap={ 4 }>
 			<FlexBlock>
 				<Flex gap={ 2 } align="center">
 					<FlexItem>
@@ -129,4 +125,4 @@ const OrderAttributionSlot = () => {
 	);
 };
 
-export default OrderAttributionSlot;
+export default GoogleAdsPromo;

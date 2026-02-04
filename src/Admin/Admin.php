@@ -206,12 +206,12 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 
 		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
 			'gla-wc-orders',
-			'js/build/metaboxes',
-			"{$this->get_root_dir()}/js/build/metaboxes.asset.php",
+			'js/build/meta-boxes',
+			"{$this->get_root_dir()}/js/build/meta-boxes.asset.php",
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
-					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/metaboxes.js" ),
+					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/meta-boxes.js" ),
 				]
 			),
 			$wc_orders_condition
@@ -227,14 +227,6 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 				],
 			]
 		);
-
-		$assets[] = ( new AdminStyleAsset(
-			'gla-metaboxes-css',
-			'js/build/metaboxes',
-			[],
-			'',
-			$wc_orders_condition
-		) );
 
 		return $assets;
 	}
