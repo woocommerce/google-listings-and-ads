@@ -134,48 +134,26 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 	 * when the size threshold is exceeded.
 	 *
 	 * @param int[] $items A single batch of WooCommerce Order IDs from the get_batch() method.
+	 *
+	 * @throws \Exception If an error occurs during CSV creation or writing.
 	 */
 	protected function process_items( array $items ) {
 		$date = $this->get_date();
 
-		// Get or initialise file state.
-		$export_state = $this->options->get( OptionsInterface::YOUTUBE_EXPORT_FILES, [] );
-		if ( ! isset( $export_state[ $date ] ) ) {
-			$export_state[ $date ] = [
-				'files'        => [],
-				'current_file' => '',
-				'current_part' => 0,
-			];
-		}
-
-		// Create first file if needed.
-		if ( empty( $export_state[ $date ]['current_file'] ) ) {
-			$filename  = 'youtube-merchant-conversion-report-' . $date;
-			$file_path = $this->writer->create_file( $filename );
-
-			$export_state[ $date ]['current_file'] = $file_path;
-			$export_state[ $date ]['files'][]      = $file_path;
-
-			$this->options->update( OptionsInterface::YOUTUBE_EXPORT_FILES, $export_state );
-		}
-
-		foreach ( $items as $order_id ) {
-			$order = wc_get_order( $order_id );
-
-			if ( ! $order ) {
-				continue;
+		try {
+			// Get or initialise file state.
+			$export_state = $this->options->get( OptionsInterface::YOUTUBE_EXPORT_FILES, [] );
+			if ( ! isset( $export_state[ $date ] ) ) {
+				$export_state[ $date ] = [
+					'files'        => [],
+					'current_file' => '',
+					'current_part' => 0,
+				];
 			}
 
-			// Check file size before processing this order.
-			$current_file = $export_state[ $date ]['current_file'];
-			$file_size    = $this->writer->get_file_size( $current_file );
-
-			if ( $file_size >= self::FILE_SIZE_THRESHOLD ) {
-				// Create new file with part suffix.
-				++$export_state[ $date ]['current_part'];
-				$part     = $export_state[ $date ]['current_part'];
-				$filename = 'youtube-merchant-conversion-report-' . $date . '-' . $part;
-
+			// Create first file if needed.
+			if ( empty( $export_state[ $date ]['current_file'] ) ) {
+				$filename  = 'youtube-merchant-conversion-report-' . $date;
 				$file_path = $this->writer->create_file( $filename );
 
 				$export_state[ $date ]['current_file'] = $file_path;
@@ -184,16 +162,56 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 				$this->options->update( OptionsInterface::YOUTUBE_EXPORT_FILES, $export_state );
 			}
 
-			// Get items from the order.
-			$line_items = $order->get_items();
+			foreach ( $items as $order_id ) {
+				$order = wc_get_order( $order_id );
 
-			foreach ( $line_items as $line_item ) {
-				$row = $this->row_builder->build_row( $line_item );
+				if ( ! $order ) {
+					continue;
+				}
 
-				if ( is_array( $row ) ) {
-					$this->writer->append_row( $export_state[ $date ]['current_file'], $row );
+				// Check file size before processing this order.
+				$current_file = $export_state[ $date ]['current_file'];
+				$file_size    = $this->writer->get_file_size( $current_file );
+
+				if ( $file_size >= self::FILE_SIZE_THRESHOLD ) {
+					// Create new file with part suffix.
+					++$export_state[ $date ]['current_part'];
+					$part     = $export_state[ $date ]['current_part'];
+					$filename = 'youtube-merchant-conversion-report-' . $date . '-' . $part;
+
+					$file_path = $this->writer->create_file( $filename );
+
+					$export_state[ $date ]['current_file'] = $file_path;
+					$export_state[ $date ]['files'][]      = $file_path;
+
+					$this->options->update( OptionsInterface::YOUTUBE_EXPORT_FILES, $export_state );
+				}
+
+				// Get items from the order.
+				$line_items = $order->get_items();
+
+				foreach ( $line_items as $line_item ) {
+					$row = $this->row_builder->build_row( $line_item );
+
+					if ( is_array( $row ) ) {
+						$this->writer->append_row( $export_state[ $date ]['current_file'], $row );
+					}
 				}
 			}
+		} catch ( \Exception $e ) {
+			// Log error to WooCommerce logs before re-throwing.
+			do_action(
+				'woocommerce_gla_error',
+				sprintf(
+					'YouTube merchant conversion report generation failed for %s: %s',
+					$date,
+					$e->getMessage()
+				),
+				__METHOD__
+			);
+
+			// Re-throw so Action Scheduler marks the job as failed.
+			throw $e;
 		}
 	}
 
@@ -220,8 +238,10 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 
 			if ( $results['success'] ) {
 				// Delete CSV files.
-				foreach ( $file_paths as $file_path ) {
-					$this->writer->delete_file( $file_path );
+				if ( apply_filters( 'woocommerce_gla_youtube_orders_csv_delete_on_complete', true ) ) {
+					foreach ( $file_paths as $file_path ) {
+						$this->writer->delete_file( $file_path );
+					}
 				}
 
 				// Remove file state for this date.

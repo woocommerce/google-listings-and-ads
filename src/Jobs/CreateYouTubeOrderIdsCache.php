@@ -102,23 +102,41 @@ class CreateYouTubeOrderIdsCache extends AbstractBatchedActionSchedulerJob imple
 	 * Process batch items.
 	 *
 	 * @param int[] $items A single batch of WooCommerce Order IDs from the get_batch() method.
+	 *
+	 * @throws \Exception If an error occurs during caching.
 	 */
 	protected function process_items( array $items ) {
-		// Get the date for the orders.
-		$date = $this->get_date();
+		try {
+			// Get the date for the orders.
+			$date = $this->get_date();
 
-		// Get the existing order IDs cache.
-		$youtube_cache = $this->options->get( OptionsInterface::YOUTUBE_ORDER_IDS_CACHE, [] );
+			// Get the existing order IDs cache.
+			$youtube_cache = $this->options->get( OptionsInterface::YOUTUBE_ORDER_IDS_CACHE, [] );
 
-		// Create the date key if not already set.
-		if ( ! isset( $youtube_cache[ $date ] ) || ! is_array( $youtube_cache[ $date ] ) ) {
-			$youtube_cache[ $date ] = [];
+			// Create the date key if not already set.
+			if ( ! isset( $youtube_cache[ $date ] ) || ! is_array( $youtube_cache[ $date ] ) ) {
+				$youtube_cache[ $date ] = [];
+			}
+
+			// Update the order IDs in the option cache.
+			$youtube_cache[ $date ] = array_unique( array_merge( $youtube_cache[ $date ], $items ) );
+
+			$this->options->update( OptionsInterface::YOUTUBE_ORDER_IDS_CACHE, $youtube_cache );
+		} catch ( \Exception $e ) {
+			// Log error to WooCommerce logs before re-throwing.
+			do_action(
+				'woocommerce_gla_error',
+				sprintf(
+					'YouTube order IDs cache update failed for %s: %s',
+					$date,
+					$e->getMessage()
+				),
+				__METHOD__
+			);
+
+			// Re-throw so Action Scheduler marks the job as failed.
+			throw $e;
 		}
-
-		// Update the order IDs in the option cache.
-		$youtube_cache[ $date ] = array_unique( array_merge( $youtube_cache[ $date ], $items ) );
-
-		$this->options->update( OptionsInterface::YOUTUBE_ORDER_IDS_CACHE, $youtube_cache );
 	}
 
 	/**

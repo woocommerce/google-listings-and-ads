@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\Writer;
 
-use RuntimeException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\ExportException;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -46,14 +46,17 @@ class CsvExportWriter {
 	 *
 	 * @return string
 	 *
-	 * @throws RuntimeException When unable to create a directory or file.
+	 * @throws ExportException When unable to create a directory or file.
 	 */
 	public function create_file( string $filename ): string {
 		$upload_dir = wp_upload_dir();
 
+		if ( ! empty( $upload_dir['error'] ) ) {
+			throw ExportException::upload_directory_error( $upload_dir['error'] );
+		}
+
 		if ( empty( $upload_dir['basedir'] ) || ! is_dir( $upload_dir['basedir'] ) ) {
-			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
-			throw new RuntimeException( 'Unable to determine upload directory.' );
+			throw ExportException::invalid_upload_directory();
 		}
 
 		$dir_path = trailingslashit( $upload_dir['basedir'] ) . self::EXPORT_FOLDER;
@@ -62,8 +65,7 @@ class CsvExportWriter {
 			wp_mkdir_p( $dir_path );
 
 			if ( ! $this->fs->is_dir( $dir_path ) ) {
-				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
-				throw new RuntimeException( sprintf( 'Failed to create export directory: %s', esc_html( $dir_path ) ) );
+				throw ExportException::failed_to_create_directory( $dir_path );
 			}
 		}
 
@@ -77,8 +79,7 @@ class CsvExportWriter {
 		$success = $this->fs->put_contents( $file, '' );
 
 		if ( ! $success ) {
-			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
-			throw new RuntimeException( sprintf( 'Failed to create CSV file: %s', esc_html( $file ) ) );
+			throw ExportException::failed_to_create_file( $file );
 		}
 
 		return $file;
@@ -141,10 +142,16 @@ class CsvExportWriter {
 	 *
 	 * @param string $file_path
 	 * @return string
+	 * @throws ExportException When upload directory has an error.
 	 */
 	public function generate_url( string $file_path ): string {
 		$upload_dir = wp_upload_dir();
-		$relative   = str_replace( $upload_dir['basedir'], '', $file_path );
+
+		if ( ! empty( $upload_dir['error'] ) ) {
+			throw ExportException::upload_directory_error( $upload_dir['error'] );
+		}
+
+		$relative = str_replace( $upload_dir['basedir'], '', $file_path );
 
 		return trailingslashit( $upload_dir['baseurl'] ) . ltrim( $relative, '/' );
 	}

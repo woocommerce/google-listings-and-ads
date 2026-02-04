@@ -3,9 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Admin\Exports\Writer;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\ExportException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\Writer\CsvExportWriter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
-use RuntimeException;
 
 /**
  * Class CsvExportWriterTest
@@ -86,6 +86,23 @@ class CsvExportWriterTest extends UnitTest {
 		$this->assertFileExists( $file_path_1 );
 	}
 
+	public function test_create_file_throws_exception_when_wp_upload_dir_has_error() {
+		// Override upload_dir to return an error.
+		add_filter(
+			'upload_dir',
+			function ( $dirs ) {
+				$dirs['error'] = 'Unable to create directory wp-content/uploads. Is its parent directory writable by the server?';
+				return $dirs;
+			},
+			20
+		);
+
+		$this->expectException( ExportException::class );
+		$this->expectExceptionMessage( 'Unable to create directory wp-content/uploads. Is its parent directory writable by the server?' );
+
+		$this->writer->create_file( 'test' );
+	}
+
 	public function test_create_file_throws_exception_when_upload_directory_invalid() {
 		// Override upload_dir to return invalid directory.
 		add_filter(
@@ -97,7 +114,7 @@ class CsvExportWriterTest extends UnitTest {
 			20
 		);
 
-		$this->expectException( RuntimeException::class );
+		$this->expectException( ExportException::class );
 		$this->expectExceptionMessage( 'Unable to determine upload directory.' );
 
 		$this->writer->create_file( 'test' );
@@ -115,7 +132,7 @@ class CsvExportWriterTest extends UnitTest {
 		// Create a new writer instance to use the mocked filesystem.
 		$writer = new CsvExportWriter();
 
-		$this->expectException( RuntimeException::class );
+		$this->expectException( ExportException::class );
 		$this->expectExceptionMessage( 'Failed to create export directory' );
 
 		try {
@@ -139,7 +156,7 @@ class CsvExportWriterTest extends UnitTest {
 		// Create a new writer instance to use the mocked filesystem.
 		$writer = new CsvExportWriter();
 
-		$this->expectException( RuntimeException::class );
+		$this->expectException( ExportException::class );
 		$this->expectExceptionMessage( 'Failed to create CSV file' );
 
 		try {
@@ -294,6 +311,26 @@ class CsvExportWriterTest extends UnitTest {
 		$this->assertStringNotContainsString( $this->test_upload_dir, $url );
 		// URL should be a valid URL format.
 		$this->assertStringStartsWith( 'http://', $url );
+	}
+
+	public function test_generate_url_throws_exception_when_wp_upload_dir_has_error() {
+		$filename  = 'test-url-error';
+		$file_path = $this->test_upload_dir . '/gla-exports/' . $filename . '.csv';
+
+		// Override upload_dir to return an error.
+		add_filter(
+			'upload_dir',
+			function ( $dirs ) {
+				$dirs['error'] = 'Unable to create directory wp-content/uploads. Is its parent directory writable by the server?';
+				return $dirs;
+			},
+			20
+		);
+
+		$this->expectException( ExportException::class );
+		$this->expectExceptionMessage( 'Unable to create directory wp-content/uploads. Is its parent directory writable by the server?' );
+
+		$this->writer->generate_url( $file_path );
 	}
 
 	public function test_append_row_preserves_existing_content() {
