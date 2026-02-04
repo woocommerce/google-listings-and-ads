@@ -238,8 +238,8 @@ class CreateMerchantReportedConversionReport extends AbstractBatchedActionSchedu
 
 			if ( $results['success'] ) {
 				// Delete CSV files.
-				foreach ( $file_paths as $file_path ) {
-					if ( apply_filters( 'woocommerce_gla_youtube_orders_csv_delete_on_complete', true ) ) {
+				if ( apply_filters( 'woocommerce_gla_youtube_orders_csv_delete_on_complete', true ) ) {
+					foreach ( $file_paths as $file_path ) {
 						$this->writer->delete_file( $file_path );
 					}
 				}

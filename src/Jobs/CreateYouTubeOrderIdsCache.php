@@ -128,7 +128,7 @@ class CreateYouTubeOrderIdsCache extends AbstractBatchedActionSchedulerJob imple
 				'woocommerce_gla_error',
 				sprintf(
 					'YouTube order IDs cache update failed for %s: %s',
-					$this->get_date(),
+					$date(),
 					$e->getMessage()
 				),
 				__METHOD__
