@@ -199,9 +199,14 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			$product_condition
 		) );
 
-		$wc_orders_condition = function () {
+		$wc_edit_order_page_condition = function () {
 			$screen = get_current_screen();
-			return ( null !== $screen && 'woocommerce_page_wc-orders' === $screen->id );
+			
+			if ( ! $screen || 'woocommerce_page_wc-orders' !== $screen->id ) {
+				return false;
+			}
+
+			return isset( $_GET['action'] ) && 'edit' === $_GET['action'];
 		};
 
 		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
@@ -214,7 +219,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/meta-boxes.js" ),
 				]
 			),
-			$wc_orders_condition
+			$wc_edit_order_page_condition
 		) )->add_inline_script(
 			'glaData',
 			[

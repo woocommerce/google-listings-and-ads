@@ -20,6 +20,12 @@ const GET_STARTED_URL = getGetStartedUrl();
 const CREATE_CAMPAIGN_URL = getCreateCampaignUrl();
 const BASE_EVENT_PROPS = addBaseEventProperties( {} );
 
+/**
+ * Check if there are any recent paid campaigns.
+ *
+ * @param {Array} campaigns List of campaigns.
+ * @return {boolean} True if there are recent paid campaigns, false otherwise.
+ */
 const hasRecentPaidCampaigns = ( campaigns ) => {
 	const fourteenDaysAgo = new Date();
 	fourteenDaysAgo.setDate( fourteenDaysAgo.getDate() - 14 );
