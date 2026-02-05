@@ -123,6 +123,16 @@ export default function TextsEditor( {
 			const generatedTextAssets =
 				generatedAssets?.[ GEN_AI_ASSET_TYPES.TEXT ]?.[ assetKey ] ??
 				[];
+			console.log(
+				'Generated text assets:',
+				generatedTextAssets,
+				'for URL:',
+				finalUrl,
+				'and asset key:',
+				assetKey,
+				'with response:',
+				generatedAssets
+			); // Debug log
 
 			const { assets: updatedTexts, updatedCount } = fillEmptyAssetSlots(
 				texts,

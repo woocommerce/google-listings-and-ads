@@ -268,33 +268,48 @@ export default function CampaignAssetsForm( {
 					return assetSuggestions;
 				}
 
-				const generatedGenAIAssets = await generateGenAIAssets( url, [
-					{ type: GEN_AI_ASSET_TYPES.TEXT },
-					{ type: GEN_AI_ASSET_TYPES.MEDIA },
-				] );
+				try {
+					const generatedGenAIAssets = await generateGenAIAssets(
+						url,
+						[
+							{ type: GEN_AI_ASSET_TYPES.TEXT },
+							{ type: GEN_AI_ASSET_TYPES.MEDIA },
+						]
+					);
 
-				const textAssetsData =
-					generatedGenAIAssets[ GEN_AI_ASSET_TYPES.TEXT ];
-				const mediaAssetsData =
-					generatedGenAIAssets[ GEN_AI_ASSET_TYPES.MEDIA ];
+					const textAssetsData =
+						generatedGenAIAssets[ GEN_AI_ASSET_TYPES.TEXT ];
+					const mediaAssetsData =
+						generatedGenAIAssets[ GEN_AI_ASSET_TYPES.MEDIA ];
 
-				const hasSuggestedTextAssets = hasValidAIGeneratedAssets(
-					REQUIRED_TEXT_ASSET_KEYS,
-					textAssetsData
-				);
+					const hasSuggestedTextAssets = hasValidAIGeneratedAssets(
+						REQUIRED_TEXT_ASSET_KEYS,
+						textAssetsData
+					);
 
-				const hasSuggestedMediaAssets = hasValidAIGeneratedAssets(
-					REQUIRED_MEDIA_ASSET_KEYS,
-					mediaAssetsData
-				);
+					const hasSuggestedMediaAssets = hasValidAIGeneratedAssets(
+						REQUIRED_MEDIA_ASSET_KEYS,
+						mediaAssetsData
+					);
 
-				setHasAISuggestedTextAssets( hasSuggestedTextAssets );
-				setHasAISuggestedMediaAssets( hasSuggestedMediaAssets );
+					setHasAISuggestedTextAssets( hasSuggestedTextAssets );
+					setHasAISuggestedMediaAssets( hasSuggestedMediaAssets );
 
-				return {
-					...assetSuggestions,
-					...( hasSuggestedTextAssets ? textAssetsData : {} ),
-				};
+					return {
+						...assetSuggestions,
+						...( hasSuggestedTextAssets ? textAssetsData : {} ),
+					};
+				} catch ( genAIError ) {
+					createNotice(
+						'error',
+						__(
+							'Unable to generate AI suggested assets.',
+							'google-listings-and-ads'
+						)
+					);
+
+					return assetSuggestions;
+				}
 			} catch ( error ) {
 				setHasAISuggestedTextAssets( false );
 				setHasAISuggestedMediaAssets( false );

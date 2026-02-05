@@ -633,20 +633,65 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS: {
-			const { url, data } = action;
-
+			const { url, data, assetType } = action;
 			const existingMedia = state.gen_ai_assets?.[ url ]?.media ?? {};
 
-			return setIn( state, [ 'gen_ai_assets', url, 'media' ], {
-				...existingMedia,
-				...data,
-			} );
+			let updatedMedia = {};
+
+			if ( assetType ) {
+				const currentList = existingMedia[ assetType ] ?? [];
+				const newList = data[ assetType ] ?? [];
+
+				// De-duplicate based on the 'url' property of the media item
+				const deDuplicated = [
+					...new Map(
+						[ ...currentList, ...newList ].map( ( item ) => [
+							item.url,
+							item,
+						] )
+					).values(),
+				];
+
+				updatedMedia = {
+					...existingMedia,
+					[ assetType ]: deDuplicated,
+				};
+			} else {
+				updatedMedia = {
+					...existingMedia,
+					...data,
+				};
+			}
+
+			return setIn(
+				state,
+				[ 'gen_ai_assets', url, 'media' ],
+				updatedMedia
+			);
 		}
 
 		case TYPES.RECEIVE_GEN_AI_TEXT_ASSETS: {
-			const { url, data } = action;
+			const { url, data, assetType } = action;
+			const existingText = state.gen_ai_assets?.[ url ]?.text ?? {};
 
-			return setIn( state, [ 'gen_ai_assets', url, 'text' ], data );
+			const updatedText = assetType
+				? {
+						...existingText,
+						[ assetType ]: [
+							...( existingText[ assetType ] ?? [] ),
+							...( data[ assetType ] ?? [] ),
+						],
+				  }
+				: {
+						...existingText,
+						...data,
+				  };
+
+			return setIn(
+				state,
+				[ 'gen_ai_assets', url, 'text' ],
+				updatedText
+			);
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

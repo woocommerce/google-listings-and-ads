@@ -118,24 +118,28 @@ const useCreateGenAIAssets = () => {
 					}
 
 					if ( type === GEN_AI_ASSET_TYPES.TEXT ) {
-						const { data: textData } = receiveGenAITextAssets(
+						const { data: textData } = await receiveGenAITextAssets(
 							url,
 							data,
 							assetKey
 						);
-						// Spread into array to keep results from multiple requests
-						generatedAssets[ GEN_AI_ASSET_TYPES.TEXT ].push(
-							...( textData || [] )
-						);
+
+						generatedAssets[ GEN_AI_ASSET_TYPES.TEXT ] = {
+							...generatedAssets[ GEN_AI_ASSET_TYPES.TEXT ],
+							...textData,
+						};
 					} else if ( type === GEN_AI_ASSET_TYPES.MEDIA ) {
-						const { data: mediaData } = receiveGenAIMediaAssets(
-							url,
-							data,
-							assetKey
-						);
-						generatedAssets[ GEN_AI_ASSET_TYPES.MEDIA ].push(
-							...( mediaData || [] )
-						);
+						const { data: mediaData } =
+							await receiveGenAIMediaAssets(
+								url,
+								data,
+								assetKey
+							);
+
+						generatedAssets[ GEN_AI_ASSET_TYPES.MEDIA ] = {
+							...generatedAssets[ GEN_AI_ASSET_TYPES.MEDIA ],
+							...mediaData,
+						};
 					}
 				}
 

@@ -1289,6 +1289,7 @@ export function* receiveGenAIMediaAssets( url, data, assetType ) {
 		return {
 			type: TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS,
 			url,
+			assetType,
 			data: {},
 		};
 	}
@@ -1296,6 +1297,7 @@ export function* receiveGenAIMediaAssets( url, data, assetType ) {
 	return {
 		type: TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS,
 		url,
+		assetType,
 		data: adaptGenAIAssets( data.items, 'temporary_image_url', assetType ),
 	};
 }
@@ -1305,6 +1307,7 @@ export function* receiveGenAITextAssets( url, data, assetType ) {
 		return {
 			type: TYPES.RECEIVE_GEN_AI_TEXT_ASSETS,
 			url,
+			assetType,
 			data: {},
 		};
 	}
@@ -1312,6 +1315,7 @@ export function* receiveGenAITextAssets( url, data, assetType ) {
 	return {
 		type: TYPES.RECEIVE_GEN_AI_TEXT_ASSETS,
 		url,
+		assetType,
 		data: adaptGenAIAssets( data.items, 'text', assetType ),
 	};
 }
