@@ -209,7 +209,15 @@ class AdsAssetGroupAssetTest extends UnitTest {
 
 
 	public function test_edit_asset_group_assets_with_empty_assets() {
-		$this->assertEquals( [], $this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, [], false ) );
+		$result = $this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, [], false );
+		$this->assertSame( [], $result['operations'] );
+		$this->assertSame(
+			[
+				'business_name' => [],
+				'logo'          => [],
+			],
+			$result['brand_asset_ids']
+		);
 	}
 
 	public function test_edit_asset_group_assets_with_update_assets() {
@@ -234,9 +242,8 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		// Generates a overridable landscape logo
 		$this->generate_overridable_asset();
 
-		$grouped_operations = $this->group_operations(
-			$this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets, false )
-		);
+		$result             = $this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets, false );
+		$grouped_operations = $this->group_operations( $result['operations'] );
 
 		// We should have two asset links creation.
 		$this->assertEquals( 2, count( $grouped_operations['asset_group_asset_operation']['create'] ) );
@@ -277,9 +284,8 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		// In the case, that there are not assets to be overridden.
 		$this->generate_ads_asset_group_asset_query_mock( [] );
 
-		$grouped_operations = $this->group_operations(
-			$this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets, false )
-		);
+		$result             = $this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets, false );
+		$grouped_operations = $this->group_operations( $result['operations'] );
 
 		// We should have two asset links creation.
 		$this->assertEquals( AssetFieldType::number( AssetFieldType::DESCRIPTION ), ( $grouped_operations['asset_group_asset_operation']['create'][0] )->getCreate()->getFieldType() );
@@ -314,9 +320,8 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		// In the case, that there are not assets to be overridden.
 		$this->generate_ads_asset_group_asset_query_mock( [] );
 
-		$grouped_operations = $this->group_operations(
-			$this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets, false )
-		);
+		$result             = $this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets, false );
+		$grouped_operations = $this->group_operations( $result['operations'] );
 
 		// We should have two delete asset_group_asset_operation.
 		$this->assertEquals( 2, count( $grouped_operations['asset_group_asset_operation']['remove'] ) );
@@ -353,14 +358,21 @@ class AdsAssetGroupAssetTest extends UnitTest {
 
 		$this->generate_ads_asset_group_asset_query_mock( [] );
 
-		$operations = $this->asset_group_asset->edit_operations(
+		$result = $this->asset_group_asset->edit_operations(
 			self::TEST_ASSET_GROUP_ID,
 			$assets,
 			true
 		);
 
 		// No delete operations should be added for business_name/logo with null id; no other ops either.
-		$this->assertSame( [], $operations );
+		$this->assertSame( [], $result['operations'] );
+		$this->assertSame(
+			[
+				'business_name' => [],
+				'logo'          => [],
+			],
+			$result['brand_asset_ids']
+		);
 	}
 
 	protected function generate_overridable_asset(): void {

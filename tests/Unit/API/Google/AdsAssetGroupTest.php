@@ -177,17 +177,23 @@ class AdsAssetGroupTest extends UnitTest {
 
 		$this->asset_group_asset->expects( $this->exactly( 1 ) )
 			->method( 'edit_operations' )
-			->with( self::TEST_ASSET_GROUP_ID, [ $asset ] )
+			->with( self::TEST_ASSET_GROUP_ID, [ $asset ], $this->isType( 'bool' ) )
 			->willReturn(
-				$this->generate_create_asset_group_asset_operations(
-					[
+				[
+					'operations'      => $this->generate_create_asset_group_asset_operations(
 						[
-							'asset_id'       => $asset['id'],
-							'asset_group_id' => self::TEST_ASSET_GROUP_ID,
-							'field_type'     => $asset['field_type'],
-						],
-					]
-				)
+							[
+								'asset_id'       => $asset['id'],
+								'asset_group_id' => self::TEST_ASSET_GROUP_ID,
+								'field_type'     => $asset['field_type'],
+							],
+						]
+					),
+					'brand_asset_ids' => [
+						'business_name' => [],
+						'logo'          => [],
+					],
+				]
 			);
 
 		$this->generate_ads_query_mock( [] );
@@ -205,6 +211,19 @@ class AdsAssetGroupTest extends UnitTest {
 			'path2' => 'mypath2',
 		];
 
+		$this->asset_group_asset->expects( $this->once() )
+			->method( 'edit_operations' )
+			->with( self::TEST_ASSET_GROUP_ID, [], $this->isType( 'bool' ) )
+			->willReturn(
+				[
+					'operations'      => [],
+					'brand_asset_ids' => [
+						'business_name' => [],
+						'logo'          => [],
+					],
+				]
+			);
+
 		$this->generate_ads_query_mock( [] );
 		$this->generate_asset_group_mutate_mock( 'update', self::TEST_ASSET_GROUP_ID );
 
@@ -218,6 +237,20 @@ class AdsAssetGroupTest extends UnitTest {
 		$asset_group_data = [
 			'path2' => 123456,
 		];
+
+		$this->asset_group_asset->expects( $this->once() )
+			->method( 'edit_operations' )
+			->with( self::TEST_ASSET_GROUP_ID, [], $this->isType( 'bool' ) )
+			->willReturn(
+				[
+					'operations'      => [],
+					'brand_asset_ids' =>
+						[
+							'business_name' => [],
+							'logo'          => [],
+						],
+				]
+			);
 
 		$this->generate_ads_query_mock( [] );
 		$this->generate_mutate_mock_exception( new ApiException( 'invalid', 3, 'INVALID_ARGUMENT' ) );
@@ -241,6 +274,19 @@ class AdsAssetGroupTest extends UnitTest {
 		$asset_group_data = [
 			'path2' => 123456,
 		];
+
+		$this->asset_group_asset->expects( $this->once() )
+			->method( 'edit_operations' )
+			->with( self::TEST_ASSET_GROUP_ID, [], $this->isType( 'bool' ) )
+			->willReturn(
+				[
+					'operations'      => [],
+					'brand_asset_ids' => [
+						'business_name' => [],
+						'logo'          => [],
+					],
+				]
+			);
 
 		$this->generate_ads_query_mock( [] );
 		$this->generate_mutate_mock_exception( new ApiException( 'Request entity too large', 413, 'UNRECOGNIZED_STATUS' ) );

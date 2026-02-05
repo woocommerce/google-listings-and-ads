@@ -35,6 +35,7 @@ use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 use Exception;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignAsset;
 
@@ -687,20 +688,27 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * Build campaign asset link operations for Brand Guidelines.
 	 *
-	 * @param int $campaign_id Campaign ID.
+	 * When business name and logo IDs are provided (e.g. from the current edit payload), use them
+	 * for campaign-level linking instead of querying. Otherwise discover from campaign/account/asset group.
+	 *
+	 * @param int   $campaign_id       Campaign ID.
+	 * @param int[] $business_name_ids Optional. Asset IDs to link as business name (from current edit).
+	 * @param int[] $logo_ids          Optional. Asset IDs to link as logo (from current edit).
 	 * @return MutateOperation[]
 	 */
-	public function get_brand_asset_link_operations( int $campaign_id ): array {
+	public function get_brand_asset_link_operations( int $campaign_id, array $business_name_ids = [], array $logo_ids = [] ): array {
 		try {
-			// First check if campaign already has the required assets
+			// Query existing campaign-level brand assets (for replace semantics and limit checks).
 			$campaign_assets = ( new AdsCampaignAssetQuery() )
 				->set_client( $this->client, $this->options->get_ads_id() )
 				->where( 'campaign.id', $campaign_id, '=' )
 				->where( 'campaign_asset.status', 'REMOVED', '!=' )
 				->get_results();
 
-			$has_business_name = false;
-			$has_logo          = false;
+			$has_business_name               = false;
+			$has_logo                        = false;
+			$existing_business_name_resource = null;
+			$existing_logo_resource          = null;
 
 			foreach ( $campaign_assets->iterateAllElements() as $row ) {
 				$campaign_asset = $row->getCampaignAsset();
@@ -711,16 +719,34 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$field_type = AssetFieldType::label( $campaign_asset->getFieldType() );
 
 				if ( AssetFieldType::BUSINESS_NAME === $field_type ) {
-					$has_business_name = true;
+					$has_business_name               = true;
+					$existing_business_name_resource = $campaign_asset->getResourceName();
 				}
 
 				if ( AssetFieldType::LOGO === $field_type ) {
-					$has_logo = true;
+					$has_logo               = true;
+					$existing_logo_resource = $campaign_asset->getResourceName();
 				}
+			}
 
-				if ( $has_business_name && $has_logo ) {
-					return [];
+			// When the caller provided IDs from the current edit: replace existing links so changes persist.
+			if ( ! empty( $business_name_ids ) || ! empty( $logo_ids ) ) {
+				$operations = [];
+				if ( ! empty( $business_name_ids ) && $existing_business_name_resource !== null ) {
+					$operations[] = $this->campaign_asset->create_remove_operation( $existing_business_name_resource );
 				}
+				if ( ! empty( $logo_ids ) && $existing_logo_resource !== null ) {
+					$operations[] = $this->campaign_asset->create_remove_operation( $existing_logo_resource );
+				}
+				$ids_to_link_business = ! empty( $business_name_ids ) ? [ $business_name_ids[0] ] : [];
+				$ids_to_link_logo     = ! empty( $logo_ids ) ? [ $logo_ids[0] ] : [];
+				$link_ops             = $this->campaign_asset->create_link_operations( $campaign_id, $ids_to_link_business, $ids_to_link_logo );
+				return array_merge( $operations, $link_ops );
+			}
+
+			// Discovery path (no IDs provided): only link what's missing to avoid exceeding limit.
+			if ( $has_business_name && $has_logo ) {
+				return [];
 			}
 
 			$needs_business_name = ! $has_business_name;
@@ -822,6 +848,55 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 			return [];
 		}
+	}
+
+	/**
+	 * Get campaign-level business name and logo assets for display (when Brand Guidelines is enabled).
+	 * Used to populate the asset group edit form since these assets are linked at campaign level, not asset group level.
+	 *
+	 * @param int $campaign_id Campaign ID.
+	 * @return array{business_name: array{id: int, content: string}|null, logo: array<array{id: int, content: string}>}
+	 */
+	public function get_campaign_brand_assets_for_display( int $campaign_id ): array {
+		$result = [
+			'business_name' => null,
+			'logo'          => [],
+		];
+		try {
+			$asset_columns = [
+				'asset.id',
+				'asset.type',
+				'asset.text_asset.text',
+				'asset.image_asset.full_size.url',
+				'asset.name',
+			];
+			$results       = ( new AdsCampaignAssetQuery() )
+				->add_columns( $asset_columns )
+				->set_client( $this->client, $this->options->get_ads_id() )
+				->where( 'campaign.id', $campaign_id, '=' )
+				->where( 'campaign_asset.field_type', [ AssetFieldType::name( AssetFieldType::BUSINESS_NAME ), AssetFieldType::name( AssetFieldType::LOGO ) ], 'IN' )
+				->where( 'campaign_asset.status', 'REMOVED', '!=' )
+				->get_results();
+
+			$asset = $this->container->get( AdsAsset::class );
+			foreach ( $results->iterateAllElements() as $row ) {
+				$campaign_asset = $row->getCampaignAsset();
+				if ( ! $campaign_asset || ! $row->getAsset() ) {
+					continue;
+				}
+				$field_type = AssetFieldType::label( $campaign_asset->getFieldType() );
+				$converted  = $asset->convert_asset( $row );
+				if ( AssetFieldType::BUSINESS_NAME === $field_type ) {
+					$result['business_name'] = $converted;
+				}
+				if ( AssetFieldType::LOGO === $field_type ) {
+					$result['logo'][] = $converted;
+				}
+			}
+		} catch ( Exception $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+		}
+		return $result;
 	}
 
 	/**

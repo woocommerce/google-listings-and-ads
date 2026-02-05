@@ -792,6 +792,8 @@ trait GoogleAdsClientTrait {
 		$list_response->method( 'getPage' )->willReturn(
 			$page
 		);
+		// Stub for get_campaign_info_by_asset_group_id() which uses iterateAllElements().
+		$list_response->method( 'iterateAllElements' )->willReturn( [] );
 
 		$this->service_client->method( 'search' )->willReturn( $list_response );
 	}

@@ -291,6 +291,21 @@ class AdsAssetGroup implements OptionsAwareInterface {
 
 		foreach ( $asset_group_ids as $asset_group_id ) {
 			$asset_groups[ $asset_group_id ]['assets'] = $assets[ $asset_group_id ] ?? (object) [];
+
+			// When Brand Guidelines is enabled, business name and logo are at campaign level; merge them for display.
+			$campaign_info = $this->get_campaign_info_by_asset_group_id( $asset_group_id );
+			if ( ! empty( $campaign_info['brand_guidelines_enabled'] ) && ! empty( $campaign_info['id'] ) ) {
+				$campaign_brand = $this->campaign->get_campaign_brand_assets_for_display( (int) $campaign_info['id'] );
+				$existing       = $asset_groups[ $asset_group_id ]['assets'];
+				$existing       = is_object( $existing ) ? (array) $existing : $existing;
+				if ( $campaign_brand['business_name'] !== null ) {
+					$existing['business_name'] = $campaign_brand['business_name'];
+				}
+				if ( ! empty( $campaign_brand['logo'] ) ) {
+					$existing['logo'] = $campaign_brand['logo'];
+				}
+				$asset_groups[ $asset_group_id ]['assets'] = $existing;
+			}
 		}
 
 		return $asset_groups;
@@ -346,7 +361,12 @@ class AdsAssetGroup implements OptionsAwareInterface {
 				$is_brand_guidelines_enabled = true;
 			}
 
-			$operations = $this->asset_group_asset->edit_operations( $asset_group_id, $assets, $is_brand_guidelines_enabled );
+			$edit_result     = $this->asset_group_asset->edit_operations( $asset_group_id, $assets, $is_brand_guidelines_enabled );
+			$operations      = $edit_result['operations'];
+			$brand_asset_ids = $edit_result['brand_asset_ids'] ?? [
+				'business_name' => [],
+				'logo'          => [],
+			];
 
 			// PMax only supports one final URL but it is required to be an array.
 			if ( ! empty( $data['final_url'] ) ) {
@@ -360,8 +380,10 @@ class AdsAssetGroup implements OptionsAwareInterface {
 			}
 
 			if ( ! empty( $campaign_info['brand_guidelines_enabled'] ) && ! empty( $campaign_info['id'] ) ) {
-				$brand_operations = $this->campaign->get_brand_asset_link_operations( $campaign_info['id'] );
-				$operations       = array_merge( $brand_operations, $operations );
+				$business_name_ids = $brand_asset_ids['business_name'] ?? [];
+				$logo_ids          = $brand_asset_ids['logo'] ?? [];
+				$brand_operations  = $this->campaign->get_brand_asset_link_operations( $campaign_info['id'], $business_name_ids, $logo_ids );
+				$operations        = array_merge( $brand_operations, $operations );
 			}
 
 			if ( ! empty( $operations ) ) {
