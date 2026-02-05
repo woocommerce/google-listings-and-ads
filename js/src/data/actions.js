@@ -1284,6 +1284,22 @@ export function* receiveAdsRecommendations(
 	};
 }
 
+export function* receiveGenAIMediaAssets( url, data, assetType ) {
+	if ( ! data?.items ) {
+		return {
+			type: TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS,
+			url,
+			data: {},
+		};
+	}
+
+	return {
+		type: TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS,
+		url,
+		data: adaptGenAIAssets( data.items, 'temporary_image_url', assetType ),
+	};
+}
+
 /**
  * Fetches Gen AI media assets. If no asset type is provided, it will fetch all asset types.
  *
@@ -1309,11 +1325,7 @@ export function* fetchGenAIMediaAssets( url, assetType ) {
 			assetType
 		);
 
-		return {
-			type: TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS,
-			url,
-			data: formattedData,
-		};
+		return yield receiveGenAIMediaAssets( url, formattedData );
 	} catch ( error ) {
 		handleApiError(
 			error,
@@ -1324,6 +1336,22 @@ export function* fetchGenAIMediaAssets( url, assetType ) {
 		);
 		throw error;
 	}
+}
+
+export function* receiveGenAITextAssets( url, data, assetType ) {
+	if ( ! data?.items ) {
+		return {
+			type: TYPES.RECEIVE_GEN_AI_TEXT_ASSETS,
+			url,
+			data: {},
+		};
+	}
+
+	return {
+		type: TYPES.RECEIVE_GEN_AI_TEXT_ASSETS,
+		url,
+		data: adaptGenAIAssets( data.items, 'text', assetType ),
+	};
 }
 
 /**
@@ -1350,11 +1378,7 @@ export function* fetchGenAITextAssets( url, assetType ) {
 			assetType
 		);
 
-		return {
-			type: TYPES.RECEIVE_GEN_AI_TEXT_ASSETS,
-			url,
-			data: formattedData,
-		};
+		return yield receiveGenAITextAssets( url, formattedData );
 	} catch ( error ) {
 		handleApiError(
 			error,

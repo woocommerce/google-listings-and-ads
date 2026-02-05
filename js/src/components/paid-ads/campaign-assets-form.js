@@ -10,7 +10,11 @@ import { isPlainObject } from 'lodash';
 /**
  * Internal dependencies
  */
-import { ASSET_GROUP_KEY, ASSET_FORM_KEY } from '~/constants';
+import {
+	ASSET_GROUP_KEY,
+	ASSET_FORM_KEY,
+	GEN_AI_ASSET_TYPES,
+} from '~/constants';
 import AdaptiveForm from '~/components/adaptive-form';
 import AppSpinner from '~/components/app-spinner';
 import validateCampaign from '~/components/paid-ads/validateCampaign';
@@ -20,7 +24,7 @@ import useBudgetRecommendation from '~/hooks/useBudgetRecommendation';
 import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
-import { useAppDispatch } from '~/data';
+import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import { FILTER_BUDGET_RECOMMENDATIONS } from '~/utils/tracks';
 import { API_NAMESPACE } from '~/data/constants';
 import round from '~/utils/round';
@@ -200,7 +204,7 @@ export default function CampaignAssetsForm( {
 	countryCodes,
 	...adaptiveFormProps
 } ) {
-	const { fetchGenAIMediaAssets, fetchGenAITextAssets } = useAppDispatch();
+	const [ generateGenAIAssets ] = useCreateGenAIAssets();
 	const [ isFetchingAssets, setIsFetchingAssets ] = useState( false );
 	const initialAssetGroup = useMemo( () => {
 		return convertAssetEntityGroupToFormValues( assetEntityGroup );
@@ -260,11 +264,19 @@ export default function CampaignAssetsForm( {
 				const assetSuggestions = await apiFetch( { path } );
 				const url = assetSuggestions[ ASSET_GROUP_KEY.FINAL_URL ];
 
-				const [ { data: textAssetsData }, { data: mediaAssetsData } ] =
-					await Promise.all( [
-						fetchGenAITextAssets( url ),
-						fetchGenAIMediaAssets( url ),
-					] );
+				if ( ! url ) {
+					return assetSuggestions;
+				}
+
+				const generatedGenAIAssets = await generateGenAIAssets( url, [
+					{ type: GEN_AI_ASSET_TYPES.TEXT },
+					{ type: GEN_AI_ASSET_TYPES.MEDIA },
+				] );
+
+				const textAssetsData =
+					generatedGenAIAssets[ GEN_AI_ASSET_TYPES.TEXT ];
+				const mediaAssetsData =
+					generatedGenAIAssets[ GEN_AI_ASSET_TYPES.MEDIA ];
 
 				const hasSuggestedTextAssets = hasValidAIGeneratedAssets(
 					REQUIRED_TEXT_ASSET_KEYS,
