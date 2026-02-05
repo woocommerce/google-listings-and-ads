@@ -14,7 +14,7 @@ import { API_NAMESPACE, REQUEST_ACTIONS } from '~/data/constants';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 
 const useCreateGenAIAssets = () => {
-	const [ loading, setLoading ] = useState( false );
+	const [ isGenerating, setIsGenerating ] = useState( false );
 	const { createNotice } = useDispatchCoreNotices();
 	const { receiveGenAITextAssets, receiveGenAIMediaAssets } =
 		useAppDispatch();
@@ -79,7 +79,7 @@ const useCreateGenAIAssets = () => {
 				return;
 			}
 
-			setLoading( true );
+			setIsGenerating( true );
 
 			// Initialize as empty arrays to avoid overwriting multiple requests of same type
 			const generatedAssets = {
@@ -150,7 +150,7 @@ const useCreateGenAIAssets = () => {
 					)
 				);
 			} finally {
-				setLoading( false );
+				setIsGenerating( false );
 			}
 		},
 		[
@@ -161,7 +161,7 @@ const useCreateGenAIAssets = () => {
 		]
 	);
 
-	return [ generateAssets, loading ];
+	return [ generateAssets, isGenerating ];
 };
 
 export default useCreateGenAIAssets;

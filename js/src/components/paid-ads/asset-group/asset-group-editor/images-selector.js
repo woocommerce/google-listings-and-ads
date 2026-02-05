@@ -8,9 +8,10 @@ import { useState, useEffect, useRef } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { useAppDispatch } from '~/data';
+import { GEN_AI_ASSET_TYPES } from '~/constants';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
+import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import useCroppedImageSelector from '~/hooks/useCroppedImageSelector';
 import AppTooltip from '~/components/app-tooltip';
 import AssetItemActionButton, {
@@ -52,9 +53,8 @@ export default function ImagesSelector( {
 } ) {
 	const { values } = useAdaptiveFormContext();
 	const updateImagesRef = useRef();
-	const [ isGeneratingAssets, setIsGeneratingAssets ] = useState( false );
 	const [ awaitingActionImage, setAwaitingActionImage ] = useState( null );
-	const { fetchGenAIMediaAssets } = useAppDispatch();
+	const [ generateAssets, isGenerating ] = useCreateGenAIAssets();
 	const { createNotice } = useDispatchCoreNotices();
 	const [ images, setImages ] = useState( () =>
 		// The asset images fetched from Google Ads are only URLs.
@@ -152,11 +152,11 @@ export default function ImagesSelector( {
 	};
 
 	const handleGenerateClick = async () => {
-		setIsGeneratingAssets( true );
-
 		try {
 			const { final_url: finalUrl } = values;
-			await fetchGenAIMediaAssets( finalUrl, assetKey );
+			await generateAssets( finalUrl, [
+				{ type: GEN_AI_ASSET_TYPES.MEDIA, assetKey },
+			] );
 		} catch ( error ) {
 			createNotice(
 				'error',
@@ -165,8 +165,6 @@ export default function ImagesSelector( {
 					'google-listings-and-ads'
 				)
 			);
-		} finally {
-			setIsGeneratingAssets( false );
 		}
 	};
 
@@ -191,7 +189,7 @@ export default function ImagesSelector( {
 					action={ ACTION_TYPES.GENERATE }
 					text={ generateButtonText }
 					onClick={ handleGenerateClick }
-					loading={ isGeneratingAssets }
+					loading={ isGenerating }
 				/>
 			) }
 		</div>
