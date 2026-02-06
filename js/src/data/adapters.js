@@ -280,8 +280,8 @@ export function adaptGenAIAssets( items = [], valueKey, filterType ) {
 		const { type, [ valueKey ]: value } = item;
 
 		// Skip if:
-		// 1. We have a filter and it doesn't match
-		// 2. The value for the specified key is empty/null
+		// We have a filter and it doesn't match
+		// The value for the specified key is empty/null
 		if ( ( filterType && type !== filterType ) || ! value ) {
 			continue;
 		}

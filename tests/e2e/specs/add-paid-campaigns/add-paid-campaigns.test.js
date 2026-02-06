@@ -722,7 +722,7 @@ test.describe( 'Add paid campaign', () => {
 										longHeadlineInputsValues.length - 1
 									];
 								expect( lastValue ).toBe(
-									'Smart shopping starts right here'
+									'Upgrade your everyday shopping experience'
 								);
 							} );
 						} );
@@ -785,7 +785,7 @@ test.describe( 'Add paid campaign', () => {
 										descriptionInputsValues.length - 1
 									];
 								expect( lastValue ).toBe(
-									'Quality products backed by great support.'
+									'Browse top picks and enjoy exclusive savings.'
 								);
 							} );
 						} );
