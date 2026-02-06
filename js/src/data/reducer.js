@@ -636,32 +636,20 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			const { url, data, assetType } = action;
 			const existingMedia = state.gen_ai_assets?.[ url ]?.media ?? {};
 
-			let updatedMedia = {};
-
-			if ( assetType ) {
-				const currentList = existingMedia[ assetType ] ?? [];
-				const newList = data[ assetType ] ?? [];
-
-				// De-duplicate based on the 'url' property of the media item
-				const deDuplicated = [
-					...new Map(
-						[ ...currentList, ...newList ].map( ( item ) => [
-							item.url,
-							item,
-						] )
-					).values(),
-				];
-
-				updatedMedia = {
-					...existingMedia,
-					[ assetType ]: deDuplicated,
-				};
-			} else {
-				updatedMedia = {
-					...existingMedia,
-					...data,
-				};
-			}
+			const updatedMedia = assetType
+				? {
+						...existingMedia,
+						[ assetType ]: [
+							...new Set( [
+								...( existingMedia[ assetType ] ?? [] ),
+								...( data[ assetType ] ?? [] ),
+							] ),
+						],
+				  }
+				: {
+						...existingMedia,
+						...data,
+				  };
 
 			return setIn(
 				state,
