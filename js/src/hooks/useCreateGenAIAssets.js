@@ -1,18 +1,23 @@
 /**
  * External dependencies
  */
+import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 import { useCallback, useState } from '@wordpress/element';
-import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
  */
-import { GEN_AI_ASSET_TYPES } from '~/constants';
 import { useAppDispatch } from '~/data';
+import { GEN_AI_ASSET_TYPES } from '~/constants';
 import { API_NAMESPACE, REQUEST_ACTIONS } from '~/data/constants';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 
+/**
+ * Custom hook to generate Gen AI assets for a given URL and asset requests.
+ *
+ * @return {Array} - An array containing the generateAssets function and a boolean indicating if assets are currently being generated.
+ */
 const useCreateGenAIAssets = () => {
 	const [ isGeneratingAssets, setIsGeneratingAssets ] = useState( false );
 	const { createNotice } = useDispatchCoreNotices();
