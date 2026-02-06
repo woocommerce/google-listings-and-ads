@@ -54,7 +54,7 @@ export default function ImagesSelector( {
 	const { values } = useAdaptiveFormContext();
 	const updateImagesRef = useRef();
 	const [ awaitingActionImage, setAwaitingActionImage ] = useState( null );
-	const [ generateAssets, isGenerating ] = useCreateGenAIAssets();
+	const [ generateAssets, isGeneratingAssets ] = useCreateGenAIAssets();
 	const { createNotice } = useDispatchCoreNotices();
 	const [ images, setImages ] = useState( () =>
 		// The asset images fetched from Google Ads are only URLs.
@@ -189,7 +189,7 @@ export default function ImagesSelector( {
 					action={ ACTION_TYPES.GENERATE }
 					text={ generateButtonText }
 					onClick={ handleGenerateClick }
-					loading={ isGenerating }
+					loading={ isGeneratingAssets }
 				/>
 			) }
 		</div>

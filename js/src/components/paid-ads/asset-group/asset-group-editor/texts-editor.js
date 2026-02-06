@@ -65,7 +65,7 @@ export default function TextsEditor( {
 } ) {
 	const updateTextsRef = useRef();
 	const { createNotice } = useDispatchCoreNotices();
-	const [ generateAssets, isGenerating ] = useCreateGenAIAssets();
+	const [ generateAssets, isGeneratingAssets ] = useCreateGenAIAssets();
 	const [ texts, setTexts ] = useState( initialTexts );
 	const { assets: genAITextAssets } = useGenAITextAssets(
 		finalUrl,
@@ -230,7 +230,7 @@ export default function TextsEditor( {
 					action={ ACTION_TYPES.GENERATE }
 					text={ generateButtonText }
 					onClick={ handleGenerateClick }
-					loading={ isGenerating }
+					loading={ isGeneratingAssets }
 				/>
 			) }
 		</div>

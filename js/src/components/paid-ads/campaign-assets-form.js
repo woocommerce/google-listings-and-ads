@@ -204,7 +204,7 @@ export default function CampaignAssetsForm( {
 	countryCodes,
 	...adaptiveFormProps
 } ) {
-	const [ generateGenAIAssets ] = useCreateGenAIAssets();
+	const [ generateAssets ] = useCreateGenAIAssets();
 	const [ isFetchingAssets, setIsFetchingAssets ] = useState( false );
 	const initialAssetGroup = useMemo( () => {
 		return convertAssetEntityGroupToFormValues( assetEntityGroup );
@@ -269,13 +269,10 @@ export default function CampaignAssetsForm( {
 				}
 
 				try {
-					const generatedGenAIAssets = await generateGenAIAssets(
-						url,
-						[
-							{ type: GEN_AI_ASSET_TYPES.TEXT },
-							{ type: GEN_AI_ASSET_TYPES.MEDIA },
-						]
-					);
+					const generatedGenAIAssets = await generateAssets( url, [
+						{ type: GEN_AI_ASSET_TYPES.TEXT },
+						{ type: GEN_AI_ASSET_TYPES.MEDIA },
+					] );
 
 					const textAssetsData =
 						generatedGenAIAssets[ GEN_AI_ASSET_TYPES.TEXT ];
