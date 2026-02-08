@@ -1,0 +1,334 @@
+<?php
+declare( strict_types=1 );
+
+namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
+
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Exception;
+use WP_REST_Request as Request;
+use WP_REST_Response as Response;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Class AssetImageProxyController
+ *
+ * Proxies AI-generated images to bypass adblocker issues by fetching images server-side
+ * and streaming them back to the client.
+ *
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\GenAI
+ */
+class AssetImageProxyController extends BaseController {
+
+	/**
+	 * Whitelisted domains allowed for image proxying.
+	 * Only URLs from these domains will be proxied.
+	 *
+	 * @var array
+	 */
+	protected $allowed_domains = [
+		'tpc.googlesyndication.com',
+	];
+
+	/**
+	 * Allowed image MIME types.
+	 *
+	 * @var array
+	 */
+	protected $allowed_mime_types = [
+		'image/jpeg',
+		'image/jpg',
+		'image/png',
+		'image/gif',
+		'image/webp',
+		'image/svg+xml',
+	];
+
+	/**
+	 * Maximum image size in bytes (10MB).
+	 *
+	 * @var int
+	 */
+	protected $max_image_size = 10485760;
+
+	/**
+	 * AssetImageProxyController constructor.
+	 *
+	 * @param RESTServer $server
+	 */
+	public function __construct( RESTServer $server ) {
+		parent::__construct( $server );
+	}
+
+	/**
+	 * Register rest routes with WordPress.
+	 */
+	public function register_routes(): void {
+		$this->register_route(
+			'ads/assets/image-proxy',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_image_proxy_callback(),
+					'permission_callback' => $this->get_image_proxy_permission_callback(),
+					'args'                => $this->get_schema_properties(),
+				],
+				'schema' => $this->get_api_response_schema_callback(),
+			]
+		);
+	}
+
+	/**
+	 * Permission callback for the image proxy endpoint.
+	 *
+	 * TODO: Change to proper permission callback.
+	 *
+	 * @return callable
+	 */
+	protected function get_image_proxy_permission_callback(): callable {
+		return '__return_true';
+	}
+
+	/**
+	 * Get the callback function for proxying images.
+	 *
+	 * @return callable
+	 */
+	protected function get_image_proxy_callback(): callable {
+		return function ( Request $request ) {
+			try {
+				$image_url = $request->get_param( 'url' );
+
+				// Check for required parameter.
+				if ( empty( $image_url ) ) {
+					return new Response(
+						[
+							'message' => __( 'Image URL is required.', 'google-listings-and-ads' ),
+						],
+						400
+					);
+				}
+
+				// Validate URL format.
+				if ( ! filter_var( $image_url, FILTER_VALIDATE_URL ) ) {
+					return new Response(
+						[
+							'message' => __( 'Invalid image URL provided.', 'google-listings-and-ads' ),
+						],
+						400
+					);
+				}
+
+				// Check if URL is from an allowed domain.
+				if ( ! $this->is_allowed_domain( $image_url ) ) {
+					return new Response(
+						[
+							'message' => __( 'Domain not allowed for image proxying.', 'google-listings-and-ads' ),
+						],
+						403
+					);
+				}
+
+				// Fetch the image.
+				$response = wp_remote_get(
+					$image_url,
+					[
+						'timeout'     => 30,
+						'redirection' => 5,
+						'user-agent'  => 'WordPress/' . get_bloginfo( 'version' ) . '; ' . home_url(),
+						'sslverify'   => true,
+					]
+				);
+
+				// Check for errors.
+				if ( is_wp_error( $response ) ) {
+					return new Response(
+						[
+							'message' => sprintf(
+								/* translators: %s: error message */
+								__( 'Failed to fetch image: %s', 'google-listings-and-ads' ),
+								$response->get_error_message()
+							),
+						],
+						502
+					);
+				}
+
+				// Get response code.
+				$response_code = wp_remote_retrieve_response_code( $response );
+				if ( 200 !== $response_code ) {
+					return new Response(
+						[
+							'message' => sprintf(
+								/* translators: %d: HTTP status code */
+								__( 'Image request returned status code: %d', 'google-listings-and-ads' ),
+								$response_code
+							),
+						],
+						$response_code
+					);
+				}
+
+				// Get content type.
+				$content_type = wp_remote_retrieve_header( $response, 'content-type' );
+
+				// Validate content type.
+				if ( ! $this->is_valid_image_type( $content_type ) ) {
+					return new Response(
+						[
+							'message' => sprintf(
+								/* translators: %s: content type */
+								__( 'Invalid content type: %s. Expected an image.', 'google-listings-and-ads' ),
+								$content_type
+							),
+						],
+						400
+					);
+				}
+
+				// Get image body.
+				$image_data = wp_remote_retrieve_body( $response );
+
+				// Check image size.
+				if ( strlen( $image_data ) > $this->max_image_size ) {
+					return new Response(
+						[
+							'message' => sprintf(
+								/* translators: %d: maximum size in MB */
+								__( 'Image exceeds maximum size of %d MB.', 'google-listings-and-ads' ),
+								$this->max_image_size / 1048576
+							),
+						],
+						413
+					);
+				}
+
+				// Return the image with appropriate headers.
+				return $this->create_image_response( $image_data, $content_type );
+
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
+	 * Get the list of allowed domains for image proxying.
+	 *
+	 * Developers can filter this list to add additional trusted domains.
+	 *
+	 * @return array
+	 */
+	protected function get_allowed_domains(): array {
+		/**
+		 * Filter the list of allowed domains for the image proxy.
+		 *
+		 * @param array $allowed_domains Array of allowed domain names.
+		 */
+		return apply_filters(
+			'woocommerce_gla_image_proxy_allowed_domains',
+			$this->allowed_domains
+		);
+	}
+
+	/**
+	 * Check if a URL is from an allowed domain.
+	 *
+	 * @param string $url The URL to check.
+	 *
+	 * @return bool
+	 */
+	protected function is_allowed_domain( string $url ): bool {
+		$parsed_url = wp_parse_url( $url );
+
+		if ( ! isset( $parsed_url['host'] ) ) {
+			return false;
+		}
+
+		$host = strtolower( $parsed_url['host'] );
+		$allowed_domains = $this->get_allowed_domains();
+
+		// Check if the host matches any allowed domain
+		foreach ( $allowed_domains as $allowed_domain ) {
+			if ( $host === strtolower( $allowed_domain ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check if the content type is a valid image type.
+	 *
+	 * @param string $content_type The content type to check.
+	 *
+	 * @return bool
+	 */
+	protected function is_valid_image_type( string $content_type ): bool {
+		// Remove charset and other parameters from content type.
+		$content_type = strtolower( trim( explode( ';', $content_type )[0] ) );
+		return in_array( $content_type, $this->allowed_mime_types, true );
+	}
+
+	/**
+	 * Create a response with image data and proper headers.
+	 *
+	 * This method serves raw binary image data by outputting it directly.
+	 *
+	 * @param string $image_data   The image binary data.
+	 * @param string $content_type The content type of the image.
+	 */
+	protected function create_image_response( string $image_data, string $content_type ): void {
+		// Clear any previous output
+		if ( ob_get_level() ) {
+			ob_end_clean();
+		}
+
+		status_header( 200 );
+
+		// Set headers for image streaming
+		header( 'Content-Type: ' . $content_type );
+		header( 'Content-Length: ' . strlen( $image_data ) );
+		header( 'Cache-Control: public, max-age=31536000, immutable' );
+		header( 'X-Content-Type-Options: nosniff' );
+
+		// Output the raw image data
+		echo $image_data; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+
+		exit;
+	}
+
+	/**
+	 * Get the item schema properties for the controller.
+	 *
+	 * @return array
+	 */
+	protected function get_schema_properties(): array {
+		return [
+			'url' => [
+				'description'       => __( 'The URL of the image to proxy.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'format'            => 'uri',
+				'required'          => true,
+				'sanitize_callback' => 'esc_url_raw',
+				'validate_callback' => function ( $param ) {
+					return filter_var( $param, FILTER_VALIDATE_URL ) !== false;
+				},
+			],
+		];
+	}
+
+	/**
+	 * Get the item schema name for the controller.
+	 *
+	 * Used for building the API response schema.
+	 *
+	 * @return string
+	 */
+	protected function get_schema_title(): string {
+		return 'asset_image_proxy';
+	}
+}

@@ -26,6 +26,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\SetupCo
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\AssetGroupController as AdsAssetGroupController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\AssetGenerationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\AssetSuggestionsController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\AssetImageProxyController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\RecommendationsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\GTINMigrationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\RestAPI\SyncController;
@@ -147,6 +148,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( SetupCompleteController::class, MerchantMetrics::class );
 		$this->share( AssetSuggestionsController::class, AdsAssetSuggestionsService::class );
 		$this->share( AssetGenerationController::class, AdsAssetGenerationService::class );
+		$this->share( AssetImageProxyController::class );
 		$this->share( SyncableProductsCountController::class, JobRepository::class );
 		$this->share( PolicyComplianceCheckController::class, PolicyComplianceCheck::class );
 		$this->share( AttributeMappingDataController::class, AttributeMappingHelper::class );
