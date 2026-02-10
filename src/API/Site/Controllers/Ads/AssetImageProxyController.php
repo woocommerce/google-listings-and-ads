@@ -23,16 +23,6 @@ defined( 'ABSPATH' ) || exit;
 class AssetImageProxyController extends BaseController {
 
 	/**
-	 * Whitelisted domains allowed for image proxying.
-	 * Only URLs from these domains will be proxied.
-	 *
-	 * @var array
-	 */
-	protected $allowed_domains = [
-		'tpc.googlesyndication.com',
-	];
-
-	/**
 	 * Allowed image MIME types.
 	 *
 	 * @var array
@@ -41,9 +31,6 @@ class AssetImageProxyController extends BaseController {
 		'image/jpeg',
 		'image/jpg',
 		'image/png',
-		'image/gif',
-		'image/webp',
-		'image/svg+xml',
 	];
 
 	/**
@@ -83,8 +70,6 @@ class AssetImageProxyController extends BaseController {
 	/**
 	 * Permission callback for the image proxy endpoint.
 	 *
-	 * TODO: Change to proper permission callback.
-	 *
 	 * @return callable
 	 */
 	protected function get_image_proxy_permission_callback(): callable {
@@ -118,16 +103,6 @@ class AssetImageProxyController extends BaseController {
 							'message' => __( 'Invalid image URL provided.', 'google-listings-and-ads' ),
 						],
 						400
-					);
-				}
-
-				// Check if URL is from an allowed domain.
-				if ( ! $this->is_allowed_domain( $image_url ) ) {
-					return new Response(
-						[
-							'message' => __( 'Domain not allowed for image proxying.', 'google-listings-and-ads' ),
-						],
-						403
 					);
 				}
 
@@ -212,52 +187,6 @@ class AssetImageProxyController extends BaseController {
 				return $this->response_from_exception( $e );
 			}
 		};
-	}
-
-	/**
-	 * Get the list of allowed domains for image proxying.
-	 *
-	 * Developers can filter this list to add additional trusted domains.
-	 *
-	 * @return array
-	 */
-	protected function get_allowed_domains(): array {
-		/**
-		 * Filter the list of allowed domains for the image proxy.
-		 *
-		 * @param array $allowed_domains Array of allowed domain names.
-		 */
-		return apply_filters(
-			'woocommerce_gla_image_proxy_allowed_domains',
-			$this->allowed_domains
-		);
-	}
-
-	/**
-	 * Check if a URL is from an allowed domain.
-	 *
-	 * @param string $url The URL to check.
-	 *
-	 * @return bool
-	 */
-	protected function is_allowed_domain( string $url ): bool {
-		$parsed_url = wp_parse_url( $url );
-
-		if ( ! isset( $parsed_url['host'] ) ) {
-			return false;
-		}
-
-		$host = strtolower( $parsed_url['host'] );
-		$allowed_domains = $this->get_allowed_domains();
-
-		// Check if the host matches any allowed domain
-		foreach ( $allowed_domains as $allowed_domain ) {
-			if ( $host === strtolower( $allowed_domain ) ) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	/**
