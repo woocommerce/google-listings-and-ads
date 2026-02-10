@@ -828,54 +828,9 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				}
 			}
 
-			// If we couldn't find the required assets at account level, try fetching from asset group
-			if ( ( $needs_business_name && empty( $business_ids ) ) || ( $needs_logo && empty( $logo_ids ) ) ) {
-				$asset_groups = $this->container->get( AdsAssetGroup::class )->get_asset_groups_by_campaign_id( $campaign_id, true );
-
-				if ( ! empty( $asset_groups ) ) {
-					$first_asset_group  = $asset_groups[0];
-					$asset_group_assets = is_object( $first_asset_group )
-						? ( $first_asset_group->assets ?? [] )
-						: ( $first_asset_group['assets'] ?? [] );
-
-					if ( is_object( $asset_group_assets ) ) {
-						$asset_group_assets = (array) $asset_group_assets;
-					}
-
-					// Try to get business name from asset group if still needed
-					if ( $needs_business_name && empty( $business_ids ) ) {
-						foreach ( [ AssetFieldType::BUSINESS_NAME, 'BUSINESS_NAME' ] as $key ) {
-							if ( ! empty( $asset_group_assets[ $key ] ) ) {
-								$business_asset = $asset_group_assets[ $key ];
-								$business_id    = is_object( $business_asset ) ? ( $business_asset->id ?? null ) : ( $business_asset['id'] ?? null );
-								if ( $business_id ) {
-									$business_ids[] = $business_id;
-									break;
-								}
-							}
-						}
-					}
-
-					// Try to get logos from asset group if still needed
-					if ( $needs_logo && empty( $logo_ids ) ) {
-						foreach ( [ AssetFieldType::LOGO, 'LOGO' ] as $key ) {
-							if ( ! empty( $asset_group_assets[ $key ] ) ) {
-								$logos = $asset_group_assets[ $key ];
-								if ( is_object( $logos ) || ( is_array( $logos ) && isset( $logos['id'] ) ) ) {
-									$logos = [ $logos ];
-								}
-								foreach ( (array) $logos as $logo ) {
-									$logo_id = is_object( $logo ) ? ( $logo->id ?? null ) : ( $logo['id'] ?? null );
-									if ( $logo_id ) {
-										$logo_ids[] = $logo_id;
-									}
-								}
-								break;
-							}
-						}
-					}
-				}
-			}
+			// If we couldn't find the required assets at account level, we cannot proceed further.
+			// Note: We avoid querying asset groups here to prevent circular dependency (AdsAssetGroup depends on AdsCampaign).
+			// The caller should provide assets via the $assets parameter for proper brand asset linking.
 
 			if ( empty( $business_ids ) && empty( $logo_ids ) ) {
 				return [];
