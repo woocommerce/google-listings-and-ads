@@ -10,10 +10,10 @@ import { API_NAMESPACE } from '~/data/constants';
 
 /**
  * Converts an external image URL to use the WordPress image proxy endpoint.
- * This bypasses adblockers that might block direct access to AI-generated images.
+ * This bypasses ad blockers that might block direct access to AI-generated images.
  *
  * Use this utility function when rendering images in the UI to ensure they load
- * even when users have adblockers enabled. The original URLs are preserved in
+ * even when users have ad blockers enabled. The original URLs are preserved in
  * state and only proxied at render time.
  *
  * @param {string} imageUrl - The original image URL to proxy.
