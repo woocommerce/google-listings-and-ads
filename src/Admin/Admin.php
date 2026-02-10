@@ -106,6 +106,17 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 	}
 
 	/**
+	 * Return version string for a build file (filemtime when file exists, else plugin version).
+	 * Avoids filemtime() errors in environments where the JS/CSS build has not been run (e.g. CI).
+	 *
+	 * @param string $path Full path to the build file.
+	 * @return string
+	 */
+	protected function get_build_file_version( string $path ): string {
+		return is_readable( $path ) ? (string) filemtime( $path ) : $this->get_version();
+	}
+
+	/**
 	 * Return an array of assets.
 	 *
 	 * @return Asset[]
@@ -115,14 +126,15 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			return PageController::is_admin_page();
 		};
 
-		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
+		$build_dir = "{$this->get_root_dir()}/js/build";
+		$assets[]  = ( new AdminScriptWithBuiltDependenciesAsset(
 			'google-listings-and-ads',
 			'js/build/index',
-			"{$this->get_root_dir()}/js/build/index.asset.php",
+			"{$build_dir}/index.asset.php",
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
-					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/index.js" ),
+					'version'      => $this->get_build_file_version( "{$build_dir}/index.js" ),
 				]
 			),
 			$wc_admin_condition
@@ -146,14 +158,14 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 				],
 				'dataViewsScriptUrl'       => add_query_arg(
 					[
-						'version' => (string) filemtime( "{$this->get_root_dir()}/js/build/wp-dataviews-shim.js" ),
+						'version' => $this->get_build_file_version( "{$build_dir}/wp-dataviews-shim.js" ),
 					],
 					(
 						new ScriptAsset(
 							'gla-data-views-shim',
 							'js/build/wp-dataviews-shim',
 							[],
-							(string) filemtime( "{$this->get_root_dir()}/js/build/wp-dataviews-shim.js" ),
+							$this->get_build_file_version( "{$build_dir}/wp-dataviews-shim.js" ),
 						)
 					)->get_uri(),
 				),
@@ -164,7 +176,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			'google-listings-and-ads-css',
 			'/js/build/index',
 			defined( 'WC_ADMIN_PLUGIN_FILE' ) ? [ 'wc-admin-app' ] : [],
-			(string) filemtime( "{$this->get_root_dir()}/js/build/index.css" ),
+			$this->get_build_file_version( "{$build_dir}/index.css" ),
 			$wc_admin_condition
 		) );
 
@@ -176,11 +188,11 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
 			'gla-product-attributes',
 			'js/build/product-attributes',
-			"{$this->get_root_dir()}/js/build/product-attributes.asset.php",
+			"{$build_dir}/product-attributes.asset.php",
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
-					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/product-attributes.js" ),
+					'version'      => $this->get_build_file_version( "{$build_dir}/product-attributes.js" ),
 				]
 			),
 			$product_condition
@@ -199,15 +211,14 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			$product_condition
 		) );
 
-		$meta_boxes_asset_path = "{$this->get_root_dir()}/js/build/meta-boxes.js";
-		$assets[]              = ( new AdminScriptWithBuiltDependenciesAsset(
+		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
 			'gla-meta-boxes',
 			'js/build/meta-boxes',
-			"{$this->get_root_dir()}/js/build/meta-boxes.asset.php",
+			"{$build_dir}/meta-boxes.asset.php",
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
-					'version'      => (string) ( file_exists( $meta_boxes_asset_path ) ? filemtime( $meta_boxes_asset_path ) : $this->get_version() ),
+					'version'      => $this->get_build_file_version( "{$build_dir}/meta-boxes.js" ),
 				]
 			),
 			function (): bool {
