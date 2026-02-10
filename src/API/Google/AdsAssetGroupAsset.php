@@ -310,25 +310,21 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 *
 	 * When brand guidelines is enabled, business name and logo are linked at both the asset group level
 	 * and the campaign level. This method creates AssetGroupAsset operations for all asset types and
-	 * returns the IDs of business_name and logo assets so the caller can also link them as CampaignAssets.
+	 * returns the created asset data so the caller can link brand assets at campaign level.
 	 *
 	 * @param int   $asset_group_id              The asset group id.
 	 * @param array $assets                      The assets to create.
 	 * @param bool  $is_brand_guidelines_enabled Whether brand guidelines is enabled for the asset group's campaign.
 	 *
-	 * @return array{operations: MutateOperation[], brand_asset_ids: array{business_name: int[], logo: int[]}} Asset group operations and, when brand guidelines enabled, IDs to link at campaign level.
+	 * @return array{operations: MutateOperation[], assets_for_creation: array, created_asset_arns: array} Asset group operations and creation data for campaign-level linking.
 	 * @throws Exception If the asset type is not supported.
 	 */
 	public function edit_operations( int $asset_group_id, array $assets, bool $is_brand_guidelines_enabled ): array {
-		$brand_asset_ids = [
-			'business_name' => [],
-			'logo'          => [],
-		];
-
 		if ( empty( $assets ) ) {
 			return [
-				'operations'      => [],
-				'brand_asset_ids' => $brand_asset_ids,
+				'operations'          => [],
+				'assets_for_creation' => [],
+				'created_asset_arns'  => [],
 			];
 		}
 
@@ -348,36 +344,8 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 		for ( $i = 0; $i < $total_assets; $i++ ) {
 			$field_type = $assets_for_creation[ $i ]['field_type'];
 
-			// When brand guidelines is enabled, collect business_name and logo IDs for campaign-level linking.
-			if ( $is_brand_guidelines_enabled && ( 'business_name' === $field_type || 'logo' === $field_type ) ) {
-				$asset_id = $this->parse_asset_id_from_resource_name( $asset_arns[ $i ] );
-				if ( $asset_id !== null ) {
-					$brand_asset_ids[ $field_type ][] = $asset_id;
-				}
-			}
-
 			// Always create asset group asset for all types (including business_name and logo).
 			$asset_group_assets_operations[] = $this->create_operation( $asset_group_id, $field_type, $asset_arns[ $i ] );
-		}
-
-		if ( $is_brand_guidelines_enabled ) {
-			foreach ( $assets as $asset ) {
-				if (
-					(
-						isset( $asset['field_type'] ) &&
-						'business_name' === $asset['field_type']
-				) ||
-				(
-				isset( $asset['field_type'] ) &&
-				'logo' === $asset['field_type']
-				)
-				) {
-					// Existing asset (no new content): use for campaign-level linking.
-					if ( ! empty( $asset['id'] ) && empty( $asset['content'] ) ) {
-						$brand_asset_ids[ $asset['field_type'] ][] = (int) $asset['id'];
-					}
-				}
-			}
 		}
 
 		foreach ( $this->get_assets_to_be_deleted( $assets ) as $asset ) {
@@ -389,23 +357,11 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 		$operations = array_merge( $delete_asset_group_assets_operations, $asset_group_assets_operations );
 
 		return [
-			'operations'      => $operations,
-			'brand_asset_ids' => $brand_asset_ids,
+			'operations'          => $operations,
+			'assets_for_creation' => $assets_for_creation,
+			'created_asset_arns'  => $asset_arns,
 		];
 	}
-
-	/**
-	 * Parse asset ID from a Google Ads resource name (e.g. "customers/123/assets/456" -> 456).
-	 *
-	 * @param string $resource_name Resource name containing the asset ID.
-	 * @return int|null Asset ID or null if unparseable.
-	 */
-	protected function parse_asset_id_from_resource_name( string $resource_name ): ?int {
-		$parts = explode( '/', $resource_name );
-		$id    = ! empty( $parts ) ? absint( end( $parts ) ) : 0;
-		return $id > 0 ? $id : null;
-	}
-
 
 	/**
 	 * Creates an operation for an asset group asset.

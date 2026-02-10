@@ -211,13 +211,8 @@ class AdsAssetGroupAssetTest extends UnitTest {
 	public function test_edit_asset_group_assets_with_empty_assets() {
 		$result = $this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, [], false );
 		$this->assertSame( [], $result['operations'] );
-		$this->assertSame(
-			[
-				'business_name' => [],
-				'logo'          => [],
-			],
-			$result['brand_asset_ids']
-		);
+		$this->assertSame( [], $result['assets_for_creation'] );
+		$this->assertSame( [], $result['created_asset_arns'] );
 	}
 
 	public function test_edit_asset_group_assets_with_update_assets() {
@@ -366,13 +361,8 @@ class AdsAssetGroupAssetTest extends UnitTest {
 
 		// No delete operations should be added for business_name/logo with null id; no other ops either.
 		$this->assertSame( [], $result['operations'] );
-		$this->assertSame(
-			[
-				'business_name' => [],
-				'logo'          => [],
-			],
-			$result['brand_asset_ids']
-		);
+		$this->assertSame( [], $result['assets_for_creation'] );
+		$this->assertSame( [], $result['created_asset_arns'] );
 	}
 
 	protected function generate_overridable_asset(): void {

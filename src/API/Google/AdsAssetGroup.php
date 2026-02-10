@@ -361,12 +361,10 @@ class AdsAssetGroup implements OptionsAwareInterface {
 				$is_brand_guidelines_enabled = true;
 			}
 
-			$edit_result     = $this->asset_group_asset->edit_operations( $asset_group_id, $assets, $is_brand_guidelines_enabled );
-			$operations      = $edit_result['operations'];
-			$brand_asset_ids = $edit_result['brand_asset_ids'] ?? [
-				'business_name' => [],
-				'logo'          => [],
-			];
+			$edit_result         = $this->asset_group_asset->edit_operations( $asset_group_id, $assets, $is_brand_guidelines_enabled );
+			$operations          = $edit_result['operations'];
+			$assets_for_creation = $edit_result['assets_for_creation'] ?? [];
+			$created_asset_arns  = $edit_result['created_asset_arns'] ?? [];
 
 			// PMax only supports one final URL but it is required to be an array.
 			if ( ! empty( $data['final_url'] ) ) {
@@ -380,10 +378,13 @@ class AdsAssetGroup implements OptionsAwareInterface {
 			}
 
 			if ( ! empty( $campaign_info['brand_guidelines_enabled'] ) && ! empty( $campaign_info['id'] ) ) {
-				$business_name_ids = $brand_asset_ids['business_name'] ?? [];
-				$logo_ids          = $brand_asset_ids['logo'] ?? [];
-				$brand_operations  = $this->campaign->get_brand_asset_link_operations( $campaign_info['id'], $business_name_ids, $logo_ids );
-				$operations        = array_merge( $brand_operations, $operations );
+				$brand_operations = $this->campaign->get_brand_asset_link_operations(
+					$campaign_info['id'],
+					$assets,
+					$assets_for_creation,
+					$created_asset_arns
+				);
+				$operations       = array_merge( $brand_operations, $operations );
 			}
 
 			if ( ! empty( $operations ) ) {

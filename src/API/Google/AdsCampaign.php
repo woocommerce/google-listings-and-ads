@@ -688,15 +688,17 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * Build campaign asset link operations for Brand Guidelines.
 	 *
-	 * When business name and logo IDs are provided (e.g. from the current edit payload), use them
-	 * for campaign-level linking instead of querying. Otherwise discover from campaign/account/asset group.
+	 * Derives business name and logo asset IDs from the provided $assets array (existing assets)
+	 * and $assets_for_creation + $created_asset_arns (newly created assets). If no assets are
+	 * provided, discovers brand assets from campaign/account/asset group.
 	 *
-	 * @param int   $campaign_id       Campaign ID.
-	 * @param int[] $business_name_ids Optional. Asset IDs to link as business name (from current edit).
-	 * @param int[] $logo_ids          Optional. Asset IDs to link as logo (from current edit).
+	 * @param int   $campaign_id         Campaign ID.
+	 * @param array $assets              Optional. The full assets array from the edit payload.
+	 * @param array $assets_for_creation Optional. Assets that were created (same order as $created_asset_arns).
+	 * @param array $created_asset_arns  Optional. Resource names returned from asset creation.
 	 * @return MutateOperation[]
 	 */
-	public function get_brand_asset_link_operations( int $campaign_id, array $business_name_ids = [], array $logo_ids = [] ): array {
+	public function get_brand_asset_link_operations( int $campaign_id, array $assets = [], array $assets_for_creation = [], array $created_asset_arns = [] ): array {
 		try {
 			// Query existing campaign-level brand assets (for replace semantics and limit checks).
 			$campaign_assets = ( new AdsCampaignAssetQuery() )
@@ -729,7 +731,43 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				}
 			}
 
-			// When the caller provided IDs from the current edit: replace existing links so changes persist.
+			// Derive brand asset IDs from the provided assets data.
+			$business_name_ids = [];
+			$logo_ids          = [];
+
+			if ( ! empty( $assets ) || ! empty( $assets_for_creation ) ) {
+				// Extract IDs from existing assets (assets with 'id' and no 'content').
+				foreach ( $assets as $asset ) {
+					if ( ! empty( $asset['id'] ) && empty( $asset['content'] ) && isset( $asset['field_type'] ) ) {
+						if ( 'business_name' === $asset['field_type'] ) {
+							$business_name_ids[] = (int) $asset['id'];
+						} elseif ( 'logo' === $asset['field_type'] ) {
+							$logo_ids[] = (int) $asset['id'];
+						}
+					}
+				}
+
+				// Extract IDs from newly created assets by matching assets_for_creation to created_asset_arns.
+				$total_created = count( $assets_for_creation );
+				for ( $i = 0; $i < $total_created; $i++ ) {
+					if ( empty( $created_asset_arns[ $i ] ) ) {
+						continue;
+					}
+					$field_type = $assets_for_creation[ $i ]['field_type'] ?? '';
+					if ( 'business_name' === $field_type || 'logo' === $field_type ) {
+						$asset_id = $this->parse_asset_id_from_resource_name( $created_asset_arns[ $i ] );
+						if ( $asset_id !== null ) {
+							if ( 'business_name' === $field_type ) {
+								$business_name_ids[] = $asset_id;
+							} else {
+								$logo_ids[] = $asset_id;
+							}
+						}
+					}
+				}
+			}
+
+			// When brand asset IDs were derived from the edit payload: replace existing links so changes persist.
 			if ( ! empty( $business_name_ids ) || ! empty( $logo_ids ) ) {
 				$operations = [];
 				if ( ! empty( $business_name_ids ) && $existing_business_name_resource !== null ) {
