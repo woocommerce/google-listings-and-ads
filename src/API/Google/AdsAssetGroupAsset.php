@@ -308,9 +308,9 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	/**
 	 * Edit assets group assets.
 	 *
-	 * When brand guidelines is enabled, business name and logo must not be linked at asset group level
-	 * (they must be CampaignAssets only). We still create the Asset entities and return their IDs
-	 * so the caller can link them at campaign level.
+	 * When brand guidelines is enabled, business name and logo are linked at both the asset group level
+	 * and the campaign level. This method creates AssetGroupAsset operations for all asset types and
+	 * returns the IDs of business_name and logo assets so the caller can also link them as CampaignAssets.
 	 *
 	 * @param int   $asset_group_id              The asset group id.
 	 * @param array $assets                      The assets to create.
@@ -345,16 +345,18 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 
 		// The asset mutation operation results (ARNs) are returned in the same order as the operations are specified.
 		// See: https://youtu.be/9KaVjqW5tVM?t=103
-		// When brand guidelines is enabled, do NOT add asset group asset create for business_name or logo (API requires them as CampaignAssets only).
 		for ( $i = 0; $i < $total_assets; $i++ ) {
 			$field_type = $assets_for_creation[ $i ]['field_type'];
+
+			// When brand guidelines is enabled, collect business_name and logo IDs for campaign-level linking.
 			if ( $is_brand_guidelines_enabled && ( 'business_name' === $field_type || 'logo' === $field_type ) ) {
 				$asset_id = $this->parse_asset_id_from_resource_name( $asset_arns[ $i ] );
 				if ( $asset_id !== null ) {
 					$brand_asset_ids[ $field_type ][] = $asset_id;
 				}
-				continue;
 			}
+
+			// Always create asset group asset for all types (including business_name and logo).
 			$asset_group_assets_operations[] = $this->create_operation( $asset_group_id, $field_type, $asset_arns[ $i ] );
 		}
 
@@ -364,13 +366,12 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 					(
 						isset( $asset['field_type'] ) &&
 						'business_name' === $asset['field_type']
-					) ||
-					(
-						isset( $asset['field_type'] ) &&
-						'logo' === $asset['field_type']
-					)
+				) ||
+				(
+				isset( $asset['field_type'] ) &&
+				'logo' === $asset['field_type']
+				)
 				) {
-					// With Brand Guidelines, business name and logo are campaign-level only; do not delete from asset group (they are not linked there).
 					// Existing asset (no new content): use for campaign-level linking.
 					if ( ! empty( $asset['id'] ) && empty( $asset['content'] ) ) {
 						$brand_asset_ids[ $asset['field_type'] ][] = (int) $asset['id'];
@@ -380,10 +381,6 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 		}
 
 		foreach ( $this->get_assets_to_be_deleted( $assets ) as $asset ) {
-			// With Brand Guidelines, business name and logo are campaign-level only; do not delete from asset group.
-			if ( $is_brand_guidelines_enabled && isset( $asset['field_type'] ) && ( 'business_name' === $asset['field_type'] || 'logo' === $asset['field_type'] ) ) {
-				continue;
-			}
 			$delete_asset_group_assets_operations[] = $this->delete_operation( $asset_group_id, $asset['field_type'], $asset['id'] );
 		}
 
