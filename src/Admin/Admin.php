@@ -199,7 +199,60 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			$product_condition
 		) );
 
+		$meta_boxes_asset_path = "{$this->get_root_dir()}/js/build/meta-boxes.js";
+		$assets[]              = ( new AdminScriptWithBuiltDependenciesAsset(
+			'gla-meta-boxes',
+			'js/build/meta-boxes',
+			"{$this->get_root_dir()}/js/build/meta-boxes.asset.php",
+			new BuiltScriptDependencyArray(
+				[
+					'dependencies' => [],
+					'version'      => (string) ( file_exists( $meta_boxes_asset_path ) ? filemtime( $meta_boxes_asset_path ) : $this->get_version() ),
+				]
+			),
+			function (): bool {
+				return $this->is_wc_order_edit_screen();
+			}
+		) )->add_inline_script(
+			'glaData',
+			[
+				'slug'             => $this->get_slug(),
+				'adsSetupComplete' => $this->ads->is_setup_complete(),
+				'initialWpData'    => [
+					'version' => $this->get_version(),
+					'mcId'    => $this->options->get_merchant_id() ?: null,
+					'adsId'   => $this->options->get_ads_id() ?: null,
+				],
+				'version'          => $this->get_version(),
+				'adsId'            => $this->options->get_ads_id() ?: null,
+				'mcId'             => $this->options->get_merchant_id() ?: null,
+			]
+		);
+
 		return $assets;
+	}
+
+	/**
+	 * Whether the current screen is the WooCommerce order edit screen (HPOS).
+	 *
+	 * @return bool
+	 */
+	protected function is_wc_order_edit_screen(): bool {
+		$screen = get_current_screen();
+		if ( null === $screen ) {
+			return false;
+		}
+		$is_wc_orders_screen = ( 'woocommerce_page_wc-orders' === $screen->id )
+			|| ( strpos( $screen->id, 'woocommerce_page_wc-orders--' ) === 0 )
+			|| ( 'admin_page_wc-orders' === $screen->id )
+			|| ( strpos( $screen->id, 'admin_page_wc-orders--' ) === 0 );
+		// Reading action for screen context only; not processing a form submission.
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Screen context check only.
+		$is_edit_action = isset( $_GET['action'] )
+			&& 'edit' === sanitize_text_field( wp_unslash( $_GET['action'] ) );
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		return $is_wc_orders_screen && $is_edit_action;
 	}
 
 	/**
