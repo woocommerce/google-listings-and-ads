@@ -15,7 +15,7 @@ import {
  */
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useGenAIMediaAssets from '~/hooks/useGenAIMediaAssets';
-import proxyImageUrl from '~/utils/proxyImageUrl';
+import getProxiedImageUrl from '~/utils/getProxiedImageUrl';
 import AppButton from '~/components/app-button';
 import AIIcon from '~/images/ai-icon.svg?inline';
 import './index.scss';
@@ -81,7 +81,7 @@ export default function GenAIImagePicker( { assetKey, onAddSelectedImages } ) {
 						}
 
 						// Proxy the URL only for rendering to bypass adblockers
-						const displayUrl = proxyImageUrl( src );
+						const displayUrl = getProxiedImageUrl( src );
 
 						return (
 							<FlexItem

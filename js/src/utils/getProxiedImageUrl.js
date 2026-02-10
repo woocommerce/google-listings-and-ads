@@ -1,3 +1,11 @@
+/**
+ * WordPress dependencies
+ */
+import { addQueryArgs } from '@wordpress/url';
+
+/**
+ * Internal dependencies
+ */
 import { API_NAMESPACE } from '~/data/constants';
 
 /**
@@ -11,16 +19,12 @@ import { API_NAMESPACE } from '~/data/constants';
  * @param {string} imageUrl - The original image URL to proxy.
  * @return {string} The proxied URL through the WordPress REST API.
  */
-export default function proxyImageUrl( imageUrl ) {
+export default function getProxiedImageUrl( imageUrl ) {
 	if ( ! imageUrl ) {
 		return imageUrl;
 	}
 
-	const apiUrl = new URL(
-		`/wp-json${ API_NAMESPACE }/ads/assets/image-proxy`,
-		window.location.origin
-	);
-	apiUrl.searchParams.set( 'url', imageUrl );
+	const baseUrl = `${ window.location.origin }/wp-json${ API_NAMESPACE }/ads/assets/image-proxy`;
 
-	return apiUrl.toString();
+	return addQueryArgs( baseUrl, { url: imageUrl } );
 }
