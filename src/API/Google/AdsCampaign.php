@@ -736,9 +736,10 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			$logo_ids          = [];
 
 			if ( ! empty( $assets ) || ! empty( $assets_for_creation ) ) {
-				// Extract IDs from existing assets (assets with 'id' and no 'content').
+				// Extract IDs from existing unchanged assets (assets with 'id' but no 'content' key).
+				// Note: Deletion operations have 'content' => null, so we use array_key_exists to check key presence, not value.
 				foreach ( $assets as $asset ) {
-					if ( ! empty( $asset['id'] ) && empty( $asset['content'] ) && isset( $asset['field_type'] ) ) {
+					if ( ! empty( $asset['id'] ) && ! array_key_exists( 'content', $asset ) && isset( $asset['field_type'] ) ) {
 						if ( 'business_name' === $asset['field_type'] ) {
 							$business_name_ids[] = (int) $asset['id'];
 						} elseif ( 'logo' === $asset['field_type'] ) {

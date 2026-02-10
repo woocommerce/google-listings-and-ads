@@ -308,9 +308,10 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	/**
 	 * Edit assets group assets.
 	 *
-	 * When brand guidelines is enabled, business name and logo are linked at both the asset group level
-	 * and the campaign level. This method creates AssetGroupAsset operations for all asset types and
-	 * returns the created asset data so the caller can link brand assets at campaign level.
+	 * When brand guidelines is enabled, business name and logo must NOT be linked at asset group level
+	 * (they must be CampaignAssets only, per Google Ads API requirements). This method skips creating
+	 * AssetGroupAsset operations for brand assets and returns the created asset data so the caller can
+	 * link them at campaign level instead.
 	 *
 	 * @param int   $asset_group_id              The asset group id.
 	 * @param array $assets                      The assets to create.
@@ -344,11 +345,22 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 		for ( $i = 0; $i < $total_assets; $i++ ) {
 			$field_type = $assets_for_creation[ $i ]['field_type'];
 
-			// Always create asset group asset for all types (including business_name and logo).
+			// When brand guidelines is enabled, do NOT add asset group asset create for business_name or logo.
+			// Google Ads API requires them as CampaignAssets only, not AssetGroupAssets.
+			if ( $is_brand_guidelines_enabled && ( 'business_name' === $field_type || 'logo' === $field_type ) ) {
+				continue;
+			}
+
 			$asset_group_assets_operations[] = $this->create_operation( $asset_group_id, $field_type, $asset_arns[ $i ] );
 		}
 
 		foreach ( $this->get_assets_to_be_deleted( $assets ) as $asset ) {
+			// When Brand Guidelines is enabled, skip deleting business_name/logo from asset group level.
+			// They may not exist there (original implementation didn't link them at asset group level).
+			// They're managed at campaign level via CampaignAsset links.
+			if ( $is_brand_guidelines_enabled && isset( $asset['field_type'] ) && ( 'business_name' === $asset['field_type'] || 'logo' === $asset['field_type'] ) ) {
+				continue;
+			}
 			$delete_asset_group_assets_operations[] = $this->delete_operation( $asset_group_id, $asset['field_type'], $asset['id'] );
 		}
 
