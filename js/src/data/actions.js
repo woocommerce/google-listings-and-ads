@@ -727,8 +727,7 @@ export function* fetchAdsIncentiveCredits() {
 export function* createAdsCampaign(
 	amount,
 	countryCodes,
-	hasConfirmedEuPoliticalContent = false,
-	hasBrandGuidelinesEnabled = false
+	hasConfirmedEuPoliticalContent = false
 ) {
 	let label = 'wc-web';
 
@@ -747,7 +746,6 @@ export function* createAdsCampaign(
 				targeted_locations: countryCodes,
 				eu_political_advertising_confirmation:
 					hasConfirmedEuPoliticalContent,
-				brand_guidelines_enabled: hasBrandGuidelinesEnabled,
 				label,
 			},
 		} );
@@ -912,13 +910,7 @@ export function* updateCampaignAssetGroup( assetGroupId, body ) {
 			'google-listings-and-ads'
 		);
 
-		// Use API response message when present (e.g. Brand Guidelines error) so it shows in wp-admin.
-		const errorWithMessage =
-			error?.message && typeof error.message === 'string'
-				? error
-				: { ...error, message: error?.message ?? fallbackMessage };
-
-		handleApiError( errorWithMessage, null, fallbackMessage );
+		handleApiError( error, null, fallbackMessage );
 		throw error;
 	}
 }
