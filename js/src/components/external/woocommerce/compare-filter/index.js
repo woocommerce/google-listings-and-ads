@@ -41,6 +41,7 @@ class CompareFilter extends Component {
 		this.updateQuery = this.updateQuery.bind( this );
 		this.updateLabels = this.updateLabels.bind( this );
 		this.onButtonClicked = this.onButtonClicked.bind( this );
+		this.onSearchChange = this.onSearchChange.bind( this );
 		if ( query[ param ] ) {
 			getLabels( query[ param ], query ).then( this.updateLabels );
 		}
@@ -96,25 +97,15 @@ class CompareFilter extends Component {
 	}
 
 	/**
-	 * Remove duplicate items based on their 'key' attribute.
-	 *
-	 * @param {Array} items - Array of items to deduplicate.
-	 * @return {Array} Deduplicated array.
-	 */
-	removeDuplicateValues( items ) {
-		return Array.from(
-			new Map( items.map( ( item ) => [ item.key, item ] ) ).values()
-		);
-	}
-
-	/**
 	 * Update the selected items and remove duplicates.
 	 *
-	 * @param {Array} value Array of selected items ( { key: string, label: string } )
+	 * @param {Array} items Array of selected items ( { key: string, label: string } )
 	 */
-	onSearchChange( value ) {
-		const deduplicated = this.removeDuplicateValues( value );
-		this.setState( { selected: deduplicated } );
+	onSearchChange( items ) {
+		const deduplicatedValues = Array.from(
+			new Map( items.map( ( item ) => [ item.key, item ] ) ).values()
+		);
+		this.setState( { selected: deduplicatedValues } );
 	}
 
 	render() {
