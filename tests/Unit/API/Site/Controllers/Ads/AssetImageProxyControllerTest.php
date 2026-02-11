@@ -283,4 +283,94 @@ class AssetImageProxyControllerTest extends RESTControllerUnitTest {
 		$this->assertArrayHasKey( 'code', $data );
 		$this->assertContains( $data['code'], [ 'rest_invalid_param', 'rest_missing_callback_param' ], 'Expected REST validation error code' );
 	}
+
+	/**
+	 * Test that authenticated users with manage_woocommerce capability can access the endpoint.
+	 */
+	public function test_authenticated_user_can_access(): void {
+		$image_data = base64_decode( '/9j/4AAQSkZJRg==' ); // Minimal valid JPEG header.
+
+		add_filter(
+			'pre_http_request',
+			function () use ( $image_data ) {
+				return [
+					'response' => [ 'code' => 200 ],
+					'body'     => $image_data,
+					'headers'  => [ 'content-type' => 'image/jpeg' ],
+				];
+			}
+		);
+
+		$params   = [ 'url' => self::VALID_IMAGE_URL ];
+		$response = $this->do_request( self::ROUTE_IMAGE_PROXY, 'GET', $params );
+
+		$this->assertEquals( 200, $response->get_status(), 'Authenticated user with manage_woocommerce should access endpoint' );
+	}
+
+	/**
+	 * Test that requests with valid nonce can access the endpoint.
+	 */
+	public function test_valid_nonce_allows_access(): void {
+		// Remove admin capabilities to test nonce-only authentication.
+		wp_set_current_user( 0 );
+
+		$image_data = base64_decode( '/9j/4AAQSkZJRg==' ); // Minimal valid JPEG header.
+
+		add_filter(
+			'pre_http_request',
+			function () use ( $image_data ) {
+				return [
+					'response' => [ 'code' => 200 ],
+					'body'     => $image_data,
+					'headers'  => [ 'content-type' => 'image/jpeg' ],
+				];
+			}
+		);
+
+		// Create a valid nonce.
+		$nonce = wp_create_nonce( 'wp_rest' );
+
+		$params   = [
+			'url'      => self::VALID_IMAGE_URL,
+			'_wpnonce' => $nonce,
+		];
+		$response = $this->do_request( self::ROUTE_IMAGE_PROXY, 'GET', $params );
+
+		$this->assertEquals( 200, $response->get_status(), 'Valid nonce should grant access to endpoint' );
+	}
+
+	/**
+	 * Test that unauthenticated requests without nonce are rejected.
+	 */
+	public function test_unauthenticated_request_rejected(): void {
+		// Remove admin capabilities.
+		wp_set_current_user( 0 );
+
+		$params   = [ 'url' => self::VALID_IMAGE_URL ];
+		$response = $this->do_request( self::ROUTE_IMAGE_PROXY, 'GET', $params );
+
+		$this->assertEquals( 403, $response->get_status(), 'Unauthenticated request without nonce should be rejected' );
+		$data = $response->get_data();
+		$this->assertArrayHasKey( 'code', $data );
+		$this->assertEquals( 'rest_forbidden', $data['code'] );
+	}
+
+	/**
+	 * Test that requests with invalid nonce are rejected.
+	 */
+	public function test_invalid_nonce_rejected(): void {
+		// Remove admin capabilities.
+		wp_set_current_user( 0 );
+
+		$params   = [
+			'url'      => self::VALID_IMAGE_URL,
+			'_wpnonce' => 'invalid_nonce_value',
+		];
+		$response = $this->do_request( self::ROUTE_IMAGE_PROXY, 'GET', $params );
+
+		$this->assertEquals( 403, $response->get_status(), 'Invalid nonce should be rejected' );
+		$data = $response->get_data();
+		$this->assertArrayHasKey( 'code', $data );
+		$this->assertEquals( 'rest_forbidden', $data['code'] );
+	}
 }

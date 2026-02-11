@@ -72,10 +72,31 @@ class AssetImageProxyController extends BaseController {
 	/**
 	 * Permission callback for the image proxy endpoint.
 	 *
+	 * Allows access via either:
+	 * 1. Direct authentication with manage_woocommerce capability
+	 * 2. Valid WordPress REST nonce in query parameter (for img tag requests)
+	 *
 	 * @return callable
 	 */
 	protected function get_image_proxy_permission_callback(): callable {
-		return '__return_true';
+		return function ( $request ) {
+			// Check if user has direct permission (for API calls with session auth).
+			if ( $this->can_manage() ) {
+				return true;
+			}
+
+			// Check for valid nonce in query parameter (for img tag requests).
+			$nonce = $request->get_param( '_wpnonce' );
+			if ( $nonce && wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+				return true;
+			}
+
+			return new \WP_Error(
+				'rest_forbidden',
+				__( 'Sorry, you are not allowed to do that.', 'google-listings-and-ads' ),
+				[ 'status' => 403 ]
+			);
+		};
 	}
 
 	/**
@@ -273,7 +294,7 @@ class AssetImageProxyController extends BaseController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'url' => [
+			'url'      => [
 				'description'       => __( 'The URL of the image to proxy.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'format'            => 'uri',
@@ -282,6 +303,11 @@ class AssetImageProxyController extends BaseController {
 				'validate_callback' => function ( $param ) {
 					return filter_var( $param, FILTER_VALIDATE_URL ) !== false;
 				},
+			],
+			'_wpnonce' => [
+				'description' => __( 'WordPress nonce for authentication', 'google-listings-and-ads' ),
+				'type'        => 'string',
+				'required'    => false,
 			],
 		];
 	}
