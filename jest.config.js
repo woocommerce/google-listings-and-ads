@@ -12,7 +12,8 @@ module.exports = {
 	],
 	moduleNameMapper: {
 		'\\.(png|jpg)$': '<rootDir>/tests/mocks/assets/imageMock.js',
-		'\\.svg$': '<rootDir>/tests/mocks/assets/svgrMock.js',
+		'\\.svg\\?inline$': '<rootDir>/tests/mocks/assets/svgrMock.js',
+		'\\.svg$': '<rootDir>/tests/mocks/assets/svgFileMock.js',
 		'\\.scss$': '<rootDir>/tests/mocks/assets/styleMock.js',
 		// Transform our `~/` alias.
 		'^~/(.*)$': '<rootDir>/js/src/$1',

@@ -16,9 +16,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingCo
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\SearchResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Resource\Reports;
 use DateTime;
-use Google\Ads\GoogleAds\V20\Common\Metrics as AdMetrics;
-use Google\Ads\GoogleAds\V20\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V20\Services\Client\GoogleAdsServiceClient;
+use Google\Ads\GoogleAds\V22\Common\Metrics as AdMetrics;
+use Google\Ads\GoogleAds\V22\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V22\Services\Client\GoogleAdsServiceClient;
 use Google\ApiCore\Page;
 use Google\ApiCore\PagedListResponse;
 use PHPUnit\Framework\MockObject\MockObject;

@@ -15,7 +15,7 @@ import {
 	EMPTY_ASSET_ENTITY_GROUP,
 } from './constants';
 import { handleApiError } from '~/utils/handleError';
-import { adaptAdsCampaign } from './adapters';
+import { adaptAdsCampaign, adaptGenAIAssets } from './adapters';
 import { isWCIos, isWCAndroid } from '~/utils/isMobileApp';
 import { convertKeysFromSnakeCaseToCamelCase } from './utils';
 
@@ -1281,5 +1281,41 @@ export function* receiveAdsRecommendations(
 		type: TYPES.RECEIVE_ADS_RECOMMENDATIONS,
 		recommendations,
 		recommendationTypes,
+	};
+}
+
+export function* receiveGenAIMediaAssets( url, data, assetType ) {
+	if ( ! data?.items ) {
+		return {
+			type: TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS,
+			url,
+			assetType,
+			data: {},
+		};
+	}
+
+	return {
+		type: TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS,
+		url,
+		assetType,
+		data: adaptGenAIAssets( data.items, 'temporary_image_url', assetType ),
+	};
+}
+
+export function* receiveGenAITextAssets( url, data, assetType ) {
+	if ( ! data?.items ) {
+		return {
+			type: TYPES.RECEIVE_GEN_AI_TEXT_ASSETS,
+			url,
+			assetType,
+			data: {},
+		};
+	}
+
+	return {
+		type: TYPES.RECEIVE_GEN_AI_TEXT_ASSETS,
+		url,
+		assetType,
+		data: adaptGenAIAssets( data.items, 'text', assetType ),
 	};
 }
