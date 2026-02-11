@@ -6,11 +6,11 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Google\Ads\GoogleAds\Util\V20\ResourceNames;
-use Google\Ads\GoogleAds\V20\Resources\CampaignAsset;
-use Google\Ads\GoogleAds\V20\Services\CampaignAssetOperation;
-use Google\Ads\GoogleAds\V20\Services\MutateOperation;
-use Google\Ads\GoogleAds\V20\Enums\AssetFieldTypeEnum\AssetFieldType as AssetFieldTypeEnum;
+use Google\Ads\GoogleAds\Util\V22\ResourceNames;
+use Google\Ads\GoogleAds\V22\Resources\CampaignAsset;
+use Google\Ads\GoogleAds\V22\Services\CampaignAssetOperation;
+use Google\Ads\GoogleAds\V22\Services\MutateOperation;
+use Google\Ads\GoogleAds\V22\Enums\AssetFieldTypeEnum\AssetFieldType as AssetFieldTypeEnum;
 
 /**
  * Class AdsCampaignAsset
