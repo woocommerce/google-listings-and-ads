@@ -37,6 +37,7 @@ export default function GenAIImagePicker( { assetKey, onAddSelectedImages } ) {
 
 	const handleOnAddSelectedImages = () => {
 		onAddSelectedImages( selectedImages );
+		setSelectedImages( [] );
 	};
 
 	const toggleImageSelection = ( src ) => {

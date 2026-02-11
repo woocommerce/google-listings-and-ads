@@ -9,9 +9,10 @@ import GridiconCrossSmall from 'gridicons/dist/cross-small';
 /**
  * Internal dependencies
  */
-import { useAppDispatch } from '~/data';
+import { GEN_AI_ASSET_TYPES } from '~/constants';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useGenAITextAssets from '~/hooks/useGenAITextAssets';
+import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import AppButton from '~/components/app-button';
 import AppInputControl from '~/components/app-input-control';
 import AssetItemActionButton, {
@@ -64,9 +65,8 @@ export default function TextsEditor( {
 } ) {
 	const updateTextsRef = useRef();
 	const { createNotice } = useDispatchCoreNotices();
-	const { fetchGenAITextAssets } = useAppDispatch();
+	const [ generateAssets, isGeneratingAssets ] = useCreateGenAIAssets();
 	const [ texts, setTexts ] = useState( initialTexts );
-	const [ isGeneratingAssets, setIsGeneratingAssets ] = useState( false );
 	const { assets: genAITextAssets } = useGenAITextAssets(
 		finalUrl,
 		assetKey
@@ -112,11 +112,17 @@ export default function TextsEditor( {
 	};
 
 	const handleGenerateClick = async () => {
-		setIsGeneratingAssets( true );
-
 		try {
-			const response = await fetchGenAITextAssets( finalUrl, assetKey );
-			const generatedTextAssets = response?.data?.[ assetKey ] ?? [];
+			const generatedAssets = await generateAssets( finalUrl, [
+				{
+					type: GEN_AI_ASSET_TYPES.TEXT,
+					assetKey,
+				},
+			] );
+
+			const generatedTextAssets =
+				generatedAssets?.[ GEN_AI_ASSET_TYPES.TEXT ]?.[ assetKey ] ??
+				[];
 
 			const { assets: updatedTexts, updatedCount } = fillEmptyAssetSlots(
 				texts,
@@ -142,8 +148,6 @@ export default function TextsEditor( {
 					'google-listings-and-ads'
 				)
 			);
-		} finally {
-			setIsGeneratingAssets( false );
 		}
 	};
 
