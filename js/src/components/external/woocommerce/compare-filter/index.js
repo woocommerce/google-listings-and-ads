@@ -103,7 +103,7 @@ class CompareFilter extends Component {
 	 */
 	removeDuplicateValues( items ) {
 		return Array.from(
-			new Map(items.map( ( item ) => [ item.key, item ] )).values()
+			new Map( items.map( ( item ) => [ item.key, item ] ) ).values()
 		);
 	}
 
@@ -117,7 +117,9 @@ class CompareFilter extends Component {
 		this.setState( { selected: deduplicated } );
 	}
 
-	render() { const { labels, type, autocompleter } = this.props; const { selected } = this.state;
+	render() {
+		const { labels, type, autocompleter } = this.props;
+		const { selected } = this.state;
 		return (
 			<Card className="woocommerce-filters__compare">
 				<CardHeader>
