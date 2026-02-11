@@ -199,7 +199,101 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			$product_condition
 		) );
 
+		$order_edit_condition = function () {
+			$screen = get_current_screen();
+			if ( null === $screen ) {
+				return false;
+			}
+			$is_wc_orders_screen = ( 'woocommerce_page_wc-orders' === $screen->id )
+				|| ( strpos( $screen->id, 'woocommerce_page_wc-orders--' ) === 0 )
+				|| ( 'admin_page_wc-orders' === $screen->id )
+				|| ( strpos( $screen->id, 'admin_page_wc-orders--' ) === 0 );
+			// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Reading request for screen context only.
+			$is_edit_action = isset( $_GET['action'] )
+				&& 'edit' === sanitize_text_field( wp_unslash( $_GET['action'] ) );
+			// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+			return $is_wc_orders_screen && $is_edit_action;
+		};
+
+		$meta_boxes_asset_path = "{$this->get_root_dir()}/js/build/meta-boxes.js";
+		$assets[]              = ( new AdminScriptWithBuiltDependenciesAsset(
+			'gla-meta-boxes',
+			'js/build/meta-boxes',
+			"{$this->get_root_dir()}/js/build/meta-boxes.asset.php",
+			new BuiltScriptDependencyArray(
+				[
+					'dependencies' => [],
+					'version'      => (string) ( file_exists( $meta_boxes_asset_path ) ? filemtime( $meta_boxes_asset_path ) : $this->get_version() ),
+				]
+			),
+			$order_edit_condition
+		) )->add_inline_script(
+			'glaData',
+			[
+				'slug'                   => $this->get_slug(),
+				'adsSetupComplete'       => $this->ads->is_setup_complete(),
+				'initialWpData'          => [
+					'version' => $this->get_version(),
+					'mcId'    => $this->options->get_merchant_id() ?: null,
+					'adsId'   => $this->options->get_ads_id() ?: null,
+				],
+				'version'                => $this->get_version(),
+				'adsId'                  => $this->options->get_ads_id() ?: null,
+				'mcId'                   => $this->options->get_merchant_id() ?: null,
+				'orderAttributionSource' => $this->get_order_attribution_source_for_edit_screen(),
+			]
+		);
+
 		return $assets;
+	}
+
+	/**
+	 * Get the order attribution source (utm_source) for the order currently being edited.
+	 * Used only when the meta-boxes asset is loaded on the WooCommerce Edit Order screen.
+	 *
+	 * @return string|null The value persisted in the database (e.g. "google"), or null when not on order edit screen or no attribution.
+	 */
+	private function get_order_attribution_source_for_edit_screen(): ?string {
+		$screen = get_current_screen();
+		if ( null === $screen ) {
+			return null;
+		}
+		$is_wc_orders_screen = ( 'woocommerce_page_wc-orders' === $screen->id )
+			|| ( strpos( $screen->id, 'woocommerce_page_wc-orders--' ) === 0 )
+			|| ( 'admin_page_wc-orders' === $screen->id )
+			|| ( strpos( $screen->id, 'admin_page_wc-orders--' ) === 0 );
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Reading request for order edit context only.
+		$is_edit_action = isset( $_GET['action'] )
+			&& 'edit' === sanitize_text_field( wp_unslash( $_GET['action'] ) );
+
+		if ( ! $is_wc_orders_screen || ! $is_edit_action ) {
+			return null;
+		}
+
+		$order_id = 0;
+		if ( isset( $_GET['id'] ) ) {
+			$order_id = absint( $_GET['id'] );
+		} elseif ( isset( $_GET['post'] ) ) {
+			$order_id = absint( $_GET['post'] );
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if ( 0 === $order_id ) {
+			return null;
+		}
+
+		$order = wc_get_order( $order_id );
+		if ( ! $order ) {
+			return null;
+		}
+
+		$source = $order->get_meta( '_wc_order_attribution_utm_source', true );
+		if ( $source === '' || $source === null ) {
+			return null;
+		}
+
+		return is_string( $source ) ? $source : (string) $source;
 	}
 
 	/**
