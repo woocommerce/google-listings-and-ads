@@ -95,9 +95,29 @@ class CompareFilter extends Component {
 		}
 	}
 
-	render() {
-		const { labels, type, autocompleter } = this.props;
-		const { selected } = this.state;
+	/**
+	 * Remove duplicate items based on their 'key' attribute.
+	 *
+	 * @param {Array} items - Array of items to deduplicate.
+	 * @return {Array} Deduplicated array.
+	 */
+	removeDuplicateValues( items ) {
+		return Array.from(
+			new Map(items.map( ( item ) => [ item.key, item ] )).values()
+		);
+	}
+
+	/**
+	 * Update the selected items and remove duplicates.
+	 *
+	 * @param {Array} value Array of selected items ( { key: string, label: string } )
+	 */
+	onSearchChange( value ) {
+		const deduplicated = this.removeDuplicateValues( value );
+		this.setState( { selected: deduplicated } );
+	}
+
+	render() { const { labels, type, autocompleter } = this.props; const { selected } = this.state;
 		return (
 			<Card className="woocommerce-filters__compare">
 				<CardHeader>
@@ -109,9 +129,7 @@ class CompareFilter extends Component {
 						type={ type }
 						selected={ selected }
 						placeholder={ labels.placeholder }
-						onChange={ ( value ) => {
-							this.setState( { selected: value } );
-						} }
+						onChange={ this.onSearchChange }
 					/>
 				</CardBody>
 				<CardFooter justify="flex-start">
