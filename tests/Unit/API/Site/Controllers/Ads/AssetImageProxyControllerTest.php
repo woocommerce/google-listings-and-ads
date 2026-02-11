@@ -17,8 +17,8 @@ class AssetImageProxyControllerTest extends RESTControllerUnitTest {
 	/** @var AssetImageProxyController $controller */
 	protected $controller;
 
-	protected const ROUTE_IMAGE_PROXY  = '/wc/gla/ads/assets/image-proxy';
-	protected const VALID_IMAGE_URL    = 'https://tpc.googlesyndication.com/pimgad/5879294827103938154';
+	protected const ROUTE_IMAGE_PROXY = '/wc/gla/ads/assets/image-proxy';
+	protected const VALID_IMAGE_URL   = 'https://tpc.googlesyndication.com/pimgad/5879294827103938154';
 
 	/**
 	 * Runs before each test is executed.
@@ -277,7 +277,8 @@ class AssetImageProxyControllerTest extends RESTControllerUnitTest {
 		$params   = [ 'url' => $invalid_url ];
 		$response = $this->do_request( self::ROUTE_IMAGE_PROXY, 'GET', $params );
 
-		$this->assertEquals( 400, $response->get_status(), "Expected invalid URL to be rejected: " . var_export( $invalid_url, true ) );
+		// Note: var_export is used to ensure values are always clear. e.g. we have '' (set but blank), '    ' (set but only spaces), etc. that would otherwise be difficult to determine.
+		$this->assertEquals( 400, $response->get_status(), 'Expected invalid URL to be rejected: ' . var_export( $invalid_url, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 		$data = $response->get_data();
 		$this->assertArrayHasKey( 'code', $data );
 		$this->assertContains( $data['code'], [ 'rest_invalid_param', 'rest_missing_callback_param' ], 'Expected REST validation error code' );
