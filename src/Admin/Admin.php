@@ -106,17 +106,6 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 	}
 
 	/**
-	 * Return version string for a build file (filemtime when file exists, else plugin version).
-	 * Avoids filemtime() errors in environments where the JS/CSS build has not been run (e.g. CI).
-	 *
-	 * @param string $path Full path to the build file.
-	 * @return string
-	 */
-	protected function get_build_file_version( string $path ): string {
-		return is_readable( $path ) ? (string) filemtime( $path ) : $this->get_version();
-	}
-
-	/**
 	 * Return an array of assets.
 	 *
 	 * @return Asset[]
