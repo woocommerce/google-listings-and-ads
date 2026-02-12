@@ -131,7 +131,6 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [ 'TW' ],
 				'eu_political_advertising_confirmation' => false,
-				'brand_guidelines_enabled'              => false,
 			],
 			[
 				'id'                                    => 5678901234,
@@ -142,7 +141,6 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [ 'HK', 'GB' ],
 				'eu_political_advertising_confirmation' => false,
-				'brand_guidelines_enabled'              => false,
 			],
 		];
 
@@ -161,7 +159,6 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
-				'brand_guidelines_enabled'              => false,
 			],
 			[
 				'id'                                    => 5678901234,
@@ -172,7 +169,6 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
-				'brand_guidelines_enabled'              => false,
 			],
 		];
 
@@ -213,7 +209,6 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
-				'brand_guidelines_enabled'              => false,
 			],
 			[
 				'id'                                    => 5678901234,
@@ -224,7 +219,6 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
-				'brand_guidelines_enabled'              => false,
 			],
 		];
 
@@ -309,7 +303,6 @@ class AdsCampaignTest extends UnitTest {
 			'country'                               => 'US',
 			'targeted_locations'                    => [ 'TW' ],
 			'eu_political_advertising_confirmation' => false,
-			'brand_guidelines_enabled'              => false,
 		];
 
 		$this->generate_ads_campaign_query_mock( [ $campaign_data ], [ $campaign_criterion_data ] );
