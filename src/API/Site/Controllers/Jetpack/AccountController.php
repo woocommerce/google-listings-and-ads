@@ -122,8 +122,8 @@ class AccountController extends BaseOptionsController {
 			}
 
 			// Get an authorization URL which will redirect back to our page.
-			$next     = $request->get_param( 'next_page_name' );
-			$path     = self::NEXT_PATH_MAPPING[ $next ];
+			$next = $request->get_param( 'next_page_name' );
+			$path = self::NEXT_PATH_MAPPING[ $next ];
 
 			/**
 			 * Filter the return-URL, which is called at the end of the OAuth onboarding process.
