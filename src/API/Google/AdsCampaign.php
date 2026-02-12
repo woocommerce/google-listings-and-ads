@@ -3,6 +3,10 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignCriterionQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignAssetQuery;
@@ -34,10 +38,6 @@ use Google\Ads\GoogleAds\V20\Services\MutateOperation;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 use Exception;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignAsset;
 
 /**
  * Class AdsCampaign (Performance Max Campaign)
