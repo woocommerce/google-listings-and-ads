@@ -123,7 +123,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
-					'version'      => $this->get_build_file_version( "{$build_dir}/index.js" ),
+					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/index.js" ),
 				]
 			),
 			$wc_admin_condition
@@ -147,14 +147,14 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 				],
 				'dataViewsScriptUrl'       => add_query_arg(
 					[
-						'version' => $this->get_build_file_version( "{$build_dir}/wp-dataviews-shim.js" ),
+						'version' => (string) filemtime( "{$this->get_root_dir()}/js/build/wp-dataviews-shim.js" ),
 					],
 					(
 						new ScriptAsset(
 							'gla-data-views-shim',
 							'js/build/wp-dataviews-shim',
 							[],
-							$this->get_build_file_version( "{$build_dir}/wp-dataviews-shim.js" ),
+							(string) filemtime( "{$this->get_root_dir()}/js/build/wp-dataviews-shim.js" ),
 						)
 					)->get_uri(),
 				),
@@ -165,7 +165,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			'google-listings-and-ads-css',
 			'/js/build/index',
 			defined( 'WC_ADMIN_PLUGIN_FILE' ) ? [ 'wc-admin-app' ] : [],
-			$this->get_build_file_version( "{$build_dir}/index.css" ),
+			(string) filemtime( "{$this->get_root_dir()}/js/build/index.css" ),
 			$wc_admin_condition
 		) );
 
@@ -181,7 +181,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
-					'version'      => $this->get_build_file_version( "{$build_dir}/product-attributes.js" ),
+					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/product-attributes.js" ),
 				]
 			),
 			$product_condition
@@ -207,7 +207,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
-					'version'      => $this->get_build_file_version( "{$build_dir}/meta-boxes.js" ),
+					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/meta-boxes.js" ),
 				]
 			),
 			function (): bool {
@@ -223,9 +223,6 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 					'mcId'    => $this->options->get_merchant_id() ?: null,
 					'adsId'   => $this->options->get_ads_id() ?: null,
 				],
-				'version'          => $this->get_version(),
-				'adsId'            => $this->options->get_ads_id() ?: null,
-				'mcId'             => $this->options->get_merchant_id() ?: null,
 			]
 		);
 
@@ -242,10 +239,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 		if ( null === $screen ) {
 			return false;
 		}
-		$is_wc_orders_screen = ( 'woocommerce_page_wc-orders' === $screen->id )
-			|| ( strpos( $screen->id, 'woocommerce_page_wc-orders--' ) === 0 )
-			|| ( 'admin_page_wc-orders' === $screen->id )
-			|| ( strpos( $screen->id, 'admin_page_wc-orders--' ) === 0 );
+		$is_wc_orders_screen = ( 0 === strpos( $screen->id, 'woocommerce_page_wc-orders' ) );
 		// Reading action for screen context only; not processing a form submission.
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Screen context check only.
 		$is_edit_action = isset( $_GET['action'] )
