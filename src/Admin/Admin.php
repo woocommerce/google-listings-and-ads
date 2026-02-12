@@ -200,20 +200,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 		) );
 
 		$order_edit_condition = function () {
-			$screen = get_current_screen();
-			if ( null === $screen ) {
-				return false;
-			}
-			$is_wc_orders_screen = ( 'woocommerce_page_wc-orders' === $screen->id )
-				|| ( strpos( $screen->id, 'woocommerce_page_wc-orders--' ) === 0 )
-				|| ( 'admin_page_wc-orders' === $screen->id )
-				|| ( strpos( $screen->id, 'admin_page_wc-orders--' ) === 0 );
-			// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Reading request for screen context only.
-			$is_edit_action = isset( $_GET['action'] )
-				&& 'edit' === sanitize_text_field( wp_unslash( $_GET['action'] ) );
-			// phpcs:enable WordPress.Security.NonceVerification.Recommended
-
-			return $is_wc_orders_screen && $is_edit_action;
+			return $this->is_wc_orders_edit_screen();
 		};
 
 		$meta_boxes_asset_path = "{$this->get_root_dir()}/js/build/meta-boxes.js";
@@ -255,29 +242,16 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 	 * @return string|null The value persisted in the database (e.g. "google"), or null when not on order edit screen or no attribution.
 	 */
 	private function get_order_attribution_source_for_edit_screen(): ?string {
-		$screen = get_current_screen();
-		if ( null === $screen ) {
-			return null;
-		}
-		$is_wc_orders_screen = ( 'woocommerce_page_wc-orders' === $screen->id )
-			|| ( strpos( $screen->id, 'woocommerce_page_wc-orders--' ) === 0 )
-			|| ( 'admin_page_wc-orders' === $screen->id )
-			|| ( strpos( $screen->id, 'admin_page_wc-orders--' ) === 0 );
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Reading request for order edit context only.
-		$is_edit_action = isset( $_GET['action'] )
-			&& 'edit' === sanitize_text_field( wp_unslash( $_GET['action'] ) );
-
-		if ( ! $is_wc_orders_screen || ! $is_edit_action ) {
+		if ( ! $this->is_wc_orders_edit_screen() ) {
 			return null;
 		}
 
 		$order_id = 0;
-		if ( isset( $_GET['id'] ) ) {
-			$order_id = absint( $_GET['id'] );
-		} elseif ( isset( $_GET['post'] ) ) {
-			$order_id = absint( $_GET['post'] );
+		if ( isset( $_GET['id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$order_id = absint( $_GET['id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		} elseif ( isset( $_GET['post'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$order_id = absint( $_GET['post'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		}
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		if ( 0 === $order_id ) {
 			return null;
@@ -294,6 +268,30 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 		}
 
 		return is_string( $source ) ? $source : (string) $source;
+	}
+
+	/**
+	 * Check if the current screen is the WooCommerce orders edit screen.
+	 *
+	 * @return bool True if on the WC orders edit screen, false otherwise.
+	 */
+	protected function is_wc_orders_edit_screen(): bool {
+		$screen = get_current_screen();
+		if ( null === $screen ) {
+			return false;
+		}
+
+		$is_wc_orders_screen = ( 'woocommerce_page_wc-orders' === $screen->id )
+			|| ( strpos( $screen->id, 'woocommerce_page_wc-orders--' ) === 0 )
+			|| ( 'admin_page_wc-orders' === $screen->id )
+			|| ( strpos( $screen->id, 'admin_page_wc-orders--' ) === 0 );
+
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Reading request for screen context only.
+		$is_edit_action = isset( $_GET['action'] )
+			&& 'edit' === sanitize_text_field( wp_unslash( $_GET['action'] ) );
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		return $is_wc_orders_screen && $is_edit_action;
 	}
 
 	/**
