@@ -127,7 +127,7 @@ class AdsCampaignTest extends UnitTest {
 				'name'                                  => 'Campaign One',
 				'status'                                => 'paused',
 				'type'                                  => 'shopping',
-				'amount'                                => 10.0,
+				'amount'                                => 10,
 				'country'                               => 'US',
 				'targeted_locations'                    => [ 'TW' ],
 				'eu_political_advertising_confirmation' => false,
