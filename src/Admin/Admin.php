@@ -267,7 +267,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			return null;
 		}
 
-		return is_string( $source ) ? $source : (string) $source;
+		return (string) $source;
 	}
 
 	/**
