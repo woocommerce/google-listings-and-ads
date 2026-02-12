@@ -16,6 +16,9 @@ import { API_NAMESPACE } from '~/data/constants';
  * even when users have ad blockers enabled. The original URLs are preserved in
  * state and only proxied at render time.
  *
+ * The function includes a WordPress REST API nonce in the URL to authenticate
+ * requests made by img tags, which cannot send custom HTTP headers.
+ *
  * @param {string} imageUrl - The original image URL to proxy.
  * @return {string} The proxied URL through the WordPress REST API.
  */
@@ -25,6 +28,12 @@ export default function getProxiedImageUrl( imageUrl ) {
 	}
 
 	const baseUrl = `${ window.location.origin }/wp-json${ API_NAMESPACE }/ads/assets/image-proxy`;
+	const nonce = window.wpApiSettings?.nonce || '';
 
-	return addQueryArgs( baseUrl, { url: imageUrl } );
+	const params = { url: imageUrl };
+	if ( nonce ) {
+		params._wpnonce = nonce;
+	}
+
+	return addQueryArgs( baseUrl, params );
 }

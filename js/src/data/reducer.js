@@ -633,20 +633,53 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS: {
-			const { url, data } = action;
-
+			const { url, data, assetType } = action;
 			const existingMedia = state.gen_ai_assets?.[ url ]?.media ?? {};
 
-			return setIn( state, [ 'gen_ai_assets', url, 'media' ], {
-				...existingMedia,
-				...data,
-			} );
+			const updatedMedia = assetType
+				? {
+						...existingMedia,
+						[ assetType ]: [
+							...new Set( [
+								...( existingMedia[ assetType ] ?? [] ),
+								...( data[ assetType ] ?? [] ),
+							] ),
+						],
+				  }
+				: {
+						...existingMedia,
+						...data,
+				  };
+
+			return setIn(
+				state,
+				[ 'gen_ai_assets', url, 'media' ],
+				updatedMedia
+			);
 		}
 
 		case TYPES.RECEIVE_GEN_AI_TEXT_ASSETS: {
-			const { url, data } = action;
+			const { url, data, assetType } = action;
+			const existingText = state.gen_ai_assets?.[ url ]?.text ?? {};
 
-			return setIn( state, [ 'gen_ai_assets', url, 'text' ], data );
+			const updatedText = assetType
+				? {
+						...existingText,
+						[ assetType ]: [
+							...( existingText[ assetType ] ?? [] ),
+							...( data[ assetType ] ?? [] ),
+						],
+				  }
+				: {
+						...existingText,
+						...data,
+				  };
+
+			return setIn(
+				state,
+				[ 'gen_ai_assets', url, 'text' ],
+				updatedText
+			);
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

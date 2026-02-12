@@ -65,15 +65,38 @@ class AssetImageProxyController extends BaseController {
 				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
+
+		add_filter( 'rest_pre_serve_request', [ $this, 'serve_image_response' ], 10, 4 );
 	}
 
 	/**
 	 * Permission callback for the image proxy endpoint.
 	 *
+	 * Allows access via either:
+	 * 1. Direct authentication with manage_woocommerce capability
+	 * 2. Valid WordPress REST nonce in query parameter (for img tag requests)
+	 *
 	 * @return callable
 	 */
 	protected function get_image_proxy_permission_callback(): callable {
-		return '__return_true';
+		return function ( $request ) {
+			// Check if user has direct permission (for API calls with session auth).
+			if ( $this->can_manage() ) {
+				return true;
+			}
+
+			// Check for valid nonce in query parameter (for img tag requests).
+			$nonce = $request->get_param( '_wpnonce' );
+			if ( $nonce && wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+				return true;
+			}
+
+			return new \WP_Error(
+				'rest_forbidden',
+				__( 'Sorry, you are not allowed to do that.', 'google-listings-and-ads' ),
+				[ 'status' => 403 ]
+			);
+		};
 	}
 
 	/**
@@ -121,6 +144,7 @@ class AssetImageProxyController extends BaseController {
 				if ( is_wp_error( $response ) ) {
 					return new Response(
 						[
+							'code'    => 'fetch_failed',
 							'message' => sprintf(
 								/* translators: %s: error message */
 								__( 'Failed to fetch image: %s', 'google-listings-and-ads' ),
@@ -136,6 +160,7 @@ class AssetImageProxyController extends BaseController {
 				if ( 200 !== $response_code ) {
 					return new Response(
 						[
+							'code'    => 'invalid_response_code',
 							'message' => sprintf(
 								/* translators: %d: HTTP status code */
 								__( 'Image request returned status code: %d', 'google-listings-and-ads' ),
@@ -153,6 +178,7 @@ class AssetImageProxyController extends BaseController {
 				if ( ! $this->is_valid_image_type( $content_type ) ) {
 					return new Response(
 						[
+							'code'    => 'invalid_content_type',
 							'message' => sprintf(
 								/* translators: %s: content type */
 								__( 'Invalid content type: %s. Expected an image.', 'google-listings-and-ads' ),
@@ -170,6 +196,7 @@ class AssetImageProxyController extends BaseController {
 				if ( strlen( $image_data ) > $this->max_image_size ) {
 					return new Response(
 						[
+							'code'    => 'image_too_large',
 							'message' => sprintf(
 								/* translators: %d: maximum size in MB */
 								__( 'Image exceeds maximum size of %d MB.', 'google-listings-and-ads' ),
@@ -205,29 +232,59 @@ class AssetImageProxyController extends BaseController {
 	/**
 	 * Create a response with image data and proper headers.
 	 *
-	 * This method serves raw binary image data by outputting it directly.
+	 * Returns a WP_REST_Response that is served as raw binary via rest_pre_serve_request.
 	 *
 	 * @param string $image_data   The image binary data.
 	 * @param string $content_type The content type of the image.
+	 *
+	 * @return Response
 	 */
-	protected function create_image_response( string $image_data, string $content_type ): void {
-		// Clear any previous output
+	protected function create_image_response( string $image_data, string $content_type ): Response {
+		$response = new Response( $image_data, 200 );
+		$response->header( 'Content-Type', $content_type );
+		$response->header( 'Content-Length', (string) strlen( $image_data ) );
+		$response->header( 'Cache-Control', 'public, max-age=31536000, immutable' );
+		$response->header( 'X-Content-Type-Options', 'nosniff' );
+		$response->header( 'X-GLA-Image-Proxy', '1' );
+
+		return $response;
+	}
+
+	/**
+	 * Serve image proxy response as raw binary, bypassing JSON encoding.
+	 *
+	 * @param bool             $served  Whether the request has already been served.
+	 * @param Response         $result  The response to serve.
+	 * @param \WP_REST_Request $request The request instance.
+	 * @param \WP_REST_Server  $server  The server instance.
+	 *
+	 * @return bool True if served, false to allow default handling.
+	 */
+	public function serve_image_response( bool $served, Response $result, $request, $server ): bool {
+		if ( $served ) {
+			return true;
+		}
+
+		$headers = $result->get_headers();
+		if ( $result->get_status() !== 200 || ! isset( $headers['X-GLA-Image-Proxy'] ) ) {
+			return false;
+		}
+
+		// Clear any previous output.
 		if ( ob_get_level() ) {
 			ob_end_clean();
 		}
 
-		status_header( 200 );
+		status_header( $result->get_status() );
 
-		// Set headers for image streaming
-		header( 'Content-Type: ' . $content_type );
-		header( 'Content-Length: ' . strlen( $image_data ) );
-		header( 'Cache-Control: public, max-age=31536000, immutable' );
-		header( 'X-Content-Type-Options: nosniff' );
+		foreach ( $result->get_headers() as $key => $value ) {
+			header( sprintf( '%s: %s', $key, is_array( $value ) ? implode( ', ', $value ) : $value ) );
+		}
 
-		// Output the raw image data
-		echo $image_data; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo $result->get_data();
 
-		exit;
+		return true;
 	}
 
 	/**
@@ -237,7 +294,7 @@ class AssetImageProxyController extends BaseController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'url' => [
+			'url'      => [
 				'description'       => __( 'The URL of the image to proxy.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'format'            => 'uri',
@@ -246,6 +303,11 @@ class AssetImageProxyController extends BaseController {
 				'validate_callback' => function ( $param ) {
 					return filter_var( $param, FILTER_VALIDATE_URL ) !== false;
 				},
+			],
+			'_wpnonce' => [
+				'description' => __( 'WordPress nonce for authentication', 'google-listings-and-ads' ),
+				'type'        => 'string',
+				'required'    => false,
 			],
 		];
 	}
