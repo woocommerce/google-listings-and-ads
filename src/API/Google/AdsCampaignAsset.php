@@ -101,8 +101,6 @@ class AdsCampaignAsset implements OptionsAwareInterface {
 	/**
 	 * Create a campaign asset removal operation.
 	 *
-	 * @since n.e.x.t
-	 *
 	 * @param string $campaign_asset_resource Campaign asset resource name.
 	 *
 	 * @return MutateOperation
