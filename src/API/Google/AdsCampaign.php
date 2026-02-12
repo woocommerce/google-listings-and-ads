@@ -324,12 +324,6 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$campaign_fields['contains_eu_political_advertising'] = EuPoliticalAdvertisingStatus::DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING;
 			}
 
-			// Prepend brand asset link operations when Brand Guidelines are enabled.
-			if ( isset( $params['brand_guidelines_enabled'] ) && true === $params['brand_guidelines_enabled'] ) {
-				$brand_asset_operations = $this->get_brand_asset_link_operations( $campaign_id );
-				$operations             = array_merge( $brand_asset_operations, $operations );
-			}
-
 			if ( ! empty( $params['amount'] ) ) {
 				$operations[] = $this->budget->edit_operation( $campaign_id, $params['amount'] );
 			}
@@ -581,7 +575,6 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 
 		$data += [
 			'eu_political_advertising_confirmation' => EuPoliticalAdvertisingStatus::CONTAINS_EU_POLITICAL_ADVERTISING === $eu_political_enum ? true : false,
-			'brand_guidelines_enabled'              => $campaign->getBrandGuidelinesEnabled(),
 		];
 
 		$budget = $row->getCampaignBudget();

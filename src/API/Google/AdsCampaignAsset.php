@@ -18,8 +18,6 @@ use Google\Ads\GoogleAds\V20\Enums\AssetFieldTypeEnum\AssetFieldType as AssetFie
  * Handles linking assets to campaigns at the campaign level.
  * Required for Performance Max campaigns with Brand Guidelines enabled.
  *
- * @since n.e.x.t
- *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
 class AdsCampaignAsset implements OptionsAwareInterface {
