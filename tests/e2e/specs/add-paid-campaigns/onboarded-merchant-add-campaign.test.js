@@ -15,6 +15,8 @@ import {
 	clearOnboardedMerchant,
 	setOnboardedMerchant,
 	setServiceBasedMerchant,
+	clearServiceBasedMerchant,
+	clearCompleteMCSetup,
 } from '../../utils/api';
 
 import { LOAD_STATE } from '../../utils/constants';
@@ -28,16 +30,13 @@ let setupAdsAccounts;
 let setupBudgetPage;
 let optimizeCampaignPage;
 
-/**
- * ---------------------------------------
- * SCENARIOS
- * ---------------------------------------
- */
-
 const SCENARIOS = [
 	{
 		name: 'When merchant account is connected',
 		setupMerchant: setOnboardedMerchant,
+		clearMerchant: () => {
+			clearOnboardedMerchant();
+		},
 		campaignId: 23232323,
 		campaignName: 'Test Campaign 2',
 		expectedCampaigns: [ 'Test Campaign 1', 'Test Campaign 2' ],
@@ -45,20 +44,18 @@ const SCENARIOS = [
 	{
 		name: 'For ads only setup',
 		setupMerchant: () => {
+			clearCompleteMCSetup();
 			setOnboardedMerchant();
 			setServiceBasedMerchant();
+		},
+		clearMerchant: () => {
+			clearServiceBasedMerchant();
 		},
 		campaignId: 45454545,
 		campaignName: 'Test Campaign 3',
 		expectedCampaigns: [ 'Test Campaign 1', 'Test Campaign 3' ],
 	},
 ];
-
-/**
- * ---------------------------------------
- * COMMON FLOW HELPERS
- * ---------------------------------------
- */
 
 async function openCampaignCreationFlow() {
 	await dashboardPage.addPaidCampaignButton.click();
@@ -99,12 +96,6 @@ async function createCampaignAndVerify( expectedCampaigns ) {
 		await expect( page.getByText( campaign ) ).toBeVisible();
 	}
 }
-
-/**
- * ---------------------------------------
- * TEST SUITE
- * ---------------------------------------
- */
 
 test.describe( 'Post onboarding campaign setup', () => {
 	test.beforeAll( async ( { browser } ) => {
@@ -156,23 +147,18 @@ test.describe( 'Post onboarding campaign setup', () => {
 		await page.close();
 	} );
 
-	/**
-	 * ---------------------------------------
-	 * SCENARIO LOOP
-	 * ---------------------------------------
-	 */
-
 	SCENARIOS.forEach(
 		( {
 			name,
 			setupMerchant,
+			clearMerchant,
 			campaignId,
 			campaignName,
 			expectedCampaigns,
 		} ) => {
 			test.describe( name, () => {
 				test.beforeAll( async () => {
-					await setupMerchant();
+					setupMerchant();
 
 					await optimizeCampaignPage.fulfillAdsCampaignsRequest(
 						{
@@ -205,6 +191,7 @@ test.describe( 'Post onboarding campaign setup', () => {
 				} );
 
 				test.afterAll( async () => {
+					await clearMerchant();
 					await clearOnboardedMerchant();
 				} );
 
