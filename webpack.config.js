@@ -97,6 +97,10 @@ const webpackConfig = {
 		),
 		blocks: path.join( __dirname, 'js/src/blocks/index.js' ),
 		'meta-boxes': path.join( __dirname, 'js/src/meta-boxes/index.js' ),
+		'channel-visibility-meta-box': path.join(
+			__dirname,
+			'js/src/meta-boxes/channel-visibility/index.js'
+		),
 		'gtag-events': path.resolve(
 			process.cwd(),
 			'js/src/gtag-events',

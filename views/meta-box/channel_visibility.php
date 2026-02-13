@@ -56,18 +56,18 @@ if ( $input_disabled ) {
 <div class="gla-channel-visibility-box">
 	<?php if ( $is_setup_complete ) : ?>
 		<?php
-		woocommerce_wp_select(
-			[
-				'id'                => $field_id,
-				'value'             => $channel_visibility,
-				'label'             => __( 'Google for WooCommerce', 'google-listings-and-ads' ),
-				'description'       => $input_description,
-				'desc_tip'          => false,
-				'options'           => ChannelVisibility::get_value_options(),
-				'custom_attributes' => $custom_attributes,
-				'wrapper_class'     => 'form-row form-row-full',
-			]
-		);
+		// woocommerce_wp_select(
+		// 	[
+		// 		'id'                => $field_id,
+		// 		'value'             => $channel_visibility,
+		// 		'label'             => __( 'Google for WooCommerce', 'google-listings-and-ads' ),
+		// 		'description'       => $input_description,
+		// 		'desc_tip'          => false,
+		// 		'options'           => ChannelVisibility::get_value_options(),
+		// 		'custom_attributes' => $custom_attributes,
+		// 		'wrapper_class'     => 'form-row form-row-full',
+		// 	]
+		// );
 		?>
 		<?php if ( $show_status ) : ?>
 			<div

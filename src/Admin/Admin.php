@@ -202,11 +202,10 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 		$wc_edit_order_page_condition = function () {
 			$screen = get_current_screen();
 			
-			if ( ! $screen || 'woocommerce_page_wc-orders' !== $screen->id ) {
-				return false;
-			}
+			// 1. Check for Edit Order Page
+			$is_edit_order = ( 'woocommerce_page_wc-orders' === $screen->id && isset( $_GET['action'] ) && 'edit' === $_GET['action'] );
 
-			return isset( $_GET['action'] ) && 'edit' === $_GET['action'];
+			return $is_edit_order;
 		};
 
 		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
@@ -230,6 +229,48 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 					'mcId'    => $this->options->get_merchant_id() ?: null,
 					'adsId'   => $this->options->get_ads_id() ?: null,
 				],
+			]
+		);
+
+		$wc_edit_product_page_condition = function () {
+			$screen = get_current_screen();
+
+			// Check for Edit Product Page
+			// Post type screen IDs are usually just the name of the post type
+			$is_edit_product = ( 'product' === $screen->id && 'post' === $screen->base && isset( $_GET['action'] ) && 'edit' === $_GET['action'] );
+
+			return $is_edit_product;
+		};
+
+		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
+			'gla-wc-product',
+			'js/build/channel-visibility-meta-box',
+			"{$this->get_root_dir()}/js/build/channel-visibility-meta-box.asset.php",
+			new BuiltScriptDependencyArray(
+				[
+					'dependencies' => [],
+					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/channel-visibility-meta-box.js" ),
+				]
+			),
+			$wc_edit_product_page_condition
+		) )->add_inline_script(
+			'glaData',
+			[
+				'slug'             => $this->get_slug(),
+				'adsSetupComplete' => $this->ads->is_setup_complete(),
+				'initialWpData'    => [
+					'version' => $this->get_version(),
+					'mcId'    => $this->options->get_merchant_id() ?: null,
+					'adsId'   => $this->options->get_ads_id() ?: null,
+				],
+				'channelVisibility' => [
+					'field_id'           => 'channel-visibility',
+					'product_id'         => 214,
+					'product_visible'    => false, // from product->is_visible()
+					'channel_visibility' => 'sync-and-show',
+					'sync_status'        => 'synced',
+					'issues'             => [],
+				]
 			]
 		);
 
