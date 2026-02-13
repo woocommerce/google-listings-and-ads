@@ -12,7 +12,9 @@ import SetupBudgetPage from '../../utils/pages/ads-onboarding/setup-budget';
 import OptimizeCampaignPage from '../../utils/pages/onboarding/step-3-optimize-campaign-ads-account-only';
 
 import {
+	clearCompletedAdsSetup,
 	clearOnboardedMerchant,
+	setCompletedAdsSetup,
 	setOnboardedMerchant,
 	setServiceBasedMerchant,
 	clearServiceBasedMerchant,
@@ -121,6 +123,8 @@ test.describe( 'Post onboarding campaign setup', () => {
 			},
 		] );
 
+		await setCompletedAdsSetup();
+
 		await setupBudgetPage.fulfillBudgetRecommendations( {
 			currency: 'EUR',
 			daily_budget_baseline: 12,
@@ -143,6 +147,7 @@ test.describe( 'Post onboarding campaign setup', () => {
 	} );
 
 	test.afterAll( async () => {
+		await clearCompletedAdsSetup();
 		await clearOnboardedMerchant();
 		await page.close();
 	} );
