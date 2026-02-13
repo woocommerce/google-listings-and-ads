@@ -10,45 +10,106 @@ import DashboardPage from '../../utils/pages/dashboard';
 import SetupAdsAccountsPage from '../../utils/pages/ads-onboarding/setup-ads-accounts';
 import SetupBudgetPage from '../../utils/pages/ads-onboarding/setup-budget';
 import OptimizeCampaignPage from '../../utils/pages/onboarding/step-3-optimize-campaign-ads-account-only';
+
 import {
 	clearOnboardedMerchant,
 	setOnboardedMerchant,
 	setServiceBasedMerchant,
 } from '../../utils/api';
+
 import { LOAD_STATE } from '../../utils/constants';
 
 test.use( { storageState: process.env.ADMINSTATE } );
-
 test.describe.configure( { mode: 'serial' } );
 
-/**
- * @type {import('../../utils/pages/dashboard.js').default} dashboardPage
- */
-let dashboardPage = null;
+let page;
+let dashboardPage;
+let setupAdsAccounts;
+let setupBudgetPage;
+let optimizeCampaignPage;
 
 /**
- * @type {import('../../utils/pages/ads-onboarding/setup-ads-accounts').default} setupAdsAccounts
+ * ---------------------------------------
+ * SCENARIOS
+ * ---------------------------------------
  */
-let setupAdsAccounts = null;
+
+const SCENARIOS = [
+	{
+		name: 'When merchant account is connected',
+		setupMerchant: setOnboardedMerchant,
+		campaignId: 23232323,
+		campaignName: 'Test Campaign 2',
+		expectedCampaigns: [ 'Test Campaign 1', 'Test Campaign 2' ],
+	},
+	{
+		name: 'For ads only setup',
+		setupMerchant: () => {
+			setOnboardedMerchant();
+			setServiceBasedMerchant();
+		},
+		campaignId: 45454545,
+		campaignName: 'Test Campaign 3',
+		expectedCampaigns: [ 'Test Campaign 1', 'Test Campaign 3' ],
+	},
+];
 
 /**
- * @type {import('../../utils/pages/ads-onboarding/setup-budget.js').default} setupBudgetPage
+ * ---------------------------------------
+ * COMMON FLOW HELPERS
+ * ---------------------------------------
  */
-let setupBudgetPage = null;
+
+async function openCampaignCreationFlow() {
+	await dashboardPage.addPaidCampaignButton.click();
+
+	await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+
+	await expect(
+		page.getByRole( 'heading', { name: 'Create your campaign' } )
+	).toBeVisible();
+}
+
+async function optimizeCampaign() {
+	await setupAdsAccounts.clickContinue();
+
+	await expect(
+		page.getByRole( 'heading', { name: 'Optimize your campaign' } )
+	).toBeVisible();
+
+	await optimizeCampaignPage.selectUrlOption();
+
+	const createCampaignButton = page.locator(
+		'[data-action="submit-campaign-and-assets"]'
+	);
+
+	await expect( createCampaignButton ).toBeEnabled();
+}
+
+async function createCampaignAndVerify( expectedCampaigns ) {
+	const createCampaignButton = page.locator(
+		'[data-action="submit-campaign-and-assets"]'
+	);
+
+	await createCampaignButton.click();
+
+	await page.waitForURL( /path=%2Fgoogle%2Fdashboard/ );
+
+	for ( const campaign of expectedCampaigns ) {
+		await expect( page.getByText( campaign ) ).toBeVisible();
+	}
+}
 
 /**
- * @type {import('../../utils/pages/onboarding/step-3-optimize-campaign-ads-account-only.js').default} optimizeCampaignPage
+ * ---------------------------------------
+ * TEST SUITE
+ * ---------------------------------------
  */
-let optimizeCampaignPage = null;
-
-/**
- * @type {import('@playwright/test').Page} page
- */
-let page = null;
 
 test.describe( 'Post onboarding campaign setup', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
+
 		dashboardPage = new DashboardPage( page );
 		setupAdsAccounts = new SetupAdsAccountsPage( page );
 		setupBudgetPage = new SetupBudgetPage( page );
@@ -83,34 +144,11 @@ test.describe( 'Post onboarding campaign setup', () => {
 						conversions_value: 89.98,
 					},
 				},
-				{
-					level: 'High',
-					country: 'FR',
-					daily_budget: 20.5,
-					metrics: {
-						cost: 143.5,
-						conversions: 2.5,
-						conversions_value: 98.59,
-					},
-				},
-				{
-					level: 'Low',
-					country: 'FR',
-					daily_budget: 7,
-					metrics: {
-						cost: 49,
-						conversions: 2,
-						conversions_value: 80.48,
-					},
-				},
 			],
 		} );
 
 		await optimizeCampaignPage.mockOptimizeCampaignRequests();
 		await optimizeCampaignPage.fulfillAssetGroupsForCampaign();
-
-		await setOnboardedMerchant();
-		await dashboardPage.goto();
 	} );
 
 	test.afterAll( async () => {
@@ -118,148 +156,68 @@ test.describe( 'Post onboarding campaign setup', () => {
 		await page.close();
 	} );
 
-	test.describe( 'When merchant account is connected', () => {
-		test.beforeAll( async () => {
-			await optimizeCampaignPage.fulfillAdsCampaignsRequest(
-				{
-					id: 23232323,
-					name: 'Test Campaign 2',
-					status: 'enabled',
-					type: 'performance_max',
-					amount: 101.5,
-					country: 'US',
-					targeted_locations: [ 'US' ],
-					eu_political_advertising_confirmation: false,
-				},
-				200,
-				[ 'POST' ]
-			);
+	/**
+	 * ---------------------------------------
+	 * SCENARIO LOOP
+	 * ---------------------------------------
+	 */
 
-			await dashboardPage.fulfillAssetGroupsForCampaign( 23232323, [
-				{
-					id: 23232323,
-					final_url: '',
-					display_url_path: [ '', '' ],
-					assets: {},
-				},
-			] );
-		} );
+	SCENARIOS.forEach(
+		( {
+			name,
+			setupMerchant,
+			campaignId,
+			campaignName,
+			expectedCampaigns,
+		} ) => {
+			test.describe( name, () => {
+				test.beforeAll( async () => {
+					await setupMerchant();
 
-		test( 'Dashboard page contains Add campaign button', async () => {
-			await expect( dashboardPage.addPaidCampaignButton ).toBeEnabled();
-		} );
+					await optimizeCampaignPage.fulfillAdsCampaignsRequest(
+						{
+							id: campaignId,
+							name: campaignName,
+							status: 'enabled',
+							type: 'performance_max',
+							amount: 101.5,
+							country: 'US',
+							targeted_locations: [ 'US' ],
+							eu_political_advertising_confirmation: false,
+						},
+						200,
+						[ 'POST' ]
+					);
 
-		test( 'Clicking on Add campaign button opens the campaign creation flow', async () => {
-			await dashboardPage.addPaidCampaignButton.click();
-			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-			await expect(
-				page.getByRole( 'heading', { name: 'Create your campaign' } )
-			).toBeVisible();
-		} );
+					await dashboardPage.fulfillAssetGroupsForCampaign(
+						campaignId,
+						[
+							{
+								id: campaignId,
+								final_url: '',
+								display_url_path: [ '', '' ],
+								assets: {},
+							},
+						]
+					);
 
-		test( 'Clicking on "Continue" button proceeds to "Optimize your campaign" step', async () => {
-			await setupAdsAccounts.clickContinue();
+					await dashboardPage.goto();
+				} );
 
-			await expect(
-				page.getByRole( 'heading', { name: 'Optimize your campaign' } )
-			).toBeVisible();
+				test.afterAll( async () => {
+					await clearOnboardedMerchant();
+				} );
 
-			await optimizeCampaignPage.selectUrlOption();
+				test( 'User can create campaign post onboarding', async () => {
+					await expect(
+						dashboardPage.addPaidCampaignButton
+					).toBeEnabled();
 
-			const createCampaignButton = page.locator(
-				'[data-action="submit-campaign-and-assets"]'
-			);
-			await expect( createCampaignButton ).toBeEnabled();
-		} );
-
-		test( 'Clicking the "Create Campaign" button navigates to the dashboard', async () => {
-			const createCampaignButton = page.locator(
-				'[data-action="submit-campaign-and-assets"]'
-			);
-
-			await createCampaignButton.click();
-
-			await page.waitForURL( /path=%2Fgoogle%2Fdashboard/ );
-			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fdashboard/ );
-
-			await expect( page.getByText( 'Test Campaign 1' ) ).toBeVisible();
-			await expect( page.getByText( 'Test Campaign 2' ) ).toBeVisible();
-		} );
-	} );
-
-	test.describe( 'For ads only setup', () => {
-		test.beforeAll( async () => {
-			await optimizeCampaignPage.fulfillAdsCampaignsRequest(
-				{
-					id: 45454545,
-					name: 'Test Campaign 3',
-					status: 'enabled',
-					type: 'performance_max',
-					amount: 101.5,
-					country: 'US',
-					targeted_locations: [ 'US' ],
-					eu_political_advertising_confirmation: false,
-				},
-				200,
-				[ 'POST' ]
-			);
-
-			await dashboardPage.fulfillAssetGroupsForCampaign( 45454545, [
-				{
-					id: 45454545,
-					final_url: '',
-					display_url_path: [ '', '' ],
-					assets: {},
-				},
-			] );
-
-			await setServiceBasedMerchant();
-		} );
-
-		test.afterAll( async () => {
-			await clearOnboardedMerchant();
-		} );
-
-		test( 'Dashboard page contains Add campaign button', async () => {
-			await expect( dashboardPage.addPaidCampaignButton ).toBeEnabled();
-		} );
-
-		test( 'Clicking on Add campaign button opens the campaign creation flow', async () => {
-			await dashboardPage.addPaidCampaignButton.click();
-			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-			await expect(
-				page.getByRole( 'heading', { name: 'Create your campaign' } )
-			).toBeVisible();
-		} );
-
-		test( 'Clicking on "Continue" button proceeds to "Optimize your campaign" step', async () => {
-			await setupAdsAccounts.clickContinue();
-
-			await expect(
-				page.getByRole( 'heading', { name: 'Optimize your campaign' } )
-			).toBeVisible();
-
-			await optimizeCampaignPage.selectUrlOption();
-
-			const createCampaignButton = page.locator(
-				'[data-action="submit-campaign-and-assets"]'
-			);
-			await expect( createCampaignButton ).toBeEnabled();
-		} );
-
-		test( 'Clicking the "Create Campaign" button navigates to the dashboard', async () => {
-			const createCampaignButton = page.locator(
-				'[data-action="submit-campaign-and-assets"]'
-			);
-
-			await createCampaignButton.click();
-
-			await page.waitForURL( /path=%2Fgoogle%2Fdashboard/ );
-			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fdashboard/ );
-
-			await expect( page.getByText( 'Test Campaign 1' ) ).toBeVisible();
-			await expect( page.getByText( 'Test Campaign 2' ) ).toBeVisible();
-			await expect( page.getByText( 'Test Campaign 3' ) ).toBeVisible();
-		} );
-	} );
+					await openCampaignCreationFlow();
+					await optimizeCampaign();
+					await createCampaignAndVerify( expectedCampaigns );
+				} );
+			} );
+		}
+	);
 } );
