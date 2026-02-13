@@ -28,4 +28,19 @@ class InvalidDomainName extends InvalidArgumentException implements GoogleListin
 			sprintf( __( 'Unable to create an account, the domain name "%s" must end with a valid top-level domain name.', 'google-listings-and-ads' ), $domain_name )
 		);
 	}
+
+	/**
+	 * Create a new instance of the exception when a Merchant Center account can't be created
+	 * because of an invalid homepage URL.
+	 *
+	 * @param string $url The homepage URL.
+	 *
+	 * @return static
+	 */
+	public static function create_account_failed_invalid_homepage_url( string $url ): InvalidDomainName {
+		return new static(
+			/* translators: %s: The homepage URL. */
+			sprintf( __( 'Unable to create an account. The homepage URL "%s" is not valid.', 'google-listings-and-ads' ), $url )
+		);
+	}
 }
