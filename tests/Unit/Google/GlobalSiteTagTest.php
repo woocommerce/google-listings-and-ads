@@ -68,14 +68,14 @@ class GlobalSiteTagTest extends UnitTest {
 		add_filter( 'woocommerce_is_order_received_page', '__return_false' );
 		$this->wp->expects( $this->never() )->method( 'wp_print_inline_script_tag' );
 
-		$this->tag->maybe_display_purchase_event_snippets( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, 0 );
+		$this->tag->maybe_display_purchase_event_snippet( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, 0 );
 	}
 
 	public function test_purchase_event_no_order() {
 		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
 		$this->wp->expects( $this->never() )->method( 'wp_print_inline_script_tag' );
 
-		$this->tag->maybe_display_purchase_event_snippets( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, 0 );
+		$this->tag->maybe_display_purchase_event_snippet( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, 0 );
 	}
 
 	public function test_purchase_event_already_tracked() {
@@ -87,7 +87,7 @@ class GlobalSiteTagTest extends UnitTest {
 
 		$this->wp->expects( $this->never() )->method( 'wp_print_inline_script_tag' );
 
-		$this->tag->maybe_display_purchase_event_snippets( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, $order->get_id() );
+		$this->tag->maybe_display_purchase_event_snippet( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, $order->get_id() );
 	}
 
 	public function test_purchase_event() {
@@ -106,7 +106,7 @@ class GlobalSiteTagTest extends UnitTest {
 				}
 			);
 
-		$this->tag->maybe_display_purchase_event_snippets( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, $order->get_id() );
+		$this->tag->maybe_display_purchase_event_snippet( self::TEST_CONVERSION_ID, self::TEST_CONVERSION_LABEL, $order->get_id() );
 
 		// Reload order and confirm tracked meta is set.
 		$order = wc_get_order( $order->get_id() );

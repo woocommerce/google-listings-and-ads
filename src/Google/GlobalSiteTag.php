@@ -122,7 +122,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		add_action(
 			'woocommerce_before_thankyou',
 			function ( $order_id ) use ( $ads_conversion_id, $ads_conversion_label ) {
-				$this->maybe_display_purchase_event_snippets( $ads_conversion_id, $ads_conversion_label, $order_id );
+				$this->maybe_display_purchase_event_snippet( $ads_conversion_id, $ads_conversion_label, $order_id );
 			},
 		);
 
@@ -355,7 +355,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @param string $ads_conversion_label Google Ads conversion label.
 	 * @param int    $order_id The order id.
 	 */
-	public function maybe_display_purchase_event_snippets( string $ads_conversion_id, string $ads_conversion_label, int $order_id ): void {
+	public function maybe_display_purchase_event_snippet( string $ads_conversion_id, string $ads_conversion_label, int $order_id ): void {
 		// Only display on the order confirmation page.
 		if ( ! is_order_received_page() ) {
 			return;
