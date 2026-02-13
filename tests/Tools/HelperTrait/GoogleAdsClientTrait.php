@@ -1188,7 +1188,7 @@ trait GoogleAdsClientTrait {
 		);
 
 		return ( new MutateOperation() )->setAssetOperation(
-			( new \Google\Ads\GoogleAds\V20\Services\AssetOperation() )
+			( new \Google\Ads\GoogleAds\V22\Services\AssetOperation() )
 				->setCreate( $asset )
 		);
 	}
