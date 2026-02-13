@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\Jetpack\Connection\Manager;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAssetGenerationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsRecommendationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
@@ -49,7 +50,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\RequestInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\ResponseInterface;
-use Google\Ads\GoogleAds\Util\V20\GoogleAdsFailures;
+use Google\Ads\GoogleAds\Util\V22\GoogleAdsFailures;
 use Jetpack_Options;
 
 defined( 'ABSPATH' ) || exit;
@@ -87,6 +88,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		AdsConversionAction::class       => true,
 		AdsReport::class                 => true,
 		AdsRecommendationsService::class => true,
+		AdsAssetGenerationService::class => true,
 		AdsAssetGroupAsset::class        => true,
 		AdsAsset::class                  => true,
 		BudgetMetrics::class             => true,
@@ -125,6 +127,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( AdsConversionAction::class, GoogleAdsClient::class );
 		$this->share( AdsReport::class, GoogleAdsClient::class );
 		$this->share( AdsRecommendationsService::class, GoogleAdsClient::class );
+		$this->share( AdsAssetGenerationService::class, GoogleAdsClient::class );
 		$this->share( BudgetMetrics::class, GoogleAdsClient::class );
 		$this->share( BudgetRecommendations::class, GoogleAdsClient::class );
 

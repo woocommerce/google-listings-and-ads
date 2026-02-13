@@ -8,7 +8,7 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import AppTooltip from '~/components/app-tooltip';
-import AddAssetItemButton from '../add-asset-item-button';
+import AssetItemActionButton from '../asset-item-action-button';
 import MediaSelector from '../media-selector';
 import YouTubeVideoInputControl from './youtube-video-input-control';
 
@@ -37,7 +37,7 @@ export default function YoutubeVideoSelector( {
 	const renderAddButton = () => {
 		const disabled = videoIds.length >= maxNumberOfVideos;
 		const button = (
-			<AddAssetItemButton
+			<AssetItemActionButton
 				disabled={ disabled }
 				text={ __( 'Add YouTube video', 'google-listings-and-ads' ) }
 				onClick={ handleAddYoutubeVideoClick }

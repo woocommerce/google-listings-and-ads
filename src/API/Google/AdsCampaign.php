@@ -17,17 +17,20 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Google\Ads\GoogleAds\Util\FieldMasks;
-use Google\Ads\GoogleAds\Util\V20\ResourceNames;
-use Google\Ads\GoogleAds\V20\Common\MaximizeConversionValue;
-use Google\Ads\GoogleAds\V20\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
-use Google\Ads\GoogleAds\V20\Resources\Campaign;
-use Google\Ads\GoogleAds\V20\Enums\EuPoliticalAdvertisingStatusEnum\EuPoliticalAdvertisingStatus;
-use Google\Ads\GoogleAds\V20\Resources\Campaign\ShoppingSetting;
-use Google\Ads\GoogleAds\V20\Services\Client\CampaignServiceClient;
-use Google\Ads\GoogleAds\V20\Services\CampaignOperation;
-use Google\Ads\GoogleAds\V20\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V20\Services\MutateGoogleAdsRequest;
-use Google\Ads\GoogleAds\V20\Services\MutateOperation;
+use Google\Ads\GoogleAds\Util\V22\ResourceNames;
+use Google\Ads\GoogleAds\V22\Common\MaximizeConversionValue;
+use Google\Ads\GoogleAds\V22\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
+use Google\Ads\GoogleAds\V22\Resources\Campaign;
+use Google\Ads\GoogleAds\V22\Enums\EuPoliticalAdvertisingStatusEnum\EuPoliticalAdvertisingStatus;
+use Google\Ads\GoogleAds\V22\Resources\Campaign\ShoppingSetting;
+use Google\Ads\GoogleAds\V22\Services\Client\CampaignServiceClient;
+use Google\Ads\GoogleAds\V22\Services\CampaignOperation;
+use Google\Ads\GoogleAds\V22\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V22\Services\MutateGoogleAdsRequest;
+use Google\Ads\GoogleAds\V22\Services\MutateOperation;
+use Google\Ads\GoogleAds\V22\Resources\Campaign\AssetAutomationSetting;
+use Google\Ads\GoogleAds\V22\Enums\AssetAutomationTypeEnum\AssetAutomationType;
+use Google\Ads\GoogleAds\V22\Enums\AssetAutomationStatusEnum\AssetAutomationStatus;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 use Exception;
@@ -514,30 +517,32 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 *
 	 * @return MutateOperation
 	 */
-	protected function create_operation( string $campaign_name, ?string $country, bool $is_eu_political ): MutateOperation {
-		$merchant_id   = $this->options->get_merchant_id();
-		$campaign_data = [
-			'resource_name'                     => $this->temporary_resource_name(),
-			'name'                              => $campaign_name,
-			'advertising_channel_type'          => AdvertisingChannelType::PERFORMANCE_MAX,
-			'status'                            => CampaignStatus::number( 'enabled' ),
-			'campaign_budget'                   => $this->budget->temporary_resource_name(),
-			'maximize_conversion_value'         => new MaximizeConversionValue(),
-			'url_expansion_opt_out'             => false,
-			'contains_eu_political_advertising' => $is_eu_political ? EuPoliticalAdvertisingStatus::CONTAINS_EU_POLITICAL_ADVERTISING : EuPoliticalAdvertisingStatus::DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING,
-		];
-
-		// Only include shopping_setting if Merchant Center account is connected.
-		if ( $merchant_id > 0 && $country !== null ) {
-			$campaign_data['shopping_setting'] = new ShoppingSetting(
-				[
-					'merchant_id' => $merchant_id,
-					'feed_label'  => $country,
-				]
-			);
-		}
-
-		$campaign = new Campaign( $campaign_data );
+	protected function create_operation( string $campaign_name, string $country, bool $is_eu_political ): MutateOperation {
+		$campaign = new Campaign(
+			[
+				'resource_name'                     => $this->temporary_resource_name(),
+				'name'                              => $campaign_name,
+				'advertising_channel_type'          => AdvertisingChannelType::PERFORMANCE_MAX,
+				'status'                            => CampaignStatus::number( 'enabled' ),
+				'campaign_budget'                   => $this->budget->temporary_resource_name(),
+				'maximize_conversion_value'         => new MaximizeConversionValue(),
+				'asset_automation_settings'         => [
+					new AssetAutomationSetting(
+						[
+							'asset_automation_type'   => AssetAutomationType::FINAL_URL_EXPANSION_TEXT_ASSET_AUTOMATION,
+							'asset_automation_status' => AssetAutomationStatus::OPTED_IN,
+						]
+					),
+				],
+				'shopping_setting'                  => new ShoppingSetting(
+					[
+						'merchant_id' => $this->options->get_merchant_id(),
+						'feed_label'  => $country,
+					]
+				),
+				'contains_eu_political_advertising' => $is_eu_political ? EuPoliticalAdvertisingStatus::CONTAINS_EU_POLITICAL_ADVERTISING : EuPoliticalAdvertisingStatus::DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING,
+			]
+		);
 
 		$operation = ( new CampaignOperation() )->setCreate( $campaign );
 		return ( new MutateOperation() )->setCampaignOperation( $operation );
