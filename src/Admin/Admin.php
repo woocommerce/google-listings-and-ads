@@ -199,6 +199,40 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			$product_condition
 		) );
 
+		$wc_edit_order_page_condition = function () {
+			$screen = get_current_screen();
+
+			if ( ! $screen || 'woocommerce_page_wc-orders' !== $screen->id ) {
+				return false;
+			}
+
+			return isset( $_GET['action'] ) && 'edit' === $_GET['action']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		};
+
+		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
+			'gla-wc-orders',
+			'js/build/meta-boxes',
+			"{$this->get_root_dir()}/js/build/meta-boxes.asset.php",
+			new BuiltScriptDependencyArray(
+				[
+					'dependencies' => [],
+					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/meta-boxes.js" ),
+				]
+			),
+			$wc_edit_order_page_condition
+		) )->add_inline_script(
+			'glaData',
+			[
+				'slug'                   => $this->get_slug(),
+				'adsSetupComplete'       => $this->ads->is_setup_complete(),
+				'initialWpData'          => [
+					'version' => $this->get_version(),
+					'mcId'    => $this->options->get_merchant_id() ?: null,
+					'adsId'   => $this->options->get_ads_id() ?: null,
+				],
+			]
+		);
+
 		return $assets;
 	}
 
