@@ -225,6 +225,8 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			[
 				'slug'                   => $this->get_slug(),
 				'adsSetupComplete'       => $this->ads->is_setup_complete(),
+				// TODO: Temporary hardcoding the attribution source to Google for testing purposes
+				'orderAttributionSource' => 'google',
 				'initialWpData'          => [
 					'version' => $this->get_version(),
 					'mcId'    => $this->options->get_merchant_id() ?: null,
