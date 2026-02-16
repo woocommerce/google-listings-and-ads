@@ -115,10 +115,11 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			return PageController::is_admin_page();
 		};
 
-		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
+		$build_dir = "{$this->get_root_dir()}/js/build";
+		$assets[]  = ( new AdminScriptWithBuiltDependenciesAsset(
 			'google-listings-and-ads',
 			'js/build/index',
-			"{$this->get_root_dir()}/js/build/index.asset.php",
+			"{$build_dir}/index.asset.php",
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
@@ -176,7 +177,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
 			'gla-product-attributes',
 			'js/build/product-attributes',
-			"{$this->get_root_dir()}/js/build/product-attributes.asset.php",
+			"{$build_dir}/product-attributes.asset.php",
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
@@ -199,36 +200,29 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			$product_condition
 		) );
 
-		$order_edit_condition = function () {
-			return $this->is_wc_orders_edit_screen();
-		};
-
-		$meta_boxes_asset_path = "{$this->get_root_dir()}/js/build/meta-boxes.js";
-		$assets[]              = ( new AdminScriptWithBuiltDependenciesAsset(
+		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
 			'gla-meta-boxes',
 			'js/build/meta-boxes',
-			"{$this->get_root_dir()}/js/build/meta-boxes.asset.php",
+			"{$build_dir}/meta-boxes.asset.php",
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
-					'version'      => (string) ( file_exists( $meta_boxes_asset_path ) ? filemtime( $meta_boxes_asset_path ) : $this->get_version() ),
+					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/meta-boxes.js" ),
 				]
 			),
-			$order_edit_condition
+			function (): bool {
+				return $this->is_wc_order_edit_screen();
+			}
 		) )->add_inline_script(
 			'glaData',
 			[
-				'slug'                   => $this->get_slug(),
-				'adsSetupComplete'       => $this->ads->is_setup_complete(),
-				'initialWpData'          => [
+				'slug'             => $this->get_slug(),
+				'adsSetupComplete' => $this->ads->is_setup_complete(),
+				'initialWpData'    => [
 					'version' => $this->get_version(),
 					'mcId'    => $this->options->get_merchant_id() ?: null,
 					'adsId'   => $this->options->get_ads_id() ?: null,
 				],
-				'version'                => $this->get_version(),
-				'adsId'                  => $this->options->get_ads_id() ?: null,
-				'mcId'                   => $this->options->get_merchant_id() ?: null,
-				'orderAttributionSource' => $this->get_order_attribution_source_for_edit_screen(),
 			]
 		);
 
@@ -281,17 +275,21 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			return false;
 		}
 
-		$is_wc_orders_screen = ( 'woocommerce_page_wc-orders' === $screen->id )
-			|| ( strpos( $screen->id, 'woocommerce_page_wc-orders--' ) === 0 )
-			|| ( 'admin_page_wc-orders' === $screen->id )
-			|| ( strpos( $screen->id, 'admin_page_wc-orders--' ) === 0 );
+		// Check for HPOS screen (High-Performance Order Storage).
+		$is_hpos_edit_screen = ( 0 === strpos( $screen->id, 'woocommerce_page_wc-orders' ) );
+		if ( $is_hpos_edit_screen ) {
+			// Reading action for screen context only; not processing a form submission.
+			// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Screen context check only.
+			$is_edit_action = isset( $_GET['action'] )
+				&& 'edit' === sanitize_text_field( wp_unslash( $_GET['action'] ) );
+			// phpcs:enable WordPress.Security.NonceVerification.Recommended
+			return $is_edit_action;
+		}
 
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Reading request for screen context only.
-		$is_edit_action = isset( $_GET['action'] )
-			&& 'edit' === sanitize_text_field( wp_unslash( $_GET['action'] ) );
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+		// Check for traditional posts storage screen.
+		$is_posts_storage_screen = ( 'shop_order' === $screen->id );
 
-		return $is_wc_orders_screen && $is_edit_action;
+		return $is_posts_storage_screen;
 	}
 
 	/**
