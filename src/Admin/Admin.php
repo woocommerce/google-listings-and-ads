@@ -22,6 +22,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\Admin\PageController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\ScriptAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\ChannelVisibilityMetaBox;
 
 /**
  * Class Admin
@@ -157,6 +160,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 						)
 					)->get_uri(),
 				),
+				'channelVisibility' => $this->get_channel_visibility_data(),
 			]
 		);
 
@@ -358,6 +362,46 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 				[ 'wp-react-refresh-runtime' ]
 			);
 			$react_script->deps[] = 'wp-react-refresh-entry';
+		}
+	}
+
+	/**
+	 * Build channel visibility data for the current product edit screen.
+	 *
+	 * @return array
+	 */
+	protected function get_channel_visibility_data(): array {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( null === $screen || 'product' !== $screen->id ) {
+			return [];
+		}
+
+		global $post;
+		if ( ! $post || ! isset( $post->ID ) ) {
+			return [];
+		}
+
+		try {
+			$product_helper = \woogle_get_container()->get( ProductHelper::class );
+			$meta_handler   = \woogle_get_container()->get( ProductMetaHandler::class );
+
+			/** @var \WC_Product $product */
+			$product = $product_helper->get_wc_product( absint( $post->ID ) );
+			if ( ! $product ) {
+				return [];
+			}
+
+			$field_id = sprintf( '%s_%s_%s', $this->get_slug(), ChannelVisibilityMetaBox::ID, ChannelVisibilityMetaBox::FIELD_VISIBILITY );
+
+			return [
+				'field_id'           => $field_id,
+				'product_is_visible' => (bool) $product->is_visible(),
+				'channel_visibility' => $product_helper->get_channel_visibility( $product ),
+				'sync_status'        => $meta_handler->get_sync_status( $product ),
+				'issues'             => $product_helper->get_validation_errors( $product ),
+			];
+		} catch ( \Throwable $e ) {
+			return [];
 		}
 	}
 }

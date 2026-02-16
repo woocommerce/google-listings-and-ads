@@ -23,6 +23,16 @@ defined( 'ABSPATH' ) || exit;
  */
 class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 
+	/**
+	 * Meta box ID.
+	 */
+	public const ID = 'channel_visibility';
+
+	/**
+	 * Field name for channel visibility.
+	 */
+	public const FIELD_VISIBILITY = 'visibility';
+
 	use PluginHelper;
 
 	/**
@@ -61,7 +71,7 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	 * @return string
 	 */
 	public function get_id(): string {
-		return 'channel_visibility';
+	return self::ID;
 	}
 
 	/**
@@ -183,6 +193,6 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	 * @since 1.1.0
 	 */
 	protected function get_visibility_field_id(): string {
-		return $this->prefix_field_id( 'visibility' );
+	return $this->prefix_field_id( self::FIELD_VISIBILITY );
 	}
 }
