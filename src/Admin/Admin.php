@@ -160,7 +160,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 						)
 					)->get_uri(),
 				),
-				'channelVisibility' => $this->get_channel_visibility_data(),
+				'channelVisibility'        => $this->get_channel_visibility_data(),
 			]
 		);
 
