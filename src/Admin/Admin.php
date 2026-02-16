@@ -230,7 +230,8 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 	}
 
 	/**
-	 * Whether the current screen is the WooCommerce order edit screen (HPOS).
+	 * Whether the current screen is the WooCommerce order edit screen.
+	 * Supports both HPOS and traditional WordPress posts storage.
 	 *
 	 * @return bool
 	 */
@@ -239,14 +240,22 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 		if ( null === $screen ) {
 			return false;
 		}
-		$is_wc_orders_screen = ( 0 === strpos( $screen->id, 'woocommerce_page_wc-orders' ) );
-		// Reading action for screen context only; not processing a form submission.
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Screen context check only.
-		$is_edit_action = isset( $_GET['action'] )
-			&& 'edit' === sanitize_text_field( wp_unslash( $_GET['action'] ) );
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
-		return $is_wc_orders_screen && $is_edit_action;
+		// Check for HPOS screen (High-Performance Order Storage).
+		$is_hpos_edit_screen = ( 0 === strpos( $screen->id, 'woocommerce_page_wc-orders' ) );
+		if ( $is_hpos_edit_screen ) {
+			// Reading action for screen context only; not processing a form submission.
+			// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Screen context check only.
+			$is_edit_action = isset( $_GET['action'] )
+				&& 'edit' === sanitize_text_field( wp_unslash( $_GET['action'] ) );
+			// phpcs:enable WordPress.Security.NonceVerification.Recommended
+			return $is_edit_action;
+		}
+
+		// Check for traditional posts storage screen.
+		$is_posts_storage_screen = ( 'shop_order' === $screen->id );
+
+		return $is_posts_storage_screen;
 	}
 
 	/**
