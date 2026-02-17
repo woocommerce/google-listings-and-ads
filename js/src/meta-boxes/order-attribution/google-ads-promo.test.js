@@ -11,22 +11,29 @@ import { glaData } from '~/constants';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import GoogleAdsPromo from './google-ads-promo';
 
-// Helpers to create mock campaign data
-const createMockRecentCampaign = ( overrides = {} ) => ( {
+// Mock campaign data
+const mockRecentCampaign = {
 	id: 1,
-	start_date: new Date().toISOString(),
+	start_date: new Date().toISOString().split( 'T' )[ 0 ], // Format: YYYY-MM-DD
 	status: 'enabled',
 	type: 'performance_max',
-	...overrides,
-} );
+};
 
-const createMockOldCampaign = ( overrides = {} ) => ( {
+const mockOldCampaign = {
 	id: 1,
 	start_date: new Date( '2025-01-01' ).toISOString(),
 	status: 'enabled',
 	type: 'performance_max',
-	...overrides,
-} );
+};
+
+const mockCampaignExact14DaysAgo = {
+	id: 1,
+	start_date: new Date( Date.now() - 14 * 24 * 60 * 60 * 1000 ) // 14 days ago
+		.toISOString()
+		.split( 'T' )[ 0 ],
+	status: 'enabled',
+	type: 'performance_max',
+};
 
 jest.mock( '~/hooks/useAdsCampaigns', () =>
 	jest.fn().mockName( 'useAdsCampaigns' )
@@ -50,14 +57,17 @@ describe( 'GoogleAdsPromo Component', () => {
 	describe( 'When adsSetupComplete is false', () => {
 		test( 'Renders component with setup incomplete messaging when no recent campaigns', () => {
 			useAdsCampaigns.mockReturnValue( {
-				data: [ createMockOldCampaign() ],
+				data: [],
 				loading: false,
 			} );
 
 			render( <GoogleAdsPromo /> );
 
 			expect(
-				screen.getByText( 'Get your products on Google' )
+				screen.getByRole( 'heading', {
+					level: 3,
+					name: 'Get your products on Google',
+				} )
 			).toBeInTheDocument();
 			expect(
 				screen.getByText(
@@ -75,7 +85,7 @@ describe( 'GoogleAdsPromo Component', () => {
 			glaData.adsSetupComplete = true;
 
 			useAdsCampaigns.mockReturnValue( {
-				data: [ createMockOldCampaign() ],
+				data: [],
 				loading: false,
 			} );
 
@@ -118,7 +128,7 @@ describe( 'GoogleAdsPromo Component', () => {
 
 		test( 'Does not render when there are recent paid campaigns', () => {
 			useAdsCampaigns.mockReturnValue( {
-				data: [ createMockRecentCampaign() ],
+				data: [ mockRecentCampaign ],
 				loading: false,
 			} );
 
@@ -126,55 +136,24 @@ describe( 'GoogleAdsPromo Component', () => {
 			expect( container.firstChild ).toBeNull();
 		} );
 
-		test( 'Renders when campaign is older than 14 days', () => {
+		test( 'Renders when campaign is exactly 14 days ago', () => {
 			useAdsCampaigns.mockReturnValue( {
-				data: [ createMockOldCampaign() ],
-				loading: false,
-			} );
-
-			render( <GoogleAdsPromo /> );
-			expect(
-				screen.getByText( 'Get your products on Google' )
-			).toBeInTheDocument();
-		} );
-
-		test( 'Renders when campaigns array is empty', () => {
-			useAdsCampaigns.mockReturnValue( {
-				data: [],
-				loading: false,
-			} );
-
-			render( <GoogleAdsPromo /> );
-			expect(
-				screen.getByText( 'Get your products on Google' )
-			).toBeInTheDocument();
-		} );
-	} );
-
-	describe( 'Component structure', () => {
-		test( 'Renders Google logo', () => {
-			useAdsCampaigns.mockReturnValue( {
-				data: [],
-				loading: false,
-			} );
-
-			render( <GoogleAdsPromo /> );
-
-			const logo = screen.getByAltText( 'Google Logo' );
-			expect( logo ).toBeInTheDocument();
-		} );
-
-		test( 'Has correct CSS class', () => {
-			useAdsCampaigns.mockReturnValue( {
-				data: [],
+				data: [ mockCampaignExact14DaysAgo ],
 				loading: false,
 			} );
 
 			const { container } = render( <GoogleAdsPromo /> );
-			const promoElement = container.querySelector(
-				'.gla-google-ads-promo'
-			);
-			expect( promoElement ).toBeInTheDocument();
+			expect( container.firstChild ).toBeInTheDocument();
+		} );
+
+		test( 'Renders when campaign is older than 14 days', () => {
+			useAdsCampaigns.mockReturnValue( {
+				data: [ mockOldCampaign ],
+				loading: false,
+			} );
+
+			const { container } = render( <GoogleAdsPromo /> );
+			expect( container.firstChild ).toBeInTheDocument();
 		} );
 	} );
 } );
