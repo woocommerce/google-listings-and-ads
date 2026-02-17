@@ -22,6 +22,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\Admin\PageController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\ScriptAsset;
+use Automattic\WooCommerce\Utilities\OrderUtil;
 
 /**
  * Class Admin
@@ -115,10 +116,11 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			return PageController::is_admin_page();
 		};
 
-		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
+		$build_dir = "{$this->get_root_dir()}/js/build";
+		$assets[]  = ( new AdminScriptWithBuiltDependenciesAsset(
 			'google-listings-and-ads',
 			'js/build/index',
-			"{$this->get_root_dir()}/js/build/index.asset.php",
+			"{$build_dir}/index.asset.php",
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
@@ -176,7 +178,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
 			'gla-product-attributes',
 			'js/build/product-attributes',
-			"{$this->get_root_dir()}/js/build/product-attributes.asset.php",
+			"{$build_dir}/product-attributes.asset.php",
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
@@ -199,7 +201,47 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			$product_condition
 		) );
 
+		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
+			'gla-meta-boxes',
+			'js/build/meta-boxes',
+			"{$build_dir}/meta-boxes.asset.php",
+			new BuiltScriptDependencyArray(
+				[
+					'dependencies' => [],
+					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/meta-boxes.js" ),
+				]
+			),
+			function (): bool {
+				return $this->is_wc_order_edit_screen();
+			}
+		) )->add_inline_script(
+			'glaData',
+			[
+				'slug'             => $this->get_slug(),
+				'adsSetupComplete' => $this->ads->is_setup_complete(),
+				'initialWpData'    => [
+					'version' => $this->get_version(),
+					'mcId'    => $this->options->get_merchant_id() ?: null,
+					'adsId'   => $this->options->get_ads_id() ?: null,
+				],
+			]
+		);
+
 		return $assets;
+	}
+
+	/**
+	 * Whether the current screen is the WooCommerce order edit screen.
+	 * Supports both HPOS and traditional WordPress posts storage.
+	 *
+	 * @return bool
+	 */
+	protected function is_wc_order_edit_screen(): bool {
+		if ( null === get_current_screen() ) {
+			return false;
+		}
+
+		return OrderUtil::is_order_edit_screen( 'shop_order' );
 	}
 
 	/**
