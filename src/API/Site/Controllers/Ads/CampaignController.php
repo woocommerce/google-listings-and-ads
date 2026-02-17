@@ -417,13 +417,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => false,
 				'default'           => false,
-			],
-			'start_date'                            => [
-				'type'        => 'string',
-				'description' => __( 'The start date of the campaign in YYYY-MM-DD format.', 'google-listings-and-ads' ),
-				'context'     => [ 'view' ],
-				'readonly'    => true,
-			],
+			]
 		];
 	}
 

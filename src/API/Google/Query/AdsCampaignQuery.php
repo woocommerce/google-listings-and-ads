@@ -27,7 +27,6 @@ class AdsCampaignQuery extends AdsQuery {
 				'campaign.start_date',
 				'campaign_budget.amount_micros',
 				'campaign.contains_eu_political_advertising',
-				'campaign.start_date',
 			]
 		);
 	}
