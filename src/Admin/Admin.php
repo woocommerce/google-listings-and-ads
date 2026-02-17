@@ -22,6 +22,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\Admin\PageController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\ScriptAsset;
+use Automattic\WooCommerce\Utilities\OrderUtil;
 
 /**
  * Class Admin
@@ -269,27 +270,12 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 	 *
 	 * @return bool True if on the WC orders edit screen, false otherwise.
 	 */
-	protected function is_wc_orders_edit_screen(): bool {
-		$screen = get_current_screen();
-		if ( null === $screen ) {
+	protected function is_wc_order_edit_screen(): bool {
+		if ( null === get_current_screen() ) {
 			return false;
 		}
 
-		// Check for HPOS screen (High-Performance Order Storage).
-		$is_hpos_edit_screen = ( 0 === strpos( $screen->id, 'woocommerce_page_wc-orders' ) );
-		if ( $is_hpos_edit_screen ) {
-			// Reading action for screen context only; not processing a form submission.
-			// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Screen context check only.
-			$is_edit_action = isset( $_GET['action'] )
-				&& 'edit' === sanitize_text_field( wp_unslash( $_GET['action'] ) );
-			// phpcs:enable WordPress.Security.NonceVerification.Recommended
-			return $is_edit_action;
-		}
-
-		// Check for traditional posts storage screen.
-		$is_posts_storage_screen = ( 'shop_order' === $screen->id );
-
-		return $is_posts_storage_screen;
+		return OrderUtil::is_order_edit_screen( 'shop_order' );
 	}
 
 	/**
