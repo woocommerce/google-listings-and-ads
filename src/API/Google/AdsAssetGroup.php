@@ -353,7 +353,6 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 */
 	public function edit_asset_group( int $asset_group_id, array $data, array $assets = [] ): int {
 		try {
-
 			$is_brand_guidelines_enabled = false;
 			// Check if Brand Guidelines is enabled for this asset group's campaign.
 			$campaign_info = $this->get_campaign_info_by_asset_group_id( $asset_group_id );
@@ -361,10 +360,10 @@ class AdsAssetGroup implements OptionsAwareInterface {
 				$is_brand_guidelines_enabled = true;
 			}
 
-			$edit_result         = $this->asset_group_asset->edit_operations( $asset_group_id, $assets, $is_brand_guidelines_enabled );
-			$operations          = $edit_result['operations'];
-			$assets_for_creation = $edit_result['assets_for_creation'] ?? [];
-			$created_asset_arns  = $edit_result['created_asset_arns'] ?? [];
+			$edit_result                  = $this->asset_group_asset->edit_operations( $asset_group_id, $assets, $is_brand_guidelines_enabled );
+			$operations                   = $edit_result['operations'];
+			$assets_for_creation          = $edit_result['assets_for_creation'] ?? [];
+			$created_asset_resource_names = $edit_result['created_asset_resource_names'] ?? [];
 
 			// PMax only supports one final URL but it is required to be an array.
 			if ( ! empty( $data['final_url'] ) ) {
@@ -382,7 +381,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 					$campaign_info['id'],
 					$assets,
 					$assets_for_creation,
-					$created_asset_arns
+					$created_asset_resource_names
 				);
 				$operations       = array_merge( $brand_operations, $operations );
 			}

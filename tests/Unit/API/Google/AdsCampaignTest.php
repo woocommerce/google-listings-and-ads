@@ -137,7 +137,7 @@ class AdsCampaignTest extends UnitTest {
 				'name'                                  => 'Campaign Two',
 				'status'                                => 'enabled',
 				'type'                                  => 'performance_max',
-				'amount'                                => 20.0,
+				'amount'                                => 20,
 				'country'                               => 'UK',
 				'targeted_locations'                    => [ 'HK', 'GB' ],
 				'eu_political_advertising_confirmation' => false,

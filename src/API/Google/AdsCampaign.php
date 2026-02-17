@@ -682,16 +682,16 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 * Build campaign asset link operations for Brand Guidelines.
 	 *
 	 * Derives business name and logo asset IDs from the provided $assets array (existing assets)
-	 * and $assets_for_creation + $created_asset_arns (newly created assets). If no assets are
+	 * and $assets_for_creation + $created_asset_resource_names (newly created assets). If no assets are
 	 * provided, discovers brand assets from campaign/account/asset group.
 	 *
-	 * @param int   $campaign_id         Campaign ID.
-	 * @param array $assets              Optional. The full assets array from the edit payload.
-	 * @param array $assets_for_creation Optional. Assets that were created (same order as $created_asset_arns).
-	 * @param array $created_asset_arns  Optional. Resource names returned from asset creation.
+	 * @param int   $campaign_id                        Campaign ID.
+	 * @param array $assets                             Optional. The full assets array from the edit payload.
+	 * @param array $assets_for_creation                Optional. Assets that were created (same order as $created_asset_resource_names).
+	 * @param array $created_asset_resource_names Optional. Asset resource names from AdsAsset::create_assets() mutate (same order as $assets_for_creation).
 	 * @return MutateOperation[]
 	 */
-	public function get_brand_asset_link_operations( int $campaign_id, array $assets = [], array $assets_for_creation = [], array $created_asset_arns = [] ): array {
+	public function get_brand_asset_link_operations( int $campaign_id, array $assets = [], array $assets_for_creation = [], array $created_asset_resource_names = [] ): array {
 		try {
 			// Query existing campaign-level brand assets (for replace semantics and limit checks).
 			$campaign_assets = ( new AdsCampaignAssetQuery() )
@@ -741,15 +741,15 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 					}
 				}
 
-				// Extract IDs from newly created assets by matching assets_for_creation to created_asset_arns.
+				// Extract IDs from newly created assets by matching assets_for_creation to created_asset_resource_names.
 				$total_created = count( $assets_for_creation );
 				for ( $i = 0; $i < $total_created; $i++ ) {
-					if ( empty( $created_asset_arns[ $i ] ) ) {
+					if ( empty( $created_asset_resource_names[ $i ] ) ) {
 						continue;
 					}
 					$field_type = $assets_for_creation[ $i ]['field_type'] ?? '';
 					if ( 'business_name' === $field_type || 'logo' === $field_type ) {
-						$asset_id = $this->parse_asset_id_from_resource_name( $created_asset_arns[ $i ] );
+						$asset_id = $this->parse_asset_id_from_resource_name( $created_asset_resource_names[ $i ] );
 						if ( $asset_id !== null ) {
 							if ( 'business_name' === $field_type ) {
 								$business_name_ids[] = $asset_id;

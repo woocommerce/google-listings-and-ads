@@ -317,21 +317,21 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 * @param array $assets                      The assets to create.
 	 * @param bool  $is_brand_guidelines_enabled Whether brand guidelines is enabled for the asset group's campaign.
 	 *
-	 * @return array{operations: MutateOperation[], assets_for_creation: array, created_asset_arns: array} Asset group operations and creation data for campaign-level linking.
+	 * @return array{operations: MutateOperation[], assets_for_creation: array, created_asset_resource_names: array} Asset group operations and creation data for campaign-level linking.
 	 * @throws Exception If the asset type is not supported.
 	 */
 	public function edit_operations( int $asset_group_id, array $assets, bool $is_brand_guidelines_enabled ): array {
 		if ( empty( $assets ) ) {
 			return [
-				'operations'          => [],
-				'assets_for_creation' => [],
-				'created_asset_arns'  => [],
+				'operations'                   => [],
+				'assets_for_creation'          => [],
+				'created_asset_resource_names' => [],
 			];
 		}
 
 		$asset_group_assets_operations        = [];
 		$assets_for_creation                  = $this->get_assets_to_be_created( $assets );
-		$asset_arns                           = $this->asset->create_assets( $assets_for_creation );
+		$asset_resource_names                 = $this->asset->create_assets( $assets_for_creation );
 		$total_assets                         = count( $assets_for_creation );
 		$delete_asset_group_assets_operations = [];
 
@@ -351,7 +351,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 				continue;
 			}
 
-			$asset_group_assets_operations[] = $this->create_operation( $asset_group_id, $field_type, $asset_arns[ $i ] );
+			$asset_group_assets_operations[] = $this->create_operation( $asset_group_id, $field_type, $asset_resource_names[ $i ] );
 		}
 
 		foreach ( $this->get_assets_to_be_deleted( $assets ) as $asset ) {
@@ -368,10 +368,12 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 		// See here: https://github.com/woocommerce/google-listings-and-ads/pull/1870
 		$operations = array_merge( $delete_asset_group_assets_operations, $asset_group_assets_operations );
 
+		// Resource names (ARNs) from AdsAsset::create_assets() mutate response; same order as assets_for_creation.
+		// Used when brand guidelines is enabled to link business name/logo at campaign level.
 		return [
-			'operations'          => $operations,
-			'assets_for_creation' => $assets_for_creation,
-			'created_asset_arns'  => $asset_arns,
+			'operations'                   => $operations,
+			'assets_for_creation'          => $assets_for_creation,
+			'created_asset_resource_names' => $asset_resource_names,
 		];
 	}
 
@@ -380,15 +382,15 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 *
 	 * @param int    $asset_group_id The ID of the asset group.
 	 * @param string $asset_field_type The field type of the asset.
-	 * @param string $asset_arn The the asset ARN.
+	 * @param string $asset_resource_name The asset resource name.
 	 *
 	 * @return MutateOperation The mutate create operation for the asset group asset.
 	 */
-	protected function create_operation( int $asset_group_id, string $asset_field_type, string $asset_arn ): MutateOperation {
+	protected function create_operation( int $asset_group_id, string $asset_field_type, string $asset_resource_name ): MutateOperation {
 		$operation             = new AssetGroupAssetOperation();
 		$new_asset_group_asset = new AssetGroupAsset(
 			[
-				'asset'       => $asset_arn,
+				'asset'       => $asset_resource_name,
 				'asset_group' => ResourceNames::forAssetGroup( $this->options->get_ads_id(), $asset_group_id ),
 				'field_type'  => AssetFieldType::number( $asset_field_type ),
 			]

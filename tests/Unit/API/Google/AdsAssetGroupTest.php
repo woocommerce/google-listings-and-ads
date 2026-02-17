@@ -190,7 +190,7 @@ class AdsAssetGroupTest extends UnitTest {
 						]
 					),
 					'assets_for_creation' => [],
-					'created_asset_arns'  => [],
+					'created_asset_resource_names' => [],
 				]
 			);
 
@@ -216,7 +216,7 @@ class AdsAssetGroupTest extends UnitTest {
 				[
 					'operations'          => [],
 					'assets_for_creation' => [],
-					'created_asset_arns'  => [],
+					'created_asset_resource_names' => [],
 				]
 			);
 
@@ -278,7 +278,7 @@ class AdsAssetGroupTest extends UnitTest {
 				[
 					'operations'          => [],
 					'assets_for_creation' => [],
-					'created_asset_arns'  => [],
+					'created_asset_resource_names' => [],
 				]
 			);
 
