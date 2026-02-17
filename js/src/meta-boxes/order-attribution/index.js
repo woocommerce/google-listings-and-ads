@@ -28,7 +28,6 @@ document.addEventListener( 'DOMContentLoaded', () => {
 
 	// Create empty div to serve as mount point for React components
 	const glaElement = document.createElement( 'div' );
-
 	const root = createRoot( glaElement );
 
 	root.render(

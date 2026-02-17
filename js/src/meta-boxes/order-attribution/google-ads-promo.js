@@ -1,8 +1,8 @@
 /**
  * Internal dependencies
  */
-import './google-ads-promo.scss';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
+import './google-ads-promo.scss';
 
 /**
  * Google Ads Promo component.
