@@ -180,7 +180,7 @@ class AdsAssetGroupTest extends UnitTest {
 			->with( self::TEST_ASSET_GROUP_ID, [ $asset ], $this->isType( 'bool' ) )
 			->willReturn(
 				[
-					'operations'          => $this->generate_create_asset_group_asset_operations(
+					'operations'                   => $this->generate_create_asset_group_asset_operations(
 						[
 							[
 								'asset_id'       => $asset['id'],
@@ -189,7 +189,7 @@ class AdsAssetGroupTest extends UnitTest {
 							],
 						]
 					),
-					'assets_for_creation' => [],
+					'assets_for_creation'          => [],
 					'created_asset_resource_names' => [],
 				]
 			);
@@ -214,8 +214,8 @@ class AdsAssetGroupTest extends UnitTest {
 			->with( self::TEST_ASSET_GROUP_ID, [], $this->isType( 'bool' ) )
 			->willReturn(
 				[
-					'operations'          => [],
-					'assets_for_creation' => [],
+					'operations'                   => [],
+					'assets_for_creation'          => [],
 					'created_asset_resource_names' => [],
 				]
 			);
@@ -276,8 +276,8 @@ class AdsAssetGroupTest extends UnitTest {
 			->with( self::TEST_ASSET_GROUP_ID, [], $this->isType( 'bool' ) )
 			->willReturn(
 				[
-					'operations'          => [],
-					'assets_for_creation' => [],
+					'operations'                   => [],
+					'assets_for_creation'          => [],
 					'created_asset_resource_names' => [],
 				]
 			);
