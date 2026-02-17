@@ -7,16 +7,9 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
+import { glaData } from '~/constants';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import GoogleAdsPromo from './google-ads-promo';
-
-jest.mock( '~/constants', () => ( {
-	...jest.requireActual( '~/constants' ),
-	__esModule: true,
-	glaData: {
-		adsSetupComplete: false,
-	},
-} ) );
 
 // Helpers to create mock campaign data
 const createMockRecentCampaign = ( overrides = {} ) => ( {
@@ -50,6 +43,7 @@ jest.mock( '~/utils/tracks', () => ( {
 
 describe( 'GoogleAdsPromo Component', () => {
 	beforeEach( () => {
+		glaData.adsSetupComplete = false;
 		jest.clearAllMocks();
 	} );
 
@@ -78,6 +72,8 @@ describe( 'GoogleAdsPromo Component', () => {
 
 	describe( 'When adsSetupComplete is true', () => {
 		test( 'Renders component with setup complete messaging when no recent campaigns', () => {
+			glaData.adsSetupComplete = true;
+
 			useAdsCampaigns.mockReturnValue( {
 				data: [ createMockOldCampaign() ],
 				loading: false,
