@@ -112,6 +112,11 @@ const webpackConfig = {
 			'js/src/notification-manager',
 			'index.js'
 		),
+		'meta-boxes': path.resolve(
+			process.cwd(),
+			'js/src/meta-boxes',
+			'index.js'
+		),
 	} ),
 	output: {
 		...defaultConfig.output,
