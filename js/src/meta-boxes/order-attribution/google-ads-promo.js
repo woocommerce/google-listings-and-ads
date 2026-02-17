@@ -15,7 +15,6 @@ import { addBaseEventProperties } from '~/utils/tracks';
 import { getCreateCampaignUrl, getGetStartedUrl } from '~/utils/urls';
 import './google-ads-promo.scss';
 
-const { adsSetupComplete } = glaData;
 const GET_STARTED_URL = getGetStartedUrl();
 const CREATE_CAMPAIGN_URL = getCreateCampaignUrl();
 const BASE_EVENT_PROPS = addBaseEventProperties( {} );
@@ -42,54 +41,13 @@ const hasRecentPaidCampaigns = ( campaigns ) => {
 	} );
 };
 
-const CONTENT = adsSetupComplete
-	? {
-			title: __(
-				'Get more sales with Google Ads',
-				'google-listings-and-ads'
-			),
-			description: __(
-				'Launch a Google Ads campaign and get your products discovered by high-intent shoppers across Google',
-				'google-listings-and-ads'
-			),
-			cta: (
-				<AppButton
-					href={ CREATE_CAMPAIGN_URL }
-					eventName="gla_google_ads_promo_create_campaign_click"
-					eventProps={ BASE_EVENT_PROPS }
-					isSecondary
-				>
-					{ __( 'Create campaign', 'google-listings-and-ads' ) }
-				</AppButton>
-			),
-	  }
-	: {
-			title: __(
-				'Get your products on Google',
-				'google-listings-and-ads'
-			),
-			description: __(
-				'Sync your products to reach customers when they’re searching for products like yours across Google',
-				'google-listings-and-ads'
-			),
-			cta: (
-				<AppButton
-					href={ GET_STARTED_URL }
-					eventName="gla_google_ads_promo_get_started_click"
-					eventProps={ BASE_EVENT_PROPS }
-					isSecondary
-				>
-					{ __( 'Get started', 'google-listings-and-ads' ) }
-				</AppButton>
-			),
-	  };
-
 /**
  * Google Ads Promo component.
  *
  * @return {JSX.Element|null} The Google Ads Promo component or null.
  */
 const GoogleAdsPromo = () => {
+	const { adsSetupComplete } = glaData;
 	const { data: campaigns, loading } = useAdsCampaigns();
 
 	if (
@@ -100,7 +58,49 @@ const GoogleAdsPromo = () => {
 		return null;
 	}
 
-	const { title, description, cta } = CONTENT;
+	const content = adsSetupComplete
+		? {
+				title: __(
+					'Get more sales with Google Ads',
+					'google-listings-and-ads'
+				),
+				description: __(
+					'Launch a Google Ads campaign and get your products discovered by high-intent shoppers across Google',
+					'google-listings-and-ads'
+				),
+				cta: (
+					<AppButton
+						href={ CREATE_CAMPAIGN_URL }
+						eventName="gla_google_ads_promo_create_campaign_click"
+						eventProps={ BASE_EVENT_PROPS }
+						isSecondary
+					>
+						{ __( 'Create campaign', 'google-listings-and-ads' ) }
+					</AppButton>
+				),
+		  }
+		: {
+				title: __(
+					'Get your products on Google',
+					'google-listings-and-ads'
+				),
+				description: __(
+					'Sync your products to reach customers when they’re searching for products like yours across Google',
+					'google-listings-and-ads'
+				),
+				cta: (
+					<AppButton
+						href={ GET_STARTED_URL }
+						eventName="gla_google_ads_promo_get_started_click"
+						eventProps={ BASE_EVENT_PROPS }
+						isSecondary
+					>
+						{ __( 'Get started', 'google-listings-and-ads' ) }
+					</AppButton>
+				),
+		  };
+
+	const { title, description, cta } = content;
 
 	return (
 		<Flex className="gla-google-ads-promo" direction="column" gap={ 3 }>
@@ -118,9 +118,7 @@ const GoogleAdsPromo = () => {
 							height={ 24 }
 						/>
 					</FlexItem>
-					<FlexBlock>
-						<strong>{ title }</strong>
-					</FlexBlock>
+					<FlexBlock>{ title }</FlexBlock>
 				</Flex>
 			</FlexBlock>
 			<FlexBlock>
