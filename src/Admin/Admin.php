@@ -241,6 +241,8 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			return null;
 		}
 
+		// We use `id` when the setting for Order data storage (WooCommerce -> Settings -> Advanced -> Order data storage) is set to "High-performance order storage (recommended)".
+		// We use `post` when the setting for Order data storage is set to "WordPress posts storage (legacy)".
 		$order_id = 0;
 		if ( isset( $_GET['id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$order_id = absint( $_GET['id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
