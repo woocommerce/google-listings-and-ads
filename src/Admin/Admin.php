@@ -217,14 +217,14 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 		) )->add_inline_script(
 			'glaData',
 			[
-				'slug'                     => $this->get_slug(),
-				'adsSetupComplete'         => $this->ads->is_setup_complete(),
-				'initialWpData'            => [
+				'slug'                   => $this->get_slug(),
+				'adsSetupComplete'       => $this->ads->is_setup_complete(),
+				'initialWpData'          => [
 					'version' => $this->get_version(),
 					'mcId'    => $this->options->get_merchant_id() ?: null,
 					'adsId'   => $this->options->get_ads_id() ?: null,
 				],
-				'orderAttributionSource'   => $this->get_order_attribution_source_for_edit_screen(),
+				'orderAttributionSource' => $this->get_order_attribution_source_for_edit_screen(),
 			]
 		);
 
