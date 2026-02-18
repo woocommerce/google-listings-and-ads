@@ -162,7 +162,6 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 						)
 					)->get_uri(),
 				),
-				'channelVisibility'        => $this->get_channel_visibility_data(),
 			]
 		);
 
@@ -216,18 +215,19 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 				]
 			),
 			function (): bool {
-				return $this->is_wc_order_edit_screen();
+				return $this->is_wc_order_edit_screen() || $this->is_wc_product_edit_screen();
 			}
 		) )->add_inline_script(
 			'glaData',
 			[
-				'slug'             => $this->get_slug(),
-				'adsSetupComplete' => $this->ads->is_setup_complete(),
-				'initialWpData'    => [
+				'slug'              => $this->get_slug(),
+				'adsSetupComplete'  => $this->ads->is_setup_complete(),
+				'initialWpData'     => [
 					'version' => $this->get_version(),
 					'mcId'    => $this->options->get_merchant_id() ?: null,
 					'adsId'   => $this->options->get_ads_id() ?: null,
 				],
+				'channelVisibility' => $this->get_channel_visibility_data(),
 			]
 		);
 
@@ -449,8 +449,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 	 * @return array
 	 */
 	protected function get_channel_visibility_data(): array {
-		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-		if ( null === $screen || 'product' !== $screen->id ) {
+		if ( ! $this->is_wc_product_edit_screen() ) {
 			return [];
 		}
 
@@ -481,5 +480,15 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 		} catch ( \Throwable $e ) {
 			return [];
 		}
+	}
+
+	/**
+	 * Check if the current screen is a WooCommerce product edit screen.
+	 *
+	 * @return bool
+	 */
+	private function is_wc_product_edit_screen(): bool {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		return null !== $screen && 'product' === $screen->id;
 	}
 }
