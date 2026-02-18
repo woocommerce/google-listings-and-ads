@@ -170,7 +170,11 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 
 		$product_condition = function () {
 			$screen = get_current_screen();
-			return ( null !== $screen && 'product' === $screen->id );
+			if ( null === $screen ) {
+				return false;
+			}
+			// Product list: screen id is 'product'. Classic product edit: screen id is 'post', post_type is 'product'.
+			return ( 'product' === $screen->id || ( 'post' === $screen->id && 'product' === $screen->post_type ) );
 		};
 
 		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
@@ -188,6 +192,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			'glaProductData',
 			[
 				'applicableProductTypes' => ProductSyncer::get_supported_product_types(),
+				'glaTabTarget'           => 'gla_attributes',
 			]
 		);
 

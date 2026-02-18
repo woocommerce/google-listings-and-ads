@@ -7,8 +7,11 @@ import $ from 'jquery';
  * Internal dependencies
  */
 import { glaProductData } from '~/constants';
+import { init as initBackorderAvailabilityDateNotice } from './backorder-availability-date-notice';
 import './custom-inputs';
 import './index.scss';
+
+initBackorderAvailabilityDateNotice();
 
 // Originally, this extension relied on a WooCommerce core processing to show or hide
 // the product data tab and meta box added to the product editing page.
