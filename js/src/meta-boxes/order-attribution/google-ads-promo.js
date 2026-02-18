@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
+import { useEffect, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -11,6 +12,7 @@ import AppButton from '~/components/app-button';
 import { glaData } from '~/constants';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import googleLogoURL from '~/images/logo/gogole-g-logo.svg';
+import { recordGlaEvent } from '~/utils/tracks';
 import { getCreateCampaignUrl, getGetStartedUrl } from '~/utils/urls';
 import './google-ads-promo.scss';
 
@@ -25,7 +27,7 @@ const hasRecentPaidCampaigns = ( campaigns ) => {
 	const fourteenDaysAgo = new Date();
 	fourteenDaysAgo.setDate( fourteenDaysAgo.getDate() - 14 );
 
-	return campaigns.some( ( campaign ) => {
+	return campaigns?.some( ( campaign ) => {
 		const campaignDate = new Date( campaign.start_date );
 
 		return (
@@ -37,6 +39,15 @@ const hasRecentPaidCampaigns = ( campaigns ) => {
 };
 
 /**
+ * Event properties for Google Ads Promo.
+ *
+ * @type {Object}
+ */
+const GOOGLE_ADS_PROMO_EVENT_PROPS = {
+	context: 'order-attribution-meta-box',
+};
+
+/**
  * Google Ads Promo component.
  *
  * @return {JSX.Element|null} The Google Ads Promo component or null.
@@ -44,6 +55,18 @@ const hasRecentPaidCampaigns = ( campaigns ) => {
 const GoogleAdsPromo = () => {
 	const { adsSetupComplete } = glaData;
 	const { data: campaigns, loading } = useAdsCampaigns();
+	const [ isVisible, setIsVisible ] = useState( false );
+
+	// Set visibility and fire event once when component mounts
+	useEffect( () => {
+		if ( ! isVisible ) {
+			setIsVisible( true );
+			recordGlaEvent(
+				'gla_google_ads_promo_shown',
+				GOOGLE_ADS_PROMO_EVENT_PROPS
+			);
+		}
+	}, [ isVisible ] );
 
 	if (
 		loading ||
@@ -67,6 +90,7 @@ const GoogleAdsPromo = () => {
 					<AppButton
 						href={ getCreateCampaignUrl() }
 						eventName="gla_google_ads_promo_create_campaign_click"
+						eventProps={ GOOGLE_ADS_PROMO_EVENT_PROPS }
 						isSecondary
 					>
 						{ __( 'Create campaign', 'google-listings-and-ads' ) }
@@ -86,6 +110,7 @@ const GoogleAdsPromo = () => {
 					<AppButton
 						href={ getGetStartedUrl() }
 						eventName="gla_google_ads_promo_get_started_click"
+						eventProps={ GOOGLE_ADS_PROMO_EVENT_PROPS }
 						isSecondary
 					>
 						{ __( 'Get started', 'google-listings-and-ads' ) }
