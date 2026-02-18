@@ -83,8 +83,8 @@ class BackorderAvailabilityDateNoticeTest extends UnitTest {
 	}
 
 	public function test_should_show_notice_returns_true_when_on_backorder_and_availability_date_empty(): void {
-		$product  = $this->create_product_mock( 'simple', true );
-		$attr     = new AvailabilityDate( '' );
+		$product = $this->create_product_mock( 'simple', true );
+		$attr    = new AvailabilityDate( '' );
 		$this->attribute_manager->method( 'get' )
 			->with( $product, AvailabilityDate::get_id() )
 			->willReturn( $attr );
@@ -93,8 +93,8 @@ class BackorderAvailabilityDateNoticeTest extends UnitTest {
 	}
 
 	public function test_should_show_notice_returns_false_when_on_backorder_but_availability_date_set(): void {
-		$product  = $this->create_product_mock( 'simple', true );
-		$attr     = new AvailabilityDate( '2025-03-01' );
+		$product = $this->create_product_mock( 'simple', true );
+		$attr    = new AvailabilityDate( '2025-03-01' );
 		$this->attribute_manager->method( 'get' )
 			->with( $product, AvailabilityDate::get_id() )
 			->willReturn( $attr );
