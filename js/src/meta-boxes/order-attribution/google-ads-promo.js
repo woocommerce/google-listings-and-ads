@@ -116,7 +116,7 @@ const GoogleAdsPromo = () => {
 				),
 				cta: (
 					<AppButton
-						href={ campaignUrl }
+						href={ getStartedUrl }
 						eventName="gla_google_ads_promo_get_started_click"
 						eventProps={ {
 							...GOOGLE_ADS_PROMO_EVENT_PROPS,
