@@ -13,3 +13,11 @@
 .gla-google-ads-promo__logo {
 	display: block;
 }
+
+.gla-google-ads-promo__title {
+	font-size: $gla-font-base;
+	font-weight: 600;
+	line-height: $gla-line-height-medium;
+	letter-spacing: 0;
+	margin: 0;
+}

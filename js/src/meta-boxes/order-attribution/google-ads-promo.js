@@ -11,11 +11,8 @@ import AppButton from '~/components/app-button';
 import { glaData } from '~/constants';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import googleLogoURL from '~/images/logo/gogole-g-logo.svg';
-import { addBaseEventProperties } from '~/utils/tracks';
 import { getCreateCampaignUrl, getGetStartedUrl } from '~/utils/urls';
 import './google-ads-promo.scss';
-
-const BASE_EVENT_PROPS = addBaseEventProperties( {} );
 
 /**
  * Check if there are any recent paid campaigns.
@@ -70,7 +67,6 @@ const GoogleAdsPromo = () => {
 					<AppButton
 						href={ getCreateCampaignUrl() }
 						eventName="gla_google_ads_promo_create_campaign_click"
-						eventProps={ BASE_EVENT_PROPS }
 						isSecondary
 					>
 						{ __( 'Create campaign', 'google-listings-and-ads' ) }
@@ -90,7 +86,6 @@ const GoogleAdsPromo = () => {
 					<AppButton
 						href={ getGetStartedUrl() }
 						eventName="gla_google_ads_promo_get_started_click"
-						eventProps={ BASE_EVENT_PROPS }
 						isSecondary
 					>
 						{ __( 'Get started', 'google-listings-and-ads' ) }
