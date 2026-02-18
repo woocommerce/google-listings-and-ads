@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
-import { useEffect, useState } from '@wordpress/element';
+import { useEffect, useRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -27,7 +27,7 @@ const hasRecentPaidCampaigns = ( campaigns ) => {
 	const fourteenDaysAgo = new Date();
 	fourteenDaysAgo.setDate( fourteenDaysAgo.getDate() - 14 );
 
-	return campaigns?.some( ( campaign ) => {
+	return campaigns.some( ( campaign ) => {
 		const campaignDate = new Date( campaign.start_date );
 
 		return (
@@ -55,24 +55,26 @@ const GOOGLE_ADS_PROMO_EVENT_PROPS = {
 const GoogleAdsPromo = () => {
 	const { adsSetupComplete } = glaData;
 	const { data: campaigns, loading } = useAdsCampaigns();
-	const [ isVisible, setIsVisible ] = useState( false );
+	const hasTrackedRef = useRef( false );
 
-	// Set visibility and fire event once when component mounts
+	// Checks if the component is ready to render
+	const isReadyToRender =
+		! loading &&
+		Array.isArray( campaigns ) &&
+		! hasRecentPaidCampaigns( campaigns );
+
 	useEffect( () => {
-		if ( ! isVisible ) {
-			setIsVisible( true );
+		// Only fire if all conditions for rendering are met and not already tracked
+		if ( ! hasTrackedRef.current && isReadyToRender ) {
 			recordGlaEvent(
 				'gla_google_ads_promo_shown',
 				GOOGLE_ADS_PROMO_EVENT_PROPS
 			);
+			hasTrackedRef.current = true;
 		}
-	}, [ isVisible ] );
+	}, [ isReadyToRender ] );
 
-	if (
-		loading ||
-		! Array.isArray( campaigns ) ||
-		hasRecentPaidCampaigns( campaigns )
-	) {
+	if ( ! isReadyToRender ) {
 		return null;
 	}
 
