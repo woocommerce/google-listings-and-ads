@@ -12,16 +12,9 @@ import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import GoogleAdsPromo from './google-ads-promo';
 
 // Mock campaign data
-const mockRecentCampaign = {
-	id: 1,
-	start_date: new Date().toISOString().split( 'T' )[ 0 ], // Format: YYYY-MM-DD
-	status: 'enabled',
-	type: 'performance_max',
-};
-
 const mockOldCampaign = {
 	id: 1,
-	start_date: new Date( '2025-01-01' ).toISOString(),
+	start_date: new Date( '2025-01-01' ).toISOString().split( 'T' )[ 0 ],
 	status: 'enabled',
 	type: 'performance_max',
 };
@@ -39,16 +32,16 @@ jest.mock( '~/hooks/useAdsCampaigns', () =>
 	jest.fn().mockName( 'useAdsCampaigns' )
 );
 
-jest.mock( '~/utils/urls', () => ( {
-	getGetStartedUrl: jest.fn( () => '/get-started' ),
-	getCreateCampaignUrl: jest.fn( () => '/create-campaign' ),
-} ) );
-
-jest.mock( '~/utils/tracks', () => ( {
-	addBaseEventProperties: jest.fn( ( props ) => props ),
-} ) );
-
 describe( 'GoogleAdsPromo Component', () => {
+	beforeAll( () => {
+		jest.useFakeTimers();
+		jest.setSystemTime( new Date( '2025-02-18' ) );
+	} );
+
+	afterAll( () => {
+		jest.useRealTimers();
+	} );
+
 	beforeEach( () => {
 		glaData.adsSetupComplete = false;
 		jest.clearAllMocks();
@@ -128,7 +121,14 @@ describe( 'GoogleAdsPromo Component', () => {
 
 		test( 'Does not render when there are recent paid campaigns', () => {
 			useAdsCampaigns.mockReturnValue( {
-				data: [ mockRecentCampaign ],
+				data: [
+					{
+						id: 1,
+						start_date: new Date().toISOString().split( 'T' )[ 0 ], // Format: YYYY-MM-DD
+						status: 'enabled',
+						type: 'performance_max',
+					},
+				],
 				loading: false,
 			} );
 
@@ -136,9 +136,26 @@ describe( 'GoogleAdsPromo Component', () => {
 			expect( container.firstChild ).toBeNull();
 		} );
 
-		test( 'Renders when campaign is exactly 14 days ago', () => {
+		test( 'Does not render when campaign is exactly 14 days ago', () => {
 			useAdsCampaigns.mockReturnValue( {
 				data: [ mockCampaignExact14DaysAgo ],
+				loading: false,
+			} );
+
+			const { container } = render( <GoogleAdsPromo /> );
+			expect( container.firstChild ).toBeNull();
+		} );
+
+		test( 'Renders when there are campaigns but no active performance_max ones', () => {
+			useAdsCampaigns.mockReturnValue( {
+				data: [
+					{
+						id: 1,
+						start_date: new Date().toISOString().split( 'T' )[ 0 ],
+						status: 'paused',
+						type: 'performance_max',
+					},
+				],
 				loading: false,
 			} );
 
