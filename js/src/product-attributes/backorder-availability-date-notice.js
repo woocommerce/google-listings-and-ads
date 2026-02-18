@@ -4,6 +4,9 @@
  * Uses glaProductData.glaTabTarget for the "Google for WooCommerce" tab link.
  */
 
+/**
+ * Internal dependencies
+ */
 import { glaProductData } from '~/constants';
 
 const GLA_DATE_INPUT_ID = 'gla_attributes_availabilityDate_date';
@@ -13,35 +16,40 @@ function getBackorderValue() {
 	const backordersSelect = document.querySelector(
 		'#inventory_product_data select[name="_backorders"]'
 	);
+	if ( backordersSelect ) {
+		return backordersSelect.value;
+	}
 	const checked = document.querySelector(
 		'#inventory_product_data input[name="_backorders"]:checked'
 	);
-	return backordersSelect
-		? backordersSelect.value
-		: checked
-			? checked.value
-			: '';
+	if ( checked ) {
+		return checked.value;
+	}
+	return '';
 }
 
 function getStockStatusValue() {
 	const stockSelect = document.querySelector(
 		'#inventory_product_data select[name="_stock_status"]'
 	);
+	if ( stockSelect ) {
+		return stockSelect.value;
+	}
 	const checked = document.querySelector(
 		'#inventory_product_data input[name="_stock_status"]:checked'
 	);
-	return stockSelect
-		? stockSelect.value
-		: checked
-			? checked.value
-			: '';
+	if ( checked ) {
+		return checked.value;
+	}
+	return '';
 }
 
 function isBackorderSelected() {
 	const backorders = getBackorderValue();
 	const stockStatus = getStockStatusValue();
 	return (
-		( backorders === 'yes' || backorders === 'notify' ) ||
+		backorders === 'yes' ||
+		backorders === 'notify' ||
 		stockStatus === 'onbackorder'
 	);
 }
