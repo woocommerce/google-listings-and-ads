@@ -76,6 +76,9 @@ const GoogleAdsPromo = () => {
 		return null;
 	}
 
+	const campaignUrl = getCreateCampaignUrl();
+	const getStartedUrl = getGetStartedUrl();
+
 	const content = adsSetupComplete
 		? {
 				title: __(
@@ -88,9 +91,12 @@ const GoogleAdsPromo = () => {
 				),
 				cta: (
 					<AppButton
-						href={ getCreateCampaignUrl() }
+						href={ campaignUrl }
 						eventName="gla_google_ads_promo_create_campaign_click"
-						eventProps={ GOOGLE_ADS_PROMO_EVENT_PROPS }
+						eventProps={ {
+							...GOOGLE_ADS_PROMO_EVENT_PROPS,
+							href: campaignUrl,
+						} }
 						isSecondary
 					>
 						{ __( 'Create campaign', 'google-listings-and-ads' ) }
@@ -108,9 +114,12 @@ const GoogleAdsPromo = () => {
 				),
 				cta: (
 					<AppButton
-						href={ getGetStartedUrl() }
+						href={ campaignUrl }
 						eventName="gla_google_ads_promo_get_started_click"
-						eventProps={ GOOGLE_ADS_PROMO_EVENT_PROPS }
+						eventProps={ {
+							...GOOGLE_ADS_PROMO_EVENT_PROPS,
+							href: getStartedUrl,
+						} }
 						isSecondary
 					>
 						{ __( 'Get started', 'google-listings-and-ads' ) }
