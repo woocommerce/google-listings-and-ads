@@ -25,6 +25,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Assets\ScriptAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\ChannelVisibilityMetaBox;
+use Automattic\WooCommerce\Utilities\OrderUtil;
 
 /**
  * Class Admin
@@ -118,10 +119,11 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			return PageController::is_admin_page();
 		};
 
-		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
+		$build_dir = "{$this->get_root_dir()}/js/build";
+		$assets[]  = ( new AdminScriptWithBuiltDependenciesAsset(
 			'google-listings-and-ads',
 			'js/build/index',
-			"{$this->get_root_dir()}/js/build/index.asset.php",
+			"{$build_dir}/index.asset.php",
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
@@ -180,7 +182,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
 			'gla-product-attributes',
 			'js/build/product-attributes',
-			"{$this->get_root_dir()}/js/build/product-attributes.asset.php",
+			"{$build_dir}/product-attributes.asset.php",
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
@@ -203,7 +205,83 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			$product_condition
 		) );
 
+		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
+			'gla-meta-boxes',
+			'js/build/meta-boxes',
+			"{$build_dir}/meta-boxes.asset.php",
+			new BuiltScriptDependencyArray(
+				[
+					'dependencies' => [],
+					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/meta-boxes.js" ),
+				]
+			),
+			function (): bool {
+				return $this->is_wc_order_edit_screen();
+			}
+		) )->add_inline_script(
+			'glaData',
+			[
+				'slug'             => $this->get_slug(),
+				'adsSetupComplete' => $this->ads->is_setup_complete(),
+				'initialWpData'    => [
+					'version' => $this->get_version(),
+					'mcId'    => $this->options->get_merchant_id() ?: null,
+					'adsId'   => $this->options->get_ads_id() ?: null,
+				],
+			]
+		);
+
 		return $assets;
+	}
+
+	/**
+	 * Get the order attribution source (utm_source) for the order currently being edited.
+	 * Used only when the meta-boxes asset is loaded on the WooCommerce Edit Order screen.
+	 *
+	 * @return string|null The value persisted in the database (e.g. "google"), or null when not on order edit screen or no attribution.
+	 */
+	private function get_order_attribution_source_for_edit_screen(): ?string {
+		if ( ! $this->is_wc_orders_edit_screen() ) {
+			return null;
+		}
+
+		// We use `id` when the setting for Order data storage (WooCommerce -> Settings -> Advanced -> Order data storage) is set to "High-performance order storage (recommended)".
+		// We use `post` when the setting for Order data storage is set to "WordPress posts storage (legacy)".
+		$order_id = 0;
+		if ( isset( $_GET['id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$order_id = absint( $_GET['id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		} elseif ( isset( $_GET['post'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$order_id = absint( $_GET['post'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		}
+
+		if ( 0 === $order_id ) {
+			return null;
+		}
+
+		$order = wc_get_order( $order_id );
+		if ( ! $order ) {
+			return null;
+		}
+
+		$source = $order->get_meta( '_wc_order_attribution_utm_source', true );
+		if ( $source === '' || $source === null ) {
+			return null;
+		}
+
+		return (string) $source;
+	}
+
+	/**
+	 * Check if the current screen is the WooCommerce orders edit screen.
+	 *
+	 * @return bool True if on the WC orders edit screen, false otherwise.
+	 */
+	protected function is_wc_order_edit_screen(): bool {
+		if ( null === get_current_screen() ) {
+			return false;
+		}
+
+		return OrderUtil::is_order_edit_screen( 'shop_order' );
 	}
 
 	/**
