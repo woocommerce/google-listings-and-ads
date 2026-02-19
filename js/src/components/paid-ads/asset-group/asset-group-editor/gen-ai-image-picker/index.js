@@ -1,23 +1,23 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
 import {
-	Flex,
-	FlexItem,
 	CheckboxControl,
+	Flex,
 	FlexBlock,
+	FlexItem,
 } from '@wordpress/components';
+import { useState } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
-import useGenAIMediaAssets from '~/hooks/useGenAIMediaAssets';
-import getProxiedImageUrl from '~/utils/getProxiedImageUrl';
 import AppButton from '~/components/app-button';
+import useGenAIMediaAssets from '~/hooks/useGenAIMediaAssets';
 import AIIcon from '~/images/ai-icon.svg?inline';
+import getProxiedImageUrl from '~/utils/getProxiedImageUrl';
 import './index.scss';
 
 /**
@@ -82,7 +82,7 @@ export default function GenAIImagePicker( { assetKey, onAddSelectedImages } ) {
 						}
 
 						// Proxy the URL only for rendering to bypass adblockers
-						const displayUrl = getProxiedImageUrl( src );
+						const displayImageUrl = getProxiedImageUrl( src );
 
 						return (
 							<FlexItem
@@ -101,7 +101,7 @@ export default function GenAIImagePicker( { assetKey, onAddSelectedImages } ) {
 								>
 									<img
 										className="gla-media-selector__medium"
-										src={ displayUrl }
+										src={ displayImageUrl }
 										alt=""
 									/>
 								</AppButton>
