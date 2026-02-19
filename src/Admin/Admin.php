@@ -202,13 +202,13 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 		) );
 
 		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
-			'gla-meta-boxes',
-			'js/build/meta-boxes',
-			"{$build_dir}/meta-boxes.asset.php",
+			'gla-order-attribution',
+			'js/build/order-attribution',
+			"{$build_dir}/order-attribution.asset.php",
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
-					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/meta-boxes.js" ),
+					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/order-attribution.js" ),
 				]
 			),
 			function (): bool {

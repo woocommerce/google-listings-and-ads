@@ -1,19 +1,19 @@
 /**
  * External dependencies
  */
-import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
-import { useEffect, useRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
+import { useEffect, useRef } from '@wordpress/element';
+import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import AppButton from '~/components/app-button';
 import { glaData } from '~/constants';
+import { getCreateCampaignUrl, getGetStartedUrl } from '~/utils/urls';
+import { recordGlaEvent } from '~/utils/tracks';
+import AppButton from '~/components/app-button';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import googleLogoURL from '~/images/logo/gogole-g-logo.svg';
-import { recordGlaEvent } from '~/utils/tracks';
-import { getCreateCampaignUrl, getGetStartedUrl } from '~/utils/urls';
 import './google-ads-promo.scss';
 
 /**
@@ -44,6 +44,7 @@ const hasRecentPaidCampaigns = ( campaigns ) => {
  * @return {JSX.Element|null} The Google Ads Promo component or null.
  */
 const GoogleAdsPromo = () => {
+	const context = 'order-attribution-meta-box';
 	const { adsSetupComplete } = glaData;
 	const { data: campaigns, loading } = useAdsCampaigns();
 	const hasTrackedRef = useRef( false );
@@ -58,7 +59,7 @@ const GoogleAdsPromo = () => {
 		// Only fire if all conditions for rendering are met and not already tracked
 		if ( ! hasTrackedRef.current && isReadyToRender ) {
 			recordGlaEvent( 'gla_google_ads_promo_shown', {
-				context: 'order-attribution-meta-box',
+				context,
 			} );
 			hasTrackedRef.current = true;
 		}
@@ -86,8 +87,8 @@ const GoogleAdsPromo = () => {
 						href={ campaignUrl }
 						eventName="gla_google_ads_promo_create_campaign_click"
 						eventProps={ {
-							context: 'order-attribution-meta-box',
 							href: campaignUrl,
+							context,
 						} }
 						isSecondary
 					>
@@ -109,8 +110,8 @@ const GoogleAdsPromo = () => {
 						href={ getStartedUrl }
 						eventName="gla_google_ads_promo_get_started_click"
 						eventProps={ {
-							context: 'order-attribution-meta-box',
 							href: getStartedUrl,
+							context,
 						} }
 						isSecondary
 					>
