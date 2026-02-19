@@ -443,7 +443,7 @@ When a documentation link is clicked.
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
 - [`ShippingTimeSection`](../../js/src/components/free-listings/configure-product-listings/shipping-time-section.js#L17) with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
-- [`SurveyModal`](../../js/src/pages/onboarding/setup-stepper/skip-paid-ads-confirmation-modal/survey-modal.js#L47) with `{ context: 'skip-paid-ads-survey-modal', link_id: 'paid-ads-with-performance-max-campaigns-learn-more', href: 'https://support.google.com/google-ads/answer/10724817' }`
+- [`SurveyModal`](../../js/src/pages/onboarding/setup-stepper/skip-paid-ads-confirmation-modal/survey-modal.js#L50) with `{ context: 'skip-paid-ads-survey-modal', link_id: 'paid-ads-with-performance-max-campaigns-learn-more', href: 'https://support.google.com/google-ads/answer/10724817' }`
 - [`TermsModal`](../../js/src/components/google-ads-account-card/terms-modal/index.js#L36)
 	- with `{ context: 'setup-ads', link_id: 'shopping-ads-policies', href: 'https://support.google.com/merchants/answer/6149970' }`
 	- with `{ context: 'setup-ads', link_id: 'google-ads-terms-of-service', href: 'https://support.google.com/adspolicy/answer/54818' }`
@@ -567,6 +567,35 @@ Clicking on the button to connect Google account.
 Clicking on the "connect to a different Google account" button.
 #### Emitters
 - [`SwitchAccountButton`](../../js/src/components/google-account-card/switch-account-button.js#L25)
+
+### [`gla_google_ads_promo_create_campaign_click`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L56)
+Google Ads Promo "Create campaign" button is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Context of the Google Ads Promo.
+`href` | `string` | URL of the "Create campaign" button.
+#### Emitters
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L73) with `{ context: 'order-attribution-meta-box', href: '/create-campaign' }`.
+
+### [`gla_google_ads_promo_get_started_click`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L48)
+Google Ads Promo "Get started" button is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Context of the Google Ads Promo.
+`href` | `string` | URL of the "Get started" button.
+#### Emitters
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L73) with `{ context: 'order-attribution-meta-box', href: '/get-started' }`.
+
+### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L41)
+Google Ads Promo component is shown.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Context of the Google Ads Promo.
+#### Emitters
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L73) with `{ context: 'order-attribution-meta-box' }`.
 
 ### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L194)
 Clicking on a Google Merchant Center link.
@@ -834,7 +863,7 @@ When the "Improve Assets" button is clicked.
 #### Emitters
 - [`PriceBenchmarkSuggestions`](../../js/src/pages/price-benchmark/price-benchmark-suggestions/index.js#L199) with `{ context: 'price-benchmark-suggestions' }` and the suggestions count.
 
-### [`gla_raise_budget_recommendation_badge_campaigns`](../../js/src/pages/dashboard/all-programs-table-card/index.js#L72)
+### [`gla_raise_budget_recommendation_badge_campaigns`](../../js/src/pages/dashboard/all-programs-table-card/index.js#L57)
 When there are campaigns with budget recommendations in the table.
 #### Properties
 | name | type | description |
@@ -842,18 +871,18 @@ When there are campaigns with budget recommendations in the table.
 `context` | `string` | The context in which the banner was dismissed. Set to 'programs-table-card'.
 `campaign_ids` | `Array<number>` | The IDs of the campaigns with budget recommendations.
 #### Emitters
-- [`AllProgramsTableCard`](../../js/src/pages/dashboard/all-programs-table-card/index.js#L88) when there are campaigns with budget recommendations in the table.
+- [`AllProgramsTableCard`](../../js/src/pages/dashboard/all-programs-table-card/index.js#L73) when there are campaigns with budget recommendations in the table.
 
-### [`gla_raise_budget_recommendation_banner_shown`](../../js/src/components/raise-budget-recommendation-banner/banner.js#L25)
+### [`gla_raise_budget_recommendation_banner_shown`](../../js/src/components/raise-budget-recommendation-banner/banner.js#L24)
 When the banner is shown.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | The context in which the banner is shown. Set to 'raise_budget_recommendation_banner'.
 #### Emitters
-- [`Banner`](../../js/src/components/raise-budget-recommendation-banner/banner.js#L66) when the banner is displayed.
+- [`Banner`](../../js/src/components/raise-budget-recommendation-banner/banner.js#L65) when the banner is displayed.
 
-### [`gla_raise_budget_recommendation_banner_view_recommendation_clicked`](../../js/src/components/raise-budget-recommendation-banner/banner.js#L32)
+### [`gla_raise_budget_recommendation_banner_view_recommendation_clicked`](../../js/src/components/raise-budget-recommendation-banner/banner.js#L31)
 When the "View recommendation" button is clicked.
 #### Properties
 | name | type | description |
@@ -861,9 +890,9 @@ When the "View recommendation" button is clicked.
 `context` | `string` | The context in which the banner is shown. Set to 'raise_budget_recommendation_banner'.
 `campaign_id` | `number` | The ID of the campaign for which the recommendation is being viewed.
 #### Emitters
-- [`Banner`](../../js/src/components/raise-budget-recommendation-banner/banner.js#L66) when the "View recommendation" button is clicked.
+- [`Banner`](../../js/src/components/raise-budget-recommendation-banner/banner.js#L65) when the "View recommendation" button is clicked.
 
-### [`gla_raise_budget_recommendation_dismiss_clicked`](../../js/src/components/raise-budget-recommendation-banner/banner.js#L40)
+### [`gla_raise_budget_recommendation_dismiss_clicked`](../../js/src/components/raise-budget-recommendation-banner/banner.js#L39)
 When the banner is dismissed by clicking the "Dismiss" button or the close icon.
 #### Properties
 | name | type | description |
@@ -871,7 +900,7 @@ When the banner is dismissed by clicking the "Dismiss" button or the close icon.
 `context` | `string` | The context in which the banner was dismissed. Set to 'raise_budget_recommendation_banner'.
 `campaign_id` | `number` | The ID of the campaign for which the banner was dismissed.
 #### Emitters
-- [`Banner`](../../js/src/components/raise-budget-recommendation-banner/banner.js#L66) when the banner is dismissed.
+- [`Banner`](../../js/src/components/raise-budget-recommendation-banner/banner.js#L65) when the banner is dismissed.
 
 ### [`gla_raise_budget_recommendation_option_selected`](../../js/src/components/paid-ads/budget-setup/budget-setup.js#L62)
 
@@ -958,6 +987,8 @@ Send survey responses when the user skips the paid ads setup.
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Name of the context where the survey was triggered (e.g. 'skip-paid-ads-survey-modal').
+`your_role` | `string` | The role of the user (e.g. 'owner', 'developer', 'agency', 'marketing_lead', 'other').
+`your_role_text` | `string` | Text input for the user's role if 'other' is selected.
 `i_already_have_ads_on_google` | `boolean` | Indicates if the user already has ads on Google.
 `i_dont_have_the_budget_to_create_ads_now` | `boolean` | Indicates if the user doesn't have the budget to create ads now.
 `ive_tried_google_ads_before_without_success` | `boolean` | Indicates if the user has tried Google ads before without success.
@@ -965,12 +996,13 @@ Send survey responses when the user skips the paid ads setup.
 `i_dont_want_ads_on_google_text` | `string` | Text input for the reason why the user doesn't want ads on Google.
 `ill_create_ads_later` | `boolean` | Indicates if the user will create ads later.
 `ill_create_ads_later_text` | `string` | Text input for the reason why the user will create ads later.
+`i_dont_have_time` | `boolean` | Indicates if the user doesn't have time.
 `other` | `boolean` | Indicates if the user has another reason.
 `other_text` | `string` | Text input for the user's other reason.
 #### Emitters
-- [`SurveyModal`](../../js/src/pages/onboarding/setup-stepper/skip-paid-ads-confirmation-modal/survey-modal.js#L47) with the survey responses and context 'skip-paid-ads-survey-modal'.
+- [`SurveyModal`](../../js/src/pages/onboarding/setup-stepper/skip-paid-ads-confirmation-modal/survey-modal.js#L50) with the survey responses and context 'skip-paid-ads-survey-modal'.
 
-### [`gla_submit_campaign_button_click`](../../js/src/components/paid-ads/asset-group/asset-group.js#L30)
+### [`gla_submit_campaign_button_click`](../../js/src/components/paid-ads/asset-group/asset-group.js#L31)
 Clicking on the submit button on the campaign creation or editing page.
  If a value is recorded as `unknown`, it's because no assets are imported and therefore unknown.
 #### Properties
@@ -997,7 +1029,7 @@ Clicking on the submit button on the campaign creation or editing page.
 `has_raise_budget_recommendation` | `boolean` | Whether there is a budget recommendation that suggests raising the budget.
 `level` | `string` | The budget recommendation level selected by the user. Possible values: `low`, `current`, `recommended`, `high`, or `custom`.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group.js#L68)
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group.js#L69)
 
 ### [`gla_table_go_to_page`](../../js/src/utils/tracks.js#L47)
 When table pagination is changed by entering page via "Go to page" input.

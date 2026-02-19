@@ -1,19 +1,19 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
-import { useEffect, useRef } from '@wordpress/element';
 import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
+import { useEffect, useRef } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import { glaData } from '~/constants';
-import { getCreateCampaignUrl, getGetStartedUrl } from '~/utils/urls';
-import { recordGlaEvent } from '~/utils/tracks';
 import AppButton from '~/components/app-button';
+import { glaData } from '~/constants';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import googleLogoURL from '~/images/logo/gogole-g-logo.svg';
+import { recordGlaEvent } from '~/utils/tracks';
+import { getCreateCampaignUrl, getGetStartedUrl } from '~/utils/urls';
 import './google-ads-promo.scss';
 
 /**
@@ -39,7 +39,34 @@ const hasRecentPaidCampaigns = ( campaigns ) => {
 };
 
 /**
+ * Google Ads Promo component is shown.
+ *
+ * @event gla_google_ads_promo_shown
+ * @property {string} context Context of the Google Ads Promo.
+ */
+
+/**
+ * Google Ads Promo "Get started" button is clicked.
+ *
+ * @event gla_google_ads_promo_get_started_click
+ * @property {string} context Context of the Google Ads Promo.
+ * @property {string} href URL of the "Get started" button.
+ */
+
+/**
+ * Google Ads Promo "Create campaign" button is clicked.
+ *
+ * @event gla_google_ads_promo_create_campaign_click
+ * @property {string} context Context of the Google Ads Promo.
+ * @property {string} href URL of the "Create campaign" button.
+ */
+
+/**
  * Google Ads Promo component.
+ *
+ * @fires gla_google_ads_promo_shown with `{ context: 'order-attribution-meta-box' }`.
+ * @fires gla_google_ads_promo_get_started_click with `{ context: 'order-attribution-meta-box', href: '/get-started' }`.
+ * @fires gla_google_ads_promo_create_campaign_click with `{ context: 'order-attribution-meta-box', href: '/create-campaign' }`.
  *
  * @return {JSX.Element|null} The Google Ads Promo component or null.
  */
