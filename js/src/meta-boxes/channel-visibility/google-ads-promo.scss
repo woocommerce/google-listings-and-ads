@@ -1,0 +1,15 @@
+.gla-channel-visibility-google-ads-promo {
+	padding: $grid-unit-05;
+
+	.gla-channel-visibility-google-ads-promo-content {
+		display: flex;
+		flex-direction: column;
+		gap: $grid-unit-05;
+		flex-wrap: wrap;
+		box-sizing: border-box;
+		background: rgba(56, 88, 233, 0.03);
+		border: 1px solid rgba(56, 88, 233, 0.16);
+		padding: $grid-unit-20;
+		align-items: flex-start;
+	}
+}
