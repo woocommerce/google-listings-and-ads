@@ -1,17 +1,17 @@
 /**
  * External dependencies
  */
-import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import AppButton from '~/components/app-button';
 import { glaData } from '~/constants';
+import { getCreateCampaignUrl, getGetStartedUrl } from '~/utils/urls';
+import AppButton from '~/components/app-button';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import googleLogoURL from '~/images/logo/gogole-g-logo.svg';
-import { getCreateCampaignUrl, getGetStartedUrl } from '~/utils/urls';
 import './google-ads-promo.scss';
 
 /**
