@@ -12,23 +12,6 @@ import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import { recordGlaEvent } from '~/utils/tracks';
 import GoogleAdsPromo from './google-ads-promo';
 
-// Mock campaign data
-const mockOldCampaign = {
-	id: 1,
-	start_date: new Date( '2025-01-01' ).toISOString().split( 'T' )[ 0 ],
-	status: 'enabled',
-	type: 'performance_max',
-};
-
-const mockCampaignExact14DaysAgo = {
-	id: 1,
-	start_date: new Date( Date.now() - 14 * 24 * 60 * 60 * 1000 ) // 14 days ago
-		.toISOString()
-		.split( 'T' )[ 0 ],
-	status: 'enabled',
-	type: 'performance_max',
-};
-
 jest.mock( '~/hooks/useAdsCampaigns', () =>
 	jest.fn().mockName( 'useAdsCampaigns' )
 );
@@ -134,7 +117,7 @@ describe( 'GoogleAdsPromo Component', () => {
 				data: [
 					{
 						id: 1,
-						start_date: new Date().toISOString().split( 'T' )[ 0 ], // Format: YYYY-MM-DD
+						start_date: '2025-02-16',
 						status: 'enabled',
 						type: 'performance_max',
 					},
@@ -148,7 +131,14 @@ describe( 'GoogleAdsPromo Component', () => {
 
 		test( 'Does not render when campaign is exactly 14 days ago', () => {
 			useAdsCampaigns.mockReturnValue( {
-				data: [ mockCampaignExact14DaysAgo ],
+				data: [
+					{
+						id: 1,
+						start_date: '2025-02-04',
+						status: 'enabled',
+						type: 'performance_max',
+					},
+				],
 				loading: false,
 			} );
 
@@ -156,12 +146,12 @@ describe( 'GoogleAdsPromo Component', () => {
 			expect( container.firstChild ).toBeNull();
 		} );
 
-		test( 'Renders when there are campaigns but no active performance_max ones', () => {
+		test( 'Renders when there are recent campaigns but no active performance_max ones', () => {
 			useAdsCampaigns.mockReturnValue( {
 				data: [
 					{
 						id: 1,
-						start_date: new Date().toISOString().split( 'T' )[ 0 ],
+						start_date: '2025-02-16',
 						status: 'paused',
 						type: 'performance_max',
 					},
@@ -175,7 +165,14 @@ describe( 'GoogleAdsPromo Component', () => {
 
 		test( 'Renders when campaign is older than 14 days', () => {
 			useAdsCampaigns.mockReturnValue( {
-				data: [ mockOldCampaign ],
+				data: [
+					{
+						id: 1,
+						start_date: '2025-01-01',
+						status: 'enabled',
+						type: 'performance_max',
+					},
+				],
 				loading: false,
 			} );
 
