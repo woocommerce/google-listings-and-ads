@@ -253,8 +253,10 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$this->campaign_label->assign_label_to_campaign_by_label_name( $campaign_id, $params['label'] );
 			}
 
-			// Clear cached campaign count.
-			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::ADS_CAMPAIGN_COUNT );
+			// Clear cached campaign count and highest spend campaign.
+			$transients = $this->container->get( TransientsInterface::class );
+			$transients->delete( TransientsInterface::ADS_CAMPAIGN_COUNT );
+			$transients->delete( TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN );
 
 			return [
 				'id'      => $campaign_id,
@@ -319,9 +321,11 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			}
 
 			if ( ! empty( $operations ) ) {
+				$this->container->get( TransientsInterface::class )->delete( TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN );
 				return $this->mutate( $operations ) ?: $campaign_id;
 			}
 
+			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN );
 			return $campaign_id;
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
@@ -356,8 +360,10 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$this->delete_operation( $campaign_resource_name ),
 			];
 
-			// Clear cached campaign count.
-			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::ADS_CAMPAIGN_COUNT );
+			// Clear cached campaign count and highest spend campaign.
+			$transients = $this->container->get( TransientsInterface::class );
+			$transients->delete( TransientsInterface::ADS_CAMPAIGN_COUNT );
+			$transients->delete( TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN );
 
 			return $this->mutate( $operations );
 		} catch ( ApiException $e ) {
@@ -385,17 +391,25 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 
 	/**
 	 * Retrieve the enabled campaign with the highest spend amount.
+	 * Result is cached to avoid Ads API requests on every admin page load.
 	 *
 	 * @return array
 	 */
 	public function get_highest_spend_campaign(): array {
+		$transients = $this->container->get( TransientsInterface::class );
+		$cached     = $transients->get( TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN );
+
+		if ( is_array( $cached ) && array_key_exists( 'campaign', $cached ) ) {
+			return $cached['campaign'];
+		}
+
 		try {
 			$campaigns = $this->get_campaigns();
 		} catch ( Exception $e ) {
 			return [];
 		}
 
-		return array_reduce(
+		$result = array_reduce(
 			$campaigns,
 			function ( $highest, $campaign ) {
 				if ( CampaignStatus::ENABLED === $campaign['status'] && ( empty( $highest ) || $campaign['amount'] > $highest['amount'] ) ) {
@@ -406,6 +420,14 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			},
 			[]
 		);
+
+		$transients->set(
+			TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN,
+			[ 'campaign' => $result ],
+			HOUR_IN_SECONDS
+		);
+
+		return $result;
 	}
 
 	/**
