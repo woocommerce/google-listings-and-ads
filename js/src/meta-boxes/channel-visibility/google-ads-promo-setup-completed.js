@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Flex, FlexItem, SelectControl } from '@wordpress/components';
 
@@ -8,8 +9,14 @@ import { Flex, FlexItem, SelectControl } from '@wordpress/components';
  * Internal dependencies
  */
 import googleLogoURL from '~/images/logo/gogole-g-logo.svg';
+import { glaData } from '~/constants';
+
+const { channelVisibility: { channel_visibility } = {} } = glaData || {};
 
 const GoogleAdsPromoSetupCompleted = () => {
+	const [ channelVisibility, setChannelVisibility ] =
+		useState( channel_visibility );
+
 	return (
 		<Flex
 			gap={ 2 }
@@ -49,6 +56,8 @@ const GoogleAdsPromoSetupCompleted = () => {
 							value: 'dont-sync-and-show',
 						},
 					] }
+					value={ channelVisibility }
+					onChange={ ( value ) => setChannelVisibility( value ) }
 					__nextHasNoMarginBottom
 				/>
 			</FlexItem>
