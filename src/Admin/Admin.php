@@ -215,7 +215,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 				]
 			),
 			function (): bool {
-				return $this->is_wc_order_edit_screen() || $this->is_wc_product_edit_screen();
+				return $this->is_wc_order_edit_screen();
 			}
 		) )->add_inline_script(
 			'glaData',
@@ -228,6 +228,40 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 					'adsId'   => $this->options->get_ads_id() ?: null,
 				],
 				'channelVisibility' => $this->get_channel_visibility_data(),
+			]
+		);
+
+		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
+			'gla-wc-product',
+			'js/build/channel-visibility-meta-box',
+			"{$this->get_root_dir()}/js/build/channel-visibility-meta-box.asset.php",
+			new BuiltScriptDependencyArray(
+				[
+					'dependencies' => [],
+					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/channel-visibility-meta-box.js" ),
+				]
+			),
+			function(): bool {
+				return $this->is_wc_product_edit_screen();
+			}
+		) )->add_inline_script(
+			'glaData',
+			[
+				'slug'             => $this->get_slug(),
+				'adsSetupComplete' => $this->ads->is_setup_complete(),
+				'initialWpData'    => [
+					'version' => $this->get_version(),
+					'mcId'    => $this->options->get_merchant_id() ?: null,
+					'adsId'   => $this->options->get_ads_id() ?: null,
+				],
+				'channelVisibility' => [
+					'field_id'           => 'channel-visibility',
+					'product_id'         => 214,
+					'product_visible'    => false,
+					'channel_visibility' => 'sync-and-show',
+					'sync_status'        => 'synced',
+					'issues'             => [],
+				]
 			]
 		);
 
