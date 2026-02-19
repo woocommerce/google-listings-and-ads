@@ -39,15 +39,6 @@ const hasRecentPaidCampaigns = ( campaigns ) => {
 };
 
 /**
- * Event properties for Google Ads Promo.
- *
- * @type {Object}
- */
-const GOOGLE_ADS_PROMO_EVENT_PROPS = {
-	context: 'order-attribution-meta-box',
-};
-
-/**
  * Google Ads Promo component.
  *
  * @return {JSX.Element|null} The Google Ads Promo component or null.
@@ -66,10 +57,9 @@ const GoogleAdsPromo = () => {
 	useEffect( () => {
 		// Only fire if all conditions for rendering are met and not already tracked
 		if ( ! hasTrackedRef.current && isReadyToRender ) {
-			recordGlaEvent(
-				'gla_google_ads_promo_shown',
-				GOOGLE_ADS_PROMO_EVENT_PROPS
-			);
+			recordGlaEvent( 'gla_google_ads_promo_shown', {
+				context: 'order-attribution-meta-box',
+			} );
 			hasTrackedRef.current = true;
 		}
 	}, [ isReadyToRender ] );
@@ -96,7 +86,7 @@ const GoogleAdsPromo = () => {
 						href={ campaignUrl }
 						eventName="gla_google_ads_promo_create_campaign_click"
 						eventProps={ {
-							...GOOGLE_ADS_PROMO_EVENT_PROPS,
+							context: 'order-attribution-meta-box',
 							href: campaignUrl,
 						} }
 						isSecondary
@@ -119,7 +109,7 @@ const GoogleAdsPromo = () => {
 						href={ getStartedUrl }
 						eventName="gla_google_ads_promo_get_started_click"
 						eventProps={ {
-							...GOOGLE_ADS_PROMO_EVENT_PROPS,
+							context: 'order-attribution-meta-box',
 							href: getStartedUrl,
 						} }
 						isSecondary
