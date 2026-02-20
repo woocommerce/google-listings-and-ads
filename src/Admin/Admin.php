@@ -205,13 +205,13 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 		) );
 
 		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
-			'gla-meta-boxes',
-			'js/build/meta-boxes',
-			"{$build_dir}/meta-boxes.asset.php",
+			'gla-order-attribution',
+			'js/build/order-attribution',
+			"{$build_dir}/order-attribution.asset.php",
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
-					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/meta-boxes.js" ),
+					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/order-attribution.js" ),
 				]
 			),
 			function (): bool {
@@ -220,14 +220,15 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 		) )->add_inline_script(
 			'glaData',
 			[
-				'slug'              => $this->get_slug(),
-				'adsSetupComplete'  => $this->ads->is_setup_complete(),
-				'initialWpData'     => [
+				'slug'                   => $this->get_slug(),
+				'adsSetupComplete'       => $this->ads->is_setup_complete(),
+				'initialWpData'          => [
 					'version' => $this->get_version(),
 					'mcId'    => $this->options->get_merchant_id() ?: null,
 					'adsId'   => $this->options->get_ads_id() ?: null,
 				],
 				'channelVisibility' => $this->get_channel_visibility_data(),
+				'orderAttributionSource' => $this->get_order_attribution_source_for_edit_screen(),
 			]
 		);
 
@@ -241,7 +242,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 	 * @return string|null The value persisted in the database (e.g. "google"), or null when not on order edit screen or no attribution.
 	 */
 	private function get_order_attribution_source_for_edit_screen(): ?string {
-		if ( ! $this->is_wc_orders_edit_screen() ) {
+		if ( ! $this->is_wc_order_edit_screen() ) {
 			return null;
 		}
 
