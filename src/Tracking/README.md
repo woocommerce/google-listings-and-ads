@@ -576,7 +576,7 @@ Google Ads Promo "Create campaign" button is clicked.
 `context` | `string` | Context of the Google Ads Promo.
 `href` | `string` | URL of the "Create campaign" button.
 #### Emitters
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L73) with `{ context: 'order-attribution-meta-box', href: '/create-campaign' }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L73) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&subpath=%2Fcampaigns%2Fcreate&path=%2Fgoogle%2Fdashboard' }`.
 
 ### [`gla_google_ads_promo_get_started_click`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L48)
 Google Ads Promo "Get started" button is clicked.
@@ -586,7 +586,7 @@ Google Ads Promo "Get started" button is clicked.
 `context` | `string` | Context of the Google Ads Promo.
 `href` | `string` | URL of the "Get started" button.
 #### Emitters
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L73) with `{ context: 'order-attribution-meta-box', href: '/get-started' }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L73) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fstart' }`.
 
 ### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L41)
 Google Ads Promo component is shown.
