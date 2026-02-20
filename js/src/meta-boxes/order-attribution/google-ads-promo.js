@@ -1,19 +1,19 @@
 /**
  * External dependencies
  */
-import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
-import { useEffect, useRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
+import { useEffect, useRef } from '@wordpress/element';
+import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import AppButton from '~/components/app-button';
 import { glaData } from '~/constants';
-import useAdsCampaigns from '~/hooks/useAdsCampaigns';
-import googleLogoURL from '~/images/logo/gogole-g-logo.svg';
 import { recordGlaEvent } from '~/utils/tracks';
 import { getCreateCampaignUrl, getGetStartedUrl } from '~/utils/urls';
+import AppButton from '~/components/app-button';
+import useAdsCampaigns from '~/hooks/useAdsCampaigns';
+import googleLogoURL from '~/images/logo/gogole-g-logo.svg';
 import './google-ads-promo.scss';
 
 /**
@@ -65,8 +65,8 @@ const hasRecentPaidCampaigns = ( campaigns ) => {
  * Google Ads Promo component.
  *
  * @fires gla_google_ads_promo_shown with `{ context: 'order-attribution-meta-box' }`.
- * @fires gla_google_ads_promo_get_started_click with `{ context: 'order-attribution-meta-box', href: '/get-started' }`.
- * @fires gla_google_ads_promo_create_campaign_click with `{ context: 'order-attribution-meta-box', href: '/create-campaign' }`.
+ * @fires gla_google_ads_promo_get_started_click with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fstart' }`.
+ * @fires gla_google_ads_promo_create_campaign_click with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&subpath=%2Fcampaigns%2Fcreate&path=%2Fgoogle%2Fdashboard' }`.
  *
  * @return {JSX.Element|null} The Google Ads Promo component or null.
  */
