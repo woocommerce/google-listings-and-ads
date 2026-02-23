@@ -228,6 +228,16 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function create_campaign( array $params ): array {
 		try {
+			// Standard PMax (no Merchant Center) requires assets in the same request; only retail can use "empty" asset group.
+			if ( $this->options->get_merchant_id() <= 0 && ( ! isset( $params['final_url'] ) || ! isset( $params['assets'] ) ) ) {
+				throw new ExceptionWithResponseData(
+					__( 'Add assets or use Generate with AI to create your campaign.', 'google-listings-and-ads' ),
+					400,
+					null,
+					[ 'errors' => [ 'INVALID_ARGUMENT' => __( 'Campaigns without a product feed require assets. Add assets or use Generate with AI.', 'google-listings-and-ads' ) ] ]
+				);
+			}
+
 			$base_country = $this->container->get( WC::class )->get_base_country();
 
 			$location_ids = array_map(
@@ -518,31 +528,35 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @return MutateOperation
 	 */
 	protected function create_operation( string $campaign_name, string $country, bool $is_eu_political ): MutateOperation {
-		$campaign = new Campaign(
-			[
-				'resource_name'                     => $this->temporary_resource_name(),
-				'name'                              => $campaign_name,
-				'advertising_channel_type'          => AdvertisingChannelType::PERFORMANCE_MAX,
-				'status'                            => CampaignStatus::number( 'enabled' ),
-				'campaign_budget'                   => $this->budget->temporary_resource_name(),
-				'maximize_conversion_value'         => new MaximizeConversionValue(),
-				'asset_automation_settings'         => [
-					new AssetAutomationSetting(
-						[
-							'asset_automation_type'   => AssetAutomationType::FINAL_URL_EXPANSION_TEXT_ASSET_AUTOMATION,
-							'asset_automation_status' => AssetAutomationStatus::OPTED_IN,
-						]
-					),
-				],
-				'shopping_setting'                  => new ShoppingSetting(
+		$campaign_params = [
+			'resource_name'                     => $this->temporary_resource_name(),
+			'name'                              => $campaign_name,
+			'advertising_channel_type'          => AdvertisingChannelType::PERFORMANCE_MAX,
+			'status'                            => CampaignStatus::number( 'enabled' ),
+			'campaign_budget'                   => $this->budget->temporary_resource_name(),
+			'maximize_conversion_value'         => new MaximizeConversionValue(),
+			'asset_automation_settings'         => [
+				new AssetAutomationSetting(
 					[
-						'merchant_id' => $this->options->get_merchant_id(),
-						'feed_label'  => $country,
+						'asset_automation_type'   => AssetAutomationType::FINAL_URL_EXPANSION_TEXT_ASSET_AUTOMATION,
+						'asset_automation_status' => AssetAutomationStatus::OPTED_IN,
 					]
 				),
-				'contains_eu_political_advertising' => $is_eu_political ? EuPoliticalAdvertisingStatus::CONTAINS_EU_POLITICAL_ADVERTISING : EuPoliticalAdvertisingStatus::DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING,
-			]
-		);
+			],
+			'contains_eu_political_advertising' => $is_eu_political ? EuPoliticalAdvertisingStatus::CONTAINS_EU_POLITICAL_ADVERTISING : EuPoliticalAdvertisingStatus::DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING,
+		];
+
+		// Only add shopping_setting for retail (Performance Max with product feed); omit for standard PMax (e.g. SBM without Merchant Center).
+		if ( $this->options->get_merchant_id() > 0 ) {
+			$campaign_params['shopping_setting'] = new ShoppingSetting(
+				[
+					'merchant_id' => $this->options->get_merchant_id(),
+					'feed_label'  => $country,
+				]
+			);
+		}
+
+		$campaign = new Campaign( $campaign_params );
 
 		$operation = ( new CampaignOperation() )->setCreate( $campaign );
 		return ( new MutateOperation() )->setCampaignOperation( $operation );
