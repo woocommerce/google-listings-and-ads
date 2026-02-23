@@ -320,12 +320,12 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$operations[] = $this->edit_operation( $campaign_id, $campaign_fields );
 			}
 
+			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN );
+
 			if ( ! empty( $operations ) ) {
-				$this->container->get( TransientsInterface::class )->delete( TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN );
 				return $this->mutate( $operations ) ?: $campaign_id;
 			}
 
-			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN );
 			return $campaign_id;
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
@@ -424,7 +424,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 		$transients->set(
 			TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN,
 			[ 'campaign' => $result ],
-			HOUR_IN_SECONDS
+			HOUR_IN_SECONDS * 12
 		);
 
 		return $result;
