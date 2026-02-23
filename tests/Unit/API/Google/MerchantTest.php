@@ -146,14 +146,14 @@ class MerchantTest extends UnitTest {
 	public function test_claim_website() {
 		$this->service->accounts->expects( $this->once() )
 			->method( 'claimwebsite' )
-			->with( $this->merchant_id, $this->merchant_id, [] );
+			->with( $this->merchant_id, $this->merchant_id );
 		$this->assertTrue( $this->merchant->claimwebsite() );
 	}
 
 	public function test_claimwebsite_error() {
 		$this->service->accounts->expects( $this->once() )
 			->method( 'claimwebsite' )
-			->with( $this->merchant_id, $this->merchant_id, [] )
+			->with( $this->merchant_id, $this->merchant_id )
 			->will(
 				$this->throwException(
 					new GoogleException()
@@ -167,7 +167,7 @@ class MerchantTest extends UnitTest {
 	public function test_website_already_claimed() {
 		$this->service->accounts->expects( $this->once() )
 			->method( 'claimwebsite' )
-			->with( $this->merchant_id, $this->merchant_id, [] )
+			->with( $this->merchant_id, $this->merchant_id )
 			->will(
 				$this->throwException(
 					new GoogleException( 'claimed', 403 )
@@ -176,6 +176,75 @@ class MerchantTest extends UnitTest {
 
 		$this->expectException( Exception::class );
 		$this->expectExceptionCode( 403 );
+		$this->merchant->claimwebsite();
+	}
+
+	public function test_website_claim_conflict_content_api() {
+		$message = "There exist other accounts with homepage that conflicts with the homepage of account 1234567890. Set the parameter 'overwrite' to true if you want to take the claim and remove it from these accounts: user@example.com";
+		$error   = [
+			'domain'  => 'content.ContentErrorDomain',
+			'reason'  => 'invalid_parameter',
+			'message' => $message,
+		];
+
+		$this->service->accounts->expects( $this->once() )
+			->method( 'claimwebsite' )
+			->with( $this->merchant_id, $this->merchant_id )
+			->will(
+				$this->throwException(
+					new GoogleServiceException( $message, 400, null, [ $error ] )
+				)
+			);
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionCode( 403 );
+		$this->expectExceptionMessage( 'Website already claimed, use overwrite to complete the process.' );
+		$this->merchant->claimwebsite();
+	}
+
+	public function test_claimwebsite_non_conflict_400_error() {
+		$message = 'Request contains an invalid argument.';
+		$error   = [
+			'domain'  => 'content.ContentErrorDomain',
+			'reason'  => 'invalid',
+			'message' => $message,
+		];
+
+		$this->service->accounts->expects( $this->once() )
+			->method( 'claimwebsite' )
+			->with( $this->merchant_id, $this->merchant_id )
+			->will(
+				$this->throwException(
+					new GoogleServiceException( $message, 400, null, [ $error ] )
+				)
+			);
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionCode( 400 );
+		$this->expectExceptionMessage( 'Unable to claim website.' );
+		$this->merchant->claimwebsite();
+	}
+
+	public function test_claimwebsite_non_content_api_domain_error() {
+		$message = "There exist other accounts with homepage that conflicts. Set the parameter 'overwrite' to true.";
+		$error   = [
+			'domain'  => 'global',
+			'reason'  => 'forbidden',
+			'message' => $message,
+		];
+
+		$this->service->accounts->expects( $this->once() )
+			->method( 'claimwebsite' )
+			->with( $this->merchant_id, $this->merchant_id )
+			->will(
+				$this->throwException(
+					new GoogleServiceException( $message, 400, null, [ $error ] )
+				)
+			);
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionCode( 400 );
+		$this->expectExceptionMessage( 'Unable to claim website.' );
 		$this->merchant->claimwebsite();
 	}
 

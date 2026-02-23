@@ -371,19 +371,30 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$order->update_meta_data( self::ORDER_CONVERSION_META_KEY, 1 );
 		$order->save_meta_data();
 
-		$conversion_gtag_info =
-		sprintf(
-			'gtag("event", "conversion", {
-			send_to: "%s",
-			value: %f,
-			currency: "%s",
-			transaction_id: "%s"});',
-			esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
-			$order->get_total(),
-			esc_js( $order->get_currency() ),
-			esc_js( $order->get_id() ),
-		);
-		$this->add_inline_event_script( $conversion_gtag_info );
+		/**
+		 * Track the legacy conversion event.
+		 *
+		 * The legacy conversion event is kept for backward compatibility with existing setups.
+		 * New implementations should rely on the 'purchase' event for conversion tracking.
+		 * In a future release, this may be removed.
+		 */
+		$add_legacy_conversion_event = apply_filters( 'woocommerce_gla_add_legacy_conversion_event', true );
+
+		if ( $add_legacy_conversion_event ) {
+			$conversion_gtag_info =
+			sprintf(
+				'gtag("event", "conversion", {
+				send_to: "%s",
+				value: %f,
+				currency: "%s",
+				transaction_id: "%s"});',
+				esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
+				$order->get_total(),
+				esc_js( $order->get_currency() ),
+				esc_js( $order->get_id() ),
+			);
+			$this->add_inline_event_script( $conversion_gtag_info );
+		}
 
 		// Get the item info in the order
 		$item_info = [];
