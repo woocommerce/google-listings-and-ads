@@ -1,5 +1,11 @@
 *** Google for WooCommerce Changelog ***
 
+= 3.5.2 - 2026-01-29 =
+* Add - Sorting functionality in `AllProgramsTableCard` to allow users to reorder columns by key attributes.
+* Fix - Resolve an issue where website claim conflicts were not detected correctly during Google Merchant Center account setup in the onboarding flow.
+* Update - Add `timeZone` and `languageCode` fields to create-merchant request for Merchant API compatibility.
+* Update - Allow legacy conversion events to be disabled via a filter.
+
 = 3.5.1 - 2025-12-10 =
 * Add - EU political content confirmation checkbox for EU-based advertisers.
 * Fix - Button misaligned after navigating between tabs.
