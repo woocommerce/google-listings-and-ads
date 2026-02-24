@@ -89,24 +89,37 @@ export default function ImagesSelector( {
 			const nextImages = [ ...images ];
 
 			// Find if there is a duplicate image first.
-			let index = nextImages.findIndex( ( { id } ) => id === image.id );
+			const selectedIndex = nextImages.findIndex(
+				( { id } ) => id === image.id
+			);
 
 			if ( awaitingActionImage ) {
-				if ( index !== -1 && image.id !== awaitingActionImage.id ) {
-					// If the selected image already exists while replacing, it's considered a swap position.
-					nextImages.splice( index, 1, { ...awaitingActionImage } );
+				const awaitingIndex = nextImages.findIndex(
+					( { id } ) => id === awaitingActionImage.id
+				);
+
+				if ( selectedIndex !== -1 && selectedIndex !== awaitingIndex ) {
+					// Swap positions
+					nextImages[ selectedIndex ] = awaitingActionImage;
+					nextImages[ awaitingIndex ] = image;
+				} else if ( awaitingIndex !== -1 ) {
+					// Replace
+					nextImages[ awaitingIndex ] = image;
+				} else {
+					// Previously clicked image no longer exists, push
+					nextImages.push( image );
 				}
-				// Find the index to be replaced with the selected image.
-				index = nextImages.indexOf( awaitingActionImage );
+
+				setAwaitingActionImage( null );
+				updateImages( nextImages );
+				return;
 			}
 
-			if ( index === -1 ) {
+			// Normal add flow (not replacing)
+			if ( selectedIndex === -1 ) {
 				nextImages.push( image );
-			} else {
-				nextImages.splice( index, 1, image );
 			}
 
-			setAwaitingActionImage( null );
 			updateImages( nextImages );
 		},
 	} );
