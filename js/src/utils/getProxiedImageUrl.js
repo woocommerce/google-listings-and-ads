@@ -4,11 +4,6 @@
 import { addQueryArgs } from '@wordpress/url';
 
 /**
- * Internal dependencies
- */
-import { API_NAMESPACE } from '~/data/constants';
-
-/**
  * Converts an external image URL to use the WordPress image proxy endpoint.
  * This bypasses ad blockers that might block direct access to AI-generated images.
  *
@@ -27,8 +22,9 @@ export default function getProxiedImageUrl( imageUrl ) {
 		return imageUrl;
 	}
 
-	const baseUrl = `/wp-json${ API_NAMESPACE }/ads/assets/image-proxy`;
 	const nonce = window.wpApiSettings?.nonce || '';
+	const root = window.wpApiSettings?.root || '/wp-json/';
+	const baseUrl = `${ root }wc/gla/ads/assets/image-proxy`;
 
 	const params = { url: imageUrl };
 	if ( nonce ) {

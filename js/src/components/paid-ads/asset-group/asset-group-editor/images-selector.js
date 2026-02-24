@@ -1,25 +1,24 @@
 /**
  * External dependencies
  */
-import { useEffect, useRef, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { noop } from 'lodash';
+import { useEffect, useRef, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
+import { GEN_AI_ASSET_TYPES } from '~/constants';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import AppTooltip from '~/components/app-tooltip';
-import { GEN_AI_ASSET_TYPES } from '~/constants';
-import useAdblockerImageProxy from '~/hooks/useAdblockerImageProxy';
 import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import useCroppedImageSelector from '~/hooks/useCroppedImageSelector';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import AssetItemActionButton, {
 	ACTION_TYPES,
 } from './asset-item-action-button';
-import GenAIImagePicker from './gen-ai-image-picker';
 import MediaSelector from './media-selector';
+import GenAIImagePicker from './gen-ai-image-picker';
 
 /**
  * @typedef {Object} AssetImageConfig
@@ -40,6 +39,7 @@ import MediaSelector from './media-selector';
  * @param {number} [props.maxNumberOfImages=-1] The maximum number of images. -1 by default and it means unlimited number.
  * @param {string} [props.reachedMaxNumberTip] The tooltip content floating on the add button when reaching the max number of images.
  * @param {JSX.Element} [props.children] Content to be rendered above the add button.
+ * @param {(url: string) => string} [props.getDisplayImageUrl] Function to get the display URL for an image, useful for handling ad blockers.
  * @param {(urls: Array<string>) => void} [props.onChange] Callback function to be called when the texts are changed.
  */
 export default function ImagesSelector( {
@@ -50,6 +50,7 @@ export default function ImagesSelector( {
 	maxNumberOfImages = -1,
 	reachedMaxNumberTip,
 	children,
+	getDisplayImageUrl = noop,
 	onChange = noop,
 } ) {
 	const { values } = useAdaptiveFormContext();
@@ -57,7 +58,6 @@ export default function ImagesSelector( {
 	const [ awaitingActionImage, setAwaitingActionImage ] = useState( null );
 	const [ generateAssets, isGeneratingAssets ] = useCreateGenAIAssets();
 	const { createNotice } = useDispatchCoreNotices();
-	const [ getProxyUrl ] = useAdblockerImageProxy();
 	const [ images, setImages ] = useState( () =>
 		// The asset images fetched from Google Ads are only URLs.
 		initialImageUrls.map( ( url ) => ( { url, id: url, alt: '' } ) )
@@ -175,7 +175,7 @@ export default function ImagesSelector( {
 			<MediaSelector
 				media={ images.map( ( img ) => ( {
 					...img,
-					thumbnail: getProxyUrl( img.url ),
+					thumbnail: getDisplayImageUrl( img.url ),
 				} ) ) }
 				onMediumClick={ handleMediumClick }
 				onRemoveMedia={ handleRemoveImage }
@@ -183,6 +183,7 @@ export default function ImagesSelector( {
 
 			<GenAIImagePicker
 				assetKey={ assetKey }
+				getDisplayImageUrl={ getDisplayImageUrl }
 				onAddSelectedImages={ handleOnAddSelectedImages }
 			/>
 

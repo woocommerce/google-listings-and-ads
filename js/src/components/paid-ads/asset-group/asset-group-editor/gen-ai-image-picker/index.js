@@ -1,22 +1,21 @@
 /**
  * External dependencies
  */
+import { __ } from '@wordpress/i18n';
+import { useState } from '@wordpress/element';
 import {
 	CheckboxControl,
 	Flex,
 	FlexBlock,
 	FlexItem,
 } from '@wordpress/components';
-import { useState } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
-import AppButton from '~/components/app-button';
-import useAdblockerImageProxy from '~/hooks/useAdblockerImageProxy';
 import useGenAIMediaAssets from '~/hooks/useGenAIMediaAssets';
+import AppButton from '~/components/app-button';
 import AIIcon from '~/images/ai-icon.svg?inline';
 import './index.scss';
 
@@ -26,15 +25,19 @@ import './index.scss';
  *
  * @param {Object} props Component props.
  * @param {string} props.assetKey Asset key.
+ * @param {(url: string) => string} props.getDisplayImageUrl Function to get the display URL for an image, useful for handling ad blockers.
  * @param {Function} props.onAddSelectedImages Callback to add selected images.
  */
-export default function GenAIImagePicker( { assetKey, onAddSelectedImages } ) {
+export default function GenAIImagePicker( {
+	assetKey,
+	getDisplayImageUrl,
+	onAddSelectedImages,
+} ) {
 	const { values } = useAdaptiveFormContext();
 	const addedImageUrls = values[ assetKey ] || [];
 	const { final_url: finalUrl } = values;
 	const { assets } = useGenAIMediaAssets( finalUrl, assetKey );
 	const [ selectedImages, setSelectedImages ] = useState( [] );
-	const [ getProxyUrl ] = useAdblockerImageProxy();
 
 	const handleOnAddSelectedImages = () => {
 		onAddSelectedImages( selectedImages );
@@ -99,7 +102,7 @@ export default function GenAIImagePicker( { assetKey, onAddSelectedImages } ) {
 								>
 									<img
 										className="gla-media-selector__medium"
-										src={ getProxyUrl( src ) }
+										src={ getDisplayImageUrl( src ) }
 										alt=""
 									/>
 								</AppButton>
