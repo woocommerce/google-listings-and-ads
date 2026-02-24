@@ -4,10 +4,10 @@
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import {
-	CheckboxControl,
 	Flex,
-	FlexBlock,
 	FlexItem,
+	CheckboxControl,
+	FlexBlock,
 } from '@wordpress/components';
 
 /**

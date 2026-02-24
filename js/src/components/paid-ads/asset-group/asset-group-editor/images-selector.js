@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { noop } from 'lodash';
-import { useEffect, useRef, useState } from '@wordpress/element';
+import { useState, useEffect, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -11,9 +11,9 @@ import { useEffect, useRef, useState } from '@wordpress/element';
 import { GEN_AI_ASSET_TYPES } from '~/constants';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
-import AppTooltip from '~/components/app-tooltip';
 import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import useCroppedImageSelector from '~/hooks/useCroppedImageSelector';
+import AppTooltip from '~/components/app-tooltip';
 import AssetItemActionButton, {
 	ACTION_TYPES,
 } from './asset-item-action-button';
