@@ -142,11 +142,16 @@ class AdsAssetGroup implements OptionsAwareInterface, ContainerAwareInterface {
 	 * @return array
 	 */
 	public function create_operations( string $campaign_resource_name, string $asset_group_name ): array {
-		// Asset must be created before listing group.
-		return [
+		$operations = [
 			$this->asset_group_create_operation( $campaign_resource_name, $asset_group_name ),
-			$this->listing_group_create_operation(),
 		];
+
+		// Only add listing group for retail (Performance Max with product feed); omit for standard PMax (e.g. SBM without Merchant Center).
+		if ( $this->options->get_merchant_id() > 0 ) {
+			$operations[] = $this->listing_group_create_operation();
+		}
+
+		return $operations;
 	}
 
 	/**

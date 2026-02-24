@@ -225,6 +225,16 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function create_campaign( array $params ): array {
 		try {
+			// Standard PMax (no Merchant Center) requires assets in the same request; only retail can use "empty" asset group.
+			if ( $this->options->get_merchant_id() <= 0 && ( ! isset( $params['final_url'] ) || ! isset( $params['assets'] ) ) ) {
+				throw new ExceptionWithResponseData(
+					__( 'Add assets to create your campaign.', 'google-listings-and-ads' ),
+					400,
+					null,
+					[ 'errors' => [ 'INVALID_ARGUMENT' => __( 'Campaigns without a product feed require assets. Add assets to create your campaign.', 'google-listings-and-ads' ) ] ]
+				);
+			}
+
 			$base_country = $this->container->get( WC::class )->get_base_country();
 
 			$location_ids = array_map(
