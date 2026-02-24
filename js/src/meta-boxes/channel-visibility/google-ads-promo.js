@@ -1,23 +1,26 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
-import { Flex, FlexItem, FlexBlock } from '@wordpress/components';
+import { useEffect, useRef } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 import { store as preferencesStore } from '@wordpress/preferences';
 
 /**
  * Internal dependencies
  */
 import { PREFERENCES_STORE_NAMESPACE, glaData } from '~/constants';
+import usePreference from '~/hooks/usePreference';
 import googleLogoURL from '~/images/logo/gogole-g-logo.svg';
+import { recordGlaEvent } from '~/utils/tracks';
+import GetStartedCTA from './get-started-cta';
 import GoogleAdsPromoCTA from './google-ads-promo-cta';
 import GoogleAdsPromoSetupCompleted from './google-ads-promo-setup-completed';
-import GetStartedCTA from './get-started-cta';
-import usePreference from '~/hooks/usePreference';
 import './google-ads-promo.scss';
 
 const { adsSetupComplete } = glaData;
+const context = 'channel-visibility-meta-box';
 
 const PREFERENCE_BANNER_KEY = 'gla_google_ads_promo_dismissed';
 
@@ -29,6 +32,16 @@ const PREFERENCE_BANNER_KEY = 'gla_google_ads_promo_dismissed';
 const GoogleAdsPromo = () => {
 	const { set } = useDispatch( preferencesStore );
 	const isDismissed = usePreference( PREFERENCE_BANNER_KEY );
+	const hasTrackedRef = useRef( false );
+
+	useEffect( () => {
+		if ( ! hasTrackedRef.current && ! adsSetupComplete ) {
+			recordGlaEvent( 'gla_google_ads_promo_shown', {
+				context,
+			} );
+			hasTrackedRef.current = true;
+		}
+	}, [] );
 
 	const handleDismiss = () => {
 		set( PREFERENCES_STORE_NAMESPACE, PREFERENCE_BANNER_KEY, true );
@@ -62,7 +75,7 @@ const GoogleAdsPromo = () => {
 					</FlexItem>
 					{ isDismissed && (
 						<FlexItem className="gla-channel-visibility-get-started-is-dismissed">
-							<GetStartedCTA />
+							<GetStartedCTA context={ context } />
 						</FlexItem>
 					) }
 				</Flex>
@@ -88,7 +101,10 @@ const GoogleAdsPromo = () => {
 					</FlexBlock>
 
 					<FlexBlock>
-						<GoogleAdsPromoCTA onDismiss={ handleDismiss } />
+						<GoogleAdsPromoCTA
+							context={ context }
+							onDismiss={ handleDismiss }
+						/>
 					</FlexBlock>
 				</Flex>
 			) }
