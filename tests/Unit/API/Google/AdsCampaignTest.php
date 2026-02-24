@@ -422,7 +422,10 @@ class AdsCampaignTest extends UnitTest {
 	}
 
 	public function test_create_campaign_throws_when_no_merchant_and_no_assets() {
-		$this->options->method( 'get_merchant_id' )->willReturn( 0 );
+		$options_no_merchant = $this->createMock( OptionsInterface::class );
+		$options_no_merchant->method( 'get_ads_id' )->willReturn( $this->ads_id );
+		$options_no_merchant->method( 'get_merchant_id' )->willReturn( 0 );
+		$this->campaign->set_options_object( $options_no_merchant );
 
 		$campaign_data = [
 			'name'                                  => 'New Campaign',
@@ -452,7 +455,10 @@ class AdsCampaignTest extends UnitTest {
 	}
 
 	public function test_create_operation_omits_shopping_setting_when_merchant_id_zero() {
-		$this->options->method( 'get_merchant_id' )->willReturn( 0 );
+		$options_no_merchant = $this->createMock( OptionsInterface::class );
+		$options_no_merchant->method( 'get_ads_id' )->willReturn( $this->ads_id );
+		$options_no_merchant->method( 'get_merchant_id' )->willReturn( 0 );
+		$this->campaign->set_options_object( $options_no_merchant );
 
 		$method = new ReflectionMethod( AdsCampaign::class, 'create_operation' );
 		$method->setAccessible( true );

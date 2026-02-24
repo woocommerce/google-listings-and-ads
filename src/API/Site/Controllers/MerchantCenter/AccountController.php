@@ -128,6 +128,27 @@ class AccountController extends BaseController {
 				);
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
+			} catch ( \Throwable $e ) {
+				// Catch PHP 7+ Error/TypeError so we return JSON instead of a blank 500.
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG && function_exists( 'wc_get_logger' ) ) {
+					wc_get_logger()->error(
+						'MC accounts request failed: ' . $e->getMessage(),
+						[
+							'source'    => 'google-listings-and-ads',
+							'exception' => $e,
+						]
+					);
+				}
+				return new Response(
+					[
+						'message' => __(
+							'An unexpected error occurred while retrieving Merchant Center accounts. Please try again or check the error log.',
+							'google-listings-and-ads'
+						),
+						'code'    => 'mc_accounts_error',
+					],
+					500
+				);
 			}
 		};
 	}

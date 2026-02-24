@@ -52,6 +52,10 @@ use Google\Ads\GoogleAds\V22\Services\Client\GoogleAdsServiceClient;
 use Google\Ads\GoogleAds\V22\Services\Client\ProductLinkInvitationServiceClient;
 use Google\Ads\GoogleAds\V22\Services\Client\RecommendationServiceClient;
 use Google\Ads\GoogleAds\V22\Services\GenerateRecommendationsResponse;
+use Google\Ads\GoogleAds\V22\Services\GenerateTextResponse;
+use Google\Ads\GoogleAds\V22\Services\GenerateImagesResponse;
+use Google\Ads\GoogleAds\V22\Services\GeneratedText;
+use Google\Ads\GoogleAds\V22\Services\GeneratedImage;
 use Google\Ads\GoogleAds\V22\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V22\Services\ListAccessibleCustomersResponse;
 use Google\Ads\GoogleAds\V22\Services\MutateCampaignResult;
@@ -124,6 +128,62 @@ trait GoogleAdsClientTrait {
 			->onlyMethods( [ 'generateText', 'generateImages' ] )
 			->getMock();
 		$this->client->method( 'getAssetGenerationServiceClient' )->willReturn( $this->asset_generation_service );
+	}
+
+	/**
+	 * Configure the asset generation service mock to return the given text assets from generateText().
+	 *
+	 * @param array $expected_text_assets Array of [ 'text' => string, 'type' => string ] (type is headline, long_headline, description).
+	 */
+	protected function generate_text_assets_mock( array $expected_text_assets ): void {
+		$generated = [];
+		foreach ( $expected_text_assets as $asset ) {
+			$generated[] = new GeneratedText(
+				[
+					'text'             => $asset['text'],
+					'asset_field_type' => AssetFieldType::number( $asset['type'] ),
+				]
+			);
+		}
+		$response = new GenerateTextResponse( [ 'generated_text' => $generated ] );
+		$this->asset_generation_service->method( 'generateText' )->willReturn( $response );
+	}
+
+	/**
+	 * Configure the asset generation service mock to throw when generateText() is called.
+	 *
+	 * @param ApiException $exception
+	 */
+	protected function generate_text_assets_mock_exception( ApiException $exception ): void {
+		$this->asset_generation_service->method( 'generateText' )->willThrowException( $exception );
+	}
+
+	/**
+	 * Configure the asset generation service mock to return the given image assets from generateImages().
+	 *
+	 * @param array $expected_image_assets Array of [ 'temporary_image_url' => string, 'type' => string ] (type is marketing_image, etc.).
+	 */
+	protected function generate_image_assets_mock( array $expected_image_assets ): void {
+		$generated = [];
+		foreach ( $expected_image_assets as $asset ) {
+			$generated[] = new GeneratedImage(
+				[
+					'image_temporary_url' => $asset['temporary_image_url'],
+					'asset_field_type'    => AssetFieldType::number( $asset['type'] ),
+				]
+			);
+		}
+		$response = new GenerateImagesResponse( [ 'generated_images' => $generated ] );
+		$this->asset_generation_service->method( 'generateImages' )->willReturn( $response );
+	}
+
+	/**
+	 * Configure the asset generation service mock to throw when generateImages() is called.
+	 *
+	 * @param ApiException $exception
+	 */
+	protected function generate_image_assets_mock_exception( ApiException $exception ): void {
+		$this->asset_generation_service->method( 'generateImages' )->willThrowException( $exception );
 	}
 
 	/**

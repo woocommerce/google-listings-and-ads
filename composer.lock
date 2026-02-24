@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "34bf83c9b42bffe4e88d69b8031e6cfc",
+    "content-hash": "29f7915131697943e319a56e9a05e9a0",
     "packages": [
         {
             "name": "firebase/php-jwt",
@@ -437,19 +437,20 @@
         },
         {
             "name": "googleads/google-ads-php",
-            "version": "dev-legacy-v31.0.1",
+            "version": "dev-legacy-v31.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleads/google-ads-php.git",
-                "reference": "e217e6176fb5d72ff51f9c47e91b8e71bbf21dfb"
+                "reference": "21ca3b959893a027145fa72b4c882ecd463e2de3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleads/google-ads-php/zipball/e217e6176fb5d72ff51f9c47e91b8e71bbf21dfb",
-                "reference": "e217e6176fb5d72ff51f9c47e91b8e71bbf21dfb",
+                "url": "https://api.github.com/repos/googleads/google-ads-php/zipball/21ca3b959893a027145fa72b4c882ecd463e2de3",
+                "reference": "21ca3b959893a027145fa72b4c882ecd463e2de3",
                 "shasum": ""
             },
             "require": {
+                "google/auth": "^1.30 || ^2.0",
                 "google/gax": "^1.19.1",
                 "google/protobuf": "^3.21.5 || >=4.26 <=4.30.0",
                 "grpc/grpc": ">=1.36.0 <=1.57.0",
@@ -494,9 +495,9 @@
             "homepage": "https://github.com/googleads/google-ads-php",
             "support": {
                 "issues": "https://github.com/googleads/google-ads-php/issues",
-                "source": "https://github.com/googleads/google-ads-php/tree/legacy-v31.0.1"
+                "source": "https://github.com/googleads/google-ads-php/tree/legacy-v31.1.0"
             },
-            "time": "2025-08-28T15:13:29+00:00"
+            "time": "2026-01-21T18:06:16+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -5274,9 +5275,9 @@
         "php": ">=7.4",
         "ext-json": "*"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "platform-overrides": {
         "php": "7.4.30"
     },
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.9.0"
 }
