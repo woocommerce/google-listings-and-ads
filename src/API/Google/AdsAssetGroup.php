@@ -5,9 +5,13 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAssetGroupQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Google\Ads\GoogleAds\Util\V22\ResourceNames;
+use Google\Ads\GoogleAds\V22\Resources\AssetGroupAsset;
+use Google\Ads\GoogleAds\V22\Services\AssetGroupAssetOperation;
 use Google\Ads\GoogleAds\V22\Enums\ListingGroupFilterListingSourceEnum\ListingGroupFilterListingSource;
 use Google\Ads\GoogleAds\V22\Enums\AssetGroupStatusEnum\AssetGroupStatus;
 use Google\Ads\GoogleAds\V22\Enums\ListingGroupFilterTypeEnum\ListingGroupFilterType;
@@ -36,8 +40,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseD
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class AdsAssetGroup implements OptionsAwareInterface {
+class AdsAssetGroup implements ContainerAwareInterface, OptionsAwareInterface {
 
+	use ContainerAwareTrait;
 	use ExceptionTrait;
 	use OptionsAwareTrait;
 
@@ -132,16 +137,77 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	/**
 	 * Returns a set of operations to create an asset group.
 	 *
+	 * Only adds listing group for retail (Performance Max with product feed); omit for standard PMax (e.g. SBM without Merchant Center).
+	 *
 	 * @param string $campaign_resource_name
 	 * @param string $asset_group_name The asset group name.
 	 * @return array
 	 */
 	public function create_operations( string $campaign_resource_name, string $asset_group_name ): array {
-		// Asset must be created before listing group.
-		return [
+		$operations = [
 			$this->asset_group_create_operation( $campaign_resource_name, $asset_group_name ),
-			$this->listing_group_create_operation(),
 		];
+
+		if ( $this->options->get_merchant_id() > 0 ) {
+			$operations[] = $this->listing_group_create_operation();
+		}
+
+		return $operations;
+	}
+
+	/**
+	 * Returns a set of operations to create an asset group with assets (for standard PMax / SBM).
+	 *
+	 * @param string $campaign_resource_name
+	 * @param string $campaign_name
+	 * @param string $final_url
+	 * @param array  $asset_group_assets
+	 * @return array
+	 */
+	public function create_operations_with_assets( string $campaign_resource_name, string $campaign_name, string $final_url, array $asset_group_assets ): array {
+		$operations = [];
+
+		$asset_group_resource_name = $this->temporary_resource_name();
+
+		$asset_group = new AssetGroup(
+			[
+				'resource_name' => $asset_group_resource_name,
+				'name'          => $campaign_name . ' Asset Group',
+				'campaign'      => $campaign_resource_name,
+				'status'        => AssetGroupStatus::ENABLED,
+				'final_urls'    => [ $final_url ],
+			]
+		);
+
+		$operations[] = ( new MutateOperation() )->setAssetGroupOperation(
+			( new AssetGroupOperation() )->setCreate( $asset_group )
+		);
+
+		$asset_ops  = $this->container->get( AdsAsset::class )->create_operations( $asset_group_assets );
+		$operations = array_merge( $operations, $asset_ops );
+
+		foreach ( $asset_ops as $i => $asset_op ) {
+			$asset_resource_name = $asset_op
+				->getAssetOperation()
+				->getCreate()
+				->getResourceName();
+
+			$operations[] = ( new MutateOperation() )->setAssetGroupAssetOperation(
+				( new AssetGroupAssetOperation() )->setCreate(
+					new AssetGroupAsset(
+						[
+							'asset_group' => $asset_group_resource_name,
+							'asset'       => $asset_resource_name,
+							'field_type'  => AssetFieldType::number(
+								$asset_group_assets[ $i ]['field_type']
+							),
+						]
+					)
+				)
+			);
+		}
+
+		return $operations;
 	}
 
 	/**

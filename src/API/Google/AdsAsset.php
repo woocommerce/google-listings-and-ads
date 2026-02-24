@@ -4,8 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Google\Ads\GoogleAds\V22\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V22\Enums\AssetTypeEnum\AssetType;
 use Google\Ads\GoogleAds\V22\Resources\Asset;
@@ -212,6 +212,38 @@ class AdsAsset implements OptionsAwareInterface {
 		}
 
 		return $arns;
+	}
+
+	/**
+	 * Returns an array of operations to create assets (for use in a batch mutate, e.g. with asset group).
+	 *
+	 * @param array $assets An array of assets, each containing content and field_type keys.
+	 * @return MutateOperation[] An array of MutateOperation.
+	 * @throws Exception If the asset type is not supported or image url is invalid.
+	 */
+	public function create_operations( array $assets ): array {
+		if ( empty( $assets ) ) {
+			return [];
+		}
+
+		$operations  = [];
+		$image_types = [
+			AssetFieldType::LOGO,
+			AssetFieldType::MARKETING_IMAGE,
+			AssetFieldType::SQUARE_MARKETING_IMAGE,
+			AssetFieldType::PORTRAIT_MARKETING_IMAGE,
+		];
+
+		foreach ( $assets as $asset ) {
+			if ( in_array( $asset['field_type'], $image_types, true ) ) {
+				$image_data    = $this->get_image_data( $asset['content'] );
+				$asset['body'] = $image_data['body'];
+			}
+
+			$operations[] = $this->create_operation( $asset, self::$temporary_id-- );
+		}
+
+		return $operations;
 	}
 
 	/**

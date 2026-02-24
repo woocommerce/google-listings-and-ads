@@ -19,6 +19,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAd
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Google\ApiCore\ApiException;
 use PHPUnit\Framework\MockObject\MockObject;
+use ReflectionMethod;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -83,6 +84,8 @@ class AdsCampaignTest extends UnitTest {
 		$this->wc            = $this->createMock( WC::class );
 		$this->google_helper = new GoogleHelper( $this->wc );
 
+		$this->asset_group->method( 'create_operations' )->willReturn( [] );
+
 		$this->container = new Container();
 		$this->container->addShared( AdsAssetGroup::class, $this->asset_group );
 		$this->container->addShared( TransientsInterface::class, $this->transients );
@@ -93,6 +96,7 @@ class AdsCampaignTest extends UnitTest {
 		$this->campaign->set_container( $this->container );
 
 		$this->options->method( 'get_ads_id' )->willReturn( $this->ads_id );
+		$this->options->method( 'get_merchant_id' )->willReturn( 12345 );
 	}
 
 	public function test_get_campaigns_empty_list() {
@@ -744,5 +748,53 @@ class AdsCampaignTest extends UnitTest {
 			);
 			$this->assertEquals( 404, $e->getCode() );
 		}
+	}
+
+	public function test_create_campaign_throws_when_no_merchant_and_no_assets() {
+		$options_no_merchant = $this->createMock( OptionsInterface::class );
+		$options_no_merchant->method( 'get_ads_id' )->willReturn( $this->ads_id );
+		$options_no_merchant->method( 'get_merchant_id' )->willReturn( 0 );
+		$this->campaign->set_options_object( $options_no_merchant );
+
+		$campaign_data = [
+			'name'                                  => 'New Campaign',
+			'amount'                                => 20,
+			'targeted_locations'                    => [ 'US', 'GB' ],
+			'eu_political_advertising_confirmation' => false,
+		];
+
+		$this->expectException( ExceptionWithResponseData::class );
+		$this->expectExceptionMessage( 'Add assets or use Generate with AI to create your campaign.' );
+
+		$this->campaign->create_campaign( $campaign_data );
+	}
+
+	public function test_create_operation_includes_shopping_setting_when_merchant_id_set() {
+		$this->options->method( 'get_merchant_id' )->willReturn( 12345 );
+
+		$method = new ReflectionMethod( AdsCampaign::class, 'create_operation' );
+		$method->setAccessible( true );
+		/** @var \Google\Ads\GoogleAds\V22\Services\MutateOperation $mutate_op */
+		$mutate_op = $method->invoke( $this->campaign, 'Test Campaign', 'US', false );
+
+		$campaign = $mutate_op->getCampaignOperation()->getCreate();
+		$this->assertTrue( $campaign->hasShoppingSetting() );
+		$this->assertEquals( 12345, $campaign->getShoppingSetting()->getMerchantId() );
+		$this->assertEquals( 'US', $campaign->getShoppingSetting()->getFeedLabel() );
+	}
+
+	public function test_create_operation_omits_shopping_setting_when_merchant_id_zero() {
+		$options_no_merchant = $this->createMock( OptionsInterface::class );
+		$options_no_merchant->method( 'get_ads_id' )->willReturn( $this->ads_id );
+		$options_no_merchant->method( 'get_merchant_id' )->willReturn( 0 );
+		$this->campaign->set_options_object( $options_no_merchant );
+
+		$method = new ReflectionMethod( AdsCampaign::class, 'create_operation' );
+		$method->setAccessible( true );
+		/** @var \Google\Ads\GoogleAds\V22\Services\MutateOperation $mutate_op */
+		$mutate_op = $method->invoke( $this->campaign, 'Test Campaign', 'US', false );
+
+		$campaign = $mutate_op->getCampaignOperation()->getCreate();
+		$this->assertFalse( $campaign->hasShoppingSetting() );
 	}
 }

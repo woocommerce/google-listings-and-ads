@@ -52,6 +52,7 @@ class AdsAssetGroupTest extends UnitTest {
 		$this->asset_group_asset = $this->createMock( AdsAssetGroupAsset::class );
 		$this->options           = $this->createMock( OptionsInterface::class );
 		$this->options->method( 'get_ads_id' )->willReturn( $this->ads_id );
+		$this->options->method( 'get_merchant_id' )->willReturn( 12345 );
 
 		$this->asset_group = new AdsAssetGroup( $this->client, $this->asset_group_asset );
 		$this->asset_group->set_options_object( $this->options );
@@ -83,6 +84,32 @@ class AdsAssetGroupTest extends UnitTest {
 		$this->assertEquals( $asset_group_resource_name, $listing_group->getAssetGroup() );
 		$this->assertEquals( ListingGroupFilterType::UNIT_INCLUDED, $listing_group->getType() );
 		$this->assertEquals( ListingGroupFilterListingSource::SHOPPING, $listing_group->getListingSource() );
+	}
+
+	public function test_create_operations_without_merchant_center() {
+		$options_no_merchant = $this->createMock( OptionsInterface::class );
+		$options_no_merchant->method( 'get_ads_id' )->willReturn( $this->ads_id );
+		$options_no_merchant->method( 'get_merchant_id' )->willReturn( 0 );
+		$this->asset_group->set_options_object( $options_no_merchant );
+
+		$campaign_resource_name    = $this->generate_campaign_resource_name( self::TEST_CAMPAIGN_ID );
+		$asset_group_resource_name = $this->generate_asset_group_resource_name( -3 );
+
+		$operations = $this->asset_group->create_operations(
+			$campaign_resource_name,
+			'New Campaign'
+		);
+
+		$this->assertCount( 1, $operations );
+
+		$operation_asset_group = $operations[0]->getAssetGroupOperation();
+		$this->assertTrue( $operation_asset_group->hasCreate() );
+
+		$asset_group = $operation_asset_group->getCreate();
+		$this->assertEquals( 'New Campaign Asset Group', $asset_group->getName() );
+		$this->assertEquals( $campaign_resource_name, $asset_group->getCampaign() );
+		$this->assertEquals( $asset_group_resource_name, $asset_group->getResourceName() );
+		$this->assertEquals( AssetGroupStatus::ENABLED, $asset_group->getStatus() );
 	}
 
 	public function test_get_asset_groups_by_campaign_id_with_assets() {
