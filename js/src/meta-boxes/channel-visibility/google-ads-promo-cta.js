@@ -1,15 +1,15 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
 import { Flex, FlexBlock } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
-import GetStartedCTA from './get-started-cta';
 import { addBaseEventProperties } from '~/utils/tracks';
+import GetStartedCTA from './get-started-cta';
 
 const BASE_EVENT_PROPS = addBaseEventProperties( {} );
 
