@@ -1,24 +1,25 @@
 /**
  * External dependencies
  */
+import { useEffect, useRef, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { noop } from 'lodash';
-import { useState, useEffect, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import { GEN_AI_ASSET_TYPES } from '~/constants';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
+import AppTooltip from '~/components/app-tooltip';
+import { GEN_AI_ASSET_TYPES } from '~/constants';
+import useAdblockerImageProxy from '~/hooks/useAdblockerImageProxy';
 import useCreateGenAIAssets from '~/hooks/useCreateGenAIAssets';
 import useCroppedImageSelector from '~/hooks/useCroppedImageSelector';
-import AppTooltip from '~/components/app-tooltip';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import AssetItemActionButton, {
 	ACTION_TYPES,
 } from './asset-item-action-button';
-import MediaSelector from './media-selector';
 import GenAIImagePicker from './gen-ai-image-picker';
+import MediaSelector from './media-selector';
 
 /**
  * @typedef {Object} AssetImageConfig
@@ -56,6 +57,7 @@ export default function ImagesSelector( {
 	const [ awaitingActionImage, setAwaitingActionImage ] = useState( null );
 	const [ generateAssets, isGeneratingAssets ] = useCreateGenAIAssets();
 	const { createNotice } = useDispatchCoreNotices();
+	const [ getProxyUrl ] = useAdblockerImageProxy();
 	const [ images, setImages ] = useState( () =>
 		// The asset images fetched from Google Ads are only URLs.
 		initialImageUrls.map( ( url ) => ( { url, id: url, alt: '' } ) )
@@ -171,7 +173,10 @@ export default function ImagesSelector( {
 	return (
 		<div className="gla-images-selector">
 			<MediaSelector
-				media={ images }
+				media={ images.map( ( img ) => ( {
+					...img,
+					thumbnail: getProxyUrl( img.url ),
+				} ) ) }
 				onMediumClick={ handleMediumClick }
 				onRemoveMedia={ handleRemoveImage }
 			/>

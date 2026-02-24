@@ -27,7 +27,7 @@ export default function getProxiedImageUrl( imageUrl ) {
 		return imageUrl;
 	}
 
-	const baseUrl = `${ window.location.origin }/wp-json${ API_NAMESPACE }/ads/assets/image-proxy`;
+	const baseUrl = `/wp-json${ API_NAMESPACE }/ads/assets/image-proxy`;
 	const nonce = window.wpApiSettings?.nonce || '';
 
 	const params = { url: imageUrl };

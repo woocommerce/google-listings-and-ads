@@ -15,9 +15,9 @@ import { __ } from '@wordpress/i18n';
  */
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import AppButton from '~/components/app-button';
+import useAdblockerImageProxy from '~/hooks/useAdblockerImageProxy';
 import useGenAIMediaAssets from '~/hooks/useGenAIMediaAssets';
 import AIIcon from '~/images/ai-icon.svg?inline';
-import getProxiedImageUrl from '~/utils/getProxiedImageUrl';
 import './index.scss';
 
 /**
@@ -34,6 +34,7 @@ export default function GenAIImagePicker( { assetKey, onAddSelectedImages } ) {
 	const { final_url: finalUrl } = values;
 	const { assets } = useGenAIMediaAssets( finalUrl, assetKey );
 	const [ selectedImages, setSelectedImages ] = useState( [] );
+	const [ getProxyUrl ] = useAdblockerImageProxy();
 
 	const handleOnAddSelectedImages = () => {
 		onAddSelectedImages( selectedImages );
@@ -81,9 +82,6 @@ export default function GenAIImagePicker( { assetKey, onAddSelectedImages } ) {
 							return null;
 						}
 
-						// Proxy the URL only for rendering to bypass adblockers
-						const displayImageUrl = getProxiedImageUrl( src );
-
 						return (
 							<FlexItem
 								key={ src }
@@ -101,7 +99,7 @@ export default function GenAIImagePicker( { assetKey, onAddSelectedImages } ) {
 								>
 									<img
 										className="gla-media-selector__medium"
-										src={ displayImageUrl }
+										src={ getProxyUrl( src ) }
 										alt=""
 									/>
 								</AppButton>
