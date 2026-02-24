@@ -35,7 +35,7 @@ const ChooseAudienceSection = () => {
 				description={
 					<p>
 						{ __(
-							'Where do you want to sell your products?',
+							'Where do you want to advertise your services?',
 							'google-listings-and-ads'
 						) }
 					</p>
