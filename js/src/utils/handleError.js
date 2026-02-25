@@ -99,11 +99,11 @@ export function getFormattedErrorMessage( detailedErrors ) {
 
 	return errors.filter( Boolean ).map( ( { error } ) => {
 		const title =
-			error.title || __( 'Unknown Error', 'google-listings-and-ads' );
+			error.title ||
+			error.error ||
+			__( 'Unknown Error', 'google-listings-and-ads' );
 
-		const description = error?.details
-			? error.details[ 0 ]?.errors?.[ 0 ]?.message
-			: error?.errors?.[ 0 ]?.message;
+		const description = error?.message;
 
 		return { title, description };
 	} );

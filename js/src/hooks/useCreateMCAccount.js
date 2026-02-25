@@ -9,6 +9,7 @@ import { __ } from '@wordpress/i18n';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import extractDetailedApiError from '~/utils/extractDetailedApiError';
 import { ERROR_SLOTS } from '~/data/constants';
 
 const useCreateMCAccount = () => {
@@ -37,17 +38,12 @@ const useCreateMCAccount = () => {
 				);
 				return;
 			}
-			console.log( e );
-			if (
-				e?.code === 'API_ERROR' &&
-				! [ 403, 503 ].includes( e.data?.statusCode )
-			) {
-				console.log(
-					'API error when creating Google Merchant Center account:',
-					e
-				);
+
+			const detailedError = await extractDetailedApiError( e );
+
+			if ( detailedError ) {
 				receiveDetailedError( ERROR_SLOTS.GOOGLE_MC_CONNECTION, {
-					...e.data.error,
+					...detailedError.data,
 					title: __( 'Connection Failed', 'google-listings-and-ads' ),
 				} );
 			}

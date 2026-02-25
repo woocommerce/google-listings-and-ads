@@ -1,13 +1,14 @@
 .gla-detailed-error {
 	color: $alert-red;
 	font-size: $gla-font-base;
+	margin: $grid-unit-10 0;
+
+	.gla-detailed-error__icon {
+		display: block;
+	}
 
 	.gla-detailed-error__title {
-		display: flex;
-		align-items: center;
 		font-weight: normal;
-		gap: $grid-unit-05;
-		flex-wrap: nowrap;
 		margin: 0;
 	}
 
