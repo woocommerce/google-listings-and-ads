@@ -1,7 +1,13 @@
 /**
  * External dependencies
  */
-import { Flex, FlexItem, SelectControl } from '@wordpress/components';
+import {
+	Flex,
+	FlexBlock,
+	FlexItem,
+	Notice,
+	SelectControl,
+} from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
@@ -11,63 +17,95 @@ import { __ } from '@wordpress/i18n';
 import { glaData } from '~/constants';
 import googleLogoURL from '~/images/logo/gogole-g-logo.svg';
 
-const { channelVisibility: { channel_visibility } = {} } = glaData || {};
+const {
+	channelVisibility: { channel_visibility } = {},
+	issues = [],
+	product_is_visible,
+} = glaData || {};
 
 const GoogleAdsPromoSetupCompleted = () => {
 	const [ channelVisibility, setChannelVisibility ] =
 		useState( channel_visibility );
+	let productIssues = issues;
+
+	if ( ! product_is_visible ) {
+		productIssues = [
+			...issues,
+			__(
+				'This product cannot be shown on any channel because it is hidden from your store catalog.',
+				'google-listings-and-ads'
+			),
+		];
+	}
 
 	return (
-		<Flex
-			gap={ 2 }
-			align="center"
-			justify="space-between"
-			className="gla-channel-visibility"
-		>
-			<FlexItem>
-				<Flex gap={ 2 } align="center">
+		<Flex direction="column" gap={ 4 } className="gla-channel-visibility">
+			<FlexBlock>
+				<Flex gap={ 2 } align="center" justify="flex-start">
 					<FlexItem>
-						<img
-							className="gla-channel-visibility__logo"
-							src={ googleLogoURL }
-							alt={ __(
-								'Google Logo',
-								'google-listings-and-ads'
-							) }
-							width={ 16 }
-							height={ 16 }
+						<Flex gap={ 2 } align="center">
+							<FlexItem>
+								<img
+									className="gla-channel-visibility__logo"
+									src={ googleLogoURL }
+									alt={ __(
+										'Google Logo',
+										'google-listings-and-ads'
+									) }
+									width={ 16 }
+									height={ 16 }
+								/>
+							</FlexItem>
+							<FlexItem>
+								{ __( 'Google', 'google-listings-and-ads' ) }
+							</FlexItem>
+						</Flex>
+					</FlexItem>
+					<FlexItem>
+						<SelectControl
+							name="gla_channel_visibility"
+							options={ [
+								{
+									label: __(
+										'Sync and show',
+										'google-listings-and-ads'
+									),
+									value: 'sync-and-show',
+								},
+								{
+									label: __(
+										"Don't sync and show",
+										'google-listings-and-ads'
+									),
+									value: 'dont-sync-and-show',
+								},
+							] }
+							value={ channelVisibility }
+							onChange={ ( value ) =>
+								setChannelVisibility( value )
+							}
+							__nextHasNoMarginBottom
 						/>
 					</FlexItem>
-					<FlexItem>
-						{ __( 'Google', 'google-listings-and-ads' ) }
-					</FlexItem>
 				</Flex>
-			</FlexItem>
+			</FlexBlock>
 
-			<FlexItem>
-				<SelectControl
-					name="gla_channel_visibility"
-					options={ [
-						{
-							label: __(
-								'Sync and show',
-								'google-listings-and-ads'
-							),
-							value: 'sync-and-show',
-						},
-						{
-							label: __(
-								"Don't sync and show",
-								'google-listings-and-ads'
-							),
-							value: 'dont-sync-and-show',
-						},
-					] }
-					value={ channelVisibility }
-					onChange={ ( value ) => setChannelVisibility( value ) }
-					__nextHasNoMarginBottom
-				/>
-			</FlexItem>
+			{ productIssues?.length > 0 && (
+				<FlexBlock>
+					<Notice status="warning" isDismissible={ false }>
+						<p>
+							<strong>
+								{ __( 'Issues', 'google-listings-and-ads' ) }
+							</strong>
+						</p>
+						<ul>
+							{ productIssues.map( ( issue, idx ) => (
+								<li key={ idx }>{ issue }</li>
+							) ) }
+						</ul>
+					</Notice>
+				</FlexBlock>
+			) }
 		</Flex>
 	);
 };
