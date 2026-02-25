@@ -18,14 +18,17 @@ import { glaData } from '~/constants';
 import googleLogoURL from '~/images/logo/gogole-g-logo.svg';
 
 const {
-	channelVisibility: { channel_visibility } = {},
-	issues = [],
-	product_is_visible,
+	channelVisibility: {
+		channel_visibility,
+		product_is_visible,
+		issues = [],
+	} = {},
 } = glaData || {};
 
 const GoogleAdsPromoSetupCompleted = () => {
-	const [ channelVisibility, setChannelVisibility ] =
-		useState( channel_visibility );
+	const [ channelVisibility, setChannelVisibility ] = useState(
+		product_is_visible ? channel_visibility : 'dont-sync-and-show'
+	);
 	let productIssues = issues;
 
 	if ( ! product_is_visible ) {
@@ -84,6 +87,7 @@ const GoogleAdsPromoSetupCompleted = () => {
 							onChange={ ( value ) =>
 								setChannelVisibility( value )
 							}
+							disabled={ ! product_is_visible }
 							__nextHasNoMarginBottom
 						/>
 					</FlexItem>
