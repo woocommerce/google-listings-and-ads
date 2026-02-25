@@ -22,12 +22,13 @@ const GoogleAdsPromoSetupCompleted = () => {
 			gap={ 2 }
 			align="center"
 			justify="space-between"
-			className="gla-channel-visibility-google-ads-promo"
+			className="gla-channel-visibility"
 		>
 			<FlexItem>
-				<Flex gap={ 4 } align="center">
+				<Flex gap={ 2 } align="center">
 					<FlexItem>
 						<img
+							className="gla-channel-visibility__logo"
 							src={ googleLogoURL }
 							alt={ __(
 								'Google Logo',
@@ -45,7 +46,7 @@ const GoogleAdsPromoSetupCompleted = () => {
 
 			<FlexItem>
 				<SelectControl
-					name="gla_channel_visibility_visibility"
+					name="gla_channel_visibility"
 					options={ [
 						{
 							label: __(

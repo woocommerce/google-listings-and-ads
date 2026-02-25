@@ -1,19 +1,31 @@
-.gla-channel-visibility-google-ads-promo {
+.gla-channel-visibility {
 	padding: $grid-unit-05;
+}
 
-	.gla-channel-visibility-google-ads-promo-content {
-		display: flex;
-		flex-direction: column;
-		gap: $grid-unit-05;
-		flex-wrap: wrap;
-		box-sizing: border-box;
-		background: rgba(56, 88, 233, 0.03);
-		border: 1px solid rgba(56, 88, 233, 0.16);
-		padding: $grid-unit-20;
-		align-items: flex-start;
-	}
+.gla-channel-visibility__logo {
+	display: block;
+}
 
-	.gla-channel-visibility-get-started-is-dismissed {
-		margin-left: auto;
+.gla-channel-visibility__title {
+	font-size: $gla-font-base;
+	font-weight: 600;
+	line-height: $gla-line-height-medium;
+	letter-spacing: 0;
+	margin: 0;
+}
+
+
+.gla-channel-visibility__content {
+	background-color: rgb(56 88 233 / 0.03);
+	border: 1px solid rgb(56 88 233 / 0.16);
+	border-radius: $grid-unit-05;
+	padding: $grid-unit-20;
+
+	p:last-child {
+		margin: 0;
 	}
+}
+
+.gla-channel-visibility__get-started--is-dismissed {
+	margin-left: auto;
 }

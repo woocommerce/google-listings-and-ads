@@ -12,7 +12,7 @@ import GetStartedCTA from './get-started-cta';
 
 const GoogleAdsPromoCTA = ( { context, onDismiss } ) => {
 	return (
-		<Flex gap={ 4 }>
+		<Flex gap={ 3 } align="flex-start">
 			<FlexBlock>
 				<GetStartedCTA context={ context } />
 			</FlexBlock>

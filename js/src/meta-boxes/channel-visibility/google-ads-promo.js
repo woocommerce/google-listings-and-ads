@@ -52,29 +52,26 @@ const GoogleAdsPromo = () => {
 	}
 
 	return (
-		<Flex
-			className="gla-channel-visibility-google-ads-promo"
-			direction="column"
-			gap={ 4 }
-		>
+		<Flex className="gla-channel-visibility" direction="column" gap={ 4 }>
 			<FlexBlock>
 				<Flex gap={ 2 } align="center" justify="flex-start">
 					<FlexItem>
 						<img
+							className="gla-channel-visibility__logo"
 							src={ googleLogoURL }
 							alt={ __(
 								'Google Logo',
 								'google-listings-and-ads'
 							) }
-							width={ 24 }
-							height={ 24 }
+							width={ 16 }
+							height={ 16 }
 						/>
 					</FlexItem>
 					<FlexItem>
 						{ __( 'Google', 'google-listings-and-ads' ) }
 					</FlexItem>
 					{ isDismissed && (
-						<FlexItem className="gla-channel-visibility-get-started-is-dismissed">
+						<FlexItem className="gla-channel-visibility__get-started--is-dismissed">
 							<GetStartedCTA context={ context } />
 						</FlexItem>
 					) }
@@ -82,14 +79,18 @@ const GoogleAdsPromo = () => {
 			</FlexBlock>
 
 			{ ! isDismissed && (
-				<Flex className="gla-channel-visibility-google-ads-promo-content">
+				<Flex
+					className="gla-channel-visibility__content"
+					direction="column"
+					gap={ 3 }
+				>
 					<FlexBlock>
-						<strong>
+						<h3 className="gla-channel-visibility__title">
 							{ __(
 								'Get your products on Google',
 								'google-listings-and-ads'
 							) }
-						</strong>
+						</h3>
 					</FlexBlock>
 					<FlexBlock>
 						<p>

@@ -118,7 +118,8 @@ const webpackConfig = {
 		),
 		'channel-visibility-meta-box': path.join(
 			__dirname,
-			'js/src/meta-boxes/channel-visibility/index.js'
+			'js/src/meta-boxes/channel-visibility',
+			'index.js'
 		),
 	} ),
 	output: {
