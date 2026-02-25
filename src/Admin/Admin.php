@@ -255,14 +255,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 					'mcId'    => $this->options->get_merchant_id() ?: null,
 					'adsId'   => $this->options->get_ads_id() ?: null,
 				],
-				'channelVisibility' => [
-					'field_id'           => 'channel-visibility',
-					'product_id'         => 214,
-					'product_visible'    => false,
-					'channel_visibility' => 'sync-and-show',
-					'sync_status'        => 'synced',
-					'issues'             => [],
-				],
+				'channelVisibility' => $this->get_channel_visibility_data(),
 			]
 		);
 
