@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
+import { Flex, FlexBlock, FlexItem, Notice } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
 import { useEffect, useRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
@@ -19,7 +19,7 @@ import GoogleAdsPromoCTA from './google-ads-promo-cta';
 import GoogleAdsPromoSetupCompleted from './google-ads-promo-setup-completed';
 import './google-ads-promo.scss';
 
-const { adsSetupComplete } = glaData;
+const { adsSetupComplete, channelVisibility: { issues = [] } = {} } = glaData;
 const context = 'channel-visibility-meta-box';
 
 const PREFERENCE_BANNER_KEY = 'gla_google_ads_promo_dismissed';
@@ -108,6 +108,23 @@ const GoogleAdsPromo = () => {
 						/>
 					</FlexBlock>
 				</Flex>
+			) }
+
+			{ issues?.length > 0 && (
+				<FlexBlock>
+					<Notice status="warning" isDismissible={ false }>
+						<p>
+							<strong>
+								{ __( 'Issues', 'google-listings-and-ads' ) }
+							</strong>
+						</p>
+						<ul>
+							{ issues.map( ( issue, idx ) => (
+								<li key={ idx }>{ issue }</li>
+							) ) }
+						</ul>
+					</Notice>
+				</FlexBlock>
 			) }
 		</Flex>
 	);
