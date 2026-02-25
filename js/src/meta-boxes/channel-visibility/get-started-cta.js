@@ -8,17 +8,18 @@ import { __ } from '@wordpress/i18n';
  */
 import AppButton from '~/components/app-button';
 import { getGetStartedUrl } from '~/utils/urls';
-import { addBaseEventProperties } from '~/utils/tracks';
 
-const GET_STARTED_URL = getGetStartedUrl();
-const BASE_EVENT_PROPS = addBaseEventProperties( {} );
+const GetStartedCTA = ( { context } ) => {
+	const getStartedUrl = getGetStartedUrl();
 
-const GetStartedCTA = () => {
 	return (
 		<AppButton
-			href={ GET_STARTED_URL }
-			eventName="gla_get_started_click"
-			eventProps={ BASE_EVENT_PROPS }
+			href={ getStartedUrl }
+			eventName="gla_google_ads_promo_create_campaign_click"
+			eventProps={ {
+				href: getStartedUrl,
+				context,
+			} }
 			isSecondary
 		>
 			{ __( 'Get started', 'google-listings-and-ads' ) }
