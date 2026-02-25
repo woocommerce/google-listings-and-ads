@@ -37,10 +37,15 @@ const useCreateMCAccount = () => {
 				);
 				return;
 			}
+			console.log( e );
 			if (
 				e?.code === 'API_ERROR' &&
 				! [ 403, 503 ].includes( e.data?.statusCode )
 			) {
+				console.log(
+					'API error when creating Google Merchant Center account:',
+					e
+				);
 				receiveDetailedError( ERROR_SLOTS.GOOGLE_MC_CONNECTION, {
 					...e.data.error,
 					title: __( 'Connection Failed', 'google-listings-and-ads' ),
