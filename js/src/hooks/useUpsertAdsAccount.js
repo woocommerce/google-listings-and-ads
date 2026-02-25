@@ -11,6 +11,7 @@ import { useAppDispatch } from '~/data';
 import { API_NAMESPACE, ERROR_SLOTS } from '~/data/constants';
 import useGoogleAdsAccount from './useGoogleAdsAccount';
 import useApiFetchCallback from './useApiFetchCallback';
+import extractDetailedApiError from '~/utils/extractDetailedApiError';
 
 /**
  * Set up a Google Ads account.
@@ -51,9 +52,13 @@ const useUpsertAdsAccount = () => {
 			// For status code 428, we want to allow users to continue and proceed,
 			// so we swallow the error for status code 428,
 			// and only display error message and exit this function for non-428 error.
-			if ( e?.code === 'API_ERROR' && e.data?.statusCode !== 428 ) {
+			const detailedError = await extractDetailedApiError( e, {
+				ignoredStatusCodes: [ 428 ],
+			} );
+
+			if ( detailedError ) {
 				receiveDetailedError( ERROR_SLOTS.GOOGLE_ADS_CONNECTION, {
-					...e.data.error,
+					...detailedError.data,
 					title: __(
 						'Google Ads Creation Failed',
 						'google-listings-and-ads'

@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import extractDetailedApiError from '~/utils/extractDetailedApiError';
 import { useAppDispatch } from '~/data';
 import { ERROR_SLOTS } from '~/data/constants';
 
@@ -45,12 +46,13 @@ const useConnectMCAccount = ( value ) => {
 				return;
 			}
 
-			if (
-				e?.code === 'API_ERROR' &&
-				! [ 409, 403 ].includes( e.data?.statusCode )
-			) {
+			const detailedError = await extractDetailedApiError( e, {
+				ignoredStatusCodes: [ 403, 409 ],
+			} );
+
+			if ( detailedError ) {
 				receiveDetailedError( ERROR_SLOTS.GOOGLE_MC_CONNECTION, {
-					...e.data.error,
+					...detailedError.data,
 					title: __( 'Connection Failed', 'google-listings-and-ads' ),
 				} );
 			}

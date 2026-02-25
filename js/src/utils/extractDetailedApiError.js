@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Extracts detailed error information from a fetch Response object.
  *
  * @async
@@ -16,6 +21,27 @@ export default async function extractDetailedApiError(
 ) {
 	// Only handle fetch Response errors
 	if ( ! ( error instanceof Response ) ) {
+		if ( error && typeof error === 'object' ) {
+			return {
+				data: {
+					statusCode: error.data?.status || 500,
+					error: error.code,
+					message:
+						error.message ||
+						__(
+							'An unknown error occurred.',
+							'google-listings-and-ads'
+						),
+				},
+			};
+		}
+
+		return null;
+	}
+
+	const statusCode = error.status;
+
+	if ( ignoredStatusCodes.includes( error.status ) ) {
 		return null;
 	}
 
@@ -23,14 +49,25 @@ export default async function extractDetailedApiError(
 		const clonedError = error.clone();
 		const parsedError = await clonedError.json();
 
-		if (
-			parsedError?.code === 'API_ERROR' &&
-			! ignoredStatusCodes.includes( parsedError?.data?.statusCode )
-		) {
+		// This is the new format for API errors, which includes a 'code' property to identify it as an API error.
+		if ( parsedError?.code === 'API_ERROR' ) {
 			return parsedError;
 		}
+
+		// For backward compatibility, we also check for the old format where the status code is directly on the error data.
+		if ( parsedError?.message ) {
+			return {
+				data: {
+					statusCode,
+					error: parsedError.message,
+					message: parsedError.message,
+				},
+			};
+		}
 	} catch {
-		return new Error( 'Error parsing response.' );
+		return new Error(
+			__( 'Error parsing response.', 'google-listings-and-ads' )
+		);
 	}
 
 	return null;
