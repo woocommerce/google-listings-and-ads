@@ -21,8 +21,11 @@ document.addEventListener( 'DOMContentLoaded', () => {
 	const orderAttributionBox = document.querySelector(
 		'#woocommerce-order-source-data .inside'
 	);
+	const orderAttributionDetailsContainer = document.querySelector(
+		'#woocommerce-order-source-data .woocommerce-order-attribution-details-container'
+	);
 
-	if ( ! orderAttributionBox ) {
+	if ( ! orderAttributionDetailsContainer && ! orderAttributionBox ) {
 		return;
 	}
 
@@ -35,6 +38,15 @@ document.addEventListener( 'DOMContentLoaded', () => {
 			<GoogleAdsPromo />
 		</Suspense>
 	);
+
+	if ( orderAttributionDetailsContainer ) {
+		orderAttributionDetailsContainer.insertAdjacentElement(
+			'afterend',
+			glaElement
+		);
+
+		return;
+	}
 
 	orderAttributionBox.prepend( glaElement );
 } );
