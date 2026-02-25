@@ -261,7 +261,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 					'channel_visibility' => 'sync-and-show',
 					'sync_status'        => 'synced',
 					'issues'             => [],
-				]
+				],
 			]
 		);
 

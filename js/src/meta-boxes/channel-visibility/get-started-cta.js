@@ -9,15 +9,15 @@ import { __ } from '@wordpress/i18n';
 import AppButton from '~/components/app-button';
 import { getGetStartedUrl } from '~/utils/urls';
 
-const GET_STARTED_URL = getGetStartedUrl();
-
 const GetStartedCTA = ( { context } ) => {
+	const getStartedUrl = getGetStartedUrl();
+
 	return (
 		<AppButton
-			href={ GET_STARTED_URL }
+			href={ getStartedUrl }
 			eventName="gla_google_ads_promo_create_campaign_click"
 			eventProps={ {
-				href: GET_STARTED_URL,
+				href: getStartedUrl,
 				context,
 			} }
 			isSecondary

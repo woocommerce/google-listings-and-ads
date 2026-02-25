@@ -12,7 +12,7 @@ import GetStartedCTA from './get-started-cta';
 
 const GoogleAdsPromoCTA = ( { context, onDismiss } ) => {
 	return (
-		<Flex className="gla-channel-visibility-google-ads-promo-cta" gap={ 4 }>
+		<Flex gap={ 4 }>
 			<FlexBlock>
 				<GetStartedCTA context={ context } />
 			</FlexBlock>
@@ -23,8 +23,8 @@ const GoogleAdsPromoCTA = ( { context, onDismiss } ) => {
 					eventProps={ {
 						context,
 					} }
-					isTertiary
 					onClick={ onDismiss }
+					isTertiary
 				>
 					{ __( 'Dismiss', 'google-listings-and-ads' ) }
 				</AppButton>
