@@ -13,6 +13,7 @@ import Subsection from '~/components/subsection';
 import RadioHelperText from '~/components/radio-helper-text';
 import SupportedCountrySelect from '~/components/supported-country-select';
 import VerticalGapLayout from '~/components/vertical-gap-layout';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import './choose-audience-section.scss';
 
 /**
@@ -22,24 +23,28 @@ import './choose-audience-section.scss';
  * Does not provide any save strategy, this is to be bound externally.
  */
 const ChooseAudienceSection = () => {
+	const { hasGoogleMCConnection } = useGoogleMCAccount();
 	const {
 		getInputProps,
 		adapter: { renderRequestedValidation },
 	} = useAdaptiveFormContext();
+
+	const description = hasGoogleMCConnection
+		? __(
+				'Where do you want to sell your products?',
+				'google-listings-and-ads'
+		  )
+		: __(
+				'Where do you want to advertise your services?',
+				'google-listings-and-ads'
+		  );
 
 	return (
 		<>
 			<Section
 				className="gla-choose-audience-section"
 				title={ __( 'Audience', 'google-listings-and-ads' ) }
-				description={
-					<p>
-						{ __(
-							'Where do you want to advertise your services?',
-							'google-listings-and-ads'
-						) }
-					</p>
-				}
+				description={ <p>{ description }</p> }
 			>
 				<Section.Card>
 					<Section.Card.Body>
