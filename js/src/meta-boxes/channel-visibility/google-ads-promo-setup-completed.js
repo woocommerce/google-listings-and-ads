@@ -1,15 +1,15 @@
 /**
  * External dependencies
  */
+import { Flex, FlexItem, SelectControl } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { Flex, FlexItem, SelectControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import googleLogoURL from '~/images/logo/gogole-g-logo.svg';
 import { glaData } from '~/constants';
+import googleLogoURL from '~/images/logo/gogole-g-logo.svg';
 
 const { channelVisibility: { channel_visibility } = {} } = glaData || {};
 
@@ -48,11 +48,17 @@ const GoogleAdsPromoSetupCompleted = () => {
 					name="gla_channel_visibility_visibility"
 					options={ [
 						{
-							label: 'Sync and show',
+							label: __(
+								'Sync and show',
+								'google-listings-and-ads'
+							),
 							value: 'sync-and-show',
 						},
 						{
-							label: "Don't sync and show",
+							label: __(
+								"Don't sync and show",
+								'google-listings-and-ads'
+							),
 							value: 'dont-sync-and-show',
 						},
 					] }
