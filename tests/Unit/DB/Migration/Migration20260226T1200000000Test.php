@@ -27,10 +27,22 @@ class Migration20260226T1200000000Test extends UnitTest {
 
 	public function test_apply_sets_pull_false_for_all_datatypes_when_current_value_is_array() {
 		$sync_mode_with_pull_enabled = [
-			'products'  => [ 'push' => true, 'pull' => true ],
-			'coupons'   => [ 'push' => false, 'pull' => true ],
-			'shipping'  => [ 'push' => true, 'pull' => true ],
-			'settings'  => [ 'push' => true, 'pull' => false ],
+			'products' => [
+				'push' => true,
+				'pull' => true,
+			],
+			'coupons'  => [
+				'push' => false,
+				'pull' => true,
+			],
+			'shipping' => [
+				'push' => true,
+				'pull' => true,
+			],
+			'settings' => [
+				'push' => true,
+				'pull' => false,
+			],
 		];
 
 		$options = $this->createMock( OptionsInterface::class );
@@ -40,17 +52,29 @@ class Migration20260226T1200000000Test extends UnitTest {
 			->willReturn( $sync_mode_with_pull_enabled );
 
 		$expected_normalized = [
-			'products'  => [ 'push' => true, 'pull' => false ],
-			'coupons'   => [ 'push' => false, 'pull' => false ],
-			'shipping'  => [ 'push' => true, 'pull' => false ],
-			'settings'  => [ 'push' => true, 'pull' => false ],
+			'products' => [
+				'push' => true,
+				'pull' => false,
+			],
+			'coupons'  => [
+				'push' => false,
+				'pull' => false,
+			],
+			'shipping' => [
+				'push' => true,
+				'pull' => false,
+			],
+			'settings' => [
+				'push' => true,
+				'pull' => false,
+			],
 		];
 
 		$options->expects( $this->once() )
 			->method( 'update' )
 			->with( OptionsInterface::API_PULL_SYNC_MODE, $expected_normalized );
 
-		$wpdb     = $this->createStub( wpdb::class );
+		$wpdb      = $this->createStub( wpdb::class );
 		$migration = new Migration20260226T1200000000( $wpdb, $options );
 
 		$migration->apply();
@@ -64,17 +88,29 @@ class Migration20260226T1200000000Test extends UnitTest {
 			->willReturn( null );
 
 		$expected_normalized = [
-			NotificationsService::DATATYPE_PRODUCT  => [ 'pull' => false, 'push' => true ],
-			NotificationsService::DATATYPE_COUPON   => [ 'pull' => false, 'push' => true ],
-			NotificationsService::DATATYPE_SHIPPING => [ 'pull' => false, 'push' => true ],
-			NotificationsService::DATATYPE_SETTINGS => [ 'pull' => false, 'push' => true ],
+			NotificationsService::DATATYPE_PRODUCT  => [
+				'pull' => false,
+				'push' => true,
+			],
+			NotificationsService::DATATYPE_COUPON   => [
+				'pull' => false,
+				'push' => true,
+			],
+			NotificationsService::DATATYPE_SHIPPING => [
+				'pull' => false,
+				'push' => true,
+			],
+			NotificationsService::DATATYPE_SETTINGS => [
+				'pull' => false,
+				'push' => true,
+			],
 		];
 
 		$options->expects( $this->once() )
 			->method( 'update' )
 			->with( OptionsInterface::API_PULL_SYNC_MODE, $this->equalTo( $expected_normalized ) );
 
-		$wpdb     = $this->createStub( wpdb::class );
+		$wpdb      = $this->createStub( wpdb::class );
 		$migration = new Migration20260226T1200000000( $wpdb, $options );
 
 		$migration->apply();
@@ -82,10 +118,15 @@ class Migration20260226T1200000000Test extends UnitTest {
 
 	public function test_apply_handles_malformed_datatype_entry_by_using_default() {
 		$sync_mode_malformed = [
-			'products'  => [ 'push' => true, 'pull' => true ],
-			'coupons'   => 'not_an_array',
-			'shipping'  => [],
-			'settings'  => [ 'push' => false ],
+			'products' => [
+				'push' => true,
+				'pull' => true,
+			],
+			'coupons'  => 'not_an_array',
+			'shipping' => [],
+			'settings' => [
+				'push' => false,
+			],
 		];
 
 		$options = $this->createMock( OptionsInterface::class );
@@ -95,17 +136,29 @@ class Migration20260226T1200000000Test extends UnitTest {
 			->willReturn( $sync_mode_malformed );
 
 		$expected_normalized = [
-			'products'  => [ 'push' => true, 'pull' => false ],
-			'coupons'   => [ 'push' => true, 'pull' => false ],
-			'shipping'  => [ 'push' => true, 'pull' => false ],
-			'settings'  => [ 'push' => false, 'pull' => false ],
+			'products' => [
+				'push' => true,
+				'pull' => false,
+			],
+			'coupons'  => [
+				'push' => true,
+				'pull' => false,
+			],
+			'shipping' => [
+				'push' => true,
+				'pull' => false,
+			],
+			'settings' => [
+				'push' => false,
+				'pull' => false,
+			],
 		];
 
 		$options->expects( $this->once() )
 			->method( 'update' )
 			->with( OptionsInterface::API_PULL_SYNC_MODE, $expected_normalized );
 
-		$wpdb     = $this->createStub( wpdb::class );
+		$wpdb      = $this->createStub( wpdb::class );
 		$migration = new Migration20260226T1200000000( $wpdb, $options );
 
 		$migration->apply();
