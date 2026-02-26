@@ -111,7 +111,7 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 
 		await expect(
 			page.getByText(
-				'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your products will be included in the campaign after they’re approved.'
+				'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your services will be included in the campaign after they’re approved.'
 			)
 		).toBeVisible();
 	} );
@@ -567,7 +567,7 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 
 			// Check we are on the correct page.
 			await expect(
-				page.getByText( 'Create a campaign to advertise your products' )
+				page.getByText( 'Create a campaign to advertise your services' )
 			).toBeVisible();
 
 			await expect(
@@ -610,7 +610,7 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 
 			await createCampaignPage.goto();
 			await page
-				.getByText( 'Create a campaign to advertise your products', {
+				.getByText( 'Create a campaign to advertise your services', {
 					exact: true,
 				} )
 				.waitFor( { state: 'visible' } );
