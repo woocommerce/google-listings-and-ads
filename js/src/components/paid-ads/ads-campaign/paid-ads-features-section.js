@@ -14,6 +14,7 @@ import AppDocumentationLink from '~/components/app-documentation-link';
 import CampaignPreview from '~/components/paid-ads/campaign-preview';
 import FreeAdCredit from '~/components/free-ad-credit';
 import VerticalGapLayout from '~/components/vertical-gap-layout';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import './paid-ads-features-section.scss';
 
 function FeatureList() {
@@ -48,6 +49,31 @@ function FeatureList() {
  * for the next actions: skip or continue the paid ads setup.
  */
 export default function PaidAdsFeaturesSection() {
+	const { hasGoogleMCConnection } = useGoogleMCAccount();
+	const content = hasGoogleMCConnection
+		? {
+				description: __(
+					'Performance Max uses the best of Google’s AI to show the most impactful ads for your products at the right time and place. Google will use your product data to create ads for this campaign.',
+					'google-listings-and-ads'
+				),
+				subtitle: __(
+					'Reach more customers by advertising your products across Google Ads channels like Search, YouTube and Discover. Set up your campaign now so your products are included as soon as they’re approved.',
+					'google-listings-and-ads'
+				),
+		  }
+		: {
+				description: __(
+					'Performance Max uses the best of Google’s AI to show the most impactful ads for your services at the right time and place. Google will use your service details to create ads for this campaign.',
+					'google-listings-and-ads'
+				),
+				subtitle: __(
+					'Reach more customers by advertising your services across Google Ads channels like Search, YouTube and Discover. Set up your campaign now so your services are included as soon as they’re approved.',
+					'google-listings-and-ads'
+				),
+		  };
+
+	const { description, subtitle } = content;
+
 	return (
 		<Section
 			className="gla-paid-ads-features-section"
@@ -60,12 +86,7 @@ export default function PaidAdsFeaturesSection() {
 			) }
 			description={
 				<>
-					<p>
-						{ __(
-							'Performance Max uses the best of Google’s AI to show the most impactful ads for your products at the right time and place. Google will use your product data to create ads for this campaign. ',
-							'google-listings-and-ads'
-						) }
-					</p>
+					<p>{ description }</p>
 					<p>
 						<AppDocumentationLink
 							context="setup-paid-ads"
@@ -97,10 +118,7 @@ export default function PaidAdsFeaturesSection() {
 									) }
 								</Section.Card.Title>
 								<div className="gla-paid-ads-features-section__subtitle">
-									{ __(
-										'Reach more customers by advertising your products across Google Ads channels like Search, YouTube and Discover. Set up your campaign now so your products are included as soon as they’re approved.',
-										'google-listings-and-ads'
-									) }
+									{ subtitle }
 								</div>
 								<FeatureList />
 							</FlexBlock>

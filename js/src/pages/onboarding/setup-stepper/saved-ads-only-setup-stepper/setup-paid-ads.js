@@ -124,7 +124,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 		>
 			<AdsCampaign
 				headerTitle={ __(
-					'Create a campaign to advertise your products',
+					'Create a campaign to advertise your services',
 					'google-listings-and-ads'
 				) }
 				continueButton={ createContinueButton }
