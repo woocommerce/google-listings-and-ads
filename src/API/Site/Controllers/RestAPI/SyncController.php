@@ -249,6 +249,11 @@ class SyncController extends BaseOptionsController {
 			}
 		}
 
+		// API Pull mode is disabled for all users; ensure pull is always false.
+		foreach ( array_keys( $valid_params ) as $key ) {
+			$valid_params[ $key ]['pull'] = false;
+		}
+
 		return $valid_params;
 	}
 }

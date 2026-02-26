@@ -41,19 +41,19 @@ class SyncControllerTest extends RESTControllerUnitTest {
 			[
 				'products' => [
 					'push' => true,
-					'pull' => true,
+					'pull' => false,
 				],
 				'coupons'  => [
 					'push' => true,
-					'pull' => true,
+					'pull' => false,
 				],
 				'shipping' => [
 					'push' => true,
-					'pull' => true,
+					'pull' => false,
 				],
 				'settings' => [
 					'push' => true,
-					'pull' => true,
+					'pull' => false,
 				],
 			],
 			$response->get_data()
@@ -88,11 +88,11 @@ class SyncControllerTest extends RESTControllerUnitTest {
 				],
 				'shipping' => [
 					'push' => true,
-					'pull' => true,
+					'pull' => false,
 				],
 				'settings' => [
 					'push' => true,
-					'pull' => true,
+					'pull' => false,
 				],
 			],
 			$response->get_data()
@@ -112,15 +112,15 @@ class SyncControllerTest extends RESTControllerUnitTest {
 			[
 				'products' => [
 					'push' => true,
-					'pull' => true,
+					'pull' => false,
 				],
 				'coupons'  => [
 					'push' => true,
-					'pull' => true,
+					'pull' => false,
 				],
 				'shipping' => [
 					'push' => false,
-					'pull' => true,
+					'pull' => false,
 				],
 				'settings' => [
 					'push' => true,
@@ -204,19 +204,19 @@ class SyncControllerTest extends RESTControllerUnitTest {
 			[
 				'products' => [
 					'push' => false,
-					'pull' => true,
+					'pull' => false,
 				],
 				'coupons'  => [
 					'push' => false,
-					'pull' => true,
+					'pull' => false,
 				],
 				'shipping' => [
 					'push' => false,
-					'pull' => true,
+					'pull' => false,
 				],
 				'settings' => [
 					'push' => false,
-					'pull' => true,
+					'pull' => false,
 				],
 			],
 			$response->get_data()
@@ -243,7 +243,7 @@ class SyncControllerTest extends RESTControllerUnitTest {
 			[
 				'products' => [
 					'push' => true,
-					'pull' => true,
+					'pull' => false,
 				],
 				'coupons'  => [
 					'push' => true,
@@ -251,11 +251,11 @@ class SyncControllerTest extends RESTControllerUnitTest {
 				],
 				'shipping' => [
 					'push' => true,
-					'pull' => true,
+					'pull' => false,
 				],
 				'settings' => [
 					'push' => true,
-					'pull' => true,
+					'pull' => false,
 				],
 			],
 			$response->get_data()
@@ -274,21 +274,23 @@ class SyncControllerTest extends RESTControllerUnitTest {
 					[
 						'products' => [
 							'push' => true,
-							'pull' => true,
+							'pull' => false,
 						],
 						'coupons'  => [
 							'push' => true,
-							'pull' => true,
+							'pull' => false,
 						],
 						'shipping' => [
 							'push' => true,
-							'pull' => true,
+							'pull' => false,
 						],
 						'settings' => [
 							'push' => true,
-							'pull' => true,
+							'pull' => false,
 						],
-					],
+					]
+				),
+				$this->equalTo(
 					[
 						'products' => [
 							'push' => false,
@@ -296,7 +298,7 @@ class SyncControllerTest extends RESTControllerUnitTest {
 						],
 						'coupons'  => [
 							'push' => true,
-							'pull' => true,
+							'pull' => false,
 						],
 						'shipping' => [
 							'push' => false,
@@ -304,13 +306,13 @@ class SyncControllerTest extends RESTControllerUnitTest {
 						],
 						'settings' => [
 							'push' => true,
-							'pull' => true,
+							'pull' => false,
 						],
 					]
 				)
 			);
 
-		add_action( 'woocommerce_gla_sync_mode_updated', [ $spy, 'callback' ] );
+		add_action( 'woocommerce_gla_sync_mode_updated', [ $spy, 'callback' ], 10, 2 );
 
 		$this->do_request(
 			self::ROUTE,
