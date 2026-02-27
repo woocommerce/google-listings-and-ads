@@ -19,6 +19,7 @@ import googleLogoURL from '~/images/logo/gogole-g-logo.svg';
 
 const {
 	channelVisibility: {
+		field_id,
 		channel_visibility,
 		product_is_visible,
 		issues = [],
@@ -82,7 +83,7 @@ const GoogleAdsPromoSetupCompleted = () => {
 					{ selectOptions.length > 0 && (
 						<FlexItem>
 							<SelectControl
-								name="gla_channel_visibility"
+								name={ field_id }
 								options={ selectOptions }
 								value={ channelVisibility }
 								onChange={ ( value ) =>
