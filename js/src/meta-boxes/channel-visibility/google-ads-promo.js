@@ -14,37 +14,47 @@ import { PREFERENCES_STORE_NAMESPACE, glaData } from '~/constants';
 import usePreference from '~/hooks/usePreference';
 import googleLogoURL from '~/images/logo/gogole-g-logo.svg';
 import { recordGlaEvent } from '~/utils/tracks';
+import {
+	CHANNEL_VISIBILITY_BANNER_KEY,
+	CHANNEL_VISIBILITY_CONTEXT,
+} from './constants';
 import GetStartedCTA from './get-started-cta';
 import GoogleAdsPromoCTA from './google-ads-promo-cta';
 import GoogleAdsPromoSetupCompleted from './google-ads-promo-setup-completed';
 import './google-ads-promo.scss';
 
 const { adsSetupComplete } = glaData;
-const context = 'channel-visibility-meta-box';
 
-const PREFERENCE_BANNER_KEY = 'gla_google_ads_promo_dismissed';
+/**
+ * Google Ads Promo banner is shown.
+ *
+ * @event gla_google_ads_promo_shown
+ * @property {string} context Context of the Google Ads Promo.
+ */
 
 /**
  * Google Ads Promo component.
+ *
+ * @fires gla_google_ads_promo_shown with `{ context: CHANNEL_VISIBILITY_CONTEXT }`.
  *
  * @return {JSX.Element|null} The Google Ads Promo component or null.
  */
 const GoogleAdsPromo = () => {
 	const { set } = useDispatch( preferencesStore );
-	const isDismissed = usePreference( PREFERENCE_BANNER_KEY );
+	const isDismissed = usePreference( CHANNEL_VISIBILITY_BANNER_KEY );
 	const hasTrackedRef = useRef( false );
 
 	useEffect( () => {
-		if ( ! hasTrackedRef.current && ! adsSetupComplete ) {
+		if ( ! hasTrackedRef.current ) {
 			recordGlaEvent( 'gla_google_ads_promo_shown', {
-				context,
+				context: CHANNEL_VISIBILITY_CONTEXT,
 			} );
 			hasTrackedRef.current = true;
 		}
 	}, [] );
 
 	const handleDismiss = () => {
-		set( PREFERENCES_STORE_NAMESPACE, PREFERENCE_BANNER_KEY, true );
+		set( PREFERENCES_STORE_NAMESPACE, CHANNEL_VISIBILITY_BANNER_KEY, true );
 	};
 
 	if ( adsSetupComplete ) {
@@ -72,7 +82,7 @@ const GoogleAdsPromo = () => {
 					</FlexItem>
 					{ isDismissed && (
 						<FlexItem className="gla-channel-visibility__get-started--is-dismissed">
-							<GetStartedCTA context={ context } />
+							<GetStartedCTA />
 						</FlexItem>
 					) }
 				</Flex>
@@ -102,10 +112,7 @@ const GoogleAdsPromo = () => {
 					</FlexBlock>
 
 					<FlexBlock>
-						<GoogleAdsPromoCTA
-							context={ context }
-							onDismiss={ handleDismiss }
-						/>
+						<GoogleAdsPromoCTA onDismiss={ handleDismiss } />
 					</FlexBlock>
 				</Flex>
 			) }
