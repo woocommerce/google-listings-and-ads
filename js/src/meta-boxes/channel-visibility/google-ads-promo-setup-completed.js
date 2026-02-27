@@ -103,8 +103,8 @@ const GoogleAdsPromoSetupCompleted = () => {
 							</strong>
 						</p>
 						<ul>
-							{ productIssues.map( ( issue, idx ) => (
-								<li key={ idx }>{ issue }</li>
+							{ productIssues.map( ( issue ) => (
+								<li key={ issue }>{ issue }</li>
 							) ) }
 						</ul>
 					</Notice>
