@@ -22,6 +22,7 @@ const {
 		channel_visibility,
 		product_is_visible,
 		issues = [],
+		options = [],
 	} = {},
 } = glaData || {};
 
@@ -40,6 +41,20 @@ const GoogleAdsPromoSetupCompleted = () => {
 			),
 		];
 	}
+
+	/**
+	 * Parse the options object into an array of options.
+	 * Options is an object with the following structure:
+	 * {
+	 *   'sync-and-show': 'Sync and show',
+	 *   'dont-sync-and-show': "Don't sync and show",
+	 * }
+	 *
+	 * @return {Array<{label: string, value: string}>}
+	 */
+	const selectOptions = Object.entries( options ).map(
+		( [ value, label ] ) => ( { label, value } )
+	);
 
 	return (
 		<Flex direction="column" gap={ 4 } className="gla-channel-visibility">
@@ -64,33 +79,20 @@ const GoogleAdsPromoSetupCompleted = () => {
 							</FlexItem>
 						</Flex>
 					</FlexItem>
-					<FlexItem>
-						<SelectControl
-							name="gla_channel_visibility"
-							options={ [
-								{
-									label: __(
-										'Sync and show',
-										'google-listings-and-ads'
-									),
-									value: 'sync-and-show',
-								},
-								{
-									label: __(
-										"Don't sync and show",
-										'google-listings-and-ads'
-									),
-									value: 'dont-sync-and-show',
-								},
-							] }
-							value={ channelVisibility }
-							onChange={ ( value ) =>
-								setChannelVisibility( value )
-							}
-							disabled={ ! product_is_visible }
-							__nextHasNoMarginBottom
-						/>
-					</FlexItem>
+					{ selectOptions.length > 0 && (
+						<FlexItem>
+							<SelectControl
+								name="gla_channel_visibility"
+								options={ selectOptions }
+								value={ channelVisibility }
+								onChange={ ( value ) =>
+									setChannelVisibility( value )
+								}
+								disabled={ ! product_is_visible }
+								__nextHasNoMarginBottom
+							/>
+						</FlexItem>
+					) }
 				</Flex>
 			</FlexBlock>
 

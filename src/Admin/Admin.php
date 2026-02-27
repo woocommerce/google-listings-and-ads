@@ -25,6 +25,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Assets\ScriptAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\ChannelVisibilityMetaBox;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\Utilities\OrderUtil;
 
 /**
@@ -504,6 +505,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 				'channel_visibility' => $product_helper->get_channel_visibility( $product ),
 				'sync_status'        => $meta_handler->get_sync_status( $product ),
 				'issues'             => $product_helper->get_validation_errors( $product ),
+				'options'            => ChannelVisibility::get_value_options(),
 			];
 		} catch ( \Throwable $e ) {
 			return [];
