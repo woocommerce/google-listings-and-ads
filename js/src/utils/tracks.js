@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { queueRecordEvent, recordEvent } from '@woocommerce/tracks';
+import { recordEvent, queueRecordEvent } from '@woocommerce/tracks';
 import { select } from '@wordpress/data';
 import { createHooks } from '@wordpress/hooks';
 
