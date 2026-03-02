@@ -319,14 +319,12 @@ test.describe( 'Set up Ads account', () => {
 			).toBeVisible();
 		} );
 
-		test.describe( 'Preview product ad', () => {
-			test( 'Preview product ad should be visible', async () => {
-				await expect(
-					page.getByText( 'Preview product ad' )
-				).toBeVisible();
+		test.describe( 'Preview service ad', () => {
+			test( 'Preview service ad should be visible', async () => {
+				await expect( page.getByText( 'Ad Preview' ) ).toBeVisible();
 				await expect(
 					page.getByText(
-						"Each of your product variants will have its own ad. Previews shown here are examples and don't include all possible formats."
+						"Previews shown here are examples and don't include all possible formats."
 					)
 				).toBeVisible();
 			} );

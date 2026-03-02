@@ -38,9 +38,9 @@ const faqItems = [
 		),
 	},
 	{
-		trackId: 'what-makes-these-ads-different-from-product-ads',
+		trackId: 'what-makes-these-ads-different-from-service-ads',
 		question: __(
-			'What makes these ads different from product ads?',
+			'What makes these ads different from service ads?',
 			'google-listings-and-ads'
 		),
 		answer: (
@@ -53,7 +53,7 @@ const faqItems = [
 				</div>
 				<div>
 					{ __(
-						'Compared to product ads—which showcase individual products and are designed to drive direct sales and revenue— ads with creative assets are typically used to highlight your business, generate interest, and attract new customers. While both types of ads can drive conversions, using them together can generate even greater results.',
+						'Compared to service ads—which showcase individual products and are designed to drive direct sales and revenue— ads with creative assets are typically used to highlight your business, generate interest, and attract new customers. While both types of ads can drive conversions, using them together can generate even greater results.',
 						'google-listings-and-ads'
 					) }
 				</div>
@@ -66,7 +66,7 @@ const faqItems = [
  * Renders a toggleable FAQs about the campaign assets of the Google Ads.
  *
  * @fires gla_faq with `{ context: 'campaign-management', id: 'what-will-my-ads-look-like', action: 'expand' | 'collapse' }`.
- * @fires gla_faq with `{ context: 'campaign-management', id: 'what-makes-these-ads-different-from-product-ads', action: 'expand' | 'collapse' }`.
+ * @fires gla_faq with `{ context: 'campaign-management', id: 'what-makes-these-ads-different-from-service-ads', action: 'expand' | 'collapse' }`.
  * @fires gla_documentation_link_click with `{ context: 'assets-faq', linkId: 'assets-faq-about-ad-formats-available-in-different-campaign-types', href: 'https://support.google.com/google-ads/answer/1722124' }`.
  */
 const Faqs = () => {

@@ -54,7 +54,7 @@ const ChooseAudienceSection = () => {
 							</Subsection.Title>
 							<Subsection.HelperText>
 								{ __(
-									'Your store should already have the appropriate shipping and tax rates (if required) for potential customers in your selected location(s).',
+									'Where do you offer your services?',
 									'google-listings-and-ads'
 								) }
 							</Subsection.HelperText>
@@ -88,7 +88,7 @@ const ChooseAudienceSection = () => {
 								>
 									<RadioHelperText>
 										{ __(
-											'Your listings will be shown in all supported countries.',
+											'Your ad will be shown in all supported countries.',
 											'google-listings-and-ads'
 										) }
 									</RadioHelperText>

@@ -39,14 +39,11 @@ export default function CampaignPreviewCard() {
 				<Flex align="start" gap={ 9 } direction={ [ 'column', 'row' ] }>
 					<FlexBlock>
 						<Section.Card.Title>
-							{ __(
-								'Preview product ad',
-								'google-listings-and-ads'
-							) }
+							{ __( 'Ad Preview', 'google-listings-and-ads' ) }
 						</Section.Card.Title>
 						<div>
 							{ __(
-								`Each of your product variants will have its own ad. Previews shown here are examples and don't include all possible formats.`,
+								`Previews shown here are examples and don't include all possible formats.`,
 								'google-listings-and-ads'
 							) }
 						</div>

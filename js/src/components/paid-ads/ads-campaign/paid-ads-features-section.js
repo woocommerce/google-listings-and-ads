@@ -53,21 +53,21 @@ export default function PaidAdsFeaturesSection() {
 	const content = hasGoogleMCConnection
 		? {
 				description: __(
-					'Performance Max uses the best of Google’s AI to show the most impactful ads for your products at the right time and place. Google will use your product data to create ads for this campaign.',
+					'Performance Max uses the best of Google’s AI to show the most impactful ads for your products at the right time and place.',
 					'google-listings-and-ads'
 				),
 				subtitle: __(
-					'Reach more customers by advertising your products across Google Ads channels like Search, YouTube and Discover. Set up your campaign now so your products are included as soon as they’re approved.',
+					'Reach more customers by advertising your products across Google Ads channels like Search, YouTube and Discover.',
 					'google-listings-and-ads'
 				),
 		  }
 		: {
 				description: __(
-					'Performance Max uses the best of Google’s AI to show the most impactful ads for your services at the right time and place. Google will use your service details to create ads for this campaign.',
+					'Performance Max uses the best of Google’s AI to show the most impactful ads for your services at the right time and place.',
 					'google-listings-and-ads'
 				),
 				subtitle: __(
-					'Reach more customers by advertising your services across Google Ads channels like Search, YouTube and Discover. Set up your campaign now so your services are included as soon as they’re approved.',
+					'Reach more customers by advertising your services across Google Ads channels like Search, YouTube and Discover.',
 					'google-listings-and-ads'
 				),
 		  };
