@@ -39,7 +39,7 @@ export default function AssetGroupHeader() {
 					),
 				}
 		  )
-		: __( 'Add additional assets', 'google-listings-and-ads' );
+		: __( 'Add assets', 'google-listings-and-ads' );
 
 	return (
 		<Section

@@ -111,15 +111,15 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 
 		await expect(
 			page.getByText(
-				'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your products will be included in the campaign after they’re approved.'
+				'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your services will be included in the campaign after they’re approved.'
 			)
 		).toBeVisible();
 	} );
 
 	test.describe( 'FAQ panels', () => {
-		test( 'should see five questions in FAQ', async () => {
+		test( 'should see four questions in FAQ', async () => {
 			const faqTitles = getFAQPanelTitle( page );
-			await expect( faqTitles ).toHaveCount( 5 );
+			await expect( faqTitles ).toHaveCount( 4 );
 		} );
 
 		test( 'should not see FAQ rows when FAQ titles are not clicked', async () => {
@@ -567,7 +567,7 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 
 			// Check we are on the correct page.
 			await expect(
-				page.getByText( 'Create a campaign to advertise your products' )
+				page.getByText( 'Create a campaign to advertise your services' )
 			).toBeVisible();
 
 			await expect(
@@ -610,7 +610,7 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 
 			await createCampaignPage.goto();
 			await page
-				.getByText( 'Create a campaign to advertise your products', {
+				.getByText( 'Create a campaign to advertise your services', {
 					exact: true,
 				} )
 				.waitFor( { state: 'visible' } );
