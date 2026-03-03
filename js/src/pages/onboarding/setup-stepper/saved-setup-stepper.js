@@ -9,6 +9,7 @@ import { useState, useEffect } from '@wordpress/element';
  * Internal dependencies
  */
 import { useAppDispatch } from '~/data';
+import useAdminUrl from '~/hooks/useAdminUrl';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import useTargetAudienceWithSuggestions from './useTargetAudienceWithSuggestions';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
@@ -21,7 +22,9 @@ import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import SetupAccounts from './setup-accounts';
 import SetupListings from './setup-listings';
 import SetupPaidAds from './setup-paid-ads';
-import stepNameKeyMap from './stepNameKeyMap';
+import { STEP_NAME_KEY_MAP } from './constants';
+import { GUIDE_NAMES } from '~/constants';
+import { getProductFeedUrl } from '~/utils/urls';
 import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
@@ -37,7 +40,7 @@ import {
  */
 const SavedSetupStepper = ( { savedStep } ) => {
 	const [ step, setStep ] = useState( savedStep );
-
+	const adminUrl = useAdminUrl();
 	const { settings, saveSettings } = useSettings();
 	const { data: suggestedAudience } = useTargetAudienceWithSuggestions();
 	const { targetAudience, getFinalCountries } =
@@ -97,11 +100,11 @@ const SavedSetupStepper = ( { savedStep } ) => {
 	};
 
 	const handleSetupAccountsContinue = () => {
-		continueStep( stepNameKeyMap.product_listings );
+		continueStep( STEP_NAME_KEY_MAP.product_listings );
 	};
 
 	const handleSetupListingsContinue = () => {
-		continueStep( stepNameKeyMap.paid_ads );
+		continueStep( STEP_NAME_KEY_MAP.paid_ads );
 	};
 
 	const handleStepClick = ( stepKey ) => {
@@ -110,6 +113,11 @@ const SavedSetupStepper = ( { savedStep } ) => {
 			recordStepperChangeEvent( 'gla_setup_mc', stepKey );
 			setStep( stepKey );
 		}
+	};
+
+	const redirectToProductFeed = () => {
+		const query = { guide: GUIDE_NAMES.SUBMISSION_SUCCESS };
+		window.location.href = adminUrl + getProductFeedUrl( query );
 	};
 
 	/**
@@ -138,7 +146,7 @@ const SavedSetupStepper = ( { savedStep } ) => {
 			currentStep={ step }
 			steps={ [
 				{
-					key: stepNameKeyMap.accounts,
+					key: STEP_NAME_KEY_MAP.accounts,
 					label: __(
 						'Set up your accounts',
 						'google-listings-and-ads'
@@ -151,7 +159,7 @@ const SavedSetupStepper = ( { savedStep } ) => {
 					onClick: handleStepClick,
 				},
 				{
-					key: stepNameKeyMap.product_listings,
+					key: STEP_NAME_KEY_MAP.product_listings,
 					label: __(
 						'Configure product listings',
 						'google-listings-and-ads'
@@ -201,9 +209,14 @@ const SavedSetupStepper = ( { savedStep } ) => {
 					onClick: handleStepClick,
 				},
 				{
-					key: stepNameKeyMap.paid_ads,
+					key: STEP_NAME_KEY_MAP.paid_ads,
 					label: __( 'Create a campaign', 'google-listings-and-ads' ),
-					content: <SetupPaidAds />,
+					content: (
+						<SetupPaidAds
+							onSetupComplete={ redirectToProductFeed }
+							onSetupSkipped={ redirectToProductFeed }
+						/>
+					),
 					onClick: handleStepClick,
 				},
 			] }

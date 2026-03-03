@@ -6,7 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagem
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\BulkEdit\BulkEditInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\BulkEdit\CouponBulkEdit;
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\ChannelVisibilityMetaBox;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\CouponChannelVisibilityMetaBox;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInterface;
@@ -33,7 +32,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupMerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Shipping;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ChannelVisibilityMetaBox;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\View\PHPViewFactory;
@@ -88,10 +90,12 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 			AssetsHandlerInterface::class,
 			PHPViewFactory::class,
 			MerchantCenterService::class,
-			AdsService::class
+			AdsService::class,
+			OnboardingCompleted::class,
+			ServiceBasedMerchantState::class,
 		);
 		$this->share_with_tags( PHPViewFactory::class );
-		$this->share_with_tags( Redirect::class, WP::class );
+		$this->share_with_tags( Redirect::class, WP::class, OnboardingCompleted::class );
 
 		// Share bulk edit views
 		$this->share_with_tags( CouponBulkEdit::class, CouponMetaHandler::class, MerchantCenterService::class, TargetAudience::class );
@@ -100,14 +104,14 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		// Share admin meta boxes
 		$this->share_with_tags( ChannelVisibilityMetaBox::class, Admin::class, ProductMetaHandler::class, ProductHelper::class, MerchantCenterService::class );
 		$this->share_with_tags( CouponChannelVisibilityMetaBox::class, Admin::class, CouponMetaHandler::class, CouponHelper::class, MerchantCenterService::class, TargetAudience::class );
-		$this->share_with_tags( MetaBoxInitializer::class, Admin::class, MetaBoxInterface::class );
+		$this->share_with_tags( MetaBoxInitializer::class, Admin::class, MetaBoxInterface::class, MerchantCenterService::class );
 
 		$this->share_with_tags( ConnectionTest::class );
 
 		$this->share_with_tags( AttributeMapping::class );
-		$this->share_with_tags( Dashboard::class );
+		$this->share_with_tags( Dashboard::class, OnboardingCompleted::class );
 		$this->share_with_tags( NotificationManager::class, AssetsHandlerInterface::class );
-		$this->share_with_tags( GetStarted::class );
+		$this->share_with_tags( GetStarted::class, OnboardingCompleted::class );
 		$this->share_with_tags( ProductFeed::class );
 		$this->share_with_tags( Reports::class );
 		$this->share_with_tags( Settings::class );

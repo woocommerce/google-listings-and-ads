@@ -7,6 +7,7 @@ import {
 	getCountryInputSearchBox,
 	selectCountryFromSearchBox,
 } from '../../utils/page';
+import { clearServiceBasedMerchant } from '../../utils/api';
 
 /**
  * External dependencies
@@ -66,6 +67,8 @@ test.describe( 'Configure product listings', () => {
 				shipping_rates_count: 0,
 				tax_rate: 'destination',
 			} ),
+
+			clearServiceBasedMerchant(),
 		] );
 
 		await productListingsPage.goto();
