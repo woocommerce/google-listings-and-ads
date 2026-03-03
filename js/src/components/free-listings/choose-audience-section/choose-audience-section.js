@@ -29,15 +29,37 @@ const ChooseAudienceSection = () => {
 		adapter: { renderRequestedValidation },
 	} = useAdaptiveFormContext();
 
-	const description = hasGoogleMCConnection
-		? __(
-				'Where do you want to sell your products?',
-				'google-listings-and-ads'
-		  )
-		: __(
-				'Where do you want to advertise your services?',
-				'google-listings-and-ads'
-		  );
+	const content = hasGoogleMCConnection
+		? {
+				description: __(
+					'Where do you want to sell your products?',
+					'google-listings-and-ads'
+				),
+				titleHelper: __(
+					'Your store should already have the appropriate shipping and tax rates (if required) for potential customers in your selected location(s).',
+					'google-listings-and-ads'
+				),
+				radioHelper: __(
+					'Your listings will be shown in all supported countries.',
+					'google-listings-and-ads'
+				),
+		  }
+		: {
+				description: __(
+					'Where do you want to advertise your services?',
+					'google-listings-and-ads'
+				),
+				titleHelper: __(
+					'Where do you offer your services?',
+					'google-listings-and-ads'
+				),
+				radioHelper: __(
+					'Your ad will be shown in all supported countries.',
+					'google-listings-and-ads'
+				),
+		  };
+
+	const { description, titleHelper, radioHelper } = content;
 
 	return (
 		<>
@@ -53,10 +75,7 @@ const ChooseAudienceSection = () => {
 								{ __( 'Location', 'google-listings-and-ads' ) }
 							</Subsection.Title>
 							<Subsection.HelperText>
-								{ __(
-									'Where do you offer your services?',
-									'google-listings-and-ads'
-								) }
+								{ titleHelper }
 							</Subsection.HelperText>
 							<VerticalGapLayout size="medium">
 								<AppRadioContentControl
@@ -87,10 +106,7 @@ const ChooseAudienceSection = () => {
 									value="all"
 								>
 									<RadioHelperText>
-										{ __(
-											'Your ad will be shown in all supported countries.',
-											'google-listings-and-ads'
-										) }
+										{ radioHelper }
 									</RadioHelperText>
 								</AppRadioContentControl>
 							</VerticalGapLayout>
