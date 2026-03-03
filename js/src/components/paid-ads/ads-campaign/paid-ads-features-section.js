@@ -63,11 +63,11 @@ export default function PaidAdsFeaturesSection() {
 		  }
 		: {
 				description: __(
-					'Performance Max uses the best of Google’s AI to show the most impactful ads for your services at the right time and place.',
+					'Performance Max uses the best of Google’s AI to show the most impactful ads for your services at the right time and place. Google will use your service details to create ads for this campaign.',
 					'google-listings-and-ads'
 				),
 				subtitle: __(
-					'Reach more customers by advertising your services across Google Ads channels like Search, YouTube and Discover.',
+					'Reach more customers by advertising your services across Google Ads channels like Search, YouTube and Discover. Set up your campaign now so your services are included as soon as they’re approved.',
 					'google-listings-and-ads'
 				),
 		  };
