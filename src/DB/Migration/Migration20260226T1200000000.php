@@ -60,7 +60,13 @@ class Migration20260226T1200000000 extends AbstractMigration {
 		// Only set 'pull' to false for existing entries that have a 'pull' key.
 		foreach ( $sync_mode as $key => $entry ) {
 			if ( is_array( $entry ) && array_key_exists( 'pull', $entry ) ) {
-				$sync_mode[ $key ]['pull'] = false;
+				if ( true === $sync_mode[ $key ]['pull'] ) {
+					// Enable push sync mode if pull was enabled to keep store synced.
+					$sync_mode[ $key ] = [
+						'pull' => false,
+						'push' => true,
+					];
+				}
 			}
 		}
 
