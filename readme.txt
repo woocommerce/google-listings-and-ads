@@ -158,14 +158,4 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Tweak - WP 6.9 compatibility.
 * Update - Modify `wc/gla/tours` API endpoint to retrieve all tours at once.
 
-= 3.5.0 - 2025-11-04 =
-* Add - Additional options to the skip paid ads survey.
-* Add - Recommendation for improving conversions by raising budgets.
-* Fix - Alignment issue on Reports page.
-* Fix - Error when syncing bundled products.
-* Fix - MC connection stuck in loading state when connection is interrupted.
-* Fix - Prevent floating point precision errors when converting to micro units by rounding before casting to integer.
-* Fix - Remove ads account status check from `ads/recommendations` endpoint.
-* Tweak - WC 10.3 compatibility.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
