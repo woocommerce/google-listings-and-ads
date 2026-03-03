@@ -101,6 +101,7 @@ test.describe( 'Set up Ads account', () => {
 		} );
 		await setupBudgetPage.mockBudgetMetrics();
 		await setupBudgetPage.mockAdsIncentiveCredits();
+		await setupBudgetPage.mockMCConnected();
 		await dashboardPage.mockRequests();
 		await dashboardPage.goto();
 	} );
@@ -319,12 +320,14 @@ test.describe( 'Set up Ads account', () => {
 			).toBeVisible();
 		} );
 
-		test.describe( 'Preview service ad', () => {
-			test( 'Preview service ad should be visible', async () => {
-				await expect( page.getByText( 'Ad Preview' ) ).toBeVisible();
+		test.describe( 'Preview product ad', () => {
+			test( 'Preview product ad should be visible', async () => {
+				await expect(
+					page.getByText( 'Preview product ad' )
+				).toBeVisible();
 				await expect(
 					page.getByText(
-						"Previews shown here are examples and don't include all possible formats."
+						"Each of your product variants will have its own ad. Previews shown here are examples and don't include all possible formats."
 					)
 				).toBeVisible();
 			} );
