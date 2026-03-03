@@ -117,9 +117,9 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 	} );
 
 	test.describe( 'FAQ panels', () => {
-		test( 'should see five questions in FAQ', async () => {
+		test( 'should see four questions in FAQ', async () => {
 			const faqTitles = getFAQPanelTitle( page );
-			await expect( faqTitles ).toHaveCount( 5 );
+			await expect( faqTitles ).toHaveCount( 4 );
 		} );
 
 		test( 'should not see FAQ rows when FAQ titles are not clicked', async () => {
