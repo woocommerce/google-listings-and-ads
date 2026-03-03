@@ -61,18 +61,14 @@ export default function PaidAdsFeaturesSection() {
 	);
 
 	if ( hasGoogleMCConnection ) {
-		description +=
-			' ' +
-			__(
-				'Google will use your product data to create ads for this campaign.',
-				'google-listings-and-ads'
-			);
-		subtitle +=
-			' ' +
-			__(
-				'Set up your campaign now so your products are included as soon as they’re approved.',
-				'google-listings-and-ads'
-			);
+		description += ` ${ __(
+			'Google will use your product data to create ads for this campaign.',
+			'google-listings-and-ads'
+		) }`;
+		subtitle += ` ${ __(
+			"Set up your campaign now so your products are included as soon as they're approved.",
+			'google-listings-and-ads'
+		) }`;
 	}
 
 	return (
