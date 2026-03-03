@@ -417,7 +417,7 @@ When a documentation link is clicked.
 	- with `{ context: 'create-ads', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
 	- with `{ context: 'edit-ads', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
 - [`FaqLink`](../../js/src/pages/price-benchmark/faq-link.js#L20) with `{ context: 'price-benchmark-suggestions', link_id: 'price-benchmark-suggestions-faq' }` and the URL.
-- [`Faqs`](../../js/src/components/paid-ads/asset-group/faqs.js#L72) with `{ context: 'assets-faq', linkId: 'assets-faq-about-ad-formats-available-in-different-campaign-types', href: 'https://support.google.com/google-ads/answer/1722124' }`.
+- [`Faqs`](../../js/src/components/paid-ads/asset-group/faqs.js#L22) with `{ context: 'assets-faq', linkId: 'assets-faq-about-ad-formats-available-in-different-campaign-types', href: 'https://support.google.com/google-ads/answer/1722124' }`.
 - [`Faqs`](../../js/src/pages/get-started/faqs/index.js#L447)
 	- with `{ context: 'faqs', linkId: 'general-requirements', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#general-requirements' }`.
 	- with `{ context: 'faqs', linkId: 'claiming-urls', href: 'https://support.google.com/merchants/answer/7527436' }`.
@@ -501,9 +501,10 @@ Clicking on faq item to collapse or expand it.
 `action` | `string` | (`expand`\|`collapse`)
 `context` | `string` | Indicates which page / module the FAQ is in
 #### Emitters
-- [`Faqs`](../../js/src/components/paid-ads/asset-group/faqs.js#L72)
+- [`Faqs`](../../js/src/components/paid-ads/asset-group/faqs.js#L22)
 	- with `{ context: 'campaign-management', id: 'what-will-my-ads-look-like', action: 'expand' | 'collapse' }`.
 	- with `{ context: 'campaign-management', id: 'what-makes-these-ads-different-from-service-ads', action: 'expand' | 'collapse' }`.
+	- with `{ context: 'campaign-management', id: 'what-makes-these-ads-different-from-product-ads', action: 'expand' | 'collapse' }`.
 - [`Faqs`](../../js/src/pages/get-started/faqs/index.js#L447)
 	- with `{ context: 'get-started', id: 'what-do-i-need-to-get-started', action: 'expand' }`.
 	- with `{ context: 'get-started', id: 'what-do-i-need-to-get-started', action: 'collapse' }`.
@@ -929,7 +930,7 @@ Triggered on events during ads onboarding
 	- with `{ triggered_by: 'stepper-step1-button', action: 'go-to-step1'}`.
 - [`SetupTopBar`](../../js/src/pages/ads-onboarding/setup-top-bar.js#L17) with given `{ triggered_by: 'back-button', action: 'leave' }` when back button is clicked.
 
-### [`gla_setup_ads_faq`](../../js/src/components/paid-ads/ads-campaign/faqs.js#L60)
+### [`gla_setup_ads_faq`](../../js/src/components/paid-ads/ads-campaign/faqs.js#L12)
 Clicking on faq items to collapse or expand it in the Onboarding Flow or creating/editing a campaign
 #### Properties
 | name | type | description |
@@ -937,7 +938,7 @@ Clicking on faq items to collapse or expand it in the Onboarding Flow or creatin
 `id` | `string` | FAQ identifier
 `action` | `string` | (`expand`\|`collapse`)
 #### Emitters
-- [`Faqs`](../../js/src/components/paid-ads/ads-campaign/faqs.js#L73)
+- [`Faqs`](../../js/src/components/paid-ads/ads-campaign/faqs.js#L25)
 
 ### [`gla_setup_mc`](../../js/src/utils/tracks.js#L164)
 Setup Merchant Center
