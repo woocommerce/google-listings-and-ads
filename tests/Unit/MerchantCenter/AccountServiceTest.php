@@ -932,6 +932,98 @@ class AccountServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_is_wpcom_api_status_healthy_returns_false_without_caching_on_wp_error() {
+		$account_mock = $this->getMockBuilder( AccountService::class )
+			->setConstructorArgs( [ $this->state ] )
+			->onlyMethods( [ 'make_wpcom_api_status_request' ] )
+			->getMock();
+		$account_mock->set_container( $this->container );
+		$account_mock->set_options_object( $this->options );
+
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->with( TransientsInterface::WPCOM_API_STATUS )
+			->willReturn( null );
+
+		$account_mock->expects( $this->once() )
+			->method( 'make_wpcom_api_status_request' )
+			->willReturn( new \WP_Error( 'http_request_failed', 'No token found associated with the client ID and user.' ) );
+
+		$this->transients->expects( $this->never() )
+			->method( 'set' );
+
+		$this->assertFalse( $account_mock->is_wpcom_api_status_healthy() );
+	}
+
+	public function test_is_wpcom_api_status_healthy_returns_false_and_caches_unhealthy_wpcom_response() {
+		$account_mock = $this->getMockBuilder( AccountService::class )
+			->setConstructorArgs( [ $this->state ] )
+			->onlyMethods( [ 'make_wpcom_api_status_request' ] )
+			->getMock();
+		$account_mock->set_container( $this->container );
+		$account_mock->set_options_object( $this->options );
+
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->with( TransientsInterface::WPCOM_API_STATUS )
+			->willReturn( null );
+
+		$account_mock->expects( $this->once() )
+			->method( 'make_wpcom_api_status_request' )
+			->willReturn(
+				[
+					'body'     => json_encode(
+						[
+							'is_healthy'               => false,
+							'is_wc_rest_api_healthy'   => true,
+							'is_partner_token_healthy' => true,
+						]
+					),
+					'response' => [ 'code' => 200 ],
+				]
+			);
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with( TransientsInterface::WPCOM_API_STATUS, $this->anything(), MINUTE_IN_SECONDS * 30 );
+
+		$this->assertFalse( $account_mock->is_wpcom_api_status_healthy() );
+	}
+
+	public function test_is_wpcom_api_status_healthy_returns_true_and_caches_healthy_wpcom_response() {
+		$account_mock = $this->getMockBuilder( AccountService::class )
+			->setConstructorArgs( [ $this->state ] )
+			->onlyMethods( [ 'make_wpcom_api_status_request' ] )
+			->getMock();
+		$account_mock->set_container( $this->container );
+		$account_mock->set_options_object( $this->options );
+
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->with( TransientsInterface::WPCOM_API_STATUS )
+			->willReturn( null );
+
+		$account_mock->expects( $this->once() )
+			->method( 'make_wpcom_api_status_request' )
+			->willReturn(
+				[
+					'body'     => json_encode(
+						[
+							'is_healthy'               => true,
+							'is_wc_rest_api_healthy'   => true,
+							'is_partner_token_healthy' => true,
+						]
+					),
+					'response' => [ 'code' => 200 ],
+				]
+			);
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with( TransientsInterface::WPCOM_API_STATUS, $this->anything(), MINUTE_IN_SECONDS * 30 );
+
+		$this->assertTrue( $account_mock->is_wpcom_api_status_healthy() );
+	}
 
 	public function test_get_setup_status() {
 		$this->mc_service->expects( $this->once() )
