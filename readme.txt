@@ -140,6 +140,12 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.5.3 - 2026-03-03 =
+* Add - Support for service based merchants.
+* Dev - Added two new filters to the Jetpack and Google OAuth flows.
+* Fix – CSS lint error in raise-budget-recommendation-banner.
+* Update - Disable API Pull mode for all users.
+
 = 3.5.2 - 2026-01-29 =
 * Add - Sorting functionality in `AllProgramsTableCard` to allow users to reorder columns by key attributes.
 * Fix - Resolve an issue where website claim conflicts were not detected correctly during Google Merchant Center account setup in the onboarding flow.
