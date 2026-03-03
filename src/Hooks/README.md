@@ -550,6 +550,8 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 - [NotificationsService.php#L293](https://github.com/woocommerce/google-listings-and-ads/blob/2635e0002b7e7f51f888083bef166addd7721262/src/API/WP/NotificationsService.php#L293)
 
+**Note**: API Pull sync mode has been disabled for all users. This filter is used by SyncStatus to return `false` for all datatypes.
+
 ## woocommerce_gla_is_push_enabled_for_datatype
 
 **Type**: filter
@@ -943,6 +945,8 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 **Used in**:
 
 - [NotificationsService.php#L281](https://github.com/woocommerce/google-listings-and-ads/blob/2635e0002b7e7f51f888083bef166addd7721262/src/API/WP/NotificationsService.php#L281)
+
+**Note**: API Pull sync mode has been disabled for all users. SyncStatus uses this filter to force `pull => false` for all datatypes.
 
 ## woocommerce_gla_sync_mode_updated
 
