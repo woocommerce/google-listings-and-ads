@@ -6,7 +6,11 @@ import { expect, test } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import { clearOnboardedMerchant, setOnboardedMerchant } from '../../utils/api';
+import {
+	clearOnboardedMerchant,
+	setOnboardedMerchant,
+	clearCompletedAdsSetup,
+} from '../../utils/api';
 import DashboardPage from '../../utils/pages/dashboard';
 import SetupAdsAccountsPage from '../../utils/pages/ads-onboarding/setup-ads-accounts';
 import SetupBudgetPage from '../../utils/pages/ads-onboarding/setup-budget';
@@ -59,6 +63,18 @@ test.describe( 'Set up Ads account', () => {
 		setupAdsAccounts = new SetupAdsAccountsPage( page );
 		setupBudgetPage = new SetupBudgetPage( page );
 		await setOnboardedMerchant();
+		await dashboardPage.fulfillAdsCampaignsRequest( [
+			{
+				id: 1,
+				name: 'Test Campaign 1',
+				status: 'enabled',
+				type: 'performance_max',
+				amount: 1,
+				country: 'US',
+				targeted_locations: [ 'US' ],
+			},
+		] );
+		await clearCompletedAdsSetup();
 		await setupAdsAccounts.mockAdsAccountsResponse( [] );
 		await setupBudgetPage.fulfillBillingStatusRequest( {
 			status: 'approved',
