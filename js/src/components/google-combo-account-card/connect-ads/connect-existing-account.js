@@ -18,6 +18,7 @@ import AdsAccountSelectControl from '~/components/ads-account-select-control';
 import ConnectedIconLabel from '~/components/connected-icon-label';
 import { ConnectAccountButton } from '~/components/google-ads-account-card';
 import { ERROR_SLOTS } from '~/data/constants';
+import extractDetailedApiError from '~/utils/extractDetailedApiError';
 
 /**
  * Renders an account card to connect to an existing Google Ads account.
@@ -65,10 +66,14 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 			await fetchGoogleAdsAccountStatus();
 			await refetchGoogleAdsAccount();
 		} catch ( error ) {
-			receiveDetailedError( ERROR_SLOTS.GOOGLE_ADS_CONNECTION, {
-				...error.data?.error,
-				title: __( 'Connection Failed', 'google-listings-and-ads' ),
-			} );
+			const detailedError = await extractDetailedApiError( error );
+
+			if ( detailedError ) {
+				receiveDetailedError( ERROR_SLOTS.GOOGLE_ADS_CONNECTION, {
+					...detailedError.data,
+					title: __( 'Connection Failed', 'google-listings-and-ads' ),
+				} );
+			}
 		} finally {
 			setLoading( false );
 		}

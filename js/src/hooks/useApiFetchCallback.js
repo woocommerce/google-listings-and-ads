@@ -172,18 +172,6 @@ const useApiFetchCallback = ( options, initialState = defaultState ) => {
 					throw e;
 				}
 
-				if ( e?.status >= 400 && e?.status < 600 ) {
-					const error = await e.json();
-					dispatch( {
-						type: TYPES.ERROR,
-						error: e,
-						response: e,
-						options: mergedOptions,
-					} );
-
-					throw error;
-				}
-
 				const response = e;
 				let error;
 

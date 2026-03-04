@@ -2,6 +2,7 @@
  * External dependencies
  */
 import classNames from 'classnames';
+import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -27,17 +28,22 @@ const DetailedError = ( { errorSlots, className } ) => {
 					key={ `${ title }-${ description }` }
 					className={ classNames( 'gla-detailed-error', className ) }
 				>
-					<div className="gla-detailed-error__title">
-						<span>
+					<Flex align="center" wrap="nowrap" gap={ 1 }>
+						<FlexItem>
 							<img
 								src={ warningIconUrl }
 								alt=""
 								width={ 16 }
 								height={ 16 }
+								className="gla-detailed-error__icon"
 							/>
-						</span>
-						<h4>{ title }</h4>
-					</div>
+						</FlexItem>
+						<FlexBlock>
+							<h4 className="gla-detailed-error__title">
+								{ title }
+							</h4>
+						</FlexBlock>
+					</Flex>
 					<p className="gla-detailed-error__description">
 						{ description }
 					</p>
