@@ -34,6 +34,7 @@ test.describe( 'Paid Feature Listing', () => {
 		dashboardPage = new DashboardPage( page );
 		await setOnboardedMerchant();
 		await dashboardPage.mockRequests();
+		await clearCompletedAdsSetup();
 		await dashboardPage.goto();
 	} );
 
