@@ -184,20 +184,34 @@ test.describe( 'Set up accounts', () => {
 
 				deferred.continueFulfill();
 
+				// Ads error header and message
 				await expect(
-					googleAccountCard.getByText(
-						'You do not have necessary permissions to perform this action.',
-						{
-							exact: true,
-						}
-					)
+					googleAccountCard.getByText( 'Google Ads Creation Failed', {
+						exact: false,
+					} )
 				).toBeVisible();
 
 				await expect(
 					googleAccountCard.getByText(
-						'Client is already linked to too many managers.',
+						'Unable to accept link for the customer account',
 						{
-							exact: true,
+							exact: false,
+						}
+					)
+				).toBeVisible();
+
+				// Merchant Center error header and message
+				await expect(
+					googleAccountCard.getByText( 'Connection Failed', {
+						exact: false,
+					} )
+				).toBeVisible();
+
+				await expect(
+					googleAccountCard.getByText(
+						'Unable to link merchant center account',
+						{
+							exact: false,
 						}
 					)
 				).toBeVisible();
@@ -253,7 +267,7 @@ test.describe( 'Set up accounts', () => {
 
 				await expect(
 					googleAccountCard.getByText(
-						'Client is already linked to too many managers.'
+						'There was an error connecting to Ads account.'
 					)
 				).toBeVisible();
 			} );
@@ -281,7 +295,7 @@ test.describe( 'Set up accounts', () => {
 
 				await expect(
 					getMCAccountCard.getByText(
-						'You do not have necessary permissions to perform this action.'
+						'Unable to link merchant center account'
 					)
 				).toBeVisible();
 			} );
