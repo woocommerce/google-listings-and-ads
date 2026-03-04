@@ -21,7 +21,7 @@ import { CHANNEL_VISIBILITY_CONTEXT } from './constants';
 /**
  * Get Started CTA component.
  *
- * @fires gla_google_ads_promo_create_campaign_click with `{ context: CHANNEL_VISIBILITY_CONTEXT, href: getGetStartedUrl() }`.
+ * @fires gla_google_ads_promo_create_campaign_click with `{ context: channel-visibility-meta-box, href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fstart' }`.
  *
  * @return {JSX.Element} The Get Started CTA component.
  */

@@ -15,7 +15,7 @@ import usePreference from '~/hooks/usePreference';
 import googleLogoURL from '~/images/logo/gogole-g-logo.svg';
 import { recordGlaEvent } from '~/utils/tracks';
 import {
-	CHANNEL_VISIBILITY_BANNER_KEY,
+	CHANNEL_VISIBILITY_PROMO_KEY,
 	CHANNEL_VISIBILITY_CONTEXT,
 } from './constants';
 import GetStartedCTA from './get-started-cta';
@@ -35,13 +35,13 @@ const { adsSetupComplete } = glaData;
 /**
  * Google Ads Promo component.
  *
- * @fires gla_google_ads_promo_shown with `{ context: CHANNEL_VISIBILITY_CONTEXT }`.
+ * @fires gla_google_ads_promo_shown with `{ context: channel-visibility-meta-box }`.
  *
  * @return {JSX.Element|null} The Google Ads Promo component or null.
  */
 const GoogleAdsPromo = () => {
 	const { set } = useDispatch( preferencesStore );
-	const isDismissed = usePreference( CHANNEL_VISIBILITY_BANNER_KEY );
+	const isDismissed = usePreference( CHANNEL_VISIBILITY_PROMO_KEY );
 	const hasTrackedRef = useRef( false );
 
 	useEffect( () => {
@@ -54,7 +54,7 @@ const GoogleAdsPromo = () => {
 	}, [] );
 
 	const handleDismiss = () => {
-		set( PREFERENCES_STORE_NAMESPACE, CHANNEL_VISIBILITY_BANNER_KEY, true );
+		set( PREFERENCES_STORE_NAMESPACE, CHANNEL_VISIBILITY_PROMO_KEY, true );
 	};
 
 	if ( adsSetupComplete ) {

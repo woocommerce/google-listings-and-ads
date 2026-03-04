@@ -21,7 +21,7 @@ import GetStartedCTA from './get-started-cta';
 /**
  * Google Ads Promo CTA component.
  *
- * @fires gla_google_ads_promo_dismiss_click with `{ context: CHANNEL_VISIBILITY_CONTEXT }`.
+ * @fires gla_google_ads_promo_dismiss_click with `{ context: channel-visibility-meta-box }`.
  * @param {Function} onDismiss The function to call when the dismiss button is clicked.
  *
  * @return {JSX.Element} The Google Ads Promo CTA component.
