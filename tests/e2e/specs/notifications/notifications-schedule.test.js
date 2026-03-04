@@ -162,7 +162,7 @@ test.describe( 'Notifications Schedule', () => {
 		await expect( row ).not.toBeVisible();
 	} );
 
-	test( 'Unpublish a notified product does not schedules product.delete notification.', async () => {
+	test( 'Unpublishing a notified product does not schedule a product.delete notification.', async () => {
 		await productEditor.gotoAddProductPage();
 		await productEditor.fillProductName();
 		await productEditor.publish();
