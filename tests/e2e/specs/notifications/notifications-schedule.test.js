@@ -64,26 +64,18 @@ test.describe( 'Notifications Schedule', () => {
 		await page.close();
 	} );
 
-	test( 'When Notifications are ready. Notifications are scheduled', async () => {
+	test( 'When Notifications are ready. Notifications are not scheduled', async () => {
 		// Create a new fresh product
 		await productEditor.gotoAddProductPage();
 		await productEditor.fillProductName();
 		await productEditor.publish();
 		const id = productEditor.getPostID();
 
-		// Check the product.create job is scheduled.
+		// Check the product.create job is not scheduled.
 		await page.goto( actionSchedulerLink );
 		let row = page.getByRole( 'row', {
 			name: getASJobRowName( id, 'product.create' ),
 		} );
-		await expect( row ).toBeVisible();
-
-		// Hover the row, so the Run button gets visible
-		await row.hover( { force: true } );
-		await row.getByRole( 'link' ).first().click();
-
-		// Wait for the page to refresh and see that pending job is not there anymore.
-		await page.waitForURL( actionSchedulerLink );
 		await expect( row ).not.toBeVisible();
 
 		// edit the product and set it as notified
@@ -92,15 +84,11 @@ test.describe( 'Notifications Schedule', () => {
 		await productEditor.fillProductName( 'updated product' );
 		await productEditor.save();
 
-		// Check if the product.update job is there.
+		// Check if the product.update job is not there.
 		await page.goto( actionSchedulerLink );
 		row = page.getByRole( 'row', {
 			name: getASJobRowName( id, 'product.update' ),
 		} );
-		await expect( row ).toBeVisible();
-		await row.hover( { force: true } );
-		await row.getByRole( 'link' ).first().click();
-		await page.waitForURL( actionSchedulerLink );
 		await expect( row ).not.toBeVisible();
 
 		// change to external type. It will trigger the product.delete
@@ -108,15 +96,11 @@ test.describe( 'Notifications Schedule', () => {
 		await productEditor.changeToExternalProduct();
 		await productEditor.save();
 
-		// Check if the product.delete job is there.
+		// Check if the product.delete job is not there.
 		await page.goto( actionSchedulerLink );
 		row = page.getByRole( 'row', {
 			name: getASJobRowName( id, 'product.delete' ),
 		} );
-		await expect( row ).toBeVisible();
-		await row.hover( { force: true } );
-		await row.getByRole( 'link' ).first().click();
-		await page.waitForURL( actionSchedulerLink );
 		await expect( row ).not.toBeVisible();
 	} );
 
@@ -178,78 +162,67 @@ test.describe( 'Notifications Schedule', () => {
 		await expect( row ).not.toBeVisible();
 	} );
 
-	test( 'Unpublish a notified product schedules product.delete notification.', async () => {
+	test( 'Unpublish a notified product does not schedules product.delete notification.', async () => {
 		await productEditor.gotoAddProductPage();
 		await productEditor.fillProductName();
 		await productEditor.publish();
 		const id = productEditor.getPostID();
 
-		// Run the scheduled product.create job so that the subsequent product.create job
-		// being rescheduled won't be skipped due to the existence of the same job.
+		// Check the product.create job is not scheduled.
 		await page.goto( actionSchedulerLink );
 		let row = page.getByRole( 'row', {
 			name: getASJobRowName( id, 'product.create' ),
 		} );
-		await expect( row ).toBeVisible();
-		await row.hover( { force: true } );
-		await row.getByRole( 'link' ).first().click();
-		await page.waitForURL( actionSchedulerLink );
 		await expect( row ).not.toBeVisible();
 
 		await productEditor.gotoEditProductPage( id );
 		await productEditor.mockNotificationStatus( 'created' );
 		await productEditor.unpublish();
 
-		// Check the product.update job is scheduled.
+		// Check the product.update job is not scheduled.
 		await page.goto( actionSchedulerLink );
 		row = page.getByRole( 'row', {
 			name: getASJobRowName( id, 'product.delete' ),
 		} );
-		await expect( row ).toBeVisible();
+		await expect( row ).not.toBeVisible();
 
 		// Simulate that delete notification was successful and publish the product again.
 		await productEditor.gotoEditProductPage( id );
 		await productEditor.mockNotificationStatus( 'deleted' );
 		await productEditor.publish();
 
-		// Check the product.create job is scheduled again.
+		// Check the product.create job is not scheduled again.
 		await page.goto( actionSchedulerLink );
 		row = page.getByRole( 'row', {
 			name: getASJobRowName( id, 'product.create' ),
 		} );
-		await expect( row ).toBeVisible();
+		await expect( row ).not.toBeVisible();
 	} );
 
-	test( 'Set as "Dont sync and show" a notified product schedules product.delete notification.', async () => {
+	test( 'Set as "Dont sync and show" a notified product does not schedule product.delete notification.', async () => {
 		await productEditor.gotoAddProductPage();
 		await productEditor.fillProductName();
 		await productEditor.publish();
 		const id = productEditor.getPostID();
 
-		// Check the product.create job is scheduled.
+		// Check the product.create job is not scheduled.
 		await page.goto( actionSchedulerLink );
 		let row = page.getByRole( 'row', {
 			name: getASJobRowName( id, 'product.create' ),
 		} );
-		await expect( row ).toBeVisible();
-		// Hover the row, so the Run button gets visible
-		await row.hover( { force: true } );
-		await row.getByRole( 'link' ).first().click();
+		await expect( row ).not.toBeVisible();
 
 		await productEditor.gotoEditProductPage( id );
 		await productEditor.mockNotificationStatus( 'created' );
 		await productEditor.setChannelVisibility( "Don't Sync and show" );
 		await productEditor.save();
-		// Check the product.delete job is scheduled.
+
+		// Check the product.delete job is not scheduled.
 		await page.goto( actionSchedulerLink );
 		row = page.getByRole( 'row', {
 			name: getASJobRowName( id, 'product.delete' ),
 		} );
-		await expect( row ).toBeVisible();
-
-		// Hover the row, so the Run button gets visible
-		await row.hover( { force: true } );
-		await row.getByRole( 'link' ).first().click();
+		await expect( row ).not.toBeVisible();
 
 		// Simulate that delete notification was successful and set as "Sync and show" the product again.
 		await productEditor.gotoEditProductPage( id );
@@ -262,39 +235,33 @@ test.describe( 'Notifications Schedule', () => {
 		row = page.getByRole( 'row', {
 			name: getASJobRowName( id, 'product.create' ),
 		} );
-		await expect( row ).toBeVisible();
+		await expect( row ).not.toBeVisible();
 	} );
 
-	test( 'Set a notified product visibility as "Not Public" schedules product.delete notification.', async () => {
+	test( 'Set a notified product visibility as "Not Public" does not schedule product.delete notification.', async () => {
 		await productEditor.gotoAddProductPage();
 		await productEditor.fillProductName();
 		await productEditor.publish();
 		const id = productEditor.getPostID();
 
-		// Check the product.create job is scheduled.
+		// Check the product.create job is not scheduled.
 		await page.goto( actionSchedulerLink );
 		let row = page.getByRole( 'row', {
 			name: getASJobRowName( id, 'product.create' ),
 		} );
-		await expect( row ).toBeVisible();
-		// Hover the row, so the Run button gets visible
-		await row.hover( { force: true } );
-		await row.getByRole( 'link' ).first().click();
+		await expect( row ).not.toBeVisible();
 
 		await productEditor.gotoEditProductPage( id );
 		await productEditor.mockNotificationStatus( 'created' );
 		await productEditor.setVisibility( 'Private' );
 		await productEditor.save();
-		// Check the product.delete job is scheduled.
+
+		// Check the product.delete job is not scheduled.
 		await page.goto( actionSchedulerLink );
 		row = page.getByRole( 'row', {
 			name: getASJobRowName( id, 'product.delete' ),
 		} );
-		await expect( row ).toBeVisible();
-
-		// Hover the row, so the Run button gets visible
-		await row.hover( { force: true } );
-		await row.getByRole( 'link' ).first().click();
+		await expect( row ).not.toBeVisible();
 
 		// Simulate that delete notification was successful and set as "Visibility: Public" the product again.
 		await productEditor.gotoEditProductPage( id );
@@ -307,6 +274,6 @@ test.describe( 'Notifications Schedule', () => {
 		row = page.getByRole( 'row', {
 			name: getASJobRowName( id, 'product.create' ),
 		} );
-		await expect( row ).toBeVisible();
+		await expect( row ).not.toBeVisible();
 	} );
 } );
