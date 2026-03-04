@@ -27,7 +27,15 @@ const {
 	} = {},
 } = glaData || {};
 
-const GoogleAdsPromoSetupCompleted = () => {
+/**
+ * Channel Visibility Settings component.
+ *
+ * The component will allow the user to select the channel visibility for the product and
+ * will be displayed when the ads setup is complete.
+ *
+ * @return {JSX.Element} The Channel Visibility Settings component
+ */
+const ChannelVisibilitySettings = () => {
 	const [ channelVisibility, setChannelVisibility ] = useState(
 		product_is_visible ? channel_visibility : 'dont-sync-and-show'
 	);
@@ -117,4 +125,4 @@ const GoogleAdsPromoSetupCompleted = () => {
 	);
 };
 
-export default GoogleAdsPromoSetupCompleted;
+export default ChannelVisibilitySettings;

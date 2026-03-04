@@ -19,8 +19,8 @@ import {
 	CHANNEL_VISIBILITY_CONTEXT,
 } from './constants';
 import GetStartedCTA from './get-started-cta';
-import GoogleAdsPromoCTA from './google-ads-promo-cta';
-import GoogleAdsPromoSetupCompleted from './google-ads-promo-setup-completed';
+import PromoCTA from './promo-cta';
+import ChannelVisibilitySettings from './channel-visibility-settings';
 import './google-ads-promo.scss';
 
 const { adsSetupComplete } = glaData;
@@ -37,7 +37,7 @@ const { adsSetupComplete } = glaData;
  *
  * @fires gla_google_ads_promo_shown with `{ context: channel-visibility-meta-box }`.
  *
- * @return {JSX.Element|null} The Google Ads Promo component or null.
+ * @return {JSX.Element} The Google Ads Promo component
  */
 const GoogleAdsPromo = () => {
 	const { set } = useDispatch( preferencesStore );
@@ -58,7 +58,7 @@ const GoogleAdsPromo = () => {
 	};
 
 	if ( adsSetupComplete ) {
-		return <GoogleAdsPromoSetupCompleted />;
+		return <ChannelVisibilitySettings />;
 	}
 
 	return (
@@ -112,7 +112,7 @@ const GoogleAdsPromo = () => {
 					</FlexBlock>
 
 					<FlexBlock>
-						<GoogleAdsPromoCTA onDismiss={ handleDismiss } />
+						<PromoCTA onDismiss={ handleDismiss } />
 					</FlexBlock>
 				</Flex>
 			) }

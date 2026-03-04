@@ -590,14 +590,14 @@ Google Ads Promo "Create campaign" button is clicked.
 - [`GetStartedCTA`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L28) with `{ context: channel-visibility-meta-box, href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fstart' }`.
 - [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L73) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&subpath=%2Fcampaigns%2Fcreate&path=%2Fgoogle%2Fdashboard' }`.
 
-### [`gla_google_ads_promo_dismiss_click`](../../js/src/meta-boxes/channel-visibility/google-ads-promo-cta.js#L14)
+### [`gla_google_ads_promo_dismiss_click`](../../js/src/meta-boxes/channel-visibility/promo-cta.js#L14)
 Google Ads Promo "Dismiss" button is clicked.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Context of the Google Ads Promo.
 #### Emitters
-- [`GoogleAdsPromoCTA`](../../js/src/meta-boxes/channel-visibility/google-ads-promo-cta.js#L29) with `{ context: channel-visibility-meta-box }`.
+- [`PromoCTA`](../../js/src/meta-boxes/channel-visibility/promo-cta.js#L29) with `{ context: channel-visibility-meta-box }`.
 
 ### [`gla_google_ads_promo_get_started_click`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L48)
 Google Ads Promo "Get started" button is clicked.

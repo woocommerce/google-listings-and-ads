@@ -26,7 +26,7 @@ import GetStartedCTA from './get-started-cta';
  *
  * @return {JSX.Element} The Google Ads Promo CTA component.
  */
-const GoogleAdsPromoCTA = ( { onDismiss } ) => {
+const PromoCTA = ( { onDismiss } ) => {
 	return (
 		<Flex gap={ 3 } align="flex-start">
 			<FlexBlock>
@@ -49,4 +49,4 @@ const GoogleAdsPromoCTA = ( { onDismiss } ) => {
 	);
 };
 
-export default GoogleAdsPromoCTA;
+export default PromoCTA;
