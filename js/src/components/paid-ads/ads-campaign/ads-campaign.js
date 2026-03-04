@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 
 /**
@@ -74,9 +74,18 @@ export default function AdsCampaign( {
 	);
 
 	if ( isOnboardingFlow ) {
-		description = __(
-			'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your products will be included in the campaign after they’re approved.',
-			'google-listings-and-ads'
+		const subject =
+			context === 'setup-ads-only'
+				? __( 'services', 'google-listings-and-ads' )
+				: __( 'products', 'google-listings-and-ads' );
+
+		description = sprintf(
+			/* translators: %s: products or services */
+			__(
+				'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your %s will be included in the campaign after they’re approved.',
+				'google-listings-and-ads'
+			),
+			subject
 		);
 	}
 

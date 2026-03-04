@@ -244,8 +244,9 @@ class SyncController extends BaseOptionsController {
 				$valid_params[ $key ]['push'] = $param['push'];
 			}
 
+			// API Pull mode is disabled for all users; if pull was passed, force it to false.
 			if ( isset( $param['pull'] ) && is_bool( $param['pull'] ) ) {
-				$valid_params[ $key ]['pull'] = $param['pull'];
+				$valid_params[ $key ]['pull'] = false;
 			}
 		}
 
