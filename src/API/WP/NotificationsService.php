@@ -226,7 +226,7 @@ class NotificationsService implements Service, OptionsAwareInterface {
 	 */
 	public function is_ready( ?string $data_type = null, bool $with_health_check = true ): bool {
 		$is_ready = $this->is_enabled() && $this->merchant_center->is_ready_for_syncing() && ( $with_health_check === false || $this->account_service->is_wpcom_api_status_healthy() );
-		return $is_ready && ( is_null( $data_type ) || $this->is_pull_enabled_for_datatype( $data_type ) );
+		return $is_ready && ( is_null( $data_type ) || $this->is_pull_enabled_for_datatype( $data_type ) || $this->is_push_enabled_for_datatype( $data_type ) );
 	}
 
 	/**

@@ -207,16 +207,33 @@ class NotificationsServiceTest extends UnitTest {
 	}
 
 	/**
-	 * Test notify() function logs an error when disabled for a datatype
+	 * Test notify() function logs an error when both pull and push are disabled for a datatype
 	 */
 	public function test_notify_show_error_when_disabled_for_datatype() {
 		$this->service = $this->get_mock();
 		remove_filter( 'woocommerce_gla_is_pull_enabled_for_datatype', '__return_true', PHP_INT_MAX );
 		add_filter( 'woocommerce_gla_is_pull_enabled_for_datatype', '__return_false' );
+		add_filter( 'woocommerce_gla_is_push_enabled_for_datatype', '__return_false' );
 		$this->service->expects( $this->never() )->method( 'do_request' );
 		$this->assertFalse( $this->service->notify( 'product.create', 1 ) );
 		$this->assertEquals( did_action( 'woocommerce_gla_error' ), 1 );
 		remove_filter( 'woocommerce_gla_is_pull_enabled_for_datatype', '__return_false' );
+		remove_filter( 'woocommerce_gla_is_push_enabled_for_datatype', '__return_false' );
+		add_filter( 'woocommerce_gla_is_pull_enabled_for_datatype', '__return_true', PHP_INT_MAX );
+	}
+
+	/**
+	 * Test notify() function succeeds when pull is disabled but push is enabled for a datatype
+	 */
+	public function test_notify_succeeds_when_pull_disabled_but_push_enabled_for_datatype() {
+		$this->service = $this->get_mock();
+		remove_filter( 'woocommerce_gla_is_pull_enabled_for_datatype', '__return_true', PHP_INT_MAX );
+		add_filter( 'woocommerce_gla_is_pull_enabled_for_datatype', '__return_false' );
+		add_filter( 'woocommerce_gla_is_push_enabled_for_datatype', '__return_true' );
+		$this->service->expects( $this->once() )->method( 'do_request' )->willReturn( [ 'code' => 200 ] );
+		$this->assertTrue( $this->service->notify( 'product.create', 1 ) );
+		remove_filter( 'woocommerce_gla_is_pull_enabled_for_datatype', '__return_false' );
+		remove_filter( 'woocommerce_gla_is_push_enabled_for_datatype', '__return_true' );
 		add_filter( 'woocommerce_gla_is_pull_enabled_for_datatype', '__return_true', PHP_INT_MAX );
 	}
 
