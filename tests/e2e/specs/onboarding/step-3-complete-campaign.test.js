@@ -16,7 +16,11 @@ import {
 	getFAQPanelRow,
 	checkBillingAdsPopup,
 } from '../../utils/page';
-import { clearServiceBasedMerchant } from '../../utils/api';
+import {
+	clearServiceBasedMerchant,
+	clearCompletedAdsSetup,
+	setCompletedAdsSetup,
+} from '../../utils/api';
 
 test.use( { storageState: process.env.ADMINSTATE } );
 
@@ -138,6 +142,8 @@ test.describe( 'Complete your campaign', () => {
 
 			clearServiceBasedMerchant(),
 		] );
+
+		await clearCompletedAdsSetup();
 
 		await completeCampaign.goto();
 	} );
@@ -489,6 +495,7 @@ test.describe( 'Complete your campaign', () => {
 		test.describe( 'User skips paid ads creation', () => {
 			test.describe( 'With WooCommerce tracking disabled', () => {
 				test.beforeAll( async () => {
+					await dashboardPage.fulfillAdsCampaignsRequest( [] );
 					await setupAdsAccountPage.mockAdsAccountIncomplete();
 					await completeCampaign.goto();
 					await completeCampaign.clickSkipPaidAdsCreationButton();
@@ -690,6 +697,7 @@ test.describe( 'Complete your campaign', () => {
 
 		test.describe( 'Ads setup is complete', async () => {
 			test.beforeAll( async () => {
+				await setCompletedAdsSetup();
 				await completeCampaign.goto();
 				await completeCampaign.clickSkipPaidAdsCreationButton();
 				await completeCampaign.clickCompleteSetupModalButton();
