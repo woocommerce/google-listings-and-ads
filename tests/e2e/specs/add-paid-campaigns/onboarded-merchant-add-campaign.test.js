@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { expect, test } from '@playwright/test';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -35,11 +36,9 @@ let optimizeCampaignPage;
 const SCENARIOS = [
 	{
 		name: 'When merchant account is connected',
-		setupMerchant: () => {
-			setOnboardedMerchant();
-		},
-		clearMerchant: () => {
-			clearOnboardedMerchant();
+		setupMerchant: noop,
+		clearMerchant: async () => {
+			await clearOnboardedMerchant();
 		},
 		campaignId: 23232323,
 		campaignName: 'Test Campaign 2',
@@ -47,13 +46,12 @@ const SCENARIOS = [
 	},
 	{
 		name: 'For ads only setup',
-		setupMerchant: () => {
-			clearCompleteMCSetup();
-			setOnboardedMerchant();
-			setServiceBasedMerchant();
+		setupMerchant: async () => {
+			await clearCompleteMCSetup();
+			await setServiceBasedMerchant();
 		},
-		clearMerchant: () => {
-			clearServiceBasedMerchant();
+		clearMerchant: async () => {
+			await clearServiceBasedMerchant();
 		},
 		campaignId: 45454545,
 		campaignName: 'Test Campaign 3',
@@ -165,7 +163,8 @@ test.describe( 'Post onboarding campaign setup', () => {
 		} ) => {
 			test.describe( name, () => {
 				test.beforeAll( async () => {
-					setupMerchant();
+					await setOnboardedMerchant();
+					await setupMerchant();
 
 					await optimizeCampaignPage.fulfillAdsCampaignsRequest(
 						{
@@ -198,8 +197,8 @@ test.describe( 'Post onboarding campaign setup', () => {
 				} );
 
 				test.afterAll( async () => {
-					await clearMerchant();
 					await clearOnboardedMerchant();
+					await clearMerchant();
 				} );
 
 				test( 'User can create campaign post onboarding', async () => {
