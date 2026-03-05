@@ -29,9 +29,7 @@ import { useAdaptiveFormContext } from '~/components/adaptive-form';
 describe( 'AssetGroupHeader', () => {
 	test( 'Component renders', () => {
 		render( <AssetGroupHeader /> );
-		expect(
-			screen.getByText( /Add additional assets/i )
-		).toBeInTheDocument();
+		expect( screen.getByText( /Add assets/i ) ).toBeInTheDocument();
 	} );
 
 	test( 'Component not showing Tip if there are no imported assets', () => {

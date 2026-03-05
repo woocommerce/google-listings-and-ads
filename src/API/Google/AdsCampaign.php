@@ -183,10 +183,13 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			$converted_campaigns = [];
 
 			// Get only the first element from campaign results
-			foreach ( $campaign_results->iterateAllElements() as $row ) {
-				$campaign                               = $this->convert_campaign( $row );
-				$converted_campaigns[ $campaign['id'] ] = $campaign;
-				break;
+			$elements = $campaign_results->iterateAllElements();
+			if ( $elements !== null ) {
+				foreach ( $elements as $row ) {
+					$campaign                               = $this->convert_campaign( $row );
+					$converted_campaigns[ $campaign['id'] ] = $campaign;
+					break;
+				}
 			}
 
 			if ( ! empty( $converted_campaigns ) ) {
@@ -233,18 +236,43 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 
 			$location_ids = array_filter( $location_ids );
 
-			// Operations must be in a specific order to match the temporary ID's.
-			$operations = array_merge(
-				[ $this->budget->create_operation( $params['name'], $params['amount'] ) ],
-				[ $this->create_operation( $params['name'], $base_country, $params['eu_political_advertising_confirmation'] ) ],
-				$this->container->get( AdsAssetGroup::class )->create_operations(
+			// Create budget operations.
+			$budget_operations = [ $this->budget->create_operation( $params['name'], $params['amount'] ) ];
+
+			// Create campaign operations.
+			$campaign_operations = [ $this->create_operation( $params['name'], $base_country, $params['eu_political_advertising_confirmation'] ) ];
+
+			// Create asset group operations.
+			$ad_asset_group = $this->container->get( AdsAssetGroup::class );
+
+			// If final URL and assets are passed create operations for those.
+			if ( isset( $params['final_url'] ) && isset( $params['assets'] ) ) {
+				$asset_group_operations = $ad_asset_group->create_operations_with_assets(
+					$this->temporary_resource_name(),
+					$params['name'],
+					$params['final_url'],
+					$params['assets']
+				);
+			} else {
+				// Create "empty" asset group operations.
+				$asset_group_operations = $ad_asset_group->create_operations(
 					$this->temporary_resource_name(),
 					$params['name']
-				),
-				$this->criterion->create_operations(
-					$this->temporary_resource_name(),
-					$location_ids
-				)
+				);
+			}
+
+			// Location/Targeting criteria operations.
+			$criteria_operations = $this->criterion->create_operations(
+				$this->temporary_resource_name(),
+				$location_ids
+			);
+
+			// Operations must be in a specific order to match the temporary ID's.
+			$operations = array_merge(
+				$budget_operations,
+				$campaign_operations,
+				$asset_group_operations,
+				$criteria_operations
 			);
 
 			$campaign_id = $this->mutate( $operations );
@@ -480,31 +508,36 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * Returns a campaign create operation.
 	 *
-	 * @param string $campaign_name
-	 * @param string $country
-	 * @param bool   $is_eu_political
+	 * @param string      $campaign_name
+	 * @param string|null $country
+	 * @param bool        $is_eu_political
 	 *
 	 * @return MutateOperation
 	 */
-	protected function create_operation( string $campaign_name, string $country, bool $is_eu_political ): MutateOperation {
-		$campaign = new Campaign(
-			[
-				'resource_name'                     => $this->temporary_resource_name(),
-				'name'                              => $campaign_name,
-				'advertising_channel_type'          => AdvertisingChannelType::PERFORMANCE_MAX,
-				'status'                            => CampaignStatus::number( 'enabled' ),
-				'campaign_budget'                   => $this->budget->temporary_resource_name(),
-				'maximize_conversion_value'         => new MaximizeConversionValue(),
-				'url_expansion_opt_out'             => false,
-				'shopping_setting'                  => new ShoppingSetting(
-					[
-						'merchant_id' => $this->options->get_merchant_id(),
-						'feed_label'  => $country,
-					]
-				),
-				'contains_eu_political_advertising' => $is_eu_political ? EuPoliticalAdvertisingStatus::CONTAINS_EU_POLITICAL_ADVERTISING : EuPoliticalAdvertisingStatus::DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING,
-			]
-		);
+	protected function create_operation( string $campaign_name, ?string $country, bool $is_eu_political ): MutateOperation {
+		$merchant_id   = $this->options->get_merchant_id();
+		$campaign_data = [
+			'resource_name'                     => $this->temporary_resource_name(),
+			'name'                              => $campaign_name,
+			'advertising_channel_type'          => AdvertisingChannelType::PERFORMANCE_MAX,
+			'status'                            => CampaignStatus::number( 'enabled' ),
+			'campaign_budget'                   => $this->budget->temporary_resource_name(),
+			'maximize_conversion_value'         => new MaximizeConversionValue(),
+			'url_expansion_opt_out'             => false,
+			'contains_eu_political_advertising' => $is_eu_political ? EuPoliticalAdvertisingStatus::CONTAINS_EU_POLITICAL_ADVERTISING : EuPoliticalAdvertisingStatus::DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING,
+		];
+
+		// Only include shopping_setting if Merchant Center account is connected.
+		if ( $merchant_id > 0 && $country !== null ) {
+			$campaign_data['shopping_setting'] = new ShoppingSetting(
+				[
+					'merchant_id' => $merchant_id,
+					'feed_label'  => $country,
+				]
+			);
+		}
+
+		$campaign = new Campaign( $campaign_data );
 
 		$operation = ( new CampaignOperation() )->setCreate( $campaign );
 		return ( new MutateOperation() )->setCampaignOperation( $operation );
@@ -636,7 +669,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 		$request->setCustomerId( $this->options->get_ads_id() );
 		$request->setMutateOperations( $operations );
 		$responses = $this->client->getGoogleAdsServiceClient()->mutate( $request );
-		foreach ( $responses->getMutateOperationResponses() as $response ) {
+		foreach ( $responses->getMutateOperationResponses() ?? [] as $response ) {
 			if ( 'campaign_result' === $response->getResponse() ) {
 				$campaign_result = $response->getCampaignResult();
 				return $this->parse_campaign_id( $campaign_result->getResourceName() );
