@@ -35,7 +35,9 @@ let optimizeCampaignPage;
 const SCENARIOS = [
 	{
 		name: 'When merchant account is connected',
-		setupMerchant: setOnboardedMerchant,
+		setupMerchant: () => {
+			setOnboardedMerchant();
+		},
 		clearMerchant: () => {
 			clearOnboardedMerchant();
 		},
