@@ -37,6 +37,7 @@ import {
 	recordStepContinueEvent,
 } from '~/utils/tracks';
 import useNavigateAwayPromptEffect from '~/hooks/useNavigateAwayPromptEffect';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'edit-ads';
@@ -75,6 +76,7 @@ const EditPaidAdsCampaign = () => {
 		createCampaignAssetGroup,
 		updateCampaignAssetGroup,
 	} = useAppDispatch();
+	const { createNotice } = useDispatchCoreNotices();
 
 	const query = useQuery();
 	const id = Number( query.programId );
@@ -210,6 +212,14 @@ const EditPaidAdsCampaign = () => {
 
 				await updateCampaignAssetGroup( assetGroupId, body );
 				invalidateResolvedAssetEntityGroups();
+
+				createNotice(
+					'success',
+					__(
+						'You’ve successfully updated your campaign!',
+						'google-listings-and-ads'
+					)
+				);
 			}
 		} catch ( e ) {
 			setIsSubmit( false );
