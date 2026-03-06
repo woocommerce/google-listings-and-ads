@@ -90,7 +90,7 @@ const ChannelVisibilitySettings = () => {
 						</Flex>
 					</FlexItem>
 					{ selectOptions.length > 0 && (
-						<FlexItem>
+						<FlexBlock>
 							<SelectControl
 								name={ fieldId }
 								options={ selectOptions }
@@ -101,7 +101,7 @@ const ChannelVisibilitySettings = () => {
 								disabled={ ! productIsVisible }
 								__nextHasNoMarginBottom
 							/>
-						</FlexItem>
+						</FlexBlock>
 					) }
 				</Flex>
 			</FlexBlock>
