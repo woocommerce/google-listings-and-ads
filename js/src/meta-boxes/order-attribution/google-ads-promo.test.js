@@ -2,18 +2,28 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
+import { render, fireEvent, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
  */
 import { glaData } from '~/constants';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
+import { recordGlaEvent } from '~/utils/tracks';
 import GoogleAdsPromo from './google-ads-promo';
 
 jest.mock( '~/hooks/useAdsCampaigns', () =>
 	jest.fn().mockName( 'useAdsCampaigns' )
 );
+
+jest.mock( '~/utils/tracks', () => ( {
+	recordGlaEvent: jest.fn(),
+} ) );
+
+jest.mock( '~/utils/urls', () => ( {
+	getGetStartedUrl: jest.fn( () => '/get-started' ),
+	getCreateCampaignUrl: jest.fn( () => '/create-campaign' ),
+} ) );
 
 describe( 'GoogleAdsPromo Component', () => {
 	beforeAll( () => {
@@ -168,6 +178,91 @@ describe( 'GoogleAdsPromo Component', () => {
 
 			const { container } = render( <GoogleAdsPromo /> );
 			expect( container.firstChild ).toBeInTheDocument();
+		} );
+	} );
+
+	describe( 'Tracking events', () => {
+		test( 'Fires gla_google_ads_promo_shown event when component successfully renders', () => {
+			useAdsCampaigns.mockReturnValue( {
+				data: [],
+				loading: false,
+			} );
+
+			render( <GoogleAdsPromo /> );
+
+			expect( recordGlaEvent ).toHaveBeenCalledWith(
+				'gla_google_ads_promo_shown',
+				{
+					context: 'order-attribution-meta-box',
+				}
+			);
+			expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		test( 'Does not fire tracking event when loading', () => {
+			useAdsCampaigns.mockReturnValue( {
+				data: [],
+				loading: true,
+			} );
+
+			render( <GoogleAdsPromo /> );
+
+			expect( recordGlaEvent ).not.toHaveBeenCalled();
+		} );
+
+		test( 'Fires tracking event only once when component re-renders with same data', () => {
+			useAdsCampaigns.mockReturnValue( {
+				data: [],
+				loading: false,
+			} );
+
+			const { rerender } = render( <GoogleAdsPromo /> );
+
+			expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
+
+			rerender( <GoogleAdsPromo /> );
+
+			expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		test( 'Fires gla_google_ads_promo_create_campaign_click event when Create campaign button is clicked', () => {
+			glaData.adsSetupComplete = true;
+
+			useAdsCampaigns.mockReturnValue( {
+				data: [],
+				loading: false,
+			} );
+
+			render( <GoogleAdsPromo /> );
+
+			fireEvent.click(
+				screen.getByRole( 'link', { name: 'Create campaign' } )
+			);
+
+			expect( recordGlaEvent ).toHaveBeenCalledWith(
+				'gla_google_ads_promo_create_campaign_click',
+				{
+					context: 'order-attribution-meta-box',
+					href: '/create-campaign',
+				}
+			);
+		} );
+
+		test( 'Fires gla_google_ads_promo_get_started_click event when Get started button is clicked', () => {
+			useAdsCampaigns.mockReturnValue( {
+				data: [],
+				loading: false,
+			} );
+
+			render( <GoogleAdsPromo /> );
+			fireEvent.click(
+				screen.getByRole( 'link', { name: 'Get started' } )
+			);
+
+			expect( recordGlaEvent ).toHaveBeenCalledWith(
+				'gla_google_ads_promo_get_started_click',
+				{ context: 'order-attribution-meta-box', href: '/get-started' }
+			);
 		} );
 	} );
 } );

@@ -2,12 +2,14 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useEffect, useRef } from '@wordpress/element';
 import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import { glaData } from '~/constants';
+import { recordGlaEvent } from '~/utils/tracks';
 import { getCreateCampaignUrl, getGetStartedUrl } from '~/utils/urls';
 import AppButton from '~/components/app-button';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
@@ -37,21 +39,65 @@ const hasRecentPaidCampaigns = ( campaigns ) => {
 };
 
 /**
+ * Google Ads Promo component is shown.
+ *
+ * @event gla_google_ads_promo_shown
+ * @property {string} context Context of the Google Ads Promo.
+ */
+
+/**
+ * Google Ads Promo "Get started" button is clicked.
+ *
+ * @event gla_google_ads_promo_get_started_click
+ * @property {string} context Context of the Google Ads Promo.
+ * @property {string} href URL of the "Get started" button.
+ */
+
+/**
+ * Google Ads Promo "Create campaign" button is clicked.
+ *
+ * @event gla_google_ads_promo_create_campaign_click
+ * @property {string} context Context of the Google Ads Promo.
+ * @property {string} href URL of the "Create campaign" button.
+ */
+
+/**
  * Google Ads Promo component.
+ *
+ * @fires gla_google_ads_promo_shown with `{ context: 'order-attribution-meta-box' }`.
+ * @fires gla_google_ads_promo_get_started_click with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fstart' }`.
+ * @fires gla_google_ads_promo_create_campaign_click with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&subpath=%2Fcampaigns%2Fcreate&path=%2Fgoogle%2Fdashboard' }`.
  *
  * @return {JSX.Element|null} The Google Ads Promo component or null.
  */
 const GoogleAdsPromo = () => {
+	const context = 'order-attribution-meta-box';
 	const { adsSetupComplete } = glaData;
 	const { data: campaigns, loading } = useAdsCampaigns();
+	const hasTrackedRef = useRef( false );
 
-	if (
-		loading ||
-		! Array.isArray( campaigns ) ||
-		hasRecentPaidCampaigns( campaigns )
-	) {
+	// Checks if the component is ready to render
+	const isReadyToRender =
+		! loading &&
+		Array.isArray( campaigns ) &&
+		! hasRecentPaidCampaigns( campaigns );
+
+	useEffect( () => {
+		// Only fire if all conditions for rendering are met and not already tracked
+		if ( ! hasTrackedRef.current && isReadyToRender ) {
+			recordGlaEvent( 'gla_google_ads_promo_shown', {
+				context,
+			} );
+			hasTrackedRef.current = true;
+		}
+	}, [ isReadyToRender ] );
+
+	if ( ! isReadyToRender ) {
 		return null;
 	}
+
+	const campaignUrl = getCreateCampaignUrl();
+	const getStartedUrl = getGetStartedUrl();
 
 	const content = adsSetupComplete
 		? {
@@ -65,8 +111,12 @@ const GoogleAdsPromo = () => {
 				),
 				cta: (
 					<AppButton
-						href={ getCreateCampaignUrl() }
+						href={ campaignUrl }
 						eventName="gla_google_ads_promo_create_campaign_click"
+						eventProps={ {
+							href: campaignUrl,
+							context,
+						} }
 						isSecondary
 					>
 						{ __( 'Create campaign', 'google-listings-and-ads' ) }
@@ -84,8 +134,12 @@ const GoogleAdsPromo = () => {
 				),
 				cta: (
 					<AppButton
-						href={ getGetStartedUrl() }
+						href={ getStartedUrl }
 						eventName="gla_google_ads_promo_get_started_click"
+						eventProps={ {
+							href: getStartedUrl,
+							context,
+						} }
 						isSecondary
 					>
 						{ __( 'Get started', 'google-listings-and-ads' ) }
