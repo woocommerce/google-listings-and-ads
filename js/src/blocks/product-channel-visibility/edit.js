@@ -109,8 +109,8 @@ export default function Edit( { attributes, context } ) {
 								{ __( 'Issues', 'google-listings-and-ads' ) }
 							</h2>
 							<ul>
-								{ issues.map( ( issue ) => (
-									<li key={ issue }>{ issue }</li>
+								{ issues.map( ( issue, idx ) => (
+									<li key={ idx }>{ issue }</li>
 								) ) }
 							</ul>
 						</section>
