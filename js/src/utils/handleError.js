@@ -103,7 +103,11 @@ export function getFormattedErrorMessage( detailedErrors ) {
 			error.error ||
 			__( 'Unknown Error', 'google-listings-and-ads' );
 
-		const description = error?.message;
+		let description = error.message;
+
+		if ( error.error?.message ) {
+			description = `${ description }. ${ error.error.message }`;
+		}
 
 		return { title, description };
 	} );

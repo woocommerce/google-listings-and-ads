@@ -269,7 +269,7 @@ test.describe( 'Set up accounts', () => {
 
 				await expect(
 					googleAccountCard.getByText(
-						'There was an error connecting to Ads account.'
+						'Unable to accept link for the customer account. Request contains an invalid argument.'
 					)
 				).toBeVisible();
 			} );

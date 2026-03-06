@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import classNames from 'classnames';
 import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 
 /**
@@ -12,7 +11,18 @@ import useDetailedErrorBySlots from '~/hooks/useDetailedErrorBySlots';
 import warningIconUrl from '~/images/icons/warning.svg';
 import './index.scss';
 
-const DetailedError = ( { errorSlots, className } ) => {
+/**
+ * Component to display detailed error messages based on provided error slots.
+ *
+ * This component uses the `useDetailedErrorBySlots` hook to retrieve the first
+ * error for each specified slot. It then formats and displays these errors in a
+ * user-friendly manner, including an icon, title, and description for each error.
+ *
+ * @param {Object} props - Component props.
+ * @param {Array<string>} props.errorSlots - The error slots to display errors for.
+ * @return {JSX.Element|null} The rendered component or null if no errors.
+ */
+const DetailedError = ( { errorSlots } ) => {
 	const errors = useDetailedErrorBySlots( errorSlots );
 
 	if ( ! errors || errors.length === 0 ) {
@@ -26,7 +36,7 @@ const DetailedError = ( { errorSlots, className } ) => {
 			{ formattedErrors.map( ( { title, description } ) => (
 				<div
 					key={ `${ title }-${ description }` }
-					className={ classNames( 'gla-detailed-error', className ) }
+					className="gla-detailed-error"
 				>
 					<Flex align="center" wrap="nowrap" gap={ 1 }>
 						<FlexItem>
