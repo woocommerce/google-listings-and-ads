@@ -58,7 +58,9 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 			return;
 		}
 
-		clearDetailedErrorBySlots( [ ERROR_SLOTS.GOOGLE_ADS_CONNECTION ] );
+		clearDetailedErrorBySlots( [
+			ERROR_SLOTS.GOOGLE_ADS_CONNECTION_ERROR_SLOT,
+		] );
 
 		setLoading( true );
 		try {
@@ -69,10 +71,16 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 			const detailedError = await extractDetailedApiError( error );
 
 			if ( detailedError ) {
-				receiveDetailedError( ERROR_SLOTS.GOOGLE_ADS_CONNECTION, {
-					...detailedError.data,
-					title: __( 'Connection Failed', 'google-listings-and-ads' ),
-				} );
+				receiveDetailedError(
+					ERROR_SLOTS.GOOGLE_ADS_CONNECTION_ERROR_SLOT,
+					{
+						...detailedError.data,
+						title: __(
+							'Connection Failed',
+							'google-listings-and-ads'
+						),
+					}
+				);
 			}
 		} finally {
 			setLoading( false );
@@ -148,7 +156,7 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 					onDisconnected={ handleDisconnected }
 				/>
 			}
-			errorSlots={ [ ERROR_SLOTS.GOOGLE_ADS_CONNECTION ] }
+			errorSlots={ [ ERROR_SLOTS.GOOGLE_ADS_CONNECTION_ERROR_SLOT ] }
 		/>
 	);
 };

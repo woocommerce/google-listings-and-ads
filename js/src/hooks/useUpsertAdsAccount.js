@@ -57,13 +57,16 @@ const useUpsertAdsAccount = () => {
 			} );
 
 			if ( detailedError ) {
-				receiveDetailedError( ERROR_SLOTS.GOOGLE_ADS_CONNECTION, {
-					...detailedError.data,
-					title: __(
-						'Google Ads Creation Failed',
-						'google-listings-and-ads'
-					),
-				} );
+				receiveDetailedError(
+					ERROR_SLOTS.GOOGLE_ADS_CONNECTION_ERROR_SLOT,
+					{
+						...detailedError.data,
+						title: __(
+							'Google Ads Creation Failed',
+							'google-listings-and-ads'
+						),
+					}
+				);
 			}
 		}
 

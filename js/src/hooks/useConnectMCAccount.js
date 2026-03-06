@@ -31,7 +31,9 @@ const useConnectMCAccount = ( value ) => {
 		}
 
 		try {
-			clearDetailedErrorBySlots( [ ERROR_SLOTS.GOOGLE_MC_CONNECTION ] );
+			clearDetailedErrorBySlots( [
+				ERROR_SLOTS.GOOGLE_MC_CONNECTION_ERROR_SLOT,
+			] );
 			await fetchMCAccounts( { parse: false } );
 			invalidateResolution( 'getGoogleMCAccount', [] );
 		} catch ( e ) {
@@ -51,10 +53,16 @@ const useConnectMCAccount = ( value ) => {
 			} );
 
 			if ( detailedError ) {
-				receiveDetailedError( ERROR_SLOTS.GOOGLE_MC_CONNECTION, {
-					...detailedError.data,
-					title: __( 'Connection Failed', 'google-listings-and-ads' ),
-				} );
+				receiveDetailedError(
+					ERROR_SLOTS.GOOGLE_MC_CONNECTION_ERROR_SLOT,
+					{
+						...detailedError.data,
+						title: __(
+							'Connection Failed',
+							'google-listings-and-ads'
+						),
+					}
+				);
 			}
 		}
 	};

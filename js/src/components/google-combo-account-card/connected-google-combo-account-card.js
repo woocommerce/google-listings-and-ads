@@ -184,10 +184,10 @@ const ConnectedGoogleComboAccountCard = () => {
 	const errorSlots = [];
 
 	if ( ! showConnectAds ) {
-		errorSlots.push( ERROR_SLOTS.GOOGLE_ADS_CONNECTION );
+		errorSlots.push( ERROR_SLOTS.GOOGLE_ADS_CONNECTION_ERROR_SLOT );
 	}
 	if ( ! showConnectMC ) {
-		errorSlots.push( ERROR_SLOTS.GOOGLE_MC_CONNECTION );
+		errorSlots.push( ERROR_SLOTS.GOOGLE_MC_CONNECTION_ERROR_SLOT );
 	}
 
 	return (

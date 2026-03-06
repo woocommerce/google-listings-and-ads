@@ -42,10 +42,16 @@ const useCreateMCAccount = () => {
 			const detailedError = await extractDetailedApiError( e );
 
 			if ( detailedError ) {
-				receiveDetailedError( ERROR_SLOTS.GOOGLE_MC_CONNECTION, {
-					...detailedError.data,
-					title: __( 'Connection Failed', 'google-listings-and-ads' ),
-				} );
+				receiveDetailedError(
+					ERROR_SLOTS.GOOGLE_MC_CONNECTION_ERROR_SLOT,
+					{
+						...detailedError.data,
+						title: __(
+							'Connection Failed',
+							'google-listings-and-ads'
+						),
+					}
+				);
 			}
 		}
 	};

@@ -167,7 +167,7 @@ const ConnectMC = ( { createAccount, resultCreateAccount, className } ) => {
 					onCreateAccount={ createAccount }
 				/>
 			}
-			errorSlots={ [ ERROR_SLOTS.GOOGLE_MC_CONNECTION ] }
+			errorSlots={ [ ERROR_SLOTS.GOOGLE_MC_CONNECTION_ERROR_SLOT ] }
 		/>
 	);
 };
