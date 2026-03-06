@@ -128,6 +128,20 @@ export async function clearCompletedAdsSetup() {
 }
 
 /**
+ * Set MC Setup.
+ */
+export async function setCompleteMCSetup() {
+	await api().post( 'gla-test/mc-completed' );
+}
+
+/**
+ * Clear MC Setup.
+ */
+export async function clearCompleteMCSetup() {
+	await api().delete( 'gla-test/mc-completed' );
+}
+
+/**
  * Set Notifications Ready.
  */
 export async function setNotificationsReady() {
@@ -153,4 +167,18 @@ export async function setVersionForHideGtin() {
  */
 export async function setVersionForDisabledGtin() {
 	await api().post( 'gla-test/gtin-disabled' );
+}
+
+/**
+ * Set Service Based Merchant.
+ */
+export async function setServiceBasedMerchant() {
+	await api().post( 'gla-test/service-based-merchant' );
+}
+
+/**
+ * Clear Service Based Merchant.
+ */
+export async function clearServiceBasedMerchant() {
+	await api().delete( 'gla-test/service-based-merchant' );
 }

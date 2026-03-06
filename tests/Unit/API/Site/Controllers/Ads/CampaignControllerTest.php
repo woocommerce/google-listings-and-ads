@@ -372,6 +372,63 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
+	public function test_create_campaign_with_final_url_and_assets() {
+		$campaign_data = [
+			'name'               => 'New Campaign',
+			'amount'             => 50,
+			'targeted_locations' => [ 'US', 'GB' ],
+			'final_url'          => 'https://example.com',
+			'assets'             => [
+				[
+					'field_type' => 'headline',
+					'content'    => 'Test headline',
+				],
+				[
+					'field_type' => 'square_marketing_image',
+					'content'    => 'https://example.com/image.jpg',
+				],
+			],
+		];
+
+		$expected = [
+			'id'                                    => self::TEST_CAMPAIGN_ID,
+			'status'                                => 'enabled',
+			'type'                                  => 'performance_max',
+			'country'                               => self::BASE_COUNTRY,
+			'name'                                  => 'New Campaign',
+			'amount'                                => 50,
+			'targeted_locations'                    => [ 'US', 'GB' ],
+			'eu_political_advertising_confirmation' => false,
+		];
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'create_campaign' )
+			->with( $campaign_data )
+			->willReturn( $expected );
+
+		$this->expect_track_event(
+			'created_campaign',
+			[
+				'id'                 => self::TEST_CAMPAIGN_ID,
+				'status'             => 'enabled',
+				'name'               => 'New Campaign',
+				'amount'             => 50,
+				'country'            => self::BASE_COUNTRY,
+				'targeted_locations' => 'US,GB',
+				'source'             => '',
+			]
+		);
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
+
+		$this->assertEquals( $expected, $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+
+		// Final URL and assets should not be returned in response.
+		$this->assertArrayNotHasKey( 'final_url', $response->get_data() );
+		$this->assertArrayNotHasKey( 'assets', $response->get_data() );
+	}
+
 	public function test_get_campaign() {
 		$campaign_data = [
 			'id'                                    => self::TEST_CAMPAIGN_ID,

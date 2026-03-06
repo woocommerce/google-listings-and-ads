@@ -90,6 +90,7 @@ module.exports = {
 					'gla_paid_campaign_step',
 					'gla_setup_ads',
 					'gla_setup_mc',
+					'gla_setup_ads_only',
 					'gla_table_go_to_page',
 					'gla_table_page_click',
 				],
