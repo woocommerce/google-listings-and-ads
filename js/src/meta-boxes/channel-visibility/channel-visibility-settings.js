@@ -19,9 +19,9 @@ import googleLogoURL from '~/images/logo/gogole-g-logo.svg';
 
 const {
 	channelVisibility: {
-		field_id,
-		channel_visibility,
-		product_is_visible,
+		field_id: fieldId,
+		channel_visibility: channelVisibility,
+		product_is_visible: productIsVisible,
 		issues = [],
 		options = [],
 	} = {},
@@ -36,12 +36,13 @@ const {
  * @return {JSX.Element} The Channel Visibility Settings component
  */
 const ChannelVisibilitySettings = () => {
-	const [ channelVisibility, setChannelVisibility ] = useState(
-		product_is_visible ? channel_visibility : 'dont-sync-and-show'
+	const [ channelVisibilityValue, setChannelVisibilityValue ] = useState(
+		productIsVisible ? channelVisibility : 'dont-sync-and-show'
 	);
 	let productIssues = issues;
 
-	if ( ! product_is_visible ) {
+	// Adds warning message if the product is not visible
+	if ( ! productIsVisible ) {
 		productIssues = [
 			...issues,
 			__(
@@ -91,13 +92,13 @@ const ChannelVisibilitySettings = () => {
 					{ selectOptions.length > 0 && (
 						<FlexItem>
 							<SelectControl
-								name={ field_id }
+								name={ fieldId }
 								options={ selectOptions }
-								value={ channelVisibility }
+								value={ channelVisibilityValue }
 								onChange={ ( value ) =>
-									setChannelVisibility( value )
+									setChannelVisibilityValue( value )
 								}
-								disabled={ ! product_is_visible }
+								disabled={ ! productIsVisible }
 								__nextHasNoMarginBottom
 							/>
 						</FlexItem>
@@ -105,7 +106,7 @@ const ChannelVisibilitySettings = () => {
 				</Flex>
 			</FlexBlock>
 
-			{ productIssues?.length > 0 && (
+			{ productIssues.length > 0 && (
 				<FlexBlock>
 					<Notice status="warning" isDismissible={ false }>
 						<p>
