@@ -17,9 +17,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use Automattic\WooCommerce\GoogleListingsAndAds\View\ViewException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\Admin\PageController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\ScriptAsset;
 
@@ -54,18 +56,32 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 	protected $ads;
 
 	/**
+	 * @var OnboardingCompleted
+	 */
+	protected $onboarding_completed;
+
+	/**
+	 * @var ServiceBasedMerchantState
+	 */
+	protected $service_based_merchant_state;
+
+	/**
 	 * Admin constructor.
 	 *
-	 * @param AssetsHandlerInterface $assets_handler
-	 * @param ViewFactory            $view_factory
-	 * @param MerchantCenterService  $merchant_center
-	 * @param AdsService             $ads
+	 * @param AssetsHandlerInterface    $assets_handler
+	 * @param ViewFactory               $view_factory
+	 * @param MerchantCenterService     $merchant_center
+	 * @param AdsService                $ads
+	 * @param OnboardingCompleted       $onboarding_completed
+	 * @param ServiceBasedMerchantState $service_based_merchant_state
 	 */
-	public function __construct( AssetsHandlerInterface $assets_handler, ViewFactory $view_factory, MerchantCenterService $merchant_center, AdsService $ads ) {
-		$this->assets_handler  = $assets_handler;
-		$this->view_factory    = $view_factory;
-		$this->merchant_center = $merchant_center;
-		$this->ads             = $ads;
+	public function __construct( AssetsHandlerInterface $assets_handler, ViewFactory $view_factory, MerchantCenterService $merchant_center, AdsService $ads, OnboardingCompleted $onboarding_completed, ServiceBasedMerchantState $service_based_merchant_state ) {
+		$this->assets_handler               = $assets_handler;
+		$this->view_factory                 = $view_factory;
+		$this->merchant_center              = $merchant_center;
+		$this->ads                          = $ads;
+		$this->onboarding_completed         = $onboarding_completed;
+		$this->service_based_merchant_state = $service_based_merchant_state;
 	}
 
 	/**
@@ -135,10 +151,12 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 				'mcSupportedLanguage'      => $this->merchant_center->is_language_supported(),
 				'adsCampaignConvertStatus' => $this->options->get( OptionsInterface::CAMPAIGN_CONVERT_STATUS ),
 				'adsSetupComplete'         => $this->ads->is_setup_complete(),
+				'onboardingComplete'       => $this->onboarding_completed->is_onboarding_complete(),
 				'enableReports'            => $this->enableReports(),
 				'dateFormat'               => get_option( 'date_format' ),
 				'timeFormat'               => get_option( 'time_format' ),
 				'siteLogoUrl'              => wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ), 'full' ),
+				'serviceBasedMerchant'     => $this->service_based_merchant_state->is_service_based_merchant(),
 				'initialWpData'            => [
 					'version' => $this->get_version(),
 					'mcId'    => $this->options->get_merchant_id() ?: null,
@@ -212,7 +230,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 		$plugin_links = [];
 
 		// Display settings url if setup is complete otherwise link to get started page
-		if ( $this->merchant_center->is_setup_complete() ) {
+		if ( $this->onboarding_completed->is_onboarding_complete() ) {
 			$plugin_links[] = sprintf(
 				'<a href="%1$s">%2$s</a>',
 				esc_attr( $this->get_settings_url() ),

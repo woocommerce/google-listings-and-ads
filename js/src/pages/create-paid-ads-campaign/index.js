@@ -11,6 +11,7 @@ import { getHistory } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import useLayout from '~/hooks/useLayout';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import { useAppDispatch } from '~/data';
@@ -46,10 +47,14 @@ const dashboardURL = getDashboardUrl();
  */
 const CreatePaidAdsCampaign = () => {
 	useLayout( 'full-content' );
-
+	const { hasGoogleMCConnection } = useGoogleMCAccount();
 	const [ step, setStep ] = useState( STEP.CAMPAIGN );
 	const createdCampaignIdRef = useRef( null );
-	const { createAdsCampaign, updateCampaignAssetGroup } = useAppDispatch();
+	const {
+		createAdsCampaign,
+		createAdsWithAssetsCampaign,
+		updateCampaignAssetGroup,
+	} = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 
@@ -78,28 +83,44 @@ const CreatePaidAdsCampaign = () => {
 		try {
 			const { dailyBudget, hasConfirmedEuPoliticalContent } = values;
 
-			// Avoid re-creating a new campaign if the subsequent asset group update is failed.
-			if ( createdCampaignIdRef.current === null ) {
-				const payload = await createAdsCampaign(
+			if ( hasGoogleMCConnection ) {
+				// Avoid re-creating a new campaign if the subsequent asset group update is failed.
+				if ( createdCampaignIdRef.current === null ) {
+					const payload = await createAdsCampaign(
+						dailyBudget,
+						countryCodes,
+						hasConfirmedEuPoliticalContent
+					);
+					createdCampaignIdRef.current = payload.createdCampaign.id;
+				}
+
+				if ( action === ACTION_SUBMIT_CAMPAIGN_AND_ASSETS ) {
+					const id = createdCampaignIdRef.current;
+					const path = `${ API_NAMESPACE }/ads/campaigns/asset-groups?campaign_id=${ id }`;
+
+					const [ assetEntityGroup ] = await apiFetch( { path } );
+
+					const body = convertToAssetGroupUpdateBody(
+						assetEntityGroup,
+						values
+					);
+
+					await updateCampaignAssetGroup( assetEntityGroup.id, body );
+				}
+			} else {
+				await createAdsWithAssetsCampaign(
 					dailyBudget,
 					countryCodes,
+					convertToAssetGroupUpdateBody(
+						{
+							final_url: '',
+							display_url_path: [ '', '' ],
+							assets: {},
+						},
+						values
+					),
 					hasConfirmedEuPoliticalContent
 				);
-				createdCampaignIdRef.current = payload.createdCampaign.id;
-			}
-
-			if ( action === ACTION_SUBMIT_CAMPAIGN_AND_ASSETS ) {
-				const id = createdCampaignIdRef.current;
-				const path = `${ API_NAMESPACE }/ads/campaigns/asset-groups?campaign_id=${ id }`;
-
-				const [ assetEntityGroup ] = await apiFetch( { path } );
-
-				const body = convertToAssetGroupUpdateBody(
-					assetEntityGroup,
-					values
-				);
-
-				await updateCampaignAssetGroup( assetEntityGroup.id, body );
 			}
 
 			createNotice(
