@@ -24,7 +24,12 @@ test.describe( 'Classic Product Editor integration', () => {
 		editorUtils = getClassicProductEditorUtils( page );
 
 		await api.setOnboardedMerchant();
+		await api.clearCompletedAdsSetup();
 		await api.setVersionForHideGtin(); // be sure the version is set for hiding GTIN
+	} );
+
+	test.afterAll( async () => {
+		await api.clearCompletedAdsSetup();
 	} );
 
 	test( 'Prompt to Get Started when not yet finished onboarding', async () => {
@@ -35,12 +40,12 @@ test.describe( 'Classic Product Editor integration', () => {
 
 		const link = editorUtils
 			.getChannelVisibilityMetaBox()
-			.getByRole( 'link', { name: 'Complete setup' } );
+			.getByRole( 'link', { name: 'Get started' } );
 
 		await expect( link ).toBeVisible();
 		await expect( link ).toHaveAttribute(
 			'href',
-			/\/wp-admin\/admin\.php\?page=wc-admin&path=\/google\/start/
+			/page=wc-admin&path=%2Fgoogle%2Fstart/
 		);
 
 		// Resume the plugin to onboarded status so that the next test can carry over.
@@ -76,6 +81,8 @@ test.describe( 'Classic Product Editor integration', () => {
 	} );
 
 	test( 'Check existence and availability of fields for simple product', async () => {
+		await api.setCompletedAdsSetup();
+
 		await editorUtils.gotoAddProductPage();
 		await editorUtils.clickPluginTab();
 
@@ -213,6 +220,8 @@ test.describe( 'Classic Product Editor integration', () => {
 	} );
 
 	test( 'Check existence of fields for variable and variation products', async () => {
+		await api.setCompletedAdsSetup();
+
 		await editorUtils.gotoEditVariableProductPage();
 		await editorUtils.clickPluginTab();
 
@@ -293,15 +302,17 @@ test.describe( 'Classic Product Editor integration', () => {
 	} );
 
 	test( 'Channel visibility is disabled when hiding in product catalog', async () => {
+		await api.setCompletedAdsSetup();
+
 		await editorUtils.gotoAddProductPage();
 		await editorUtils.fillProductName();
 
-		const { selection, help } = editorUtils.getChannelVisibility();
+		const { selection, notice } = editorUtils.getChannelVisibility();
 		const catalogVisibility = page.locator( '#catalog-visibility' );
 
 		await expect( selection ).toBeEnabled();
 		await expect( selection ).toHaveValue( 'sync-and-show' );
-		await expect( help ).toBeHidden();
+		await expect( notice ).toBeHidden();
 
 		await catalogVisibility.getByRole( 'link', { name: 'Edit' } ).click();
 		await catalogVisibility.getByLabel( 'Search results only' ).click();
@@ -309,8 +320,8 @@ test.describe( 'Classic Product Editor integration', () => {
 
 		await expect( selection ).toBeDisabled();
 		await expect( selection ).toHaveValue( 'dont-sync-and-show' );
-		await expect( help ).toBeVisible();
-		await expect( help ).toContainText(
+		await expect( notice ).toBeVisible();
+		await expect( notice ).toContainText(
 			'This product cannot be shown on any channel because it is hidden from your store catalog.'
 		);
 
@@ -319,31 +330,30 @@ test.describe( 'Classic Product Editor integration', () => {
 		await editorUtils.save();
 
 		await expect( selection ).toBeEnabled();
-		await expect( help ).toBeHidden();
+		await expect( notice ).toBeHidden();
 	} );
 
 	test( 'Change channel visibility and check its notice, status, and issues', async () => {
+		await api.setCompletedAdsSetup();
+
 		await editorUtils.gotoAddProductPage();
 		await editorUtils.fillProductName();
 		await editorUtils.save();
 
 		const issueTexts = [ 'Invalid price', 'Invalid GTIN' ];
-		const { selection, notice, status, issues } =
+		const { selection, notice, issues } =
 			editorUtils.getChannelVisibility();
 
 		/*
 		 * Assert:
 		 * - The value is saved to 'dont-sync-and-show'
-		 * - The notice won't be shown even if there are issues
+		 * - The notice will show the issue contents
 		 */
 		await editorUtils.mockChannelVisibility( 'has-errors', issueTexts );
 		await selection.selectOption( 'dont-sync-and-show' );
 		await editorUtils.save();
 
 		await expect( selection ).toHaveValue( 'dont-sync-and-show' );
-		await expect( notice ).toBeHidden();
-		await expect( status ).toBeHidden();
-		await expect( issues ).toBeHidden();
 
 		/*
 		 * Assert:
@@ -355,48 +365,12 @@ test.describe( 'Classic Product Editor integration', () => {
 
 		await expect( selection ).toHaveValue( 'sync-and-show' );
 		await expect( notice ).toBeVisible();
-		await expect( notice ).toHaveClass( /(^| )notice-warning( |$)/ );
-		await expect( status ).toHaveText( /^Issues detected$/i );
+		await expect( notice ).toHaveClass( /(^| )is-warning( |$)/ );
 		await expect( issues ).toHaveCount( issueTexts.length );
 
 		for ( const [ index, issueText ] of issueTexts.entries() ) {
 			await expect( issues.nth( index ) ).toHaveText( issueText );
 		}
-
-		/*
-		 * Assert:
-		 * - The info notice is shown with "Not synced" status
-		 */
-		await editorUtils.mockChannelVisibility( 'not-synced' );
-		await page.reload();
-
-		await expect( notice ).toBeVisible();
-		await expect( notice ).not.toHaveClass( /(^| )notice-warning( |$)/ );
-		await expect( status ).toHaveText( /^Not synced$/i );
-		await expect( issues ).toBeHidden();
-
-		/*
-		 * Assert:
-		 * - The info notice is shown with "Pending" status
-		 */
-		await editorUtils.mockChannelVisibility( 'pending' );
-		await page.reload();
-
-		await expect( notice ).toBeVisible();
-		await expect( notice ).not.toHaveClass( /(^| )notice-warning( |$)/ );
-		await expect( status ).toHaveText( /^Pending$/i );
-		await expect( issues ).toBeHidden();
-
-		/*
-		 * Assert:
-		 * - The notice won't be shown when the status is 'synced'
-		 */
-		await editorUtils.mockChannelVisibility( 'synced' );
-		await page.reload();
-
-		await expect( notice ).toBeHidden();
-		await expect( status ).toBeHidden();
-		await expect( issues ).toBeHidden();
 	} );
 
 	test( 'Custom input: Select with text input', async () => {

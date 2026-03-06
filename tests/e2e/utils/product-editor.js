@@ -118,9 +118,7 @@ export function getClassicProductEditorUtils( page ) {
 
 			return {
 				selection: metaBox.getByRole( 'combobox' ),
-				help: metaBox.locator( '.description' ),
-				notice: metaBox.locator( '.sync-status' ),
-				status: metaBox.locator( '.sync-status p' ).nth( 1 ),
+				notice: metaBox.locator( '.components-notice' ),
 				issues: metaBox.getByRole( 'listitem' ),
 			};
 		},
