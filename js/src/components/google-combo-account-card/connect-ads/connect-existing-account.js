@@ -17,8 +17,8 @@ import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
 import AdsAccountSelectControl from '~/components/ads-account-select-control';
 import ConnectedIconLabel from '~/components/connected-icon-label';
 import { ConnectAccountButton } from '~/components/google-ads-account-card';
-
-const ERROR_SLOT = 'CONNECT_ADS_ACCOUNT';
+import { ERROR_SLOTS } from '~/data/constants';
+import extractDetailedApiError from '~/utils/extractDetailedApiError';
 
 /**
  * Renders an account card to connect to an existing Google Ads account.
@@ -31,7 +31,7 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 	const [ isLoading, setLoading ] = useState( false );
 	const {
 		fetchGoogleAdsAccountStatus,
-		clearDetailedErrorBySlot,
+		clearDetailedErrorBySlots,
 		receiveDetailedError,
 	} = useAppDispatch();
 	const { isGoogleAdsReady } = useGoogleAdsAccountReady();
@@ -58,7 +58,7 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 			return;
 		}
 
-		clearDetailedErrorBySlot( ERROR_SLOT );
+		clearDetailedErrorBySlots( [ ERROR_SLOTS.GOOGLE_ADS_CONNECTION ] );
 
 		setLoading( true );
 		try {
@@ -66,11 +66,14 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 			await fetchGoogleAdsAccountStatus();
 			await refetchGoogleAdsAccount();
 		} catch ( error ) {
-			receiveDetailedError( ERROR_SLOT, {
-				...error,
-				code: error.statusText,
-				title: __( 'Connection Failed', 'google-listings-and-ads' ),
-			} );
+			const detailedError = await extractDetailedApiError( error );
+
+			if ( detailedError ) {
+				receiveDetailedError( ERROR_SLOTS.GOOGLE_ADS_CONNECTION, {
+					...detailedError.data,
+					title: __( 'Connection Failed', 'google-listings-and-ads' ),
+				} );
+			}
 		} finally {
 			setLoading( false );
 		}
@@ -145,7 +148,7 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 					onDisconnected={ handleDisconnected }
 				/>
 			}
-			errorSlots={ [ 'CONNECT_ADS_ACCOUNT' ] }
+			errorSlots={ [ ERROR_SLOTS.GOOGLE_ADS_CONNECTION ] }
 		/>
 	);
 };

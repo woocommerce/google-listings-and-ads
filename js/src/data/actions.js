@@ -1387,9 +1387,15 @@ export function* receiveDetailedError( slot, error ) {
  * @param {string} slot - Unique key identifying the error to be cleared.
  * @return {{type: string, slot: string}} Redux action with type `TYPES.CLEAR_DETAILED_ERROR_BY_SLOT`.
  */
-export function* clearDetailedErrorBySlot( slot ) {
+/**
+ * Clears error information for specific error slots.
+ *
+ * @param {Array<string>} slots - Array of unique keys identifying the errors to be cleared.
+ * @return {{type: string, slots: Array<string>}} Redux action with type `TYPES.CLEAR_DETAILED_ERROR_BY_SLOT`.
+ */
+export function* clearDetailedErrorBySlots( slots ) {
 	return {
 		type: TYPES.CLEAR_DETAILED_ERROR_BY_SLOT,
-		slot,
+		slots,
 	};
 }

@@ -120,7 +120,10 @@
 	}
 
 	.gla-account-card__error {
-		grid-area: auto/2/auto/span 1;
+		display: flex;
+		flex-direction: column;
+		gap: $grid-unit-20;
+		grid-area: auto/2/auto/span 2;
 		margin-top: $grid-unit-10;
 	}
 }

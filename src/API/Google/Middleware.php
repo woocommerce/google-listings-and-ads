@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidTerm;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidDomainName;
@@ -21,8 +22,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerExceptionInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\NotFoundExceptionInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException;
 use DateTime;
 use Exception;
+use WP_REST_Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -165,6 +168,7 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
 			$message = $this->client_exception_message( $e, __( 'Error creating account', 'google-listings-and-ads' ) );
+			$status  = $e->getCode() ?: 400;
 
 			// Content API for Shopping: Invalid account name terms.
 			// Merchant API: Account name validation failed.
@@ -186,7 +190,8 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			}
 
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
-			throw new Exception( $message, $e->getCode() );
+
+			throw new Exception( $message, $status, $e );
 		}
 	}
 
@@ -236,11 +241,9 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
-
-			throw new Exception(
-				$this->client_exception_message( $e, __( 'Error linking merchant to MCA', 'google-listings-and-ads' ) ),
-				$e->getCode()
-			);
+			$message = $this->client_exception_message( $e, __( 'Error linking merchant to MCA', 'google-listings-and-ads' ) );
+			$status  = $e->getCode() ?: 400;
+			throw new Exception( $message, $status, $e );
 		}
 	}
 
@@ -282,11 +285,20 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 			do_action( 'woocommerce_gla_site_claim_failure', [ 'details' => 'google_manager' ] );
-
-			throw new Exception(
-				$this->client_exception_message( $e, __( 'Error claiming website', 'google-listings-and-ads' ) ),
-				$e->getCode()
-			);
+			$message = $this->client_exception_message( $e, __( 'Error claiming website', 'google-listings-and-ads' ) );
+			$status  = $e->getCode() ?: 400;
+			$errors  = [];
+			if ( $e instanceof BadResponseException ) {
+				$raw = json_decode( $e->getResponse()->getBody()->getContents(), true );
+				if ( is_array( $raw ) && ! empty( $raw['errors'] ) && is_array( $raw['errors'] ) ) {
+					foreach ( $raw['errors'] as $err ) {
+						if ( isset( $err['code'], $err['message'] ) ) {
+							$errors[ (string) $err['code'] ] = (string) $err['message'];
+						}
+					}
+				}
+			}
+			throw new Exception( $message, $status );
 		}
 	}
 
@@ -403,6 +415,20 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
+
+			if ( $e instanceof BadResponseException ) {
+				$raw = json_decode( $e->getResponse()->getBody()->getContents(), true );
+
+				throw new ExceptionWithResponseData(
+					$raw['message'] ?? __( 'Error linking ads account', 'google-listings-and-ads' ),
+					$e->getCode() ?: 400,
+					null,
+					[
+						'code' => 'API_ERROR',
+						'data' => $raw,
+					]
+				);
+			}
 
 			throw new Exception(
 				$this->client_exception_message( $e, __( 'Error linking account', 'google-listings-and-ads' ) ),

@@ -234,8 +234,13 @@ export default class MockRequests {
 	 * @param {Object} payload
 	 * @return {Promise<void>}
 	 */
-	async fulfillMCConnection( payload ) {
-		await this.fulfillRequest( /\/wc\/gla\/mc\/connection\b/, payload );
+	async fulfillMCConnection( payload, status = 200, methods = [ 'GET' ] ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/connection\b/,
+			payload,
+			status,
+			methods
+		);
 	}
 
 	/**
@@ -773,6 +778,54 @@ export default class MockRequests {
 		);
 	}
 
+	async mockAdsAccountCreationError() {
+		await this.fulfillAdsAccounts(
+			{
+				code: 'API_ERROR',
+				message: 'There was an error connecting to Ads account.',
+				data: {
+					statusCode: 400,
+					message: 'Unable to accept link for the customer account',
+					error: {
+						code: 400,
+						message: 'Request contains an invalid argument.',
+						status: 'INVALID_ARGUMENT',
+						details: [
+							{
+								'@type':
+									'type.googleapis.com/google.ads.googleads.v20.errors.GoogleAdsFailure',
+								errors: [
+									{
+										errorCode: {
+											managerLinkError:
+												'TOO_MANY_MANAGERS',
+										},
+										message:
+											'Client is already linked to too many managers.',
+										trigger: {
+											int64Value: '6530335391',
+										},
+										location: {
+											fieldPathElements: [
+												{
+													fieldName: 'operations',
+													index: 0,
+												},
+											],
+										},
+									},
+								],
+								requestId: 'T-Ayj9dDBlp2VI4yuiq3Kw',
+							},
+						],
+					},
+				},
+			},
+			400,
+			[ 'POST' ]
+		);
+	}
+
 	/**
 	 * Mock the Ads accounts response.
 	 *
@@ -931,6 +984,39 @@ export default class MockRequests {
 			status,
 			step,
 		} );
+	}
+
+	async mockMCAccountConnectionError(
+		message = 'There was an error connecting MC Account.'
+	) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/accounts\b/,
+			{
+				code: 'API_ERROR',
+				message: message
+					? message
+					: 'There was an error connecting to MC account.',
+				data: {
+					statusCode: 400,
+					message: 'Unable to link merchant center account',
+					error: {
+						code: 400,
+						message:
+							'You do not have necessary permissions to perform this action.',
+						errors: [
+							{
+								message:
+									'You do not have necessary permissions to perform this action.',
+								domain: 'global',
+								reason: 'invalid',
+							},
+						],
+					},
+				},
+			},
+			499,
+			[ 'POST' ]
+		);
 	}
 
 	/**
