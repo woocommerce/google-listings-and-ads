@@ -4,12 +4,13 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
-use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20231109T1653383133;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\MigrationInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20231109T1653383133;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20211228T1640692399;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20220524T1653383133;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20240813T1653383133;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20250910T1653383133;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20260226T1200000000;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\MigrationVersion141;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migrator;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductFeedQueryHelper;
@@ -114,6 +115,7 @@ class DBServiceProvider extends AbstractServiceProvider {
 		$this->share_migration( Migration20231109T1653383133::class, BudgetRecommendationTable::class );
 		$this->share_migration( Migration20240813T1653383133::class, ShippingTimeTable::class );
 		$this->share_migration( Migration20250910T1653383133::class, ActionScheduler::class );
+		$this->share_migration( Migration20260226T1200000000::class, OptionsInterface::class );
 		$this->share_with_tags( Migrator::class, MigrationInterface::class );
 	}
 

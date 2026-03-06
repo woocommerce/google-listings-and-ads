@@ -5,28 +5,42 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Menu;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
 
 /**
  * Class Dashboard
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Menu
  */
-class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
+class Dashboard implements Service, Registerable {
 
 	use MenuFixesTrait;
-	use MerchantCenterAwareTrait;
 
 	public const PATH = '/google/dashboard';
 
 	public const MARKETING_MENU_SLUG = 'woocommerce-marketing';
 
 	/**
+	 * Onboarding completed status.
+	 *
+	 * @var OnboardingCompleted
+	 */
+	private $onboarding_completed;
+
+	/**
+	 * Dashboard constructor.
+	 *
+	 * @param OnboardingCompleted $onboarding_completed Onboarding completed status.
+	 */
+	public function __construct( OnboardingCompleted $onboarding_completed ) {
+		$this->onboarding_completed = $onboarding_completed;
+	}
+
+	/**
 	 * Register a service.
 	 */
 	public function register(): void {
-		if ( ! $this->merchant_center->is_setup_complete() ) {
+		if ( ! $this->onboarding_completed->is_onboarding_complete() ) {
 			return;
 		}
 
