@@ -248,6 +248,7 @@ const SetupFreeListings = ( {
 							<Fill>
 								<AppButton
 									isPrimary
+									disabled={ ! isValidForm }
 									loading={ adapter.isSubmitting }
 									onClick={ handleSubmitClick }
 								>
