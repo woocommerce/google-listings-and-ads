@@ -1,7 +1,7 @@
 {
 	"name": "google-listings-and-ads",
 	"title": "Google for WooCommerce",
-	"version": "3.5.0",
+	"version": "3.5.3",
 	"description": "Google for WooCommerce",
 	"author": "Automattic",
 	"license": "GPL-3.0-or-later",
@@ -77,7 +77,7 @@
 		"react": "^18",
 		"react-dom": "^18",
 		"typescript": "^5.5.4",
-		"woocommerce-grow-jsdoc": "https://gitpkg.now.sh/woocommerce/grow/packages/js/jsdoc?eabdb5c3e6f089499a9bc62ec2e5e2251d7b23ca"
+		"woocommerce-grow-jsdoc": "git+https://github.com/woocommerce/grow#jsdoc-v1"
 	},
 	"overrides": {
 		"@woocommerce/eslint-plugin": {
@@ -148,11 +148,11 @@
 			},
 			{
 				"path": "./js/build/index.js",
-				"maxSize": "18.66 kB"
+				"maxSize": "18.89 kB"
 			},
 			{
 				"path": "./js/build/commons.js",
-				"maxSize": "63.6 kB"
+				"maxSize": "64.5 kB"
 			},
 			{
 				"path": "./js/build/vendors.js",

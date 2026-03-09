@@ -359,6 +359,28 @@ export function* syncSettings() {
 	} );
 }
 
+/**
+ * Mark onboarding as complete for service-based merchants.
+ *
+ * @throws Will throw an error if the request failed.
+ */
+export function* completeOnboarding() {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/google/onboarding/complete`,
+			method: 'POST',
+		} );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error completing onboarding.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
 export function* fetchJetpackAccount() {
 	try {
 		const response = yield apiFetch( {
@@ -720,10 +742,15 @@ export function* fetchAdsIncentiveCredits() {
  *
  * @param {number} amount Daily average cost of the paid ads campaign.
  * @param {Array<CountryCode>} countryCodes Country code of the paid ads campaign audience country. Example: 'US'.
+ * @param {boolean} [hasConfirmedEuPoliticalContent=false] Whether the user has confirmed that the ads campaign contains EU political content.
  *
  * @throws { { message: string } } Will throw an error if the campaign creation fails.
  */
-export function* createAdsCampaign( amount, countryCodes ) {
+export function* createAdsCampaign(
+	amount,
+	countryCodes,
+	hasConfirmedEuPoliticalContent = false
+) {
 	let label = 'wc-web';
 
 	if ( isWCIos() ) {
@@ -739,7 +766,61 @@ export function* createAdsCampaign( amount, countryCodes ) {
 			data: {
 				amount,
 				targeted_locations: countryCodes,
+				eu_political_advertising_confirmation:
+					hasConfirmedEuPoliticalContent,
 				label,
+			},
+		} );
+
+		return {
+			type: TYPES.CREATE_ADS_CAMPAIGN,
+			createdCampaign: adaptAdsCampaign( createdCampaign ),
+		};
+	} catch ( error ) {
+		handleApiError( error );
+
+		throw error;
+	}
+}
+
+/**
+ * Create a new ads campaign with assets.
+ *
+ * @param {number} amount Daily average cost of the paid ads campaign.
+ * @param {Array<CountryCode>} countryCodes Country code of the paid ads campaign audience country. Example: 'US'.
+ * @param {AssetEntityGroupUpdateBody} assets Assets of the ads campaign.
+ * @param {boolean} [hasConfirmedEuPoliticalContent=false] Whether the user has confirmed that the ads campaign contains EU political content.
+ *
+ * @throws { { message: string } } Will throw an error if the campaign creation fails.
+ */
+export function* createAdsWithAssetsCampaign(
+	amount,
+	countryCodes,
+	assets,
+	hasConfirmedEuPoliticalContent = false
+) {
+	let label = 'wc-web';
+
+	if ( isWCIos() ) {
+		label = 'wc-ios';
+	} else if ( isWCAndroid() ) {
+		label = 'wc-android';
+	}
+
+	try {
+		const createdCampaign = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/campaigns`,
+			method: 'POST',
+			data: {
+				amount,
+				targeted_locations: countryCodes,
+				eu_political_advertising_confirmation:
+					hasConfirmedEuPoliticalContent,
+				label,
+				final_url: assets.final_url,
+				assets: assets.assets,
+				path1: assets.path1,
+				path2: assets.path2,
 			},
 		} );
 

@@ -237,10 +237,14 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	public function activate_global_site_tag( string $ads_conversion_id ) {
 		if ( $this->gtag_js->is_adding_framework() ) {
 			if ( $this->gtag_js->ga4w_v2 ) {
+				$inline_script  = $this->get_gtag_config( $ads_conversion_id );
+				$inline_script .= "\n" . $this->get_enhanced_conversion_tag();
+
 				$this->wp->wp_add_inline_script(
 					'woocommerce-google-analytics-integration',
-					$this->get_gtag_config( $ads_conversion_id )
+					$inline_script
 				);
+
 			} else {
 				// Legacy code to support Google Analytics for WooCommerce version < 2.0.0.
 				add_filter(
@@ -367,19 +371,30 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$order->update_meta_data( self::ORDER_CONVERSION_META_KEY, 1 );
 		$order->save_meta_data();
 
-		$conversion_gtag_info =
-		sprintf(
-			'gtag("event", "conversion", {
-			send_to: "%s",
-			value: %f,
-			currency: "%s",
-			transaction_id: "%s"});',
-			esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
-			$order->get_total(),
-			esc_js( $order->get_currency() ),
-			esc_js( $order->get_id() ),
-		);
-		$this->add_inline_event_script( $conversion_gtag_info );
+		/**
+		 * Track the legacy conversion event.
+		 *
+		 * The legacy conversion event is kept for backward compatibility with existing setups.
+		 * New implementations should rely on the 'purchase' event for conversion tracking.
+		 * In a future release, this may be removed.
+		 */
+		$add_legacy_conversion_event = apply_filters( 'woocommerce_gla_add_legacy_conversion_event', true );
+
+		if ( $add_legacy_conversion_event ) {
+			$conversion_gtag_info =
+			sprintf(
+				'gtag("event", "conversion", {
+				send_to: "%s",
+				value: %f,
+				currency: "%s",
+				transaction_id: "%s"});',
+				esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
+				$order->get_total(),
+				esc_js( $order->get_currency() ),
+				esc_js( $order->get_id() ),
+			);
+			$this->add_inline_event_script( $conversion_gtag_info );
+		}
 
 		// Get the item info in the order
 		$item_info = [];

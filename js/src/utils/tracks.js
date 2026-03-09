@@ -43,6 +43,7 @@ filterPropertiesMap.set( FILTER_BUDGET_RECOMMENDATIONS, [
  */
 export const CONTEXT_EXTENSION_ONBOARDING = 'setup-mc';
 export const CONTEXT_ADS_ONBOARDING = 'setup-ads';
+export const CONTEXT_ADS_ONLY_ONBOARDING = 'setup-ads-only';
 
 /**
  * When table pagination is changed by entering page via "Go to page" input.
@@ -178,6 +179,7 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  * @property {number} budget Daily average cost of the paid campaign
  * @property {string} source The data source of the budget recommendations, e.g. 'google-ads-api', 'fallback-database'.
  * @property {number} recommended_budget The recommended daily budget displayed to merchants regardless of the final amount they choose.
+ * @property {boolean} has_confirmed_eu_political_content Whether the user has confirmed that the ads campaign contains EU political content.
  */
 
 /**

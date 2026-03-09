@@ -25,6 +25,10 @@ use Google\Protobuf\FieldMask;
 use Exception;
 use DateTime;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Google\Ads\GoogleAds\V20\Resources\AssetGroupAsset;
+use Google\Ads\GoogleAds\V20\Services\AssetGroupAssetOperation;
 
 /**
  * Class AdsAssetGroup
@@ -36,10 +40,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseD
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class AdsAssetGroup implements OptionsAwareInterface {
+class AdsAssetGroup implements OptionsAwareInterface, ContainerAwareInterface {
 
 	use ExceptionTrait;
 	use OptionsAwareTrait;
+	use ContainerAwareTrait;
 
 	/**
 	 * Temporary ID to use within a batch job.
@@ -142,6 +147,64 @@ class AdsAssetGroup implements OptionsAwareInterface {
 			$this->asset_group_create_operation( $campaign_resource_name, $asset_group_name ),
 			$this->listing_group_create_operation(),
 		];
+	}
+
+	/**
+	 * Returns a set of operations to create an asset group with assets.
+	 *
+	 * @param string $campaign_resource_name
+	 * @param string $campaign_name
+	 * @param string $final_url
+	 * @param array  $asset_group_assets
+	 * @return array
+	 */
+	public function create_operations_with_assets( string $campaign_resource_name, string $campaign_name, string $final_url, array $asset_group_assets ): array {
+		$operations = [];
+
+		$asset_group_resource_name = $this->temporary_resource_name();
+
+		// Create the asset group operation.
+		$asset_group = new AssetGroup(
+			[
+				'resource_name' => $asset_group_resource_name,
+				'name'          => $campaign_name . ' Asset Group',
+				'campaign'      => $campaign_resource_name,
+				'status'        => AssetGroupStatus::ENABLED,
+				'final_urls'    => [ $final_url ],
+			]
+		);
+
+		$operations[] = ( new MutateOperation() )->setAssetGroupOperation(
+			( new AssetGroupOperation() )->setCreate( $asset_group )
+		);
+
+		// Create assets operations.
+		$asset_ops  = $this->container->get( AdsAsset::class )->create_operations( $asset_group_assets );
+		$operations = array_merge( $operations, $asset_ops );
+
+		// Attach assets to group.
+		foreach ( $asset_ops as $i => $asset_op ) {
+			$asset_resource_name = $asset_op
+				->getAssetOperation()
+				->getCreate()
+				->getResourceName();
+
+			$operations[] = ( new MutateOperation() )->setAssetGroupAssetOperation(
+				( new AssetGroupAssetOperation() )->setCreate(
+					new AssetGroupAsset(
+						[
+							'asset_group' => $asset_group_resource_name,
+							'asset'       => $asset_resource_name,
+							'field_type'  => AssetFieldType::number(
+								$asset_group_assets[ $i ]['field_type']
+							),
+						]
+					)
+				)
+			);
+		}
+
+		return $operations;
 	}
 
 	/**

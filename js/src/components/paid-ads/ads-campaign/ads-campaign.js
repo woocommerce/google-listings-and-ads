@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 
 /**
@@ -18,6 +18,7 @@ import BudgetSection from '../budget-section';
 import { CampaignPreviewCard } from '../campaign-preview';
 import Faqs from './faqs';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
+import EuRegulationsSection from '../eu-regulations-section';
 
 /**
  * @typedef {import('~/components/adaptive-form/adaptive-form-context').AdaptiveFormContext} AdaptiveFormContext
@@ -29,10 +30,10 @@ import PaidAdsFeaturesSection from './paid-ads-features-section';
  * Please note that this component relies on a CampaignAssetsForm's context and custom adapter,
  * so it expects a `CampaignAssetsForm` to exist in its parents.
  *
- * @fires gla_documentation_link_click with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
+ * @fires gla_documentation_link_click with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads' | 'setup-ads-only', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
  * @param {Object} props React props.
  * @param {string} props.headerTitle The title of the step.
- * @param {'create-ads'|'edit-ads'|'setup-ads'|'setup-mc'} props.context A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
+ * @param {'create-ads'|'edit-ads'|'setup-ads'|'setup-mc'|'setup-ads-only'} props.context A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  * @param {(formContext: AdaptiveFormContext) => JSX.Element | JSX.Element} [props.skipButton] A React element or function to render the "Skip" button. If a function is passed, it receives the form context and returns the button element.
  * @param {(formContext: AdaptiveFormContext) => JSX.Element | JSX.Element} [props.continueButton] A React element or function to render the "Continue" button. If a function is passed, it receives the form context and returns the button element.
  */
@@ -43,14 +44,18 @@ export default function AdsCampaign( {
 	continueButton,
 } ) {
 	const formContext = useAdaptiveFormContext();
-	const isOnboardingFlow = context === 'setup-mc';
+	const isOnboardingFlow =
+		context === 'setup-mc' || context === 'setup-ads-only';
 	const showCampaignPreviewCard =
 		context === 'setup-ads' ||
 		context === 'create-ads' ||
 		context === 'edit-ads';
 	// only show the billing card during onboarding or setup Ads flow.
 	// For creating/editing a campaign, we assume billing is already set up.
-	const showBillingCard = context === 'setup-mc' || context === 'setup-ads';
+	const showBillingCard =
+		context === 'setup-mc' ||
+		context === 'setup-ads' ||
+		context === 'setup-ads-only';
 
 	let description = createInterpolateElement(
 		__(
@@ -69,9 +74,18 @@ export default function AdsCampaign( {
 	);
 
 	if ( isOnboardingFlow ) {
-		description = __(
-			'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your products will be included in the campaign after they’re approved.',
-			'google-listings-and-ads'
+		const subject =
+			context === 'setup-ads-only'
+				? __( 'services', 'google-listings-and-ads' )
+				: __( 'products', 'google-listings-and-ads' );
+
+		description = sprintf(
+			/* translators: %s: products or services */
+			__(
+				'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your %s will be included in the campaign after they’re approved.',
+				'google-listings-and-ads'
+			),
+			subject
 		);
 	}
 
@@ -88,6 +102,8 @@ export default function AdsCampaign( {
 				{ showBillingCard && <BillingCard /> }
 				{ showCampaignPreviewCard && <CampaignPreviewCard /> }
 			</BudgetSection>
+
+			<EuRegulationsSection context={ context } />
 
 			<StepContentFooter>
 				<StepContentActions>

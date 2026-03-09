@@ -1157,4 +1157,30 @@ trait GoogleAdsClientTrait {
 
 		$this->generate_ads_query_mock( array_values( $locations ) );
 	}
+
+	/**
+	 * Generates a mocked asset create operation.
+	 *
+	 * @param integer $asset_id The asset ID.
+	 * @param string  $field_type The asset field type.
+	 * @param string  $content The asset content.
+	 * @return MutateOperation
+	 */
+	protected function generate_asset_create_operation( int $asset_id, string $field_type, string $content ): MutateOperation {
+		$asset = $this->generate_asset(
+			[
+				'field_type' => $field_type,
+				'content'    => $content,
+			]
+		);
+
+		$asset->setResourceName(
+			$this->generate_asset_resource_name( $asset_id )
+		);
+
+		return ( new MutateOperation() )->setAssetOperation(
+			( new \Google\Ads\GoogleAds\V20\Services\AssetOperation() )
+				->setCreate( $asset )
+		);
+	}
 }

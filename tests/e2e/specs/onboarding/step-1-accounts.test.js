@@ -8,6 +8,7 @@ import {
 	getFAQPanelRow,
 	checkFAQExpandable,
 } from '../../utils/page';
+import { clearServiceBasedMerchant } from '../../utils/api';
 
 /**
  * External dependencies
@@ -47,6 +48,7 @@ test.describe( 'Set up accounts', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		setUpAccountsPage = new SetUpAccountsPage( page );
+		await clearServiceBasedMerchant();
 	} );
 
 	test.afterAll( async () => {
