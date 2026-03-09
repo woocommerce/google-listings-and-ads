@@ -10,6 +10,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use ReflectionClass;
+use WP_Post;
 
 /**
  * Class CouponChannelVisibilityMetaBoxTest
@@ -76,6 +78,60 @@ class CouponChannelVisibilityMetaBoxTest extends UnitTest {
 		return [
 			'connected'     => [ true ],
 			'not_connected' => [ false ],
+		];
+	}
+
+	public function test_get_view_context_returns_expected_keys(): void {
+		$post = $this->createMock( WP_Post::class );
+
+		// Use Reflection to access protected method.
+		$reflection = new ReflectionClass( $this->coupon_channel_visibility_meta_box );
+		$method     = $reflection->getMethod( 'get_view_context' );
+		$method->setAccessible( true );
+
+		$context = $method->invoke( $this->coupon_channel_visibility_meta_box, $post, [] );
+
+		$this->assertIsArray( $context );
+		$this->assertEqualsCanonicalizing(
+			[ 'field_id', 'coupon_id', 'coupon', 'channel_visibility', 'sync_status', 'issues', 'is_channel_supported', 'get_started_url' ],
+			array_keys( $context )
+		);
+		$this->assertArrayNotHasKey( 'is_setup_complete', $context );
+	}
+
+	/**
+	 * @dataProvider data_provider_is_channel_supported
+	 *
+	 * @param bool $is_supported
+	 */
+	public function test_get_view_context_includes_is_channel_supported( bool $is_supported ): void {
+		$post = $this->createMock( WP_Post::class );
+
+		$this->merchant_center
+			->method( 'is_promotion_supported_country' )
+			->willReturn( $is_supported );
+
+		// Use Reflection to access protected method.
+		$reflection = new ReflectionClass( $this->coupon_channel_visibility_meta_box );
+		$method     = $reflection->getMethod( 'get_view_context' );
+		$method->setAccessible( true );
+
+		$context = $method->invoke( $this->coupon_channel_visibility_meta_box, $post, [] );
+
+		$this->assertIsArray( $context );
+		$this->assertArrayHasKey( 'is_channel_supported', $context );
+		$this->assertSame( $is_supported, $context['is_channel_supported'] );
+	}
+
+	/**
+	 * Data provider for test_get_view_context_includes_is_channel_supported.
+	 *
+	 * @return array
+	 */
+	public function data_provider_is_channel_supported(): array {
+		return [
+			'supported'     => [ true ],
+			'not_supported' => [ false ],
 		];
 	}
 }
