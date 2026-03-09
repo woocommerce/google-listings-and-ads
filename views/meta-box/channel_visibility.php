@@ -19,9 +19,14 @@ $channel_visibility = $this->channel_visibility;
 /** @var string */
 $field_id = $this->field_id;
 /** @var bool */
-$is_setup_complete = $this->is_setup_complete;
+$is_connected = $this->is_connected;
 /** @var string */
 $get_started_url = $this->get_started_url;
+
+// Hide metabox if Merchant Center is not connected.
+if ( ! $is_connected ) {
+	return;
+}
 
 /** @var string $sync_status */
 if ( SyncStatus::HAS_ERRORS === $this->sync_status ) {
@@ -54,44 +59,37 @@ if ( $input_disabled ) {
 ?>
 
 <div class="gla-channel-visibility-box">
-	<?php if ( $is_setup_complete ) : ?>
-		<?php
-		woocommerce_wp_select(
-			[
-				'id'                => $field_id,
-				'value'             => $channel_visibility,
-				'label'             => __( 'Google for WooCommerce', 'google-listings-and-ads' ),
-				'description'       => $input_description,
-				'desc_tip'          => false,
-				'options'           => ChannelVisibility::get_value_options(),
-				'custom_attributes' => $custom_attributes,
-				'wrapper_class'     => 'form-row form-row-full',
-			]
-		);
-		?>
-		<?php if ( $show_status ) : ?>
-			<div
-				class="sync-status notice-alt notice-large <?php echo esc_attr( $visibility_box_class ); ?>"
-				style="<?php echo esc_attr( $visibility_box_style ); ?>"
-			>
-				<p><strong><?php esc_html_e( 'Google sync status', 'google-listings-and-ads' ); ?></strong></p>
-				<p><?php echo esc_html( $sync_status ); ?></p>
-				<?php if ( $has_issues ) : ?>
-					<div class="gla-product-issues">
-						<p><strong><?php esc_html_e( 'Issues', 'google-listings-and-ads' ); ?></strong></p>
-						<ul>
-							<?php foreach ( $issues as $issue ) : ?>
-								<li><?php echo esc_html( $issue ); ?></li>
-							<?php endforeach; ?>
-						</ul>
-					</div>
-				<?php endif; ?>
-			</div>
-		<?php endif; ?>
-	<?php else : ?>
-		<p><strong><?php esc_html_e( 'Google for WooCommerce', 'google-listings-and-ads' ); ?></strong></p>
-		<p><?php esc_html_e( 'Complete setup to get your products listed on Google for free.', 'google-listings-and-ads' ); ?></p>
-		<a href="<?php echo esc_attr( $get_started_url ); ?>"
-			class="button"><?php esc_html_e( 'Complete setup', 'google-listings-and-ads' ); ?></a>
+	<?php
+	woocommerce_wp_select(
+		[
+			'id'                => $field_id,
+			'value'             => $channel_visibility,
+			'label'             => __( 'Google for WooCommerce', 'google-listings-and-ads' ),
+			'description'       => $input_description,
+			'desc_tip'          => false,
+			'options'           => ChannelVisibility::get_value_options(),
+			'custom_attributes' => $custom_attributes,
+			'wrapper_class'     => 'form-row form-row-full',
+		]
+	);
+	?>
+	<?php if ( $show_status ) : ?>
+		<div
+			class="sync-status notice-alt notice-large <?php echo esc_attr( $visibility_box_class ); ?>"
+			style="<?php echo esc_attr( $visibility_box_style ); ?>"
+		>
+			<p><strong><?php esc_html_e( 'Google sync status', 'google-listings-and-ads' ); ?></strong></p>
+			<p><?php echo esc_html( $sync_status ); ?></p>
+			<?php if ( $has_issues ) : ?>
+				<div class="gla-product-issues">
+					<p><strong><?php esc_html_e( 'Issues', 'google-listings-and-ads' ); ?></strong></p>
+					<ul>
+						<?php foreach ( $issues as $issue ) : ?>
+							<li><?php echo esc_html( $issue ); ?></li>
+						<?php endforeach; ?>
+					</ul>
+				</div>
+			<?php endif; ?>
+		</div>
 	<?php endif; ?>
 </div>

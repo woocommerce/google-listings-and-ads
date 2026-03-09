@@ -7,6 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { glaData } from '~/constants';
 import FaqsPanel from '~/components/faqs-panel';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import './index.scss';
@@ -26,6 +27,15 @@ const linkPmax = (
 		href="https://woocommerce.com/document/google-for-woocommerce/get-started/google-performance-max-campaigns/"
 	/>
 );
+
+const HIDE_FOR_ADS_ONLY_SETUP = new Set( [
+	'what-is-google-merchant-center',
+	'why-should-i-connect-google-merchant-center',
+	'what-is-product-sync',
+	'what-is-multi-country-advertising',
+	'which-countries-can-i-target',
+] );
+
 const faqItems = [
 	{
 		trackId: 'what-is-google-merchant-center',
@@ -398,6 +408,15 @@ const faqItems = [
 	},
 ];
 
+const buildFaqItems = ( isAdsOnlySetup ) => {
+	if ( ! isAdsOnlySetup ) {
+		return faqItems;
+	}
+	return faqItems.filter(
+		( item ) => ! HIDE_FOR_ADS_ONLY_SETUP.has( item.trackId )
+	);
+};
+
 /**
  * @fires gla_faq with `{ context: 'get-started', id: 'what-do-i-need-to-get-started', action: 'expand' }`.
  * @fires gla_faq with `{ context: 'get-started', id: 'what-do-i-need-to-get-started', action: 'collapse' }`.
@@ -426,12 +445,14 @@ const faqItems = [
  * @fires gla_documentation_link_click with `{ context: 'faqs', linkId: 'terms-and-conditions-of-google-ads-coupons', href: 'https://www.google.com/ads/coupons/terms/' }`.
  */
 const Faqs = () => {
+	const { serviceBasedMerchant } = glaData;
+
 	return (
 		<FaqsPanel
 			className="gla-get-started-faqs"
 			trackName="gla_faq"
 			context="get-started"
-			faqItems={ faqItems }
+			faqItems={ buildFaqItems( serviceBasedMerchant ) }
 		/>
 	);
 };

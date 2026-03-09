@@ -101,6 +101,7 @@ test.describe( 'Set up Ads account', () => {
 		} );
 		await setupBudgetPage.mockBudgetMetrics();
 		await setupBudgetPage.mockAdsIncentiveCredits();
+		await setupBudgetPage.mockMCConnected();
 		await dashboardPage.mockRequests();
 		await dashboardPage.goto();
 	} );
