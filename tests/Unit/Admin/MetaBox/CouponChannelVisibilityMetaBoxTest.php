@@ -96,7 +96,6 @@ class CouponChannelVisibilityMetaBoxTest extends UnitTest {
 			[ 'field_id', 'coupon_id', 'coupon', 'channel_visibility', 'sync_status', 'issues', 'is_channel_supported', 'get_started_url' ],
 			array_keys( $context )
 		);
-		$this->assertArrayNotHasKey( 'is_setup_complete', $context );
 	}
 
 	/**
