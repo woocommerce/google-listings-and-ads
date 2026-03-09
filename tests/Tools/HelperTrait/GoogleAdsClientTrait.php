@@ -1168,6 +1168,32 @@ trait GoogleAdsClientTrait {
 	}
 
 	/**
+	 * Generates a mocked asset create operation.
+	 *
+	 * @param integer $asset_id The asset ID.
+	 * @param string  $field_type The asset field type.
+	 * @param string  $content The asset content.
+	 * @return MutateOperation
+	 */
+	protected function generate_asset_create_operation( int $asset_id, string $field_type, string $content ): MutateOperation {
+		$asset = $this->generate_asset(
+			[
+				'field_type' => $field_type,
+				'content'    => $content,
+			]
+		);
+
+		$asset->setResourceName(
+			$this->generate_asset_resource_name( $asset_id )
+		);
+
+		return ( new MutateOperation() )->setAssetOperation(
+			( new \Google\Ads\GoogleAds\V22\Services\AssetOperation() )
+				->setCreate( $asset )
+		);
+	}
+
+	/**
 	 * Generates a mocked response for text asset generation.
 	 *
 	 * @param array $text_assets Array of text assets with 'text' and 'type' keys (type in lowercase like 'headline').
@@ -1183,7 +1209,6 @@ trait GoogleAdsClientTrait {
 		foreach ( $text_assets as $asset ) {
 			$text_asset = $this->createMock( \Google\Ads\GoogleAds\V22\Services\GeneratedText::class );
 			$text_asset->method( 'getText' )->willReturn( $asset['text'] );
-			// Convert uppercase type string to enum number.
 			$type_label  = $type_mapping[ $asset['type'] ] ?? AssetFieldType::HEADLINE;
 			$type_number = AssetFieldType::number( $type_label );
 			$text_asset->method( 'getAssetFieldType' )->willReturn( $type_number );
@@ -1221,7 +1246,6 @@ trait GoogleAdsClientTrait {
 		foreach ( $image_assets as $asset ) {
 			$image_asset = $this->createMock( \Google\Ads\GoogleAds\V22\Services\GeneratedImage::class );
 			$image_asset->method( 'getImageTemporaryUrl' )->willReturn( $asset['temporary_image_url'] );
-			// Convert uppercase type string to enum number.
 			$type_label  = $type_mapping[ $asset['type'] ] ?? AssetFieldType::MARKETING_IMAGE;
 			$type_number = AssetFieldType::number( $type_label );
 			$image_asset->method( 'getAssetFieldType' )->willReturn( $type_number );

@@ -114,6 +114,7 @@ test.describe( 'Add paid campaign', () => {
 		} );
 		await setupBudgetPage.mockBudgetMetrics();
 		await setupBudgetPage.mockAdsIncentiveCredits();
+		await setupBudgetPage.mockMCConnected();
 		await dashboardPage.mockRequests();
 		await dashboardPage.goto();
 	} );

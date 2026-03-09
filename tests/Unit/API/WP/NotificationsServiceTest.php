@@ -83,7 +83,7 @@ class NotificationsServiceTest extends UnitTest {
 		);
 
 		add_filter( 'woocommerce_gla_notifications_enabled', '__return_true' );
-		add_filter( 'woocommerce_gla_is_pull_enabled_for_datatype', '__return_true' );
+		add_filter( 'woocommerce_gla_is_pull_enabled_for_datatype', '__return_true', PHP_INT_MAX );
 	}
 
 	/**
@@ -211,12 +211,13 @@ class NotificationsServiceTest extends UnitTest {
 	 */
 	public function test_notify_show_error_when_disabled_for_datatype() {
 		$this->service = $this->get_mock();
-		remove_filter( 'woocommerce_gla_is_pull_enabled_for_datatype', '__return_true' );
+		remove_filter( 'woocommerce_gla_is_pull_enabled_for_datatype', '__return_true', PHP_INT_MAX );
 		add_filter( 'woocommerce_gla_is_pull_enabled_for_datatype', '__return_false' );
 		$this->service->expects( $this->never() )->method( 'do_request' );
 		$this->assertFalse( $this->service->notify( 'product.create', 1 ) );
 		$this->assertEquals( did_action( 'woocommerce_gla_error' ), 1 );
 		remove_filter( 'woocommerce_gla_is_pull_enabled_for_datatype', '__return_false' );
+		add_filter( 'woocommerce_gla_is_pull_enabled_for_datatype', '__return_true', PHP_INT_MAX );
 	}
 
 	/**

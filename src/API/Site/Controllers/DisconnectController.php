@@ -47,6 +47,7 @@ class DisconnectController extends BaseController {
 				'google/connect',
 				'jetpack/connect',
 				'rest-api/authorize',
+				'google/onboarding/complete',
 			];
 
 			$errors    = [];

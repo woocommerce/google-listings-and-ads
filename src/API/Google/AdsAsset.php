@@ -253,6 +253,41 @@ class AdsAsset implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Returns an array of operations to create multiple assets.
+	 *
+	 * @param array $assets An array of assets, each containing content and field_type keys
+	 * @return array An array of MutateOperation
+	 */
+	public function create_operations( array $assets ): array {
+		if ( empty( $assets ) ) {
+			return [];
+		}
+
+		$operations  = [];
+		$image_types = [
+			AssetFieldType::LOGO,
+			AssetFieldType::MARKETING_IMAGE,
+			AssetFieldType::SQUARE_MARKETING_IMAGE,
+			AssetFieldType::PORTRAIT_MARKETING_IMAGE,
+		];
+
+		foreach ( $assets as $asset ) {
+			// For image assets, fetch the image data.
+			if ( in_array( $asset['field_type'], $image_types, true ) ) {
+				$image_data    = $this->get_image_data( $asset['content'] );
+				$asset['body'] = $image_data['body'];
+			}
+
+			$operations[] = $this->create_operation(
+				$asset,
+				self::$temporary_id--
+			);
+		}
+
+		return $operations;
+	}
+
+	/**
 	 * Returns the asset content for the given row.
 	 *
 	 * @param GoogleAdsRow $row Data row returned from a query request.
