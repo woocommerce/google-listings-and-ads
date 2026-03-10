@@ -24,7 +24,6 @@ test.describe( 'Classic Product Editor integration', () => {
 		editorUtils = getClassicProductEditorUtils( page );
 
 		await api.setOnboardedMerchant();
-		await api.clearCompletedAdsSetup();
 		await api.setVersionForHideGtin(); // be sure the version is set for hiding GTIN
 	} );
 
@@ -211,6 +210,8 @@ test.describe( 'Classic Product Editor integration', () => {
 				await expect( tooltip ).toContainText( expectedText );
 			} ).toPass();
 		}
+
+		await api.clearCompletedAdsSetup();
 	} );
 
 	test( 'Check existence of fields for variable and variation products', async () => {
@@ -293,6 +294,8 @@ test.describe( 'Classic Product Editor integration', () => {
 		 * - Multipack
 		 */
 		await expect( variation.getByRole( 'spinbutton' ) ).toHaveCount( 1 );
+
+		await api.clearCompletedAdsSetup();
 	} );
 
 	test( 'Channel visibility is disabled when hiding in product catalog', async () => {
@@ -325,6 +328,8 @@ test.describe( 'Classic Product Editor integration', () => {
 
 		await expect( selection ).toBeEnabled();
 		await expect( notice ).toBeHidden();
+
+		await api.clearCompletedAdsSetup();
 	} );
 
 	test( 'Change channel visibility and check its notice, status, and issues', async () => {
@@ -377,6 +382,8 @@ test.describe( 'Classic Product Editor integration', () => {
 		await page.reload();
 
 		await expect( issues ).toBeHidden();
+
+		await api.clearCompletedAdsSetup();
 	} );
 
 	test( 'Custom input: Select with text input', async () => {
