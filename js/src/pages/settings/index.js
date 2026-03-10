@@ -22,6 +22,7 @@ import MainTabNav from '~/components/main-tab-nav';
 import RebrandingTour from '~/components/tours/rebranding-tour';
 import SetupEnhancedConversions from './enhanced-conversions/setup-enhanced-conversions';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import './index.scss';
 
 const pageClassName = 'gla-settings';
@@ -35,6 +36,7 @@ const Settings = () => {
 
 	const { google } = useGoogleAccount();
 	const isReconnectGooglePage = subpath === subpaths.reconnectGoogleAccount;
+	const { hasGoogleMCConnection } = useGoogleMCAccount();
 
 	// This page wouldn't get any 401 response when losing Google account access,
 	// so we still need to detect it here.
@@ -67,8 +69,12 @@ const Settings = () => {
 			<MainTabNav />
 			<RebrandingTour />
 			<SetupEnhancedConversions />
-			<ContactInformationPreview />
-			<SetupTaxRate />
+			{ hasGoogleMCConnection && (
+				<>
+					<ContactInformationPreview />
+					<SetupTaxRate />
+				</>
+			) }
 			<LinkedAccounts />
 		</div>
 	);

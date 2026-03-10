@@ -28,28 +28,22 @@ test.describe( 'Classic Product Editor integration', () => {
 		await api.setVersionForHideGtin(); // be sure the version is set for hiding GTIN
 	} );
 
-	test.afterAll( async () => {
-		await api.clearCompletedAdsSetup();
-	} );
-
-	test( 'Prompt to Get Started when not yet finished onboarding', async () => {
+	test( 'Hide Channel Visibility metabox when Merchant Center is not connected', async () => {
 		await api.clearOnboardedMerchant();
 		await editorUtils.gotoAddProductPage();
 
 		await expect( editorUtils.getPluginTab() ).toBeHidden();
-
-		const link = editorUtils
-			.getChannelVisibilityMetaBox()
-			.getByRole( 'link', { name: 'Get started' } );
-
-		await expect( link ).toBeVisible();
-		await expect( link ).toHaveAttribute(
-			'href',
-			/page=wc-admin&path=%2Fgoogle%2Fstart/
-		);
+		await expect( editorUtils.getChannelVisibilityMetaBox() ).toBeHidden();
 
 		// Resume the plugin to onboarded status so that the next test can carry over.
 		await api.setOnboardedMerchant();
+	} );
+
+	test( 'Show Channel Visibility metabox when Merchant Center is connected', async () => {
+		await api.setOnboardedMerchant();
+		await editorUtils.gotoAddProductPage();
+
+		await expect( editorUtils.getChannelVisibilityMetaBox() ).toBeVisible();
 	} );
 
 	test( 'Hide plugin tab and meta box for unsupported product types', async () => {
