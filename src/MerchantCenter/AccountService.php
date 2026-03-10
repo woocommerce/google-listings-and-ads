@@ -675,6 +675,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 			$response = $this->make_wpcom_api_status_request( $integration_status_args );
 
 			if ( is_wp_error( $response ) ) {
+				do_action( 'woocommerce_gla_debug_message', $response->get_error_message(), __METHOD__ );
 				return false;
 			}
 
