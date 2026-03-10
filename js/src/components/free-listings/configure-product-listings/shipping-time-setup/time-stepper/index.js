@@ -13,7 +13,6 @@ import AppInputNumberControl from '~/components/app-input-number-control';
 import './index.scss';
 
 const TimeStepper = ( {
-	audienceCountries = [],
 	step = 1,
 	min = 0,
 	max = 250, // Google's UI in the MC shows a maximum limit of 250 days, though the API doesn’t appear to have any such restriction.
@@ -27,17 +26,9 @@ const TimeStepper = ( {
 	const debounceTime = 600;
 
 	useEffect( () => {
-		if ( time === null ) {
-			if ( field === 'time' && audienceCountries.length > 0 ) {
-				handleBlur( 1, 'time' );
-			} else if ( field === 'maxTime' && audienceCountries.length > 0 ) {
-				handleBlur( 5, 'maxTime' );
-			}
-		}
-
 		// If the time is 0, we want to display an empty string to show the "Same Day" delivery placeholder.
 		setValue( time === 0 ? '' : time );
-	}, [ time, field, handleBlur, audienceCountries ] );
+	}, [ time ] );
 
 	function onIncrement( increment ) {
 		const newValue = parseFloat( value || 0 ) + increment;
