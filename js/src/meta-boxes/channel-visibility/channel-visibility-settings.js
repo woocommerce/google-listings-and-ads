@@ -22,10 +22,13 @@ const {
 		field_id: fieldId,
 		channel_visibility: channelVisibility,
 		product_is_visible: productIsVisible,
+		sync_status: syncStatus = null,
 		issues = [],
 		options = [],
 	} = {},
 } = glaData || {};
+
+const SYNC_STATUS_SYNCED = 'synced';
 
 /**
  * Channel Visibility Settings component.
@@ -41,16 +44,24 @@ const ChannelVisibilitySettings = () => {
 	);
 	let productIssues = issues;
 
-	// Adds warning message if the product is not visible
+	// When product is not visible: force dont-sync-and-show, show catalog message only (no sync status block).
 	if ( ! productIsVisible ) {
 		productIssues = [
-			...issues,
 			__(
 				'This product cannot be shown on any channel because it is hidden from your store catalog.',
 				'google-listings-and-ads'
 			),
 		];
 	}
+
+	// Show issues block only when: visibility is sync-and-show, status exists, and status is not "synced"
+	const shouldShowSyncStatus =
+		productIsVisible &&
+		syncStatus &&
+		channelVisibilityValue === 'sync-and-show' &&
+		syncStatus !== SYNC_STATUS_SYNCED;
+
+	const hasIssues = productIssues.length > 0;
 
 	/**
 	 * Parse the options object into an array of options.
@@ -106,7 +117,14 @@ const ChannelVisibilitySettings = () => {
 				</Flex>
 			</FlexBlock>
 
-			{ productIssues.length > 0 && (
+			{ ! productIsVisible && hasIssues && (
+				<FlexBlock>
+					<Notice status="info" isDismissible={ false }>
+						<p>{ productIssues[ 0 ] }</p>
+					</Notice>
+				</FlexBlock>
+			) }
+			{ shouldShowSyncStatus && hasIssues && (
 				<FlexBlock>
 					<Notice status="warning" isDismissible={ false }>
 						<p>

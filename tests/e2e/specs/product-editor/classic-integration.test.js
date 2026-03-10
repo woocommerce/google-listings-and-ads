@@ -341,13 +341,16 @@ test.describe( 'Classic Product Editor integration', () => {
 		/*
 		 * Assert:
 		 * - The value is saved to 'dont-sync-and-show'
-		 * - The notice will show the issue contents
+		 * - The notice won't be shown even if there are issues
 		 */
 		await editorUtils.mockChannelVisibility( 'has-errors', issueTexts );
 		await selection.selectOption( 'dont-sync-and-show' );
 		await editorUtils.save();
 
 		await expect( selection ).toHaveValue( 'dont-sync-and-show' );
+
+		await expect( notice ).toBeHidden();
+		await expect( issues ).toBeHidden();
 
 		/*
 		 * Assert:
@@ -365,6 +368,15 @@ test.describe( 'Classic Product Editor integration', () => {
 		for ( const [ index, issueText ] of issueTexts.entries() ) {
 			await expect( issues.nth( index ) ).toHaveText( issueText );
 		}
+
+		/*
+		 * Assert:
+		 * - The notice won't be shown when the status is 'synced'
+		 */
+		await editorUtils.mockChannelVisibility( 'synced' );
+		await page.reload();
+
+		await expect( issues ).toBeHidden();
 	} );
 
 	test( 'Custom input: Select with text input', async () => {
