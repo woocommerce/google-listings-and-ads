@@ -399,6 +399,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'amount'                                => 50,
 			'targeted_locations'                    => [ 'US', 'GB' ],
 			'eu_political_advertising_confirmation' => false,
+			'start_date'                            => null,
 		];
 
 		$this->ads_campaign->expects( $this->once() )
