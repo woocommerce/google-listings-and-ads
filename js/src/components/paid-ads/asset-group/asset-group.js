@@ -18,6 +18,7 @@ import Faqs from './faqs';
 import { recordGlaEvent, CONTEXT_ADS_ONLY_ONBOARDING } from '~/utils/tracks';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import AssetGroupHeader from './asset-group-header';
+import AssetGroupEditor from './asset-group-editor';
 import { upsertActionedCampaign } from '~/utils/actionedCampaignsCache';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import './asset-group.scss';
@@ -78,7 +79,13 @@ export default function AssetGroup( {
 	const { isValidForm, handleSubmit, adapter, values } =
 		useAdaptiveFormContext();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
-	const { isValidAssetGroup, isSubmitting, isSubmitted, submitter } = adapter;
+	const {
+		isValidAssetGroup,
+		isSubmitting,
+		isSubmitted,
+		submitter,
+		isFetchingAssets,
+	} = adapter;
 	const { hasGoogleMCConnection } = useGoogleMCAccount();
 	const currentAction = submitter?.dataset.action;
 
@@ -168,58 +175,77 @@ export default function AssetGroup( {
 
 			<AssetGroupHeader />
 
-			<StepContentFooter>
-				<StepContentActions>
-					{ ( isCreation || adapter.isEmptyAssetEntityGroup ) &&
-						hasGoogleMCConnection && (
-							// Currently, the PMax Assets feature in this extension doesn't offer the function
-							// to delete the asset entity group, so it needs to hide the skip button if the editing
-							// asset group is not considered empty.
+			{ ! isFetchingAssets && (
+				<>
+					<AssetGroupEditor />
+
+					<StepContentFooter>
+						<StepContentActions>
+							{ ( isCreation ||
+								adapter.isEmptyAssetEntityGroup ) &&
+								hasGoogleMCConnection && (
+									// Currently, the PMax Assets feature in this extension doesn't offer the function
+									// to delete the asset entity group, so it needs to hide the skip button if the editing
+									// asset group is not considered empty.
+									<AppButton
+										isTertiary
+										data-action={
+											ACTION_SUBMIT_CAMPAIGN_ONLY
+										}
+										disabled={
+											! isValidForm ||
+											isSubmitted ||
+											currentAction ===
+												ACTION_SUBMIT_CAMPAIGN_AND_ASSETS
+										}
+										loading={
+											isSubmitting &&
+											currentAction ===
+												ACTION_SUBMIT_CAMPAIGN_ONLY
+										}
+										onClick={ handleSkipClick }
+									>
+										{ __(
+											'Skip this step',
+											'google-listings-and-ads'
+										) }
+									</AppButton>
+								) }
 							<AppButton
-								isTertiary
-								data-action={ ACTION_SUBMIT_CAMPAIGN_ONLY }
+								isPrimary
+								data-action={
+									ACTION_SUBMIT_CAMPAIGN_AND_ASSETS
+								}
 								disabled={
-									! isValidForm ||
+									! adapter.baseAssetGroup[
+										ASSET_FORM_KEY.FINAL_URL
+									] ||
 									isSubmitted ||
 									currentAction ===
-										ACTION_SUBMIT_CAMPAIGN_AND_ASSETS
+										ACTION_SUBMIT_CAMPAIGN_ONLY
 								}
 								loading={
 									isSubmitting &&
 									currentAction ===
-										ACTION_SUBMIT_CAMPAIGN_ONLY
+										ACTION_SUBMIT_CAMPAIGN_AND_ASSETS
 								}
-								onClick={ handleSkipClick }
+								onClick={ handleLaunchClick }
 							>
-								{ __(
-									'Skip this step',
-									'google-listings-and-ads'
-								) }
+								{ isCreation
+									? __(
+											'Create campaign',
+											'google-listings-and-ads'
+									  )
+									: __(
+											'Save changes',
+											'google-listings-and-ads'
+									  ) }
 							</AppButton>
-						) }
-					<AppButton
-						isPrimary
-						data-action={ ACTION_SUBMIT_CAMPAIGN_AND_ASSETS }
-						disabled={
-							! adapter.baseAssetGroup[
-								ASSET_FORM_KEY.FINAL_URL
-							] ||
-							isSubmitted ||
-							currentAction === ACTION_SUBMIT_CAMPAIGN_ONLY
-						}
-						loading={
-							isSubmitting &&
-							currentAction === ACTION_SUBMIT_CAMPAIGN_AND_ASSETS
-						}
-						onClick={ handleLaunchClick }
-					>
-						{ isCreation
-							? __( 'Create campaign', 'google-listings-and-ads' )
-							: __( 'Save changes', 'google-listings-and-ads' ) }
-					</AppButton>
-				</StepContentActions>
-				<Faqs />
-			</StepContentFooter>
+						</StepContentActions>
+						<Faqs />
+					</StepContentFooter>
+				</>
+			) }
 		</StepContent>
 	);
 }

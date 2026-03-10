@@ -577,7 +577,7 @@ test.describe( 'Add paid campaign', () => {
 		} );
 
 		test.describe( 'Optimize your campaign step', async () => {
-			test( 'Final URL should be selected to homepage by default', async () => {
+			test( 'Final URL should be selected by default', async () => {
 				const finalUrlCard = createCampaignPage.getFinalUrlCard();
 				await expect( finalUrlCard ).toContainText(
 					'https://woo.com/shop/'
