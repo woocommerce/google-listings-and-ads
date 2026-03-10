@@ -11,6 +11,9 @@ import DashboardPage from '../../utils/pages/dashboard';
 import SetupAdsAccountsPage from '../../utils/pages/ads-onboarding/setup-ads-accounts';
 import SetupBudgetPage from '../../utils/pages/ads-onboarding/setup-budget';
 import OptimizeCampaignPage from '../../utils/pages/onboarding/step-3-optimize-campaign-ads-account-only';
+import openCampaignCreationFlow from '../../utils/pages/open-campaign-creation-flow';
+import optimizeCampaign from '../../utils/pages/optimize-campaign';
+import createCampaignAndVerify from '../../utils/pages/create-campaign-and-verify';
 
 import {
 	clearCompletedAdsSetup,
@@ -21,8 +24,6 @@ import {
 	clearServiceBasedMerchant,
 	clearCompleteMCSetup,
 } from '../../utils/api';
-
-import { LOAD_STATE } from '../../utils/constants';
 
 test.use( { storageState: process.env.ADMINSTATE } );
 test.describe.configure( { mode: 'serial' } );
@@ -58,46 +59,6 @@ const SCENARIOS = [
 		expectedCampaigns: [ 'Test Campaign 1', 'Test Campaign 3' ],
 	},
 ];
-
-async function openCampaignCreationFlow() {
-	await dashboardPage.addPaidCampaignButton.click();
-
-	await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-
-	await expect(
-		page.getByRole( 'heading', { name: 'Create your campaign' } )
-	).toBeVisible();
-}
-
-async function optimizeCampaign() {
-	await setupAdsAccounts.clickContinue();
-
-	await expect(
-		page.getByRole( 'heading', { name: 'Optimize your campaign' } )
-	).toBeVisible();
-
-	await optimizeCampaignPage.selectUrlOption();
-
-	const createCampaignButton = page.locator(
-		'[data-action="submit-campaign-and-assets"]'
-	);
-
-	await expect( createCampaignButton ).toBeEnabled();
-}
-
-async function createCampaignAndVerify( expectedCampaigns ) {
-	const createCampaignButton = page.locator(
-		'[data-action="submit-campaign-and-assets"]'
-	);
-
-	await createCampaignButton.click();
-
-	await page.waitForURL( /path=%2Fgoogle%2Fdashboard/ );
-
-	for ( const campaign of expectedCampaigns ) {
-		await expect( page.getByText( campaign ) ).toBeVisible();
-	}
-}
 
 test.describe( 'Post onboarding campaign setup', () => {
 	test.beforeAll( async ( { browser } ) => {
@@ -206,9 +167,13 @@ test.describe( 'Post onboarding campaign setup', () => {
 						dashboardPage.addPaidCampaignButton
 					).toBeEnabled();
 
-					await openCampaignCreationFlow();
-					await optimizeCampaign();
-					await createCampaignAndVerify( expectedCampaigns );
+					await openCampaignCreationFlow( page, dashboardPage );
+					await optimizeCampaign(
+						page,
+						setupAdsAccounts,
+						optimizeCampaignPage
+					);
+					await createCampaignAndVerify( page, expectedCampaigns );
 				} );
 			} );
 		}
