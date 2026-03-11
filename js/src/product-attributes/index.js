@@ -7,7 +7,7 @@ import $ from 'jquery';
  * Internal dependencies
  */
 import { glaProductData } from '~/constants';
-import { init as initBackorderAvailabilityDateNotice } from './backorder-availability-date-notice';
+import initBackorderAvailabilityDateNotice from './backorder-availability-date-notice';
 import './custom-inputs';
 import './index.scss';
 

@@ -38,7 +38,6 @@ module.exports = {
 	},
 	globals: {
 		getComputedStyle: 'readonly',
-		MouseEvent: 'readonly',
 	},
 	rules: {
 		'@wordpress/i18n-text-domain': [

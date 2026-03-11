@@ -48,22 +48,6 @@ function isBackorderSelected() {
 	);
 }
 
-function hasGlaAvailabilityDate() {
-	const dateInput = document.getElementById( GLA_DATE_INPUT_ID );
-	return dateInput && dateInput.value.trim() !== '';
-}
-
-function updateNoticeVisibility() {
-	const notice = document.querySelector(
-		'.gla-backorder-availability-date-notice'
-	);
-	if ( ! notice ) {
-		return;
-	}
-	const show = isBackorderSelected() && ! hasGlaAvailabilityDate();
-	notice.style.display = show ? '' : 'none';
-}
-
 /**
  * Backorder availability date notice on the product Inventory tab (classic editor).
  * Shows/hides the notice based on backorder selection and GLA availability date field.
@@ -83,22 +67,32 @@ function initBackorderAvailabilityDateNotice() {
 		return;
 	}
 
+	function hasGlaAvailabilityDate() {
+		return glaDateEl.value.trim() !== '';
+	}
+
+	function updateNoticeVisibility() {
+		const show = isBackorderSelected() && ! hasGlaAvailabilityDate();
+		notice.style.display = show ? '' : 'none';
+	}
+
 	const tabTarget = glaProductData.glaTabTarget || 'gla_attributes';
 
 	// Clicking the link switches to the GLA tab.
-	document
-		.querySelectorAll( '.gla-availability-date-tab-link' )
-		.forEach( ( link ) => {
-			link.addEventListener( 'click', ( event ) => {
-				event.preventDefault();
-				const tabLink = document.querySelector(
-					`.product_data_tabs a[href="#${ tabTarget }"]`
-				);
-				if ( tabLink ) {
-					tabLink.click();
-				}
-			} );
+	const noticeLink = document.querySelector(
+		'.gla-availability-date-tab-link'
+	);
+	if ( noticeLink ) {
+		noticeLink.addEventListener( 'click', ( event ) => {
+			event.preventDefault();
+			const tabLink = document.querySelector(
+				`.product_data_tabs a[href="#${ tabTarget }"]`
+			);
+			if ( tabLink ) {
+				tabLink.click();
+			}
 		} );
+	}
 
 	document
 		.querySelectorAll(
@@ -114,7 +108,7 @@ function initBackorderAvailabilityDateNotice() {
 	updateNoticeVisibility();
 }
 
-export function init() {
+export default function init() {
 	if ( document.readyState === 'loading' ) {
 		document.addEventListener(
 			'DOMContentLoaded',

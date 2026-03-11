@@ -191,7 +191,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 			if ( null === $screen ) {
 				return false;
 			}
-			// Product list: screen id is 'product'. Classic product edit: screen id is 'post', post_type is 'product'.
+			// Block editor product edit: screen id is 'product'. Classic product edit: screen id is 'post', post_type is 'product'.
 			return ( 'product' === $screen->id || ( 'post' === $screen->id && 'product' === $screen->post_type ) );
 		};
 

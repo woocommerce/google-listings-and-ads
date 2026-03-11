@@ -85,6 +85,24 @@ async function setAttributeValue( locator, value ) {
  */
 export function getClassicProductEditorUtils( page ) {
 	const locators = {
+		getInventoryTab() {
+			return page.locator( 'li.inventory_tab' );
+		},
+
+		getStockStatusInput( value ) {
+			return page.locator(
+				`#inventory_product_data input[name="_stock_status"][value="${ value }"]`
+			);
+		},
+
+		getBackorderAvailabilityDateNotice() {
+			return page.locator( '.gla-backorder-availability-date-notice' );
+		},
+
+		getNoticeTabLink() {
+			return page.locator( '.gla-availability-date-tab-link' );
+		},
+
 		getPluginTab() {
 			return page.locator( '.gla_attributes_tab' );
 		},
@@ -263,6 +281,10 @@ export function getClassicProductEditorUtils( page ) {
 			return expect(
 				page.locator( '.product_data_tabs li.active' )
 			).toHaveCount( 1 );
+		},
+
+		async clickInventoryTab() {
+			return this.getInventoryTab().click();
 		},
 
 		async clickPluginTab() {
