@@ -179,6 +179,14 @@ test.describe( 'Settings', () => {
 		} );
 	} );
 
+	test.describe( 'Connected Google Merchant Center account', () => {
+		test( 'should not show the Audience section', async () => {
+			await expect(
+				page.getByRole( 'heading', { name: 'Audience' } )
+			).not.toBeVisible();
+		} );
+	} );
+
 	test.describe( 'No connected Google Merchant Center account', () => {
 		test.beforeAll( async () => {
 			await settingsPage.mockJetpackConnected();
@@ -244,14 +252,6 @@ test.describe( 'Settings', () => {
 			const requestPayload = await request.postDataJSON();
 
 			expect( requestPayload ).toHaveProperty( 'location', 'all' );
-		} );
-	} );
-
-	test.describe( 'Connected Google Merchant Center account', () => {
-		test( 'should not show the Audience section', async () => {
-			await expect(
-				page.getByRole( 'heading', { name: 'Audience' } )
-			).not.toBeVisible();
 		} );
 	} );
 } );
