@@ -77,18 +77,20 @@ const Settings = () => {
 			<MainTabNav />
 			<RebrandingTour />
 			<SetupEnhancedConversions />
-			{ ! hasGoogleMCConnection && (
-				<TargetAudienceSection
-					targetAudience={ initTargetAudience }
-					resolveFinalCountries={ getFinalCountries }
-					onTargetAudienceChange={ saveTargetAudience }
-				/>
-			) }
-			{ hasGoogleMCConnection && (
+			{ hasGoogleMCConnection ? (
 				<>
 					<ContactInformationPreview />
 					<SetupTaxRate />
 				</>
+			) : (
+				// Adding this check to avoid rendering the section while the MC hook is resolving and then hides
+				hasFinishedResolution && (
+					<TargetAudienceSection
+						targetAudience={ initTargetAudience }
+						resolveFinalCountries={ getFinalCountries }
+						onTargetAudienceChange={ saveTargetAudience }
+					/>
+				)
 			) }
 			<LinkedAccounts />
 		</div>
