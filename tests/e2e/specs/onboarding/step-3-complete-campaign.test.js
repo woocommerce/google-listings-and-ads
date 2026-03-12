@@ -16,6 +16,7 @@ import {
 	getFAQPanelRow,
 	checkBillingAdsPopup,
 } from '../../utils/page';
+import { clearServiceBasedMerchant } from '../../utils/api';
 
 test.use( { storageState: process.env.ADMINSTATE } );
 
@@ -134,6 +135,8 @@ test.describe( 'Complete your campaign', () => {
 				},
 				next_page: null,
 			} ),
+
+			clearServiceBasedMerchant(),
 		] );
 
 		await completeCampaign.goto();
