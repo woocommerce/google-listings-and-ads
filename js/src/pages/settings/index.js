@@ -61,11 +61,12 @@ const Settings = () => {
 	 * @param {TargetAudienceData} targetAudienceData Target audience data to be saved.
 	 */
 	const onTargetAudienceChange = ( targetAudienceData ) => {
-		const hasSelectedCountries =
+		const hasNoCountriesSelected =
 			targetAudienceData.location === 'selected' &&
-			targetAudienceData.countries.length > 0;
+			( ! targetAudienceData.countries ||
+				targetAudienceData.countries.length === 0 );
 
-		if ( hasSelectedCountries ) {
+		if ( ! hasNoCountriesSelected ) {
 			saveTargetAudience( targetAudienceData );
 		}
 	};
