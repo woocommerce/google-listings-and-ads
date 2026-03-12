@@ -19,10 +19,13 @@ import ChooseAudienceSection from '~/components/free-listings/choose-audience-se
  */
 
 /**
- * Renders the Target Audience section form for Ads only merchant setup flow.
+ * Renders the Target Audience section form.
+ *
+ * To be used in onboarding and further editing.
+ * Does not provide any save strategy, this is to be bound externally via `onTargetAudienceChange`.
  *
  * @param {Object} props
- * @param {TargetAudienceData} props.targetAudience Target audience value data to be initialed the form, if not given AppSpinner will be rendered.} param0
+ * @param {TargetAudienceData} props.targetAudience Target audience value data to initialize the form; if not given AppSpinner will be rendered.
  * @param {(targetAudience: TargetAudienceData) => Array<CountryCode>} props.resolveFinalCountries Callback for this component to resolve the given `targetAudience` to the final list of countries.
  * @param {(targetAudience: TargetAudienceData) => void} [props.onTargetAudienceChange] Callback called with new data once target audience data is changed.
  */

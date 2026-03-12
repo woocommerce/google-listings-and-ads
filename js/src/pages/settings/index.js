@@ -13,6 +13,7 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useUpdateRestAPIAuthorizeStatusByUrlQuery from '~/hooks/useUpdateRestAPIAuthorizeStatusByUrlQuery';
 import { subpaths, getReconnectAccountUrl } from '~/utils/urls';
 import { ContactInformationPreview } from '~/components/contact-information';
+import TargetAudienceSection from '~/components/target-audience-section';
 import SetupTaxRate from './setup-tax-rate';
 import LinkedAccounts from './linked-accounts';
 import ReconnectWPComAccount from './reconnect-wpcom-account';
@@ -23,6 +24,8 @@ import RebrandingTour from '~/components/tours/rebranding-tour';
 import SetupEnhancedConversions from './enhanced-conversions/setup-enhanced-conversions';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
+import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
+import { useAppDispatch } from '~/data';
 import './index.scss';
 
 const pageClassName = 'gla-settings';
@@ -36,7 +39,12 @@ const Settings = () => {
 
 	const { google } = useGoogleAccount();
 	const isReconnectGooglePage = subpath === subpaths.reconnectGoogleAccount;
-	const { hasGoogleMCConnection } = useGoogleMCAccount();
+	const { hasFinishedResolution, hasGoogleMCConnection } =
+		useGoogleMCAccount();
+	const { targetAudience, getFinalCountries } =
+		useTargetAudienceFinalCountryCodes();
+	const { saveTargetAudience } = useAppDispatch();
+	const initTargetAudience = targetAudience?.location ? targetAudience : null;
 
 	// This page wouldn't get any 401 response when losing Google account access,
 	// so we still need to detect it here.
@@ -69,6 +77,13 @@ const Settings = () => {
 			<MainTabNav />
 			<RebrandingTour />
 			<SetupEnhancedConversions />
+			{ ! hasGoogleMCConnection && (
+				<TargetAudienceSection
+					targetAudience={ initTargetAudience }
+					resolveFinalCountries={ getFinalCountries }
+					onTargetAudienceChange={ saveTargetAudience }
+				/>
+			) }
 			{ hasGoogleMCConnection && (
 				<>
 					<ContactInformationPreview />
