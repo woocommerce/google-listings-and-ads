@@ -292,7 +292,7 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 					'recommendation_id'              => $recommendation_id,
 					/**
 					 * Note: The 'id' field below refers to the Recommendation resource's ID property, not the field name itself.
-					 * Reference: https://github.com/googleads/google-ads-php/blob/main/src/Google/Ads/GoogleAds/V20/Resources/Recommendation.php#L25-L30
+					 * Reference: https://github.com/googleads/google-ads-php/blob/main/src/Google/Ads/GoogleAds/V22/Resources/Recommendation.php#L25-L30
 					 *
 					 * We use the static name for the recommendation type instead of `$recommendation->getType()`
 					 * to ensure consistency and avoid potential issues with dynamic values or API changes.
