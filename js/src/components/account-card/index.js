@@ -10,7 +10,7 @@ import { Icon, store as storeIcon } from '@wordpress/icons';
  */
 import Section from '~/components/section';
 import Subsection from '~/components/subsection';
-import googleLogoURL from '~/images/logo/gogole-g-logo.svg';
+import googleLogoURL from '~/images/logo/google-g-logo.svg';
 import googleMCLogoURL from '~/images/logo/google-merchant-center-logo.svg';
 import googleAdsLogoURL from '~/images/logo/google-ads-logo.svg';
 import wpLogoURL from '~/images/logo/wp-logo.svg';
