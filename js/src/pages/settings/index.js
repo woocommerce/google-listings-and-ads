@@ -28,8 +28,17 @@ import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCo
 import { useAppDispatch } from '~/data';
 import './index.scss';
 
+/**
+ * @typedef {import('~/data/actions').TargetAudienceData } TargetAudienceData
+ */
+
 const pageClassName = 'gla-settings';
 
+/**
+ * Settings page component.
+ *
+ * @return {JSX.Element} The settings page component.
+ */
 const Settings = () => {
 	const { subpath } = getQuery();
 	// Make the component highlight GLA entry in the WC legacy menu.
@@ -45,6 +54,21 @@ const Settings = () => {
 		useTargetAudienceFinalCountryCodes();
 	const { saveTargetAudience } = useAppDispatch();
 	const initTargetAudience = targetAudience?.location ? targetAudience : null;
+
+	/**
+	 * Callback called with new data once target audience data is changed.
+	 *
+	 * @param {TargetAudienceData} targetAudienceData Target audience data to be saved.
+	 */
+	const onTargetAudienceChange = ( targetAudienceData ) => {
+		const hasSelectedCountries =
+			targetAudienceData.location === 'selected' &&
+			targetAudienceData.countries.length > 0;
+
+		if ( hasSelectedCountries ) {
+			saveTargetAudience( targetAudienceData );
+		}
+	};
 
 	// This page wouldn't get any 401 response when losing Google account access,
 	// so we still need to detect it here.
@@ -88,7 +112,8 @@ const Settings = () => {
 					<TargetAudienceSection
 						targetAudience={ initTargetAudience }
 						resolveFinalCountries={ getFinalCountries }
-						onTargetAudienceChange={ saveTargetAudience }
+						onTargetAudienceChange={ onTargetAudienceChange }
+						showValidation
 					/>
 				)
 			) }
