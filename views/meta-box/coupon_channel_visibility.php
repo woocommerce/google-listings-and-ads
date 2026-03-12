@@ -37,12 +37,6 @@ $field_id = $this->field_id;
  *
  * @var bool
  */
-$is_setup_complete = $this->is_setup_complete;
-
-/**
- *
- * @var bool
- */
 $is_channel_supported = $this->is_channel_supported;
 
 /**
