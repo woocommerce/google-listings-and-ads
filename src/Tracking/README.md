@@ -552,6 +552,22 @@ Saving changes of audience and/or shipping settings to the product feed.
 #### Emitters
 - [`exports`](../../js/src/pages/shipping/index.js#L46)
 
+### [`gla_gen_ai_image_picker_add_selected_images_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L22)
+Triggered when the "Add selected images" button is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`finalUrl` | `string` | The final URL for which the images were generated.
+`assetKey` | `string` | The asset key for which the images were generated.
+`numberOfSelectedImages` | `number` | The number of images that were selected to be added.
+#### Emitters
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L41) when the "Add selected images" button is clicked.
+
+### [`gla_gen_ai_progress_skip_button_click`](../../js/src/components/paid-ads/gen-ai-progress/skip-button.js#L12)
+Triggered when the skip button is clicked during Gen AI asset generation progress.
+#### Emitters
+- [`SkipButton`](../../js/src/components/paid-ads/gen-ai-progress/skip-button.js#L27) when the skip button is clicked.
+
 ### [`gla_google_account_connect_button_click`](../../js/src/utils/tracks.js#L185)
 Clicking on the button to connect Google account.
 #### Properties
@@ -592,14 +608,14 @@ Clicking on a Google Merchant Center link.
 #### Emitters
 - [`HelpIconButton`](../../js/src/components/help-icon-button/index.js#L31)
 
-### [`gla_import_assets_by_final_url_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-header/assets-loader.js#L80)
+### [`gla_import_assets_by_final_url_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-header/assets-loader.js#L83)
 Clicking on the "Scan for assets" button.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `type` | `string` | The type of the selected Final URL suggestion to be imported. Possible values: `post`, `term`, `homepage`.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-header/assets-loader.js#L96)
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-header/assets-loader.js#L99)
 
 ### [`gla_launch_paid_campaign_button_click`](../../js/src/utils/tracks.js#L173)
 Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign in the Google Ads setup flow.
@@ -912,10 +928,10 @@ Triggered when the request review is successful
 #### Emitters
 - [`ReviewRequestModal`](../../js/src/pages/product-feed/review-request/review-request-modal.js#L58)
 
-### [`gla_reselect_another_final_url_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-header/final-url-card.js#L23)
+### [`gla_reselect_another_final_url_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-header/final-url-card.js#L24)
 Clicking on the "Or, select another page" button.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-header/final-url-card.js#L39)
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-header/final-url-card.js#L40)
 
 ### [`gla_setup_ads`](../../js/src/utils/tracks.js#L203)
 Triggered on events during ads onboarding
@@ -1051,6 +1067,16 @@ Sorting table
 #### Emitters
 - [`AppTableCard`](../../js/src/components/app-table-card/index.js#L74) upon sorting table by column
 - [`recordTableSortEvent`](../../js/src/components/app-table-card/index.js#L55) with given props.
+
+### [`gla_texts_editor_generate_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/texts-editor.js#L35)
+Triggered when the generate texts button is clicked in the TextsEditor component. Event properties include finalUrl and assetKey.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`finalUrl` | `string` | The final URL for the ad.
+`assetKey` | `string` | The key of the text asset.
+#### Emitters
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/texts-editor.js#L62) when the generate texts button is clicked in the TextsEditor component.
 
 ### [`gla_tooltip_viewed`](../../js/src/components/help-popover/index.js#L16)
 Viewing tooltip

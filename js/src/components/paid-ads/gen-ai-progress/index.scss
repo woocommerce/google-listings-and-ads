@@ -21,4 +21,9 @@
 			margin: $grid-unit-20 0 0;
 		}
 	}
+
+	.gen-ai-progress__actions {
+		margin-block-start: $grid-unit-10;
+		min-height: $gla-size-control-height;
+	}
 }

@@ -204,7 +204,8 @@ export default function CampaignAssetsForm( {
 	countryCodes,
 	...adaptiveFormProps
 } ) {
-	const [ generateAssets ] = useCreateGenAIAssets();
+	const { generateAssets, isGeneratingAssets, abortGenerateAssets } =
+		useCreateGenAIAssets();
 	const [ isFetchingAssets, setIsFetchingAssets ] = useState( false );
 	const initialAssetGroup = useMemo( () => {
 		return convertAssetEntityGroupToFormValues( assetEntityGroup );
@@ -273,6 +274,10 @@ export default function CampaignAssetsForm( {
 						{ type: GEN_AI_ASSET_TYPES.TEXT },
 						{ type: GEN_AI_ASSET_TYPES.MEDIA },
 					] );
+
+					if ( ! generatedGenAIAssets ) {
+						return assetSuggestions;
+					}
 
 					const textAssetsData =
 						generatedGenAIAssets[ GEN_AI_ASSET_TYPES.TEXT ];
@@ -365,9 +370,11 @@ export default function CampaignAssetsForm( {
 				formContext.adapter.hideValidation();
 			},
 			isFetchingAssets,
+			isGeneratingAssets,
 			hasAISuggestedTextAssets,
 			hasAISuggestedMediaAssets,
 			fetchAssets,
+			abortGenerateAssets,
 		};
 	};
 

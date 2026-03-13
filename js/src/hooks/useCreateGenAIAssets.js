@@ -3,7 +3,7 @@
  */
 import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
-import { useCallback, useState } from '@wordpress/element';
+import { useCallback, useState, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -16,13 +16,23 @@ import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 /**
  * Custom hook to generate Gen AI assets for a given URL and asset requests.
  *
- * @return {Array} - An array containing the generateAssets function and a boolean indicating if assets are currently being generated.
+ * @return {Object} An object containing the generateAssets function, isGeneratingAssets boolean, and abortGenerateAssets function.
  */
 const useCreateGenAIAssets = () => {
 	const [ isGeneratingAssets, setIsGeneratingAssets ] = useState( false );
 	const { createNotice } = useDispatchCoreNotices();
+	const abortControllerRef = useRef( null );
 	const { receiveGenAITextAssets, receiveGenAIMediaAssets } =
 		useAppDispatch();
+
+	/**
+	 * Aborts any ongoing Gen AI asset generation requests.
+	 */
+	const abortGenerateAssets = useCallback( () => {
+		if ( abortControllerRef.current ) {
+			abortControllerRef.current.abort();
+		}
+	}, [] );
 
 	/**
 	 * Helper function to process Gen AI API responses, handling both success and error cases.
@@ -84,6 +94,9 @@ const useCreateGenAIAssets = () => {
 				return;
 			}
 
+			abortControllerRef.current = new AbortController();
+			const { signal } = abortControllerRef.current;
+
 			setIsGeneratingAssets( true );
 
 			// Initialize as empty arrays to avoid overwriting multiple requests of same type
@@ -101,6 +114,7 @@ const useCreateGenAIAssets = () => {
 
 					return apiFetch( {
 						path,
+						signal,
 						method: REQUEST_ACTIONS.POST,
 						parse: false,
 						data: {
@@ -113,6 +127,10 @@ const useCreateGenAIAssets = () => {
 				} );
 
 				const results = await Promise.allSettled( promises );
+
+				if ( signal.aborted ) {
+					return;
+				}
 
 				for ( let index = 0; index < results.length; index++ ) {
 					const { type, assetKey } = requests[ index ];
@@ -150,6 +168,10 @@ const useCreateGenAIAssets = () => {
 
 				return generatedAssets;
 			} catch ( error ) {
+				if ( signal.aborted ) {
+					return;
+				}
+
 				// Catch unexpected runtime errors
 				createNotice(
 					'error',
@@ -170,7 +192,7 @@ const useCreateGenAIAssets = () => {
 		]
 	);
 
-	return [ generateAssets, isGeneratingAssets ];
+	return { generateAssets, isGeneratingAssets, abortGenerateAssets };
 };
 
 export default useCreateGenAIAssets;
