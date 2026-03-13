@@ -5,7 +5,7 @@ Requires at least: 6.6
 Tested up to: 6.9
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.5.2
+Stable tag: 3.5.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -140,6 +140,12 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.5.3 - 2026-03-03 =
+* Add - Support for service based merchants.
+* Dev - Added two new filters to the Jetpack and Google OAuth flows.
+* Fix – CSS lint error in raise-budget-recommendation-banner.
+* Update - Disable API Pull mode for all users.
+
 = 3.5.2 - 2026-01-29 =
 * Add - Sorting functionality in `AllProgramsTableCard` to allow users to reorder columns by key attributes.
 * Fix - Resolve an issue where website claim conflicts were not detected correctly during Google Merchant Center account setup in the onboarding flow.
@@ -157,15 +163,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Tweak - WC 10.4 compatibility.
 * Tweak - WP 6.9 compatibility.
 * Update - Modify `wc/gla/tours` API endpoint to retrieve all tours at once.
-
-= 3.5.0 - 2025-11-04 =
-* Add - Additional options to the skip paid ads survey.
-* Add - Recommendation for improving conversions by raising budgets.
-* Fix - Alignment issue on Reports page.
-* Fix - Error when syncing bundled products.
-* Fix - MC connection stuck in loading state when connection is interrupted.
-* Fix - Prevent floating point precision errors when converting to micro units by rounding before casting to integer.
-* Fix - Remove ads account status check from `ads/recommendations` endpoint.
-* Tweak - WC 10.3 compatibility.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
