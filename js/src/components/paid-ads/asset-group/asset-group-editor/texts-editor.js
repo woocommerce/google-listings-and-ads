@@ -65,7 +65,7 @@ export default function TextsEditor( {
 } ) {
 	const updateTextsRef = useRef();
 	const { createNotice } = useDispatchCoreNotices();
-	const [ generateAssets, isGeneratingAssets ] = useCreateGenAIAssets();
+	const { generateAssets, isGeneratingAssets } = useCreateGenAIAssets();
 	const [ texts, setTexts ] = useState( initialTexts );
 	const { assets: genAITextAssets } = useGenAITextAssets(
 		finalUrl,

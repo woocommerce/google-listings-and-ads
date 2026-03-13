@@ -9,8 +9,14 @@ import { ProgressBar } from '@wordpress/components';
  * Internal dependencies
  */
 import ProgressGraphics from '~/images/pmax-assets-improvements/gen-ai-progress.svg';
-import './gen-ai-progress.scss';
+import SkipButton from './skip-button';
+import './index.scss';
 
+/**
+ * Component to display the progress of Gen AI asset generation, including a progress bar and a skip button.
+ *
+ * @return {JSX.Element} The GenAIProgress component.
+ */
 const GenAIProgress = () => {
 	return (
 		<div className="gen-ai-progress">
@@ -34,6 +40,10 @@ const GenAIProgress = () => {
 						'google-listings-and-ads'
 					) }
 				</p>
+
+				<div className="gen-ai-progress__actions">
+					<SkipButton />
+				</div>
 			</div>
 		</div>
 	);
