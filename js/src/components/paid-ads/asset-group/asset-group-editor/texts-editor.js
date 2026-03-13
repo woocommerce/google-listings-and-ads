@@ -33,7 +33,17 @@ function normalizeNumberOfTexts( texts, minNumberOfTexts, maxNumberOfTexts ) {
 }
 
 /**
+ * Triggered when the generate texts button is clicked in the TextsEditor component. Event properties include finalUrl and assetKey.
+ *
+ * @event gla_texts_editor_generate_button_click
+ * @property {string} finalUrl The final URL for the ad.
+ * @property {string} assetKey The key of the text asset.
+ */
+
+/**
  * Renders a list of text inputs for managing the single type of asset texts.
+ *
+ * @fires gla_texts_editor_generate_button_click when the generate texts button is clicked in the TextsEditor component.
  *
  * @param {Object} props React props.
  * @param {string} props.assetKey Key of the text asset.
@@ -231,6 +241,11 @@ export default function TextsEditor( {
 					text={ generateButtonText }
 					onClick={ handleGenerateClick }
 					loading={ isGeneratingAssets }
+					eventName="gla_texts_editor_generate_button_click"
+					eventProps={ {
+						finalUrl,
+						assetKey,
+					} }
 				/>
 			) }
 		</div>
