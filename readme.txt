@@ -152,16 +152,4 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Update - Add `timeZone` and `languageCode` fields to create-merchant request for Merchant API compatibility.
 * Update - Allow legacy conversion events to be disabled via a filter.
 
-= 3.5.1 - 2025-12-10 =
-* Add - EU political content confirmation checkbox for EU-based advertisers.
-* Fix - Button misaligned after navigating between tabs.
-* Fix - Correct the product edit URL to properly handle product variations in the Price Benchmark modal.
-* Fix - Fill missing intervals in products chart.
-* Fix - Prevent “Free Listings” from being automatically added after unselecting all campaigns in the comparison filter.
-* Fix - Setup enhanced conversion data when gtag is added by the Google Analytics extension.
-* Tweak - Make it possible to complete the onboarding flow using a site URL with paths.
-* Tweak - WC 10.4 compatibility.
-* Tweak - WP 6.9 compatibility.
-* Update - Modify `wc/gla/tours` API endpoint to retrieve all tours at once.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
