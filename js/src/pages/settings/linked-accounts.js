@@ -49,7 +49,7 @@ export default function LinkedAccounts() {
 	const {
 		googleMCAccount,
 		hasFinishedResolution: hasResolvedMCAccount,
-		hasGoogleMCConnection
+		hasGoogleMCConnection,
 	} = useGoogleMCAccount();
 	const { googleAdsAccount, hasFinishedResolution: hasResolvedAdsAccount } =
 		useGoogleAdsAccount();
