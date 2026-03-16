@@ -421,6 +421,7 @@ trait GoogleAdsClientTrait {
 		$campaign->method( 'getStatus' )->willReturn( CampaignStatus::number( $data['status'] ) );
 		$campaign->method( 'getAdvertisingChannelType' )->willReturn( CampaignType::number( $data['type'] ) );
 		$campaign->method( 'getShoppingSetting' )->willReturn( $setting );
+		$campaign->method( 'getBrandGuidelinesEnabled' )->willReturn( $data['brand_guidelines_enabled'] ?? false );
 
 		$budget = $this->createMock( CampaignBudget::class );
 		$budget->method( 'getAmountMicros' )->willReturn( $this->to_micro( $data['amount'] ) );
@@ -791,6 +792,8 @@ trait GoogleAdsClientTrait {
 		$list_response->method( 'getPage' )->willReturn(
 			$page
 		);
+		// Stub for get_campaign_info_by_asset_group_id() which uses iterateAllElements().
+		$list_response->method( 'iterateAllElements' )->willReturn( [] );
 
 		$this->service_client->method( 'search' )->willReturn( $list_response );
 	}
@@ -1156,5 +1159,31 @@ trait GoogleAdsClientTrait {
 		}
 
 		$this->generate_ads_query_mock( array_values( $locations ) );
+	}
+
+	/**
+	 * Generates a mocked asset create operation.
+	 *
+	 * @param integer $asset_id The asset ID.
+	 * @param string  $field_type The asset field type.
+	 * @param string  $content The asset content.
+	 * @return MutateOperation
+	 */
+	protected function generate_asset_create_operation( int $asset_id, string $field_type, string $content ): MutateOperation {
+		$asset = $this->generate_asset(
+			[
+				'field_type' => $field_type,
+				'content'    => $content,
+			]
+		);
+
+		$asset->setResourceName(
+			$this->generate_asset_resource_name( $asset_id )
+		);
+
+		return ( new MutateOperation() )->setAssetOperation(
+			( new \Google\Ads\GoogleAds\V20\Services\AssetOperation() )
+				->setCreate( $asset )
+		);
 	}
 }

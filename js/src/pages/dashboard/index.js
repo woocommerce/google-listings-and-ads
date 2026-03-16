@@ -29,6 +29,8 @@ import PMaxImproveAssetsBanner from '~/components/pmax-improve-assets-banner';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
 import RaiseBudgetRecommendationBanner from '~/components/raise-budget-recommendation-banner';
 import YouTubeShoppingTour from '~/components/tours/youtube-shopping-tour';
+import SubmissionSuccessGuide from '~/pages/product-feed/submission-success-guide';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import './index.scss';
 
 /**
@@ -36,6 +38,7 @@ import './index.scss';
  */
 const Dashboard = () => {
 	const [ isCESPromptOpen, setCESPromptOpen ] = useState( false );
+	const { hasGoogleMCConnection } = useGoogleMCAccount();
 
 	const handleCampaignCreationSuccessGuideClose = useCallback(
 		( e, specifiedAction ) => {
@@ -83,6 +86,8 @@ const Dashboard = () => {
 
 	const isCampaignCreationSuccessGuideOpen =
 		query?.guide === GUIDE_NAMES.CAMPAIGN_CREATION_SUCCESS;
+	const isSubmissionSuccessOpen =
+		query?.guide === GUIDE_NAMES.SUBMISSION_SUCCESS;
 	const wcTracksEnabled = isWCTracksEnabled();
 
 	return (
@@ -99,7 +104,9 @@ const Dashboard = () => {
 					<AppDateRangeFilterPicker
 						trackEventReportId={ trackEventReportId }
 					/>
-					{ enableReports && <ReportsLink /> }
+					{ enableReports && hasGoogleMCConnection && (
+						<ReportsLink />
+					) }
 				</div>
 				<div className="gla-dashboard__performance">
 					<SummarySection />
@@ -117,6 +124,7 @@ const Dashboard = () => {
 					}
 				/>
 			) }
+			{ isSubmissionSuccessOpen && <SubmissionSuccessGuide /> }
 			{ isCESPromptOpen && wcTracksEnabled && (
 				<CustomerEffortScorePrompt
 					label={ __(

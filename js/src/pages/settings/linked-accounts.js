@@ -46,7 +46,7 @@ export default function LinkedAccounts() {
 		useJetpackAccount();
 	const { google, hasFinishedResolution: hasResolvedGoogleAccount } =
 		useGoogleAccount();
-	const { googleMCAccount, hasFinishedResolution: hasResolvedMCAccount } =
+	const { googleMCAccount, hasFinishedResolution: hasResolvedMCAccount, hasGoogleMCConnection } =
 		useGoogleMCAccount();
 	const { googleAdsAccount, hasFinishedResolution: hasResolvedAdsAccount } =
 		useGoogleAdsAccount();
@@ -101,26 +101,34 @@ export default function LinkedAccounts() {
 						googleAccount={ google }
 						hideAccountSwitch
 					/>
-					<MerchantCenterAccountInfoCard
-						googleMCAccount={ googleMCAccount }
-					/>
+
+					{ hasGoogleMCConnection && (
+						<MerchantCenterAccountInfoCard
+							googleMCAccount={ googleMCAccount }
+						/>
+					) }
+
 					{ hasAdsAccount && (
 						<ConnectedGoogleAdsAccountCard
 							googleAdsAccount={ googleAdsAccount }
 							hideAccountSwitch
 						>
-							<Section.Card.Footer>
-								<AppButton
-									isDestructive
-									isLink
-									onClick={ openDisconnectAdsAccountModal }
-								>
-									{ __(
-										'Disconnect Google Ads account',
-										'google-listings-and-ads'
-									) }
-								</AppButton>
-							</Section.Card.Footer>
+							{ hasGoogleMCConnection && (
+								<Section.Card.Footer>
+									<AppButton
+										isDestructive
+										isLink
+										onClick={
+											openDisconnectAdsAccountModal
+										}
+									>
+										{ __(
+											'Disconnect Google Ads account only',
+											'google-listings-and-ads'
+										) }
+									</AppButton>
+								</Section.Card.Footer>
+							) }
 						</ConnectedGoogleAdsAccountCard>
 					) }
 
