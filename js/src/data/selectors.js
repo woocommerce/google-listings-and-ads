@@ -108,6 +108,10 @@ export const getExistingGoogleAdsAccounts = ( state ) => {
 	return state.mc.accounts.existing_ads;
 };
 
+export const getYouTubeAccount = ( state ) => {
+	return state.mc.accounts.youtube;
+};
+
 /**
  * @typedef {Object} Address
  * @property {string|null} street_address Street-level part of the address. `null` when empty.

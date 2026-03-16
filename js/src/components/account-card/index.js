@@ -14,6 +14,7 @@ import googleLogoURL from '~/images/logo/google-g-logo.svg';
 import googleMCLogoURL from '~/images/logo/google-merchant-center-logo.svg';
 import googleAdsLogoURL from '~/images/logo/google-ads-logo.svg';
 import wpLogoURL from '~/images/logo/wp-logo.svg';
+import youTubeLogoURL from '~/images/logo/youtube-logo.svg';
 import finalUrlIconURL from '~/images/final-url-icon.svg';
 import './index.scss';
 
@@ -30,6 +31,7 @@ export const APPEARANCE = {
 	GOOGLE_ADS: 'google_ads',
 	ADDRESS: 'address',
 	FINAL_URL: 'final_url',
+	YOUTUBE: 'youtube',
 };
 
 const googleLogo = (
@@ -65,6 +67,15 @@ const wpLogo = (
 		alt={ __( 'WordPress.com Logo', 'google-listings-and-ads' ) }
 		width="40"
 		height="40"
+	/>
+);
+
+const youTubeLogo = (
+	<img
+		src={ youTubeLogoURL }
+		alt={ __( 'YouTube Logo', 'google-listings-and-ads' ) }
+		width="39"
+		height="28"
 	/>
 );
 
@@ -109,6 +120,10 @@ const appearanceDict = {
 	[ APPEARANCE.FINAL_URL ]: {
 		icon: finalUrlIcon,
 		title: __( 'Final URL', 'google-listings-and-ads' ),
+	},
+	[ APPEARANCE.YOUTUBE ]: {
+		icon: youTubeLogo,
+		title: __( 'YouTube', 'google-listings-and-ads' ),
 	},
 };
 

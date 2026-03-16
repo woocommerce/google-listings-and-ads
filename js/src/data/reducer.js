@@ -33,6 +33,7 @@ const DEFAULT_STATE = {
 			existing_ads: null,
 			ads_billing_status: null,
 			google_access: null,
+			youtube: null,
 		},
 		contact: null,
 		mapping: {
@@ -631,7 +632,14 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			);
 		}
 
-		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.
+		case TYPES.RECEIVE_ACCOUNTS_YOUTUBE: {
+			return setIn( state, 'mc.accounts.youtube', action.account );
+		}
+
+		case TYPES.DISCONNECT_ACCOUNTS_YOUTUBE: {
+			return setIn( state, 'mc.accounts.youtube', null );
+		}
+
 		case TYPES.DISCONNECT_ACCOUNTS_ALL:
 		default:
 			return state;
