@@ -139,7 +139,7 @@ class AssetImageProxyController extends BaseController {
 				}
 
 				// Check if the domain is allowed.
-				$domain = parse_url( $image_url, PHP_URL_HOST );
+				$domain = wp_parse_url( $image_url, PHP_URL_HOST );
 				if ( ! in_array( $domain, $this->allowed_domains, true ) ) {
 					return new Response(
 						[
