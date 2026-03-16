@@ -77,7 +77,13 @@ class ProductFilterTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_filter_sync_ready_products_with_pre_filter() {
-		add_filter( 'woocommerce_gla_get_sync_ready_products_pre_filter', '__return_empty_array' );
+		add_filter(
+			'woocommerce_gla_get_sync_ready_products_pre_filter',
+			function ( $products ) {
+				unset( $products );
+				return [];
+			}
+		);
 
 		$this->product_helper->expects( $this->never() )->method( 'is_sync_ready' );
 		$this->product_helper->expects( $this->never() )->method( 'is_sync_failed_recently' );
@@ -89,7 +95,13 @@ class ProductFilterTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_filter_sync_ready_products_with_post_filter() {
-		add_filter( 'woocommerce_gla_get_sync_ready_products_filter', '__return_empty_array' );
+		add_filter(
+			'woocommerce_gla_get_sync_ready_products_filter',
+			function ( $products ) {
+				unset( $products );
+				return [];
+			}
+		);
 
 		[ $product_a, $product_b, $product_c ] = $this->products;
 

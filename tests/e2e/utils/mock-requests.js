@@ -299,6 +299,19 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the YouTube Account Connection request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillYouTubeAccountConnection( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/youtube\/connection\b/,
+			payload
+		);
+	}
+
+	/**
 	 * Fulfill the Settings request.
 	 *
 	 * @param {Object} payload
@@ -1110,6 +1123,59 @@ export default class MockRequests {
 			status,
 			[ 'GET' ]
 		);
+	}
+
+	/**
+	 * Fulfills the YouTube account connection mock with a payload that sets
+	 * the connection status to 'disconnected', causing consumers to behave
+	 * as if the account is not connected.
+	 *
+	 * @return {Promise<void>} Resolves when the mock request has been fulfilled.
+	 */
+	async mockYouTubeAccountNotConnected() {
+		await this.fulfillYouTubeAccountConnection( {
+			status: 'disconnected',
+			channel: [],
+		} );
+	}
+
+	/**
+	 * Mock helper that simulates a YouTube account connection by calling
+	 * `fulfillYouTubeAccountConnection` with a predefined payload.
+	 *
+	 * Note: although the method name suggests a connected account, the payload
+	 * sets `status` to `'connected'` while still providing channel metadata
+	 * (`id` and `label`).
+	 *
+	 * This method is asynchronous and awaits the underlying fulfillment call.
+	 *
+	 * @return {Promise<*>} Resolves with whatever value `fulfillYouTubeAccountConnection` returns.
+	 */
+	async mockYouTubeAccountConnected() {
+		await this.fulfillYouTubeAccountConnection( {
+			status: 'connected',
+			channel: {
+				id: 'a89ahifdaffe234',
+				label: 'My YouTube Channel',
+			},
+		} );
+	}
+
+	/**
+	 * Mock a connected YouTube account that has no channels.
+	 *
+	 * This asynchronous helper fulfills the YouTube account connection with a
+	 * status of "connected" and an explicit null channel value, simulating a
+	 * scenario where the account is connected but no channels are available or
+	 * accessible.
+	 *
+	 * @return {Promise<void>} Resolves once the mock connection has been fulfilled.
+	 */
+	async mockYouTubeAccountNoChannels() {
+		await this.fulfillYouTubeAccountConnection( {
+			status: 'connected',
+			channel: [],
+		} );
 	}
 
 	/**
