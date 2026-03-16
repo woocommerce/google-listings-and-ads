@@ -212,7 +212,7 @@ const ASSET_TEXT_SPECS = [
 		key: ASSET_FORM_KEY.HEADLINE,
 		min: 3,
 		max: 5,
-		maxCharacterCounts: [ 15, 30, 30, 30, 30 ],
+		maxCharacterCounts: 30,
 		heading: _x(
 			'Headlines',
 			'Plural asset field name as the heading',

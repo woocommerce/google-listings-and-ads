@@ -20,8 +20,19 @@ import AIIcon from '~/images/ai-icon.svg?inline';
 import './index.scss';
 
 /**
+ * Triggered when the "Add selected images" button is clicked.
+ *
+ * @event gla_gen_ai_image_picker_add_selected_images_click
+ * @property {string} finalUrl The final URL for which the images were generated.
+ * @property {string} assetKey The asset key for which the images were generated.
+ * @property {number} numberOfSelectedImages The number of images that were selected to be added.
+ */
+
+/**
  * GenAIImagePicker component.
  * Allows users to pick AI-generated images based on the final URL and the spec type.
+ *
+ * @fires gla_gen_ai_image_picker_add_selected_images_click when the "Add selected images" button is clicked.
  *
  * @param {Object} props Component props.
  * @param {string} props.assetKey Asset key.
@@ -129,6 +140,12 @@ export default function GenAIImagePicker( {
 					) }
 					onClick={ handleOnAddSelectedImages }
 					disabled={ selectedImages.length === 0 }
+					eventName="gla_gen_ai_image_picker_add_selected_images_click"
+					eventProps={ {
+						finalUrl,
+						assetKey,
+						numberOfSelectedImages: selectedImages.length,
+					} }
 				/>
 			</FlexBlock>
 		</Flex>

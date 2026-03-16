@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignCriterion;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignLabel;
@@ -59,6 +60,9 @@ class AdsCampaignTest extends UnitTest {
 	/** @var MockObject|AdsCampaignLabel $campaign_label */
 	protected $campaign_label;
 
+	/** @var MockObject|AdsCampaignAsset $campaign_asset */
+	protected $campaign_asset;
+
 	/** @var WC $wc */
 	protected $wc;
 
@@ -76,6 +80,7 @@ class AdsCampaignTest extends UnitTest {
 		$this->asset_group    = $this->createMock( AdsAssetGroup::class );
 		$this->budget         = $this->createMock( AdsCampaignBudget::class );
 		$this->campaign_label = $this->createMock( AdsCampaignLabel::class );
+		$this->campaign_asset = $this->createMock( AdsCampaignAsset::class );
 		$this->criterion      = new AdsCampaignCriterion();
 		$this->options        = $this->createMock( OptionsInterface::class );
 		$this->transients     = $this->createMock( TransientsInterface::class );
@@ -88,7 +93,7 @@ class AdsCampaignTest extends UnitTest {
 		$this->container->addShared( TransientsInterface::class, $this->transients );
 		$this->container->addShared( WC::class, $this->wc );
 
-		$this->campaign = new AdsCampaign( $this->client, $this->budget, $this->criterion, $this->google_helper, $this->campaign_label );
+		$this->campaign = new AdsCampaign( $this->client, $this->budget, $this->criterion, $this->google_helper, $this->campaign_label, $this->campaign_asset );
 		$this->campaign->set_options_object( $this->options );
 		$this->campaign->set_container( $this->container );
 

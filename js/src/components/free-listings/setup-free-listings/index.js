@@ -17,6 +17,7 @@ import checkErrors from '~/components/free-listings/configure-product-listings/c
 import getOfferFreeShippingInitialValue from '~/utils/getOfferFreeShippingInitialValue';
 import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
 import FormContent from './form-content';
+import { TARGET_AUDIENCE_FIELDS } from '../choose-audience-section/constants';
 
 /**
  * @typedef {import('~/data/actions').TargetAudienceData } TargetAudienceData
@@ -24,8 +25,6 @@ import FormContent from './form-content';
  * @typedef {import('~/data/actions').ShippingTime} ShippingTime
  * @typedef {import('~/data/actions').CountryCode} CountryCode
  */
-
-const targetAudienceFields = [ 'locale', 'language', 'location', 'countries' ];
 
 /**
  * Field names for settings.
@@ -169,8 +168,8 @@ const SetupFreeListings = ( {
 			if ( shouldTriggerOnChange ) {
 				onSettingsChange( getSettings( values ) );
 			}
-		} else if ( targetAudienceFields.includes( change.name ) ) {
-			onTargetAudienceChange( pick( values, targetAudienceFields ) );
+		} else if ( TARGET_AUDIENCE_FIELDS.includes( change.name ) ) {
+			onTargetAudienceChange( pick( values, TARGET_AUDIENCE_FIELDS ) );
 
 			// Only keep shipping data with selected countries.
 			[ 'shipping_country_rates', 'shipping_country_times' ].forEach(
