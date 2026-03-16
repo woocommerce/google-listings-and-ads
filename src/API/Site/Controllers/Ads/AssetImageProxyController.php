@@ -23,6 +23,15 @@ defined( 'ABSPATH' ) || exit;
 class AssetImageProxyController extends BaseController {
 
 	/**
+	 * Allowed domains.
+	 *
+	 * @var array
+	 */
+	protected $allowed_domains = [
+		'tpc.googlesyndication.com',
+	];
+
+	/**
 	 * Allowed image MIME types.
 	 *
 	 * @var array
@@ -126,6 +135,18 @@ class AssetImageProxyController extends BaseController {
 							'message' => __( 'Invalid image URL provided.', 'google-listings-and-ads' ),
 						],
 						400
+					);
+				}
+
+				// Check if the domain is allowed.
+				$domain = parse_url( $image_url, PHP_URL_HOST );
+				if ( ! in_array( $domain, $this->allowed_domains, true ) ) {
+					return new Response(
+						[
+							'code'    => 'domain_not_allowed',
+							'message' => __( 'Domain not allowed for image proxying.', 'google-listings-and-ads' ),
+						],
+						403
 					);
 				}
 

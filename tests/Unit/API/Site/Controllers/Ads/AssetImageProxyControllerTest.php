@@ -125,6 +125,17 @@ class AssetImageProxyControllerTest extends RESTControllerUnitTest {
 	}
 
 	/**
+	 * Test domain not allowed for image proxying.
+	 */
+	public function test_domain_not_allowed_for_image_proxying() {
+		$params   = [ 'url' => 'https://nonvaliddomain.com/image.jpg' ];
+		$response = $this->do_request( self::ROUTE_IMAGE_PROXY, 'GET', $params );
+
+		$this->assertEquals( 'domain_not_allowed', $response->get_data()['code'] );
+		$this->assertEquals( 403, $response->get_status() );
+	}
+
+	/**
 	 * Test missing URL parameter.
 	 */
 	public function test_missing_url_parameter() {
