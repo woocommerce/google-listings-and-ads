@@ -119,11 +119,13 @@ class ServiceBasedMerchantHooksTest extends UnitTest {
 	}
 
 	public function test_handle_product_removal_ignores_non_product_post_types() {
-		$post_id = wp_insert_post( [
-			'post_type'   => 'post',
-			'post_title'  => 'Test Post',
-			'post_status' => 'publish',
-		] );
+		$post_id = wp_insert_post(
+			[
+				'post_type'   => 'post',
+				'post_title'  => 'Test Post',
+				'post_status' => 'publish',
+			]
+		);
 
 		$this->state->expects( $this->never() )->method( 'is_service_based_merchant' );
 		$this->state->expects( $this->never() )->method( 'reset_service_based_merchant_status' );
@@ -160,11 +162,13 @@ class ServiceBasedMerchantHooksTest extends UnitTest {
 	}
 
 	public function test_handle_product_restore_ignores_non_product_post_types() {
-		$post_id = wp_insert_post( [
-			'post_type'   => 'post',
-			'post_title'  => 'Test Post',
-			'post_status' => 'publish',
-		] );
+		$post_id = wp_insert_post(
+			[
+				'post_type'   => 'post',
+				'post_title'  => 'Test Post',
+				'post_status' => 'publish',
+			]
+		);
 
 		$this->state->expects( $this->never() )->method( 'is_service_based_merchant' );
 		$this->state->expects( $this->never() )->method( 'reset_service_based_merchant_status' );
