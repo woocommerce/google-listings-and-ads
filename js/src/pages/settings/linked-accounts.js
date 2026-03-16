@@ -46,8 +46,11 @@ export default function LinkedAccounts() {
 		useJetpackAccount();
 	const { google, hasFinishedResolution: hasResolvedGoogleAccount } =
 		useGoogleAccount();
-	const { googleMCAccount, hasFinishedResolution: hasResolvedMCAccount, hasGoogleMCConnection } =
-		useGoogleMCAccount();
+	const {
+		googleMCAccount,
+		hasFinishedResolution: hasResolvedMCAccount,
+		hasGoogleMCConnection
+	} = useGoogleMCAccount();
 	const { googleAdsAccount, hasFinishedResolution: hasResolvedAdsAccount } =
 		useGoogleAdsAccount();
 	const { hasFinishedResolution: hasResolvedYouTubeAccount } =
