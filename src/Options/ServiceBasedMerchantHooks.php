@@ -39,6 +39,7 @@ class ServiceBasedMerchantHooks implements Service, Registerable {
 	public function register(): void {
 		add_action( 'woocommerce_new_product', [ $this, 'handle_product_change' ], 10, 2 );
 		add_action( 'woocommerce_update_product', [ $this, 'handle_product_change' ], 10, 2 );
+		add_action( 'untrashed_post', [ $this, 'handle_product_restore' ] );
 		add_action( 'trashed_post', [ $this, 'handle_product_removal' ] );
 		add_action( 'deleted_post', [ $this, 'handle_product_removal' ] );
 	}
@@ -62,6 +63,20 @@ class ServiceBasedMerchantHooks implements Service, Registerable {
 		if ( $product && $product->needs_shipping() ) {
 			$this->service_based_merchant_state->reset_service_based_merchant_status();
 		}
+	}
+
+	/**
+	 * When a product is restored from the trash and the store is currently
+	 * classified as service-based, reset the flag so it is recalculated.
+	 *
+	 * @param int $post_id Post ID.
+	 */
+	public function handle_product_restore( int $post_id ): void {
+		if ( get_post_type( $post_id ) !== 'product' ) {
+			return;
+		}
+
+		$this->handle_product_change( $post_id );
 	}
 
 	/**
