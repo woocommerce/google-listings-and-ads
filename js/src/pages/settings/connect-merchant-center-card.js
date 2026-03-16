@@ -37,10 +37,7 @@ const ConnectMerchantCenterCard = () => {
 				'google-listings-and-ads'
 			) }
 			indicator={
-				<AppButton
-					isPrimary
-					href={ adminUrl + getOnboardingUrl() }
-				>
+				<AppButton isPrimary href={ adminUrl + getOnboardingUrl() }>
 					{ __(
 						'Set up Merchant Center',
 						'google-listings-and-ads'
