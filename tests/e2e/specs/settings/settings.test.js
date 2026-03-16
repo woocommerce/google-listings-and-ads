@@ -179,6 +179,49 @@ test.describe( 'Settings', () => {
 		} );
 	} );
 
+	test.describe( 'YouTube Shopping', () => {
+		test( 'should show connect button when account is not connected', async () => {
+			await settingsPage.goto();
+
+			const connectButton = settingsPage.youTubeCard.getByRole(
+				'button',
+				{
+					name: 'Connect',
+				}
+			);
+
+			await expect( connectButton ).toBeVisible();
+		} );
+
+		test( 'should show the channel name and disconnect button when account is connected', async () => {
+			await settingsPage.mockYouTubeAccountConnected();
+			await settingsPage.goto();
+
+			const disconnectButton = settingsPage.youTubeCard.getByRole(
+				'button',
+				{
+					name: 'Disconnect YouTube account',
+				}
+			);
+			const channelName =
+				settingsPage.youTubeCard.getByText( 'My YouTube Channel' );
+
+			await expect( channelName ).toBeVisible();
+			await expect( disconnectButton ).toBeVisible();
+		} );
+
+		test( 'should show a notice if there are no channels when connected', async () => {
+			await settingsPage.mockYouTubeAccountNoChannels();
+			await settingsPage.goto();
+
+			const notice = settingsPage.youTubeCard.getByText(
+				'No channels found (or permission not granted).'
+			);
+
+			await expect( notice ).toBeVisible();
+		} );
+	} );
+
 	test.describe( 'No connected Google Merchant Center account', () => {
 		test.beforeAll( async () => {
 			await settingsPage.mockJetpackConnected();

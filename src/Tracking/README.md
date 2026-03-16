@@ -382,14 +382,14 @@ Triggered when datepicker (date ranger picker) is updated,
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L41)
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
 
-### [`gla_disconnected_accounts`](../../js/src/pages/settings/linked-accounts.js#L31)
+### [`gla_disconnected_accounts`](../../js/src/pages/settings/linked-accounts.js#L33)
 Accounts are disconnected from the Setting page
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | (`all-accounts`\|`ads-account`) - indicate which accounts have been disconnected.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/linked-accounts.js#L41)
+- [`exports`](../../js/src/pages/settings/linked-accounts.js#L43)
 
 ### [`gla_documentation_link_click`](../../js/src/components/app-documentation-link/index.js#L6)
 When a documentation link is clicked.
@@ -407,6 +407,7 @@ When a documentation link is clicked.
 	- with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions' }`
 	- with `{ context: 'setup-mc-accounts', link_id: 'google-mc-terms-of-service', href: 'https://support.google.com/merchants/answer/160173' }`
 	- with `{ context: 'setup-ads', link_id: 'google-ads-terms-of-service', href: 'https://support.google.com/adspolicy/answer/54818' }`
+- [`ConnectYouTubeAccountCard`](../../js/src/components/youtube-account-card/connect-youtube-account-card.js#L32) with `{ context: 'settings-connect-youtube-account-card', link_id: 'youtube-merchant-terms' }` and the URL.
 - [`DifferentCurrencyNotice`](../../js/src/components/different-currency-notice.js#L28)
 	- with `{ context: "dashboard", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
 	- with `{ context: "reports-products", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
@@ -615,6 +616,15 @@ Triggered when the "Launch paid campaign" button is clicked to add a new paid ca
 #### Emitters
 - [`SetupPaidAds`](../../js/src/pages/ads-onboarding/ads-stepper/setup-paid-ads.js#L48) on submit
 
+### [`gla_link_youtube_account_button_click`](../../js/src/components/youtube-account-card/connected-youtube-account-card.js#L26)
+Clicking on the button to link the YouTube account.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
+#### Emitters
+- [`ConnectedYouTubeAccountCard`](../../js/src/components/youtube-account-card/connected-youtube-account-card.js#L42) When the user clicks on the button to link the YouTube account.
+
 ### [`gla_mc_account_connect_button_click`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L23)
 Clicking on the button to connect an existing Google Merchant Center account.
 #### Properties
@@ -669,7 +679,7 @@ Clicking on the "Yes, I want a new account" button in the warning modal for crea
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
 - [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
-- [`Dashboard`](../../js/src/pages/dashboard/index.js#L38) when CES modal is closed.
+- [`Dashboard`](../../js/src/pages/dashboard/index.js#L39) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
@@ -684,7 +694,7 @@ A modal is closed.
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
 - [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
-- [`Dashboard`](../../js/src/pages/dashboard/index.js#L38) when CES modal is closed.
+- [`Dashboard`](../../js/src/pages/dashboard/index.js#L39) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
@@ -1081,6 +1091,43 @@ Clicking on the button to connect WordPress.com account.
 `context` | `string` | (`setup-mc`\|`reconnect`) - indicates from which page the button was clicked.
 #### Emitters
 - [`ConnectWPComAccountCard`](../../js/src/components/wpcom-account-card/connect-wpcom-account-card.js#L27)
+
+### [`gla_youtube_account_connect_button_click`](../../js/src/components/youtube-account-card/connect-youtube-account-card.js#L19)
+Clicking on the button to connect YouTube account.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
+#### Emitters
+- [`ConnectYouTubeAccountCard`](../../js/src/components/youtube-account-card/connect-youtube-account-card.js#L32)
+
+### [`gla_youtube_account_disconnect_button_click`](../../js/src/components/youtube-account-card/disconnect-account.js#L13)
+Clicking on the button to disconnect the YouTube account.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
+#### Emitters
+- [`DisconnectAccount`](../../js/src/components/youtube-account-card/disconnect-account.js#L25) When the user clicks on the button to disconnect the YouTube account.
+
+### [`gla_youtube_shopping_tour_close_button_click`](../../js/src/components/tours/youtube-shopping-tour.js#L26)
+When the tour is closed.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The tour context, e.g. "youtube_shopping_tour"
+`source` | `string` | The source of the close event, e.g. "done-btn" \| "close-btn" \| "skip-btn"
+#### Emitters
+- [`exports`](../../js/src/components/tours/youtube-shopping-tour.js#L39) with `{ context: "youtube_shopping_tour", source: "done-btn" | "close-btn" | "skip-btn" }`
+
+### [`gla_youtube_shopping_tour_shown`](../../js/src/components/tours/youtube-shopping-tour.js#L19)
+When the tour is shown.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The tour context, e.g. "youtube_shopping_tour"
+#### Emitters
+- [`exports`](../../js/src/components/tours/youtube-shopping-tour.js#L39) with `{ context: "youtube_shopping_tour" }`
 
 <!---
 End of `woocommerce-grow-tracking-jsdoc`-generated content.
