@@ -500,3 +500,47 @@ export const getAdsRecommendations = ( state, types, campaign_id = null ) => {
 	const key = arrayToUnderscoreKey( keyToHash );
 	return state.ads.recommendations[ key ] || null;
 };
+
+/**
+ * Retrieves the GenAI media assets from the state for a given URL and type.
+ *
+ * @param {Object} state - The Redux state object containing GenAI assets data.
+ * @param {string} url - The URL associated with the GenAI assets.
+ * @param {'marketing_image'|'square_marketing_image'|'portrait_marketing_image'|undefined} [assetType] - The type of media asset to retrieve.
+ * @return {Array<string>} The media assets for the specified URL and type, or an empty array if not found.
+ */
+export const getGenAIMediaAssets = ( state, url, assetType ) => {
+	const mediaAssets = state.gen_ai_assets?.[ url ]?.media;
+
+	if ( ! url || ! mediaAssets ) {
+		return [];
+	}
+
+	if ( assetType ) {
+		return mediaAssets[ assetType ] ?? [];
+	}
+
+	return mediaAssets;
+};
+
+/**
+ * Retrieves the GenAI text assets from the state for a given URL and type.
+ *
+ * @param {Object} state - The Redux state object containing GenAI assets data.
+ * @param {string} url - The URL associated with the GenAI assets.
+ * @param {'headline'|'long_headline'|'description'|undefined} [assetType] - The type of text asset to retrieve.
+ * @return {Array<string>} The text assets for the specified URL and type, or an empty array if not found.
+ */
+export const getGenAITextAssets = ( state, url, assetType ) => {
+	const textAssets = state.gen_ai_assets?.[ url ]?.text;
+
+	if ( ! url || ! textAssets ) {
+		return [];
+	}
+
+	if ( assetType ) {
+		return textAssets[ assetType ] ?? [];
+	}
+
+	return textAssets;
+};

@@ -1247,4 +1247,36 @@ export default class MockRequests {
 			[ 'GET' ]
 		);
 	}
+
+	/**
+	 * Fulfill generate text assets request.
+	 *
+	 * @param {Object} payload - The response payload to return.
+	 * @param {number} status - The HTTP status in the response.
+	 * @return {Promise<void>}
+	 */
+	async fulfillGenerateTextAssetsRequest( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/assets\/generate-text\b/,
+			payload,
+			status,
+			[ 'POST' ]
+		);
+	}
+
+	/**
+	 * Fulfill generate image assets request.
+	 *
+	 * @param {Object} payload - The response payload to return.
+	 * @param {number} status - The HTTP status in the response.
+	 * @return {Promise<void>}
+	 */
+	async fulfillGenerateImageAssetsRequest( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/assets\/generate-images\b/,
+			payload,
+			status,
+			[ 'POST' ]
+		);
+	}
 }

@@ -23,18 +23,21 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Google\Ads\GoogleAds\Util\FieldMasks;
-use Google\Ads\GoogleAds\Util\V20\ResourceNames;
-use Google\Ads\GoogleAds\V20\Common\MaximizeConversionValue;
-use Google\Ads\GoogleAds\V20\Enums\AssetTypeEnum\AssetType as AdsAssetType;
-use Google\Ads\GoogleAds\V20\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
-use Google\Ads\GoogleAds\V20\Resources\Campaign;
-use Google\Ads\GoogleAds\V20\Enums\EuPoliticalAdvertisingStatusEnum\EuPoliticalAdvertisingStatus;
-use Google\Ads\GoogleAds\V20\Resources\Campaign\ShoppingSetting;
-use Google\Ads\GoogleAds\V20\Services\Client\CampaignServiceClient;
-use Google\Ads\GoogleAds\V20\Services\CampaignOperation;
-use Google\Ads\GoogleAds\V20\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V20\Services\MutateGoogleAdsRequest;
-use Google\Ads\GoogleAds\V20\Services\MutateOperation;
+use Google\Ads\GoogleAds\Util\V22\ResourceNames;
+use Google\Ads\GoogleAds\V22\Common\MaximizeConversionValue;
+use Google\Ads\GoogleAds\V22\Enums\AssetTypeEnum\AssetType as AdsAssetType;
+use Google\Ads\GoogleAds\V22\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
+use Google\Ads\GoogleAds\V22\Resources\Campaign;
+use Google\Ads\GoogleAds\V22\Enums\EuPoliticalAdvertisingStatusEnum\EuPoliticalAdvertisingStatus;
+use Google\Ads\GoogleAds\V22\Resources\Campaign\ShoppingSetting;
+use Google\Ads\GoogleAds\V22\Services\Client\CampaignServiceClient;
+use Google\Ads\GoogleAds\V22\Services\CampaignOperation;
+use Google\Ads\GoogleAds\V22\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V22\Services\MutateGoogleAdsRequest;
+use Google\Ads\GoogleAds\V22\Services\MutateOperation;
+use Google\Ads\GoogleAds\V22\Resources\Campaign\AssetAutomationSetting;
+use Google\Ads\GoogleAds\V22\Enums\AssetAutomationTypeEnum\AssetAutomationType;
+use Google\Ads\GoogleAds\V22\Enums\AssetAutomationStatusEnum\AssetAutomationStatus;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 use Exception;
@@ -537,7 +540,14 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			'status'                            => CampaignStatus::number( 'enabled' ),
 			'campaign_budget'                   => $this->budget->temporary_resource_name(),
 			'maximize_conversion_value'         => new MaximizeConversionValue(),
-			'url_expansion_opt_out'             => false,
+			'asset_automation_settings'         => [
+				new AssetAutomationSetting(
+					[
+						'asset_automation_type'   => AssetAutomationType::FINAL_URL_EXPANSION_TEXT_ASSET_AUTOMATION,
+						'asset_automation_status' => AssetAutomationStatus::OPTED_IN,
+					]
+				),
+			],
 			'contains_eu_political_advertising' => $is_eu_political ? EuPoliticalAdvertisingStatus::CONTAINS_EU_POLITICAL_ADVERTISING : EuPoliticalAdvertisingStatus::DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING,
 		];
 
@@ -549,6 +559,9 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 					'feed_label'  => $country,
 				]
 			);
+		} else {
+			// Turn off brand guidelines for non-shopping campaigns.
+			$campaign_data['brand_guidelines_enabled'] = false;
 		}
 
 		$campaign = new Campaign( $campaign_data );

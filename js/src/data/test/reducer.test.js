@@ -86,6 +86,7 @@ describe( 'reducer', () => {
 				},
 				summary: {},
 			},
+			gen_ai_assets: {},
 		} );
 
 		prepareState = prepareImmutableState.bind( null, defaultState );
