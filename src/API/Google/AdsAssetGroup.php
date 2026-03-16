@@ -7,18 +7,18 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAssetGroupQu
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Google\Ads\GoogleAds\Util\V20\ResourceNames;
-use Google\Ads\GoogleAds\V20\Enums\ListingGroupFilterListingSourceEnum\ListingGroupFilterListingSource;
-use Google\Ads\GoogleAds\V20\Enums\AssetGroupStatusEnum\AssetGroupStatus;
-use Google\Ads\GoogleAds\V20\Enums\ListingGroupFilterTypeEnum\ListingGroupFilterType;
-use Google\Ads\GoogleAds\V20\Resources\AssetGroup;
-use Google\Ads\GoogleAds\V20\Resources\AssetGroupListingGroupFilter;
-use Google\Ads\GoogleAds\V20\Services\AssetGroupListingGroupFilterOperation;
-use Google\Ads\GoogleAds\V20\Services\AssetGroupOperation;
-use Google\Ads\GoogleAds\V20\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V20\Services\MutateGoogleAdsRequest;
-use Google\Ads\GoogleAds\V20\Services\MutateOperation;
-use Google\Ads\GoogleAds\V20\Services\Client\AssetGroupServiceClient;
+use Google\Ads\GoogleAds\Util\V22\ResourceNames;
+use Google\Ads\GoogleAds\V22\Enums\ListingGroupFilterListingSourceEnum\ListingGroupFilterListingSource;
+use Google\Ads\GoogleAds\V22\Enums\AssetGroupStatusEnum\AssetGroupStatus;
+use Google\Ads\GoogleAds\V22\Enums\ListingGroupFilterTypeEnum\ListingGroupFilterType;
+use Google\Ads\GoogleAds\V22\Resources\AssetGroup;
+use Google\Ads\GoogleAds\V22\Resources\AssetGroupListingGroupFilter;
+use Google\Ads\GoogleAds\V22\Services\AssetGroupListingGroupFilterOperation;
+use Google\Ads\GoogleAds\V22\Services\AssetGroupOperation;
+use Google\Ads\GoogleAds\V22\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V22\Services\MutateGoogleAdsRequest;
+use Google\Ads\GoogleAds\V22\Services\MutateOperation;
+use Google\Ads\GoogleAds\V22\Services\Client\AssetGroupServiceClient;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 use Google\Protobuf\FieldMask;
@@ -27,8 +27,8 @@ use DateTime;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
-use Google\Ads\GoogleAds\V20\Resources\AssetGroupAsset;
-use Google\Ads\GoogleAds\V20\Services\AssetGroupAssetOperation;
+use Google\Ads\GoogleAds\V22\Resources\AssetGroupAsset;
+use Google\Ads\GoogleAds\V22\Services\AssetGroupAssetOperation;
 
 /**
  * Class AdsAssetGroup
