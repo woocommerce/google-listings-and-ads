@@ -81,8 +81,3 @@
 .wp-admin .woocommerce-customer-effort-score__intro {
 	margin-bottom: 1em;
 }
-
-// Fix for missing margin top on settings pages, this value should match the height of .woocommerce-layout__header
-#wpbody:has(.woocommerce-layout__header) {
-	margin-block-start: 60px;
-}
