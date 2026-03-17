@@ -210,15 +210,59 @@ test.describe( 'Settings', () => {
 			await expect( disconnectButton ).toBeVisible();
 		} );
 
-		test( 'should show a notice if there are no channels when connected', async () => {
-			await settingsPage.mockYouTubeAccountNoChannels();
+		test( 'should show a notice if the YouTube account is incomplete', async () => {
+			await settingsPage.mockYouTubeAccountIncomplete();
 			await settingsPage.goto();
 
 			const notice = settingsPage.youTubeCard.getByText(
-				'No channels found (or permission not granted).'
+				'Your YouTube account is connected, but setup isn’t complete yet.'
 			);
 
 			await expect( notice ).toBeVisible();
+		} );
+
+		test( 'should display error message when "Complete setup" fails', async () => {
+			await settingsPage
+				.withFulfillTimes( 1 )
+				.mockNotEligibleYouTubeChannel();
+			const requestPromise =
+				settingsPage.registerYouTubeCompleteSetupRequest();
+
+			const completeSetupButton =
+				settingsPage.getYouTubeCompleteSetupButton();
+			await completeSetupButton.click();
+
+			await requestPromise;
+
+			await expect(
+				settingsPage.youTubeCard.getByText(
+					'The channel is not eligible for the linking program.'
+				)
+			).toBeVisible();
+		} );
+
+		test( 'should complete YouTube account setup successfully', async () => {
+			await settingsPage
+				.withFulfillTimes( 1 )
+				.mockYouTubeAccountIncomplete();
+			await settingsPage.mockEligibleYouTubeChannel();
+			await settingsPage.goto();
+
+			const requestPromise =
+				settingsPage.registerYouTubeCompleteSetupRequest();
+
+			const completeSetupButton =
+				settingsPage.getYouTubeCompleteSetupButton();
+			await completeSetupButton.click();
+
+			await requestPromise;
+
+			// Now mock as connected so re-renders show the channel name
+			await settingsPage.mockYouTubeAccountConnected();
+
+			await expect(
+				settingsPage.youTubeCard.getByText( 'My YouTube Channel' )
+			).toBeVisible();
 		} );
 	} );
 
