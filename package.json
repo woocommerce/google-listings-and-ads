@@ -81,6 +81,7 @@
 		"woocommerce-grow-jsdoc": "git+https://github.com/woocommerce/grow#jsdoc-v1"
 	},
 	"overrides": {
+		"simple-git": "^3.32.3",
 		"@woocommerce/eslint-plugin": {
 			"@wordpress/eslint-plugin@<18.1.0": "^18.1.0"
 		},
