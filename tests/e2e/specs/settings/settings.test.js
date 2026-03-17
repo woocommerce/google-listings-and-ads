@@ -180,7 +180,13 @@ test.describe( 'Settings', () => {
 	} );
 
 	test.describe( 'YouTube Shopping', () => {
+		test.afterEach( async () => {
+			// Prevent setup/complete handlers from leaking between tests.
+			await page.unroute( /\/wc\/gla\/youtube\/setup\/complete\b/ );
+		} );
+
 		test( 'should show connect button when account is not connected', async () => {
+			await settingsPage.mockYouTubeAccountNotConnected();
 			await settingsPage.goto();
 
 			const connectButton = settingsPage.youTubeCard.getByRole(
@@ -222,9 +228,7 @@ test.describe( 'Settings', () => {
 		} );
 
 		test( 'should display error message when "Complete setup" fails', async () => {
-			await settingsPage
-				.withFulfillTimes( 1 )
-				.mockNotEligibleYouTubeChannel();
+			await settingsPage.mockNotEligibleYouTubeChannel();
 			const requestPromise =
 				settingsPage.registerYouTubeCompleteSetupRequest();
 
@@ -242,10 +246,8 @@ test.describe( 'Settings', () => {
 		} );
 
 		test( 'should complete YouTube account setup successfully', async () => {
-			await settingsPage
-				.withFulfillTimes( 1 )
-				.mockYouTubeAccountIncomplete();
 			await settingsPage.mockEligibleYouTubeChannel();
+			await settingsPage.mockYouTubeAccountIncomplete();
 			await settingsPage.goto();
 
 			const requestPromise =
