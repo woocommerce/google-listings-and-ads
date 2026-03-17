@@ -15,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use WP_Query;
 use WP_REST_Request;
 use wpdb;
@@ -97,7 +98,8 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 		foreach ( $this->product_repository->find( $args, $limit, $offset ) as $product ) {
 			$id        = $product->get_id();
 			$errors    = $product_helper->get_validation_errors( $product );
-			$mc_status = $product_helper->get_mc_status( $product ) ?: $product_helper->get_sync_status( $product );
+			$mc_status = $product_helper->get_mc_status( $product )
+			?? ( $product_helper->is_product_synced( $product ) ? MCStatus::PENDING : MCStatus::NOT_SYNCED );
 
 			// If the refresh_status_data_job is scheduled, we don't know the status yet as it is being refreshed.
 			if ( $refresh_status_data_job && $refresh_status_data_job->is_scheduled() ) {
