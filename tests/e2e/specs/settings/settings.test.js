@@ -244,5 +244,11 @@ test.describe( 'Settings', () => {
 				page.getByText( 'Tax rate (required for U.S. only)' )
 			).not.toBeVisible();
 		} );
+
+		test( 'should not show the YouTube Shopping section', async () => {
+			await expect(
+				page.getByText( 'YouTube Shopping' )
+			).not.toBeVisible();
+		} );
 	} );
 } );
