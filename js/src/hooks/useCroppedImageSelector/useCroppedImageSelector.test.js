@@ -5,6 +5,7 @@ import {
 	calcMaxCroppingByFixedRatio,
 	getSelectionOptions,
 	calcRatioPercentError,
+	isMimeTypeAllowed,
 } from './useCroppedImageSelector';
 
 describe( 'calcMaxCroppingByFixedRatio', () => {
@@ -69,5 +70,17 @@ describe( 'calcRatioPercentError', () => {
 		expect( calcRatioPercentError( 100, 104, 1, 1 ) ).toBeCloseTo( 4 );
 		expect( calcRatioPercentError( 100, 200, 1, 1 ) ).toBeCloseTo( 100 );
 		expect( calcRatioPercentError( 200, 100, 1, 1 ) ).toBeCloseTo( 100 );
+	} );
+} );
+
+describe( 'isMimeTypeAllowed', () => {
+	it( 'Should include JPEG, PNG, and GIF.', () => {
+		expect( isMimeTypeAllowed( 'image/jpeg' ) ).toBe( true );
+		expect( isMimeTypeAllowed( 'image/png' ) ).toBe( true );
+		expect( isMimeTypeAllowed( 'image/gif' ) ).toBe( true );
+	} );
+
+	it( 'Should not include WebP.', () => {
+		expect( isMimeTypeAllowed( 'image/webp' ) ).toBe( false );
 	} );
 } );

@@ -5,6 +5,12 @@ import { __, sprintf } from '@wordpress/i18n';
 import { useCallback, useRef } from '@wordpress/element';
 
 /**
+ * The MIME types allowed for campaign asset image selection.
+ * WebP and other formats are not supported.
+ */
+export const ALLOWED_MIME_TYPES = [ 'image/jpeg', 'image/png', 'image/gif' ];
+
+/**
  * Internal dependencies
  */
 import './useCroppedImageSelector.scss';
@@ -108,6 +114,16 @@ export function calcRatioPercentError(
 	return ( errorRatio - 1 ) * 100;
 }
 
+/**
+ * Checks if the MIME type is allowed.
+ *
+ * @param {string} mime The MIME type.
+ * @return {boolean} True if the MIME type is allowed, false otherwise.
+ */
+export function isMimeTypeAllowed( mime ) {
+	return ALLOWED_MIME_TYPES.includes( mime );
+}
+
 function resetSelectionArea( controller, options, img ) {
 	// Temporarily force the preview <img> size to a size that tolerates the decimal precision bug.
 	const computedStyle = getComputedStyle( img );
@@ -183,6 +199,11 @@ export default function useCroppedImageSelector( {
 				),
 				minWidth,
 				minHeight
+			);
+
+			const mimeTypeErrorMessage = __(
+				'Selected file type is not supported',
+				'google-listings-and-ads'
 			);
 
 			// Will be called by the controller of the parent class of CustomizeImageCropper. Ref:
@@ -275,7 +296,7 @@ export default function useCroppedImageSelector( {
 						),
 						// The following are options for AttachmentsBrowser view.
 						// Ref: https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/media/views/frame/select.js#L145-L151
-						library: media.query( { type: 'image' } ),
+						library: media.query( { type: ALLOWED_MIME_TYPES } ),
 						date: false,
 						suggestedWidth,
 						suggestedHeight,
@@ -322,17 +343,26 @@ export default function useCroppedImageSelector( {
 				const selection = frame.state().get( 'selection' );
 				const toolbar = frame.toolbar.get();
 
+				let errorMessage;
 				let invalidSize;
+				let invalidMimeType;
 
 				if ( selection.length ) {
-					const { width, height } = selection.first().toJSON();
+					const { width, height, mime } = selection.first().toJSON();
 					invalidSize = width < minWidth || height < minHeight;
+					invalidMimeType = ! isMimeTypeAllowed( mime );
+				}
+
+				if ( invalidSize ) {
+					errorMessage = sizeErrorMessage;
+				} else if ( invalidMimeType ) {
+					errorMessage = mimeTypeErrorMessage;
 				}
 
 				const primaryBlock = toolbar.primary.el;
 
-				if ( invalidSize ) {
-					primaryBlock.dataset.errorMessage = sizeErrorMessage;
+				if ( errorMessage ) {
+					primaryBlock.dataset.errorMessage = errorMessage;
 					primaryBlock.classList.add( 'gla-decorated-error-message' );
 					toolbar.get( 'select' ).model.set( 'disabled', true );
 				} else {
