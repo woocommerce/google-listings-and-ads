@@ -288,5 +288,16 @@ test.describe( 'Settings', () => {
 				page.getByText( 'Tax rate (required for U.S. only)' )
 			).not.toBeVisible();
 		} );
+
+		test( 'should not show the YouTube Shopping section', async () => {
+			// Wait for a stable element that's always present on a loaded page
+			await page
+				.getByRole( 'button', { name: 'Disconnect from all accounts' } )
+				.waitFor();
+
+			await expect(
+				page.getByText( 'YouTube Shopping' )
+			).not.toBeVisible();
+		} );
 	} );
 } );
