@@ -73,6 +73,7 @@ describe( 'reducer', () => {
 					inviteLink: null,
 					step: null,
 				},
+				cyo_incentives: null,
 				budgetRecommendations: {},
 				recommendations: {},
 				enable_enhanced_conversions: false,
@@ -960,6 +961,31 @@ describe( 'reducer', () => {
 				`${ path }.us_jp::15`,
 				action2.data
 			);
+		} );
+	} );
+
+	describe( 'CYO Incentives', () => {
+		const path = 'ads.cyo_incentives';
+
+		it( 'should receive CYO incentives data in ads object', () => {
+			const action = {
+				type: TYPES.RECEIVE_CYO_INCENTIVES,
+				cyoIncentives: {
+					incentives: [
+						{
+							id: 123,
+							type: 'new_customer_offer',
+						},
+					],
+					meta: {
+						currency: 'USD',
+					},
+				},
+			};
+
+			const state = reducer( prepareState(), action );
+
+			expect( state ).toHaveProperty( path, action.cyoIncentives );
 		} );
 	} );
 

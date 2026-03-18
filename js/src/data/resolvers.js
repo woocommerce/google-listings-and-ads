@@ -60,6 +60,7 @@ import {
 	receiveTours,
 	receiveGtinMigrationStatus,
 	receiveAdsRecommendations,
+	receiveCYOIncentives,
 	receiveEnhancedConversionsStatus,
 } from './actions';
 
@@ -769,6 +770,28 @@ export function* getAdsRecommendations( types, campaign_id = null ) {
 			error,
 			__(
 				'There was an error getting the Ads recommendations.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* getCYOIncentives() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/incentives`,
+		} );
+
+		yield receiveCYOIncentives( response );
+	} catch ( error ) {
+		if ( error?.status === 404 || error?.data?.status === 404 ) {
+			return;
+		}
+
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the CYO incentives.',
 				'google-listings-and-ads'
 			)
 		);

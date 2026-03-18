@@ -71,6 +71,7 @@ const DEFAULT_STATE = {
 			inviteLink: null,
 			step: null,
 		},
+		cyo_incentives: null,
 		budgetRecommendations: {},
 		recommendations: {},
 		enable_enhanced_conversions: false,
@@ -631,6 +632,10 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				[ 'ads', 'recommendations', recommendationTypes ],
 				recommendations
 			);
+		}
+
+		case TYPES.RECEIVE_CYO_INCENTIVES: {
+			return setIn( state, [ 'ads', 'cyo_incentives' ], action.cyoIncentives );
 		}
 
 		case TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS: {

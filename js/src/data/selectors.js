@@ -427,6 +427,10 @@ export const getAdsBudgetMetrics = ( state, countryCodes, budget ) => {
 	return state.ads.budgetMetrics[ key ] || null;
 };
 
+export const getCYOIncentives = ( state ) => {
+	return state.ads.cyo_incentives?.incentives || null;
+};
+
 /**
  * Return the GTIN Migration status.
  *
