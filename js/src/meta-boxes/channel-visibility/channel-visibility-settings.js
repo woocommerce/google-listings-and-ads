@@ -15,7 +15,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { glaData } from '~/constants';
-import googleLogoURL from '~/images/logo/gogole-g-logo.svg';
+import googleLogoURL from '~/images/logo/google-g-logo.svg';
 
 const {
 	channelVisibility: {
