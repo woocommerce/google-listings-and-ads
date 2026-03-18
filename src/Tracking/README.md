@@ -411,14 +411,14 @@ Triggered when datepicker (date ranger picker) is updated,
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L41)
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
 
-### [`gla_disconnected_accounts`](../../js/src/pages/settings/linked-accounts.js#L31)
+### [`gla_disconnected_accounts`](../../js/src/pages/settings/linked-accounts.js#L33)
 Accounts are disconnected from the Setting page
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | (`all-accounts`\|`ads-account`) - indicate which accounts have been disconnected.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/linked-accounts.js#L41)
+- [`exports`](../../js/src/pages/settings/linked-accounts.js#L43)
 
 ### [`gla_documentation_link_click`](../../js/src/components/app-documentation-link/index.js#L6)
 When a documentation link is clicked.
@@ -436,6 +436,7 @@ When a documentation link is clicked.
 	- with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions' }`
 	- with `{ context: 'setup-mc-accounts', link_id: 'google-mc-terms-of-service', href: 'https://support.google.com/merchants/answer/160173' }`
 	- with `{ context: 'setup-ads', link_id: 'google-ads-terms-of-service', href: 'https://support.google.com/adspolicy/answer/54818' }`
+- [`ConnectYouTubeAccountCard`](../../js/src/components/youtube-account-card/connect-youtube-account-card.js#L32) with `{ context: 'settings-connect-youtube-account-card', link_id: 'youtube-merchant-terms' }` and the URL.
 - [`DifferentCurrencyNotice`](../../js/src/components/different-currency-notice.js#L28)
 	- with `{ context: "dashboard", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
 	- with `{ context: "reports-products", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
@@ -581,6 +582,22 @@ Saving changes of audience and/or shipping settings to the product feed.
 #### Emitters
 - [`exports`](../../js/src/pages/shipping/index.js#L46)
 
+### [`gla_gen_ai_image_picker_add_selected_images_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L22)
+Triggered when the "Add selected images" button is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`finalUrl` | `string` | The final URL for which the images were generated.
+`assetKey` | `string` | The asset key for which the images were generated.
+`numberOfSelectedImages` | `number` | The number of images that were selected to be added.
+#### Emitters
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L41) when the "Add selected images" button is clicked.
+
+### [`gla_gen_ai_progress_skip_button_click`](../../js/src/components/paid-ads/gen-ai-progress/skip-button.js#L12)
+Triggered when the skip button is clicked during Gen AI asset generation progress.
+#### Emitters
+- [`SkipButton`](../../js/src/components/paid-ads/gen-ai-progress/skip-button.js#L27) when the skip button is clicked.
+
 ### [`gla_google_account_connect_button_click`](../../js/src/utils/tracks.js#L185)
 Clicking on the button to connect Google account.
 #### Properties
@@ -682,14 +699,14 @@ Clicking on a Google Merchant Center link.
 #### Emitters
 - [`HelpIconButton`](../../js/src/components/help-icon-button/index.js#L31)
 
-### [`gla_import_assets_by_final_url_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-header/assets-loader.js#L80)
+### [`gla_import_assets_by_final_url_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-header/assets-loader.js#L83)
 Clicking on the "Scan for assets" button.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `type` | `string` | The type of the selected Final URL suggestion to be imported. Possible values: `post`, `term`, `homepage`.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-header/assets-loader.js#L96)
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-header/assets-loader.js#L99)
 
 ### [`gla_launch_paid_campaign_button_click`](../../js/src/utils/tracks.js#L173)
 Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign in the Google Ads setup flow.
@@ -704,6 +721,15 @@ Triggered when the "Launch paid campaign" button is clicked to add a new paid ca
 `has_confirmed_eu_political_content` | `boolean` | Whether the user has confirmed that the ads campaign contains EU political content.
 #### Emitters
 - [`SetupPaidAds`](../../js/src/pages/ads-onboarding/ads-stepper/setup-paid-ads.js#L48) on submit
+
+### [`gla_link_youtube_account_button_click`](../../js/src/components/youtube-account-card/connected-youtube-account-card.js#L26)
+Clicking on the button to link the YouTube account.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
+#### Emitters
+- [`ConnectedYouTubeAccountCard`](../../js/src/components/youtube-account-card/connected-youtube-account-card.js#L42) When the user clicks on the button to link the YouTube account.
 
 ### [`gla_mc_account_connect_button_click`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L23)
 Clicking on the button to connect an existing Google Merchant Center account.
@@ -759,7 +785,7 @@ Clicking on the "Yes, I want a new account" button in the warning modal for crea
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
 - [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
-- [`Dashboard`](../../js/src/pages/dashboard/index.js#L38) when CES modal is closed.
+- [`Dashboard`](../../js/src/pages/dashboard/index.js#L39) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
@@ -774,7 +800,7 @@ A modal is closed.
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
 - [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
-- [`Dashboard`](../../js/src/pages/dashboard/index.js#L38) when CES modal is closed.
+- [`Dashboard`](../../js/src/pages/dashboard/index.js#L39) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
@@ -1002,10 +1028,10 @@ Triggered when the request review is successful
 #### Emitters
 - [`ReviewRequestModal`](../../js/src/pages/product-feed/review-request/review-request-modal.js#L58)
 
-### [`gla_reselect_another_final_url_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-header/final-url-card.js#L23)
+### [`gla_reselect_another_final_url_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-header/final-url-card.js#L24)
 Clicking on the "Or, select another page" button.
 #### Emitters
-- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-header/final-url-card.js#L39)
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-header/final-url-card.js#L40)
 
 ### [`gla_setup_ads`](../../js/src/utils/tracks.js#L203)
 Triggered on events during ads onboarding
@@ -1142,6 +1168,16 @@ Sorting table
 - [`AppTableCard`](../../js/src/components/app-table-card/index.js#L74) upon sorting table by column
 - [`recordTableSortEvent`](../../js/src/components/app-table-card/index.js#L55) with given props.
 
+### [`gla_texts_editor_generate_button_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/texts-editor.js#L35)
+Triggered when the generate texts button is clicked in the TextsEditor component. Event properties include finalUrl and assetKey.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`finalUrl` | `string` | The final URL for the ad.
+`assetKey` | `string` | The key of the text asset.
+#### Emitters
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/texts-editor.js#L62) when the generate texts button is clicked in the TextsEditor component.
+
 ### [`gla_tooltip_viewed`](../../js/src/components/help-popover/index.js#L16)
 Viewing tooltip
 #### Properties
@@ -1171,6 +1207,43 @@ Clicking on the button to connect WordPress.com account.
 `context` | `string` | (`setup-mc`\|`reconnect`) - indicates from which page the button was clicked.
 #### Emitters
 - [`ConnectWPComAccountCard`](../../js/src/components/wpcom-account-card/connect-wpcom-account-card.js#L27)
+
+### [`gla_youtube_account_connect_button_click`](../../js/src/components/youtube-account-card/connect-youtube-account-card.js#L19)
+Clicking on the button to connect YouTube account.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
+#### Emitters
+- [`ConnectYouTubeAccountCard`](../../js/src/components/youtube-account-card/connect-youtube-account-card.js#L32)
+
+### [`gla_youtube_account_disconnect_button_click`](../../js/src/components/youtube-account-card/disconnect-account.js#L13)
+Clicking on the button to disconnect the YouTube account.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
+#### Emitters
+- [`DisconnectAccount`](../../js/src/components/youtube-account-card/disconnect-account.js#L25) When the user clicks on the button to disconnect the YouTube account.
+
+### [`gla_youtube_shopping_tour_close_button_click`](../../js/src/components/tours/youtube-shopping-tour.js#L26)
+When the tour is closed.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The tour context, e.g. "youtube_shopping_tour"
+`source` | `string` | The source of the close event, e.g. "done-btn" \| "close-btn" \| "skip-btn"
+#### Emitters
+- [`exports`](../../js/src/components/tours/youtube-shopping-tour.js#L39) with `{ context: "youtube_shopping_tour", source: "done-btn" | "close-btn" | "skip-btn" }`
+
+### [`gla_youtube_shopping_tour_shown`](../../js/src/components/tours/youtube-shopping-tour.js#L19)
+When the tour is shown.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The tour context, e.g. "youtube_shopping_tour"
+#### Emitters
+- [`exports`](../../js/src/components/tours/youtube-shopping-tour.js#L39) with `{ context: "youtube_shopping_tour" }`
 
 <!---
 End of `woocommerce-grow-tracking-jsdoc`-generated content.

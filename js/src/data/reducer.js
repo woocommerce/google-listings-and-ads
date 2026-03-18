@@ -33,6 +33,7 @@ const DEFAULT_STATE = {
 			existing_ads: null,
 			ads_billing_status: null,
 			google_access: null,
+			youtube: null,
 		},
 		contact: null,
 		mapping: {
@@ -83,6 +84,7 @@ const DEFAULT_STATE = {
 		},
 		summary: {},
 	},
+	gen_ai_assets: {},
 };
 
 /**
@@ -631,7 +633,65 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			);
 		}
 
+		case TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS: {
+			const { url, data, assetType } = action;
+			const existingMedia = state.gen_ai_assets?.[ url ]?.media ?? {};
+
+			const updatedMedia = assetType
+				? {
+						...existingMedia,
+						[ assetType ]: [
+							...new Set( [
+								...( existingMedia[ assetType ] ?? [] ),
+								...( data[ assetType ] ?? [] ),
+							] ),
+						],
+				  }
+				: {
+						...existingMedia,
+						...data,
+				  };
+
+			return setIn(
+				state,
+				[ 'gen_ai_assets', url, 'media' ],
+				updatedMedia
+			);
+		}
+
+		case TYPES.RECEIVE_GEN_AI_TEXT_ASSETS: {
+			const { url, data, assetType } = action;
+			const existingText = state.gen_ai_assets?.[ url ]?.text ?? {};
+
+			const updatedText = assetType
+				? {
+						...existingText,
+						[ assetType ]: [
+							...( existingText[ assetType ] ?? [] ),
+							...( data[ assetType ] ?? [] ),
+						],
+				  }
+				: {
+						...existingText,
+						...data,
+				  };
+
+			return setIn(
+				state,
+				[ 'gen_ai_assets', url, 'text' ],
+				updatedText
+			);
+		}
+
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.
+		case TYPES.RECEIVE_ACCOUNTS_YOUTUBE: {
+			return setIn( state, 'mc.accounts.youtube', action.account );
+		}
+
+		case TYPES.DISCONNECT_ACCOUNTS_YOUTUBE: {
+			return setIn( state, 'mc.accounts.youtube', null );
+		}
+
 		case TYPES.DISCONNECT_ACCOUNTS_ALL:
 		default:
 			return state;
