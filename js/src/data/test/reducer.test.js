@@ -73,7 +73,7 @@ describe( 'reducer', () => {
 					inviteLink: null,
 					step: null,
 				},
-				cyo_incentives: null,
+				cyo_incentives: {},
 				budgetRecommendations: {},
 				recommendations: {},
 				enable_enhanced_conversions: false,

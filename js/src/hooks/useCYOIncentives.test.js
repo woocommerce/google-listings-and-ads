@@ -16,15 +16,71 @@ describe( 'useCYOIncentives', () => {
 		const incentives = [
 			{
 				id: 123,
-				type: 'new_customer_offer',
+				type: 'ACQUISITION',
+                offer: 'high',
+                termsAndConditionsUrl: 'https://example.com/terms-1',
+                requirements: {
+                    spend: {
+                        awardAmount: {
+                            currencyCode: 'USD',
+                            units: '1800',
+                        }
+                    },
+                    requiredAmount: {
+                        currencyCode: 'USD',
+                        units: '4000',
+                    }
+                },
 			},
+            {
+				id: 456,
+				type: 'ACQUISITION',
+                offer: 'medium',
+                termsAndConditionsUrl: 'https://example.com/terms-2',
+                requirements: {
+                    spend: {
+                        awardAmount: {
+                            currencyCode: 'USD',
+                            units: '1200',
+                        }
+                    },
+                    requiredAmount: {
+                        currencyCode: 'USD',
+                        units: '1800',
+                    }
+                },
+			},
+            {
+				id: 789,
+				type: 'ACQUISITION',
+                offer: 'low',
+                termsAndConditionsUrl: 'https://example.com/terms-3',
+                requirements: {
+                    spend: {
+                        awardAmount: {
+                            currencyCode: 'USD',
+                            units: '600',
+                        }
+                    },
+                    requiredAmount: {
+                        currencyCode: 'USD',
+                        units: '1200',
+                    }
+                },
+			},
+
 		];
+		const invalidateResolution = jest.fn();
 
 		useAppSelectDispatch.mockReturnValue( {
-			data: incentives,
+			data: {
+                type: 'CYO_INCENTIVE',
+                termsAndConditionsUrl: 'https://ads.google.com/terms',
+				incentives,
+			},
 			hasFinishedResolution: true,
 			isResolving: false,
-			invalidateResolution: jest.fn(),
+			invalidateResolution,
 		} );
 
 		const { result } = renderHook( () => useCYOIncentives() );
@@ -32,19 +88,31 @@ describe( 'useCYOIncentives', () => {
 		expect( useAppSelectDispatch ).toHaveBeenCalledWith(
 			'getCYOIncentives'
 		);
-		expect( result.current ).toEqual( incentives );
+		expect( result.current ).toEqual( {
+			data: incentives,
+			hasFinishedResolution: true,
+			isResolving: false,
+			invalidateResolution,
+		} );
 	} );
 
-	it( 'returns null when incentives are not available', () => {
+	it( 'returns payload with null data when incentives are not available', () => {
+		const invalidateResolution = jest.fn();
+
 		useAppSelectDispatch.mockReturnValue( {
 			data: null,
 			hasFinishedResolution: true,
 			isResolving: false,
-			invalidateResolution: jest.fn(),
+			invalidateResolution,
 		} );
 
 		const { result } = renderHook( () => useCYOIncentives() );
 
-		expect( result.current ).toBeNull();
+		expect( result.current ).toEqual( {
+			data: null,
+			hasFinishedResolution: true,
+			isResolving: false,
+			invalidateResolution,
+		} );
 	} );
 } );
