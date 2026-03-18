@@ -383,9 +383,11 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 	}
 
 	/**
+	 * Set the target country for the coupon.
 	 *
 	 * @param string $targetCountry
-     *            phpcs:disable WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
+	 *
+	 * phpcs:disable WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
 	 */
 	public function setTargetCountry( $targetCountry ) {
 		// set the new target country
@@ -419,7 +421,7 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 		$meta_key  = $is_exclude ? 'exclude_product_brands' : 'product_brands';
 
 		// Get the brand term IDs if brand restriction is set.
-		$brand_term_ids = get_post_meta( $coupon_id, $meta_key );
+		$brand_term_ids = get_post_meta( $coupon_id, $meta_key, true );
 
 		if ( ! is_array( $brand_term_ids ) ) {
 			return [];
