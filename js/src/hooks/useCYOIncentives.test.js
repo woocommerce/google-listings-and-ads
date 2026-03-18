@@ -17,65 +17,64 @@ describe( 'useCYOIncentives', () => {
 			{
 				id: 123,
 				type: 'ACQUISITION',
-                offer: 'high',
-                termsAndConditionsUrl: 'https://example.com/terms-1',
-                requirements: {
-                    spend: {
-                        awardAmount: {
-                            currencyCode: 'USD',
-                            units: '1800',
-                        }
-                    },
-                    requiredAmount: {
-                        currencyCode: 'USD',
-                        units: '4000',
-                    }
-                },
+				offer: 'high',
+				termsAndConditionsUrl: 'https://example.com/terms-1',
+				requirements: {
+					spend: {
+						awardAmount: {
+							currencyCode: 'USD',
+							units: '1800',
+						},
+					},
+					requiredAmount: {
+						currencyCode: 'USD',
+						units: '4000',
+					},
+				},
 			},
-            {
+			{
 				id: 456,
 				type: 'ACQUISITION',
-                offer: 'medium',
-                termsAndConditionsUrl: 'https://example.com/terms-2',
-                requirements: {
-                    spend: {
-                        awardAmount: {
-                            currencyCode: 'USD',
-                            units: '1200',
-                        }
-                    },
-                    requiredAmount: {
-                        currencyCode: 'USD',
-                        units: '1800',
-                    }
-                },
+				offer: 'medium',
+				termsAndConditionsUrl: 'https://example.com/terms-2',
+				requirements: {
+					spend: {
+						awardAmount: {
+							currencyCode: 'USD',
+							units: '1200',
+						},
+					},
+					requiredAmount: {
+						currencyCode: 'USD',
+						units: '1800',
+					},
+				},
 			},
-            {
+			{
 				id: 789,
 				type: 'ACQUISITION',
-                offer: 'low',
-                termsAndConditionsUrl: 'https://example.com/terms-3',
-                requirements: {
-                    spend: {
-                        awardAmount: {
-                            currencyCode: 'USD',
-                            units: '600',
-                        }
-                    },
-                    requiredAmount: {
-                        currencyCode: 'USD',
-                        units: '1200',
-                    }
-                },
+				offer: 'low',
+				termsAndConditionsUrl: 'https://example.com/terms-3',
+				requirements: {
+					spend: {
+						awardAmount: {
+							currencyCode: 'USD',
+							units: '600',
+						},
+					},
+					requiredAmount: {
+						currencyCode: 'USD',
+						units: '1200',
+					},
+				},
 			},
-
 		];
 		const invalidateResolution = jest.fn();
 
 		useAppSelectDispatch.mockReturnValue( {
 			data: {
-                type: 'CYO_INCENTIVE',
-                termsAndConditionsUrl: 'https://ads.google.com/terms',
+				type: 'CYO_INCENTIVE',
+				termsAndConditionsUrl: 'https://ads.google.com/terms',
 				incentives,
 			},
 			hasFinishedResolution: true,
