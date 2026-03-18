@@ -399,7 +399,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		// Get the item info in the order
 		$item_info = [];
 		foreach ( $order->get_items() as $item_id => $item ) {
-			$product_id   = $item->get_product_id();
+			$product_id   = $item->get_variation_id() ?: $item->get_product_id();
 			$product_name = $item->get_name();
 			$quantity     = $item->get_quantity();
 			$price        = $order->get_item_total( $item );
@@ -505,7 +505,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 		foreach ( WC()->cart->get_cart() as $cart_item ) {
 			// gets the product id
-			$id = $cart_item['product_id'];
+			$id = ! empty( $cart_item['variation_id'] ) ? $cart_item['variation_id'] : $cart_item['product_id'];
 
 			// gets the product object
 			$product = $cart_item['data'];

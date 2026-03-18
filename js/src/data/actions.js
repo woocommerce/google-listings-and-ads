@@ -15,7 +15,7 @@ import {
 	EMPTY_ASSET_ENTITY_GROUP,
 } from './constants';
 import { handleApiError } from '~/utils/handleError';
-import { adaptAdsCampaign } from './adapters';
+import { adaptAdsCampaign, adaptGenAIAssets } from './adapters';
 import { isWCIos, isWCAndroid } from '~/utils/isMobileApp';
 import { convertKeysFromSnakeCaseToCamelCase } from './utils';
 
@@ -1356,4 +1356,98 @@ export function* receiveAdsRecommendations(
 		recommendations,
 		recommendationTypes,
 	};
+}
+
+export function* receiveGenAIMediaAssets( url, data, assetType ) {
+	if ( ! data?.items ) {
+		return {
+			type: TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS,
+			url,
+			assetType,
+			data: {},
+		};
+	}
+
+	return {
+		type: TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS,
+		url,
+		assetType,
+		data: adaptGenAIAssets( data.items, 'temporary_image_url', assetType ),
+	};
+}
+
+export function* receiveGenAITextAssets( url, data, assetType ) {
+	if ( ! data?.items ) {
+		return {
+			type: TYPES.RECEIVE_GEN_AI_TEXT_ASSETS,
+			url,
+			assetType,
+			data: {},
+		};
+	}
+
+	return {
+		type: TYPES.RECEIVE_GEN_AI_TEXT_ASSETS,
+		url,
+		assetType,
+		data: adaptGenAIAssets( data.items, 'text', assetType ),
+	};
+}
+
+export function* fetchYouTubeAccount() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/youtube/connection`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_YOUTUBE,
+			account: response,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading YouTube account info.',
+				'google-listings-and-ads'
+			)
+		);
+
+		// Set a default disconnected state to ensure loading state resolves
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_YOUTUBE,
+			account: {
+				status: 'disconnected',
+				channel: [],
+			},
+		};
+	}
+}
+
+/**
+ * Disconnect the connected YouTube account.
+ *
+ * @throws Will throw an error if the request failed.
+ */
+export function* disconnectYouTubeAccount() {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/youtube/connection`,
+			method: 'DELETE',
+		} );
+
+		return {
+			type: TYPES.DISCONNECT_ACCOUNTS_YOUTUBE,
+			invalidateRelatedState: true,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'Unable to disconnect your YouTube account.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
 }
