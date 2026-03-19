@@ -2,14 +2,16 @@
  * External dependencies
  */
 import { renderHook } from '@testing-library/react';
+import { useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
 import useCYOIncentives from './useCYOIncentives';
-import useAppSelectDispatch from '~/hooks/useAppSelectDispatch';
 
-jest.mock( '~/hooks/useAppSelectDispatch' );
+jest.mock( '@wordpress/data', () => ( {
+	useSelect: jest.fn(),
+} ) );
 
 describe( 'useCYOIncentives', () => {
 	it( 'returns incentives from store selector payload', () => {
@@ -69,49 +71,35 @@ describe( 'useCYOIncentives', () => {
 				},
 			},
 		];
-		const invalidateResolution = jest.fn();
 
-		useAppSelectDispatch.mockReturnValue( {
-			data: {
-				type: 'CYO_INCENTIVE',
-				termsAndConditionsUrl: 'https://ads.google.com/terms',
-				incentives,
-			},
-			hasFinishedResolution: true,
-			isResolving: false,
-			invalidateResolution,
-		} );
+		useSelect.mockImplementation( ( cb ) =>
+			cb( () => ( {
+				getCYOIncentives: () => incentives,
+				hasFinishedResolution: () => true,
+			} ) )
+		);
 
 		const { result } = renderHook( () => useCYOIncentives() );
 
-		expect( useAppSelectDispatch ).toHaveBeenCalledWith(
-			'getCYOIncentives'
-		);
 		expect( result.current ).toEqual( {
 			data: incentives,
 			hasFinishedResolution: true,
-			isResolving: false,
-			invalidateResolution,
 		} );
 	} );
 
 	it( 'returns payload with null data when incentives are not available', () => {
-		const invalidateResolution = jest.fn();
-
-		useAppSelectDispatch.mockReturnValue( {
-			data: null,
-			hasFinishedResolution: true,
-			isResolving: false,
-			invalidateResolution,
-		} );
+		useSelect.mockImplementation( ( cb ) =>
+			cb( () => ( {
+				getCYOIncentives: () => null,
+				hasFinishedResolution: () => false,
+			} ) )
+		);
 
 		const { result } = renderHook( () => useCYOIncentives() );
 
 		expect( result.current ).toEqual( {
 			data: null,
-			hasFinishedResolution: true,
-			isResolving: false,
-			invalidateResolution,
+			hasFinishedResolution: false,
 		} );
 	} );
 } );
