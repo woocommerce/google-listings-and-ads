@@ -179,6 +179,93 @@ test.describe( 'Settings', () => {
 		} );
 	} );
 
+	test.describe( 'YouTube Shopping', () => {
+		test( 'should show connect button when account is not connected', async () => {
+			await settingsPage.goto();
+
+			const connectButton = settingsPage.youTubeCard.getByRole(
+				'button',
+				{
+					name: 'Connect',
+				}
+			);
+
+			await expect( connectButton ).toBeVisible();
+		} );
+
+		test( 'should show the channel name and disconnect button when account is connected', async () => {
+			await settingsPage.mockYouTubeAccountConnected();
+			await settingsPage.goto();
+
+			const disconnectButton = settingsPage.youTubeCard.getByRole(
+				'button',
+				{
+					name: 'Disconnect YouTube account',
+				}
+			);
+			const channelName =
+				settingsPage.youTubeCard.getByText( 'My YouTube Channel' );
+
+			await expect( channelName ).toBeVisible();
+			await expect( disconnectButton ).toBeVisible();
+		} );
+
+		test( 'should show a notice if the YouTube account is incomplete', async () => {
+			await settingsPage.mockYouTubeAccountIncomplete();
+			await settingsPage.goto();
+
+			const notice = settingsPage.youTubeCard.getByText(
+				'Your YouTube account is connected, but setup isn’t complete yet.'
+			);
+
+			await expect( notice ).toBeVisible();
+		} );
+
+		test( 'should display error message when "Complete setup" fails', async () => {
+			await settingsPage
+				.withFulfillTimes( 1 )
+				.mockNotEligibleYouTubeChannel();
+			const requestPromise =
+				settingsPage.registerYouTubeCompleteSetupRequest();
+
+			const completeSetupButton =
+				settingsPage.getYouTubeCompleteSetupButton();
+			await completeSetupButton.click();
+
+			await requestPromise;
+
+			await expect(
+				settingsPage.youTubeCard.getByText(
+					'The channel is not eligible for the linking program.'
+				)
+			).toBeVisible();
+		} );
+
+		test( 'should complete YouTube account setup successfully', async () => {
+			await settingsPage
+				.withFulfillTimes( 1 )
+				.mockYouTubeAccountIncomplete();
+			await settingsPage.mockEligibleYouTubeChannel();
+			await settingsPage.goto();
+
+			const requestPromise =
+				settingsPage.registerYouTubeCompleteSetupRequest();
+
+			const completeSetupButton =
+				settingsPage.getYouTubeCompleteSetupButton();
+			await completeSetupButton.click();
+
+			await requestPromise;
+
+			// Now mock as connected so re-renders show the channel name
+			await settingsPage.mockYouTubeAccountConnected();
+
+			await expect(
+				settingsPage.youTubeCard.getByText( 'My YouTube Channel' )
+			).toBeVisible();
+		} );
+	} );
+
 	test.describe( 'No connected Google Merchant Center account', () => {
 		test.beforeAll( async () => {
 			await settingsPage.mockJetpackConnected();
@@ -199,6 +286,17 @@ test.describe( 'Settings', () => {
 		test( 'should not show the tax rate setup section', async () => {
 			await expect(
 				page.getByText( 'Tax rate (required for U.S. only)' )
+			).not.toBeVisible();
+		} );
+
+		test( 'should not show the YouTube Shopping section', async () => {
+			// Wait for a stable element that's always present on a loaded page
+			await page
+				.getByRole( 'button', { name: 'Disconnect from all accounts' } )
+				.waitFor();
+
+			await expect(
+				page.getByText( 'YouTube Shopping' )
 			).not.toBeVisible();
 		} );
 	} );

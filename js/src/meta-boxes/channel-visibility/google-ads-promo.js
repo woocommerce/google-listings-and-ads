@@ -12,7 +12,7 @@ import { store as preferencesStore } from '@wordpress/preferences';
  */
 import { PREFERENCES_STORE_NAMESPACE, glaData } from '~/constants';
 import usePreference from '~/hooks/usePreference';
-import googleLogoURL from '~/images/logo/gogole-g-logo.svg';
+import googleLogoURL from '~/images/logo/google-g-logo.svg';
 import { recordGlaEvent } from '~/utils/tracks';
 import {
 	CHANNEL_VISIBILITY_PROMO_KEY,

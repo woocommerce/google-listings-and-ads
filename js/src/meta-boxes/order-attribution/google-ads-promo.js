@@ -13,7 +13,7 @@ import { recordGlaEvent } from '~/utils/tracks';
 import { getCreateCampaignUrl, getGetStartedUrl } from '~/utils/urls';
 import AppButton from '~/components/app-button';
 import useAdsCampaigns from '~/hooks/useAdsCampaigns';
-import googleLogoURL from '~/images/logo/gogole-g-logo.svg';
+import googleLogoURL from '~/images/logo/google-g-logo.svg';
 import './google-ads-promo.scss';
 
 /**
