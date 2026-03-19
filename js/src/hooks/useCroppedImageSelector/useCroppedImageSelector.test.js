@@ -74,14 +74,13 @@ describe( 'calcRatioPercentError', () => {
 } );
 
 describe( 'isMimeTypeAllowed', () => {
-	it( 'Should include JPEG, PNG, and GIF.', () => {
-		expect( isMimeTypeAllowed( 'image/jpg' ) ).toBe( true );
-		expect( isMimeTypeAllowed( 'image/jpeg' ) ).toBe( true );
-		expect( isMimeTypeAllowed( 'image/png' ) ).toBe( true );
-		expect( isMimeTypeAllowed( 'image/gif' ) ).toBe( true );
-	} );
-
-	it( 'Should not include WebP.', () => {
-		expect( isMimeTypeAllowed( 'image/webp' ) ).toBe( false );
+	test.each( [
+		[ 'image/jpg', true ],
+		[ 'image/jpeg', true ],
+		[ 'image/png', true ],
+		[ 'image/gif', true ],
+		[ 'image/webp', false ],
+	] )( 'isMimeTypeAllowed(%s) should return %s', ( mime, expected ) => {
+		expect( isMimeTypeAllowed( mime ) ).toBe( expected );
 	} );
 } );

@@ -5,20 +5,20 @@ import { __, sprintf } from '@wordpress/i18n';
 import { useCallback, useRef } from '@wordpress/element';
 
 /**
+ * Internal dependencies
+ */
+import './useCroppedImageSelector.scss';
+
+/**
  * The MIME types allowed for campaign asset image selection.
  * WebP and other formats are not supported.
  */
-export const ALLOWED_MIME_TYPES = [
+const ALLOWED_MIME_TYPES = [
 	'image/jpg',
 	'image/jpeg',
 	'image/png',
 	'image/gif',
 ];
-
-/**
- * Internal dependencies
- */
-import './useCroppedImageSelector.scss';
 
 /**
  * @typedef {import('~/hooks/types.js').ImageMedia} ImageMedia
@@ -349,19 +349,15 @@ export default function useCroppedImageSelector( {
 				const toolbar = frame.toolbar.get();
 
 				let errorMessage;
-				let invalidSize;
-				let invalidMimeType;
 
 				if ( selection.length ) {
 					const { width, height, mime } = selection.first().toJSON();
-					invalidSize = width < minWidth || height < minHeight;
-					invalidMimeType = ! isMimeTypeAllowed( mime );
-				}
 
-				if ( invalidSize ) {
-					errorMessage = sizeErrorMessage;
-				} else if ( invalidMimeType ) {
-					errorMessage = mimeTypeErrorMessage;
+					if ( width < minWidth || height < minHeight ) {
+						errorMessage = sizeErrorMessage;
+					} else if ( ! isMimeTypeAllowed( mime ) ) {
+						errorMessage = mimeTypeErrorMessage;
+					}
 				}
 
 				const primaryBlock = toolbar.primary.el;
