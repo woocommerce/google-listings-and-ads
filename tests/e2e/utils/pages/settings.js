@@ -13,6 +13,9 @@ export default class SettingsPage extends MockRequests {
 	constructor( page ) {
 		super( page );
 		this.page = page;
+		this.youTubeCard = this.page
+			.locator( '.gla-account-card' )
+			.filter( { hasText: 'YouTube' } );
 	}
 
 	/**
@@ -51,6 +54,7 @@ export default class SettingsPage extends MockRequests {
 		await this.mockEnhancedConversionsStatus();
 		await this.fulfillAdsReportProducts( adsReportProductsData );
 		await this.fulfillProductStatisticsRequest( mcProductStatistics );
+		await this.mockYouTubeAccountNotConnected();
 	}
 
 	/**
@@ -88,6 +92,17 @@ export default class SettingsPage extends MockRequests {
 	getEnhancedConversionsCheckbox() {
 		return this.page.getByRole( 'checkbox', {
 			name: 'Send Enhanced Conversions data to Google Ads',
+		} );
+	}
+
+	/**
+	 * Get the Complete YouTube Setup button.
+	 *
+	 * @return {Promise<import('@playwright/test').Locator>} The Complete YouTube Setup button
+	 */
+	getYouTubeCompleteSetupButton() {
+		return this.youTubeCard.getByRole( 'button', {
+			name: 'Complete setup',
 		} );
 	}
 
