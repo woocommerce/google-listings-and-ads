@@ -1,5 +1,5 @@
 {
-	"phpVersion": "8.0",
+	"phpVersion": "8.4",
 	"plugins": [
 		"https://github.com/WP-API/Basic-Auth/archive/master.zip",
 		"./tests/e2e/test-data",
