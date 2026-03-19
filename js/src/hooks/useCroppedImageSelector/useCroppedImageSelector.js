@@ -8,7 +8,12 @@ import { useCallback, useRef } from '@wordpress/element';
  * The MIME types allowed for campaign asset image selection.
  * WebP and other formats are not supported.
  */
-export const ALLOWED_MIME_TYPES = [ 'image/jpeg', 'image/png', 'image/gif' ];
+export const ALLOWED_MIME_TYPES = [
+	'image/jpg',
+	'image/jpeg',
+	'image/png',
+	'image/gif',
+];
 
 /**
  * Internal dependencies

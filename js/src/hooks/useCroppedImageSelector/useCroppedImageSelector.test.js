@@ -75,6 +75,7 @@ describe( 'calcRatioPercentError', () => {
 
 describe( 'isMimeTypeAllowed', () => {
 	it( 'Should include JPEG, PNG, and GIF.', () => {
+		expect( isMimeTypeAllowed( 'image/jpg' ) ).toBe( true );
 		expect( isMimeTypeAllowed( 'image/jpeg' ) ).toBe( true );
 		expect( isMimeTypeAllowed( 'image/png' ) ).toBe( true );
 		expect( isMimeTypeAllowed( 'image/gif' ) ).toBe( true );
