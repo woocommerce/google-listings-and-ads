@@ -14,15 +14,15 @@ import { STORE_KEY } from '~/data/constants';
  * @return {Object|null} The CYO incentives. It will be `null` if not yet fetched or fetched but doesn't exist.
  */
 const useCYOIncentives = () => {
-    return useSelect( ( select ) => {
-        const { getCYOIncentives, hasFinishedResolution } = select( STORE_KEY );
-        const data = getCYOIncentives();
+	return useSelect( ( select ) => {
+		const { getCYOIncentives, hasFinishedResolution } = select( STORE_KEY );
+		const data = getCYOIncentives();
 
-        return {
-            data,
-            hasFinishedResolution: hasFinishedResolution( 'getCYOIncentives' ),
-        };
-    } );
+		return {
+			data,
+			hasFinishedResolution: hasFinishedResolution( 'getCYOIncentives' ),
+		};
+	} );
 };
 
 export default useCYOIncentives;
