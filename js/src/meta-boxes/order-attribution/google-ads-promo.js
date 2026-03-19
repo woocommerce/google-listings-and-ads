@@ -48,7 +48,7 @@ const hasRecentPaidCampaigns = ( campaigns ) => {
 /**
  * Google Ads Promo "Get started" button is clicked.
  *
- * @event gla_google_ads_promo_get_started_click
+ * @event wcadmin_gla_google_ads_promo_create_campaign_click
  * @property {string} context Context of the Google Ads Promo.
  * @property {string} href URL of the "Get started" button.
  */
@@ -65,7 +65,7 @@ const hasRecentPaidCampaigns = ( campaigns ) => {
  * Google Ads Promo component.
  *
  * @fires gla_google_ads_promo_shown with `{ context: 'order-attribution-meta-box' }`.
- * @fires gla_google_ads_promo_get_started_click with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fstart' }`.
+ * @fires wcadmin_gla_google_ads_promo_create_campaign_click with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fstart' }`.
  * @fires gla_google_ads_promo_create_campaign_click with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&subpath=%2Fcampaigns%2Fcreate&path=%2Fgoogle%2Fdashboard' }`.
  *
  * @return {JSX.Element|null} The Google Ads Promo component or null.
@@ -135,7 +135,7 @@ const GoogleAdsPromo = () => {
 				cta: (
 					<AppButton
 						href={ getStartedUrl }
-						eventName="gla_google_ads_promo_get_started_click"
+						eventName="wcadmin_gla_google_ads_promo_create_campaign_click"
 						eventProps={ {
 							href: getStartedUrl,
 							context,

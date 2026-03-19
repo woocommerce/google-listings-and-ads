@@ -649,16 +649,6 @@ Google Ads Promo "Dismiss" button is clicked.
 #### Emitters
 - [`PromoCTA`](../../js/src/meta-boxes/channel-visibility/promo-cta.js#L29) with `{ context: channel-visibility-meta-box }`.
 
-### [`gla_google_ads_promo_get_started_click`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L48)
-Google Ads Promo "Get started" button is clicked.
-#### Properties
-| name | type | description |
-| ---- | ---- | ----------- |
-`context` | `string` | Context of the Google Ads Promo.
-`href` | `string` | URL of the "Get started" button.
-#### Emitters
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L73) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fstart' }`.
-
 ### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L28)
 Google Ads Promo banner is shown.
 #### Properties
@@ -1244,6 +1234,16 @@ When the tour is shown.
 `context` | `string` | The tour context, e.g. "youtube_shopping_tour"
 #### Emitters
 - [`exports`](../../js/src/components/tours/youtube-shopping-tour.js#L39) with `{ context: "youtube_shopping_tour" }`
+
+### [`wcadmin_gla_google_ads_promo_create_campaign_click`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L48)
+Google Ads Promo "Get started" button is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Context of the Google Ads Promo.
+`href` | `string` | URL of the "Get started" button.
+#### Emitters
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L73) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fstart' }`.
 
 <!---
 End of `woocommerce-grow-tracking-jsdoc`-generated content.

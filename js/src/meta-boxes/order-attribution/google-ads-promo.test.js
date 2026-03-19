@@ -248,7 +248,7 @@ describe( 'GoogleAdsPromo Component', () => {
 			);
 		} );
 
-		test( 'Fires gla_google_ads_promo_get_started_click event when Get started button is clicked', () => {
+		test( 'Fires wcadmin_gla_google_ads_promo_create_campaign_click event when Get started button is clicked', () => {
 			useAdsCampaigns.mockReturnValue( {
 				data: [],
 				loading: false,
@@ -260,7 +260,7 @@ describe( 'GoogleAdsPromo Component', () => {
 			);
 
 			expect( recordGlaEvent ).toHaveBeenCalledWith(
-				'gla_google_ads_promo_get_started_click',
+				'wcadmin_gla_google_ads_promo_create_campaign_click',
 				{ context: 'order-attribution-meta-box', href: '/get-started' }
 			);
 		} );
