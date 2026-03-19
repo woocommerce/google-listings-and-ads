@@ -784,10 +784,6 @@ export function* getCYOIncentives() {
 
 		yield receiveCYOIncentives( response );
 	} catch ( error ) {
-		if ( error?.status === 404 || error?.data?.status === 404 ) {
-			return;
-		}
-
 		handleApiError(
 			error,
 			__(
