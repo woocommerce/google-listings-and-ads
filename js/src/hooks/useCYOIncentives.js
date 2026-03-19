@@ -1,7 +1,12 @@
 /**
+ * External dependencies
+ */
+import { useSelect } from '@wordpress/data';
+
+/**
  * Internal dependencies
  */
-import useAppSelectDispatch from './useAppSelectDispatch';
+import { STORE_KEY } from '~/data/constants';
 
 /**
  * Custom hook to retrieve CYO incentives from the store.
@@ -9,12 +14,15 @@ import useAppSelectDispatch from './useAppSelectDispatch';
  * @return {Object|null} The CYO incentives. It will be `null` if not yet fetched or fetched but doesn't exist.
  */
 const useCYOIncentives = () => {
-	const payload = useAppSelectDispatch( 'getCYOIncentives' );
+    return useSelect( ( select ) => {
+        const { getCYOIncentives, hasFinishedResolution } = select( STORE_KEY );
+        const data = getCYOIncentives();
 
-	return {
-		...payload,
-		data: payload.data?.incentives || null,
-	};
+        return {
+            data,
+            hasFinishedResolution: hasFinishedResolution( 'getCYOIncentives' ),
+        };
+    } );
 };
 
 export default useCYOIncentives;
