@@ -17,6 +17,7 @@ use Google\Ads\GoogleAds\Util\V23\ResourceNames;
 use Google\Ads\GoogleAds\V23\Enums\AccessRoleEnum\AccessRole;
 use Google\Ads\GoogleAds\V23\Enums\ProductLinkInvitationStatusEnum\ProductLinkInvitationStatus;
 use Google\Ads\GoogleAds\V23\Resources\ProductLinkInvitation;
+use Google\Ads\GoogleAds\V23\Services\ApplyIncentiveRequest;
 use Google\Ads\GoogleAds\V23\Services\FetchIncentiveRequest;
 use Google\Ads\GoogleAds\V23\Services\FetchIncentiveRequest\IncentiveType;
 use Google\Ads\GoogleAds\V23\Services\Incentive;
@@ -340,6 +341,51 @@ class Ads implements OptionsAwareInterface {
 			'currencyCode' => $money->getCurrencyCode(),
 			'units'        => (string) $money->getUnits(),
 		];
+	}
+
+	/**
+	 * Apply a selected incentive to the connected Google Ads account.
+	 *
+	 * @since 3.3.0
+	 *
+	 * @param string $incentive_id The selected incentive ID.
+	 * @param string $country_code ISO 3166-1 alpha-2 country code.
+	 *
+	 * @return array The applied incentive data with coupon_code and creation_time.
+	 * @throws ExceptionWithResponseData When the API call fails.
+	 */
+	public function apply_incentive( string $incentive_id, string $country_code ): array {
+		try {
+			$request = new ApplyIncentiveRequest(
+				[
+					'selected_incentive_id' => (int) $incentive_id,
+					'customer_id'           => (string) $this->options->get_ads_id(),
+					'country_code'          => $country_code,
+				]
+			);
+
+			$response = $this->client->getIncentiveServiceClient()->applyIncentive( $request );
+
+			return [
+				'coupon_code'   => $response->getCouponCode(),
+				'creation_time' => $response->getCreationTime(),
+			];
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+
+			$errors = $this->get_exception_errors( $e );
+
+			throw new ExceptionWithResponseData(
+				sprintf(
+				/* translators: %s Error message */
+					__( 'Error applying incentive: %s', 'google-listings-and-ads' ),
+					reset( $errors )
+				),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				null,
+				[ 'errors' => $errors ]
+			);
+		}
 	}
 
 	/**

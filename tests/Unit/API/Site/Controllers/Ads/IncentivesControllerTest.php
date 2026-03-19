@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\IncentivesController;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -218,5 +219,59 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertSame( 'NO_INCENTIVE', $response->get_data()['type'] );
 		$this->assertEmpty( $response->get_data()['incentives'] );
+	}
+
+	public function test_apply_incentive_success() {
+		$this->ads->expects( $this->once() )
+			->method( 'apply_incentive' )
+			->with( '2378556534', 'GB' )
+			->willReturn(
+				[
+					'coupon_code'   => 'abc123',
+					'creation_time' => '2026-03-15 15:33:21',
+				]
+			);
+
+		$response = $this->do_request(
+			self::ROUTE_INCENTIVES,
+			'POST',
+			[ 'id' => '2378556534' ]
+		);
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertSame( 'abc123', $response->get_data()['coupon_code'] );
+		$this->assertSame( '2026-03-15 15:33:21', $response->get_data()['creation_time'] );
+	}
+
+	public function test_apply_incentive_api_exception() {
+		$this->ads->expects( $this->once() )
+			->method( 'apply_incentive' )
+			->willThrowException(
+				new ExceptionWithResponseData(
+					'Error applying incentive: PERMISSION_DENIED',
+					403,
+					null,
+					[ 'errors' => [ 'PERMISSION_DENIED' => 'The caller does not have permission' ] ]
+				)
+			);
+
+		$response = $this->do_request(
+			self::ROUTE_INCENTIVES,
+			'POST',
+			[ 'id' => '2378556534' ]
+		);
+
+		$this->assertEquals( 403, $response->get_status() );
+		$this->assertArrayHasKey( 'errors', $response->get_data() );
+	}
+
+	public function test_apply_incentive_missing_id() {
+		$response = $this->do_request(
+			self::ROUTE_INCENTIVES,
+			'POST',
+			[]
+		);
+
+		$this->assertEquals( 400, $response->get_status() );
 	}
 }
