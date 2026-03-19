@@ -416,6 +416,7 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 			test.describe( 'With WooCommerce tracking disabled', () => {
 				test.beforeAll( async () => {
 					await setupAdsAccountPage.mockAdsAccountIncomplete();
+					await dashboardPage.fulfillAdsCampaignsRequest( [] );
 					await createCampaignPage.goto();
 					await createCampaignPage.clickSkipPaidAdsCreationButton();
 				} );
@@ -440,11 +441,18 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 					await expect( setupSuccessModal ).toBeVisible();
 				} );
 
-				test( 'should see buttons on Dashboard for Google Ads onboarding', async () => {
-					await page.keyboard.press( 'Escape' );
-					await page
-						.getByRole( 'tab', { name: 'Dashboard' } )
-						.click();
+				test( 'should be able to close the setup success modal', async () => {
+					const closeModalButton =
+						createCampaignPage.getSetupSuccessModalCloseButton();
+					await expect( closeModalButton ).toBeVisible();
+					await expect( closeModalButton ).toBeEnabled();
+					await closeModalButton.click();
+					await expect(
+						createCampaignPage.getSetupSuccessModal()
+					).toBeHidden();
+				} );
+
+				test( 'should see Google Ads onboarding buttons on Dashboard', async () => {
 					const { addPaidCampaignButton, createCampaignButton } =
 						dashboardPage;
 

@@ -1,5 +1,16 @@
 *** Google for WooCommerce Changelog ***
 
+= 3.6.0 - 2026-03-16 =
+* Add - Generative AI for assets.
+* Add - YouTube shopping support.
+* Fix – Rename the logo svg file.
+* Fix - Update Google Ads API to v22.
+* Fix - Duplicated values in the report comparison filters.
+* Fix - Conversion events use product variation ID in purchase events.
+* Fix - Resolved fatal error in Channel Visibility when creating coupons.
+* Fix - Show user error message when Brand Guidelines are enabled.
+* Update - Update Google Ads API to v22.
+
 = 3.5.3 - 2026-03-03 =
 * Add - Support for service based merchants.
 * Dev - Added two new filters to the Jetpack and Google OAuth flows.
