@@ -101,6 +101,11 @@ export function getClassicProductEditorUtils( page ) {
 			return page.locator( '#channel_visibility' );
 		},
 
+		getChannelVisibilityMetaBoxContent() {
+			const metaBox = this.getChannelVisibilityMetaBox();
+			return metaBox.locator( '.gla-channel-visibility__content' );
+		},
+
 		getChannelVisibilityHeading() {
 			return this.getChannelVisibilityMetaBox().getByRole( 'heading', {
 				name: 'Channel visibility',

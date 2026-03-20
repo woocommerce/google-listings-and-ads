@@ -86,10 +86,10 @@ test.describe( 'Channel Visibility Meta Box', () => {
 			await setPromoDismissed( false );
 			await editorUtils.gotoEditProductPage( productId );
 
-			const glaBox = page.locator( '#gla-channel-visibility-box' );
+			const glaBox = editorUtils.getChannelVisibilityMetaBox();
 
 			await expect(
-				glaBox.locator( '.gla-channel-visibility__content' )
+				editorUtils.getChannelVisibilityMetaBoxContent()
 			).toBeVisible();
 
 			await expect(
@@ -127,7 +127,7 @@ test.describe( 'Channel Visibility Meta Box', () => {
 			await setPromoDismissed( true );
 			await editorUtils.gotoEditProductPage( productId );
 
-			const glaBox = page.locator( '#gla-channel-visibility-box' );
+			const glaBox = editorUtils.getChannelVisibilityMetaBox();
 
 			const compactGetStarted = glaBox
 				.locator( '.gla-channel-visibility__get-started--is-dismissed' )
@@ -140,7 +140,7 @@ test.describe( 'Channel Visibility Meta Box', () => {
 			);
 
 			await expect(
-				glaBox.locator( '.gla-channel-visibility__content' )
+				editorUtils.getChannelVisibilityMetaBoxContent()
 			).toBeHidden();
 			await expect(
 				glaBox.getByRole( 'button', { name: 'Dismiss' } )
@@ -158,23 +158,22 @@ test.describe( 'Channel Visibility Meta Box', () => {
 			await setPromoDismissed( false );
 			await editorUtils.gotoEditProductPage( productId );
 
-			const glaBox = page.locator( '#gla-channel-visibility-box' );
+			const glaBox = editorUtils.getChannelVisibilityMetaBox();
 
 			await expect(
-				glaBox.locator( '.gla-channel-visibility__content' )
+				editorUtils.getChannelVisibilityMetaBoxContent()
 			).toBeVisible();
 
 			await glaBox.getByRole( 'button', { name: 'Dismiss' } ).click();
 
 			await expect(
-				glaBox.locator( '.gla-channel-visibility__content' )
+				editorUtils.getChannelVisibilityMetaBoxContent()
 			).toBeHidden();
 
 			await editorUtils.gotoEditProductPage( productId );
 
-			const glaBoxAfterRefresh = page.locator(
-				'#gla-channel-visibility-box'
-			);
+			const glaBoxAfterRefresh =
+				editorUtils.getChannelVisibilityMetaBox();
 
 			await expect(
 				glaBoxAfterRefresh.locator(
@@ -200,7 +199,7 @@ test.describe( 'Channel Visibility Meta Box', () => {
 		test( 'Shows channel visibility settings with Google label and dropdown', async () => {
 			await editorUtils.gotoEditProductPage( productId );
 
-			const glaBox = page.locator( '#gla-channel-visibility-box' );
+			const glaBox = editorUtils.getChannelVisibilityMetaBox();
 
 			await expect( glaBox.getByRole( 'combobox' ) ).toBeVisible();
 
@@ -220,7 +219,7 @@ test.describe( 'Channel Visibility Meta Box', () => {
 		test( "Dropdown contains Sync and show and Don't sync and show options", async () => {
 			await editorUtils.gotoEditProductPage( productId );
 
-			const glaBox = page.locator( '#gla-channel-visibility-box' );
+			const glaBox = editorUtils.getChannelVisibilityMetaBox();
 			const select = glaBox.getByRole( 'combobox' );
 			const options = select.locator( 'option' );
 
@@ -232,7 +231,7 @@ test.describe( 'Channel Visibility Meta Box', () => {
 		test( 'Changing the dropdown updates the selected value', async () => {
 			await editorUtils.gotoEditProductPage( productId );
 
-			const glaBox = page.locator( '#gla-channel-visibility-box' );
+			const glaBox = editorUtils.getChannelVisibilityMetaBox();
 			const select = glaBox.getByRole( 'combobox' );
 
 			await expect( select ).toBeVisible();
@@ -247,7 +246,7 @@ test.describe( 'Channel Visibility Meta Box', () => {
 		test( 'Selected visibility value is saved when the product form is submitted', async () => {
 			await editorUtils.gotoEditProductPage( productId );
 
-			const glaBox = page.locator( '#gla-channel-visibility-box' );
+			const glaBox = editorUtils.getChannelVisibilityMetaBox();
 			const select = glaBox.getByRole( 'combobox' );
 
 			await select.selectOption( 'dont-sync-and-show' );
@@ -255,8 +254,8 @@ test.describe( 'Channel Visibility Meta Box', () => {
 
 			await editorUtils.save();
 
-			const savedSelect = page
-				.locator( '#gla-channel-visibility-box' )
+			const savedSelect = editorUtils
+				.getChannelVisibilityMetaBox()
 				.getByRole( 'combobox' );
 			await expect( savedSelect ).toHaveValue( 'dont-sync-and-show' );
 
@@ -270,8 +269,8 @@ test.describe( 'Channel Visibility Meta Box', () => {
 		test( 'Changed visibility value persists after navigating away and back', async () => {
 			await editorUtils.gotoEditProductPage( productId );
 
-			const select = page
-				.locator( '#gla-channel-visibility-box' )
+			const select = editorUtils
+				.getChannelVisibilityMetaBox()
 				.getByRole( 'combobox' );
 
 			await select.selectOption( 'dont-sync-and-show' );
@@ -281,8 +280,8 @@ test.describe( 'Channel Visibility Meta Box', () => {
 
 			await editorUtils.gotoEditProductPage( productId );
 
-			const selectAfterRefresh = page
-				.locator( '#gla-channel-visibility-box' )
+			const selectAfterRefresh = editorUtils
+				.getChannelVisibilityMetaBox()
 				.getByRole( 'combobox' );
 
 			await expect( selectAfterRefresh ).toHaveValue(
