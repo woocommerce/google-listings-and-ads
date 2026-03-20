@@ -618,17 +618,6 @@ Clicking on the "connect to a different Google account" button.
 #### Emitters
 - [`SwitchAccountButton`](../../js/src/components/google-account-card/switch-account-button.js#L25)
 
-### [`gla_google_ads_promo_create_campaign_click`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L13)
-Google Ads Promo "Get started" button is clicked.
-#### Properties
-| name | type | description |
-| ---- | ---- | ----------- |
-`context` | `string` | Context of the Google Ads Promo.
-`href` | `string` | URL of the "Get started" button.
-#### Emitters
-- [`GetStartedCTA`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L28) with `{ context: channel-visibility-meta-box, href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fstart' }`.
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L73) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&subpath=%2Fcampaigns%2Fcreate&path=%2Fgoogle%2Fdashboard' }`.
-
 ### [`gla_google_ads_promo_create_campaign_click`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L56)
 Google Ads Promo "Create campaign" button is clicked.
 #### Properties
@@ -637,7 +626,6 @@ Google Ads Promo "Create campaign" button is clicked.
 `context` | `string` | Context of the Google Ads Promo.
 `href` | `string` | URL of the "Create campaign" button.
 #### Emitters
-- [`GetStartedCTA`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L28) with `{ context: channel-visibility-meta-box, href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fstart' }`.
 - [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L73) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&subpath=%2Fcampaigns%2Fcreate&path=%2Fgoogle%2Fdashboard' }`.
 
 ### [`gla_google_ads_promo_dismiss_click`](../../js/src/meta-boxes/channel-visibility/promo-cta.js#L14)
@@ -649,6 +637,17 @@ Google Ads Promo "Dismiss" button is clicked.
 #### Emitters
 - [`PromoCTA`](../../js/src/meta-boxes/channel-visibility/promo-cta.js#L29) with `{ context: channel-visibility-meta-box }`.
 
+### [`gla_google_ads_promo_get_started_click`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L13)
+Google Ads Promo "Get started" button is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Context of the Google Ads Promo.
+`href` | `string` | URL of the "Get started" button.
+#### Emitters
+- [`GetStartedCTA`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L28) with `{ context: channel-visibility-meta-box, href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fstart' }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L73) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fstart' }`.
+
 ### [`gla_google_ads_promo_get_started_click`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L48)
 Google Ads Promo "Get started" button is clicked.
 #### Properties
@@ -657,6 +656,7 @@ Google Ads Promo "Get started" button is clicked.
 `context` | `string` | Context of the Google Ads Promo.
 `href` | `string` | URL of the "Get started" button.
 #### Emitters
+- [`GetStartedCTA`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L28) with `{ context: channel-visibility-meta-box, href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fstart' }`.
 - [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L73) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fstart' }`.
 
 ### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L28)
