@@ -22,7 +22,6 @@ test.describe.configure( { mode: 'serial' } );
 
 const PREFERENCES_NAMESPACE = 'woocommerce/google-listings-and-ads';
 const PROMO_DISMISSED_KEY = 'gla_google_ads_promo_dismissed';
-
 const GET_STARTED_URL_PATTERN = /page=wc-admin&path=%2Fgoogle%2Fstart/;
 
 /**
