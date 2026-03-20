@@ -196,20 +196,6 @@ export default function useCroppedImageSelector( {
 	const openSelector = useCallback(
 		( preTickedId ) => {
 			const { media } = wp;
-			const sizeErrorMessage = sprintf(
-				// translators: 1: Minimum width, 2: Minimum height.
-				__(
-					'Image size needs to be at least %1$d x %2$d',
-					'google-listings-and-ads'
-				),
-				minWidth,
-				minHeight
-			);
-
-			const mimeTypeErrorMessage = __(
-				'Selected file type is not supported',
-				'google-listings-and-ads'
-			);
 
 			// Will be called by the controller of the parent class of CustomizeImageCropper. Ref:
 			// - https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/media/controllers/customize-image-cropper.js#L14
@@ -354,9 +340,20 @@ export default function useCroppedImageSelector( {
 					const { width, height, mime } = selection.first().toJSON();
 
 					if ( width < minWidth || height < minHeight ) {
-						errorMessage = sizeErrorMessage;
+						errorMessage = sprintf(
+							// translators: 1: Minimum width, 2: Minimum height.
+							__(
+								'Image size needs to be at least %1$d x %2$d',
+								'google-listings-and-ads'
+							),
+							minWidth,
+							minHeight
+						);
 					} else if ( ! isMimeTypeAllowed( mime ) ) {
-						errorMessage = mimeTypeErrorMessage;
+						errorMessage = __(
+							'Selected file type is not supported',
+							'google-listings-and-ads'
+						);
 					}
 				}
 

@@ -219,6 +219,7 @@ const EditPaidAdsCampaign = () => {
 
 		getHistory().push( getDashboardUrl() );
 	};
+	console.log( 'campaign', campaign );
 
 	return (
 		<>
