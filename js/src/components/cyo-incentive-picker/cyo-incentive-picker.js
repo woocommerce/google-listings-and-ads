@@ -6,17 +6,25 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import useCYOIncentives from '~/hooks/useCYOIncentives';
 import Section from '~/components/section';
 import Subsection from '~/components/subsection';
 import CYOIAvailableOffers from './cyoi-available-offers';
 import styles from './cyo-incentive-picker.module.scss';
+import useCYOIncentives from '~/hooks/useCYOIncentives';
+import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
+import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import './index.scss';
 
 const CyoIncentivePicker = () => {
 	const { data: incentives, hasFinishedResolution } = useCYOIncentives();
+	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 
-	if ( ! hasFinishedResolution || ! incentives || incentives.length === 0 ) {
+	const shouldDisplay =
+		hasFinishedResolution &&
+		incentives?.length > 0 &&
+		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
+
+	if ( ! shouldDisplay ) {
 		return null;
 	}
 
