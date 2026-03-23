@@ -6,6 +6,7 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import Section from '~/components/section';
 import Subsection from '~/components/subsection';
 import CYOIRadioControl from './cyoi-radio-control';
@@ -17,6 +18,7 @@ import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import './index.scss';
 
 const CyoIncentivePicker = () => {
+	const { getInputProps } = useAdaptiveFormContext();
 	const { data: incentives, hasFinishedResolution } = useCYOIncentives();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const { formatAmount } = useAdsCurrency();
@@ -29,6 +31,9 @@ const CyoIncentivePicker = () => {
 	if ( ! shouldDisplay ) {
 		return null;
 	}
+
+	const { value: selectedIncentiveId, ...restIncentiveIdInputProps } =
+		getInputProps( 'incentiveId' );
 
 	return (
 		<div className="gla-cyoi-section">
@@ -71,9 +76,11 @@ const CyoIncentivePicker = () => {
 								return (
 									<div key={ id } className={ styles.row }>
 										<CYOIRadioControl
+											{ ...restIncentiveIdInputProps }
 											label={ rewardAmount }
 											offer={ offer }
 											requirement={ requirement }
+											selected={ selectedIncentiveId }
 											value={ id }
 										/>
 										<div className={ styles.option }>
