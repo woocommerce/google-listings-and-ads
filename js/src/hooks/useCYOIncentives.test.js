@@ -21,7 +21,7 @@ describe( 'useCYOIncentives', () => {
 			type: 'ACQUISITION',
 			offer: 'high',
 			termsAndConditionsUrl: 'https://example.com/terms-1',
-			requirements: {
+			requirement: {
 				spend: {
 					awardAmount: {
 						currencyCode: 'USD',
@@ -39,7 +39,7 @@ describe( 'useCYOIncentives', () => {
 			type: 'ACQUISITION',
 			offer: 'medium',
 			termsAndConditionsUrl: 'https://example.com/terms-2',
-			requirements: {
+			requirement: {
 				spend: {
 					awardAmount: {
 						currencyCode: 'USD',
@@ -57,7 +57,7 @@ describe( 'useCYOIncentives', () => {
 			type: 'ACQUISITION',
 			offer: 'low',
 			termsAndConditionsUrl: 'https://example.com/terms-3',
-			requirements: {
+			requirement: {
 				spend: {
 					awardAmount: {
 						currencyCode: 'USD',

@@ -971,15 +971,67 @@ describe( 'reducer', () => {
 			const action = {
 				type: TYPES.RECEIVE_CYO_INCENTIVES,
 				cyoIncentives: {
+					type: 'CYO_INCENTIVE',
+					termsAndConditionsUrl: 'https://example.com/terms',
 					incentives: [
 						{
 							id: 123,
-							type: 'new_customer_offer',
+							type: 'ACQUISITION',
+							offer: 'high',
+							termsAndConditionsUrl:
+								'https://example.com/terms-1',
+							requirement: {
+								spend: {
+									awardAmount: {
+										currencyCode: 'USD',
+										units: '1800',
+									},
+								},
+								requiredAmount: {
+									currencyCode: 'USD',
+									units: '4000',
+								},
+							},
+						},
+						{
+							id: 456,
+							type: 'ACQUISITION',
+							offer: 'medium',
+							termsAndConditionsUrl:
+								'https://example.com/terms-2',
+							requirements: {
+								spend: {
+									awardAmount: {
+										currencyCode: 'USD',
+										units: '1200',
+									},
+								},
+								requiredAmount: {
+									currencyCode: 'USD',
+									units: '1800',
+								},
+							},
+						},
+						{
+							id: 789,
+							type: 'ACQUISITION',
+							offer: 'low',
+							termsAndConditionsUrl:
+								'https://example.com/terms-3',
+							requirements: {
+								spend: {
+									awardAmount: {
+										currencyCode: 'USD',
+										units: '600',
+									},
+								},
+								requiredAmount: {
+									currencyCode: 'USD',
+									units: '1200',
+								},
+							},
 						},
 					],
-					meta: {
-						currency: 'USD',
-					},
 				},
 			};
 
