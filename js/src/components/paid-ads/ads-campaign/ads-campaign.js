@@ -104,7 +104,7 @@ export default function AdsCampaign( {
 				{ showCampaignPreviewCard && <CampaignPreviewCard /> }
 			</BudgetSection>
 
-			<CyoIncentivePicker />
+			{ isOnboardingFlow && <CyoIncentivePicker /> }
 
 			<EuRegulationsSection context={ context } />
 
