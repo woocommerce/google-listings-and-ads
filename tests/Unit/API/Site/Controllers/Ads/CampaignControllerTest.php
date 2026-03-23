@@ -556,6 +556,61 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	public function test_set_eu_political_campaigns() {
+		$campaigns = [
+			[
+				'id'    => self::TEST_CAMPAIGN_ID,
+				'value' => true,
+			],
+			[
+				'id'    => 9876543210,
+				'value' => false,
+			],
+		];
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'set_eu_political_campaigns' )
+			->with( $campaigns )
+			->willReturn( [ self::TEST_CAMPAIGN_ID, 9876543210 ] );
+
+		$response = $this->do_request( '/wc/gla/ads/campaigns/set-eu-political-flag', 'POST', [ 'campaigns' => $campaigns ] );
+
+		$this->assertEquals(
+			[
+				'status'  => 'success',
+				'message' => 'Successfully updated EU political advertising flag.',
+				'updated' => [ self::TEST_CAMPAIGN_ID, 9876543210 ],
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_set_eu_political_campaigns_missing_param() {
+		$response = $this->do_request( '/wc/gla/ads/campaigns/set-eu-political-flag', 'POST', [] );
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertStringContainsString( 'campaigns', $response->get_data()['message'] );
+	}
+
+	public function test_set_eu_political_campaigns_with_exception() {
+		$campaigns = [
+			[
+				'id'    => self::TEST_CAMPAIGN_ID,
+				'value' => false,
+			],
+		];
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'set_eu_political_campaigns' )
+			->willThrowException( new Exception( 'error', 500 ) );
+
+		$response = $this->do_request( '/wc/gla/ads/campaigns/set-eu-political-flag', 'POST', [ 'campaigns' => $campaigns ] );
+
+		$this->assertEquals( 'error', $response->get_data()['message'] );
+		$this->assertEquals( 500, $response->get_status() );
+	}
+
 	public function test_delete_campaign_with_api_exception() {
 		$this->ads_campaign->expects( $this->once() )
 			->method( 'delete_campaign' )
