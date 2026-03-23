@@ -124,6 +124,7 @@ export function getClassicProductEditorUtils( page ) {
 			return {
 				selection: metaBox.getByRole( 'combobox' ),
 				notice: metaBox.locator( '.components-notice' ),
+				status: metaBox.locator( '.gla-channel-visibility__sync-status' ),
 				issues: metaBox.getByRole( 'listitem' ),
 			};
 		},

@@ -29,6 +29,7 @@ const {
 } = glaData || {};
 
 const SYNC_STATUS_SYNCED = 'synced';
+const SYNC_STATUS_HAS_ERRORS = 'has-errors';
 
 /**
  * Channel Visibility Settings component.
@@ -42,26 +43,22 @@ const ChannelVisibilitySettings = () => {
 	const [ channelVisibilityValue, setChannelVisibilityValue ] = useState(
 		productIsVisible ? channelVisibility : 'dont-sync-and-show'
 	);
-	let productIssues = issues;
 
-	// When product is not visible: force dont-sync-and-show, show catalog message only (no sync status block).
-	if ( ! productIsVisible ) {
-		productIssues = [
-			__(
-				'This product cannot be shown on any channel because it is hidden from your store catalog.',
-				'google-listings-and-ads'
-			),
-		];
+	let syncStatusText = null;
+
+	if ( syncStatus === SYNC_STATUS_HAS_ERRORS ) {
+		syncStatusText = __( 'Issues detected', 'google-listings-and-ads' );
+	} else if ( syncStatus ) {
+		syncStatusText = syncStatus.charAt( 0 ).toUpperCase() + syncStatus.slice( 1 ).replace( '-', ' ' );
 	}
 
-	// Show issues block only when: visibility is sync-and-show, status exists, and status is not "synced"
-	const shouldShowSyncStatus =
+	const shouldDisplaySyncNotice =
 		productIsVisible &&
 		syncStatus &&
 		channelVisibilityValue === 'sync-and-show' &&
 		syncStatus !== SYNC_STATUS_SYNCED;
 
-	const hasIssues = productIssues.length > 0;
+	const hasIssues = issues.length > 0;
 
 	/**
 	 * Parse the options object into an array of options.
@@ -117,26 +114,50 @@ const ChannelVisibilitySettings = () => {
 				</Flex>
 			</FlexBlock>
 
-			{ ! productIsVisible && hasIssues && (
+			{ ! productIsVisible && (
 				<FlexBlock>
 					<Notice status="info" isDismissible={ false }>
-						<p>{ productIssues[ 0 ] }</p>
+						<p>
+							{ __(
+								'This product cannot be shown on any channel because it is hidden from your store catalog.',
+								'google-listings-and-ads'
+							) }
+						</p>
 					</Notice>
 				</FlexBlock>
 			) }
-			{ shouldShowSyncStatus && hasIssues && (
+			{ shouldDisplaySyncNotice && syncStatusText && (
 				<FlexBlock>
-					<Notice status="warning" isDismissible={ false }>
+					<Notice
+						isDismissible={ false }
+						status={ hasIssues ? 'warning' : 'info' }
+					>
 						<p>
 							<strong>
-								{ __( 'Issues', 'google-listings-and-ads' ) }
+								{ __(
+									'Google sync status',
+									'google-listings-and-ads'
+								) }
 							</strong>
 						</p>
-						<ul>
-							{ productIssues.map( ( issue ) => (
-								<li key={ issue }>{ issue }</li>
-							) ) }
-						</ul>
+						<p className="gla-channel-visibility__sync-status">{ syncStatusText }</p>
+						{ hasIssues && (
+							<>
+								<p>
+									<strong>
+										{ __(
+											'Issues',
+											'google-listings-and-ads'
+										) }
+									</strong>
+								</p>
+								<ul>
+									{ issues.map( ( issue, index ) => (
+										<li key={ index }>{ issue }</li>
+									) ) }
+								</ul>
+							</>
+						) }
 					</Notice>
 				</FlexBlock>
 			) }

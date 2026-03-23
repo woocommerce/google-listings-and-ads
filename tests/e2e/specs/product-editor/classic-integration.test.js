@@ -327,7 +327,7 @@ test.describe( 'Classic Product Editor integration', () => {
 		await editorUtils.save();
 
 		const issueTexts = [ 'Invalid price', 'Invalid GTIN' ];
-		const { selection, notice, issues } =
+		const { selection, notice, status, issues } =
 			editorUtils.getChannelVisibility();
 
 		/*
@@ -347,7 +347,7 @@ test.describe( 'Classic Product Editor integration', () => {
 		/*
 		 * Assert:
 		 * - The value is saved to 'sync-and-show'
-		 * - The warning notice is shown with "Issues detected" status and issue contents
+		 * - The warning notice is shown with "Issues" status and issue contents
 		 */
 		await selection.selectOption( 'sync-and-show' );
 		await editorUtils.save();
@@ -363,11 +363,41 @@ test.describe( 'Classic Product Editor integration', () => {
 
 		/*
 		 * Assert:
+		 * - The info notice is shown with "Not synced" status
+		 */
+		await editorUtils.mockChannelVisibility( 'not-synced' );
+		await page.reload();
+
+		/*
+		 * Assert:
+		 * - The info notice is shown with "Not synced" status
+		 */
+		await expect( notice ).toBeVisible();
+		await expect( notice ).not.toHaveClass( /(^| )notice-warning( |$)/ );
+		await expect( status ).toHaveText( /^Not synced$/i );
+		await expect( issues ).toBeHidden();
+
+		/*
+		 * Assert:
+		 * - The info notice is shown with "Pending" status
+		 */
+		await editorUtils.mockChannelVisibility( 'pending' );
+		await page.reload();
+
+		await expect( notice ).toBeVisible();
+		await expect( notice ).not.toHaveClass( /(^| )notice-warning( |$)/ );
+		await expect( status ).toHaveText( /^Pending$/i );
+		await expect( issues ).toBeHidden();
+
+		/*
+		 * Assert:
 		 * - The notice won't be shown when the status is 'synced'
 		 */
 		await editorUtils.mockChannelVisibility( 'synced' );
 		await page.reload();
 
+		await expect( notice ).toBeHidden();
+		await expect( status ).toBeHidden();
 		await expect( issues ).toBeHidden();
 	} );
 
