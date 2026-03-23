@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -9,10 +9,11 @@ import { __ } from '@wordpress/i18n';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import Section from '~/components/section';
 import Subsection from '~/components/subsection';
+import CYOIRadioControl from './cyoi-radio-control';
 import styles from './cyo-incentive-picker.module.scss';
 import useCYOIncentives from '~/hooks/useCYOIncentives';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
-import CYOIAvailableOffers from './cyoi-available-offers';
+import useAdsCurrency from '~/hooks/useAdsCurrency';
 import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import './index.scss';
 
@@ -20,6 +21,7 @@ const CyoIncentivePicker = () => {
 	const { getInputProps } = useAdaptiveFormContext();
 	const { data: incentives, hasFinishedResolution } = useCYOIncentives();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
+	const { formatAmount } = useAdsCurrency();
 
 	const shouldDisplay =
 		hasFinishedResolution &&
@@ -30,7 +32,8 @@ const CyoIncentivePicker = () => {
 		return null;
 	}
 
-	const incentiveIdInputProps = getInputProps( 'incentiveId' );
+	const { value: selectedIncentiveId, ...restIncentiveIdInputProps } =
+		getInputProps( 'incentiveId' );
 
 	return (
 		<div className="gla-cyoi-section">
@@ -63,10 +66,44 @@ const CyoIncentivePicker = () => {
 							</Subsection.Subtitle>
 						</div>
 						<div className={ styles.container }>
-							<CYOIAvailableOffers
-								incentives={ incentives }
-								incentiveIdInputProps={ incentiveIdInputProps }
-							/>
+							{ incentives.map( ( incentive ) => {
+								const { id, offer, requirement } = incentive;
+								const rewardAmount =
+									requirement.spend.awardAmount.units;
+								const spendAmount =
+									requirement.spend.requiredAmount.units;
+
+								return (
+									<div key={ id } className={ styles.row }>
+										<CYOIRadioControl
+											{ ...restIncentiveIdInputProps }
+											label={ rewardAmount }
+											offer={ offer }
+											requirement={ requirement }
+											selected={ selectedIncentiveId }
+											value={ id }
+										/>
+										<div className={ styles.option }>
+											{ sprintf(
+												/* translators: %s: amount in dollars */
+												__(
+													'Spend %s with Google Ads in the first 60 days to unlock the credit.',
+													'google-listings-and-ads'
+												),
+												formatAmount( spendAmount )
+											) }
+										</div>
+										<div className={ styles.helper }>
+											<span>
+												{ __(
+													'in Ads credit',
+													'google-listings-and-ads'
+												) }
+											</span>
+										</div>
+									</div>
+								);
+							} ) }
 						</div>
 					</Section.Card.Body>
 				</Section.Card>
