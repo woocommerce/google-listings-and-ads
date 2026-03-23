@@ -49,7 +49,9 @@ const ChannelVisibilitySettings = () => {
 	if ( syncStatus === SYNC_STATUS_HAS_ERRORS ) {
 		syncStatusText = __( 'Issues detected', 'google-listings-and-ads' );
 	} else if ( syncStatus ) {
-		syncStatusText = syncStatus.charAt( 0 ).toUpperCase() + syncStatus.slice( 1 ).replace( '-', ' ' );
+		syncStatusText =
+			syncStatus.charAt( 0 ).toUpperCase() +
+			syncStatus.slice( 1 ).replace( '-', ' ' );
 	}
 
 	const shouldDisplaySyncNotice =
@@ -140,7 +142,9 @@ const ChannelVisibilitySettings = () => {
 								) }
 							</strong>
 						</p>
-						<p className="gla-channel-visibility__sync-status">{ syncStatusText }</p>
+						<p className="gla-channel-visibility__sync-status">
+							{ syncStatusText }
+						</p>
 						{ hasIssues && (
 							<>
 								<p>
