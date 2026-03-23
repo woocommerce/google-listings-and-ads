@@ -2,15 +2,19 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
  */
 import CyoIncentivePicker from './cyo-incentive-picker';
+import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useCYOIncentives from '~/hooks/useCYOIncentives';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 
+jest.mock( '~/components/adaptive-form', () => ( {
+	useAdaptiveFormContext: jest.fn(),
+} ) );
 jest.mock( '~/hooks/useCYOIncentives' );
 jest.mock( '~/hooks/useGoogleAdsAccountBillingStatus' );
 
@@ -72,7 +76,17 @@ const INCENTIVES_DATA = [
 ];
 
 describe( 'CyoIncentivePicker Component', () => {
+	const onIncentiveIdChange = jest.fn();
+
 	beforeEach( () => {
+		onIncentiveIdChange.mockReset();
+		useAdaptiveFormContext.mockReturnValue( {
+			getInputProps: jest.fn().mockReturnValue( {
+				value: null,
+				onChange: onIncentiveIdChange,
+			} ),
+		} );
+
 		useCYOIncentives.mockReturnValue( {
 			data: INCENTIVES_DATA,
 			hasFinishedResolution: true,
@@ -128,5 +142,12 @@ describe( 'CyoIncentivePicker Component', () => {
 		render( <CyoIncentivePicker /> );
 		const titleElement = screen.queryByText( 'Ads credit offer' );
 		expect( titleElement ).toBeInTheDocument();
+	} );
+
+	it( 'should set incentiveId when selecting an offer', () => {
+		render( <CyoIncentivePicker /> );
+		fireEvent.click( screen.getByRole( 'radio', { name: '123' } ) );
+
+		expect( onIncentiveIdChange ).toHaveBeenCalledWith( '123' );
 	} );
 } );

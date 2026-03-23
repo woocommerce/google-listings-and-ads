@@ -27,7 +27,7 @@ const CYOIRadioControl = ( {
 				{ ...rest }
 				label={ formatAmount( label ) }
 				className={ classnames( className ) }
-				checked={ selected === value }
+				checked={ String( selected ) === String( value ) }
 				options={ [ { value } ] }
 				hideLabelFromVision
 				help=""

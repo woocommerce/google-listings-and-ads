@@ -10,8 +10,11 @@ import CYOIRadioControl from './cyoi-radio-control';
 import styles from './cyo-incentive-picker.module.scss';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
 
-const CYOIAvailableOffers = ( { incentives } ) => {
+const CYOIAvailableOffers = ( { incentives, incentiveIdInputProps } ) => {
 	const { formatAmount } = useAdsCurrency();
+	const { value: selectedIncentiveId, ...restIncentiveIdInputProps } =
+		incentiveIdInputProps;
+
 	return incentives.map( ( incentive ) => {
 		const { id, offer, requirement } = incentive;
 
@@ -21,10 +24,12 @@ const CYOIAvailableOffers = ( { incentives } ) => {
 		return (
 			<div key={ id } className={ styles.row }>
 				<CYOIRadioControl
+					{ ...restIncentiveIdInputProps }
 					label={ rewardAmount }
 					offer={ offer }
 					requirement={ requirement }
-					value={ offer }
+					selected={ selectedIncentiveId }
+					value={ id }
 				/>
 				<div className={ styles.option }>
 					{ sprintf(

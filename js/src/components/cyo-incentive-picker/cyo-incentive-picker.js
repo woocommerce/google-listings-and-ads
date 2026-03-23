@@ -6,16 +6,18 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import Section from '~/components/section';
 import Subsection from '~/components/subsection';
-import CYOIAvailableOffers from './cyoi-available-offers';
 import styles from './cyo-incentive-picker.module.scss';
 import useCYOIncentives from '~/hooks/useCYOIncentives';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
+import CYOIAvailableOffers from './cyoi-available-offers';
 import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import './index.scss';
 
 const CyoIncentivePicker = () => {
+	const { getInputProps } = useAdaptiveFormContext();
 	const { data: incentives, hasFinishedResolution } = useCYOIncentives();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 
@@ -27,6 +29,8 @@ const CyoIncentivePicker = () => {
 	if ( ! shouldDisplay ) {
 		return null;
 	}
+
+	const incentiveIdInputProps = getInputProps( 'incentiveId' );
 
 	return (
 		<div className="gla-cyoi-section">
@@ -59,7 +63,10 @@ const CyoIncentivePicker = () => {
 							</Subsection.Subtitle>
 						</div>
 						<div className={ styles.container }>
-							<CYOIAvailableOffers incentives={ incentives } />
+							<CYOIAvailableOffers
+								incentives={ incentives }
+								incentiveIdInputProps={ incentiveIdInputProps }
+							/>
 						</div>
 					</Section.Card.Body>
 				</Section.Card>
