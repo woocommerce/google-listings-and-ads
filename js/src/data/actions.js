@@ -1451,3 +1451,33 @@ export function* disconnectYouTubeAccount() {
 		throw error;
 	}
 }
+
+/**
+ * Set the EU political advertising declaration flag for a list of campaigns.
+ *
+ * Required by Google Ads API enforcement starting April 1, 2026.
+ *
+ * @param { Array<{ id: number, value: boolean }> } campaigns Array of campaign ids and their EU political flag value.
+ * @yield {Object} The wp-data action with data payload.
+ * @throws { { message: string } } Will throw an error if the update fails.
+ */
+export function* setEuPoliticalCampaigns( campaigns ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/campaigns/set-eu-political-flag`,
+			method: 'POST',
+			data: { campaigns },
+		} );
+
+		for ( const { id, value } of campaigns ) {
+			yield {
+				type: TYPES.UPDATE_ADS_CAMPAIGN,
+				id,
+				data: { missing_eu_political_declaration: value },
+			};
+		}
+	} catch ( error ) {
+		handleApiError( error );
+		throw error;
+	}
+}
