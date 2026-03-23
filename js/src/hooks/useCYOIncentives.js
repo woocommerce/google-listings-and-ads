@@ -15,18 +15,23 @@ import { STORE_KEY } from '~/data/constants';
  */
 
 /**
- * @typedef {Object} CYOIncentiveRequirements
- * @property {{ awardAmount: CYOIncentiveAmount }} spend The spend requirement, including the award amount earned upon meeting it.
+ * @typedef {Object} CYOIncentiveSpend
+ * @property {CYOIncentiveAmount} awardAmount The ad credit amount awarded upon meeting the spend requirement.
  * @property {CYOIncentiveAmount} requiredAmount The minimum spend amount required to qualify for the incentive.
  */
 
 /**
+ * @typedef {Object} CYOIncentiveRequirement
+ * @property {CYOIncentiveSpend} spend The spend details including the award and required amounts.
+ */
+
+/**
  * @typedef {Object} CYOIncentive
- * @property {number} id The unique identifier for the incentive.
+ * @property {string} id The unique identifier for the incentive.
  * @property {string} type The incentive type. Example: 'ACQUISITION'.
  * @property {'high'|'medium'|'low'} offer The offer tier.
  * @property {string} termsAndConditionsUrl URL to the terms and conditions for this incentive.
- * @property {CYOIncentiveRequirements} requirements The spend requirements to qualify for this incentive.
+ * @property {CYOIncentiveRequirement} requirement The spend requirement to qualify for this incentive.
  */
 
 /**
