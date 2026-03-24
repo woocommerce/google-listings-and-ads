@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d86ee8a8736c3d74e72af01948a70df5",
+    "content-hash": "90517af517d21e49fbabbeddfceca631",
     "packages": [
         {
             "name": "brick/math",
@@ -466,16 +466,16 @@
         },
         {
             "name": "google/protobuf",
-            "version": "v4.30.2",
+            "version": "v4.30.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/protocolbuffers/protobuf-php.git",
-                "reference": "a4c4d8565b40b9f76debc9dfeb221412eacb8ced"
+                "reference": "e1d66682f6836aa87820400f0aa07d9eb566feb6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/protocolbuffers/protobuf-php/zipball/a4c4d8565b40b9f76debc9dfeb221412eacb8ced",
-                "reference": "a4c4d8565b40b9f76debc9dfeb221412eacb8ced",
+                "url": "https://api.github.com/repos/protocolbuffers/protobuf-php/zipball/e1d66682f6836aa87820400f0aa07d9eb566feb6",
+                "reference": "e1d66682f6836aa87820400f0aa07d9eb566feb6",
                 "shasum": ""
             },
             "require": {
@@ -504,37 +504,37 @@
                 "proto"
             ],
             "support": {
-                "source": "https://github.com/protocolbuffers/protobuf-php/tree/v4.30.2"
+                "source": "https://github.com/protocolbuffers/protobuf-php/tree/v4.30.0"
             },
-            "time": "2025-03-26T18:01:50+00:00"
+            "time": "2025-03-04T22:54:49+00:00"
         },
         {
             "name": "googleads/google-ads-php",
-            "version": "v32.2.0",
+            "version": "dev-legacy-v32.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleads/google-ads-php.git",
-                "reference": "4b0649ce2cc17637688be18843b98cbe70a7aa79"
+                "reference": "392aaddfc84f72e1375f52a6213732f7d858c33a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleads/google-ads-php/zipball/4b0649ce2cc17637688be18843b98cbe70a7aa79",
-                "reference": "4b0649ce2cc17637688be18843b98cbe70a7aa79",
+                "url": "https://api.github.com/repos/googleads/google-ads-php/zipball/392aaddfc84f72e1375f52a6213732f7d858c33a",
+                "reference": "392aaddfc84f72e1375f52a6213732f7d858c33a",
                 "shasum": ""
             },
             "require": {
                 "google/auth": "^1.30 || ^2.0",
-                "google/gax": "^1.36.1",
-                "google/protobuf": "^3.21.5 || >=4.26 <4.31.0",
+                "google/gax": "^1.19.1",
+                "google/protobuf": "^3.21.5 || >=4.26 <=4.30.0",
                 "grpc/grpc": ">=1.36.0 <=1.57.0",
                 "monolog/monolog": "^1.26 || ^2.0 || ^3.0",
-                "php": ">=8.1"
+                "php": ">=7.4"
             },
             "require-dev": {
                 "composer/composer": "^2.0",
                 "ext-bcmath": "*",
                 "ext-grpc": ">=1.57.0 <=1.66.0",
-                "ext-protobuf": "^3.21.5 || ^4.26",
+                "ext-protobuf": "3.21.5 || >=4.26 <=4.30.0",
                 "phpunit/phpunit": "^9.5",
                 "react/http": "^1.2.0",
                 "squizlabs/php_codesniffer": "^3.5",
@@ -568,9 +568,9 @@
             "homepage": "https://github.com/googleads/google-ads-php",
             "support": {
                 "issues": "https://github.com/googleads/google-ads-php/issues",
-                "source": "https://github.com/googleads/google-ads-php/tree/v32.2.0"
+                "source": "https://github.com/googleads/google-ads-php/tree/legacy-v32.1.0"
             },
-            "time": "2026-02-25T23:14:19+00:00"
+            "time": "2026-01-28T23:38:49+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -5654,7 +5654,9 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {},
+    "stability-flags": {
+        "googleads/google-ads-php": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
