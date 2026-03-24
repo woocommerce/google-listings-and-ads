@@ -131,6 +131,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [ 'TW' ],
 				'eu_political_advertising_confirmation' => false,
+				'missing_eu_political_declaration'      => false,
 			],
 			[
 				'id'                                    => 5678901234,
@@ -141,6 +142,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [ 'HK', 'GB' ],
 				'eu_political_advertising_confirmation' => false,
+				'missing_eu_political_declaration'      => false,
 			],
 		];
 
@@ -159,6 +161,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'missing_eu_political_declaration'      => false,
 			],
 			[
 				'id'                                    => 5678901234,
@@ -169,6 +172,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'missing_eu_political_declaration'      => false,
 			],
 		];
 
@@ -209,6 +213,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'missing_eu_political_declaration'      => false,
 			],
 			[
 				'id'                                    => 5678901234,
@@ -219,6 +224,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'missing_eu_political_declaration'      => false,
 			],
 		];
 
