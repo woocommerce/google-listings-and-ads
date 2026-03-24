@@ -30,6 +30,7 @@ import ExperienceRatingBanner from '~/components/experience-rating-banner';
 import RaiseBudgetRecommendationBanner from '~/components/raise-budget-recommendation-banner';
 import YouTubeShoppingTour from '~/components/tours/youtube-shopping-tour';
 import SubmissionSuccessGuide from '~/pages/product-feed/submission-success-guide';
+import EuPoliticalDeclaration from '~/components/eu-political-declaration';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import './index.scss';
 
@@ -100,6 +101,7 @@ const Dashboard = () => {
 				<RaiseBudgetRecommendationBanner />
 				<RebrandingTour />
 				<YouTubeShoppingTour />
+				<EuPoliticalDeclaration />
 				<div className="gla-dashboard__filter">
 					<AppDateRangeFilterPicker
 						trackEventReportId={ trackEventReportId }

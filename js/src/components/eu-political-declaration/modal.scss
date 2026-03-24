@@ -1,0 +1,16 @@
+.gla-eu-political-declaration-modal {
+
+	.gla-eu-political-declaration-modal__notice--error {
+		margin-block-start: $grid-unit-10;
+	}
+
+	ul {
+		margin-block: $grid-unit-20;
+	}
+
+	li + li {
+		border-top: 1px solid #e2e4e7;
+		padding-block: $grid-unit-10;
+		margin: 0;
+	}
+}
