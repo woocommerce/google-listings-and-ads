@@ -108,7 +108,18 @@ test.describe( 'Optimize campaign for Ads only merchants', () => {
 	} );
 
 	test.describe( 'Optimize campaign', () => {
-		test( 'Create Campaign button should be disabled if no URL selected', async () => {
+		test( 'Final URL should be selected by default', async () => {
+			const finalUrlCard = createCampaignPage.getFinalUrlCard();
+			await expect( finalUrlCard ).toContainText(
+				'https://woo.com/shop/'
+			);
+		} );
+
+		test( 'Selecting the "Or, select a different Final URL" button disables the Create Campaign button', async () => {
+			const selectDifferentFinalUrlButton =
+				optimizeCampaignPage.getSelectDifferentFinalUrlButton();
+			await selectDifferentFinalUrlButton.click();
+
 			const createCampaignButton =
 				optimizeCampaignPage.getCreateCampaignButton();
 			await expect( createCampaignButton ).toBeDisabled();
@@ -122,23 +133,12 @@ test.describe( 'Optimize campaign for Ads only merchants', () => {
 			await expect( createCampaignButton ).toBeEnabled();
 		} );
 
-		test( 'Selecting the "Or, select a different Final URL" button disables the Create Campaign button', async () => {
-			const selectDifferentFinalUrlButton =
-				optimizeCampaignPage.getSelectDifferentFinalUrlButton();
-			await selectDifferentFinalUrlButton.click();
-
-			const createCampaignButton =
-				optimizeCampaignPage.getCreateCampaignButton();
-			await expect( createCampaignButton ).toBeDisabled();
-		} );
-
 		test( '"Skip this step" button should not be present in the last step of onboarding', async () => {
 			const skipThisStepButton = page.locator( 'text="Skip this step"' );
 			await expect( skipThisStepButton ).toHaveCount( 0 );
 		} );
 
 		test( 'Clicking the "Create Campaign" button navigates to the dashboard and should see the setup success modal', async () => {
-			await optimizeCampaignPage.selectUrlOption();
 			const createCampaignButton =
 				optimizeCampaignPage.getCreateCampaignButton();
 

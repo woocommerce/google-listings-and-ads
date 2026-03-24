@@ -14,6 +14,11 @@ jest.mock( '~/components/adaptive-form', () => ( {
 		} ),
 } ) );
 
+jest.mock(
+	'~/components/paid-ads/asset-group/asset-group-header/final-url-card',
+	() => () => <div className="gla-final-url-card" />
+);
+
 /**
  * External dependencies
  */
