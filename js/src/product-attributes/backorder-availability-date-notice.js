@@ -7,41 +7,36 @@ const GLA_DATE_INPUT_ID = 'gla_attributes_availabilityDate_date';
 const GLA_TIME_INPUT_ID = 'gla_attributes_availabilityDate_time';
 const INVENTORY_PRODUCT_DATA = '#inventory_product_data';
 
-function getBackorderValue() {
-	const backordersSelect = document.querySelector(
-		`${ INVENTORY_PRODUCT_DATA } select[name="_backorders"]`
+/**
+ * Get the value of a field from the inventory product data.
+ *
+ * @param {string} name - The name of the field to get the value of.
+ * @return {string} The value of the field.
+ */
+function getFieldValue( name ) {
+	const select = document.querySelector(
+		`${ INVENTORY_PRODUCT_DATA } select[name="${ name }"]`
 	);
-	if ( backordersSelect ) {
-		return backordersSelect.value;
-	}
-	const checked = document.querySelector(
-		`${ INVENTORY_PRODUCT_DATA } input[name="_backorders"]:checked`
-	);
-	if ( checked ) {
-		return checked.value;
-	}
-	return '';
-}
 
-function getStockStatusValue() {
-	const stockSelect = document.querySelector(
-		`${ INVENTORY_PRODUCT_DATA } select[name="_stock_status"]`
-	);
-	if ( stockSelect ) {
-		return stockSelect.value;
+	if ( select ) {
+		return select.value;
 	}
+
 	const checked = document.querySelector(
-		`${ INVENTORY_PRODUCT_DATA } input[name="_stock_status"]:checked`
+		`${ INVENTORY_PRODUCT_DATA } input[name="${ name }"]:checked`
 	);
+
 	if ( checked ) {
 		return checked.value;
 	}
+
 	return '';
 }
 
 function isBackorderSelected() {
-	const backorders = getBackorderValue();
-	const stockStatus = getStockStatusValue();
+	const backorders = getFieldValue( '_backorders' );
+	const stockStatus = getFieldValue( '_stock_status' );
+
 	return (
 		[ 'yes', 'notify' ].includes( backorders ) ||
 		stockStatus === 'onbackorder'
@@ -53,27 +48,27 @@ function isBackorderSelected() {
  * Shows/hides the notice based on backorder selection and GLA availability date field.
  * Uses glaProductData.glaTabTarget for the "Google for WooCommerce" tab link.
  */
-function initBackorderAvailabilityDateNotice() {
+export default function initBackorderAvailabilityDateNotice() {
 	const notice = document.querySelector(
 		'.gla-backorder-availability-date-notice'
 	);
+
 	if ( ! notice ) {
 		return;
 	}
 
 	const glaDateEl = document.getElementById( GLA_DATE_INPUT_ID );
 	const glaTimeEl = document.getElementById( GLA_TIME_INPUT_ID );
+
 	if ( ! glaDateEl || ! glaTimeEl ) {
 		return;
 	}
 
-	function hasGlaAvailabilityDate() {
-		return glaDateEl.value.trim() !== '';
-	}
-
 	function updateNoticeVisibility() {
-		const show = isBackorderSelected() && ! hasGlaAvailabilityDate();
-		notice.style.display = show ? '' : 'none';
+		const hasGlaAvailabilityDate = glaDateEl.value.trim() !== '';
+		const shouldShowNotice =
+			isBackorderSelected() && ! hasGlaAvailabilityDate;
+		notice.style.display = shouldShowNotice ? '' : 'none';
 	}
 
 	const tabTarget = glaProductData.glaTabTarget || 'gla_attributes';
@@ -82,17 +77,16 @@ function initBackorderAvailabilityDateNotice() {
 	const noticeLink = document.querySelector(
 		'.gla-availability-date-tab-link'
 	);
-	if ( noticeLink ) {
-		noticeLink.addEventListener( 'click', ( event ) => {
-			event.preventDefault();
-			const tabLink = document.querySelector(
-				`.product_data_tabs a[href="#${ tabTarget }"]`
-			);
-			if ( tabLink ) {
-				tabLink.click();
-			}
-		} );
-	}
+
+	noticeLink?.addEventListener( 'click', ( event ) => {
+		event.preventDefault();
+
+		const tabLink = document.querySelector(
+			`.product_data_tabs a[href="#${ tabTarget }"]`
+		);
+
+		tabLink?.click();
+	} );
 
 	document
 		.querySelectorAll(
@@ -106,15 +100,4 @@ function initBackorderAvailabilityDateNotice() {
 	glaTimeEl.addEventListener( 'change', updateNoticeVisibility );
 
 	updateNoticeVisibility();
-}
-
-export default function init() {
-	if ( document.readyState === 'loading' ) {
-		document.addEventListener(
-			'DOMContentLoaded',
-			initBackorderAvailabilityDateNotice
-		);
-	} else {
-		initBackorderAvailabilityDateNotice();
-	}
 }
