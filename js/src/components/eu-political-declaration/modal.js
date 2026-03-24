@@ -3,15 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState, createInterpolateElement } from '@wordpress/element';
-import {
-	Flex,
-	FlexBlock,
-	Notice,
-	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
-	__experimentalToggleGroupControl as ToggleGroupControl,
-	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
-	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
-} from '@wordpress/components';
+import { CheckboxControl, Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -38,22 +30,14 @@ import './modal.scss';
  * @return {JSX.Element} The rendered Modal component.
  */
 const Modal = ( { campaigns, onRequestClose } ) => {
+	const [ individualMode, setIndividualMode ] = useState( false );
+	const [ loading, setLoading ] = useState( false );
+	const { invalidateResolution, setEuPoliticalCampaigns } = useAppDispatch();
 	const [ declarations, setDeclarations ] = useState( () =>
 		Object.fromEntries( campaigns.map( ( { id } ) => [ id, false ] ) )
 	);
-	const [ loading, setLoading ] = useState( false );
-	const { invalidateResolution, setEuPoliticalCampaigns } = useAppDispatch();
 
-	const handleToggleChange = ( id, value ) => {
-		setDeclarations( { ...declarations, [ id ]: value } );
-	};
-
-	const handleConfirm = async () => {
-		const payload = campaigns.map( ( { id } ) => ( {
-			id,
-			value: declarations[ id ],
-		} ) );
-
+	const submitDeclaration = async ( payload ) => {
 		setLoading( true );
 
 		try {
@@ -65,36 +49,76 @@ const Modal = ( { campaigns, onRequestClose } ) => {
 		}
 	};
 
+	const handleCheckboxChange = ( id, value ) => {
+		setDeclarations( { ...declarations, [ id ]: value } );
+	};
+
+	const handleSelectAll = () => {
+		setDeclarations(
+			Object.fromEntries( campaigns.map( ( { id } ) => [ id, true ] ) )
+		);
+	};
+
+	const handleClickSomePolitical = () => {
+		setIndividualMode( true );
+	};
+
+	const handleClickAllNonPolitical = () =>
+		submitDeclaration(
+			campaigns.map( ( { id } ) => ( { id, value: false } ) )
+		);
+
+	const handleConfirmDeclaration = () =>
+		submitDeclaration(
+			campaigns.map( ( { id } ) => ( { id, value: declarations[ id ] } ) )
+		);
+
+	const buttons = individualMode
+		? [
+				<AppButton
+					key="confirm-declaration"
+					variant="primary"
+					onClick={ handleConfirmDeclaration }
+					loading={ loading }
+				>
+					{ __( 'Confirm declaration', 'google-listings-and-ads' ) }
+				</AppButton>,
+		  ]
+		: [
+				<AppButton
+					key="declare-some-political"
+					variant="tertiary"
+					onClick={ handleClickSomePolitical }
+				>
+					{ __( 'Some are political', 'google-listings-and-ads' ) }
+				</AppButton>,
+				<AppButton
+					key="declare-all-non-political"
+					variant="primary"
+					onClick={ handleClickAllNonPolitical }
+					loading={ loading }
+				>
+					{ __(
+						'Declare all as non-political',
+						'google-listings-and-ads'
+					) }
+				</AppButton>,
+		  ];
+
 	return (
 		<AppModal
 			title={ __(
 				'Action required: EU political ads declaration',
 				'google-listings-and-ads'
 			) }
-			buttons={ [
-				<AppButton
-					key="confirm-declaration"
-					variant="primary"
-					onClick={ handleConfirm }
-					loading={ loading }
-				>
-					{ __( 'Confirm declaration', 'google-listings-and-ads' ) }
-				</AppButton>,
-			] }
+			buttons={ buttons }
 			onRequestClose={ onRequestClose }
 			className="gla-eu-political-declaration-modal"
 		>
-			<Notice status="warning" isDismissible={ false }>
-				{ __(
-					"After April 1, 2026, you won't be able to create or edit campaigns without completing this declaration.",
-					'google-listings-and-ads'
-				) }
-			</Notice>
-
 			<p>
 				{ createInterpolateElement(
 					__(
-						'Your Google Ads campaigns are missing the required <link>EU political ads declaration</link>. Check any campaigns below that contain political ads.',
+						'Your Google Ads campaigns are missing the required EU political ads declaration. <link>Learn about political ads</link>',
 						'google-listings-and-ads'
 					),
 					{
@@ -109,58 +133,68 @@ const Modal = ( { campaigns, onRequestClose } ) => {
 				) }
 			</p>
 
+			{ ! individualMode && (
+				<Notice
+					status="warning"
+					isDismissible={ false }
+					className="gla-eu-political-declaration-modal__notice--warning"
+				>
+					{ __(
+						"After April 1, 2026, you won't be able to create or edit campaigns without completing this declaration.",
+						'google-listings-and-ads'
+					) }
+				</Notice>
+			) }
+
+			{ individualMode && (
+				<p className="gla-eu-political-declaration-modal__subtitle">
+					{ __(
+						'Select campaigns that contain political ads:',
+						'google-listings-and-ads'
+					) }
+				</p>
+			) }
+
 			<ul>
 				{ campaigns.map( ( { id, name } ) => (
 					<li key={ id }>
-						<Flex>
-							<FlexBlock>{ name }</FlexBlock>
-							<FlexBlock>
-								<ToggleGroupControl
-									label={ __(
-										'Ad type',
-										'google-listings-and-ads'
-									) }
-									value={ declarations[ id ] }
-									onChange={ ( value ) =>
-										handleToggleChange( id, value )
-									}
-									isBlock
-									hideLabelFromVision
-									__nextHasNoMarginBottom
-								>
-									<ToggleGroupControlOption
-										value={ true }
-										label={ __(
-											'Political',
-											'google-listings-and-ads'
-										) }
-									/>
-									<ToggleGroupControlOption
-										value={ false }
-										label={ __(
-											'Non-political',
-											'google-listings-and-ads'
-										) }
-									/>
-								</ToggleGroupControl>
-							</FlexBlock>
-						</Flex>
+						{ ! individualMode && <span>{ name }</span> }
 
-						{ declarations[ id ] && (
-							<Notice
-								status="error"
-								isDismissible={ false }
-								className="gla-eu-political-declaration-modal__notice--error"
-							>
-								{ __(
-									'Your ads will not run in the EU',
-									'google-listings-and-ads'
-								) }
-							</Notice>
+						{ individualMode && (
+							<CheckboxControl
+								label={ name }
+								checked={ declarations[ id ] }
+								onChange={ ( value ) =>
+									handleCheckboxChange( id, value )
+								}
+							/>
 						) }
 					</li>
 				) ) }
 			</ul>
+
+			{ individualMode && (
+				<>
+					<AppButton variant="link" onClick={ handleSelectAll }>
+						{ __( 'Select all', 'google-listings-and-ads' ) }
+					</AppButton>
+
+					{ Object.values( declarations ).some(
+						( value ) => value
+					) && (
+						<Notice
+							status="warning"
+							isDismissible={ false }
+							className="gla-eu-political-declaration-modal__notice--warning"
+						>
+							{ __(
+								'Campaigns marked as political will not run in EU countries.',
+								'google-listings-and-ads'
+							) }
+						</Notice>
+					) }
+				</>
+			) }
 		</AppModal>
 	);
 };
