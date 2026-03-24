@@ -165,11 +165,12 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 
 		$final_url = $args['final_url'] ?? $this->get_site_url();
 
-		// Convert asset field types from lowercase strings to enum numbers (if provided).
-		$asset_field_types = [];
-		if ( ! empty( $args['asset_field_types'] ) ) {
-			$asset_field_types = $this->convert_types_to_enums( $args['asset_field_types'], self::VALID_IMAGE_TYPES );
+		// Default to all valid image types if not specified.
+		if ( empty( $args['asset_field_types'] ) ) {
+			$args['asset_field_types'] = self::VALID_IMAGE_TYPES;
 		}
+
+		$asset_field_types = $this->convert_types_to_enums( $args['asset_field_types'], self::VALID_IMAGE_TYPES );
 
 		$request_data = [
 			'customer_id'              => $customer_id,
@@ -179,12 +180,8 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 					'final_url' => $final_url,
 				]
 			),
+			'asset_field_types'        => $asset_field_types,
 		];
-
-		// Add asset_field_types only if provided.
-		if ( ! empty( $asset_field_types ) ) {
-			$request_data['asset_field_types'] = $asset_field_types;
-		}
 
 		$request = new GenerateImagesRequest( $request_data );
 
