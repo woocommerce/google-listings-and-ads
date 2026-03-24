@@ -14,6 +14,8 @@ import AppModal from '~/components/app-modal';
 import { useAppDispatch } from '~/data';
 import './modal.scss';
 
+export const CONTEXT = 'eu_political_declaration_modal';
+
 /**
  * @typedef {Object} Campaign
  * @property {number} id The unique identifier for the campaign.
@@ -80,6 +82,8 @@ const Modal = ( { campaigns, onRequestClose } ) => {
 					variant="primary"
 					onClick={ handleConfirmDeclaration }
 					loading={ loading }
+					eventName="gla_eu_political_declaration_modal_confirm_declaration_click"
+					eventProps={ { context: CONTEXT } }
 				>
 					{ __( 'Confirm declaration', 'google-listings-and-ads' ) }
 				</AppButton>,
@@ -89,6 +93,8 @@ const Modal = ( { campaigns, onRequestClose } ) => {
 					key="declare-some-political"
 					variant="tertiary"
 					onClick={ handleClickSomePolitical }
+					eventName="gla_eu_political_declaration_modal_declare_some_political_click"
+					eventProps={ { context: CONTEXT } }
 				>
 					{ __( 'Some are political', 'google-listings-and-ads' ) }
 				</AppButton>,
@@ -97,6 +103,8 @@ const Modal = ( { campaigns, onRequestClose } ) => {
 					variant="primary"
 					onClick={ handleClickAllNonPolitical }
 					loading={ loading }
+					eventName="gla_eu_political_declaration_modal_declare_all_non_political_click"
+					eventProps={ { context: CONTEXT } }
 				>
 					{ __(
 						'Declare all as non-political',
@@ -126,7 +134,7 @@ const Modal = ( { campaigns, onRequestClose } ) => {
 							<AppDocumentationLink
 								href="https://support.google.com/adspolicy/answer/6014595"
 								linkId="eu-political-content"
-								context="eu_political_declaration_modal"
+								context={ CONTEXT }
 							/>
 						),
 					}
@@ -175,9 +183,11 @@ const Modal = ( { campaigns, onRequestClose } ) => {
 
 			{ individualMode && (
 				<>
-					<AppButton variant="link" onClick={ handleSelectAll }>
-						{ __( 'Select all', 'google-listings-and-ads' ) }
-					</AppButton>
+					{ ! Object.values( declarations ).every( Boolean ) && (
+						<AppButton variant="link" onClick={ handleSelectAll }>
+							{ __( 'Select all', 'google-listings-and-ads' ) }
+						</AppButton>
+					) }
 
 					{ Object.values( declarations ).some(
 						( value ) => value
