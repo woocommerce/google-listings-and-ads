@@ -1358,6 +1358,13 @@ export function* receiveAdsRecommendations(
 	};
 }
 
+export function* receiveCYOIncentives( cyoIncentives ) {
+	return {
+		type: TYPES.RECEIVE_CYO_INCENTIVES,
+		cyoIncentives,
+	};
+}
+
 export function* receiveGenAIMediaAssets( url, data, assetType ) {
 	if ( ! data?.items ) {
 		return {
