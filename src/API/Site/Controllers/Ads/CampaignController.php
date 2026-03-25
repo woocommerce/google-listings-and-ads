@@ -101,6 +101,17 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 		);
 
 		$this->register_route(
+			'ads/campaigns/missing-eu-political-declaration',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_campaigns_missing_eu_declaration_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
+
+		$this->register_route(
 			'ads/campaigns/(?P<id>[\d]+)',
 			[
 				[
@@ -140,6 +151,21 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 					'message' => __( 'Successfully updated EU political advertising flag.', 'google-listings-and-ads' ),
 					'updated' => $updated,
 				];
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
+	 * Get the callback function for listing campaigns missing EU political declaration.
+	 *
+	 * @return callable
+	 */
+	protected function get_campaigns_missing_eu_declaration_callback(): callable {
+		return function () {
+			try {
+				return $this->ads_campaign->get_campaigns_missing_eu_political_declaration();
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
