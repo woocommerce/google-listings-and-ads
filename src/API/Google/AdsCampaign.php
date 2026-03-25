@@ -463,6 +463,33 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
+	 * Get full campaign details by campaign ID.
+	 *
+	 * @param array $ids
+	 * @return array
+	 */
+	public function get_campaigns_by_ids( array $ids ): array {
+		if ( empty( $ids ) ) {
+			return [];
+		}
+
+		$query = ( new AdsCampaignQuery() )
+			->set_client( $this->client, $this->options->get_ads_id() )
+			->where( 'campaign.id', $ids, 'IN' );
+
+		$results = $query->get_results();
+
+		$campaigns = [];
+
+		foreach ( $results->iterateAllElements() as $row ) {
+			$campaign                     = $this->convert_campaign( $row );
+			$campaigns[ $campaign['id'] ] = $campaign;
+		}
+
+		return $this->combine_campaigns_and_campaign_criterion_results( $campaigns );
+	}
+
+	/**
 	 * Delete a campaign.
 	 *
 	 * @param int $campaign_id Campaign ID.
