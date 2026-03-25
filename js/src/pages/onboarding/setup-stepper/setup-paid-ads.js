@@ -84,18 +84,47 @@ export default function SetupPaidAds() {
 		window.location.href = adminUrl + getProductFeedUrl( query );
 	};
 
-	const handleSkipCreatePaidAds = async () => {
+	const applyIncentive = async ( incentiveId ) => {
+		if ( ! incentiveId ) {
+			return true;
+		}
+		try {
+			await apiFetch( {
+				path: `${ API_NAMESPACE }/ads/incentive`,
+				method: 'POST',
+				data: { id: incentiveId },
+			} );
+			return true;
+		} catch ( e ) {
+			createNotice(
+				'error',
+				__(
+					'Unable to apply the selected ads credit offer.',
+					'google-listings-and-ads'
+				)
+			);
+			return false;
+		}
+	};
+
+	const handleSkipCreatePaidAds = async ( incentiveId ) => {
 		setCompleting( ACTION_SKIP );
+		if ( ! ( await applyIncentive( incentiveId ) ) ) {
+			setCompleting( null );
+			return;
+		}
 		await finishOnboardingSetup();
 	};
 
 	const createSkipButton = ( formContext ) => {
-		const { isValidForm } = formContext;
+		const { isValidForm, values } = formContext;
 
 		return (
 			<SkipButton
 				isValidForm={ isValidForm }
-				onSkipCreatePaidAds={ handleSkipCreatePaidAds }
+				onSkipCreatePaidAds={ () =>
+					handleSkipCreatePaidAds( values.incentiveId )
+				}
 				disabled={ completing === ACTION_COMPLETE }
 				loading={ completing === ACTION_SKIP }
 			/>
@@ -146,23 +175,8 @@ export default function SetupPaidAds() {
 			hasConfirmedEuPoliticalContent,
 		} = values;
 
-		if ( incentiveId ) {
-			try {
-				await apiFetch( {
-					path: `${ API_NAMESPACE }/ads/incentive`,
-					method: 'POST',
-					data: { id: incentiveId },
-				} );
-			} catch ( e ) {
-				createNotice(
-					'error',
-					__(
-						'Unable to apply the selected ads credit offer.',
-						'google-listings-and-ads'
-					)
-				);
-				return;
-			}
+		if ( ! ( await applyIncentive( incentiveId ) ) ) {
+			return;
 		}
 
 		const onBeforeFinish = handleSetupComplete.bind(
