@@ -180,91 +180,118 @@ test.describe( 'Settings', () => {
 	} );
 
 	test.describe( 'YouTube Shopping', () => {
-		test.afterEach( async () => {
-			// Prevent setup/complete handlers from leaking between tests.
-			await page.unroute( /\/wc\/gla\/youtube\/setup\/complete\b/ );
+		test.describe( 'when account is not connected', () => {
+			test.beforeAll( async () => {
+				await settingsPage.mockYouTubeAccountNotConnected();
+				await settingsPage.goto();
+			} );
+
+			test.afterAll( async () => {
+				await page.unroute( /\/wc\/gla\/youtube\/connection\b/ );
+				await page.unroute( /\/wc\/gla\/youtube\/connect\b/ );
+			} );
+
+			test( 'should show connect button when account is not connected', async () => {
+				await expect(
+					settingsPage.getYouTubeConnectButton()
+				).toBeVisible();
+			} );
 		} );
 
-		test( 'should show connect button when account is not connected', async () => {
-			await settingsPage.mockYouTubeAccountNotConnected();
-			await settingsPage.goto();
+		test.describe( 'when account is connected', () => {
+			test.beforeAll( async () => {
+				await settingsPage.mockYouTubeAccountConnected();
+				await settingsPage.goto();
+			} );
 
-			const connectButton = settingsPage.youTubeCard.getByRole(
-				'button',
-				{
-					name: 'Connect',
-				}
-			);
+			test.afterAll( async () => {
+				await page.unroute( /\/wc\/gla\/youtube\/connection\b/ );
+			} );
 
-			await expect( connectButton ).toBeVisible();
+			test( 'should show the channel name and disconnect button when account is connected', async () => {
+				await expect(
+					settingsPage.youTubeCard.getByText( 'My YouTube Channel' )
+				).toBeVisible();
+				await expect(
+					settingsPage.getYouTubeDisconnectButton()
+				).toBeVisible();
+			} );
+
+			test( 'should disconnect YouTube account and show Connect button', async () => {
+				const requestPromise =
+					settingsPage.registerYouTubeDisconnectRequest();
+
+				await settingsPage.mockYouTubeDisconnect();
+
+				await settingsPage.getYouTubeDisconnectButton().click();
+
+				await requestPromise;
+
+				await settingsPage.mockYouTubeAccountNotConnected();
+				await settingsPage.goto();
+
+				await expect(
+					settingsPage.getYouTubeConnectButton()
+				).toBeVisible();
+			} );
 		} );
 
-		test( 'should show the channel name and disconnect button when account is connected', async () => {
-			await settingsPage.mockYouTubeAccountConnected();
-			await settingsPage.goto();
+		test.describe( 'when account setup is incomplete', () => {
+			test.beforeAll( async () => {
+				await settingsPage.mockYouTubeAccountConnected();
+				await settingsPage.mockYouTubeAccountIncomplete();
+				await settingsPage.goto();
+			} );
 
-			const disconnectButton = settingsPage.youTubeCard.getByRole(
-				'button',
-				{
-					name: 'Disconnect YouTube account',
-				}
-			);
-			const channelName =
-				settingsPage.youTubeCard.getByText( 'My YouTube Channel' );
+			test.afterAll( async () => {
+				await page.unroute( /\/wc\/gla\/youtube\/setup\/complete\b/ );
+				await page.unroute( /\/wc\/gla\/youtube\/connection\b/ );
+			} );
 
-			await expect( channelName ).toBeVisible();
-			await expect( disconnectButton ).toBeVisible();
-		} );
+			test( 'should show a notice if the YouTube account is incomplete', async () => {
+				await expect(
+					settingsPage.youTubeCard.getByText(
+						'Your YouTube account is connected, but setup isn’t complete yet.'
+					)
+				).toBeVisible();
+			} );
 
-		test( 'should show a notice if the YouTube account is incomplete', async () => {
-			await settingsPage.mockYouTubeAccountIncomplete();
-			await settingsPage.goto();
+			test( 'should display error message when "Complete setup" fails', async () => {
+				await settingsPage.mockNotEligibleYouTubeChannel();
 
-			const notice = settingsPage.youTubeCard.getByText(
-				'Your YouTube account is connected, but setup isn’t complete yet.'
-			);
+				const requestPromise =
+					settingsPage.registerYouTubeCompleteSetupRequest();
 
-			await expect( notice ).toBeVisible();
-		} );
+				await settingsPage.getYouTubeCompleteSetupButton().click();
 
-		test( 'should display error message when "Complete setup" fails', async () => {
-			await settingsPage.mockNotEligibleYouTubeChannel();
-			const requestPromise =
-				settingsPage.registerYouTubeCompleteSetupRequest();
+				await requestPromise;
 
-			const completeSetupButton =
-				settingsPage.getYouTubeCompleteSetupButton();
-			await completeSetupButton.click();
+				await expect(
+					settingsPage.youTubeCard.getByText(
+						'The channel is not eligible for the linking program.'
+					)
+				).toBeVisible();
+			} );
 
-			await requestPromise;
+			test( 'should complete YouTube account setup successfully', async () => {
+				await settingsPage.mockEligibleYouTubeChannel();
+				// Reload so the page starts from the clean incomplete state.
+				await settingsPage.goto();
 
-			await expect(
-				settingsPage.youTubeCard.getByText(
-					'The channel is not eligible for the linking program.'
-				)
-			).toBeVisible();
-		} );
+				const requestPromise =
+					settingsPage.registerYouTubeCompleteSetupRequest();
 
-		test( 'should complete YouTube account setup successfully', async () => {
-			await settingsPage.mockEligibleYouTubeChannel();
-			await settingsPage.mockYouTubeAccountIncomplete();
-			await settingsPage.goto();
+				await settingsPage.getYouTubeCompleteSetupButton().click();
 
-			const requestPromise =
-				settingsPage.registerYouTubeCompleteSetupRequest();
+				await requestPromise;
 
-			const completeSetupButton =
-				settingsPage.getYouTubeCompleteSetupButton();
-			await completeSetupButton.click();
+				await settingsPage.mockYouTubeAccountConnected();
+				await settingsPage.goto();
 
-			await requestPromise;
-
-			// Now mock as connected so re-renders show the channel name
-			await settingsPage.mockYouTubeAccountConnected();
-
-			await expect(
-				settingsPage.youTubeCard.getByText( 'My YouTube Channel' )
-			).toBeVisible();
+				await expect(
+					settingsPage.youTubeCard.getByText( 'My YouTube Channel' )
+				).toBeVisible();
+			} );
 		} );
 	} );
 
