@@ -436,7 +436,7 @@ When a documentation link is clicked.
 	- with `{ context: 'setup-mc-accounts', link_id: 'comparison-shopping-services', href: 'https://support.google.com/merchants/topic/9080307' }`
 	- with `{ context: 'setup-mc-accounts', link_id: 'comparison-shopping-partners-find-a-partner', href: 'https://comparisonshoppingpartners.withgoogle.com/find_a_partner/' }`
 - [`IssuesTableDataModal`](../../js/src/pages/product-feed/issues-table-card/issues-table-data-modal.js#L21) with { context: 'issues-data-table-modal' }
-- [`Modal`](../../js/src/components/eu-political-declaration/modal.js#L46) with `{ context: 'eu-political-declaration-modal', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
+- [`Modal`](../../js/src/components/eu-political-declaration/modal.js#L38) with `{ context: 'eu-political-declaration-modal', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
 - [`ProductStatusHelpPopover`](../../js/src/pages/product-feed/product-statistics/product-status-help-popover.js#L16) with `{ context: 'product-feed', link_id: 'product-sync-statuses', href: 'https://support.google.com/merchants/answer/160491' }`
 - [`ReclaimUrlCard`](../../js/src/components/google-mc-account-card/reclaim-url-card/index.js#L42) with `{ context: 'setup-mc', link_id: 'claim-url', href: 'https://support.google.com/merchants/answer/176793' }`
 - [`RequestFullAccessGoogleAccountCard`](../../js/src/components/google-account-card/request-full-access-google-account-card.js#L26) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions' }`
@@ -502,17 +502,6 @@ Triggered when store address "Edit in WooCommerce Settings" button is clicked.
 `context` | `string` | The context in which the modal was closed, set to 'eu-political-declaration-modal'.
 #### Emitters
 - [`EuPoliticalDeclaration`](../../js/src/components/eu-political-declaration/index.js#L25) when the modal is closed.
-- [`Modal`](../../js/src/components/eu-political-declaration/modal.js#L46) when the modal is closed.
-
-### [`gla_eu_political_declaration_modal_closed`](../../js/src/components/eu-political-declaration/modal.js#L27)
-Triggered when the EU Political Declaration modal is closed.
-#### Properties
-| name | type | description |
-| ---- | ---- | ----------- |
-`context` | `string` | The context in which the modal was closed, set to 'eu-political-declaration-modal'.
-#### Emitters
-- [`EuPoliticalDeclaration`](../../js/src/components/eu-political-declaration/index.js#L25) when the modal is closed.
-- [`Modal`](../../js/src/components/eu-political-declaration/modal.js#L46) when the modal is closed.
 
 ### [`gla_faq`](../../js/src/components/faqs-panel/index.js#L22)
 Clicking on faq item to collapse or expand it.
