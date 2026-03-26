@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignCriterionQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsMissingEuDeclarationQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignAssetQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAssetQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
@@ -176,6 +177,41 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			throw new ExceptionWithResponseData(
 				/* translators: %s Error message */
 				sprintf( __( 'Error retrieving campaigns: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				null,
+				[ 'errors' => $errors ]
+			);
+		}
+	}
+
+	/**
+	 * Get campaigns that are missing the EU political advertising declaration.
+	 *
+	 * @return array[] List of campaigns with 'id' and 'name' keys.
+	 * @throws ExceptionWithResponseData When an ApiException is caught.
+	 */
+	public function get_campaigns_missing_eu_political_declaration(): array {
+		try {
+			$query     = ( new AdsMissingEuDeclarationQuery() )->set_client( $this->client, $this->options->get_ads_id() );
+			$results   = $query->get_results();
+			$campaigns = [];
+
+			foreach ( $results->iterateAllElements() as $row ) {
+				$campaign    = $row->getCampaign();
+				$campaigns[] = [
+					'id'   => $campaign->getId(),
+					'name' => $campaign->getName(),
+				];
+			}
+
+			return $campaigns;
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+
+			$errors = $this->get_exception_errors( $e );
+			throw new ExceptionWithResponseData(
+				/* translators: %s Error message */
+				sprintf( __( 'Error retrieving campaigns missing EU political declaration: %s', 'google-listings-and-ads' ), reset( $errors ) ),
 				$this->map_grpc_code_to_http_status_code( $e ),
 				null,
 				[ 'errors' => $errors ]
@@ -684,7 +720,6 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 
 		$data += [
 			'eu_political_advertising_confirmation' => EuPoliticalAdvertisingStatus::CONTAINS_EU_POLITICAL_ADVERTISING === $eu_political_enum ? true : false,
-			'missing_eu_political_declaration'      => EuPoliticalAdvertisingStatus::UNSPECIFIED === $eu_political_enum,
 		];
 
 		$budget = $row->getCampaignBudget();
