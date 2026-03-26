@@ -14,7 +14,6 @@ import Section from '~/components/section';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import SpinnerCard from '~/components/spinner-card';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
-import { recordGlaEvent } from '~/utils/tracks';
 import useEnableEnhancedConversions from './useEnableEnhancedConversions';
 
 /**
@@ -43,10 +42,6 @@ const SetupEnhancedConversions = () => {
 		try {
 			setIsSaving( true );
 			await toggleEnhancedConversions();
-			recordGlaEvent( 'gla_enhanced_conversions_toggle', {
-				action: ! isEnabled ? 'enabled' : 'disabled',
-				context: 'settings',
-			} );
 
 			createNotice(
 				'success',
