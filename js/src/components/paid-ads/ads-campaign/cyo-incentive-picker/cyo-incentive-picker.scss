@@ -1,0 +1,63 @@
+.gla-cyoi-section {
+
+    .gla-subsection-title {
+        font-weight: 400;
+        margin-bottom: 4px;
+    }
+
+    .gla-cyoi-incentive-picker__container {
+        display: grid;
+        grid-template-columns: [radio] auto [option] 120px [metrics-start] 1fr;
+        align-items: center;
+        padding-bottom: $grid-unit-20;
+        line-height: 16px;
+        color: $gray-700;
+
+        :global(.gridicon) {
+            fill: currentcolor;
+        }
+    }
+
+    .gla-cyoi-incentive-picker__helper {
+        grid-column-start: option;
+        display: inline-flex;
+        padding-top: $grid-unit-05 * 1.5;
+        font-size: $gla-font-base;
+    }
+
+    .gla-cyoi-incentive-picker__option {
+        align-content: center;
+        min-height: 20px;
+    }
+
+    .gla-cyoi-incentive-picker__row,
+    .gla-cyoi-radio-control__wrapper {
+        display: contents;
+    }
+
+    .gla-cyoi-incentive-picker__row {
+        font-size: $gla-font-smaller;
+
+        label {
+            font-size: 15px;
+            font-weight: 500;
+            color: $black;
+        }
+
+        &:not(.customRow) .metricsItem {
+            grid-row-end: span 2;
+        }
+
+        &::before {
+            content: "";
+            grid-column: 1 / -1;
+            height: 1px;
+            margin: $grid-unit-20 0;
+            background-color: $gray-200;
+        }
+
+        &:first-child::before {
+            visibility: hidden;
+        }
+    }
+}
