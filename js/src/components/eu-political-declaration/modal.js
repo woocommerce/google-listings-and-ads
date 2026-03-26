@@ -15,7 +15,6 @@ import AppModal from '~/components/app-modal';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import './modal.scss';
 
-export const CONTEXT = 'eu-political-declaration-modal';
 const CAMPAIGNS_BASE_URL = 'https://ads.google.com/aw/campaigns';
 
 /**
@@ -25,17 +24,24 @@ const CAMPAIGNS_BASE_URL = 'https://ads.google.com/aw/campaigns';
  */
 
 /**
+ * @event gla_eu_political_declaration_modal_go_to_google_ads_click
+ * @property {string} context The context in which the modal was closed, set to the value of the `eventContext` prop.
+ */
+
+/**
  * Modal component for EU Political Declaration. Displays a list of campaigns missing the declaration.
  *
- * @fires gla_documentation_link_click with `{ context: 'eu-political-declaration-modal', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
+ * @fires gla_documentation_link_click with `{ context: 'dashboard'|'edit-ads'|'create-ads', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
+ * @fires gla_eu_political_declaration_modal_go_to_google_ads_click with `{ context: 'dashboard'|'edit-ads'|'create-ads' }`
  *
  * @param {Object} props The component props.
  * @param {Campaign[]} props.campaigns An array of campaign objects that are missing the EU political declaration.
  * @param {Function} props.onRequestClose A callback function to be called when the modal is requested to be closed.
+ * @param {string} props.eventContext The context in which the component is rendered, used for tracking purposes.
  *
  * @return {JSX.Element} The rendered Modal component.
  */
-const Modal = ( { campaigns, onRequestClose } ) => {
+const Modal = ( { campaigns, onRequestClose, eventContext } ) => {
 	const { googleAdsAccount, hasFinishedResolution } = useGoogleAdsAccount();
 
 	if ( ! hasFinishedResolution ) {
@@ -59,7 +65,7 @@ const Modal = ( { campaigns, onRequestClose } ) => {
 					variant="primary"
 					href={ campaignsUrl }
 					eventName="gla_eu_political_declaration_modal_go_to_google_ads_click"
-					eventProps={ { context: CONTEXT } }
+					eventProps={ { context: eventContext } }
 				>
 					{ __( 'Go to Google Ads', 'google-listings-and-ads' ) }
 				</AppButton>,
@@ -78,7 +84,7 @@ const Modal = ( { campaigns, onRequestClose } ) => {
 							<AppDocumentationLink
 								href="https://support.google.com/adspolicy/answer/6014595"
 								linkId="eu-political-content"
-								context={ CONTEXT }
+								context={ eventContext }
 							/>
 						),
 					}

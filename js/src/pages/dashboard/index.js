@@ -101,7 +101,7 @@ const Dashboard = () => {
 				<RaiseBudgetRecommendationBanner />
 				<RebrandingTour />
 				<YouTubeShoppingTour />
-				<EuPoliticalDeclaration />
+				<EuPoliticalDeclaration eventContext="dashboard" />
 				<div className="gla-dashboard__filter">
 					<AppDateRangeFilterPicker
 						trackEventReportId={ trackEventReportId }

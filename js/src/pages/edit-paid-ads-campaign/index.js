@@ -37,6 +37,7 @@ import {
 	recordStepContinueEvent,
 } from '~/utils/tracks';
 import useNavigateAwayPromptEffect from '~/hooks/useNavigateAwayPromptEffect';
+import EuPoliticalDeclaration from '~/components/eu-political-declaration';
 
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'edit-ads';
@@ -285,6 +286,7 @@ const EditPaidAdsCampaign = () => {
 					] }
 				/>
 			</CampaignAssetsForm>
+			<EuPoliticalDeclaration eventContext={ eventContext } />
 		</>
 	);
 };
