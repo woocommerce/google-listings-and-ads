@@ -58,8 +58,6 @@ const CyoIncentivePicker = () => {
 		return acc;
 	}, [] );
 
-	console.log( 'selectedIncentiveId:', selectedIncentiveId ); // Debugging log to check selected incentive ID
-
 	return (
 		<Section
 			className="gla-cyoi-section"
