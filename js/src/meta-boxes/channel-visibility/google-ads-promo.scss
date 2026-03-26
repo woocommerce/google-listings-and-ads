@@ -29,3 +29,14 @@
 .gla-channel-visibility__get-started--is-dismissed {
 	margin-left: auto;
 }
+
+.gla-channel-visibility__sync-notice .components-notice__content {
+
+	& > p:first-child {
+		margin-top: 0;
+	}
+
+	& > p:last-child {
+		margin-bottom: 0;
+	}
+}

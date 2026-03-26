@@ -16,6 +16,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { glaData } from '~/constants';
 import googleLogoURL from '~/images/logo/google-g-logo.svg';
+import { SYNC_STATUS_HAS_ERRORS, SYNC_STATUS_SYNCED } from './constants';
 
 const {
 	channelVisibility: {
@@ -27,9 +28,6 @@ const {
 		options = [],
 	} = {},
 } = glaData || {};
-
-const SYNC_STATUS_SYNCED = 'synced';
-const SYNC_STATUS_HAS_ERRORS = 'has-errors';
 
 /**
  * Channel Visibility Settings component.
@@ -49,6 +47,7 @@ const ChannelVisibilitySettings = () => {
 	if ( syncStatus === SYNC_STATUS_HAS_ERRORS ) {
 		syncStatusText = __( 'Issues detected', 'google-listings-and-ads' );
 	} else if ( syncStatus ) {
+		// Capitalize the first letter and replace dashes with spaces (e.g. 'not-synced' → 'Not synced').
 		syncStatusText =
 			syncStatus.charAt( 0 ).toUpperCase() +
 			syncStatus.slice( 1 ).replace( '-', ' ' );
@@ -131,6 +130,7 @@ const ChannelVisibilitySettings = () => {
 			{ shouldDisplaySyncNotice && syncStatusText && (
 				<FlexBlock>
 					<Notice
+						className="gla-channel-visibility__sync-notice"
 						isDismissible={ false }
 						status={ hasIssues ? 'warning' : 'info' }
 					>
@@ -145,6 +145,7 @@ const ChannelVisibilitySettings = () => {
 						<p className="gla-channel-visibility__sync-status">
 							{ syncStatusText }
 						</p>
+
 						{ hasIssues && (
 							<>
 								<p>
@@ -156,8 +157,8 @@ const ChannelVisibilitySettings = () => {
 									</strong>
 								</p>
 								<ul>
-									{ issues.map( ( issue, index ) => (
-										<li key={ index }>{ issue }</li>
+									{ issues.map( ( issue ) => (
+										<li key={ issue }>{ issue }</li>
 									) ) }
 								</ul>
 							</>

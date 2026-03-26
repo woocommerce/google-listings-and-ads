@@ -347,7 +347,7 @@ test.describe( 'Classic Product Editor integration', () => {
 		/*
 		 * Assert:
 		 * - The value is saved to 'sync-and-show'
-		 * - The warning notice is shown with "Issues" status and issue contents
+		 * - The warning notice is shown with "Issues detected" status and issue contents
 		 */
 		await selection.selectOption( 'sync-and-show' );
 		await editorUtils.save();
