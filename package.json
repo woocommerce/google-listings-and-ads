@@ -81,7 +81,6 @@
 		"woocommerce-grow-jsdoc": "git+https://github.com/woocommerce/grow#jsdoc-v1"
 	},
 	"overrides": {
-		"locutus": "^3.0.14",
 		"serialize-javascript": "^7.0.3",
 		"d3-color": "^3.1.0",
 		"d3-interpolate": "^3.0.0",
