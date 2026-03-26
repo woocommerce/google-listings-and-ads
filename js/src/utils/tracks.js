@@ -162,6 +162,14 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  */
 
 /**
+ * Triggered when a user toggles the Enhanced Conversions checkbox in Settings.
+ *
+ * @event gla_enhanced_conversions_toggle
+ * @property {string} action Whether the user `enabled` or `disabled` the feature.
+ * @property {string} context Always `settings`.
+ */
+
+/**
  * Setup Merchant Center
  *
  * @event gla_setup_mc
