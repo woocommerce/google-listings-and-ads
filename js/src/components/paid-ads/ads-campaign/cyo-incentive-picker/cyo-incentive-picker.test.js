@@ -146,8 +146,16 @@ describe( 'CyoIncentivePicker Component', () => {
 
 	it( 'should set incentiveId when selecting an offer', () => {
 		render( <CyoIncentivePicker /> );
-		fireEvent.click( screen.getByRole( 'radio', { name: '123' } ) );
+		const radioButtons = screen.getAllByRole( 'radio' );
+		expect( radioButtons ).toHaveLength( 3 );
 
+		fireEvent.click( radioButtons[ 0 ] );
+		expect( onIncentiveIdChange ).toHaveBeenCalledWith( '789' );
+
+		fireEvent.click( radioButtons[ 1 ] );
+		expect( onIncentiveIdChange ).toHaveBeenCalledWith( '456' );
+
+		fireEvent.click( radioButtons[ 2 ] );
 		expect( onIncentiveIdChange ).toHaveBeenCalledWith( '123' );
 	} );
 } );
