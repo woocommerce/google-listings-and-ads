@@ -181,20 +181,15 @@ test.describe( 'Settings', () => {
 
 	test.describe( 'YouTube Shopping', () => {
 		test.describe( 'when account is not connected', () => {
-			test.beforeAll( async () => {
+			test( 'should show connect button when account is not connected', async () => {
 				await settingsPage.mockYouTubeAccountNotConnected();
 				await settingsPage.goto();
-			} );
 
-			test.afterAll( async () => {
-				await page.unroute( /\/wc\/gla\/youtube\/connection\b/ );
-				await page.unroute( /\/wc\/gla\/youtube\/connect\b/ );
-			} );
-
-			test( 'should show connect button when account is not connected', async () => {
 				await expect(
 					settingsPage.getYouTubeConnectButton()
 				).toBeVisible();
+
+				await page.unroute( /\/wc\/gla\/youtube\/connection\b/ );
 			} );
 		} );
 
@@ -218,17 +213,15 @@ test.describe( 'Settings', () => {
 			} );
 
 			test( 'should disconnect YouTube account and show Connect button', async () => {
+				await settingsPage.mockYouTubeAccountNotConnected();
+				await settingsPage.mockYouTubeDisconnect();
+
 				const requestPromise =
 					settingsPage.registerYouTubeDisconnectRequest();
-
-				await settingsPage.mockYouTubeDisconnect();
 
 				await settingsPage.getYouTubeDisconnectButton().click();
 
 				await requestPromise;
-
-				await settingsPage.mockYouTubeAccountNotConnected();
-				await settingsPage.goto();
 
 				await expect(
 					settingsPage.getYouTubeConnectButton()
