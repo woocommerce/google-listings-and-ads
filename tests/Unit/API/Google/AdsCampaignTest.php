@@ -543,63 +543,6 @@ class AdsCampaignTest extends UnitTest {
 		}
 	}
 
-	public function test_set_eu_political_campaigns() {
-		$second_campaign_id = 9876543210;
-		$campaigns          = [
-			[
-				'id'    => self::TEST_CAMPAIGN_ID,
-				'value' => true,
-			],
-			[
-				'id'    => $second_campaign_id,
-				'value' => false,
-			],
-		];
-
-		$this->service_client->expects( $this->once() )
-			->method( 'mutate' )
-			->willReturnCallback(
-				function ( \Google\Ads\GoogleAds\V22\Services\MutateGoogleAdsRequest $request ) {
-					$operations = $request->getMutateOperations();
-					foreach ( $operations as $operation ) {
-						if ( 'campaign_operation' === $operation->getOperation() ) {
-							$this->assertEquals( 'update', $operation->getCampaignOperation()->getOperation() );
-						}
-					}
-					return new \Google\Ads\GoogleAds\V22\Services\MutateGoogleAdsResponse();
-				}
-			);
-
-		$this->assertEquals(
-			[ self::TEST_CAMPAIGN_ID, $second_campaign_id ],
-			$this->campaign->set_eu_political_campaigns( $campaigns )
-		);
-	}
-
-	public function test_set_eu_political_campaigns_exception() {
-		$campaigns = [
-			[
-				'id'    => self::TEST_CAMPAIGN_ID,
-				'value' => false,
-			],
-		];
-
-		$this->generate_campaign_mutate_mock_exception( new ApiException( 'invalid', 3, 'INVALID_ARGUMENT' ) );
-
-		try {
-			$this->campaign->set_eu_political_campaigns( $campaigns );
-		} catch ( ExceptionWithResponseData $e ) {
-			$this->assertEquals(
-				[
-					'message' => 'Error updating EU political advertising flag: invalid',
-					'errors'  => [ 'INVALID_ARGUMENT' => 'invalid' ],
-				],
-				$e->get_response_data( true )
-			);
-			$this->assertEquals( 400, $e->getCode() );
-		}
-	}
-
 	public function test_edit_campaign() {
 		$campaign_data = [
 			'amount' => 40,

@@ -2,8 +2,9 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState, createInterpolateElement } from '@wordpress/element';
-import { CheckboxControl, Notice } from '@wordpress/components';
+import { createInterpolateElement } from '@wordpress/element';
+import { Notice } from '@wordpress/components';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -11,10 +12,11 @@ import { CheckboxControl, Notice } from '@wordpress/components';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import AppButton from '~/components/app-button';
 import AppModal from '~/components/app-modal';
-import { useAppDispatch } from '~/data';
+import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import './modal.scss';
 
-export const CONTEXT = 'eu_political_declaration_modal';
+export const CONTEXT = 'eu-political-declaration-modal';
+const CAMPAIGNS_BASE_URL = 'https://ads.google.com/aw/campaigns';
 
 /**
  * @typedef {Object} Campaign
@@ -23,7 +25,9 @@ export const CONTEXT = 'eu_political_declaration_modal';
  */
 
 /**
- * Modal component for EU Political Declaration. Displays a list of campaigns missing the declaration and allows users to confirm which campaigns contain political ads.
+ * Modal component for EU Political Declaration. Displays a list of campaigns missing the declaration.
+ *
+ * @fires gla_documentation_link_click with `{ context: 'eu-political-declaration-modal', link_id: 'eu-political-content', href: 'https://support.google.com/adspolicy/answer/6014595' }`
  *
  * @param {Object} props The component props.
  * @param {Campaign[]} props.campaigns An array of campaign objects that are missing the EU political declaration.
@@ -32,86 +36,16 @@ export const CONTEXT = 'eu_political_declaration_modal';
  * @return {JSX.Element} The rendered Modal component.
  */
 const Modal = ( { campaigns, onRequestClose } ) => {
-	const [ individualMode, setIndividualMode ] = useState( false );
-	const [ loading, setLoading ] = useState( false );
-	const { invalidateResolution, setEuPoliticalCampaigns } = useAppDispatch();
-	const [ declarations, setDeclarations ] = useState( () =>
-		Object.fromEntries( campaigns.map( ( { id } ) => [ id, false ] ) )
-	);
+	const { googleAdsAccount, hasFinishedResolution } = useGoogleAdsAccount();
 
-	const submitDeclaration = async ( payload ) => {
-		setLoading( true );
+	if ( ! hasFinishedResolution ) {
+		return null;
+	}
 
-		try {
-			await setEuPoliticalCampaigns( payload );
-			invalidateResolution( 'getAdsCampaigns', [] );
-			onRequestClose();
-		} finally {
-			setLoading( false );
-		}
-	};
-
-	const handleCheckboxChange = ( id, value ) => {
-		setDeclarations( { ...declarations, [ id ]: value } );
-	};
-
-	const handleSelectAll = () => {
-		setDeclarations(
-			Object.fromEntries( campaigns.map( ( { id } ) => [ id, true ] ) )
-		);
-	};
-
-	const handleClickSomePolitical = () => {
-		setIndividualMode( true );
-	};
-
-	const handleClickAllNonPolitical = () =>
-		submitDeclaration(
-			campaigns.map( ( { id } ) => ( { id, value: false } ) )
-		);
-
-	const handleConfirmDeclaration = () =>
-		submitDeclaration(
-			campaigns.map( ( { id } ) => ( { id, value: declarations[ id ] } ) )
-		);
-
-	const buttons = individualMode
-		? [
-				<AppButton
-					key="confirm-declaration"
-					variant="primary"
-					onClick={ handleConfirmDeclaration }
-					loading={ loading }
-					eventName="gla_eu_political_declaration_modal_confirm_declaration_click"
-					eventProps={ { context: CONTEXT } }
-				>
-					{ __( 'Confirm declaration', 'google-listings-and-ads' ) }
-				</AppButton>,
-		  ]
-		: [
-				<AppButton
-					key="declare-some-political"
-					variant="tertiary"
-					onClick={ handleClickSomePolitical }
-					eventName="gla_eu_political_declaration_modal_declare_some_political_click"
-					eventProps={ { context: CONTEXT } }
-				>
-					{ __( 'Some are political', 'google-listings-and-ads' ) }
-				</AppButton>,
-				<AppButton
-					key="declare-all-non-political"
-					variant="primary"
-					onClick={ handleClickAllNonPolitical }
-					loading={ loading }
-					eventName="gla_eu_political_declaration_modal_declare_all_non_political_click"
-					eventProps={ { context: CONTEXT } }
-				>
-					{ __(
-						'Declare all as non-political',
-						'google-listings-and-ads'
-					) }
-				</AppButton>,
-		  ];
+	const params = googleAdsAccount?.ocid
+		? { ocid: googleAdsAccount.ocid }
+		: {};
+	const campaignsUrl = addQueryArgs( CAMPAIGNS_BASE_URL, params );
 
 	return (
 		<AppModal
@@ -119,14 +53,24 @@ const Modal = ( { campaigns, onRequestClose } ) => {
 				'Action required: EU political ads declaration',
 				'google-listings-and-ads'
 			) }
-			buttons={ buttons }
+			buttons={ [
+				<AppButton
+					key="go-to-google-ads"
+					variant="primary"
+					href={ campaignsUrl }
+					eventName="gla_eu_political_declaration_modal_go_to_google_ads_click"
+					eventProps={ { context: CONTEXT } }
+				>
+					{ __( 'Go to Google Ads', 'google-listings-and-ads' ) }
+				</AppButton>,
+			] }
 			onRequestClose={ onRequestClose }
 			className="gla-eu-political-declaration-modal"
 		>
 			<p>
 				{ createInterpolateElement(
 					__(
-						'Your Google Ads campaigns are missing the required EU political ads declaration. <link>Learn about political ads</link>',
+						"Your Google Ads campaigns are missing the required EU political ads declaration. You'll need to complete this in Google Ads before you can create or edit campaigns here. <link>Learn about political ads</link>",
 						'google-listings-and-ads'
 					),
 					{
@@ -141,70 +85,22 @@ const Modal = ( { campaigns, onRequestClose } ) => {
 				) }
 			</p>
 
-			{ ! individualMode && (
-				<Notice
-					status="warning"
-					isDismissible={ false }
-					className="gla-eu-political-declaration-modal__notice--warning"
-				>
-					{ __(
-						"After April 1, 2026, you won't be able to create or edit campaigns without completing this declaration.",
-						'google-listings-and-ads'
-					) }
-				</Notice>
-			) }
-
-			{ individualMode && (
-				<p className="gla-eu-political-declaration-modal__subtitle">
-					{ __(
-						'Select campaigns that contain political ads:',
-						'google-listings-and-ads'
-					) }
-				</p>
-			) }
+			<Notice
+				status="warning"
+				isDismissible={ false }
+				className="gla-eu-political-declaration-modal__notice--warning"
+			>
+				{ __(
+					"After April 1, 2026, you won't be able to create or edit campaigns without completing this declaration.",
+					'google-listings-and-ads'
+				) }
+			</Notice>
 
 			<ul>
 				{ campaigns.map( ( { id, name } ) => (
-					<li key={ id }>
-						{ ! individualMode && <span>{ name }</span> }
-
-						{ individualMode && (
-							<CheckboxControl
-								label={ name }
-								checked={ declarations[ id ] }
-								onChange={ ( value ) =>
-									handleCheckboxChange( id, value )
-								}
-							/>
-						) }
-					</li>
+					<li key={ id }>{ name }</li>
 				) ) }
 			</ul>
-
-			{ individualMode && (
-				<>
-					{ ! Object.values( declarations ).every( Boolean ) && (
-						<AppButton variant="link" onClick={ handleSelectAll }>
-							{ __( 'Select all', 'google-listings-and-ads' ) }
-						</AppButton>
-					) }
-
-					{ Object.values( declarations ).some(
-						( value ) => value
-					) && (
-						<Notice
-							status="warning"
-							isDismissible={ false }
-							className="gla-eu-political-declaration-modal__notice--warning"
-						>
-							{ __(
-								'Campaigns marked as political will not run in EU countries.',
-								'google-listings-and-ads'
-							) }
-						</Notice>
-					) }
-				</>
-			) }
 		</AppModal>
 	);
 };
