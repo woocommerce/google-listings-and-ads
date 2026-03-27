@@ -98,6 +98,7 @@ const ChannelVisibilitySettings = () => {
 							</FlexItem>
 						</Flex>
 					</FlexItem>
+
 					{ selectOptions.length > 0 && (
 						<FlexBlock>
 							<SelectControl
@@ -127,6 +128,7 @@ const ChannelVisibilitySettings = () => {
 					</Notice>
 				</FlexBlock>
 			) }
+
 			{ shouldDisplaySyncNotice && syncStatusText && (
 				<FlexBlock>
 					<Notice
