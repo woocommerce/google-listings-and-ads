@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsMissingEuDeclarationQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\AbstractBatchedActionSchedulerJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
@@ -26,11 +25,6 @@ class UpdateEuPoliticalCampaigns extends AbstractBatchedActionSchedulerJob imple
 	use OptionsAwareTrait;
 
 	/**
-	 * @var GoogleAdsClient
-	 */
-	protected $client;
-
-	/**
 	 * @var AdsCampaign
 	 */
 	protected $ads_campaign;
@@ -43,9 +37,8 @@ class UpdateEuPoliticalCampaigns extends AbstractBatchedActionSchedulerJob imple
 	 * @param GoogleAdsClient           $client
 	 * @param AdsCampaign               $ads_campaign
 	 */
-	public function __construct( ActionSchedulerInterface $action_scheduler, ActionSchedulerJobMonitor $monitor, GoogleAdsClient $client, AdsCampaign $ads_campaign ) {
+	public function __construct( ActionSchedulerInterface $action_scheduler, ActionSchedulerJobMonitor $monitor, AdsCampaign $ads_campaign ) {
 		parent::__construct( $action_scheduler, $monitor );
-		$this->client       = $client;
 		$this->ads_campaign = $ads_campaign;
 	}
 
@@ -85,19 +78,9 @@ class UpdateEuPoliticalCampaigns extends AbstractBatchedActionSchedulerJob imple
 		$limit  = $this->get_batch_size();
 		$offset = ( $batch_number - 1 ) * $limit;
 
-		$query = new AdsMissingEuDeclarationQuery();
-		$query->set_client( $this->client, $this->options->get_ads_id() );
+		$items = $this->ads_campaign->get_campaigns_missing_eu_political_declaration();
 
-		$results  = $query->get_results();
-		$all_rows = iterator_to_array( $results->iterateAllElements() );
-
-		$items = [];
-		foreach ( array_slice( $all_rows, $offset, $limit ) as $row ) {
-			$campaign = $row->getCampaign();
-			$items[]  = [ 'id' => $campaign->getId() ];
-		}
-
-		return $items;
+		return array_slice( $items, $offset, $limit );
 	}
 
 	/**

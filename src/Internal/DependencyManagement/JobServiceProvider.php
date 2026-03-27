@@ -214,7 +214,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 
 		$this->share_action_scheduler_job( UpdateMerchantPriceBenchmarks::class, MerchantCenterService::class, PriceBenchmarks::class );
 
-		$this->share_action_scheduler_job( UpdateEuPoliticalCampaigns::class, GoogleAdsClient::class, AdsCampaign::class );
+		$this->share_action_scheduler_job( UpdateEuPoliticalCampaigns::class, AdsCampaign::class );
 	}
 
 	/**
