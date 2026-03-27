@@ -8,6 +8,7 @@ import { useState, useRef } from '@wordpress/element';
  * Internal dependencies
  */
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
+import useApplyIncentive from '~/hooks/useApplyIncentive';
 import AdsCampaign from '~/components/paid-ads/ads-campaign';
 import BudgetIncentivePrompt from '~/components/paid-ads/budget-incentive-prompt';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
@@ -33,6 +34,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
+	const applyIncentive = useApplyIncentive();
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
@@ -40,18 +42,24 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
-	const handleSkipCreatePaidAds = async () => {
+	const handleSkipCreatePaidAds = async ( incentiveId ) => {
 		setCompleting( ACTION_SKIP );
+		if ( ! ( await applyIncentive( incentiveId ) ) ) {
+			setCompleting( null );
+			return;
+		}
 		onSkip();
 	};
 
 	const createSkipButton = ( formContext ) => {
-		const { isValidForm } = formContext;
+		const { isValidForm, values } = formContext;
 
 		return (
 			<SkipButton
 				isValidForm={ isValidForm }
-				onSkipCreatePaidAds={ handleSkipCreatePaidAds }
+				onSkipCreatePaidAds={ () =>
+					handleSkipCreatePaidAds( values.incentiveId )
+				}
 				disabled={ completing === ACTION_CONTINUE }
 				loading={ completing === ACTION_SKIP }
 			/>
@@ -95,8 +103,18 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	}
 
 	const handleSubmit = async ( values ) => {
+		const {
+			level,
+			dailyBudget,
+			incentiveId,
+			hasConfirmedEuPoliticalContent,
+		} = values;
+
+		if ( ! ( await applyIncentive( incentiveId ) ) ) {
+			return;
+		}
+
 		setCompleting( ACTION_CONTINUE );
-		const { level, dailyBudget, hasConfirmedEuPoliticalContent } = values;
 
 		recordGlaEvent(
 			'gla_ads_only_onboarding_with_paid_ads_continue_button_click',

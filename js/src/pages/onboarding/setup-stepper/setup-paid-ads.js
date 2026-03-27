@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 import { useState, useRef } from '@wordpress/element';
 import { noop } from 'lodash';
@@ -12,7 +11,7 @@ import { noop } from 'lodash';
 import useAdminUrl from '~/hooks/useAdminUrl';
 import useAdsSetupCompleteCallback from '~/hooks/useAdsSetupCompleteCallback';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import useApplyIncentive from '~/hooks/useApplyIncentive';
 import AdsCampaign from '~/components/paid-ads/ads-campaign';
 import BudgetIncentivePrompt from '~/components/paid-ads/budget-incentive-prompt';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
@@ -23,7 +22,6 @@ import { getProductFeedUrl } from '~/utils/urls';
 import { handleApiError } from '~/utils/handleError';
 import { FILTER_BUDGET_RECOMMENDATIONS, recordGlaEvent } from '~/utils/tracks';
 import { useAppDispatch } from '~/data';
-import { API_NAMESPACE } from '~/data/constants';
 import { GUIDE_NAMES, GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
 import SkipButton from './skip-button';
@@ -54,7 +52,7 @@ export default function SetupPaidAds() {
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const { syncSettings } = useAppDispatch();
-	const { createNotice } = useDispatchCoreNotices();
+	const applyIncentive = useApplyIncentive();
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
@@ -82,29 +80,6 @@ export default function SetupPaidAds() {
 		// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.
 		const query = { guide: GUIDE_NAMES.SUBMISSION_SUCCESS };
 		window.location.href = adminUrl + getProductFeedUrl( query );
-	};
-
-	const applyIncentive = async ( incentiveId ) => {
-		if ( ! incentiveId ) {
-			return true;
-		}
-		try {
-			await apiFetch( {
-				path: `${ API_NAMESPACE }/ads/incentive`,
-				method: 'POST',
-				data: { id: incentiveId },
-			} );
-			return true;
-		} catch ( e ) {
-			createNotice(
-				'error',
-				__(
-					'Unable to apply the selected ads credit offer.',
-					'google-listings-and-ads'
-				)
-			);
-			return false;
-		}
 	};
 
 	const handleSkipCreatePaidAds = async ( incentiveId ) => {
