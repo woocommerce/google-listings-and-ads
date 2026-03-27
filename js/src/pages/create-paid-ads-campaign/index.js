@@ -34,6 +34,7 @@ import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
 } from '~/utils/tracks';
+import EuPoliticalDeclaration from '~/components/eu-political-declaration';
 
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'create-ads';
@@ -200,6 +201,7 @@ const CreatePaidAdsCampaign = () => {
 					] }
 				/>
 			</CampaignAssetsForm>
+			<EuPoliticalDeclaration eventContext={ eventContext } />
 		</>
 	);
 };

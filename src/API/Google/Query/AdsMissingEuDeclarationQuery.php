@@ -17,7 +17,6 @@ class AdsMissingEuDeclarationQuery extends AdsQuery {
 	 */
 	public function __construct() {
 		parent::__construct( 'campaign' );
-		$this->columns( [ 'campaign.id', 'campaign.name' ] );
 	}
 
 	/**

@@ -69,38 +69,6 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 		);
 
 		$this->register_route(
-			'ads/campaigns/set-eu-political-flag',
-			[
-				[
-					'methods'             => TransportMethods::CREATABLE,
-					'callback'            => $this->set_eu_political_campaigns_callback(),
-					'permission_callback' => $this->get_permission_callback(),
-					'args'                => [
-						'campaigns' => [
-							'type'              => 'array',
-							'description'       => __( 'List of campaigns with their EU political advertising flag value.', 'google-listings-and-ads' ),
-							'required'          => true,
-							'validate_callback' => 'rest_validate_request_arg',
-							'items'             => [
-								'type'       => 'object',
-								'properties' => [
-									'id'    => [
-										'type'     => 'integer',
-										'required' => true,
-									],
-									'value' => [
-										'type'     => 'boolean',
-										'required' => true,
-									],
-								],
-							],
-						],
-					],
-				],
-			]
-		);
-
-		$this->register_route(
 			'ads/campaigns/missing-eu-political-declaration',
 			[
 				[
@@ -133,28 +101,6 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
-	}
-
-	/**
-	 * Get the callback function for setting the EU political advertising flag on a list of campaigns.
-	 *
-	 * @return callable
-	 */
-	protected function set_eu_political_campaigns_callback(): callable {
-		return function ( Request $request ) {
-			try {
-				$campaigns = $request->get_param( 'campaigns' );
-				$updated   = $this->ads_campaign->set_eu_political_campaigns( $campaigns );
-
-				return [
-					'status'  => 'success',
-					'message' => __( 'Successfully updated EU political advertising flag.', 'google-listings-and-ads' ),
-					'updated' => $updated,
-				];
-			} catch ( Exception $e ) {
-				return $this->response_from_exception( $e );
-			}
-		};
 	}
 
 	/**
