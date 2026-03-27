@@ -362,7 +362,7 @@ class AdsCampaignTest extends UnitTest {
 		$this->transients->expects( $this->atLeastOnce() )
 			->method( 'set' )
 			->willReturnCallback(
-				function ( string $name, $value ) use ( $expected_highest ) {
+				function ( string $name, $value, int $expiration = 0 ) use ( $expected_highest ) {
 					if ( $name === TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN ) {
 						$this->assertIsArray( $value );
 						$this->assertArrayHasKey( 'campaign', $value );
@@ -370,6 +370,7 @@ class AdsCampaignTest extends UnitTest {
 						$this->assertEquals( $expected_highest['id'], $campaign['id'] );
 						$this->assertEquals( $expected_highest['status'], $campaign['status'] );
 						$this->assertEqualsWithDelta( $expected_highest['amount'], $campaign['amount'] ?? 0, 0.01 );
+						$this->assertEquals( HOUR_IN_SECONDS * 12, $expiration );
 					}
 					return true;
 				}
