@@ -111,7 +111,11 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 	protected function get_campaigns_missing_eu_declaration_callback(): callable {
 		return function () {
 			try {
-				return $this->ads_campaign->get_campaigns_missing_eu_political_declaration();
+				$campaigns    = $this->ads_campaign->get_campaigns_missing_eu_political_declaration();
+				$campaign_ids = array_column( $campaigns, 'id' );
+				$data         = $this->ads_campaign->get_campaigns_by_ids( $campaign_ids );
+
+				return array_values( $data );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
