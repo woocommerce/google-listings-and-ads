@@ -1359,4 +1359,43 @@ export default class MockRequests {
 			[ 'POST' ]
 		);
 	}
+
+	/**
+	 * Mocks a request for missing EU declaration campaigns.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned.
+	 * @param {number} [status=200] - The HTTP status code to be returned. Defaults to 200.
+	 * @return {Promise<void>} A promise that resolves when the request is mocked.
+	 */
+	async fulfillMissingEUDeclarationCampaigns( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/campaigns\/missing-eu-political-declaration\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Mocks the presence of campaigns missing EU political declarations.
+	 */
+	async mockHasMissingEUDeclarationCampaigns() {
+		await this.fulfillMissingEUDeclarationCampaigns( [
+			{
+				id: 12345,
+				name: 'Campaign 1',
+			},
+			{
+				id: 23456,
+				name: 'Campaign 2',
+			},
+		] );
+	}
+
+	/**
+	 * Mocks the absence of campaigns missing EU political declarations.
+	 */
+	async mockHasNoMissingEUDeclarationCampaigns() {
+		await this.fulfillMissingEUDeclarationCampaigns( [] );
+	}
 }
