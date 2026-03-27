@@ -7,6 +7,7 @@ import { useState, useCallback } from '@wordpress/element';
  * Internal dependencies
  */
 import Modal from './modal';
+import useAppSelectDispatch from '~/hooks/useAppSelectDispatch';
 import useAdsCampaignsMissingEuDeclaration from '~/hooks/useAdsCampaignsMissingEuDeclaration';
 import { recordGlaEvent } from '~/utils/tracks';
 
@@ -25,6 +26,10 @@ import { recordGlaEvent } from '~/utils/tracks';
  * @return {JSX.Element|null} The Modal component if there are campaigns missing the declaration and the modal has not been dismissed, otherwise null.
  */
 const EuPoliticalDeclaration = ( { eventContext } ) => {
+	const {
+		data: { continents },
+		hasFinishedResolution: hasResolvedCountriesAndContinents,
+	} = useAppSelectDispatch( 'getMCCountriesAndContinents' );
 	const { data: campaignsMissingEuDeclaration, loaded } =
 		useAdsCampaignsMissingEuDeclaration();
 	const [ isDismissed, setIsDismissed ] = useState( false );
@@ -36,13 +41,29 @@ const EuPoliticalDeclaration = ( { eventContext } ) => {
 		} );
 	}, [ eventContext ] );
 
-	if ( ! loaded || isDismissed || ! campaignsMissingEuDeclaration?.length ) {
+	if (
+		! loaded ||
+		isDismissed ||
+		! hasResolvedCountriesAndContinents ||
+		! campaignsMissingEuDeclaration?.length
+	) {
+		return null;
+	}
+
+	const euCountries = continents.EU?.countries || [];
+	const campaignsTargetingEu = campaignsMissingEuDeclaration.filter(
+		( campaign ) =>
+			campaign.targeted_locations?.some( ( location ) =>
+				euCountries.includes( location )
+			)
+	);
+
+	if ( ! campaignsTargetingEu.length ) {
 		return null;
 	}
 
 	return (
 		<Modal
-			campaigns={ campaignsMissingEuDeclaration }
 			onRequestClose={ handleCloseModal }
 			eventContext={ eventContext }
 		/>
