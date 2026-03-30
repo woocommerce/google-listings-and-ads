@@ -15,8 +15,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166Aware
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use DateTime;
 use Exception;
+use Google\Ads\GoogleAds\Lib\V22\GoogleAdsException;
+use Google\Ads\GoogleAds\V22\Errors\MutateErrorEnum\MutateError;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
+use WP_REST_Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -195,7 +198,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 
 				return $this->prepare_item_for_response( $campaign, $request );
 			} catch ( Exception $e ) {
-				return $this->response_from_exception( $e );
+				return $this->create_response_from_exception( $e );
 			}
 		};
 	}
@@ -275,7 +278,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 					'id'      => $campaign_id,
 				];
 			} catch ( Exception $e ) {
-				return $this->response_from_exception( $e );
+				return $this->create_response_from_exception( $e );
 			}
 		};
 	}
@@ -313,6 +316,35 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				return $this->response_from_exception( $e );
 			}
 		};
+	}
+
+	/**
+	 * Create a response from exception with a specific check for the EU political declaration error.
+	 *
+	 * @param Exception $e
+	 * @return WP_REST_Response
+	 */
+	protected function create_response_from_exception( Exception $e ): WP_REST_Response {
+		if ( $e instanceof GoogleAdsException ) {
+			foreach ( $e->getGoogleAdsFailure()->getErrors() as $error ) {
+				$code = json_decode( wp_json_encode( $error->getErrorCode() ), true );
+
+				if (
+					isset( $code['mutateError'] ) &&
+					$code['mutateError'] === 'EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED'
+				) {
+					return new Response(
+						[
+							'code'    => 'eu_political_advertising_declaration_required',
+							'message' => $e->getMessage(),
+						],
+						400
+					);
+				}
+			}
+		}
+
+		return $this->response_from_exception( $e );
 	}
 
 	/**
