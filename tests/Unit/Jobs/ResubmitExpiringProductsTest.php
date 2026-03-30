@@ -9,7 +9,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ResubmitExpiringProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
@@ -38,9 +37,6 @@ class ResubmitExpiringProductsTest extends UnitTest {
 	/** @var MockObject|ProductRepository $product_repository */
 	protected $product_repository;
 
-	/** @var MockObject|OptionsInterface $options */
-	protected $options;
-
 	/** @var MockObject|BatchProductHelper $product_helper */
 	protected $product_helper;
 
@@ -63,7 +59,6 @@ class ResubmitExpiringProductsTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->options            = $this->createMock( OptionsInterface::class );
 		$this->action_scheduler   = $this->createMock( ActionSchedulerInterface::class );
 		$this->monitor            = $this->createMock( ActionSchedulerJobMonitor::class );
 		$this->product_syncer     = $this->createMock( ProductSyncer::class );
@@ -97,7 +92,6 @@ class ResubmitExpiringProductsTest extends UnitTest {
 			2
 		);
 
-		$this->job->set_options_object( $this->options );
 		$this->job->init();
 	}
 
@@ -106,7 +100,7 @@ class ResubmitExpiringProductsTest extends UnitTest {
 	}
 
 	/**
-	 * schedule() must enqueue the first batch with cursor 0, not batch number 1.
+	 * The schedule() must enqueue the first batch with cursor 0, not batch number 1.
 	 */
 	public function test_schedule_starts_at_cursor_zero() {
 		$this->action_scheduler
@@ -203,7 +197,7 @@ class ResubmitExpiringProductsTest extends UnitTest {
 	}
 
 	/**
-	 * process_items must call product_syncer->update() with the loaded WC_Product objects.
+	 * The process_items must call product_syncer->update() with the loaded WC_Product objects.
 	 */
 	public function test_process_items_calls_product_syncer() {
 		$ids      = [ 10, 20 ];
