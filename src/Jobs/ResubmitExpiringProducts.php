@@ -26,6 +26,21 @@ class ResubmitExpiringProducts extends AbstractProductSyncerBatchedJob implement
 	}
 
 	/**
+	 * Check if the job can be scheduled.
+	 *
+	 * Because cursor values vary between runs, we pass null to check for ANY pending
+	 * create_batch action, not just one with matching args. This prevents a second
+	 * concurrent run from being enqueued while the job is already in progress.
+	 *
+	 * @param array|null $args Ignored.
+	 *
+	 * @return bool
+	 */
+	public function can_schedule( $args = [] ): bool {
+		return ! $this->is_running( null );
+	}
+
+	/**
 	 * Schedule the job to start, using cursor 0 so keyset pagination begins from the first product.
 	 *
 	 * @param array $args Unused; kept for interface compatibility.
