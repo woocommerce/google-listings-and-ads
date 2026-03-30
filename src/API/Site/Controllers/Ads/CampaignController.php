@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -195,7 +196,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 
 				return $this->prepare_item_for_response( $campaign, $request );
 			} catch ( Exception $e ) {
-				return $this->response_from_exception( $e );
+				return $this->create_response_from_exception( $e );
 			}
 		};
 	}
@@ -275,7 +276,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 					'id'      => $campaign_id,
 				];
 			} catch ( Exception $e ) {
-				return $this->response_from_exception( $e );
+				return $this->create_response_from_exception( $e );
 			}
 		};
 	}
@@ -313,6 +314,30 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				return $this->response_from_exception( $e );
 			}
 		};
+	}
+
+	/**
+	 * Create a response from exception with a specific check for the EU political declaration error.
+	 *
+	 * @param Exception $e
+	 * @return Response
+	 */
+	protected function create_response_from_exception( Exception $e ): Response {
+		if ( $e instanceof ExceptionWithResponseData ) {
+			$data = $e->get_response_data();
+
+			if ( isset( $data['errors']['EU_POLITICAL_ADVERTISING_DECLARATION_MISSING'] ) ) {
+				return new Response(
+					[
+						'code'    => 'eu_political_advertising_declaration_required',
+						'message' => 'EU Political advertising declaration is required.',
+					],
+					400
+				);
+			}
+		}
+
+		return $this->response_from_exception( $e );
 	}
 
 	/**
