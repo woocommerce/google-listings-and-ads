@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getNewPath } from '@woocommerce/navigation';
-import { useRef } from '@wordpress/element';
+import { useRef, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -21,9 +21,11 @@ import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import { FILTER_BUDGET_RECOMMENDATIONS, recordGlaEvent } from '~/utils/tracks';
 import AppSpinner from '~/components/app-spinner';
+import EuPoliticalDeclarationModal from '~/components/eu-political-declaration/modal';
 import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 
 const { APPROVED } = GOOGLE_ADS_BILLING_STATUS;
+const EVENT_CONTEXT = 'setup-ads';
 
 function HookNavigateAwayPrompt() {
 	const { isDirty, adapter } = useAdaptiveFormContext();
@@ -48,7 +50,12 @@ function HookNavigateAwayPrompt() {
 const SetupPaidAds = () => {
 	const budgetPromptRef = useRef();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
-	const [ handleSetupComplete, isSubmitting ] = useAdsSetupCompleteCallback();
+	const [
+		euPoliticalDeclarationModalDismissed,
+		setEuPoliticalDeclarationModalDismissed,
+	] = useState( false );
+	const [ handleSetupComplete, isSubmitting, setupError ] =
+		useAdsSetupCompleteCallback();
 	const adminUrl = useAdminUrl();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const getEventProps = useEventPropertiesFilter(
@@ -96,6 +103,8 @@ const SetupPaidAds = () => {
 			} )
 		);
 
+		setEuPoliticalDeclarationModalDismissed( false );
+
 		handleSetupComplete(
 			dailyBudget,
 			countryCodes,
@@ -108,12 +117,22 @@ const SetupPaidAds = () => {
 				);
 				window.location.href = adminUrl + nextPath;
 			}
-		);
+		).catch( () => {} );
 	};
 
 	if ( ! countryCodes ) {
 		return <AppSpinner />;
 	}
+
+	const handleCloseEuPoliticalDeclarationModal = () => {
+		setEuPoliticalDeclarationModalDismissed( true );
+	};
+
+	const showEuPoliticalDeclarationModal =
+		! euPoliticalDeclarationModalDismissed &&
+		!! setupError &&
+		( setupError.code === 'eu_political_declaration_required' ||
+			setupError.code === 'rest_missing_callback_param' );
 
 	return (
 		<CampaignAssetsForm
@@ -126,13 +145,20 @@ const SetupPaidAds = () => {
 					'Create your campaign',
 					'google-listings-and-ads'
 				) }
-				context="setup-ads"
+				context={ EVENT_CONTEXT }
 				continueButton={ renderSubmitButton }
 			/>
 			<BudgetIncentivePrompt
 				ref={ budgetPromptRef }
 				countryCodes={ countryCodes }
 			/>
+
+			{ showEuPoliticalDeclarationModal && (
+				<EuPoliticalDeclarationModal
+					eventContext={ EVENT_CONTEXT }
+					onRequestClose={ handleCloseEuPoliticalDeclarationModal }
+				/>
+			) }
 		</CampaignAssetsForm>
 	);
 };
