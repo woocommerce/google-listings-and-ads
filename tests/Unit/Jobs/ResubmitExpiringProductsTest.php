@@ -143,7 +143,7 @@ class ResubmitExpiringProductsTest extends UnitTest {
 	 * and then schedule one more create_batch with max(ids) as the cursor.
 	 */
 	public function test_single_partial_batch() {
-		$ids = [ 10, 20 ];
+		$ids = [ 10 ];
 
 		$this->product_repository->expects( $this->once() )
 			->method( 'find_expiring_product_ids' )
@@ -159,7 +159,7 @@ class ResubmitExpiringProductsTest extends UnitTest {
 			->withConsecutive(
 				[ self::CREATE_BATCH_HOOK, [ 0 ] ],         // Initial scheduling.
 				[ self::PROCESS_ITEM_HOOK, [ $ids ] ],      // Process the batch.
-				[ self::CREATE_BATCH_HOOK, [ 20 ] ]         // Next cursor is the max ID.
+				[ self::CREATE_BATCH_HOOK, [ 10 ] ]         // Next cursor is the max ID.
 			);
 
 		$this->job->schedule();

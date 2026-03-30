@@ -279,11 +279,9 @@ class ProductRepository implements Service {
 				$this->get_sync_ready_products_meta_query(),
 				$this->get_valid_products_meta_query(),
 				[
-					[
-						'key'     => ProductMetaHandler::KEY_SYNCED_AT,
-						'compare' => '<',
-						'value'   => strtotime( '-25 days' ),
-					],
+					'key'     => ProductMetaHandler::KEY_SYNCED_AT,
+					'compare' => '<',
+					'value'   => strtotime( '-25 days' ),
 				],
 			],
 		];
@@ -295,8 +293,11 @@ class ProductRepository implements Service {
 		};
 
 		add_filter( 'posts_where', $cursor_filter );
-		$results = $this->find_ids( $args, $limit );
-		remove_filter( 'posts_where', $cursor_filter );
+		try {
+			$results = $this->find_ids( $args, $limit );
+		} finally {
+			remove_filter( 'posts_where', $cursor_filter );
+		}
 
 		return $results;
 	}

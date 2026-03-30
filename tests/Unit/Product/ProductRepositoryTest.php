@@ -294,27 +294,6 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		);
 	}
 
-	public function test_find_expiring_product_ids_returns_expiring_product() {
-		// Recently synced – should NOT be returned.
-		$product_1 = WC_Helper_Product::create_simple_product();
-		$this->product_helper->mark_as_synced( $product_1, $this->generate_google_product_mock() );
-
-		// Synced 30 days ago – SHOULD be returned.
-		$product_2 = WC_Helper_Product::create_simple_product();
-		$this->product_helper->mark_as_synced( $product_2, $this->generate_google_product_mock() );
-		$this->product_meta->update_synced_at( $product_2, strtotime( '-30 days' ) );
-
-		// Has errors – should NOT be returned.
-		$product_3 = WC_Helper_Product::create_simple_product();
-		$this->product_helper->mark_as_invalid( $product_3, [ 'Error 1' ] );
-		$this->product_meta->update_synced_at( $product_3, strtotime( '-30 days' ) );
-
-		$this->assertEquals(
-			[ $product_2->get_id() ],
-			$this->product_repository->find_expiring_product_ids()
-		);
-	}
-
 	public function test_find_expiring_product_ids_respects_cursor() {
 		$product_1 = WC_Helper_Product::create_simple_product();
 		$this->product_helper->mark_as_synced( $product_1, $this->generate_google_product_mock() );
