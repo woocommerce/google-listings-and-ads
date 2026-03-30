@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\JobTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -24,6 +25,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 class ResubmitExpiringProductsTest extends UnitTest {
 
 	use JobTrait;
+	use ProductTrait;
 
 	/** @var MockObject|ActionScheduler $action_scheduler */
 	protected $action_scheduler;
@@ -155,9 +157,9 @@ class ResubmitExpiringProductsTest extends UnitTest {
 		$this->action_scheduler->expects( $this->exactly( 3 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
-				[ self::CREATE_BATCH_HOOK, [ 0 ] ],         // schedule()
-				[ self::PROCESS_ITEM_HOOK, [ $ids ] ],      // process batch
-				[ self::CREATE_BATCH_HOOK, [ 20 ] ]         // next cursor = max(ids)
+				[ self::CREATE_BATCH_HOOK, [ 0 ] ],         // Initial scheduling.
+				[ self::PROCESS_ITEM_HOOK, [ $ids ] ],      // Process the batch.
+				[ self::CREATE_BATCH_HOOK, [ 20 ] ]         // Next cursor is the max ID.
 			);
 
 		$this->job->schedule();
@@ -183,11 +185,11 @@ class ResubmitExpiringProductsTest extends UnitTest {
 		$this->action_scheduler->expects( $this->exactly( 5 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
-				[ self::CREATE_BATCH_HOOK, [ 0 ] ],      // schedule()
+				[ self::CREATE_BATCH_HOOK, [ 0 ] ],      // Initial scheduling.
 				[ self::PROCESS_ITEM_HOOK, [ $batch_a ] ],
-				[ self::CREATE_BATCH_HOOK, [ 20 ] ],     // cursor = max(batch_a)
+				[ self::CREATE_BATCH_HOOK, [ 20 ] ],     // Cursor advances to max of batch A.
 				[ self::PROCESS_ITEM_HOOK, [ $batch_b ] ],
-				[ self::CREATE_BATCH_HOOK, [ 40 ] ]      // cursor = max(batch_b)
+				[ self::CREATE_BATCH_HOOK, [ 40 ] ]      // Cursor advances to max of batch B.
 			);
 
 		$this->job->schedule();
