@@ -777,7 +777,9 @@ export function* createAdsCampaign(
 			createdCampaign: adaptAdsCampaign( createdCampaign ),
 		};
 	} catch ( error ) {
-		handleApiError( error );
+		if ( error.code !== 'eu_political_advertising_declaration_required' ) {
+			handleApiError( error );
+		}
 
 		throw error;
 	}

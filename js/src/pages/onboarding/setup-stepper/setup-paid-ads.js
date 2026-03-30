@@ -72,9 +72,7 @@ export default function SetupPaidAds() {
 		} catch ( e ) {
 			setCompleting( null );
 
-			const isEuError =
-				e?.code === 'eu_political_declaration_required' ||
-				e?.code === 'rest_missing_callback_param';
+			const isEuError = e?.code === 'eu_political_declaration_required';
 
 			if ( ! isEuError ) {
 				handleApiError(

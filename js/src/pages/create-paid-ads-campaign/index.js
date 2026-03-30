@@ -35,6 +35,7 @@ import {
 	recordStepContinueEvent,
 } from '~/utils/tracks';
 import EuPoliticalDeclaration from '~/components/eu-political-declaration';
+import EuPoliticalDeclarationModal from '~/components/eu-political-declaration/modal';
 
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'create-ads';
@@ -56,6 +57,10 @@ const CreatePaidAdsCampaign = () => {
 		createAdsWithAssetsCampaign,
 		updateCampaignAssetGroup,
 	} = useAppDispatch();
+	const [
+		euPoliticalDeclarationModalDismissed,
+		setEuPoliticalDeclarationModalDismissed,
+	] = useState( true );
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 
@@ -132,6 +137,10 @@ const CreatePaidAdsCampaign = () => {
 				)
 			);
 		} catch ( e ) {
+			if ( e?.code === 'eu_political_advertising_declaration_required' ) {
+				setEuPoliticalDeclarationModalDismissed( false );
+			}
+
 			enhancer.signalFailedSubmission();
 			return;
 		}
@@ -202,6 +211,15 @@ const CreatePaidAdsCampaign = () => {
 				/>
 			</CampaignAssetsForm>
 			<EuPoliticalDeclaration eventContext={ eventContext } />
+
+			{ ! euPoliticalDeclarationModalDismissed && (
+				<EuPoliticalDeclarationModal
+					eventContext={ eventContext }
+					onRequestClose={ () =>
+						setEuPoliticalDeclarationModalDismissed( true )
+					}
+				/>
+			) }
 		</>
 	);
 };
