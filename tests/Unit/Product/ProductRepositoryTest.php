@@ -294,6 +294,82 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		);
 	}
 
+	public function test_find_expiring_product_ids_returns_expiring_product() {
+		// Recently synced – should NOT be returned.
+		$product_1 = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product_1, $this->generate_google_product_mock() );
+
+		// Synced 30 days ago – SHOULD be returned.
+		$product_2 = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product_2, $this->generate_google_product_mock() );
+		$this->product_meta->update_synced_at( $product_2, strtotime( '-30 days' ) );
+
+		// Has errors – should NOT be returned.
+		$product_3 = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_invalid( $product_3, [ 'Error 1' ] );
+
+		$this->assertEquals(
+			[ $product_2->get_id() ],
+			$this->product_repository->find_expiring_product_ids()
+		);
+	}
+
+	public function test_find_expiring_product_ids_respects_cursor() {
+		$product_1 = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product_1, $this->generate_google_product_mock() );
+		$this->product_meta->update_synced_at( $product_1, strtotime( '-30 days' ) );
+
+		$product_2 = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product_2, $this->generate_google_product_mock() );
+		$this->product_meta->update_synced_at( $product_2, strtotime( '-30 days' ) );
+
+		// Both products are expiring; passing the first ID as cursor should only return the second.
+		$ids = $this->product_repository->find_expiring_product_ids( $product_1->get_id() );
+
+		$this->assertEquals( [ $product_2->get_id() ], $ids );
+	}
+
+	public function test_find_expiring_product_ids_respects_limit() {
+		for ( $i = 0; $i < 3; $i++ ) {
+			$p = WC_Helper_Product::create_simple_product();
+			$this->product_helper->mark_as_synced( $p, $this->generate_google_product_mock() );
+			$this->product_meta->update_synced_at( $p, strtotime( '-30 days' ) );
+		}
+
+		$ids = $this->product_repository->find_expiring_product_ids( 0, 2 );
+
+		$this->assertCount( 2, $ids );
+	}
+
+	public function test_find_expiring_product_ids_excludes_dont_sync_visibility() {
+		$product = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
+		$this->product_meta->update_synced_at( $product, strtotime( '-30 days' ) );
+		$this->product_meta->update_visibility( $product, \Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility::DONT_SYNC_AND_SHOW );
+
+		$ids = $this->product_repository->find_expiring_product_ids();
+
+		$this->assertNotContains( $product->get_id(), $ids );
+	}
+
+	public function test_find_expiring_product_ids_results_are_ordered_asc() {
+		$ids_created = [];
+		for ( $i = 0; $i < 3; $i++ ) {
+			$p = WC_Helper_Product::create_simple_product();
+			$this->product_helper->mark_as_synced( $p, $this->generate_google_product_mock() );
+			$this->product_meta->update_synced_at( $p, strtotime( '-30 days' ) );
+			$ids_created[] = $p->get_id();
+		}
+
+		$ids_found = $this->product_repository->find_expiring_product_ids();
+
+		// Returned IDs should be a sorted subset of what was created.
+		$intersection = array_values( array_intersect( $ids_found, $ids_created ) );
+		$sorted       = $intersection;
+		sort( $sorted );
+		$this->assertEquals( $sorted, $intersection );
+	}
+
 	public function test_find_all_synced_google_ids() {
 		$synced_google_ids = [];
 
