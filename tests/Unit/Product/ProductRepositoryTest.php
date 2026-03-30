@@ -307,6 +307,7 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		// Has errors – should NOT be returned.
 		$product_3 = WC_Helper_Product::create_simple_product();
 		$this->product_helper->mark_as_invalid( $product_3, [ 'Error 1' ] );
+		$this->product_meta->update_synced_at( $product_3, strtotime( '-30 days' ) );
 
 		$this->assertEquals(
 			[ $product_2->get_id() ],
