@@ -180,8 +180,7 @@ export default function SetupPaidAds() {
 	const showEuPoliticalDeclarationModal =
 		! euPoliticalDeclarationModalDismissed &&
 		!! setupError &&
-		( setupError.code === 'eu_political_declaration_required' ||
-			setupError.code === 'rest_missing_callback_param' );
+		setupError.code === 'eu_political_advertising_declaration_required';
 
 	return (
 		<CampaignAssetsForm
