@@ -10,16 +10,14 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use DateTime;
 use Exception;
-use Google\Ads\GoogleAds\Lib\V22\GoogleAdsException;
-use Google\Ads\GoogleAds\V22\Errors\MutateErrorEnum\MutateError;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
-use WP_REST_Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -322,25 +320,20 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 	 * Create a response from exception with a specific check for the EU political declaration error.
 	 *
 	 * @param Exception $e
-	 * @return WP_REST_Response
+	 * @return Response
 	 */
-	protected function create_response_from_exception( Exception $e ): WP_REST_Response {
-		if ( $e instanceof GoogleAdsException ) {
-			foreach ( $e->getGoogleAdsFailure()->getErrors() as $error ) {
-				$code = json_decode( wp_json_encode( $error->getErrorCode() ), true );
+	protected function create_response_from_exception( Exception $e ): Response {
+		if ( $e instanceof ExceptionWithResponseData ) {
+			$data = $e->get_response_data();
 
-				if (
-					isset( $code['mutateError'] ) &&
-					$code['mutateError'] === 'EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED'
-				) {
-					return new Response(
-						[
-							'code'    => 'eu_political_advertising_declaration_required',
-							'message' => $e->getMessage(),
-						],
-						400
-					);
-				}
+			if ( isset( $data['errors']['EU_POLITICAL_ADVERTISING_DECLARATION_MISSING'] ) ) {
+				return new Response(
+					[
+						'code'    => 'eu_political_advertising_declaration_required',
+						'message' => 'EU Political advertising declaration is required.',
+					],
+					400
+				);
 			}
 		}
 
