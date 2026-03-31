@@ -140,6 +140,12 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.6.1 - 2026-03-31 =
+* Add - EU political ads declaration modal for compliance with Google's political advertising requirements.
+* Dev - Refactor YouTube card E2E tests.
+* Fix - Cache GAQL query for highest spend campaign.
+* Fix - Remove legacy conversion event.
+
 = 3.6.0 - 2026-03-16 =
 * Add - Generative AI for assets.
 * Add - YouTube shopping support.
