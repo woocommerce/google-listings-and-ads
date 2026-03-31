@@ -12,6 +12,7 @@ interface TransientsInterface {
 
 	public const ADS_BUDGET_METRICS         = 'ads_budget_metrics';
 	public const ADS_CAMPAIGN_COUNT         = 'ads_campaign_count';
+	public const ADS_HIGHEST_SPEND_CAMPAIGN = 'ads_highest_spend_campaign';
 	public const ADS_LOCATION_IDS           = 'ads_location_ids';
 	public const ADS_METRICS                = 'ads_metrics';
 	public const ADS_BUDGET_RECOMMENDATIONS = 'ads_budget_recommendations';
@@ -26,6 +27,7 @@ interface TransientsInterface {
 	public const VALID_OPTIONS = [
 		self::ADS_BUDGET_METRICS         => true,
 		self::ADS_CAMPAIGN_COUNT         => true,
+		self::ADS_HIGHEST_SPEND_CAMPAIGN => true,
 		self::ADS_LOCATION_IDS           => true,
 		self::ADS_METRICS                => true,
 		self::ADS_RECOMMENDATIONS        => true,
