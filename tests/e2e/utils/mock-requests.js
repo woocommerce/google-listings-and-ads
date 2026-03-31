@@ -302,12 +302,20 @@ export default class MockRequests {
 	 * Fulfill the YouTube Account Connection request.
 	 *
 	 * @param {Object} payload
+	 * @param {number} [status=200]
+	 * @param {Array} [methods=[]]
 	 * @return {Promise<void>}
 	 */
-	async fulfillYouTubeAccountConnection( payload ) {
+	async fulfillYouTubeAccountConnection(
+		payload,
+		status = 200,
+		methods = []
+	) {
 		await this.fulfillRequest(
 			/\/wc\/gla\/youtube\/connection\b/,
-			payload
+			payload,
+			status,
+			methods
 		);
 	}
 
@@ -1159,6 +1167,19 @@ export default class MockRequests {
 				label: 'My YouTube Channel',
 			},
 		} );
+	}
+
+	/**
+	 * Mock the YouTube disconnect request.
+	 *
+	 * wordpress/api-fetch's http-v1 middleware converts DELETE to POST with
+	 * an X-HTTP-Method-Override: DELETE header, so we intercept POST here and
+	 * let GET requests fall through to the connection-state mock.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockYouTubeDisconnect() {
+		await this.fulfillYouTubeAccountConnection( {}, 200, [ 'POST' ] );
 	}
 
 	/**
