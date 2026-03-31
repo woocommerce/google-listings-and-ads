@@ -503,7 +503,7 @@ Triggered when store address "Edit in WooCommerce Settings" button is clicked.
 | ---- | ---- | ----------- |
 `context` | `string` | The context in which the modal was closed, set to the value of the `eventContext` prop.
 #### Emitters
-- [`Modal`](../../js/src/components/eu-political-declaration/modal.js#L35) with `{ context: 'dashboard'|'edit-ads'|'create-ads' }`
+- [`Modal`](../../js/src/components/eu-political-declaration/modal.js#L35) with `{ context: 'dashboard'|'edit-ads'|'create-ads'|'setup-ads'|'setup-mc' }`
 
 ### [`gla_faq`](../../js/src/components/faqs-panel/index.js#L22)
 Clicking on faq item to collapse or expand it.
