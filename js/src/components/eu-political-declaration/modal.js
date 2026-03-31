@@ -50,11 +50,11 @@ const Modal = ( { onRequestClose, eventContext } ) => {
 	const { title, description } = isEditOrDashboard
 		? {
 				title: __(
-					'Campaign edits are paused for this Google Ads account',
+					'Campaign changes are paused for this Google Ads account',
 					'google-listings-and-ads'
 				),
 				description: __(
-					'To comply with EU political ads rules, you can’t edit campaigns in this account until the required declarations are added.',
+					'To comply with EU political ads rules, you can’t create or edit campaigns in this account until the required declarations are added.',
 					'google-listings-and-ads'
 				),
 		  }
