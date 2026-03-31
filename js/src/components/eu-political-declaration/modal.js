@@ -3,6 +3,8 @@
  */
 import { __ } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
+import { Icon } from '@wordpress/components';
+import { external as externalIcon } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -22,7 +24,7 @@ const CAMPAIGNS_BASE_URL = 'https://ads.google.com/aw/campaigns';
 /**
  * Modal component for EU Political Declaration. Displays a list of campaigns missing the declaration.
  *
- * @fires gla_eu_political_declaration_modal_go_to_google_ads_click with `{ context: 'dashboard'|'edit-ads'|'create-ads' }`
+ * @fires gla_eu_political_declaration_modal_go_to_google_ads_click with `{ context: 'dashboard'|'edit-ads'|'create-ads'|'setup-ads'|'setup-mc' }`
  *
  * @param {Object} props The component props.
  * @param {Function} props.onRequestClose A callback function to be called when the modal is requested to be closed.
@@ -42,12 +44,34 @@ const Modal = ( { onRequestClose, eventContext } ) => {
 		: {};
 	const campaignsUrl = addQueryArgs( CAMPAIGNS_BASE_URL, params );
 
+	const isEditOrDashboard =
+		eventContext === 'edit-ads' || eventContext === 'dashboard';
+
+	const { title, description } = isEditOrDashboard
+		? {
+				title: __(
+					'Campaign edits are paused for this Google Ads account',
+					'google-listings-and-ads'
+				),
+				description: __(
+					'To comply with EU political ads rules, you can’t edit campaigns in this account until the required declarations are added.',
+					'google-listings-and-ads'
+				),
+		  }
+		: {
+				title: __(
+					'Some campaigns are missing European Union (EU) ads status',
+					'google-listings-and-ads'
+				),
+				description: __(
+					'Changes to any campaigns in this account are not allowed because EU political ads declarations are missing.',
+					'google-listings-and-ads'
+				),
+		  };
+
 	return (
 		<AppModal
-			title={ __(
-				'Some campaigns are missing European Union (EU) ads status',
-				'google-listings-and-ads'
-			) }
+			title={ title }
 			buttons={ [
 				<AppButton
 					key="go-to-google-ads"
@@ -56,6 +80,9 @@ const Modal = ( { onRequestClose, eventContext } ) => {
 					target="_blank"
 					eventName="gla_eu_political_declaration_modal_go_to_google_ads_click"
 					eventProps={ { context: eventContext } }
+					icon={ <Icon icon={ externalIcon } /> }
+					iconPosition="right"
+					iconSize={ 16 }
 				>
 					{ __( 'Go to Google Ads', 'google-listings-and-ads' ) }
 				</AppButton>,
@@ -63,12 +90,7 @@ const Modal = ( { onRequestClose, eventContext } ) => {
 			onRequestClose={ onRequestClose }
 			className="gla-eu-political-declaration-modal"
 		>
-			<p>
-				{ __(
-					'Changes to any campaigns in this account are not allowed because EU political ads declarations are missing.',
-					'google-listings-and-ads'
-				) }
-			</p>
+			<p>{ description }</p>
 		</AppModal>
 	);
 };
