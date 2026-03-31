@@ -8,12 +8,12 @@ import { render, fireEvent, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import { glaData } from '~/constants';
-import useAdsCampaigns from '~/hooks/useAdsCampaigns';
+import useHasRecentAdSpend from '~/hooks/useHasRecentAdSpend';
 import { recordGlaEvent } from '~/utils/tracks';
 import GoogleAdsPromo from './google-ads-promo';
 
-jest.mock( '~/hooks/useAdsCampaigns', () =>
-	jest.fn().mockName( 'useAdsCampaigns' )
+jest.mock( '~/hooks/useHasRecentAdSpend', () =>
+	jest.fn().mockName( 'useHasRecentAdSpend' )
 );
 
 jest.mock( '~/utils/tracks', () => ( {
@@ -26,25 +26,17 @@ jest.mock( '~/utils/urls', () => ( {
 } ) );
 
 describe( 'GoogleAdsPromo Component', () => {
-	beforeAll( () => {
-		jest.useFakeTimers();
-		jest.setSystemTime( new Date( '2025-02-18' ) );
-	} );
-
-	afterAll( () => {
-		jest.useRealTimers();
-	} );
-
 	beforeEach( () => {
 		glaData.adsSetupComplete = false;
 		jest.clearAllMocks();
 	} );
 
 	describe( 'When adsSetupComplete is false', () => {
-		test( 'Renders component with setup incomplete messaging when no recent campaigns', () => {
-			useAdsCampaigns.mockReturnValue( {
-				data: [],
+		test( 'Renders component with setup incomplete messaging when there is no recent ad spend', () => {
+			useHasRecentAdSpend.mockReturnValue( {
 				loading: false,
+				hasFinishedResolution: true,
+				hasAdSpend: false,
 			} );
 
 			render( <GoogleAdsPromo /> );
@@ -67,12 +59,13 @@ describe( 'GoogleAdsPromo Component', () => {
 	} );
 
 	describe( 'When adsSetupComplete is true', () => {
-		test( 'Renders component with setup complete messaging when no recent campaigns', () => {
+		test( 'Renders component with setup complete messaging when there is no recent ad spend', () => {
 			glaData.adsSetupComplete = true;
 
-			useAdsCampaigns.mockReturnValue( {
-				data: [],
+			useHasRecentAdSpend.mockReturnValue( {
 				loading: false,
+				hasFinishedResolution: true,
+				hasAdSpend: false,
 			} );
 
 			render( <GoogleAdsPromo /> );
@@ -93,87 +86,32 @@ describe( 'GoogleAdsPromo Component', () => {
 
 	describe( 'Conditional rendering', () => {
 		test( 'Does not render when loading', () => {
-			useAdsCampaigns.mockReturnValue( {
-				data: [],
+			useHasRecentAdSpend.mockReturnValue( {
 				loading: true,
+				hasFinishedResolution: false,
+				hasAdSpend: false,
 			} );
 
 			const { container } = render( <GoogleAdsPromo /> );
 			expect( container.firstChild ).toBeNull();
 		} );
 
-		test( 'Does not render when campaigns data is not an array', () => {
-			useAdsCampaigns.mockReturnValue( {
-				data: null,
+		test( 'Does not render when there is recent ad spend', () => {
+			useHasRecentAdSpend.mockReturnValue( {
 				loading: false,
+				hasFinishedResolution: true,
+				hasAdSpend: true,
 			} );
 
 			const { container } = render( <GoogleAdsPromo /> );
 			expect( container.firstChild ).toBeNull();
 		} );
 
-		test( 'Does not render when there are recent paid campaigns', () => {
-			useAdsCampaigns.mockReturnValue( {
-				data: [
-					{
-						id: 1,
-						start_date: '2025-02-16',
-						status: 'enabled',
-						type: 'performance_max',
-					},
-				],
+		test( 'Renders when there is no recent ad spend', () => {
+			useHasRecentAdSpend.mockReturnValue( {
 				loading: false,
-			} );
-
-			const { container } = render( <GoogleAdsPromo /> );
-			expect( container.firstChild ).toBeNull();
-		} );
-
-		test( 'Does not render when campaign is exactly 14 days ago', () => {
-			useAdsCampaigns.mockReturnValue( {
-				data: [
-					{
-						id: 1,
-						start_date: '2025-02-04',
-						status: 'enabled',
-						type: 'performance_max',
-					},
-				],
-				loading: false,
-			} );
-
-			const { container } = render( <GoogleAdsPromo /> );
-			expect( container.firstChild ).toBeNull();
-		} );
-
-		test( 'Renders when there are recent campaigns but no active performance_max ones', () => {
-			useAdsCampaigns.mockReturnValue( {
-				data: [
-					{
-						id: 1,
-						start_date: '2025-02-16',
-						status: 'paused',
-						type: 'performance_max',
-					},
-				],
-				loading: false,
-			} );
-
-			const { container } = render( <GoogleAdsPromo /> );
-			expect( container.firstChild ).toBeInTheDocument();
-		} );
-
-		test( 'Renders when campaign is older than 14 days', () => {
-			useAdsCampaigns.mockReturnValue( {
-				data: [
-					{
-						id: 1,
-						start_date: '2025-01-01',
-						status: 'enabled',
-						type: 'performance_max',
-					},
-				],
-				loading: false,
+				hasFinishedResolution: true,
+				hasAdSpend: false,
 			} );
 
 			const { container } = render( <GoogleAdsPromo /> );
@@ -183,9 +121,10 @@ describe( 'GoogleAdsPromo Component', () => {
 
 	describe( 'Tracking events', () => {
 		test( 'Fires gla_google_ads_promo_shown event when component successfully renders', () => {
-			useAdsCampaigns.mockReturnValue( {
-				data: [],
+			useHasRecentAdSpend.mockReturnValue( {
 				loading: false,
+				hasFinishedResolution: true,
+				hasAdSpend: false,
 			} );
 
 			render( <GoogleAdsPromo /> );
@@ -200,9 +139,10 @@ describe( 'GoogleAdsPromo Component', () => {
 		} );
 
 		test( 'Does not fire tracking event when loading', () => {
-			useAdsCampaigns.mockReturnValue( {
-				data: [],
+			useHasRecentAdSpend.mockReturnValue( {
 				loading: true,
+				hasFinishedResolution: false,
+				hasAdSpend: false,
 			} );
 
 			render( <GoogleAdsPromo /> );
@@ -211,9 +151,10 @@ describe( 'GoogleAdsPromo Component', () => {
 		} );
 
 		test( 'Fires tracking event only once when component re-renders with same data', () => {
-			useAdsCampaigns.mockReturnValue( {
-				data: [],
+			useHasRecentAdSpend.mockReturnValue( {
 				loading: false,
+				hasFinishedResolution: true,
+				hasAdSpend: false,
 			} );
 
 			const { rerender } = render( <GoogleAdsPromo /> );
@@ -228,9 +169,10 @@ describe( 'GoogleAdsPromo Component', () => {
 		test( 'Fires gla_google_ads_promo_create_campaign_click event when Create campaign button is clicked', () => {
 			glaData.adsSetupComplete = true;
 
-			useAdsCampaigns.mockReturnValue( {
-				data: [],
+			useHasRecentAdSpend.mockReturnValue( {
 				loading: false,
+				hasFinishedResolution: true,
+				hasAdSpend: false,
 			} );
 
 			render( <GoogleAdsPromo /> );
@@ -249,9 +191,10 @@ describe( 'GoogleAdsPromo Component', () => {
 		} );
 
 		test( 'Fires gla_google_ads_promo_get_started_click event when Get started button is clicked', () => {
-			useAdsCampaigns.mockReturnValue( {
-				data: [],
+			useHasRecentAdSpend.mockReturnValue( {
 				loading: false,
+				hasFinishedResolution: true,
+				hasAdSpend: false,
 			} );
 
 			render( <GoogleAdsPromo /> );
