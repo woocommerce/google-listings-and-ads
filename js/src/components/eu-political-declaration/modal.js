@@ -3,6 +3,8 @@
  */
 import { __ } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
+import { Icon } from '@wordpress/components';
+import { external as externalIcon } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -56,6 +58,9 @@ const Modal = ( { onRequestClose, eventContext } ) => {
 					target="_blank"
 					eventName="gla_eu_political_declaration_modal_go_to_google_ads_click"
 					eventProps={ { context: eventContext } }
+					icon={ <Icon icon={ externalIcon } /> }
+					iconPosition="right"
+					iconSize={ 16 }
 				>
 					{ __( 'Go to Google Ads', 'google-listings-and-ads' ) }
 				</AppButton>,

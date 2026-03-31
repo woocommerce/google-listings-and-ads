@@ -12,7 +12,6 @@ import useCompleteAdsSetup from './useCompleteAdsSetup';
 export default function useAdsSetupCompleteCallback() {
 	const { createAdsCampaign } = useAppDispatch();
 	const [ loading, setLoading ] = useState( false );
-	const [ error, setError ] = useState( null );
 	const { completeAdsSetup } = useCompleteAdsSetup();
 
 	const handleFinishSetup = useCallback(
@@ -23,7 +22,6 @@ export default function useAdsSetupCompleteCallback() {
 			onCompleted
 		) => {
 			setLoading( true );
-			setError( null );
 			return createAdsCampaign(
 				amount,
 				countryCodes,
@@ -31,14 +29,13 @@ export default function useAdsSetupCompleteCallback() {
 			)
 				.then( completeAdsSetup )
 				.then( onCompleted )
-				.catch( ( err ) => {
-					setError( err );
-					throw err;
+				.catch( ( error ) => {
+					throw error;
 				} )
 				.finally( () => setLoading( false ) );
 		},
 		[ createAdsCampaign, completeAdsSetup ]
 	);
 
-	return [ handleFinishSetup, loading, error ];
+	return [ handleFinishSetup, loading ];
 }

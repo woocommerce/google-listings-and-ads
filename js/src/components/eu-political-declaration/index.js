@@ -1,73 +1,60 @@
 /**
  * External dependencies
  */
-import { useState, useCallback } from '@wordpress/element';
+import { useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import Modal from './modal';
 import useAppSelectDispatch from '~/hooks/useAppSelectDispatch';
 import useAdsCampaignsMissingEuDeclaration from '~/hooks/useAdsCampaignsMissingEuDeclaration';
-import { recordGlaEvent } from '~/utils/tracks';
+import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
 
 /**
- * @event gla_eu_political_declaration_modal_closed
- * @property {string} context The context in which the modal was closed.
- */
-
-/**
- * Component that checks for campaigns missing the EU political declaration and displays a modal to allow users to declare which campaigns contain political ads. The component is only rendered if there are campaigns missing the declaration and the user has not dismissed the modal.
+ * Component that checks for campaigns missing the EU political declaration and triggers
+ * the modal via context. Renders nothing — it is a side-effect-only component for
+ * auto-detection. The modal itself is rendered by `EuPoliticalDeclarationProvider`.
  *
- * @fires gla_eu_political_declaration_modal_closed with `{ context: 'dashboard'|'edit-ads'|'create-ads' }`
- *
- * @param {Object} props The component props.
- * @param {string} props.eventContext The context in which the component is rendered, used for tracking purposes.
- * @return {JSX.Element|null} The Modal component if there are campaigns missing the declaration and the modal has not been dismissed, otherwise null.
+ * @return {null} Always returns null.
  */
-const EuPoliticalDeclaration = ( { eventContext } ) => {
+const EuPoliticalDeclaration = () => {
 	const {
 		data: { continents },
 		hasFinishedResolution: hasResolvedCountriesAndContinents,
 	} = useAppSelectDispatch( 'getMCCountriesAndContinents' );
 	const { data: campaignsMissingEuDeclaration, loaded } =
 		useAdsCampaignsMissingEuDeclaration();
-	const [ isDismissed, setIsDismissed ] = useState( false );
+	const { showModal } = useEuPoliticalDeclarationContext();
 
-	const handleCloseModal = useCallback( () => {
-		setIsDismissed( true );
-		recordGlaEvent( 'gla_eu_political_declaration_modal_closed', {
-			context: eventContext,
-		} );
-	}, [ eventContext ] );
+	useEffect( () => {
+		if (
+			! loaded ||
+			! hasResolvedCountriesAndContinents ||
+			! campaignsMissingEuDeclaration?.length
+		) {
+			return;
+		}
 
-	if (
-		! loaded ||
-		isDismissed ||
-		! hasResolvedCountriesAndContinents ||
-		! campaignsMissingEuDeclaration?.length
-	) {
-		return null;
-	}
+		const euCountries = continents.EU?.countries || [];
+		const campaignsTargetingEu = campaignsMissingEuDeclaration.filter(
+			( campaign ) =>
+				campaign.targeted_locations?.some( ( location ) =>
+					euCountries.includes( location )
+				)
+		);
 
-	const euCountries = continents.EU?.countries || [];
-	const campaignsTargetingEu = campaignsMissingEuDeclaration.filter(
-		( campaign ) =>
-			campaign.targeted_locations?.some( ( location ) =>
-				euCountries.includes( location )
-			)
-	);
+		if ( campaignsTargetingEu.length ) {
+			showModal();
+		}
+	}, [
+		loaded,
+		hasResolvedCountriesAndContinents,
+		campaignsMissingEuDeclaration,
+		continents,
+		showModal,
+	] );
 
-	if ( ! campaignsTargetingEu.length ) {
-		return null;
-	}
-
-	return (
-		<Modal
-			onRequestClose={ handleCloseModal }
-			eventContext={ eventContext }
-		/>
-	);
+	return null;
 };
 
 export default EuPoliticalDeclaration;

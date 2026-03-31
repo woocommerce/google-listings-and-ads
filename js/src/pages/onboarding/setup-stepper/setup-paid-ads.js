@@ -21,14 +21,16 @@ import { getProductFeedUrl } from '~/utils/urls';
 import { handleApiError } from '~/utils/handleError';
 import { FILTER_BUDGET_RECOMMENDATIONS, recordGlaEvent } from '~/utils/tracks';
 import { useAppDispatch } from '~/data';
-import { GUIDE_NAMES, GOOGLE_ADS_BILLING_STATUS } from '~/constants';
+import {
+	GUIDE_NAMES,
+	GOOGLE_ADS_BILLING_STATUS,
+	EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE,
+} from '~/constants';
 import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
 import SkipButton from './skip-button';
 import clientSession from './clientSession';
 import AppSpinner from '~/components/app-spinner';
-import EuPoliticalDeclarationModal from '~/components/eu-political-declaration/modal';
-
-const EVENT_CONTEXT = 'setup-mc';
+import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
 
 /**
  * Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
@@ -50,14 +52,12 @@ export default function SetupPaidAds() {
 	const budgetPromptRef = useRef();
 	const adminUrl = useAdminUrl();
 	const [ completing, setCompleting ] = useState( null );
-	const [
-		euPoliticalDeclarationModalDismissed,
-		setEuPoliticalDeclarationModalDismissed,
-	] = useState( false );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
-	const [ handleSetupComplete, , setupError ] = useAdsSetupCompleteCallback();
+	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const { syncSettings } = useAppDispatch();
+	const { handleError: handleEuPoliticalDeclarationError } =
+		useEuPoliticalDeclarationContext();
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
@@ -70,11 +70,13 @@ export default function SetupPaidAds() {
 			await syncSettings();
 			await onBeforeFinish();
 		} catch ( e ) {
+			handleEuPoliticalDeclarationError( e );
 			setCompleting( null );
 
-			const isEuError = e?.code === 'eu_political_declaration_required';
-
-			if ( ! isEuError ) {
+			if (
+				e.code !==
+				EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE
+			) {
 				handleApiError(
 					e,
 					__(
@@ -155,7 +157,6 @@ export default function SetupPaidAds() {
 		);
 
 		setCompleting( ACTION_COMPLETE );
-		setEuPoliticalDeclarationModalDismissed( false );
 
 		recordGlaEvent(
 			'gla_onboarding_complete_with_paid_ads_button_click',
@@ -170,15 +171,6 @@ export default function SetupPaidAds() {
 
 		await finishOnboardingSetup( onBeforeFinish );
 	};
-
-	const handleCloseEuPoliticalDeclarationModal = () => {
-		setEuPoliticalDeclarationModalDismissed( true );
-	};
-
-	const showEuPoliticalDeclarationModal =
-		! euPoliticalDeclarationModalDismissed &&
-		!! setupError &&
-		setupError.code === 'eu_political_advertising_declaration_required';
 
 	return (
 		<CampaignAssetsForm
@@ -196,19 +188,12 @@ export default function SetupPaidAds() {
 				) }
 				continueButton={ createContinueButton }
 				skipButton={ createSkipButton }
-				context={ EVENT_CONTEXT }
+				context="setup-mc"
 			/>
 			<BudgetIncentivePrompt
 				ref={ budgetPromptRef }
 				countryCodes={ countryCodes }
 			/>
-
-			{ showEuPoliticalDeclarationModal && (
-				<EuPoliticalDeclarationModal
-					eventContext={ EVENT_CONTEXT }
-					onRequestClose={ handleCloseEuPoliticalDeclarationModal }
-				/>
-			) }
 		</CampaignAssetsForm>
 	);
 }

@@ -32,6 +32,7 @@ import YouTubeShoppingTour from '~/components/tours/youtube-shopping-tour';
 import SubmissionSuccessGuide from '~/pages/product-feed/submission-success-guide';
 import EuPoliticalDeclaration from '~/components/eu-political-declaration';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
+import EuPoliticalDeclarationProvider from '~/components/eu-political-declaration/eu-political-declaration-provider';
 import './index.scss';
 
 /**
@@ -67,9 +68,17 @@ const Dashboard = () => {
 	const query = getQuery();
 	switch ( query.subpath ) {
 		case subpaths.editCampaign:
-			return <EditPaidAdsCampaign />;
+			return (
+				<EuPoliticalDeclarationProvider context="edit-ads">
+					<EditPaidAdsCampaign />
+				</EuPoliticalDeclarationProvider>
+			);
 		case subpaths.createCampaign:
-			return <CreatePaidAdsCampaign />;
+			return (
+				<EuPoliticalDeclarationProvider context="create-ads">
+					<CreatePaidAdsCampaign />
+				</EuPoliticalDeclarationProvider>
+			);
 	}
 
 	const trackEventReportId = 'dashboard';
@@ -101,7 +110,6 @@ const Dashboard = () => {
 				<RaiseBudgetRecommendationBanner />
 				<RebrandingTour />
 				<YouTubeShoppingTour />
-				<EuPoliticalDeclaration eventContext="dashboard" />
 				<div className="gla-dashboard__filter">
 					<AppDateRangeFilterPicker
 						trackEventReportId={ trackEventReportId }
@@ -113,12 +121,22 @@ const Dashboard = () => {
 				<div className="gla-dashboard__performance">
 					<SummarySection />
 				</div>
-				<div className="gla-dashboard__programs">
-					<AllProgramsTableCard
-						trackEventReportId={ trackEventReportId }
-					/>
-				</div>
+
+				{ /* Wrapping AllProgramsTableCard with
+				EuPoliticalDeclarationProvider to enable the EU political
+				declaration modal to be triggered from within the programs
+				table, if necessary when enabling/disabling campaigns. */ }
+				<EuPoliticalDeclarationProvider context="dashboard">
+					<div className="gla-dashboard__programs">
+						<AllProgramsTableCard
+							trackEventReportId={ trackEventReportId }
+						/>
+					</div>
+
+					<EuPoliticalDeclaration />
+				</EuPoliticalDeclarationProvider>
 			</div>
+
 			{ isCampaignCreationSuccessGuideOpen && (
 				<CampaignCreationSuccessGuide
 					onGuideRequestClose={
