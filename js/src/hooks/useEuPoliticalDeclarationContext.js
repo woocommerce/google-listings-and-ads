@@ -9,9 +9,13 @@ import { useContext } from '@wordpress/element';
 import { EuPoliticalDeclarationContext } from '~/components/eu-political-declaration/eu-political-declaration-provider';
 
 /**
+ * @typedef {import('~/components/eu-political-declaration/eu-political-declaration-provider').EuPoliticalDeclarationContextValue} EuPoliticalDeclarationContextValue
+ */
+
+/**
  * Hook to access the EU political declaration modal context.
  *
- * @return {EuPoliticalDeclarationContext} The context value with `showModal`, `hideModal` and `handleError` functions.
+ * @return {EuPoliticalDeclarationContextValue} The context value with `showModal`, `hideModal` and `handleError` functions.
  * @throws Will throw an error if used outside of `EuPoliticalDeclarationProvider`.
  */
 export default function useEuPoliticalDeclarationContext() {

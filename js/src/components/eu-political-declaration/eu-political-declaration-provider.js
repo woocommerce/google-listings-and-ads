@@ -11,12 +11,17 @@ import { EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE } from '~/cons
 import { recordGlaEvent } from '~/utils/tracks';
 
 /**
- * @event gla_eu_political_declaration_modal_opened When the EU political declaration modal is opened.
- * @event gla_eu_political_declaration_modal_closed When the EU political declaration modal is closed.
+ * @event gla_eu_political_declaration_modal_opened
+ * @property {string} context The context in which the modal is being used, for tracking purposes.
  */
 
 /**
- * @typedef {Object} EuPoliticalDeclarationContext
+ * @event gla_eu_political_declaration_modal_closed
+ * @property {string} context The context in which the modal is being used, for tracking purposes.
+ */
+
+/**
+ * @typedef {Object} EuPoliticalDeclarationContextValue
  * @property {Function} showModal Function to show the EU political declaration modal.
  * @property {Function} hideModal Function to hide the EU political declaration modal.
  * @property {Function} handleError Function to handle errors related to campaign updates, which can trigger the modal if the error is due to a missing political declaration.

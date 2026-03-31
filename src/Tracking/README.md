@@ -493,8 +493,14 @@ Triggered when store address "Edit in WooCommerce Settings" button is clicked.
 #### Emitters
 - [`StoreAddressCard`](../../js/src/components/contact-information/store-address-card.js#L49) Whenever "Edit in WooCommerce Settings" button is clicked.
 
-### [`gla_eu_political_declaration_modal_closed When the EU political declaration modal is closed.`](../../js/src/components/eu-political-declaration/eu-political-declaration-provider.js#L13)
+### [`gla_eu_political_declaration_modal_closed`](../../js/src/components/eu-political-declaration/eu-political-declaration-provider.js#L18)
 
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the modal is being used, for tracking purposes.
+#### Emitters
+- [`EuPoliticalDeclarationProvider`](../../js/src/components/eu-political-declaration/eu-political-declaration-provider.js#L44) when the modal is closed.
 
 ### [`gla_eu_political_declaration_modal_go_to_google_ads_click`](../../js/src/components/eu-political-declaration/modal.js#L19)
 
@@ -504,6 +510,15 @@ Triggered when store address "Edit in WooCommerce Settings" button is clicked.
 `context` | `string` | The context in which the modal was closed, set to the value of the `eventContext` prop.
 #### Emitters
 - [`Modal`](../../js/src/components/eu-political-declaration/modal.js#L35) with `{ context: 'dashboard'|'edit-ads'|'create-ads'|'setup-ads'|'setup-mc' }`
+
+### [`gla_eu_political_declaration_modal_opened`](../../js/src/components/eu-political-declaration/eu-political-declaration-provider.js#L13)
+
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the modal is being used, for tracking purposes.
+#### Emitters
+- [`EuPoliticalDeclarationProvider`](../../js/src/components/eu-political-declaration/eu-political-declaration-provider.js#L44) when the modal is opened.
 
 ### [`gla_faq`](../../js/src/components/faqs-panel/index.js#L22)
 Clicking on faq item to collapse or expand it.
