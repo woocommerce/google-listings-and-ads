@@ -157,10 +157,4 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix – CSS lint error in raise-budget-recommendation-banner.
 * Update - Disable API Pull mode for all users.
 
-= 3.5.2 - 2026-01-29 =
-* Add - Sorting functionality in `AllProgramsTableCard` to allow users to reorder columns by key attributes.
-* Fix - Resolve an issue where website claim conflicts were not detected correctly during Google Merchant Center account setup in the onboarding flow.
-* Update - Add `timeZone` and `languageCode` fields to create-merchant request for Merchant API compatibility.
-* Update - Allow legacy conversion events to be disabled via a filter.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
