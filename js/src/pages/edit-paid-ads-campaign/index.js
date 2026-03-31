@@ -37,6 +37,8 @@ import {
 	recordStepContinueEvent,
 } from '~/utils/tracks';
 import useNavigateAwayPromptEffect from '~/hooks/useNavigateAwayPromptEffect';
+import EuPoliticalDeclaration from '~/components/eu-political-declaration';
+import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
 
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'edit-ads';
@@ -69,7 +71,8 @@ const EditPaidAdsCampaign = () => {
 	useLayout( 'full-content' );
 	const [ didChange, setDidChange ] = useState( false );
 	const [ isSubmit, setIsSubmit ] = useState( false );
-
+	const { handleError: handleEuPoliticalDeclarationError } =
+		useEuPoliticalDeclarationContext();
 	const {
 		updateAdsCampaign,
 		createCampaignAssetGroup,
@@ -212,6 +215,7 @@ const EditPaidAdsCampaign = () => {
 				invalidateResolvedAssetEntityGroups();
 			}
 		} catch ( e ) {
+			handleEuPoliticalDeclarationError( e );
 			setIsSubmit( false );
 			enhancer.signalFailedSubmission();
 			return;
@@ -285,6 +289,8 @@ const EditPaidAdsCampaign = () => {
 					] }
 				/>
 			</CampaignAssetsForm>
+
+			<EuPoliticalDeclaration />
 		</>
 	);
 };

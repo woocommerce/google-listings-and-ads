@@ -21,11 +21,16 @@ import { getProductFeedUrl } from '~/utils/urls';
 import { handleApiError } from '~/utils/handleError';
 import { FILTER_BUDGET_RECOMMENDATIONS, recordGlaEvent } from '~/utils/tracks';
 import { useAppDispatch } from '~/data';
-import { GUIDE_NAMES, GOOGLE_ADS_BILLING_STATUS } from '~/constants';
+import {
+	GUIDE_NAMES,
+	GOOGLE_ADS_BILLING_STATUS,
+	EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE,
+} from '~/constants';
 import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
 import SkipButton from './skip-button';
 import clientSession from './clientSession';
 import AppSpinner from '~/components/app-spinner';
+import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
 
 /**
  * Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
@@ -51,6 +56,8 @@ export default function SetupPaidAds() {
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const { syncSettings } = useAppDispatch();
+	const { handleError: handleEuPoliticalDeclarationError } =
+		useEuPoliticalDeclarationContext();
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
@@ -63,15 +70,21 @@ export default function SetupPaidAds() {
 			await syncSettings();
 			await onBeforeFinish();
 		} catch ( e ) {
+			handleEuPoliticalDeclarationError( e );
 			setCompleting( null );
 
-			handleApiError(
-				e,
-				__(
-					'Unable to complete your setup.',
-					'google-listings-and-ads'
-				)
-			);
+			if (
+				e.code !==
+				EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE
+			) {
+				handleApiError(
+					e,
+					__(
+						'Unable to complete your setup.',
+						'google-listings-and-ads'
+					)
+				);
+			}
 			return;
 		}
 
@@ -151,6 +164,8 @@ export default function SetupPaidAds() {
 				level,
 				budget: dailyBudget,
 				audiences: countryCodes.join( ',' ),
+				has_confirmed_eu_political_content:
+					hasConfirmedEuPoliticalContent,
 			} )
 		);
 
