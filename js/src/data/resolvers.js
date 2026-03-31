@@ -228,6 +228,27 @@ getAdsCampaigns.shouldInvalidate = ( action, query ) => {
 	);
 };
 
+export function* getAdsCampaignsMissingEuDeclaration() {
+	try {
+		const campaigns = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/campaigns/missing-eu-political-declaration`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ADS_CAMPAIGNS_MISSING_EU_DECLARATION,
+			campaigns,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading campaigns missing EU political declaration.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
 export function* getCampaignAssetGroups( campaignId ) {
 	const endpoint = `${ API_NAMESPACE }/ads/campaigns/asset-groups`;
 	const query = { campaign_id: campaignId };
