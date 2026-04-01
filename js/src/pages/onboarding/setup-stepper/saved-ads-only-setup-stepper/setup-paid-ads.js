@@ -9,6 +9,8 @@ import { useState, useRef } from '@wordpress/element';
  */
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useApplyIncentive from '~/hooks/useApplyIncentive';
+import useCYOIncentives from '~/hooks/useCYOIncentives';
+import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import AdsCampaign from '~/components/paid-ads/ads-campaign';
 import BudgetIncentivePrompt from '~/components/paid-ads/budget-incentive-prompt';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
@@ -39,6 +41,9 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
 
+	const { data: incentives } = useCYOIncentives();
+	const isServiceBasedMerchant = useServiceBasedMerchant();
+
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
@@ -47,6 +52,15 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 		if ( ! ( await applyIncentive( incentiveId ) ) ) {
 			setCompleting( null );
 			return;
+		}
+		if ( incentiveId ) {
+			const incentive = incentives?.find(
+				( i ) => String( i.id ) === String( incentiveId )
+			);
+			recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
+				is_service_based_merchant: isServiceBasedMerchant,
+				offer: incentive?.offer,
+			} );
 		}
 		onSkip();
 	};
@@ -112,6 +126,16 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 
 		if ( ! ( await applyIncentive( incentiveId ) ) ) {
 			return;
+		}
+
+		if ( incentiveId ) {
+			const incentive = incentives?.find(
+				( i ) => String( i.id ) === String( incentiveId )
+			);
+			recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
+				is_service_based_merchant: isServiceBasedMerchant,
+				offer: incentive?.offer,
+			} );
 		}
 
 		setCompleting( ACTION_CONTINUE );

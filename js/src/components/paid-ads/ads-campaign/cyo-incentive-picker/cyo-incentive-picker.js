@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useEffect } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
@@ -13,7 +14,9 @@ import CYOIRadioControl from './cyoi-radio-control';
 import useCYOIncentives from '~/hooks/useCYOIncentives';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
+import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
+import { recordGlaEvent } from '~/utils/tracks';
 import './cyo-incentive-picker.scss';
 
 const CyoIncentivePicker = () => {
@@ -21,11 +24,20 @@ const CyoIncentivePicker = () => {
 	const { data: incentives, hasFinishedResolution } = useCYOIncentives();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const { formatAmount } = useAdsCurrency();
+	const isServiceBasedMerchant = useServiceBasedMerchant();
 
 	const shouldDisplay =
 		hasFinishedResolution &&
 		incentives?.length > 0 &&
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
+
+	useEffect( () => {
+		if ( shouldDisplay ) {
+			recordGlaEvent( 'gla_cyo_incentive_picker_shown', {
+				is_service_based_merchant: isServiceBasedMerchant,
+			} );
+		}
+	}, [ shouldDisplay, isServiceBasedMerchant ] );
 
 	if ( ! shouldDisplay ) {
 		return null;
@@ -57,6 +69,19 @@ const CyoIncentivePicker = () => {
 		}
 		return acc;
 	}, [] );
+
+	const handleIncentiveChange = ( id ) => {
+		restInputProps.onChange( id );
+		const option = options.find(
+			( opt ) => String( opt.id ) === String( id )
+		);
+		if ( option ) {
+			recordGlaEvent( 'gla_cyo_incentive_selected', {
+				is_service_based_merchant: isServiceBasedMerchant,
+				offer: option.offer,
+			} );
+		}
+	};
 
 	return (
 		<Section
@@ -93,7 +118,10 @@ const CyoIncentivePicker = () => {
 									key={ id }
 									className="gla-cyoi-incentive-picker__row"
 								>
-									<CYOIRadioControl { ...radioProps } />
+									<CYOIRadioControl
+										{ ...radioProps }
+										onChange={ handleIncentiveChange }
+									/>
 									<div className="gla-cyoi-incentive-picker__option">
 										{ sprintf(
 											/* translators: %s: amount in users' currency */

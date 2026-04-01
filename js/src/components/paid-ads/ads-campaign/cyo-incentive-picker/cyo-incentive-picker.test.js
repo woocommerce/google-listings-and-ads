@@ -11,12 +11,18 @@ import CyoIncentivePicker from './cyo-incentive-picker';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useCYOIncentives from '~/hooks/useCYOIncentives';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
+import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
+import { recordGlaEvent } from '~/utils/tracks';
 
 jest.mock( '~/components/adaptive-form', () => ( {
 	useAdaptiveFormContext: jest.fn(),
 } ) );
 jest.mock( '~/hooks/useCYOIncentives' );
 jest.mock( '~/hooks/useGoogleAdsAccountBillingStatus' );
+jest.mock( '~/hooks/useServiceBasedMerchant' );
+jest.mock( '~/utils/tracks', () => ( {
+	recordGlaEvent: jest.fn(),
+} ) );
 
 const INCENTIVES_DATA = [
 	{
@@ -80,6 +86,7 @@ describe( 'CyoIncentivePicker Component', () => {
 
 	beforeEach( () => {
 		onIncentiveIdChange.mockReset();
+		recordGlaEvent.mockReset();
 		useAdaptiveFormContext.mockReturnValue( {
 			getInputProps: jest.fn().mockReturnValue( {
 				value: null,
@@ -95,6 +102,8 @@ describe( 'CyoIncentivePicker Component', () => {
 		useGoogleAdsAccountBillingStatus.mockReturnValue( {
 			billingStatus: { status: 'approved' },
 		} );
+
+		useServiceBasedMerchant.mockReturnValue( false );
 	} );
 
 	it( 'should render the component', () => {
@@ -157,5 +166,57 @@ describe( 'CyoIncentivePicker Component', () => {
 
 		fireEvent.click( radioButtons[ 2 ] );
 		expect( onIncentiveIdChange ).toHaveBeenCalledWith( '123' );
+	} );
+
+	it( 'should track gla_cyo_incentive_picker_shown when rendered', () => {
+		render( <CyoIncentivePicker /> );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_cyo_incentive_picker_shown',
+			{ is_service_based_merchant: false }
+		);
+	} );
+
+	it( 'should track gla_cyo_incentive_picker_shown with isServiceBasedMerchant true', () => {
+		useServiceBasedMerchant.mockReturnValue( true );
+		render( <CyoIncentivePicker /> );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_cyo_incentive_picker_shown',
+			{ is_service_based_merchant: true }
+		);
+	} );
+
+	it( 'should not track gla_cyo_incentive_picker_shown when not displayed', () => {
+		useCYOIncentives.mockReturnValue( {
+			data: null,
+			hasFinishedResolution: true,
+		} );
+		render( <CyoIncentivePicker /> );
+		expect( recordGlaEvent ).not.toHaveBeenCalledWith(
+			'gla_cyo_incentive_picker_shown',
+			expect.anything()
+		);
+	} );
+
+	it( 'should track gla_cyo_incentive_selected with offer level when selecting a radio', () => {
+		render( <CyoIncentivePicker /> );
+		const radioButtons = screen.getAllByRole( 'radio' );
+
+		fireEvent.click( radioButtons[ 0 ] );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_cyo_incentive_selected',
+				{ is_service_based_merchant: false, offer: 'low' }
+			);
+
+		fireEvent.click( radioButtons[ 1 ] );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+				'gla_cyo_incentive_selected',
+				{ is_service_based_merchant: false, offer: 'medium' }
+			);
+
+		fireEvent.click( radioButtons[ 2 ] );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+				'gla_cyo_incentive_selected',
+				{ is_service_based_merchant: false, offer: 'high' }
+		);
 	} );
 } );
