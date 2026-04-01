@@ -204,19 +204,19 @@ describe( 'CyoIncentivePicker Component', () => {
 		fireEvent.click( radioButtons[ 0 ] );
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_cyo_incentive_selected',
-				{ is_service_based_merchant: false, offer: 'low' }
-			);
+			{ is_service_based_merchant: false, offer: 'low' }
+		);
 
 		fireEvent.click( radioButtons[ 1 ] );
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
-				'gla_cyo_incentive_selected',
-				{ is_service_based_merchant: false, offer: 'medium' }
-			);
+			'gla_cyo_incentive_selected',
+			{ is_service_based_merchant: false, offer: 'medium' }
+		);
 
 		fireEvent.click( radioButtons[ 2 ] );
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
-				'gla_cyo_incentive_selected',
-				{ is_service_based_merchant: false, offer: 'high' }
+			'gla_cyo_incentive_selected',
+			{ is_service_based_merchant: false, offer: 'high' }
 		);
 	} );
 } );
