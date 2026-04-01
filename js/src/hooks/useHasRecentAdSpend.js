@@ -24,7 +24,6 @@ function getDateDaysAgo( daysAgo ) {
 
 /**
  * @typedef {Object} HasRecentAdSpendPayload
- * @property {boolean} loading Whether the resolution is in progress.
  * @property {boolean} hasFinishedResolution Whether the resolution has completed.
  * @property {boolean} hasAdSpend Whether there has been any Google Ads spend within the past N days.
  */
@@ -33,7 +32,7 @@ function getDateDaysAgo( daysAgo ) {
  * Hook that checks whether there has been any Google Ads spend within the past N days.
  *
  * @param {number} [days=14] Number of days to look back for ad spend. Defaults to 14.
- * @return {HasRecentAdSpendPayload} Loading state, resolution state, and whether ad spend exists.
+ * @return {HasRecentAdSpendPayload} Resolution state, and whether ad spend exists.
  */
 const useHasRecentAdSpend = ( days = 14 ) => {
 	return useSelect(
@@ -42,20 +41,21 @@ const useHasRecentAdSpend = ( days = 14 ) => {
 
 			if ( ! adsSetupComplete ) {
 				return {
-					loading: false,
 					hasFinishedResolution: true,
 					hasAdSpend: false,
 				};
 			}
 
-			const reportQuery = {
-				after: getDateDaysAgo( days ),
-				before: getDateDaysAgo( 0 ),
-				fields: [ 'spend' ],
-			};
-
 			const selector = select( STORE_KEY );
-			const args = [ 'programs', REPORT_SOURCE_PAID, reportQuery ];
+			const args = [
+				'programs',
+				REPORT_SOURCE_PAID,
+				{
+					after: getDateDaysAgo( days ),
+					before: getDateDaysAgo( 0 ),
+					fields: [ 'spend' ],
+				},
+			];
 			const report = selector.getReportByApiQuery( ...args );
 			const hasFinishedResolution = selector.hasFinishedResolution(
 				'getReportByApiQuery',
@@ -63,9 +63,8 @@ const useHasRecentAdSpend = ( days = 14 ) => {
 			);
 
 			return {
-				loading: ! hasFinishedResolution,
 				hasFinishedResolution,
-				hasAdSpend: hasFinishedResolution && !! report?.totals?.spend,
+				hasAdSpend: report?.totals?.spend > 0,
 			};
 		},
 		[ days ]

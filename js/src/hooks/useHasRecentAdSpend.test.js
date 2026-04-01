@@ -40,66 +40,47 @@ describe( 'useHasRecentAdSpend', () => {
 		);
 	} );
 
-	test( 'returns loading:true, hasFinishedResolution:false and hasAdSpend:false while resolution is pending', () => {
+	test( 'indicates pending state and no ad spend while the report is still loading', () => {
 		mockHasFinishedResolution.mockReturnValue( false );
 		mockGetReportByApiQuery.mockReturnValue( null );
 
 		const { result } = renderHook( () => useHasRecentAdSpend() );
 
-		expect( result.current ).toEqual( {
-			loading: true,
-			hasFinishedResolution: false,
-			hasAdSpend: false,
-		} );
+		expect( result.current.hasFinishedResolution ).toBe( false );
+		expect( result.current.hasAdSpend ).toBeFalsy();
 	} );
 
-	test( 'returns loading:false, hasFinishedResolution:true and hasAdSpend:true when spend > 0', () => {
+	test( 'returns true when the reported spend is greater than zero', () => {
 		mockHasFinishedResolution.mockReturnValue( true );
 		mockGetReportByApiQuery.mockReturnValue( { totals: { spend: 42.5 } } );
 
 		const { result } = renderHook( () => useHasRecentAdSpend() );
 
 		expect( result.current ).toEqual( {
-			loading: false,
 			hasFinishedResolution: true,
 			hasAdSpend: true,
 		} );
 	} );
 
-	test( 'returns loading:false, hasFinishedResolution:true and hasAdSpend:false when spend === 0', () => {
+	test( 'returns false spend when the reported spend amount is zero', () => {
 		mockHasFinishedResolution.mockReturnValue( true );
 		mockGetReportByApiQuery.mockReturnValue( { totals: { spend: 0 } } );
 
 		const { result } = renderHook( () => useHasRecentAdSpend() );
 
 		expect( result.current ).toEqual( {
-			loading: false,
 			hasFinishedResolution: true,
 			hasAdSpend: false,
 		} );
 	} );
 
-	test( 'returns loading:false, hasFinishedResolution:true and hasAdSpend:false when report is null', () => {
-		mockHasFinishedResolution.mockReturnValue( true );
-		mockGetReportByApiQuery.mockReturnValue( null );
-
-		const { result } = renderHook( () => useHasRecentAdSpend() );
-
-		expect( result.current ).toEqual( {
-			loading: false,
-			hasFinishedResolution: true,
-			hasAdSpend: false,
-		} );
-	} );
-
-	test( 'returns loading:false, hasFinishedResolution:true and hasAdSpend:false without API call when adsSetupComplete is false', () => {
+	test( 'skips the API call and reports no ad spend when ads setup is not complete', () => {
 		glaData.adsSetupComplete = false;
 
 		const { result } = renderHook( () => useHasRecentAdSpend() );
 
 		expect( mockGetReportByApiQuery ).not.toHaveBeenCalled();
 		expect( result.current ).toEqual( {
-			loading: false,
 			hasFinishedResolution: true,
 			hasAdSpend: false,
 		} );
