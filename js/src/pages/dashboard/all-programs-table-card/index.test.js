@@ -13,6 +13,14 @@ import useAdsCampaigns from '~/hooks/useAdsCampaigns';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
 import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
 
+jest.mock( '~/hooks/useEuPoliticalDeclarationContext', () =>
+	jest.fn().mockReturnValue( {
+		showModal: jest.fn(),
+		hideModal: jest.fn(),
+		handleError: jest.fn(),
+	} )
+);
+
 jest.mock( '~/components/tours/campaign-assets-tour', () =>
 	jest
 		.fn()
