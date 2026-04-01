@@ -522,6 +522,33 @@ Triggered when store address "Edit in WooCommerce Settings" button is clicked.
 #### Emitters
 - [`StoreAddressCard`](../../js/src/components/contact-information/store-address-card.js#L49) Whenever "Edit in WooCommerce Settings" button is clicked.
 
+### [`gla_eu_political_declaration_modal_closed`](../../js/src/components/eu-political-declaration/eu-political-declaration-provider.js#L18)
+
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the modal is being used, for tracking purposes.
+#### Emitters
+- [`EuPoliticalDeclarationProvider`](../../js/src/components/eu-political-declaration/eu-political-declaration-provider.js#L44) when the modal is closed.
+
+### [`gla_eu_political_declaration_modal_go_to_google_ads_click`](../../js/src/components/eu-political-declaration/modal.js#L19)
+
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the modal was closed, set to the value of the `eventContext` prop.
+#### Emitters
+- [`Modal`](../../js/src/components/eu-political-declaration/modal.js#L35) with `{ context: 'dashboard'|'edit-ads'|'create-ads'|'setup-ads'|'setup-mc' }`
+
+### [`gla_eu_political_declaration_modal_opened`](../../js/src/components/eu-political-declaration/eu-political-declaration-provider.js#L13)
+
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the modal is being used, for tracking purposes.
+#### Emitters
+- [`EuPoliticalDeclarationProvider`](../../js/src/components/eu-political-declaration/eu-political-declaration-provider.js#L44) when the modal is opened.
+
 ### [`gla_faq`](../../js/src/components/faqs-panel/index.js#L22)
 Clicking on faq item to collapse or expand it.
 #### Properties
@@ -720,7 +747,7 @@ Triggered when the "Launch paid campaign" button is clicked to add a new paid ca
 `recommended_budget` | `number` | The recommended daily budget displayed to merchants regardless of the final amount they choose.
 `has_confirmed_eu_political_content` | `boolean` | Whether the user has confirmed that the ads campaign contains EU political content.
 #### Emitters
-- [`SetupPaidAds`](../../js/src/pages/ads-onboarding/ads-stepper/setup-paid-ads.js#L48) on submit
+- [`SetupPaidAds`](../../js/src/pages/ads-onboarding/ads-stepper/setup-paid-ads.js#L49) on submit
 
 ### [`gla_link_youtube_account_button_click`](../../js/src/components/youtube-account-card/connected-youtube-account-card.js#L26)
 Clicking on the button to link the YouTube account.
@@ -785,7 +812,7 @@ Clicking on the "Yes, I want a new account" button in the warning modal for crea
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
 - [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
-- [`Dashboard`](../../js/src/pages/dashboard/index.js#L39) when CES modal is closed.
+- [`Dashboard`](../../js/src/pages/dashboard/index.js#L41) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
@@ -800,7 +827,7 @@ A modal is closed.
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
 - [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
-- [`Dashboard`](../../js/src/pages/dashboard/index.js#L39) when CES modal is closed.
+- [`Dashboard`](../../js/src/pages/dashboard/index.js#L41) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
@@ -851,7 +878,7 @@ Clicking on the skip paid ads button to complete the onboarding flow.
 `billing_method_status` | `string` | The status of billing method of merchant's Google Ads addcount e.g. 'unknown', 'pending', 'approved', 'cancelled'
 `campaign_form_validation` | `string` | Whether the entered paid campaign form data are valid, e.g. 'unknown', 'valid', 'invalid'
 
-### [`gla_onboarding_complete_with_paid_ads_button_click`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L30)
+### [`gla_onboarding_complete_with_paid_ads_button_click`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L35)
 Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
 #### Properties
 | name | type | description |
@@ -862,7 +889,7 @@ Clicking on the "Complete setup" button to complete the onboarding flow with pai
 `source` | `string` | The data source of the budget recommendations, e.g. 'google-ads-api', 'fallback-database'.
 `recommended_budget` | `number` | The recommended daily budget displayed to merchants regardless of the final amount they choose.
 #### Emitters
-- [`exports`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L46)
+- [`exports`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L51)
 
 ### [`gla_open_ads_account_claim_invitation_button_click`](../../js/src/components/google-ads-account-card/claim-account-button.js#L15)
 Clicking on the button to open the invitation page for claiming the newly created Google Ads account.
@@ -883,10 +910,10 @@ Triggered when moving to another step during creating/editing a campaign.
 `action` | `string` | User's action or/and objective (e.g. `go-to-step-2`)
 `context` | `string \| undefined` | Indicates where this event happened
 #### Emitters
-- [`CreatePaidAdsCampaign`](../../js/src/pages/create-paid-ads-campaign/index.js#L48)
+- [`CreatePaidAdsCampaign`](../../js/src/pages/create-paid-ads-campaign/index.js#L50)
 	- with `{ context: 'create-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
 	- with `{ context: 'create-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
-- [`EditPaidAdsCampaign`](../../js/src/pages/edit-paid-ads-campaign/index.js#L68)
+- [`EditPaidAdsCampaign`](../../js/src/pages/edit-paid-ads-campaign/index.js#L70)
 	- with `{ context: 'edit-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
 	- with `{ context: 'edit-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
 
@@ -1041,7 +1068,7 @@ Triggered on events during ads onboarding
 `triggered_by` | `string` | Indicates which button triggered this event
 `action` | `string` | User's action or/and objective (e.g. `leave`, `go-to-step-2`)
 #### Emitters
-- [`AdsStepper`](../../js/src/pages/ads-onboarding/ads-stepper/index.js#L28)
+- [`AdsStepper`](../../js/src/pages/ads-onboarding/ads-stepper/index.js#L29)
 	- with `{ triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
 	- with `{ triggered_by: 'stepper-step1-button', action: 'go-to-step1'}`.
 - [`SetupTopBar`](../../js/src/pages/ads-onboarding/setup-top-bar.js#L17) with given `{ triggered_by: 'back-button', action: 'leave' }` when back button is clicked.
@@ -1067,7 +1094,7 @@ Setup Merchant Center
 #### Emitters
 - [`GetStartedCard`](../../js/src/pages/get-started/get-started-card/index.js#L23) with `{ triggered_by: 'start-onboarding-button', action: 'go-to-onboarding', context: 'get-started' }`.
 - [`GetStartedWithHeroCard`](../../js/src/pages/get-started/get-started-with-hero-card/index.js#L24) with `{ triggered_by: 'start-onboarding-button', action: 'go-to-onboarding', context: 'get-started-with-hero' }`.
-- [`SavedSetupStepper`](../../js/src/pages/onboarding/setup-stepper/saved-setup-stepper.js#L41)
+- [`SavedSetupStepper`](../../js/src/pages/onboarding/setup-stepper/saved-setup-stepper.js#L42)
 	- with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button', action: 'go-to-step2' | 'go-to-step3' }`.
 	- with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
 - [`SetupTopBar`](../../js/src/pages/onboarding/setup-top-bar.js#L17) with `{ triggered_by: 'back-button', action: 'leave' }`.
