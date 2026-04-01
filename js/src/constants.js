@@ -156,3 +156,6 @@ export const GEN_AI_ASSET_TYPES = {
 	TEXT: 'text',
 	MEDIA: 'media',
 };
+
+export const EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE =
+	'eu_political_advertising_declaration_required';
