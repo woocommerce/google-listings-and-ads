@@ -102,10 +102,14 @@ export default function ConfirmModal( {
 	const dispatcher = useAppDispatch();
 	const { hasGoogleMCConnection } = useGoogleMCAccount();
 
-	const targetTextDict =
-		disconnectTarget === ALL_ACCOUNTS && ! hasGoogleMCConnection
-			? ADS_ONLY
-			: ALL_ACCOUNTS;
+	const getTargetTextKey = () => {
+    	if (disconnectTarget === ADS_ACCOUNT) return ADS_ACCOUNT;
+    	if (disconnectTarget === ALL_ACCOUNTS && !hasGoogleMCConnection) return ADS_ONLY;
+    
+    	return ALL_ACCOUNTS;
+	};
+
+	const targetTextDict = getTargetTextKey();
 
 	const { title, confirmButton, confirmation, contents } =
 		textDict[ targetTextDict ];
