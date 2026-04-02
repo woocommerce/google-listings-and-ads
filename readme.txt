@@ -5,7 +5,7 @@ Requires at least: 6.6
 Tested up to: 6.9
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.6.0
+Stable tag: 3.6.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -140,6 +140,12 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.6.1 - 2026-03-31 =
+* Add - EU political ads declaration modal for compliance with Google's political advertising requirements.
+* Dev - Refactor YouTube card E2E tests.
+* Fix - Cache GAQL query for highest spend campaign.
+* Fix - Remove legacy conversion event.
+
 = 3.6.0 - 2026-03-16 =
 * Add - Generative AI for assets.
 * Add - YouTube shopping support.
@@ -156,11 +162,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Dev - Added two new filters to the Jetpack and Google OAuth flows.
 * Fix – CSS lint error in raise-budget-recommendation-banner.
 * Update - Disable API Pull mode for all users.
-
-= 3.5.2 - 2026-01-29 =
-* Add - Sorting functionality in `AllProgramsTableCard` to allow users to reorder columns by key attributes.
-* Fix - Resolve an issue where website claim conflicts were not detected correctly during Google Merchant Center account setup in the onboarding flow.
-* Update - Add `timeZone` and `languageCode` fields to create-merchant request for Merchant API compatibility.
-* Update - Allow legacy conversion events to be disabled via a filter.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
