@@ -15,6 +15,8 @@ import {
 	clearOnboardedMerchant,
 	setOnboardedMerchant,
 	clearNotificationsReady,
+	setCompletedAdsSetup,
+	clearCompletedAdsSetup,
 } from '../../utils/api';
 
 test.use( { storageState: process.env.ADMINSTATE } );
@@ -204,6 +206,7 @@ test.describe( 'Notifications Schedule', () => {
 	} );
 
 	test( 'Set as "Dont sync and show" a notified product does not schedule product.delete notification.', async () => {
+		// Set the product as not visible
 		await productEditor.gotoAddProductPage();
 		await productEditor.fillProductName();
 		await productEditor.publish();
