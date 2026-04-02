@@ -13,6 +13,8 @@ import {
 	clearOnboardedMerchant,
 	setOnboardedMerchant,
 	clearNotificationsReady,
+	setCompletedAdsSetup,
+	clearCompletedAdsSetup,
 } from '../../utils/api';
 
 test.use( { storageState: process.env.ADMINSTATE } );
@@ -200,6 +202,9 @@ test.describe( 'Notifications Schedule', () => {
 	} );
 
 	test( 'Set as "Dont sync and show" a notified product does not schedule product.delete notification.', async () => {
+		await setCompletedAdsSetup();
+
+		// Set the product as not visible
 		await productEditor.gotoAddProductPage();
 		await productEditor.fillProductName();
 		await productEditor.publish();
@@ -236,6 +241,8 @@ test.describe( 'Notifications Schedule', () => {
 			name: getASJobRowName( id, 'product.create' ),
 		} );
 		await expect( row ).not.toBeVisible();
+
+		await clearCompletedAdsSetup();
 	} );
 
 	test( 'Set a notified product visibility as "Not Public" does not schedule product.delete notification.', async () => {

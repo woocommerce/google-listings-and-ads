@@ -16,12 +16,14 @@ import { __ } from '@wordpress/i18n';
  */
 import { glaData } from '~/constants';
 import googleLogoURL from '~/images/logo/google-g-logo.svg';
+import { SYNC_STATUS_HAS_ERRORS, SYNC_STATUS_SYNCED } from './constants';
 
 const {
 	channelVisibility: {
 		field_id: fieldId,
 		channel_visibility: channelVisibility,
 		product_is_visible: productIsVisible,
+		sync_status: syncStatus = null,
 		issues = [],
 		options = [],
 	} = {},
@@ -39,18 +41,25 @@ const ChannelVisibilitySettings = () => {
 	const [ channelVisibilityValue, setChannelVisibilityValue ] = useState(
 		productIsVisible ? channelVisibility : 'dont-sync-and-show'
 	);
-	let productIssues = issues;
 
-	// Adds warning message if the product is not visible
-	if ( ! productIsVisible ) {
-		productIssues = [
-			...issues,
-			__(
-				'This product cannot be shown on any channel because it is hidden from your store catalog.',
-				'google-listings-and-ads'
-			),
-		];
+	let syncStatusText = null;
+
+	if ( syncStatus === SYNC_STATUS_HAS_ERRORS ) {
+		syncStatusText = __( 'Issues detected', 'google-listings-and-ads' );
+	} else if ( syncStatus ) {
+		// Capitalize the first letter and replace dashes with spaces (e.g. 'not-synced' → 'Not synced').
+		syncStatusText =
+			syncStatus.charAt( 0 ).toUpperCase() +
+			syncStatus.slice( 1 ).replace( '-', ' ' );
 	}
+
+	const shouldDisplaySyncNotice =
+		productIsVisible &&
+		syncStatus &&
+		channelVisibilityValue === 'sync-and-show' &&
+		syncStatus !== SYNC_STATUS_SYNCED;
+
+	const hasIssues = issues.length > 0;
 
 	/**
 	 * Parse the options object into an array of options.
@@ -89,6 +98,7 @@ const ChannelVisibilitySettings = () => {
 							</FlexItem>
 						</Flex>
 					</FlexItem>
+
 					{ selectOptions.length > 0 && (
 						<FlexBlock>
 							<SelectControl
@@ -106,19 +116,55 @@ const ChannelVisibilitySettings = () => {
 				</Flex>
 			</FlexBlock>
 
-			{ productIssues.length > 0 && (
+			{ ! productIsVisible && (
 				<FlexBlock>
-					<Notice status="warning" isDismissible={ false }>
+					<Notice status="info" isDismissible={ false }>
+						<p>
+							{ __(
+								'This product cannot be shown on any channel because it is hidden from your store catalog.',
+								'google-listings-and-ads'
+							) }
+						</p>
+					</Notice>
+				</FlexBlock>
+			) }
+
+			{ shouldDisplaySyncNotice && syncStatusText && (
+				<FlexBlock>
+					<Notice
+						className="gla-channel-visibility__sync-notice"
+						isDismissible={ false }
+						status={ hasIssues ? 'warning' : 'info' }
+					>
 						<p>
 							<strong>
-								{ __( 'Issues', 'google-listings-and-ads' ) }
+								{ __(
+									'Google sync status',
+									'google-listings-and-ads'
+								) }
 							</strong>
 						</p>
-						<ul>
-							{ productIssues.map( ( issue ) => (
-								<li key={ issue }>{ issue }</li>
-							) ) }
-						</ul>
+						<p className="gla-channel-visibility__sync-status">
+							{ syncStatusText }
+						</p>
+
+						{ hasIssues && (
+							<>
+								<p>
+									<strong>
+										{ __(
+											'Issues',
+											'google-listings-and-ads'
+										) }
+									</strong>
+								</p>
+								<ul>
+									{ issues.map( ( issue ) => (
+										<li key={ issue }>{ issue }</li>
+									) ) }
+								</ul>
+							</>
+						) }
 					</Notice>
 				</FlexBlock>
 			) }

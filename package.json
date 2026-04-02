@@ -61,6 +61,7 @@
 		"@testing-library/user-event": "^14.5.2",
 		"@woocommerce/dependency-extraction-webpack-plugin": "^3.0.1",
 		"@woocommerce/eslint-plugin": "^2.3.0",
+		"@wordpress/e2e-test-utils-playwright": "^1.41.0",
 		"@wordpress/env": "^10.28.0",
 		"@wordpress/jest-preset-default": "^11.29.0",
 		"@wordpress/prettier-config": "^3.15.0",
@@ -149,11 +150,11 @@
 			},
 			{
 				"path": "./js/build/index.js",
-				"maxSize": "20.10 kB"
+				"maxSize": "20.20 kB"
 			},
 			{
 				"path": "./js/build/commons.js",
-				"maxSize": "85.00 kB"
+				"maxSize": "85.15 kB"
 			},
 			{
 				"path": "./js/build/vendors.js",
