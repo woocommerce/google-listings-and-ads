@@ -53,6 +53,12 @@
 		"allow-plugins": {
 			"automattic/jetpack-autoloader": true,
 			"dealerdirect/phpcodesniffer-composer-installer": true
+		},
+		"audit": {
+			"ignore": {
+				"CVE-2025-45769": "Disputed CVE; details here: https://nvd.nist.gov/vuln/detail/CVE-2025-45769",
+				"GHSA-p2gh-cfq4-4wjc": "Upstream issue with googleads/google-ads-php; safe in this context: https://github.com/googleads/google-ads-php/issues/1147"
+			}
 		}
 	},
 	"scripts": {
