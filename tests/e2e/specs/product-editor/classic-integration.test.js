@@ -24,6 +24,7 @@ test.describe( 'Classic Product Editor integration', () => {
 		editorUtils = getClassicProductEditorUtils( page );
 
 		await api.setOnboardedMerchant();
+		await api.setCompletedAdsSetup();
 		await api.setVersionForHideGtin(); // be sure the version is set for hiding GTIN
 	} );
 
@@ -663,6 +664,7 @@ test.describe( 'Classic Product Editor integration', () => {
 
 	test.afterAll( async () => {
 		await api.clearOnboardedMerchant();
+		await api.clearCompletedAdsSetup();
 		await page.close();
 	} );
 } );
