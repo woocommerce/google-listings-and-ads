@@ -122,7 +122,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		add_action(
 			'woocommerce_before_thankyou',
 			function ( $order_id ) use ( $ads_conversion_id, $ads_conversion_label ) {
-				$this->maybe_display_conversion_and_purchase_event_snippets( $ads_conversion_id, $ads_conversion_label, $order_id );
+				$this->maybe_display_purchase_event_snippet( $ads_conversion_id, $ads_conversion_label, $order_id );
 			},
 		);
 
@@ -349,13 +349,13 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	}
 
 	/**
-	 * Display the JavaScript code to track conversions on the order confirmation page.
+	 * Display the JavaScript code to track purchase on the order confirmation page.
 	 *
 	 * @param string $ads_conversion_id Google Ads account conversion ID.
 	 * @param string $ads_conversion_label Google Ads conversion label.
 	 * @param int    $order_id The order id.
 	 */
-	public function maybe_display_conversion_and_purchase_event_snippets( string $ads_conversion_id, string $ads_conversion_label, int $order_id ): void {
+	public function maybe_display_purchase_event_snippet( string $ads_conversion_id, string $ads_conversion_label, int $order_id ): void {
 		// Only display on the order confirmation page.
 		if ( ! is_order_received_page() ) {
 			return;
@@ -370,31 +370,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		// Mark the order as tracked, to avoid double-reporting if the confirmation page is reloaded.
 		$order->update_meta_data( self::ORDER_CONVERSION_META_KEY, 1 );
 		$order->save_meta_data();
-
-		/**
-		 * Track the legacy conversion event.
-		 *
-		 * The legacy conversion event is kept for backward compatibility with existing setups.
-		 * New implementations should rely on the 'purchase' event for conversion tracking.
-		 * In a future release, this may be removed.
-		 */
-		$add_legacy_conversion_event = apply_filters( 'woocommerce_gla_add_legacy_conversion_event', true );
-
-		if ( $add_legacy_conversion_event ) {
-			$conversion_gtag_info =
-			sprintf(
-				'gtag("event", "conversion", {
-				send_to: "%s",
-				value: %f,
-				currency: "%s",
-				transaction_id: "%s"});',
-				esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
-				$order->get_total(),
-				esc_js( $order->get_currency() ),
-				esc_js( $order->get_id() ),
-			);
-			$this->add_inline_event_script( $conversion_gtag_info );
-		}
 
 		// Get the item info in the order
 		$item_info = [];
