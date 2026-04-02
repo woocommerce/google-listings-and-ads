@@ -34,7 +34,6 @@ describe( 'GoogleAdsPromo Component', () => {
 	describe( 'When adsSetupComplete is false', () => {
 		test( 'Renders component with setup incomplete messaging when there is no recent ad spend', () => {
 			useHasRecentAdSpend.mockReturnValue( {
-				loading: false,
 				hasFinishedResolution: true,
 				hasAdSpend: false,
 			} );
@@ -63,7 +62,6 @@ describe( 'GoogleAdsPromo Component', () => {
 			glaData.adsSetupComplete = true;
 
 			useHasRecentAdSpend.mockReturnValue( {
-				loading: false,
 				hasFinishedResolution: true,
 				hasAdSpend: false,
 			} );
@@ -87,7 +85,6 @@ describe( 'GoogleAdsPromo Component', () => {
 	describe( 'Conditional rendering', () => {
 		test( 'Does not render when loading', () => {
 			useHasRecentAdSpend.mockReturnValue( {
-				loading: true,
 				hasFinishedResolution: false,
 				hasAdSpend: false,
 			} );
@@ -98,7 +95,6 @@ describe( 'GoogleAdsPromo Component', () => {
 
 		test( 'Does not render when there is recent ad spend', () => {
 			useHasRecentAdSpend.mockReturnValue( {
-				loading: false,
 				hasFinishedResolution: true,
 				hasAdSpend: true,
 			} );
@@ -109,7 +105,6 @@ describe( 'GoogleAdsPromo Component', () => {
 
 		test( 'Renders when there is no recent ad spend', () => {
 			useHasRecentAdSpend.mockReturnValue( {
-				loading: false,
 				hasFinishedResolution: true,
 				hasAdSpend: false,
 			} );
@@ -122,7 +117,6 @@ describe( 'GoogleAdsPromo Component', () => {
 	describe( 'Tracking events', () => {
 		test( 'Fires gla_google_ads_promo_shown event when component successfully renders', () => {
 			useHasRecentAdSpend.mockReturnValue( {
-				loading: false,
 				hasFinishedResolution: true,
 				hasAdSpend: false,
 			} );
@@ -140,7 +134,6 @@ describe( 'GoogleAdsPromo Component', () => {
 
 		test( 'Does not fire tracking event when loading', () => {
 			useHasRecentAdSpend.mockReturnValue( {
-				loading: true,
 				hasFinishedResolution: false,
 				hasAdSpend: false,
 			} );
@@ -152,7 +145,6 @@ describe( 'GoogleAdsPromo Component', () => {
 
 		test( 'Fires tracking event only once when component re-renders with same data', () => {
 			useHasRecentAdSpend.mockReturnValue( {
-				loading: false,
 				hasFinishedResolution: true,
 				hasAdSpend: false,
 			} );
@@ -170,7 +162,6 @@ describe( 'GoogleAdsPromo Component', () => {
 			glaData.adsSetupComplete = true;
 
 			useHasRecentAdSpend.mockReturnValue( {
-				loading: false,
 				hasFinishedResolution: true,
 				hasAdSpend: false,
 			} );
@@ -192,7 +183,6 @@ describe( 'GoogleAdsPromo Component', () => {
 
 		test( 'Fires gla_google_ads_promo_get_started_click event when Get started button is clicked', () => {
 			useHasRecentAdSpend.mockReturnValue( {
-				loading: false,
 				hasFinishedResolution: true,
 				hasAdSpend: false,
 			} );
