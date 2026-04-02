@@ -15,8 +15,6 @@ import {
 	clearOnboardedMerchant,
 	setOnboardedMerchant,
 	clearNotificationsReady,
-	setCompletedAdsSetup,
-	clearCompletedAdsSetup,
 } from '../../utils/api';
 
 test.use( { storageState: process.env.ADMINSTATE } );
