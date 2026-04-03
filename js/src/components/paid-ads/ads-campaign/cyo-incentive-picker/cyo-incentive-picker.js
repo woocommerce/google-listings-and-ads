@@ -34,6 +34,10 @@ const CyoIncentivePicker = () => {
 	const { value: selectedIncentiveId, ...restInputProps } =
 		getInputProps( 'incentiveId' );
 
+	const defaultIncentiveId =
+		incentives.find( ( incentive ) => incentive.offer === 'medium' )?.id ||
+		incentives[ 0 ].id;
+
 	const options = [ 'low', 'medium', 'high' ].reduce( ( acc, offer ) => {
 		const item = incentives.find(
 			( incentive ) => incentive.offer === offer
@@ -41,13 +45,11 @@ const CyoIncentivePicker = () => {
 
 		if ( item ) {
 			acc.push( {
-				offer,
 				id: item.id,
-				selected: selectedIncentiveId,
-				rewardAmount: item.requirement.spend.awardAmount.units,
 				spendAmount: item.requirement.spend.requiredAmount.units,
 				radioProps: {
 					...restInputProps,
+					selected: selectedIncentiveId ?? defaultIncentiveId,
 					value: item.id,
 					label: formatAmount(
 						item.requirement.spend.awardAmount.units
