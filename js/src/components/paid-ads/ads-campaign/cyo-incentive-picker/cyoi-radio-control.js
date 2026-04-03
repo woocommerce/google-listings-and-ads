@@ -29,7 +29,7 @@ const CYOIRadioControl = ( { amount, value } ) => {
 				aria-label={ sprintf(
 						/* translators: %s: incentive amount */
 						__( 'Select incentive amount %s', 'google-listings-and-ads' ),
-						value
+						rewardAmount
 					) }
 				hideLabelFromVision
 			/>
