@@ -18,18 +18,19 @@ import useAdsCurrency from '~/hooks/useAdsCurrency';
  */
 const CYOIRadioControl = ( { amount, value } ) => {
 	const { formatAmount } = useAdsCurrency();
+	const rewardAmount = formatAmount( amount );
 
 	return (
 		// eslint-disable-next-line jsx-a11y/label-has-associated-control
 		<label className="gla-cyoi-radio-control__wrapper">
 			<RadioControl
-				label={ formatAmount( amount ) }
+				label={ rewardAmount }
 				options={ [ { value } ] }
-				aria-label={ value }
+				aria-label={ `Select incentive amount ${ value }` }
 				hideLabelFromVision
 			/>
 			<span className="gla-cyoi-incentive-picker__option">
-				{ formatAmount( amount ) }
+				{ rewardAmount }
 			</span>
 		</label>
 	);

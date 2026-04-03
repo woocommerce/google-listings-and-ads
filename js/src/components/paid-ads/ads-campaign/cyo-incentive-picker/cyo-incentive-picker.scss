@@ -2,7 +2,7 @@
 
     .gla-subsection-title {
         font-weight: 400;
-        margin-bottom: 4px;
+        margin-block-end: $grid-unit-05;
     }
 
     .gla-cyoi-incentive-picker__container {
@@ -12,10 +12,6 @@
         padding-bottom: $grid-unit-20;
         line-height: 16px;
         color: $gray-700;
-
-        :global(.gridicon) {
-            fill: currentcolor;
-        }
     }
 
     .gla-cyoi-incentive-picker__helper {
@@ -42,10 +38,6 @@
             font-size: 15px;
             font-weight: 500;
             color: $black;
-        }
-
-        &:not(.customRow) .metricsItem {
-            grid-row-end: span 2;
         }
 
         &::before {

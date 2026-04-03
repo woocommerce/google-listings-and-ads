@@ -10,9 +10,15 @@ import { render, screen } from '@testing-library/react';
 import CyoIncentivePicker from './cyo-incentive-picker';
 import useCYOIncentives from '~/hooks/useCYOIncentives';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
+import useAdsCurrency from '~/hooks/useAdsCurrency';
+import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 
 jest.mock( '~/hooks/useCYOIncentives' );
 jest.mock( '~/hooks/useGoogleAdsAccountBillingStatus' );
+jest.mock( '~/hooks/useAdsCurrency' );
+
+const formatAmountMock = jest.fn();
+useAdsCurrency.mockReturnValue( { formatAmount: formatAmountMock } );
 
 const INCENTIVES_DATA = [
 	{
@@ -79,7 +85,7 @@ describe( 'CyoIncentivePicker Component', () => {
 		} );
 
 		useGoogleAdsAccountBillingStatus.mockReturnValue( {
-			billingStatus: { status: 'approved' },
+			billingStatus: { status: GOOGLE_ADS_BILLING_STATUS.APPROVED },
 		} );
 	} );
 
@@ -120,13 +126,32 @@ describe( 'CyoIncentivePicker Component', () => {
 		expect( titleElement ).not.toBeInTheDocument();
 	} );
 
-	it( 'should render the component when incentives are available and billing status is approved', () => {
+	it( 'should render the component when billing status switches from pending to approved', () => {
 		useGoogleAdsAccountBillingStatus.mockReturnValue( {
-			billingStatus: { status: 'approved' },
+			billingStatus: { status: 'pending' },
+		} );
+
+		const { rerender } = render( <CyoIncentivePicker /> );
+		let titleElement = screen.queryByText( 'Ads credit offer' );
+		expect( titleElement ).not.toBeInTheDocument();
+
+		useGoogleAdsAccountBillingStatus.mockReturnValue( {
+			billingStatus: { status: GOOGLE_ADS_BILLING_STATUS.APPROVED },
+		} );
+
+		rerender( <CyoIncentivePicker /> );
+		titleElement = screen.queryByText( 'Ads credit offer' );
+		expect( titleElement ).toBeInTheDocument();
+	} );
+
+	it( 'should not render if incentives array is empty', () => {
+		useCYOIncentives.mockReturnValue( {
+			data: [],
+			hasFinishedResolution: true,
 		} );
 
 		render( <CyoIncentivePicker /> );
 		const titleElement = screen.queryByText( 'Ads credit offer' );
-		expect( titleElement ).toBeInTheDocument();
+		expect( titleElement ).not.toBeInTheDocument();
 	} );
 } );

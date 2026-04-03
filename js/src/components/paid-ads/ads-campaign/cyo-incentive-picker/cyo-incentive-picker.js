@@ -59,7 +59,7 @@ const CyoIncentivePicker = () => {
 					</Subsection.Subtitle>
 					<div className="gla-cyoi-incentive-picker__container">
 						{ incentives.map( ( incentive ) => {
-							const { id, offer, requirement } = incentive;
+							const { id, requirement } = incentive;
 							const rewardAmount =
 								requirement.spend.awardAmount.units;
 							const spendAmount =
@@ -72,8 +72,6 @@ const CyoIncentivePicker = () => {
 								>
 									<CYOIRadioControl
 										amount={ rewardAmount }
-										offer={ offer }
-										requirement={ requirement }
 										value={ id }
 									/>
 									<div className="gla-cyoi-incentive-picker__option">
@@ -87,12 +85,10 @@ const CyoIncentivePicker = () => {
 										) }
 									</div>
 									<div className="gla-cyoi-incentive-picker__helper">
-										<span>
-											{ __(
-												'in Ads credit',
-												'google-listings-and-ads'
-											) }
-										</span>
+										{ __(
+											'in Ads credit',
+											'google-listings-and-ads'
+										) }
 									</div>
 								</div>
 							);
