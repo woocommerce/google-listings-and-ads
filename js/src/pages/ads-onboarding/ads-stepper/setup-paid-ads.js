@@ -22,6 +22,7 @@ import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import { FILTER_BUDGET_RECOMMENDATIONS, recordGlaEvent } from '~/utils/tracks';
 import AppSpinner from '~/components/app-spinner';
 import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
+import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
 
 const { APPROVED } = GOOGLE_ADS_BILLING_STATUS;
 
@@ -51,6 +52,8 @@ const SetupPaidAds = () => {
 	const [ handleSetupComplete, isSubmitting ] = useAdsSetupCompleteCallback();
 	const adminUrl = useAdminUrl();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
+	const { handleError: handleEuPoliticalDeclarationError } =
+		useEuPoliticalDeclarationContext();
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
@@ -108,7 +111,9 @@ const SetupPaidAds = () => {
 				);
 				window.location.href = adminUrl + nextPath;
 			}
-		);
+		).catch( ( error ) => {
+			handleEuPoliticalDeclarationError( error );
+		} );
 	};
 
 	if ( ! countryCodes ) {

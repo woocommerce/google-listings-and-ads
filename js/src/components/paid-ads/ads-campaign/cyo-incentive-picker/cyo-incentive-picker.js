@@ -105,12 +105,10 @@ const CyoIncentivePicker = () => {
 										) }
 									</div>
 									<div className="gla-cyoi-incentive-picker__helper">
-										<span>
-											{ __(
-												'in Ads credit',
-												'google-listings-and-ads'
-											) }
-										</span>
+										{ __(
+											'in Ads credit',
+											'google-listings-and-ads'
+										) }
 									</div>
 								</div>
 							);
