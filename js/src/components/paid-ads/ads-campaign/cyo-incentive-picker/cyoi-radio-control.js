@@ -27,10 +27,13 @@ const CYOIRadioControl = ( { amount, value } ) => {
 				label={ rewardAmount }
 				options={ [ { value } ] }
 				aria-label={ sprintf(
-						/* translators: %s: incentive amount */
-						__( 'Select incentive amount %s', 'google-listings-and-ads' ),
-						rewardAmount
-					) }
+					/* translators: %s: incentive amount */
+					__(
+						'Select incentive amount %s',
+						'google-listings-and-ads'
+					),
+					rewardAmount
+				) }
 				hideLabelFromVision
 			/>
 			<span className="gla-cyoi-incentive-picker__option">
