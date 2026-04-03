@@ -21,8 +21,7 @@ const CYOIRadioControl = ( { amount, value } ) => {
 	const rewardAmount = formatAmount( amount );
 
 	return (
-		// eslint-disable-next-line jsx-a11y/label-has-associated-control
-		<label className="gla-cyoi-radio-control__wrapper">
+		<div className="gla-cyoi-radio-control__wrapper">
 			<RadioControl
 				label={ rewardAmount }
 				options={ [ { value } ] }
@@ -32,7 +31,7 @@ const CYOIRadioControl = ( { amount, value } ) => {
 			<span className="gla-cyoi-incentive-picker__option">
 				{ rewardAmount }
 			</span>
-		</label>
+		</div>
 	);
 };
 
