@@ -105,6 +105,17 @@ describe( 'CyoIncentivePicker Component', () => {
 		expect( titleElement ).not.toBeInTheDocument();
 	} );
 
+	it( 'should not render if incentives array is empty', () => {
+		useCYOIncentives.mockReturnValue( {
+			data: [],
+			hasFinishedResolution: true,
+		} );
+
+		render( <CyoIncentivePicker /> );
+		const titleElement = screen.queryByText( 'Ads credit offer' );
+		expect( titleElement ).not.toBeInTheDocument();
+	} );
+
 	it( 'should not render if incentives are still loading', () => {
 		useCYOIncentives.mockReturnValue( {
 			data: null,
@@ -142,16 +153,5 @@ describe( 'CyoIncentivePicker Component', () => {
 		rerender( <CyoIncentivePicker /> );
 		titleElement = screen.queryByText( 'Ads credit offer' );
 		expect( titleElement ).toBeInTheDocument();
-	} );
-
-	it( 'should not render if incentives array is empty', () => {
-		useCYOIncentives.mockReturnValue( {
-			data: [],
-			hasFinishedResolution: true,
-		} );
-
-		render( <CyoIncentivePicker /> );
-		const titleElement = screen.queryByText( 'Ads credit offer' );
-		expect( titleElement ).not.toBeInTheDocument();
 	} );
 } );
