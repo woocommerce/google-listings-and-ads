@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { __, sprintf } from '@wordpress/i18n';
 import { RadioControl } from '@wordpress/components';
 
 /**
@@ -25,7 +26,11 @@ const CYOIRadioControl = ( { amount, value } ) => {
 			<RadioControl
 				label={ rewardAmount }
 				options={ [ { value } ] }
-				aria-label={ `Select incentive amount ${ value }` }
+				aria-label={ sprintf(
+						/* translators: %s: incentive amount */
+						__( 'Select incentive amount %s', 'google-listings-and-ads' ),
+						value
+					) }
 				hideLabelFromVision
 			/>
 			<span className="gla-cyoi-incentive-picker__option">
