@@ -169,18 +169,41 @@ describe( 'CyoIncentivePicker Component', () => {
 		expect( titleElement ).toBeInTheDocument();
 	} );
 
-	it( 'should set incentiveId when selecting an offer', () => {
+	it( 'should set default selected incentive to medium offer', () => {
 		render( <CyoIncentivePicker /> );
 		const radioButtons = screen.getAllByRole( 'radio' );
 		expect( radioButtons ).toHaveLength( 3 );
 
+		expect( radioButtons[ 1 ] ).toBeChecked();
+	} );
+
+	it( 'should set incentiveId when selecting an offer', () => {
+		let selectedIncentiveId = null;
+		useAdaptiveFormContext.mockReturnValue( {
+			getInputProps: jest.fn().mockImplementation( () => ( {
+				value: selectedIncentiveId,
+				onChange: ( value ) => {
+					selectedIncentiveId = value;
+					onIncentiveIdChange( value );
+				},
+			} ) ),
+		} );
+
+		const { rerender } = render( <CyoIncentivePicker /> );
+		let radioButtons = screen.getAllByRole( 'radio' );
+		expect( radioButtons ).toHaveLength( 3 );
+
 		fireEvent.click( radioButtons[ 0 ] );
-		expect( onIncentiveIdChange ).toHaveBeenCalledWith( '789' );
+		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 1, '789' );
 
+		rerender( <CyoIncentivePicker /> );
+		radioButtons = screen.getAllByRole( 'radio' );
 		fireEvent.click( radioButtons[ 1 ] );
-		expect( onIncentiveIdChange ).toHaveBeenCalledWith( '456' );
+		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 2, '456' );
 
+		rerender( <CyoIncentivePicker /> );
+		radioButtons = screen.getAllByRole( 'radio' );
 		fireEvent.click( radioButtons[ 2 ] );
-		expect( onIncentiveIdChange ).toHaveBeenCalledWith( '123' );
+		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 3, '123' );
 	} );
 } );
