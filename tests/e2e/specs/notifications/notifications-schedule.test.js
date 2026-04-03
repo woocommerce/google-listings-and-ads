@@ -10,11 +10,11 @@ import { getClassicProductEditorUtils } from '../../utils/product-editor';
 import MockRequests from '../../utils/mock-requests';
 import {
 	setNotificationsReady,
+	setCompletedAdsSetup,
+	clearCompletedAdsSetup,
 	clearOnboardedMerchant,
 	setOnboardedMerchant,
 	clearNotificationsReady,
-	setCompletedAdsSetup,
-	clearCompletedAdsSetup,
 } from '../../utils/api';
 
 test.use( { storageState: process.env.ADMINSTATE } );
@@ -49,6 +49,7 @@ test.describe( 'Notifications Schedule', () => {
 		productEditor = getClassicProductEditorUtils( page );
 		mockRequests = new MockRequests( page );
 		await setOnboardedMerchant();
+		await setCompletedAdsSetup();
 		await setNotificationsReady();
 		await Promise.all( [
 			// Mock Jetpack as connected
@@ -62,6 +63,7 @@ test.describe( 'Notifications Schedule', () => {
 
 	test.afterAll( async () => {
 		await clearOnboardedMerchant();
+		await clearCompletedAdsSetup();
 		await clearNotificationsReady();
 		await page.close();
 	} );
@@ -202,8 +204,6 @@ test.describe( 'Notifications Schedule', () => {
 	} );
 
 	test( 'Set as "Dont sync and show" a notified product does not schedule product.delete notification.', async () => {
-		await setCompletedAdsSetup();
-
 		// Set the product as not visible
 		await productEditor.gotoAddProductPage();
 		await productEditor.fillProductName();
@@ -241,8 +241,6 @@ test.describe( 'Notifications Schedule', () => {
 			name: getASJobRowName( id, 'product.create' ),
 		} );
 		await expect( row ).not.toBeVisible();
-
-		await clearCompletedAdsSetup();
 	} );
 
 	test( 'Set a notified product visibility as "Not Public" does not schedule product.delete notification.', async () => {

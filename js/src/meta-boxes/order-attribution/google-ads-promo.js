@@ -12,31 +12,9 @@ import { glaData } from '~/constants';
 import { recordGlaEvent } from '~/utils/tracks';
 import { getCreateCampaignUrl, getGetStartedUrl } from '~/utils/urls';
 import AppButton from '~/components/app-button';
-import useAdsCampaigns from '~/hooks/useAdsCampaigns';
+import useHasRecentAdSpend from '~/hooks/useHasRecentAdSpend';
 import googleLogoURL from '~/images/logo/google-g-logo.svg';
 import './google-ads-promo.scss';
-
-/**
- * Check if there are any recent paid campaigns.
- *
- * @param {Array} campaigns List of campaigns.
- *
- * @return {boolean} True if there are recent paid campaigns, false otherwise.
- */
-const hasRecentPaidCampaigns = ( campaigns ) => {
-	const fourteenDaysAgo = new Date();
-	fourteenDaysAgo.setDate( fourteenDaysAgo.getDate() - 14 );
-
-	return campaigns.some( ( campaign ) => {
-		const campaignDate = new Date( campaign.start_date );
-
-		return (
-			campaign.status === 'enabled' &&
-			campaign.type === 'performance_max' &&
-			campaignDate >= fourteenDaysAgo
-		);
-	} );
-};
 
 /**
  * Google Ads Promo component is shown.
@@ -73,14 +51,10 @@ const hasRecentPaidCampaigns = ( campaigns ) => {
 const GoogleAdsPromo = () => {
 	const context = 'order-attribution-meta-box';
 	const { adsSetupComplete } = glaData;
-	const { data: campaigns, loading } = useAdsCampaigns();
+	const { hasAdSpend, hasFinishedResolution } = useHasRecentAdSpend();
 	const hasTrackedRef = useRef( false );
 
-	// Checks if the component is ready to render
-	const isReadyToRender =
-		! loading &&
-		Array.isArray( campaigns ) &&
-		! hasRecentPaidCampaigns( campaigns );
+	const isReadyToRender = hasFinishedResolution && ! hasAdSpend;
 
 	useEffect( () => {
 		// Only fire if all conditions for rendering are met and not already tracked
