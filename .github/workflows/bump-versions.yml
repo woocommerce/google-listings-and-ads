@@ -50,7 +50,7 @@ jobs:
       - name: Bump stable tag in readme.txt
         env:
           VERSION: ${{ inputs.version }}
-        run: sed -i "s/^Stable tag: .*/Stable tag: ${VERSION}/" readme.txt
+        run: 'sed -i "s/^Stable tag: .*/Stable tag: ${VERSION}/" readme.txt'
 
       - name: Commit and push
         env:
