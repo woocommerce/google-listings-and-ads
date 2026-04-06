@@ -66,7 +66,7 @@ jobs:
               repo: context.repo.repo,
               tag_name: `v${version}`,
               ...(latestTag ? { previous_tag_name: latestTag } : {}),
-              target_commitish: 'develop',
+              target_commitish: `release/${version}`,
             });
 
             // Extract unique PR numbers from the generated notes body.
