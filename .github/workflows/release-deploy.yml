@@ -1,0 +1,65 @@
+name: 'Deploy Release'
+run-name: 'Deploy ${{ github.event.pull_request.head.ref }} to WordPress.org and GitHub'
+
+# **What it does**: Deploys to GitHub Releases and WordPress.org when a release/* PR is merged to trunk.
+#   Uses woo-product-deploy to handle version bumping, changelog generation, zip build,
+#   GitHub release creation, and SVN deployment to WordPress.org.
+# **Why we have it**: To make the merge of the release PR the single human action that triggers
+#   the full production deployment — no separate manual step required.
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - trunk
+
+jobs:
+  deploy:
+    name: Deploy ${{ github.event.pull_request.head.ref }}
+    # Only deploy when a release/* branch is merged (not just closed) into trunk.
+    if: |
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.head.ref, 'release/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract version from branch name
+        id: version
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          VERSION="${HEAD_REF#release/}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      # Checkout the private woo-product-deploy action repository
+      - name: Checkout woo-product-deploy action
+        uses: actions/checkout@v4
+        with:
+          repository: woocommerce/woo-product-deploy
+          ref: trunk
+          path: ./.github/actions/woo-product-deploy
+          token: ${{ secrets.ORG_DEPLOY_SECRET }}
+
+      - name: Deploy Product
+        uses: ./.github/actions/woo-product-deploy
+        with:
+          repo_url: https://github.com/woocommerce/google-listings-and-ads
+          branch: trunk
+          version: ${{ steps.version.outputs.version }}
+          node_version: '20'
+          npm_version: '10'
+          simulate: false
+          github_release: true
+          wporg_release: true
+          wporg_username: ${{ secrets.WPORG_USERNAME }}
+          wporg_password: ${{ secrets.WPORG_PASSWORD }}
+          deploy_pat: ${{ secrets.ORG_DEPLOY_SECRET }}
+          partner_user: ${{ secrets.ORG_PARTNER_USER }}
+          partner_secret: ${{ secrets.ORG_PARTNER_DEPLOY_SECRET }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: google-listings-and-ads-${{ steps.version.outputs.version }}.zip
+          path: ${{ github.workspace }}/target-repo/google-listings-and-ads.zip
+          retention-days: 30

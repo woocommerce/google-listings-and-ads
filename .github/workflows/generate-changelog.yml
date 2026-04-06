@@ -1,0 +1,200 @@
+name: 'Generate Changelog'
+
+# **What it does**: Checks out a release branch, generates a changelog block from merged PRs
+#   since the last release using GitHub's release notes API, prepends it to changelog.txt and
+#   readme.txt, commits, pushes, and outputs the block for the PR description.
+# **Why we have it**: Called by release.yml after bump-versions.yml so the changelog commit
+#   is visible in the release PR diff. The changelog block output is used in the PR body.
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'Version being released (e.g. 3.7.0)'
+        required: true
+        type: string
+    outputs:
+      changelog_block:
+        description: 'The generated changelog block, used in the release PR description'
+        value: ${{ jobs.changelog.outputs.changelog_block }}
+
+jobs:
+  changelog:
+    name: Generate changelog for ${{ inputs.version }}
+    runs-on: ubuntu-latest
+    outputs:
+      changelog_block: ${{ steps.generate.outputs.changelog_block }}
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: release/${{ inputs.version }}
+          token: ${{ secrets.ORG_DEPLOY_SECRET }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Generate changelog from merged PRs
+        id: generate
+        uses: actions/github-script@v7
+        env:
+          VERSION: ${{ inputs.version }}
+        with:
+          github-token: ${{ secrets.ORG_DEPLOY_SECRET }}
+          script: |
+            const version = process.env.VERSION;
+
+            // Get the latest published release to use as the comparison base.
+            const { data: releases } = await github.rest.repos.listReleases({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 1,
+            });
+            const latestTag = releases.length > 0 ? releases[0].tag_name : null;
+            core.info(`Generating changelog since: ${latestTag ?? '(beginning of repo)'}`);
+
+            // Use GitHub's generate-notes API. It respects .github/release.yml exclusions
+            // (e.g. changelog: none label, dependabot, github-actions authors).
+            const { data: notes } = await github.rest.repos.generateReleaseNotes({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: `v${version}`,
+              ...(latestTag ? { previous_tag_name: latestTag } : {}),
+              target_commitish: 'develop',
+            });
+
+            // Extract unique PR numbers from the generated notes body.
+            const prNumbers = [
+              ...new Set(
+                [...notes.body.matchAll(/\/pull\/(\d+)/g)].map(m => parseInt(m[1]))
+              ),
+            ];
+            core.info(`Found ${prNumbers.length} PRs in release notes.`);
+
+            // Map changelog labels to their prefixes (order matters — first match wins).
+            const labelPrefixMap = [
+              ['changelog: breaking', 'Breaking'],
+              ['changelog: add',      'Add'],
+              ['changelog: update',   'Update'],
+              ['changelog: fix',      'Fix'],
+              ['changelog: tweak',    'Tweak'],
+              ['changelog: dev',      'Dev'],
+              ['changelog: doc',      'Doc'],
+              ['type: enhancement',   'Add'],
+              ['type: bug',           'Fix'],
+              ['type: documentation', 'Doc'],
+            ];
+
+            const skipAuthors = [
+              'dependabot', 'dependabot[bot]',
+              'github-actions', 'github-actions[bot]',
+            ];
+
+            // Matches any existing changelog prefix at the start of an entry.
+            const existingPrefixRe = /^(Breaking|Add|Update|Fix|Tweak|Dev|Doc)\s*[-–]\s*/i;
+
+            const entries = [];
+
+            for (const prNumber of prNumbers) {
+              let pr;
+              try {
+                ({ data: pr } = await github.rest.pulls.get({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: prNumber,
+                }));
+              } catch (e) {
+                core.warning(`Could not fetch PR #${prNumber}: ${e.message}`);
+                continue;
+              }
+
+              const labels = pr.labels.map(l => l.name);
+
+              // Skip explicitly excluded PRs and bot authors.
+              if (labels.includes('changelog: none')) continue;
+              if (skipAuthors.includes(pr.user.login)) continue;
+
+              // Determine prefix from PR labels (first match wins).
+              let prefix = 'Fix';
+              for (const [label, p] of labelPrefixMap) {
+                if (labels.includes(label)) { prefix = p; break; }
+              }
+
+              // Try to extract the changelog entry from the PR body.
+              let entry = null;
+              if (pr.body) {
+                const match = pr.body.match(
+                  /###\s*Changelog\s+entry\s*\n+([\s\S]*?)(?=\n###|\n##|$)/i
+                );
+                if (match) {
+                  entry = match[1]
+                    .split('\n')
+                    .map(l => l.replace(/^[\s*\-]+/, '').trim())
+                    .find(l => l && l.toLowerCase() !== 'n/a') ?? null;
+                }
+              }
+
+              // Fall back to the PR title.
+              if (!entry) entry = pr.title.trim();
+              if (!entry) continue;
+
+              // Strip any existing prefix so we don't double-prefix.
+              entry = entry.replace(existingPrefixRe, '').trim();
+
+              // Ensure the entry ends with a period.
+              if (!entry.endsWith('.')) entry += '.';
+
+              entries.push(`* ${prefix} - ${entry}`);
+            }
+
+            if (entries.length === 0) {
+              core.warning('No changelog entries found. The changelog block will be empty.');
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+            const changelogBlock = `= ${version} - ${today} =\n${entries.join('\n')}`;
+
+            core.info(`Changelog block:\n${changelogBlock}`);
+            core.setOutput('changelog_block', changelogBlock);
+
+      - name: Prepend changelog entry to changelog.txt
+        env:
+          CHANGELOG_BLOCK: ${{ steps.generate.outputs.changelog_block }}
+        run: |
+          head -1 changelog.txt > changelog.txt.new
+          echo "" >> changelog.txt.new
+          printf '%s' "$CHANGELOG_BLOCK" >> changelog.txt.new
+          echo "" >> changelog.txt.new
+          echo "" >> changelog.txt.new
+          tail -n +2 changelog.txt >> changelog.txt.new
+          mv changelog.txt.new changelog.txt
+
+      - name: Insert changelog entry into readme.txt
+        env:
+          CHANGELOG_BLOCK: ${{ steps.generate.outputs.changelog_block }}
+        run: |
+          python3 - <<'PYEOF'
+          import os, re
+
+          entry = os.environ['CHANGELOG_BLOCK'].strip()
+          content = open('readme.txt').read()
+
+          updated = re.sub(
+            r'(== Changelog ==\n)',
+            f'\\1\n{entry}\n',
+            content,
+            count=1,
+          )
+
+          open('readme.txt', 'w').write(updated)
+          PYEOF
+
+      - name: Commit and push
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          git add changelog.txt readme.txt
+          git commit -m "Release: Update changelogs for ${VERSION}."
+          git push origin release/${VERSION}

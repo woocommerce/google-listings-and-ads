@@ -1,0 +1,61 @@
+name: 'Bump Versions'
+
+# **What it does**: Checks out a release branch, bumps the version string in
+#   google-listings-and-ads.php, package.json, and readme.txt, then commits and pushes.
+# **Why we have it**: Called by release.yml as the first step after the release branch is created,
+#   so the version bump commit is visible in the release PR diff.
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'New version string (e.g. 3.7.0)'
+        required: true
+        type: string
+
+jobs:
+  bump:
+    name: Bump version to ${{ inputs.version }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: release/${{ inputs.version }}
+          token: ${{ secrets.ORG_DEPLOY_SECRET }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version in google-listings-and-ads.php
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          sed -i "s/ \* Version:.*/ * Version: ${VERSION}/" google-listings-and-ads.php
+          sed -i "s/define( 'WC_GLA_VERSION', '[^']*' );/define( 'WC_GLA_VERSION', '${VERSION}' );/" google-listings-and-ads.php
+
+      - name: Bump version in package.json
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.version = process.env.VERSION;
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, '\t') + '\n');
+          "
+
+      - name: Bump stable tag in readme.txt
+        env:
+          VERSION: ${{ inputs.version }}
+        run: sed -i "s/^Stable tag: .*/Stable tag: ${VERSION}/" readme.txt
+
+      - name: Commit and push
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          git add google-listings-and-ads.php package.json readme.txt
+          git commit -m "Release: Bump version to ${VERSION}."
+          git push origin release/${VERSION}

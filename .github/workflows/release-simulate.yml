@@ -1,0 +1,65 @@
+name: 'Simulate Deploy'
+
+# **What it does**: Runs a simulate deploy (dry run) for any PR from a release/* branch to trunk.
+#   Uses woo-product-deploy in simulate mode: performs version bumps, changelog generation, and
+#   a full build, but does NOT commit to SVN or create a GitHub release. Uploads the zip artifact
+#   and shows the git diff and SVN status so the release can be reviewed before merging.
+# **Why we have it**: To validate the full release pipeline (build, version bump, changelog,
+#   SVN changes) before any code is actually deployed.
+
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+    branches:
+      - trunk
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  simulate-deploy:
+    name: Simulate Deploy
+    if: startsWith(github.head_ref, 'release/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract version from branch name
+        id: version
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          VERSION="${HEAD_REF#release/}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      # Checkout the private woo-product-deploy action repository
+      - name: Checkout woo-product-deploy action
+        uses: actions/checkout@v4
+        with:
+          repository: woocommerce/woo-product-deploy
+          ref: trunk
+          path: ./.github/actions/woo-product-deploy
+          token: ${{ secrets.ORG_DEPLOY_SECRET }}
+
+      - name: Simulate Deploy
+        uses: ./.github/actions/woo-product-deploy
+        with:
+          repo_url: https://github.com/woocommerce/google-listings-and-ads
+          branch: ${{ github.head_ref }}
+          version: ${{ steps.version.outputs.version }}
+          node_version: '20'
+          npm_version: '10'
+          simulate: true
+          github_release: true
+          wporg_release: true
+          wporg_username: ${{ secrets.WPORG_USERNAME }}
+          wporg_password: ${{ secrets.WPORG_PASSWORD }}
+          deploy_pat: ${{ secrets.ORG_DEPLOY_SECRET }}
+          partner_user: ${{ secrets.ORG_PARTNER_USER }}
+          partner_secret: ${{ secrets.ORG_PARTNER_DEPLOY_SECRET }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: google-listings-and-ads-simulate-${{ steps.version.outputs.version }}.zip
+          path: ${{ github.workspace }}/target-repo/google-listings-and-ads.zip
+          retention-days: 5
