@@ -78,8 +78,9 @@ jobs:
             core.info(`Found ${prNumbers.length} PRs in release notes.`);
 
             // Map changelog labels to their prefixes (order matters — first match wins).
+            // Prefixes follow the repo convention defined in PULL_REQUEST_TEMPLATE.md.
             const labelPrefixMap = [
-              ['changelog: breaking', 'Breaking'],
+              ['changelog: breaking', 'Break'],
               ['changelog: add',      'Add'],
               ['changelog: update',   'Update'],
               ['changelog: fix',      'Fix'],
@@ -97,7 +98,9 @@ jobs:
             ];
 
             // Matches any existing changelog prefix at the start of an entry.
-            const existingPrefixRe = /^(Breaking|Add|Update|Fix|Tweak|Dev|Doc)\s*[-–]\s*/i;
+            // Covers both the canonical short form (Break) and the long form (Breaking)
+            // in case contributors write either variant in their PR bodies.
+            const existingPrefixRe = /^(Break(?:ing)?|Add|Update|Fix|Tweak|Dev|Doc)\s*[-–]\s*/i;
 
             const entries = [];
 
