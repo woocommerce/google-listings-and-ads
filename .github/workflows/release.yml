@@ -127,4 +127,13 @@ jobs:
               draft: simulate,
             });
 
+            if (simulate) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                labels: ['simulate-release'],
+              });
+            }
+
             core.notice(`Pull Request created: ${pr.html_url}`);
