@@ -1,0 +1,18 @@
+.gla-eu-political-declaration-modal {
+
+	.gla-eu-political-declaration-modal__notice--warning {
+		margin-block: calc($grid-unit-60 / 2);
+	}
+
+	.gla-eu-political-declaration-modal__subtitle {
+		margin-block-start: calc($grid-unit-60 / 2);
+	}
+
+	ul {
+		margin-block: $grid-unit-20;
+	}
+
+	li {
+		margin: 0 0 $grid-unit-10 0;
+	}
+}
