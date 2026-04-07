@@ -670,6 +670,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 				'method'  => 'GET',
 				'timeout' => 30,
 				'url'     => 'https://public-api.wordpress.com/wpcom/v2/sites/' . Jetpack_Options::get_option( 'id' ) . '/wc/partners/google/remote-site-status',
+				'user_id' => true,
 			];
 
 			$response = $this->make_wpcom_api_status_request( $integration_status_args );
@@ -680,6 +681,12 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 			}
 
 			$status = json_decode( wp_remote_retrieve_body( $response ), true ) ?? [ 'is_healthy' => false ];
+
+			if ( isset( $status['code'] ) ) {
+				$error_message = $status['message'] ?? 'Unknown WPCOM API error';
+				do_action( 'woocommerce_gla_debug_message', $error_message, __METHOD__ );
+				return false;
+			}
 
 			/*
 			 * Since we switched from OAuth to client credentials,
