@@ -48,6 +48,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client as Guzz
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\ClientInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Utils;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\RequestInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\ResponseInterface;
@@ -155,6 +156,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			$handler_stack->push( $this->error_handler(), 'http_errors' );
 			$handler_stack->push( $this->add_auth_header(), 'auth_header' );
 			$handler_stack->push( $this->add_plugin_version_header(), 'plugin_version_header' );
+			$handler_stack->push( $this->strip_apply_incentive_duplicates(), 'strip_incentive_duplicates' );
 
 			// Override endpoint URL if we are using http locally.
 			if ( 0 === strpos( $this->get_connect_server_url_root(), 'http://' ) ) {
@@ -302,6 +304,39 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			return function ( RequestInterface $request, array $options ) use ( $handler ) {
 				$request = $request->withHeader( 'x-client-name', $this->get_client_name() )
 					->withHeader( 'x-client-version', $this->get_version() );
+				return $handler( $request, $options );
+			};
+		};
+	}
+
+	/**
+	 * Strip path-bound fields from the ApplyIncentive request body.
+	 *
+	 * The ApplyIncentive REST config places customer_id and selected_incentive_id
+	 * in both the URL path and the JSON body (body: *). WCS cannot handle proto3
+	 * optional fields that appear in both locations, so we remove them from the
+	 * body before the request is sent.
+	 *
+	 * @since 3.3.0
+	 *
+	 * @return callable
+	 */
+	protected function strip_apply_incentive_duplicates(): callable {
+		return function ( callable $handler ) {
+			return function ( RequestInterface $request, array $options ) use ( $handler ) {
+				$path = $request->getUri()->getPath();
+
+				if ( false !== strpos( $path, ':applyIncentive' ) ) {
+					$body = json_decode( (string) $request->getBody(), true );
+
+					if ( is_array( $body ) ) {
+						unset( $body['selectedIncentiveId'], $body['customerId'] );
+						$request = $request->withBody(
+							Utils::streamFor( wp_json_encode( $body ) )
+						);
+					}
+				}
+
 				return $handler( $request, $options );
 			};
 		};
