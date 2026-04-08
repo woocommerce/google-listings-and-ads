@@ -8,7 +8,7 @@ import { useSelect } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
+import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useHasRecentAdSpend from '~/hooks/useHasRecentAdSpend';
 
 const mockGetReportByApiQuery = jest.fn();
@@ -19,8 +19,8 @@ jest.mock( '@wordpress/data', () => ( {
 	useSelect: jest.fn(),
 } ) );
 
-jest.mock( '~/hooks/useGoogleAdsAccountReady', () =>
-	jest.fn().mockName( 'useGoogleAdsAccountReady' )
+jest.mock( '~/hooks/useGoogleAdsAccount', () =>
+	jest.fn().mockName( 'useGoogleAdsAccount' )
 );
 
 describe( 'useHasRecentAdSpend', () => {
@@ -34,7 +34,10 @@ describe( 'useHasRecentAdSpend', () => {
 	} );
 
 	beforeEach( () => {
-		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: true } );
+		useGoogleAdsAccount.mockReturnValue( {
+			hasGoogleAdsConnection: true,
+			hasFinishedResolution: true,
+		} );
 		jest.clearAllMocks();
 		useSelect.mockImplementation( ( cb ) =>
 			cb( () => ( {
@@ -52,6 +55,27 @@ describe( 'useHasRecentAdSpend', () => {
 
 		expect( result.current.hasFinishedResolution ).toBe( false );
 		expect( result.current.hasAdSpend ).toBeFalsy();
+	} );
+
+	test( 'makes the API call with correct args and indicates pending state when account is connected but report is still loading', () => {
+		mockHasFinishedResolution.mockReturnValue( false );
+		mockGetReportByApiQuery.mockReturnValue( null );
+
+		const { result } = renderHook( () => useHasRecentAdSpend() );
+
+		expect( mockGetReportByApiQuery ).toHaveBeenCalledWith(
+			'programs',
+			'paid',
+			{
+				after: '2025-02-04',
+				before: '2025-02-18',
+				fields: [ 'spend' ],
+			}
+		);
+		expect( result.current ).toEqual( {
+			hasFinishedResolution: false,
+			hasAdSpend: false,
+		} );
 	} );
 
 	test( 'returns true when the reported spend is greater than zero', () => {
@@ -79,7 +103,10 @@ describe( 'useHasRecentAdSpend', () => {
 	} );
 
 	test( 'skips the API call and reports no ad spend when Google Ads account is not ready', () => {
-		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: false } );
+		useGoogleAdsAccount.mockReturnValue( {
+			hasGoogleAdsConnection: false,
+			hasFinishedResolution: true,
+		} );
 
 		const { result } = renderHook( () => useHasRecentAdSpend() );
 

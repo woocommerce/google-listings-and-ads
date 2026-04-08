@@ -11,7 +11,7 @@ import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 import { recordGlaEvent } from '~/utils/tracks';
 import { getCreateCampaignUrl, getGetStartedUrl } from '~/utils/urls';
 import AppButton from '~/components/app-button';
-import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
+import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useHasRecentAdSpend from '~/hooks/useHasRecentAdSpend';
 import googleLogoURL from '~/images/logo/google-g-logo.svg';
 import './google-ads-promo.scss';
@@ -50,11 +50,16 @@ import './google-ads-promo.scss';
  */
 const GoogleAdsPromo = () => {
 	const context = 'order-attribution-meta-box';
-	const { isGoogleAdsReady } = useGoogleAdsAccountReady();
-	const { hasAdSpend, hasFinishedResolution } = useHasRecentAdSpend();
+	const {
+		hasGoogleAdsConnection,
+		hasFinishedResolution: hasResolvedGoogleAdsAccount,
+	} = useGoogleAdsAccount();
+	const { hasAdSpend, hasFinishedResolution: hasResolvedRecentAdSpend } =
+		useHasRecentAdSpend();
 	const hasTrackedRef = useRef( false );
 
-	const isReadyToRender = hasFinishedResolution && ! hasAdSpend;
+	const isReadyToRender =
+		hasResolvedGoogleAdsAccount && hasResolvedRecentAdSpend && ! hasAdSpend;
 
 	useEffect( () => {
 		// Only fire if all conditions for rendering are met and not already tracked
@@ -73,7 +78,7 @@ const GoogleAdsPromo = () => {
 	const campaignUrl = getCreateCampaignUrl();
 	const getStartedUrl = getGetStartedUrl();
 
-	const content = isGoogleAdsReady
+	const content = hasGoogleAdsConnection
 		? {
 				title: __(
 					'Get more sales with Google Ads',
