@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignCriterionQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsMissingEuDeclarationQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignAssetQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAssetQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
@@ -184,6 +185,41 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
+	 * Get campaigns that are missing the EU political advertising declaration.
+	 *
+	 * @return array[] List of campaigns with 'id' and 'name' keys.
+	 * @throws ExceptionWithResponseData When an ApiException is caught.
+	 */
+	public function get_campaigns_missing_eu_political_declaration(): array {
+		try {
+			$query     = ( new AdsMissingEuDeclarationQuery() )->set_client( $this->client, $this->options->get_ads_id() );
+			$results   = $query->get_results();
+			$campaigns = [];
+
+			foreach ( $results->iterateAllElements() as $row ) {
+				$campaign    = $row->getCampaign();
+				$campaigns[] = [
+					'id'   => $campaign->getId(),
+					'name' => $campaign->getName(),
+				];
+			}
+
+			return $campaigns;
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+
+			$errors = $this->get_exception_errors( $e );
+			throw new ExceptionWithResponseData(
+				/* translators: %s Error message */
+				sprintf( __( 'Error retrieving campaigns missing EU political declaration: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				null,
+				[ 'errors' => $errors ]
+			);
+		}
+	}
+
+	/**
 	 * Retrieve a single campaign with targeted locations retrieved from campaign criterion.
 	 *
 	 * @param int $id Campaign ID.
@@ -298,8 +334,10 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$this->campaign_label->assign_label_to_campaign_by_label_name( $campaign_id, $params['label'] );
 			}
 
-			// Clear cached campaign count.
-			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::ADS_CAMPAIGN_COUNT );
+			// Clear cached campaign count and highest spend campaign.
+			$transients = $this->container->get( TransientsInterface::class );
+			$transients->delete( TransientsInterface::ADS_CAMPAIGN_COUNT );
+			$transients->delete( TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN );
 
 			return [
 				'id'      => $campaign_id,
@@ -363,6 +401,8 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$operations[] = $this->edit_operation( $campaign_id, $campaign_fields );
 			}
 
+			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN );
+
 			if ( ! empty( $operations ) ) {
 				return $this->mutate( $operations ) ?: $campaign_id;
 			}
@@ -386,6 +426,74 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
+	 * Set the EU political advertising flag for a list of campaigns.
+	 *
+	 * @param array $campaigns Array of [ 'id' => int, 'value' => bool ] entries.
+	 *
+	 * @return array Updated campaign IDs.
+	 * @throws ExceptionWithResponseData When an ApiException is caught.
+	 */
+	public function set_eu_political_campaigns( array $campaigns ): array {
+		try {
+			$operations = [];
+
+			foreach ( $campaigns as $campaign ) {
+				$status       = $campaign['value']
+					? EuPoliticalAdvertisingStatus::CONTAINS_EU_POLITICAL_ADVERTISING
+					: EuPoliticalAdvertisingStatus::DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING;
+				$operations[] = $this->edit_operation(
+					$campaign['id'],
+					[ 'contains_eu_political_advertising' => $status ]
+				);
+			}
+
+			if ( ! empty( $operations ) ) {
+				$this->mutate( $operations );
+			}
+
+			return array_column( $campaigns, 'id' );
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+
+			$errors = $this->get_exception_errors( $e );
+			throw new ExceptionWithResponseData(
+				/* translators: %s Error message */
+				sprintf( __( 'Error updating EU political advertising flag: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				null,
+				[ 'errors' => $errors ]
+			);
+		}
+	}
+
+	/**
+	 * Get full campaign details by campaign ID.
+	 *
+	 * @param array $ids
+	 * @return array
+	 */
+	public function get_campaigns_by_ids( array $ids ): array {
+		if ( empty( $ids ) ) {
+			return [];
+		}
+
+		$query = ( new AdsCampaignQuery() )
+			->set_client( $this->client, $this->options->get_ads_id() )
+			->where( 'campaign.id', $ids, 'IN' );
+
+		$results = $query->get_results();
+
+		$campaigns = [];
+
+		foreach ( $results->iterateAllElements() as $row ) {
+			$campaign                     = $this->convert_campaign( $row );
+			$campaigns[ $campaign['id'] ] = $campaign;
+		}
+
+		return $this->combine_campaigns_and_campaign_criterion_results( $campaigns );
+	}
+
+	/**
 	 * Delete a campaign.
 	 *
 	 * @param int $campaign_id Campaign ID.
@@ -401,8 +509,10 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$this->delete_operation( $campaign_resource_name ),
 			];
 
-			// Clear cached campaign count.
-			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::ADS_CAMPAIGN_COUNT );
+			// Clear cached campaign count and highest spend campaign.
+			$transients = $this->container->get( TransientsInterface::class );
+			$transients->delete( TransientsInterface::ADS_CAMPAIGN_COUNT );
+			$transients->delete( TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN );
 
 			return $this->mutate( $operations );
 		} catch ( ApiException $e ) {
@@ -430,17 +540,25 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 
 	/**
 	 * Retrieve the enabled campaign with the highest spend amount.
+	 * Result is cached to avoid Ads API requests on every admin page load.
 	 *
 	 * @return array
 	 */
 	public function get_highest_spend_campaign(): array {
+		$transients = $this->container->get( TransientsInterface::class );
+		$cached     = $transients->get( TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN );
+
+		if ( is_array( $cached ) && array_key_exists( 'campaign', $cached ) ) {
+			return $cached['campaign'];
+		}
+
 		try {
 			$campaigns = $this->get_campaigns();
 		} catch ( Exception $e ) {
 			return [];
 		}
 
-		return array_reduce(
+		$result = array_reduce(
 			$campaigns,
 			function ( $highest, $campaign ) {
 				if ( CampaignStatus::ENABLED === $campaign['status'] && ( empty( $highest ) || $campaign['amount'] > $highest['amount'] ) ) {
@@ -451,6 +569,14 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			},
 			[]
 		);
+
+		$transients->set(
+			TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN,
+			[ 'campaign' => $result ],
+			HOUR_IN_SECONDS * 12
+		);
+
+		return $result;
 	}
 
 	/**

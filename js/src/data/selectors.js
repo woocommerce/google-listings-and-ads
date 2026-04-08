@@ -178,6 +178,16 @@ export const getAdsCampaigns = ( state, query ) => {
 };
 
 /**
+ * Get campaigns that are missing the EU political advertising declaration.
+ *
+ * @param {Object} state The current store state will be injected by `wp.data`.
+ * @return {Array<{id: number, name: string}>|null} List of campaigns missing the EU declaration, or null if not yet loaded.
+ */
+export const getAdsCampaignsMissingEuDeclaration = ( state ) => {
+	return state.ads_campaigns_missing_eu_declaration;
+};
+
+/**
  * Get the enhanced conversions setting.
  * This setting indicates whether enhanced conversions are enabled for the Google Ads account.
  *
@@ -425,6 +435,16 @@ export const getAdsBudgetRecommendations = ( state, countryCodes = [] ) => {
 export const getAdsBudgetMetrics = ( state, countryCodes, budget ) => {
 	const key = getAdsBudgetMetricsKey( countryCodes, budget );
 	return state.ads.budgetMetrics[ key ] || null;
+};
+
+/**
+ * Retrieves the CYO incentives from the state.
+ *
+ * @param {Object} state The state
+ * @return {Object|null} The CYO incentives. It will be `null` if not yet fetched or fetched but doesn't exist.
+ */
+export const getCYOIncentives = ( state ) => {
+	return state.ads.cyo_incentives?.incentives || null;
 };
 
 /**

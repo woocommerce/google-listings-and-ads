@@ -50,6 +50,7 @@ describe( 'reducer', () => {
 			},
 			ads_campaigns: null,
 			all_ads_campaigns: null,
+			ads_campaigns_missing_eu_declaration: null,
 			campaign_asset_groups: {},
 			mc_setup: null,
 			mc_review_request: {
@@ -73,6 +74,7 @@ describe( 'reducer', () => {
 					inviteLink: null,
 					step: null,
 				},
+				cyo_incentives: {},
 				budgetRecommendations: {},
 				recommendations: {},
 				enable_enhanced_conversions: false,
@@ -960,6 +962,83 @@ describe( 'reducer', () => {
 				`${ path }.us_jp::15`,
 				action2.data
 			);
+		} );
+	} );
+
+	describe( 'CYO Incentives', () => {
+		const path = 'ads.cyo_incentives';
+
+		it( 'should receive CYO incentives data in ads object', () => {
+			const action = {
+				type: TYPES.RECEIVE_CYO_INCENTIVES,
+				cyoIncentives: {
+					type: 'CYO_INCENTIVE',
+					termsAndConditionsUrl: 'https://example.com/terms',
+					incentives: [
+						{
+							id: 123,
+							type: 'ACQUISITION',
+							offer: 'high',
+							termsAndConditionsUrl:
+								'https://example.com/terms-1',
+							requirement: {
+								spend: {
+									awardAmount: {
+										currencyCode: 'USD',
+										units: '1800',
+									},
+								},
+								requiredAmount: {
+									currencyCode: 'USD',
+									units: '4000',
+								},
+							},
+						},
+						{
+							id: 456,
+							type: 'ACQUISITION',
+							offer: 'medium',
+							termsAndConditionsUrl:
+								'https://example.com/terms-2',
+							requirements: {
+								spend: {
+									awardAmount: {
+										currencyCode: 'USD',
+										units: '1200',
+									},
+								},
+								requiredAmount: {
+									currencyCode: 'USD',
+									units: '1800',
+								},
+							},
+						},
+						{
+							id: 789,
+							type: 'ACQUISITION',
+							offer: 'low',
+							termsAndConditionsUrl:
+								'https://example.com/terms-3',
+							requirements: {
+								spend: {
+									awardAmount: {
+										currencyCode: 'USD',
+										units: '600',
+									},
+								},
+								requiredAmount: {
+									currencyCode: 'USD',
+									units: '1200',
+								},
+							},
+						},
+					],
+				},
+			};
+
+			const state = reducer( prepareState(), action );
+
+			expect( state ).toHaveProperty( path, action.cyoIncentives );
 		} );
 	} );
 
