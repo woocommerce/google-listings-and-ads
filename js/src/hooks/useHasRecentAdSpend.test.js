@@ -8,7 +8,7 @@ import { useSelect } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { glaData } from '~/constants';
+import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
 import useHasRecentAdSpend from '~/hooks/useHasRecentAdSpend';
 
 const mockGetReportByApiQuery = jest.fn();
@@ -18,6 +18,10 @@ jest.mock( '@wordpress/data', () => ( {
 	__esModule: true,
 	useSelect: jest.fn(),
 } ) );
+
+jest.mock( '~/hooks/useGoogleAdsAccountReady', () =>
+	jest.fn().mockName( 'useGoogleAdsAccountReady' )
+);
 
 describe( 'useHasRecentAdSpend', () => {
 	beforeAll( () => {
@@ -30,7 +34,7 @@ describe( 'useHasRecentAdSpend', () => {
 	} );
 
 	beforeEach( () => {
-		glaData.adsSetupComplete = true;
+		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: true } );
 		jest.clearAllMocks();
 		useSelect.mockImplementation( ( cb ) =>
 			cb( () => ( {
@@ -74,8 +78,8 @@ describe( 'useHasRecentAdSpend', () => {
 		} );
 	} );
 
-	test( 'skips the API call and reports no ad spend when ads setup is not complete', () => {
-		glaData.adsSetupComplete = false;
+	test( 'skips the API call and reports no ad spend when Google Ads account is not ready', () => {
+		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: false } );
 
 		const { result } = renderHook( () => useHasRecentAdSpend() );
 
