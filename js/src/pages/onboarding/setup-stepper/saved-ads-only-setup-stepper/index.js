@@ -20,6 +20,7 @@ import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import AssetGroup from '~/components/paid-ads/asset-group';
 import SetupPaidAds from './setup-paid-ads';
 import convertToAssetGroupUpdateBody from '~/components/paid-ads/convertToAssetGroupUpdateBody';
+import EuPoliticalDeclarationProvider from '~/components/eu-political-declaration/eu-political-declaration-provider';
 import { GUIDE_NAMES } from '~/constants';
 import { ADS_ONLY_STEP_NAME_KEY_MAP } from '../constants';
 import { getDashboardUrl } from '~/utils/urls';
@@ -174,10 +175,14 @@ const SavedAdsOnlySetupStepper = ( { savedStep } ) => {
 					key: ADS_ONLY_STEP_NAME_KEY_MAP.create_campaign,
 					label: __( 'Set your budget', 'google-listings-and-ads' ),
 					content: (
-						<SetupPaidAds
-							onSubmit={ handleSetupPaidAdsSubmit }
-							onSkip={ handleSetupPaidAdsSkipped }
-						/>
+						<EuPoliticalDeclarationProvider
+							context={ CONTEXT_ADS_ONLY_ONBOARDING }
+						>
+							<SetupPaidAds
+								onSubmit={ handleSetupPaidAdsSubmit }
+								onSkip={ handleSetupPaidAdsSkipped }
+							/>
+						</EuPoliticalDeclarationProvider>
 					),
 					onClick: handleStepClick,
 				},

@@ -14,6 +14,7 @@ import {
 	REQUEST_ACTIONS,
 	EMPTY_ASSET_ENTITY_GROUP,
 } from './constants';
+import { EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE } from '~/constants';
 import { handleApiError } from '~/utils/handleError';
 import { adaptAdsCampaign, adaptGenAIAssets } from './adapters';
 import { isWCIos, isWCAndroid } from '~/utils/isMobileApp';
@@ -777,7 +778,9 @@ export function* createAdsCampaign(
 			createdCampaign: adaptAdsCampaign( createdCampaign ),
 		};
 	} catch ( error ) {
-		handleApiError( error );
+		if ( error.code !== 'eu_political_advertising_declaration_required' ) {
+			handleApiError( error );
+		}
 
 		throw error;
 	}
@@ -858,7 +861,12 @@ export function* updateAdsCampaign( id, data ) {
 			data,
 		};
 	} catch ( error ) {
-		handleApiError( error );
+		if (
+			error?.code !==
+			EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE
+		) {
+			handleApiError( error );
+		}
 
 		throw error;
 	}

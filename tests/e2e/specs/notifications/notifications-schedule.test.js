@@ -10,6 +10,8 @@ import { getClassicProductEditorUtils } from '../../utils/product-editor';
 import MockRequests from '../../utils/mock-requests';
 import {
 	setNotificationsReady,
+	setCompletedAdsSetup,
+	clearCompletedAdsSetup,
 	clearOnboardedMerchant,
 	setOnboardedMerchant,
 	clearNotificationsReady,
@@ -47,6 +49,7 @@ test.describe( 'Notifications Schedule', () => {
 		productEditor = getClassicProductEditorUtils( page );
 		mockRequests = new MockRequests( page );
 		await setOnboardedMerchant();
+		await setCompletedAdsSetup();
 		await setNotificationsReady();
 		await Promise.all( [
 			// Mock Jetpack as connected
@@ -60,6 +63,7 @@ test.describe( 'Notifications Schedule', () => {
 
 	test.afterAll( async () => {
 		await clearOnboardedMerchant();
+		await clearCompletedAdsSetup();
 		await clearNotificationsReady();
 		await page.close();
 	} );
@@ -200,6 +204,7 @@ test.describe( 'Notifications Schedule', () => {
 	} );
 
 	test( 'Set as "Dont sync and show" a notified product does not schedule product.delete notification.', async () => {
+		// Set the product as not visible
 		await productEditor.gotoAddProductPage();
 		await productEditor.fillProductName();
 		await productEditor.publish();
