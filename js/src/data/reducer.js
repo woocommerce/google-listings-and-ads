@@ -48,6 +48,7 @@ const DEFAULT_STATE = {
 	},
 	ads_campaigns: null,
 	all_ads_campaigns: null,
+	ads_campaigns_missing_eu_declaration: null,
 	campaign_asset_groups: {},
 	mc_setup: null,
 	mc_product_statistics: null,
@@ -71,6 +72,7 @@ const DEFAULT_STATE = {
 			inviteLink: null,
 			step: null,
 		},
+		cyo_incentives: {},
 		budgetRecommendations: {},
 		recommendations: {},
 		enable_enhanced_conversions: false,
@@ -314,6 +316,14 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				return setIn( state, 'all_ads_campaigns', action.adsCampaigns );
 			}
 			return setIn( state, 'ads_campaigns', action.adsCampaigns );
+		}
+
+		case TYPES.RECEIVE_ADS_CAMPAIGNS_MISSING_EU_DECLARATION: {
+			return setIn(
+				state,
+				'ads_campaigns_missing_eu_declaration',
+				action.campaigns
+			);
 		}
 
 		case TYPES.CREATE_ADS_CAMPAIGN: {
@@ -631,6 +641,11 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				[ 'ads', 'recommendations', recommendationTypes ],
 				recommendations
 			);
+		}
+
+		case TYPES.RECEIVE_CYO_INCENTIVES: {
+			const { cyoIncentives } = action;
+			return setIn( state, [ 'ads', 'cyo_incentives' ], cyoIncentives );
 		}
 
 		case TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS: {
