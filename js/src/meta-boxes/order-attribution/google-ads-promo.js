@@ -8,10 +8,10 @@ import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { glaData } from '~/constants';
 import { recordGlaEvent } from '~/utils/tracks';
 import { getCreateCampaignUrl, getGetStartedUrl } from '~/utils/urls';
 import AppButton from '~/components/app-button';
+import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
 import useHasRecentAdSpend from '~/hooks/useHasRecentAdSpend';
 import googleLogoURL from '~/images/logo/google-g-logo.svg';
 import './google-ads-promo.scss';
@@ -50,7 +50,7 @@ import './google-ads-promo.scss';
  */
 const GoogleAdsPromo = () => {
 	const context = 'order-attribution-meta-box';
-	const { adsSetupComplete } = glaData;
+	const { isGoogleAdsReady } = useGoogleAdsAccountReady();
 	const { hasAdSpend, hasFinishedResolution } = useHasRecentAdSpend();
 	const hasTrackedRef = useRef( false );
 
@@ -73,7 +73,7 @@ const GoogleAdsPromo = () => {
 	const campaignUrl = getCreateCampaignUrl();
 	const getStartedUrl = getGetStartedUrl();
 
-	const content = adsSetupComplete
+	const content = isGoogleAdsReady
 		? {
 				title: __(
 					'Get more sales with Google Ads',

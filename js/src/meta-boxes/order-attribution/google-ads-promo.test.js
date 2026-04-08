@@ -7,10 +7,14 @@ import { render, fireEvent, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { glaData } from '~/constants';
+import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
 import useHasRecentAdSpend from '~/hooks/useHasRecentAdSpend';
 import { recordGlaEvent } from '~/utils/tracks';
 import GoogleAdsPromo from './google-ads-promo';
+
+jest.mock( '~/hooks/useGoogleAdsAccountReady', () =>
+	jest.fn().mockName( 'useGoogleAdsAccountReady' )
+);
 
 jest.mock( '~/hooks/useHasRecentAdSpend', () =>
 	jest.fn().mockName( 'useHasRecentAdSpend' )
@@ -27,12 +31,15 @@ jest.mock( '~/utils/urls', () => ( {
 
 describe( 'GoogleAdsPromo Component', () => {
 	beforeEach( () => {
-		glaData.adsSetupComplete = false;
+		useGoogleAdsAccountReady.mockReturnValue( { isGoogleAdsReady: false } );
 		jest.clearAllMocks();
 	} );
 
-	describe( 'When adsSetupComplete is false', () => {
+	describe( 'When isGoogleAdsReady is false', () => {
 		test( 'Renders component with setup incomplete messaging when there is no recent ad spend', () => {
+			useGoogleAdsAccountReady.mockReturnValue( {
+				isGoogleAdsReady: false,
+			} );
 			useHasRecentAdSpend.mockReturnValue( {
 				hasFinishedResolution: true,
 				hasAdSpend: false,
@@ -57,10 +64,11 @@ describe( 'GoogleAdsPromo Component', () => {
 		} );
 	} );
 
-	describe( 'When adsSetupComplete is true', () => {
+	describe( 'When isGoogleAdsReady is true', () => {
 		test( 'Renders component with setup complete messaging when there is no recent ad spend', () => {
-			glaData.adsSetupComplete = true;
-
+			useGoogleAdsAccountReady.mockReturnValue( {
+				isGoogleAdsReady: true,
+			} );
 			useHasRecentAdSpend.mockReturnValue( {
 				hasFinishedResolution: true,
 				hasAdSpend: false,
@@ -159,8 +167,9 @@ describe( 'GoogleAdsPromo Component', () => {
 		} );
 
 		test( 'Fires gla_google_ads_promo_create_campaign_click event when Create campaign button is clicked', () => {
-			glaData.adsSetupComplete = true;
-
+			useGoogleAdsAccountReady.mockReturnValue( {
+				isGoogleAdsReady: true,
+			} );
 			useHasRecentAdSpend.mockReturnValue( {
 				hasFinishedResolution: true,
 				hasAdSpend: false,
