@@ -790,6 +790,7 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 	 * Return the MCA ID for the WooCommerce Connect Server.
 	 *
 	 * @return integer
+	 * @throws Exception When an error response occurs.
 	 */
 	public function get_wcs_mca_id(): int {
 		try {
