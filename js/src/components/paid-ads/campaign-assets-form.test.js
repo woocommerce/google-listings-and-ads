@@ -26,12 +26,6 @@ jest.mock( '~/hooks/useRaiseBudgetRecommendations', () =>
 	} )
 );
 
-jest.mock( '~/hooks/useCYOIncentives', () =>
-	jest.fn().mockReturnValue( {
-		hasFinishedResolution: true,
-	} )
-);
-
 const alwaysValid = () => ( {} );
 
 describe( 'CampaignAssetsForm', () => {

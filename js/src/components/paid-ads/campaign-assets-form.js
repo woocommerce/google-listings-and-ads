@@ -21,7 +21,6 @@ import validateCampaign from '~/components/paid-ads/validateCampaign';
 import validateAssetGroup from '~/components/paid-ads/validateAssetGroup';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
 import useBudgetRecommendation from '~/hooks/useBudgetRecommendation';
-import useCYOIncentives from '~/hooks/useCYOIncentives';
 import useRaiseBudgetRecommendations from '~/hooks/useRaiseBudgetRecommendations';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
@@ -221,10 +220,6 @@ export default function CampaignAssetsForm( {
 	const { formatAmount } = useAdsCurrency();
 	const { data: budgetRecommendationData, hasResolved } =
 		useBudgetRecommendation( countryCodes );
-	const {
-		data: incentives,
-		hasFinishedResolution: hasFinishedResolutionIncentives,
-	} = useCYOIncentives();
 	const { createNotice } = useDispatchCoreNotices();
 
 	const budgetRecommendation = budgetRecommendationData || {};
@@ -242,19 +237,9 @@ export default function CampaignAssetsForm( {
 		hasFinishedResolution: hasResolvedRaiseBudgetRecommendations,
 	} = useRaiseBudgetRecommendations( campaignId );
 
-	if (
-		! hasResolved ||
-		! hasResolvedRaiseBudgetRecommendations ||
-		! hasFinishedResolutionIncentives
-	) {
+	if ( ! hasResolved || ! hasResolvedRaiseBudgetRecommendations ) {
 		return <AppSpinner />;
 	}
-
-	const defaultIncentiveId =
-		incentives?.length > 0
-			? incentives.find( ( incentive ) => incentive.offer === 'medium' )
-					?.id || incentives[ 0 ].id
-			: null;
 
 	const selectedBudgetRecommendation =
 		isEditing && raiseBudgetRecommendations.length
@@ -416,7 +401,7 @@ export default function CampaignAssetsForm( {
 					{
 						level: 'recommended',
 						amount: selectedBudgetRecommendation.recommendedDailyBudget,
-						incentiveId: defaultIncentiveId,
+						incentiveId: null,
 					},
 					selectedBudgetRecommendation,
 					budgetRecommendation

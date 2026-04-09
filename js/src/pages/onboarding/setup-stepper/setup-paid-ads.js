@@ -10,6 +10,7 @@ import { noop } from 'lodash';
  */
 import useAdminUrl from '~/hooks/useAdminUrl';
 import useAdsSetupCompleteCallback from '~/hooks/useAdsSetupCompleteCallback';
+import useCYOIncentives from '~/hooks/useCYOIncentives';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import AdsCampaign from '~/components/paid-ads/ads-campaign';
 import BudgetIncentivePrompt from '~/components/paid-ads/budget-incentive-prompt';
@@ -55,6 +56,10 @@ export default function SetupPaidAds() {
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
+	const {
+		data: incentives,
+		hasFinishedResolution: hasFinishedResolutionIncentives,
+	} = useCYOIncentives();
 	const { syncSettings } = useAppDispatch();
 	const { handleError: handleEuPoliticalDeclarationError } =
 		useEuPoliticalDeclarationContext();
@@ -64,6 +69,12 @@ export default function SetupPaidAds() {
 
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
+
+	const defaultIncentiveId =
+		isBillingCompleted && incentives?.length > 0
+			? incentives.find( ( incentive ) => incentive.offer === 'medium' )
+					?.id || incentives[ 0 ].id
+			: null;
 
 	const finishOnboardingSetup = async ( onBeforeFinish = noop ) => {
 		try {
@@ -139,13 +150,14 @@ export default function SetupPaidAds() {
 		);
 	};
 
-	const paidAds = {
-		...clientSession.getCampaign(),
-	};
-
-	if ( ! countryCodes ) {
+	if ( ! countryCodes || ! hasFinishedResolutionIncentives ) {
 		return <AppSpinner />;
 	}
+
+	const paidAds = {
+		incentiveId: defaultIncentiveId,
+		...clientSession.getCampaign(),
+	};
 
 	const handleSubmit = async ( values ) => {
 		const { level, dailyBudget, hasConfirmedEuPoliticalContent } = values;
