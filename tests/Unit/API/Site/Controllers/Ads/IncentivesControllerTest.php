@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsIncentives;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\IncentivesController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
@@ -16,7 +16,7 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 class IncentivesControllerTest extends RESTControllerUnitTest {
 
-	/** @var MockObject|Ads $ads */
+	/** @var MockObject|AdsIncentives $ads */
 	protected $ads;
 
 	/** @var MockObject|WC $wc */
@@ -36,7 +36,7 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->ads = $this->createMock( Ads::class );
+		$this->ads = $this->createMock( AdsIncentives::class );
 		$this->wc  = $this->createMock( WC::class );
 
 		$this->wc->method( 'get_base_country' )->willReturn( 'GB' );
