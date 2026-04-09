@@ -21,7 +21,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerExceptionInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\NotFoundExceptionInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
-use DateTime;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -782,6 +781,36 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 
 			throw new Exception(
 				$this->client_exception_message( $e, __( 'Error fetching incentive credits.', 'google-listings-and-ads' ) ),
+				$e->getCode()
+			);
+		}
+	}
+
+	/**
+	 * Return the MCA ID for the WooCommerce Connect Server.
+	 *
+	 * @return integer
+	 */
+	public function get_wcs_mca_id(): int {
+		try {
+			/** @var Client $client */
+			$client   = $this->container->get( Client::class );
+			$result   = $client->get( $this->get_manager_url( 'mca' ) );
+			$response = json_decode( $result->getBody()->getContents(), true );
+
+			if ( 200 !== $result->getStatusCode() || ! is_array( $response ) || ! isset( $response['mcaId'] ) ) {
+				throw new Exception(
+					__( 'Invalid response when retrieving MCA ID from WooCommerce Connect Server.', 'google-listings-and-ads' ),
+					$result->getStatusCode()
+				);
+			}
+
+			return absint( $response['mcaId'] );
+		} catch ( ClientExceptionInterface $e ) {
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
+
+			throw new Exception(
+				$this->client_exception_message( $e, __( 'Error retrieving MCA ID from WooCommerce Connect Server', 'google-listings-and-ads' ) ),
 				$e->getCode()
 			);
 		}
