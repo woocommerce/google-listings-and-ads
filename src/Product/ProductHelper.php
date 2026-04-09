@@ -639,7 +639,12 @@ class ProductHelper implements Service, HelperNotificationInterface {
 	 */
 	public function get_mc_status( WC_Product $wc_product ): ?string {
 		try {
-			return $this->meta_handler->get_mc_status( $this->maybe_swap_for_parent( $wc_product ) ) ?: null;
+			$mc_status = $this->meta_handler->get_mc_status( $this->maybe_swap_for_parent( $wc_product ) );
+			if ( $mc_status ) {
+				return $mc_status;
+			}
+
+			return $this->is_product_synced( $wc_product ) ? MCStatus::PENDING : MCStatus::NOT_SYNCED;
 		} catch ( InvalidValue $exception ) {
 			do_action(
 				'woocommerce_gla_debug_message',

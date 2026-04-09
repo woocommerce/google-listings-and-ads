@@ -991,16 +991,30 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * When no mc_status meta is stored, get_mc_status() must return null so the
-	 * fallback in ProductFeedQueryHelper can read sync_status instead.
+	 * When no mc_status meta is stored and the product is not synced,
+	 * get_mc_status() must return NOT_SYNCED.
 	 *
 	 * @param string $callback
 	 *
 	 * @dataProvider return_test_product_callbacks
 	 */
-	public function test_get_mc_status_returns_null_when_not_set( string $callback ) {
+	public function test_get_mc_status_returns_not_synced_when_not_set( string $callback ) {
 		$product = call_user_func( $callback );
-		$this->assertNull( $this->product_helper->get_mc_status( $product ) );
+		$this->assertEquals( MCStatus::NOT_SYNCED, $this->product_helper->get_mc_status( $product ) );
+	}
+
+	/**
+	 * Pull-synced products (via mark_as_notified) have no mc_status but
+	 * sync_status = synced. get_mc_status() must return PENDING for them.
+	 *
+	 * @param string $callback
+	 *
+	 * @dataProvider return_test_product_callbacks
+	 */
+	public function test_get_mc_status_returns_pending_for_pull_synced_product( string $callback ) {
+		$product = call_user_func( $callback );
+		$this->product_helper->mark_as_notified( $product );
+		$this->assertEquals( MCStatus::PENDING, $this->product_helper->get_mc_status( $product ) );
 	}
 
 	public function test_get_mc_status_variation_product() {
