@@ -170,7 +170,15 @@ describe( 'CyoIncentivePicker Component', () => {
 	} );
 
 	it( 'should set default selected incentive to medium offer', () => {
+		useAdaptiveFormContext.mockReturnValue( {
+			getInputProps: jest.fn().mockReturnValue( {
+				value: 456,
+				onChange: onIncentiveIdChange,
+			} ),
+		} );
+
 		render( <CyoIncentivePicker /> );
+
 		const radioButtons = screen.getAllByRole( 'radio' );
 		expect( radioButtons ).toHaveLength( 3 );
 

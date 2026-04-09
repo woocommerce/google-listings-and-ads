@@ -27,16 +27,12 @@ const CyoIncentivePicker = () => {
 		incentives?.length > 0 &&
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
-	if ( ! shouldDisplay ) {
-		return null;
-	}
-
 	const { value: selectedIncentiveId, ...restInputProps } =
 		getInputProps( 'incentiveId' );
 
-	const defaultIncentiveId =
-		incentives.find( ( incentive ) => incentive.offer === 'medium' )?.id ||
-		incentives[ 0 ].id;
+	if ( ! shouldDisplay ) {
+		return null;
+	}
 
 	const options = [ 'low', 'medium', 'high' ].reduce( ( acc, offer ) => {
 		const item = incentives.find(
@@ -49,7 +45,7 @@ const CyoIncentivePicker = () => {
 				spendAmount: item.requirement.spend.requiredAmount.units,
 				radioProps: {
 					...restInputProps,
-					selected: selectedIncentiveId ?? defaultIncentiveId,
+					selected: selectedIncentiveId,
 					value: item.id,
 					label: formatAmount(
 						item.requirement.spend.awardAmount.units
