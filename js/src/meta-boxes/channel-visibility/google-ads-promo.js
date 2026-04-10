@@ -10,7 +10,8 @@ import { store as preferencesStore } from '@wordpress/preferences';
 /**
  * Internal dependencies
  */
-import { PREFERENCES_STORE_NAMESPACE, glaData } from '~/constants';
+import { PREFERENCES_STORE_NAMESPACE } from '~/constants';
+import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import usePreference from '~/hooks/usePreference';
 import googleLogoURL from '~/images/logo/google-g-logo.svg';
 import { recordGlaEvent } from '~/utils/tracks';
@@ -22,8 +23,6 @@ import GetStartedCTA from './get-started-cta';
 import PromoCTA from './promo-cta';
 import ChannelVisibilitySettings from './channel-visibility-settings';
 import './google-ads-promo.scss';
-
-const { adsSetupComplete } = glaData;
 
 /**
  * Google Ads Promo banner is shown.
@@ -40,24 +39,32 @@ const { adsSetupComplete } = glaData;
  * @return {JSX.Element} The Google Ads Promo component
  */
 const GoogleAdsPromo = () => {
+	const {
+		hasGoogleAdsConnection,
+		hasFinishedResolution: hasResolvedGoogleAdsAccount,
+	} = useGoogleAdsAccount();
 	const { set } = useDispatch( preferencesStore );
 	const isDismissed = usePreference( CHANNEL_VISIBILITY_PROMO_KEY );
 	const hasTrackedRef = useRef( false );
 
 	useEffect( () => {
-		if ( ! hasTrackedRef.current ) {
+		if ( ! hasTrackedRef.current && hasResolvedGoogleAdsAccount ) {
 			recordGlaEvent( 'gla_google_ads_promo_shown', {
 				context: CHANNEL_VISIBILITY_CONTEXT,
 			} );
 			hasTrackedRef.current = true;
 		}
-	}, [] );
+	}, [ hasResolvedGoogleAdsAccount ] );
 
 	const handleDismiss = () => {
 		set( PREFERENCES_STORE_NAMESPACE, CHANNEL_VISIBILITY_PROMO_KEY, true );
 	};
 
-	if ( adsSetupComplete ) {
+	if ( ! hasResolvedGoogleAdsAccount ) {
+		return null;
+	}
+
+	if ( hasGoogleAdsConnection ) {
 		return <ChannelVisibilitySettings />;
 	}
 
