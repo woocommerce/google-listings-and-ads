@@ -48,7 +48,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client as Guzz
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\ClientInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Container\Definition;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\RequestInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\ResponseInterface;
 use Google\Ads\GoogleAds\Util\V22\GoogleAdsFailures;

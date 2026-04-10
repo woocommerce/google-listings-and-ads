@@ -4,7 +4,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantPriceBenchmar
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PriceBenchmarks;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Container\PluginContainer as Container;
 use PHPUnit\Framework\MockObject\MockObject;
 /**
  * Test class for PriceBenchmarksController.

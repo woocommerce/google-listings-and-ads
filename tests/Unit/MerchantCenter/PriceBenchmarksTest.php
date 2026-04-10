@@ -10,7 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PriceBenchmarks;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Container\PluginContainer as Container;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Helper_Product;
 

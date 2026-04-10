@@ -10,7 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Container\PluginContainer as Container;
 use Google\ApiCore\ApiException;
 use PHPUnit\Framework\MockObject\MockObject;
 

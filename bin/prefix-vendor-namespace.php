@@ -37,11 +37,6 @@ $packages = [
 		'strict'    => false,
 	],
 	[
-		'namespace' => 'League\\Container',
-		'package'   => 'league/container',
-		'strict'    => false,
-	],
-	[
 		'namespace' => 'League\\ISO3166',
 		'package'   => 'league/iso3166',
 		'strict'    => false,
@@ -94,9 +89,6 @@ $dependencies = [
 		'google/apiclient',
 		'google/auth',
 		'google/gax',
-	],
-	'psr/container'    => [
-		'league/container',
 	],
 	'psr/http-client'  => [
 		'firebase/php-jwt',

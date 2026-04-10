@@ -104,10 +104,22 @@ class JobServiceProvider extends AbstractServiceProvider {
 	 * @return void
 	 */
 	public function register(): void {
-		$this->share_with_tags(
+		// AsyncActionRunner must be constructed lazily because its
+		// dependencies (QueueRunnerAsyncRequest + ActionSchedulerCore) are
+		// provided by the ActionScheduler plugin, which may not have loaded
+		// yet at the point where the container's service providers run
+		// (plugins_loaded priority 1). The old League-based container hid
+		// this ordering dependency by deferring provider booting; the new
+		// eager container makes it explicit. Wrapping the instantiation in
+		// a factory closure defers it to first get(AsyncActionRunner::class).
+		$this->share_factory_with_tags(
 			AsyncActionRunner::class,
-			new QueueRunnerAsyncRequest( ActionSchedulerCore::store() ),
-			ActionSchedulerCore::lock()
+			static function () {
+				return new AsyncActionRunner(
+					new QueueRunnerAsyncRequest( ActionSchedulerCore::store() ),
+					ActionSchedulerCore::lock()
+				);
+			}
 		);
 		$this->share_with_tags( ActionScheduler::class, AsyncActionRunner::class );
 		$this->share_with_tags( ActionSchedulerJobMonitor::class, ActionScheduler::class );

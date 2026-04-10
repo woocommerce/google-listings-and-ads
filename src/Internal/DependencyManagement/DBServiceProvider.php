@@ -32,7 +32,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\DefinitionInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Container\Definition;
 use wpdb;
 
 defined( 'ABSPATH' ) || exit;
@@ -125,9 +125,9 @@ class DBServiceProvider extends AbstractServiceProvider {
 	 * @param string $class_name
 	 * @param mixed  ...$arguments
 	 *
-	 * @return DefinitionInterface
+	 * @return Definition
 	 */
-	protected function add_query_class( string $class_name, ...$arguments ): DefinitionInterface {
+	protected function add_query_class( string $class_name, ...$arguments ): Definition {
 		return $this->add( $class_name, wpdb::class, ...$arguments )->addTag( 'db_query' );
 	}
 
@@ -140,9 +140,9 @@ class DBServiceProvider extends AbstractServiceProvider {
 	 * @param string $class_name   The class name to add.
 	 * @param mixed  ...$arguments Constructor arguments for the class.
 	 *
-	 * @return DefinitionInterface
+	 * @return Definition
 	 */
-	protected function share_table_class( string $class_name, ...$arguments ): DefinitionInterface {
+	protected function share_table_class( string $class_name, ...$arguments ): Definition {
 		return parent::share( $class_name, WP::class, wpdb::class, ...$arguments )->addTag( 'db_table' );
 	}
 
