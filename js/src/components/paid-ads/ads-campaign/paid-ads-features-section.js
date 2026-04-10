@@ -22,7 +22,14 @@ function FeatureList() {
 		{
 			Icon: GridiconCheckmark,
 			content: __(
-				'Set a daily budget, and only pay when people click on your ads.',
+				'Performance Max puts your products in front of active customers on Search, Shopping, YouTube, and more.',
+				'google-listings-and-ads'
+			),
+		},
+		{
+			Icon: GridiconCheckmark,
+			content: __(
+				"By combining your unique business insights with Google AI, you'll capture high-value customers by reaching the right audience at the right time—while staying perfectly aligned with your budget and goals.",
 				'google-listings-and-ads'
 			),
 		},
@@ -55,18 +62,10 @@ export default function PaidAdsFeaturesSection() {
 		'Performance Max uses the best of Google’s AI to show the most impactful ads for your products at the right time and place.',
 		'google-listings-and-ads'
 	);
-	let subtitle = __(
-		'Reach more customers by advertising your products across Google Ads channels like Search, YouTube and Discover.',
-		'google-listings-and-ads'
-	);
 
 	if ( hasGoogleMCConnection ) {
 		description += ` ${ __(
 			'Google will use your product data to create ads for this campaign.',
-			'google-listings-and-ads'
-		) }`;
-		subtitle += ` ${ __(
-			"Set up your campaign now so your products are included as soon as they're approved.",
 			'google-listings-and-ads'
 		) }`;
 	}
@@ -104,19 +103,16 @@ export default function PaidAdsFeaturesSection() {
 					<VerticalGapLayout size="medium">
 						<Flex
 							className="gla-paid-ads-features-section__content"
-							align="center"
+							align="flex-start"
 							gap={ 9 }
 						>
 							<FlexBlock>
 								<Section.Card.Title>
 									{ __(
-										'Drive more sales with Performance Max',
+										'Grow your business and connect with high-intent shoppers across Google—all from a single campaign.',
 										'google-listings-and-ads'
 									) }
 								</Section.Card.Title>
-								<div className="gla-paid-ads-features-section__subtitle">
-									{ subtitle }
-								</div>
 								<FeatureList />
 							</FlexBlock>
 							<FlexItem>
