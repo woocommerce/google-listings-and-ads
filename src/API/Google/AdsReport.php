@@ -68,13 +68,17 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @throws ExceptionWithResponseData If the report data can't be retrieved.
 	 */
 	public function get_report_data( string $type, array $args ): array {
-		$cache_key    = 'gla_ads_report_' . $type . '_' . md5( serialize( $args ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
+		$ads_id       = (string) $this->options->get_ads_id();
+		$cache_key    = 'gla_ads_report_' . $type . '_' . md5( serialize( [ 'ads_id' => $ads_id, 'args' => $args ] ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
 		$cached_value = get_transient( $cache_key );
 
-		if ( false !== $cached_value ) {
+		if ( is_array( $cached_value ) ) {
 			return $cached_value;
 		}
 
+		if ( false !== $cached_value ) {
+			delete_transient( $cache_key );
+		}
 		try {
 			$this->has_converted = 'converted' === $this->container->get( AdsCampaign::class )->get_campaign_convert_status();
 
