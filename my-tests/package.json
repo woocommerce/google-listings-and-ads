@@ -1,0 +1,15 @@
+{
+    "private": true,
+    "type": "module",
+    "dependencies": {
+        "@woocommerce/qit-runtime": "*"
+    },
+    "devDependencies": {
+        "@playwright/test": "^1.59.1",
+        "allure-playwright": "^3.7.0",
+        "playwright-ctrf-json-reporter": "^0.0.29"
+    },
+    "scripts": {
+        "test:e2e": "playwright test"
+    }
+}

@@ -1,0 +1,67 @@
+{
+  "reportFormat": "CTRF",
+  "specVersion": "0.0.0",
+  "reportId": "0cbf414e-e5e7-4917-a04b-f27e4083967b",
+  "timestamp": "2026-04-08T16:07:24.264Z",
+  "generatedBy": "playwright-ctrf-json-reporter",
+  "results": {
+    "tool": {
+      "name": "playwright"
+    },
+    "summary": {
+      "tests": 2,
+      "passed": 2,
+      "failed": 0,
+      "pending": 0,
+      "skipped": 0,
+      "other": 0,
+      "start": 1775664444325,
+      "stop": 1775664446632,
+      "suites": 0
+    },
+    "tests": [
+      {
+        "name": "site is reachable",
+        "status": "passed",
+        "duration": 1567,
+        "start": 1775664444,
+        "stop": 1775664446,
+        "rawStatus": "passed",
+        "tags": [],
+        "type": "e2e",
+        "filePath": "/Users/jasonkytros/Local Sites/wpml/app/public/wp-content/plugins/google-listings-and-ads/my-tests/tests/example.spec.js",
+        "retries": 0,
+        "flaky": false,
+        "steps": [],
+        "suite": "chromium > example.spec.js",
+        "attachments": [],
+        "stdout": [],
+        "stderr": [],
+        "extra": {
+          "annotations": []
+        }
+      },
+      {
+        "name": "META-004: readme.txt exists at plugin root",
+        "status": "passed",
+        "duration": 18,
+        "start": 1775664446,
+        "stop": 1775664446,
+        "rawStatus": "passed",
+        "tags": [],
+        "type": "e2e",
+        "filePath": "/Users/jasonkytros/Local Sites/wpml/app/public/wp-content/plugins/google-listings-and-ads/my-tests/tests/meta-004-readme-exists.spec.js",
+        "retries": 0,
+        "flaky": false,
+        "steps": [],
+        "suite": "chromium > meta-004-readme-exists.spec.js",
+        "attachments": [],
+        "stdout": [],
+        "stderr": [],
+        "extra": {
+          "annotations": []
+        }
+      }
+    ]
+  }
+}
