@@ -15,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use DateTime;
+use DateTimeInterface;
 use Google\Ads\GoogleAds\V22\Common\Segments;
 use Google\Ads\GoogleAds\V22\Services\GoogleAdsRow;
 use Google\ApiCore\ApiException;
@@ -69,7 +70,14 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function get_report_data( string $type, array $args ): array {
 		$ads_id       = (string) $this->options->get_ads_id();
-		$cache_key    = 'gla_ads_report_' . $type . '_' . md5( serialize( [ 'ads_id' => $ads_id, 'args' => $args ] ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
+		$cache_key    = 'gla_ads_report_' . $type . '_' . md5(
+			wp_json_encode(
+				[
+					'ads_id' => $ads_id,
+					'args'   => $this->normalize_args_for_cache( $args ),
+				]
+			)
+		);
 		$cached_value = get_transient( $cache_key );
 
 		if ( is_array( $cached_value ) ) {
@@ -130,6 +138,39 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 				]
 			);
 		}
+	}
+
+	/**
+	 * Normalize query args for stable cache key generation.
+	 *
+	 * Converts DateTime values to 'Y-m-d' strings (matching how ReportQueryTrait
+	 * formats them for the actual query) and applies a recursive ksort so that
+	 * argument key ordering does not affect the cache key.
+	 *
+	 * @param array $args Raw query arguments.
+	 * @return array Normalized args safe for hashing.
+	 */
+	private function normalize_args_for_cache( array $args ): array {
+		array_walk_recursive(
+			$args,
+			function ( &$value ) {
+				if ( $value instanceof DateTimeInterface ) {
+					$value = $value->format( 'Y-m-d' );
+				}
+			}
+		);
+
+		$sort_recursive = function ( array &$arr ) use ( &$sort_recursive ) {
+			ksort( $arr );
+			foreach ( $arr as &$value ) {
+				if ( is_array( $value ) ) {
+					$sort_recursive( $value );
+				}
+			}
+		};
+		$sort_recursive( $args );
+
+		return $args;
 	}
 
 	/**
