@@ -2,6 +2,8 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
+import { RadioControl } from '@wordpress/components';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -9,30 +11,23 @@ import { __, sprintf } from '@wordpress/i18n';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import Section from '~/components/section';
 import Subsection from '~/components/subsection';
-import CYOIRadioControl from './cyoi-radio-control';
 import useCYOIncentives from '~/hooks/useCYOIncentives';
-import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
-import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import './cyo-incentive-picker.scss';
 
 const CyoIncentivePicker = () => {
 	const { getInputProps } = useAdaptiveFormContext();
 	const { data: incentives, hasFinishedResolution } = useCYOIncentives();
-	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const { formatAmount } = useAdsCurrency();
 
-	const shouldDisplay =
-		hasFinishedResolution &&
-		incentives?.length > 0 &&
-		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
+	const shouldDisplay = hasFinishedResolution && incentives?.length > 0;
+
+	const { value: selectedIncentiveId, ...restInputProps } =
+		getInputProps( 'incentiveId' );
 
 	if ( ! shouldDisplay ) {
 		return null;
 	}
-
-	const { value: selectedIncentiveId, ...restInputProps } =
-		getInputProps( 'incentiveId' );
 
 	const options = [ 'low', 'medium', 'high' ].reduce( ( acc, offer ) => {
 		const item = incentives.find(
@@ -41,17 +36,12 @@ const CyoIncentivePicker = () => {
 
 		if ( item ) {
 			acc.push( {
-				offer,
 				id: item.id,
-				selected: selectedIncentiveId,
-				rewardAmount: item.requirement.spend.awardAmount.units,
 				spendAmount: item.requirement.spend.requiredAmount.units,
 				radioProps: {
 					...restInputProps,
+					checked: selectedIncentiveId === item.id,
 					value: item.id,
-					label: formatAmount(
-						item.requirement.spend.awardAmount.units
-					),
 				},
 			} );
 		}
@@ -87,34 +77,51 @@ const CyoIncentivePicker = () => {
 						) }
 					</Subsection.Subtitle>
 					<div className="gla-cyoi-incentive-picker__container">
-						{ options.map( ( { id, spendAmount, radioProps } ) => {
-							return (
-								<div
-									key={ id }
-									className="gla-cyoi-incentive-picker__row"
-								>
-									<CYOIRadioControl { ...radioProps } />
-									<div className="gla-cyoi-incentive-picker__option">
-										{ sprintf(
+						{ options.map(
+							( {
+								id,
+								spendAmount,
+								radioProps: {
+									selected,
+									value,
+									...restRadioProps
+								},
+							} ) => {
+								const formattedSpendAmount =
+									formatAmount( spendAmount );
+								const label = createInterpolateElement(
+									sprintf(
+										/* translators: %s: amount in users' currency */
+										__(
+											'Get <strong>%s</strong>',
+											'google-listings-and-ads'
+										),
+										formattedSpendAmount
+									),
+									{
+										strong: <strong />,
+									}
+								);
+
+								return (
+									<RadioControl
+										{ ...restRadioProps }
+										key={ id }
+										className="gla-cyoi-radio-control__radio-control"
+										options={ [ { value, label } ] }
+										help={ sprintf(
 											/* translators: %s: amount in users' currency */
 											__(
 												'Spend %s with Google Ads in the first 60 days to unlock the credit.',
 												'google-listings-and-ads'
 											),
-											formatAmount( spendAmount )
+											formattedSpendAmount
 										) }
-									</div>
-									<div className="gla-cyoi-incentive-picker__helper">
-										<span>
-											{ __(
-												'in Ads credit',
-												'google-listings-and-ads'
-											) }
-										</span>
-									</div>
-								</div>
-							);
-						} ) }
+										hideLabelFromVision
+									/>
+								);
+							}
+						) }
 					</div>
 				</Section.Card.Body>
 			</Section.Card>

@@ -10,23 +10,27 @@ import { noop } from 'lodash';
  */
 import useAdminUrl from '~/hooks/useAdminUrl';
 import useAdsSetupCompleteCallback from '~/hooks/useAdsSetupCompleteCallback';
+import useCYOIncentives from '~/hooks/useCYOIncentives';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useApplyIncentive from '~/hooks/useApplyIncentive';
 import AdsCampaign from '~/components/paid-ads/ads-campaign';
 import BudgetIncentivePrompt from '~/components/paid-ads/budget-incentive-prompt';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import AppButton from '~/components/app-button';
-import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import { getProductFeedUrl } from '~/utils/urls';
 import { handleApiError } from '~/utils/handleError';
 import { FILTER_BUDGET_RECOMMENDATIONS, recordGlaEvent } from '~/utils/tracks';
 import { useAppDispatch } from '~/data';
-import { GUIDE_NAMES, GOOGLE_ADS_BILLING_STATUS } from '~/constants';
+import {
+	GUIDE_NAMES,
+	EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE,
+} from '~/constants';
 import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
 import SkipButton from './skip-button';
 import clientSession from './clientSession';
 import AppSpinner from '~/components/app-spinner';
+import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
 
 /**
  * Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
@@ -50,30 +54,41 @@ export default function SetupPaidAds() {
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
-	const { billingStatus } = useGoogleAdsAccountBillingStatus();
+	const { data: incentives, hasFinishedResolution } = useCYOIncentives();
 	const { syncSettings } = useAppDispatch();
 	const applyIncentive = useApplyIncentive();
+	const { handleError: handleEuPoliticalDeclarationError } =
+		useEuPoliticalDeclarationContext();
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
 
-	const isBillingCompleted =
-		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
+	const defaultIncentiveId =
+		hasFinishedResolution && incentives?.length > 0
+			? incentives.find( ( incentive ) => incentive.offer === 'medium' )
+					?.id || incentives[ 0 ].id
+			: null;
 
 	const finishOnboardingSetup = async ( onBeforeFinish = noop ) => {
 		try {
 			await syncSettings();
 			await onBeforeFinish();
 		} catch ( e ) {
+			handleEuPoliticalDeclarationError( e );
 			setCompleting( null );
 
-			handleApiError(
-				e,
-				__(
-					'Unable to complete your setup.',
-					'google-listings-and-ads'
-				)
-			);
+			if (
+				e.code !==
+				EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE
+			) {
+				handleApiError(
+					e,
+					__(
+						'Unable to complete your setup.',
+						'google-listings-and-ads'
+					)
+				);
+			}
 			return;
 		}
 
@@ -108,8 +123,7 @@ export default function SetupPaidAds() {
 
 	const createContinueButton = ( formContext ) => {
 		const { isValidForm, values } = formContext;
-		const disabled =
-			completing === ACTION_SKIP || ! isValidForm || ! isBillingCompleted;
+		const disabled = completing === ACTION_SKIP || ! isValidForm;
 
 		const handleClick = () => {
 			budgetPromptRef.current
@@ -134,13 +148,11 @@ export default function SetupPaidAds() {
 		);
 	};
 
-	const paidAds = {
-		...clientSession.getCampaign(),
-	};
-
 	if ( ! countryCodes ) {
 		return <AppSpinner />;
 	}
+
+	const paidAds = clientSession.getCampaign();
 
 	const handleSubmit = async ( values ) => {
 		const {
@@ -169,6 +181,8 @@ export default function SetupPaidAds() {
 				level,
 				budget: dailyBudget,
 				audiences: countryCodes.join( ',' ),
+				has_confirmed_eu_political_content:
+					hasConfirmedEuPoliticalContent,
 			} )
 		);
 
@@ -177,7 +191,7 @@ export default function SetupPaidAds() {
 
 	return (
 		<CampaignAssetsForm
-			initialCampaign={ paidAds }
+			initialCampaign={ { incentiveId: defaultIncentiveId, ...paidAds } }
 			countryCodes={ countryCodes }
 			onChange={ ( _, values ) => {
 				clientSession.setCampaign( values );
