@@ -25,8 +25,8 @@ class OptionsTest extends UnitTest {
 		$wp = $this->createMock( WP::class );
 
 		$wp->method( 'get_option' )->willReturnCallback(
-			function ( string $option, $default = null ) use ( &$storage ) {
-				return array_key_exists( $option, $storage ) ? $storage[ $option ] : $default;
+			function ( string $option, $default_value = null ) use ( &$storage ) {
+				return array_key_exists( $option, $storage ) ? $storage[ $option ] : $default_value;
 			}
 		);
 
@@ -104,7 +104,10 @@ class OptionsTest extends UnitTest {
 		$options = $this->create_options_with_storage( $storage );
 
 		$options->add( OptionsInterface::MARKETS, [ 'version' => 1 ] );
-		$updated = [ 'version' => 2, 'regions' => [ 'EU' ] ];
+		$updated = [
+			'version' => 2,
+			'regions' => [ 'EU' ],
+		];
 
 		$this->assertTrue( $options->update( OptionsInterface::MARKETS, $updated ) );
 		$this->assertSame( $updated, $options->get( OptionsInterface::MARKETS ) );
