@@ -12,16 +12,22 @@ on:
         description: 'New version string (e.g. 3.7.0)'
         required: true
         type: string
+      release_branch:
+        description: 'Release branch to update (e.g. release/3.7.0)'
+        required: false
+        type: string
 
 jobs:
   bump:
     name: Bump version to ${{ inputs.version }}
     runs-on: ubuntu-latest
+    env:
+      RELEASE_BRANCH: ${{ inputs.release_branch != '' && inputs.release_branch || format('release/{0}', inputs.version) }}
     steps:
       - name: Checkout release branch
         uses: actions/checkout@v4
         with:
-          ref: release/${{ inputs.version }}
+          ref: ${{ env.RELEASE_BRANCH }}
           token: ${{ secrets.ORG_DEPLOY_SECRET }}
 
       - name: Configure git
@@ -33,8 +39,38 @@ jobs:
         env:
           VERSION: ${{ inputs.version }}
         run: |
-          sed -i "s/ \* Version:.*/ * Version: ${VERSION}/" google-listings-and-ads.php
-          sed -i "s/define( 'WC_GLA_VERSION', '[^']*' );/define( 'WC_GLA_VERSION', '${VERSION}' );/" google-listings-and-ads.php
+          python3 - <<'PYEOF'
+          import os
+          import re
+
+          version = os.environ["VERSION"]
+          path = "google-listings-and-ads.php"
+          content = open(path, "r", encoding="utf-8").read()
+
+          # Bump plugin header Version line.
+          content, count = re.subn(
+              r"(^\s*\*\s[Vv]ersion:\s*).*$",
+              rf"\g<1>{version}",
+              content,
+              count=1,
+              flags=re.MULTILINE,
+          )
+          if count == 0:
+              raise SystemExit("Could not find plugin header Version line in google-listings-and-ads.php")
+
+          # Bump version constants using WRCS markers.
+          content, marker_count = re.subn(
+              r"('[0-9]+\.[0-9]+\.[0-9]+-?([a-z]+)?\.?[0-9]*'\s*\);\s*//\s*WRCS:\s*DEFINED_VERSION\.)",
+              lambda m: f"'{version}' ); // WRCS: DEFINED_VERSION.",
+              content,
+              count=1,
+          )
+
+          if marker_count == 0:
+              raise SystemExit("Could not find WRCS marker-based version constant in google-listings-and-ads.php")
+
+          open(path, "w", encoding="utf-8").write(content)
+          PYEOF
 
       - name: Bump version in package.json
         env:
@@ -47,6 +83,20 @@ jobs:
             fs.writeFileSync('package.json', JSON.stringify(pkg, null, '\t') + '\n');
           "
 
+      - name: Bump version in package-lock.json
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          node -e "
+            const fs = require('fs');
+            const lock = JSON.parse(fs.readFileSync('package-lock.json', 'utf8'));
+            lock.version = process.env.VERSION;
+            if (lock.packages && lock.packages['']) {
+              lock.packages[''].version = process.env.VERSION;
+            }
+            fs.writeFileSync('package-lock.json', JSON.stringify(lock, null, '\t') + '\n');
+          "
+
       - name: Bump stable tag in readme.txt
         env:
           VERSION: ${{ inputs.version }}
@@ -56,6 +106,6 @@ jobs:
         env:
           VERSION: ${{ inputs.version }}
         run: |
-          git add google-listings-and-ads.php package.json readme.txt
+          git add google-listings-and-ads.php package.json package-lock.json readme.txt
           git commit -m "Release: Bump version to ${VERSION}."
-          git push origin release/${VERSION}
+          git push origin "${RELEASE_BRANCH}"

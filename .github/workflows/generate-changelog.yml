@@ -13,6 +13,10 @@ on:
         description: 'Version being released (e.g. 3.7.0)'
         required: true
         type: string
+      release_branch:
+        description: 'Release branch to update (e.g. release/3.7.0)'
+        required: false
+        type: string
     outputs:
       changelog_block:
         description: 'The generated changelog block, used in the release PR description'
@@ -22,13 +26,15 @@ jobs:
   changelog:
     name: Generate changelog for ${{ inputs.version }}
     runs-on: ubuntu-latest
+    env:
+      RELEASE_BRANCH: ${{ inputs.release_branch != '' && inputs.release_branch || format('release/{0}', inputs.version) }}
     outputs:
       changelog_block: ${{ steps.generate.outputs.changelog_block }}
     steps:
       - name: Checkout release branch
         uses: actions/checkout@v4
         with:
-          ref: release/${{ inputs.version }}
+          ref: ${{ env.RELEASE_BRANCH }}
           token: ${{ secrets.ORG_DEPLOY_SECRET }}
 
       - name: Configure git
@@ -41,10 +47,12 @@ jobs:
         uses: actions/github-script@v7
         env:
           VERSION: ${{ inputs.version }}
+          RELEASE_BRANCH: ${{ env.RELEASE_BRANCH }}
         with:
           github-token: ${{ secrets.ORG_DEPLOY_SECRET }}
           script: |
             const version = process.env.VERSION;
+            const releaseBranch = process.env.RELEASE_BRANCH;
 
             // Get the latest published (non-draft, non-prerelease) release to use as
             // the comparison base. listReleases sorts by created_at desc so the first
@@ -66,7 +74,7 @@ jobs:
               repo: context.repo.repo,
               tag_name: `v${version}`,
               ...(latestTag ? { previous_tag_name: latestTag } : {}),
-              target_commitish: `release/${version}`,
+              target_commitish: releaseBranch,
             });
 
             // Extract unique PR numbers from the generated notes body.
@@ -80,16 +88,14 @@ jobs:
             // Map changelog labels to their prefixes (order matters — first match wins).
             // Prefixes follow the repo convention defined in PULL_REQUEST_TEMPLATE.md.
             const labelPrefixMap = [
-              ['changelog: breaking', 'Break'],
               ['changelog: add',      'Add'],
               ['changelog: update',   'Update'],
               ['changelog: fix',      'Fix'],
               ['changelog: tweak',    'Tweak'],
               ['changelog: dev',      'Dev'],
-              ['changelog: doc',      'Doc'],
               ['type: enhancement',   'Add'],
               ['type: bug',           'Fix'],
-              ['type: documentation', 'Doc'],
+              ['type: documentation', 'Dev'],
             ];
 
             const skipAuthors = [
@@ -100,7 +106,7 @@ jobs:
             // Matches any existing changelog prefix at the start of an entry.
             // Covers both the canonical short form (Break) and the long form (Breaking)
             // in case contributors write either variant in their PR bodies.
-            const existingPrefixRe = /^(Break(?:ing)?|Add|Update|Fix|Tweak|Dev|Doc)\s*[-–]\s*/i;
+            const existingPrefixRe = /^(Add|Update|Fix|Tweak|Dev)\s*[-–]\s*/i;
 
             const entries = [];
 
@@ -117,7 +123,7 @@ jobs:
                 continue;
               }
 
-              const labels = pr.labels.map(l => l.name);
+              const labels = pr.labels.map(l => l.name.toLowerCase());
 
               // Skip explicitly excluded PRs and bot authors.
               if (labels.includes('changelog: none')) continue;
@@ -159,6 +165,7 @@ jobs:
             if (entries.length === 0) {
               core.warning('No changelog entries found. The changelog block will be empty.');
             }
+            entries.sort((a, b) => a.localeCompare(b));
 
             const today = new Date().toISOString().split('T')[0];
             const changelogBlock = `= ${version} - ${today} =\n${entries.join('\n')}`;
@@ -204,4 +211,4 @@ jobs:
         run: |
           git add changelog.txt readme.txt
           git commit -m "Release: Update changelogs for ${VERSION}."
-          git push origin release/${VERSION}
+          git push origin "${RELEASE_BRANCH}"
