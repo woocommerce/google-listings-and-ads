@@ -789,8 +789,8 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * Return the MCA ID for the WooCommerce Connect Server.
 	 *
-	 * @return integer
-	 * @throws Exception When an error response occurs.
+	 * @return int Positive MCA ID.
+	 * @throws Exception When the HTTP response is invalid, mcaId is missing, or mcaId is not a positive integer.
 	 */
 	public function get_wcs_mca_id(): int {
 		try {
@@ -806,7 +806,24 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 				);
 			}
 
-			return absint( $response['mcaId'] );
+			$mca_id = filter_var(
+				$response['mcaId'],
+				FILTER_VALIDATE_INT,
+				[
+					'options' => [
+						'min_range' => 1,
+					],
+				]
+			);
+
+			if ( false === $mca_id ) {
+				throw new Exception(
+					__( 'Invalid response when retrieving MCA ID from WooCommerce Connect Server.', 'google-listings-and-ads' ),
+					$result->getStatusCode()
+				);
+			}
+
+			return $mca_id;
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 

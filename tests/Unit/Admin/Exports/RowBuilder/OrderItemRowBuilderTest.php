@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\RowBuilder\OrderIt
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Exception;
+use PHPUnit\Framework\MockObject\MockObject;
 use WC_Helper_Product;
 use WC_Helper_Order;
 use WC_Helper_Coupon;
@@ -19,6 +20,9 @@ use WC_Order_Item_Coupon;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Admin\Exports\RowBuilder
  */
 class OrderItemRowBuilderTest extends UnitTest {
+
+	protected const TEST_WCS_MCA_ID = 987654321;
+
 	/** @var OrderItemRowBuilder $builder */
 	protected $builder;
 
@@ -80,11 +84,14 @@ class OrderItemRowBuilderTest extends UnitTest {
 		$order->calculate_totals();
 		$order->save();
 
+		$this->middleware->method( 'get_wcs_mca_id' )->willReturn( self::TEST_WCS_MCA_ID );
+
 		// Build the CSV row.
 		$row = $this->builder->build_row( $item );
 
 		// Assert.
 		$this->assertEquals( $row['transaction_type'], 'purchase' );
+		$this->assertSame( self::TEST_WCS_MCA_ID, $row['gmc_merchant_id'] );
 		$this->assertEquals( $row['transaction_id'], $order->get_id() );
 		$this->assertEquals( $row['item_id'], $item->get_product_id() );
 		$this->assertEquals( $row['item_name'], $product->get_name() );
@@ -138,6 +145,8 @@ class OrderItemRowBuilderTest extends UnitTest {
 		$order->calculate_totals();
 		$order->save();
 
+		$this->middleware->method( 'get_wcs_mca_id' )->willReturn( self::TEST_WCS_MCA_ID );
+
 		// Add the refund.
 		$refund = wc_create_refund(
 			[
@@ -161,6 +170,7 @@ class OrderItemRowBuilderTest extends UnitTest {
 
 		// Assert.
 		$this->assertEquals( $row['transaction_type'], 'refund' );
+		$this->assertSame( self::TEST_WCS_MCA_ID, $row['gmc_merchant_id'] );
 		$this->assertEquals( $row['transaction_id'], $refund->get_id() );
 		$this->assertEquals( $row['item_id'], $item->get_product_id() );
 		$this->assertEquals( $row['item_name'], $product->get_name() );
