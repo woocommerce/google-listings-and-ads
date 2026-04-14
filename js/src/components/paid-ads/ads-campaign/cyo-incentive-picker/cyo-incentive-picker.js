@@ -12,21 +12,15 @@ import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import Section from '~/components/section';
 import Subsection from '~/components/subsection';
 import useCYOIncentives from '~/hooks/useCYOIncentives';
-import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
-import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import './cyo-incentive-picker.scss';
 
 const CyoIncentivePicker = () => {
 	const { getInputProps } = useAdaptiveFormContext();
 	const { data: incentives, hasFinishedResolution } = useCYOIncentives();
-	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const { formatAmount } = useAdsCurrency();
 
-	const shouldDisplay =
-		hasFinishedResolution &&
-		incentives?.length > 0 &&
-		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
+	const shouldDisplay = hasFinishedResolution && incentives?.length > 0;
 
 	const { value: selectedIncentiveId, ...restInputProps } =
 		getInputProps( 'incentiveId' );
