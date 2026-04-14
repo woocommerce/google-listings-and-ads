@@ -10,15 +10,12 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import CyoIncentivePicker from './cyo-incentive-picker';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useCYOIncentives from '~/hooks/useCYOIncentives';
-import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
-import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 
 jest.mock( '~/components/adaptive-form', () => ( {
 	useAdaptiveFormContext: jest.fn(),
 } ) );
 jest.mock( '~/hooks/useCYOIncentives' );
-jest.mock( '~/hooks/useGoogleAdsAccountBillingStatus' );
 jest.mock( '~/hooks/useAdsCurrency' );
 
 const formatAmountMock = jest.fn();
@@ -97,10 +94,6 @@ describe( 'CyoIncentivePicker Component', () => {
 			data: INCENTIVES_DATA,
 			hasFinishedResolution: true,
 		} );
-
-		useGoogleAdsAccountBillingStatus.mockReturnValue( {
-			billingStatus: { status: GOOGLE_ADS_BILLING_STATUS.APPROVED },
-		} );
 	} );
 
 	it( 'should render the component', () => {
@@ -142,8 +135,10 @@ describe( 'CyoIncentivePicker Component', () => {
 	} );
 
 	it( 'should not render if billing status is not approved', () => {
-		useGoogleAdsAccountBillingStatus.mockReturnValue( {
-			billingStatus: { status: 'pending' },
+		// useCYOIncentives returns no data when billing is not approved
+		useCYOIncentives.mockReturnValue( {
+			data: null,
+			hasFinishedResolution: true,
 		} );
 
 		render( <CyoIncentivePicker /> );
@@ -152,16 +147,20 @@ describe( 'CyoIncentivePicker Component', () => {
 	} );
 
 	it( 'should render the component when billing status switches from pending to approved', () => {
-		useGoogleAdsAccountBillingStatus.mockReturnValue( {
-			billingStatus: { status: 'pending' },
+		// useCYOIncentives returns no data when billing is not approved
+		useCYOIncentives.mockReturnValue( {
+			data: null,
+			hasFinishedResolution: true,
 		} );
 
 		const { rerender } = render( <CyoIncentivePicker /> );
 		let titleElement = screen.queryByText( 'Ads credit offer' );
 		expect( titleElement ).not.toBeInTheDocument();
 
-		useGoogleAdsAccountBillingStatus.mockReturnValue( {
-			billingStatus: { status: GOOGLE_ADS_BILLING_STATUS.APPROVED },
+		// useCYOIncentives returns data once billing is approved
+		useCYOIncentives.mockReturnValue( {
+			data: INCENTIVES_DATA,
+			hasFinishedResolution: true,
 		} );
 
 		rerender( <CyoIncentivePicker /> );
