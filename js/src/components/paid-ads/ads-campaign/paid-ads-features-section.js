@@ -12,8 +12,6 @@ import GridiconCheckmark from 'gridicons/dist/checkmark';
 import Section from '~/components/section';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import CampaignPreview from '~/components/paid-ads/campaign-preview';
-import FreeAdCredit from '~/components/free-ad-credit';
-import VerticalGapLayout from '~/components/vertical-gap-layout';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import './paid-ads-features-section.scss';
 
@@ -100,27 +98,24 @@ export default function PaidAdsFeaturesSection() {
 		>
 			<Section.Card>
 				<Section.Card.Body>
-					<VerticalGapLayout size="medium">
-						<Flex
-							className="gla-paid-ads-features-section__content"
-							align="flex-start"
-							gap={ 9 }
-						>
-							<FlexBlock>
-								<Section.Card.Title>
-									{ __(
-										'Grow your business and connect with high-intent shoppers across Google—all from a single campaign.',
-										'google-listings-and-ads'
-									) }
-								</Section.Card.Title>
-								<FeatureList />
-							</FlexBlock>
-							<FlexItem>
-								<CampaignPreview />
-							</FlexItem>
-						</Flex>
-						<FreeAdCredit />
-					</VerticalGapLayout>
+					<Flex
+						className="gla-paid-ads-features-section__content"
+						align="flex-start"
+						gap={ 9 }
+					>
+						<FlexBlock>
+							<Section.Card.Title>
+								{ __(
+									'Grow your business and connect with high-intent shoppers across Google—all from a single campaign.',
+									'google-listings-and-ads'
+								) }
+							</Section.Card.Title>
+							<FeatureList />
+						</FlexBlock>
+						<FlexItem>
+							<CampaignPreview />
+						</FlexItem>
+					</Flex>
 				</Section.Card.Body>
 			</Section.Card>
 		</Section>
