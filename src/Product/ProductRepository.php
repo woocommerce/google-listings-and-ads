@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WC_Product;
+use WP_Query;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -30,6 +31,13 @@ class ProductRepository implements Service {
 	 * @var ProductFilter
 	 */
 	protected $product_filter;
+
+	/**
+	 * Exclusive minimum post ID for keyset pagination in find_expiring_product_ids.
+	 *
+	 * @var int|null
+	 */
+	protected ?int $expiring_product_ids_after_id = null;
 
 	/**
 	 * ProductRepository constructor.
@@ -259,12 +267,15 @@ class ProductRepository implements Service {
 	/**
 	 * Find and return an array of WooCommerce product IDs nearly expired and ready to be re-submitted to Google Merchant Center.
 	 *
-	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
-	 * @param int $offset Amount to offset product results.
+	 * Results are ordered by post ID ascending. When $after_id is greater than zero, keyset pagination is used
+	 * (only IDs greater than $after_id), avoiding large offset scans on big catalogs.
+	 *
+	 * @param int $limit    Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int $after_id Only return products with a post ID greater than this value. Use 0 for the first page.
 	 *
 	 * @return int[] Array of WooCommerce product IDs
 	 */
-	public function find_expiring_product_ids( int $limit = - 1, int $offset = 0 ): array {
+	public function find_expiring_product_ids( int $limit = - 1, int $after_id = 0 ): array {
 		$args['meta_query'] = [
 			'relation' => 'AND',
 			$this->get_sync_ready_products_meta_query(),
@@ -278,7 +289,62 @@ class ProductRepository implements Service {
 			],
 		];
 
-		return $this->find_ids( $args, $limit, $offset );
+		$args['orderby'] = 'ID';
+		$args['order']   = 'ASC';
+
+		if ( $after_id > 0 ) {
+			$this->expiring_product_ids_after_id = $after_id;
+			add_filter( 'posts_where', [ $this, 'filter_posts_where_expiring_product_keyset' ], 10, 2 );
+		}
+
+		try {
+			return $this->find_ids( $args, $limit, 0 );
+		} finally {
+			if ( $after_id > 0 ) {
+				remove_filter( 'posts_where', [ $this, 'filter_posts_where_expiring_product_keyset' ], 10 );
+				$this->expiring_product_ids_after_id = null;
+			}
+		}
+	}
+
+	/**
+	 * Restrict the expiring-products query to posts with ID greater than the keyset checkpoint.
+	 *
+	 * @param string   $where    The WHERE clause of the query.
+	 * @param WP_Query $wp_query The WP_Query instance.
+	 *
+	 * @return string
+	 */
+	public function filter_posts_where_expiring_product_keyset( string $where, WP_Query $wp_query ): string {
+		if ( null === $this->expiring_product_ids_after_id || $this->expiring_product_ids_after_id <= 0 ) {
+			return $where;
+		}
+
+		if ( ! $this->is_product_or_variation_query( $wp_query ) ) {
+			return $where;
+		}
+
+		global $wpdb;
+
+		return $where . $wpdb->prepare( " AND `{$wpdb->posts}`.ID > %d ", $this->expiring_product_ids_after_id ); // phpcs:ignore WordPress.DB.PreparedSQL
+	}
+
+	/**
+	 * Whether the query is for WooCommerce products or variations.
+	 *
+	 * @param WP_Query $wp_query The WP_Query instance.
+	 *
+	 * @return bool
+	 */
+	protected function is_product_or_variation_query( WP_Query $wp_query ): bool {
+		$post_type = $wp_query->get( 'post_type' );
+		if ( empty( $post_type ) ) {
+			return false;
+		}
+
+		$types = (array) $post_type;
+
+		return (bool) array_intersect( [ 'product', 'product_variation' ], $types );
 	}
 
 	/**

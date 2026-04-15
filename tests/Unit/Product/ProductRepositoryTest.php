@@ -294,6 +294,37 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		);
 	}
 
+	public function test_find_expiring_product_ids_keyset_pagination() {
+		$product_a = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product_a, $this->generate_google_product_mock() );
+		$this->product_meta->update_synced_at( $product_a, strtotime( '-30 days' ) );
+
+		$product_b = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product_b, $this->generate_google_product_mock() );
+		$this->product_meta->update_synced_at( $product_b, strtotime( '-30 days' ) );
+
+		$lower_id  = min( $product_a->get_id(), $product_b->get_id() );
+		$higher_id = max( $product_a->get_id(), $product_b->get_id() );
+
+		$this->assertSame(
+			[ $lower_id ],
+			$this->product_repository->find_expiring_product_ids( 1, 0 ),
+			'First keyset page should return the lowest matching product ID.'
+		);
+
+		$this->assertSame(
+			[ $higher_id ],
+			$this->product_repository->find_expiring_product_ids( 1, $lower_id ),
+			'Second keyset page should return the product with ID greater than the first checkpoint.'
+		);
+
+		$this->assertSame(
+			[],
+			$this->product_repository->find_expiring_product_ids( 1, $higher_id ),
+			'No products should remain after the second checkpoint.'
+		);
+	}
+
 	public function test_find_all_synced_google_ids() {
 		$synced_google_ids = [];
 
