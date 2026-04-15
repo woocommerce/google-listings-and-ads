@@ -22,7 +22,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 class ResubmitExpiringProductsTest extends UnitTest {
 
 	protected const CHECKPOINT_OPTION = 'woocommerce_gla_resubmit_expiring_products_checkpoint';
-	protected const JOB_NAME         = 'resubmit_expiring_products';
+	protected const JOB_NAME          = 'resubmit_expiring_products';
 	protected const CREATE_BATCH_HOOK = 'gla/jobs/' . self::JOB_NAME . '/create_batch';
 	protected const PROCESS_ITEM_HOOK = 'gla/jobs/' . self::JOB_NAME . '/process_item';
 
@@ -56,13 +56,13 @@ class ResubmitExpiringProductsTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->action_scheduler  = $this->createMock( ActionSchedulerInterface::class );
-		$this->monitor           = $this->createMock( ActionSchedulerJobMonitor::class );
-		$this->product_syncer    = $this->createMock( ProductSyncer::class );
+		$this->action_scheduler   = $this->createMock( ActionSchedulerInterface::class );
+		$this->monitor            = $this->createMock( ActionSchedulerJobMonitor::class );
+		$this->product_syncer     = $this->createMock( ProductSyncer::class );
 		$this->product_repository = $this->createMock( ProductRepository::class );
-		$this->product_helper    = $this->createMock( BatchProductHelper::class );
-		$this->merchant_center   = $this->createMock( MerchantCenterService::class );
-		$this->merchant_statuses = $this->createMock( MerchantStatuses::class );
+		$this->product_helper     = $this->createMock( BatchProductHelper::class );
+		$this->merchant_center    = $this->createMock( MerchantCenterService::class );
+		$this->merchant_statuses  = $this->createMock( MerchantStatuses::class );
 
 		$this->merchant_center->method( 'is_ready_for_syncing' )->willReturn( true );
 		$this->merchant_center->method( 'is_enabled_for_datatype' )->willReturn( true );
@@ -204,7 +204,7 @@ class ResubmitExpiringProductsTest extends UnitTest {
 	}
 
 	/**
-	 * schedule() must clear any stale checkpoint from a previous run before enqueueing the first batch.
+	 * Schedule() must clear any stale checkpoint from a previous run before enqueueing the first batch.
 	 */
 	public function test_schedule_clears_stale_checkpoint_from_previous_run(): void {
 		update_option( self::CHECKPOINT_OPTION, 77, false );
