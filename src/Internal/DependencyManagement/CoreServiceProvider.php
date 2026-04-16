@@ -62,6 +62,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MultichannelMarketing\GLAChannel
 use Automattic\WooCommerce\GoogleListingsAndAds\MultichannelMarketing\MarketingChannelRegistrar;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PolicyComplianceCheck;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ContactInformation as ContactInformationNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\NoteInitializer;
@@ -73,6 +74,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaignTwoWeeks as S
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCouponSharing as SetupCouponSharingNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsSetupCompleted;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Markets;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
@@ -177,6 +179,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ContactInformation::class        => true,
 		MerchantCenterService::class     => true,
 		NotificationsService::class      => true,
+		MarketService::class             => true,
 		TargetAudience::class            => true,
 		MerchantAccountState::class      => true,
 		AdsAccountState::class           => true,
@@ -238,6 +241,10 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		// Set up the TargetAudience service.
 		$this->share_with_tags( TargetAudience::class, WC::class, OptionsInterface::class, GoogleHelper::class );
+
+		// Set up the Markets options wrapper and MarketService.
+		$this->share_with_tags( Markets::class );
+		$this->share_with_tags( MarketService::class, TargetAudience::class );
 
 		// Set up MerchantCenter service, and inflect classes that need it.
 		$this->share_with_tags( MerchantCenterService::class );
