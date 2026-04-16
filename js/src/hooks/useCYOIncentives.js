@@ -8,6 +8,9 @@ import { useSelect } from '@wordpress/data';
  */
 import { STORE_KEY } from '~/data/constants';
 import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
+import useGoogleAdsAccountBillingStatus from './useGoogleAdsAccountBillingStatus';
+
+const selectorName = 'getCYOIncentives';
 
 /**
  * @typedef {Object} CYOIncentiveAmount
@@ -49,31 +52,32 @@ import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
  * @return {CYOIncentivesPayload} The CYO incentives payload.
  */
 const useCYOIncentives = () => {
-	return useSelect( ( select ) => {
-		const {
-			getGoogleAdsAccountBillingStatus,
-			getCYOIncentives,
-			hasFinishedResolution,
-		} = select( STORE_KEY );
+	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 
-		const billingStatus = getGoogleAdsAccountBillingStatus();
-		const isBillingCompleted =
-			billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
+	return useSelect(
+		( select ) => {
+			const isBillingCompleted =
+				billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
-		if ( ! isBillingCompleted ) {
+			if ( ! isBillingCompleted ) {
+				return {
+					data: null,
+					hasFinishedResolution: true,
+				};
+			}
+
+			const selector = select( STORE_KEY );
+
 			return {
-				data: null,
-				hasFinishedResolution: true,
+				data: selector[ selectorName ](),
+				hasFinishedResolution: selector.hasFinishedResolution(
+					selectorName,
+					[]
+				),
 			};
-		}
-
-		const data = getCYOIncentives();
-
-		return {
-			data,
-			hasFinishedResolution: hasFinishedResolution( 'getCYOIncentives' ),
-		};
-	}, [] );
+		},
+		[ billingStatus ]
+	);
 };
 
 export default useCYOIncentives;

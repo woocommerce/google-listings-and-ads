@@ -53,7 +53,10 @@ export default function SetupPaidAds() {
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
-	const { data: incentives, hasFinishedResolution } = useCYOIncentives();
+	const {
+		data: incentives,
+		hasFinishedResolution: hasResolvedCyoIncentives,
+	} = useCYOIncentives();
 	const { syncSettings } = useAppDispatch();
 	const { handleError: handleEuPoliticalDeclarationError } =
 		useEuPoliticalDeclarationContext();
@@ -62,7 +65,7 @@ export default function SetupPaidAds() {
 	);
 
 	const defaultIncentiveId =
-		hasFinishedResolution && incentives?.length > 0
+		hasResolvedCyoIncentives && incentives?.length > 0
 			? incentives.find( ( incentive ) => incentive.offer === 'medium' )
 					?.id || incentives[ 0 ].id
 			: null;
@@ -140,7 +143,7 @@ export default function SetupPaidAds() {
 		);
 	};
 
-	if ( ! countryCodes ) {
+	if ( ! countryCodes || ! hasResolvedCyoIncentives ) {
 		return <AppSpinner />;
 	}
 
