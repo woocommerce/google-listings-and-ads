@@ -31,7 +31,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|OptionsInterface */
 	protected $options;
 
-	protected const ROUTE_MARKETS             = '/wc/gla/mc/markets';
+	protected const ROUTE_MARKETS              = '/wc/gla/mc/markets';
 	protected const ROUTE_LANGUAGES_CURRENCIES = '/wc/gla/mc/markets/languages-currencies';
 	protected const ROUTE_MARKET               = '/wc/gla/mc/markets/';
 
@@ -118,7 +118,14 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->options->method( 'get' )
 			->willReturnMap(
 				[
-					[ OptionsInterface::MERCHANT_CENTER, [], [ 'shipping_rate' => 'flat', 'shipping_time' => 'manual' ] ],
+					[
+						OptionsInterface::MERCHANT_CENTER,
+						[],
+						[
+							'shipping_rate' => 'flat',
+							'shipping_time' => 'manual',
+						],
+					],
 				]
 			);
 
@@ -172,7 +179,14 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->options->method( 'get' )
 			->willReturnMap(
 				[
-					[ OptionsInterface::MERCHANT_CENTER, [], [ 'shipping_rate' => 'flat', 'shipping_time' => 'flat' ] ],
+					[
+						OptionsInterface::MERCHANT_CENTER,
+						[],
+						[
+							'shipping_rate' => 'flat',
+							'shipping_time' => 'flat',
+						],
+					],
 				]
 			);
 
@@ -191,7 +205,14 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->options->method( 'get' )
 			->willReturnMap(
 				[
-					[ OptionsInterface::MERCHANT_CENTER, [], [ 'shipping_rate' => 'flat', 'shipping_time' => 'flat' ] ],
+					[
+						OptionsInterface::MERCHANT_CENTER,
+						[],
+						[
+							'shipping_rate' => 'flat',
+							'shipping_time' => 'flat',
+						],
+					],
 				]
 			);
 
@@ -199,7 +220,10 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			->method( 'update' )
 			->with(
 				OptionsInterface::MERCHANT_CENTER,
-				[ 'shipping_rate' => 'manual', 'shipping_time' => 'flat' ]
+				[
+					'shipping_rate' => 'manual',
+					'shipping_time' => 'flat',
+				]
 			);
 
 		$this->do_request(
@@ -215,7 +239,14 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->options->method( 'get' )
 			->willReturnMap(
 				[
-					[ OptionsInterface::MERCHANT_CENTER, [], [ 'shipping_rate' => 'flat', 'shipping_time' => 'manual' ] ],
+					[
+						OptionsInterface::MERCHANT_CENTER,
+						[],
+						[
+							'shipping_rate' => 'flat',
+							'shipping_time' => 'manual',
+						],
+					],
 				]
 			);
 
