@@ -1,0 +1,222 @@
+<?php
+declare( strict_types=1 );
+
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads;
+
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsIncentives;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\IncentivesController;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
+use PHPUnit\Framework\MockObject\MockObject;
+
+/**
+ * Class IncentivesControllerTest
+ *
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads
+ */
+class IncentivesControllerTest extends RESTControllerUnitTest {
+
+	/** @var MockObject|AdsIncentives $ads */
+	protected $ads;
+
+	/** @var MockObject|WC $wc */
+	protected $wc;
+
+	/** @var IncentivesController $controller */
+	protected $controller;
+
+	protected const ROUTE_INCENTIVES = '/wc/gla/ads/incentives';
+
+	protected const EMPTY_RESPONSE = [
+		'type'                  => 'CYO_INCENTIVE',
+		'termsAndConditionsUrl' => '',
+		'incentives'            => [],
+	];
+
+	public function setUp(): void {
+		parent::setUp();
+
+		$this->ads = $this->createMock( AdsIncentives::class );
+		$this->wc  = $this->createMock( WC::class );
+
+		$this->wc->method( 'get_base_country' )->willReturn( 'GB' );
+
+		$this->controller = new IncentivesController( $this->server, $this->ads, $this->wc );
+		$this->controller->register();
+	}
+
+	public function test_get_incentives_success() {
+		$incentives = [
+			'type'                  => 'CYO_INCENTIVE',
+			'termsAndConditionsUrl' => 'https://ads.google.com/intl/en_uk/home/terms-and-conditions/incentives/?bc=UK',
+			'incentives'            => [
+				[
+					'id'                    => '2378556534',
+					'type'                  => 'ACQUISITION',
+					'offer'                 => 'low',
+					'termsAndConditionsUrl' => 'https://ads.google.com/intl/en_uk/home/terms-and-conditions/incentives/?bc=UK&bid=nickel',
+					'requirement'           => [
+						'spend' => [
+							'awardAmount'    => [
+								'currencyCode' => 'GBP',
+								'units'        => '800',
+							],
+							'requiredAmount' => [
+								'currencyCode' => 'GBP',
+								'units'        => '1250',
+							],
+						],
+					],
+				],
+				[
+					'id'                    => '1995402192',
+					'type'                  => 'ACQUISITION',
+					'offer'                 => 'medium',
+					'termsAndConditionsUrl' => 'https://ads.google.com/intl/en_uk/home/terms-and-conditions/incentives/?bc=UK&bid=sodium',
+					'requirement'           => [
+						'spend' => [
+							'awardAmount'    => [
+								'currencyCode' => 'GBP',
+								'units'        => '1600',
+							],
+							'requiredAmount' => [
+								'currencyCode' => 'GBP',
+								'units'        => '3200',
+							],
+						],
+					],
+				],
+				[
+					'id'                    => '7056154833',
+					'type'                  => 'ACQUISITION',
+					'offer'                 => 'high',
+					'termsAndConditionsUrl' => 'https://ads.google.com/intl/en_uk/home/terms-and-conditions/incentives/?bc=UK&bid=technetium',
+					'requirement'           => [
+						'spend' => [
+							'awardAmount'    => [
+								'currencyCode' => 'GBP',
+								'units'        => '2500',
+							],
+							'requiredAmount' => [
+								'currencyCode' => 'GBP',
+								'units'        => '5000',
+							],
+						],
+					],
+				],
+			],
+		];
+
+		$this->ads->expects( $this->once() )
+			->method( 'fetch_incentives' )
+			->with( 'GB', $this->isType( 'string' ) )
+			->willReturn( $incentives );
+
+		$response = $this->do_request( self::ROUTE_INCENTIVES, 'GET' );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertSame( $incentives, $response->get_data() );
+	}
+
+	public function test_get_incentives_success_usd() {
+		$incentives = [
+			'type'                  => 'CYO_INCENTIVE',
+			'termsAndConditionsUrl' => 'https://ads.google.com/intl/en_us/home/terms-and-conditions/incentives/?bc=US',
+			'incentives'            => [
+				[
+					'id'                    => '1234567890',
+					'type'                  => 'ACQUISITION',
+					'offer'                 => 'low',
+					'termsAndConditionsUrl' => 'https://ads.google.com/intl/en_us/home/terms-and-conditions/incentives/?bc=US&bid=low',
+					'requirement'           => [
+						'spend' => [
+							'awardAmount'    => [
+								'currencyCode' => 'USD',
+								'units'        => '500',
+							],
+							'requiredAmount' => [
+								'currencyCode' => 'USD',
+								'units'        => '500',
+							],
+						],
+					],
+				],
+				[
+					'id'                    => '2345678901',
+					'type'                  => 'ACQUISITION',
+					'offer'                 => 'medium',
+					'termsAndConditionsUrl' => 'https://ads.google.com/intl/en_us/home/terms-and-conditions/incentives/?bc=US&bid=medium',
+					'requirement'           => [
+						'spend' => [
+							'awardAmount'    => [
+								'currencyCode' => 'USD',
+								'units'        => '1000',
+							],
+							'requiredAmount' => [
+								'currencyCode' => 'USD',
+								'units'        => '1500',
+							],
+						],
+					],
+				],
+				[
+					'id'                    => '3456789012',
+					'type'                  => 'ACQUISITION',
+					'offer'                 => 'high',
+					'termsAndConditionsUrl' => 'https://ads.google.com/intl/en_us/home/terms-and-conditions/incentives/?bc=US&bid=high',
+					'requirement'           => [
+						'spend' => [
+							'awardAmount'    => [
+								'currencyCode' => 'USD',
+								'units'        => '1500',
+							],
+							'requiredAmount' => [
+								'currencyCode' => 'USD',
+								'units'        => '3000',
+							],
+						],
+					],
+				],
+			],
+		];
+
+		$this->ads->expects( $this->once() )
+			->method( 'fetch_incentives' )
+			->with( 'GB', $this->isType( 'string' ) )
+			->willReturn( $incentives );
+
+		$response = $this->do_request( self::ROUTE_INCENTIVES, 'GET' );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertSame( $incentives, $response->get_data() );
+	}
+
+	public function test_get_incentives_empty_response() {
+		$this->ads->expects( $this->once() )
+			->method( 'fetch_incentives' )
+			->willReturn( self::EMPTY_RESPONSE );
+
+		$response = $this->do_request( self::ROUTE_INCENTIVES, 'GET' );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertSame( self::EMPTY_RESPONSE, $response->get_data() );
+	}
+
+	public function test_get_incentives_no_incentive_type() {
+		$no_incentive = [
+			'type'                  => 'NO_INCENTIVE',
+			'termsAndConditionsUrl' => '',
+			'incentives'            => [],
+		];
+
+		$this->ads->expects( $this->once() )
+			->method( 'fetch_incentives' )
+			->willReturn( $no_incentive );
+
+		$response = $this->do_request( self::ROUTE_INCENTIVES, 'GET' );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertSame( 'NO_INCENTIVE', $response->get_data()['type'] );
+		$this->assertEmpty( $response->get_data()['incentives'] );
+	}
+}
