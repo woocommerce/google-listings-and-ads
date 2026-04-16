@@ -19,13 +19,14 @@
 		}
 	}
 
-	.components-flex-item {
+	&__title {
+		font-size: $gla-font-medium;
+		line-height: $gla-line-height-small;
+	}
+
+	&__content {
 		flex: 100%;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		gap: $grid-unit-20;
-		padding: $grid-unit-50;
+		padding: $grid-unit-40;
 
 		@media (max-width: $break-small) {
 			padding: $grid-unit-30;
@@ -44,6 +45,38 @@
 		font-size: $helptext-font-size;
 		color: $gray-600;
 		line-height: $gla-line-height-smaller;
+	}
+
+	& &__notice {
+		background-color: $gla-color-blue-5;
+		border-radius: 8px;
+		border: 1px solid $gla-color-blue-30;
+		margin: 0;
+		padding: $grid-unit-15;
+
+		p {
+			margin: 0;
+		}
+	}
+
+	& &__notice-icon {
+		flex-shrink: 0;
+
+		svg {
+
+			fill: var(
+				--wp-components-color-accent,
+				var( --wp-admin-theme-color, #3858e9 )
+			);
+		}
+	}
+
+	& &__notice-title {
+		font-weight: 500;
+	}
+
+	& &__notice-terms {
+		color: $gray-900;
 	}
 
 	@media (max-width: $break-small) {
