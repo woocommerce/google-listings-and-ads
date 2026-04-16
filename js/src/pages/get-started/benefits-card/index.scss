@@ -19,13 +19,9 @@
 		}
 	}
 
-	.components-flex-item {
+	&__content {
 		flex: 100%;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		gap: $grid-unit-20;
-		padding: $grid-unit-50;
+		padding: $grid-unit-40;
 
 		@media (max-width: $break-small) {
 			padding: $grid-unit-30;
@@ -39,17 +35,15 @@
 		line-height: $gla-line-height-small;
 	}
 
-	// Use more specific rules to make it higher priority to override <Text> component.
-	& &__hint {
+	& &__notice {
+		background-color: $gla-color-green-0;
+		border: 0;
 		font-size: $helptext-font-size;
-		color: $gray-600;
-		line-height: $gla-line-height-smaller;
-	}
+		margin: 0;
+		padding: $grid-unit-20;
 
-	@media (max-width: $break-small) {
-		// Use more specific rules to make it higher priority to override <Text> component.
-		& &__title {
-			font-size: $gla-font-small-medium;
+		p {
+			margin: 0;
 		}
 	}
 }

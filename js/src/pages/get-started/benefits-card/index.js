@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody, FlexItem } from '@wordpress/components';
+import { Card, CardBody, Flex, Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -26,26 +26,45 @@ const BenefitsCard = () => {
 						height="100%"
 					/>
 				</div>
-				<FlexItem>
-					<Text
-						variant="title-medium"
-						className="gla-get-started-benefits-card__title"
+				<Flex
+					className="gla-get-started-benefits-card__content"
+					direction="column"
+					gap={ 4 }
+					justify="center"
+				>
+					<Flex direction="column" gap={ 2 }>
+						<Text
+							variant="title-small"
+							className="gla-get-started-benefits-card__title"
+						>
+							{ __(
+								'Reach your sales goals by creating a campaign',
+								'google-listings-and-ads'
+							) }
+						</Text>
+						<Text
+							variant="body"
+							className="gla-get-started-benefits-card__description"
+						>
+							{ __(
+								'Reach more customers by advertising your products across Google Ads channels like Search, YouTube and Discover.',
+								'google-listings-and-ads'
+							) }
+						</Text>
+					</Flex>
+					<Notice
+						className="gla-get-started-benefits-card__notice"
+						status="success"
+						isDismissible={ false }
 					>
-						{ __(
-							'Reach your sales goals by creating a campaign',
-							'google-listings-and-ads'
-						) }
-					</Text>
-					<Text
-						variant="body"
-						className="gla-get-started-benefits-card__description"
-					>
-						{ __(
-							'Reach more customers by advertising your products across Google Ads channels like Search, YouTube and Discover. Set up your campaign now so your products are included as soon as they’re approved.',
-							'google-listings-and-ads'
-						) }
-					</Text>
-				</FlexItem>
+						<p>
+							{ __(
+								'Choose your offer and get up to $1500 in Ads credits. New advertiser? Choose between three offers, based on your monthly budget, to jumpstart your first campaign!',
+								'google-listings-and-ads'
+							) }
+						</p>
+					</Notice>
+				</Flex>
 			</CardBody>
 		</Card>
 	);
