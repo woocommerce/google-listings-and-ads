@@ -33,10 +33,7 @@ const BenefitsCard = () => {
 					justify="center"
 				>
 					<Flex direction="column" gap={ 2 }>
-						<Text
-							variant="title-small"
-							className="gla-get-started-benefits-card__title"
-						>
+						<Text variant="title-small">
 							{ __(
 								'Reach your sales goals by creating a campaign',
 								'google-listings-and-ads'
