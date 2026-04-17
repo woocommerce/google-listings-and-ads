@@ -17,20 +17,6 @@ jest.mock( '~/components/adaptive-form', () => ( {
 } ) );
 jest.mock( '~/hooks/useCYOIncentives' );
 jest.mock( '~/hooks/useAdsCurrency' );
-jest.mock( '~/components/app-button', () => {
-	return function MockAppButton( { onClick, loading, children } ) {
-		return (
-			<button onClick={ onClick } aria-busy={ loading }>
-				{ children }
-			</button>
-		);
-	};
-} );
-jest.mock( '~/components/app-documentation-link', () => {
-	return function MockAppDocumentationLink( { children, href } ) {
-		return <a href={ href }>{ children }</a>;
-	};
-} );
 
 const formatAmountMock = jest.fn();
 useAdsCurrency.mockReturnValue( { formatAmount: formatAmountMock } );
@@ -307,7 +293,7 @@ describe( 'CyoIncentivePicker Component', () => {
 			expect( onRetry ).toHaveBeenCalledWith( 456 );
 		} );
 
-		it( 'should show the retry button in a loading state when incentiveResult.loading is true', () => {
+		it( 'should disable the retry button in a loading state when incentiveResult.loading is true', () => {
 			renderComponent( {
 				incentiveResult: {
 					error: { message: 'API error' },
@@ -316,7 +302,7 @@ describe( 'CyoIncentivePicker Component', () => {
 			} );
 
 			const retryButton = screen.getByText( 'Try again' );
-			expect( retryButton ).toHaveAttribute( 'aria-busy', 'true' );
+			expect( retryButton ).toHaveAttribute( 'disabled' );
 		} );
 
 		it( 'should render the "Apply in Google Ads" link in the error notice', () => {
