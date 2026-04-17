@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { noop } from 'lodash';
 import { __, sprintf } from '@wordpress/i18n';
 import { RadioControl, Notice, Flex, FlexItem } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
@@ -26,7 +27,7 @@ import './cyo-incentive-picker.scss';
  * @param {Function} props.onRetry Callback to retry applying the incentive.
  * @return {JSX.Element|null} The rendered component, or null if the incentives are still being resolved or if there are no incentives available.
  */
-const CyoIncentivePicker = ( { context, incentiveResult, onRetry } ) => {
+const CyoIncentivePicker = ( { context, incentiveResult, onRetry = noop } ) => {
 	const { getInputProps } = useAdaptiveFormContext();
 	const { data: incentives, hasFinishedResolution } = useCYOIncentives();
 	const { formatAmount } = useAdsCurrency();

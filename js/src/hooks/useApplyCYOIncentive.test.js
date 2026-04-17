@@ -52,7 +52,45 @@ describe( 'useApplyCYOIncentive', () => {
 		expect( result.current.result ).toBe( mockResult );
 	} );
 
-	describe( 'handleApplyIncentive', () => {
+	describe( 'applyIncentive', () => {
+		beforeEach( () => {
+			useGoogleAdsAccountBillingStatus.mockReturnValue( {
+				billingStatus: {
+					status: GOOGLE_ADS_BILLING_STATUS.APPROVED,
+				},
+			} );
+		} );
+
+		it( 'delegates to redeemIncentive when there is no prior error', async () => {
+			useApiFetchCallback.mockReturnValue( [
+				fetchApplyIncentive,
+				{ error: null },
+			] );
+			const { result } = renderHook( () => useApplyCYOIncentive() );
+
+			await result.current.applyIncentive( 'incentive-123' );
+
+			expect( fetchApplyIncentive ).toHaveBeenCalledWith( {
+				data: { id: 'incentive-123' },
+			} );
+		} );
+
+		it( 'returns true without fetching when there is a prior error', async () => {
+			useApiFetchCallback.mockReturnValue( [
+				fetchApplyIncentive,
+				{ error: new Error( 'prior error' ) },
+			] );
+			const { result } = renderHook( () => useApplyCYOIncentive() );
+
+			const returnValue =
+				await result.current.applyIncentive( 'incentive-123' );
+
+			expect( returnValue ).toBe( true );
+			expect( fetchApplyIncentive ).not.toHaveBeenCalled();
+		} );
+	} );
+
+	describe( 'redeemIncentive', () => {
 		describe( 'when it should skip applying the incentive', () => {
 			it( 'returns true without fetching when incentiveId is falsy', async () => {
 				useGoogleAdsAccountBillingStatus.mockReturnValue( {
@@ -63,7 +101,7 @@ describe( 'useApplyCYOIncentive', () => {
 
 				const { result } = renderHook( () => useApplyCYOIncentive() );
 				const returnValue =
-					await result.current.handleApplyIncentive( undefined );
+					await result.current.redeemIncentive( undefined );
 
 				expect( returnValue ).toBe( true );
 				expect( fetchApplyIncentive ).not.toHaveBeenCalled();
@@ -76,7 +114,7 @@ describe( 'useApplyCYOIncentive', () => {
 
 				const { result } = renderHook( () => useApplyCYOIncentive() );
 				const returnValue =
-					await result.current.handleApplyIncentive(
+					await result.current.redeemIncentive(
 						'incentive-123'
 					);
 
@@ -91,7 +129,7 @@ describe( 'useApplyCYOIncentive', () => {
 
 				const { result } = renderHook( () => useApplyCYOIncentive() );
 				const returnValue =
-					await result.current.handleApplyIncentive(
+					await result.current.redeemIncentive(
 						'incentive-123'
 					);
 
@@ -112,7 +150,7 @@ describe( 'useApplyCYOIncentive', () => {
 			it( 'calls fetchApplyIncentive with the incentive id', async () => {
 				const { result } = renderHook( () => useApplyCYOIncentive() );
 
-				await result.current.handleApplyIncentive( 'incentive-123' );
+				await result.current.redeemIncentive( 'incentive-123' );
 
 				expect( fetchApplyIncentive ).toHaveBeenCalledWith( {
 					data: { id: 'incentive-123' },
@@ -126,16 +164,16 @@ describe( 'useApplyCYOIncentive', () => {
 				const { result } = renderHook( () => useApplyCYOIncentive() );
 
 				await expect(
-					result.current.handleApplyIncentive( 'incentive-123' )
+					result.current.redeemIncentive( 'incentive-123' )
 				).rejects.toThrow( 'API error' );
 			} );
 
 			it( 'does not call fetchApplyIncentive again after successful application', async () => {
 				const { result } = renderHook( () => useApplyCYOIncentive() );
 
-				await result.current.handleApplyIncentive( 'incentive-123' );
+				await result.current.redeemIncentive( 'incentive-123' );
 				const returnValue =
-					await result.current.handleApplyIncentive(
+					await result.current.redeemIncentive(
 						'incentive-123'
 					);
 
@@ -152,10 +190,10 @@ describe( 'useApplyCYOIncentive', () => {
 				const { result } = renderHook( () => useApplyCYOIncentive() );
 
 				await expect(
-					result.current.handleApplyIncentive( 'incentive-123' )
+					result.current.redeemIncentive( 'incentive-123' )
 				).rejects.toThrow( 'API error' );
 
-				await result.current.handleApplyIncentive( 'incentive-123' );
+				await result.current.redeemIncentive( 'incentive-123' );
 
 				expect( fetchApplyIncentive ).toHaveBeenCalledTimes( 2 );
 			} );

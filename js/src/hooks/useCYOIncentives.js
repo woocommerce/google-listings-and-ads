@@ -11,6 +11,7 @@ import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import useGoogleAdsAccountBillingStatus from './useGoogleAdsAccountBillingStatus';
 
 const selectorName = 'getCYOIncentives';
+const PREFERRED_INCENTIVE_TIER = 'medium';
 
 /**
  * @typedef {Object} CYOIncentiveAmount
@@ -78,7 +79,8 @@ const useCYOIncentives = () => {
 				data: incentives,
 				defaultIncentiveId:
 					incentives?.find(
-						( incentive ) => incentive.offer === 'medium'
+						( incentive ) =>
+							incentive.offer === PREFERRED_INCENTIVE_TIER
 					)?.id ||
 					incentives?.[ 0 ]?.id ||
 					null,

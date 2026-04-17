@@ -104,7 +104,9 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 							} );
 						}
 					} );
-			} catch ( error ) {}
+			} catch ( error ) {
+				// Error is intentionally swallowed — incentiveResult.error drives the retry UI.
+			}
 		};
 
 		return (
