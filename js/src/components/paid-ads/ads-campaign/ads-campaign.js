@@ -62,7 +62,6 @@ export default function AdsCampaign( {
 		context === 'setup-mc' ||
 		context === 'setup-ads' ||
 		context === 'setup-ads-only';
-	const showCyoIncentivePicker = isOnboardingFlow || context === 'setup-ads';
 
 	let description = createInterpolateElement(
 		__(
@@ -110,7 +109,7 @@ export default function AdsCampaign( {
 				{ showCampaignPreviewCard && <CampaignPreviewCard /> }
 			</BudgetSection>
 
-			{ showCyoIncentivePicker && (
+			{ isOnboardingFlow && (
 				<CyoIncentivePicker
 					context={ context }
 					incentiveResult={ incentiveResult }
