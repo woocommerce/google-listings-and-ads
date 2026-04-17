@@ -30,6 +30,7 @@ import SkipButton from './skip-button';
 import clientSession from './clientSession';
 import AppSpinner from '~/components/app-spinner';
 import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
+import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
 
 /**
  * Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
@@ -53,13 +54,32 @@ export default function SetupPaidAds() {
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
-	const { defaultIncentiveId, applyIncentive } = useCYOIncentives();
+	const {
+		defaultIncentiveId,
+		hasFinishedResolution: hasResolvedCyoIncentives,
+	} = useCYOIncentives();
 	const { syncSettings } = useAppDispatch();
 	const { handleError: handleEuPoliticalDeclarationError } =
 		useEuPoliticalDeclarationContext();
+	const { handleApplyIncentive, result: incentiveResult } =
+		useApplyCYOIncentive();
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
+
+	/**
+	 * Applies the selected incentive and returns whether the application was successful. If there is an error applying the incentive, an error notice will be shown.
+	 *
+	 * @param {number} incentiveId The ID of the incentive to apply.
+	 * @return {boolean} Whether the incentive was successfully applied.
+	 */
+	const applyIncentive = async ( incentiveId ) => {
+		if ( incentiveResult.error ) {
+			return true;
+		}
+
+		return handleApplyIncentive( incentiveId );
+	};
 
 	const finishOnboardingSetup = async ( onBeforeFinish = noop ) => {
 		try {
@@ -89,24 +109,30 @@ export default function SetupPaidAds() {
 		window.location.href = adminUrl + getProductFeedUrl( query );
 	};
 
-	const handleSkipCreatePaidAds = async ( incentiveId ) => {
+	const skipCreatePaidAds = async ( incentiveId ) => {
 		setCompleting( ACTION_SKIP );
-		if ( ! ( await applyIncentive( incentiveId ) ) ) {
+
+		try {
+			await applyIncentive( incentiveId );
+		} catch ( error ) {
 			setCompleting( null );
 			return;
 		}
+
 		await finishOnboardingSetup();
 	};
 
 	const createSkipButton = ( formContext ) => {
 		const { isValidForm, values } = formContext;
 
+		const handleSkipCreatePaidAds = () => {
+			skipCreatePaidAds( values.incentiveId );
+		};
+
 		return (
 			<SkipButton
 				isValidForm={ isValidForm }
-				onSkipCreatePaidAds={ () =>
-					handleSkipCreatePaidAds( values.incentiveId )
-				}
+				onSkipCreatePaidAds={ handleSkipCreatePaidAds }
 				disabled={ completing === ACTION_COMPLETE }
 				loading={ completing === ACTION_SKIP }
 			/>
@@ -140,7 +166,7 @@ export default function SetupPaidAds() {
 		);
 	};
 
-	if ( ! countryCodes ) {
+	if ( ! countryCodes || ! hasResolvedCyoIncentives ) {
 		return <AppSpinner />;
 	}
 
@@ -154,31 +180,32 @@ export default function SetupPaidAds() {
 			hasConfirmedEuPoliticalContent,
 		} = values;
 
-		if ( ! ( await applyIncentive( incentiveId ) ) ) {
-			return;
+		try {
+			setCompleting( ACTION_COMPLETE );
+			await applyIncentive( incentiveId );
+
+			const onBeforeFinish = handleSetupComplete.bind(
+				null,
+				dailyBudget,
+				countryCodes,
+				hasConfirmedEuPoliticalContent
+			);
+
+			recordGlaEvent(
+				'gla_onboarding_complete_with_paid_ads_button_click',
+				getEventProps( {
+					level,
+					budget: dailyBudget,
+					audiences: countryCodes.join( ',' ),
+					has_confirmed_eu_political_content:
+						hasConfirmedEuPoliticalContent,
+				} )
+			);
+
+			await finishOnboardingSetup( onBeforeFinish );
+		} finally {
+			setCompleting( null );
 		}
-
-		const onBeforeFinish = handleSetupComplete.bind(
-			null,
-			dailyBudget,
-			countryCodes,
-			hasConfirmedEuPoliticalContent
-		);
-
-		setCompleting( ACTION_COMPLETE );
-
-		recordGlaEvent(
-			'gla_onboarding_complete_with_paid_ads_button_click',
-			getEventProps( {
-				level,
-				budget: dailyBudget,
-				audiences: countryCodes.join( ',' ),
-				has_confirmed_eu_political_content:
-					hasConfirmedEuPoliticalContent,
-			} )
-		);
-
-		await finishOnboardingSetup( onBeforeFinish );
 	};
 
 	return (
@@ -197,6 +224,8 @@ export default function SetupPaidAds() {
 				) }
 				continueButton={ createContinueButton }
 				skipButton={ createSkipButton }
+				incentiveResult={ incentiveResult }
+				onRetryIncentive={ handleApplyIncentive }
 				context="setup-mc"
 			/>
 			<BudgetIncentivePrompt

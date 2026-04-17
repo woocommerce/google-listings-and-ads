@@ -45,7 +45,7 @@ const SetupStepper = () => {
 		);
 	}
 
-	return <SavedSetupStepper savedStep={ STEP_NAME_KEY_MAP[ step ] } />;
+	return <SavedSetupStepper savedStep={ STEP_NAME_KEY_MAP.paid_ads } />;
 };
 
 export default SetupStepper;

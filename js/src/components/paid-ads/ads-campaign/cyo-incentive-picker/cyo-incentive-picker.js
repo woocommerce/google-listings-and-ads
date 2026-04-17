@@ -2,20 +2,31 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { RadioControl } from '@wordpress/components';
+import { RadioControl, Notice, Flex, FlexItem } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
+import AppButton from '~/components/app-button';
 import Section from '~/components/section';
 import Subsection from '~/components/subsection';
+import AppDocumentationLink from '~/components/app-documentation-link';
 import useCYOIncentives from '~/hooks/useCYOIncentives';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
 import './cyo-incentive-picker.scss';
 
-const CyoIncentivePicker = () => {
+/**
+ * Renders the component for picking a "Choose Your Own" incentive for ads campaigns, which allows merchants to select from different ads credit offers based on their expected ad spend.
+ *
+ * @param {Object}   props React props.
+ * @param {string}   props.context The context in which this component is used, e.g. 'create-ads', 'edit-ads', 'setup-ads', 'setup-mc', or 'setup-ads-only'. This is used for tracking purposes and may also be used to conditionally render content within the component.
+ * @param {Object}   props.incentiveResult The result of applying a CYO incentive. This is used to determine whether to show an error message after applying an incentive.
+ * @param {Function} props.onRetry Callback to retry applying the incentive.
+ * @return {JSX.Element|null} The rendered component, or null if the incentives are still being resolved or if there are no incentives available.
+ */
+const CyoIncentivePicker = ( { context, incentiveResult, onRetry } ) => {
 	const { getInputProps } = useAdaptiveFormContext();
 	const { data: incentives, hasFinishedResolution } = useCYOIncentives();
 	const { formatAmount } = useAdsCurrency();
@@ -28,6 +39,10 @@ const CyoIncentivePicker = () => {
 	if ( ! shouldDisplay ) {
 		return null;
 	}
+
+	const handleOnRetryClick = () => {
+		onRetry( selectedIncentiveId );
+	};
 
 	const options = [ 'low', 'medium', 'high' ].reduce( ( acc, offer ) => {
 		const item = incentives.find(
@@ -123,6 +138,48 @@ const CyoIncentivePicker = () => {
 							}
 						) }
 					</div>
+
+					{ incentiveResult?.error && (
+						<Notice status="error" isDismissible={ false }>
+							<p>
+								{ incentiveResult.error.message ||
+									__(
+										'There was an issue applying the selected offer. Please try again.',
+										'google-listings-and-ads'
+									) }
+							</p>
+
+							<Flex justify="flex-start" gap={ 2 }>
+								<FlexItem>
+									<AppButton
+										onClick={ handleOnRetryClick }
+										loading={ incentiveResult.loading }
+										eventName="gla_cyoi_apply_incentive_retry_click"
+										eventProps={ { context } }
+										isPrimary
+									>
+										{ __(
+											'Try again',
+											'google-listings-and-ads'
+										) }
+									</AppButton>
+								</FlexItem>
+
+								<FlexItem>
+									<AppDocumentationLink
+										href="https://ads.google.com/aw/overview"
+										linkId="apply-in-google-ads"
+										context={ context }
+									>
+										{ __(
+											'Apply in Google Ads',
+											'google-listings-and-ads'
+										) }
+									</AppDocumentationLink>
+								</FlexItem>
+							</Flex>
+						</Notice>
+					) }
 				</Section.Card.Body>
 			</Section.Card>
 		</Section>
