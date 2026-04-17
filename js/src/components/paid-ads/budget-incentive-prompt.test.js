@@ -26,6 +26,12 @@ jest.mock( '~/hooks/useRaiseBudgetRecommendations', () =>
 	} )
 );
 
+jest.mock( '~/hooks/useCYOIncentives', () =>
+	jest.fn().mockReturnValue( {
+		hasFinishedResolution: true,
+	} )
+);
+
 jest.mock( '~/hooks/useBudgetRecommendation', () =>
 	jest.fn().mockReturnValue( {
 		hasResolved: true,

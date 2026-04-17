@@ -7,6 +7,10 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import { STORE_KEY } from '~/data/constants';
+import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
+import useGoogleAdsAccountBillingStatus from './useGoogleAdsAccountBillingStatus';
+
+const selectorName = 'getCYOIncentives';
 
 /**
  * @typedef {Object} CYOIncentiveAmount
@@ -42,19 +46,38 @@ import { STORE_KEY } from '~/data/constants';
 
 /**
  * Custom hook to retrieve CYO incentives from the store.
+ * The incentives resolver is only triggered when billing is approved;
+ * otherwise the hook returns immediately with no data.
  *
  * @return {CYOIncentivesPayload} The CYO incentives payload.
  */
 const useCYOIncentives = () => {
-	return useSelect( ( select ) => {
-		const { getCYOIncentives, hasFinishedResolution } = select( STORE_KEY );
-		const data = getCYOIncentives();
+	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 
-		return {
-			data,
-			hasFinishedResolution: hasFinishedResolution( 'getCYOIncentives' ),
-		};
-	} );
+	return useSelect(
+		( select ) => {
+			const isBillingCompleted =
+				billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
+
+			if ( ! isBillingCompleted ) {
+				return {
+					data: null,
+					hasFinishedResolution: true,
+				};
+			}
+
+			const selector = select( STORE_KEY );
+
+			return {
+				data: selector[ selectorName ](),
+				hasFinishedResolution: selector.hasFinishedResolution(
+					selectorName,
+					[]
+				),
+			};
+		},
+		[ billingStatus ]
+	);
 };
 
 export default useCYOIncentives;
