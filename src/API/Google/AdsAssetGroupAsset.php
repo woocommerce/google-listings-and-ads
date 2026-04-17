@@ -7,13 +7,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAssetGroupAs
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Google\Ads\GoogleAds\V20\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V20\Resources\AssetGroupAsset;
+use Google\Ads\GoogleAds\V22\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V22\Resources\AssetGroupAsset;
 use Google\ApiCore\ApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
-use Google\Ads\GoogleAds\V20\Services\MutateOperation;
-use Google\Ads\GoogleAds\V20\Services\AssetGroupAssetOperation;
-use Google\Ads\GoogleAds\Util\V20\ResourceNames;
+use Google\Ads\GoogleAds\V22\Services\MutateOperation;
+use Google\Ads\GoogleAds\V22\Services\AssetGroupAssetOperation;
+use Google\Ads\GoogleAds\Util\V22\ResourceNames;
 
 
 
@@ -308,20 +308,30 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	/**
 	 * Edit assets group assets.
 	 *
-	 * @param int   $asset_group_id The asset group id.
-	 * @param array $assets The assets to create.
+	 * When brand guidelines is enabled, business name and logo must NOT be linked at asset group level
+	 * (they must be CampaignAssets only, per Google Ads API requirements). This method skips creating
+	 * AssetGroupAsset operations for brand assets and returns the created asset data so the caller can
+	 * link them at campaign level instead.
 	 *
-	 * @return array The asset group asset operations.
+	 * @param int   $asset_group_id              The asset group id.
+	 * @param array $assets                      The assets to create.
+	 * @param bool  $is_brand_guidelines_enabled Whether brand guidelines is enabled for the asset group's campaign.
+	 *
+	 * @return array{operations: MutateOperation[], assets_for_creation: array, created_asset_resource_names: array} Asset group operations and creation data for campaign-level linking.
 	 * @throws Exception If the asset type is not supported.
 	 */
-	public function edit_operations( int $asset_group_id, array $assets ): array {
+	public function edit_operations( int $asset_group_id, array $assets, bool $is_brand_guidelines_enabled ): array {
 		if ( empty( $assets ) ) {
-			return [];
+			return [
+				'operations'                   => [],
+				'assets_for_creation'          => [],
+				'created_asset_resource_names' => [],
+			];
 		}
 
 		$asset_group_assets_operations        = [];
 		$assets_for_creation                  = $this->get_assets_to_be_created( $assets );
-		$asset_arns                           = $this->asset->create_assets( $assets_for_creation );
+		$asset_resource_names                 = $this->asset->create_assets( $assets_for_creation );
 		$total_assets                         = count( $assets_for_creation );
 		$delete_asset_group_assets_operations = [];
 
@@ -333,33 +343,54 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 		// The asset mutation operation results (ARNs) are returned in the same order as the operations are specified.
 		// See: https://youtu.be/9KaVjqW5tVM?t=103
 		for ( $i = 0; $i < $total_assets; $i++ ) {
-			$asset_group_assets_operations[] = $this->create_operation( $asset_group_id, $assets_for_creation[ $i ]['field_type'], $asset_arns[ $i ] );
+			$field_type = $assets_for_creation[ $i ]['field_type'];
+
+			// When brand guidelines is enabled, do NOT add asset group asset create for business_name or logo.
+			// Google Ads API requires them as CampaignAssets only, not AssetGroupAssets.
+			if ( $is_brand_guidelines_enabled && ( 'business_name' === $field_type || 'logo' === $field_type ) ) {
+				continue;
+			}
+
+			$asset_group_assets_operations[] = $this->create_operation( $asset_group_id, $field_type, $asset_resource_names[ $i ] );
 		}
 
 		foreach ( $this->get_assets_to_be_deleted( $assets ) as $asset ) {
+			// When Brand Guidelines is enabled, skip deleting business_name/logo from asset group level.
+			// They may not exist there (original implementation didn't link them at asset group level).
+			// They're managed at campaign level via CampaignAsset links.
+			if ( $is_brand_guidelines_enabled && isset( $asset['field_type'] ) && ( 'business_name' === $asset['field_type'] || 'logo' === $asset['field_type'] ) ) {
+				continue;
+			}
 			$delete_asset_group_assets_operations[] = $this->delete_operation( $asset_group_id, $asset['field_type'], $asset['id'] );
 		}
 
 		// The delete operations must be executed first otherwise will cause a conflict with existing assets with identical content.
 		// See here: https://github.com/woocommerce/google-listings-and-ads/pull/1870
-		return array_merge( $delete_asset_group_assets_operations, $asset_group_assets_operations );
-	}
+		$operations = array_merge( $delete_asset_group_assets_operations, $asset_group_assets_operations );
 
+		// Resource names (ARNs) from AdsAsset::create_assets() mutate response; same order as assets_for_creation.
+		// Used when brand guidelines is enabled to link business name/logo at campaign level.
+		return [
+			'operations'                   => $operations,
+			'assets_for_creation'          => $assets_for_creation,
+			'created_asset_resource_names' => $asset_resource_names,
+		];
+	}
 
 	/**
 	 * Creates an operation for an asset group asset.
 	 *
 	 * @param int    $asset_group_id The ID of the asset group.
 	 * @param string $asset_field_type The field type of the asset.
-	 * @param string $asset_arn The the asset ARN.
+	 * @param string $asset_resource_name The asset resource name.
 	 *
 	 * @return MutateOperation The mutate create operation for the asset group asset.
 	 */
-	protected function create_operation( int $asset_group_id, string $asset_field_type, string $asset_arn ): MutateOperation {
+	protected function create_operation( int $asset_group_id, string $asset_field_type, string $asset_resource_name ): MutateOperation {
 		$operation             = new AssetGroupAssetOperation();
 		$new_asset_group_asset = new AssetGroupAsset(
 			[
-				'asset'       => $asset_arn,
+				'asset'       => $asset_resource_name,
 				'asset_group' => ResourceNames::forAssetGroup( $this->options->get_ads_id(), $asset_group_id ),
 				'field_type'  => AssetFieldType::number( $asset_field_type ),
 			]

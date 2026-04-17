@@ -111,6 +111,7 @@ export default class DashboardPage extends MockRequests {
 
 		await this.mockAdsRecommendations();
 		await this.fulfillAdsReportProducts( adsReportProductsData );
+		await this.mockHasNoMissingEUDeclarationCampaigns();
 	}
 
 	/**

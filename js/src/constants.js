@@ -85,6 +85,12 @@ export const GOOGLE_ADS_BILLING_STATUS = {
 	CANCELLED: 'cancelled',
 };
 
+export const YOUTUBE_ACCOUNT_STATUS = {
+	CONNECTED: 'connected',
+	DISCONNECTED: 'disconnected',
+	INCOMPLETE: 'incomplete',
+};
+
 // Attribute Mapping
 export const CATEGORY_CONDITION_SELECT_TYPES = {
 	ALL: 'ALL',
@@ -145,3 +151,11 @@ export const CAMPAIGN_BUDGET = 'CAMPAIGN_BUDGET';
 export const MARGINAL_ROI_CAMPAIGN_BUDGET = 'MARGINAL_ROI_CAMPAIGN_BUDGET';
 export const PMAX_IMPROVE_PERFORMANCE_MAX_AD_STRENGTH =
 	'IMPROVE_PERFORMANCE_MAX_AD_STRENGTH';
+
+export const GEN_AI_ASSET_TYPES = {
+	TEXT: 'text',
+	MEDIA: 'media',
+};
+
+export const EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE =
+	'eu_political_advertising_declaration_required';

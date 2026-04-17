@@ -118,6 +118,10 @@ export const getExistingGoogleAdsAccounts = ( state ) => {
 	return state.mc.accounts.existing_ads;
 };
 
+export const getYouTubeAccount = ( state ) => {
+	return state.mc.accounts.youtube;
+};
+
 /**
  * @typedef {Object} Address
  * @property {string|null} street_address Street-level part of the address. `null` when empty.
@@ -181,6 +185,16 @@ export const getAdsCampaigns = ( state, query ) => {
 	}
 
 	return state.ads_campaigns;
+};
+
+/**
+ * Get campaigns that are missing the EU political advertising declaration.
+ *
+ * @param {Object} state The current store state will be injected by `wp.data`.
+ * @return {Array<{id: number, name: string}>|null} List of campaigns missing the EU declaration, or null if not yet loaded.
+ */
+export const getAdsCampaignsMissingEuDeclaration = ( state ) => {
+	return state.ads_campaigns_missing_eu_declaration;
 };
 
 /**
@@ -527,4 +541,48 @@ export const getDetailedErrorBySlots = ( state, slots ) => {
 	return state.detailed_errors.filter( ( error ) => {
 		return slots.includes( error?.slot );
 	} );
+};
+
+/**
+ * Retrieves the GenAI media assets from the state for a given URL and type.
+ *
+ * @param {Object} state - The Redux state object containing GenAI assets data.
+ * @param {string} url - The URL associated with the GenAI assets.
+ * @param {'marketing_image'|'square_marketing_image'|'portrait_marketing_image'|undefined} [assetType] - The type of media asset to retrieve.
+ * @return {Array<string>} The media assets for the specified URL and type, or an empty array if not found.
+ */
+export const getGenAIMediaAssets = ( state, url, assetType ) => {
+	const mediaAssets = state.gen_ai_assets?.[ url ]?.media;
+
+	if ( ! url || ! mediaAssets ) {
+		return [];
+	}
+
+	if ( assetType ) {
+		return mediaAssets[ assetType ] ?? [];
+	}
+
+	return mediaAssets;
+};
+
+/**
+ * Retrieves the GenAI text assets from the state for a given URL and type.
+ *
+ * @param {Object} state - The Redux state object containing GenAI assets data.
+ * @param {string} url - The URL associated with the GenAI assets.
+ * @param {'headline'|'long_headline'|'description'|undefined} [assetType] - The type of text asset to retrieve.
+ * @return {Array<string>} The text assets for the specified URL and type, or an empty array if not found.
+ */
+export const getGenAITextAssets = ( state, url, assetType ) => {
+	const textAssets = state.gen_ai_assets?.[ url ]?.text;
+
+	if ( ! url || ! textAssets ) {
+		return [];
+	}
+
+	if ( assetType ) {
+		return textAssets[ assetType ] ?? [];
+	}
+
+	return textAssets;
 };
