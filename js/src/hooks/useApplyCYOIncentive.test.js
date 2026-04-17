@@ -114,9 +114,7 @@ describe( 'useApplyCYOIncentive', () => {
 
 				const { result } = renderHook( () => useApplyCYOIncentive() );
 				const returnValue =
-					await result.current.redeemIncentive(
-						'incentive-123'
-					);
+					await result.current.redeemIncentive( 'incentive-123' );
 
 				expect( returnValue ).toBe( true );
 				expect( fetchApplyIncentive ).not.toHaveBeenCalled();
@@ -129,9 +127,7 @@ describe( 'useApplyCYOIncentive', () => {
 
 				const { result } = renderHook( () => useApplyCYOIncentive() );
 				const returnValue =
-					await result.current.redeemIncentive(
-						'incentive-123'
-					);
+					await result.current.redeemIncentive( 'incentive-123' );
 
 				expect( returnValue ).toBe( true );
 				expect( fetchApplyIncentive ).not.toHaveBeenCalled();
@@ -173,9 +169,7 @@ describe( 'useApplyCYOIncentive', () => {
 
 				await result.current.redeemIncentive( 'incentive-123' );
 				const returnValue =
-					await result.current.redeemIncentive(
-						'incentive-123'
-					);
+					await result.current.redeemIncentive( 'incentive-123' );
 
 				expect( fetchApplyIncentive ).toHaveBeenCalledTimes( 1 );
 				expect( returnValue ).toBe( true );
