@@ -177,13 +177,27 @@ jobs:
         env:
           CHANGELOG_BLOCK: ${{ steps.generate.outputs.changelog_block }}
         run: |
-          head -1 changelog.txt > changelog.txt.new
-          echo "" >> changelog.txt.new
-          printf '%s' "$CHANGELOG_BLOCK" >> changelog.txt.new
-          echo "" >> changelog.txt.new
-          echo "" >> changelog.txt.new
-          tail -n +2 changelog.txt >> changelog.txt.new
-          mv changelog.txt.new changelog.txt
+          python3 - <<'PYEOF'
+          import os
+          import re
+          from pathlib import Path
+
+          changelog_path = Path('changelog.txt')
+          content = changelog_path.read_text()
+          lines = content.splitlines()
+
+          header = lines[0] if lines else '*** Changelog ***'
+          existing_body = '\n'.join(lines[1:]).lstrip('\n')
+          new_block = os.environ['CHANGELOG_BLOCK'].strip()
+
+          combined_body = f"{new_block}\n\n{existing_body}".strip()
+          entry_pattern = re.compile(r'^= .+? =\n.*?(?=^= .+? =\n|\Z)', re.M | re.S)
+          entries = [entry.strip() for entry in entry_pattern.findall(combined_body)]
+          kept_entries = entries[:3]
+
+          updated = f"{header}\n\n" + '\n\n'.join(kept_entries).rstrip() + '\n'
+          changelog_path.write_text(updated)
+          PYEOF
 
       - name: Insert changelog entry into readme.txt
         env:
