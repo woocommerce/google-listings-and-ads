@@ -40,6 +40,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterfac
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection as YouTubeConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -74,9 +75,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantSetupCompleted;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\SyncStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
@@ -94,6 +97,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WPAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRatesProcessor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingSuggestionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ZoneMethodsParser;
@@ -113,6 +117,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Utility\AddressUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DateTimeUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ImageUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\Writer\CsvExportWriter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\WPCLIMigrationGTIN;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -190,7 +195,10 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		MerchantAccountService::class    => true,
 		MarketingChannelRegistrar::class => true,
 		OAuthService::class              => true,
+		SyncStatus::class                => true,
 		WPCLIMigrationGTIN::class        => true,
+		OnboardingCompleted::class       => true,
+		ServiceBasedMerchantState::class => true,
 	];
 
 	/**
@@ -274,8 +282,10 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( SiteVerificationMeta::class );
 		$this->conditionally_share_with_tags( MerchantSetupCompleted::class );
 		$this->conditionally_share_with_tags( AdsSetupCompleted::class );
+		$this->share_with_tags( SyncStatus::class );
 		$this->share_with_tags( AdsAccountService::class, AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountService::class, MerchantAccountState::class );
+		$this->share_with_tags( YouTubeConnection::class );
 
 		// Inbox Notes
 		$this->share_with_tags( ContactInformationNote::class );
@@ -298,6 +308,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( ProductBlocksService::class, AssetsHandlerInterface::class, ChannelVisibilityBlock::class, AttributeManager::class, MerchantCenterService::class );
 
 		$this->share_with_tags( MerchantAccountState::class );
+		$this->share_with_tags( ServiceBasedMerchantState::class );
 		$this->share_with_tags( MerchantStatuses::class );
 		$this->share_with_tags( PriceBenchmarks::class );
 		$this->share_with_tags( PhoneVerification::class, Merchant::class, WP::class, ISOUtility::class );
@@ -378,6 +389,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			$this->share_with_tags( GLAChannel::class, MerchantCenterService::class, AdsCampaign::class, Ads::class, MerchantStatuses::class, ProductSyncStats::class );
 			$this->share_with_tags( MarketingChannelRegistrar::class, GLAChannel::class, WC::class );
 		}
+
+		$this->share_with_tags( OnboardingCompleted::class );
 
 		// ClI Classes
 		$this->conditionally_share_with_tags( WPCLIMigrationGTIN::class, ProductRepository::class, AttributeManager::class );

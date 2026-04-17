@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import classNames from 'classnames';
+import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -11,30 +11,55 @@ import useDetailedErrorBySlots from '~/hooks/useDetailedErrorBySlots';
 import warningIconUrl from '~/images/icons/warning.svg';
 import './index.scss';
 
-const DetailedError = ( { errorSlots, className } ) => {
-	const error = useDetailedErrorBySlots( errorSlots );
+/**
+ * Component to display detailed error messages based on provided error slots.
+ *
+ * This component uses the `useDetailedErrorBySlots` hook to retrieve the first
+ * error for each specified slot. It then formats and displays these errors in a
+ * user-friendly manner, including an icon, title, and description for each error.
+ *
+ * @param {Object} props - Component props.
+ * @param {Array<string>} props.errorSlots - The error slots to display errors for.
+ * @return {JSX.Element|null} The rendered component or null if no errors.
+ */
+const DetailedError = ( { errorSlots } ) => {
+	const errors = useDetailedErrorBySlots( errorSlots );
 
-	if ( ! error ) {
+	if ( ! errors || errors.length === 0 ) {
 		return null;
 	}
 
-	const { title, description } = getFormattedErrorMessage( error );
+	const formattedErrors = getFormattedErrorMessage( errors );
 
 	return (
-		<div className={ classNames( 'gla-detailed-error', className ) }>
-			<div className="gla-detailed-error__title">
-				<span>
-					<img
-						src={ warningIconUrl }
-						alt=""
-						width={ 16 }
-						height={ 16 }
-					/>
-				</span>
-				<h4>{ title }</h4>
-			</div>
-			<p className="gla-detailed-error__description">{ description }</p>
-		</div>
+		<>
+			{ formattedErrors.map( ( { title, description } ) => (
+				<div
+					key={ `${ title }-${ description }` }
+					className="gla-detailed-error"
+				>
+					<Flex align="center" wrap="nowrap" gap={ 1 }>
+						<FlexItem>
+							<img
+								src={ warningIconUrl }
+								alt=""
+								width={ 16 }
+								height={ 16 }
+								className="gla-detailed-error__icon"
+							/>
+						</FlexItem>
+						<FlexBlock>
+							<h4 className="gla-detailed-error__title">
+								{ title }
+							</h4>
+						</FlexBlock>
+					</Flex>
+					<p className="gla-detailed-error__description">
+						{ description }
+					</p>
+				</div>
+			) ) }
+		</>
 	);
 };
 

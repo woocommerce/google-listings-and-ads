@@ -7,6 +7,8 @@ import AccountCard from '~/components/account-card';
 import { RequestFullAccessGoogleAccountCard } from '~/components/google-account-card';
 import ConnectGoogleComboAccountCard from './connect-google-combo-account-card';
 import ConnectedGoogleComboAccountCard from './connected-google-combo-account-card';
+import ConnectedGoogleAdsOnlyAccountCard from './connected-google-ads-only-account-card';
+import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import './index.scss';
 
 /**
@@ -19,6 +21,7 @@ import './index.scss';
  */
 export default function GoogleComboAccountCard( { disabled = false } ) {
 	const { google, scope, hasFinishedResolution } = useGoogleAccount();
+	const serviceBasedMerchant = useServiceBasedMerchant();
 
 	if ( ! hasFinishedResolution ) {
 		return <AccountCard description={ <AppSpinner /> } />;
@@ -27,6 +30,10 @@ export default function GoogleComboAccountCard( { disabled = false } ) {
 	const isConnected = google?.active === 'yes';
 
 	if ( isConnected && scope.onboardingRequired ) {
+		if ( serviceBasedMerchant ) {
+			return <ConnectedGoogleAdsOnlyAccountCard />;
+		}
+
 		return <ConnectedGoogleComboAccountCard />;
 	}
 

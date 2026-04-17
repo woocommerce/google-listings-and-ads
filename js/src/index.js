@@ -15,6 +15,7 @@ import './css/index.scss';
 import withAdminPageShell from '~/components/withAdminPageShell';
 import './data';
 import { addBaseEventProperties } from '~/utils/tracks';
+import { glaData } from './constants';
 
 const Dashboard = lazy( () =>
 	import( /* webpackChunkName: "dashboard" */ './pages/dashboard' )
@@ -72,6 +73,7 @@ const PAGES_FILTER = 'woocommerce_admin_pages_list';
 let hasAddedPluginAdminPages = false;
 
 const registerPluginAdminPages = () => {
+	const { serviceBasedMerchant } = glaData;
 	const namespace = 'woocommerce/google-listings-and-ads/add-page-routes';
 
 	addFilter( PAGES_FILTER, namespace, ( pages ) => {
@@ -81,7 +83,7 @@ const registerPluginAdminPages = () => {
 			__( 'Google for WooCommerce', 'google-listings-and-ads' ),
 		];
 
-		const pluginAdminPages = [
+		let pluginAdminPages = [
 			{
 				breadcrumbs: [ ...initialBreadcrumbs ],
 				container: GetStartedPage,
@@ -91,7 +93,7 @@ const registerPluginAdminPages = () => {
 			{
 				breadcrumbs: [
 					...initialBreadcrumbs,
-					__( 'Setup Merchant Center', 'google-listings-and-ads' ),
+					__( 'Setup your accounts', 'google-listings-and-ads' ),
 				],
 				container: Onboarding,
 				path: '/google/setup-mc',
@@ -168,6 +170,20 @@ const registerPluginAdminPages = () => {
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
 		];
+
+		const adsOnlyRoutes = [
+			'/google/start',
+			'/google/setup-mc',
+			'/google/setup-ads',
+			'/google/dashboard',
+			'/google/settings',
+		];
+
+		if ( serviceBasedMerchant ) {
+			pluginAdminPages = pluginAdminPages.filter( ( page ) =>
+				adsOnlyRoutes.includes( page.path )
+			);
+		}
 
 		pluginAdminPages.forEach( ( page ) => {
 			page.container = withAdminPageShell( page.container );

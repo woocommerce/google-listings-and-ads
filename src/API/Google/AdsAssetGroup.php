@@ -7,24 +7,28 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAssetGroupQu
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Google\Ads\GoogleAds\Util\V20\ResourceNames;
-use Google\Ads\GoogleAds\V20\Enums\ListingGroupFilterListingSourceEnum\ListingGroupFilterListingSource;
-use Google\Ads\GoogleAds\V20\Enums\AssetGroupStatusEnum\AssetGroupStatus;
-use Google\Ads\GoogleAds\V20\Enums\ListingGroupFilterTypeEnum\ListingGroupFilterType;
-use Google\Ads\GoogleAds\V20\Resources\AssetGroup;
-use Google\Ads\GoogleAds\V20\Resources\AssetGroupListingGroupFilter;
-use Google\Ads\GoogleAds\V20\Services\AssetGroupListingGroupFilterOperation;
-use Google\Ads\GoogleAds\V20\Services\AssetGroupOperation;
-use Google\Ads\GoogleAds\V20\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V20\Services\MutateGoogleAdsRequest;
-use Google\Ads\GoogleAds\V20\Services\MutateOperation;
-use Google\Ads\GoogleAds\V20\Services\Client\AssetGroupServiceClient;
+use Google\Ads\GoogleAds\Util\V22\ResourceNames;
+use Google\Ads\GoogleAds\V22\Enums\ListingGroupFilterListingSourceEnum\ListingGroupFilterListingSource;
+use Google\Ads\GoogleAds\V22\Enums\AssetGroupStatusEnum\AssetGroupStatus;
+use Google\Ads\GoogleAds\V22\Enums\ListingGroupFilterTypeEnum\ListingGroupFilterType;
+use Google\Ads\GoogleAds\V22\Resources\AssetGroup;
+use Google\Ads\GoogleAds\V22\Resources\AssetGroupListingGroupFilter;
+use Google\Ads\GoogleAds\V22\Services\AssetGroupListingGroupFilterOperation;
+use Google\Ads\GoogleAds\V22\Services\AssetGroupOperation;
+use Google\Ads\GoogleAds\V22\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V22\Services\MutateGoogleAdsRequest;
+use Google\Ads\GoogleAds\V22\Services\MutateOperation;
+use Google\Ads\GoogleAds\V22\Services\Client\AssetGroupServiceClient;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 use Google\Protobuf\FieldMask;
 use Exception;
 use DateTime;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Google\Ads\GoogleAds\V22\Resources\AssetGroupAsset;
+use Google\Ads\GoogleAds\V22\Services\AssetGroupAssetOperation;
 
 /**
  * Class AdsAssetGroup
@@ -36,10 +40,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseD
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class AdsAssetGroup implements OptionsAwareInterface {
+class AdsAssetGroup implements OptionsAwareInterface, ContainerAwareInterface {
 
 	use ExceptionTrait;
 	use OptionsAwareTrait;
+	use ContainerAwareTrait;
 
 	/**
 	 * Temporary ID to use within a batch job.
@@ -64,6 +69,13 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	protected $asset_group_asset;
 
 	/**
+	 * The AdsCampaign class.
+	 *
+	 * @var AdsCampaign
+	 */
+	protected $campaign;
+
+	/**
 	 * List of asset group resource names.
 	 *
 	 * @var string[]
@@ -75,10 +87,12 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 *
 	 * @param GoogleAdsClient    $client
 	 * @param AdsAssetGroupAsset $asset_group_asset
+	 * @param AdsCampaign        $campaign
 	 */
-	public function __construct( GoogleAdsClient $client, AdsAssetGroupAsset $asset_group_asset ) {
+	public function __construct( GoogleAdsClient $client, AdsAssetGroupAsset $asset_group_asset, AdsCampaign $campaign ) {
 		$this->client            = $client;
 		$this->asset_group_asset = $asset_group_asset;
+		$this->campaign          = $campaign;
 	}
 
 	/**
@@ -142,6 +156,64 @@ class AdsAssetGroup implements OptionsAwareInterface {
 			$this->asset_group_create_operation( $campaign_resource_name, $asset_group_name ),
 			$this->listing_group_create_operation(),
 		];
+	}
+
+	/**
+	 * Returns a set of operations to create an asset group with assets.
+	 *
+	 * @param string $campaign_resource_name
+	 * @param string $campaign_name
+	 * @param string $final_url
+	 * @param array  $asset_group_assets
+	 * @return array
+	 */
+	public function create_operations_with_assets( string $campaign_resource_name, string $campaign_name, string $final_url, array $asset_group_assets ): array {
+		$operations = [];
+
+		$asset_group_resource_name = $this->temporary_resource_name();
+
+		// Create the asset group operation.
+		$asset_group = new AssetGroup(
+			[
+				'resource_name' => $asset_group_resource_name,
+				'name'          => $campaign_name . ' Asset Group',
+				'campaign'      => $campaign_resource_name,
+				'status'        => AssetGroupStatus::ENABLED,
+				'final_urls'    => [ $final_url ],
+			]
+		);
+
+		$operations[] = ( new MutateOperation() )->setAssetGroupOperation(
+			( new AssetGroupOperation() )->setCreate( $asset_group )
+		);
+
+		// Create assets operations.
+		$asset_ops  = $this->container->get( AdsAsset::class )->create_operations( $asset_group_assets );
+		$operations = array_merge( $operations, $asset_ops );
+
+		// Attach assets to group.
+		foreach ( $asset_ops as $i => $asset_op ) {
+			$asset_resource_name = $asset_op
+				->getAssetOperation()
+				->getCreate()
+				->getResourceName();
+
+			$operations[] = ( new MutateOperation() )->setAssetGroupAssetOperation(
+				( new AssetGroupAssetOperation() )->setCreate(
+					new AssetGroupAsset(
+						[
+							'asset_group' => $asset_group_resource_name,
+							'asset'       => $asset_resource_name,
+							'field_type'  => AssetFieldType::number(
+								$asset_group_assets[ $i ]['field_type']
+							),
+						]
+					)
+				)
+			);
+		}
+
+		return $operations;
 	}
 
 	/**
@@ -282,9 +354,54 @@ class AdsAssetGroup implements OptionsAwareInterface {
 
 		foreach ( $asset_group_ids as $asset_group_id ) {
 			$asset_groups[ $asset_group_id ]['assets'] = $assets[ $asset_group_id ] ?? (object) [];
+
+			// When Brand Guidelines is enabled, business name and logo are at campaign level; merge them for display.
+			$campaign_info = $this->get_campaign_info_by_asset_group_id( $asset_group_id );
+			if ( ! empty( $campaign_info['brand_guidelines_enabled'] ) && ! empty( $campaign_info['id'] ) ) {
+				$campaign_brand = $this->campaign->get_campaign_brand_assets_for_display( (int) $campaign_info['id'] );
+				$existing       = $asset_groups[ $asset_group_id ]['assets'];
+				$existing       = is_object( $existing ) ? (array) $existing : $existing;
+				if ( $campaign_brand['business_name'] !== null ) {
+					$existing['business_name'] = $campaign_brand['business_name'];
+				}
+				if ( ! empty( $campaign_brand['logo'] ) ) {
+					$existing['logo'] = $campaign_brand['logo'];
+				}
+				$asset_groups[ $asset_group_id ]['assets'] = $existing;
+			}
 		}
 
 		return $asset_groups;
+	}
+
+	/**
+	 * Get campaign information from asset group ID.
+	 *
+	 * @param int $asset_group_id The asset group ID.
+	 *
+	 * @return array Campaign information with 'id' and 'brand_guidelines_enabled' keys.
+	 */
+	protected function get_campaign_info_by_asset_group_id( int $asset_group_id ): array {
+		try {
+			$results = ( new AdsAssetGroupQuery() )
+				->set_client( $this->client, $this->options->get_ads_id() )
+				->add_columns( [ 'campaign.id', 'campaign.brand_guidelines_enabled' ] )
+				->where( 'asset_group.id', $asset_group_id, '=' )
+				->get_results();
+
+			foreach ( $results->iterateAllElements() as $row ) {
+				$campaign = $row->getCampaign();
+				return [
+					'id'                       => $campaign->getId(),
+					'brand_guidelines_enabled' => $campaign->getBrandGuidelinesEnabled(),
+				];
+			}
+
+			return [];
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+			return [];
+		}
 	}
 
 	/**
@@ -299,7 +416,17 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 */
 	public function edit_asset_group( int $asset_group_id, array $data, array $assets = [] ): int {
 		try {
-			$operations = $this->asset_group_asset->edit_operations( $asset_group_id, $assets );
+			$is_brand_guidelines_enabled = false;
+			// Check if Brand Guidelines is enabled for this asset group's campaign.
+			$campaign_info = $this->get_campaign_info_by_asset_group_id( $asset_group_id );
+			if ( ! empty( $campaign_info['brand_guidelines_enabled'] ) && ! empty( $campaign_info['id'] ) ) {
+				$is_brand_guidelines_enabled = true;
+			}
+
+			$edit_result                  = $this->asset_group_asset->edit_operations( $asset_group_id, $assets, $is_brand_guidelines_enabled );
+			$operations                   = $edit_result['operations'];
+			$assets_for_creation          = $edit_result['assets_for_creation'] ?? [];
+			$created_asset_resource_names = $edit_result['created_asset_resource_names'] ?? [];
 
 			// PMax only supports one final URL but it is required to be an array.
 			if ( ! empty( $data['final_url'] ) ) {
@@ -310,6 +437,16 @@ class AdsAssetGroup implements OptionsAwareInterface {
 			if ( ! empty( $data ) ) {
 				// If the asset group does not contain a final URL, it is required to update first the asset group with the final URL and then the assets.
 				$operations = [ $this->edit_operation( $asset_group_id, $data ), ...$operations ];
+			}
+
+			if ( ! empty( $campaign_info['brand_guidelines_enabled'] ) && ! empty( $campaign_info['id'] ) ) {
+				$brand_operations = $this->campaign->get_brand_asset_link_operations(
+					$campaign_info['id'],
+					$assets,
+					$assets_for_creation,
+					$created_asset_resource_names
+				);
+				$operations       = array_merge( $brand_operations, $operations );
 			}
 
 			if ( ! empty( $operations ) ) {

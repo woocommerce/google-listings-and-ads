@@ -26,28 +26,28 @@ const actions = {
 		slot,
 		error,
 	} ),
-	clearDetailedErrorBySlot: ( slot ) => ( {
+	clearDetailedErrorBySlots: ( slots ) => ( {
 		type: TYPES.CLEAR_DETAILED_ERROR_BY_SLOT,
-		slot,
+		slots,
 	} ),
 };
 
 registerStore( STORE_KEY, { reducer, selectors, actions } );
 
 describe( 'useDetailedErrorBySlots', () => {
-	it( 'returns null when errorSlots is empty array', () => {
+	it( 'returns empty array when errorSlots is empty array', () => {
 		const { result } = renderHook( () => useDetailedErrorBySlots( [] ) );
-		expect( result.current ).toBeNull();
+		expect( result.current ).toEqual( [] );
 	} );
 
-	it( 'returns null when no matching errors in store', () => {
+	it( 'returns empty array when no matching errors in store', () => {
 		const { result } = renderHook( () =>
 			useDetailedErrorBySlots( [ 'slot_a' ] )
 		);
-		expect( result.current ).toBeNull();
+		expect( result.current ).toEqual( [] );
 	} );
 
-	it( 'returns first matching error when multiple slots provided', () => {
+	it( 'returns first error per slot when multiple slots provided', () => {
 		dispatch( STORE_KEY ).receiveDetailedError(
 			'slot_b',
 			createError( 'slot_b' )
@@ -59,7 +59,16 @@ describe( 'useDetailedErrorBySlots', () => {
 		const { result } = renderHook( () =>
 			useDetailedErrorBySlots( [ 'slot_a', 'slot_b' ] )
 		);
-		expect( result.current ).toMatchObject( {
+		expect( result.current ).toHaveLength( 2 );
+		expect( result.current[ 0 ] ).toMatchObject( {
+			slot: 'slot_a',
+			error: {
+				code: 'code_slot_a',
+				message: 'Error for slot_a',
+				slot: 'slot_a',
+			},
+		} );
+		expect( result.current[ 1 ] ).toMatchObject( {
 			slot: 'slot_b',
 			error: {
 				code: 'code_slot_b',
@@ -78,16 +87,18 @@ describe( 'useDetailedErrorBySlots', () => {
 			( props ) => useDetailedErrorBySlots( props ),
 			{ initialProps: [ 'slot_a' ] }
 		);
-		expect( result.current ).toMatchObject( { slot: 'slot_a' } );
+		expect( result.current ).toHaveLength( 1 );
+		expect( result.current[ 0 ] ).toMatchObject( { slot: 'slot_a' } );
 		dispatch( STORE_KEY ).receiveDetailedError(
 			'slot_b',
 			createError( 'slot_b' )
 		);
 		rerender( [ 'slot_b' ] );
-		expect( result.current ).toMatchObject( { slot: 'slot_b' } );
+		expect( result.current ).toHaveLength( 1 );
+		expect( result.current[ 0 ] ).toMatchObject( { slot: 'slot_b' } );
 	} );
 
-	it( 'returns null after clearing error for provided slot', () => {
+	it( 'returns empty array after clearing error for provided slot', () => {
 		const errorSpy = jest
 			.spyOn( console, 'error' )
 			.mockImplementation( () => {} );
@@ -98,10 +109,10 @@ describe( 'useDetailedErrorBySlots', () => {
 		const { result, rerender } = renderHook( () =>
 			useDetailedErrorBySlots( [ 'slot_a' ] )
 		);
-		expect( result.current ).not.toBeNull();
-		dispatch( STORE_KEY ).clearDetailedErrorBySlot( 'slot_a' );
+		expect( result.current ).toHaveLength( 1 );
+		dispatch( STORE_KEY ).clearDetailedErrorBySlots( [ 'slot_a' ] );
 		rerender();
-		expect( result.current ).toBeNull();
+		expect( result.current ).toEqual( [] );
 		errorSpy.mockRestore();
 	} );
 } );

@@ -178,4 +178,148 @@ test.describe( 'Settings', () => {
 			} );
 		} );
 	} );
+
+	test.describe( 'YouTube Shopping', () => {
+		test.describe( 'when account is not connected', () => {
+			test( 'should show connect button when account is not connected', async () => {
+				await settingsPage.mockYouTubeAccountNotConnected();
+				await settingsPage.goto();
+
+				await expect(
+					settingsPage.getYouTubeConnectButton()
+				).toBeVisible();
+
+				await page.unroute( /\/wc\/gla\/youtube\/connection\b/ );
+			} );
+		} );
+
+		test.describe( 'when account is connected', () => {
+			test.beforeAll( async () => {
+				await settingsPage.mockYouTubeAccountConnected();
+				await settingsPage.goto();
+			} );
+
+			test.afterAll( async () => {
+				await page.unroute( /\/wc\/gla\/youtube\/connection\b/ );
+			} );
+
+			test( 'should show the channel name and disconnect button when account is connected', async () => {
+				await expect(
+					settingsPage.youTubeCard.getByText( 'My YouTube Channel' )
+				).toBeVisible();
+				await expect(
+					settingsPage.getYouTubeDisconnectButton()
+				).toBeVisible();
+			} );
+
+			test( 'should disconnect YouTube account and show Connect button', async () => {
+				await settingsPage.mockYouTubeAccountNotConnected();
+				await settingsPage.mockYouTubeDisconnect();
+
+				const requestPromise =
+					settingsPage.registerYouTubeDisconnectRequest();
+
+				await settingsPage.getYouTubeDisconnectButton().click();
+
+				await requestPromise;
+
+				await expect(
+					settingsPage.getYouTubeConnectButton()
+				).toBeVisible();
+			} );
+		} );
+
+		test.describe( 'when account setup is incomplete', () => {
+			test.beforeAll( async () => {
+				await settingsPage.mockYouTubeAccountConnected();
+				await settingsPage.mockYouTubeAccountIncomplete();
+				await settingsPage.goto();
+			} );
+
+			test.afterAll( async () => {
+				await page.unroute( /\/wc\/gla\/youtube\/setup\/complete\b/ );
+				await page.unroute( /\/wc\/gla\/youtube\/connection\b/ );
+			} );
+
+			test( 'should show a notice if the YouTube account is incomplete', async () => {
+				await expect(
+					settingsPage.youTubeCard.getByText(
+						'Your YouTube account is connected, but setup isn’t complete yet.'
+					)
+				).toBeVisible();
+			} );
+
+			test( 'should display error message when "Complete setup" fails', async () => {
+				await settingsPage.mockNotEligibleYouTubeChannel();
+
+				const requestPromise =
+					settingsPage.registerYouTubeCompleteSetupRequest();
+
+				await settingsPage.getYouTubeCompleteSetupButton().click();
+
+				await requestPromise;
+
+				await expect(
+					settingsPage.youTubeCard.getByText(
+						'The channel is not eligible for the linking program.'
+					)
+				).toBeVisible();
+			} );
+
+			test( 'should complete YouTube account setup successfully', async () => {
+				await settingsPage.mockEligibleYouTubeChannel();
+				// Reload so the page starts from the clean incomplete state.
+				await settingsPage.goto();
+
+				const requestPromise =
+					settingsPage.registerYouTubeCompleteSetupRequest();
+
+				await settingsPage.getYouTubeCompleteSetupButton().click();
+
+				await requestPromise;
+
+				await settingsPage.mockYouTubeAccountConnected();
+				await settingsPage.goto();
+
+				await expect(
+					settingsPage.youTubeCard.getByText( 'My YouTube Channel' )
+				).toBeVisible();
+			} );
+		} );
+	} );
+
+	test.describe( 'No connected Google Merchant Center account', () => {
+		test.beforeAll( async () => {
+			await settingsPage.mockJetpackConnected();
+			await settingsPage.mockGoogleConnected();
+			await settingsPage.mockAdsAccountConnected();
+			await settingsPage.mockMCNotConnected();
+			await settingsPage.goto();
+		} );
+
+		test( 'should not show Google Merchant Center account card', async () => {
+			// There should not be a `gla-account-card` with text 'Google Merchant Center'.
+			const gmcCard = page.locator(
+				'.gla-account-card:has-text("Google Merchant Center")'
+			);
+			await expect( gmcCard ).not.toBeVisible();
+		} );
+
+		test( 'should not show the tax rate setup section', async () => {
+			await expect(
+				page.getByText( 'Tax rate (required for U.S. only)' )
+			).not.toBeVisible();
+		} );
+
+		test( 'should not show the YouTube Shopping section', async () => {
+			// Wait for a stable element that's always present on a loaded page
+			await page
+				.getByRole( 'button', { name: 'Disconnect from all accounts' } )
+				.waitFor();
+
+			await expect(
+				page.getByText( 'YouTube Shopping' )
+			).not.toBeVisible();
+		} );
+	} );
 } );

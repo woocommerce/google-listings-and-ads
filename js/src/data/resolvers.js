@@ -46,6 +46,7 @@ import {
 	receiveGoogleMCContactInformation,
 	fetchTargetAudience,
 	fetchMCSetup,
+	fetchYouTubeAccount,
 	receiveGoogleAccountAccess,
 	receiveReport,
 	receiveMCProductStatistics,
@@ -226,6 +227,27 @@ getAdsCampaigns.shouldInvalidate = ( action, query ) => {
 		query?.exclude_removed === false
 	);
 };
+
+export function* getAdsCampaignsMissingEuDeclaration() {
+	try {
+		const campaigns = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/campaigns/missing-eu-political-declaration`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ADS_CAMPAIGNS_MISSING_EU_DECLARATION,
+			campaigns,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading campaigns missing EU political declaration.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
 
 export function* getCampaignAssetGroups( campaignId ) {
 	const endpoint = `${ API_NAMESPACE }/ads/campaigns/asset-groups`;
@@ -773,3 +795,14 @@ export function* getAdsRecommendations( types, campaign_id = null ) {
 		);
 	}
 }
+
+export function* getYouTubeAccount() {
+	yield fetchYouTubeAccount();
+}
+
+getYouTubeAccount.shouldInvalidate = ( action ) => {
+	return (
+		action.type === TYPES.DISCONNECT_ACCOUNTS_YOUTUBE &&
+		action.invalidateRelatedState
+	);
+};

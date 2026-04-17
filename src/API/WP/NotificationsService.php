@@ -312,7 +312,7 @@ class NotificationsService implements Service, OptionsAwareInterface {
 	 */
 	public function get_default_sync_mode(): array {
 		$default_mode = [
-			'pull' => true,
+			'pull' => false,
 			'push' => true,
 		];
 

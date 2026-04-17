@@ -5,7 +5,7 @@ Requires at least: 6.6
 Tested up to: 6.9
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.5.1
+Stable tag: 3.6.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -140,34 +140,27 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
-= 3.5.1 - 2025-12-10 =
-* Add - EU political content confirmation checkbox for EU-based advertisers.
-* Fix - Button misaligned after navigating between tabs.
-* Fix - Correct the product edit URL to properly handle product variations in the Price Benchmark modal.
-* Fix - Fill missing intervals in products chart.
-* Fix - Prevent “Free Listings” from being automatically added after unselecting all campaigns in the comparison filter.
-* Fix - Setup enhanced conversion data when gtag is added by the Google Analytics extension.
-* Tweak - Make it possible to complete the onboarding flow using a site URL with paths.
-* Tweak - WC 10.4 compatibility.
-* Tweak - WP 6.9 compatibility.
-* Update - Modify `wc/gla/tours` API endpoint to retrieve all tours at once.
+= 3.6.1 - 2026-03-31 =
+* Add - EU political ads declaration modal for compliance with Google's political advertising requirements.
+* Dev - Refactor YouTube card E2E tests.
+* Fix - Cache GAQL query for highest spend campaign.
+* Fix - Remove legacy conversion event.
 
-= 3.5.0 - 2025-11-04 =
-* Add - Additional options to the skip paid ads survey.
-* Add - Recommendation for improving conversions by raising budgets.
-* Fix - Alignment issue on Reports page.
-* Fix - Error when syncing bundled products.
-* Fix - MC connection stuck in loading state when connection is interrupted.
-* Fix - Prevent floating point precision errors when converting to micro units by rounding before casting to integer.
-* Fix - Remove ads account status check from `ads/recommendations` endpoint.
-* Tweak - WC 10.3 compatibility.
+= 3.6.0 - 2026-03-16 =
+* Add - Generative AI for assets.
+* Add - YouTube shopping support.
+* Fix – Rename the logo svg file.
+* Fix - Update Google Ads API to v22.
+* Fix - Duplicated values in the report comparison filters.
+* Fix - Conversion events use product variation ID in purchase events.
+* Fix - Resolved fatal error in Channel Visibility when creating coupons.
+* Fix - Show user error message when Brand Guidelines are enabled.
+* Update - Update Google Ads API to v22.
 
-= 3.4.3 - 2025-09-16 =
-* Dev - Update NPM packages with security issues.
-* Dev - Update NPM packages with security issues.
-* Fix - Improve focus handling in `TreeSelectControl`.
-* Fix - Use `isGoogleAdsReady` property instead of `hasGoogleAdsConnection` to check for a connected Ads account.
-* Tweak - WC 10.2 compatibility.
-* Update - Incorporate API changes for EU political advertising.
+= 3.5.3 - 2026-03-03 =
+* Add - Support for service based merchants.
+* Dev - Added two new filters to the Jetpack and Google OAuth flows.
+* Fix – CSS lint error in raise-budget-recommendation-banner.
+* Update - Disable API Pull mode for all users.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

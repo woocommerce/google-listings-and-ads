@@ -1,0 +1,29 @@
+.gen-ai-progress {
+	--wp-components-color-foreground: #3858e9;
+	text-align: center;
+	padding: $grid-unit-80 0;
+
+	.gen-ai-progress__bar {
+		height: $grid-unit-05;
+		width: 100%;
+	}
+
+	.gen-ai-progress__text-content {
+		margin: $grid-unit-40 auto $grid-unit-20;
+		max-width: 520px;
+
+		h2 {
+			font-size: $gla-font-small-medium;
+			margin: 0 0 $grid-unit-20;
+		}
+
+		p {
+			margin: $grid-unit-20 0 0;
+		}
+	}
+
+	.gen-ai-progress__actions {
+		margin-block-start: $grid-unit-10;
+		min-height: $gla-size-control-height;
+	}
+}

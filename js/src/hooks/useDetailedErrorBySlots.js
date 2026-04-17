@@ -11,23 +11,34 @@ import { STORE_KEY } from '~/data/constants';
 const selectorName = 'getDetailedErrorBySlots';
 
 /**
- * Custom hook to get error details by slots.
- * It returns the first matching detailed error object for the provided slots.
+ * Custom hook to get the first error per slot.
+ *
+ * For the provided list of slots, it returns an array where each element is the
+ * first error belonging to that slot (0th index for the slot). If a slot has
+ * no error, it is omitted from the returned array.
  *
  * @param {Array<string>} slots - The error slots to check.
- * @return {Object|null} The detailed error object or null if none found.
+ * @return {Array<Object>} Array of first errors per slot. Empty if none.
  */
 const useDetailedErrorBySlots = ( slots ) => {
 	return useSelect(
 		( select ) => {
+			// Guard against undefined or non-array inputs.
+			const safeSlots = Array.isArray( slots ) ? slots : [];
 			const selector = select( STORE_KEY );
-			const errors = selector[ selectorName ]( slots );
+			const allErrors = selector[ selectorName ]( safeSlots ) || [];
 
-			if ( ! errors || errors.length === 0 ) {
-				return null;
-			}
+			const firstErrorsPerSlot = safeSlots.reduce( ( acc, slot ) => {
+				const firstForSlot = allErrors.find(
+					( err ) => err && err.slot === slot
+				);
+				if ( firstForSlot ) {
+					acc.push( firstForSlot );
+				}
+				return acc;
+			}, [] );
 
-			return errors[ 0 ];
+			return firstErrorsPerSlot;
 		},
 		[ slots ]
 	);

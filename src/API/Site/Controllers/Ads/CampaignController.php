@@ -4,11 +4,13 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -68,6 +70,17 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 		);
 
 		$this->register_route(
+			'ads/campaigns/missing-eu-political-declaration',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_campaigns_missing_eu_declaration_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
+
+		$this->register_route(
 			'ads/campaigns/(?P<id>[\d]+)',
 			[
 				[
@@ -89,6 +102,25 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
+	}
+
+	/**
+	 * Get the callback function for listing campaigns missing EU political declaration.
+	 *
+	 * @return callable
+	 */
+	protected function get_campaigns_missing_eu_declaration_callback(): callable {
+		return function () {
+			try {
+				$campaigns    = $this->ads_campaign->get_campaigns_missing_eu_political_declaration();
+				$campaign_ids = array_column( $campaigns, 'id' );
+				$data         = $this->ads_campaign->get_campaigns_by_ids( $campaign_ids );
+
+				return array_values( $data );
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
 	}
 
 	/**
@@ -164,7 +196,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 
 				return $this->prepare_item_for_response( $campaign, $request );
 			} catch ( Exception $e ) {
-				return $this->response_from_exception( $e );
+				return $this->create_response_from_exception( $e );
 			}
 		};
 	}
@@ -244,7 +276,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 					'id'      => $campaign_id,
 				];
 			} catch ( Exception $e ) {
-				return $this->response_from_exception( $e );
+				return $this->create_response_from_exception( $e );
 			}
 		};
 	}
@@ -282,6 +314,30 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				return $this->response_from_exception( $e );
 			}
 		};
+	}
+
+	/**
+	 * Create a response from exception with a specific check for the EU political declaration error.
+	 *
+	 * @param Exception $e
+	 * @return Response
+	 */
+	protected function create_response_from_exception( Exception $e ): Response {
+		if ( $e instanceof ExceptionWithResponseData ) {
+			$data = $e->get_response_data();
+
+			if ( isset( $data['errors']['EU_POLITICAL_ADVERTISING_DECLARATION_MISSING'] ) ) {
+				return new Response(
+					[
+						'code'    => 'eu_political_advertising_declaration_required',
+						'message' => 'EU Political advertising declaration is required.',
+					],
+					400
+				);
+			}
+		}
+
+		return $this->response_from_exception( $e );
 	}
 
 	/**
@@ -410,6 +466,85 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => false,
 				'default'           => false,
+			],
+			'final_url'                             => [
+				'type'        => 'string',
+				'description' => __( 'Final URL', 'google-listings-and-ads' ),
+				'context'     => [ 'edit' ],
+				'required'    => false,
+			],
+			'assets'                                => [
+				'type'        => 'array',
+				'description' => __( 'Asset is a part of an ad which can be shared across multiple ads. It can be an image, headlines, descriptions, etc.', 'google-listings-and-ads' ),
+				'context'     => [ 'edit' ],
+				'required'    => false,
+				'items'       => [
+					'type'       => 'object',
+					'properties' => [
+						AssetFieldType::SQUARE_MARKETING_IMAGE   => $this->get_schema_field_type_asset(),
+						AssetFieldType::MARKETING_IMAGE          => $this->get_schema_field_type_asset(),
+						AssetFieldType::PORTRAIT_MARKETING_IMAGE => $this->get_schema_field_type_asset(),
+						AssetFieldType::LOGO                     => $this->get_schema_field_type_asset(),
+						AssetFieldType::BUSINESS_NAME            => $this->get_schema_field_type_asset(),
+						AssetFieldType::HEADLINE                 => $this->get_schema_field_type_asset(),
+						AssetFieldType::DESCRIPTION              => $this->get_schema_field_type_asset(),
+						AssetFieldType::LONG_HEADLINE            => $this->get_schema_field_type_asset(),
+						AssetFieldType::CALL_TO_ACTION_SELECTION => $this->get_schema_field_type_asset(),
+						AssetFieldType::YOUTUBE_VIDEO            => $this->get_schema_field_type_asset(),
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * Get the item schema for the field type asset.
+	 *
+	 * @return array the field type asset schema.
+	 */
+	protected function get_schema_field_type_asset(): array {
+		return [
+			'type'     => 'array',
+			'items'    => $this->get_schema_asset(),
+			'required' => false,
+		];
+	}
+
+	/**
+	 * Get the item schema for the asset.
+	 *
+	 * @return array
+	 */
+	protected function get_schema_asset() {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'id'         => [
+					'type'        => [ 'integer', 'null' ],
+					'description' => __( 'Asset ID', 'google-listings-and-ads' ),
+				],
+				'content'    => [
+					'type'        => [ 'string', 'null' ],
+					'description' => __( 'Asset content', 'google-listings-and-ads' ),
+				],
+				'field_type' => [
+					'type'        => 'string',
+					'description' => __( 'Asset field type', 'google-listings-and-ads' ),
+					'required'    => true,
+					'context'     => [ 'edit' ],
+					'enum'        => [
+						AssetFieldType::HEADLINE,
+						AssetFieldType::LONG_HEADLINE,
+						AssetFieldType::DESCRIPTION,
+						AssetFieldType::BUSINESS_NAME,
+						AssetFieldType::MARKETING_IMAGE,
+						AssetFieldType::SQUARE_MARKETING_IMAGE,
+						AssetFieldType::LOGO,
+						AssetFieldType::CALL_TO_ACTION_SELECTION,
+						AssetFieldType::PORTRAIT_MARKETING_IMAGE,
+						AssetFieldType::YOUTUBE_VIDEO,
+					],
+				],
 			],
 		];
 	}
