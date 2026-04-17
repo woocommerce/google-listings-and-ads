@@ -53,6 +53,7 @@ const CyoIncentivePicker = ( { context, incentiveResult, onRetry } ) => {
 			acc.push( {
 				id: item.id,
 				spendAmount: item.requirement.spend.requiredAmount.units,
+				awardAmount: item.requirement.spend.awardAmount.units,
 				radioProps: {
 					...restInputProps,
 					checked: selectedIncentiveId === item.id,
@@ -96,6 +97,7 @@ const CyoIncentivePicker = ( { context, incentiveResult, onRetry } ) => {
 							( {
 								id,
 								spendAmount,
+								awardAmount,
 								radioProps: {
 									selected,
 									value,
@@ -104,6 +106,8 @@ const CyoIncentivePicker = ( { context, incentiveResult, onRetry } ) => {
 							} ) => {
 								const formattedSpendAmount =
 									formatAmount( spendAmount );
+								const formattedRewardAmount =
+									formatAmount( awardAmount );
 								const label = createInterpolateElement(
 									sprintf(
 										/* translators: %s: amount in users' currency */
@@ -111,7 +115,7 @@ const CyoIncentivePicker = ( { context, incentiveResult, onRetry } ) => {
 											'Get <strong>%s</strong>',
 											'google-listings-and-ads'
 										),
-										formattedSpendAmount
+										formattedRewardAmount
 									),
 									{
 										strong: <strong />,

@@ -1,8 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
-import { useCallback } from '@wordpress/element';
+import { useCallback, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -18,9 +17,14 @@ const useApplyCYOIncentive = () => {
 		path: `${ API_NAMESPACE }/ads/incentive`,
 		method: 'POST',
 	} );
+	const appliedRef = useRef( false );
 
 	const handleApplyIncentive = useCallback(
 		async ( incentiveId ) => {
+			if ( appliedRef.current ) {
+				return true;
+			}
+
 			const isBillingCompleted =
 				billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
@@ -29,6 +33,8 @@ const useApplyCYOIncentive = () => {
 			}
 
 			await fetchApplyIncentive( { data: { id: incentiveId } } );
+			appliedRef.current = true;
+			return true;
 		},
 		[ billingStatus, fetchApplyIncentive ]
 	);

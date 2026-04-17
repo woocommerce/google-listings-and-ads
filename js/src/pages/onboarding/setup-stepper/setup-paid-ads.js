@@ -75,6 +75,7 @@ export default function SetupPaidAds() {
 	 */
 	const applyIncentive = async ( incentiveId ) => {
 		if ( incentiveResult.error ) {
+			// Proceed with onboarding since merchant can retry and proceed without the incentive.
 			return true;
 		}
 
@@ -181,8 +182,8 @@ export default function SetupPaidAds() {
 		} = values;
 
 		try {
-			setCompleting( ACTION_COMPLETE );
 			await applyIncentive( incentiveId );
+			setCompleting( ACTION_COMPLETE );
 
 			const onBeforeFinish = handleSetupComplete.bind(
 				null,
@@ -203,7 +204,7 @@ export default function SetupPaidAds() {
 			);
 
 			await finishOnboardingSetup( onBeforeFinish );
-		} finally {
+		} catch ( error ) {
 			setCompleting( null );
 		}
 	};

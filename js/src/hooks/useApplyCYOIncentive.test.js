@@ -129,6 +129,36 @@ describe( 'useApplyCYOIncentive', () => {
 					result.current.handleApplyIncentive( 'incentive-123' )
 				).rejects.toThrow( 'API error' );
 			} );
+
+			it( 'does not call fetchApplyIncentive again after successful application', async () => {
+				const { result } = renderHook( () => useApplyCYOIncentive() );
+
+				await result.current.handleApplyIncentive( 'incentive-123' );
+				const returnValue =
+					await result.current.handleApplyIncentive(
+						'incentive-123'
+					);
+
+				expect( fetchApplyIncentive ).toHaveBeenCalledTimes( 1 );
+				expect( returnValue ).toBe( true );
+			} );
+
+			it( 'allows retry after a failed application', async () => {
+				const error = new Error( 'API error' );
+				fetchApplyIncentive
+					.mockRejectedValueOnce( error )
+					.mockResolvedValueOnce( {} );
+
+				const { result } = renderHook( () => useApplyCYOIncentive() );
+
+				await expect(
+					result.current.handleApplyIncentive( 'incentive-123' )
+				).rejects.toThrow( 'API error' );
+
+				await result.current.handleApplyIncentive( 'incentive-123' );
+
+				expect( fetchApplyIncentive ).toHaveBeenCalledTimes( 2 );
+			} );
 		} );
 	} );
 } );

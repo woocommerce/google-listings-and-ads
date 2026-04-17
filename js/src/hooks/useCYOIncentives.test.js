@@ -26,10 +26,10 @@ const MOCKED_INCENTIVES = [
 					currencyCode: 'USD',
 					units: '1800',
 				},
-			},
-			requiredAmount: {
-				currencyCode: 'USD',
-				units: '4000',
+				requiredAmount: {
+					currencyCode: 'USD',
+					units: '4000',
+				},
 			},
 		},
 	},
@@ -44,10 +44,10 @@ const MOCKED_INCENTIVES = [
 					currencyCode: 'USD',
 					units: '1200',
 				},
-			},
-			requiredAmount: {
-				currencyCode: 'USD',
-				units: '1800',
+				requiredAmount: {
+					currencyCode: 'USD',
+					units: '1800',
+				},
 			},
 		},
 	},
@@ -62,10 +62,10 @@ const MOCKED_INCENTIVES = [
 					currencyCode: 'USD',
 					units: '600',
 				},
-			},
-			requiredAmount: {
-				currencyCode: 'USD',
-				units: '1200',
+				requiredAmount: {
+					currencyCode: 'USD',
+					units: '1200',
+				},
 			},
 		},
 	},
