@@ -72,8 +72,10 @@ const useCYOIncentives = () => {
 
 			const selector = select( STORE_KEY );
 			const incentives = selector[ selectorName ]();
-			const hasResolvedIncentives =
-				selector.hasFinishedResolution( selectorName );
+			const hasResolvedIncentives = selector.hasFinishedResolution(
+				selectorName,
+				[]
+			);
 
 			return {
 				data: incentives,

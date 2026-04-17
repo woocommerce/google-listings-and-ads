@@ -83,6 +83,7 @@ describe( 'useCYOIncentives', () => {
 	it( 'returns resolved empty state without calling the incentives selector when billing is not approved', () => {
 		useGoogleAdsAccountBillingStatus.mockReturnValue( {
 			billingStatus: { status: 'pending' },
+			hasFinishedResolution: true,
 		} );
 
 		const getCYOIncentives = jest.fn();
@@ -97,7 +98,7 @@ describe( 'useCYOIncentives', () => {
 
 		expect( select ).not.toHaveBeenCalledWith( STORE_KEY );
 		expect( getCYOIncentives ).not.toHaveBeenCalled();
-		expect( result.current ).toMatchObject( {
+		expect( result.current ).toEqual( {
 			data: null,
 			defaultIncentiveId: null,
 			hasFinishedResolution: true,
@@ -134,9 +135,10 @@ describe( 'useCYOIncentives', () => {
 		} );
 	} );
 
-	it( 'returns resolved empty state when billing status is not yet loaded', () => {
+	it( 'returns unresolved empty state when billing status is not yet loaded', () => {
 		useGoogleAdsAccountBillingStatus.mockReturnValue( {
 			billingStatus: undefined,
+			hasFinishedResolution: false,
 		} );
 
 		const getCYOIncentives = jest.fn();
@@ -153,7 +155,7 @@ describe( 'useCYOIncentives', () => {
 		expect( getCYOIncentives ).not.toHaveBeenCalled();
 		expect( result.current ).toEqual( {
 			data: null,
-			hasFinishedResolution: true,
+			hasFinishedResolution: false,
 			defaultIncentiveId: null,
 		} );
 	} );
