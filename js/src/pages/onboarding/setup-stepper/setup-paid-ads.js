@@ -54,33 +54,21 @@ export default function SetupPaidAds() {
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
+	const { syncSettings } = useAppDispatch();
+	const { handleError: handleEuPoliticalDeclarationError } =
+		useEuPoliticalDeclarationContext();
+	const {
+		applyIncentive,
+		redeemIncentive,
+		result: incentiveResult,
+	} = useApplyCYOIncentive();
 	const {
 		defaultIncentiveId,
 		hasFinishedResolution: hasResolvedCyoIncentives,
 	} = useCYOIncentives();
-	const { syncSettings } = useAppDispatch();
-	const { handleError: handleEuPoliticalDeclarationError } =
-		useEuPoliticalDeclarationContext();
-	const { handleApplyIncentive, result: incentiveResult } =
-		useApplyCYOIncentive();
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
-
-	/**
-	 * Applies the selected incentive and returns whether the application was successful. If there is an error applying the incentive, an error notice will be shown.
-	 *
-	 * @param {number} incentiveId The ID of the incentive to apply.
-	 * @return {boolean} Whether the incentive was successfully applied.
-	 */
-	const applyIncentive = async ( incentiveId ) => {
-		if ( incentiveResult.error ) {
-			// Proceed with onboarding since merchant can retry and proceed without the incentive.
-			return true;
-		}
-
-		return handleApplyIncentive( incentiveId );
-	};
 
 	const finishOnboardingSetup = async ( onBeforeFinish = noop ) => {
 		try {
@@ -142,7 +130,10 @@ export default function SetupPaidAds() {
 
 	const createContinueButton = ( formContext ) => {
 		const { isValidForm, values } = formContext;
-		const disabled = completing === ACTION_SKIP || ! isValidForm;
+		const disabled =
+			completing === ACTION_SKIP ||
+			! isValidForm ||
+			incentiveResult.loading;
 
 		const handleClick = () => {
 			budgetPromptRef.current
@@ -226,7 +217,7 @@ export default function SetupPaidAds() {
 				continueButton={ createContinueButton }
 				skipButton={ createSkipButton }
 				incentiveResult={ incentiveResult }
-				onRetryIncentive={ handleApplyIncentive }
+				onRetryIncentive={ redeemIncentive }
 				context="setup-mc"
 			/>
 			<BudgetIncentivePrompt

@@ -19,7 +19,12 @@ const useApplyCYOIncentive = () => {
 	} );
 	const appliedRef = useRef( false );
 
-	const handleApplyIncentive = useCallback(
+	/**
+	 * Makes the API request to redeem the incentive. Skips silently if already
+	 * redeemed, no incentive ID is provided, or billing is not yet approved.
+	 * Use this for explicit retry attempts where a fresh API call is always intended.
+	 */
+	const redeemIncentive = useCallback(
 		async ( incentiveId ) => {
 			if ( appliedRef.current ) {
 				return true;
@@ -39,7 +44,24 @@ const useApplyCYOIncentive = () => {
 		[ billingStatus, fetchApplyIncentive ]
 	);
 
-	return { handleApplyIncentive, result };
+	/**
+	 * Wraps `redeemIncentive` for use in the normal onboarding flow (skip/continue).
+	 * If a previous redemption attempt errored, proceeds without retrying so the
+	 * merchant is not blocked — they can retry via the dedicated retry action.
+	 */
+	const applyIncentive = useCallback(
+		async ( incentiveId ) => {
+			if ( result.error ) {
+				// Proceed with onboarding since merchant can retry and proceed without the incentive.
+				return true;
+			}
+
+			return redeemIncentive( incentiveId );
+		},
+		[ result.error, redeemIncentive ]
+	);
+
+	return { applyIncentive, redeemIncentive, result };
 };
 
 export default useApplyCYOIncentive;

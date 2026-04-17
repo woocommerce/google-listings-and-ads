@@ -8,13 +8,14 @@ import { useState, useRef } from '@wordpress/element';
  * Internal dependencies
  */
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
-import useCYOIncentives from '~/hooks/useCYOIncentives';
 import AdsCampaign from '~/components/paid-ads/ads-campaign';
 import BudgetIncentivePrompt from '~/components/paid-ads/budget-incentive-prompt';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import AppButton from '~/components/app-button';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
+import useCYOIncentives from '~/hooks/useCYOIncentives';
+import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
 import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import { ACTION_CONTINUE, ACTION_SKIP } from '../constants';
 import { FILTER_BUDGET_RECOMMENDATIONS, recordGlaEvent } from '~/utils/tracks';
@@ -34,7 +35,15 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
-	const { defaultIncentiveId, applyIncentive } = useCYOIncentives();
+	const {
+		applyIncentive,
+		redeemIncentive,
+		result: incentiveResult,
+	} = useApplyCYOIncentive();
+	const {
+		defaultIncentiveId,
+		hasFinishedResolution: hasResolvedCyoIncentives,
+	} = useCYOIncentives();
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
@@ -42,9 +51,12 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
-	const handleSkipCreatePaidAds = async ( incentiveId ) => {
+	const skipCreatePaidAds = async ( incentiveId ) => {
 		setCompleting( ACTION_SKIP );
-		if ( ! ( await applyIncentive( incentiveId ) ) ) {
+
+		try {
+			await applyIncentive( incentiveId );
+		} catch ( error ) {
 			setCompleting( null );
 			return;
 		}
@@ -54,12 +66,14 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const createSkipButton = ( formContext ) => {
 		const { isValidForm, values } = formContext;
 
+		const handleSkipCreatePaidAds = () => {
+			skipCreatePaidAds( values.incentiveId );
+		};
+
 		return (
 			<SkipButton
 				isValidForm={ isValidForm }
-				onSkipCreatePaidAds={ () =>
-					handleSkipCreatePaidAds( values.incentiveId )
-				}
+				onSkipCreatePaidAds={ handleSkipCreatePaidAds }
 				disabled={ completing === ACTION_CONTINUE }
 				loading={ completing === ACTION_SKIP }
 			/>
@@ -69,18 +83,28 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const createContinueButton = ( formContext ) => {
 		const { isValidForm, values } = formContext;
 		const disabled =
-			completing === ACTION_SKIP || ! isValidForm || ! isBillingCompleted;
+			completing === ACTION_SKIP ||
+			! isValidForm ||
+			! isBillingCompleted ||
+			incentiveResult.loading;
 
-		const handleClick = () => {
-			budgetPromptRef.current
-				.resolve( values.dailyBudget )
-				.then( ( amount ) => {
-					if ( amount === null ) {
-						formContext.handleSubmit();
-					} else if ( Number.isFinite( amount ) ) {
-						formContext.setValues( { level: 'custom', amount } );
-					}
-				} );
+		const handleClick = async () => {
+			try {
+				await applyIncentive( values.incentiveId );
+
+				budgetPromptRef.current
+					.resolve( values.dailyBudget )
+					.then( ( amount ) => {
+						if ( amount === null ) {
+							formContext.handleSubmit();
+						} else if ( Number.isFinite( amount ) ) {
+							formContext.setValues( {
+								level: 'custom',
+								amount,
+							} );
+						}
+					} );
+			} catch ( error ) {}
 		};
 
 		return (
@@ -88,7 +112,9 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 				isPrimary
 				disabled={ disabled }
 				onClick={ handleClick }
-				loading={ completing === ACTION_CONTINUE }
+				loading={
+					completing === ACTION_CONTINUE || incentiveResult.loading
+				}
 				text={ __( 'Continue', 'google-listings-and-ads' ) }
 			/>
 		);
@@ -98,21 +124,12 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 		...clientSession.getCampaign(),
 	};
 
-	if ( ! countryCodes ) {
+	if ( ! countryCodes || ! hasResolvedCyoIncentives ) {
 		return <AppSpinner />;
 	}
 
 	const handleSubmit = async ( values ) => {
-		const {
-			level,
-			dailyBudget,
-			incentiveId,
-			hasConfirmedEuPoliticalContent,
-		} = values;
-
-		if ( ! ( await applyIncentive( incentiveId ) ) ) {
-			return;
-		}
+		const { level, dailyBudget, hasConfirmedEuPoliticalContent } = values;
 
 		setCompleting( ACTION_CONTINUE );
 
@@ -147,6 +164,8 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 				) }
 				continueButton={ createContinueButton }
 				skipButton={ createSkipButton }
+				incentiveResult={ incentiveResult }
+				onRetryIncentive={ redeemIncentive }
 				context="setup-ads-only"
 			/>
 			<BudgetIncentivePrompt
