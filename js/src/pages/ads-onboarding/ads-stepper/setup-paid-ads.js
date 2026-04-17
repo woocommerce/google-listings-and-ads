@@ -16,7 +16,6 @@ import useAdminUrl from '~/hooks/useAdminUrl';
 import useNavigateAwayPromptEffect from '~/hooks/useNavigateAwayPromptEffect';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useAdsSetupCompleteCallback from '~/hooks/useAdsSetupCompleteCallback';
-import useCYOIncentives from '~/hooks/useCYOIncentives';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
@@ -53,10 +52,6 @@ const SetupPaidAds = () => {
 	const [ handleSetupComplete, isSubmitting ] = useAdsSetupCompleteCallback();
 	const adminUrl = useAdminUrl();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
-	const {
-		defaultIncentiveId,
-		applyIncentive,
-	} = useCYOIncentives();
 	const { handleError: handleEuPoliticalDeclarationError } =
 		useEuPoliticalDeclarationContext();
 	const getEventProps = useEventPropertiesFilter(
@@ -90,17 +85,8 @@ const SetupPaidAds = () => {
 		);
 	};
 
-	const handleSubmit = async ( values ) => {
-		const {
-			level,
-			dailyBudget,
-			incentiveId,
-			hasConfirmedEuPoliticalContent,
-		} = values;
-
-		if ( ! ( await applyIncentive( incentiveId ) ) ) {
-			return;
-		}
+	const handleSubmit = ( values ) => {
+		const { level, dailyBudget, hasConfirmedEuPoliticalContent } = values;
 
 		recordGlaEvent(
 			'gla_launch_paid_campaign_button_click',
@@ -136,7 +122,6 @@ const SetupPaidAds = () => {
 
 	return (
 		<CampaignAssetsForm
-			initialCampaign={ { incentiveId: defaultIncentiveId } }
 			countryCodes={ countryCodes }
 			onSubmit={ handleSubmit }
 		>
