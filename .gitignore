@@ -12,6 +12,9 @@ coverage
 tests/php-coverage
 .phpunit.result.cache
 tests/e2e/test-results
+my-tests/playwright-report/
+my-tests/results/
+my-tests/test-results/
 
 # Directories/files that may appear in your environment
 .wp-env.override.json

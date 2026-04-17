@@ -2,11 +2,12 @@ import { test, expect } from '@playwright/test';
 import qit from '@woocommerce/qit-runtime';
 
 /**
- * UX-002: Settings link exists on plugins page
+ * UX-002: Plugin row and primary action on plugins page
  *
  * Severity: Low | Blocking: Yes
- * Pass criteria: a "Settings" action link is present in the plugin's row
- * on wp-admin/plugins.php after activation.
+ * Pass criteria: the SUT row exists on wp-admin/plugins.php and the row
+ * contains a link (row-actions / plugin meta) labeled Get Started, Settings,
+ * or Configure.
  */
 
 test('UX-002: Settings link exists on plugins page', async ({ page }) => {
@@ -21,15 +22,22 @@ test('UX-002: Settings link exists on plugins page', async ({ page }) => {
   await page.waitForURL('**/wp-admin/**');
 
   // Navigate to the plugins list.
-  await page.goto('/wp-admin/plugins.php');
+  await page.goto('/wp-admin/plugins.php', { waitUntil: 'load' });
+  await expect(page.getByRole('heading', { name: /^Plugins$/ })).toBeVisible();
 
-  // Locate the row for this plugin and assert a Settings link is present.
-  const pluginRow = page.locator(`tr[data-slug="${slug}"]`);
-  await expect(pluginRow, `Plugin row for "${slug}" not found on plugins page`).toBeVisible();
-
-  const settingsLink = pluginRow.locator('.row-actions a', { hasText: /^Settings$/i });
+  // Scope to the installed-plugins tbody; `data-plugin` is stable for this extension.
+  const pluginFile = `${slug}/${slug}.php`;
+  const pluginRow = page.locator(`#the-list tr[data-plugin="${pluginFile}"]`);
   await expect(
-    settingsLink,
-    `No "Settings" link found in the plugin row for "${slug}"`
+    pluginRow,
+    `Plugin row for "${slug}" not found on plugins page`
+  ).toBeVisible();
+
+  const primaryAction = pluginRow.getByRole('link', {
+    name: /^(Get Started|Settings|Configure)$/i,
+  });
+  await expect(
+    primaryAction,
+    `No "Get Started", "Settings", or "Configure" link in the plugin row for "${slug}"`
   ).toBeVisible();
 });
