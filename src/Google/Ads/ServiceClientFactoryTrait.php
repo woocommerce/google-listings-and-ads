@@ -23,6 +23,7 @@ use Google\Ads\GoogleAds\V23\Services\Client\AssetGenerationServiceClient;
 use Google\Ads\GoogleAds\V23\Services\Client\AssetGroupListingGroupFilterServiceClient;
 use Google\Ads\GoogleAds\V23\Services\Client\AssetGroupServiceClient;
 use Google\Ads\GoogleAds\V23\Services\Client\BillingSetupServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\IncentiveServiceClient;
 use Google\Ads\GoogleAds\V23\Services\Client\CampaignBudgetServiceClient;
 use Google\Ads\GoogleAds\V23\Services\Client\CampaignCriterionServiceClient;
 use Google\Ads\GoogleAds\V23\Services\Client\CampaignServiceClient;
@@ -195,6 +196,13 @@ trait ServiceClientFactoryTrait {
 	 */
 	public function getGoogleAdsServiceClient(): GoogleAdsServiceClient {
 		return new GoogleAdsServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return IncentiveServiceClient
+	 */
+	public function getIncentiveServiceClient(): IncentiveServiceClient {
+		return new IncentiveServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
