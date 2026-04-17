@@ -12,7 +12,6 @@ import useAdminUrl from '~/hooks/useAdminUrl';
 import useAdsSetupCompleteCallback from '~/hooks/useAdsSetupCompleteCallback';
 import useCYOIncentives from '~/hooks/useCYOIncentives';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
-import useApplyIncentive from '~/hooks/useApplyIncentive';
 import AdsCampaign from '~/components/paid-ads/ads-campaign';
 import BudgetIncentivePrompt from '~/components/paid-ads/budget-incentive-prompt';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
@@ -54,20 +53,13 @@ export default function SetupPaidAds() {
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
-	const { data: incentives, hasFinishedResolution } = useCYOIncentives();
+	const { defaultIncentiveId, applyIncentive } = useCYOIncentives();
 	const { syncSettings } = useAppDispatch();
-	const applyIncentive = useApplyIncentive();
 	const { handleError: handleEuPoliticalDeclarationError } =
 		useEuPoliticalDeclarationContext();
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
-
-	const defaultIncentiveId =
-		hasFinishedResolution && incentives?.length > 0
-			? incentives.find( ( incentive ) => incentive.offer === 'medium' )
-					?.id || incentives[ 0 ].id
-			: null;
 
 	const finishOnboardingSetup = async ( onBeforeFinish = noop ) => {
 		try {

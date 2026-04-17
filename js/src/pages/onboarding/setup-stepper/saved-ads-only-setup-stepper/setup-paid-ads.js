@@ -8,7 +8,7 @@ import { useState, useRef } from '@wordpress/element';
  * Internal dependencies
  */
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
-import useApplyIncentive from '~/hooks/useApplyIncentive';
+import useCYOIncentives from '~/hooks/useCYOIncentives';
 import AdsCampaign from '~/components/paid-ads/ads-campaign';
 import BudgetIncentivePrompt from '~/components/paid-ads/budget-incentive-prompt';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
@@ -34,7 +34,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
-	const applyIncentive = useApplyIncentive();
+	const { defaultIncentiveId, applyIncentive } = useCYOIncentives();
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
@@ -133,7 +133,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 
 	return (
 		<CampaignAssetsForm
-			initialCampaign={ paidAds }
+			initialCampaign={ { incentiveId: defaultIncentiveId, ...paidAds } }
 			countryCodes={ countryCodes }
 			onChange={ ( _, values ) => {
 				clientSession.setCampaign( values );

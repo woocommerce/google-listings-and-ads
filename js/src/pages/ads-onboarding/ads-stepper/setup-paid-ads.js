@@ -17,7 +17,6 @@ import useNavigateAwayPromptEffect from '~/hooks/useNavigateAwayPromptEffect';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useAdsSetupCompleteCallback from '~/hooks/useAdsSetupCompleteCallback';
 import useCYOIncentives from '~/hooks/useCYOIncentives';
-import useApplyIncentive from '~/hooks/useApplyIncentive';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
@@ -54,19 +53,15 @@ const SetupPaidAds = () => {
 	const [ handleSetupComplete, isSubmitting ] = useAdsSetupCompleteCallback();
 	const adminUrl = useAdminUrl();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
-	const { data: incentives, hasFinishedResolution } = useCYOIncentives();
-	const applyIncentive = useApplyIncentive();
+	const {
+		defaultIncentiveId,
+		applyIncentive,
+	} = useCYOIncentives();
 	const { handleError: handleEuPoliticalDeclarationError } =
 		useEuPoliticalDeclarationContext();
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
-
-	const defaultIncentiveId =
-		hasFinishedResolution && incentives?.length > 0
-			? incentives.find( ( incentive ) => incentive.offer === 'medium' )
-					?.id || incentives[ 0 ].id
-			: null;
 
 	const renderSubmitButton = ( formContext ) => {
 		const handleClick = () => {

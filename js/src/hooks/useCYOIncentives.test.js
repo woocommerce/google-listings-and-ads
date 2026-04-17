@@ -15,6 +15,10 @@ jest.mock( '@wordpress/data', () => ( {
 	useSelect: jest.fn(),
 } ) );
 
+jest.mock( '~/hooks/useDispatchCoreNotices', () =>
+	jest.fn( () => ( { createNotice: jest.fn() } ) )
+);
+
 describe( 'useCYOIncentives', () => {
 	const incentives = [
 		{
@@ -94,9 +98,11 @@ describe( 'useCYOIncentives', () => {
 
 		expect( select ).toHaveBeenCalledWith( STORE_KEY );
 		expect( getCYOIncentives ).not.toHaveBeenCalled();
-		expect( result.current ).toEqual( {
+		expect( result.current ).toMatchObject( {
 			data: null,
 			hasFinishedResolution: true,
+			defaultIncentiveId: null,
+			applyIncentive: expect.any( Function ),
 		} );
 	} );
 
@@ -122,9 +128,11 @@ describe( 'useCYOIncentives', () => {
 			'getCYOIncentives'
 		);
 
-		expect( result.current ).toEqual( {
+		expect( result.current ).toMatchObject( {
 			data: incentives,
 			hasFinishedResolution: true,
+			defaultIncentiveId: 456,
+			applyIncentive: expect.any( Function ),
 		} );
 	} );
 } );
