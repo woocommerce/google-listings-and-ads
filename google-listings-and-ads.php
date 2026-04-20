@@ -82,6 +82,11 @@ register_deactivation_hook(
 	__FILE__,
 	function () {
 		PluginFactory::instance()->deactivate();
+
+		// Unschedule all pending ActionScheduler jobs for this plugin.
+		if ( function_exists( 'as_unschedule_all_actions' ) ) {
+			as_unschedule_all_actions( null, null, 'gla' );
+		}
 	}
 );
 
