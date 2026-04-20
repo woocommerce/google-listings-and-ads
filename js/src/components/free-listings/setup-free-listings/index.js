@@ -3,13 +3,13 @@
  */
 import { useRef } from '@wordpress/element';
 import { createSlotFill } from '@wordpress/components';
-import { Form } from '@woocommerce/components';
 import { pick, noop } from 'lodash';
 
 /**
  * Internal dependencies
  */
 import AppSpinner from '~/components/app-spinner';
+import useStoreCurrency from '~/hooks/useStoreCurrency';
 import AppButton from '~/components/app-button';
 import AdaptiveForm from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
@@ -91,6 +91,7 @@ const SetupFreeListings = ( {
 	submitLabel,
 } ) => {
 	const formRef = useRef();
+	const { code: currencyCode } = useStoreCurrency();
 
 	if ( ! ( targetAudience && settings && shippingRates && shippingTimes ) ) {
 		return <AppSpinner />;
@@ -106,7 +107,16 @@ const SetupFreeListings = ( {
 	const handleChange = ( change, values ) => {
 		const { setValue } = formRef.current;
 
-		if ( change.name === 'shipping_country_rates' ) {
+		if ( change.name === 'flat_shipping_rate' ) {
+			const countries = resolveFinalCountries( values );
+			const rates = countries.map( ( country ) => ( {
+				options: {},
+				country,
+				currency: currencyCode,
+				rate: change.value,
+			} ) );
+			setValue( 'shipping_country_rates', rates );
+		} else if ( change.name === 'shipping_country_rates' ) {
 			onShippingRatesChange( values.shipping_country_rates );
 
 			// If all the shipping rates are free shipping,
@@ -172,18 +182,33 @@ const SetupFreeListings = ( {
 			onTargetAudienceChange( pick( values, TARGET_AUDIENCE_FIELDS ) );
 
 			// Only keep shipping data with selected countries.
-			[ 'shipping_country_rates', 'shipping_country_times' ].forEach(
-				( field ) => {
-					const countries = resolveFinalCountries( values );
-					const currentValues = values[ field ];
-					const nextValues = currentValues.filter( ( el ) =>
-						countries.includes( el.country || el.countryCode )
-					);
-					if ( nextValues.length !== currentValues.length ) {
-						setValue( field, nextValues );
-					}
-				}
+			const audienceCountries = resolveFinalCountries( values );
+
+			// For rates: filter removed countries AND add newly added countries.
+			const filteredRates = values.shipping_country_rates.filter(
+				( shippingCountryRate ) =>
+					audienceCountries.includes( shippingCountryRate.country )
 			);
+			const missingCountries = audienceCountries.filter(
+				( country ) =>
+					! filteredRates.some( ( rate ) => rate.country === country )
+			);
+			const nextRates =
+				values.flat_shipping_rate !== undefined &&
+				missingCountries.length > 0
+					? [
+							...filteredRates,
+							...missingCountries.map( ( country ) => ( {
+								options: {},
+								country,
+								currency: currencyCode,
+								rate: values.flat_shipping_rate,
+							} ) ),
+					  ]
+					: filteredRates;
+			if ( nextRates.length !== values.shipping_country_rates.length ) {
+				setValue( 'shipping_country_rates', nextRates );
+			}
 		}
 	};
 
@@ -219,6 +244,8 @@ const SetupFreeListings = ( {
 					// This is used in UI only, not used in API.
 					offer_free_shipping:
 						getOfferFreeShippingInitialValue( shippingRates ),
+					// Simple flat rate value for all countries (UI only, derived from shippingRates).
+					flat_shipping_rate: shippingRates?.[ 0 ]?.rate,
 					// Glue shipping rates and times together, as the Form does not support nested structures.
 					shipping_country_rates: shippingRates,
 					shipping_country_times: shippingTimes,

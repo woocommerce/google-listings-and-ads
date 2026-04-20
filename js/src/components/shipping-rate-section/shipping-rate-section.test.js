@@ -11,7 +11,10 @@ import useSettings from '~/hooks/useSettings';
 import useMCSetup from '~/hooks/useMCSetup';
 import ShippingRateSection from './shipping-rate-section';
 
-jest.mock( './flat-shipping-rates-input-cards', () => () => <></> );
+jest.mock(
+	'./estimated-shipping-rates-card/flat-estimated-shipping-rates-card',
+	() => () => <></>
+);
 
 jest.mock( '~/components/adaptive-form', () => ( {
 	useAdaptiveFormContext: jest
