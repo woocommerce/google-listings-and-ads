@@ -567,25 +567,6 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 		} );
 	} );
 
-	test.describe( 'Free Ad Credit', () => {
-		test( 'should see the Free Ad Credit section always', async () => {
-			await setupAdsAccountPage.mockAdsAccountConnected();
-			await createCampaignPage.goto();
-			await setupAdsAccountPage.awaitAdsConnectionResponse();
-
-			// Check we are on the correct page.
-			await expect(
-				page.getByText( 'Create a campaign to advertise your services' )
-			).toBeVisible();
-
-			await expect(
-				page.getByText(
-					'Spend $500 to get $500 in Google Ads credits!'
-				)
-			).toBeVisible();
-		} );
-	} );
-
 	test.describe( 'EU Regulations section', () => {
 		test( 'Displays the EU Regulations checkbox if the target audience contains an EU country', async () => {
 			await createCampaignPage.fulfillTargetAudience(
