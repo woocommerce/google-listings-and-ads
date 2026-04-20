@@ -30,6 +30,7 @@ import SkipButton from './skip-button';
 import clientSession from './clientSession';
 import AppSpinner from '~/components/app-spinner';
 import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
+import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
 
 /**
  * Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
@@ -53,10 +54,18 @@ export default function SetupPaidAds() {
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
-	const { defaultIncentiveId, applyIncentive } = useCYOIncentives();
 	const { syncSettings } = useAppDispatch();
 	const { handleError: handleEuPoliticalDeclarationError } =
 		useEuPoliticalDeclarationContext();
+	const {
+		applyIncentive,
+		redeemIncentive,
+		result: incentiveResult,
+	} = useApplyCYOIncentive();
+	const {
+		defaultIncentiveId,
+		hasFinishedResolution: hasResolvedCyoIncentives,
+	} = useCYOIncentives();
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
@@ -89,24 +98,30 @@ export default function SetupPaidAds() {
 		window.location.href = adminUrl + getProductFeedUrl( query );
 	};
 
-	const handleSkipCreatePaidAds = async ( incentiveId ) => {
+	const skipCreatePaidAds = async ( incentiveId ) => {
 		setCompleting( ACTION_SKIP );
-		if ( ! ( await applyIncentive( incentiveId ) ) ) {
+
+		try {
+			await applyIncentive( incentiveId );
+		} catch ( error ) {
 			setCompleting( null );
 			return;
 		}
+
 		await finishOnboardingSetup();
 	};
 
 	const createSkipButton = ( formContext ) => {
 		const { isValidForm, values } = formContext;
 
+		const handleSkipCreatePaidAds = () => {
+			skipCreatePaidAds( values.incentiveId );
+		};
+
 		return (
 			<SkipButton
 				isValidForm={ isValidForm }
-				onSkipCreatePaidAds={ () =>
-					handleSkipCreatePaidAds( values.incentiveId )
-				}
+				onSkipCreatePaidAds={ handleSkipCreatePaidAds }
 				disabled={ completing === ACTION_COMPLETE }
 				loading={ completing === ACTION_SKIP }
 			/>
@@ -115,7 +130,10 @@ export default function SetupPaidAds() {
 
 	const createContinueButton = ( formContext ) => {
 		const { isValidForm, values } = formContext;
-		const disabled = completing === ACTION_SKIP || ! isValidForm;
+		const disabled =
+			completing === ACTION_SKIP ||
+			! isValidForm ||
+			incentiveResult.loading;
 
 		const handleClick = () => {
 			budgetPromptRef.current
@@ -140,7 +158,7 @@ export default function SetupPaidAds() {
 		);
 	};
 
-	if ( ! countryCodes ) {
+	if ( ! countryCodes || ! hasResolvedCyoIncentives ) {
 		return <AppSpinner />;
 	}
 
@@ -154,31 +172,32 @@ export default function SetupPaidAds() {
 			hasConfirmedEuPoliticalContent,
 		} = values;
 
-		if ( ! ( await applyIncentive( incentiveId ) ) ) {
-			return;
+		try {
+			await applyIncentive( incentiveId );
+			setCompleting( ACTION_COMPLETE );
+
+			const onBeforeFinish = handleSetupComplete.bind(
+				null,
+				dailyBudget,
+				countryCodes,
+				hasConfirmedEuPoliticalContent
+			);
+
+			recordGlaEvent(
+				'gla_onboarding_complete_with_paid_ads_button_click',
+				getEventProps( {
+					level,
+					budget: dailyBudget,
+					audiences: countryCodes.join( ',' ),
+					has_confirmed_eu_political_content:
+						hasConfirmedEuPoliticalContent,
+				} )
+			);
+
+			await finishOnboardingSetup( onBeforeFinish );
+		} catch ( error ) {
+			setCompleting( null );
 		}
-
-		const onBeforeFinish = handleSetupComplete.bind(
-			null,
-			dailyBudget,
-			countryCodes,
-			hasConfirmedEuPoliticalContent
-		);
-
-		setCompleting( ACTION_COMPLETE );
-
-		recordGlaEvent(
-			'gla_onboarding_complete_with_paid_ads_button_click',
-			getEventProps( {
-				level,
-				budget: dailyBudget,
-				audiences: countryCodes.join( ',' ),
-				has_confirmed_eu_political_content:
-					hasConfirmedEuPoliticalContent,
-			} )
-		);
-
-		await finishOnboardingSetup( onBeforeFinish );
 	};
 
 	return (
@@ -197,6 +216,8 @@ export default function SetupPaidAds() {
 				) }
 				continueButton={ createContinueButton }
 				skipButton={ createSkipButton }
+				incentiveResult={ incentiveResult }
+				onRetryIncentive={ redeemIncentive }
 				context="setup-mc"
 			/>
 			<BudgetIncentivePrompt

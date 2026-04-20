@@ -1,17 +1,17 @@
 /**
  * External dependencies
  */
-import { useCallback } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
-import apiFetch from '@wordpress/api-fetch';
-import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import { STORE_KEY, API_NAMESPACE } from '~/data/constants';
+import { STORE_KEY } from '~/data/constants';
 import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
-import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import useGoogleAdsAccountBillingStatus from './useGoogleAdsAccountBillingStatus';
+
+const selectorName = 'getCYOIncentives';
+const PREFERRED_INCENTIVE_TIER = 'medium';
 
 /**
  * @typedef {Object} CYOIncentiveAmount
@@ -44,7 +44,6 @@ import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
  * @property {CYOIncentive[]|null} data The list of CYO incentives, or `null` if not yet fetched.
  * @property {boolean} hasFinishedResolution Whether the data fetching has finished.
  * @property {string|null} defaultIncentiveId The ID of the default incentive to pre-select, or `null` if not available.
- * @property {Function} applyIncentive Async function that posts an incentive ID to the API. Returns `true` on success or skip, `false` on error.
  */
 
 /**
@@ -55,68 +54,43 @@ import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
  * @return {CYOIncentivesPayload} The CYO incentives payload.
  */
 const useCYOIncentives = () => {
-	const { createNotice } = useDispatchCoreNotices();
+	const { billingStatus, hasFinishedResolution: hasResolvedBillingStatus } =
+		useGoogleAdsAccountBillingStatus();
 
-	const { data, hasFinishedResolution } = useSelect( ( select ) => {
-		const {
-			getGoogleAdsAccountBillingStatus,
-			getCYOIncentives,
-			hasFinishedResolution: hasFinished,
-		} = select( STORE_KEY );
+	return useSelect(
+		( select ) => {
+			const isBillingCompleted =
+				billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
-		const billingStatus = getGoogleAdsAccountBillingStatus();
-		const isBillingCompleted =
-			billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
+			if ( ! isBillingCompleted ) {
+				return {
+					data: null,
+					defaultIncentiveId: null,
+					hasFinishedResolution: hasResolvedBillingStatus,
+				};
+			}
 
-		if ( ! isBillingCompleted ) {
+			const selector = select( STORE_KEY );
+			const incentives = selector[ selectorName ]();
+			const hasResolvedIncentives = selector.hasFinishedResolution(
+				selectorName,
+				[]
+			);
+
 			return {
-				data: null,
-				hasFinishedResolution: true,
+				data: incentives,
+				defaultIncentiveId:
+					incentives?.find(
+						( incentive ) =>
+							incentive.offer === PREFERRED_INCENTIVE_TIER
+					)?.id ||
+					incentives?.[ 0 ]?.id ||
+					null,
+				hasFinishedResolution: hasResolvedIncentives,
 			};
-		}
-
-		const incentivesData = getCYOIncentives();
-
-		return {
-			data: incentivesData,
-			hasFinishedResolution: hasFinished( 'getCYOIncentives' ),
-		};
-	}, [] );
-
-	const defaultIncentiveId =
-		hasFinishedResolution && data?.length > 0
-			? data.find( ( incentive ) => incentive.offer === 'medium' )?.id ||
-			  data[ 0 ].id
-			: null;
-
-	const applyIncentive = useCallback(
-		async ( incentiveId ) => {
-			if ( ! incentiveId ) {
-				return true;
-			}
-
-			try {
-				await apiFetch( {
-					path: `${ API_NAMESPACE }/ads/incentive`,
-					method: 'POST',
-					data: { id: incentiveId },
-				} );
-				return true;
-			} catch ( error ) {
-				createNotice(
-					'error',
-					__(
-						'Unable to apply the selected ads credit offer.',
-						'google-listings-and-ads'
-					)
-				);
-				return false;
-			}
 		},
-		[ createNotice ]
+		[ billingStatus, hasResolvedBillingStatus ]
 	);
-
-	return { data, hasFinishedResolution, defaultIncentiveId, applyIncentive };
 };
 
 export default useCYOIncentives;
