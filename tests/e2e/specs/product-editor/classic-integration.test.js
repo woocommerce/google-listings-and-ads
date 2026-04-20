@@ -45,12 +45,12 @@ test.describe( 'Classic Product Editor integration', () => {
 		] );
 	} );
 
-	test( 'Hide Channel Visibility metabox when Merchant Center is not connected', async () => {
+	test( 'Show Channel Visibility metabox with promo when Merchant Center is not connected', async () => {
 		await api.clearOnboardedMerchant();
 		await editorUtils.gotoAddProductPage();
 
 		await expect( editorUtils.getPluginTab() ).toBeHidden();
-		await expect( editorUtils.getChannelVisibilityMetaBox() ).toBeHidden();
+		await expect( editorUtils.getChannelVisibilityMetaBox() ).toBeVisible();
 
 		// Resume the plugin to onboarded status so that the next test can carry over.
 		await api.setOnboardedMerchant();

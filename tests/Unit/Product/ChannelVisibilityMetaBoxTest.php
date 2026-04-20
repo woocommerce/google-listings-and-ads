@@ -4,14 +4,12 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\ChannelVisibilityMetaBox;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\ChannelVisibilityMetaBox;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
-use WC_Product;
 use WP_Post;
 
 /**
@@ -55,16 +53,16 @@ class ChannelVisibilityMetaBoxTest extends UnitTest {
 	}
 
 	/**
-	 * @dataProvider data_provider_is_connected
+	 * @dataProvider data_provider_is_setup_complete
 	 *
-	 * @param bool $is_connected
+	 * @param bool $is_setup_complete
 	 */
-	public function test_get_view_context_includes_is_connected( bool $is_connected ) {
+	public function test_get_view_context_includes_is_setup_complete( bool $is_setup_complete ) {
 		$post = $this->createMock( WP_Post::class );
 
 		$this->merchant_center
-			->method( 'is_connected' )
-			->willReturn( $is_connected );
+			->method( 'is_setup_complete' )
+			->willReturn( $is_setup_complete );
 
 		// Use Reflection to access protected method.
 		$reflection = new \ReflectionClass( $this->channel_visibility_meta_box );
@@ -74,32 +72,23 @@ class ChannelVisibilityMetaBoxTest extends UnitTest {
 		$context = $method->invoke( $this->channel_visibility_meta_box, $post, [] );
 
 		$this->assertIsArray( $context );
-		$this->assertArrayHasKey( 'is_connected', $context );
-		$this->assertSame( $is_connected, $context['is_connected'] );
+		$this->assertArrayHasKey( 'is_setup_complete', $context );
+		$this->assertSame( $is_setup_complete, $context['is_setup_complete'] );
 	}
 
 	/**
-	 * Data provider for test_get_view_context_includes_is_connected.
+	 * Data provider for test_get_view_context_includes_is_setup_complete.
 	 *
 	 * @return array
 	 */
-	public function data_provider_is_connected(): array {
+	public function data_provider_is_setup_complete(): array {
 		return [
-			'connected'     => [ true ],
-			'not_connected' => [ false ],
+			'setup_complete'     => [ true ],
+			'setup_not_complete' => [ false ],
 		];
 	}
 
-	/**
-	 * @dataProvider data_provider_is_connected
-	 *
-	 * @param bool $is_connected
-	 */
-	public function test_can_register_returns_merchant_center_connection_status( bool $is_connected ) {
-		$this->merchant_center
-			->method( 'is_connected' )
-			->willReturn( $is_connected );
-
-		$this->assertSame( $is_connected, $this->channel_visibility_meta_box->can_register() );
+	public function test_can_register_always_returns_true() {
+		$this->assertTrue( $this->channel_visibility_meta_box->can_register() );
 	}
 }
