@@ -8,6 +8,8 @@ exports[`checkErrors Audience When the audience location option is an invalid va
 
 exports[`checkErrors Offer free shipping With flat shipping rate option When there are some non-free shipping rates, and offer free shipping is checked, and there is no minimum order amount for non-free shipping rates, should not pass 1`] = `"Please enter minimum order for free shipping."`;
 
+exports[`checkErrors Shipping rates For flat type When flat_shipping_rate is a negative number, should not pass 1`] = `"Please specify an estimated shipping rate."`;
+
 exports[`checkErrors Shipping rates For flat type When flat_shipping_rate is undefined, should not pass 1`] = `"Please specify an estimated shipping rate."`;
 
 exports[`checkErrors Shipping rates When the type of shipping rate is an invalid value or missing, should not pass 1`] = `"Please select a shipping rate option."`;

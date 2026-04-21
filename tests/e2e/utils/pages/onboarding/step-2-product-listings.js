@@ -201,7 +201,7 @@ export default class ProductListingsPage extends MockRequests {
 	/**
 	 * Get "Please specify an estimated shipping rate." error.
 	 *
-	 * @return {import('@playwright/test').Locator} Get estimated shipping rates null error.
+	 * @return {import('@playwright/test').Locator} Locator for the "Please specify an estimated shipping rate." error text.
 	 */
 	getEstimatedShippingRatesNullError() {
 		return this.getEstimatedShippingRatesCard().getByText(
