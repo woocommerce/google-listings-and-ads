@@ -3,13 +3,13 @@
  */
 import { useRef } from '@wordpress/element';
 import { createSlotFill } from '@wordpress/components';
+import { Form } from '@woocommerce/components';
 import { pick, noop } from 'lodash';
 
 /**
  * Internal dependencies
  */
 import AppSpinner from '~/components/app-spinner';
-import useStoreCurrency from '~/hooks/useStoreCurrency';
 import AppButton from '~/components/app-button';
 import AdaptiveForm from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
@@ -17,6 +17,7 @@ import checkErrors from '~/components/free-listings/configure-product-listings/c
 import getOfferFreeShippingInitialValue from '~/utils/getOfferFreeShippingInitialValue';
 import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
 import FormContent from './form-content';
+import useStoreCurrency from '~/hooks/useStoreCurrency';
 import { TARGET_AUDIENCE_FIELDS } from '../choose-audience-section/constants';
 
 /**
@@ -105,6 +106,7 @@ const SetupFreeListings = ( {
 		const { setValue } = formRef.current;
 
 		if ( change.name === 'flat_shipping_rate' ) {
+			// Translate the single flat rate into the per-country array the API expects.
 			const countries = resolveFinalCountries( values );
 			const rates = countries.map( ( country ) => ( {
 				options: {},
@@ -112,6 +114,7 @@ const SetupFreeListings = ( {
 				currency: currencyCode,
 				rate: change.value,
 			} ) );
+
 			setValue( 'shipping_country_rates', rates );
 		} else if ( change.name === 'shipping_country_rates' ) {
 			onShippingRatesChange( values.shipping_country_rates );
@@ -197,10 +200,10 @@ const SetupFreeListings = ( {
 		} else if ( TARGET_AUDIENCE_FIELDS.includes( change.name ) ) {
 			onTargetAudienceChange( pick( values, TARGET_AUDIENCE_FIELDS ) );
 
-			// Only keep shipping data with selected countries.
+			// Sync shipping_country_rates with the updated audience countries.
 			const audienceCountries = resolveFinalCountries( values );
 
-			// For rates: filter removed countries AND add newly added countries.
+			// Filter removed countries AND fill in newly added countries using the current flat rate.
 			const filteredRates = values.shipping_country_rates.filter(
 				( shippingCountryRate ) =>
 					audienceCountries.includes( shippingCountryRate.country )
@@ -252,6 +255,7 @@ const SetupFreeListings = ( {
 							} ) ),
 					  ]
 					: filteredTimes;
+
 			if ( nextTimes.length !== values.shipping_country_times.length ) {
 				setValue( 'shipping_country_times', nextTimes );
 			}
@@ -290,7 +294,8 @@ const SetupFreeListings = ( {
 					// This is used in UI only, not used in API.
 					offer_free_shipping:
 						getOfferFreeShippingInitialValue( shippingRates ),
-					// Simple flat rate value for all countries (UI only, derived from shippingRates).
+					// UI-only scalar; assumes all countries share the same rate (flat rate mode).
+					// Derived from the first entry; the full per-country array is in shipping_country_rates.
 					flat_shipping_rate: shippingRates?.[ 0 ]?.rate,
 					// Simple flat time values for all countries (UI only, derived from shippingTimes).
 					flat_shipping_min_time: shippingTimes?.[ 0 ]?.time ?? null,
