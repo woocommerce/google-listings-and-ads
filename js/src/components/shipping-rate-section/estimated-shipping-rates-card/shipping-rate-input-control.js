@@ -28,7 +28,11 @@ const ShippingRateInputControl = ( { countryOptions, value, onChange } ) => {
 	const { code: currencyCode } = useStoreCurrency();
 
 	const handleBlur = ( event, numberValue ) => {
-		if ( value === numberValue ) {
+		if (
+			value === numberValue ||
+			isNaN( numberValue ) ||
+			numberValue < 0
+		) {
 			return;
 		}
 
