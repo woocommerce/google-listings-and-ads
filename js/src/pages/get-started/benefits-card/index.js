@@ -7,7 +7,7 @@ import { Card, CardBody, Flex, Notice } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import benefitsImageURL from '~/images/get-started/benefits.png';
+import benefitsImageURL from '~/images/get-started/benefits.jpg';
 import Text from '~/components/app-text';
 import './index.scss';
 
