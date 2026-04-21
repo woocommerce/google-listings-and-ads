@@ -37,7 +37,8 @@ const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
 
 	if (
 		values.shipping_rate === 'flat' &&
-		values.flat_shipping_rate === undefined
+		( values.flat_shipping_rate === undefined ||
+			values.flat_shipping_rate < 0 )
 	) {
 		errors.flat_shipping_rate = __(
 			'Please specify an estimated shipping rate.',

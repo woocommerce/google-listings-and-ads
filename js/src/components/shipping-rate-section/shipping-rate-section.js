@@ -13,7 +13,7 @@ import AppRadioContentControl from '~/components/app-radio-content-control';
 import RadioHelperText from '~/components/radio-helper-text';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import VerticalGapLayout from '~/components/vertical-gap-layout';
-import FlatEstimatedShippingRatesCard from './estimated-shipping-rates-card/flat-estimated-shipping-rates-card';
+import FlatShippingRatesInputCards from './flat-shipping-rates-input-cards';
 import useSettings from '~/hooks/useSettings';
 import useMCSetup from '~/hooks/useMCSetup';
 
@@ -118,7 +118,7 @@ const ShippingRateSection = () => {
 				</Section.Card.Body>
 			</Section.Card>
 			{ values.shipping_rate === 'flat' && (
-				<FlatEstimatedShippingRatesCard />
+				<FlatShippingRatesInputCards />
 			) }
 		</Section>
 	);

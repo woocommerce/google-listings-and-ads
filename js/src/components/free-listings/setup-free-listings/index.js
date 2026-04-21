@@ -3,13 +3,13 @@
  */
 import { useRef } from '@wordpress/element';
 import { createSlotFill } from '@wordpress/components';
+import { Form } from '@woocommerce/components';
 import { pick, noop } from 'lodash';
 
 /**
  * Internal dependencies
  */
 import AppSpinner from '~/components/app-spinner';
-import useStoreCurrency from '~/hooks/useStoreCurrency';
 import AppButton from '~/components/app-button';
 import AdaptiveForm from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
@@ -17,6 +17,7 @@ import checkErrors from '~/components/free-listings/configure-product-listings/c
 import getOfferFreeShippingInitialValue from '~/utils/getOfferFreeShippingInitialValue';
 import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
 import FormContent from './form-content';
+import useStoreCurrency from '~/hooks/useStoreCurrency';
 import { TARGET_AUDIENCE_FIELDS } from '../choose-audience-section/constants';
 
 /**
@@ -115,6 +116,7 @@ const SetupFreeListings = ( {
 				currency: currencyCode,
 				rate: change.value,
 			} ) );
+
 			setValue( 'shipping_country_rates', rates );
 		} else if ( change.name === 'shipping_country_rates' ) {
 			onShippingRatesChange( values.shipping_country_rates );
