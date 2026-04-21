@@ -98,10 +98,7 @@ const SetupFreeListings = ( {
 	}
 
 	const handleValidate = ( values ) => {
-		const countries = resolveFinalCountries( values );
-		const { shipping_country_times: shippingTimesData } = values;
-
-		return checkErrors( values, shippingTimesData, countries );
+		return checkErrors( values );
 	};
 
 	const handleChange = ( change, values ) => {
@@ -142,10 +139,29 @@ const SetupFreeListings = ( {
 
 				setValue( 'shipping_country_rates', nextValue );
 			}
+		} else if (
+			change.name === 'flat_shipping_min_time' ||
+			change.name === 'flat_shipping_max_time'
+		) {
+			const countries = resolveFinalCountries( values );
+			const minTime =
+				change.name === 'flat_shipping_min_time'
+					? change.value
+					: values.flat_shipping_min_time;
+			const maxTime =
+				change.name === 'flat_shipping_max_time'
+					? change.value
+					: values.flat_shipping_max_time;
+			const times = countries.map( ( countryCode ) => ( {
+				countryCode,
+				time: minTime,
+				maxTime,
+			} ) );
+			setValue( 'shipping_country_times', times );
 		} else if ( change.name === 'shipping_country_times' ) {
 			// Skip the call of `onShippingTimesChange` if any shipping times are invalid.
 			const error = handleValidate( values );
-			const isValid = ! error.hasOwnProperty( change.name );
+			const isValid = ! error.hasOwnProperty( 'flat_shipping_times' );
 
 			// Skip the call of `onShippingTimesChange` if there are incomplete shipping times.
 			// This should only happen during onboarding when the shipping times haven't been stored yet.
@@ -209,6 +225,36 @@ const SetupFreeListings = ( {
 			if ( nextRates.length !== values.shipping_country_rates.length ) {
 				setValue( 'shipping_country_rates', nextRates );
 			}
+
+			// For times: filter removed countries AND add newly added countries.
+			const filteredTimes = values.shipping_country_times.filter(
+				( shippingCountryTime ) =>
+					audienceCountries.includes(
+						shippingCountryTime.countryCode
+					)
+			);
+			const missingTimesCountries = audienceCountries.filter(
+				( country ) =>
+					! filteredTimes.some(
+						( time ) => time.countryCode === country
+					)
+			);
+			const nextTimes =
+				values.flat_shipping_min_time !== null &&
+				values.flat_shipping_max_time !== null &&
+				missingTimesCountries.length > 0
+					? [
+							...filteredTimes,
+							...missingTimesCountries.map( ( countryCode ) => ( {
+								countryCode,
+								time: values.flat_shipping_min_time,
+								maxTime: values.flat_shipping_max_time,
+							} ) ),
+					  ]
+					: filteredTimes;
+			if ( nextTimes.length !== values.shipping_country_times.length ) {
+				setValue( 'shipping_country_times', nextTimes );
+			}
 		}
 	};
 
@@ -246,6 +292,10 @@ const SetupFreeListings = ( {
 						getOfferFreeShippingInitialValue( shippingRates ),
 					// Simple flat rate value for all countries (UI only, derived from shippingRates).
 					flat_shipping_rate: shippingRates?.[ 0 ]?.rate,
+					// Simple flat time values for all countries (UI only, derived from shippingTimes).
+					flat_shipping_min_time: shippingTimes?.[ 0 ]?.time ?? null,
+					flat_shipping_max_time:
+						shippingTimes?.[ 0 ]?.maxTime ?? null,
 					// Glue shipping rates and times together, as the Form does not support nested structures.
 					shipping_country_rates: shippingRates,
 					shipping_country_times: shippingTimes,

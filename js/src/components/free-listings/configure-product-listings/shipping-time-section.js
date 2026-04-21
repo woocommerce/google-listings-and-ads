@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 import Section from '~/components/section';
 import AppDocumentationLink from '~/components/app-documentation-link';
-import ShippingTimeSetup from './shipping-time-setup';
+import FlatEstimatedShippingTimesCard from './shipping-time-setup/flat-estimated-shipping-times-card';
 
 /**
  * @fires gla_documentation_link_click with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
@@ -38,7 +38,7 @@ const ShippingTimeSection = () => {
 				</div>
 			}
 		>
-			<ShippingTimeSetup />
+			<FlatEstimatedShippingTimesCard />
 		</Section>
 	);
 };

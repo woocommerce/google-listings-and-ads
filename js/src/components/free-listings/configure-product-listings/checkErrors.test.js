@@ -14,14 +14,6 @@ function toRates( ...tuples ) {
 	} ) );
 }
 
-function toTimes( ...tuples ) {
-	return tuples.map( ( [ countryCode, time, maxTime ] ) => ( {
-		countryCode,
-		time,
-		maxTime,
-	} ) );
-}
-
 const defaultFormValues = {
 	shipping_country_rates: [],
 };
@@ -42,19 +34,19 @@ describe( 'checkErrors', () => {
 			shipping_rate: 'flat',
 			flat_shipping_rate: 10,
 			shipping_time: 'flat',
+			flat_shipping_min_time: 3,
+			flat_shipping_max_time: 5,
 			shipping_country_rates: toRates( [ 'US', 10 ], [ 'JP', 30, 88 ] ),
 			offer_free_shipping: true,
 		};
-		const times = toTimes( [ 'US', 3, 3 ], [ 'JP', 10, 10 ] );
-		const codes = [ 'US', 'JP' ];
 
-		const errors = checkErrors( values, times, codes );
+		const errors = checkErrors( values );
 
 		expect( errors ).toStrictEqual( {} );
 	} );
 
 	it( 'should indicate multiple unpassed checks by setting properties in the returned object', () => {
-		const errors = checkErrors( defaultFormValues, [], [] );
+		const errors = checkErrors( defaultFormValues );
 
 		expect( errors ).toHaveProperty( 'shipping_rate' );
 		expect( errors ).toHaveProperty( 'shipping_time' );
@@ -63,13 +55,13 @@ describe( 'checkErrors', () => {
 	describe( 'Audience', () => {
 		it( 'When the audience location option is an invalid value or missing, should not pass', () => {
 			// Not set yet
-			let errors = checkErrors( {}, [], [] );
+			let errors = checkErrors( {} );
 
 			expect( errors ).toHaveProperty( 'location' );
 			expect( errors.location ).toMatchSnapshot();
 
 			// Invalid value
-			errors = checkErrors( { location: true }, [], [] );
+			errors = checkErrors( { location: true } );
 
 			expect( errors ).toHaveProperty( 'location' );
 			expect( errors.location ).toMatchSnapshot();
@@ -77,7 +69,7 @@ describe( 'checkErrors', () => {
 
 		it( 'When the audience location option is a valid value, should pass', () => {
 			// Selected all countries
-			let errors = checkErrors( { location: 'all' }, [], [] );
+			let errors = checkErrors( { location: 'all' } );
 
 			expect( errors ).not.toHaveProperty( 'location' );
 
@@ -86,7 +78,7 @@ describe( 'checkErrors', () => {
 				location: 'selected',
 				countries: [],
 			};
-			errors = checkErrors( values, [], [] );
+			errors = checkErrors( values );
 
 			expect( errors ).not.toHaveProperty( 'location' );
 		} );
@@ -96,7 +88,7 @@ describe( 'checkErrors', () => {
 				location: 'selected',
 				countries: [],
 			};
-			const errors = checkErrors( values, [], [] );
+			const errors = checkErrors( values );
 
 			expect( errors ).toHaveProperty( 'countries' );
 			expect( errors.countries ).toMatchSnapshot();
@@ -107,7 +99,7 @@ describe( 'checkErrors', () => {
 				location: 'selected',
 				countries: [ '' ],
 			};
-			const errors = checkErrors( values, [], [] );
+			const errors = checkErrors( values );
 
 			expect( errors ).not.toHaveProperty( 'countries' );
 		} );
@@ -132,27 +124,25 @@ describe( 'checkErrors', () => {
 
 		it( 'When the type of shipping rate is an invalid value or missing, should not pass', () => {
 			// Not set yet
-			let errors = checkErrors( defaultFormValues, [], [] );
+			let errors = checkErrors( defaultFormValues );
 
 			expect( errors ).toHaveProperty( 'shipping_rate' );
 			expect( errors.shipping_rate ).toMatchSnapshot();
 
 			// Invalid value
-			errors = checkErrors(
-				{ ...defaultFormValues, shipping_rate: true },
-				[],
-				[]
-			);
+			errors = checkErrors( {
+				...defaultFormValues,
+				shipping_rate: true,
+			} );
 
 			expect( errors ).toHaveProperty( 'shipping_rate' );
 			expect( errors.shipping_rate ).toMatchSnapshot();
 
 			// Invalid value
-			errors = checkErrors(
-				{ ...defaultFormValues, shipping_rate: 'invalid' },
-				[],
-				[]
-			);
+			errors = checkErrors( {
+				...defaultFormValues,
+				shipping_rate: 'invalid',
+			} );
 
 			expect( errors ).toHaveProperty( 'shipping_rate' );
 			expect( errors.shipping_rate ).toMatchSnapshot();
@@ -160,17 +150,17 @@ describe( 'checkErrors', () => {
 
 		it( 'When the type of shipping rate is a valid value, should pass', () => {
 			// Selected automatic
-			let errors = checkErrors( automaticShipping, [], [] );
+			let errors = checkErrors( automaticShipping );
 
 			expect( errors ).not.toHaveProperty( 'shipping_rate' );
 
 			// Selected flat
-			errors = checkErrors( flatShipping, [], [] );
+			errors = checkErrors( flatShipping );
 
 			expect( errors ).not.toHaveProperty( 'shipping_rate' );
 
 			// Selected manual
-			errors = checkErrors( manualShipping, [], [] );
+			errors = checkErrors( manualShipping );
 
 			expect( errors ).not.toHaveProperty( 'shipping_rate' );
 		} );
@@ -182,7 +172,7 @@ describe( 'checkErrors', () => {
 					flat_shipping_rate: undefined,
 				};
 
-				const errors = checkErrors( values, [], [] );
+				const errors = checkErrors( values );
 
 				expect( errors ).toHaveProperty( 'flat_shipping_rate' );
 				expect( errors.flat_shipping_rate ).toMatchSnapshot();
@@ -190,11 +180,11 @@ describe( 'checkErrors', () => {
 
 			it( 'When flat_shipping_rate is defined (including 0 for free shipping), should pass', () => {
 				let values = { ...flatShipping, flat_shipping_rate: 10 };
-				let errors = checkErrors( values, [], [] );
+				let errors = checkErrors( values );
 				expect( errors ).not.toHaveProperty( 'flat_shipping_rate' );
 
 				values = { ...flatShipping, flat_shipping_rate: 0 };
-				errors = checkErrors( values, [], [] );
+				errors = checkErrors( values );
 				expect( errors ).not.toHaveProperty( 'flat_shipping_rate' );
 			} );
 		} );
@@ -206,12 +196,14 @@ describe( 'checkErrors', () => {
 				const values = {
 					...defaultFormValues,
 					shipping_rate: 'flat',
-					shipping_country_rates: toRates( [ 'US', 0 ], [ 'JP', 0 ] ),
+					shipping_country_rates: toRates(
+						[ 'US', 0 ],
+						[ 'JP', 0 ]
+					),
 					offer_free_shipping: undefined,
 				};
-				const codes = [ 'US', 'JP' ];
 
-				const errors = checkErrors( values, [], codes );
+				const errors = checkErrors( values );
 
 				expect( errors ).not.toHaveProperty( 'offer_free_shipping' );
 			} );
@@ -226,9 +218,8 @@ describe( 'checkErrors', () => {
 					),
 					offer_free_shipping: true,
 				};
-				const codes = [ 'US', 'JP' ];
 
-				const errors = checkErrors( values, [], codes );
+				const errors = checkErrors( values );
 
 				expect( errors ).not.toHaveProperty( 'offer_free_shipping' );
 			} );
@@ -237,12 +228,14 @@ describe( 'checkErrors', () => {
 				const values = {
 					...defaultFormValues,
 					shipping_rate: 'flat',
-					shipping_country_rates: toRates( [ 'US', 0 ], [ 'JP', 1 ] ),
+					shipping_country_rates: toRates(
+						[ 'US', 0 ],
+						[ 'JP', 1 ]
+					),
 					offer_free_shipping: true,
 				};
-				const codes = [ 'US', 'JP' ];
 
-				const errors = checkErrors( values, [], codes );
+				const errors = checkErrors( values );
 
 				expect( errors ).toHaveProperty( 'free_shipping_threshold' );
 				expect( errors.free_shipping_threshold ).toMatchSnapshot();
@@ -254,12 +247,14 @@ describe( 'checkErrors', () => {
 				const values = {
 					...defaultFormValues,
 					shipping_rate: 'automatic',
-					shipping_country_rates: toRates( [ 'US', 0 ], [ 'JP', 1 ] ),
+					shipping_country_rates: toRates(
+						[ 'US', 0 ],
+						[ 'JP', 1 ]
+					),
 					offer_free_shipping: undefined,
 				};
-				const codes = [ 'US', 'JP' ];
 
-				const errors = checkErrors( values, [], codes );
+				const errors = checkErrors( values );
 
 				expect( errors ).not.toHaveProperty( 'offer_free_shipping' );
 			} );
@@ -268,12 +263,14 @@ describe( 'checkErrors', () => {
 				const values = {
 					...defaultFormValues,
 					shipping_rate: 'manual',
-					shipping_country_rates: toRates( [ 'US', 0 ], [ 'JP', 1 ] ),
+					shipping_country_rates: toRates(
+						[ 'US', 0 ],
+						[ 'JP', 1 ]
+					),
 					offer_free_shipping: true,
 				};
-				const codes = [ 'US', 'JP' ];
 
-				const errors = checkErrors( values, [], codes );
+				const errors = checkErrors( values );
 
 				expect( errors ).not.toHaveProperty( 'offer_free_shipping' );
 			} );
@@ -291,27 +288,25 @@ describe( 'checkErrors', () => {
 
 		it( 'When the type of shipping time is an invalid value or missing, should not pass', () => {
 			// Not set yet
-			let errors = checkErrors( defaultFormValues, [], [] );
+			let errors = checkErrors( defaultFormValues );
 
 			expect( errors ).toHaveProperty( 'shipping_time' );
 			expect( errors.shipping_time ).toMatchSnapshot();
 
 			// Invalid value
-			errors = checkErrors(
-				{ ...defaultFormValues, shipping_time: true },
-				[],
-				[]
-			);
+			errors = checkErrors( {
+				...defaultFormValues,
+				shipping_time: true,
+			} );
 
 			expect( errors ).toHaveProperty( 'shipping_time' );
 			expect( errors.shipping_time ).toMatchSnapshot();
 
 			// Invalid value
-			errors = checkErrors(
-				{ ...defaultFormValues, shipping_time: 'invalid' },
-				[],
-				[]
-			);
+			errors = checkErrors( {
+				...defaultFormValues,
+				shipping_time: 'invalid',
+			} );
 
 			expect( errors ).toHaveProperty( 'shipping_time' );
 			expect( errors.shipping_time ).toMatchSnapshot();
@@ -319,93 +314,83 @@ describe( 'checkErrors', () => {
 
 		it( 'When the type of shipping time is a valid value, should pass', () => {
 			// Selected flat
-			let errors = checkErrors( flatShipping, [], [] );
+			let errors = checkErrors( flatShipping );
 
 			expect( errors ).not.toHaveProperty( 'shipping_time' );
 
 			// Selected manual
-			errors = checkErrors( manualShipping, [], [] );
+			errors = checkErrors( manualShipping );
 
 			expect( errors ).not.toHaveProperty( 'shipping_time' );
 		} );
 
 		describe( 'For flat type', () => {
-			it( `When there are any selected countries' shipping times is not set, should not pass`, () => {
-				const times = toTimes( [ 'US', 7, 7 ], [ 'FR', 16, 16 ] );
-				const codes = [ 'US', 'JP', 'FR' ];
+			it( 'When flat_shipping_min_time is null or undefined, should not pass', () => {
+				let values = {
+					...flatShipping,
+					flat_shipping_min_time: null,
+				};
+				let errors = checkErrors( values );
+				expect( errors ).toHaveProperty( 'flat_shipping_times' );
+				expect( errors.flat_shipping_times ).toMatchSnapshot();
 
-				const errors = checkErrors( flatShipping, times, codes );
-
-				expect( errors ).toHaveProperty( 'shipping_country_times' );
-				expect( errors.shipping_country_times ).toMatchSnapshot();
+				values = {
+					...flatShipping,
+					flat_shipping_min_time: undefined,
+				};
+				errors = checkErrors( values );
+				expect( errors ).toHaveProperty( 'flat_shipping_times' );
 			} );
 
-			it( `When all selected countries' shipping times are set, should pass`, () => {
-				const times = toTimes( [ 'US', 7, 7 ], [ 'FR', 16, 16 ] );
-				const codes = [ 'US', 'FR' ];
+			it( 'When flat_shipping_max_time is null or undefined, should not pass', () => {
+				let values = {
+					...flatShipping,
+					flat_shipping_min_time: 3,
+					flat_shipping_max_time: null,
+				};
+				let errors = checkErrors( values );
+				expect( errors ).toHaveProperty( 'flat_shipping_times' );
+				expect( errors.flat_shipping_times ).toMatchSnapshot();
 
-				const errors = checkErrors( flatShipping, times, codes );
-
-				expect( errors ).not.toHaveProperty( 'shipping_time' );
+				values = {
+					...flatShipping,
+					flat_shipping_min_time: 3,
+					flat_shipping_max_time: undefined,
+				};
+				errors = checkErrors( values );
+				expect( errors ).toHaveProperty( 'flat_shipping_times' );
 			} );
 
-			it( 'When there are any shipping times are < 0, should not pass', () => {
-				const times = toTimes( [ 'US', 10, 10 ], [ 'JP', -1, -1 ] );
-				const codes = [ 'US', 'JP' ];
+			it( 'When flat_shipping_min_time > flat_shipping_max_time, should not pass', () => {
+				const values = {
+					...flatShipping,
+					flat_shipping_min_time: 5,
+					flat_shipping_max_time: 3,
+				};
 
-				const errors = checkErrors( flatShipping, times, codes );
+				const errors = checkErrors( values );
 
-				expect( errors ).toHaveProperty( 'shipping_country_times' );
-				expect( errors.shipping_country_times ).toMatchSnapshot();
+				expect( errors ).toHaveProperty( 'flat_shipping_times' );
+				expect( errors.flat_shipping_times ).toMatchSnapshot();
 			} );
 
-			it( 'When minimum times is < 0, should not pass', () => {
-				const times = toTimes( [ 'US', 10, 10 ], [ 'JP', -1, 10 ] );
-				const codes = [ 'US', 'JP' ];
+			it( 'When both times are valid and min <= max, should pass', () => {
+				let values = {
+					...flatShipping,
+					flat_shipping_min_time: 3,
+					flat_shipping_max_time: 5,
+				};
+				let errors = checkErrors( values );
+				expect( errors ).not.toHaveProperty( 'flat_shipping_times' );
 
-				const errors = checkErrors( flatShipping, times, codes );
-
-				expect( errors ).toHaveProperty( 'shipping_country_times' );
-				expect( errors.shipping_country_times ).toMatchSnapshot();
-			} );
-
-			it( 'When minimum max_time is < 0, should not pass', () => {
-				const times = toTimes( [ 'US', 10, 10 ], [ 'JP', 1, -10 ] );
-				const codes = [ 'US', 'JP' ];
-
-				const errors = checkErrors( flatShipping, times, codes );
-
-				expect( errors ).toHaveProperty( 'shipping_country_times' );
-				expect( errors.shipping_country_times ).toMatchSnapshot();
-			} );
-
-			it( 'When all shipping times are ≥ 0, should pass', () => {
-				const times = toTimes( [ 'US', 1, 1 ], [ 'JP', 0, 0 ] );
-				const codes = [ 'US', 'JP' ];
-
-				const errors = checkErrors( flatShipping, times, codes );
-
-				expect( errors ).not.toHaveProperty( 'shipping_time' );
-			} );
-
-			it( 'shouldnt pass if min time is bigger than max time', () => {
-				const times = toTimes( [ 'US', 1, 0 ], [ 'JP', 1, 1 ] );
-				const codes = [ 'US', 'JP' ];
-
-				const errors = checkErrors( flatShipping, times, codes );
-
-				expect( errors ).toHaveProperty( 'shipping_country_times' );
-				expect( errors.shipping_country_times ).toMatchSnapshot();
-			} );
-
-			it( 'shouldnt pass if min or max time is null', () => {
-				const times = toTimes( [ 'US', null, 1 ], [ 'JP', 1, null ] );
-				const codes = [ 'US', 'JP' ];
-
-				const errors = checkErrors( flatShipping, times, codes );
-
-				expect( errors ).toHaveProperty( 'shipping_country_times' );
-				expect( errors.shipping_country_times ).toMatchSnapshot();
+				// min === max (same day)
+				values = {
+					...flatShipping,
+					flat_shipping_min_time: 0,
+					flat_shipping_max_time: 0,
+				};
+				errors = checkErrors( values );
+				expect( errors ).not.toHaveProperty( 'flat_shipping_times' );
 			} );
 		} );
 	} );
