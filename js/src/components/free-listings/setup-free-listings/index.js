@@ -109,6 +109,7 @@ const SetupFreeListings = ( {
 		const { setValue } = formRef.current;
 
 		if ( change.name === 'flat_shipping_rate' ) {
+			// Translate the single flat rate into the per-country array the API expects.
 			const countries = resolveFinalCountries( values );
 			const rates = countries.map( ( country ) => ( {
 				options: {},
@@ -183,10 +184,10 @@ const SetupFreeListings = ( {
 		} else if ( TARGET_AUDIENCE_FIELDS.includes( change.name ) ) {
 			onTargetAudienceChange( pick( values, TARGET_AUDIENCE_FIELDS ) );
 
-			// Only keep shipping data with selected countries.
+			// Sync shipping_country_rates with the updated audience countries.
 			const audienceCountries = resolveFinalCountries( values );
 
-			// For rates: filter removed countries AND add newly added countries.
+			// Filter removed countries AND fill in newly added countries using the current flat rate.
 			const filteredRates = values.shipping_country_rates.filter(
 				( shippingCountryRate ) =>
 					audienceCountries.includes( shippingCountryRate.country )
@@ -210,6 +211,14 @@ const SetupFreeListings = ( {
 					: filteredRates;
 			if ( nextRates.length !== values.shipping_country_rates.length ) {
 				setValue( 'shipping_country_rates', nextRates );
+			}
+
+			// Remove time entries for countries no longer in the audience.
+			const nextTimes = values.shipping_country_times.filter( ( el ) =>
+				audienceCountries.includes( el.countryCode )
+			);
+			if ( nextTimes.length !== values.shipping_country_times.length ) {
+				setValue( 'shipping_country_times', nextTimes );
 			}
 		}
 	};
@@ -246,7 +255,8 @@ const SetupFreeListings = ( {
 					// This is used in UI only, not used in API.
 					offer_free_shipping:
 						getOfferFreeShippingInitialValue( shippingRates ),
-					// Simple flat rate value for all countries (UI only, derived from shippingRates).
+					// UI-only scalar; assumes all countries share the same rate (flat rate mode).
+					// Derived from the first entry; the full per-country array is in shipping_country_rates.
 					flat_shipping_rate: shippingRates?.[ 0 ]?.rate,
 					// Glue shipping rates and times together, as the Form does not support nested structures.
 					shipping_country_rates: shippingRates,

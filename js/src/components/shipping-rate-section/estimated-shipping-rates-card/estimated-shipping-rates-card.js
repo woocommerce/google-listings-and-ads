@@ -15,8 +15,7 @@ import ShippingRateInputControl from './shipping-rate-input-control';
  */
 
 /**
- * The "Estimated shipping rates" card to provide shipping rates for individual countries,
- * with an UI, that allows to aggregate countries with the same rate.
+ * The "Estimated shipping rates" card with a single flat rate input applied to all audience countries.
  *
  * @param {Object} props
  * @param {Array<CountryCode>} props.audienceCountries Array of country codes of all audience countries.
