@@ -46,7 +46,7 @@ class IncentivesController extends BaseController {
 	public function __construct( RESTServer $rest_server, AdsIncentives $ads_incentives, WC $wc ) {
 		parent::__construct( $rest_server );
 		$this->ads_incentives = $ads_incentives;
-		$this->wc  = $wc;
+		$this->wc             = $wc;
 	}
 
 	/**
