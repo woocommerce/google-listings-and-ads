@@ -13,6 +13,7 @@ import { getCreateCampaignUrl, getGetStartedUrl } from '~/utils/urls';
 import AppButton from '~/components/app-button';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useHasRecentAdSpend from '~/hooks/useHasRecentAdSpend';
+import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import googleLogoURL from '~/images/logo/google-g-logo.svg';
 import './google-ads-promo.scss';
 
@@ -56,6 +57,7 @@ const GoogleAdsPromo = () => {
 	} = useGoogleAdsAccount();
 	const { hasAdSpend, hasFinishedResolution: hasResolvedRecentAdSpend } =
 		useHasRecentAdSpend();
+	const isServiceBasedMerchant = useServiceBasedMerchant();
 	const hasTrackedRef = useRef( false );
 
 	const isResolved = hasResolvedGoogleAdsAccount && hasResolvedRecentAdSpend;
@@ -104,14 +106,21 @@ const GoogleAdsPromo = () => {
 	} else {
 		const getStartedUrl = getGetStartedUrl();
 		content = {
-			title: __(
-				'Get your products on Google',
-				'google-listings-and-ads'
-			),
-			description: __(
-				'Sync your products to reach customers when they’re searching for products like yours across Google',
-				'google-listings-and-ads'
-			),
+			title: isServiceBasedMerchant
+				? __( 'Set up Google Ads', 'google-listings-and-ads' )
+				: __(
+						'Get your products on Google',
+						'google-listings-and-ads'
+				  ),
+			description: isServiceBasedMerchant
+				? __(
+						'Create or connect a Google Ads account to start running campaigns and reach customers across Google',
+						'google-listings-and-ads'
+				  )
+				: __(
+						'Sync your products to reach customers when they’re searching for products like yours across Google',
+						'google-listings-and-ads'
+				  ),
 			cta: (
 				<AppButton
 					href={ getStartedUrl }
