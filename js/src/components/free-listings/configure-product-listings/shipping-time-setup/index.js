@@ -9,14 +9,13 @@ import { __ } from '@wordpress/i18n';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import Section from '~/components/section';
 import AppSpinner from '~/components/app-spinner';
-import ShippingCountriesForm from './shipping-countries-form';
+import CountriesTimeInput from './countries-time-input';
 
 /**
  * Form control to edit shipping rate settings.
  */
 const ShippingTimeSetup = () => {
 	const {
-		getInputProps,
 		adapter: { audienceCountries, renderRequestedValidation },
 	} = useAdaptiveFormContext();
 
@@ -33,11 +32,10 @@ const ShippingTimeSetup = () => {
 						'google-listings-and-ads'
 					) }
 				</Section.Card.Title>
-				<ShippingCountriesForm
-					{ ...getInputProps( 'shipping_country_times' ) }
-					audienceCountries={ audienceCountries }
-				/>
-				{ renderRequestedValidation( 'shipping_country_times' ) }
+
+				<CountriesTimeInput />
+
+				{ renderRequestedValidation( 'flat_shipping_times' ) }
 			</Section.Card.Body>
 		</Section.Card>
 	);

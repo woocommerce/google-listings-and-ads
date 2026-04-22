@@ -99,7 +99,10 @@ const SetupFreeListings = ( {
 	}
 
 	const handleValidate = ( values ) => {
-		return checkErrors( values );
+		const countries = resolveFinalCountries( values );
+		const { shipping_country_times: shippingTimesData } = values;
+
+		return checkErrors( values, shippingTimesData, countries );
 	};
 
 	const handleChange = ( change, values ) => {
@@ -160,6 +163,7 @@ const SetupFreeListings = ( {
 				time: minTime,
 				maxTime,
 			} ) );
+
 			setValue( 'shipping_country_times', times );
 		} else if ( change.name === 'shipping_country_times' ) {
 			// Skip the call of `onShippingTimesChange` if any shipping times are invalid.
