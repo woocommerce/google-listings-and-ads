@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\ChannelVisibilityMetaBox;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -33,22 +34,27 @@ class ChannelVisibilityMetaBoxTest extends UnitTest {
 	/** @var \PHPUnit\Framework\MockObject\Stub|MerchantCenterService $merchant_center */
 	protected $merchant_center;
 
+	/** @var \PHPUnit\Framework\MockObject\Stub|ServiceBasedMerchantState $service_based_merchant_state */
+	protected $service_based_merchant_state;
+
 	/** @var ChannelVisibilityMetaBox $channel_visibility_meta_box */
 	protected $channel_visibility_meta_box;
 
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->admin           = $this->createStub( Admin::class );
-		$this->meta_handler    = $this->createMock( ProductMetaHandler::class );
-		$this->product_helper  = $this->createStub( ProductHelper::class );
-		$this->merchant_center = $this->createStub( MerchantCenterService::class );
+		$this->admin                        = $this->createStub( Admin::class );
+		$this->meta_handler                 = $this->createMock( ProductMetaHandler::class );
+		$this->product_helper               = $this->createStub( ProductHelper::class );
+		$this->merchant_center              = $this->createStub( MerchantCenterService::class );
+		$this->service_based_merchant_state = $this->createStub( ServiceBasedMerchantState::class );
 
 		$this->channel_visibility_meta_box = new ChannelVisibilityMetaBox(
 			$this->admin,
 			$this->meta_handler,
 			$this->product_helper,
-			$this->merchant_center
+			$this->merchant_center,
+			$this->service_based_merchant_state
 		);
 	}
 
@@ -88,7 +94,15 @@ class ChannelVisibilityMetaBoxTest extends UnitTest {
 		];
 	}
 
-	public function test_can_register_always_returns_true() {
+	public function test_can_register_returns_false_for_service_based_merchant() {
+		$this->service_based_merchant_state->method( 'is_service_based_merchant' )->willReturn( true );
+
+		$this->assertFalse( $this->channel_visibility_meta_box->can_register() );
+	}
+
+	public function test_can_register_returns_true_for_non_service_based_merchant() {
+		$this->service_based_merchant_state->method( 'is_service_based_merchant' )->willReturn( false );
+
 		$this->assertTrue( $this->channel_visibility_meta_box->can_register() );
 	}
 }

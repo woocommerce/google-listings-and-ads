@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
@@ -51,18 +52,32 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	protected $merchant_center;
 
 	/**
+	 * @var ServiceBasedMerchantState
+	 */
+	protected $service_based_merchant_state;
+
+	/**
 	 * ChannelVisibilityMetaBox constructor.
 	 *
-	 * @param Admin                 $admin
-	 * @param ProductMetaHandler    $meta_handler
-	 * @param ProductHelper         $product_helper
-	 * @param MerchantCenterService $merchant_center
+	 * @param Admin                     $admin
+	 * @param ProductMetaHandler        $meta_handler
+	 * @param ProductHelper             $product_helper
+	 * @param MerchantCenterService     $merchant_center
+	 * @param ServiceBasedMerchantState $service_based_merchant_state
 	 */
-	public function __construct( Admin $admin, ProductMetaHandler $meta_handler, ProductHelper $product_helper, MerchantCenterService $merchant_center ) {
-		$this->meta_handler    = $meta_handler;
-		$this->product_helper  = $product_helper;
-		$this->merchant_center = $merchant_center;
+	public function __construct( Admin $admin, ProductMetaHandler $meta_handler, ProductHelper $product_helper, MerchantCenterService $merchant_center, ServiceBasedMerchantState $service_based_merchant_state ) {
+		$this->meta_handler                 = $meta_handler;
+		$this->product_helper               = $product_helper;
+		$this->merchant_center              = $merchant_center;
+		$this->service_based_merchant_state = $service_based_merchant_state;
 		parent::__construct( $admin );
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function can_register(): bool {
+		return ! $this->service_based_merchant_state->is_service_based_merchant();
 	}
 
 	/**
