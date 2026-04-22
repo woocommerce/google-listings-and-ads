@@ -17,8 +17,8 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 class IncentivesControllerTest extends RESTControllerUnitTest {
 
-	/** @var MockObject|AdsIncentives $ads */
-	protected $ads;
+	/** @var MockObject|AdsIncentives $ads_incentives */
+	protected $ads_incentives;
 
 	/** @var MockObject|WC $wc */
 	protected $wc;
@@ -37,12 +37,12 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->ads = $this->createMock( AdsIncentives::class );
-		$this->wc  = $this->createMock( WC::class );
+		$this->ads_incentives = $this->createMock( AdsIncentives::class );
+		$this->wc             = $this->createMock( WC::class );
 
 		$this->wc->method( 'get_base_country' )->willReturn( 'GB' );
 
-		$this->controller = new IncentivesController( $this->server, $this->ads, $this->wc );
+		$this->controller = new IncentivesController( $this->server, $this->ads_incentives, $this->wc );
 		$this->controller->register();
 	}
 
@@ -108,7 +108,7 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 			],
 		];
 
-		$this->ads->expects( $this->once() )
+		$this->ads_incentives->expects( $this->once() )
 			->method( 'fetch_incentives' )
 			->with( 'GB', $this->isType( 'string' ) )
 			->willReturn( $incentives );
@@ -181,7 +181,7 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 			],
 		];
 
-		$this->ads->expects( $this->once() )
+		$this->ads_incentives->expects( $this->once() )
 			->method( 'fetch_incentives' )
 			->with( 'GB', $this->isType( 'string' ) )
 			->willReturn( $incentives );
@@ -193,7 +193,7 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_incentives_empty_response() {
-		$this->ads->expects( $this->once() )
+		$this->ads_incentives->expects( $this->once() )
 			->method( 'fetch_incentives' )
 			->willReturn( self::EMPTY_RESPONSE );
 
@@ -210,7 +210,7 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 			'incentives'            => [],
 		];
 
-		$this->ads->expects( $this->once() )
+		$this->ads_incentives->expects( $this->once() )
 			->method( 'fetch_incentives' )
 			->willReturn( $no_incentive );
 
@@ -222,7 +222,7 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_apply_incentive_success() {
-		$this->ads->expects( $this->once() )
+		$this->ads_incentives->expects( $this->once() )
 			->method( 'apply_incentive' )
 			->with( '2378556534', 'GB' )
 			->willReturn(
@@ -244,7 +244,7 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_apply_incentive_api_exception() {
-		$this->ads->expects( $this->once() )
+		$this->ads_incentives->expects( $this->once() )
 			->method( 'apply_incentive' )
 			->willThrowException(
 				new ExceptionWithResponseData(

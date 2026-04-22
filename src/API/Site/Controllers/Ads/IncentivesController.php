@@ -29,7 +29,7 @@ class IncentivesController extends BaseController {
 	/**
 	 * @var AdsIncentives
 	 */
-	protected $ads;
+	protected $ads_incentives;
 
 	/**
 	 * @var WC
@@ -40,12 +40,12 @@ class IncentivesController extends BaseController {
 	 * IncentivesController constructor.
 	 *
 	 * @param RESTServer    $rest_server
-	 * @param AdsIncentives $ads
+	 * @param AdsIncentives $ads_incentives
 	 * @param WC            $wc
 	 */
-	public function __construct( RESTServer $rest_server, AdsIncentives $ads, WC $wc ) {
+	public function __construct( RESTServer $rest_server, AdsIncentives $ads_incentives, WC $wc ) {
 		parent::__construct( $rest_server );
-		$this->ads = $ads;
+		$this->ads_incentives = $ads_incentives;
 		$this->wc  = $wc;
 	}
 
@@ -80,7 +80,7 @@ class IncentivesController extends BaseController {
 			$country_code  = $this->wc->get_base_country();
 			$language_code = $this->get_language_code();
 
-			$incentives = $this->ads->fetch_incentives( $country_code, $language_code );
+			$incentives = $this->ads_incentives->fetch_incentives( $country_code, $language_code );
 
 			return $this->prepare_item_for_response( $incentives, $request );
 		};
@@ -110,7 +110,7 @@ class IncentivesController extends BaseController {
 				$incentive_id = $request->get_param( 'id' );
 				$country_code = $this->wc->get_base_country();
 
-				$result = $this->ads->apply_incentive( $incentive_id, $country_code );
+				$result = $this->ads_incentives->apply_incentive( $incentive_id, $country_code );
 
 				return new Response( $result );
 			} catch ( ExceptionWithResponseData $e ) {

@@ -3,7 +3,11 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Google\Ads\GoogleAds\V23\Services\ApplyIncentiveRequest;
 use Google\Ads\GoogleAds\V23\Services\FetchIncentiveRequest;
 use Google\Ads\GoogleAds\V23\Services\FetchIncentiveRequest\IncentiveType;
 use Google\Ads\GoogleAds\V23\Services\Incentive;
@@ -20,9 +24,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class AdsIncentives {
+class AdsIncentives implements OptionsAwareInterface {
 
 	use ExceptionTrait;
+	use OptionsAwareTrait;
 
 	/**
 	 * The Google Ads Client.
@@ -155,5 +160,50 @@ class AdsIncentives {
 			'currencyCode' => $money->getCurrencyCode(),
 			'units'        => (string) $money->getUnits(),
 		];
+	}
+
+	/**
+	 * Apply a selected incentive to the connected Google Ads account.
+	 *
+	 * @since 3.3.0
+	 *
+	 * @param string $incentive_id The selected incentive ID.
+	 * @param string $country_code ISO 3166-1 alpha-2 country code.
+	 *
+	 * @return array The applied incentive data with coupon_code and creation_time.
+	 * @throws ExceptionWithResponseData When the API call fails.
+	 */
+	public function apply_incentive( string $incentive_id, string $country_code ): array {
+		try {
+			$request = new ApplyIncentiveRequest(
+				[
+					'selected_incentive_id' => (int) $incentive_id,
+					'customer_id'           => (string) $this->options->get_ads_id(),
+					'country_code'          => $country_code,
+				]
+			);
+
+			$response = $this->client->getIncentiveServiceClient()->applyIncentive( $request );
+
+			return [
+				'coupon_code'   => $response->getCouponCode(),
+				'creation_time' => $response->getCreationTime(),
+			];
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+
+			$errors = $this->get_exception_errors( $e );
+
+			throw new ExceptionWithResponseData(
+				sprintf(
+				/* translators: %s Error message */
+					__( 'Error applying incentive: %s', 'google-listings-and-ads' ),
+					reset( $errors )
+				),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				null,
+				[ 'errors' => $errors ]
+			);
+		}
 	}
 }
