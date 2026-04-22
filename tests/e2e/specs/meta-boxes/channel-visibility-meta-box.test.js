@@ -14,6 +14,7 @@ import {
 	createSimpleProduct,
 	setCompletedAdsSetup,
 } from '../../utils/api';
+import MockRequests from '../../utils/mock-requests';
 import { getClassicProductEditorUtils } from '../../utils/product-editor';
 
 test.use( { storageState: process.env.ADMINSTATE } );
@@ -22,7 +23,7 @@ test.describe.configure( { mode: 'serial' } );
 
 const PREFERENCES_NAMESPACE = 'woocommerce/google-listings-and-ads';
 const PROMO_DISMISSED_KEY = 'gla_google_ads_promo_dismissed';
-const GET_STARTED_URL_PATTERN = /page=wc-admin&path=%2Fgoogle%2Fstart/;
+const GET_STARTED_URL_PATTERN = /page=wc-admin&path=%2Fgoogle%2Fsetup-mc/;
 
 /**
  * @type {RequestUtils}
@@ -46,17 +47,28 @@ async function setPromoDismissed( dismissed ) {
 	} );
 }
 
+/**
+ * @type {Page}
+ */
+let page = null;
+
+/**
+ * @type {import('../../utils/product-editor.js').default} productEditor
+ */
+let editorUtils = null;
+
+/**
+ * @type {MockRequests}
+ */
+let mockRequests = null;
+
 test.describe( 'Channel Visibility Meta Box', () => {
-	/**
-	 * @type {Page}
-	 */
-	let page = null;
-	let editorUtils = null;
 	let productId = null;
 
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		editorUtils = getClassicProductEditorUtils( page );
+		mockRequests = new MockRequests( page );
 
 		requestUtils = await RequestUtils.setup( {
 			storageStatePath: process.env.ADMINSTATE,
@@ -79,6 +91,9 @@ test.describe( 'Channel Visibility Meta Box', () => {
 	test.describe( 'Onboarding not completed', () => {
 		test.beforeEach( async () => {
 			await clearCompletedAdsSetup();
+			await mockRequests.mockJetpackConnected();
+			await mockRequests.mockGoogleConnected();
+			await mockRequests.mockAdsAccountDisconnected();
 		} );
 
 		test( 'Shows full promo banner when not dismissed', async () => {
@@ -189,10 +204,16 @@ test.describe( 'Channel Visibility Meta Box', () => {
 	test.describe( 'Onboarding completed', () => {
 		test.beforeAll( async () => {
 			await setCompletedAdsSetup();
+			await mockRequests.mockJetpackConnected();
+			await mockRequests.mockGoogleConnected();
+			await mockRequests.mockAdsAccountConnected();
 		} );
 
 		test.afterAll( async () => {
 			await clearCompletedAdsSetup();
+			await page.unroute( /\/wc\/gla\/jetpack\/connected\b/ );
+			await page.unroute( /\/wc\/gla\/google\/connected\b/ );
+			await page.unroute( /\/wc\/gla\/ads\/connection\b/ );
 		} );
 
 		test( 'Shows channel visibility settings with Google label and dropdown', async () => {

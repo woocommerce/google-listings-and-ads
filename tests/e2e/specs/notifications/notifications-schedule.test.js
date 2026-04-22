@@ -58,6 +58,7 @@ test.describe( 'Notifications Schedule', () => {
 			// Mock google as connected.
 			mockRequests.mockGoogleConnected(),
 			mockRequests.mockMCConnected( 1234, true, 'approved' ),
+			mockRequests.mockAdsAccountConnected(),
 		] );
 	} );
 

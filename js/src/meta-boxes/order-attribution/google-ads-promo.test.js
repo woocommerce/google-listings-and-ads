@@ -2,15 +2,19 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, fireEvent, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 
 /**
  * Internal dependencies
  */
-import { glaData } from '~/constants';
+import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useHasRecentAdSpend from '~/hooks/useHasRecentAdSpend';
 import { recordGlaEvent } from '~/utils/tracks';
 import GoogleAdsPromo from './google-ads-promo';
+
+jest.mock( '~/hooks/useGoogleAdsAccount', () =>
+	jest.fn().mockName( 'useGoogleAdsAccount' )
+);
 
 jest.mock( '~/hooks/useHasRecentAdSpend', () =>
 	jest.fn().mockName( 'useHasRecentAdSpend' )
@@ -27,12 +31,23 @@ jest.mock( '~/utils/urls', () => ( {
 
 describe( 'GoogleAdsPromo Component', () => {
 	beforeEach( () => {
-		glaData.adsSetupComplete = false;
 		jest.clearAllMocks();
+		useGoogleAdsAccount.mockReturnValue( {
+			hasGoogleAdsConnection: false,
+			hasFinishedResolution: true,
+		} );
+		useHasRecentAdSpend.mockReturnValue( {
+			hasFinishedResolution: false,
+			hasAdSpend: false,
+		} );
 	} );
 
-	describe( 'When adsSetupComplete is false', () => {
+	describe( 'When hasGoogleAdsConnection is false', () => {
 		test( 'Renders component with setup incomplete messaging when there is no recent ad spend', () => {
+			useGoogleAdsAccount.mockReturnValue( {
+				hasGoogleAdsConnection: false,
+				hasFinishedResolution: true,
+			} );
 			useHasRecentAdSpend.mockReturnValue( {
 				hasFinishedResolution: true,
 				hasAdSpend: false,
@@ -57,10 +72,12 @@ describe( 'GoogleAdsPromo Component', () => {
 		} );
 	} );
 
-	describe( 'When adsSetupComplete is true', () => {
+	describe( 'When hasGoogleAdsConnection is true', () => {
 		test( 'Renders component with setup complete messaging when there is no recent ad spend', () => {
-			glaData.adsSetupComplete = true;
-
+			useGoogleAdsAccount.mockReturnValue( {
+				hasGoogleAdsConnection: true,
+				hasFinishedResolution: true,
+			} );
 			useHasRecentAdSpend.mockReturnValue( {
 				hasFinishedResolution: true,
 				hasAdSpend: false,
@@ -83,7 +100,21 @@ describe( 'GoogleAdsPromo Component', () => {
 	} );
 
 	describe( 'Conditional rendering', () => {
-		test( 'Does not render when loading', () => {
+		test( 'Does not render when Google Ads account is loading', () => {
+			useGoogleAdsAccount.mockReturnValue( {
+				hasGoogleAdsConnection: false,
+				hasFinishedResolution: false,
+			} );
+			useHasRecentAdSpend.mockReturnValue( {
+				hasFinishedResolution: true,
+				hasAdSpend: false,
+			} );
+
+			const { container } = render( <GoogleAdsPromo /> );
+			expect( container.firstChild ).toBeNull();
+		} );
+
+		test( 'Does not render when recent ad spend is loading', () => {
 			useHasRecentAdSpend.mockReturnValue( {
 				hasFinishedResolution: false,
 				hasAdSpend: false,
@@ -159,8 +190,10 @@ describe( 'GoogleAdsPromo Component', () => {
 		} );
 
 		test( 'Fires gla_google_ads_promo_create_campaign_click event when Create campaign button is clicked', () => {
-			glaData.adsSetupComplete = true;
-
+			useGoogleAdsAccount.mockReturnValue( {
+				hasGoogleAdsConnection: true,
+				hasFinishedResolution: true,
+			} );
 			useHasRecentAdSpend.mockReturnValue( {
 				hasFinishedResolution: true,
 				hasAdSpend: false,
@@ -182,6 +215,10 @@ describe( 'GoogleAdsPromo Component', () => {
 		} );
 
 		test( 'Fires gla_google_ads_promo_get_started_click event when Get started button is clicked', () => {
+			useGoogleAdsAccount.mockReturnValue( {
+				hasGoogleAdsConnection: false,
+				hasFinishedResolution: true,
+			} );
 			useHasRecentAdSpend.mockReturnValue( {
 				hasFinishedResolution: true,
 				hasAdSpend: false,

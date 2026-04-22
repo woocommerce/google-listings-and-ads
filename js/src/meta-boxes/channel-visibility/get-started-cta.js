@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
-import { getGetStartedUrl } from '~/utils/urls';
+import { getOnboardingUrl } from '~/utils/urls';
 import { CHANNEL_VISIBILITY_CONTEXT } from './constants';
 
 /**
@@ -21,19 +21,19 @@ import { CHANNEL_VISIBILITY_CONTEXT } from './constants';
 /**
  * Get Started CTA component.
  *
- * @fires gla_google_ads_promo_get_started_click with `{ context: channel-visibility-meta-box, href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fstart' }`.
+ * @fires gla_google_ads_promo_get_started_click with `{ context: channel-visibility-meta-box, href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
  *
  * @return {JSX.Element} The Get Started CTA component.
  */
 const GetStartedCTA = () => {
-	const getStartedUrl = getGetStartedUrl();
+	const onboardingUrl = getOnboardingUrl();
 
 	return (
 		<AppButton
-			href={ getStartedUrl }
+			href={ onboardingUrl }
 			eventName="gla_google_ads_promo_get_started_click"
 			eventProps={ {
-				href: getStartedUrl,
+				href: onboardingUrl,
 				context: CHANNEL_VISIBILITY_CONTEXT,
 			} }
 			isSecondary
