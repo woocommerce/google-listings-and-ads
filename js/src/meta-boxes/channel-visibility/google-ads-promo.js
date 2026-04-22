@@ -12,6 +12,7 @@ import { store as preferencesStore } from '@wordpress/preferences';
  */
 import { PREFERENCES_STORE_NAMESPACE } from '~/constants';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import usePreference from '~/hooks/usePreference';
 import googleLogoURL from '~/images/logo/google-g-logo.svg';
 import { recordGlaEvent } from '~/utils/tracks';
@@ -40,6 +41,10 @@ import './google-ads-promo.scss';
  */
 const GoogleAdsPromo = () => {
 	const {
+		hasGoogleMCConnection,
+		hasFinishedResolution: hasResolvedGoogleMCAccount,
+	} = useGoogleMCAccount();
+	const {
 		hasGoogleAdsConnection,
 		hasFinishedResolution: hasResolvedGoogleAdsAccount,
 	} = useGoogleAdsAccount();
@@ -47,20 +52,23 @@ const GoogleAdsPromo = () => {
 	const isDismissed = usePreference( CHANNEL_VISIBILITY_PROMO_KEY );
 	const hasTrackedRef = useRef( false );
 
+	const isResolved =
+		hasResolvedGoogleMCAccount && hasResolvedGoogleAdsAccount;
+
 	useEffect( () => {
-		if ( ! hasTrackedRef.current && hasResolvedGoogleAdsAccount ) {
+		if ( ! hasTrackedRef.current && isResolved ) {
 			recordGlaEvent( 'gla_google_ads_promo_shown', {
 				context: CHANNEL_VISIBILITY_CONTEXT,
 			} );
 			hasTrackedRef.current = true;
 		}
-	}, [ hasResolvedGoogleAdsAccount ] );
+	}, [ isResolved ] );
 
 	const handleDismiss = () => {
 		set( PREFERENCES_STORE_NAMESPACE, CHANNEL_VISIBILITY_PROMO_KEY, true );
 	};
 
-	if ( ! hasResolvedGoogleAdsAccount ) {
+	if ( ! isResolved || ! hasGoogleMCConnection ) {
 		return null;
 	}
 
