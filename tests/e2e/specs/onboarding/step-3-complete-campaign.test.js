@@ -768,4 +768,138 @@ test.describe( 'Complete your campaign', () => {
 			).not.toBeVisible();
 		} );
 	} );
+
+	test.describe( 'Choose Your Own Incentive (CYOI)', () => {
+		test.beforeAll( async () => {
+			// Override billing to approved so useCYOIncentives fetches the incentives.
+			// The outer beforeAll sets billing to pending, so this must run after it.
+			await setupBudgetPage.fulfillBillingStatusRequest( {
+				status: 'approved',
+			} );
+			await completeCampaign.fulfillCYOIncentives();
+			await completeCampaign.fulfillApplyCYOIncentive();
+			await completeCampaign.goto();
+		} );
+
+		test( 'should show the incentive picker when billing is approved and offers are available', async () => {
+			await expect( page.getByText( 'Ads credit offer' ) ).toBeVisible();
+		} );
+
+		test( 'should hide the incentive picker when no offers are available', async () => {
+			await completeCampaign.fulfillCYOIncentives( [] );
+			await completeCampaign.goto();
+			await expect(
+				page.getByText( 'Ads credit offer' )
+			).not.toBeVisible();
+		} );
+
+		test( 'should hide the incentive picker when billing is not yet approved', async () => {
+			await setupBudgetPage.fulfillBillingStatusRequest( {
+				status: 'pending',
+			} );
+			await completeCampaign.goto();
+			await expect(
+				page.getByText( 'Ads credit offer' )
+			).not.toBeVisible();
+
+			// Restore for subsequent tests.
+			await setupBudgetPage.fulfillBillingStatusRequest( {
+				status: 'approved',
+			} );
+			await completeCampaign.fulfillCYOIncentives();
+			await completeCampaign.fulfillApplyCYOIncentive();
+			await completeCampaign.goto();
+		} );
+
+		test( 'should apply the selected incentive on form submission', async () => {
+			const incentivePostPromise = page.waitForRequest(
+				( request ) =>
+					request.url().includes( '/gla/ads/incentive' ) &&
+					request.method() === 'POST'
+			);
+			await completeCampaign.clickSkipPaidAdsCreationButton();
+			await completeCampaign.clickCompleteSetupModalButton();
+			const incentiveRequest = await incentivePostPromise;
+			expect( incentiveRequest.method() ).toBe( 'POST' );
+			expect( incentiveRequest.postDataJSON() ).toMatchObject( {
+				id: 'incentive-medium-id',
+			} );
+			await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
+		} );
+
+		test( 'should skip incentive application when no offer is available', async () => {
+			await completeCampaign.fulfillCYOIncentives( [] );
+			await completeCampaign.goto();
+			let incentivePostFired = false;
+			await page.route( /\/wc\/gla\/ads\/incentive\b/, ( route ) => {
+				if ( route.request().method() === 'POST' ) {
+					incentivePostFired = true;
+				}
+				route.fallback();
+			} );
+			await completeCampaign.clickSkipPaidAdsCreationButton();
+			await completeCampaign.clickCompleteSetupModalButton();
+			await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
+			expect( incentivePostFired ).toBe( false );
+		} );
+
+		test.describe( 'When applying the incentive fails', () => {
+			test.beforeAll( async () => {
+				await completeCampaign.fulfillCYOIncentives();
+				await setupBudgetPage.fulfillBillingStatusRequest( {
+					status: 'approved',
+				} );
+				await completeCampaign.fulfillApplyCYOIncentive( {}, 500 );
+				await completeCampaign.goto();
+
+				// First skip: apply incentive fails and error is shown.
+				await completeCampaign.clickSkipPaidAdsCreationButton();
+				await completeCampaign.clickCompleteSetupModalButton();
+			} );
+
+			test( 'should show an error notice', async () => {
+				await expect(
+					page.locator( '.components-notice.is-error' )
+				).toBeVisible();
+			} );
+
+			test( 'should show the "Apply in Google Ads" link in the notice', async () => {
+				await expect(
+					page.getByRole( 'link', { name: 'Apply in Google Ads' } )
+				).toHaveAttribute(
+					'href',
+					'https://ads.google.com/aw/overview'
+				);
+			} );
+
+			test( 'should dismiss the error after a successful retry', async () => {
+				await completeCampaign.fulfillApplyCYOIncentive( {
+					success: true,
+				} );
+				await page.getByRole( 'button', { name: 'Try again' } ).click();
+				await page.waitForLoadState( 'domcontentloaded' );
+				await expect(
+					page.locator( '.components-notice.is-error' )
+				).not.toBeVisible();
+			} );
+
+			test( 'should proceed with onboarding when skipping again after a failed attempt', async () => {
+				await completeCampaign.fulfillApplyCYOIncentive( {}, 500 );
+				await completeCampaign.goto();
+
+				// First skip: POST fails and error is shown.
+				await completeCampaign.clickSkipPaidAdsCreationButton();
+				await completeCampaign.clickCompleteSetupModalButton();
+				await expect(
+					page.locator( '.components-notice.is-error' )
+				).toBeVisible();
+
+				// Second skip: error is dismissed and onboarding proceeds.
+				await completeCampaign.clickSkipPaidAdsCreationButton();
+				await completeCampaign.clickCompleteSetupModalButton();
+				await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
+				expect( page.url() ).toMatch( /path=%2Fgoogle%2Fproduct-feed/ );
+			} );
+		} );
+	} );
 } );

@@ -24,6 +24,7 @@ import { useAppDispatch } from '~/data';
 import {
 	GUIDE_NAMES,
 	EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE,
+	GOOGLE_ADS_BILLING_STATUS,
 } from '~/constants';
 import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
 import SkipButton from './skip-button';
@@ -31,6 +32,7 @@ import clientSession from './clientSession';
 import AppSpinner from '~/components/app-spinner';
 import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
 import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
+import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 
 /**
  * Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
@@ -62,6 +64,9 @@ export default function SetupPaidAds() {
 		redeemIncentive,
 		result: incentiveResult,
 	} = useApplyCYOIncentive();
+	const { billingStatus } = useGoogleAdsAccountBillingStatus();
+	const isBillingCompleted =
+		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 	const {
 		defaultIncentiveId,
 		hasFinishedResolution: hasResolvedCyoIncentives,
@@ -133,6 +138,7 @@ export default function SetupPaidAds() {
 		const disabled =
 			completing === ACTION_SKIP ||
 			! isValidForm ||
+			! isBillingCompleted ||
 			incentiveResult.loading;
 
 		const handleClick = () => {
