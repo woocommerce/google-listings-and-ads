@@ -43,6 +43,10 @@
 		margin: 0;
 		padding: $grid-unit-20;
 
+		&:not(.app-notice) {
+			margin-block-end: 0;
+		}
+
 		p {
 			margin: 0;
 		}
