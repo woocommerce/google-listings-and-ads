@@ -212,13 +212,18 @@ const SetupFreeListings = ( {
 				( country ) =>
 					! filteredRates.some( ( rate ) => rate.country === country )
 			);
+			const existingThreshold = filteredRates.find(
+				isNonFreeShippingRate
+			)?.options?.free_shipping_threshold;
 			const nextRates =
 				values.flat_shipping_rate !== undefined &&
 				missingCountries.length > 0
 					? [
 							...filteredRates,
 							...missingCountries.map( ( country ) => ( {
-								options: {},
+								options: {
+									free_shipping_threshold: existingThreshold,
+								},
 								country,
 								currency: currencyCode,
 								rate: values.flat_shipping_rate,

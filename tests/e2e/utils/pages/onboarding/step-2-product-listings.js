@@ -243,12 +243,12 @@ export default class ProductListingsPage extends MockRequests {
 	}
 
 	/**
-	 * Get "Minimum order to qualify for free shipping" text.
+	 * Get "Cost" text.
 	 *
-	 * @return {import('@playwright/test').Locator} Get "Minimum order to qualify for free shipping" text.
+	 * @return {import('@playwright/test').Locator} Get "Cost" text.
 	 */
-	getMinimumOrderForFreeShippingText() {
-		return this.page.getByText( 'Minimum order for United States (US)' );
+	getCostText() {
+		return this.page.getByText( 'Cost' );
 	}
 
 	/**

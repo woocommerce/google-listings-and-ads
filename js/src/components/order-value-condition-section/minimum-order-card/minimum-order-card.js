@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import GridiconPlusSmall from 'gridicons/dist/plus-small';
 
 /**
  * @typedef { import("~/data/actions").ShippingRate } ShippingRate
@@ -12,124 +11,47 @@ import GridiconPlusSmall from 'gridicons/dist/plus-small';
  * Internal dependencies
  */
 import Section from '~/components/section';
-import AppButton from '~/components/app-button';
-import AppButtonModalTrigger from '~/components/app-button-modal-trigger';
+import AppInputPriceControl from '~/components/app-input-price-control';
 import VerticalGapLayout from '~/components/vertical-gap-layout';
-import { useAdaptiveFormInputProps } from '~/components/adaptive-form';
+import {
+	useAdaptiveFormContext,
+	useAdaptiveFormInputProps,
+} from '~/components/adaptive-form';
 import OfferFreeShippingCheckbox from '~/components/order-value-condition-section/offer-free-shipping-checkbox';
 import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
-import MinimumOrderInputControl from './minimum-order-input-control';
-import { AddMinimumOrderFormModal } from './minimum-order-form-modals';
-import groupShippingRatesByCurrencyFreeShippingThreshold from './groupShippingRatesByCurrencyFreeShippingThreshold';
-import { calculateValueFromGroupChange } from './calculateValueFromGroupChange';
 import './minimum-order-card.scss';
 
 /**
- * Renders a Card UI to provide the free shipping threshold for individual countries.
+ * Renders a Card UI to set a single free shipping threshold applied to all countries.
  *
  * @param {Object} props React props.
- * @param {Array<ShippingRate>} [props.value=[]] Array of individual shipping rates to be used as the initial values of the form.
+ * @param {Array<ShippingRate>} [props.value=[]] Array of shipping rates; the threshold is read from the first non-free rate and written back to all rates.
  * @param {JSX.Element} [props.helper] Helper content to be rendered at the bottom of the card body.
- * @param {(nextValue: Array<ShippingRate>) => void} props.onChange Callback called with the next data once shipping rates are changed.
+ * @param {(nextValue: Array<ShippingRate>) => void} props.onChange Callback called with the updated rates once the threshold changes.
  */
 const MinimumOrderCard = ( { value = [], helper, onChange } ) => {
-	const offerFreeShippingCardInputProps = useAdaptiveFormInputProps(
+	const offerFreeShippingInputProps = useAdaptiveFormInputProps(
 		'offer_free_shipping'
 	);
+	const { values } = useAdaptiveFormContext();
 
-	const renderGroups = () => {
-		const nonZeroShippingRates = value.filter( isNonFreeShippingRate );
-		const groups =
-			groupShippingRatesByCurrencyFreeShippingThreshold(
-				nonZeroShippingRates
-			);
-		const countryOptions = nonZeroShippingRates.map(
-			( shippingRate ) => shippingRate.country
-		);
+	const nonFreeRates = value.filter( isNonFreeShippingRate );
+	const threshold = nonFreeRates[ 0 ]?.options?.free_shipping_threshold;
+	const currency = value[ 0 ]?.currency;
 
-		// Event handlers for add, update, delete operations.
-		const addHandler = ( newGroup ) => {
-			onChange( calculateValueFromGroupChange( value, null, newGroup ) );
-		};
-		const getChangeHandler = ( oldGroup ) => ( newGroup ) => {
-			onChange(
-				calculateValueFromGroupChange( value, oldGroup, newGroup )
-			);
-		};
-		const getDeleteHandler = ( oldGroup ) => () => {
-			onChange( calculateValueFromGroupChange( value, oldGroup ) );
-		};
-
-		// If group length is 1, we render the group,
-		// regardless of threshold is defined or not.
-		if ( groups.length === 1 ) {
-			return (
-				<MinimumOrderInputControl
-					countryOptions={ countryOptions }
-					value={ groups[ 0 ] }
-					onChange={ getChangeHandler( groups[ 0 ] ) }
-					onDelete={ getDeleteHandler( groups[ 0 ] ) }
-				/>
-			);
+	const handleBlur = ( _event, numberValue ) => {
+		if ( numberValue === threshold ) {
+			return;
 		}
-
-		/**
-		 * Groups with defined threshold. This is used
-		 * to render MinimumOrderInputControl.
-		 */
-		const thresholdGroups = groups.filter(
-			( group ) => group.threshold !== undefined
-		);
-
-		/**
-		 * The first group with undefined threshold. This is used
-		 * to render the "Add another minimum order" button
-		 * after all the groups with defined threshold.
-		 */
-		const emptyThresholdGroup = groups.find(
-			( group ) => group.threshold === undefined
-		);
-
-		return (
-			<>
-				{ thresholdGroups.map( ( group ) => {
-					return (
-						<MinimumOrderInputControl
-							key={ group.countries.join( '-' ) }
-							countryOptions={ countryOptions }
-							value={ group }
-							onChange={ getChangeHandler( group ) }
-							onDelete={ getDeleteHandler( group ) }
-						/>
-					);
-				} ) }
-				{ emptyThresholdGroup && (
-					<div>
-						<AppButtonModalTrigger
-							button={
-								<AppButton
-									isSecondary
-									icon={ <GridiconPlusSmall /> }
-								>
-									{ __(
-										'Add another condition',
-										'google-listings-and-ads'
-									) }
-								</AppButton>
-							}
-							modal={
-								<AddMinimumOrderFormModal
-									countryOptions={
-										emptyThresholdGroup.countries
-									}
-									initialValues={ emptyThresholdGroup }
-									onSubmit={ addHandler }
-								/>
-							}
-						/>
-					</div>
-				) }
-			</>
+		onChange(
+			value.map( ( rate ) => ( {
+				...rate,
+				options: {
+					...rate.options,
+					free_shipping_threshold:
+						numberValue > 0 ? numberValue : undefined,
+				},
+			} ) )
 		);
 	};
 
@@ -144,9 +66,16 @@ const MinimumOrderCard = ( { value = [], helper, onChange } ) => {
 				</Section.Card.Title>
 				<VerticalGapLayout size="large">
 					<OfferFreeShippingCheckbox
-						{ ...offerFreeShippingCardInputProps }
+						{ ...offerFreeShippingInputProps }
 					/>
-					{ renderGroups() }
+					{ values.offer_free_shipping && (
+						<AppInputPriceControl
+							label={ __( 'Cost', 'google-listings-and-ads' ) }
+							suffix={ currency }
+							value={ threshold }
+							onBlur={ handleBlur }
+						/>
+					) }
 				</VerticalGapLayout>
 				{ helper }
 			</Section.Card.Body>
