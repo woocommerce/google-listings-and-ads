@@ -656,4 +656,65 @@ class MiddlewareTest extends UnitTest {
 
 		$this->assertFalse( $this->middleware->is_subaccount() );
 	}
+
+	public function test_get_wcs_mca_id() {
+		$mca_id = 987654321;
+		$this->generate_request_mock( [ 'mcaId' => $mca_id ] );
+
+		$this->assertSame( $mca_id, $this->middleware->get_wcs_mca_id() );
+	}
+
+	public function test_get_wcs_mca_id_accepts_numeric_string() {
+		$this->generate_request_mock( [ 'mcaId' => '987654321' ] );
+
+		$this->assertSame( 987654321, $this->middleware->get_wcs_mca_id() );
+	}
+
+	/**
+	 * @return array<string, array{0: mixed}>
+	 */
+	public function invalid_wcs_mca_id_provider(): array {
+		return [
+			'zero'         => [ 0 ],
+			'negative'     => [ -1 ],
+			'non_numeric'  => [ 'not-a-number' ],
+			'empty_string' => [ '' ],
+			'array'        => [ [] ],
+			'object'       => [ new \stdClass() ],
+		];
+	}
+
+	/**
+	 * @dataProvider invalid_wcs_mca_id_provider
+	 *
+	 * @param mixed $mca_id Invalid mcaId from the connect server response.
+	 */
+	public function test_get_wcs_mca_id_throws_when_mca_id_not_positive_integer( $mca_id ): void {
+		$this->generate_request_mock( [ 'mcaId' => $mca_id ] );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Invalid response when retrieving MCA ID from WooCommerce Connect Server.' );
+
+		$this->middleware->get_wcs_mca_id();
+	}
+
+	public function test_get_wcs_mca_id_exception() {
+		$this->generate_request_mock_exception( 'error' );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Error retrieving MCA ID from WooCommerce Connect Server' );
+		$this->expectExceptionCode( 400 );
+
+		$this->middleware->get_wcs_mca_id();
+	}
+
+	public function test_get_wcs_mca_id_invalid_http_status() {
+		$this->generate_request_mock( [ 'mcaId' => 123456 ], 'get', 500 );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Invalid response when retrieving MCA ID from WooCommerce Connect Server.' );
+		$this->expectExceptionCode( 500 );
+
+		$this->middleware->get_wcs_mca_id();
+	}
 }
