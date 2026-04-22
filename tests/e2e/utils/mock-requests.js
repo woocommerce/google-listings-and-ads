@@ -578,6 +578,91 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the CYO incentives GET request.
+	 *
+	 * @param {Array|undefined} incentives Incentive items array.
+	 * @param {number} [status=200]
+	 * @return {Promise<void>}
+	 */
+	async fulfillCYOIncentives( incentives, status = 200 ) {
+		const defaultIncentives = [
+			{
+				id: 'incentive-low-id',
+				type: 'ACQUISITION',
+				offer: 'low',
+				termsAndConditionsUrl:
+					'https://ads.google.com/aw/campaignassistant',
+				requirement: {
+					spend: {
+						requiredAmount: { currencyCode: 'USD', units: '600' },
+						awardAmount: { currencyCode: 'USD', units: '600' },
+					},
+				},
+			},
+			{
+				id: 'incentive-medium-id',
+				type: 'ACQUISITION',
+				offer: 'medium',
+				termsAndConditionsUrl:
+					'https://ads.google.com/aw/campaignassistant',
+				requirement: {
+					spend: {
+						requiredAmount: { currencyCode: 'USD', units: '1800' },
+						awardAmount: { currencyCode: 'USD', units: '1200' },
+					},
+				},
+			},
+			{
+				id: 'incentive-high-id',
+				type: 'ACQUISITION',
+				offer: 'high',
+				termsAndConditionsUrl:
+					'https://ads.google.com/aw/campaignassistant',
+				requirement: {
+					spend: {
+						requiredAmount: { currencyCode: 'USD', units: '3600' },
+						awardAmount: { currencyCode: 'USD', units: '1800' },
+					},
+				},
+			},
+		];
+
+		const payload = {
+			type: 'CYO_INCENTIVE',
+			termsAndConditionsUrl:
+				'https://ads.google.com/aw/campaignassistant',
+			incentives: incentives ?? defaultIncentives,
+		};
+
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/incentives\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Fulfill the apply CYO incentive POST request.
+	 * The method filter ensures GET requests to similarly-named endpoints fall through.
+	 *
+	 * @param {Object} [payload={ success: true }]
+	 * @param {number} [status=200]
+	 * @return {Promise<void>}
+	 */
+	async fulfillApplyCYOIncentive(
+		payload = { success: true },
+		status = 200
+	) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/incentive\b/,
+			payload,
+			status,
+			[ 'POST' ]
+		);
+	}
+
+	/**
 	 * Fulfill the price benchmark suggestions request.
 	 *
 	 * @param {Object} payload
