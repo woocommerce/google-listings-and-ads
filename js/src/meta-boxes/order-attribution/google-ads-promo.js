@@ -10,6 +10,7 @@ import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
  */
 import { recordGlaEvent } from '~/utils/tracks';
 import { getCreateCampaignUrl, getOnboardingUrl } from '~/utils/urls';
+import { ORDER_ATTRIBUTION_CONTEXT } from './constants';
 import AppButton from '~/components/app-button';
 import AppSpinner from '~/components/app-spinner';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
@@ -50,7 +51,6 @@ import './google-ads-promo.scss';
  * @return {JSX.Element|null} The Google Ads Promo component or null.
  */
 const GoogleAdsPromo = () => {
-	const context = 'order-attribution-meta-box';
 	const {
 		hasGoogleAdsConnection,
 		hasFinishedResolution: hasResolvedGoogleAdsAccount,
@@ -66,7 +66,7 @@ const GoogleAdsPromo = () => {
 		// Only fire if all conditions for rendering are met and not already tracked
 		if ( ! hasTrackedRef.current && shouldShowPromo ) {
 			recordGlaEvent( 'gla_google_ads_promo_shown', {
-				context,
+				context: ORDER_ATTRIBUTION_CONTEXT,
 			} );
 			hasTrackedRef.current = true;
 		}
@@ -98,7 +98,7 @@ const GoogleAdsPromo = () => {
 					eventName="gla_google_ads_promo_create_campaign_click"
 					eventProps={ {
 						href: campaignUrl,
-						context,
+						context: ORDER_ATTRIBUTION_CONTEXT,
 					} }
 					isSecondary
 				>
@@ -123,7 +123,7 @@ const GoogleAdsPromo = () => {
 					eventName="gla_google_ads_promo_get_started_click"
 					eventProps={ {
 						href: onboardingUrl,
-						context,
+						context: ORDER_ATTRIBUTION_CONTEXT,
 					} }
 					isSecondary
 				>
