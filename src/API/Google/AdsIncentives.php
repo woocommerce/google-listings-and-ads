@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Google\Ads\GoogleAds\V23\Services\ApplyIncentiveRequest;
 use Google\Ads\GoogleAds\V23\Services\FetchIncentiveRequest;
@@ -191,6 +192,9 @@ class AdsIncentives implements OptionsAwareInterface {
 			];
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+
+			// Set a flag to indicate an error occurred during incentive application.
+			$this->options->update( OptionsInterface::ADS_INCENTIVE_APPLY_ERROR, $incentive_id );
 
 			$errors = $this->get_exception_errors( $e );
 

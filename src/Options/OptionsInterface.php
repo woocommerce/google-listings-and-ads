@@ -18,6 +18,7 @@ interface OptionsInterface {
 	public const ADS_ENHANCED_CONVERSIONS_ENABLED          = 'enhanced_conversions_enabled';
 	public const ADS_BILLING_URL                           = 'ads_billing_url';
 	public const ADS_ID                                    = 'ads_id';
+	public const ADS_INCENTIVE_APPLY_ERROR                 = 'ads_incentive_apply_error';
 	public const ADS_CONVERSION_ACTION                     = 'ads_conversion_action';
 	public const ADS_SETUP_COMPLETED_AT                    = 'ads_setup_completed_at';
 	public const CAMPAIGN_CONVERT_STATUS                   = 'campaign_convert_status';
@@ -62,6 +63,7 @@ interface OptionsInterface {
 		self::ADS_ENHANCED_CONVERSIONS_ENABLED          => true,
 		self::ADS_BILLING_URL                           => true,
 		self::ADS_ID                                    => true,
+		self::ADS_INCENTIVE_APPLY_ERROR                 => true,
 		self::ADS_CONVERSION_ACTION                     => true,
 		self::ADS_SETUP_COMPLETED_AT                    => true,
 		self::CAMPAIGN_CONVERT_STATUS                   => true,
