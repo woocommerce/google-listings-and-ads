@@ -15,14 +15,14 @@ import './index.scss';
  * This is used inside ShippingTimeSetup component, and is responsible for rendering the input fields for min and max shipping times, and handling their changes.
  */
 const CountriesTimeInput = () => {
-	const { value: minTime, onChange: onMinTimeChange } =
+	const { value: time, onChange: onMinTimeChange } =
 		useAdaptiveFormInputProps( 'flat_shipping_min_time' );
 	const { value: maxTime, onChange: onMaxTimeChange } =
 		useAdaptiveFormInputProps( 'flat_shipping_max_time' );
 
 	const handleBlur = ( numberValue, field ) => {
 		if ( field === 'time' ) {
-			if ( minTime !== numberValue ) {
+			if ( time !== numberValue ) {
 				onMinTimeChange( numberValue );
 			}
 		} else if ( maxTime !== numberValue ) {
@@ -42,7 +42,7 @@ const CountriesTimeInput = () => {
 		<Flex className="gla-countries-time-input-container">
 			<FlexBlock>
 				<MinMaxShippingTimes
-					time={ minTime }
+					time={ time }
 					maxTime={ maxTime }
 					handleBlur={ handleBlur }
 					handleIncrement={ handleIncrement }
