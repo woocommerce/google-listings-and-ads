@@ -9,6 +9,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
  */
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useHasRecentAdSpend from '~/hooks/useHasRecentAdSpend';
+import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import { recordGlaEvent } from '~/utils/tracks';
 import GoogleAdsPromo from './google-ads-promo';
 
@@ -18,6 +19,10 @@ jest.mock( '~/hooks/useGoogleAdsAccount', () =>
 
 jest.mock( '~/hooks/useHasRecentAdSpend', () =>
 	jest.fn().mockName( 'useHasRecentAdSpend' )
+);
+
+jest.mock( '~/hooks/useServiceBasedMerchant', () =>
+	jest.fn().mockName( 'useServiceBasedMerchant' )
 );
 
 jest.mock( '~/utils/tracks', () => ( {
@@ -40,19 +45,18 @@ describe( 'GoogleAdsPromo Component', () => {
 			hasFinishedResolution: false,
 			hasAdSpend: false,
 		} );
+		useServiceBasedMerchant.mockReturnValue( false );
 	} );
 
 	describe( 'When hasGoogleAdsConnection is false', () => {
-		test( 'Renders component with setup incomplete messaging when there is no recent ad spend', () => {
-			useGoogleAdsAccount.mockReturnValue( {
-				hasGoogleAdsConnection: false,
-				hasFinishedResolution: true,
-			} );
+		beforeEach( () => {
 			useHasRecentAdSpend.mockReturnValue( {
 				hasFinishedResolution: true,
 				hasAdSpend: false,
 			} );
+		} );
 
+		test( 'Renders product-based merchant copy when not a service-based merchant', () => {
 			render( <GoogleAdsPromo /> );
 
 			expect(
@@ -63,7 +67,28 @@ describe( 'GoogleAdsPromo Component', () => {
 			).toBeInTheDocument();
 			expect(
 				screen.getByText(
-					'Sync your products to reach customers when they’re searching for products like yours across Google'
+					'Sync your products to reach customers when they\u2019re searching for products like yours across Google'
+				)
+			).toBeInTheDocument();
+			expect(
+				screen.getByRole( 'link', { name: 'Get started' } )
+			).toBeInTheDocument();
+		} );
+
+		test( 'Renders service-based merchant copy when isServiceBasedMerchant is true', () => {
+			useServiceBasedMerchant.mockReturnValue( true );
+
+			render( <GoogleAdsPromo /> );
+
+			expect(
+				screen.getByRole( 'heading', {
+					level: 3,
+					name: 'Set up Google Ads',
+				} )
+			).toBeInTheDocument();
+			expect(
+				screen.getByText(
+					'Create or connect a Google Ads account to start running campaigns and reach customers across Google'
 				)
 			).toBeInTheDocument();
 			expect(
