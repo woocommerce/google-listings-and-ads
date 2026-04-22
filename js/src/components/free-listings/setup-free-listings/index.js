@@ -99,10 +99,7 @@ const SetupFreeListings = ( {
 	}
 
 	const handleValidate = ( values ) => {
-		const countries = resolveFinalCountries( values );
-		const { shipping_country_times: shippingTimesData } = values;
-
-		return checkErrors( values, shippingTimesData, countries );
+		return checkErrors( values );
 	};
 
 	const handleChange = ( change, values ) => {
@@ -235,15 +232,13 @@ const SetupFreeListings = ( {
 
 			// For times: filter removed countries AND add newly added countries.
 			const filteredTimes = values.shipping_country_times.filter(
-				( shippingCountryTime ) =>
-					audienceCountries.includes(
-						shippingCountryTime.countryCode
-					)
+				( shippingTime ) =>
+					audienceCountries.includes( shippingTime.countryCode )
 			);
 			const missingTimesCountries = audienceCountries.filter(
 				( country ) =>
 					! filteredTimes.some(
-						( time ) => time.countryCode === country
+						( shippingTime ) => shippingTime.countryCode === country
 					)
 			);
 			const nextTimes =

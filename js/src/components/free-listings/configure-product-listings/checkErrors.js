@@ -92,6 +92,14 @@ const checkErrors = ( values ) => {
 				'google-listings-and-ads'
 			);
 		} else if (
+			values.flat_shipping_min_time < 0 ||
+			values.flat_shipping_max_time < 0
+		) {
+			errors.flat_shipping_times = __(
+				'The shipping time cannot be less than 0.',
+				'google-listings-and-ads'
+			);
+		} else if (
 			values.flat_shipping_min_time > values.flat_shipping_max_time
 		) {
 			errors.flat_shipping_times = __(

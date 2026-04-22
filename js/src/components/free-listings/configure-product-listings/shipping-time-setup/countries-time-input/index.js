@@ -25,7 +25,7 @@ const CountriesTimeInput = () => {
 			if ( time !== numberValue ) {
 				onMinTimeChange( numberValue );
 			}
-		} else if ( maxTime !== numberValue ) {
+		} else if ( field === 'maxTime' && maxTime !== numberValue ) {
 			onMaxTimeChange( numberValue );
 		}
 	};
@@ -33,7 +33,7 @@ const CountriesTimeInput = () => {
 	const handleIncrement = ( numberValue, field ) => {
 		if ( field === 'time' ) {
 			onMinTimeChange( numberValue );
-		} else {
+		} else if ( field === 'maxTime' ) {
 			onMaxTimeChange( numberValue );
 		}
 	};

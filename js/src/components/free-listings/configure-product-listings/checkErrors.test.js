@@ -356,6 +356,25 @@ describe( 'checkErrors', () => {
 				expect( errors ).toHaveProperty( 'flat_shipping_times' );
 			} );
 
+			it( 'When flat_shipping_min_time or flat_shipping_max_time is < 0, should not pass', () => {
+				let values = {
+					...flatShipping,
+					flat_shipping_min_time: -1,
+					flat_shipping_max_time: 5,
+				};
+				let errors = checkErrors( values );
+				expect( errors ).toHaveProperty( 'flat_shipping_times' );
+				expect( errors.flat_shipping_times ).toMatchSnapshot();
+
+				values = {
+					...flatShipping,
+					flat_shipping_min_time: 3,
+					flat_shipping_max_time: -1,
+				};
+				errors = checkErrors( values );
+				expect( errors ).toHaveProperty( 'flat_shipping_times' );
+			} );
+
 			it( 'When flat_shipping_min_time > flat_shipping_max_time, should not pass', () => {
 				const values = {
 					...flatShipping,
