@@ -37,11 +37,6 @@
 	}
 
 	& &__notice {
-		background-color: $gla-color-green-0;
-		border: 0;
-		font-size: $helptext-font-size;
-		margin: 0;
-		padding: $grid-unit-20;
 
 		&:not(.app-notice) {
 			margin-block-end: 0;
@@ -49,6 +44,20 @@
 
 		p {
 			margin: 0;
+		}
+	}
+
+	&__terms {
+		color: $gray-700;
+		margin: 0;
+	}
+
+	&__terms-link {
+		color: $gray-700;
+
+		&:hover,
+		&:focus {
+			color: $gray-900;
 		}
 	}
 }

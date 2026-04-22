@@ -1,14 +1,16 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
 import { Card, CardBody, Flex, Notice } from '@wordpress/components';
+import { createInterpolateElement } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import benefitsImageURL from '~/images/get-started/benefits.jpg';
+import AppDocumentationLink from '~/components/app-documentation-link';
 import Text from '~/components/app-text';
+import benefitsImageURL from '~/images/get-started/benefits.jpg';
 import './index.scss';
 
 const BenefitsCard = () => {
@@ -51,16 +53,34 @@ const BenefitsCard = () => {
 					</Flex>
 					<Notice
 						className="gla-get-started-benefits-card__notice"
-						status="success"
+						status="info"
 						isDismissible={ false }
 					>
 						<p>
 							{ __(
-								'Choose your offer and get up to $1500 in Ads credits. New advertiser? Choose between three offers, based on your monthly budget, to jumpstart your first campaign!',
+								'Choose your offer and get up to $1500 in Ads credits*. New advertiser? Choose between three offers, based on your monthly budget, to jumpstart your first campaign!',
 								'google-listings-and-ads'
 							) }
 						</p>
 					</Notice>
+					<p className="gla-get-started-benefits-card__terms">
+						{ createInterpolateElement(
+							__(
+								'* <link>Terms and conditions</link> apply.',
+								'google-listings-and-ads'
+							),
+							{
+								link: (
+									<AppDocumentationLink
+										className="gla-get-started-benefits-card__terms-link"
+										context="get-started"
+										linkId="benefits-card-credit-terms"
+										href="https://www.google.com/ads/coupons/terms/"
+									/>
+								),
+							}
+						) }
+					</p>
 				</Flex>
 			</CardBody>
 		</Card>
