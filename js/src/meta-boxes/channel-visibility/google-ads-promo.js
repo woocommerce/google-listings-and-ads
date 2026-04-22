@@ -22,6 +22,7 @@ import {
 import GetStartedCTA from './get-started-cta';
 import PromoCTA from './promo-cta';
 import ChannelVisibilitySettings from './channel-visibility-settings';
+import AppSpinner from '~/components/app-spinner';
 import './google-ads-promo.scss';
 
 /**
@@ -61,7 +62,7 @@ const GoogleAdsPromo = () => {
 	};
 
 	if ( ! hasResolvedGoogleAdsAccount ) {
-		return null;
+		return <AppSpinner />;
 	}
 
 	if ( hasGoogleAdsConnection ) {
