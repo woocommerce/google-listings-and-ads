@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAssetGenerationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AssetSuggestionsService as AdsAssetSuggestionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsIncentives;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
@@ -129,7 +130,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( BudgetRecommendationController::class, Ads::class );
 		$this->share( GoogleAccountController::class, Connection::class );
 		$this->share( IncentiveCreditsController::class );
-		$this->share( IncentivesController::class, Ads::class, WC::class );
+		$this->share( IncentivesController::class, AdsIncentives::class, WC::class );
 		$this->share( JetpackAccountController::class, Manager::class, Middleware::class );
 		$this->share( MerchantCenterProductStatsController::class, MerchantStatuses::class, ProductSyncStats::class );
 		$this->share( MerchantCenterIssuesController::class, MerchantStatuses::class, ProductHelper::class );

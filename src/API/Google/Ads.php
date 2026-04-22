@@ -26,7 +26,6 @@ use Google\Ads\GoogleAds\V23\Services\ListAccessibleCustomersRequest;
 use Google\Ads\GoogleAds\V23\Services\UpdateProductLinkInvitationRequest;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
-use Google\Type\Money;
 
 defined( 'ABSPATH' ) || exit;
 

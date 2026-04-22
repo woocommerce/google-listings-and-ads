@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsIncentives;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
@@ -27,7 +27,7 @@ defined( 'ABSPATH' ) || exit;
 class IncentivesController extends BaseController {
 
 	/**
-	 * @var Ads
+	 * @var AdsIncentives
 	 */
 	protected $ads;
 
@@ -39,11 +39,11 @@ class IncentivesController extends BaseController {
 	/**
 	 * IncentivesController constructor.
 	 *
-	 * @param RESTServer $rest_server
-	 * @param Ads        $ads
-	 * @param WC         $wc
+	 * @param RESTServer    $rest_server
+	 * @param AdsIncentives $ads
+	 * @param WC            $wc
 	 */
-	public function __construct( RESTServer $rest_server, Ads $ads, WC $wc ) {
+	public function __construct( RESTServer $rest_server, AdsIncentives $ads, WC $wc ) {
 		parent::__construct( $rest_server );
 		$this->ads = $ads;
 		$this->wc  = $wc;

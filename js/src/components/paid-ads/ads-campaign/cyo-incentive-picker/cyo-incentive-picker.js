@@ -2,32 +2,51 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
+import { RadioControl } from '@wordpress/components';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
+import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import Section from '~/components/section';
 import Subsection from '~/components/subsection';
-import CYOIRadioControl from './cyoi-radio-control';
 import useCYOIncentives from '~/hooks/useCYOIncentives';
-import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
-import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import './cyo-incentive-picker.scss';
 
 const CyoIncentivePicker = () => {
+	const { getInputProps } = useAdaptiveFormContext();
 	const { data: incentives, hasFinishedResolution } = useCYOIncentives();
-	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const { formatAmount } = useAdsCurrency();
 
-	const shouldDisplay =
-		hasFinishedResolution &&
-		incentives?.length > 0 &&
-		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
+	const shouldDisplay = hasFinishedResolution && incentives?.length > 0;
+
+	const { value: selectedIncentiveId, ...restInputProps } =
+		getInputProps( 'incentiveId' );
 
 	if ( ! shouldDisplay ) {
 		return null;
 	}
+
+	const options = [ 'low', 'medium', 'high' ].reduce( ( acc, offer ) => {
+		const item = incentives.find(
+			( incentive ) => incentive.offer === offer
+		);
+
+		if ( item ) {
+			acc.push( {
+				id: item.id,
+				spendAmount: item.requirement.spend.requiredAmount.units,
+				radioProps: {
+					...restInputProps,
+					checked: selectedIncentiveId === item.id,
+					value: item.id,
+				},
+			} );
+		}
+		return acc;
+	}, [] );
 
 	return (
 		<Section
@@ -58,41 +77,51 @@ const CyoIncentivePicker = () => {
 						) }
 					</Subsection.Subtitle>
 					<div className="gla-cyoi-incentive-picker__container">
-						{ incentives.map( ( incentive ) => {
-							const { id, requirement } = incentive;
-							const rewardAmount =
-								requirement.spend.awardAmount.units;
-							const spendAmount =
-								requirement.spend.requiredAmount.units;
+						{ options.map(
+							( {
+								id,
+								spendAmount,
+								radioProps: {
+									selected,
+									value,
+									...restRadioProps
+								},
+							} ) => {
+								const formattedSpendAmount =
+									formatAmount( spendAmount );
+								const label = createInterpolateElement(
+									sprintf(
+										/* translators: %s: amount in users' currency */
+										__(
+											'Get <strong>%s</strong>',
+											'google-listings-and-ads'
+										),
+										formattedSpendAmount
+									),
+									{
+										strong: <strong />,
+									}
+								);
 
-							return (
-								<div
-									key={ id }
-									className="gla-cyoi-incentive-picker__row"
-								>
-									<CYOIRadioControl
-										amount={ rewardAmount }
-										value={ id }
-									/>
-									<div className="gla-cyoi-incentive-picker__option">
-										{ sprintf(
+								return (
+									<RadioControl
+										{ ...restRadioProps }
+										key={ id }
+										className="gla-cyoi-radio-control__radio-control"
+										options={ [ { value, label } ] }
+										help={ sprintf(
 											/* translators: %s: amount in users' currency */
 											__(
 												'Spend %s with Google Ads in the first 60 days to unlock the credit.',
 												'google-listings-and-ads'
 											),
-											formatAmount( spendAmount )
+											formattedSpendAmount
 										) }
-									</div>
-									<div className="gla-cyoi-incentive-picker__helper">
-										{ __(
-											'in Ads credit',
-											'google-listings-and-ads'
-										) }
-									</div>
-								</div>
-							);
-						} ) }
+										hideLabelFromVision
+									/>
+								);
+							}
+						) }
 					</div>
 				</Section.Card.Body>
 			</Section.Card>
