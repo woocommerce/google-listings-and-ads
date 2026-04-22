@@ -11,8 +11,7 @@ import MinMaxShippingTimes from '../min-max-shipping-times';
 import './index.scss';
 
 /**
- * Input component for shipping times for different countries.
- * This is used inside ShippingTimeSetup component, and is responsible for rendering the input fields for min and max shipping times, and handling their changes.
+ * Input component for the estimated flat shipping time (min and max days) applied to all target countries.
  */
 const CountriesTimeInput = () => {
 	const { value: time, onChange: onMinTimeChange } =

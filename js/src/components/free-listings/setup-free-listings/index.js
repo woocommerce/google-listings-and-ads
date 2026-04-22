@@ -3,7 +3,6 @@
  */
 import { useRef } from '@wordpress/element';
 import { createSlotFill } from '@wordpress/components';
-import { Form } from '@woocommerce/components';
 import { pick, noop } from 'lodash';
 
 /**
@@ -66,13 +65,13 @@ const { Fill, Slot } = createSlotFill( 'gla/SetupFreeListings/SubmitButton' );
  * @param {Object} props
  * @param {TargetAudienceData} props.targetAudience Target audience value data to be initialed the form, if not given AppSpinner will be rendered.
  * @param {(targetAudience: TargetAudienceData) => Array<CountryCode>} props.resolveFinalCountries Callback for this component to resolve the given `targetAudience` to the final list of countries.
- * @param {(targetAudience: TargetAudienceData) => void} [props.onTargetAudienceChange] Callback called with new data once target audience data is changed. Forwarded from and {@link Form.Props.onChange}.
+ * @param {(targetAudience: TargetAudienceData) => void} [props.onTargetAudienceChange] Callback called with new data once target audience data is changed.
  * @param {Object} props.settings Settings data, if not given AppSpinner will be rendered.
- * @param {(newValue: Object) => void} [props.onSettingsChange] Callback called with new data once form data is changed. Forwarded from and {@link Form.Props.onChange}.
+ * @param {(newValue: Object) => void} [props.onSettingsChange] Callback called with new data once form data is changed.
  * @param {Array<ShippingRateFromServerSide>} props.shippingRates Shipping rates data, if not given AppSpinner will be rendered.
- * @param {(newValue: Object) => void} [props.onShippingRatesChange] Callback called with new data once shipping rates are changed. Forwarded from {@link Form.Props.onChange}.
+ * @param {(newValue: Object) => void} [props.onShippingRatesChange] Callback called with new data once shipping rates are changed.
  * @param {Array<ShippingTime>} props.shippingTimes Shipping times data, if not given AppSpinner will be rendered.
- * @param {(newValue: Object) => void} [props.onShippingTimesChange] Callback called with new data once shipping times are changed. Forwarded from {@link Form.Props.onChange}.
+ * @param {(newValue: Object) => void} [props.onShippingTimesChange] Callback called with new data once shipping times are changed.
  * @param {() => boolean | Promise<boolean>} [props.onRequestSubmit] Callback called before the form is submitted. If it returns false, the form will not be submitted.
  * @param {() => void} [props.onContinue] Callback called once continue button is clicked. Could be async. While it's being resolved the form would turn into a saving state.
  * @param {string} props.submitLabel Submit button label.

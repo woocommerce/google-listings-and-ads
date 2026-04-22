@@ -8,20 +8,15 @@ import { __ } from '@wordpress/i18n';
  */
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import Section from '~/components/section';
-import AppSpinner from '~/components/app-spinner';
 import CountriesTimeInput from './countries-time-input';
 
 /**
- * Form control to edit shipping rate settings.
+ * Form control to edit shipping time settings.
  */
 const ShippingTimeSetup = () => {
 	const {
-		adapter: { audienceCountries, renderRequestedValidation },
+		adapter: { renderRequestedValidation },
 	} = useAdaptiveFormContext();
-
-	if ( ! audienceCountries ) {
-		return <AppSpinner />;
-	}
 
 	return (
 		<Section.Card>
