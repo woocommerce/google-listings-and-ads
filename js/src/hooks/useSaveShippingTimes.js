@@ -51,7 +51,6 @@ const useSaveShippingTimes = () => {
 		 * @throws Will throw an error if any request failed.
 		 */
 		async ( newShippingTimes ) => {
-			console.log( 'Saving shipping times...', { newShippingTimes } );
 			const deletedCountryCodes = getDeletedCountryCodes(
 				newShippingTimes,
 				oldShippingTimes

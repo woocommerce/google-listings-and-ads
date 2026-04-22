@@ -39,12 +39,6 @@ const useSaveShippingRates = () => {
 		 * @throws Will throw an error if any request failed.
 		 */
 		async ( newShippingRates ) => {
-			console.log(
-				'Saving shipping rates. New:',
-				newShippingRates,
-				'Old:',
-				oldShippingRates
-			);
 			const deleteIds = getDeleteIds(
 				newShippingRates,
 				oldShippingRates
