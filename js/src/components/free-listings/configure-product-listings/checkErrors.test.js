@@ -203,10 +203,7 @@ describe( 'checkErrors', () => {
 				const values = {
 					...defaultFormValues,
 					shipping_rate: 'flat',
-					shipping_country_rates: toRates(
-						[ 'US', 0 ],
-						[ 'JP', 0 ]
-					),
+					shipping_country_rates: toRates( [ 'US', 0 ], [ 'JP', 0 ] ),
 					offer_free_shipping: undefined,
 				};
 
@@ -235,10 +232,7 @@ describe( 'checkErrors', () => {
 				const values = {
 					...defaultFormValues,
 					shipping_rate: 'flat',
-					shipping_country_rates: toRates(
-						[ 'US', 0 ],
-						[ 'JP', 1 ]
-					),
+					shipping_country_rates: toRates( [ 'US', 0 ], [ 'JP', 1 ] ),
 					offer_free_shipping: true,
 				};
 
@@ -254,10 +248,7 @@ describe( 'checkErrors', () => {
 				const values = {
 					...defaultFormValues,
 					shipping_rate: 'automatic',
-					shipping_country_rates: toRates(
-						[ 'US', 0 ],
-						[ 'JP', 1 ]
-					),
+					shipping_country_rates: toRates( [ 'US', 0 ], [ 'JP', 1 ] ),
 					offer_free_shipping: undefined,
 				};
 
@@ -270,10 +261,7 @@ describe( 'checkErrors', () => {
 				const values = {
 					...defaultFormValues,
 					shipping_rate: 'manual',
-					shipping_country_rates: toRates(
-						[ 'US', 0 ],
-						[ 'JP', 1 ]
-					),
+					shipping_country_rates: toRates( [ 'US', 0 ], [ 'JP', 1 ] ),
 					offer_free_shipping: true,
 				};
 
