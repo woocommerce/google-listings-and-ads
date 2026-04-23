@@ -343,8 +343,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags(
 			CouponHelper::class,
 			CouponMetaHandler::class,
-			WC::class,
-			MerchantCenterService::class
+			WC::class
 		);
 		$this->share_with_tags(
 			CouponSyncer::class,
