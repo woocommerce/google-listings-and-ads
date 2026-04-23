@@ -64,8 +64,6 @@ const GoogleAdsPromo = () => {
 		return null;
 	}
 
-	console.log( 'hasGoogleMCConnection', hasGoogleMCConnection );
-
 	if ( hasGoogleMCConnection ) {
 		return <ChannelVisibilitySettings />;
 	}
