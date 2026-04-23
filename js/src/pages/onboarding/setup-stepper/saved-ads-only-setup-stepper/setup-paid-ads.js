@@ -8,7 +8,6 @@ import { useState, useRef } from '@wordpress/element';
  * Internal dependencies
  */
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
-import useCYOIncentives from '~/hooks/useCYOIncentives';
 import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import AdsCampaign from '~/components/paid-ads/ads-campaign';
 import BudgetIncentivePrompt from '~/components/paid-ads/budget-incentive-prompt';
@@ -17,12 +16,13 @@ import AppButton from '~/components/app-button';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
-import {
-	GOOGLE_ADS_BILLING_STATUS,
-	CYO_INCENTIVES_ONBOARDING_SETUP_ADS_CONTEXT,
-} from '~/constants';
+import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import { ACTION_CONTINUE, ACTION_SKIP } from '../constants';
-import { FILTER_BUDGET_RECOMMENDATIONS, recordGlaEvent } from '~/utils/tracks';
+import {
+	FILTER_BUDGET_RECOMMENDATIONS,
+	CONTEXT_ADS_ONLY_ONBOARDING,
+	recordGlaEvent,
+} from '~/utils/tracks';
 import SkipButton from '../skip-button';
 import clientSession from '../clientSession';
 import AppSpinner from '~/components/app-spinner';
@@ -44,41 +44,32 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 		redeemIncentive,
 		result: incentiveResult,
 	} = useApplyCYOIncentive();
-	const {
-		defaultIncentiveId,
-		hasFinishedResolution: hasResolvedCyoIncentives,
-	} = useCYOIncentives();
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
-
-	const { data: incentives } = useCYOIncentives();
 	const isServiceBasedMerchant = useServiceBasedMerchant();
 
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
-	const skipCreatePaidAds = async ( incentiveId ) => {
+	const skipCreatePaidAds = async ( incentiveOffer ) => {
 		setCompleting( ACTION_SKIP );
 
 		try {
-			await applyIncentive( incentiveId );
+			const applied = await applyIncentive( incentiveOffer );
+
+			if ( applied ) {
+				recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
+					context: CONTEXT_ADS_ONLY_ONBOARDING,
+					is_service_based_merchant: isServiceBasedMerchant,
+					level: incentiveOffer,
+				} );
+			}
 		} catch ( error ) {
 			setCompleting( null );
 			return;
 		}
-		if ( incentiveId ) {
-			const selectedIncentive = incentives?.find(
-				( incentive ) =>
-					String( incentive.id ) === String( incentiveId )
-			);
 
-			recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
-				context: CYO_INCENTIVES_ONBOARDING_SETUP_ADS_CONTEXT,
-				is_service_based_merchant: isServiceBasedMerchant,
-				level: selectedIncentive?.offer,
-			} );
-		}
 		onSkip();
 	};
 
@@ -86,7 +77,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 		const { isValidForm, values } = formContext;
 
 		const handleSkipCreatePaidAds = () => {
-			skipCreatePaidAds( values.incentiveId );
+			skipCreatePaidAds( values.incentiveOffer );
 		};
 
 		return (
@@ -109,7 +100,18 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 
 		const handleClick = async () => {
 			try {
-				await applyIncentive( values.incentiveId );
+				const applied = await applyIncentive( values.incentiveOffer );
+
+				if ( applied ) {
+					recordGlaEvent(
+						'gla_onboarding_with_cyo_incentive_selected',
+						{
+							context: CONTEXT_ADS_ONLY_ONBOARDING,
+							is_service_based_merchant: isServiceBasedMerchant,
+							level: values.incentiveOffer,
+						}
+					);
+				}
 
 				budgetPromptRef.current
 					.resolve( values.dailyBudget )
@@ -145,30 +147,12 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 		...clientSession.getCampaign(),
 	};
 
-	if ( ! countryCodes || ! hasResolvedCyoIncentives ) {
+	if ( ! countryCodes ) {
 		return <AppSpinner />;
 	}
 
 	const handleSubmit = async ( values ) => {
-		const {
-			level,
-			dailyBudget,
-			hasConfirmedEuPoliticalContent,
-			incentiveId,
-		} = values;
-
-		if ( incentiveId ) {
-			const selectedIncentive = incentives?.find(
-				( incentive ) =>
-					String( incentive.id ) === String( incentiveId )
-			);
-
-			recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
-				context: CYO_INCENTIVES_ONBOARDING_SETUP_ADS_CONTEXT,
-				is_service_based_merchant: isServiceBasedMerchant,
-				level: selectedIncentive?.offer,
-			} );
-		}
+		const { level, dailyBudget, hasConfirmedEuPoliticalContent } = values;
 
 		setCompleting( ACTION_CONTINUE );
 
@@ -189,7 +173,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 
 	return (
 		<CampaignAssetsForm
-			initialCampaign={ { incentiveId: defaultIncentiveId, ...paidAds } }
+			initialCampaign={ paidAds }
 			countryCodes={ countryCodes }
 			onChange={ ( _, values ) => {
 				clientSession.setCampaign( values );
@@ -205,7 +189,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 				skipButton={ createSkipButton }
 				incentiveResult={ incentiveResult }
 				onRetryIncentive={ redeemIncentive }
-				context="setup-ads-only"
+				context={ CONTEXT_ADS_ONLY_ONBOARDING }
 			/>
 			<BudgetIncentivePrompt
 				ref={ budgetPromptRef }

@@ -34,11 +34,13 @@ const CyoIncentivePicker = ( { context, incentiveResult, onRetry = noop } ) => {
 	const { data: incentives, hasFinishedResolution } = useCYOIncentives();
 	const { formatAmount } = useAdsCurrency();
 	const isServiceBasedMerchant = useServiceBasedMerchant();
+	const {
+		value: selectedIncentiveOffer,
+		onChange,
+		...restInputProps
+	} = getInputProps( 'incentiveOffer' );
 
 	const shouldDisplay = hasFinishedResolution && incentives?.length > 0;
-
-	const { value: selectedIncentiveId, ...restInputProps } =
-		getInputProps( 'incentiveId' );
 
 	useEffect( () => {
 		if ( shouldDisplay ) {
@@ -54,7 +56,7 @@ const CyoIncentivePicker = ( { context, incentiveResult, onRetry = noop } ) => {
 	}
 
 	const handleOnRetryClick = () => {
-		onRetry( selectedIncentiveId );
+		onRetry( selectedIncentiveOffer );
 	};
 
 	const options = [ 'low', 'medium', 'high' ].reduce( ( acc, offer ) => {
@@ -70,28 +72,23 @@ const CyoIncentivePicker = ( { context, incentiveResult, onRetry = noop } ) => {
 				awardAmount: item.requirement.spend.awardAmount.units,
 				radioProps: {
 					...restInputProps,
-					checked: selectedIncentiveId === item.id,
-					value: item.id,
+					onChange,
+					checked: selectedIncentiveOffer === item.offer,
+					value: item.offer,
 				},
 			} );
 		}
 		return acc;
 	}, [] );
 
-	const handleIncentiveChange = ( incentiveId ) => {
-		restInputProps.onChange( incentiveId );
+	const handleIncentiveChange = ( offer ) => {
+		onChange( offer );
 
-		const selectedOption = options.find(
-			( option ) => String( option.id ) === String( incentiveId )
-		);
-
-		if ( selectedOption ) {
-			recordGlaEvent( 'gla_cyo_incentive_selected', {
-				context,
-				is_service_based_merchant: isServiceBasedMerchant,
-				level: selectedOption.offer,
-			} );
-		}
+		recordGlaEvent( 'gla_cyo_incentive_selected', {
+			context,
+			is_service_based_merchant: isServiceBasedMerchant,
+			level: offer,
+		} );
 	};
 
 	return (
