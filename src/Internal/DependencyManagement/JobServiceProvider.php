@@ -32,7 +32,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\MigrateGTIN;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\CouponNotificationJob;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ProductNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\SettingsNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ShippingNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
@@ -128,13 +127,6 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_coupon_syncer_job( UpdateCoupon::class );
 		$this->share_coupon_syncer_job( DeleteCoupon::class );
 
-		// share product notifications job
-		$this->share_action_scheduler_job(
-			ProductNotificationJob::class,
-			NotificationsService::class,
-			ProductHelper::class
-		);
-
 		// share coupon notifications job
 		$this->share_action_scheduler_job(
 			CouponNotificationJob::class,
@@ -162,7 +154,6 @@ class JobServiceProvider extends AbstractServiceProvider {
 			ProductHelper::class,
 			JobRepository::class,
 			MerchantCenterService::class,
-			NotificationsService::class,
 			WC::class
 		);
 
