@@ -59,7 +59,6 @@ export default function SetupPaidAds() {
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
 	const { syncSettings } = useAppDispatch();
-	const isServiceBasedMerchant = useServiceBasedMerchant();
 	const { handleError: handleEuPoliticalDeclarationError } =
 		useEuPoliticalDeclarationContext();
 	const {
@@ -108,7 +107,6 @@ export default function SetupPaidAds() {
 			if ( applied ) {
 				recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
 					context: CONTEXT_EXTENSION_ONBOARDING,
-					is_service_based_merchant: isServiceBasedMerchant,
 					level: incentiveOffer,
 				} );
 			}
@@ -187,7 +185,6 @@ export default function SetupPaidAds() {
 			if ( applied ) {
 				recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
 					context: CONTEXT_EXTENSION_ONBOARDING,
-					is_service_based_merchant: isServiceBasedMerchant,
 					level: incentiveOffer,
 				} );
 			}

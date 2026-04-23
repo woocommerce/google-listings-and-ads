@@ -8,7 +8,6 @@ import { useState, useRef } from '@wordpress/element';
  * Internal dependencies
  */
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
-import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import AdsCampaign from '~/components/paid-ads/ads-campaign';
 import BudgetIncentivePrompt from '~/components/paid-ads/budget-incentive-prompt';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
@@ -47,7 +46,6 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
-	const isServiceBasedMerchant = useServiceBasedMerchant();
 
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
@@ -61,7 +59,6 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 			if ( applied ) {
 				recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
 					context: CONTEXT_ADS_ONLY_ONBOARDING,
-					is_service_based_merchant: isServiceBasedMerchant,
 					level: incentiveOffer,
 				} );
 			}
@@ -107,7 +104,6 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 						'gla_onboarding_with_cyo_incentive_selected',
 						{
 							context: CONTEXT_ADS_ONLY_ONBOARDING,
-							is_service_based_merchant: isServiceBasedMerchant,
 							level: values.incentiveOffer,
 						}
 					);
