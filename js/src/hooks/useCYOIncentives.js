@@ -7,6 +7,11 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import { STORE_KEY } from '~/data/constants';
+import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
+import useGoogleAdsAccountBillingStatus from './useGoogleAdsAccountBillingStatus';
+
+const selectorName = 'getCYOIncentives';
+const PREFERRED_INCENTIVE_TIER = 'medium';
 
 /**
  * @typedef {Object} CYOIncentiveAmount
@@ -38,23 +43,54 @@ import { STORE_KEY } from '~/data/constants';
  * @typedef {Object} CYOIncentivesPayload
  * @property {CYOIncentive[]|null} data The list of CYO incentives, or `null` if not yet fetched.
  * @property {boolean} hasFinishedResolution Whether the data fetching has finished.
+ * @property {string|null} defaultIncentiveId The ID of the default incentive to pre-select, or `null` if not available.
  */
 
 /**
  * Custom hook to retrieve CYO incentives from the store.
+ * The incentives resolver is only triggered when billing is approved;
+ * otherwise the hook returns immediately with no data.
  *
  * @return {CYOIncentivesPayload} The CYO incentives payload.
  */
 const useCYOIncentives = () => {
-	return useSelect( ( select ) => {
-		const { getCYOIncentives, hasFinishedResolution } = select( STORE_KEY );
-		const data = getCYOIncentives();
+	const { billingStatus, hasFinishedResolution: hasResolvedBillingStatus } =
+		useGoogleAdsAccountBillingStatus();
 
-		return {
-			data,
-			hasFinishedResolution: hasFinishedResolution( 'getCYOIncentives' ),
-		};
-	} );
+	return useSelect(
+		( select ) => {
+			const isBillingCompleted =
+				billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
+
+			if ( ! isBillingCompleted ) {
+				return {
+					data: null,
+					defaultIncentiveId: null,
+					hasFinishedResolution: hasResolvedBillingStatus,
+				};
+			}
+
+			const selector = select( STORE_KEY );
+			const incentives = selector[ selectorName ]();
+			const hasResolvedIncentives = selector.hasFinishedResolution(
+				selectorName,
+				[]
+			);
+
+			return {
+				data: incentives,
+				defaultIncentiveId:
+					incentives?.find(
+						( incentive ) =>
+							incentive.offer === PREFERRED_INCENTIVE_TIER
+					)?.id ||
+					incentives?.[ 0 ]?.id ||
+					null,
+				hasFinishedResolution: hasResolvedIncentives,
+			};
+		},
+		[ billingStatus, hasResolvedBillingStatus ]
+	);
 };
 
 export default useCYOIncentives;

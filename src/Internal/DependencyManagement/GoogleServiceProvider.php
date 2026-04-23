@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAssetGenerationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsRecommendationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsIncentives;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
@@ -51,7 +52,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\RequestInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\ResponseInterface;
-use Google\Ads\GoogleAds\Util\V22\GoogleAdsFailures;
+use Google\Ads\GoogleAds\Util\V23\GoogleAdsFailures;
 use Jetpack_Options;
 
 defined( 'ABSPATH' ) || exit;
@@ -82,6 +83,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		Merchant::class                  => true,
 		MerchantMetrics::class           => true,
 		Ads::class                       => true,
+		AdsIncentives::class             => true,
 		AdsAssetGroup::class             => true,
 		AdsCampaign::class               => true,
 		AdsCampaignAsset::class          => true,
@@ -119,6 +121,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->add( Settings::class );
 
 		$this->share( Ads::class, GoogleAdsClient::class );
+		$this->share( AdsIncentives::class, GoogleAdsClient::class );
 		$this->share( AdsAssetGroup::class, GoogleAdsClient::class, AdsAssetGroupAsset::class, AdsCampaign::class );
 		$this->share( AdsCampaign::class, GoogleAdsClient::class, AdsCampaignBudget::class, AdsCampaignCriterion::class, GoogleHelper::class, AdsCampaignLabel::class, AdsCampaignAsset::class );
 		$this->share( AdsCampaignAsset::class, GoogleAdsClient::class );

@@ -302,12 +302,20 @@ export default class MockRequests {
 	 * Fulfill the YouTube Account Connection request.
 	 *
 	 * @param {Object} payload
+	 * @param {number} [status=200]
+	 * @param {Array} [methods=[]]
 	 * @return {Promise<void>}
 	 */
-	async fulfillYouTubeAccountConnection( payload ) {
+	async fulfillYouTubeAccountConnection(
+		payload,
+		status = 200,
+		methods = []
+	) {
 		await this.fulfillRequest(
 			/\/wc\/gla\/youtube\/connection\b/,
-			payload
+			payload,
+			status,
+			methods
 		);
 	}
 
@@ -1162,6 +1170,19 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Mock the YouTube disconnect request.
+	 *
+	 * wordpress/api-fetch's http-v1 middleware converts DELETE to POST with
+	 * an X-HTTP-Method-Override: DELETE header, so we intercept POST here and
+	 * let GET requests fall through to the connection-state mock.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockYouTubeDisconnect() {
+		await this.fulfillYouTubeAccountConnection( {}, 200, [ 'POST' ] );
+	}
+
+	/**
 	 * Mock helper that simulates an incomplete YouTube account connection by calling
 	 * `fulfillYouTubeAccountConnection` with a predefined payload.
 	 *
@@ -1358,5 +1379,44 @@ export default class MockRequests {
 			status,
 			[ 'POST' ]
 		);
+	}
+
+	/**
+	 * Mocks a request for missing EU declaration campaigns.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned.
+	 * @param {number} [status=200] - The HTTP status code to be returned. Defaults to 200.
+	 * @return {Promise<void>} A promise that resolves when the request is mocked.
+	 */
+	async fulfillMissingEUDeclarationCampaigns( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/campaigns\/missing-eu-political-declaration\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Mocks the presence of campaigns missing EU political declarations.
+	 */
+	async mockHasMissingEUDeclarationCampaigns() {
+		await this.fulfillMissingEUDeclarationCampaigns( [
+			{
+				id: 12345,
+				name: 'Campaign 1',
+			},
+			{
+				id: 23456,
+				name: 'Campaign 2',
+			},
+		] );
+	}
+
+	/**
+	 * Mocks the absence of campaigns missing EU political declarations.
+	 */
+	async mockHasNoMissingEUDeclarationCampaigns() {
+		await this.fulfillMissingEUDeclarationCampaigns( [] );
 	}
 }
