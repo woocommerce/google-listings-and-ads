@@ -72,7 +72,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 
 			recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
 				is_service_based_merchant: isServiceBasedMerchant,
-				offer: selectedIncentive?.offer,
+				level: selectedIncentive?.offer,
 			} );
 		}
 		onSkip();
@@ -161,7 +161,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 
 			recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
 				is_service_based_merchant: isServiceBasedMerchant,
-				offer: selectedIncentive?.offer,
+				level: selectedIncentive?.offer,
 			} );
 		}
 

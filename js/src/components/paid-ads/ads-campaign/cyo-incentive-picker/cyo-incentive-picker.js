@@ -87,7 +87,7 @@ const CyoIncentivePicker = ( { context, incentiveResult, onRetry = noop } ) => {
 		if ( selectedOption ) {
 			recordGlaEvent( 'gla_cyo_incentive_selected', {
 				is_service_based_merchant: isServiceBasedMerchant,
-				offer: selectedOption.offer,
+				level: selectedOption.offer,
 			} );
 		}
 	};
