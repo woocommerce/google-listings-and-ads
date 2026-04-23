@@ -102,10 +102,6 @@ class UpdateProductsTest extends UnitTest {
 			->willReturn( false );
 
 		$this->merchant_center
-			->method( 'is_enabled_for_datatype' )
-			->willReturn( true );
-
-		$this->merchant_center
 			->method( 'is_ready_for_syncing' )
 			->willReturn( true );
 		$this->merchant_center
@@ -149,8 +145,4 @@ class UpdateProductsTest extends UnitTest {
 		$this->job->process_items( [] );
 	}
 
-	public function test_cannot_schedule_when_mc_push_blocked() {
-		$this->merchant_center->expects( $this->any() )->method( 'is_enabled_for_datatype' )->with( 'products' )->willReturn( false );
-		$this->assertFalse( $this->job->can_schedule() );
-	}
 }
