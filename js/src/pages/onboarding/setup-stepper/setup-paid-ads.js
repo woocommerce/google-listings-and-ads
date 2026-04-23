@@ -111,13 +111,16 @@ export default function SetupPaidAds() {
 			setCompleting( null );
 			return;
 		}
+
 		if ( incentiveId ) {
-			const incentive = incentives?.find(
-				( i ) => String( i.id ) === String( incentiveId )
+			const selectedIncentive = incentives?.find(
+				( incentive ) =>
+					String( incentive.id ) === String( incentiveId )
 			);
+
 			recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
 				is_service_based_merchant: isServiceBasedMerchant,
-				offer: incentive?.offer,
+				offer: selectedIncentive?.offer,
 			} );
 		}
 
@@ -213,12 +216,14 @@ export default function SetupPaidAds() {
 		}
 
 		if ( incentiveId ) {
-			const incentive = incentives?.find(
-				( i ) => String( i.id ) === String( incentiveId )
+			const selectedIncentive = incentives?.find(
+				( incentive ) =>
+					String( incentive.id ) === String( incentiveId )
 			);
+
 			recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
 				is_service_based_merchant: isServiceBasedMerchant,
-				offer: incentive?.offer,
+				offer: selectedIncentive?.offer,
 			} );
 		}
 

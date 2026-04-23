@@ -77,15 +77,17 @@ const CyoIncentivePicker = ( { context, incentiveResult, onRetry = noop } ) => {
 		return acc;
 	}, [] );
 
-	const handleIncentiveChange = ( id ) => {
-		restInputProps.onChange( id );
-		const option = options.find(
-			( opt ) => String( opt.id ) === String( id )
+	const handleIncentiveChange = ( incentiveId ) => {
+		restInputProps.onChange( incentiveId );
+
+		const selectedOption = options.find(
+			( option ) => String( option.id ) === String( incentiveId )
 		);
-		if ( option ) {
+
+		if ( selectedOption ) {
 			recordGlaEvent( 'gla_cyo_incentive_selected', {
 				is_service_based_merchant: isServiceBasedMerchant,
-				offer: option.offer,
+				offer: selectedOption.offer,
 			} );
 		}
 	};
