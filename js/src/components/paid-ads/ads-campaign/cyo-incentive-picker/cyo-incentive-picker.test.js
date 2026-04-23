@@ -20,7 +20,6 @@ jest.mock( '~/components/adaptive-form', () => ( {
 } ) );
 jest.mock( '~/hooks/useCYOIncentives' );
 jest.mock( '~/hooks/useGoogleAdsAccountBillingStatus' );
-jest.mock( '~/hooks/useServiceBasedMerchant' );
 jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn(),
 } ) );
@@ -119,8 +118,6 @@ describe( 'CyoIncentivePicker Component', () => {
 		useGoogleAdsAccountBillingStatus.mockReturnValue( {
 			billingStatus: { status: 'approved' },
 		} );
-
-		useServiceBasedMerchant.mockReturnValue( false );
 	} );
 
 	it( 'should render the component', () => {
@@ -338,30 +335,27 @@ describe( 'CyoIncentivePicker Component', () => {
 		render( <CyoIncentivePicker context="setup-mc" /> );
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_cyo_incentive_picker_shown',
-			{ context: 'setup-mc', is_service_based_merchant: false }
+			{ context: 'setup-mc' }
 		);
 	} );
 
 	it( 'should track gla_cyo_incentive_picker_shown with isServiceBasedMerchant true', () => {
-		useServiceBasedMerchant.mockReturnValue( true );
 		render( <CyoIncentivePicker context="setup-mc" /> );
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_cyo_incentive_picker_shown',
-			{ context: 'setup-mc', is_service_based_merchant: true }
+			{ context: 'setup-mc' }
 		);
 	} );
 
 	it( 'should track gla_cyo_incentive_picker_shown only once when isServiceBasedMerchant resolves after shouldDisplay', () => {
-		useServiceBasedMerchant.mockReturnValue( undefined );
 		const { rerender } = renderComponent();
 
 		expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_cyo_incentive_picker_shown',
-			{ context: 'setup-mc', is_service_based_merchant: undefined }
+			{ context: 'setup-mc' }
 		);
 
-		useServiceBasedMerchant.mockReturnValue( true );
 		rerender(
 			<CyoIncentivePicker
 				context="setup-mc"
@@ -391,7 +385,7 @@ describe( 'CyoIncentivePicker Component', () => {
 
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_cyo_incentive_picker_shown',
-			{ context: 'setup-mc', is_service_based_merchant: false }
+			{ context: 'setup-mc' }
 		);
 
 		fireEvent.click( radioButtons[ 0 ] );
@@ -399,7 +393,6 @@ describe( 'CyoIncentivePicker Component', () => {
 			'gla_cyo_incentive_selected',
 			{
 				context: 'setup-mc',
-				is_service_based_merchant: false,
 				level: 'low',
 			}
 		);
@@ -409,7 +402,6 @@ describe( 'CyoIncentivePicker Component', () => {
 			'gla_cyo_incentive_selected',
 			{
 				context: 'setup-mc',
-				is_service_based_merchant: false,
 				level: 'medium',
 			}
 		);
@@ -419,7 +411,6 @@ describe( 'CyoIncentivePicker Component', () => {
 			'gla_cyo_incentive_selected',
 			{
 				context: 'setup-mc',
-				is_service_based_merchant: false,
 				level: 'high',
 			}
 		);

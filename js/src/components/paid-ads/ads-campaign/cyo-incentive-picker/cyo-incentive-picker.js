@@ -4,7 +4,11 @@
 import { noop } from 'lodash';
 import { __, sprintf } from '@wordpress/i18n';
 import { RadioControl, Notice, Flex, FlexItem } from '@wordpress/components';
-import { createInterpolateElement, useEffect, useRef } from '@wordpress/element';
+import {
+	createInterpolateElement,
+	useEffect,
+	useRef,
+} from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -16,7 +20,6 @@ import Subsection from '~/components/subsection';
 import AppDocumentationLink from '~/components/app-documentation-link';
 import useCYOIncentives from '~/hooks/useCYOIncentives';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
-import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import { recordGlaEvent } from '~/utils/tracks';
 import './cyo-incentive-picker.scss';
 
@@ -33,7 +36,6 @@ const CyoIncentivePicker = ( { context, incentiveResult, onRetry = noop } ) => {
 	const { getInputProps } = useAdaptiveFormContext();
 	const { data: incentives, hasFinishedResolution } = useCYOIncentives();
 	const { formatAmount } = useAdsCurrency();
-	const isServiceBasedMerchant = useServiceBasedMerchant();
 	const {
 		value: selectedIncentiveOffer,
 		onChange,
@@ -48,10 +50,9 @@ const CyoIncentivePicker = ( { context, incentiveResult, onRetry = noop } ) => {
 			hasTrackedShownRef.current = true;
 			recordGlaEvent( 'gla_cyo_incentive_picker_shown', {
 				context,
-				is_service_based_merchant: isServiceBasedMerchant,
 			} );
 		}
-	}, [ context, shouldDisplay, isServiceBasedMerchant ] );
+	}, [ context, shouldDisplay ] );
 
 	if ( ! shouldDisplay ) {
 		return null;
@@ -88,7 +89,6 @@ const CyoIncentivePicker = ( { context, incentiveResult, onRetry = noop } ) => {
 
 		recordGlaEvent( 'gla_cyo_incentive_selected', {
 			context,
-			is_service_based_merchant: isServiceBasedMerchant,
 			level: offer,
 		} );
 	};
