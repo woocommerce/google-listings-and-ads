@@ -75,6 +75,37 @@ class AdsCampaignAsset implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Create operations to link newly created brand assets to a campaign.
+	 *
+	 * @param string $campaign_resource_name  Campaign resource name.
+	 * @param array  $business_name_resources Array of asset resource names to link as BUSINESS_NAME.
+	 * @param array  $logo_resources          Array of asset resource names to link as LOGO.
+	 *
+	 * @return MutateOperation[]
+	 */
+	public function create_link_operations_for_resources( string $campaign_resource_name, array $business_name_resources = [], array $logo_resources = [] ): array {
+		$operations = [];
+
+		foreach ( $business_name_resources as $asset_resource ) {
+			$operations[] = $this->create_campaign_asset_operation_for_resource(
+				$campaign_resource_name,
+				$asset_resource,
+				AssetFieldTypeEnum::BUSINESS_NAME
+			);
+		}
+
+		foreach ( $logo_resources as $asset_resource ) {
+			$operations[] = $this->create_campaign_asset_operation_for_resource(
+				$campaign_resource_name,
+				$asset_resource,
+				AssetFieldTypeEnum::LOGO
+			);
+		}
+
+		return $operations;
+	}
+
+	/**
 	 * Create a campaign asset link operation.
 	 *
 	 * @param string $campaign_resource Campaign resource name.
@@ -85,7 +116,19 @@ class AdsCampaignAsset implements OptionsAwareInterface {
 	 */
 	protected function create_campaign_asset_operation( string $campaign_resource, int $asset_id, int $field_type ): MutateOperation {
 		$asset_resource = ResourceNames::forAsset( $this->options->get_ads_id(), $asset_id );
+		return $this->create_campaign_asset_operation_for_resource( $campaign_resource, $asset_resource, $field_type );
+	}
 
+	/**
+	 * Create a campaign asset link operation from resource names.
+	 *
+	 * @param string $campaign_resource Campaign resource name.
+	 * @param string $asset_resource    Asset resource name.
+	 * @param int    $field_type        Asset field type enum value.
+	 *
+	 * @return MutateOperation
+	 */
+	protected function create_campaign_asset_operation_for_resource( string $campaign_resource, string $asset_resource, int $field_type ): MutateOperation {
 		$campaign_asset = new CampaignAsset(
 			[
 				'campaign'   => $campaign_resource,
