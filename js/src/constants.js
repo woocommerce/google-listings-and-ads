@@ -159,3 +159,7 @@ export const GEN_AI_ASSET_TYPES = {
 
 export const EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE =
 	'eu_political_advertising_declaration_required';
+
+export const CYO_INCENTIVES_ONBOARDING_SETUP_MC_CONTEXT = 'onboarding-setup-mc';
+export const CYO_INCENTIVES_ONBOARDING_SETUP_ADS_CONTEXT =
+	'onboarding-setup-ads-only';

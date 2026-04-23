@@ -335,19 +335,19 @@ describe( 'CyoIncentivePicker Component', () => {
 	} );
 
 	it( 'should track gla_cyo_incentive_picker_shown when rendered', () => {
-		render( <CyoIncentivePicker /> );
+		render( <CyoIncentivePicker context="setup-mc" /> );
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_cyo_incentive_picker_shown',
-			{ is_service_based_merchant: false }
+			{ context: 'setup-mc', is_service_based_merchant: false }
 		);
 	} );
 
 	it( 'should track gla_cyo_incentive_picker_shown with isServiceBasedMerchant true', () => {
 		useServiceBasedMerchant.mockReturnValue( true );
-		render( <CyoIncentivePicker /> );
+		render( <CyoIncentivePicker context="setup-mc" /> );
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_cyo_incentive_picker_shown',
-			{ is_service_based_merchant: true }
+			{ context: 'setup-mc', is_service_based_merchant: true }
 		);
 	} );
 
@@ -356,7 +356,7 @@ describe( 'CyoIncentivePicker Component', () => {
 			data: null,
 			hasFinishedResolution: true,
 		} );
-		render( <CyoIncentivePicker /> );
+		render( <CyoIncentivePicker context="setup-mc" /> );
 		expect( recordGlaEvent ).not.toHaveBeenCalledWith(
 			'gla_cyo_incentive_picker_shown',
 			expect.anything()
@@ -364,30 +364,42 @@ describe( 'CyoIncentivePicker Component', () => {
 	} );
 
 	it( 'should track gla_cyo_incentive_selected with offer level when selecting a radio', () => {
-		render( <CyoIncentivePicker /> );
+		render( <CyoIncentivePicker context="setup-mc" /> );
 		const radioButtons = screen.getAllByRole( 'radio' );
 
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_cyo_incentive_picker_shown',
-			{ is_service_based_merchant: false }
+			{ context: 'setup-mc', is_service_based_merchant: false }
 		);
 
 		fireEvent.click( radioButtons[ 0 ] );
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_cyo_incentive_selected',
-			{ is_service_based_merchant: false, level: 'low' }
+			{
+				context: 'setup-mc',
+				is_service_based_merchant: false,
+				level: 'low',
+			}
 		);
 
 		fireEvent.click( radioButtons[ 1 ] );
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_cyo_incentive_selected',
-			{ is_service_based_merchant: false, level: 'medium' }
+			{
+				context: 'setup-mc',
+				is_service_based_merchant: false,
+				level: 'medium',
+			}
 		);
 
 		fireEvent.click( radioButtons[ 2 ] );
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_cyo_incentive_selected',
-			{ is_service_based_merchant: false, level: 'high' }
+			{
+				context: 'setup-mc',
+				is_service_based_merchant: false,
+				level: 'high',
+			}
 		);
 	} );
 } );

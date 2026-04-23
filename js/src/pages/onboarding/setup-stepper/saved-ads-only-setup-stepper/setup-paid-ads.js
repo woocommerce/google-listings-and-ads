@@ -17,7 +17,10 @@ import AppButton from '~/components/app-button';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
-import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
+import {
+	GOOGLE_ADS_BILLING_STATUS,
+	CYO_INCENTIVES_ONBOARDING_SETUP_ADS_CONTEXT,
+} from '~/constants';
 import { ACTION_CONTINUE, ACTION_SKIP } from '../constants';
 import { FILTER_BUDGET_RECOMMENDATIONS, recordGlaEvent } from '~/utils/tracks';
 import SkipButton from '../skip-button';
@@ -71,6 +74,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 			);
 
 			recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
+				context: CYO_INCENTIVES_ONBOARDING_SETUP_ADS_CONTEXT,
 				is_service_based_merchant: isServiceBasedMerchant,
 				level: selectedIncentive?.offer,
 			} );
@@ -160,6 +164,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 			);
 
 			recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
+				context: CYO_INCENTIVES_ONBOARDING_SETUP_ADS_CONTEXT,
 				is_service_based_merchant: isServiceBasedMerchant,
 				level: selectedIncentive?.offer,
 			} );

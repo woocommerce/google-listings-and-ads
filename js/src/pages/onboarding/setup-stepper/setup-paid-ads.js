@@ -25,6 +25,7 @@ import { useAppDispatch } from '~/data';
 import {
 	GUIDE_NAMES,
 	EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE,
+	CYO_INCENTIVES_ONBOARDING_SETUP_MC_CONTEXT,
 } from '~/constants';
 import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
 import SkipButton from './skip-button';
@@ -119,6 +120,7 @@ export default function SetupPaidAds() {
 			);
 
 			recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
+				context: CYO_INCENTIVES_ONBOARDING_SETUP_MC_CONTEXT,
 				is_service_based_merchant: isServiceBasedMerchant,
 				level: selectedIncentive?.offer,
 			} );
@@ -199,6 +201,7 @@ export default function SetupPaidAds() {
 				);
 
 				recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
+					context: CYO_INCENTIVES_ONBOARDING_SETUP_MC_CONTEXT,
 					is_service_based_merchant: isServiceBasedMerchant,
 					level: selectedIncentive?.offer,
 				} );

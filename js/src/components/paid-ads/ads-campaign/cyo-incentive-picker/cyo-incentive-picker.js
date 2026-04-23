@@ -43,10 +43,11 @@ const CyoIncentivePicker = ( { context, incentiveResult, onRetry = noop } ) => {
 	useEffect( () => {
 		if ( shouldDisplay ) {
 			recordGlaEvent( 'gla_cyo_incentive_picker_shown', {
+				context,
 				is_service_based_merchant: isServiceBasedMerchant,
 			} );
 		}
-	}, [ shouldDisplay, isServiceBasedMerchant ] );
+	}, [ context, shouldDisplay, isServiceBasedMerchant ] );
 
 	if ( ! shouldDisplay ) {
 		return null;
@@ -86,6 +87,7 @@ const CyoIncentivePicker = ( { context, incentiveResult, onRetry = noop } ) => {
 
 		if ( selectedOption ) {
 			recordGlaEvent( 'gla_cyo_incentive_selected', {
+				context,
 				is_service_based_merchant: isServiceBasedMerchant,
 				level: selectedOption.offer,
 			} );
