@@ -298,14 +298,24 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			// Create asset group operations.
 			$ad_asset_group = $this->container->get( AdsAssetGroup::class );
 
+			// Brand assets (business name, logo) must be linked at the campaign level when
+			// brand_guidelines_enabled is true. All other assets are linked at the asset group level.
+			$brand_operations = [];
+
 			// If final URL and assets are passed create operations for those.
 			if ( isset( $params['final_url'] ) && isset( $params['assets'] ) ) {
+				[ $brand_assets, $asset_group_assets ] = $this->partition_brand_assets( $params['assets'] );
+
 				$asset_group_operations = $ad_asset_group->create_operations_with_assets(
 					$this->temporary_resource_name(),
 					$params['name'],
 					$params['final_url'],
-					$params['assets']
+					$asset_group_assets
 				);
+
+				if ( ! empty( $brand_assets ) ) {
+					$brand_operations = $this->create_brand_asset_operations( $brand_assets );
+				}
 			} else {
 				// Create "empty" asset group operations.
 				$asset_group_operations = $ad_asset_group->create_operations(
@@ -325,6 +335,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$budget_operations,
 				$campaign_operations,
 				$asset_group_operations,
+				$brand_operations,
 				$criteria_operations
 			);
 
