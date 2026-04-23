@@ -649,6 +649,62 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
+	 * Split an assets array into brand assets (business name, logo) and the rest
+	 *
+	 * @param array $assets
+	 *
+	 * @return array{0: array, 1: array} [brand_assets, asset_group_assets]
+	 */
+	protected function partition_brand_assets( array $assets ): array {
+		$brand             = [];
+		$asset_group_level = [];
+
+		foreach ( $assets as $asset ) {
+			$field_type = $asset['field_type'] ?? '';
+			if ( AssetFieldType::BUSINESS_NAME === $field_type || AssetFieldType::LOGO === $field_type ) {
+				$brand[] = $asset;
+			} else {
+				$asset_group_level[] = $asset;
+			}
+		}
+
+		return [ $brand, $asset_group_level ];
+	}
+
+	/**
+	 * Build Asset create operations and matching CampaignAsset link operations for brand assets.
+	 *
+	 * @param array $brand_assets
+	 *
+	 * @return MutateOperation[]
+	 */
+	protected function create_brand_asset_operations( array $brand_assets ): array {
+		$asset_ops = $this->container->get( AdsAsset::class )->create_operations( $brand_assets );
+
+		$business_name_resources = [];
+		$logo_resources          = [];
+
+		foreach ( $asset_ops as $i => $asset_op ) {
+			$asset_resource = $asset_op->getAssetOperation()->getCreate()->getResourceName();
+			$field_type     = $brand_assets[ $i ]['field_type'] ?? '';
+
+			if ( AssetFieldType::BUSINESS_NAME === $field_type ) {
+				$business_name_resources[] = $asset_resource;
+			} elseif ( AssetFieldType::LOGO === $field_type ) {
+				$logo_resources[] = $asset_resource;
+			}
+		}
+
+		$link_ops = $this->campaign_asset->create_link_operations_for_resources(
+			$this->temporary_resource_name(),
+			$business_name_resources,
+			$logo_resources
+		);
+
+		return array_merge( $asset_ops, $link_ops );
+	}
+
+	/**
 	 * Returns a campaign create operation.
 	 *
 	 * @param string      $campaign_name
