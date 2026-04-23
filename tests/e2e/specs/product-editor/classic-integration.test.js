@@ -41,11 +41,14 @@ test.describe( 'Classic Product Editor integration', () => {
 		await Promise.all( [
 			mockRequests.mockJetpackConnected(),
 			mockRequests.mockGoogleConnected(),
+			mockRequests.mockMCConnected(),
 			mockRequests.mockAdsAccountConnected(),
 		] );
 	} );
 
 	test( 'Show Channel Visibility metabox with promo when Merchant Center is not connected', async () => {
+		await mockRequests.mockMCNotConnected();
+
 		await api.clearOnboardedMerchant();
 		await editorUtils.gotoAddProductPage();
 
@@ -54,6 +57,7 @@ test.describe( 'Classic Product Editor integration', () => {
 
 		// Resume the plugin to onboarded status so that the next test can carry over.
 		await api.setOnboardedMerchant();
+		await mockRequests.mockMCConnected();
 	} );
 
 	test( 'Show Channel Visibility metabox when Merchant Center is connected', async () => {
