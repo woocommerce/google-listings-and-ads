@@ -190,7 +190,7 @@ describe( 'checkErrors', () => {
 
 			it( 'When flat_shipping_rate is a negative number, should not pass', () => {
 				const values = { ...flatShipping, flat_shipping_rate: -1 };
-				const errors = checkErrors( values, [], [] );
+				const errors = checkErrors( values );
 				expect( errors ).toHaveProperty( 'flat_shipping_rate' );
 				expect( errors.flat_shipping_rate ).toMatchSnapshot();
 			} );

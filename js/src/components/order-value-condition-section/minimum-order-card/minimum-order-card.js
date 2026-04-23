@@ -44,14 +44,19 @@ const MinimumOrderCard = ( { value = [], helper, onChange } ) => {
 			return;
 		}
 		onChange(
-			value.map( ( rate ) => ( {
-				...rate,
-				options: {
-					...rate.options,
-					free_shipping_threshold:
-						numberValue > 0 ? numberValue : undefined,
-				},
-			} ) )
+			value.map( ( rate ) => {
+				if ( ! isNonFreeShippingRate( rate ) ) {
+					return rate;
+				}
+				return {
+					...rate,
+					options: {
+						...rate.options,
+						free_shipping_threshold:
+							numberValue > 0 ? numberValue : undefined,
+					},
+				};
+			} )
 		);
 	};
 

@@ -216,7 +216,7 @@ export default class ProductListingsPage extends MockRequests {
 	 */
 	getEstimatedShippingTimesNullError() {
 		return this.getEstimatedShippingTimesCard().getByText(
-			'Please specify estimated shipping times for all the countries, and the time cannot be less than 0.'
+			'Please specify an estimated minimum shipping time.'
 		);
 	}
 

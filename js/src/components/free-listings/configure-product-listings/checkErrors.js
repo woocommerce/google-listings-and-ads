@@ -52,7 +52,7 @@ const checkErrors = ( values ) => {
 	if ( values.shipping_rate === 'flat' ) {
 		if (
 			values.offer_free_shipping === true &&
-			values.shipping_country_rates.every(
+			( values.shipping_country_rates ?? [] ).every(
 				( shippingRate ) =>
 					shippingRate.options.free_shipping_threshold === undefined
 			)

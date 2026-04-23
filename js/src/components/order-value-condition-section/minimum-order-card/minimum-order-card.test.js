@@ -64,7 +64,10 @@ describe( 'MinimumOrderCard', () => {
 			mockFormContext( { offerFreeShipping: true } );
 
 			render(
-				<MinimumOrderCard value={ defaultRates } onChange={ onChange } />
+				<MinimumOrderCard
+					value={ defaultRates }
+					onChange={ onChange }
+				/>
 			);
 
 			expect( screen.getByRole( 'textbox' ) ).toHaveValue( '50.00' );
@@ -74,7 +77,10 @@ describe( 'MinimumOrderCard', () => {
 			mockFormContext( { offerFreeShipping: false } );
 
 			render(
-				<MinimumOrderCard value={ defaultRates } onChange={ onChange } />
+				<MinimumOrderCard
+					value={ defaultRates }
+					onChange={ onChange }
+				/>
 			);
 
 			expect( screen.queryByRole( 'textbox' ) ).toBeNull();
