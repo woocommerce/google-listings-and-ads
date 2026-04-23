@@ -10,9 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\CouponChannelVisib
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Redirect;
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\SystemStatusService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\ConnectionTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
@@ -73,7 +71,6 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		SetupAds::class            => true,
 		SetupMerchantCenter::class => true,
 		Shipping::class            => true,
-		SystemStatusService::class => true,
 		Service::class             => true,
 	];
 
@@ -118,6 +115,5 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		$this->share_with_tags( SetupAds::class );
 		$this->share_with_tags( SetupMerchantCenter::class );
 		$this->share_with_tags( Shipping::class );
-		$this->share_with_tags( SystemStatusService::class, NotificationsService::class, MerchantCenterService::class );
 	}
 }

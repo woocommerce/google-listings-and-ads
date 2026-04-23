@@ -8,7 +8,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
@@ -220,9 +219,6 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 	 * @return array
 	 */
 	public function get_connected_status(): array {
-		/** @var NotificationsService $notifications_service */
-		$notifications_service = $this->container->get( NotificationsService::class );
-
 		$id                    = $this->options->get_merchant_id();
 		$wpcom_rest_api_status = $this->options->get( OptionsInterface::WPCOM_REST_API_STATUS );
 
@@ -242,10 +238,9 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		}
 
 		$status = [
-			'id'                           => $id,
-			'status'                       => $id ? 'connected' : 'disconnected',
-			'notification_service_enabled' => $notifications_service->is_enabled(),
-			'wpcom_rest_api_status'        => $wpcom_rest_api_status,
+			'id'                    => $id,
+			'status'                => $id ? 'connected' : 'disconnected',
+			'wpcom_rest_api_status' => $wpcom_rest_api_status,
 		];
 
 		$incomplete = $this->state->last_incomplete_step();
