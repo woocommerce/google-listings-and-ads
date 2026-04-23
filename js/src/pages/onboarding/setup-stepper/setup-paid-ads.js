@@ -192,6 +192,18 @@ export default function SetupPaidAds() {
 			await applyIncentive( incentiveId );
 			setCompleting( ACTION_COMPLETE );
 
+			if ( incentiveId ) {
+				const selectedIncentive = incentives?.find(
+					( incentive ) =>
+						String( incentive.id ) === String( incentiveId )
+				);
+
+				recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
+					is_service_based_merchant: isServiceBasedMerchant,
+					level: selectedIncentive?.offer,
+				} );
+			}
+
 			const onBeforeFinish = handleSetupComplete.bind(
 				null,
 				dailyBudget,
@@ -214,38 +226,6 @@ export default function SetupPaidAds() {
 		} catch ( error ) {
 			setCompleting( null );
 		}
-
-		if ( incentiveId ) {
-			const selectedIncentive = incentives?.find(
-				( incentive ) =>
-					String( incentive.id ) === String( incentiveId )
-			);
-
-			recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
-				is_service_based_merchant: isServiceBasedMerchant,
-				level: selectedIncentive?.offer,
-			} );
-		}
-
-		const onBeforeFinish = handleSetupComplete.bind(
-			null,
-			dailyBudget,
-			countryCodes,
-			hasConfirmedEuPoliticalContent
-		);
-
-		setCompleting( ACTION_COMPLETE );
-
-		recordGlaEvent(
-			'gla_onboarding_complete_with_paid_ads_button_click',
-			getEventProps( {
-				level,
-				budget: dailyBudget,
-				audiences: countryCodes.join( ',' ),
-			} )
-		);
-
-		await finishOnboardingSetup( onBeforeFinish );
 	};
 
 	return (
