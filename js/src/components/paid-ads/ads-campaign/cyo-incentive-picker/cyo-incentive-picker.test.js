@@ -11,7 +11,6 @@ import CyoIncentivePicker from './cyo-incentive-picker';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useCYOIncentives from '~/hooks/useCYOIncentives';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
-import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import { recordGlaEvent } from '~/utils/tracks';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
 
