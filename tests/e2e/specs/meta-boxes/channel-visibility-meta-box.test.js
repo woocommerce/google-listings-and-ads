@@ -206,6 +206,7 @@ test.describe( 'Channel Visibility Meta Box', () => {
 			await setCompletedAdsSetup();
 			await mockRequests.mockJetpackConnected();
 			await mockRequests.mockGoogleConnected();
+			await mockRequests.mockMCConnected();
 			await mockRequests.mockAdsAccountConnected();
 		} );
 
@@ -213,6 +214,7 @@ test.describe( 'Channel Visibility Meta Box', () => {
 			await clearCompletedAdsSetup();
 			await page.unroute( /\/wc\/gla\/jetpack\/connected\b/ );
 			await page.unroute( /\/wc\/gla\/google\/connected\b/ );
+			await page.unroute( /\/wc\/gla\/mc\/connection\b/ );
 			await page.unroute( /\/wc\/gla\/ads\/connection\b/ );
 		} );
 
