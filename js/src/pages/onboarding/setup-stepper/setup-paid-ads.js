@@ -236,7 +236,7 @@ export default function SetupPaidAds() {
 				skipButton={ createSkipButton }
 				incentiveResult={ incentiveResult }
 				onRetryIncentive={ redeemIncentive }
-				context="setup-mc"
+				context={ CONTEXT_EXTENSION_ONBOARDING }
 			/>
 			<BudgetIncentivePrompt
 				ref={ budgetPromptRef }
