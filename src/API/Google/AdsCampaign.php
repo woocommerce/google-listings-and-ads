@@ -752,9 +752,6 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 					'feed_label'  => $country,
 				]
 			);
-		} else {
-			// Turn off brand guidelines for non-shopping campaigns.
-			$campaign_data['brand_guidelines_enabled'] = false;
 		}
 
 		$campaign = new Campaign( $campaign_data );
