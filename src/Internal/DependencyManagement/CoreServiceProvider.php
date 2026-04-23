@@ -32,6 +32,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migrator;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\TableManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Event\ClearProductStatsCache;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
@@ -74,7 +76,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaignTwoWeeks as S
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCouponSharing as SetupCouponSharingNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsSetupCompleted;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\Markets;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
@@ -242,9 +243,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Set up the TargetAudience service.
 		$this->share_with_tags( TargetAudience::class, WC::class, OptionsInterface::class, GoogleHelper::class );
 
-		// Set up the Markets options wrapper and MarketService.
-		$this->share_with_tags( Markets::class );
-		$this->share_with_tags( MarketService::class, TargetAudience::class );
+		// Set up the MarketService.
+		$this->share_with_tags( MarketService::class, TargetAudience::class, ShippingRateQuery::class, ShippingTimeQuery::class );
 
 		// Set up MerchantCenter service, and inflect classes that need it.
 		$this->share_with_tags( MerchantCenterService::class );
