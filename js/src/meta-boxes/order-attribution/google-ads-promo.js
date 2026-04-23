@@ -8,10 +8,10 @@ import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { glaData } from '~/constants';
 import { recordGlaEvent } from '~/utils/tracks';
 import { getCreateCampaignUrl, getGetStartedUrl } from '~/utils/urls';
 import AppButton from '~/components/app-button';
+import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useHasRecentAdSpend from '~/hooks/useHasRecentAdSpend';
 import googleLogoURL from '~/images/logo/google-g-logo.svg';
 import './google-ads-promo.scss';
@@ -50,76 +50,83 @@ import './google-ads-promo.scss';
  */
 const GoogleAdsPromo = () => {
 	const context = 'order-attribution-meta-box';
-	const { adsSetupComplete } = glaData;
-	const { hasAdSpend, hasFinishedResolution } = useHasRecentAdSpend();
+	const {
+		hasGoogleAdsConnection,
+		hasFinishedResolution: hasResolvedGoogleAdsAccount,
+	} = useGoogleAdsAccount();
+	const { hasAdSpend, hasFinishedResolution: hasResolvedRecentAdSpend } =
+		useHasRecentAdSpend();
 	const hasTrackedRef = useRef( false );
 
-	const isReadyToRender = hasFinishedResolution && ! hasAdSpend;
+	const isResolved = hasResolvedGoogleAdsAccount && hasResolvedRecentAdSpend;
+	const shouldShowPromo = isResolved && ! hasAdSpend;
 
 	useEffect( () => {
 		// Only fire if all conditions for rendering are met and not already tracked
-		if ( ! hasTrackedRef.current && isReadyToRender ) {
+		if ( ! hasTrackedRef.current && shouldShowPromo ) {
 			recordGlaEvent( 'gla_google_ads_promo_shown', {
 				context,
 			} );
 			hasTrackedRef.current = true;
 		}
-	}, [ isReadyToRender ] );
+	}, [ shouldShowPromo ] );
 
-	if ( ! isReadyToRender ) {
+	if ( ! shouldShowPromo ) {
 		return null;
 	}
 
-	const campaignUrl = getCreateCampaignUrl();
-	const getStartedUrl = getGetStartedUrl();
-
-	const content = adsSetupComplete
-		? {
-				title: __(
-					'Get more sales with Google Ads',
-					'google-listings-and-ads'
-				),
-				description: __(
-					'Launch a Google Ads campaign and get your products discovered by high-intent shoppers across Google',
-					'google-listings-and-ads'
-				),
-				cta: (
-					<AppButton
-						href={ campaignUrl }
-						eventName="gla_google_ads_promo_create_campaign_click"
-						eventProps={ {
-							href: campaignUrl,
-							context,
-						} }
-						isSecondary
-					>
-						{ __( 'Create campaign', 'google-listings-and-ads' ) }
-					</AppButton>
-				),
-		  }
-		: {
-				title: __(
-					'Get your products on Google',
-					'google-listings-and-ads'
-				),
-				description: __(
-					'Sync your products to reach customers when they’re searching for products like yours across Google',
-					'google-listings-and-ads'
-				),
-				cta: (
-					<AppButton
-						href={ getStartedUrl }
-						eventName="gla_google_ads_promo_get_started_click"
-						eventProps={ {
-							href: getStartedUrl,
-							context,
-						} }
-						isSecondary
-					>
-						{ __( 'Get started', 'google-listings-and-ads' ) }
-					</AppButton>
-				),
-		  };
+	let content;
+	if ( hasGoogleAdsConnection ) {
+		const campaignUrl = getCreateCampaignUrl();
+		content = {
+			title: __(
+				'Get more sales with Google Ads',
+				'google-listings-and-ads'
+			),
+			description: __(
+				'Launch a Google Ads campaign and get your products discovered by high-intent shoppers across Google',
+				'google-listings-and-ads'
+			),
+			cta: (
+				<AppButton
+					href={ campaignUrl }
+					eventName="gla_google_ads_promo_create_campaign_click"
+					eventProps={ {
+						href: campaignUrl,
+						context,
+					} }
+					isSecondary
+				>
+					{ __( 'Create campaign', 'google-listings-and-ads' ) }
+				</AppButton>
+			),
+		};
+	} else {
+		const getStartedUrl = getGetStartedUrl();
+		content = {
+			title: __(
+				'Get your products on Google',
+				'google-listings-and-ads'
+			),
+			description: __(
+				'Sync your products to reach customers when they’re searching for products like yours across Google',
+				'google-listings-and-ads'
+			),
+			cta: (
+				<AppButton
+					href={ getStartedUrl }
+					eventName="gla_google_ads_promo_get_started_click"
+					eventProps={ {
+						href: getStartedUrl,
+						context,
+					} }
+					isSecondary
+				>
+					{ __( 'Get started', 'google-listings-and-ads' ) }
+				</AppButton>
+			),
+		};
+	}
 
 	const { title, description, cta } = content;
 

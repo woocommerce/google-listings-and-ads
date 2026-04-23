@@ -7,6 +7,7 @@ import { expect, test, Page } from '@playwright/test';
  * Internal dependencies
  */
 import * as api from '../../utils/api';
+import MockRequests from '../../utils/mock-requests';
 import { getClassicProductEditorUtils } from '../../utils/product-editor';
 
 test.use( { storageState: process.env.ADMINSTATE } );
@@ -17,26 +18,46 @@ test.describe( 'Classic Product Editor integration', () => {
 	 * @type {Page}
 	 */
 	let page = null;
+
+	/**
+	 * @type {import('../../utils/product-editor.js').default} productEditor
+	 */
 	let editorUtils = null;
+
+	/**
+	 * @type {MockRequests}
+	 */
+	let mockRequests = null;
 
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		editorUtils = getClassicProductEditorUtils( page );
+		mockRequests = new MockRequests( page );
 
 		await api.setOnboardedMerchant();
 		await api.setCompletedAdsSetup();
 		await api.setVersionForHideGtin(); // be sure the version is set for hiding GTIN
+
+		await Promise.all( [
+			mockRequests.mockJetpackConnected(),
+			mockRequests.mockGoogleConnected(),
+			mockRequests.mockMCConnected(),
+			mockRequests.mockAdsAccountConnected(),
+		] );
 	} );
 
-	test( 'Hide Channel Visibility metabox when Merchant Center is not connected', async () => {
+	test( 'Show Channel Visibility metabox with promo when Merchant Center is not connected', async () => {
+		await mockRequests.mockMCNotConnected();
+
 		await api.clearOnboardedMerchant();
 		await editorUtils.gotoAddProductPage();
 
 		await expect( editorUtils.getPluginTab() ).toBeHidden();
-		await expect( editorUtils.getChannelVisibilityMetaBox() ).toBeHidden();
+		await expect( editorUtils.getChannelVisibilityMetaBox() ).toBeVisible();
 
 		// Resume the plugin to onboarded status so that the next test can carry over.
 		await api.setOnboardedMerchant();
+		await mockRequests.mockMCConnected();
 	} );
 
 	test( 'Show Channel Visibility metabox when Merchant Center is connected', async () => {

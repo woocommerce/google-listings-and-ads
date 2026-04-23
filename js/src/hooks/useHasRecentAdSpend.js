@@ -8,7 +8,8 @@ import { format } from '@wordpress/date';
  * Internal dependencies
  */
 import { STORE_KEY } from '~/data/constants';
-import { REPORT_SOURCE_PAID, glaData } from '~/constants';
+import { REPORT_SOURCE_PAID } from '~/constants';
+import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 
 /**
  * Returns the ISO date string for `daysAgo` days before today.
@@ -35,13 +36,16 @@ function getDateDaysAgo( daysAgo ) {
  * @return {HasRecentAdSpendPayload} Resolution state, and whether ad spend exists.
  */
 const useHasRecentAdSpend = ( days = 14 ) => {
+	const {
+		hasGoogleAdsConnection,
+		hasFinishedResolution: hasResolvedGoogleAdsAccount,
+	} = useGoogleAdsAccount();
+
 	return useSelect(
 		( select ) => {
-			const { adsSetupComplete } = glaData;
-
-			if ( ! adsSetupComplete ) {
+			if ( ! hasGoogleAdsConnection ) {
 				return {
-					hasFinishedResolution: true,
+					hasFinishedResolution: hasResolvedGoogleAdsAccount,
 					hasAdSpend: false,
 				};
 			}
@@ -67,7 +71,7 @@ const useHasRecentAdSpend = ( days = 14 ) => {
 				hasAdSpend: report?.totals?.spend > 0,
 			};
 		},
-		[ days ]
+		[ days, hasGoogleAdsConnection, hasResolvedGoogleAdsAccount ]
 	);
 };
 
