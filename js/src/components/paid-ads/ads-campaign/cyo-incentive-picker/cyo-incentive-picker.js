@@ -4,7 +4,7 @@
 import { noop } from 'lodash';
 import { __, sprintf } from '@wordpress/i18n';
 import { RadioControl, Notice, Flex, FlexItem } from '@wordpress/components';
-import { createInterpolateElement, useEffect } from '@wordpress/element';
+import { createInterpolateElement, useEffect, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -41,9 +41,11 @@ const CyoIncentivePicker = ( { context, incentiveResult, onRetry = noop } ) => {
 	} = getInputProps( 'incentiveOffer' );
 
 	const shouldDisplay = hasFinishedResolution && incentives?.length > 0;
+	const hasTrackedShownRef = useRef( false );
 
 	useEffect( () => {
-		if ( shouldDisplay ) {
+		if ( shouldDisplay && ! hasTrackedShownRef.current ) {
+			hasTrackedShownRef.current = true;
 			recordGlaEvent( 'gla_cyo_incentive_picker_shown', {
 				context,
 				is_service_based_merchant: isServiceBasedMerchant,

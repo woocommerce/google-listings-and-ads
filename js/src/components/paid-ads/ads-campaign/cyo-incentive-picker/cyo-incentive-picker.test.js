@@ -204,7 +204,7 @@ describe( 'CyoIncentivePicker Component', () => {
 	it( 'should set default selected incentive to medium offer', () => {
 		useAdaptiveFormContext.mockReturnValue( {
 			getInputProps: jest.fn().mockReturnValue( {
-				value: 456,
+				value: 'medium',
 				onChange: onIncentiveIdChange,
 			} ),
 		} );
@@ -217,13 +217,13 @@ describe( 'CyoIncentivePicker Component', () => {
 		expect( radioButtons[ 1 ] ).toBeChecked();
 	} );
 
-	it( 'should set incentiveId when selecting an offer', () => {
-		let selectedIncentiveId = null;
+	it( 'should call onChange with the offer level when selecting an offer', () => {
+		let selectedOffer = null;
 		useAdaptiveFormContext.mockReturnValue( {
 			getInputProps: jest.fn().mockImplementation( () => ( {
-				value: selectedIncentiveId,
+				value: selectedOffer,
 				onChange: ( value ) => {
-					selectedIncentiveId = value;
+					selectedOffer = value;
 					onIncentiveIdChange( value );
 				},
 			} ) ),
@@ -234,7 +234,7 @@ describe( 'CyoIncentivePicker Component', () => {
 		expect( radioButtons ).toHaveLength( 3 );
 
 		fireEvent.click( radioButtons[ 0 ] );
-		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 1, '789' );
+		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 1, 'low' );
 
 		rerender(
 			<CyoIncentivePicker
@@ -245,7 +245,7 @@ describe( 'CyoIncentivePicker Component', () => {
 		);
 		radioButtons = screen.getAllByRole( 'radio' );
 		fireEvent.click( radioButtons[ 1 ] );
-		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 2, '456' );
+		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 2, 'medium' );
 
 		rerender(
 			<CyoIncentivePicker
@@ -256,7 +256,7 @@ describe( 'CyoIncentivePicker Component', () => {
 		);
 		radioButtons = screen.getAllByRole( 'radio' );
 		fireEvent.click( radioButtons[ 2 ] );
-		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 3, '123' );
+		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 3, 'high' );
 	} );
 
 	describe( 'error state', () => {
@@ -349,6 +349,28 @@ describe( 'CyoIncentivePicker Component', () => {
 			'gla_cyo_incentive_picker_shown',
 			{ context: 'setup-mc', is_service_based_merchant: true }
 		);
+	} );
+
+	it( 'should track gla_cyo_incentive_picker_shown only once when isServiceBasedMerchant resolves after shouldDisplay', () => {
+		useServiceBasedMerchant.mockReturnValue( undefined );
+		const { rerender } = renderComponent();
+
+		expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_cyo_incentive_picker_shown',
+			{ context: 'setup-mc', is_service_based_merchant: undefined }
+		);
+
+		useServiceBasedMerchant.mockReturnValue( true );
+		rerender(
+			<CyoIncentivePicker
+				context="setup-mc"
+				incentiveResult={ { error: null, loading: false } }
+				onRetry={ onRetry }
+			/>
+		);
+
+		expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	it( 'should not track gla_cyo_incentive_picker_shown when not displayed', () => {
