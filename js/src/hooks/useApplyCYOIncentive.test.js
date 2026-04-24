@@ -9,11 +9,13 @@ import { renderHook } from '@testing-library/react';
 import useApplyCYOIncentive from './useApplyCYOIncentive';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useGoogleAdsAccountBillingStatus from './useGoogleAdsAccountBillingStatus';
+import useCYOIncentives from './useCYOIncentives';
 import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import { API_NAMESPACE } from '~/data/constants';
 
 jest.mock( '~/hooks/useApiFetchCallback' );
 jest.mock( './useGoogleAdsAccountBillingStatus' );
+jest.mock( './useCYOIncentives' );
 
 describe( 'useApplyCYOIncentive', () => {
 	let fetchApplyIncentive;
@@ -22,6 +24,7 @@ describe( 'useApplyCYOIncentive', () => {
 		jest.clearAllMocks();
 		fetchApplyIncentive = jest.fn().mockName( 'fetchApplyIncentive' );
 		useApiFetchCallback.mockReturnValue( [ fetchApplyIncentive, {} ] );
+		useCYOIncentives.mockReturnValue( { data: [] } );
 	} );
 
 	it( 'initializes useApiFetchCallback with the correct path and method', () => {
@@ -59,6 +62,9 @@ describe( 'useApplyCYOIncentive', () => {
 					status: GOOGLE_ADS_BILLING_STATUS.APPROVED,
 				},
 			} );
+			useCYOIncentives.mockReturnValue( {
+				data: [ { offer: 'incentive-123', id: 'incentive-123' } ],
+			} );
 		} );
 
 		it( 'delegates to redeemIncentive when there is no prior error', async () => {
@@ -75,7 +81,7 @@ describe( 'useApplyCYOIncentive', () => {
 			} );
 		} );
 
-		it( 'returns true without fetching when there is a prior error', async () => {
+		it( 'returns false without fetching when there is a prior error', async () => {
 			useApiFetchCallback.mockReturnValue( [
 				fetchApplyIncentive,
 				{ error: new Error( 'prior error' ) },
@@ -85,14 +91,14 @@ describe( 'useApplyCYOIncentive', () => {
 			const returnValue =
 				await result.current.applyIncentive( 'incentive-123' );
 
-			expect( returnValue ).toBe( true );
+			expect( returnValue ).toBe( false );
 			expect( fetchApplyIncentive ).not.toHaveBeenCalled();
 		} );
 	} );
 
 	describe( 'redeemIncentive', () => {
 		describe( 'when it should skip applying the incentive', () => {
-			it( 'returns true without fetching when incentiveId is falsy', async () => {
+			it( 'returns false when no matching incentive offer is found', async () => {
 				useGoogleAdsAccountBillingStatus.mockReturnValue( {
 					billingStatus: {
 						status: GOOGLE_ADS_BILLING_STATUS.APPROVED,
@@ -103,11 +109,11 @@ describe( 'useApplyCYOIncentive', () => {
 				const returnValue =
 					await result.current.redeemIncentive( undefined );
 
-				expect( returnValue ).toBe( true );
+				expect( returnValue ).toBe( false );
 				expect( fetchApplyIncentive ).not.toHaveBeenCalled();
 			} );
 
-			it( 'returns true without fetching when billing status is not yet loaded', async () => {
+			it( 'returns false when billing status is not yet loaded', async () => {
 				useGoogleAdsAccountBillingStatus.mockReturnValue( {
 					billingStatus: undefined,
 				} );
@@ -116,11 +122,11 @@ describe( 'useApplyCYOIncentive', () => {
 				const returnValue =
 					await result.current.redeemIncentive( 'incentive-123' );
 
-				expect( returnValue ).toBe( true );
+				expect( returnValue ).toBe( false );
 				expect( fetchApplyIncentive ).not.toHaveBeenCalled();
 			} );
 
-			it( 'returns true without fetching when billing is not approved', async () => {
+			it( 'returns false when billing is not approved', async () => {
 				useGoogleAdsAccountBillingStatus.mockReturnValue( {
 					billingStatus: { status: 'pending' },
 				} );
@@ -129,7 +135,7 @@ describe( 'useApplyCYOIncentive', () => {
 				const returnValue =
 					await result.current.redeemIncentive( 'incentive-123' );
 
-				expect( returnValue ).toBe( true );
+				expect( returnValue ).toBe( false );
 				expect( fetchApplyIncentive ).not.toHaveBeenCalled();
 			} );
 		} );
@@ -140,6 +146,9 @@ describe( 'useApplyCYOIncentive', () => {
 					billingStatus: {
 						status: GOOGLE_ADS_BILLING_STATUS.APPROVED,
 					},
+				} );
+				useCYOIncentives.mockReturnValue( {
+					data: [ { offer: 'incentive-123', id: 'incentive-123' } ],
 				} );
 			} );
 
