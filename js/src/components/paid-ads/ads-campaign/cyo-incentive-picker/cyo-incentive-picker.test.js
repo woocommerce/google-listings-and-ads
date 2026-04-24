@@ -10,7 +10,6 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import CyoIncentivePicker from './cyo-incentive-picker';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useCYOIncentives from '~/hooks/useCYOIncentives';
-import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 import { recordGlaEvent } from '~/utils/tracks';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
 
@@ -18,7 +17,6 @@ jest.mock( '~/components/adaptive-form', () => ( {
 	useAdaptiveFormContext: jest.fn(),
 } ) );
 jest.mock( '~/hooks/useCYOIncentives' );
-jest.mock( '~/hooks/useGoogleAdsAccountBillingStatus' );
 jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn(),
 } ) );
@@ -103,10 +101,6 @@ describe( 'CyoIncentivePicker Component', () => {
 		useCYOIncentives.mockReturnValue( {
 			data: INCENTIVES_DATA,
 			hasFinishedResolution: true,
-		} );
-
-		useGoogleAdsAccountBillingStatus.mockReturnValue( {
-			billingStatus: { status: 'approved' },
 		} );
 	} );
 
@@ -236,7 +230,7 @@ describe( 'CyoIncentivePicker Component', () => {
 		);
 	} );
 
-	it( 'should track gla_cyo_incentive_picker_shown with isServiceBasedMerchant true', () => {
+	it( 'should track gla_cyo_incentive_picker_shown with the correct context', () => {
 		render( <CyoIncentivePicker context="setup-mc" /> );
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_cyo_incentive_picker_shown',
@@ -244,7 +238,7 @@ describe( 'CyoIncentivePicker Component', () => {
 		);
 	} );
 
-	it( 'should track gla_cyo_incentive_picker_shown only once when isServiceBasedMerchant resolves after shouldDisplay', () => {
+	it( 'should track gla_cyo_incentive_picker_shown only once even when the component re-renders', () => {
 		const { rerender } = renderComponent();
 
 		expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
