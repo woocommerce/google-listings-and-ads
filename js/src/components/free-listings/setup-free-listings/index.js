@@ -3,7 +3,6 @@
  */
 import { useRef } from '@wordpress/element';
 import { createSlotFill } from '@wordpress/components';
-import { Form } from '@woocommerce/components';
 import { pick, noop } from 'lodash';
 
 /**
@@ -66,13 +65,13 @@ const { Fill, Slot } = createSlotFill( 'gla/SetupFreeListings/SubmitButton' );
  * @param {Object} props
  * @param {TargetAudienceData} props.targetAudience Target audience value data to be initialed the form, if not given AppSpinner will be rendered.
  * @param {(targetAudience: TargetAudienceData) => Array<CountryCode>} props.resolveFinalCountries Callback for this component to resolve the given `targetAudience` to the final list of countries.
- * @param {(targetAudience: TargetAudienceData) => void} [props.onTargetAudienceChange] Callback called with new data once target audience data is changed. Forwarded from and {@link Form.Props.onChange}.
+ * @param {(targetAudience: TargetAudienceData) => void} [props.onTargetAudienceChange] Callback called with new data once target audience data is changed.
  * @param {Object} props.settings Settings data, if not given AppSpinner will be rendered.
- * @param {(newValue: Object) => void} [props.onSettingsChange] Callback called with new data once form data is changed. Forwarded from and {@link Form.Props.onChange}.
+ * @param {(newValue: Object) => void} [props.onSettingsChange] Callback called with new data once form data is changed.
  * @param {Array<ShippingRateFromServerSide>} props.shippingRates Shipping rates data, if not given AppSpinner will be rendered.
- * @param {(newValue: Object) => void} [props.onShippingRatesChange] Callback called with new data once shipping rates are changed. Forwarded from {@link Form.Props.onChange}.
+ * @param {(newValue: Object) => void} [props.onShippingRatesChange] Callback called with new data once shipping rates are changed.
  * @param {Array<ShippingTime>} props.shippingTimes Shipping times data, if not given AppSpinner will be rendered.
- * @param {(newValue: Object) => void} [props.onShippingTimesChange] Callback called with new data once shipping times are changed. Forwarded from {@link Form.Props.onChange}.
+ * @param {(newValue: Object) => void} [props.onShippingTimesChange] Callback called with new data once shipping times are changed.
  * @param {() => boolean | Promise<boolean>} [props.onRequestSubmit] Callback called before the form is submitted. If it returns false, the form will not be submitted.
  * @param {() => void} [props.onContinue] Callback called once continue button is clicked. Could be async. While it's being resolved the form would turn into a saving state.
  * @param {string} props.submitLabel Submit button label.
@@ -99,10 +98,7 @@ const SetupFreeListings = ( {
 	}
 
 	const handleValidate = ( values ) => {
-		const countries = resolveFinalCountries( values );
-		const { shipping_country_times: shippingTimesData } = values;
-
-		return checkErrors( values, shippingTimesData, countries );
+		return checkErrors( values );
 	};
 
 	const handleChange = ( change, values ) => {
@@ -145,10 +141,30 @@ const SetupFreeListings = ( {
 
 				setValue( 'shipping_country_rates', nextValue );
 			}
+		} else if (
+			change.name === 'flat_shipping_min_time' ||
+			change.name === 'flat_shipping_max_time'
+		) {
+			const countries = resolveFinalCountries( values );
+			const minTime =
+				change.name === 'flat_shipping_min_time'
+					? change.value
+					: values.flat_shipping_min_time;
+			const maxTime =
+				change.name === 'flat_shipping_max_time'
+					? change.value
+					: values.flat_shipping_max_time;
+			const times = countries.map( ( countryCode ) => ( {
+				countryCode,
+				time: minTime,
+				maxTime,
+			} ) );
+
+			setValue( 'shipping_country_times', times );
 		} else if ( change.name === 'shipping_country_times' ) {
 			// Skip the call of `onShippingTimesChange` if any shipping times are invalid.
 			const error = handleValidate( values );
-			const isValid = ! error.hasOwnProperty( change.name );
+			const isValid = ! error.hasOwnProperty( 'flat_shipping_times' );
 
 			// Skip the call of `onShippingTimesChange` if there are incomplete shipping times.
 			// This should only happen during onboarding when the shipping times haven't been stored yet.
@@ -213,10 +229,31 @@ const SetupFreeListings = ( {
 				setValue( 'shipping_country_rates', nextRates );
 			}
 
-			// Remove time entries for countries no longer in the audience.
-			const nextTimes = values.shipping_country_times.filter( ( el ) =>
-				audienceCountries.includes( el.countryCode )
+			// For times: filter removed countries AND add newly added countries.
+			const filteredTimes = values.shipping_country_times.filter(
+				( shippingTime ) =>
+					audienceCountries.includes( shippingTime.countryCode )
 			);
+			const missingTimesCountries = audienceCountries.filter(
+				( country ) =>
+					! filteredTimes.some(
+						( shippingTime ) => shippingTime.countryCode === country
+					)
+			);
+			const nextTimes =
+				values.flat_shipping_min_time !== null &&
+				values.flat_shipping_max_time !== null &&
+				missingTimesCountries.length > 0
+					? [
+							...filteredTimes,
+							...missingTimesCountries.map( ( countryCode ) => ( {
+								countryCode,
+								time: values.flat_shipping_min_time,
+								maxTime: values.flat_shipping_max_time,
+							} ) ),
+					  ]
+					: filteredTimes;
+
 			if ( nextTimes.length !== values.shipping_country_times.length ) {
 				setValue( 'shipping_country_times', nextTimes );
 			}
@@ -258,6 +295,10 @@ const SetupFreeListings = ( {
 					// UI-only scalar; assumes all countries share the same rate (flat rate mode).
 					// Derived from the first entry; the full per-country array is in shipping_country_rates.
 					flat_shipping_rate: shippingRates?.[ 0 ]?.rate,
+					// Simple flat time values for all countries (UI only, derived from shippingTimes).
+					flat_shipping_min_time: shippingTimes?.[ 0 ]?.time ?? null,
+					flat_shipping_max_time:
+						shippingTimes?.[ 0 ]?.maxTime ?? null,
 					// Glue shipping rates and times together, as the Form does not support nested structures.
 					shipping_country_rates: shippingRates,
 					shipping_country_times: shippingTimes,

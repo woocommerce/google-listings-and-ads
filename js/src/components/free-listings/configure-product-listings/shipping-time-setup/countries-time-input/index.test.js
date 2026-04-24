@@ -8,142 +8,150 @@ import { render, fireEvent, waitFor } from '@testing-library/react';
  * Internal dependencies
  */
 import CountriesTimeInput from './';
+import { useAdaptiveFormInputProps } from '~/components/adaptive-form';
+
+jest.mock( '~/components/adaptive-form', () => ( {
+	useAdaptiveFormInputProps: jest.fn(),
+} ) );
+
+function setupMocks( { time = 1, maxTime = 32 } = {} ) {
+	const onMinTimeChange = jest.fn();
+	const onMaxTimeChange = jest.fn();
+
+	useAdaptiveFormInputProps.mockImplementation( ( key ) => {
+		if ( key === 'flat_shipping_min_time' ) {
+			return { value: time, onChange: onMinTimeChange };
+		}
+		return { value: maxTime, onChange: onMaxTimeChange };
+	} );
+
+	return { onMinTimeChange, onMaxTimeChange };
+}
 
 describe( 'CountriesTimeInput', () => {
-	describe( 'Test Same delivery placeholder', () => {
-		it( 'Shouldnt have placeholder if times are null', () => {
-			const { getByText, getByRole, getAllByRole } = render(
-				<CountriesTimeInput
-					value={ { countries: [ 'ES' ], time: null, maxTime: null } }
-					audienceCountries={ [ 'ES' ] }
-					onChange={ jest.fn() }
-					onDelete={ jest.fn() }
-				/>
-			);
+	it( 'renders two inputs with values from form context', () => {
+		setupMocks( { time: 3, maxTime: 7 } );
 
-			expect( getByText( 'Shipping time for' ) ).toBeInTheDocument();
+		const { getAllByRole } = render( <CountriesTimeInput /> );
+		const inputs = getAllByRole( 'textbox' );
 
-			expect(
-				getByRole( 'button', { name: 'Edit' } )
-			).toBeInTheDocument();
+		expect( inputs ).toHaveLength( 2 );
+		expect( inputs[ 0 ] ).toHaveValue( '3' );
+		expect( inputs[ 1 ] ).toHaveValue( '7' );
+	} );
 
-			const inputs = getAllByRole( 'textbox' );
+	it( 'shows an empty input for time value of 0 (Same Day placeholder)', () => {
+		setupMocks( { time: 0, maxTime: 5 } );
 
-			expect( inputs ).toHaveLength( 2 );
+		const { getAllByRole } = render( <CountriesTimeInput /> );
+		const [ minInput ] = getAllByRole( 'textbox' );
 
-			for ( const input of inputs ) {
-				expect( input ).toHaveAttribute( 'placeholder', '' );
-			}
+		expect( minInput ).toHaveValue( '' );
+	} );
+
+	describe( 'handleBlur', () => {
+		it( 'calls onMinTimeChange with the new value when min input blurs with a different value', () => {
+			const { onMinTimeChange } = setupMocks( { time: 1 } );
+			const { getAllByRole } = render( <CountriesTimeInput /> );
+			const [ minInput ] = getAllByRole( 'textbox' );
+
+			fireEvent.blur( minInput, { target: { value: '5' } } );
+
+			expect( onMinTimeChange ).toHaveBeenCalledTimes( 1 );
+			expect( onMinTimeChange ).toHaveBeenCalledWith( 5 );
 		} );
 
-		it( 'Should set placeholders if times are different than 0', () => {
-			const { getByDisplayValue, queryAllByPlaceholderText } = render(
-				<CountriesTimeInput
-					value={ { countries: [ 'ES' ], time: 0, maxTime: 32 } }
-					audienceCountries={ [ 'ES' ] }
-					onChange={ jest.fn() }
-					onDelete={ jest.fn() }
-				/>
-			);
+		it( 'does not call onMinTimeChange when min input blurs with the same value', () => {
+			const { onMinTimeChange } = setupMocks( { time: 1 } );
+			const { getAllByRole } = render( <CountriesTimeInput /> );
+			const [ minInput ] = getAllByRole( 'textbox' );
 
-			expect( queryAllByPlaceholderText( 'Same Day' ) ).toHaveLength( 2 );
+			fireEvent.blur( minInput, { target: { value: '1' } } );
 
-			expect( getByDisplayValue( '32' ) ).toBeInTheDocument();
+			expect( onMinTimeChange ).not.toHaveBeenCalled();
+		} );
 
-			// The 0 is changed to an empty string, allowing the placeholder/default value to be displayed.
-			expect( getByDisplayValue( '' ) ).toBeInTheDocument();
+		it( 'calls onMaxTimeChange with the new value when max input blurs with a different value', () => {
+			const { onMaxTimeChange } = setupMocks( { maxTime: 32 } );
+			const { getAllByRole } = render( <CountriesTimeInput /> );
+			const [ , maxInput ] = getAllByRole( 'textbox' );
+
+			fireEvent.blur( maxInput, { target: { value: '10' } } );
+
+			expect( onMaxTimeChange ).toHaveBeenCalledTimes( 1 );
+			expect( onMaxTimeChange ).toHaveBeenCalledWith( 10 );
+		} );
+
+		it( 'does not call onMaxTimeChange when max input blurs with the same value', () => {
+			const { onMaxTimeChange } = setupMocks( { maxTime: 32 } );
+			const { getAllByRole } = render( <CountriesTimeInput /> );
+			const [ , maxInput ] = getAllByRole( 'textbox' );
+
+			fireEvent.blur( maxInput, { target: { value: '32' } } );
+
+			expect( onMaxTimeChange ).not.toHaveBeenCalled();
 		} );
 	} );
 
-	describe( 'Test TimeStepper', () => {
-		it( 'Should call onChange when increasing an decreasing the days', async () => {
-			const onChange = jest.fn();
-			const { queryAllByRole } = render(
-				<CountriesTimeInput
-					value={ { countries: [ 'ES' ], time: 1, maxTime: 32 } }
-					audienceCountries={ [ 'ES' ] }
-					onChange={ onChange }
-					onDelete={ jest.fn() }
-				/>
-			);
-
-			const incrementButtons = queryAllByRole( 'button', {
+	describe( 'handleIncrement (stepper buttons)', () => {
+		it( 'calls onMinTimeChange when the min increment button is pressed', async () => {
+			const { onMinTimeChange } = setupMocks( { time: 1 } );
+			const { getAllByRole } = render( <CountriesTimeInput /> );
+			const incrementButtons = getAllByRole( 'button', {
 				name: 'Increment',
 			} );
-			const decrementButtons = queryAllByRole( 'button', {
+
+			fireEvent.mouseDown( incrementButtons[ 0 ] );
+
+			await waitFor( () => {
+				expect( onMinTimeChange ).toHaveBeenCalledTimes( 1 );
+			} );
+			expect( onMinTimeChange ).toHaveBeenCalledWith( 2 );
+		} );
+
+		it( 'calls onMaxTimeChange when the max increment button is pressed', async () => {
+			const { onMaxTimeChange } = setupMocks( { maxTime: 32 } );
+			const { getAllByRole } = render( <CountriesTimeInput /> );
+			const incrementButtons = getAllByRole( 'button', {
+				name: 'Increment',
+			} );
+
+			fireEvent.mouseDown( incrementButtons[ 1 ] );
+
+			await waitFor( () => {
+				expect( onMaxTimeChange ).toHaveBeenCalledTimes( 1 );
+			} );
+			expect( onMaxTimeChange ).toHaveBeenCalledWith( 33 );
+		} );
+
+		it( 'calls onMinTimeChange when the min decrement button is pressed', async () => {
+			const { onMinTimeChange } = setupMocks( { time: 3 } );
+			const { getAllByRole } = render( <CountriesTimeInput /> );
+			const decrementButtons = getAllByRole( 'button', {
 				name: 'Decrement',
 			} );
 
-			// One for the min and one for the max = 2 increment buttons and 2 decrement buttons
-			expect( incrementButtons ).toHaveLength( 2 );
-			expect( decrementButtons ).toHaveLength( 2 );
-
-			//Increasing
-			for ( const button of incrementButtons ) {
-				fireEvent.mouseDown( button );
-			}
+			fireEvent.mouseDown( decrementButtons[ 0 ] );
 
 			await waitFor( () => {
-				expect( onChange ).toHaveBeenCalledTimes( 2 );
+				expect( onMinTimeChange ).toHaveBeenCalledTimes( 1 );
 			} );
-
-			expect( onChange.mock.calls[ 0 ][ 0 ].time ).toBe( 2 );
-			expect( onChange.mock.calls[ 1 ][ 0 ].maxTime ).toBe( 33 );
-
-			//Decreasing
-			for ( const button of decrementButtons ) {
-				fireEvent.mouseDown( button );
-			}
-
-			await waitFor( () => {
-				expect( onChange ).toHaveBeenCalledTimes( 4 );
-			} );
-
-			expect( onChange.mock.calls[ 2 ][ 0 ].time ).toBe( 1 );
-			expect( onChange.mock.calls[ 3 ][ 0 ].maxTime ).toBe( 32 );
+			expect( onMinTimeChange ).toHaveBeenCalledWith( 2 );
 		} );
-	} );
 
-	describe( 'Test handleBlur', () => {
-		it( 'Test onChange when handleBlur is called', async () => {
-			const onChange = jest.fn();
-			const onDelete = jest.fn();
-			const { queryAllByRole } = render(
-				<CountriesTimeInput
-					value={ { countries: [ 'ES' ], time: 1, maxTime: 32 } }
-					audienceCountries={ [ 'ES' ] }
-					onChange={ onChange }
-					onDelete={ onDelete }
-				/>
-			);
+		it( 'calls onMaxTimeChange when the max decrement button is pressed', async () => {
+			const { onMaxTimeChange } = setupMocks( { maxTime: 32 } );
+			const { getAllByRole } = render( <CountriesTimeInput /> );
+			const decrementButtons = getAllByRole( 'button', {
+				name: 'Decrement',
+			} );
 
-			const inputs = queryAllByRole( 'textbox' );
+			fireEvent.mouseDown( decrementButtons[ 1 ] );
 
-			expect( inputs ).toHaveLength( 2 );
-
-			const [ timeInput, maxTimeInput ] = inputs;
-
-			// The value is the same, so the onChange function shouldnt be called
-			fireEvent.blur( timeInput, { target: { value: '1' } } );
-			expect( onChange ).toHaveBeenCalledTimes( 0 );
-
-			// The value is different, so the onChange function should be called
-			fireEvent.blur( timeInput, { target: { value: '2' } } );
-			expect( onChange ).toHaveBeenCalledTimes( 1 );
-			// It should update the time property.
-			expect( onChange.mock.calls[ 0 ][ 0 ].time ).toBe( 2 );
-
-			onChange.mockClear();
-
-			// The value is the same, so the onChange function shouldnt be called
-			fireEvent.blur( maxTimeInput, { target: { value: '32' } } );
-			expect( onChange ).toHaveBeenCalledTimes( 0 );
-
-			// The value is different, so the onChange function should be called
-			fireEvent.blur( maxTimeInput, { target: { value: '10' } } );
-			expect( onChange ).toHaveBeenCalledTimes( 1 );
-			// It should update the maxTime property.
-			expect( onChange.mock.calls[ 0 ][ 0 ].maxTime ).toBe( 10 );
+			await waitFor( () => {
+				expect( onMaxTimeChange ).toHaveBeenCalledTimes( 1 );
+			} );
+			expect( onMaxTimeChange ).toHaveBeenCalledWith( 31 );
 		} );
 	} );
 } );
