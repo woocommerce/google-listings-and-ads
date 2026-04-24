@@ -63,7 +63,6 @@ const useCYOIncentives = () => {
 			if ( ! isBillingCompleted ) {
 				return {
 					data: null,
-					defaultIncentiveId: null,
 					hasFinishedResolution: hasResolvedBillingStatus,
 				};
 			}
