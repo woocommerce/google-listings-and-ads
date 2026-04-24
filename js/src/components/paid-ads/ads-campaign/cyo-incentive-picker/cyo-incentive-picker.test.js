@@ -11,7 +11,6 @@ import CyoIncentivePicker from './cyo-incentive-picker';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useCYOIncentives from '~/hooks/useCYOIncentives';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
-import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import { recordGlaEvent } from '~/utils/tracks';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
 
@@ -20,7 +19,6 @@ jest.mock( '~/components/adaptive-form', () => ( {
 } ) );
 jest.mock( '~/hooks/useCYOIncentives' );
 jest.mock( '~/hooks/useGoogleAdsAccountBillingStatus' );
-jest.mock( '~/hooks/useServiceBasedMerchant' );
 jest.mock( '~/utils/tracks', () => ( {
 	recordGlaEvent: jest.fn(),
 } ) );
@@ -119,8 +117,6 @@ describe( 'CyoIncentivePicker Component', () => {
 		useGoogleAdsAccountBillingStatus.mockReturnValue( {
 			billingStatus: { status: 'approved' },
 		} );
-
-		useServiceBasedMerchant.mockReturnValue( false );
 	} );
 
 	it( 'should render the component', () => {
@@ -204,7 +200,7 @@ describe( 'CyoIncentivePicker Component', () => {
 	it( 'should set default selected incentive to medium offer', () => {
 		useAdaptiveFormContext.mockReturnValue( {
 			getInputProps: jest.fn().mockReturnValue( {
-				value: 456,
+				value: 'medium',
 				onChange: onIncentiveIdChange,
 			} ),
 		} );
@@ -217,13 +213,13 @@ describe( 'CyoIncentivePicker Component', () => {
 		expect( radioButtons[ 1 ] ).toBeChecked();
 	} );
 
-	it( 'should set incentiveId when selecting an offer', () => {
-		let selectedIncentiveId = null;
+	it( 'should call onChange with the offer level when selecting an offer', () => {
+		let selectedOffer = null;
 		useAdaptiveFormContext.mockReturnValue( {
 			getInputProps: jest.fn().mockImplementation( () => ( {
-				value: selectedIncentiveId,
+				value: selectedOffer,
 				onChange: ( value ) => {
-					selectedIncentiveId = value;
+					selectedOffer = value;
 					onIncentiveIdChange( value );
 				},
 			} ) ),
@@ -234,7 +230,7 @@ describe( 'CyoIncentivePicker Component', () => {
 		expect( radioButtons ).toHaveLength( 3 );
 
 		fireEvent.click( radioButtons[ 0 ] );
-		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 1, '789' );
+		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 1, 'low' );
 
 		rerender(
 			<CyoIncentivePicker
@@ -245,7 +241,7 @@ describe( 'CyoIncentivePicker Component', () => {
 		);
 		radioButtons = screen.getAllByRole( 'radio' );
 		fireEvent.click( radioButtons[ 1 ] );
-		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 2, '456' );
+		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 2, 'medium' );
 
 		rerender(
 			<CyoIncentivePicker
@@ -256,7 +252,7 @@ describe( 'CyoIncentivePicker Component', () => {
 		);
 		radioButtons = screen.getAllByRole( 'radio' );
 		fireEvent.click( radioButtons[ 2 ] );
-		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 3, '123' );
+		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 3, 'high' );
 	} );
 
 	describe( 'error state', () => {
@@ -338,17 +334,36 @@ describe( 'CyoIncentivePicker Component', () => {
 		render( <CyoIncentivePicker context="setup-mc" /> );
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_cyo_incentive_picker_shown',
-			{ context: 'setup-mc', is_service_based_merchant: false }
+			{ context: 'setup-mc' }
 		);
 	} );
 
 	it( 'should track gla_cyo_incentive_picker_shown with isServiceBasedMerchant true', () => {
-		useServiceBasedMerchant.mockReturnValue( true );
 		render( <CyoIncentivePicker context="setup-mc" /> );
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_cyo_incentive_picker_shown',
-			{ context: 'setup-mc', is_service_based_merchant: true }
+			{ context: 'setup-mc' }
 		);
+	} );
+
+	it( 'should track gla_cyo_incentive_picker_shown only once when isServiceBasedMerchant resolves after shouldDisplay', () => {
+		const { rerender } = renderComponent();
+
+		expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_cyo_incentive_picker_shown',
+			{ context: 'setup-mc' }
+		);
+
+		rerender(
+			<CyoIncentivePicker
+				context="setup-mc"
+				incentiveResult={ { error: null, loading: false } }
+				onRetry={ onRetry }
+			/>
+		);
+
+		expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	it( 'should not track gla_cyo_incentive_picker_shown when not displayed', () => {
@@ -369,7 +384,7 @@ describe( 'CyoIncentivePicker Component', () => {
 
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_cyo_incentive_picker_shown',
-			{ context: 'setup-mc', is_service_based_merchant: false }
+			{ context: 'setup-mc' }
 		);
 
 		fireEvent.click( radioButtons[ 0 ] );
@@ -377,7 +392,6 @@ describe( 'CyoIncentivePicker Component', () => {
 			'gla_cyo_incentive_selected',
 			{
 				context: 'setup-mc',
-				is_service_based_merchant: false,
 				level: 'low',
 			}
 		);
@@ -387,7 +401,6 @@ describe( 'CyoIncentivePicker Component', () => {
 			'gla_cyo_incentive_selected',
 			{
 				context: 'setup-mc',
-				is_service_based_merchant: false,
 				level: 'medium',
 			}
 		);
@@ -397,7 +410,6 @@ describe( 'CyoIncentivePicker Component', () => {
 			'gla_cyo_incentive_selected',
 			{
 				context: 'setup-mc',
-				is_service_based_merchant: false,
 				level: 'high',
 			}
 		);
