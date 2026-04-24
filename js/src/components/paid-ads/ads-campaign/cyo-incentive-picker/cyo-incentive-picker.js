@@ -23,14 +23,14 @@ import './cyo-incentive-picker.scss';
 /**
  * @event gla_cyo_incentive_picker_shown
  * @description Fired when the CYO incentive picker is shown to the user.
- * @param {string} context - The context in which the incentive picker is shown, e.g. 'create-ads', 'edit-ads', 'setup-ads', 'setup-mc', or 'setup-ads-only'.
+ * @property {string} context The context in which the incentive picker is shown, e.g. 'create-ads', 'edit-ads', 'setup-ads', 'setup-mc', or 'setup-ads-only'.
  */
 
 /**
  * @event gla_cyo_incentive_selected
  * @description Fired when the user selects an incentive offer.
- * @param {string} context - The context in which the incentive offer is selected.
- * @param {string} level - The level of the selected incentive offer, e.g. 'low', 'medium', or 'high'.
+ * @property {string} context The context in which the incentive offer is selected.
+ * @property {string} level The level of the selected incentive offer, e.g. 'low', 'medium', or 'high'.
  */
 
 /**
