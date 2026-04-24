@@ -185,7 +185,8 @@ jobs:
             const newlineIdx = content.indexOf('\n');
             const header = content.slice(0, newlineIdx);
             const existingBody = content.slice(newlineIdx).replace(/^\n+/, '');
-            fs.writeFileSync('changelog.txt', `${header}\n\n${changelogBlock}\n\n${existingBody}`);
+            const updatedContent = `${header}\n\n${changelogBlock}\n\n${existingBody}`;
+            fs.writeFileSync('changelog.txt', updatedContent.endsWith('\n') ? updatedContent : `${updatedContent}\n`);
 
       - name: Insert changelog entry into readme.txt
         env:
