@@ -17,6 +17,7 @@ import checkErrors from '~/components/free-listings/configure-product-listings/c
 import getOfferFreeShippingInitialValue from '~/utils/getOfferFreeShippingInitialValue';
 import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
 import FormContent from './form-content';
+import useStoreCurrency from '~/hooks/useStoreCurrency';
 import { TARGET_AUDIENCE_FIELDS } from '../choose-audience-section/constants';
 
 /**
@@ -91,6 +92,7 @@ const SetupFreeListings = ( {
 	submitLabel,
 } ) => {
 	const formRef = useRef();
+	const { code: currencyCode } = useStoreCurrency();
 
 	if ( ! ( targetAudience && settings && shippingRates && shippingTimes ) ) {
 		return <AppSpinner />;
@@ -106,7 +108,18 @@ const SetupFreeListings = ( {
 	const handleChange = ( change, values ) => {
 		const { setValue } = formRef.current;
 
-		if ( change.name === 'shipping_country_rates' ) {
+		if ( change.name === 'flat_shipping_rate' ) {
+			// Translate the single flat rate into the per-country array the API expects.
+			const countries = resolveFinalCountries( values );
+			const rates = countries.map( ( country ) => ( {
+				options: {},
+				country,
+				currency: currencyCode,
+				rate: change.value,
+			} ) );
+
+			setValue( 'shipping_country_rates', rates );
+		} else if ( change.name === 'shipping_country_rates' ) {
 			onShippingRatesChange( values.shipping_country_rates );
 
 			// If all the shipping rates are free shipping,
@@ -171,19 +184,42 @@ const SetupFreeListings = ( {
 		} else if ( TARGET_AUDIENCE_FIELDS.includes( change.name ) ) {
 			onTargetAudienceChange( pick( values, TARGET_AUDIENCE_FIELDS ) );
 
-			// Only keep shipping data with selected countries.
-			[ 'shipping_country_rates', 'shipping_country_times' ].forEach(
-				( field ) => {
-					const countries = resolveFinalCountries( values );
-					const currentValues = values[ field ];
-					const nextValues = currentValues.filter( ( el ) =>
-						countries.includes( el.country || el.countryCode )
-					);
-					if ( nextValues.length !== currentValues.length ) {
-						setValue( field, nextValues );
-					}
-				}
+			// Sync shipping_country_rates with the updated audience countries.
+			const audienceCountries = resolveFinalCountries( values );
+
+			// Filter removed countries AND fill in newly added countries using the current flat rate.
+			const filteredRates = values.shipping_country_rates.filter(
+				( shippingCountryRate ) =>
+					audienceCountries.includes( shippingCountryRate.country )
 			);
+			const missingCountries = audienceCountries.filter(
+				( country ) =>
+					! filteredRates.some( ( rate ) => rate.country === country )
+			);
+			const nextRates =
+				values.flat_shipping_rate !== undefined &&
+				missingCountries.length > 0
+					? [
+							...filteredRates,
+							...missingCountries.map( ( country ) => ( {
+								options: {},
+								country,
+								currency: currencyCode,
+								rate: values.flat_shipping_rate,
+							} ) ),
+					  ]
+					: filteredRates;
+			if ( nextRates.length !== values.shipping_country_rates.length ) {
+				setValue( 'shipping_country_rates', nextRates );
+			}
+
+			// Remove time entries for countries no longer in the audience.
+			const nextTimes = values.shipping_country_times.filter( ( el ) =>
+				audienceCountries.includes( el.countryCode )
+			);
+			if ( nextTimes.length !== values.shipping_country_times.length ) {
+				setValue( 'shipping_country_times', nextTimes );
+			}
 		}
 	};
 
@@ -219,6 +255,9 @@ const SetupFreeListings = ( {
 					// This is used in UI only, not used in API.
 					offer_free_shipping:
 						getOfferFreeShippingInitialValue( shippingRates ),
+					// UI-only scalar; assumes all countries share the same rate (flat rate mode).
+					// Derived from the first entry; the full per-country array is in shipping_country_rates.
+					flat_shipping_rate: shippingRates?.[ 0 ]?.rate,
 					// Glue shipping rates and times together, as the Form does not support nested structures.
 					shipping_country_rates: shippingRates,
 					shipping_country_times: shippingTimes,

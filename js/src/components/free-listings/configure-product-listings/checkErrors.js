@@ -37,11 +37,11 @@ const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
 
 	if (
 		values.shipping_rate === 'flat' &&
-		( values.shipping_country_rates.length < finalCountryCodes.length ||
-			values.shipping_country_rates.some( ( el ) => el.rate < 0 ) )
+		( values.flat_shipping_rate === undefined ||
+			values.flat_shipping_rate < 0 )
 	) {
-		errors.shipping_country_rates = __(
-			'Please specify estimated shipping rates for all the countries, and the rate cannot be less than 0.',
+		errors.flat_shipping_rate = __(
+			'Please specify an estimated shipping rate.',
 			'google-listings-and-ads'
 		);
 	}

@@ -40,6 +40,7 @@ describe( 'checkErrors', () => {
 			location: 'selected',
 			countries: [ 'US', 'JP' ],
 			shipping_rate: 'flat',
+			flat_shipping_rate: 10,
 			shipping_time: 'flat',
 			shipping_country_rates: toRates( [ 'US', 10 ], [ 'JP', 30, 88 ] ),
 			offer_free_shipping: true,
@@ -175,63 +176,33 @@ describe( 'checkErrors', () => {
 		} );
 
 		describe( 'For flat type', () => {
-			it( `When there are any selected countries with shipping rates not set, should not pass`, () => {
+			it( 'When flat_shipping_rate is undefined, should not pass', () => {
 				const values = {
 					...flatShipping,
-					shipping_country_rates: toRates(
-						[ 'US', 10.5 ],
-						[ 'FR', 12.8 ]
-					),
+					flat_shipping_rate: undefined,
 				};
-				const codes = [ 'US', 'JP', 'FR' ];
 
-				const errors = checkErrors( values, [], codes );
+				const errors = checkErrors( values, [], [] );
 
-				expect( errors ).toHaveProperty( 'shipping_country_rates' );
-				expect( errors.shipping_country_rates ).toMatchSnapshot();
+				expect( errors ).toHaveProperty( 'flat_shipping_rate' );
+				expect( errors.flat_shipping_rate ).toMatchSnapshot();
 			} );
 
-			it( `When all selected countries' shipping rates are set, should pass`, () => {
-				const values = {
-					...flatShipping,
-					shipping_country_rates: toRates(
-						[ 'US', 10.5 ],
-						[ 'FR', 12.8 ]
-					),
-				};
-				const codes = [ 'US', 'FR' ];
+			it( 'When flat_shipping_rate is defined (including 0 for free shipping), should pass', () => {
+				let values = { ...flatShipping, flat_shipping_rate: 10 };
+				let errors = checkErrors( values, [], [] );
+				expect( errors ).not.toHaveProperty( 'flat_shipping_rate' );
 
-				const errors = checkErrors( values, [], codes );
-
-				expect( errors ).not.toHaveProperty( 'shipping_rate' );
+				values = { ...flatShipping, flat_shipping_rate: 0 };
+				errors = checkErrors( values, [], [] );
+				expect( errors ).not.toHaveProperty( 'flat_shipping_rate' );
 			} );
 
-			it( `When there are any shipping rates is < 0, should not pass`, () => {
-				const values = {
-					...flatShipping,
-					shipping_country_rates: toRates(
-						[ 'US', 10.5 ],
-						[ 'JP', -0.01 ]
-					),
-				};
-				const codes = [ 'US', 'JP' ];
-
-				const errors = checkErrors( values, [], codes );
-
-				expect( errors ).toHaveProperty( 'shipping_country_rates' );
-				expect( errors.shipping_country_rates ).toMatchSnapshot();
-			} );
-
-			it( `When all shipping rates are ≥ 0, should pass`, () => {
-				const values = {
-					...flatShipping,
-					shipping_country_rates: toRates( [ 'US', 1 ], [ 'JP', 0 ] ),
-				};
-				const codes = [ 'US', 'JP' ];
-
-				const errors = checkErrors( values, [], codes );
-
-				expect( errors ).not.toHaveProperty( 'shipping_rate' );
+			it( 'When flat_shipping_rate is a negative number, should not pass', () => {
+				const values = { ...flatShipping, flat_shipping_rate: -1 };
+				const errors = checkErrors( values, [], [] );
+				expect( errors ).toHaveProperty( 'flat_shipping_rate' );
+				expect( errors.flat_shipping_rate ).toMatchSnapshot();
 			} );
 		} );
 	} );

@@ -201,6 +201,13 @@ test.describe( 'Configure product listings', () => {
 			await expect( estimatedRatesInputBox ).toBeVisible();
 		} );
 
+		test( 'should show error message if no shipping rate is specified', async () => {
+			await productListingsPage.clickContinueButton();
+			const estimatedRatesError =
+				productListingsPage.getEstimatedShippingRatesNullError();
+			await expect( estimatedRatesError ).toBeVisible();
+		} );
+
 		test( 'should see "Free shipping for all orders" tag if shipping rate is 0', async () => {
 			await productListingsPage.fillEstimatedShippingRates( '0' );
 			const freeShippingForAllOrdersTag =
