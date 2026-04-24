@@ -199,6 +199,16 @@ export const getEnableEnhancedConversions = ( state ) => {
 };
 
 /**
+ * Gets the ads settings object.
+ *
+ * @param {Object} state The current store state will be injected by `wp.data`.
+ * @return {Object|null} The ads settings object, or null if not yet loaded.
+ */
+export const getAdsSettings = ( state ) => {
+	return state.ads.settings;
+};
+
+/**
  * Gets the asset groups by the given campaign ID.
  *
  * @param {Object} state The current store state will be injected by `wp.data`.

@@ -62,6 +62,7 @@ import {
 	receiveAdsRecommendations,
 	receiveCYOIncentives,
 	receiveEnhancedConversionsStatus,
+	receiveAdsSettings,
 } from './actions';
 
 /**
@@ -673,6 +674,27 @@ export function* getEnableEnhancedConversions() {
 			error,
 			__(
 				'There was an error getting the enhanced conversions status.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Resolver to fetch the full ads settings object.
+ */
+export function* getAdsSettings() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/settings`,
+		} );
+
+		yield receiveAdsSettings( response );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the ads settings.',
 				'google-listings-and-ads'
 			)
 		);

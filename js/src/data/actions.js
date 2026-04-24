@@ -879,6 +879,13 @@ export function receiveEnhancedConversionsStatus( status ) {
 	};
 }
 
+export function receiveAdsSettings( settings ) {
+	return {
+		type: TYPES.RECEIVE_ADS_SETTINGS,
+		settings,
+	};
+}
+
 /**
  * Update the enhanced conversions status.
  *

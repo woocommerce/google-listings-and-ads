@@ -77,6 +77,7 @@ const DEFAULT_STATE = {
 		recommendations: {},
 		enable_enhanced_conversions: false,
 		budgetMetrics: {},
+		settings: null,
 	},
 	gtinMigrationStatus: null,
 	price_benchmark: {
@@ -557,6 +558,10 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			const { status } = action;
 
 			return setIn( state, 'ads.enable_enhanced_conversions', status );
+		}
+
+		case TYPES.RECEIVE_ADS_SETTINGS: {
+			return setIn( state, 'ads.settings', action.settings );
 		}
 
 		case TYPES.RECEIVE_PRICE_BENCHMARK_SUMMARY: {
