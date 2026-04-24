@@ -144,7 +144,7 @@ jobs:
                 if (match) {
                   entry = match[1]
                     .split('\n')
-                    .map(l => l.replace(/^[\s*\->]+/, '').trim())
+                    .map(l => l.replace(/^[\s*>-]+/, '').trim())
                     .find(l => l && l.toLowerCase() !== 'n/a') ?? null;
                 }
               }
