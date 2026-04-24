@@ -428,8 +428,6 @@ When a documentation link is clicked.
 	- with `{ context: 'faqs', linkId: 'campaign-analytics', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/campaign-analytics' }`.
 	- with `{ context: 'faqs', linkId: 'terms-and-conditions-of-google-ads-coupons', href: 'https://www.google.com/ads/coupons/terms/' }`.
 - [`Faqs`](../../js/src/pages/onboarding/setup-stepper/setup-accounts/faqs.js#L68) with `{ context: 'faqs', link_id: 'find-a-partner', href: 'https://comparisonshoppingpartners.withgoogle.com/find_a_partner/' }`
-- [`FreeAdCredit`](../../js/src/components/free-ad-credit/index.js#L17) with `{ context: 'setup-ads', link_id: 'free-ad-credit-terms', href: 'https://www.google.com/ads/coupons/terms/' }`
-- [`FreeAdCredit`](../../js/src/pages/dashboard/summary-section/paid-features/free-ad-credit.js#L19) with `{ context: 'dashboard', link_id: 'free-ad-credit-terms', href: 'https://www.google.com/ads/coupons/terms/' }`
 - [`GetStartedCard`](../../js/src/pages/get-started/get-started-card/index.js#L23) with `{ context: 'get-started', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
 - [`GetStartedWithHeroCard`](../../js/src/pages/get-started/get-started-with-hero-card/index.js#L24) with `{ context: 'get-started-with-hero', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
 - [`GoogleMCDisclaimer`](../../js/src/pages/onboarding/setup-stepper/setup-accounts/index.js#L36)
@@ -451,7 +449,7 @@ When a documentation link is clicked.
 - [`TermsModal`](../../js/src/components/google-mc-account-card/terms-modal/index.js#L29) with `{ context: 'setup-mc', link_id: 'google-mc-terms-of-service', href: 'https://support.google.com/merchants/answer/160173' }`
 - [`UnsupportedCountry`](../../js/src/pages/get-started/unsupported-notices/index.js#L73) with `{ context: "get-started", link_id: "supported-countries" }`
 - [`UnsupportedLanguage`](../../js/src/pages/get-started/unsupported-notices/index.js#L30) with `{ context: 'get-started', link_id: 'supported-languages', href: 'https://support.google.com/merchants/answer/160637' }`
-- [`exports`](../../js/src/components/paid-ads/ads-campaign/ads-campaign.js#L40) with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads' | 'setup-ads-only', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
+- [`exports`](../../js/src/components/paid-ads/ads-campaign/ads-campaign.js#L41) with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads' | 'setup-ads-only', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
 
 ### [`gla_edit_mc_store_address`](../../js/src/components/contact-information/store-address-card.js#L166)
 Trigger when store address edit button is clicked.

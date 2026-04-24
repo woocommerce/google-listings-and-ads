@@ -10,12 +10,12 @@ import { noop } from 'lodash';
  */
 import useAdminUrl from '~/hooks/useAdminUrl';
 import useAdsSetupCompleteCallback from '~/hooks/useAdsSetupCompleteCallback';
+import useCYOIncentives from '~/hooks/useCYOIncentives';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import AdsCampaign from '~/components/paid-ads/ads-campaign';
 import BudgetIncentivePrompt from '~/components/paid-ads/budget-incentive-prompt';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import AppButton from '~/components/app-button';
-import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import { getProductFeedUrl } from '~/utils/urls';
 import { handleApiError } from '~/utils/handleError';
@@ -23,7 +23,6 @@ import { FILTER_BUDGET_RECOMMENDATIONS, recordGlaEvent } from '~/utils/tracks';
 import { useAppDispatch } from '~/data';
 import {
 	GUIDE_NAMES,
-	GOOGLE_ADS_BILLING_STATUS,
 	EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE,
 } from '~/constants';
 import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
@@ -31,6 +30,7 @@ import SkipButton from './skip-button';
 import clientSession from './clientSession';
 import AppSpinner from '~/components/app-spinner';
 import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
+import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
 
 /**
  * Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
@@ -54,16 +54,21 @@ export default function SetupPaidAds() {
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
-	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const { syncSettings } = useAppDispatch();
 	const { handleError: handleEuPoliticalDeclarationError } =
 		useEuPoliticalDeclarationContext();
+	const {
+		applyIncentive,
+		redeemIncentive,
+		result: incentiveResult,
+	} = useApplyCYOIncentive();
+	const {
+		defaultIncentiveId,
+		hasFinishedResolution: hasResolvedCyoIncentives,
+	} = useCYOIncentives();
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
-
-	const isBillingCompleted =
-		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
 	const finishOnboardingSetup = async ( onBeforeFinish = noop ) => {
 		try {
@@ -93,13 +98,25 @@ export default function SetupPaidAds() {
 		window.location.href = adminUrl + getProductFeedUrl( query );
 	};
 
-	const handleSkipCreatePaidAds = async () => {
+	const skipCreatePaidAds = async ( incentiveId ) => {
 		setCompleting( ACTION_SKIP );
+
+		try {
+			await applyIncentive( incentiveId );
+		} catch ( error ) {
+			setCompleting( null );
+			return;
+		}
+
 		await finishOnboardingSetup();
 	};
 
 	const createSkipButton = ( formContext ) => {
-		const { isValidForm } = formContext;
+		const { isValidForm, values } = formContext;
+
+		const handleSkipCreatePaidAds = () => {
+			skipCreatePaidAds( values.incentiveId );
+		};
 
 		return (
 			<SkipButton
@@ -114,7 +131,9 @@ export default function SetupPaidAds() {
 	const createContinueButton = ( formContext ) => {
 		const { isValidForm, values } = formContext;
 		const disabled =
-			completing === ACTION_SKIP || ! isValidForm || ! isBillingCompleted;
+			completing === ACTION_SKIP ||
+			! isValidForm ||
+			incentiveResult.loading;
 
 		const handleClick = () => {
 			budgetPromptRef.current
@@ -139,42 +158,51 @@ export default function SetupPaidAds() {
 		);
 	};
 
-	const paidAds = {
-		...clientSession.getCampaign(),
-	};
-
-	if ( ! countryCodes ) {
+	if ( ! countryCodes || ! hasResolvedCyoIncentives ) {
 		return <AppSpinner />;
 	}
 
+	const paidAds = clientSession.getCampaign();
+
 	const handleSubmit = async ( values ) => {
-		const { level, dailyBudget, hasConfirmedEuPoliticalContent } = values;
-		const onBeforeFinish = handleSetupComplete.bind(
-			null,
+		const {
+			level,
 			dailyBudget,
-			countryCodes,
-			hasConfirmedEuPoliticalContent
-		);
+			incentiveId,
+			hasConfirmedEuPoliticalContent,
+		} = values;
 
-		setCompleting( ACTION_COMPLETE );
+		try {
+			await applyIncentive( incentiveId );
+			setCompleting( ACTION_COMPLETE );
 
-		recordGlaEvent(
-			'gla_onboarding_complete_with_paid_ads_button_click',
-			getEventProps( {
-				level,
-				budget: dailyBudget,
-				audiences: countryCodes.join( ',' ),
-				has_confirmed_eu_political_content:
-					hasConfirmedEuPoliticalContent,
-			} )
-		);
+			const onBeforeFinish = handleSetupComplete.bind(
+				null,
+				dailyBudget,
+				countryCodes,
+				hasConfirmedEuPoliticalContent
+			);
 
-		await finishOnboardingSetup( onBeforeFinish );
+			recordGlaEvent(
+				'gla_onboarding_complete_with_paid_ads_button_click',
+				getEventProps( {
+					level,
+					budget: dailyBudget,
+					audiences: countryCodes.join( ',' ),
+					has_confirmed_eu_political_content:
+						hasConfirmedEuPoliticalContent,
+				} )
+			);
+
+			await finishOnboardingSetup( onBeforeFinish );
+		} catch ( error ) {
+			setCompleting( null );
+		}
 	};
 
 	return (
 		<CampaignAssetsForm
-			initialCampaign={ paidAds }
+			initialCampaign={ { incentiveId: defaultIncentiveId, ...paidAds } }
 			countryCodes={ countryCodes }
 			onChange={ ( _, values ) => {
 				clientSession.setCampaign( values );
@@ -188,6 +216,8 @@ export default function SetupPaidAds() {
 				) }
 				continueButton={ createContinueButton }
 				skipButton={ createSkipButton }
+				incentiveResult={ incentiveResult }
+				onRetryIncentive={ redeemIncentive }
 				context="setup-mc"
 			/>
 			<BudgetIncentivePrompt

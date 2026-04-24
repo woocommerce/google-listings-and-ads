@@ -14,6 +14,8 @@ import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import AppButton from '~/components/app-button';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
+import useCYOIncentives from '~/hooks/useCYOIncentives';
+import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
 import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import { ACTION_CONTINUE, ACTION_SKIP } from '../constants';
 import { FILTER_BUDGET_RECOMMENDATIONS, recordGlaEvent } from '~/utils/tracks';
@@ -33,6 +35,15 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
+	const {
+		applyIncentive,
+		redeemIncentive,
+		result: incentiveResult,
+	} = useApplyCYOIncentive();
+	const {
+		defaultIncentiveId,
+		hasFinishedResolution: hasResolvedCyoIncentives,
+	} = useCYOIncentives();
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
@@ -40,13 +51,24 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
-	const handleSkipCreatePaidAds = async () => {
+	const skipCreatePaidAds = async ( incentiveId ) => {
 		setCompleting( ACTION_SKIP );
+
+		try {
+			await applyIncentive( incentiveId );
+		} catch ( error ) {
+			setCompleting( null );
+			return;
+		}
 		onSkip();
 	};
 
 	const createSkipButton = ( formContext ) => {
-		const { isValidForm } = formContext;
+		const { isValidForm, values } = formContext;
+
+		const handleSkipCreatePaidAds = () => {
+			skipCreatePaidAds( values.incentiveId );
+		};
 
 		return (
 			<SkipButton
@@ -61,18 +83,30 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const createContinueButton = ( formContext ) => {
 		const { isValidForm, values } = formContext;
 		const disabled =
-			completing === ACTION_SKIP || ! isValidForm || ! isBillingCompleted;
+			completing === ACTION_SKIP ||
+			! isValidForm ||
+			! isBillingCompleted ||
+			incentiveResult.loading;
 
-		const handleClick = () => {
-			budgetPromptRef.current
-				.resolve( values.dailyBudget )
-				.then( ( amount ) => {
-					if ( amount === null ) {
-						formContext.handleSubmit();
-					} else if ( Number.isFinite( amount ) ) {
-						formContext.setValues( { level: 'custom', amount } );
-					}
-				} );
+		const handleClick = async () => {
+			try {
+				await applyIncentive( values.incentiveId );
+
+				budgetPromptRef.current
+					.resolve( values.dailyBudget )
+					.then( ( amount ) => {
+						if ( amount === null ) {
+							formContext.handleSubmit();
+						} else if ( Number.isFinite( amount ) ) {
+							formContext.setValues( {
+								level: 'custom',
+								amount,
+							} );
+						}
+					} );
+			} catch ( error ) {
+				// Error is intentionally swallowed — incentiveResult.error drives the retry UI.
+			}
 		};
 
 		return (
@@ -80,7 +114,9 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 				isPrimary
 				disabled={ disabled }
 				onClick={ handleClick }
-				loading={ completing === ACTION_CONTINUE }
+				loading={
+					completing === ACTION_CONTINUE || incentiveResult.loading
+				}
 				text={ __( 'Continue', 'google-listings-and-ads' ) }
 			/>
 		);
@@ -90,13 +126,14 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 		...clientSession.getCampaign(),
 	};
 
-	if ( ! countryCodes ) {
+	if ( ! countryCodes || ! hasResolvedCyoIncentives ) {
 		return <AppSpinner />;
 	}
 
 	const handleSubmit = async ( values ) => {
-		setCompleting( ACTION_CONTINUE );
 		const { level, dailyBudget, hasConfirmedEuPoliticalContent } = values;
+
+		setCompleting( ACTION_CONTINUE );
 
 		recordGlaEvent(
 			'gla_ads_only_onboarding_with_paid_ads_continue_button_click',
@@ -115,7 +152,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 
 	return (
 		<CampaignAssetsForm
-			initialCampaign={ paidAds }
+			initialCampaign={ { incentiveId: defaultIncentiveId, ...paidAds } }
 			countryCodes={ countryCodes }
 			onChange={ ( _, values ) => {
 				clientSession.setCampaign( values );
@@ -129,6 +166,8 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 				) }
 				continueButton={ createContinueButton }
 				skipButton={ createSkipButton }
+				incentiveResult={ incentiveResult }
+				onRetryIncentive={ redeemIncentive }
 				context="setup-ads-only"
 			/>
 			<BudgetIncentivePrompt
