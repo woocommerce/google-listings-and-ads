@@ -55,7 +55,7 @@ describe( 'getShippingRateLabel', () => {
 		).toHaveAttribute( 'href', GOOGLE_MERCHANT_CENTER_URL );
 	} );
 
-	test( 'returns placeholder for an unknown / undefined value', () => {
+	test( 'returns the "..." loading placeholder for an unknown / undefined value', () => {
 		expect( getShippingRateLabel( undefined ) ).toBe( '...' );
 		expect( getShippingRateLabel( 'not-a-real-option' ) ).toBe( '...' );
 	} );
