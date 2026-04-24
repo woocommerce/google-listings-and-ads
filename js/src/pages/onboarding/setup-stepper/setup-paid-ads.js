@@ -15,6 +15,7 @@ import AdsCampaign from '~/components/paid-ads/ads-campaign';
 import BudgetIncentivePrompt from '~/components/paid-ads/budget-incentive-prompt';
 import CampaignAssetsForm from '~/components/paid-ads/campaign-assets-form';
 import AppButton from '~/components/app-button';
+import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBillingStatus';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import { getProductFeedUrl } from '~/utils/urls';
 import { handleApiError } from '~/utils/handleError';
@@ -26,6 +27,7 @@ import {
 import { useAppDispatch } from '~/data';
 import {
 	GUIDE_NAMES,
+	GOOGLE_ADS_BILLING_STATUS,
 	EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE,
 } from '~/constants';
 import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
@@ -66,6 +68,7 @@ export default function SetupPaidAds() {
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
+	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const { syncSettings } = useAppDispatch();
 	const { handleError: handleEuPoliticalDeclarationError } =
 		useEuPoliticalDeclarationContext();
@@ -74,6 +77,9 @@ export default function SetupPaidAds() {
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
+
+	const isBillingCompleted =
+		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
 	const finishOnboardingSetup = async ( onBeforeFinish = noop ) => {
 		try {
@@ -138,7 +144,10 @@ export default function SetupPaidAds() {
 	const createContinueButton = ( formContext ) => {
 		const { isValidForm, values } = formContext;
 		const disabled =
-			completing === ACTION_SKIP || ! isValidForm || incentiveLoading;
+			completing === ACTION_SKIP ||
+			! isValidForm ||
+			! isBillingCompleted ||
+			incentiveLoading;
 
 		const handleClick = () => {
 			budgetPromptRef.current

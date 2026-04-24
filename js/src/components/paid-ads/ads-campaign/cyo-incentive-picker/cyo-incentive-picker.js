@@ -21,14 +21,16 @@ import { recordGlaEvent } from '~/utils/tracks';
 import './cyo-incentive-picker.scss';
 
 /**
+ * Fired when the CYO incentive picker is shown to the user.
+ *
  * @event gla_cyo_incentive_picker_shown
- * @description Fired when the CYO incentive picker is shown to the user.
  * @property {string} context The context in which the incentive picker is shown, e.g. 'create-ads', 'edit-ads', 'setup-ads', 'setup-mc', or 'setup-ads-only'.
  */
 
 /**
+ * Fired when the user selects an incentive offer.
+ *
  * @event gla_cyo_incentive_selected
- * @description Fired when the user selects an incentive offer.
  * @property {string} context The context in which the incentive offer is selected.
  * @property {string} level The level of the selected incentive offer, e.g. 'low', 'medium', or 'high'.
  */
