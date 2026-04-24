@@ -1,0 +1,12 @@
+.gla-markets-dashboard {
+	display: flex;
+	flex-direction: column;
+	gap: $grid-unit-20;
+
+	&__card {
+		min-height: $grid-unit-60;
+		border-radius: 0;
+		box-shadow: none;
+		padding: $grid-unit-20;
+	}
+}

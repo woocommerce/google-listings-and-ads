@@ -17,17 +17,18 @@ jest.mock( '~/components/experience-rating-banner', () =>
 	jest.fn().mockReturnValue( null ).mockName( 'ExperienceRatingBanner' )
 );
 
-// TODO: Subject to change as the page gains content.
+jest.mock( './markets-dashboard', () =>
+	jest.fn().mockReturnValue( <div data-testid="markets-dashboard" /> )
+);
+
 describe( 'Markets page', () => {
 	test( 'renders the main tab navigation', () => {
 		render( <Markets /> );
 		expect( screen.getByTestId( 'main-tab-nav' ) ).toBeInTheDocument();
 	} );
 
-	test( 'renders the MarketsDashboard placeholder heading', () => {
+	test( 'renders the MarketsDashboard', () => {
 		render( <Markets /> );
-		expect(
-			screen.getByRole( 'heading', { name: 'Markets' } )
-		).toBeInTheDocument();
+		expect( screen.getByTestId( 'markets-dashboard' ) ).toBeInTheDocument();
 	} );
 } );
