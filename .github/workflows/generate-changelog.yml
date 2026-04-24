@@ -183,8 +183,8 @@ jobs:
             const changelogBlock = process.env.CHANGELOG_BLOCK;
             const content = fs.readFileSync('changelog.txt', 'utf8');
             const newlineIdx = content.indexOf('\n');
-            const header = content.slice(0, newlineIdx);
-            const existingBody = content.slice(newlineIdx).replace(/^\n+/, '');
+            const header = newlineIdx === -1 ? content : content.slice(0, newlineIdx);
+            const existingBody = newlineIdx === -1 ? '' : content.slice(newlineIdx).replace(/^\n+/, '');
             const updatedContent = `${header}\n\n${changelogBlock}\n\n${existingBody}`;
             fs.writeFileSync('changelog.txt', updatedContent.endsWith('\n') ? updatedContent : `${updatedContent}\n`);
 
