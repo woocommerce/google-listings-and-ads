@@ -60,11 +60,8 @@ export default function SetupPaidAds() {
 	const { syncSettings } = useAppDispatch();
 	const { handleError: handleEuPoliticalDeclarationError } =
 		useEuPoliticalDeclarationContext();
-	const {
-		applyIncentive,
-		redeemIncentive,
-		result: incentiveResult,
-	} = useApplyCYOIncentive();
+	const { applyIncentive, loading: incentiveLoading } =
+		useApplyCYOIncentive();
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
@@ -100,18 +97,13 @@ export default function SetupPaidAds() {
 	const skipCreatePaidAds = async ( incentiveOffer ) => {
 		setCompleting( ACTION_SKIP );
 
-		try {
-			const applied = await applyIncentive( incentiveOffer );
+		const applied = await applyIncentive( incentiveOffer );
 
-			if ( applied ) {
-				recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
-					context: CONTEXT_EXTENSION_ONBOARDING,
-					level: incentiveOffer,
-				} );
-			}
-		} catch ( error ) {
-			setCompleting( null );
-			return;
+		if ( applied ) {
+			recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
+				context: CONTEXT_EXTENSION_ONBOARDING,
+				level: incentiveOffer,
+			} );
 		}
 
 		await finishOnboardingSetup();
@@ -137,9 +129,7 @@ export default function SetupPaidAds() {
 	const createContinueButton = ( formContext ) => {
 		const { isValidForm, values } = formContext;
 		const disabled =
-			completing === ACTION_SKIP ||
-			! isValidForm ||
-			incentiveResult.loading;
+			completing === ACTION_SKIP || ! isValidForm || incentiveLoading;
 
 		const handleClick = () => {
 			budgetPromptRef.current
@@ -178,40 +168,35 @@ export default function SetupPaidAds() {
 			hasConfirmedEuPoliticalContent,
 		} = values;
 
-		try {
-			const applied = await applyIncentive( incentiveOffer );
+		setCompleting( ACTION_COMPLETE );
 
-			if ( applied ) {
-				recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
-					context: CONTEXT_EXTENSION_ONBOARDING,
-					level: incentiveOffer,
-				} );
-			}
-
-			setCompleting( ACTION_COMPLETE );
-
-			const onBeforeFinish = handleSetupComplete.bind(
-				null,
-				dailyBudget,
-				countryCodes,
-				hasConfirmedEuPoliticalContent
-			);
-
-			recordGlaEvent(
-				'gla_onboarding_complete_with_paid_ads_button_click',
-				getEventProps( {
-					level,
-					budget: dailyBudget,
-					audiences: countryCodes.join( ',' ),
-					has_confirmed_eu_political_content:
-						hasConfirmedEuPoliticalContent,
-				} )
-			);
-
-			await finishOnboardingSetup( onBeforeFinish );
-		} catch ( error ) {
-			setCompleting( null );
+		const applied = await applyIncentive( incentiveOffer );
+		if ( applied ) {
+			recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
+				context: CONTEXT_EXTENSION_ONBOARDING,
+				level: incentiveOffer,
+			} );
 		}
+
+		const onBeforeFinish = handleSetupComplete.bind(
+			null,
+			dailyBudget,
+			countryCodes,
+			hasConfirmedEuPoliticalContent
+		);
+
+		recordGlaEvent(
+			'gla_onboarding_complete_with_paid_ads_button_click',
+			getEventProps( {
+				level,
+				budget: dailyBudget,
+				audiences: countryCodes.join( ',' ),
+				has_confirmed_eu_political_content:
+					hasConfirmedEuPoliticalContent,
+			} )
+		);
+
+		await finishOnboardingSetup( onBeforeFinish );
 	};
 
 	return (
@@ -230,8 +215,6 @@ export default function SetupPaidAds() {
 				) }
 				continueButton={ createContinueButton }
 				skipButton={ createSkipButton }
-				incentiveResult={ incentiveResult }
-				onRetryIncentive={ redeemIncentive }
 				context={ CONTEXT_EXTENSION_ONBOARDING }
 			/>
 			<BudgetIncentivePrompt

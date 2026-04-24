@@ -86,22 +86,13 @@ const INCENTIVES_DATA = [
 
 describe( 'CyoIncentivePicker Component', () => {
 	const onIncentiveIdChange = jest.fn();
-	const onRetry = jest.fn();
 
 	const renderComponent = ( props = {} ) =>
-		render(
-			<CyoIncentivePicker
-				context="setup-mc"
-				incentiveResult={ { error: null, loading: false } }
-				onRetry={ onRetry }
-				{ ...props }
-			/>
-		);
+		render( <CyoIncentivePicker context="setup-mc" { ...props } /> );
 
 	beforeEach( () => {
 		onIncentiveIdChange.mockReset();
 		recordGlaEvent.mockReset();
-		onRetry.mockReset();
 		useAdaptiveFormContext.mockReturnValue( {
 			getInputProps: jest.fn().mockReturnValue( {
 				value: null,
@@ -186,13 +177,7 @@ describe( 'CyoIncentivePicker Component', () => {
 			hasFinishedResolution: true,
 		} );
 
-		rerender(
-			<CyoIncentivePicker
-				context="setup-mc"
-				incentiveResult={ { error: null, loading: false } }
-				onRetry={ onRetry }
-			/>
-		);
+		rerender( <CyoIncentivePicker context="setup-mc" /> );
 		titleElement = screen.queryByText( 'Ads credit offer' );
 		expect( titleElement ).toBeInTheDocument();
 	} );
@@ -232,102 +217,15 @@ describe( 'CyoIncentivePicker Component', () => {
 		fireEvent.click( radioButtons[ 0 ] );
 		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 1, 'low' );
 
-		rerender(
-			<CyoIncentivePicker
-				context="setup-mc"
-				incentiveResult={ { error: null, loading: false } }
-				onRetry={ onRetry }
-			/>
-		);
+		rerender( <CyoIncentivePicker context="setup-mc" /> );
 		radioButtons = screen.getAllByRole( 'radio' );
 		fireEvent.click( radioButtons[ 1 ] );
 		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 2, 'medium' );
 
-		rerender(
-			<CyoIncentivePicker
-				context="setup-mc"
-				incentiveResult={ { error: null, loading: false } }
-				onRetry={ onRetry }
-			/>
-		);
+		rerender( <CyoIncentivePicker context="setup-mc" /> );
 		radioButtons = screen.getAllByRole( 'radio' );
 		fireEvent.click( radioButtons[ 2 ] );
 		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 3, 'high' );
-	} );
-
-	describe( 'error state', () => {
-		it( 'should not show error notice when there is no error', () => {
-			renderComponent();
-			expect( screen.queryByText( 'Try again' ) ).not.toBeInTheDocument();
-		} );
-
-		it( 'should show error notice with the API error message', () => {
-			renderComponent( {
-				incentiveResult: {
-					error: { message: 'Something went wrong' },
-					loading: false,
-				},
-			} );
-			expect(
-				screen.getByText( 'Something went wrong' )
-			).toBeInTheDocument();
-		} );
-
-		it( 'should show fallback error message when error has no message', () => {
-			renderComponent( {
-				incentiveResult: { error: {}, loading: false },
-			} );
-			expect(
-				screen.getByText(
-					'There was an issue applying the selected offer. Please try again.'
-				)
-			).toBeInTheDocument();
-		} );
-
-		it( 'should call onRetry with the selected incentive ID when retry button is clicked', () => {
-			useAdaptiveFormContext.mockReturnValue( {
-				getInputProps: jest.fn().mockReturnValue( {
-					value: 456,
-					onChange: onIncentiveIdChange,
-				} ),
-			} );
-
-			renderComponent( {
-				incentiveResult: {
-					error: { message: 'API error' },
-					loading: false,
-				},
-			} );
-
-			fireEvent.click( screen.getByText( 'Try again' ) );
-
-			expect( onRetry ).toHaveBeenCalledWith( 456 );
-		} );
-
-		it( 'should disable the retry button in a loading state when incentiveResult.loading is true', () => {
-			renderComponent( {
-				incentiveResult: {
-					error: { message: 'API error' },
-					loading: true,
-				},
-			} );
-
-			const retryButton = screen.getByText( 'Try again' );
-			expect( retryButton ).toHaveAttribute( 'disabled' );
-		} );
-
-		it( 'should render the "Apply in Google Ads" link in the error notice', () => {
-			renderComponent( {
-				incentiveResult: {
-					error: { message: 'API error' },
-					loading: false,
-				},
-			} );
-
-			expect(
-				screen.getByText( 'Apply in Google Ads' )
-			).toBeInTheDocument();
-		} );
 	} );
 
 	it( 'should track gla_cyo_incentive_picker_shown when rendered', () => {
@@ -355,13 +253,7 @@ describe( 'CyoIncentivePicker Component', () => {
 			{ context: 'setup-mc' }
 		);
 
-		rerender(
-			<CyoIncentivePicker
-				context="setup-mc"
-				incentiveResult={ { error: null, loading: false } }
-				onRetry={ onRetry }
-			/>
-		);
+		rerender( <CyoIncentivePicker context="setup-mc" /> );
 
 		expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
 	} );

@@ -38,11 +38,8 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
-	const {
-		applyIncentive,
-		redeemIncentive,
-		result: incentiveResult,
-	} = useApplyCYOIncentive();
+	const { applyIncentive, loading: incentiveLoading } =
+		useApplyCYOIncentive();
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
@@ -53,18 +50,12 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const skipCreatePaidAds = async ( incentiveOffer ) => {
 		setCompleting( ACTION_SKIP );
 
-		try {
-			const applied = await applyIncentive( incentiveOffer );
-
-			if ( applied ) {
-				recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
-					context: CONTEXT_ADS_ONLY_ONBOARDING,
-					level: incentiveOffer,
-				} );
-			}
-		} catch ( error ) {
-			setCompleting( null );
-			return;
+		const applied = await applyIncentive( incentiveOffer );
+		if ( applied ) {
+			recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
+				context: CONTEXT_ADS_ONLY_ONBOARDING,
+				level: incentiveOffer,
+			} );
 		}
 
 		onSkip();
@@ -93,37 +84,29 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 			completing === ACTION_SKIP ||
 			! isValidForm ||
 			! isBillingCompleted ||
-			incentiveResult.loading;
+			incentiveLoading;
 
 		const handleClick = async () => {
-			try {
-				const applied = await applyIncentive( values.incentiveOffer );
-
-				if ( applied ) {
-					recordGlaEvent(
-						'gla_onboarding_with_cyo_incentive_selected',
-						{
-							context: CONTEXT_ADS_ONLY_ONBOARDING,
-							level: values.incentiveOffer,
-						}
-					);
-				}
-
-				budgetPromptRef.current
-					.resolve( values.dailyBudget )
-					.then( ( amount ) => {
-						if ( amount === null ) {
-							formContext.handleSubmit();
-						} else if ( Number.isFinite( amount ) ) {
-							formContext.setValues( {
-								level: 'custom',
-								amount,
-							} );
-						}
-					} );
-			} catch ( error ) {
-				// Error is intentionally swallowed — incentiveResult.error drives the retry UI.
+			const applied = await applyIncentive( values.incentiveOffer );
+			if ( applied ) {
+				recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
+					context: CONTEXT_ADS_ONLY_ONBOARDING,
+					level: values.incentiveOffer,
+				} );
 			}
+
+			budgetPromptRef.current
+				.resolve( values.dailyBudget )
+				.then( ( amount ) => {
+					if ( amount === null ) {
+						formContext.handleSubmit();
+					} else if ( Number.isFinite( amount ) ) {
+						formContext.setValues( {
+							level: 'custom',
+							amount,
+						} );
+					}
+				} );
 		};
 
 		return (
@@ -131,9 +114,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 				isPrimary
 				disabled={ disabled }
 				onClick={ handleClick }
-				loading={
-					completing === ACTION_CONTINUE || incentiveResult.loading
-				}
+				loading={ completing === ACTION_CONTINUE || incentiveLoading }
 				text={ __( 'Continue', 'google-listings-and-ads' ) }
 			/>
 		);
@@ -183,8 +164,6 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 				) }
 				continueButton={ createContinueButton }
 				skipButton={ createSkipButton }
-				incentiveResult={ incentiveResult }
-				onRetryIncentive={ redeemIncentive }
 				context={ CONTEXT_ADS_ONLY_ONBOARDING }
 			/>
 			<BudgetIncentivePrompt
