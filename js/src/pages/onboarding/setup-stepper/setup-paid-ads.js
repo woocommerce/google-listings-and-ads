@@ -47,9 +47,18 @@ import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
  */
 
 /**
+ * Selecting a "Choose Your Own" incentive offer when setting up paid ads during onboarding.
+ *
+ * @event gla_onboarding_with_cyo_incentive_selected
+ * @property {string} context The context in which the incentive offer is selected, e.g. 'create-ads', 'edit-ads', 'setup-ads', 'setup-mc', or 'setup-ads-only'.
+ * @property {string} level The level of the selected incentive offer, e.g. 'low', 'medium', or 'high'.
+ */
+
+/**
  * Renders the onboarding step for setting up the paid ads (Google Ads account and paid campaign)
  * or skipping it, and then completing the onboarding flow.
  * @fires gla_onboarding_complete_with_paid_ads_button_click
+ * @fires gla_onboarding_with_cyo_incentive_selected
  */
 export default function SetupPaidAds() {
 	const budgetPromptRef = useRef();
