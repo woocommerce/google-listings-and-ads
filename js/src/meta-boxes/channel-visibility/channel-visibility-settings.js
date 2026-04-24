@@ -25,7 +25,7 @@ const {
 		product_is_visible: productIsVisible,
 		sync_status: syncStatus = null,
 		issues = [],
-		options = [],
+		options = {},
 	} = {},
 } = glaData || {};
 

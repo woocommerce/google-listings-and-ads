@@ -9,8 +9,10 @@ import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
  * Internal dependencies
  */
 import { recordGlaEvent } from '~/utils/tracks';
-import { getCreateCampaignUrl, getGetStartedUrl } from '~/utils/urls';
+import { getCreateCampaignUrl, getOnboardingUrl } from '~/utils/urls';
+import { ORDER_ATTRIBUTION_CONTEXT } from './constants';
 import AppButton from '~/components/app-button';
+import AppSpinner from '~/components/app-spinner';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useHasRecentAdSpend from '~/hooks/useHasRecentAdSpend';
 import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
@@ -44,13 +46,12 @@ import './google-ads-promo.scss';
  * Google Ads Promo component.
  *
  * @fires gla_google_ads_promo_shown with `{ context: 'order-attribution-meta-box' }`.
- * @fires gla_google_ads_promo_get_started_click with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fstart' }`.
+ * @fires gla_google_ads_promo_get_started_click with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
  * @fires gla_google_ads_promo_create_campaign_click with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&subpath=%2Fcampaigns%2Fcreate&path=%2Fgoogle%2Fdashboard' }`.
  *
  * @return {JSX.Element|null} The Google Ads Promo component or null.
  */
 const GoogleAdsPromo = () => {
-	const context = 'order-attribution-meta-box';
 	const {
 		hasGoogleAdsConnection,
 		hasFinishedResolution: hasResolvedGoogleAdsAccount,
@@ -67,13 +68,17 @@ const GoogleAdsPromo = () => {
 		// Only fire if all conditions for rendering are met and not already tracked
 		if ( ! hasTrackedRef.current && shouldShowPromo ) {
 			recordGlaEvent( 'gla_google_ads_promo_shown', {
-				context,
+				context: ORDER_ATTRIBUTION_CONTEXT,
 			} );
 			hasTrackedRef.current = true;
 		}
 	}, [ shouldShowPromo ] );
 
-	if ( ! shouldShowPromo ) {
+	if ( ! isResolved ) {
+		return <AppSpinner />;
+	}
+
+	if ( hasAdSpend ) {
 		return null;
 	}
 
@@ -95,7 +100,7 @@ const GoogleAdsPromo = () => {
 					eventName="gla_google_ads_promo_create_campaign_click"
 					eventProps={ {
 						href: campaignUrl,
-						context,
+						context: ORDER_ATTRIBUTION_CONTEXT,
 					} }
 					isSecondary
 				>
@@ -104,7 +109,7 @@ const GoogleAdsPromo = () => {
 			),
 		};
 	} else {
-		const getStartedUrl = getGetStartedUrl();
+		const onboardingUrl = getOnboardingUrl();
 		content = {
 			title: isServiceBasedMerchant
 				? __( 'Set up Google Ads', 'google-listings-and-ads' )
@@ -123,11 +128,11 @@ const GoogleAdsPromo = () => {
 				  ),
 			cta: (
 				<AppButton
-					href={ getStartedUrl }
+					href={ onboardingUrl }
 					eventName="gla_google_ads_promo_get_started_click"
 					eventProps={ {
-						href: getStartedUrl,
-						context,
+						href: onboardingUrl,
+						context: ORDER_ATTRIBUTION_CONTEXT,
 					} }
 					isSecondary
 				>

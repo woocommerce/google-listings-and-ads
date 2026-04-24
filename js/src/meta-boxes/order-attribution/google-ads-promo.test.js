@@ -30,7 +30,7 @@ jest.mock( '~/utils/tracks', () => ( {
 } ) );
 
 jest.mock( '~/utils/urls', () => ( {
-	getGetStartedUrl: jest.fn( () => '/get-started' ),
+	getOnboardingUrl: jest.fn( () => '/onboarding' ),
 	getCreateCampaignUrl: jest.fn( () => '/create-campaign' ),
 } ) );
 
@@ -125,7 +125,7 @@ describe( 'GoogleAdsPromo Component', () => {
 	} );
 
 	describe( 'Conditional rendering', () => {
-		test( 'Does not render when Google Ads account is loading', () => {
+		test( 'Shows a spinner when Google Ads account is loading', () => {
 			useGoogleAdsAccount.mockReturnValue( {
 				hasGoogleAdsConnection: false,
 				hasFinishedResolution: false,
@@ -135,18 +135,18 @@ describe( 'GoogleAdsPromo Component', () => {
 				hasAdSpend: false,
 			} );
 
-			const { container } = render( <GoogleAdsPromo /> );
-			expect( container.firstChild ).toBeNull();
+			render( <GoogleAdsPromo /> );
+			expect( screen.getByRole( 'status' ) ).toBeInTheDocument();
 		} );
 
-		test( 'Does not render when recent ad spend is loading', () => {
+		test( 'Shows a spinner when recent ad spend is loading', () => {
 			useHasRecentAdSpend.mockReturnValue( {
 				hasFinishedResolution: false,
 				hasAdSpend: false,
 			} );
 
-			const { container } = render( <GoogleAdsPromo /> );
-			expect( container.firstChild ).toBeNull();
+			render( <GoogleAdsPromo /> );
+			expect( screen.getByRole( 'status' ) ).toBeInTheDocument();
 		} );
 
 		test( 'Does not render when there is recent ad spend', () => {
@@ -256,7 +256,7 @@ describe( 'GoogleAdsPromo Component', () => {
 
 			expect( recordGlaEvent ).toHaveBeenCalledWith(
 				'gla_google_ads_promo_get_started_click',
-				{ context: 'order-attribution-meta-box', href: '/get-started' }
+				{ context: 'order-attribution-meta-box', href: '/onboarding' }
 			);
 		} );
 	} );
