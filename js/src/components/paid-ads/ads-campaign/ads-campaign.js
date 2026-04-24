@@ -19,7 +19,7 @@ import { CampaignPreviewCard } from '../campaign-preview';
 import Faqs from './faqs';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
 import EuRegulationsSection from '../eu-regulations-section';
-import CyoIncentivePicker from './cyo-incentive-picker/cyo-incentive-picker';
+import CyoIncentivePicker from './cyo-incentive-picker';
 
 /**
  * @typedef {import('~/components/adaptive-form/adaptive-form-context').AdaptiveFormContext} AdaptiveFormContext

@@ -38,8 +38,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const [ completing, setCompleting ] = useState( null );
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
-	const { applyIncentive, loading: incentiveLoading } =
-		useApplyCYOIncentive();
+	const { applyIncentive } = useApplyCYOIncentive();
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
@@ -81,20 +80,9 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	const createContinueButton = ( formContext ) => {
 		const { isValidForm, values } = formContext;
 		const disabled =
-			completing === ACTION_SKIP ||
-			! isValidForm ||
-			! isBillingCompleted ||
-			incentiveLoading;
+			completing === ACTION_SKIP || ! isValidForm || ! isBillingCompleted;
 
 		const handleClick = async () => {
-			const applied = await applyIncentive( values.incentiveOffer );
-			if ( applied ) {
-				recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
-					context: CONTEXT_ADS_ONLY_ONBOARDING,
-					level: values.incentiveOffer,
-				} );
-			}
-
 			budgetPromptRef.current
 				.resolve( values.dailyBudget )
 				.then( ( amount ) => {
@@ -114,7 +102,7 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 				isPrimary
 				disabled={ disabled }
 				onClick={ handleClick }
-				loading={ completing === ACTION_CONTINUE || incentiveLoading }
+				loading={ completing === ACTION_CONTINUE }
 				text={ __( 'Continue', 'google-listings-and-ads' ) }
 			/>
 		);
@@ -129,9 +117,22 @@ export default function SetupPaidAds( { onSubmit, onSkip } ) {
 	}
 
 	const handleSubmit = async ( values ) => {
-		const { level, dailyBudget, hasConfirmedEuPoliticalContent } = values;
+		const {
+			level,
+			dailyBudget,
+			hasConfirmedEuPoliticalContent,
+			incentiveOffer,
+		} = values;
 
 		setCompleting( ACTION_CONTINUE );
+
+		const applied = await applyIncentive( incentiveOffer );
+		if ( applied ) {
+			recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
+				context: CONTEXT_ADS_ONLY_ONBOARDING,
+				level: incentiveOffer,
+			} );
+		}
 
 		recordGlaEvent(
 			'gla_ads_only_onboarding_with_paid_ads_continue_button_click',

@@ -356,6 +356,21 @@ Triggered when the save button in contact information page is clicked.
 #### Emitters
 - [`EditStoreAddress`](../../js/src/pages/settings/edit-store-address.js#L41)
 
+### [`gla_cyo_incentive_apply_incentive_retry_click`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L39)
+Fired when the user clicks the retry button after a failed attempt to apply an incentive.
+#### Emitters
+- [`CyoIncentivePicker`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L58) when the user clicks the retry button after a failed attempt to apply an incentive.
+
+### [`gla_cyo_incentive_picker_shown`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L26)
+Fired when the CYO incentive picker is shown to the user.
+#### Emitters
+- [`CyoIncentivePicker`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L58) when the incentive picker is shown to the user.
+
+### [`gla_cyo_incentive_selected`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L32)
+Fired when the user selects an incentive offer.
+#### Emitters
+- [`CyoIncentivePicker`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L58) when the user selects an incentive offer.
+
 ### [`gla_dashboard_edit_program_click`](../../js/src/pages/dashboard/all-programs-table-card/edit-program-button/edit-program-prompt-modal.js#L16)
 Triggered when "continue" to edit program button is clicked.
 #### Properties
