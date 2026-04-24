@@ -22,6 +22,12 @@ jest.mock( '@wordpress/components', () => ( {
 	),
 } ) );
 
+jest.mock( '~/components/app-button', () => ( { children, href, onClick } ) => (
+	<a href={ href } onClick={ onClick }>
+		{ children }
+	</a>
+) );
+
 jest.mock( '@wordpress/data', () => ( {
 	__esModule: true,
 	useDispatch: jest.fn(),
@@ -35,7 +41,7 @@ jest.mock( '~/hooks/useAdsSettings', () =>
 	jest.fn().mockName( 'useAdsSettings' )
 );
 
-const NOTICE_DISMISSED_KEY = 'unclaimed-incentive-notice-dismissed';
+const NOTICE_DISMISSED_KEY = 'gla_unclaimed_incentive_notice_dismissed';
 
 describe( 'UnclaimedIncentiveNotice', () => {
 	beforeEach( () => {
@@ -80,9 +86,44 @@ describe( 'UnclaimedIncentiveNotice', () => {
 
 		expect(
 			screen.getByText(
-				'You have an unclaimed incentive available for your Google Ads account.'
+				"Your ads credit offer couldn't be applied. You can try again, or apply it directly in Google Ads. You have 14 days from your first ad impression to select an offer."
 			)
 		).toBeInTheDocument();
+	} );
+
+	it( 'renders the "Apply in Google Ads" button linking to ads.google.com', () => {
+		useAdsSettings.mockReturnValue( {
+			adsSettings: { has_unclaimed_incentive: true },
+		} );
+		usePreference.mockReturnValue( false );
+
+		render( <UnclaimedIncentiveNotice /> );
+
+		const button = screen.getByRole( 'link', {
+			name: 'Apply in Google Ads',
+		} );
+		expect( button ).toBeInTheDocument();
+		expect( button ).toHaveAttribute( 'href', 'https://ads.google.com' );
+	} );
+
+	it( 'dismisses the notice when the "Apply in Google Ads" button is clicked', () => {
+		const setMock = jest.fn();
+		useDispatch.mockReturnValue( { set: setMock } );
+		useAdsSettings.mockReturnValue( {
+			adsSettings: { has_unclaimed_incentive: true },
+		} );
+		usePreference.mockReturnValue( false );
+
+		render( <UnclaimedIncentiveNotice /> );
+		fireEvent.click(
+			screen.getByRole( 'link', { name: 'Apply in Google Ads' } )
+		);
+
+		expect( setMock ).toHaveBeenCalledWith(
+			PREFERENCES_STORE_NAMESPACE,
+			NOTICE_DISMISSED_KEY,
+			true
+		);
 	} );
 
 	it( 'calls set with the dismissed key when the notice is dismissed', () => {
