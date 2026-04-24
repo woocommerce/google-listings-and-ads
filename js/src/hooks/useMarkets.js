@@ -13,9 +13,14 @@ import { __ } from '@wordpress/i18n';
  * - `data`: an array of market objects (`{ id, market, country, shipping }`).
  * - `hasFinishedResolution`: a boolean mirroring the `@wordpress/data`
  *   resolution flag used by `useAppSelectDispatch`.
+ * - `invalidateResolution`: a no-op callback today; will trigger a refetch of
+ *   the markets list once `useMarkets` is wired to a real selector.
  *
- * @return {{ data: Array<{ id: string, market: string, country: string, shipping: string }>, hasFinishedResolution: boolean }}
- *         Markets data and resolution flag.
+ * @return {{
+ *   data: Array<{ id: string, market: string, country: string, shipping: string }>,
+ *   hasFinishedResolution: boolean,
+ *   invalidateResolution: () => void,
+ * }} Markets data, resolution flag, and refetch callback.
  */
 const useMarkets = () => {
 	return {
@@ -28,6 +33,7 @@ const useMarkets = () => {
 			},
 		],
 		hasFinishedResolution: true,
+		invalidateResolution: () => {},
 	};
 };
 

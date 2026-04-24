@@ -2,23 +2,32 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useState, useCallback } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
+import AddMarketModal from '../add-market-modal';
 
 /**
- * Placeholder for the "Add market" CTA on the Markets dashboard.
- *
- * The button is wired with a no-op handler for now. The follow-up task
- * will introduce `AddMarketModal` and replace the handler.
+ * Owns the open / close state for `AddMarketModal`. The modal itself is a
+ * placeholder today; the follow-up task will replace its body with a real
+ * country / shipping form and a save handler.
  */
 const AddMarket = () => {
+	const [ isOpen, setIsOpen ] = useState( false );
+
+	const handleOpen = useCallback( () => setIsOpen( true ), [] );
+	const handleClose = useCallback( () => setIsOpen( false ), [] );
+
 	return (
-		<AppButton variant="primary" onClick={ () => {} }>
-			{ __( 'Add market', 'google-listings-and-ads' ) }
-		</AppButton>
+		<>
+			<AppButton variant="primary" onClick={ handleOpen }>
+				{ __( 'Add market', 'google-listings-and-ads' ) }
+			</AppButton>
+			{ isOpen && <AddMarketModal onRequestClose={ handleClose } /> }
+		</>
 	);
 };
 
