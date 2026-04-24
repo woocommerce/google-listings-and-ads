@@ -373,9 +373,9 @@ Fired when the CYO incentive picker is shown to the user.
 | ---- | ---- | ----------- |
 `context` | `string` | The context in which the incentive picker is shown, e.g. 'create-ads', 'edit-ads', 'setup-ads', 'setup-mc', or 'setup-ads-only'.
 #### Emitters
-- [`CyoIncentivePicker`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L46) when the incentive picker is shown to the user.
+- [`CyoIncentivePicker`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L48) when the incentive picker is shown to the user.
 
-### [`gla_cyo_incentive_selected`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L29)
+### [`gla_cyo_incentive_selected`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L30)
 Fired when the user selects an incentive offer.
 #### Properties
 | name | type | description |
@@ -383,7 +383,7 @@ Fired when the user selects an incentive offer.
 `context` | `string` | The context in which the incentive offer is selected.
 `level` | `string` | The level of the selected incentive offer, e.g. 'low', 'medium', or 'high'.
 #### Emitters
-- [`CyoIncentivePicker`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L46) when the user selects an incentive offer.
+- [`CyoIncentivePicker`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L48) when the user selects an incentive offer.
 
 ### [`gla_dashboard_edit_program_click`](../../js/src/pages/dashboard/all-programs-table-card/edit-program-button/edit-program-prompt-modal.js#L16)
 Triggered when "continue" to edit program button is clicked.
@@ -815,7 +815,7 @@ Clicking on the skip paid ads button to complete the onboarding flow.
 `billing_method_status` | `string` | The status of billing method of merchant's Google Ads addcount e.g. 'unknown', 'pending', 'approved', 'cancelled'
 `campaign_form_validation` | `string` | Whether the entered paid campaign form data are valid, e.g. 'unknown', 'valid', 'invalid'
 
-### [`gla_onboarding_complete_with_paid_ads_button_click`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L38)
+### [`gla_onboarding_complete_with_paid_ads_button_click`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L40)
 Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
 #### Properties
 | name | type | description |
@@ -826,9 +826,9 @@ Clicking on the "Complete setup" button to complete the onboarding flow with pai
 `source` | `string` | The data source of the budget recommendations, e.g. 'google-ads-api', 'fallback-database'.
 `recommended_budget` | `number` | The recommended daily budget displayed to merchants regardless of the final amount they choose.
 #### Emitters
-- [`exports`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L63)
+- [`exports`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L65)
 
-### [`gla_onboarding_with_cyo_incentive_selected`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L49)
+### [`gla_onboarding_with_cyo_incentive_selected`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L51)
 Selecting a "Choose Your Own" incentive offer when setting up paid ads during onboarding.
 #### Properties
 | name | type | description |
@@ -836,7 +836,7 @@ Selecting a "Choose Your Own" incentive offer when setting up paid ads during on
 `context` | `string` | The context in which the incentive offer is selected, e.g. 'create-ads', 'edit-ads', 'setup-ads', 'setup-mc', or 'setup-ads-only'.
 `level` | `string` | The level of the selected incentive offer, e.g. 'low', 'medium', or 'high'.
 #### Emitters
-- [`exports`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L63)
+- [`exports`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L65)
 
 ### [`gla_open_ads_account_claim_invitation_button_click`](../../js/src/components/google-ads-account-card/claim-account-button.js#L15)
 Clicking on the button to open the invitation page for claiming the newly created Google Ads account.
