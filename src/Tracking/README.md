@@ -368,11 +368,20 @@ Triggered when the save button in contact information page is clicked.
 
 ### [`gla_cyo_incentive_picker_shown`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L23)
 Fired when the CYO incentive picker is shown to the user.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the incentive picker is shown, e.g. 'create-ads', 'edit-ads', 'setup-ads', 'setup-mc', or 'setup-ads-only'.
 #### Emitters
 - [`CyoIncentivePicker`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L46) when the incentive picker is shown to the user.
 
 ### [`gla_cyo_incentive_selected`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L29)
 Fired when the user selects an incentive offer.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the incentive offer is selected.
+`level` | `string` | The level of the selected incentive offer, e.g. 'low', 'medium', or 'high'.
 #### Emitters
 - [`CyoIncentivePicker`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L46) when the user selects an incentive offer.
 
