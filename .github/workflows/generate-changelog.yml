@@ -214,7 +214,8 @@ jobs:
               output.push(line);
             }
 
-            fs.writeFileSync('readme.txt', output.join('\n'));
+            const readmeContent = output.join('\n');
+            fs.writeFileSync('readme.txt', readmeContent.endsWith('\n') ? readmeContent : `${readmeContent}\n`);
 
       - name: Commit and push
         env:
