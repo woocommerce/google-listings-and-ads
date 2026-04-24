@@ -100,7 +100,6 @@ describe( 'useCYOIncentives', () => {
 		expect( getCYOIncentives ).not.toHaveBeenCalled();
 		expect( result.current ).toEqual( {
 			data: null,
-			defaultIncentiveId: null,
 			hasFinishedResolution: true,
 		} );
 	} );
@@ -131,7 +130,6 @@ describe( 'useCYOIncentives', () => {
 		expect( result.current ).toEqual( {
 			data: MOCKED_INCENTIVES,
 			hasFinishedResolution: true,
-			defaultIncentiveId: 456,
 		} );
 	} );
 
@@ -156,7 +154,6 @@ describe( 'useCYOIncentives', () => {
 		expect( result.current ).toEqual( {
 			data: null,
 			hasFinishedResolution: false,
-			defaultIncentiveId: null,
 		} );
 	} );
 
@@ -179,7 +176,6 @@ describe( 'useCYOIncentives', () => {
 		expect( result.current ).toEqual( {
 			data: null,
 			hasFinishedResolution: false,
-			defaultIncentiveId: null,
 		} );
 	} );
 } );
