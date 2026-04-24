@@ -356,6 +356,21 @@ Triggered when the save button in contact information page is clicked.
 #### Emitters
 - [`EditStoreAddress`](../../js/src/pages/settings/edit-store-address.js#L41)
 
+### [`gla_cyo_incentive_apply_incentive_retry_click`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L39)
+Fired when the user clicks the retry button after a failed attempt to apply an incentive.
+#### Emitters
+- [`CyoIncentivePicker`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L58) when the user clicks the retry button after a failed attempt to apply an incentive.
+
+### [`gla_cyo_incentive_picker_shown`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L26)
+Fired when the CYO incentive picker is shown to the user.
+#### Emitters
+- [`CyoIncentivePicker`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L58) when the incentive picker is shown to the user.
+
+### [`gla_cyo_incentive_selected`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L32)
+Fired when the user selects an incentive offer.
+#### Emitters
+- [`CyoIncentivePicker`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L58) when the user selects an incentive offer.
+
 ### [`gla_dashboard_edit_program_click`](../../js/src/pages/dashboard/all-programs-table-card/edit-program-button/edit-program-prompt-modal.js#L16)
 Triggered when "continue" to edit program button is clicked.
 #### Properties
@@ -449,7 +464,7 @@ When a documentation link is clicked.
 - [`TermsModal`](../../js/src/components/google-mc-account-card/terms-modal/index.js#L29) with `{ context: 'setup-mc', link_id: 'google-mc-terms-of-service', href: 'https://support.google.com/merchants/answer/160173' }`
 - [`UnsupportedCountry`](../../js/src/pages/get-started/unsupported-notices/index.js#L73) with `{ context: "get-started", link_id: "supported-countries" }`
 - [`UnsupportedLanguage`](../../js/src/pages/get-started/unsupported-notices/index.js#L30) with `{ context: 'get-started', link_id: 'supported-languages', href: 'https://support.google.com/merchants/answer/160637' }`
-- [`exports`](../../js/src/components/paid-ads/ads-campaign/ads-campaign.js#L41) with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads' | 'setup-ads-only', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
+- [`exports`](../../js/src/components/paid-ads/ads-campaign/ads-campaign.js#L44) with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads' | 'setup-ads-only', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
 
 ### [`gla_edit_mc_store_address`](../../js/src/components/contact-information/store-address-card.js#L166)
 Trigger when store address edit button is clicked.
@@ -786,7 +801,7 @@ Clicking on the skip paid ads button to complete the onboarding flow.
 `billing_method_status` | `string` | The status of billing method of merchant's Google Ads addcount e.g. 'unknown', 'pending', 'approved', 'cancelled'
 `campaign_form_validation` | `string` | Whether the entered paid campaign form data are valid, e.g. 'unknown', 'valid', 'invalid'
 
-### [`gla_onboarding_complete_with_paid_ads_button_click`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L35)
+### [`gla_onboarding_complete_with_paid_ads_button_click`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L38)
 Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
 #### Properties
 | name | type | description |
@@ -797,7 +812,7 @@ Clicking on the "Complete setup" button to complete the onboarding flow with pai
 `source` | `string` | The data source of the budget recommendations, e.g. 'google-ads-api', 'fallback-database'.
 `recommended_budget` | `number` | The recommended daily budget displayed to merchants regardless of the final amount they choose.
 #### Emitters
-- [`exports`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L51)
+- [`exports`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L54)
 
 ### [`gla_open_ads_account_claim_invitation_button_click`](../../js/src/components/google-ads-account-card/claim-account-button.js#L15)
 Clicking on the button to open the invitation page for claiming the newly created Google Ads account.
