@@ -24,12 +24,13 @@ describe( 'MarketsHeader', () => {
 		expect( screen.getByTestId( 'add-market' ) ).toBeInTheDocument();
 	} );
 
-	test( 'omits the description when shippingRate is undefined', () => {
+	test( 'renders the "..." placeholder description when shippingRate is undefined', () => {
 		const { container } = render( <MarketsHeader /> );
 
 		expect(
 			container.querySelector( '.gla-markets-header__description' )
-		).not.toBeInTheDocument();
+				.textContent
+		).toBe( '...' );
 	} );
 
 	test( 'renders the "automatic" description when shippingRate is "automatic"', () => {

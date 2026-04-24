@@ -13,6 +13,10 @@ import { SHIPPING_RATE_OPTION } from '../constants';
 
 jest.mock( '~/hooks/useSettings' );
 
+jest.mock( './market-data-views', () =>
+	jest.fn().mockReturnValue( <div data-testid="market-data-views" /> )
+);
+
 const mockShippingRate = ( shippingRate ) =>
 	useSettings.mockReturnValue( {
 		settings: shippingRate ? { shipping_rate: shippingRate } : undefined,
@@ -37,7 +41,7 @@ describe( 'MarketsDashboard', () => {
 				screen.getByRole( 'status', { name: 'Loading…' } )
 			).toBeInTheDocument();
 			expect(
-				screen.queryByText( 'MarketDataViews placeholder' )
+				screen.queryByTestId( 'market-data-views' )
 			).not.toBeInTheDocument();
 		} );
 
@@ -49,7 +53,7 @@ describe( 'MarketsDashboard', () => {
 			render( <MarketsDashboard /> );
 
 			expect(
-				screen.getByText( 'MarketDataViews placeholder' )
+				screen.getByTestId( 'market-data-views' )
 			).toBeInTheDocument();
 			expect(
 				screen.queryByRole( 'status', { name: 'Loading…' } )
@@ -91,12 +95,13 @@ describe( 'MarketsDashboard', () => {
 			).toContain( 'Shipping is managed in Google Merchant Center' );
 		} );
 
-		test( 'renders no description when settings have not resolved', () => {
+		test( 'renders the "..." placeholder description when settings have not resolved', () => {
 			const { container } = render( <MarketsDashboard /> );
 
 			expect(
 				container.querySelector( '.gla-markets-header__description' )
-			).not.toBeInTheDocument();
+					.textContent
+			).toBe( '...' );
 		} );
 	} );
 } );
