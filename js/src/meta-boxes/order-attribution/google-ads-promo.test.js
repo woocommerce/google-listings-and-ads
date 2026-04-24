@@ -67,7 +67,7 @@ describe( 'GoogleAdsPromo Component', () => {
 			).toBeInTheDocument();
 			expect(
 				screen.getByText(
-					'Sync your products to reach customers when they\u2019re searching for products like yours across Google'
+					"Sync your products to reach customers when they're searching for products like yours across Google"
 				)
 			).toBeInTheDocument();
 			expect(
