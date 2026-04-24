@@ -198,19 +198,36 @@ jobs:
             const changelogBlock = process.env.CHANGELOG_BLOCK;
             const lines = fs.readFileSync('readme.txt', 'utf8').split('\n');
             const output = [];
+            const releaseHeaderPattern = /^= .+ =$/;
+            const releaseBlockContentPattern = /^(?:\s*$|\s+.*|[-*]\s+.*)$/;
             let inChangelog = false;
             let releases = 0;
+            let skippingOldRelease = false;
 
             for (const line of lines) {
               if (/^== Changelog ==$/.test(line)) {
                 output.push(line, '', ...changelogBlock.split('\n'));
                 inChangelog = true;
                 releases = 0;
+                skippingOldRelease = false;
                 continue;
               }
-              if (inChangelog && /^== .+ ==$/.test(line)) inChangelog = false;
-              if (inChangelog && /^= .+ =$/.test(line)) releases++;
-              if (inChangelog && releases > 2) continue;
+
+              if (inChangelog && /^== .+ ==$/.test(line)) {
+                inChangelog = false;
+                skippingOldRelease = false;
+              }
+
+              if (inChangelog && releaseHeaderPattern.test(line)) {
+                releases++;
+                skippingOldRelease = releases > 2;
+                if (skippingOldRelease) continue;
+              }
+
+              if (inChangelog && skippingOldRelease) {
+                if (releaseBlockContentPattern.test(line)) continue;
+                skippingOldRelease = false;
+              }
               output.push(line);
             }
 
