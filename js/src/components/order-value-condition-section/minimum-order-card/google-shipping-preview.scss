@@ -1,5 +1,15 @@
 .gla-google-shipping-preview {
+	background-color: $gla-color-gray-0;
+	border: 1px solid $gla-color-gray-5;
+	padding: $grid-unit-15;
+
 	p {
+		font-size: $gla-font-smaller;
+		line-height: $gla-line-height-smaller;
 		margin: 0;
+	}
+
+	svg {
+		display: block;
 	}
 }

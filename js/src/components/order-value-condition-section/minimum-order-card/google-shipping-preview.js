@@ -3,7 +3,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
-import GridiconShipping from 'gridicons/dist/shipping';
+import { Icon, shipping as shippingIcon } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -41,7 +41,11 @@ const GoogleShippingPreview = ( { threshold } ) => {
 				<FlexBlock>
 					<Flex gap={ 1 }>
 						<FlexItem>
-							<GridiconShipping />
+							<Icon
+								icon={ shippingIcon }
+								width={ 20 }
+								height={ 20 }
+							/>
 						</FlexItem>
 						<FlexBlock>
 							<p>
