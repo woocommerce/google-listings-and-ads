@@ -10,7 +10,7 @@ import userEvent from '@testing-library/user-event';
  */
 import EditMarketModal from './';
 
-const market = { id: 'primary', market: 'Primary market' };
+const market = { id: 'primary', label: 'Primary Market' };
 
 describe( 'EditMarketModal', () => {
 	test( 'renders the title and the market name being edited', () => {
@@ -22,7 +22,7 @@ describe( 'EditMarketModal', () => {
 			screen.getByRole( 'dialog', { name: 'Edit market' } )
 		).toBeInTheDocument();
 		expect(
-			screen.getByText( 'Editing Primary market.' )
+			screen.getByText( 'Editing Primary Market.' )
 		).toBeInTheDocument();
 	} );
 

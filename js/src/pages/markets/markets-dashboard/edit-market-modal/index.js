@@ -17,7 +17,7 @@ import AppButton from '~/components/app-button';
  * wiring from `MarketDataViews` can be reviewed end-to-end.
  *
  * @param {Object} props
- * @param {{ id: string, market: string }} props.market The market being edited.
+ * @param {{ id: string, label: string }} props.market The market being edited.
  * @param {() => void} props.onRequestClose Called when the user closes the modal.
  */
 const EditMarketModal = ( { market, onRequestClose } ) => {
@@ -40,7 +40,7 @@ const EditMarketModal = ( { market, onRequestClose } ) => {
 				{ sprintf(
 					// translators: %s is the name of the market being edited.
 					__( 'Editing %s.', 'google-listings-and-ads' ),
-					market.market
+					market.label
 				) }
 			</p>
 		</AppModal>

@@ -1,8 +1,8 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
-import { useState, useCallback } from '@wordpress/element';
+import { __, _n, sprintf } from '@wordpress/i18n';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -18,14 +18,8 @@ const FIELDS = [
 		enableSorting: false,
 	},
 	{
-		id: 'country',
-		label: __( 'Country', 'google-listings-and-ads' ),
-		enableHiding: false,
-		enableSorting: false,
-	},
-	{
-		id: 'shipping',
-		label: __( 'Shipping', 'google-listings-and-ads' ),
+		id: 'shippingTime',
+		label: __( 'Shipping times', 'google-listings-and-ads' ),
 		enableHiding: false,
 		enableSorting: false,
 	},
@@ -41,24 +35,38 @@ const DEFAULT_VIEW = {
 /**
  * Markets data table.
  *
- * Renders a basic three-column table (Market, Country, Shipping) with an Edit
+ * Renders the default two-column view (Market, Shipping times) with an Edit
  * action per row. Custom DataViews variants per shipping rate / multilingual
- * store will be added in a follow-up task; the parent passes `shippingRate`
- * today, but this placeholder ignores it.
+ * store will be added in a follow-up task; `shippingRate` is accepted today
+ * but currently ignored.
+ *
+ * @param {Object} props
+ * @param {string} [props.shippingRate] One of the values defined in `SHIPPING_RATE_OPTION`.
  */
-const MarketDataViews = () => {
+const MarketDataViews = ( { shippingRate } ) => {
+	// Reserved; will drive view variants in a follow-up task.
+	void shippingRate;
+
 	const { DataViews } = window.wp.dataviews;
 	const { data: markets, hasFinishedResolution } = useMarkets();
 	const [ view, setView ] = useState( DEFAULT_VIEW );
 	const [ editingMarket, setEditingMarket ] = useState( null );
 
-	const handleChangeView = useCallback( ( nextView ) => {
-		setView( nextView );
-	}, [] );
-
-	const handleCloseEditModal = useCallback( () => {
-		setEditingMarket( null );
-	}, [] );
+	const rows = markets.map( ( market ) => ( {
+		...market,
+		market: sprintf(
+			// translators: 1: market label, 2: number of countries.
+			_n(
+				'%1$s (%2$d country)',
+				'%1$s (%2$d countries)',
+				market.countries.length,
+				'google-listings-and-ads'
+			),
+			market.label,
+			market.countries.length
+		),
+		shippingTime: market.shipping_time,
+	} ) );
 
 	const ACTIONS = [
 		{
@@ -75,11 +83,11 @@ const MarketDataViews = () => {
 				getItemId={ ( item ) => item.id }
 				fields={ FIELDS }
 				actions={ ACTIONS }
-				data={ markets }
+				data={ rows }
 				view={ view }
-				onChangeView={ handleChangeView }
+				onChangeView={ setView }
 				paginationInfo={ {
-					totalItems: markets.length,
+					totalItems: rows.length,
 					totalPages: 1,
 				} }
 				defaultLayouts={ { table: {} } }
@@ -88,7 +96,7 @@ const MarketDataViews = () => {
 			{ editingMarket && (
 				<EditMarketModal
 					market={ editingMarket }
-					onRequestClose={ handleCloseEditModal }
+					onRequestClose={ () => setEditingMarket( null ) }
 				/>
 			) }
 		</>

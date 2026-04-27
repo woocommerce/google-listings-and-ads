@@ -16,7 +16,7 @@ jest.mock( '~/hooks/useMarkets' );
 jest.mock( '../edit-market-modal', () =>
 	jest.fn( ( { market, onRequestClose } ) => (
 		<div data-testid="edit-market-modal">
-			<span data-testid="edit-market-modal-name">{ market.market }</span>
+			<span data-testid="edit-market-modal-name">{ market.label }</span>
 			<button onClick={ onRequestClose }>Close modal</button>
 		</div>
 	) )
@@ -25,15 +25,25 @@ jest.mock( '../edit-market-modal', () =>
 const SAMPLE_MARKETS = [
 	{
 		id: 'primary',
-		market: 'Primary market',
-		country: '20 Countries',
-		shipping: 'Managed in Google',
+		label: 'Primary Market',
+		countries: [ 'MU', 'ZW' ],
+		language: 'en',
+		currency: 'USD',
+		feedLabel: 'ZW',
+		shipping_rate: 'flat',
+		shipping_time: 'flat',
+		free_shipping: null,
 	},
 	{
 		id: 'secondary',
-		market: 'Secondary market',
-		country: '5 Countries',
-		shipping: 'Flat rate',
+		label: 'Secondary Market',
+		countries: [ 'FR' ],
+		language: 'fr',
+		currency: 'EUR',
+		feedLabel: 'FR',
+		shipping_rate: 'table',
+		shipping_time: 'table',
+		free_shipping: null,
 	},
 ];
 
@@ -106,17 +116,36 @@ afterEach( () => {
 } );
 
 describe( 'MarketDataViews', () => {
-	test( 'renders three column headers: Market, Country, Shipping', () => {
+	test( 'renders two column headers: Market, Shipping times', () => {
 		render( <MarketDataViews /> );
 
 		expect(
 			screen.getByRole( 'columnheader', { name: 'Market' } )
 		).toBeInTheDocument();
 		expect(
-			screen.getByRole( 'columnheader', { name: 'Country' } )
+			screen.getByRole( 'columnheader', { name: 'Shipping times' } )
+		).toBeInTheDocument();
+	} );
+
+	test( 'renders the Market cell as "<label> (<n> countries)"', () => {
+		render( <MarketDataViews /> );
+
+		expect(
+			screen.getByRole( 'cell', { name: 'Primary Market (2 countries)' } )
 		).toBeInTheDocument();
 		expect(
-			screen.getByRole( 'columnheader', { name: 'Shipping' } )
+			screen.getByRole( 'cell', { name: 'Secondary Market (1 country)' } )
+		).toBeInTheDocument();
+	} );
+
+	test( 'renders the Shipping times cell from shipping_time', () => {
+		render( <MarketDataViews /> );
+
+		expect(
+			screen.getByRole( 'cell', { name: 'flat' } )
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'cell', { name: 'table' } )
 		).toBeInTheDocument();
 	} );
 
@@ -163,7 +192,7 @@ describe( 'MarketDataViews', () => {
 		expect( screen.getByTestId( 'edit-market-modal' ) ).toBeInTheDocument();
 		expect(
 			screen.getByTestId( 'edit-market-modal-name' ).textContent
-		).toBe( SAMPLE_MARKETS[ 0 ].market );
+		).toBe( SAMPLE_MARKETS[ 0 ].label );
 	} );
 
 	test( 'closes EditMarketModal when onRequestClose is invoked', async () => {
