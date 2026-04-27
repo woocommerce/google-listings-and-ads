@@ -3,7 +3,6 @@
 = 3.6.2 - 2026-04-27 =
 * Dev - Remove API Pull sync status rows from the Connection Test page.
 * Fix - Disconnect modal now shows Google Ads-specific copy and confirmation text when disconnecting only the Google Ads account, instead of always falling back to the "all accounts" variant.
-* Fix - GOOWOO-499: Automate regular browserslist database updates via GitHub Actions.
 * Fix - Improve scheduling for job that updates non-EU campaigns.
 * Fix - Improved performance of the expiring products query for large catalogs.
 * Fix - Only schedule UpdateEuPoliticalCampaigns jobs with an Ads connection.
