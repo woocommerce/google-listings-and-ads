@@ -8,6 +8,7 @@ import { createInterpolateElement } from '@wordpress/element';
  * Internal dependencies
  */
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
+import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 import Section from '~/components/section';
 import AppRadioContentControl from '~/components/app-radio-content-control';
 import RadioHelperText from '~/components/radio-helper-text';
@@ -27,6 +28,7 @@ const ShippingRateSection = () => {
 	const { settings } = useSettings();
 	const { hasFinishedResolution, data: mcSetup } = useMCSetup();
 	const inputProps = getInputProps( 'shipping_rate' );
+	const { isMultiLingualStore } = glaData;
 
 	// Hide the automatic shipping rate option if there are no shipping rates and the merchant is onboarding.
 	const hideAutomatticShippingRate =
@@ -78,15 +80,19 @@ const ShippingRateSection = () => {
 								</RadioHelperText>
 							</AppRadioContentControl>
 						) }
-						<AppRadioContentControl
-							{ ...inputProps }
-							label={ __(
-								'My shipping settings are simple. I can manually estimate flat shipping rates.',
-								'google-listings-and-ads'
-							) }
-							value="flat"
-							collapsible
-						/>
+
+						{ ! isMultiLingualStore && (
+							<AppRadioContentControl
+								{ ...inputProps }
+								label={ __(
+									'My shipping settings are simple. I can manually estimate flat shipping rates.',
+									'google-listings-and-ads'
+								) }
+								value="flat"
+								collapsible
+							/>
+						) }
+
 						<AppRadioContentControl
 							{ ...inputProps }
 							label={ __(
@@ -117,9 +123,10 @@ const ShippingRateSection = () => {
 					</VerticalGapLayout>
 				</Section.Card.Body>
 			</Section.Card>
-			{ values.shipping_rate === 'flat' && (
-				<FlatShippingRatesInputCards />
-			) }
+			{ ! isMultiLingualStore &&
+				values.shipping_rate === SHIPPING_RATE_METHOD.FLAT_RATE && (
+					<FlatShippingRatesInputCards />
+				) }
 		</Section>
 	);
 };

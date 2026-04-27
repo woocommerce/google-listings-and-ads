@@ -13,6 +13,7 @@ import AppButton from '~/components/app-button';
 import AdaptiveForm from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
 import checkErrors from '~/components/free-listings/configure-product-listings/checkErrors';
+import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 import getOfferFreeShippingInitialValue from '~/utils/getOfferFreeShippingInitialValue';
 import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
 import FormContent from './form-content';
@@ -300,7 +301,12 @@ const SetupFreeListings = ( {
 					location: targetAudience.location,
 					countries: targetAudience.countries || [],
 					// These are the fields for settings.
-					shipping_rate: settings.shipping_rate,
+					shipping_rate:
+						glaData.isMultiLingualStore &&
+						settings.shipping_rate ===
+							SHIPPING_RATE_METHOD.FLAT_RATE
+							? SHIPPING_RATE_METHOD.MANUAL
+							: settings.shipping_rate,
 					shipping_time: settings.shipping_time,
 					// This is used in UI only, not used in API.
 					offer_free_shipping:
