@@ -20,6 +20,7 @@ import {
 import OfferFreeShippingCheckbox from '~/components/order-value-condition-section/offer-free-shipping-checkbox';
 import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
 import './minimum-order-card.scss';
+import GoogleShippingPreview from './google-shipping-preview';
 
 /**
  * Renders a Card UI to set a single free shipping threshold applied to all countries.
@@ -74,12 +75,19 @@ const MinimumOrderCard = ( { value = [], helper, onChange } ) => {
 						{ ...offerFreeShippingInputProps }
 					/>
 					{ values.offer_free_shipping && (
-						<AppInputPriceControl
-							label={ __( 'Cost', 'google-listings-and-ads' ) }
-							suffix={ currency }
-							value={ threshold }
-							onBlur={ handleBlur }
-						/>
+						<>
+							<AppInputPriceControl
+								label={ __(
+									'Cost',
+									'google-listings-and-ads'
+								) }
+								suffix={ currency }
+								value={ threshold }
+								onBlur={ handleBlur }
+							/>
+
+							<GoogleShippingPreview threshold={ threshold } />
+						</>
 					) }
 				</VerticalGapLayout>
 				{ helper }
