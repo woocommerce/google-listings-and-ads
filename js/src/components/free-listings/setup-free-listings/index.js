@@ -303,8 +303,7 @@ const SetupFreeListings = ( {
 					// These are the fields for settings.
 					shipping_rate:
 						glaData.isMultiLingualStore &&
-						settings.shipping_rate ===
-							SHIPPING_RATE_METHOD.FLAT_RATE
+						settings.shipping_rate === SHIPPING_RATE_METHOD.FLAT
 							? SHIPPING_RATE_METHOD.MANUAL
 							: settings.shipping_rate,
 					shipping_time: settings.shipping_time,

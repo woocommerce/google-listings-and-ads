@@ -69,7 +69,7 @@ const ShippingRateSection = () => {
 									'Automatically sync my store’s shipping settings to Google.',
 									'google-listings-and-ads'
 								) }
-								value="automatic"
+								value={ SHIPPING_RATE_METHOD.AUTOMATIC }
 								collapsible
 							>
 								<RadioHelperText>
@@ -88,7 +88,7 @@ const ShippingRateSection = () => {
 									'My shipping settings are simple. I can manually estimate flat shipping rates.',
 									'google-listings-and-ads'
 								) }
-								value="flat"
+								value={ SHIPPING_RATE_METHOD.FLAT }
 								collapsible
 							/>
 						) }
@@ -99,7 +99,7 @@ const ShippingRateSection = () => {
 								'My shipping settings are complex. I will enter my shipping rates and times manually in Google Merchant Center.',
 								'google-listings-and-ads'
 							) }
-							value="manual"
+							value={ SHIPPING_RATE_METHOD.MANUAL }
 							collapsible
 						>
 							<RadioHelperText>
@@ -124,7 +124,7 @@ const ShippingRateSection = () => {
 				</Section.Card.Body>
 			</Section.Card>
 			{ ! isMultiLingualStore &&
-				values.shipping_rate === SHIPPING_RATE_METHOD.FLAT_RATE && (
+				values.shipping_rate === SHIPPING_RATE_METHOD.FLAT && (
 					<FlatShippingRatesInputCards />
 				) }
 		</Section>

@@ -39,7 +39,7 @@ export const API_RESPONSE_CODES = {
 };
 
 export const SHIPPING_RATE_METHOD = {
-	FLAT_RATE: 'flat_rate',
+	FLAT: 'flat',
 	MANUAL: 'manual',
 	AUTOMATIC: 'automatic',
 };
