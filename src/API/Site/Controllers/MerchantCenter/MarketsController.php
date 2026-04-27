@@ -3,11 +3,10 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
@@ -19,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
-class MarketsController extends BaseOptionsController {
+class MarketsController extends BaseController {
 
 	/**
 	 * @var MarketService
@@ -27,21 +26,14 @@ class MarketsController extends BaseOptionsController {
 	protected MarketService $market_service;
 
 	/**
-	 * @var TargetAudience
-	 */
-	protected TargetAudience $target_audience;
-
-	/**
 	 * MarketsController constructor.
 	 *
-	 * @param RESTServer     $server
-	 * @param MarketService  $market_service
-	 * @param TargetAudience $target_audience
+	 * @param RESTServer    $server
+	 * @param MarketService $market_service
 	 */
-	public function __construct( RESTServer $server, MarketService $market_service, TargetAudience $target_audience ) {
+	public function __construct( RESTServer $server, MarketService $market_service ) {
 		parent::__construct( $server );
-		$this->market_service  = $market_service;
-		$this->target_audience = $target_audience;
+		$this->market_service = $market_service;
 	}
 
 	/**
@@ -74,6 +66,7 @@ class MarketsController extends BaseOptionsController {
 					'callback'            => $this->get_languages_currencies_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
+				'schema' => $this->get_languages_currencies_schema_callback(),
 			]
 		);
 
@@ -103,25 +96,13 @@ class MarketsController extends BaseOptionsController {
 	 */
 	protected function get_read_markets_callback(): callable {
 		return function ( Request $request ) {
-			$primary = $this->build_primary_market();
-
-			$markets = [ $primary ];
-
-			$stored = $this->market_service->get_markets();
-			foreach ( $stored as $key => $market ) {
-				if ( is_string( $key ) ) {
-					$market['id'] = $key;
-					$markets[]    = $market;
-				}
+			$markets = [];
+			foreach ( $this->market_service->get_markets() as $id => $market ) {
+				$market['id'] = $id;
+				$response     = $this->prepare_item_for_response( $market, $request );
+				$markets[]    = $this->prepare_response_for_collection( $response );
 			}
-
-			return array_map(
-				function ( $market ) use ( $request ) {
-					$response = $this->prepare_item_for_response( $market, $request );
-					return $this->prepare_response_for_collection( $response );
-				},
-				$markets
-			);
+			return $markets;
 		};
 	}
 
@@ -147,30 +128,63 @@ class MarketsController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_create_market_callback(): callable {
-		return function () {
-			// TODO: Implement market creation in GOOWOO-559.
-			return new Response(
-				[
-					'message' => __( 'Not yet implemented.', 'google-listings-and-ads' ),
-				],
-				501
-			);
+		return function ( Request $request ) {
+			$config = [
+				'country'       => $request->get_param( 'country' ),
+				'language'      => $request->get_param( 'language' ),
+				'currency'      => $request->get_param( 'currency' ),
+				'feedLabel'     => strtoupper( $request->get_param( 'country' ) ),
+				'shipping_rate' => $request->get_param( 'shipping_rate' ),
+				'shipping_time' => $request->get_param( 'shipping_time' ),
+				'free_shipping' => $request->get_param( 'free_shipping' ),
+			];
+
+			// TODO: Move ID generation into MarketService::generate_market_id().
+			$id = sanitize_title( $config['feedLabel'] );
+
+			if ( 'primary' === $id ) {
+				return new Response(
+					[ 'message' => __( 'Cannot create a market with a reserved ID.', 'google-listings-and-ads' ) ],
+					400
+				);
+			}
+
+			if ( null !== $this->market_service->get_market( $id ) ) {
+				return new Response(
+					[
+						'message' => __( 'A market with this ID already exists.', 'google-listings-and-ads' ),
+						'id'      => $id,
+					],
+					409
+				);
+			}
+
+			try {
+				$this->market_service->add_market( $id, $config );
+			} catch ( InvalidValue $e ) {
+				return new Response( [ 'message' => $e->getMessage() ], 400 );
+			}
+
+			$created       = $this->market_service->get_market( $id );
+			$created['id'] = $id;
+
+			return new Response( $created, 201 );
 		};
 	}
 
 	/**
 	 * Get the callback for updating a market.
 	 *
+	 * Dispatches to MarketService::update_market() for all markets including
+	 * primary. The AC mentions "POST .../primary" in the cross-cutting section,
+	 * but this is treated as a typo for "PUT .../primary" — the preceding AC
+	 * section documents PUT /mc/markets/primary returning 200.
+	 *
 	 * @return callable
 	 */
 	protected function get_update_market_callback(): callable {
 		return function ( Request $request ) {
-			$id = $request->get_param( 'id' );
-
-			if ( 'primary' === $id ) {
-				return $this->update_primary_market( $request );
-			}
-
+			$id     = $request->get_param( 'id' );
 			$market = $this->market_service->get_market( $id );
 			if ( null === $market ) {
 				return new Response(
@@ -182,13 +196,13 @@ class MarketsController extends BaseOptionsController {
 				);
 			}
 
-			// TODO: Implement secondary market updates in GOOWOO-559.
-			return new Response(
-				[
-					'message' => __( 'Not yet implemented.', 'google-listings-and-ads' ),
-				],
-				501
-			);
+			try {
+				$updated = $this->market_service->update_market( $id, $this->extract_writable_params( $request ) );
+			} catch ( InvalidValue $e ) {
+				return new Response( [ 'message' => $e->getMessage() ], 400 );
+			}
+
+			return new Response( $updated );
 		};
 	}
 
@@ -221,82 +235,49 @@ class MarketsController extends BaseOptionsController {
 				);
 			}
 
-			// TODO: Implement market deletion in GOOWOO-559.
+			try {
+				$this->market_service->delete_market( $id );
+			} catch ( InvalidValue $e ) {
+				return new Response( [ 'message' => $e->getMessage() ], 400 );
+			}
+
 			return new Response(
 				[
-					'message' => __( 'Not yet implemented.', 'google-listings-and-ads' ),
-				],
-				501
+					'deleted' => true,
+					'id'      => $id,
+				]
 			);
 		};
 	}
 
 	/**
-	 * Build the primary market object from existing settings.
-	 *
-	 * @return array
-	 */
-	protected function build_primary_market(): array {
-		$primary  = $this->market_service->get_primary_market();
-		$settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
-
-		return [
-			'id'            => 'primary',
-			'label'         => __( 'Primary Market', 'google-listings-and-ads' ),
-			'countries'     => $this->target_audience->get_target_countries(),
-			'country'       => $primary['country'] ?? null,
-			'language'      => $primary['language'] ?? null,
-			'currency'      => $primary['currency'] ?? null,
-			'feedLabel'     => $primary['feedLabel'] ?? null,
-			'shipping_rate' => $settings['shipping_rate'] ?? null,
-			'shipping_time' => $settings['shipping_time'] ?? null,
-			'free_shipping' => null,
-		];
-	}
-
-	/**
-	 * Handle updating the primary market.
+	 * Extracts only the writable (edit-context) params that were actually
+	 * supplied on the request, so omitted fields are not modified (partial update).
 	 *
 	 * @param Request $request
 	 *
-	 * @return Response
+	 * @return array
 	 */
-	protected function update_primary_market( Request $request ): Response {
-		$settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+	private function extract_writable_params( Request $request ): array {
+		$schema = $this->get_schema_properties();
+		$params = [];
 
-		if ( null !== $request->get_param( 'shipping_rate' ) ) {
-			$settings['shipping_rate'] = $request->get_param( 'shipping_rate' );
+		foreach ( $schema as $key => $definition ) {
+			if ( ! empty( $definition['readonly'] ) ) {
+				continue;
+			}
+
+			if ( ! in_array( 'edit', $definition['context'] ?? [], true ) ) {
+				continue;
+			}
+
+			$value = $request->get_param( $key );
+			if ( null !== $value ) {
+				$params[ $key ] = $value;
+			}
 		}
 
-		if ( null !== $request->get_param( 'shipping_time' ) ) {
-			$settings['shipping_time'] = $request->get_param( 'shipping_time' );
-		}
-
-		$this->options->update( OptionsInterface::MERCHANT_CENTER, $settings );
-
-		$countries = $request->get_param( 'countries' );
-		if ( null !== $countries ) {
-			$audience              = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
-			$audience['countries'] = $countries;
-			$this->options->update( OptionsInterface::TARGET_AUDIENCE, $audience );
-		}
-
-		$primary = $this->market_service->get_primary_market();
-
-		return new Response(
-			[
-				'id'            => 'primary',
-				'label'         => __( 'Primary Market', 'google-listings-and-ads' ),
-				'countries'     => $countries ?? $this->target_audience->get_target_countries(),
-				'country'       => $primary['country'] ?? null,
-				'language'      => $primary['language'] ?? null,
-				'currency'      => $primary['currency'] ?? null,
-				'feedLabel'     => $primary['feedLabel'] ?? null,
-				'shipping_rate' => $settings['shipping_rate'] ?? null,
-				'shipping_time' => $settings['shipping_time'] ?? null,
-				'free_shipping' => null,
-			]
-		);
+		return $params;
 	}
 
 	/**
@@ -318,7 +299,48 @@ class MarketsController extends BaseOptionsController {
 	}
 
 	/**
+	 * Get the schema callback for the languages-currencies endpoint.
+	 *
+	 * @return callable
+	 */
+	protected function get_languages_currencies_schema_callback(): callable {
+		return function () {
+			return [
+				'$schema'    => 'http://json-schema.org/draft-04/schema#',
+				'title'      => 'languages-currencies',
+				'type'       => 'object',
+				'properties' => [
+					'languages'  => [
+						'type'  => 'array',
+						'items' => [
+							'type'       => 'object',
+							'properties' => [
+								'code'  => [ 'type' => 'string' ],
+								'label' => [ 'type' => 'string' ],
+							],
+						],
+					],
+					'currencies' => [
+						'type'  => 'array',
+						'items' => [
+							'type'       => 'object',
+							'properties' => [
+								'code'   => [ 'type' => 'string' ],
+								'symbol' => [ 'type' => 'string' ],
+							],
+						],
+					],
+				],
+			];
+		};
+	}
+
+	/**
 	 * Get the item schema properties for the controller.
+	 *
+	 * The AC uses "country" (singular) for the primary target country field.
+	 * The PR test plan and FE expect "countries" (plural) for the array of
+	 * country codes — this is the semantically correct name for an array.
 	 *
 	 * @return array
 	 */

@@ -4,9 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\MarketsController;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -25,55 +24,46 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|MarketService */
 	protected $market_service;
 
-	/** @var MockObject|TargetAudience */
-	protected $target_audience;
-
-	/** @var MockObject|OptionsInterface */
-	protected $options;
-
 	protected const ROUTE_MARKETS              = '/wc/gla/mc/markets';
 	protected const ROUTE_LANGUAGES_CURRENCIES = '/wc/gla/mc/markets/languages-currencies';
 	protected const ROUTE_MARKET               = '/wc/gla/mc/markets/';
 
-	/** @var string[] Countries returned by the TargetAudience mock. */
-	protected $target_countries = [ 'US' ];
+	protected const PRIMARY_MARKET = [
+		'id'            => 'primary',
+		'label'         => 'Primary Market',
+		'countries'     => [ 'US' ],
+		'country'       => 'US',
+		'language'      => 'en',
+		'currency'      => 'USD',
+		'feedLabel'     => 'US',
+		'shipping_rate' => 'flat',
+		'shipping_time' => 'flat',
+		'free_shipping' => 50.0,
+	];
+
+	protected const SECONDARY_MARKET = [
+		'country'       => 'GB',
+		'language'      => 'en',
+		'currency'      => 'GBP',
+		'feedLabel'     => 'GB',
+		'shipping_rate' => 'flat',
+		'shipping_time' => 'flat',
+		'free_shipping' => null,
+	];
 
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->market_service  = $this->createMock( MarketService::class );
-		$this->target_audience = $this->createMock( TargetAudience::class );
-		$this->options         = $this->createMock( OptionsInterface::class );
-
-		$this->market_service->method( 'get_primary_market' )->willReturn(
-			[
-				'country'   => 'US',
-				'language'  => 'en',
-				'currency'  => 'USD',
-				'feedLabel' => 'US',
-			]
-		);
-
-		$this->target_audience->method( 'get_target_countries' )
-			->willReturnCallback(
-				function () {
-					return $this->target_countries;
-				}
-			);
+		$this->market_service = $this->createMock( MarketService::class );
 
 		$this->market_service->method( 'get_markets' )->willReturn(
 			[
-				[
-					'country'   => 'US',
-					'language'  => 'en',
-					'currency'  => 'USD',
-					'feedLabel' => 'US',
-				],
+				'primary' => self::PRIMARY_MARKET,
+				'gb'      => self::SECONDARY_MARKET,
 			]
 		);
 
-		$this->controller = new MarketsController( $this->server, $this->market_service, $this->target_audience );
-		$this->controller->set_options_object( $this->options );
+		$this->controller = new MarketsController( $this->server, $this->market_service );
 		$this->controller->register();
 	}
 
@@ -82,6 +72,15 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertIsArray( $response->get_data() );
+	}
+
+	public function test_get_markets_returns_array_with_ids(): void {
+		$response = $this->do_request( self::ROUTE_MARKETS );
+		$data     = $response->get_data();
+
+		$this->assertCount( 2, $data );
+		$this->assertEquals( 'primary', $data[0]['id'] );
+		$this->assertEquals( 'gb', $data[1]['id'] );
 	}
 
 	public function test_get_markets_primary_has_correct_keys(): void {
@@ -97,43 +96,16 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertArrayHasKey( 'free_shipping', $primary );
 	}
 
-	public function test_get_markets_primary_id_is_primary(): void {
+	public function test_get_markets_primary_values_from_market_service(): void {
 		$response = $this->do_request( self::ROUTE_MARKETS );
 		$data     = $response->get_data();
+		$primary  = $data[0];
 
-		$this->assertEquals( 'primary', $data[0]['id'] );
-		$this->assertEquals( 'Primary Market', $data[0]['label'] );
-	}
-
-	public function test_get_markets_primary_countries_from_target_audience(): void {
-		$this->target_countries = [ 'AU', 'NZ' ];
-
-		$response = $this->do_request( self::ROUTE_MARKETS );
-		$data     = $response->get_data();
-
-		$this->assertEquals( [ 'AU', 'NZ' ], $data[0]['countries'] );
-	}
-
-	public function test_get_markets_primary_shipping_from_options(): void {
-		$this->options->method( 'get' )
-			->willReturnMap(
-				[
-					[
-						OptionsInterface::MERCHANT_CENTER,
-						[],
-						[
-							'shipping_rate' => 'flat',
-							'shipping_time' => 'manual',
-						],
-					],
-				]
-			);
-
-		$response = $this->do_request( self::ROUTE_MARKETS );
-		$data     = $response->get_data();
-
-		$this->assertEquals( 'flat', $data[0]['shipping_rate'] );
-		$this->assertEquals( 'manual', $data[0]['shipping_time'] );
+		$this->assertEquals( 'Primary Market', $primary['label'] );
+		$this->assertEquals( [ 'US' ], $primary['countries'] );
+		$this->assertEquals( 'flat', $primary['shipping_rate'] );
+		$this->assertEquals( 'flat', $primary['shipping_time'] );
+		$this->assertEquals( 50.0, $primary['free_shipping'] );
 	}
 
 	public function test_get_languages_currencies_returns_200(): void {
@@ -144,20 +116,75 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( [], $response->get_data()['currencies'] );
 	}
 
-	public function test_post_market_returns_501(): void {
+	public function test_languages_currencies_schema_shape(): void {
+		$reflection = new \ReflectionClass( $this->controller );
+		$method     = $reflection->getMethod( 'get_languages_currencies_schema_callback' );
+		$method->setAccessible( true );
+		$callback = $method->invoke( $this->controller );
+		$schema   = $callback();
+
+		$this->assertEquals( 'languages-currencies', $schema['title'] );
+		$this->assertEquals( 'object', $schema['type'] );
+		$this->assertArrayHasKey( 'languages', $schema['properties'] );
+		$this->assertArrayHasKey( 'currencies', $schema['properties'] );
+		$this->assertEquals( 'array', $schema['properties']['languages']['type'] );
+		$this->assertEquals( 'array', $schema['properties']['currencies']['type'] );
+		$this->assertEquals( 'object', $schema['properties']['languages']['items']['type'] );
+		$this->assertArrayHasKey( 'code', $schema['properties']['languages']['items']['properties'] );
+		$this->assertArrayHasKey( 'label', $schema['properties']['languages']['items']['properties'] );
+		$this->assertArrayHasKey( 'code', $schema['properties']['currencies']['items']['properties'] );
+		$this->assertArrayHasKey( 'symbol', $schema['properties']['currencies']['items']['properties'] );
+	}
+
+	public function test_post_market_returns_201_on_success(): void {
+		$created_market = [
+			'country'       => 'DE',
+			'language'      => 'de',
+			'currency'      => 'EUR',
+			'feedLabel'     => 'DE',
+			'shipping_rate' => 'flat',
+			'shipping_time' => 'flat',
+			'free_shipping' => null,
+		];
+
+		$created = false;
+
+		$this->market_service->method( 'add_market' )
+			->willReturnCallback(
+				function () use ( &$created ) {
+					$created = true;
+				}
+			);
+
+		$this->market_service->method( 'get_market' )
+			->willReturnCallback(
+				function ( string $id ) use ( &$created, $created_market ) {
+					if ( 'de' === $id && $created ) {
+						return $created_market;
+					}
+					return null;
+				}
+			);
+
 		$response = $this->do_request(
 			self::ROUTE_MARKETS,
 			'POST',
 			[
-				'country'       => 'GB',
-				'language'      => 'en',
-				'currency'      => 'GBP',
+				'country'       => 'DE',
+				'language'      => 'de',
+				'currency'      => 'EUR',
 				'shipping_rate' => 'flat',
 				'shipping_time' => 'flat',
 			]
 		);
 
-		$this->assertEquals( 501, $response->get_status() );
+		$this->assertEquals( 201, $response->get_status() );
+		$data = $response->get_data();
+		$this->assertEquals( 'de', $data['id'] );
+		$this->assertEquals( 'DE', $data['country'] );
+		$this->assertEquals( 'EUR', $data['currency'] );
+		$this->assertEquals( 'DE', $data['feedLabel'] );
+		$this->assertEquals( 'flat', $data['shipping_rate'] );
 	}
 
 	public function test_post_market_returns_400_missing_required_field(): void {
@@ -175,19 +202,65 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
-	public function test_put_primary_returns_200(): void {
-		$this->options->method( 'get' )
-			->willReturnMap(
-				[
-					[
-						OptionsInterface::MERCHANT_CENTER,
-						[],
-						[
-							'shipping_rate' => 'flat',
-							'shipping_time' => 'flat',
-						],
-					],
-				]
+	public function test_post_market_returns_400_when_add_market_throws_invalid_value(): void {
+		$this->market_service->method( 'get_market' )
+			->willReturn( null );
+
+		$this->market_service->method( 'add_market' )
+			->willThrowException( InvalidValue::is_empty( 'country' ) );
+
+		$response = $this->do_request(
+			self::ROUTE_MARKETS,
+			'POST',
+			[
+				'country'       => 'DE',
+				'language'      => 'de',
+				'currency'      => 'EUR',
+				'shipping_rate' => 'flat',
+				'shipping_time' => 'flat',
+			]
+		);
+
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_post_market_returns_409_when_id_already_exists(): void {
+		$this->market_service->method( 'get_market' )
+			->with( 'gb' )
+			->willReturn( self::SECONDARY_MARKET );
+
+		$response = $this->do_request(
+			self::ROUTE_MARKETS,
+			'POST',
+			[
+				'country'       => 'GB',
+				'language'      => 'en',
+				'currency'      => 'GBP',
+				'shipping_rate' => 'flat',
+				'shipping_time' => 'flat',
+			]
+		);
+
+		$this->assertEquals( 409, $response->get_status() );
+	}
+
+	public function test_put_primary_delegates_to_market_service(): void {
+		$this->market_service->method( 'get_market' )
+			->with( 'primary' )
+			->willReturn( self::PRIMARY_MARKET );
+
+		$this->market_service->expects( $this->once() )
+			->method( 'update_market' )
+			->with(
+				'primary',
+				$this->callback(
+					function ( $params ) {
+						return 'manual' === $params['shipping_rate'];
+					}
+				)
+			)
+			->willReturn(
+				array_merge( self::PRIMARY_MARKET, [ 'shipping_rate' => 'manual' ] )
 			);
 
 		$response = $this->do_request(
@@ -199,107 +272,56 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		);
 
 		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( 'manual', $response->get_data()['shipping_rate'] );
 	}
 
-	public function test_put_primary_updates_merchant_center_options(): void {
-		$this->options->method( 'get' )
-			->willReturnMap(
-				[
-					[
-						OptionsInterface::MERCHANT_CENTER,
-						[],
-						[
-							'shipping_rate' => 'flat',
-							'shipping_time' => 'flat',
-						],
-					],
-				]
-			);
+	public function test_put_secondary_delegates_to_market_service(): void {
+		$this->market_service->method( 'get_market' )
+			->with( 'gb' )
+			->willReturn( self::SECONDARY_MARKET );
 
-		$this->options->expects( $this->once() )
-			->method( 'update' )
+		$this->market_service->expects( $this->once() )
+			->method( 'update_market' )
 			->with(
-				OptionsInterface::MERCHANT_CENTER,
-				[
-					'shipping_rate' => 'manual',
-					'shipping_time' => 'flat',
-				]
-			);
-
-		$this->do_request(
-			self::ROUTE_MARKET . 'primary',
-			'PUT',
-			[
-				'shipping_rate' => 'manual',
-			]
-		);
-	}
-
-	public function test_put_primary_partial_update_preserves_existing(): void {
-		$this->options->method( 'get' )
-			->willReturnMap(
-				[
-					[
-						OptionsInterface::MERCHANT_CENTER,
-						[],
-						[
-							'shipping_rate' => 'flat',
-							'shipping_time' => 'manual',
-						],
-					],
-				]
+				'gb',
+				$this->callback(
+					function ( $params ) {
+						return 'automatic' === $params['shipping_rate'];
+					}
+				)
+			)
+			->willReturn(
+				array_merge( self::SECONDARY_MARKET, [ 'shipping_rate' => 'automatic' ] )
 			);
 
 		$response = $this->do_request(
-			self::ROUTE_MARKET . 'primary',
+			self::ROUTE_MARKET . 'gb',
 			'PUT',
 			[
 				'shipping_rate' => 'automatic',
 			]
 		);
 
-		$data = $response->get_data();
-		$this->assertEquals( 'automatic', $data['shipping_rate'] );
-		$this->assertEquals( 'manual', $data['shipping_time'] );
+		$this->assertEquals( 200, $response->get_status() );
 	}
 
-	public function test_put_primary_updates_target_audience_countries(): void {
-		$existing_audience = [
-			'location'  => 'selected',
-			'countries' => [ 'US' ],
-		];
+	public function test_put_returns_400_when_update_throws_invalid_value(): void {
+		$this->market_service->method( 'get_market' )
+			->with( 'gb' )
+			->willReturn( self::SECONDARY_MARKET );
 
-		$this->options->method( 'get' )
-			->willReturnMap(
-				[
-					[ OptionsInterface::MERCHANT_CENTER, [], [] ],
-					[ OptionsInterface::TARGET_AUDIENCE, [], $existing_audience ],
-				]
-			);
+		$this->market_service->method( 'update_market' )
+			->willThrowException( InvalidValue::is_empty( 'currency' ) );
 
-		$updated_audience = false;
-		$this->options->expects( $this->exactly( 2 ) )
-			->method( 'update' )
-			->willReturnCallback(
-				function ( $key, $value ) use ( &$updated_audience ) {
-					if ( OptionsInterface::TARGET_AUDIENCE === $key ) {
-						$this->assertEquals( 'selected', $value['location'] );
-						$this->assertEquals( [ 'US', 'CA' ], $value['countries'] );
-						$updated_audience = true;
-					}
-					return true;
-				}
-			);
-
-		$this->do_request(
-			self::ROUTE_MARKET . 'primary',
+		$response = $this->do_request(
+			self::ROUTE_MARKET . 'gb',
 			'PUT',
 			[
-				'countries' => [ 'US', 'CA' ],
+				'currency' => '',
 			]
 		);
 
-		$this->assertTrue( $updated_audience, 'TARGET_AUDIENCE option was not updated.' );
+		$this->assertEquals( 400, $response->get_status() );
 	}
 
 	public function test_put_primary_returns_400_invalid_shipping_rate(): void {
@@ -328,6 +350,18 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		);
 
 		$this->assertEquals( 404, $response->get_status() );
+	}
+
+	public function test_delete_market_returns_200_on_success(): void {
+		$this->market_service->method( 'get_market' )
+			->with( 'gb' )
+			->willReturn( self::SECONDARY_MARKET );
+
+		$response = $this->do_request( self::ROUTE_MARKET . 'gb', 'DELETE' );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertTrue( $response->get_data()['deleted'] );
+		$this->assertEquals( 'gb', $response->get_data()['id'] );
 	}
 
 	public function test_delete_primary_returns_400(): void {
@@ -392,5 +426,34 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_MARKET . 'primary', 'DELETE' );
 
 		$this->assertEquals( 403, $response->get_status() );
+	}
+
+	public function test_put_only_sends_writable_params(): void {
+		$this->market_service->method( 'get_market' )
+			->with( 'primary' )
+			->willReturn( self::PRIMARY_MARKET );
+
+		$this->market_service->expects( $this->once() )
+			->method( 'update_market' )
+			->with(
+				'primary',
+				$this->callback(
+					function ( $params ) {
+						return isset( $params['shipping_rate'] )
+							&& ! isset( $params['id'] )
+							&& ! isset( $params['label'] )
+							&& ! isset( $params['feedLabel'] );
+					}
+				)
+			)
+			->willReturn( self::PRIMARY_MARKET );
+
+		$this->do_request(
+			self::ROUTE_MARKET . 'primary',
+			'PUT',
+			[
+				'shipping_rate' => 'flat',
+			]
+		);
 	}
 }

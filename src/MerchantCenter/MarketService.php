@@ -225,7 +225,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * Deletes a market from the markets config based on ID.
 	 *
 	 * Primary cannot be deleted. After removal, the market's country is
-	 * restored to the primary feed's TargetAudience (deferred from GOOWOO-560 AC).
+	 * restored to the primary feed's TargetAudience.
 	 *
 	 * @param string $id
 	 *
