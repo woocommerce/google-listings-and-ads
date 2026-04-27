@@ -20,9 +20,10 @@ import {
  * for the given shipping rate selection.
  *
  * @param {string|undefined} shippingRate One of the values defined in `SHIPPING_RATE_OPTION`.
- * @return {JSX.Element|string} A localized description, or a `'...'` placeholder when the value
- *                              is unknown (e.g. settings are still resolving or the merchant
- *                              skipped onboarding) so the layout stays stable while loading.
+ * @return {JSX.Element|string|null} A localized description, or `null` when the value
+ *                                   is unknown (e.g. settings are still resolving or the
+ *                                   merchant skipped onboarding) so the caller can render
+ *                                   a loading skeleton in its place.
  */
 export const getShippingRateLabel = ( shippingRate ) => {
 	switch ( shippingRate ) {
@@ -60,6 +61,6 @@ export const getShippingRateLabel = ( shippingRate ) => {
 			);
 
 		default:
-			return '...';
+			return null;
 	}
 };

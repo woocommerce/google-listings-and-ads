@@ -30,11 +30,18 @@ const MarketsHeader = ( { shippingRate } ) => {
 				<h1 className="gla-markets-header__title">
 					{ __( 'Markets', 'google-listings-and-ads' ) }
 				</h1>
-				{ description && (
-					<p className="gla-markets-header__description">
-						{ description }
-					</p>
-				) }
+				<p className="gla-markets-header__description">
+					{ description ?? (
+						<span
+							className="gla-markets-header__description-placeholder"
+							aria-busy="true"
+							title={ __(
+								'Loading…',
+								'google-listings-and-ads'
+							) }
+						/>
+					) }
+				</p>
 			</FlexBlock>
 			<FlexItem>
 				<AddMarket />
