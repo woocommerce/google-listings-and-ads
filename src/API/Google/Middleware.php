@@ -23,9 +23,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerEx
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\NotFoundExceptionInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException;
-use DateTime;
 use Exception;
-use WP_REST_Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -285,20 +283,28 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 			do_action( 'woocommerce_gla_site_claim_failure', [ 'details' => 'google_manager' ] );
+
+			if ( $e instanceof BadResponseException ) {
+				$decoded = json_decode( (string) $e->getResponse()->getBody(), true );
+				$error   = is_array( $decoded ) ? ( $decoded['error'] ?? [] ) : [];
+				$message = is_array( $error ) && isset( $error['message'] )
+					? (string) $error['message']
+					: $this->client_exception_message( $e, __( 'Error claiming website', 'google-listings-and-ads' ) );
+
+				throw new ExceptionWithResponseData(
+					$message,
+					$e->getCode() ?: 400,
+					null,
+					[
+						'code'  => 'API_ERROR',
+						'error' => $decoded,
+					]
+				);
+			}
+
 			$message = $this->client_exception_message( $e, __( 'Error claiming website', 'google-listings-and-ads' ) );
 			$status  = $e->getCode() ?: 400;
-			$errors  = [];
-			if ( $e instanceof BadResponseException ) {
-				$raw = json_decode( $e->getResponse()->getBody()->getContents(), true );
-				if ( is_array( $raw ) && ! empty( $raw['errors'] ) && is_array( $raw['errors'] ) ) {
-					foreach ( $raw['errors'] as $err ) {
-						if ( isset( $err['code'], $err['message'] ) ) {
-							$errors[ (string) $err['code'] ] = (string) $err['message'];
-						}
-					}
-				}
-			}
-			throw new Exception( $message, $status );
+			throw new Exception( $message, $status, $e );
 		}
 	}
 
@@ -653,7 +659,6 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 	 * Get a timezone string from WP Settings.
 	 *
 	 * @return string
-	 * @throws Exception If the DateTime instantiation fails.
 	 */
 	protected function get_site_timezone_string(): string {
 		/** @var WP $wp */
