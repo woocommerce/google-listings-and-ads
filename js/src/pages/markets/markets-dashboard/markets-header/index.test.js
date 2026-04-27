@@ -24,13 +24,20 @@ describe( 'MarketsHeader', () => {
 		expect( screen.getByTestId( 'add-market' ) ).toBeInTheDocument();
 	} );
 
-	test( 'renders the "..." placeholder description when shippingRate is undefined', () => {
+	test( 'renders a loading skeleton inside the description when shippingRate is undefined', () => {
 		const { container } = render( <MarketsHeader /> );
 
-		expect(
-			container.querySelector( '.gla-markets-header__description' )
-				.textContent
-		).toBe( '...' );
+		const description = container.querySelector(
+			'.gla-markets-header__description'
+		);
+		const placeholder = container.querySelector(
+			'.gla-markets-header__description-placeholder'
+		);
+
+		expect( description ).toBeInTheDocument();
+		expect( description.textContent ).toBe( '' );
+		expect( placeholder ).toBeInTheDocument();
+		expect( placeholder ).toHaveAttribute( 'aria-busy', 'true' );
 	} );
 
 	test( 'renders the "automatic" description when shippingRate is "automatic"', () => {

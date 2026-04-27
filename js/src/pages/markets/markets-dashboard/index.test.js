@@ -8,6 +8,7 @@ import { render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import MarketsDashboard from './';
+import MarketsHeader from './markets-header';
 import useSettings from '~/hooks/useSettings';
 import { SHIPPING_RATE_OPTION } from '../constants';
 
@@ -15,6 +16,10 @@ jest.mock( '~/hooks/useSettings' );
 
 jest.mock( './market-data-views', () =>
 	jest.fn().mockReturnValue( <div data-testid="market-data-views" /> )
+);
+
+jest.mock( './markets-header', () =>
+	jest.fn().mockReturnValue( <div data-testid="markets-header" /> )
 );
 
 const mockShippingRate = ( shippingRate ) =>
@@ -30,6 +35,7 @@ beforeEach( () => {
 
 afterEach( () => {
 	useSettings.mockReset();
+	MarketsHeader.mockClear();
 } );
 
 describe( 'MarketsDashboard', () => {
@@ -61,47 +67,26 @@ describe( 'MarketsDashboard', () => {
 		} );
 	} );
 
-	describe( 'Shipping rate description', () => {
-		test( 'renders the "automatic" description', () => {
+	describe( 'Shipping rate wiring', () => {
+		test( 'forwards the resolved shipping rate from useSettings to MarketsHeader', () => {
 			mockShippingRate( SHIPPING_RATE_OPTION.AUTOMATIC );
-			const { container } = render( <MarketsDashboard /> );
+			render( <MarketsDashboard /> );
 
-			expect(
-				container.querySelector( '.gla-markets-header__description' )
-					.textContent
-			).toBe(
-				'Shipping rates are synced from your WooCommerce settings.'
+			expect( MarketsHeader ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					shippingRate: SHIPPING_RATE_OPTION.AUTOMATIC,
+				} ),
+				expect.anything()
 			);
 		} );
 
-		test( 'renders the "flat" description', () => {
-			mockShippingRate( SHIPPING_RATE_OPTION.FLAT );
+		test( 'forwards `undefined` to MarketsHeader when settings have not resolved', () => {
 			render( <MarketsDashboard /> );
 
-			expect(
-				screen.getByText(
-					'Shipping rates are manually configured per market.'
-				)
-			).toBeInTheDocument();
-		} );
-
-		test( 'renders the "manual" description', () => {
-			mockShippingRate( SHIPPING_RATE_OPTION.MANUAL );
-			const { container } = render( <MarketsDashboard /> );
-
-			expect(
-				container.querySelector( '.gla-markets-header__description' )
-					.textContent
-			).toContain( 'Shipping is managed in Google Merchant Center' );
-		} );
-
-		test( 'renders the "..." placeholder description when settings have not resolved', () => {
-			const { container } = render( <MarketsDashboard /> );
-
-			expect(
-				container.querySelector( '.gla-markets-header__description' )
-					.textContent
-			).toBe( '...' );
+			expect( MarketsHeader ).toHaveBeenCalledWith(
+				expect.objectContaining( { shippingRate: undefined } ),
+				expect.anything()
+			);
 		} );
 	} );
 } );
