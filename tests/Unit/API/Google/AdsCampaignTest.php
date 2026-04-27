@@ -402,6 +402,92 @@ class AdsCampaignTest extends UnitTest {
 		}
 	}
 
+	public function test_get_campaigns_missing_eu_political_declaration_skips_video_campaigns() {
+		$campaigns_data = [
+			[
+				'id'      => 111,
+				'name'    => 'Non-shopping PMax',
+				'status'  => 'enabled',
+				'type'    => CampaignType::PERFORMANCE_MAX,
+				'country' => 'US',
+				'amount'  => 10,
+			],
+			[
+				'id'      => 222,
+				'name'    => 'Video',
+				'status'  => 'enabled',
+				'type'    => CampaignType::VIDEO,
+				'country' => 'US',
+				'amount'  => 10,
+			],
+			[
+				'id'      => 333,
+				'name'    => 'Shopping',
+				'status'  => 'enabled',
+				'type'    => CampaignType::SHOPPING,
+				'country' => 'US',
+				'amount'  => 10,
+			],
+		];
+
+		$rows = array_map( [ $this, 'generate_campaign_row_mock' ], $campaigns_data );
+		$this->generate_ads_query_mock( $rows );
+
+		$this->options->expects( $this->never() )
+			->method( 'update' )
+			->with( OptionsInterface::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE );
+
+		$result = $this->campaign->get_campaigns_missing_eu_political_declaration();
+
+		$this->assertCount( 2, $result );
+		$this->assertEquals(
+			[
+				'id'   => 111,
+				'name' => 'Non-shopping PMax',
+			],
+			$result[0]
+		);
+		$this->assertEquals(
+			[
+				'id'   => 333,
+				'name' => 'Shopping',
+			],
+			$result[1]
+		);
+	}
+
+	public function test_get_campaigns_missing_eu_political_declaration_sets_complete_flag_when_empty() {
+		$this->generate_ads_query_mock( [] );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE, true );
+
+		$this->assertEquals( [], $this->campaign->get_campaigns_missing_eu_political_declaration() );
+	}
+
+	public function test_get_campaigns_missing_eu_political_declaration_sets_complete_flag_when_only_video_campaigns() {
+		$campaigns_data = [
+			[
+				'id'      => 222,
+				'name'    => 'Video',
+				'status'  => 'enabled',
+				'type'    => CampaignType::VIDEO,
+				'country' => 'US',
+				'amount'  => 10,
+			],
+		];
+
+		$rows = array_map( [ $this, 'generate_campaign_row_mock' ], $campaigns_data );
+		$this->generate_ads_query_mock( $rows );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE, true );
+
+		$this->assertEquals( [], $this->campaign->get_campaigns_missing_eu_political_declaration() );
+	}
+
 	public function test_create_campaign() {
 		$campaign_data = [
 			'name'                                  => 'New Campaign',
