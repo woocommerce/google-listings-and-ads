@@ -1390,12 +1390,6 @@ export function* receiveDetailedError( slot, error ) {
 }
 
 /**
- * Clears error information for a specific error slot.
- *
- * @param {string} slot - Unique key identifying the error to be cleared.
- * @return {{type: string, slot: string}} Redux action with type `TYPES.CLEAR_DETAILED_ERROR_BY_SLOT`.
- */
-/**
  * Clears error information for specific error slots.
  *
  * @param {Array<string>} slots - Array of unique keys identifying the errors to be cleared.
@@ -1407,6 +1401,7 @@ export function* clearDetailedErrorBySlots( slots ) {
 		slots,
 	};
 }
+
 export function* receiveGenAIMediaAssets( url, data, assetType ) {
 	if ( ! data?.items ) {
 		return {

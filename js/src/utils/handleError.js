@@ -12,14 +12,14 @@ import { logError } from './console';
 
 /**
  * @typedef {Object} ApiError
- * @property {number} [code] The HTTP response status code.
+ * @property {string} [code] The error code (e.g. 'API_ERROR').
  * @property {string} [message] The error reason.
  */
 
 /**
  * @typedef {Object} DetailedApiError
  * @property {ApiError} error The error data.
- * @property {string} [slot] The ad slot where the error occurred.
+ * @property {string} [slot] The error slot identifier.
  */
 
 // Functions in this module use optional chaining to access `error` because the

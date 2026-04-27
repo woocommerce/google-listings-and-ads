@@ -1073,7 +1073,7 @@ describe( 'reducer', () => {
 			} );
 			const cleared = reducer( withError, {
 				type: TYPES.CLEAR_DETAILED_ERROR_BY_SLOT,
-				slot: 'slot_b',
+				slots: [ 'slot_b' ],
 			} );
 
 			expect( cleared.detailed_errors ).toHaveLength( 1 );
