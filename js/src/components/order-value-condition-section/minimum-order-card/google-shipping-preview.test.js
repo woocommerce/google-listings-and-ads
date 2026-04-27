@@ -32,7 +32,9 @@ describe( 'GoogleShippingPreview', () => {
 		render( <GoogleShippingPreview threshold={ 50 } /> );
 
 		expect(
-			screen.getByText( /Example of what your customers will see on Google:/ )
+			screen.getByText(
+				/Example of what your customers will see on Google:/
+			)
 		).toBeInTheDocument();
 		expect(
 			screen.getByText( 'Ships free over $50.00' )
