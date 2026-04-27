@@ -105,6 +105,46 @@ class MarketServiceTest extends UnitTest {
 		$this->assertArrayNotHasKey( 'should', $result['primary'] );
 	}
 
+	/**
+	 * Regression: legacy/corrupted state could leave a primary-shaped entry
+	 * stored under the 'primary' key. The result must always contain exactly
+	 * one primary, sourced from the synthesised composition — never the
+	 * stored copy — even when iterated by a consumer that flattens to a list.
+	 */
+	public function test_get_markets_never_returns_duplicate_primary(): void {
+		$stored = [
+			'primary' => [
+				'id'        => 'primary',
+				'label'     => 'Primary Market',
+				'countries' => [ 'MU', 'ZW' ],
+				'country'   => 'ZW',
+				'language'  => 'en',
+				'currency'  => 'USD',
+				'feedLabel' => 'ZW',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $stored ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US', 'CA' ] );
+
+		$result = $this->market_service->get_markets();
+
+		$this->assertCount( 1, $result );
+		$this->assertArrayHasKey( 'primary', $result );
+
+		$primary_ids = array_filter(
+			array_column( $result, 'id' ),
+			static function ( $id ) {
+				return 'primary' === $id;
+			}
+		);
+		$this->assertCount( 1, $primary_ids );
+
+		$this->assertSame( 'US', $result['primary']['country'] );
+		$this->assertSame( 'US', $result['primary']['feedLabel'] );
+		$this->assertSame( [ 'US', 'CA' ], $result['primary']['countries'] );
+	}
+
 	public function test_get_primary_market_returns_full_response_ready_shape(): void {
 		$mc_settings = [
 			'shipping_rate' => 'flat',
