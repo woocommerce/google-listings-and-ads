@@ -45,6 +45,7 @@ const DEFAULT_STATE = {
 				pages: null,
 			},
 		},
+		markets: [],
 	},
 	ads_campaigns: null,
 	all_ads_campaigns: null,
@@ -86,7 +87,6 @@ const DEFAULT_STATE = {
 		summary: {},
 	},
 	gen_ai_assets: {},
-	markets: [],
 };
 
 /**
@@ -705,7 +705,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		case TYPES.RECEIVE_MARKETS: {
 			const { markets } = action;
 
-			return { ...state, markets };
+			return setIn( state, 'mc.markets', markets );
 		}
 
 		case TYPES.DISCONNECT_ACCOUNTS_ALL:

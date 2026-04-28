@@ -562,7 +562,7 @@ export const getGenAITextAssets = ( state, url, assetType ) => {
  * @return {Array} The list of markets.
  */
 export const getMarkets = ( state ) => {
-	return state.markets;
+	return state.mc.markets;
 };
 
 /**
@@ -573,5 +573,5 @@ export const getMarkets = ( state ) => {
  * @return {Object|undefined} The market with the specified ID, or undefined if not found.
  */
 export const getMarket = ( state, id ) => {
-	return state.markets.find( ( market ) => market.id === id );
+	return state.mc.markets.find( ( market ) => market.id === id );
 };
