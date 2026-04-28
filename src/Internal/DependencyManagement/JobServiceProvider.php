@@ -11,9 +11,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\AsyncActionRunne
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\RowBuilder\OrderItemRowBuilder;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\Services\YouTubeOrders;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\Writer\CsvExportWriter;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
@@ -204,7 +206,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 
 		// YouTube Merchant Reported Conversions.
 		$this->share_with_tags( YouTubeOrders::class );
-		$this->share_with_tags( OrderItemRowBuilder::class );
+		$this->share_with_tags( OrderItemRowBuilder::class, Middleware::class );
 		$this->share_with_tags( CsvExportWriter::class );
 
 		$this->share_action_scheduler_job( CreateYouTubeOrderIdsCache::class, YouTubeOrders::class, JobRepository::class );
@@ -214,7 +216,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 
 		$this->share_action_scheduler_job( UpdateMerchantPriceBenchmarks::class, MerchantCenterService::class, PriceBenchmarks::class );
 
-		$this->share_action_scheduler_job( UpdateEuPoliticalCampaigns::class, AdsCampaign::class );
+		$this->share_action_scheduler_job( UpdateEuPoliticalCampaigns::class, AdsCampaign::class, AdsService::class );
 	}
 
 	/**
