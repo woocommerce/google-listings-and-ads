@@ -18,8 +18,7 @@ import ProductComparisonChart from './product-comparison-chart';
 import './index.scss';
 
 const PriceBenchmark = () => {
-	const { dataViewIsLoading, dataViewHasFailed, dataViewIsReady } =
-		useDataViewsScript();
+	const dataViewStatus = useDataViewsScript();
 
 	return (
 		<div className="gla-price-benchmark">
@@ -28,7 +27,7 @@ const PriceBenchmark = () => {
 			<Banner />
 			<ProductComparisonChart />
 
-			{ dataViewHasFailed && (
+			{ dataViewStatus === 'failed' && (
 				<AppNotice
 					status="warning"
 					isDismissible={ false }
@@ -41,10 +40,12 @@ const PriceBenchmark = () => {
 				</AppNotice>
 			) }
 
-			{ ! dataViewHasFailed && (
+			{ dataViewStatus !== 'failed' && (
 				<Card className="gla-price-benchmark__card">
-					{ dataViewIsLoading && <AppSpinner /> }
-					{ dataViewIsReady && <PriceBenchmarkSuggestions /> }
+					{ dataViewStatus === 'loading' && <AppSpinner /> }
+					{ dataViewStatus === 'ready' && (
+						<PriceBenchmarkSuggestions />
+					) }
 				</Card>
 			) }
 		</div>

@@ -1,11 +1,13 @@
 /**
  * External dependencies
  */
+import { __ } from '@wordpress/i18n';
 import { Card } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
+import AppNotice from '~/components/app-notice';
 import AppSpinner from '~/components/app-spinner';
 import useDataViewsScript from '~/hooks/useDataViewsScript';
 import useSettings from '~/hooks/useSettings';
@@ -17,17 +19,29 @@ const MarketsDashboard = () => {
 	const { settings } = useSettings();
 	const shippingRate = settings?.shipping_rate;
 
-	const { dataViewIsLoading, dataViewHasFailed, dataViewIsReady } =
-		useDataViewsScript();
+	const dataViewStatus = useDataViewsScript();
 
 	return (
 		<div className="gla-markets-dashboard">
 			<MarketsHeader shippingRate={ shippingRate } />
 
-			{ ! dataViewHasFailed && (
+			{ dataViewStatus === 'failed' && (
+				<AppNotice
+					status="warning"
+					isDismissible={ false }
+					className="gla-markets-dashboard__error-message"
+				>
+					{ __(
+						'There was an error loading the markets dashboard.',
+						'google-listings-and-ads'
+					) }
+				</AppNotice>
+			) }
+
+			{ dataViewStatus !== 'failed' && (
 				<Card className="gla-markets-dashboard__card">
-					{ dataViewIsLoading && <AppSpinner /> }
-					{ dataViewIsReady && (
+					{ dataViewStatus === 'loading' && <AppSpinner /> }
+					{ dataViewStatus === 'ready' && (
 						<MarketDataViews shippingRate={ shippingRate } />
 					) }
 				</Card>
