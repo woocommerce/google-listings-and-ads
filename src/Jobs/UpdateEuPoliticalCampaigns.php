@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\AbstractBatchedActionSchedu
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -56,6 +57,12 @@ class UpdateEuPoliticalCampaigns extends AbstractBatchedActionSchedulerJob imple
 	 * @return bool Returns true if the job can be scheduled.
 	 */
 	public function can_schedule( $args = [] ): bool {
+		// Stop scheduling once this Ads account has no more campaigns needing the EU political declaration.
+		// The flag is cleared on Ads disconnect, so reconnecting a different account re-enables the job.
+		if ( $this->options->get( OptionsInterface::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE ) ) {
+			return false;
+		}
+
 		return parent::can_schedule( $args ) && $this->ads_service->is_connected();
 	}
 
