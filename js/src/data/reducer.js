@@ -86,6 +86,7 @@ const DEFAULT_STATE = {
 		summary: {},
 	},
 	gen_ai_assets: {},
+	markets: [],
 };
 
 /**
@@ -699,6 +700,12 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 
 		case TYPES.DISCONNECT_ACCOUNTS_YOUTUBE: {
 			return setIn( state, 'mc.accounts.youtube', null );
+		}
+
+		case TYPES.RECEIVE_MARKETS: {
+			const { markets } = action;
+
+			return { ...state, markets };
 		}
 
 		case TYPES.DISCONNECT_ACCOUNTS_ALL:

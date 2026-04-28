@@ -1459,3 +1459,94 @@ export function* disconnectYouTubeAccount() {
 		throw error;
 	}
 }
+
+/**
+ * @typedef {Object} MarketArgs
+ * @property {CountryCode} country Primary country code in ISO 3166-1 alpha-2 format.
+ * @property {string} language Language code in ISO 639-1 format. Example: 'en'.
+ * @property {string} currency Currency code in ISO 4217 format. Example: 'USD'.
+ * @property {'automatic'|'flat'|'manual'} shipping_rate Shipping rate type.
+ * @property {'flat'|'manual'} shipping_time Shipping time type.
+ * @property {number|null} [free_shipping] Free shipping threshold amount, or null when unset.
+ */
+
+/**
+ * Fetch the list of markets.
+ *
+ * @return {Object} Action object to receive the markets.
+ * @throws Will throw an error if the request failed.
+ */
+export function* fetchMarkets() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/markets`,
+		} );
+
+		return { type: TYPES.RECEIVE_MARKETS, markets: response };
+	} catch ( error ) {
+		handleApiError( error );
+	}
+}
+
+/**
+ * Create a new market.
+ *
+ * @param {MarketArgs} args The market data to create.
+ * @return {Object} Action object to receive the markets after creation.
+ * @throws Will throw an error if the request failed.
+ */
+export function* createMarket( args ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/markets`,
+			method: 'POST',
+			data: args,
+		} );
+		return yield fetchMarkets();
+	} catch ( error ) {
+		handleApiError( error );
+		throw error;
+	}
+}
+
+/**
+ * Update an existing market.
+ *
+ * @param {string} id The ID of the market to update.
+ * @param {Partial<MarketArgs>} data The market fields to update (all fields optional).
+ * @return {Object} Action object to receive the markets after update.
+ * @throws Will throw an error if the request failed.
+ */
+export function* updateMarket( id, data ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/markets/${ id }`,
+			method: 'PUT',
+			data,
+		} );
+		return yield fetchMarkets();
+	} catch ( error ) {
+		handleApiError( error );
+		throw error;
+	}
+}
+
+/**
+ * Delete a market.
+ *
+ * @param {string|number} id The ID of the market to delete.
+ * @return {Object} Action object to receive the markets after deletion.
+ * @throws Will throw an error if the request failed.
+ */
+export function* deleteMarket( id ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/markets/${ id }`,
+			method: 'DELETE',
+		} );
+		return yield fetchMarkets();
+	} catch ( error ) {
+		handleApiError( error );
+		throw error;
+	}
+}
