@@ -2,7 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -81,19 +81,30 @@ const DataViewsStub = ( props ) => {
 				{ data.map( ( item ) => (
 					<tr key={ item.id }>
 						{ fields.map( ( field ) => (
-							<td key={ field.id }>{ item[ field.id ] }</td>
-						) ) }
-						{ actions?.map( ( action ) => (
-							<td key={ action.id }>
-								<button
-									onClick={ () =>
-										action.callback( [ item ] )
-									}
-								>
-									{ action.label }
-								</button>
+							<td key={ field.id }>
+								{ field.render
+									? field.render( { item } )
+									: item[ field.id ] }
 							</td>
 						) ) }
+						{ actions
+							?.filter(
+								( action ) =>
+									! action.isEligible ||
+									action.isEligible( item )
+							)
+							.map( ( action ) => (
+								<td key={ action.id }>
+									<button
+										disabled={ !! action.disabled }
+										onClick={ () =>
+											action.callback( [ item ] )
+										}
+									>
+										{ action.label }
+									</button>
+								</td>
+							) ) }
 					</tr>
 				) ) }
 			</tbody>
@@ -159,14 +170,20 @@ describe( 'MarketDataViews', () => {
 		} );
 	} );
 
-	test( 'exposes a single Edit action', () => {
+	test( 'exposes a primary Edit action with an icon', () => {
 		render( <MarketDataViews /> );
 
-		expect( dataViewsCalls[ 0 ].actions ).toHaveLength( 1 );
-		expect( dataViewsCalls[ 0 ].actions[ 0 ] ).toMatchObject( {
+		const editAction = dataViewsCalls[ 0 ].actions.find(
+			( action ) => action.id === 'edit'
+		);
+		expect( editAction ).toMatchObject( {
 			id: 'edit',
 			label: 'Edit',
+			isPrimary: true,
 		} );
+		// `icon` is required for DataViews to render a primary action outside
+		// the kebab menu, so guard against it being dropped.
+		expect( editAction.icon ).toBeTruthy();
 	} );
 
 	test( 'renders an Edit action button on each row', () => {
@@ -174,6 +191,76 @@ describe( 'MarketDataViews', () => {
 
 		const editButtons = screen.getAllByRole( 'button', { name: 'Edit' } );
 		expect( editButtons ).toHaveLength( SAMPLE_MARKETS.length );
+	} );
+
+	test( 'exposes an enabled Delete action only for non-primary markets', () => {
+		render( <MarketDataViews /> );
+
+		const deleteAction = dataViewsCalls[ 0 ].actions.find(
+			( action ) => action.id === 'delete'
+		);
+		expect( deleteAction ).toMatchObject( {
+			id: 'delete',
+			label: 'Delete',
+			isDestructive: true,
+		} );
+		expect( deleteAction.isPrimary ).toBeFalsy();
+		expect( deleteAction.disabled ).toBeFalsy();
+		expect( deleteAction.isEligible( { id: 'primary' } ) ).toBe( false );
+		expect( deleteAction.isEligible( { id: 'secondary' } ) ).toBe( true );
+	} );
+
+	test( 'exposes a disabled Delete action only for the primary market', () => {
+		render( <MarketDataViews /> );
+
+		const disabledDeleteAction = dataViewsCalls[ 0 ].actions.find(
+			( action ) => action.id === 'delete-disabled'
+		);
+		expect( disabledDeleteAction ).toMatchObject( {
+			label: 'Delete',
+			disabled: true,
+		} );
+		expect( disabledDeleteAction.isEligible( { id: 'primary' } ) ).toBe(
+			true
+		);
+		expect( disabledDeleteAction.isEligible( { id: 'secondary' } ) ).toBe(
+			false
+		);
+	} );
+
+	test( 'renders Delete disabled on the primary market row and enabled elsewhere', () => {
+		render( <MarketDataViews /> );
+
+		const deleteButtons = screen.getAllByRole( 'button', {
+			name: 'Delete',
+		} );
+		expect( deleteButtons ).toHaveLength( SAMPLE_MARKETS.length );
+
+		const primaryRow = screen
+			.getByRole( 'cell', { name: 'Primary Market (2 countries)' } )
+			.closest( 'tr' );
+		const secondaryRow = screen
+			.getByRole( 'cell', { name: 'Secondary Market (1 country)' } )
+			.closest( 'tr' );
+
+		expect(
+			within( primaryRow ).getByRole( 'button', { name: 'Delete' } )
+		).toBeDisabled();
+		expect(
+			within( secondaryRow ).getByRole( 'button', { name: 'Delete' } )
+		).toBeEnabled();
+	} );
+
+	test( 'renders the Market cell wrapped in the gray-900 helper class', () => {
+		const { container } = render( <MarketDataViews /> );
+
+		const marketCells = container.querySelectorAll(
+			'.gla-markets-table__market-cell'
+		);
+		expect( marketCells ).toHaveLength( SAMPLE_MARKETS.length );
+		expect( marketCells[ 0 ] ).toHaveTextContent(
+			'Primary Market (2 countries)'
+		);
 	} );
 
 	test( 'opens EditMarketModal with the clicked row when Edit is pressed', async () => {

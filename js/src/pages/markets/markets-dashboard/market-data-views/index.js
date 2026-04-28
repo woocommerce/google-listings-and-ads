@@ -3,12 +3,15 @@
  */
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
+import { edit, trash } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import useMarkets from '~/hooks/useMarkets';
+import { PRIMARY_MARKET_ID } from '../../constants';
 import EditMarketModal from '../edit-market-modal';
+import './index.scss';
 
 const FIELDS = [
 	{
@@ -16,6 +19,11 @@ const FIELDS = [
 		label: __( 'Market', 'google-listings-and-ads' ),
 		enableHiding: false,
 		enableSorting: false,
+		render: ( { item } ) => (
+			<span className="gla-markets-table__market-cell">
+				{ item.market }
+			</span>
+		),
 	},
 	{
 		id: 'shippingTime',
@@ -32,13 +40,31 @@ const DEFAULT_VIEW = {
 	perPage: 10,
 };
 
+const isPrimaryMarket = ( market ) => market.id === PRIMARY_MARKET_ID;
+
 /**
  * Markets data table.
  *
- * Renders the default two-column view (Market, Shipping times) with an Edit
- * action per row. Custom DataViews variants per shipping rate / multilingual
- * store will be added in a follow-up task; `shippingRate` is accepted today
- * but currently ignored.
+ * Renders the default two-column view (Market, Shipping times) plus a per-row
+ * actions column managed by `@wordpress/dataviews`. Custom DataViews variants
+ * per shipping rate / multilingual store will be added in a follow-up task;
+ * `shippingRate` is accepted today but currently ignored.
+ *
+ * Known design / implementation mismatches we are intentionally accepting to
+ * stay on the built-in DataViews UI:
+ *
+ * - Figma asks for an always-visible "Edit" text button. DataViews only lifts
+ *   actions out of the kebab menu when both `isPrimary` and `icon` are set,
+ *   and renders them as an icon-only button (the label is exposed only as
+ *   `aria-label`). The built-in stylesheet additionally hides primary action
+ *   buttons until the row is hovered. We therefore ship an icon-only Edit that
+ *   appears on hover; matching the Figma exactly would require dropping the
+ *   built-in component, which isn't worth it for now.
+ * - DataViews' `disabled` flag on actions is per-action, not per-item, so we
+ *   model "Delete is disabled on the primary market" with two eligibility-
+ *   gated entries: an enabled `delete` for non-primary rows and a disabled
+ *   `delete-disabled` twin for the primary row. The Delete callback is a
+ *   placeholder until the real deletion flow is wired up.
  *
  * @param {Object} props
  * @param {string} [props.shippingRate] One of the values defined in `SHIPPING_RATE_OPTION`.
@@ -72,8 +98,17 @@ const MarketDataViews = ( { shippingRate } ) => {
 		{
 			id: 'edit',
 			label: __( 'Edit', 'google-listings-and-ads' ),
+			icon: edit,
 			isPrimary: true,
 			callback: ( [ market ] ) => setEditingMarket( market ),
+		},
+		{
+			id: 'delete',
+			label: __( 'Delete', 'google-listings-and-ads' ),
+			icon: trash,
+			isDestructive: true,
+			isEligible: ( market ) => ! isPrimaryMarket( market ),
+			callback: () => {},
 		},
 	];
 
