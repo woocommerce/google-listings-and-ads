@@ -1,4 +1,10 @@
 /**
+ * External dependencies
+ */
+import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
+// The above is an unpublished package, delivered with WC, we use Dependency Extraction Webpack Plugin to import it.
+
+/**
  * Shipping rate selection made by the merchant during onboarding.
  *
  * Mirrors the radio values rendered by
@@ -11,6 +17,6 @@ export const SHIPPING_RATE_OPTION = {
 };
 
 export const WC_SHIPPING_SETTINGS_URL =
-	'/wp-admin/admin.php?page=wc-settings&tab=shipping';
+	getSetting( 'adminUrl' ) + 'admin.php?page=wc-settings&tab=shipping';
 
 export const GOOGLE_MERCHANT_CENTER_URL = 'https://merchants.google.com/';

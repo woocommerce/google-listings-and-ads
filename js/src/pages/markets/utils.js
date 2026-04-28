@@ -10,9 +10,9 @@ import { Link } from '@woocommerce/components';
  * Internal dependencies
  */
 import {
+	GOOGLE_MERCHANT_CENTER_URL,
 	SHIPPING_RATE_OPTION,
 	WC_SHIPPING_SETTINGS_URL,
-	GOOGLE_MERCHANT_CENTER_URL,
 } from './constants';
 
 /**
