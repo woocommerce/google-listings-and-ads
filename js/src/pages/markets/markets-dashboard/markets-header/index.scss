@@ -1,5 +1,5 @@
 .gla-markets-header {
-	h1#{&}__title {
+	.gla-markets-header__title {
 		font-size: 16px;
 		font-weight: 600;
 		line-height: 24px;
@@ -7,13 +7,13 @@
 		padding: 0;
 	}
 
-	&__description {
+	.gla-markets-header__description {
 		margin: 0;
 		line-height: $gla-line-height-smaller;
 		color: $gray-700;
 	}
 
-	&__description-placeholder {
+	.gla-markets-header__description-placeholder {
 		display: inline-block;
 		width: 36ch;
 		max-width: 100%;

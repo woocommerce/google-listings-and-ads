@@ -3,7 +3,7 @@
 	flex-direction: column;
 	gap: $grid-unit-20;
 
-	&__card {
+	.gla-markets-dashboard__card {
 		min-height: $grid-unit-60;
 		padding: $grid-unit-20;
 	}

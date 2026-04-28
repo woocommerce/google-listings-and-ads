@@ -24,7 +24,6 @@ import AppButton from '~/components/app-button';
 const AddMarketModal = ( { onRequestClose } ) => {
 	return (
 		<AppModal
-			className="gla-add-market-modal"
 			title={ __( 'Add market', 'google-listings-and-ads' ) }
 			onRequestClose={ onRequestClose }
 			buttons={ [
