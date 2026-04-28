@@ -210,31 +210,13 @@ describe( 'MarketDataViews', () => {
 		expect( deleteAction.isEligible( { id: 'secondary' } ) ).toBe( true );
 	} );
 
-	test( 'exposes a disabled Delete action only for the primary market', () => {
-		render( <MarketDataViews /> );
-
-		const disabledDeleteAction = dataViewsCalls[ 0 ].actions.find(
-			( action ) => action.id === 'delete-disabled'
-		);
-		expect( disabledDeleteAction ).toMatchObject( {
-			label: 'Delete',
-			disabled: true,
-		} );
-		expect( disabledDeleteAction.isEligible( { id: 'primary' } ) ).toBe(
-			true
-		);
-		expect( disabledDeleteAction.isEligible( { id: 'secondary' } ) ).toBe(
-			false
-		);
-	} );
-
-	test( 'renders Delete disabled on the primary market row and enabled elsewhere', () => {
+	test( 'renders Delete only on non-primary market rows', () => {
 		render( <MarketDataViews /> );
 
 		const deleteButtons = screen.getAllByRole( 'button', {
 			name: 'Delete',
 		} );
-		expect( deleteButtons ).toHaveLength( SAMPLE_MARKETS.length );
+		expect( deleteButtons ).toHaveLength( 1 );
 
 		const primaryRow = screen
 			.getByRole( 'cell', { name: 'Primary Market (2 countries)' } )
@@ -244,8 +226,8 @@ describe( 'MarketDataViews', () => {
 			.closest( 'tr' );
 
 		expect(
-			within( primaryRow ).getByRole( 'button', { name: 'Delete' } )
-		).toBeDisabled();
+			within( primaryRow ).queryByRole( 'button', { name: 'Delete' } )
+		).not.toBeInTheDocument();
 		expect(
 			within( secondaryRow ).getByRole( 'button', { name: 'Delete' } )
 		).toBeEnabled();
