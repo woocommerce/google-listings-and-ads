@@ -60,11 +60,10 @@ const isPrimaryMarket = ( market ) => market.id === PRIMARY_MARKET_ID;
  *   buttons until the row is hovered. We therefore ship an icon-only Edit that
  *   appears on hover; matching the Figma exactly would require dropping the
  *   built-in component, which isn't worth it for now.
- * - DataViews' `disabled` flag on actions is per-action, not per-item, so we
- *   model "Delete is disabled on the primary market" with two eligibility-
- *   gated entries: an enabled `delete` for non-primary rows and a disabled
- *   `delete-disabled` twin for the primary row. The Delete callback is a
- *   placeholder until the real deletion flow is wired up.
+ * - The primary market cannot be deleted, so the Delete action is gated by
+ *   `isEligible` and simply omitted on the primary row (only Edit shows).
+ *   The Delete callback is a placeholder until the real deletion flow is
+ *   wired up.
  *
  * @param {Object} props
  * @param {string} [props.shippingRate] One of the values defined in `SHIPPING_RATE_OPTION`.
