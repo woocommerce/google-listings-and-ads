@@ -34,16 +34,11 @@ jest.mock( './price-benchmark-suggestions', () =>
 		.mockReturnValue( <div data-testid="price-benchmark-suggestions" /> )
 );
 
-const mockDataViewState = ( state = {} ) =>
-	useDataViewsScript.mockReturnValue( {
-		dataViewIsLoading: false,
-		dataViewHasFailed: false,
-		dataViewIsReady: false,
-		...state,
-	} );
+const mockDataViewStatus = ( status = 'loading' ) =>
+	useDataViewsScript.mockReturnValue( status );
 
 beforeEach( () => {
-	mockDataViewState();
+	mockDataViewStatus();
 } );
 
 afterEach( () => {
@@ -52,7 +47,7 @@ afterEach( () => {
 
 describe( 'PriceBenchmark', () => {
 	test( 'renders spinner while DataViews script is loading', () => {
-		mockDataViewState( { dataViewIsLoading: true } );
+		mockDataViewStatus( 'loading' );
 
 		render( <PriceBenchmark /> );
 
@@ -65,7 +60,7 @@ describe( 'PriceBenchmark', () => {
 	} );
 
 	test( 'renders suggestions once DataViews script is ready', () => {
-		mockDataViewState( { dataViewIsReady: true } );
+		mockDataViewStatus( 'ready' );
 
 		render( <PriceBenchmark /> );
 
@@ -78,7 +73,7 @@ describe( 'PriceBenchmark', () => {
 	} );
 
 	test( 'renders a warning notice and hides card when DataViews script fails', () => {
-		mockDataViewState( { dataViewHasFailed: true } );
+		mockDataViewStatus( 'failed' );
 
 		render( <PriceBenchmark /> );
 

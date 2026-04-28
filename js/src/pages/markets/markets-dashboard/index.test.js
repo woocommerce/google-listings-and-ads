@@ -29,17 +29,12 @@ const mockShippingRate = ( shippingRate ) =>
 		settings: shippingRate ? { shipping_rate: shippingRate } : undefined,
 	} );
 
-const mockDataViewState = ( state = {} ) =>
-	useDataViewsScript.mockReturnValue( {
-		dataViewIsLoading: false,
-		dataViewHasFailed: false,
-		dataViewIsReady: false,
-		...state,
-	} );
+const mockDataViewStatus = ( status = 'loading' ) =>
+	useDataViewsScript.mockReturnValue( status );
 
 beforeEach( () => {
 	mockShippingRate();
-	mockDataViewState();
+	mockDataViewStatus();
 } );
 
 afterEach( () => {
@@ -51,7 +46,7 @@ afterEach( () => {
 describe( 'MarketsDashboard', () => {
 	describe( 'DataViews shim loading', () => {
 		test( 'renders a spinner while the shim has not loaded yet', () => {
-			mockDataViewState( { dataViewIsLoading: true } );
+			mockDataViewStatus( 'loading' );
 			render( <MarketsDashboard /> );
 
 			expect(
@@ -63,7 +58,7 @@ describe( 'MarketsDashboard', () => {
 		} );
 
 		test( 'renders MarketDataViews once the shim is available', () => {
-			mockDataViewState( { dataViewIsReady: true } );
+			mockDataViewStatus( 'ready' );
 
 			render( <MarketsDashboard /> );
 
@@ -75,10 +70,15 @@ describe( 'MarketsDashboard', () => {
 			).not.toBeInTheDocument();
 		} );
 
-		test( 'does not render data views card when script load failed', () => {
-			mockDataViewState( { dataViewHasFailed: true } );
+		test( 'renders a warning notice and hides card when DataViews script fails', () => {
+			mockDataViewStatus( 'failed' );
 			render( <MarketsDashboard /> );
 
+			expect(
+				screen.getAllByText(
+					'There was an error loading the markets dashboard.'
+				).length
+			).toBeGreaterThan( 0 );
 			expect(
 				screen.queryByTestId( 'market-data-views' )
 			).not.toBeInTheDocument();
