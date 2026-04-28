@@ -248,6 +248,7 @@ class Admin implements OptionsAwareInterface, Registerable, Service {
 				],
 				'channelVisibility'      => $this->get_channel_visibility_data(),
 				'orderAttributionSource' => $this->get_order_attribution_source_for_edit_screen(),
+				'serviceBasedMerchant'   => $this->service_based_merchant_state->is_service_based_merchant(),
 			]
 		);
 
