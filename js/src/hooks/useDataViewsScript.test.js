@@ -3,14 +3,15 @@
  */
 import { renderHook, act } from '@testing-library/react';
 
-/**
- * Internal dependencies
- */
-import useDataViewsScript, {
-	__resetLoadPromiseForTesting,
-} from './useDataViewsScript';
-
 const SCRIPT_URL = 'https://example.test/dataviews.js';
+
+// Pin `@wordpress/element` to the same React instance that
+// `@testing-library/react` uses, so that re-importing the hook via
+// `jest.isolateModules` (to reset its module-level singleton) doesn't
+// produce a second React copy and trigger "Invalid hook call" errors.
+// `mock`-prefixed identifiers are exempt from jest.mock's hoist guard.
+const mockReact = jest.requireActual( 'react' );
+jest.mock( '@wordpress/element', () => mockReact );
 
 let mockGlaData;
 
@@ -29,6 +30,14 @@ const setReadyGlobal = () => {
 	};
 };
 
+const loadHook = () => {
+	let hook;
+	jest.isolateModules( () => {
+		hook = require( './useDataViewsScript' ).default;
+	} );
+	return hook;
+};
+
 describe( 'useDataViewsScript', () => {
 	let appendedScripts;
 	let appendChildSpy;
@@ -36,7 +45,6 @@ describe( 'useDataViewsScript', () => {
 	beforeEach( () => {
 		mockGlaData = { dataViewsScriptUrl: SCRIPT_URL };
 		appendedScripts = [];
-		__resetLoadPromiseForTesting();
 
 		appendChildSpy = jest
 			.spyOn( document.head, 'appendChild' )
@@ -53,6 +61,7 @@ describe( 'useDataViewsScript', () => {
 
 	it( 'returns "ready" synchronously when window.wp.dataviews is already available', () => {
 		setReadyGlobal();
+		const useDataViewsScript = loadHook();
 
 		const { result } = renderHook( () => useDataViewsScript() );
 
@@ -61,6 +70,8 @@ describe( 'useDataViewsScript', () => {
 	} );
 
 	it( 'injects exactly one <script> tag for two concurrent hook instances', () => {
+		const useDataViewsScript = loadHook();
+
 		renderHook( () => useDataViewsScript() );
 		renderHook( () => useDataViewsScript() );
 
@@ -69,6 +80,8 @@ describe( 'useDataViewsScript', () => {
 	} );
 
 	it( 'resolves both concurrent instances to "ready" after a single onload', async () => {
+		const useDataViewsScript = loadHook();
+
 		const a = renderHook( () => useDataViewsScript() );
 		const b = renderHook( () => useDataViewsScript() );
 
@@ -86,6 +99,8 @@ describe( 'useDataViewsScript', () => {
 	} );
 
 	it( 'resolves to "failed" on onerror and allows a subsequent mount to retry', async () => {
+		const useDataViewsScript = loadHook();
+
 		const first = renderHook( () => useDataViewsScript() );
 		expect( first.result.current ).toBe( 'loading' );
 
@@ -105,6 +120,8 @@ describe( 'useDataViewsScript', () => {
 	// `console.error` is emitted, e.g. React's "setState after unmount"
 	// warning, so this test relies on that side effect.
 	it( 'does not warn when onload fires after unmount', async () => {
+		const useDataViewsScript = loadHook();
+
 		const { result, unmount } = renderHook( () => useDataViewsScript() );
 		expect( result.current ).toBe( 'loading' );
 
@@ -119,6 +136,7 @@ describe( 'useDataViewsScript', () => {
 
 	it( 'returns "failed" when no script URL is configured', async () => {
 		mockGlaData = {};
+		const useDataViewsScript = loadHook();
 
 		const { result } = renderHook( () => useDataViewsScript() );
 
