@@ -34,7 +34,6 @@ const ConnectMerchantCenterCard = () => {
 				'You now have physical products in your store. Connect a Google Merchant Center account to sync your products and list them on Google.',
 				'google-listings-and-ads'
 			) }
-			expandedDetail
 			indicator={
 				<AppButton
 					href={ getOnboardingUrl() }
@@ -48,6 +47,7 @@ const ConnectMerchantCenterCard = () => {
 					) }
 				</AppButton>
 			}
+			expandedDetail
 		/>
 	);
 };
