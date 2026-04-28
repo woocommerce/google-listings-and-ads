@@ -9,9 +9,11 @@ import { render, screen } from '@testing-library/react';
  */
 import MarketsDashboard from './';
 import MarketsHeader from './markets-header';
+import useDataViewsScript from '~/hooks/useDataViewsScript';
 import useSettings from '~/hooks/useSettings';
 import { SHIPPING_RATE_OPTION } from '../constants';
 
+jest.mock( '~/hooks/useDataViewsScript' );
 jest.mock( '~/hooks/useSettings' );
 
 jest.mock( './market-data-views', () =>
@@ -27,13 +29,21 @@ const mockShippingRate = ( shippingRate ) =>
 		settings: shippingRate ? { shipping_rate: shippingRate } : undefined,
 	} );
 
+const mockDataViewState = ( state = {} ) =>
+	useDataViewsScript.mockReturnValue( {
+		dataViewIsLoading: false,
+		dataViewHasFailed: false,
+		dataViewIsReady: false,
+		...state,
+	} );
+
 beforeEach( () => {
-	delete window.wp;
-	window.glaData.dataViewsScriptUrl = '';
 	mockShippingRate();
+	mockDataViewState();
 } );
 
 afterEach( () => {
+	useDataViewsScript.mockReset();
 	useSettings.mockReset();
 	MarketsHeader.mockClear();
 } );
@@ -41,6 +51,7 @@ afterEach( () => {
 describe( 'MarketsDashboard', () => {
 	describe( 'DataViews shim loading', () => {
 		test( 'renders a spinner while the shim has not loaded yet', () => {
+			mockDataViewState( { dataViewIsLoading: true } );
 			render( <MarketsDashboard /> );
 
 			expect(
@@ -52,15 +63,25 @@ describe( 'MarketsDashboard', () => {
 		} );
 
 		test( 'renders MarketDataViews once the shim is available', () => {
-			window.wp = {
-				dataviews: { filterSortAndPaginate: jest.fn() },
-			};
+			mockDataViewState( { dataViewIsReady: true } );
 
 			render( <MarketsDashboard /> );
 
 			expect(
 				screen.getByTestId( 'market-data-views' )
 			).toBeInTheDocument();
+			expect(
+				screen.queryByRole( 'status', { name: 'Loading…' } )
+			).not.toBeInTheDocument();
+		} );
+
+		test( 'does not render data views card when script load failed', () => {
+			mockDataViewState( { dataViewHasFailed: true } );
+			render( <MarketsDashboard /> );
+
+			expect(
+				screen.queryByTestId( 'market-data-views' )
+			).not.toBeInTheDocument();
 			expect(
 				screen.queryByRole( 'status', { name: 'Loading…' } )
 			).not.toBeInTheDocument();
