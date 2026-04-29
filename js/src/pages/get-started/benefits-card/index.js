@@ -58,7 +58,7 @@ const BenefitsCard = () => {
 					>
 						<p>
 							{ __(
-								'Choose your offer and get up to $1500 in Ads credits*. New advertiser? Choose between three offers, based on your monthly budget, to jumpstart your first campaign!',
+								'Get $500 USD or more in Google Ads credits*. New advertiser? Choose between three offers, based on your monthly budget, to jumpstart your first campaign!',
 								'google-listings-and-ads'
 							) }
 						</p>
