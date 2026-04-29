@@ -53,6 +53,10 @@ const PriceBenchmark = lazy( () =>
 	)
 );
 
+const Markets = lazy( () =>
+	import( /* webpackChunkName: "markets" */ './pages/markets' )
+);
+
 const Settings = lazy( () =>
 	import( /* webpackChunkName: "settings" */ './pages/settings' )
 );
@@ -149,6 +153,15 @@ const registerPluginAdminPages = () => {
 				],
 				container: AttributeMapping,
 				path: '/google/attribute-mapping',
+				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
+			},
+			{
+				breadcrumbs: [
+					...initialBreadcrumbs,
+					__( 'Markets', 'google-listings-and-ads' ),
+				],
+				container: Markets,
+				path: '/google/markets',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
 			{
