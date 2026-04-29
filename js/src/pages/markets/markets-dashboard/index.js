@@ -10,41 +10,39 @@ import { Card } from '@wordpress/components';
 import AppNotice from '~/components/app-notice';
 import AppSpinner from '~/components/app-spinner';
 import useDataViewsScript from '~/hooks/useDataViewsScript';
-import Banner from './banner';
-import ExperienceRatingBanner from '~/components/experience-rating-banner';
-import MainTabNav from '~/components/main-tab-nav';
-import PriceBenchmarkSuggestions from './price-benchmark-suggestions';
-import ProductComparisonChart from './product-comparison-chart';
+import useSettings from '~/hooks/useSettings';
+import MarketsHeader from './markets-header';
+import MarketDataViews from './market-data-views';
 import './index.scss';
 
-const PriceBenchmark = () => {
+const MarketsDashboard = () => {
+	const { settings } = useSettings();
+	const shippingRate = settings?.shipping_rate;
+
 	const dataViewStatus = useDataViewsScript();
 
 	return (
-		<div className="gla-price-benchmark">
-			<ExperienceRatingBanner />
-			<MainTabNav />
-			<Banner />
-			<ProductComparisonChart />
+		<div className="gla-markets-dashboard">
+			<MarketsHeader shippingRate={ shippingRate } />
 
 			{ dataViewStatus === 'failed' && (
 				<AppNotice
 					status="warning"
 					isDismissible={ false }
-					className="gla-price-benchmark__error-message"
+					className="gla-markets-dashboard__error-message"
 				>
 					{ __(
-						'There was an error loading the price benchmark suggestions.',
+						'There was an error loading the markets dashboard.',
 						'google-listings-and-ads'
 					) }
 				</AppNotice>
 			) }
 
 			{ dataViewStatus !== 'failed' && (
-				<Card className="gla-price-benchmark__card">
+				<Card className="gla-markets-dashboard__card">
 					{ dataViewStatus === 'loading' && <AppSpinner /> }
 					{ dataViewStatus === 'ready' && (
-						<PriceBenchmarkSuggestions />
+						<MarketDataViews shippingRate={ shippingRate } />
 					) }
 				</Card>
 			) }
@@ -52,4 +50,4 @@ const PriceBenchmark = () => {
 	);
 };
 
-export default PriceBenchmark;
+export default MarketsDashboard;
