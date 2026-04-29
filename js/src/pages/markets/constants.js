@@ -4,18 +4,6 @@
 import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
 // The above is an unpublished package, delivered with WC, we use Dependency Extraction Webpack Plugin to import it.
 
-/**
- * Shipping rate selection made by the merchant during onboarding.
- *
- * Mirrors the radio values rendered by
- * `~/components/shipping-rate-section/shipping-rate-section.js`.
- */
-export const SHIPPING_RATE_OPTION = {
-	AUTOMATIC: 'automatic',
-	FLAT: 'flat',
-	MANUAL: 'manual',
-};
-
 export const WC_SHIPPING_SETTINGS_URL =
 	getSetting( 'adminUrl' ) + 'admin.php?page=wc-settings&tab=shipping';
 

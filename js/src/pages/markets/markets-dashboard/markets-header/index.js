@@ -15,7 +15,7 @@ import './index.scss';
  * Header for the Markets dashboard.
  *
  * @param {Object} props
- * @param {string} [props.shippingRate] One of the values defined in `SHIPPING_RATE_OPTION`.
+ * @param {string} [props.shippingRate] One of the values defined in `SHIPPING_RATE_METHOD`.
  */
 const MarketsHeader = ( { shippingRate } ) => {
 	const description = getShippingRateLabel( shippingRate );

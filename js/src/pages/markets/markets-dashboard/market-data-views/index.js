@@ -66,7 +66,7 @@ const isPrimaryMarket = ( market ) => market.id === PRIMARY_MARKET_ID;
  *   wired up.
  *
  * @param {Object} props
- * @param {string} [props.shippingRate] One of the values defined in `SHIPPING_RATE_OPTION`.
+ * @param {string} [props.shippingRate] One of the values defined in `SHIPPING_RATE_METHOD`.
  */
 const MarketDataViews = ( { shippingRate } ) => {
 	// Reserved; will drive view variants in a follow-up task.

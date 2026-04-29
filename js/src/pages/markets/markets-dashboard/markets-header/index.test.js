@@ -7,8 +7,8 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
+import { SHIPPING_RATE_METHOD } from '~/constants';
 import MarketsHeader from './';
-import { SHIPPING_RATE_OPTION } from '../../constants';
 
 jest.mock( '../add-market', () =>
 	jest.fn().mockReturnValue( <div data-testid="add-market" /> )
@@ -42,7 +42,7 @@ describe( 'MarketsHeader', () => {
 
 	test( 'renders the "automatic" description when shippingRate is "automatic"', () => {
 		const { container } = render(
-			<MarketsHeader shippingRate={ SHIPPING_RATE_OPTION.AUTOMATIC } />
+			<MarketsHeader shippingRate={ SHIPPING_RATE_METHOD.AUTOMATIC } />
 		);
 
 		expect(
@@ -55,7 +55,7 @@ describe( 'MarketsHeader', () => {
 	} );
 
 	test( 'renders the "flat" description when shippingRate is "flat"', () => {
-		render( <MarketsHeader shippingRate={ SHIPPING_RATE_OPTION.FLAT } /> );
+		render( <MarketsHeader shippingRate={ SHIPPING_RATE_METHOD.FLAT } /> );
 
 		expect(
 			screen.getByText(
@@ -66,7 +66,7 @@ describe( 'MarketsHeader', () => {
 
 	test( 'renders the "manual" description when shippingRate is "manual"', () => {
 		const { container } = render(
-			<MarketsHeader shippingRate={ SHIPPING_RATE_OPTION.MANUAL } />
+			<MarketsHeader shippingRate={ SHIPPING_RATE_METHOD.MANUAL } />
 		);
 
 		expect(

@@ -11,7 +11,7 @@ import MarketsDashboard from './';
 import MarketsHeader from './markets-header';
 import useDataViewsScript from '~/hooks/useDataViewsScript';
 import useSettings from '~/hooks/useSettings';
-import { SHIPPING_RATE_OPTION } from '../constants';
+import { SHIPPING_RATE_METHOD } from '~/constants';
 
 jest.mock( '~/hooks/useDataViewsScript' );
 jest.mock( '~/hooks/useSettings' );
@@ -90,12 +90,12 @@ describe( 'MarketsDashboard', () => {
 
 	describe( 'Shipping rate wiring', () => {
 		test( 'forwards the resolved shipping rate from useSettings to MarketsHeader', () => {
-			mockShippingRate( SHIPPING_RATE_OPTION.AUTOMATIC );
+			mockShippingRate( SHIPPING_RATE_METHOD.AUTOMATIC );
 			render( <MarketsDashboard /> );
 
 			expect( MarketsHeader ).toHaveBeenCalledWith(
 				expect.objectContaining( {
-					shippingRate: SHIPPING_RATE_OPTION.AUTOMATIC,
+					shippingRate: SHIPPING_RATE_METHOD.AUTOMATIC,
 				} ),
 				expect.anything()
 			);

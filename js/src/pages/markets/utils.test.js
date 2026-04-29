@@ -8,9 +8,9 @@ import { render } from '@testing-library/react';
  * Internal dependencies
  */
 import { getShippingRateLabel } from './utils';
+import { SHIPPING_RATE_METHOD } from '~/constants';
 import {
 	GOOGLE_MERCHANT_CENTER_URL,
-	SHIPPING_RATE_OPTION,
 	WC_SHIPPING_SETTINGS_URL,
 } from './constants';
 
@@ -20,7 +20,7 @@ const renderLabel = ( shippingRate ) =>
 describe( 'getShippingRateLabel', () => {
 	test( 'returns the WooCommerce-synced label for the "automatic" option', () => {
 		const { container, getByRole } = renderLabel(
-			SHIPPING_RATE_OPTION.AUTOMATIC
+			SHIPPING_RATE_METHOD.AUTOMATIC
 		);
 
 		expect( container.textContent ).toBe(
@@ -33,7 +33,7 @@ describe( 'getShippingRateLabel', () => {
 
 	test( 'returns the per-market label (no link) for the "flat" option', () => {
 		const { container, queryByRole } = renderLabel(
-			SHIPPING_RATE_OPTION.FLAT
+			SHIPPING_RATE_METHOD.FLAT
 		);
 
 		expect( container.textContent ).toBe(
@@ -44,7 +44,7 @@ describe( 'getShippingRateLabel', () => {
 
 	test( 'returns the Google-Merchant-Center label for the "manual" option', () => {
 		const { container, getByRole } = renderLabel(
-			SHIPPING_RATE_OPTION.MANUAL
+			SHIPPING_RATE_METHOD.MANUAL
 		);
 
 		expect( container.textContent ).toContain(
