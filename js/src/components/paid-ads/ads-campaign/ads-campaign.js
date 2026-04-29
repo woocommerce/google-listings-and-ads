@@ -19,7 +19,7 @@ import { CampaignPreviewCard } from '../campaign-preview';
 import Faqs from './faqs';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
 import EuRegulationsSection from '../eu-regulations-section';
-import CyoIncentivePicker from './cyo-incentive-picker/cyo-incentive-picker';
+import CyoIncentivePicker from './cyo-incentive-picker';
 
 /**
  * @typedef {import('~/components/adaptive-form/adaptive-form-context').AdaptiveFormContext} AdaptiveFormContext
@@ -37,8 +37,6 @@ import CyoIncentivePicker from './cyo-incentive-picker/cyo-incentive-picker';
  * @param {'create-ads'|'edit-ads'|'setup-ads'|'setup-mc'|'setup-ads-only'} props.context A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  * @param {(formContext: AdaptiveFormContext) => JSX.Element | JSX.Element} [props.skipButton] A React element or function to render the "Skip" button. If a function is passed, it receives the form context and returns the button element.
  * @param {(formContext: AdaptiveFormContext) => JSX.Element | JSX.Element} [props.continueButton] A React element or function to render the "Continue" button. If a function is passed, it receives the form context and returns the button element.
- * @param {Object} [props.incentiveResult] The result of applying a CYO incentive. This is passed down to the CyoIncentivePicker component to determine whether to show an error message after applying an incentive.
- * @param {Function} [props.onRetryIncentive] Callback to retry applying the incentive, receives the incentiveId.
  * @return {JSX.Element} The rendered component.
  */
 export default function AdsCampaign( {
@@ -46,8 +44,6 @@ export default function AdsCampaign( {
 	context,
 	skipButton,
 	continueButton,
-	incentiveResult,
-	onRetryIncentive,
 } ) {
 	const formContext = useAdaptiveFormContext();
 	const isOnboardingFlow =
@@ -109,13 +105,7 @@ export default function AdsCampaign( {
 				{ showCampaignPreviewCard && <CampaignPreviewCard /> }
 			</BudgetSection>
 
-			{ isOnboardingFlow && (
-				<CyoIncentivePicker
-					context={ context }
-					incentiveResult={ incentiveResult }
-					onRetry={ onRetryIncentive }
-				/>
-			) }
+			{ isOnboardingFlow && <CyoIncentivePicker context={ context } /> }
 
 			<EuRegulationsSection context={ context } />
 

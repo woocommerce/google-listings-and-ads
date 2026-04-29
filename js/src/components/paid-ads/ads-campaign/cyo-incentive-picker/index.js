@@ -1,1 +1,1 @@
-export { default as CYOIncentivePicker } from './cyo-incentive-picker';
+export { default } from './cyo-incentive-picker';

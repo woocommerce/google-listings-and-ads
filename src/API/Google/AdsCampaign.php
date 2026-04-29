@@ -197,11 +197,22 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			$campaigns = [];
 
 			foreach ( $results->iterateAllElements() as $row ) {
-				$campaign    = $row->getCampaign();
+				$campaign = $row->getCampaign();
+
+				// Skip VIDEO campaigns
+				if ( AdvertisingChannelType::VIDEO === $campaign->getAdvertisingChannelType() ) {
+					continue;
+				}
+
 				$campaigns[] = [
 					'id'   => $campaign->getId(),
 					'name' => $campaign->getName(),
 				];
+			}
+
+			// When no campaigns need the declaration, record that so the recurring job can stop scheduling
+			if ( empty( $campaigns ) ) {
+				$this->options->update( OptionsInterface::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE, true );
 			}
 
 			return $campaigns;

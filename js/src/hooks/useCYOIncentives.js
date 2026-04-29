@@ -11,7 +11,6 @@ import { GOOGLE_ADS_BILLING_STATUS } from '~/constants';
 import useGoogleAdsAccountBillingStatus from './useGoogleAdsAccountBillingStatus';
 
 const selectorName = 'getCYOIncentives';
-const PREFERRED_INCENTIVE_TIER = 'medium';
 
 /**
  * @typedef {Object} CYOIncentiveAmount
@@ -43,7 +42,6 @@ const PREFERRED_INCENTIVE_TIER = 'medium';
  * @typedef {Object} CYOIncentivesPayload
  * @property {CYOIncentive[]|null} data The list of CYO incentives, or `null` if not yet fetched.
  * @property {boolean} hasFinishedResolution Whether the data fetching has finished.
- * @property {string|null} defaultIncentiveId The ID of the default incentive to pre-select, or `null` if not available.
  */
 
 /**
@@ -65,7 +63,6 @@ const useCYOIncentives = () => {
 			if ( ! isBillingCompleted ) {
 				return {
 					data: null,
-					defaultIncentiveId: null,
 					hasFinishedResolution: hasResolvedBillingStatus,
 				};
 			}
@@ -79,13 +76,6 @@ const useCYOIncentives = () => {
 
 			return {
 				data: incentives,
-				defaultIncentiveId:
-					incentives?.find(
-						( incentive ) =>
-							incentive.offer === PREFERRED_INCENTIVE_TIER
-					)?.id ||
-					incentives?.[ 0 ]?.id ||
-					null,
 				hasFinishedResolution: hasResolvedIncentives,
 			};
 		},
