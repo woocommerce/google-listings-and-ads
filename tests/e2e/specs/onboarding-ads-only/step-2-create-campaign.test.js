@@ -684,64 +684,29 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 			expect( incentivePostFired ).toBe( false );
 		} );
 
-		test.describe( 'When applying the incentive fails', () => {
-			test.beforeAll( async () => {
-				await createCampaignPage.fulfillCYOIncentives();
-				await setupBudgetPage.fulfillBillingStatusRequest( {
-					status: 'approved',
-				} );
-				await createCampaignPage.fulfillApplyCYOIncentive( {}, 500 );
-				await createCampaignPage.goto();
-
-				// First skip: apply incentive fails and error is shown.
-				await createCampaignPage.clickSkipPaidAdsCreationButton();
-				await createCampaignPage.clickCompleteSetupModalButton();
+		test( 'should still complete onboarding when applying the incentive fails', async () => {
+			await createCampaignPage.fulfillCYOIncentives();
+			await setupBudgetPage.fulfillBillingStatusRequest( {
+				status: 'approved',
 			} );
+			await createCampaignPage.fulfillApplyCYOIncentive( {}, 500 );
 
-			test( 'should show an error notice', async () => {
-				await expect(
-					page.locator( '.components-notice.is-error' )
-				).toBeVisible();
-			} );
+			const incentivePostPromise = page.waitForRequest(
+				( request ) =>
+					request.url().includes( '/gla/ads/incentive' ) &&
+					request.method() === 'POST'
+			);
 
-			test( 'should show the "Apply in Google Ads" link in the notice', async () => {
-				await expect(
-					page.getByRole( 'link', { name: 'Apply in Google Ads' } )
-				).toHaveAttribute(
-					'href',
-					'https://ads.google.com/aw/overview'
-				);
-			} );
+			await dashboardPage.fulfillAdsCampaignsRequest( [] );
+			await createCampaignPage.goto();
+			await createCampaignPage.clickSkipPaidAdsCreationButton();
+			await createCampaignPage.clickCompleteSetupModalButton();
 
-			test( 'should dismiss the error after a successful retry', async () => {
-				await createCampaignPage.fulfillApplyCYOIncentive( {
-					success: true,
-				} );
-				await page.getByRole( 'button', { name: 'Try again' } ).click();
-				await page.waitForLoadState( 'domcontentloaded' );
-				await expect(
-					page.locator( '.components-notice.is-error' )
-				).not.toBeVisible();
-			} );
+			const incentiveRequest = await incentivePostPromise;
+			expect( incentiveRequest.method() ).toBe( 'POST' );
 
-			test( 'should proceed with onboarding when skipping again after a failed attempt', async () => {
-				await createCampaignPage.fulfillApplyCYOIncentive( {}, 500 );
-				await dashboardPage.fulfillAdsCampaignsRequest( [] );
-				await createCampaignPage.goto();
-
-				// First skip: POST fails and error is shown.
-				await createCampaignPage.clickSkipPaidAdsCreationButton();
-				await createCampaignPage.clickCompleteSetupModalButton();
-				await expect(
-					page.locator( '.components-notice.is-error' )
-				).toBeVisible();
-
-				// Second skip: error is dismissed and onboarding proceeds.
-				await createCampaignPage.clickSkipPaidAdsCreationButton();
-				await createCampaignPage.clickCompleteSetupModalButton();
-				await page.waitForURL( /path=%2Fgoogle%2Fdashboard/ );
-				expect( page.url() ).toMatch( /path=%2Fgoogle%2Fdashboard/ );
-			} );
+			await page.waitForURL( /path=%2Fgoogle%2Fdashboard/ );
+			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fdashboard/ );
 		} );
 	} );
 } );
