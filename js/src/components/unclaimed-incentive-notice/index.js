@@ -10,13 +10,11 @@ import { store as preferencesStore } from '@wordpress/preferences';
  * Internal dependencies
  */
 import { PREFERENCES_STORE_NAMESPACE } from '~/constants';
+import { NOTICE_DISMISSED_KEY, CTA_URL } from './constants';
 import AppButton from '~/components/app-button';
 import usePreference from '~/hooks/usePreference';
 import useAdsSettings from '~/hooks/useAdsSettings';
 import './index.scss';
-
-const NOTICE_DISMISSED_KEY = 'gla_unclaimed_incentive_notice_dismissed';
-const CTA_URL = 'https://ads.google.com';
 
 /**
  * Triggered when the "Apply in Google Ads" button is clicked in the unclaimed incentive notice.

@@ -9,6 +9,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
  * Internal dependencies
  */
 import { PREFERENCES_STORE_NAMESPACE } from '~/constants';
+import { NOTICE_DISMISSED_KEY } from './constants';
 import UnclaimedIncentiveNotice from './index';
 import usePreference from '~/hooks/usePreference';
 import useAdsSettings from '~/hooks/useAdsSettings';
@@ -40,8 +41,6 @@ jest.mock( '~/hooks/usePreference', () =>
 jest.mock( '~/hooks/useAdsSettings', () =>
 	jest.fn().mockName( 'useAdsSettings' )
 );
-
-const NOTICE_DISMISSED_KEY = 'gla_unclaimed_incentive_notice_dismissed';
 
 describe( 'UnclaimedIncentiveNotice', () => {
 	beforeEach( () => {
