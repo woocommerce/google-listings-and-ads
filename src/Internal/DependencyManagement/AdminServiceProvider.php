@@ -102,7 +102,7 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		$this->share_with_tags( BulkEditInitializer::class );
 
 		// Share admin meta boxes
-		$this->share_with_tags( ChannelVisibilityMetaBox::class, Admin::class, ProductMetaHandler::class, ProductHelper::class, MerchantCenterService::class );
+		$this->share_with_tags( ChannelVisibilityMetaBox::class, Admin::class, ProductMetaHandler::class, ProductHelper::class, MerchantCenterService::class, ServiceBasedMerchantState::class );
 		$this->share_with_tags( CouponChannelVisibilityMetaBox::class, Admin::class, CouponMetaHandler::class, CouponHelper::class, MerchantCenterService::class, TargetAudience::class );
 		$this->share_with_tags( MetaBoxInitializer::class, Admin::class, MetaBoxInterface::class, MerchantCenterService::class );
 
