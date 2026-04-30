@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
+import MultiLingualPluginPrompt from './multilingual-plugin-prompt';
 
 /**
  * Placeholder for the Add Market modal.
@@ -37,6 +38,7 @@ const AddMarketModal = ( { onRequestClose } ) => {
 			] }
 		>
 			<p>{ __( 'Adding a new market.', 'google-listings-and-ads' ) }</p>
+			<MultiLingualPluginPrompt />
 		</AppModal>
 	);
 };
