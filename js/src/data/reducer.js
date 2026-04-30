@@ -45,6 +45,7 @@ const DEFAULT_STATE = {
 				pages: null,
 			},
 		},
+		markets: [],
 	},
 	ads_campaigns: null,
 	all_ads_campaigns: null,
@@ -699,6 +700,12 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 
 		case TYPES.DISCONNECT_ACCOUNTS_YOUTUBE: {
 			return setIn( state, 'mc.accounts.youtube', null );
+		}
+
+		case TYPES.RECEIVE_MARKETS: {
+			const { markets } = action;
+
+			return setIn( state, 'mc.markets', markets );
 		}
 
 		case TYPES.DISCONNECT_ACCOUNTS_ALL:

@@ -554,3 +554,24 @@ export const getGenAITextAssets = ( state, url, assetType ) => {
 
 	return textAssets;
 };
+
+/**
+ * Retrieves all markets from the state.
+ *
+ * @param {Object} state - The Redux state object containing markets data.
+ * @return {Array} The list of markets.
+ */
+export const getMarkets = ( state ) => {
+	return state.mc.markets;
+};
+
+/**
+ * Retrieves a specific market from the state by its ID.
+ *
+ * @param {Object} state - The Redux state object containing markets data.
+ * @param {string|number} id - The unique identifier of the market.
+ * @return {Object|undefined} The market with the specified ID, or undefined if not found.
+ */
+export const getMarket = ( state, id ) => {
+	return state.mc.markets.find( ( market ) => market.id === id );
+};
