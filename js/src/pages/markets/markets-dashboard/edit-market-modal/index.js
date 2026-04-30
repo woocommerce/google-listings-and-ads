@@ -1,20 +1,14 @@
 /**
  * External dependencies
  */
-import { Notice } from '@wordpress/components';
-import { createInterpolateElement } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
-import AppDocumentationLink from '~/components/app-documentation-link';
 import AppModal from '~/components/app-modal';
-import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
-import useSettings from '~/hooks/useSettings';
-import { GOOGLE_MERCHANT_CENTER_URL } from '~/pages/markets/constants';
-import './index.scss';
+import ShippingNotice from './shipping-notice';
 
 /**
  * Placeholder for the Edit Market modal.
@@ -28,11 +22,6 @@ import './index.scss';
  * @param {() => void} props.onRequestClose Called when the user closes the modal.
  */
 const EditMarketModal = ( { market, onRequestClose } ) => {
-	const { settings } = useSettings();
-	const showShippingNotice =
-		! glaData.isMultiLingualStore &&
-		settings?.shipping_rate === SHIPPING_RATE_METHOD.MANUAL;
-
 	return (
 		<AppModal
 			title={ __( 'Edit market', 'google-listings-and-ads' ) }
@@ -54,29 +43,7 @@ const EditMarketModal = ( { market, onRequestClose } ) => {
 					market.label
 				) }
 			</p>
-			{ showShippingNotice && (
-				<Notice
-					className="gla-edit-market-modal__notice"
-					status="info"
-					isDismissible={ false }
-				>
-					{ createInterpolateElement(
-						__(
-							'Shipping is managed in Google Merchant Center. Configure shipping rates and times for each currency in your <link>Merchant Center account</link>.',
-							'google-listings-and-ads'
-						),
-						{
-							link: (
-								<AppDocumentationLink
-									context="edit-market-modal"
-									linkId="shipping-notice-merchant-center"
-									href={ GOOGLE_MERCHANT_CENTER_URL }
-								/>
-							),
-						}
-					) }
-				</Notice>
-			) }
+			<ShippingNotice />
 		</AppModal>
 	);
 };

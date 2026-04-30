@@ -17,14 +17,7 @@ const market = { id: 'primary', label: 'Primary Market' };
 
 describe( 'EditMarketModal', () => {
 	beforeEach( () => {
-		global.glaData.isMultiLingualStore = false;
-		useSettings.mockReturnValue( {
-			settings: { shipping_rate: 'manual' },
-		} );
-	} );
-
-	afterEach( () => {
-		delete global.glaData.isMultiLingualStore;
+		useSettings.mockReturnValue( { settings: { shipping_rate: 'manual' } } );
 	} );
 
 	test( 'renders the title and the market name being edited', () => {
@@ -38,46 +31,6 @@ describe( 'EditMarketModal', () => {
 		expect(
 			screen.getByText( 'Editing Primary Market.' )
 		).toBeInTheDocument();
-	} );
-
-	test( 'renders a shipping notice when shipping_rate is manual and single lingual store', () => {
-		render(
-			<EditMarketModal market={ market } onRequestClose={ () => {} } />
-		);
-
-		const notice = document.querySelector(
-			'.gla-edit-market-modal__notice'
-		);
-		expect( notice ).toBeInTheDocument();
-		expect( notice ).toHaveTextContent(
-			'Shipping is managed in Google Merchant Center. Configure shipping rates and times for each currency in your Merchant Center account.'
-		);
-	} );
-
-	test( 'does not render the shipping notice on multi lingual stores', () => {
-		global.glaData.isMultiLingualStore = true;
-
-		render(
-			<EditMarketModal market={ market } onRequestClose={ () => {} } />
-		);
-
-		expect(
-			document.querySelector( '.gla-edit-market-modal__notice' )
-		).not.toBeInTheDocument();
-	} );
-
-	test( 'does not render the shipping notice when shipping_rate is not manual', () => {
-		useSettings.mockReturnValue( {
-			settings: { shipping_rate: 'flat' },
-		} );
-
-		render(
-			<EditMarketModal market={ market } onRequestClose={ () => {} } />
-		);
-
-		expect(
-			document.querySelector( '.gla-edit-market-modal__notice' )
-		).not.toBeInTheDocument();
 	} );
 
 	test( 'invokes onRequestClose when the footer Close button is clicked', async () => {
