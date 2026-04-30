@@ -27,7 +27,9 @@ describe( 'ShippingNotice', () => {
 	test( 'renders when shipping_rate is manual and single lingual store', () => {
 		render( <ShippingNotice /> );
 
-		const notice = document.querySelector( '.gla-edit-market-modal__notice' );
+		const notice = document.querySelector(
+			'.gla-edit-market-modal__notice'
+		);
 		expect( notice ).toBeInTheDocument();
 		expect( notice ).toHaveTextContent(
 			'Shipping is managed in Google Merchant Center. Configure shipping rates and times for each currency in your Merchant Center account.'

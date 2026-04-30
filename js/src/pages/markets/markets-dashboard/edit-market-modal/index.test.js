@@ -17,7 +17,9 @@ const market = { id: 'primary', label: 'Primary Market' };
 
 describe( 'EditMarketModal', () => {
 	beforeEach( () => {
-		useSettings.mockReturnValue( { settings: { shipping_rate: 'manual' } } );
+		useSettings.mockReturnValue( {
+			settings: { shipping_rate: 'manual' },
+		} );
 	} );
 
 	test( 'renders the title and the market name being edited', () => {
