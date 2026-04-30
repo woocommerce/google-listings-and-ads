@@ -109,10 +109,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 		return [
 			'primary' => [
-				'country'   => $country,
-				'language'  => $language,
-				'currency'  => $currency,
-				'feedLabel' => $country,
+				'country'    => $country,
+				'language'   => $language,
+				'currency'   => $currency,
+				'feed_label' => $country,
 			],
 		];
 	}
@@ -136,7 +136,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			'country'       => $defaults['country'],
 			'language'      => $defaults['language'],
 			'currency'      => $defaults['currency'],
-			'feedLabel'     => $defaults['feedLabel'],
+			'feed_label'    => $defaults['feed_label'],
 			'shipping_rate' => $mc_settings['shipping_rate'] ?? null,
 			'shipping_time' => $mc_settings['shipping_time'] ?? null,
 			'free_shipping' => $this->get_primary_free_shipping_threshold(),
@@ -327,7 +327,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @throws InvalidValue When a required key is missing or not a non-empty string.
 	 */
 	private function validate_secondary_market_config( array $config ): void {
-		$required = [ 'country', 'language', 'currency', 'feedLabel' ];
+		$required = [ 'country', 'language', 'currency', 'feed_label' ];
 
 		foreach ( $required as $key ) {
 			if ( empty( $config[ $key ] ) || ! is_string( $config[ $key ] ) ) {

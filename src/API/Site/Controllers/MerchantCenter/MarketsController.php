@@ -133,14 +133,14 @@ class MarketsController extends BaseController {
 				'country'       => $request->get_param( 'country' ),
 				'language'      => $request->get_param( 'language' ),
 				'currency'      => $request->get_param( 'currency' ),
-				'feedLabel'     => strtoupper( $request->get_param( 'country' ) ),
+				'feed_label'    => strtoupper( $request->get_param( 'country' ) ),
 				'shipping_rate' => $request->get_param( 'shipping_rate' ),
 				'shipping_time' => $request->get_param( 'shipping_time' ),
 				'free_shipping' => $request->get_param( 'free_shipping' ),
 			];
 
 			// TODO: Move ID generation into MarketService::generate_market_id().
-			$id = sanitize_title( $config['feedLabel'] );
+			$id = sanitize_title( $config['feed_label'] );
 
 			if ( 'primary' === $id ) {
 				return new Response(
@@ -385,7 +385,7 @@ class MarketsController extends BaseController {
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'feedLabel'     => [
+			'feed_label'    => [
 				'type'              => 'string',
 				'description'       => __( 'Google feed label.', 'google-listings-and-ads' ),
 				'context'           => [ 'view' ],

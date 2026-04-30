@@ -35,7 +35,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		'country'       => 'US',
 		'language'      => 'en',
 		'currency'      => 'USD',
-		'feedLabel'     => 'US',
+		'feed_label'    => 'US',
 		'shipping_rate' => 'flat',
 		'shipping_time' => 'flat',
 		'free_shipping' => 50.0,
@@ -45,7 +45,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		'country'       => 'GB',
 		'language'      => 'en',
 		'currency'      => 'GBP',
-		'feedLabel'     => 'GB',
+		'feed_label'    => 'GB',
 		'shipping_rate' => 'flat',
 		'shipping_time' => 'flat',
 		'free_shipping' => null,
@@ -141,7 +141,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			'country'       => 'DE',
 			'language'      => 'de',
 			'currency'      => 'EUR',
-			'feedLabel'     => 'DE',
+			'feed_label'    => 'DE',
 			'shipping_rate' => 'flat',
 			'shipping_time' => 'flat',
 			'free_shipping' => null,
@@ -183,7 +183,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'de', $data['id'] );
 		$this->assertEquals( 'DE', $data['country'] );
 		$this->assertEquals( 'EUR', $data['currency'] );
-		$this->assertEquals( 'DE', $data['feedLabel'] );
+		$this->assertEquals( 'DE', $data['feed_label'] );
 		$this->assertEquals( 'flat', $data['shipping_rate'] );
 	}
 
@@ -442,7 +442,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 						return isset( $params['shipping_rate'] )
 							&& ! isset( $params['id'] )
 							&& ! isset( $params['label'] )
-							&& ! isset( $params['feedLabel'] );
+							&& ! isset( $params['feed_label'] );
 					}
 				)
 			)
