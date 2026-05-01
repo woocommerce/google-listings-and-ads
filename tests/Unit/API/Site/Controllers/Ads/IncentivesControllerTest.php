@@ -13,6 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
+use RuntimeException;
 
 /**
  * Class IncentivesControllerTest
@@ -298,5 +299,29 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 		);
 
 		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_apply_incentive_failure_sets_flag_and_schedules_job() {
+		$this->ads_incentives->expects( $this->once() )
+			->method( 'apply_incentive' )
+			->willThrowException( new RuntimeException( 'Unexpected API failure' ) );
+
+		// Failure path: error flag must be raised.
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::ADS_INCENTIVE_APPLY_ERROR, 'error' );
+
+		// Background job must be queued via the start hook.
+		$this->action_scheduler->expects( $this->once() )
+			->method( 'schedule_immediate' )
+			->with( 'gla/jobs/check_unclaimed_incentive/start' );
+
+		$response = $this->do_request(
+			self::ROUTE_INCENTIVES,
+			'POST',
+			[ 'id' => '2378556534' ]
+		);
+
+		$this->assertEquals( 500, $response->get_status() );
 	}
 }

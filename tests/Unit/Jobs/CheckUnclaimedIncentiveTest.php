@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
+use ReflectionMethod;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -77,6 +78,16 @@ class CheckUnclaimedIncentiveTest extends UnitTest {
 			'gla/jobs/check_unclaimed_incentive/start',
 			$this->job->get_start_hook()->get_hook()
 		);
+	}
+
+	public function test_schedule_queues_process_item() {
+		$this->action_scheduler->method( 'has_scheduled_action' )->willReturn( false );
+
+		$this->action_scheduler->expects( $this->once() )
+			->method( 'schedule_immediate' )
+			->with( 'gla/jobs/check_unclaimed_incentive/process_item' );
+
+		$this->job->schedule();
 	}
 
 	public function test_process_items_does_nothing_when_error_flag_not_set() {
@@ -188,11 +199,26 @@ class CheckUnclaimedIncentiveTest extends UnitTest {
 		$this->invoke_process_items();
 	}
 
+	public function test_get_language_code_falls_back_to_en_when_locale_is_empty() {
+		$filter = static function () {
+			return '';
+		};
+		add_filter( 'locale', $filter );
+
+		try {
+			$method = new ReflectionMethod( CheckUnclaimedIncentive::class, 'get_language_code' );
+			$method->setAccessible( true );
+			$this->assertSame( 'en', $method->invoke( $this->job ) );
+		} finally {
+			remove_filter( 'locale', $filter );
+		}
+	}
+
 	/**
 	 * Invoke the protected process_items() method.
 	 */
 	protected function invoke_process_items(): void {
-		$method = new \ReflectionMethod( CheckUnclaimedIncentive::class, 'process_items' );
+		$method = new ReflectionMethod( CheckUnclaimedIncentive::class, 'process_items' );
 		$method->setAccessible( true );
 		$method->invoke( $this->job, [] );
 	}
