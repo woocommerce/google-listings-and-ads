@@ -3,10 +3,15 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsIncentives;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CheckUnclaimedIncentive;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Exception;
@@ -24,7 +29,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
-class IncentivesController extends BaseController {
+class IncentivesController extends BaseController implements OptionsAwareInterface {
+
+	use OptionsAwareTrait;
 
 	/**
 	 * @var AdsIncentives
@@ -37,16 +44,30 @@ class IncentivesController extends BaseController {
 	protected $wc;
 
 	/**
+	 * @var ActionSchedulerInterface
+	 */
+	protected $action_scheduler;
+
+	/**
+	 * @var CheckUnclaimedIncentive
+	 */
+	protected $check_unclaimed_incentive;
+
+	/**
 	 * IncentivesController constructor.
 	 *
-	 * @param RESTServer    $rest_server
-	 * @param AdsIncentives $ads_incentives
-	 * @param WC            $wc
+	 * @param RESTServer               $rest_server
+	 * @param AdsIncentives            $ads_incentives
+	 * @param WC                       $wc
+	 * @param ActionSchedulerInterface $action_scheduler
+	 * @param CheckUnclaimedIncentive  $check_unclaimed_incentive
 	 */
-	public function __construct( RESTServer $rest_server, AdsIncentives $ads_incentives, WC $wc ) {
+	public function __construct( RESTServer $rest_server, AdsIncentives $ads_incentives, WC $wc, ActionSchedulerInterface $action_scheduler, CheckUnclaimedIncentive $check_unclaimed_incentive ) {
 		parent::__construct( $rest_server );
-		$this->ads_incentives = $ads_incentives;
-		$this->wc             = $wc;
+		$this->ads_incentives            = $ads_incentives;
+		$this->wc                        = $wc;
+		$this->action_scheduler          = $action_scheduler;
+		$this->check_unclaimed_incentive = $check_unclaimed_incentive;
 	}
 
 	/**
@@ -112,16 +133,36 @@ class IncentivesController extends BaseController {
 
 				$result = $this->ads_incentives->apply_incentive( $incentive_id, $country_code );
 
+				// Clear any stale error flag from a previous failed attempt.
+				$this->options->delete( OptionsInterface::ADS_INCENTIVE_APPLY_ERROR );
+
 				return new Response( $result );
 			} catch ( ExceptionWithResponseData $e ) {
+				$this->handle_apply_failure( $e );
 				return $this->response_from_exception( $e );
 			} catch ( Exception $e ) {
+				$this->handle_apply_failure( $e );
 				return new Response(
 					[ 'message' => $e->getMessage() ],
 					500
 				);
 			}
 		};
+	}
+
+	/**
+	 * Handle a failure when applying an incentive
+	 *
+	 * @param Exception $e
+	 */
+	protected function handle_apply_failure( Exception $e ): void {
+		do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+
+		$this->options->update( OptionsInterface::ADS_INCENTIVE_APPLY_ERROR, 'error' );
+
+		$this->action_scheduler->schedule_immediate(
+			$this->check_unclaimed_incentive->get_start_hook()->get_hook()
+		);
 	}
 
 	/**

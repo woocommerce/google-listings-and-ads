@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\Jetpack\Connection\Manager;
+use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AccountService as AdsAccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAssetGenerationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AssetSuggestionsService as AdsAssetSuggestionsService;
@@ -74,6 +75,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CheckUnclaimedIncentive;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService as MerchantAccountService;
@@ -130,7 +132,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( BudgetRecommendationController::class, Ads::class );
 		$this->share( GoogleAccountController::class, Connection::class );
 		$this->share( IncentiveCreditsController::class );
-		$this->share( IncentivesController::class, AdsIncentives::class, WC::class );
+		$this->share( IncentivesController::class, AdsIncentives::class, WC::class, ActionScheduler::class, CheckUnclaimedIncentive::class );
 		$this->share( JetpackAccountController::class, Manager::class, Middleware::class );
 		$this->share( MerchantCenterProductStatsController::class, MerchantStatuses::class, ProductSyncStats::class );
 		$this->share( MerchantCenterIssuesController::class, MerchantStatuses::class, ProductHelper::class );
