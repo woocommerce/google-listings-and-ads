@@ -3,9 +3,13 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsIncentives;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\IncentivesController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CheckUnclaimedIncentive;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\StartHook;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -23,6 +27,15 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|WC $wc */
 	protected $wc;
 
+	/** @var MockObject|ActionSchedulerInterface $action_scheduler */
+	protected $action_scheduler;
+
+	/** @var MockObject|CheckUnclaimedIncentive $check_unclaimed_incentive */
+	protected $check_unclaimed_incentive;
+
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
 	/** @var IncentivesController $controller */
 	protected $controller;
 
@@ -37,12 +50,24 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->ads_incentives = $this->createMock( AdsIncentives::class );
-		$this->wc             = $this->createMock( WC::class );
+		$this->ads_incentives            = $this->createMock( AdsIncentives::class );
+		$this->wc                        = $this->createMock( WC::class );
+		$this->action_scheduler          = $this->createMock( ActionSchedulerInterface::class );
+		$this->check_unclaimed_incentive = $this->createMock( CheckUnclaimedIncentive::class );
+		$this->options                   = $this->createMock( OptionsInterface::class );
 
 		$this->wc->method( 'get_base_country' )->willReturn( 'GB' );
+		$this->check_unclaimed_incentive->method( 'get_start_hook' )
+			->willReturn( new StartHook( 'gla/jobs/check_unclaimed_incentive/start' ) );
 
-		$this->controller = new IncentivesController( $this->server, $this->ads_incentives, $this->wc );
+		$this->controller = new IncentivesController(
+			$this->server,
+			$this->ads_incentives,
+			$this->wc,
+			$this->action_scheduler,
+			$this->check_unclaimed_incentive
+		);
+		$this->controller->set_options_object( $this->options );
 		$this->controller->register();
 	}
 
