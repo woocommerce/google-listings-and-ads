@@ -763,6 +763,7 @@ class AccountServiceTest extends UnitTest {
 				[ OptionsInterface::ADS_BILLING_URL ],
 				[ OptionsInterface::ADS_CONVERSION_ACTION ],
 				[ OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED ],
+				[ OptionsInterface::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE ],
 				[ OptionsInterface::ADS_ID ],
 				[ OptionsInterface::ADS_INCENTIVE_APPLY_ERROR ],
 				[ OptionsInterface::ADS_SETUP_COMPLETED_AT ],

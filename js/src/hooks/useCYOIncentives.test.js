@@ -26,10 +26,10 @@ const MOCKED_INCENTIVES = [
 					currencyCode: 'USD',
 					units: '1800',
 				},
-			},
-			requiredAmount: {
-				currencyCode: 'USD',
-				units: '4000',
+				requiredAmount: {
+					currencyCode: 'USD',
+					units: '4000',
+				},
 			},
 		},
 	},
@@ -44,10 +44,10 @@ const MOCKED_INCENTIVES = [
 					currencyCode: 'USD',
 					units: '1200',
 				},
-			},
-			requiredAmount: {
-				currencyCode: 'USD',
-				units: '1800',
+				requiredAmount: {
+					currencyCode: 'USD',
+					units: '1800',
+				},
 			},
 		},
 	},
@@ -62,10 +62,10 @@ const MOCKED_INCENTIVES = [
 					currencyCode: 'USD',
 					units: '600',
 				},
-			},
-			requiredAmount: {
-				currencyCode: 'USD',
-				units: '1200',
+				requiredAmount: {
+					currencyCode: 'USD',
+					units: '1200',
+				},
 			},
 		},
 	},
@@ -83,6 +83,7 @@ describe( 'useCYOIncentives', () => {
 	it( 'returns resolved empty state without calling the incentives selector when billing is not approved', () => {
 		useGoogleAdsAccountBillingStatus.mockReturnValue( {
 			billingStatus: { status: 'pending' },
+			hasFinishedResolution: true,
 		} );
 
 		const getCYOIncentives = jest.fn();
@@ -132,9 +133,10 @@ describe( 'useCYOIncentives', () => {
 		} );
 	} );
 
-	it( 'returns resolved empty state when billing status is not yet loaded', () => {
+	it( 'returns unresolved empty state when billing status is not yet loaded', () => {
 		useGoogleAdsAccountBillingStatus.mockReturnValue( {
 			billingStatus: undefined,
+			hasFinishedResolution: false,
 		} );
 
 		const getCYOIncentives = jest.fn();
@@ -151,7 +153,7 @@ describe( 'useCYOIncentives', () => {
 		expect( getCYOIncentives ).not.toHaveBeenCalled();
 		expect( result.current ).toEqual( {
 			data: null,
-			hasFinishedResolution: true,
+			hasFinishedResolution: false,
 		} );
 	} );
 

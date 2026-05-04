@@ -52,7 +52,8 @@ const selectorName = 'getCYOIncentives';
  * @return {CYOIncentivesPayload} The CYO incentives payload.
  */
 const useCYOIncentives = () => {
-	const { billingStatus } = useGoogleAdsAccountBillingStatus();
+	const { billingStatus, hasFinishedResolution: hasResolvedBillingStatus } =
+		useGoogleAdsAccountBillingStatus();
 
 	return useSelect(
 		( select ) => {
@@ -62,21 +63,23 @@ const useCYOIncentives = () => {
 			if ( ! isBillingCompleted ) {
 				return {
 					data: null,
-					hasFinishedResolution: true,
+					hasFinishedResolution: hasResolvedBillingStatus,
 				};
 			}
 
 			const selector = select( STORE_KEY );
+			const incentives = selector[ selectorName ]();
+			const hasResolvedIncentives = selector.hasFinishedResolution(
+				selectorName,
+				[]
+			);
 
 			return {
-				data: selector[ selectorName ](),
-				hasFinishedResolution: selector.hasFinishedResolution(
-					selectorName,
-					[]
-				),
+				data: incentives,
+				hasFinishedResolution: hasResolvedIncentives,
 			};
 		},
-		[ billingStatus ]
+		[ billingStatus, hasResolvedBillingStatus ]
 	);
 };
 
