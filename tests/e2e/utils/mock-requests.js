@@ -580,7 +580,7 @@ export default class MockRequests {
 	/**
 	 * Fulfill the CYO incentives GET request.
 	 *
-	 * @param {Array|undefined} incentives Incentive items array.
+	 * @param {Array} [incentives] Incentive items array. Omit to use the default three-tier set.
 	 * @param {number} [status=200]
 	 * @return {Promise<void>}
 	 */

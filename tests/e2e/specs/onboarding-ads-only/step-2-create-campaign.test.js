@@ -630,6 +630,11 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 			await expect(
 				page.getByText( 'Ads credit offer' )
 			).not.toBeVisible();
+
+			// Restore for subsequent tests.
+			await createCampaignPage.fulfillCYOIncentives();
+			await createCampaignPage.fulfillApplyCYOIncentive();
+			await createCampaignPage.goto();
 		} );
 
 		test( 'should hide the incentive picker when billing is not yet approved', async () => {
@@ -672,16 +677,18 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 			await dashboardPage.fulfillAdsCampaignsRequest( [] );
 			await createCampaignPage.goto();
 			let incentivePostFired = false;
-			await page.route( /\/wc\/gla\/ads\/incentive\b/, ( route ) => {
+			const interceptor = ( route ) => {
 				if ( route.request().method() === 'POST' ) {
 					incentivePostFired = true;
 				}
 				route.fallback();
-			} );
+			};
+			await page.route( /\/wc\/gla\/ads\/incentive\b/, interceptor );
 			await createCampaignPage.clickSkipPaidAdsCreationButton();
 			await createCampaignPage.clickCompleteSetupModalButton();
 			await page.waitForURL( /path=%2Fgoogle%2Fdashboard/ );
 			expect( incentivePostFired ).toBe( false );
+			await page.unroute( /\/wc\/gla\/ads\/incentive\b/, interceptor );
 		} );
 
 		test( 'should still complete onboarding when applying the incentive fails', async () => {
@@ -706,7 +713,6 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 			expect( incentiveRequest.method() ).toBe( 'POST' );
 
 			await page.waitForURL( /path=%2Fgoogle%2Fdashboard/ );
-			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fdashboard/ );
 		} );
 	} );
 } );
