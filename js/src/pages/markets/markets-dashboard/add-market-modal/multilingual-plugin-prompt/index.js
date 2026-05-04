@@ -2,7 +2,13 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody } from '@wordpress/components';
+import {
+	Card,
+	CardBody,
+	Flex,
+	FlexBlock,
+	FlexItem,
+} from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -54,48 +60,68 @@ const MultiLingualPluginPrompt = () => {
 	}
 
 	return (
-		<div className="gla-multilingual-plugin-prompt">
-			{ PLUGINS.map( ( plugin ) => (
+		<Flex
+			className="gla-multilingual-plugin-prompt"
+			direction="column"
+			gap={ 4 }
+		>
+			{ PLUGINS.map( ( { id, title, description, link, icon } ) => (
 				<Card
 					className="gla-multilingual-plugin-prompt__plugin"
-					key={ plugin.id }
 					size="small"
+					key={ id }
 				>
-					<CardBody className="gla-multilingual-plugin-prompt__plugin-content">
-						<img
-							alt={ plugin.title }
-							className="gla-multilingual-plugin-prompt__plugin-icon"
-							height="32"
-							src={ plugin.icon }
-							width="32"
-						/>
-						<div className="gla-multilingual-plugin-prompt__plugin-info">
-							<Text
-								className="gla-multilingual-plugin-prompt__plugin-title"
-								variant="subtitle-small"
-							>
-								{ plugin.title }
-							</Text>
-							<Text
-								className="gla-multilingual-plugin-prompt__plugin-description"
-								variant="body"
-							>
-								{ plugin.description }
-							</Text>
-						</div>
-						<AppButton
-							className="gla-multilingual-plugin-prompt__plugin-button"
-							href={ plugin.link }
-							rel="noreferrer"
-							target="_blank"
-							variant="secondary"
-						>
-							{ __( 'Learn more', 'google-listings-and-ads' ) }
-						</AppButton>
+					<CardBody>
+						<Flex align="center" gap={ 4 } wrap>
+							<FlexBlock size={ 1 }>
+								<Flex
+									align="center"
+									justify="start"
+									gap={ 4 }
+									wrap
+								>
+									<FlexItem className="gla-multilingual-plugin-prompt__plugin-icon">
+										<img
+											alt={ title }
+											height="32"
+											src={ icon }
+											width="32"
+										/>
+									</FlexItem>
+									<FlexItem>
+										<Text
+											className="gla-multilingual-plugin-prompt__plugin-title"
+											variant="subtitle-small"
+										>
+											{ title }
+										</Text>
+										<Text
+											className="gla-multilingual-plugin-prompt__plugin-description"
+											variant="body"
+										>
+											{ description }
+										</Text>
+									</FlexItem>
+								</Flex>
+							</FlexBlock>
+							<FlexItem>
+								<AppButton
+									href={ link }
+									rel="noreferrer"
+									target="_blank"
+									variant="secondary"
+								>
+									{ __(
+										'Learn more',
+										'google-listings-and-ads'
+									) }
+								</AppButton>
+							</FlexItem>
+						</Flex>
 					</CardBody>
 				</Card>
 			) ) }
-		</div>
+		</Flex>
 	);
 };
 
