@@ -16,6 +16,8 @@ import './index.scss';
 
 /**
  * Displays an info notice about shipping being managed in Google Merchant Center.
+ *
+ * @fires gla_documentation_link_click with `{ context: "edit-market-modal", link_id: "hipping-notice-merchant-center", href: "https://merchants.google.com/" }`
  */
 const ShippingNotice = () => {
 	const { settings } = useSettings();
