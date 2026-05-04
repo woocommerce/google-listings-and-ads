@@ -41,6 +41,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
@@ -122,7 +123,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->add( Settings::class );
 
 		$this->share( Ads::class, GoogleAdsClient::class );
-		$this->share( AdsIncentives::class, GoogleAdsClient::class );
+		$this->share( AdsIncentives::class, GoogleAdsClient::class, WC::class );
 		$this->share( AdsAssetGroup::class, GoogleAdsClient::class, AdsAssetGroupAsset::class, AdsCampaign::class );
 		$this->share( AdsCampaign::class, GoogleAdsClient::class, AdsCampaignBudget::class, AdsCampaignCriterion::class, GoogleHelper::class, AdsCampaignLabel::class, AdsCampaignAsset::class );
 		$this->share( AdsCampaignAsset::class, GoogleAdsClient::class );

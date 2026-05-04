@@ -9,7 +9,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -38,28 +37,20 @@ class CheckUnclaimedIncentive extends AbstractActionSchedulerJob implements Star
 	protected $middleware;
 
 	/**
-	 * @var WC
-	 */
-	protected $wc;
-
-	/**
 	 * @param ActionSchedulerInterface  $action_scheduler
 	 * @param ActionSchedulerJobMonitor $monitor
 	 * @param AdsIncentives             $ads_incentives
 	 * @param Middleware                $middleware
-	 * @param WC                        $wc
 	 */
 	public function __construct(
 		ActionSchedulerInterface $action_scheduler,
 		ActionSchedulerJobMonitor $monitor,
 		AdsIncentives $ads_incentives,
-		Middleware $middleware,
-		WC $wc
+		Middleware $middleware
 	) {
 		parent::__construct( $action_scheduler, $monitor );
 		$this->ads_incentives = $ads_incentives;
 		$this->middleware     = $middleware;
-		$this->wc             = $wc;
 	}
 
 	/**
@@ -102,11 +93,8 @@ class CheckUnclaimedIncentive extends AbstractActionSchedulerJob implements Star
 			return;
 		}
 
-		$country_code  = $this->wc->get_base_country();
-		$language_code = $this->get_language_code();
-
 		// No incentives available
-		$incentives = $this->ads_incentives->fetch_incentives( $country_code, $language_code );
+		$incentives = $this->ads_incentives->fetch_incentives();
 		if ( empty( $incentives['incentives'] ) ) {
 			$this->mark_no_unclaimed_incentive();
 			return;
@@ -129,18 +117,5 @@ class CheckUnclaimedIncentive extends AbstractActionSchedulerJob implements Star
 	protected function mark_no_unclaimed_incentive(): void {
 		$this->options->update( OptionsInterface::ADS_HAS_UNCLAIMED_INCENTIVE, false );
 		$this->options->delete( OptionsInterface::ADS_INCENTIVE_APPLY_ERROR );
-	}
-
-	/**
-	 * @return string
-	 */
-	protected function get_language_code(): string {
-		$locale = get_locale();
-
-		if ( empty( $locale ) ) {
-			return 'en';
-		}
-
-		return strtolower( substr( $locale, 0, 2 ) );
 	}
 }

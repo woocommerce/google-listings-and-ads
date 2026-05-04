@@ -98,28 +98,10 @@ class IncentivesController extends BaseController implements OptionsAwareInterfa
 	 */
 	protected function get_incentives_callback(): callable {
 		return function ( Request $request ) {
-			$country_code  = $this->wc->get_base_country();
-			$language_code = $this->get_language_code();
-
-			$incentives = $this->ads_incentives->fetch_incentives( $country_code, $language_code );
+			$incentives = $this->ads_incentives->fetch_incentives();
 
 			return $this->prepare_item_for_response( $incentives, $request );
 		};
-	}
-
-	/**
-	 * Get the ISO 639-1 language code from the WordPress locale.
-	 *
-	 * @return string
-	 */
-	protected function get_language_code(): string {
-		$locale = get_locale();
-
-		if ( empty( $locale ) ) {
-			return 'en';
-		}
-
-		return strtolower( substr( $locale, 0, 2 ) );
 	}
 
 	/**
