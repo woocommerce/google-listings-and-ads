@@ -305,6 +305,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		$this->options->delete( OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED );
 		$this->options->delete( OptionsInterface::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE );
 		$this->options->delete( OptionsInterface::ADS_ID );
+		$this->options->delete( OptionsInterface::ADS_INCENTIVE_APPLY_ERROR );
 		$this->options->delete( OptionsInterface::ADS_SETUP_COMPLETED_AT );
 		$this->options->delete( OptionsInterface::CAMPAIGN_CONVERT_STATUS );
 		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::ADS_CAMPAIGN_COUNT );
