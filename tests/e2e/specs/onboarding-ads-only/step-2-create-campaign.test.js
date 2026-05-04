@@ -609,4 +609,110 @@ test.describe( 'Create campaign for Ads only merchants', () => {
 			).not.toBeVisible();
 		} );
 	} );
+
+	test.describe( 'Choose Your Own Incentive (CYOI)', () => {
+		test.beforeAll( async () => {
+			await setupBudgetPage.fulfillBillingStatusRequest( {
+				status: 'approved',
+			} );
+			await createCampaignPage.fulfillCYOIncentives();
+			await createCampaignPage.fulfillApplyCYOIncentive();
+			await createCampaignPage.goto();
+		} );
+
+		test( 'should show the incentive picker when billing is approved and offers are available', async () => {
+			await expect( page.getByText( 'Ads credit offer' ) ).toBeVisible();
+		} );
+
+		test( 'should hide the incentive picker when no offers are available', async () => {
+			await createCampaignPage.fulfillCYOIncentives( [] );
+			await createCampaignPage.goto();
+			await expect(
+				page.getByText( 'Ads credit offer' )
+			).not.toBeVisible();
+
+			// Restore for subsequent tests.
+			await createCampaignPage.fulfillCYOIncentives();
+			await createCampaignPage.fulfillApplyCYOIncentive();
+			await createCampaignPage.goto();
+		} );
+
+		test( 'should hide the incentive picker when billing is not yet approved', async () => {
+			await setupBudgetPage.fulfillBillingStatusRequest( {
+				status: 'pending',
+			} );
+			await createCampaignPage.goto();
+			await expect(
+				page.getByText( 'Ads credit offer' )
+			).not.toBeVisible();
+
+			// Restore for subsequent tests.
+			await setupBudgetPage.fulfillBillingStatusRequest( {
+				status: 'approved',
+			} );
+			await createCampaignPage.fulfillCYOIncentives();
+			await createCampaignPage.fulfillApplyCYOIncentive();
+			await createCampaignPage.goto();
+		} );
+
+		test( 'should apply the selected incentive on form submission', async () => {
+			await dashboardPage.fulfillAdsCampaignsRequest( [] );
+			const incentivePostPromise = page.waitForRequest(
+				( request ) =>
+					request.url().includes( '/gla/ads/incentive' ) &&
+					request.method() === 'POST'
+			);
+			await createCampaignPage.clickSkipPaidAdsCreationButton();
+			await createCampaignPage.clickCompleteSetupModalButton();
+			const incentiveRequest = await incentivePostPromise;
+			expect( incentiveRequest.method() ).toBe( 'POST' );
+			expect( incentiveRequest.postDataJSON() ).toMatchObject( {
+				id: 'incentive-medium-id',
+			} );
+			await page.waitForURL( /path=%2Fgoogle%2Fdashboard/ );
+		} );
+
+		test( 'should skip incentive application when no offer is available', async () => {
+			await createCampaignPage.fulfillCYOIncentives( [] );
+			await dashboardPage.fulfillAdsCampaignsRequest( [] );
+			await createCampaignPage.goto();
+			let incentivePostFired = false;
+			const interceptor = ( route ) => {
+				if ( route.request().method() === 'POST' ) {
+					incentivePostFired = true;
+				}
+				route.fallback();
+			};
+			await page.route( /\/wc\/gla\/ads\/incentive\b/, interceptor );
+			await createCampaignPage.clickSkipPaidAdsCreationButton();
+			await createCampaignPage.clickCompleteSetupModalButton();
+			await page.waitForURL( /path=%2Fgoogle%2Fdashboard/ );
+			expect( incentivePostFired ).toBe( false );
+			await page.unroute( /\/wc\/gla\/ads\/incentive\b/, interceptor );
+		} );
+
+		test( 'should still complete onboarding when applying the incentive fails', async () => {
+			await createCampaignPage.fulfillCYOIncentives();
+			await setupBudgetPage.fulfillBillingStatusRequest( {
+				status: 'approved',
+			} );
+			await createCampaignPage.fulfillApplyCYOIncentive( {}, 500 );
+
+			const incentivePostPromise = page.waitForRequest(
+				( request ) =>
+					request.url().includes( '/gla/ads/incentive' ) &&
+					request.method() === 'POST'
+			);
+
+			await dashboardPage.fulfillAdsCampaignsRequest( [] );
+			await createCampaignPage.goto();
+			await createCampaignPage.clickSkipPaidAdsCreationButton();
+			await createCampaignPage.clickCompleteSetupModalButton();
+
+			const incentiveRequest = await incentivePostPromise;
+			expect( incentiveRequest.method() ).toBe( 'POST' );
+
+			await page.waitForURL( /path=%2Fgoogle%2Fdashboard/ );
+		} );
+	} );
 } );

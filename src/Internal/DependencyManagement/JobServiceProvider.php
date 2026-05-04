@@ -15,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
@@ -208,7 +209,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 
 		// YouTube Merchant Reported Conversions.
 		$this->share_with_tags( YouTubeOrders::class );
-		$this->share_with_tags( OrderItemRowBuilder::class );
+		$this->share_with_tags( OrderItemRowBuilder::class, Middleware::class );
 		$this->share_with_tags( CsvExportWriter::class );
 
 		$this->share_action_scheduler_job( CreateYouTubeOrderIdsCache::class, YouTubeOrders::class, JobRepository::class );

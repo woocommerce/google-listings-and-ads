@@ -1,8 +1,11 @@
 name: 'Merge the release to develop'
 run-name:  Make a PR to merge the released `${{ github.head_ref }}` from `trunk` to `develop`
 
-# **What it does**: Creates a PR to merge `trunk` to `develop` after `prepare-extension-release`-based release is merged to `trunk`.
-# **Why we have it**: To automate the release process and follow the git-flow.
+# **What it does**:
+#   - Creates a PR to merge `trunk` to `develop` after a release is merged to `trunk`.
+#   - When a **draft** `release/*` PR to `trunk` is **closed without merging** (typical simulate flow),
+#     deletes the head branch so `release.yml` can be re-run for the same version.
+# **Why we have it**: Automate git-flow and avoid stale simulate branches blocking a real release.
 
 on:
   pull_request:
@@ -16,3 +19,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: woocommerce/grow/merge-trunk-develop-pr@actions-v2
+
+  delete-simulate-release-branch:
+    name: Delete simulate release branch
+    runs-on: ubuntu-latest
+    if: |
+      github.event.pull_request.merged == false &&
+      startsWith(github.event.pull_request.head.ref, 'release/') &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      (github.event.pull_request.draft == true || contains(join(github.event.pull_request.labels.*.name, ','), 'simulate-release'))
+    permissions:
+      contents: write
+    steps:
+      - name: Delete branch
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branch = context.payload.pull_request.head.ref;
+            const ref = `heads/${branch}`;
+            try {
+              await github.rest.git.deleteRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref,
+              });
+              core.notice(`Deleted branch ${branch}`);
+            } catch (e) {
+              if (e.status === 422) {
+                core.warning(`Branch ${branch} was already gone (${e.message})`);
+              } else {
+                throw e;
+              }
+            }

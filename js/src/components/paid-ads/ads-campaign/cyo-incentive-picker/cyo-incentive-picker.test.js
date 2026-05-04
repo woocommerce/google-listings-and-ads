@@ -10,12 +10,16 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import CyoIncentivePicker from './cyo-incentive-picker';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useCYOIncentives from '~/hooks/useCYOIncentives';
+import { recordGlaEvent } from '~/utils/tracks';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
 
 jest.mock( '~/components/adaptive-form', () => ( {
 	useAdaptiveFormContext: jest.fn(),
 } ) );
 jest.mock( '~/hooks/useCYOIncentives' );
+jest.mock( '~/utils/tracks', () => ( {
+	recordGlaEvent: jest.fn(),
+} ) );
 jest.mock( '~/hooks/useAdsCurrency' );
 
 const formatAmountMock = jest.fn();
@@ -81,8 +85,12 @@ const INCENTIVES_DATA = [
 describe( 'CyoIncentivePicker Component', () => {
 	const onIncentiveIdChange = jest.fn();
 
+	const renderComponent = ( props = {} ) =>
+		render( <CyoIncentivePicker context="setup-mc" { ...props } /> );
+
 	beforeEach( () => {
 		onIncentiveIdChange.mockReset();
+		recordGlaEvent.mockReset();
 		useAdaptiveFormContext.mockReturnValue( {
 			getInputProps: jest.fn().mockReturnValue( {
 				value: null,
@@ -97,7 +105,7 @@ describe( 'CyoIncentivePicker Component', () => {
 	} );
 
 	it( 'should render the component', () => {
-		render( <CyoIncentivePicker /> );
+		renderComponent();
 		const titleElement = screen.queryByText( 'Ads credit offer' );
 		expect( titleElement ).toBeInTheDocument();
 	} );
@@ -107,7 +115,7 @@ describe( 'CyoIncentivePicker Component', () => {
 			data: null,
 			hasFinishedResolution: true,
 		} );
-		render( <CyoIncentivePicker /> );
+		renderComponent();
 		const titleElement = screen.queryByText( 'Ads credit offer' );
 		expect( titleElement ).not.toBeInTheDocument();
 	} );
@@ -118,7 +126,7 @@ describe( 'CyoIncentivePicker Component', () => {
 			hasFinishedResolution: true,
 		} );
 
-		render( <CyoIncentivePicker /> );
+		renderComponent();
 		const titleElement = screen.queryByText( 'Ads credit offer' );
 		expect( titleElement ).not.toBeInTheDocument();
 	} );
@@ -129,7 +137,7 @@ describe( 'CyoIncentivePicker Component', () => {
 			hasFinishedResolution: false,
 		} );
 
-		render( <CyoIncentivePicker /> );
+		renderComponent();
 		const titleElement = screen.queryByText( 'Ads credit offer' );
 		expect( titleElement ).not.toBeInTheDocument();
 	} );
@@ -141,7 +149,7 @@ describe( 'CyoIncentivePicker Component', () => {
 			hasFinishedResolution: true,
 		} );
 
-		render( <CyoIncentivePicker /> );
+		renderComponent();
 		const titleElement = screen.queryByText( 'Ads credit offer' );
 		expect( titleElement ).not.toBeInTheDocument();
 	} );
@@ -153,7 +161,7 @@ describe( 'CyoIncentivePicker Component', () => {
 			hasFinishedResolution: true,
 		} );
 
-		const { rerender } = render( <CyoIncentivePicker /> );
+		const { rerender } = renderComponent();
 		let titleElement = screen.queryByText( 'Ads credit offer' );
 		expect( titleElement ).not.toBeInTheDocument();
 
@@ -163,7 +171,7 @@ describe( 'CyoIncentivePicker Component', () => {
 			hasFinishedResolution: true,
 		} );
 
-		rerender( <CyoIncentivePicker /> );
+		rerender( <CyoIncentivePicker context="setup-mc" /> );
 		titleElement = screen.queryByText( 'Ads credit offer' );
 		expect( titleElement ).toBeInTheDocument();
 	} );
@@ -171,12 +179,12 @@ describe( 'CyoIncentivePicker Component', () => {
 	it( 'should set default selected incentive to medium offer', () => {
 		useAdaptiveFormContext.mockReturnValue( {
 			getInputProps: jest.fn().mockReturnValue( {
-				value: 456,
+				value: 'medium',
 				onChange: onIncentiveIdChange,
 			} ),
 		} );
 
-		render( <CyoIncentivePicker /> );
+		renderComponent();
 
 		const radioButtons = screen.getAllByRole( 'radio' );
 		expect( radioButtons ).toHaveLength( 3 );
@@ -184,33 +192,112 @@ describe( 'CyoIncentivePicker Component', () => {
 		expect( radioButtons[ 1 ] ).toBeChecked();
 	} );
 
-	it( 'should set incentiveId when selecting an offer', () => {
-		let selectedIncentiveId = null;
+	it( 'should call onChange with the offer level when selecting an offer', () => {
+		let selectedOffer = null;
 		useAdaptiveFormContext.mockReturnValue( {
 			getInputProps: jest.fn().mockImplementation( () => ( {
-				value: selectedIncentiveId,
+				value: selectedOffer,
 				onChange: ( value ) => {
-					selectedIncentiveId = value;
+					selectedOffer = value;
 					onIncentiveIdChange( value );
 				},
 			} ) ),
 		} );
 
-		const { rerender } = render( <CyoIncentivePicker /> );
+		const { rerender } = renderComponent();
 		let radioButtons = screen.getAllByRole( 'radio' );
 		expect( radioButtons ).toHaveLength( 3 );
 
 		fireEvent.click( radioButtons[ 0 ] );
-		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 1, '789' );
+		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 1, 'low' );
 
-		rerender( <CyoIncentivePicker /> );
+		rerender( <CyoIncentivePicker context="setup-mc" /> );
 		radioButtons = screen.getAllByRole( 'radio' );
 		fireEvent.click( radioButtons[ 1 ] );
-		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 2, '456' );
+		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 2, 'medium' );
 
-		rerender( <CyoIncentivePicker /> );
+		rerender( <CyoIncentivePicker context="setup-mc" /> );
 		radioButtons = screen.getAllByRole( 'radio' );
 		fireEvent.click( radioButtons[ 2 ] );
-		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 3, '123' );
+		expect( onIncentiveIdChange ).toHaveBeenNthCalledWith( 3, 'high' );
+	} );
+
+	it( 'should track gla_cyo_incentive_picker_shown when rendered', () => {
+		render( <CyoIncentivePicker context="setup-mc" /> );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_cyo_incentive_picker_shown',
+			{ context: 'setup-mc' }
+		);
+	} );
+
+	it( 'should track gla_cyo_incentive_picker_shown with the correct context', () => {
+		render( <CyoIncentivePicker context="setup-mc" /> );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_cyo_incentive_picker_shown',
+			{ context: 'setup-mc' }
+		);
+	} );
+
+	it( 'should track gla_cyo_incentive_picker_shown only once even when the component re-renders', () => {
+		const { rerender } = renderComponent();
+
+		expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_cyo_incentive_picker_shown',
+			{ context: 'setup-mc' }
+		);
+
+		rerender( <CyoIncentivePicker context="setup-mc" /> );
+
+		expect( recordGlaEvent ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'should not track gla_cyo_incentive_picker_shown when not displayed', () => {
+		useCYOIncentives.mockReturnValue( {
+			data: null,
+			hasFinishedResolution: true,
+		} );
+		render( <CyoIncentivePicker context="setup-mc" /> );
+		expect( recordGlaEvent ).not.toHaveBeenCalledWith(
+			'gla_cyo_incentive_picker_shown',
+			expect.anything()
+		);
+	} );
+
+	it( 'should track gla_cyo_incentive_selected with offer level when selecting a radio', () => {
+		render( <CyoIncentivePicker context="setup-mc" /> );
+		const radioButtons = screen.getAllByRole( 'radio' );
+
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_cyo_incentive_picker_shown',
+			{ context: 'setup-mc' }
+		);
+
+		fireEvent.click( radioButtons[ 0 ] );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_cyo_incentive_selected',
+			{
+				context: 'setup-mc',
+				level: 'low',
+			}
+		);
+
+		fireEvent.click( radioButtons[ 1 ] );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_cyo_incentive_selected',
+			{
+				context: 'setup-mc',
+				level: 'medium',
+			}
+		);
+
+		fireEvent.click( radioButtons[ 2 ] );
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_cyo_incentive_selected',
+			{
+				context: 'setup-mc',
+				level: 'high',
+			}
+		);
 	} );
 } );
