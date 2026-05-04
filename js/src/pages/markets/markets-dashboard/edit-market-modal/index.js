@@ -1,13 +1,20 @@
 /**
  * External dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { pick } from 'lodash';
+import { __ } from '@wordpress/i18n';
+import { useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
+import { TARGET_AUDIENCE_FIELDS } from '~/components/free-listings/choose-audience-section/constants';
+import AdaptiveForm from '~/components/adaptive-form';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
+import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
+import ValidationErrors from '~/components/validation-errors';
+import EditPrimaryFeed from './edit-primary-feed';
 
 /**
  * Placeholder for the Edit Market modal.
@@ -21,6 +28,32 @@ import AppButton from '~/components/app-button';
  * @param {() => void} props.onRequestClose Called when the user closes the modal.
  */
 const EditMarketModal = ( { market, onRequestClose } ) => {
+	const formRef = useRef();
+	const { targetAudience, getFinalCountries } =
+		useTargetAudienceFinalCountryCodes();
+
+	const extendAdapter = ( formContext ) => {
+		return {
+			audienceCountries: getFinalCountries( formContext.values ),
+			renderRequestedValidation( key ) {
+				if ( formContext.adapter.requestedShowValidation ) {
+					return (
+						<ValidationErrors
+							messages={ formContext.errors[ key ] }
+						/>
+					);
+				}
+				return null;
+			},
+		};
+	};
+
+	const handleChange = ( change, values ) => {
+		if ( TARGET_AUDIENCE_FIELDS.includes( change.name ) ) {
+			console.log( pick( values, TARGET_AUDIENCE_FIELDS ) );
+		}
+	};
+
 	return (
 		<AppModal
 			title={ __( 'Edit market', 'google-listings-and-ads' ) }
@@ -35,13 +68,16 @@ const EditMarketModal = ( { market, onRequestClose } ) => {
 				</AppButton>,
 			] }
 		>
-			<p>
-				{ sprintf(
-					// translators: %s is the name of the market being edited.
-					__( 'Editing %s.', 'google-listings-and-ads' ),
-					market.label
-				) }
-			</p>
+			<AdaptiveForm
+				ref={ formRef }
+				initialValues={ {
+					countries: targetAudience.countries || [],
+				} }
+				extendAdapter={ extendAdapter }
+				onChange={ handleChange }
+			>
+				<EditPrimaryFeed />
+			</AdaptiveForm>
 		</AppModal>
 	);
 };
