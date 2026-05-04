@@ -15,6 +15,7 @@ import AppButton from '~/components/app-button';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import ValidationErrors from '~/components/validation-errors';
 import EditPrimaryFeed from './edit-primary-feed';
+import AppSpinner from '~/components/app-spinner';
 
 /**
  * Placeholder for the Edit Market modal.
@@ -29,7 +30,7 @@ import EditPrimaryFeed from './edit-primary-feed';
  */
 const EditMarketModal = ( { market, onRequestClose } ) => {
 	const formRef = useRef();
-	const { targetAudience, getFinalCountries } =
+	const { targetAudience, getFinalCountries, loaded } =
 		useTargetAudienceFinalCountryCodes();
 
 	const extendAdapter = ( formContext ) => {
@@ -64,20 +65,31 @@ const EditMarketModal = ( { market, onRequestClose } ) => {
 					variant="tertiary"
 					onClick={ onRequestClose }
 				>
-					{ __( 'Close', 'google-listings-and-ads' ) }
+					{ __( 'Cancel', 'google-listings-and-ads' ) }
+				</AppButton>,
+				<AppButton
+					key="save"
+					variant="primary"
+					onClick={ onRequestClose }
+				>
+					{ __( 'Save', 'google-listings-and-ads' ) }
 				</AppButton>,
 			] }
 		>
-			<AdaptiveForm
-				ref={ formRef }
-				initialValues={ {
-					countries: targetAudience.countries || [],
-				} }
-				extendAdapter={ extendAdapter }
-				onChange={ handleChange }
-			>
-				<EditPrimaryFeed />
-			</AdaptiveForm>
+			{ loaded && (
+				<AdaptiveForm
+					ref={ formRef }
+					initialValues={ {
+						countries: targetAudience.countries || [],
+					} }
+					extendAdapter={ extendAdapter }
+					onChange={ handleChange }
+				>
+					<EditPrimaryFeed />
+				</AdaptiveForm>
+			) }
+
+			{ ! loaded && <AppSpinner /> }
 		</AppModal>
 	);
 };
