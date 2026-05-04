@@ -133,8 +133,9 @@ class IncentivesController extends BaseController implements OptionsAwareInterfa
 
 				$result = $this->ads_incentives->apply_incentive( $incentive_id, $country_code );
 
-				// Clear any stale error flag from a previous failed attempt.
+				// Clear any stale flags from a previous failed attempt.
 				$this->options->delete( OptionsInterface::ADS_INCENTIVE_APPLY_ERROR );
+				$this->options->delete( OptionsInterface::ADS_HAS_UNCLAIMED_INCENTIVE );
 
 				return new Response( $result );
 			} catch ( ExceptionWithResponseData $e ) {
