@@ -754,7 +754,7 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_disconnect() {
-		$this->options->expects( $this->exactly( 11 ) )
+		$this->options->expects( $this->exactly( 12 ) )
 			->method( 'delete' )
 			->withConsecutive(
 				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ],
