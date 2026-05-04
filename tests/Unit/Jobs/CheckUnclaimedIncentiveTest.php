@@ -9,7 +9,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CheckUnclaimedIncentive;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionMethod;
@@ -35,16 +34,11 @@ class CheckUnclaimedIncentiveTest extends UnitTest {
 	/** @var MockObject|Middleware $middleware */
 	protected $middleware;
 
-	/** @var MockObject|WC $wc */
-	protected $wc;
-
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
 	/** @var CheckUnclaimedIncentive $job */
 	protected $job;
-
-	protected const COUNTRY_CODE = 'US';
 
 	/**
 	 * Runs before each test is executed.
@@ -56,17 +50,13 @@ class CheckUnclaimedIncentiveTest extends UnitTest {
 		$this->monitor          = $this->createMock( ActionSchedulerJobMonitor::class );
 		$this->ads_incentives   = $this->createMock( AdsIncentives::class );
 		$this->middleware       = $this->createMock( Middleware::class );
-		$this->wc               = $this->createMock( WC::class );
 		$this->options          = $this->createMock( OptionsInterface::class );
-
-		$this->wc->method( 'get_base_country' )->willReturn( self::COUNTRY_CODE );
 
 		$this->job = new CheckUnclaimedIncentive(
 			$this->action_scheduler,
 			$this->monitor,
 			$this->ads_incentives,
-			$this->middleware,
-			$this->wc
+			$this->middleware
 		);
 
 		$this->job->set_options_object( $this->options );
@@ -197,21 +187,6 @@ class CheckUnclaimedIncentiveTest extends UnitTest {
 		$this->options->expects( $this->never() )->method( 'delete' );
 
 		$this->invoke_process_items();
-	}
-
-	public function test_get_language_code_falls_back_to_en_when_locale_is_empty() {
-		$filter = static function () {
-			return '';
-		};
-		add_filter( 'locale', $filter );
-
-		try {
-			$method = new ReflectionMethod( CheckUnclaimedIncentive::class, 'get_language_code' );
-			$method->setAccessible( true );
-			$this->assertSame( 'en', $method->invoke( $this->job ) );
-		} finally {
-			remove_filter( 'locale', $filter );
-		}
 	}
 
 	/**

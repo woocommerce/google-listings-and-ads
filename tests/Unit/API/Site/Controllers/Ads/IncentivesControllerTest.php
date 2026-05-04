@@ -136,7 +136,6 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 
 		$this->ads_incentives->expects( $this->once() )
 			->method( 'fetch_incentives' )
-			->with( 'GB', $this->isType( 'string' ) )
 			->willReturn( $incentives );
 
 		$response = $this->do_request( self::ROUTE_INCENTIVES, 'GET' );
@@ -209,7 +208,6 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 
 		$this->ads_incentives->expects( $this->once() )
 			->method( 'fetch_incentives' )
-			->with( 'GB', $this->isType( 'string' ) )
 			->willReturn( $incentives );
 
 		$response = $this->do_request( self::ROUTE_INCENTIVES, 'GET' );
