@@ -279,6 +279,14 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 				)
 			);
 
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::ADS_INCENTIVE_APPLY_ERROR, 'error' );
+
+		$this->action_scheduler->expects( $this->once() )
+			->method( 'schedule_immediate' )
+			->with( 'gla/jobs/check_unclaimed_incentive/start' );
+
 		$response = $this->do_request(
 			self::ROUTE_INCENTIVES,
 			'POST',
