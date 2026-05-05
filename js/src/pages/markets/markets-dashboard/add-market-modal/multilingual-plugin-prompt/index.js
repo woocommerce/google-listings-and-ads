@@ -28,6 +28,7 @@ import './index.scss';
  * @property {string} link Plugin link.
  * @property {string} icon Plugin icon.
  */
+
 const PLUGINS = [
 	{
 		id: 'wpml',
@@ -53,8 +54,7 @@ const MultiLingualPluginPrompt = () => {
 
 	if (
 		glaData.isMultiLingualStore ||
-		settings?.shipping_rate !== SHIPPING_RATE_METHOD.MANUAL ||
-		PLUGINS.length <= 0
+		settings?.shipping_rate !== SHIPPING_RATE_METHOD.MANUAL
 	) {
 		return null;
 	}
@@ -72,14 +72,13 @@ const MultiLingualPluginPrompt = () => {
 					key={ id }
 				>
 					<CardBody>
-						<Flex align="center" gap={ 4 } wrap>
+						<Flex
+							direction="column"
+							className="gla-multilingual-plugin-prompt__plugin-content"
+							gap={ 4 }
+						>
 							<FlexBlock size={ 1 }>
-								<Flex
-									align="center"
-									justify="start"
-									gap={ 4 }
-									wrap
-								>
+								<Flex align="center" justify="start" gap={ 4 }>
 									<FlexItem className="gla-multilingual-plugin-prompt__plugin-icon">
 										<img
 											alt={ title }
@@ -106,6 +105,7 @@ const MultiLingualPluginPrompt = () => {
 							</FlexBlock>
 							<FlexItem>
 								<AppButton
+									className="gla-multilingual-plugin-prompt__plugin-button"
 									href={ link }
 									rel="noreferrer"
 									target="_blank"

@@ -1,5 +1,17 @@
+.gla-add-market-modal__title {
+
+}
+
 .gla-multilingual-plugin-prompt {
 	margin-block-start: $grid-unit-30;
+}
+
+.gla-multilingual-plugin-prompt__plugin-content {
+
+	@include break-small {
+		align-items: center;
+		flex-direction: row;
+	}
 }
 
 .gla-multilingual-plugin-prompt__plugin-icon {
@@ -17,4 +29,13 @@
 
 .gla-multilingual-plugin-prompt__plugin-description {
 	color: $gray-700;
+}
+
+.gla-multilingual-plugin-prompt__plugin-button {
+	justify-content: center;
+	width: 100%;
+
+	@include break-small {
+		width: auto;
+	}
 }

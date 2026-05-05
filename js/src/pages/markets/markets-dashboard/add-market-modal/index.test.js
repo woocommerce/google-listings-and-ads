@@ -18,7 +18,7 @@ describe( 'AddMarketModal', () => {
 			screen.getByRole( 'dialog', { name: 'Add market' } )
 		).toBeInTheDocument();
 		expect(
-			screen.getByText( 'Adding a new market.' )
+			screen.getByText( 'Install a multilingual plugin to add markets' )
 		).toBeInTheDocument();
 	} );
 

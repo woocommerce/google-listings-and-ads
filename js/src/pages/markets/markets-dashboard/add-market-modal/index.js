@@ -8,7 +8,9 @@ import { __ } from '@wordpress/i18n';
  */
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
+import Text from '~/components/app-text';
 import MultiLingualPluginPrompt from './multilingual-plugin-prompt';
+import './index.scss';
 
 /**
  * Placeholder for the Add Market modal.
@@ -37,7 +39,22 @@ const AddMarketModal = ( { onRequestClose } ) => {
 				</AppButton>,
 			] }
 		>
-			<p>{ __( 'Adding a new market.', 'google-listings-and-ads' ) }</p>
+			<Text
+				as="h2"
+				variant="subtitle-small"
+				className="gla-add-market-modal__title"
+			>
+				{ __(
+					'Install a multilingual plugin to add markets',
+					'google-listings-and-ads'
+				) }
+			</Text>
+			<Text variant="body" className="gla-add-market-modal__description">
+				{ __(
+					'To create market feeds with different languages and currencies, you need a compatible multilingual plugin installed on your store.',
+					'google-listings-and-ads'
+				) }
+			</Text>
 			<MultiLingualPluginPrompt />
 		</AppModal>
 	);
