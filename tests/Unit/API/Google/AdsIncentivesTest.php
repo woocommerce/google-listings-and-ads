@@ -215,23 +215,9 @@ class AdsIncentivesTest extends UnitTest {
 		$this->assertEquals( '2026-03-15 15:33:21', $result['creation_time'] );
 	}
 
-	public function test_apply_incentive_sets_error_flag_on_api_error() {
-		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
-
-		$this->options->expects( $this->once() )
-			->method( 'update' )
-			->with( OptionsInterface::ADS_INCENTIVE_APPLY_ERROR, self::TEST_INCENTIVE_ID );
-
-		$this->incentive_service->method( 'applyIncentive' )
-			->willThrowException( new ApiException( 'PERMISSION_DENIED', 7, 'PERMISSION_DENIED' ) );
-
-		$this->expectException( ExceptionWithResponseData::class );
-		$this->ads_incentives->apply_incentive( self::TEST_INCENTIVE_ID, self::TEST_COUNTRY );
-	}
-
 	public function test_apply_incentive_throws_exception_on_api_error() {
 		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
-		$this->options->method( 'update' );
+		$this->options->expects( $this->never() )->method( 'update' );
 
 		$this->incentive_service->method( 'applyIncentive' )
 			->willThrowException( new ApiException( 'PERMISSION_DENIED', 7, 'PERMISSION_DENIED' ) );
