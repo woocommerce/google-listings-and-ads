@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsIncentives;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
 use Google\Ads\GoogleAds\V23\Services\ApplyIncentiveResponse;
@@ -39,6 +40,9 @@ class AdsIncentivesTest extends UnitTest {
 	/** @var MockObject|IncentiveServiceClient $incentive_service */
 	protected $incentive_service;
 
+	/** @var MockObject|WC $wc */
+	protected $wc;
+
 	/** @var AdsIncentives $ads_incentives */
 	protected $ads_incentives;
 
@@ -63,8 +67,10 @@ class AdsIncentivesTest extends UnitTest {
 		$this->client->method( 'getIncentiveServiceClient' )->willReturn( $this->incentive_service );
 
 		$this->options = $this->createMock( OptionsInterface::class );
+		$this->wc      = $this->createMock( WC::class );
+		$this->wc->method( 'get_base_country' )->willReturn( self::TEST_COUNTRY );
 
-		$this->ads_incentives = new AdsIncentives( $this->client );
+		$this->ads_incentives = new AdsIncentives( $this->client, $this->wc );
 		$this->ads_incentives->set_options_object( $this->options );
 	}
 
@@ -74,7 +80,7 @@ class AdsIncentivesTest extends UnitTest {
 
 		$this->incentive_service->method( 'fetchIncentive' )->willReturn( $response );
 
-		$result = $this->ads_incentives->fetch_incentives( self::TEST_COUNTRY, self::TEST_LANGUAGE );
+		$result = $this->ads_incentives->fetch_incentives();
 
 		$this->assertEquals( 'CYO_INCENTIVE', $result['type'] );
 		$this->assertSame( '', $result['termsAndConditionsUrl'] );
@@ -90,7 +96,7 @@ class AdsIncentivesTest extends UnitTest {
 
 		$this->incentive_service->method( 'fetchIncentive' )->willReturn( $response );
 
-		$result = $this->ads_incentives->fetch_incentives( self::TEST_COUNTRY, self::TEST_LANGUAGE );
+		$result = $this->ads_incentives->fetch_incentives();
 
 		$this->assertEquals( 'CYO_INCENTIVE', $result['type'] );
 		$this->assertSame( '', $result['termsAndConditionsUrl'] );
@@ -101,7 +107,7 @@ class AdsIncentivesTest extends UnitTest {
 		$this->incentive_service->method( 'fetchIncentive' )
 			->willThrowException( new ApiException( 'unavailable', 14, 'UNAVAILABLE' ) );
 
-		$result = $this->ads_incentives->fetch_incentives( self::TEST_COUNTRY, self::TEST_LANGUAGE );
+		$result = $this->ads_incentives->fetch_incentives();
 
 		$this->assertEquals( 'CYO_INCENTIVE', $result['type'] );
 		$this->assertSame( '', $result['termsAndConditionsUrl'] );
@@ -120,7 +126,7 @@ class AdsIncentivesTest extends UnitTest {
 
 		$this->incentive_service->method( 'fetchIncentive' )->willReturn( $response );
 
-		$result = $this->ads_incentives->fetch_incentives( self::TEST_COUNTRY, self::TEST_LANGUAGE );
+		$result = $this->ads_incentives->fetch_incentives();
 
 		$this->assertEquals( 'NO_INCENTIVE', $result['type'] );
 		$this->assertEmpty( $result['incentives'] );
@@ -149,7 +155,7 @@ class AdsIncentivesTest extends UnitTest {
 
 		$this->incentive_service->method( 'fetchIncentive' )->willReturn( $response );
 
-		$result = $this->ads_incentives->fetch_incentives( self::TEST_COUNTRY, self::TEST_LANGUAGE );
+		$result = $this->ads_incentives->fetch_incentives();
 
 		$this->assertEquals( 'CYO_INCENTIVE', $result['type'] );
 		$this->assertEquals( $tc_url, $result['termsAndConditionsUrl'] );
@@ -185,7 +191,7 @@ class AdsIncentivesTest extends UnitTest {
 
 		$this->incentive_service->method( 'fetchIncentive' )->willReturn( $response );
 
-		$result = $this->ads_incentives->fetch_incentives( self::TEST_COUNTRY, self::TEST_LANGUAGE );
+		$result = $this->ads_incentives->fetch_incentives();
 		$spend  = $result['incentives'][0]['requirement']['spend'];
 
 		$this->assertEquals( '', $spend['awardAmount']['currencyCode'] );

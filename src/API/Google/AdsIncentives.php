@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Google\Ads\GoogleAds\V23\Services\ApplyIncentiveRequest;
 use Google\Ads\GoogleAds\V23\Services\FetchIncentiveRequest;
 use Google\Ads\GoogleAds\V23\Services\FetchIncentiveRequest\IncentiveType;
@@ -38,26 +39,32 @@ class AdsIncentives implements OptionsAwareInterface {
 	protected $client;
 
 	/**
+	 * @var WC
+	 */
+	protected $wc;
+
+	/**
 	 * AdsIncentives constructor.
 	 *
 	 * @param GoogleAdsClient $client
+	 * @param WC              $wc
 	 */
-	public function __construct( GoogleAdsClient $client ) {
+	public function __construct( GoogleAdsClient $client, WC $wc ) {
 		$this->client = $client;
+		$this->wc     = $wc;
 	}
 
 	/**
 	 * Fetch available incentive offers from the Google Ads API.
 	 *
-	 * @since 3.3.0
+	 * Country and language are derived from the store's base country and the WP locale.
 	 *
-	 * @param string $country_code  ISO 3166-1 alpha-2 country code.
-	 * @param string $language_code ISO 639-1 language code.
+	 * @since 3.3.0
 	 *
 	 * @return array Structured incentive offer data. Always returns a valid structure,
 	 *               falling back to an empty CYO_INCENTIVE response on API errors.
 	 */
-	public function fetch_incentives( string $country_code, string $language_code ): array {
+	public function fetch_incentives(): array {
 		$empty_response = [
 			'type'                  => OfferType::name( OfferType::CYO_INCENTIVE ),
 			'termsAndConditionsUrl' => '',
@@ -66,8 +73,8 @@ class AdsIncentives implements OptionsAwareInterface {
 
 		try {
 			$request = new FetchIncentiveRequest();
-			$request->setCountryCode( $country_code );
-			$request->setLanguageCode( $language_code );
+			$request->setCountryCode( $this->wc->get_base_country() );
+			$request->setLanguageCode( $this->get_language_code() );
 
 			$response = $this->client->getIncentiveServiceClient()->fetchIncentive( $request );
 			$offer    = $response->getIncentiveOffer();
@@ -209,5 +216,20 @@ class AdsIncentives implements OptionsAwareInterface {
 				[ 'errors' => $errors ]
 			);
 		}
+	}
+
+	/**
+	 * Get the ISO 639-1 language code from the WordPress locale.
+	 *
+	 * @return string
+	 */
+	protected function get_language_code(): string {
+		$locale = get_locale();
+
+		if ( empty( $locale ) ) {
+			return 'en';
+		}
+
+		return strtolower( substr( $locale, 0, 2 ) );
 	}
 }

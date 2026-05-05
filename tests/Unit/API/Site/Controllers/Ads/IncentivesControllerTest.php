@@ -3,12 +3,17 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsIncentives;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\IncentivesController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CheckUnclaimedIncentive;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\StartHook;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
+use RuntimeException;
 
 /**
  * Class IncentivesControllerTest
@@ -22,6 +27,15 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 
 	/** @var MockObject|WC $wc */
 	protected $wc;
+
+	/** @var MockObject|ActionSchedulerInterface $action_scheduler */
+	protected $action_scheduler;
+
+	/** @var MockObject|CheckUnclaimedIncentive $check_unclaimed_incentive */
+	protected $check_unclaimed_incentive;
+
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
 
 	/** @var IncentivesController $controller */
 	protected $controller;
@@ -37,12 +51,24 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->ads_incentives = $this->createMock( AdsIncentives::class );
-		$this->wc             = $this->createMock( WC::class );
+		$this->ads_incentives            = $this->createMock( AdsIncentives::class );
+		$this->wc                        = $this->createMock( WC::class );
+		$this->action_scheduler          = $this->createMock( ActionSchedulerInterface::class );
+		$this->check_unclaimed_incentive = $this->createMock( CheckUnclaimedIncentive::class );
+		$this->options                   = $this->createMock( OptionsInterface::class );
 
 		$this->wc->method( 'get_base_country' )->willReturn( 'GB' );
+		$this->check_unclaimed_incentive->method( 'get_start_hook' )
+			->willReturn( new StartHook( 'gla/jobs/check_unclaimed_incentive/start' ) );
 
-		$this->controller = new IncentivesController( $this->server, $this->ads_incentives, $this->wc );
+		$this->controller = new IncentivesController(
+			$this->server,
+			$this->ads_incentives,
+			$this->wc,
+			$this->action_scheduler,
+			$this->check_unclaimed_incentive
+		);
+		$this->controller->set_options_object( $this->options );
 		$this->controller->register();
 	}
 
@@ -110,7 +136,6 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 
 		$this->ads_incentives->expects( $this->once() )
 			->method( 'fetch_incentives' )
-			->with( 'GB', $this->isType( 'string' ) )
 			->willReturn( $incentives );
 
 		$response = $this->do_request( self::ROUTE_INCENTIVES, 'GET' );
@@ -183,7 +208,6 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 
 		$this->ads_incentives->expects( $this->once() )
 			->method( 'fetch_incentives' )
-			->with( 'GB', $this->isType( 'string' ) )
 			->willReturn( $incentives );
 
 		$response = $this->do_request( self::ROUTE_INCENTIVES, 'GET' );
@@ -273,5 +297,29 @@ class IncentivesControllerTest extends RESTControllerUnitTest {
 		);
 
 		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_apply_incentive_failure_sets_flag_and_schedules_job() {
+		$this->ads_incentives->expects( $this->once() )
+			->method( 'apply_incentive' )
+			->willThrowException( new RuntimeException( 'Unexpected API failure' ) );
+
+		// Failure path: error flag must be raised.
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::ADS_INCENTIVE_APPLY_ERROR, 'error' );
+
+		// Background job must be queued via the start hook.
+		$this->action_scheduler->expects( $this->once() )
+			->method( 'schedule_immediate' )
+			->with( 'gla/jobs/check_unclaimed_incentive/start' );
+
+		$response = $this->do_request(
+			self::ROUTE_INCENTIVES,
+			'POST',
+			[ 'id' => '2378556534' ]
+		);
+
+		$this->assertEquals( 500, $response->get_status() );
 	}
 }
