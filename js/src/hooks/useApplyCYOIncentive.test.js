@@ -71,7 +71,7 @@ describe( 'useApplyCYOIncentive', () => {
 			await act( () => result.current.applyIncentive( 'incentive-123' ) );
 
 			expect( apiFetch ).toHaveBeenCalledWith( {
-				path: `${ API_NAMESPACE }/ads/incentive`,
+				path: `${ API_NAMESPACE }/ads/incentives`,
 				method: 'POST',
 				data: { id: 'incentive-123' },
 			} );

@@ -1001,7 +1001,7 @@ describe( 'reducer', () => {
 							offer: 'medium',
 							termsAndConditionsUrl:
 								'https://example.com/terms-2',
-							requirements: {
+							requirement: {
 								spend: {
 									awardAmount: {
 										currencyCode: 'USD',
@@ -1020,7 +1020,7 @@ describe( 'reducer', () => {
 							offer: 'low',
 							termsAndConditionsUrl:
 								'https://example.com/terms-3',
-							requirements: {
+							requirement: {
 								spend: {
 									awardAmount: {
 										currencyCode: 'USD',

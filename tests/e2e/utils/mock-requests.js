@@ -655,7 +655,7 @@ export default class MockRequests {
 		status = 200
 	) {
 		await this.fulfillRequest(
-			/\/wc\/gla\/ads\/incentive\b/,
+			/\/wc\/gla\/ads\/incentives\b/,
 			payload,
 			status,
 			[ 'POST' ]
