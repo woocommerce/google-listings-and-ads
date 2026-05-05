@@ -40,7 +40,7 @@ const useApplyCYOIncentive = () => {
 				setLoading( true );
 
 				await apiFetch( {
-					path: `${ API_NAMESPACE }/ads/incentive`,
+					path: `${ API_NAMESPACE }/ads/incentives`,
 					method: 'POST',
 					data: { id: incentiveId },
 				} );

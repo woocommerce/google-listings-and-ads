@@ -55,9 +55,9 @@ describe( 'UnclaimedIncentiveNotice', () => {
 		expect( container.firstChild ).toBeNull();
 	} );
 
-	it( 'renders nothing when has_unclaimed_incentive is false', () => {
+	it( 'renders nothing when ads_has_unclaimed_incentive is false', () => {
 		useAdsSettings.mockReturnValue( {
-			adsSettings: { has_unclaimed_incentive: false },
+			adsSettings: { ads_has_unclaimed_incentive: false },
 		} );
 		usePreference.mockReturnValue( false );
 
@@ -67,7 +67,7 @@ describe( 'UnclaimedIncentiveNotice', () => {
 
 	it( 'renders nothing when the notice has been dismissed', () => {
 		useAdsSettings.mockReturnValue( {
-			adsSettings: { has_unclaimed_incentive: true },
+			adsSettings: { ads_has_unclaimed_incentive: true },
 		} );
 		usePreference.mockReturnValue( true );
 
@@ -75,9 +75,9 @@ describe( 'UnclaimedIncentiveNotice', () => {
 		expect( container.firstChild ).toBeNull();
 	} );
 
-	it( 'renders the notice when has_unclaimed_incentive is true and not dismissed', () => {
+	it( 'renders the notice when ads_has_unclaimed_incentive is true and not dismissed', () => {
 		useAdsSettings.mockReturnValue( {
-			adsSettings: { has_unclaimed_incentive: true },
+			adsSettings: { ads_has_unclaimed_incentive: true },
 		} );
 		usePreference.mockReturnValue( false );
 
@@ -92,7 +92,7 @@ describe( 'UnclaimedIncentiveNotice', () => {
 
 	it( 'renders the "Apply in Google Ads" button linking to ads.google.com', () => {
 		useAdsSettings.mockReturnValue( {
-			adsSettings: { has_unclaimed_incentive: true },
+			adsSettings: { ads_has_unclaimed_incentive: true },
 		} );
 		usePreference.mockReturnValue( false );
 
@@ -109,7 +109,7 @@ describe( 'UnclaimedIncentiveNotice', () => {
 		const setMock = jest.fn();
 		useDispatch.mockReturnValue( { set: setMock } );
 		useAdsSettings.mockReturnValue( {
-			adsSettings: { has_unclaimed_incentive: true },
+			adsSettings: { ads_has_unclaimed_incentive: true },
 		} );
 		usePreference.mockReturnValue( false );
 
@@ -129,7 +129,7 @@ describe( 'UnclaimedIncentiveNotice', () => {
 		const setMock = jest.fn();
 		useDispatch.mockReturnValue( { set: setMock } );
 		useAdsSettings.mockReturnValue( {
-			adsSettings: { has_unclaimed_incentive: true },
+			adsSettings: { ads_has_unclaimed_incentive: true },
 		} );
 		usePreference.mockReturnValue( false );
 

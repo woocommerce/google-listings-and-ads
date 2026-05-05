@@ -1373,7 +1373,7 @@ export function* receiveAdsRecommendations(
 	};
 }
 
-export function* receiveCYOIncentives( cyoIncentives ) {
+export function receiveCYOIncentives( cyoIncentives ) {
 	return {
 		type: TYPES.RECEIVE_CYO_INCENTIVES,
 		cyoIncentives,

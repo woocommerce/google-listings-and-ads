@@ -35,7 +35,7 @@ const UnclaimedIncentiveNotice = () => {
 	const { set } = useDispatch( preferencesStore );
 	const isDismissed = usePreference( NOTICE_DISMISSED_KEY );
 
-	if ( ! adsSettings?.has_unclaimed_incentive || isDismissed ) {
+	if ( ! adsSettings?.ads_has_unclaimed_incentive || isDismissed ) {
 		return null;
 	}
 
