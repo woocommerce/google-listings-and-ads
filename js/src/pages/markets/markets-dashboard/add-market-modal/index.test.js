@@ -9,8 +9,24 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import AddMarketModal from './';
+import useSettings from '~/hooks/useSettings';
+import { SHIPPING_RATE_METHOD } from '~/constants';
+
+jest.mock( '~/hooks/useSettings' );
 
 describe( 'AddMarketModal', () => {
+	beforeEach( () => {
+		global.glaData.isMultiLingualStore = false;
+
+		useSettings.mockReturnValue( {
+			settings: { shipping_rate: SHIPPING_RATE_METHOD.MANUAL },
+		} );
+	} );
+
+	afterEach( () => {
+		delete global.glaData.isMultiLingualStore;
+	} );
+
 	test( 'renders the title and the placeholder body', () => {
 		render( <AddMarketModal onRequestClose={ () => {} } /> );
 
@@ -36,5 +52,29 @@ describe( 'AddMarketModal', () => {
 		await user.click( footerCloseButton );
 
 		expect( onRequestClose ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	test( 'should render the plugin list and title and button appears when conditions are met', () => {
+		global.glaData.isMultiLingualStore = false;
+		useSettings.mockReturnValue( {
+			settings: { shipping_rate: SHIPPING_RATE_METHOD.MANUAL },
+		} );
+
+		try {
+			render( <AddMarketModal onRequestClose={ () => {} } /> );
+
+			expect( screen.getByText( 'WPML' ) ).toBeInTheDocument();
+			expect(
+				screen.getByText(
+					'WooCommerce integration that handles multi-currency natively.'
+				)
+			).toBeInTheDocument();
+			expect(
+				screen.getByRole( 'link', { name: 'Learn more' } )
+			).toBeInTheDocument();
+		} finally {
+			delete global.glaData.isMultiLingualStore;
+			useSettings.mockReset();
+		}
 	} );
 } );
