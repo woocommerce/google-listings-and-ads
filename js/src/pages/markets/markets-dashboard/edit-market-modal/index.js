@@ -6,8 +6,9 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
+import AppModal from '~/components/app-modal';
+import ShippingNotice from './shipping-notice';
 
 /**
  * Placeholder for the Edit Market modal.
@@ -42,6 +43,7 @@ const EditMarketModal = ( { market, onRequestClose } ) => {
 					market.label
 				) }
 			</p>
+			<ShippingNotice />
 		</AppModal>
 	);
 };

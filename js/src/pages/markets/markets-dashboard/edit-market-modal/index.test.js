@@ -8,11 +8,20 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
+import useSettings from '~/hooks/useSettings';
 import EditMarketModal from './';
+
+jest.mock( '~/hooks/useSettings' );
 
 const market = { id: 'primary', label: 'Primary Market' };
 
 describe( 'EditMarketModal', () => {
+	beforeEach( () => {
+		useSettings.mockReturnValue( {
+			settings: { shipping_rate: 'manual' },
+		} );
+	} );
+
 	test( 'renders the title and the market name being edited', () => {
 		render(
 			<EditMarketModal market={ market } onRequestClose={ () => {} } />
