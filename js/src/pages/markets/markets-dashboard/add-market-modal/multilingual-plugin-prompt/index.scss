@@ -8,9 +8,9 @@
 
 .gla-multilingual-plugin-prompt__plugin-content {
 
-	@include break-small {
-		align-items: center;
-		flex-direction: row;
+	@media (max-width: $break-small) {
+		flex-direction: column !important; /* Override the default flex direction */
+		flex-wrap: wrap;
 	}
 }
 

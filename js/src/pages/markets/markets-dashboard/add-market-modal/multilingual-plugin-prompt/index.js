@@ -73,7 +73,7 @@ const MultiLingualPluginPrompt = () => {
 				>
 					<CardBody>
 						<Flex
-							direction="column"
+							align="center"
 							className="gla-multilingual-plugin-prompt__plugin-content"
 							gap={ 4 }
 						>
