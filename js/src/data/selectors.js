@@ -454,7 +454,7 @@ export const getAdsBudgetMetrics = ( state, countryCodes, budget ) => {
  * @return {Array|null} The CYO incentives. It will be `null` if not yet fetched or fetched but doesn't exist.
  */
 export const getCYOIncentives = ( state ) => {
-	return state.ads.cyo_incentives?.incentives || null;
+	return state.ads.cyo_incentives?.incentives ?? null;
 };
 
 /**

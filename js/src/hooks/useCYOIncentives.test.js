@@ -16,7 +16,7 @@ jest.mock( './useGoogleAdsAccountBillingStatus' );
 
 const MOCKED_INCENTIVES = [
 	{
-		id: 123,
+		id: '123',
 		type: 'ACQUISITION',
 		offer: 'high',
 		termsAndConditionsUrl: 'https://example.com/terms-1',
@@ -34,7 +34,7 @@ const MOCKED_INCENTIVES = [
 		},
 	},
 	{
-		id: 456,
+		id: '456',
 		type: 'ACQUISITION',
 		offer: 'medium',
 		termsAndConditionsUrl: 'https://example.com/terms-2',
@@ -52,7 +52,7 @@ const MOCKED_INCENTIVES = [
 		},
 	},
 	{
-		id: 789,
+		id: '789',
 		type: 'ACQUISITION',
 		offer: 'low',
 		termsAndConditionsUrl: 'https://example.com/terms-3',
