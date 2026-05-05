@@ -1,23 +1,23 @@
 /**
  * External dependencies
  */
+import { __ } from '@wordpress/i18n';
 import { Notice } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import AppDocumentationLink from '~/components/app-documentation-link';
 import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
-import useSettings from '~/hooks/useSettings';
 import { GOOGLE_MERCHANT_CENTER_URL } from '~/pages/markets/constants';
+import AppDocumentationLink from '~/components/app-documentation-link';
+import useSettings from '~/hooks/useSettings';
 import './index.scss';
 
 /**
  * Displays an info notice about shipping being managed in Google Merchant Center.
  *
- * @fires gla_documentation_link_click with `{ context: "edit-market-modal", link_id: "hipping-notice-merchant-center", href: "https://merchants.google.com/" }`
+ * @fires gla_documentation_link_click with `{ context: "edit-market-modal", link_id: "shipping-notice-merchant-center", href: "https://merchants.google.com/" }`
  */
 const ShippingNotice = () => {
 	const { settings } = useSettings();
