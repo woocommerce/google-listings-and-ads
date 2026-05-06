@@ -2,20 +2,24 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useRef } from '@wordpress/element';
+import { useRef, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { PRIMARY_MARKET_ID } from '../../constants';
+import { useAppDispatch } from '~/data';
 import AdaptiveForm from '~/components/adaptive-form';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
-import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import ValidationErrors from '~/components/validation-errors';
 import EditPrimaryFeed from './edit-primary-feed';
-import AppSpinner from '~/components/app-spinner';
 import ShippingNotice from './shipping-notice';
+
+/**
+ * @typedef {import('~/data/actions').TargetAudienceData } TargetAudienceData
+ * @typedef {import('~/data/actions').CountryCode} CountryCode
+ */
 
 const checkErrors = ( values ) => {
 	const errors = {};
@@ -39,22 +43,43 @@ const checkErrors = ( values ) => {
  *
  * @param {Object} props
  * @param {{ id: string, label: string }} props.market The market being edited.
+ * @param {TargetAudienceData} props.targetAudience Target audience value data to initialize the form with.
+ * @param {(targetAudience: TargetAudienceData) => Array<CountryCode>} props.resolveFinalCountries Callback for this component to resolve the given `targetAudience` to the final list of countries.
  * @param {() => void} props.onRequestClose Called when the user closes the modal.
  */
-const EditMarketModal = ( { market, onRequestClose } ) => {
+const EditMarketModal = ( {
+	market,
+	targetAudience,
+	resolveFinalCountries,
+	onRequestClose,
+} ) => {
+	const { updateMarket, invalidateResolution } = useAppDispatch();
 	const { id } = market;
+	const [ isSaving, setIsSaving ] = useState( false );
 	const isPrimaryMarket = id === PRIMARY_MARKET_ID;
 	const formRef = useRef();
-	const { targetAudience, getFinalCountries, loaded } =
-		useTargetAudienceFinalCountryCodes();
 
 	const handleValidate = ( values ) => {
 		return checkErrors( values );
 	};
 
+	const handleSubmit = async ( values ) => {
+		const { id: marketId, ...data } = values;
+
+		setIsSaving( true );
+		try {
+			await updateMarket( marketId, data );
+			invalidateResolution( 'getTargetAudience', [] );
+		} finally {
+			setIsSaving( false );
+		}
+
+		onRequestClose();
+	};
+
 	const extendAdapter = ( formContext ) => {
 		return {
-			audienceCountries: getFinalCountries( formContext.values ),
+			audienceCountries: resolveFinalCountries( formContext.values ),
 			renderRequestedValidation( key ) {
 				return (
 					<ValidationErrors messages={ formContext.errors[ key ] } />
@@ -71,13 +96,19 @@ const EditMarketModal = ( { market, onRequestClose } ) => {
 		<AdaptiveForm
 			ref={ formRef }
 			initialValues={ {
+				id,
 				countries: targetAudience.countries || [],
 			} }
 			extendAdapter={ extendAdapter }
 			validate={ handleValidate }
+			onSubmit={ handleSubmit }
 		>
 			{ ( formContext ) => {
-				const { isValidForm, handleSubmit, isDirty } = formContext;
+				const {
+					isValidForm,
+					handleSubmit: handleSave,
+					isDirty,
+				} = formContext;
 
 				return (
 					<AppModal
@@ -95,16 +126,15 @@ const EditMarketModal = ( { market, onRequestClose } ) => {
 							<AppButton
 								key="save"
 								variant="primary"
-								onClick={ handleSubmit }
+								onClick={ handleSave }
 								disabled={ ! isValidForm || ! isDirty }
+								loading={ isSaving }
 							>
 								{ __( 'Save', 'google-listings-and-ads' ) }
 							</AppButton>,
 						] }
 					>
-						{ loaded && isPrimaryMarket && <EditPrimaryFeed /> }
-
-						{ ! loaded && <AppSpinner /> }
+						{ isPrimaryMarket && <EditPrimaryFeed /> }
 
 						<ShippingNotice />
 					</AppModal>
