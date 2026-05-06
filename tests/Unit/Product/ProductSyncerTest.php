@@ -640,7 +640,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->market_service = $this->createMock( MarketService::class );
+		$this->market_service  = $this->createMock( MarketService::class );
 		$this->merchant_center = $this->createMock( MerchantCenterService::class );
 		$this->merchant_center->expects( $this->any() )
 			->method( 'is_ready_for_syncing' )

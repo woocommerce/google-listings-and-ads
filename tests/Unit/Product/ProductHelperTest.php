@@ -1454,8 +1454,8 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->product_meta    = $this->container->get( ProductMetaHandler::class );
-		$this->wc              = $this->container->get( WC::class );
+		$this->product_meta   = $this->container->get( ProductMetaHandler::class );
+		$this->wc             = $this->container->get( WC::class );
 		$this->market_service = $this->createMock( MarketService::class );
 		$this->product_helper = new ProductHelper( $this->product_meta, $this->wc, $this->market_service );
 	}

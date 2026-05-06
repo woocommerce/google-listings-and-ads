@@ -285,7 +285,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$countries = $this->target_audience->get_target_countries();
 
 		if ( ! empty( $secondary ) ) {
-			foreach ($secondary as $market) {
+			foreach ( $secondary as $market ) {
 				$countries[] = $market['country'];
 			}
 		}

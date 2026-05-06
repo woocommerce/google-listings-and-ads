@@ -190,7 +190,13 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 		$this->market_service->expects( $this->any() )
 			->method( 'get_primary_market' )
-			->willReturn( [ 'country' => 'US', 'feedLabel' => 'US', 'language' => 'en' ] );
+			->willReturn(
+				[
+					'country'   => 'US',
+					'feedLabel' => 'US',
+					'language'  => 'en',
+				]
+			);
 
 		$this->market_service->expects( $this->any() )
 			->method( 'get_all_countries' )
@@ -259,7 +265,13 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 		$this->market_service->expects( $this->any() )
 			->method( 'get_primary_market' )
-			->willReturn( [ 'country' => 'US', 'feedLabel' => 'US', 'language' => 'en' ] );
+			->willReturn(
+				[
+					'country'   => 'US',
+					'feedLabel' => 'US',
+					'language'  => 'en',
+				]
+			);
 
 		$this->market_service->expects( $this->any() )
 			->method( 'get_all_countries' )
@@ -290,7 +302,13 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 		$this->market_service->expects( $this->any() )
 			->method( 'get_primary_market' )
-			->willReturn( [ 'country' => 'US', 'feedLabel' => 'US', 'language' => 'en' ] );
+			->willReturn(
+				[
+					'country'   => 'US',
+					'feedLabel' => 'US',
+					'language'  => 'en',
+				]
+			);
 
 		$this->market_service->expects( $this->any() )
 			->method( 'get_all_countries' )

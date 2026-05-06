@@ -592,8 +592,18 @@ class MarketServiceTest extends UnitTest {
 
 	public function test_get_all_feed_labels_includes_secondary_markets(): void {
 		$secondary = [
-			'gb' => [ 'country' => 'GB', 'language' => 'en', 'currency' => 'GBP', 'feedLabel' => 'GB' ],
-			'de' => [ 'country' => 'DE', 'language' => 'de', 'currency' => 'EUR', 'feedLabel' => 'DE' ],
+			'gb' => [
+				'country'   => 'GB',
+				'language'  => 'en',
+				'currency'  => 'GBP',
+				'feedLabel' => 'GB',
+			],
+			'de' => [
+				'country'   => 'DE',
+				'language'  => 'de',
+				'currency'  => 'EUR',
+				'feedLabel' => 'DE',
+			],
 		];
 
 		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
@@ -626,7 +636,12 @@ class MarketServiceTest extends UnitTest {
 
 	public function test_get_all_countries_includes_secondary_market_country(): void {
 		$secondary = [
-			'gb' => [ 'country' => 'GB', 'language' => 'en', 'currency' => 'GBP', 'feedLabel' => 'GB' ],
+			'gb' => [
+				'country'   => 'GB',
+				'language'  => 'en',
+				'currency'  => 'GBP',
+				'feedLabel' => 'GB',
+			],
 		];
 
 		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
@@ -642,7 +657,12 @@ class MarketServiceTest extends UnitTest {
 
 	public function test_get_all_countries_deduplicates(): void {
 		$secondary = [
-			'us2' => [ 'country' => 'US', 'language' => 'en', 'currency' => 'USD', 'feedLabel' => 'US-PROMO' ],
+			'us2' => [
+				'country'   => 'US',
+				'language'  => 'en',
+				'currency'  => 'USD',
+				'feedLabel' => 'US-PROMO',
+			],
 		];
 
 		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
