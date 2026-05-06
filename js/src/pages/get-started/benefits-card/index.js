@@ -13,6 +13,12 @@ import Text from '~/components/app-text';
 import benefitsImageURL from '~/images/get-started/benefits.jpg';
 import './index.scss';
 
+/**
+ * Highlights the benefits of creating a Google Ads campaign,
+ * The component is used in the "Get Started" page to encourage merchants to create their first campaign.
+ *
+ * @fires gla_documentation_link_click with `{ context: 'get-started', link_id: 'benefits-card-credit-terms', href: 'https://ads.google.com/home/terms-and-conditions/incentives/' }` when the user clicks on the "Terms and conditions" link in the notice.
+ */
 const BenefitsCard = () => {
 	return (
 		<Card className="gla-get-started-benefits-card" isBorderless>
@@ -75,7 +81,7 @@ const BenefitsCard = () => {
 										className="gla-get-started-benefits-card__terms-link"
 										context="get-started"
 										linkId="benefits-card-credit-terms"
-										href="https://www.google.com/ads/coupons/terms/"
+										href="https://ads.google.com/home/terms-and-conditions/incentives/"
 									/>
 								),
 							}
