@@ -8,6 +8,8 @@ import { __, sprintf } from '@wordpress/i18n';
  */
 import AppButton from '~/components/app-button';
 import AppModal from '~/components/app-modal';
+import EstimatedShippingRatesSection from './estimated-shipping-rates-section';
+import EstimatedShippingTimesSection from './estimated-shipping-times-section';
 import ShippingNotice from './shipping-notice';
 
 /**
@@ -43,6 +45,8 @@ const EditMarketModal = ( { market, onRequestClose } ) => {
 					market.label
 				) }
 			</p>
+			<EstimatedShippingRatesSection />
+			<EstimatedShippingTimesSection />
 			<ShippingNotice />
 		</AppModal>
 	);

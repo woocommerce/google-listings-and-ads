@@ -2,14 +2,22 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useState, useCallback } from '@wordpress/element';
 import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
+import AppButton from '~/components/app-button';
 import AddMarket from '../add-market';
+import EditMarketModal from '../edit-market-modal';
 import { getShippingRateLabel } from '../../utils';
 import './index.scss';
+
+const DUMMY_EDIT_MARKET = {
+	id: 'dummy',
+	label: __( 'Dummy market', 'google-listings-and-ads' ),
+};
 
 /**
  * Header for the Markets dashboard.
@@ -19,6 +27,9 @@ import './index.scss';
  */
 const MarketsHeader = ( { shippingRate } ) => {
 	const description = getShippingRateLabel( shippingRate );
+	const [ isDummyEditOpen, setIsDummyEditOpen ] = useState( false );
+	const openDummyEdit = useCallback( () => setIsDummyEditOpen( true ), [] );
+	const closeDummyEdit = useCallback( () => setIsDummyEditOpen( false ), [] );
 
 	return (
 		<Flex
@@ -44,7 +55,20 @@ const MarketsHeader = ( { shippingRate } ) => {
 				</p>
 			</FlexBlock>
 			<FlexItem>
-				<AddMarket />
+				<>
+					<Flex gap={ 2 } justify="flex-end">
+						<AppButton variant="tertiary" onClick={ openDummyEdit }>
+							{ __( 'Open edit modal', 'google-listings-and-ads' ) }
+						</AppButton>
+						<AddMarket />
+					</Flex>
+					{ isDummyEditOpen && (
+						<EditMarketModal
+							market={ DUMMY_EDIT_MARKET }
+							onRequestClose={ closeDummyEdit }
+						/>
+					) }
+				</>
 			</FlexItem>
 		</Flex>
 	);

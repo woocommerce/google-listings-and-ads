@@ -22,15 +22,17 @@ import ShippingRateInputControl from './shipping-rate-input-control';
  * @param {number} props.value The shipping rate this control is responsible for.
  * @param {JSX.Element} [props.helper] Helper content to be rendered at the bottom of the card body.
  * @param {(newValue: number) => void} props.onChange Callback called with the new rate once it is changed.
+ * @param {string} [props.className] Optional class name on the section card.
  */
 export default function EstimatedShippingRatesCard( {
 	audienceCountries,
 	value,
 	helper,
 	onChange,
+	className,
 } ) {
 	return (
-		<Section.Card>
+		<Section.Card className={ className }>
 			<Section.Card.Body>
 				<Section.Card.Title>
 					{ __(

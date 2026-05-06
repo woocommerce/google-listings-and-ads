@@ -1,0 +1,39 @@
+.gla-edit-market-modal__estimated-rates {
+
+	&.components-card {
+		box-shadow: none;
+		margin-bottom: $grid-unit-30;
+	}
+
+	.gla-section-card-title {
+		font-size: $gla-font-base;
+		font-weight: 400;
+		letter-spacing: 0.02em;
+		margin-bottom: $grid-unit-10;
+		text-transform: uppercase;
+	}
+
+	.gla-vertical-gap-layout {
+		gap: $grid-unit-20;
+	}
+
+	.gla-edit-market-modal__estimated-rates__helper {
+		margin-top: $grid-unit-20;
+	}
+
+	.components-input-control__container {
+		padding: $grid-unit-10;
+	}
+
+	.app-input-control {
+		width: 100%;
+	}
+
+	.components-card__body {
+		padding: 0;
+	}
+
+	.components-input-control__suffix {
+		color: $gray-700;
+	}
+}

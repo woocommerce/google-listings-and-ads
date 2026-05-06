@@ -35,6 +35,38 @@ describe( 'EditMarketModal', () => {
 		).toBeInTheDocument();
 	} );
 
+	test( 'renders the estimated shipping rates block', () => {
+		render(
+			<EditMarketModal market={ market } onRequestClose={ () => {} } />
+		);
+
+		expect(
+			screen.getByText( 'Estimated shipping rates' )
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'checkbox', {
+				name: 'Free shipping over a specific order value',
+			} )
+		).toBeInTheDocument();
+	} );
+
+	test( 'renders the estimated shipping times block', () => {
+		render(
+			<EditMarketModal market={ market } onRequestClose={ () => {} } />
+		);
+
+		expect(
+			screen.getByText( 'Estimated shipping times' )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				'Delivery times apply per country, regardless of language or currency.'
+			)
+		).toBeInTheDocument();
+		expect( screen.getByText( 'to' ) ).toBeInTheDocument();
+		expect( screen.getByDisplayValue( '3' ) ).toBeInTheDocument();
+	} );
+
 	test( 'invokes onRequestClose when the footer Close button is clicked', async () => {
 		const user = userEvent.setup();
 		const onRequestClose = jest.fn();
