@@ -9,8 +9,24 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import AddMarketModal from './';
+import useSettings from '~/hooks/useSettings';
+import { SHIPPING_RATE_METHOD } from '~/constants';
+
+jest.mock( '~/hooks/useSettings' );
 
 describe( 'AddMarketModal', () => {
+	beforeEach( () => {
+		global.glaData.isMultiLingualStore = false;
+
+		useSettings.mockReturnValue( {
+			settings: { shipping_rate: SHIPPING_RATE_METHOD.MANUAL },
+		} );
+	} );
+
+	afterEach( () => {
+		delete global.glaData.isMultiLingualStore;
+	} );
+
 	test( 'renders the title and the placeholder body', () => {
 		render( <AddMarketModal onRequestClose={ () => {} } /> );
 
@@ -18,7 +34,7 @@ describe( 'AddMarketModal', () => {
 			screen.getByRole( 'dialog', { name: 'Add market' } )
 		).toBeInTheDocument();
 		expect(
-			screen.getByText( 'Adding a new market.' )
+			screen.getByText( 'Install a multilingual plugin to add markets' )
 		).toBeInTheDocument();
 	} );
 
@@ -29,12 +45,31 @@ describe( 'AddMarketModal', () => {
 
 		// `getByRole('button', { name: 'Close' })` matches both the
 		// `<Modal>`'s X button (aria-label) and the footer button. Use the
-		// `is-tertiary` variant class to target only our footer button.
+		// `is-primary` variant class to target only our footer button.
 		const footerCloseButton = document.querySelector(
-			'.app-modal__footer .is-tertiary'
+			'.app-modal__footer .is-primary'
 		);
 		await user.click( footerCloseButton );
 
 		expect( onRequestClose ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	test( 'should render the plugin list and title and button appears when conditions are met', () => {
+		global.glaData.isMultiLingualStore = false;
+		useSettings.mockReturnValue( {
+			settings: { shipping_rate: SHIPPING_RATE_METHOD.MANUAL },
+		} );
+
+		render( <AddMarketModal onRequestClose={ () => {} } /> );
+
+		expect( screen.getByText( 'WPML' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				'WooCommerce integration that handles multi-currency natively.'
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', { name: 'Learn more' } )
+		).toBeInTheDocument();
 	} );
 } );

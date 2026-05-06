@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import SupportedCountrySelect from '~/components/supported-country-select';
+import './edit-primary-feed.scss';
 
 const EditPrimaryFeed = () => {
 	const {
@@ -18,12 +19,13 @@ const EditPrimaryFeed = () => {
 	return (
 		<div className="gla-edit-primary-feed">
 			<SupportedCountrySelect
-				multiple
 				{ ...getInputProps( 'countries' ) }
 				help={ __(
 					'Select which countries your store ships to.',
 					'google-listings-and-ads'
 				) }
+				label={ __( 'Audience', 'google-listings-and-ads' ) }
+				multiple
 			/>
 
 			{ renderRequestedValidation( 'countries' ) }

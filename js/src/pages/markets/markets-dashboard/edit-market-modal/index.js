@@ -15,6 +15,7 @@ import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCo
 import ValidationErrors from '~/components/validation-errors';
 import EditPrimaryFeed from './edit-primary-feed';
 import AppSpinner from '~/components/app-spinner';
+import ShippingNotice from './shipping-notice';
 
 const checkErrors = ( values ) => {
 	const errors = {};
@@ -62,9 +63,9 @@ const EditMarketModal = ( { market, onRequestClose } ) => {
 		};
 	};
 
-	if ( ! loaded ) {
-		return <AppSpinner />;
-	}
+	const appModalTitle = isPrimaryMarket
+		? __( 'Edit primary market', 'google-listings-and-ads' )
+		: __( 'Edit market', 'google-listings-and-ads' );
 
 	return (
 		<AdaptiveForm
@@ -77,11 +78,10 @@ const EditMarketModal = ( { market, onRequestClose } ) => {
 		>
 			{ ( formContext ) => {
 				const { isValidForm, handleSubmit, isDirty } = formContext;
-				console.log( 'Form values:', formContext );
 
 				return (
 					<AppModal
-						title={ __( 'Edit market', 'google-listings-and-ads' ) }
+						title={ appModalTitle }
 						onRequestClose={ onRequestClose }
 						overflow="visible"
 						buttons={ [
@@ -105,6 +105,8 @@ const EditMarketModal = ( { market, onRequestClose } ) => {
 						{ loaded && isPrimaryMarket && <EditPrimaryFeed /> }
 
 						{ ! loaded && <AppSpinner /> }
+
+						<ShippingNotice />
 					</AppModal>
 				);
 			} }
