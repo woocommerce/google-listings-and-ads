@@ -60,68 +60,85 @@ const MultiLingualPluginPrompt = () => {
 	}
 
 	return (
-		<Flex
-			className="gla-multilingual-plugin-prompt"
-			direction="column"
-			gap={ 4 }
-		>
-			{ PLUGINS.map( ( { id, title, description, link, icon } ) => (
-				<Card
-					className="gla-multilingual-plugin-prompt__plugin"
-					size="small"
-					key={ id }
-				>
-					<CardBody>
-						<Flex
-							align="center"
-							className="gla-multilingual-plugin-prompt__plugin-content"
-							gap={ 4 }
-						>
-							<FlexBlock size={ 1 }>
-								<Flex align="center" justify="start" gap={ 4 }>
-									<FlexItem className="gla-multilingual-plugin-prompt__plugin-icon">
-										<img
-											alt={ title }
-											height="32"
-											src={ icon }
-											width="32"
-										/>
-									</FlexItem>
-									<FlexItem>
-										<Text
-											className="gla-multilingual-plugin-prompt__plugin-title"
-											variant="subtitle-small"
-										>
-											{ title }
-										</Text>
-										<Text
-											className="gla-multilingual-plugin-prompt__plugin-description"
-											variant="body"
-										>
-											{ description }
-										</Text>
-									</FlexItem>
-								</Flex>
-							</FlexBlock>
-							<FlexItem>
-								<AppButton
-									className="gla-multilingual-plugin-prompt__plugin-button"
-									href={ link }
-									rel="noreferrer"
-									target="_blank"
-									variant="secondary"
-								>
-									{ __(
-										'Learn more',
-										'google-listings-and-ads'
-									) }
-								</AppButton>
-							</FlexItem>
-						</Flex>
-					</CardBody>
-				</Card>
-			) ) }
-		</Flex>
+		<div className="gla-multilingual-plugin-prompt">
+			<Text
+				as="h2"
+				variant="subtitle-small"
+				className="gla-multilingual-plugin-prompt__title"
+			>
+				{ __(
+					'Install a multilingual plugin to add markets',
+					'google-listings-and-ads'
+				) }
+			</Text>
+			<Text
+				variant="body"
+				className="gla-multilingual-plugin-prompt__description"
+			>
+				{ __(
+					'To create market feeds with different languages and currencies, you need a compatible multilingual plugin installed on your store.',
+					'google-listings-and-ads'
+				) }
+			</Text>
+
+			<Flex direction="column" gap={ 4 }>
+				{ PLUGINS.map( ( { id, title, description, link, icon } ) => (
+					<Card size="small" key={ id }>
+						<CardBody>
+							<Flex
+								align="center"
+								gap={ 4 }
+								direction={ [ 'column', 'row' ] }
+							>
+								<FlexBlock size={ 1 }>
+									<Flex
+										align="center"
+										justify="start"
+										gap={ 4 }
+									>
+										<FlexItem className="gla-multilingual-plugin-prompt__plugin-icon">
+											<img
+												alt={ title }
+												height="32"
+												src={ icon }
+												width="32"
+											/>
+										</FlexItem>
+										<FlexItem>
+											<Text
+												className="gla-multilingual-plugin-prompt__plugin-title"
+												variant="subtitle-small"
+											>
+												{ title }
+											</Text>
+											<Text
+												className="gla-multilingual-plugin-prompt__plugin-description"
+												variant="body"
+											>
+												{ description }
+											</Text>
+										</FlexItem>
+									</Flex>
+								</FlexBlock>
+								<FlexItem>
+									<AppButton
+										href={ link }
+										rel="noreferrer"
+										target="_blank"
+										variant="secondary"
+									>
+										{ __(
+											'Learn more',
+											'google-listings-and-ads'
+										) }
+									</AppButton>
+								</FlexItem>
+							</Flex>
+						</CardBody>
+					</Card>
+				) ) }
+			</Flex>
+		</div>
 	);
 };
 
