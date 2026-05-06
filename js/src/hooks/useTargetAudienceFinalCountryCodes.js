@@ -57,7 +57,7 @@ const useTargetAudienceFinalCountryCodes = () => {
 
 		/**
 		 * Resolves countries from given targetAudience.
-		 * If `targetAudience.location` is set to `'all'` returns the country codes of all currentyl supported countries.
+		 * If `targetAudience.location` is set to `'all'` returns the country codes of all currently supported countries.
 		 *
 		 * @param {Object} targetAudience Target audience object to resolve.
 		 * @param {string} targetAudience.location

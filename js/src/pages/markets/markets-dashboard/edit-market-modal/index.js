@@ -9,30 +9,18 @@ import { useRef, useState } from '@wordpress/element';
  */
 import { PRIMARY_MARKET_ID } from '../../constants';
 import { useAppDispatch } from '~/data';
+import { checkErrors } from '../../utils';
 import AdaptiveForm from '~/components/adaptive-form';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
 import ValidationErrors from '~/components/validation-errors';
-import EditPrimaryFeed from './edit-primary-feed';
+import EditPrimaryAudience from './edit-primary-audience';
 import ShippingNotice from './shipping-notice';
 
 /**
  * @typedef {import('~/data/actions').TargetAudienceData } TargetAudienceData
  * @typedef {import('~/data/actions').CountryCode} CountryCode
  */
-
-const checkErrors = ( values ) => {
-	const errors = {};
-
-	if ( values.countries.length === 0 ) {
-		errors.countries = __(
-			'Please select at least one country.',
-			'google-listings-and-ads'
-		);
-	}
-
-	return errors;
-};
 
 /**
  * Placeholder for the Edit Market modal.
@@ -44,42 +32,31 @@ const checkErrors = ( values ) => {
  * @param {Object} props
  * @param {{ id: string, label: string }} props.market The market being edited.
  * @param {TargetAudienceData} props.targetAudience Target audience value data to initialize the form with.
- * @param {(targetAudience: TargetAudienceData) => Array<CountryCode>} props.resolveFinalCountries Callback for this component to resolve the given `targetAudience` to the final list of countries.
  * @param {() => void} props.onRequestClose Called when the user closes the modal.
  */
-const EditMarketModal = ( {
-	market,
-	targetAudience,
-	resolveFinalCountries,
-	onRequestClose,
-} ) => {
+const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 	const { updateMarket, invalidateResolution } = useAppDispatch();
 	const { id } = market;
-	const [ isSaving, setIsSaving ] = useState( false );
+	const [ saving, setSaving ] = useState( false );
 	const isPrimaryMarket = id === PRIMARY_MARKET_ID;
 	const formRef = useRef();
-
-	const handleValidate = ( values ) => {
-		return checkErrors( values );
-	};
 
 	const handleSubmit = async ( values ) => {
 		const { id: marketId, ...data } = values;
 
-		setIsSaving( true );
+		setSaving( true );
+
 		try {
 			await updateMarket( marketId, data );
 			invalidateResolution( 'getTargetAudience', [] );
-		} finally {
-			setIsSaving( false );
-		}
+			onRequestClose();
+		} catch ( error ) {}
 
-		onRequestClose();
+		setSaving( false );
 	};
 
 	const extendAdapter = ( formContext ) => {
 		return {
-			audienceCountries: resolveFinalCountries( formContext.values ),
 			renderRequestedValidation( key ) {
 				return (
 					<ValidationErrors messages={ formContext.errors[ key ] } />
@@ -100,7 +77,7 @@ const EditMarketModal = ( {
 				countries: targetAudience.countries || [],
 			} }
 			extendAdapter={ extendAdapter }
-			validate={ handleValidate }
+			validate={ checkErrors }
 			onSubmit={ handleSubmit }
 		>
 			{ ( formContext ) => {
@@ -128,13 +105,13 @@ const EditMarketModal = ( {
 								variant="primary"
 								onClick={ handleSave }
 								disabled={ ! isValidForm || ! isDirty }
-								loading={ isSaving }
+								loading={ saving }
 							>
 								{ __( 'Save', 'google-listings-and-ads' ) }
 							</AppButton>,
 						] }
 					>
-						{ isPrimaryMarket && <EditPrimaryFeed /> }
+						{ isPrimaryMarket && <EditPrimaryAudience /> }
 
 						<ShippingNotice />
 					</AppModal>

@@ -78,8 +78,7 @@ const MarketDataViews = ( { shippingRate } ) => {
 	const { data: markets, hasFinishedResolution } = useMarkets();
 	const [ view, setView ] = useState( DEFAULT_VIEW );
 	const [ editingMarket, setEditingMarket ] = useState( null );
-	const { targetAudience, getFinalCountries, loaded } =
-		useTargetAudienceFinalCountryCodes();
+	const { targetAudience, loaded } = useTargetAudienceFinalCountryCodes();
 
 	const rows = markets.map( ( market ) => ( {
 		...market,
@@ -139,7 +138,6 @@ const MarketDataViews = ( { shippingRate } ) => {
 					market={ editingMarket }
 					onRequestClose={ () => setEditingMarket( null ) }
 					targetAudience={ targetAudience }
-					resolveFinalCountries={ getFinalCountries }
 				/>
 			) }
 		</>

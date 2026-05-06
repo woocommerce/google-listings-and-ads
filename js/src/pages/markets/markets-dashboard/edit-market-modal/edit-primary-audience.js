@@ -8,16 +8,16 @@ import { __ } from '@wordpress/i18n';
  */
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import SupportedCountrySelect from '~/components/supported-country-select';
-import './edit-primary-feed.scss';
+import './edit-primary-audience.scss';
 
-const EditPrimaryFeed = () => {
+const EditPrimaryAudience = () => {
 	const {
 		getInputProps,
 		adapter: { renderRequestedValidation },
 	} = useAdaptiveFormContext();
 
 	return (
-		<div className="gla-edit-primary-feed">
+		<div className="gla-edit-primary-audience">
 			<SupportedCountrySelect
 				{ ...getInputProps( 'countries' ) }
 				help={ __(
@@ -33,4 +33,4 @@ const EditPrimaryFeed = () => {
 	);
 };
 
-export default EditPrimaryFeed;
+export default EditPrimaryAudience;
