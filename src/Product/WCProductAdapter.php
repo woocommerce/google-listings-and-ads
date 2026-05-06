@@ -69,6 +69,16 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	protected $product_category_ids;
 
 	/**
+	 * @var string Feed label
+	 */
+	private string $feed_label = '';
+
+	/**
+	 * @var string Language
+	 */
+	private string $language = '';
+
+	/**
 	 * Initialize this object's properties from an array.
 	 *
 	 * @param array $properties Used to seed this object's properties.
@@ -968,6 +978,26 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 
 		// product shipping information is also country based
 		$this->map_wc_product_shipping();
+	}
+
+	/**
+	 * Sets the feed label
+	 *
+	 * @param string $feed_label
+	 */
+	public function set_feed_label( string $feed_label ): void {
+		$this->feed_label = $feed_label;
+		$this->setFeedLabel( $feed_label );
+	}
+
+	/**
+	 * Sets the content language
+	 *
+	 * @param string $language ISO 639-1 language code.
+	 */
+	public function set_language( string $language ): void {
+		$this->language = $language;
+		$this->setContentLanguage( $language );
 	}
 
 	/**

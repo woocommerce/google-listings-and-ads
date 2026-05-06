@@ -12,7 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product as GoogleProduct;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Product;
@@ -52,14 +52,14 @@ class BatchProductHelper implements Service {
 	protected $product_factory;
 
 	/**
-	 * @var TargetAudience
-	 */
-	protected $target_audience;
-
-	/**
 	 * @var AttributeMappingRulesQuery
 	 */
 	protected $attribute_mapping_rules_query;
+
+	/**
+	 * @var MarketService
+	 */
+	protected $market_service;
 
 	/**
 	 * BatchProductHelper constructor.
@@ -68,23 +68,23 @@ class BatchProductHelper implements Service {
 	 * @param ProductHelper              $product_helper
 	 * @param ValidatorInterface         $validator
 	 * @param ProductFactory             $product_factory
-	 * @param TargetAudience             $target_audience
 	 * @param AttributeMappingRulesQuery $attribute_mapping_rules_query
+	 * @param MarketService              $market_service
 	 */
 	public function __construct(
 		ProductMetaHandler $meta_handler,
 		ProductHelper $product_helper,
 		ValidatorInterface $validator,
 		ProductFactory $product_factory,
-		TargetAudience $target_audience,
-		AttributeMappingRulesQuery $attribute_mapping_rules_query
+		AttributeMappingRulesQuery $attribute_mapping_rules_query,
+		MarketService $market_service
 	) {
 		$this->meta_handler                  = $meta_handler;
 		$this->product_helper                = $product_helper;
 		$this->validator                     = $validator;
 		$this->product_factory               = $product_factory;
-		$this->target_audience               = $target_audience;
 		$this->attribute_mapping_rules_query = $attribute_mapping_rules_query;
+		$this->market_service                = $market_service;
 	}
 
 	/**
@@ -218,11 +218,16 @@ class BatchProductHelper implements Service {
 					continue;
 				}
 
-				$target_countries    = $this->target_audience->get_target_countries();
-				$main_target_country = $this->target_audience->get_main_target_country();
+				$primary_market = $this->market_service->get_primary_market();
 
 				// validate the product
-				$adapted_product   = $this->product_factory->create( $product, $main_target_country, $mapping_rules );
+				$adapted_product   = $this->product_factory->create(
+					$product,
+					$primary_market['country'],
+					$mapping_rules,
+					$primary_market['feedLabel'],
+					$primary_market['language']
+				);
 				$validation_result = $this->validate_product( $adapted_product );
 				if ( $validation_result instanceof BatchInvalidProductEntry ) {
 					$this->mark_as_invalid( $validation_result );
@@ -236,8 +241,9 @@ class BatchProductHelper implements Service {
 					continue;
 				}
 
-				// add shipping for all selected target countries
-				array_walk( $target_countries, [ $adapted_product, 'add_shipping_country' ] );
+				// add shipping for all countries across all markets
+				$all_countries = $this->market_service->get_all_countries();
+				array_walk( $all_countries, [ $adapted_product, 'add_shipping_country' ] );
 
 				$request_entries[] = new BatchProductRequestEntry(
 					$product->get_id(),
@@ -283,11 +289,11 @@ class BatchProductHelper implements Service {
 	 * @return BatchProductIDRequestEntry[]
 	 */
 	public function generate_stale_products_request_entries( array $products ): array {
-		$target_audience = $this->target_audience->get_target_countries();
+		$feed_labels     = $this->market_service->get_all_feed_labels();
 		$request_entries = [];
 		foreach ( $products as $product ) {
 			$google_ids = $this->meta_handler->get_google_ids( $product ) ?: [];
-			$stale_ids  = array_diff_key( $google_ids, array_flip( $target_audience ) );
+			$stale_ids  = array_diff_key( $google_ids, array_flip( $feed_labels ) );
 			foreach ( $stale_ids as $stale_id ) {
 				$request_entries[ $stale_id ] = new BatchProductIDRequestEntry(
 					$product->get_id(),
@@ -310,12 +316,12 @@ class BatchProductHelper implements Service {
 	 * @return BatchProductIDRequestEntry[]
 	 */
 	public function generate_stale_countries_request_entries( array $products ): array {
-		$main_target_country = $this->target_audience->get_main_target_country();
+		$main_feed_label = $this->market_service->get_main_feed_label();
 
 		$request_entries = [];
 		foreach ( $products as $product ) {
 			$google_ids = $this->meta_handler->get_google_ids( $product ) ?: [];
-			$stale_ids  = array_diff_key( $google_ids, array_flip( [ $main_target_country ] ) );
+			$stale_ids  = array_diff_key( $google_ids, array_flip( [ $main_feed_label ] ) );
 			foreach ( $stale_ids as $stale_id ) {
 				$request_entries[ $stale_id ] = new BatchProductIDRequestEntry(
 					$product->get_id(),

@@ -250,13 +250,56 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Returns true if a supported multilingual integration is active.
+	 * Returns the feed label values for every configured market.
 	 *
-	 * TODO: Connect WPML integration — GOOWOO-561.
+	 * @return array
+	 */
+	public function get_all_feed_labels(): array {
+		$secondary   = $this->get_stored_secondary_markets();
+		$feed_labels = array_column( array_values( $secondary ), 'feedLabel' );
+		array_unshift( $feed_labels, $this->get_main_feed_label() );
+
+		return $feed_labels;
+	}
+
+	/**
+	 * Returns the feed label for the primary market.
+	 *
+	 * @return string Defaults to the store's main target country code when no
+	 *                custom feedLabel has been configured.
+	 */
+	public function get_main_feed_label(): string {
+		return $this->build_default_markets()['primary']['feedLabel'];
+	}
+
+	/**
+	 * Returns every country code across all markets without duplicates.
+	 *
+	 * The primary market contributes its target_audience countries; each
+	 * secondary market contributes its single `country` value. No DB queries.
+	 *
+	 * @return string[]
+	 */
+	public function get_all_countries(): array {
+		$secondary = $this->get_stored_secondary_markets();
+		$countries = $this->target_audience->get_target_countries();
+
+		if ( ! empty( $secondary ) ) {
+			foreach ($secondary as $market) {
+				$countries[] = $market['country'];
+			}
+		}
+
+		return array_unique( $countries );
+	}
+
+	/**
+	 * Returns true if a supported multilingual integration is active.
 	 *
 	 * @return bool
 	 */
 	public function has_multilingual_support(): bool {
+		// Note: this will be updated in GOOWOO-561
 		return false;
 	}
 

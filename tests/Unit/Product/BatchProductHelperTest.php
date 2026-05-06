@@ -9,7 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
@@ -51,8 +51,8 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 	/** @var ProductFactory $product_factory */
 	protected $product_factory;
 
-	/** @var MockObject|TargetAudience $target_audience */
-	protected $target_audience;
+	/** @var MockObject|MarketService $market_service */
+	protected $market_service;
 
 	/** @var BatchProductHelper $batch_product_helper */
 	protected $batch_product_helper;
@@ -188,9 +188,14 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 	public function test_validate_and_generate_update_request_entries() {
 		$products = $this->create_and_return_supported_test_products();
 
-		$this->target_audience->expects( $this->any() )
-			->method( 'get_main_target_country' )
-			->willReturn( 'US' );
+		$this->market_service->expects( $this->any() )
+			->method( 'get_primary_market' )
+			->willReturn( [ 'country' => 'US', 'feedLabel' => 'US', 'language' => 'en' ] );
+
+		$this->market_service->expects( $this->any() )
+			->method( 'get_all_countries' )
+			->willReturn( [ 'US' ] );
+
 		$this->validator->expects( $this->any() )
 			->method( 'validate' )
 			->willReturn( [] );
@@ -252,9 +257,13 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			->method( 'get_results' )
 			->willReturn( [] );
 
-		$this->target_audience->expects( $this->any() )
-			->method( 'get_main_target_country' )
-			->willReturn( 'US' );
+		$this->market_service->expects( $this->any() )
+			->method( 'get_primary_market' )
+			->willReturn( [ 'country' => 'US', 'feedLabel' => 'US', 'language' => 'en' ] );
+
+		$this->market_service->expects( $this->any() )
+			->method( 'get_all_countries' )
+			->willReturn( [ 'US' ] );
 
 		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( $products );
 
@@ -279,12 +288,18 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			$this->product_meta->update_visibility( $skipped_product, ChannelVisibility::DONT_SYNC_AND_SHOW );
 		}
 
-		$this->target_audience->expects( $this->any() )
-			->method( 'get_main_target_country' )
-			->willReturn( 'US' );
+		$this->market_service->expects( $this->any() )
+			->method( 'get_primary_market' )
+			->willReturn( [ 'country' => 'US', 'feedLabel' => 'US', 'language' => 'en' ] );
+
+		$this->market_service->expects( $this->any() )
+			->method( 'get_all_countries' )
+			->willReturn( [ 'US' ] );
+
 		$this->validator->expects( $this->any() )
 			->method( 'validate' )
 			->willReturn( [] );
+
 		$this->rules_query->expects( $this->any() )
 			->method( 'get_results' )
 			->willReturn( [] );
@@ -315,12 +330,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$stale_product    = $products[0];
 		$stale_product_id = $stale_product->get_id();
 
-		$this->target_audience->expects( $this->once() )
-			->method( 'get_target_countries' )
+		$this->market_service->expects( $this->once() )
+			->method( 'get_all_feed_labels' )
 			->willReturn( [ 'US' ] );
-		$this->target_audience->expects( $this->any() )
-			->method( 'get_main_target_country' )
-			->willReturn( 'US' );
 
 		$stale_google_ids = [
 			'AU' => "online:en:AU:gla_{$stale_product_id}",
@@ -346,8 +358,8 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$stale_product    = $products[0];
 		$stale_product_id = $stale_product->get_id();
 
-		$this->target_audience->expects( $this->once() )
-			->method( 'get_main_target_country' )
+		$this->market_service->expects( $this->once() )
+			->method( 'get_main_feed_label' )
 			->willReturn( 'US' );
 
 		$stale_google_ids = [
@@ -385,13 +397,13 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->target_audience      = $this->createMock( TargetAudience::class );
+		$this->market_service       = $this->createMock( MarketService::class );
 		$this->validator            = $this->createMock( ValidatorInterface::class );
 		$this->rules_query          = $this->createMock( AttributeMappingRulesQuery::class );
 		$this->product_meta         = $this->container->get( ProductMetaHandler::class );
 		$this->product_factory      = $this->container->get( ProductFactory::class );
 		$this->wc                   = $this->container->get( WC::class );
-		$this->product_helper       = new ProductHelper( $this->product_meta, $this->wc, $this->target_audience );
-		$this->batch_product_helper = new BatchProductHelper( $this->product_meta, $this->product_helper, $this->validator, $this->product_factory, $this->target_audience, $this->rules_query );
+		$this->product_helper       = new ProductHelper( $this->product_meta, $this->wc, $this->market_service );
+		$this->batch_product_helper = new BatchProductHelper( $this->product_meta, $this->product_helper, $this->validator, $this->product_factory, $this->rules_query, $this->market_service );
 	}
 }

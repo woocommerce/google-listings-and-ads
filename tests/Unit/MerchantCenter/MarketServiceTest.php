@@ -581,6 +581,79 @@ class MarketServiceTest extends UnitTest {
 		$this->assertArrayHasKey( 'currency', $result['primary'] );
 	}
 
+	public function test_get_all_feed_labels_primary_only(): void {
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$result = $this->market_service->get_all_feed_labels();
+
+		$this->assertSame( [ 'US' ], $result );
+	}
+
+	public function test_get_all_feed_labels_includes_secondary_markets(): void {
+		$secondary = [
+			'gb' => [ 'country' => 'GB', 'language' => 'en', 'currency' => 'GBP', 'feedLabel' => 'GB' ],
+			'de' => [ 'country' => 'DE', 'language' => 'de', 'currency' => 'EUR', 'feedLabel' => 'DE' ],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$result = $this->market_service->get_all_feed_labels();
+
+		$this->assertContains( 'US', $result );
+		$this->assertContains( 'GB', $result );
+		$this->assertContains( 'DE', $result );
+		$this->assertCount( 3, $result );
+	}
+
+	public function test_get_main_feed_label_returns_primary_feed_label(): void {
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'AU' );
+
+		$result = $this->market_service->get_main_feed_label();
+
+		$this->assertSame( 'AU', $result );
+	}
+
+	public function test_get_all_countries_primary_only(): void {
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US', 'CA' ] );
+
+		$result = $this->market_service->get_all_countries();
+
+		$this->assertSame( [ 'US', 'CA' ], $result );
+	}
+
+	public function test_get_all_countries_includes_secondary_market_country(): void {
+		$secondary = [
+			'gb' => [ 'country' => 'GB', 'language' => 'en', 'currency' => 'GBP', 'feedLabel' => 'GB' ],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US', 'CA' ] );
+
+		$result = $this->market_service->get_all_countries();
+
+		$this->assertContains( 'US', $result );
+		$this->assertContains( 'CA', $result );
+		$this->assertContains( 'GB', $result );
+		$this->assertCount( 3, $result );
+	}
+
+	public function test_get_all_countries_deduplicates(): void {
+		$secondary = [
+			'us2' => [ 'country' => 'US', 'language' => 'en', 'currency' => 'USD', 'feedLabel' => 'US-PROMO' ],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$result = $this->market_service->get_all_countries();
+
+		$this->assertCount( 1, $result );
+		$this->assertContains( 'US', $result );
+	}
+
 	public function test_has_multilingual_support_returns_false(): void {
 		$this->assertFalse( $this->market_service->has_multilingual_support() );
 	}

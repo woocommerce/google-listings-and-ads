@@ -6,7 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
@@ -41,21 +41,21 @@ class ProductHelper implements Service, HelperNotificationInterface {
 	protected $wc;
 
 	/**
-	 * @var TargetAudience
+	 * @var MarketService
 	 */
-	protected $target_audience;
+	protected $market_service;
 
 	/**
 	 * ProductHelper constructor.
 	 *
 	 * @param ProductMetaHandler $meta_handler
 	 * @param WC                 $wc
-	 * @param TargetAudience     $target_audience
+	 * @param MarketService      $market_service
 	 */
-	public function __construct( ProductMetaHandler $meta_handler, WC $wc, TargetAudience $target_audience ) {
-		$this->meta_handler    = $meta_handler;
-		$this->wc              = $wc;
-		$this->target_audience = $target_audience;
+	public function __construct( ProductMetaHandler $meta_handler, WC $wc, MarketService $market_service ) {
+		$this->meta_handler   = $meta_handler;
+		$this->wc             = $wc;
+		$this->market_service = $market_service;
 	}
 
 	/**
@@ -102,13 +102,14 @@ class ProductHelper implements Service, HelperNotificationInterface {
 		// merge and update all google product ids
 		$current_google_ids = $this->meta_handler->get_google_ids( $product );
 		$current_google_ids = ! empty( $current_google_ids ) ? $current_google_ids : [];
-		$google_ids         = array_unique( array_merge( $current_google_ids, [ $google_product->getTargetCountry() => $google_product->getId() ] ) );
+		$key                = $google_product->getFeedLabel() ?: $google_product->getTargetCountry();
+		$google_ids         = array_unique( array_merge( $current_google_ids, [ $key => $google_product->getId() ] ) );
 		$this->meta_handler->update_google_ids( $product, $google_ids );
 
-		// check if product is synced for main target country and remove any previous errors if it is
-		$synced_countries = array_keys( $google_ids );
-		$target_countries = $this->target_audience->get_target_countries();
-		if ( empty( array_diff( $synced_countries, $target_countries ) ) ) {
+		// check if product is synced for all feed labels and remove any previous errors if it is
+		$synced_keys     = array_keys( $google_ids );
+		$all_feed_labels = $this->market_service->get_all_feed_labels() ?? [];
+		if ( empty( array_diff( $all_feed_labels, $synced_keys ) ) ) {
 			$this->meta_handler->delete_errors( $product );
 			$this->meta_handler->delete_failed_sync_attempts( $product );
 			$this->meta_handler->delete_sync_failed_at( $product );
