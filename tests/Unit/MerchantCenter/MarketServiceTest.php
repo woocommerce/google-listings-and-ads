@@ -55,10 +55,10 @@ class MarketServiceTest extends UnitTest {
 	public function test_get_markets_returns_primary_and_stored_secondary(): void {
 		$secondary = [
 			'gb' => [
-				'country'   => 'GB',
-				'language'  => 'en',
-				'currency'  => 'GBP',
-				'feedLabel' => 'GB',
+				'country'    => 'GB',
+				'language'   => 'en',
+				'currency'   => 'GBP',
+				'feed_label' => 'GB',
 			],
 		];
 
@@ -82,17 +82,17 @@ class MarketServiceTest extends UnitTest {
 		$this->assertCount( 1, $result );
 		$this->assertArrayHasKey( 'primary', $result );
 		$this->assertSame( 'US', $result['primary']['country'] );
-		$this->assertSame( 'US', $result['primary']['feedLabel'] );
+		$this->assertSame( 'US', $result['primary']['feed_label'] );
 	}
 
 	public function test_get_markets_strips_stored_primary_key(): void {
 		$stored = [
 			'primary' => [ 'should' => 'be-ignored' ],
 			'gb'      => [
-				'country'   => 'GB',
-				'language'  => 'en',
-				'currency'  => 'GBP',
-				'feedLabel' => 'GB',
+				'country'    => 'GB',
+				'language'   => 'en',
+				'currency'   => 'GBP',
+				'feed_label' => 'GB',
 			],
 		];
 
@@ -103,6 +103,46 @@ class MarketServiceTest extends UnitTest {
 
 		$this->assertSame( 'primary', $result['primary']['id'] );
 		$this->assertArrayNotHasKey( 'should', $result['primary'] );
+	}
+
+	/**
+	 * Regression: legacy/corrupted state could leave a primary-shaped entry
+	 * stored under the 'primary' key. The result must always contain exactly
+	 * one primary, sourced from the synthesised composition — never the
+	 * stored copy — even when iterated by a consumer that flattens to a list.
+	 */
+	public function test_get_markets_never_returns_duplicate_primary(): void {
+		$stored = [
+			'primary' => [
+				'id'         => 'primary',
+				'label'      => 'Primary Market',
+				'countries'  => [ 'MU', 'ZW' ],
+				'country'    => 'ZW',
+				'language'   => 'en',
+				'currency'   => 'USD',
+				'feed_label' => 'ZW',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $stored ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US', 'CA' ] );
+
+		$result = $this->market_service->get_markets();
+
+		$this->assertCount( 1, $result );
+		$this->assertArrayHasKey( 'primary', $result );
+
+		$primary_ids = array_filter(
+			array_column( $result, 'id' ),
+			static function ( $id ) {
+				return 'primary' === $id;
+			}
+		);
+		$this->assertCount( 1, $primary_ids );
+
+		$this->assertSame( 'US', $result['primary']['country'] );
+		$this->assertSame( 'US', $result['primary']['feed_label'] );
+		$this->assertSame( [ 'US', 'CA' ], $result['primary']['countries'] );
 	}
 
 	public function test_get_primary_market_returns_full_response_ready_shape(): void {
@@ -133,7 +173,7 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( 'US', $result['country'] );
 		$this->assertNotEmpty( $result['language'] );
 		$this->assertNotEmpty( $result['currency'] );
-		$this->assertSame( 'US', $result['feedLabel'] );
+		$this->assertSame( 'US', $result['feed_label'] );
 		$this->assertSame( 'flat', $result['shipping_rate'] );
 		$this->assertSame( 'flat', $result['shipping_time'] );
 		$this->assertSame( 50.0, $result['free_shipping'] );
@@ -151,10 +191,10 @@ class MarketServiceTest extends UnitTest {
 	public function test_get_market_returns_market_by_id(): void {
 		$stored = [
 			'gb' => [
-				'country'   => 'GB',
-				'language'  => 'en',
-				'currency'  => 'GBP',
-				'feedLabel' => 'GB',
+				'country'    => 'GB',
+				'language'   => 'en',
+				'currency'   => 'GBP',
+				'feed_label' => 'GB',
 			],
 		];
 
@@ -205,10 +245,10 @@ class MarketServiceTest extends UnitTest {
 
 	public function test_add_market_persists_and_removes_country_from_target_audience(): void {
 		$config = [
-			'country'   => 'GB',
-			'language'  => 'en',
-			'currency'  => 'GBP',
-			'feedLabel' => 'GB',
+			'country'    => 'GB',
+			'language'   => 'en',
+			'currency'   => 'GBP',
+			'feed_label' => 'GB',
 		];
 
 		$ta = [
@@ -243,10 +283,10 @@ class MarketServiceTest extends UnitTest {
 
 	public function test_add_market_country_removal_is_idempotent(): void {
 		$config = [
-			'country'   => 'DE',
-			'language'  => 'de',
-			'currency'  => 'EUR',
-			'feedLabel' => 'DE',
+			'country'    => 'DE',
+			'language'   => 'de',
+			'currency'   => 'EUR',
+			'feed_label' => 'DE',
 		];
 
 		$ta = [
@@ -364,10 +404,10 @@ class MarketServiceTest extends UnitTest {
 	public function test_update_market_secondary_merges_and_persists(): void {
 		$existing = [
 			'gb' => [
-				'country'   => 'GB',
-				'language'  => 'en',
-				'currency'  => 'GBP',
-				'feedLabel' => 'GB',
+				'country'    => 'GB',
+				'language'   => 'en',
+				'currency'   => 'GBP',
+				'feed_label' => 'GB',
 			],
 		];
 
@@ -394,10 +434,10 @@ class MarketServiceTest extends UnitTest {
 	public function test_update_market_secondary_validates_merged_config(): void {
 		$existing = [
 			'gb' => [
-				'country'   => 'GB',
-				'language'  => 'en',
-				'currency'  => 'GBP',
-				'feedLabel' => 'GB',
+				'country'    => 'GB',
+				'language'   => 'en',
+				'currency'   => 'GBP',
+				'feed_label' => 'GB',
 			],
 		];
 
@@ -414,7 +454,7 @@ class MarketServiceTest extends UnitTest {
 				'country'       => 'GB',
 				'language'      => 'en',
 				'currency'      => 'GBP',
-				'feedLabel'     => 'GB',
+				'feed_label'    => 'GB',
 				'shipping_rate' => 'automatic',
 			],
 		];
@@ -431,10 +471,10 @@ class MarketServiceTest extends UnitTest {
 	public function test_update_market_secondary_returns_updated_market(): void {
 		$existing = [
 			'gb' => [
-				'country'   => 'GB',
-				'language'  => 'en',
-				'currency'  => 'GBP',
-				'feedLabel' => 'GB',
+				'country'    => 'GB',
+				'language'   => 'en',
+				'currency'   => 'GBP',
+				'feed_label' => 'GB',
 			],
 		];
 
@@ -456,16 +496,16 @@ class MarketServiceTest extends UnitTest {
 	public function test_delete_market_removes_and_restores_country_to_target_audience(): void {
 		$existing = [
 			'us' => [
-				'country'   => 'US',
-				'language'  => 'en',
-				'currency'  => 'USD',
-				'feedLabel' => 'US',
+				'country'    => 'US',
+				'language'   => 'en',
+				'currency'   => 'USD',
+				'feed_label' => 'US',
 			],
 			'gb' => [
-				'country'   => 'GB',
-				'language'  => 'en',
-				'currency'  => 'GBP',
-				'feedLabel' => 'GB',
+				'country'    => 'GB',
+				'language'   => 'en',
+				'currency'   => 'GBP',
+				'feed_label' => 'GB',
 			],
 		];
 
@@ -504,10 +544,10 @@ class MarketServiceTest extends UnitTest {
 	public function test_delete_market_country_restoration_is_idempotent(): void {
 		$existing = [
 			'gb' => [
-				'country'   => 'GB',
-				'language'  => 'en',
-				'currency'  => 'GBP',
-				'feedLabel' => 'GB',
+				'country'    => 'GB',
+				'language'   => 'en',
+				'currency'   => 'GBP',
+				'feed_label' => 'GB',
 			],
 		];
 
@@ -542,10 +582,10 @@ class MarketServiceTest extends UnitTest {
 		$markets = [
 			'primary' => [ 'country' => 'US' ],
 			'gb'      => [
-				'country'   => 'GB',
-				'language'  => 'en',
-				'currency'  => 'GBP',
-				'feedLabel' => 'GB',
+				'country'    => 'GB',
+				'language'   => 'en',
+				'currency'   => 'GBP',
+				'feed_label' => 'GB',
 			],
 		];
 
@@ -576,7 +616,7 @@ class MarketServiceTest extends UnitTest {
 
 		$this->assertArrayHasKey( 'primary', $result );
 		$this->assertSame( 'AU', $result['primary']['country'] );
-		$this->assertSame( 'AU', $result['primary']['feedLabel'] );
+		$this->assertSame( 'AU', $result['primary']['feed_label'] );
 		$this->assertArrayHasKey( 'language', $result['primary'] );
 		$this->assertArrayHasKey( 'currency', $result['primary'] );
 	}
