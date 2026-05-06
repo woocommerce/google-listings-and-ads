@@ -90,7 +90,7 @@ const MultiLingualPluginPrompt = () => {
 								gap={ 4 }
 								direction={ [ 'column', 'row' ] }
 							>
-								<FlexBlock size={ 1 }>
+								<FlexBlock>
 									<Flex
 										align="center"
 										justify="start"

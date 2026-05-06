@@ -45,9 +45,9 @@ describe( 'AddMarketModal', () => {
 
 		// `getByRole('button', { name: 'Close' })` matches both the
 		// `<Modal>`'s X button (aria-label) and the footer button. Use the
-		// `is-tertiary` variant class to target only our footer button.
+		// `is-primary` variant class to target only our footer button.
 		const footerCloseButton = document.querySelector(
-			'.app-modal__footer .is-tertiary'
+			'.app-modal__footer .is-primary'
 		);
 		await user.click( footerCloseButton );
 
@@ -60,21 +60,16 @@ describe( 'AddMarketModal', () => {
 			settings: { shipping_rate: SHIPPING_RATE_METHOD.MANUAL },
 		} );
 
-		try {
-			render( <AddMarketModal onRequestClose={ () => {} } /> );
+		render( <AddMarketModal onRequestClose={ () => {} } /> );
 
-			expect( screen.getByText( 'WPML' ) ).toBeInTheDocument();
-			expect(
-				screen.getByText(
-					'WooCommerce integration that handles multi-currency natively.'
-				)
-			).toBeInTheDocument();
-			expect(
-				screen.getByRole( 'link', { name: 'Learn more' } )
-			).toBeInTheDocument();
-		} finally {
-			delete global.glaData.isMultiLingualStore;
-			useSettings.mockReset();
-		}
+		expect( screen.getByText( 'WPML' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				'WooCommerce integration that handles multi-currency natively.'
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', { name: 'Learn more' } )
+		).toBeInTheDocument();
 	} );
 } );
