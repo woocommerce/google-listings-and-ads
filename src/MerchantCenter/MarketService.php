@@ -269,7 +269,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 *                custom feedLabel has been configured.
 	 */
 	public function get_main_feed_label(): string {
-		return $this->build_default_markets()['primary']['feedLabel'];
+		return $this->target_audience->get_main_target_country();
 	}
 
 	/**
