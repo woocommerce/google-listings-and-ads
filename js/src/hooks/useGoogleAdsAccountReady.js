@@ -42,7 +42,7 @@ const useGoogleAdsAccountReady = () => {
 	const isGoogleAdsReady =
 		hasGoogleAdsConnection &&
 		hasAccess &&
-		[ '', 'billing', 'link_merchant' ].includes( step );
+		[ '', 'billing', 'link_merchant', 'set_id' ].includes( step );
 
 	return {
 		isGoogleAdsReady,
