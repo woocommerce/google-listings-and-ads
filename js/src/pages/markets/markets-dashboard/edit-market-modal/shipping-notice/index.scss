@@ -1,3 +1,13 @@
 .gla-edit-market-modal__notice {
 	margin-block-start: $grid-unit-30;
+
+	a {
+		color: $gray-900;
+		text-decoration: underline;
+
+		&:hover,
+		&:focus {
+			color: $gray-700;
+		}
+	}
 }
