@@ -3,13 +3,15 @@
  */
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
+import { Spinner } from '@wordpress/components';
 import { edit, trash } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
-import useMarkets from '~/hooks/useMarkets';
 import { PRIMARY_MARKET_ID } from '../../constants';
+import useMarkets from '~/hooks/useMarkets';
+import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import EditMarketModal from '../edit-market-modal';
 import './index.scss';
 
@@ -76,6 +78,7 @@ const MarketDataViews = ( { shippingRate } ) => {
 	const { data: markets, hasFinishedResolution } = useMarkets();
 	const [ view, setView ] = useState( DEFAULT_VIEW );
 	const [ editingMarket, setEditingMarket ] = useState( null );
+	const { targetAudience, loaded } = useTargetAudienceFinalCountryCodes();
 
 	const rows = markets.map( ( market ) => ( {
 		...market,
@@ -97,9 +100,11 @@ const MarketDataViews = ( { shippingRate } ) => {
 		{
 			id: 'edit',
 			label: __( 'Edit', 'google-listings-and-ads' ),
-			icon: edit,
+			icon: loaded ? edit : <Spinner />,
 			isPrimary: true,
-			callback: ( [ market ] ) => setEditingMarket( market ),
+			callback: loaded
+				? ( [ market ] ) => setEditingMarket( market )
+				: () => {},
 		},
 		{
 			id: 'delete',
@@ -127,10 +132,12 @@ const MarketDataViews = ( { shippingRate } ) => {
 				defaultLayouts={ { table: {} } }
 				isLoading={ ! hasFinishedResolution }
 			/>
+
 			{ editingMarket && (
 				<EditMarketModal
 					market={ editingMarket }
 					onRequestClose={ () => setEditingMarket( null ) }
+					targetAudience={ targetAudience }
 				/>
 			) }
 		</>

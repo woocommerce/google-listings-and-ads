@@ -32,6 +32,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migrator;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\TableManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Event\ClearProductStatsCache;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
@@ -62,6 +64,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MultichannelMarketing\GLAChannel
 use Automattic\WooCommerce\GoogleListingsAndAds\MultichannelMarketing\MarketingChannelRegistrar;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PolicyComplianceCheck;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ContactInformation as ContactInformationNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\NoteInitializer;
@@ -177,6 +180,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ContactInformation::class        => true,
 		MerchantCenterService::class     => true,
 		NotificationsService::class      => true,
+		MarketService::class             => true,
 		TargetAudience::class            => true,
 		MerchantAccountState::class      => true,
 		AdsAccountState::class           => true,
@@ -238,6 +242,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		// Set up the TargetAudience service.
 		$this->share_with_tags( TargetAudience::class, WC::class, OptionsInterface::class, GoogleHelper::class );
+
+		// Set up the MarketService.
+		$this->share_with_tags( MarketService::class, TargetAudience::class, ShippingRateQuery::class, ShippingTimeQuery::class );
 
 		// Set up MerchantCenter service, and inflect classes that need it.
 		$this->share_with_tags( MerchantCenterService::class );
