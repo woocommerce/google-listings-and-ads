@@ -69,12 +69,19 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 		? __( 'Edit primary market', 'google-listings-and-ads' )
 		: __( 'Edit market', 'google-listings-and-ads' );
 
+	let initialValues = {};
+	if ( isPrimaryMarket ) {
+		initialValues = {
+			countries: targetAudience.countries || [],
+		};
+	}
+
 	return (
 		<AdaptiveForm
 			ref={ formRef }
 			initialValues={ {
 				id,
-				countries: targetAudience.countries || [],
+				...initialValues,
 			} }
 			extendAdapter={ extendAdapter }
 			validate={ checkErrors }
