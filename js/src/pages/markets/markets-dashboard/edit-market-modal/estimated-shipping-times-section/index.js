@@ -2,21 +2,43 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 import { Flex, FlexBlock } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import MinMaxShippingTimes from '~/components/free-listings/configure-product-listings/shipping-time-setup/min-max-shipping-times';
+import AppSpinner from '~/components/app-spinner';
 import Section from '~/components/section';
 import Subsection from '~/components/subsection';
 import VerticalGapLayout from '~/components/vertical-gap-layout';
+import useShippingTimes from '~/hooks/useShippingTimes';
+import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import './index.scss';
 
 const EstimatedShippingTimesSection = () => {
-	const [ minTime, setMinTime ] = useState( 0 );
-	const [ maxTime, setMaxTime ] = useState( 3 );
+	const { data: shippingTimes, hasFinishedResolution } =
+		useShippingTimes();
+	const { loading: audienceLoading } = useTargetAudienceFinalCountryCodes();
+
+	const [ minTime, setMinTime ] = useState( null );
+	const [ maxTime, setMaxTime ] = useState( null );
+	const [ ready, setReady ] = useState( false );
+
+	useEffect( () => {
+		if ( ! hasFinishedResolution || audienceLoading ) {
+			return;
+		}
+		const st = shippingTimes ?? [];
+		setMinTime( st[ 0 ]?.time ?? null );
+		setMaxTime( st[ 0 ]?.maxTime ?? null );
+		setReady( true );
+	}, [ hasFinishedResolution, audienceLoading, shippingTimes ] );
+
+	if ( ! hasFinishedResolution || audienceLoading || ! ready ) {
+		return <AppSpinner />;
+	}
 
 	const handleBlur = ( numberValue, field ) => {
 		if ( field === 'time' && minTime !== numberValue ) {

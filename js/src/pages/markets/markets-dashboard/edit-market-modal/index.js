@@ -2,7 +2,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useRef, useState } from '@wordpress/element';
+import { useRef, useState, useCallback } from '@wordpress/element';
+import { isEqual } from 'lodash';
 
 /**
  * Internal dependencies
@@ -16,8 +17,10 @@ import EstimatedShippingRatesSection from './estimated-shipping-rates-section';
 import EstimatedShippingTimesSection from './estimated-shipping-times-section';
 import AppButton from '~/components/app-button';
 import ValidationErrors from '~/components/validation-errors';
-import EditPrimaryAudience from './edit-primary-audience';
+import EditPrimaryAudience from './edit-primary-audience.js';
 import ShippingNotice from './shipping-notice';
+import useSaveShippingRates from '~/hooks/useSaveShippingRates';
+import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 
 /**
  * @typedef {import('~/data/actions').TargetAudienceData } TargetAudienceData
@@ -38,20 +41,48 @@ import ShippingNotice from './shipping-notice';
  */
 const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 	const { updateMarket, invalidateResolution } = useAppDispatch();
+	const { saveShippingRates } = useSaveShippingRates();
+	const { getFinalCountries } = useTargetAudienceFinalCountryCodes();
 	const { id } = market;
 	const [ saving, setSaving ] = useState( false );
+	const [ shippingRatesDirty, setShippingRatesDirty ] = useState( false );
 	const isPrimaryMarket = id === PRIMARY_MARKET_ID;
 	const formRef = useRef();
+	const latestRatesRef = useRef( null );
+	const baselineRatesRef = useRef( null );
+
+	const handleRatesPayload = useCallback( ( rates, { isBaseline } ) => {
+		latestRatesRef.current = rates;
+		if ( isBaseline ) {
+			baselineRatesRef.current = rates;
+		}
+		setShippingRatesDirty(
+			Boolean(
+				baselineRatesRef.current &&
+					latestRatesRef.current &&
+					! isEqual(
+						baselineRatesRef.current,
+						latestRatesRef.current
+					)
+			)
+		);
+	}, [] );
 
 	const handleSubmit = async ( values ) => {
-		const { id: marketId, ...data } = values;
-
 		setSaving( true );
 
 		try {
-			await updateMarket( marketId, data );
-			invalidateResolution( 'getTargetAudience', [] );
-			onRequestClose();
+			if ( isPrimaryMarket ) {
+				await updateMarket( values.id, {
+					countries: values.countries,
+				} );
+				if ( latestRatesRef.current?.length ) {
+					await saveShippingRates( latestRatesRef.current );
+				}
+				invalidateResolution( 'getTargetAudience', [] );
+				invalidateResolution( 'getShippingRates', [] );
+				onRequestClose();
+			}
 		} catch ( error ) {}
 
 		setSaving( false );
@@ -96,6 +127,18 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 					isDirty,
 				} = formContext;
 
+				const mergedAudience = isPrimaryMarket
+					? {
+							...targetAudience,
+							countries:
+								formContext.values?.countries ??
+								targetAudience.countries ??
+								[],
+					  }
+					: targetAudience;
+				const audienceCountryCodes =
+					getFinalCountries( mergedAudience ) ?? [];
+
 				return (
 					<AppModal
 						title={ appModalTitle }
@@ -113,7 +156,10 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 								key="save"
 								variant="primary"
 								onClick={ handleSave }
-								disabled={ ! isValidForm || ! isDirty }
+								disabled={
+									! isValidForm ||
+									( ! isDirty && ! shippingRatesDirty )
+								}
 								loading={ saving }
 							>
 								{ __( 'Save', 'google-listings-and-ads' ) }
@@ -123,7 +169,15 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 						{ isPrimaryMarket && <EditPrimaryAudience /> }
 
 						<ShippingNotice />
-						<EstimatedShippingRatesSection />
+						<EstimatedShippingRatesSection
+							key={ `estimated-rates-${ id }` }
+							audienceCountryCodes={ audienceCountryCodes }
+							onRatesPayloadChange={
+								isPrimaryMarket
+									? handleRatesPayload
+									: undefined
+							}
+						/>
 						<EstimatedShippingTimesSection />
 					</AppModal>
 				);

@@ -3,6 +3,7 @@
 	&.components-card {
 		box-shadow: none;
 		margin-bottom: $grid-unit-30;
+		margin-top: $grid-unit-30;
 	}
 
 	.gla-section-card-title {
@@ -19,6 +20,10 @@
 
 	.gla-edit-market-modal__estimated-rates__helper {
 		margin-top: $grid-unit-20;
+
+		.gla-edit-market-modal__estimated-rates__cost .app-input-control {
+			width: $gla-width-medium;
+		}
 	}
 
 	.components-input-control__container {

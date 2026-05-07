@@ -55,20 +55,7 @@ const MarketsHeader = ( { shippingRate } ) => {
 				</p>
 			</FlexBlock>
 			<FlexItem>
-				<>
-					<Flex gap={ 2 } justify="flex-end">
-						<AppButton variant="tertiary" onClick={ openDummyEdit }>
-							{ __( 'Open edit modal', 'google-listings-and-ads' ) }
-						</AppButton>
-						<AddMarket />
-					</Flex>
-					{ isDummyEditOpen && (
-						<EditMarketModal
-							market={ DUMMY_EDIT_MARKET }
-							onRequestClose={ closeDummyEdit }
-						/>
-					) }
-				</>
+				<AddMarket />
 			</FlexItem>
 		</Flex>
 	);
