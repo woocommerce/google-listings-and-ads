@@ -8,8 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 import ShippingRateInputControl from '~/components/shipping-rate-section/estimated-shipping-rates-card/shipping-rate-input-control';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
-import OfferFreeShippingCheckbox from '~/components/order-value-condition-section/offer-free-shipping-checkbox';
-import AppInputPriceControl from '~/components/app-input-price-control';
+import MinimumOrderInputs from '~/components/minimum-order-inputs';
 
 const EditShippingRates = ( { audienceCountryCodes = [] } ) => {
 	const { values, setValue, getInputProps } = useAdaptiveFormContext();
@@ -38,16 +37,13 @@ const EditShippingRates = ( { audienceCountryCodes = [] } ) => {
 				value={ values.flat_shipping_rate }
 				onChange={ handleRateChange }
 			/>
-			<OfferFreeShippingCheckbox { ...getInputProps( 'offer_free_shipping' ) } />
-			{ values.offer_free_shipping && (
-				<AppInputPriceControl
-					className="gla-edit-estimated-rates__cost"
-					label={ __( 'Cost', 'google-listings-and-ads' ) }
-					suffix={ values.shipping_currency }
-					value={ values.free_shipping_threshold }
-					onBlur={ handleThresholdBlur }
-				/>
-			) }
+			<MinimumOrderInputs
+				offerFreeShippingInputProps={ getInputProps( 'offer_free_shipping' ) }
+				offerFreeShipping={ values.offer_free_shipping }
+				currency={ values.shipping_currency }
+				threshold={ values.free_shipping_threshold }
+				onCostBlur={ handleThresholdBlur }
+			/>
 		</div>
 	);
 };

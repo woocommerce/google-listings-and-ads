@@ -137,7 +137,7 @@ describe( 'EditMarketModal', () => {
 		expect( screen.getByDisplayValue( '3' ) ).toBeInTheDocument();
 	} );
 
-	test( 'dispatches updateMarket with countries when Save is clicked', async () => {
+	test( 'dispatches updateMarket with countries and shipping payloads when Save is clicked', async () => {
 		const user = userEvent.setup();
 		const updateMarket = jest.fn().mockResolvedValue();
 		useAppDispatch.mockReturnValue( {
@@ -164,6 +164,34 @@ describe( 'EditMarketModal', () => {
 		await waitFor( () => {
 			expect( updateMarket ).toHaveBeenCalledWith( 'primary', {
 				countries: [ 'US', 'CA' ],
+				shippingRates: [
+					{
+						id: 'rate-us',
+						country: 'US',
+						currency: 'USD',
+						rate: 10,
+						options: { free_shipping_threshold: 50 },
+					},
+					{
+						id: undefined,
+						country: 'CA',
+						currency: 'USD',
+						rate: 10,
+						options: { free_shipping_threshold: 50 },
+					},
+				],
+				shippingTimes: [
+					{
+						countryCode: 'US',
+						time: 0,
+						maxTime: 3,
+					},
+					{
+						countryCode: 'CA',
+						time: 0,
+						maxTime: 3,
+					},
+				],
 			} );
 		} );
 

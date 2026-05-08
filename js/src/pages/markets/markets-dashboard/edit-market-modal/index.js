@@ -24,6 +24,10 @@ import ValidationErrors from '~/components/validation-errors';
 import EditPrimaryAudience from './edit-primary-audience';
 import ShippingNotice from './shipping-notice';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
+import {
+	buildShippingRatesPayload,
+	buildShippingTimesPayload,
+} from './utils.js';
 import './edit-market-modal.scss';
 
 /**
@@ -44,7 +48,7 @@ import './edit-market-modal.scss';
  * @param {() => void} props.onRequestClose Called when the user closes the modal.
  */
 const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
-	const { updateMarket } = useAppDispatch();
+	const { updateMarket, invalidateResolution } = useAppDispatch();
 	const { data: shippingRates, hasFinishedResolution: hasResolvedRates } =
 		useShippingRates();
 	const { data: shippingTimes, hasFinishedResolution: hasResolvedTimes } =
@@ -59,15 +63,13 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 	const formRef = useRef();
 
 	const handleSubmit = async ( values ) => {
+		const { id: marketId, ...data } = values;
 		setSaving( true );
 
 		try {
-			if ( isPrimaryMarket ) {
-				await updateMarket( values.id, {
-					countries: values.countries,
-				} );
-				onRequestClose();
-			}
+			await updateMarket( marketId, data);
+			invalidateResolution( 'getTargetAudience', [] );
+			onRequestClose();
 		} catch ( error ) {}
 
 		setSaving( false );

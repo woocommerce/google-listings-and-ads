@@ -11,13 +11,11 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import Section from '~/components/section';
-import AppInputPriceControl from '~/components/app-input-price-control';
-import VerticalGapLayout from '~/components/vertical-gap-layout';
 import {
 	useAdaptiveFormContext,
 	useAdaptiveFormInputProps,
 } from '~/components/adaptive-form';
-import OfferFreeShippingCheckbox from '~/components/order-value-condition-section/offer-free-shipping-checkbox';
+import MinimumOrderInputs from '~/components/minimum-order-inputs';
 import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
 import './minimum-order-card.scss';
 
@@ -69,19 +67,13 @@ const MinimumOrderCard = ( { value = [], helper, onChange } ) => {
 						'google-listings-and-ads'
 					) }
 				</Section.Card.Title>
-				<VerticalGapLayout size="large">
-					<OfferFreeShippingCheckbox
-						{ ...offerFreeShippingInputProps }
-					/>
-					{ values.offer_free_shipping && (
-						<AppInputPriceControl
-							label={ __( 'Cost', 'google-listings-and-ads' ) }
-							suffix={ currency }
-							value={ threshold }
-							onBlur={ handleBlur }
-						/>
-					) }
-				</VerticalGapLayout>
+				<MinimumOrderInputs
+					offerFreeShippingInputProps={ offerFreeShippingInputProps }
+					offerFreeShipping={ values.offer_free_shipping }
+					currency={ currency }
+					threshold={ threshold }
+					onCostBlur={ handleBlur }
+				/>
 				{ helper }
 			</Section.Card.Body>
 		</Section.Card>
