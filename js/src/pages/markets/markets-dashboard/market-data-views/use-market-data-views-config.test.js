@@ -40,7 +40,12 @@ const SECONDARY_MARKET = {
 const setMocks = ( {
 	primary = PRIMARY_MARKET,
 	markets = [ PRIMARY_MARKET ],
-	countries = { US: 'United States', CA: 'Canada', MX: 'Mexico', FR: 'France' },
+	countries = {
+		US: 'United States',
+		CA: 'Canada',
+		MX: 'Mexico',
+		FR: 'France',
+	},
 	multiLingualStore = false,
 } = {} ) => {
 	useMarkets.mockReturnValue( {
