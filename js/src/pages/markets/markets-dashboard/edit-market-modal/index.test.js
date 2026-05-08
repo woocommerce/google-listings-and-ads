@@ -12,7 +12,6 @@ import { useAppDispatch } from '~/data';
 import useSettings from '~/hooks/useSettings';
 import useShippingRates from '~/hooks/useShippingRates';
 import useShippingTimes from '~/hooks/useShippingTimes';
-import useSaveShippingRates from '~/hooks/useSaveShippingRates';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import EditMarketModal from './';
 
@@ -20,7 +19,6 @@ jest.mock( '~/data', () => ( { useAppDispatch: jest.fn() } ) );
 jest.mock( '~/hooks/useSettings' );
 jest.mock( '~/hooks/useShippingRates' );
 jest.mock( '~/hooks/useShippingTimes' );
-jest.mock( '~/hooks/useSaveShippingRates' );
 jest.mock( '~/hooks/useTargetAudienceFinalCountryCodes' );
 jest.mock( './edit-primary-audience', () => {
 	const { useEffect } = require( '@wordpress/element' );
@@ -44,7 +42,6 @@ describe( 'EditMarketModal', () => {
 	beforeEach( () => {
 		useAppDispatch.mockReturnValue( {
 			updateMarket: jest.fn().mockResolvedValue(),
-			invalidateResolution: jest.fn(),
 		} );
 		useSettings.mockReturnValue( {
 			settings: { shipping_rate: 'manual' },
@@ -70,9 +67,6 @@ describe( 'EditMarketModal', () => {
 				},
 			],
 			hasFinishedResolution: true,
-		} );
-		useSaveShippingRates.mockReturnValue( {
-			saveShippingRates: jest.fn().mockResolvedValue(),
 		} );
 		useTargetAudienceFinalCountryCodes.mockReturnValue( {
 			targetAudience: {
@@ -146,14 +140,8 @@ describe( 'EditMarketModal', () => {
 	test( 'dispatches updateMarket with countries when Save is clicked', async () => {
 		const user = userEvent.setup();
 		const updateMarket = jest.fn().mockResolvedValue();
-		const invalidateResolution = jest.fn();
-		const saveShippingRates = jest.fn().mockResolvedValue();
 		useAppDispatch.mockReturnValue( {
 			updateMarket,
-			invalidateResolution,
-		} );
-		useSaveShippingRates.mockReturnValue( {
-			saveShippingRates,
 		} );
 		const onRequestClose = jest.fn();
 
@@ -179,37 +167,6 @@ describe( 'EditMarketModal', () => {
 			} );
 		} );
 
-		await waitFor( () => {
-			expect( saveShippingRates ).toHaveBeenCalledWith(
-				expect.arrayContaining( [
-					expect.objectContaining( {
-						country: 'US',
-						currency: 'USD',
-						rate: 10,
-						options: {
-							free_shipping_threshold: 50,
-						},
-					} ),
-					expect.objectContaining( {
-						country: 'CA',
-						currency: 'USD',
-						rate: 10,
-						options: {
-							free_shipping_threshold: 50,
-						},
-					} ),
-				] )
-			);
-		} );
-
-		expect( invalidateResolution ).toHaveBeenCalledWith(
-			'getTargetAudience',
-			[]
-		);
-		expect( invalidateResolution ).toHaveBeenCalledWith(
-			'getShippingRates',
-			[]
-		);
 		expect( onRequestClose ).toHaveBeenCalledTimes( 1 );
 	} );
 

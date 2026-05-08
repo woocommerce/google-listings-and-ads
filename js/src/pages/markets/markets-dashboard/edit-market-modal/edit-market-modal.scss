@@ -1,0 +1,57 @@
+.gla-edit-market-modal {
+
+    .gla-edit-estimated-rates__label,
+    .gla-edit-estimated-times__label {
+        color: $gray-900;
+        display: block;
+        font-size: $gla-font-smallest;
+        font-weight: 600;
+        margin: 0;
+        padding-bottom: $grid-unit-05;
+        text-transform: uppercase;
+    }
+
+    .app-input-control .components-flex-item label.components-input-control__label {
+        color: $gray-900 !important; // to override !important from app-input-control
+        font-weight: 600;
+        padding-bottom: 0;
+    }
+
+    .gla-shipping-rate-input-control .app-input-control {
+        width: 100%;
+    }
+
+    .components-input-control__container {
+        padding: $grid-unit-10;
+    }
+
+    .gla-countries-time-input-container {
+        margin-bottom: $grid-unit-10;
+        max-width: unset;
+    }
+
+    .gla-shipping-rate-input-control {
+        margin-bottom: $grid-unit-10;
+    }
+
+    .gla-edit-estimated-rates,
+    .gla-edit-estimated-times {
+        margin-top: $grid-unit-30;
+    }
+
+    .gla-edit-estimated-rates__cost {
+        margin-top: $grid-unit-20;
+    }
+
+    .gla-subsection-helper-text {
+        color: $gray-700;
+    }
+
+    .gla-countries-time-input-container .components-flex-item:not(:nth-child(2)) {
+        flex: 1;
+    }
+
+    .gla-countries-time-stepper {
+        width: unset;
+    }
+}

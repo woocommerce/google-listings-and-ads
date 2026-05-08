@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
-import MultiLingualPluginPrompt from './multilingual-plugin-prompt/index.js';
+import MultiLingualPluginPrompt from './multilingual-plugin-prompt';
 
 /**
  * Placeholder for the Add Market modal.

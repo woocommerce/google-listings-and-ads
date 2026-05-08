@@ -2,8 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useRef, useState, useCallback } from '@wordpress/element';
-import { isEqual } from 'lodash';
+import { useRef, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -13,14 +12,19 @@ import { useAppDispatch } from '~/data';
 import { checkErrors } from '../../utils';
 import AdaptiveForm from '~/components/adaptive-form';
 import AppModal from '~/components/app-modal';
-import EstimatedShippingRatesSection from './estimated-shipping-rates-section';
-import EstimatedShippingTimesSection from './estimated-shipping-times-section';
+import AppSpinner from '~/components/app-spinner';
+import useShippingRates from '~/hooks/useShippingRates';
+import useShippingTimes from '~/hooks/useShippingTimes';
+import getOfferFreeShippingInitialValue from '~/utils/getOfferFreeShippingInitialValue';
+import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
+import EditShippingRates from './edit-shipping-rates.js';
+import EditShippingTimes from './edit-shipping-times.js';
 import AppButton from '~/components/app-button';
 import ValidationErrors from '~/components/validation-errors';
-import EditPrimaryAudience from './edit-primary-audience.js';
+import EditPrimaryAudience from './edit-primary-audience';
 import ShippingNotice from './shipping-notice';
-import useSaveShippingRates from '~/hooks/useSaveShippingRates';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
+import './edit-market-modal.scss';
 
 /**
  * @typedef {import('~/data/actions').TargetAudienceData } TargetAudienceData
@@ -40,33 +44,19 @@ import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCo
  * @param {() => void} props.onRequestClose Called when the user closes the modal.
  */
 const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
-	const { updateMarket, invalidateResolution } = useAppDispatch();
-	const { saveShippingRates } = useSaveShippingRates();
-	const { getFinalCountries } = useTargetAudienceFinalCountryCodes();
+	const { updateMarket } = useAppDispatch();
+	const { data: shippingRates, hasFinishedResolution: hasResolvedRates } =
+		useShippingRates();
+	const { data: shippingTimes, hasFinishedResolution: hasResolvedTimes } =
+		useShippingTimes();
+	const {
+		getFinalCountries,
+		loading: audienceLoading,
+	} = useTargetAudienceFinalCountryCodes();
 	const { id } = market;
 	const [ saving, setSaving ] = useState( false );
-	const [ shippingRatesDirty, setShippingRatesDirty ] = useState( false );
 	const isPrimaryMarket = id === PRIMARY_MARKET_ID;
 	const formRef = useRef();
-	const latestRatesRef = useRef( null );
-	const baselineRatesRef = useRef( null );
-
-	const handleRatesPayload = useCallback( ( rates, { isBaseline } ) => {
-		latestRatesRef.current = rates;
-		if ( isBaseline ) {
-			baselineRatesRef.current = rates;
-		}
-		setShippingRatesDirty(
-			Boolean(
-				baselineRatesRef.current &&
-					latestRatesRef.current &&
-					! isEqual(
-						baselineRatesRef.current,
-						latestRatesRef.current
-					)
-			)
-		);
-	}, [] );
 
 	const handleSubmit = async ( values ) => {
 		setSaving( true );
@@ -76,11 +66,6 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 				await updateMarket( values.id, {
 					countries: values.countries,
 				} );
-				if ( latestRatesRef.current?.length ) {
-					await saveShippingRates( latestRatesRef.current );
-				}
-				invalidateResolution( 'getTargetAudience', [] );
-				invalidateResolution( 'getShippingRates', [] );
 				onRequestClose();
 			}
 		} catch ( error ) {}
@@ -103,10 +88,28 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 		: __( 'Edit market', 'google-listings-and-ads' );
 
 	let initialValues = {};
+	if ( ! hasResolvedRates || ! hasResolvedTimes || audienceLoading ) {
+		return <AppSpinner />;
+	}
+
+	const rates = shippingRates ?? [];
+	const times = shippingTimes ?? [];
+	const nonFreeRates = rates.filter( isNonFreeShippingRate );
+	const thresholdFromStore =
+		nonFreeRates[ 0 ]?.options?.free_shipping_threshold;
+
+	initialValues = {
+		flat_shipping_rate: rates?.[ 0 ]?.rate ?? 0,
+		offer_free_shipping:
+			getOfferFreeShippingInitialValue( rates ) ?? false,
+		free_shipping_threshold: thresholdFromStore,
+		shipping_currency: rates?.[ 0 ]?.currency,
+		flat_shipping_min_time: times?.[ 0 ]?.time ?? null,
+		flat_shipping_max_time: times?.[ 0 ]?.maxTime ?? null,
+	};
+
 	if ( isPrimaryMarket ) {
-		initialValues = {
-			countries: targetAudience.countries || [],
-		};
+		initialValues.countries = targetAudience.countries || [];
 	}
 
 	return (
@@ -141,6 +144,7 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 
 				return (
 					<AppModal
+						className="gla-edit-market-modal"
 						title={ appModalTitle }
 						onRequestClose={ onRequestClose }
 						overflow="visible"
@@ -156,10 +160,7 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 								key="save"
 								variant="primary"
 								onClick={ handleSave }
-								disabled={
-									! isValidForm ||
-									( ! isDirty && ! shippingRatesDirty )
-								}
+								disabled={ ! isValidForm || ! isDirty }
 								loading={ saving }
 							>
 								{ __( 'Save', 'google-listings-and-ads' ) }
@@ -169,16 +170,10 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 						{ isPrimaryMarket && <EditPrimaryAudience /> }
 
 						<ShippingNotice />
-						<EstimatedShippingRatesSection
-							key={ `estimated-rates-${ id }` }
+						<EditShippingRates
 							audienceCountryCodes={ audienceCountryCodes }
-							onRatesPayloadChange={
-								isPrimaryMarket
-									? handleRatesPayload
-									: undefined
-							}
 						/>
-						<EstimatedShippingTimesSection />
+						<EditShippingTimes />
 					</AppModal>
 				);
 			} }
