@@ -264,6 +264,17 @@ describe( 'CyoIncentivePicker Component', () => {
 		);
 	} );
 
+	it( 'should render the terms and conditions link with the URL from the API response', () => {
+		renderComponent();
+		const tcLink = screen.getByRole( 'link', {
+			name: /terms and conditions apply/i,
+		} );
+		expect( tcLink ).toHaveAttribute(
+			'href',
+			'https://example.com/terms-1'
+		);
+	} );
+
 	it( 'should track gla_cyo_incentive_selected with offer level when selecting a radio', () => {
 		render( <CyoIncentivePicker context="setup-mc" /> );
 		const radioButtons = screen.getAllByRole( 'radio' );

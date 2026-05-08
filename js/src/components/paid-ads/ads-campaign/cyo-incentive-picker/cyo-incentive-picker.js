@@ -41,7 +41,7 @@ import './cyo-incentive-picker.scss';
  *
  * @fires gla_cyo_incentive_picker_shown when the incentive picker is shown to the user.
  * @fires gla_cyo_incentive_selected when the user selects an incentive offer.
- * @fires gla_documentation_link_click with `{ context: 'setup-ads' | 'setup-ads-only', link_id: 'incentives-terms-and-conditions-apply', href: 'https://ads.google.com/home/terms-and-conditions/incentives/' }`
+ * @fires gla_documentation_link_click with `{ context: 'setup-ads' | 'setup-ads-only', link_id: 'incentives-terms-and-conditions-apply', href: termsAndConditionsUrl }`
  *
  * @param {Object} props React props.
  * @param {string} props.context The context in which this component is used, e.g. 'create-ads', 'edit-ads', 'setup-ads', 'setup-mc', or 'setup-ads-only'. This is used for tracking purposes and may also be used to conditionally render content within the component.
@@ -59,6 +59,7 @@ const CyoIncentivePicker = ( { context } ) => {
 	} = getInputProps( 'incentiveOffer' );
 
 	const shouldDisplay = hasFinishedResolution && incentives?.length > 0;
+	const termsAndConditionsUrl = incentives?.[ 0 ]?.termsAndConditionsUrl;
 	const hasTrackedShownRef = useRef( false );
 
 	useEffect( () => {
@@ -133,7 +134,7 @@ const CyoIncentivePicker = ( { context } ) => {
 									<AppDocumentationLink
 										context={ context }
 										linkId="incentives-terms-and-conditions-apply"
-										href="https://ads.google.com/home/terms-and-conditions/incentives/"
+										href={ termsAndConditionsUrl }
 									/>
 								),
 							}
