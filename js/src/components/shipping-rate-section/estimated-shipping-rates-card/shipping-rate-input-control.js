@@ -8,7 +8,6 @@ import { Pill } from '@woocommerce/components';
  * Internal dependencies
  */
 import AppInputPriceControl from '~/components/app-input-price-control';
-import ShippingRateInputControlLabelText from './shipping-rate-input-control-label-text';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
 import './shipping-rate-input-control.scss';
 
@@ -20,11 +19,17 @@ import './shipping-rate-input-control.scss';
  * Input control to edit a shipping rate.
  *
  * @param {Object} props
- * @param {Array<CountryCode>} props.countryOptions Country options.
+ * @param {JSX.Element|string} props.label Label content for the input control.
  * @param {number} props.value The shipping rate this control is responsible for.
  * @param {(newRate: number) => void} props.onChange Callback called with the new rate when the rate is changed.
+ * @param {boolean} [props.hideLabelFromVision] Whether the label should be hidden from vision. Default to true.
  */
-const ShippingRateInputControl = ( { countryOptions, value, onChange } ) => {
+const ShippingRateInputControl = ( {
+	label,
+	value,
+	onChange,
+	hideLabelFromVision = true,
+} ) => {
 	const { code: currencyCode } = useStoreCurrency();
 
 	const handleBlur = ( event, numberValue ) => {
@@ -42,15 +47,11 @@ const ShippingRateInputControl = ( { countryOptions, value, onChange } ) => {
 	return (
 		<div className="gla-shipping-rate-input-control">
 			<AppInputPriceControl
-				label={
-					<ShippingRateInputControlLabelText
-						countries={ countryOptions }
-					/>
-				}
+				label={ label }
 				suffix={ currencyCode }
 				value={ value }
 				onBlur={ handleBlur }
-				hideLabelFromVision
+				hideLabelFromVision={ hideLabelFromVision }
 			/>
 
 			{ value === 0 && (

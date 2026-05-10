@@ -1,0 +1,16 @@
+.gla-app-searchable-select-control {
+
+	.gla-searchable-select-control__label {
+		color: $gray-900;
+		font-size: $gla-font-smallest;
+		font-weight: 500;
+		line-height: 1.4;
+		text-transform: uppercase;
+	}
+
+	.woocommerce-select-control .components-base-control {
+		border-color: $gray-600;
+		border-radius: 2px;
+		padding: 2px 2px 2px 8px;
+	}
+}
