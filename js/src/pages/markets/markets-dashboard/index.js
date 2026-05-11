@@ -41,9 +41,7 @@ const MarketsDashboard = () => {
 			{ dataViewStatus !== 'failed' && (
 				<Card className="gla-markets-dashboard__card">
 					{ dataViewStatus === 'loading' && <AppSpinner /> }
-					{ dataViewStatus === 'ready' && (
-						<MarketDataViews shippingRate={ shippingRate } />
-					) }
+					{ dataViewStatus === 'ready' && <MarketDataViews /> }
 				</Card>
 			) }
 		</div>
