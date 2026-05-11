@@ -35,7 +35,10 @@ describe( 'DeleteMarketModal', () => {
 	beforeEach( () => {
 		deleteMarketMock = jest.fn().mockResolvedValue( undefined );
 		onRequestCloseMock = jest.fn();
-		useAppDispatch.mockReturnValue( { deleteMarket: deleteMarketMock } );
+		useAppDispatch.mockReturnValue( {
+			deleteMarket: deleteMarketMock,
+			invalidateResolution: jest.fn(),
+		} );
 		useCountryKeyNameMap.mockReturnValue( { FR: 'France' } );
 	} );
 

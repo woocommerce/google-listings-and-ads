@@ -20,7 +20,7 @@ import AppButton from '~/components/app-button';
  * @param {() => void} props.onRequestClose Called when the user cancels or after a successful delete.
  */
 const DeleteMarketModal = ( { market, onRequestClose } ) => {
-	const { deleteMarket } = useAppDispatch();
+	const { deleteMarket, invalidateResolution } = useAppDispatch();
 	const countryNames = useCountryKeyNameMap();
 	const [ deleting, setDeleting ] = useState( false );
 
@@ -30,6 +30,7 @@ const DeleteMarketModal = ( { market, onRequestClose } ) => {
 		setDeleting( true );
 		try {
 			await deleteMarket( market.id );
+			invalidateResolution( 'getTargetAudience', [] );
 			onRequestClose();
 		} catch ( error ) {
 			// `handleApiError` in the store action already dispatches an error
@@ -55,10 +56,10 @@ const DeleteMarketModal = ( { market, onRequestClose } ) => {
 				<AppButton
 					key="delete"
 					variant="primary"
-					isDestructive
 					onClick={ handleConfirm }
 					disabled={ deleting }
 					loading={ deleting }
+					isDestructive
 				>
 					{ __( 'Delete', 'google-listings-and-ads' ) }
 				</AppButton>,
