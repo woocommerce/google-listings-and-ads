@@ -203,7 +203,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 	/**
 	 * Use the register method to register items with the container via the
-	 * protected $this->container property or the `getContainer` method
+	 * protected $this->container property or the `get_container` method
 	 * from the ContainerAwareTrait.
 	 *
 	 * @return void
@@ -220,21 +220,21 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		// Set up Options, and inflect classes that need options.
 		$this->share_concrete( OptionsInterface::class, Options::class );
-		$this->getContainer()
+		$this->get_container()
 			->inflector( OptionsAwareInterface::class )
-			->invokeMethod( 'set_options_object', [ OptionsInterface::class ] );
+			->invoke_method( 'set_options_object', [ OptionsInterface::class ] );
 
 		// Set up Transients, and inflect classes that need transients.
 		$this->share_concrete( TransientsInterface::class, Transients::class );
-		$this->getContainer()
+		$this->get_container()
 			->inflector( TransientsAwareInterface::class )
-			->invokeMethod( 'set_transients_object', [ TransientsInterface::class ] );
+			->invoke_method( 'set_transients_object', [ TransientsInterface::class ] );
 
 		// Share helper classes, and inflect classes that need it.
 		$this->share_with_tags( GoogleHelper::class, WC::class );
-		$this->getContainer()
+		$this->get_container()
 			->inflector( GoogleHelperAwareInterface::class )
-			->invokeMethod( 'set_google_helper_object', [ GoogleHelper::class ] );
+			->invoke_method( 'set_google_helper_object', [ GoogleHelper::class ] );
 
 		// Set up the TargetAudience service.
 		$this->share_with_tags( TargetAudience::class, WC::class, OptionsInterface::class, GoogleHelper::class );
@@ -248,20 +248,20 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Set up OAuthService service.
 		$this->share_with_tags( OAuthService::class );
 
-		$this->getContainer()
+		$this->get_container()
 			->inflector( MerchantCenterAwareInterface::class )
-			->invokeMethod( 'set_merchant_center_object', [ MerchantCenterService::class ] );
+			->invoke_method( 'set_merchant_center_object', [ MerchantCenterService::class ] );
 
-		$this->getContainer()
+		$this->get_container()
 			->inflector( WPAwareInterface::class )
-			->invokeMethod( 'set_wp_proxy_object', [ WP::class ] );
+			->invoke_method( 'set_wp_proxy_object', [ WP::class ] );
 
 		// Set up Ads service, and inflect classes that need it.
 		$this->share_with_tags( AdsAccountState::class );
 		$this->share_with_tags( AdsService::class, AdsAccountState::class );
-		$this->getContainer()
+		$this->get_container()
 			->inflector( AdsAwareInterface::class )
-			->invokeMethod( 'set_ads_object', [ AdsService::class ] );
+			->invoke_method( 'set_ads_object', [ AdsService::class ] );
 		$this->share_with_tags( AssetSuggestionsService::class, WP::class, WC::class, ImageUtility::class, wpdb::class, AdsAssetGroupAsset::class );
 
 		// Set up the installer.
@@ -357,9 +357,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		);
 
 		// Set up inflector for tracks classes.
-		$this->getContainer()
+		$this->get_container()
 			->inflector( TracksAwareInterface::class )
-			->invokeMethod( 'set_tracks', [ TracksInterface::class ] );
+			->invoke_method( 'set_tracks', [ TracksInterface::class ] );
 
 		// Share other classes.
 		$this->share_with_tags( ActivatedEvents::class, $_SERVER );

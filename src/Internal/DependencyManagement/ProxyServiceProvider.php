@@ -9,7 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC as WCProxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Jetpack;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Container\Definition;
 use wpdb;
 
 use function WC;
@@ -37,7 +37,7 @@ class ProxyServiceProvider extends AbstractServiceProvider {
 
 	/**
 	 * Use the register method to register items with the container via the
-	 * protected $this->container property or the `getContainer` method
+	 * protected $this->container property or the `get_container` method
 	 * from the ContainerAwareTrait.
 	 *
 	 * @return void

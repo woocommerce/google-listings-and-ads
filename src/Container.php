@@ -6,6 +6,7 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Container\PluginContainer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\AdminServiceProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\CoreServiceProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\DBServiceProvider;
@@ -16,10 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\Pr
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\RESTServiceProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\ThirdPartyServiceProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container as LeagueContainer;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerExceptionInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\NotFoundExceptionInterface;
 
 /**
  * PSR11 compliant dependency injection container for Google for WooCommerce.
@@ -33,9 +31,26 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\NotFoundExc
  * can be used directly.
  *
  * Class registration should be done via service providers that inherit from
- * \Automattic\WooCommerce\Internal\DependencyManagement and those should go in the
- * `src/Internal/DependencyManagement/ServiceProviders` folder unless there's a good reason to put them elsewhere.
- * All the service provider class names must be in the `$service_providers` array.
+ * Internal\DependencyManagement\AbstractServiceProvider and live under
+ * src/Internal/DependencyManagement/. All concrete provider classes must be listed in $service_providers.
+ *
+ * ---
+ *
+ * This class is a thin PSR-11 adapter on top of PluginContainer. The real
+ * container logic (definitions, arguments resolution, inflectors, tagging)
+ * lives in Internal\Container\PluginContainer. This class:
+ *
+ *   1. Constructs a PluginContainer instance.
+ *   2. Registers itself on that inner container as ContainerInterface::class,
+ *      so any service that depends on ContainerInterface receives this
+ *      public wrapper (not the internal implementation).
+ *   3. Installs the ContainerAwareInterface inflector so classes implementing
+ *      that interface have set_container() called after construction.
+ *   4. Eagerly instantiates every configured ServiceProvider, respects the
+ *      Conditional::is_needed() gate, and passes each one through
+ *      addServiceProvider() — which calls the provider's register() method
+ *      immediately. Unlike the previous League-based implementation, there
+ *      is no deferred booting.
  */
 final class Container implements ContainerInterface {
 
@@ -57,22 +72,28 @@ final class Container implements ContainerInterface {
 	];
 
 	/**
-	 * The underlying container.
+	 * The underlying plugin container.
 	 *
-	 * @var LeagueContainer
+	 * @var PluginContainer
 	 */
 	private $container;
 
 	/**
 	 * Container constructor.
-	 *
-	 * @param LeagueContainer|null $container
 	 */
-	public function __construct( ?LeagueContainer $container = null ) {
-		$this->container = $container ?? new LeagueContainer();
+	public function __construct() {
+		$this->container = new PluginContainer();
+
+		// Any service that depends on ContainerInterface receives this
+		// wrapper, not the inner container. Callers use only PSR-11 methods
+		// so the wrapper is a complete substitute for the inner container
+		// from the outside.
 		$this->container->addShared( ContainerInterface::class, $this );
+
+		// Classes that implement ContainerAwareInterface receive the
+		// container via set_container() immediately after construction.
 		$this->container->inflector( ContainerAwareInterface::class )
-			->invokeMethod( 'set_container', [ ContainerInterface::class ] );
+			->invoke_method( 'set_container', [ ContainerInterface::class ] );
 
 		foreach ( $this->service_providers as $service_provider_class ) {
 			$service_provider = new $service_provider_class();
@@ -81,6 +102,8 @@ final class Container implements ContainerInterface {
 				continue;
 			}
 
+			// Eager registration: this immediately calls the provider's
+			// register() method and wires up all its bindings.
 			$this->container->addServiceProvider( $service_provider );
 		}
 	}
@@ -90,8 +113,8 @@ final class Container implements ContainerInterface {
 	 *
 	 * @param string $id Identifier of the entry to look for.
 	 *
-	 * @throws NotFoundExceptionInterface  No entry was found for **this** identifier.
-	 * @throws ContainerExceptionInterface Error while retrieving the entry.
+	 * @throws \Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\NotFoundExceptionInterface  No entry was found for **this** identifier.
+	 * @throws \Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerExceptionInterface Error while retrieving the entry.
 	 *
 	 * @return mixed Entry.
 	 */
@@ -104,7 +127,7 @@ final class Container implements ContainerInterface {
 	 * Returns false otherwise.
 	 *
 	 * `has($id)` returning true does not mean that `get($id)` will not throw an exception.
-	 * It does however mean that `get($id)` will not throw a `NotFoundExceptionInterface`.
+	 * It does however mean that `get($id)` will not throw a NotFoundExceptionInterface.
 	 *
 	 * @param string $id Identifier of the entry to look for.
 	 *

@@ -17,7 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Handler\MockHa
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Response;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Container\PluginContainer as Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use ReflectionMethod;
 
@@ -66,7 +66,7 @@ class ClientTest extends UnitTest {
 		$this->container->addShared( OptionsInterface::class, $this->options );
 
 		$this->provider = new GoogleServiceProvider();
-		$this->provider->setContainer( $this->container );
+		$this->provider->set_container( $this->container );
 	}
 
 	/**

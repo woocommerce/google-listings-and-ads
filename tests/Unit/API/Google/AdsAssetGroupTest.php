@@ -17,7 +17,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use Google\ApiCore\ApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Container\PluginContainer as Container;
 
 defined( 'ABSPATH' ) || exit;
 

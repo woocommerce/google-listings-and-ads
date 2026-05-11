@@ -7,7 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\RecommendationsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Container\PluginContainer as Container;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use WP_REST_Response as Response;

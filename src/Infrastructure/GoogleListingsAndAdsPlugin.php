@@ -88,7 +88,13 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 		add_action(
 			self::SERVICE_REGISTRATION_HOOK,
 			function () {
+				if ( function_exists( 'spx_profiler_start' ) ) {
+					spx_profiler_start();
+				}
 				$this->maybe_register_services();
+				if ( function_exists( 'spx_profiler_stop' ) ) {
+					spx_profiler_stop();
+				}
 			},
 			20
 		);

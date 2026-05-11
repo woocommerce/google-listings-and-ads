@@ -16,7 +16,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GuzzleCl
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DateTimeUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Container\PluginContainer as Container;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 

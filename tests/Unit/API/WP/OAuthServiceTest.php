@@ -8,7 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities as UtilitiesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Container\PluginContainer as Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Jetpack;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
