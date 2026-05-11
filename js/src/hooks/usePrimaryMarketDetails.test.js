@@ -6,6 +6,7 @@ import { renderHook } from '@testing-library/react';
 /**
  * Internal dependencies
  */
+import { PRIMARY_MARKET_ID } from '~/pages/markets/constants';
 import usePrimaryMarketDetails from './usePrimaryMarketDetails';
 import useMarkets from './useMarkets';
 
@@ -18,7 +19,7 @@ describe( 'usePrimaryMarketDetails', () => {
 
 	test( 'returns the primary market from the markets list', () => {
 		const primary = {
-			id: 'primary',
+			id: PRIMARY_MARKET_ID,
 			label: 'Primary Market',
 			countries: [ 'US', 'CA' ],
 			shipping_rate: 'manual',

@@ -7,7 +7,7 @@ import { __, _n, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
-import { PRIMARY_MARKET_ID } from '../../constants';
+import { PRIMARY_MARKET_ID } from '~/pages/markets/constants';
 import useMarkets from '~/hooks/useMarkets';
 import usePrimaryMarketDetails from '~/hooks/usePrimaryMarketDetails';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
@@ -132,7 +132,7 @@ const buildDefaultConfig = ( markets, countryNames ) => {
  * @return {{ fields: Array, data: Array }} DataViews fields and pre-formatted rows.
  */
 const useMarketDataViewsConfig = () => {
-	const { data: markets } = useMarkets();
+	const { data: markets, hasFinishedResolution } = useMarkets();
 	const { data: primaryMarket } = usePrimaryMarketDetails();
 	const countryNames = useCountryKeyNameMap();
 
@@ -145,10 +145,13 @@ const useMarketDataViewsConfig = () => {
 	const shippingRate = primaryMarket?.shipping_rate;
 
 	if ( ! multiLingualStore && shippingRate === SHIPPING_RATE_METHOD.MANUAL ) {
-		return buildManualConfig( primaryMarket );
+		return { ...buildManualConfig( primaryMarket ), hasFinishedResolution };
 	}
 
-	return buildDefaultConfig( markets, countryNames );
+	return {
+		...buildDefaultConfig( markets, countryNames ),
+		hasFinishedResolution,
+	};
 };
 
 export default useMarketDataViewsConfig;

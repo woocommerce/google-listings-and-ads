@@ -6,7 +6,7 @@ import { renderHook } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import useMarketDataViewsConfig from './use-market-data-views-config';
+import useMarketDataViewsConfig from './useMarketDataViewsConfig';
 import useMarkets from '~/hooks/useMarkets';
 import usePrimaryMarketDetails from '~/hooks/usePrimaryMarketDetails';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
