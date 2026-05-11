@@ -17,9 +17,9 @@ import './index.scss';
 /**
  * Displays an info notice about shipping being managed in Google Merchant Center.
  *
- * @fires gla_documentation_link_click with `{ context: "edit-market-modal", link_id: "shipping-notice-merchant-center", href: "https://merchants.google.com/" }`
+ * @fires gla_documentation_link_click with `{ context: "edit-market-modal", link_id: "market-notice-merchant-center", href: "https://merchants.google.com/" }`
  */
-const ShippingNotice = () => {
+const MarketNotice = ( { context } ) => {
 	const { settings } = useSettings();
 
 	if (
@@ -31,7 +31,7 @@ const ShippingNotice = () => {
 
 	return (
 		<Notice
-			className="gla-edit-market-modal__notice"
+			className="gla-market-notice"
 			isDismissible={ false }
 			status="info"
 		>
@@ -43,9 +43,9 @@ const ShippingNotice = () => {
 				{
 					link: (
 						<AppDocumentationLink
-							context="edit-market-modal"
+							context={ context }
 							href={ GOOGLE_MERCHANT_CENTER_URL }
-							linkId="shipping-notice-merchant-center"
+							linkId="market-notice-merchant-center"
 						/>
 					),
 				}
@@ -54,4 +54,4 @@ const ShippingNotice = () => {
 	);
 };
 
-export default ShippingNotice;
+export default MarketNotice;

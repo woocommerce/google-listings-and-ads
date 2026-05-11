@@ -27,10 +27,7 @@ const MarketSelectControl = () => {
 	} = usePrimaryMarketDetails();
 	const { data: markets, hasFinishedResolution: hasResolvedMarkets } =
 		useMarkets();
-	const {
-		getInputProps,
-		adapter: { renderRequestedValidation },
-	} = useAdaptiveFormContext();
+	const { getInputProps } = useAdaptiveFormContext();
 
 	if (
 		! hasResolvedCountries ||

@@ -7,7 +7,7 @@ import { Flex, Notice } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
+import { SHIPPING_RATE_METHOD } from '~/constants';
 import {
 	useAdaptiveFormContext,
 	useAdaptiveFormInputProps,
@@ -16,9 +16,9 @@ import useSettings from '~/hooks/useSettings';
 import MarketSelectControl from './market-select-control';
 import LanguageSelectControl from './language-select-control';
 import CurrencySelectControl from './currency-select-control';
+import ShippingTimesInput from './shipping-times-input';
 import ShippingRateInputControl from '~/components/shipping-rate-section/estimated-shipping-rates-card/shipping-rate-input-control';
 import FreeShippingThresholdControl from '~/components/order-value-condition-section/minimum-order-card/free-shipping-threshold-control';
-import CountriesTimeInput from '~/components/free-listings/configure-product-listings/shipping-time-setup/countries-time-input';
 
 const MarketFields = () => {
 	const { settings } = useSettings();
@@ -58,7 +58,7 @@ const MarketFields = () => {
 				<FreeShippingThresholdControl { ...freeShippingInputProps } />
 			) }
 
-			<CountriesTimeInput />
+			<ShippingTimesInput />
 		</Flex>
 	);
 };

@@ -7,7 +7,7 @@ import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import AddMarket from '../add-market';
+import AddMarketButton from '../add-market-button';
 import { getShippingRateLabel } from '../utils/getShippingRateLabel';
 import './index.scss';
 
@@ -44,7 +44,7 @@ const MarketsHeader = ( { shippingRate } ) => {
 				</p>
 			</FlexBlock>
 			<FlexItem>
-				<AddMarket />
+				<AddMarketButton />
 			</FlexItem>
 		</Flex>
 	);

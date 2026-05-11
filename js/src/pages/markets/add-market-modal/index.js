@@ -2,21 +2,22 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import { checkErrors } from '../../utils/checkErrors';
 import { SHIPPING_RATE_METHOD } from '~/constants';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
-import AdaptiveForm from '~/components/adaptive-form';
 import MultiLingualPluginPrompt from './multilingual-plugin-prompt';
-import ValidationErrors from '~/components/validation-errors';
 import useSettings from '~/hooks/useSettings';
-import useShippingRates from '~/hooks/useShippingRates';
-import MarketFields from '../../market-fields';
+import MarketFields from '../market-fields';
+import MarketForm from '../market-form';
+
+/**
+ * @typedef {import('~/data/actions').ShippingRate} ShippingRate
+ * @typedef {import('~/data/actions').ShippingTime} ShippingTime
+ */
 
 /**
  * Placeholder for the Add Market modal.
@@ -28,47 +29,35 @@ import MarketFields from '../../market-fields';
  * end-to-end.
  *
  * @param {Object} props
+ * @param {Array<ShippingRate>} props.shippingRates Shipping rates to pre-populate the form with.
+ * @param {Array<ShippingTime>} props.shippingTimes Shipping times data, if not given AppSpinner will be rendered.
  * @param {() => void} props.onRequestClose Called when the user closes the modal.
  */
-const AddMarketModal = ( { onRequestClose } ) => {
-	const formRef = useRef();
+const AddMarketModal = ( { shippingRates, shippingTimes, onRequestClose } ) => {
 	const { settings } = useSettings();
-	const { data: shippingRates } = useShippingRates();
-
-	const extendAdapter = ( formContext ) => {
-		return {
-			renderRequestedValidation( key ) {
-				return (
-					<ValidationErrors messages={ formContext.errors[ key ] } />
-				);
-			},
-		};
-	};
-
-	const handleSubmit = async ( values ) => {
-		console.log( 'Submitting form with values:', values );
-	};
 
 	return (
-		<AdaptiveForm
-			ref={ formRef }
-			initialValues={ {
-				countries: [], // @TODO: to remove since checkErrors depends on it for now.
+		<MarketForm
+			initialMarket={ {
 				offer_free_shipping:
 					shippingRates?.[ 0 ]?.options?.free_shipping_threshold > 0,
 				flat_shipping_rate: shippingRates?.[ 0 ]?.rate,
 				shipping_country_rates: shippingRates, // for backwards compatibility with existing controls; to be removed once all controls are migrated to use flat_shipping_rate and offer_free_shipping directly.
+				flat_shipping_min_time: shippingTimes?.[ 0 ]?.time ?? null,
+				flat_shipping_max_time: shippingTimes?.[ 0 ]?.maxTime ?? null,
 			} }
-			extendAdapter={ extendAdapter }
-			validate={ checkErrors }
-			onSubmit={ handleSubmit }
+			onSubmit={ onRequestClose }
 		>
 			{ ( formContext ) => {
+				const { adapter, isValidForm, handleSubmit } = formContext;
+				const { isSaving } = adapter;
+
 				let buttons = [
 					<AppButton
 						key="close"
 						variant="tertiary"
 						onClick={ onRequestClose }
+						disabled={ isSaving }
 					>
 						{ __( 'Cancel', 'google-listings-and-ads' ) }
 					</AppButton>,
@@ -80,7 +69,9 @@ const AddMarketModal = ( { onRequestClose } ) => {
 						<AppButton
 							key="add-market"
 							variant="primary"
-							onClick={ formContext.handleSubmit }
+							disabled={ ! isValidForm }
+							onClick={ handleSubmit }
+							loading={ isSaving }
 						>
 							{ __( 'Add market', 'google-listings-and-ads' ) }
 						</AppButton>,
@@ -98,7 +89,7 @@ const AddMarketModal = ( { onRequestClose } ) => {
 					</AppModal>
 				);
 			} }
-		</AdaptiveForm>
+		</MarketForm>
 	);
 };
 

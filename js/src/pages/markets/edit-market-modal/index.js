@@ -2,20 +2,16 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useRef, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { PRIMARY_MARKET_ID } from '../constants';
-import { useAppDispatch } from '~/data';
-import { checkErrors } from '../utils/checkErrors';
-import AdaptiveForm from '~/components/adaptive-form';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
-import ValidationErrors from '~/components/validation-errors';
 import EditPrimaryAudience from './edit-primary-audience';
-import ShippingNotice from './shipping-notice';
+import MarketNotice from '../market-notice';
+import MarketForm from '../market-form';
 
 /**
  * @typedef {import('~/data/actions').TargetAudienceData } TargetAudienceData
@@ -35,35 +31,8 @@ import ShippingNotice from './shipping-notice';
  * @param {() => void} props.onRequestClose Called when the user closes the modal.
  */
 const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
-	const { updateMarket, invalidateResolution } = useAppDispatch();
 	const { id } = market;
-	const [ saving, setSaving ] = useState( false );
 	const isPrimaryMarket = id === PRIMARY_MARKET_ID;
-	const formRef = useRef();
-
-	const handleSubmit = async ( values ) => {
-		const { id: marketId, ...data } = values;
-
-		setSaving( true );
-
-		try {
-			await updateMarket( marketId, data );
-			invalidateResolution( 'getTargetAudience', [] );
-			onRequestClose();
-		} catch ( error ) {}
-
-		setSaving( false );
-	};
-
-	const extendAdapter = ( formContext ) => {
-		return {
-			renderRequestedValidation( key ) {
-				return (
-					<ValidationErrors messages={ formContext.errors[ key ] } />
-				);
-			},
-		};
-	};
 
 	const appModalTitle = isPrimaryMarket
 		? __( 'Edit primary market', 'google-listings-and-ads' )
@@ -77,22 +46,21 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 	}
 
 	return (
-		<AdaptiveForm
-			ref={ formRef }
-			initialValues={ {
+		<MarketForm
+			initialMarket={ {
 				id,
 				...initialValues,
 			} }
-			extendAdapter={ extendAdapter }
-			validate={ checkErrors }
-			onSubmit={ handleSubmit }
+			onSubmit={ onRequestClose }
 		>
 			{ ( formContext ) => {
 				const {
 					isValidForm,
 					handleSubmit: handleSave,
 					isDirty,
+					adapter,
 				} = formContext;
+				const { isSaving } = adapter;
 
 				return (
 					<AppModal
@@ -104,6 +72,7 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 								key="close"
 								variant="tertiary"
 								onClick={ onRequestClose }
+								disabled={ isSaving }
 							>
 								{ __( 'Cancel', 'google-listings-and-ads' ) }
 							</AppButton>,
@@ -112,7 +81,7 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 								variant="primary"
 								onClick={ handleSave }
 								disabled={ ! isValidForm || ! isDirty }
-								loading={ saving }
+								loading={ isSaving }
 							>
 								{ __( 'Save', 'google-listings-and-ads' ) }
 							</AppButton>,
@@ -120,11 +89,11 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 					>
 						{ isPrimaryMarket && <EditPrimaryAudience /> }
 
-						<ShippingNotice />
+						<MarketNotice context="edit-market-modal" />
 					</AppModal>
 				);
 			} }
-		</AdaptiveForm>
+		</MarketForm>
 	);
 };
 
