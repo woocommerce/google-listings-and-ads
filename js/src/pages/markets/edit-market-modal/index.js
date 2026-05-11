@@ -7,9 +7,9 @@ import { useRef, useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { PRIMARY_MARKET_ID } from '../../constants';
+import { PRIMARY_MARKET_ID } from '../constants';
 import { useAppDispatch } from '~/data';
-import { checkErrors } from '../../utils';
+import { checkErrors } from '../utils/checkErrors';
 import AdaptiveForm from '~/components/adaptive-form';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';

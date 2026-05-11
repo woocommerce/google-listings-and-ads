@@ -7,8 +7,8 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import MarketsDashboard from './';
-import MarketsHeader from './markets-header';
+import MarketsDashboard from '../markets-dashboard';
+import MarketsHeader from '../markets-header';
 import useDataViewsScript from '~/hooks/useDataViewsScript';
 import useSettings from '~/hooks/useSettings';
 import { SHIPPING_RATE_METHOD } from '~/constants';
@@ -16,7 +16,7 @@ import { SHIPPING_RATE_METHOD } from '~/constants';
 jest.mock( '~/hooks/useDataViewsScript' );
 jest.mock( '~/hooks/useSettings' );
 
-jest.mock( './market-data-views', () =>
+jest.mock( '../market-data-views', () =>
 	jest.fn().mockReturnValue( <div data-testid="market-data-views" /> )
 );
 

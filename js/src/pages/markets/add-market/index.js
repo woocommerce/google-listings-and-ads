@@ -8,7 +8,7 @@ import { useState, useCallback } from '@wordpress/element';
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
-import AddMarketModal from '../add-market-modal';
+import AddMarketModal from './add-market-modal';
 
 /**
  * Owns the open / close state for `AddMarketModal`. The modal itself is a

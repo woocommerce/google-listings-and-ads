@@ -7,10 +7,12 @@ import { Flex, Notice } from '@wordpress/components';
 /**
  * Internal dependencies
  */
+import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 import {
 	useAdaptiveFormContext,
 	useAdaptiveFormInputProps,
 } from '~/components/adaptive-form';
+import useSettings from '~/hooks/useSettings';
 import MarketSelectControl from './market-select-control';
 import LanguageSelectControl from './language-select-control';
 import CurrencySelectControl from './currency-select-control';
@@ -19,12 +21,16 @@ import FreeShippingThresholdControl from '~/components/order-value-condition-sec
 import CountriesTimeInput from '~/components/free-listings/configure-product-listings/shipping-time-setup/countries-time-input';
 
 const MarketFields = () => {
+	const { settings } = useSettings();
 	const { getInputProps, values } = useAdaptiveFormContext();
 	const freeShippingInputProps = useAdaptiveFormInputProps(
 		'shipping_country_rates',
 		'free_shipping_threshold'
 	);
 	const shouldDisplayFreeShippingThreshold = values.flat_shipping_rate > 0;
+	if ( settings?.shipping_rate !== SHIPPING_RATE_METHOD.FLAT ) {
+		return null;
+	}
 
 	return (
 		<Flex direction="column" gap={ 6 }>

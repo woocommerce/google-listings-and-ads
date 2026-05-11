@@ -14,7 +14,7 @@ const CurrencySelectControl = () => {
 	if ( ! glaData.isMultiLingualStore ) {
 		return (
 			<AppInputControl
-				label={ __( 'Language', 'google-listings-and-ads' ) }
+				label={ __( 'Currency', 'google-listings-and-ads' ) }
 				placeholder={ __(
 					'Requires multilingual plugin',
 					'google-listings-and-ads'

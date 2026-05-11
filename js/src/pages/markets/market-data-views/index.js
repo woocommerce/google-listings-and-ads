@@ -9,7 +9,7 @@ import { edit, trash } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import { PRIMARY_MARKET_ID } from '../../constants';
+import { PRIMARY_MARKET_ID } from '../constants';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useMarketDataViewsConfig from '~/hooks/useMarketDataViewsConfig';
 import EditMarketModal from '../edit-market-modal';

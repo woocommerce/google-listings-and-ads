@@ -7,7 +7,7 @@ import { useRef } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { checkErrors } from '../../utils';
+import { checkErrors } from '../../utils/checkErrors';
 import { SHIPPING_RATE_METHOD } from '~/constants';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
@@ -16,7 +16,7 @@ import MultiLingualPluginPrompt from './multilingual-plugin-prompt';
 import ValidationErrors from '~/components/validation-errors';
 import useSettings from '~/hooks/useSettings';
 import useShippingRates from '~/hooks/useShippingRates';
-import MarketFields from './market-fields';
+import MarketFields from '../../market-fields';
 
 /**
  * Placeholder for the Add Market modal.

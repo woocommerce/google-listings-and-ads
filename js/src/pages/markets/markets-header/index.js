@@ -8,7 +8,7 @@ import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
  * Internal dependencies
  */
 import AddMarket from '../add-market';
-import { getShippingRateLabel } from '../../utils';
+import { getShippingRateLabel } from '../utils/getShippingRateLabel';
 import './index.scss';
 
 /**
