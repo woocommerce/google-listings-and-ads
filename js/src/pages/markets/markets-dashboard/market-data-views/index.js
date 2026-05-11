@@ -11,8 +11,10 @@ import { edit, trash } from '@wordpress/icons';
  */
 import { PRIMARY_MARKET_ID } from '../../constants';
 import useMarkets from '~/hooks/useMarkets';
+import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import EditMarketModal from '../edit-market-modal';
+import DeleteMarketModal from '../delete-market-modal';
 import './index.scss';
 
 const FIELDS = [
@@ -52,21 +54,6 @@ const isPrimaryMarket = ( market ) => market.id === PRIMARY_MARKET_ID;
  * per shipping rate / multilingual store will be added in a follow-up task;
  * `shippingRate` is accepted today but currently ignored.
  *
- * Known design / implementation mismatches we are intentionally accepting to
- * stay on the built-in DataViews UI:
- *
- * - Figma asks for an always-visible "Edit" text button. DataViews only lifts
- *   actions out of the kebab menu when both `isPrimary` and `icon` are set,
- *   and renders them as an icon-only button (the label is exposed only as
- *   `aria-label`). The built-in stylesheet additionally hides primary action
- *   buttons until the row is hovered. We therefore ship an icon-only Edit that
- *   appears on hover; matching the Figma exactly would require dropping the
- *   built-in component, which isn't worth it for now.
- * - The primary market cannot be deleted, so the Delete action is gated by
- *   `isEligible` and simply omitted on the primary row (only Edit shows).
- *   The Delete callback is a placeholder until the real deletion flow is
- *   wired up.
- *
  * @param {Object} props
  * @param {string} [props.shippingRate] One of the values defined in `SHIPPING_RATE_METHOD`.
  */
@@ -78,23 +65,31 @@ const MarketDataViews = ( { shippingRate } ) => {
 	const { data: markets, hasFinishedResolution } = useMarkets();
 	const [ view, setView ] = useState( DEFAULT_VIEW );
 	const [ editingMarket, setEditingMarket ] = useState( null );
+	const [ deletingMarket, setDeletingMarket ] = useState( null );
 	const { targetAudience, loaded } = useTargetAudienceFinalCountryCodes();
+	const countryNames = useCountryKeyNameMap();
 
-	const rows = markets.map( ( market ) => ( {
-		...market,
-		market: sprintf(
-			// translators: 1: market label, 2: number of countries.
-			_n(
-				'%1$s (%2$d country)',
-				'%1$s (%2$d countries)',
-				market.countries.length,
-				'google-listings-and-ads'
-			),
-			market.label,
-			market.countries.length
-		),
-		shippingTime: market.shipping_time,
-	} ) );
+	const rows = markets.map( ( market ) => {
+		const marketCell = isPrimaryMarket( market )
+			? sprintf(
+					// translators: 1: market label, 2: number of countries.
+					_n(
+						'%1$s (%2$d country)',
+						'%1$s (%2$d countries)',
+						market.countries.length,
+						'google-listings-and-ads'
+					),
+					market.label,
+					market.countries.length
+			  )
+			: countryNames[ market.country ];
+
+		return {
+			...market,
+			market: marketCell,
+			shippingTime: market.shipping_time,
+		};
+	} );
 
 	const ACTIONS = [
 		{
@@ -112,7 +107,7 @@ const MarketDataViews = ( { shippingRate } ) => {
 			icon: trash,
 			isDestructive: true,
 			isEligible: ( market ) => ! isPrimaryMarket( market ),
-			callback: () => {},
+			callback: ( [ market ] ) => setDeletingMarket( market ),
 		},
 	];
 
@@ -138,6 +133,13 @@ const MarketDataViews = ( { shippingRate } ) => {
 					market={ editingMarket }
 					onRequestClose={ () => setEditingMarket( null ) }
 					targetAudience={ targetAudience }
+				/>
+			) }
+
+			{ deletingMarket && (
+				<DeleteMarketModal
+					market={ deletingMarket }
+					onRequestClose={ () => setDeletingMarket( null ) }
 				/>
 			) }
 		</>
