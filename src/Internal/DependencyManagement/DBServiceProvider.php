@@ -86,7 +86,7 @@ class DBServiceProvider extends AbstractServiceProvider {
 
 	/**
 	 * Use the register method to register items with the container via the
-	 * protected $this->container property or the `getContainer` method
+	 * protected $this->container property or the `get_container` method
 	 * from the ContainerAwareTrait.
 	 *
 	 * @return void
@@ -128,7 +128,7 @@ class DBServiceProvider extends AbstractServiceProvider {
 	 * @return Definition
 	 */
 	protected function add_query_class( string $class_name, ...$arguments ): Definition {
-		return $this->add( $class_name, wpdb::class, ...$arguments )->addTag( 'db_query' );
+		return $this->add( $class_name, wpdb::class, ...$arguments )->add_tag( 'db_query' );
 	}
 
 	/**
@@ -143,7 +143,7 @@ class DBServiceProvider extends AbstractServiceProvider {
 	 * @return Definition
 	 */
 	protected function share_table_class( string $class_name, ...$arguments ): Definition {
-		return parent::share( $class_name, WP::class, wpdb::class, ...$arguments )->addTag( 'db_table' );
+		return parent::share( $class_name, WP::class, wpdb::class, ...$arguments )->add_tag( 'db_table' );
 	}
 
 	/**

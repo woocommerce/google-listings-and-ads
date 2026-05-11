@@ -39,16 +39,16 @@ class ThirdPartyServiceProvider extends AbstractServiceProvider {
 
 	/**
 	 * Use the register method to register items with the container via the
-	 * protected $this->container property or the `getContainer` method
+	 * protected $this->container property or the `get_container` method
 	 * from the ContainerAwareTrait.
 	 *
 	 * @return void
 	 */
 	public function register(): void {
 		$jetpack_id = 'google-listings-and-ads';
-		$this->share( Manager::class )->addArgument( $jetpack_id );
+		$this->share( Manager::class )->add_argument( $jetpack_id );
 
-		$this->share( Config::class )->addMethodCall(
+		$this->share( Config::class )->add_method_call(
 			'ensure',
 			[
 				'connection',
@@ -60,9 +60,9 @@ class ThirdPartyServiceProvider extends AbstractServiceProvider {
 		);
 
 		$this->share_concrete( ISO3166DataProvider::class, ISO3166::class );
-		$this->getContainer()
+		$this->get_container()
 			->inflector( ISO3166AwareInterface::class )
-			->invokeMethod( 'set_iso3166_provider', [ ISO3166DataProvider::class ] );
+			->invoke_method( 'set_iso3166_provider', [ ISO3166DataProvider::class ] );
 
 		$this->share_concrete(
 			ValidatorInterface::class,
@@ -77,7 +77,7 @@ class ThirdPartyServiceProvider extends AbstractServiceProvider {
 		add_action(
 			'init',
 			function () {
-				$manager = $this->getContainer()->get( Manager::class );
+				$manager = $this->get_container()->get( Manager::class );
 				$manager->get_plugin()->add(
 					__( 'Google for WooCommerce', 'google-listings-and-ads' )
 				);

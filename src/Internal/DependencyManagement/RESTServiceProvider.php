@@ -112,7 +112,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 
 	/**
 	 * Use the register method to register items with the container via the
-	 * protected $this->container property or the `getContainer` method
+	 * protected $this->container property or the `get_container` method
 	 * from the ContainerAwareTrait.
 	 *
 	 * @return void
@@ -179,6 +179,6 @@ class RESTServiceProvider extends AbstractServiceProvider {
 	 * @return Definition
 	 */
 	protected function share( string $class_name, ...$arguments ): Definition {
-		return parent::share( $class_name, RESTServer::class, ...$arguments )->addTag( 'rest_controller' );
+		return parent::share( $class_name, RESTServer::class, ...$arguments )->add_tag( 'rest_controller' );
 	}
 }

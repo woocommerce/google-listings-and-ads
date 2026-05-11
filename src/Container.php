@@ -93,7 +93,7 @@ final class Container implements ContainerInterface {
 		// Classes that implement ContainerAwareInterface receive the
 		// container via set_container() immediately after construction.
 		$this->container->inflector( ContainerAwareInterface::class )
-			->invokeMethod( 'set_container', [ ContainerInterface::class ] );
+			->invoke_method( 'set_container', [ ContainerInterface::class ] );
 
 		foreach ( $this->service_providers as $service_provider_class ) {
 			$service_provider = new $service_provider_class();

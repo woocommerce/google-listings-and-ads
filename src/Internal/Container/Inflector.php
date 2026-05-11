@@ -11,9 +11,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * Used by providers via:
  *
- *     $this->getContainer()
+ *     $this->get_container()
  *         ->inflector( OptionsAwareInterface::class )
- *         ->invokeMethod( 'set_options_object', [ OptionsInterface::class ] );
+ *         ->invoke_method( 'set_options_object', [ OptionsInterface::class ] );
  *
  * The container calls Inflector::inflect() on every just-built instance, so
  * every *AwareInterface-implementing service gets its setter called with the
@@ -35,11 +35,17 @@ class Inflector {
 	 */
 	private $method_calls = [];
 
+	/**
+	 * @param string $type Interface or class name instances must implement.
+	 */
 	public function __construct( string $type ) {
 		$this->type = $type;
 	}
 
-	public function getType(): string {
+	/**
+	 * @return string
+	 */
+	public function get_type(): string {
 		return $this->type;
 	}
 
@@ -50,8 +56,9 @@ class Inflector {
 	 *
 	 * @param string            $method
 	 * @param array<int, mixed> $args
+	 * @return self
 	 */
-	public function invokeMethod( string $method, array $args = [] ): self {
+	public function invoke_method( string $method, array $args = [] ): self {
 		$this->method_calls[] = [
 			'method' => $method,
 			'args'   => $args,
@@ -59,10 +66,18 @@ class Inflector {
 		return $this;
 	}
 
+	/**
+	 * @param object $instance
+	 * @return bool
+	 */
 	public function applies( object $instance ): bool {
 		return $instance instanceof $this->type;
 	}
 
+	/**
+	 * @param object          $instance
+	 * @param PluginContainer $container
+	 */
 	public function inflect( object $instance, PluginContainer $container ): void {
 		foreach ( $this->method_calls as $call ) {
 			$resolved = $container->resolve_arguments(

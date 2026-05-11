@@ -66,7 +66,7 @@ class ClientTest extends UnitTest {
 		$this->container->addShared( OptionsInterface::class, $this->options );
 
 		$this->provider = new GoogleServiceProvider();
-		$this->provider->setContainer( $this->container );
+		$this->provider->set_container( $this->container );
 	}
 
 	/**

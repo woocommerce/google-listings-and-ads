@@ -79,7 +79,7 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 
 	/**
 	 * Use the register method to register items with the container via the
-	 * protected $this->container property or the `getContainer` method
+	 * protected $this->container property or the `get_container` method
 	 * from the ContainerAwareTrait.
 	 *
 	 * @return void

@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
  * signatures as before so concrete provider classes do not need to change.
  * The only visible difference is the return type: a plugin-local Definition
  * instead of League's DefinitionInterface. Methods called on that return
- * value (addArguments, addArgument, addTag, addMethodCall) are identical.
+ * value (add_arguments, add_argument, add_tag, add_method_call) are identical.
  */
 abstract class AbstractServiceProvider extends ServiceProvider {
 
@@ -39,6 +39,9 @@ abstract class AbstractServiceProvider extends ServiceProvider {
 	/**
 	 * Historical provides() check. Not called by the plugin's container,
 	 * kept for compatibility with any external caller that inspects it.
+	 *
+	 * @param string $service
+	 * @return bool
 	 */
 	public function provides( string $service ): bool {
 		return array_key_exists( $service, $this->provides );
@@ -52,7 +55,7 @@ abstract class AbstractServiceProvider extends ServiceProvider {
 	 * @param mixed  $concrete       A class name, closure, object, or Definition.
 	 */
 	protected function share_concrete( string $interface_name, $concrete = null ): Definition {
-		return $this->getContainer()->addShared( $interface_name, $concrete );
+		return $this->get_container()->addShared( $interface_name, $concrete );
 	}
 
 	/**
@@ -66,7 +69,7 @@ abstract class AbstractServiceProvider extends ServiceProvider {
 	protected function share_with_tags( string $class_name, ...$arguments ): Definition {
 		$definition = $this->share( $class_name, ...$arguments );
 		foreach ( class_implements( $class_name ) as $interface_name ) {
-			$definition->addTag( $interface_name );
+			$definition->add_tag( $interface_name );
 		}
 		return $definition;
 	}
@@ -87,7 +90,7 @@ abstract class AbstractServiceProvider extends ServiceProvider {
 	protected function share_factory_with_tags( string $class_name, callable $factory ): Definition {
 		$definition = $this->share_concrete( $class_name, $factory );
 		foreach ( class_implements( $class_name ) as $interface_name ) {
-			$definition->addTag( $interface_name );
+			$definition->add_tag( $interface_name );
 		}
 		return $definition;
 	}
@@ -99,7 +102,7 @@ abstract class AbstractServiceProvider extends ServiceProvider {
 	 * @param mixed  ...$arguments Constructor arguments.
 	 */
 	protected function share( string $class_name, ...$arguments ): Definition {
-		return $this->getContainer()->addShared( $class_name )->addArguments( $arguments );
+		return $this->get_container()->addShared( $class_name )->add_arguments( $arguments );
 	}
 
 	/**
@@ -109,7 +112,7 @@ abstract class AbstractServiceProvider extends ServiceProvider {
 	 * @param mixed  ...$arguments Constructor arguments.
 	 */
 	protected function add( string $class_name, ...$arguments ): Definition {
-		return $this->getContainer()->add( $class_name )->addArguments( $arguments );
+		return $this->get_container()->add( $class_name )->add_arguments( $arguments );
 	}
 
 	/**

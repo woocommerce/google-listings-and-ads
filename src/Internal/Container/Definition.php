@@ -66,9 +66,9 @@ class Definition {
 
 		// Unwrap nested Definition wrappers. Providers sometimes build a
 		// Definition to pass to share_concrete():
-		//   share_concrete( X::class, new Definition( X::class, $closure ) )
+		// share_concrete( X::class, new Definition( X::class, $closure ) )
 		// We flatten that into this definition so the caller can still chain
-		// addMethodCall() etc. on what they receive.
+		// add_method_call() etc. on what they receive.
 		if ( $concrete instanceof self ) {
 			$this->concrete     = $concrete->concrete;
 			$this->arguments    = $concrete->arguments;
@@ -80,15 +80,25 @@ class Definition {
 		$this->concrete = $concrete ?? $id;
 	}
 
-	public function getId(): string {
+	/**
+	 * @return string
+	 */
+	public function get_id(): string {
 		return $this->id;
 	}
 
-	public function isShared(): bool {
+	/**
+	 * @return bool
+	 */
+	public function is_shared(): bool {
 		return $this->shared;
 	}
 
-	public function setShared( bool $shared ): self {
+	/**
+	 * @param bool $shared
+	 * @return self
+	 */
+	public function set_shared( bool $shared ): self {
 		$this->shared = $shared;
 		return $this;
 	}
@@ -96,15 +106,23 @@ class Definition {
 	/**
 	 * @return array<int, string>
 	 */
-	public function getTags(): array {
+	public function get_tags(): array {
 		return $this->tags;
 	}
 
-	public function hasTag( string $tag ): bool {
+	/**
+	 * @param string $tag
+	 * @return bool
+	 */
+	public function has_tag( string $tag ): bool {
 		return in_array( $tag, $this->tags, true );
 	}
 
-	public function addTag( string $tag ): self {
+	/**
+	 * @param string $tag
+	 * @return self
+	 */
+	public function add_tag( string $tag ): self {
 		if ( ! in_array( $tag, $this->tags, true ) ) {
 			$this->tags[] = $tag;
 		}
@@ -115,8 +133,9 @@ class Definition {
 	 * Append a single positional argument.
 	 *
 	 * @param mixed $argument
+	 * @return self
 	 */
-	public function addArgument( $argument ): self {
+	public function add_argument( $argument ): self {
 		$this->arguments[] = $argument;
 		return $this;
 	}
@@ -125,8 +144,9 @@ class Definition {
 	 * Append multiple positional arguments.
 	 *
 	 * @param array<int, mixed> $arguments
+	 * @return self
 	 */
-	public function addArguments( array $arguments ): self {
+	public function add_arguments( array $arguments ): self {
 		foreach ( $arguments as $argument ) {
 			$this->arguments[] = $argument;
 		}
@@ -137,10 +157,11 @@ class Definition {
 	 * Register a method to call on the built instance, with arguments that
 	 * will be resolved through the container at build time.
 	 *
-	 * @param string             $method
-	 * @param array<int, mixed>  $args
+	 * @param string            $method
+	 * @param array<int, mixed> $args
+	 * @return self
 	 */
-	public function addMethodCall( string $method, array $args = [] ): self {
+	public function add_method_call( string $method, array $args = [] ): self {
 		$this->method_calls[] = [
 			'method' => $method,
 			'args'   => $args,
@@ -152,6 +173,7 @@ class Definition {
 	 * Build the instance (or return the literal value) this definition
 	 * represents.
 	 *
+	 * @param PluginContainer $container
 	 * @return mixed
 	 */
 	public function build( PluginContainer $container ) {
@@ -182,16 +204,19 @@ class Definition {
 	}
 
 	/**
+	 * @param string          $class_name
+	 * @param PluginContainer $container
 	 * @return object
+	 * @throws ContainerException When the class cannot be instantiated or arguments are insufficient.
 	 */
-	private function instantiate_class( string $class, PluginContainer $container ) {
-		$reflection = new ReflectionClass( $class );
+	private function instantiate_class( string $class_name, PluginContainer $container ) {
+		$reflection = new ReflectionClass( $class_name );
 
 		if ( ! $reflection->isInstantiable() ) {
 			throw new ContainerException(
 				sprintf(
 					'Cannot instantiate %s while building "%s": class is abstract, an interface, or has a non-public constructor.',
-					$class,
+					$class_name,
 					$this->id
 				)
 			);
@@ -205,7 +230,7 @@ class Definition {
 				throw new ContainerException(
 					sprintf(
 						'%s has no constructor but %d argument(s) were declared in the definition for "%s".',
-						$class,
+						$class_name,
 						count( $this->arguments ),
 						$this->id
 					)
@@ -227,7 +252,7 @@ class Definition {
 				sprintf(
 					'Not enough arguments to instantiate %s (binding "%s"): %d required, %d provided. ' .
 					'Declare the missing dependencies in the provider\'s share()/add() call.',
-					$class,
+					$class_name,
 					$this->id,
 					$required,
 					count( $this->arguments )
@@ -237,15 +262,16 @@ class Definition {
 
 		$resolved = $container->resolve_arguments(
 			$this->arguments,
-			sprintf( '%s::__construct', $class )
+			sprintf( '%s::__construct', $class_name )
 		);
 
 		return $reflection->newInstanceArgs( $resolved );
 	}
 
 	/**
-	 * @param object $instance
-	 * @return object
+	 * @param mixed           $instance
+	 * @param PluginContainer $container
+	 * @return mixed
 	 */
 	private function apply_method_calls( $instance, PluginContainer $container ) {
 		if ( empty( $this->method_calls ) ) {

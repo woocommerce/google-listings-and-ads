@@ -97,7 +97,7 @@ class PluginContainer implements ContainerInterface {
 	 */
 	public function add( string $id, $concrete = null ): Definition {
 		$definition = new Definition( $id, $concrete );
-		$definition->setShared( false );
+		$definition->set_shared( false );
 		$this->definitions[ $id ] = $definition;
 		$this->tags_dirty         = true;
 		return $definition;
@@ -112,7 +112,7 @@ class PluginContainer implements ContainerInterface {
 	 */
 	public function addShared( string $id, $concrete = null ): Definition {
 		$definition = new Definition( $id, $concrete );
-		$definition->setShared( true );
+		$definition->set_shared( true );
 		$this->definitions[ $id ] = $definition;
 		$this->tags_dirty         = true;
 		return $definition;
@@ -137,9 +137,11 @@ class PluginContainer implements ContainerInterface {
 	 *
 	 * Unlike League, there is no deferred booting — providers are registered
 	 * in the order they are added.
+	 *
+	 * @param ServiceProvider $provider
 	 */
 	public function addServiceProvider( ServiceProvider $provider ): void {
-		$provider->setContainer( $this );
+		$provider->set_container( $this );
 		$provider->register();
 	}
 
@@ -157,6 +159,7 @@ class PluginContainer implements ContainerInterface {
 	 *
 	 * @param string $id
 	 * @return mixed
+	 * @throws NotFoundException When no binding, cached instance, or tag collection matches $id.
 	 */
 	public function get( $id ) {
 		if ( array_key_exists( $id, $this->shared_instances ) ) {
@@ -230,8 +233,11 @@ class PluginContainer implements ContainerInterface {
 	}
 
 	/**
-	 * @param mixed $argument
+	 * @param mixed  $argument
+	 * @param string $context
+	 * @param int    $index
 	 * @return mixed
+	 * @throws NotFoundException When a string argument is a known class/interface with no binding.
 	 */
 	private function resolve_argument( $argument, string $context, int $index ) {
 		if ( ! is_string( $argument ) ) {
@@ -279,7 +285,7 @@ class PluginContainer implements ContainerInterface {
 		// Cache BEFORE applying inflectors so a re-entrant get() for this
 		// id from inside a setter finds the instance instead of starting
 		// another build.
-		if ( $definition->isShared() ) {
+		if ( $definition->is_shared() ) {
 			$this->shared_instances[ $id ] = $instance;
 		}
 
@@ -306,6 +312,9 @@ class PluginContainer implements ContainerInterface {
 		return $instances;
 	}
 
+	/**
+	 * @param object $instance
+	 */
 	private function apply_inflectors( object $instance ): void {
 		foreach ( $this->inflectors as $inflector ) {
 			if ( $inflector->applies( $instance ) ) {
@@ -330,7 +339,7 @@ class PluginContainer implements ContainerInterface {
 		}
 		$this->tags = [];
 		foreach ( $this->definitions as $id => $definition ) {
-			foreach ( $definition->getTags() as $tag ) {
+			foreach ( $definition->get_tags() as $tag ) {
 				$this->tags[ $tag ][] = $id;
 			}
 		}

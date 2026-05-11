@@ -105,7 +105,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 
 	/**
 	 * Use the register method to register items with the container via the
-	 * protected $this->container property or the `getContainer` method
+	 * protected $this->container property or the `get_container` method
 	 * from the ContainerAwareTrait.
 	 *
 	 * @return void
@@ -142,7 +142,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 
 		$this->share( SiteVerification::class );
 
-		$this->getContainer()->add( 'connect_server_root', $this->get_connect_server_url_root() );
+		$this->get_container()->add( 'connect_server_root', $this->get_connect_server_url_root() );
 	}
 
 	/**
@@ -179,14 +179,14 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share_concrete(
 			GoogleAdsClient::class,
 			new Definition( GoogleAdsClient::class, $callback )
-		)->addMethodCall( 'setHttpClient', [ ClientInterface::class ] );
+		)->add_method_call( 'setHttpClient', [ ClientInterface::class ] );
 	}
 
 	/**
 	 * Register the various Google classes we use.
 	 */
 	protected function register_google_classes() {
-		$this->add( Client::class )->addMethodCall( 'setHttpClient', [ ClientInterface::class ] );
+		$this->add( Client::class )->add_method_call( 'setHttpClient', [ ClientInterface::class ] );
 		$this->add(
 			ShoppingContent::class,
 			Client::class,
@@ -328,7 +328,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 */
 	protected function generate_auth_header(): string {
 		/** @var Manager $manager */
-		$manager = $this->getContainer()->get( Manager::class );
+		$manager = $this->get_container()->get( Manager::class );
 		$token   = $manager->get_tokens()->get_access_token( false, false, false );
 		$this->check_for_wp_error( $token );
 
@@ -390,7 +390,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 */
 	protected function set_google_disconnected() {
 		/** @var Options $options */
-		$options = $this->getContainer()->get( OptionsInterface::class );
+		$options = $this->get_container()->get( OptionsInterface::class );
 		$options->update( OptionsInterface::GOOGLE_CONNECTED, false );
 	}
 
@@ -403,7 +403,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 */
 	protected function set_jetpack_connected( bool $connected ) {
 		/** @var Options $options */
-		$options = $this->getContainer()->get( OptionsInterface::class );
+		$options = $this->get_container()->get( OptionsInterface::class );
 
 		// Save previous connected status before updating.
 		$previous_connected = boolval( $options->get( OptionsInterface::JETPACK_CONNECTED ) );
@@ -424,7 +424,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 */
 	protected function jetpack_connected_change( bool $connected ) {
 		/** @var ReconnectWordPress $note */
-		$note = $this->getContainer()->get( ReconnectWordPress::class );
+		$note = $this->get_container()->get( ReconnectWordPress::class );
 
 		if ( $connected ) {
 			$note->delete();

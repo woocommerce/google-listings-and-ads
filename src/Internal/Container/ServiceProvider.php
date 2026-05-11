@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * Replaces League's AbstractServiceProvider so the plugin no longer depends
  * on league/container. The API surface is intentionally narrow: providers
- * receive the container via setContainer() and implement register() to
+ * receive the container via set_container() and implement register() to
  * declare their bindings.
  *
  * Unlike League's deferred-provider model, every provider's register() is
@@ -24,15 +24,22 @@ abstract class ServiceProvider {
 	 */
 	protected $container;
 
-	public function setContainer( PluginContainer $container ): void {
+	/**
+	 * @param PluginContainer $container
+	 */
+	public function set_container( PluginContainer $container ): void {
 		$this->container = $container;
 	}
 
-	public function getContainer(): PluginContainer {
+	/**
+	 * @return PluginContainer
+	 * @throws ContainerException When called before the provider is registered with a container.
+	 */
+	public function get_container(): PluginContainer {
 		if ( null === $this->container ) {
 			throw new ContainerException(
 				sprintf(
-					'%s::getContainer() called before the provider was registered with a container.',
+					'%s::get_container() called before the provider was registered with a container.',
 					static::class
 				)
 			);
