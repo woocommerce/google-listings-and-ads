@@ -10,27 +10,34 @@ import { PRIMARY_MARKET_ID } from '../constants';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
 import EditPrimaryAudience from './edit-primary-audience';
+import EditShippingRates from './edit-shipping-rates';
+import EditShippingTimes from './edit-shipping-times';
 import MarketNotice from '../market-notice';
 import MarketForm from '../market-form';
+import './index.scss';
 
 /**
  * @typedef {import('~/data/actions').TargetAudienceData } TargetAudienceData
  * @typedef {import('~/data/actions').CountryCode} CountryCode
+ * @typedef {import('~/data/actions').ShippingRate} ShippingRate
+ * @typedef {import('~/data/actions').ShippingTime} ShippingTime
  */
 
 /**
- * Placeholder for the Edit Market modal.
- *
- * The follow-up task will replace this with a real form. For now, the modal
- * renders the selected market's name and a Close button so the open/close
- * wiring from `MarketDataViews` can be reviewed end-to-end.
- *
  * @param {Object} props
  * @param {{ id: string, label: string }} props.market The market being edited.
  * @param {TargetAudienceData} props.targetAudience Target audience value data to initialize the form with.
+ * @param {Array<ShippingRate>} props.shippingRates Shipping rates to pre-populate the form with.
+ * @param {Array<ShippingTime>} props.shippingTimes Shipping times to pre-populate the form with.
  * @param {() => void} props.onRequestClose Called when the user closes the modal.
  */
-const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
+const EditMarketModal = ( {
+	market,
+	targetAudience,
+	shippingRates,
+	shippingTimes,
+	onRequestClose,
+} ) => {
 	const { id } = market;
 	const isPrimaryMarket = id === PRIMARY_MARKET_ID;
 
@@ -40,8 +47,15 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 
 	let initialValues = {};
 	if ( isPrimaryMarket ) {
+		const freeShippingThreshold =
+			shippingRates?.[ 0 ]?.options?.free_shipping_threshold ?? null;
 		initialValues = {
 			countries: targetAudience.countries || [],
+			flat_shipping_rate: shippingRates?.[ 0 ]?.rate,
+			offer_free_shipping: ( freeShippingThreshold ?? 0 ) > 0,
+			free_shipping: freeShippingThreshold,
+			flat_shipping_min_time: shippingTimes?.[ 0 ]?.time ?? null,
+			flat_shipping_max_time: shippingTimes?.[ 0 ]?.maxTime ?? null,
 		};
 	}
 
@@ -64,6 +78,7 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 
 				return (
 					<AppModal
+						className="gla-edit-market-modal"
 						title={ appModalTitle }
 						onRequestClose={ onRequestClose }
 						overflow="visible"
@@ -88,6 +103,8 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 						] }
 					>
 						{ isPrimaryMarket && <EditPrimaryAudience /> }
+						<EditShippingRates />
+						<EditShippingTimes />
 
 						<MarketNotice context="edit-market-modal" />
 					</AppModal>

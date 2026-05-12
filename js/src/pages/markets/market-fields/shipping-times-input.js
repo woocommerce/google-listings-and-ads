@@ -9,9 +9,10 @@ import { __ } from '@wordpress/i18n';
  */
 import CountriesTimeInput from '~/components/free-listings/configure-product-listings/shipping-time-setup/countries-time-input';
 
-const ShippingTimesInput = () => {
+const ShippingTimesInput = ( { className } ) => {
 	return (
 		<BaseControl
+			className={ className }
 			id="gla-shipping-times-input"
 			label={ __(
 				'Estimated shipping times',

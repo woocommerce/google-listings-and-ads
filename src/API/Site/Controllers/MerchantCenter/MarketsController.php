@@ -412,6 +412,24 @@ class MarketsController extends BaseController {
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
+			'flat_shipping_rate'    => [
+				'type'              => [ 'number', 'null' ],
+				'description'       => __( 'Flat shipping rate amount per country.', 'google-listings-and-ads' ),
+				'context'           => [ 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'flat_shipping_min_time' => [
+				'type'              => [ 'integer', 'null' ],
+				'description'       => __( 'Minimum flat shipping time in days per country.', 'google-listings-and-ads' ),
+				'context'           => [ 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'flat_shipping_max_time' => [
+				'type'              => [ 'integer', 'null' ],
+				'description'       => __( 'Maximum flat shipping time in days per country.', 'google-listings-and-ads' ),
+				'context'           => [ 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+			],
 		];
 	}
 

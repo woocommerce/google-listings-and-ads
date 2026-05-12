@@ -11,6 +11,7 @@ import { useAppDispatch } from '~/data';
 import { PRIMARY_MARKET_ID } from './constants';
 import AdaptiveForm from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
+import { checkErrors } from './utils/checkErrors';
 
 /**
  * Form for creating/editing a market. This is a placeholder implementation to be used for testing the end-to-end flow of market creation/editing from the MarketDataViews component, and will be replaced with a real form in a follow-up task.
@@ -41,25 +42,18 @@ const MarketForm = ( {
 		};
 	};
 
-	const checkErrors = ( values ) => {
-		const errors = {};
-
-		// @TODO: add error handling here based on difference scenarios
-		if (
-			values.id === PRIMARY_MARKET_ID &&
-			values.countries.length === 0
-		) {
-			errors.countries = __(
-				'Please select at least one country.',
-				'google-listings-and-ads'
-			);
+	const validate = ( values ) => {
+		if ( values.id !== PRIMARY_MARKET_ID ) {
+			return {};
 		}
-
-		return errors;
+		return checkErrors( values );
 	};
 
 	const handleSubmit = async ( values ) => {
-		const { id: marketId, ...data } = values;
+		const { id: marketId, offer_free_shipping, ...data } = values;
+		if ( ! offer_free_shipping ) {
+			data.free_shipping = null;
+		}
 
 		try {
 			setIsSaving( true );
@@ -83,7 +77,7 @@ const MarketForm = ( {
 			ref={ formRef }
 			initialValues={ initialMarket }
 			extendAdapter={ extendAdapter }
-			validate={ checkErrors }
+			validate={ validate }
 			onSubmit={ handleSubmit }
 			{ ...adaptiveFormProps }
 		/>
