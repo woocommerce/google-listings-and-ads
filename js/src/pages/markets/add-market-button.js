@@ -14,7 +14,14 @@ import AppButton from '~/components/app-button';
 import AddMarketModal from './add-market-modal';
 
 /**
+ * Event fired when the "Add market" button is clicked.
+ *
+ * @event gla_add_market_button_clicked
+ */
+
+/**
  * Component for the "Add market" button on the markets page, which opens a modal to add a new market.
+ * @fires gla_add_market_button_clicked event when the button is clicked
  */
 const AddMarketButton = () => {
 	const [ isOpen, setIsOpen ] = useState( false );
@@ -37,6 +44,7 @@ const AddMarketButton = () => {
 			<AppButton
 				variant="primary"
 				onClick={ handleOpen }
+				eventName="gla_add_market_button_clicked"
 				loading={
 					! hasResolvedShippingRates ||
 					! hasResolvedShippingTimes ||
