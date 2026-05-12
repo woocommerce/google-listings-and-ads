@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import CountriesTimeInput from '~/components/free-listings/configure-product-listings/shipping-time-setup/countries-time-input';
+import CountriesTimeInput from '~/components/countries-time-input';
 
 /**
  * Renders the shipping times input control within the market edit form.

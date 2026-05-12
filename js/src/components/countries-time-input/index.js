@@ -7,7 +7,7 @@ import { Flex, FlexBlock } from '@wordpress/components';
  * Internal dependencies
  */
 import { useAdaptiveFormInputProps } from '~/components/adaptive-form';
-import MinMaxShippingTimes from '../min-max-shipping-times';
+import MinMaxShippingTimes from './min-max-shipping-times';
 import './index.scss';
 
 /**
