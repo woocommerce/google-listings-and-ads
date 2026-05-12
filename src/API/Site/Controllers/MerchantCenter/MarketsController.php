@@ -133,7 +133,7 @@ class MarketsController extends BaseController {
 				'country'    => $request->get_param( 'country' ),
 				'language'   => $request->get_param( 'language' ),
 				'currency'   => $request->get_param( 'currency' ),
-				'feed_label' => strtoupper( $request->get_param( 'country' ) ),
+				'feed_label' => $request->get_param( 'country' ),
 			];
 
 			// TODO: Move ID generation into MarketService::generate_market_id().
@@ -398,13 +398,6 @@ class MarketsController extends BaseController {
 				'description'       => __( 'Shipping time configuration type.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'enum'              => [ 'flat', 'manual' ],
-				'validate_callback' => 'rest_validate_request_arg',
-			],
-			'free_shipping' => [
-				'type'              => [ 'number', 'null' ],
-				'description'       => __( 'Free shipping threshold amount, or null when unset.', 'google-listings-and-ads' ),
-				'context'           => [ 'view' ],
-				'readonly'          => true,
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 		];

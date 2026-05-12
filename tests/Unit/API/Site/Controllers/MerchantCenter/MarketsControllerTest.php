@@ -95,7 +95,6 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertArrayHasKey( 'countries', $primary );
 		$this->assertArrayHasKey( 'shipping_rate', $primary );
 		$this->assertArrayHasKey( 'shipping_time', $primary );
-		$this->assertArrayHasKey( 'free_shipping', $primary );
 	}
 
 	public function test_get_markets_primary_values_from_market_service(): void {
@@ -107,7 +106,6 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( [ 'US' ], $primary['countries'] );
 		$this->assertEquals( 'flat', $primary['shipping_rate'] );
 		$this->assertEquals( 'flat', $primary['shipping_time'] );
-		$this->assertEquals( 50.0, $primary['free_shipping'] );
 	}
 
 	public function test_get_languages_currencies_returns_200(): void {
@@ -428,7 +426,6 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertArrayHasKey( 'id', $secondary );
 		$this->assertArrayHasKey( 'label', $secondary );
 		$this->assertArrayHasKey( 'countries', $secondary );
-		$this->assertArrayHasKey( 'free_shipping', $secondary );
 		$this->assertEquals( 'gb', $secondary['id'] );
 		$this->assertEquals( 'United Kingdom (UK)', $secondary['label'] );
 		$this->assertEquals( [ 'GB' ], $secondary['countries'] );
