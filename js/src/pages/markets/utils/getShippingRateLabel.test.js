@@ -9,6 +9,10 @@ import { render, screen } from '@testing-library/react';
  */
 import { getShippingRateLabel } from './getShippingRateLabel';
 import { SHIPPING_RATE_METHOD } from '~/constants';
+import {
+	GOOGLE_MERCHANT_CENTER_URL,
+	WC_SHIPPING_SETTINGS_URL,
+} from '../constants';
 
 describe( 'getShippingRateLabel', () => {
 	test( 'returns null for an unknown or undefined shipping rate', () => {
@@ -32,7 +36,7 @@ describe( 'getShippingRateLabel', () => {
 		);
 		expect(
 			screen.getByRole( 'link', { name: 'WooCommerce settings' } )
-		).toBeInTheDocument();
+		).toHaveAttribute( 'href', WC_SHIPPING_SETTINGS_URL );
 	} );
 
 	test( 'returns a JSX element linking to Google Merchant Center for MANUAL', () => {
@@ -45,6 +49,6 @@ describe( 'getShippingRateLabel', () => {
 		);
 		expect(
 			screen.getByRole( 'link', { name: /Google Merchant Center/ } )
-		).toBeInTheDocument();
+		).toHaveAttribute( 'href', GOOGLE_MERCHANT_CENTER_URL );
 	} );
 } );

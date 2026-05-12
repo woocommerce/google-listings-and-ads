@@ -16,7 +16,8 @@ import ValidationErrors from '~/components/validation-errors';
 import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
 
 /**
- * Form for creating/editing a market. This is a placeholder implementation to be used for testing the end-to-end flow of market creation/editing from the MarketDataViews component, and will be replaced with a real form in a follow-up task.
+ * Form component for creating or editing a market.
+ * This component is used within the AddMarketModal and EditMarketModal.
  *
  * @param {Object} props
  * @param {Object} props.initialMarket Initial values to populate the form with. Can be empty when creating a new market.

@@ -52,7 +52,7 @@ const CONTEXT = 'add_market_modal';
 const AddMarketModal = ( {
 	shippingRates,
 	shippingTimes,
-	targetAudience,
+	targetAudience = { countries: [] },
 	onRequestClose,
 } ) => {
 	const { settings } = useSettings();

@@ -33,11 +33,7 @@ const CONTEXT = 'edit_market_modal';
  */
 
 /**
- * Placeholder for the Edit Market modal.
- *
- * The follow-up task will replace this with a real form. For now, the modal
- * renders the selected market's name and a Close button so the open/close
- * wiring from `MarketDataViews` can be reviewed end-to-end.
+ * Modal component for editing an existing market.
  *
  * @fires gla_cancel_button_clicked when the cancel button is clicked with context of "edit_market_modal"
  * @fires gla_save_button_clicked when the save button is clicked with context of "edit_market_modal"
