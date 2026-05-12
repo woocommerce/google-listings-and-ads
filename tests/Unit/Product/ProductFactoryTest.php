@@ -115,6 +115,7 @@ class ProductFactoryTest extends ContainerAwareUnitTest {
 		$adapted = $this->product_factory->create( $product, 'US', [], 'US' );
 
 		$this->assertSame( 'US', $adapted->getFeedLabel() );
+		$this->assertNull( $adapted->getContentLanguage() );
 	}
 
 	public function test_create_with_language_sets_content_language_when_no_feed_label() {
@@ -128,7 +129,7 @@ class ProductFactoryTest extends ContainerAwareUnitTest {
 		$this->assertNull( $adapted->getFeedLabel() );
 	}
 
-	public function test_create_with_feed_label_and_language_sets_both() {
+	public function test_create_with_feed_label_takes_precedence_over_language() {
 		$product = WC_Helper_Product::create_simple_product();
 
 		$this->attribute_manager->method( 'get_all_values' )->willReturn( [] );
@@ -136,7 +137,7 @@ class ProductFactoryTest extends ContainerAwareUnitTest {
 		$adapted = $this->product_factory->create( $product, 'US', [], 'US', 'en' );
 
 		$this->assertSame( 'US', $adapted->getFeedLabel() );
-		$this->assertSame( 'en', $adapted->getContentLanguage() );
+		$this->assertNull( $adapted->getContentLanguage() );
 	}
 
 	public function test_create_without_optional_params_uses_content_language() {

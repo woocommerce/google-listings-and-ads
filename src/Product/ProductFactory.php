@@ -86,8 +86,7 @@ class ProductFactory {
 
 		if ( $feed_label ) {
 			$adapted->set_feed_label( $feed_label );
-		}
-		if ( $language ) {
+		} elseif ( $language ) {
 			$adapted->set_language( $language );
 		}
 

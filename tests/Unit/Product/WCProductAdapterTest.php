@@ -288,7 +288,7 @@ class WCProductAdapterTest extends UnitTest {
 		$this->assertEquals( 'fr', $adapted_product->getContentLanguage() );
 	}
 
-	public function test_set_feed_label_sets_feed_label() {
+	public function test_set_feed_label_sets_feed_label_and_clears_content_language() {
 		$adapted_product = new WCProductAdapter(
 			[
 				'wc_product'    => WC_Helper_Product::create_simple_product( false ),
@@ -299,6 +299,7 @@ class WCProductAdapterTest extends UnitTest {
 		$adapted_product->set_feed_label( 'US' );
 
 		$this->assertSame( 'US', $adapted_product->getFeedLabel() );
+		$this->assertNull( $adapted_product->getContentLanguage() );
 	}
 
 	public function test_set_language_sets_content_language_when_no_feed_label() {
@@ -315,7 +316,7 @@ class WCProductAdapterTest extends UnitTest {
 		$this->assertNull( $adapted_product->getFeedLabel() );
 	}
 
-	public function test_set_language_after_set_feed_label_sets_both() {
+	public function test_set_language_after_set_feed_label_overrides_cleared_content_language() {
 		$adapted_product = new WCProductAdapter(
 			[
 				'wc_product'    => WC_Helper_Product::create_simple_product( false ),
