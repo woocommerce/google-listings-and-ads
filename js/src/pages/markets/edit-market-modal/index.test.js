@@ -8,11 +8,22 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import { useAppDispatch } from '~/data';
 import useSettings from '~/hooks/useSettings';
 import EditMarketModal from './';
 
-jest.mock( '~/data', () => ( { useAppDispatch: jest.fn() } ) );
+// MarketForm pulls in useSaveShippingRates → useSelect( STORE_KEY ) which
+// requires the wc/gla store to be registered. Mock it to avoid that dependency.
+jest.mock( '../market-form', () =>
+	jest.fn( ( { children } ) =>
+		children( {
+			adapter: { isSaving: false },
+			isValidForm: true,
+			handleSubmit: jest.fn(),
+			isDirty: false,
+		} )
+	)
+);
+
 jest.mock( '~/hooks/useSettings' );
 jest.mock( './edit-primary-audience', () => () => null );
 
@@ -21,10 +32,6 @@ const targetAudience = { countries: [ 'US' ] };
 
 describe( 'EditMarketModal', () => {
 	beforeEach( () => {
-		useAppDispatch.mockReturnValue( {
-			updateMarket: jest.fn(),
-			invalidateResolution: jest.fn(),
-		} );
 		useSettings.mockReturnValue( {
 			settings: { shipping_rate: 'manual' },
 		} );

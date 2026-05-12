@@ -20,7 +20,7 @@ jest.mock( '../market-data-views', () =>
 	jest.fn().mockReturnValue( <div data-testid="market-data-views" /> )
 );
 
-jest.mock( './markets-header', () =>
+jest.mock( '../markets-header', () =>
 	jest.fn().mockReturnValue( <div data-testid="markets-header" /> )
 );
 
