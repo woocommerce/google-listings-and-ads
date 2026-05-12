@@ -9,6 +9,11 @@ import { __ } from '@wordpress/i18n';
  */
 import CountriesTimeInput from '~/components/free-listings/configure-product-listings/shipping-time-setup/countries-time-input';
 
+/**
+ * Renders the shipping times input control within the market edit form.
+ * This control allows users to specify estimated shipping times for the market,
+ * which apply per country regardless of language or currency.
+ */
 const ShippingTimesInput = () => {
 	return (
 		<BaseControl

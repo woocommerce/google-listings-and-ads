@@ -21,9 +21,18 @@ import ShippingTimesInput from './shipping-times-input';
 import ShippingRateInputControl from '~/components/shipping-rate-section/estimated-shipping-rates-card/shipping-rate-input-control';
 import FreeShippingThresholdControl from '~/components/order-value-condition-section/minimum-order-card/free-shipping-threshold-control';
 
+/**
+ * Renders the market details fields within the market edit form.
+ * The fields rendered here vary based on the scenario (manual vs multilingual),
+ * but this component is scenario-agnostic; it only owns the shipping-rate-specific fields
+ * and the notice about multilingual support, which are common to both scenarios.
+ *
+ * The scenario-specific field sets and data shapes are handled within
+ * `useMarketDataViewsConfig`.
+ */
 const MarketFields = () => {
 	const { settings } = useSettings();
-	const { getInputProps, setValue, values } = useAdaptiveFormContext();
+	const { getInputProps, values } = useAdaptiveFormContext();
 	const freeShippingInputProps = useAdaptiveFormInputProps(
 		'shipping_country_rates',
 		'free_shipping_threshold'

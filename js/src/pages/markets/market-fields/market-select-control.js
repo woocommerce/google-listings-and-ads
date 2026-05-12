@@ -6,16 +6,16 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { PRIMARY_MARKET_ID } from '../constants';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useAppSelectDispatch from '~/hooks/useAppSelectDispatch';
 import AppSelectControl from '~/components/app-select-control';
-import useMarkets from '~/hooks/useMarkets';
 import usePrimaryMarketDetails from '~/hooks/usePrimaryMarketDetails';
 
 /**
- * Select control for choosing a market (country) when adding a new market. The options are populated from the list of countries in the primary market that are
- * not already claimed by existing secondary markets.
+ * Renders the market select control within the market edit form.
+ * The options for this control are derived from the primary market's countries,
+ * which are fetched from the store; thus, this control is only rendered once
+ * the relevant data has been resolved.
  */
 const MarketSelectControl = () => {
 	const {
@@ -26,31 +26,16 @@ const MarketSelectControl = () => {
 		data: primaryMarket,
 		hasFinishedResolution: hasResolvedPrimaryMarket,
 	} = usePrimaryMarketDetails();
-	const { data: markets, hasFinishedResolution: hasResolvedMarkets } =
-		useMarkets();
 	const { getInputProps } = useAdaptiveFormContext();
 
-	if (
-		! hasResolvedCountries ||
-		! hasResolvedPrimaryMarket ||
-		! hasResolvedMarkets
-	) {
+	if ( ! hasResolvedCountries || ! hasResolvedPrimaryMarket ) {
 		return null;
 	}
 
-	// Collect all claimed countries from non-primary markets to exclude them from the options list.
-	const claimedCountries = new Set(
-		markets
-			.filter( ( market ) => market.id !== PRIMARY_MARKET_ID )
-			.flatMap( ( market ) => market.countries )
-	);
-
-	const options = primaryMarket.countries
-		.filter( ( countryCode ) => ! claimedCountries.has( countryCode ) )
-		.map( ( countryCode ) => ( {
-			value: countryCode,
-			label: countries[ countryCode ]?.name || countryCode,
-		} ) );
+	const options = primaryMarket.countries.map( ( countryCode ) => ( {
+		value: countryCode,
+		label: countries[ countryCode ]?.name || countryCode,
+	} ) );
 
 	const inputProps = getInputProps( 'country' );
 	const appSelectControlProps = {

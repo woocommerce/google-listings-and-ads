@@ -6,11 +6,11 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import AppInputPriceControl from '~/components/app-input-price-control';
 import {
 	useAdaptiveFormContext,
 	useAdaptiveFormInputProps,
 } from '~/components/adaptive-form';
+import AppInputPriceControl from '~/components/app-input-price-control';
 import OfferFreeShippingCheckbox from '~/components/order-value-condition-section/offer-free-shipping-checkbox';
 import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
 import './minimum-order-card.scss';
