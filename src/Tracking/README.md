@@ -139,16 +139,14 @@ Do not edit it manually!
 Event fired when the "Add market" button is clicked.
 #### Emitters
 - [`AddMarketButton`](../../js/src/pages/markets/add-market-button.js#L26) event when the button is clicked
-- [`AddMarketModal`](../../js/src/pages/markets/add-market-modal/index.js#L52) when the add market button is clicked with context of "add_market_modal"
 
-### [`gla_add_market_button_clicked`](../../js/src/pages/markets/add-market-modal/index.js#L32)
+### [`gla_add_new_market_button_clicked`](../../js/src/pages/markets/add-market-modal/index.js#L32)
 Event fired when the "Add market" button in the AddMarketModal is clicked.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | The context in which the add market button click happened, e.g. "add_market_modal".
 #### Emitters
-- [`AddMarketButton`](../../js/src/pages/markets/add-market-button.js#L26) event when the button is clicked
 - [`AddMarketModal`](../../js/src/pages/markets/add-market-modal/index.js#L52) when the add market button is clicked with context of "add_market_modal"
 
 ### [`gla_add_paid_campaign_clicked`](../../js/src/components/paid-ads/add-paid-campaign-button.js#L15)

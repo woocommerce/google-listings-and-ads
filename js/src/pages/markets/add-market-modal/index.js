@@ -31,7 +31,7 @@ const CONTEXT = 'add_market_modal';
 
 /**
  * Event fired when the "Add market" button in the AddMarketModal is clicked.
- * @event gla_add_market_button_clicked
+ * @event gla_add_new_market_button_clicked
  * @property {string} context The context in which the add market button click happened, e.g. "add_market_modal".
  */
 
@@ -41,7 +41,7 @@ const CONTEXT = 'add_market_modal';
  * and it contains a form for entering the details of the new market.
  *
  * @fires gla_cancel_button_clicked when the cancel button is clicked with context of "add_market_modal"
- * @fires gla_add_market_button_clicked when the add market button is clicked with context of "add_market_modal"
+ * @fires gla_add_new_market_button_clicked when the add market button is clicked with context of "add_market_modal"
  *
  * @param {Object} props
  * @param {Array<ShippingRate>} props.shippingRates Shipping rates to pre-populate the form with.
@@ -105,7 +105,7 @@ const AddMarketModal = ( {
 							disabled={ ! isValidForm }
 							onClick={ handleSubmit }
 							loading={ isSaving }
-							eventName="gla_add_market_button_clicked"
+							eventName="gla_add_new_market_button_clicked"
 							eventProps={ {
 								context: CONTEXT,
 							} }
