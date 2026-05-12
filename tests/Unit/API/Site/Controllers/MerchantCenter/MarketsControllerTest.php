@@ -91,6 +91,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertArrayHasKey( 'id', $primary );
 		$this->assertArrayHasKey( 'label', $primary );
 		$this->assertArrayHasKey( 'countries', $primary );
+		$this->assertArrayHasKey( 'country', $primary );
 		$this->assertArrayHasKey( 'shipping_rate', $primary );
 		$this->assertArrayHasKey( 'shipping_time', $primary );
 		$this->assertArrayHasKey( 'free_shipping', $primary );
@@ -103,6 +104,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( 'Primary Market', $primary['label'] );
 		$this->assertEquals( [ 'US' ], $primary['countries'] );
+		$this->assertEquals( 'US', $primary['country'] );
 		$this->assertEquals( 'flat', $primary['shipping_rate'] );
 		$this->assertEquals( 'flat', $primary['shipping_time'] );
 		$this->assertEquals( 50.0, $primary['free_shipping'] );

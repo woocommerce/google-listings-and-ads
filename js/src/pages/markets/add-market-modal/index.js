@@ -7,6 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { SHIPPING_RATE_METHOD } from '~/constants';
+import useStoreCurrency from '~/hooks/useStoreCurrency';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
 import MultiLingualPluginPrompt from './multilingual-plugin-prompt';
@@ -15,6 +16,7 @@ import MarketFields from '../market-fields';
 import MarketForm from '../market-form';
 
 /**
+ * @typedef {import('~/data/actions').TargetAudienceData } TargetAudienceData
  * @typedef {import('~/data/actions').ShippingRate} ShippingRate
  * @typedef {import('~/data/actions').ShippingTime} ShippingTime
  */
@@ -31,20 +33,34 @@ import MarketForm from '../market-form';
  * @param {Object} props
  * @param {Array<ShippingRate>} props.shippingRates Shipping rates to pre-populate the form with.
  * @param {Array<ShippingTime>} props.shippingTimes Shipping times data, if not given AppSpinner will be rendered.
+ * @param {TargetAudienceData} props.targetAudience Target audience value data to be initialed the form, if not given AppSpinner will be rendered.
  * @param {() => void} props.onRequestClose Called when the user closes the modal.
  */
-const AddMarketModal = ( { shippingRates, shippingTimes, onRequestClose } ) => {
+const AddMarketModal = ( {
+	shippingRates,
+	shippingTimes,
+	targetAudience,
+	onRequestClose,
+} ) => {
 	const { settings } = useSettings();
+	const { code: currencyCode } = useStoreCurrency();
 
 	return (
 		<MarketForm
 			initialMarket={ {
+				countries: targetAudience.countries || [],
+				country: null,
 				offer_free_shipping:
 					shippingRates?.[ 0 ]?.options?.free_shipping_threshold > 0,
 				flat_shipping_rate: shippingRates?.[ 0 ]?.rate,
 				shipping_country_rates: shippingRates, // for backwards compatibility with existing controls; to be removed once all controls are migrated to use flat_shipping_rate and offer_free_shipping directly.
 				flat_shipping_min_time: shippingTimes?.[ 0 ]?.time ?? null,
 				flat_shipping_max_time: shippingTimes?.[ 0 ]?.maxTime ?? null,
+				shipping_country_times: shippingTimes,
+				language: targetAudience.language,
+				currency: currencyCode,
+				shipping_rate: settings?.shipping_rate,
+				shipping_time: settings?.shipping_time,
 			} }
 			onSubmit={ onRequestClose }
 		>

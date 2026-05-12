@@ -40,21 +40,8 @@ const FreeShippingThresholdControl = ( { value, onChange } ) => {
 		if ( numberValue === threshold ) {
 			return;
 		}
-		onChange(
-			value.map( ( rate ) => {
-				if ( ! isNonFreeShippingRate( rate ) ) {
-					return rate;
-				}
-				return {
-					...rate,
-					options: {
-						...rate.options,
-						free_shipping_threshold:
-							numberValue > 0 ? numberValue : undefined,
-					},
-				};
-			} )
-		);
+
+		onChange( numberValue );
 	};
 
 	return (

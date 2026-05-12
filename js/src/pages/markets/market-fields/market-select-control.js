@@ -6,6 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { PRIMARY_MARKET_ID } from '../constants';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useAppSelectDispatch from '~/hooks/useAppSelectDispatch';
 import AppSelectControl from '~/components/app-select-control';
@@ -40,7 +41,7 @@ const MarketSelectControl = () => {
 	// Collect all claimed countries from non-primary markets to exclude them from the options list.
 	const claimedCountries = new Set(
 		markets
-			.filter( ( market ) => market.id !== 'primary' )
+			.filter( ( market ) => market.id !== PRIMARY_MARKET_ID )
 			.flatMap( ( market ) => market.countries )
 	);
 
@@ -51,12 +52,22 @@ const MarketSelectControl = () => {
 			label: countries[ countryCode ]?.name || countryCode,
 		} ) );
 
+	const inputProps = getInputProps( 'country' );
+	const appSelectControlProps = {
+		...inputProps,
+		...( ! inputProps.selected
+			? {
+					autoSelectFirstOption: true,
+					value: undefined,
+			  }
+			: {} ),
+	};
+
 	return (
 		<AppSelectControl
 			label={ __( 'Market', 'google-listings-and-ads' ) }
 			options={ options }
-			autoSelectFirstOption
-			{ ...getInputProps( 'country' ) }
+			{ ...appSelectControlProps }
 		/>
 	);
 };

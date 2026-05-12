@@ -13,6 +13,7 @@ import {
 	useAdaptiveFormInputProps,
 } from '~/components/adaptive-form';
 import useSettings from '~/hooks/useSettings';
+import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
 import MarketSelectControl from './market-select-control';
 import LanguageSelectControl from './language-select-control';
 import CurrencySelectControl from './currency-select-control';
@@ -22,12 +23,36 @@ import FreeShippingThresholdControl from '~/components/order-value-condition-sec
 
 const MarketFields = () => {
 	const { settings } = useSettings();
-	const { getInputProps, values } = useAdaptiveFormContext();
+	const { getInputProps, setValue, values } = useAdaptiveFormContext();
 	const freeShippingInputProps = useAdaptiveFormInputProps(
 		'shipping_country_rates',
 		'free_shipping_threshold'
 	);
+	const { onChange, value } = freeShippingInputProps;
+
 	const shouldDisplayFreeShippingThreshold = values.flat_shipping_rate > 0;
+
+	const handleThresholdChange = ( numberValue ) => {
+		const updatedRates = values.shipping_country_rates.map( ( rate ) => {
+			if (
+				rate.country !== values.country ||
+				! isNonFreeShippingRate( rate )
+			) {
+				return rate;
+			}
+			return {
+				...rate,
+				options: {
+					...rate.options,
+					free_shipping_threshold:
+						numberValue > 0 ? numberValue : undefined,
+				},
+			};
+		} );
+
+		onChange( updatedRates );
+	};
+
 	if ( settings?.shipping_rate !== SHIPPING_RATE_METHOD.FLAT ) {
 		return null;
 	}
@@ -55,7 +80,10 @@ const MarketFields = () => {
 			/>
 
 			{ shouldDisplayFreeShippingThreshold && (
-				<FreeShippingThresholdControl { ...freeShippingInputProps } />
+				<FreeShippingThresholdControl
+					value={ value }
+					onChange={ handleThresholdChange }
+				/>
 			) }
 
 			<ShippingTimesInput />

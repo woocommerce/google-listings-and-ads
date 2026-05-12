@@ -370,7 +370,7 @@ class MarketsController extends BaseController {
 			'country'       => [
 				'type'              => 'string',
 				'description'       => __( 'Primary country code in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
-				'context'           => [ 'edit' ],
+				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'language'      => [
