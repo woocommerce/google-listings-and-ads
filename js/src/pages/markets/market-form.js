@@ -11,7 +11,6 @@ import { useAppDispatch } from '~/data';
 import { PRIMARY_MARKET_ID } from './constants';
 import useSaveShippingRates from '~/hooks/useSaveShippingRates';
 import useSaveShippingTimes from '~/hooks/useSaveShippingTimes';
-import useStoreCurrency from '~/hooks/useStoreCurrency';
 import AdaptiveForm from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
 import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
@@ -47,7 +46,7 @@ const MarketForm = ( {
 		};
 	};
 
-	const checkErrors = ( values ) => {
+	const handleValidate = ( values ) => {
 		const errors = {};
 
 		// @TODO: add error handling here based on difference scenarios
@@ -62,10 +61,6 @@ const MarketForm = ( {
 		}
 
 		return errors;
-	};
-
-	const handleValidate = ( values ) => {
-		return checkErrors( values );
 	};
 
 	const handleSubmit = async ( values ) => {
@@ -177,7 +172,7 @@ const MarketForm = ( {
 			ref={ formRef }
 			initialValues={ initialMarket }
 			extendAdapter={ extendAdapter }
-			validate={ checkErrors }
+			validate={ handleValidate }
 			onSubmit={ handleSubmit }
 			onChange={ handleChange }
 			{ ...adaptiveFormProps }
