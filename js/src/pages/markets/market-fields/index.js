@@ -18,8 +18,8 @@ import MarketSelectControl from './market-select-control';
 import LanguageSelectControl from './language-select-control';
 import CurrencySelectControl from './currency-select-control';
 import ShippingTimesInput from './shipping-times-input';
-import ShippingRateInputControl from '~/components/shipping-rate-section/estimated-shipping-rates-card/shipping-rate-input-control';
-import FreeShippingThresholdControl from '~/components/order-value-condition-section/minimum-order-card/free-shipping-threshold-control';
+import ShippingRateInputControl from '~/components/shipping-rate-input-control';
+import FreeShippingThresholdControl from '~/components/free-shipping-threshold-control';
 
 /**
  * Renders the market details fields within the market edit form.

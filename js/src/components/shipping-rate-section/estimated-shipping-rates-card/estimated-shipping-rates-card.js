@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 import Section from '~/components/section';
 import VerticalGapLayout from '~/components/vertical-gap-layout';
-import ShippingRateInputControl from './shipping-rate-input-control';
+import ShippingRateInputControl from '~/components/shipping-rate-input-control';
 import ShippingRateInputControlLabelText from './shipping-rate-input-control-label-text';
 
 /**

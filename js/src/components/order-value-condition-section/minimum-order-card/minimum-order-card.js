@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 import Section from '~/components/section';
 import VerticalGapLayout from '~/components/vertical-gap-layout';
-import FreeShippingThresholdControl from './free-shipping-threshold-control';
+import FreeShippingThresholdControl from '~/components/free-shipping-threshold-control';
 import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
 import './minimum-order-card.scss';
 

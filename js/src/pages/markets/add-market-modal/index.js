@@ -22,13 +22,9 @@ import MarketForm from '../market-form';
  */
 
 /**
- * Placeholder for the Add Market modal.
- *
- * The follow-up task will replace this with a real form (country selector,
- * shipping configuration, validation, and a save handler that triggers a
- * markets refetch). For now, the modal renders a short placeholder body and a
- * Close button so the open / close wiring from `AddMarket` can be reviewed
- * end-to-end.
+ * Modal component for adding a new market.
+ * This component is rendered when the user clicks the "Add market" button on the markets page,
+ * and it contains a form for entering the details of the new market.
  *
  * @param {Object} props
  * @param {Array<ShippingRate>} props.shippingRates Shipping rates to pre-populate the form with.

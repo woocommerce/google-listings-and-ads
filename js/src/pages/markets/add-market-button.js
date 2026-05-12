@@ -14,9 +14,7 @@ import AppButton from '~/components/app-button';
 import AddMarketModal from './add-market-modal';
 
 /**
- * Owns the open / close state for `AddMarketModal`. The modal itself is a
- * placeholder today; the follow-up task will replace its body with a real
- * country / shipping form and a save handler.
+ * Component for the "Add market" button on the markets page, which opens a modal to add a new market.
  */
 const AddMarketButton = () => {
 	const [ isOpen, setIsOpen ] = useState( false );

@@ -13,7 +13,6 @@ import {
 import AppInputPriceControl from '~/components/app-input-price-control';
 import OfferFreeShippingCheckbox from '~/components/order-value-condition-section/offer-free-shipping-checkbox';
 import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
-import './minimum-order-card.scss';
 
 /**
  * @typedef { import("~/data/actions").ShippingRate } ShippingRate
