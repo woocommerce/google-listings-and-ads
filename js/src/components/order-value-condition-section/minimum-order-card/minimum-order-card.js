@@ -25,6 +25,10 @@ import './minimum-order-card.scss';
  * @param {(nextValue: Array<ShippingRate>) => void} props.onChange Callback called with the updated rates once the threshold changes.
  */
 const MinimumOrderCard = ( { value = [], helper, onChange } ) => {
+	const nonFreeRates = value.filter( isNonFreeShippingRate );
+	const threshold = nonFreeRates[ 0 ]?.options?.free_shipping_threshold;
+	const currency = value[ 0 ]?.currency;
+
 	const handleChange = ( numberValue ) => {
 		onChange(
 			value.map( ( rate ) => {
@@ -55,8 +59,9 @@ const MinimumOrderCard = ( { value = [], helper, onChange } ) => {
 				</Section.Card.Title>
 				<VerticalGapLayout size="large">
 					<FreeShippingThresholdControl
-						value={ value }
 						onChange={ handleChange }
+						threshold={ threshold }
+						currency={ currency }
 					/>
 				</VerticalGapLayout>
 				{ helper }

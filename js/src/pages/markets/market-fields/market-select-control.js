@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useEffect, useRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -26,7 +27,58 @@ const MarketSelectControl = () => {
 		data: primaryMarket,
 		hasFinishedResolution: hasResolvedPrimaryMarket,
 	} = usePrimaryMarketDetails();
-	const { getInputProps } = useAdaptiveFormContext();
+	const { getInputProps, values, setValues, isDirty } =
+		useAdaptiveFormContext();
+	const { country, shipping_country_rates, shipping_country_times } = values;
+
+	const syncRef = useRef( null );
+	syncRef.current = {
+		shipping_country_rates,
+		shipping_country_times,
+		setValues,
+		primaryMarket,
+		isDirty,
+	};
+
+	useEffect( () => {
+		if ( ! hasResolvedCountries || ! hasResolvedPrimaryMarket ) {
+			return;
+		}
+
+		const effectiveCountry =
+			country || syncRef.current.primaryMarket.countries[ 0 ];
+
+		if ( ! effectiveCountry ) {
+			return;
+		}
+
+		const { isDirty: dirty } = syncRef.current;
+		const existingRate = dirty
+			? undefined
+			: syncRef.current.shipping_country_rates?.find(
+					( rate ) => rate.country === effectiveCountry
+			  );
+		const existingTime = dirty
+			? undefined
+			: syncRef.current.shipping_country_times?.find(
+					( time ) => time.countryCode === effectiveCountry
+			  );
+
+		syncRef.current.setValues( {
+			...( ! country && { country: effectiveCountry } ),
+			...( existingRate && {
+				flat_shipping_rate: existingRate.rate,
+				offer_free_shipping:
+					existingRate.options?.free_shipping_threshold > 0,
+				free_shipping_threshold:
+					existingRate.options?.free_shipping_threshold ?? [],
+			} ),
+			...( existingTime && {
+				flat_shipping_min_time: existingTime.time,
+				flat_shipping_max_time: existingTime.maxTime,
+			} ),
+		} );
+	}, [ country, hasResolvedCountries, hasResolvedPrimaryMarket ] );
 
 	if ( ! hasResolvedCountries || ! hasResolvedPrimaryMarket ) {
 		return null;
@@ -38,21 +90,12 @@ const MarketSelectControl = () => {
 	} ) );
 
 	const inputProps = getInputProps( 'country' );
-	const appSelectControlProps = {
-		...inputProps,
-		...( ! inputProps.selected
-			? {
-					autoSelectFirstOption: true,
-					value: undefined,
-			  }
-			: {} ),
-	};
 
 	return (
 		<AppSelectControl
 			label={ __( 'Market', 'google-listings-and-ads' ) }
 			options={ options }
-			{ ...appSelectControlProps }
+			{ ...inputProps }
 		/>
 	);
 };

@@ -32,35 +32,15 @@ import FreeShippingThresholdControl from '~/components/free-shipping-threshold-c
  */
 const MarketFields = () => {
 	const { settings } = useSettings();
-	const { getInputProps, values } = useAdaptiveFormContext();
-	const freeShippingInputProps = useAdaptiveFormInputProps(
-		'shipping_country_rates',
-		'free_shipping_threshold'
-	);
-	const { onChange, value } = freeShippingInputProps;
+	const {
+		getInputProps,
+		values,
+		adapter: { renderRequestedValidation },
+	} = useAdaptiveFormContext();
+	const { currency } = values;
+	const { onChange, value } = getInputProps( 'free_shipping_threshold' );
 
 	const shouldDisplayFreeShippingThreshold = values.flat_shipping_rate > 0;
-
-	const handleThresholdChange = ( numberValue ) => {
-		const updatedRates = values.shipping_country_rates.map( ( rate ) => {
-			if (
-				rate.country !== values.country ||
-				! isNonFreeShippingRate( rate )
-			) {
-				return rate;
-			}
-			return {
-				...rate,
-				options: {
-					...rate.options,
-					free_shipping_threshold:
-						numberValue > 0 ? numberValue : undefined,
-				},
-			};
-		} );
-
-		onChange( updatedRates );
-	};
 
 	if ( settings?.shipping_rate !== SHIPPING_RATE_METHOD.FLAT ) {
 		return null;
@@ -89,10 +69,14 @@ const MarketFields = () => {
 			/>
 
 			{ shouldDisplayFreeShippingThreshold && (
-				<FreeShippingThresholdControl
-					value={ value }
-					onChange={ handleThresholdChange }
-				/>
+				<Flex direction="column" gap={ 2 }>
+					<FreeShippingThresholdControl
+						onChange={ onChange }
+						threshold={ value }
+						currency={ currency }
+					/>
+					{ renderRequestedValidation( 'free_shipping_threshold' ) }
+				</Flex>
 			) }
 
 			<ShippingTimesInput />

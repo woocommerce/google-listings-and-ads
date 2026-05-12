@@ -7,6 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import CountriesTimeInput from '~/components/countries-time-input';
 
 /**
@@ -15,6 +16,10 @@ import CountriesTimeInput from '~/components/countries-time-input';
  * which apply per country regardless of language or currency.
  */
 const ShippingTimesInput = () => {
+	const {
+		adapter: { renderRequestedValidation },
+	} = useAdaptiveFormContext();
+
 	return (
 		<BaseControl
 			id="gla-shipping-times-input"
@@ -28,6 +33,7 @@ const ShippingTimesInput = () => {
 			) }
 		>
 			<CountriesTimeInput />
+			{ renderRequestedValidation( 'flat_shipping_times' ) }
 		</BaseControl>
 	);
 };

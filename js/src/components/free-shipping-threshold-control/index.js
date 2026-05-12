@@ -12,7 +12,6 @@ import {
 } from '~/components/adaptive-form';
 import AppInputPriceControl from '~/components/app-input-price-control';
 import OfferFreeShippingCheckbox from '~/components/order-value-condition-section/offer-free-shipping-checkbox';
-import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
 
 /**
  * @typedef { import("~/data/actions").ShippingRate } ShippingRate
@@ -22,18 +21,15 @@ import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
  * Renders controls to set free shipping threshold for minimum order value condition.
  *
  * @param {Object} props React props.
- * @param {Array<ShippingRate>} [props.value=[]] Array of shipping rates; the threshold is read from the first non-free rate and written back to all rates.
- * @param {(nextValue: Array<ShippingRate>) => void} props.onChange Callback called with the updated rates once the threshold changes.
+ * @param {number} props.threshold The current free shipping threshold.
+ * @param {string} props.currency The currency to display for the threshold.
+ * @param {(nextValue: number) => void} props.onChange Callback called with the updated threshold once it changes.
  */
-const FreeShippingThresholdControl = ( { value, onChange } ) => {
+const FreeShippingThresholdControl = ( { onChange, threshold, currency } ) => {
 	const offerFreeShippingInputProps = useAdaptiveFormInputProps(
 		'offer_free_shipping'
 	);
 	const { values } = useAdaptiveFormContext();
-
-	const nonFreeRates = value.filter( isNonFreeShippingRate );
-	const threshold = nonFreeRates[ 0 ]?.options?.free_shipping_threshold;
-	const currency = value[ 0 ]?.currency;
 
 	const handleBlur = ( _event, numberValue ) => {
 		if ( numberValue === threshold ) {

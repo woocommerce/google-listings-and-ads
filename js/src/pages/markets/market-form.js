@@ -1,14 +1,13 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
 import { useRef, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { useAppDispatch } from '~/data';
-import { PRIMARY_MARKET_ID } from './constants';
+import checkErrors from './utils/checkErrors';
 import useSaveShippingRates from '~/hooks/useSaveShippingRates';
 import useSaveShippingTimes from '~/hooks/useSaveShippingTimes';
 import AdaptiveForm from '~/components/adaptive-form';
@@ -40,28 +39,15 @@ const MarketForm = ( {
 		return {
 			isSaving,
 			renderRequestedValidation( key ) {
+				if ( ! formContext.adapter.requestedShowValidation ) {
+					return null;
+				}
+
 				return (
 					<ValidationErrors messages={ formContext.errors[ key ] } />
 				);
 			},
 		};
-	};
-
-	const handleValidate = ( values ) => {
-		const errors = {};
-
-		// @TODO: add error handling here based on difference scenarios
-		if (
-			values.id === PRIMARY_MARKET_ID &&
-			values.countries.length === 0
-		) {
-			errors.countries = __(
-				'Please select at least one country.',
-				'google-listings-and-ads'
-			);
-		}
-
-		return errors;
 	};
 
 	const handleSubmit = async ( values ) => {
@@ -106,14 +92,6 @@ const MarketForm = ( {
 			);
 
 			setValue( 'shipping_country_rates', rates );
-		} else if ( change.name === 'shipping_country_rates' ) {
-			// If all the shipping rates are free shipping,
-			// we set the offer_free_shipping to undefined,
-			// so that when users add a non-free shipping rate,
-			// they would need to choose "yes" / "no" for offer_free_shipping.
-			if ( ! change.value.some( isNonFreeShippingRate ) ) {
-				setValue( 'offer_free_shipping', undefined );
-			}
 		} else if ( change.name === 'offer_free_shipping' ) {
 			if ( change.value === false ) {
 				const { country } = values;
@@ -150,22 +128,22 @@ const MarketForm = ( {
 			);
 
 			setValue( 'shipping_country_times', times );
+		} else if ( change.name === 'free_shipping_threshold' ) {
+			const { country } = values;
+			const nextValue = values.shipping_country_rates.map( ( rate ) =>
+				rate.country === country
+					? {
+							...rate,
+							options: {
+								...rate.options,
+								free_shipping_threshold: change.value,
+							},
+					  }
+					: rate
+			);
+
+			setValue( 'shipping_country_rates', nextValue );
 		}
-		// } else if ( change.name === 'shipping_country_times' ) {
-		// 	// Skip the call of `onShippingTimesChange` if any shipping times are invalid.
-		// 	const error = handleValidate( values );
-		// 	const isValid = ! error.hasOwnProperty( 'flat_shipping_times' );
-
-		// 	// Skip the call of `onShippingTimesChange` if there are incomplete shipping times.
-		// 	// This should only happen during onboarding when the shipping times haven't been stored yet.
-		// 	const shippingIsIncomplete = values.shipping_country_times.some(
-		// 		( item ) => item.time === null || item.maxTime === null
-		// 	);
-
-		// 	if ( ! shippingIsIncomplete && isValid ) {
-		// 		onShippingTimesChange( values.shipping_country_times );
-		// 	}
-		// }
 	};
 
 	return (
@@ -173,7 +151,7 @@ const MarketForm = ( {
 			ref={ formRef }
 			initialValues={ initialMarket }
 			extendAdapter={ extendAdapter }
-			validate={ handleValidate }
+			validate={ checkErrors }
 			onSubmit={ handleSubmit }
 			onChange={ handleChange }
 			{ ...adaptiveFormProps }

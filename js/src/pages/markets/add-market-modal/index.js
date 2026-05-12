@@ -63,12 +63,12 @@ const AddMarketModal = ( {
 			initialMarket={ {
 				countries: targetAudience.countries || [],
 				country: null,
-				offer_free_shipping:
-					shippingRates?.[ 0 ]?.options?.free_shipping_threshold > 0,
-				flat_shipping_rate: shippingRates?.[ 0 ]?.rate,
-				shipping_country_rates: shippingRates, // for backwards compatibility with existing controls; to be removed once all controls are migrated to use flat_shipping_rate and offer_free_shipping directly.
-				flat_shipping_min_time: shippingTimes?.[ 0 ]?.time ?? null,
-				flat_shipping_max_time: shippingTimes?.[ 0 ]?.maxTime ?? null,
+				shipping_country_rates: shippingRates,
+				flat_shipping_rate: null,
+				offer_free_shipping: false,
+				free_shipping_threshold: null,
+				flat_shipping_min_time: null,
+				flat_shipping_max_time: null,
 				shipping_country_times: shippingTimes,
 				language: targetAudience.language,
 				currency: currencyCode,
@@ -80,6 +80,13 @@ const AddMarketModal = ( {
 			{ ( formContext ) => {
 				const { adapter, isValidForm, handleSubmit } = formContext;
 				const { isSaving } = adapter;
+
+				const handleSubmitClick = ( event ) => {
+					if ( isValidForm ) {
+						return handleSubmit( event );
+					}
+					adapter.showValidation();
+				};
 
 				let buttons = [
 					<AppButton
@@ -102,8 +109,7 @@ const AddMarketModal = ( {
 						<AppButton
 							key="add-market"
 							variant="primary"
-							disabled={ ! isValidForm }
-							onClick={ handleSubmit }
+							onClick={ handleSubmitClick }
 							loading={ isSaving }
 							eventName="gla_add_new_market_button_clicked"
 							eventProps={ {
