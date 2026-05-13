@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Flex, Notice } from '@wordpress/components';
+import { Flex } from '@wordpress/components';
 
 /**
  * Internal dependencies
