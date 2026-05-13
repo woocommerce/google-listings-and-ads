@@ -38,7 +38,6 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		'feed_label'    => 'US',
 		'shipping_rate' => 'flat',
 		'shipping_time' => 'flat',
-		'free_shipping' => 50.0,
 	];
 
 	protected const SECONDARY_MARKET = [
@@ -50,7 +49,6 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		'feed_label'    => 'GB',
 		'shipping_rate' => 'flat',
 		'shipping_time' => 'flat',
-		'free_shipping' => null,
 	];
 
 	public function setUp(): void {
@@ -93,6 +91,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertArrayHasKey( 'id', $primary );
 		$this->assertArrayHasKey( 'label', $primary );
 		$this->assertArrayHasKey( 'countries', $primary );
+		$this->assertArrayHasKey( 'country', $primary );
 		$this->assertArrayHasKey( 'shipping_rate', $primary );
 		$this->assertArrayHasKey( 'shipping_time', $primary );
 	}
@@ -104,6 +103,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( 'Primary Market', $primary['label'] );
 		$this->assertEquals( [ 'US' ], $primary['countries'] );
+		$this->assertEquals( 'US', $primary['country'] );
 		$this->assertEquals( 'flat', $primary['shipping_rate'] );
 		$this->assertEquals( 'flat', $primary['shipping_time'] );
 	}

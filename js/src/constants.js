@@ -44,6 +44,11 @@ export const SHIPPING_RATE_METHOD = {
 	AUTOMATIC: 'automatic',
 };
 
+export const SHIPPING_TIME_METHOD = {
+	FLAT: 'flat',
+	MANUAL: 'manual',
+};
+
 // Stepper key related
 const campaignStepEntries = [
 	[ 'CAMPAIGN', 'campaign' ],

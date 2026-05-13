@@ -8,7 +8,8 @@ import { __ } from '@wordpress/i18n';
  */
 import Section from '~/components/section';
 import VerticalGapLayout from '~/components/vertical-gap-layout';
-import ShippingRateInputControl from './shipping-rate-input-control';
+import ShippingRateInputControl from '~/components/shipping-rate-input-control';
+import ShippingRateInputControlLabelText from './shipping-rate-input-control-label-text';
 
 /**
  * @typedef { import("~/data/actions").CountryCode } CountryCode
@@ -40,7 +41,11 @@ export default function EstimatedShippingRatesCard( {
 				</Section.Card.Title>
 				<VerticalGapLayout size="large">
 					<ShippingRateInputControl
-						countryOptions={ audienceCountries }
+						label={
+							<ShippingRateInputControlLabelText
+								countries={ audienceCountries }
+							/>
+						}
 						value={ value }
 						onChange={ onChange }
 					/>
