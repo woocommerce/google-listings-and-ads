@@ -10,8 +10,10 @@ import userEvent from '@testing-library/user-event';
  */
 import MarketDataViews from './';
 import useMarkets from '~/hooks/useMarkets';
+import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 
 jest.mock( '~/hooks/useMarkets' );
+jest.mock( '~/hooks/useCountryKeyNameMap' );
 
 jest.mock( '../edit-market-modal', () =>
 	jest.fn( ( { market, onRequestClose } ) => (
@@ -22,25 +24,34 @@ jest.mock( '../edit-market-modal', () =>
 	) )
 );
 
+jest.mock( '../delete-market-modal', () =>
+	jest.fn( ( { market, onRequestClose } ) => (
+		<div data-testid="delete-market-modal">
+			<span data-testid="delete-market-modal-id">{ market.id }</span>
+			<button onClick={ onRequestClose }>Close delete modal</button>
+		</div>
+	) )
+);
+
 const SAMPLE_MARKETS = [
 	{
 		id: 'primary',
 		label: 'Primary Market',
 		countries: [ 'MU', 'ZW' ],
+		country: 'ZW',
 		language: 'en',
 		currency: 'USD',
-		feedLabel: 'ZW',
+		feed_label: 'ZW',
 		shipping_rate: 'flat',
 		shipping_time: 'flat',
 		free_shipping: null,
 	},
 	{
-		id: 'secondary',
-		label: 'Secondary Market',
-		countries: [ 'FR' ],
+		id: 'fr',
+		country: 'FR',
 		language: 'fr',
 		currency: 'EUR',
-		feedLabel: 'FR',
+		feed_label: 'FR',
 		shipping_rate: 'table',
 		shipping_time: 'table',
 		free_shipping: null,
@@ -119,10 +130,16 @@ beforeEach( () => {
 		data: SAMPLE_MARKETS,
 		hasFinishedResolution: true,
 	} );
+	useCountryKeyNameMap.mockReturnValue( {
+		FR: 'France',
+		MU: 'Mauritius',
+		ZW: 'Zimbabwe',
+	} );
 } );
 
 afterEach( () => {
 	useMarkets.mockReset();
+	useCountryKeyNameMap.mockReset();
 	delete window.wp;
 } );
 
@@ -138,14 +155,19 @@ describe( 'MarketDataViews', () => {
 		).toBeInTheDocument();
 	} );
 
-	test( 'renders the Market cell as "<label> (<n> countries)"', () => {
+	test( 'renders the primary Market cell as "<label> (<n> countries)"', () => {
 		render( <MarketDataViews /> );
 
 		expect(
 			screen.getByRole( 'cell', { name: 'Primary Market (2 countries)' } )
 		).toBeInTheDocument();
+	} );
+
+	test( 'renders a non-primary Market cell as the country name', () => {
+		render( <MarketDataViews /> );
+
 		expect(
-			screen.getByRole( 'cell', { name: 'Secondary Market (1 country)' } )
+			screen.getByRole( 'cell', { name: 'France' } )
 		).toBeInTheDocument();
 	} );
 
@@ -207,7 +229,7 @@ describe( 'MarketDataViews', () => {
 		expect( deleteAction.isPrimary ).toBeFalsy();
 		expect( deleteAction.disabled ).toBeFalsy();
 		expect( deleteAction.isEligible( { id: 'primary' } ) ).toBe( false );
-		expect( deleteAction.isEligible( { id: 'secondary' } ) ).toBe( true );
+		expect( deleteAction.isEligible( { id: 'fr' } ) ).toBe( true );
 	} );
 
 	test( 'renders Delete only on non-primary market rows', () => {
@@ -222,7 +244,7 @@ describe( 'MarketDataViews', () => {
 			.getByRole( 'cell', { name: 'Primary Market (2 countries)' } )
 			.closest( 'tr' );
 		const secondaryRow = screen
-			.getByRole( 'cell', { name: 'Secondary Market (1 country)' } )
+			.getByRole( 'cell', { name: 'France' } )
 			.closest( 'tr' );
 
 		expect(
@@ -262,6 +284,51 @@ describe( 'MarketDataViews', () => {
 		expect(
 			screen.getByTestId( 'edit-market-modal-name' ).textContent
 		).toBe( SAMPLE_MARKETS[ 0 ].label );
+	} );
+
+	test( 'opens DeleteMarketModal with the clicked row when Delete is pressed', async () => {
+		const user = userEvent.setup();
+		render( <MarketDataViews /> );
+
+		expect(
+			screen.queryByTestId( 'delete-market-modal' )
+		).not.toBeInTheDocument();
+
+		await user.click( screen.getByRole( 'button', { name: 'Delete' } ) );
+
+		expect(
+			screen.getByTestId( 'delete-market-modal' )
+		).toBeInTheDocument();
+		expect(
+			screen.getByTestId( 'delete-market-modal-id' ).textContent
+		).toBe( 'fr' );
+	} );
+
+	test( 'closes DeleteMarketModal when onRequestClose is invoked', async () => {
+		const user = userEvent.setup();
+		render( <MarketDataViews /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Delete' } ) );
+		expect(
+			screen.getByTestId( 'delete-market-modal' )
+		).toBeInTheDocument();
+
+		await user.click(
+			screen.getByRole( 'button', { name: 'Close delete modal' } )
+		);
+		expect(
+			screen.queryByTestId( 'delete-market-modal' )
+		).not.toBeInTheDocument();
+	} );
+
+	test( 'opening Delete does not open Edit, and vice versa', async () => {
+		const user = userEvent.setup();
+		render( <MarketDataViews /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Delete' } ) );
+		expect(
+			screen.queryByTestId( 'edit-market-modal' )
+		).not.toBeInTheDocument();
 	} );
 
 	test( 'closes EditMarketModal when onRequestClose is invoked', async () => {

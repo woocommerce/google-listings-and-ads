@@ -192,9 +192,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			->method( 'get_primary_market' )
 			->willReturn(
 				[
-					'country'   => 'US',
-					'feedLabel' => 'US',
-					'language'  => 'en',
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
 				]
 			);
 
@@ -267,9 +267,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			->method( 'get_primary_market' )
 			->willReturn(
 				[
-					'country'   => 'US',
-					'feedLabel' => 'US',
-					'language'  => 'en',
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
 				]
 			);
 
@@ -304,9 +304,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			->method( 'get_primary_market' )
 			->willReturn(
 				[
-					'country'   => 'US',
-					'feedLabel' => 'US',
-					'language'  => 'en',
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
 				]
 			);
 

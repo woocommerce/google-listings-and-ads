@@ -225,7 +225,7 @@ class BatchProductHelper implements Service {
 					$product,
 					$primary_market['country'],
 					$mapping_rules,
-					$primary_market['feedLabel'],
+					$primary_market['feed_label'],
 					$primary_market['language']
 				);
 				$validation_result = $this->validate_product( $adapted_product );
