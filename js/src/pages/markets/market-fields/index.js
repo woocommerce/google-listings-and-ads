@@ -11,8 +11,7 @@ import { SHIPPING_RATE_METHOD } from '~/constants';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useSettings from '~/hooks/useSettings';
 import MarketSelectControl from './market-select-control';
-import LanguageSelectControl from './language-select-control';
-import CurrencySelectControl from './currency-select-control';
+import LocaleControls from './locale-controls';
 import ShippingTimesInput from './shipping-times-input';
 import ShippingRateInputControl from '~/components/shipping-rate-input-control';
 import FreeShippingThresholdControl from '~/components/free-shipping-threshold-control';
@@ -43,15 +42,7 @@ const MarketFields = () => {
 	return (
 		<Flex direction="column" gap={ 6 } className="gla-market-fields">
 			<MarketSelectControl />
-			<LanguageSelectControl />
-			<CurrencySelectControl />
-
-			<Notice isDismissible={ false }>
-				{ __(
-					'Want to sell in multiple languages? Install a compatible multilingual plugin to add language and currency support to your markets.',
-					'google-listings-and-ads'
-				) }
-			</Notice>
+			<LocaleControls />
 
 			<ShippingRateInputControl
 				hideLabelFromVision={ false }
