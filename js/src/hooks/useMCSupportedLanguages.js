@@ -8,14 +8,17 @@ import { useSelect } from '@wordpress/data';
  */
 import { STORE_KEY } from '~/data/constants';
 
-const selectorName = 'getMCSupportedLanguages';
+const selectorName = 'getMCLanguagesCurrencies';
 
 const useMCSupportedLanguages = () => {
 	return useSelect( ( select ) => {
 		const selector = select( STORE_KEY );
 
+		// Trigger the shared resolver that populates both languages and currencies.
+		selector[ selectorName ]();
+
 		return {
-			languages: selector[ selectorName ](),
+			languages: selector.getMCSupportedLanguages(),
 			hasFinishedResolution: selector.hasFinishedResolution(
 				selectorName,
 				[]

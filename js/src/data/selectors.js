@@ -577,7 +577,20 @@ export const getMarket = ( state, id ) => {
 };
 
 /**
+ * Select supported languages and currencies for MC markets.
+ * Triggers the single resolver that populates both state properties.
+ *
+ * @param {Object} state The current store state.
+ * @return {{languages: Array<{code: string, label: string}>|null, currencies: Array<{code: string, symbol: string}>|null}} Supported languages and currencies, or null values before data is fetched.
+ */
+export const getMCLanguagesCurrencies = ( state ) => {
+	const { languages, currencies } = state.mc;
+	return { languages, currencies };
+};
+
+/**
  * Select the supported languages for MC markets.
+ * Call getMCLanguagesCurrencies to trigger the data fetch.
  *
  * @param {Object} state The current store state.
  * @return {Array<{code: string, label: string}>|null} Supported languages, or null before data is fetched.
@@ -586,6 +599,7 @@ export const getMCSupportedLanguages = ( state ) => state.mc.languages;
 
 /**
  * Select the supported currencies for MC markets.
+ * Call getMCLanguagesCurrencies to trigger the data fetch.
  *
  * @param {Object} state The current store state.
  * @return {Array<{code: string, symbol: string}>|null} Supported currencies, or null before data is fetched.
