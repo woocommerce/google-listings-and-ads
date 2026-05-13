@@ -76,7 +76,6 @@ const checkErrors = ( values ) => {
 			);
 		}
 	}
-	console.log( 'errors', errors );
 
 	return errors;
 };

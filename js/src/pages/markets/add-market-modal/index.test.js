@@ -136,4 +136,30 @@ describe( 'AddMarketModal', () => {
 			screen.queryByText( 'Install a multilingual plugin to add markets' )
 		).not.toBeInTheDocument();
 	} );
+
+	test( 'calls showValidation and not handleSubmit when the form is invalid and "Add market" is clicked', async () => {
+		const user = userEvent.setup();
+		const showValidation = jest.fn();
+		const handleSubmit = jest.fn();
+
+		const MarketForm = jest.requireMock( '../market-form' );
+		MarketForm.mockImplementationOnce( ( { children } ) =>
+			children( {
+				adapter: { isSaving: false, showValidation },
+				isValidForm: false,
+				handleSubmit,
+			} )
+		);
+
+		useSettings.mockReturnValue( {
+			settings: { shipping_rate: SHIPPING_RATE_METHOD.FLAT },
+		} );
+
+		render( <AddMarketModal { ...defaultProps } /> );
+
+		await user.click( screen.getByRole( 'button', { name: 'Add market' } ) );
+
+		expect( showValidation ).toHaveBeenCalledTimes( 1 );
+		expect( handleSubmit ).not.toHaveBeenCalled();
+	} );
 } );

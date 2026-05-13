@@ -19,13 +19,8 @@ import FreeShippingThresholdControl from '~/components/free-shipping-threshold-c
 import './index.scss';
 
 /**
- * Renders the market details fields within the market edit form.
- * The fields rendered here vary based on the scenario (manual vs multilingual),
- * but this component is scenario-agnostic; it only owns the shipping-rate-specific fields
- * and the notice about multilingual support, which are common to both scenarios.
- *
- * The scenario-specific field sets and data shapes are handled within
- * `useMarketDataViewsConfig`.
+ * Renders all market form fields for both the Add and Edit Market modals.
+ * Returns null when `shipping_rate` is not `flat`.
  */
 const MarketFields = () => {
 	const { settings } = useSettings();
@@ -35,13 +30,13 @@ const MarketFields = () => {
 		adapter: { renderRequestedValidation },
 	} = useAdaptiveFormContext();
 	const { currency } = values;
-	const { onChange, value } = getInputProps( 'free_shipping_threshold' );
-
-	const shouldDisplayFreeShippingThreshold = values.flat_shipping_rate > 0;
 
 	if ( settings?.shipping_rate !== SHIPPING_RATE_METHOD.FLAT ) {
 		return null;
 	}
+
+	const shouldDisplayFreeShippingThreshold = values.flat_shipping_rate > 0;
+	const { onChange, value: threshold } = getInputProps( 'free_shipping_threshold' );
 
 	return (
 		<Flex direction="column" gap={ 6 } className="gla-market-fields">
@@ -73,7 +68,7 @@ const MarketFields = () => {
 				>
 					<FreeShippingThresholdControl
 						onChange={ onChange }
-						threshold={ value }
+						threshold={ threshold }
 						currency={ currency }
 					/>
 					{ renderRequestedValidation( 'free_shipping_threshold' ) }
