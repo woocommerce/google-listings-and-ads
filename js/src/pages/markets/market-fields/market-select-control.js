@@ -67,7 +67,7 @@ const MarketSelectControl = () => {
 				offer_free_shipping:
 					existingRate.options?.free_shipping_threshold > 0,
 				free_shipping_threshold:
-					existingRate.options?.free_shipping_threshold ?? {},
+					existingRate.options?.free_shipping_threshold ?? undefined,
 			} ),
 			...( existingTime && {
 				flat_shipping_min_time: existingTime.time,

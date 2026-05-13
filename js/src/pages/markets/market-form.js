@@ -81,8 +81,8 @@ const MarketForm = ( {
 		const { setValue } = formRef.current;
 
 		if ( change.name === 'flat_shipping_rate' ) {
-			const existingRates = values.shipping_country_rates || [];
 			const { country } = values;
+			const existingRates = values.shipping_country_rates || [];
 
 			const rates = existingRates.map( ( singleRate ) =>
 				singleRate.country === country
@@ -114,6 +114,7 @@ const MarketForm = ( {
 			change.name === 'flat_shipping_max_time'
 		) {
 			const { country } = values;
+
 			const times = ( values.shipping_country_times || [] ).map(
 				( timeEntry ) =>
 					timeEntry.countryCode === country
@@ -129,6 +130,7 @@ const MarketForm = ( {
 			setValue( 'shipping_country_times', times );
 		} else if ( change.name === 'free_shipping_threshold' ) {
 			const { country } = values;
+
 			const nextValue = values.shipping_country_rates.map( ( rate ) =>
 				rate.country === country
 					? {

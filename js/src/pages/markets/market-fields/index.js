@@ -16,6 +16,7 @@ import CurrencySelectControl from './currency-select-control';
 import ShippingTimesInput from './shipping-times-input';
 import ShippingRateInputControl from '~/components/shipping-rate-input-control';
 import FreeShippingThresholdControl from '~/components/free-shipping-threshold-control';
+import './index.scss';
 
 /**
  * Renders the market details fields within the market edit form.
@@ -43,7 +44,7 @@ const MarketFields = () => {
 	}
 
 	return (
-		<Flex direction="column" gap={ 6 }>
+		<Flex direction="column" gap={ 6 } className="gla-market-fields">
 			<MarketSelectControl />
 			<LanguageSelectControl />
 			<CurrencySelectControl />
@@ -65,7 +66,11 @@ const MarketFields = () => {
 			/>
 
 			{ shouldDisplayFreeShippingThreshold && (
-				<Flex direction="column" gap={ 2 }>
+				<Flex
+					direction="column"
+					gap={ 2 }
+					className="gla-market-fields__free-shipping-threshold"
+				>
 					<FreeShippingThresholdControl
 						onChange={ onChange }
 						threshold={ value }

@@ -13,12 +13,13 @@ const checkErrors = ( values ) => {
 	const errors = {};
 
 	if ( values.id === PRIMARY_MARKET_ID ) {
-		if ( values.countries.length === 0 ) {
+		if ( ( values.countries ?? [] ).length === 0 ) {
 			errors.countries = __(
 				'Please select at least one country.',
 				'google-listings-and-ads'
 			);
 		}
+
 		return errors;
 	}
 
@@ -30,10 +31,14 @@ const checkErrors = ( values ) => {
 	}
 
 	if ( values.shipping_rate === SHIPPING_RATE_METHOD.FLAT ) {
+		console.log(
+			'values',
+			values.offer_free_shipping,
+			values.free_shipping_threshold
+		);
 		if (
 			values.offer_free_shipping === true &&
-			( ! values.free_shipping_threshold ||
-				Object.values( values.free_shipping_threshold ).length === 0 )
+			! values.free_shipping_threshold
 		) {
 			errors.free_shipping_threshold = __(
 				'Please enter minimum order for free shipping.',
@@ -76,6 +81,7 @@ const checkErrors = ( values ) => {
 			);
 		}
 	}
+	console.log( 'errors', errors );
 
 	return errors;
 };

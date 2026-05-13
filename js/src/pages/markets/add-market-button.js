@@ -46,22 +46,26 @@ const AddMarketButton = () => {
 				onClick={ handleOpen }
 				eventName="gla_add_market_button_clicked"
 				loading={
-					! hasResolvedShippingRates ||
-					! hasResolvedShippingTimes ||
-					! hasResolvedTargetAudience
+					isOpen &&
+					( ! hasResolvedShippingRates ||
+						! hasResolvedShippingTimes ||
+						! hasResolvedTargetAudience )
 				}
 			>
 				{ __( 'Add market', 'google-listings-and-ads' ) }
 			</AppButton>
 
-			{ isOpen && (
-				<AddMarketModal
-					shippingRates={ shippingRates }
-					shippingTimes={ shippingTimes }
-					targetAudience={ targetAudience }
-					onRequestClose={ handleClose }
-				/>
-			) }
+			{ isOpen &&
+				hasResolvedShippingRates &&
+				hasResolvedShippingTimes &&
+				hasResolvedTargetAudience && (
+					<AddMarketModal
+						shippingRates={ shippingRates }
+						shippingTimes={ shippingTimes }
+						targetAudience={ targetAudience }
+						onRequestClose={ handleClose }
+					/>
+				) }
 		</>
 	);
 };
