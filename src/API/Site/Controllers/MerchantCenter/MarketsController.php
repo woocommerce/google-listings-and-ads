@@ -112,6 +112,7 @@ class MarketsController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_languages_currencies_callback(): callable {
+		// TODO: Replace with real language/currency data once the multilingual scenario is implemented.
 		return function () {
 			return new Response(
 				[
@@ -130,13 +131,10 @@ class MarketsController extends BaseController {
 	protected function get_create_market_callback(): callable {
 		return function ( Request $request ) {
 			$config = [
-				'country'       => $request->get_param( 'country' ),
-				'language'      => $request->get_param( 'language' ),
-				'currency'      => $request->get_param( 'currency' ),
-				'feed_label'    => strtoupper( $request->get_param( 'country' ) ),
-				'shipping_rate' => $request->get_param( 'shipping_rate' ),
-				'shipping_time' => $request->get_param( 'shipping_time' ),
-				'free_shipping' => $request->get_param( 'free_shipping' ),
+				'country'    => $request->get_param( 'country' ),
+				'language'   => $request->get_param( 'language' ),
+				'currency'   => $request->get_param( 'currency' ),
+				'feed_label' => $request->get_param( 'country' ),
 			];
 
 			// TODO: Move ID generation into MarketService::generate_market_id().
@@ -289,12 +287,9 @@ class MarketsController extends BaseController {
 		$schema = $this->get_schema_properties();
 
 		return [
-			'country'       => array_merge( $schema['country'], [ 'required' => true ] ),
-			'language'      => array_merge( $schema['language'], [ 'required' => true ] ),
-			'currency'      => array_merge( $schema['currency'], [ 'required' => true ] ),
-			'shipping_rate' => array_merge( $schema['shipping_rate'], [ 'required' => true ] ),
-			'shipping_time' => array_merge( $schema['shipping_time'], [ 'required' => true ] ),
-			'free_shipping' => $schema['free_shipping'],
+			'country'  => array_merge( $schema['country'], [ 'required' => true ] ),
+			'language' => array_merge( $schema['language'], [ 'required' => true ] ),
+			'currency' => array_merge( $schema['currency'], [ 'required' => true ] ),
 		];
 	}
 
@@ -370,7 +365,7 @@ class MarketsController extends BaseController {
 			'country'       => [
 				'type'              => 'string',
 				'description'       => __( 'Primary country code in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
-				'context'           => [ 'edit' ],
+				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'language'      => [
@@ -404,30 +399,6 @@ class MarketsController extends BaseController {
 				'description'       => __( 'Shipping time configuration type.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'enum'              => [ 'flat', 'manual' ],
-				'validate_callback' => 'rest_validate_request_arg',
-			],
-			'free_shipping' => [
-				'type'              => [ 'number', 'null' ],
-				'description'       => __( 'Free shipping threshold amount, or null when unset.', 'google-listings-and-ads' ),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-			],
-			'flat_shipping_rate'    => [
-				'type'              => [ 'number', 'null' ],
-				'description'       => __( 'Flat shipping rate amount per country.', 'google-listings-and-ads' ),
-				'context'           => [ 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-			],
-			'flat_shipping_min_time' => [
-				'type'              => [ 'integer', 'null' ],
-				'description'       => __( 'Minimum flat shipping time in days per country.', 'google-listings-and-ads' ),
-				'context'           => [ 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-			],
-			'flat_shipping_max_time' => [
-				'type'              => [ 'integer', 'null' ],
-				'description'       => __( 'Maximum flat shipping time in days per country.', 'google-listings-and-ads' ),
-				'context'           => [ 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 		];

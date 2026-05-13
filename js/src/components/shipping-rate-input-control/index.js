@@ -9,7 +9,7 @@ import { Pill } from '@woocommerce/components';
  */
 import AppInputPriceControl from '~/components/app-input-price-control';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
-import './shipping-rate-input-control.scss';
+import './index.scss';
 
 /**
  * @typedef { import("~/data/actions").CountryCode } CountryCode

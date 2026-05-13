@@ -8,32 +8,40 @@ import { Flex, Notice } from '@wordpress/components';
  * Internal dependencies
  */
 import { SHIPPING_RATE_METHOD } from '~/constants';
-import {
-	useAdaptiveFormContext,
-	useAdaptiveFormInputProps,
-} from '~/components/adaptive-form';
+import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useSettings from '~/hooks/useSettings';
 import MarketSelectControl from './market-select-control';
 import LanguageSelectControl from './language-select-control';
 import CurrencySelectControl from './currency-select-control';
 import ShippingTimesInput from './shipping-times-input';
-import ShippingRateInputControl from '~/components/shipping-rate-section/estimated-shipping-rates-card/shipping-rate-input-control';
-import FreeShippingThresholdControl from '~/components/order-value-condition-section/minimum-order-card/free-shipping-threshold-control';
+import ShippingRateInputControl from '~/components/shipping-rate-input-control';
+import FreeShippingThresholdControl from '~/components/free-shipping-threshold-control';
+import './index.scss';
 
+/**
+ * Renders all market form fields for both the Add and Edit Market modals.
+ * Returns null when `shipping_rate` is not `flat`.
+ */
 const MarketFields = () => {
 	const { settings } = useSettings();
-	const { getInputProps, values } = useAdaptiveFormContext();
-	const freeShippingInputProps = useAdaptiveFormInputProps(
-		'shipping_country_rates',
-		'free_shipping_threshold'
-	);
-	const shouldDisplayFreeShippingThreshold = values.flat_shipping_rate > 0;
+	const {
+		getInputProps,
+		values,
+		adapter: { renderRequestedValidation },
+	} = useAdaptiveFormContext();
+	const { currency } = values;
+
 	if ( settings?.shipping_rate !== SHIPPING_RATE_METHOD.FLAT ) {
 		return null;
 	}
 
+	const shouldDisplayFreeShippingThreshold = values.flat_shipping_rate > 0;
+	const { onChange, value: threshold } = getInputProps(
+		'free_shipping_threshold'
+	);
+
 	return (
-		<Flex direction="column" gap={ 6 }>
+		<Flex direction="column" gap={ 6 } className="gla-market-fields">
 			<MarketSelectControl />
 			<LanguageSelectControl />
 			<CurrencySelectControl />
@@ -55,7 +63,18 @@ const MarketFields = () => {
 			/>
 
 			{ shouldDisplayFreeShippingThreshold && (
-				<FreeShippingThresholdControl { ...freeShippingInputProps } />
+				<Flex
+					direction="column"
+					gap={ 2 }
+					className="gla-market-fields__free-shipping-threshold"
+				>
+					<FreeShippingThresholdControl
+						onChange={ onChange }
+						threshold={ threshold }
+						currency={ currency }
+					/>
+					{ renderRequestedValidation( 'free_shipping_threshold' ) }
+				</Flex>
 			) }
 
 			<ShippingTimesInput />

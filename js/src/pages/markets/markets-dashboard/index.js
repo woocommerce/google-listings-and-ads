@@ -12,7 +12,7 @@ import AppSpinner from '~/components/app-spinner';
 import useDataViewsScript from '~/hooks/useDataViewsScript';
 import useSettings from '~/hooks/useSettings';
 import MarketsHeader from '../markets-header';
-import MarketDataViews from '..//market-data-views';
+import MarketDataViews from '../market-data-views';
 import './index.scss';
 
 const MarketsDashboard = () => {

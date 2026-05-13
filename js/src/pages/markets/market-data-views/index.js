@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useState, useMemo } from '@wordpress/element';
 import { Spinner } from '@wordpress/components';
 import { edit, trash } from '@wordpress/icons';
 
@@ -53,25 +53,28 @@ const MarketDataViews = () => {
 		fields: fields.map( ( field ) => field.id ),
 	};
 
-	const ACTIONS = [
-		{
-			id: 'edit',
-			label: __( 'Edit', 'google-listings-and-ads' ),
-			icon: loaded ? edit : <Spinner />,
-			isPrimary: true,
-			callback: loaded
-				? ( [ market ] ) => setEditingMarket( market )
-				: () => {},
-		},
-		{
-			id: 'delete',
-			label: __( 'Delete', 'google-listings-and-ads' ),
-			icon: trash,
-			isDestructive: true,
-			isEligible: ( market ) => ! isPrimaryMarket( market ),
-			callback: ( [ market ] ) => setDeletingMarket( market ),
-		},
-	];
+	const ACTIONS = useMemo(
+		() => [
+			{
+				id: 'edit',
+				label: __( 'Edit', 'google-listings-and-ads' ),
+				icon: loaded ? edit : <Spinner />,
+				isPrimary: true,
+				callback: loaded
+					? ( [ market ] ) => setEditingMarket( market )
+					: () => {},
+			},
+			{
+				id: 'delete',
+				label: __( 'Delete', 'google-listings-and-ads' ),
+				icon: trash,
+				isDestructive: true,
+				isEligible: ( market ) => ! isPrimaryMarket( market ),
+				callback: ( [ market ] ) => setDeletingMarket( market ),
+			},
+		],
+		[ loaded ]
+	);
 
 	return (
 		<>

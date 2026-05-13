@@ -9,12 +9,13 @@ import { __ } from '@wordpress/i18n';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useAppSelectDispatch from '~/hooks/useAppSelectDispatch';
 import AppSelectControl from '~/components/app-select-control';
-import useMarkets from '~/hooks/useMarkets';
 import usePrimaryMarketDetails from '~/hooks/usePrimaryMarketDetails';
 
 /**
- * Select control for choosing a market (country) when adding a new market. The options are populated from the list of countries in the primary market that are
- * not already claimed by existing secondary markets.
+ * Renders the market select control within the market edit form.
+ * The options for this control are derived from the primary market's countries,
+ * which are fetched from the store; thus, this control is only rendered once
+ * the relevant data has been resolved.
  */
 const MarketSelectControl = () => {
 	const {
@@ -25,38 +26,72 @@ const MarketSelectControl = () => {
 		data: primaryMarket,
 		hasFinishedResolution: hasResolvedPrimaryMarket,
 	} = usePrimaryMarketDetails();
-	const { data: markets, hasFinishedResolution: hasResolvedMarkets } =
-		useMarkets();
-	const { getInputProps } = useAdaptiveFormContext();
+	const { getInputProps, values, setValues } = useAdaptiveFormContext();
+	const { shipping_country_rates, shipping_country_times } = values;
 
-	if (
-		! hasResolvedCountries ||
-		! hasResolvedPrimaryMarket ||
-		! hasResolvedMarkets
-	) {
+	if ( ! hasResolvedCountries || ! hasResolvedPrimaryMarket ) {
 		return null;
 	}
 
-	// Collect all claimed countries from non-primary markets to exclude them from the options list.
-	const claimedCountries = new Set(
-		markets
-			.filter( ( market ) => market.id !== 'primary' )
-			.flatMap( ( market ) => market.countries )
-	);
+	const options = primaryMarket.countries.map( ( countryCode ) => ( {
+		value: countryCode,
+		label: countries[ countryCode ]?.name || countryCode,
+	} ) );
 
-	const options = primaryMarket.countries
-		.filter( ( countryCode ) => ! claimedCountries.has( countryCode ) )
-		.map( ( countryCode ) => ( {
-			value: countryCode,
-			label: countries[ countryCode ]?.name || countryCode,
-		} ) );
+	const { onChange, ...inputProps } = getInputProps( 'country' );
+
+	const handleChange = ( selectedOption ) => {
+		onChange( selectedOption );
+
+		const existingRate = shipping_country_rates?.find(
+			( rate ) => rate.country === selectedOption
+		);
+		const existingTime = shipping_country_times?.find(
+			( time ) => time.countryCode === selectedOption
+		);
+
+		// `onChange` above satisfies the `getInputProps` contract and notifies any external
+		// listeners, but it internally calls `setValues( { country } )` — a first synchronous
+		// call against the current state snapshot.
+		//
+		// Due to a WC 6.9+ closure bug, a second synchronous `setValues` call merges against
+		// that *same* original snapshot rather than the result of the first call. Omitting
+		// `country` here would therefore revert it to its pre-selection value.
+		//
+		// Including `country` in this single batch call ensures all fields land atomically on
+		// one snapshot, avoiding the race. See adaptive-form.js `setValueCompatibly` for detail.
+		setValues( {
+			country: selectedOption,
+			...( existingRate && {
+				flat_shipping_rate: existingRate.rate,
+				offer_free_shipping:
+					existingRate.options?.free_shipping_threshold > 0,
+				free_shipping_threshold:
+					existingRate.options?.free_shipping_threshold ?? undefined,
+			} ),
+			...( existingTime && {
+				flat_shipping_min_time: existingTime.time,
+				flat_shipping_max_time: existingTime.maxTime,
+			} ),
+		} );
+	};
+
+	const appSelectControlProps = {
+		...inputProps,
+		...( ! inputProps.selected
+			? {
+					autoSelectFirstOption: true,
+					value: undefined,
+			  }
+			: {} ),
+	};
 
 	return (
 		<AppSelectControl
 			label={ __( 'Market', 'google-listings-and-ads' ) }
 			options={ options }
-			autoSelectFirstOption
-			{ ...getInputProps( 'country' ) }
+			onChange={ handleChange }
+			{ ...appSelectControlProps }
 		/>
 	);
 };

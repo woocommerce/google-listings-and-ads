@@ -7,9 +7,19 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import CountriesTimeInput from '~/components/free-listings/configure-product-listings/shipping-time-setup/countries-time-input';
+import { useAdaptiveFormContext } from '~/components/adaptive-form';
+import CountriesTimeInput from '~/components/countries-time-input';
 
-const ShippingTimesInput = ( { className } ) => {
+/**
+ * Renders the shipping times input control within the market edit form.
+ * This control allows users to specify estimated shipping times for the market,
+ * which apply per country regardless of language or currency.
+ */
+const ShippingTimesInput = ({ className }) => {
+	const {
+		adapter: { renderRequestedValidation },
+	} = useAdaptiveFormContext();
+
 	return (
 		<BaseControl
 			className={ className }
@@ -24,6 +34,7 @@ const ShippingTimesInput = ( { className } ) => {
 			) }
 		>
 			<CountriesTimeInput />
+			{ renderRequestedValidation( 'flat_shipping_times' ) }
 		</BaseControl>
 	);
 };

@@ -7,6 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { SHIPPING_RATE_METHOD } from '~/constants';
+import useStoreCurrency from '~/hooks/useStoreCurrency';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
 import MultiLingualPluginPrompt from './multilingual-plugin-prompt';
@@ -14,37 +15,65 @@ import useSettings from '~/hooks/useSettings';
 import MarketFields from '../market-fields';
 import MarketForm from '../market-form';
 
+const CONTEXT = 'add_market_modal';
+
 /**
+ * @typedef {import('~/data/actions').TargetAudienceData } TargetAudienceData
  * @typedef {import('~/data/actions').ShippingRate} ShippingRate
  * @typedef {import('~/data/actions').ShippingTime} ShippingTime
  */
 
 /**
- * Placeholder for the Add Market modal.
+ * Event fired when the "Cancel" button in the AddMarketModal is clicked.
+ * @event gla_cancel_button_clicked
+ * @property {string} context The context in which the cancel button click happened, e.g. "add_market_modal".
+ */
+
+/**
+ * Event fired when the "Add market" button in the AddMarketModal is clicked.
+ * @event gla_add_new_market_button_clicked
+ * @property {string} context The context in which the add market button click happened, e.g. "add_market_modal".
+ */
+
+/**
+ * Modal component for adding a new market.
+ * This component is rendered when the user clicks the "Add market" button on the markets page,
+ * and it contains a form for entering the details of the new market.
  *
- * The follow-up task will replace this with a real form (country selector,
- * shipping configuration, validation, and a save handler that triggers a
- * markets refetch). For now, the modal renders a short placeholder body and a
- * Close button so the open / close wiring from `AddMarket` can be reviewed
- * end-to-end.
+ * @fires gla_cancel_button_clicked when the cancel button is clicked with context of "add_market_modal"
+ * @fires gla_add_new_market_button_clicked when the add market button is clicked with context of "add_market_modal"
  *
  * @param {Object} props
  * @param {Array<ShippingRate>} props.shippingRates Shipping rates to pre-populate the form with.
  * @param {Array<ShippingTime>} props.shippingTimes Shipping times data, if not given AppSpinner will be rendered.
+ * @param {TargetAudienceData} props.targetAudience Target audience value data to be initialed the form, if not given AppSpinner will be rendered.
  * @param {() => void} props.onRequestClose Called when the user closes the modal.
  */
-const AddMarketModal = ( { shippingRates, shippingTimes, onRequestClose } ) => {
+const AddMarketModal = ( {
+	shippingRates,
+	shippingTimes,
+	targetAudience = { countries: [] },
+	onRequestClose,
+} ) => {
 	const { settings } = useSettings();
+	const { code: currencyCode } = useStoreCurrency();
 
 	return (
 		<MarketForm
 			initialMarket={ {
-				offer_free_shipping:
-					shippingRates?.[ 0 ]?.options?.free_shipping_threshold > 0,
-				flat_shipping_rate: shippingRates?.[ 0 ]?.rate,
-				shipping_country_rates: shippingRates, // for backwards compatibility with existing controls; to be removed once all controls are migrated to use flat_shipping_rate and offer_free_shipping directly.
-				flat_shipping_min_time: shippingTimes?.[ 0 ]?.time ?? null,
-				flat_shipping_max_time: shippingTimes?.[ 0 ]?.maxTime ?? null,
+				countries: targetAudience.countries,
+				country: null,
+				shipping_country_rates: shippingRates,
+				flat_shipping_rate: null,
+				offer_free_shipping: false,
+				free_shipping_threshold: null,
+				flat_shipping_min_time: null,
+				flat_shipping_max_time: null,
+				shipping_country_times: shippingTimes,
+				language: targetAudience.language,
+				currency: currencyCode,
+				shipping_rate: settings?.shipping_rate,
+				shipping_time: settings?.shipping_time,
 			} }
 			onSubmit={ onRequestClose }
 		>
@@ -52,12 +81,23 @@ const AddMarketModal = ( { shippingRates, shippingTimes, onRequestClose } ) => {
 				const { adapter, isValidForm, handleSubmit } = formContext;
 				const { isSaving } = adapter;
 
+				const handleSubmitClick = ( event ) => {
+					if ( isValidForm ) {
+						return handleSubmit( event );
+					}
+					adapter.showValidation();
+				};
+
 				let buttons = [
 					<AppButton
 						key="close"
 						variant="tertiary"
 						onClick={ onRequestClose }
 						disabled={ isSaving }
+						eventName="gla_cancel_button_clicked"
+						eventProps={ {
+							context: CONTEXT,
+						} }
 					>
 						{ __( 'Cancel', 'google-listings-and-ads' ) }
 					</AppButton>,
@@ -69,9 +109,12 @@ const AddMarketModal = ( { shippingRates, shippingTimes, onRequestClose } ) => {
 						<AppButton
 							key="add-market"
 							variant="primary"
-							disabled={ ! isValidForm }
-							onClick={ handleSubmit }
+							onClick={ handleSubmitClick }
 							loading={ isSaving }
+							eventName="gla_add_new_market_button_clicked"
+							eventProps={ {
+								context: CONTEXT,
+							} }
 						>
 							{ __( 'Add market', 'google-listings-and-ads' ) }
 						</AppButton>,

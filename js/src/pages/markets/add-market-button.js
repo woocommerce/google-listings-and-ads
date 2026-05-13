@@ -9,13 +9,19 @@ import { useState, useCallback } from '@wordpress/element';
  */
 import useShippingRates from '~/hooks/useShippingRates';
 import useShippingTimes from '~/hooks/useShippingTimes';
+import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import AppButton from '~/components/app-button';
 import AddMarketModal from './add-market-modal';
 
 /**
- * Owns the open / close state for `AddMarketModal`. The modal itself is a
- * placeholder today; the follow-up task will replace its body with a real
- * country / shipping form and a save handler.
+ * Event fired when the "Add market" button is clicked.
+ *
+ * @event gla_add_market_button_clicked
+ */
+
+/**
+ * Component for the "Add market" button on the markets page, which opens a modal to add a new market.
+ * @fires gla_add_market_button_clicked event when the button is clicked
  */
 const AddMarketButton = () => {
 	const [ isOpen, setIsOpen ] = useState( false );
@@ -27,6 +33,8 @@ const AddMarketButton = () => {
 		hasFinishedResolution: hasResolvedShippingTimes,
 		data: shippingTimes,
 	} = useShippingTimes();
+	const { targetAudience, loaded: hasResolvedTargetAudience } =
+		useTargetAudienceFinalCountryCodes();
 
 	const handleOpen = useCallback( () => setIsOpen( true ), [] );
 	const handleClose = useCallback( () => setIsOpen( false ), [] );
@@ -36,20 +44,28 @@ const AddMarketButton = () => {
 			<AppButton
 				variant="primary"
 				onClick={ handleOpen }
+				eventName="gla_add_market_button_clicked"
 				loading={
-					! hasResolvedShippingRates || ! hasResolvedShippingTimes
+					isOpen &&
+					( ! hasResolvedShippingRates ||
+						! hasResolvedShippingTimes ||
+						! hasResolvedTargetAudience )
 				}
 			>
 				{ __( 'Add market', 'google-listings-and-ads' ) }
 			</AppButton>
 
-			{ isOpen && (
-				<AddMarketModal
-					shippingRates={ shippingRates }
-					shippingTimes={ shippingTimes }
-					onRequestClose={ handleClose }
-				/>
-			) }
+			{ isOpen &&
+				hasResolvedShippingRates &&
+				hasResolvedShippingTimes &&
+				hasResolvedTargetAudience && (
+					<AddMarketModal
+						shippingRates={ shippingRates }
+						shippingTimes={ shippingTimes }
+						targetAudience={ targetAudience }
+						onRequestClose={ handleClose }
+					/>
+				) }
 		</>
 	);
 };

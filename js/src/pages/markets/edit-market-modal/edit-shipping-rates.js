@@ -10,8 +10,9 @@ import { SHIPPING_RATE_METHOD } from '~/constants';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useSettings from '~/hooks/useSettings';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
-import ShippingRateInputControl from '~/components/shipping-rate-section/estimated-shipping-rates-card/shipping-rate-input-control';
-import OfferFreeShippingCheckbox from '~/components/order-value-condition-section/offer-free-shipping-checkbox';
+import ShippingRateInputControl from '~/components/shipping-rate-input-control';
+import FreeShippingThresholdControl from '~/components/free-shipping-threshold-control';
+import MinimumOrderCard from '~/components/order-value-condition-section/minimum-order-card';
 import AppInputPriceControl from '~/components/app-input-price-control';
 
 const EditShippingRates = () => {
@@ -30,12 +31,12 @@ const EditShippingRates = () => {
 	const { value: threshold, onChange: onThresholdChange } =
 		getInputProps( 'free_shipping' );
 
-	const handleThresholdBlur = ( _event, numberValue ) => {
-		if ( threshold === numberValue ) {
-			return;
-		}
-		onThresholdChange( numberValue > 0 ? numberValue : null );
-	};
+	// const handleChange = ( numberValue ) => {
+	// 	if ( threshold === numberValue ) {
+	// 		return;
+	// 	}
+	// 	onThresholdChange( numberValue > 0 ? numberValue : null );
+	// };
 
 	return (
 		<div className="gla-edit-shipping-rates">
@@ -48,19 +49,11 @@ const EditShippingRates = () => {
 				) }
 				{ ...getInputProps( 'flat_shipping_rate' ) }
 			/>
-			<OfferFreeShippingCheckbox
-				className="gla-edit-shipping-rates__free-shipping"
-				{ ...getInputProps( 'offer_free_shipping' ) }
+			<FreeShippingThresholdControl
+				onChange={ onThresholdChange }
+				threshold={ threshold }
+				currency={ currencyCode }
 			/>
-			{ values.offer_free_shipping && (
-				<AppInputPriceControl
-					className="gla-edit-shipping-rates__free-shipping-cost"
-					label={ __( 'Cost', 'google-listings-and-ads' ) }
-					suffix={ currencyCode }
-					value={ threshold }
-					onBlur={ handleThresholdBlur }
-				/>
-			) }
 			{ renderRequestedValidation( 'free_shipping' ) }
 		</div>
 	);

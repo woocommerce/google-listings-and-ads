@@ -8,8 +8,9 @@ import { __ } from '@wordpress/i18n';
  */
 import Section from '~/components/section';
 import VerticalGapLayout from '~/components/vertical-gap-layout';
+import FreeShippingThresholdControl from '~/components/free-shipping-threshold-control';
+import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
 import './minimum-order-card.scss';
-import FreeShippingThresholdControl from './free-shipping-threshold-control';
 
 /**
  * @typedef { import("~/data/actions").ShippingRate } ShippingRate
@@ -24,6 +25,29 @@ import FreeShippingThresholdControl from './free-shipping-threshold-control';
  * @param {(nextValue: Array<ShippingRate>) => void} props.onChange Callback called with the updated rates once the threshold changes.
  */
 const MinimumOrderCard = ( { value = [], helper, onChange } ) => {
+	const nonFreeRates = value.filter( isNonFreeShippingRate );
+	const threshold = nonFreeRates[ 0 ]?.options?.free_shipping_threshold;
+	const currency = value[ 0 ]?.currency;
+
+	const handleChange = ( numberValue ) => {
+		onChange(
+			value.map( ( rate ) => {
+				if ( ! isNonFreeShippingRate( rate ) ) {
+					return rate;
+				}
+
+				return {
+					...rate,
+					options: {
+						...rate.options,
+						free_shipping_threshold:
+							numberValue > 0 ? numberValue : undefined,
+					},
+				};
+			} )
+		);
+	};
+
 	return (
 		<Section.Card className="gla-minimum-order-card">
 			<Section.Card.Body>
@@ -35,8 +59,9 @@ const MinimumOrderCard = ( { value = [], helper, onChange } ) => {
 				</Section.Card.Title>
 				<VerticalGapLayout size="large">
 					<FreeShippingThresholdControl
-						value={ value }
-						onChange={ onChange }
+						onChange={ handleChange }
+						threshold={ threshold }
+						currency={ currency }
 					/>
 				</VerticalGapLayout>
 				{ helper }

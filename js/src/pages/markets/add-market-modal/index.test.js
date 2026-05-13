@@ -10,9 +10,34 @@ import userEvent from '@testing-library/user-event';
  */
 import AddMarketModal from './';
 import useSettings from '~/hooks/useSettings';
+import useStoreCurrency from '~/hooks/useStoreCurrency';
 import { SHIPPING_RATE_METHOD } from '~/constants';
 
 jest.mock( '~/hooks/useSettings' );
+jest.mock( '~/hooks/useStoreCurrency' );
+
+// MarketForm pulls in useAppDispatch, useSaveShippingRates, useSaveShippingTimes.
+// Mock it to a thin wrapper that calls its render-prop child with a minimal form context.
+jest.mock( '../market-form', () =>
+	jest.fn( ( { children } ) =>
+		children( {
+			adapter: { isSaving: false },
+			isValidForm: true,
+			handleSubmit: jest.fn(),
+		} )
+	)
+);
+
+// MarketFields requires AdaptiveForm context (provided by MarketForm). Mock it
+// so it renders without that context since MarketForm itself is mocked above.
+jest.mock( '../market-fields', () => jest.fn( () => null ) );
+
+const defaultProps = {
+	shippingRates: [],
+	shippingTimes: [],
+	targetAudience: { countries: [], language: 'en' },
+	onRequestClose: jest.fn(),
+};
 
 describe( 'AddMarketModal', () => {
 	beforeEach( () => {
@@ -21,47 +46,64 @@ describe( 'AddMarketModal', () => {
 		useSettings.mockReturnValue( {
 			settings: { shipping_rate: SHIPPING_RATE_METHOD.MANUAL },
 		} );
+
+		useStoreCurrency.mockReturnValue( { code: 'USD' } );
 	} );
 
 	afterEach( () => {
 		delete global.glaData.isMultiLingualStore;
 	} );
 
-	test( 'renders the title and the placeholder body', () => {
-		render( <AddMarketModal onRequestClose={ () => {} } /> );
+	test( 'renders the modal with "Add market" title', () => {
+		render( <AddMarketModal { ...defaultProps } /> );
 
 		expect(
 			screen.getByRole( 'dialog', { name: 'Add market' } )
 		).toBeInTheDocument();
-		expect(
-			screen.getByText( 'Install a multilingual plugin to add markets' )
-		).toBeInTheDocument();
 	} );
 
-	test( 'invokes onRequestClose when the footer Close button is clicked', async () => {
+	test( 'invokes onRequestClose when the Cancel button is clicked', async () => {
 		const user = userEvent.setup();
 		const onRequestClose = jest.fn();
-		render( <AddMarketModal onRequestClose={ onRequestClose } /> );
 
-		// `getByRole('button', { name: 'Close' })` matches both the
-		// `<Modal>`'s X button (aria-label) and the footer button. Use the
-		// `is-primary` variant class to target only our footer button.
-		const footerCloseButton = document.querySelector(
-			'.app-modal__footer .is-primary'
+		render(
+			<AddMarketModal
+				{ ...defaultProps }
+				onRequestClose={ onRequestClose }
+			/>
 		);
-		await user.click( footerCloseButton );
+
+		await user.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
 
 		expect( onRequestClose ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	test( 'should render the plugin list and title and button appears when conditions are met', () => {
-		global.glaData.isMultiLingualStore = false;
+	test( 'does not show the "Add market" button when shipping_rate is MANUAL', () => {
+		render( <AddMarketModal { ...defaultProps } /> );
+
+		expect(
+			screen.queryByRole( 'button', { name: 'Add market' } )
+		).not.toBeInTheDocument();
+	} );
+
+	test( 'shows the "Add market" button when shipping_rate is not MANUAL', () => {
 		useSettings.mockReturnValue( {
-			settings: { shipping_rate: SHIPPING_RATE_METHOD.MANUAL },
+			settings: { shipping_rate: SHIPPING_RATE_METHOD.FLAT },
 		} );
 
-		render( <AddMarketModal onRequestClose={ () => {} } /> );
+		render( <AddMarketModal { ...defaultProps } /> );
 
+		expect(
+			screen.getByRole( 'button', { name: 'Add market' } )
+		).toBeInTheDocument();
+	} );
+
+	test( 'shows the multilingual plugin prompt when store is not multilingual and shipping_rate is MANUAL', () => {
+		render( <AddMarketModal { ...defaultProps } /> );
+
+		expect(
+			screen.getByText( 'Install a multilingual plugin to add markets' )
+		).toBeInTheDocument();
 		expect( screen.getByText( 'WPML' ) ).toBeInTheDocument();
 		expect(
 			screen.getByText(
@@ -71,5 +113,55 @@ describe( 'AddMarketModal', () => {
 		expect(
 			screen.getByRole( 'link', { name: 'Learn more' } )
 		).toBeInTheDocument();
+	} );
+
+	test( 'hides the multilingual plugin prompt when the store already has a multilingual plugin', () => {
+		global.glaData.isMultiLingualStore = true;
+
+		render( <AddMarketModal { ...defaultProps } /> );
+
+		expect(
+			screen.queryByText( 'Install a multilingual plugin to add markets' )
+		).not.toBeInTheDocument();
+	} );
+
+	test( 'hides the multilingual plugin prompt when shipping_rate is not MANUAL', () => {
+		useSettings.mockReturnValue( {
+			settings: { shipping_rate: SHIPPING_RATE_METHOD.FLAT },
+		} );
+
+		render( <AddMarketModal { ...defaultProps } /> );
+
+		expect(
+			screen.queryByText( 'Install a multilingual plugin to add markets' )
+		).not.toBeInTheDocument();
+	} );
+
+	test( 'calls showValidation and not handleSubmit when the form is invalid and "Add market" is clicked', async () => {
+		const user = userEvent.setup();
+		const showValidation = jest.fn();
+		const handleSubmit = jest.fn();
+
+		const MarketForm = jest.requireMock( '../market-form' );
+		MarketForm.mockImplementationOnce( ( { children } ) =>
+			children( {
+				adapter: { isSaving: false, showValidation },
+				isValidForm: false,
+				handleSubmit,
+			} )
+		);
+
+		useSettings.mockReturnValue( {
+			settings: { shipping_rate: SHIPPING_RATE_METHOD.FLAT },
+		} );
+
+		render( <AddMarketModal { ...defaultProps } /> );
+
+		await user.click(
+			screen.getByRole( 'button', { name: 'Add market' } )
+		);
+
+		expect( showValidation ).toHaveBeenCalledTimes( 1 );
+		expect( handleSubmit ).not.toHaveBeenCalled();
 	} );
 } );

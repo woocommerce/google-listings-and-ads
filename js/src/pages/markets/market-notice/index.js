@@ -17,7 +17,10 @@ import './index.scss';
 /**
  * Displays an info notice about shipping being managed in Google Merchant Center.
  *
- * @fires gla_documentation_link_click with `{ context: "edit-market-modal", link_id: "market-notice-merchant-center", href: "https://merchants.google.com/" }`
+ * @fires gla_documentation_link_click with `{ context: props.context, link_id: "market-notice-merchant-center", href: "https://merchants.google.com/" }`
+ *
+ * @param {Object} props
+ * @param {string} props.context Tracking context forwarded to the documentation link (e.g. "edit-market-modal").
  */
 const MarketNotice = ( { context } ) => {
 	const { settings } = useSettings();

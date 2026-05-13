@@ -10,7 +10,7 @@ import { render, screen } from '@testing-library/react';
 import { SHIPPING_RATE_METHOD } from '~/constants';
 import MarketsHeader from './';
 
-jest.mock( '../add-market', () =>
+jest.mock( '../add-market-button', () =>
 	jest.fn().mockReturnValue( <div data-testid="add-market" /> )
 );
 

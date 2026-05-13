@@ -1,20 +1,21 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
 import { useRef, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { useAppDispatch } from '~/data';
-import { PRIMARY_MARKET_ID } from './constants';
+import checkErrors from './utils/checkErrors';
+import useSaveShippingRates from '~/hooks/useSaveShippingRates';
+import useSaveShippingTimes from '~/hooks/useSaveShippingTimes';
 import AdaptiveForm from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
-import { checkErrors } from './utils/checkErrors';
 
 /**
- * Form for creating/editing a market. This is a placeholder implementation to be used for testing the end-to-end flow of market creation/editing from the MarketDataViews component, and will be replaced with a real form in a follow-up task.
+ * Form component for creating or editing a market.
+ * This component is used within the AddMarketModal and EditMarketModal.
  *
  * @param {Object} props
  * @param {Object} props.initialMarket Initial values to populate the form with. Can be empty when creating a new market.
@@ -27,14 +28,20 @@ const MarketForm = ( {
 	...adaptiveFormProps
 } ) => {
 	const formRef = useRef();
+	const { saveShippingRates } = useSaveShippingRates();
+	const { saveShippingTimes } = useSaveShippingTimes();
+	const [ isSaving, setIsSaving ] = useState( false );
 	const { createMarket, updateMarket, invalidateResolution } =
 		useAppDispatch();
-	const [ isSaving, setIsSaving ] = useState( false );
 
 	const extendAdapter = ( formContext ) => {
 		return {
 			isSaving,
 			renderRequestedValidation( key ) {
+				if ( ! formContext.adapter.requestedShowValidation ) {
+					return null;
+				}
+
 				return (
 					<ValidationErrors messages={ formContext.errors[ key ] } />
 				);
@@ -42,18 +49,14 @@ const MarketForm = ( {
 		};
 	};
 
-	const validate = ( values ) => {
-		if ( values.id !== PRIMARY_MARKET_ID ) {
-			return {};
-		}
-		return checkErrors( values );
-	};
-
 	const handleSubmit = async ( values ) => {
-		const { id: marketId, offer_free_shipping, ...data } = values;
-		if ( ! offer_free_shipping ) {
-			data.free_shipping = null;
-		}
+		const {
+			id: marketId,
+			shipping_country_rates,
+			shipping_country_times,
+			countries, // omit countries from the data sent to the API since it's already included in the shipping_country_rates and shipping_country_times, and including it in both places causes confusion; to be removed once the API is updated to accept countries only in the shipping rates and times.
+			...data
+		} = values;
 
 		try {
 			setIsSaving( true );
@@ -62,6 +65,8 @@ const MarketForm = ( {
 				await updateMarket( marketId, data );
 			} else {
 				await createMarket( data );
+				await saveShippingRates( shipping_country_rates );
+				await saveShippingTimes( shipping_country_times );
 			}
 
 			invalidateResolution( 'getTargetAudience', [] );
@@ -72,13 +77,84 @@ const MarketForm = ( {
 		}
 	};
 
+	const handleChange = ( change, values ) => {
+		const { setValue } = formRef.current;
+
+		if ( change.name === 'flat_shipping_rate' ) {
+			const { country } = values;
+			const existingRates = values.shipping_country_rates || [];
+
+			const rates = existingRates.map( ( singleRate ) =>
+				singleRate.country === country
+					? { ...singleRate, rate: change.value }
+					: singleRate
+			);
+
+			setValue( 'shipping_country_rates', rates );
+		} else if ( change.name === 'offer_free_shipping' ) {
+			if ( change.value === false ) {
+				const { country } = values;
+				const nextValue = values.shipping_country_rates.map(
+					( rate ) =>
+						rate.country === country
+							? {
+									...rate,
+									options: {
+										...rate.options,
+										free_shipping_threshold: undefined,
+									},
+							  }
+							: rate
+				);
+
+				setValue( 'shipping_country_rates', nextValue );
+			}
+		} else if (
+			change.name === 'flat_shipping_min_time' ||
+			change.name === 'flat_shipping_max_time'
+		) {
+			const { country } = values;
+
+			const times = ( values.shipping_country_times || [] ).map(
+				( timeEntry ) =>
+					timeEntry.countryCode === country
+						? {
+								...timeEntry,
+								...( change.name === 'flat_shipping_min_time'
+									? { time: change.value }
+									: { maxTime: change.value } ),
+						  }
+						: timeEntry
+			);
+
+			setValue( 'shipping_country_times', times );
+		} else if ( change.name === 'free_shipping_threshold' ) {
+			const { country } = values;
+
+			const nextValue = values.shipping_country_rates.map( ( rate ) =>
+				rate.country === country
+					? {
+							...rate,
+							options: {
+								...rate.options,
+								free_shipping_threshold: change.value,
+							},
+					  }
+					: rate
+			);
+
+			setValue( 'shipping_country_rates', nextValue );
+		}
+	};
+
 	return (
 		<AdaptiveForm
 			ref={ formRef }
 			initialValues={ initialMarket }
 			extendAdapter={ extendAdapter }
-			validate={ validate }
+			validate={ checkErrors }
 			onSubmit={ handleSubmit }
+			onChange={ handleChange }
 			{ ...adaptiveFormProps }
 		/>
 	);
