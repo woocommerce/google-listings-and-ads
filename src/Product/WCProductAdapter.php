@@ -977,7 +977,6 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 */
 	public function set_feed_label( string $feed_label ): void {
 		$this->setFeedLabel( $feed_label );
-		$this->setContentLanguage( null );
 	}
 
 	/**

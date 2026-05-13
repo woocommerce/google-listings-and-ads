@@ -115,7 +115,7 @@ class ProductFactoryTest extends ContainerAwareUnitTest {
 		$adapted = $this->product_factory->create( $product, 'US', [], 'US' );
 
 		$this->assertSame( 'US', $adapted->getFeedLabel() );
-		$this->assertNull( $adapted->getContentLanguage() );
+		$this->assertNotEmpty( $adapted->getContentLanguage() );
 	}
 
 	public function test_create_with_language_sets_content_language_when_no_feed_label() {
@@ -137,7 +137,7 @@ class ProductFactoryTest extends ContainerAwareUnitTest {
 		$adapted = $this->product_factory->create( $product, 'US', [], 'US', 'en' );
 
 		$this->assertSame( 'US', $adapted->getFeedLabel() );
-		$this->assertNull( $adapted->getContentLanguage() );
+		$this->assertNotEmpty( $adapted->getContentLanguage() );
 	}
 
 	public function test_create_without_optional_params_uses_content_language() {
