@@ -12,7 +12,6 @@ import useSaveShippingRates from '~/hooks/useSaveShippingRates';
 import useSaveShippingTimes from '~/hooks/useSaveShippingTimes';
 import AdaptiveForm from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
-import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
 
 /**
  * Form component for creating or editing a market.

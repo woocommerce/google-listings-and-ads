@@ -6,6 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { SHIPPING_RATE_METHOD } from '~/constants';
 import { PRIMARY_MARKET_ID } from '../constants';
 
 const checkErrors = ( values ) => {
@@ -28,22 +29,11 @@ const checkErrors = ( values ) => {
 		);
 	}
 
-	if ( values.shipping_rate === 'flat' ) {
-		if (
-			values.flat_shipping_rate === undefined ||
-			values.flat_shipping_rate === null ||
-			values.flat_shipping_rate < 0
-		) {
-			errors.flat_shipping_rate = __(
-				'Please specify an estimated shipping rate.',
-				'google-listings-and-ads'
-			);
-		}
-
+	if ( values.shipping_rate === SHIPPING_RATE_METHOD.FLAT ) {
 		if (
 			values.offer_free_shipping === true &&
-			( values.free_shipping_threshold === undefined ||
-				values.free_shipping_threshold === null )
+			( ! values.free_shipping_threshold ||
+				Object.values( values.free_shipping_threshold ).length === 0 )
 		) {
 			errors.free_shipping_threshold = __(
 				'Please enter minimum order for free shipping.',

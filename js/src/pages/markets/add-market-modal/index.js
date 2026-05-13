@@ -61,7 +61,7 @@ const AddMarketModal = ( {
 	return (
 		<MarketForm
 			initialMarket={ {
-				countries: targetAudience.countries || [],
+				countries: targetAudience.countries,
 				country: null,
 				shipping_country_rates: shippingRates,
 				flat_shipping_rate: null,

@@ -8,12 +8,8 @@ import { Flex, Notice } from '@wordpress/components';
  * Internal dependencies
  */
 import { SHIPPING_RATE_METHOD } from '~/constants';
-import {
-	useAdaptiveFormContext,
-	useAdaptiveFormInputProps,
-} from '~/components/adaptive-form';
+import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useSettings from '~/hooks/useSettings';
-import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
 import MarketSelectControl from './market-select-control';
 import LanguageSelectControl from './language-select-control';
 import CurrencySelectControl from './currency-select-control';
