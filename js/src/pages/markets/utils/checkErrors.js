@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { SHIPPING_RATE_METHOD } from '~/constants';
+import { SHIPPING_RATE_METHOD, SHIPPING_TIME_METHOD } from '~/constants';
 import { PRIMARY_MARKET_ID } from '../constants';
 
 const checkErrors = ( values ) => {
@@ -42,7 +42,7 @@ const checkErrors = ( values ) => {
 		}
 	}
 
-	if ( values.shipping_time === 'flat' ) {
+	if ( values.shipping_time === SHIPPING_TIME_METHOD.FLAT ) {
 		if (
 			values.flat_shipping_min_time === null ||
 			values.flat_shipping_min_time === undefined
