@@ -10,8 +10,8 @@ import './index.scss';
 const AppSearchableSelectControl = ( props ) => {
 	return (
 		<SearchableSelectControl
-			className="gla-app-searchable-select-control"
 			{ ...props }
+			className="gla-app-searchable-select-control"
 		/>
 	);
 };

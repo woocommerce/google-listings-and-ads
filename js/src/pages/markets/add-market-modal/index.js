@@ -44,18 +44,19 @@ const CONTEXT = 'add_market_modal';
  * @fires gla_add_new_market_button_clicked when the add market button is clicked with context of "add_market_modal"
  *
  * @param {Object} props
+ * @param {Object} props.settings The settings object containing shipping_rate and other configurations.
  * @param {Array<ShippingRate>} props.shippingRates Shipping rates to pre-populate the form with.
  * @param {Array<ShippingTime>} props.shippingTimes Shipping times data, if not given AppSpinner will be rendered.
  * @param {TargetAudienceData} props.targetAudience Target audience value data to be initialed the form, if not given AppSpinner will be rendered.
  * @param {() => void} props.onRequestClose Called when the user closes the modal.
  */
 const AddMarketModal = ( {
+	settings,
 	shippingRates,
 	shippingTimes,
 	targetAudience = { countries: [] },
 	onRequestClose,
 } ) => {
-	const { settings } = useSettings();
 	const { code: currencyCode } = useStoreCurrency();
 
 	let initialMarket = {
@@ -70,8 +71,6 @@ const AddMarketModal = ( {
 		shipping_country_times: shippingTimes,
 		language: targetAudience.language,
 		currency: currencyCode,
-		shipping_rate: settings?.shipping_rate,
-		shipping_time: settings?.shipping_time,
 	};
 
 	if ( settings.shipping_rate === SHIPPING_RATE_METHOD.MANUAL ) {
@@ -80,11 +79,27 @@ const AddMarketModal = ( {
 		} else if ( glaData.isMultiLingualStore ) {
 			initialMarket = {
 				country: null,
-				language: targetAudience.language,
+				language: [ { key: 'FR', value: 'FR', label: 'French' } ],
 				currency: currencyCode,
 			};
 		}
+	} else if ( settings.shipping_rate === SHIPPING_RATE_METHOD.FLAT ) {
+		initialMarket = {
+			country: null,
+			shipping_country_rates: shippingRates,
+			flat_shipping_rate: null,
+			offer_free_shipping: false,
+			free_shipping_threshold: null,
+			flat_shipping_min_time: null,
+			flat_shipping_max_time: null,
+			shipping_country_times: shippingTimes,
+		};
 	}
+
+	const showAddButton = ! (
+		! glaData.isMultiLingualStore &&
+		settings?.shipping_rate === SHIPPING_RATE_METHOD.MANUAL
+	);
 
 	return (
 		<MarketForm initialMarket={ initialMarket } onSubmit={ onRequestClose }>
@@ -102,7 +117,7 @@ const AddMarketModal = ( {
 				let buttons = [
 					<AppButton
 						key="close"
-						variant="tertiary"
+						variant={ showAddButton ? 'tertiary' : 'primary' }
 						onClick={ onRequestClose }
 						disabled={ isSaving }
 						eventName="gla_cancel_button_clicked"
@@ -114,7 +129,7 @@ const AddMarketModal = ( {
 					</AppButton>,
 				];
 
-				if ( settings?.shipping_rate !== SHIPPING_RATE_METHOD.MANUAL ) {
+				if ( showAddButton ) {
 					buttons = [
 						...buttons,
 						<AppButton

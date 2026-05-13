@@ -7,8 +7,10 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { glaData } from '~/constants';
+import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import AppSearchableSelectControl from '~/components/app-searchable-select-control';
 import AppInputControl from '~/components/app-input-control';
+import useMCSupportedLanguages from '~/hooks/useMCSupportedLanguages';
 
 /**
  * Renders the language select control within the market edit form.
@@ -17,6 +19,9 @@ import AppInputControl from '~/components/app-input-control';
  * the multilingual requirement is rendered instead.
  */
 const LanguageSelectControl = () => {
+	const { getInputProps } = useAdaptiveFormContext();
+	const { languages, hasFinishedResolution } = useMCSupportedLanguages();
+
 	if ( ! glaData.isMultiLingualStore ) {
 		return (
 			<AppInputControl
@@ -30,18 +35,27 @@ const LanguageSelectControl = () => {
 		);
 	}
 
+	const options = languages?.map( ( language ) => ( {
+		key: language.code,
+		value: language.code,
+		label: language.label,
+	} ) );
+
+	const inputProps = getInputProps( 'language' );
+
 	// @TODO: replace with real language options and value once the multilingual scenario is implemented.
 	return (
 		<AppSearchableSelectControl
 			label={ __( 'Language', 'google-listings-and-ads' ) }
-			options={ [
-				{ key: 'en', value: 'en', label: 'English' },
-				{ key: 'es', value: 'es', label: 'Spanish' },
-				{ key: 'fr', value: 'fr', label: 'French' },
-			] }
-			selected={ [ { key: 'fr', value: 'fr', label: 'French' } ] }
+			options={ options }
+			disabled={ ! hasFinishedResolution }
+			helperText={ __(
+				"Languages and currencies are populated from your multilingual plugin. You can remove them per market but can't add ones the plugin doesn't provide.",
+				'google-listings-and-ads'
+			) }
 			inlineTags
 			multiple
+			{ ...inputProps }
 		/>
 	);
 };

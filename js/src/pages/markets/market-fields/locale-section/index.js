@@ -7,7 +7,8 @@ import { Flex, Notice } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { glaData } from '~/constants';
+import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
+import useSettings from '~/hooks/useSettings';
 import LanguageSelectControl from './language-select-control';
 import CurrencySelectControl from './currency-select-control';
 import './index.scss';
@@ -17,6 +18,15 @@ import './index.scss';
  * as well as a notice about multilingual support if the store is not multilingual.
  */
 const LocaleSection = () => {
+	const { settings } = useSettings();
+
+	if (
+		glaData.isMultiLingualStore &&
+		settings?.shipping_rate === SHIPPING_RATE_METHOD.FLAT
+	) {
+		return null;
+	}
+
 	return (
 		<Flex
 			direction="column"

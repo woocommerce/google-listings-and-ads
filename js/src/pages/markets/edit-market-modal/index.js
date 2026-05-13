@@ -10,7 +10,6 @@ import { PRIMARY_MARKET_ID } from '../constants';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
 import EditPrimaryAudience from './edit-primary-audience';
-import MarketNotice from '../market-notice';
 import MarketForm from '../market-form';
 
 const CONTEXT = 'edit_market_modal';
@@ -109,8 +108,6 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 						] }
 					>
 						{ isPrimaryMarket && <EditPrimaryAudience /> }
-
-						<MarketNotice context="edit-market-modal" />
 					</AppModal>
 				);
 			} }

@@ -10,6 +10,7 @@ import { useState, useCallback } from '@wordpress/element';
 import useShippingRates from '~/hooks/useShippingRates';
 import useShippingTimes from '~/hooks/useShippingTimes';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
+import useSettings from '~/hooks/useSettings';
 import AppButton from '~/components/app-button';
 import AddMarketModal from './add-market-modal';
 
@@ -35,6 +36,7 @@ const AddMarketButton = () => {
 	} = useShippingTimes();
 	const { targetAudience, loaded: hasResolvedTargetAudience } =
 		useTargetAudienceFinalCountryCodes();
+	const { settings } = useSettings();
 
 	const handleOpen = useCallback( () => setIsOpen( true ), [] );
 	const handleClose = useCallback( () => setIsOpen( false ), [] );
@@ -49,7 +51,8 @@ const AddMarketButton = () => {
 					isOpen &&
 					( ! hasResolvedShippingRates ||
 						! hasResolvedShippingTimes ||
-						! hasResolvedTargetAudience )
+						! hasResolvedTargetAudience ||
+						! settings )
 				}
 			>
 				{ __( 'Add market', 'google-listings-and-ads' ) }
@@ -60,6 +63,7 @@ const AddMarketButton = () => {
 				hasResolvedShippingTimes &&
 				hasResolvedTargetAudience && (
 					<AddMarketModal
+						settings={ settings }
 						shippingRates={ shippingRates }
 						shippingTimes={ shippingTimes }
 						targetAudience={ targetAudience }

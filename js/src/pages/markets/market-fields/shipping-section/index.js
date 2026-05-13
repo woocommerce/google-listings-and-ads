@@ -1,9 +1,11 @@
 /**
  * Internal dependencies
  */
-import ShippingRateControl from './shipping-rate-control';
-import FreeShippingThresholdField from './free-shipping-threshold-field';
+import { SHIPPING_RATE_METHOD } from '~/constants';
+import useSettings from '~/hooks/useSettings';
 import ShippingTimesInput from './shipping-times-input';
+import ShippingNotice from './shipping-notice';
+import ShippingRateControls from './shipping-rate-controls';
 
 /**
  * Renders the shipping section of the market form, which includes controls for
@@ -13,10 +15,15 @@ import ShippingTimesInput from './shipping-times-input';
  * This section is conditionally rendered based on the store's settings and multilingual support.
  */
 const ShippingSection = () => {
+	const { settings } = useSettings();
+
+	if ( settings?.shipping_rate === SHIPPING_RATE_METHOD.MANUAL ) {
+		return <ShippingNotice />;
+	}
+
 	return (
 		<>
-			<ShippingRateControl />
-			<FreeShippingThresholdField />
+			<ShippingRateControls />
 			<ShippingTimesInput />
 		</>
 	);
