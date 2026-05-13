@@ -12,7 +12,6 @@ import AppButton from '~/components/app-button';
 import MarketNotice from '../market-notice';
 import MarketForm from '../market-form';
 import MarketFields from '../market-fields';
-import './index.scss';
 
 const CONTEXT = 'edit_market_modal';
 
