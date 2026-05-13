@@ -575,3 +575,19 @@ export const getMarkets = ( state ) => {
 export const getMarket = ( state, id ) => {
 	return state.mc.markets.find( ( market ) => market.id === id );
 };
+
+/**
+ * Select the supported languages for MC markets.
+ *
+ * @param {Object} state The current store state.
+ * @return {Array<{code: string, label: string}>|null} Supported languages, or null before data is fetched.
+ */
+export const getMCSupportedLanguages = ( state ) => state.mc.languages;
+
+/**
+ * Select the supported currencies for MC markets.
+ *
+ * @param {Object} state The current store state.
+ * @return {Array<{code: string, symbol: string}>|null} Supported currencies, or null before data is fetched.
+ */
+export const getMCSupportedCurrencies = ( state ) => state.mc.currencies;

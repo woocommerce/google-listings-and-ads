@@ -46,6 +46,8 @@ const DEFAULT_STATE = {
 			},
 		},
 		markets: [],
+		languages: null,
+		currencies: null,
 	},
 	ads_campaigns: null,
 	all_ads_campaigns: null,
@@ -706,6 +708,14 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			const { markets } = action;
 
 			return setIn( state, 'mc.markets', markets );
+		}
+
+		case TYPES.RECEIVE_MC_LANGUAGES_CURRENCIES: {
+			const { data } = action;
+			return chainState( state, 'mc' )
+				.setIn( 'languages', data.languages )
+				.setIn( 'currencies', data.currencies )
+				.end();
 		}
 
 		case TYPES.DISCONNECT_ACCOUNTS_ALL:

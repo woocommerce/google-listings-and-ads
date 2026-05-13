@@ -811,3 +811,41 @@ getYouTubeAccount.shouldInvalidate = ( action ) => {
 export function* getMarkets() {
 	yield fetchMarkets();
 }
+
+export function* getMCSupportedLanguages() {
+	try {
+		const data = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/markets/languages-currencies`,
+		} );
+		return { type: TYPES.RECEIVE_MC_LANGUAGES_CURRENCIES, data };
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading supported languages and currencies.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+getMCSupportedLanguages.isFulfilled = ( state ) => state.mc.languages !== null;
+
+export function* getMCSupportedCurrencies() {
+	try {
+		const data = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/markets/languages-currencies`,
+		} );
+		return { type: TYPES.RECEIVE_MC_LANGUAGES_CURRENCIES, data };
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading supported languages and currencies.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+// Languages and currencies always come from the same endpoint.
+// Once getMCSupportedLanguages resolves and sets mc.languages, this resolver won't fire.
+getMCSupportedCurrencies.isFulfilled = ( state ) => state.mc.languages !== null;
