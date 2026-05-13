@@ -9,11 +9,9 @@ import { __ } from '@wordpress/i18n';
 import { PRIMARY_MARKET_ID } from '../constants';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
-import EditPrimaryAudience from './edit-primary-audience';
-import EditShippingRates from './edit-shipping-rates';
-import EditShippingTimes from './edit-shipping-times';
 import MarketNotice from '../market-notice';
 import MarketForm from '../market-form';
+import MarketFields from '../market-fields';
 import './index.scss';
 
 const CONTEXT = 'edit_market_modal';
@@ -66,15 +64,62 @@ const EditMarketModal = ( {
 
 	let initialValues = {};
 	if ( isPrimaryMarket ) {
+		const countries = targetAudience.countries || [];
+		const countrySet = new Set( countries );
+
+		const primaryRates = shippingRates?.filter( ( r ) =>
+			countrySet.has( r.country )
+		);
+		const primaryTimes = shippingTimes?.filter( ( t ) =>
+			countrySet.has( t.countryCode )
+		);
+
+		// Warn if primary market countries have inconsistent shipping rates.
+		if ( primaryRates?.length > 1 ) {
+			const [ firstRate ] = primaryRates;
+			const inconsistentRates = primaryRates.some(
+				( r ) =>
+					r.rate !== firstRate.rate ||
+					( r.options?.free_shipping_threshold ?? null ) !==
+						( firstRate.options?.free_shipping_threshold ?? null )
+			);
+			if ( inconsistentRates ) {
+				// eslint-disable-next-line no-console
+				console.warn(
+					'EditMarketModal: Primary market countries have inconsistent shipping rates.'
+				);
+			}
+		}
+
+		// Warn if primary market countries have inconsistent shipping times.
+		if ( primaryTimes?.length > 1 ) {
+			const [ firstTime ] = primaryTimes;
+			const inconsistentTimes = primaryTimes.some(
+				( t ) =>
+					t.time !== firstTime.time || t.maxTime !== firstTime.maxTime
+			);
+			if ( inconsistentTimes ) {
+				// eslint-disable-next-line no-console
+				console.warn(
+					'EditMarketModal: Primary market countries have inconsistent shipping times.'
+				);
+			}
+		}
+
+		const representativeRate = primaryRates?.[ 0 ];
+		const representativeTime = primaryTimes?.[ 0 ];
 		const freeShippingThreshold =
-			shippingRates?.[ 0 ]?.options?.free_shipping_threshold ?? null;
+			representativeRate?.options?.free_shipping_threshold ?? null;
+
 		initialValues = {
-			countries: targetAudience.countries || [],
-			flat_shipping_rate: shippingRates?.[ 0 ]?.rate,
+			countries,
+			flat_shipping_rate: representativeRate?.rate,
 			offer_free_shipping: ( freeShippingThreshold ?? 0 ) > 0,
-			free_shipping: freeShippingThreshold,
-			flat_shipping_min_time: shippingTimes?.[ 0 ]?.time ?? null,
-			flat_shipping_max_time: shippingTimes?.[ 0 ]?.maxTime ?? null,
+			free_shipping_threshold: freeShippingThreshold,
+			flat_shipping_min_time: representativeTime?.time ?? null,
+			flat_shipping_max_time: representativeTime?.maxTime ?? null,
+			shipping_country_rates: primaryRates ?? [],
+			shipping_country_times: primaryTimes ?? [],
 		};
 	}
 
@@ -97,7 +142,6 @@ const EditMarketModal = ( {
 
 				return (
 					<AppModal
-						className="gla-edit-market-modal"
 						title={ appModalTitle }
 						onRequestClose={ onRequestClose }
 						overflow="visible"
@@ -129,9 +173,7 @@ const EditMarketModal = ( {
 							</AppButton>,
 						] }
 					>
-						{ isPrimaryMarket && <EditPrimaryAudience /> }
-						<EditShippingRates />
-						<EditShippingTimes />
+						<MarketFields isPrimaryMarket={ isPrimaryMarket } />
 
 						<MarketNotice context="edit-market-modal" />
 					</AppModal>

@@ -63,6 +63,18 @@ const MarketForm = ( {
 
 			if ( marketId ) {
 				await updateMarket( marketId, data );
+				await saveShippingRates( shipping_country_rates );
+
+				const timesForSave =
+					countries?.length && shipping_country_times?.length
+						? shipping_country_times.map( ( t ) => ( {
+								...t,
+								time: data.flat_shipping_min_time,
+								maxTime: data.flat_shipping_max_time,
+						  } ) )
+						: shipping_country_times;
+
+				await saveShippingTimes( timesForSave );
 			} else {
 				await createMarket( data );
 				await saveShippingRates( shipping_country_rates );
@@ -79,13 +91,15 @@ const MarketForm = ( {
 
 	const handleChange = ( change, values ) => {
 		const { setValue } = formRef.current;
+		const { country, countries } = values;
+		const matchesCountry = ( code ) =>
+			countries ? countries.includes( code ) : code === country;
 
 		if ( change.name === 'flat_shipping_rate' ) {
-			const { country } = values;
 			const existingRates = values.shipping_country_rates || [];
 
 			const rates = existingRates.map( ( singleRate ) =>
-				singleRate.country === country
+				matchesCountry( singleRate.country )
 					? { ...singleRate, rate: change.value }
 					: singleRate
 			);
@@ -93,10 +107,9 @@ const MarketForm = ( {
 			setValue( 'shipping_country_rates', rates );
 		} else if ( change.name === 'offer_free_shipping' ) {
 			if ( change.value === false ) {
-				const { country } = values;
-				const nextValue = values.shipping_country_rates.map(
+				const nextValue = ( values.shipping_country_rates || [] ).map(
 					( rate ) =>
-						rate.country === country
+						matchesCountry( rate.country )
 							? {
 									...rate,
 									options: {
@@ -113,11 +126,9 @@ const MarketForm = ( {
 			change.name === 'flat_shipping_min_time' ||
 			change.name === 'flat_shipping_max_time'
 		) {
-			const { country } = values;
-
 			const times = ( values.shipping_country_times || [] ).map(
 				( timeEntry ) =>
-					timeEntry.countryCode === country
+					matchesCountry( timeEntry.countryCode )
 						? {
 								...timeEntry,
 								...( change.name === 'flat_shipping_min_time'
@@ -129,10 +140,8 @@ const MarketForm = ( {
 
 			setValue( 'shipping_country_times', times );
 		} else if ( change.name === 'free_shipping_threshold' ) {
-			const { country } = values;
-
-			const nextValue = values.shipping_country_rates.map( ( rate ) =>
-				rate.country === country
+			const nextValue = ( values.shipping_country_rates || [] ).map( ( rate ) =>
+				matchesCountry( rate.country )
 					? {
 							...rate,
 							options: {

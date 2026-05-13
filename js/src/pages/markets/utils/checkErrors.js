@@ -83,13 +83,6 @@ const checkErrors = ( values ) => {
 		}
 	}
 
-	if ( values.offer_free_shipping && ! values.free_shipping ) {
-		errors.free_shipping = __(
-			'Please enter a minimum order value for free shipping.',
-			'google-listings-and-ads'
-		);
-	}
-
 	return errors;
 };
 

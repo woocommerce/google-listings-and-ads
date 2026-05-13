@@ -40,8 +40,9 @@ const MarketDataViews = () => {
 	const [ editingMarket, setEditingMarket ] = useState( null );
 	const [ deletingMarket, setDeletingMarket ] = useState( null );
 	const { targetAudience, loaded } = useTargetAudienceFinalCountryCodes();
-	const { data: shippingRates } = useShippingRates();
-	const { data: shippingTimes } = useShippingTimes();
+	const { data: shippingRates, hasFinishedResolution: shippingRatesLoaded } = useShippingRates();
+	const { data: shippingTimes, hasFinishedResolution: shippingTimesLoaded } = useShippingTimes();
+	const allLoaded = loaded && shippingRatesLoaded && shippingTimesLoaded;
 
 	// `view.fields` is the list of visible columns; it must track the field set
 	// returned by `useMarketDataViewsConfig`, which varies per scenario.
@@ -58,9 +59,9 @@ const MarketDataViews = () => {
 			{
 				id: 'edit',
 				label: __( 'Edit', 'google-listings-and-ads' ),
-				icon: loaded ? edit : <Spinner />,
+				icon: allLoaded ? edit : <Spinner />,
 				isPrimary: true,
-				callback: loaded
+				callback: allLoaded
 					? ( [ market ] ) => setEditingMarket( market )
 					: () => {},
 			},
@@ -73,7 +74,7 @@ const MarketDataViews = () => {
 				callback: ( [ market ] ) => setDeletingMarket( market ),
 			},
 		],
-		[ loaded ]
+		[ allLoaded ]
 	);
 
 	return (

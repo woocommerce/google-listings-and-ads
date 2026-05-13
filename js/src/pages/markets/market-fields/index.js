@@ -16,13 +16,14 @@ import CurrencySelectControl from './currency-select-control';
 import ShippingTimesInput from './shipping-times-input';
 import ShippingRateInputControl from '~/components/shipping-rate-input-control';
 import FreeShippingThresholdControl from '~/components/free-shipping-threshold-control';
+import EditPrimaryAudience from '../edit-market-modal/edit-primary-audience';
 import './index.scss';
 
 /**
  * Renders all market form fields for both the Add and Edit Market modals.
  * Returns null when `shipping_rate` is not `flat`.
  */
-const MarketFields = () => {
+const MarketFields = ( { isPrimaryMarket = false } ) => {
 	const { settings } = useSettings();
 	const {
 		getInputProps,
@@ -42,42 +43,44 @@ const MarketFields = () => {
 
 	return (
 		<Flex direction="column" gap={ 6 } className="gla-market-fields">
-			<MarketSelectControl />
-			<LanguageSelectControl />
-			<CurrencySelectControl />
+			{ !isPrimaryMarket && <MarketSelectControl /> }
+			{ !isPrimaryMarket && <LanguageSelectControl /> }
+			{ !isPrimaryMarket && <CurrencySelectControl /> }
 
-			<Notice isDismissible={ false }>
+			{ !isPrimaryMarket && <Notice isDismissible={ false }>
 				{ __(
 					'Want to sell in multiple languages? Install a compatible multilingual plugin to add language and currency support to your markets.',
 					'google-listings-and-ads'
 				) }
-			</Notice>
+			</Notice> }
 
-			<ShippingRateInputControl
+			{ isPrimaryMarket && <EditPrimaryAudience /> }
+
+			{ isPrimaryMarket && <ShippingRateInputControl
 				hideLabelFromVision={ false }
 				label={ __(
 					'Estimated shipping rates',
 					'google-listings-and-ads'
 				) }
 				{ ...getInputProps( 'flat_shipping_rate' ) }
-			/>
+			/> }
 
-			{ shouldDisplayFreeShippingThreshold && (
+			{ shouldDisplayFreeShippingThreshold && isPrimaryMarket && (
 				<Flex
 					direction="column"
 					gap={ 2 }
 					className="gla-market-fields__free-shipping-threshold"
 				>
 					<FreeShippingThresholdControl
-						onChange={ onChange }
 						threshold={ threshold }
 						currency={ currency }
+						onChange={ onChange }
 					/>
 					{ renderRequestedValidation( 'free_shipping_threshold' ) }
 				</Flex>
 			) }
 
-			<ShippingTimesInput />
+			{ isPrimaryMarket && <ShippingTimesInput /> }
 		</Flex>
 	);
 };

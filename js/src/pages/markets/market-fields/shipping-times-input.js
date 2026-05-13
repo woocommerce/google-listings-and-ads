@@ -15,14 +15,13 @@ import CountriesTimeInput from '~/components/countries-time-input';
  * This control allows users to specify estimated shipping times for the market,
  * which apply per country regardless of language or currency.
  */
-const ShippingTimesInput = ({ className }) => {
+const ShippingTimesInput = () => {
 	const {
 		adapter: { renderRequestedValidation },
 	} = useAdaptiveFormContext();
 
 	return (
 		<BaseControl
-			className={ className }
 			id="gla-shipping-times-input"
 			label={ __(
 				'Estimated shipping times',
