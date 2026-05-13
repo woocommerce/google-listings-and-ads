@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -47,20 +48,28 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	protected ShippingTimeQuery $shipping_time_query;
 
 	/**
+	 * @var WC
+	 */
+	protected WC $wc;
+
+	/**
 	 * MarketService constructor.
 	 *
 	 * @param TargetAudience    $target_audience
 	 * @param ShippingRateQuery $shipping_rate_query
 	 * @param ShippingTimeQuery $shipping_time_query
+	 * @param WC                $wc
 	 */
 	public function __construct(
 		TargetAudience $target_audience,
 		ShippingRateQuery $shipping_rate_query,
-		ShippingTimeQuery $shipping_time_query
+		ShippingTimeQuery $shipping_time_query,
+		WC $wc
 	) {
 		$this->target_audience     = $target_audience;
 		$this->shipping_rate_query = $shipping_rate_query;
 		$this->shipping_time_query = $shipping_time_query;
+		$this->wc                  = $wc;
 	}
 
 	/**
@@ -79,6 +88,21 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$stored    = $this->options->get( OptionsInterface::MARKETS );
 		$secondary = is_array( $stored ) ? $stored : [];
 		unset( $secondary['primary'] );
+
+		$all_rates     = $this->shipping_rate_query->get_all_shipping_rates();
+		$all_countries = $this->wc->get_countries();
+
+		foreach ( $secondary as &$market ) {
+			$country = $market['country'] ?? null;
+
+			$market['free_shipping'] = ( $country && isset( $all_rates[ $country ]['free_shipping_threshold'] ) )
+				? (float) $all_rates[ $country ]['free_shipping_threshold']
+				: null;
+
+			$market['countries'] = $country ? [ $country ] : [];
+			$market['label']     = $country ? ( $all_countries[ $country ] ?? null ) : null;
+		}
+		unset( $market );
 
 		return [ 'primary' => $this->get_primary_market() ] + $secondary;
 	}
@@ -174,6 +198,16 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			throw new InvalidValue(
 				sprintf( 'The market ID "%s" is reserved and cannot be added.', $id )
 			);
+		}
+
+		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+
+		if ( ! isset( $config['shipping_rate'] ) ) {
+			$config['shipping_rate'] = $mc_settings['shipping_rate'] ?? 'flat';
+		}
+
+		if ( ! isset( $config['shipping_time'] ) ) {
+			$config['shipping_time'] = $mc_settings['shipping_time'] ?? 'flat';
 		}
 
 		$this->validate_secondary_market_config( $config );

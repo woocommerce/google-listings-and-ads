@@ -43,6 +43,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 	protected const SECONDARY_MARKET = [
 		'country'       => 'GB',
+		'label'         => 'United Kingdom (UK)',
+		'countries'     => [ 'GB' ],
 		'language'      => 'en',
 		'currency'      => 'GBP',
 		'feed_label'    => 'GB',
@@ -93,7 +95,6 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertArrayHasKey( 'countries', $primary );
 		$this->assertArrayHasKey( 'shipping_rate', $primary );
 		$this->assertArrayHasKey( 'shipping_time', $primary );
-		$this->assertArrayHasKey( 'free_shipping', $primary );
 	}
 
 	public function test_get_markets_primary_values_from_market_service(): void {
@@ -105,7 +106,6 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( [ 'US' ], $primary['countries'] );
 		$this->assertEquals( 'flat', $primary['shipping_rate'] );
 		$this->assertEquals( 'flat', $primary['shipping_time'] );
-		$this->assertEquals( 50.0, $primary['free_shipping'] );
 	}
 
 	public function test_get_languages_currencies_returns_200(): void {
@@ -170,11 +170,9 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			self::ROUTE_MARKETS,
 			'POST',
 			[
-				'country'       => 'DE',
-				'language'      => 'de',
-				'currency'      => 'EUR',
-				'shipping_rate' => 'flat',
-				'shipping_time' => 'flat',
+				'country'  => 'DE',
+				'language' => 'de',
+				'currency' => 'EUR',
 			]
 		);
 
@@ -192,10 +190,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			self::ROUTE_MARKETS,
 			'POST',
 			[
-				'language'      => 'en',
-				'currency'      => 'GBP',
-				'shipping_rate' => 'flat',
-				'shipping_time' => 'flat',
+				'language' => 'en',
+				'currency' => 'GBP',
 			]
 		);
 
@@ -213,11 +209,9 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			self::ROUTE_MARKETS,
 			'POST',
 			[
-				'country'       => 'DE',
-				'language'      => 'de',
-				'currency'      => 'EUR',
-				'shipping_rate' => 'flat',
-				'shipping_time' => 'flat',
+				'country'  => 'DE',
+				'language' => 'de',
+				'currency' => 'EUR',
 			]
 		);
 
@@ -233,11 +227,9 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			self::ROUTE_MARKETS,
 			'POST',
 			[
-				'country'       => 'GB',
-				'language'      => 'en',
-				'currency'      => 'GBP',
-				'shipping_rate' => 'flat',
-				'shipping_time' => 'flat',
+				'country'  => 'GB',
+				'language' => 'en',
+				'currency' => 'GBP',
 			]
 		);
 
@@ -395,11 +387,9 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			self::ROUTE_MARKETS,
 			'POST',
 			[
-				'country'       => 'GB',
-				'language'      => 'en',
-				'currency'      => 'GBP',
-				'shipping_rate' => 'flat',
-				'shipping_time' => 'flat',
+				'country'  => 'GB',
+				'language' => 'en',
+				'currency' => 'GBP',
 			]
 		);
 
@@ -428,6 +418,89 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 403, $response->get_status() );
 	}
 
+	public function test_get_markets_secondary_has_correct_keys(): void {
+		$response  = $this->do_request( self::ROUTE_MARKETS );
+		$data      = $response->get_data();
+		$secondary = $data[1];
+
+		$this->assertArrayHasKey( 'id', $secondary );
+		$this->assertArrayHasKey( 'label', $secondary );
+		$this->assertArrayHasKey( 'countries', $secondary );
+		$this->assertEquals( 'gb', $secondary['id'] );
+		$this->assertEquals( 'United Kingdom (UK)', $secondary['label'] );
+		$this->assertEquals( [ 'GB' ], $secondary['countries'] );
+	}
+
+	public function test_post_market_without_shipping_mode_succeeds(): void {
+		$created_market = [
+			'country'       => 'JP',
+			'language'      => 'ja',
+			'currency'      => 'JPY',
+			'feed_label'    => 'JP',
+			'shipping_rate' => 'flat',
+			'shipping_time' => 'flat',
+			'free_shipping' => null,
+		];
+
+		$created = false;
+
+		$this->market_service->method( 'add_market' )
+			->willReturnCallback(
+				function () use ( &$created ) {
+					$created = true;
+				}
+			);
+
+		$this->market_service->method( 'get_market' )
+			->willReturnCallback(
+				function ( string $id ) use ( &$created, $created_market ) {
+					if ( 'jp' === $id && $created ) {
+						return $created_market;
+					}
+					return null;
+				}
+			);
+
+		$response = $this->do_request(
+			self::ROUTE_MARKETS,
+			'POST',
+			[
+				'country'  => 'JP',
+				'language' => 'ja',
+				'currency' => 'JPY',
+			]
+		);
+
+		$this->assertEquals( 201, $response->get_status() );
+	}
+
+	public function test_post_market_free_shipping_cannot_be_set_in_payload(): void {
+		$this->market_service->method( 'get_market' )
+			->willReturnOnConsecutiveCalls( null, [] );
+
+		$this->market_service->expects( $this->once() )
+			->method( 'add_market' )
+			->with(
+				$this->anything(),
+				$this->callback(
+					function ( $config ) {
+						return ! array_key_exists( 'free_shipping', $config );
+					}
+				)
+			);
+
+		$this->do_request(
+			self::ROUTE_MARKETS,
+			'POST',
+			[
+				'country'       => 'JP',
+				'language'      => 'ja',
+				'currency'      => 'JPY',
+				'free_shipping' => 99.0,
+			]
+		);
+	}
+
 	public function test_put_only_sends_writable_params(): void {
 		$this->market_service->method( 'get_market' )
 			->with( 'primary' )
@@ -442,7 +515,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 						return isset( $params['shipping_rate'] )
 							&& ! isset( $params['id'] )
 							&& ! isset( $params['label'] )
-							&& ! isset( $params['feed_label'] );
+							&& ! isset( $params['feed_label'] )
+							&& ! isset( $params['free_shipping'] );
 					}
 				)
 			)
