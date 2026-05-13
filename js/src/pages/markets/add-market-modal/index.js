@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { SHIPPING_RATE_METHOD } from '~/constants';
+import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
@@ -58,25 +58,36 @@ const AddMarketModal = ( {
 	const { settings } = useSettings();
 	const { code: currencyCode } = useStoreCurrency();
 
-	return (
-		<MarketForm
-			initialMarket={ {
-				countries: targetAudience.countries,
+	let initialMarket = {
+		countries: targetAudience.countries,
+		country: null,
+		shipping_country_rates: shippingRates,
+		flat_shipping_rate: null,
+		offer_free_shipping: false,
+		free_shipping_threshold: null,
+		flat_shipping_min_time: null,
+		flat_shipping_max_time: null,
+		shipping_country_times: shippingTimes,
+		language: targetAudience.language,
+		currency: currencyCode,
+		shipping_rate: settings?.shipping_rate,
+		shipping_time: settings?.shipping_time,
+	};
+
+	if ( settings.shipping_rate === SHIPPING_RATE_METHOD.MANUAL ) {
+		if ( ! glaData.isMultiLingualStore ) {
+			initialMarket = {};
+		} else if ( glaData.isMultiLingualStore ) {
+			initialMarket = {
 				country: null,
-				shipping_country_rates: shippingRates,
-				flat_shipping_rate: null,
-				offer_free_shipping: false,
-				free_shipping_threshold: null,
-				flat_shipping_min_time: null,
-				flat_shipping_max_time: null,
-				shipping_country_times: shippingTimes,
 				language: targetAudience.language,
 				currency: currencyCode,
-				shipping_rate: settings?.shipping_rate,
-				shipping_time: settings?.shipping_time,
-			} }
-			onSubmit={ onRequestClose }
-		>
+			};
+		}
+	}
+
+	return (
+		<MarketForm initialMarket={ initialMarket } onSubmit={ onRequestClose }>
 			{ ( formContext ) => {
 				const { adapter, isValidForm, handleSubmit } = formContext;
 				const { isSaving } = adapter;
