@@ -157,7 +157,9 @@ describe( 'AddMarketModal', () => {
 
 		render( <AddMarketModal { ...defaultProps } /> );
 
-		await user.click( screen.getByRole( 'button', { name: 'Add market' } ) );
+		await user.click(
+			screen.getByRole( 'button', { name: 'Add market' } )
+		);
 
 		expect( showValidation ).toHaveBeenCalledTimes( 1 );
 		expect( handleSubmit ).not.toHaveBeenCalled();

@@ -36,7 +36,9 @@ const MarketFields = () => {
 	}
 
 	const shouldDisplayFreeShippingThreshold = values.flat_shipping_rate > 0;
-	const { onChange, value: threshold } = getInputProps( 'free_shipping_threshold' );
+	const { onChange, value: threshold } = getInputProps(
+		'free_shipping_threshold'
+	);
 
 	return (
 		<Flex direction="column" gap={ 6 } className="gla-market-fields">

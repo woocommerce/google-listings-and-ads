@@ -38,7 +38,6 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		'feed_label'    => 'US',
 		'shipping_rate' => 'flat',
 		'shipping_time' => 'flat',
-		'free_shipping' => 50.0,
 	];
 
 	protected const SECONDARY_MARKET = [
@@ -50,7 +49,6 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		'feed_label'    => 'GB',
 		'shipping_rate' => 'flat',
 		'shipping_time' => 'flat',
-		'free_shipping' => null,
 	];
 
 	public function setUp(): void {

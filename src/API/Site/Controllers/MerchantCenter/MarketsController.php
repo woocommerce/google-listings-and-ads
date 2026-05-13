@@ -112,6 +112,7 @@ class MarketsController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_languages_currencies_callback(): callable {
+		// TODO: Replace with real language/currency data once the multilingual scenario is implemented.
 		return function () {
 			return new Response(
 				[

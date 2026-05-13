@@ -74,7 +74,10 @@ describe( 'checkErrors', () => {
 	} );
 
 	describe( 'flat shipping rate validation', () => {
-		const base = { country: 'US', shipping_rate: SHIPPING_RATE_METHOD.FLAT };
+		const base = {
+			country: 'US',
+			shipping_rate: SHIPPING_RATE_METHOD.FLAT,
+		};
 
 		it( 'returns an error when offer_free_shipping is true but threshold is missing', () => {
 			const errors = checkErrors( {
