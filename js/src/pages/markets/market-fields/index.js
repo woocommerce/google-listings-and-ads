@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Flex, Notice } from '@wordpress/components';
+import { Flex } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -11,8 +11,7 @@ import { SHIPPING_RATE_METHOD } from '~/constants';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useSettings from '~/hooks/useSettings';
 import MarketSelectControl from './market-select-control';
-import LanguageSelectControl from './language-select-control';
-import CurrencySelectControl from './currency-select-control';
+import LocaleControls from './locale-controls';
 import ShippingTimesInput from './shipping-times-input';
 import ShippingRateInputControl from '~/components/shipping-rate-input-control';
 import FreeShippingThresholdControl from '~/components/free-shipping-threshold-control';
@@ -43,27 +42,21 @@ const MarketFields = ( { isPrimaryMarket = false } ) => {
 
 	return (
 		<Flex direction="column" gap={ 6 } className="gla-market-fields">
-			{ !isPrimaryMarket && <MarketSelectControl /> }
-			{ !isPrimaryMarket && <LanguageSelectControl /> }
-			{ !isPrimaryMarket && <CurrencySelectControl /> }
-
-			{ !isPrimaryMarket && <Notice isDismissible={ false }>
-				{ __(
-					'Want to sell in multiple languages? Install a compatible multilingual plugin to add language and currency support to your markets.',
-					'google-listings-and-ads'
-				) }
-			</Notice> }
+			{ ! isPrimaryMarket && <MarketSelectControl /> }
+			{ ! isPrimaryMarket && <LocaleControls /> }
 
 			{ isPrimaryMarket && <EditPrimaryAudience /> }
 
-			{ isPrimaryMarket && <ShippingRateInputControl
-				hideLabelFromVision={ false }
-				label={ __(
-					'Estimated shipping rates',
-					'google-listings-and-ads'
-				) }
-				{ ...getInputProps( 'flat_shipping_rate' ) }
-			/> }
+			{ isPrimaryMarket && (
+				<ShippingRateInputControl
+					hideLabelFromVision={ false }
+					label={ __(
+						'Estimated shipping rates',
+						'google-listings-and-ads'
+					) }
+					{ ...getInputProps( 'flat_shipping_rate' ) }
+				/>
+			) }
 
 			{ shouldDisplayFreeShippingThreshold && isPrimaryMarket && (
 				<Flex

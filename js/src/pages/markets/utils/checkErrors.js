@@ -12,7 +12,7 @@ import { __ } from '@wordpress/i18n';
  * @param {number|null} [values.free_shipping] The free shipping threshold amount.
  * @return {Object} An object containing error messages for each invalid field.
  */
-import { SHIPPING_RATE_METHOD } from '~/constants';
+import { SHIPPING_RATE_METHOD, SHIPPING_TIME_METHOD } from '~/constants';
 import { PRIMARY_MARKET_ID } from '../constants';
 
 const checkErrors = ( values ) => {
@@ -48,7 +48,7 @@ const checkErrors = ( values ) => {
 		}
 	}
 
-	if ( values.shipping_time === 'flat' ) {
+	if ( values.shipping_time === SHIPPING_TIME_METHOD.FLAT ) {
 		if (
 			values.flat_shipping_min_time === null ||
 			values.flat_shipping_min_time === undefined
