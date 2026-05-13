@@ -31,11 +31,6 @@ const checkErrors = ( values ) => {
 	}
 
 	if ( values.shipping_rate === SHIPPING_RATE_METHOD.FLAT ) {
-		console.log(
-			'values',
-			values.offer_free_shipping,
-			values.free_shipping_threshold
-		);
 		if (
 			values.offer_free_shipping === true &&
 			! values.free_shipping_threshold
