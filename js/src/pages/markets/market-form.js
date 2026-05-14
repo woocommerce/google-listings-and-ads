@@ -135,7 +135,10 @@ const MarketForm = ( {
 			setIsSaving( true );
 
 			if ( marketId ) {
-				await updateMarket( marketId, data );
+				await updateMarket(
+					marketId,
+					isPrimaryMarket ? { ...data, countries } : data
+				);
 			} else {
 				await createMarket( data );
 			}
