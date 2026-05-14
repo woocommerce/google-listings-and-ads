@@ -43,7 +43,6 @@ const LanguageSelectControl = () => {
 
 	const inputProps = getInputProps( 'language' );
 
-	// @TODO: replace with real language options and value once the multilingual scenario is implemented.
 	return (
 		<AppSearchableSelectControl
 			label={ __( 'Language', 'google-listings-and-ads' ) }

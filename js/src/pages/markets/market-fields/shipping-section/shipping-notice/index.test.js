@@ -7,24 +7,31 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import useSettings from '~/hooks/useSettings';
+import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import ShippingNotice from '.';
 
-jest.mock( '~/hooks/useSettings' );
+jest.mock( '~/components/adaptive-form', () => ( {
+	useAdaptiveFormContext: jest
+		.fn()
+		.mockName( 'useAdaptiveFormContext' )
+		.mockImplementation( () => ( { values: {} } ) ),
+} ) );
 
 describe( 'ShippingNotice', () => {
 	beforeEach( () => {
 		global.glaData.isMultiLingualStore = false;
-		useSettings.mockReturnValue( {
-			settings: { shipping_rate: 'manual' },
-		} );
+		useAdaptiveFormContext.mockImplementation( () => ( { values: {} } ) );
 	} );
 
 	afterEach( () => {
 		delete global.glaData.isMultiLingualStore;
 	} );
 
-	test( 'renders when shipping_rate is manual and single lingual store', () => {
+	test( 'renders for the primary market on a non-multilingual store', () => {
+		useAdaptiveFormContext.mockImplementation( () => ( {
+			values: { id: 'primary' },
+		} ) );
+
 		render( <ShippingNotice /> );
 
 		const notice = document.querySelector( '.gla-shipping-notice' );
@@ -34,20 +41,20 @@ describe( 'ShippingNotice', () => {
 		);
 	} );
 
-	test( 'renders null when isMultiLingualStore is true', () => {
+	test( 'renders for any market on a multilingual store', () => {
 		global.glaData.isMultiLingualStore = true;
 
 		render( <ShippingNotice /> );
 
 		expect(
 			document.querySelector( '.gla-shipping-notice' )
-		).not.toBeInTheDocument();
+		).toBeInTheDocument();
 	} );
 
-	test( 'renders null when shipping_rate is not manual', () => {
-		useSettings.mockReturnValue( {
-			settings: { shipping_rate: 'flat' },
-		} );
+	test( 'renders null for a non-primary market on a non-multilingual store', () => {
+		useAdaptiveFormContext.mockImplementation( () => ( {
+			values: { id: 'US' },
+		} ) );
 
 		render( <ShippingNotice /> );
 

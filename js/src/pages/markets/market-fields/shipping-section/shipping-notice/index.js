@@ -13,13 +13,13 @@ import {
 	GOOGLE_MERCHANT_CENTER_URL,
 	PRIMARY_MARKET_ID,
 } from '~/pages/markets/constants';
-import AppDocumentationLink from '~/components/app-documentation-link';
+import TrackableLink from '~/components/trackable-link';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import './index.scss';
 
 /**
  *
- * @fires gla_documentation_link_click with `{ link_id: "shipping-notice-merchant-center", href: "https://merchants.google.com/" }`
+ * @fires gla_shipping_notice_merchant_center_link_click
  *
  * Displays an info notice about shipping being managed in Google Merchant Center.
  */
@@ -27,12 +27,7 @@ const ShippingNotice = () => {
 	const { values } = useAdaptiveFormContext();
 	const isPrimaryMarket = values.id === PRIMARY_MARKET_ID;
 
-	if (
-		! (
-			( ! glaData.isMultiLingualStore && isPrimaryMarket ) ||
-			glaData.isMultiLingualStore
-		)
-	) {
+	if ( ! glaData.isMultiLingualStore && ! isPrimaryMarket ) {
 		return null;
 	}
 
@@ -49,9 +44,11 @@ const ShippingNotice = () => {
 				),
 				{
 					link: (
-						<AppDocumentationLink
+						<TrackableLink
+							target="_blank"
+							type="external"
 							href={ GOOGLE_MERCHANT_CENTER_URL }
-							linkId="shipping-notice-merchant-center"
+							eventName="gla_shipping_notice_merchant_center_link_click"
 						/>
 					),
 				}

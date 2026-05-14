@@ -62,6 +62,7 @@ import {
 	receiveGtinMigrationStatus,
 	receiveAdsRecommendations,
 	receiveEnhancedConversionsStatus,
+	receiveMcLanguagesCurrencies,
 } from './actions';
 
 /**
@@ -817,7 +818,7 @@ export function* getMCLanguagesCurrencies() {
 		const data = yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/markets/languages-currencies`,
 		} );
-		return { type: TYPES.RECEIVE_MC_LANGUAGES_CURRENCIES, data };
+		return receiveMcLanguagesCurrencies( data );
 	} catch ( error ) {
 		handleApiError(
 			error,

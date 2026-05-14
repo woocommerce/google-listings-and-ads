@@ -15,7 +15,7 @@ import './index.scss';
 
 /**
  * Renders all market form fields for both the Add and Edit Market modals.
- * Returns null when `shipping_rate` is not `manual` or the store is multilingual.
+ * Returns null when `shipping_rate` is `manual` and the store is not multilingual.
  */
 const MarketFields = () => {
 	const { settings } = useSettings();
