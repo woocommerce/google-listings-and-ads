@@ -474,9 +474,6 @@ When a documentation link is clicked.
 - [`ReclaimUrlCard`](../../js/src/components/google-mc-account-card/reclaim-url-card/index.js#L42) with `{ context: 'setup-mc', link_id: 'claim-url', href: 'https://support.google.com/merchants/answer/176793' }`
 - [`RequestFullAccessGoogleAccountCard`](../../js/src/components/google-account-card/request-full-access-google-account-card.js#L26) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions' }`
 - [`SetupEnhancedConversions`](../../js/src/pages/settings/enhanced-conversions/setup-enhanced-conversions.js#L24) with `{ context: 'setup-enhanced-conversions', link_id: 'enhanced-conversions-read-more', href: 'https://support.google.com/google-ads/answer/9888656' }`
-- [`ShippingRateNotice`](../../js/src/pages/markets/market-fields/shipping-section/shipping-rate-controls/shipping-rate-notice/index.js#L20) with `{ link_id: "shipping-rate-notice-shipping-settings", href: "https://merchants.google.com/" }`
-
- Displays an info notice about shipping being managed in Google Merchant Center.
 - [`ShippingRateSection`](../../js/src/components/shipping-rate-section/shipping-rate-section.js#L26)
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
@@ -1054,6 +1051,20 @@ Setup Merchant Center
 	- with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button', action: 'go-to-step2' | 'go-to-step3' }`.
 	- with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
 - [`SetupTopBar`](../../js/src/pages/onboarding/setup-top-bar.js#L17) with `{ triggered_by: 'back-button', action: 'leave' }`.
+
+### [`gla_shipping_notice_merchant_center_link_click`](../../js/src/pages/markets/market-fields/shipping-section/shipping-notice/index.js#L20)
+
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`url` | `string` | The URL of the link that was clicked.
+#### Emitters
+- [`ShippingNotice`](../../js/src/pages/markets/market-fields/shipping-section/shipping-notice/index.js#L30) when the Merchant Center link in the notice is clicked.
+
+### [`gla_shipping_rate_notice_shipping_settings_link_click`](../../js/src/pages/markets/market-fields/shipping-section/shipping-rate-controls/shipping-rate-notice/index.js#L14)
+
+#### Emitters
+- [`ShippingRateNotice`](../../js/src/pages/markets/market-fields/shipping-section/shipping-rate-controls/shipping-rate-notice/index.js#L23) When the shipping settings link in the notice is clicked.
 
 ### [`gla_skip_campaign_creation_survey`](../../js/src/pages/onboarding/setup-stepper/skip-paid-ads-confirmation-modal/survey-modal.js#L22)
 Send survey responses when the user skips the paid ads setup.

@@ -25,7 +25,6 @@ jest.mock( '../market-form', () =>
 );
 
 jest.mock( '~/hooks/useSettings' );
-jest.mock( './edit-primary-audience', () => () => null );
 
 const market = { id: 'primary', label: 'Primary Market' };
 const targetAudience = { countries: [ 'US' ] };

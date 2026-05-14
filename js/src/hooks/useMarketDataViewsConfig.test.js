@@ -128,7 +128,7 @@ describe( 'useMarketDataViewsConfig', () => {
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 
-			expect( result.current.data[ 0 ].market ).toBe( 'Primary Market' );
+			expect( result.current.data[ 0 ].label ).toBe( 'Primary Market' );
 		} );
 	} );
 
@@ -166,7 +166,7 @@ describe( 'useMarketDataViewsConfig', () => {
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 
-			expect( result.current.data[ 0 ].market ).toBe(
+			expect( result.current.data[ 0 ].label ).toBe(
 				'Primary Market (3 countries)'
 			);
 		} );
@@ -179,7 +179,7 @@ describe( 'useMarketDataViewsConfig', () => {
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 
-			expect( result.current.data[ 1 ].market ).toBe( 'France' );
+			expect( result.current.data[ 1 ].label ).toBe( 'France' );
 		} );
 
 		test( 'falls through when multiLingualStore is true even with manual shipping', () => {

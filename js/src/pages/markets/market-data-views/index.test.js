@@ -171,15 +171,11 @@ describe( 'MarketDataViews', () => {
 		).toBeInTheDocument();
 	} );
 
-	test( 'renders the Shipping times cell from shipping_time', () => {
+	test( 'passes shipping_time from each market row to DataViews', () => {
 		render( <MarketDataViews /> );
 
-		expect(
-			screen.getByRole( 'cell', { name: 'flat' } )
-		).toBeInTheDocument();
-		expect(
-			screen.getByRole( 'cell', { name: 'table' } )
-		).toBeInTheDocument();
+		expect( dataViewsCalls[ 0 ].data[ 0 ].shipping_time ).toBe( 'flat' );
+		expect( dataViewsCalls[ 0 ].data[ 1 ].shipping_time ).toBe( 'table' );
 	} );
 
 	test( 'configures every field with enableHiding=false and enableSorting=false', () => {
@@ -283,7 +279,7 @@ describe( 'MarketDataViews', () => {
 		expect( screen.getByTestId( 'edit-market-modal' ) ).toBeInTheDocument();
 		expect(
 			screen.getByTestId( 'edit-market-modal-name' ).textContent
-		).toBe( SAMPLE_MARKETS[ 0 ].label );
+		).toBe( 'Primary Market (2 countries)' );
 	} );
 
 	test( 'opens DeleteMarketModal with the clicked row when Delete is pressed', async () => {
