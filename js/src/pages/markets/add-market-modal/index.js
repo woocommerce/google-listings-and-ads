@@ -11,7 +11,6 @@ import useStoreCurrency from '~/hooks/useStoreCurrency';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
 import MultiLingualPluginPrompt from './multilingual-plugin-prompt';
-import useSettings from '~/hooks/useSettings';
 import MarketFields from '../market-fields';
 import MarketForm from '../market-form';
 
@@ -45,58 +44,23 @@ const CONTEXT = 'add_market_modal';
  *
  * @param {Object} props
  * @param {Object} props.settings The settings object containing shipping_rate and other configurations.
- * @param {Array<ShippingRate>} props.shippingRates Shipping rates to pre-populate the form with.
- * @param {Array<ShippingTime>} props.shippingTimes Shipping times data, if not given AppSpinner will be rendered.
  * @param {TargetAudienceData} props.targetAudience Target audience value data to be initialed the form, if not given AppSpinner will be rendered.
  * @param {() => void} props.onRequestClose Called when the user closes the modal.
  */
 const AddMarketModal = ( {
 	settings,
-	shippingRates,
-	shippingTimes,
 	targetAudience = { countries: [] },
 	onRequestClose,
 } ) => {
 	const { code: currencyCode } = useStoreCurrency();
 
-	let initialMarket = {
+	const initialMarket = {
 		countries: targetAudience.countries,
-		country: null,
-		shipping_country_rates: shippingRates,
-		flat_shipping_rate: null,
-		offer_free_shipping: false,
-		free_shipping_threshold: null,
-		flat_shipping_min_time: null,
-		flat_shipping_max_time: null,
-		shipping_country_times: shippingTimes,
 		language: targetAudience.language,
 		currency: currencyCode,
 	};
 
-	if ( settings.shipping_rate === SHIPPING_RATE_METHOD.MANUAL ) {
-		if ( ! glaData.isMultiLingualStore ) {
-			initialMarket = {};
-		} else if ( glaData.isMultiLingualStore ) {
-			initialMarket = {
-				country: null,
-				language: [ { key: 'FR', value: 'FR', label: 'French' } ],
-				currency: currencyCode,
-			};
-		}
-	} else if ( settings.shipping_rate === SHIPPING_RATE_METHOD.FLAT ) {
-		initialMarket = {
-			country: null,
-			shipping_country_rates: shippingRates,
-			flat_shipping_rate: null,
-			offer_free_shipping: false,
-			free_shipping_threshold: null,
-			flat_shipping_min_time: null,
-			flat_shipping_max_time: null,
-			shipping_country_times: shippingTimes,
-		};
-	}
-
-	const showAddButton = ! (
+	const showAddMarketButton = ! (
 		! glaData.isMultiLingualStore &&
 		settings?.shipping_rate === SHIPPING_RATE_METHOD.MANUAL
 	);
@@ -117,7 +81,7 @@ const AddMarketModal = ( {
 				let buttons = [
 					<AppButton
 						key="close"
-						variant={ showAddButton ? 'tertiary' : 'primary' }
+						variant={ showAddMarketButton ? 'tertiary' : 'primary' }
 						onClick={ onRequestClose }
 						disabled={ isSaving }
 						eventName="gla_cancel_button_clicked"
@@ -129,7 +93,7 @@ const AddMarketModal = ( {
 					</AppButton>,
 				];
 
-				if ( showAddButton ) {
+				if ( showAddMarketButton ) {
 					buttons = [
 						...buttons,
 						<AppButton

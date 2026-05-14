@@ -23,7 +23,7 @@ const checkErrors = ( values ) => {
 		return errors;
 	}
 
-	if ( ! values.country ) {
+	if ( ! values.country && values.id !== PRIMARY_MARKET_ID ) {
 		errors.country = __(
 			'Please select a market.',
 			'google-listings-and-ads'

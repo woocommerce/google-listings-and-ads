@@ -23,7 +23,7 @@ const marketField = {
 	enableHiding: false,
 	enableSorting: false,
 	render: ( { item } ) => (
-		<span className="gla-markets-table__market-cell">{ item.market }</span>
+		<span className="gla-markets-table__market-cell">{ item.label }</span>
 	),
 };
 
@@ -53,7 +53,7 @@ const buildManualConfig = ( primaryMarket ) => {
 		? [
 				{
 					...primaryMarket,
-					market: primaryMarket.label,
+					label: primaryMarket.label,
 					country: sprintf(
 						// translators: %d: number of countries.
 						_n(
@@ -113,8 +113,7 @@ const buildDefaultConfig = ( markets, countryNames ) => {
 
 		return {
 			...market,
-			market: marketCell,
-			shippingTime: market.shipping_time,
+			label: marketCell,
 		};
 	} );
 

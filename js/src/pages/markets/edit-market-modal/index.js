@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -9,8 +9,8 @@ import { __ } from '@wordpress/i18n';
 import { PRIMARY_MARKET_ID } from '../constants';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
-import EditPrimaryAudience from './edit-primary-audience';
 import MarketForm from '../market-form';
+import MarketFields from '../market-fields';
 
 const CONTEXT = 'edit_market_modal';
 
@@ -43,42 +43,39 @@ const CONTEXT = 'edit_market_modal';
  * @param {() => void} props.onRequestClose Called when the user closes the modal.
  */
 const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
-	const { id } = market;
-	const isPrimaryMarket = id === PRIMARY_MARKET_ID;
+	const isPrimaryMarket = market.id === PRIMARY_MARKET_ID;
 
 	const appModalTitle = isPrimaryMarket
 		? __( 'Edit primary market', 'google-listings-and-ads' )
-		: __( 'Edit market', 'google-listings-and-ads' );
-
-	let initialValues = {};
-	if ( isPrimaryMarket ) {
-		initialValues = {
-			countries: targetAudience.countries || [],
-		};
-	}
+		: sprintf(
+				/* translators: %s is the name of the market being edited, e.g. "Europe". */
+				__( 'Edit %s', 'google-listings-and-ads' ),
+				market.label
+		  );
 
 	return (
 		<MarketForm
 			initialMarket={ {
-				id,
-				...initialValues,
+				...market,
+				countries: targetAudience.countries,
 			} }
 			onSubmit={ onRequestClose }
 		>
 			{ ( formContext ) => {
-				const {
-					isValidForm,
-					handleSubmit: handleSave,
-					isDirty,
-					adapter,
-				} = formContext;
+				const { adapter, isValidForm, handleSubmit } = formContext;
 				const { isSaving } = adapter;
+
+				const handleSubmitClick = ( event ) => {
+					if ( isValidForm ) {
+						return handleSubmit( event );
+					}
+					adapter.showValidation();
+				};
 
 				return (
 					<AppModal
 						title={ appModalTitle }
 						onRequestClose={ onRequestClose }
-						overflow="visible"
 						buttons={ [
 							<AppButton
 								key="close"
@@ -95,8 +92,7 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 							<AppButton
 								key="save"
 								variant="primary"
-								onClick={ handleSave }
-								disabled={ ! isValidForm || ! isDirty }
+								onClick={ handleSubmitClick }
 								loading={ isSaving }
 								eventName="gla_save_button_clicked"
 								eventProps={ {
@@ -107,7 +103,7 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 							</AppButton>,
 						] }
 					>
-						{ isPrimaryMarket && <EditPrimaryAudience /> }
+						<MarketFields />
 					</AppModal>
 				);
 			} }
