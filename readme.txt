@@ -5,7 +5,7 @@ Requires at least: 6.6
 Tested up to: 6.9
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.6.1
+Stable tag: 3.6.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -140,6 +140,17 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.6.2 - 2026-04-27 =
+* Dev - Bump WooCommerce "tested up to" version 10.7.
+* Dev - Remove API Pull sync status rows from the Connection Test page.
+* Fix - Disconnect modal now shows Google Ads-specific copy and confirmation text when disconnecting only the Google Ads account, instead of always falling back to the "all accounts" variant.
+* Fix - Improve scheduling for job that updates non-EU campaigns.
+* Fix - Improved performance of the expiring products query for large catalogs.
+* Fix - Only schedule UpdateEuPoliticalCampaigns jobs with an Ads connection.
+* Fix - Unschedule all Action Scheduler jobs when the plugin is deactivated to prevent orphaned recurring tasks from accumulating failure logs.
+* Fix - Update gmc_merchant_id in YouTube Shopping reports.
+* Fix - Updated caniuse-lite browserslist database.
+
 = 3.6.1 - 2026-03-31 =
 * Add - EU political ads declaration modal for compliance with Google's political advertising requirements.
 * Dev - Refactor YouTube card E2E tests.
@@ -156,11 +167,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix - Resolved fatal error in Channel Visibility when creating coupons.
 * Fix - Show user error message when Brand Guidelines are enabled.
 * Update - Update Google Ads API to v22.
-
-= 3.5.3 - 2026-03-03 =
-* Add - Support for service based merchants.
-* Dev - Added two new filters to the Jetpack and Google OAuth flows.
-* Fix – CSS lint error in raise-budget-recommendation-banner.
-* Update - Disable API Pull mode for all users.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
