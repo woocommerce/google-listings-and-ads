@@ -41,6 +41,11 @@ let tabs = [
 		href: getNewPath( {}, '/google/attribute-mapping', {} ),
 	},
 	{
+		key: 'markets',
+		title: __( 'Markets', 'google-listings-and-ads' ),
+		href: getNewPath( {}, '/google/markets', {} ),
+	},
+	{
 		key: 'settings',
 		title: __( 'Settings', 'google-listings-and-ads' ),
 		href: getNewPath( {}, '/google/settings', {} ),

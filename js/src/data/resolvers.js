@@ -47,6 +47,7 @@ import {
 	fetchTargetAudience,
 	fetchMCSetup,
 	fetchYouTubeAccount,
+	fetchMarkets,
 	receiveGoogleAccountAccess,
 	receiveReport,
 	receiveMCProductStatistics,
@@ -806,3 +807,7 @@ getYouTubeAccount.shouldInvalidate = ( action ) => {
 		action.invalidateRelatedState
 	);
 };
+
+export function* getMarkets() {
+	yield fetchMarkets();
+}
