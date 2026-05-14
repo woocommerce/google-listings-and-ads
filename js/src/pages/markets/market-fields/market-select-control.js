@@ -16,8 +16,15 @@ import usePrimaryMarketDetails from '~/hooks/usePrimaryMarketDetails';
  * The options for this control are derived from the primary market's countries,
  * which are fetched from the store; thus, this control is only rendered once
  * the relevant data has been resolved.
+ *
+ * @param {Object}  props
+ * @param {boolean} [props.autoSelectFirstOption=true] Pass false to keep the field empty on open, requiring an explicit user choice.
+ * @param {string}  [props.placeholderOption]          When provided, prepends a non-selectable placeholder option with this label and an empty value.
  */
-const MarketSelectControl = () => {
+const MarketSelectControl = ( {
+	autoSelectFirstOption = true,
+	placeholderOption,
+} ) => {
 	const {
 		data: { countries },
 		hasFinishedResolution: hasResolvedCountries,
@@ -33,10 +40,14 @@ const MarketSelectControl = () => {
 		return null;
 	}
 
-	const options = primaryMarket.countries.map( ( countryCode ) => ( {
+	const countryOptions = primaryMarket.countries.map( ( countryCode ) => ( {
 		value: countryCode,
 		label: countries[ countryCode ]?.name || countryCode,
 	} ) );
+
+	const options = placeholderOption
+		? [ { value: '', label: placeholderOption }, ...countryOptions ]
+		: countryOptions;
 
 	const { onChange, ...inputProps } = getInputProps( 'country' );
 
@@ -80,7 +91,7 @@ const MarketSelectControl = () => {
 		...inputProps,
 		...( ! inputProps.selected
 			? {
-					autoSelectFirstOption: true,
+					autoSelectFirstOption,
 					value: undefined,
 			  }
 			: {} ),

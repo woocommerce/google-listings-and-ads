@@ -7,6 +7,7 @@ import { useRef, useState } from '@wordpress/element';
  * Internal dependencies
  */
 import { useAppDispatch } from '~/data';
+import { SHIPPING_RATE_METHOD } from '~/constants';
 import checkErrors from './utils/checkErrors';
 import useSaveShippingRates from '~/hooks/useSaveShippingRates';
 import useSaveShippingTimes from '~/hooks/useSaveShippingTimes';
@@ -65,8 +66,11 @@ const MarketForm = ( {
 				await updateMarket( marketId, data );
 			} else {
 				await createMarket( data );
-				await saveShippingRates( shipping_country_rates );
-				await saveShippingTimes( shipping_country_times );
+
+				if ( data.shipping_rate !== SHIPPING_RATE_METHOD.AUTOMATIC ) {
+					await saveShippingRates( shipping_country_rates );
+					await saveShippingTimes( shipping_country_times );
+				}
 			}
 
 			invalidateResolution( 'getTargetAudience', [] );

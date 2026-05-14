@@ -32,6 +32,16 @@ jest.mock( '../market-form', () =>
 // so it renders without that context since MarketForm itself is mocked above.
 jest.mock( '../market-fields', () => jest.fn( () => null ) );
 
+// These components are rendered directly in the automatic non-multilingual branch
+// and also require AdaptiveForm context, so mock them for the same reason.
+jest.mock( '../market-fields/market-select-control', () =>
+	jest.fn( () => null )
+);
+jest.mock(
+	'~/components/free-listings/configure-product-listings/shipping-time-setup',
+	() => jest.fn( () => null )
+);
+
 const defaultProps = {
 	shippingRates: [],
 	shippingTimes: [],
@@ -163,5 +173,71 @@ describe( 'AddMarketModal', () => {
 
 		expect( showValidation ).toHaveBeenCalledTimes( 1 );
 		expect( handleSubmit ).not.toHaveBeenCalled();
+	} );
+
+	describe( 'automatic non-multilingual scenario', () => {
+		beforeEach( () => {
+			global.glaData.isMultiLingualStore = false;
+			useSettings.mockReturnValue( {
+				settings: { shipping_rate: SHIPPING_RATE_METHOD.AUTOMATIC },
+			} );
+		} );
+
+		test( 'shows the "Add market" button', () => {
+			render( <AddMarketModal { ...defaultProps } /> );
+
+			expect(
+				screen.getByRole( 'button', { name: 'Add market' } )
+			).toBeInTheDocument();
+		} );
+
+		test( 'does not render the multilingual plugin prompt', () => {
+			render( <AddMarketModal { ...defaultProps } /> );
+
+			expect(
+				screen.queryByText(
+					'Install a multilingual plugin to add markets'
+				)
+			).not.toBeInTheDocument();
+		} );
+
+		test( 'renders a disabled Language field with "Requires multilingual plugin" placeholder', () => {
+			render( <AddMarketModal { ...defaultProps } /> );
+
+			const input = screen.getByRole( 'textbox', { name: 'Language' } );
+			expect( input ).toBeDisabled();
+			expect( input ).toHaveAttribute(
+				'placeholder',
+				'Requires multilingual plugin'
+			);
+		} );
+
+		test( 'renders a disabled Currency field with "Requires multilingual plugin" placeholder', () => {
+			render( <AddMarketModal { ...defaultProps } /> );
+
+			const input = screen.getByRole( 'textbox', { name: 'Currency' } );
+			expect( input ).toBeDisabled();
+			expect( input ).toHaveAttribute(
+				'placeholder',
+				'Requires multilingual plugin'
+			);
+		} );
+
+		test( 'disables the "Add market" button when the form is invalid', () => {
+			const MarketForm = jest.requireMock( '../market-form' );
+			MarketForm.mockImplementationOnce( ( { children } ) =>
+				children( {
+					adapter: { isSaving: false },
+					isValidForm: false,
+					handleSubmit: jest.fn(),
+				} )
+			);
+
+			render( <AddMarketModal { ...defaultProps } /> );
+
+			expect(
+				screen.getByRole( 'button', { name: 'Add market' } )
+			).toBeDisabled();
+		} );
 	} );
 } );

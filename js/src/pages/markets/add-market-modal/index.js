@@ -2,17 +2,22 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { Flex } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { SHIPPING_RATE_METHOD } from '~/constants';
+import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
 import MultiLingualPluginPrompt from './multilingual-plugin-prompt';
 import useSettings from '~/hooks/useSettings';
 import MarketFields from '../market-fields';
+import MarketSelectControl from '../market-fields/market-select-control';
+import ShippingTimeSetup from '~/components/free-listings/configure-product-listings/shipping-time-setup';
+import LanguageSelectControl from '../market-fields/language-select-control';
+import CurrencySelectControl from '../market-fields/currency-select-control';
 import MarketForm from '../market-form';
 
 const CONTEXT = 'add_market_modal';
@@ -58,25 +63,38 @@ const AddMarketModal = ( {
 	const { settings } = useSettings();
 	const { code: currencyCode } = useStoreCurrency();
 
-	return (
-		<MarketForm
-			initialMarket={ {
+	const isAutomaticNonMultilingual =
+		! glaData.isMultiLingualStore &&
+		settings?.shipping_rate === SHIPPING_RATE_METHOD.AUTOMATIC;
+
+	const baseMarket = {
+		country: null,
+		shipping_rate: settings?.shipping_rate,
+		shipping_time: settings?.shipping_time,
+	};
+
+	const initialMarket = isAutomaticNonMultilingual
+		? {
+				...baseMarket,
+				shipping_country_rates: [],
+				shipping_country_times: [],
+		  }
+		: {
+				...baseMarket,
+				flat_shipping_min_time: null,
+				flat_shipping_max_time: null,
 				countries: targetAudience.countries,
-				country: null,
 				shipping_country_rates: shippingRates,
 				flat_shipping_rate: null,
 				offer_free_shipping: false,
 				free_shipping_threshold: null,
-				flat_shipping_min_time: null,
-				flat_shipping_max_time: null,
 				shipping_country_times: shippingTimes,
 				language: targetAudience.language,
 				currency: currencyCode,
-				shipping_rate: settings?.shipping_rate,
-				shipping_time: settings?.shipping_time,
-			} }
-			onSubmit={ onRequestClose }
-		>
+		  };
+
+	return (
+		<MarketForm initialMarket={ initialMarket } onSubmit={ onRequestClose }>
 			{ ( formContext ) => {
 				const { adapter, isValidForm, handleSubmit } = formContext;
 				const { isSaving } = adapter;
@@ -103,13 +121,23 @@ const AddMarketModal = ( {
 					</AppButton>,
 				];
 
-				if ( settings?.shipping_rate !== SHIPPING_RATE_METHOD.MANUAL ) {
+				if (
+					isAutomaticNonMultilingual ||
+					settings?.shipping_rate !== SHIPPING_RATE_METHOD.MANUAL
+				) {
 					buttons = [
 						...buttons,
 						<AppButton
 							key="add-market"
 							variant="primary"
-							onClick={ handleSubmitClick }
+							onClick={
+								isAutomaticNonMultilingual
+									? handleSubmit
+									: handleSubmitClick
+							}
+							disabled={
+								isAutomaticNonMultilingual && ! isValidForm
+							}
 							loading={ isSaving }
 							eventName="gla_add_new_market_button_clicked"
 							eventProps={ {
@@ -127,8 +155,25 @@ const AddMarketModal = ( {
 						onRequestClose={ onRequestClose }
 						buttons={ buttons }
 					>
-						<MarketFields />
-						<MultiLingualPluginPrompt />
+						{ isAutomaticNonMultilingual ? (
+							<Flex direction="column" gap={ 6 }>
+								<MarketSelectControl
+									autoSelectFirstOption={ false }
+									placeholderOption={ __(
+										'Select…',
+										'google-listings-and-ads'
+									) }
+								/>
+								<ShippingTimeSetup />
+								<LanguageSelectControl />
+								<CurrencySelectControl />
+							</Flex>
+						) : (
+							<>
+								<MarketFields />
+								<MultiLingualPluginPrompt />
+							</>
+						) }
 					</AppModal>
 				);
 			} }
