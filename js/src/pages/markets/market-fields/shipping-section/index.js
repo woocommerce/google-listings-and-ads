@@ -1,8 +1,9 @@
 /**
  * Internal dependencies
  */
-import { SHIPPING_RATE_METHOD } from '~/constants';
+import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 import useSettings from '~/hooks/useSettings';
+import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import ShippingTimesInput from './shipping-times-input';
 import ShippingNotice from './shipping-notice';
 import ShippingRateControls from './shipping-rate-controls';
@@ -16,8 +17,14 @@ import ShippingRateControls from './shipping-rate-controls';
  */
 const ShippingSection = () => {
 	const { settings } = useSettings();
+	const { adapter } = useAdaptiveFormContext();
+	const { isPrimaryMarket } = adapter;
 
 	if ( settings?.shipping_rate === SHIPPING_RATE_METHOD.MANUAL ) {
+		// ShippingNotice only renders for multilingual stores or the primary market.
+		if ( ! glaData.isMultiLingualStore && ! isPrimaryMarket ) {
+			return null;
+		}
 		return <ShippingNotice />;
 	}
 

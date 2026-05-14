@@ -11,7 +11,6 @@ import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 import useSettings from '~/hooks/useSettings';
 import LanguageSelectControl from './language-select-control';
 import CurrencySelectControl from './currency-select-control';
-import './index.scss';
 
 /**
  * Renders language and currency select controls,

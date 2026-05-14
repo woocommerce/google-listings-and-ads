@@ -9,6 +9,7 @@ const AudienceSection = () => {
 	const { adapter } = useAdaptiveFormContext();
 	const { isEditing, isPrimaryMarket } = adapter;
 
+	// Non-primary markets can't change which market they're editing — hide the selector.
 	if ( isEditing && ! isPrimaryMarket ) {
 		return null;
 	}

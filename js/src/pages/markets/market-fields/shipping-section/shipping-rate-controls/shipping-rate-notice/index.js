@@ -12,10 +12,13 @@ import TrackableLink from '~/components/trackable-link';
 import './index.scss';
 
 /**
+ * @event gla_shipping_rate_notice_shipping_settings_link_click
+ */
+
+/**
+ * Displays an info notice about shipping rates being synced from WooCommerce shipping settings.
  *
- * @fires gla_documentation_link_click with `{ link_id: "shipping-rate-notice-shipping-settings", href: "https://merchants.google.com/" }`
- *
- * Displays an info notice about shipping being managed in Google Merchant Center.
+ * @fires gla_shipping_rate_notice_shipping_settings_link_click When the shipping settings link in the notice is clicked.
  */
 const ShippingRateNotice = () => {
 	return (

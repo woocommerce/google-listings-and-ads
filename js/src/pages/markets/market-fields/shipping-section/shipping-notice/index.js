@@ -18,10 +18,14 @@ import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import './index.scss';
 
 /**
- *
- * @fires gla_shipping_notice_merchant_center_link_click
- *
+ * @event gla_shipping_notice_merchant_center_link_click
+ * @property {string} url The URL of the link that was clicked.
+ */
+
+/**
  * Displays an info notice about shipping being managed in Google Merchant Center.
+ *
+ * @fires gla_shipping_notice_merchant_center_link_click when the Merchant Center link in the notice is clicked.
  */
 const ShippingNotice = () => {
 	const { values } = useAdaptiveFormContext();
@@ -49,6 +53,9 @@ const ShippingNotice = () => {
 							type="external"
 							href={ GOOGLE_MERCHANT_CENTER_URL }
 							eventName="gla_shipping_notice_merchant_center_link_click"
+							eventProps={ {
+								url: GOOGLE_MERCHANT_CENTER_URL,
+							} }
 						/>
 					),
 				}
