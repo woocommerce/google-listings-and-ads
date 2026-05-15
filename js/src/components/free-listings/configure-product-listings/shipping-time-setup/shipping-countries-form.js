@@ -41,8 +41,8 @@ export default function ShippingCountriesForm( {
 	if ( countriesTimeArray.length === 0 ) {
 		countriesTimeArray.push( {
 			countries: audienceCountries,
-			time: null,
-			maxTime: null,
+			time: 1,
+			maxTime: 5,
 		} );
 	}
 

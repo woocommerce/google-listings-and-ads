@@ -288,12 +288,21 @@ test.describe( 'Settings', () => {
 		} );
 	} );
 
+	test.describe( 'Connected Google Merchant Center account', () => {
+		test( 'should not show the Audience section', async () => {
+			await expect(
+				page.getByRole( 'heading', { name: 'Audience' } )
+			).not.toBeVisible();
+		} );
+	} );
+
 	test.describe( 'No connected Google Merchant Center account', () => {
 		test.beforeAll( async () => {
 			await settingsPage.mockJetpackConnected();
 			await settingsPage.mockGoogleConnected();
 			await settingsPage.mockAdsAccountConnected();
 			await settingsPage.mockMCNotConnected();
+			await settingsPage.mockTargetAudienceCountries();
 			await settingsPage.goto();
 		} );
 
@@ -320,6 +329,49 @@ test.describe( 'Settings', () => {
 			await expect(
 				page.getByText( 'YouTube Shopping' )
 			).not.toBeVisible();
+		} );
+
+		test( 'should show the Audience section', async () => {
+			await expect(
+				page.getByRole( 'heading', { name: 'Audience' } )
+			).toBeVisible();
+		} );
+
+		test( 'should show Location subsection with country selection options', async () => {
+			const sectionTitle = page.locator(
+				'.gla-subsection-title:has-text("Location")'
+			);
+			await expect( sectionTitle ).toBeVisible();
+			await expect(
+				page.getByRole( 'radio', { name: 'Selected countries only' } )
+			).toBeVisible();
+			await expect(
+				page.getByRole( 'radio', { name: 'All countries' } )
+			).toBeVisible();
+		} );
+
+		test( 'should send POST request to save endpoint when updating audience settings', async () => {
+			const requestPromise =
+				settingsPage.registerTargetAudienceSaveRequests();
+
+			await settingsPage.fulfillTargetAudience( { location: 'all' }, [
+				'POST',
+			] );
+
+			const audienceSection = page.locator(
+				'.gla-choose-audience-section'
+			);
+
+			const allCountriesRadioBox =
+				audienceSection.getByLabel( 'All countries' );
+			await allCountriesRadioBox.check();
+
+			await expect( allCountriesRadioBox ).toBeChecked();
+
+			const request = await requestPromise;
+			const requestPayload = await request.postDataJSON();
+
+			expect( requestPayload ).toHaveProperty( 'location', 'all' );
 		} );
 	} );
 } );

@@ -16,9 +16,9 @@ import useMCCountries from '~/hooks/useMCCountries';
 /**
  * Gets the final country codes from the Target Audience page.
  * This will call the `getTargetAudience` selector and `useMCCountries` hook.
- * Returns `{ loading, data, targetAudience, getFinalCountries }`.
+ * Returns `{ loaded, data, targetAudience, getFinalCountries }`.
  *
- * `loading` is true when both `getTargetAudience` and `useMCCountries` are still resolving.
+ * `loaded` is true when both `getTargetAudience` and `useMCCountries` have finished resolving.
  *
  * `data` is:
  * - `undefined` when loading is in progress;
@@ -31,20 +31,23 @@ import useMCCountries from '~/hooks/useMCCountries';
  *
  */
 const useTargetAudienceFinalCountryCodes = () => {
-	const { data: supportedCountries, isResolving: countriesLoading } =
+	const { data: supportedCountries, hasFinishedResolution: countriesLoaded } =
 		useMCCountries();
 
 	function mapSelect( select ) {
-		const { getTargetAudience, isResolving } = select( STORE_KEY );
+		const { getTargetAudience, hasFinishedResolution } =
+			select( STORE_KEY );
 		const storedTargetAudience = getTargetAudience();
-		const targetAudienceLoading = isResolving( 'getTargetAudience' );
+		const targetAudienceLoaded =
+			hasFinishedResolution( 'getTargetAudience' );
 
 		/**
-		 * Flag to indicate that the data is loading.
+		 * Flag to indicate that the data has been loaded.
 		 *
 		 * @type {boolean}
 		 */
-		const loading = targetAudienceLoading || countriesLoading;
+		const loaded = countriesLoaded && targetAudienceLoaded;
+
 		const allCountries =
 			supportedCountries && Object.keys( supportedCountries );
 
@@ -70,14 +73,14 @@ const useTargetAudienceFinalCountryCodes = () => {
 		const data = getFinalCountries( storedTargetAudience );
 
 		return {
-			loading,
+			loaded,
 			data,
 			targetAudience: storedTargetAudience,
 			getFinalCountries,
 		};
 	}
 
-	return useSelect( mapSelect, [ supportedCountries, countriesLoading ] );
+	return useSelect( mapSelect, [ supportedCountries, countriesLoaded ] );
 };
 
 export default useTargetAudienceFinalCountryCodes;
