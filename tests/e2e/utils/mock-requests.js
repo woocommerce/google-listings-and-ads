@@ -302,12 +302,20 @@ export default class MockRequests {
 	 * Fulfill the YouTube Account Connection request.
 	 *
 	 * @param {Object} payload
+	 * @param {number} [status=200]
+	 * @param {Array} [methods=[]]
 	 * @return {Promise<void>}
 	 */
-	async fulfillYouTubeAccountConnection( payload ) {
+	async fulfillYouTubeAccountConnection(
+		payload,
+		status = 200,
+		methods = []
+	) {
 		await this.fulfillRequest(
 			/\/wc\/gla\/youtube\/connection\b/,
-			payload
+			payload,
+			status,
+			methods
 		);
 	}
 
@@ -1162,20 +1170,113 @@ export default class MockRequests {
 	}
 
 	/**
-	 * Mock a connected YouTube account that has no channels.
+	 * Mock the YouTube disconnect request.
 	 *
-	 * This asynchronous helper fulfills the YouTube account connection with a
-	 * status of "connected" and an explicit null channel value, simulating a
-	 * scenario where the account is connected but no channels are available or
-	 * accessible.
+	 * wordpress/api-fetch's http-v1 middleware converts DELETE to POST with
+	 * an X-HTTP-Method-Override: DELETE header, so we intercept POST here and
+	 * let GET requests fall through to the connection-state mock.
 	 *
-	 * @return {Promise<void>} Resolves once the mock connection has been fulfilled.
+	 * @return {Promise<void>}
 	 */
-	async mockYouTubeAccountNoChannels() {
+	async mockYouTubeDisconnect() {
+		await this.fulfillYouTubeAccountConnection( {}, 200, [ 'POST' ] );
+	}
+
+	/**
+	 * Mock helper that simulates an incomplete YouTube account connection by calling
+	 * `fulfillYouTubeAccountConnection` with a predefined payload.
+	 *
+	 * The payload sets `status` to `'incomplete'` while still providing channel metadata
+	 * (`id` and `label`), which may be used by consumers to determine that the account
+	 * connection process has been started but not completed.
+	 *
+	 * This method is asynchronous and awaits the underlying fulfillment call.
+	 *
+	 * @return {Promise<*>} Resolves with whatever value `fulfillYouTubeAccountConnection` returns.
+	 */
+	async mockYouTubeAccountIncomplete() {
 		await this.fulfillYouTubeAccountConnection( {
-			status: 'connected',
-			channel: [],
+			status: 'incomplete',
+			channel: {
+				id: 'a89ahifdaffe234',
+				label: 'My YouTube Channel',
+			},
 		} );
+	}
+
+	/**
+	 * Mock helper that simulates a YouTube account connection with an ineligible channel by calling
+	 * `fulfillYouTubeAccountConnection` with a predefined payload.
+	 * The payload includes an error message and code indicating that the channel is not eligible for the linking program.
+	 *
+	 * This method is asynchronous and awaits the underlying fulfillment call.
+	 *
+	 * @return {Promise<*>} Resolves with whatever value `fulfillYouTubeAccountConnection` returns.
+	 */
+	async mockNotEligibleYouTubeChannel() {
+		await this.fulfillYouTubeCompleteSetup(
+			{
+				message: 'The channel is not eligible for the linking program.',
+				error: {
+					code: 403,
+					message:
+						'The channel is not eligible for the linking program.',
+					errors: [
+						{
+							message:
+								'The channel is not eligible for the linking program.',
+							domain: 'youtube.thirdPartyLink',
+							reason: 'CHANNEL_NOT_ELIGIBLE',
+						},
+					],
+				},
+			},
+			403
+		);
+	}
+
+	/**
+	 * Mock helper that simulates a YouTube account connection with an eligible channel by calling
+	 * `fulfillYouTubeAccountConnection` with a predefined payload.
+	 * The payload includes a message indicating that the channel is eligible for the linking program.
+	 *
+	 * This method is asynchronous and awaits the underlying fulfillment call.
+	 *
+	 * @return {Promise<*>} Resolves with whatever value `fulfillYouTubeAccountConnection` returns.
+	 */
+	async mockEligibleYouTubeChannel() {
+		await this.fulfillYouTubeCompleteSetup( {
+			message: 'The channel is eligible for the linking program.',
+		} );
+	}
+
+	/**
+	 * Fulfills a mock request for the YouTube complete setup endpoint, simulating the completion of the YouTube setup process.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned, which may include details about the completed setup.
+	 * @param {number} [status=200] - The HTTP status code to be returned. Defaults to 200.
+	 * @return {Promise<void>} A promise that resolves when the request is fulfilled.
+	 */
+	async fulfillYouTubeCompleteSetup( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/youtube\/setup\/complete\b/,
+			payload,
+			status,
+			[ 'POST' ]
+		);
+	}
+
+	/**
+	 * Registers a wait for a request to the YouTube complete setup endpoint, allowing tests to wait until this specific request is made before proceeding.
+	 *
+	 * @return {Promise<import('playwright').Request>} A promise that resolves with the intercepted request object when a request matching the criteria is made.
+	 */
+	async registerYouTubeCompleteSetupRequest() {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/youtube/setup/complete' ) &&
+				request.method() === 'POST'
+		);
 	}
 
 	/**
@@ -1278,5 +1379,44 @@ export default class MockRequests {
 			status,
 			[ 'POST' ]
 		);
+	}
+
+	/**
+	 * Mocks a request for missing EU declaration campaigns.
+	 *
+	 * @param {Object} payload - The mock response payload to be returned.
+	 * @param {number} [status=200] - The HTTP status code to be returned. Defaults to 200.
+	 * @return {Promise<void>} A promise that resolves when the request is mocked.
+	 */
+	async fulfillMissingEUDeclarationCampaigns( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/campaigns\/missing-eu-political-declaration\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Mocks the presence of campaigns missing EU political declarations.
+	 */
+	async mockHasMissingEUDeclarationCampaigns() {
+		await this.fulfillMissingEUDeclarationCampaigns( [
+			{
+				id: 12345,
+				name: 'Campaign 1',
+			},
+			{
+				id: 23456,
+				name: 'Campaign 2',
+			},
+		] );
+	}
+
+	/**
+	 * Mocks the absence of campaigns missing EU political declarations.
+	 */
+	async mockHasNoMissingEUDeclarationCampaigns() {
+		await this.fulfillMissingEUDeclarationCampaigns( [] );
 	}
 }

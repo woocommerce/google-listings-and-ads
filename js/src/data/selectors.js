@@ -178,6 +178,16 @@ export const getAdsCampaigns = ( state, query ) => {
 };
 
 /**
+ * Get campaigns that are missing the EU political advertising declaration.
+ *
+ * @param {Object} state The current store state will be injected by `wp.data`.
+ * @return {Array<{id: number, name: string}>|null} List of campaigns missing the EU declaration, or null if not yet loaded.
+ */
+export const getAdsCampaignsMissingEuDeclaration = ( state ) => {
+	return state.ads_campaigns_missing_eu_declaration;
+};
+
+/**
  * Get the enhanced conversions setting.
  * This setting indicates whether enhanced conversions are enabled for the Google Ads account.
  *
