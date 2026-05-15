@@ -50,6 +50,7 @@ describe( 'reducer', () => {
 			},
 			ads_campaigns: null,
 			all_ads_campaigns: null,
+			ads_campaigns_missing_eu_declaration: null,
 			campaign_asset_groups: {},
 			mc_setup: null,
 			mc_review_request: {

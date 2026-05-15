@@ -309,6 +309,81 @@ class AdsCampaignTest extends UnitTest {
 		$this->assertEquals( $campaign_data, $this->campaign->get_campaign( self::TEST_CAMPAIGN_ID ) );
 	}
 
+	public function test_get_highest_spend_campaign_returns_cached_value() {
+		$cached_campaign = [
+			'id'      => 5678901234,
+			'name'    => 'Cached Campaign',
+			'status'  => 'enabled',
+			'type'    => 'performance_max',
+			'amount'  => 50,
+			'country' => 'US',
+		];
+
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->with( TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN )
+			->willReturn( [ 'campaign' => $cached_campaign ] );
+		$this->transients->expects( $this->never() )->method( 'set' );
+
+		$this->assertEquals( $cached_campaign, $this->campaign->get_highest_spend_campaign() );
+	}
+
+	public function test_get_highest_spend_campaign_fetches_and_caches_on_miss() {
+		$campaigns_data = [
+			[
+				'id'                                    => self::TEST_CAMPAIGN_ID,
+				'name'                                  => 'Campaign One',
+				'status'                                => 'paused',
+				'type'                                  => 'performance_max',
+				'amount'                                => 10,
+				'country'                               => 'US',
+				'targeted_locations'                    => [],
+				'eu_political_advertising_confirmation' => false,
+			],
+			[
+				'id'                                    => 5678901234,
+				'name'                                  => 'Campaign Two',
+				'status'                                => 'enabled',
+				'type'                                  => 'performance_max',
+				'amount'                                => 20,
+				'country'                               => 'UK',
+				'targeted_locations'                    => [],
+				'eu_political_advertising_confirmation' => false,
+			],
+		];
+
+		$expected_highest = $campaigns_data[1];
+
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->with( TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN )
+			->willReturn( null );
+		// set() may be called twice: ADS_HIGHEST_SPEND_CAMPAIGN (our cache) and possibly ADS_CAMPAIGN_COUNT from get_campaigns().
+		$this->transients->expects( $this->atLeastOnce() )
+			->method( 'set' )
+			->willReturnCallback(
+				function ( string $name, $value, int $expiration = 0 ) use ( $expected_highest ) {
+					if ( $name === TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN ) {
+						$this->assertIsArray( $value );
+						$this->assertArrayHasKey( 'campaign', $value );
+						$campaign = $value['campaign'];
+						$this->assertEquals( $expected_highest['id'], $campaign['id'] );
+						$this->assertEquals( $expected_highest['status'], $campaign['status'] );
+						$this->assertEqualsWithDelta( $expected_highest['amount'], $campaign['amount'] ?? 0, 0.01 );
+						$this->assertEquals( HOUR_IN_SECONDS * 12, $expiration );
+					}
+					return true;
+				}
+			);
+
+		$this->generate_ads_campaign_query_mock( $campaigns_data, [] );
+
+		$result = $this->campaign->get_highest_spend_campaign();
+		$this->assertEquals( $expected_highest['id'], $result['id'] );
+		$this->assertEquals( $expected_highest['status'], $result['status'] );
+		$this->assertEqualsWithDelta( $expected_highest['amount'], $result['amount'] ?? 0, 0.01 );
+	}
+
 	public function test_get_campaign_exception() {
 		$this->generate_ads_query_mock_exception( new ApiException( 'not found', 5, 'NOT_FOUND' ) );
 
@@ -325,6 +400,92 @@ class AdsCampaignTest extends UnitTest {
 			);
 			$this->assertEquals( 404, $e->getCode() );
 		}
+	}
+
+	public function test_get_campaigns_missing_eu_political_declaration_skips_video_campaigns() {
+		$campaigns_data = [
+			[
+				'id'      => 111,
+				'name'    => 'Non-shopping PMax',
+				'status'  => 'enabled',
+				'type'    => CampaignType::PERFORMANCE_MAX,
+				'country' => 'US',
+				'amount'  => 10,
+			],
+			[
+				'id'      => 222,
+				'name'    => 'Video',
+				'status'  => 'enabled',
+				'type'    => CampaignType::VIDEO,
+				'country' => 'US',
+				'amount'  => 10,
+			],
+			[
+				'id'      => 333,
+				'name'    => 'Shopping',
+				'status'  => 'enabled',
+				'type'    => CampaignType::SHOPPING,
+				'country' => 'US',
+				'amount'  => 10,
+			],
+		];
+
+		$rows = array_map( [ $this, 'generate_campaign_row_mock' ], $campaigns_data );
+		$this->generate_ads_query_mock( $rows );
+
+		$this->options->expects( $this->never() )
+			->method( 'update' )
+			->with( OptionsInterface::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE );
+
+		$result = $this->campaign->get_campaigns_missing_eu_political_declaration();
+
+		$this->assertCount( 2, $result );
+		$this->assertEquals(
+			[
+				'id'   => 111,
+				'name' => 'Non-shopping PMax',
+			],
+			$result[0]
+		);
+		$this->assertEquals(
+			[
+				'id'   => 333,
+				'name' => 'Shopping',
+			],
+			$result[1]
+		);
+	}
+
+	public function test_get_campaigns_missing_eu_political_declaration_sets_complete_flag_when_empty() {
+		$this->generate_ads_query_mock( [] );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE, true );
+
+		$this->assertEquals( [], $this->campaign->get_campaigns_missing_eu_political_declaration() );
+	}
+
+	public function test_get_campaigns_missing_eu_political_declaration_sets_complete_flag_when_only_video_campaigns() {
+		$campaigns_data = [
+			[
+				'id'      => 222,
+				'name'    => 'Video',
+				'status'  => 'enabled',
+				'type'    => CampaignType::VIDEO,
+				'country' => 'US',
+				'amount'  => 10,
+			],
+		];
+
+		$rows = array_map( [ $this, 'generate_campaign_row_mock' ], $campaigns_data );
+		$this->generate_ads_query_mock( $rows );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE, true );
+
+		$this->assertEquals( [], $this->campaign->get_campaigns_missing_eu_political_declaration() );
 	}
 
 	public function test_create_campaign() {
@@ -349,7 +510,12 @@ class AdsCampaignTest extends UnitTest {
 			'eu_political_advertising_confirmation' => false,
 		] + $campaign_data;
 
-		$this->transients->expects( $this->once() )->method( 'delete' )->with( TransientsInterface::ADS_CAMPAIGN_COUNT );
+		$this->transients->expects( $this->exactly( 2 ) )
+			->method( 'delete' )
+			->withConsecutive(
+				[ TransientsInterface::ADS_CAMPAIGN_COUNT ],
+				[ TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN ]
+			);
 
 		$this->assertEquals(
 			$expected,
@@ -472,6 +638,10 @@ class AdsCampaignTest extends UnitTest {
 
 		$this->generate_campaign_mutate_mock( 'update', self::TEST_CAMPAIGN_ID );
 
+		$this->transients->expects( $this->once() )
+			->method( 'delete' )
+			->with( TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN );
+
 		$this->assertEquals(
 			self::TEST_CAMPAIGN_ID,
 			$this->campaign->edit_campaign( self::TEST_CAMPAIGN_ID, $campaign_data )
@@ -503,7 +673,12 @@ class AdsCampaignTest extends UnitTest {
 	public function test_delete_campaign() {
 		$this->generate_campaign_mutate_mock( 'remove', self::TEST_CAMPAIGN_ID );
 
-		$this->transients->expects( $this->once() )->method( 'delete' )->with( TransientsInterface::ADS_CAMPAIGN_COUNT );
+		$this->transients->expects( $this->exactly( 2 ) )
+			->method( 'delete' )
+			->withConsecutive(
+				[ TransientsInterface::ADS_CAMPAIGN_COUNT ],
+				[ TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN ]
+			);
 
 		$this->assertEquals(
 			self::TEST_CAMPAIGN_ID,
@@ -706,7 +881,12 @@ class AdsCampaignTest extends UnitTest {
 			'country' => self::BASE_COUNTRY,
 		] + $campaign_data;
 
-		$this->transients->expects( $this->once() )->method( 'delete' )->with( TransientsInterface::ADS_CAMPAIGN_COUNT );
+		$this->transients->expects( $this->exactly( 2 ) )
+			->method( 'delete' )
+			->withConsecutive(
+				[ TransientsInterface::ADS_CAMPAIGN_COUNT ],
+				[ TransientsInterface::ADS_HIGHEST_SPEND_CAMPAIGN ]
+			);
 		$this->campaign_label->expects( $this->once() )
 			->method( 'assign_label_to_campaign_by_label_name' )
 			->with( self::TEST_CAMPAIGN_ID, 'wc-gla' );

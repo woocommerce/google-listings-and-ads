@@ -80,7 +80,7 @@ class AdsRecommendationsService implements ContainerAwareInterface, OptionsAware
 		$transient = $this->transients->get( TransientsInterface::ADS_RECOMMENDATIONS );
 		$cache_key = md5( wp_json_encode( $args ) );
 
-		if ( $transient && ! empty( $transient[ $cache_key ] ) ) {
+		if ( is_array( $transient ) && array_key_exists( $cache_key, $transient ) ) {
 			return $transient[ $cache_key ];
 		}
 
