@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { Flex, FlexItem, Tip } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -33,7 +34,8 @@ const AssetGroupImagesSection = ( {
 	getNumOfIssues,
 	renderErrors,
 } ) => {
-	const { values, getInputProps } = useAdaptiveFormContext();
+	const { values, getInputProps, adapter } = useAdaptiveFormContext();
+	const showTip = adapter.hasAISuggestedMediaAssets;
 
 	return (
 		<Section
@@ -75,36 +77,57 @@ const AssetGroupImagesSection = ( {
 			}
 		>
 			<div className="gla-asset-group-section__content">
-				{ ASSET_IMAGE_SPECS.map( ( spec ) => {
-					const initialImageUrls = initialValues[ spec.key ];
-					const imageProps = getInputProps( spec.key );
-
-					return (
-						<AssetField
-							key={ spec.key }
-							ref={ refFirstErrorField.bind( spec.key ) }
-							heading={ spec.heading }
-							subheading={ spec.subheading }
-							help={ spec.help }
-							numOfIssues={ getNumOfIssues( spec.key ) }
-							markOptional={ spec.min === 0 }
-							disabled={ ! isSelectedFinalUrl }
-							initialExpanded={ isSelectedFinalUrl }
-						>
-							<ImagesSelector
-								initialImageUrls={ initialImageUrls }
-								maxNumberOfImages={ spec.getMax( values ) }
-								reachedMaxNumberTip={ spec.getMaxNumberTip(
-									values
+				<Flex direction="column" gap={ 4 }>
+					{ showTip && (
+						<FlexItem>
+							<Tip>
+								{ __(
+									"We've used your final URL to auto-populate images…",
+									'google-listings-and-ads'
 								) }
-								imageConfig={ spec.imageConfig }
-								onChange={ imageProps.onChange }
-							>
-								{ renderErrors( spec.key ) }
-							</ImagesSelector>
-						</AssetField>
-					);
-				} ) }
+							</Tip>
+						</FlexItem>
+					) }
+
+					<FlexItem>
+						{ ASSET_IMAGE_SPECS.map( ( spec ) => {
+							const initialImageUrls = initialValues[ spec.key ];
+							const imageProps = getInputProps( spec.key );
+
+							return (
+								<AssetField
+									key={ spec.key }
+									ref={ refFirstErrorField.bind( spec.key ) }
+									heading={ spec.heading }
+									subheading={ spec.subheading }
+									help={ spec.help }
+									numOfIssues={ getNumOfIssues( spec.key ) }
+									markOptional={ spec.min === 0 }
+									disabled={ ! isSelectedFinalUrl }
+									initialExpanded={ isSelectedFinalUrl }
+								>
+									<ImagesSelector
+										assetKey={ spec.key }
+										initialImageUrls={ initialImageUrls }
+										maxNumberOfImages={ spec.getMax(
+											values
+										) }
+										reachedMaxNumberTip={ spec.getMaxNumberTip(
+											values
+										) }
+										imageConfig={ spec.imageConfig }
+										onChange={ imageProps.onChange }
+										generateButtonText={
+											spec.generateButtonText
+										}
+									>
+										{ renderErrors( spec.key ) }
+									</ImagesSelector>
+								</AssetField>
+							);
+						} ) }
+					</FlexItem>
+				</Flex>
 			</div>
 		</Section>
 	);

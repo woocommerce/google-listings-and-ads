@@ -46,7 +46,7 @@ class OnboardingController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_complete_callback(): callable {
-		return function ( Request $request ) {
+		return function ( Request $request ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
 			do_action( 'woocommerce_gla_onboarding_completed' );
 
 			return new Response(
@@ -65,7 +65,7 @@ class OnboardingController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_delete_callback(): callable {
-		return function ( Request $request ) {
+		return function ( Request $request ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
 			$this->options->delete( OptionsInterface::ONBOARDING_COMPLETED_AT );
 
 			return new Response(

@@ -26,6 +26,8 @@ class AdsCampaignQuery extends AdsQuery {
 				'campaign.shopping_setting.feed_label',
 				'campaign_budget.amount_micros',
 				'campaign.contains_eu_political_advertising',
+				'campaign.missing_eu_political_advertising_declaration',
+				'campaign.brand_guidelines_enabled',
 			]
 		);
 	}

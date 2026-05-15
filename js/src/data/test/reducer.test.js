@@ -39,6 +39,7 @@ describe( 'reducer', () => {
 					existing_ads: null,
 					ads_billing_status: null,
 					google_access: null,
+					youtube: null,
 				},
 				mapping: {
 					attributes: [],
@@ -49,6 +50,7 @@ describe( 'reducer', () => {
 			},
 			ads_campaigns: null,
 			all_ads_campaigns: null,
+			ads_campaigns_missing_eu_declaration: null,
 			campaign_asset_groups: {},
 			mc_setup: null,
 			mc_review_request: {
@@ -85,6 +87,7 @@ describe( 'reducer', () => {
 				},
 				summary: {},
 			},
+			gen_ai_assets: {},
 		} );
 
 		prepareState = prepareImmutableState.bind( null, defaultState );
@@ -415,6 +418,34 @@ describe( 'reducer', () => {
 		it( 'should return with default Google Ads account connection when getting disconnect action', () => {
 			const originalState = prepareState( path, { id: 123456789 } );
 			const action = { type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS };
+			const state = reducer( originalState, action );
+
+			expect( state ).toHaveProperty( path, get( defaultState, path ) );
+		} );
+	} );
+
+	describe( 'YouTube account connection', () => {
+		const path = 'mc.accounts.youtube';
+
+		it( 'should return with received YouTube account connection', () => {
+			const action = {
+				type: TYPES.RECEIVE_ACCOUNTS_YOUTUBE,
+				account: {
+					status: 'connected',
+					channel: { id: 'abc', label: 'ABC' },
+				},
+			};
+			const state = reducer( prepareState(), action );
+
+			expect( state ).toHaveProperty( path, action.account );
+		} );
+
+		it( 'should return with default YouTube account connection when getting disconnect action', () => {
+			const originalState = prepareState( path, {
+				status: 'connected',
+				channel: { id: 'abc', label: 'ABC' },
+			} );
+			const action = { type: TYPES.DISCONNECT_ACCOUNTS_YOUTUBE };
 			const state = reducer( originalState, action );
 
 			expect( state ).toHaveProperty( path, get( defaultState, path ) );
