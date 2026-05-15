@@ -36,17 +36,17 @@ const defaultProps = {
 	shippingRates: [],
 	shippingTimes: [],
 	targetAudience: { countries: [], language: 'en' },
+	settings: { shipping_rate: SHIPPING_RATE_METHOD.MANUAL },
 	onRequestClose: jest.fn(),
 };
 
 describe( 'AddMarketModal', () => {
 	beforeEach( () => {
 		global.glaData.isMultiLingualStore = false;
-
+		// MultiLingualPluginPrompt reads useSettings() directly.
 		useSettings.mockReturnValue( {
 			settings: { shipping_rate: SHIPPING_RATE_METHOD.MANUAL },
 		} );
-
 		useStoreCurrency.mockReturnValue( { code: 'USD' } );
 	} );
 
@@ -90,8 +90,12 @@ describe( 'AddMarketModal', () => {
 		useSettings.mockReturnValue( {
 			settings: { shipping_rate: SHIPPING_RATE_METHOD.FLAT },
 		} );
-
-		render( <AddMarketModal { ...defaultProps } /> );
+		render(
+			<AddMarketModal
+				{ ...defaultProps }
+				settings={ { shipping_rate: SHIPPING_RATE_METHOD.FLAT } }
+			/>
+		);
 
 		expect(
 			screen.getByRole( 'button', { name: 'Add market' } )
@@ -129,8 +133,12 @@ describe( 'AddMarketModal', () => {
 		useSettings.mockReturnValue( {
 			settings: { shipping_rate: SHIPPING_RATE_METHOD.FLAT },
 		} );
-
-		render( <AddMarketModal { ...defaultProps } /> );
+		render(
+			<AddMarketModal
+				{ ...defaultProps }
+				settings={ { shipping_rate: SHIPPING_RATE_METHOD.FLAT } }
+			/>
+		);
 
 		expect(
 			screen.queryByText( 'Install a multilingual plugin to add markets' )
@@ -154,8 +162,12 @@ describe( 'AddMarketModal', () => {
 		useSettings.mockReturnValue( {
 			settings: { shipping_rate: SHIPPING_RATE_METHOD.FLAT },
 		} );
-
-		render( <AddMarketModal { ...defaultProps } /> );
+		render(
+			<AddMarketModal
+				{ ...defaultProps }
+				settings={ { shipping_rate: SHIPPING_RATE_METHOD.FLAT } }
+			/>
+		);
 
 		await user.click(
 			screen.getByRole( 'button', { name: 'Add market' } )

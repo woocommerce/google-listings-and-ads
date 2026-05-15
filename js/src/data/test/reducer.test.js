@@ -48,6 +48,8 @@ describe( 'reducer', () => {
 				},
 				contact: null,
 				markets: [],
+				languages: null,
+				currencies: null,
 			},
 			ads_campaigns: null,
 			all_ads_campaigns: null,

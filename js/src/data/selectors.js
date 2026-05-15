@@ -575,3 +575,45 @@ export const getMarkets = ( state ) => {
 export const getMarket = ( state, id ) => {
 	return state.mc.markets.find( ( market ) => market.id === id );
 };
+
+/**
+ * @typedef {Object} MCLanguage
+ * @property {string} code BCP 47 language code (e.g. `"en"`).
+ * @property {string} label Human-readable language name (e.g. `"English"`).
+ */
+
+/**
+ * @typedef {Object} MCCurrency
+ * @property {string} code ISO 4217 currency code (e.g. `"USD"`).
+ * @property {string} symbol Currency symbol (e.g. `"$"`).
+ */
+
+/**
+ * Select supported languages and currencies for MC markets.
+ * Triggers the single resolver that populates both state properties.
+ *
+ * @param {Object} state The current store state.
+ * @return {{languages: Array<MCLanguage>|null, currencies: Array<MCCurrency>|null}} Supported languages and currencies, or null values before data is fetched.
+ */
+export const getMCLanguagesCurrencies = ( state ) => {
+	const { languages, currencies } = state.mc;
+	return { languages, currencies };
+};
+
+/**
+ * Select the supported languages for MC markets.
+ * Call getMCLanguagesCurrencies to trigger the data fetch.
+ *
+ * @param {Object} state The current store state.
+ * @return {Array<MCLanguage>|null} Supported languages, or null before data is fetched.
+ */
+export const getMCSupportedLanguages = ( state ) => state.mc.languages;
+
+/**
+ * Select the supported currencies for MC markets.
+ * Call getMCLanguagesCurrencies to trigger the data fetch.
+ *
+ * @param {Object} state The current store state.
+ * @return {Array<MCCurrency>|null} Supported currencies, or null before data is fetched.
+ */
+export const getMCSupportedCurrencies = ( state ) => state.mc.currencies;

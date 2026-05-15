@@ -24,8 +24,11 @@ jest.mock( '../market-form', () =>
 	)
 );
 
+// MarketFields requires AdaptiveForm context (provided by MarketForm). Mock it
+// so it renders without that context since MarketForm itself is mocked above.
+jest.mock( '../market-fields', () => jest.fn( () => null ) );
+
 jest.mock( '~/hooks/useSettings' );
-jest.mock( './edit-primary-audience', () => () => null );
 
 const market = { id: 'primary', label: 'Primary Market' };
 const targetAudience = { countries: [ 'US' ] };

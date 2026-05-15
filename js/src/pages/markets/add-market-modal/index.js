@@ -6,12 +6,11 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { SHIPPING_RATE_METHOD } from '~/constants';
+import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
 import MultiLingualPluginPrompt from './multilingual-plugin-prompt';
-import useSettings from '~/hooks/useSettings';
 import MarketFields from '../market-fields';
 import MarketForm from '../market-form';
 
@@ -44,39 +43,30 @@ const CONTEXT = 'add_market_modal';
  * @fires gla_add_new_market_button_clicked when the add market button is clicked with context of "add_market_modal"
  *
  * @param {Object} props
- * @param {Array<ShippingRate>} props.shippingRates Shipping rates to pre-populate the form with.
- * @param {Array<ShippingTime>} props.shippingTimes Shipping times data, if not given AppSpinner will be rendered.
+ * @param {Object} props.settings The settings object containing shipping_rate and other configurations.
  * @param {TargetAudienceData} props.targetAudience Target audience value data to be initialed the form, if not given AppSpinner will be rendered.
  * @param {() => void} props.onRequestClose Called when the user closes the modal.
  */
 const AddMarketModal = ( {
-	shippingRates,
-	shippingTimes,
+	settings,
 	targetAudience = { countries: [] },
 	onRequestClose,
 } ) => {
-	const { settings } = useSettings();
 	const { code: currencyCode } = useStoreCurrency();
 
+	const initialMarket = {
+		countries: targetAudience.countries,
+		language: targetAudience.language,
+		currency: currencyCode,
+	};
+
+	const showAddMarketButton = ! (
+		! glaData.isMultiLingualStore &&
+		settings?.shipping_rate === SHIPPING_RATE_METHOD.MANUAL
+	);
+
 	return (
-		<MarketForm
-			initialMarket={ {
-				countries: targetAudience.countries,
-				country: null,
-				shipping_country_rates: shippingRates,
-				flat_shipping_rate: null,
-				offer_free_shipping: false,
-				free_shipping_threshold: null,
-				flat_shipping_min_time: null,
-				flat_shipping_max_time: null,
-				shipping_country_times: shippingTimes,
-				language: targetAudience.language,
-				currency: currencyCode,
-				shipping_rate: settings?.shipping_rate,
-				shipping_time: settings?.shipping_time,
-			} }
-			onSubmit={ onRequestClose }
-		>
+		<MarketForm initialMarket={ initialMarket } onSubmit={ onRequestClose }>
 			{ ( formContext ) => {
 				const { adapter, isValidForm, handleSubmit } = formContext;
 				const { isSaving } = adapter;
@@ -91,7 +81,7 @@ const AddMarketModal = ( {
 				let buttons = [
 					<AppButton
 						key="close"
-						variant="tertiary"
+						variant={ showAddMarketButton ? 'tertiary' : 'primary' }
 						onClick={ onRequestClose }
 						disabled={ isSaving }
 						eventName="gla_cancel_button_clicked"
@@ -103,7 +93,7 @@ const AddMarketModal = ( {
 					</AppButton>,
 				];
 
-				if ( settings?.shipping_rate !== SHIPPING_RATE_METHOD.MANUAL ) {
+				if ( showAddMarketButton ) {
 					buttons = [
 						...buttons,
 						<AppButton
