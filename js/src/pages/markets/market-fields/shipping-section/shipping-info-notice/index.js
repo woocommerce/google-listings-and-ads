@@ -21,7 +21,13 @@ import './index.scss';
  * @param {Object} [props.eventProps] Additional tracking properties.
  * @param {string} [props.className] Additional CSS class name.
  */
-const ShippingInfoNotice = ( { message, href, eventName, eventProps, className } ) => {
+const ShippingInfoNotice = ( {
+	message,
+	href,
+	eventName,
+	eventProps,
+	className,
+} ) => {
 	return (
 		<Notice
 			className={ classnames( 'gla-shipping-info-notice', className ) }
