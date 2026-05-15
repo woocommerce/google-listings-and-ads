@@ -149,6 +149,7 @@ const MarketForm = ( {
 			invalidateResolution( 'getTargetAudience', [] );
 			onSubmit();
 		} catch ( error ) {
+			onSubmit();
 		} finally {
 			setIsSaving( false );
 		}

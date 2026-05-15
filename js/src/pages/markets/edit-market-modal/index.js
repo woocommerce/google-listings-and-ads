@@ -94,6 +94,7 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 								variant="primary"
 								onClick={ handleSubmitClick }
 								loading={ isSaving }
+								disabled={ isSaving }
 								eventName="gla_save_button_clicked"
 								eventProps={ {
 									context: CONTEXT,
