@@ -2,8 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Notice } from '@wordpress/components';
-import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -13,9 +11,8 @@ import {
 	GOOGLE_MERCHANT_CENTER_URL,
 	PRIMARY_MARKET_ID,
 } from '~/pages/markets/constants';
-import TrackableLink from '~/components/trackable-link';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
-import './index.scss';
+import ShippingInfoNotice from '../shipping-info-notice';
 
 /**
  * @event gla_shipping_notice_merchant_center_link_click
@@ -36,31 +33,16 @@ const ShippingNotice = () => {
 	}
 
 	return (
-		<Notice
+		<ShippingInfoNotice
 			className="gla-shipping-notice"
-			isDismissible={ false }
-			status="info"
-		>
-			{ createInterpolateElement(
-				__(
-					'Shipping is managed in Google Merchant Center. Configure shipping rates and times for each currency in your <link>Merchant Center account</link>.',
-					'google-listings-and-ads'
-				),
-				{
-					link: (
-						<TrackableLink
-							target="_blank"
-							type="external"
-							href={ GOOGLE_MERCHANT_CENTER_URL }
-							eventName="gla_shipping_notice_merchant_center_link_click"
-							eventProps={ {
-								url: GOOGLE_MERCHANT_CENTER_URL,
-							} }
-						/>
-					),
-				}
+			message={ __(
+				'Shipping is managed in Google Merchant Center. Configure shipping rates and times for each currency in your <link>Merchant Center account</link>.',
+				'google-listings-and-ads'
 			) }
-		</Notice>
+			href={ GOOGLE_MERCHANT_CENTER_URL }
+			eventName="gla_shipping_notice_merchant_center_link_click"
+			eventProps={ { url: GOOGLE_MERCHANT_CENTER_URL } }
+		/>
 	);
 };
 

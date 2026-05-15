@@ -2,14 +2,11 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Notice } from '@wordpress/components';
-import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import TrackableLink from '~/components/trackable-link';
-import './index.scss';
+import ShippingInfoNotice from '../../shipping-info-notice';
 
 /**
  * @event gla_shipping_rate_notice_shipping_settings_link_click
@@ -22,28 +19,15 @@ import './index.scss';
  */
 const ShippingRateNotice = () => {
 	return (
-		<Notice
+		<ShippingInfoNotice
 			className="gla-shipping-rate-notice"
-			isDismissible={ false }
-			status="info"
-		>
-			{ createInterpolateElement(
-				__(
-					'Shipping rates are synced automatically from your WooCommerce <link>shipping settings</link>.',
-					'google-listings-and-ads'
-				),
-				{
-					link: (
-						<TrackableLink
-							target="_blank"
-							type="external"
-							href="admin.php?page=wc-settings&tab=shipping"
-							eventName="gla_shipping_rate_notice_shipping_settings_link_click"
-						/>
-					),
-				}
+			message={ __(
+				'Shipping rates are synced automatically from your WooCommerce <link>shipping settings</link>.',
+				'google-listings-and-ads'
 			) }
-		</Notice>
+			href="admin.php?page=wc-settings&tab=shipping"
+			eventName="gla_shipping_rate_notice_shipping_settings_link_click"
+		/>
 	);
 };
 
