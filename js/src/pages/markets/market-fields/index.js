@@ -21,7 +21,9 @@ import './index.scss';
  */
 const MarketFields = () => {
 	const { settings } = useSettings();
-	const { adapter: { isEditing } } = useAdaptiveFormContext();
+	const {
+		adapter: { isEditing },
+	} = useAdaptiveFormContext();
 
 	if (
 		settings?.shipping_rate === SHIPPING_RATE_METHOD.MANUAL &&
