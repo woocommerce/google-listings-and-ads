@@ -26,8 +26,12 @@ const PRIMARY_MARKET = {
 
 const PRIMARY_MARKET_FLAT = {
 	...PRIMARY_MARKET,
+	currency: 'USD',
 	shipping_rate: 'flat',
 	shipping_time: 'flat',
+	shippingRate: 10,
+	shippingTime: '3-5 days',
+	free_shipping: null,
 };
 
 const SECONDARY_MARKET = {
@@ -35,6 +39,40 @@ const SECONDARY_MARKET = {
 	country: 'FR',
 	shipping_rate: 'flat',
 	shipping_time: 'flat',
+};
+
+const SECONDARY_MARKET_FLAT = {
+	id: 'fr',
+	country: 'FR',
+	currency: 'EUR',
+	shipping_rate: 'flat',
+	shipping_time: 'flat',
+	shippingRate: 8,
+	shippingTime: '5-7 days',
+	free_shipping: 50,
+};
+
+const PRIMARY_MARKET_AUTOMATIC = {
+	...PRIMARY_MARKET,
+	shipping_rate: 'automatic',
+	shippingTime: '3-5 days',
+};
+
+const PRIMARY_MARKET_MULTILINGUAL_AUTOMATIC = {
+	...PRIMARY_MARKET,
+	shipping_rate: 'automatic',
+	language: 'English',
+	currency: 'USD',
+	shippingTime: '3-5 days',
+};
+
+const SECONDARY_MARKET_MULTILINGUAL_AUTOMATIC = {
+	id: 'fr',
+	country: 'FR',
+	shipping_rate: 'automatic',
+	language: 'French',
+	currency: 'EUR',
+	shippingTime: '5-7 days',
 };
 
 const setMocks = ( {
@@ -60,7 +98,7 @@ const setMocks = ( {
 	// `glaData` is captured as a reference to `window.glaData` at module load
 	// (see `js/src/constants.js`), so mutate in place rather than replacing the
 	// object — replacing would leave the original reference stale.
-	window.glaData.multiLingualStore = multiLingualStore;
+	window.glaData.isMultiLingualStore = multiLingualStore;
 };
 
 describe( 'useMarketDataViewsConfig', () => {
@@ -68,7 +106,7 @@ describe( 'useMarketDataViewsConfig', () => {
 		useMarkets.mockReset();
 		usePrimaryMarketDetails.mockReset();
 		useCountryKeyNameMap.mockReset();
-		delete window.glaData.multiLingualStore;
+		delete window.glaData.isMultiLingualStore;
 	} );
 
 	describe( 'manual shipping, no multilingual store', () => {
@@ -133,10 +171,11 @@ describe( 'useMarketDataViewsConfig', () => {
 	} );
 
 	describe( 'fall-through (any other scenario)', () => {
-		test( 'returns the legacy two-column shape for flat shipping', () => {
+		test( 'returns the legacy two-column shape for multilingual + flat shipping', () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_FLAT,
 				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET ],
+				multiLingualStore: true,
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
@@ -151,6 +190,7 @@ describe( 'useMarketDataViewsConfig', () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_FLAT,
 				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET ],
+				multiLingualStore: true,
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
@@ -162,6 +202,7 @@ describe( 'useMarketDataViewsConfig', () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_FLAT,
 				markets: [ PRIMARY_MARKET_FLAT ],
+				multiLingualStore: true,
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
@@ -175,6 +216,7 @@ describe( 'useMarketDataViewsConfig', () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_FLAT,
 				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET ],
+				multiLingualStore: true,
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
@@ -193,6 +235,202 @@ describe( 'useMarketDataViewsConfig', () => {
 				'market',
 				'shippingTime',
 			] );
+		} );
+	} );
+
+	describe( 'flat shipping, no multilingual store', () => {
+		test( 'returns exactly four fields: Market, Shipping rate, Shipping time, Free shipping', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_FLAT,
+				markets: [ PRIMARY_MARKET_FLAT ],
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.fields.map( ( f ) => f.id ) ).toEqual( [
+				'market',
+				'shippingRate',
+				'shippingTime',
+				'freeShipping',
+			] );
+		} );
+
+		test( 'includes both primary and additional markets as rows', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_FLAT,
+				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.data ).toHaveLength( 2 );
+			expect( result.current.data[ 0 ].id ).toBe( 'primary' );
+			expect( result.current.data[ 1 ].id ).toBe( 'fr' );
+		} );
+
+		test( 'retains shippingRate and shippingTime from each market', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_FLAT,
+				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+			const [ primary, secondary ] = result.current.data;
+
+			expect( primary.shippingRate ).toBe( 10 );
+			expect( primary.shippingTime ).toBe( '3-5 days' );
+			expect( secondary.shippingRate ).toBe( 8 );
+			expect( secondary.shippingTime ).toBe( '5-7 days' );
+		} );
+
+		test( 'sets freeShipping to null when free_shipping is null', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_FLAT,
+				markets: [ PRIMARY_MARKET_FLAT ],
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.data[ 0 ].freeShipping ).toBeNull();
+		} );
+
+		test( 'formats freeShipping as "Free over <amount>" when free_shipping is set', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_FLAT,
+				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.data[ 1 ].freeShipping ).toMatch(
+				/Free over/
+			);
+			expect( result.current.data[ 1 ].freeShipping ).toMatch( /50/ );
+		} );
+	} );
+
+	describe( 'automatic shipping, no multilingual store', () => {
+		test( 'returns exactly two fields: Market, Shipping time', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_AUTOMATIC,
+				markets: [ PRIMARY_MARKET_AUTOMATIC ],
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.fields.map( ( f ) => f.id ) ).toEqual( [
+				'market',
+				'shippingTime',
+			] );
+		} );
+
+		test( 'returns only the primary market row', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_AUTOMATIC,
+				markets: [ PRIMARY_MARKET_AUTOMATIC, SECONDARY_MARKET ],
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.data ).toHaveLength( 1 );
+			expect( result.current.data[ 0 ].id ).toBe( 'primary' );
+		} );
+
+		test( 'formats the market label as "<label> (N countries)"', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_AUTOMATIC,
+				markets: [ PRIMARY_MARKET_AUTOMATIC ],
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.data[ 0 ].label ).toBe(
+				'Primary Market (3 countries)'
+			);
+		} );
+
+		test( 'pluralizes singular country count', () => {
+			setMocks( {
+				primary: {
+					...PRIMARY_MARKET_AUTOMATIC,
+					countries: [ 'US' ],
+				},
+				markets: [ PRIMARY_MARKET_AUTOMATIC ],
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.data[ 0 ].label ).toBe(
+				'Primary Market (1 country)'
+			);
+		} );
+
+		test( 'retains shippingTime from primary market data', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_AUTOMATIC,
+				markets: [ PRIMARY_MARKET_AUTOMATIC ],
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.data[ 0 ].shippingTime ).toBe( '3-5 days' );
+		} );
+	} );
+
+	describe( 'multilingual store, automatic shipping', () => {
+		test( 'returns exactly four fields: Market, Language, Currency, Shipping time', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_MULTILINGUAL_AUTOMATIC,
+				markets: [ PRIMARY_MARKET_MULTILINGUAL_AUTOMATIC ],
+				multiLingualStore: true,
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.fields.map( ( f ) => f.id ) ).toEqual( [
+				'market',
+				'language',
+				'currency',
+				'shippingTime',
+			] );
+		} );
+
+		test( 'includes both primary and additional markets as rows', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_MULTILINGUAL_AUTOMATIC,
+				markets: [
+					PRIMARY_MARKET_MULTILINGUAL_AUTOMATIC,
+					SECONDARY_MARKET_MULTILINGUAL_AUTOMATIC,
+				],
+				multiLingualStore: true,
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.data ).toHaveLength( 2 );
+			expect( result.current.data[ 0 ].id ).toBe( 'primary' );
+			expect( result.current.data[ 1 ].id ).toBe( 'fr' );
+		} );
+
+		test( 'each row retains market language, currency, and shippingTime', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_MULTILINGUAL_AUTOMATIC,
+				markets: [
+					PRIMARY_MARKET_MULTILINGUAL_AUTOMATIC,
+					SECONDARY_MARKET_MULTILINGUAL_AUTOMATIC,
+				],
+				multiLingualStore: true,
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+			const [ primary, secondary ] = result.current.data;
+
+			expect( primary.language ).toBe( 'English' );
+			expect( primary.currency ).toBe( 'USD' );
+			expect( primary.shippingTime ).toBe( '3-5 days' );
+			expect( secondary.language ).toBe( 'French' );
+			expect( secondary.currency ).toBe( 'EUR' );
+			expect( secondary.shippingTime ).toBe( '5-7 days' );
 		} );
 	} );
 
