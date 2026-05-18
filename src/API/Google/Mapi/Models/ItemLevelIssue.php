@@ -28,7 +28,7 @@ class ItemLevelIssue {
 	protected $resolution;
 
 	/** @var string|null */
-	protected $servability;
+	protected $severity;
 
 	/** @var string[] */
 	protected $applicable_countries = [];
@@ -47,7 +47,7 @@ class ItemLevelIssue {
 		$instance->detail               = $data['detail'] ?? null;
 		$instance->documentation        = $data['documentation'] ?? null;
 		$instance->resolution           = $data['resolution'] ?? null;
-		$instance->servability          = $data['servability'] ?? null;
+		$instance->severity             = $data['severity'] ?? null;
 		$instance->applicable_countries = $data['applicableCountries'] ?? [];
 
 		return $instance;
@@ -91,8 +91,8 @@ class ItemLevelIssue {
 	/**
 	 * @return string|null
 	 */
-	public function get_servability(): ?string {
-		return $this->servability;
+	public function get_severity(): ?string {
+		return $this->severity;
 	}
 
 	/**

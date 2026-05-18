@@ -23,7 +23,7 @@ class ItemLevelIssueTest extends UnitTest {
 				'detail'              => 'The image_link attribute is required',
 				'documentation'       => 'https://support.google.com/...',
 				'resolution'          => 'merchant_action',
-				'servability'         => 'disapproved',
+				'severity'            => 'DISAPPROVED',
 				'applicableCountries' => [ 'US', 'CA' ],
 			]
 		);
@@ -33,7 +33,7 @@ class ItemLevelIssueTest extends UnitTest {
 		$this->assertSame( 'The image_link attribute is required', $issue->get_detail() );
 		$this->assertSame( 'https://support.google.com/...', $issue->get_documentation() );
 		$this->assertSame( 'merchant_action', $issue->get_resolution() );
-		$this->assertSame( 'disapproved', $issue->get_servability() );
+		$this->assertSame( 'DISAPPROVED', $issue->get_severity() );
 		$this->assertSame( [ 'US', 'CA' ], $issue->get_applicable_countries() );
 	}
 
@@ -45,7 +45,7 @@ class ItemLevelIssueTest extends UnitTest {
 		$this->assertNull( $issue->get_detail() );
 		$this->assertNull( $issue->get_documentation() );
 		$this->assertNull( $issue->get_resolution() );
-		$this->assertNull( $issue->get_servability() );
+		$this->assertNull( $issue->get_severity() );
 		$this->assertSame( [], $issue->get_applicable_countries() );
 	}
 }

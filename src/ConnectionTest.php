@@ -1530,7 +1530,7 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 					'detail'               => $issue->get_detail(),
 					'documentation'        => $issue->get_documentation(),
 					'resolution'           => $issue->get_resolution(),
-					'servability'          => $issue->get_servability(),
+					'severity'             => $issue->get_severity(),
 					'applicable_countries' => $issue->get_applicable_countries(),
 				];
 			}
