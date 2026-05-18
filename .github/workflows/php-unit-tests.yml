@@ -57,7 +57,7 @@ jobs:
       - name: Filter WC versions below plugin minimum (10.6)
         id: wc-filter
         run: |
-          FILTERED=$(echo '${{ steps.wc.outputs.versions }}' | jq '[.[] | select(
+          FILTERED=$(echo '${{ steps.wc.outputs.versions }}' | jq -c '[.[] | select(
             (split(".")[0] | tonumber) * 1000 + (split(".")[1] | tonumber) >= 10006
           )]')
           echo "versions=$FILTERED" >> $GITHUB_OUTPUT
