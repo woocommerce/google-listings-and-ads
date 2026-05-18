@@ -10,10 +10,12 @@ import useMarketDataViewsConfig from './useMarketDataViewsConfig';
 import useMarkets from '~/hooks/useMarkets';
 import usePrimaryMarketDetails from '~/hooks/usePrimaryMarketDetails';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
+import useSettings from '~/hooks/useSettings';
 
 jest.mock( '~/hooks/useMarkets' );
 jest.mock( '~/hooks/usePrimaryMarketDetails' );
 jest.mock( '~/hooks/useCountryKeyNameMap' );
+jest.mock( '~/hooks/useSettings' );
 
 const PRIMARY_MARKET = {
 	id: 'primary',
@@ -85,6 +87,7 @@ const setMocks = ( {
 		FR: 'France',
 	},
 	multiLingualStore = false,
+	shippingRate = primary.shipping_rate,
 } = {} ) => {
 	useMarkets.mockReturnValue( {
 		data: markets,
@@ -95,6 +98,9 @@ const setMocks = ( {
 		hasFinishedResolution: true,
 	} );
 	useCountryKeyNameMap.mockReturnValue( countries );
+	useSettings.mockReturnValue( {
+		settings: { shipping_rate: shippingRate },
+	} );
 	// `glaData` is captured as a reference to `window.glaData` at module load
 	// (see `js/src/constants.js`), so mutate in place rather than replacing the
 	// object — replacing would leave the original reference stale.
@@ -106,6 +112,7 @@ describe( 'useMarketDataViewsConfig', () => {
 		useMarkets.mockReset();
 		usePrimaryMarketDetails.mockReset();
 		useCountryKeyNameMap.mockReset();
+		useSettings.mockReset();
 		delete window.glaData.isMultiLingualStore;
 	} );
 
@@ -171,11 +178,11 @@ describe( 'useMarketDataViewsConfig', () => {
 	} );
 
 	describe( 'fall-through (any other scenario)', () => {
-		test( 'returns the legacy two-column shape for multilingual + flat shipping', () => {
+		test( 'returns the legacy two-column shape for an unrecognised shipping rate', () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_FLAT,
 				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET ],
-				multiLingualStore: true,
+				shippingRate: null,
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
@@ -190,7 +197,7 @@ describe( 'useMarketDataViewsConfig', () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_FLAT,
 				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET ],
-				multiLingualStore: true,
+				shippingRate: null,
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
@@ -202,7 +209,7 @@ describe( 'useMarketDataViewsConfig', () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_FLAT,
 				markets: [ PRIMARY_MARKET_FLAT ],
-				multiLingualStore: true,
+				shippingRate: null,
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
@@ -216,25 +223,12 @@ describe( 'useMarketDataViewsConfig', () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_FLAT,
 				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET ],
-				multiLingualStore: true,
+				shippingRate: null,
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 
 			expect( result.current.data[ 1 ].label ).toBe( 'France' );
-		} );
-
-		test( 'falls through when multiLingualStore is true even with manual shipping', () => {
-			setMocks( {
-				multiLingualStore: true,
-			} );
-
-			const { result } = renderHook( () => useMarketDataViewsConfig() );
-
-			expect( result.current.fields.map( ( f ) => f.id ) ).toEqual( [
-				'market',
-				'shippingTime',
-			] );
 		} );
 	} );
 
@@ -283,7 +277,7 @@ describe( 'useMarketDataViewsConfig', () => {
 			expect( secondary.shippingTime ).toBe( '5-7 days' );
 		} );
 
-		test( 'sets freeShipping to null when free_shipping is null', () => {
+		test( 'sets freeShipping to a dash when free_shipping is null', () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_FLAT,
 				markets: [ PRIMARY_MARKET_FLAT ],
@@ -291,7 +285,7 @@ describe( 'useMarketDataViewsConfig', () => {
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 
-			expect( result.current.data[ 0 ].freeShipping ).toBeNull();
+			expect( result.current.data[ 0 ].freeShipping ).toBe( '-' );
 		} );
 
 		test( 'formats freeShipping as "Free over <amount>" when free_shipping is set', () => {
@@ -431,6 +425,27 @@ describe( 'useMarketDataViewsConfig', () => {
 			expect( secondary.language ).toBe( 'French' );
 			expect( secondary.currency ).toBe( 'EUR' );
 			expect( secondary.shippingTime ).toBe( '5-7 days' );
+		} );
+	} );
+
+	describe( 'loading state', () => {
+		test( 'returns empty fields and data while markets have not resolved', () => {
+			useMarkets.mockReturnValue( {
+				data: [],
+				hasFinishedResolution: false,
+			} );
+			usePrimaryMarketDetails.mockReturnValue( {
+				data: null,
+				hasFinishedResolution: false,
+			} );
+			useCountryKeyNameMap.mockReturnValue( {} );
+			useSettings.mockReturnValue( { settings: null } );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.fields ).toEqual( [] );
+			expect( result.current.data ).toEqual( [] );
+			expect( result.current.hasFinishedResolution ).toBe( false );
 		} );
 	} );
 
