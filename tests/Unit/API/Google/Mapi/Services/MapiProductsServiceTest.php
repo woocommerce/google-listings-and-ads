@@ -79,7 +79,12 @@ class MapiProductsServiceTest extends UnitTest {
 			->willReturnCallback(
 				function ( string $path ) {
 					$id = substr( $path, strrpos( $path, '/' ) + 1 );
-					return Create::promiseFor( [ 'name' => $path, 'offerId' => $id ] );
+					return Create::promiseFor(
+						[
+							'name'    => $path,
+							'offerId' => $id,
+						]
+					);
 				}
 			);
 
@@ -101,7 +106,12 @@ class MapiProductsServiceTest extends UnitTest {
 					}
 
 					$id = substr( $path, strrpos( $path, '/' ) + 1 );
-					return Create::promiseFor( [ 'name' => $path, 'offerId' => $id ] );
+					return Create::promiseFor(
+						[
+							'name'    => $path,
+							'offerId' => $id,
+						]
+					);
 				}
 			);
 

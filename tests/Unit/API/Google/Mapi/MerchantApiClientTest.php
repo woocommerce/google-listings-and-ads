@@ -79,7 +79,12 @@ class MerchantApiClientTest extends UnitTest {
 			'error' => [
 				'code'    => 400,
 				'message' => 'Invalid request',
-				'errors'  => [ [ 'reason' => 'invalidValue', 'message' => 'bad' ] ],
+				'errors'  => [
+					[
+						'reason'  => 'invalidValue',
+						'message' => 'bad',
+					],
+				],
 			],
 		];
 		$this->mock->append( new Response( 400, [], wp_json_encode( $body ) ) );

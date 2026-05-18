@@ -39,8 +39,8 @@ class MerchantApiExceptionTest extends UnitTest {
 	}
 
 	public function test_constructor_fires_logging_action_once() {
-		$called = 0;
-		$captured_method = null;
+		$called             = 0;
+		$captured_method    = null;
 		$captured_exception = null;
 
 		$callback = function ( $exception, $method ) use ( &$called, &$captured_method, &$captured_exception ) {
