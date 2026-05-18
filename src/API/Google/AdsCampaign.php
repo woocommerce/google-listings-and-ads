@@ -752,6 +752,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			'status'             => CampaignStatus::label( $campaign->getStatus() ),
 			'type'               => CampaignType::label( $campaign->getAdvertisingChannelType() ),
 			'targeted_locations' => [],
+			'start_date_time'    => $campaign->hasStartDateTime() ? $campaign->getStartDateTime() : null,
 		];
 
 		$eu_political_enum = $campaign->getContainsEuPoliticalAdvertising();

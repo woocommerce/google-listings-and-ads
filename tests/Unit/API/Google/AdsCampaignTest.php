@@ -131,6 +131,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [ 'TW' ],
 				'eu_political_advertising_confirmation' => false,
+				'start_date_time'                       => '2025-01-15 00:00:00',
 			],
 			[
 				'id'                                    => 5678901234,
@@ -141,6 +142,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [ 'HK', 'GB' ],
 				'eu_political_advertising_confirmation' => false,
+				'start_date_time'                       => '2025-01-20 00:00:00',
 			],
 		];
 
@@ -159,6 +161,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'start_date_time'                       => '2025-01-15 00:00:00',
 			],
 			[
 				'id'                                    => 5678901234,
@@ -169,6 +172,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'start_date_time'                       => '2025-01-20 00:00:00',
 			],
 		];
 
@@ -209,6 +213,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'start_date_time'                       => '2025-01-15 00:00:00',
 			],
 			[
 				'id'                                    => 5678901234,
@@ -219,6 +224,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'start_date_time'                       => '2025-01-20 00:00:00',
 			],
 		];
 
@@ -303,10 +309,35 @@ class AdsCampaignTest extends UnitTest {
 			'country'                               => 'US',
 			'targeted_locations'                    => [ 'TW' ],
 			'eu_political_advertising_confirmation' => false,
+			'start_date_time'                       => '2025-01-15 00:00:00',
 		];
 
 		$this->generate_ads_campaign_query_mock( [ $campaign_data ], [ $campaign_criterion_data ] );
 		$this->assertEquals( $campaign_data, $this->campaign->get_campaign( self::TEST_CAMPAIGN_ID ) );
+	}
+
+	public function test_get_campaign_returns_null_start_date_time_when_unavailable() {
+		$campaign_criterion_data = [
+			'campaign_id'         => self::TEST_CAMPAIGN_ID,
+			'geo_target_constant' => 'geoTargetConstants/2158',
+		];
+
+		$campaign_data_without_start_date_time = [
+			'id'                                    => self::TEST_CAMPAIGN_ID,
+			'name'                                  => 'Campaign Without Start Date',
+			'status'                                => 'enabled',
+			'type'                                  => 'performance_max',
+			'amount'                                => 10,
+			'country'                               => 'US',
+			'targeted_locations'                    => [ 'TW' ],
+			'eu_political_advertising_confirmation' => false,
+		];
+
+		$expected                    = $campaign_data_without_start_date_time;
+		$expected['start_date_time'] = null;
+
+		$this->generate_ads_campaign_query_mock( [ $campaign_data_without_start_date_time ], [ $campaign_criterion_data ] );
+		$this->assertEquals( $expected, $this->campaign->get_campaign( self::TEST_CAMPAIGN_ID ) );
 	}
 
 	public function test_get_highest_spend_campaign_returns_cached_value() {

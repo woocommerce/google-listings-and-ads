@@ -424,12 +424,15 @@ trait GoogleAdsClientTrait {
 		$setting = $this->createMock( ShoppingSetting::class );
 		$setting->method( 'getFeedLabel' )->willReturn( $data['country'] );
 
-		$campaign = $this->createMock( Campaign::class );
+		$start_date_time = $data['start_date_time'] ?? null;
+		$campaign        = $this->createMock( Campaign::class );
 		$campaign->method( 'getId' )->willReturn( $data['id'] );
 		$campaign->method( 'getName' )->willReturn( $data['name'] );
 		$campaign->method( 'getStatus' )->willReturn( CampaignStatus::number( $data['status'] ) );
 		$campaign->method( 'getAdvertisingChannelType' )->willReturn( CampaignType::number( $data['type'] ) );
 		$campaign->method( 'getShoppingSetting' )->willReturn( $setting );
+		$campaign->method( 'hasStartDateTime' )->willReturn( $start_date_time !== null && $start_date_time !== '' );
+		$campaign->method( 'getStartDateTime' )->willReturn( $start_date_time !== null && $start_date_time !== '' ? $start_date_time : '' );
 		$campaign->method( 'getBrandGuidelinesEnabled' )->willReturn( $data['brand_guidelines_enabled'] ?? false );
 
 		$budget = $this->createMock( CampaignBudget::class );
