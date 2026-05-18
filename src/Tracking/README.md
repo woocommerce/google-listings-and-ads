@@ -24,96 +24,125 @@ All event names are prefixed by `wcadmin_`.
 
 Most events have the following properties:
 
-- `gla_version`: Plugin version
-- `gla_mc_id`: Google Merchant Center account ID if connected
-- `gla_ads_id`: Google Ads account ID if connected
+-   `gla_version`: Plugin version
+-   `gla_mc_id`: Google Merchant Center account ID if connected
+-   `gla_ads_id`: Google Ads account ID if connected
 
 ### `gla_activated_from_source`
+
 Plugin is activated from the "Add Plugins" page in the admin, and has `utm` query parameters indicating deep linking. Parameters currently tracked (and sent as properties):
- - `utm_source`
- - `utm_medium`
- - `utm_campaign`
- - `utm_term`
- - `utm_content` 
+
+-   `utm_source`
+-   `utm_medium`
+-   `utm_campaign`
+-   `utm_term`
+-   `utm_content`
 
 ### `gla_mc_account_reclaim_url_agreement_check`
-Clicking on the checkbox to agree with the implications of reclaiming URL. 
+
+Clicking on the checkbox to agree with the implications of reclaiming URL.
+
 #### Properties
-|   |   |   |
-|---|---|---|
-`checked` |  | indicate whether the checkbox is checked or unchecked.
+
+|           |     |                                                        |
+| --------- | --- | ------------------------------------------------------ |
+| `checked` |     | indicate whether the checkbox is checked or unchecked. |
 
 ### `gla_mc_url_switch`
-Clicking on the checkbox to agree with the implications of reclaiming URL. 
+
+Clicking on the checkbox to agree with the implications of reclaiming URL.
+
 #### Properties
-|   |   |   |
-|---|---|---|
-`action` | `string` | <ul><li>`required`: the Merchant Center account has a different, claimed URL and needs to be changed. <li>`success`: the Merchant Center account has been changed from blank, updated from a different, unclaimed URL, or after user confirmation of a required change.</ul>
+
+|          |          |                                                                                                                                                                                                                                                                              |
+| -------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `action` | `string` | <ul><li>`required`: the Merchant Center account has a different, claimed URL and needs to be changed. <li>`success`: the Merchant Center account has been changed from blank, updated from a different, unclaimed URL, or after user confirmation of a required change.</ul> |
 
 ### `gla_site_claim`
+
 #### Properties
-|   |   |   |
-|---|---|---|
-`action` | `string` | <ul><li>`overwrite_required`: the site URL is claimed by another Merchant Center account and overwrite confirmation is required <li>`success`: URL has been successfully set or overwritten.<li>`failure`</ul>
-`details` | `string` | Used for `failure` action. <ul><li>`independent_account`: unable to execute site claim because the provided Merchant Center account is not a sub-account of our MCA <li>`google_proxy`: claim failed using the user creds (in the `Merchant` class) <li>`google_manager`: claimed failed using MCA creds (paradoxically in the `Middleware` class)</ul>
+
+|           |          |                                                                                                                                                                                                                                                                                                                                                         |
+| --------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `action`  | `string` | <ul><li>`overwrite_required`: the site URL is claimed by another Merchant Center account and overwrite confirmation is required <li>`success`: URL has been successfully set or overwritten.<li>`failure`</ul>                                                                                                                                          |
+| `details` | `string` | Used for `failure` action. <ul><li>`independent_account`: unable to execute site claim because the provided Merchant Center account is not a sub-account of our MCA <li>`google_proxy`: claim failed using the user creds (in the `Merchant` class) <li>`google_manager`: claimed failed using MCA creds (paradoxically in the `Middleware` class)</ul> |
 
 ### `gla_site_verify_failure`
+
 When a site verification with Google fails
+
 #### Properties
-|   |   |   |
-|---|---|---|
-`step` | `string` | the step of the process that failed (token, meta-tag, unknown)
+
+|        |          |                                                                |
+| ------ | -------- | -------------------------------------------------------------- |
+| `step` | `string` | the step of the process that failed (token, meta-tag, unknown) |
 
 ### `gla_site_verify_success`
+
 When a site is successfully verified with Google
 
 ### `gla_created_campaign`
+
 When a campaign has been successfully created.
+
 #### Properties
-| name | type | description |
-| ---- | ---- | ----------- |
-`id` | `int` | Campaign ID.
-`status` | `string` | Campaign status, `enabled` or `paused`.
-`name` | `string` | Campaign name, generated based on date.
-`amount` | `float` | Campaign budget.
-`country` | `string` | Base target country code.
-`targeted_locations` | `string` | Additional target country codes.
+
+| name                 | type     | description                             |
+| -------------------- | -------- | --------------------------------------- |
+| `id`                 | `int`    | Campaign ID.                            |
+| `status`             | `string` | Campaign status, `enabled` or `paused`. |
+| `name`               | `string` | Campaign name, generated based on date. |
+| `amount`             | `float`  | Campaign budget.                        |
+| `country`            | `string` | Base target country code.               |
+| `targeted_locations` | `string` | Additional target country codes.        |
 
 ### `gla_edited_campaign`
+
 When a campaign has been successfully edited.
+
 #### Properties
-| name | type | description |
-| ---- | ---- | ----------- |
-`id` | `int` | Campaign ID.
-`status` | `string` | Campaign status, `enabled` or `paused`.
-`name` | `string` | Campaign name.
-`amount` | `float` | Campaign budget.
+
+| name     | type     | description                             |
+| -------- | -------- | --------------------------------------- |
+| `id`     | `int`    | Campaign ID.                            |
+| `status` | `string` | Campaign status, `enabled` or `paused`. |
+| `name`   | `string` | Campaign name.                          |
+| `amount` | `float`  | Campaign budget.                        |
 
 ### `gla_deleted_campaign`
+
 When a campaign has been successfully deleted.
+
 #### Properties
-| name | type | description |
-| ---- | ---- | ----------- |
-`id` | `int` | Campaign ID.
+
+| name | type  | description  |
+| ---- | ----- | ------------ |
+| `id` | `int` | Campaign ID. |
 
 ### `gla_ads_setup_completed`
+
 Ads onboarding has been successfully completed.
+
 #### Properties
-| name | type | description |
-| ---- | ---- | ----------- |
-`campaign_count` | `int` | Number of campaigns for the connected Ads account.
+
+| name             | type  | description                                        |
+| ---------------- | ----- | -------------------------------------------------- |
+| `campaign_count` | `int` | Number of campaigns for the connected Ads account. |
 
 ### `gla_mc_setup_completed`
+
 Merchant Center onboarding has been successfully completed.
+
 #### Properties
-| name | type | description |
-| ---- | ---- | ----------- |
-`shipping_rate` | `string` | Shipping rate setup `automatic`, `manual`, `flat`.
-`offers_free_shipping` | `bool` | Free Shipping is available.
-`free_shipping_threshold` | `float` | Minimum amount to avail of free shipping.
-`shipping_time` | `string` | Shipping time setup `flat`, `manual`.
-`tax_rate` | `string` | Tax rate setup `destination`, `manual`.
-`target_countries` | `string` | List of target countries or `all`.
+
+| name                      | type     | description                                        |
+| ------------------------- | -------- | -------------------------------------------------- |
+| `shipping_rate`           | `string` | Shipping rate setup `automatic`, `manual`, `flat`. |
+| `offers_free_shipping`    | `bool`   | Free Shipping is available.                        |
+| `free_shipping_threshold` | `float`  | Minimum amount to avail of free shipping.          |
+| `shipping_time`           | `string` | Shipping time setup `flat`, `manual`.              |
+| `tax_rate`                | `string` | Tax rate setup `destination`, `manual`.            |
+| `target_countries`        | `string` | List of target countries or `all`.                 |
 
 <!-- -- >
 ## Developer Info
@@ -615,6 +644,67 @@ Clicking on the button to connect Google account.
 Clicking on the "connect to a different Google account" button.
 #### Emitters
 - [`SwitchAccountButton`](../../js/src/components/google-account-card/switch-account-button.js#L25)
+
+### [`gla_google_ads_promo_create_campaign_click`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L35)
+Google Ads Promo "Create campaign" button is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Context of the Google Ads Promo.
+`href` | `string` | URL of the "Create campaign" button.
+#### Emitters
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L52) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&subpath=%2Fcampaigns%2Fcreate&path=%2Fgoogle%2Fdashboard' }`.
+
+### [`gla_google_ads_promo_dismiss_click`](../../js/src/meta-boxes/channel-visibility/promo-cta.js#L14)
+Google Ads Promo "Dismiss" button is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Context of the Google Ads Promo.
+#### Emitters
+- [`PromoCTA`](../../js/src/meta-boxes/channel-visibility/promo-cta.js#L29) with `{ context: channel-visibility-meta-box }`.
+
+### [`gla_google_ads_promo_get_started_click`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L13)
+Google Ads Promo "Get started" button is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Context of the Google Ads Promo.
+`href` | `string` | URL of the "Get started" button.
+#### Emitters
+- [`GetStartedCTA`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L28) with `{ context: channel-visibility-meta-box, href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L52) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
+
+### [`gla_google_ads_promo_get_started_click`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L27)
+Google Ads Promo "Get started" button is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Context of the Google Ads Promo.
+`href` | `string` | URL of the "Get started" button.
+#### Emitters
+- [`GetStartedCTA`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L28) with `{ context: channel-visibility-meta-box, href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L52) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
+
+### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L27)
+Google Ads Promo banner is shown.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Context of the Google Ads Promo.
+#### Emitters
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L41) with `{ context: channel-visibility-meta-box }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L52) with `{ context: 'order-attribution-meta-box' }`.
+
+### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L20)
+Google Ads Promo component is shown.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Context of the Google Ads Promo.
+#### Emitters
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L41) with `{ context: channel-visibility-meta-box }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L52) with `{ context: 'order-attribution-meta-box' }`.
 
 ### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L195)
 Clicking on a Google Merchant Center link.
