@@ -21,6 +21,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\MerchantTrait;
@@ -88,6 +89,9 @@ class AccountServiceTest extends UnitTest {
 	/** @var MockObject|NotificationsService $transients */
 	protected $notifications_service;
 
+	/** @var MockObject|ServiceBasedMerchantState $service_based_merchant_state */
+	protected $service_based_merchant_state;
+
 	/** @var AccountService $account */
 	protected $account;
 
@@ -125,21 +129,22 @@ class AccountServiceTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->ads                   = $this->createMock( Ads::class );
-		$this->cleanup_synced        = $this->createMock( CleanupSyncedProducts::class );
-		$this->merchant              = $this->createMock( Merchant::class );
-		$this->mc_service            = $this->createMock( MerchantCenterService::class );
-		$this->issue_table           = $this->createMock( MerchantIssueTable::class );
-		$this->merchant_statuses     = $this->createMock( MerchantStatuses::class );
-		$this->middleware            = $this->createMock( Middleware::class );
-		$this->site_verification     = $this->createMock( SiteVerification::class );
-		$this->rate_table            = $this->createMock( ShippingRateTable::class );
-		$this->time_table            = $this->createMock( ShippingTimeTable::class );
-		$this->state                 = $this->createMock( MerchantAccountState::class );
-		$this->ads_state             = $this->createMock( AdsAccountState::class );
-		$this->options               = $this->createMock( OptionsInterface::class );
-		$this->transients            = $this->createMock( TransientsInterface::class );
-		$this->notifications_service = $this->createMock( NotificationsService::class );
+		$this->ads                          = $this->createMock( Ads::class );
+		$this->cleanup_synced               = $this->createMock( CleanupSyncedProducts::class );
+		$this->merchant                     = $this->createMock( Merchant::class );
+		$this->mc_service                   = $this->createMock( MerchantCenterService::class );
+		$this->issue_table                  = $this->createMock( MerchantIssueTable::class );
+		$this->merchant_statuses            = $this->createMock( MerchantStatuses::class );
+		$this->middleware                   = $this->createMock( Middleware::class );
+		$this->site_verification            = $this->createMock( SiteVerification::class );
+		$this->rate_table                   = $this->createMock( ShippingRateTable::class );
+		$this->time_table                   = $this->createMock( ShippingTimeTable::class );
+		$this->state                        = $this->createMock( MerchantAccountState::class );
+		$this->ads_state                    = $this->createMock( AdsAccountState::class );
+		$this->options                      = $this->createMock( OptionsInterface::class );
+		$this->transients                   = $this->createMock( TransientsInterface::class );
+		$this->notifications_service        = $this->createMock( NotificationsService::class );
+		$this->service_based_merchant_state = $this->createMock( ServiceBasedMerchantState::class );
 
 		$this->container = new Container();
 		$this->container->addShared( Ads::class, $this->ads );
@@ -155,7 +160,7 @@ class AccountServiceTest extends UnitTest {
 		$this->container->addShared( ShippingRateTable::class, $this->rate_table );
 		$this->container->addShared( ShippingTimeTable::class, $this->time_table );
 		$this->container->addShared( TransientsInterface::class, $this->transients );
-		$this->container->addShared( TransientsInterface::class, $this->transients );
+		$this->container->addShared( ServiceBasedMerchantState::class, $this->service_based_merchant_state );
 
 		$this->job_repository = new JobRepository();
 		$this->job_repository->set_container( $this->container );
@@ -969,6 +974,9 @@ class AccountServiceTest extends UnitTest {
 				[ TransientsInterface::URL_MATCHES ],
 				[ TransientsInterface::MC_IS_SUBACCOUNT ]
 			);
+
+		$this->service_based_merchant_state->expects( $this->once() )
+			->method( 'reset_service_based_merchant_status' );
 
 		$this->account->disconnect();
 	}
