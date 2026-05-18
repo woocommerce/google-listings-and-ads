@@ -126,6 +126,9 @@ const DataViewsStub = ( props ) => {
 beforeEach( () => {
 	dataViewsCalls.length = 0;
 	window.wp = { dataviews: { DataViews: DataViewsStub } };
+	// Use multilingual + flat so the fixture falls through to buildDefaultConfig
+	// (the two-column legacy shape this test suite was written against).
+	window.glaData.isMultiLingualStore = true;
 	useMarkets.mockReturnValue( {
 		data: SAMPLE_MARKETS,
 		hasFinishedResolution: true,
@@ -140,6 +143,7 @@ beforeEach( () => {
 afterEach( () => {
 	useMarkets.mockReset();
 	useCountryKeyNameMap.mockReset();
+	delete window.glaData.isMultiLingualStore;
 	delete window.wp;
 } );
 
