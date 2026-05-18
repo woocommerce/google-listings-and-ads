@@ -39,8 +39,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       wp-versions: ${{ steps.wp.outputs.versions }}
-      wc-versions: ${{ steps.wc.outputs.versions }}
-      latest-wc-version: ${{ fromJson(steps.wc.outputs.versions)[0] }}
+      wc-versions: ${{ steps.wc-filter.outputs.versions }}
+      latest-wc-version: ${{ fromJson(steps.wc-filter.outputs.versions)[0] }}
+      oldest-wc-version: ${{ steps.wc-filter.outputs.min-version }}
     steps:
       - name: Get Release versions from WordPress
         id: wp
@@ -53,6 +54,14 @@ jobs:
         with:
           source: github
           slug: woocommerce/woocommerce
+      - name: Filter WC versions below plugin minimum (10.6)
+        id: wc-filter
+        run: |
+          FILTERED=$(echo '${{ steps.wc.outputs.versions }}' | jq '[.[] | select(
+            (split(".")[0] | tonumber) * 1000 + (split(".")[1] | tonumber) >= 10006
+          )]')
+          echo "versions=$FILTERED" >> $GITHUB_OUTPUT
+          echo "min-version=$(echo $FILTERED | jq -r '.[-1]')" >> $GITHUB_OUTPUT
 
   UnitTests:
     if: github.event_name != 'workflow_dispatch'
@@ -77,7 +86,7 @@ jobs:
             wc-versions: latest
           - php: 7.4
             wp-version: ${{ fromJson(needs.GetMatrix.outputs.wp-versions)[2] }} # L-2 WP Version support
-            wc-versions: ${{ fromJson(needs.GetMatrix.outputs.wc-versions)[1] }} # L-1 WC Version support
+            wc-versions: ${{ needs.GetMatrix.outputs.oldest-wc-version }} # oldest supported WC version
 
     steps:
       - name: Checkout repository
