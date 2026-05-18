@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { useEffect, useRef } from '@wordpress/element';
+
+/**
  * Internal dependencies
  */
 import VerticalGapLayout from '~/components/vertical-gap-layout';
@@ -25,6 +30,7 @@ export default function ShippingCountriesForm( {
 	audienceCountries,
 	onChange,
 } ) {
+	const mountedRef = useRef( false );
 	const actualCountryCount = shippingTimes.length;
 	const actualCountries = new Map(
 		shippingTimes.map( ( time ) => [ time.countryCode, time ] )
@@ -37,14 +43,23 @@ export default function ShippingCountriesForm( {
 	// Group countries with the same time.
 	const countriesTimeArray = getShippingTimesGroups( shippingTimes );
 
-	// Prefill to-be-added time.
-	if ( countriesTimeArray.length === 0 ) {
-		countriesTimeArray.push( {
-			countries: audienceCountries,
-			time: 1,
-			maxTime: 5,
-		} );
-	}
+	useEffect( () => {
+		if ( mountedRef.current ) {
+			return;
+		}
+		mountedRef.current = true;
+
+		// Prefill to-be-added time if there are selected audience countries, but no times provided yet.
+		if ( actualCountryCount === 0 && audienceCountries.length > 0 ) {
+			onChange(
+				audienceCountries.map( ( countryCode ) => ( {
+					countryCode,
+					time: 1,
+					maxTime: 5,
+				} ) )
+			);
+		}
+	}, [ audienceCountries, actualCountryCount, onChange ] );
 
 	// Given the limitations of `<Form>` component we can communicate up only onChange.
 	// Therefore we loose the information whether it was add, change, delete.
