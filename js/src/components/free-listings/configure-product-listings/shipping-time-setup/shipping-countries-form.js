@@ -59,7 +59,7 @@ export default function ShippingCountriesForm( {
 				} ) )
 			);
 		}
-	}, [ audienceCountries, actualCountryCount, onChange ] );
+	} );
 
 	// Given the limitations of `<Form>` component we can communicate up only onChange.
 	// Therefore we loose the information whether it was add, change, delete.
