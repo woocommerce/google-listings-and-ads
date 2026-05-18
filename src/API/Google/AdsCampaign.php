@@ -752,7 +752,8 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			'status'             => CampaignStatus::label( $campaign->getStatus() ),
 			'type'               => CampaignType::label( $campaign->getAdvertisingChannelType() ),
 			'targeted_locations' => [],
-			'start_date_time'    => $campaign->hasStartDateTime() ? $campaign->getStartDateTime() : null,
+			// getStartDateTime() returns a full datetime string (e.g. 2025-01-15 00:00:00) from the Google Ads API v23 start_date_time field.
+			'start_date'         => $campaign->hasStartDateTime() ? substr( $campaign->getStartDateTime(), 0, 10 ) : null,
 		];
 
 		$eu_political_enum = $campaign->getContainsEuPoliticalAdvertising();

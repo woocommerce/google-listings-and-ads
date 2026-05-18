@@ -434,7 +434,7 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 			if ( is_wp_error( $object_ids ) ) {
 				continue;
 			}
-			$product_ids = array_merge( $product_ids, array_map( 'intval', $object_ids ) );
+			$product_ids = array_merge( $product_ids, $object_ids );
 		}
 
 		return $product_ids;

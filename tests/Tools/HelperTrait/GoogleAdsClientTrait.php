@@ -424,7 +424,7 @@ trait GoogleAdsClientTrait {
 		$setting = $this->createMock( ShoppingSetting::class );
 		$setting->method( 'getFeedLabel' )->willReturn( $data['country'] );
 
-		$start_date_time = $data['start_date_time'] ?? null;
+		$start_date_time = $data['start_date'] ?? null;
 		$campaign        = $this->createMock( Campaign::class );
 		$campaign->method( 'getId' )->willReturn( $data['id'] );
 		$campaign->method( 'getName' )->willReturn( $data['name'] );
