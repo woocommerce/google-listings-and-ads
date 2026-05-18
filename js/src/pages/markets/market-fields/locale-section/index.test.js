@@ -12,11 +12,9 @@ import useSettings from '~/hooks/useSettings';
 import LocaleSection from './';
 
 jest.mock( '~/components/adaptive-form', () => ( {
-	useAdaptiveFormContext: jest
-		.fn()
-		.mockImplementation( () => ( {
-			adapter: { isPrimaryMarket: false },
-		} ) ),
+	useAdaptiveFormContext: jest.fn().mockImplementation( () => ( {
+		adapter: { isPrimaryMarket: false },
+	} ) ),
 } ) );
 
 jest.mock( '~/hooks/useSettings' );
@@ -97,7 +95,9 @@ describe( 'LocaleSection', () => {
 
 		const notice = container.querySelector( '.components-notice' );
 		expect( notice ).toBeInTheDocument();
-		expect( notice ).toHaveTextContent( 'Want to sell in multiple languages?' );
+		expect( notice ).toHaveTextContent(
+			'Want to sell in multiple languages?'
+		);
 	} );
 
 	test( 'does not show the multilingual plugin notice on a multilingual store', () => {
