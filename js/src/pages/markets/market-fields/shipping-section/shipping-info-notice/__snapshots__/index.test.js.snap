@@ -1,0 +1,34 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ShippingInfoNotice matches snapshot 1`] = `
+<DocumentFragment>
+  <div
+    class="gla-shipping-info-notice test-class components-notice is-info"
+  >
+    <div
+      class="components-visually-hidden css-6272zb-View e19lxcc00"
+      data-wp-c16t="true"
+      data-wp-component="VisuallyHidden"
+      style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+    >
+      Information notice
+    </div>
+    <div
+      class="components-notice__content"
+    >
+      See the 
+      <a
+        data-link-type="external"
+        href="https://example.com"
+        target="_blank"
+      >
+        details here
+      </a>
+      .
+      <div
+        class="components-notice__actions"
+      />
+    </div>
+  </div>
+</DocumentFragment>
+`;
