@@ -12,7 +12,7 @@ import './index.scss';
  * Shared notice wrapper for shipping section notices.
  *
  * @param {Object} props
- * @param {React.ReactNode} props.children Notice content.
+ * @param {JSX.Element} props.children Notice content.
  */
 const ShippingInfoNotice = ( { children } ) => {
 	return (
