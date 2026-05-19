@@ -1,13 +1,16 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\SubmittableMetaBox;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WC_Product;
 use WP_Post;
@@ -17,9 +20,19 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class ChannelVisibilityMetaBox
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox
  */
 class ChannelVisibilityMetaBox extends SubmittableMetaBox {
+
+	/**
+	 * Meta box ID.
+	 */
+	public const ID = 'channel_visibility';
+
+	/**
+	 * Field name for channel visibility.
+	 */
+	public const FIELD_VISIBILITY = 'visibility';
 
 	use PluginHelper;
 
@@ -39,18 +52,32 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	protected $merchant_center;
 
 	/**
+	 * @var ServiceBasedMerchantState
+	 */
+	protected $service_based_merchant_state;
+
+	/**
 	 * ChannelVisibilityMetaBox constructor.
 	 *
-	 * @param Admin                 $admin
-	 * @param ProductMetaHandler    $meta_handler
-	 * @param ProductHelper         $product_helper
-	 * @param MerchantCenterService $merchant_center
+	 * @param Admin                     $admin
+	 * @param ProductMetaHandler        $meta_handler
+	 * @param ProductHelper             $product_helper
+	 * @param MerchantCenterService     $merchant_center
+	 * @param ServiceBasedMerchantState $service_based_merchant_state
 	 */
-	public function __construct( Admin $admin, ProductMetaHandler $meta_handler, ProductHelper $product_helper, MerchantCenterService $merchant_center ) {
-		$this->meta_handler    = $meta_handler;
-		$this->product_helper  = $product_helper;
-		$this->merchant_center = $merchant_center;
+	public function __construct( Admin $admin, ProductMetaHandler $meta_handler, ProductHelper $product_helper, MerchantCenterService $merchant_center, ServiceBasedMerchantState $service_based_merchant_state ) {
+		$this->meta_handler                 = $meta_handler;
+		$this->product_helper               = $product_helper;
+		$this->merchant_center              = $merchant_center;
+		$this->service_based_merchant_state = $service_based_merchant_state;
 		parent::__construct( $admin );
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function can_register(): bool {
+		return ! $this->service_based_merchant_state->is_service_based_merchant();
 	}
 
 	/**
@@ -59,7 +86,7 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	 * @return string
 	 */
 	public function get_id(): string {
-		return 'channel_visibility';
+		return self::ID;
 	}
 
 	/**
@@ -105,15 +132,6 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	}
 
 	/**
-	 * Check whether this meta box can be registered.
-	 *
-	 * @return bool Whether the meta box can be registered.
-	 */
-	public function can_register(): bool {
-		return $this->merchant_center->is_connected();
-	}
-
-	/**
 	 * Returns an array of variables to be used in the view.
 	 *
 	 * @param WP_Post $post The WordPress post object the box is loaded for.
@@ -132,7 +150,7 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 			'channel_visibility' => $this->product_helper->get_channel_visibility( $product ),
 			'sync_status'        => $this->meta_handler->get_sync_status( $product ),
 			'issues'             => $this->product_helper->get_validation_errors( $product ),
-			'is_connected'       => $this->merchant_center->is_connected(),
+			'is_setup_complete'  => $this->merchant_center->is_setup_complete(),
 			'get_started_url'    => $this->get_start_url(),
 		];
 	}
@@ -190,6 +208,6 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	 * @since 1.1.0
 	 */
 	protected function get_visibility_field_id(): string {
-		return $this->prefix_field_id( 'visibility' );
+		return $this->prefix_field_id( self::FIELD_VISIBILITY );
 	}
 }

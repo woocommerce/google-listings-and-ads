@@ -168,4 +168,17 @@ export default class SettingsPage extends MockRequests {
 				request.method() === 'POST'
 		);
 	}
+
+	/**
+	 * Register requests sent when saving target audience settings.
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerTargetAudienceSaveRequests() {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/mc/target_audience' ) &&
+				request.method() === 'POST'
+		);
+	}
 }

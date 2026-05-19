@@ -25,6 +25,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
@@ -290,6 +291,8 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_ACCOUNT_REVIEW );
 		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::URL_MATCHES );
 		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_IS_SUBACCOUNT );
+
+		$this->container->get( ServiceBasedMerchantState::class )->reset_service_based_merchant_status();
 	}
 
 	/**
@@ -465,7 +468,6 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		/** @var Merchant $merchant */
 		$merchant = $this->container->get( Merchant::class );
 
-		/** @var Account $account */
 		$account     = $merchant->get_account( $merchant_id );
 		$account_url = $account->getWebsiteUrl() ?: '';
 

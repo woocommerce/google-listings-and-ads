@@ -312,7 +312,7 @@ describe( 'AllProgramsTableCard', () => {
 			);
 		} );
 
-		it( 'should sort campaigns by title descending', () => {
+		it( 'should sort campaigns by id descending', () => {
 			render( <AllProgramsTableCard /> );
 
 			clickHeader( 'Program' );
@@ -326,12 +326,12 @@ describe( 'AllProgramsTableCard', () => {
 			);
 			expect( titles ).toEqual( [
 				'Shopping Campaign',
-				'PMax Campaign Budget recommendation',
 				'Disabled PMax Campaign Budget recommendation',
+				'PMax Campaign Budget recommendation',
 			] );
 		} );
 
-		it( 'should sort campaigns by title ascending', () => {
+		it( 'should sort campaigns by id ascending', () => {
 			render( <AllProgramsTableCard /> );
 
 			clickHeader( 'Program', 2 );
@@ -344,8 +344,8 @@ describe( 'AllProgramsTableCard', () => {
 					} ).textContent
 			);
 			expect( titles ).toEqual( [
-				'Disabled PMax Campaign Budget recommendation',
 				'PMax Campaign Budget recommendation',
+				'Disabled PMax Campaign Budget recommendation',
 				'Shopping Campaign',
 			] );
 		} );
