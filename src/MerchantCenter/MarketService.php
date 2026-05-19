@@ -361,10 +361,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @throws InvalidValue When a required key is missing or not a non-empty string.
 	 */
 	private function validate_secondary_market_config( array $config ): void {
-		$required = [ 'country', 'language', 'currency', 'feed_label' ];
-
-		foreach ( $required as $key ) {
+		foreach ( [ 'country', 'feed_label' ] as $key ) {
 			if ( empty( $config[ $key ] ) || ! is_string( $config[ $key ] ) ) {
+				throw InvalidValue::is_empty( $key );
+			}
+		}
+
+		foreach ( [ 'language', 'currency' ] as $key ) {
+			if ( empty( $config[ $key ] ) || ! is_array( $config[ $key ] ) ) {
 				throw InvalidValue::is_empty( $key );
 			}
 		}
