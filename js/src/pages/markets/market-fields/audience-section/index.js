@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
@@ -18,7 +23,12 @@ const AudienceSection = () => {
 		return <AudienceSelectControl />;
 	}
 
-	return <MarketSelectControl />;
+	return (
+		<MarketSelectControl
+			autoSelectFirstOption={ false }
+			placeholderOption={ __( 'Select…', 'google-listings-and-ads' ) }
+		/>
+	);
 };
 
 export default AudienceSection;
