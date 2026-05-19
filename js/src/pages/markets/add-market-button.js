@@ -7,9 +7,8 @@ import { useState, useCallback } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import useShippingRates from '~/hooks/useShippingRates';
-import useShippingTimes from '~/hooks/useShippingTimes';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
+import useSettings from '~/hooks/useSettings';
 import AppButton from '~/components/app-button';
 import AddMarketModal from './add-market-modal';
 
@@ -25,16 +24,9 @@ import AddMarketModal from './add-market-modal';
  */
 const AddMarketButton = () => {
 	const [ isOpen, setIsOpen ] = useState( false );
-	const {
-		data: shippingRates,
-		hasFinishedResolution: hasResolvedShippingRates,
-	} = useShippingRates();
-	const {
-		hasFinishedResolution: hasResolvedShippingTimes,
-		data: shippingTimes,
-	} = useShippingTimes();
 	const { targetAudience, loaded: hasResolvedTargetAudience } =
 		useTargetAudienceFinalCountryCodes();
+	const { settings } = useSettings();
 
 	const handleOpen = useCallback( () => setIsOpen( true ), [] );
 	const handleClose = useCallback( () => setIsOpen( false ), [] );
@@ -46,26 +38,18 @@ const AddMarketButton = () => {
 				onClick={ handleOpen }
 				eventName="gla_add_market_button_clicked"
 				loading={
-					isOpen &&
-					( ! hasResolvedShippingRates ||
-						! hasResolvedShippingTimes ||
-						! hasResolvedTargetAudience )
+					isOpen && ( ! hasResolvedTargetAudience || ! settings )
 				}
 			>
 				{ __( 'Add market', 'google-listings-and-ads' ) }
 			</AppButton>
 
-			{ isOpen &&
-				hasResolvedShippingRates &&
-				hasResolvedShippingTimes &&
-				hasResolvedTargetAudience && (
-					<AddMarketModal
-						shippingRates={ shippingRates }
-						shippingTimes={ shippingTimes }
-						targetAudience={ targetAudience }
-						onRequestClose={ handleClose }
-					/>
-				) }
+			{ isOpen && hasResolvedTargetAudience && (
+				<AddMarketModal
+					targetAudience={ targetAudience }
+					onRequestClose={ handleClose }
+				/>
+			) }
 		</>
 	);
 };

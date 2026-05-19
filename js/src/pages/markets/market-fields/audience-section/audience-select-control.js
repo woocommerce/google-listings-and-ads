@@ -8,19 +8,19 @@ import { __ } from '@wordpress/i18n';
  */
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import SupportedCountrySelect from '~/components/supported-country-select';
-import './edit-primary-audience.scss';
+import './audience-select-control.scss';
 
 /**
  * Component for editing the primary market's audience (countries) in the Edit Market modal.
  */
-const EditPrimaryAudience = () => {
+const AudienceSelectControl = () => {
 	const {
 		getInputProps,
 		adapter: { renderRequestedValidation },
 	} = useAdaptiveFormContext();
 
 	return (
-		<div className="gla-edit-primary-audience">
+		<div className="gla-audience-select-control">
 			<SupportedCountrySelect
 				{ ...getInputProps( 'countries' ) }
 				help={ __(
@@ -36,4 +36,4 @@ const EditPrimaryAudience = () => {
 	);
 };
 
-export default EditPrimaryAudience;
+export default AudienceSelectControl;

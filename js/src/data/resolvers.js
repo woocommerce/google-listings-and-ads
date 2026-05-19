@@ -62,6 +62,7 @@ import {
 	receiveGtinMigrationStatus,
 	receiveAdsRecommendations,
 	receiveEnhancedConversionsStatus,
+	receiveMcLanguagesCurrencies,
 } from './actions';
 
 /**
@@ -810,4 +811,21 @@ getYouTubeAccount.shouldInvalidate = ( action ) => {
 
 export function* getMarkets() {
 	yield fetchMarkets();
+}
+
+export function* getMCLanguagesCurrencies() {
+	try {
+		const data = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/markets/languages-currencies`,
+		} );
+		return receiveMcLanguagesCurrencies( data );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading supported languages and currencies.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }

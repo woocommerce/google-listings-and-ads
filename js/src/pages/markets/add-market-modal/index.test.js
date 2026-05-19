@@ -15,6 +15,22 @@ import { SHIPPING_RATE_METHOD } from '~/constants';
 
 jest.mock( '~/hooks/useSettings' );
 jest.mock( '~/hooks/useStoreCurrency' );
+jest.mock( '~/hooks/useMCSupportedLanguages', () =>
+	jest.fn( () => ( { languages: [], hasFinishedResolution: true } ) )
+);
+
+// Prevent useAdaptiveFormContext from throwing when rendered outside its real provider.
+jest.mock( '~/components/adaptive-form', () => ( {
+	useAdaptiveFormContext: jest.fn( () => ( {
+		adapter: { isEditing: false, isPrimaryMarket: false },
+		getInputProps: jest.fn( () => ( {
+			value: '',
+			onChange: jest.fn(),
+			onBlur: jest.fn(),
+		} ) ),
+	} ) ),
+	useAdaptiveFormInputProps: jest.fn(),
+} ) );
 
 // MarketForm pulls in useAppDispatch, useSaveShippingRates, useSaveShippingTimes.
 // Mock it to a thin wrapper that calls its render-prop child with a minimal form context.
@@ -28,23 +44,12 @@ jest.mock( '../market-form', () =>
 	)
 );
 
-// MarketFields requires AdaptiveForm context (provided by MarketForm). Mock it
-// so it renders without that context since MarketForm itself is mocked above.
-jest.mock( '../market-fields', () => jest.fn( () => null ) );
-
-// These components are rendered directly in the automatic non-multilingual branch
-// and also require AdaptiveForm context, so mock them for the same reason.
-jest.mock( '../market-fields/market-select-control', () =>
-	jest.fn( () => null )
-);
-jest.mock(
-	'~/components/free-listings/configure-product-listings/shipping-time-setup',
-	() => jest.fn( () => null )
-);
+// AudienceSection and ShippingSection have complex form dependencies; mock them
+// so tests focus on the modal's own behaviour.
+jest.mock( '../market-fields/audience-section', () => jest.fn( () => null ) );
+jest.mock( '../market-fields/shipping-section', () => jest.fn( () => null ) );
 
 const defaultProps = {
-	shippingRates: [],
-	shippingTimes: [],
 	targetAudience: { countries: [], language: 'en' },
 	onRequestClose: jest.fn(),
 };
@@ -52,11 +57,10 @@ const defaultProps = {
 describe( 'AddMarketModal', () => {
 	beforeEach( () => {
 		global.glaData.isMultiLingualStore = false;
-
+		// MultiLingualPluginPrompt and LocaleSection read useSettings() directly.
 		useSettings.mockReturnValue( {
 			settings: { shipping_rate: SHIPPING_RATE_METHOD.MANUAL },
 		} );
-
 		useStoreCurrency.mockReturnValue( { code: 'USD' } );
 	} );
 
@@ -100,7 +104,6 @@ describe( 'AddMarketModal', () => {
 		useSettings.mockReturnValue( {
 			settings: { shipping_rate: SHIPPING_RATE_METHOD.FLAT },
 		} );
-
 		render( <AddMarketModal { ...defaultProps } /> );
 
 		expect(
@@ -139,7 +142,6 @@ describe( 'AddMarketModal', () => {
 		useSettings.mockReturnValue( {
 			settings: { shipping_rate: SHIPPING_RATE_METHOD.FLAT },
 		} );
-
 		render( <AddMarketModal { ...defaultProps } /> );
 
 		expect(
@@ -164,7 +166,6 @@ describe( 'AddMarketModal', () => {
 		useSettings.mockReturnValue( {
 			settings: { shipping_rate: SHIPPING_RATE_METHOD.FLAT },
 		} );
-
 		render( <AddMarketModal { ...defaultProps } /> );
 
 		await user.click(

@@ -2,22 +2,17 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Flex } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
+import useSettings from '~/hooks/useSettings';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
 import MultiLingualPluginPrompt from './multilingual-plugin-prompt';
-import useSettings from '~/hooks/useSettings';
 import MarketFields from '../market-fields';
-import MarketSelectControl from '../market-fields/market-select-control';
-import ShippingTimeSetup from '~/components/free-listings/configure-product-listings/shipping-time-setup';
-import LanguageSelectControl from '../market-fields/language-select-control';
-import CurrencySelectControl from '../market-fields/currency-select-control';
 import MarketForm from '../market-form';
 
 const CONTEXT = 'add_market_modal';
@@ -49,49 +44,33 @@ const CONTEXT = 'add_market_modal';
  * @fires gla_add_new_market_button_clicked when the add market button is clicked with context of "add_market_modal"
  *
  * @param {Object} props
- * @param {Array<ShippingRate>} props.shippingRates Shipping rates to pre-populate the form with.
- * @param {Array<ShippingTime>} props.shippingTimes Shipping times data, if not given AppSpinner will be rendered.
  * @param {TargetAudienceData} props.targetAudience Target audience value data to be initialed the form, if not given AppSpinner will be rendered.
  * @param {() => void} props.onRequestClose Called when the user closes the modal.
  */
 const AddMarketModal = ( {
-	shippingRates,
-	shippingTimes,
 	targetAudience = { countries: [] },
 	onRequestClose,
 } ) => {
-	const { settings } = useSettings();
 	const { code: currencyCode } = useStoreCurrency();
+	const { settings } = useSettings();
 
+	const initialMarket = {
+		countries: targetAudience.countries,
+		language: targetAudience.language,
+		currency: currencyCode,
+	};
+
+	// Non-multilingual store with manual shipping has no form fields to fill in —
+	// it only shows the multilingual plugin prompt.
+	const isManualNonMultilingual =
+		! glaData.isMultiLingualStore &&
+		settings?.shipping_rate === SHIPPING_RATE_METHOD.MANUAL;
+
+	// Non-multilingual store with automatic shipping uses a simpler form where
+	// the "Add market" button is disabled until the form is valid.
 	const isAutomaticNonMultilingual =
 		! glaData.isMultiLingualStore &&
 		settings?.shipping_rate === SHIPPING_RATE_METHOD.AUTOMATIC;
-
-	const baseMarket = {
-		country: null,
-		shipping_rate: settings?.shipping_rate,
-		shipping_time: settings?.shipping_time,
-	};
-
-	const initialMarket = isAutomaticNonMultilingual
-		? {
-				...baseMarket,
-				shipping_country_rates: [],
-				shipping_country_times: [],
-		  }
-		: {
-				...baseMarket,
-				flat_shipping_min_time: null,
-				flat_shipping_max_time: null,
-				countries: targetAudience.countries,
-				shipping_country_rates: shippingRates,
-				flat_shipping_rate: null,
-				offer_free_shipping: false,
-				free_shipping_threshold: null,
-				shipping_country_times: shippingTimes,
-				language: targetAudience.language,
-				currency: currencyCode,
-		  };
 
 	return (
 		<MarketForm initialMarket={ initialMarket } onSubmit={ onRequestClose }>
@@ -109,7 +88,9 @@ const AddMarketModal = ( {
 				let buttons = [
 					<AppButton
 						key="close"
-						variant="tertiary"
+						variant={
+							! isManualNonMultilingual ? 'tertiary' : 'primary'
+						}
 						onClick={ onRequestClose }
 						disabled={ isSaving }
 						eventName="gla_cancel_button_clicked"
@@ -121,10 +102,7 @@ const AddMarketModal = ( {
 					</AppButton>,
 				];
 
-				if (
-					isAutomaticNonMultilingual ||
-					settings?.shipping_rate !== SHIPPING_RATE_METHOD.MANUAL
-				) {
+				if ( ! isManualNonMultilingual ) {
 					buttons = [
 						...buttons,
 						<AppButton
@@ -155,25 +133,8 @@ const AddMarketModal = ( {
 						onRequestClose={ onRequestClose }
 						buttons={ buttons }
 					>
-						{ isAutomaticNonMultilingual ? (
-							<Flex direction="column" gap={ 6 }>
-								<MarketSelectControl
-									autoSelectFirstOption={ false }
-									placeholderOption={ __(
-										'Select…',
-										'google-listings-and-ads'
-									) }
-								/>
-								<ShippingTimeSetup />
-								<LanguageSelectControl />
-								<CurrencySelectControl />
-							</Flex>
-						) : (
-							<>
-								<MarketFields />
-								<MultiLingualPluginPrompt />
-							</>
-						) }
+						<MarketFields />
+						<MultiLingualPluginPrompt />
 					</AppModal>
 				);
 			} }

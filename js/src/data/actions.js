@@ -1552,3 +1552,15 @@ export function* deleteMarket( id ) {
 		throw error;
 	}
 }
+
+/**
+ * Returns an action object to receive supported languages and currencies data.
+ *
+ * @param {Object}        data           Response from the languages-currencies endpoint.
+ * @param {Array<Object>} data.languages Available languages.
+ * @param {Array<Object>} data.currencies Available currencies.
+ * @return {Object} Action object.
+ */
+export function receiveMcLanguagesCurrencies( data ) {
+	return { type: TYPES.RECEIVE_MC_LANGUAGES_CURRENCIES, data };
+}
