@@ -1,6 +1,6 @@
 *** Google for WooCommerce Changelog ***
 
-= 3.6.3 - 2026-05-19 =
+= 3.7.0 - 2026-05-19 =
 * Add - Create Your Own Incentive (CYOI) feature.
 * Add - In-Product Placements feature.
 * Add - Restrict accepted image formats when creating campaign assets.
