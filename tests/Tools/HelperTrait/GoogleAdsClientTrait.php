@@ -431,8 +431,8 @@ trait GoogleAdsClientTrait {
 		$campaign->method( 'getStatus' )->willReturn( CampaignStatus::number( $data['status'] ) );
 		$campaign->method( 'getAdvertisingChannelType' )->willReturn( CampaignType::number( $data['type'] ) );
 		$campaign->method( 'getShoppingSetting' )->willReturn( $setting );
-		$campaign->method( 'hasStartDate' )->willReturn( $start_date !== null && $start_date !== '' );
-		$campaign->method( 'getStartDate' )->willReturn( $start_date !== null && $start_date !== '' ? $start_date : '' );
+		$campaign->method( 'hasStartDateTime' )->willReturn( $start_date !== null && $start_date !== '' );
+		$campaign->method( 'getStartDateTime' )->willReturn( $start_date !== null && $start_date !== '' ? $start_date : '' );
 		$campaign->method( 'getBrandGuidelinesEnabled' )->willReturn( $data['brand_guidelines_enabled'] ?? false );
 
 		$budget = $this->createMock( CampaignBudget::class );
