@@ -72,11 +72,13 @@ function updateTimes( times, isTarget, patch ) {
  * @param {Object} props
  * @param {Object} props.initialMarket Initial values to populate the form with. Can be empty when creating a new market.
  * @param {Function} props.onSubmit Callback function to handle form submission.
+ * @param {Function} [props.onError] Optional callback invoked when the submission API call fails.
  * @return {JSX.Element} The rendered form.
  */
 const MarketForm = ( {
 	initialMarket = {},
 	onSubmit,
+	onError,
 	...adaptiveFormProps
 } ) => {
 	const formRef = useRef();
@@ -154,6 +156,7 @@ const MarketForm = ( {
 			invalidateResolution( 'getTargetAudience', [] );
 			onSubmit();
 		} catch ( error ) {
+			onError?.();
 		} finally {
 			setIsSaving( false );
 		}

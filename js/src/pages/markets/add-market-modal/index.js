@@ -73,7 +73,11 @@ const AddMarketModal = ( {
 		settings?.shipping_rate === SHIPPING_RATE_METHOD.AUTOMATIC;
 
 	return (
-		<MarketForm initialMarket={ initialMarket } onSubmit={ onRequestClose }>
+		<MarketForm
+			initialMarket={ initialMarket }
+			onSubmit={ onRequestClose }
+			onError={ onRequestClose }
+		>
 			{ ( formContext ) => {
 				const { adapter, isValidForm, handleSubmit } = formContext;
 				const { isSaving } = adapter;
