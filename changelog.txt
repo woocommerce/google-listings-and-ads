@@ -1,5 +1,53 @@
 *** Google for WooCommerce Changelog ***
 
+= 3.6.3 - 2026-05-19 =
+* Add - [GOOWOO-496] CYOI E2E Tests.
+* Add - Add CYOI picker component.
+* Add - Add tracking for CYOI picker.
+* Add - Add: CYO Incentive picker to onboarding flow.
+* Add - Add: Show a coupon notice on the benefits card.
+* Add - Fix CYOI bugs: wrong API path, wrong settings key, test data.
+* Add - GOOWOO-611: Silence error when incentive cannot be applied.
+* Add - GOOWOO-617: Improve UX loading state for in product placements.
+* Add - GOOWOO-619: Update copy for SBMs.
+* Add - GOOWOO-621: Add `UnclaimedIncentiveNotice` component.
+* Add - Restrict image formats in campaign asset creating.
+* Fix - .
+* Fix - [GOOWOO-453] Fix meta-boxes JS only on WC Edit Order screen.
+* Fix - [GOOWOO-453] Load meta-boxes JS only on WC Edit Order screen.
+* Fix - [GOOWOO-454] Add new property within glaData to indicate whether source is Google.
+* Fix - [GOOWOO-492] Implement endpoint to get incentives.
+* Fix - [GOOWOO-493] Implement endpoint to apply incentive.
+* Fix - [GOOWOO-522] Update Google Ads PHP Library to v23.
+* Fix - [GOOWOO-536] FE - Update Paid Ads section copy and styles.
+* Fix - [GOOWOO-684] Fix broken ads campaigns endpoint caused by campaign.start_date removal in Google Ads API v23.
+* Fix - Add end-to-end testing for channel visibility metabox.
+* Fix - Add tracking to.
+* Fix - Adds GoogleAdsPromo block to orders.
+* Fix - Adds tracking events to GoogleAdsPromo component.
+* Fix - Audience section to Settings page when Merchant Center is not connected.
+* Fix - Cache AdsReport queries to reduce API requests.
+* Fix - Cache miss for empty recommendations causing live Ads API calls on every admin page load.
+* Fix - Create Your Own Incentive Feature.
+* Fix - Feature/GOOWOO-457 Attribution order meta box mount-point.
+* Fix - Fix issue rendering Shipping tab when shipping options were not set.
+* Fix - Fix: Change display logic for Ads Promo component.
+* Fix - Fix: update hook to render component when users have not created a campaign yet.
+* Fix - Fix/GOOWOO-526: Channel visibility event name change.
+* Fix - GOOWOO-455 | Update ads/campaigns endpoint to return campaign start_date.
+* Fix - GOOWOO-618: Conditionally register channel visibility metabox.
+* Fix - GOOWOO-620: Track failed incentive applications and recover unclaimed incentives via background job.
+* Fix - GOOWOO-620: Track failed incentive applications and recover unclaimed incentives via background job.
+* Fix - Onboarding "Continue" button incorrectly disabled when shipping time fields are pre-populated with default values.
+* Fix - Revert "[GOOWOO-453] Fix meta-boxes JS only on WC Edit Order screen".
+* Fix - Sorting order of the programs column.
+* Update - Add default values for shipping time inputs during the onboarding process.
+* Update - Add success notice after saving a campaign.
+* Update - Campaign creation and recent paid campaign state to Channel visibility metabox.
+* Update - Implement endpoint to apply incentive.
+* Update - Update Channel Visibility meta box UI to match the latest designs.
+* Update - Update data store to include new  property.
+
 = 3.6.2 - 2026-04-27 =
 * Dev - Bump WooCommerce "tested up to" version 10.7.
 * Dev - Remove API Pull sync status rows from the Connection Test page.
