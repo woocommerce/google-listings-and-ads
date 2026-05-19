@@ -62,7 +62,7 @@ const ALL_FIELDS = {
 	},
 	shippingTime: {
 		id: 'shippingTime',
-		label: __( 'Shipping time', 'google-listings-and-ads' ),
+		label: __( 'Shipping times', 'google-listings-and-ads' ),
 		enableHiding: false,
 		enableSorting: false,
 	},

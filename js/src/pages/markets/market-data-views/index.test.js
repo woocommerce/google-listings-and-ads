@@ -11,9 +11,11 @@ import userEvent from '@testing-library/user-event';
 import MarketDataViews from './';
 import useMarkets from '~/hooks/useMarkets';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
+import useSettings from '~/hooks/useSettings';
 
 jest.mock( '~/hooks/useMarkets' );
 jest.mock( '~/hooks/useCountryKeyNameMap' );
+jest.mock( '~/hooks/useSettings' );
 
 jest.mock( '../edit-market-modal', () =>
 	jest.fn( ( { market, onRequestClose } ) => (
@@ -126,9 +128,9 @@ const DataViewsStub = ( props ) => {
 beforeEach( () => {
 	dataViewsCalls.length = 0;
 	window.wp = { dataviews: { DataViews: DataViewsStub } };
-	// Use multilingual + flat so the fixture falls through to buildDefaultConfig
-	// (the two-column legacy shape this test suite was written against).
-	window.glaData.isMultiLingualStore = true;
+	// shipping_rate: null triggers buildDefaultConfig (the two-column legacy
+	// shape this test suite was written against).
+	useSettings.mockReturnValue( { settings: { shipping_rate: null } } );
 	useMarkets.mockReturnValue( {
 		data: SAMPLE_MARKETS,
 		hasFinishedResolution: true,
@@ -141,6 +143,7 @@ beforeEach( () => {
 } );
 
 afterEach( () => {
+	useSettings.mockReset();
 	useMarkets.mockReset();
 	useCountryKeyNameMap.mockReset();
 	delete window.glaData.isMultiLingualStore;
