@@ -108,11 +108,7 @@ const AddMarketModal = ( {
 						<AppButton
 							key="add-market"
 							variant="primary"
-							onClick={
-								isAutomaticNonMultilingual
-									? handleSubmit
-									: handleSubmitClick
-							}
+							onClick={ handleSubmitClick }
 							disabled={
 								isAutomaticNonMultilingual && ! isValidForm
 							}
