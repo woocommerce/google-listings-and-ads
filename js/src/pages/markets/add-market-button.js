@@ -48,6 +48,7 @@ const AddMarketButton = () => {
 				<AddMarketModal
 					targetAudience={ targetAudience }
 					onRequestClose={ handleClose }
+					settings={ settings }
 				/>
 			) }
 		</>

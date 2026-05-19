@@ -51,6 +51,7 @@ jest.mock( '../market-fields/shipping-section', () => jest.fn( () => null ) );
 
 const defaultProps = {
 	targetAudience: { countries: [], language: 'en' },
+	settings: { shipping_rate: SHIPPING_RATE_METHOD.MANUAL },
 	onRequestClose: jest.fn(),
 };
 
@@ -104,7 +105,12 @@ describe( 'AddMarketModal', () => {
 		useSettings.mockReturnValue( {
 			settings: { shipping_rate: SHIPPING_RATE_METHOD.FLAT },
 		} );
-		render( <AddMarketModal { ...defaultProps } /> );
+		render(
+			<AddMarketModal
+				{ ...defaultProps }
+				settings={ { shipping_rate: SHIPPING_RATE_METHOD.FLAT } }
+			/>
+		);
 
 		expect(
 			screen.getByRole( 'button', { name: 'Add market' } )
@@ -142,7 +148,12 @@ describe( 'AddMarketModal', () => {
 		useSettings.mockReturnValue( {
 			settings: { shipping_rate: SHIPPING_RATE_METHOD.FLAT },
 		} );
-		render( <AddMarketModal { ...defaultProps } /> );
+		render(
+			<AddMarketModal
+				{ ...defaultProps }
+				settings={ { shipping_rate: SHIPPING_RATE_METHOD.FLAT } }
+			/>
+		);
 
 		expect(
 			screen.queryByText( 'Install a multilingual plugin to add markets' )
@@ -166,7 +177,12 @@ describe( 'AddMarketModal', () => {
 		useSettings.mockReturnValue( {
 			settings: { shipping_rate: SHIPPING_RATE_METHOD.FLAT },
 		} );
-		render( <AddMarketModal { ...defaultProps } /> );
+		render(
+			<AddMarketModal
+				{ ...defaultProps }
+				settings={ { shipping_rate: SHIPPING_RATE_METHOD.FLAT } }
+			/>
+		);
 
 		await user.click(
 			screen.getByRole( 'button', { name: 'Add market' } )
@@ -177,15 +193,20 @@ describe( 'AddMarketModal', () => {
 	} );
 
 	describe( 'automatic non-multilingual scenario', () => {
+		const automaticSettings = { shipping_rate: SHIPPING_RATE_METHOD.AUTOMATIC };
+
 		beforeEach( () => {
 			global.glaData.isMultiLingualStore = false;
-			useSettings.mockReturnValue( {
-				settings: { shipping_rate: SHIPPING_RATE_METHOD.AUTOMATIC },
-			} );
+			useSettings.mockReturnValue( { settings: automaticSettings } );
 		} );
 
 		test( 'shows the "Add market" button', () => {
-			render( <AddMarketModal { ...defaultProps } /> );
+			render(
+				<AddMarketModal
+					{ ...defaultProps }
+					settings={ automaticSettings }
+				/>
+			);
 
 			expect(
 				screen.getByRole( 'button', { name: 'Add market' } )
@@ -193,7 +214,12 @@ describe( 'AddMarketModal', () => {
 		} );
 
 		test( 'does not render the multilingual plugin prompt', () => {
-			render( <AddMarketModal { ...defaultProps } /> );
+			render(
+				<AddMarketModal
+					{ ...defaultProps }
+					settings={ automaticSettings }
+				/>
+			);
 
 			expect(
 				screen.queryByText(
@@ -203,7 +229,12 @@ describe( 'AddMarketModal', () => {
 		} );
 
 		test( 'renders a disabled Language field with "Requires multilingual plugin" placeholder', () => {
-			render( <AddMarketModal { ...defaultProps } /> );
+			render(
+				<AddMarketModal
+					{ ...defaultProps }
+					settings={ automaticSettings }
+				/>
+			);
 
 			const input = screen.getByRole( 'textbox', { name: 'Language' } );
 			expect( input ).toBeDisabled();
@@ -214,7 +245,12 @@ describe( 'AddMarketModal', () => {
 		} );
 
 		test( 'renders a disabled Currency field with "Requires multilingual plugin" placeholder', () => {
-			render( <AddMarketModal { ...defaultProps } /> );
+			render(
+				<AddMarketModal
+					{ ...defaultProps }
+					settings={ automaticSettings }
+				/>
+			);
 
 			const input = screen.getByRole( 'textbox', { name: 'Currency' } );
 			expect( input ).toBeDisabled();
@@ -234,7 +270,12 @@ describe( 'AddMarketModal', () => {
 				} )
 			);
 
-			render( <AddMarketModal { ...defaultProps } /> );
+			render(
+				<AddMarketModal
+					{ ...defaultProps }
+					settings={ automaticSettings }
+				/>
+			);
 
 			expect(
 				screen.getByRole( 'button', { name: 'Add market' } )

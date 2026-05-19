@@ -8,7 +8,6 @@ import { __ } from '@wordpress/i18n';
  */
 import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
-import useSettings from '~/hooks/useSettings';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
 import MultiLingualPluginPrompt from './multilingual-plugin-prompt';
@@ -44,15 +43,16 @@ const CONTEXT = 'add_market_modal';
  * @fires gla_add_new_market_button_clicked when the add market button is clicked with context of "add_market_modal"
  *
  * @param {Object} props
+ * @param {Object} props.settings The settings object containing shipping_rate and other configurations.
  * @param {TargetAudienceData} props.targetAudience Target audience value data to be initialed the form, if not given AppSpinner will be rendered.
  * @param {() => void} props.onRequestClose Called when the user closes the modal.
  */
 const AddMarketModal = ( {
+	settings,
 	targetAudience = { countries: [] },
 	onRequestClose,
 } ) => {
 	const { code: currencyCode } = useStoreCurrency();
-	const { settings } = useSettings();
 
 	const initialMarket = {
 		countries: targetAudience.countries,
