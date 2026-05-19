@@ -145,6 +145,7 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Add - In-Product Placements feature.
 * Add - Restrict accepted image formats when creating campaign assets.
 * Dev - Upgrade Google Ads PHP Library to v23.
+* Dev - Added tracking for YouTube connected stores.
 * Fix - Cache miss on empty recommendations triggering live Ads API calls on every admin page load.
 * Fix - Shipping tab failing to render when no shipping options were set.
 * Fix - Sorting order of the programs column.
