@@ -33,7 +33,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Shipping;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\ChannelVisibilityMetaBox;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\ChannelVisibilityMetaBox;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
@@ -102,7 +102,7 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		$this->share_with_tags( BulkEditInitializer::class );
 
 		// Share admin meta boxes
-		$this->share_with_tags( ChannelVisibilityMetaBox::class, Admin::class, ProductMetaHandler::class, ProductHelper::class, MerchantCenterService::class );
+		$this->share_with_tags( ChannelVisibilityMetaBox::class, Admin::class, ProductMetaHandler::class, ProductHelper::class, MerchantCenterService::class, ServiceBasedMerchantState::class );
 		$this->share_with_tags( CouponChannelVisibilityMetaBox::class, Admin::class, CouponMetaHandler::class, CouponHelper::class, MerchantCenterService::class, TargetAudience::class );
 		$this->share_with_tags( MetaBoxInitializer::class, Admin::class, MetaBoxInterface::class, MerchantCenterService::class );
 

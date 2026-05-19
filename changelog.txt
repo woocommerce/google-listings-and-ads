@@ -1,5 +1,17 @@
 *** Google for WooCommerce Changelog ***
 
+= 3.7.0 - 2026-05-19 =
+* Add - Create Your Own Incentive (CYOI) feature.
+* Add - In-Product Placements feature.
+* Add - Restrict accepted image formats when creating campaign assets.
+* Dev - Upgrade Google Ads PHP Library to v23.
+* Dev - Added tracking for YouTube connected stores.
+* Fix - Cache miss on empty recommendations triggering live Ads API calls on every admin page load.
+* Fix - Shipping tab failing to render when no shipping options were set.
+* Fix - Sorting order of the programs column.
+* Update - Default values for shipping time inputs during onboarding.
+* Update - Success notice displayed after saving a campaign.
+
 = 3.6.2 - 2026-04-27 =
 * Dev - Bump WooCommerce "tested up to" version 10.7.
 * Dev - Remove API Pull sync status rows from the Connection Test page.
