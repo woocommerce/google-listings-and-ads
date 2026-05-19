@@ -13,6 +13,7 @@ import {
 	clearCompletedAdsSetup,
 	createSimpleProduct,
 	setCompletedAdsSetup,
+	clearServiceBasedMerchant,
 } from '../../utils/api';
 import MockRequests from '../../utils/mock-requests';
 import { getClassicProductEditorUtils } from '../../utils/product-editor';
@@ -85,6 +86,7 @@ test.describe( 'Channel Visibility Meta Box', () => {
 		await requestUtils.resetPreferences();
 		await clearOnboardedMerchant();
 		await clearCompletedAdsSetup();
+		await clearServiceBasedMerchant();
 		await page.close();
 	} );
 
@@ -93,8 +95,6 @@ test.describe( 'Channel Visibility Meta Box', () => {
 			await clearCompletedAdsSetup();
 			await mockRequests.mockJetpackConnected();
 			await mockRequests.mockGoogleConnected();
-			await mockRequests.mockMCConnected();
-			await mockRequests.mockAdsAccountDisconnected();
 		} );
 
 		test( 'Shows full promo banner when not dismissed', async () => {
