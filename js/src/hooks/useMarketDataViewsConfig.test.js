@@ -447,6 +447,25 @@ describe( 'useMarketDataViewsConfig', () => {
 			expect( result.current.data ).toEqual( [] );
 			expect( result.current.hasFinishedResolution ).toBe( false );
 		} );
+
+		test( 'returns empty fields and data when markets are resolved but settings are not yet available', () => {
+			useMarkets.mockReturnValue( {
+				data: [ PRIMARY_MARKET ],
+				hasFinishedResolution: true,
+			} );
+			usePrimaryMarketDetails.mockReturnValue( {
+				data: PRIMARY_MARKET,
+				hasFinishedResolution: true,
+			} );
+			useCountryKeyNameMap.mockReturnValue( {} );
+			useSettings.mockReturnValue( { settings: undefined } );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.fields ).toEqual( [] );
+			expect( result.current.data ).toEqual( [] );
+			expect( result.current.hasFinishedResolution ).toBe( true );
+		} );
 	} );
 
 	describe( 'reactivity', () => {

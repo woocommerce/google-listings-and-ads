@@ -66,12 +66,6 @@ const ALL_FIELDS = {
 		enableHiding: false,
 		enableSorting: false,
 	},
-	shippingTimes: {
-		id: 'shippingTime',
-		label: __( 'Shipping times', 'google-listings-and-ads' ),
-		enableHiding: false,
-		enableSorting: false,
-	},
 	freeShipping: {
 		id: 'freeShipping',
 		label: __( 'Free shipping', 'google-listings-and-ads' ),
@@ -124,7 +118,6 @@ const buildManualConfig = ( { primaryMarket } ) => {
 		? [
 				{
 					...primaryMarket,
-					label: primaryMarket.label,
 					country: sprintf(
 						// translators: %d: number of countries.
 						_n(
@@ -199,9 +192,7 @@ const buildAutomaticConfig = ( {
 			ALL_FIELDS.shippingTime,
 		];
 
-		const data = markets.map( ( market ) => ( { ...market } ) );
-
-		return { fields, data };
+		return { fields, data: markets };
 	}
 
 	const countryCount = primaryMarket?.countries?.length ?? 0;
@@ -242,7 +233,7 @@ const buildAutomaticConfig = ( {
  * @return {{ fields: Array, data: Array }} DataViews fields and pre-formatted rows.
  */
 const buildDefaultConfig = ( markets, countryNames ) => {
-	const fields = [ ALL_FIELDS.market, ALL_FIELDS.shippingTimes ];
+	const fields = [ ALL_FIELDS.market, ALL_FIELDS.shippingTime ];
 
 	const data = markets.map( ( market ) => {
 		const marketCell = isPrimaryMarket( market )
@@ -286,7 +277,7 @@ const useMarketDataViewsConfig = () => {
 
 	const isMultiLingualStore = glaData.isMultiLingualStore ?? false;
 
-	if ( ! hasFinishedResolution ) {
+	if ( ! hasFinishedResolution || ! settings ) {
 		return { fields: [], data: [], hasFinishedResolution };
 	}
 
