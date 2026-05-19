@@ -202,7 +202,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$this->ads_campaign->expects( $this->once() )
 			->method( 'create_campaign' )
 			->with( $campaign_data )
-			->willReturn( array_diff_key( $expected, [ 'start_date' => null ] ) );
+			->willReturn( $expected );
 
 		$this->expect_track_event(
 			'created_campaign',
