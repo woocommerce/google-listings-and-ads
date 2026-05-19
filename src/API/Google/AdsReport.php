@@ -14,11 +14,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Google\ApiCore\ApiException;
+use Google\Ads\GoogleAds\V23\Common\Segments;
+use Google\Ads\GoogleAds\V23\Services\GoogleAdsRow;
 use DateTime;
 use DateTimeInterface;
-use Google\Ads\GoogleAds\V22\Common\Segments;
-use Google\Ads\GoogleAds\V22\Services\GoogleAdsRow;
-use Google\ApiCore\ApiException;
 
 /**
  * Class AdsReport

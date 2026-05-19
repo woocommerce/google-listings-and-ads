@@ -72,10 +72,12 @@ const DEFAULT_STATE = {
 			inviteLink: null,
 			step: null,
 		},
+		cyo_incentives: {},
 		budgetRecommendations: {},
 		recommendations: {},
 		enable_enhanced_conversions: false,
 		budgetMetrics: {},
+		settings: null,
 	},
 	gtinMigrationStatus: null,
 	price_benchmark: {
@@ -558,6 +560,10 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, 'ads.enable_enhanced_conversions', status );
 		}
 
+		case TYPES.RECEIVE_ADS_SETTINGS: {
+			return setIn( state, 'ads.settings', action.settings );
+		}
+
 		case TYPES.RECEIVE_PRICE_BENCHMARK_SUMMARY: {
 			const { data } = action;
 			return setIn( state, 'price_benchmark.summary', data );
@@ -640,6 +646,11 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				[ 'ads', 'recommendations', recommendationTypes ],
 				recommendations
 			);
+		}
+
+		case TYPES.RECEIVE_CYO_INCENTIVES: {
+			const { cyoIncentives } = action;
+			return setIn( state, [ 'ads', 'cyo_incentives' ], cyoIncentives );
 		}
 
 		case TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS: {

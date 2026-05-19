@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAssetGenerationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsRecommendationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsIncentives;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
@@ -40,6 +41,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
@@ -48,10 +50,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client as Guzz
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\ClientInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Utils;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\RequestInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\ResponseInterface;
-use Google\Ads\GoogleAds\Util\V22\GoogleAdsFailures;
+use Google\Ads\GoogleAds\Util\V23\GoogleAdsFailures;
 use Jetpack_Options;
 
 defined( 'ABSPATH' ) || exit;
@@ -82,6 +85,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		Merchant::class                  => true,
 		MerchantMetrics::class           => true,
 		Ads::class                       => true,
+		AdsIncentives::class             => true,
 		AdsAssetGroup::class             => true,
 		AdsCampaign::class               => true,
 		AdsCampaignAsset::class          => true,
@@ -119,6 +123,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->add( Settings::class );
 
 		$this->share( Ads::class, GoogleAdsClient::class );
+		$this->share( AdsIncentives::class, GoogleAdsClient::class, WC::class );
 		$this->share( AdsAssetGroup::class, GoogleAdsClient::class, AdsAssetGroupAsset::class, AdsCampaign::class );
 		$this->share( AdsCampaign::class, GoogleAdsClient::class, AdsCampaignBudget::class, AdsCampaignCriterion::class, GoogleHelper::class, AdsCampaignLabel::class, AdsCampaignAsset::class );
 		$this->share( AdsCampaignAsset::class, GoogleAdsClient::class );
@@ -155,6 +160,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			$handler_stack->push( $this->error_handler(), 'http_errors' );
 			$handler_stack->push( $this->add_auth_header(), 'auth_header' );
 			$handler_stack->push( $this->add_plugin_version_header(), 'plugin_version_header' );
+			$handler_stack->push( $this->strip_apply_incentive_duplicates(), 'strip_incentive_duplicates' );
 
 			// Override endpoint URL if we are using http locally.
 			if ( 0 === strpos( $this->get_connect_server_url_root(), 'http://' ) ) {
@@ -302,6 +308,39 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			return function ( RequestInterface $request, array $options ) use ( $handler ) {
 				$request = $request->withHeader( 'x-client-name', $this->get_client_name() )
 					->withHeader( 'x-client-version', $this->get_version() );
+				return $handler( $request, $options );
+			};
+		};
+	}
+
+	/**
+	 * Strip path-bound fields from the ApplyIncentive request body.
+	 *
+	 * The ApplyIncentive REST config places customer_id and selected_incentive_id
+	 * in both the URL path and the JSON body (body: *). WCS cannot handle proto3
+	 * optional fields that appear in both locations, so we remove them from the
+	 * body before the request is sent.
+	 *
+	 * @since 3.3.0
+	 *
+	 * @return callable
+	 */
+	protected function strip_apply_incentive_duplicates(): callable {
+		return function ( callable $handler ) {
+			return function ( RequestInterface $request, array $options ) use ( $handler ) {
+				$path = $request->getUri()->getPath();
+
+				if ( false !== strpos( $path, ':applyIncentive' ) ) {
+					$body = json_decode( (string) $request->getBody(), true );
+
+					if ( is_array( $body ) ) {
+						unset( $body['selectedIncentiveId'], $body['customerId'] );
+						$request = $request->withBody(
+							Utils::streamFor( wp_json_encode( $body ) )
+						);
+					}
+				}
+
 				return $handler( $request, $options );
 			};
 		};
