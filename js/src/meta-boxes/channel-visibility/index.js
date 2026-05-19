@@ -16,7 +16,10 @@ const GoogleAdsPromo = lazy( () =>
 
 document.addEventListener( 'DOMContentLoaded', () => {
 	// Only render the component if the channel visibility is set
-	if ( glaData?.channelVisibility === 0 ) {
+	if (
+		! glaData?.channelVisibility ||
+		Object.keys( glaData.channelVisibility ).length === 0
+	) {
 		return;
 	}
 
