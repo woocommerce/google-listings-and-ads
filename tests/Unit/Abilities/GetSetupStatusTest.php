@@ -38,61 +38,61 @@ class GetSetupStatusTest extends UnitTest {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$_GET['customer_id'] = '888888';
 
+		$values = [
+			OptionsInterface::GOOGLE_CONNECTED            => true,
+			OptionsInterface::JETPACK_CONNECTED           => true,
+			OptionsInterface::WP_TOS_ACCEPTED             => true,
+			OptionsInterface::MERCHANT_ID                 => 12345,
+			OptionsInterface::MC_SETUP_COMPLETED_AT       => 1700000000,
+			OptionsInterface::MERCHANT_ACCOUNT_STATE      => [
+				'verify' => [
+					'status'  => 1,
+					'message' => 'hidden',
+					'data'    => [ 'token' => 'hidden' ],
+				],
+			],
+			OptionsInterface::TARGET_AUDIENCE             => [
+				'location'  => 'selected',
+				'countries' => [ 'us', 'CA' ],
+			],
+			OptionsInterface::CONTACT_INFO_SETUP          => true,
+			OptionsInterface::SITE_VERIFICATION           => [
+				'verified' => 'verified',
+				'meta_tag' => 'must not be exposed',
+			],
+			OptionsInterface::SHIPPING_RATES              => [ 'rate' => true ],
+			OptionsInterface::SHIPPING_TIMES              => [ 'time' => true ],
+			OptionsInterface::ADS_ID                      => 54321,
+			OptionsInterface::ADS_SETUP_COMPLETED_AT      => 1700000100,
+			OptionsInterface::ADS_ACCOUNT_STATE           => [
+				'billing' => [
+					'status'  => 0,
+					'message' => 'hidden',
+				],
+			],
+			OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED => true,
+			OptionsInterface::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE => true,
+			OptionsInterface::ADS_HAS_UNCLAIMED_INCENTIVE => true,
+			OptionsInterface::CAMPAIGN_CONVERT_STATUS     => [
+				'status'  => 'converted',
+				'updated' => 1700000200,
+			],
+			OptionsInterface::ONBOARDING_COMPLETED_AT     => 1700000300,
+			OptionsInterface::SYNCABLE_PRODUCTS_COUNT     => 12,
+			OptionsInterface::UPDATE_ALL_PRODUCTS_LAST_SYNC => 1700000400,
+			OptionsInterface::API_PULL_SYNC_MODE          => [
+				'products' => [
+					'push' => true,
+					'pull' => false,
+				],
+			],
+		];
+
 		$options = $this->createMock( OptionsInterface::class );
 		$options->method( 'get' )
 			->willReturnCallback(
-				static function ( string $name, $default = null ) {
-					$values = [
-						OptionsInterface::GOOGLE_CONNECTED                       => true,
-						OptionsInterface::JETPACK_CONNECTED                      => true,
-						OptionsInterface::WP_TOS_ACCEPTED                        => true,
-						OptionsInterface::MERCHANT_ID                            => 12345,
-						OptionsInterface::MC_SETUP_COMPLETED_AT                  => 1700000000,
-						OptionsInterface::MERCHANT_ACCOUNT_STATE                 => [
-							'verify' => [
-								'status'  => 1,
-								'message' => 'hidden',
-								'data'    => [ 'token' => 'hidden' ],
-							],
-						],
-						OptionsInterface::TARGET_AUDIENCE                        => [
-							'location'  => 'selected',
-							'countries' => [ 'us', 'CA' ],
-						],
-						OptionsInterface::CONTACT_INFO_SETUP                     => true,
-						OptionsInterface::SITE_VERIFICATION                      => [
-							'verified' => 'verified',
-							'meta_tag' => 'must not be exposed',
-						],
-						OptionsInterface::SHIPPING_RATES                         => [ 'rate' => true ],
-						OptionsInterface::SHIPPING_TIMES                         => [ 'time' => true ],
-						OptionsInterface::ADS_ID                                 => 54321,
-						OptionsInterface::ADS_SETUP_COMPLETED_AT                 => 1700000100,
-						OptionsInterface::ADS_ACCOUNT_STATE                      => [
-							'billing' => [
-								'status'  => 0,
-								'message' => 'hidden',
-							],
-						],
-						OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED       => true,
-						OptionsInterface::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE => true,
-						OptionsInterface::ADS_HAS_UNCLAIMED_INCENTIVE            => true,
-						OptionsInterface::CAMPAIGN_CONVERT_STATUS                => [
-							'status'  => 'converted',
-							'updated' => 1700000200,
-						],
-						OptionsInterface::ONBOARDING_COMPLETED_AT                => 1700000300,
-						OptionsInterface::SYNCABLE_PRODUCTS_COUNT                => 12,
-						OptionsInterface::UPDATE_ALL_PRODUCTS_LAST_SYNC          => 1700000400,
-						OptionsInterface::API_PULL_SYNC_MODE                     => [
-							'products' => [
-								'push' => true,
-								'pull' => false,
-							],
-						],
-					];
-
-					return $values[ $name ] ?? $default;
+				static function ( string $name, $fallback = null ) use ( $values ) {
+					return $values[ $name ] ?? $fallback;
 				}
 			);
 
