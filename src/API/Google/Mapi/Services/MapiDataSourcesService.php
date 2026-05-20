@@ -86,7 +86,7 @@ class MapiDataSourcesService implements OptionsAwareInterface, InstallableInterf
 	 * own primary product data source if one already exists.
 	 *
 	 * @return string|null
-	 * @throws MerchantApiException
+	 * @throws MerchantApiException On a non-2xx MAPI response.
 	 */
 	protected function find_existing_data_source(): ?string {
 		$response = $this->client->get(
@@ -109,8 +109,8 @@ class MapiDataSourcesService implements OptionsAwareInterface, InstallableInterf
 	/**
 	 * Create a new primary product data source.
 	 *
-	 * @return string
-	 * @throws MerchantApiException
+	 * @return string The created data source resource name.
+	 * @throws MerchantApiException On a non-2xx MAPI response.
 	 */
 	protected function create_data_source(): string {
 		$base = wc_get_base_location();

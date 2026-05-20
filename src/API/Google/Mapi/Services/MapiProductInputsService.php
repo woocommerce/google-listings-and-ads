@@ -45,8 +45,8 @@ class MapiProductInputsService implements OptionsAwareInterface {
 	 *
 	 * @param ProductInput $input
 	 *
-	 * @return ProductInput
-	 * @throws MerchantApiException
+	 * @return ProductInput The hydrated response.
+	 * @throws MerchantApiException On a non-2xx MAPI response.
 	 */
 	public function insert( ProductInput $input ): ProductInput {
 		$body = $this->client->post(
@@ -64,7 +64,7 @@ class MapiProductInputsService implements OptionsAwareInterface {
 	 * @param int            $concurrency
 	 *
 	 * @return array{successes: array<int, ProductInput>, failures: array<int, MerchantApiException>}
-	 * @throws MerchantApiException
+	 * @throws MerchantApiException On a non-2xx MAPI response while resolving the data source.
 	 */
 	public function insert_many( array $inputs, int $concurrency = 10 ): array {
 		$path   = $this->build_path( $this->data_sources->ensure_primary_data_source() );
