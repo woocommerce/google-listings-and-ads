@@ -60,11 +60,11 @@ const Modal = ( { onRequestClose, eventContext } ) => {
 		  }
 		: {
 				title: __(
-					'Some campaigns are missing European Union (EU) ads status',
+					'Missing EU ads declaration',
 					'google-listings-and-ads'
 				),
 				description: __(
-					'Changes to any campaigns in this account are not allowed because EU political ads declarations are missing.',
+					"You can't edit your campaigns until you complete the EU political ads declaration in Google Ads.",
 					'google-listings-and-ads'
 				),
 		  };
@@ -89,6 +89,7 @@ const Modal = ( { onRequestClose, eventContext } ) => {
 			] }
 			onRequestClose={ onRequestClose }
 			className="gla-eu-political-declaration-modal"
+			size="small"
 		>
 			<p>{ description }</p>
 		</AppModal>
