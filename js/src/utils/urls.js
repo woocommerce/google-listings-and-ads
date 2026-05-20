@@ -51,7 +51,11 @@ export const getEditCampaignUrl = ( programId, initialStep ) => {
 };
 
 export const getCreateCampaignUrl = () => {
-	return getNewPath( { subpath: subpaths.createCampaign }, dashboardPath );
+	return getNewPath(
+		{ subpath: subpaths.createCampaign },
+		dashboardPath,
+		null
+	);
 };
 
 export const getGetStartedUrl = () => {
