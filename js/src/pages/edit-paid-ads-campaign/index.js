@@ -37,6 +37,7 @@ import {
 	recordStepContinueEvent,
 } from '~/utils/tracks';
 import useNavigateAwayPromptEffect from '~/hooks/useNavigateAwayPromptEffect';
+import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import EuPoliticalDeclaration from '~/components/eu-political-declaration';
 import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
 
@@ -78,6 +79,7 @@ const EditPaidAdsCampaign = () => {
 		createCampaignAssetGroup,
 		updateCampaignAssetGroup,
 	} = useAppDispatch();
+	const { createNotice } = useDispatchCoreNotices();
 
 	const query = useQuery();
 	const id = Number( query.programId );
@@ -213,6 +215,14 @@ const EditPaidAdsCampaign = () => {
 
 				await updateCampaignAssetGroup( assetGroupId, body );
 				invalidateResolvedAssetEntityGroups();
+
+				createNotice(
+					'success',
+					__(
+						'You’ve successfully updated your campaign!',
+						'google-listings-and-ads'
+					)
+				);
 			}
 		} catch ( e ) {
 			handleEuPoliticalDeclarationError( e );
