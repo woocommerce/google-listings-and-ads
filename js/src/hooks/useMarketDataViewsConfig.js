@@ -228,11 +228,12 @@ const buildAutomaticConfig = ( {
  * TODO: Remove once all scenarios have explicit branches:
  *   - GOOWOO-598 / -602: remaining multilingual variants.
  *
- * @param {Array}  markets      All markets from useMarkets.
- * @param {Object} countryNames Country code → name lookup from useCountryKeyNameMap.
+ * @param {Object} options
+ * @param {Array}  options.markets      All markets from useMarkets.
+ * @param {Object}  options.countryNames Mapping of country code to country name from useCountryKeyNameMap.
  * @return {{ fields: Array, data: Array }} DataViews fields and pre-formatted rows.
  */
-const buildDefaultConfig = ( markets, countryNames ) => {
+const buildDefaultConfig = ( { markets, countryNames } ) => {
 	const fields = [ ALL_FIELDS.market, ALL_FIELDS.shippingTime ];
 
 	const data = markets.map( ( market ) => {
@@ -309,7 +310,7 @@ const useMarketDataViewsConfig = () => {
 	}
 
 	return {
-		...buildDefaultConfig( markets, countryNames ),
+		...buildDefaultConfig( { markets, countryNames } ),
 		hasFinishedResolution,
 	};
 };
