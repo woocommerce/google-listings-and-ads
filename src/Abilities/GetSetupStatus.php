@@ -333,9 +333,9 @@ class GetSetupStatus implements AbilityDefinition {
 						'ads_id'                         => [ 'type' => 'integer' ],
 						'setup_started'                  => [ 'type' => 'boolean' ],
 						'setup_complete'                 => [ 'type' => 'boolean' ],
-						'connected'                       => [ 'type' => 'boolean' ],
-						'setup_completed_at'              => [ 'type' => 'integer' ],
-						'account_state'                   => [
+						'connected'                      => [ 'type' => 'boolean' ],
+						'setup_completed_at'             => [ 'type' => 'integer' ],
+						'account_state'                  => [
 							'type'  => 'array',
 							'items' => [
 								'type'                 => 'object',
@@ -347,10 +347,10 @@ class GetSetupStatus implements AbilityDefinition {
 								'additionalProperties' => false,
 							],
 						],
-						'enhanced_conversions_enabled'    => [ 'type' => 'boolean' ],
-						'eu_political_declarations_done'  => [ 'type' => 'boolean' ],
-						'has_unclaimed_incentive'         => [ 'type' => 'boolean' ],
-						'campaign_convert_status'         => [
+						'enhanced_conversions_enabled'   => [ 'type' => 'boolean' ],
+						'eu_political_declarations_done' => [ 'type' => 'boolean' ],
+						'has_unclaimed_incentive'        => [ 'type' => 'boolean' ],
+						'campaign_convert_status'        => [
 							'type'                 => 'object',
 							'properties'           => [
 								'status'  => [ 'type' => 'string' ],
