@@ -43,6 +43,13 @@
 		&__header {
 			font-size: inherit;
 		}
+
+		// The card border-radius is applied by @wordpress/components via Emotion
+		// to the first/last card children (CardBody, CardFooter), not the card
+		// container. Without overflow: hidden, table content overflows those radii.
+		&__body:first-child {
+			overflow: hidden;
+		}
 	}
 
 	// Adjust InputControl suffix's empty right margin.
