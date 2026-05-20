@@ -13,26 +13,27 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads;
 
 use Google\Ads\GoogleAds\Constants;
 use Google\Ads\GoogleAds\Lib\ConfigurationTrait;
-use Google\Ads\GoogleAds\V22\Services\Client\AccountLinkServiceClient;
-use Google\Ads\GoogleAds\V22\Services\Client\AdGroupAdLabelServiceClient;
-use Google\Ads\GoogleAds\V22\Services\Client\AdGroupAdServiceClient;
-use Google\Ads\GoogleAds\V22\Services\Client\AdGroupCriterionServiceClient;
-use Google\Ads\GoogleAds\V22\Services\Client\AdGroupServiceClient;
-use Google\Ads\GoogleAds\V22\Services\Client\AdServiceClient;
-use Google\Ads\GoogleAds\V22\Services\Client\AssetGenerationServiceClient;
-use Google\Ads\GoogleAds\V22\Services\Client\AssetGroupListingGroupFilterServiceClient;
-use Google\Ads\GoogleAds\V22\Services\Client\AssetGroupServiceClient;
-use Google\Ads\GoogleAds\V22\Services\Client\BillingSetupServiceClient;
-use Google\Ads\GoogleAds\V22\Services\Client\CampaignBudgetServiceClient;
-use Google\Ads\GoogleAds\V22\Services\Client\CampaignCriterionServiceClient;
-use Google\Ads\GoogleAds\V22\Services\Client\CampaignServiceClient;
-use Google\Ads\GoogleAds\V22\Services\Client\ConversionActionServiceClient;
-use Google\Ads\GoogleAds\V22\Services\Client\CustomerServiceClient;
-use Google\Ads\GoogleAds\V22\Services\Client\CustomerUserAccessServiceClient;
-use Google\Ads\GoogleAds\V22\Services\Client\GeoTargetConstantServiceClient;
-use Google\Ads\GoogleAds\V22\Services\Client\GoogleAdsServiceClient;
-use Google\Ads\GoogleAds\V22\Services\Client\ProductLinkInvitationServiceClient;
-use Google\Ads\GoogleAds\V22\Services\Client\RecommendationServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\AccountLinkServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\AdGroupAdLabelServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\AdGroupAdServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\AdGroupCriterionServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\AdGroupServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\AdServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\AssetGenerationServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\AssetGroupListingGroupFilterServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\AssetGroupServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\BillingSetupServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\IncentiveServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\CampaignBudgetServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\CampaignCriterionServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\CampaignServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\ConversionActionServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\CustomerServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\CustomerUserAccessServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\GeoTargetConstantServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\GoogleAdsServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\ProductLinkInvitationServiceClient;
+use Google\Ads\GoogleAds\V23\Services\Client\RecommendationServiceClient;
 
 /**
  * Contains service client factory methods.
@@ -195,6 +196,13 @@ trait ServiceClientFactoryTrait {
 	 */
 	public function getGoogleAdsServiceClient(): GoogleAdsServiceClient {
 		return new GoogleAdsServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return IncentiveServiceClient
+	 */
+	public function getIncentiveServiceClient(): IncentiveServiceClient {
+		return new IncentiveServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
