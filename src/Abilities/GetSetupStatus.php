@@ -67,6 +67,22 @@ class GetSetupStatus implements AbilityDefinition {
 		$merchant_center = $container->get( MerchantCenterService::class );
 		$ads             = $container->get( AdsService::class );
 
+		return self::build_response( $options, $merchant_center, $ads );
+	}
+
+	/**
+	 * Build the ability response from local plugin services.
+	 *
+	 * @param OptionsInterface      $options         Options service.
+	 * @param MerchantCenterService $merchant_center Merchant Center service.
+	 * @param AdsService            $ads             Ads service.
+	 * @return array
+	 */
+	public static function build_response(
+		OptionsInterface $options,
+		MerchantCenterService $merchant_center,
+		AdsService $ads
+	): array {
 		return [
 			'connections'     => [
 				'google_connected'  => (bool) $options->get( OptionsInterface::GOOGLE_CONNECTED, false ),
@@ -74,7 +90,7 @@ class GetSetupStatus implements AbilityDefinition {
 				'wp_tos_accepted'   => (bool) $options->get( OptionsInterface::WP_TOS_ACCEPTED, false ),
 			],
 			'merchant_center' => [
-				'merchant_id'          => $options->get_merchant_id(),
+				'merchant_id'          => self::get_integer_option( $options, OptionsInterface::MERCHANT_ID ),
 				'setup_complete'       => $merchant_center->is_setup_complete(),
 				'connected'            => $merchant_center->is_connected(),
 				'setup_completed_at'   => self::get_timestamp_option( $options, OptionsInterface::MC_SETUP_COMPLETED_AT ),
@@ -86,7 +102,7 @@ class GetSetupStatus implements AbilityDefinition {
 				'shipping_times_setup' => null !== $options->get( OptionsInterface::SHIPPING_TIMES, null ),
 			],
 			'ads'             => [
-				'ads_id'                         => $options->get_ads_id(),
+				'ads_id'                         => self::get_integer_option( $options, OptionsInterface::ADS_ID ),
 				'setup_started'                  => $ads->is_setup_started(),
 				'setup_complete'                 => $ads->is_setup_complete(),
 				'connected'                      => $ads->is_connected(),
@@ -130,6 +146,17 @@ class GetSetupStatus implements AbilityDefinition {
 		$value = $options->get( $name, [] );
 
 		return is_array( $value ) ? $value : [];
+	}
+
+	/**
+	 * Get an option as an integer without using request-overridable helper methods.
+	 *
+	 * @param OptionsInterface $options Options service.
+	 * @param string           $name    Option name.
+	 * @return int
+	 */
+	private static function get_integer_option( OptionsInterface $options, string $name ): int {
+		return (int) $options->get( $name, 0 );
 	}
 
 	/**
