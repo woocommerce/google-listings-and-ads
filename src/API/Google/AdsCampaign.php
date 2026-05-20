@@ -24,21 +24,21 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Google\Ads\GoogleAds\Util\FieldMasks;
-use Google\Ads\GoogleAds\Util\V22\ResourceNames;
-use Google\Ads\GoogleAds\V22\Common\MaximizeConversionValue;
-use Google\Ads\GoogleAds\V22\Enums\AssetTypeEnum\AssetType as AdsAssetType;
-use Google\Ads\GoogleAds\V22\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
-use Google\Ads\GoogleAds\V22\Resources\Campaign;
-use Google\Ads\GoogleAds\V22\Enums\EuPoliticalAdvertisingStatusEnum\EuPoliticalAdvertisingStatus;
-use Google\Ads\GoogleAds\V22\Resources\Campaign\ShoppingSetting;
-use Google\Ads\GoogleAds\V22\Services\Client\CampaignServiceClient;
-use Google\Ads\GoogleAds\V22\Services\CampaignOperation;
-use Google\Ads\GoogleAds\V22\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V22\Services\MutateGoogleAdsRequest;
-use Google\Ads\GoogleAds\V22\Services\MutateOperation;
-use Google\Ads\GoogleAds\V22\Resources\Campaign\AssetAutomationSetting;
-use Google\Ads\GoogleAds\V22\Enums\AssetAutomationTypeEnum\AssetAutomationType;
-use Google\Ads\GoogleAds\V22\Enums\AssetAutomationStatusEnum\AssetAutomationStatus;
+use Google\Ads\GoogleAds\Util\V23\ResourceNames;
+use Google\Ads\GoogleAds\V23\Common\MaximizeConversionValue;
+use Google\Ads\GoogleAds\V23\Enums\AssetTypeEnum\AssetType as AdsAssetType;
+use Google\Ads\GoogleAds\V23\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
+use Google\Ads\GoogleAds\V23\Resources\Campaign;
+use Google\Ads\GoogleAds\V23\Enums\EuPoliticalAdvertisingStatusEnum\EuPoliticalAdvertisingStatus;
+use Google\Ads\GoogleAds\V23\Resources\Campaign\ShoppingSetting;
+use Google\Ads\GoogleAds\V23\Services\Client\CampaignServiceClient;
+use Google\Ads\GoogleAds\V23\Services\CampaignOperation;
+use Google\Ads\GoogleAds\V23\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V23\Services\MutateGoogleAdsRequest;
+use Google\Ads\GoogleAds\V23\Services\MutateOperation;
+use Google\Ads\GoogleAds\V23\Resources\Campaign\AssetAutomationSetting;
+use Google\Ads\GoogleAds\V23\Enums\AssetAutomationTypeEnum\AssetAutomationType;
+use Google\Ads\GoogleAds\V23\Enums\AssetAutomationStatusEnum\AssetAutomationStatus;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 use Exception;
@@ -752,6 +752,8 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			'status'             => CampaignStatus::label( $campaign->getStatus() ),
 			'type'               => CampaignType::label( $campaign->getAdvertisingChannelType() ),
 			'targeted_locations' => [],
+			// getStartDateTime() returns a full datetime string (e.g. 2025-01-15 00:00:00) from the Google Ads API v23 start_date_time field.
+			'start_date'         => $campaign->hasStartDateTime() ? substr( $campaign->getStartDateTime(), 0, 10 ) : null,
 		];
 
 		$eu_political_enum = $campaign->getContainsEuPoliticalAdvertising();
