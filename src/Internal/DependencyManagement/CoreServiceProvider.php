@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsRecommendationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AccountService as AdsAccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Abilities\Abilities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AssetSuggestionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
@@ -198,6 +199,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		SyncStatus::class                => true,
 		WPCLIMigrationGTIN::class        => true,
 		OnboardingCompleted::class       => true,
+		Abilities::class                 => true,
 		ServiceBasedMerchantState::class => true,
 	];
 
@@ -286,6 +288,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( AdsAccountService::class, AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountService::class, MerchantAccountState::class );
 		$this->share_with_tags( YouTubeConnection::class );
+		$this->share_with_tags( Abilities::class );
 
 		// Inbox Notes
 		$this->share_with_tags( ContactInformationNote::class );
