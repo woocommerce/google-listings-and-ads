@@ -34,6 +34,7 @@ interface OptionsInterface {
 	public const INSTALL_TIMESTAMP                         = 'install_timestamp';
 	public const INSTALL_VERSION                           = 'install_version';
 	public const JETPACK_CONNECTED                         = 'jetpack_connected';
+	public const MAPI_PRIMARY_DATA_SOURCE                  = 'mapi_primary_data_source';
 	public const MC_SETUP_COMPLETED_AT                     = 'mc_setup_completed_at';
 	public const MERCHANT_ACCOUNT_STATE                    = 'merchant_account_state';
 	public const MERCHANT_CENTER                           = 'merchant_center';
@@ -79,6 +80,7 @@ interface OptionsInterface {
 		self::INSTALL_TIMESTAMP                         => true,
 		self::INSTALL_VERSION                           => true,
 		self::JETPACK_CONNECTED                         => true,
+		self::MAPI_PRIMARY_DATA_SOURCE                  => true,
 		self::MC_SETUP_COMPLETED_AT                     => true,
 		self::MERCHANT_ACCOUNT_STATE                    => true,
 		self::MERCHANT_CENTER                           => true,
