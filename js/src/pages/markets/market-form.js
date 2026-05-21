@@ -149,6 +149,7 @@ const MarketForm = ( {
 			invalidateResolution( 'getTargetAudience', [] );
 			onSubmit();
 		} catch ( error ) {
+			// Do nothing. Keep the modal open.
 		} finally {
 			setIsSaving( false );
 		}

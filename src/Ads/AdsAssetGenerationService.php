@@ -11,10 +11,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\ExceptionTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
-use Google\Ads\GoogleAds\V22\Services\GenerateTextRequest;
-use Google\Ads\GoogleAds\V22\Services\GenerateImagesRequest;
-use Google\Ads\GoogleAds\V22\Services\FinalUrlImageGenerationInput;
-use Google\Ads\GoogleAds\V22\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
+use Google\Ads\GoogleAds\V23\Services\GenerateTextRequest;
+use Google\Ads\GoogleAds\V23\Services\GenerateImagesRequest;
+use Google\Ads\GoogleAds\V23\Services\FinalUrlImageGenerationInput;
+use Google\Ads\GoogleAds\V23\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
 use Google\ApiCore\ApiException;
 use Exception;
 
@@ -36,7 +36,7 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	/**
 	 * The Asset Generation Service Client.
 	 *
-	 * @var \Google\Ads\GoogleAds\V22\Services\Client\AssetGenerationServiceClient
+	 * @var \Google\Ads\GoogleAds\V23\Services\Client\AssetGenerationServiceClient
 	 */
 	protected $client;
 
