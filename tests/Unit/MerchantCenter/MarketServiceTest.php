@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WpmlIntegration;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -37,6 +38,9 @@ class MarketServiceTest extends UnitTest {
 	/** @var MockObject|WC */
 	protected $wc;
 
+	/** @var MockObject|WpmlIntegration */
+	protected $wpml_integration;
+
 	/** @var MarketService */
 	protected $market_service;
 
@@ -48,12 +52,14 @@ class MarketServiceTest extends UnitTest {
 		$this->shipping_rate_query = $this->createMock( ShippingRateQuery::class );
 		$this->shipping_time_query = $this->createMock( ShippingTimeQuery::class );
 		$this->wc                  = $this->createMock( WC::class );
+		$this->wpml_integration    = $this->createMock( WpmlIntegration::class );
 
 		$this->market_service = new MarketService(
 			$this->target_audience,
 			$this->shipping_rate_query,
 			$this->shipping_time_query,
-			$this->wc
+			$this->wc,
+			$this->wpml_integration
 		);
 		$this->market_service->set_options_object( $this->options );
 	}
@@ -778,7 +784,38 @@ class MarketServiceTest extends UnitTest {
 	}
 
 	public function test_has_multilingual_support_returns_false(): void {
+		$this->wpml_integration->method( 'is_active' )->willReturn( false );
+
 		$this->assertFalse( $this->market_service->has_multilingual_support() );
+	}
+
+	public function test_has_multilingual_support_returns_true(): void {
+		$this->wpml_integration->method( 'is_active' )->willReturn( true );
+
+		$this->assertTrue( $this->market_service->has_multilingual_support() );
+	}
+
+	public function test_get_languages_delegates_to_wpml_integration(): void {
+		$languages = [
+			[
+				'code'  => 'en',
+				'label' => 'English',
+			],
+			[
+				'code'  => 'de',
+				'label' => 'German',
+			],
+		];
+
+		$this->wpml_integration->method( 'get_languages' )->willReturn( $languages );
+
+		$this->assertSame( $languages, $this->market_service->get_languages() );
+	}
+
+	public function test_get_languages_returns_empty_when_wpml_not_active(): void {
+		$this->wpml_integration->method( 'get_languages' )->willReturn( [] );
+
+		$this->assertSame( [], $this->market_service->get_languages() );
 	}
 
 	/**
