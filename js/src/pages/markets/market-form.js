@@ -47,7 +47,10 @@ function getCountryPredicate( isPrimaryMarket, values ) {
  */
 function updateRateRows( rates, isTarget, patch, optionsPatch ) {
 	return rates.map( ( rate ) => {
-		if ( ! isTarget( rate.country ) ) return rate;
+		if ( ! isTarget( rate.country ) ) {
+			return rate;
+		}
+
 		return {
 			...rate,
 			...patch,
