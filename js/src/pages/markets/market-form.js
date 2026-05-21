@@ -143,11 +143,6 @@ const MarketForm = ( {
 				);
 			} else {
 				await createMarket( data );
-
-				if ( data.shipping_rate !== SHIPPING_RATE_METHOD.AUTOMATIC ) {
-					await saveShippingRates( shipping_country_rates );
-					await saveShippingTimes( shipping_country_times );
-				}
 			}
 
 			await saveShippingRates( shipping_country_rates );

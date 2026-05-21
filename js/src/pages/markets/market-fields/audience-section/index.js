@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -23,12 +22,7 @@ const AudienceSection = () => {
 		return <AudienceSelectControl />;
 	}
 
-	return (
-		<MarketSelectControl
-			autoSelectFirstOption={ false }
-			placeholderOption={ __( 'Select…', 'google-listings-and-ads' ) }
-		/>
-	);
+	return <MarketSelectControl />;
 };
 
 export default AudienceSection;

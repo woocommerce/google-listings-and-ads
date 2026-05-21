@@ -66,12 +66,6 @@ const AddMarketModal = ( {
 		! glaData.isMultiLingualStore &&
 		settings?.shipping_rate === SHIPPING_RATE_METHOD.MANUAL;
 
-	// Non-multilingual store with automatic shipping uses a simpler form where
-	// the "Add market" button is disabled until the form is valid.
-	const isAutomaticNonMultilingual =
-		! glaData.isMultiLingualStore &&
-		settings?.shipping_rate === SHIPPING_RATE_METHOD.AUTOMATIC;
-
 	return (
 		<MarketForm
 			initialMarket={ initialMarket }
@@ -113,9 +107,7 @@ const AddMarketModal = ( {
 							key="add-market"
 							variant="primary"
 							onClick={ handleSubmitClick }
-							disabled={
-								isAutomaticNonMultilingual && ! isValidForm
-							}
+							disabled={ isSaving }
 							loading={ isSaving }
 							eventName="gla_add_new_market_button_clicked"
 							eventProps={ {
