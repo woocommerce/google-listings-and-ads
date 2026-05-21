@@ -23,6 +23,9 @@ class MapiProductsService implements OptionsAwareInterface {
 
 	use OptionsAwareTrait;
 
+	/** Base path for the Merchant API products. */
+	protected const API_PATH = 'products/v1';
+
 	/** @var MerchantApiClient */
 	protected $client;
 
@@ -95,7 +98,8 @@ class MapiProductsService implements OptionsAwareInterface {
 	 */
 	protected function build_path( string $google_product_id ): string {
 		return sprintf(
-			'products/v1/accounts/%s/products/%s',
+			'%s/accounts/%s/products/%s',
+			self::API_PATH,
 			$this->options->get_merchant_id(),
 			$google_product_id
 		);
