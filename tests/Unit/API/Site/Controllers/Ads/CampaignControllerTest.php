@@ -73,6 +73,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'start_date'                            => '2025-01-15',
 			],
 			[
 				'id'                                    => 5678901234,
@@ -83,6 +84,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'start_date'                            => '2025-01-20',
 			],
 		];
 
@@ -92,8 +94,15 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'GET' );
 
-		$this->assertEquals( $campaigns_data, $response->get_data() );
+		$data = $response->get_data();
+		$this->assertEquals( $campaigns_data, $data );
 		$this->assertEquals( 200, $response->get_status() );
+		foreach ( $data as $campaign ) {
+			$this->assertArrayHasKey( 'start_date', $campaign );
+			if ( $campaign['start_date'] !== null ) {
+				$this->assertMatchesRegularExpression( '/^\d{4}-\d{2}-\d{2}$/', $campaign['start_date'] );
+			}
+		}
 	}
 
 	public function test_get_campaigns_converted_names() {
@@ -107,6 +116,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'start_date'                            => '2025-01-15',
 			],
 			[
 				'id'                                    => 5678901234,
@@ -117,6 +127,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'start_date'                            => '2025-01-20',
 			],
 		];
 
@@ -130,6 +141,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'start_date'                            => '2025-01-15',
 			],
 			[
 				'id'                                    => 5678901234,
@@ -140,6 +152,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'start_date'                            => '2025-01-20',
 			],
 		];
 
@@ -183,12 +196,13 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'type'                                  => 'performance_max',
 			'country'                               => self::BASE_COUNTRY,
 			'eu_political_advertising_confirmation' => false,
+			'start_date'                            => null,
 		] + array_diff_key( $campaign_data, [ 'label' => 'wc-web' ] );
 
 		$this->ads_campaign->expects( $this->once() )
 			->method( 'create_campaign' )
 			->with( $campaign_data )
-			->willReturn( $expected );
+			->willReturn( array_diff_key( $expected, [ 'start_date' => null ] ) );
 
 		$this->expect_track_event(
 			'created_campaign',
@@ -225,12 +239,13 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'amount'                                => 20,
 			'targeted_locations'                    => [ 'US', 'GB', 'TW' ],
 			'eu_political_advertising_confirmation' => false,
+			'start_date'                            => null,
 		];
 
 		$this->ads_campaign->expects( $this->once() )
 			->method( 'create_campaign' )
 			->with( $campaign_data )
-			->willReturn( $expected );
+			->willReturn( array_diff_key( $expected, [ 'start_date' => null ] ) );
 
 		$this->expect_track_event(
 			'created_campaign',
@@ -264,6 +279,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'type'                                  => 'performance_max',
 			'country'                               => self::BASE_COUNTRY,
 			'eu_political_advertising_confirmation' => false,
+			'start_date'                            => null,
 		] + $campaign_data;
 
 		$this->ads_campaign->expects( $this->once() )
@@ -277,7 +293,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 					$this->assertStringMatchesFormat( 'Campaign %d-%d-%d %d:%d:%d', $name, 'Name does not match' );
 					$this->assertEquals( $data, $campaign_data );
 
-					return $expected;
+					return array_diff_key( $expected, [ 'start_date' => null ] );
 				}
 			);
 
@@ -383,6 +399,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'amount'                                => 50,
 			'targeted_locations'                    => [ 'US', 'GB' ],
 			'eu_political_advertising_confirmation' => false,
+			'start_date'                            => null,
 		];
 
 		$this->ads_campaign->expects( $this->once() )
@@ -423,6 +440,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'country'                               => 'US',
 			'targeted_locations'                    => [],
 			'eu_political_advertising_confirmation' => false,
+			'start_date'                            => '2025-01-15',
 		];
 
 		$this->ads_campaign->expects( $this->once() )
@@ -432,8 +450,37 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'GET' );
 
-		$this->assertEquals( $campaign_data, $response->get_data() );
+		$data = $response->get_data();
+		$this->assertEquals( $campaign_data, $data );
 		$this->assertEquals( 200, $response->get_status() );
+		$this->assertArrayHasKey( 'start_date', $data );
+		$this->assertMatchesRegularExpression( '/^\d{4}-\d{2}-\d{2}$/', $data['start_date'] );
+	}
+
+	public function test_get_campaign_returns_null_start_date_when_unavailable() {
+		$campaign_data = [
+			'id'                                    => self::TEST_CAMPAIGN_ID,
+			'name'                                  => 'Campaign Without Start Date',
+			'status'                                => 'enabled',
+			'type'                                  => 'performance_max',
+			'amount'                                => 10,
+			'country'                               => 'US',
+			'targeted_locations'                    => [],
+			'eu_political_advertising_confirmation' => false,
+			'start_date'                            => null,
+		];
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'get_campaign' )
+			->with( self::TEST_CAMPAIGN_ID )
+			->willReturn( $campaign_data );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'GET' );
+
+		$data = $response->get_data();
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertArrayHasKey( 'start_date', $data );
+		$this->assertNull( $data['start_date'] );
 	}
 
 	public function test_get_campaign_not_found() {

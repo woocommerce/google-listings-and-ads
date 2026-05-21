@@ -1,0 +1,40 @@
+.gla-cyoi-section {
+
+	.gla-subsection-title {
+		font-weight: 400;
+		margin-block-end: $grid-unit-05;
+	}
+
+	.gla-subsection-subtitle a {
+		color: $gray-700;
+		text-decoration: underline;
+
+		&:hover,
+		&:focus {
+			color: $gray-900;
+		}
+	}
+}
+
+.gla-cyoi-incentive-picker__container {
+	margin-block-start: $grid-unit-30;
+}
+
+.gla-cyoi-radio-control__radio-control {
+	font-size: 15px;
+	color: $black;
+	padding-block: $grid-unit-20;
+
+	&:where(:not(:last-child)) {
+		border-bottom: 1px solid $gray-200;
+	}
+
+	.components-base-control__help {
+		margin-block-start: $grid-unit-05;
+		margin-inline-start: $grid-unit-20 * 1.5;
+	}
+
+	.components-radio-control__group-wrapper.has-help {
+		margin-block-end: 0;
+	}
+}
