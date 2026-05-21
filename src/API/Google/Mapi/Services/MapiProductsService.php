@@ -80,8 +80,11 @@ class MapiProductsService implements OptionsAwareInterface {
 				'fulfilled'   => function ( array $body, string $id ) use ( &$results ) {
 					$results[ $id ] = Product::from_array( $body );
 				},
-				'rejected'    => function () {
-					// MerchantApiException already fires the logging action.
+				'rejected'    => function ( $reason ) {
+					if ( ! $reason instanceof MerchantApiException ) {
+						do_action( 'woocommerce_gla_exception', $reason, __METHOD__ );
+					}
+					// MerchantApiException already fires woocommerce_gla_mc_client_exception.
 				},
 			]
 		) )->promise()->wait();
