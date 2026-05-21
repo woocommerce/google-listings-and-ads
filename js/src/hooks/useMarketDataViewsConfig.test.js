@@ -51,8 +51,6 @@ const PRIMARY_MARKET_FLAT = {
 	currency: 'USD',
 	shipping_rate: 'flat',
 	shipping_time: 'flat',
-	shippingRate: 10,
-	shippingTime: '3-5 days',
 	free_shipping: null,
 };
 
@@ -69,15 +67,12 @@ const SECONDARY_MARKET_FLAT = {
 	currency: 'EUR',
 	shipping_rate: 'flat',
 	shipping_time: 'flat',
-	shippingRate: 8,
-	shippingTime: '5-7 days',
 	free_shipping: 50,
 };
 
 const PRIMARY_MARKET_AUTOMATIC = {
 	...PRIMARY_MARKET,
 	shipping_rate: 'automatic',
-	shippingTime: '3-5 days',
 };
 
 const PRIMARY_MARKET_MULTILINGUAL_AUTOMATIC = {
@@ -85,7 +80,6 @@ const PRIMARY_MARKET_MULTILINGUAL_AUTOMATIC = {
 	shipping_rate: 'automatic',
 	language: 'English',
 	currency: 'USD',
-	shippingTime: '3-5 days',
 };
 
 const SECONDARY_MARKET_MULTILINGUAL_AUTOMATIC = {
@@ -94,7 +88,6 @@ const SECONDARY_MARKET_MULTILINGUAL_AUTOMATIC = {
 	shipping_rate: 'automatic',
 	language: 'French',
 	currency: 'EUR',
-	shippingTime: '5-7 days',
 };
 
 const setMocks = ( {
