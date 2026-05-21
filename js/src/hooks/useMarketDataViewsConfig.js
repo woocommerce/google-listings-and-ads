@@ -12,6 +12,8 @@ import useMarkets from '~/hooks/useMarkets';
 import usePrimaryMarketDetails from '~/hooks/usePrimaryMarketDetails';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import useSettings from '~/hooks/useSettings';
+import useShippingRates from '~/hooks/useShippingRates';
+import useShippingTimes from '~/hooks/useShippingTimes';
 
 const isPrimaryMarket = ( market ) => market.id === PRIMARY_MARKET_ID;
 
@@ -75,26 +77,67 @@ const ALL_FIELDS = {
 };
 
 /**
- * Formats a free-shipping threshold number into a localised "Free over X" string,
- * or returns a dash when no threshold is set.
- *
- * @param {number|null} threshold The threshold amount from market.free_shipping.
- * @param {string}      currency  ISO 4217 currency code from market.currency.
- * @return {string} Formatted string or '-'.
+ * @param {{ currency: string, rate: number }|undefined} rateRow
+ * @return {string} Formatted currency string or '-'.
  */
-const formatFreeShipping = ( threshold, currency ) => {
-	if ( threshold === null || threshold === undefined ) {
+const formatShippingRate = ( rateRow ) => {
+	if ( ! rateRow ) {
 		return '-';
 	}
-	const formatted = new Intl.NumberFormat( undefined, {
+	return new Intl.NumberFormat( undefined, {
 		style: 'currency',
-		currency,
-	} ).format( threshold );
+		currency: rateRow.currency,
+	} ).format( rateRow.rate );
+};
+
+/**
+ * @param {{ time: number, maxTime: number }|undefined} timeRow
+ * @return {string} Formatted days string or '-'.
+ */
+const formatShippingTime = ( timeRow ) => {
+	if ( ! timeRow ) {
+		return '-';
+	}
+	const { time, maxTime } = timeRow;
+	if ( time === maxTime ) {
+		return sprintf(
+			// translators: %d: number of shipping days.
+			__( '%d days', 'google-listings-and-ads' ),
+			time
+		);
+	}
 	return sprintf(
-		// translators: %s: currency-formatted free shipping threshold, e.g. "$50.00".
-		__( 'Free over %s', 'google-listings-and-ads' ),
-		formatted
+		// translators: 1: minimum shipping days, 2: maximum shipping days.
+		__( '%1$d-%2$d days', 'google-listings-and-ads' ),
+		time,
+		maxTime
 	);
+};
+
+/**
+ * @param {{ rate: number, currency: string, options?: { free_shipping_threshold?: number } }|undefined} rateRow
+ * @return {string} 'Free', 'Free over $X', or '-'.
+ */
+const formatFreeShipping = ( rateRow ) => {
+	if ( ! rateRow ) {
+		return '-';
+	}
+	if ( rateRow.rate === 0 ) {
+		return __( 'Free', 'google-listings-and-ads' );
+	}
+	const threshold = rateRow.options?.free_shipping_threshold;
+	if ( threshold !== null && threshold !== undefined ) {
+		const formatted = new Intl.NumberFormat( undefined, {
+			style: 'currency',
+			currency: rateRow.currency,
+		} ).format( threshold );
+		return sprintf(
+			// translators: %s: currency-formatted free shipping threshold, e.g. "$50.00".
+			__( 'Free over %s', 'google-listings-and-ads' ),
+			formatted
+		);
+	}
+	return '-';
 };
 
 /**
@@ -144,10 +187,12 @@ const buildManualConfig = ( { primaryMarket } ) => {
  * All markets (primary and additional) appear as rows.
  *
  * @param {Object} options
- * @param {Array}  options.markets All markets from useMarkets.
+ * @param {Array}  options.markets         All markets from useMarkets.
+ * @param {Object} options.ratesByCountry  Country-keyed map of shipping rate rows.
+ * @param {Object} options.timesByCountry  Country-keyed map of shipping time rows.
  * @return {{ fields: Array, data: Array }} DataViews fields and pre-formatted rows.
  */
-const buildFlatConfig = ( { markets } ) => {
+const buildFlatConfig = ( { markets, ratesByCountry, timesByCountry } ) => {
 	const fields = [
 		ALL_FIELDS.market,
 		ALL_FIELDS.shippingRate,
@@ -155,13 +200,16 @@ const buildFlatConfig = ( { markets } ) => {
 		ALL_FIELDS.freeShipping,
 	];
 
-	const data = markets.map( ( market ) => ( {
-		...market,
-		freeShipping: formatFreeShipping(
-			market.free_shipping,
-			market.currency
-		),
-	} ) );
+	const data = markets.map( ( market ) => {
+		const rateRow = ratesByCountry[ market.country ];
+		const timeRow = timesByCountry[ market.country ];
+		return {
+			...market,
+			shippingRate: formatShippingRate( rateRow ),
+			shippingTime: formatShippingTime( timeRow ),
+			freeShipping: formatFreeShipping( rateRow ),
+		};
+	} );
 
 	return { fields, data };
 };
@@ -177,12 +225,14 @@ const buildFlatConfig = ( { markets } ) => {
  * @param {Array}   options.markets             All markets from useMarkets.
  * @param {Object}  options.primaryMarket       Primary market data from usePrimaryMarketDetails.
  * @param {boolean} options.isMultiLingualStore Whether the store has a multilingual plugin.
+ * @param {Object}  options.timesByCountry      Country-keyed map of shipping time rows.
  * @return {{ fields: Array, data: Array }} DataViews fields and pre-formatted rows.
  */
 const buildAutomaticConfig = ( {
 	markets,
 	primaryMarket,
 	isMultiLingualStore,
+	timesByCountry,
 } ) => {
 	if ( isMultiLingualStore ) {
 		const fields = [
@@ -192,7 +242,14 @@ const buildAutomaticConfig = ( {
 			ALL_FIELDS.shippingTime,
 		];
 
-		return { fields, data: markets };
+		const data = markets.map( ( market ) => ( {
+			...market,
+			shippingTime: formatShippingTime(
+				timesByCountry[ market.country ]
+			),
+		} ) );
+
+		return { fields, data };
 	}
 
 	const countryCount = primaryMarket?.countries?.length ?? 0;
@@ -213,6 +270,9 @@ const buildAutomaticConfig = ( {
 						),
 						primaryMarket.label,
 						countryCount
+					),
+					shippingTime: formatShippingTime(
+						timesByCountry[ primaryMarket.country ]
 					),
 				},
 		  ]
@@ -271,12 +331,20 @@ const buildDefaultConfig = ( { markets, countryNames } ) => {
  * @return {{ fields: Array, data: Array, hasFinishedResolution: boolean }} DataViews fields and pre-formatted rows.
  */
 const useMarketDataViewsConfig = () => {
-	const { data: markets, hasFinishedResolution } = useMarkets();
+	const { data: markets, hasFinishedResolution: marketsResolved } =
+		useMarkets();
 	const { data: primaryMarket } = usePrimaryMarketDetails();
 	const countryNames = useCountryKeyNameMap();
 	const { settings } = useSettings();
+	const { data: shippingRatesData, hasFinishedResolution: ratesResolved } =
+		useShippingRates();
+	const { data: shippingTimesData, hasFinishedResolution: timesResolved } =
+		useShippingTimes();
 
 	const isMultiLingualStore = glaData.isMultiLingualStore ?? false;
+
+	const hasFinishedResolution =
+		marketsResolved && ratesResolved && timesResolved;
 
 	if ( ! hasFinishedResolution || ! settings ) {
 		return { fields: [], data: [], hasFinishedResolution };
@@ -291,9 +359,16 @@ const useMarketDataViewsConfig = () => {
 		};
 	}
 
+	const ratesByCountry = Object.fromEntries(
+		( shippingRatesData || [] ).map( ( r ) => [ r.country, r ] )
+	);
+	const timesByCountry = Object.fromEntries(
+		( shippingTimesData || [] ).map( ( t ) => [ t.countryCode, t ] )
+	);
+
 	if ( shippingRate === SHIPPING_RATE_METHOD.FLAT ) {
 		return {
-			...buildFlatConfig( { markets } ),
+			...buildFlatConfig( { markets, ratesByCountry, timesByCountry } ),
 			hasFinishedResolution,
 		};
 	}
@@ -304,6 +379,7 @@ const useMarketDataViewsConfig = () => {
 				markets,
 				primaryMarket,
 				isMultiLingualStore,
+				timesByCountry,
 			} ),
 			hasFinishedResolution,
 		};
