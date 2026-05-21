@@ -1183,7 +1183,6 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertTrue( $this->product_helper->is_delete_failed_threshold_reached( $product ) );
 	}
 
-
 	/**
 	 * @param string $callback
 	 *

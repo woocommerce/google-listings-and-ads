@@ -1158,7 +1158,6 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 			$this->response = 'Successfully scheduled a job to migrate GTIN';
 		}
 
-
 	}
 
 	/**

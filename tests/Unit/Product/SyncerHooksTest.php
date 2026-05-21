@@ -56,7 +56,6 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$this->update_products_job->expects( $this->once() )
 			->method( 'schedule' );
 
-
 		WC_Helper_Product::create_simple_product( true, [ 'status' => 'publish' ] );
 	}
 
@@ -213,7 +212,6 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$variation_to_delete->delete();
 	}
 
-
 	public function test_force_deleting_synced_variation_schedules_delete_job() {
 		$this->set_mc_and_notifications();
 
@@ -340,7 +338,6 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$this->assertEquals( 90, has_action( 'untrashed_post', [ $this->syncer_hooks, 'update_by_id' ] ) );
 		$this->assertEquals( 90, has_filter( 'woocommerce_duplicate_product_exclude_meta', [ $this->syncer_hooks, 'duplicate_product_exclude_meta' ] ) );
 	}
-
 
 	/**
 	 * Set the SyncerHooks class with specific features.

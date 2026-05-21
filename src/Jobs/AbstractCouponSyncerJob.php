@@ -54,7 +54,6 @@ abstract class AbstractCouponSyncerJob extends AbstractActionSchedulerJob {
 		parent::__construct( $action_scheduler, $monitor );
 	}
 
-
 	/**
 	 * Can the job be scheduled.
 	 *

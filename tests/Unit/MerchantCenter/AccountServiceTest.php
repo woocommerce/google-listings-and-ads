@@ -88,7 +88,6 @@ class AccountServiceTest extends UnitTest {
 	/** @var MockObject|ServiceBasedMerchantState $service_based_merchant_state */
 	protected $service_based_merchant_state;
 
-
 	/** @var AccountService $account */
 	protected $account;
 
@@ -881,7 +880,6 @@ class AccountServiceTest extends UnitTest {
 			$this->account->get_connected_status()
 		);
 	}
-
 
 	public function test_get_setup_status() {
 		$this->mc_service->expects( $this->once() )

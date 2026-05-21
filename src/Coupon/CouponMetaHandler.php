@@ -59,7 +59,6 @@ class CouponMetaHandler implements Service {
 
 	public const KEY_MC_STATUS = 'mc_status';
 
-
 	protected const TYPES = [
 		self::KEY_SYNCED_AT            => 'int',
 		self::KEY_GOOGLE_IDS           => 'array',
