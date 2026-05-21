@@ -67,11 +67,7 @@ const AddMarketModal = ( {
 		settings?.shipping_rate === SHIPPING_RATE_METHOD.MANUAL;
 
 	return (
-		<MarketForm
-			initialMarket={ initialMarket }
-			onSubmit={ onRequestClose }
-			onError={ onRequestClose }
-		>
+		<MarketForm initialMarket={ initialMarket } onSubmit={ onRequestClose }>
 			{ ( formContext ) => {
 				const { adapter, isValidForm, handleSubmit } = formContext;
 				const { isSaving } = adapter;
@@ -107,7 +103,6 @@ const AddMarketModal = ( {
 							key="add-market"
 							variant="primary"
 							onClick={ handleSubmitClick }
-							disabled={ isSaving }
 							loading={ isSaving }
 							eventName="gla_add_new_market_button_clicked"
 							eventProps={ {
