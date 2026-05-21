@@ -8,6 +8,7 @@ import { Flex, Notice } from '@wordpress/components';
  * Internal dependencies
  */
 import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
+import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useSettings from '~/hooks/useSettings';
 import LanguageSelectControl from './language-select-control';
 import CurrencySelectControl from './currency-select-control';
@@ -18,10 +19,13 @@ import CurrencySelectControl from './currency-select-control';
  */
 const LocaleSection = () => {
 	const { settings } = useSettings();
+	const {
+		adapter: { isPrimaryMarket },
+	} = useAdaptiveFormContext();
 
 	if (
-		glaData.isMultiLingualStore &&
-		settings?.shipping_rate === SHIPPING_RATE_METHOD.FLAT
+		settings?.shipping_rate === SHIPPING_RATE_METHOD.FLAT ||
+		( isPrimaryMarket && ! glaData.isMultiLingualStore )
 	) {
 		return null;
 	}

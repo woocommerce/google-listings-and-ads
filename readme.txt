@@ -5,7 +5,7 @@ Requires at least: 6.6
 Tested up to: 6.9
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.6.2
+Stable tag: 3.7.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -140,6 +140,18 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.7.0 - 2026-05-19 =
+* Add - Create Your Own Incentive (CYOI) feature.
+* Add - In-Product Placements feature.
+* Add - Restrict accepted image formats when creating campaign assets.
+* Dev - Upgrade Google Ads PHP Library to v23.
+* Dev - Added tracking for YouTube connected stores.
+* Fix - Cache miss on empty recommendations triggering live Ads API calls on every admin page load.
+* Fix - Shipping tab failing to render when no shipping options were set.
+* Fix - Sorting order of the programs column.
+* Update - Default values for shipping time inputs during onboarding.
+* Update - Success notice displayed after saving a campaign.
+
 = 3.6.2 - 2026-04-27 =
 * Dev - Bump WooCommerce "tested up to" version 10.7.
 * Dev - Remove API Pull sync status rows from the Connection Test page.
@@ -156,16 +168,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Dev - Refactor YouTube card E2E tests.
 * Fix - Cache GAQL query for highest spend campaign.
 * Fix - Remove legacy conversion event.
-
-= 3.6.0 - 2026-03-16 =
-* Add - Generative AI for assets.
-* Add - YouTube shopping support.
-* Fix – Rename the logo svg file.
-* Fix - Update Google Ads API to v22.
-* Fix - Duplicated values in the report comparison filters.
-* Fix - Conversion events use product variation ID in purchase events.
-* Fix - Resolved fatal error in Channel Visibility when creating coupons.
-* Fix - Show user error message when Brand Guidelines are enabled.
-* Update - Update Google Ads API to v22.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

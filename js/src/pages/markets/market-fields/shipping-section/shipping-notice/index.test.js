@@ -34,7 +34,7 @@ describe( 'ShippingNotice', () => {
 
 		render( <ShippingNotice /> );
 
-		const notice = document.querySelector( '.gla-shipping-notice' );
+		const notice = document.querySelector( '.gla-shipping-info-notice' );
 		expect( notice ).toBeInTheDocument();
 		expect( notice ).toHaveTextContent(
 			'Shipping is managed in Google Merchant Center. Configure shipping rates and times for each currency in your Merchant Center account.'
@@ -47,7 +47,7 @@ describe( 'ShippingNotice', () => {
 		render( <ShippingNotice /> );
 
 		expect(
-			document.querySelector( '.gla-shipping-notice' )
+			document.querySelector( '.gla-shipping-info-notice' )
 		).toBeInTheDocument();
 	} );
 
@@ -59,7 +59,7 @@ describe( 'ShippingNotice', () => {
 		render( <ShippingNotice /> );
 
 		expect(
-			document.querySelector( '.gla-shipping-notice' )
+			document.querySelector( '.gla-shipping-info-notice' )
 		).not.toBeInTheDocument();
 	} );
 } );

@@ -7,13 +7,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAssetGroupAs
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Google\Ads\GoogleAds\V22\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V22\Resources\AssetGroupAsset;
+use Google\Ads\GoogleAds\V23\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V23\Resources\AssetGroupAsset;
 use Google\ApiCore\ApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
-use Google\Ads\GoogleAds\V22\Services\MutateOperation;
-use Google\Ads\GoogleAds\V22\Services\AssetGroupAssetOperation;
-use Google\Ads\GoogleAds\Util\V22\ResourceNames;
+use Google\Ads\GoogleAds\V23\Services\MutateOperation;
+use Google\Ads\GoogleAds\V23\Services\AssetGroupAssetOperation;
+use Google\Ads\GoogleAds\Util\V23\ResourceNames;
 
 
 
