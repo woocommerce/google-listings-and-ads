@@ -11,11 +11,31 @@ import useMarkets from '~/hooks/useMarkets';
 import usePrimaryMarketDetails from '~/hooks/usePrimaryMarketDetails';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import useSettings from '~/hooks/useSettings';
+import useShippingRates from '~/hooks/useShippingRates';
+import useShippingTimes from '~/hooks/useShippingTimes';
 
 jest.mock( '~/hooks/useMarkets' );
 jest.mock( '~/hooks/usePrimaryMarketDetails' );
 jest.mock( '~/hooks/useCountryKeyNameMap' );
 jest.mock( '~/hooks/useSettings' );
+jest.mock( '~/hooks/useShippingRates' );
+jest.mock( '~/hooks/useShippingTimes' );
+
+const SHIPPING_RATES = [
+	{ id: 1, country: 'US', currency: 'USD', rate: 10, options: {} },
+	{
+		id: 2,
+		country: 'FR',
+		currency: 'EUR',
+		rate: 8,
+		options: { free_shipping_threshold: 50 },
+	},
+];
+
+const SHIPPING_TIMES = [
+	{ countryCode: 'US', time: 3, maxTime: 5 },
+	{ countryCode: 'FR', time: 5, maxTime: 7 },
+];
 
 const PRIMARY_MARKET = {
 	id: 'primary',
@@ -88,6 +108,8 @@ const setMocks = ( {
 	},
 	multiLingualStore = false,
 	shippingRate = primary.shipping_rate,
+	shippingRates = [],
+	shippingTimes = [],
 } = {} ) => {
 	useMarkets.mockReturnValue( {
 		data: markets,
@@ -101,6 +123,14 @@ const setMocks = ( {
 	useSettings.mockReturnValue( {
 		settings: { shipping_rate: shippingRate },
 	} );
+	useShippingRates.mockReturnValue( {
+		data: shippingRates,
+		hasFinishedResolution: true,
+	} );
+	useShippingTimes.mockReturnValue( {
+		data: shippingTimes,
+		hasFinishedResolution: true,
+	} );
 	// `glaData` is captured as a reference to `window.glaData` at module load
 	// (see `js/src/constants.js`), so mutate in place rather than replacing the
 	// object — replacing would leave the original reference stale.
@@ -113,6 +143,8 @@ describe( 'useMarketDataViewsConfig', () => {
 		usePrimaryMarketDetails.mockReset();
 		useCountryKeyNameMap.mockReset();
 		useSettings.mockReset();
+		useShippingRates.mockReset();
+		useShippingTimes.mockReset();
 		delete window.glaData.isMultiLingualStore;
 	} );
 
@@ -266,14 +298,16 @@ describe( 'useMarketDataViewsConfig', () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_FLAT,
 				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
+				shippingRates: SHIPPING_RATES,
+				shippingTimes: SHIPPING_TIMES,
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 			const [ primary, secondary ] = result.current.data;
 
-			expect( primary.shippingRate ).toBe( 10 );
+			expect( primary.shippingRate ).toMatch( /10/ );
 			expect( primary.shippingTime ).toBe( '3-5 days' );
-			expect( secondary.shippingRate ).toBe( 8 );
+			expect( secondary.shippingRate ).toMatch( /8/ );
 			expect( secondary.shippingTime ).toBe( '5-7 days' );
 		} );
 
@@ -292,6 +326,7 @@ describe( 'useMarketDataViewsConfig', () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_FLAT,
 				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
+				shippingRates: SHIPPING_RATES,
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
@@ -363,6 +398,7 @@ describe( 'useMarketDataViewsConfig', () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_AUTOMATIC,
 				markets: [ PRIMARY_MARKET_AUTOMATIC ],
+				shippingTimes: SHIPPING_TIMES,
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
@@ -414,6 +450,7 @@ describe( 'useMarketDataViewsConfig', () => {
 					SECONDARY_MARKET_MULTILINGUAL_AUTOMATIC,
 				],
 				multiLingualStore: true,
+				shippingTimes: SHIPPING_TIMES,
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
@@ -440,6 +477,14 @@ describe( 'useMarketDataViewsConfig', () => {
 			} );
 			useCountryKeyNameMap.mockReturnValue( {} );
 			useSettings.mockReturnValue( { settings: null } );
+			useShippingRates.mockReturnValue( {
+				data: [],
+				hasFinishedResolution: false,
+			} );
+			useShippingTimes.mockReturnValue( {
+				data: [],
+				hasFinishedResolution: false,
+			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 
@@ -459,6 +504,14 @@ describe( 'useMarketDataViewsConfig', () => {
 			} );
 			useCountryKeyNameMap.mockReturnValue( {} );
 			useSettings.mockReturnValue( { settings: undefined } );
+			useShippingRates.mockReturnValue( {
+				data: [],
+				hasFinishedResolution: true,
+			} );
+			useShippingTimes.mockReturnValue( {
+				data: [],
+				hasFinishedResolution: true,
+			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 

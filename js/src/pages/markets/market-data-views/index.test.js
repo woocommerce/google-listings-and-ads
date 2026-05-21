@@ -12,10 +12,14 @@ import MarketDataViews from './';
 import useMarkets from '~/hooks/useMarkets';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import useSettings from '~/hooks/useSettings';
+import useShippingRates from '~/hooks/useShippingRates';
+import useShippingTimes from '~/hooks/useShippingTimes';
 
 jest.mock( '~/hooks/useMarkets' );
 jest.mock( '~/hooks/useCountryKeyNameMap' );
 jest.mock( '~/hooks/useSettings' );
+jest.mock( '~/hooks/useShippingRates' );
+jest.mock( '~/hooks/useShippingTimes' );
 
 jest.mock( '../edit-market-modal', () =>
 	jest.fn( ( { market, onRequestClose } ) => (
@@ -140,12 +144,22 @@ beforeEach( () => {
 		MU: 'Mauritius',
 		ZW: 'Zimbabwe',
 	} );
+	useShippingRates.mockReturnValue( {
+		data: [],
+		hasFinishedResolution: true,
+	} );
+	useShippingTimes.mockReturnValue( {
+		data: [],
+		hasFinishedResolution: true,
+	} );
 } );
 
 afterEach( () => {
 	useSettings.mockReset();
 	useMarkets.mockReset();
 	useCountryKeyNameMap.mockReset();
+	useShippingRates.mockReset();
+	useShippingTimes.mockReset();
 	delete window.glaData.isMultiLingualStore;
 	delete window.wp;
 } );
