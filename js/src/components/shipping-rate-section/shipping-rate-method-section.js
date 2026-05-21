@@ -32,7 +32,7 @@ const ShippingRateMethodSection = ( { children } ) => {
 	const { isMultiLingualStore } = glaData;
 
 	// Hide the automatic shipping rate option if there are no shipping rates and the merchant is onboarding.
-	const hideAutomatticShippingRate =
+	const hideAutomaticShippingRate =
 		! settings?.shipping_rates_count &&
 		hasFinishedResolution &&
 		mcSetup?.status === 'incomplete';
@@ -63,7 +63,7 @@ const ShippingRateMethodSection = ( { children } ) => {
 			<Section.Card>
 				<Section.Card.Body>
 					<VerticalGapLayout size="large">
-						{ ! hideAutomatticShippingRate && (
+						{ ! hideAutomaticShippingRate && (
 							<AppRadioContentControl
 								{ ...inputProps }
 								label={ __(
