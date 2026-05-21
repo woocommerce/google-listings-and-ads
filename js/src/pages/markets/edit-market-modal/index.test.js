@@ -9,6 +9,7 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import useSettings from '~/hooks/useSettings';
+import MarketForm from '../market-form';
 import EditMarketModal from './';
 
 // MarketForm pulls in useSaveShippingRates → useSelect( STORE_KEY ) which
@@ -38,6 +39,7 @@ describe( 'EditMarketModal', () => {
 		useSettings.mockReturnValue( {
 			settings: { shipping_rate: 'manual' },
 		} );
+		MarketForm.mockClear();
 	} );
 
 	test( 'renders the title for the primary market', () => {
@@ -52,6 +54,52 @@ describe( 'EditMarketModal', () => {
 		expect(
 			screen.getByRole( 'dialog', { name: 'Edit primary market' } )
 		).toBeInTheDocument();
+	} );
+
+	test( 'forwards target-audience countries as initialMarket.countries for the primary market', () => {
+		render(
+			<EditMarketModal
+				market={ { id: 'primary', label: 'Primary Market' } }
+				targetAudience={ { countries: [ 'US', 'CA', 'MX' ] } }
+				onRequestClose={ () => {} }
+			/>
+		);
+
+		expect( MarketForm ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				initialMarket: expect.objectContaining( {
+					id: 'primary',
+					countries: [ 'US', 'CA', 'MX' ],
+				} ),
+			} ),
+			expect.anything()
+		);
+	} );
+
+	test( 'preserves the secondary market countries (does not override with primary audience)', () => {
+		render(
+			<EditMarketModal
+				market={ {
+					id: 'fr',
+					label: 'France',
+					country: 'FR',
+					countries: [ 'FR' ],
+				} }
+				targetAudience={ { countries: [ 'US', 'CA', 'MX' ] } }
+				onRequestClose={ () => {} }
+			/>
+		);
+
+		expect( MarketForm ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				initialMarket: expect.objectContaining( {
+					id: 'fr',
+					country: 'FR',
+					countries: [ 'FR' ],
+				} ),
+			} ),
+			expect.anything()
+		);
 	} );
 
 	test( 'invokes onRequestClose when the footer Cancel button is clicked', async () => {
