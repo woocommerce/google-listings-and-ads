@@ -311,5 +311,4 @@ class CouponHelper implements Service {
 
 		return $errors;
 	}
-
 }
