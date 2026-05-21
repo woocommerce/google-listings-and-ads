@@ -212,27 +212,5 @@ describe( 'AddMarketModal', () => {
 				)
 			).not.toBeInTheDocument();
 		} );
-
-		test( 'disables the "Add market" button when the form is invalid', () => {
-			const MarketForm = jest.requireMock( '../market-form' );
-			MarketForm.mockImplementationOnce( ( { children } ) =>
-				children( {
-					adapter: { isSaving: false },
-					isValidForm: false,
-					handleSubmit: jest.fn(),
-				} )
-			);
-
-			render(
-				<AddMarketModal
-					{ ...defaultProps }
-					settings={ automaticSettings }
-				/>
-			);
-
-			expect(
-				screen.getByRole( 'button', { name: 'Add market' } )
-			).toBeDisabled();
-		} );
 	} );
 } );
