@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useCallback } from '@wordpress/element';
-import { noop } from 'lodash';
 
 /**
  * Internal dependencies
