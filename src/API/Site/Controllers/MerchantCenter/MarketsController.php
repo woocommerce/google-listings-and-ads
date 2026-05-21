@@ -132,10 +132,16 @@ class MarketsController extends BaseController {
 		return function ( Request $request ) {
 			$config = [
 				'country'    => $request->get_param( 'country' ),
-				'language'   => $request->get_param( 'language' ),
-				'currency'   => $request->get_param( 'currency' ),
 				'feed_label' => $request->get_param( 'country' ),
 			];
+
+			if ( null !== $request->get_param( 'language' ) ) {
+				$config['language'] = $request->get_param( 'language' );
+			}
+
+			if ( null !== $request->get_param( 'currency' ) ) {
+				$config['currency'] = $request->get_param( 'currency' );
+			}
 
 			// TODO: Move ID generation into MarketService::generate_market_id().
 			$id = sanitize_title( $config['feed_label'] );
@@ -287,9 +293,7 @@ class MarketsController extends BaseController {
 		$schema = $this->get_schema_properties();
 
 		return [
-			'country'  => array_merge( $schema['country'], [ 'required' => true ] ),
-			'language' => array_merge( $schema['language'], [ 'required' => true ] ),
-			'currency' => array_merge( $schema['currency'], [ 'required' => true ] ),
+			'country' => array_merge( $schema['country'], [ 'required' => true ] ),
 		];
 	}
 

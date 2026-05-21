@@ -198,6 +198,97 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
+	public function test_post_market_without_language_currency_returns_201(): void {
+		$created_market = [
+			'country'       => 'GB',
+			'language'      => [ 'en' ],
+			'currency'      => [ 'USD' ],
+			'feed_label'    => 'GB',
+			'shipping_rate' => 'flat',
+			'shipping_time' => 'flat',
+			'free_shipping' => null,
+		];
+
+		$created = false;
+
+		$this->market_service->method( 'add_market' )
+			->with(
+				'gb',
+				$this->callback(
+					function ( $config ) {
+						return 'GB' === $config['country']
+							&& ! array_key_exists( 'language', $config )
+							&& ! array_key_exists( 'currency', $config );
+					}
+				)
+			)
+			->willReturnCallback(
+				function () use ( &$created ) {
+					$created = true;
+				}
+			);
+
+		$this->market_service->method( 'get_market' )
+			->willReturnCallback(
+				function ( string $id ) use ( &$created, $created_market ) {
+					if ( 'gb' === $id && $created ) {
+						return $created_market;
+					}
+					return null;
+				}
+			);
+
+		$response = $this->do_request(
+			self::ROUTE_MARKETS,
+			'POST',
+			[
+				'country' => 'GB',
+			]
+		);
+
+		$this->assertEquals( 201, $response->get_status() );
+	}
+
+	public function test_post_market_with_empty_language_currency_arrays_passes_empty_arrays(): void {
+		$created = false;
+
+		$this->market_service->method( 'add_market' )
+			->with(
+				'gb',
+				$this->callback(
+					function ( $config ) {
+						return 'GB' === $config['country']
+							&& [] === $config['language']
+							&& [] === $config['currency'];
+					}
+				)
+			)
+			->willReturnCallback(
+				function () use ( &$created ) {
+					$created = true;
+				}
+			);
+
+		$this->market_service->method( 'get_market' )
+			->willReturnCallback(
+				function ( string $id ) use ( &$created ) {
+					return $created ? [ 'country' => 'GB' ] : null;
+				}
+			);
+
+		$response = $this->do_request(
+			self::ROUTE_MARKETS,
+			'POST',
+			[
+				'country'  => 'GB',
+				'language' => [],
+				'currency' => [],
+			]
+		);
+
+		$this->assertEquals( 201, $response->get_status() );
+	}
+
 	public function test_post_market_returns_400_when_add_market_throws_invalid_value(): void {
 		$this->market_service->method( 'get_market' )
 			->willReturn( null );

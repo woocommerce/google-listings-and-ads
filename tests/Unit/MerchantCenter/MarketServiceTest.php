@@ -177,8 +177,8 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( 'Primary Market', $result['label'] );
 		$this->assertSame( [ 'US', 'CA' ], $result['countries'] );
 		$this->assertSame( 'US', $result['country'] );
-		$this->assertNotEmpty( $result['language'] );
-		$this->assertNotEmpty( $result['currency'] );
+		$this->assertSame( [ substr( get_locale(), 0, 2 ) ], $result['language'] );
+		$this->assertSame( [ get_woocommerce_currency() ], $result['currency'] );
 		$this->assertSame( 'US', $result['feed_label'] );
 		$this->assertSame( 'flat', $result['shipping_rate'] );
 		$this->assertSame( 'flat', $result['shipping_time'] );
@@ -243,8 +243,8 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->add_market(
 			'gb',
 			[
-				'country'  => 'GB',
 				'language' => [ 'en' ],
+				'currency' => [ 'GBP' ],
 			]
 		);
 	}
@@ -283,8 +283,8 @@ class MarketServiceTest extends UnitTest {
 		$this->assertArrayHasKey( OptionsInterface::MARKETS, $update_calls );
 		$stored_gb = $update_calls[ OptionsInterface::MARKETS ]['gb'];
 		$this->assertSame( 'GB', $stored_gb['country'] );
-		$this->assertSame( [ 'en' ], $stored_gb['language'] );
-		$this->assertSame( [ 'GBP' ], $stored_gb['currency'] );
+		$this->assertSame( [ substr( get_locale(), 0, 2 ) ], $stored_gb['language'] );
+		$this->assertSame( [ get_woocommerce_currency(), 'GBP' ], $stored_gb['currency'] );
 		$this->assertSame( 'GB', $stored_gb['feed_label'] );
 		$this->assertSame( 'flat', $stored_gb['shipping_rate'] );
 		$this->assertSame( 'flat', $stored_gb['shipping_time'] );
@@ -840,8 +840,107 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->add_market( 'ch', $config );
 
 		$stored_ch = $update_calls[ OptionsInterface::MARKETS ]['ch'];
-		$this->assertSame( [ 'de', 'fr', 'it' ], $stored_ch['language'] );
-		$this->assertSame( [ 'CHF', 'EUR' ], $stored_ch['currency'] );
+		$this->assertSame(
+			[ substr( get_locale(), 0, 2 ), 'de', 'fr', 'it' ],
+			$stored_ch['language']
+		);
+		$this->assertSame(
+			[ get_woocommerce_currency(), 'CHF', 'EUR' ],
+			$stored_ch['currency']
+		);
+	}
+
+	public function test_add_market_without_language_currency_stores_site_primary_only(): void {
+		$config = [
+			'country'    => 'GB',
+			'feed_label' => 'GB',
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'GB' ] ],
+			]
+		);
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->market_service->add_market( 'gb', $config );
+
+		$stored_gb = $update_calls[ OptionsInterface::MARKETS ]['gb'];
+		$this->assertSame( [ substr( get_locale(), 0, 2 ) ], $stored_gb['language'] );
+		$this->assertSame( [ get_woocommerce_currency() ], $stored_gb['currency'] );
+	}
+
+	public function test_add_market_with_empty_language_currency_arrays_stores_site_primary_only(): void {
+		$config = [
+			'country'    => 'GB',
+			'language'   => [],
+			'currency'   => [],
+			'feed_label' => 'GB',
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'GB' ] ],
+			]
+		);
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->market_service->add_market( 'gb', $config );
+
+		$stored_gb = $update_calls[ OptionsInterface::MARKETS ]['gb'];
+		$this->assertSame( [ substr( get_locale(), 0, 2 ) ], $stored_gb['language'] );
+		$this->assertSame( [ get_woocommerce_currency() ], $stored_gb['currency'] );
+	}
+
+	public function test_add_market_with_extra_languages_prepends_site_primary(): void {
+		$config = [
+			'country'    => 'FR',
+			'language'   => [ 'fr', 'de' ],
+			'currency'   => [ 'EUR' ],
+			'feed_label' => 'FR',
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'FR' ] ],
+			]
+		);
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->market_service->add_market( 'fr', $config );
+
+		$stored_fr = $update_calls[ OptionsInterface::MARKETS ]['fr'];
+		$this->assertSame(
+			[ substr( get_locale(), 0, 2 ), 'fr', 'de' ],
+			$stored_fr['language']
+		);
 	}
 
 	/**
