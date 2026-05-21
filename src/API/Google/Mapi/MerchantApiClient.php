@@ -84,7 +84,7 @@ class MerchantApiClient {
 				if ( $reason instanceof RequestException && $reason->hasResponse() ) {
 					throw new MerchantApiException(
 						$reason->getResponse()->getStatusCode(),
-						$this->decode_response( $reason->getResponse(), false ),
+						$this->decode_response( $reason->getResponse() ),
 						$method_label,
 						$reason
 					);
@@ -147,27 +147,16 @@ class MerchantApiClient {
 	}
 
 	/**
-	 * Decode a JSON response.
+	 * Decode a JSON response body to an array.
 	 *
 	 * @param ResponseInterface $response
-	 * @param bool              $throw_on_error_status Whether to throw a MerchantApiException for non-2xx.
 	 *
 	 * @return array
-	 * @throws MerchantApiException When the status is outside 2xx and $throw_on_error_status is true.
 	 */
-	protected function decode_response( ResponseInterface $response, bool $throw_on_error_status = true ): array {
+	protected function decode_response( ResponseInterface $response ): array {
 		$body    = (string) $response->getBody();
 		$decoded = '' === $body ? [] : json_decode( $body, true );
 
-		if ( ! is_array( $decoded ) ) {
-			$decoded = [];
-		}
-
-		$status = $response->getStatusCode();
-		if ( $throw_on_error_status && ( $status < 200 || $status >= 300 ) ) {
-			throw new MerchantApiException( $status, $decoded, __METHOD__ );
-		}
-
-		return $decoded;
+		return is_array( $decoded ) ? $decoded : [];
 	}
 }

@@ -122,4 +122,38 @@ class MapiProductsServiceTest extends UnitTest {
 		$this->assertArrayHasKey( 'good2', $results );
 		$this->assertArrayNotHasKey( 'bad', $results );
 	}
+
+	public function test_get_many_routes_non_api_rejections_to_gla_exception_action() {
+		$captured = [];
+		$callback = function ( $reason, $method ) use ( &$captured ) {
+			$captured[] = [ $reason, $method ];
+		};
+
+		add_action( 'woocommerce_gla_exception', $callback, 10, 2 );
+
+		$boom = new \RuntimeException( 'boom' );
+		$this->client->method( 'get_async' )
+			->willReturnCallback(
+				function ( string $path ) use ( $boom ) {
+					if ( false !== strpos( $path, '/explode' ) ) {
+						return Create::rejectionFor( $boom );
+					}
+
+					$id = substr( $path, strrpos( $path, '/' ) + 1 );
+					return Create::promiseFor(
+						[
+							'name'    => $path,
+							'offerId' => $id,
+						]
+					);
+				}
+			);
+
+		$this->service->get_many( [ 'good', 'explode' ] );
+
+		remove_action( 'woocommerce_gla_exception', $callback, 10 );
+
+		$this->assertCount( 1, $captured );
+		$this->assertSame( $boom, $captured[0][0] );
+	}
 }

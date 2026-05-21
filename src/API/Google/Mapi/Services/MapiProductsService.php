@@ -23,6 +23,9 @@ class MapiProductsService implements OptionsAwareInterface {
 
 	use OptionsAwareTrait;
 
+	/** Base path for the Merchant API products. */
+	protected const API_PATH = 'products/v1';
+
 	/** @var MerchantApiClient */
 	protected $client;
 
@@ -77,8 +80,11 @@ class MapiProductsService implements OptionsAwareInterface {
 				'fulfilled'   => function ( array $body, string $id ) use ( &$results ) {
 					$results[ $id ] = Product::from_array( $body );
 				},
-				'rejected'    => function () {
-					// MerchantApiException already fires the logging action.
+				'rejected'    => function ( $reason ) {
+					if ( ! $reason instanceof MerchantApiException ) {
+						do_action( 'woocommerce_gla_exception', $reason, __METHOD__ );
+					}
+					// MerchantApiException already fires woocommerce_gla_mc_client_exception.
 				},
 			]
 		) )->promise()->wait();
@@ -95,7 +101,8 @@ class MapiProductsService implements OptionsAwareInterface {
 	 */
 	protected function build_path( string $google_product_id ): string {
 		return sprintf(
-			'products/v1/accounts/%s/products/%s',
+			'%s/accounts/%s/products/%s',
+			self::API_PATH,
 			$this->options->get_merchant_id(),
 			$google_product_id
 		);
