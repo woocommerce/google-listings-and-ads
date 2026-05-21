@@ -185,7 +185,7 @@ const MarketForm = ( {
 
 		switch ( change.name ) {
 			case 'flat_shipping_rate': {
-				const isFree = ! ( change.value > 0 );
+				const isFree = change.value === 0;
 				setValue(
 					'shipping_country_rates',
 					updateRateRows(
