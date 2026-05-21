@@ -19,7 +19,11 @@ import useGoogleAdsAccountBillingStatus from '~/hooks/useGoogleAdsAccountBilling
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import { getProductFeedUrl } from '~/utils/urls';
 import { handleApiError } from '~/utils/handleError';
-import { FILTER_BUDGET_RECOMMENDATIONS, recordGlaEvent } from '~/utils/tracks';
+import {
+	FILTER_BUDGET_RECOMMENDATIONS,
+	CONTEXT_EXTENSION_ONBOARDING,
+	recordGlaEvent,
+} from '~/utils/tracks';
 import { useAppDispatch } from '~/data';
 import {
 	GUIDE_NAMES,
@@ -31,6 +35,7 @@ import SkipButton from './skip-button';
 import clientSession from './clientSession';
 import AppSpinner from '~/components/app-spinner';
 import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
+import useApplyCYOIncentive from '~/hooks/useApplyCYOIncentive';
 
 /**
  * Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
@@ -44,9 +49,18 @@ import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationC
  */
 
 /**
+ * Selecting a "Choose Your Own" incentive offer when setting up paid ads during onboarding.
+ *
+ * @event gla_onboarding_with_cyo_incentive_selected
+ * @property {string} context The context in which the incentive offer is selected, e.g. 'create-ads', 'edit-ads', 'setup-ads', 'setup-mc', or 'setup-ads-only'.
+ * @property {string} level The level of the selected incentive offer, e.g. 'low', 'medium', or 'high'.
+ */
+
+/**
  * Renders the onboarding step for setting up the paid ads (Google Ads account and paid campaign)
  * or skipping it, and then completing the onboarding flow.
  * @fires gla_onboarding_complete_with_paid_ads_button_click
+ * @fires gla_onboarding_with_cyo_incentive_selected
  */
 export default function SetupPaidAds() {
 	const budgetPromptRef = useRef();
@@ -58,6 +72,8 @@ export default function SetupPaidAds() {
 	const { syncSettings } = useAppDispatch();
 	const { handleError: handleEuPoliticalDeclarationError } =
 		useEuPoliticalDeclarationContext();
+	const { applyIncentive, loading: incentiveLoading } =
+		useApplyCYOIncentive();
 	const getEventProps = useEventPropertiesFilter(
 		FILTER_BUDGET_RECOMMENDATIONS
 	);
@@ -93,13 +109,27 @@ export default function SetupPaidAds() {
 		window.location.href = adminUrl + getProductFeedUrl( query );
 	};
 
-	const handleSkipCreatePaidAds = async () => {
+	const skipCreatePaidAds = async ( incentiveOffer ) => {
 		setCompleting( ACTION_SKIP );
+
+		const applied = await applyIncentive( incentiveOffer );
+
+		if ( applied ) {
+			recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
+				context: CONTEXT_EXTENSION_ONBOARDING,
+				level: incentiveOffer,
+			} );
+		}
+
 		await finishOnboardingSetup();
 	};
 
 	const createSkipButton = ( formContext ) => {
-		const { isValidForm } = formContext;
+		const { isValidForm, values } = formContext;
+
+		const handleSkipCreatePaidAds = () => {
+			skipCreatePaidAds( values.incentiveOffer );
+		};
 
 		return (
 			<SkipButton
@@ -114,7 +144,10 @@ export default function SetupPaidAds() {
 	const createContinueButton = ( formContext ) => {
 		const { isValidForm, values } = formContext;
 		const disabled =
-			completing === ACTION_SKIP || ! isValidForm || ! isBillingCompleted;
+			completing === ACTION_SKIP ||
+			! isValidForm ||
+			! isBillingCompleted ||
+			incentiveLoading;
 
 		const handleClick = () => {
 			budgetPromptRef.current
@@ -139,24 +172,36 @@ export default function SetupPaidAds() {
 		);
 	};
 
-	const paidAds = {
-		...clientSession.getCampaign(),
-	};
-
 	if ( ! countryCodes ) {
 		return <AppSpinner />;
 	}
 
+	const paidAds = clientSession.getCampaign();
+
 	const handleSubmit = async ( values ) => {
-		const { level, dailyBudget, hasConfirmedEuPoliticalContent } = values;
+		const {
+			level,
+			dailyBudget,
+			incentiveOffer,
+			hasConfirmedEuPoliticalContent,
+		} = values;
+
+		setCompleting( ACTION_COMPLETE );
+
+		const applied = await applyIncentive( incentiveOffer );
+		if ( applied ) {
+			recordGlaEvent( 'gla_onboarding_with_cyo_incentive_selected', {
+				context: CONTEXT_EXTENSION_ONBOARDING,
+				level: incentiveOffer,
+			} );
+		}
+
 		const onBeforeFinish = handleSetupComplete.bind(
 			null,
 			dailyBudget,
 			countryCodes,
 			hasConfirmedEuPoliticalContent
 		);
-
-		setCompleting( ACTION_COMPLETE );
 
 		recordGlaEvent(
 			'gla_onboarding_complete_with_paid_ads_button_click',
@@ -188,7 +233,7 @@ export default function SetupPaidAds() {
 				) }
 				continueButton={ createContinueButton }
 				skipButton={ createSkipButton }
-				context="setup-mc"
+				context={ CONTEXT_EXTENSION_ONBOARDING }
 			/>
 			<BudgetIncentivePrompt
 				ref={ budgetPromptRef }

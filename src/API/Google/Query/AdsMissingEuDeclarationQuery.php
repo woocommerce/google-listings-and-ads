@@ -28,6 +28,6 @@ class AdsMissingEuDeclarationQuery extends AdsQuery {
 	 * @return string
 	 */
 	protected function build_query(): string {
-		return 'SELECT campaign.id, campaign.name FROM campaign WHERE campaign.missing_eu_political_advertising_declaration = true';
+		return 'SELECT campaign.id, campaign.name, campaign.advertising_channel_type FROM campaign WHERE campaign.missing_eu_political_advertising_declaration = true';
 	}
 }

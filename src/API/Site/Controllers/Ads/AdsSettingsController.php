@@ -49,6 +49,7 @@ class AdsSettingsController extends BaseOptionsController {
 	protected function get_allowed_options(): array {
 		return [
 			OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED => false,
+			OptionsInterface::ADS_HAS_UNCLAIMED_INCENTIVE      => false,
 		];
 	}
 
@@ -150,6 +151,16 @@ class AdsSettingsController extends BaseOptionsController {
 					'google-listings-and-ads'
 				),
 				'context'     => [ 'view', 'edit' ],
+			],
+			OptionsInterface::ADS_HAS_UNCLAIMED_INCENTIVE      => [
+				'type'        => 'boolean',
+				'description' => __(
+					'Whether the merchant has an unclaimed incentive that can still be applied.',
+					'google-listings-and-ads'
+				),
+				'default'     => false,
+				'context'     => [ 'view' ],
+				'readonly'    => true,
 			],
 		];
 	}
