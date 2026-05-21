@@ -37,23 +37,25 @@ function getCountryPredicate( isPrimaryMarket, values ) {
 }
 
 /**
- * Patches top-level fields on matching rate rows.
+ * Patches top-level fields and/or the `options` object on matching rate rows.
+ *
+ * @param {Array}    rates         Current rate rows.
+ * @param {Function} isTarget      Predicate — true for rows that should be patched.
+ * @param {Object}   [patch]       Top-level fields to merge onto matching rows.
+ * @param {Object}   [optionsPatch] Fields to merge into `row.options` on matching rows.
+ * @return {Array} New rate array with matching rows patched.
  */
-function updateRates( rates, isTarget, patch ) {
-	return rates.map( ( rate ) =>
-		isTarget( rate.country ) ? { ...rate, ...patch } : rate
-	);
-}
-
-/**
- * Patches the `options` object on matching rate rows (merges, does not replace).
- */
-function updateRateOptions( rates, isTarget, optionsPatch ) {
-	return rates.map( ( rate ) =>
-		isTarget( rate.country )
-			? { ...rate, options: { ...rate.options, ...optionsPatch } }
-			: rate
-	);
+function updateRateRows( rates, isTarget, patch, optionsPatch ) {
+	return rates.map( ( rate ) => {
+		if ( ! isTarget( rate.country ) ) return rate;
+		return {
+			...rate,
+			...patch,
+			...( optionsPatch !== undefined && {
+				options: { ...rate.options, ...optionsPatch },
+			} ),
+		};
+	} );
 }
 
 /**
@@ -179,20 +181,38 @@ const MarketForm = ( {
 		const times = values.shipping_country_times || [];
 
 		switch ( change.name ) {
-			case 'flat_shipping_rate':
+			case 'flat_shipping_rate': {
+				const isFree = ! ( change.value > 0 );
 				setValue(
 					'shipping_country_rates',
-					updateRates( rates, isTarget, { rate: change.value } )
+					updateRateRows(
+						rates,
+						isTarget,
+						{ rate: change.value },
+						isFree
+							? { free_shipping_threshold: undefined }
+							: undefined
+					)
 				);
+				if ( isFree ) {
+					setValue( 'free_shipping_threshold', undefined );
+					setValue( 'offer_free_shipping', false );
+				}
 				break;
+			}
 
 			case 'offer_free_shipping':
 				if ( change.value === false ) {
 					setValue(
 						'shipping_country_rates',
-						updateRateOptions( rates, isTarget, {
-							free_shipping_threshold: undefined,
-						} )
+						updateRateRows(
+							rates,
+							isTarget,
+							{},
+							{
+								free_shipping_threshold: undefined,
+							}
+						)
 					);
 				}
 				break;
@@ -214,9 +234,14 @@ const MarketForm = ( {
 			case 'free_shipping_threshold':
 				setValue(
 					'shipping_country_rates',
-					updateRateOptions( rates, isTarget, {
-						free_shipping_threshold: change.value,
-					} )
+					updateRateRows(
+						rates,
+						isTarget,
+						{},
+						{
+							free_shipping_threshold: change.value,
+						}
+					)
 				);
 				break;
 		}
