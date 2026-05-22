@@ -61,7 +61,8 @@ const isPrimaryMarket = ( market ) => market.id === PRIMARY_MARKET_ID;
  * Each scenario builder returns an object with `fields` (DataViews column definitions) and `data` (pre-formatted rows).
  *
  * Scenarios:
- * - Manual: Market, Country (count), Shipping (static "Managed in Google"). Only primary market shown.
+ * - Manual non-multilingual: Market, Country (count), Shipping (static "Managed in Google"). Only primary market shown.
+ * - Manual multilingual: Market (label + country count for primary, country name for secondaries), Language, Currency. All markets shown.
  * - Flat: Market, Shipping Rate, Shipping Time, Free shipping. All markets shown.
  * - Automatic multilingual: Market, Language, Currency, Shipping time. All markets shown.
  * - Automatic non-multilingual: Market (label + country count), Shipping time. Only primary market shown.
@@ -208,14 +209,57 @@ const formatFreeShipping = ( rateRow ) => {
 };
 
 /**
- * Manual shipping scenario: Market, Country (count), Shipping (static "Managed in Google").
- * Only the primary market row is shown.
+ * Manual shipping scenario. The column set differs based on whether the store
+ * has multilingual support:
  *
- * @param {Object}         options
- * @param {Market}         options.primaryMarket Primary market data from usePrimaryMarketDetails.
+ * - Multilingual: Market (label + country count for primary, country name for
+ *   secondaries), Language, Currency — all markets as rows.
+ * - Non-multilingual: Market, Country (count), Shipping (static "Managed in
+ *   Google") — primary market only.
+ *
+ * @param {Object}     options
+ * @param {Market}     options.primaryMarket       Primary market data from usePrimaryMarketDetails.
+ * @param {Market[]}   options.markets             All markets from useMarkets.
+ * @param {boolean}    options.isMultiLingualStore Whether the store has a multilingual plugin.
  * @return {DataViewsConfig} DataViews fields and pre-formatted rows.
  */
-const buildManualConfig = ( { primaryMarket } ) => {
+const buildManualConfig = ( {
+	primaryMarket,
+	markets,
+	isMultiLingualStore,
+} ) => {
+	if ( isMultiLingualStore ) {
+		const fields = [
+			ALL_FIELDS.market,
+			ALL_FIELDS.language,
+			ALL_FIELDS.currency,
+		];
+
+		const data = markets.map( ( market ) => {
+			if ( ! isPrimaryMarket( market ) ) {
+				return market;
+			}
+
+			const countryCount = market.countries?.length ?? 0;
+			return {
+				...market,
+				label: sprintf(
+					// translators: 1: market label, 2: number of countries.
+					_n(
+						'%1$s (%2$d country)',
+						'%1$s (%2$d countries)',
+						countryCount,
+						'google-listings-and-ads'
+					),
+					market.label,
+					countryCount
+				),
+			};
+		} );
+
+		return { fields, data };
+	}
+
 	const countryCount = primaryMarket?.countries?.length ?? 0;
 
 	const fields = [
@@ -360,7 +404,7 @@ const buildAutomaticConfig = ( {
  * any scenario that doesn't yet have a dedicated builder.
  *
  * TODO: Remove once all scenarios have explicit branches:
- *   - GOOWOO-598 / -602: remaining multilingual variants.
+ *   - GOOWOO-602: flat + multilingual variant.
  *
  * @param {Object}              options
  * @param {Market[]}           options.markets      All markets from useMarkets.
@@ -431,7 +475,11 @@ const useMarketDataViewsConfig = () => {
 
 	if ( shippingRate === SHIPPING_RATE_METHOD.MANUAL ) {
 		return {
-			...buildManualConfig( { primaryMarket } ),
+			...buildManualConfig( {
+				primaryMarket,
+				markets,
+				isMultiLingualStore,
+			} ),
 			hasFinishedResolution,
 		};
 	}
