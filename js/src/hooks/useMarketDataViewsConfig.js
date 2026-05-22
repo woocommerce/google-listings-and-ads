@@ -61,9 +61,10 @@ const isPrimaryMarket = ( market ) => market.id === PRIMARY_MARKET_ID;
  * Each scenario builder returns an object with `fields` (DataViews column definitions) and `data` (pre-formatted rows).
  *
  * Scenarios:
- * - Manual: Market, Country (count), Shipping (static "Managed in Google"). Only primary market shown.
- * - Flat: Market, Shipping Rate, Shipping Time, Free shipping. All markets shown.
- * - Automatic multilingual: Market, Language, Currency, Shipping time. All markets shown.
+ * - Manual non-multilingual: Market, Country (count), Shipping (static "Managed in Google"). Only primary market shown.
+ * - Manual multilingual: Market (label + country count for primary, country name for secondaries), Language, Currency. All markets shown.
+ * - Flat (multilingual or not): Market (label + country count for primary), Shipping Rate, Shipping Time, Free shipping. All markets shown. Both store types render identically per Figma; the multilingual variant of this scenario is GOOWOO-602.
+ * - Automatic multilingual: Market (label + country count for primary), Language, Currency, Shipping time. All markets shown.
  * - Automatic non-multilingual: Market (label + country count), Shipping time. Only primary market shown.
  * - Default/fall-through: Market + Shipping time for all markets, with primary market showing country count in label.
  */
@@ -208,14 +209,57 @@ const formatFreeShipping = ( rateRow ) => {
 };
 
 /**
- * Manual shipping scenario: Market, Country (count), Shipping (static "Managed in Google").
- * Only the primary market row is shown.
+ * Manual shipping scenario. The column set differs based on whether the store
+ * has multilingual support:
  *
- * @param {Object}         options
- * @param {Market}         options.primaryMarket Primary market data from usePrimaryMarketDetails.
+ * - Multilingual: Market (label + country count for primary, country name for
+ *   secondaries), Language, Currency — all markets as rows.
+ * - Non-multilingual: Market, Country (count), Shipping (static "Managed in
+ *   Google") — primary market only.
+ *
+ * @param {Object}     options
+ * @param {Market}     options.primaryMarket       Primary market data from usePrimaryMarketDetails.
+ * @param {Market[]}   options.markets             All markets from useMarkets.
+ * @param {boolean}    options.isMultiLingualStore Whether the store has a multilingual plugin.
  * @return {DataViewsConfig} DataViews fields and pre-formatted rows.
  */
-const buildManualConfig = ( { primaryMarket } ) => {
+const buildManualConfig = ( {
+	primaryMarket,
+	markets,
+	isMultiLingualStore,
+} ) => {
+	if ( isMultiLingualStore ) {
+		const fields = [
+			ALL_FIELDS.market,
+			ALL_FIELDS.language,
+			ALL_FIELDS.currency,
+		];
+
+		const data = markets.map( ( market ) => {
+			if ( ! isPrimaryMarket( market ) ) {
+				return market;
+			}
+
+			const countryCount = market.countries?.length ?? 0;
+			return {
+				...market,
+				label: sprintf(
+					// translators: 1: market label, 2: number of countries.
+					_n(
+						'%1$s (%2$d country)',
+						'%1$s (%2$d countries)',
+						countryCount,
+						'google-listings-and-ads'
+					),
+					market.label,
+					countryCount
+				),
+			};
+		} );
+
+		return { fields, data };
+	}
+
 	const countryCount = primaryMarket?.countries?.length ?? 0;
 
 	const fields = [
@@ -253,6 +297,10 @@ const buildManualConfig = ( { primaryMarket } ) => {
  * Flat shipping scenario: Market, Shipping Rate, Shipping Time, Free shipping.
  * All markets (primary and additional) appear as rows.
  *
+ * Covers both non-multilingual and multilingual stores — Figma renders both
+ * frames identically, so the builder is shared rather than branched on
+ * `isMultiLingualStore`. The multilingual variant is tracked as GOOWOO-602.
+ *
  * @param {Object}                  options
  * @param {Market[]}               options.markets        All markets from useMarkets.
  * @param {Object.<string,RateRow>} options.ratesByCountry Country-keyed map of shipping rate rows.
@@ -277,12 +325,30 @@ const buildFlatConfig = ( { markets, ratesByCountry, timesByCountry } ) => {
 
 		const rateRow = ratesByCountry[ country ];
 		const timeRow = timesByCountry[ country ];
-		return {
+
+		const row = {
 			...market,
 			shippingRate: formatShippingRate( rateRow ),
 			shippingTime: formatShippingTime( timeRow ),
 			freeShipping: formatFreeShipping( rateRow ),
 		};
+
+		if ( isPrimaryMarket( market ) ) {
+			const countryCount = market.countries?.length ?? 0;
+			row.label = sprintf(
+				// translators: 1: market label, 2: number of countries.
+				_n(
+					'%1$s (%2$d country)',
+					'%1$s (%2$d countries)',
+					countryCount,
+					'google-listings-and-ads'
+				),
+				market.label,
+				countryCount
+			);
+		}
+
+		return row;
 	} );
 
 	return { fields, data };
@@ -292,7 +358,7 @@ const buildFlatConfig = ( { markets, ratesByCountry, timesByCountry } ) => {
  * Automatic shipping scenario. The column set differs based on whether the store
  * has multilingual support:
  *
- * - Multilingual: Market, Language, Currency, Shipping time — all markets as rows.
+ * - Multilingual: Market (label + country count for primary, country name for secondaries), Language, Currency, Shipping time — all markets as rows.
  * - Non-multilingual: Market (label + country count), Shipping time — primary market only.
  *
  * @param {Object}                  options
@@ -316,12 +382,31 @@ const buildAutomaticConfig = ( {
 			ALL_FIELDS.shippingTime,
 		];
 
-		const data = markets.map( ( market ) => ( {
-			...market,
-			shippingTime: formatShippingTime(
-				timesByCountry[ market.country ]
-			),
-		} ) );
+		const data = markets.map( ( market ) => {
+			const row = {
+				...market,
+				shippingTime: formatShippingTime(
+					timesByCountry[ market.country ]
+				),
+			};
+
+			if ( isPrimaryMarket( market ) ) {
+				const countryCount = market.countries?.length ?? 0;
+				row.label = sprintf(
+					// translators: 1: market label, 2: number of countries.
+					_n(
+						'%1$s (%2$d country)',
+						'%1$s (%2$d countries)',
+						countryCount,
+						'google-listings-and-ads'
+					),
+					market.label,
+					countryCount
+				);
+			}
+
+			return row;
+		} );
 
 		return { fields, data };
 	}
@@ -357,10 +442,9 @@ const buildAutomaticConfig = ( {
 
 /**
  * Fall-through default — preserves the legacy Market + Shipping times shape for
- * any scenario that doesn't yet have a dedicated builder.
- *
- * TODO: Remove once all scenarios have explicit branches:
- *   - GOOWOO-598 / -602: remaining multilingual variants.
+ * any scenario that doesn't yet have a dedicated builder. With every documented
+ * scenario now branched, this only catches unexpected `shipping_rate` values
+ * and serves as a safety net.
  *
  * @param {Object}              options
  * @param {Market[]}           options.markets      All markets from useMarkets.
@@ -431,7 +515,11 @@ const useMarketDataViewsConfig = () => {
 
 	if ( shippingRate === SHIPPING_RATE_METHOD.MANUAL ) {
 		return {
-			...buildManualConfig( { primaryMarket } ),
+			...buildManualConfig( {
+				primaryMarket,
+				markets,
+				isMultiLingualStore,
+			} ),
 			hasFinishedResolution,
 		};
 	}

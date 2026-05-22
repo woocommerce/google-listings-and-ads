@@ -90,6 +90,22 @@ const SECONDARY_MARKET_MULTILINGUAL_AUTOMATIC = {
 	currency: 'EUR',
 };
 
+const PRIMARY_MARKET_MULTILINGUAL_MANUAL = {
+	...PRIMARY_MARKET,
+	shipping_rate: 'manual',
+	language: 'English',
+	currency: 'USD',
+};
+
+const SECONDARY_MARKET_MULTILINGUAL_MANUAL = {
+	id: 'fr',
+	country: 'FR',
+	label: 'France',
+	shipping_rate: 'manual',
+	language: 'French',
+	currency: 'EUR',
+};
+
 const setMocks = ( {
 	primary = PRIMARY_MARKET,
 	markets = [ PRIMARY_MARKET ],
@@ -329,6 +345,33 @@ describe( 'useMarketDataViewsConfig', () => {
 			);
 			expect( result.current.data[ 1 ].freeShipping ).toMatch( /50/ );
 		} );
+
+		test( 'formats the primary market label with the country count', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_FLAT,
+				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.data[ 0 ].label ).toBe(
+				'Primary Market (3 countries)'
+			);
+		} );
+
+		test( 'leaves the secondary market label as the country name', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_FLAT,
+				markets: [
+					PRIMARY_MARKET_FLAT,
+					{ ...SECONDARY_MARKET_FLAT, label: 'France' },
+				],
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.data[ 1 ].label ).toBe( 'France' );
+		} );
 	} );
 
 	describe( 'automatic shipping, no multilingual store', () => {
@@ -457,6 +500,199 @@ describe( 'useMarketDataViewsConfig', () => {
 			expect( secondary.language ).toBe( 'French' );
 			expect( secondary.currency ).toBe( 'EUR' );
 			expect( secondary.shippingTime ).toBe( '5 - 7 days' );
+		} );
+
+		test( 'formats the primary market label with the country count', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_MULTILINGUAL_AUTOMATIC,
+				markets: [
+					PRIMARY_MARKET_MULTILINGUAL_AUTOMATIC,
+					SECONDARY_MARKET_MULTILINGUAL_AUTOMATIC,
+				],
+				multiLingualStore: true,
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.data[ 0 ].label ).toBe(
+				'Primary Market (3 countries)'
+			);
+		} );
+	} );
+
+	describe( 'multilingual store, manual shipping', () => {
+		test( 'returns exactly three fields: Market, Language, Currency', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_MULTILINGUAL_MANUAL,
+				markets: [ PRIMARY_MARKET_MULTILINGUAL_MANUAL ],
+				multiLingualStore: true,
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.fields.map( ( f ) => f.id ) ).toEqual( [
+				'market',
+				'language',
+				'currency',
+			] );
+		} );
+
+		test( 'includes both primary and additional markets as rows', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_MULTILINGUAL_MANUAL,
+				markets: [
+					PRIMARY_MARKET_MULTILINGUAL_MANUAL,
+					SECONDARY_MARKET_MULTILINGUAL_MANUAL,
+				],
+				multiLingualStore: true,
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.data ).toHaveLength( 2 );
+			expect( result.current.data[ 0 ].id ).toBe( 'primary' );
+			expect( result.current.data[ 1 ].id ).toBe( 'fr' );
+		} );
+
+		test( 'formats the primary market label with the country count', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_MULTILINGUAL_MANUAL,
+				markets: [ PRIMARY_MARKET_MULTILINGUAL_MANUAL ],
+				multiLingualStore: true,
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.data[ 0 ].label ).toBe(
+				'Primary Market (3 countries)'
+			);
+		} );
+
+		test( 'pluralizes singular country count', () => {
+			setMocks( {
+				primary: {
+					...PRIMARY_MARKET_MULTILINGUAL_MANUAL,
+					countries: [ 'US' ],
+				},
+				markets: [
+					{
+						...PRIMARY_MARKET_MULTILINGUAL_MANUAL,
+						countries: [ 'US' ],
+					},
+				],
+				multiLingualStore: true,
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.data[ 0 ].label ).toBe(
+				'Primary Market (1 country)'
+			);
+		} );
+
+		test( 'leaves the secondary market label as the country name', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_MULTILINGUAL_MANUAL,
+				markets: [
+					PRIMARY_MARKET_MULTILINGUAL_MANUAL,
+					SECONDARY_MARKET_MULTILINGUAL_MANUAL,
+				],
+				multiLingualStore: true,
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.data[ 1 ].label ).toBe( 'France' );
+		} );
+
+		test( 'each row retains market language and currency', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_MULTILINGUAL_MANUAL,
+				markets: [
+					PRIMARY_MARKET_MULTILINGUAL_MANUAL,
+					SECONDARY_MARKET_MULTILINGUAL_MANUAL,
+				],
+				multiLingualStore: true,
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+			const [ primary, secondary ] = result.current.data;
+
+			expect( primary.language ).toBe( 'English' );
+			expect( primary.currency ).toBe( 'USD' );
+			expect( secondary.language ).toBe( 'French' );
+			expect( secondary.currency ).toBe( 'EUR' );
+		} );
+	} );
+
+	describe( 'multilingual store, flat shipping', () => {
+		// Per Figma, the multilingual flat table renders identically to the
+		// non-multilingual flat table — no Language/Currency columns, same
+		// rendering. These tests lock in that decision so future changes that
+		// diverge the two are caught.
+
+		test( 'returns the same four fields as the non-multilingual flat scenario', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_FLAT,
+				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
+				multiLingualStore: true,
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.fields.map( ( f ) => f.id ) ).toEqual( [
+				'market',
+				'shippingRate',
+				'shippingTime',
+				'freeShipping',
+			] );
+		} );
+
+		test( 'includes both primary and additional markets as rows', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_FLAT,
+				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
+				multiLingualStore: true,
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.data ).toHaveLength( 2 );
+			expect( result.current.data[ 0 ].id ).toBe( 'primary' );
+			expect( result.current.data[ 1 ].id ).toBe( 'fr' );
+		} );
+
+		test( 'formats shipping cells the same way as the non-multilingual flat scenario', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_FLAT,
+				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
+				multiLingualStore: true,
+				shippingRates: SHIPPING_RATES,
+				shippingTimes: SHIPPING_TIMES,
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+			const [ primary, secondary ] = result.current.data;
+
+			expect( primary.shippingRate ).toMatch( /10/ );
+			expect( primary.shippingTime ).toBe( '3 - 5 days' );
+			expect( secondary.shippingRate ).toMatch( /8/ );
+			expect( secondary.shippingTime ).toBe( '5 - 7 days' );
+			expect( secondary.freeShipping ).toMatch( /Free over/ );
+		} );
+
+		test( 'formats the primary market label with the country count', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_FLAT,
+				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
+				multiLingualStore: true,
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.data[ 0 ].label ).toBe(
+				'Primary Market (3 countries)'
+			);
 		} );
 	} );
 
