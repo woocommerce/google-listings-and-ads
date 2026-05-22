@@ -272,7 +272,10 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->market_service->method( 'get_market' )
 			->willReturnCallback(
 				function ( string $id ) use ( &$created ) {
-					return $created ? [ 'country' => 'GB' ] : null;
+					if ( 'gb' === $id && $created ) {
+						return [ 'country' => 'GB' ];
+					}
+					return null;
 				}
 			);
 
