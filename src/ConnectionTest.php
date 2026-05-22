@@ -353,11 +353,16 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 							<th>MAPI Resolve Data Source:</th>
 							<td>
 								<p>
-									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'mapi-resolve-datasource' ], $url ), 'mapi-resolve-datasource' ) ); ?>">Resolve primary data source</a>
+									<input name="mapi_ds_language" type="text" style="width:5em" placeholder="en" value="<?php echo isset( $_GET['mapi_ds_language'] ) ? esc_attr( $_GET['mapi_ds_language'] ) : 'en'; ?>" />
+									<input name="mapi_ds_feed" type="text" style="width:5em" placeholder="US" value="<?php echo isset( $_GET['mapi_ds_feed'] ) ? esc_attr( $_GET['mapi_ds_feed'] ) : 'US'; ?>" />
+									<button class="button">Resolve data source</button>
 								</p>
 							</td>
 						</tr>
 					</table>
+					<?php wp_nonce_field( 'mapi-resolve-datasource' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="mapi-resolve-datasource" type="hidden" />
 				</form>
 				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 					<table class="form-table" role="presentation">
@@ -1319,12 +1324,15 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 		}
 
 		if ( 'mapi-resolve-datasource' === $_GET['action'] && check_admin_referer( 'mapi-resolve-datasource' ) ) {
+			$language = isset( $_GET['mapi_ds_language'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_ds_language'] ) ) : 'en';
+			$feed     = isset( $_GET['mapi_ds_feed'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_ds_feed'] ) ) : 'US';
+
 			/** @var MapiDataSourcesService $service */
 			$service        = $this->container->get( MapiDataSourcesService::class );
-			$this->response = "MAPI ensure_primary_data_source\n\n";
+			$this->response = "MAPI ensure_data_source_for({$language}, {$feed})\n\n";
 
 			try {
-				$this->response .= $service->ensure_primary_data_source() . "\n";
+				$this->response .= $service->ensure_data_source_for( $language, $feed ) . "\n";
 			} catch ( MerchantApiException $e ) {
 				$this->response .= sprintf( "HTTP %d\n", $e->get_http_status() );
 				$this->response .= print_r( $e->get_response_body(), true );
