@@ -60,11 +60,10 @@ const AddMarketModal = ( {
 		currency: currencyCode,
 	};
 
-	// Non-multilingual store with manual shipping has no form fields to fill in —
-	// it only shows the multilingual plugin prompt.
-	const isManualNonMultilingual =
+	const showAddMarketButton = ! (
 		! glaData.isMultiLingualStore &&
-		settings?.shipping_rate === SHIPPING_RATE_METHOD.MANUAL;
+		settings?.shipping_rate === SHIPPING_RATE_METHOD.MANUAL
+	);
 
 	return (
 		<MarketForm initialMarket={ initialMarket } onSubmit={ onRequestClose }>
@@ -82,9 +81,7 @@ const AddMarketModal = ( {
 				let buttons = [
 					<AppButton
 						key="close"
-						variant={
-							! isManualNonMultilingual ? 'tertiary' : 'primary'
-						}
+						variant={ showAddMarketButton ? 'tertiary' : 'primary' }
 						onClick={ onRequestClose }
 						disabled={ isSaving }
 						eventName="gla_cancel_button_clicked"
@@ -96,7 +93,7 @@ const AddMarketModal = ( {
 					</AppButton>,
 				];
 
-				if ( ! isManualNonMultilingual ) {
+				if ( showAddMarketButton ) {
 					buttons = [
 						...buttons,
 						<AppButton

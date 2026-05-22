@@ -1,8 +1,4 @@
 /**
- * External dependencies
- */
-
-/**
  * Internal dependencies
  */
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
