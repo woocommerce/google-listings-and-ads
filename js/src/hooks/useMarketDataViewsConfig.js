@@ -63,7 +63,7 @@ const isPrimaryMarket = ( market ) => market.id === PRIMARY_MARKET_ID;
  * Scenarios:
  * - Manual non-multilingual: Market, Country (count), Shipping (static "Managed in Google"). Only primary market shown.
  * - Manual multilingual: Market (label + country count for primary, country name for secondaries), Language, Currency. All markets shown.
- * - Flat: Market, Shipping Rate, Shipping Time, Free shipping. All markets shown.
+ * - Flat (multilingual or not): Market, Shipping Rate, Shipping Time, Free shipping. All markets shown. Both store types render identically per Figma; the multilingual variant of this scenario is GOOWOO-602.
  * - Automatic multilingual: Market, Language, Currency, Shipping time. All markets shown.
  * - Automatic non-multilingual: Market (label + country count), Shipping time. Only primary market shown.
  * - Default/fall-through: Market + Shipping time for all markets, with primary market showing country count in label.
@@ -297,6 +297,10 @@ const buildManualConfig = ( {
  * Flat shipping scenario: Market, Shipping Rate, Shipping Time, Free shipping.
  * All markets (primary and additional) appear as rows.
  *
+ * Covers both non-multilingual and multilingual stores — Figma renders both
+ * frames identically, so the builder is shared rather than branched on
+ * `isMultiLingualStore`. The multilingual variant is tracked as GOOWOO-602.
+ *
  * @param {Object}                  options
  * @param {Market[]}               options.markets        All markets from useMarkets.
  * @param {Object.<string,RateRow>} options.ratesByCountry Country-keyed map of shipping rate rows.
@@ -401,10 +405,9 @@ const buildAutomaticConfig = ( {
 
 /**
  * Fall-through default — preserves the legacy Market + Shipping times shape for
- * any scenario that doesn't yet have a dedicated builder.
- *
- * TODO: Remove once all scenarios have explicit branches:
- *   - GOOWOO-602: flat + multilingual variant.
+ * any scenario that doesn't yet have a dedicated builder. With every documented
+ * scenario now branched, this only catches unexpected `shipping_rate` values
+ * and serves as a safety net.
  *
  * @param {Object}              options
  * @param {Market[]}           options.markets      All markets from useMarkets.
