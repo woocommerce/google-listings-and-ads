@@ -25,7 +25,7 @@ const CONTEXT = 'edit_market_modal';
  * Modal footer component for the EditMarketModal.
  * It renders a cancel button and a save button.
  * It also shows a validation error if the form is not valid.
- * 
+ *
  * @fires gla_cancel_button_clicked when the cancel button is clicked with context of "edit_market_modal"
  * @fires gla_save_button_clicked when the save button is clicked with context of "edit_market_modal"
  *

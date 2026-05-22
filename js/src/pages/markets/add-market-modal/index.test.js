@@ -69,20 +69,17 @@ describe( 'AddMarketModal', () => {
 		).toBeInTheDocument();
 	} );
 
-	test( 'invokes onRequestClose when the Cancel button is clicked', async () => {
+	test( 'invokes onCancel when the Cancel button is clicked', async () => {
 		const user = userEvent.setup();
-		const onRequestClose = jest.fn();
+		const onCancel = jest.fn();
 
 		render(
-			<AddMarketModal
-				{ ...defaultProps }
-				onRequestClose={ onRequestClose }
-			/>
+			<AddMarketModal { ...defaultProps } onRequestClose={ onCancel } />
 		);
 
 		await user.click( screen.getByRole( 'button', { name: 'Cancel' } ) );
 
-		expect( onRequestClose ).toHaveBeenCalledTimes( 1 );
+		expect( onCancel ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	test( 'does not show the "Add market" button when shipping_rate is MANUAL', () => {

@@ -122,14 +122,14 @@ describe( 'EditMarketModal', () => {
 		);
 	} );
 
-	test( 'invokes onRequestClose when the footer Cancel button is clicked', async () => {
+	test( 'invokes onCancel when the footer Cancel button is clicked', async () => {
 		const user = userEvent.setup();
-		const onRequestClose = jest.fn();
+		const onCancel = jest.fn();
 		render(
 			<EditMarketModal
 				market={ market }
 				targetAudience={ targetAudience }
-				onRequestClose={ onRequestClose }
+				onRequestClose={ onCancel }
 			/>
 		);
 
@@ -141,6 +141,6 @@ describe( 'EditMarketModal', () => {
 		);
 		await user.click( footerCancelButton );
 
-		expect( onRequestClose ).toHaveBeenCalledTimes( 1 );
+		expect( onCancel ).toHaveBeenCalledTimes( 1 );
 	} );
 } );
