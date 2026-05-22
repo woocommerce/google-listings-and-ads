@@ -319,8 +319,8 @@ const MarketForm = ( {
 			flat_shipping_rate: null,
 			offer_free_shipping: false,
 			free_shipping_threshold: null,
-			flat_shipping_min_time: null,
-			flat_shipping_max_time: null,
+			flat_shipping_min_time: 1,
+			flat_shipping_max_time: 5,
 		};
 
 		let updatedMarket = {
