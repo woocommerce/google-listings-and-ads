@@ -14,8 +14,28 @@
 		padding: 2px 2px 2px 8px;
 	}
 
+	.woocommerce-select-control .woocommerce-select-control__listbox {
+		border: 1.5px solid var(--wp-admin-theme-color, #3858e9);
+		border-radius: 2px;
+		box-shadow: none;
+		top: calc(100% + 8px);
+	}
+
 	.gla-searchable-select-control__helper-text {
 		font-style: normal;
 		color: $gray-700;
+	}
+
+	.woocommerce-select-control__option {
+		font-size: $gla-font-base;
+		font-weight: 400;
+		height: unset;
+		line-height: $gla-line-height-medium;
+		min-height: unset;
+		padding: 6px 12px;
+	}
+
+	.woocommerce-select-control__control-icon {
+		display: none;
 	}
 }

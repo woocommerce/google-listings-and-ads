@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -62,6 +63,7 @@ const CurrencySelectControl = () => {
 				} }
 				inlineTags
 				multiple
+				isSearchable
 			/>
 			{ renderRequestedValidation( 'currency' ) }
 		</div>
