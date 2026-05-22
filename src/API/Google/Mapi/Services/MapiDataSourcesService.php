@@ -3,31 +3,31 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MapiPaths;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
-use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\InstallableInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Throwable;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Class MapiDataSourcesService
  *
- * Resolves the plugin's primary product data source. Reuses the plugin's own
- * data source when one already exists on the merchant, otherwise creates one.
- * The result is cached in options. Products in any pre-existing data source
- * are auto-moved by MAPI on the next productInputs.insert under the new source.
+ * Resolves the plugin's product data source per (contentLanguage, feedLabel) pair.
+ * Reuses an existing primary data source matching the pair when one is already on
+ * the merchant, otherwise creates one. Resolved sources are cached in options as
+ * a map keyed by "lang|feed". Resolution is lazy: the first product write into a
+ * given market triggers the lookup/create.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services
  */
-class MapiDataSourcesService implements OptionsAwareInterface, InstallableInterface {
+class MapiDataSourcesService implements OptionsAwareInterface {
 
 	use OptionsAwareTrait;
 
-	/** Display name used when creating the plugin's data source. */
+	/** Display name prefix used when creating the plugin's data sources. */
 	public const DATA_SOURCE_DISPLAY_NAME = 'Google for WooCommerce';
 
 	/** @var MerchantApiClient */
@@ -43,62 +43,70 @@ class MapiDataSourcesService implements OptionsAwareInterface, InstallableInterf
 	}
 
 	/**
-	 * Return the resource name of the plugin's primary product data source,
-	 * creating or discovering one as needed and caching the result.
+	 * Return the resource name of the primary product data source for the given
+	 * (contentLanguage, feedLabel) pair. Discovers or creates one as needed and
+	 * caches the result.
 	 *
-	 * @return string Data source resource name (accounts/{a}/dataSources/{id}).
+	 * @param string $content_language language code
+	 * @param string $feed_label       Feed label
+	 *
+	 * @return string Data source resource name.
 	 * @throws MerchantApiException On a non-2xx MAPI response.
 	 */
-	public function ensure_primary_data_source(): string {
-		$cached = (string) $this->options->get( OptionsInterface::MAPI_PRIMARY_DATA_SOURCE, '' );
-		if ( '' !== $cached ) {
-			return $cached;
+	public function ensure_data_source_for( string $content_language, string $feed_label ): string {
+		$cache_key = $this->cache_key( $content_language, $feed_label );
+		$cache     = (array) $this->options->get( OptionsInterface::MAPI_DATA_SOURCES, [] );
+
+		if ( isset( $cache[ $cache_key ] ) && '' !== $cache[ $cache_key ] ) {
+			return (string) $cache[ $cache_key ];
 		}
 
-		$name = $this->find_existing_data_source() ?? $this->create_data_source();
+		$name = $this->find_existing_data_source( $content_language, $feed_label )
+			?? $this->create_data_source( $content_language, $feed_label );
 
-		$this->options->update( OptionsInterface::MAPI_PRIMARY_DATA_SOURCE, $name );
+		$cache[ $cache_key ] = $name;
+		$this->options->update( OptionsInterface::MAPI_DATA_SOURCES, $cache );
 
 		return $name;
 	}
 
 	/**
-	 * Resolve the data source on plugin activation/update so it is ready before
-	 * the first write request. Skipped when Merchant Center is not connected
+	 * Build the cache key for a (language, feed) pair.
 	 *
-	 * @param string $old_version Previous version before updating.
-	 * @param string $new_version Current version after updating.
+	 * @param string $content_language
+	 * @param string $feed_label
+	 *
+	 * @return string
 	 */
-	public function install( string $old_version, string $new_version ): void {
-		if ( empty( $this->options->get_merchant_id() ) ) {
-			return;
-		}
-
-		try {
-			$this->ensure_primary_data_source();
-		} catch ( Throwable $e ) {
-			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
-		}
+	protected function cache_key( string $content_language, string $feed_label ): string {
+		return $content_language . '|' . $feed_label;
 	}
 
 	/**
-	 * List existing data sources and return the resource name of the plugin's
-	 * own primary product data source if one already exists.
+	 * List existing data sources and return the resource name of the primary
+	 * product data source matching the given (language, feed) pair, if any.
+	 *
+	 * @param string $content_language
+	 * @param string $feed_label
 	 *
 	 * @return string|null
 	 * @throws MerchantApiException On a non-2xx MAPI response.
 	 */
-	protected function find_existing_data_source(): ?string {
+	protected function find_existing_data_source( string $content_language, string $feed_label ): ?string {
 		$response = $this->client->get(
-			sprintf( 'datasources/v1/accounts/%s/dataSources', $this->options->get_merchant_id() )
+			sprintf( '%s/accounts/%s/dataSources', MapiPaths::DATASOURCES, $this->options->get_merchant_id() )
 		);
 
 		foreach ( $response['dataSources'] ?? [] as $source ) {
-			if ( ! isset( $source['primaryProductDataSource'], $source['name'] ) ) {
+			$primary = $source['primaryProductDataSource'] ?? null;
+			if ( ! is_array( $primary ) || ! isset( $source['name'] ) ) {
 				continue;
 			}
 
-			if ( self::DATA_SOURCE_DISPLAY_NAME === ( $source['displayName'] ?? '' ) ) {
+			if (
+				$content_language === ( $primary['contentLanguage'] ?? '' )
+				&& $feed_label === ( $primary['feedLabel'] ?? '' )
+			) {
 				return $source['name'];
 			}
 		}
@@ -107,21 +115,22 @@ class MapiDataSourcesService implements OptionsAwareInterface, InstallableInterf
 	}
 
 	/**
-	 * Create a new primary product data source.
+	 * Create a new primary product data source for the given (language, feed) pair.
+	 *
+	 * @param string $content_language
+	 * @param string $feed_label
 	 *
 	 * @return string The created data source resource name.
 	 * @throws MerchantApiException On a non-2xx MAPI response.
 	 */
-	protected function create_data_source(): string {
-		$base = wc_get_base_location();
-
+	protected function create_data_source( string $content_language, string $feed_label ): string {
 		$response = $this->client->post(
-			sprintf( 'datasources/v1/accounts/%s/dataSources', $this->options->get_merchant_id() ),
+			sprintf( '%s/accounts/%s/dataSources', MapiPaths::DATASOURCES, $this->options->get_merchant_id() ),
 			[
-				'displayName'              => self::DATA_SOURCE_DISPLAY_NAME,
+				'displayName'              => sprintf( '%s (%s/%s)', self::DATA_SOURCE_DISPLAY_NAME, $content_language, $feed_label ),
 				'primaryProductDataSource' => [
-					'contentLanguage' => substr( (string) get_locale(), 0, 2 ) ?: 'en',
-					'feedLabel'       => $base['country'] ?? 'US',
+					'contentLanguage' => $content_language,
+					'feedLabel'       => $feed_label,
 				],
 			]
 		);
