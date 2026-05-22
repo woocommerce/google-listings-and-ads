@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google\Mapi
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInputPatch;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -65,6 +66,17 @@ class MapiProductInputsServiceTest extends UnitTest {
 
 	protected function expected_path( string $data_source ): string {
 		return 'products/v1/accounts/12345/productInputs:insert?dataSource=' . rawurlencode( $data_source );
+	}
+
+	protected function expected_patch_path( ProductInput $input, array $mask, string $data_source ): string {
+		return sprintf(
+			'products/v1/accounts/12345/productInputs/%s~%s~%s?dataSource=%s&updateMask=%s',
+			$input->get_content_language(),
+			$input->get_feed_label(),
+			rawurlencode( $input->get_offer_id() ),
+			rawurlencode( $data_source ),
+			rawurlencode( implode( ',', $mask ) )
+		);
 	}
 
 	protected function make_input( string $offer_id = 'sku42', string $language = 'en', string $feed = 'US' ): ProductInput {
@@ -177,5 +189,130 @@ class MapiProductInputsServiceTest extends UnitTest {
 
 		$this->assertSame( $this->expected_path( self::DS_EN_US ), $paths_seen['us_sku'] );
 		$this->assertSame( $this->expected_path( self::DS_FR_CA ), $paths_seen['ca_sku'] );
+	}
+
+	public function test_patch_resolves_data_source_and_builds_correct_path() {
+		$input = $this->make_input();
+		$mask  = [ 'productAttributes.title' ];
+
+		$this->client->expects( $this->once() )
+			->method( 'patch' )
+			->with( $this->expected_patch_path( $input, $mask, self::DS_EN_US ), $input->to_array() )
+			->willReturn(
+				[
+					'name'    => 'accounts/12345/productInputs/en~US~sku42',
+					'offerId' => 'sku42',
+				]
+			);
+
+		$result = $this->service->patch( new ProductInputPatch( $input, $mask ) );
+
+		$this->assertInstanceOf( ProductInput::class, $result );
+		$this->assertSame( 'sku42', $result->get_offer_id() );
+	}
+
+	public function test_patch_routes_different_market_to_a_different_data_source() {
+		$input = $this->make_input( 'sku42', 'fr', 'CA' );
+		$mask  = [ 'productAttributes.title' ];
+
+		$this->client->expects( $this->once() )
+			->method( 'patch' )
+			->with( $this->expected_patch_path( $input, $mask, self::DS_FR_CA ), $input->to_array() )
+			->willReturn( [ 'offerId' => 'sku42' ] );
+
+		$this->service->patch( new ProductInputPatch( $input, $mask ) );
+	}
+
+	public function test_patch_throws_on_empty_update_mask_without_http_call() {
+		$this->client->expects( $this->never() )->method( 'patch' );
+		$this->data_sources->expects( $this->never() )->method( 'ensure_data_source_for' );
+
+		$this->expectException( \InvalidArgumentException::class );
+
+		$this->service->patch( new ProductInputPatch( $this->make_input(), [] ) );
+	}
+
+	public function test_patch_propagates_merchant_api_exception() {
+		$this->client->method( 'patch' )
+			->willThrowException( new MerchantApiException( 404, [], __METHOD__ ) );
+
+		$this->expectException( MerchantApiException::class );
+
+		$this->service->patch( new ProductInputPatch( $this->make_input(), [ 'productAttributes.title' ] ) );
+	}
+
+	public function test_patch_many_keys_successes_and_failures_by_index() {
+		$this->client->method( 'request_async' )
+			->willReturnCallback(
+				function ( string $method, string $path, array $body ) {
+					if ( 'bad' === $body['offerId'] ) {
+						return Create::rejectionFor( new MerchantApiException( 500, [], __METHOD__ ) );
+					}
+
+					return Create::promiseFor(
+						[
+							'name'    => 'accounts/12345/productInputs/' . $body['offerId'],
+							'offerId' => $body['offerId'],
+						]
+					);
+				}
+			);
+
+		$mask   = [ 'productAttributes.title' ];
+		$result = $this->service->patch_many(
+			[
+				new ProductInputPatch( $this->make_input( 'good1' ), $mask ),
+				new ProductInputPatch( $this->make_input( 'bad' ), $mask ),
+				new ProductInputPatch( $this->make_input( 'good2' ), $mask ),
+			]
+		);
+
+		$this->assertCount( 2, $result['successes'] );
+		$this->assertCount( 1, $result['failures'] );
+		$this->assertArrayHasKey( 0, $result['successes'] );
+		$this->assertArrayHasKey( 2, $result['successes'] );
+		$this->assertArrayHasKey( 1, $result['failures'] );
+		$this->assertInstanceOf( MerchantApiException::class, $result['failures'][1] );
+	}
+
+	public function test_patch_many_routes_each_input_to_its_own_data_source() {
+		$paths_seen = [];
+
+		$this->client->method( 'request_async' )
+			->willReturnCallback(
+				function ( string $method, string $path, array $body ) use ( &$paths_seen ) {
+					$paths_seen[ $body['offerId'] ] = [ $method, $path ];
+
+					return Create::promiseFor( [ 'offerId' => $body['offerId'] ] );
+				}
+			);
+
+		$mask     = [ 'productAttributes.title' ];
+		$us_input = $this->make_input( 'us_sku', 'en', 'US' );
+		$ca_input = $this->make_input( 'ca_sku', 'fr', 'CA' );
+
+		$this->service->patch_many(
+			[
+				new ProductInputPatch( $us_input, $mask ),
+				new ProductInputPatch( $ca_input, $mask ),
+			]
+		);
+
+		$this->assertSame( 'PATCH', $paths_seen['us_sku'][0] );
+		$this->assertSame( $this->expected_patch_path( $us_input, $mask, self::DS_EN_US ), $paths_seen['us_sku'][1] );
+		$this->assertSame( $this->expected_patch_path( $ca_input, $mask, self::DS_FR_CA ), $paths_seen['ca_sku'][1] );
+	}
+
+	public function test_patch_many_throws_on_empty_update_mask_without_http_call() {
+		$this->client->expects( $this->never() )->method( 'request_async' );
+
+		$this->expectException( \InvalidArgumentException::class );
+
+		$this->service->patch_many(
+			[
+				new ProductInputPatch( $this->make_input( 'good' ), [ 'productAttributes.title' ] ),
+				new ProductInputPatch( $this->make_input( 'bad' ), [] ),
+			]
+		);
 	}
 }
