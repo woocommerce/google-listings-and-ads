@@ -8,10 +8,30 @@
 		text-transform: uppercase;
 	}
 
+	.gla-searchable-select-control__input {
+		position: relative;
+
+		&::after {
+			background-color: currentcolor;
+			content: "";
+			display: block;
+			height: 1.5rem;
+			mask-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAyNCAyNCc+PHBhdGggZmlsbD0nd2hpdGUnIGQ9J00xNS45OSAxMC44OSAxMiAxNC4zbC0zLjk5LTMuNDJMOSA5Ljc1bDMgMi41OCAzLjAxLTIuNTh6Jy8+PC9zdmc+);
+			mask-position: center;
+			mask-repeat: no-repeat;
+			mask-size: contain;
+			position: absolute;
+			right: 8px;
+			top: 50%;
+			transform: translateY(-50%);
+			width: 1.5rem;
+		}
+	}
+
 	.woocommerce-select-control .components-base-control {
 		border-color: $gray-600;
 		border-radius: 2px;
-		padding: 2px 2px 2px 8px;
+		padding: 2px 44px 2px 8px; // 44px right padding for the chevron icon.
 	}
 
 	.woocommerce-select-control .woocommerce-select-control__listbox {
