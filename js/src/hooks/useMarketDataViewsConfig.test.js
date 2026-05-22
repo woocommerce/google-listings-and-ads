@@ -581,6 +581,63 @@ describe( 'useMarketDataViewsConfig', () => {
 		} );
 	} );
 
+	describe( 'multilingual store, flat shipping', () => {
+		// Per Figma, the multilingual flat table renders identically to the
+		// non-multilingual flat table — no Language/Currency columns, same
+		// rendering. These tests lock in that decision so future changes that
+		// diverge the two are caught.
+
+		test( 'returns the same four fields as the non-multilingual flat scenario', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_FLAT,
+				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
+				multiLingualStore: true,
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.fields.map( ( f ) => f.id ) ).toEqual( [
+				'market',
+				'shippingRate',
+				'shippingTime',
+				'freeShipping',
+			] );
+		} );
+
+		test( 'includes both primary and additional markets as rows', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_FLAT,
+				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
+				multiLingualStore: true,
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.data ).toHaveLength( 2 );
+			expect( result.current.data[ 0 ].id ).toBe( 'primary' );
+			expect( result.current.data[ 1 ].id ).toBe( 'fr' );
+		} );
+
+		test( 'formats shipping cells the same way as the non-multilingual flat scenario', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_FLAT,
+				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
+				multiLingualStore: true,
+				shippingRates: SHIPPING_RATES,
+				shippingTimes: SHIPPING_TIMES,
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+			const [ primary, secondary ] = result.current.data;
+
+			expect( primary.shippingRate ).toMatch( /10/ );
+			expect( primary.shippingTime ).toBe( '3 - 5 days' );
+			expect( secondary.shippingRate ).toMatch( /8/ );
+			expect( secondary.shippingTime ).toBe( '5 - 7 days' );
+			expect( secondary.freeShipping ).toMatch( /Free over/ );
+		} );
+	} );
+
 	describe( 'loading state', () => {
 		test( 'returns empty fields and data while markets have not resolved', () => {
 			useMarkets.mockReturnValue( {
