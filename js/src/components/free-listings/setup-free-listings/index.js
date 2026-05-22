@@ -234,7 +234,6 @@ const SetupFreeListings = ( {
 									free_shipping_threshold: existingThreshold,
 								},
 								country,
-								currency: currencyCode,
 								rate: values.flat_shipping_rate,
 							} ) ),
 					  ]

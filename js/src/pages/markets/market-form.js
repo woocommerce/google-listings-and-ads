@@ -18,6 +18,7 @@ import useSettings from '~/hooks/useSettings';
 import AdaptiveForm from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
 import AppSpinner from '~/components/app-spinner';
+import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
 
 /**
  * Returns a predicate: "should this country be updated?"
@@ -218,6 +219,81 @@ const MarketForm = ( {
 						free_shipping_threshold: change.value,
 					} )
 				);
+				break;
+
+			case 'countries':
+				const audienceCountries = change.value || [];
+
+				// Filter removed countries AND fill in newly added countries using the current flat rate.
+				const filteredRates = values.shipping_country_rates.filter(
+					( shippingCountryRate ) =>
+						audienceCountries.includes(
+							shippingCountryRate.country
+						)
+				);
+				const missingCountries = audienceCountries.filter(
+					( country ) =>
+						! filteredRates.some(
+							( rate ) => rate.country === country
+						)
+				);
+				const existingThreshold = filteredRates.find(
+					isNonFreeShippingRate
+				)?.options?.free_shipping_threshold;
+				const nextRates =
+					values.flat_shipping_rate !== undefined &&
+					missingCountries.length > 0
+						? [
+								...filteredRates,
+								...missingCountries.map( ( country ) => ( {
+									options: {
+										free_shipping_threshold:
+											existingThreshold,
+									},
+									country,
+									rate: values.flat_shipping_rate,
+								} ) ),
+						  ]
+						: filteredRates;
+				if (
+					nextRates.length !== values.shipping_country_rates.length
+				) {
+					setValue( 'shipping_country_rates', nextRates );
+				}
+
+				// For times: filter removed countries AND add newly added countries.
+				const filteredTimes = values.shipping_country_times.filter(
+					( shippingTime ) =>
+						audienceCountries.includes( shippingTime.countryCode )
+				);
+				const missingTimesCountries = audienceCountries.filter(
+					( country ) =>
+						! filteredTimes.some(
+							( shippingTime ) =>
+								shippingTime.countryCode === country
+						)
+				);
+				const nextTimes =
+					values.flat_shipping_min_time !== null &&
+					values.flat_shipping_max_time !== null &&
+					missingTimesCountries.length > 0
+						? [
+								...filteredTimes,
+								...missingTimesCountries.map(
+									( countryCode ) => ( {
+										countryCode,
+										time: values.flat_shipping_min_time,
+										maxTime: values.flat_shipping_max_time,
+									} )
+								),
+						  ]
+						: filteredTimes;
+
+				if (
+					nextTimes.length !== values.shipping_country_times.length
+				) {
+					setValue( 'shipping_country_times', nextTimes );
+				}
 				break;
 		}
 	};
