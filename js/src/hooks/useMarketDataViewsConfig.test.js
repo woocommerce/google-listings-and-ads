@@ -345,6 +345,33 @@ describe( 'useMarketDataViewsConfig', () => {
 			);
 			expect( result.current.data[ 1 ].freeShipping ).toMatch( /50/ );
 		} );
+
+		test( 'formats the primary market label with the country count', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_FLAT,
+				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.data[ 0 ].label ).toBe(
+				'Primary Market (3 countries)'
+			);
+		} );
+
+		test( 'leaves the secondary market label as the country name', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_FLAT,
+				markets: [
+					PRIMARY_MARKET_FLAT,
+					{ ...SECONDARY_MARKET_FLAT, label: 'France' },
+				],
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.data[ 1 ].label ).toBe( 'France' );
+		} );
 	} );
 
 	describe( 'automatic shipping, no multilingual store', () => {
@@ -635,6 +662,20 @@ describe( 'useMarketDataViewsConfig', () => {
 			expect( secondary.shippingRate ).toMatch( /8/ );
 			expect( secondary.shippingTime ).toBe( '5 - 7 days' );
 			expect( secondary.freeShipping ).toMatch( /Free over/ );
+		} );
+
+		test( 'formats the primary market label with the country count', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_FLAT,
+				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
+				multiLingualStore: true,
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.data[ 0 ].label ).toBe(
+				'Primary Market (3 countries)'
+			);
 		} );
 	} );
 
