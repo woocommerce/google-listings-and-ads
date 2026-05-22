@@ -13,13 +13,32 @@ import AppButton from '~/components/app-button';
 const CONTEXT = 'add_market_modal';
 
 /**
+ * Event fired when the "Cancel" button in the AddMarketModal is clicked.
+ * @event gla_cancel_button_clicked
+ * @property {string} context The context in which the cancel button click happened, e.g. "add_market_modal".
+ */
+
+/**
+ * Event fired when the "Add market" button in the AddMarketModal is clicked.
+ * @event gla_add_new_market_button_clicked
+ * @property {string} context The context in which the add market button click happened, e.g. "add_market_modal".
+ */
+
+/**
+ * Modal footer component for the AddMarketModal.
+ * It renders a cancel button and an add market button if the shipping rate is not manual.
+ * It also shows a validation error if the form is not valid.
+ *
+ * @fires gla_cancel_button_clicked when the cancel button is clicked with context of "add_market_modal"
+ * @fires gla_add_new_market_button_clicked when the add market button is clicked with context of "add_market_modal"
  * @param {Object}   props
- * @param {Function} props.onRequestClose  Called when the cancel button is clicked.
+ * @param {Function} props.onCancel  Called when the cancel button is clicked.
  * @param {Object}   props.settings        Settings object used to determine button visibility.
  */
-const AddMarketButtons = ( { onRequestClose, settings } ) => {
+
+const ModalFooter = ( { onCancel, settings } ) => {
 	const { adapter, isValidForm, handleSubmit } = useAdaptiveFormContext();
-	const { isSaving } = adapter;
+	const { isSaving, isLoading } = adapter;
 
 	const showAddMarketButton = ! (
 		! glaData.isMultiLingualStore &&
@@ -37,7 +56,7 @@ const AddMarketButtons = ( { onRequestClose, settings } ) => {
 		<div className="app-modal__footer">
 			<AppButton
 				variant={ showAddMarketButton ? 'tertiary' : 'primary' }
-				onClick={ onRequestClose }
+				onClick={ onCancel }
 				disabled={ isSaving }
 				eventName="gla_cancel_button_clicked"
 				eventProps={ { context: CONTEXT } }
@@ -48,7 +67,7 @@ const AddMarketButtons = ( { onRequestClose, settings } ) => {
 				<AppButton
 					variant="primary"
 					onClick={ handleSubmitClick }
-					loading={ isSaving }
+					loading={ isSaving || isLoading }
 					eventName="gla_add_new_market_button_clicked"
 					eventProps={ { context: CONTEXT } }
 				>
@@ -59,4 +78,4 @@ const AddMarketButtons = ( { onRequestClose, settings } ) => {
 	);
 };
 
-export default AddMarketButtons;
+export default ModalFooter;

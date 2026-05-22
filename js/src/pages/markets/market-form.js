@@ -32,7 +32,6 @@ import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
  * This component is used within the AddMarketModal and EditMarketModal.
  *
  * @param {Object} props
- * @param {Object} props.children
  * @param {Object} props.initialMarket Initial values to populate the form with. Can be empty when creating a new market.
  * @param {Function} props.onSubmit Callback function to handle form submission.
  * @return {JSX.Element} The rendered form.
@@ -40,7 +39,6 @@ import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
 const MarketForm = ( {
 	initialMarket = {},
 	onSubmit,
-	children,
 	...adaptiveFormProps
 } ) => {
 	const formRef = useRef();
@@ -72,6 +70,7 @@ const MarketForm = ( {
 	const extendAdapter = ( formContext ) => {
 		return {
 			isSaving,
+			isLoading,
 			isEditing,
 			isPrimaryMarket,
 			renderRequestedValidation( key ) {
@@ -456,9 +455,7 @@ const MarketForm = ( {
 			onSubmit={ handleSubmit }
 			onChange={ handleChange }
 			{ ...adaptiveFormProps }
-		>
-			{ children }
-		</AdaptiveForm>
+		/>
 	);
 };
 

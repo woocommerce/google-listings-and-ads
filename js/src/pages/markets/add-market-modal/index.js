@@ -11,7 +11,7 @@ import AppModal from '~/components/app-modal';
 import MultiLingualPluginPrompt from './multilingual-plugin-prompt';
 import MarketFields from '../market-fields';
 import MarketForm from '../market-form';
-import AddMarketButtons from './add-market-buttons';
+import ModalFooter from './modal-footer';
 
 /**
  * @typedef {import('~/data/actions').TargetAudienceData } TargetAudienceData
@@ -20,24 +20,10 @@ import AddMarketButtons from './add-market-buttons';
  */
 
 /**
- * Event fired when the "Cancel" button in the AddMarketModal is clicked.
- * @event gla_cancel_button_clicked
- * @property {string} context The context in which the cancel button click happened, e.g. "add_market_modal".
- */
-
-/**
- * Event fired when the "Add market" button in the AddMarketModal is clicked.
- * @event gla_add_new_market_button_clicked
- * @property {string} context The context in which the add market button click happened, e.g. "add_market_modal".
- */
-
-/**
  * Modal component for adding a new market.
  * This component is rendered when the user clicks the "Add market" button on the markets page,
  * and it contains a form for entering the details of the new market.
  *
- * @fires gla_cancel_button_clicked when the cancel button is clicked with context of "add_market_modal"
- * @fires gla_add_new_market_button_clicked when the add market button is clicked with context of "add_market_modal"
  *
  * @param {Object} props
  * @param {Object} props.settings The settings object containing shipping_rate and other configurations.
@@ -68,7 +54,7 @@ const AddMarketModal = ( {
 			>
 				<MarketFields />
 				<MultiLingualPluginPrompt />
-				<AddMarketButtons
+				<ModalFooter
 					onRequestClose={ onRequestClose }
 					settings={ settings }
 				/>
