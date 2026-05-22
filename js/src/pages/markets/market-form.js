@@ -74,6 +74,7 @@ function updateTimes( times, isTarget, patch ) {
  * This component is used within the AddMarketModal and EditMarketModal.
  *
  * @param {Object} props
+ * @param {Object} props.children
  * @param {Object} props.initialMarket Initial values to populate the form with. Can be empty when creating a new market.
  * @param {Function} props.onSubmit Callback function to handle form submission.
  * @return {JSX.Element} The rendered form.
