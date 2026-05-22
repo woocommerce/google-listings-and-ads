@@ -4,11 +4,13 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\AbstractBatchedActionSchedulerJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -29,15 +31,39 @@ class UpdateEuPoliticalCampaigns extends AbstractBatchedActionSchedulerJob imple
 	protected $ads_campaign;
 
 	/**
+	 * @var AdsService
+	 */
+	protected $ads_service;
+
+	/**
 	 * CreateYouTubeOrderIdsCache constructor.
 	 *
 	 * @param ActionSchedulerInterface  $action_scheduler
 	 * @param ActionSchedulerJobMonitor $monitor
 	 * @param AdsCampaign               $ads_campaign
+	 * @param AdsService                $ads_service
 	 */
-	public function __construct( ActionSchedulerInterface $action_scheduler, ActionSchedulerJobMonitor $monitor, AdsCampaign $ads_campaign ) {
+	public function __construct( ActionSchedulerInterface $action_scheduler, ActionSchedulerJobMonitor $monitor, AdsCampaign $ads_campaign, AdsService $ads_service ) {
 		parent::__construct( $action_scheduler, $monitor );
 		$this->ads_campaign = $ads_campaign;
+		$this->ads_service  = $ads_service;
+	}
+
+	/**
+	 * Can the job be scheduled.
+	 *
+	 * @param array|null $args
+	 *
+	 * @return bool Returns true if the job can be scheduled.
+	 */
+	public function can_schedule( $args = [] ): bool {
+		// Stop scheduling once this Ads account has no more campaigns needing the EU political declaration.
+		// The flag is cleared on Ads disconnect, so reconnecting a different account re-enables the job.
+		if ( $this->options->get( OptionsInterface::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE ) ) {
+			return false;
+		}
+
+		return parent::can_schedule( $args ) && $this->ads_service->is_connected();
 	}
 
 	/**

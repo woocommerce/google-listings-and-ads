@@ -131,6 +131,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [ 'TW' ],
 				'eu_political_advertising_confirmation' => false,
+				'start_date'                            => '2025-01-15',
 			],
 			[
 				'id'                                    => 5678901234,
@@ -141,6 +142,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [ 'HK', 'GB' ],
 				'eu_political_advertising_confirmation' => false,
+				'start_date'                            => '2025-01-20',
 			],
 		];
 
@@ -159,6 +161,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'start_date'                            => '2025-01-15',
 			],
 			[
 				'id'                                    => 5678901234,
@@ -169,6 +172,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'start_date'                            => '2025-01-20',
 			],
 		];
 
@@ -209,6 +213,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'US',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'start_date'                            => '2025-01-15',
 			],
 			[
 				'id'                                    => 5678901234,
@@ -219,6 +224,7 @@ class AdsCampaignTest extends UnitTest {
 				'country'                               => 'UK',
 				'targeted_locations'                    => [],
 				'eu_political_advertising_confirmation' => false,
+				'start_date'                            => '2025-01-20',
 			],
 		];
 
@@ -303,10 +309,35 @@ class AdsCampaignTest extends UnitTest {
 			'country'                               => 'US',
 			'targeted_locations'                    => [ 'TW' ],
 			'eu_political_advertising_confirmation' => false,
+			'start_date'                            => '2025-01-15',
 		];
 
 		$this->generate_ads_campaign_query_mock( [ $campaign_data ], [ $campaign_criterion_data ] );
 		$this->assertEquals( $campaign_data, $this->campaign->get_campaign( self::TEST_CAMPAIGN_ID ) );
+	}
+
+	public function test_get_campaign_returns_null_start_date_when_unavailable() {
+		$campaign_criterion_data = [
+			'campaign_id'         => self::TEST_CAMPAIGN_ID,
+			'geo_target_constant' => 'geoTargetConstants/2158',
+		];
+
+		$campaign_data_without_start_date = [
+			'id'                                    => self::TEST_CAMPAIGN_ID,
+			'name'                                  => 'Campaign Without Start Date',
+			'status'                                => 'enabled',
+			'type'                                  => 'performance_max',
+			'amount'                                => 10,
+			'country'                               => 'US',
+			'targeted_locations'                    => [ 'TW' ],
+			'eu_political_advertising_confirmation' => false,
+		];
+
+		$expected               = $campaign_data_without_start_date;
+		$expected['start_date'] = null;
+
+		$this->generate_ads_campaign_query_mock( [ $campaign_data_without_start_date ], [ $campaign_criterion_data ] );
+		$this->assertEquals( $expected, $this->campaign->get_campaign( self::TEST_CAMPAIGN_ID ) );
 	}
 
 	public function test_get_highest_spend_campaign_returns_cached_value() {
@@ -400,6 +431,92 @@ class AdsCampaignTest extends UnitTest {
 			);
 			$this->assertEquals( 404, $e->getCode() );
 		}
+	}
+
+	public function test_get_campaigns_missing_eu_political_declaration_skips_video_campaigns() {
+		$campaigns_data = [
+			[
+				'id'      => 111,
+				'name'    => 'Non-shopping PMax',
+				'status'  => 'enabled',
+				'type'    => CampaignType::PERFORMANCE_MAX,
+				'country' => 'US',
+				'amount'  => 10,
+			],
+			[
+				'id'      => 222,
+				'name'    => 'Video',
+				'status'  => 'enabled',
+				'type'    => CampaignType::VIDEO,
+				'country' => 'US',
+				'amount'  => 10,
+			],
+			[
+				'id'      => 333,
+				'name'    => 'Shopping',
+				'status'  => 'enabled',
+				'type'    => CampaignType::SHOPPING,
+				'country' => 'US',
+				'amount'  => 10,
+			],
+		];
+
+		$rows = array_map( [ $this, 'generate_campaign_row_mock' ], $campaigns_data );
+		$this->generate_ads_query_mock( $rows );
+
+		$this->options->expects( $this->never() )
+			->method( 'update' )
+			->with( OptionsInterface::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE );
+
+		$result = $this->campaign->get_campaigns_missing_eu_political_declaration();
+
+		$this->assertCount( 2, $result );
+		$this->assertEquals(
+			[
+				'id'   => 111,
+				'name' => 'Non-shopping PMax',
+			],
+			$result[0]
+		);
+		$this->assertEquals(
+			[
+				'id'   => 333,
+				'name' => 'Shopping',
+			],
+			$result[1]
+		);
+	}
+
+	public function test_get_campaigns_missing_eu_political_declaration_sets_complete_flag_when_empty() {
+		$this->generate_ads_query_mock( [] );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE, true );
+
+		$this->assertEquals( [], $this->campaign->get_campaigns_missing_eu_political_declaration() );
+	}
+
+	public function test_get_campaigns_missing_eu_political_declaration_sets_complete_flag_when_only_video_campaigns() {
+		$campaigns_data = [
+			[
+				'id'      => 222,
+				'name'    => 'Video',
+				'status'  => 'enabled',
+				'type'    => CampaignType::VIDEO,
+				'country' => 'US',
+				'amount'  => 10,
+			],
+		];
+
+		$rows = array_map( [ $this, 'generate_campaign_row_mock' ], $campaigns_data );
+		$this->generate_ads_query_mock( $rows );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE, true );
+
+		$this->assertEquals( [], $this->campaign->get_campaigns_missing_eu_political_declaration() );
 	}
 
 	public function test_create_campaign() {

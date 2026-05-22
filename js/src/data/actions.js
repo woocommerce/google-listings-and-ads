@@ -879,6 +879,13 @@ export function receiveEnhancedConversionsStatus( status ) {
 	};
 }
 
+export function receiveAdsSettings( settings ) {
+	return {
+		type: TYPES.RECEIVE_ADS_SETTINGS,
+		settings,
+	};
+}
+
 /**
  * Update the enhanced conversions status.
  *
@@ -1363,6 +1370,13 @@ export function* receiveAdsRecommendations(
 		type: TYPES.RECEIVE_ADS_RECOMMENDATIONS,
 		recommendations,
 		recommendationTypes,
+	};
+}
+
+export function receiveCYOIncentives( cyoIncentives ) {
+	return {
+		type: TYPES.RECEIVE_CYO_INCENTIVES,
+		cyoIncentives,
 	};
 }
 
