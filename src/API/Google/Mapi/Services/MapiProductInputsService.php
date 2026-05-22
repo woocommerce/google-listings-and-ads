@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MapiPaths;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
@@ -15,7 +16,8 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class MapiProductInputsService
  *
- * Writes products to the Merchant API via `accounts.productInputs.insert`.
+ * Writes products to the Merchant API via `accounts.productInputs.insert`. Each
+ * write targets the data source matching the input's contentLanguage + feedLabel.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services
  */
@@ -41,7 +43,8 @@ class MapiProductInputsService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Insert a single product.
+	 * Insert a single product. The target data source is resolved from the
+	 * input's contentLanguage + feedLabel.
 	 *
 	 * @param ProductInput $input
 	 *
@@ -49,8 +52,13 @@ class MapiProductInputsService implements OptionsAwareInterface {
 	 * @throws MerchantApiException On a non-2xx MAPI response.
 	 */
 	public function insert( ProductInput $input ): ProductInput {
+		$data_source = $this->data_sources->ensure_data_source_for(
+			$input->get_content_language(),
+			$input->get_feed_label()
+		);
+
 		$body = $this->client->post(
-			$this->build_path( $this->data_sources->ensure_primary_data_source() ),
+			$this->build_path( $data_source ),
 			$input->to_array()
 		);
 
@@ -58,21 +66,32 @@ class MapiProductInputsService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Insert multiple products in parallel.
+	 * Insert multiple products in parallel. Each input is routed to the data
+	 * source matching its (contentLanguage, feedLabel).
 	 *
 	 * @param ProductInput[] $inputs
 	 * @param int            $concurrency
 	 *
 	 * @return array{successes: array<int, ProductInput>, failures: array<int, MerchantApiException>}
-	 * @throws MerchantApiException On a non-2xx MAPI response while resolving the data source.
+	 * @throws MerchantApiException On a non-2xx MAPI response while resolving a data source.
 	 */
 	public function insert_many( array $inputs, int $concurrency = 10 ): array {
-		$path   = $this->build_path( $this->data_sources->ensure_primary_data_source() );
+		// Resolve all unique (language, feed) pairs upfront so the async batch
+		// starts with every data source known and cached.
+		$paths_by_index = [];
+		foreach ( $inputs as $index => $input ) {
+			$data_source              = $this->data_sources->ensure_data_source_for(
+				$input->get_content_language(),
+				$input->get_feed_label()
+			);
+			$paths_by_index[ $index ] = $this->build_path( $data_source );
+		}
+
 		$client = $this->client;
 
-		$requests = function () use ( $inputs, $client, $path ) {
+		$requests = function () use ( $inputs, $client, $paths_by_index ) {
 			foreach ( $inputs as $index => $input ) {
-				yield $index => $client->request_async( 'POST', $path, $input->to_array() );
+				yield $index => $client->request_async( 'POST', $paths_by_index[ $index ], $input->to_array() );
 			}
 		};
 
@@ -99,15 +118,16 @@ class MapiProductInputsService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Build the productInputs.insert path.
+	 * Build the productInputs.insert path with the resolved data source.
 	 *
-	 * @param string $data_source
+	 * @param string $data_source Data source resource name.
 	 *
 	 * @return string
 	 */
 	protected function build_path( string $data_source ): string {
 		return sprintf(
-			'products/v1/accounts/%s/productInputs:insert?dataSource=%s',
+			'%s/accounts/%s/productInputs:insert?dataSource=%s',
+			MapiPaths::PRODUCTS,
 			$this->options->get_merchant_id(),
 			rawurlencode( $data_source )
 		);
