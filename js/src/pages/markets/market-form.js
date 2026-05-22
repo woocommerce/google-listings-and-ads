@@ -81,6 +81,7 @@ function updateTimes( times, isTarget, patch ) {
 const MarketForm = ( {
 	initialMarket = {},
 	onSubmit,
+	children,
 	...adaptiveFormProps
 } ) => {
 	const formRef = useRef();
@@ -106,13 +107,13 @@ const MarketForm = ( {
 		! hasResolvedShippingRates || ! hasResolvedShippingTimes || ! settings;
 
 	if ( isLoading ) {
-		return adaptiveFormProps.children( { adapter: { isLoading: true } } );
+		return children( { adapter: { isLoading: true } } );
 	}
 
 	const extendAdapter = ( formContext ) => {
 		return {
 			isSaving,
-			isLoading,
+			isLoading: false,
 			isEditing,
 			isPrimaryMarket,
 			renderRequestedValidation( key ) {
@@ -389,7 +390,9 @@ const MarketForm = ( {
 			onSubmit={ handleSubmit }
 			onChange={ handleChange }
 			{ ...adaptiveFormProps }
-		/>
+		>
+			{ children }
+		</AdaptiveForm>
 	);
 };
 
