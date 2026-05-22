@@ -42,15 +42,22 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	}
 
 	public function test_returns_cached_value_without_api_call() {
-		$this->options->method( 'get' )->willReturn( 'accounts/12345/dataSources/999' );
+		$this->options->method( 'get' )->willReturn(
+			[
+				'en|US' => 'accounts/12345/dataSources/999',
+			]
+		);
 		$this->client->expects( $this->never() )->method( 'get' );
 		$this->client->expects( $this->never() )->method( 'post' );
 
-		$this->assertSame( 'accounts/12345/dataSources/999', $this->service->ensure_primary_data_source() );
+		$this->assertSame(
+			'accounts/12345/dataSources/999',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
 	}
 
-	public function test_reuses_plugin_labeled_source() {
-		$this->options->method( 'get' )->willReturn( '' );
+	public function test_reuses_existing_data_source_matching_language_and_feed() {
+		$this->options->method( 'get' )->willReturn( [] );
 		$this->client->expects( $this->once() )
 			->method( 'get' )
 			->with( self::LIST_PATH )
@@ -58,34 +65,44 @@ class MapiDataSourcesServiceTest extends UnitTest {
 				[
 					'dataSources' => [
 						[
-							'name'                     => 'accounts/12345/dataSources/200',
-							'displayName'              => 'Google for WooCommerce',
-							'primaryProductDataSource' => [],
+							'name'                     => 'accounts/12345/dataSources/100',
+							'displayName'              => 'Some existing source',
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+							],
 						],
 					],
 				]
 			);
 		$this->options->expects( $this->once() )
 			->method( 'update' )
-			->with( OptionsInterface::MAPI_PRIMARY_DATA_SOURCE, 'accounts/12345/dataSources/200' );
+			->with(
+				OptionsInterface::MAPI_DATA_SOURCES,
+				[ 'en|US' => 'accounts/12345/dataSources/100' ]
+			);
 
-		$this->assertSame( 'accounts/12345/dataSources/200', $this->service->ensure_primary_data_source() );
+		$this->assertSame(
+			'accounts/12345/dataSources/100',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
 	}
 
-	public function test_creates_new_source_when_no_plugin_labeled_source_exists() {
-		$this->options->method( 'get' )->willReturn( '' );
-		// Existing non-plugin sources must be ignored; MAPI will auto-move products
-		// on the next productInputs.insert under the new data source.
+	public function test_skips_existing_sources_with_different_language_or_feed() {
+		$this->options->method( 'get' )->willReturn( [] );
 		$this->client->method( 'get' )->willReturn(
 			[
 				'dataSources' => [
 					[
 						'name'                     => 'accounts/12345/dataSources/100',
-						'displayName'              => 'Content API',
-						'primaryProductDataSource' => [],
+						'displayName'              => 'Other market',
+						'primaryProductDataSource' => [
+							'contentLanguage' => 'fr',
+							'feedLabel'       => 'CA',
+						],
 					],
 					[
-						'name'        => 'accounts/12345/dataSources/300',
+						'name'        => 'accounts/12345/dataSources/200',
 						'displayName' => 'Some File Feed',
 						'fileInput'   => [],
 					],
@@ -98,47 +115,61 @@ class MapiDataSourcesServiceTest extends UnitTest {
 				self::LIST_PATH,
 				$this->callback(
 					function ( $body ) {
-						return 'Google for WooCommerce' === $body['displayName']
-							&& isset( $body['primaryProductDataSource'] )
+						return 'Google for WooCommerce (en/US)' === $body['displayName']
+							&& 'en' === $body['primaryProductDataSource']['contentLanguage']
+							&& 'US' === $body['primaryProductDataSource']['feedLabel']
 							&& ! isset( $body['fileInput'] );
 					}
 				)
 			)
 			->willReturn( [ 'name' => 'accounts/12345/dataSources/777' ] );
 
-		$this->assertSame( 'accounts/12345/dataSources/777', $this->service->ensure_primary_data_source() );
+		$this->assertSame(
+			'accounts/12345/dataSources/777',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
 	}
 
-	public function test_install_skips_when_no_merchant_id() {
-		$options = $this->createMock( OptionsInterface::class );
-		$options->method( 'get_merchant_id' )->willReturn( 0 );
+	public function test_creates_new_source_when_none_match() {
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+		$this->client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn( [ 'name' => 'accounts/12345/dataSources/777' ] );
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::MAPI_DATA_SOURCES,
+				[ 'fr|CA' => 'accounts/12345/dataSources/777' ]
+			);
 
-		$service = new MapiDataSourcesService( $this->client );
-		$service->set_options_object( $options );
-
-		$this->client->expects( $this->never() )->method( 'get' );
-		$this->client->expects( $this->never() )->method( 'post' );
-
-		$service->install( '1.0.0', '1.1.0' );
+		$this->assertSame(
+			'accounts/12345/dataSources/777',
+			$this->service->ensure_data_source_for( 'fr', 'CA' )
+		);
 	}
 
-	public function test_install_resolves_data_source_when_connected() {
-		$this->options->method( 'get' )->willReturn( '' );
-		$this->client->method( 'get' )->willReturn(
-			[
-				'dataSources' => [
-					[
-						'name'                     => 'accounts/12345/dataSources/200',
-						'displayName'              => 'Google for WooCommerce',
-						'primaryProductDataSource' => [],
-					],
-				],
-			]
+	public function test_preserves_other_market_cache_entries_when_resolving_a_new_market() {
+		$this->options->method( 'get' )->willReturn(
+			[ 'en|US' => 'accounts/12345/dataSources/100' ]
+		);
+		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
+		$this->client->method( 'post' )->willReturn(
+			[ 'name' => 'accounts/12345/dataSources/200' ]
 		);
 		$this->options->expects( $this->once() )
 			->method( 'update' )
-			->with( OptionsInterface::MAPI_PRIMARY_DATA_SOURCE, 'accounts/12345/dataSources/200' );
+			->with(
+				OptionsInterface::MAPI_DATA_SOURCES,
+				[
+					'en|US' => 'accounts/12345/dataSources/100',
+					'fr|CA' => 'accounts/12345/dataSources/200',
+				]
+			);
 
-		$this->service->install( '1.0.0', '1.1.0' );
+		$this->assertSame(
+			'accounts/12345/dataSources/200',
+			$this->service->ensure_data_source_for( 'fr', 'CA' )
+		);
 	}
 }
