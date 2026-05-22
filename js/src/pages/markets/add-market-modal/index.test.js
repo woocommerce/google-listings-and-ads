@@ -33,8 +33,6 @@ jest.mock( '../market-form', () =>
 jest.mock( '../market-fields', () => jest.fn( () => null ) );
 
 const defaultProps = {
-	shippingRates: [],
-	shippingTimes: [],
 	targetAudience: { countries: [], language: 'en' },
 	settings: { shipping_rate: SHIPPING_RATE_METHOD.MANUAL },
 	onRequestClose: jest.fn(),
@@ -43,7 +41,7 @@ const defaultProps = {
 describe( 'AddMarketModal', () => {
 	beforeEach( () => {
 		global.glaData.isMultiLingualStore = false;
-		// MultiLingualPluginPrompt reads useSettings() directly.
+		// MultiLingualPluginPrompt and LocaleSection read useSettings() directly.
 		useSettings.mockReturnValue( {
 			settings: { shipping_rate: SHIPPING_RATE_METHOD.MANUAL },
 		} );
@@ -175,5 +173,44 @@ describe( 'AddMarketModal', () => {
 
 		expect( showValidation ).toHaveBeenCalledTimes( 1 );
 		expect( handleSubmit ).not.toHaveBeenCalled();
+	} );
+
+	describe( 'automatic non-multilingual scenario', () => {
+		const automaticSettings = {
+			shipping_rate: SHIPPING_RATE_METHOD.AUTOMATIC,
+		};
+
+		beforeEach( () => {
+			global.glaData.isMultiLingualStore = false;
+			useSettings.mockReturnValue( { settings: automaticSettings } );
+		} );
+
+		test( 'shows the "Add market" button', () => {
+			render(
+				<AddMarketModal
+					{ ...defaultProps }
+					settings={ automaticSettings }
+				/>
+			);
+
+			expect(
+				screen.getByRole( 'button', { name: 'Add market' } )
+			).toBeInTheDocument();
+		} );
+
+		test( 'does not render the multilingual plugin prompt', () => {
+			render(
+				<AddMarketModal
+					{ ...defaultProps }
+					settings={ automaticSettings }
+				/>
+			);
+
+			expect(
+				screen.queryByText(
+					'Install a multilingual plugin to add markets'
+				)
+			).not.toBeInTheDocument();
+		} );
 	} );
 } );

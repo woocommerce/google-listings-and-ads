@@ -33,10 +33,13 @@ const MarketSelectControl = () => {
 		return null;
 	}
 
-	const options = primaryMarket.countries.map( ( countryCode ) => ( {
-		value: countryCode,
-		label: countries[ countryCode ]?.name || countryCode,
-	} ) );
+	const options = [
+		{ value: '', label: __( 'Select…', 'google-listings-and-ads' ) },
+		...primaryMarket.countries.map( ( countryCode ) => ( {
+			value: countryCode,
+			label: countries[ countryCode ]?.name || countryCode,
+		} ) ),
+	];
 
 	const { onChange, ...inputProps } = getInputProps( 'country' );
 
