@@ -9,16 +9,14 @@ import { useRef, useState } from '@wordpress/element';
 import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 import { useAppDispatch } from '~/data';
 import { PRIMARY_MARKET_ID } from './constants';
-import checkErrors from './utils/checkErrors';
 import {
 	getTargetCountries,
 	ensureRateRows,
 	ensureTimeRows,
-	updateRates,
-	updateRateOptions,
 	updateTimes,
 	updateRateRows,
 } from './utils/shipping-rows';
+import checkErrors from './utils/checkErrors';
 import useShippingRates from '~/hooks/useShippingRates';
 import useShippingTimes from '~/hooks/useShippingTimes';
 import useSaveShippingRates from '~/hooks/useSaveShippingRates';
