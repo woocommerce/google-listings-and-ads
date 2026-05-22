@@ -5,8 +5,7 @@ import {
 	getTargetCountries,
 	ensureRateRows,
 	ensureTimeRows,
-	updateRates,
-	updateRateOptions,
+	updateRateRows,
 	updateTimes,
 } from './shipping-rows';
 
@@ -81,16 +80,24 @@ describe( 'ensureTimeRows', () => {
 			maxTime: 0,
 		} );
 	} );
+
+	test( 'works against an empty times array', () => {
+		const result = ensureTimeRows( [], [ 'FR' ] );
+
+		expect( result ).toEqual( [
+			{ countryCode: 'FR', time: 0, maxTime: 0 },
+		] );
+	} );
 } );
 
-describe( 'updateRates', () => {
+describe( 'updateRateRows', () => {
 	test( 'patches only rows whose country is in the target list', () => {
 		const rates = [
 			{ country: 'US', currency: 'USD', rate: 10, options: {} },
 			{ country: 'FR', currency: 'EUR', rate: 8, options: {} },
 		];
 
-		const result = updateRates( rates, [ 'FR' ], { rate: 12 } );
+		const result = updateRateRows( rates, [ 'FR' ], { rate: 12 } );
 
 		expect( result[ 0 ].rate ).toBe( 10 );
 		expect( result[ 1 ].rate ).toBe( 12 );
@@ -101,13 +108,13 @@ describe( 'updateRates', () => {
 			{ country: 'US', currency: 'USD', rate: 10, options: {} },
 		];
 
-		const result = updateRates( rates, [ 'FR' ], { rate: 12 } );
+		const result = updateRateRows( rates, [ 'FR' ], { rate: 12 } );
 
 		expect( result ).toEqual( rates );
 	} );
 } );
 
-describe( 'updateRateOptions', () => {
+describe( 'updateRateRows — optionsPatch', () => {
 	test( 'merges options into matching rows without overwriting siblings', () => {
 		const rates = [
 			{
@@ -118,9 +125,12 @@ describe( 'updateRateOptions', () => {
 			},
 		];
 
-		const result = updateRateOptions( rates, [ 'FR' ], {
-			free_shipping_threshold: 50,
-		} );
+		const result = updateRateRows(
+			rates,
+			[ 'FR' ],
+			{},
+			{ free_shipping_threshold: 50 }
+		);
 
 		expect( result[ 0 ].options ).toEqual( {
 			existing_key: 'keep',
@@ -134,9 +144,12 @@ describe( 'updateRateOptions', () => {
 			{ country: 'FR', currency: 'EUR', rate: 8, options: {} },
 		];
 
-		const result = updateRateOptions( rates, [ 'FR' ], {
-			free_shipping_threshold: 50,
-		} );
+		const result = updateRateRows(
+			rates,
+			[ 'FR' ],
+			{},
+			{ free_shipping_threshold: 50 }
+		);
 
 		expect( result[ 0 ].options ).toEqual( {} );
 	} );
@@ -165,7 +178,9 @@ describe( 'regression: secondary market with no stored rate row', () => {
 		const targetCountries = getTargetCountries( false, { country: 'FR' } );
 		const rates = []; // no FR row stored yet
 		const ensured = ensureRateRows( rates, targetCountries, 'EUR' );
-		const patched = updateRates( ensured, targetCountries, { rate: 10 } );
+		const patched = updateRateRows( ensured, targetCountries, {
+			rate: 10,
+		} );
 
 		expect( patched ).toEqual( [
 			{ country: 'FR', currency: 'EUR', rate: 10, options: {} },
