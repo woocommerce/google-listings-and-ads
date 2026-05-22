@@ -70,7 +70,6 @@ const MarketForm = ( {
 	const extendAdapter = ( formContext ) => {
 		return {
 			isSaving,
-			isLoading,
 			isEditing,
 			isPrimaryMarket,
 			renderRequestedValidation( key ) {

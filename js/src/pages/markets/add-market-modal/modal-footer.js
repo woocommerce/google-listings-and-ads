@@ -17,13 +17,11 @@ const CONTEXT = 'add_market_modal';
  * @event gla_cancel_button_clicked
  * @property {string} context The context in which the cancel button click happened, e.g. "add_market_modal".
  */
-
 /**
  * Event fired when the "Add market" button in the AddMarketModal is clicked.
  * @event gla_add_new_market_button_clicked
  * @property {string} context The context in which the add market button click happened, e.g. "add_market_modal".
  */
-
 /**
  * Modal footer component for the AddMarketModal.
  * It renders a cancel button and an add market button if the shipping rate is not manual.
@@ -38,7 +36,7 @@ const CONTEXT = 'add_market_modal';
 
 const ModalFooter = ( { onCancel, settings } ) => {
 	const { adapter, isValidForm, handleSubmit } = useAdaptiveFormContext();
-	const { isSaving, isLoading } = adapter;
+	const { isSaving } = adapter;
 
 	const showAddMarketButton = ! (
 		! glaData.isMultiLingualStore &&
@@ -67,7 +65,7 @@ const ModalFooter = ( { onCancel, settings } ) => {
 				<AppButton
 					variant="primary"
 					onClick={ handleSubmitClick }
-					loading={ isSaving || isLoading }
+					loading={ isSaving }
 					eventName="gla_add_new_market_button_clicked"
 					eventProps={ { context: CONTEXT } }
 				>

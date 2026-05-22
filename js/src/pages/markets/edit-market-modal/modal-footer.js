@@ -16,13 +16,11 @@ const CONTEXT = 'edit_market_modal';
  * @event gla_cancel_button_clicked
  * @property {string} context The context in which the cancel button click happened, e.g. "edit_market_modal".
  */
-
 /**
  * Event fired when the "Save" button in the EditMarketModal is clicked.
  * @event gla_save_button_clicked
  * @property {string} context The context in which the save button click happened, e.g. "edit_market_modal".
  */
-
 /**
  * Modal footer component for the EditMarketModal.
  * It renders a cancel button and a save button.
@@ -36,7 +34,7 @@ const CONTEXT = 'edit_market_modal';
  */
 const ModalFooter = ( { onCancel } ) => {
 	const { adapter, isValidForm, handleSubmit } = useAdaptiveFormContext();
-	const { isSaving, isLoading } = adapter;
+	const { isSaving } = adapter;
 
 	const handleSubmitClick = ( event ) => {
 		if ( isValidForm ) {
@@ -59,7 +57,7 @@ const ModalFooter = ( { onCancel } ) => {
 			<AppButton
 				variant="primary"
 				onClick={ handleSubmitClick }
-				loading={ isSaving || isLoading }
+				loading={ isSaving }
 				eventName="gla_save_button_clicked"
 				eventProps={ { context: CONTEXT } }
 			>
