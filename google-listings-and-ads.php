@@ -72,6 +72,14 @@ add_action(
 add_action(
 	'woocommerce_loaded',
 	function () {
+		global $pagenow;
+
+		// Bail during plugin upgrade requests to prevent mid-request crashes caused by the
+		// stale ClassLoader from the previous version resolving removed classes in the admin footer.
+		if ( is_admin() && 'update.php' === $pagenow ) {
+			return;
+		}
+
 		PluginFactory::instance()->register();
 	},
 	1
