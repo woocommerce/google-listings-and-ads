@@ -72,9 +72,7 @@ describe( 'EditMarketModal', () => {
 			screen.getByRole( 'dialog', { name: 'Edit primary market' } )
 		).toBeInTheDocument();
 		expect( screen.getByRole( 'status' ) ).toBeInTheDocument();
-		expect(
-			screen.getByRole( 'button', { name: 'Save' } )
-		).toBeDisabled();
+		expect( screen.getByRole( 'button', { name: 'Save' } ) ).toBeDisabled();
 	} );
 
 	test( 'invokes onRequestClose when the footer Cancel button is clicked', async () => {
