@@ -145,6 +145,23 @@ describe( 'AddMarketModal', () => {
 		).not.toBeInTheDocument();
 	} );
 
+	test( 'renders AppSpinner inside the modal while data is loading', () => {
+		const MarketForm = jest.requireMock( '../market-form' );
+		MarketForm.mockImplementationOnce( ( { children } ) =>
+			children( { adapter: { isLoading: true } } )
+		);
+
+		render( <AddMarketModal { ...defaultProps } /> );
+
+		expect(
+			screen.getByRole( 'dialog', { name: 'Add market' } )
+		).toBeInTheDocument();
+		expect( screen.getByRole( 'status' ) ).toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Add market' } )
+		).not.toBeInTheDocument();
+	} );
+
 	test( 'calls showValidation and not handleSubmit when the form is invalid and "Add market" is clicked', async () => {
 		const user = userEvent.setup();
 		const showValidation = jest.fn();

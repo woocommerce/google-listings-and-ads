@@ -9,6 +9,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { PRIMARY_MARKET_ID } from '../constants';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
+import AppSpinner from '~/components/app-spinner';
 import MarketForm from '../market-form';
 import MarketFields from '../market-fields';
 
@@ -63,7 +64,7 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 		>
 			{ ( formContext ) => {
 				const { adapter, isValidForm, handleSubmit } = formContext;
-				const { isSaving } = adapter;
+				const { isSaving, isLoading } = adapter;
 
 				const handleSubmitClick = ( event ) => {
 					if ( isValidForm ) {
@@ -93,7 +94,7 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 								key="save"
 								variant="primary"
 								onClick={ handleSubmitClick }
-								loading={ isSaving }
+								loading={ isSaving || isLoading }
 								eventName="gla_save_button_clicked"
 								eventProps={ {
 									context: CONTEXT,
@@ -103,7 +104,7 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 							</AppButton>,
 						] }
 					>
-						<MarketFields />
+						{ isLoading ? <AppSpinner /> : <MarketFields /> }
 					</AppModal>
 				);
 			} }

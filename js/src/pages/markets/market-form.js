@@ -17,7 +17,6 @@ import useSaveShippingTimes from '~/hooks/useSaveShippingTimes';
 import useSettings from '~/hooks/useSettings';
 import AdaptiveForm from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
-import AppSpinner from '~/components/app-spinner';
 
 /**
  * Returns a predicate: "should this country be updated?"
@@ -103,17 +102,17 @@ const MarketForm = ( {
 	const isEditing = Boolean( marketId );
 	const isPrimaryMarket = isEditing && marketId === PRIMARY_MARKET_ID;
 
-	if (
-		! hasResolvedShippingRates ||
-		! hasResolvedShippingTimes ||
-		! settings
-	) {
-		return <AppSpinner />;
+	const isLoading =
+		! hasResolvedShippingRates || ! hasResolvedShippingTimes || ! settings;
+
+	if ( isLoading ) {
+		return adaptiveFormProps.children( { adapter: { isLoading: true } } );
 	}
 
 	const extendAdapter = ( formContext ) => {
 		return {
 			isSaving,
+			isLoading,
 			isEditing,
 			isPrimaryMarket,
 			renderRequestedValidation( key ) {

@@ -10,6 +10,7 @@ import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
+import AppSpinner from '~/components/app-spinner';
 import MultiLingualPluginPrompt from './multilingual-plugin-prompt';
 import MarketFields from '../market-fields';
 import MarketForm from '../market-form';
@@ -69,7 +70,7 @@ const AddMarketModal = ( {
 		<MarketForm initialMarket={ initialMarket } onSubmit={ onRequestClose }>
 			{ ( formContext ) => {
 				const { adapter, isValidForm, handleSubmit } = formContext;
-				const { isSaving } = adapter;
+				const { isSaving, isLoading } = adapter;
 
 				const handleSubmitClick = ( event ) => {
 					if ( isValidForm ) {
@@ -100,7 +101,7 @@ const AddMarketModal = ( {
 							key="add-market"
 							variant="primary"
 							onClick={ handleSubmitClick }
-							loading={ isSaving }
+							loading={ isSaving || isLoading }
 							eventName="gla_add_new_market_button_clicked"
 							eventProps={ {
 								context: CONTEXT,
@@ -117,8 +118,14 @@ const AddMarketModal = ( {
 						onRequestClose={ onRequestClose }
 						buttons={ buttons }
 					>
-						<MarketFields />
-						<MultiLingualPluginPrompt />
+						{ isLoading ? (
+							<AppSpinner />
+						) : (
+							<>
+								<MarketFields />
+								<MultiLingualPluginPrompt />
+							</>
+						) }
 					</AppModal>
 				);
 			} }

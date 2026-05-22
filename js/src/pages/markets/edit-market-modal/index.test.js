@@ -54,6 +54,29 @@ describe( 'EditMarketModal', () => {
 		).toBeInTheDocument();
 	} );
 
+	test( 'renders AppSpinner inside the modal while data is loading', () => {
+		const MarketForm = jest.requireMock( '../market-form' );
+		MarketForm.mockImplementationOnce( ( { children } ) =>
+			children( { adapter: { isLoading: true } } )
+		);
+
+		render(
+			<EditMarketModal
+				market={ market }
+				targetAudience={ targetAudience }
+				onRequestClose={ () => {} }
+			/>
+		);
+
+		expect(
+			screen.getByRole( 'dialog', { name: 'Edit primary market' } )
+		).toBeInTheDocument();
+		expect( screen.getByRole( 'status' ) ).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'button', { name: 'Save' } )
+		).toBeDisabled();
+	} );
+
 	test( 'invokes onRequestClose when the footer Cancel button is clicked', async () => {
 		const user = userEvent.setup();
 		const onRequestClose = jest.fn();
