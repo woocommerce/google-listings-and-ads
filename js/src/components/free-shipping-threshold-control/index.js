@@ -32,7 +32,11 @@ const FreeShippingThresholdControl = ( { onChange, threshold, currency } ) => {
 	const { values } = useAdaptiveFormContext();
 
 	const handleBlur = ( _event, numberValue ) => {
-		if ( numberValue === threshold ) {
+		if (
+			numberValue === threshold ||
+			isNaN( numberValue ) ||
+			numberValue < 0
+		) {
 			return;
 		}
 
