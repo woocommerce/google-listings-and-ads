@@ -9,6 +9,13 @@ import { useRef, useState } from '@wordpress/element';
 import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 import { useAppDispatch } from '~/data';
 import { PRIMARY_MARKET_ID } from './constants';
+import {
+	getTargetCountries,
+	ensureRateRows,
+	ensureTimeRows,
+	updateTimes,
+	updateRateRows,
+} from './utils/shipping-rows';
 import checkErrors from './utils/checkErrors';
 import useShippingRates from '~/hooks/useShippingRates';
 import useShippingTimes from '~/hooks/useShippingTimes';
@@ -18,57 +25,7 @@ import useSettings from '~/hooks/useSettings';
 import AdaptiveForm from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
 import AppSpinner from '~/components/app-spinner';
-
-/**
- * Returns a predicate: "should this country be updated?"
- * - Non-primary market: matches only `values.country`.
- * - Primary market: matches every country in `values.countries`.
- *
- * @param {boolean} isPrimaryMarket
- * @param {Object}  values Current form values.
- * @return {Function} (countryCode: string) => boolean
- */
-function getCountryPredicate( isPrimaryMarket, values ) {
-	if ( isPrimaryMarket ) {
-		const selected = new Set( values.countries || [] );
-		return ( code ) => selected.has( code );
-	}
-	return ( code ) => code === values.country;
-}
-
-/**
- * Patches top-level fields and/or the `options` object on matching rate rows.
- *
- * @param {Array}    rates         Current rate rows.
- * @param {Function} isTarget      Predicate — true for rows that should be patched.
- * @param {Object}   [patch]       Top-level fields to merge onto matching rows.
- * @param {Object}   [optionsPatch] Fields to merge into `row.options` on matching rows.
- * @return {Array} New rate array with matching rows patched.
- */
-function updateRateRows( rates, isTarget, patch, optionsPatch ) {
-	return rates.map( ( rate ) => {
-		if ( ! isTarget( rate.country ) ) {
-			return rate;
-		}
-
-		return {
-			...rate,
-			...patch,
-			...( optionsPatch !== undefined && {
-				options: { ...rate.options, ...optionsPatch },
-			} ),
-		};
-	} );
-}
-
-/**
- * Patches top-level fields on matching time rows.
- */
-function updateTimes( times, isTarget, patch ) {
-	return times.map( ( entry ) =>
-		isTarget( entry.countryCode ) ? { ...entry, ...patch } : entry
-	);
-}
+import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
 
 /**
  * Form component for creating or editing a market.
@@ -167,8 +124,8 @@ const MarketForm = ( {
 	 * Several fields (e.g. flat_shipping_rate) are displayed as a single
 	 * input but must be written into every relevant row of
 	 * `shipping_country_rates` or `shipping_country_times`. This handler
-	 * figures out which rows to update (via `getCountryPredicate`) and
-	 * applies the right patch depending on which field changed.
+	 * resolves the target countries (via `getTargetCountries`), materialises
+	 * missing rows where needed, and applies the right patch.
 	 *
 	 * - Non-primary market: only the row for `values.country` is updated.
 	 * - Primary market: every row whose country is in `values.countries` is updated.
@@ -179,24 +136,32 @@ const MarketForm = ( {
 	const handleChange = ( change, values ) => {
 		const { setValue } = formRef.current;
 
-		const isTarget = getCountryPredicate( isPrimaryMarket, values );
-		const rates = values.shipping_country_rates || [];
-		const times = values.shipping_country_times || [];
+		const targetCountries = getTargetCountries( isPrimaryMarket, values );
+		const rawRates = values.shipping_country_rates || [];
+		const rawTimes = values.shipping_country_times || [];
+		const { currency } = values;
 
 		switch ( change.name ) {
 			case 'flat_shipping_rate': {
+				const rates = ensureRateRows(
+					rawRates,
+					targetCountries,
+					currency
+				);
 				const isFree = change.value === 0;
+
 				setValue(
 					'shipping_country_rates',
 					updateRateRows(
 						rates,
-						isTarget,
+						targetCountries,
 						{ rate: change.value },
 						isFree
 							? { free_shipping_threshold: undefined }
 							: undefined
 					)
 				);
+
 				if ( isFree ) {
 					setValue( 'free_shipping_threshold', undefined );
 					setValue( 'offer_free_shipping', false );
@@ -206,11 +171,12 @@ const MarketForm = ( {
 
 			case 'offer_free_shipping':
 				if ( change.value === false ) {
+					// Clearing the threshold — don't materialise rows just to unset.
 					setValue(
 						'shipping_country_rates',
 						updateRateRows(
-							rates,
-							isTarget,
+							rawRates,
+							targetCountries,
 							{},
 							{
 								free_shipping_threshold: undefined,
@@ -220,26 +186,39 @@ const MarketForm = ( {
 				}
 				break;
 
-			case 'flat_shipping_min_time':
+			case 'flat_shipping_min_time': {
+				const times = ensureTimeRows( rawTimes, targetCountries );
 				setValue(
 					'shipping_country_times',
-					updateTimes( times, isTarget, { time: change.value } )
+					updateTimes( times, targetCountries, {
+						time: change.value,
+					} )
 				);
 				break;
+			}
 
-			case 'flat_shipping_max_time':
+			case 'flat_shipping_max_time': {
+				const times = ensureTimeRows( rawTimes, targetCountries );
 				setValue(
 					'shipping_country_times',
-					updateTimes( times, isTarget, { maxTime: change.value } )
+					updateTimes( times, targetCountries, {
+						maxTime: change.value,
+					} )
 				);
 				break;
+			}
 
-			case 'free_shipping_threshold':
+			case 'free_shipping_threshold': {
+				const rates = ensureRateRows(
+					rawRates,
+					targetCountries,
+					currency
+				);
 				setValue(
 					'shipping_country_rates',
 					updateRateRows(
 						rates,
-						isTarget,
+						targetCountries,
 						{},
 						{
 							free_shipping_threshold: change.value,
@@ -247,6 +226,83 @@ const MarketForm = ( {
 					)
 				);
 				break;
+			}
+
+			case 'countries': {
+				const audienceCountries = change.value || [];
+
+				// Filter removed countries AND fill in newly added countries using the current flat rate.
+				const filteredRates = values.shipping_country_rates.filter(
+					( shippingCountryRate ) =>
+						audienceCountries.includes(
+							shippingCountryRate.country
+						)
+				);
+				const missingCountries = audienceCountries.filter(
+					( country ) =>
+						! filteredRates.some(
+							( rate ) => rate.country === country
+						)
+				);
+				const existingThreshold = filteredRates.find(
+					isNonFreeShippingRate
+				)?.options?.free_shipping_threshold;
+				const nextRates =
+					values.flat_shipping_rate !== undefined &&
+					missingCountries.length > 0
+						? [
+								...filteredRates,
+								...missingCountries.map( ( country ) => ( {
+									options: {
+										free_shipping_threshold:
+											existingThreshold,
+									},
+									country,
+									rate: values.flat_shipping_rate,
+								} ) ),
+						  ]
+						: filteredRates;
+				if (
+					nextRates.length !== values.shipping_country_rates.length
+				) {
+					setValue( 'shipping_country_rates', nextRates );
+				}
+
+				// For times: filter removed countries AND add newly added countries.
+				const filteredTimes = values.shipping_country_times.filter(
+					( shippingTime ) =>
+						audienceCountries.includes( shippingTime.countryCode )
+				);
+				const missingTimesCountries = audienceCountries.filter(
+					( country ) =>
+						! filteredTimes.some(
+							( shippingTime ) =>
+								shippingTime.countryCode === country
+						)
+				);
+				const nextTimes =
+					values.flat_shipping_min_time !== null &&
+					values.flat_shipping_max_time !== null &&
+					missingTimesCountries.length > 0
+						? [
+								...filteredTimes,
+								...missingTimesCountries.map(
+									( countryCode ) => ( {
+										countryCode,
+										time: values.flat_shipping_min_time,
+										maxTime: values.flat_shipping_max_time,
+									} )
+								),
+						  ]
+						: filteredTimes;
+
+				if (
+					nextTimes.length !== values.shipping_country_times.length
+				) {
+					setValue( 'shipping_country_times', nextTimes );
+				}
+				break;
+			}
 		}
 	};
 
@@ -275,12 +331,21 @@ const MarketForm = ( {
 		};
 
 		if ( isEditing ) {
-			const existingRate = shippingRates?.find(
-				( rate ) => rate.country === marketId.toUpperCase() // @TODO: check with BE with the ID is saved to lowercase. Here we need to convert to uppercase
-			);
-			const existingTime = shippingTimes?.find(
-				( time ) => time.countryCode === marketId.toUpperCase()
-			);
+			// `initialMarket.country` is the canonical ISO code from the backend
+			// (uppercase). The market `id` is `sanitize_title(country)`
+			// (lowercased), so deriving the lookup country from `id` would be
+			// fragile — use the country field directly.
+			const editingCountry = initialMarket.country;
+			const existingRate = editingCountry
+				? shippingRates?.find(
+						( rate ) => rate.country === editingCountry
+				  )
+				: undefined;
+			const existingTime = editingCountry
+				? shippingTimes?.find(
+						( time ) => time.countryCode === editingCountry
+				  )
+				: undefined;
 
 			updatedMarket = {
 				...updatedMarket,
