@@ -107,16 +107,19 @@ const SetupFreeListings = ( {
 
 		if ( change.name === 'flat_shipping_rate' ) {
 			// Translate the single flat rate into the per-country array the API expects.
-			// Preserve any existing free_shipping_threshold per country.
+			// Preserve any existing free_shipping_threshold per country, unless the
+			// new rate is free (0), in which case clear the threshold.
+			const isFree = change.value === 0;
 			const countries = resolveFinalCountries( values );
 			const existingByCountry = new Map(
 				values.shipping_country_rates.map( ( r ) => [ r.country, r ] )
 			);
 			const rates = countries.map( ( country ) => ( {
 				options: {
-					free_shipping_threshold:
-						existingByCountry.get( country )?.options
-							?.free_shipping_threshold,
+					free_shipping_threshold: isFree
+						? undefined
+						: existingByCountry.get( country )?.options
+								?.free_shipping_threshold,
 				},
 				country,
 				currency: currencyCode,

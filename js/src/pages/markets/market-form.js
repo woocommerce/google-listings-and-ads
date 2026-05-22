@@ -17,6 +17,7 @@ import {
 	updateRates,
 	updateRateOptions,
 	updateTimes,
+	updateRateRows,
 } from './utils/shipping-rows';
 import useShippingRates from '~/hooks/useShippingRates';
 import useShippingTimes from '~/hooks/useShippingTimes';
@@ -149,12 +150,24 @@ const MarketForm = ( {
 					targetCountries,
 					currency
 				);
+				const isFree = change.value === 0;
+
 				setValue(
 					'shipping_country_rates',
-					updateRates( rates, targetCountries, {
-						rate: change.value,
-					} )
+					updateRateRows(
+						rates,
+						targetCountries,
+						{ rate: change.value },
+						isFree
+							? { free_shipping_threshold: undefined }
+							: undefined
+					)
 				);
+
+				if ( isFree ) {
+					setValue( 'free_shipping_threshold', undefined );
+					setValue( 'offer_free_shipping', false );
+				}
 				break;
 			}
 
@@ -163,9 +176,14 @@ const MarketForm = ( {
 					// Clearing the threshold — don't materialise rows just to unset.
 					setValue(
 						'shipping_country_rates',
-						updateRateOptions( rawRates, targetCountries, {
-							free_shipping_threshold: undefined,
-						} )
+						updateRateRows(
+							rawRates,
+							targetCountries,
+							{},
+							{
+								free_shipping_threshold: undefined,
+							}
+						)
 					);
 				}
 				break;
@@ -200,9 +218,14 @@ const MarketForm = ( {
 				);
 				setValue(
 					'shipping_country_rates',
-					updateRateOptions( rates, targetCountries, {
-						free_shipping_threshold: change.value,
-					} )
+					updateRateRows(
+						rates,
+						targetCountries,
+						{},
+						{
+							free_shipping_threshold: change.value,
+						}
+					)
 				);
 				break;
 			}

@@ -17,22 +17,23 @@
  * touched by the next form change.
  *
  * @param {boolean} isPrimaryMarket
- * @param {Object}  values Current form values.
+ * @param {Object} values Current form values.
  * @return {string[]} ISO 3166-1 alpha-2 country codes.
  */
 export function getTargetCountries( isPrimaryMarket, values ) {
 	if ( isPrimaryMarket ) {
 		return values.countries || [];
 	}
+
 	return values.country ? [ values.country ] : [];
 }
 
 /**
  * Appends rate rows for any target country missing from `rates`.
  *
- * @param {Array}    rates           Current shipping_country_rates value.
+ * @param {Array} rates Current shipping_country_rates value.
  * @param {string[]} targetCountries Country codes that need a row.
- * @param {string}   currency        Currency to seed onto newly-created rows.
+ * @param {string} currency Currency to seed onto newly-created rows.
  * @return {Array} A new array with rows for every target country.
  */
 export function ensureRateRows( rates, targetCountries, currency ) {
@@ -45,13 +46,14 @@ export function ensureRateRows( rates, targetCountries, currency ) {
 			rate: 0,
 			options: {},
 		} ) );
+
 	return newRows.length ? [ ...rates, ...newRows ] : rates;
 }
 
 /**
  * Appends time rows for any target country missing from `times`.
  *
- * @param {Array}    times           Current shipping_country_times value.
+ * @param {Array} times Current shipping_country_times value.
  * @param {string[]} targetCountries Country codes that need a row.
  * @return {Array} A new array with rows for every target country.
  */
@@ -64,37 +66,47 @@ export function ensureTimeRows( times, targetCountries ) {
 			time: 0,
 			maxTime: 0,
 		} ) );
+
 	return newRows.length ? [ ...times, ...newRows ] : times;
 }
 
 /**
- * Patches top-level fields on rate rows whose country is in `targetCountries`.
- */
-export function updateRates( rates, targetCountries, patch ) {
-	const targets = new Set( targetCountries );
-	return rates.map( ( rate ) =>
-		targets.has( rate.country ) ? { ...rate, ...patch } : rate
-	);
-}
-
-/**
- * Patches the `options` object on matching rate rows (merges, does not replace).
- */
-export function updateRateOptions( rates, targetCountries, optionsPatch ) {
-	const targets = new Set( targetCountries );
-	return rates.map( ( rate ) =>
-		targets.has( rate.country )
-			? { ...rate, options: { ...rate.options, ...optionsPatch } }
-			: rate
-	);
-}
-
-/**
  * Patches top-level fields on time rows whose country is in `targetCountries`.
+ *
+ * @param {Array} times Current time rows.
+ * @param {string[]} targetCountries Country codes that should be patched.
+ * @param {Object} patch Fields to merge onto matching rows.
+ * @return {Array} New time array with matching rows patched.
  */
 export function updateTimes( times, targetCountries, patch ) {
 	const targets = new Set( targetCountries );
 	return times.map( ( entry ) =>
 		targets.has( entry.countryCode ) ? { ...entry, ...patch } : entry
 	);
+}
+
+/**
+ * Patches top-level fields and/or the `options` object on matching rate rows.
+ *
+ * @param {Array}    rates         Current rate rows.
+ * @param {string[]} targetCountries Country codes that should be patched.
+ * @param {Object}   [patch]       Top-level fields to merge onto matching rows.
+ * @param {Object}   [optionsPatch] Fields to merge into `row.options` on matching rows.
+ * @return {Array} New rate array with matching rows patched.
+ */
+export function updateRateRows( rates, targetCountries, patch, optionsPatch ) {
+	const targets = new Set( targetCountries );
+	return rates.map( ( rate ) => {
+		if ( ! targets.has( rate.country ) ) {
+			return rate;
+		}
+
+		return {
+			...rate,
+			...patch,
+			...( optionsPatch !== undefined && {
+				options: { ...rate.options, ...optionsPatch },
+			} ),
+		};
+	} );
 }
