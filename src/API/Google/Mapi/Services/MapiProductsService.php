@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MapiPaths;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\Product;
@@ -22,9 +23,6 @@ defined( 'ABSPATH' ) || exit;
 class MapiProductsService implements OptionsAwareInterface {
 
 	use OptionsAwareTrait;
-
-	/** Base path for the Merchant API products. */
-	protected const API_PATH = 'products/v1';
 
 	/** @var MerchantApiClient */
 	protected $client;
@@ -102,7 +100,7 @@ class MapiProductsService implements OptionsAwareInterface {
 	protected function build_path( string $google_product_id ): string {
 		return sprintf(
 			'%s/accounts/%s/products/%s',
-			self::API_PATH,
+			MapiPaths::PRODUCTS,
 			$this->options->get_merchant_id(),
 			$google_product_id
 		);
