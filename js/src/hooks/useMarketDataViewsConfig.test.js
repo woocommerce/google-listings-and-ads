@@ -501,6 +501,23 @@ describe( 'useMarketDataViewsConfig', () => {
 			expect( secondary.currency ).toBe( 'EUR' );
 			expect( secondary.shippingTime ).toBe( '5 - 7 days' );
 		} );
+
+		test( 'formats the primary market label with the country count', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_MULTILINGUAL_AUTOMATIC,
+				markets: [
+					PRIMARY_MARKET_MULTILINGUAL_AUTOMATIC,
+					SECONDARY_MARKET_MULTILINGUAL_AUTOMATIC,
+				],
+				multiLingualStore: true,
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+
+			expect( result.current.data[ 0 ].label ).toBe(
+				'Primary Market (3 countries)'
+			);
+		} );
 	} );
 
 	describe( 'multilingual store, manual shipping', () => {

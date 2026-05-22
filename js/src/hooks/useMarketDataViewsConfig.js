@@ -64,7 +64,7 @@ const isPrimaryMarket = ( market ) => market.id === PRIMARY_MARKET_ID;
  * - Manual non-multilingual: Market, Country (count), Shipping (static "Managed in Google"). Only primary market shown.
  * - Manual multilingual: Market (label + country count for primary, country name for secondaries), Language, Currency. All markets shown.
  * - Flat (multilingual or not): Market (label + country count for primary), Shipping Rate, Shipping Time, Free shipping. All markets shown. Both store types render identically per Figma; the multilingual variant of this scenario is GOOWOO-602.
- * - Automatic multilingual: Market, Language, Currency, Shipping time. All markets shown.
+ * - Automatic multilingual: Market (label + country count for primary), Language, Currency, Shipping time. All markets shown.
  * - Automatic non-multilingual: Market (label + country count), Shipping time. Only primary market shown.
  * - Default/fall-through: Market + Shipping time for all markets, with primary market showing country count in label.
  */
@@ -358,7 +358,7 @@ const buildFlatConfig = ( { markets, ratesByCountry, timesByCountry } ) => {
  * Automatic shipping scenario. The column set differs based on whether the store
  * has multilingual support:
  *
- * - Multilingual: Market, Language, Currency, Shipping time — all markets as rows.
+ * - Multilingual: Market (label + country count for primary, country name for secondaries), Language, Currency, Shipping time — all markets as rows.
  * - Non-multilingual: Market (label + country count), Shipping time — primary market only.
  *
  * @param {Object}                  options
@@ -382,12 +382,31 @@ const buildAutomaticConfig = ( {
 			ALL_FIELDS.shippingTime,
 		];
 
-		const data = markets.map( ( market ) => ( {
-			...market,
-			shippingTime: formatShippingTime(
-				timesByCountry[ market.country ]
-			),
-		} ) );
+		const data = markets.map( ( market ) => {
+			const row = {
+				...market,
+				shippingTime: formatShippingTime(
+					timesByCountry[ market.country ]
+				),
+			};
+
+			if ( isPrimaryMarket( market ) ) {
+				const countryCount = market.countries?.length ?? 0;
+				row.label = sprintf(
+					// translators: 1: market label, 2: number of countries.
+					_n(
+						'%1$s (%2$d country)',
+						'%1$s (%2$d countries)',
+						countryCount,
+						'google-listings-and-ads'
+					),
+					market.label,
+					countryCount
+				);
+			}
+
+			return row;
+		} );
 
 		return { fields, data };
 	}
