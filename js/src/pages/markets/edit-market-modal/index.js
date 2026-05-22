@@ -8,12 +8,9 @@ import { __, sprintf } from '@wordpress/i18n';
  */
 import { PRIMARY_MARKET_ID } from '../constants';
 import AppModal from '~/components/app-modal';
-import AppButton from '~/components/app-button';
-import AppSpinner from '~/components/app-spinner';
 import MarketForm from '../market-form';
 import MarketFields from '../market-fields';
-
-const CONTEXT = 'edit_market_modal';
+import EditMarketButtons from './edit-market-buttons';
 
 /**
  * @typedef {import('~/data/actions').TargetAudienceData } TargetAudienceData
@@ -55,60 +52,18 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 		  );
 
 	return (
-		<MarketForm
-			initialMarket={ {
-				...market,
-				countries: targetAudience.countries,
-			} }
-			onSubmit={ onRequestClose }
-		>
-			{ ( formContext ) => {
-				const { adapter, isValidForm, handleSubmit } = formContext;
-				const { isSaving, isLoading } = adapter;
-
-				const handleSubmitClick = ( event ) => {
-					if ( isValidForm ) {
-						return handleSubmit( event );
-					}
-					adapter.showValidation();
-				};
-
-				return (
-					<AppModal
-						title={ appModalTitle }
-						onRequestClose={ onRequestClose }
-						buttons={ [
-							<AppButton
-								key="close"
-								variant="tertiary"
-								onClick={ onRequestClose }
-								disabled={ isSaving }
-								eventName="gla_cancel_button_clicked"
-								eventProps={ {
-									context: CONTEXT,
-								} }
-							>
-								{ __( 'Cancel', 'google-listings-and-ads' ) }
-							</AppButton>,
-							<AppButton
-								key="save"
-								variant="primary"
-								onClick={ handleSubmitClick }
-								loading={ isSaving || isLoading }
-								eventName="gla_save_button_clicked"
-								eventProps={ {
-									context: CONTEXT,
-								} }
-							>
-								{ __( 'Save', 'google-listings-and-ads' ) }
-							</AppButton>,
-						] }
-					>
-						{ isLoading ? <AppSpinner /> : <MarketFields /> }
-					</AppModal>
-				);
-			} }
-		</MarketForm>
+		<AppModal title={ appModalTitle } onRequestClose={ onRequestClose }>
+			<MarketForm
+				initialMarket={ {
+					...market,
+					countries: targetAudience.countries,
+				} }
+				onSubmit={ onRequestClose }
+			>
+				<MarketFields />
+				<EditMarketButtons onRequestClose={ onRequestClose } />
+			</MarketForm>
+		</AppModal>
 	);
 };
 

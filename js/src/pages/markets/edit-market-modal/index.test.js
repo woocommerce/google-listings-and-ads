@@ -8,35 +8,37 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import useSettings from '~/hooks/useSettings';
 import EditMarketModal from './';
+import AppSpinner from '~/components/app-spinner';
 
 // MarketForm pulls in useSaveShippingRates → useSelect( STORE_KEY ) which
 // requires the wc/gla store to be registered. Mock it to avoid that dependency.
 jest.mock( '../market-form', () =>
-	jest.fn( ( { children } ) =>
-		children( {
-			adapter: { isSaving: false },
-			isValidForm: true,
-			handleSubmit: jest.fn(),
-			isDirty: false,
-		} )
-	)
+	jest.fn( ( { children } ) => <>{ children }</> )
 );
 
-// MarketFields requires AdaptiveForm context (provided by MarketForm). Mock it
-// so it renders without that context since MarketForm itself is mocked above.
+// MarketFields requires AdaptiveForm context. Mock it so it renders without
+// that context since MarketForm itself is mocked above.
 jest.mock( '../market-fields', () => jest.fn( () => null ) );
 
-jest.mock( '~/hooks/useSettings' );
+// EditMarketButtons uses useAdaptiveFormContext. Mock the hook so the buttons
+// render without a real AdaptiveForm provider.
+jest.mock( '~/components/adaptive-form', () => ( {
+	useAdaptiveFormContext: jest.fn(),
+} ) );
 
 const market = { id: 'primary', label: 'Primary Market' };
 const targetAudience = { countries: [ 'US' ] };
 
 describe( 'EditMarketModal', () => {
 	beforeEach( () => {
-		useSettings.mockReturnValue( {
-			settings: { shipping_rate: 'manual' },
+		const { useAdaptiveFormContext } = jest.requireMock(
+			'~/components/adaptive-form'
+		);
+		useAdaptiveFormContext.mockReturnValue( {
+			adapter: { isSaving: false, showValidation: jest.fn() },
+			isValidForm: true,
+			handleSubmit: jest.fn(),
 		} );
 	} );
 
@@ -56,9 +58,7 @@ describe( 'EditMarketModal', () => {
 
 	test( 'renders AppSpinner inside the modal while data is loading', () => {
 		const MarketForm = jest.requireMock( '../market-form' );
-		MarketForm.mockImplementationOnce( ( { children } ) =>
-			children( { adapter: { isLoading: true } } )
-		);
+		MarketForm.mockImplementationOnce( () => <AppSpinner /> );
 
 		render(
 			<EditMarketModal
@@ -72,7 +72,6 @@ describe( 'EditMarketModal', () => {
 			screen.getByRole( 'dialog', { name: 'Edit primary market' } )
 		).toBeInTheDocument();
 		expect( screen.getByRole( 'status' ) ).toBeInTheDocument();
-		expect( screen.getByRole( 'button', { name: 'Save' } ) ).toBeDisabled();
 	} );
 
 	test( 'invokes onRequestClose when the footer Cancel button is clicked', async () => {

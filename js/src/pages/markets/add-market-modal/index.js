@@ -6,16 +6,12 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
 import AppModal from '~/components/app-modal';
-import AppButton from '~/components/app-button';
-import AppSpinner from '~/components/app-spinner';
 import MultiLingualPluginPrompt from './multilingual-plugin-prompt';
 import MarketFields from '../market-fields';
 import MarketForm from '../market-form';
-
-const CONTEXT = 'add_market_modal';
+import AddMarketButtons from './add-market-buttons';
 
 /**
  * @typedef {import('~/data/actions').TargetAudienceData } TargetAudienceData
@@ -61,75 +57,23 @@ const AddMarketModal = ( {
 		currency: currencyCode,
 	};
 
-	const showAddMarketButton = ! (
-		! glaData.isMultiLingualStore &&
-		settings?.shipping_rate === SHIPPING_RATE_METHOD.MANUAL
-	);
-
 	return (
-		<MarketForm initialMarket={ initialMarket } onSubmit={ onRequestClose }>
-			{ ( formContext ) => {
-				const { adapter, isValidForm, handleSubmit } = formContext;
-				const { isSaving, isLoading } = adapter;
-
-				const handleSubmitClick = ( event ) => {
-					if ( isValidForm ) {
-						return handleSubmit( event );
-					}
-					adapter.showValidation();
-				};
-
-				let buttons = [
-					<AppButton
-						key="close"
-						variant={ showAddMarketButton ? 'tertiary' : 'primary' }
-						onClick={ onRequestClose }
-						disabled={ isSaving }
-						eventName="gla_cancel_button_clicked"
-						eventProps={ {
-							context: CONTEXT,
-						} }
-					>
-						{ __( 'Cancel', 'google-listings-and-ads' ) }
-					</AppButton>,
-				];
-
-				if ( showAddMarketButton ) {
-					buttons = [
-						...buttons,
-						<AppButton
-							key="add-market"
-							variant="primary"
-							onClick={ handleSubmitClick }
-							loading={ isSaving || isLoading }
-							eventName="gla_add_new_market_button_clicked"
-							eventProps={ {
-								context: CONTEXT,
-							} }
-						>
-							{ __( 'Add market', 'google-listings-and-ads' ) }
-						</AppButton>,
-					];
-				}
-
-				return (
-					<AppModal
-						title={ __( 'Add market', 'google-listings-and-ads' ) }
-						onRequestClose={ onRequestClose }
-						buttons={ buttons }
-					>
-						{ isLoading ? (
-							<AppSpinner />
-						) : (
-							<>
-								<MarketFields />
-								<MultiLingualPluginPrompt />
-							</>
-						) }
-					</AppModal>
-				);
-			} }
-		</MarketForm>
+		<AppModal
+			title={ __( 'Add market', 'google-listings-and-ads' ) }
+			onRequestClose={ onRequestClose }
+		>
+			<MarketForm
+				initialMarket={ initialMarket }
+				onSubmit={ onRequestClose }
+			>
+				<MarketFields />
+				<MultiLingualPluginPrompt />
+				<AddMarketButtons
+					onRequestClose={ onRequestClose }
+					settings={ settings }
+				/>
+			</MarketForm>
+		</AppModal>
 	);
 };
 

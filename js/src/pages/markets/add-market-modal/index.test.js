@@ -12,25 +12,26 @@ import AddMarketModal from './';
 import useSettings from '~/hooks/useSettings';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
 import { SHIPPING_RATE_METHOD } from '~/constants';
+import AppSpinner from '~/components/app-spinner';
 
 jest.mock( '~/hooks/useSettings' );
 jest.mock( '~/hooks/useStoreCurrency' );
 
 // MarketForm pulls in useAppDispatch, useSaveShippingRates, useSaveShippingTimes.
-// Mock it to a thin wrapper that calls its render-prop child with a minimal form context.
+// Mock it to a thin pass-through that renders its children inside AdaptiveFormContext.
 jest.mock( '../market-form', () =>
-	jest.fn( ( { children } ) =>
-		children( {
-			adapter: { isSaving: false },
-			isValidForm: true,
-			handleSubmit: jest.fn(),
-		} )
-	)
+	jest.fn( ( { children } ) => <>{ children }</> )
 );
 
-// MarketFields requires AdaptiveForm context (provided by MarketForm). Mock it
-// so it renders without that context since MarketForm itself is mocked above.
+// MarketFields requires AdaptiveForm context. Mock it so it renders without that
+// context since MarketForm itself is mocked above.
 jest.mock( '../market-fields', () => jest.fn( () => null ) );
+
+// AddMarketButtons uses useAdaptiveFormContext. Mock the hook so the buttons
+// render without a real AdaptiveForm provider.
+jest.mock( '~/components/adaptive-form', () => ( {
+	useAdaptiveFormContext: jest.fn(),
+} ) );
 
 const defaultProps = {
 	shippingRates: [],
@@ -48,6 +49,14 @@ describe( 'AddMarketModal', () => {
 			settings: { shipping_rate: SHIPPING_RATE_METHOD.MANUAL },
 		} );
 		useStoreCurrency.mockReturnValue( { code: 'USD' } );
+		const { useAdaptiveFormContext } = jest.requireMock(
+			'~/components/adaptive-form'
+		);
+		useAdaptiveFormContext.mockReturnValue( {
+			adapter: { isSaving: false, showValidation: jest.fn() },
+			isValidForm: true,
+			handleSubmit: jest.fn(),
+		} );
 	} );
 
 	afterEach( () => {
@@ -147,9 +156,7 @@ describe( 'AddMarketModal', () => {
 
 	test( 'renders AppSpinner inside the modal while data is loading', () => {
 		const MarketForm = jest.requireMock( '../market-form' );
-		MarketForm.mockImplementationOnce( ( { children } ) =>
-			children( { adapter: { isLoading: true } } )
-		);
+		MarketForm.mockImplementationOnce( () => <AppSpinner /> );
 
 		render( <AddMarketModal { ...defaultProps } /> );
 
@@ -157,9 +164,6 @@ describe( 'AddMarketModal', () => {
 			screen.getByRole( 'dialog', { name: 'Add market' } )
 		).toBeInTheDocument();
 		expect( screen.getByRole( 'status' ) ).toBeInTheDocument();
-		expect(
-			screen.queryByRole( 'button', { name: 'Add market' } )
-		).not.toBeInTheDocument();
 	} );
 
 	test( 'calls showValidation and not handleSubmit when the form is invalid and "Add market" is clicked', async () => {
@@ -167,14 +171,14 @@ describe( 'AddMarketModal', () => {
 		const showValidation = jest.fn();
 		const handleSubmit = jest.fn();
 
-		const MarketForm = jest.requireMock( '../market-form' );
-		MarketForm.mockImplementationOnce( ( { children } ) =>
-			children( {
-				adapter: { isSaving: false, showValidation },
-				isValidForm: false,
-				handleSubmit,
-			} )
+		const { useAdaptiveFormContext } = jest.requireMock(
+			'~/components/adaptive-form'
 		);
+		useAdaptiveFormContext.mockReturnValueOnce( {
+			adapter: { isSaving: false, showValidation },
+			isValidForm: false,
+			handleSubmit,
+		} );
 
 		useSettings.mockReturnValue( {
 			settings: { shipping_rate: SHIPPING_RATE_METHOD.FLAT },
