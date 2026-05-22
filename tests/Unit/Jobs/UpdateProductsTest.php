@@ -144,5 +144,4 @@ class UpdateProductsTest extends UnitTest {
 
 		$this->job->process_items( [] );
 	}
-
 }
