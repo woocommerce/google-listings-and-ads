@@ -15,44 +15,44 @@ import useSettings from '~/hooks/useSettings';
 import useShippingRates from '~/hooks/useShippingRates';
 import useShippingTimes from '~/hooks/useShippingTimes';
 
-const isPrimaryMarket = ( market ) => market.id === PRIMARY_MARKET_ID;
-
 /**
  * @typedef {Object} TimeRow
- * @property {number} time    Minimum shipping days.
+ * @property {number} time Minimum shipping days.
  * @property {number} maxTime Maximum shipping days.
  */
 
 /**
  * @typedef {Object} RateRow
- * @property {string} currency                          ISO currency code.
- * @property {number} rate                              Shipping rate amount.
- * @property {Object} [options]                         Optional rate modifiers.
+ * @property {string} currency ISO currency code.
+ * @property {number} rate Shipping rate amount.
+ * @property {Object} [options] Optional rate modifiers.
  * @property {number} [options.free_shipping_threshold] Free shipping threshold amount.
  */
 
 /**
  * @typedef {Object} Market
- * @property {string}   id         Market identifier.
- * @property {string}   country    ISO country code for the market's primary country.
- * @property {string[]} countries  All ISO country codes belonging to the market.
- * @property {string}   label      Display name.
- * @property {string}   [language] BCP-47 language tag (multilingual stores only).
- * @property {string}   [currency] ISO currency code (multilingual stores only).
+ * @property {string} id Market identifier.
+ * @property {string} country ISO country code for the market's primary country.
+ * @property {string[]} countries All ISO country codes belonging to the market.
+ * @property {string} label Display name.
+ * @property {string} [language] BCP-47 language tag (multilingual stores only).
+ * @property {string} [currency] ISO currency code (multilingual stores only).
  */
 
 /**
  * @typedef {Object} DataViewsConfig
  * @property {Array} fields DataViews column definitions.
- * @property {Array} data   Pre-formatted row objects.
+ * @property {Array} data Pre-formatted row objects.
  */
 
 /**
  * @typedef {Object} MarketDataViewsResult
- * @property {Array}   fields               DataViews column definitions.
- * @property {Array}   data                 Pre-formatted row objects.
+ * @property {Array} fields DataViews column definitions.
+ * @property {Array} data Pre-formatted row objects.
  * @property {boolean} hasFinishedResolution Whether all data has loaded.
  */
+
+const isPrimaryMarket = ( market ) => market.id === PRIMARY_MARKET_ID;
 
 /**
  * Centralized configuration for the MarketDataViews component.
@@ -268,8 +268,15 @@ const buildFlatConfig = ( { markets, ratesByCountry, timesByCountry } ) => {
 	];
 
 	const data = markets.map( ( market ) => {
-		const rateRow = ratesByCountry[ market.country ];
-		const timeRow = timesByCountry[ market.country ];
+		let country = market.country;
+		if ( isPrimaryMarket( market ) && market.countries.length > 0 ) {
+			// For the primary market, use the first country in the list to look up rates and times,
+			// since theoretically there should not be the country property for that market.
+			country = market.countries[ 0 ];
+		}
+
+		const rateRow = ratesByCountry[ country ];
+		const timeRow = timesByCountry[ country ];
 		return {
 			...market,
 			shippingRate: formatShippingRate( rateRow ),
@@ -398,26 +405,29 @@ const buildDefaultConfig = ( { markets, countryNames } ) => {
  * @return {MarketDataViewsResult} DataViews fields, pre-formatted rows, and resolution state.
  */
 const useMarketDataViewsConfig = () => {
-	const { data: markets, hasFinishedResolution: marketsResolved } =
+	const { data: markets, hasFinishedResolution: hasResolvedMarkets } =
 		useMarkets();
 	const { data: primaryMarket } = usePrimaryMarketDetails();
 	const countryNames = useCountryKeyNameMap();
 	const { settings } = useSettings();
-	const { data: shippingRatesData, hasFinishedResolution: ratesResolved } =
+	const { data: shippingRatesData, hasFinishedResolution: hasResolvedRates } =
 		useShippingRates();
-	const { data: shippingTimesData, hasFinishedResolution: timesResolved } =
+	const { data: shippingTimesData, hasFinishedResolution: hasResolvedTimes } =
 		useShippingTimes();
 
 	const isMultiLingualStore = glaData.isMultiLingualStore ?? false;
 
 	const hasFinishedResolution =
-		marketsResolved && ratesResolved && timesResolved;
+		hasResolvedMarkets &&
+		hasResolvedRates &&
+		hasResolvedTimes &&
+		!! settings;
 
-	if ( ! hasFinishedResolution || ! settings ) {
+	if ( ! hasFinishedResolution ) {
 		return { fields: [], data: [], hasFinishedResolution };
 	}
 
-	const shippingRate = settings?.shipping_rate;
+	const shippingRate = settings.shipping_rate;
 
 	if ( shippingRate === SHIPPING_RATE_METHOD.MANUAL ) {
 		return {
