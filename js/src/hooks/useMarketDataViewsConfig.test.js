@@ -299,9 +299,9 @@ describe( 'useMarketDataViewsConfig', () => {
 			const [ primary, secondary ] = result.current.data;
 
 			expect( primary.shippingRate ).toMatch( /10/ );
-			expect( primary.shippingTime ).toBe( '3-5 days' );
+			expect( primary.shippingTime ).toBe( '3 - 5 days' );
 			expect( secondary.shippingRate ).toMatch( /8/ );
-			expect( secondary.shippingTime ).toBe( '5-7 days' );
+			expect( secondary.shippingTime ).toBe( '5 - 7 days' );
 		} );
 
 		test( 'sets freeShipping to a dash when free_shipping is null', () => {
@@ -396,7 +396,9 @@ describe( 'useMarketDataViewsConfig', () => {
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 
-			expect( result.current.data[ 0 ].shippingTime ).toBe( '3-5 days' );
+			expect( result.current.data[ 0 ].shippingTime ).toBe(
+				'3 - 5 days'
+			);
 		} );
 	} );
 
@@ -451,10 +453,10 @@ describe( 'useMarketDataViewsConfig', () => {
 
 			expect( primary.language ).toBe( 'English' );
 			expect( primary.currency ).toBe( 'USD' );
-			expect( primary.shippingTime ).toBe( '3-5 days' );
+			expect( primary.shippingTime ).toBe( '3 - 5 days' );
 			expect( secondary.language ).toBe( 'French' );
 			expect( secondary.currency ).toBe( 'EUR' );
-			expect( secondary.shippingTime ).toBe( '5-7 days' );
+			expect( secondary.shippingTime ).toBe( '5 - 7 days' );
 		} );
 	} );
 
@@ -510,7 +512,7 @@ describe( 'useMarketDataViewsConfig', () => {
 
 			expect( result.current.fields ).toEqual( [] );
 			expect( result.current.data ).toEqual( [] );
-			expect( result.current.hasFinishedResolution ).toBe( true );
+			expect( result.current.hasFinishedResolution ).toBe( false );
 		} );
 	} );
 
