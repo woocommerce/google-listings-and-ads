@@ -40,7 +40,7 @@ const ModalFooter = ( { onCancel, settings } ) => {
 
 	const showAddMarketButton = ! (
 		! glaData.isMultiLingualStore &&
-		settings?.shipping_rate === SHIPPING_RATE_METHOD.MANUAL
+		settings.shipping_rate === SHIPPING_RATE_METHOD.MANUAL
 	);
 
 	const handleSubmitClick = ( event ) => {
