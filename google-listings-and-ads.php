@@ -72,11 +72,10 @@ add_action(
 add_action(
 	'woocommerce_loaded',
 	function () {
-		global $pagenow;
-
 		// Bail during plugin upgrade requests to prevent mid-request crashes caused by the
 		// stale ClassLoader from the previous version resolving removed classes in the admin footer.
-		if ( is_admin() && 'update.php' === $pagenow ) {
+		// $pagenow is not yet set at plugins_loaded, so check $_SERVER directly.
+		if ( is_admin() && 'update.php' === basename( $_SERVER['PHP_SELF'] ?? '' ) ) {
 			return;
 		}
 
