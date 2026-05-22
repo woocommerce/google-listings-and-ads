@@ -17,6 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInputPatch;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductsService;
@@ -396,6 +397,41 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 					<?php wp_nonce_field( 'mapi-product-insert-many' ); ?>
 					<input name="page" value="connection-test-admin-page" type="hidden" />
 					<input name="action" value="mapi-product-insert-many" type="hidden" />
+				</form>
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>MAPI Patch Product:</th>
+							<td>
+								<p>
+									<input name="mapi_patch_offer_id" type="text" style="width:14em" placeholder="offer id" value="<?php echo isset( $_GET['mapi_patch_offer_id'] ) ? esc_attr( $_GET['mapi_patch_offer_id'] ) : ''; ?>" />
+									<input name="mapi_patch_attribute" type="text" style="width:10em" placeholder="title" value="<?php echo isset( $_GET['mapi_patch_attribute'] ) ? esc_attr( $_GET['mapi_patch_attribute'] ) : 'title'; ?>" />
+									<input name="mapi_patch_value" type="text" style="width:18em" placeholder="new value" value="<?php echo isset( $_GET['mapi_patch_value'] ) ? esc_attr( $_GET['mapi_patch_value'] ) : ''; ?>" />
+									<button class="button">Patch product via MAPI</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'mapi-product-patch' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="mapi-product-patch" type="hidden" />
+				</form>
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>MAPI Parallel Patch:</th>
+							<td>
+								<p>
+									<input name="mapi_patch_offer_ids" type="text" style="width:28em" placeholder="offer1, offer2, offer3" value="<?php echo isset( $_GET['mapi_patch_offer_ids'] ) ? esc_attr( $_GET['mapi_patch_offer_ids'] ) : ''; ?>" />
+									<input name="mapi_patch_title" type="text" style="width:18em" placeholder="new title for all" value="<?php echo isset( $_GET['mapi_patch_title'] ) ? esc_attr( $_GET['mapi_patch_title'] ) : ''; ?>" />
+									<button class="button">Patch products in parallel via MAPI</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'mapi-product-patch-many' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="mapi-product-patch-many" type="hidden" />
 				</form>
 				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 
@@ -1422,6 +1458,78 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 			$this->response = sprintf( "MAPI parallel productInputs.insert for %d product(s)\n\n", count( $inputs ) );
 
 			$result = $service->insert_many( $inputs );
+
+			foreach ( $offer_ids as $index => $offer_id ) {
+				$this->response .= "--- {$offer_id} ---\n";
+				if ( isset( $result['successes'][ $index ] ) ) {
+					$this->response .= $result['successes'][ $index ]->get_name() . "\n";
+				} elseif ( isset( $result['failures'][ $index ] ) ) {
+					$e               = $result['failures'][ $index ];
+					$this->response .= $e instanceof MerchantApiException
+						? sprintf( "HTTP %d\n%s", $e->get_http_status(), print_r( $e->get_response_body(), true ) )
+						: get_class( $e ) . ': ' . $e->getMessage() . "\n";
+				} else {
+					$this->response .= "(no result)\n";
+				}
+			}
+		}
+
+		if ( 'mapi-product-patch' === $_GET['action'] && check_admin_referer( 'mapi-product-patch' ) ) {
+			$offer_id  = isset( $_GET['mapi_patch_offer_id'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_patch_offer_id'] ) ) : '';
+			$attribute = isset( $_GET['mapi_patch_attribute'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_patch_attribute'] ) ) : '';
+			$value     = isset( $_GET['mapi_patch_value'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_patch_value'] ) ) : '';
+
+			if ( '' === $offer_id || '' === $attribute ) {
+				$this->response .= 'Please enter an offer ID and an attribute.';
+				return;
+			}
+
+			$input = new ProductInput( $offer_id, 'en', 'US', [ $attribute => $value ] );
+			$patch = new ProductInputPatch( $input, [ "productAttributes.{$attribute}" ] );
+
+			/** @var MapiProductInputsService $service */
+			$service        = $this->container->get( MapiProductInputsService::class );
+			$this->response = "MAPI productInputs.patch for {$offer_id} ({$attribute})\n\n";
+
+			try {
+				$result          = $service->patch( $patch );
+				$this->response .= print_r(
+					[
+						'name'       => $result->get_name(),
+						'offer_id'   => $result->get_offer_id(),
+						'attributes' => $result->get_attributes(),
+					],
+					true
+				);
+			} catch ( MerchantApiException $e ) {
+				$this->response .= sprintf( "HTTP %d\n", $e->get_http_status() );
+				$this->response .= print_r( $e->get_response_body(), true );
+			}
+		}
+
+		if ( 'mapi-product-patch-many' === $_GET['action'] && check_admin_referer( 'mapi-product-patch-many' ) ) {
+			$raw       = isset( $_GET['mapi_patch_offer_ids'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_patch_offer_ids'] ) ) : '';
+			$title     = isset( $_GET['mapi_patch_title'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_patch_title'] ) ) : '';
+			$offer_ids = array_filter( array_map( 'trim', explode( ',', $raw ) ) );
+
+			if ( empty( $offer_ids ) || '' === $title ) {
+				$this->response .= 'Please enter one or more offer IDs (comma-separated) and a title.';
+				return;
+			}
+
+			$patches = [];
+			foreach ( $offer_ids as $offer_id ) {
+				$patches[] = new ProductInputPatch(
+					new ProductInput( $offer_id, 'en', 'US', [ 'title' => $title ] ),
+					[ 'productAttributes.title' ]
+				);
+			}
+
+			/** @var MapiProductInputsService $service */
+			$service        = $this->container->get( MapiProductInputsService::class );
+			$this->response = sprintf( "MAPI parallel productInputs.patch for %d product(s)\n\n", count( $patches ) );
+
+			$result = $service->patch_many( $patches );
 
 			foreach ( $offer_ids as $index => $offer_id ) {
 				$this->response .= "--- {$offer_id} ---\n";
