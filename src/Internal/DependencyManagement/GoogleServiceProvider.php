@@ -220,7 +220,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			$this->get_connect_server_url_root( 'google/google-merchant' )
 		);
 		$this->share( MapiProductsService::class, MerchantApiClient::class );
-		$this->share_with_tags( MapiDataSourcesService::class, MerchantApiClient::class );
+		$this->share( MapiDataSourcesService::class, MerchantApiClient::class );
 		$this->share( MapiProductInputsService::class, MerchantApiClient::class, MapiDataSourcesService::class );
 	}
 
