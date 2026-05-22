@@ -8,6 +8,7 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
+import MarketForm from '../market-form';
 import EditMarketModal from './';
 import AppSpinner from '~/components/app-spinner';
 
@@ -40,6 +41,7 @@ describe( 'EditMarketModal', () => {
 			isValidForm: true,
 			handleSubmit: jest.fn(),
 		} );
+		MarketForm.mockClear();
 	} );
 
 	test( 'renders the title for the primary market', () => {
@@ -57,8 +59,8 @@ describe( 'EditMarketModal', () => {
 	} );
 
 	test( 'renders AppSpinner inside the modal while data is loading', () => {
-		const MarketForm = jest.requireMock( '../market-form' );
-		MarketForm.mockImplementationOnce( () => <AppSpinner /> );
+		const MarketFormMock = jest.requireMock( '../market-form' );
+		MarketFormMock.mockImplementationOnce( () => <AppSpinner /> );
 
 		render(
 			<EditMarketModal
@@ -72,6 +74,52 @@ describe( 'EditMarketModal', () => {
 			screen.getByRole( 'dialog', { name: 'Edit primary market' } )
 		).toBeInTheDocument();
 		expect( screen.getByRole( 'status' ) ).toBeInTheDocument();
+	} );
+
+	test( 'forwards target-audience countries as initialMarket.countries for the primary market', () => {
+		render(
+			<EditMarketModal
+				market={ { id: 'primary', label: 'Primary Market' } }
+				targetAudience={ { countries: [ 'US', 'CA', 'MX' ] } }
+				onRequestClose={ () => {} }
+			/>
+		);
+
+		expect( MarketForm ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				initialMarket: expect.objectContaining( {
+					id: 'primary',
+					countries: [ 'US', 'CA', 'MX' ],
+				} ),
+			} ),
+			expect.anything()
+		);
+	} );
+
+	test( 'preserves the secondary market countries (does not override with primary audience)', () => {
+		render(
+			<EditMarketModal
+				market={ {
+					id: 'fr',
+					label: 'France',
+					country: 'FR',
+					countries: [ 'FR' ],
+				} }
+				targetAudience={ { countries: [ 'US', 'CA', 'MX' ] } }
+				onRequestClose={ () => {} }
+			/>
+		);
+
+		expect( MarketForm ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				initialMarket: expect.objectContaining( {
+					id: 'fr',
+					country: 'FR',
+					countries: [ 'FR' ],
+				} ),
+			} ),
+			expect.anything()
+		);
 	} );
 
 	test( 'invokes onRequestClose when the footer Cancel button is clicked', async () => {

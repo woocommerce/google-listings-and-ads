@@ -51,13 +51,18 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 				market.label
 		  );
 
+	// `targetAudience.countries` is the authoritative list for the primary
+	// market and may have been refreshed since `market` was read. Only override
+	// for the primary — secondary markets carry their own single-country
+	// `countries` array that must not be replaced with the primary's audience.
+	const initialMarket = isPrimaryMarket
+		? { ...market, countries: targetAudience.countries }
+		: market;
+
 	return (
 		<AppModal title={ appModalTitle } onRequestClose={ onRequestClose }>
 			<MarketForm
-				initialMarket={ {
-					...market,
-					countries: targetAudience.countries,
-				} }
+				initialMarket={ initialMarket }
 				onSubmit={ onRequestClose }
 			>
 				<MarketFields />
