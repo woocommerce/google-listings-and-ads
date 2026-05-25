@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -53,23 +54,31 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	protected WC $wc;
 
 	/**
+	 * @var WPML
+	 */
+	protected WPML $wpml;
+
+	/**
 	 * MarketService constructor.
 	 *
 	 * @param TargetAudience    $target_audience
 	 * @param ShippingRateQuery $shipping_rate_query
 	 * @param ShippingTimeQuery $shipping_time_query
 	 * @param WC                $wc
+	 * @param WPML              $wpml
 	 */
 	public function __construct(
 		TargetAudience $target_audience,
 		ShippingRateQuery $shipping_rate_query,
 		ShippingTimeQuery $shipping_time_query,
-		WC $wc
+		WC $wc,
+		WPML $wpml
 	) {
 		$this->target_audience     = $target_audience;
 		$this->shipping_rate_query = $shipping_rate_query;
 		$this->shipping_time_query = $shipping_time_query;
 		$this->wc                  = $wc;
+		$this->wpml                = $wpml;
 	}
 
 	/**
@@ -286,12 +295,19 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	/**
 	 * Returns true if a supported multilingual integration is active.
 	 *
-	 * TODO: Connect WPML integration — GOOWOO-561.
-	 *
 	 * @return bool
 	 */
 	public function has_multilingual_support(): bool {
-		return false;
+		return $this->wpml->is_active();
+	}
+
+	/**
+	 * Returns the store's active languages from the multilingual integration.
+	 *
+	 * @return array<int, array{code: string, label: string}>
+	 */
+	public function get_languages(): array {
+		return $this->wpml->get_languages();
 	}
 
 	/**
