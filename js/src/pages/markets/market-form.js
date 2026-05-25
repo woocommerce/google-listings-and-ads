@@ -308,10 +308,11 @@ const MarketForm = ( {
 	 * @return {Object} Filtered initial values for AdaptiveForm.
 	 */
 	const resolveInitialMarket = () => {
-		const { shipping_rate } = settings;
+		const { shipping_rate, shipping_time } = settings;
 
 		const defaults = {
 			shipping_rate,
+			shipping_time,
 			country: null,
 			flat_shipping_rate: null,
 			language: [],
@@ -368,9 +369,10 @@ const MarketForm = ( {
 		 * so the form shows a single set of fields rather than per-country rows.
 		 * We seed those fields from the first stored rate/time entry as a
 		 * representative value — any row would give the same result since they
-		 * are kept in sync whenever the user saves.
+		 * are kept in sync whenever the user saves. The same entry is also used
+		 * as the starting point when adding a new secondary market.
 		 */
-		if ( isPrimaryMarket ) {
+		if ( isPrimaryMarket || ! isEditing ) {
 			const firstShippingRate = shippingRates?.[ 0 ];
 			const firstShippingTime = shippingTimes?.[ 0 ];
 			updatedMarket = {
