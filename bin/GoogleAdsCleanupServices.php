@@ -26,7 +26,7 @@ class GoogleAdsCleanupServices {
 	 *
 	 * @var string
 	 */
-	protected $version = 'V22';
+	protected $version = 'V23';
 
 	/**
 	 * @var Event Composer event.
@@ -57,6 +57,8 @@ class GoogleAdsCleanupServices {
 		// - https://github.com/googleads/google-ads-php/blob/v28.0.0/src/Google/Ads/GoogleAds/Util/V20/ResourceNames.php#L1433-L1439
 		// - https://github.com/googleads/google-ads-php/blob/v31.1.0/src/Google/Ads/GoogleAds/Util/V22/ResourceNames.php#L1457-L1463
 		'ConversionValueRule',
+		// IncentiveService is required by GOOWOO-492 & GOOWOO-493 (IncentivesController).
+		'Incentive',
 	];
 
 	/**

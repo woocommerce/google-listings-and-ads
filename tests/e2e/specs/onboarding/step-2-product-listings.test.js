@@ -223,11 +223,14 @@ test.describe( 'Configure product listings', () => {
 			await expect( minimumOrderForFreeShippingText ).toBeVisible();
 		} );
 
-		test( 'should show error message if min or max shipping time is not set', async () => {
-			await productListingsPage.clickContinueButton();
-			const estimatedTimesError =
-				productListingsPage.getEstimatedShippingTimesNullError();
-			await expect( estimatedTimesError ).toBeVisible();
+		test( 'should have minTime as 1 and maxTime as 5 set by default', async () => {
+			const estimatedTimesInputBox =
+				await productListingsPage.getEstimatedShippingTimesInputBox();
+			const minTime = await estimatedTimesInputBox.first().inputValue();
+			const maxTime = await estimatedTimesInputBox.nth( 1 ).inputValue();
+
+			expect( minTime ).toBe( '1' );
+			expect( maxTime ).toBe( '5' );
 		} );
 
 		test( 'should show error message if min shipping time is bigger than max time', async () => {
