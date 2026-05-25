@@ -116,9 +116,8 @@ const SECONDARY_MARKET_MULTILINGUAL_MANUAL = {
  * formatter path was taken without caring about real currency symbols.
  *
  * @param {number} amount
- * @return {string}
  * @return {string} "ADS:<amount>"
- */ 
+ */
 const adsFormatAmount = ( amount ) => `ADS:${ amount }`;
 
 /**
