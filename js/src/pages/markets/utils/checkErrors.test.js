@@ -206,7 +206,6 @@ describe( 'checkErrors', () => {
 
 			expect( errors.flat_shipping_times ).toBeUndefined();
 		} );
-
 	} );
 
 	describe( 'valid non-primary market', () => {
