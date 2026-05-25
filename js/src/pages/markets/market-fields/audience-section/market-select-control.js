@@ -26,7 +26,12 @@ const MarketSelectControl = () => {
 		data: primaryMarket,
 		hasFinishedResolution: hasResolvedPrimaryMarket,
 	} = usePrimaryMarketDetails();
-	const { getInputProps, values, setValues } = useAdaptiveFormContext();
+	const {
+		getInputProps,
+		values,
+		setValues,
+		adapter: { renderRequestedValidation },
+	} = useAdaptiveFormContext();
 	const { shipping_country_rates, shipping_country_times } = values;
 
 	if ( ! hasResolvedCountries || ! hasResolvedPrimaryMarket ) {
@@ -41,7 +46,9 @@ const MarketSelectControl = () => {
 		} ) ),
 	];
 
-	const { onChange, ...inputProps } = getInputProps( 'country' );
+	// Extract onBlur to avoid WC Form marking this field as "touched",
+	// the validation error should only appear after the user clicks "Add market".
+	const { onChange, onBlur, ...inputProps } = getInputProps( 'country' );
 
 	const handleChange = ( selectedOption ) => {
 		onChange( selectedOption );
@@ -90,12 +97,15 @@ const MarketSelectControl = () => {
 	};
 
 	return (
-		<AppSelectControl
-			label={ __( 'Market', 'google-listings-and-ads' ) }
-			options={ options }
-			onChange={ handleChange }
-			{ ...appSelectControlProps }
-		/>
+		<div className="gla-market-select-control">
+			<AppSelectControl
+				label={ __( 'Market', 'google-listings-and-ads' ) }
+				options={ options }
+				onChange={ handleChange }
+				{ ...appSelectControlProps }
+			/>
+			{ renderRequestedValidation( 'country' ) }
+		</div>
 	);
 };
 
