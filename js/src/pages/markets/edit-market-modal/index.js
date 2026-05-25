@@ -11,6 +11,7 @@ import AppModal from '~/components/app-modal';
 import MarketForm from '../market-form';
 import MarketFields from '../market-fields';
 import ModalFooter from './modal-footer';
+import { isPrimaryMarket } from '~/pages/markets/utils/isPrimaryMarket';
 
 /**
  * @typedef {import('~/data/actions').TargetAudienceData } TargetAudienceData
@@ -26,7 +27,6 @@ import ModalFooter from './modal-footer';
  * @param {() => void} props.onRequestClose Called when the user closes the modal.
  */
 const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
-	const isPrimaryMarket = market.id === PRIMARY_MARKET_ID;
 
 	const appModalTitle = isPrimaryMarket
 		? __( 'Edit primary market', 'google-listings-and-ads' )
@@ -40,7 +40,7 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 	// market and may have been refreshed since `market` was read. Only override
 	// for the primary — secondary markets carry their own single-country
 	// `countries` array that must not be replaced with the primary's audience.
-	const initialMarket = isPrimaryMarket
+	const initialMarket = isPrimaryMarket( market.id )
 		? { ...market, countries: targetAudience.countries }
 		: market;
 

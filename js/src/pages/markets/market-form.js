@@ -8,7 +8,6 @@ import { useRef, useState } from '@wordpress/element';
  */
 import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 import { useAppDispatch } from '~/data';
-import { PRIMARY_MARKET_ID } from './constants';
 import {
 	getTargetCountries,
 	ensureRateRows,
@@ -26,7 +25,7 @@ import AdaptiveForm from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
 import AppSpinner from '~/components/app-spinner';
 import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
-
+import { isPrimaryMarket as checkIsPrimaryMarket } from '~/pages/markets/utils/isPrimaryMarket';
 /**
  * Form component for creating or editing a market.
  * This component is used within the AddMarketModal and EditMarketModal.
@@ -58,7 +57,7 @@ const MarketForm = ( {
 		useAppDispatch();
 	const marketId = initialMarket?.id;
 	const isEditing = Boolean( marketId );
-	const isPrimaryMarket = isEditing && marketId === PRIMARY_MARKET_ID;
+	const isPrimaryMarket = isEditing && checkIsPrimaryMarket( marketId );
 
 	const isLoading =
 		! hasResolvedShippingRates || ! hasResolvedShippingTimes || ! settings;

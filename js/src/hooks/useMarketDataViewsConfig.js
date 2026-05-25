@@ -7,13 +7,13 @@ import { __, _n, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
-import { PRIMARY_MARKET_ID } from '~/pages/markets/constants';
 import useMarkets from '~/hooks/useMarkets';
 import usePrimaryMarketDetails from '~/hooks/usePrimaryMarketDetails';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import useSettings from '~/hooks/useSettings';
 import useShippingRates from '~/hooks/useShippingRates';
 import useShippingTimes from '~/hooks/useShippingTimes';
+import { isPrimaryMarket } from '~/pages/markets/utils/isPrimaryMarket';
 
 /**
  * @typedef {Object} TimeRow
@@ -51,8 +51,6 @@ import useShippingTimes from '~/hooks/useShippingTimes';
  * @property {Array} data Pre-formatted row objects.
  * @property {boolean} hasFinishedResolution Whether all data has loaded.
  */
-
-const isPrimaryMarket = ( market ) => market.id === PRIMARY_MARKET_ID;
 
 /**
  * Centralized configuration for the MarketDataViews component.
@@ -236,7 +234,7 @@ const buildManualConfig = ( {
 		];
 
 		const data = markets.map( ( market ) => {
-			if ( ! isPrimaryMarket( market ) ) {
+			if ( ! isPrimaryMarket( market.id ) ) {
 				return market;
 			}
 
@@ -317,7 +315,7 @@ const buildFlatConfig = ( { markets, ratesByCountry, timesByCountry } ) => {
 
 	const data = markets.map( ( market ) => {
 		let country = market.country;
-		if ( isPrimaryMarket( market ) && market.countries.length > 0 ) {
+		if ( isPrimaryMarket( market.id ) && market.countries.length > 0 ) {
 			// For the primary market, use the first country in the list to look up rates and times,
 			// since theoretically there should not be the country property for that market.
 			country = market.countries[ 0 ];
@@ -333,7 +331,7 @@ const buildFlatConfig = ( { markets, ratesByCountry, timesByCountry } ) => {
 			freeShipping: formatFreeShipping( rateRow ),
 		};
 
-		if ( isPrimaryMarket( market ) ) {
+		if ( isPrimaryMarket( market.id ) ) {
 			const countryCount = market.countries?.length ?? 0;
 			row.label = sprintf(
 				// translators: 1: market label, 2: number of countries.
@@ -390,7 +388,7 @@ const buildAutomaticConfig = ( {
 				),
 			};
 
-			if ( isPrimaryMarket( market ) ) {
+			if ( isPrimaryMarket( market.id ) ) {
 				const countryCount = market.countries?.length ?? 0;
 				row.label = sprintf(
 					// translators: 1: market label, 2: number of countries.
@@ -455,7 +453,7 @@ const buildDefaultConfig = ( { markets, countryNames } ) => {
 	const fields = [ ALL_FIELDS.market, ALL_FIELDS.shippingTime ];
 
 	const data = markets.map( ( market ) => {
-		const marketCell = isPrimaryMarket( market )
+		const marketCell = isPrimaryMarket( market.id )
 			? sprintf(
 					// translators: 1: market label, 2: number of countries.
 					_n(

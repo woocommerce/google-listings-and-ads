@@ -9,14 +9,12 @@ import { Icon, edit, trash } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import { PRIMARY_MARKET_ID } from '../constants';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useMarketDataViewsConfig from '~/hooks/useMarketDataViewsConfig';
 import EditMarketModal from '../edit-market-modal';
 import DeleteMarketModal from '../delete-market-modal';
+import { isPrimaryMarket } from '~/pages/markets/utils/isPrimaryMarket';
 import './index.scss';
-
-const isPrimaryMarket = ( market ) => market.id === PRIMARY_MARKET_ID;
 
 const DEFAULT_VIEW = {
 	type: 'table',
@@ -69,7 +67,7 @@ const MarketDataViews = () => {
 				label: __( 'Delete', 'google-listings-and-ads' ),
 				icon: <Icon icon={ trash } width={ 24 } height={ 24 } />,
 				isDestructive: true,
-				isEligible: ( market ) => ! isPrimaryMarket( market ),
+				isEligible: ( market ) => ! isPrimaryMarket( market.id ),
 				callback: ( [ market ] ) => setDeletingMarket( market ),
 			},
 		],
