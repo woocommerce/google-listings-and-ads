@@ -950,7 +950,7 @@ class MarketServiceTest extends UnitTest {
 			$stored_fr['language']
 		);
 	}
-	
+
 	public function test_has_multilingual_support_returns_true(): void {
 		$this->wpml->method( 'is_active' )->willReturn( true );
 
