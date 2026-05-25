@@ -55,7 +55,7 @@ const AddMarketModal = ( {
 				<MarketFields />
 				<MultiLingualPluginPrompt />
 				<ModalFooter
-					onRequestClose={ onRequestClose }
+					onCancel={ onRequestClose }
 					settings={ settings }
 				/>
 			</MarketForm>
