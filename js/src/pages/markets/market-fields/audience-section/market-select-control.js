@@ -97,7 +97,7 @@ const MarketSelectControl = () => {
 	};
 
 	return (
-		<div className="gla-market-select-control">
+		<div>
 			<AppSelectControl
 				label={ __( 'Market', 'google-listings-and-ads' ) }
 				options={ options }

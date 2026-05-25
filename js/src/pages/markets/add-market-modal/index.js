@@ -6,7 +6,6 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import useStoreCurrency from '~/hooks/useStoreCurrency';
 import AppModal from '~/components/app-modal';
 import MultiLingualPluginPrompt from './multilingual-plugin-prompt';
 import MarketFields from '../market-fields';
@@ -35,12 +34,8 @@ const AddMarketModal = ( {
 	targetAudience = { countries: [] },
 	onRequestClose,
 } ) => {
-	const { code: currencyCode } = useStoreCurrency();
-
 	const initialMarket = {
 		countries: targetAudience.countries,
-		language: targetAudience.language,
-		currency: currencyCode,
 	};
 
 	return (
