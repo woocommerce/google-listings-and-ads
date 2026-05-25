@@ -60,11 +60,10 @@ const MarketForm = ( {
 	const isEditing = Boolean( marketId );
 	const isPrimaryMarket = isEditing && marketId === PRIMARY_MARKET_ID;
 
-	if (
-		! hasResolvedShippingRates ||
-		! hasResolvedShippingTimes ||
-		! settings
-	) {
+	const isLoading =
+		! hasResolvedShippingRates || ! hasResolvedShippingTimes || ! settings;
+
+	if ( isLoading ) {
 		return <AppSpinner />;
 	}
 
