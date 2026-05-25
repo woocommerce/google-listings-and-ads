@@ -6,11 +6,11 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Integration;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class WpmlIntegration
+ * Class WPML
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Integration
  */
-class WpmlIntegration implements IntegrationInterface {
+class WPML implements IntegrationInterface {
 
 	/**
 	 * Returns whether the integration is active or not.

@@ -8,7 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WpmlIntegration;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -54,9 +54,9 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	protected WC $wc;
 
 	/**
-	 * @var WpmlIntegration
+	 * @var WPML
 	 */
-	protected WpmlIntegration $wpml_integration;
+	protected WPML $wpml;
 
 	/**
 	 * MarketService constructor.
@@ -65,20 +65,20 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @param ShippingRateQuery $shipping_rate_query
 	 * @param ShippingTimeQuery $shipping_time_query
 	 * @param WC                $wc
-	 * @param WpmlIntegration   $wpml_integration
+	 * @param WPML              $wpml
 	 */
 	public function __construct(
 		TargetAudience $target_audience,
 		ShippingRateQuery $shipping_rate_query,
 		ShippingTimeQuery $shipping_time_query,
 		WC $wc,
-		WpmlIntegration $wpml_integration
+		WPML $wpml
 	) {
 		$this->target_audience     = $target_audience;
 		$this->shipping_rate_query = $shipping_rate_query;
 		$this->shipping_time_query = $shipping_time_query;
 		$this->wc                  = $wc;
-		$this->wpml_integration    = $wpml_integration;
+		$this->wpml                = $wpml;
 	}
 
 	/**
@@ -298,7 +298,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @return bool
 	 */
 	public function has_multilingual_support(): bool {
-		return $this->wpml_integration->is_active();
+		return $this->wpml->is_active();
 	}
 
 	/**
@@ -307,7 +307,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @return array<int, array{code: string, label: string}>
 	 */
 	public function get_languages(): array {
-		return $this->wpml_integration->get_languages();
+		return $this->wpml->get_languages();
 	}
 
 	/**
