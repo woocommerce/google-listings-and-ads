@@ -4,7 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { useState, useMemo } from '@wordpress/element';
 import { Spinner } from '@wordpress/components';
-import { edit, trash } from '@wordpress/icons';
+import { Icon, edit, trash } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -54,7 +54,11 @@ const MarketDataViews = () => {
 			{
 				id: 'edit',
 				label: __( 'Edit', 'google-listings-and-ads' ),
-				icon: loaded ? edit : <Spinner />,
+				icon: loaded ? (
+					<Icon icon={ edit } width={ 24 } height={ 24 } />
+				) : (
+					<Spinner />
+				),
 				isPrimary: true,
 				callback: loaded
 					? ( [ market ] ) => setEditingMarket( market )
@@ -63,7 +67,7 @@ const MarketDataViews = () => {
 			{
 				id: 'delete',
 				label: __( 'Delete', 'google-listings-and-ads' ),
-				icon: trash,
+				icon: <Icon icon={ trash } width={ 24 } height={ 24 } />,
 				isDestructive: true,
 				isEligible: ( market ) => ! isPrimaryMarket( market ),
 				callback: ( [ market ] ) => setDeletingMarket( market ),
