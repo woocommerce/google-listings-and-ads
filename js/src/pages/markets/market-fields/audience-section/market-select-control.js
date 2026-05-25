@@ -46,9 +46,7 @@ const MarketSelectControl = () => {
 		} ) ),
 	];
 
-	// Extract onBlur to avoid WC Form marking this field as "touched",
-	// the validation error should only appear after the user clicks "Add market".
-	const { onChange, onBlur, ...inputProps } = getInputProps( 'country' );
+	const { onChange, ...inputProps } = getInputProps( 'country' );
 
 	const handleChange = ( selectedOption ) => {
 		onChange( selectedOption );
@@ -97,7 +95,7 @@ const MarketSelectControl = () => {
 	};
 
 	return (
-		<div className="gla-market-select-control">
+		<div>
 			<AppSelectControl
 				label={ __( 'Market', 'google-listings-and-ads' ) }
 				options={ options }

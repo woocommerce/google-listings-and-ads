@@ -231,7 +231,7 @@ const MarketForm = ( {
 				const audienceCountries = change.value || [];
 
 				// Filter removed countries AND fill in newly added countries using the current flat rate.
-				const filteredRates = values.shipping_country_rates.filter(
+				const filteredRates = rawRates.filter(
 					( shippingCountryRate ) =>
 						audienceCountries.includes(
 							shippingCountryRate.country
@@ -261,16 +261,13 @@ const MarketForm = ( {
 								} ) ),
 						  ]
 						: filteredRates;
-				if (
-					nextRates.length !== values.shipping_country_rates.length
-				) {
+				if ( nextRates.length !== rawRates.length ) {
 					setValue( 'shipping_country_rates', nextRates );
 				}
 
 				// For times: filter removed countries AND add newly added countries.
-				const filteredTimes = values.shipping_country_times.filter(
-					( shippingTime ) =>
-						audienceCountries.includes( shippingTime.countryCode )
+				const filteredTimes = rawTimes.filter( ( shippingTime ) =>
+					audienceCountries.includes( shippingTime.countryCode )
 				);
 				const missingTimesCountries = audienceCountries.filter(
 					( country ) =>
@@ -295,9 +292,7 @@ const MarketForm = ( {
 						  ]
 						: filteredTimes;
 
-				if (
-					nextTimes.length !== values.shipping_country_times.length
-				) {
+				if ( nextTimes.length !== rawTimes.length ) {
 					setValue( 'shipping_country_times', nextTimes );
 				}
 				break;
@@ -313,9 +308,14 @@ const MarketForm = ( {
 	 * @return {Object} Filtered initial values for AdaptiveForm.
 	 */
 	const resolveInitialMarket = () => {
+		const { shipping_rate } = settings;
+
 		const defaults = {
+			shipping_rate,
 			country: null,
 			flat_shipping_rate: null,
+			language: [],
+			currency: [],
 			offer_free_shipping: false,
 			free_shipping_threshold: null,
 			flat_shipping_min_time: 1,
@@ -390,9 +390,7 @@ const MarketForm = ( {
 			};
 		}
 
-		const { shipping_rate } = settings;
 		const { isMultiLingualStore } = glaData;
-
 		const audienceField = isPrimaryMarket ? 'countries' : 'country';
 		const localeFields = [ 'language', 'currency' ];
 		const shippingTimeFields = [
@@ -445,9 +443,6 @@ const MarketForm = ( {
 			ref={ formRef }
 			initialValues={ {
 				...resolveInitialMarket(),
-				// Temporary since the BE needs those fields
-				language: initialMarket.language,
-				currency: initialMarket.currency,
 			} }
 			extendAdapter={ extendAdapter }
 			validate={ checkErrors }
