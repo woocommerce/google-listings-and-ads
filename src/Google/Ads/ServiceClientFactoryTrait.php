@@ -221,8 +221,22 @@ trait ServiceClientFactoryTrait {
 
 	/**
 	 * @return AssetGenerationServiceClient
+	 * @throws \RuntimeException If the plugin is in an unstable upgrade state.
 	 */
 	public function getAssetGenerationServiceClient(): AssetGenerationServiceClient {
-		return new AssetGenerationServiceClient( $this->getGoogleAdsClientOptions() );
+		// Directory check guards against a mid-upgrade state where V23 classes are absent
+		// and Composer autoloading could fall back to stale V22 class maps.
+		$v23_dir = dirname( __FILE__, 4 ) . '/vendor/googleads/google-ads-php/src/Google/Ads/GoogleAds/V23';
+
+		if ( ! is_dir( $v23_dir ) ) {
+			throw new \RuntimeException( 'Google Ads V23 directory is missing. Upgrade in progress.' );
+		}
+
+		$class = 'Google\Ads\GoogleAds\V23\Services\Client\AssetGenerationServiceClient';
+		if ( ! class_exists( $class, false ) ) {
+			throw new \RuntimeException( 'Google Ads V23 Service Clients are not fully loaded.' );
+		}
+
+		return new $class( $this->getGoogleAdsClientOptions() );
 	}
 }

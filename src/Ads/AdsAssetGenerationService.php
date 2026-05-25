@@ -23,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class AdsAssetGenerationService
  *
- * Encapsulates all calls to the Google Ads API v22 AssetGenerationService.
+ * Encapsulates all calls to the Google Ads API v23 AssetGenerationService.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Ads
  */
@@ -36,7 +36,7 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	/**
 	 * The Asset Generation Service Client.
 	 *
-	 * @var \Google\Ads\GoogleAds\V23\Services\Client\AssetGenerationServiceClient
+	 * @var \Google\Ads\GoogleAds\V23\Services\Client\AssetGenerationServiceClient|null
 	 */
 	protected $client;
 
@@ -76,7 +76,13 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	 */
 	public function __construct( GoogleAdsClient $client ) {
 		$this->google_ads_client = $client;
-		$this->client            = $client->getAssetGenerationServiceClient();
+
+		try {
+			$this->client = $client->getAssetGenerationServiceClient();
+		} catch ( \Throwable $_e ) {
+			// V23 SDK unavailable during plugin upgrade — defer the error to call-time.
+			$this->client = null;
+		}
 	}
 
 	/**
@@ -92,6 +98,8 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	 * @throws Exception If the text assets can't be generated.
 	 */
 	public function generate_text( array $args = [] ): array {
+		$this->assertClientReady();
+
 		$customer_id = $this->options->get_ads_id();
 		if ( empty( $customer_id ) ) {
 			throw new Exception( __( 'Ads account ID is required.', 'google-listings-and-ads' ) );
@@ -158,6 +166,8 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	 * @throws Exception If the image assets can't be generated.
 	 */
 	public function generate_images( array $args = [] ): array {
+		$this->assertClientReady();
+
 		$customer_id = $this->options->get_ads_id();
 		if ( empty( $customer_id ) ) {
 			throw new Exception( __( 'Ads account ID is required.', 'google-listings-and-ads' ) );
@@ -214,6 +224,17 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 				$e,
 				[ 'errors' => $errors ]
 			);
+		}
+	}
+
+	/**
+	 * Throws if the service client is unavailable due to a mid-upgrade state.
+	 *
+	 * @throws Exception
+	 */
+	private function assertClientReady(): void {
+		if ( null === $this->client ) {
+			throw new Exception( __( 'The Ads Asset Generation Service is temporarily unavailable. Please refresh.', 'google-listings-and-ads' ) );
 		}
 	}
 
