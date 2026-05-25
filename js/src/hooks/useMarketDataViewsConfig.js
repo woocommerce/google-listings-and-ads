@@ -14,6 +14,8 @@ import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import useSettings from '~/hooks/useSettings';
 import useShippingRates from '~/hooks/useShippingRates';
 import useShippingTimes from '~/hooks/useShippingTimes';
+import useAdsCurrency from '~/hooks/useAdsCurrency';
+import useMarketCurrency from '~/hooks/useMarketCurrency';
 
 /**
  * @typedef {Object} TimeRow
@@ -128,17 +130,15 @@ const ALL_FIELDS = {
  * Formats a shipping rate row into a currency string, or returns '-' if no rate.
  *
  * @param {RateRow|undefined} rateRow
+ * @param {Function}          formatAmount `(amount, currencyCode) => string` formatter from the active currency hook.
  * @return {string} Formatted currency string or '-'.
  */
-const formatShippingRate = ( rateRow ) => {
+const formatShippingRate = ( rateRow, formatAmount ) => {
 	if ( ! rateRow ) {
 		return '-';
 	}
 
-	return new Intl.NumberFormat( undefined, {
-		style: 'currency',
-		currency: rateRow.currency,
-	} ).format( rateRow.rate );
+	return formatAmount( rateRow.rate, rateRow.currency );
 };
 
 /**
@@ -180,9 +180,10 @@ const formatShippingTime = ( timeRow ) => {
  * - Otherwise, returns '-'.
  *
  * @param {RateRow|undefined} rateRow
+ * @param {Function}          formatAmount `(amount, currencyCode) => string` formatter from the active currency hook.
  * @return {string} 'Free', 'Free over $X', or '-'.
  */
-const formatFreeShipping = ( rateRow ) => {
+const formatFreeShipping = ( rateRow, formatAmount ) => {
 	if ( ! rateRow ) {
 		return '-';
 	}
@@ -193,10 +194,7 @@ const formatFreeShipping = ( rateRow ) => {
 
 	const threshold = rateRow.options?.free_shipping_threshold;
 	if ( threshold !== null && threshold !== undefined ) {
-		const formatted = new Intl.NumberFormat( undefined, {
-			style: 'currency',
-			currency: rateRow.currency,
-		} ).format( threshold );
+		const formatted = formatAmount( threshold, rateRow.currency );
 
 		return sprintf(
 			// translators: %s: currency-formatted free shipping threshold, e.g. "$50.00".
@@ -305,9 +303,15 @@ const buildManualConfig = ( {
  * @param {Market[]}               options.markets        All markets from useMarkets.
  * @param {Object.<string,RateRow>} options.ratesByCountry Country-keyed map of shipping rate rows.
  * @param {Object.<string,TimeRow>} options.timesByCountry Country-keyed map of shipping time rows.
+ * @param {Function}               options.formatAmount   `(amount, currencyCode) => string` formatter from the active currency hook.
  * @return {DataViewsConfig} DataViews fields and pre-formatted rows.
  */
-const buildFlatConfig = ( { markets, ratesByCountry, timesByCountry } ) => {
+const buildFlatConfig = ( {
+	markets,
+	ratesByCountry,
+	timesByCountry,
+	formatAmount,
+} ) => {
 	const fields = [
 		ALL_FIELDS.market,
 		ALL_FIELDS.shippingRate,
@@ -328,9 +332,9 @@ const buildFlatConfig = ( { markets, ratesByCountry, timesByCountry } ) => {
 
 		const row = {
 			...market,
-			shippingRate: formatShippingRate( rateRow ),
+			shippingRate: formatShippingRate( rateRow, formatAmount ),
 			shippingTime: formatShippingTime( timeRow ),
-			freeShipping: formatFreeShipping( rateRow ),
+			freeShipping: formatFreeShipping( rateRow, formatAmount ),
 		};
 
 		if ( isPrimaryMarket( market ) ) {
@@ -499,7 +503,20 @@ const useMarketDataViewsConfig = () => {
 	const { data: shippingTimesData, hasFinishedResolution: hasResolvedTimes } =
 		useShippingTimes();
 
+	// Both currency hooks are called unconditionally (rules of hooks).
+	// The active formatter is chosen based on store type after the hooks run.
+	const { formatAmount: adsFormatAmount } = useAdsCurrency();
+	const { formatAmount: marketFormatAmount } = useMarketCurrency();
+
 	const isMultiLingualStore = glaData.isMultiLingualStore ?? false;
+
+	// For non-multilingual stores every amount is expressed in the single Ads
+	// account currency, so we use formatAmount from useAdsCurrency directly.
+	// For multilingual stores each market may carry its own currency, so we
+	// delegate to useMarketCurrency which accepts a per-call currency code.
+	const formatAmount = isMultiLingualStore
+		? ( amount, currencyCode ) => marketFormatAmount( amount, currencyCode )
+		: ( amount ) => adsFormatAmount( amount );
 
 	const hasFinishedResolution =
 		hasResolvedMarkets &&
@@ -536,7 +553,12 @@ const useMarketDataViewsConfig = () => {
 
 	if ( shippingRate === SHIPPING_RATE_METHOD.FLAT ) {
 		return {
-			...buildFlatConfig( { markets, ratesByCountry, timesByCountry } ),
+			...buildFlatConfig( {
+				markets,
+				ratesByCountry,
+				timesByCountry,
+				formatAmount,
+			} ),
 			hasFinishedResolution,
 		};
 	}

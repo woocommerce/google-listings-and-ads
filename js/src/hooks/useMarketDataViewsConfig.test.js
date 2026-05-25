@@ -13,6 +13,8 @@ import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import useSettings from '~/hooks/useSettings';
 import useShippingRates from '~/hooks/useShippingRates';
 import useShippingTimes from '~/hooks/useShippingTimes';
+import useAdsCurrency from '~/hooks/useAdsCurrency';
+import useMarketCurrency from '~/hooks/useMarketCurrency';
 
 jest.mock( '~/hooks/useMarkets' );
 jest.mock( '~/hooks/usePrimaryMarketDetails' );
@@ -20,6 +22,8 @@ jest.mock( '~/hooks/useCountryKeyNameMap' );
 jest.mock( '~/hooks/useSettings' );
 jest.mock( '~/hooks/useShippingRates' );
 jest.mock( '~/hooks/useShippingTimes' );
+jest.mock( '~/hooks/useAdsCurrency' );
+jest.mock( '~/hooks/useMarketCurrency' );
 
 const SHIPPING_RATES = [
 	{ id: 1, country: 'US', currency: 'USD', rate: 10, options: {} },
@@ -106,6 +110,28 @@ const SECONDARY_MARKET_MULTILINGUAL_MANUAL = {
 	currency: 'EUR',
 };
 
+/**
+ * Simple stand-in for useAdsCurrency.formatAmount used in non-multilingual
+ * scenarios. Prefixes the raw amount with "ADS:" so tests can assert which
+ * formatter path was taken without caring about real currency symbols.
+ *
+ * @param {number} amount
+ * @return {string}
+ */
+const adsFormatAmount = ( amount ) => `ADS:${ amount }`;
+
+/**
+ * Simple stand-in for useMarketCurrency.formatAmount used in multilingual
+ * scenarios. Encodes both the currency code and amount so tests can verify
+ * that the correct currency is forwarded per market row.
+ *
+ * @param {number} amount
+ * @param {string} currencyCode
+ * @return {string}
+ */
+const marketFormatAmount = ( amount, currencyCode ) =>
+	`MKT:${ currencyCode }:${ amount }`;
+
 const setMocks = ( {
 	primary = PRIMARY_MARKET,
 	markets = [ PRIMARY_MARKET ],
@@ -140,6 +166,13 @@ const setMocks = ( {
 		data: shippingTimes,
 		hasFinishedResolution: true,
 	} );
+	useAdsCurrency.mockReturnValue( {
+		adsCurrencyConfig: {},
+		formatAmount: adsFormatAmount,
+	} );
+	useMarketCurrency.mockReturnValue( {
+		formatAmount: marketFormatAmount,
+	} );
 	// `glaData` is captured as a reference to `window.glaData` at module load
 	// (see `js/src/constants.js`), so mutate in place rather than replacing the
 	// object — replacing would leave the original reference stale.
@@ -154,6 +187,8 @@ describe( 'useMarketDataViewsConfig', () => {
 		useSettings.mockReset();
 		useShippingRates.mockReset();
 		useShippingTimes.mockReset();
+		useAdsCurrency.mockReset();
+		useMarketCurrency.mockReset();
 		delete window.glaData.isMultiLingualStore;
 	} );
 
@@ -318,6 +353,24 @@ describe( 'useMarketDataViewsConfig', () => {
 			expect( primary.shippingTime ).toBe( '3 - 5 days' );
 			expect( secondary.shippingRate ).toMatch( /8/ );
 			expect( secondary.shippingTime ).toBe( '5 - 7 days' );
+		} );
+
+		test( 'formats amounts using useAdsCurrency (non-multilingual)', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_FLAT,
+				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
+				shippingRates: SHIPPING_RATES,
+				shippingTimes: SHIPPING_TIMES,
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+			const [ primary, secondary ] = result.current.data;
+
+			// adsFormatAmount prefixes with "ADS:" — confirms the Ads-account
+			// currency formatter is used, not the per-market one.
+			expect( primary.shippingRate ).toBe( 'ADS:10' );
+			expect( secondary.shippingRate ).toBe( 'ADS:8' );
+			expect( secondary.freeShipping ).toBe( 'Free over ADS:50' );
 		} );
 
 		test( 'sets freeShipping to a dash when free_shipping is null', () => {
@@ -626,10 +679,12 @@ describe( 'useMarketDataViewsConfig', () => {
 	} );
 
 	describe( 'multilingual store, flat shipping', () => {
-		// Per Figma, the multilingual flat table renders identically to the
-		// non-multilingual flat table — no Language/Currency columns, same
-		// rendering. These tests lock in that decision so future changes that
-		// diverge the two are caught.
+		// Per Figma the multilingual flat table uses the same four columns as
+		// the non-multilingual flat table (no extra Language/Currency columns).
+		// However the two scenarios diverge in *how* amounts are formatted:
+		// non-multilingual uses useAdsCurrency (single Ads-account currency),
+		// while multilingual uses useMarketCurrency so each market row is
+		// formatted in its own currency.
 
 		test( 'returns the same four fields as the non-multilingual flat scenario', () => {
 			setMocks( {
@@ -662,7 +717,7 @@ describe( 'useMarketDataViewsConfig', () => {
 			expect( result.current.data[ 1 ].id ).toBe( 'fr' );
 		} );
 
-		test( 'formats shipping cells the same way as the non-multilingual flat scenario', () => {
+		test( 'formats shipping rate and time for each market row', () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_FLAT,
 				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
@@ -679,6 +734,25 @@ describe( 'useMarketDataViewsConfig', () => {
 			expect( secondary.shippingRate ).toMatch( /8/ );
 			expect( secondary.shippingTime ).toBe( '5 - 7 days' );
 			expect( secondary.freeShipping ).toMatch( /Free over/ );
+		} );
+
+		test( 'formats amounts using useMarketCurrency with per-market currency codes', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_FLAT,
+				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
+				multiLingualStore: true,
+				shippingRates: SHIPPING_RATES,
+				shippingTimes: SHIPPING_TIMES,
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+			const [ primary, secondary ] = result.current.data;
+
+			// marketFormatAmount encodes both amount and currency code so we can
+			// assert each row was formatted with the correct market currency.
+			expect( primary.shippingRate ).toBe( 'MKT:USD:10' );
+			expect( secondary.shippingRate ).toBe( 'MKT:EUR:8' );
+			expect( secondary.freeShipping ).toBe( 'Free over MKT:EUR:50' );
 		} );
 
 		test( 'formats the primary market label with the country count', () => {
@@ -716,6 +790,13 @@ describe( 'useMarketDataViewsConfig', () => {
 				data: [],
 				hasFinishedResolution: false,
 			} );
+			useAdsCurrency.mockReturnValue( {
+				adsCurrencyConfig: {},
+				formatAmount: adsFormatAmount,
+			} );
+			useMarketCurrency.mockReturnValue( {
+				formatAmount: marketFormatAmount,
+			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 
@@ -742,6 +823,13 @@ describe( 'useMarketDataViewsConfig', () => {
 			useShippingTimes.mockReturnValue( {
 				data: [],
 				hasFinishedResolution: true,
+			} );
+			useAdsCurrency.mockReturnValue( {
+				adsCurrencyConfig: {},
+				formatAmount: adsFormatAmount,
+			} );
+			useMarketCurrency.mockReturnValue( {
+				formatAmount: marketFormatAmount,
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
