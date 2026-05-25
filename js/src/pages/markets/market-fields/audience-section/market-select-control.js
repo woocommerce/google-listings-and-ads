@@ -26,7 +26,9 @@ const MarketSelectControl = () => {
 		data: primaryMarket,
 		hasFinishedResolution: hasResolvedPrimaryMarket,
 	} = usePrimaryMarketDetails();
-	const { getInputProps, values, setValues } = useAdaptiveFormContext();
+	const { getInputProps, values, setValues, adapter } =
+		useAdaptiveFormContext();
+	const { renderRequestedValidation } = adapter;
 	const { shipping_country_rates, shipping_country_times } = values;
 
 	if ( ! hasResolvedCountries || ! hasResolvedPrimaryMarket ) {
@@ -90,12 +92,15 @@ const MarketSelectControl = () => {
 	};
 
 	return (
-		<AppSelectControl
-			label={ __( 'Market', 'google-listings-and-ads' ) }
-			options={ options }
-			onChange={ handleChange }
-			{ ...appSelectControlProps }
-		/>
+		<div>
+			<AppSelectControl
+				label={ __( 'Market', 'google-listings-and-ads' ) }
+				options={ options }
+				onChange={ handleChange }
+				{ ...appSelectControlProps }
+			/>
+			{ renderRequestedValidation( 'country' ) }
+		</div>
 	);
 };
 
