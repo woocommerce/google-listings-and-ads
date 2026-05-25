@@ -117,7 +117,8 @@ const SECONDARY_MARKET_MULTILINGUAL_MANUAL = {
  *
  * @param {number} amount
  * @return {string}
- */
+ * @return {string} "ADS:<amount>"
+ */ 
 const adsFormatAmount = ( amount ) => `ADS:${ amount }`;
 
 /**
@@ -127,7 +128,7 @@ const adsFormatAmount = ( amount ) => `ADS:${ amount }`;
  *
  * @param {number} amount
  * @param {string} currencyCode
- * @return {string}
+ * @return {string} "MKT:<currencyCode>:<amount>"
  */
 const marketFormatAmount = ( amount, currencyCode ) =>
 	`MKT:${ currencyCode }:${ amount }`;
