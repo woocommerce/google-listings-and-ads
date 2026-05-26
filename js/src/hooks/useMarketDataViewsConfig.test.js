@@ -525,10 +525,9 @@ describe( 'useMarketDataViewsConfig', () => {
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
-			const expected = new Intl.DisplayNames(
-				[ navigator.language ],
-				{ type: 'language' }
-			).of( 'en' );
+			const expected = new Intl.DisplayNames( [ navigator.language ], {
+				type: 'language',
+			} ).of( 'en' );
 
 			expect( result.current.data[ 0 ].languageDisplay ).toBe( expected );
 		} );
