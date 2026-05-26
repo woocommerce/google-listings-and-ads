@@ -143,8 +143,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		return [
 			'primary' => [
 				'country'    => $country,
-				'language'   => $language,
-				'currency'   => $currency,
+				'language'   => [ $language ],
+				'currency'   => [ $currency ],
 				'feed_label' => $country,
 			],
 		];
@@ -218,6 +218,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		if ( ! isset( $config['shipping_time'] ) ) {
 			$config['shipping_time'] = $mc_settings['shipping_time'] ?? 'flat';
 		}
+
+		$config = $this->merge_language_currency_with_primary( $config );
 
 		$this->validate_secondary_market_config( $config );
 
@@ -311,6 +313,15 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
+	 * Returns the store's active currencies from the multilingual integration.
+	 *
+	 * @return array<int, array{code: string, symbol: string}>
+	 */
+	public function get_currencies(): array {
+		return $this->wpml->get_currencies();
+	}
+
+	/**
 	 * Returns the stored secondary markets from the Markets option.
 	 *
 	 * @return array[]
@@ -377,13 +388,71 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @throws InvalidValue When a required key is missing or not a non-empty string.
 	 */
 	private function validate_secondary_market_config( array $config ): void {
-		$required = [ 'country', 'language', 'currency', 'feed_label' ];
-
-		foreach ( $required as $key ) {
+		foreach ( [ 'country', 'feed_label' ] as $key ) {
 			if ( empty( $config[ $key ] ) || ! is_string( $config[ $key ] ) ) {
 				throw InvalidValue::is_empty( $key );
 			}
 		}
+
+		foreach ( [ 'language', 'currency' ] as $key ) {
+			if ( ! isset( $config[ $key ] ) || ! is_array( $config[ $key ] ) ) {
+				throw InvalidValue::is_empty( $key );
+			}
+		}
+	}
+
+	/**
+	 * Prepends the site primary language and currency to request-supplied values.
+	 *
+	 * Omitted keys or empty arrays result in a single-element array containing
+	 * only the site primary. Non-array values are rejected before merging.
+	 *
+	 * @param array $config
+	 *
+	 * @return array
+	 *
+	 * @throws InvalidValue When language or currency is present but not an array.
+	 */
+	private function merge_language_currency_with_primary( array $config ): array {
+		foreach ( [ 'language', 'currency' ] as $key ) {
+			if ( array_key_exists( $key, $config ) && ! is_array( $config[ $key ] ) ) {
+				throw InvalidValue::is_empty( $key );
+			}
+		}
+
+		$language_extras = isset( $config['language'] ) && is_array( $config['language'] ) ? $config['language'] : [];
+		$currency_extras = isset( $config['currency'] ) && is_array( $config['currency'] ) ? $config['currency'] : [];
+
+		$config['language'] = array_values(
+			array_unique(
+				array_merge( [ $this->get_site_primary_language() ], $language_extras )
+			)
+		);
+		$config['currency'] = array_values(
+			array_unique(
+				array_merge( [ $this->get_site_primary_currency() ], $currency_extras )
+			)
+		);
+
+		return $config;
+	}
+
+	/**
+	 * Returns the site primary language code (ISO 639-1).
+	 *
+	 * @return string
+	 */
+	private function get_site_primary_language(): string {
+		return substr( get_locale(), 0, 2 );
+	}
+
+	/**
+	 * Returns the site primary currency code (ISO 4217).
+	 *
+	 * @return string
+	 */
+	private function get_site_primary_currency(): string {
+		return get_woocommerce_currency();
 	}
 
 	/**

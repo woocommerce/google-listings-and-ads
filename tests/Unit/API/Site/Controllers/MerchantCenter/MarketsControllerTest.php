@@ -33,8 +33,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		'label'         => 'Primary Market',
 		'countries'     => [ 'US' ],
 		'country'       => 'US',
-		'language'      => 'en',
-		'currency'      => 'USD',
+		'language'      => [ 'en' ],
+		'currency'      => [ 'USD' ],
 		'feed_label'    => 'US',
 		'shipping_rate' => 'flat',
 		'shipping_time' => 'flat',
@@ -44,8 +44,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		'country'       => 'GB',
 		'label'         => 'United Kingdom (UK)',
 		'countries'     => [ 'GB' ],
-		'language'      => 'en',
-		'currency'      => 'GBP',
+		'language'      => [ 'en' ],
+		'currency'      => [ 'GBP' ],
 		'feed_label'    => 'GB',
 		'shipping_rate' => 'flat',
 		'shipping_time' => 'flat',
@@ -110,6 +110,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 	public function test_get_languages_currencies_returns_200(): void {
 		$this->market_service->method( 'get_languages' )->willReturn( [] );
+		$this->market_service->method( 'get_currencies' )->willReturn( [] );
 
 		$response = $this->do_request( self::ROUTE_LANGUAGES_CURRENCIES );
 
@@ -131,12 +132,35 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		];
 
 		$this->market_service->method( 'get_languages' )->willReturn( $languages );
+		$this->market_service->method( 'get_currencies' )->willReturn( [] );
 
 		$response = $this->do_request( self::ROUTE_LANGUAGES_CURRENCIES );
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( $languages, $response->get_data()['languages'] );
 		$this->assertEquals( [], $response->get_data()['currencies'] );
+	}
+
+	public function test_get_languages_currencies_returns_currencies_from_market_service(): void {
+		$currencies = [
+			[
+				'code'   => 'USD',
+				'symbol' => '$',
+			],
+			[
+				'code'   => 'EUR',
+				'symbol' => '€',
+			],
+		];
+
+		$this->market_service->method( 'get_languages' )->willReturn( [] );
+		$this->market_service->method( 'get_currencies' )->willReturn( $currencies );
+
+		$response = $this->do_request( self::ROUTE_LANGUAGES_CURRENCIES );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( [], $response->get_data()['languages'] );
+		$this->assertEquals( $currencies, $response->get_data()['currencies'] );
 	}
 
 	public function test_languages_currencies_schema_shape(): void {
@@ -162,8 +186,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 	public function test_post_market_returns_201_on_success(): void {
 		$created_market = [
 			'country'       => 'DE',
-			'language'      => 'de',
-			'currency'      => 'EUR',
+			'language'      => [ 'de' ],
+			'currency'      => [ 'EUR' ],
 			'feed_label'    => 'DE',
 			'shipping_rate' => 'flat',
 			'shipping_time' => 'flat',
@@ -194,8 +218,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			'POST',
 			[
 				'country'  => 'DE',
-				'language' => 'de',
-				'currency' => 'EUR',
+				'language' => [ 'de' ],
+				'currency' => [ 'EUR' ],
 			]
 		);
 
@@ -203,7 +227,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$data = $response->get_data();
 		$this->assertEquals( 'de', $data['id'] );
 		$this->assertEquals( 'DE', $data['country'] );
-		$this->assertEquals( 'EUR', $data['currency'] );
+		$this->assertEquals( [ 'EUR' ], $data['currency'] );
 		$this->assertEquals( 'DE', $data['feed_label'] );
 		$this->assertEquals( 'flat', $data['shipping_rate'] );
 	}
@@ -213,12 +237,106 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			self::ROUTE_MARKETS,
 			'POST',
 			[
-				'language' => 'en',
-				'currency' => 'GBP',
+				'language' => [ 'en' ],
+				'currency' => [ 'GBP' ],
 			]
 		);
 
 		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_post_market_without_language_currency_returns_201(): void {
+		$created_market = [
+			'country'       => 'GB',
+			'language'      => [ 'en' ],
+			'currency'      => [ 'USD' ],
+			'feed_label'    => 'GB',
+			'shipping_rate' => 'flat',
+			'shipping_time' => 'flat',
+			'free_shipping' => null,
+		];
+
+		$created = false;
+
+		$this->market_service->method( 'add_market' )
+			->with(
+				'gb',
+				$this->callback(
+					function ( $config ) {
+						return 'GB' === $config['country']
+							&& ! array_key_exists( 'language', $config )
+							&& ! array_key_exists( 'currency', $config );
+					}
+				)
+			)
+			->willReturnCallback(
+				function () use ( &$created ) {
+					$created = true;
+				}
+			);
+
+		$this->market_service->method( 'get_market' )
+			->willReturnCallback(
+				function ( string $id ) use ( &$created, $created_market ) {
+					if ( 'gb' === $id && $created ) {
+						return $created_market;
+					}
+					return null;
+				}
+			);
+
+		$response = $this->do_request(
+			self::ROUTE_MARKETS,
+			'POST',
+			[
+				'country' => 'GB',
+			]
+		);
+
+		$this->assertEquals( 201, $response->get_status() );
+	}
+
+	public function test_post_market_with_empty_language_currency_arrays_passes_empty_arrays(): void {
+		$created = false;
+
+		$this->market_service->method( 'add_market' )
+			->with(
+				'gb',
+				$this->callback(
+					function ( $config ) {
+						return 'GB' === $config['country']
+							&& [] === $config['language']
+							&& [] === $config['currency'];
+					}
+				)
+			)
+			->willReturnCallback(
+				function () use ( &$created ) {
+					$created = true;
+				}
+			);
+
+		$this->market_service->method( 'get_market' )
+			->willReturnCallback(
+				function ( string $id ) use ( &$created ) {
+					if ( 'gb' === $id && $created ) {
+						return [ 'country' => 'GB' ];
+					}
+					return null;
+				}
+			);
+
+		$response = $this->do_request(
+			self::ROUTE_MARKETS,
+			'POST',
+			[
+				'country'  => 'GB',
+				'language' => [],
+				'currency' => [],
+			]
+		);
+
+		$this->assertEquals( 201, $response->get_status() );
 	}
 
 	public function test_post_market_returns_400_when_add_market_throws_invalid_value(): void {
@@ -233,8 +351,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			'POST',
 			[
 				'country'  => 'DE',
-				'language' => 'de',
-				'currency' => 'EUR',
+				'language' => [ 'de' ],
+				'currency' => [ 'EUR' ],
 			]
 		);
 
@@ -251,8 +369,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			'POST',
 			[
 				'country'  => 'GB',
-				'language' => 'en',
-				'currency' => 'GBP',
+				'language' => [ 'en' ],
+				'currency' => [ 'GBP' ],
 			]
 		);
 
@@ -332,7 +450,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			self::ROUTE_MARKET . 'gb',
 			'PUT',
 			[
-				'currency' => '',
+				'currency' => [ 'EUR' ],
 			]
 		);
 
@@ -411,8 +529,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			'POST',
 			[
 				'country'  => 'GB',
-				'language' => 'en',
-				'currency' => 'GBP',
+				'language' => [ 'en' ],
+				'currency' => [ 'GBP' ],
 			]
 		);
 
@@ -457,8 +575,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 	public function test_post_market_without_shipping_mode_succeeds(): void {
 		$created_market = [
 			'country'       => 'JP',
-			'language'      => 'ja',
-			'currency'      => 'JPY',
+			'language'      => [ 'ja' ],
+			'currency'      => [ 'JPY' ],
 			'feed_label'    => 'JP',
 			'shipping_rate' => 'flat',
 			'shipping_time' => 'flat',
@@ -489,8 +607,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			'POST',
 			[
 				'country'  => 'JP',
-				'language' => 'ja',
-				'currency' => 'JPY',
+				'language' => [ 'ja' ],
+				'currency' => [ 'JPY' ],
 			]
 		);
 
@@ -517,8 +635,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			'POST',
 			[
 				'country'       => 'JP',
-				'language'      => 'ja',
-				'currency'      => 'JPY',
+				'language'      => [ 'ja' ],
+				'currency'      => [ 'JPY' ],
 				'free_shipping' => 99.0,
 			]
 		);
@@ -552,5 +670,93 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 				'shipping_rate' => 'flat',
 			]
 		);
+	}
+
+	public function test_post_market_accepts_multiple_languages(): void {
+		$created_market = [
+			'country'       => 'CH',
+			'language'      => [ 'de', 'fr', 'it' ],
+			'currency'      => [ 'CHF' ],
+			'feed_label'    => 'CH',
+			'shipping_rate' => 'flat',
+			'shipping_time' => 'flat',
+			'free_shipping' => null,
+		];
+
+		$created = false;
+
+		$this->market_service->method( 'add_market' )
+			->willReturnCallback(
+				function () use ( &$created ) {
+					$created = true;
+				}
+			);
+
+		$this->market_service->method( 'get_market' )
+			->willReturnCallback(
+				function ( string $id ) use ( &$created, $created_market ) {
+					if ( 'ch' === $id && $created ) {
+						return $created_market;
+					}
+					return null;
+				}
+			);
+
+		$response = $this->do_request(
+			self::ROUTE_MARKETS,
+			'POST',
+			[
+				'country'  => 'CH',
+				'language' => [ 'de', 'fr', 'it' ],
+				'currency' => [ 'CHF' ],
+			]
+		);
+
+		$this->assertEquals( 201, $response->get_status() );
+		$this->assertEquals( [ 'de', 'fr', 'it' ], $response->get_data()['language'] );
+	}
+
+	public function test_post_market_accepts_multiple_currencies(): void {
+		$created_market = [
+			'country'       => 'CH',
+			'language'      => [ 'de' ],
+			'currency'      => [ 'CHF', 'EUR' ],
+			'feed_label'    => 'CH',
+			'shipping_rate' => 'flat',
+			'shipping_time' => 'flat',
+			'free_shipping' => null,
+		];
+
+		$created = false;
+
+		$this->market_service->method( 'add_market' )
+			->willReturnCallback(
+				function () use ( &$created ) {
+					$created = true;
+				}
+			);
+
+		$this->market_service->method( 'get_market' )
+			->willReturnCallback(
+				function ( string $id ) use ( &$created, $created_market ) {
+					if ( 'ch' === $id && $created ) {
+						return $created_market;
+					}
+					return null;
+				}
+			);
+
+		$response = $this->do_request(
+			self::ROUTE_MARKETS,
+			'POST',
+			[
+				'country'  => 'CH',
+				'language' => [ 'de' ],
+				'currency' => [ 'CHF', 'EUR' ],
+			]
+		);
+
+		$this->assertEquals( 201, $response->get_status() );
+		$this->assertEquals( [ 'CHF', 'EUR' ], $response->get_data()['currency'] );
 	}
 }
