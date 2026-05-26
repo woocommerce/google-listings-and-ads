@@ -13,6 +13,7 @@ import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import useSettings from '~/hooks/useSettings';
 import useShippingRates from '~/hooks/useShippingRates';
 import useShippingTimes from '~/hooks/useShippingTimes';
+import useMCSupportedLanguages from '~/hooks/useMCSupportedLanguages';
 
 /**
  * @typedef {Object} TimeRow
@@ -90,12 +91,14 @@ const ALL_FIELDS = {
 		label: __( 'Language', 'google-listings-and-ads' ),
 		enableHiding: false,
 		enableSorting: false,
+		render: ( { item } ) => item.languageDisplay,
 	},
 	currency: {
 		id: 'currency',
 		label: __( 'Currency', 'google-listings-and-ads' ),
 		enableHiding: false,
 		enableSorting: false,
+		render: ( { item } ) => item.currencyDisplay,
 	},
 	shipping: {
 		id: 'shipping',
@@ -122,6 +125,35 @@ const ALL_FIELDS = {
 		enableSorting: false,
 	},
 };
+
+/**
+ * Formats an array of language codes into a comma-separated display string.
+ *
+ * @param {string[]|undefined} codes Language codes from the market.
+ * @param {Object.<string,string>} languagesByCode Map of code → label.
+ * @return {string} Comma-separated language names, or '-'.
+ */
+const languageDisplayNames = new Intl.DisplayNames( [ navigator.language ], {
+	type: 'language',
+} );
+
+const formatLanguageCodes = ( codes, languagesByCode ) =>
+	codes
+		?.map(
+			( code ) =>
+				languagesByCode[ code ] ??
+				languageDisplayNames.of( code ) ??
+				code
+		)
+		.join( ', ' ) || '-';
+
+/**
+ * Formats an array of currency codes into a comma-separated display string.
+ *
+ * @param {string[]|undefined} codes Currency codes from the market.
+ * @return {string} Comma-separated currency codes, or '-'.
+ */
+const formatCurrencyCodes = ( codes ) => codes?.join( ', ' ) || '-';
 
 /**
  * Formats a shipping rate row into a currency string, or returns '-' if no rate.
@@ -216,11 +248,12 @@ const formatFreeShipping = ( rateRow ) => {
  * - Non-multilingual: Market, Country (count), Shipping (static "Managed in
  *   Google") — primary market only.
  *
- * @param {Object}   options
- * @param {Market[]} options.markets All markets from useMarkets.
+ * @param {Object}              options
+ * @param {Market[]}            options.markets         All markets from useMarkets.
+ * @param {Object.<string,string>} options.languagesByCode Map of language code to label.
  * @return {DataViewsConfig} DataViews fields and pre-formatted rows.
  */
-const buildManualConfig = ( { markets } ) => {
+const buildManualConfig = ( { markets, languagesByCode } ) => {
 	if ( glaData.isMultiLingualStore ) {
 		const fields = [
 			ALL_FIELDS.market,
@@ -229,8 +262,14 @@ const buildManualConfig = ( { markets } ) => {
 		];
 
 		const data = markets.map( ( market ) => {
+			const languageDisplay = formatLanguageCodes(
+				market.language,
+				languagesByCode
+			);
+			const currencyDisplay = formatCurrencyCodes( market.currency );
+
 			if ( ! isPrimaryMarket( market ) ) {
-				return market;
+				return { ...market, languageDisplay, currencyDisplay };
 			}
 
 			const countryCount = market.countries?.length ?? 0;
@@ -247,6 +286,8 @@ const buildManualConfig = ( { markets } ) => {
 					market.label,
 					countryCount
 				),
+				languageDisplay,
+				currencyDisplay,
 			};
 		} );
 
@@ -355,12 +396,17 @@ const buildFlatConfig = ( { markets, ratesByCountry, timesByCountry } ) => {
  * - Multilingual: Market (label + country count for primary, country name for secondaries), Language, Currency, Shipping time — all markets as rows.
  * - Non-multilingual: Market (label + country count), Shipping time — primary market only.
  *
- * @param {Object} options
- * @param {Market[]} options.markets All markets from useMarkets.
- * @param {Object.<string,TimeRow>} options.timesByCountry Country-keyed map of shipping time rows.
+ * @param {Object}                 options
+ * @param {Market[]}               options.markets         All markets from useMarkets.
+ * @param {Object.<string,TimeRow>} options.timesByCountry  Country-keyed map of shipping time rows.
+ * @param {Object.<string,string>} options.languagesByCode Map of language code to label.
  * @return {DataViewsConfig} DataViews fields and pre-formatted rows.
  */
-const buildAutomaticConfig = ( { markets, timesByCountry } ) => {
+const buildAutomaticConfig = ( {
+	markets,
+	timesByCountry,
+	languagesByCode,
+} ) => {
 	const fields = glaData.isMultiLingualStore
 		? [
 				ALL_FIELDS.market,
@@ -373,6 +419,11 @@ const buildAutomaticConfig = ( { markets, timesByCountry } ) => {
 	const data = markets.map( ( market ) => {
 		const row = {
 			...market,
+			languageDisplay: formatLanguageCodes(
+				market.language,
+				languagesByCode
+			),
+			currencyDisplay: formatCurrencyCodes( market.currency ),
 			shippingTime: formatShippingTime(
 				timesByCountry[ market.country ]
 			),
@@ -456,22 +507,32 @@ const useMarketDataViewsConfig = () => {
 		useShippingRates();
 	const { data: shippingTimesData, hasFinishedResolution: hasResolvedTimes } =
 		useShippingTimes();
+	const { languages, hasFinishedResolution: hasResolvedLanguages } =
+		useMCSupportedLanguages();
 
 	const hasFinishedResolution =
 		hasResolvedMarkets &&
 		hasResolvedRates &&
 		hasResolvedTimes &&
-		!! settings;
+		!! settings &&
+		( ! glaData.isMultiLingualStore || hasResolvedLanguages );
 
 	if ( ! hasFinishedResolution ) {
 		return { fields: [], data: [], hasFinishedResolution };
 	}
 
+	const languagesByCode = Object.fromEntries(
+		( languages || [] ).map( ( language ) => [
+			language.code,
+			language.label,
+		] )
+	);
+
 	const shippingRate = settings.shipping_rate;
 
 	if ( shippingRate === SHIPPING_RATE_METHOD.MANUAL ) {
 		return {
-			...buildManualConfig( { markets } ),
+			...buildManualConfig( { markets, languagesByCode } ),
 			hasFinishedResolution,
 		};
 	}
@@ -498,6 +559,7 @@ const useMarketDataViewsConfig = () => {
 			...buildAutomaticConfig( {
 				markets,
 				timesByCountry,
+				languagesByCode,
 			} ),
 			hasFinishedResolution,
 		};

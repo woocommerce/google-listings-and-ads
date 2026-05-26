@@ -349,6 +349,7 @@ const MarketForm = ( {
 
 			updatedMarket = {
 				...updatedMarket,
+				country: editingCountry,
 				...( existingRate && {
 					flat_shipping_rate: existingRate.rate,
 					offer_free_shipping:
