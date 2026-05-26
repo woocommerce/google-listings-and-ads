@@ -32,7 +32,7 @@
 		"@wordpress/compose": "^6.19.13",
 		"@wordpress/data": "^9.12.13",
 		"@wordpress/data-controls": "^3.11.13",
-		"@wordpress/dataviews": "^4.17.0",
+		"@wordpress/dataviews": "^14.3.0",
 		"@wordpress/date": "^4.42.13",
 		"@wordpress/dom": "^3.42.13",
 		"@wordpress/element": "^5.19.13",
