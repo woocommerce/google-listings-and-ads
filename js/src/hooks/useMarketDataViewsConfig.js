@@ -51,8 +51,6 @@ import useShippingTimes from '~/hooks/useShippingTimes';
  * @property {boolean} hasFinishedResolution Whether all data has loaded.
  */
 
-const { isMultiLingualStore } = glaData;
-
 const isPrimaryMarket = ( market ) => market.id === PRIMARY_MARKET_ID;
 
 /**
@@ -223,7 +221,7 @@ const formatFreeShipping = ( rateRow ) => {
  * @return {DataViewsConfig} DataViews fields and pre-formatted rows.
  */
 const buildManualConfig = ( { markets } ) => {
-	if ( isMultiLingualStore ) {
+	if ( glaData.isMultiLingualStore ) {
 		const fields = [
 			ALL_FIELDS.market,
 			ALL_FIELDS.language,
@@ -295,7 +293,7 @@ const buildManualConfig = ( { markets } ) => {
  *
  * Covers both non-multilingual and multilingual stores — Figma renders both
  * frames identically, so the builder is shared rather than branched on
- * `isMultiLingualStore`. The multilingual variant is tracked as GOOWOO-602.
+ * `glaData.isMultiLingualStore`. The multilingual variant is tracked as GOOWOO-602.
  *
  * @param {Object} options
  * @param {Market[]} options.markets All markets from useMarkets.
@@ -363,7 +361,7 @@ const buildFlatConfig = ( { markets, ratesByCountry, timesByCountry } ) => {
  * @return {DataViewsConfig} DataViews fields and pre-formatted rows.
  */
 const buildAutomaticConfig = ( { markets, timesByCountry } ) => {
-	const fields = isMultiLingualStore
+	const fields = glaData.isMultiLingualStore
 		? [
 				ALL_FIELDS.market,
 				ALL_FIELDS.language,
@@ -443,7 +441,7 @@ const buildDefaultConfig = ( { markets, countryNames } ) => {
  * Single source of truth for the MarketDataViews `{ fields, data }` shape.
  *
  * Picks the active scenario from `settings.shipping_rate` and
- * `glaData.isMultiLingualStore`, formats the rows, and returns the DataViews-ready
+ * `glaData.glaData.isMultiLingualStore`, formats the rows, and returns the DataViews-ready
  * config. `MarketDataViews` consumes this directly with no scenario branching of
  * its own.
  *

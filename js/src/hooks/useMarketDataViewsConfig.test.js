@@ -8,14 +8,12 @@ import { renderHook } from '@testing-library/react';
  */
 import useMarketDataViewsConfig from './useMarketDataViewsConfig';
 import useMarkets from '~/hooks/useMarkets';
-import usePrimaryMarketDetails from '~/hooks/usePrimaryMarketDetails';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import useSettings from '~/hooks/useSettings';
 import useShippingRates from '~/hooks/useShippingRates';
 import useShippingTimes from '~/hooks/useShippingTimes';
 
 jest.mock( '~/hooks/useMarkets' );
-jest.mock( '~/hooks/usePrimaryMarketDetails' );
 jest.mock( '~/hooks/useCountryKeyNameMap' );
 jest.mock( '~/hooks/useSettings' );
 jest.mock( '~/hooks/useShippingRates' );
@@ -124,10 +122,6 @@ const setMocks = ( {
 		data: markets,
 		hasFinishedResolution: true,
 	} );
-	usePrimaryMarketDetails.mockReturnValue( {
-		data: primary,
-		hasFinishedResolution: true,
-	} );
 	useCountryKeyNameMap.mockReturnValue( countries );
 	useSettings.mockReturnValue( {
 		settings: { shipping_rate: shippingRate },
@@ -149,7 +143,6 @@ const setMocks = ( {
 describe( 'useMarketDataViewsConfig', () => {
 	afterEach( () => {
 		useMarkets.mockReset();
-		usePrimaryMarketDetails.mockReset();
 		useCountryKeyNameMap.mockReset();
 		useSettings.mockReset();
 		useShippingRates.mockReset();
@@ -192,6 +185,7 @@ describe( 'useMarketDataViewsConfig', () => {
 		test( 'pluralizes singular country count', () => {
 			setMocks( {
 				primary: { ...PRIMARY_MARKET, countries: [ 'US' ] },
+				markets: [ { ...PRIMARY_MARKET, countries: [ 'US' ] } ],
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
@@ -389,7 +383,7 @@ describe( 'useMarketDataViewsConfig', () => {
 			] );
 		} );
 
-		test( 'returns only the primary market row', () => {
+		test( 'returns all markets as rows', () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_AUTOMATIC,
 				markets: [ PRIMARY_MARKET_AUTOMATIC, SECONDARY_MARKET ],
@@ -397,8 +391,9 @@ describe( 'useMarketDataViewsConfig', () => {
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 
-			expect( result.current.data ).toHaveLength( 1 );
+			expect( result.current.data ).toHaveLength( 2 );
 			expect( result.current.data[ 0 ].id ).toBe( 'primary' );
+			expect( result.current.data[ 1 ].id ).toBe( 'fr' );
 		} );
 
 		test( 'formats the market label as "<label> (N countries)"', () => {
@@ -415,12 +410,13 @@ describe( 'useMarketDataViewsConfig', () => {
 		} );
 
 		test( 'pluralizes singular country count', () => {
+			const singleCountryMarket = {
+				...PRIMARY_MARKET_AUTOMATIC,
+				countries: [ 'US' ],
+			};
 			setMocks( {
-				primary: {
-					...PRIMARY_MARKET_AUTOMATIC,
-					countries: [ 'US' ],
-				},
-				markets: [ PRIMARY_MARKET_AUTOMATIC ],
+				primary: singleCountryMarket,
+				markets: [ singleCountryMarket ],
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
@@ -702,10 +698,6 @@ describe( 'useMarketDataViewsConfig', () => {
 				data: [],
 				hasFinishedResolution: false,
 			} );
-			usePrimaryMarketDetails.mockReturnValue( {
-				data: null,
-				hasFinishedResolution: false,
-			} );
 			useCountryKeyNameMap.mockReturnValue( {} );
 			useSettings.mockReturnValue( { settings: null } );
 			useShippingRates.mockReturnValue( {
@@ -727,10 +719,6 @@ describe( 'useMarketDataViewsConfig', () => {
 		test( 'returns empty fields and data when markets are resolved but settings are not yet available', () => {
 			useMarkets.mockReturnValue( {
 				data: [ PRIMARY_MARKET ],
-				hasFinishedResolution: true,
-			} );
-			usePrimaryMarketDetails.mockReturnValue( {
-				data: PRIMARY_MARKET,
 				hasFinishedResolution: true,
 			} );
 			useCountryKeyNameMap.mockReturnValue( {} );
