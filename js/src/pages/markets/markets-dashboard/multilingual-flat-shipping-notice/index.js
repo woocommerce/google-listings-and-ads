@@ -8,11 +8,11 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import TrackableLink from '~/components/trackable-link';
 import { getSettingsUrl } from '~/utils/urls';
-import './index.scss';
-import useSettings from '~/hooks/useSettings';
 import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
+import TrackableLink from '~/components/trackable-link';
+import useSettings from '~/hooks/useSettings';
+import './index.scss';
 
 /**
  * @event gla_multilingual_flat_notice_settings_link_click
