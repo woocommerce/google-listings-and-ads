@@ -26,7 +26,7 @@ const MultilingualFlatShippingNotice = () => {
 		<Notice status="warning" isDismissible={ false }>
 			{ createInterpolateElement(
 				__(
-					'Your current shipping setup is not compatible with multilingual feeds. You have "I will manually enter my shipping rates" selected. To use multilingual feeds, switch to a different shipping setup in <link>Settings</link>.',
+					'Your current shipping setup is not compatible with multilingual feeds. You have "My shipping settings are simple. I can manually estimate flat shipping rates" selected. To use multilingual feeds, switch to a different shipping setup in <link>Settings</link>.',
 					'google-listings-and-ads'
 				),
 				{
