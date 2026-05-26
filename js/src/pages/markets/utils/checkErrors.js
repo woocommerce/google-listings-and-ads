@@ -56,6 +56,17 @@ const checkErrors = ( values ) => {
 
 	if ( shipping_rate === SHIPPING_RATE_METHOD.FLAT ) {
 		if (
+			values.flat_shipping_rate === null ||
+			values.flat_shipping_rate === undefined ||
+			values.flat_shipping_rate < 0
+		) {
+			errors.flat_shipping_rate = __(
+				'Please enter a valid shipping rate.',
+				'google-listings-and-ads'
+			);
+		}
+
+		if (
 			values.offer_free_shipping === true &&
 			! values.free_shipping_threshold
 		) {

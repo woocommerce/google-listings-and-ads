@@ -104,8 +104,12 @@ const MarketForm = ( {
 				await createMarket( data );
 			}
 
-			await saveShippingRates( shipping_country_rates );
-			await saveShippingTimes( shipping_country_times );
+			// Run both saves concurrently; if either rejects the thrown error
+			// is re-thrown below so the caller can surface it to the user.
+			await Promise.all( [
+				saveShippingRates( shipping_country_rates ),
+				saveShippingTimes( shipping_country_times ),
+			] );
 
 			invalidateResolution( 'getTargetAudience', [] );
 			onSubmit();

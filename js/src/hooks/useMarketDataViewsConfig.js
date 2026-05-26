@@ -134,25 +134,32 @@ const ALL_FIELDS = {
 	},
 };
 
-const languageDisplayNames = new Intl.DisplayNames( [ navigator.language ], {
-	type: 'language',
-} );
-
 /**
  * Formats an array of language codes into a comma-separated display string.
  * Resolution order: API label → Intl.DisplayNames → raw code.
+ *
+ * Intl.DisplayNames is not available in Safari < 14, so it is instantiated
+ * lazily and only when the API is present to avoid a ReferenceError that
+ * would crash every component importing this module on older browsers.
  *
  * @param {string[]|undefined} codes Language codes from the market.
  * @param {Object.<string,string>} languagesByCode Map of code → label from the MC languages API.
  * @return {string} Comma-separated language names, or '-'.
  */
 const formatLanguageCodes = ( codes, languagesByCode ) => {
+	const displayNames =
+		typeof Intl !== 'undefined' && Intl.DisplayNames
+			? new Intl.DisplayNames( [ navigator.language ], {
+					type: 'language',
+			  } )
+			: null;
+
 	return (
 		codes
 			?.map(
 				( code ) =>
 					languagesByCode[ code ] ??
-					languageDisplayNames.of( code ) ??
+					displayNames?.of( code ) ??
 					code
 			)
 			.join( ', ' ) || '-'

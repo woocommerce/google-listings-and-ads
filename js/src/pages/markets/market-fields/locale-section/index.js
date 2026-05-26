@@ -12,6 +12,7 @@ import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useSettings from '~/hooks/useSettings';
 import LanguageSelectControl from './language-select-control';
 import CurrencySelectControl from './currency-select-control';
+import './index.scss';
 
 /**
  * Renders language and currency select controls,
@@ -34,7 +35,7 @@ const LocaleSection = () => {
 		<Flex
 			direction="column"
 			gap={ 6 }
-			className="gla-market-fields__locale-controls"
+			className="gla-market-fields__locale-section"
 		>
 			{ ! glaData.isMultiLingualStore && (
 				<Notice isDismissible={ false }>
