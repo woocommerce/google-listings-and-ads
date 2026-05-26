@@ -116,7 +116,7 @@ class MarketsController extends BaseController {
 			return new Response(
 				[
 					'languages'  => $this->market_service->get_languages(),
-					'currencies' => [],
+					'currencies' => $this->market_service->get_currencies(),
 				]
 			);
 		};
