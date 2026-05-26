@@ -13,6 +13,7 @@ import useDataViewsScript from '~/hooks/useDataViewsScript';
 import useSettings from '~/hooks/useSettings';
 import MarketsHeader from '../markets-header';
 import MarketDataViews from '../market-data-views';
+import MultilingualFlatShippingNotice from './multilingual-flat-shipping-notice';
 import './index.scss';
 
 const MarketsDashboard = () => {
@@ -23,6 +24,8 @@ const MarketsDashboard = () => {
 
 	return (
 		<div className="gla-markets-dashboard">
+			<MultilingualFlatShippingNotice />
+
 			<MarketsHeader shippingRate={ shippingRate } />
 
 			{ dataViewStatus === 'failed' && (

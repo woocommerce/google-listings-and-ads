@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -53,23 +54,31 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	protected WC $wc;
 
 	/**
+	 * @var WPML
+	 */
+	protected WPML $wpml;
+
+	/**
 	 * MarketService constructor.
 	 *
 	 * @param TargetAudience    $target_audience
 	 * @param ShippingRateQuery $shipping_rate_query
 	 * @param ShippingTimeQuery $shipping_time_query
 	 * @param WC                $wc
+	 * @param WPML              $wpml
 	 */
 	public function __construct(
 		TargetAudience $target_audience,
 		ShippingRateQuery $shipping_rate_query,
 		ShippingTimeQuery $shipping_time_query,
-		WC $wc
+		WC $wc,
+		WPML $wpml
 	) {
 		$this->target_audience     = $target_audience;
 		$this->shipping_rate_query = $shipping_rate_query;
 		$this->shipping_time_query = $shipping_time_query;
 		$this->wc                  = $wc;
+		$this->wpml                = $wpml;
 	}
 
 	/**
@@ -134,8 +143,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		return [
 			'primary' => [
 				'country'    => $country,
-				'language'   => $language,
-				'currency'   => $currency,
+				'language'   => [ $language ],
+				'currency'   => [ $currency ],
 				'feed_label' => $country,
 			],
 		];
@@ -209,6 +218,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		if ( ! isset( $config['shipping_time'] ) ) {
 			$config['shipping_time'] = $mc_settings['shipping_time'] ?? 'flat';
 		}
+
+		$config = $this->merge_language_currency_with_primary( $config );
 
 		$this->validate_secondary_market_config( $config );
 
@@ -286,12 +297,28 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	/**
 	 * Returns true if a supported multilingual integration is active.
 	 *
-	 * TODO: Connect WPML integration — GOOWOO-561.
-	 *
 	 * @return bool
 	 */
 	public function has_multilingual_support(): bool {
-		return false;
+		return $this->wpml->is_active();
+	}
+
+	/**
+	 * Returns the store's active languages from the multilingual integration.
+	 *
+	 * @return array<int, array{code: string, label: string}>
+	 */
+	public function get_languages(): array {
+		return $this->wpml->get_languages();
+	}
+
+	/**
+	 * Returns the store's active currencies from the multilingual integration.
+	 *
+	 * @return array<int, array{code: string, symbol: string}>
+	 */
+	public function get_currencies(): array {
+		return $this->wpml->get_currencies();
 	}
 
 	/**
@@ -361,13 +388,71 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @throws InvalidValue When a required key is missing or not a non-empty string.
 	 */
 	private function validate_secondary_market_config( array $config ): void {
-		$required = [ 'country', 'language', 'currency', 'feed_label' ];
-
-		foreach ( $required as $key ) {
+		foreach ( [ 'country', 'feed_label' ] as $key ) {
 			if ( empty( $config[ $key ] ) || ! is_string( $config[ $key ] ) ) {
 				throw InvalidValue::is_empty( $key );
 			}
 		}
+
+		foreach ( [ 'language', 'currency' ] as $key ) {
+			if ( ! isset( $config[ $key ] ) || ! is_array( $config[ $key ] ) ) {
+				throw InvalidValue::is_empty( $key );
+			}
+		}
+	}
+
+	/**
+	 * Prepends the site primary language and currency to request-supplied values.
+	 *
+	 * Omitted keys or empty arrays result in a single-element array containing
+	 * only the site primary. Non-array values are rejected before merging.
+	 *
+	 * @param array $config
+	 *
+	 * @return array
+	 *
+	 * @throws InvalidValue When language or currency is present but not an array.
+	 */
+	private function merge_language_currency_with_primary( array $config ): array {
+		foreach ( [ 'language', 'currency' ] as $key ) {
+			if ( array_key_exists( $key, $config ) && ! is_array( $config[ $key ] ) ) {
+				throw InvalidValue::is_empty( $key );
+			}
+		}
+
+		$language_extras = isset( $config['language'] ) && is_array( $config['language'] ) ? $config['language'] : [];
+		$currency_extras = isset( $config['currency'] ) && is_array( $config['currency'] ) ? $config['currency'] : [];
+
+		$config['language'] = array_values(
+			array_unique(
+				array_merge( [ $this->get_site_primary_language() ], $language_extras )
+			)
+		);
+		$config['currency'] = array_values(
+			array_unique(
+				array_merge( [ $this->get_site_primary_currency() ], $currency_extras )
+			)
+		);
+
+		return $config;
+	}
+
+	/**
+	 * Returns the site primary language code (ISO 639-1).
+	 *
+	 * @return string
+	 */
+	private function get_site_primary_language(): string {
+		return substr( get_locale(), 0, 2 );
+	}
+
+	/**
+	 * Returns the site primary currency code (ISO 4217).
+	 *
+	 * @return string
+	 */
+	private function get_site_primary_currency(): string {
+		return get_woocommerce_currency();
 	}
 
 	/**

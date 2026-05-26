@@ -117,8 +117,8 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * @property {string} id The market ID.
  * @property {string} label The market label.
  * @property {Array<CountryCode>} countries Array of audience countries.
- * @property {string} language Language code in ISO 639-1 format. Example: 'en'.
- * @property {string} currency Currency code in ISO 4217 format. Example: 'USD'.
+ * @property {string[]} language Language codes in ISO 639-1 format. Example: ['en'].
+ * @property {string[]} currency Currency codes in ISO 4217 format. Example: ['USD'].
  * @property {'automatic'|'flat'|'manual'} shipping_rate Shipping rate type.
  * @property {'flat'|'manual'} shipping_time Shipping time type.
  * @property {number|null} [free_shipping] Free shipping threshold amount, or null when unset.
@@ -891,6 +891,13 @@ export function receiveEnhancedConversionsStatus( status ) {
 	};
 }
 
+export function receiveAdsSettings( settings ) {
+	return {
+		type: TYPES.RECEIVE_ADS_SETTINGS,
+		settings,
+	};
+}
+
 /**
  * Update the enhanced conversions status.
  *
@@ -1375,6 +1382,13 @@ export function* receiveAdsRecommendations(
 		type: TYPES.RECEIVE_ADS_RECOMMENDATIONS,
 		recommendations,
 		recommendationTypes,
+	};
+}
+
+export function receiveCYOIncentives( cyoIncentives ) {
+	return {
+		type: TYPES.RECEIVE_CYO_INCENTIVES,
+		cyoIncentives,
 	};
 }
 

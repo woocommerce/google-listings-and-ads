@@ -24,96 +24,125 @@ All event names are prefixed by `wcadmin_`.
 
 Most events have the following properties:
 
-- `gla_version`: Plugin version
-- `gla_mc_id`: Google Merchant Center account ID if connected
-- `gla_ads_id`: Google Ads account ID if connected
+-   `gla_version`: Plugin version
+-   `gla_mc_id`: Google Merchant Center account ID if connected
+-   `gla_ads_id`: Google Ads account ID if connected
 
 ### `gla_activated_from_source`
+
 Plugin is activated from the "Add Plugins" page in the admin, and has `utm` query parameters indicating deep linking. Parameters currently tracked (and sent as properties):
- - `utm_source`
- - `utm_medium`
- - `utm_campaign`
- - `utm_term`
- - `utm_content` 
+
+-   `utm_source`
+-   `utm_medium`
+-   `utm_campaign`
+-   `utm_term`
+-   `utm_content`
 
 ### `gla_mc_account_reclaim_url_agreement_check`
-Clicking on the checkbox to agree with the implications of reclaiming URL. 
+
+Clicking on the checkbox to agree with the implications of reclaiming URL.
+
 #### Properties
-|   |   |   |
-|---|---|---|
-`checked` |  | indicate whether the checkbox is checked or unchecked.
+
+|           |     |                                                        |
+| --------- | --- | ------------------------------------------------------ |
+| `checked` |     | indicate whether the checkbox is checked or unchecked. |
 
 ### `gla_mc_url_switch`
-Clicking on the checkbox to agree with the implications of reclaiming URL. 
+
+Clicking on the checkbox to agree with the implications of reclaiming URL.
+
 #### Properties
-|   |   |   |
-|---|---|---|
-`action` | `string` | <ul><li>`required`: the Merchant Center account has a different, claimed URL and needs to be changed. <li>`success`: the Merchant Center account has been changed from blank, updated from a different, unclaimed URL, or after user confirmation of a required change.</ul>
+
+|          |          |                                                                                                                                                                                                                                                                              |
+| -------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `action` | `string` | <ul><li>`required`: the Merchant Center account has a different, claimed URL and needs to be changed. <li>`success`: the Merchant Center account has been changed from blank, updated from a different, unclaimed URL, or after user confirmation of a required change.</ul> |
 
 ### `gla_site_claim`
+
 #### Properties
-|   |   |   |
-|---|---|---|
-`action` | `string` | <ul><li>`overwrite_required`: the site URL is claimed by another Merchant Center account and overwrite confirmation is required <li>`success`: URL has been successfully set or overwritten.<li>`failure`</ul>
-`details` | `string` | Used for `failure` action. <ul><li>`independent_account`: unable to execute site claim because the provided Merchant Center account is not a sub-account of our MCA <li>`google_proxy`: claim failed using the user creds (in the `Merchant` class) <li>`google_manager`: claimed failed using MCA creds (paradoxically in the `Middleware` class)</ul>
+
+|           |          |                                                                                                                                                                                                                                                                                                                                                         |
+| --------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `action`  | `string` | <ul><li>`overwrite_required`: the site URL is claimed by another Merchant Center account and overwrite confirmation is required <li>`success`: URL has been successfully set or overwritten.<li>`failure`</ul>                                                                                                                                          |
+| `details` | `string` | Used for `failure` action. <ul><li>`independent_account`: unable to execute site claim because the provided Merchant Center account is not a sub-account of our MCA <li>`google_proxy`: claim failed using the user creds (in the `Merchant` class) <li>`google_manager`: claimed failed using MCA creds (paradoxically in the `Middleware` class)</ul> |
 
 ### `gla_site_verify_failure`
+
 When a site verification with Google fails
+
 #### Properties
-|   |   |   |
-|---|---|---|
-`step` | `string` | the step of the process that failed (token, meta-tag, unknown)
+
+|        |          |                                                                |
+| ------ | -------- | -------------------------------------------------------------- |
+| `step` | `string` | the step of the process that failed (token, meta-tag, unknown) |
 
 ### `gla_site_verify_success`
+
 When a site is successfully verified with Google
 
 ### `gla_created_campaign`
+
 When a campaign has been successfully created.
+
 #### Properties
-| name | type | description |
-| ---- | ---- | ----------- |
-`id` | `int` | Campaign ID.
-`status` | `string` | Campaign status, `enabled` or `paused`.
-`name` | `string` | Campaign name, generated based on date.
-`amount` | `float` | Campaign budget.
-`country` | `string` | Base target country code.
-`targeted_locations` | `string` | Additional target country codes.
+
+| name                 | type     | description                             |
+| -------------------- | -------- | --------------------------------------- |
+| `id`                 | `int`    | Campaign ID.                            |
+| `status`             | `string` | Campaign status, `enabled` or `paused`. |
+| `name`               | `string` | Campaign name, generated based on date. |
+| `amount`             | `float`  | Campaign budget.                        |
+| `country`            | `string` | Base target country code.               |
+| `targeted_locations` | `string` | Additional target country codes.        |
 
 ### `gla_edited_campaign`
+
 When a campaign has been successfully edited.
+
 #### Properties
-| name | type | description |
-| ---- | ---- | ----------- |
-`id` | `int` | Campaign ID.
-`status` | `string` | Campaign status, `enabled` or `paused`.
-`name` | `string` | Campaign name.
-`amount` | `float` | Campaign budget.
+
+| name     | type     | description                             |
+| -------- | -------- | --------------------------------------- |
+| `id`     | `int`    | Campaign ID.                            |
+| `status` | `string` | Campaign status, `enabled` or `paused`. |
+| `name`   | `string` | Campaign name.                          |
+| `amount` | `float`  | Campaign budget.                        |
 
 ### `gla_deleted_campaign`
+
 When a campaign has been successfully deleted.
+
 #### Properties
-| name | type | description |
-| ---- | ---- | ----------- |
-`id` | `int` | Campaign ID.
+
+| name | type  | description  |
+| ---- | ----- | ------------ |
+| `id` | `int` | Campaign ID. |
 
 ### `gla_ads_setup_completed`
+
 Ads onboarding has been successfully completed.
+
 #### Properties
-| name | type | description |
-| ---- | ---- | ----------- |
-`campaign_count` | `int` | Number of campaigns for the connected Ads account.
+
+| name             | type  | description                                        |
+| ---------------- | ----- | -------------------------------------------------- |
+| `campaign_count` | `int` | Number of campaigns for the connected Ads account. |
 
 ### `gla_mc_setup_completed`
+
 Merchant Center onboarding has been successfully completed.
+
 #### Properties
-| name | type | description |
-| ---- | ---- | ----------- |
-`shipping_rate` | `string` | Shipping rate setup `automatic`, `manual`, `flat`.
-`offers_free_shipping` | `bool` | Free Shipping is available.
-`free_shipping_threshold` | `float` | Minimum amount to avail of free shipping.
-`shipping_time` | `string` | Shipping time setup `flat`, `manual`.
-`tax_rate` | `string` | Tax rate setup `destination`, `manual`.
-`target_countries` | `string` | List of target countries or `all`.
+
+| name                      | type     | description                                        |
+| ------------------------- | -------- | -------------------------------------------------- |
+| `shipping_rate`           | `string` | Shipping rate setup `automatic`, `manual`, `flat`. |
+| `offers_free_shipping`    | `bool`   | Free Shipping is available.                        |
+| `free_shipping_threshold` | `float`  | Minimum amount to avail of free shipping.          |
+| `shipping_time`           | `string` | Shipping time setup `flat`, `manual`.              |
+| `tax_rate`                | `string` | Tax rate setup `destination`, `manual`.            |
+| `target_countries`        | `string` | List of target countries or `all`.                 |
 
 <!-- -- >
 ## Developer Info
@@ -212,6 +241,16 @@ Received the data of budget recommendations.
 `metrics_availability` | `string` | The availability of the forecast metrics for the budget recommendations, e.g. 'all', 'partial', 'none'.
 #### Emitters
 - [`recordGlaDataEventControl`](../../js/src/data/controls.js#L60)
+
+### [`gla_ads_only_onboarding_with_cyo_incentive_selected`](../../js/src/pages/onboarding/setup-stepper/saved-ads-only-setup-stepper/setup-paid-ads.js#L29)
+Selecting a "Choose Your Own" incentive offer when setting up paid ads during onboarding.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the incentive offer is selected, e.g. 'create-ads', 'edit-ads', 'setup-ads', 'setup-mc', or 'setup-ads-only'.
+`level` | `string` | The level of the selected incentive offer, e.g. 'low', 'medium', or 'high'.
+#### Emitters
+- [`exports`](../../js/src/pages/onboarding/setup-stepper/saved-ads-only-setup-stepper/setup-paid-ads.js#L47)
 
 ### [`gla_ads_set_up_billing_click`](../../js/src/components/paid-ads/billing-card/billing-setup-card.js#L22)
 "Set up billing" button for Google Ads account is clicked.
@@ -390,6 +429,25 @@ Triggered when the save button in contact information page is clicked.
 #### Emitters
 - [`EditStoreAddress`](../../js/src/pages/settings/edit-store-address.js#L41)
 
+### [`gla_cyo_incentive_picker_shown`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L24)
+Fired when the CYO incentive picker is shown to the user.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the incentive picker is shown, e.g. 'create-ads', 'edit-ads', 'setup-ads', 'setup-mc', or 'setup-ads-only'.
+#### Emitters
+- [`CyoIncentivePicker`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L50) when the incentive picker is shown to the user.
+
+### [`gla_cyo_incentive_selected`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L31)
+Fired when the user selects an incentive offer.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the incentive offer is selected.
+`level` | `string` | The level of the selected incentive offer, e.g. 'low', 'medium', or 'high'.
+#### Emitters
+- [`CyoIncentivePicker`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L50) when the user selects an incentive offer.
+
 ### [`gla_dashboard_edit_program_click`](../../js/src/pages/dashboard/all-programs-table-card/edit-program-button/edit-program-prompt-modal.js#L16)
 Triggered when "continue" to edit program button is clicked.
 #### Properties
@@ -435,6 +493,7 @@ When a documentation link is clicked.
 `href` | `string` | link's URL
 #### Emitters
 - [`AppDocumentationLink`](../../js/src/components/app-documentation-link/index.js#L29)
+- [`BenefitsCard`](../../js/src/pages/get-started/benefits-card/index.js#L22) with `{ context: 'get-started', link_id: 'benefits-card-credit-terms', href: 'https://ads.google.com/home/terms-and-conditions/incentives/' }` when the user clicks on the "Terms and conditions" link in the notice.
 - [`ConnectAds`](../../js/src/components/google-ads-account-card/connect-ads/index.js#L32) with `{ context: 'setup-ads-connect-account', link_id: 'connect-sub-account', href: 'https://support.google.com/google-ads/answer/6139186' }`
 - [`ConnectGoogleAccountCard`](../../js/src/components/google-account-card/connect-google-account-card.js#L25) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions' }`
 - [`ConnectGoogleComboAccountCard`](../../js/src/components/google-combo-account-card/connect-google-combo-account-card.js#L41)
@@ -442,6 +501,7 @@ When a documentation link is clicked.
 	- with `{ context: 'setup-mc-accounts', link_id: 'google-mc-terms-of-service', href: 'https://support.google.com/merchants/answer/160173' }`
 	- with `{ context: 'setup-ads', link_id: 'google-ads-terms-of-service', href: 'https://support.google.com/adspolicy/answer/54818' }`
 - [`ConnectYouTubeAccountCard`](../../js/src/components/youtube-account-card/connect-youtube-account-card.js#L32) with `{ context: 'settings-connect-youtube-account-card', link_id: 'youtube-merchant-terms' }` and the URL.
+- [`CyoIncentivePicker`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L50) with `{ context: 'setup-ads' | 'setup-ads-only', link_id: 'incentives-terms-and-conditions-apply', href: 'https://ads.google.com/home/terms-and-conditions/incentives/' }`
 - [`DifferentCurrencyNotice`](../../js/src/components/different-currency-notice.js#L28)
 	- with `{ context: "dashboard", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
 	- with `{ context: "reports-products", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
@@ -462,8 +522,6 @@ When a documentation link is clicked.
 	- with `{ context: 'faqs', linkId: 'campaign-analytics', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/campaign-analytics' }`.
 	- with `{ context: 'faqs', linkId: 'terms-and-conditions-of-google-ads-coupons', href: 'https://www.google.com/ads/coupons/terms/' }`.
 - [`Faqs`](../../js/src/pages/onboarding/setup-stepper/setup-accounts/faqs.js#L68) with `{ context: 'faqs', link_id: 'find-a-partner', href: 'https://comparisonshoppingpartners.withgoogle.com/find_a_partner/' }`
-- [`FreeAdCredit`](../../js/src/components/free-ad-credit/index.js#L17) with `{ context: 'setup-ads', link_id: 'free-ad-credit-terms', href: 'https://www.google.com/ads/coupons/terms/' }`
-- [`FreeAdCredit`](../../js/src/pages/dashboard/summary-section/paid-features/free-ad-credit.js#L19) with `{ context: 'dashboard', link_id: 'free-ad-credit-terms', href: 'https://www.google.com/ads/coupons/terms/' }`
 - [`GetStartedCard`](../../js/src/pages/get-started/get-started-card/index.js#L23) with `{ context: 'get-started', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
 - [`GetStartedWithHeroCard`](../../js/src/pages/get-started/get-started-with-hero-card/index.js#L24) with `{ context: 'get-started-with-hero', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
 - [`GoogleMCDisclaimer`](../../js/src/pages/onboarding/setup-stepper/setup-accounts/index.js#L36)
@@ -474,7 +532,7 @@ When a documentation link is clicked.
 - [`ReclaimUrlCard`](../../js/src/components/google-mc-account-card/reclaim-url-card/index.js#L42) with `{ context: 'setup-mc', link_id: 'claim-url', href: 'https://support.google.com/merchants/answer/176793' }`
 - [`RequestFullAccessGoogleAccountCard`](../../js/src/components/google-account-card/request-full-access-google-account-card.js#L26) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions' }`
 - [`SetupEnhancedConversions`](../../js/src/pages/settings/enhanced-conversions/setup-enhanced-conversions.js#L24) with `{ context: 'setup-enhanced-conversions', link_id: 'enhanced-conversions-read-more', href: 'https://support.google.com/google-ads/answer/9888656' }`
-- [`ShippingRateSection`](../../js/src/components/shipping-rate-section/shipping-rate-section.js#L26)
+- [`ShippingRateMethodSection`](../../js/src/components/shipping-rate-section/shipping-rate-method-section.js#L27)
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
 - [`ShippingTimeSection`](../../js/src/components/free-listings/configure-product-listings/shipping-time-section.js#L17) with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
@@ -485,7 +543,7 @@ When a documentation link is clicked.
 - [`TermsModal`](../../js/src/components/google-mc-account-card/terms-modal/index.js#L29) with `{ context: 'setup-mc', link_id: 'google-mc-terms-of-service', href: 'https://support.google.com/merchants/answer/160173' }`
 - [`UnsupportedCountry`](../../js/src/pages/get-started/unsupported-notices/index.js#L73) with `{ context: "get-started", link_id: "supported-countries" }`
 - [`UnsupportedLanguage`](../../js/src/pages/get-started/unsupported-notices/index.js#L30) with `{ context: 'get-started', link_id: 'supported-languages', href: 'https://support.google.com/merchants/answer/160637' }`
-- [`exports`](../../js/src/components/paid-ads/ads-campaign/ads-campaign.js#L40) with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads' | 'setup-ads-only', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
+- [`exports`](../../js/src/components/paid-ads/ads-campaign/ads-campaign.js#L42) with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads' | 'setup-ads-only', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
 
 ### [`gla_edit_mc_store_address`](../../js/src/components/contact-information/store-address-card.js#L166)
 Trigger when store address edit button is clicked.
@@ -650,6 +708,67 @@ Clicking on the "connect to a different Google account" button.
 #### Emitters
 - [`SwitchAccountButton`](../../js/src/components/google-account-card/switch-account-button.js#L25)
 
+### [`gla_google_ads_promo_create_campaign_click`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L37)
+Google Ads Promo "Create campaign" button is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Context of the Google Ads Promo.
+`href` | `string` | URL of the "Create campaign" button.
+#### Emitters
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L54) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&subpath=%2Fcampaigns%2Fcreate&path=%2Fgoogle%2Fdashboard' }`.
+
+### [`gla_google_ads_promo_dismiss_click`](../../js/src/meta-boxes/channel-visibility/promo-cta.js#L14)
+Google Ads Promo "Dismiss" button is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Context of the Google Ads Promo.
+#### Emitters
+- [`PromoCTA`](../../js/src/meta-boxes/channel-visibility/promo-cta.js#L29) with `{ context: channel-visibility-meta-box }`.
+
+### [`gla_google_ads_promo_get_started_click`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L13)
+Google Ads Promo "Get started" button is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Context of the Google Ads Promo.
+`href` | `string` | URL of the "Get started" button.
+#### Emitters
+- [`GetStartedCTA`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L28) with `{ context: channel-visibility-meta-box, href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L54) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
+
+### [`gla_google_ads_promo_get_started_click`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L29)
+Google Ads Promo "Get started" button is clicked.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Context of the Google Ads Promo.
+`href` | `string` | URL of the "Get started" button.
+#### Emitters
+- [`GetStartedCTA`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L28) with `{ context: channel-visibility-meta-box, href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L54) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
+
+### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L28)
+Google Ads Promo banner is shown.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Context of the Google Ads Promo.
+#### Emitters
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L42) with `{ context: channel-visibility-meta-box }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L54) with `{ context: 'order-attribution-meta-box' }`.
+
+### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L22)
+Google Ads Promo component is shown.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Context of the Google Ads Promo.
+#### Emitters
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L42) with `{ context: channel-visibility-meta-box }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L54) with `{ context: 'order-attribution-meta-box' }`.
+
 ### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L195)
 Clicking on a Google Merchant Center link.
 #### Properties
@@ -756,7 +875,7 @@ Clicking on the "Yes, I want a new account" button in the warning modal for crea
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
 - [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
-- [`Dashboard`](../../js/src/pages/dashboard/index.js#L41) when CES modal is closed.
+- [`Dashboard`](../../js/src/pages/dashboard/index.js#L42) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
@@ -771,7 +890,7 @@ A modal is closed.
 - [`AttributeMappingTable`](../../js/src/pages/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
 - [`ChangePrice`](../../js/src/pages/price-benchmark/change-price.js#L36) with `{ context: 'price-benchmark-change-price-modal', action: 'change-price' }`
 - [`ChangePriceModal`](../../js/src/pages/price-benchmark/change-price-modal/index.js#L74) with `{ context: 'price-benchmark-change-price-modal', action: 'close' }` and the product ID.
-- [`Dashboard`](../../js/src/pages/dashboard/index.js#L41) when CES modal is closed.
+- [`Dashboard`](../../js/src/pages/dashboard/index.js#L42) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss' | 'view-enhanced-conversions-settings'`
 
@@ -810,6 +929,11 @@ A modal is open
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
+### [`gla_multilingual_flat_notice_settings_link_click`](../../js/src/pages/markets/markets-dashboard/multilingual-flat-shipping-notice/index.js#L14)
+
+#### Emitters
+- [`MultilingualFlatShippingNotice`](../../js/src/pages/markets/markets-dashboard/multilingual-flat-shipping-notice/index.js#L24) When the Settings link in the notice is clicked.
+
 ### [`gla_onboarding_complete_button_click`](../../js/src/pages/onboarding/setup-stepper/skip-button.js#L17)
 Clicking on the skip paid ads button to complete the onboarding flow.
  The 'unknown' value of properties may means:
@@ -822,7 +946,7 @@ Clicking on the skip paid ads button to complete the onboarding flow.
 `billing_method_status` | `string` | The status of billing method of merchant's Google Ads addcount e.g. 'unknown', 'pending', 'approved', 'cancelled'
 `campaign_form_validation` | `string` | Whether the entered paid campaign form data are valid, e.g. 'unknown', 'valid', 'invalid'
 
-### [`gla_onboarding_complete_with_paid_ads_button_click`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L35)
+### [`gla_onboarding_complete_with_paid_ads_button_click`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L40)
 Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
 #### Properties
 | name | type | description |
@@ -833,7 +957,17 @@ Clicking on the "Complete setup" button to complete the onboarding flow with pai
 `source` | `string` | The data source of the budget recommendations, e.g. 'google-ads-api', 'fallback-database'.
 `recommended_budget` | `number` | The recommended daily budget displayed to merchants regardless of the final amount they choose.
 #### Emitters
-- [`exports`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L51)
+- [`exports`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L65)
+
+### [`gla_onboarding_with_cyo_incentive_selected`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L51)
+Selecting a "Choose Your Own" incentive offer when setting up paid ads during onboarding.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | The context in which the incentive offer is selected, e.g. 'create-ads', 'edit-ads', 'setup-ads', 'setup-mc', or 'setup-ads-only'.
+`level` | `string` | The level of the selected incentive offer, e.g. 'low', 'medium', or 'high'.
+#### Emitters
+- [`exports`](../../js/src/pages/onboarding/setup-stepper/setup-paid-ads.js#L65)
 
 ### [`gla_open_ads_account_claim_invitation_button_click`](../../js/src/components/google-ads-account-card/claim-account-button.js#L15)
 Clicking on the button to open the invitation page for claiming the newly created Google Ads account.
@@ -857,7 +991,7 @@ Triggered when moving to another step during creating/editing a campaign.
 - [`CreatePaidAdsCampaign`](../../js/src/pages/create-paid-ads-campaign/index.js#L50)
 	- with `{ context: 'create-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
 	- with `{ context: 'create-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
-- [`EditPaidAdsCampaign`](../../js/src/pages/edit-paid-ads-campaign/index.js#L70)
+- [`EditPaidAdsCampaign`](../../js/src/pages/edit-paid-ads-campaign/index.js#L71)
 	- with `{ context: 'edit-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
 	- with `{ context: 'edit-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
 
@@ -1052,19 +1186,19 @@ Setup Merchant Center
 	- with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
 - [`SetupTopBar`](../../js/src/pages/onboarding/setup-top-bar.js#L17) with `{ triggered_by: 'back-button', action: 'leave' }`.
 
-### [`gla_shipping_notice_merchant_center_link_click`](../../js/src/pages/markets/market-fields/shipping-section/shipping-notice/index.js#L20)
+### [`gla_shipping_notice_merchant_center_link_click`](../../js/src/pages/markets/market-fields/shipping-section/shipping-notice/index.js#L19)
 
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `url` | `string` | The URL of the link that was clicked.
 #### Emitters
-- [`ShippingNotice`](../../js/src/pages/markets/market-fields/shipping-section/shipping-notice/index.js#L30) when the Merchant Center link in the notice is clicked.
+- [`ShippingNotice`](../../js/src/pages/markets/market-fields/shipping-section/shipping-notice/index.js#L29) when the Merchant Center link in the notice is clicked.
 
-### [`gla_shipping_rate_notice_shipping_settings_link_click`](../../js/src/pages/markets/market-fields/shipping-section/shipping-rate-controls/shipping-rate-notice/index.js#L14)
+### [`gla_shipping_rate_notice_shipping_settings_link_click`](../../js/src/pages/markets/market-fields/shipping-section/shipping-rate-controls/shipping-rate-notice/index.js#L13)
 
 #### Emitters
-- [`ShippingRateNotice`](../../js/src/pages/markets/market-fields/shipping-section/shipping-rate-controls/shipping-rate-notice/index.js#L23) When the shipping settings link in the notice is clicked.
+- [`ShippingRateNotice`](../../js/src/pages/markets/market-fields/shipping-section/shipping-rate-controls/shipping-rate-notice/index.js#L22) When the shipping settings link in the notice is clicked.
 
 ### [`gla_skip_campaign_creation_survey`](../../js/src/pages/onboarding/setup-stepper/skip-paid-ads-confirmation-modal/survey-modal.js#L22)
 Send survey responses when the user skips the paid ads setup.
@@ -1180,6 +1314,11 @@ Viewing tooltip
 `id` | `string` | Tooltip identifier.
 #### Emitters
 - [`HelpPopover`](../../js/src/components/help-popover/index.js#L32) with the given `id`.
+
+### [`gla_unclaimed_incentive_notice_apply_offer_click`](../../js/src/components/unclaimed-incentive-notice/index.js#L19)
+Triggered when the "Apply in Google Ads" button is clicked in the unclaimed incentive notice.
+#### Emitters
+- [`UnclaimedIncentiveNotice`](../../js/src/components/unclaimed-incentive-notice/index.js#L33) when the "Apply in Google Ads" button is clicked.
 
 ### [`gla_wc_store_address_validation`](../../js/src/components/contact-information/store-address-card.js#L32)
 Track how many times and what fields the store address is having validation errors.

@@ -10,6 +10,17 @@ import { useCallback, useRef } from '@wordpress/element';
 import './useCroppedImageSelector.scss';
 
 /**
+ * The MIME types allowed for campaign asset image selection.
+ * WebP and other formats are not supported.
+ */
+const ALLOWED_MIME_TYPES = [
+	'image/jpg',
+	'image/jpeg',
+	'image/png',
+	'image/gif',
+];
+
+/**
  * @typedef {import('~/hooks/types.js').ImageMedia} ImageMedia
  */
 
@@ -108,6 +119,16 @@ export function calcRatioPercentError(
 	return ( errorRatio - 1 ) * 100;
 }
 
+/**
+ * Checks if the MIME type is allowed.
+ *
+ * @param {string} mime The MIME type.
+ * @return {boolean} True if the MIME type is allowed, false otherwise.
+ */
+export function isMimeTypeAllowed( mime ) {
+	return ALLOWED_MIME_TYPES.includes( mime );
+}
+
 function resetSelectionArea( controller, options, img ) {
 	// Temporarily force the preview <img> size to a size that tolerates the decimal precision bug.
 	const computedStyle = getComputedStyle( img );
@@ -175,15 +196,6 @@ export default function useCroppedImageSelector( {
 	const openSelector = useCallback(
 		( preTickedId ) => {
 			const { media } = wp;
-			const sizeErrorMessage = sprintf(
-				// translators: 1: Minimum width, 2: Minimum height.
-				__(
-					'Image size needs to be at least %1$d x %2$d',
-					'google-listings-and-ads'
-				),
-				minWidth,
-				minHeight
-			);
 
 			// Will be called by the controller of the parent class of CustomizeImageCropper. Ref:
 			// - https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/media/controllers/customize-image-cropper.js#L14
@@ -275,7 +287,7 @@ export default function useCroppedImageSelector( {
 						),
 						// The following are options for AttachmentsBrowser view.
 						// Ref: https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/media/views/frame/select.js#L145-L151
-						library: media.query( { type: 'image' } ),
+						library: media.query( { type: ALLOWED_MIME_TYPES } ),
 						date: false,
 						suggestedWidth,
 						suggestedHeight,
@@ -322,17 +334,33 @@ export default function useCroppedImageSelector( {
 				const selection = frame.state().get( 'selection' );
 				const toolbar = frame.toolbar.get();
 
-				let invalidSize;
+				let errorMessage;
 
 				if ( selection.length ) {
-					const { width, height } = selection.first().toJSON();
-					invalidSize = width < minWidth || height < minHeight;
+					const { width, height, mime } = selection.first().toJSON();
+
+					if ( width < minWidth || height < minHeight ) {
+						errorMessage = sprintf(
+							// translators: 1: Minimum width, 2: Minimum height.
+							__(
+								'Image size needs to be at least %1$d x %2$d',
+								'google-listings-and-ads'
+							),
+							minWidth,
+							minHeight
+						);
+					} else if ( ! isMimeTypeAllowed( mime ) ) {
+						errorMessage = __(
+							'Selected file type is not supported',
+							'google-listings-and-ads'
+						);
+					}
 				}
 
 				const primaryBlock = toolbar.primary.el;
 
-				if ( invalidSize ) {
-					primaryBlock.dataset.errorMessage = sizeErrorMessage;
+				if ( errorMessage ) {
+					primaryBlock.dataset.errorMessage = errorMessage;
 					primaryBlock.classList.add( 'gla-decorated-error-message' );
 					toolbar.get( 'select' ).model.set( 'disabled', true );
 				} else {
