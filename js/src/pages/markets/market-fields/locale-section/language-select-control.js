@@ -19,7 +19,10 @@ import useMCSupportedLanguages from '~/hooks/useMCSupportedLanguages';
  * the multilingual requirement is rendered instead.
  */
 const LanguageSelectControl = () => {
-	const { getInputProps } = useAdaptiveFormContext();
+	const {
+		getInputProps,
+		adapter: { renderRequestedValidation },
+	} = useAdaptiveFormContext();
 	const { languages, hasFinishedResolution } = useMCSupportedLanguages();
 
 	if ( ! glaData.isMultiLingualStore ) {
@@ -41,21 +44,31 @@ const LanguageSelectControl = () => {
 		label: language.label,
 	} ) );
 
-	const inputProps = getInputProps( 'language' );
+	const { onChange, selected } = getInputProps( 'language' );
+
+	const selectedOptions =
+		options?.filter( ( option ) => selected?.includes( option.value ) ) ??
+		[];
 
 	return (
-		<AppSearchableSelectControl
-			label={ __( 'Language', 'google-listings-and-ads' ) }
-			options={ options }
-			disabled={ ! hasFinishedResolution }
-			helperText={ __(
-				"Languages and currencies are populated from your multilingual plugin. You can remove them per market but can't add ones the plugin doesn't provide.",
-				'google-listings-and-ads'
-			) }
-			inlineTags
-			multiple
-			{ ...inputProps }
-		/>
+		<div>
+			<AppSearchableSelectControl
+				label={ __( 'Language', 'google-listings-and-ads' ) }
+				options={ options }
+				disabled={ ! hasFinishedResolution }
+				selected={ selectedOptions }
+				onChange={ ( changedOptions ) =>
+					onChange( changedOptions.map( ( option ) => option.value ) )
+				}
+				helperText={ __(
+					"Languages and currencies are populated from your multilingual plugin. You can remove them per market but can't add ones the plugin doesn't provide.",
+					'google-listings-and-ads'
+				) }
+				inlineTags
+				multiple
+			/>
+			{ renderRequestedValidation( 'language' ) }
+		</div>
 	);
 };
 
