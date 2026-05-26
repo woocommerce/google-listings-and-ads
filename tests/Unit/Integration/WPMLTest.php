@@ -28,6 +28,25 @@ class WPMLTest extends UnitTest {
 		$this->assertSame( [], $integration->get_languages() );
 	}
 
+	public function test_get_default_language_code_returns_empty_when_not_active(): void {
+		$integration = $this->create_integration( false );
+
+		$this->assertSame( '', $integration->get_default_language_code() );
+	}
+
+	public function test_get_default_language_code_returns_wpml_default(): void {
+		$integration = $this->create_integration( true );
+
+		add_filter(
+			'wpml_default_language',
+			function () {
+				return 'fr';
+			}
+		);
+
+		$this->assertSame( 'fr', $integration->get_default_language_code() );
+	}
+
 	public function test_get_languages_returns_formatted_languages(): void {
 		$integration = $this->create_integration( true );
 
