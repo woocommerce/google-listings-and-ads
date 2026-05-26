@@ -981,6 +981,29 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( [], $this->market_service->get_languages() );
 	}
 
+	public function test_get_currencies_delegates_to_wpml(): void {
+		$currencies = [
+			[
+				'code'   => 'USD',
+				'symbol' => '$',
+			],
+			[
+				'code'   => 'EUR',
+				'symbol' => '€',
+			],
+		];
+
+		$this->wpml->method( 'get_currencies' )->willReturn( $currencies );
+
+		$this->assertSame( $currencies, $this->market_service->get_currencies() );
+	}
+
+	public function test_get_currencies_returns_empty_when_wpml_not_active(): void {
+		$this->wpml->method( 'get_currencies' )->willReturn( [] );
+
+		$this->assertSame( [], $this->market_service->get_currencies() );
+	}
+
 	/**
 	 * Sets up the options mock to return specific values for different option keys.
 	 *

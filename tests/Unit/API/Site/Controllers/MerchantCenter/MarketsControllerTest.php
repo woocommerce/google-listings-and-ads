@@ -112,6 +112,7 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 	public function test_get_languages_currencies_returns_200(): void {
 		$this->market_service->method( 'get_languages' )->willReturn( [] );
+		$this->market_service->method( 'get_currencies' )->willReturn( [] );
 
 		$response = $this->do_request( self::ROUTE_LANGUAGES_CURRENCIES );
 
@@ -133,12 +134,35 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		];
 
 		$this->market_service->method( 'get_languages' )->willReturn( $languages );
+		$this->market_service->method( 'get_currencies' )->willReturn( [] );
 
 		$response = $this->do_request( self::ROUTE_LANGUAGES_CURRENCIES );
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( $languages, $response->get_data()['languages'] );
 		$this->assertEquals( [], $response->get_data()['currencies'] );
+	}
+
+	public function test_get_languages_currencies_returns_currencies_from_market_service(): void {
+		$currencies = [
+			[
+				'code'   => 'USD',
+				'symbol' => '$',
+			],
+			[
+				'code'   => 'EUR',
+				'symbol' => '€',
+			],
+		];
+
+		$this->market_service->method( 'get_languages' )->willReturn( [] );
+		$this->market_service->method( 'get_currencies' )->willReturn( $currencies );
+
+		$response = $this->do_request( self::ROUTE_LANGUAGES_CURRENCIES );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( [], $response->get_data()['languages'] );
+		$this->assertEquals( $currencies, $response->get_data()['currencies'] );
 	}
 
 	public function test_languages_currencies_schema_shape(): void {

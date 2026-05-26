@@ -35,7 +35,7 @@ const MarketsHeader = ( { shippingRate } ) => {
 						<span
 							className="gla-markets-header__description-placeholder"
 							aria-busy="true"
-							title={ __(
+							aria-label={ __(
 								'Loading…',
 								'google-listings-and-ads'
 							) }

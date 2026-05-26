@@ -9,11 +9,11 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 import { PRIMARY_MARKET_ID } from '~/pages/markets/constants';
 import useMarkets from '~/hooks/useMarkets';
-import usePrimaryMarketDetails from '~/hooks/usePrimaryMarketDetails';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import useSettings from '~/hooks/useSettings';
 import useShippingRates from '~/hooks/useShippingRates';
 import useShippingTimes from '~/hooks/useShippingTimes';
+import useMCSupportedLanguages from '~/hooks/useMCSupportedLanguages';
 
 /**
  * @typedef {Object} TimeRow
@@ -52,7 +52,9 @@ import useShippingTimes from '~/hooks/useShippingTimes';
  * @property {boolean} hasFinishedResolution Whether all data has loaded.
  */
 
-const isPrimaryMarket = ( market ) => market.id === PRIMARY_MARKET_ID;
+const isPrimaryMarket = ( market ) => {
+	return market.id === PRIMARY_MARKET_ID;
+};
 
 /**
  * Centralized configuration for the MarketDataViews component.
@@ -74,11 +76,13 @@ const ALL_FIELDS = {
 		label: __( 'Market', 'google-listings-and-ads' ),
 		enableHiding: false,
 		enableSorting: false,
-		render: ( { item } ) => (
-			<span className="gla-markets-table__market-cell">
-				{ item.label }
-			</span>
-		),
+		render: ( { item } ) => {
+			return (
+				<span className="gla-markets-table__market-cell">
+					{ item.label }
+				</span>
+			);
+		},
 	},
 	country: {
 		id: 'country',
@@ -91,12 +95,18 @@ const ALL_FIELDS = {
 		label: __( 'Language', 'google-listings-and-ads' ),
 		enableHiding: false,
 		enableSorting: false,
+		render: ( { item } ) => {
+			return item.languageDisplay;
+		},
 	},
 	currency: {
 		id: 'currency',
 		label: __( 'Currency', 'google-listings-and-ads' ),
 		enableHiding: false,
 		enableSorting: false,
+		render: ( { item } ) => {
+			return item.currencyDisplay;
+		},
 	},
 	shipping: {
 		id: 'shipping',
@@ -122,6 +132,46 @@ const ALL_FIELDS = {
 		enableHiding: false,
 		enableSorting: false,
 	},
+};
+
+/**
+ * Formats an array of language codes into a comma-separated display string.
+ * Resolution order: API label → Intl.DisplayNames → raw code.
+ *
+ * Intl.DisplayNames is not available in Safari < 14, so it is instantiated
+ * lazily and only when the API is present to avoid a ReferenceError that
+ * would crash every component importing this module on older browsers.
+ *
+ * @param {string[]|undefined} codes Language codes from the market.
+ * @param {Object.<string,string>} languagesByCode Map of code → label from the MC languages API.
+ * @return {string} Comma-separated language names, or '-'.
+ */
+const formatLanguageCodes = ( codes, languagesByCode ) => {
+	const displayNames =
+		typeof Intl !== 'undefined' && Intl.DisplayNames
+			? new Intl.DisplayNames( [ navigator.language ], {
+					type: 'language',
+			  } )
+			: null;
+
+	return (
+		codes
+			?.map(
+				( code ) =>
+					languagesByCode[ code ] ?? displayNames?.of( code ) ?? code
+			)
+			.join( ', ' ) || '-'
+	);
+};
+
+/**
+ * Formats an array of currency codes into a comma-separated display string.
+ *
+ * @param {string[]|undefined} codes Currency codes from the market.
+ * @return {string} Comma-separated currency codes, or '-'.
+ */
+const formatCurrencyCodes = ( codes ) => {
+	return codes?.join( ', ' ) || '-';
 };
 
 /**
@@ -217,18 +267,13 @@ const formatFreeShipping = ( rateRow ) => {
  * - Non-multilingual: Market, Country (count), Shipping (static "Managed in
  *   Google") — primary market only.
  *
- * @param {Object}     options
- * @param {Market}     options.primaryMarket       Primary market data from usePrimaryMarketDetails.
- * @param {Market[]}   options.markets             All markets from useMarkets.
- * @param {boolean}    options.isMultiLingualStore Whether the store has a multilingual plugin.
+ * @param {Object}              options
+ * @param {Market[]}            options.markets         All markets from useMarkets.
+ * @param {Object.<string,string>} options.languagesByCode Map of language code to label.
  * @return {DataViewsConfig} DataViews fields and pre-formatted rows.
  */
-const buildManualConfig = ( {
-	primaryMarket,
-	markets,
-	isMultiLingualStore,
-} ) => {
-	if ( isMultiLingualStore ) {
+const buildManualConfig = ( { markets, languagesByCode } ) => {
+	if ( glaData.isMultiLingualStore ) {
 		const fields = [
 			ALL_FIELDS.market,
 			ALL_FIELDS.language,
@@ -236,8 +281,14 @@ const buildManualConfig = ( {
 		];
 
 		const data = markets.map( ( market ) => {
+			const languageDisplay = formatLanguageCodes(
+				market.language,
+				languagesByCode
+			);
+			const currencyDisplay = formatCurrencyCodes( market.currency );
+
 			if ( ! isPrimaryMarket( market ) ) {
-				return market;
+				return { ...market, languageDisplay, currencyDisplay };
 			}
 
 			const countryCount = market.countries?.length ?? 0;
@@ -254,12 +305,15 @@ const buildManualConfig = ( {
 					market.label,
 					countryCount
 				),
+				languageDisplay,
+				currencyDisplay,
 			};
 		} );
 
 		return { fields, data };
 	}
 
+	const primaryMarket = markets.find( isPrimaryMarket );
 	const countryCount = primaryMarket?.countries?.length ?? 0;
 
 	const fields = [
@@ -299,10 +353,10 @@ const buildManualConfig = ( {
  *
  * Covers both non-multilingual and multilingual stores — Figma renders both
  * frames identically, so the builder is shared rather than branched on
- * `isMultiLingualStore`. The multilingual variant is tracked as GOOWOO-602.
+ * `glaData.isMultiLingualStore`. The multilingual variant is tracked as GOOWOO-602.
  *
- * @param {Object}                  options
- * @param {Market[]}               options.markets        All markets from useMarkets.
+ * @param {Object} options
+ * @param {Market[]} options.markets All markets from useMarkets.
  * @param {Object.<string,RateRow>} options.ratesByCountry Country-keyed map of shipping rate rows.
  * @param {Object.<string,TimeRow>} options.timesByCountry Country-keyed map of shipping time rows.
  * @return {DataViewsConfig} DataViews fields and pre-formatted rows.
@@ -360,85 +414,60 @@ const buildFlatConfig = ( { markets, ratesByCountry, timesByCountry } ) => {
  * - Multilingual: Market (label + country count for primary, country name for secondaries), Language, Currency, Shipping time — all markets as rows.
  * - Non-multilingual: Market (label + country count), Shipping time — primary market only.
  *
- * @param {Object}                  options
- * @param {Market[]}               options.markets             All markets from useMarkets.
- * @param {Market}                 options.primaryMarket       Primary market data from usePrimaryMarketDetails.
- * @param {boolean}                options.isMultiLingualStore Whether the store has a multilingual plugin.
- * @param {Object.<string,TimeRow>} options.timesByCountry      Country-keyed map of shipping time rows.
+ * @param {Object}                 options
+ * @param {Market[]}               options.markets         All markets from useMarkets.
+ * @param {Object.<string,TimeRow>} options.timesByCountry  Country-keyed map of shipping time rows.
+ * @param {Object.<string,string>} options.languagesByCode Map of language code to label.
  * @return {DataViewsConfig} DataViews fields and pre-formatted rows.
  */
 const buildAutomaticConfig = ( {
 	markets,
-	primaryMarket,
-	isMultiLingualStore,
 	timesByCountry,
+	languagesByCode,
 } ) => {
-	if ( isMultiLingualStore ) {
-		const fields = [
-			ALL_FIELDS.market,
-			ALL_FIELDS.language,
-			ALL_FIELDS.currency,
-			ALL_FIELDS.shippingTime,
-		];
-
-		const data = markets.map( ( market ) => {
-			const row = {
-				...market,
-				shippingTime: formatShippingTime(
-					timesByCountry[
-						isPrimaryMarket( market )
-							? market.countries?.[ 0 ]
-							: market.country
-					]
-				),
-			};
-
-			if ( isPrimaryMarket( market ) ) {
-				const countryCount = market.countries?.length ?? 0;
-				row.label = sprintf(
-					// translators: 1: market label, 2: number of countries.
-					_n(
-						'%1$s (%2$d country)',
-						'%1$s (%2$d countries)',
-						countryCount,
-						'google-listings-and-ads'
-					),
-					market.label,
-					countryCount
-				);
-			}
-
-			return row;
-		} );
-
-		return { fields, data };
-	}
-
-	const countryCount = primaryMarket?.countries?.length ?? 0;
-
-	const fields = [ ALL_FIELDS.market, ALL_FIELDS.shippingTime ];
-
-	const data = primaryMarket
+	const fields = glaData.isMultiLingualStore
 		? [
-				{
-					...primaryMarket,
-					label: sprintf(
-						// translators: 1: market label, 2: number of countries.
-						_n(
-							'%1$s (%2$d country)',
-							'%1$s (%2$d countries)',
-							countryCount,
-							'google-listings-and-ads'
-						),
-						primaryMarket.label,
-						countryCount
-					),
-					shippingTime: formatShippingTime(
-						timesByCountry[ primaryMarket.countries?.[ 0 ] ]
-					),
-				},
+				ALL_FIELDS.market,
+				ALL_FIELDS.language,
+				ALL_FIELDS.currency,
+				ALL_FIELDS.shippingTime,
 		  ]
-		: [];
+		: [ ALL_FIELDS.market, ALL_FIELDS.shippingTime ];
+
+	const data = markets.map( ( market ) => {
+		const row = {
+			...market,
+			languageDisplay: formatLanguageCodes(
+				market.language,
+				languagesByCode
+			),
+			currencyDisplay: formatCurrencyCodes( market.currency ),
+			shippingTime: formatShippingTime(
+				timesByCountry[
+					isPrimaryMarket( market )
+						? market.countries?.[ 0 ]
+						: market.country
+				]
+			),
+		};
+
+		if ( isPrimaryMarket( market ) ) {
+			const countryCount = market.countries?.length ?? 0;
+			row.label = sprintf(
+				// translators: 1: market label, 2: number of countries.
+				_n(
+					'%1$s (%2$d country)',
+					'%1$s (%2$d countries)',
+					countryCount,
+					'google-listings-and-ads'
+				),
+				market.label,
+				countryCount
+			);
+		}
+
+		return row;
+	} );
 
 	return { fields, data };
 };
@@ -449,8 +478,8 @@ const buildAutomaticConfig = ( {
  * scenario now branched, this only catches unexpected `shipping_rate` values
  * and serves as a safety net.
  *
- * @param {Object}              options
- * @param {Market[]}           options.markets      All markets from useMarkets.
+ * @param {Object} options
+ * @param {Market[]} options.markets All markets from useMarkets.
  * @param {Object.<string,string>} options.countryNames Mapping of country code to country name from useCountryKeyNameMap.
  * @return {DataViewsConfig} DataViews fields and pre-formatted rows.
  */
@@ -485,7 +514,7 @@ const buildDefaultConfig = ( { markets, countryNames } ) => {
  * Single source of truth for the MarketDataViews `{ fields, data }` shape.
  *
  * Picks the active scenario from `settings.shipping_rate` and
- * `glaData.isMultiLingualStore`, formats the rows, and returns the DataViews-ready
+ * `glaData.glaData.isMultiLingualStore`, formats the rows, and returns the DataViews-ready
  * config. `MarketDataViews` consumes this directly with no scenario branching of
  * its own.
  *
@@ -494,35 +523,38 @@ const buildDefaultConfig = ( { markets, countryNames } ) => {
 const useMarketDataViewsConfig = () => {
 	const { data: markets, hasFinishedResolution: hasResolvedMarkets } =
 		useMarkets();
-	const { data: primaryMarket } = usePrimaryMarketDetails();
 	const countryNames = useCountryKeyNameMap();
 	const { settings } = useSettings();
 	const { data: shippingRatesData, hasFinishedResolution: hasResolvedRates } =
 		useShippingRates();
 	const { data: shippingTimesData, hasFinishedResolution: hasResolvedTimes } =
 		useShippingTimes();
-
-	const isMultiLingualStore = glaData.isMultiLingualStore ?? false;
+	const { languages, hasFinishedResolution: hasResolvedLanguages } =
+		useMCSupportedLanguages();
 
 	const hasFinishedResolution =
 		hasResolvedMarkets &&
 		hasResolvedRates &&
 		hasResolvedTimes &&
-		!! settings;
+		!! settings &&
+		( ! glaData.isMultiLingualStore || hasResolvedLanguages );
 
 	if ( ! hasFinishedResolution ) {
 		return { fields: [], data: [], hasFinishedResolution };
 	}
 
+	const languagesByCode = Object.fromEntries(
+		( languages || [] ).map( ( language ) => [
+			language.code,
+			language.label,
+		] )
+	);
+
 	const shippingRate = settings.shipping_rate;
 
 	if ( shippingRate === SHIPPING_RATE_METHOD.MANUAL ) {
 		return {
-			...buildManualConfig( {
-				primaryMarket,
-				markets,
-				isMultiLingualStore,
-			} ),
+			...buildManualConfig( { markets, languagesByCode } ),
 			hasFinishedResolution,
 		};
 	}
@@ -548,9 +580,8 @@ const useMarketDataViewsConfig = () => {
 		return {
 			...buildAutomaticConfig( {
 				markets,
-				primaryMarket,
-				isMultiLingualStore,
 				timesByCountry,
+				languagesByCode,
 			} ),
 			hasFinishedResolution,
 		};
