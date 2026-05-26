@@ -929,6 +929,11 @@ A modal is open
 - [`ReviewRequest`](../../js/src/pages/product-feed/review-request/index.js#L31) with `context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/pages/product-feed/submission-success-guide/index.js#L247) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
+### [`gla_multilingual_flat_notice_settings_link_click`](../../js/src/pages/markets/markets-dashboard/multilingual-flat-shipping-notice/index.js#L14)
+
+#### Emitters
+- [`MultilingualFlatShippingNotice`](../../js/src/pages/markets/markets-dashboard/multilingual-flat-shipping-notice/index.js#L24) When the Settings link in the notice is clicked.
+
 ### [`gla_onboarding_complete_button_click`](../../js/src/pages/onboarding/setup-stepper/skip-button.js#L17)
 Clicking on the skip paid ads button to complete the onboarding flow.
  The 'unknown' value of properties may means:
