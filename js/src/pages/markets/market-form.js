@@ -57,7 +57,7 @@ const MarketForm = ( {
 		useAppDispatch();
 	const marketId = initialMarket?.id;
 	const isEditing = Boolean( marketId );
-	const isPrimaryMarket = isEditing && checkIsPrimaryMarket( marketId );
+	const isPrimaryMarket = isEditing && checkIsPrimaryMarket( initialMarket );
 
 	const isLoading =
 		! hasResolvedShippingRates || ! hasResolvedShippingTimes || ! settings;

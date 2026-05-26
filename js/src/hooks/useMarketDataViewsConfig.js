@@ -234,7 +234,7 @@ const buildManualConfig = ( {
 		];
 
 		const data = markets.map( ( market ) => {
-			if ( ! isPrimaryMarket( market.id ) ) {
+			if ( ! isPrimaryMarket( market ) ) {
 				return market;
 			}
 
@@ -315,7 +315,7 @@ const buildFlatConfig = ( { markets, ratesByCountry, timesByCountry } ) => {
 
 	const data = markets.map( ( market ) => {
 		let country = market.country;
-		if ( isPrimaryMarket( market.id ) && market.countries.length > 0 ) {
+		if ( isPrimaryMarket( market ) && market.countries.length > 0 ) {
 			// For the primary market, use the first country in the list to look up rates and times,
 			// since theoretically there should not be the country property for that market.
 			country = market.countries[ 0 ];
@@ -331,7 +331,7 @@ const buildFlatConfig = ( { markets, ratesByCountry, timesByCountry } ) => {
 			freeShipping: formatFreeShipping( rateRow ),
 		};
 
-		if ( isPrimaryMarket( market.id ) ) {
+		if ( isPrimaryMarket( market ) ) {
 			const countryCount = market.countries?.length ?? 0;
 			row.label = sprintf(
 				// translators: 1: market label, 2: number of countries.
@@ -388,7 +388,7 @@ const buildAutomaticConfig = ( {
 				),
 			};
 
-			if ( isPrimaryMarket( market.id ) ) {
+			if ( isPrimaryMarket( market ) ) {
 				const countryCount = market.countries?.length ?? 0;
 				row.label = sprintf(
 					// translators: 1: market label, 2: number of countries.
@@ -453,7 +453,7 @@ const buildDefaultConfig = ( { markets, countryNames } ) => {
 	const fields = [ ALL_FIELDS.market, ALL_FIELDS.shippingTime ];
 
 	const data = markets.map( ( market ) => {
-		const marketCell = isPrimaryMarket( market.id )
+		const marketCell = isPrimaryMarket( market )
 			? sprintf(
 					// translators: 1: market label, 2: number of countries.
 					_n(

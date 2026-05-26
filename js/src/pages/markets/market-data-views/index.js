@@ -67,7 +67,7 @@ const MarketDataViews = () => {
 				label: __( 'Delete', 'google-listings-and-ads' ),
 				icon: <Icon icon={ trash } width={ 24 } height={ 24 } />,
 				isDestructive: true,
-				isEligible: ( market ) => ! isPrimaryMarket( market.id ),
+				isEligible: ( market ) => ! isPrimaryMarket( market ),
 				callback: ( [ market ] ) => setDeletingMarket( market ),
 			},
 		],
