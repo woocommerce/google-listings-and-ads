@@ -93,8 +93,8 @@ class MarketServiceTest extends UnitTest {
 
 		$this->assertCount( 1, $result );
 		$this->assertArrayHasKey( 'primary', $result );
-		$this->assertSame( 'US', $result['primary']['country'] );
-		$this->assertSame( 'US', $result['primary']['feed_label'] );
+		$this->assertArrayNotHasKey( 'country', $result['primary'] );
+		$this->assertArrayNotHasKey( 'feed_label', $result['primary'] );
 	}
 
 	public function test_get_markets_strips_stored_primary_key(): void {
@@ -152,9 +152,23 @@ class MarketServiceTest extends UnitTest {
 		);
 		$this->assertCount( 1, $primary_ids );
 
-		$this->assertSame( 'US', $result['primary']['country'] );
-		$this->assertSame( 'US', $result['primary']['feed_label'] );
+		$this->assertArrayNotHasKey( 'country', $result['primary'] );
+		$this->assertArrayNotHasKey( 'feed_label', $result['primary'] );
 		$this->assertSame( [ 'US', 'CA' ], $result['primary']['countries'] );
+	}
+
+	public function test_get_primary_market_omits_country_and_feed_label(): void {
+		$this->set_up_options_get( [ OptionsInterface::MERCHANT_CENTER => [] ] );
+		$this->set_up_primary_market_dependencies(
+			'ZW',
+			[ 'MU', 'ZW', 'AO', 'CI', 'CM' ]
+		);
+
+		$result = $this->market_service->get_primary_market();
+
+		$this->assertArrayNotHasKey( 'country', $result );
+		$this->assertArrayNotHasKey( 'feed_label', $result );
+		$this->assertSame( [ 'MU', 'ZW', 'AO', 'CI', 'CM' ], $result['countries'] );
 	}
 
 	public function test_get_primary_market_returns_full_response_ready_shape(): void {
@@ -182,10 +196,10 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( 'primary', $result['id'] );
 		$this->assertSame( 'Primary Market', $result['label'] );
 		$this->assertSame( [ 'US', 'CA' ], $result['countries'] );
-		$this->assertSame( 'US', $result['country'] );
+		$this->assertArrayNotHasKey( 'country', $result );
 		$this->assertSame( [ substr( get_locale(), 0, 2 ) ], $result['language'] );
 		$this->assertSame( [ get_woocommerce_currency() ], $result['currency'] );
-		$this->assertSame( 'US', $result['feed_label'] );
+		$this->assertArrayNotHasKey( 'feed_label', $result );
 		$this->assertSame( 'flat', $result['shipping_rate'] );
 		$this->assertSame( 'flat', $result['shipping_time'] );
 		$this->assertSame( 50.0, $result['free_shipping'] );
@@ -225,7 +239,7 @@ class MarketServiceTest extends UnitTest {
 		$result = $this->market_service->get_market( 'primary' );
 
 		$this->assertSame( 'primary', $result['id'] );
-		$this->assertSame( 'US', $result['country'] );
+		$this->assertArrayNotHasKey( 'country', $result );
 	}
 
 	public function test_get_market_returns_null_for_unknown_id(): void {
@@ -624,19 +638,6 @@ class MarketServiceTest extends UnitTest {
 
 		$this->assertArrayNotHasKey( 'primary', $persisted );
 		$this->assertArrayHasKey( 'gb', $persisted );
-	}
-
-	public function test_build_default_markets_returns_keyed_by_primary(): void {
-		$this->target_audience->method( 'get_main_target_country' )
-			->willReturn( 'AU' );
-
-		$result = $this->market_service->build_default_markets();
-
-		$this->assertArrayHasKey( 'primary', $result );
-		$this->assertSame( 'AU', $result['primary']['country'] );
-		$this->assertSame( 'AU', $result['primary']['feed_label'] );
-		$this->assertArrayHasKey( 'language', $result['primary'] );
-		$this->assertArrayHasKey( 'currency', $result['primary'] );
 	}
 
 	public function test_get_markets_secondary_enriched_with_free_shipping_countries_and_label(): void {

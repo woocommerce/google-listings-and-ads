@@ -129,28 +129,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Generates the default markets configuration from site settings.
-	 *
-	 * Returns a config-shape primary keyed by 'primary'.
-	 *
-	 * @return array[]
-	 */
-	public function build_default_markets(): array {
-		$country  = $this->target_audience->get_main_target_country();
-		$language = substr( get_locale(), 0, 2 );
-		$currency = get_woocommerce_currency();
-
-		return [
-			'primary' => [
-				'country'    => $country,
-				'language'   => [ $language ],
-				'currency'   => [ $currency ],
-				'feed_label' => $country,
-			],
-		];
-	}
-
-	/**
 	 * Builds and returns the full response-ready primary market.
 	 *
 	 * Composes from TargetAudience, MerchantCenter options, site locale/currency,
@@ -159,17 +137,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @return array
 	 */
 	public function get_primary_market(): array {
-		$defaults    = $this->build_default_markets()['primary'];
 		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
 
 		return [
 			'id'            => 'primary',
 			'label'         => __( 'Primary Market', 'google-listings-and-ads' ),
 			'countries'     => $this->target_audience->get_target_countries(),
-			'country'       => $defaults['country'],
-			'language'      => $defaults['language'],
-			'currency'      => $defaults['currency'],
-			'feed_label'    => $defaults['feed_label'],
+			'language'      => [ $this->get_site_primary_language() ],
+			'currency'      => [ $this->get_site_primary_currency() ],
 			'shipping_rate' => $mc_settings['shipping_rate'] ?? null,
 			'shipping_time' => $mc_settings['shipping_time'] ?? null,
 			'free_shipping' => $this->get_primary_free_shipping_threshold(),
@@ -357,6 +332,9 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 	/**
 	 * Returns the free-shipping threshold for the primary market's country.
+	 *
+	 * Uses get_main_target_country() as a single-country fallback for the aggregated
+	 * free_shipping field; multi-country aggregation is out of scope.
 	 *
 	 * @return float|null The threshold amount, or null when unset.
 	 */

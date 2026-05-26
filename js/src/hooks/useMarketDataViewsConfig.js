@@ -318,8 +318,7 @@ const buildFlatConfig = ( { markets, ratesByCountry, timesByCountry } ) => {
 	const data = markets.map( ( market ) => {
 		let country = market.country;
 		if ( isPrimaryMarket( market ) && market.countries.length > 0 ) {
-			// For the primary market, use the first country in the list to look up rates and times,
-			// since theoretically there should not be the country property for that market.
+			// Primary's country is null by API contract — use the first targeted country for rate/time lookups.
 			country = market.countries[ 0 ];
 		}
 
@@ -386,7 +385,11 @@ const buildAutomaticConfig = ( {
 			const row = {
 				...market,
 				shippingTime: formatShippingTime(
-					timesByCountry[ market.country ]
+					timesByCountry[
+						isPrimaryMarket( market )
+							? market.countries?.[ 0 ]
+							: market.country
+					]
 				),
 			};
 
@@ -431,7 +434,7 @@ const buildAutomaticConfig = ( {
 						countryCount
 					),
 					shippingTime: formatShippingTime(
-						timesByCountry[ primaryMarket.country ]
+						timesByCountry[ primaryMarket.countries?.[ 0 ] ]
 					),
 				},
 		  ]

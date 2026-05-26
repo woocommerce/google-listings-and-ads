@@ -32,10 +32,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		'id'            => 'primary',
 		'label'         => 'Primary Market',
 		'countries'     => [ 'US' ],
-		'country'       => 'US',
 		'language'      => [ 'en' ],
 		'currency'      => [ 'USD' ],
-		'feed_label'    => 'US',
 		'shipping_rate' => 'flat',
 		'shipping_time' => 'flat',
 	];
@@ -92,6 +90,9 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertArrayHasKey( 'label', $primary );
 		$this->assertArrayHasKey( 'countries', $primary );
 		$this->assertArrayHasKey( 'country', $primary );
+		$this->assertArrayHasKey( 'feed_label', $primary );
+		$this->assertNull( $primary['country'] );
+		$this->assertNull( $primary['feed_label'] );
 		$this->assertArrayHasKey( 'shipping_rate', $primary );
 		$this->assertArrayHasKey( 'shipping_time', $primary );
 	}
@@ -103,7 +104,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( 'Primary Market', $primary['label'] );
 		$this->assertEquals( [ 'US' ], $primary['countries'] );
-		$this->assertEquals( 'US', $primary['country'] );
+		$this->assertNull( $primary['country'] );
+		$this->assertNull( $primary['feed_label'] );
 		$this->assertEquals( 'flat', $primary['shipping_rate'] );
 		$this->assertEquals( 'flat', $primary['shipping_time'] );
 	}

@@ -41,7 +41,7 @@ const PRIMARY_MARKET = {
 	id: 'primary',
 	label: 'Primary Market',
 	countries: [ 'US', 'CA', 'MX' ],
-	country: 'US',
+	country: null,
 	shipping_rate: 'manual',
 	shipping_time: 'manual',
 };
