@@ -313,6 +313,15 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
+	 * Returns the store's active currencies from the multilingual integration.
+	 *
+	 * @return array<int, array{code: string, symbol: string}>
+	 */
+	public function get_currencies(): array {
+		return $this->wpml->get_currencies();
+	}
+
+	/**
 	 * Returns the stored secondary markets from the Markets option.
 	 *
 	 * @return array[]
