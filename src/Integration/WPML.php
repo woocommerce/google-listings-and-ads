@@ -77,11 +77,12 @@ class WPML implements IntegrationInterface {
 			return [];
 		}
 
-		return $this->format_currencies( $this->get_active_currency_codes() );
+		return $this->get_formatted_currencies( $this->get_active_currency_codes() );
 	}
 
 	/**
-	 * Returns currency codes configured for the store.
+	 * Returns WCML currency codes when multi-currency is enabled, or the single WooCommerce
+	 * store currency as a fallback when WCML multi-currency is off or unavailable.
 	 *
 	 * @return string[]
 	 */
@@ -90,9 +91,13 @@ class WPML implements IntegrationInterface {
 			global $woocommerce_wpml;
 
 			if ( isset( $woocommerce_wpml ) && is_object( $woocommerce_wpml ) && method_exists( $woocommerce_wpml, 'get_multi_currency' ) ) {
-				$codes = $woocommerce_wpml->get_multi_currency()->get_currency_codes();
+				$multi_currency = $woocommerce_wpml->get_multi_currency();
 
-				return is_array( $codes ) ? array_values( $codes ) : [];
+				if ( is_object( $multi_currency ) && method_exists( $multi_currency, 'get_currency_codes' ) ) {
+					$codes = $multi_currency->get_currency_codes();
+
+					return is_array( $codes ) ? array_values( $codes ) : [];
+				}
 			}
 		}
 
@@ -106,7 +111,7 @@ class WPML implements IntegrationInterface {
 	 *
 	 * @return array<int, array{code: string, symbol: string}>
 	 */
-	private function format_currencies( array $codes ): array {
+	private function get_formatted_currencies( array $codes ): array {
 		if ( ! function_exists( 'get_woocommerce_currency_symbol' ) ) {
 			return [];
 		}
