@@ -52,7 +52,9 @@ import useMCSupportedLanguages from '~/hooks/useMCSupportedLanguages';
  * @property {boolean} hasFinishedResolution Whether all data has loaded.
  */
 
-const isPrimaryMarket = ( market ) => market.id === PRIMARY_MARKET_ID;
+const isPrimaryMarket = ( market ) => {
+	return market.id === PRIMARY_MARKET_ID;
+};
 
 /**
  * Centralized configuration for the MarketDataViews component.
@@ -74,11 +76,13 @@ const ALL_FIELDS = {
 		label: __( 'Market', 'google-listings-and-ads' ),
 		enableHiding: false,
 		enableSorting: false,
-		render: ( { item } ) => (
-			<span className="gla-markets-table__market-cell">
-				{ item.label }
-			</span>
-		),
+		render: ( { item } ) => {
+			return (
+				<span className="gla-markets-table__market-cell">
+					{ item.label }
+				</span>
+			);
+		},
 	},
 	country: {
 		id: 'country',
@@ -91,14 +95,18 @@ const ALL_FIELDS = {
 		label: __( 'Language', 'google-listings-and-ads' ),
 		enableHiding: false,
 		enableSorting: false,
-		render: ( { item } ) => item.languageDisplay,
+		render: ( { item } ) => {
+			return item.languageDisplay;
+		},
 	},
 	currency: {
 		id: 'currency',
 		label: __( 'Currency', 'google-listings-and-ads' ),
 		enableHiding: false,
 		enableSorting: false,
-		render: ( { item } ) => item.currencyDisplay,
+		render: ( { item } ) => {
+			return item.currencyDisplay;
+		},
 	},
 	shipping: {
 		id: 'shipping',
@@ -126,26 +134,30 @@ const ALL_FIELDS = {
 	},
 };
 
-/**
- * Formats an array of language codes into a comma-separated display string.
- *
- * @param {string[]|undefined} codes Language codes from the market.
- * @param {Object.<string,string>} languagesByCode Map of code → label.
- * @return {string} Comma-separated language names, or '-'.
- */
 const languageDisplayNames = new Intl.DisplayNames( [ navigator.language ], {
 	type: 'language',
 } );
 
-const formatLanguageCodes = ( codes, languagesByCode ) =>
-	codes
-		?.map(
-			( code ) =>
-				languagesByCode[ code ] ??
-				languageDisplayNames.of( code ) ??
-				code
-		)
-		.join( ', ' ) || '-';
+/**
+ * Formats an array of language codes into a comma-separated display string.
+ * Resolution order: API label → Intl.DisplayNames → raw code.
+ *
+ * @param {string[]|undefined} codes Language codes from the market.
+ * @param {Object.<string,string>} languagesByCode Map of code → label from the MC languages API.
+ * @return {string} Comma-separated language names, or '-'.
+ */
+const formatLanguageCodes = ( codes, languagesByCode ) => {
+	return (
+		codes
+			?.map(
+				( code ) =>
+					languagesByCode[ code ] ??
+					languageDisplayNames.of( code ) ??
+					code
+			)
+			.join( ', ' ) || '-'
+	);
+};
 
 /**
  * Formats an array of currency codes into a comma-separated display string.
@@ -153,7 +165,9 @@ const formatLanguageCodes = ( codes, languagesByCode ) =>
  * @param {string[]|undefined} codes Currency codes from the market.
  * @return {string} Comma-separated currency codes, or '-'.
  */
-const formatCurrencyCodes = ( codes ) => codes?.join( ', ' ) || '-';
+const formatCurrencyCodes = ( codes ) => {
+	return codes?.join( ', ' ) || '-';
+};
 
 /**
  * Formats a shipping rate row into a currency string, or returns '-' if no rate.
