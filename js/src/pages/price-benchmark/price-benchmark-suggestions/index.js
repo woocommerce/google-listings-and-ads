@@ -272,19 +272,36 @@ const PriceBenchmarkSuggestions = ( { isViewportMobile } ) => {
 		return <EmptyMetricsNotice />;
 	}
 
+	// Distribute visible metric columns equally. The title field (Product) is
+	// handled separately by DataViews and takes the remaining space.
+	// +1 reserves a share for that title column.
+	const columnWidth = `${ Math.floor( 100 / ( view.fields.length + 1 ) ) }%`;
+	const viewWithStyles = {
+		...view,
+		layout: {
+			...view.layout,
+			styles: Object.fromEntries(
+				view.fields.map( ( fieldId ) => [
+					fieldId,
+					{ width: columnWidth },
+				] )
+			),
+		},
+	};
+
 	return (
 		<div className="gla-price-benchmark-suggestions">
 			<DataViews
 				getItemId={ ( item ) => item?.product?.id }
 				fields={ [ ...PRODUCT_TABLE_FIELDS, ...METRICS_TABLE_FIELDS ] }
 				data={ suggestions }
-				view={ view }
+				view={ viewWithStyles }
 				paginationInfo={ {
 					totalItems: meta?.totalItems,
 					totalPages: Math.ceil( meta?.totalItems / view?.perPage ),
 				} }
 				onChangeView={ handleOnChangeView }
-				defaultLayouts={ [] }
+				defaultLayouts={ { table: {} } }
 				header={ <FaqLink /> }
 				isLoading={ ! hasFinishedResolution }
 			/>
