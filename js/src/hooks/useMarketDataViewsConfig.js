@@ -158,9 +158,7 @@ const formatLanguageCodes = ( codes, languagesByCode ) => {
 		codes
 			?.map(
 				( code ) =>
-					languagesByCode[ code ] ??
-					displayNames?.of( code ) ??
-					code
+					languagesByCode[ code ] ?? displayNames?.of( code ) ?? code
 			)
 			.join( ', ' ) || '-'
 	);
