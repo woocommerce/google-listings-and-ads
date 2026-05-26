@@ -9,6 +9,7 @@ import { useState, useMemo, useEffect, useCallback } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import applyEqualColumnWidths from '~/utils/applyEqualColumnWidths';
 import { recordGlaEvent } from '~/utils/tracks';
 import EmptyMetricsNotice from '../empty-metrics-notice';
 import usePriceBenchmarkSuggestions from '~/hooks/usePriceBenchmarkSuggestions';
@@ -272,22 +273,7 @@ const PriceBenchmarkSuggestions = ( { isViewportMobile } ) => {
 		return <EmptyMetricsNotice />;
 	}
 
-	// Distribute visible metric columns equally. The title field (Product) is
-	// handled separately by DataViews and takes the remaining space.
-	// +1 reserves a share for that title column.
-	const columnWidth = `${ Math.floor( 100 / ( view.fields.length + 1 ) ) }%`;
-	const viewWithStyles = {
-		...view,
-		layout: {
-			...view.layout,
-			styles: Object.fromEntries(
-				view.fields.map( ( fieldId ) => [
-					fieldId,
-					{ width: columnWidth },
-				] )
-			),
-		},
-	};
+	const viewWithStyles = applyEqualColumnWidths( view, view.fields );
 
 	return (
 		<div className="gla-price-benchmark-suggestions">

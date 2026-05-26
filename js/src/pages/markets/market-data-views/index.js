@@ -9,6 +9,7 @@ import { Icon, edit, trash } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
+import applyEqualColumnWidths from '~/utils/applyEqualColumnWidths';
 import { PRIMARY_MARKET_ID } from '../constants';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useMarketDataViewsConfig from '~/hooks/useMarketDataViewsConfig';
@@ -44,22 +45,11 @@ const MarketDataViews = () => {
 	// Derive it inline so a scenario change (e.g. the markets resolver landing
 	// after first render) updates the visible columns. The user's view-state
 	// changes (sorting, pagination) still flow through `setView`.
-	// Distribute all data columns equally. DataViews v14 defaults to width:1%
-	// (shrink-to-fit) for every column except the last, which gets col-expand
-	// and consumes all remaining space. Passing explicit widths via
-	// view.layout.styles overrides that behaviour.
-	// +1 reserves a rough share for the fixed-width Actions column.
-	const columnWidth = `${ Math.floor( 100 / ( fields.length + 1 ) ) }%`;
-	const viewWithFields = {
-		...view,
-		fields: fields.map( ( field ) => field.id ),
-		layout: {
-			...( view.layout ?? {} ),
-			styles: Object.fromEntries(
-				fields.map( ( field ) => [ field.id, { width: columnWidth } ] )
-			),
-		},
-	};
+	const fieldIds = fields.map( ( field ) => field.id );
+	const viewWithFields = applyEqualColumnWidths(
+		{ ...view, fields: fieldIds },
+		fieldIds
+	);
 
 	const ACTIONS = useMemo(
 		() => [
