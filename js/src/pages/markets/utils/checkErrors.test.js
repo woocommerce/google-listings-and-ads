@@ -77,6 +77,7 @@ describe( 'checkErrors', () => {
 		const base = {
 			country: 'US',
 			shipping_rate: SHIPPING_RATE_METHOD.FLAT,
+			flat_shipping_rate: 10,
 		};
 
 		it( 'returns an error when offer_free_shipping is true but threshold is missing', () => {
@@ -124,6 +125,7 @@ describe( 'checkErrors', () => {
 		const base = {
 			country: 'US',
 			shipping_rate: SHIPPING_RATE_METHOD.FLAT,
+			flat_shipping_rate: 10,
 			offer_free_shipping: false,
 			shipping_time: 'flat',
 		};
@@ -208,11 +210,64 @@ describe( 'checkErrors', () => {
 		} );
 	} );
 
+	describe( 'flat_shipping_rate validation', () => {
+		const base = {
+			country: 'US',
+			shipping_rate: SHIPPING_RATE_METHOD.FLAT,
+			offer_free_shipping: false,
+			flat_shipping_min_time: 1,
+			flat_shipping_max_time: 5,
+		};
+
+		it( 'returns an error when flat_shipping_rate is null', () => {
+			const errors = checkErrors( {
+				...base,
+				flat_shipping_rate: null,
+			} );
+
+			expect( errors.flat_shipping_rate ).toBeDefined();
+		} );
+
+		it( 'returns an error when flat_shipping_rate is undefined', () => {
+			const errors = checkErrors( { ...base } );
+
+			expect( errors.flat_shipping_rate ).toBeDefined();
+		} );
+
+		it( 'returns an error when flat_shipping_rate is negative', () => {
+			const errors = checkErrors( {
+				...base,
+				flat_shipping_rate: -1,
+			} );
+
+			expect( errors.flat_shipping_rate ).toBeDefined();
+		} );
+
+		it( 'returns no error when flat_shipping_rate is 0', () => {
+			const errors = checkErrors( {
+				...base,
+				flat_shipping_rate: 0,
+			} );
+
+			expect( errors.flat_shipping_rate ).toBeUndefined();
+		} );
+
+		it( 'returns no error when flat_shipping_rate is a positive number', () => {
+			const errors = checkErrors( {
+				...base,
+				flat_shipping_rate: 5,
+			} );
+
+			expect( errors.flat_shipping_rate ).toBeUndefined();
+		} );
+	} );
+
 	describe( 'valid non-primary market', () => {
 		it( 'returns an empty errors object for a fully valid submission', () => {
 			const errors = checkErrors( {
 				country: 'US',
 				shipping_rate: SHIPPING_RATE_METHOD.FLAT,
+				flat_shipping_rate: 5,
 				offer_free_shipping: true,
 				free_shipping_threshold: 50,
 				shipping_time: 'flat',
