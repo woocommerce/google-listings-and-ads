@@ -20,14 +20,6 @@ jest.mock( '../market-data-views', () =>
 	jest.fn().mockReturnValue( <div data-testid="market-data-views" /> )
 );
 
-jest.mock( './multilingual-flat-shipping-notice', () =>
-	jest
-		.fn()
-		.mockReturnValue(
-			<div data-testid="multilingual-flat-shipping-notice" />
-		)
-);
-
 jest.mock( '../markets-header', () =>
 	jest.fn().mockReturnValue( <div data-testid="markets-header" /> )
 );
@@ -100,7 +92,7 @@ describe( 'MarketsDashboard', () => {
 
 	describe( 'Multilingual flat shipping notice', () => {
 		const getNotice = () =>
-			screen.queryByTestId( 'multilingual-flat-shipping-notice' );
+			document.querySelector( '.gla-multilingual-flat-shipping-notice' );
 
 		test( 'renders the notice when isMultiLingualStore is true and shipping_rate is flat', () => {
 			global.glaData.isMultiLingualStore = true;

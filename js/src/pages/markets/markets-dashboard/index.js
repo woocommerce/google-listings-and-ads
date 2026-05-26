@@ -11,7 +11,6 @@ import AppNotice from '~/components/app-notice';
 import AppSpinner from '~/components/app-spinner';
 import useDataViewsScript from '~/hooks/useDataViewsScript';
 import useSettings from '~/hooks/useSettings';
-import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 import MarketsHeader from '../markets-header';
 import MarketDataViews from '../market-data-views';
 import MultilingualFlatShippingNotice from './multilingual-flat-shipping-notice';
@@ -25,10 +24,7 @@ const MarketsDashboard = () => {
 
 	return (
 		<div className="gla-markets-dashboard">
-			{ glaData.isMultiLingualStore &&
-				shippingRate === SHIPPING_RATE_METHOD.FLAT && (
-					<MultilingualFlatShippingNotice />
-				) }
+			<MultilingualFlatShippingNotice />
 
 			<MarketsHeader shippingRate={ shippingRate } />
 

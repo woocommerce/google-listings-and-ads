@@ -10,6 +10,9 @@ import { createInterpolateElement } from '@wordpress/element';
  */
 import TrackableLink from '~/components/trackable-link';
 import { getSettingsUrl } from '~/utils/urls';
+import './index.scss';
+import useSettings from '~/hooks/useSettings';
+import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 
 /**
  * @event gla_multilingual_flat_notice_settings_link_click
@@ -22,8 +25,22 @@ import { getSettingsUrl } from '~/utils/urls';
  * @fires gla_multilingual_flat_notice_settings_link_click When the Settings link in the notice is clicked.
  */
 const MultilingualFlatShippingNotice = () => {
+	const { settings } = useSettings();
+	const shippingRate = settings?.shipping_rate;
+
+	if (
+		! glaData.isMultiLingualStore ||
+		shippingRate !== SHIPPING_RATE_METHOD.FLAT
+	) {
+		return null;
+	}
+
 	return (
-		<Notice status="warning" isDismissible={ false }>
+		<Notice
+			status="warning"
+			isDismissible={ false }
+			className="gla-multilingual-flat-shipping-notice"
+		>
 			{ createInterpolateElement(
 				__(
 					'Your current shipping setup is not compatible with multilingual feeds. You have "My shipping settings are simple. I can manually estimate flat shipping rates" selected. To use multilingual feeds, switch to a different shipping setup in <link>Settings</link>.',
