@@ -19,7 +19,7 @@ const storeCurrencyConfig = {
 	priceFormat: '%1$s%2$s',
 };
 
-jest.mock( './useStoreCurrency', () =>
+jest.mock( '~/hooks/useStoreCurrency', () =>
 	jest
 		.fn()
 		.mockName( 'useStoreCurrency' )

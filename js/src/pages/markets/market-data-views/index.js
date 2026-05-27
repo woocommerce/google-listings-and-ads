@@ -9,14 +9,12 @@ import { Icon, edit, trash } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import { PRIMARY_MARKET_ID } from '../constants';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useMarketDataViewsConfig from '../hooks/useMarketDataViewsConfig';
 import EditMarketModal from '../edit-market-modal';
 import DeleteMarketModal from '../delete-market-modal';
+import isPrimaryMarket from '../utils/isPrimaryMarket';
 import './index.scss';
-
-const isPrimaryMarket = ( market ) => market.id === PRIMARY_MARKET_ID;
 
 const DEFAULT_VIEW = {
 	type: 'table',

@@ -7,7 +7,6 @@ import { __, _n, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
-import { PRIMARY_MARKET_ID } from '~/pages/markets/constants';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import useSettings from '~/hooks/useSettings';
 import useShippingRates from '~/hooks/useShippingRates';
@@ -18,6 +17,7 @@ import LanguageCell from '../market-data-views/language-cell';
 import CurrencyCell from '../market-data-views/currency-cell';
 import FreeShippingCell from '../market-data-views/free-shipping-cell';
 import ShippingTimes from '../market-data-views/shipping-times';
+import isPrimaryMarket from '../utils/isPrimaryMarket';
 
 /**
  * @typedef {Object} TimeRow
@@ -55,10 +55,6 @@ import ShippingTimes from '../market-data-views/shipping-times';
  * @property {Array} data Pre-formatted row objects.
  * @property {boolean} hasFinishedResolution Whether all data has loaded.
  */
-
-const isPrimaryMarket = ( market ) => {
-	return market.id === PRIMARY_MARKET_ID;
-};
 
 /**
  * Centralized configuration for the MarketDataViews component.
