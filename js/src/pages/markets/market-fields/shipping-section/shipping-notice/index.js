@@ -12,7 +12,7 @@ import { GOOGLE_MERCHANT_CENTER_URL } from '~/pages/markets/constants';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import TrackableLink from '~/components/trackable-link';
 import ShippingInfoNotice from '../shipping-info-notice';
-import isPrimaryMarket from '~/pages/markets/utils/isPrimaryMarket';
+import isPrimaryMarket from '../../../utils/isPrimaryMarket';
 
 /**
  * @event gla_shipping_notice_merchant_center_link_click
