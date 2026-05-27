@@ -118,7 +118,9 @@ const DataViewsStub = ( props ) => {
 											action.callback( [ item ] )
 										}
 									>
-										{ action.label }
+										{ typeof action.label === 'function'
+											? action.label()
+											: action.label }
 									</button>
 								</td>
 							) ) }
@@ -217,12 +219,12 @@ describe( 'MarketDataViews', () => {
 		);
 		expect( editAction ).toMatchObject( {
 			id: 'edit',
-			label: 'Edit',
 			isPrimary: true,
 		} );
-		// `icon` is required for DataViews to render a primary action outside
-		// the kebab menu, so guard against it being dropped.
-		expect( editAction.icon ).toBeTruthy();
+		// In DataViews v14 the icon is embedded inside the label function
+		// (action.icon is ignored for per-row table buttons). Guard against
+		// the label being accidentally reverted to a plain string.
+		expect( typeof editAction.label ).toBe( 'function' );
 	} );
 
 	test( 'renders an Edit action button on each row', () => {
@@ -240,9 +242,9 @@ describe( 'MarketDataViews', () => {
 		);
 		expect( deleteAction ).toMatchObject( {
 			id: 'delete',
-			label: 'Delete',
 			isDestructive: true,
 		} );
+		expect( typeof deleteAction.label ).toBe( 'function' );
 		expect( deleteAction.isPrimary ).toBeFalsy();
 		expect( deleteAction.disabled ).toBeFalsy();
 		expect( deleteAction.isEligible( { id: 'primary' } ) ).toBe( false );

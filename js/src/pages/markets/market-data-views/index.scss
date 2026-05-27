@@ -1,3 +1,15 @@
 .gla-markets-table__market-cell {
 	color: $gray-900;
 }
+
+.gla-market-data-views {
+	.dataviews-view-table tbody tr:first-child .dataviews-item-actions .components-button:not(.dataviews-all-actions-button) {
+		opacity: 1;
+	}
+}
+
+.gla-market-data-views__button-label {
+	align-items: center;
+	display: flex;
+	gap: 2px;
+}

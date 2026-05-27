@@ -32,7 +32,7 @@
 		"@wordpress/compose": "^6.19.13",
 		"@wordpress/data": "^9.12.13",
 		"@wordpress/data-controls": "^3.11.13",
-		"@wordpress/dataviews": "^4.17.0",
+		"@wordpress/dataviews": "^14.3.0",
 		"@wordpress/date": "^4.42.13",
 		"@wordpress/dom": "^3.42.13",
 		"@wordpress/element": "^5.19.13",
@@ -154,7 +154,7 @@
 			},
 			{
 				"path": "./js/build/commons.js",
-				"maxSize": "87.25 kB"
+				"maxSize": "87.33 kB"
 			},
 			{
 				"path": "./js/build/vendors.js",
@@ -162,7 +162,7 @@
 			},
 			{
 				"path": "./js/build/wp-dataviews-shim.js",
-				"maxSize": "277.00 kB"
+				"maxSize": "327.99 kB"
 			},
 			{
 				"path": "./js/build/*.css",
@@ -170,7 +170,7 @@
 			},
 			{
 				"path": "./google-listings-and-ads.zip",
-				"maxSize": "8.44 mB",
+				"maxSize": "8.50 mB",
 				"compression": "none"
 			}
 		],

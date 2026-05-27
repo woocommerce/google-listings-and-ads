@@ -9,6 +9,7 @@ import { useState, useMemo, useEffect, useCallback } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import applyEqualColumnWidths from '~/utils/applyEqualColumnWidths';
 import { recordGlaEvent } from '~/utils/tracks';
 import EmptyMetricsNotice from '../empty-metrics-notice';
 import usePriceBenchmarkSuggestions from '~/hooks/usePriceBenchmarkSuggestions';
@@ -272,19 +273,21 @@ const PriceBenchmarkSuggestions = ( { isViewportMobile } ) => {
 		return <EmptyMetricsNotice />;
 	}
 
+	const viewWithStyles = applyEqualColumnWidths( view, view.fields );
+
 	return (
 		<div className="gla-price-benchmark-suggestions">
 			<DataViews
 				getItemId={ ( item ) => item?.product?.id }
 				fields={ [ ...PRODUCT_TABLE_FIELDS, ...METRICS_TABLE_FIELDS ] }
 				data={ suggestions }
-				view={ view }
+				view={ viewWithStyles }
 				paginationInfo={ {
 					totalItems: meta?.totalItems,
 					totalPages: Math.ceil( meta?.totalItems / view?.perPage ),
 				} }
 				onChangeView={ handleOnChangeView }
-				defaultLayouts={ [] }
+				defaultLayouts={ { table: {} } }
 				header={ <FaqLink /> }
 				isLoading={ ! hasFinishedResolution }
 			/>

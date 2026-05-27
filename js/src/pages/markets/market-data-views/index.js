@@ -9,6 +9,7 @@ import { Icon, edit, trash } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
+import applyEqualColumnWidths from '~/utils/applyEqualColumnWidths';
 import { PRIMARY_MARKET_ID } from '../constants';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useMarketDataViewsConfig from '~/hooks/useMarketDataViewsConfig';
@@ -44,20 +45,25 @@ const MarketDataViews = () => {
 	// Derive it inline so a scenario change (e.g. the markets resolver landing
 	// after first render) updates the visible columns. The user's view-state
 	// changes (sorting, pagination) still flow through `setView`.
-	const viewWithFields = {
-		...view,
-		fields: fields.map( ( field ) => field.id ),
-	};
+	const fieldIds = fields.map( ( field ) => field.id );
+	const viewWithFields = applyEqualColumnWidths(
+		{ ...view, fields: fieldIds },
+		fieldIds
+	);
 
 	const ACTIONS = useMemo(
 		() => [
 			{
 				id: 'edit',
-				label: __( 'Edit', 'google-listings-and-ads' ),
-				icon: loaded ? (
-					<Icon icon={ edit } width={ 24 } height={ 24 } />
-				) : (
-					<Spinner />
+				label: () => (
+					<span className="gla-market-data-views__button-label">
+						{ loaded ? (
+							<Icon icon={ edit } width={ 16 } height={ 16 } />
+						) : (
+							<Spinner />
+						) }
+						{ __( 'Edit', 'google-listings-and-ads' ) }
+					</span>
 				),
 				isPrimary: true,
 				callback: loaded
@@ -66,8 +72,12 @@ const MarketDataViews = () => {
 			},
 			{
 				id: 'delete',
-				label: __( 'Delete', 'google-listings-and-ads' ),
-				icon: <Icon icon={ trash } width={ 24 } height={ 24 } />,
+				label: () => (
+					<span className="gla-market-data-views__button-label">
+						<Icon icon={ trash } width={ 16 } height={ 16 } />
+						{ __( 'Delete', 'google-listings-and-ads' ) }
+					</span>
+				),
 				isDestructive: true,
 				isEligible: ( market ) => ! isPrimaryMarket( market ),
 				callback: ( [ market ] ) => setDeletingMarket( market ),
@@ -78,20 +88,22 @@ const MarketDataViews = () => {
 
 	return (
 		<>
-			<DataViews
-				getItemId={ ( item ) => item.id }
-				fields={ fields }
-				actions={ ACTIONS }
-				data={ data }
-				view={ viewWithFields }
-				onChangeView={ setView }
-				paginationInfo={ {
-					totalItems: data.length,
-					totalPages: 1,
-				} }
-				defaultLayouts={ { table: {} } }
-				isLoading={ ! hasFinishedResolution }
-			/>
+			<div className="gla-market-data-views">
+				<DataViews
+					getItemId={ ( item ) => item.id }
+					fields={ fields }
+					actions={ ACTIONS }
+					data={ data }
+					view={ viewWithFields }
+					onChangeView={ setView }
+					paginationInfo={ {
+						totalItems: data.length,
+						totalPages: 1,
+					} }
+					defaultLayouts={ { table: {} } }
+					isLoading={ ! hasFinishedResolution }
+				/>
+			</div>
 
 			{ editingMarket && (
 				<EditMarketModal
