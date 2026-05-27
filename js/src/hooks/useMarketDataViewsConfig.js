@@ -7,12 +7,12 @@ import { __, _n, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
-import { PRIMARY_MARKET_ID } from '~/pages/markets/constants';
 import useMarkets from '~/hooks/useMarkets';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import useSettings from '~/hooks/useSettings';
 import useShippingRates from '~/hooks/useShippingRates';
 import useShippingTimes from '~/hooks/useShippingTimes';
+import isPrimaryMarket from '~/pages/markets/utils/isPrimaryMarket';
 import useMCSupportedLanguages from '~/hooks/useMCSupportedLanguages';
 
 /**
@@ -51,10 +51,6 @@ import useMCSupportedLanguages from '~/hooks/useMCSupportedLanguages';
  * @property {Array} data Pre-formatted row objects.
  * @property {boolean} hasFinishedResolution Whether all data has loaded.
  */
-
-const isPrimaryMarket = ( market ) => {
-	return market.id === PRIMARY_MARKET_ID;
-};
 
 /**
  * Centralized configuration for the MarketDataViews component.
