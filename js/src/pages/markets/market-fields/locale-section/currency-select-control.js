@@ -62,6 +62,7 @@ const CurrencySelectControl = () => {
 				} }
 				inlineTags
 				multiple
+				isSearchable
 			/>
 			{ renderRequestedValidation( 'currency' ) }
 		</div>

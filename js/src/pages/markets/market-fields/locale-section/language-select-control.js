@@ -66,6 +66,7 @@ const LanguageSelectControl = () => {
 				) }
 				inlineTags
 				multiple
+				isSearchable
 			/>
 			{ renderRequestedValidation( 'language' ) }
 		</div>
