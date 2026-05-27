@@ -39,7 +39,7 @@ import ShippingTimes from '../market-data-views/shipping-times';
  * @property {string} country ISO country code for the market's primary country.
  * @property {string[]} countries All ISO country codes belonging to the market.
  * @property {string} label Display name.
- * @property {string} [language] BCP-47 language tag (multilingual stores only).
+ * @property {string[]} [language] BCP-47 language tags (multilingual stores only).
  * @property {string} [currency] ISO currency code (multilingual stores only).
  */
 
@@ -71,7 +71,7 @@ const isPrimaryMarket = ( market ) => {
  * - Manual multilingual: Market (label + country count for primary, country name for secondaries), Language, Currency. All markets shown.
  * - Flat (multilingual or not): Market (label + country count for primary), Shipping Rate, Shipping Time, Free shipping. All markets shown. Both store types render identically per Figma; the multilingual variant of this scenario is GOOWOO-602.
  * - Automatic multilingual: Market (label + country count for primary), Language, Currency, Shipping time. All markets shown.
- * - Automatic non-multilingual: Market (label + country count), Shipping time. Only primary market shown.
+ * - Automatic non-multilingual: Market (label + country count), Shipping time. All markets shown.
  * - Default/fall-through: Market + Shipping time for all markets, with primary market showing country count in label.
  */
 const ALL_FIELDS = {
@@ -310,9 +310,17 @@ const buildAutomaticConfig = ( { markets, timesByCountry } ) => {
 		: [ ALL_FIELDS.market, ALL_FIELDS.shippingTime ];
 
 	const data = markets.map( ( market ) => {
+		let country = market.country;
+		if ( isPrimaryMarket( market ) && market.countries?.length > 0 ) {
+			// For the primary market, use the first country in the list to look up
+			// times, since theoretically there should not be a country property for
+			// that market.
+			country = market.countries[ 0 ];
+		}
+
 		const row = {
 			...market,
-			shipping_time_config: timesByCountry[ market.country ],
+			shipping_time_config: timesByCountry[ country ],
 		};
 
 		if ( isPrimaryMarket( market ) ) {
@@ -345,9 +353,10 @@ const buildAutomaticConfig = ( { markets, timesByCountry } ) => {
  * @param {Object} options
  * @param {Market[]} options.markets All markets from useMarkets.
  * @param {Object.<string,string>} options.countryNames Mapping of country code to country name from useCountryKeyNameMap.
+ * @param {Object.<string,TimeRow>} options.timesByCountry Country-keyed map of shipping time rows.
  * @return {DataViewsConfig} DataViews fields and pre-formatted rows.
  */
-const buildDefaultConfig = ( { markets, countryNames } ) => {
+const buildDefaultConfig = ( { markets, countryNames, timesByCountry } ) => {
 	const fields = [ ALL_FIELDS.market, ALL_FIELDS.shippingTime ];
 
 	const data = markets.map( ( market ) => {
@@ -368,6 +377,7 @@ const buildDefaultConfig = ( { markets, countryNames } ) => {
 		return {
 			...market,
 			label: marketCell,
+			shipping_time_config: timesByCountry[ market.country ],
 		};
 	} );
 
@@ -413,26 +423,12 @@ const useMarketDataViewsConfig = () => {
 		};
 	}
 
-	const ratesByCountry = Object.fromEntries(
-		( shippingRatesData || [] ).map( ( rate ) => [ rate.country, rate ] )
-	);
 	const timesByCountry = Object.fromEntries(
 		( shippingTimesData || [] ).map( ( time ) => [
 			time.countryCode,
 			time,
 		] )
 	);
-
-	if ( shippingRateMethod === SHIPPING_RATE_METHOD.FLAT ) {
-		return {
-			...buildFlatConfig( {
-				markets,
-				ratesByCountry,
-				timesByCountry,
-			} ),
-			hasFinishedResolution,
-		};
-	}
 
 	if ( shippingRateMethod === SHIPPING_RATE_METHOD.AUTOMATIC ) {
 		return {
@@ -444,8 +440,22 @@ const useMarketDataViewsConfig = () => {
 		};
 	}
 
+	const ratesByCountry = Object.fromEntries(
+		( shippingRatesData || [] ).map( ( rate ) => [ rate.country, rate ] )
+	);
+	if ( shippingRateMethod === SHIPPING_RATE_METHOD.FLAT ) {
+		return {
+			...buildFlatConfig( {
+				markets,
+				ratesByCountry,
+				timesByCountry,
+			} ),
+			hasFinishedResolution,
+		};
+	}
+
 	return {
-		...buildDefaultConfig( { markets, countryNames } ),
+		...buildDefaultConfig( { markets, countryNames, timesByCountry } ),
 		hasFinishedResolution,
 	};
 };

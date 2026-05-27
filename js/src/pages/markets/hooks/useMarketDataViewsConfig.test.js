@@ -12,18 +12,11 @@ import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import useSettings from '~/hooks/useSettings';
 import useShippingRates from '~/hooks/useShippingRates';
 import useShippingTimes from '~/hooks/useShippingTimes';
-import useAdsCurrency from '~/hooks/useAdsCurrency';
-import useMarketCurrency from './useMarketCurrency';
-import useMCSupportedLanguages from '~/hooks/useMCSupportedLanguages';
-
-jest.mock( '~/hooks/useMarkets' );
+jest.mock( './useMarkets' );
 jest.mock( '~/hooks/useCountryKeyNameMap' );
 jest.mock( '~/hooks/useSettings' );
 jest.mock( '~/hooks/useShippingRates' );
 jest.mock( '~/hooks/useShippingTimes' );
-jest.mock( '~/hooks/useAdsCurrency' );
-jest.mock( '~/hooks/useMarketCurrency' );
-jest.mock( '~/hooks/useMCSupportedLanguages' );
 
 const SHIPPING_RATES = [
 	{ id: 1, country: 'US', currency: 'USD', rate: 10, options: {} },
@@ -110,33 +103,6 @@ const SECONDARY_MARKET_MULTILINGUAL_MANUAL = {
 	currency: [ 'EUR' ],
 };
 
-/**
- * Simple stand-in for useAdsCurrency.formatAmount used in non-multilingual
- * scenarios. Prefixes the raw amount with "ADS:" so tests can assert which
- * formatter path was taken without caring about real currency symbols.
- *
- * @param {number} amount
- * @return {string} "ADS:<amount>"
- */
-const adsFormatAmount = ( amount ) => `ADS:${ amount }`;
-
-/**
- * Simple stand-in for useMarketCurrency.formatAmount used in multilingual
- * scenarios. Encodes both the currency code and amount so tests can verify
- * that the correct currency is forwarded per market row.
- *
- * @param {number} amount
- * @param {string} currencyCode
- * @return {string} "MKT:<currencyCode>:<amount>"
- */
-const marketFormatAmount = ( amount, currencyCode ) =>
-	`MKT:${ currencyCode }:${ amount }`;
-
-const MULTILINGUAL_LANGUAGES = [
-	{ code: 'en', label: 'English' },
-	{ code: 'fr', label: 'French' },
-];
-
 const setMocks = ( {
 	primary = PRIMARY_MARKET,
 	markets = [ PRIMARY_MARKET ],
@@ -147,7 +113,6 @@ const setMocks = ( {
 		FR: 'France',
 	},
 	multiLingualStore = false,
-	languages = [],
 	shippingRate = primary.shipping_rate,
 	shippingRates = [],
 	shippingTimes = [],
@@ -168,17 +133,6 @@ const setMocks = ( {
 		data: shippingTimes,
 		hasFinishedResolution: true,
 	} );
-	useAdsCurrency.mockReturnValue( {
-		adsCurrencyConfig: {},
-		formatAmount: adsFormatAmount,
-	} );
-	useMarketCurrency.mockReturnValue( {
-		formatAmount: marketFormatAmount,
-	} );
-	useMCSupportedLanguages.mockReturnValue( {
-		languages,
-		hasFinishedResolution: true,
-	} );
 	// `glaData` is captured as a reference to `window.glaData` at module load
 	// (see `js/src/constants.js`), so mutate in place rather than replacing the
 	// object — replacing would leave the original reference stale.
@@ -192,9 +146,6 @@ describe( 'useMarketDataViewsConfig', () => {
 		useSettings.mockReset();
 		useShippingRates.mockReset();
 		useShippingTimes.mockReset();
-		useAdsCurrency.mockReset();
-		useMarketCurrency.mockReset();
-		useMCSupportedLanguages.mockReset();
 		delete window.glaData.isMultiLingualStore;
 	} );
 
@@ -345,7 +296,7 @@ describe( 'useMarketDataViewsConfig', () => {
 			expect( result.current.data[ 1 ].id ).toBe( 'fr' );
 		} );
 
-		test( 'retains shippingRate and shippingTime from each market', () => {
+		test( 'attaches shipping_rate_config and shipping_time_config from lookup tables', () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_FLAT,
 				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
@@ -356,31 +307,25 @@ describe( 'useMarketDataViewsConfig', () => {
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 			const [ primary, secondary ] = result.current.data;
 
-			expect( primary.shippingRate ).toMatch( /10/ );
-			expect( primary.shippingTime ).toBe( '3 - 5 days' );
-			expect( secondary.shippingRate ).toMatch( /8/ );
-			expect( secondary.shippingTime ).toBe( '5 - 7 days' );
-		} );
-
-		test( 'formats amounts using useAdsCurrency (non-multilingual)', () => {
-			setMocks( {
-				primary: PRIMARY_MARKET_FLAT,
-				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
-				shippingRates: SHIPPING_RATES,
-				shippingTimes: SHIPPING_TIMES,
+			expect( primary.shipping_rate_config ).toMatchObject( {
+				rate: 10,
+				currency: 'USD',
 			} );
-
-			const { result } = renderHook( () => useMarketDataViewsConfig() );
-			const [ primary, secondary ] = result.current.data;
-
-			// adsFormatAmount prefixes with "ADS:" — confirms the Ads-account
-			// currency formatter is used, not the per-market one.
-			expect( primary.shippingRate ).toBe( 'ADS:10' );
-			expect( secondary.shippingRate ).toBe( 'ADS:8' );
-			expect( secondary.freeShipping ).toBe( 'Free over ADS:50' );
+			expect( primary.shipping_time_config ).toMatchObject( {
+				time: 3,
+				maxTime: 5,
+			} );
+			expect( secondary.shipping_rate_config ).toMatchObject( {
+				rate: 8,
+				currency: 'EUR',
+			} );
+			expect( secondary.shipping_time_config ).toMatchObject( {
+				time: 5,
+				maxTime: 7,
+			} );
 		} );
 
-		test( 'sets freeShipping to a dash when free_shipping is null', () => {
+		test( 'sets shipping_rate_config to undefined when no rate is configured', () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_FLAT,
 				markets: [ PRIMARY_MARKET_FLAT ],
@@ -388,10 +333,10 @@ describe( 'useMarketDataViewsConfig', () => {
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 
-			expect( result.current.data[ 0 ].freeShipping ).toBe( '-' );
+			expect( result.current.data[ 0 ].shipping_rate_config ).toBeUndefined();
 		} );
 
-		test( 'formats freeShipping as "Free over <amount>" when free_shipping is set', () => {
+		test( 'attaches free_shipping_threshold on shipping_rate_config when configured', () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_FLAT,
 				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
@@ -400,10 +345,10 @@ describe( 'useMarketDataViewsConfig', () => {
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 
-			expect( result.current.data[ 1 ].freeShipping ).toMatch(
-				/Free over/
-			);
-			expect( result.current.data[ 1 ].freeShipping ).toMatch( /50/ );
+			expect(
+				result.current.data[ 1 ].shipping_rate_config?.options
+					?.free_shipping_threshold
+			).toBe( 50 );
 		} );
 
 		test( 'formats the primary market label with the country count', () => {
@@ -492,7 +437,7 @@ describe( 'useMarketDataViewsConfig', () => {
 			);
 		} );
 
-		test( 'retains shippingTime from primary market data', () => {
+		test( 'attaches shipping_time_config from lookup table', () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_AUTOMATIC,
 				markets: [ PRIMARY_MARKET_AUTOMATIC ],
@@ -501,9 +446,10 @@ describe( 'useMarketDataViewsConfig', () => {
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 
-			expect( result.current.data[ 0 ].shippingTime ).toBe(
-				'3 - 5 days'
-			);
+			expect( result.current.data[ 0 ].shipping_time_config ).toMatchObject( {
+				time: 3,
+				maxTime: 5,
+			} );
 		} );
 	} );
 
@@ -542,7 +488,7 @@ describe( 'useMarketDataViewsConfig', () => {
 			expect( result.current.data[ 1 ].id ).toBe( 'fr' );
 		} );
 
-		test( 'each row retains market language, currency, and shippingTime', () => {
+		test( 'each row retains market language, currency, and shipping_time_config', () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_MULTILINGUAL_AUTOMATIC,
 				markets: [
@@ -550,7 +496,6 @@ describe( 'useMarketDataViewsConfig', () => {
 					SECONDARY_MARKET_MULTILINGUAL_AUTOMATIC,
 				],
 				multiLingualStore: true,
-				languages: MULTILINGUAL_LANGUAGES,
 				shippingTimes: SHIPPING_TIMES,
 			} );
 
@@ -559,30 +504,16 @@ describe( 'useMarketDataViewsConfig', () => {
 
 			expect( primary.language ).toEqual( [ 'en' ] );
 			expect( primary.currency ).toEqual( [ 'USD' ] );
-			expect( primary.languageDisplay ).toBe( 'English' );
-			expect( primary.currencyDisplay ).toBe( 'USD' );
-			expect( primary.shippingTime ).toBe( '3 - 5 days' );
+			expect( primary.shipping_time_config ).toMatchObject( {
+				time: 3,
+				maxTime: 5,
+			} );
 			expect( secondary.language ).toEqual( [ 'fr' ] );
 			expect( secondary.currency ).toEqual( [ 'EUR' ] );
-			expect( secondary.languageDisplay ).toBe( 'French' );
-			expect( secondary.currencyDisplay ).toBe( 'EUR' );
-			expect( secondary.shippingTime ).toBe( '5 - 7 days' );
-		} );
-
-		test( 'falls back to Intl.DisplayNames for codes missing from the API response', () => {
-			setMocks( {
-				primary: PRIMARY_MARKET_MULTILINGUAL_AUTOMATIC,
-				markets: [ PRIMARY_MARKET_MULTILINGUAL_AUTOMATIC ],
-				multiLingualStore: true,
-				languages: [],
+			expect( secondary.shipping_time_config ).toMatchObject( {
+				time: 5,
+				maxTime: 7,
 			} );
-
-			const { result } = renderHook( () => useMarketDataViewsConfig() );
-			const expected = new Intl.DisplayNames( [ navigator.language ], {
-				type: 'language',
-			} ).of( 'en' );
-
-			expect( result.current.data[ 0 ].languageDisplay ).toBe( expected );
 		} );
 
 		test( 'formats the primary market label with the country count', () => {
@@ -696,7 +627,6 @@ describe( 'useMarketDataViewsConfig', () => {
 					SECONDARY_MARKET_MULTILINGUAL_MANUAL,
 				],
 				multiLingualStore: true,
-				languages: MULTILINGUAL_LANGUAGES,
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
@@ -704,12 +634,8 @@ describe( 'useMarketDataViewsConfig', () => {
 
 			expect( primary.language ).toEqual( [ 'en' ] );
 			expect( primary.currency ).toEqual( [ 'USD' ] );
-			expect( primary.languageDisplay ).toBe( 'English' );
-			expect( primary.currencyDisplay ).toBe( 'USD' );
 			expect( secondary.language ).toEqual( [ 'fr' ] );
 			expect( secondary.currency ).toEqual( [ 'EUR' ] );
-			expect( secondary.languageDisplay ).toBe( 'French' );
-			expect( secondary.currencyDisplay ).toBe( 'EUR' );
 		} );
 	} );
 
@@ -752,7 +678,7 @@ describe( 'useMarketDataViewsConfig', () => {
 			expect( result.current.data[ 1 ].id ).toBe( 'fr' );
 		} );
 
-		test( 'formats shipping rate and time for each market row', () => {
+		test( 'attaches shipping_rate_config and shipping_time_config for each market row', () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_FLAT,
 				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
@@ -764,30 +690,25 @@ describe( 'useMarketDataViewsConfig', () => {
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 			const [ primary, secondary ] = result.current.data;
 
-			expect( primary.shippingRate ).toMatch( /10/ );
-			expect( primary.shippingTime ).toBe( '3 - 5 days' );
-			expect( secondary.shippingRate ).toMatch( /8/ );
-			expect( secondary.shippingTime ).toBe( '5 - 7 days' );
-			expect( secondary.freeShipping ).toMatch( /Free over/ );
-		} );
-
-		test( 'formats amounts using useMarketCurrency with per-market currency codes', () => {
-			setMocks( {
-				primary: PRIMARY_MARKET_FLAT,
-				markets: [ PRIMARY_MARKET_FLAT, SECONDARY_MARKET_FLAT ],
-				multiLingualStore: true,
-				shippingRates: SHIPPING_RATES,
-				shippingTimes: SHIPPING_TIMES,
+			expect( primary.shipping_rate_config ).toMatchObject( {
+				rate: 10,
+				currency: 'USD',
 			} );
-
-			const { result } = renderHook( () => useMarketDataViewsConfig() );
-			const [ primary, secondary ] = result.current.data;
-
-			// marketFormatAmount encodes both amount and currency code so we can
-			// assert each row was formatted with the correct market currency.
-			expect( primary.shippingRate ).toBe( 'MKT:USD:10' );
-			expect( secondary.shippingRate ).toBe( 'MKT:EUR:8' );
-			expect( secondary.freeShipping ).toBe( 'Free over MKT:EUR:50' );
+			expect( primary.shipping_time_config ).toMatchObject( {
+				time: 3,
+				maxTime: 5,
+			} );
+			expect( secondary.shipping_rate_config ).toMatchObject( {
+				rate: 8,
+				currency: 'EUR',
+			} );
+			expect( secondary.shipping_time_config ).toMatchObject( {
+				time: 5,
+				maxTime: 7,
+			} );
+			expect(
+				secondary.shipping_rate_config?.options?.free_shipping_threshold
+			).toBe( 50 );
 		} );
 
 		test( 'formats the primary market label with the country count', () => {
@@ -821,17 +742,6 @@ describe( 'useMarketDataViewsConfig', () => {
 				data: [],
 				hasFinishedResolution: false,
 			} );
-			useAdsCurrency.mockReturnValue( {
-				adsCurrencyConfig: {},
-				formatAmount: adsFormatAmount,
-			} );
-			useMarketCurrency.mockReturnValue( {
-				formatAmount: marketFormatAmount,
-			} );
-			useMCSupportedLanguages.mockReturnValue( {
-				languages: [],
-				hasFinishedResolution: false,
-			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 
@@ -853,17 +763,6 @@ describe( 'useMarketDataViewsConfig', () => {
 			} );
 			useShippingTimes.mockReturnValue( {
 				data: [],
-				hasFinishedResolution: true,
-			} );
-			useAdsCurrency.mockReturnValue( {
-				adsCurrencyConfig: {},
-				formatAmount: adsFormatAmount,
-			} );
-			useMarketCurrency.mockReturnValue( {
-				formatAmount: marketFormatAmount,
-			} );
-			useMCSupportedLanguages.mockReturnValue( {
-				languages: [],
 				hasFinishedResolution: true,
 			} );
 
