@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
+import { createInterpolateElement, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -32,6 +32,13 @@ const ShippingRateMethodSection = ( { children } ) => {
 	const { isMultiLingualStore } = glaData;
 	const isFlatShippingRate =
 		settings?.shipping_rate === SHIPPING_RATE_METHOD.FLAT;
+
+	// Capture the initial visibility of the flat option on mount so it doesn't
+	// disappear mid-session when the user switches to another option and the
+	// form auto-saves (which would otherwise flip isFlatShippingRate to false).
+	const [ showFlatOption ] = useState(
+		() => ! isMultiLingualStore || isFlatShippingRate
+	);
 
 	// Hide the automatic shipping rate option if there are no shipping rates and the merchant is onboarding.
 	const hideAutomaticShippingRate =
@@ -84,7 +91,7 @@ const ShippingRateMethodSection = ( { children } ) => {
 							</AppRadioContentControl>
 						) }
 
-						{ ( ! isMultiLingualStore || isFlatShippingRate ) && (
+						{ showFlatOption && (
 							<AppRadioContentControl
 								{ ...inputProps }
 								label={ __(
