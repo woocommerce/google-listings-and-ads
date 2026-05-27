@@ -20,6 +20,10 @@ import ShippingTimes from '../components/market-data-views/shipping-times';
 import isPrimaryMarket from '../utils/isPrimaryMarket';
 
 /**
+ * @typedef {import('~/data/actions').Market} Market
+ */
+
+/**
  * @typedef {Object} TimeRow
  * @property {number} time Minimum shipping days.
  * @property {number} maxTime Maximum shipping days.
@@ -31,16 +35,6 @@ import isPrimaryMarket from '../utils/isPrimaryMarket';
  * @property {number} rate Shipping rate amount.
  * @property {Object} [options] Optional rate modifiers.
  * @property {number} [options.free_shipping_threshold] Free shipping threshold amount.
- */
-
-/**
- * @typedef {Object} Market
- * @property {string} id Market identifier.
- * @property {string} country ISO country code for the market's primary country.
- * @property {string[]} countries All ISO country codes belonging to the market.
- * @property {string} label Display name.
- * @property {string[]} [language] BCP-47 language tags (multilingual stores only).
- * @property {string} [currency] ISO currency code (multilingual stores only).
  */
 
 /**

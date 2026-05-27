@@ -10,7 +10,7 @@ import { glaData } from '~/constants';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import AppSearchableSelectControl from '~/components/app-searchable-select-control';
 import AppInputControl from '~/components/app-input-control';
-import useMCSupportedCurrencies from '~/hooks/useMCSupportedCurrencies';
+import useAvailableStoreCurrencies from '~/hooks/useAvailableStoreCurrencies';
 
 /**
  * Renders the currency select control within the market edit form.
@@ -23,7 +23,7 @@ const CurrencySelectControl = () => {
 		getInputProps,
 		adapter: { renderRequestedValidation },
 	} = useAdaptiveFormContext();
-	const { currencies, hasFinishedResolution } = useMCSupportedCurrencies();
+	const { currencies, hasFinishedResolution } = useAvailableStoreCurrencies();
 
 	if ( ! glaData.isMultiLingualStore ) {
 		return (

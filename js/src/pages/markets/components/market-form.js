@@ -21,6 +21,7 @@ import useShippingTimes from '~/hooks/useShippingTimes';
 import useSaveShippingRates from '~/hooks/useSaveShippingRates';
 import useSaveShippingTimes from '~/hooks/useSaveShippingTimes';
 import useSettings from '~/hooks/useSettings';
+import useStoreCurrency from '~/hooks/useStoreCurrency';
 import AdaptiveForm from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
 import AppSpinner from '~/components/app-spinner';
@@ -42,6 +43,7 @@ const MarketForm = ( {
 	...adaptiveFormProps
 } ) => {
 	const formRef = useRef();
+	const { code: storeCurrencyCode } = useStoreCurrency();
 	const { settings } = useSettings();
 	const {
 		data: shippingRates,
@@ -142,14 +144,13 @@ const MarketForm = ( {
 		const targetCountries = getTargetCountries( isPrimaryMarket, values );
 		const rawRates = values.shipping_country_rates || [];
 		const rawTimes = values.shipping_country_times || [];
-		const { currency } = values;
 
 		switch ( change.name ) {
 			case 'flat_shipping_rate': {
 				const rates = ensureRateRows(
 					rawRates,
 					targetCountries,
-					currency
+					storeCurrencyCode
 				);
 				const isFree = change.value === 0;
 
@@ -215,7 +216,7 @@ const MarketForm = ( {
 				const rates = ensureRateRows(
 					rawRates,
 					targetCountries,
-					currency
+					storeCurrencyCode
 				);
 				setValue(
 					'shipping_country_rates',
@@ -261,6 +262,7 @@ const MarketForm = ( {
 											existingThreshold,
 									},
 									country,
+									currency: storeCurrencyCode,
 									rate: values.flat_shipping_rate,
 								} ) ),
 						  ]

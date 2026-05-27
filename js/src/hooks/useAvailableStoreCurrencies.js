@@ -8,9 +8,9 @@ import { useSelect } from '@wordpress/data';
  */
 import { STORE_KEY } from '~/data/constants';
 
-const selectorName = 'getMCLanguagesCurrencies';
+const selectorName = 'getAvailableLanguagesCurrencies';
 
-const useMCSupportedLanguages = () => {
+const useAvailableStoreCurrencies = () => {
 	return useSelect( ( select ) => {
 		const selector = select( STORE_KEY );
 
@@ -18,7 +18,7 @@ const useMCSupportedLanguages = () => {
 		selector[ selectorName ]();
 
 		return {
-			languages: selector.getMCSupportedLanguages(),
+			currencies: selector.getAvailableStoreCurrencies(),
 			hasFinishedResolution: selector.hasFinishedResolution(
 				selectorName,
 				[]
@@ -27,4 +27,4 @@ const useMCSupportedLanguages = () => {
 	}, [] );
 };
 
-export default useMCSupportedLanguages;
+export default useAvailableStoreCurrencies;
