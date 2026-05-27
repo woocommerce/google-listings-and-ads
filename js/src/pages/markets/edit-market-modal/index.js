@@ -10,7 +10,7 @@ import AppModal from '~/components/app-modal';
 import MarketForm from '../market-form';
 import MarketFields from '../market-fields';
 import ModalFooter from './modal-footer';
-import { isPrimaryMarket } from '~/pages/markets/utils/isPrimaryMarket';
+import isPrimaryMarket from '~/pages/markets/utils/isPrimaryMarket';
 
 /**
  * @typedef {import('~/data/actions').TargetAudienceData } TargetAudienceData

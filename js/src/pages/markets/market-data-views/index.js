@@ -13,7 +13,7 @@ import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCo
 import useMarketDataViewsConfig from '~/hooks/useMarketDataViewsConfig';
 import EditMarketModal from '../edit-market-modal';
 import DeleteMarketModal from '../delete-market-modal';
-import { isPrimaryMarket } from '~/pages/markets/utils/isPrimaryMarket';
+import isPrimaryMarket from '~/pages/markets/utils/isPrimaryMarket';
 import './index.scss';
 
 const DEFAULT_VIEW = {

@@ -25,7 +25,7 @@ import AdaptiveForm from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
 import AppSpinner from '~/components/app-spinner';
 import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
-import { isPrimaryMarket as checkIsPrimaryMarket } from '~/pages/markets/utils/isPrimaryMarket';
+import checkIsPrimaryMarket from '~/pages/markets/utils/isPrimaryMarket';
 /**
  * Form component for creating or editing a market.
  * This component is used within the AddMarketModal and EditMarketModal.

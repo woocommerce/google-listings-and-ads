@@ -13,7 +13,7 @@ import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import useSettings from '~/hooks/useSettings';
 import useShippingRates from '~/hooks/useShippingRates';
 import useShippingTimes from '~/hooks/useShippingTimes';
-import { isPrimaryMarket } from '~/pages/markets/utils/isPrimaryMarket';
+import isPrimaryMarket from '~/pages/markets/utils/isPrimaryMarket';
 
 /**
  * @typedef {Object} TimeRow
