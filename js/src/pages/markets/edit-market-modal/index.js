@@ -11,6 +11,7 @@ import MarketForm from '../market-form';
 import MarketFields from '../market-fields';
 import ModalFooter from './modal-footer';
 import isPrimaryMarket from '../utils/isPrimaryMarket';
+import './index.scss';
 
 /**
  * @typedef {import('~/data/actions').TargetAudienceData } TargetAudienceData
@@ -43,7 +44,11 @@ const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
 		: market;
 
 	return (
-		<AppModal title={ appModalTitle } onRequestClose={ onRequestClose }>
+		<AppModal
+			title={ appModalTitle }
+			onRequestClose={ onRequestClose }
+			className="gla-edit-market-modal"
+		>
 			<MarketForm
 				initialMarket={ initialMarket }
 				onSubmit={ onRequestClose }
