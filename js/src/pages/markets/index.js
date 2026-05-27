@@ -3,7 +3,7 @@
  */
 import MainTabNav from '~/components/main-tab-nav';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
-import MarketsDashboard from './markets-dashboard';
+import MarketsDashboard from './components/markets-dashboard';
 import './index.scss';
 
 const Markets = () => {

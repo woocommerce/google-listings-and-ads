@@ -9,7 +9,7 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import MarketForm from '../market-form';
-import EditMarketModal from './';
+import EditMarketModal from '.';
 import AppSpinner from '~/components/app-spinner';
 
 // MarketForm pulls in useSaveShippingRates → useSelect( STORE_KEY ) which

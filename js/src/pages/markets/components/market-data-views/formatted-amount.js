@@ -3,7 +3,7 @@
  */
 import { glaData } from '~/constants';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
-import useMarketCurrency from '../hooks/useMarketCurrency';
+import useMarketCurrency from '../../hooks/useMarketCurrency';
 
 /**
  * Renders a currency-formatted monetary amount.

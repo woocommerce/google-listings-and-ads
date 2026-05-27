@@ -8,8 +8,8 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import MarketDataViews from './';
-import useMarkets from '../hooks/useMarkets';
+import MarketDataViews from '.';
+import useMarkets from '../../hooks/useMarkets';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import useSettings from '~/hooks/useSettings';
 import useShippingRates from '~/hooks/useShippingRates';

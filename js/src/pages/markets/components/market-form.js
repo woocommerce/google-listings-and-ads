@@ -14,8 +14,8 @@ import {
 	ensureTimeRows,
 	updateTimes,
 	updateRateRows,
-} from './utils/shipping-rows';
-import checkErrors from './utils/checkErrors';
+} from '../utils/shipping-rows';
+import checkErrors from '../utils/checkErrors';
 import useShippingRates from '~/hooks/useShippingRates';
 import useShippingTimes from '~/hooks/useShippingTimes';
 import useSaveShippingRates from '~/hooks/useSaveShippingRates';
@@ -25,7 +25,7 @@ import AdaptiveForm from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
 import AppSpinner from '~/components/app-spinner';
 import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
-import checkIsPrimaryMarket from './utils/isPrimaryMarket';
+import checkIsPrimaryMarket from '../utils/isPrimaryMarket';
 
 /**
  * Form component for creating or editing a market.

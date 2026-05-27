@@ -9,8 +9,8 @@ import { __ } from '@wordpress/i18n';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useAppSelectDispatch from '~/hooks/useAppSelectDispatch';
 import AppSelectControl from '~/components/app-select-control';
-import useMarkets from '../../hooks/useMarkets';
-import usePrimaryMarketDetails from '../../hooks/usePrimaryMarketDetails';
+import useMarkets from '../../../hooks/useMarkets';
+import usePrimaryMarketDetails from '../../../hooks/usePrimaryMarketDetails';
 
 /**
  * Renders the market select control within the market edit form.

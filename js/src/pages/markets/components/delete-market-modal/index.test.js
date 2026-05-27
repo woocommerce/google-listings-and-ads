@@ -8,7 +8,7 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import DeleteMarketModal from './';
+import DeleteMarketModal from '.';
 import { useAppDispatch } from '~/data';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 

@@ -8,7 +8,7 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import AddMarketModal from './';
+import AddMarketModal from '.';
 import useSettings from '~/hooks/useSettings';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
 import { SHIPPING_RATE_METHOD } from '~/constants';

@@ -9,7 +9,7 @@ import { render, screen } from '@testing-library/react';
  */
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import useSettings from '~/hooks/useSettings';
-import LocaleSection from './';
+import LocaleSection from '.';
 
 jest.mock( '~/components/adaptive-form', () => ( {
 	useAdaptiveFormContext: jest.fn().mockImplementation( () => ( {

@@ -7,7 +7,7 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import MarketsDashboard from '../markets-dashboard';
+import MarketsDashboard from '.';
 import MarketsHeader from '../markets-header';
 import useDataViewsScript from '~/hooks/useDataViewsScript';
 import useSettings from '~/hooks/useSettings';

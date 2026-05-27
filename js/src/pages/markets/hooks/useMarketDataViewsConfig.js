@@ -12,11 +12,11 @@ import useSettings from '~/hooks/useSettings';
 import useShippingRates from '~/hooks/useShippingRates';
 import useShippingTimes from '~/hooks/useShippingTimes';
 import useMarkets from './useMarkets';
-import ShippingRateCell from '../market-data-views/shipping-rate-cell';
-import LanguageCell from '../market-data-views/language-cell';
-import CurrencyCell from '../market-data-views/currency-cell';
-import FreeShippingCell from '../market-data-views/free-shipping-cell';
-import ShippingTimes from '../market-data-views/shipping-times';
+import ShippingRateCell from '../components/market-data-views/shipping-rate-cell';
+import LanguageCell from '../components/market-data-views/language-cell';
+import CurrencyCell from '../components/market-data-views/currency-cell';
+import FreeShippingCell from '../components/market-data-views/free-shipping-cell';
+import ShippingTimes from '../components/market-data-views/shipping-times';
 import isPrimaryMarket from '../utils/isPrimaryMarket';
 
 /**

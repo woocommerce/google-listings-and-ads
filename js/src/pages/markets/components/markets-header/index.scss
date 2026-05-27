@@ -19,8 +19,12 @@
 		max-width: 100%;
 
 		@include placeholder;
+
 		// The mixin's default `$gray-100` matches the WP admin page background,
 		// so bump it one shade darker to keep the skeleton visible here.
-		background-color: $gray-200;
+		/* stylelint-disable-next-line no-duplicate-selectors */
+		& {
+			background-color: $gray-200;
+		}
 	}
 }

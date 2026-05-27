@@ -10,7 +10,7 @@ import AppModal from '~/components/app-modal';
 import MarketForm from '../market-form';
 import MarketFields from '../market-fields';
 import ModalFooter from './modal-footer';
-import isPrimaryMarket from '../utils/isPrimaryMarket';
+import isPrimaryMarket from '../../utils/isPrimaryMarket';
 import './index.scss';
 
 /**
