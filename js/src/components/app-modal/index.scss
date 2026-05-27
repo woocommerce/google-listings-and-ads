@@ -40,11 +40,4 @@
 			overflow: visible;
 		}
 	}
-
-	&:is(.gla-edit-market-modal):has(.woocommerce-tree-select-control__control-input[aria-expanded="true"]) {
-		&.app-modal,
-		.components-modal__content {
-			overflow: visible;
-		}
-	}
 }

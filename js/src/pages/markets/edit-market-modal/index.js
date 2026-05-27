@@ -11,6 +11,7 @@ import AppModal from '~/components/app-modal';
 import MarketForm from '../market-form';
 import MarketFields from '../market-fields';
 import ModalFooter from './modal-footer';
+import './index.scss';
 
 /**
  * @typedef {import('~/data/actions').TargetAudienceData } TargetAudienceData
