@@ -32,7 +32,7 @@ describe( 'checkErrors', () => {
 			expect( errors ).toEqual( {} );
 		} );
 
-		it( 'returns only country-level errors and skips shipping validation', () => {
+		it( 'validates both countries and shipping for primary flat market', () => {
 			const errors = checkErrors( {
 				id: PRIMARY_MARKET_ID,
 				countries: [],
@@ -42,7 +42,7 @@ describe( 'checkErrors', () => {
 			} );
 
 			expect( errors.countries ).toBeDefined();
-			expect( errors.free_shipping_threshold ).toBeUndefined();
+			expect( errors.free_shipping_threshold ).toBeDefined();
 		} );
 	} );
 
@@ -77,6 +77,7 @@ describe( 'checkErrors', () => {
 		const base = {
 			country: 'US',
 			shipping_rate: SHIPPING_RATE_METHOD.FLAT,
+			flat_shipping_rate: 10,
 		};
 
 		it( 'returns an error when offer_free_shipping is true but threshold is missing', () => {
@@ -124,6 +125,7 @@ describe( 'checkErrors', () => {
 		const base = {
 			country: 'US',
 			shipping_rate: SHIPPING_RATE_METHOD.FLAT,
+			flat_shipping_rate: 10,
 			offer_free_shipping: false,
 			shipping_time: 'flat',
 		};
@@ -206,16 +208,57 @@ describe( 'checkErrors', () => {
 
 			expect( errors.flat_shipping_times ).toBeUndefined();
 		} );
+	} );
 
-		it( 'skips time validation when shipping_time is not flat', () => {
+	describe( 'flat_shipping_rate validation', () => {
+		const base = {
+			country: 'US',
+			shipping_rate: SHIPPING_RATE_METHOD.FLAT,
+			offer_free_shipping: false,
+			flat_shipping_min_time: 1,
+			flat_shipping_max_time: 5,
+		};
+
+		it( 'returns an error when flat_shipping_rate is null', () => {
 			const errors = checkErrors( {
 				...base,
-				shipping_time: 'manual',
-				flat_shipping_min_time: null,
-				flat_shipping_max_time: null,
+				flat_shipping_rate: null,
 			} );
 
-			expect( errors.flat_shipping_times ).toBeUndefined();
+			expect( errors.flat_shipping_rate ).toBeDefined();
+		} );
+
+		it( 'returns an error when flat_shipping_rate is undefined', () => {
+			const errors = checkErrors( { ...base } );
+
+			expect( errors.flat_shipping_rate ).toBeDefined();
+		} );
+
+		it( 'returns an error when flat_shipping_rate is negative', () => {
+			const errors = checkErrors( {
+				...base,
+				flat_shipping_rate: -1,
+			} );
+
+			expect( errors.flat_shipping_rate ).toBeDefined();
+		} );
+
+		it( 'returns no error when flat_shipping_rate is 0', () => {
+			const errors = checkErrors( {
+				...base,
+				flat_shipping_rate: 0,
+			} );
+
+			expect( errors.flat_shipping_rate ).toBeUndefined();
+		} );
+
+		it( 'returns no error when flat_shipping_rate is a positive number', () => {
+			const errors = checkErrors( {
+				...base,
+				flat_shipping_rate: 5,
+			} );
+
+			expect( errors.flat_shipping_rate ).toBeUndefined();
 		} );
 	} );
 
@@ -224,6 +267,7 @@ describe( 'checkErrors', () => {
 			const errors = checkErrors( {
 				country: 'US',
 				shipping_rate: SHIPPING_RATE_METHOD.FLAT,
+				flat_shipping_rate: 5,
 				offer_free_shipping: true,
 				free_shipping_threshold: 50,
 				shipping_time: 'flat',
@@ -232,6 +276,120 @@ describe( 'checkErrors', () => {
 			} );
 
 			expect( errors ).toEqual( {} );
+		} );
+	} );
+
+	describe( 'non-multilingual non-primary manual market', () => {
+		beforeEach( () => {
+			global.glaData.isMultiLingualStore = false;
+		} );
+
+		afterEach( () => {
+			delete global.glaData.isMultiLingualStore;
+		} );
+
+		it( 'skips audience validation when country field is not shown', () => {
+			const errors = checkErrors( {
+				shipping_rate: SHIPPING_RATE_METHOD.MANUAL,
+				country: null,
+			} );
+
+			expect( errors.country ).toBeUndefined();
+		} );
+	} );
+
+	describe( 'multilingual store', () => {
+		beforeEach( () => {
+			global.glaData.isMultiLingualStore = true;
+		} );
+
+		afterEach( () => {
+			delete global.glaData.isMultiLingualStore;
+		} );
+
+		it( 'returns a language error when language is empty for manual shipping', () => {
+			const errors = checkErrors( {
+				country: 'US',
+				shipping_rate: SHIPPING_RATE_METHOD.MANUAL,
+				language: [],
+				currency: [ 'usd' ],
+			} );
+
+			expect( errors.language ).toBeDefined();
+		} );
+
+		it( 'returns a currency error when currency is empty for manual shipping', () => {
+			const errors = checkErrors( {
+				country: 'US',
+				shipping_rate: SHIPPING_RATE_METHOD.MANUAL,
+				language: [ 'en' ],
+				currency: [],
+			} );
+
+			expect( errors.currency ).toBeDefined();
+		} );
+
+		it( 'returns a language error when language is empty for automatic shipping', () => {
+			const errors = checkErrors( {
+				country: 'US',
+				shipping_rate: SHIPPING_RATE_METHOD.AUTOMATIC,
+				language: [],
+				currency: [ 'usd' ],
+				flat_shipping_min_time: 1,
+				flat_shipping_max_time: 5,
+			} );
+
+			expect( errors.language ).toBeDefined();
+		} );
+
+		it( 'returns a currency error when currency is empty for automatic shipping', () => {
+			const errors = checkErrors( {
+				country: 'US',
+				shipping_rate: SHIPPING_RATE_METHOD.AUTOMATIC,
+				language: [ 'en' ],
+				currency: [],
+				flat_shipping_min_time: 1,
+				flat_shipping_max_time: 5,
+			} );
+
+			expect( errors.currency ).toBeDefined();
+		} );
+
+		it( 'skips locale validation for flat shipping', () => {
+			const errors = checkErrors( {
+				country: 'US',
+				shipping_rate: SHIPPING_RATE_METHOD.FLAT,
+				language: [],
+				currency: [],
+				offer_free_shipping: false,
+				flat_shipping_min_time: 1,
+				flat_shipping_max_time: 5,
+			} );
+
+			expect( errors.language ).toBeUndefined();
+			expect( errors.currency ).toBeUndefined();
+		} );
+
+		it( 'returns no locale errors when language and currency are both set', () => {
+			const errors = checkErrors( {
+				country: 'US',
+				shipping_rate: SHIPPING_RATE_METHOD.MANUAL,
+				language: [ 'en' ],
+				currency: [ 'usd' ],
+			} );
+
+			expect( errors.language ).toBeUndefined();
+			expect( errors.currency ).toBeUndefined();
+		} );
+
+		it( 'returns a language error when language is missing (undefined)', () => {
+			const errors = checkErrors( {
+				country: 'US',
+				shipping_rate: SHIPPING_RATE_METHOD.MANUAL,
+				currency: [ 'usd' ],
+			} );
+
+			expect( errors.language ).toBeDefined();
 		} );
 	} );
 } );

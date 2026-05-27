@@ -61,6 +61,7 @@ const ModalFooter = ( { onCancel, settings } ) => {
 			>
 				{ __( 'Cancel', 'google-listings-and-ads' ) }
 			</AppButton>
+
 			{ showAddMarketButton && (
 				<AppButton
 					variant="primary"

@@ -7,8 +7,10 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { glaData } from '~/constants';
+import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import AppSearchableSelectControl from '~/components/app-searchable-select-control';
 import AppInputControl from '~/components/app-input-control';
+import useMCSupportedCurrencies from '~/hooks/useMCSupportedCurrencies';
 
 /**
  * Renders the currency select control within the market edit form.
@@ -17,6 +19,12 @@ import AppInputControl from '~/components/app-input-control';
  * the multilingual requirement is rendered instead.
  */
 const CurrencySelectControl = () => {
+	const {
+		getInputProps,
+		adapter: { renderRequestedValidation },
+	} = useAdaptiveFormContext();
+	const { currencies, hasFinishedResolution } = useMCSupportedCurrencies();
+
 	if ( ! glaData.isMultiLingualStore ) {
 		return (
 			<AppInputControl
@@ -30,19 +38,33 @@ const CurrencySelectControl = () => {
 		);
 	}
 
-	// @TODO: replace with real currency options and value once the multilingual scenario is implemented.
+	const options = currencies?.map( ( currency ) => ( {
+		key: currency.code,
+		value: currency.code,
+		label: currency.code,
+	} ) );
+
+	const { onChange, selected } = getInputProps( 'currency' );
+	const selectedOptions =
+		options?.filter( ( opt ) => selected?.includes( opt.value ) ) ?? [];
+
 	return (
-		<AppSearchableSelectControl
-			label={ __( 'Currency', 'google-listings-and-ads' ) }
-			options={ [
-				{ key: 'usd', value: 'usd', label: 'USD' },
-				{ key: 'eur', value: 'eur', label: 'EUR' },
-				{ key: 'gbp', value: 'gbp', label: 'GBP' },
-			] }
-			selected={ [ { key: 'usd', value: 'usd', label: 'USD' } ] }
-			inlineTags
-			multiple
-		/>
+		<div>
+			<AppSearchableSelectControl
+				label={ __( 'Currency', 'google-listings-and-ads' ) }
+				options={ options }
+				disabled={ ! hasFinishedResolution }
+				selected={ selectedOptions }
+				onChange={ ( changedOptions ) => {
+					onChange(
+						changedOptions.map( ( option ) => option.value )
+					);
+				} }
+				inlineTags
+				multiple
+			/>
+			{ renderRequestedValidation( 'currency' ) }
+		</div>
 	);
 };
 

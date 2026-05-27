@@ -103,8 +103,12 @@ const MarketForm = ( {
 				await createMarket( data );
 			}
 
-			await saveShippingRates( shipping_country_rates );
-			await saveShippingTimes( shipping_country_times );
+			// Run both saves concurrently; if either rejects the thrown error
+			// is re-thrown below so the caller can surface it to the user.
+			await Promise.all( [
+				saveShippingRates( shipping_country_rates ),
+				saveShippingTimes( shipping_country_times ),
+			] );
 
 			invalidateResolution( 'getTargetAudience', [] );
 			onSubmit();
@@ -230,7 +234,7 @@ const MarketForm = ( {
 				const audienceCountries = change.value || [];
 
 				// Filter removed countries AND fill in newly added countries using the current flat rate.
-				const filteredRates = values.shipping_country_rates.filter(
+				const filteredRates = rawRates.filter(
 					( shippingCountryRate ) =>
 						audienceCountries.includes(
 							shippingCountryRate.country
@@ -260,16 +264,13 @@ const MarketForm = ( {
 								} ) ),
 						  ]
 						: filteredRates;
-				if (
-					nextRates.length !== values.shipping_country_rates.length
-				) {
+				if ( nextRates.length !== rawRates.length ) {
 					setValue( 'shipping_country_rates', nextRates );
 				}
 
 				// For times: filter removed countries AND add newly added countries.
-				const filteredTimes = values.shipping_country_times.filter(
-					( shippingTime ) =>
-						audienceCountries.includes( shippingTime.countryCode )
+				const filteredTimes = rawTimes.filter( ( shippingTime ) =>
+					audienceCountries.includes( shippingTime.countryCode )
 				);
 				const missingTimesCountries = audienceCountries.filter(
 					( country ) =>
@@ -294,9 +295,7 @@ const MarketForm = ( {
 						  ]
 						: filteredTimes;
 
-				if (
-					nextTimes.length !== values.shipping_country_times.length
-				) {
+				if ( nextTimes.length !== rawTimes.length ) {
 					setValue( 'shipping_country_times', nextTimes );
 				}
 				break;
@@ -312,9 +311,15 @@ const MarketForm = ( {
 	 * @return {Object} Filtered initial values for AdaptiveForm.
 	 */
 	const resolveInitialMarket = () => {
+		const { shipping_rate, shipping_time } = settings;
+
 		const defaults = {
+			shipping_rate,
+			shipping_time,
 			country: null,
 			flat_shipping_rate: null,
+			language: [],
+			currency: [],
 			offer_free_shipping: false,
 			free_shipping_threshold: null,
 			flat_shipping_min_time: 1,
@@ -347,6 +352,7 @@ const MarketForm = ( {
 
 			updatedMarket = {
 				...updatedMarket,
+				country: editingCountry,
 				...( existingRate && {
 					flat_shipping_rate: existingRate.rate,
 					offer_free_shipping:
@@ -367,9 +373,10 @@ const MarketForm = ( {
 		 * so the form shows a single set of fields rather than per-country rows.
 		 * We seed those fields from the first stored rate/time entry as a
 		 * representative value — any row would give the same result since they
-		 * are kept in sync whenever the user saves.
+		 * are kept in sync whenever the user saves. The same entry is also used
+		 * as the starting point when adding a new secondary market.
 		 */
-		if ( isPrimaryMarket ) {
+		if ( isPrimaryMarket || ! isEditing ) {
 			const firstShippingRate = shippingRates?.[ 0 ];
 			const firstShippingTime = shippingTimes?.[ 0 ];
 			updatedMarket = {
@@ -389,9 +396,7 @@ const MarketForm = ( {
 			};
 		}
 
-		const { shipping_rate } = settings;
 		const { isMultiLingualStore } = glaData;
-
 		const audienceField = isPrimaryMarket ? 'countries' : 'country';
 		const localeFields = [ 'language', 'currency' ];
 		const shippingTimeFields = [
@@ -444,9 +449,6 @@ const MarketForm = ( {
 			ref={ formRef }
 			initialValues={ {
 				...resolveInitialMarket(),
-				// Temporary since the BE needs those fields
-				language: initialMarket.language,
-				currency: initialMarket.currency,
 			} }
 			extendAdapter={ extendAdapter }
 			validate={ checkErrors }
