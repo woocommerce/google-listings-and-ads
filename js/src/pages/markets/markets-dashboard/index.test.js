@@ -35,12 +35,14 @@ const mockDataViewStatus = ( status = 'loading' ) =>
 beforeEach( () => {
 	mockShippingRate();
 	mockDataViewStatus();
+	global.glaData.isMultiLingualStore = false;
 } );
 
 afterEach( () => {
 	useDataViewsScript.mockReset();
 	useSettings.mockReset();
 	MarketsHeader.mockClear();
+	delete global.glaData.isMultiLingualStore;
 } );
 
 describe( 'MarketsDashboard', () => {
@@ -85,6 +87,49 @@ describe( 'MarketsDashboard', () => {
 			expect(
 				screen.queryByRole( 'status', { name: 'Loading…' } )
 			).not.toBeInTheDocument();
+		} );
+	} );
+
+	describe( 'Multilingual flat shipping notice', () => {
+		const getNotice = () =>
+			document.querySelector( '.gla-multilingual-flat-shipping-notice' );
+
+		test( 'renders the notice when isMultiLingualStore is true and shipping_rate is flat', () => {
+			global.glaData.isMultiLingualStore = true;
+			mockShippingRate( SHIPPING_RATE_METHOD.FLAT );
+			mockDataViewStatus( 'ready' );
+
+			render( <MarketsDashboard /> );
+
+			expect( getNotice() ).toBeInTheDocument();
+		} );
+
+		test( 'does not render when isMultiLingualStore is false', () => {
+			mockShippingRate( SHIPPING_RATE_METHOD.FLAT );
+			mockDataViewStatus( 'ready' );
+
+			render( <MarketsDashboard /> );
+
+			expect( getNotice() ).not.toBeInTheDocument();
+		} );
+
+		test( 'does not render when shipping_rate is not flat', () => {
+			global.glaData.isMultiLingualStore = true;
+			mockShippingRate( SHIPPING_RATE_METHOD.AUTOMATIC );
+			mockDataViewStatus( 'ready' );
+
+			render( <MarketsDashboard /> );
+
+			expect( getNotice() ).not.toBeInTheDocument();
+		} );
+
+		test( 'does not render when settings have not resolved', () => {
+			global.glaData.isMultiLingualStore = true;
+			mockDataViewStatus( 'ready' );
+
+			render( <MarketsDashboard /> );
+
+			expect( getNotice() ).not.toBeInTheDocument();
 		} );
 	} );
 
