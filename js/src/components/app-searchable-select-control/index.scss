@@ -31,7 +31,7 @@
 	.woocommerce-select-control .components-base-control {
 		border-color: $gray-600;
 		border-radius: 2px;
-		padding: 2px 44px 2px 8px; // 44px right padding for the chevron icon.
+		padding: 4px 44px 4px 8px; // 44px right padding for the chevron icon.
 	}
 
 	.woocommerce-select-control .woocommerce-select-control__listbox {
@@ -57,5 +57,9 @@
 
 	.woocommerce-select-control__control-icon {
 		display: none;
+	}
+
+	.woocommerce-select-control .components-base-control .woocommerce-select-control__control-input {
+		min-height: 26px;
 	}
 }
