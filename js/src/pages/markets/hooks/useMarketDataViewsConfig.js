@@ -16,7 +16,7 @@ import ShippingRateCell from '../components/market-data-views/shipping-rate-cell
 import LanguageCell from '../components/market-data-views/language-cell';
 import CurrencyCell from '../components/market-data-views/currency-cell';
 import FreeShippingCell from '../components/market-data-views/free-shipping-cell';
-import ShippingTimes from '../components/market-data-views/shipping-times';
+import ShippingTimesCell from '../components/market-data-views/shipping-times-cell';
 import isPrimaryMarket from '../utils/isPrimaryMarket';
 
 /**
@@ -123,7 +123,7 @@ const ALL_FIELDS = {
 		enableHiding: false,
 		enableSorting: false,
 		render: ( { item } ) => {
-			return <ShippingTimes market={ item } />;
+			return <ShippingTimesCell market={ item } />;
 		},
 	},
 	freeShipping: {

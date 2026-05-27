@@ -25,7 +25,6 @@ import useStoreCurrency from '~/hooks/useStoreCurrency';
 import AdaptiveForm from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
 import AppSpinner from '~/components/app-spinner';
-import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
 import checkIsPrimaryMarket from '../utils/isPrimaryMarket';
 
 /**
@@ -106,12 +105,17 @@ const MarketForm = ( {
 				await createMarket( data );
 			}
 
-			// Run both saves concurrently; if either rejects the thrown error
-			// is re-thrown below so the caller can surface it to the user.
-			await Promise.all( [
-				saveShippingRates( shipping_country_rates ),
-				saveShippingTimes( shipping_country_times ),
-			] );
+			// Mirror fieldsByMethod from resolveInitialMarket: FLAT includes
+			// rates + times, AUTOMATIC includes times only, MANUAL includes neither.
+			const { shipping_rate: shippingRateMethod } = settings;
+			const saves = [];
+			if ( shippingRateMethod === SHIPPING_RATE_METHOD.FLAT ) {
+				saves.push( saveShippingRates( shipping_country_rates ) );
+			}
+			if ( shippingRateMethod !== SHIPPING_RATE_METHOD.MANUAL ) {
+				saves.push( saveShippingTimes( shipping_country_times ) );
+			}
+			await Promise.all( saves );
 
 			invalidateResolution( 'getTargetAudience', [] );
 			onSubmit();
@@ -229,78 +233,6 @@ const MarketForm = ( {
 						}
 					)
 				);
-				break;
-			}
-
-			case 'countries': {
-				const audienceCountries = change.value || [];
-
-				// Filter removed countries AND fill in newly added countries using the current flat rate.
-				const filteredRates = rawRates.filter(
-					( shippingCountryRate ) =>
-						audienceCountries.includes(
-							shippingCountryRate.country
-						)
-				);
-				const missingCountries = audienceCountries.filter(
-					( country ) =>
-						! filteredRates.some(
-							( rate ) => rate.country === country
-						)
-				);
-				const existingThreshold = filteredRates.find(
-					isNonFreeShippingRate
-				)?.options?.free_shipping_threshold;
-				const nextRates =
-					values.flat_shipping_rate !== undefined &&
-					missingCountries.length > 0
-						? [
-								...filteredRates,
-								...missingCountries.map( ( country ) => ( {
-									options: {
-										free_shipping_threshold:
-											existingThreshold,
-									},
-									country,
-									currency: storeCurrencyCode,
-									rate: values.flat_shipping_rate,
-								} ) ),
-						  ]
-						: filteredRates;
-				if ( nextRates.length !== rawRates.length ) {
-					setValue( 'shipping_country_rates', nextRates );
-				}
-
-				// For times: filter removed countries AND add newly added countries.
-				const filteredTimes = rawTimes.filter( ( shippingTime ) =>
-					audienceCountries.includes( shippingTime.countryCode )
-				);
-				const missingTimesCountries = audienceCountries.filter(
-					( country ) =>
-						! filteredTimes.some(
-							( shippingTime ) =>
-								shippingTime.countryCode === country
-						)
-				);
-				const nextTimes =
-					values.flat_shipping_min_time !== null &&
-					values.flat_shipping_max_time !== null &&
-					missingTimesCountries.length > 0
-						? [
-								...filteredTimes,
-								...missingTimesCountries.map(
-									( countryCode ) => ( {
-										countryCode,
-										time: values.flat_shipping_min_time,
-										maxTime: values.flat_shipping_max_time,
-									} )
-								),
-						  ]
-						: filteredTimes;
-
-				if ( nextTimes.length !== rawTimes.length ) {
-					setValue( 'shipping_country_times', nextTimes );
-				}
 				break;
 			}
 		}

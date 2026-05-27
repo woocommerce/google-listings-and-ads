@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 
 /**
  * @typedef {Object} ShippingTimeConfig
@@ -17,15 +17,15 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Renders the shipping time range for a market row.
  *
- * Returns "Same day" when both min and max are 0, a single value like "3 days"
- * when min equals max, a range like "3 - 5 days" otherwise, or "-" when no
+ * Returns "Same day" when both min and max are 0, "1 day" or "N days" when
+ * min equals max, a range like "3 - 5 days" otherwise, or "-" when no
  * shipping time config is present.
  *
  * @param {Object} props
  * @param {ShippingTimesRow} props.market Market data row.
  * @return {string} Formatted shipping time label.
  */
-const ShippingTimes = ( { market } ) => {
+const ShippingTimesCell = ( { market } ) => {
 	if ( ! market.shipping_time_config ) {
 		return '-';
 	}
@@ -40,7 +40,7 @@ const ShippingTimes = ( { market } ) => {
 	if ( time === maxTime ) {
 		return sprintf(
 			// translators: %d: number of shipping days.
-			__( '%d days', 'google-listings-and-ads' ),
+			_n( '%d day', '%d days', time, 'google-listings-and-ads' ),
 			time
 		);
 	}
@@ -53,4 +53,4 @@ const ShippingTimes = ( { market } ) => {
 	);
 };
 
-export default ShippingTimes;
+export default ShippingTimesCell;

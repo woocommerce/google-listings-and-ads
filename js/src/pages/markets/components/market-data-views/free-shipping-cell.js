@@ -31,7 +31,7 @@ import FormattedAmount from './formatted-amount';
  *
  * - No config → "-"
  * - `rate === 0` → "Free"
- * - `free_shipping_threshold` set → "Free over <amount>" (currency-formatted)
+ * - `free_shipping_threshold` set → "Over <amount>" (currency-formatted)
  * - Otherwise → "-"
  *
  * @param {Object} props
@@ -55,7 +55,7 @@ const FreeShippingCell = ( { market } ) => {
 	if ( threshold !== null && threshold !== undefined ) {
 		return createInterpolateElement(
 			// translators: <amount> is a currency-formatted free shipping threshold, e.g. "$50.00".
-			__( 'Free over <amount/>', 'google-listings-and-ads' ),
+			__( 'Over <amount/>', 'google-listings-and-ads' ),
 			{
 				amount: (
 					<FormattedAmount
