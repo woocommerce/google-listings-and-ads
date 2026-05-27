@@ -30,6 +30,8 @@ const ShippingRateMethodSection = ( { children } ) => {
 	const { hasFinishedResolution, data: mcSetup } = useMCSetup();
 	const inputProps = getInputProps( 'shipping_rate' );
 	const { isMultiLingualStore } = glaData;
+	const isFlatShippingRate =
+		settings?.shipping_rate === SHIPPING_RATE_METHOD.FLAT;
 
 	// Hide the automatic shipping rate option if there are no shipping rates and the merchant is onboarding.
 	const hideAutomaticShippingRate =
@@ -82,7 +84,7 @@ const ShippingRateMethodSection = ( { children } ) => {
 							</AppRadioContentControl>
 						) }
 
-						{ ! isMultiLingualStore && (
+						{ ( ! isMultiLingualStore || isFlatShippingRate ) && (
 							<AppRadioContentControl
 								{ ...inputProps }
 								label={ __(
