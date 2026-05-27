@@ -333,7 +333,9 @@ describe( 'useMarketDataViewsConfig', () => {
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 
-			expect( result.current.data[ 0 ].shipping_rate_config ).toBeUndefined();
+			expect(
+				result.current.data[ 0 ].shipping_rate_config
+			).toBeUndefined();
 		} );
 
 		test( 'attaches free_shipping_threshold on shipping_rate_config when configured', () => {
@@ -446,7 +448,9 @@ describe( 'useMarketDataViewsConfig', () => {
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 
-			expect( result.current.data[ 0 ].shipping_time_config ).toMatchObject( {
+			expect(
+				result.current.data[ 0 ].shipping_time_config
+			).toMatchObject( {
 				time: 3,
 				maxTime: 5,
 			} );
