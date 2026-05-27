@@ -7,7 +7,7 @@ import CurrencyFactory from '@woocommerce/currency';
 /**
  * Internal dependencies
  */
-import useStoreCurrency from './useStoreCurrency';
+import useStoreCurrency from '~/hooks/useStoreCurrency';
 
 /**
  * Returns a `formatAmount` function that formats a monetary value using a

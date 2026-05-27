@@ -6,31 +6,66 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { SHIPPING_RATE_METHOD, SHIPPING_TIME_METHOD } from '~/constants';
+import { SHIPPING_RATE_METHOD, glaData } from '~/constants';
 import { PRIMARY_MARKET_ID } from '../constants';
 
 const checkErrors = ( values ) => {
+	const { isMultiLingualStore } = glaData;
+	const isPrimary = values.id === PRIMARY_MARKET_ID;
+	const { shipping_rate } = values;
 	const errors = {};
 
-	if ( values.id === PRIMARY_MARKET_ID ) {
-		if ( ( values.countries ?? [] ).length === 0 ) {
-			errors.countries = __(
-				'Please select at least one country.',
+	// Audience validation: skip for non-primary, non-multilingual, MANUAL markets
+	// (the audience field is not shown in the form for that combination).
+	const validateAudience =
+		isPrimary ||
+		shipping_rate !== SHIPPING_RATE_METHOD.MANUAL ||
+		isMultiLingualStore;
+
+	if ( validateAudience ) {
+		if ( isPrimary ) {
+			if ( ( values.countries ?? [] ).length === 0 ) {
+				errors.countries = __(
+					'Please select at least one country.',
+					'google-listings-and-ads'
+				);
+			}
+		} else if ( ! values.country ) {
+			errors.country = __(
+				'Please select a market.',
+				'google-listings-and-ads'
+			);
+		}
+	}
+
+	// Locale validation: language + currency for multilingual stores using non-flat shipping.
+	if ( isMultiLingualStore && shipping_rate !== SHIPPING_RATE_METHOD.FLAT ) {
+		if ( ( values.language ?? [] ).length === 0 ) {
+			errors.language = __(
+				'Please select at least one language.',
+				'google-listings-and-ads'
+			);
+		}
+		if ( ( values.currency ?? [] ).length === 0 ) {
+			errors.currency = __(
+				'Please select at least one currency.',
+				'google-listings-and-ads'
+			);
+		}
+	}
+
+	if ( shipping_rate === SHIPPING_RATE_METHOD.FLAT ) {
+		if (
+			values.flat_shipping_rate === null ||
+			values.flat_shipping_rate === undefined ||
+			values.flat_shipping_rate < 0
+		) {
+			errors.flat_shipping_rate = __(
+				'Please enter a valid shipping rate.',
 				'google-listings-and-ads'
 			);
 		}
 
-		return errors;
-	}
-
-	if ( ! values.country && values.id !== PRIMARY_MARKET_ID ) {
-		errors.country = __(
-			'Please select a market.',
-			'google-listings-and-ads'
-		);
-	}
-
-	if ( values.shipping_rate === SHIPPING_RATE_METHOD.FLAT ) {
 		if (
 			values.offer_free_shipping === true &&
 			! values.free_shipping_threshold
@@ -42,7 +77,10 @@ const checkErrors = ( values ) => {
 		}
 	}
 
-	if ( values.shipping_time === SHIPPING_TIME_METHOD.FLAT ) {
+	if (
+		shipping_rate === SHIPPING_RATE_METHOD.FLAT ||
+		shipping_rate === SHIPPING_RATE_METHOD.AUTOMATIC
+	) {
 		if (
 			values.flat_shipping_min_time === null ||
 			values.flat_shipping_min_time === undefined

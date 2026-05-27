@@ -7,23 +7,23 @@ import { renderHook } from '@testing-library/react';
  * Internal dependencies
  */
 import useMarketDataViewsConfig from './useMarketDataViewsConfig';
-import useMarkets from '~/hooks/useMarkets';
-import usePrimaryMarketDetails from '~/hooks/usePrimaryMarketDetails';
+import useMarkets from './useMarkets';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import useSettings from '~/hooks/useSettings';
 import useShippingRates from '~/hooks/useShippingRates';
 import useShippingTimes from '~/hooks/useShippingTimes';
 import useAdsCurrency from '~/hooks/useAdsCurrency';
-import useMarketCurrency from '~/hooks/useMarketCurrency';
+import useMarketCurrency from './useMarketCurrency';
+import useMCSupportedLanguages from '~/hooks/useMCSupportedLanguages';
 
 jest.mock( '~/hooks/useMarkets' );
-jest.mock( '~/hooks/usePrimaryMarketDetails' );
 jest.mock( '~/hooks/useCountryKeyNameMap' );
 jest.mock( '~/hooks/useSettings' );
 jest.mock( '~/hooks/useShippingRates' );
 jest.mock( '~/hooks/useShippingTimes' );
 jest.mock( '~/hooks/useAdsCurrency' );
 jest.mock( '~/hooks/useMarketCurrency' );
+jest.mock( '~/hooks/useMCSupportedLanguages' );
 
 const SHIPPING_RATES = [
 	{ id: 1, country: 'US', currency: 'USD', rate: 10, options: {} },
@@ -82,23 +82,23 @@ const PRIMARY_MARKET_AUTOMATIC = {
 const PRIMARY_MARKET_MULTILINGUAL_AUTOMATIC = {
 	...PRIMARY_MARKET,
 	shipping_rate: 'automatic',
-	language: 'English',
-	currency: 'USD',
+	language: [ 'en' ],
+	currency: [ 'USD' ],
 };
 
 const SECONDARY_MARKET_MULTILINGUAL_AUTOMATIC = {
 	id: 'fr',
 	country: 'FR',
 	shipping_rate: 'automatic',
-	language: 'French',
-	currency: 'EUR',
+	language: [ 'fr' ],
+	currency: [ 'EUR' ],
 };
 
 const PRIMARY_MARKET_MULTILINGUAL_MANUAL = {
 	...PRIMARY_MARKET,
 	shipping_rate: 'manual',
-	language: 'English',
-	currency: 'USD',
+	language: [ 'en' ],
+	currency: [ 'USD' ],
 };
 
 const SECONDARY_MARKET_MULTILINGUAL_MANUAL = {
@@ -106,8 +106,8 @@ const SECONDARY_MARKET_MULTILINGUAL_MANUAL = {
 	country: 'FR',
 	label: 'France',
 	shipping_rate: 'manual',
-	language: 'French',
-	currency: 'EUR',
+	language: [ 'fr' ],
+	currency: [ 'EUR' ],
 };
 
 /**
@@ -132,6 +132,11 @@ const adsFormatAmount = ( amount ) => `ADS:${ amount }`;
 const marketFormatAmount = ( amount, currencyCode ) =>
 	`MKT:${ currencyCode }:${ amount }`;
 
+const MULTILINGUAL_LANGUAGES = [
+	{ code: 'en', label: 'English' },
+	{ code: 'fr', label: 'French' },
+];
+
 const setMocks = ( {
 	primary = PRIMARY_MARKET,
 	markets = [ PRIMARY_MARKET ],
@@ -142,16 +147,13 @@ const setMocks = ( {
 		FR: 'France',
 	},
 	multiLingualStore = false,
+	languages = [],
 	shippingRate = primary.shipping_rate,
 	shippingRates = [],
 	shippingTimes = [],
 } = {} ) => {
 	useMarkets.mockReturnValue( {
 		data: markets,
-		hasFinishedResolution: true,
-	} );
-	usePrimaryMarketDetails.mockReturnValue( {
-		data: primary,
 		hasFinishedResolution: true,
 	} );
 	useCountryKeyNameMap.mockReturnValue( countries );
@@ -173,6 +175,10 @@ const setMocks = ( {
 	useMarketCurrency.mockReturnValue( {
 		formatAmount: marketFormatAmount,
 	} );
+	useMCSupportedLanguages.mockReturnValue( {
+		languages,
+		hasFinishedResolution: true,
+	} );
 	// `glaData` is captured as a reference to `window.glaData` at module load
 	// (see `js/src/constants.js`), so mutate in place rather than replacing the
 	// object — replacing would leave the original reference stale.
@@ -182,13 +188,13 @@ const setMocks = ( {
 describe( 'useMarketDataViewsConfig', () => {
 	afterEach( () => {
 		useMarkets.mockReset();
-		usePrimaryMarketDetails.mockReset();
 		useCountryKeyNameMap.mockReset();
 		useSettings.mockReset();
 		useShippingRates.mockReset();
 		useShippingTimes.mockReset();
 		useAdsCurrency.mockReset();
 		useMarketCurrency.mockReset();
+		useMCSupportedLanguages.mockReset();
 		delete window.glaData.isMultiLingualStore;
 	} );
 
@@ -227,6 +233,7 @@ describe( 'useMarketDataViewsConfig', () => {
 		test( 'pluralizes singular country count', () => {
 			setMocks( {
 				primary: { ...PRIMARY_MARKET, countries: [ 'US' ] },
+				markets: [ { ...PRIMARY_MARKET, countries: [ 'US' ] } ],
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
@@ -442,7 +449,7 @@ describe( 'useMarketDataViewsConfig', () => {
 			] );
 		} );
 
-		test( 'returns only the primary market row', () => {
+		test( 'returns all markets as rows', () => {
 			setMocks( {
 				primary: PRIMARY_MARKET_AUTOMATIC,
 				markets: [ PRIMARY_MARKET_AUTOMATIC, SECONDARY_MARKET ],
@@ -450,8 +457,9 @@ describe( 'useMarketDataViewsConfig', () => {
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 
-			expect( result.current.data ).toHaveLength( 1 );
+			expect( result.current.data ).toHaveLength( 2 );
 			expect( result.current.data[ 0 ].id ).toBe( 'primary' );
+			expect( result.current.data[ 1 ].id ).toBe( 'fr' );
 		} );
 
 		test( 'formats the market label as "<label> (N countries)"', () => {
@@ -468,12 +476,13 @@ describe( 'useMarketDataViewsConfig', () => {
 		} );
 
 		test( 'pluralizes singular country count', () => {
+			const singleCountryMarket = {
+				...PRIMARY_MARKET_AUTOMATIC,
+				countries: [ 'US' ],
+			};
 			setMocks( {
-				primary: {
-					...PRIMARY_MARKET_AUTOMATIC,
-					countries: [ 'US' ],
-				},
-				markets: [ PRIMARY_MARKET_AUTOMATIC ],
+				primary: singleCountryMarket,
+				markets: [ singleCountryMarket ],
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
@@ -541,18 +550,39 @@ describe( 'useMarketDataViewsConfig', () => {
 					SECONDARY_MARKET_MULTILINGUAL_AUTOMATIC,
 				],
 				multiLingualStore: true,
+				languages: MULTILINGUAL_LANGUAGES,
 				shippingTimes: SHIPPING_TIMES,
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 			const [ primary, secondary ] = result.current.data;
 
-			expect( primary.language ).toBe( 'English' );
-			expect( primary.currency ).toBe( 'USD' );
+			expect( primary.language ).toEqual( [ 'en' ] );
+			expect( primary.currency ).toEqual( [ 'USD' ] );
+			expect( primary.languageDisplay ).toBe( 'English' );
+			expect( primary.currencyDisplay ).toBe( 'USD' );
 			expect( primary.shippingTime ).toBe( '3 - 5 days' );
-			expect( secondary.language ).toBe( 'French' );
-			expect( secondary.currency ).toBe( 'EUR' );
+			expect( secondary.language ).toEqual( [ 'fr' ] );
+			expect( secondary.currency ).toEqual( [ 'EUR' ] );
+			expect( secondary.languageDisplay ).toBe( 'French' );
+			expect( secondary.currencyDisplay ).toBe( 'EUR' );
 			expect( secondary.shippingTime ).toBe( '5 - 7 days' );
+		} );
+
+		test( 'falls back to Intl.DisplayNames for codes missing from the API response', () => {
+			setMocks( {
+				primary: PRIMARY_MARKET_MULTILINGUAL_AUTOMATIC,
+				markets: [ PRIMARY_MARKET_MULTILINGUAL_AUTOMATIC ],
+				multiLingualStore: true,
+				languages: [],
+			} );
+
+			const { result } = renderHook( () => useMarketDataViewsConfig() );
+			const expected = new Intl.DisplayNames( [ navigator.language ], {
+				type: 'language',
+			} ).of( 'en' );
+
+			expect( result.current.data[ 0 ].languageDisplay ).toBe( expected );
 		} );
 
 		test( 'formats the primary market label with the country count', () => {
@@ -666,15 +696,20 @@ describe( 'useMarketDataViewsConfig', () => {
 					SECONDARY_MARKET_MULTILINGUAL_MANUAL,
 				],
 				multiLingualStore: true,
+				languages: MULTILINGUAL_LANGUAGES,
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 			const [ primary, secondary ] = result.current.data;
 
-			expect( primary.language ).toBe( 'English' );
-			expect( primary.currency ).toBe( 'USD' );
-			expect( secondary.language ).toBe( 'French' );
-			expect( secondary.currency ).toBe( 'EUR' );
+			expect( primary.language ).toEqual( [ 'en' ] );
+			expect( primary.currency ).toEqual( [ 'USD' ] );
+			expect( primary.languageDisplay ).toBe( 'English' );
+			expect( primary.currencyDisplay ).toBe( 'USD' );
+			expect( secondary.language ).toEqual( [ 'fr' ] );
+			expect( secondary.currency ).toEqual( [ 'EUR' ] );
+			expect( secondary.languageDisplay ).toBe( 'French' );
+			expect( secondary.currencyDisplay ).toBe( 'EUR' );
 		} );
 	} );
 
@@ -776,10 +811,6 @@ describe( 'useMarketDataViewsConfig', () => {
 				data: [],
 				hasFinishedResolution: false,
 			} );
-			usePrimaryMarketDetails.mockReturnValue( {
-				data: null,
-				hasFinishedResolution: false,
-			} );
 			useCountryKeyNameMap.mockReturnValue( {} );
 			useSettings.mockReturnValue( { settings: null } );
 			useShippingRates.mockReturnValue( {
@@ -797,6 +828,10 @@ describe( 'useMarketDataViewsConfig', () => {
 			useMarketCurrency.mockReturnValue( {
 				formatAmount: marketFormatAmount,
 			} );
+			useMCSupportedLanguages.mockReturnValue( {
+				languages: [],
+				hasFinishedResolution: false,
+			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );
 
@@ -808,10 +843,6 @@ describe( 'useMarketDataViewsConfig', () => {
 		test( 'returns empty fields and data when markets are resolved but settings are not yet available', () => {
 			useMarkets.mockReturnValue( {
 				data: [ PRIMARY_MARKET ],
-				hasFinishedResolution: true,
-			} );
-			usePrimaryMarketDetails.mockReturnValue( {
-				data: PRIMARY_MARKET,
 				hasFinishedResolution: true,
 			} );
 			useCountryKeyNameMap.mockReturnValue( {} );
@@ -830,6 +861,10 @@ describe( 'useMarketDataViewsConfig', () => {
 			} );
 			useMarketCurrency.mockReturnValue( {
 				formatAmount: marketFormatAmount,
+			} );
+			useMCSupportedLanguages.mockReturnValue( {
+				languages: [],
+				hasFinishedResolution: true,
 			} );
 
 			const { result } = renderHook( () => useMarketDataViewsConfig() );

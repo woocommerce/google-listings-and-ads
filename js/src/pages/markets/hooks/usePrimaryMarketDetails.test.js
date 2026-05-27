@@ -6,7 +6,7 @@ import { renderHook } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { PRIMARY_MARKET_ID } from '~/pages/markets/constants';
+import { PRIMARY_MARKET_ID } from '../constants';
 import usePrimaryMarketDetails from './usePrimaryMarketDetails';
 import useMarkets from './useMarkets';
 

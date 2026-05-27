@@ -11,7 +11,7 @@ import { Icon, edit, trash } from '@wordpress/icons';
  */
 import { PRIMARY_MARKET_ID } from '../constants';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
-import useMarketDataViewsConfig from '~/hooks/useMarketDataViewsConfig';
+import useMarketDataViewsConfig from '../hooks/useMarketDataViewsConfig';
 import EditMarketModal from '../edit-market-modal';
 import DeleteMarketModal from '../delete-market-modal';
 import './index.scss';

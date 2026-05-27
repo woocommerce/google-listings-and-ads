@@ -7,7 +7,7 @@ import { renderHook } from '@testing-library/react';
  * Internal dependencies
  */
 import useMarketCurrency from './useMarketCurrency';
-import useStoreCurrency from './useStoreCurrency';
+import useStoreCurrency from '~/hooks/useStoreCurrency';
 
 const storeCurrencyConfig = {
 	code: 'USD',

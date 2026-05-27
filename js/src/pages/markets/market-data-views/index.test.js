@@ -9,13 +9,13 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import MarketDataViews from './';
-import useMarkets from '~/hooks/useMarkets';
+import useMarkets from '../hooks/useMarkets';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
 import useSettings from '~/hooks/useSettings';
 import useShippingRates from '~/hooks/useShippingRates';
 import useShippingTimes from '~/hooks/useShippingTimes';
 
-jest.mock( '~/hooks/useMarkets' );
+jest.mock( '../hooks/useMarkets' );
 jest.mock( '~/hooks/useCountryKeyNameMap' );
 jest.mock( '~/hooks/useSettings' );
 jest.mock( '~/hooks/useShippingRates' );
