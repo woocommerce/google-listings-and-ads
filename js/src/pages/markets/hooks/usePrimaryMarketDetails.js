@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { PRIMARY_MARKET_ID } from '~/pages/markets/constants';
+import { PRIMARY_MARKET_ID } from '../constants';
 import useMarkets from './useMarkets';
 
 /**
