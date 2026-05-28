@@ -609,31 +609,31 @@ export const getMarket = ( state, id ) => {
  */
 
 /**
- * Select supported languages and currencies for MC markets.
+ * Select available languages and currencies from the store's local installation (e.g. WPML).
  * Triggers the single resolver that populates both state properties.
  *
  * @param {Object} state The current store state.
- * @return {{languages: Array<MCLanguage>|null, currencies: Array<MCCurrency>|null}} Supported languages and currencies, or null values before data is fetched.
+ * @return {{languages: Array<MCLanguage>|null, currencies: Array<MCCurrency>|null}} Available languages and currencies, or null values before data is fetched.
  */
-export const getMCLanguagesCurrencies = ( state ) => {
+export const getAvailableLanguagesCurrencies = ( state ) => {
 	const { languages, currencies } = state.mc;
 	return { languages, currencies };
 };
 
 /**
- * Select the supported languages for MC markets.
- * Call getMCLanguagesCurrencies to trigger the data fetch.
+ * Select the available languages from the store's local installation (e.g. WPML).
+ * Call getAvailableLanguagesCurrencies to trigger the data fetch.
  *
  * @param {Object} state The current store state.
- * @return {Array<MCLanguage>|null} Supported languages, or null before data is fetched.
+ * @return {Array<MCLanguage>|null} Available languages, or null before data is fetched.
  */
-export const getMCSupportedLanguages = ( state ) => state.mc.languages;
+export const getAvailableLanguages = ( state ) => state.mc.languages;
 
 /**
- * Select the supported currencies for MC markets.
- * Call getMCLanguagesCurrencies to trigger the data fetch.
+ * Select the available currencies from the store's local installation (e.g. WPML/WCML).
+ * Call getAvailableLanguagesCurrencies to trigger the data fetch.
  *
  * @param {Object} state The current store state.
- * @return {Array<MCCurrency>|null} Supported currencies, or null before data is fetched.
+ * @return {Array<MCCurrency>|null} Available store currencies, or null before data is fetched.
  */
-export const getMCSupportedCurrencies = ( state ) => state.mc.currencies;
+export const getAvailableStoreCurrencies = ( state ) => state.mc.currencies;

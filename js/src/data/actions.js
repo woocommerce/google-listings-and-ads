@@ -121,7 +121,6 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * @property {string[]} currency Currency codes in ISO 4217 format. Example: ['USD'].
  * @property {'automatic'|'flat'|'manual'} shipping_rate Shipping rate type.
  * @property {'flat'|'manual'} shipping_time Shipping time type.
- * @property {number|null} [free_shipping] Free shipping threshold amount, or null when unset.
  */
 
 /**
