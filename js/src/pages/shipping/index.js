@@ -189,7 +189,7 @@ export default function Shipping() {
 		}
 	};
 
-	const initialAudience = targetAudience?.location ? targetAudience : null;
+	const initialAudience = targetAudience?.countries ? targetAudience : null;
 	const initialSettings = settings?.shipping_rate ? settings : null;
 	const initialRates = hasResolvedShippingRates ? savedShippingRates : {};
 	const initialTimes = hasResolvedShippingTimes ? savedShippingTimes : {};
