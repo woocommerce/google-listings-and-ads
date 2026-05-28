@@ -29,6 +29,21 @@ class WPML implements IntegrationInterface {
 	public function init(): void {}
 
 	/**
+	 * Returns the site's default WPML language code.
+	 *
+	 * @return string ISO 639-1 language code, or empty when unavailable.
+	 */
+	public function get_default_language_code(): string {
+		if ( ! $this->is_active() ) {
+			return '';
+		}
+
+		$default = apply_filters( 'wpml_default_language', null );
+
+		return is_string( $default ) && '' !== $default ? $default : '';
+	}
+
+	/**
 	 * Returns the store's active WPML languages.
 	 *
 	 * @return array<int, array{code: string, label: string}>

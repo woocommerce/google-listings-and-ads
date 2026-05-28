@@ -11,7 +11,7 @@ import MultiLingualPluginPrompt from './multilingual-plugin-prompt';
 import MarketFields from '../market-fields';
 import MarketForm from '../market-form';
 import ModalFooter from './modal-footer';
-import usePrimaryMarketDetails from '~/hooks/usePrimaryMarketDetails';
+import usePrimaryMarketDetails from '../hooks/usePrimaryMarketDetails';
 
 /**
  * @typedef {import('~/data/actions').TargetAudienceData } TargetAudienceData

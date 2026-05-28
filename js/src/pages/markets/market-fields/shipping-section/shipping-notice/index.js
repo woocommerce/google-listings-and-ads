@@ -8,13 +8,11 @@ import { createInterpolateElement } from '@wordpress/element';
  * Internal dependencies
  */
 import { glaData } from '~/constants';
-import {
-	GOOGLE_MERCHANT_CENTER_URL,
-	PRIMARY_MARKET_ID,
-} from '~/pages/markets/constants';
+import { GOOGLE_MERCHANT_CENTER_URL } from '~/pages/markets/constants';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import TrackableLink from '~/components/trackable-link';
 import ShippingInfoNotice from '../shipping-info-notice';
+import isPrimaryMarket from '../../../utils/isPrimaryMarket';
 
 /**
  * @event gla_shipping_notice_merchant_center_link_click
@@ -28,9 +26,8 @@ import ShippingInfoNotice from '../shipping-info-notice';
  */
 const ShippingNotice = () => {
 	const { values } = useAdaptiveFormContext();
-	const isPrimaryMarket = values.id === PRIMARY_MARKET_ID;
 
-	if ( ! glaData.isMultiLingualStore && ! isPrimaryMarket ) {
+	if ( ! glaData.isMultiLingualStore && ! isPrimaryMarket( values ) ) {
 		return null;
 	}
 
