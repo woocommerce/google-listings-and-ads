@@ -140,5 +140,4 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertArrayNotHasKey( 'imageLink', $attrs );
 		$this->assertArrayNotHasKey( 'additionalImageLinks', $attrs );
 	}
-
 }
