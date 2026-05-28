@@ -18,6 +18,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AssetSuggestionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection as GoogleConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
@@ -331,6 +332,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags(
 			ProductSyncer::class,
 			GoogleProductService::class,
+			MapiProductInputsService::class,
 			BatchProductHelper::class,
 			ProductHelper::class,
 			MerchantCenterService::class,
