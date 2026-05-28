@@ -317,9 +317,8 @@ const SetupFreeListings = ( {
 					// Derived from the first entry; the full per-country array is in shipping_country_rates.
 					flat_shipping_rate: shippingRates?.[ 0 ]?.rate,
 					// Simple flat time values for all countries (UI only, derived from shippingTimes).
-					flat_shipping_min_time: shippingTimes?.[ 0 ]?.time ?? null,
-					flat_shipping_max_time:
-						shippingTimes?.[ 0 ]?.maxTime ?? null,
+					flat_shipping_min_time: shippingTimes?.[ 0 ]?.time ?? 1,
+					flat_shipping_max_time: shippingTimes?.[ 0 ]?.maxTime ?? 5,
 					// Glue shipping rates and times together, as the Form does not support nested structures.
 					shipping_country_rates: shippingRates,
 					shipping_country_times: shippingTimes,
