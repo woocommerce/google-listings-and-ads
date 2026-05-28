@@ -719,7 +719,12 @@ class MarketServiceTest extends UnitTest {
 			],
 		];
 
-		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $secondary,
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'flat' ],
+			]
+		);
 		$this->set_up_primary_market_dependencies(
 			'US',
 			[ 'US' ],
@@ -735,6 +740,99 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( [ 'DE' ], $result['de']['countries'] );
 		$this->assertSame( 'Germany', $result['de']['label'] );
 		$this->assertSame( 75.0, $result['de']['free_shipping'] );
+	}
+
+	public function test_get_markets_free_shipping_null_for_all_markets_when_mode_automatic(): void {
+		$secondary = [
+			'de' => [
+				'country'    => 'DE',
+				'language'   => [ 'de' ],
+				'currency'   => [ 'EUR' ],
+				'feed_label' => 'DE',
+			],
+			'fr' => [
+				'country'    => 'FR',
+				'language'   => [ 'fr' ],
+				'currency'   => [ 'EUR' ],
+				'feed_label' => 'FR',
+			],
+		];
+
+		// Rows persist in the DB across mode switches, so this fixture mimics a
+		// merchant who had flat rates configured and then switched to automatic.
+		$rates = [
+			'US' => [
+				'country_code'            => 'US',
+				'currency'                => 'USD',
+				'rate'                    => '5.00',
+				'free_shipping_threshold' => 50.0,
+			],
+			'DE' => [
+				'country_code'            => 'DE',
+				'currency'                => 'EUR',
+				'rate'                    => '5.00',
+				'free_shipping_threshold' => 75.0,
+			],
+			'FR' => [
+				'country_code'            => 'FR',
+				'currency'                => 'EUR',
+				'rate'                    => '5.00',
+				'free_shipping_threshold' => 80.0,
+			],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $secondary,
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'automatic' ],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ], $rates );
+
+		$result = $this->market_service->get_markets();
+
+		$this->assertNull( $result['primary']['free_shipping'] );
+		$this->assertNull( $result['de']['free_shipping'] );
+		$this->assertNull( $result['fr']['free_shipping'] );
+	}
+
+	public function test_get_markets_free_shipping_null_when_mode_manual_or_unset(): void {
+		$secondary = [
+			'de' => [
+				'country'    => 'DE',
+				'language'   => [ 'de' ],
+				'currency'   => [ 'EUR' ],
+				'feed_label' => 'DE',
+			],
+		];
+
+		$rates = [
+			'US' => [
+				'country_code'            => 'US',
+				'currency'                => 'USD',
+				'rate'                    => '5.00',
+				'free_shipping_threshold' => 50.0,
+			],
+			'DE' => [
+				'country_code'            => 'DE',
+				'currency'                => 'EUR',
+				'rate'                    => '5.00',
+				'free_shipping_threshold' => 75.0,
+			],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $secondary,
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'manual' ],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ], $rates );
+
+		$result = $this->market_service->get_markets();
+
+		$this->assertNull( $result['primary']['free_shipping'] );
+		$this->assertNull( $result['de']['free_shipping'] );
 	}
 
 	public function test_get_markets_secondary_free_shipping_null_when_no_rate_entry(): void {
