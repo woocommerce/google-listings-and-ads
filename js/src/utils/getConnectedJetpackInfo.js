@@ -16,7 +16,7 @@ import { __ } from '@wordpress/i18n';
  */
 export default function getConnectedJetpackInfo( jetpack ) {
 	// Error-proofing for calling with not yet connect jetpack.
-	if ( jetpack.active !== 'yes' ) {
+	if ( ! jetpack || jetpack.active !== 'yes' ) {
 		return '';
 	}
 

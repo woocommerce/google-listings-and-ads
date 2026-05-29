@@ -23,7 +23,7 @@ const ConnectedGoogleAccountCard = ( {
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE }
-			description={ googleAccount.email }
+			description={ googleAccount?.email }
 			helper={ helper }
 			indicator={ <ConnectedIconLabel /> }
 		>
