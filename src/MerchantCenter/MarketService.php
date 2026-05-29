@@ -166,8 +166,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			'label'         => __( 'Primary Market', 'google-listings-and-ads' ),
 			'countries'     => $this->target_audience->get_target_countries(),
 			'country'       => $defaults['country'],
-			'language'      => $defaults['language'],
-			'currency'      => $defaults['currency'],
+			'language'      => $mc_settings['primary_languages'] ?? $defaults['language'],
+			'currency'      => $mc_settings['primary_currencies'] ?? $defaults['currency'],
 			'feed_label'    => $defaults['feed_label'],
 			'shipping_rate' => $mc_settings['shipping_rate'] ?? null,
 			'shipping_time' => $mc_settings['shipping_time'] ?? null,
@@ -372,14 +372,21 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
 		$mc_updated  = false;
 
-		if ( array_key_exists( 'shipping_rate', $config ) ) {
-			$mc_settings['shipping_rate'] = $config['shipping_rate'];
-			$mc_updated                   = true;
+		foreach ( [ 'shipping_rate', 'shipping_time' ] as $key ) {
+			if ( array_key_exists( $key, $config ) ) {
+				$mc_settings[ $key ] = $config[ $key ];
+				$mc_updated          = true;
+			}
 		}
 
-		if ( array_key_exists( 'shipping_time', $config ) ) {
-			$mc_settings['shipping_time'] = $config['shipping_time'];
-			$mc_updated                   = true;
+		if ( array_key_exists( 'language', $config ) ) {
+			$mc_settings['primary_languages'] = $config['language'];
+			$mc_updated                       = true;
+		}
+
+		if ( array_key_exists( 'currency', $config ) ) {
+			$mc_settings['primary_currencies'] = $config['currency'];
+			$mc_updated                        = true;
 		}
 
 		if ( $mc_updated ) {

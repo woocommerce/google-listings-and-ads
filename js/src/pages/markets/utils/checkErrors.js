@@ -9,6 +9,76 @@ import { __ } from '@wordpress/i18n';
 import { SHIPPING_RATE_METHOD, glaData } from '~/constants';
 import { PRIMARY_MARKET_ID } from '../constants';
 
+// Languages supported by Google Merchant Center as contentLanguage values.
+// Source: https://support.google.com/merchants/answer/160637
+const MC_SUPPORTED_LANGUAGES = new Set( [
+	'af',
+	'ar',
+	'az',
+	'be',
+	'bg',
+	'bn',
+	'ca',
+	'cs',
+	'cy',
+	'da',
+	'de',
+	'el',
+	'en',
+	'es',
+	'et',
+	'eu',
+	'fa',
+	'fi',
+	'fr',
+	'gl',
+	'gu',
+	'he',
+	'hi',
+	'hr',
+	'hu',
+	'hy',
+	'id',
+	'is',
+	'it',
+	'ja',
+	'ka',
+	'km',
+	'ko',
+	'ky',
+	'lt',
+	'lv',
+	'mk',
+	'ml',
+	'mn',
+	'mr',
+	'ms',
+	'my',
+	'nl',
+	'no',
+	'pa',
+	'pl',
+	'pt',
+	'ro',
+	'ru',
+	'sk',
+	'sl',
+	'sq',
+	'sr',
+	'sv',
+	'sw',
+	'ta',
+	'te',
+	'th',
+	'tl',
+	'tr',
+	'uk',
+	'ur',
+	'uz',
+	'vi',
+	'zh',
+] );
+
 const checkErrors = ( values ) => {
 	const { isMultiLingualStore } = glaData;
 	const isPrimary = values.id === PRIMARY_MARKET_ID;
@@ -38,7 +108,7 @@ const checkErrors = ( values ) => {
 		}
 	}
 
-	// Locale validation: language + currency for multilingual stores using non-flat shipping.
+	// Locale validation: language + currency required for multilingual non-flat markets.
 	if ( isMultiLingualStore && shipping_rate !== SHIPPING_RATE_METHOD.FLAT ) {
 		if ( ( values.language ?? [] ).length === 0 ) {
 			errors.language = __(
@@ -49,6 +119,19 @@ const checkErrors = ( values ) => {
 		if ( ( values.currency ?? [] ).length === 0 ) {
 			errors.currency = __(
 				'Please select at least one currency.',
+				'google-listings-and-ads'
+			);
+		}
+	}
+
+	// MC language support check applies to all multilingual markets (including flat-rate).
+	if ( isMultiLingualStore && ! errors.language ) {
+		const unsupported = ( values.language ?? [] ).filter(
+			( lang ) => ! MC_SUPPORTED_LANGUAGES.has( lang )
+		);
+		if ( unsupported.length > 0 ) {
+			errors.language = __(
+				'One or more selected languages are not supported by Google Merchant Center.',
 				'google-listings-and-ads'
 			);
 		}

@@ -246,4 +246,64 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 			]
 		);
 	}
+
+	public function test_uses_per_rate_currency_when_provided() {
+		$db_rates = [
+			[
+				'country'  => 'DE',
+				'rate'     => 5,
+				'options'  => [],
+				'currency' => 'EUR',
+			],
+		];
+
+		$settings = new DBShippingSettingsAdapter(
+			[
+				'currency'       => 'USD',
+				'delivery_times' => [
+					'DE' => [
+						'time'     => 1,
+						'max_time' => 3,
+					],
+				],
+				'db_rates'       => $db_rates,
+			]
+		);
+
+		$services = $settings->getServices();
+
+		$this->assertCount( 1, $services );
+		$this->assertEquals( 'EUR', $services[0]->getCurrency() );
+		$this->assertEquals( 'EUR', $services[0]->getRateGroups()[0]->getSingleValue()->getFlatRate()->getCurrency() );
+	}
+
+	public function test_falls_back_to_adapter_currency_when_rate_currency_is_empty() {
+		$db_rates = [
+			[
+				'country'  => 'US',
+				'rate'     => 10,
+				'options'  => [],
+				'currency' => '',
+			],
+		];
+
+		$settings = new DBShippingSettingsAdapter(
+			[
+				'currency'       => 'USD',
+				'delivery_times' => [
+					'US' => [
+						'time'     => 1,
+						'max_time' => 3,
+					],
+				],
+				'db_rates'       => $db_rates,
+			]
+		);
+
+		$services = $settings->getServices();
+
+		$this->assertCount( 1, $services );
+		$this->assertEquals( 'USD', $services[0]->getCurrency() );
+		$this->assertEquals( 'USD', $services[0]->getRateGroups()[0]->getSingleValue()->getFlatRate()->getCurrency() );
+	}
 }

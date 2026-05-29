@@ -58,33 +58,37 @@ class DBShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 	/**
 	 * Map the shipping rates stored for each country in DB to MC shipping settings.
 	 *
-	 * @param array[] $db_rates
+	 * @param array[] $db_rates Each item: { country: string, rate: float|int, options: array, currency?: string }.
+	 *                          When `currency` is absent or empty, falls back to the adapter-level currency.
 	 *
 	 * @return void
 	 */
 	protected function map_db_rates( array $db_rates ) {
 		$services = [];
-		foreach ( $db_rates as ['country' => $country, 'rate' => $rate, 'options' => $options] ) {
+		foreach ( $db_rates as $db_rate ) {
+			[ 'country' => $country, 'rate' => $rate, 'options' => $options ] = $db_rate;
+			$rate_currency = $db_rate['currency'] ?? '';
 			// No negative rates.
 			if ( $rate < 0 ) {
 				continue;
 			}
 
-			$service = $this->create_shipping_service( $country, $this->currency, (float) $rate );
+			$currency = $rate_currency ?: $this->currency;
+			$service  = $this->create_shipping_service( $country, $currency, (float) $rate );
 
 			if ( isset( $options['free_shipping_threshold'] ) ) {
 				$minimum_order_value = (float) $options['free_shipping_threshold'];
 
 				if ( $rate > 0 ) {
 					// Add a conditional free-shipping service if the current rate is not free.
-					$services[] = $this->create_conditional_free_shipping_service( $country, $this->currency, $minimum_order_value );
+					$services[] = $this->create_conditional_free_shipping_service( $country, $currency, $minimum_order_value );
 				} else {
 					// Set the minimum order value if the current rate is free.
 					$service->setMinimumOrderValue(
 						new Price(
 							[
 								'value'    => $minimum_order_value,
-								'currency' => $this->currency,
+								'currency' => $currency,
 							]
 						)
 					);

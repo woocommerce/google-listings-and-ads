@@ -400,6 +400,86 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( [ 'US', 'CA' ], $update_calls[ OptionsInterface::TARGET_AUDIENCE ]['countries'] );
 	}
 
+	public function test_update_market_primary_saves_language_to_merchant_center(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->market_service->update_market(
+			'primary',
+			[ 'language' => [ 'en', 'fr' ] ]
+		);
+
+		$this->assertArrayHasKey( OptionsInterface::MERCHANT_CENTER, $update_calls );
+		$this->assertSame( [ 'en', 'fr' ], $update_calls[ OptionsInterface::MERCHANT_CENTER ]['primary_languages'] );
+	}
+
+	public function test_update_market_primary_saves_currency_to_merchant_center(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->market_service->update_market(
+			'primary',
+			[ 'currency' => [ 'USD', 'EUR' ] ]
+		);
+
+		$this->assertArrayHasKey( OptionsInterface::MERCHANT_CENTER, $update_calls );
+		$this->assertSame( [ 'USD', 'EUR' ], $update_calls[ OptionsInterface::MERCHANT_CENTER ]['primary_currencies'] );
+	}
+
+	public function test_get_primary_market_reads_language_from_merchant_center(): void {
+		$mc_settings = [
+			'primary_languages'  => [ 'en', 'fr' ],
+			'primary_currencies' => [ 'USD', 'EUR' ],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MERCHANT_CENTER => $mc_settings ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$result = $this->market_service->get_primary_market();
+
+		$this->assertSame( [ 'en', 'fr' ], $result['language'] );
+		$this->assertSame( [ 'USD', 'EUR' ], $result['currency'] );
+	}
+
+	public function test_get_primary_market_falls_back_to_site_defaults_when_language_not_stored(): void {
+		$this->set_up_options_get( [ OptionsInterface::MERCHANT_CENTER => [] ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$result = $this->market_service->get_primary_market();
+
+		// Falls back to the site's default language and currency.
+		$this->assertSame( [ substr( get_locale(), 0, 2 ) ], $result['language'] );
+		$this->assertSame( [ get_woocommerce_currency() ], $result['currency'] );
+	}
+
 	public function test_update_market_primary_returns_composed_market(): void {
 		$this->set_up_options_get(
 			[

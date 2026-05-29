@@ -4,6 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleDatafeedService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateShippingSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketDatafeedManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -20,15 +22,26 @@ class MarketDatafeedManagerTest extends UnitTest {
 	/** @var MockObject|MarketService $market_service */
 	protected $market_service;
 
+	/** @var MockObject|JobRepository $job_repository */
+	protected $job_repository;
+
+	/** @var MockObject|UpdateShippingSettings $update_shipping_settings */
+	protected $update_shipping_settings;
+
 	/** @var MarketDatafeedManager $manager */
 	protected $manager;
 
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->datafeed_service = $this->createMock( GoogleDatafeedService::class );
-		$this->market_service   = $this->createMock( MarketService::class );
-		$this->manager          = new MarketDatafeedManager( $this->datafeed_service, $this->market_service );
+		$this->datafeed_service         = $this->createMock( GoogleDatafeedService::class );
+		$this->market_service           = $this->createMock( MarketService::class );
+		$this->update_shipping_settings = $this->createMock( UpdateShippingSettings::class );
+		$this->job_repository           = $this->createMock( JobRepository::class );
+		$this->job_repository->method( 'get' )
+			->with( UpdateShippingSettings::class )
+			->willReturn( $this->update_shipping_settings );
+		$this->manager = new MarketDatafeedManager( $this->datafeed_service, $this->market_service, $this->job_repository );
 	}
 
 	public function test_register_adds_action_hooks() {
@@ -195,5 +208,87 @@ class MarketDatafeedManagerTest extends UnitTest {
 
 		$this->assertContains( 'en-USD', $calls );
 		$this->assertContains( 'fr-EUR', $calls );
+	}
+
+	public function test_on_market_added_schedules_shipping_sync() {
+		$this->update_shipping_settings->expects( $this->once() )
+										->method( 'schedule' );
+
+		$this->manager->on_market_added(
+			'fr-market',
+			[
+				'country'  => 'FR',
+				'language' => [ 'fr' ],
+				'currency' => [ 'EUR' ],
+			]
+		);
+	}
+
+	public function test_on_market_updated_schedules_shipping_sync() {
+		$this->update_shipping_settings->expects( $this->once() )
+										->method( 'schedule' );
+
+		$this->manager->on_market_updated(
+			'de-market',
+			[
+				'country'  => 'DE',
+				'language' => [ 'de' ],
+				'currency' => [ 'EUR' ],
+			]
+		);
+	}
+
+	public function test_on_market_deleted_schedules_shipping_sync() {
+		$this->market_service->method( 'get_markets' )->willReturn( [] );
+
+		$this->update_shipping_settings->expects( $this->once() )
+										->method( 'schedule' );
+
+		$this->manager->on_market_deleted(
+			'fr-market',
+			[
+				'country'  => 'FR',
+				'language' => [ 'fr' ],
+				'currency' => [ 'EUR' ],
+			]
+		);
+	}
+
+	public function test_shipping_sync_not_double_scheduled_in_same_request() {
+		$this->update_shipping_settings->expects( $this->once() )
+										->method( 'schedule' );
+
+		$config = [
+			'country'  => 'FR',
+			'language' => [ 'fr' ],
+			'currency' => [ 'EUR' ],
+		];
+
+		$this->manager->on_market_added( 'fr-market', $config );
+		$this->manager->on_market_added( 'fr-market-2', $config );
+	}
+
+	public function test_shipping_sync_not_double_scheduled_across_different_handlers() {
+		$this->market_service->method( 'get_markets' )->willReturn( [] );
+
+		$this->update_shipping_settings->expects( $this->once() )
+										->method( 'schedule' );
+
+		$this->manager->on_market_added(
+			'fr-market',
+			[
+				'country'  => 'FR',
+				'language' => [ 'fr' ],
+				'currency' => [ 'EUR' ],
+			]
+		);
+		$this->manager->on_market_deleted(
+			'de-market',
+			[
+				'country'  => 'DE',
+				'language' => [ 'de' ],
+				'currency' => [ 'EUR' ],
+			]
+		);
 	}
 }
