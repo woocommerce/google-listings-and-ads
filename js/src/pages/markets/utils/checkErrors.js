@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -126,13 +126,17 @@ const checkErrors = ( values ) => {
 
 	// MC language support check applies to all multilingual markets (including flat-rate).
 	if ( isMultiLingualStore && ! errors.language ) {
-		const unsupported = ( values.language ?? [] ).filter(
-			( lang ) => ! MC_SUPPORTED_LANGUAGES.has( lang )
+		const unsupportedLanguages = ( values.language ?? [] ).filter(
+			( language ) => ! MC_SUPPORTED_LANGUAGES.has( language )
 		);
-		if ( unsupported.length > 0 ) {
-			errors.language = __(
-				'One or more selected languages are not supported by Google Merchant Center.',
-				'google-listings-and-ads'
+		if ( unsupportedLanguages.length > 0 ) {
+			errors.language = sprintf(
+				// translators: %s: comma-separated list of unsupported language codes.
+				__(
+					'The following languages are not supported by Google Merchant Center: %s',
+					'google-listings-and-ads'
+				),
+				unsupportedLanguages.join( ', ' )
 			);
 		}
 	}
