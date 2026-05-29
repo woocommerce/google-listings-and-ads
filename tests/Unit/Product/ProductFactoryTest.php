@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
@@ -26,6 +27,9 @@ class ProductFactoryTest extends ContainerAwareUnitTest {
 
 	/** @var MockObject|AttributeManager $attribute_manager */
 	protected $attribute_manager;
+
+	/** @var MockObject|WPML $wpml */
+	protected $wpml;
 
 	/** @var ProductFactory $product_factory */
 	protected $product_factory;
@@ -113,6 +117,64 @@ class ProductFactoryTest extends ContainerAwareUnitTest {
 		$this->product_factory->create( $variable, 'US', [] );
 	}
 
+	public function test_create_for_market_sets_feed_label_and_language() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->attribute_manager->expects( $this->any() )
+								->method( 'get_all_values' )
+								->willReturn( [] );
+
+		$adapted = $this->product_factory->create_for_market( $product, 'US', [], 'en-USD', 'en', 'USD' );
+
+		$this->assertInstanceOf( WCProductAdapter::class, $adapted );
+		$this->assertNull( $adapted->getTargetCountry() );
+		$this->assertEquals( 'en-USD', $adapted->getFeedLabel() );
+		$this->assertEquals( 'en', $adapted->getContentLanguage() );
+	}
+
+	public function test_create_for_market_variable_product_fails() {
+		$variable = WC_Helper_Product::create_variation_product();
+		$this->expectException( InvalidClass::class );
+		$this->product_factory->create_for_market( $variable, 'US', [], 'fr-EUR', 'fr', 'EUR' );
+	}
+
+	public function test_create_for_market_uses_wcml_price_when_available() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_regular_price( '100' );
+		$product->save();
+
+		$this->attribute_manager->expects( $this->any() )
+								->method( 'get_all_values' )
+								->willReturn( [] );
+
+		// Simulate WCML returning a converted price.
+		$this->wpml->expects( $this->any() )
+					->method( 'is_active' )
+					->willReturn( true );
+
+		add_filter( 'wcml_is_multi_currency_on', '__return_true' );
+		add_filter(
+			'wcml_raw_price_amount',
+			function ( $price, $currency ) {
+				if ( 'EUR' === $currency ) {
+					return 90.0;
+				}
+				return $price;
+			},
+			10,
+			2
+		);
+
+		$adapted = $this->product_factory->create_for_market( $product, 'US', [], 'en-EUR', 'en', 'EUR' );
+
+		$this->assertInstanceOf( WCProductAdapter::class, $adapted );
+		$this->assertEquals( 'EUR', $adapted->getPrice()->getCurrency() );
+		$this->assertEquals( 90.0, $adapted->getPrice()->getValue() );
+
+		remove_all_filters( 'wcml_is_multi_currency_on' );
+		remove_all_filters( 'wcml_raw_price_amount' );
+	}
+
 	/**
 	 * Runs before each test is executed.
 	 */
@@ -121,6 +183,7 @@ class ProductFactoryTest extends ContainerAwareUnitTest {
 		$this->attribute_manager = $this->createMock( AttributeManager::class );
 		$this->rules_query       = $this->createMock( AttributeMappingRulesQuery::class );
 		$this->wc                = $this->container->get( WC::class );
-		$this->product_factory   = new ProductFactory( $this->attribute_manager, $this->wc );
+		$this->wpml              = $this->createMock( WPML::class );
+		$this->product_factory   = new ProductFactory( $this->attribute_manager, $this->wc, $this->wpml );
 	}
 }

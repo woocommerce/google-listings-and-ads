@@ -13,6 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use WC_Product;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -217,7 +218,12 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$config['shipping_time'] = $mc_settings['shipping_time'] ?? 'flat';
 		}
 
-		$config = $this->merge_language_currency_with_primary( $config );
+		if ( empty( $config['language'] ) ) {
+			$config['language'] = [ $this->get_site_primary_language() ];
+		}
+		if ( empty( $config['currency'] ) ) {
+			$config['currency'] = [ $this->get_site_primary_currency() ];
+		}
 
 		$this->validate_secondary_market_config( $config );
 
@@ -228,6 +234,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		if ( ! empty( $config['country'] ) ) {
 			$this->remove_country_from_target_audience( $config['country'] );
 		}
+
+		do_action( 'woocommerce_gla_market_added', $id, $config );
 	}
 
 	/**
@@ -248,28 +256,25 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	public function update_market( string $id, array $config ): array {
 		if ( 'primary' === $id ) {
 			$this->update_primary_market_fanout( $config );
+			$updated_market = $this->get_market( $id );
+			do_action( 'woocommerce_gla_market_updated', $id, $updated_market );
 
-			return $this->get_market( $id );
+			return $updated_market;
 		}
 
 		$markets  = $this->get_stored_secondary_markets();
 		$existing = $markets[ $id ] ?? [];
 		$merged   = array_merge( $existing, $config );
 
-		if ( array_key_exists( 'language', $config ) || array_key_exists( 'currency', $config ) ) {
-			$merged = $this->merge_language_currency_with_primary(
-				$merged,
-				array_key_exists( 'language', $config ),
-				array_key_exists( 'currency', $config )
-			);
-		}
-
 		$this->validate_secondary_market_config( $merged );
 
 		$markets[ $id ] = $merged;
 		$this->options->update( OptionsInterface::MARKETS, $markets );
 
-		return $this->get_market( $id );
+		$updated_market = $this->get_market( $id );
+		do_action( 'woocommerce_gla_market_updated', $id, $updated_market );
+
+		return $updated_market;
 	}
 
 	/**
@@ -289,8 +294,9 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			);
 		}
 
-		$markets = $this->get_stored_secondary_markets();
-		$country = $markets[ $id ]['country'] ?? null;
+		$markets        = $this->get_stored_secondary_markets();
+		$deleted_config = $markets[ $id ] ?? [];
+		$country        = $deleted_config['country'] ?? null;
 
 		unset( $markets[ $id ] );
 		$this->options->update( OptionsInterface::MARKETS, $markets );
@@ -298,6 +304,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		if ( $country ) {
 			$this->restore_country_to_target_audience( $country );
 		}
+
+		do_action( 'woocommerce_gla_market_deleted', $id, $deleted_config );
 	}
 
 	/**
@@ -325,6 +333,21 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 */
 	public function get_currencies(): array {
 		return $this->wpml->get_currencies();
+	}
+
+	/**
+	 * Returns the WooCommerce product translated into the given language, or null when
+	 * no translation exists or multilingual support is inactive.
+	 *
+	 * @since 2.9.0
+	 *
+	 * @param WC_Product $product  The source product.
+	 * @param string     $language ISO 639-1 language code (e.g. 'fr').
+	 *
+	 * @return WC_Product|null
+	 */
+	public function get_product_in_language( WC_Product $product, string $language ): ?WC_Product {
+		return $this->wpml->get_product_in_language( $product, $language );
 	}
 
 	/**
@@ -405,54 +428,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				throw InvalidValue::is_empty( $key );
 			}
 		}
-	}
-
-	/**
-	 * Prepends the site primary language and currency to request-supplied values.
-	 *
-	 * Omitted keys or empty arrays result in a single-element array containing
-	 * only the site primary. Non-array values are rejected before merging.
-	 *
-	 * @param array $config
-	 * @param bool  $merge_language Whether to merge the language field.
-	 * @param bool  $merge_currency Whether to merge the currency field.
-	 *
-	 * @return array
-	 *
-	 * @throws InvalidValue When language or currency is present but not an array.
-	 */
-	private function merge_language_currency_with_primary(
-		array $config,
-		bool $merge_language = true,
-		bool $merge_currency = true
-	): array {
-		if ( $merge_language ) {
-			if ( array_key_exists( 'language', $config ) && ! is_array( $config['language'] ) ) {
-				throw InvalidValue::is_empty( 'language' );
-			}
-
-			$language_extras    = isset( $config['language'] ) && is_array( $config['language'] ) ? $config['language'] : [];
-			$config['language'] = array_values(
-				array_unique(
-					array_merge( [ $this->get_site_primary_language() ], $language_extras )
-				)
-			);
-		}
-
-		if ( $merge_currency ) {
-			if ( array_key_exists( 'currency', $config ) && ! is_array( $config['currency'] ) ) {
-				throw InvalidValue::is_empty( 'currency' );
-			}
-
-			$currency_extras    = isset( $config['currency'] ) && is_array( $config['currency'] ) ? $config['currency'] : [];
-			$config['currency'] = array_values(
-				array_unique(
-					array_merge( [ $this->get_site_primary_currency() ], $currency_extras )
-				)
-			);
-		}
-
-		return $config;
 	}
 
 	/**

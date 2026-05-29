@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product as GoogleProduct;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -62,6 +63,11 @@ class BatchProductHelper implements Service {
 	protected $attribute_mapping_rules_query;
 
 	/**
+	 * @var MarketService
+	 */
+	protected $market_service;
+
+	/**
 	 * BatchProductHelper constructor.
 	 *
 	 * @param ProductMetaHandler         $meta_handler
@@ -70,6 +76,7 @@ class BatchProductHelper implements Service {
 	 * @param ProductFactory             $product_factory
 	 * @param TargetAudience             $target_audience
 	 * @param AttributeMappingRulesQuery $attribute_mapping_rules_query
+	 * @param MarketService              $market_service
 	 */
 	public function __construct(
 		ProductMetaHandler $meta_handler,
@@ -77,7 +84,8 @@ class BatchProductHelper implements Service {
 		ValidatorInterface $validator,
 		ProductFactory $product_factory,
 		TargetAudience $target_audience,
-		AttributeMappingRulesQuery $attribute_mapping_rules_query
+		AttributeMappingRulesQuery $attribute_mapping_rules_query,
+		MarketService $market_service
 	) {
 		$this->meta_handler                  = $meta_handler;
 		$this->product_helper                = $product_helper;
@@ -85,6 +93,7 @@ class BatchProductHelper implements Service {
 		$this->product_factory               = $product_factory;
 		$this->target_audience               = $target_audience;
 		$this->attribute_mapping_rules_query = $attribute_mapping_rules_query;
+		$this->market_service                = $market_service;
 	}
 
 	/**
@@ -221,28 +230,61 @@ class BatchProductHelper implements Service {
 				$target_countries    = $this->target_audience->get_target_countries();
 				$main_target_country = $this->target_audience->get_main_target_country();
 
-				// validate the product
-				$adapted_product   = $this->product_factory->create( $product, $main_target_country, $mapping_rules );
-				$validation_result = $this->validate_product( $adapted_product );
-				if ( $validation_result instanceof BatchInvalidProductEntry ) {
-					$this->mark_as_invalid( $validation_result );
+				if ( $this->market_service->has_multilingual_support() ) {
+					// Multilingual path: generate one adapter per language × currency pair across all markets.
+					$feed_label_pairs = $this->get_unique_feed_label_pairs();
 
-					do_action(
-						'woocommerce_gla_debug_message',
-						sprintf( 'Skipping product (ID: %s) because it does not pass validation: %s', $product->get_id(), wp_json_encode( $validation_result ) ),
-						__METHOD__
+					foreach ( $feed_label_pairs as $pair ) {
+						$language   = $pair['language'];
+						$currency   = $pair['currency'];
+						$feed_label = "{$language}-{$currency}";
+
+						$market_product  = $this->market_service->get_product_in_language( $product, $language ) ?? $product;
+						$adapted_product = $this->product_factory->create_for_market( $market_product, $pair['target_country'], $mapping_rules, $feed_label, $language, $currency );
+						$validation_result = $this->validate_product( $adapted_product );
+						if ( $validation_result instanceof BatchInvalidProductEntry ) {
+							$this->mark_as_invalid( $validation_result );
+
+							do_action(
+								'woocommerce_gla_debug_message',
+								sprintf( 'Skipping product (ID: %s, feedLabel: %s) because it does not pass validation: %s', $product->get_id(), $feed_label, wp_json_encode( $validation_result ) ),
+								__METHOD__
+							);
+
+							continue;
+						}
+
+						array_walk( $pair['shipping_countries'], [ $adapted_product, 'add_shipping_country' ] );
+
+						$request_entries[] = new BatchProductRequestEntry(
+							$product->get_id(),
+							$adapted_product
+						);
+					}
+				} else {
+					// Non-multilingual path: existing single-entry behaviour, unchanged.
+					$adapted_product   = $this->product_factory->create( $product, $main_target_country, $mapping_rules );
+					$validation_result = $this->validate_product( $adapted_product );
+					if ( $validation_result instanceof BatchInvalidProductEntry ) {
+						$this->mark_as_invalid( $validation_result );
+
+						do_action(
+							'woocommerce_gla_debug_message',
+							sprintf( 'Skipping product (ID: %s) because it does not pass validation: %s', $product->get_id(), wp_json_encode( $validation_result ) ),
+							__METHOD__
+						);
+
+						continue;
+					}
+
+					// add shipping for all selected target countries
+					array_walk( $target_countries, [ $adapted_product, 'add_shipping_country' ] );
+
+					$request_entries[] = new BatchProductRequestEntry(
+						$product->get_id(),
+						$adapted_product
 					);
-
-					continue;
 				}
-
-				// add shipping for all selected target countries
-				array_walk( $target_countries, [ $adapted_product, 'add_shipping_country' ] );
-
-				$request_entries[] = new BatchProductRequestEntry(
-					$product->get_id(),
-					$adapted_product
-				);
 			} catch ( GoogleListingsAndAdsException $exception ) {
 				do_action(
 					'woocommerce_gla_error',
@@ -278,16 +320,24 @@ class BatchProductHelper implements Service {
 	/**
 	 * Filters and returns an array of request entries for Google products that should no longer be submitted for the selected target audience.
 	 *
+	 * In multilingual mode, stale detection compares stored google_ids keys against the set of active
+	 * feedLabels across all markets. In non-multilingual mode, the existing country-key comparison is used.
+	 *
 	 * @param WC_Product[] $products
 	 *
 	 * @return BatchProductIDRequestEntry[]
 	 */
 	public function generate_stale_products_request_entries( array $products ): array {
-		$target_audience = $this->target_audience->get_target_countries();
+		if ( $this->market_service->has_multilingual_support() ) {
+			$active_keys = $this->product_helper->get_active_feed_labels_from_markets( $this->market_service->get_markets() );
+		} else {
+			$active_keys = $this->target_audience->get_target_countries();
+		}
+
 		$request_entries = [];
 		foreach ( $products as $product ) {
 			$google_ids = $this->meta_handler->get_google_ids( $product ) ?: [];
-			$stale_ids  = array_diff_key( $google_ids, array_flip( $target_audience ) );
+			$stale_ids  = array_diff_key( $google_ids, array_flip( $active_keys ) );
 			foreach ( $stale_ids as $stale_id ) {
 				$request_entries[ $stale_id ] = new BatchProductIDRequestEntry(
 					$product->get_id(),
@@ -303,6 +353,9 @@ class BatchProductHelper implements Service {
 	 * Returns an array of request entries for Google products that should no
 	 * longer be submitted for every target country.
 	 *
+	 * In multilingual mode, stale detection is feedLabel-based (handled by
+	 * generate_stale_products_request_entries), so this method is a no-op.
+	 *
 	 * @since 1.1.0
 	 *
 	 * @param WC_Product[] $products
@@ -310,6 +363,11 @@ class BatchProductHelper implements Service {
 	 * @return BatchProductIDRequestEntry[]
 	 */
 	public function generate_stale_countries_request_entries( array $products ): array {
+		// In multilingual mode, feedLabel cleanup covers staleness — country-based check is not applicable.
+		if ( $this->market_service->has_multilingual_support() ) {
+			return [];
+		}
+
 		$main_target_country = $this->target_audience->get_main_target_country();
 
 		$request_entries = [];
@@ -325,5 +383,65 @@ class BatchProductHelper implements Service {
 		}
 
 		return $request_entries;
+	}
+
+	/**
+	 * Returns unique language × currency pairs across all markets for multilingual sync.
+	 *
+	 * Each entry carries the correct targetCountry and shipping countries for that pair:
+	 * - Primary markets (have a 'countries' key): canonical country from TargetAudience; shipping to all target countries.
+	 * - Secondary markets (have a 'country' key): that market's single country; shipping to that country only.
+	 *
+	 * @since 2.9.0
+	 *
+	 * @return array[] Array of maps with keys: language, currency, target_country, shipping_countries.
+	 */
+	protected function get_unique_feed_label_pairs(): array {
+		$markets          = $this->market_service->get_markets();
+		$target_countries = $this->target_audience->get_target_countries();
+		$main_country     = $this->target_audience->get_main_target_country();
+		$pairs            = [];
+
+		foreach ( $markets as $market ) {
+			$languages  = $market['language'] ?? [];
+			$currencies = $market['currency'] ?? [];
+
+			// Primary market is identified by 'id' => 'primary'; secondary markets don't have this key.
+			// Note: get_markets() adds 'countries' to secondary markets too (as a single-element array),
+			// so checking 'countries' alone is not a reliable discriminator.
+			if ( ( $market['id'] ?? null ) === 'primary' ) {
+				$target_country     = $main_country;
+				$shipping_countries = $target_countries;
+			} elseif ( ! empty( $market['country'] ) ) {
+				$target_country     = $market['country'];
+				$shipping_countries = [ $market['country'] ];
+			} else {
+				continue;
+			}
+
+			foreach ( $languages as $language ) {
+				foreach ( $currencies as $currency ) {
+					$key = "{$language}-{$currency}";
+					if ( ! isset( $pairs[ $key ] ) ) {
+						$pairs[ $key ] = [
+							'language'           => $language,
+							'currency'           => $currency,
+							'target_country'     => $target_country,
+							'shipping_countries' => $shipping_countries,
+						];
+					} else {
+						// Multiple markets share this feed-label pair — merge shipping countries
+						// so all of them appear in the MC data source (e.g. CM + UG both use fr-EUR).
+						$pairs[ $key ]['shipping_countries'] = array_values(
+							array_unique(
+								array_merge( $pairs[ $key ]['shipping_countries'], $shipping_countries )
+							)
+						);
+					}
+				}
+			}
+		}
+
+		return array_values( $pairs );
 	}
 }

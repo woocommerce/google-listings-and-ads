@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
@@ -46,16 +47,23 @@ class ProductHelper implements Service, HelperNotificationInterface {
 	protected $target_audience;
 
 	/**
+	 * @var MarketService
+	 */
+	protected $market_service;
+
+	/**
 	 * ProductHelper constructor.
 	 *
 	 * @param ProductMetaHandler $meta_handler
 	 * @param WC                 $wc
 	 * @param TargetAudience     $target_audience
+	 * @param MarketService      $market_service
 	 */
-	public function __construct( ProductMetaHandler $meta_handler, WC $wc, TargetAudience $target_audience ) {
+	public function __construct( ProductMetaHandler $meta_handler, WC $wc, TargetAudience $target_audience, MarketService $market_service ) {
 		$this->meta_handler    = $meta_handler;
 		$this->wc              = $wc;
 		$this->target_audience = $target_audience;
+		$this->market_service  = $market_service;
 	}
 
 	/**
@@ -102,13 +110,23 @@ class ProductHelper implements Service, HelperNotificationInterface {
 		// merge and update all google product ids
 		$current_google_ids = $this->meta_handler->get_google_ids( $product );
 		$current_google_ids = ! empty( $current_google_ids ) ? $current_google_ids : [];
-		$google_ids         = array_unique( array_merge( $current_google_ids, [ $google_product->getTargetCountry() => $google_product->getId() ] ) );
+
+		// In multilingual mode, key google_ids by feedLabel (e.g. "en-USD") rather than targetCountry.
+		// Pre-existing entries keyed by country code are naturally treated as stale on the next sync.
+		$id_key     = $this->market_service->has_multilingual_support()
+			? $google_product->getFeedLabel()
+			: $google_product->getTargetCountry();
+		$google_ids = array_unique( array_merge( $current_google_ids, [ $id_key => $google_product->getId() ] ) );
 		$this->meta_handler->update_google_ids( $product, $google_ids );
 
 		// check if product is synced for main target country and remove any previous errors if it is
-		$synced_countries = array_keys( $google_ids );
-		$target_countries = $this->target_audience->get_target_countries();
-		if ( empty( array_diff( $synced_countries, $target_countries ) ) ) {
+		$synced_keys = array_keys( $google_ids );
+		if ( $this->market_service->has_multilingual_support() ) {
+			$active_keys = $this->get_active_feed_labels_from_markets( $this->market_service->get_markets() );
+		} else {
+			$active_keys = $this->target_audience->get_target_countries();
+		}
+		if ( empty( array_diff( $active_keys, $synced_keys ) ) ) {
 			$this->meta_handler->delete_errors( $product );
 			$this->meta_handler->delete_failed_sync_attempts( $product );
 			$this->meta_handler->delete_sync_failed_at( $product );
@@ -775,5 +793,34 @@ class ProductHelper implements Service, HelperNotificationInterface {
 	 */
 	public function get_offer_id( int $product_id ) {
 		return WCProductAdapter::get_google_product_offer_id( $this->get_slug(), $product_id );
+	}
+
+	/**
+	 * Computes the set of active feedLabels from all markets.
+	 *
+	 * A feedLabel is the Cartesian product of each market's language × currency values,
+	 * formatted as "{language}-{currency}" (e.g. "en-USD").
+	 *
+	 * @since 2.9.0
+	 *
+	 * @param array[] $markets Keyed market config array from MarketService::get_markets().
+	 *
+	 * @return string[] Deduplicated list of active feed labels.
+	 */
+	public function get_active_feed_labels_from_markets( array $markets ): array {
+		$feed_labels = [];
+
+		foreach ( $markets as $market ) {
+			$languages = $market['language'] ?? [];
+			$currencies = $market['currency'] ?? [];
+
+			foreach ( $languages as $language ) {
+				foreach ( $currencies as $currency ) {
+					$feed_labels[] = "{$language}-{$currency}";
+				}
+			}
+		}
+
+		return array_values( array_unique( $feed_labels ) );
 	}
 }

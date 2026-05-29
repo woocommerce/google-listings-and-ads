@@ -32,6 +32,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleDatafeedService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
@@ -203,6 +204,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			Client::class,
 			$this->get_connect_server_url_root( 'google/google-sv' )
 		);
+		$this->share( GoogleDatafeedService::class, ShoppingContent::class );
 		$this->share( GoogleProductService::class, ShoppingContent::class );
 		$this->share( GooglePromotionService::class, ShoppingContent::class );
 	}

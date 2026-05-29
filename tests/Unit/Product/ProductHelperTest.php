@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
@@ -39,6 +40,9 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 
 	/** @var MockObject|TargetAudience $target_audience */
 	protected $target_audience;
+
+	/** @var MockObject|MarketService $market_service */
+	protected $market_service;
 
 	/** @var ProductHelper $product_helper */
 	protected $product_helper;
@@ -1371,6 +1375,92 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertEquals( $this->product_helper->get_offer_id( 1 ), 'gla_1' );
 	}
 
+	public function test_mark_as_synced_multilingual_keys_by_feed_label() {
+		$product        = WC_Helper_Product::create_simple_product();
+		$google_product = $this->createMock( \Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product::class );
+		$google_product->expects( $this->any() )->method( 'getId' )->willReturn( 'online:en:US:gla_1' );
+		$google_product->expects( $this->any() )->method( 'getFeedLabel' )->willReturn( 'en-USD' );
+		$google_product->expects( $this->any() )->method( 'getTargetCountry' )->willReturn( 'US' );
+
+		// Reconfigure market_service to return multilingual mode and active markets.
+		$market_service = $this->createMock( MarketService::class );
+		$market_service->expects( $this->any() )
+					   ->method( 'has_multilingual_support' )
+					   ->willReturn( true );
+		$market_service->expects( $this->any() )
+					   ->method( 'get_markets' )
+					   ->willReturn(
+						   [
+							   'primary' => [
+								   'language' => [ 'en' ],
+								   'currency' => [ 'USD' ],
+							   ],
+						   ]
+					   );
+
+		$product_helper = new ProductHelper( $this->product_meta, $this->wc, $this->target_audience, $market_service );
+		$product_helper->mark_as_synced( $product, $google_product );
+
+		$google_ids = $this->product_meta->get_google_ids( $product );
+		$this->assertArrayHasKey( 'en-USD', $google_ids );
+		$this->assertEquals( 'online:en:US:gla_1', $google_ids['en-USD'] );
+	}
+
+	public function test_mark_as_synced_non_multilingual_keys_by_country() {
+		$product        = WC_Helper_Product::create_simple_product();
+		$google_product = $this->createMock( \Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product::class );
+		$google_product->expects( $this->any() )->method( 'getId' )->willReturn( 'online:en:US:gla_1' );
+		$google_product->expects( $this->any() )->method( 'getTargetCountry' )->willReturn( 'US' );
+
+		$this->target_audience->expects( $this->any() )
+							  ->method( 'get_target_countries' )
+							  ->willReturn( [ 'US' ] );
+
+		$this->product_helper->mark_as_synced( $product, $google_product );
+
+		$google_ids = $this->product_meta->get_google_ids( $product );
+		$this->assertArrayHasKey( 'US', $google_ids );
+		$this->assertEquals( 'online:en:US:gla_1', $google_ids['US'] );
+	}
+
+	public function test_get_active_feed_labels_from_markets() {
+		$markets = [
+			'primary'   => [
+				'language' => [ 'en' ],
+				'currency' => [ 'USD' ],
+			],
+			'secondary' => [
+				'language' => [ 'fr', 'en' ],
+				'currency' => [ 'EUR' ],
+			],
+		];
+
+		$labels = $this->product_helper->get_active_feed_labels_from_markets( $markets );
+
+		$this->assertContains( 'en-USD', $labels );
+		$this->assertContains( 'fr-EUR', $labels );
+		$this->assertContains( 'en-EUR', $labels );
+		$this->assertCount( 3, $labels );
+	}
+
+	public function test_get_active_feed_labels_deduplicates() {
+		$markets = [
+			'primary'   => [
+				'language' => [ 'en' ],
+				'currency' => [ 'USD' ],
+			],
+			'secondary' => [
+				'language' => [ 'en' ],
+				'currency' => [ 'USD' ],
+			],
+		];
+
+		$labels = $this->product_helper->get_active_feed_labels_from_markets( $markets );
+
+		$this->assertCount( 1, $labels );
+		$this->assertContains( 'en-USD', $labels );
+	}
+
 	public function test_get_filtered_offer_id() {
 		add_filter(
 			'woocommerce_gla_get_google_product_offer_id',
@@ -1435,6 +1525,11 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->product_meta    = $this->container->get( ProductMetaHandler::class );
 		$this->wc              = $this->container->get( WC::class );
 		$this->target_audience = $this->createMock( TargetAudience::class );
-		$this->product_helper  = new ProductHelper( $this->product_meta, $this->wc, $this->target_audience );
+		$this->market_service  = $this->createMock( MarketService::class );
+		// Default: non-multilingual mode.
+		$this->market_service->expects( $this->any() )
+							 ->method( 'has_multilingual_support' )
+							 ->willReturn( false );
+		$this->product_helper  = new ProductHelper( $this->product_meta, $this->wc, $this->target_audience, $this->market_service );
 	}
 }

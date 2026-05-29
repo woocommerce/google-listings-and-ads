@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Integration;
 
+use WC_Product;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -151,6 +153,102 @@ class WPML implements IntegrationInterface {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Returns the price of a product converted to a specific currency via WCML.
+	 *
+	 * Returns null when:
+	 * - WPML is not active
+	 * - WCML multi-currency is not enabled
+	 * - The product has no price set
+	 *
+	 * Returns 0.0 for legitimately free products — callers should not treat 0.0 as a fallback signal.
+	 *
+	 * @since 2.9.0
+	 *
+	 * @param WC_Product $product  The WooCommerce product to price.
+	 * @param string     $currency ISO 4217 currency code.
+	 *
+	 * @return float|null The converted price, or null when unavailable.
+	 */
+	public function get_product_price_in_currency( WC_Product $product, string $currency ): ?float {
+		if ( ! $this->is_active() ) {
+			return null;
+		}
+
+		if ( ! function_exists( 'wcml_is_multi_currency_on' ) || ! wcml_is_multi_currency_on() ) {
+			return null;
+		}
+
+		$price = $product->get_price();
+		if ( '' === $price ) {
+			return null;
+		}
+
+		return (float) apply_filters( 'wcml_raw_price_amount', $price, $currency, null );
+	}
+
+	/**
+	 * Returns the scheduled sale price of a product converted to a specific currency via WCML.
+	 *
+	 * Uses `$product->get_sale_price()` (the scheduled/stored sale price), not the active
+	 * price, so it is safe to call regardless of whether the sale is currently active.
+	 *
+	 * Returns null when:
+	 * - WPML is not active
+	 * - WCML multi-currency is not enabled
+	 * - The product has no scheduled sale price set
+	 *
+	 * @since 2.9.0
+	 *
+	 * @param WC_Product $product  The WooCommerce product to price.
+	 * @param string     $currency ISO 4217 currency code.
+	 *
+	 * @return float|null The converted sale price, or null when unavailable.
+	 */
+	public function get_product_sale_price_in_currency( WC_Product $product, string $currency ): ?float {
+		if ( ! $this->is_active() ) {
+			return null;
+		}
+
+		if ( ! function_exists( 'wcml_is_multi_currency_on' ) || ! wcml_is_multi_currency_on() ) {
+			return null;
+		}
+
+		$sale_price = $product->get_sale_price();
+		if ( '' === $sale_price ) {
+			return null;
+		}
+
+		return (float) apply_filters( 'wcml_raw_price_amount', $sale_price, $currency, null );
+	}
+
+	/**
+	 * Returns the WooCommerce product translated into the given language, or null when
+	 * no translation exists or WPML is inactive.
+	 *
+	 * @since 2.9.0
+	 *
+	 * @param WC_Product $product  The source product (any language).
+	 * @param string     $language ISO 639-1 language code (e.g. 'fr').
+	 *
+	 * @return WC_Product|null The translated product, or null when unavailable.
+	 */
+	public function get_product_in_language( WC_Product $product, string $language ): ?WC_Product {
+		if ( ! $this->is_active() ) {
+			return null;
+		}
+
+		$translated_id = (int) apply_filters( 'wpml_object_id', $product->get_id(), 'product', false, $language );
+
+		if ( ! $translated_id || $translated_id === $product->get_id() ) {
+			return null;
+		}
+
+		$translated = wc_get_product( $translated_id );
+
+		return $translated instanceof WC_Product ? $translated : null;
 	}
 
 	/**

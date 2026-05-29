@@ -244,7 +244,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Set up the TargetAudience service.
 		$this->share_with_tags( TargetAudience::class, WC::class, OptionsInterface::class, GoogleHelper::class );
 
-		// Set up the MarketService.
 		$this->share_with_tags( MarketService::class, TargetAudience::class, ShippingRateQuery::class, ShippingTimeQuery::class, WC::class, WPML::class );
 
 		// Set up MerchantCenter service, and inflect classes that need it.
@@ -323,10 +322,10 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( PolicyComplianceCheck::class, WC::class, GoogleHelper::class, TargetAudience::class );
 		$this->share_with_tags( ContactInformation::class, Merchant::class, GoogleSettings::class );
 		$this->share_with_tags( ProductMetaHandler::class );
-		$this->share( ProductHelper::class, ProductMetaHandler::class, WC::class, TargetAudience::class );
+		$this->share( ProductHelper::class, ProductMetaHandler::class, WC::class, TargetAudience::class, MarketService::class );
 		$this->share_with_tags( ProductFilter::class, ProductHelper::class );
 		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class, ProductFilter::class );
-		$this->share_with_tags( ProductFactory::class, AttributeManager::class, WC::class );
+		$this->share_with_tags( ProductFactory::class, AttributeManager::class, WC::class, WPML::class );
 		$this->share_with_tags(
 			BatchProductHelper::class,
 			ProductMetaHandler::class,
@@ -334,7 +333,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			ValidatorInterface::class,
 			ProductFactory::class,
 			TargetAudience::class,
-			AttributeMappingRulesQuery::class
+			AttributeMappingRulesQuery::class,
+			MarketService::class
 		);
 		$this->share_with_tags(
 			ProductSyncer::class,
