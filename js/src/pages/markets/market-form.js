@@ -104,11 +104,17 @@ const MarketForm = ( {
 				await createMarket( data );
 			}
 
-			// Run both saves concurrently; if either rejects the thrown error
-			// is re-thrown below so the caller can surface it to the user.
+			// Some shipping methods (e.g. manual) don't include rate/time fields
+			// in the form, so these values are undefined. The save helpers
+			// interpret undefined as "delete everything", so only call them when
+			// the form actually has data to save.
 			await Promise.all( [
-				saveShippingRates( shipping_country_rates ),
-				saveShippingTimes( shipping_country_times ),
+				shipping_country_rates !== undefined
+					? saveShippingRates( shipping_country_rates )
+					: Promise.resolve(),
+				shipping_country_times !== undefined
+					? saveShippingTimes( shipping_country_times )
+					: Promise.resolve(),
 			] );
 
 			invalidateResolution( 'getTargetAudience', [] );
