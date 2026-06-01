@@ -683,7 +683,10 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			// When a currency override is active and WCML is available, convert the price.
 			if ( null !== $this->currency_override && null !== $this->wpml ) {
 				$wcml_price = $this->wpml->get_product_price_in_currency( $product, $this->currency_override );
-				$price      = null !== $wcml_price ? $wcml_price : (float) $regular_price;
+				if ( null === $wcml_price ) {
+					return $this;
+				}
+				$price = $wcml_price;
 			} else {
 				$price = $this->tax_excluded ?
 					wc_get_price_excluding_tax( $product, [ 'price' => $regular_price ] ) :

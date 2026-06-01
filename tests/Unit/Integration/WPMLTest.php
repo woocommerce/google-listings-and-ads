@@ -427,4 +427,58 @@ class WPMLTest extends UnitTest {
 
 		return $integration;
 	}
+
+	public function test_get_product_price_in_currency_passes_product_id_to_filter(): void {
+		$integration = $this->create_integration( true );
+		$product     = $this->createMock( \WC_Product::class );
+		$product->method( 'get_price' )->willReturn( '100' );
+		$product->method( 'get_id' )->willReturn( 42 );
+
+		add_filter( 'wcml_is_multi_currency_on', '__return_true' );
+
+		$received_product_id = null;
+		add_filter(
+			'wcml_raw_price_amount',
+			function ( $price, $currency, $product_id ) use ( &$received_product_id ) {
+				$received_product_id = $product_id;
+				return 90.0;
+			},
+			10,
+			3
+		);
+
+		$integration->get_product_price_in_currency( $product, 'EUR' );
+
+		remove_all_filters( 'wcml_is_multi_currency_on' );
+		remove_all_filters( 'wcml_raw_price_amount' );
+
+		$this->assertEquals( 42, $received_product_id );
+	}
+
+	public function test_get_product_sale_price_in_currency_passes_product_id_to_filter(): void {
+		$integration = $this->create_integration( true );
+		$product     = $this->createMock( \WC_Product::class );
+		$product->method( 'get_sale_price' )->willReturn( '80' );
+		$product->method( 'get_id' )->willReturn( 99 );
+
+		add_filter( 'wcml_is_multi_currency_on', '__return_true' );
+
+		$received_product_id = null;
+		add_filter(
+			'wcml_raw_price_amount',
+			function ( $price, $currency, $product_id ) use ( &$received_product_id ) {
+				$received_product_id = $product_id;
+				return 72.0;
+			},
+			10,
+			3
+		);
+
+		$integration->get_product_sale_price_in_currency( $product, 'EUR' );
+
+		remove_all_filters( 'wcml_is_multi_currency_on' );
+		remove_all_filters( 'wcml_raw_price_amount' );
+
+		$this->assertEquals( 99, $received_product_id );
+	}
 }

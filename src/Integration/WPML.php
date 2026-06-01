@@ -186,7 +186,7 @@ class WPML implements IntegrationInterface {
 			return null;
 		}
 
-		return (float) apply_filters( 'wcml_raw_price_amount', $price, $currency, null );
+		return (float) apply_filters( 'wcml_raw_price_amount', $price, $currency, $product->get_id() );
 	}
 
 	/**
@@ -221,7 +221,7 @@ class WPML implements IntegrationInterface {
 			return null;
 		}
 
-		return (float) apply_filters( 'wcml_raw_price_amount', $sale_price, $currency, null );
+		return (float) apply_filters( 'wcml_raw_price_amount', $sale_price, $currency, $product->get_id() );
 	}
 
 	/**

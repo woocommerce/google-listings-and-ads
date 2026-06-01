@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Brand;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\GTIN;
@@ -1750,5 +1751,57 @@ class WCProductAdapterTest extends UnitTest {
 
 		// remove added shortcodes
 		remove_shortcode( 'wc_gla_sample_test_shortcode' );
+	}
+
+	public function test_price_not_set_when_currency_override_and_wcml_returns_null(): void {
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_product_price_in_currency' )->willReturn( null );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 45,
+				'regular_price' => 45,
+			]
+		);
+
+		$adapted = new WCProductAdapter(
+			[
+				'wc_product'      => $product,
+				'targetCountry'   => 'FR',
+				'currency_override' => 'EUR',
+				'wpml'            => $wpml,
+			]
+		);
+
+		// When WCML cannot convert the price, no price should be set to avoid labelling
+		// a USD value as EUR.
+		$this->assertNull( $adapted->getPrice() );
+	}
+
+	public function test_price_set_from_wcml_when_currency_override_active(): void {
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_product_price_in_currency' )->willReturn( 41.5 );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 45,
+				'regular_price' => 45,
+			]
+		);
+
+		$adapted = new WCProductAdapter(
+			[
+				'wc_product'      => $product,
+				'targetCountry'   => 'FR',
+				'currency_override' => 'EUR',
+				'wpml'            => $wpml,
+			]
+		);
+
+		$this->assertNotNull( $adapted->getPrice() );
+		$this->assertEquals( 41.5, $adapted->getPrice()->getValue() );
+		$this->assertEquals( 'EUR', $adapted->getPrice()->getCurrency() );
 	}
 }
