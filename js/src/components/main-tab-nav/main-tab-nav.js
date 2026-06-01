@@ -14,7 +14,7 @@ import useMenuEffect from '~/hooks/useMenuEffect';
 import GtinMigrationBanner from '~/components/gtin-migration-banner';
 import { getShippingUrl } from '~/utils/urls';
 
-let tabs = [
+export const ALL_TABS = [
 	{
 		key: 'dashboard',
 		title: __( 'Dashboard', 'google-listings-and-ads' ),
@@ -57,6 +57,8 @@ let tabs = [
 	},
 ];
 
+const MC_GATED_TAB_KEYS = [ 'dashboard', 'settings' ];
+
 const getSelectedTabKey = ( allTabs ) => {
 	const path = getPath();
 	return allTabs.find( ( el ) => path.includes( el.key ) )?.key;
@@ -68,15 +70,17 @@ const MainTabNav = () => {
 	const { hasGoogleMCConnection } = useGoogleMCAccount();
 	const hasMC = glaData.mcSetupComplete || hasGoogleMCConnection;
 
-	if ( ! glaData.enableReports ) {
-		tabs = tabs.filter( ( { key } ) => key !== 'reports' );
-	}
+	const tabs = ALL_TABS.filter( ( { key } ) => {
+		if ( ! glaData.enableReports && key === 'reports' ) {
+			return false;
+		}
 
-	if ( ! hasMC ) {
-		tabs = tabs.filter( ( { key } ) =>
-			[ 'dashboard', 'settings' ].includes( key )
-		);
-	}
+		if ( ! hasMC && ! MC_GATED_TAB_KEYS.includes( key ) ) {
+			return false;
+		}
+
+		return true;
+	} );
 
 	const selectedKey = getSelectedTabKey( tabs );
 
