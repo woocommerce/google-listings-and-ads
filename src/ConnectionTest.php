@@ -14,6 +14,9 @@ use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\Product;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
@@ -308,6 +311,38 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 					<?php wp_nonce_field( 'wcs-google-mc-proxy' ); ?>
 					<input name="page" value="connection-test-admin-page" type="hidden" />
 					<input name="action" value="wcs-google-mc-proxy" type="hidden" />
+				</form>
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>MAPI Single Fetch:</th>
+							<td>
+								<p>
+									<input name="mapi_product_id" type="text" style="width:24em" placeholder="online~en~US~sku123" value="<?php echo isset( $_GET['mapi_product_id'] ) ? esc_attr( $_GET['mapi_product_id'] ) : ''; ?>" />
+									<button class="button">Fetch product via MAPI</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'mapi-product-get' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="mapi-product-get" type="hidden" />
+				</form>
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>MAPI Parallel Fetch:</th>
+							<td>
+								<p>
+									<input name="mapi_product_ids" type="text" style="width:36em" placeholder="id1, id2, id3" value="<?php echo isset( $_GET['mapi_product_ids'] ) ? esc_attr( $_GET['mapi_product_ids'] ) : ''; ?>" />
+									<button class="button">Fetch products in parallel via MAPI</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'mapi-product-get-many' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="mapi-product-get-many" type="hidden" />
 				</form>
 				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 
@@ -1189,6 +1224,52 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 			}
 		}
 
+		if ( 'mapi-product-get' === $_GET['action'] && check_admin_referer( 'mapi-product-get' ) ) {
+			$id = isset( $_GET['mapi_product_id'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_product_id'] ) ) : '';
+
+			if ( '' === $id ) {
+				$this->response .= 'Please enter a Google product ID.';
+				return;
+			}
+
+			/** @var MapiProductsService $service */
+			$service        = $this->container->get( MapiProductsService::class );
+			$this->response = "MAPI GET accounts.products.get for {$id}\n\n";
+
+			try {
+				$product = $service->get( $id );
+				$this->response .= print_r( $this->dump_product( $product ), true );
+			} catch ( MerchantApiException $e ) {
+				$this->response .= sprintf( "HTTP %d\n", $e->get_http_status() );
+				$this->response .= print_r( $e->get_response_body(), true );
+			}
+		}
+
+		if ( 'mapi-product-get-many' === $_GET['action'] && check_admin_referer( 'mapi-product-get-many' ) ) {
+			$raw = isset( $_GET['mapi_product_ids'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_product_ids'] ) ) : '';
+			$ids = array_filter( array_map( 'trim', explode( ',', $raw ) ) );
+
+			if ( empty( $ids ) ) {
+				$this->response .= 'Please enter one or more Google product IDs (comma-separated).';
+				return;
+			}
+
+			/** @var MapiProductsService $service */
+			$service        = $this->container->get( MapiProductsService::class );
+			$this->response = sprintf( "MAPI parallel fetch for %d product(s)\n\n", count( $ids ) );
+
+			$results = $service->get_many( $ids );
+
+			foreach ( $ids as $id ) {
+				$this->response .= "--- {$id} ---\n";
+				if ( isset( $results[ $id ] ) ) {
+					$this->response .= print_r( $this->dump_product( $results[ $id ] ), true );
+				} else {
+					$this->response .= "(no result)\n";
+				}
+			}
+		}
+
 		if ( 'wcs-ads-customers-lib' === $_GET['action'] && check_admin_referer( 'wcs-ads-customers-lib' ) ) {
 			try {
 				$accounts = $this->container->get( Ads::class )->get_ads_accounts();
@@ -1426,6 +1507,42 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 		}
 
 		return 'X_JP_Auth ' . join( ' ', $header_pieces );
+	}
+
+	/**
+	 * Flatten a MAPI Product DTO
+	 */
+	private function dump_product( Product $product ): array {
+		$data = [
+			'id'             => $product->get_id(),
+			'offer_id'       => $product->get_offer_id(),
+			'title'          => $product->get_title(),
+			'target_country' => $product->get_target_country(),
+		];
+
+		$status = $product->get_product_status();
+		if ( null !== $status ) {
+			$issues = [];
+			foreach ( $status->get_item_level_issues() as $issue ) {
+				$issues[] = [
+					'code'                 => $issue->get_code(),
+					'description'          => $issue->get_description(),
+					'detail'               => $issue->get_detail(),
+					'documentation'        => $issue->get_documentation(),
+					'resolution'           => $issue->get_resolution(),
+					'severity'             => $issue->get_severity(),
+					'applicable_countries' => $issue->get_applicable_countries(),
+				];
+			}
+
+			$data['product_status'] = [
+				'last_update_date'     => $status->get_last_update_date(),
+				'destination_statuses' => $status->get_destination_statuses(),
+				'item_level_issues'    => $issues,
+			];
+		}
+
+		return $data;
 	}
 
 	/**
