@@ -947,10 +947,11 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_disconnect() {
-		$this->options->expects( $this->exactly( 8 ) )
+		$this->options->expects( $this->exactly( 9 ) )
 			->method( 'delete' )
 			->withConsecutive(
 				[ OptionsInterface::CONTACT_INFO_SETUP ],
+				[ OptionsInterface::MAPI_DATA_SOURCES ],
 				[ OptionsInterface::MC_SETUP_COMPLETED_AT ],
 				[ OptionsInterface::MERCHANT_ACCOUNT_STATE ],
 				[ OptionsInterface::MERCHANT_CENTER ],
