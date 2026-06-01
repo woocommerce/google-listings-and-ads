@@ -854,7 +854,7 @@ export function* getMarkets() {
 	yield fetchMarkets();
 }
 
-export function* getMCLanguagesCurrencies() {
+export function* getAvailableLanguagesCurrencies() {
 	try {
 		const data = yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/markets/languages-currencies`,
