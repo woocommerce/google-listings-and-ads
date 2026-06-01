@@ -427,7 +427,8 @@ describe( 'checkErrors', () => {
 				expect( errors.language ).toBeDefined();
 				expect( errors.language ).toContain( 'xx' );
 				expect( errors.language ).toContain( 'yy' );
-				expect( errors.language ).not.toContain( 'en' );
+				// Use word-boundary regex so "en" in "Center" doesn't trigger a false failure.
+				expect( errors.language ).not.toMatch( /\ben\b/ );
 			} );
 
 			it( 'also validates MC language support for flat-rate markets', () => {

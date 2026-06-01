@@ -205,8 +205,9 @@ class BatchProductHelper implements Service {
 	 * @return BatchProductRequestEntry[]
 	 */
 	public function validate_and_generate_update_request_entries( array $products ): array {
-		$request_entries = [];
-		$mapping_rules   = $this->attribute_mapping_rules_query->get_results();
+		$request_entries    = [];
+		$mapping_rules      = $this->attribute_mapping_rules_query->get_results();
+		$is_multilingual    = $this->market_service->has_multilingual_support();
 
 		foreach ( $products as $product ) {
 			$this->validate_instanceof( $product, WC_Product::class );
@@ -230,7 +231,7 @@ class BatchProductHelper implements Service {
 				$target_countries    = $this->target_audience->get_target_countries();
 				$main_target_country = $this->target_audience->get_main_target_country();
 
-				if ( $this->market_service->has_multilingual_support() ) {
+				if ( $is_multilingual ) {
 					// Multilingual path: generate one adapter per language × currency pair across all markets.
 					$feed_label_pairs = $this->get_unique_feed_label_pairs();
 
@@ -241,6 +242,24 @@ class BatchProductHelper implements Service {
 
 						$market_product  = $this->market_service->get_product_in_language( $product, $language ) ?? $product;
 						$adapted_product = $this->product_factory->create_for_market( $market_product, $pair['target_country'], $mapping_rules, $feed_label, $language, $currency );
+
+						// When WCML multi-currency is off, create_for_market() returns an adapter
+						// with no price (WPML active but WCML inactive). Log and skip rather than
+						// letting it fail validation with a cryptic "does not pass validation" message.
+						if ( null === $adapted_product->getPrice() ) {
+							do_action(
+								'woocommerce_gla_debug_message',
+								sprintf(
+									'Skipping product (ID: %s, feedLabel: %s) because no price could be resolved for currency %s. Ensure WCML multi-currency is enabled.',
+									$product->get_id(),
+									$feed_label,
+									$currency
+								),
+								__METHOD__
+							);
+							continue;
+						}
+
 						$validation_result = $this->validate_product( $adapted_product );
 						if ( $validation_result instanceof BatchInvalidProductEntry ) {
 							$this->mark_as_invalid( $validation_result );
@@ -333,7 +352,9 @@ class BatchProductHelper implements Service {
 	 * @return BatchProductIDRequestEntry[]
 	 */
 	public function generate_stale_products_request_entries( array $products ): array {
-		if ( $this->market_service->has_multilingual_support() ) {
+		$is_multilingual = $this->market_service->has_multilingual_support();
+
+		if ( $is_multilingual ) {
 			$active_keys = $this->product_helper->get_active_feed_labels_from_markets( $this->market_service->get_markets() );
 		} else {
 			$active_keys = $this->target_audience->get_target_countries();
@@ -348,7 +369,7 @@ class BatchProductHelper implements Service {
 			// In multilingual mode, skip stale detection for products that have not yet been
 			// re-synced with feedLabel keys. Without any active feedLabel in google_ids, deleting
 			// the old country-keyed entries now would leave the product temporarily absent from MC.
-			if ( $this->market_service->has_multilingual_support() ) {
+			if ( $is_multilingual ) {
 				$has_feed_label_entry = ! empty( array_intersect_key( $google_ids, $active_keys_flip ) );
 				if ( ! $has_feed_label_entry ) {
 					continue;
@@ -420,14 +441,25 @@ class BatchProductHelper implements Service {
 		$main_country     = $this->target_audience->get_main_target_country();
 		$pairs            = [];
 
-		foreach ( $markets as $market ) {
+		foreach ( $markets as $market_id => $market ) {
 			$languages  = $market['language'] ?? [];
 			$currencies = $market['currency'] ?? [];
 
-			// Primary market is identified by 'id' => 'primary'; secondary markets don't have this key.
-			// Note: get_markets() adds 'countries' to secondary markets too (as a single-element array),
-			// so checking 'countries' alone is not a reliable discriminator.
-			if ( ( $market['id'] ?? null ) === 'primary' ) {
+			if ( empty( $languages ) || empty( $currencies ) ) {
+				do_action(
+					'woocommerce_gla_debug_message',
+					sprintf(
+						'Skipping market (ID: %s) in feed-label pair generation: empty language or currency array.',
+						$market_id
+					),
+					__METHOD__
+				);
+				continue;
+			}
+
+			// Primary market is keyed 'primary' in the get_markets() return value.
+			// Secondary markets use their own ID as the key.
+			if ( 'primary' === $market_id ) {
 				$target_country     = $main_country;
 				$shipping_countries = $target_countries;
 			} elseif ( ! empty( $market['country'] ) ) {

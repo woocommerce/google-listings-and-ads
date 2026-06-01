@@ -462,6 +462,16 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				throw InvalidValue::is_empty( $key );
 			}
 		}
+
+		// On multilingual stores language and currency must be non-empty — an empty
+		// array produces zero feed-label pairs and the market would never sync.
+		if ( $this->has_multilingual_support() ) {
+			foreach ( [ 'language', 'currency' ] as $key ) {
+				if ( empty( $config[ $key ] ) ) {
+					throw InvalidValue::is_empty( $key );
+				}
+			}
+		}
 	}
 
 	/**

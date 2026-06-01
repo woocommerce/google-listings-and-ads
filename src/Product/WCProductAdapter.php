@@ -501,7 +501,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		// Virtual products should override any country shipping cost.
 		if ( $this->is_virtual() ) {
 			$product_shipping['price'] = [
-				'currency' => $this->currency_override ?? get_woocommerce_currency(),
+				'currency' => $this->get_effective_currency(),
 				'value'    => 0,
 			];
 		}
@@ -672,11 +672,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * @return $this
 	 */
 	protected function map_wc_product_price( WC_Product $product ): WCProductAdapter {
-		// Resolve the effective currency for this product entry.
-		$currency = get_woocommerce_currency();
-		if ( null !== $this->currency_override ) {
-			$currency = $this->currency_override;
-		}
+		$currency = $this->get_effective_currency();
 
 		// set regular price
 		$regular_price = $product->get_regular_price();
@@ -742,11 +738,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			$sale_price = $active_price;
 		}
 
-		// Resolve the effective currency for this product entry.
-		$currency = get_woocommerce_currency();
-		if ( null !== $this->currency_override ) {
-			$currency = $this->currency_override;
-		}
+		$currency = $this->get_effective_currency();
 
 		// set sale price and sale effective date if any
 		if ( '' !== $sale_price ) {
@@ -854,6 +846,18 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 *
 	 * @return bool
 	 */
+	/**
+	 * Returns the effective ISO 4217 currency for this product entry.
+	 *
+	 * Returns the multilingual currency override when one is set (multilingual mode),
+	 * otherwise falls back to the WooCommerce store currency.
+	 *
+	 * @return string
+	 */
+	protected function get_effective_currency(): string {
+		return $this->currency_override ?? get_woocommerce_currency();
+	}
+
 	public function is_virtual(): bool {
 		$is_virtual = $this->wc_product->is_virtual();
 

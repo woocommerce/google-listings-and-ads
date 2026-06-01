@@ -37,7 +37,8 @@ const checkErrors = ( values ) => {
 
 	if (
 		values.shipping_rate === 'flat' &&
-		( values.flat_shipping_rate === undefined ||
+		( values.flat_shipping_rate === null ||
+			values.flat_shipping_rate === undefined ||
 			values.flat_shipping_rate < 0 )
 	) {
 		errors.flat_shipping_rate = __(

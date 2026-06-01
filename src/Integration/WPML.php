@@ -98,13 +98,26 @@ class WPML implements IntegrationInterface {
 	}
 
 	/**
+	 * Returns whether WCML multi-currency mode is enabled.
+	 *
+	 * Uses the `wcml_is_multi_currency_on` filter — the canonical WCML API —
+	 * rather than the PHP function, so the check remains consistent across all
+	 * callers in this class.
+	 *
+	 * @return bool
+	 */
+	private function is_multi_currency_on(): bool {
+		return (bool) apply_filters( 'wcml_is_multi_currency_on', false );
+	}
+
+	/**
 	 * Returns WCML currency codes when multi-currency is enabled, or the single WooCommerce
 	 * store currency as a fallback when WCML multi-currency is off or unavailable.
 	 *
 	 * @return string[]
 	 */
 	protected function get_active_currency_codes(): array {
-		if ( function_exists( 'wcml_is_multi_currency_on' ) && wcml_is_multi_currency_on() ) {
+		if ( $this->is_multi_currency_on() ) {
 			global $woocommerce_wpml;
 
 			if ( isset( $woocommerce_wpml ) && is_object( $woocommerce_wpml ) && method_exists( $woocommerce_wpml, 'get_multi_currency' ) ) {
@@ -177,7 +190,7 @@ class WPML implements IntegrationInterface {
 			return null;
 		}
 
-		if ( ! apply_filters( 'wcml_is_multi_currency_on', false ) ) {
+		if ( ! $this->is_multi_currency_on() ) {
 			return null;
 		}
 
@@ -212,7 +225,7 @@ class WPML implements IntegrationInterface {
 			return null;
 		}
 
-		if ( ! apply_filters( 'wcml_is_multi_currency_on', false ) ) {
+		if ( ! $this->is_multi_currency_on() ) {
 			return null;
 		}
 

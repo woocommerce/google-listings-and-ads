@@ -205,6 +205,8 @@ class MarketsController extends BaseController {
 				return new Response( [ 'message' => $e->getMessage() ], 400 );
 			}
 
+			$updated['id'] = $id;
+
 			return new Response( $updated );
 		};
 	}

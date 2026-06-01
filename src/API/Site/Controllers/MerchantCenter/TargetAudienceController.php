@@ -187,13 +187,7 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
-			'get_callback' => function () {
-				$locale = $this->wp->get_locale();
-				if ( class_exists( Locale::class ) ) {
-					return Locale::getPrimaryLanguage( $locale );
-				}
-				return strtolower( explode( '_', $locale )[0] );
-			},
+			'get_callback' => $this->get_language_code_callback(),
 		];
 
 		return $fields;
@@ -283,10 +277,23 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 	}
 
 	/**
-	 * Get the callback to provide the language in use for the site.
+	 * Get the callback that returns the BCP 47 primary language code for the site locale.
+	 *
+	 * Uses PHP's Locale::getPrimaryLanguage() when the intl extension is available,
+	 * otherwise falls back to splitting on underscore and lowercasing the first segment.
 	 *
 	 * @return callable
 	 */
+	protected function get_language_code_callback(): callable {
+		return function () {
+			$locale = $this->wp->get_locale();
+			if ( class_exists( Locale::class ) ) {
+				return Locale::getPrimaryLanguage( $locale );
+			}
+			return strtolower( explode( '_', $locale )[0] );
+		};
+	}
+
 	protected function get_language_callback(): callable {
 		$locale = $this->wp->get_locale();
 

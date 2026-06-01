@@ -1,30 +1,17 @@
 /**
- * External dependencies
- */
-import { useSelect } from '@wordpress/data';
-
-/**
  * Internal dependencies
  */
-import { STORE_KEY } from '~/data/constants';
+import useAvailableLanguagesCurrencies from './useAvailableLanguagesCurrencies';
 
-const selectorName = 'getAvailableLanguagesCurrencies';
-
+/**
+ * Returns available languages from the store's multilingual integration.
+ * Delegates to useAvailableLanguagesCurrencies so both values share one resolver call.
+ *
+ * @return {{ languages: Array|null, hasFinishedResolution: boolean }}
+ */
 const useAvailableLanguages = () => {
-	return useSelect( ( select ) => {
-		const selector = select( STORE_KEY );
-
-		// Trigger the shared resolver that populates both languages and currencies.
-		selector[ selectorName ]();
-
-		return {
-			languages: selector.getAvailableLanguages(),
-			hasFinishedResolution: selector.hasFinishedResolution(
-				selectorName,
-				[]
-			),
-		};
-	}, [] );
+	const { languages, hasFinishedResolution } = useAvailableLanguagesCurrencies();
+	return { languages, hasFinishedResolution };
 };
 
 export default useAvailableLanguages;
