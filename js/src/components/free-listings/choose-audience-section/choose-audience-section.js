@@ -8,10 +8,9 @@ import { __ } from '@wordpress/i18n';
  */
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import AppRadioContentControl from '~/components/app-radio-content-control';
-import RadioHelperText from '~/components/radio-helper-text';
 import Section from '~/components/section';
-import SpinnerCard from '~/components/spinner-card';
 import Subsection from '~/components/subsection';
+import RadioHelperText from '~/components/radio-helper-text';
 import SupportedCountrySelect from '~/components/supported-country-select';
 import VerticalGapLayout from '~/components/vertical-gap-layout';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
@@ -24,8 +23,7 @@ import './choose-audience-section.scss';
  * Does not provide any save strategy, this is to be bound externally.
  */
 const ChooseAudienceSection = () => {
-	const { hasGoogleMCConnection, hasFinishedResolution } =
-		useGoogleMCAccount();
+	const { hasGoogleMCConnection } = useGoogleMCAccount();
 	const {
 		getInputProps,
 		adapter: { renderRequestedValidation },
@@ -70,60 +68,51 @@ const ChooseAudienceSection = () => {
 				title={ __( 'Audience', 'google-listings-and-ads' ) }
 				description={ <p>{ description }</p> }
 			>
-				{ ! hasFinishedResolution ? (
-					<SpinnerCard />
-				) : (
-					<Section.Card>
-						<Section.Card.Body>
-							<Subsection>
-								<Subsection.Title>
-									{ __(
-										'Location',
+				<Section.Card>
+					<Section.Card.Body>
+						<Subsection>
+							<Subsection.Title>
+								{ __( 'Location', 'google-listings-and-ads' ) }
+							</Subsection.Title>
+							<Subsection.HelperText>
+								{ titleHelper }
+							</Subsection.HelperText>
+							<VerticalGapLayout size="medium">
+								<AppRadioContentControl
+									{ ...getInputProps( 'location' ) }
+									collapsible={ true }
+									label={ __(
+										'Selected countries only',
 										'google-listings-and-ads'
 									) }
-								</Subsection.Title>
-								<Subsection.HelperText>
-									{ titleHelper }
-								</Subsection.HelperText>
-								<VerticalGapLayout size="medium">
-									<AppRadioContentControl
-										{ ...getInputProps( 'location' ) }
-										collapsible={ true }
-										label={ __(
-											'Selected countries only',
+									value="selected"
+								>
+									<SupportedCountrySelect
+										multiple
+										{ ...getInputProps( 'countries' ) }
+										help={ __(
+											'Can’t find a country? Only supported countries can be selected.',
 											'google-listings-and-ads'
 										) }
-										value="selected"
-									>
-										<SupportedCountrySelect
-											multiple
-											{ ...getInputProps( 'countries' ) }
-											help={ __(
-												'Can’t find a country? Only supported countries can be selected.',
-												'google-listings-and-ads'
-											) }
-										/>
-										{ renderRequestedValidation(
-											'countries'
-										) }
-									</AppRadioContentControl>
-									<AppRadioContentControl
-										{ ...getInputProps( 'location' ) }
-										label={ __(
-											'All countries',
-											'google-listings-and-ads'
-										) }
-										value="all"
-									>
-										<RadioHelperText>
-											{ radioHelper }
-										</RadioHelperText>
-									</AppRadioContentControl>
-								</VerticalGapLayout>
-							</Subsection>
-						</Section.Card.Body>
-					</Section.Card>
-				) }
+									/>
+									{ renderRequestedValidation( 'countries' ) }
+								</AppRadioContentControl>
+								<AppRadioContentControl
+									{ ...getInputProps( 'location' ) }
+									label={ __(
+										'All countries',
+										'google-listings-and-ads'
+									) }
+									value="all"
+								>
+									<RadioHelperText>
+										{ radioHelper }
+									</RadioHelperText>
+								</AppRadioContentControl>
+							</VerticalGapLayout>
+						</Subsection>
+					</Section.Card.Body>
+				</Section.Card>
 			</Section>
 		</>
 	);
