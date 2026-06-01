@@ -58,8 +58,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Event\StartProductSync;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CreateMerchantReportedConversionReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CreateYouTubeOrderIdsCache;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleDatafeedService;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketDatafeedManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PriceBenchmarks;
@@ -202,9 +200,6 @@ class JobServiceProvider extends AbstractServiceProvider {
 		// Share shipping settings syncer job and hooks.
 		$this->share_action_scheduler_job( UpdateShippingSettings::class, MerchantCenterService::class, GoogleSettings::class );
 		$this->share_with_tags( Shipping\SyncerHooks::class, MerchantCenterService::class, GoogleSettings::class, JobRepository::class, NotificationsService::class );
-
-		// Share market datafeed manager — also triggers shipping sync on market CRUD.
-		$this->share_with_tags( MarketDatafeedManager::class, GoogleDatafeedService::class, MarketService::class, JobRepository::class );
 
 		// Share plugin update jobs
 		$this->share_product_syncer_job( CleanupProductTargetCountriesJob::class );
