@@ -22,6 +22,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetRecommendations;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
@@ -107,6 +109,8 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		GooglePromotionService::class    => true,
 		MerchantApiClient::class         => true,
 		MapiProductsService::class       => true,
+		MapiDataSourcesService::class    => true,
+		MapiProductInputsService::class  => true,
 		SiteVerification::class          => true,
 		Settings::class                  => true,
 	];
@@ -216,6 +220,8 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			$this->get_connect_server_url_root( 'google/google-merchant' )
 		);
 		$this->share( MapiProductsService::class, MerchantApiClient::class );
+		$this->share( MapiDataSourcesService::class, MerchantApiClient::class );
+		$this->share( MapiProductInputsService::class, MerchantApiClient::class, MapiDataSourcesService::class );
 	}
 
 	/**

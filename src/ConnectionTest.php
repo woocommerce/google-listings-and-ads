@@ -16,6 +16,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\Product;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
@@ -343,6 +346,56 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 					<?php wp_nonce_field( 'mapi-product-get-many' ); ?>
 					<input name="page" value="connection-test-admin-page" type="hidden" />
 					<input name="action" value="mapi-product-get-many" type="hidden" />
+				</form>
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>MAPI Resolve Data Source:</th>
+							<td>
+								<p>
+									<input name="mapi_ds_language" type="text" style="width:5em" placeholder="en" value="<?php echo isset( $_GET['mapi_ds_language'] ) ? esc_attr( $_GET['mapi_ds_language'] ) : 'en'; ?>" />
+									<input name="mapi_ds_feed" type="text" style="width:5em" placeholder="US" value="<?php echo isset( $_GET['mapi_ds_feed'] ) ? esc_attr( $_GET['mapi_ds_feed'] ) : 'US'; ?>" />
+									<button class="button">Resolve data source</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'mapi-resolve-datasource' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="mapi-resolve-datasource" type="hidden" />
+				</form>
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>MAPI Insert Product:</th>
+							<td>
+								<p>
+									<input name="mapi_offer_id" type="text" style="width:18em" placeholder="offer id" value="<?php echo isset( $_GET['mapi_offer_id'] ) ? esc_attr( $_GET['mapi_offer_id'] ) : ''; ?>" />
+									<input name="mapi_title" type="text" style="width:22em" placeholder="product title" value="<?php echo isset( $_GET['mapi_title'] ) ? esc_attr( $_GET['mapi_title'] ) : ''; ?>" />
+									<button class="button">Insert product via MAPI</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'mapi-product-insert' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="mapi-product-insert" type="hidden" />
+				</form>
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>MAPI Parallel Insert:</th>
+							<td>
+								<p>
+									<input name="mapi_offer_ids" type="text" style="width:36em" placeholder="offer1, offer2, offer3" value="<?php echo isset( $_GET['mapi_offer_ids'] ) ? esc_attr( $_GET['mapi_offer_ids'] ) : ''; ?>" />
+									<button class="button">Insert products in parallel via MAPI</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'mapi-product-insert-many' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="mapi-product-insert-many" type="hidden" />
 				</form>
 				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 
@@ -1264,6 +1317,121 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 				$this->response .= "--- {$id} ---\n";
 				if ( isset( $results[ $id ] ) ) {
 					$this->response .= print_r( $this->dump_product( $results[ $id ] ), true );
+				} else {
+					$this->response .= "(no result)\n";
+				}
+			}
+		}
+
+		if ( 'mapi-resolve-datasource' === $_GET['action'] && check_admin_referer( 'mapi-resolve-datasource' ) ) {
+			$language = isset( $_GET['mapi_ds_language'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_ds_language'] ) ) : 'en';
+			$feed     = isset( $_GET['mapi_ds_feed'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_ds_feed'] ) ) : 'US';
+
+			/** @var MapiDataSourcesService $service */
+			$service        = $this->container->get( MapiDataSourcesService::class );
+			$this->response = "MAPI ensure_data_source_for({$language}, {$feed})\n\n";
+
+			try {
+				$this->response .= $service->ensure_data_source_for( $language, $feed ) . "\n";
+			} catch ( MerchantApiException $e ) {
+				$this->response .= sprintf( "HTTP %d\n", $e->get_http_status() );
+				$this->response .= print_r( $e->get_response_body(), true );
+			}
+		}
+
+		if ( 'mapi-product-insert' === $_GET['action'] && check_admin_referer( 'mapi-product-insert' ) ) {
+			$offer_id = isset( $_GET['mapi_offer_id'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_offer_id'] ) ) : '';
+			$title    = isset( $_GET['mapi_title'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_title'] ) ) : '';
+
+			if ( '' === $offer_id ) {
+				$this->response .= 'Please enter an offer ID.';
+				return;
+			}
+
+			$input = new ProductInput(
+				$offer_id,
+				'en',
+				'US',
+				[
+					'title'        => '' !== $title ? $title : $offer_id,
+					'description'  => 'Inserted via Connection Test.',
+					'link'         => home_url( '/' ),
+					'imageLink'    => 'https://via.placeholder.com/250',
+					'availability' => 'in_stock',
+					'condition'    => 'new',
+					'price'        => [
+						'amountMicros' => '19990000',
+						'currencyCode' => 'USD',
+					],
+				]
+			);
+
+			/** @var MapiProductInputsService $service */
+			$service        = $this->container->get( MapiProductInputsService::class );
+			$this->response = "MAPI productInputs.insert for {$offer_id}\n\n";
+
+			try {
+				$result          = $service->insert( $input );
+				$this->response .= print_r(
+					[
+						'name'       => $result->get_name(),
+						'offer_id'   => $result->get_offer_id(),
+						'feed_label' => $result->get_feed_label(),
+						'attributes' => $result->get_attributes(),
+					],
+					true
+				);
+			} catch ( MerchantApiException $e ) {
+				$this->response .= sprintf( "HTTP %d\n", $e->get_http_status() );
+				$this->response .= print_r( $e->get_response_body(), true );
+			}
+		}
+
+		if ( 'mapi-product-insert-many' === $_GET['action'] && check_admin_referer( 'mapi-product-insert-many' ) ) {
+			$raw       = isset( $_GET['mapi_offer_ids'] ) ? sanitize_text_field( wp_unslash( $_GET['mapi_offer_ids'] ) ) : '';
+			$offer_ids = array_filter( array_map( 'trim', explode( ',', $raw ) ) );
+
+			if ( empty( $offer_ids ) ) {
+				$this->response .= 'Please enter one or more offer IDs (comma-separated).';
+				return;
+			}
+
+			$inputs = [];
+			foreach ( $offer_ids as $offer_id ) {
+				$inputs[] = new ProductInput(
+					$offer_id,
+					'en',
+					'US',
+					[
+						'title'        => $offer_id,
+						'description'  => 'Inserted via Connection Test.',
+						'link'         => home_url( '/' ),
+						'imageLink'    => 'https://via.placeholder.com/250',
+						'availability' => 'in_stock',
+						'condition'    => 'new',
+						'price'        => [
+							'amountMicros' => '19990000',
+							'currencyCode' => 'USD',
+						],
+					]
+				);
+			}
+
+			/** @var MapiProductInputsService $service */
+			$service        = $this->container->get( MapiProductInputsService::class );
+			$this->response = sprintf( "MAPI parallel productInputs.insert for %d product(s)\n\n", count( $inputs ) );
+
+			$result = $service->insert_many( $inputs );
+
+			foreach ( $offer_ids as $index => $offer_id ) {
+				$this->response .= "--- {$offer_id} ---\n";
+				if ( isset( $result['successes'][ $index ] ) ) {
+					$this->response .= $result['successes'][ $index ]->get_name() . "\n";
+				} elseif ( isset( $result['failures'][ $index ] ) ) {
+					$e               = $result['failures'][ $index ];
+					$this->response .= $e instanceof MerchantApiException
+						? sprintf( "HTTP %d\n%s", $e->get_http_status(), print_r( $e->get_response_body(), true ) )
+						: get_class( $e ) . ': ' . $e->getMessage() . "\n";
 				} else {
 					$this->response .= "(no result)\n";
 				}
