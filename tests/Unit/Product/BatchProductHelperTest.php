@@ -440,7 +440,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertArrayHasKey( $google_ids['fr-EUR'], $results );
 	}
 
-	public function test_generate_stale_products_request_entries_multilingual_mode_pre_existing_country_keys_are_stale() {
+	public function test_generate_stale_products_request_entries_multilingual_mode_pre_existing_country_keys_skipped_until_resynced() {
 		$products         = $this->create_and_return_supported_test_products();
 		$stale_product    = $products[0];
 		$stale_product_id = $stale_product->get_id();
@@ -463,7 +463,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$product_helper       = new ProductHelper( $this->product_meta, $this->wc, $this->target_audience, $market_service );
 		$batch_product_helper = new BatchProductHelper( $this->product_meta, $product_helper, $this->validator, $this->product_factory, $this->target_audience, $this->rules_query, $market_service );
 
-		// Pre-migration google_ids keyed by country code — all are stale in multilingual mode.
+		// Pre-migration google_ids keyed by country code only — no feedLabel keys yet.
+		// These should be skipped until the normal sync cycle uploads new feedLabel entries,
+		// preventing a mass delete-before-reupload when WPML is first activated.
 		$google_ids = [
 			'US' => "online:en:US:gla_{$stale_product_id}",
 			'AU' => "online:en:AU:gla_{$stale_product_id}",
@@ -472,7 +474,46 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 		$results = $batch_product_helper->generate_stale_products_request_entries( $products );
 
+		$this->assertEmpty( $results );
+	}
+
+	public function test_generate_stale_products_request_entries_multilingual_mode_country_keys_stale_after_resync() {
+		$products         = $this->create_and_return_supported_test_products();
+		$stale_product    = $products[0];
+		$stale_product_id = $stale_product->get_id();
+
+		$market_service = $this->createMock( MarketService::class );
+		$market_service->expects( $this->any() )
+					   ->method( 'has_multilingual_support' )
+					   ->willReturn( true );
+		$market_service->expects( $this->any() )
+					   ->method( 'get_markets' )
+					   ->willReturn(
+						   [
+							   'primary' => [
+								   'language' => [ 'en' ],
+								   'currency' => [ 'USD' ],
+							   ],
+						   ]
+					   );
+
+		$product_helper       = new ProductHelper( $this->product_meta, $this->wc, $this->target_audience, $market_service );
+		$batch_product_helper = new BatchProductHelper( $this->product_meta, $product_helper, $this->validator, $this->product_factory, $this->target_audience, $this->rules_query, $market_service );
+
+		// Product has been re-synced (has an active feedLabel key) plus old country-code keys.
+		// Now the country-code keys are legitimately stale and should be deleted.
+		$google_ids = [
+			'en-USD' => "online:en:US:gla_{$stale_product_id}",
+			'US'     => "online:en:US:gla_{$stale_product_id}_old",
+			'AU'     => "online:en:AU:gla_{$stale_product_id}_old",
+		];
+		$this->product_meta->update_google_ids( $stale_product, $google_ids );
+
+		$results = $batch_product_helper->generate_stale_products_request_entries( $products );
+
 		$this->assertCount( 2, $results );
+		$this->assertArrayHasKey( $google_ids['US'], $results );
+		$this->assertArrayHasKey( $google_ids['AU'], $results );
 	}
 
 	public function test_validate_and_generate_update_request_entries_multilingual_uses_per_market_country() {

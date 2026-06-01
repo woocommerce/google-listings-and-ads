@@ -663,8 +663,9 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * Map the prices (base and sale price) for a given WooCommerce product.
 	 *
 	 * When a currency override is set (multilingual mode), the price is converted
-	 * via WCML. Falls back to the native price with the store currency when WCML
-	 * returns null (e.g. multi-currency is off or WPML is inactive).
+	 * via WCML. If WCML returns null (multi-currency off, WPML inactive, or product
+	 * has no price), no price is set and the method returns early — callers must
+	 * handle a null getPrice().
 	 *
 	 * @param WC_Product $product
 	 *
@@ -686,7 +687,9 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 				if ( null === $wcml_price ) {
 					return $this;
 				}
-				$price = $wcml_price;
+				$price = $this->tax_excluded ?
+					wc_get_price_excluding_tax( $product, [ 'price' => $wcml_price ] ) :
+					wc_get_price_including_tax( $product, [ 'price' => $wcml_price ] );
 			} else {
 				$price = $this->tax_excluded ?
 					wc_get_price_excluding_tax( $product, [ 'price' => $regular_price ] ) :
@@ -754,7 +757,9 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 				if ( null === $wcml_sale_price ) {
 					return $this;
 				}
-				$sale_price = $wcml_sale_price;
+				$sale_price = $this->tax_excluded ?
+					wc_get_price_excluding_tax( $product, [ 'price' => $wcml_sale_price ] ) :
+					wc_get_price_including_tax( $product, [ 'price' => $wcml_sale_price ] );
 			} else {
 				$sale_price = $this->tax_excluded ?
 					wc_get_price_excluding_tax( $product, [ 'price' => $sale_price ] ) :

@@ -177,7 +177,7 @@ class WPML implements IntegrationInterface {
 			return null;
 		}
 
-		if ( ! function_exists( 'wcml_is_multi_currency_on' ) || ! wcml_is_multi_currency_on() ) {
+		if ( ! apply_filters( 'wcml_is_multi_currency_on', false ) ) {
 			return null;
 		}
 
@@ -212,7 +212,7 @@ class WPML implements IntegrationInterface {
 			return null;
 		}
 
-		if ( ! function_exists( 'wcml_is_multi_currency_on' ) || ! wcml_is_multi_currency_on() ) {
+		if ( ! apply_filters( 'wcml_is_multi_currency_on', false ) ) {
 			return null;
 		}
 

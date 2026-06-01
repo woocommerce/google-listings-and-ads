@@ -235,6 +235,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$this->remove_country_from_target_audience( $config['country'] );
 		}
 
+		/**
+		 * Fires after a secondary market has been persisted.
+		 *
+		 * @since 2.9.0
+		 *
+		 * @param string $id     The market ID that was added.
+		 * @param array  $config The full market config as stored.
+		 */
 		do_action( 'woocommerce_gla_market_added', $id, $config );
 	}
 
@@ -257,6 +265,15 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		if ( 'primary' === $id ) {
 			$this->update_primary_market_fanout( $config );
 			$updated_market = $this->get_market( $id );
+
+			/**
+			 * Fires after a market has been updated.
+			 *
+			 * @since 2.9.0
+			 *
+			 * @param string $id             The market ID that was updated.
+			 * @param array  $updated_market The full composed market as returned by get_market().
+			 */
 			do_action( 'woocommerce_gla_market_updated', $id, $updated_market );
 
 			return $updated_market;
@@ -272,6 +289,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$this->options->update( OptionsInterface::MARKETS, $markets );
 
 		$updated_market = $this->get_market( $id );
+
+		/** This action is documented in src/MerchantCenter/MarketService.php */
 		do_action( 'woocommerce_gla_market_updated', $id, $updated_market );
 
 		return $updated_market;
@@ -305,6 +324,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$this->restore_country_to_target_audience( $country );
 		}
 
+		/**
+		 * Fires after a secondary market has been removed.
+		 *
+		 * @since 2.9.0
+		 *
+		 * @param string $id             The market ID that was deleted.
+		 * @param array  $deleted_config The market config at the time of deletion.
+		 */
 		do_action( 'woocommerce_gla_market_deleted', $id, $deleted_config );
 	}
 

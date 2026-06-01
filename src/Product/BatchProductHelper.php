@@ -321,7 +321,12 @@ class BatchProductHelper implements Service {
 	 * Filters and returns an array of request entries for Google products that should no longer be submitted for the selected target audience.
 	 *
 	 * In multilingual mode, stale detection compares stored google_ids keys against the set of active
-	 * feedLabels across all markets. In non-multilingual mode, the existing country-key comparison is used.
+	 * feedLabels across all markets. Products whose google_ids still contain only legacy country-code
+	 * keys (pre-multilingual schema) are skipped until the normal sync cycle has had a chance to
+	 * upload the new feedLabel-keyed entries — this prevents a mass delete-before-reupload when
+	 * WPML is first activated on a store with existing synced products.
+	 *
+	 * In non-multilingual mode, the existing country-key comparison is used.
 	 *
 	 * @param WC_Product[] $products
 	 *
@@ -334,10 +339,23 @@ class BatchProductHelper implements Service {
 			$active_keys = $this->target_audience->get_target_countries();
 		}
 
-		$request_entries = [];
+		$active_keys_flip = array_flip( $active_keys );
+		$request_entries  = [];
+
 		foreach ( $products as $product ) {
 			$google_ids = $this->meta_handler->get_google_ids( $product ) ?: [];
-			$stale_ids  = array_diff_key( $google_ids, array_flip( $active_keys ) );
+
+			// In multilingual mode, skip stale detection for products that have not yet been
+			// re-synced with feedLabel keys. Without any active feedLabel in google_ids, deleting
+			// the old country-keyed entries now would leave the product temporarily absent from MC.
+			if ( $this->market_service->has_multilingual_support() ) {
+				$has_feed_label_entry = ! empty( array_intersect_key( $google_ids, $active_keys_flip ) );
+				if ( ! $has_feed_label_entry ) {
+					continue;
+				}
+			}
+
+			$stale_ids = array_diff_key( $google_ids, $active_keys_flip );
 			foreach ( $stale_ids as $stale_id ) {
 				$request_entries[ $stale_id ] = new BatchProductIDRequestEntry(
 					$product->get_id(),
