@@ -1,0 +1,158 @@
+<?php
+declare( strict_types=1 );
+
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification;
+
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use PHPUnit\Framework\MockObject\MockObject;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Class NotificationServiceTest
+ *
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification
+ */
+class NotificationServiceTest extends UnitTest {
+
+	/** @var MockObject|Container $container */
+	protected $container;
+
+	/** @var NotificationService $service */
+	protected $service;
+
+	/**
+	 * Runs before each test is executed.
+	 */
+	public function setUp(): void {
+		parent::setUp();
+
+		$this->login_as_administrator();
+
+		$this->container = $this->createMock( Container::class );
+
+		$this->service = new NotificationService( new WP() );
+		$this->service->set_container( $this->container );
+	}
+
+	public function test_returns_ids_in_priority_order() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'notification-c', 30, true ),
+				$this->create_mocked_evaluator( 'notification-a', 10, true ),
+				$this->create_mocked_evaluator( 'notification-b', 20, true ),
+			]
+		);
+
+		$ids = wp_list_pluck( $this->service->get_notifications(), 'id' );
+
+		$this->assertEquals( [ 'notification-a', 'notification-b', 'notification-c' ], $ids );
+	}
+
+	public function test_excludes_notifications_that_should_not_show() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'notification-a', 10, true ),
+				$this->create_mocked_evaluator( 'notification-b', 20, false ),
+			]
+		);
+
+		$ids = wp_list_pluck( $this->service->get_notifications(), 'id' );
+
+		$this->assertEquals( [ 'notification-a' ], $ids );
+	}
+
+	public function test_triggered_at_is_set_on_first_trigger_and_unchanged_afterwards() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'notification-a', 10, true ),
+			]
+		);
+
+		$first  = $this->service->get_notifications();
+		$second = $this->service->get_notifications();
+
+		$this->assertNotEmpty( $first[0]['triggered_at'] );
+		$this->assertIsInt( $first[0]['triggered_at'] );
+		$this->assertEquals( $first[0]['triggered_at'], $second[0]['triggered_at'] );
+	}
+
+	public function test_dismissed_notification_absent_from_all_future_results() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'notification-a', 10, true ),
+				$this->create_mocked_evaluator( 'notification-b', 20, true ),
+			]
+		);
+
+		$this->service->dismiss( 'notification-a' );
+
+		$first_ids  = wp_list_pluck( $this->service->get_notifications(), 'id' );
+		$second_ids = wp_list_pluck( $this->service->get_notifications(), 'id' );
+
+		$this->assertEquals( [ 'notification-b' ], $first_ids );
+		$this->assertEquals( [ 'notification-b' ], $second_ids );
+	}
+
+	public function test_dismissing_one_id_does_not_affect_another() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'notification-a', 10, true ),
+				$this->create_mocked_evaluator( 'notification-b', 20, true ),
+			]
+		);
+
+		// Record a trigger for both notifications first.
+		$initial      = $this->service->get_notifications();
+		$triggered_at = wp_list_pluck( $initial, 'triggered_at', 'id' );
+
+		$this->service->dismiss( 'notification-a' );
+
+		$remaining = $this->service->get_notifications();
+
+		$this->assertCount( 1, $remaining );
+		$this->assertEquals( 'notification-b', $remaining[0]['id'] );
+		$this->assertEquals( $triggered_at['notification-b'], $remaining[0]['triggered_at'] );
+	}
+
+	public function test_non_manage_woocommerce_user_returns_empty_array() {
+		wp_set_current_user( 0 );
+
+		$this->assertEquals( [], $this->service->get_notifications() );
+	}
+
+	/**
+	 * Have the mocked container return the given evaluators.
+	 *
+	 * @param NotificationEvaluatorInterface[] $evaluators
+	 *
+	 * @return void
+	 */
+	private function set_evaluators( array $evaluators ): void {
+		$this->container->method( 'get' )
+			->with( NotificationEvaluatorInterface::class )
+			->willReturn( $evaluators );
+	}
+
+	/**
+	 * Create a mocked notification evaluator.
+	 *
+	 * @param string $id          The notification ID.
+	 * @param int    $priority    The notification priority.
+	 * @param bool   $should_show Whether the condition is met.
+	 *
+	 * @return MockObject|NotificationEvaluatorInterface
+	 */
+	private function create_mocked_evaluator( string $id, int $priority, bool $should_show ): MockObject {
+		$evaluator = $this->createMock( NotificationEvaluatorInterface::class );
+		$evaluator->method( 'get_id' )->willReturn( $id );
+		$evaluator->method( 'get_priority' )->willReturn( $priority );
+		$evaluator->method( 'should_show' )->willReturn( $should_show );
+
+		return $evaluator;
+	}
+}
