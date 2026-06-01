@@ -10,7 +10,9 @@ describe( 'getNotifications', () => {
 			{ id: 'notif-2', triggered_at: 2000 },
 		];
 
-		expect( getNotifications( { notifications } ) ).toEqual( notifications );
+		expect( getNotifications( { notifications } ) ).toEqual(
+			notifications
+		);
 	} );
 
 	it( 'returns empty array when state.notifications is undefined', () => {
