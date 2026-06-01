@@ -217,7 +217,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$config['shipping_time'] = $mc_settings['shipping_time'] ?? 'flat';
 		}
 
-		$config = $this->merge_language_currency_with_primary( $config );
+		$config = $this->apply_language_currency_defaults( $config );
 
 		$this->validate_secondary_market_config( $config );
 
@@ -257,7 +257,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$merged   = array_merge( $existing, $config );
 
 		if ( array_key_exists( 'language', $config ) || array_key_exists( 'currency', $config ) ) {
-			$merged = $this->merge_language_currency_with_primary(
+			$merged = $this->apply_language_currency_defaults(
 				$merged,
 				array_key_exists( 'language', $config ),
 				array_key_exists( 'currency', $config )
@@ -408,51 +408,66 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Prepends the site primary language and currency to request-supplied values.
+	 * Normalises the language and currency fields against the site primary.
 	 *
-	 * Omitted keys or empty arrays result in a single-element array containing
-	 * only the site primary. Non-array values are rejected before merging.
+	 * User-supplied non-empty arrays are stored as-is. Omitted keys or empty
+	 * arrays fall back to a single-element array containing the site primary.
+	 * Non-array values are rejected.
 	 *
 	 * @param array $config
-	 * @param bool  $merge_language Whether to merge the language field.
-	 * @param bool  $merge_currency Whether to merge the currency field.
+	 * @param bool  $apply_language Whether to normalise the language field.
+	 * @param bool  $apply_currency Whether to normalise the currency field.
 	 *
 	 * @return array
 	 *
 	 * @throws InvalidValue When language or currency is present but not an array.
 	 */
-	private function merge_language_currency_with_primary(
+	private function apply_language_currency_defaults(
 		array $config,
-		bool $merge_language = true,
-		bool $merge_currency = true
+		bool $apply_language = true,
+		bool $apply_currency = true
 	): array {
-		if ( $merge_language ) {
-			if ( array_key_exists( 'language', $config ) && ! is_array( $config['language'] ) ) {
-				throw InvalidValue::is_empty( 'language' );
-			}
-
-			$language_extras    = isset( $config['language'] ) && is_array( $config['language'] ) ? $config['language'] : [];
-			$config['language'] = array_values(
-				array_unique(
-					array_merge( [ $this->get_site_primary_language() ], $language_extras )
-				)
+		if ( $apply_language ) {
+			$config['language'] = $this->resolve_locale_field(
+				$config,
+				'language',
+				$this->get_site_primary_language()
 			);
 		}
 
-		if ( $merge_currency ) {
-			if ( array_key_exists( 'currency', $config ) && ! is_array( $config['currency'] ) ) {
-				throw InvalidValue::is_empty( 'currency' );
-			}
-
-			$currency_extras    = isset( $config['currency'] ) && is_array( $config['currency'] ) ? $config['currency'] : [];
-			$config['currency'] = array_values(
-				array_unique(
-					array_merge( [ $this->get_site_primary_currency() ], $currency_extras )
-				)
+		if ( $apply_currency ) {
+			$config['currency'] = $this->resolve_locale_field(
+				$config,
+				'currency',
+				$this->get_site_primary_currency()
 			);
 		}
 
 		return $config;
+	}
+
+	/**
+	 * Resolves a locale-style array field, falling back to the site primary.
+	 *
+	 * Returns the supplied values as-is when a non-empty array is provided, or
+	 * a single-element array containing the site primary when omitted or empty.
+	 *
+	 * @param array  $config
+	 * @param string $key
+	 * @param string $primary
+	 *
+	 * @return string[]
+	 *
+	 * @throws InvalidValue When the field is present but not an array.
+	 */
+	private function resolve_locale_field( array $config, string $key, string $primary ): array {
+		if ( array_key_exists( $key, $config ) && ! is_array( $config[ $key ] ) ) {
+			throw InvalidValue::is_empty( $key );
+		}
+
+		$values = isset( $config[ $key ] ) && is_array( $config[ $key ] ) ? array_values( $config[ $key ] ) : [];
+
+		return empty( $values ) ? [ $primary ] : $values;
 	}
 
 	/**

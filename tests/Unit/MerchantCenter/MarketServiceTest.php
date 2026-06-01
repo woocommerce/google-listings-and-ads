@@ -289,8 +289,8 @@ class MarketServiceTest extends UnitTest {
 		$this->assertArrayHasKey( OptionsInterface::MARKETS, $update_calls );
 		$stored_gb = $update_calls[ OptionsInterface::MARKETS ]['gb'];
 		$this->assertSame( 'GB', $stored_gb['country'] );
-		$this->assertSame( [ substr( get_locale(), 0, 2 ) ], $stored_gb['language'] );
-		$this->assertSame( [ get_woocommerce_currency(), 'GBP' ], $stored_gb['currency'] );
+		$this->assertSame( [ 'en' ], $stored_gb['language'] );
+		$this->assertSame( [ 'GBP' ], $stored_gb['currency'] );
 		$this->assertSame( 'GB', $stored_gb['feed_label'] );
 		$this->assertSame( 'flat', $stored_gb['shipping_rate'] );
 		$this->assertSame( 'flat', $stored_gb['shipping_time'] );
@@ -445,7 +445,7 @@ class MarketServiceTest extends UnitTest {
 
 		$this->market_service->update_market( 'gb', [ 'currency' => [ 'EUR' ] ] );
 
-		$this->assertSame( [ get_woocommerce_currency(), 'EUR' ], $persisted['gb']['currency'] );
+		$this->assertSame( [ 'EUR' ], $persisted['gb']['currency'] );
 		$this->assertSame( 'GB', $persisted['gb']['country'] );
 	}
 
@@ -478,7 +478,7 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( [ 'en', 'de' ], $persisted['gb']['language'] );
 	}
 
-	public function test_update_market_merges_language_with_primary_when_language_provided(): void {
+	public function test_update_market_stores_supplied_language_as_is(): void {
 		$existing = [
 			'gb' => [
 				'country'    => 'GB',
@@ -504,10 +504,36 @@ class MarketServiceTest extends UnitTest {
 
 		$this->market_service->update_market( 'gb', [ 'language' => [ 'fr', 'de' ] ] );
 
-		$this->assertSame(
-			[ substr( get_locale(), 0, 2 ), 'fr', 'de' ],
-			$persisted['gb']['language']
-		);
+		$this->assertSame( [ 'fr', 'de' ], $persisted['gb']['language'] );
+	}
+
+	public function test_update_market_empty_language_falls_back_to_site_primary(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en', 'de' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$persisted = null;
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$persisted ) {
+					if ( OptionsInterface::MARKETS === $key ) {
+						$persisted = $value;
+					}
+					return true;
+				}
+			);
+
+		$this->market_service->update_market( 'gb', [ 'language' => [] ] );
+
+		$this->assertSame( [ substr( get_locale(), 0, 2 ) ], $persisted['gb']['language'] );
 	}
 
 	public function test_update_market_secondary_validates_merged_config(): void {
@@ -909,14 +935,8 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->add_market( 'ch', $config );
 
 		$stored_ch = $update_calls[ OptionsInterface::MARKETS ]['ch'];
-		$this->assertSame(
-			[ substr( get_locale(), 0, 2 ), 'de', 'fr', 'it' ],
-			$stored_ch['language']
-		);
-		$this->assertSame(
-			[ get_woocommerce_currency(), 'CHF', 'EUR' ],
-			$stored_ch['currency']
-		);
+		$this->assertSame( [ 'de', 'fr', 'it' ], $stored_ch['language'] );
+		$this->assertSame( [ 'CHF', 'EUR' ], $stored_ch['currency'] );
 	}
 
 	public function test_add_market_without_language_currency_stores_site_primary_only(): void {
@@ -979,7 +999,7 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( [ get_woocommerce_currency() ], $stored_gb['currency'] );
 	}
 
-	public function test_add_market_with_extra_languages_prepends_site_primary(): void {
+	public function test_add_market_stores_supplied_language_as_is(): void {
 		$config = [
 			'country'    => 'FR',
 			'language'   => [ 'fr', 'de' ],
@@ -1006,10 +1026,8 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->add_market( 'fr', $config );
 
 		$stored_fr = $update_calls[ OptionsInterface::MARKETS ]['fr'];
-		$this->assertSame(
-			[ substr( get_locale(), 0, 2 ), 'fr', 'de' ],
-			$stored_fr['language']
-		);
+		$this->assertSame( [ 'fr', 'de' ], $stored_fr['language'] );
+		$this->assertSame( [ 'EUR' ], $stored_fr['currency'] );
 	}
 
 	public function test_has_multilingual_support_returns_true(): void {
