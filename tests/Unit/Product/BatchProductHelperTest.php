@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
@@ -185,6 +186,78 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertArrayNotHasKey( 'online:en:US:gla_' . $skipped_product->get_id(), $results );
 	}
 
+	public function test_generate_mapi_delete_entries() {
+		$products = $this->create_and_return_supported_test_products();
+
+		foreach ( $products as $product ) {
+			$this->product_helper->mark_as_synced(
+				$product,
+				$this->generate_google_product_mock( "en~US~gla_{$product->get_id()}", 'US' )
+			);
+		}
+
+		$results = $this->batch_product_helper->generate_mapi_delete_entries( $products );
+
+		$this->assertCount( count( $products ), $results );
+		foreach ( $results as $entry ) {
+			$this->assertInstanceOf( ProductInput::class, $entry['input'] );
+			$this->assertSame( 'US', $entry['country'] );
+			$this->assertSame( "en~US~gla_{$entry['wc_product_id']}", $entry['google_id'] );
+			$this->assertSame( 'en', $entry['input']->get_content_language() );
+			$this->assertSame( 'US', $entry['input']->get_feed_label() );
+			$this->assertSame( "gla_{$entry['wc_product_id']}", $entry['input']->get_offer_id() );
+		}
+	}
+
+	public function test_generate_mapi_delete_entries_variable_product() {
+		$variable   = WC_Helper_Product::create_variation_product();
+		$variations = [];
+		foreach ( $variable->get_children() as $variation_id ) {
+			$variation = $this->wc->get_product( $variation_id );
+			$this->product_helper->mark_as_synced(
+				$variation,
+				$this->generate_google_product_mock( "en~US~gla_{$variation->get_id()}", 'US' )
+			);
+			$variations[] = $variation;
+		}
+
+		$results = $this->batch_product_helper->generate_mapi_delete_entries( [ $variable ] );
+
+		$this->assertCount( count( $variations ), $results );
+	}
+
+	public function test_generate_mapi_delete_entries_skips_products_without_google_id() {
+		$products = $this->create_and_return_supported_test_products();
+
+		foreach ( $products as $product ) {
+			$this->product_helper->mark_as_synced(
+				$product,
+				$this->generate_google_product_mock( "en~US~gla_{$product->get_id()}", 'US' )
+			);
+		}
+
+		$skipped_product = $products[0];
+		$this->product_meta->delete_google_ids( $skipped_product );
+
+		$results = $this->batch_product_helper->generate_mapi_delete_entries( $products );
+
+		$this->assertNotContains( $skipped_product->get_id(), array_column( $results, 'wc_product_id' ) );
+	}
+
+	public function test_generate_mapi_delete_entries_skips_malformed_id() {
+		$products = $this->create_and_return_supported_test_products();
+		$product  = $products[0];
+
+		$this->product_helper->mark_as_synced(
+			$product,
+			$this->generate_google_product_mock( 'malformed-id', 'US' )
+		);
+
+		$results = $this->batch_product_helper->generate_mapi_delete_entries( [ $product ] );
+
+		$this->assertEmpty( $results );
+	}
+
 	public function test_validate_and_generate_update_request_entries() {
 		$products = $this->create_and_return_supported_test_products();
 
@@ -310,7 +383,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->batch_product_helper->validate_and_generate_update_request_entries( $products );
 	}
 
-	public function test_generate_stale_products_request_entries() {
+	public function test_generate_stale_products_delete_entries() {
 		$products         = $this->create_and_return_supported_test_products();
 		$stale_product    = $products[0];
 		$stale_product_id = $stale_product->get_id();
@@ -318,30 +391,32 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->target_audience->expects( $this->once() )
 			->method( 'get_target_countries' )
 			->willReturn( [ 'US' ] );
-		$this->target_audience->expects( $this->any() )
-			->method( 'get_main_target_country' )
-			->willReturn( 'US' );
 
 		$stale_google_ids = [
-			'AU' => "online:en:AU:gla_{$stale_product_id}",
-			'DK' => "online:en:DK:gla_{$stale_product_id}",
-			'US' => "online:en:US:gla_{$stale_product_id}",
+			'AU' => "en~AU~gla_{$stale_product_id}",
+			'DK' => "en~DK~gla_{$stale_product_id}",
+			'US' => "en~US~gla_{$stale_product_id}",
 		];
 		$this->product_meta->update_google_ids( $stale_product, $stale_google_ids );
 
-		$results = $this->batch_product_helper->generate_stale_products_request_entries( $products );
+		$results = $this->batch_product_helper->generate_stale_products_delete_entries( $products );
 
 		$this->assertCount( 2, $results );
-		$this->assertContainsOnlyInstancesOf( BatchProductIDRequestEntry::class, $results );
-		$this->assertArrayHasKey( $stale_google_ids['AU'], $results );
-		$this->assertArrayHasKey( $stale_google_ids['DK'], $results );
 
-		foreach ( $results as $request_entry ) {
-			$this->assertEquals( $stale_product_id, $request_entry->get_wc_product_id() );
+		$entries_by_country = [];
+		foreach ( $results as $entry ) {
+			$this->assertInstanceOf( ProductInput::class, $entry['input'] );
+			$this->assertSame( $stale_product_id, $entry['wc_product_id'] );
+			$entries_by_country[ $entry['country'] ] = $entry;
 		}
+
+		$this->assertArrayHasKey( 'AU', $entries_by_country );
+		$this->assertArrayHasKey( 'DK', $entries_by_country );
+		$this->assertSame( $stale_google_ids['AU'], $entries_by_country['AU']['google_id'] );
+		$this->assertSame( $stale_google_ids['DK'], $entries_by_country['DK']['google_id'] );
 	}
 
-	public function test_generate_stale_countries_request_entries() {
+	public function test_generate_stale_countries_delete_entries() {
 		$products         = $this->create_and_return_supported_test_products();
 		$stale_product    = $products[0];
 		$stale_product_id = $stale_product->get_id();
@@ -351,22 +426,27 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			->willReturn( 'US' );
 
 		$stale_google_ids = [
-			'AU' => "online:en:AU:gla_{$stale_product_id}",
-			'DK' => "online:en:DK:gla_{$stale_product_id}",
-			'US' => "online:en:US:gla_{$stale_product_id}",
+			'AU' => "en~AU~gla_{$stale_product_id}",
+			'DK' => "en~DK~gla_{$stale_product_id}",
+			'US' => "en~US~gla_{$stale_product_id}",
 		];
 		$this->product_meta->update_google_ids( $stale_product, $stale_google_ids );
 
-		$results = $this->batch_product_helper->generate_stale_countries_request_entries( $products );
+		$results = $this->batch_product_helper->generate_stale_countries_delete_entries( $products );
 
 		$this->assertCount( 2, $results );
-		$this->assertContainsOnlyInstancesOf( BatchProductIDRequestEntry::class, $results );
-		$this->assertArrayHasKey( $stale_google_ids['AU'], $results );
-		$this->assertArrayHasKey( $stale_google_ids['DK'], $results );
 
-		foreach ( $results as $request_entry ) {
-			$this->assertEquals( $stale_product_id, $request_entry->get_wc_product_id() );
+		$entries_by_country = [];
+		foreach ( $results as $entry ) {
+			$this->assertInstanceOf( ProductInput::class, $entry['input'] );
+			$this->assertSame( $stale_product_id, $entry['wc_product_id'] );
+			$entries_by_country[ $entry['country'] ] = $entry;
 		}
+
+		$this->assertArrayHasKey( 'AU', $entries_by_country );
+		$this->assertArrayHasKey( 'DK', $entries_by_country );
+		$this->assertSame( $stale_google_ids['AU'], $entries_by_country['AU']['google_id'] );
+		$this->assertSame( $stale_google_ids['DK'], $entries_by_country['DK']['google_id'] );
 	}
 
 	/**
