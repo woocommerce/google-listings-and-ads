@@ -128,7 +128,11 @@ const checkErrors = ( values ) => {
 	// For flat-rate markets, language is [] (field not shown), so unsupportedLanguages
 	// is always empty and this block is a no-op — it only fires for non-flat markets
 	// that already have language values submitted.
-	if ( isMultiLingualStore && ! errors.language && ( values.language ?? [] ).length > 0 ) {
+	if (
+		isMultiLingualStore &&
+		! errors.language &&
+		( values.language ?? [] ).length > 0
+	) {
 		const unsupportedLanguages = ( values.language ?? [] ).filter(
 			( language ) => ! MC_SUPPORTED_LANGUAGES.has( language )
 		);

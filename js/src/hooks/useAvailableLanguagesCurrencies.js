@@ -15,7 +15,7 @@ const selectorName = 'getAvailableLanguagesCurrencies';
  * integration (e.g. WPML/WCML). Both values are populated by a single resolver,
  * so this hook fires one request for both.
  *
- * @return {{ languages: Array|null, currencies: Array|null, hasFinishedResolution: boolean }}
+ * @return {Object} An object containing the available languages, currencies, and resolution status.
  */
 const useAvailableLanguagesCurrencies = () => {
 	return useSelect( ( select ) => {
