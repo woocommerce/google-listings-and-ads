@@ -79,6 +79,7 @@ const DEFAULT_STATE = {
 		budgetMetrics: {},
 		settings: null,
 	},
+	notifications: [],
 	gtinMigrationStatus: null,
 	price_benchmark: {
 		suggestions: {
@@ -710,6 +711,19 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 
 		case TYPES.DISCONNECT_ACCOUNTS_YOUTUBE: {
 			return setIn( state, 'mc.accounts.youtube', null );
+		}
+
+		case TYPES.RECEIVE_NOTIFICATIONS: {
+			return { ...state, notifications: action.notifications };
+		}
+
+		case TYPES.DISMISS_NOTIFICATION: {
+			return {
+				...state,
+				notifications: state.notifications.filter(
+					( n ) => n.id !== action.id
+				),
+			};
 		}
 
 		case TYPES.DISCONNECT_ACCOUNTS_ALL:
