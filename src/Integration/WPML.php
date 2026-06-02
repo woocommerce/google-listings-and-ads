@@ -100,14 +100,10 @@ class WPML implements IntegrationInterface {
 	/**
 	 * Returns whether WCML multi-currency mode is enabled.
 	 *
-	 * Uses the `wcml_is_multi_currency_on` filter — the canonical WCML API —
-	 * rather than the PHP function, so the check remains consistent across all
-	 * callers in this class.
-	 *
 	 * @return bool
 	 */
 	private function is_multi_currency_on(): bool {
-		return (bool) apply_filters( 'wcml_is_multi_currency_on', false );
+		return function_exists( 'wcml_is_multi_currency_on' ) && wcml_is_multi_currency_on();
 	}
 
 	/**
