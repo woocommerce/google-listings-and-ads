@@ -1406,7 +1406,7 @@ export function* clearDetailedErrorBySlots( slots ) {
 	return {
 		type: TYPES.CLEAR_DETAILED_ERROR_BY_SLOT,
 		slots,
-	}
+	};
 }
 
 export function receiveCYOIncentives( cyoIncentives ) {

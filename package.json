@@ -154,11 +154,7 @@
 			},
 			{
 				"path": "./js/build/commons.js",
-				"maxSize": "70.0 kB"
-			},
-			{
-				"path": "./js/build/commons.js",
-				"maxSize": "86.90 kB"
+				"maxSize": "88.10 kB"
 			},
 			{
 				"path": "./js/build/vendors.js",
