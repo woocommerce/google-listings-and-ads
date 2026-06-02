@@ -56,7 +56,9 @@ observer.observe( document.body, {
 	subtree: true,
 } );
 
-const existingMultichannel = document.querySelector( `.${ MULTICHANNEL_CLASS }` );
+const existingMultichannel = document.querySelector(
+	`.${ MULTICHANNEL_CLASS }`
+);
 if ( existingMultichannel ) {
 	mount( existingMultichannel );
 }
