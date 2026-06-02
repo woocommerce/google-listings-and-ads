@@ -1087,6 +1087,84 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( [ 'EUR' ], $stored_fr['currency'] );
 	}
 
+	public function test_get_secondary_market_countries_returns_empty_when_no_markets(): void {
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+
+		$this->assertSame( [], $this->market_service->get_secondary_market_countries() );
+	}
+
+	public function test_get_secondary_market_countries_returns_codes(): void {
+		$markets = [
+			'mu' => [
+				'country'    => 'MU',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'MUR' ],
+				'feed_label' => 'MU',
+			],
+			'zw' => [
+				'country'    => 'ZW',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'USD' ],
+				'feed_label' => 'ZW',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $markets ] );
+
+		$result = $this->market_service->get_secondary_market_countries();
+
+		$this->assertContains( 'MU', $result );
+		$this->assertContains( 'ZW', $result );
+		$this->assertCount( 2, $result );
+	}
+
+	public function test_get_secondary_market_countries_filters_out_empty_country(): void {
+		$markets = [
+			'mu'  => [
+				'country'    => 'MU',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'MUR' ],
+				'feed_label' => 'MU',
+			],
+			'bad' => [
+				'country'    => '',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'USD' ],
+				'feed_label' => 'BAD',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $markets ] );
+
+		$result = $this->market_service->get_secondary_market_countries();
+
+		$this->assertSame( [ 'MU' ], $result );
+	}
+
+	public function test_get_secondary_market_countries_ignores_stored_primary_key(): void {
+		$stored = [
+			'primary' => [
+				'country'    => 'US',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'USD' ],
+				'feed_label' => 'US',
+			],
+			'gb'      => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $stored ] );
+
+		$result = $this->market_service->get_secondary_market_countries();
+
+		$this->assertSame( [ 'GB' ], $result );
+		$this->assertNotContains( 'US', $result );
+	}
+
 	public function test_has_multilingual_support_returns_true(): void {
 		$this->wpml->method( 'is_active' )->willReturn( true );
 
