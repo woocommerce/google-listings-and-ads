@@ -7,6 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
+import { PRIMARY_MARKET_ID } from '../../../constants';
 import useAppSelectDispatch from '~/hooks/useAppSelectDispatch';
 import AppSelectControl from '~/components/app-select-control';
 import useMarkets from '../../../hooks/useMarkets';
@@ -46,7 +47,9 @@ const MarketSelectControl = () => {
 	// in the form state, but this ensures the list is correct even if not.
 	const usedCountries = new Set(
 		markets
-			?.filter( ( market ) => market.country )
+			?.filter(
+				( market ) => market.country && market.id !== PRIMARY_MARKET_ID
+			)
 			.map( ( market ) => market.country )
 	);
 

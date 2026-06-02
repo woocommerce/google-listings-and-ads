@@ -378,6 +378,19 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
+	 * Returns ISO 3166-1 alpha-2 country codes for all secondary markets.
+	 *
+	 * @return string[]
+	 */
+	public function get_secondary_market_countries(): array {
+		return array_values(
+			array_filter(
+				array_column( $this->get_stored_secondary_markets(), 'country' )
+			)
+		);
+	}
+
+	/**
 	 * Returns the stored secondary markets from the Markets option.
 	 *
 	 * @return array[]

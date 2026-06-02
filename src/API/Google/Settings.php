@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -28,6 +29,7 @@ defined( 'ABSPATH' ) || exit;
  * Class Settings
  *
  * Container used for:
+ * - MarketService
  * - OptionsInterface
  * - ShippingRateQuery
  * - ShippingTimeQuery
@@ -225,8 +227,17 @@ class Settings implements ContainerAwareInterface {
 	 */
 	protected function get_shipping_rates_collections_from_woocommerce(): array {
 		/** @var TargetAudience $target_audience */
-		$target_audience  = $this->container->get( TargetAudience::class );
-		$target_countries = $target_audience->get_target_countries();
+		$target_audience = $this->container->get( TargetAudience::class );
+		/** @var MarketService $market_service */
+		$market_service = $this->container->get( MarketService::class );
+
+		$target_countries = array_unique(
+			array_merge(
+				$target_audience->get_target_countries(),
+				$market_service->get_secondary_market_countries()
+			)
+		);
+
 		/** @var ShippingZone $shipping_zone */
 		$shipping_zone = $this->container->get( ShippingZone::class );
 
