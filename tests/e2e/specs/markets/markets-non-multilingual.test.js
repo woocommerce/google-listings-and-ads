@@ -116,7 +116,9 @@ test.describe( 'Markets – non-multilingual store', () => {
 			await expect( modal ).toBeVisible();
 
 			await expect(
-				modal.getByText( 'Install a multilingual plugin to add markets' )
+				modal.getByText(
+					'Install a multilingual plugin to add markets'
+				)
 			).toBeVisible();
 
 			await expect(
