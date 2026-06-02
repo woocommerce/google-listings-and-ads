@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { registerStore, useDispatch, dispatch } from '@wordpress/data';
+import { registerStore, select, useDispatch, dispatch } from '@wordpress/data';
 import apiFetch from '@wordpress/api-fetch';
 import { getHistory } from '@woocommerce/navigation';
 
@@ -18,15 +18,17 @@ import reducer from './reducer';
 import { createErrorResponseCatcher } from './apiFetchMiddlewares';
 import { getReconnectAccountUrl } from '~/utils/urls';
 
-registerStore( STORE_KEY, {
-	actions,
-	selectors,
-	resolvers,
-	controls,
-	reducer,
-} );
+if ( ! select( STORE_KEY ) ) {
+	registerStore( STORE_KEY, {
+		actions,
+		selectors,
+		resolvers,
+		controls,
+		reducer,
+	} );
 
-dispatch( STORE_KEY ).hydratePrefetchedData( glaData.initialWpData );
+	dispatch( STORE_KEY ).hydratePrefetchedData( glaData.initialWpData );
+}
 
 apiFetch.use(
 	createErrorResponseCatcher( ( response ) => {
