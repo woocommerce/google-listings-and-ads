@@ -27,6 +27,9 @@ jobs:
         with:
           install-deps: "no"
 
+      - name: Upgrade npm
+        run: npm install -g npm@^11
+
       - name: Prepare node
         uses: woocommerce/grow/prepare-node@actions-v2
         with:
