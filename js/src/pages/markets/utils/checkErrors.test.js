@@ -461,4 +461,81 @@ describe( 'checkErrors', () => {
 			} );
 		} );
 	} );
+
+	describe( 'MC supported-language validation', () => {
+		beforeEach( () => {
+			global.glaData.isMultiLingualStore = true;
+		} );
+
+		afterEach( () => {
+			delete global.glaData.isMultiLingualStore;
+		} );
+
+		it( 'returns no error when all selected languages are supported by MC', () => {
+			const errors = checkErrors( {
+				country: 'US',
+				shipping_rate: SHIPPING_RATE_METHOD.MANUAL,
+				language: [ 'en', 'fr' ],
+				currency: [ 'usd' ],
+			} );
+
+			expect( errors.language ).toBeUndefined();
+		} );
+
+		it( 'returns a language error when a selected language is not supported by MC', () => {
+			const errors = checkErrors( {
+				country: 'US',
+				shipping_rate: SHIPPING_RATE_METHOD.MANUAL,
+				language: [ 'xx' ],
+				currency: [ 'usd' ],
+			} );
+
+			expect( errors.language ).toBeDefined();
+			expect( errors.language ).toContain( 'xx' );
+		} );
+
+		it( 'lists only unsupported codes in the error, not supported ones', () => {
+			const errors = checkErrors( {
+				country: 'US',
+				shipping_rate: SHIPPING_RATE_METHOD.MANUAL,
+				language: [ 'en', 'xx', 'yy' ],
+				currency: [ 'usd' ],
+			} );
+
+			expect( errors.language ).toBeDefined();
+			expect( errors.language ).toContain( 'xx' );
+			expect( errors.language ).toContain( 'yy' );
+			// Use word-boundary regex so "en" in "Center" doesn't trigger a false failure.
+			expect( errors.language ).not.toMatch( /\ben\b/ );
+		} );
+
+		it( 'also validates MC language support for flat-rate markets', () => {
+			const errors = checkErrors( {
+				country: 'US',
+				shipping_rate: SHIPPING_RATE_METHOD.FLAT,
+				language: [ 'xx' ],
+				currency: [ 'usd' ],
+				flat_shipping_rate: 5,
+				offer_free_shipping: false,
+				flat_shipping_min_time: 1,
+				flat_shipping_max_time: 3,
+			} );
+
+			expect( errors.language ).toBeDefined();
+			expect( errors.language ).toContain( 'xx' );
+		} );
+
+		it( 'skips MC check when language is empty (locale validation error takes precedence)', () => {
+			const errors = checkErrors( {
+				country: 'US',
+				shipping_rate: SHIPPING_RATE_METHOD.MANUAL,
+				language: [],
+				currency: [ 'usd' ],
+			} );
+
+			// Locale error set first; MC check is skipped via the `! errors.language` guard.
+			expect( errors.language ).toBeDefined();
+			expect( errors.language ).not.toContain( 'not supported' );
+		} );
+	} );
 } );
