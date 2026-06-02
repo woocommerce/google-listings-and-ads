@@ -27,7 +27,7 @@ import './index.scss';
  * @param {() => void} props.onRequestClose Called when the user closes the modal.
  */
 const EditMarketModal = ( { market, targetAudience, onRequestClose } ) => {
-	const appModalTitle = isPrimaryMarket
+	const appModalTitle = isPrimaryMarket( market )
 		? __( 'Edit primary market', 'google-listings-and-ads' )
 		: sprintf(
 				/* translators: %s is the name of the market being edited, e.g. "Europe". */
