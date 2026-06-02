@@ -10,12 +10,13 @@ import { createRoot } from '@wordpress/element';
  */
 import NotificationsPanel from './notifications-panel';
 
+const MULTICHANNEL_CLASS = 'woocommerce-marketing-overview-multichannel';
 const BANNER_CLASS = 'woocommerce-marketing-introduction-banner';
 const CONTAINER_CLASS = 'gla-notification-system-container';
 
 let currentRoot = null;
 
-function mount( banner ) {
+function mount( multichannel ) {
 	let container = document.querySelector( `.${ CONTAINER_CLASS }` );
 
 	if ( container && currentRoot ) {
@@ -25,7 +26,14 @@ function mount( banner ) {
 	if ( ! container ) {
 		container = document.createElement( 'div' );
 		container.className = CONTAINER_CLASS;
-		banner.insertAdjacentElement( 'afterend', container );
+
+		const banner = multichannel.querySelector( `.${ BANNER_CLASS }` );
+
+		if ( banner ) {
+			banner.insertAdjacentElement( 'afterend', container );
+		} else {
+			multichannel.insertBefore( container, multichannel.firstChild );
+		}
 	}
 
 	if ( currentRoot ) {
@@ -37,9 +45,9 @@ function mount( banner ) {
 }
 
 const observer = new MutationObserver( () => {
-	const banner = document.querySelector( `.${ BANNER_CLASS }` );
-	if ( banner ) {
-		mount( banner );
+	const multichannel = document.querySelector( `.${ MULTICHANNEL_CLASS }` );
+	if ( multichannel ) {
+		mount( multichannel );
 	}
 } );
 
@@ -48,7 +56,7 @@ observer.observe( document.body, {
 	subtree: true,
 } );
 
-const existingBanner = document.querySelector( `.${ BANNER_CLASS }` );
-if ( existingBanner ) {
-	mount( existingBanner );
+const existingMultichannel = document.querySelector( `.${ MULTICHANNEL_CLASS }` );
+if ( existingMultichannel ) {
+	mount( existingMultichannel );
 }
