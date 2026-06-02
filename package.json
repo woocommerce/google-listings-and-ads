@@ -150,11 +150,15 @@
 			},
 			{
 				"path": "./js/build/index.js",
-				"maxSize": "21.0 kB"
+				"maxSize": "21.5 kB"
 			},
 			{
 				"path": "./js/build/commons.js",
-				"maxSize": "87.10 kB"
+				"maxSize": "89.00 kB"
+			},
+			{
+				"path": "./js/build/notification-system.js",
+				"maxSize": "20 kB"
 			},
 			{
 				"path": "./js/build/vendors.js",
@@ -170,7 +174,7 @@
 			},
 			{
 				"path": "./google-listings-and-ads.zip",
-				"maxSize": "8.43 mB",
+				"maxSize": "8.45 mB",
 				"compression": "none"
 			}
 		],
