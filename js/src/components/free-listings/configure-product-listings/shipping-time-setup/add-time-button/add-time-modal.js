@@ -36,8 +36,8 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 		<Form
 			initialValues={ {
 				countries,
-				time: 0,
-				maxTime: 0,
+				time: 1,
+				maxTime: 5,
 			} }
 			validate={ validateShippingTimeGroup }
 			onSubmit={ handleSubmitCallback }

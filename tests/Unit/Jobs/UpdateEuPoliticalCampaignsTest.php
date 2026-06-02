@@ -87,6 +87,14 @@ class UpdateEuPoliticalCampaignsTest extends UnitTest {
 		$this->assertFalse( $this->job->can_schedule() );
 	}
 
+	public function test_cannot_schedule_when_declarations_complete_flag_is_set() {
+		$this->options->method( 'get' )
+			->with( OptionsInterface::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE )
+			->willReturn( true );
+
+		$this->assertFalse( $this->job->can_schedule() );
+	}
+
 	public function test_updates_campaigns_not_targeting_eu_counties() {
 		$campaigns = [
 			[

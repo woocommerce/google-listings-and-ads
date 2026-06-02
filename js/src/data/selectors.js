@@ -209,6 +209,16 @@ export const getEnableEnhancedConversions = ( state ) => {
 };
 
 /**
+ * Gets the ads settings object.
+ *
+ * @param {Object} state The current store state will be injected by `wp.data`.
+ * @return {Object|null} The ads settings object, or null if not yet loaded.
+ */
+export const getAdsSettings = ( state ) => {
+	return state.ads.settings;
+};
+
+/**
  * Gets the asset groups by the given campaign ID.
  *
  * @param {Object} state The current store state will be injected by `wp.data`.
@@ -445,6 +455,16 @@ export const getAdsBudgetRecommendations = ( state, countryCodes = [] ) => {
 export const getAdsBudgetMetrics = ( state, countryCodes, budget ) => {
 	const key = getAdsBudgetMetricsKey( countryCodes, budget );
 	return state.ads.budgetMetrics[ key ] || null;
+};
+
+/**
+ * Retrieves the CYO incentives from the state.
+ *
+ * @param {Object} state The state
+ * @return {Array|null} The CYO incentives. It will be `null` if not yet fetched or fetched but doesn't exist.
+ */
+export const getCYOIncentives = ( state ) => {
+	return state.ads.cyo_incentives?.incentives ?? null;
 };
 
 /**

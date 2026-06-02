@@ -887,6 +887,13 @@ export function receiveEnhancedConversionsStatus( status ) {
 	};
 }
 
+export function receiveAdsSettings( settings ) {
+	return {
+		type: TYPES.RECEIVE_ADS_SETTINGS,
+		settings,
+	};
+}
+
 /**
  * Update the enhanced conversions status.
  *
@@ -1399,6 +1406,13 @@ export function* clearDetailedErrorBySlots( slots ) {
 	return {
 		type: TYPES.CLEAR_DETAILED_ERROR_BY_SLOT,
 		slots,
+	}
+}
+
+export function receiveCYOIncentives( cyoIncentives ) {
+	return {
+		type: TYPES.RECEIVE_CYO_INCENTIVES,
+		cyoIncentives,
 	};
 }
 
