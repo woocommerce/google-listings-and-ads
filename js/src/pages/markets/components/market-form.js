@@ -55,7 +55,7 @@ const MarketForm = ( {
 	const { saveShippingRates } = useSaveShippingRates();
 	const { saveShippingTimes } = useSaveShippingTimes();
 	const [ isSaving, setIsSaving ] = useState( false );
-	const { createMarket, updateMarket, invalidateResolution } =
+	const { createMarket, updateMarket, syncSettings, invalidateResolution } =
 		useAppDispatch();
 	const marketId = initialMarket?.id;
 	const isEditing = Boolean( marketId );
@@ -116,6 +116,11 @@ const MarketForm = ( {
 				saves.push( saveShippingTimes( shipping_country_times ) );
 			}
 			await Promise.all( saves );
+
+			// If the user has made changes to the shipping rates or times, we need to sync the settings to ensure the changes are reflected in the UI and persisted correctly. This is necessary because the shipping rates and times are stored separately from the market data, and changes to them may not trigger a re-fetch of the market data on their own.
+			if ( saves.length > 0 ) {
+				await syncSettings();
+			}
 
 			invalidateResolution( 'getTargetAudience', [] );
 			onSubmit();
