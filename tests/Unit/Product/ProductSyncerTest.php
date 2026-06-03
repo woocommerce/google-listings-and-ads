@@ -549,6 +549,23 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		$this->product_syncer->delete_by_id_map( [] );
 	}
 
+	public function test_delete_mapi_entries_throws_exception_when_mc_is_blocked() {
+		$merchant_center = $this->createMock( MerchantCenterService::class );
+		$merchant_center->expects( $this->any() )
+			->method( 'should_push' )
+			->willReturn( true );
+		$this->merchant_center->expects( $this->any() )
+			->method( 'is_enabled_for_datatype' )
+			->with( 'products' )
+			->willReturn( false );
+		$this->product_syncer = $this->get_product_syncer( [ 'merchant_center' => $merchant_center ] );
+
+		$this->expectException( ProductSyncerException::class );
+
+		// The cleanup jobs call delete_mapi_entries() directly, so it must validate too.
+		$this->product_syncer->delete_mapi_entries( [] );
+	}
+
 	/**
 	 * Function to return an instance of ProductSyncer.
 	 *
