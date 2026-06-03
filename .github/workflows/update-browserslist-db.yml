@@ -24,6 +24,10 @@ jobs:
         uses: woocommerce/grow/prepare-node@actions-v2
         with:
           node-version-file: ".nvmrc"
+          install-deps: "no"
+
+      - name: Upgrade npm and install dependencies
+        run: npm install -g npm@^11 && npm ci
 
       - name: Update Browserslist DB and create PR
         uses: c2corg/browserslist-update-action@a76abb476199caea5399f9e28ff3f16e491ec566 # v2.5.0
