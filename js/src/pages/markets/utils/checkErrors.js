@@ -1,13 +1,13 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import { SHIPPING_RATE_METHOD, glaData } from '~/constants';
-import { PRIMARY_MARKET_ID } from '../constants';
+import { PRIMARY_MARKET_ID, MC_SUPPORTED_LANGUAGES } from '../constants';
 
 const checkErrors = ( values ) => {
 	const { isMultiLingualStore } = glaData;
@@ -38,7 +38,7 @@ const checkErrors = ( values ) => {
 		}
 	}
 
-	// Locale validation: language + currency for multilingual stores using non-flat shipping.
+	// Locale validation: language + currency required for multilingual non-flat markets.
 	if ( isMultiLingualStore && shipping_rate !== SHIPPING_RATE_METHOD.FLAT ) {
 		if ( ( values.language ?? [] ).length === 0 ) {
 			errors.language = __(
@@ -50,6 +50,31 @@ const checkErrors = ( values ) => {
 			errors.currency = __(
 				'Please select at least one currency.',
 				'google-listings-and-ads'
+			);
+		}
+	}
+
+	// MC language support check applies to all multilingual markets (including flat-rate).
+	// For flat-rate markets, language is [] (field not shown), so unsupportedLanguages
+	// is always empty and this block is a no-op — it only fires for non-flat markets
+	// that already have language values submitted.
+	if (
+		isMultiLingualStore &&
+		! errors.language &&
+		( values.language ?? [] ).length > 0
+	) {
+		const unsupportedLanguages = ( values.language ?? [] ).filter(
+			( language ) => ! MC_SUPPORTED_LANGUAGES.has( language )
+		);
+
+		if ( unsupportedLanguages.length > 0 ) {
+			errors.language = sprintf(
+				// translators: %s: comma-separated list of unsupported language codes.
+				__(
+					'The following languages are not supported by Google Merchant Center: %s',
+					'google-listings-and-ads'
+				),
+				unsupportedLanguages.join( ', ' )
 			);
 		}
 	}
