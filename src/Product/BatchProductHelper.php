@@ -313,7 +313,7 @@ class BatchProductHelper implements Service {
 	 *
 	 * @param WC_Product[] $products
 	 *
-	 * @return array<int, array{wc_product_id: int, country: string, google_id: string, input: ProductInput}>
+	 * @return array<int, array{wc_product_id: int, google_id: string, input: ProductInput}>
 	 */
 	public function generate_mapi_delete_entries( array $products ): array {
 		$entries = [];
@@ -331,7 +331,7 @@ class BatchProductHelper implements Service {
 				continue;
 			}
 
-			foreach ( $google_ids as $country => $google_id ) {
+			foreach ( $google_ids as $google_id ) {
 				$identity = $this->parse_mapi_identity( (string) $google_id );
 				if ( null === $identity ) {
 					continue;
@@ -341,7 +341,6 @@ class BatchProductHelper implements Service {
 
 				$entries[] = [
 					'wc_product_id' => $product->get_id(),
-					'country'       => (string) $country,
 					'google_id'     => (string) $google_id,
 					'input'         => new ProductInput( $offer_id, $language, $feed ),
 				];
@@ -392,7 +391,7 @@ class BatchProductHelper implements Service {
 	 *
 	 * @param WC_Product[] $products
 	 *
-	 * @return array<int, array{wc_product_id: int, country: string, google_id: string, input: ProductInput}>
+	 * @return array<int, array{wc_product_id: int, google_id: string, input: ProductInput}>
 	 */
 	public function generate_stale_products_delete_entries( array $products ): array {
 		$target_audience = $this->target_audience->get_target_countries();
@@ -408,7 +407,7 @@ class BatchProductHelper implements Service {
 	 *
 	 * @param WC_Product[] $products
 	 *
-	 * @return array<int, array{wc_product_id: int, country: string, google_id: string, input: ProductInput}>
+	 * @return array<int, array{wc_product_id: int, google_id: string, input: ProductInput}>
 	 */
 	public function generate_stale_countries_delete_entries( array $products ): array {
 		return $this->build_stale_entries( $products, [ $this->target_audience->get_main_target_country() ] );
@@ -421,7 +420,7 @@ class BatchProductHelper implements Service {
 	 * @param WC_Product[] $products
 	 * @param string[]     $keep_countries
 	 *
-	 * @return array<int, array{wc_product_id: int, country: string, google_id: string, input: ProductInput}>
+	 * @return array<int, array{wc_product_id: int, google_id: string, input: ProductInput}>
 	 */
 	protected function build_stale_entries( array $products, array $keep_countries ): array {
 		$entries = [];
@@ -430,7 +429,7 @@ class BatchProductHelper implements Service {
 			$google_ids = $this->meta_handler->get_google_ids( $product ) ?: [];
 			$stale_ids  = array_diff_key( $google_ids, array_flip( $keep_countries ) );
 
-			foreach ( $stale_ids as $country => $google_id ) {
+			foreach ( $stale_ids as $google_id ) {
 				$identity = $this->parse_mapi_identity( (string) $google_id );
 				if ( null === $identity ) {
 					continue;
@@ -440,7 +439,6 @@ class BatchProductHelper implements Service {
 
 				$entries[] = [
 					'wc_product_id' => $product->get_id(),
-					'country'       => (string) $country,
 					'google_id'     => (string) $google_id,
 					'input'         => new ProductInput( $offer_id, $language, $feed ),
 				];
