@@ -48,24 +48,30 @@ class WCProductInputAdapter {
 	/** @var array */
 	protected $attributes = [];
 
+	/** @var string[] Target countries to add shipping entries for. */
+	protected $shipping_countries = [];
+
 	/**
 	 * WCProductInputAdapter constructor.
 	 *
-	 * @param WC_Product      $product        The WooCommerce product.
-	 * @param string          $target_country Feed label.
-	 * @param WC_Product|null $parent_product Parent product, required when $product is a variation.
+	 * @param WC_Product      $product            The WooCommerce product.
+	 * @param string          $target_country     Feed label.
+	 * @param WC_Product|null $parent_product     Parent product, required when $product is a variation.
+	 * @param string[]        $shipping_countries Additional target countries to add shipping entries for.
 	 */
-	public function __construct( WC_Product $product, string $target_country, ?WC_Product $parent_product = null ) {
-		$this->wc_product        = $product;
-		$this->parent_wc_product = $parent_product;
-		$this->feed_label        = $target_country;
-		$this->tax_excluded      = $this->resolve_tax_excluded();
+	public function __construct( WC_Product $product, string $target_country, ?WC_Product $parent_product = null, array $shipping_countries = [] ) {
+		$this->wc_product         = $product;
+		$this->parent_wc_product  = $parent_product;
+		$this->feed_label         = $target_country;
+		$this->shipping_countries = $shipping_countries;
+		$this->tax_excluded       = $this->resolve_tax_excluded();
 
 		$this->map_identity();
 		$this->map_general_attributes();
 		$this->map_images();
 		$this->map_availability();
 		$this->map_price();
+		$this->map_shipping();
 	}
 
 	/**
@@ -217,6 +223,114 @@ class WCProductInputAdapter {
 		$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $this->wc_product, $this->tax_excluded );
 
 		$this->attributes['price'] = $this->to_money( (float) $price, get_woocommerce_currency() );
+	}
+
+	/**
+	 * Map the shipping attributes.
+	 */
+	protected function map_shipping(): void {
+		$is_virtual = $this->is_virtual();
+
+		$countries = array_values( array_unique( array_filter( array_merge( [ $this->feed_label ], $this->shipping_countries ) ) ) );
+
+		$shipping = [];
+		foreach ( $countries as $country ) {
+			$entry = [ 'country' => $country ];
+
+			// Virtual products override any country shipping cost with zero.
+			if ( $is_virtual ) {
+				$entry['price'] = $this->to_money( 0.0, get_woocommerce_currency() );
+			}
+
+			$shipping[] = $entry;
+		}
+
+		if ( ! empty( $shipping ) ) {
+			$this->attributes['shipping'] = $shipping;
+		}
+
+		// Dimensions, weight and label only apply to physical products.
+		if ( $is_virtual ) {
+			return;
+		}
+
+		$this->map_shipping_dimensions();
+		$this->map_shipping_weight();
+
+		$shipping_class = $this->wc_product->get_shipping_class();
+		if ( ! empty( $shipping_class ) ) {
+			$this->attributes['shippingLabel'] = $shipping_class;
+		}
+	}
+
+	/**
+	 * Map the shipping dimensions when length, width and height are all set.
+	 */
+	protected function map_shipping_dimensions(): void {
+		$unit = apply_filters( 'woocommerce_gla_dimension_unit', get_option( 'woocommerce_dimension_unit' ) );
+		if ( ! in_array( $unit, [ 'in', 'cm' ], true ) ) {
+			$unit = 'cm';
+		}
+
+		$length = wc_get_dimension( (float) $this->wc_product->get_length(), $unit );
+		$width  = wc_get_dimension( (float) $this->wc_product->get_width(), $unit );
+		$height = wc_get_dimension( (float) $this->wc_product->get_height(), $unit );
+
+		if ( $length > 0 && $width > 0 && $height > 0 ) {
+			$this->attributes['shippingLength'] = [
+				'value' => $length,
+				'unit'  => $unit,
+			];
+			$this->attributes['shippingWidth']  = [
+				'value' => $width,
+				'unit'  => $unit,
+			];
+			$this->attributes['shippingHeight'] = [
+				'value' => $height,
+				'unit'  => $unit,
+			];
+		}
+	}
+
+	/**
+	 * Map the shipping weight.
+	 */
+	protected function map_shipping_weight(): void {
+		$weight = (float) $this->wc_product->get_weight();
+		if ( $weight <= 0 ) {
+			return;
+		}
+
+		$unit = apply_filters( 'woocommerce_gla_weight_unit', get_option( 'woocommerce_weight_unit' ) );
+		if ( ! in_array( $unit, [ 'g', 'lbs', 'oz' ], true ) ) {
+			$unit = 'g';
+		}
+
+		$weight = wc_get_weight( $weight, $unit );
+
+		// Google Merchant Center uses lb rather than lbs.
+		if ( 'lbs' === $unit ) {
+			$unit = 'lb';
+		}
+
+		$this->attributes['shippingWeight'] = [
+			'value' => $weight,
+			'unit'  => $unit,
+		];
+	}
+
+	/**
+	 * Whether the product is virtual.
+	 *
+	 * @return bool
+	 */
+	protected function is_virtual(): bool {
+		$is_virtual = $this->wc_product->is_virtual();
+
+		/** This filter is documented in src/Product/WCProductAdapter.php */
+		$is_virtual = apply_filters( 'woocommerce_gla_product_property_value_is_virtual', $is_virtual, $this->wc_product );
+
+		return false !== $is_virtual;
 	}
 
 	/**
