@@ -140,4 +140,160 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertArrayNotHasKey( 'imageLink', $attrs );
 		$this->assertArrayNotHasKey( 'additionalImageLinks', $attrs );
 	}
+
+	public function test_adds_shipping_entry_for_feed_label_country() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( [ [ 'country' => 'US' ] ], $attrs['shipping'] );
+	}
+
+	public function test_adds_shipping_entry_per_target_country() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US', null, [ 'US', 'CA', 'GB' ] ) )->get_product_input()->get_attributes();
+
+		$this->assertEqualsCanonicalizing( [ 'US', 'CA', 'GB' ], array_column( $attrs['shipping'], 'country' ) );
+		$this->assertCount( 3, $attrs['shipping'] );
+	}
+
+	public function test_virtual_product_shipping_is_free_with_no_measurements() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_virtual( true );
+		$product->set_weight( '2' );
+		$product->set_length( '10' );
+		$product->set_width( '10' );
+		$product->set_height( '10' );
+		$product->save();
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame(
+			[
+				[
+					'country' => 'US',
+					'price'   => [
+						'amountMicros' => '0',
+						'currencyCode' => get_woocommerce_currency(),
+					],
+				],
+			],
+			$attrs['shipping']
+		);
+		$this->assertArrayNotHasKey( 'shippingWeight', $attrs );
+		$this->assertArrayNotHasKey( 'shippingLength', $attrs );
+		$this->assertArrayNotHasKey( 'shippingLabel', $attrs );
+	}
+
+	public function test_physical_product_maps_dimensions_and_weight() {
+		update_option( 'woocommerce_dimension_unit', 'cm' );
+		update_option( 'woocommerce_weight_unit', 'g' );
+
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_virtual( false );
+		$product->set_length( '10' );
+		$product->set_width( '20' );
+		$product->set_height( '30' );
+		$product->set_weight( '500' );
+		$product->save();
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertEqualsCanonicalizing( [ 'value' => 10.0, 'unit' => 'cm' ], $attrs['shippingLength'] );
+		$this->assertEqualsCanonicalizing( [ 'value' => 20.0, 'unit' => 'cm' ], $attrs['shippingWidth'] );
+		$this->assertEqualsCanonicalizing( [ 'value' => 30.0, 'unit' => 'cm' ], $attrs['shippingHeight'] );
+		$this->assertEqualsCanonicalizing( [ 'value' => 500.0, 'unit' => 'g' ], $attrs['shippingWeight'] );
+	}
+
+	public function test_maps_shipping_label_from_shipping_class() {
+		$term = wp_insert_term( 'Bulky', 'product_shipping_class' );
+
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_shipping_class_id( $term['term_id'] );
+		$product->save();
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( 'bulky', $attrs['shippingLabel'] );
+	}
+
+	public function test_physical_product_without_weight_omits_shipping_weight() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_virtual( false );
+		$product->set_weight( '' );
+		$product->save();
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertArrayHasKey( 'shipping', $attrs );
+		$this->assertArrayNotHasKey( 'shippingWeight', $attrs );
+	}
+
+	public function test_omits_shipping_dimensions_when_not_all_set() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_virtual( false );
+		$product->set_length( '10' );
+		$product->set_width( '20' );
+		$product->set_height( '' );
+		$product->save();
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertArrayNotHasKey( 'shippingLength', $attrs );
+		$this->assertArrayNotHasKey( 'shippingWidth', $attrs );
+		$this->assertArrayNotHasKey( 'shippingHeight', $attrs );
+	}
+
+	public function test_maps_weight_unit_lbs_to_lb() {
+		update_option( 'woocommerce_weight_unit', 'lbs' );
+
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_virtual( false );
+		$product->set_weight( '3' );
+		$product->save();
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( 'lb', $attrs['shippingWeight']['unit'] );
+	}
+
+	public function test_honors_virtual_property_filter_for_shipping() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_virtual( false );
+		$product->set_weight( '2' );
+		$product->save();
+
+		add_filter( 'woocommerce_gla_product_property_value_is_virtual', '__return_true' );
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+		remove_filter( 'woocommerce_gla_product_property_value_is_virtual', '__return_true' );
+
+		// Forced virtual: free shipping and no weight mapped.
+		$this->assertSame(
+			[
+				'amountMicros' => '0',
+				'currencyCode' => get_woocommerce_currency(),
+			],
+			$attrs['shipping'][0]['price']
+		);
+		$this->assertArrayNotHasKey( 'shippingWeight', $attrs );
+	}
+
+	public function test_variation_maps_shipping() {
+		update_option( 'woocommerce_weight_unit', 'g' );
+
+		$parent     = WC_Helper_Product::create_variation_product();
+		$variations = $parent->get_children();
+		$variation  = wc_get_product( $variations[0] );
+		$variation->set_virtual( false );
+		$variation->set_weight( '4' );
+		$variation->save();
+
+		$attrs = ( new WCProductInputAdapter( $variation, 'US', $parent ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( [ [ 'country' => 'US' ] ], $attrs['shipping'] );
+		$this->assertEqualsCanonicalizing( [ 'value' => 4.0, 'unit' => 'g' ], $attrs['shippingWeight'] );
+	}
 }
