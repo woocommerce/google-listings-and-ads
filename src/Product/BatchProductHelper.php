@@ -269,8 +269,9 @@ class BatchProductHelper implements Service {
 	 * @return array<int, array{product: WC_Product, country: string, input: ProductInput}>
 	 */
 	public function generate_mapi_update_entries( array $products ): array {
-		$entries = [];
-		$country = $this->target_audience->get_main_target_country();
+		$entries          = [];
+		$country          = $this->target_audience->get_main_target_country();
+		$target_countries = $this->target_audience->get_target_countries();
 
 		foreach ( $products as $product ) {
 			$this->validate_instanceof( $product, WC_Product::class );
@@ -292,7 +293,7 @@ class BatchProductHelper implements Service {
 				$entries[] = [
 					'product' => $product,
 					'country' => $country,
-					'input'   => ( new WCProductInputAdapter( $product, $country, $parent ) )->get_product_input(),
+					'input'   => ( new WCProductInputAdapter( $product, $country, $parent, $target_countries ) )->get_product_input(),
 				];
 			} catch ( GoogleListingsAndAdsException $exception ) {
 				do_action(
