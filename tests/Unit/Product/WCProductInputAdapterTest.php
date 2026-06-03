@@ -202,10 +202,34 @@ class WCProductInputAdapterTest extends UnitTest {
 
 		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
 
-		$this->assertEqualsCanonicalizing( [ 'value' => 10.0, 'unit' => 'cm' ], $attrs['shippingLength'] );
-		$this->assertEqualsCanonicalizing( [ 'value' => 20.0, 'unit' => 'cm' ], $attrs['shippingWidth'] );
-		$this->assertEqualsCanonicalizing( [ 'value' => 30.0, 'unit' => 'cm' ], $attrs['shippingHeight'] );
-		$this->assertEqualsCanonicalizing( [ 'value' => 500.0, 'unit' => 'g' ], $attrs['shippingWeight'] );
+		$this->assertEqualsCanonicalizing(
+			[
+				'value' => 10.0,
+				'unit'  => 'cm',
+			],
+			$attrs['shippingLength']
+		);
+		$this->assertEqualsCanonicalizing(
+			[
+				'value' => 20.0,
+				'unit'  => 'cm',
+			],
+			$attrs['shippingWidth']
+		);
+		$this->assertEqualsCanonicalizing(
+			[
+				'value' => 30.0,
+				'unit'  => 'cm',
+			],
+			$attrs['shippingHeight']
+		);
+		$this->assertEqualsCanonicalizing(
+			[
+				'value' => 500.0,
+				'unit'  => 'g',
+			],
+			$attrs['shippingWeight']
+		);
 	}
 
 	public function test_maps_shipping_label_from_shipping_class() {
@@ -294,6 +318,12 @@ class WCProductInputAdapterTest extends UnitTest {
 		$attrs = ( new WCProductInputAdapter( $variation, 'US', $parent ) )->get_product_input()->get_attributes();
 
 		$this->assertSame( [ [ 'country' => 'US' ] ], $attrs['shipping'] );
-		$this->assertEqualsCanonicalizing( [ 'value' => 4.0, 'unit' => 'g' ], $attrs['shippingWeight'] );
+		$this->assertEqualsCanonicalizing(
+			[
+				'value' => 4.0,
+				'unit'  => 'g',
+			],
+			$attrs['shippingWeight']
+		);
 	}
 }
