@@ -113,7 +113,25 @@ const MarketForm = ( {
 				saves.push( saveShippingRates( shipping_country_rates ) );
 			}
 			if ( shippingRateMethod !== SHIPPING_RATE_METHOD.MANUAL ) {
-				saves.push( saveShippingTimes( shipping_country_times ) );
+				// Countries in the store that are outside the primary target
+				// audience belong to secondary markets — exclude them so they
+				// are never deleted when saving the primary market.
+				const excludedCountryCodes = isPrimaryMarket
+					? shippingTimes
+							.filter(
+								( shippingTime ) =>
+									! countries.includes(
+										shippingTime.countryCode
+									)
+							)
+							.map( ( shippingTime ) => shippingTime.countryCode )
+					: [];
+				saves.push(
+					saveShippingTimes(
+						shipping_country_times,
+						excludedCountryCodes
+					)
+				);
 			}
 			await Promise.all( saves );
 
