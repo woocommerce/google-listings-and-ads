@@ -6,7 +6,11 @@ import { expect, test } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import { clearOnboardedMerchant, setOnboardedMerchant } from '../../utils/api';
+import {
+	clearOnboardedMerchant,
+	clearServiceBasedMerchant,
+	setOnboardedMerchant,
+} from '../../utils/api';
 import MarketsPage, {
 	PRIMARY_MARKET,
 	SECONDARY_MARKET,
@@ -31,6 +35,7 @@ test.describe( 'Markets – multilingual store', () => {
 		page = await browser.newPage();
 		marketsPage = new MarketsPage( page );
 		await setOnboardedMerchant();
+		await clearServiceBasedMerchant();
 	} );
 
 	test.afterAll( async () => {
