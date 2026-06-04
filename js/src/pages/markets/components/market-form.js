@@ -148,16 +148,13 @@ const MarketForm = ( {
 		const targetCountries = getTargetCountries( isPrimaryMarket, values );
 		const rawRates = values.shipping_country_rates || [];
 		const rawTimes = values.shipping_country_times || [];
-		// Persist rate rows with the market's own primary currency so the
-		// backend doesn't fall back to the schema default for secondary markets.
-		const marketCurrency = values.currency?.[ 0 ] || storeCurrencyCode;
 
 		switch ( change.name ) {
 			case 'flat_shipping_rate': {
 				const rates = ensureRateRows(
 					rawRates,
 					targetCountries,
-					marketCurrency
+					storeCurrencyCode
 				);
 				const isFree = change.value === 0;
 
@@ -223,7 +220,7 @@ const MarketForm = ( {
 				const rates = ensureRateRows(
 					rawRates,
 					targetCountries,
-					marketCurrency
+					storeCurrencyCode
 				);
 				setValue(
 					'shipping_country_rates',
