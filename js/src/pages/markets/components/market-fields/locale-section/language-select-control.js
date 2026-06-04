@@ -10,7 +10,7 @@ import { glaData } from '~/constants';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import AppSearchableSelectControl from '~/components/app-searchable-select-control';
 import AppInputControl from '~/components/app-input-control';
-import useAvailableLanguages from '~/hooks/useAvailableLanguages';
+import useAvailableStoreLanguages from '~/hooks/useAvailableStoreLanguages';
 
 /**
  * Renders the language select control within the market edit form.
@@ -23,7 +23,7 @@ const LanguageSelectControl = () => {
 		getInputProps,
 		adapter: { renderRequestedValidation },
 	} = useAdaptiveFormContext();
-	const { languages, hasFinishedResolution } = useAvailableLanguages();
+	const { languages, hasFinishedResolution } = useAvailableStoreLanguages();
 
 	if ( ! glaData.isMultiLingualStore ) {
 		return (
