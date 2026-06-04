@@ -33,14 +33,24 @@ const ShippingRateMethodSection = ( { children } ) => {
 	const isFlatShippingRate =
 		settings?.shipping_rate === SHIPPING_RATE_METHOD.FLAT;
 
-	// Defer the one-time snapshot until settings has resolved. Using a ref so
-	// mid-session auto-saves (which flip isFlatShippingRate to false) don't
-	// hide the option after it was already shown.
+	// Take a one-time snapshot once both settings and MC setup have resolved.
+	// Using a ref so mid-session auto-saves (which flip isFlatShippingRate to
+	// false) don't hide the option after it was already shown.
+	// During onboarding (status === 'incomplete'), ignore any previously stored
+	// flat rate: the auto-save in SavedSetupStepper always initialises
+	// shipping_rate to 'flat', so isFlatShippingRate would always be true here,
+	// which incorrectly shows the option for multilingual stores.
 	const showFlatOptionRef = useRef( null );
-	if ( showFlatOptionRef.current === null && settings !== undefined ) {
-		showFlatOptionRef.current = ! isMultiLingualStore || isFlatShippingRate;
+	if (
+		showFlatOptionRef.current === null &&
+		settings !== undefined &&
+		hasFinishedResolution
+	) {
+		const isOnboarding = mcSetup?.status === 'incomplete';
+		showFlatOptionRef.current =
+			! isMultiLingualStore || ( isFlatShippingRate && ! isOnboarding );
 	}
-	const showFlatOption = showFlatOptionRef.current;
+	const showFlatOption = showFlatOptionRef.current ?? ! isMultiLingualStore;
 
 	// Hide the automatic shipping rate option if there are no shipping rates and the merchant is onboarding.
 	const hideAutomaticShippingRate =
