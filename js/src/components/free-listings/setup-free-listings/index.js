@@ -276,6 +276,28 @@ const SetupFreeListings = ( {
 		}
 	};
 
+	const handleContinue = ( values ) => {
+		// If the user kept the pre-populated flat values without making any changes,
+		// shipping_country_times will still be empty. In that case, derive and save
+		// the times from the flat values before moving to the next step.
+		if (
+			values.shipping_country_times.length === 0 &&
+			values.flat_shipping_min_time !== null &&
+			values.flat_shipping_max_time !== null
+		) {
+			const countries = resolveFinalCountries( values );
+			if ( countries.length > 0 ) {
+				const times = countries.map( ( countryCode ) => ( {
+					countryCode,
+					time: values.flat_shipping_min_time,
+					maxTime: values.flat_shipping_max_time,
+				} ) );
+				onShippingTimesChange( times );
+			}
+		}
+		onContinue();
+	};
+
 	const extendAdapter = ( formContext ) => {
 		return {
 			audienceCountries: resolveFinalCountries( formContext.values ),
@@ -321,7 +343,7 @@ const SetupFreeListings = ( {
 				extendAdapter={ extendAdapter }
 				onChange={ handleChange }
 				validate={ handleValidate }
-				onSubmit={ onContinue }
+				onSubmit={ handleContinue }
 			>
 				{ ( formContext ) => {
 					const { isValidForm, handleSubmit, adapter } = formContext;
