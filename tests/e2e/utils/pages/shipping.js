@@ -129,7 +129,9 @@ export default class ShippingPage extends MockRequests {
 	 * @return {Promise<void>}
 	 */
 	async fillCountriesShippingTimeInput( min, max ) {
-		const timesLocator = this.page.locator( '.gla-countries-time-input input' );
+		const timesLocator = this.page.locator(
+			'.gla-countries-time-input input'
+		);
 		await timesLocator.first().fill( min );
 		await timesLocator.last().fill( max );
 	}
