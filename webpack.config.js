@@ -155,7 +155,7 @@ const webpackConfig = {
 		),
 		'notification-system': path.resolve(
 			process.cwd(),
-			'js/src/notification-system',
+			'js/src/notifications-system',
 			'index.js'
 		),
 		'order-attribution': path.resolve(
