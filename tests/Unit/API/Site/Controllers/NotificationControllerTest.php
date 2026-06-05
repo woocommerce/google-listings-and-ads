@@ -85,4 +85,29 @@ class NotificationControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( 404, $response->get_status() );
 	}
+
+	public function test_get_notifications_without_permission() {
+		wp_set_current_user( 0 );
+
+		$this->service->expects( $this->never() )
+			->method( 'get_notifications' );
+
+		$response = $this->do_request( self::ROUTE );
+
+		$this->assertEquals( 401, $response->get_status() );
+	}
+
+	public function test_delete_notification_without_permission() {
+		wp_set_current_user( 0 );
+
+		$this->service->expects( $this->never() )
+			->method( 'dismiss' );
+
+		$this->service->expects( $this->never() )
+			->method( 'get_notifications' );
+
+		$response = $this->do_request( self::ROUTE_DELETE, 'DELETE' );
+
+		$this->assertEquals( 401, $response->get_status() );
+	}
 }
