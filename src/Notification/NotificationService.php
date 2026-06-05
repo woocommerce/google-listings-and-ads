@@ -118,6 +118,10 @@ class NotificationService implements ContainerAwareInterface {
 	 * @return void
 	 */
 	public function dismiss( string $id ): void {
+		if ( ! $this->can_manage() ) {
+			return;
+		}
+
 		$state                     = $this->get_state();
 		$state[ $id ]['dismissed'] = true;
 
