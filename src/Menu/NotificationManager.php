@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDepen
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 
@@ -34,12 +35,19 @@ class NotificationManager implements ContainerAwareInterface, Service, Registera
 	protected $assets_handler;
 
 	/**
+	 * @var NotificationService
+	 */
+	protected $notification_service;
+
+	/**
 	 * NotificationManager constructor.
 	 *
 	 * @param AssetsHandlerInterface $assets_handler
+	 * @param NotificationService    $notification_service
 	 */
-	public function __construct( AssetsHandlerInterface $assets_handler ) {
-		$this->assets_handler = $assets_handler;
+	public function __construct( AssetsHandlerInterface $assets_handler, NotificationService $notification_service ) {
+		$this->assets_handler       = $assets_handler;
+		$this->notification_service = $notification_service;
 	}
 
 	/**
@@ -52,6 +60,7 @@ class NotificationManager implements ContainerAwareInterface, Service, Registera
 
 		add_filter( 'google_for_woocommerce_admin_menu_notification_count', [ $this, 'performance_max_ad_strength_count' ] );
 		add_filter( 'google_for_woocommerce_admin_menu_notification_count', [ $this, 'raise_budget_recommendations_count' ] );
+		add_filter( 'google_for_woocommerce_admin_menu_notification_count', [ $this, 'notifications_count' ] );
 	}
 
 	/**
@@ -147,6 +156,11 @@ class NotificationManager implements ContainerAwareInterface, Service, Registera
 	 * This method is hooked to 'admin_menu'.
 	 */
 	public function display_aggregated_notification_pill(): void {
+		// The badge must never be shown to users who cannot manage WooCommerce.
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
 		global $menu, $submenu;
 
 		// Initialize the count and apply the filter to get the total aggregated count.
@@ -279,6 +293,16 @@ class NotificationManager implements ContainerAwareInterface, Service, Registera
 		}
 
 		return $count;
+	}
+
+	/**
+	 * Adds the number of active notifications from the NotificationService to the count.
+	 *
+	 * @param int $count The initial count.
+	 * @return int The updated notification count including the active notifications.
+	 */
+	public function notifications_count( int $count ): int {
+		return $count + count( $this->notification_service->get_notifications() );
 	}
 
 	/**

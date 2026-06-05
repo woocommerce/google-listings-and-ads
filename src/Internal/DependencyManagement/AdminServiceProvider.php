@@ -32,6 +32,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupMerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Shipping;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\ChannelVisibilityMetaBox;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
@@ -110,7 +111,7 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 
 		$this->share_with_tags( AttributeMapping::class );
 		$this->share_with_tags( Dashboard::class, OnboardingCompleted::class );
-		$this->share_with_tags( NotificationManager::class, AssetsHandlerInterface::class );
+		$this->share_with_tags( NotificationManager::class, AssetsHandlerInterface::class, NotificationService::class );
 		$this->share_with_tags( GetStarted::class, OnboardingCompleted::class );
 		$this->share_with_tags( ProductFeed::class );
 		$this->share_with_tags( Reports::class );
