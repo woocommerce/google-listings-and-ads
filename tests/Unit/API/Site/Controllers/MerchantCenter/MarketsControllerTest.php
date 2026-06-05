@@ -32,8 +32,10 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		'id'            => 'primary',
 		'label'         => 'Primary Market',
 		'countries'     => [ 'US' ],
+		'country'       => null,
 		'language'      => [ 'en' ],
 		'currency'      => [ 'USD' ],
+		'feed_label'    => null,
 		'shipping_rate' => 'flat',
 		'shipping_time' => 'flat',
 	];
@@ -572,6 +574,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'gb', $secondary['id'] );
 		$this->assertEquals( 'United Kingdom (UK)', $secondary['label'] );
 		$this->assertEquals( [ 'GB' ], $secondary['countries'] );
+		$this->assertSame( 'GB', $secondary['country'] );
+		$this->assertSame( 'GB', $secondary['feed_label'] );
 	}
 
 	public function test_post_market_without_shipping_mode_succeeds(): void {
