@@ -11,7 +11,11 @@ import { STORE_KEY } from '~/data/constants';
 const selectorName = 'getNotifications';
 
 /**
- * @return {{ notifications: Array<import('~/data/selectors').Notification>, hasFinishedResolution: boolean }} Current notifications from the store.
+ * @typedef {import('~/data/selectors').Notification} Notification
+ */
+
+/**
+ * @return {{ notifications: Array<Notification>, hasFinishedResolution: boolean }} Current notifications from the store.
  */
 const useNotifications = () => {
 	return useSelect( ( select ) => {

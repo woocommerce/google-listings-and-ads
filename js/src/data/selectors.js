@@ -585,4 +585,6 @@ export const getGenAITextAssets = ( state, url, assetType ) => {
  * @param {Object} state
  * @return {Array<Notification>} Current notifications, or empty array if none.
  */
-export const getNotifications = ( state ) => state.notifications ?? [];
+export const getNotifications = ( state ) => {
+	return state.notifications ?? [];
+};
