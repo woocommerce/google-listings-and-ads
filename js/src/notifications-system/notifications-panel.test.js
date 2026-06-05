@@ -8,7 +8,7 @@ import { useDispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import NotificationsPanel from '../notifications-panel';
+import NotificationsPanel from './notifications-panel';
 import useNotifications from '~/hooks/useNotifications';
 
 jest.mock( '~/hooks/useNotifications', () => jest.fn() );
@@ -18,7 +18,7 @@ jest.mock( '@wordpress/data', () => ( {
 } ) );
 
 jest.mock(
-	'../notifications/skipped-campaign-creation',
+	'./notifications/skipped-campaign-creation',
 	() =>
 		( { onDismiss } ) => (
 			<div data-testid="skipped-campaign-creation">
@@ -26,40 +26,40 @@ jest.mock(
 			</div>
 		)
 );
-jest.mock( '../notifications/not-onboarded-90-days', () => () => (
+jest.mock( './notifications/not-onboarded-90-days', () => () => (
 	<div data-testid="not-onboarded-90-days" />
 ) );
-jest.mock( '../notifications/sold-10-items', () => () => (
+jest.mock( './notifications/sold-10-items', () => () => (
 	<div data-testid="sold-10-items" />
 ) );
-jest.mock( '../notifications/payments-shipping-no-sales', () => () => (
+jest.mock( './notifications/payments-shipping-no-sales', () => () => (
 	<div data-testid="payments-shipping-no-sales" />
 ) );
-jest.mock( '../notifications/abandoned-onboarding', () => () => (
+jest.mock( './notifications/abandoned-onboarding', () => () => (
 	<div data-testid="abandoned-onboarding" />
 ) );
-jest.mock( '../notifications/product-issues', () => () => (
+jest.mock( './notifications/product-issues', () => () => (
 	<div data-testid="product-issues" />
 ) );
-jest.mock( '../notifications/paused-campaign', () => () => (
+jest.mock( './notifications/paused-campaign', () => () => (
 	<div data-testid="paused-campaign" />
 ) );
-jest.mock( '../notifications/active-campaign-zero-sales', () => () => (
+jest.mock( './notifications/active-campaign-zero-sales', () => () => (
 	<div data-testid="active-campaign-zero-sales" />
 ) );
-jest.mock( '../notifications/enhanced-conversions-off', () => () => (
+jest.mock( './notifications/enhanced-conversions-off', () => () => (
 	<div data-testid="enhanced-conversions-off" />
 ) );
-jest.mock( '../notifications/recommendations-available', () => () => (
+jest.mock( './notifications/recommendations-available', () => () => (
 	<div data-testid="recommendations-available" />
 ) );
-jest.mock( '../notifications/coupons-not-synced', () => () => (
+jest.mock( './notifications/coupons-not-synced', () => () => (
 	<div data-testid="coupons-not-synced" />
 ) );
-jest.mock( '../notifications/sales-not-growing', () => () => (
+jest.mock( './notifications/sales-not-growing', () => () => (
 	<div data-testid="sales-not-growing" />
 ) );
-jest.mock( '../notifications/tracking-off', () => () => (
+jest.mock( './notifications/tracking-off', () => () => (
 	<div data-testid="tracking-off" />
 ) );
 
