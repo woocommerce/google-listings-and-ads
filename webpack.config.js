@@ -153,7 +153,7 @@ const webpackConfig = {
 			'js/src/notification-manager',
 			'index.js'
 		),
-		'notification-system': path.resolve(
+		'notifications-system': path.resolve(
 			process.cwd(),
 			'js/src/notifications-system',
 			'index.js'

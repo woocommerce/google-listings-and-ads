@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class NotificationSystem
  *
- * Enqueues the notification-system JS bundle and its paired CSS on the
+ * Enqueues the notifications-system JS bundle and its paired CSS on the
  * WooCommerce Marketing overview page (page=wc-admin&path=/marketing).
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin
@@ -53,9 +53,9 @@ class NotificationSystem implements Service, Registerable {
 				$build_dir = "{$this->get_root_dir()}/js/build";
 
 				$script = new AdminScriptWithBuiltDependenciesAsset(
-					'google-listings-and-ads-notification-system',
-					'js/build/notification-system',
-					"{$build_dir}/notification-system.asset.php",
+					'google-listings-and-ads-notifications-system',
+					'js/build/notifications-system',
+					"{$build_dir}/notifications-system.asset.php",
 					new BuiltScriptDependencyArray(
 						[
 							'dependencies' => [],
@@ -65,10 +65,10 @@ class NotificationSystem implements Service, Registerable {
 				);
 
 				$style = new AdminStyleAsset(
-					'google-listings-and-ads-notification-system-css',
-					'js/build/notification-system',
+					'google-listings-and-ads-notifications-system-css',
+					'js/build/notifications-system',
 					[],
-					(string) filemtime( "{$build_dir}/notification-system.css" )
+					(string) filemtime( "{$build_dir}/notifications-system.css" )
 				);
 
 				$this->assets_handler->register_many( [ $script, $style ] );
