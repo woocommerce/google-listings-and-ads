@@ -310,6 +310,65 @@ class BatchProductHelper implements Service {
 	}
 
 	/**
+	 * Generate MAPI delete entries for the given products.
+	 *
+	 * @param WC_Product[] $products
+	 *
+	 * @return array<int, array{wc_product_id: int, google_id: string, input: ProductInput}>
+	 */
+	public function generate_mapi_delete_entries( array $products ): array {
+		$entries = [];
+
+		foreach ( $products as $product ) {
+			$this->validate_instanceof( $product, WC_Product::class );
+
+			if ( $product instanceof WC_Product_Variable ) {
+				$entries = array_merge( $entries, $this->generate_mapi_delete_entries( $product->get_available_variations( 'objects' ) ) );
+				continue;
+			}
+
+			$google_ids = $this->product_helper->get_synced_google_product_ids( $product );
+			if ( empty( $google_ids ) ) {
+				continue;
+			}
+
+			foreach ( $google_ids as $google_id ) {
+				$identity = $this->parse_mapi_identity( (string) $google_id );
+				if ( null === $identity ) {
+					continue;
+				}
+
+				[ $language, $feed, $offer_id ] = $identity;
+
+				$entries[] = [
+					'wc_product_id' => $product->get_id(),
+					'google_id'     => (string) $google_id,
+					'input'         => new ProductInput( $offer_id, $language, $feed ),
+				];
+			}
+		}
+
+		return $entries;
+	}
+
+	/**
+	 * Parse a MAPI Google product id (e.g. `en~US~gla_29`) into its identity array
+	 * [language, feed, offerId].
+	 *
+	 * @param string $google_id
+	 *
+	 * @return array{0: string, 1: string, 2: string}|null
+	 */
+	public function parse_mapi_identity( string $google_id ): ?array {
+		$parts = explode( '~', $google_id, 3 );
+		if ( count( $parts ) !== 3 ) {
+			return null;
+		}
+
+		return [ $parts[0], $parts[1], $parts[2] ];
+	}
+
+	/**
 	 * @param WCProductAdapter $product
 	 *
 	 * @return BatchInvalidProductEntry|true
@@ -328,54 +387,65 @@ class BatchProductHelper implements Service {
 	}
 
 	/**
-	 * Filters and returns an array of request entries for Google products that should no longer be submitted for the selected target audience.
+	 * Generate MAPI delete entries for products whose stored google_ids include
+	 * countries that are no longer in the target audience.
 	 *
 	 * @param WC_Product[] $products
 	 *
-	 * @return BatchProductIDRequestEntry[]
+	 * @return array<int, array{wc_product_id: int, google_id: string, input: ProductInput}>
 	 */
-	public function generate_stale_products_request_entries( array $products ): array {
+	public function generate_stale_products_delete_entries( array $products ): array {
 		$target_audience = $this->target_audience->get_target_countries();
-		$request_entries = [];
-		foreach ( $products as $product ) {
-			$google_ids = $this->meta_handler->get_google_ids( $product ) ?: [];
-			$stale_ids  = array_diff_key( $google_ids, array_flip( $target_audience ) );
-			foreach ( $stale_ids as $stale_id ) {
-				$request_entries[ $stale_id ] = new BatchProductIDRequestEntry(
-					$product->get_id(),
-					$stale_id
-				);
-			}
-		}
 
-		return $request_entries;
+		return $this->build_stale_entries( $products, $target_audience );
 	}
 
 	/**
-	 * Returns an array of request entries for Google products that should no
-	 * longer be submitted for every target country.
+	 * Generate MAPI delete entries for products whose stored google_ids target
+	 * countries other than the main target country.
 	 *
 	 * @since 1.1.0
 	 *
 	 * @param WC_Product[] $products
 	 *
-	 * @return BatchProductIDRequestEntry[]
+	 * @return array<int, array{wc_product_id: int, google_id: string, input: ProductInput}>
 	 */
-	public function generate_stale_countries_request_entries( array $products ): array {
-		$main_target_country = $this->target_audience->get_main_target_country();
+	public function generate_stale_countries_delete_entries( array $products ): array {
+		return $this->build_stale_entries( $products, [ $this->target_audience->get_main_target_country() ] );
+	}
 
-		$request_entries = [];
+	/**
+	 * Build MAPI delete entries from products by keeping only the google_ids whose
+	 * country is NOT in $keep_countries. Malformed ids are skipped.
+	 *
+	 * @param WC_Product[] $products
+	 * @param string[]     $keep_countries
+	 *
+	 * @return array<int, array{wc_product_id: int, google_id: string, input: ProductInput}>
+	 */
+	protected function build_stale_entries( array $products, array $keep_countries ): array {
+		$entries = [];
+
 		foreach ( $products as $product ) {
 			$google_ids = $this->meta_handler->get_google_ids( $product ) ?: [];
-			$stale_ids  = array_diff_key( $google_ids, array_flip( [ $main_target_country ] ) );
-			foreach ( $stale_ids as $stale_id ) {
-				$request_entries[ $stale_id ] = new BatchProductIDRequestEntry(
-					$product->get_id(),
-					$stale_id
-				);
+			$stale_ids  = array_diff_key( $google_ids, array_flip( $keep_countries ) );
+
+			foreach ( $stale_ids as $google_id ) {
+				$identity = $this->parse_mapi_identity( (string) $google_id );
+				if ( null === $identity ) {
+					continue;
+				}
+
+				[ $language, $feed, $offer_id ] = $identity;
+
+				$entries[] = [
+					'wc_product_id' => $product->get_id(),
+					'google_id'     => (string) $google_id,
+					'input'         => new ProductInput( $offer_id, $language, $feed ),
+				];
 			}
 		}
 
-		return $request_entries;
+		return $entries;
 	}
 }

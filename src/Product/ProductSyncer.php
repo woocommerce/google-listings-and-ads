@@ -9,7 +9,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPro
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
@@ -187,7 +186,7 @@ class ProductSyncer implements Service {
 	protected function build_synced_google_product( ProductInput $input, string $country ): GoogleProduct {
 		$google_product = new GoogleProduct();
 		$google_product->setId(
-			sprintf( 'online:%s:%s:%s', $input->get_content_language(), $input->get_feed_label(), $input->get_offer_id() )
+			sprintf( '%s~%s~%s', $input->get_content_language(), $input->get_feed_label(), $input->get_offer_id() )
 		);
 		$google_product->setTargetCountry( $country );
 
@@ -291,47 +290,89 @@ class ProductSyncer implements Service {
 	 * @throws ProductSyncerException If there are any errors while deleting products from Google Merchant Center.
 	 */
 	public function delete( array $products ): BatchProductResponse {
-		$this->validate_merchant_center_setup();
-
 		$synced_products = $this->batch_helper->filter_synced_products( $products );
-		$product_entries = $this->batch_helper->generate_delete_request_entries( $synced_products );
+		$entries         = $this->batch_helper->generate_mapi_delete_entries( $synced_products );
 
-		return $this->delete_by_batch_requests( $product_entries );
+		return $this->delete_mapi_entries( $entries );
 	}
 
 	/**
-	 * Deletes an array of WooCommerce products from Google Merchant Center.
+	 * Delete the products described by the given id map (`[ google_id => wc_product_id ]`),
+	 * the shape produced by ProductIDMap.
 	 *
-	 * Note: This method does not automatically delete variations of a parent product. They each must be provided via the $product_entries argument.
+	 * @param array<string, int> $product_id_map
 	 *
-	 * @param BatchProductIDRequestEntry[] $product_entries
-	 *
-	 * @return BatchProductResponse Containing both the deleted and invalid products (including their variation).
+	 * @return BatchProductResponse Containing both the deleted and invalid products.
 	 *
 	 * @throws ProductSyncerException If there are any errors while deleting products from Google Merchant Center.
 	 */
-	public function delete_by_batch_requests( array $product_entries ): BatchProductResponse {
+	public function delete_by_id_map( array $product_id_map ): BatchProductResponse {
+		$entries = [];
+		foreach ( $product_id_map as $google_id => $wc_product_id ) {
+			$identity = $this->batch_helper->parse_mapi_identity( (string) $google_id );
+			if ( null === $identity ) {
+				continue;
+			}
+
+			[ $language, $feed, $offer_id ] = $identity;
+
+			$entries[] = [
+				'wc_product_id' => (int) $wc_product_id,
+				'google_id'     => (string) $google_id,
+				'input'         => new ProductInput( $offer_id, $language, $feed ),
+			];
+		}
+
+		return $this->delete_mapi_entries( $entries );
+	}
+
+	/**
+	 * Delete the given MAPI entries via productInputs.delete.
+	 *
+	 * @param array<int, array{wc_product_id: int, google_id: string, input: ProductInput}> $entries
+	 *
+	 * @return BatchProductResponse Containing both the deleted and invalid products.
+	 *
+	 * @throws ProductSyncerException If there are any errors while deleting products from Google Merchant Center.
+	 */
+	public function delete_mapi_entries( array $entries ): BatchProductResponse {
 		$this->validate_merchant_center_setup();
 
-		// return empty response if no synced product found
-		if ( empty( $product_entries ) ) {
+		if ( empty( $entries ) ) {
 			return new BatchProductResponse( [], [] );
 		}
 
 		$deleted_products = [];
 		$invalid_products = [];
-		foreach ( array_chunk( $product_entries, GoogleProductService::BATCH_SIZE ) as $batch_entries ) {
+
+		foreach ( array_chunk( $entries, GoogleProductService::BATCH_SIZE ) as $batch ) {
+			$inputs = array_map(
+				static function ( array $entry ): ProductInput {
+					return $entry['input'];
+				},
+				$batch
+			);
+
 			try {
-				$response = $this->google_service->delete_batch( $batch_entries );
-
-				$deleted_products = array_merge( $deleted_products, $response->get_products() );
-				$invalid_products = array_merge( $invalid_products, $response->get_errors() );
-
-				array_walk( $deleted_products, [ $this->batch_helper, 'mark_as_unsynced' ] );
+				$result = $this->mapi_inputs->delete_many( $inputs );
 			} catch ( Exception $exception ) {
 				do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
 
 				throw new ProductSyncerException( sprintf( 'Error deleting Google products: %s', $exception->getMessage() ), 0, $exception );
+			}
+
+			foreach ( $batch as $index => $entry ) {
+				if ( isset( $result['successes'][ $index ] ) ) {
+					$deleted_entry      = new BatchProductEntry( $entry['wc_product_id'], null );
+					$deleted_products[] = $deleted_entry;
+					$this->batch_helper->mark_as_unsynced( $deleted_entry );
+				} elseif ( isset( $result['failures'][ $index ] ) ) {
+					$invalid_products[] = $this->build_delete_invalid_entry(
+						$entry['wc_product_id'],
+						$entry['google_id'],
+						$result['failures'][ $index ]
+					);
+				}
 			}
 		}
 
@@ -343,29 +384,34 @@ class ProductSyncer implements Service {
 			$invalid_products
 		);
 
-		do_action(
-			'woocommerce_gla_debug_message',
-			sprintf(
-				"Deleted %s products:\n%s",
-				count( $deleted_products ),
-				wp_json_encode( $deleted_products ),
-			),
-			__METHOD__
-		);
-		if ( ! empty( $invalid_products ) ) {
-			do_action(
-				'woocommerce_gla_debug_message',
-				sprintf(
-					"Failed to delete %s products from Merchant Center:\n%s",
-					count( $invalid_products ),
-					wp_json_encode( $invalid_products )
-				),
-				__METHOD__
-			);
-		}
-
 		return new BatchProductResponse( $deleted_products, $invalid_products );
 	}
+
+	/**
+	 * Build an invalid entry from a failed MAPI delete. 404 is tagged with the
+	 * not-found reason so the existing handler removes the stale google_id;
+	 * server errors are tagged with the internal-error reason so they are retried.
+	 *
+	 * @param int       $wc_product_id
+	 * @param string    $google_id
+	 * @param Exception $reason
+	 *
+	 * @return BatchInvalidProductEntry
+	 */
+	protected function build_delete_invalid_entry( int $wc_product_id, string $google_id, Exception $reason ): BatchInvalidProductEntry {
+		$status = $reason instanceof MerchantApiException ? $reason->get_http_status() : 0;
+
+		if ( 404 === $status ) {
+			$errors = [ GoogleProductService::NOT_FOUND_ERROR_REASON => $reason->getMessage() ];
+		} elseif ( $status >= 500 ) {
+			$errors = [ GoogleProductService::INTERNAL_ERROR_REASON => $reason->getMessage() ];
+		} else {
+			$errors = [ 'invalid' => $reason->getMessage() ];
+		}
+
+		return new BatchInvalidProductEntry( $wc_product_id, $google_id, $errors );
+	}
+
 
 	/**
 	 * Return the list of supported product types.

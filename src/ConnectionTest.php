@@ -1716,9 +1716,9 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 
 				try {
 					$products = $product_repository->find_synced_products();
-					$stale_entries = $batch_product_helper->generate_stale_products_request_entries( $products );
+					$stale_entries = $batch_product_helper->generate_stale_products_delete_entries( $products );
 
-					$result = $product_syncer->delete_by_batch_requests( $stale_entries );
+					$result = $product_syncer->delete_mapi_entries( $stale_entries );
 
 					$this->response .= sprintf( '%s products cleaned up.', count( $result->get_products() ) ) . "\n";
 					if ( ! empty( $result->get_errors() ) ) {
