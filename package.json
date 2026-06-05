@@ -157,7 +157,7 @@
 				"maxSize": "89.00 kB"
 			},
 			{
-				"path": "./js/build/notification-system.js",
+				"path": "./js/build/notifications-system.js",
 				"maxSize": "20 kB"
 			},
 			{
