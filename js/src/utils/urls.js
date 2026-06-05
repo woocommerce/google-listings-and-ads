@@ -66,6 +66,10 @@ export const getOnboardingUrl = () => {
 	return getNewPath( null, onboardingPath, null );
 };
 
+export const getSetupAdsUrl = () => {
+	return getNewPath( null, pagePaths.adsOnboarding, null );
+};
+
 export const getDashboardUrl = ( query = null ) => {
 	return getNewPath( query, dashboardPath, null );
 };

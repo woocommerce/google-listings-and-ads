@@ -8,6 +8,13 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
+import {
+	getDashboardUrl,
+	getGetStartedUrl,
+	getProductFeedUrl,
+	getSettingsUrl,
+	getSetupAdsUrl,
+} from '~/utils/urls';
 
 /**
  * @typedef {Object} NotificationConfig
@@ -31,7 +38,7 @@ const STATIC_MAP = {
 		actions: [
 			{
 				isPrimary: true,
-				href: 'admin.php?page=wc-admin&path=/google/start',
+				href: getGetStartedUrl(),
 				children: __( 'Continue Setup', 'google-listings-and-ads' ),
 			},
 		],
@@ -48,7 +55,7 @@ const STATIC_MAP = {
 		actions: [
 			{
 				isPrimary: true,
-				href: 'admin.php?page=wc-admin&path=/google/setup-ads',
+				href: getSetupAdsUrl(),
 				children: __(
 					'Set up Google Ads campaign',
 					'google-listings-and-ads'
@@ -68,7 +75,7 @@ const STATIC_MAP = {
 		actions: [
 			{
 				isPrimary: true,
-				href: 'admin.php?page=wc-admin&path=/google/setup-ads',
+				href: getSetupAdsUrl(),
 				children: __( 'Get started', 'google-listings-and-ads' ),
 			},
 		],
@@ -82,7 +89,7 @@ const STATIC_MAP = {
 		actions: [
 			{
 				isPrimary: true,
-				href: 'admin.php?page=wc-admin&path=/google/product-feed',
+				href: getProductFeedUrl(),
 				children: __(
 					'View Product Issues',
 					'google-listings-and-ads'
@@ -121,7 +128,7 @@ const STATIC_MAP = {
 		actions: [
 			{
 				isPrimary: true,
-				href: 'admin.php?page=wc-admin&path=/google/settings',
+				href: getSettingsUrl(),
 				children: __( 'Enable Feature', 'google-listings-and-ads' ),
 			},
 		],
@@ -138,7 +145,7 @@ const STATIC_MAP = {
 		actions: [
 			{
 				isPrimary: true,
-				href: 'admin.php?page=wc-admin&path=/google/dashboard',
+				href: getDashboardUrl(),
 				children: __(
 					'See recommendations here',
 					'google-listings-and-ads'
@@ -195,7 +202,7 @@ const useNotificationsSystemMap = () => {
 				actions: [
 					{
 						isPrimary: true,
-						href: 'admin.php?page=wc-admin&path=/google/setup-ads',
+						href: getSetupAdsUrl(),
 						children: __(
 							'Complete Campaign Setup',
 							'google-listings-and-ads'
@@ -220,7 +227,7 @@ const useNotificationsSystemMap = () => {
 				actions: [
 					{
 						isPrimary: true,
-						href: 'admin.php?page=wc-admin&path=/google/start',
+						href: getGetStartedUrl(),
 						children: __( 'Setup here', 'google-listings-and-ads' ),
 					},
 				],
@@ -242,7 +249,7 @@ const useNotificationsSystemMap = () => {
 				actions: [
 					{
 						isPrimary: true,
-						href: 'admin.php?page=wc-admin&path=/google/dashboard',
+						href: getDashboardUrl(),
 						children: __(
 							'Resume your campaign',
 							'google-listings-and-ads'
@@ -294,7 +301,7 @@ const useNotificationsSystemMap = () => {
 				actions: [
 					{
 						isPrimary: true,
-						href: 'admin.php?page=wc-admin&path=/google/setup-ads',
+						href: getSetupAdsUrl(),
 						children: __(
 							'Launch a campaign today',
 							'google-listings-and-ads'
@@ -319,7 +326,7 @@ const useNotificationsSystemMap = () => {
 				actions: [
 					{
 						isPrimary: true,
-						href: 'admin.php?page=wc-admin&path=/google/settings',
+						href: getSettingsUrl(),
 						children: __(
 							'Review coupon settings',
 							'google-listings-and-ads'
