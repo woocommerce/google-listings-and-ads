@@ -66,6 +66,11 @@ class NotificationService implements ContainerAwareInterface {
 			return [];
 		}
 
+		// No evaluators are registered against the tag, so there is nothing to show.
+		if ( ! $this->container->has( NotificationEvaluatorInterface::class ) ) {
+			return [];
+		}
+
 		$evaluators = $this->container->get( NotificationEvaluatorInterface::class );
 
 		usort(
