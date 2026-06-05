@@ -484,8 +484,69 @@ class MarketServiceTest extends UnitTest {
 
 		$this->market_service->update_market( 'gb', [ 'currency' => [ 'EUR' ] ] );
 
-		$this->assertSame( [ 'EUR' ], $persisted['gb']['currency'] );
+		$this->assertSame( [ get_woocommerce_currency(), 'EUR' ], $persisted['gb']['currency'] );
 		$this->assertSame( 'GB', $persisted['gb']['country'] );
+	}
+
+	public function test_update_market_does_not_remerge_language_when_language_omitted(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en', 'de' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$persisted = null;
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$persisted ) {
+					if ( OptionsInterface::MARKETS === $key ) {
+						$persisted = $value;
+					}
+					return true;
+				}
+			);
+
+		$this->market_service->update_market( 'gb', [ 'shipping_rate' => 'flat' ] );
+
+		$this->assertSame( [ 'en', 'de' ], $persisted['gb']['language'] );
+	}
+
+	public function test_update_market_merges_language_with_primary_when_language_provided(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$persisted = null;
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$persisted ) {
+					if ( OptionsInterface::MARKETS === $key ) {
+						$persisted = $value;
+					}
+					return true;
+				}
+			);
+
+		$this->market_service->update_market( 'gb', [ 'language' => [ 'fr', 'de' ] ] );
+
+		$this->assertSame(
+			[ substr( get_locale(), 0, 2 ), 'fr', 'de' ],
+			$persisted['gb']['language']
+		);
 	}
 
 	public function test_update_market_secondary_validates_merged_config(): void {
@@ -981,6 +1042,39 @@ class MarketServiceTest extends UnitTest {
 		$this->wpml->method( 'is_active' )->willReturn( true );
 
 		$this->assertTrue( $this->market_service->has_multilingual_support() );
+	}
+
+	public function test_get_primary_market_uses_wpml_default_language_when_active(): void {
+		$this->wpml->method( 'is_active' )->willReturn( true );
+		$this->wpml->method( 'get_default_language_code' )->willReturn( 'fr' );
+		$this->wpml->method( 'get_languages' )->willReturn(
+			[
+				[
+					'code'  => 'en',
+					'label' => 'English',
+				],
+				[
+					'code'  => 'fr',
+					'label' => 'French',
+				],
+			]
+		);
+		$this->wpml->method( 'get_currencies' )->willReturn(
+			[
+				[
+					'code'   => 'EUR',
+					'symbol' => '€',
+				],
+			]
+		);
+
+		$this->set_up_options_get( [ OptionsInterface::MERCHANT_CENTER => [] ] );
+		$this->set_up_primary_market_dependencies( 'FR', [ 'FR' ] );
+
+		$result = $this->market_service->get_primary_market();
+
+		$this->assertSame( [ 'fr' ], $result['language'] );
+		$this->assertSame( [ 'EUR' ], $result['currency'] );
 	}
 
 	public function test_get_languages_delegates_to_wpml_integration(): void {
