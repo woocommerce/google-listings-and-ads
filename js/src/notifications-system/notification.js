@@ -11,7 +11,7 @@ import { Card } from '@wordpress/components';
 import { glaData } from '~/constants';
 import AppButton from '~/components/app-button';
 import googleLogoURL from '~/images/logo/google-logo.svg';
-import './index.scss';
+import './notification.scss';
 
 /**
  * Base notification card component.
