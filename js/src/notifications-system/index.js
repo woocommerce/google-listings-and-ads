@@ -9,6 +9,7 @@ import { createRoot } from '@wordpress/element';
  * Internal dependencies
  */
 import NotificationsPanel from './notifications-panel';
+import './index.scss';
 
 const MULTICHANNEL_CLASS = 'woocommerce-marketing-overview-multichannel';
 const BANNER_CLASS = 'woocommerce-marketing-introduction-banner';
