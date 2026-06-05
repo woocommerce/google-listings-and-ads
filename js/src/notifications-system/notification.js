@@ -30,9 +30,10 @@ const Notification = ( {
 	onDismiss,
 	actions = [],
 } ) => {
-	const formattedDate = triggeredAt
-		? dateI18n( glaData.dateFormat, new Date( triggeredAt * 1000 ) )
-		: null;
+	const formattedDate = dateI18n(
+		glaData.dateFormat,
+		new Date( triggeredAt * 1000 )
+	);
 
 	return (
 		<Card className="gla-notification">
