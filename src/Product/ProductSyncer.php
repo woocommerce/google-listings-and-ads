@@ -3,8 +3,12 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
@@ -12,6 +16,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product as GoogleProduct;
 use Exception;
 use WC_Product;
 
@@ -31,6 +36,11 @@ class ProductSyncer implements Service {
 	 * @var GoogleProductService
 	 */
 	protected $google_service;
+
+	/**
+	 * @var MapiProductInputsService
+	 */
+	protected $mapi_inputs;
 
 	/**
 	 * @var BatchProductHelper
@@ -60,15 +70,17 @@ class ProductSyncer implements Service {
 	/**
 	 * ProductSyncer constructor.
 	 *
-	 * @param GoogleProductService  $google_service
-	 * @param BatchProductHelper    $batch_helper
-	 * @param ProductHelper         $product_helper
-	 * @param MerchantCenterService $merchant_center
-	 * @param WC                    $wc
-	 * @param ProductRepository     $product_repository
+	 * @param GoogleProductService     $google_service
+	 * @param MapiProductInputsService $mapi_inputs
+	 * @param BatchProductHelper       $batch_helper
+	 * @param ProductHelper            $product_helper
+	 * @param MerchantCenterService    $merchant_center
+	 * @param WC                       $wc
+	 * @param ProductRepository        $product_repository
 	 */
 	public function __construct(
 		GoogleProductService $google_service,
+		MapiProductInputsService $mapi_inputs,
 		BatchProductHelper $batch_helper,
 		ProductHelper $product_helper,
 		MerchantCenterService $merchant_center,
@@ -76,6 +88,7 @@ class ProductSyncer implements Service {
 		ProductRepository $product_repository
 	) {
 		$this->google_service     = $google_service;
+		$this->mapi_inputs        = $mapi_inputs;
 		$this->batch_helper       = $batch_helper;
 		$this->product_helper     = $product_helper;
 		$this->merchant_center    = $merchant_center;
@@ -95,10 +108,109 @@ class ProductSyncer implements Service {
 	public function update( array $products ): BatchProductResponse {
 		$this->validate_merchant_center_setup();
 
-		// prepare and validate products
-		$product_entries = $this->batch_helper->validate_and_generate_update_request_entries( $products );
+		$entries = $this->batch_helper->generate_mapi_update_entries( $products );
 
-		return $this->update_by_batch_requests( $product_entries );
+		return $this->update_mapi_entries( $entries );
+	}
+
+	/**
+	 * Submit MAPI ProductInput entries to Merchant Center via productInputs.insert.
+	 *
+	 * @param array<int, array{product: WC_Product, country: string, input: ProductInput}> $entries
+	 *
+	 * @return BatchProductResponse Containing both the synced and invalid products.
+	 *
+	 * @throws ProductSyncerException If there are any errors while syncing products with Google Merchant Center.
+	 */
+	protected function update_mapi_entries( array $entries ): BatchProductResponse {
+		if ( empty( $entries ) ) {
+			return new BatchProductResponse( [], [] );
+		}
+
+		$updated_products = [];
+		$invalid_products = [];
+
+		foreach ( array_chunk( $entries, GoogleProductService::BATCH_SIZE ) as $batch ) {
+			$inputs = array_map(
+				static function ( array $entry ): ProductInput {
+					return $entry['input'];
+				},
+				$batch
+			);
+
+			try {
+				$result = $this->mapi_inputs->insert_many( $inputs );
+			} catch ( Exception $exception ) {
+				do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
+
+				throw new ProductSyncerException( sprintf( 'Error updating Google products: %s', $exception->getMessage() ), 0, $exception );
+			}
+
+			foreach ( $batch as $index => $entry ) {
+				if ( isset( $result['successes'][ $index ] ) ) {
+					$synced_entry = new BatchProductEntry(
+						$entry['product']->get_id(),
+						$this->build_synced_google_product( $result['successes'][ $index ], $entry['country'] )
+					);
+
+					$updated_products[] = $synced_entry;
+					$this->batch_helper->mark_as_synced( $synced_entry );
+				} elseif ( isset( $result['failures'][ $index ] ) ) {
+					$invalid_entry = $this->build_invalid_entry( $entry['product']->get_id(), $result['failures'][ $index ] );
+
+					$invalid_products[] = $invalid_entry;
+					$this->batch_helper->mark_as_invalid( $invalid_entry );
+				}
+			}
+		}
+
+		$this->handle_update_errors( $invalid_products );
+
+		do_action(
+			'woocommerce_gla_batch_updated_products',
+			$updated_products,
+			$invalid_products
+		);
+
+		return new BatchProductResponse( $updated_products, $invalid_products );
+	}
+
+	/**
+	 * Build a Google product carrying the synced id and target country,
+	 * used to update the product's sync metadata.
+	 *
+	 * @param ProductInput $input
+	 * @param string       $country
+	 *
+	 * @return GoogleProduct
+	 */
+	protected function build_synced_google_product( ProductInput $input, string $country ): GoogleProduct {
+		$google_product = new GoogleProduct();
+		$google_product->setId(
+			sprintf( 'online:%s:%s:%s', $input->get_content_language(), $input->get_feed_label(), $input->get_offer_id() )
+		);
+		$google_product->setTargetCountry( $country );
+
+		return $google_product;
+	}
+
+	/**
+	 * Build an invalid product entry from a failed MAPI insert. Server errors are
+	 * tagged with the internal-error reason so they are retried.
+	 *
+	 * @param int       $wc_product_id
+	 * @param Exception $reason
+	 *
+	 * @return BatchInvalidProductEntry
+	 */
+	protected function build_invalid_entry( int $wc_product_id, Exception $reason ): BatchInvalidProductEntry {
+		if ( $reason instanceof MerchantApiException && $reason->get_http_status() >= 500 ) {
+			$errors = [ GoogleProductService::INTERNAL_ERROR_REASON => $reason->getMessage() ];
+		} else {
+			$errors = [ 'invalid' => $reason->getMessage() ];
+		}
+
+		return new BatchInvalidProductEntry( $wc_product_id, null, $errors );
 	}
 
 	/**

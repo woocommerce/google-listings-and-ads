@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\GoogleListingsAndAdsException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
@@ -17,6 +18,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingCo
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Product;
 use WC_Product_Variable;
+use WC_Product_Variation;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -255,6 +257,56 @@ class BatchProductHelper implements Service {
 		}
 
 		return $request_entries;
+	}
+
+	/**
+	 * Generate MAPI ProductInput entries for the given products. Expands variable
+	 * products into variations, skips products that are not sync-ready, and builds
+	 * a ProductInput per product targeting the main target country.
+	 *
+	 * @param WC_Product[] $products
+	 *
+	 * @return array<int, array{product: WC_Product, country: string, input: ProductInput}>
+	 */
+	public function generate_mapi_update_entries( array $products ): array {
+		$entries          = [];
+		$country          = $this->target_audience->get_main_target_country();
+		$target_countries = $this->target_audience->get_target_countries();
+
+		foreach ( $products as $product ) {
+			$this->validate_instanceof( $product, WC_Product::class );
+
+			try {
+				if ( ! $this->product_helper->is_sync_ready( $product ) ) {
+					continue;
+				}
+
+				if ( $product instanceof WC_Product_Variable ) {
+					$entries = array_merge( $entries, $this->generate_mapi_update_entries( $product->get_available_variations( 'objects' ) ) );
+					continue;
+				}
+
+				$parent = $product instanceof WC_Product_Variation
+					? $this->product_helper->get_wc_product( $product->get_parent_id() )
+					: null;
+
+				$entries[] = [
+					'product' => $product,
+					'country' => $country,
+					'input'   => ( new WCProductInputAdapter( $product, $country, $parent, $target_countries ) )->get_product_input(),
+				];
+			} catch ( GoogleListingsAndAdsException $exception ) {
+				do_action(
+					'woocommerce_gla_error',
+					sprintf( 'Skipping product (ID: %s) due to exception: %s', $product->get_id(), $exception->getMessage() ),
+					__METHOD__
+				);
+
+				continue;
+			}
+		}
+
+		return $entries;
 	}
 
 	/**

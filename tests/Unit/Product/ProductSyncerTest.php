@@ -3,6 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
@@ -42,6 +45,9 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 	/** @var MockObject|GoogleProductService $google_service */
 	protected $google_service;
 
+	/** @var MockObject|MapiProductInputsService $mapi_inputs */
+	protected $mapi_inputs;
+
 	/** @var MockObject|TargetAudience $target_audience */
 	protected $target_audience;
 
@@ -70,10 +76,14 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 	protected $wc;
 
 	public function test_update() {
+		// $synced_products:   products that were successfully synced to Merchant Center
+		// $rejected_products: products that have errors and were rejected by Google API
+		[ $synced_products, $rejected_products ] = $this->create_multiple_simple_product_sets( 2, 2 );
+
 		$validator       = $this->createMock( ValidatorInterface::class );
 		$product_factory = $this->container->get( ProductFactory::class );
 		$batch_helper    = $this->getMockBuilder( BatchProductHelper::class )
-								->setMethods( [ 'validate_and_generate_update_request_entries' ] )
+								->setMethods( [ 'generate_mapi_update_entries' ] )
 								->setConstructorArgs(
 									[
 										$this->product_meta,
@@ -86,28 +96,59 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 								)
 								->getMock();
 		$batch_helper->expects( $this->once() )
-			->method( 'validate_and_generate_update_request_entries' )
+			->method( 'generate_mapi_update_entries' )
 			->willReturnCallback(
 				function ( array $products ) {
 					return array_map(
 						function ( WC_Product $product ) {
-							return new BatchProductRequestEntry( $product->get_id(), $this->generate_adapted_product( $product ) );
+							return [
+								'product' => $product,
+								'country' => 'US',
+								'input'   => new ProductInput( "gla_{$product->get_id()}", 'en', 'US', [ 'title' => $product->get_title() ] ),
+							];
 						},
 						$products
 					);
 				}
 			);
 
-		// $synced_products:   products that were successfully synced to Merchant Center
-		// $rejected_products: products that have errors and were rejected by Google API
-		[ $synced_products, $rejected_products ] = $this->create_multiple_simple_product_sets( 2, 2 );
-
-		$this->mock_google_service( $synced_products, $rejected_products );
+		$this->mock_mapi_inputs( $synced_products, $rejected_products );
 		$product_syncer = $this->get_product_syncer( [ 'batch_helper' => $batch_helper ] );
 
 		$products = array_merge( $synced_products, $rejected_products );
 		$results  = $product_syncer->update( $products );
 		$this->assert_update_results_are_valid( $results, $synced_products, $rejected_products );
+	}
+
+	/**
+	 * Mock MapiProductInputsService::insert_many to succeed for synced products and
+	 * fail for rejected products.
+	 *
+	 * @param array $synced_products   WC product IDs.
+	 * @param array $rejected_products WC product IDs.
+	 */
+	protected function mock_mapi_inputs( array $synced_products, array $rejected_products ): void {
+		$this->mapi_inputs->expects( $this->any() )
+			->method( 'insert_many' )
+			->willReturnCallback(
+				function ( array $inputs ) use ( $synced_products, $rejected_products ) {
+					$successes = [];
+					$failures  = [];
+					foreach ( $inputs as $index => $input ) {
+						$product_id = (int) str_replace( 'gla_', '', $input->get_offer_id() );
+						if ( isset( $synced_products[ $product_id ] ) ) {
+							$successes[ $index ] = $input;
+						} elseif ( isset( $rejected_products[ $product_id ] ) ) {
+							$failures[ $index ] = new MerchantApiException( 500, [], 'Internal Error!' );
+						}
+					}
+
+					return [
+						'successes' => $successes,
+						'failures'  => $failures,
+					];
+				}
+			);
 	}
 
 	public function test_update_by_batch_requests() {
@@ -619,6 +660,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 	 */
 	private function get_product_syncer( $args = [] ): ProductSyncer {
 		$args['google_service']     = $args['google_service'] ?? $this->google_service;
+		$args['mapi_inputs']        = $args['mapi_inputs'] ?? $this->mapi_inputs;
 		$args['batch_helper']       = $args['batch_helper'] ?? $this->batch_helper;
 		$args['product_helper']     = $args['product_helper'] ?? $this->product_helper;
 		$args['merchant_center']    = $args['merchant_center'] ?? $this->merchant_center;
@@ -627,6 +669,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 		return new ProductSyncer(
 			$args['google_service'],
+			$args['mapi_inputs'],
 			$args['batch_helper'],
 			$args['product_helper'],
 			$args['merchant_center'],
@@ -656,6 +699,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 			->willReturn( true );
 
 		$this->google_service = $this->createMock( GoogleProductService::class );
+		$this->mapi_inputs    = $this->createMock( MapiProductInputsService::class );
 		$this->rules_query    = $this->createMock( AttributeMappingRulesQuery::class );
 
 		$this->product_meta       = $this->container->get( ProductMetaHandler::class );
