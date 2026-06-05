@@ -714,15 +714,16 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_NOTIFICATIONS: {
-			return { ...state, notifications: action.notifications };
+			return setIn( state, 'notifications', action.notifications );
 		}
 
 		case TYPES.DISMISS_NOTIFICATION: {
+			const notifications = state.notifications.filter(
+				( notification ) => notification.id !== action.id
+			);
 			return {
 				...state,
-				notifications: state.notifications.filter(
-					( n ) => n.id !== action.id
-				),
+				notifications,
 			};
 		}
 
