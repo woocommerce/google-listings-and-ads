@@ -213,8 +213,6 @@ class ProductSyncer implements Service {
 	 * @throws ProductSyncerException If there are any errors while deleting products from Google Merchant Center.
 	 */
 	public function delete( array $products ): BatchProductResponse {
-		$this->validate_merchant_center_setup();
-
 		$synced_products = $this->batch_helper->filter_synced_products( $products );
 		$entries         = $this->batch_helper->generate_mapi_delete_entries( $synced_products );
 
@@ -223,7 +221,7 @@ class ProductSyncer implements Service {
 
 	/**
 	 * Delete the products described by the given id map (`[ google_id => wc_product_id ]`),
-	 * the shape produced by ProductIDMap. Country is parsed from the google_id's feed segment.
+	 * the shape produced by ProductIDMap.
 	 *
 	 * @param array<string, int> $product_id_map
 	 *
@@ -232,8 +230,6 @@ class ProductSyncer implements Service {
 	 * @throws ProductSyncerException If there are any errors while deleting products from Google Merchant Center.
 	 */
 	public function delete_by_id_map( array $product_id_map ): BatchProductResponse {
-		$this->validate_merchant_center_setup();
-
 		$entries = [];
 		foreach ( $product_id_map as $google_id => $wc_product_id ) {
 			$identity = $this->batch_helper->parse_mapi_identity( (string) $google_id );
@@ -245,7 +241,6 @@ class ProductSyncer implements Service {
 
 			$entries[] = [
 				'wc_product_id' => (int) $wc_product_id,
-				'country'       => $feed,
 				'google_id'     => (string) $google_id,
 				'input'         => new ProductInput( $offer_id, $language, $feed ),
 			];
@@ -257,13 +252,15 @@ class ProductSyncer implements Service {
 	/**
 	 * Delete the given MAPI entries via productInputs.delete.
 	 *
-	 * @param array<int, array{wc_product_id: int, country: string, google_id: string, input: ProductInput}> $entries
+	 * @param array<int, array{wc_product_id: int, google_id: string, input: ProductInput}> $entries
 	 *
 	 * @return BatchProductResponse Containing both the deleted and invalid products.
 	 *
 	 * @throws ProductSyncerException If there are any errors while deleting products from Google Merchant Center.
 	 */
 	public function delete_mapi_entries( array $entries ): BatchProductResponse {
+		$this->validate_merchant_center_setup();
+
 		if ( empty( $entries ) ) {
 			return new BatchProductResponse( [], [] );
 		}

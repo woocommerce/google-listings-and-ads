@@ -182,7 +182,6 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertCount( count( $products ), $results );
 		foreach ( $results as $entry ) {
 			$this->assertInstanceOf( ProductInput::class, $entry['input'] );
-			$this->assertSame( 'US', $entry['country'] );
 			$this->assertSame( "en~US~gla_{$entry['wc_product_id']}", $entry['google_id'] );
 			$this->assertSame( 'en', $entry['input']->get_content_language() );
 			$this->assertSame( 'US', $entry['input']->get_feed_label() );
@@ -259,17 +258,15 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 		$this->assertCount( 2, $results );
 
-		$entries_by_country = [];
 		foreach ( $results as $entry ) {
 			$this->assertInstanceOf( ProductInput::class, $entry['input'] );
 			$this->assertSame( $stale_product_id, $entry['wc_product_id'] );
-			$entries_by_country[ $entry['country'] ] = $entry;
 		}
 
-		$this->assertArrayHasKey( 'AU', $entries_by_country );
-		$this->assertArrayHasKey( 'DK', $entries_by_country );
-		$this->assertSame( $stale_google_ids['AU'], $entries_by_country['AU']['google_id'] );
-		$this->assertSame( $stale_google_ids['DK'], $entries_by_country['DK']['google_id'] );
+		$google_ids = array_column( $results, 'google_id' );
+		$this->assertContains( $stale_google_ids['AU'], $google_ids );
+		$this->assertContains( $stale_google_ids['DK'], $google_ids );
+		$this->assertNotContains( $stale_google_ids['US'], $google_ids );
 	}
 
 	public function test_generate_stale_countries_delete_entries() {
@@ -292,17 +289,15 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 		$this->assertCount( 2, $results );
 
-		$entries_by_country = [];
 		foreach ( $results as $entry ) {
 			$this->assertInstanceOf( ProductInput::class, $entry['input'] );
 			$this->assertSame( $stale_product_id, $entry['wc_product_id'] );
-			$entries_by_country[ $entry['country'] ] = $entry;
 		}
 
-		$this->assertArrayHasKey( 'AU', $entries_by_country );
-		$this->assertArrayHasKey( 'DK', $entries_by_country );
-		$this->assertSame( $stale_google_ids['AU'], $entries_by_country['AU']['google_id'] );
-		$this->assertSame( $stale_google_ids['DK'], $entries_by_country['DK']['google_id'] );
+		$google_ids = array_column( $results, 'google_id' );
+		$this->assertContains( $stale_google_ids['AU'], $google_ids );
+		$this->assertContains( $stale_google_ids['DK'], $google_ids );
+		$this->assertNotContains( $stale_google_ids['US'], $google_ids );
 	}
 
 	/**
