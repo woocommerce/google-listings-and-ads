@@ -2,12 +2,10 @@
  * External dependencies
  */
 import { useEffect } from '@wordpress/element';
-import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
-import { STORE_KEY } from '~/data/constants';
 import useNotifications from '~/hooks/useNotifications';
 import AbandonedOnboarding from './notifications/abandoned-onboarding';
 import ActiveCampaignZeroSales from './notifications/active-campaign-zero-sales';
@@ -23,6 +21,7 @@ import SkippedCampaignCreation from './notifications/skipped-campaign-creation';
 import Sold10Items from './notifications/sold-10-items';
 import TrackingOff from './notifications/tracking-off';
 import './notifications-panel.scss';
+import { useAppDispatch } from '~/data';
 
 const NOTIFICATION_MAP = {
 	'skipped-campaign-creation': SkippedCampaignCreation,
@@ -52,21 +51,7 @@ const NOTIFICATION_MAP = {
 const NotificationsPanel = () => {
 	const notifications = useNotifications();
 	const { dismissNotification, invalidateResolutionForStoreSelector } =
-		useDispatch( STORE_KEY );
-
-	useEffect( () => {
-		const badge = document.querySelector(
-			'#toplevel_page_woocommerce-marketing .update-plugins'
-		);
-
-		if ( ! badge ) {
-			return;
-		}
-
-		const count = notifications.length;
-		badge.textContent = count > 0 ? String( count ) : '';
-		badge.style.display = count > 0 ? '' : 'none';
-	}, [ notifications ] );
+		useAppDispatch();
 
 	useEffect( () => {
 		const handleVisibilityChange = () => {
