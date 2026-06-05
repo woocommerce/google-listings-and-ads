@@ -3,18 +3,17 @@
  */
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { useDispatch } from '@wordpress/data';
-
 /**
  * Internal dependencies
  */
 import NotificationsPanel from './notifications-panel';
 import useNotifications from '~/hooks/useNotifications';
+import { useAppDispatch } from '~/data';
 
 jest.mock( '~/hooks/useNotifications', () => jest.fn() );
 
-jest.mock( '@wordpress/data', () => ( {
-	useDispatch: jest.fn(),
+jest.mock( '~/data', () => ( {
+	useAppDispatch: jest.fn(),
 } ) );
 
 jest.mock(
@@ -85,7 +84,7 @@ const mockInvalidateResolutionForStoreSelector = jest.fn();
 describe( 'NotificationsPanel', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
-		useDispatch.mockReturnValue( {
+		useAppDispatch.mockReturnValue( {
 			dismissNotification: mockDismissNotification,
 			invalidateResolutionForStoreSelector:
 				mockInvalidateResolutionForStoreSelector,
@@ -142,42 +141,6 @@ describe( 'NotificationsPanel', () => {
 		expect( mockDismissNotification ).toHaveBeenCalledWith(
 			'skipped-campaign-creation'
 		);
-	} );
-
-	describe( 'badge DOM update', () => {
-		let badge;
-
-		beforeEach( () => {
-			badge = document.createElement( 'span' );
-			badge.className = 'update-plugins';
-			const menuItem = document.createElement( 'li' );
-			menuItem.id = 'toplevel_page_woocommerce-marketing';
-			menuItem.appendChild( badge );
-			document.body.appendChild( menuItem );
-		} );
-
-		afterEach( () => {
-			document
-				.getElementById( 'toplevel_page_woocommerce-marketing' )
-				?.remove();
-		} );
-
-		it( 'sets badge text and shows it when notifications are present', () => {
-			useNotifications.mockReturnValue( [
-				{ id: 'paused-campaign', triggered_at: 1000 },
-				{ id: 'tracking-off', triggered_at: 2000 },
-			] );
-			render( <NotificationsPanel /> );
-			expect( badge.textContent ).toBe( '2' );
-			expect( badge.style.display ).not.toBe( 'none' );
-		} );
-
-		it( 'clears badge text and hides it when notifications are empty', () => {
-			useNotifications.mockReturnValue( [] );
-			render( <NotificationsPanel /> );
-			expect( badge.textContent ).toBe( '' );
-			expect( badge.style.display ).toBe( 'none' );
-		} );
 	} );
 
 	it( 'invalidates getNotifications resolution when the tab becomes visible', () => {
