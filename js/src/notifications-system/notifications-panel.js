@@ -22,6 +22,7 @@ import SalesNotGrowing from './notifications/sales-not-growing';
 import SkippedCampaignCreation from './notifications/skipped-campaign-creation';
 import Sold10Items from './notifications/sold-10-items';
 import TrackingOff from './notifications/tracking-off';
+import './notifications-panel.scss';
 
 const NOTIFICATION_MAP = {
 	'skipped-campaign-creation': SkippedCampaignCreation,
