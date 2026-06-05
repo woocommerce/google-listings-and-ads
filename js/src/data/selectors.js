@@ -574,3 +574,17 @@ export const getGenAITextAssets = ( state, url, assetType ) => {
 
 	return textAssets;
 };
+
+/**
+ * @typedef {Object} Notification
+ * @property {string} id Notification ID.
+ * @property {number} triggered_at Unix timestamp of when the notification was triggered.
+ */
+
+/**
+ * @param {Object} state
+ * @return {Array<Notification>} Current notifications, or empty array if none.
+ */
+export const getNotifications = ( state ) => {
+	return state.notifications ?? [];
+};
