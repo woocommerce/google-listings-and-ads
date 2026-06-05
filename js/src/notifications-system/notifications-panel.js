@@ -40,6 +40,15 @@ const NOTIFICATION_MAP = {
 	'tracking-off': TrackingOff,
 };
 
+/**
+ * Renders the list of active notifications fetched from the notifications API.
+ *
+ * Maps each notification ID to its corresponding component via {@link NOTIFICATION_MAP},
+ * updates the WooCommerce Marketing menu badge count, and re-fetches notifications
+ * whenever the browser tab becomes visible.
+ *
+ * @return {JSX.Element|null} A panel of notification cards, or null if there are no active notifications.
+ */
 const NotificationsPanel = () => {
 	const notifications = useNotifications();
 	const { dismissNotification, invalidateResolutionForStoreSelector } =
