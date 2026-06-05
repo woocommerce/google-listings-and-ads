@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers;
 
@@ -61,7 +61,7 @@ class NotificationController extends BaseController {
 					'methods'             => TransportMethods::DELETABLE,
 					'callback'            => $this->get_delete_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => [ 'id' => $this->get_schema_properties()['id'] ],
+					'args'                => [ 'id' => $this->get_notification_item_properties()['id'] ],
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			],
@@ -118,15 +118,39 @@ class NotificationController extends BaseController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
+			'notifications' => [
+				'type'        => 'array',
+				'description' => __( 'Active notifications.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+				'items'       => [
+					'type'       => 'object',
+					'properties' => $this->get_notification_item_properties(),
+				],
+			],
+		];
+	}
+
+	/**
+	 * Get the schema properties for a single notification item.
+	 *
+	 * @return array
+	 */
+	protected function get_notification_item_properties(): array {
+		return [
 			'id'           => [
 				'description'       => __( 'The notification ID.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'validate_callback' => 'rest_validate_request_arg',
 				'pattern'           => "^{$this->get_notification_id_regex()}$",
+				'context'           => [ 'view' ],
+				'readonly'          => true,
 			],
 			'triggered_at' => [
 				'description' => __( 'The timestamp when the notification was triggered.', 'google-listings-and-ads' ),
 				'type'        => 'integer',
+				'context'     => [ 'view' ],
+				'readonly'    => true,
 			],
 		];
 	}
