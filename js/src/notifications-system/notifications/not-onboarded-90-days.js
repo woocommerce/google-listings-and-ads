@@ -9,6 +9,15 @@ import { __ } from '@wordpress/i18n';
 import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import Notification from '../notification';
 
+/**
+ * Notification prompting a user who has had the plugin active for 90 days but
+ * has not yet connected a Google account to complete the onboarding setup.
+ *
+ * @param {Object} props React props.
+ * @param {number} props.triggeredAt Unix timestamp (ms) when the notification was triggered.
+ * @param {Function} props.onDismiss Callback invoked when the notification is dismissed.
+ * @return {JSX.Element} A {@link Notification} with a link to begin the onboarding flow.
+ */
 const NotOnboarded90Days = ( { triggeredAt, onDismiss } ) => {
 	const isServiceBased = useServiceBasedMerchant();
 

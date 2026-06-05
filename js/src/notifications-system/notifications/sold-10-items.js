@@ -8,6 +8,15 @@ import { __ } from '@wordpress/i18n';
  */
 import Notification from '../notification';
 
+/**
+ * Notification congratulating the user on their first 10 sales and prompting
+ * them to start a Google Ads campaign to drive further growth.
+ *
+ * @param {Object} props React props.
+ * @param {number} props.triggeredAt Unix timestamp (ms) when the notification was triggered.
+ * @param {Function} props.onDismiss Callback invoked when the notification is dismissed.
+ * @return {JSX.Element} A {@link Notification} with a link to the Google Ads setup flow.
+ */
 const Sold10Items = ( { triggeredAt, onDismiss } ) => {
 	return (
 		<Notification

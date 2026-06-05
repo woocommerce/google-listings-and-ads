@@ -8,6 +8,15 @@ import { __ } from '@wordpress/i18n';
  */
 import Notification from '../notification';
 
+/**
+ * Notification alerting the user that their active Google Ads campaign has not
+ * yet generated any sales, and directing them to Google Ads recommendations.
+ *
+ * @param {Object} props React props.
+ * @param {number} props.triggeredAt Unix timestamp (ms) when the notification was triggered.
+ * @param {Function} props.onDismiss Callback invoked when the notification is dismissed.
+ * @return {JSX.Element} A {@link Notification} with an external link to Google Ads recommendations.
+ */
 const ActiveCampaignZeroSales = ( { triggeredAt, onDismiss } ) => {
 	return (
 		<Notification

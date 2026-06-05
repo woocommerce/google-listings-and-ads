@@ -8,6 +8,15 @@ import { __ } from '@wordpress/i18n';
  */
 import Notification from '../notification';
 
+/**
+ * Notification prompting the user to enable Enhanced Conversions to improve
+ * the accuracy of their sales data and attribution reporting.
+ *
+ * @param {Object} props React props.
+ * @param {number} props.triggeredAt Unix timestamp (ms) when the notification was triggered.
+ * @param {Function} props.onDismiss Callback invoked when the notification is dismissed.
+ * @return {JSX.Element} A {@link Notification} with a link to the Google for WooCommerce settings page.
+ */
 const EnhancedConversionsOff = ( { triggeredAt, onDismiss } ) => {
 	return (
 		<Notification
