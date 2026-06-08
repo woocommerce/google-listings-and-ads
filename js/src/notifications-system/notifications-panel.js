@@ -2,6 +2,8 @@
  * External dependencies
  */
 import { useEffect } from '@wordpress/element';
+import { Card, CardHeader } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -10,6 +12,7 @@ import { useAppDispatch } from '~/data';
 import useNotifications from '~/hooks/useNotifications';
 import Notification from './notification';
 import useNotificationsSystemMap from './useNotificationsSystemMap';
+import Text from '~/components/app-text';
 import './notifications-panel.scss';
 
 /**
@@ -48,7 +51,18 @@ const NotificationsPanel = () => {
 	}
 
 	return (
-		<div className="gla-notifications-panel">
+		<Card className="gla-notifications-panel">
+			<CardHeader className="gla-notifications-panel__header">
+				<Text
+					variant="title-small"
+					className="gla-notifications-panel__title"
+				>
+					{ __( 'Action required', 'google-listings-and-ads' ) }
+					<span className="gla-notifications-panel__chip">
+						{ notifications.length }
+					</span>
+				</Text>
+			</CardHeader>
 			{ notifications.map( ( { id, triggered_at } ) => {
 				const config = notificationMap[ id ];
 
@@ -65,7 +79,7 @@ const NotificationsPanel = () => {
 					/>
 				);
 			} ) }
-		</div>
+		</Card>
 	);
 };
 

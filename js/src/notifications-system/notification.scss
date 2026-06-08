@@ -1,12 +1,18 @@
-.gla-notification__header {
+.gla-notification {
+	border-bottom: 1px solid $gray-300;
 	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: $grid-unit-20 $grid-unit-20 0;
+	flex-direction: row;
+	gap: $grid-unit-20;
+	padding: $grid-unit-30;
+
+	&:last-child {
+		border-bottom: 0;
+	}
 }
 
-.gla-notification__logo {
-	display: block;
+.gla-notification__dismiss-container {
+	align-items: flex-start;
+	display: flex;
 }
 
 .gla-notification__dismiss {
@@ -24,7 +30,7 @@
 }
 
 .gla-notification__body {
-	padding: $grid-unit-15 $grid-unit-20 0;
+	flex-grow: 1;
 }
 
 .gla-notification__title {
@@ -37,7 +43,7 @@
 .gla-notification__date {
 	font-size: 12px;
 	color: $gray-700;
-	margin: 0 0 $grid-unit-10;
+	margin: 0;
 }
 
 .gla-notification__description {
@@ -47,8 +53,24 @@
 }
 
 .gla-notification__actions {
+	align-items: center;
 	display: flex;
 	flex-wrap: wrap;
 	gap: $grid-unit-10;
-	padding: $grid-unit-15 $grid-unit-20 $grid-unit-20;
+	margin-top: $grid-unit-10;
+
+	> * + *::before {
+		content: "·";
+		margin-right: $grid-unit-10;
+		color: $gray-700;
+	}
+}
+
+.gla-notification__action.is-link {
+	text-decoration: none;
+
+	&:hover,
+	&:focus {
+		text-decoration: none;
+	}
 }
