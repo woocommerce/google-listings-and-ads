@@ -327,7 +327,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			ValidatorInterface::class,
 			ProductFactory::class,
 			TargetAudience::class,
-			AttributeMappingRulesQuery::class
+			AttributeMappingRulesQuery::class,
+			AttributeManager::class
 		);
 		$this->share_with_tags(
 			ProductSyncer::class,
