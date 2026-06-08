@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAssetGenerationService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
@@ -239,6 +240,37 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'Ads account ID is required' );
+
+		$this->service->generate_images( [] );
+	}
+
+	public function test_generate_images_uses_default_types_when_none_provided() {
+		$expected_enum_types = array_map(
+			[ AssetFieldType::class, 'number' ],
+			AdsAssetGenerationService::VALID_IMAGE_TYPES
+		);
+
+		$image_asset = $this->createMock( \Google\Ads\GoogleAds\V22\Services\GeneratedImage::class );
+		$image_asset->method( 'getImageTemporaryUrl' )->willReturn( 'https://example.com/image.jpg' );
+		$image_asset->method( 'getAssetFieldType' )->willReturn( AssetFieldType::number( 'marketing_image' ) );
+
+		$response = $this->createMock( \Google\Ads\GoogleAds\V22\Services\GenerateImagesResponse::class );
+		$response->method( 'getGeneratedImages' )->willReturn( [ $image_asset ] );
+
+		$this->asset_generation_service
+			->expects( $this->once() )
+			->method( 'generateImages' )
+			->with(
+				$this->callback(
+					function ( $request ) use ( $expected_enum_types ) {
+						$actual = iterator_to_array( $request->getAssetFieldTypes() );
+						sort( $actual );
+						sort( $expected_enum_types );
+						return $actual === $expected_enum_types;
+					}
+				)
+			)
+			->willReturn( $response );
 
 		$this->service->generate_images( [] );
 	}
