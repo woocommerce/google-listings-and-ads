@@ -4,8 +4,11 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
 use WC_Product;
+use WC_Product_Variable;
 use WC_Product_Variation;
 
 defined( 'ABSPATH' ) || exit;
@@ -26,6 +29,29 @@ class WCProductInputAdapter {
 	public const AVAILABILITY_BACKORDER    = 'backorder';
 
 	public const IMAGE_SIZE_FULL = 'full';
+
+	/**
+	 * Supported per-product Google attribute ids (WooCommerce attribute keys).
+	 * Translated to their MAPI keys and types in set_attribute().
+	 */
+	protected const SUPPORTED_ATTRIBUTES = [
+		'gtin',
+		'mpn',
+		'brand',
+		'condition',
+		'gender',
+		'size',
+		'sizeSystem',
+		'sizeType',
+		'color',
+		'material',
+		'pattern',
+		'ageGroup',
+		'multipack',
+		'isBundle',
+		'availabilityDate',
+		'adult',
+	];
 
 	/** @var WC_Product */
 	protected $wc_product;
@@ -51,6 +77,15 @@ class WCProductInputAdapter {
 	/** @var string[] Target countries to add shipping entries for. */
 	protected $shipping_countries = [];
 
+	/** @var array Per-product Google attribute values keyed by attribute id. */
+	protected $gla_attributes = [];
+
+	/** @var array Attribute mapping rules to apply. */
+	protected $mapping_rules = [];
+
+	/** @var int[] Product (or parent) category term ids, used for rule conditions. */
+	protected $product_category_ids = [];
+
 	/**
 	 * WCProductInputAdapter constructor.
 	 *
@@ -58,13 +93,26 @@ class WCProductInputAdapter {
 	 * @param string          $target_country     Feed label.
 	 * @param WC_Product|null $parent_product     Parent product, required when $product is a variation.
 	 * @param string[]        $shipping_countries Additional target countries to add shipping entries for.
+	 * @param array           $gla_attributes     Per-product Google attribute values.
+	 * @param array           $mapping_rules      Attribute mapping rules to apply.
+	 *
+	 * @throws InvalidValue When $product is a variation and a valid parent product is not provided.
 	 */
-	public function __construct( WC_Product $product, string $target_country, ?WC_Product $parent_product = null, array $shipping_countries = [] ) {
+	public function __construct( WC_Product $product, string $target_country, ?WC_Product $parent_product = null, array $shipping_countries = [], array $gla_attributes = [], array $mapping_rules = [] ) {
 		$this->wc_product         = $product;
 		$this->parent_wc_product  = $parent_product;
 		$this->feed_label         = $target_country;
 		$this->shipping_countries = $shipping_countries;
+		$this->gla_attributes     = $gla_attributes;
+		$this->mapping_rules      = $mapping_rules;
 		$this->tax_excluded       = $this->resolve_tax_excluded();
+
+		if ( $this->is_variation() && ! $this->parent_wc_product instanceof WC_Product_Variable ) {
+			throw InvalidValue::not_instance_of( WC_Product_Variable::class, 'parent_product' );
+		}
+
+		$base_product_id            = $this->is_variation() ? $this->parent_wc_product->get_id() : $this->wc_product->get_id();
+		$this->product_category_ids = wc_get_product_term_ids( $base_product_id, 'product_cat' );
 
 		$this->map_identity();
 		$this->map_general_attributes();
@@ -72,6 +120,13 @@ class WCProductInputAdapter {
 		$this->map_availability();
 		$this->map_price();
 		$this->map_shipping();
+		$this->map_product_types();
+
+		// Order matters: per-product values override rules, gtin overrides those, the override filter wins.
+		$this->map_attribute_mapping_rules();
+		$this->map_gla_attributes();
+		$this->map_gtin();
+		$this->override_attributes();
 	}
 
 	/**
@@ -226,6 +281,50 @@ class WCProductInputAdapter {
 	}
 
 	/**
+	 * Map the product's categories to the productTypes attribute (capped at 10),
+	 * ported from WCProductAdapter::map_product_categories.
+	 */
+	protected function map_product_types(): void {
+		$product_types = [];
+		foreach ( array_unique( $this->product_category_ids ) as $category_id ) {
+			if ( ! is_int( $category_id ) ) {
+				continue;
+			}
+
+			$path = $this->category_path( $category_id );
+			if ( '' !== $path ) {
+				$product_types[] = $path;
+			}
+		}
+
+		if ( ! empty( $product_types ) ) {
+			$this->attributes['productTypes'] = array_slice( $product_types, 0, 10 );
+		}
+	}
+
+	/**
+	 * Build the "Parent > Child" category path for a category term id.
+	 *
+	 * @param int $category_id
+	 *
+	 * @return string
+	 */
+	protected function category_path( int $category_id ): string {
+		$names = [];
+		do {
+			$term = get_term_by( 'id', $category_id, 'product_cat', 'ARRAY_A' );
+			if ( ! $term ) {
+				break;
+			}
+
+			$names[]     = $term['name'];
+			$category_id = (int) $term['parent'];
+		} while ( ! empty( $term['parent'] ) );
+
+		return implode( ' > ', array_reverse( $names ) );
+	}
+
+	/**
 	 * Map the shipping attributes.
 	 */
 	protected function map_shipping(): void {
@@ -331,6 +430,258 @@ class WCProductInputAdapter {
 		$is_virtual = apply_filters( 'woocommerce_gla_product_property_value_is_virtual', $is_virtual, $this->wc_product );
 
 		return false !== $is_virtual;
+	}
+
+	/**
+	 * Map the per-product Google attribute values (brand, gtin, color, size, etc.).
+	 */
+	protected function map_gla_attributes(): void {
+		foreach ( $this->gla_attributes as $attribute_id => $value ) {
+			if ( ! in_array( $attribute_id, self::SUPPORTED_ATTRIBUTES, true ) ) {
+				continue;
+			}
+
+			/** This filter is documented in src/Product/WCProductAdapter.php */
+			$value = apply_filters( "woocommerce_gla_product_attribute_value_{$attribute_id}", $value, $this->wc_product );
+
+			if ( null === $value || '' === $value ) {
+				continue;
+			}
+
+			$this->set_attribute( $attribute_id, $value );
+		}
+	}
+
+	/**
+	 * Apply the custom attribute mapping rules, resolving each rule's source value
+	 * for products that match the rule's category conditions.
+	 */
+	protected function map_attribute_mapping_rules(): void {
+		foreach ( $this->mapping_rules as $rule ) {
+			$attribute_id = $rule['attribute'] ?? '';
+			if ( ! in_array( $attribute_id, self::SUPPORTED_ATTRIBUTES, true ) ) {
+				continue;
+			}
+
+			if ( ! $this->rule_match_conditions( $rule ) ) {
+				continue;
+			}
+
+			/** This filter is documented in src/Product/WCProductAdapter.php */
+			$value = apply_filters(
+				"woocommerce_gla_product_attribute_value_{$attribute_id}",
+				$this->get_source( (string) ( $rule['source'] ?? '' ) ),
+				$this->wc_product
+			);
+
+			if ( null === $value || '' === $value ) {
+				continue;
+			}
+
+			$this->set_attribute( $attribute_id, $value );
+		}
+	}
+
+	/**
+	 * Whether the product matches a mapping rule's category conditions.
+	 *
+	 * @param array $rule
+	 *
+	 * @return bool
+	 */
+	protected function rule_match_conditions( array $rule ): bool {
+		$condition_type = $rule['category_condition_type'] ?? '';
+
+		if ( AttributeMappingHelper::CATEGORY_CONDITION_TYPE_ALL === $condition_type ) {
+			return true;
+		}
+
+		$categories = explode( ',', (string) ( $rule['categories'] ?? '' ) );
+		$contains   = ! empty( array_intersect( $categories, $this->product_category_ids ) );
+
+		if ( AttributeMappingHelper::CATEGORY_CONDITION_TYPE_ONLY === $condition_type ) {
+			return $contains;
+		}
+
+		return ! $contains;
+	}
+
+	/**
+	 * Resolve a mapping rule source to its value: a product field, taxonomy term,
+	 * custom attribute, or a static value.
+	 *
+	 * @param string $source
+	 *
+	 * @return string
+	 */
+	protected function get_source( string $source ): string {
+		$separator = strpos( $source, ':' );
+		if ( ! $separator ) {
+			return $source;
+		}
+
+		$type  = substr( $source, 0, $separator );
+		$value = substr( $source, $separator + 1 );
+
+		switch ( $type ) {
+			case 'product':
+				return $this->get_product_field( $value );
+			case 'taxonomy':
+				return $this->get_product_taxonomy( $value );
+			case 'attribute':
+				return $this->get_custom_attribute( $value );
+			default:
+				return $source;
+		}
+	}
+
+	/**
+	 * Get a core product field value for a mapping rule source.
+	 *
+	 * @param string $field
+	 *
+	 * @return string
+	 */
+	protected function get_product_field( string $field ): string {
+		if ( 'weight_with_unit' === $field ) {
+			$weight = $this->wc_product->get_weight();
+			return $weight ? $weight . ' ' . get_option( 'woocommerce_weight_unit' ) : '';
+		}
+
+		$getter = 'get_' . $field;
+		if ( is_callable( [ $this->wc_product, $getter ] ) ) {
+			$value = $this->wc_product->$getter();
+			return is_scalar( $value ) ? (string) $value : '';
+		}
+
+		return '';
+	}
+
+	/**
+	 * Get the first taxonomy term value for a mapping rule source.
+	 *
+	 * @param string $taxonomy
+	 *
+	 * @return string
+	 */
+	protected function get_product_taxonomy( string $taxonomy ): string {
+		if ( $this->is_variation() ) {
+			$values = $this->wc_product->get_attribute( $taxonomy );
+
+			if ( ! $values ) {
+				$values = $this->get_taxonomy_term_names( $this->wc_product->get_id(), $taxonomy );
+			}
+
+			if ( ! $values && $this->parent_wc_product instanceof WC_Product ) {
+				$values = $this->parent_wc_product->get_attribute( $taxonomy );
+				if ( ! $values ) {
+					$values = $this->get_taxonomy_term_names( $this->parent_wc_product->get_id(), $taxonomy );
+				}
+			}
+
+			if ( is_string( $values ) ) {
+				$values = explode( ', ', $values );
+			}
+		} else {
+			$values = $this->get_taxonomy_term_names( $this->wc_product->get_id(), $taxonomy );
+		}
+
+		if ( empty( $values ) || is_wp_error( $values ) ) {
+			return '';
+		}
+
+		return (string) $values[0];
+	}
+
+	/**
+	 * Get the term names for a product taxonomy.
+	 *
+	 * @param int    $product_id
+	 * @param string $taxonomy
+	 *
+	 * @return string[]
+	 */
+	protected function get_taxonomy_term_names( int $product_id, string $taxonomy ): array {
+		$terms = wc_get_product_terms( $product_id, $taxonomy );
+
+		return wp_list_pluck( $terms, 'name' );
+	}
+
+	/**
+	 * Get the first custom attribute or meta value for a mapping rule source.
+	 *
+	 * @param string $attribute_name
+	 *
+	 * @return string
+	 */
+	protected function get_custom_attribute( string $attribute_name ): string {
+		$value = $this->wc_product->get_attribute( $attribute_name );
+
+		if ( ! $value ) {
+			$value = $this->wc_product->get_meta( $attribute_name );
+		}
+
+		if ( ! is_scalar( $value ) ) {
+			return '';
+		}
+
+		$values = array_filter( array_map( 'trim', explode( WC_DELIMITER, (string) $value ) ) );
+
+		return empty( $values ) ? '' : (string) reset( $values );
+	}
+
+	/**
+	 * Apply the attribute-values override filter, which takes precedence over every
+	 * other attribute mapping.
+	 */
+	protected function override_attributes(): void {
+		/** This filter is documented in src/Product/WCProductAdapter.php */
+		$overrides = apply_filters( 'woocommerce_gla_product_attribute_values', [], $this->wc_product, $this );
+
+		if ( is_array( $overrides ) ) {
+			$this->attributes = array_merge( $this->attributes, $overrides );
+		}
+	}
+
+	/**
+	 * Set a single Google attribute, mapping it to its MAPI key and type.
+	 *
+	 * @param string $attribute_id
+	 * @param mixed  $value
+	 */
+	protected function set_attribute( string $attribute_id, $value ): void {
+		switch ( $attribute_id ) {
+			case 'gtin':
+				$this->attributes['gtins'] = [ (string) $value ];
+				break;
+			case 'sizeType':
+				$this->attributes['sizeTypes'] = [ (string) $value ];
+				break;
+			case 'multipack':
+				$this->attributes['multipack'] = (string) (int) $value;
+				break;
+			case 'isBundle':
+			case 'adult':
+				$this->attributes[ $attribute_id ] = wc_string_to_bool( $value );
+				break;
+			default:
+				$this->attributes[ $attribute_id ] = (string) $value;
+		}
+	}
+
+	/**
+	 * Map the WooCommerce core global unique id (GTIN) when available. Ported from WCProductAdapter.
+	 */
+	protected function map_gtin(): void {
+		// Core global unique ID field was added in WC 9.2.
+		if ( ! method_exists( $this->wc_product, 'get_global_unique_id' ) ) {
+			return;
+		}
+
+		$gtin = preg_replace( '/[^0-9]/', '', (string) $this->wc_product->get_global_unique_id() );
+		if ( ! empty( $gtin ) ) {
+			$this->attributes['gtins'] = [ $gtin ];
+		}
 	}
 
 	/**
