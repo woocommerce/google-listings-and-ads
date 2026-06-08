@@ -8,6 +8,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
+use Google\Ads\GoogleAds\V23\Services\GeneratedImage;
+use Google\Ads\GoogleAds\V23\Services\GenerateImagesResponse;
 use Google\ApiCore\ApiException;
 use PHPUnit\Framework\MockObject\MockObject;
 use Exception;
@@ -250,11 +252,11 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 			AdsAssetGenerationService::VALID_IMAGE_TYPES
 		);
 
-		$image_asset = $this->createMock( \Google\Ads\GoogleAds\V22\Services\GeneratedImage::class );
+		$image_asset = $this->createMock( GeneratedImage::class );
 		$image_asset->method( 'getImageTemporaryUrl' )->willReturn( 'https://example.com/image.jpg' );
 		$image_asset->method( 'getAssetFieldType' )->willReturn( AssetFieldType::number( 'marketing_image' ) );
 
-		$response = $this->createMock( \Google\Ads\GoogleAds\V22\Services\GenerateImagesResponse::class );
+		$response = $this->createMock( GenerateImagesResponse::class );
 		$response->method( 'getGeneratedImages' )->willReturn( [ $image_asset ] );
 
 		$this->asset_generation_service
