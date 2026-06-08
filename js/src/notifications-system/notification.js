@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
-import { Card } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -11,7 +10,7 @@ import { Card } from '@wordpress/components';
 import { glaData } from '~/constants';
 import { useAppDispatch } from '~/data';
 import AppButton from '~/components/app-button';
-import googleLogoURL from '~/images/logo/google-logo.svg';
+import googleLogoURL from '~/images/logo/google-g-logo.svg';
 import './notification.scss';
 
 /**
@@ -38,15 +37,34 @@ const Notification = ( {
 	);
 
 	return (
-		<Card className="gla-notification">
-			<div className="gla-notification__header">
+		<div className="gla-notification">
+			<div className="gla-notification__logo-container">
 				<img
 					src={ googleLogoURL }
 					alt="Google"
 					className="gla-notification__logo"
-					width="64"
-					height="22"
+					width="24"
+					height="24"
 				/>
+			</div>
+			<div className="gla-notification__body">
+				<h3 className="gla-notification__title">{ title }</h3>
+				<p className="gla-notification__description">{ description }</p>
+
+				<div className="gla-notification__actions">
+					<p className="gla-notification__date">{ formattedDate }</p>
+					{ actions.length > 0 &&
+						actions.map( ( actionProps, index ) => (
+							<AppButton
+								key={ index }
+								className="gla-notification__action"
+								variant="link"
+								{ ...actionProps }
+							/>
+						) ) }
+				</div>
+			</div>
+			<div className="gla-notification__dismiss-container">
 				<button
 					type="button"
 					className="gla-notification__dismiss"
@@ -59,19 +77,7 @@ const Notification = ( {
 					&#x2715;
 				</button>
 			</div>
-			<div className="gla-notification__body">
-				<h3 className="gla-notification__title">{ title }</h3>
-				<p className="gla-notification__date">{ formattedDate }</p>
-				<p className="gla-notification__description">{ description }</p>
-			</div>
-			{ actions.length > 0 && (
-				<div className="gla-notification__actions">
-					{ actions.map( ( actionProps, index ) => (
-						<AppButton key={ index } { ...actionProps } />
-					) ) }
-				</div>
-			) }
-		</Card>
+		</div>
 	);
 };
 
