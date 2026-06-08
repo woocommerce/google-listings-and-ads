@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product as GoogleProduct;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Product;
@@ -64,6 +65,11 @@ class BatchProductHelper implements Service {
 	protected $attribute_mapping_rules_query;
 
 	/**
+	 * @var AttributeManager
+	 */
+	protected $attribute_manager;
+
+	/**
 	 * BatchProductHelper constructor.
 	 *
 	 * @param ProductMetaHandler         $meta_handler
@@ -72,6 +78,7 @@ class BatchProductHelper implements Service {
 	 * @param ProductFactory             $product_factory
 	 * @param TargetAudience             $target_audience
 	 * @param AttributeMappingRulesQuery $attribute_mapping_rules_query
+	 * @param AttributeManager           $attribute_manager
 	 */
 	public function __construct(
 		ProductMetaHandler $meta_handler,
@@ -79,7 +86,8 @@ class BatchProductHelper implements Service {
 		ValidatorInterface $validator,
 		ProductFactory $product_factory,
 		TargetAudience $target_audience,
-		AttributeMappingRulesQuery $attribute_mapping_rules_query
+		AttributeMappingRulesQuery $attribute_mapping_rules_query,
+		AttributeManager $attribute_manager
 	) {
 		$this->meta_handler                  = $meta_handler;
 		$this->product_helper                = $product_helper;
@@ -87,6 +95,7 @@ class BatchProductHelper implements Service {
 		$this->product_factory               = $product_factory;
 		$this->target_audience               = $target_audience;
 		$this->attribute_mapping_rules_query = $attribute_mapping_rules_query;
+		$this->attribute_manager             = $attribute_manager;
 	}
 
 	/**
@@ -272,6 +281,7 @@ class BatchProductHelper implements Service {
 		$entries          = [];
 		$country          = $this->target_audience->get_main_target_country();
 		$target_countries = $this->target_audience->get_target_countries();
+		$mapping_rules    = $this->attribute_mapping_rules_query->get_results();
 
 		foreach ( $products as $product ) {
 			$this->validate_instanceof( $product, WC_Product::class );
@@ -290,10 +300,15 @@ class BatchProductHelper implements Service {
 					? $this->product_helper->get_wc_product( $product->get_parent_id() )
 					: null;
 
+				$attributes = $this->attribute_manager->get_all_values( $product );
+				if ( null !== $parent ) {
+					$attributes = array_merge( $this->attribute_manager->get_all_values( $parent ), $attributes );
+				}
+
 				$entries[] = [
 					'product' => $product,
 					'country' => $country,
-					'input'   => ( new WCProductInputAdapter( $product, $country, $parent, $target_countries ) )->get_product_input(),
+					'input'   => ( new WCProductInputAdapter( $product, $country, $parent, $target_countries, $attributes, $mapping_rules ) )->get_product_input(),
 				];
 			} catch ( GoogleListingsAndAdsException $exception ) {
 				do_action(
