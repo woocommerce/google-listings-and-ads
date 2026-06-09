@@ -96,6 +96,19 @@ const SetupFreeListings = ( {
 		return <AppSpinner />;
 	}
 
+	const initialAudienceCountries =
+		resolveFinalCountries( targetAudience ) || [];
+
+	// Initialize shipping times with defaults for each audience country
+	const initialShippingTimes =
+		shippingTimes.length === 0 && initialAudienceCountries.length > 0
+			? initialAudienceCountries.map( ( countryCode ) => ( {
+					countryCode,
+					time: 1,
+					maxTime: 5,
+			  } ) )
+			: shippingTimes;
+
 	const handleValidate = ( values ) => {
 		const countries = resolveFinalCountries( values );
 		const { shipping_country_times: shippingTimesData } = values;
@@ -221,7 +234,7 @@ const SetupFreeListings = ( {
 						getOfferFreeShippingInitialValue( shippingRates ),
 					// Glue shipping rates and times together, as the Form does not support nested structures.
 					shipping_country_rates: shippingRates,
-					shipping_country_times: shippingTimes,
+					shipping_country_times: initialShippingTimes,
 				} }
 				extendAdapter={ extendAdapter }
 				onChange={ handleChange }

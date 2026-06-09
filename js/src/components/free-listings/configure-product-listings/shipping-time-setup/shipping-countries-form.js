@@ -51,15 +51,13 @@ export default function ShippingCountriesForm( {
 
 		// Prefill to-be-added time if there are selected audience countries, but no times provided yet.
 		if ( actualCountryCount === 0 && audienceCountries.length > 0 ) {
-			const defaults = audienceCountries.map( ( countryCode ) => ( {
-				countryCode,
-				time: 1,
-				maxTime: 5,
-			} ) );
-
-			// Defer until after WC Form's one-time init validation useEffect.
-			// Running in a new task ensures the subsequent re-validation sees the populated values.
-			setTimeout( () => onChange( defaults ), 0 );
+			onChange(
+				audienceCountries.map( ( countryCode ) => ( {
+					countryCode,
+					time: 1,
+					maxTime: 5,
+				} ) )
+			);
 		}
 	} );
 
