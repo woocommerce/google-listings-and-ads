@@ -14,6 +14,7 @@ import {
 	REQUEST_ACTIONS,
 	EMPTY_ASSET_ENTITY_GROUP,
 } from './constants';
+import { EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE } from '~/constants';
 import { handleApiError } from '~/utils/handleError';
 import { adaptAdsCampaign, adaptGenAIAssets } from './adapters';
 import { isWCIos, isWCAndroid } from '~/utils/isMobileApp';
@@ -41,6 +42,14 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * @property {string} currency Currency of the price.
  * @property {number} rate Shipping price.
  * @property {Object} options Options, such as `free_shipping_threshold`.
+ */
+
+/**
+ * Error object returned from the API.
+ *
+ * @typedef {Object} ApiError
+ * @property {string} code Error code.
+ * @property {string} message Error message.
  */
 
 /**
@@ -777,7 +786,9 @@ export function* createAdsCampaign(
 			createdCampaign: adaptAdsCampaign( createdCampaign ),
 		};
 	} catch ( error ) {
-		handleApiError( error );
+		if ( error.code !== 'eu_political_advertising_declaration_required' ) {
+			handleApiError( error );
+		}
 
 		throw error;
 	}
@@ -858,7 +869,12 @@ export function* updateAdsCampaign( id, data ) {
 			data,
 		};
 	} catch ( error ) {
-		handleApiError( error );
+		if (
+			error?.code !==
+			EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE
+		) {
+			handleApiError( error );
+		}
 
 		throw error;
 	}
@@ -868,6 +884,13 @@ export function receiveEnhancedConversionsStatus( status ) {
 	return {
 		type: TYPES.RECEIVE_ADS_ENHANCED_CONVERSIONS,
 		status,
+	};
+}
+
+export function receiveAdsSettings( settings ) {
+	return {
+		type: TYPES.RECEIVE_ADS_SETTINGS,
+		settings,
 	};
 }
 
@@ -1355,6 +1378,41 @@ export function* receiveAdsRecommendations(
 		type: TYPES.RECEIVE_ADS_RECOMMENDATIONS,
 		recommendations,
 		recommendationTypes,
+	};
+}
+
+/**
+ * Action containing detailed error information.
+ *
+ * @param {string} slot - Unique key identifying the error (e.g., field name or error code).
+ * @param {ApiError|null} error - The original error object or additional error details.
+ * @return {{type: string, slot: string, error: ApiError|null}} Redux action with type `TYPES.RECEIVE_DETAILED_ERROR`.
+ */
+export function* receiveDetailedError( slot, error ) {
+	return {
+		type: TYPES.RECEIVE_DETAILED_ERROR,
+		slot,
+		error,
+	};
+}
+
+/**
+ * Clears error information for specific error slots.
+ *
+ * @param {Array<string>} slots - Array of unique keys identifying the errors to be cleared.
+ * @return {{type: string, slots: Array<string>}} Redux action with type `TYPES.CLEAR_DETAILED_ERROR_BY_SLOT`.
+ */
+export function* clearDetailedErrorBySlots( slots ) {
+	return {
+		type: TYPES.CLEAR_DETAILED_ERROR_BY_SLOT,
+		slots,
+	};
+}
+
+export function receiveCYOIncentives( cyoIncentives ) {
+	return {
+		type: TYPES.RECEIVE_CYO_INCENTIVES,
+		cyoIncentives,
 	};
 }
 

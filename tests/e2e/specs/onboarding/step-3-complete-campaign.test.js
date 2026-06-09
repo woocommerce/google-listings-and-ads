@@ -726,25 +726,6 @@ test.describe( 'Complete your campaign', () => {
 		} );
 	} );
 
-	test.describe( 'Free Ad Credit', () => {
-		test( 'should see the Free Ad Credit section always', async () => {
-			await setupAdsAccountPage.mockAdsAccountConnected();
-			await completeCampaign.goto();
-			await setupAdsAccountPage.awaitAdsConnectionResponse();
-
-			// Check we are on the correct page.
-			await expect(
-				page.getByText( 'Create a campaign to advertise your products' )
-			).toBeVisible();
-
-			await expect(
-				page.getByText(
-					'Spend $500 to get $500 in Google Ads credits!'
-				)
-			).toBeVisible();
-		} );
-	} );
-
 	test.describe( 'EU Regulations section', () => {
 		test( 'Displays the EU Regulations checkbox if the target audience contains an EU country', async () => {
 			await completeCampaign.fulfillTargetAudience(
@@ -785,6 +766,111 @@ test.describe( 'Complete your campaign', () => {
 			await expect(
 				page.getByText( 'EU regulations' )
 			).not.toBeVisible();
+		} );
+	} );
+
+	test.describe( 'Choose Your Own Incentive (CYOI)', () => {
+		test.beforeAll( async () => {
+			// Override billing to approved so useCYOIncentives fetches the incentives.
+			// The outer beforeAll sets billing to pending, so this must run after it.
+			await setupBudgetPage.fulfillBillingStatusRequest( {
+				status: 'approved',
+			} );
+			await completeCampaign.fulfillCYOIncentives();
+			await completeCampaign.fulfillApplyCYOIncentive();
+			await completeCampaign.goto();
+		} );
+
+		test( 'should show the incentive picker when billing is approved and offers are available', async () => {
+			await expect( page.getByText( 'Ads credit offer' ) ).toBeVisible();
+		} );
+
+		test( 'should hide the incentive picker when no offers are available', async () => {
+			await completeCampaign.fulfillCYOIncentives( [] );
+			await completeCampaign.goto();
+			await expect(
+				page.getByText( 'Ads credit offer' )
+			).not.toBeVisible();
+
+			// Restore for subsequent tests.
+			await completeCampaign.fulfillCYOIncentives();
+			await completeCampaign.fulfillApplyCYOIncentive();
+			await completeCampaign.goto();
+		} );
+
+		test( 'should hide the incentive picker when billing is not yet approved', async () => {
+			await setupBudgetPage.fulfillBillingStatusRequest( {
+				status: 'pending',
+			} );
+			await completeCampaign.goto();
+			await expect(
+				page.getByText( 'Ads credit offer' )
+			).not.toBeVisible();
+
+			// Restore for subsequent tests.
+			await setupBudgetPage.fulfillBillingStatusRequest( {
+				status: 'approved',
+			} );
+			await completeCampaign.fulfillCYOIncentives();
+			await completeCampaign.fulfillApplyCYOIncentive();
+			await completeCampaign.goto();
+		} );
+
+		test( 'should apply the selected incentive on form submission', async () => {
+			const incentivePostPromise = page.waitForRequest(
+				( request ) =>
+					request.url().includes( '/gla/ads/incentive' ) &&
+					request.method() === 'POST'
+			);
+			await completeCampaign.clickSkipPaidAdsCreationButton();
+			await completeCampaign.clickCompleteSetupModalButton();
+			const incentiveRequest = await incentivePostPromise;
+			expect( incentiveRequest.method() ).toBe( 'POST' );
+			expect( incentiveRequest.postDataJSON() ).toMatchObject( {
+				id: 'incentive-medium-id',
+			} );
+			await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
+		} );
+
+		test( 'should skip incentive application when no offer is available', async () => {
+			await completeCampaign.fulfillCYOIncentives( [] );
+			await completeCampaign.goto();
+			let incentivePostFired = false;
+			const interceptor = ( route ) => {
+				if ( route.request().method() === 'POST' ) {
+					incentivePostFired = true;
+				}
+				route.fallback();
+			};
+			await page.route( /\/wc\/gla\/ads\/incentive\b/, interceptor );
+			await completeCampaign.clickSkipPaidAdsCreationButton();
+			await completeCampaign.clickCompleteSetupModalButton();
+			await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
+			expect( incentivePostFired ).toBe( false );
+			await page.unroute( /\/wc\/gla\/ads\/incentive\b/, interceptor );
+		} );
+
+		test( 'should still complete onboarding when applying the incentive fails', async () => {
+			await completeCampaign.fulfillCYOIncentives();
+			await setupBudgetPage.fulfillBillingStatusRequest( {
+				status: 'approved',
+			} );
+			await completeCampaign.fulfillApplyCYOIncentive( {}, 500 );
+
+			const incentivePostPromise = page.waitForRequest(
+				( request ) =>
+					request.url().includes( '/gla/ads/incentive' ) &&
+					request.method() === 'POST'
+			);
+
+			await completeCampaign.goto();
+			await completeCampaign.clickSkipPaidAdsCreationButton();
+			await completeCampaign.clickCompleteSetupModalButton();
+
+			const incentiveRequest = await incentivePostPromise;
+			expect( incentiveRequest.method() ).toBe( 'POST' );
+
+			await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
 		} );
 	} );
 } );

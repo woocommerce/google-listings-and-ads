@@ -17,7 +17,8 @@ import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
 import AdsAccountSelectControl from '~/components/ads-account-select-control';
 import ConnectedIconLabel from '~/components/connected-icon-label';
 import { ConnectAccountButton } from '~/components/google-ads-account-card';
-import { handleApiError } from '~/utils/handleError';
+import { ERROR_SLOTS } from '~/data/constants';
+import extractDetailedApiError from '~/utils/extractDetailedApiError';
 
 /**
  * Renders an account card to connect to an existing Google Ads account.
@@ -28,7 +29,11 @@ import { handleApiError } from '~/utils/handleError';
 const ConnectExistingAccount = ( { onCreateClick } ) => {
 	const [ value, setValue ] = useState();
 	const [ isLoading, setLoading ] = useState( false );
-	const { fetchGoogleAdsAccountStatus } = useAppDispatch();
+	const {
+		fetchGoogleAdsAccountStatus,
+		clearDetailedErrorBySlots,
+		receiveDetailedError,
+	} = useAppDispatch();
 	const { isGoogleAdsReady } = useGoogleAdsAccountReady();
 	const {
 		googleAdsAccount,
@@ -53,20 +58,30 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 			return;
 		}
 
+		clearDetailedErrorBySlots( [
+			ERROR_SLOTS.GOOGLE_ADS_CONNECTION_ERROR_SLOT,
+		] );
+
 		setLoading( true );
 		try {
 			await connectGoogleAdsAccount();
 			await fetchGoogleAdsAccountStatus();
 			await refetchGoogleAdsAccount();
 		} catch ( error ) {
-			handleApiError(
-				error,
-				null,
-				__(
-					'Unable to connect your Google Ads account. Please try again later.',
-					'google-listings-and-ads'
-				)
-			);
+			const detailedError = await extractDetailedApiError( error );
+
+			if ( detailedError ) {
+				receiveDetailedError(
+					ERROR_SLOTS.GOOGLE_ADS_CONNECTION_ERROR_SLOT,
+					{
+						...detailedError.data,
+						title: __(
+							'Connection Failed',
+							'google-listings-and-ads'
+						),
+					}
+				);
+			}
 		} finally {
 			setLoading( false );
 		}
@@ -141,6 +156,7 @@ const ConnectExistingAccount = ( { onCreateClick } ) => {
 					onDisconnected={ handleDisconnected }
 				/>
 			}
+			errorSlots={ [ ERROR_SLOTS.GOOGLE_ADS_CONNECTION_ERROR_SLOT ] }
 		/>
 	);
 };

@@ -180,91 +180,119 @@ test.describe( 'Settings', () => {
 	} );
 
 	test.describe( 'YouTube Shopping', () => {
-		test.afterEach( async () => {
-			// Prevent setup/complete handlers from leaking between tests.
-			await page.unroute( /\/wc\/gla\/youtube\/setup\/complete\b/ );
+		test.describe( 'when account is not connected', () => {
+			test( 'should show connect button when account is not connected', async () => {
+				await settingsPage.mockYouTubeAccountNotConnected();
+				await settingsPage.goto();
+
+				await expect(
+					settingsPage.getYouTubeConnectButton()
+				).toBeVisible();
+
+				await page.unroute( /\/wc\/gla\/youtube\/connection\b/ );
+			} );
 		} );
 
-		test( 'should show connect button when account is not connected', async () => {
-			await settingsPage.mockYouTubeAccountNotConnected();
-			await settingsPage.goto();
+		test.describe( 'when account is connected', () => {
+			test.beforeAll( async () => {
+				await settingsPage.mockYouTubeAccountConnected();
+				await settingsPage.goto();
+			} );
 
-			const connectButton = settingsPage.youTubeCard.getByRole(
-				'button',
-				{
-					name: 'Connect',
-				}
-			);
+			test.afterAll( async () => {
+				await page.unroute( /\/wc\/gla\/youtube\/connection\b/ );
+			} );
 
-			await expect( connectButton ).toBeVisible();
+			test( 'should show the channel name and disconnect button when account is connected', async () => {
+				await expect(
+					settingsPage.youTubeCard.getByText( 'My YouTube Channel' )
+				).toBeVisible();
+				await expect(
+					settingsPage.getYouTubeDisconnectButton()
+				).toBeVisible();
+			} );
+
+			test( 'should disconnect YouTube account and show Connect button', async () => {
+				await settingsPage.mockYouTubeAccountNotConnected();
+				await settingsPage.mockYouTubeDisconnect();
+
+				const requestPromise =
+					settingsPage.registerYouTubeDisconnectRequest();
+
+				await settingsPage.getYouTubeDisconnectButton().click();
+
+				await requestPromise;
+
+				await expect(
+					settingsPage.getYouTubeConnectButton()
+				).toBeVisible();
+			} );
 		} );
 
-		test( 'should show the channel name and disconnect button when account is connected', async () => {
-			await settingsPage.mockYouTubeAccountConnected();
-			await settingsPage.goto();
+		test.describe( 'when account setup is incomplete', () => {
+			test.beforeAll( async () => {
+				await settingsPage.mockYouTubeAccountConnected();
+				await settingsPage.mockYouTubeAccountIncomplete();
+				await settingsPage.goto();
+			} );
 
-			const disconnectButton = settingsPage.youTubeCard.getByRole(
-				'button',
-				{
-					name: 'Disconnect YouTube account',
-				}
-			);
-			const channelName =
-				settingsPage.youTubeCard.getByText( 'My YouTube Channel' );
+			test.afterAll( async () => {
+				await page.unroute( /\/wc\/gla\/youtube\/setup\/complete\b/ );
+				await page.unroute( /\/wc\/gla\/youtube\/connection\b/ );
+			} );
 
-			await expect( channelName ).toBeVisible();
-			await expect( disconnectButton ).toBeVisible();
+			test( 'should show a notice if the YouTube account is incomplete', async () => {
+				await expect(
+					settingsPage.youTubeCard.getByText(
+						'Your YouTube account is connected, but setup isn’t complete yet.'
+					)
+				).toBeVisible();
+			} );
+
+			test( 'should display error message when "Complete setup" fails', async () => {
+				await settingsPage.mockNotEligibleYouTubeChannel();
+
+				const requestPromise =
+					settingsPage.registerYouTubeCompleteSetupRequest();
+
+				await settingsPage.getYouTubeCompleteSetupButton().click();
+
+				await requestPromise;
+
+				await expect(
+					settingsPage.youTubeCard.getByText(
+						'The channel is not eligible for the linking program.'
+					)
+				).toBeVisible();
+			} );
+
+			test( 'should complete YouTube account setup successfully', async () => {
+				await settingsPage.mockEligibleYouTubeChannel();
+				// Reload so the page starts from the clean incomplete state.
+				await settingsPage.goto();
+
+				const requestPromise =
+					settingsPage.registerYouTubeCompleteSetupRequest();
+
+				await settingsPage.getYouTubeCompleteSetupButton().click();
+
+				await requestPromise;
+
+				await settingsPage.mockYouTubeAccountConnected();
+				await settingsPage.goto();
+
+				await expect(
+					settingsPage.youTubeCard.getByText( 'My YouTube Channel' )
+				).toBeVisible();
+			} );
 		} );
+	} );
 
-		test( 'should show a notice if the YouTube account is incomplete', async () => {
-			await settingsPage.mockYouTubeAccountIncomplete();
-			await settingsPage.goto();
-
-			const notice = settingsPage.youTubeCard.getByText(
-				'Your YouTube account is connected, but setup isn’t complete yet.'
-			);
-
-			await expect( notice ).toBeVisible();
-		} );
-
-		test( 'should display error message when "Complete setup" fails', async () => {
-			await settingsPage.mockNotEligibleYouTubeChannel();
-			const requestPromise =
-				settingsPage.registerYouTubeCompleteSetupRequest();
-
-			const completeSetupButton =
-				settingsPage.getYouTubeCompleteSetupButton();
-			await completeSetupButton.click();
-
-			await requestPromise;
-
+	test.describe( 'Connected Google Merchant Center account', () => {
+		test( 'should not show the Audience section', async () => {
 			await expect(
-				settingsPage.youTubeCard.getByText(
-					'The channel is not eligible for the linking program.'
-				)
-			).toBeVisible();
-		} );
-
-		test( 'should complete YouTube account setup successfully', async () => {
-			await settingsPage.mockEligibleYouTubeChannel();
-			await settingsPage.mockYouTubeAccountIncomplete();
-			await settingsPage.goto();
-
-			const requestPromise =
-				settingsPage.registerYouTubeCompleteSetupRequest();
-
-			const completeSetupButton =
-				settingsPage.getYouTubeCompleteSetupButton();
-			await completeSetupButton.click();
-
-			await requestPromise;
-
-			// Now mock as connected so re-renders show the channel name
-			await settingsPage.mockYouTubeAccountConnected();
-
-			await expect(
-				settingsPage.youTubeCard.getByText( 'My YouTube Channel' )
-			).toBeVisible();
+				page.getByRole( 'heading', { name: 'Audience' } )
+			).not.toBeVisible();
 		} );
 	} );
 
@@ -274,6 +302,7 @@ test.describe( 'Settings', () => {
 			await settingsPage.mockGoogleConnected();
 			await settingsPage.mockAdsAccountConnected();
 			await settingsPage.mockMCNotConnected();
+			await settingsPage.mockTargetAudienceCountries();
 			await settingsPage.goto();
 		} );
 
@@ -300,6 +329,49 @@ test.describe( 'Settings', () => {
 			await expect(
 				page.getByText( 'YouTube Shopping' )
 			).not.toBeVisible();
+		} );
+
+		test( 'should show the Audience section', async () => {
+			await expect(
+				page.getByRole( 'heading', { name: 'Audience' } )
+			).toBeVisible();
+		} );
+
+		test( 'should show Location subsection with country selection options', async () => {
+			const sectionTitle = page.locator(
+				'.gla-subsection-title:has-text("Location")'
+			);
+			await expect( sectionTitle ).toBeVisible();
+			await expect(
+				page.getByRole( 'radio', { name: 'Selected countries only' } )
+			).toBeVisible();
+			await expect(
+				page.getByRole( 'radio', { name: 'All countries' } )
+			).toBeVisible();
+		} );
+
+		test( 'should send POST request to save endpoint when updating audience settings', async () => {
+			const requestPromise =
+				settingsPage.registerTargetAudienceSaveRequests();
+
+			await settingsPage.fulfillTargetAudience( { location: 'all' }, [
+				'POST',
+			] );
+
+			const audienceSection = page.locator(
+				'.gla-choose-audience-section'
+			);
+
+			const allCountriesRadioBox =
+				audienceSection.getByLabel( 'All countries' );
+			await allCountriesRadioBox.check();
+
+			await expect( allCountriesRadioBox ).toBeChecked();
+
+			const request = await requestPromise;
+			const requestPayload = await request.postDataJSON();
+
+			expect( requestPayload ).toHaveProperty( 'location', 'all' );
 		} );
 	} );
 } );

@@ -107,6 +107,56 @@ export default class SettingsPage extends MockRequests {
 	}
 
 	/**
+	 * Get the YouTube Connect button.
+	 *
+	 * @return {Promise<import('@playwright/test').Locator>} The Connect button.
+	 */
+	getYouTubeConnectButton() {
+		return this.youTubeCard.getByRole( 'button', { name: 'Connect' } );
+	}
+
+	/**
+	 * Get the YouTube Disconnect button.
+	 *
+	 * @return {Promise<import('@playwright/test').Locator>} The Disconnect button.
+	 */
+	getYouTubeDisconnectButton() {
+		return this.youTubeCard.getByRole( 'button', {
+			name: 'Disconnect YouTube account',
+		} );
+	}
+
+	/**
+	 * Register a wait for the YouTube disconnect request.
+	 *
+	 * Matches the POST that @wordpress/api-fetch sends for DELETE operations,
+	 * identified by the X-HTTP-Method-Override: DELETE header.
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerYouTubeDisconnectRequest() {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/youtube/connection' ) &&
+				request.method() === 'POST' &&
+				request.headers()[ 'x-http-method-override' ] === 'DELETE'
+		);
+	}
+
+	/**
+	 * Await for the YouTube connect request.
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerYouTubeConnectRequest() {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/youtube/connect' ) &&
+				request.method() === 'GET'
+		);
+	}
+
+	/**
 	 * Register the request when the enhanced conversions checkbox is checked or unchecked.
 	 *
 	 * @return {Promise<import('@playwright/test').Request>} The request.
@@ -115,6 +165,19 @@ export default class SettingsPage extends MockRequests {
 		return this.page.waitForRequest(
 			( request ) =>
 				request.url().includes( '/gla/ads/settings' ) &&
+				request.method() === 'POST'
+		);
+	}
+
+	/**
+	 * Register requests sent when saving target audience settings.
+	 *
+	 * @return {Promise<import('@playwright/test').Request>} The request.
+	 */
+	registerTargetAudienceSaveRequests() {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/mc/target_audience' ) &&
 				request.method() === 'POST'
 		);
 	}

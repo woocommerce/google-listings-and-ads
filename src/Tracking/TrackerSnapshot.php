@@ -88,6 +88,7 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 			'google_connected'                => $this->get_boolean_value( OptionsInterface::GOOGLE_CONNECTED ),
 			'mc_setup'                        => $this->get_boolean_value( OptionsInterface::MC_SETUP_COMPLETED_AT ),
 			'ads_setup'                       => $this->get_boolean_value( OptionsInterface::ADS_SETUP_COMPLETED_AT ),
+			'enhanced_conversions'            => $this->get_boolean_value( OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED ),
 			'target_audience'                 => $target_audience->get_target_countries(),
 			'shipping_rate'                   => $mc_settings['shipping_rate'] ?? '',
 			'shipping_time'                   => $mc_settings['shipping_time'] ?? '',
@@ -97,6 +98,7 @@ class TrackerSnapshot implements ContainerAwareInterface, OptionsAwareInterface,
 			'ads_setup_started'               => $ads_service->is_setup_started() ? 'yes' : 'no',
 			'ads_customer_id'                 => $this->options->get_ads_id(),
 			'ads_campaign_count'              => $merchant_metrics->get_campaign_count(),
+			'youtube_connected'               => $this->get_boolean_value( OptionsInterface::YOUTUBE_THIRD_PARTY_LINK ),
 		];
 	}
 
