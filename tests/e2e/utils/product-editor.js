@@ -119,6 +119,11 @@ export function getClassicProductEditorUtils( page ) {
 			return page.locator( '#channel_visibility' );
 		},
 
+		getChannelVisibilityMetaBoxContent() {
+			const metaBox = this.getChannelVisibilityMetaBox();
+			return metaBox.locator( '.gla-channel-visibility__content' );
+		},
+
 		getChannelVisibilityHeading() {
 			return this.getChannelVisibilityMetaBox().getByRole( 'heading', {
 				name: 'Channel visibility',
@@ -136,9 +141,10 @@ export function getClassicProductEditorUtils( page ) {
 
 			return {
 				selection: metaBox.getByRole( 'combobox' ),
-				help: metaBox.locator( '.description' ),
-				notice: metaBox.locator( '.sync-status' ),
-				status: metaBox.locator( '.sync-status p' ).nth( 1 ),
+				notice: metaBox.locator( '.components-notice' ),
+				status: metaBox.locator(
+					'.gla-channel-visibility__sync-status'
+				),
 				issues: metaBox.getByRole( 'listitem' ),
 			};
 		},

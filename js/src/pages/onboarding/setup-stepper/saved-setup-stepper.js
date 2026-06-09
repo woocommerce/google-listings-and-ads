@@ -22,6 +22,7 @@ import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import SetupAccounts from './setup-accounts';
 import SetupListings from './setup-listings';
 import SetupPaidAds from './setup-paid-ads';
+import EuPoliticalDeclarationProvider from '~/components/eu-political-declaration/eu-political-declaration-provider';
 import { STEP_NAME_KEY_MAP } from './constants';
 import { GUIDE_NAMES } from '~/constants';
 import { getProductFeedUrl } from '~/utils/urls';
@@ -212,10 +213,14 @@ const SavedSetupStepper = ( { savedStep } ) => {
 					key: STEP_NAME_KEY_MAP.paid_ads,
 					label: __( 'Create a campaign', 'google-listings-and-ads' ),
 					content: (
-						<SetupPaidAds
-							onSetupComplete={ redirectToProductFeed }
-							onSetupSkipped={ redirectToProductFeed }
-						/>
+						<EuPoliticalDeclarationProvider
+							context={ CONTEXT_EXTENSION_ONBOARDING }
+						>
+							<SetupPaidAds
+								onSetupComplete={ redirectToProductFeed }
+								onSetupSkipped={ redirectToProductFeed }
+							/>
+						</EuPoliticalDeclarationProvider>
 					),
 					onClick: handleStepClick,
 				},

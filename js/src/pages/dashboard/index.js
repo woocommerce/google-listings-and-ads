@@ -26,11 +26,14 @@ import { CTA_CREATE_ANOTHER_CAMPAIGN, CTA_CONFIRM } from './constants';
 import { recordGlaEvent } from '~/utils/tracks';
 import RebrandingTour from '~/components/tours/rebranding-tour';
 import PMaxImproveAssetsBanner from '~/components/pmax-improve-assets-banner';
+import UnclaimedIncentiveNotice from '~/components/unclaimed-incentive-notice';
 import ExperienceRatingBanner from '~/components/experience-rating-banner';
 import RaiseBudgetRecommendationBanner from '~/components/raise-budget-recommendation-banner';
 import YouTubeShoppingTour from '~/components/tours/youtube-shopping-tour';
 import SubmissionSuccessGuide from '~/pages/product-feed/submission-success-guide';
+import EuPoliticalDeclaration from '~/components/eu-political-declaration';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
+import EuPoliticalDeclarationProvider from '~/components/eu-political-declaration/eu-political-declaration-provider';
 import './index.scss';
 
 /**
@@ -66,9 +69,17 @@ const Dashboard = () => {
 	const query = getQuery();
 	switch ( query.subpath ) {
 		case subpaths.editCampaign:
-			return <EditPaidAdsCampaign />;
+			return (
+				<EuPoliticalDeclarationProvider context="edit-ads">
+					<EditPaidAdsCampaign />
+				</EuPoliticalDeclarationProvider>
+			);
 		case subpaths.createCampaign:
-			return <CreatePaidAdsCampaign />;
+			return (
+				<EuPoliticalDeclarationProvider context="create-ads">
+					<CreatePaidAdsCampaign />
+				</EuPoliticalDeclarationProvider>
+			);
 	}
 
 	const trackEventReportId = 'dashboard';
@@ -93,6 +104,7 @@ const Dashboard = () => {
 	return (
 		<>
 			<div className="gla-dashboard">
+				<UnclaimedIncentiveNotice />
 				<PMaxImproveAssetsBanner />
 				<ExperienceRatingBanner />
 				<DifferentCurrencyNotice context="dashboard" />
@@ -111,12 +123,22 @@ const Dashboard = () => {
 				<div className="gla-dashboard__performance">
 					<SummarySection />
 				</div>
-				<div className="gla-dashboard__programs">
-					<AllProgramsTableCard
-						trackEventReportId={ trackEventReportId }
-					/>
-				</div>
+
+				{ /* Wrapping AllProgramsTableCard with
+				EuPoliticalDeclarationProvider to enable the EU political
+				declaration modal to be triggered from within the programs
+				table, if necessary when enabling/disabling campaigns. */ }
+				<EuPoliticalDeclarationProvider context="dashboard">
+					<div className="gla-dashboard__programs">
+						<AllProgramsTableCard
+							trackEventReportId={ trackEventReportId }
+						/>
+					</div>
+
+					<EuPoliticalDeclaration />
+				</EuPoliticalDeclarationProvider>
 			</div>
+
 			{ isCampaignCreationSuccessGuideOpen && (
 				<CampaignCreationSuccessGuide
 					onGuideRequestClose={
