@@ -172,4 +172,48 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			$this->service->ensure_data_source_for( 'fr', 'CA' )
 		);
 	}
+
+	public function test_finds_matching_data_source_on_a_later_page() {
+		$this->options->method( 'get' )->willReturn( [] );
+
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'get' )
+			->withConsecutive(
+				[ self::LIST_PATH ],
+				[ self::LIST_PATH . '?pageToken=page-2' ]
+			)
+			->willReturnOnConsecutiveCalls(
+				[
+					'dataSources'   => [
+						[
+							'name'                     => 'accounts/12345/dataSources/100',
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'fr',
+								'feedLabel'       => 'CA',
+							],
+						],
+					],
+					'nextPageToken' => 'page-2',
+				],
+				[
+					'dataSources' => [
+						[
+							'name'                     => 'accounts/12345/dataSources/200',
+							'primaryProductDataSource' => [
+								'contentLanguage' => 'en',
+								'feedLabel'       => 'US',
+							],
+						],
+					],
+				]
+			);
+
+		// A match on a later page must be reused, never duplicated.
+		$this->client->expects( $this->never() )->method( 'post' );
+
+		$this->assertSame(
+			'accounts/12345/dataSources/200',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
 }
