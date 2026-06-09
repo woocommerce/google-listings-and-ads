@@ -130,10 +130,9 @@ const useAdBlockImage = () => {
 
 	const getDisplayImageUrl = useCallback(
 		( imageUrl ) => {
-			const isGoogleAd =
-				/^https:\/\/tpc\.googlesyndication\.com\/[ps]imgad/.test(
-					imageUrl || ''
-				);
+			const isGoogleAd = imageUrl?.startsWith(
+				'https://tpc.googlesyndication.com/'
+			);
 
 			if ( ! imageUrl || ! isDetected || ! isGoogleAd ) {
 				return imageUrl;
