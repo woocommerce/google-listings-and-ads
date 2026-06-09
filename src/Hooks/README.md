@@ -237,14 +237,6 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 - [WCCouponAdapter.php#L409](https://github.com/woocommerce/google-listings-and-ads/blob/33ae490f594f7b084f2823e779327c56aded6d01/src/Coupon/WCCouponAdapter.php#L409)
 
-## woocommerce_gla_coupon_is_ready_to_notify
-
-**Type**: filter
-
-**Used in**:
-
-- [CouponHelper.php#L359](https://github.com/woocommerce/google-listings-and-ads/blob/33ae490f594f7b084f2823e779327c56aded6d01/src/Coupon/CouponHelper.php#L359)
-
 ## woocommerce_gla_coupons_delete_retry_on_failure
 
 **Type**: filter
@@ -573,22 +565,6 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 - [CouponSyncer.php#L380](https://github.com/woocommerce/google-listings-and-ads/blob/33ae490f594f7b084f2823e779327c56aded6d01/src/Coupon/CouponSyncer.php#L380)
 
-## woocommerce_gla_is_pull_enabled_for_datatype
-
-**Type**: filter
-
-**Used in**:
-
-- [NotificationsService.php#L293](https://github.com/woocommerce/google-listings-and-ads/blob/33ae490f594f7b084f2823e779327c56aded6d01/src/API/WP/NotificationsService.php#L293)
-
-## woocommerce_gla_is_push_enabled_for_datatype
-
-**Type**: filter
-
-**Used in**:
-
-- [NotificationsService.php#L305](https://github.com/woocommerce/google-listings-and-ads/blob/33ae490f594f7b084f2823e779327c56aded6d01/src/API/WP/NotificationsService.php#L305)
-
 ## woocommerce_gla_jetpack_connect_return_url
 
 **Type**: filter
@@ -683,30 +659,6 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 **Used in**:
 
 - [MerchantStatuses.php#L596](https://github.com/woocommerce/google-listings-and-ads/blob/33ae490f594f7b084f2823e779327c56aded6d01/src/MerchantCenter/MerchantStatuses.php#L596)
-
-## woocommerce_gla_notification_job_can_schedule
-
-**Type**: filter
-
-**Used in**:
-
-- [AbstractNotificationJob.php#L86](https://github.com/woocommerce/google-listings-and-ads/blob/33ae490f594f7b084f2823e779327c56aded6d01/src/Jobs/Notifications/AbstractNotificationJob.php#L86)
-
-## woocommerce_gla_notifications_enabled
-
-**Type**: filter
-
-**Used in**:
-
-- [NotificationsService.php#L238](https://github.com/woocommerce/google-listings-and-ads/blob/33ae490f594f7b084f2823e779327c56aded6d01/src/API/WP/NotificationsService.php#L238)
-
-## woocommerce_gla_notify
-
-**Type**: filter
-
-**Used in**:
-
-- [NotificationsService.php#L135](https://github.com/woocommerce/google-listings-and-ads/blob/33ae490f594f7b084f2823e779327c56aded6d01/src/API/WP/NotificationsService.php#L135)
 
 ## woocommerce_gla_onboarding_completed
 
@@ -813,14 +765,6 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 **Used in**:
 
 - [WCProductAdapter.php#L322](https://github.com/woocommerce/google-listings-and-ads/blob/33ae490f594f7b084f2823e779327c56aded6d01/src/Product/WCProductAdapter.php#L322)
-
-## woocommerce_gla_product_is_ready_to_notify
-
-**Type**: filter
-
-**Used in**:
-
-- [ProductHelper.php#L417](https://github.com/woocommerce/google-listings-and-ads/blob/33ae490f594f7b084f2823e779327c56aded6d01/src/Product/ProductHelper.php#L417)
 
 ## woocommerce_gla_product_property_value_is_virtual
 
@@ -982,22 +926,6 @@ A list of hooks, e.g. `actions` and `filters`, that are defined or used in this 
 
 - [SiteVerification.php#L120](https://github.com/woocommerce/google-listings-and-ads/blob/33ae490f594f7b084f2823e779327c56aded6d01/src/API/Google/SiteVerification.php#L120)
 - [SiteVerification.php#L162](https://github.com/woocommerce/google-listings-and-ads/blob/33ae490f594f7b084f2823e779327c56aded6d01/src/API/Google/SiteVerification.php#L162)
-
-## woocommerce_gla_sync_mode
-
-**Type**: filter
-
-**Used in**:
-
-- [NotificationsService.php#L281](https://github.com/woocommerce/google-listings-and-ads/blob/33ae490f594f7b084f2823e779327c56aded6d01/src/API/WP/NotificationsService.php#L281)
-
-## woocommerce_gla_sync_mode_updated
-
-**Type**: action
-
-**Used in**:
-
-- [SyncController.php#L142](https://github.com/woocommerce/google-listings-and-ads/blob/33ae490f594f7b084f2823e779327c56aded6d01/src/API/Site/Controllers/RestAPI/SyncController.php#L142)
 
 ## woocommerce_gla_tax_excluded
 
