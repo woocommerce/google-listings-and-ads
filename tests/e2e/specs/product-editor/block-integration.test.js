@@ -34,12 +34,12 @@ test.describe( 'Product Block Editor integration', () => {
 		await editorUtils.gotoAddProductPage();
 		await editorUtils.clickPluginTab();
 
-		const link = page.getByRole( 'link', { name: 'Get Started' } );
+		const link = page.getByRole( 'link', { name: 'Get started' } );
 
 		await expect( link ).toBeVisible();
 		await expect( link ).toHaveAttribute(
 			'href',
-			/\/wp-admin\/admin\.php\?page=wc-admin&path=\/google\/start/
+			/page=wc-admin&path=%2Fgoogle%2Fstart/
 		);
 
 		// Resume the plugin to onboarded status so that the next test can carry over.

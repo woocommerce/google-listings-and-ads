@@ -24,6 +24,7 @@ class AdsCampaignQuery extends AdsQuery {
 				'campaign.status',
 				'campaign.advertising_channel_type',
 				'campaign.shopping_setting.feed_label',
+				'campaign.start_date_time',
 				'campaign_budget.amount_micros',
 				'campaign.contains_eu_political_advertising',
 				'campaign.missing_eu_political_advertising_declaration',

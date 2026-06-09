@@ -23,21 +23,6 @@
 		}
 	}
 
-	.gla-free-ad-credit-claim {
-		text-align: left;
-		background-color: $white;
-		display: flex;
-		align-items: flex-start;
-		gap: $grid-unit;
-		padding: $grid-unit-20 $grid-unit-15;
-		color: $gray-900;
-
-		.gridicon {
-			fill: $gla-color-green;
-			flex: 0 0 auto;
-		}
-	}
-
 	.components-button {
 		align-self: flex-end;
 	}

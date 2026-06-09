@@ -234,8 +234,13 @@ export default class MockRequests {
 	 * @param {Object} payload
 	 * @return {Promise<void>}
 	 */
-	async fulfillMCConnection( payload ) {
-		await this.fulfillRequest( /\/wc\/gla\/mc\/connection\b/, payload );
+	async fulfillMCConnection( payload, status = 200, methods = [ 'GET' ] ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/connection\b/,
+			payload,
+			status,
+			methods
+		);
 	}
 
 	/**
@@ -578,6 +583,91 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the CYO incentives GET request.
+	 *
+	 * @param {Array} [incentives] Incentive items array. Omit to use the default three-tier set.
+	 * @param {number} [status=200]
+	 * @return {Promise<void>}
+	 */
+	async fulfillCYOIncentives( incentives, status = 200 ) {
+		const defaultIncentives = [
+			{
+				id: 'incentive-low-id',
+				type: 'ACQUISITION',
+				offer: 'low',
+				termsAndConditionsUrl:
+					'https://ads.google.com/aw/campaignassistant',
+				requirement: {
+					spend: {
+						requiredAmount: { currencyCode: 'USD', units: '600' },
+						awardAmount: { currencyCode: 'USD', units: '600' },
+					},
+				},
+			},
+			{
+				id: 'incentive-medium-id',
+				type: 'ACQUISITION',
+				offer: 'medium',
+				termsAndConditionsUrl:
+					'https://ads.google.com/aw/campaignassistant',
+				requirement: {
+					spend: {
+						requiredAmount: { currencyCode: 'USD', units: '1800' },
+						awardAmount: { currencyCode: 'USD', units: '1200' },
+					},
+				},
+			},
+			{
+				id: 'incentive-high-id',
+				type: 'ACQUISITION',
+				offer: 'high',
+				termsAndConditionsUrl:
+					'https://ads.google.com/aw/campaignassistant',
+				requirement: {
+					spend: {
+						requiredAmount: { currencyCode: 'USD', units: '3600' },
+						awardAmount: { currencyCode: 'USD', units: '1800' },
+					},
+				},
+			},
+		];
+
+		const payload = {
+			type: 'CYO_INCENTIVE',
+			termsAndConditionsUrl:
+				'https://ads.google.com/aw/campaignassistant',
+			incentives: incentives ?? defaultIncentives,
+		};
+
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/incentives\b/,
+			payload,
+			status,
+			[ 'GET' ]
+		);
+	}
+
+	/**
+	 * Fulfill the apply CYO incentive POST request.
+	 * The method filter ensures GET requests to similarly-named endpoints fall through.
+	 *
+	 * @param {Object} [payload={ success: true }]
+	 * @param {number} [status=200]
+	 * @return {Promise<void>}
+	 */
+	async fulfillApplyCYOIncentive(
+		payload = { success: true },
+		status = 200
+	) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/incentives\b/,
+			payload,
+			status,
+			[ 'POST' ]
+		);
+	}
+
+	/**
 	 * Fulfill the price benchmark suggestions request.
 	 *
 	 * @param {Object} payload
@@ -794,6 +884,54 @@ export default class MockRequests {
 		);
 	}
 
+	async mockAdsAccountCreationError() {
+		await this.fulfillAdsAccounts(
+			{
+				code: 'API_ERROR',
+				message: 'There was an error connecting to Ads account.',
+				data: {
+					statusCode: 400,
+					message: 'Unable to accept link for the customer account',
+					error: {
+						code: 400,
+						message: 'Request contains an invalid argument.',
+						status: 'INVALID_ARGUMENT',
+						details: [
+							{
+								'@type':
+									'type.googleapis.com/google.ads.googleads.v20.errors.GoogleAdsFailure',
+								errors: [
+									{
+										errorCode: {
+											managerLinkError:
+												'TOO_MANY_MANAGERS',
+										},
+										message:
+											'Client is already linked to too many managers.',
+										trigger: {
+											int64Value: '6530335391',
+										},
+										location: {
+											fieldPathElements: [
+												{
+													fieldName: 'operations',
+													index: 0,
+												},
+											],
+										},
+									},
+								],
+								requestId: 'T-Ayj9dDBlp2VI4yuiq3Kw',
+							},
+						],
+					},
+				},
+			},
+			400,
+			[ 'POST' ]
+		);
+	}
+
 	/**
 	 * Mock the Ads accounts response.
 	 *
@@ -952,6 +1090,39 @@ export default class MockRequests {
 			status,
 			step,
 		} );
+	}
+
+	async mockMCAccountConnectionError(
+		message = 'There was an error connecting MC Account.'
+	) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/accounts\b/,
+			{
+				code: 'API_ERROR',
+				message: message
+					? message
+					: 'There was an error connecting to MC account.',
+				data: {
+					statusCode: 400,
+					message: 'Unable to link merchant center account',
+					error: {
+						code: 400,
+						message:
+							'You do not have necessary permissions to perform this action.',
+						errors: [
+							{
+								message:
+									'You do not have necessary permissions to perform this action.',
+								domain: 'global',
+								reason: 'invalid',
+							},
+						],
+					},
+				},
+			},
+			499,
+			[ 'POST' ]
+		);
 	}
 
 	/**
