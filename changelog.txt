@@ -1,23 +1,15 @@
 *** Google for WooCommerce Changelog ***
 
 = 3.7.1 - 2026-06-09 =
-* Add - Add `DetailedError` component.
-* Add - Error response for merchant center link/create operation.
-* Add - Update data store to include new detailed_errors property.
-* Fix - [GOOWOO-505] Images with type not set generated.
-* Fix - <!--.
-* Fix - Apply the Google Ads API `is_new_customer` field to budget recommendation and metrics requests, and split their cache keys by new/existing advertiser so recommendations refresh correctly after the first campaign is created.
-* Fix - Better Guidance Integration.
-* Fix - Better User Guidance Feature.
+* Add - Better User Guidance Feature.
+* Fix - Split budget recommendation and metrics cache keys by advertiser type so recommendations refresh correctly after the first campaign is created.
 * Fix - chore: pin third-party GitHub Actions to SHAs + enable Dependabot.
-* Fix - Fix table paddings and borders within cards.
-* Fix - GOOWOO-543: Remove API Pull infrastructure.
-* Fix - MainTabNav intermittently rendering an incomplete tab list when a Merchant Center connection became available mid-session.
-* Fix - Release: 3.7.0 - Merge `trunk` to `develop`.
+* Fix - Update table paddings and borders within cards.
+* Fix - Remove API Pull infrastructure.
+* Fix - MainTabNav intermittently showing an incomplete tab list when MC connection state changes mid-session.
 * Fix - Shipping settings tab empty settings.
-* Fix - Tweaks to BGU integration.
 * Fix - Update EU declaration modal title.
-* Update - Update/goowoo 303 account card.
+* Fix - Exclude tall_portrait_marketing_image type and images with no type set from generated ad assets.
 
 = 3.7.0 - 2026-05-19 =
 * Add - Create Your Own Incentive (CYOI) feature.
