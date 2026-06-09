@@ -2,27 +2,15 @@
 	display: flex;
 	flex-direction: column;
 	gap: $grid-unit-40;
-}
 
-.gla-notifications-panel__header {
-	padding: $grid-unit-20 $grid-unit-20 0;
-}
+	&__header {
+		padding: $grid-unit-20 $grid-unit-20 0;
+	}
 
-.gla-notifications-panel__chip {
-	align-items: center;
-	background-color: $gray-100;
-	border-radius: 50%;
-	display: flex;
-	font-size: 12px;
-	font-weight: 600;
-	justify-content: center;
-	height: 24px;
-	position: relative;
-	width: 24px;
-}
+	&__title {
+		align-items: center;
+		display: flex;
+		gap: $grid-unit-20;
+	}
 
-.gla-notifications-panel__title {
-	align-items: center;
-	display: flex;
-	gap: $grid-unit-20;
 }

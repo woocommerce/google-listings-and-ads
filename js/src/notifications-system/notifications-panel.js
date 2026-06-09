@@ -13,6 +13,7 @@ import useNotifications from '~/hooks/useNotifications';
 import Notification from './notification';
 import useNotificationsSystemMap from './useNotificationsSystemMap';
 import Text from '~/components/app-text';
+import Badge from '~/components/badge';
 import './notifications-panel.scss';
 
 /**
@@ -58,9 +59,7 @@ const NotificationsPanel = () => {
 					className="gla-notifications-panel__title"
 				>
 					{ __( 'Action required', 'google-listings-and-ads' ) }
-					<span className="gla-notifications-panel__chip">
-						{ notifications.length }
-					</span>
+					<Badge>{ notifications.length }</Badge>
 				</Text>
 			</CardHeader>
 			{ notifications.map( ( { id, triggered_at } ) => {

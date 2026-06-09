@@ -3,6 +3,8 @@
  */
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
+import { Flex, FlexBlock, FlexItem, Icon } from '@wordpress/components';
+import { closeSmall } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -14,14 +16,23 @@ import googleLogoURL from '~/images/logo/google-g-logo.svg';
 import './notification.scss';
 
 /**
+ * @typedef {Object} NotificationAction
+ * @property {string}  id        Unique key for the action.
+ * @property {string}  href      Link destination.
+ * @property {string}  children  Button label.
+ * @property {string}  [target]  Link target (e.g. '_blank').
+ * @property {string}  [rel]     Link rel attribute.
+ */
+
+/**
  * Base notification card component.
  *
- * @param {Object}   props
- * @param {string}   props.id          Notification ID, used to call dismissNotification on dismiss.
- * @param {string}   props.title       Notification headline.
- * @param {string}   props.description Notification body text.
- * @param {number}   props.triggeredAt Unix timestamp (seconds) when the notification was triggered.
- * @param {Array}    props.actions     Array of AppButton prop objects for CTA buttons.
+ * @param {Object}               props
+ * @param {string}               props.id          Notification ID, used to call dismissNotification on dismiss.
+ * @param {string}               props.title       Notification headline.
+ * @param {string}               props.description Notification body text.
+ * @param {number}               props.triggeredAt Unix timestamp (seconds) when the notification was triggered.
+ * @param {NotificationAction[]} props.actions     CTA buttons.
  */
 const Notification = ( {
 	id,
@@ -36,48 +47,75 @@ const Notification = ( {
 		new Date( triggeredAt * 1000 )
 	);
 
+	const handleDismissClick = () => {
+		dismissNotification( id );
+	};
+
 	return (
-		<div className="gla-notification">
-			<div className="gla-notification__logo-container">
+		<Flex align="flex-start" className="gla-notification" gap="4">
+			<FlexItem>
 				<img
 					src={ googleLogoURL }
-					alt="Google"
-					className="gla-notification__logo"
+					alt={ __( 'Google Logo', 'google-listings-and-ads' ) }
 					width="24"
 					height="24"
 				/>
-			</div>
-			<div className="gla-notification__body">
-				<h3 className="gla-notification__title">{ title }</h3>
-				<p className="gla-notification__description">{ description }</p>
+			</FlexItem>
+			<FlexBlock className="gla-notification__body">
+				<Flex direction="column" gap="1">
+					<h3 className="gla-notification__title">{ title }</h3>
+					<p className="gla-notification__description">
+						{ description }
+					</p>
 
-				<div className="gla-notification__actions">
-					<p className="gla-notification__date">{ formattedDate }</p>
-					{ actions.length > 0 &&
-						actions.map( ( actionProps, index ) => (
-							<AppButton
-								key={ index }
-								className="gla-notification__action"
-								variant="link"
-								{ ...actionProps }
-							/>
-						) ) }
-				</div>
-			</div>
-			<div className="gla-notification__dismiss-container">
-				<button
-					type="button"
+					<Flex
+						className="gla-notification__footer"
+						align="center"
+						justify="start"
+						wrap="wrap"
+					>
+						<p className="gla-notification__date">
+							{ formattedDate }
+						</p>
+						{ actions.map(
+							( {
+								id: actionId,
+								href,
+								children,
+								target,
+								rel,
+							} ) => (
+								<AppButton
+									key={ actionId }
+									className="gla-notification__action"
+									variant="link"
+									href={ href }
+									target={ target }
+									rel={ rel }
+								>
+									{ children }
+								</AppButton>
+							)
+						) }
+					</Flex>
+				</Flex>
+			</FlexBlock>
+			<FlexBlock
+				className="gla-notification__dismiss-container"
+				align="flex-start"
+			>
+				<AppButton
 					className="gla-notification__dismiss"
-					onClick={ () => dismissNotification( id ) }
+					onClick={ handleDismissClick }
 					aria-label={ __(
 						'Dismiss notification',
 						'google-listings-and-ads'
 					) }
 				>
-					&#x2715;
-				</button>
-			</div>
-		</div>
+					<Icon icon={ closeSmall } />
+				</AppButton>
+			</FlexBlock>
+		</Flex>
 	);
 };
 
