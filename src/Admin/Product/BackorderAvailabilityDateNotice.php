@@ -94,26 +94,15 @@ class BackorderAvailabilityDateNotice implements Service, Registerable, Conditio
 	}
 
 	/**
-	 * Output the notice. Always present in the DOM but hidden by default; shown
-	 * when backorder is selected (via JS) or when product is on backorder with no
-	 * availability date (via data-initial-visible).
+	 * Output the notice container. Hidden by default; JS mounts the React Notice
+	 * component inside and controls visibility based on backorder/date selection.
 	 */
 	public function render_notice(): void {
 		$product         = $this->get_current_product();
 		$initial_visible = $product && $this->should_show_notice( $product );
+		$hidden_style    = $initial_visible ? '' : 'display: none;';
 
-		$message = sprintf(
-			/* translators: 1: opening link tag to GLA tab, 2: closing link tag */
-			esc_html__(
-				'Google requires an availability date for products on backorder. Set the Availability date in the %1$sGoogle for WooCommerce tab%2$s so your product can be submitted correctly.',
-				'google-listings-and-ads'
-			),
-			'<a href="#' . esc_attr( self::GLA_TAB_TARGET ) . '" class="gla-availability-date-tab-link">',
-			'</a>'
-		);
-
-		$hidden_style = $initial_visible ? '' : ' display: none;';
-		echo '<div class="notice notice-warning inline gla-backorder-availability-date-notice" style="' . esc_attr( $hidden_style ) . '"><p>' . wp_kses_post( $message ) . '</p></div>';
+		echo '<div class="gla-backorder-availability-date-notice" style="' . esc_attr( $hidden_style ) . '"></div>';
 	}
 
 	/**

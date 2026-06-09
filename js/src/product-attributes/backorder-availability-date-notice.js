@@ -1,4 +1,15 @@
 /**
+ * External dependencies
+ */
+import { Notice } from '@wordpress/components';
+import {
+	createElement,
+	createInterpolateElement,
+	createRoot,
+} from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import { glaProductData } from '~/constants';
@@ -33,6 +44,11 @@ function getFieldValue( name ) {
 	return '';
 }
 
+/**
+ * Check if the backorder is selected.
+ *
+ * @return {boolean} True if the backorder is selected, false otherwise.
+ */
 function isBackorderSelected() {
 	const backorders = getFieldValue( '_backorders' );
 	const stockStatus = getFieldValue( '_stock_status' );
@@ -45,15 +61,15 @@ function isBackorderSelected() {
 
 /**
  * Backorder availability date notice on the product Inventory tab (classic editor).
- * Shows/hides the notice based on backorder selection and GLA availability date field.
- * Uses glaProductData.glaTabTarget for the "Google for WooCommerce" tab link.
+ * Mounts a WordPress Notice component and shows/hides it based on backorder selection
+ * and GLA availability date field.
  */
 export default function initBackorderAvailabilityDateNotice() {
-	const notice = document.querySelector(
+	const container = document.querySelector(
 		'.gla-backorder-availability-date-notice'
 	);
 
-	if ( ! notice ) {
+	if ( ! container ) {
 		return;
 	}
 
@@ -64,27 +80,49 @@ export default function initBackorderAvailabilityDateNotice() {
 		return;
 	}
 
+	const tabTarget = glaProductData.glaTabTarget || 'gla_attributes';
+
+	const message = createInterpolateElement(
+		__(
+			'Google requires an availability date for products on backorder. Set the Availability date in the <link>Google for WooCommerce tab</link> so your product can be submitted correctly.',
+			'google-listings-and-ads'
+		),
+		{
+			link: createElement( 'a', {
+				href: `#${ tabTarget }`,
+				className: 'gla-availability-date-tab-link',
+			} ),
+		}
+	);
+
+	createRoot( container ).render(
+		createElement(
+			Notice,
+			{ status: 'warning', isDismissible: false },
+			message
+		)
+	);
+
 	function updateNoticeVisibility() {
 		const hasGlaAvailabilityDate = glaDateEl.value.trim() !== '';
 		const shouldShowNotice =
 			isBackorderSelected() && ! hasGlaAvailabilityDate;
-		notice.style.display = shouldShowNotice ? '' : 'none';
+		container.style.display = shouldShowNotice ? '' : 'none';
 	}
 
-	const tabTarget = glaProductData.glaTabTarget || 'gla_attributes';
+	// Use event delegation since React renders the link asynchronously.
+	container.addEventListener( 'click', ( event ) => {
+		const link = event.target.closest( '.gla-availability-date-tab-link' );
 
-	// Clicking the link switches to the GLA tab.
-	const noticeLink = document.querySelector(
-		'.gla-availability-date-tab-link'
-	);
+		if ( ! link ) {
+			return;
+		}
 
-	noticeLink?.addEventListener( 'click', ( event ) => {
 		event.preventDefault();
 
 		const tabLink = document.querySelector(
 			`.product_data_tabs a[href="#${ tabTarget }"]`
 		);
-
 		tabLink?.click();
 	} );
 

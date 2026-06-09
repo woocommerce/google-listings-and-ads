@@ -50,20 +50,16 @@
 }
 
 // Backorder availability date notice (Inventory tab, classic product editor).
-// More specific than #inventory_product_data .notice so our background/border apply.
 #woocommerce-product-data #inventory_product_data .gla-backorder-availability-date-notice {
-	background: $gla-color-yellow-0;
-	border-left: 4px solid $alert-yellow;
-	color: $gray-900;
 	margin: $grid-unit-20;
-	padding: $grid-unit-15 $grid-unit-15 $grid-unit-15 $grid-unit-20;
+
+	.components-notice {
+		margin: 0;
+		padding: $grid-unit-15 $grid-unit-15 $grid-unit-15 $grid-unit-20;
+	}
 
 	a {
 		color: $gla-color-blue-50;
 		font-weight: 500;
-	}
-
-	p {
-		margin: 0;
 	}
 }
