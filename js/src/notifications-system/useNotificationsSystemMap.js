@@ -37,6 +37,7 @@ const STATIC_MAP = {
 		),
 		actions: [
 			{
+				id: 'continue-setup',
 				isPrimary: true,
 				href: getGetStartedUrl(),
 				children: __( 'Continue Setup', 'google-listings-and-ads' ),
@@ -54,6 +55,7 @@ const STATIC_MAP = {
 		),
 		actions: [
 			{
+				id: 'setup-ads-campaign',
 				isPrimary: true,
 				href: getSetupAdsUrl(),
 				children: __(
@@ -74,6 +76,7 @@ const STATIC_MAP = {
 		),
 		actions: [
 			{
+				id: 'get-started',
 				isPrimary: true,
 				href: getSetupAdsUrl(),
 				children: __( 'Get started', 'google-listings-and-ads' ),
@@ -88,6 +91,7 @@ const STATIC_MAP = {
 		),
 		actions: [
 			{
+				id: 'view-product-issues',
 				isPrimary: true,
 				href: getProductFeedUrl(),
 				children: __(
@@ -105,6 +109,7 @@ const STATIC_MAP = {
 		),
 		actions: [
 			{
+				id: 'view-recommendations',
 				isPrimary: true,
 				href: 'https://ads.google.com/aw/recommendations',
 				target: '_blank',
@@ -127,6 +132,7 @@ const STATIC_MAP = {
 		),
 		actions: [
 			{
+				id: 'enable-feature',
 				isPrimary: true,
 				href: getSettingsUrl(),
 				children: __( 'Enable Feature', 'google-listings-and-ads' ),
@@ -144,6 +150,7 @@ const STATIC_MAP = {
 		),
 		actions: [
 			{
+				id: 'see-recommendations',
 				isPrimary: true,
 				href: getDashboardUrl(),
 				children: __(
@@ -164,6 +171,7 @@ const STATIC_MAP = {
 		),
 		actions: [
 			{
+				id: 'turn-on-tracking',
 				isPrimary: true,
 				href: 'admin.php?page=wc-settings&tab=advanced',
 				children: __( 'Turn on tracking', 'google-listings-and-ads' ),
@@ -201,6 +209,7 @@ const useNotificationsSystemMap = () => {
 					  ),
 				actions: [
 					{
+						id: 'complete-campaign-setup',
 						isPrimary: true,
 						href: getSetupAdsUrl(),
 						children: __(
@@ -226,6 +235,7 @@ const useNotificationsSystemMap = () => {
 					  ),
 				actions: [
 					{
+						id: 'setup-here',
 						isPrimary: true,
 						href: getGetStartedUrl(),
 						children: __( 'Setup here', 'google-listings-and-ads' ),
@@ -248,6 +258,7 @@ const useNotificationsSystemMap = () => {
 					  ),
 				actions: [
 					{
+						id: 'resume-campaign',
 						isPrimary: true,
 						href: getDashboardUrl(),
 						children: __(
@@ -268,6 +279,7 @@ const useNotificationsSystemMap = () => {
 				),
 				actions: [
 					{
+						id: 'view-recommendations',
 						isPrimary: true,
 						href: 'https://ads.google.com/aw/recommendations',
 						target: '_blank',
@@ -300,6 +312,7 @@ const useNotificationsSystemMap = () => {
 					  ),
 				actions: [
 					{
+						id: 'launch-campaign',
 						isPrimary: true,
 						href: getSetupAdsUrl(),
 						children: __(
@@ -325,6 +338,7 @@ const useNotificationsSystemMap = () => {
 					  ),
 				actions: [
 					{
+						id: 'review-coupon-settings',
 						isPrimary: true,
 						href: getSettingsUrl(),
 						children: __(
