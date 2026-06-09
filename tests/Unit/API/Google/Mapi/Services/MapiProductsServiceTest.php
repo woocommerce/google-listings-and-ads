@@ -156,4 +156,52 @@ class MapiProductsServiceTest extends UnitTest {
 		$this->assertCount( 1, $captured );
 		$this->assertSame( $boom, $captured[0][0] );
 	}
+
+	public function test_list_follows_pagination_and_returns_products() {
+		$this->client->expects( $this->exactly( 2 ) )
+			->method( 'get' )
+			->withConsecutive(
+				[ 'products/v1/accounts/12345/products?pageSize=250' ],
+				[ 'products/v1/accounts/12345/products?pageSize=250&pageToken=a%2Fb%3Dc' ]
+			)
+			->willReturnOnConsecutiveCalls(
+				[
+					'products'      => [
+						[
+							'name'    => 'accounts/12345/products/a',
+							'offerId' => 'a',
+						],
+						[
+							'name'    => 'accounts/12345/products/b',
+							'offerId' => 'b',
+						],
+					],
+					'nextPageToken' => 'a/b=c',
+				],
+				[
+					'products' => [
+						[
+							'name'    => 'accounts/12345/products/c',
+							'offerId' => 'c',
+						],
+					],
+				]
+			);
+
+		$products = $this->service->list();
+
+		$this->assertCount( 3, $products );
+		$this->assertContainsOnlyInstancesOf( Product::class, $products );
+		$this->assertSame( 'a', $products[0]->get_offer_id() );
+		$this->assertSame( 'c', $products[2]->get_offer_id() );
+	}
+
+	public function test_list_returns_empty_array_when_no_products() {
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( 'products/v1/accounts/12345/products?pageSize=250' )
+			->willReturn( [ 'products' => [] ] );
+
+		$this->assertSame( [], $this->service->list() );
+	}
 }
