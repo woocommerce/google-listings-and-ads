@@ -13,9 +13,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingCo
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Account;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountAdsLink;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountStatus;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductstatusesCustomBatchResponse;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductstatusesCustomBatchRequest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RequestPhoneVerificationRequest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RequestReviewFreeListingsRequest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RequestReviewShoppingAdsRequest;
@@ -50,33 +47,6 @@ class Merchant implements OptionsAwareInterface {
 	public function __construct( ShoppingContent $service ) {
 		$this->service = $service;
 	}
-
-	/**
-	 * @return Product[]
-	 */
-	public function get_products(): array {
-		$products = $this->service->products->listProducts( $this->options->get_merchant_id() );
-		$return   = [];
-
-		while ( ! empty( $products->getResources() ) ) {
-
-			foreach ( $products->getResources() as $product ) {
-				$return[] = $product;
-			}
-
-			if ( empty( $products->getNextPageToken() ) ) {
-				break;
-			}
-
-			$products = $this->service->products->listProducts(
-				$this->options->get_merchant_id(),
-				[ 'pageToken' => $products->getNextPageToken() ]
-			);
-		}
-
-		return $return;
-	}
-
 
 	/**
 	 * Claim a website for the user's Merchant Center account.
@@ -306,33 +276,6 @@ class Merchant implements OptionsAwareInterface {
 			throw new Exception( __( 'Unable to retrieve Merchant Center account status.', 'google-listings-and-ads' ), $e->getCode() );
 		}
 		return $mc_account_status;
-	}
-
-	/**
-	 * Retrieve a batch of Merchant Center Product Statuses using the provided Merchant Center product IDs.
-	 *
-	 * @since 1.1.0
-	 *
-	 * @param string[] $mc_product_ids
-	 *
-	 * @return ProductstatusesCustomBatchResponse;
-	 */
-	public function get_productstatuses_batch( array $mc_product_ids ): ProductstatusesCustomBatchResponse {
-		$merchant_id = $this->options->get_merchant_id();
-		$entries     = [];
-		foreach ( $mc_product_ids as $index => $id ) {
-			$entries[] = [
-				'batchId'    => $index + 1,
-				'productId'  => $id,
-				'method'     => 'GET',
-				'merchantId' => $merchant_id,
-			];
-		}
-
-		// Retrieve batch.
-		$request = new ProductstatusesCustomBatchRequest();
-		$request->setEntries( $entries );
-		return $this->service->productstatuses->custombatch( $request );
 	}
 
 	/**
