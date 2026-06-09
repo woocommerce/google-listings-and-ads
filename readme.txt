@@ -140,6 +140,25 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.7.1 - 2026-06-09 =
+* Add - Add `DetailedError` component.
+* Add - Error response for merchant center link/create operation.
+* Add - Update data store to include new detailed_errors property.
+* Fix - [GOOWOO-505] Images with type not set generated.
+* Fix - <!--.
+* Fix - Apply the Google Ads API `is_new_customer` field to budget recommendation and metrics requests, and split their cache keys by new/existing advertiser so recommendations refresh correctly after the first campaign is created.
+* Fix - Better Guidance Integration.
+* Fix - Better User Guidance Feature.
+* Fix - chore: pin third-party GitHub Actions to SHAs + enable Dependabot.
+* Fix - Fix table paddings and borders within cards.
+* Fix - GOOWOO-543: Remove API Pull infrastructure.
+* Fix - MainTabNav intermittently rendering an incomplete tab list when a Merchant Center connection became available mid-session.
+* Fix - Release: 3.7.0 - Merge `trunk` to `develop`.
+* Fix - Shipping settings tab empty settings.
+* Fix - Tweaks to BGU integration.
+* Fix - Update EU declaration modal title.
+* Update - Update/goowoo 303 account card.
+
 = 3.7.0 - 2026-05-19 =
 * Add - Create Your Own Incentive (CYOI) feature.
 * Add - In-Product Placements feature.
@@ -162,11 +181,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix - Unschedule all Action Scheduler jobs when the plugin is deactivated to prevent orphaned recurring tasks from accumulating failure logs.
 * Fix - Update gmc_merchant_id in YouTube Shopping reports.
 * Fix - Updated caniuse-lite browserslist database.
-
-= 3.6.1 - 2026-03-31 =
-* Add - EU political ads declaration modal for compliance with Google's political advertising requirements.
-* Dev - Refactor YouTube card E2E tests.
-* Fix - Cache GAQL query for highest spend campaign.
-* Fix - Remove legacy conversion event.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
