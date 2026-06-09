@@ -93,25 +93,50 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 * @throws MerchantApiException On a non-2xx MAPI response.
 	 */
 	protected function find_existing_data_source( string $content_language, string $feed_label ): ?string {
-		$response = $this->client->get(
-			sprintf( '%s/accounts/%s/dataSources', MapiPaths::DATASOURCES, $this->options->get_merchant_id() )
-		);
+		$page_token = '';
 
-		foreach ( $response['dataSources'] ?? [] as $source ) {
-			$primary = $source['primaryProductDataSource'] ?? null;
-			if ( ! is_array( $primary ) || ! isset( $source['name'] ) ) {
-				continue;
+		do {
+			$response = $this->client->get( $this->build_list_path( $page_token ) );
+
+			foreach ( $response['dataSources'] ?? [] as $source ) {
+				$primary = $source['primaryProductDataSource'] ?? null;
+				if ( ! is_array( $primary ) || ! isset( $source['name'] ) ) {
+					continue;
+				}
+
+				if (
+					$content_language === ( $primary['contentLanguage'] ?? '' )
+					&& $feed_label === ( $primary['feedLabel'] ?? '' )
+				) {
+					return $source['name'];
+				}
 			}
 
-			if (
-				$content_language === ( $primary['contentLanguage'] ?? '' )
-				&& $feed_label === ( $primary['feedLabel'] ?? '' )
-			) {
-				return $source['name'];
-			}
-		}
+			$page_token = $response['nextPageToken'] ?? '';
+		} while ( '' !== $page_token );
 
 		return null;
+	}
+
+	/**
+	 * Build the resource path for listing data sources.
+	 *
+	 * @param string $page_token
+	 *
+	 * @return string
+	 */
+	protected function build_list_path( string $page_token ): string {
+		$path = sprintf(
+			'%s/accounts/%s/dataSources',
+			MapiPaths::DATASOURCES,
+			$this->options->get_merchant_id()
+		);
+
+		if ( '' !== $page_token ) {
+			$path .= '?pageToken=' . rawurlencode( $page_token );
+		}
+
+		return $path;
 	}
 
 	/**
