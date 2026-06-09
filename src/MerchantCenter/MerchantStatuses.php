@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductMetaQueryHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
@@ -19,7 +20,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductStatus as GoogleProductStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
@@ -390,30 +390,19 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @return array The list of product issues.
 	 */
 	protected function get_product_issues( array $statuses ): array {
-		/** @var Merchant $merchant */
-		$merchant = $this->container->get( Merchant::class );
 		/** @var ProductHelper $product_helper */
-		$product_helper      = $this->container->get( ProductHelper::class );
+		$product_helper = $this->container->get( ProductHelper::class );
+		/** @var MapiProductsService $mapi_products */
+		$mapi_products       = $this->container->get( MapiProductsService::class );
 		$visibility_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
 
-		$google_ids     = array_column( $statuses, 'mc_id' );
-		$product_issues = [];
-		$created_at     = $this->cache_created_time->format( 'Y-m-d H:i:s' );
-		$entries        = $merchant->get_productstatuses_batch( $google_ids )->getEntries() ?? [];
-		foreach ( $entries as $response_entry ) {
-			/** @var GoogleProductStatus $mc_product_status */
-			$mc_product_status = $response_entry->getProductStatus();
-			$mc_product_id     = $mc_product_status->getProductId();
-			$wc_product_id     = $product_helper->get_wc_product_id( $mc_product_id );
-			$wc_product        = $this->product_data_lookup[ $wc_product_id ] ?? null;
+		// Map each synced Merchant API product ID back to its WooCommerce product.
+		$google_id_to_wc_id = [];
+		foreach ( $statuses as $status ) {
+			$wc_product_id = $status['product_id'];
+			$wc_product    = $this->product_data_lookup[ $wc_product_id ] ?? null;
 
-			// Skip products not synced by this extension.
 			if ( ! $wc_product ) {
-				do_action(
-					'woocommerce_gla_debug_message',
-					sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $mc_product_id ),
-					__METHOD__ . ' in remove_invalid_statuses()',
-				);
 				continue;
 			}
 			// Unsynced issues shouldn't be shown.
@@ -421,10 +410,29 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 				continue;
 			}
 
+			foreach ( $product_helper->get_synced_google_product_ids( $wc_product ) ?? [] as $google_id ) {
+				$google_id_to_wc_id[ $google_id ] = $wc_product_id;
+			}
+		}
+
+		if ( empty( $google_id_to_wc_id ) ) {
+			return [];
+		}
+
+		$created_at     = $this->cache_created_time->format( 'Y-m-d H:i:s' );
+		$products       = $mapi_products->get_many( array_keys( $google_id_to_wc_id ) );
+		$product_issues = [];
+
+		foreach ( $products as $google_id => $product ) {
+			$product_status = $product->get_product_status();
+
 			// Confirm there are issues for this product.
-			if ( empty( $mc_product_status->getItemLevelIssues() ) ) {
+			if ( ! $product_status || empty( $product_status->get_item_level_issues() ) ) {
 				continue;
 			}
+
+			$wc_product_id = $google_id_to_wc_id[ $google_id ];
+			$wc_product    = $this->product_data_lookup[ $wc_product_id ];
 
 			$product_issue_template = [
 				'product'              => html_entity_decode( $wc_product->get_name(), ENT_QUOTES ),
@@ -433,23 +441,23 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 				'applicable_countries' => [],
 				'source'               => 'mc',
 			];
-			foreach ( $mc_product_status->getItemLevelIssues() as $item_level_issue ) {
-				if ( 'merchant_action' !== $item_level_issue->getResolution() ) {
+			foreach ( $product_status->get_item_level_issues() as $item_level_issue ) {
+				if ( 'merchant_action' !== $item_level_issue->get_resolution() ) {
 					continue;
 				}
-				$hash_key = $wc_product_id . '__' . md5( $item_level_issue->getDescription() );
+				$hash_key = $wc_product_id . '__' . md5( $item_level_issue->get_description() );
 
 				$this->product_issue_countries[ $hash_key ] = array_merge(
 					$this->product_issue_countries[ $hash_key ] ?? [],
-					$item_level_issue->getApplicableCountries()
+					$item_level_issue->get_applicable_countries()
 				);
 
 				$product_issues[ $hash_key ] = $product_issue_template + [
-					'code'       => $item_level_issue->getCode(),
-					'issue'      => $item_level_issue->getDescription(),
-					'action'     => $item_level_issue->getDetail(),
-					'action_url' => $item_level_issue->getDocumentation(),
-					'severity'   => $item_level_issue->getServability(),
+					'code'       => $item_level_issue->get_code(),
+					'issue'      => $item_level_issue->get_description(),
+					'action'     => $item_level_issue->get_detail(),
+					'action_url' => $item_level_issue->get_documentation(),
+					'severity'   => $item_level_issue->get_severity(),
 				];
 			}
 		}
@@ -1001,8 +1009,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			[
 				'warning',
 				'suggestion',
-				'demoted',
-				'unaffected',
+				'DEMOTED',
+				'NOT_IMPACTED',
 			],
 			true
 		);
