@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { useEffect } from '@wordpress/element';
-import { Card, CardHeader } from '@wordpress/components';
+import { Card, CardHeader, CardDivider } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Badge } from '@woocommerce/components';
 
@@ -53,7 +53,7 @@ const NotificationsPanel = () => {
 
 	return (
 		<Card className="gla-notifications-panel">
-			<CardHeader className="gla-notifications-panel__header">
+			<CardHeader>
 				<Text
 					variant="title-small"
 					className="gla-notifications-panel__title woocommerce-marketing-card-header-title"
@@ -65,7 +65,8 @@ const NotificationsPanel = () => {
 					/>
 				</Text>
 			</CardHeader>
-			{ notifications.map( ( { id, triggered_at } ) => {
+
+			{ notifications.map( ( { id, triggered_at }, index ) => {
 				const config = notificationMap[ id ];
 
 				if ( ! config ) {
@@ -73,12 +74,18 @@ const NotificationsPanel = () => {
 				}
 
 				return (
-					<Notification
-						key={ id }
-						id={ id }
-						triggeredAt={ triggered_at }
-						{ ...config }
-					/>
+					<>
+						<Notification
+							key={ id }
+							id={ id }
+							triggeredAt={ triggered_at }
+							{ ...config }
+						/>
+
+						{ index !== notifications.length - 1 && (
+							<CardDivider />
+						) }
+					</>
 				);
 			} ) }
 		</Card>

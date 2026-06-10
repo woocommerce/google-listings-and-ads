@@ -3,7 +3,13 @@
  */
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
-import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
+import {
+	CardBody,
+	CardDivider,
+	Flex,
+	FlexBlock,
+	FlexItem,
+} from '@wordpress/components';
 import { closeSmall } from '@wordpress/icons';
 
 /**
@@ -52,7 +58,7 @@ const Notification = ( {
 	};
 
 	return (
-		<Flex align="flex-start" className="gla-notification" gap="4">
+		<CardBody align="flex-start" className="gla-notification" gap="4">
 			<FlexItem>
 				<img
 					src={ googleLogoURL }
@@ -77,7 +83,7 @@ const Notification = ( {
 						<span className="gla-notification__date">
 							{ formattedDate }
 						</span>
-						<div className="gla-notification__actions">
+						<FlexBlock>
 							{ actions.map(
 								( {
 									id: actionId,
@@ -98,25 +104,22 @@ const Notification = ( {
 									</AppButton>
 								)
 							) }
-						</div>
+						</FlexBlock>
 					</Flex>
 				</Flex>
 			</FlexBlock>
-			<FlexBlock
-				className="gla-notification__dismiss-container"
-				align="flex-start"
-			>
+			<FlexItem>
 				<AppButton
-					className="gla-notification__dismiss"
-					onClick={ handleDismissClick }
 					aria-label={ __(
 						'Dismiss notification',
 						'google-listings-and-ads'
 					) }
+					className="gla-notification__dismiss"
+					onClick={ handleDismissClick }
 					icon={ closeSmall }
 				/>
-			</FlexBlock>
-		</Flex>
+			</FlexItem>
+		</CardBody>
 	);
 };
 
