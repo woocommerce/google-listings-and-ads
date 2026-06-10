@@ -45,6 +45,14 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  */
 
 /**
+ * Error object returned from the API.
+ *
+ * @typedef {Object} ApiError
+ * @property {string} code Error code.
+ * @property {string} message Error message.
+ */
+
+/**
  * Campaign data.
  *
  * @typedef {Object} Campaign
@@ -879,6 +887,13 @@ export function receiveEnhancedConversionsStatus( status ) {
 	};
 }
 
+export function receiveAdsSettings( settings ) {
+	return {
+		type: TYPES.RECEIVE_ADS_SETTINGS,
+		settings,
+	};
+}
+
 /**
  * Update the enhanced conversions status.
  *
@@ -1363,6 +1378,41 @@ export function* receiveAdsRecommendations(
 		type: TYPES.RECEIVE_ADS_RECOMMENDATIONS,
 		recommendations,
 		recommendationTypes,
+	};
+}
+
+/**
+ * Action containing detailed error information.
+ *
+ * @param {string} slot - Unique key identifying the error (e.g., field name or error code).
+ * @param {ApiError|null} error - The original error object or additional error details.
+ * @return {{type: string, slot: string, error: ApiError|null}} Redux action with type `TYPES.RECEIVE_DETAILED_ERROR`.
+ */
+export function* receiveDetailedError( slot, error ) {
+	return {
+		type: TYPES.RECEIVE_DETAILED_ERROR,
+		slot,
+		error,
+	};
+}
+
+/**
+ * Clears error information for specific error slots.
+ *
+ * @param {Array<string>} slots - Array of unique keys identifying the errors to be cleared.
+ * @return {{type: string, slots: Array<string>}} Redux action with type `TYPES.CLEAR_DETAILED_ERROR_BY_SLOT`.
+ */
+export function* clearDetailedErrorBySlots( slots ) {
+	return {
+		type: TYPES.CLEAR_DETAILED_ERROR_BY_SLOT,
+		slots,
+	};
+}
+
+export function receiveCYOIncentives( cyoIncentives ) {
+	return {
+		type: TYPES.RECEIVE_CYO_INCENTIVES,
+		cyoIncentives,
 	};
 }
 
