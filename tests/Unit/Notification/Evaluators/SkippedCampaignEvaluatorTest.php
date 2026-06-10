@@ -34,9 +34,9 @@ class SkippedCampaignEvaluatorTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->ads_service       = $this->createMock( AdsService::class );
-		$this->merchant_center   = $this->createMock( MerchantCenterService::class );
-		$this->evaluator         = new SkippedCampaignEvaluator();
+		$this->ads_service     = $this->createMock( AdsService::class );
+		$this->merchant_center = $this->createMock( MerchantCenterService::class );
+		$this->evaluator       = new SkippedCampaignEvaluator();
 		$this->evaluator->set_ads_object( $this->ads_service );
 		$this->evaluator->set_merchant_center_object( $this->merchant_center );
 	}
