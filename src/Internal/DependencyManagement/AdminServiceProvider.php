@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\NotificationSystemSlot;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\BulkEdit\BulkEditInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\BulkEdit\CouponBulkEdit;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\CouponChannelVisibilityMetaBox;
@@ -60,7 +61,8 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		ConnectionTest::class      => true,
 		CouponBulkEdit::class      => true,
 		Dashboard::class           => true,
-		NotificationManager::class => true,
+		NotificationManager::class  => true,
+		NotificationSystemSlot::class => true,
 		GetStarted::class          => true,
 		MetaBoxInterface::class    => true,
 		MetaBoxInitializer::class  => true,
@@ -108,6 +110,7 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		$this->share_with_tags( AttributeMapping::class );
 		$this->share_with_tags( Dashboard::class, OnboardingCompleted::class );
 		$this->share_with_tags( NotificationManager::class, AssetsHandlerInterface::class );
+		$this->share_with_tags( NotificationSystemSlot::class, AssetsHandlerInterface::class );
 		$this->share_with_tags( GetStarted::class, OnboardingCompleted::class );
 		$this->share_with_tags( ProductFeed::class );
 		$this->share_with_tags( Reports::class );
