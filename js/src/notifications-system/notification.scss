@@ -14,26 +14,26 @@
 		flex: 0 0 auto;
 	}
 
-	&__title {
+	.gla-notification__title {
 		font-size: 14px;
 		font-weight: 600;
 		margin: 0 0 $grid-unit-05;
 		color: $gray-900;
 	}
 
-	&__date {
+	.gla-notification__date {
 		font-size: 12px;
 		color: $gray-700;
 		margin: 0;
 	}
 
-	&__description {
+	.gla-notification__description {
 		font-size: 13px;
 		color: $gray-900;
 		margin: 0;
 	}
 
-	&__footer {
+	.gla-notification__footer {
 		margin-top: $grid-unit-10;
 
 		> * + *::before {
@@ -43,7 +43,7 @@
 		}
 	}
 
-	&__action.is-link {
+	.gla-notification__action.is-link {
 		text-decoration: none;
 
 		&:hover,
@@ -52,4 +52,9 @@
 		}
 	}
 
+	.gla-notification__dismiss.components-button.has-icon {
+		height: 24px;
+		min-width: unset;
+		width: 24px;
+	}
 }

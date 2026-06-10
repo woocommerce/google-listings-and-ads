@@ -4,6 +4,7 @@
 import { useEffect } from '@wordpress/element';
 import { Card, CardHeader } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { Badge } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -13,7 +14,6 @@ import useNotifications from '~/hooks/useNotifications';
 import Notification from './notification';
 import useNotificationsSystemMap from './useNotificationsSystemMap';
 import Text from '~/components/app-text';
-import Badge from '~/components/badge';
 import './notifications-panel.scss';
 
 /**
@@ -56,10 +56,13 @@ const NotificationsPanel = () => {
 			<CardHeader className="gla-notifications-panel__header">
 				<Text
 					variant="title-small"
-					className="gla-notifications-panel__title"
+					className="gla-notifications-panel__title woocommerce-marketing-card-header-title"
 				>
 					{ __( 'Action required', 'google-listings-and-ads' ) }
-					<Badge>{ notifications.length }</Badge>
+					<Badge
+						count={ notifications.length }
+						className="gla-notifications-panel__badge"
+					/>
 				</Text>
 			</CardHeader>
 			{ notifications.map( ( { id, triggered_at } ) => {
