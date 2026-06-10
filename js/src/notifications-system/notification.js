@@ -3,13 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
-import {
-	CardBody,
-	CardDivider,
-	Flex,
-	FlexBlock,
-	FlexItem,
-} from '@wordpress/components';
+import { CardBody, Flex, FlexBlock, FlexItem } from '@wordpress/components';
 import { closeSmall } from '@wordpress/icons';
 
 /**
