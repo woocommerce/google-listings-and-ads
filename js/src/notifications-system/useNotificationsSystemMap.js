@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import {
 	getDashboardUrl,
 	getGetStartedUrl,
@@ -189,7 +189,7 @@ const STATIC_MAP = {
  * @return {Object.<string, NotificationConfig>} Map of notification ID to its display config.
  */
 const useNotificationsSystemMap = () => {
-	const isServiceBased = useServiceBasedMerchant();
+	const { hasGoogleMCConnection } = useGoogleMCAccount();
 
 	const dynamicMap = useMemo(
 		() => ( {
@@ -198,7 +198,7 @@ const useNotificationsSystemMap = () => {
 					'Finish setting up Google Ads',
 					'google-listings-and-ads'
 				),
-				description: isServiceBased
+				description: ! hasGoogleMCConnection
 					? __(
 							'Your campaign is not live. Finish setup now to begin showing your business services across Google (Including Search, Shopping, YouTube, and more). Get $500 USD or more in Google ad credit. Offer for new advertisers only. Terms apply.',
 							'google-listings-and-ads'
@@ -224,7 +224,7 @@ const useNotificationsSystemMap = () => {
 					'Finish your Google for WooCommerce connection',
 					'google-listings-and-ads'
 				),
-				description: isServiceBased
+				description: ! hasGoogleMCConnection
 					? __(
 							'The plugin is active but not yet connected to a Google account. Link your account and start your first Google Ads campaign.',
 							'google-listings-and-ads'
@@ -247,7 +247,7 @@ const useNotificationsSystemMap = () => {
 					'Your Google Ads campaign is paused',
 					'google-listings-and-ads'
 				),
-				description: isServiceBased
+				description: ! hasGoogleMCConnection
 					? __(
 							'Your ads are not currently running.',
 							'google-listings-and-ads'
@@ -292,7 +292,7 @@ const useNotificationsSystemMap = () => {
 				],
 			},
 			'sales-not-growing': {
-				title: isServiceBased
+				title: ! hasGoogleMCConnection
 					? __(
 							'Increase your site traffic',
 							'google-listings-and-ads'
@@ -301,7 +301,7 @@ const useNotificationsSystemMap = () => {
 							"You're not growing sales",
 							'google-listings-and-ads'
 					  ),
-				description: isServiceBased
+				description: ! hasGoogleMCConnection
 					? __(
 							'Generate more customers with Google Ads. Get $500 USD or more in Google ad credit. Offer for new advertisers only. Terms apply.',
 							'google-listings-and-ads'
@@ -327,7 +327,7 @@ const useNotificationsSystemMap = () => {
 					'Promote your coupons on Google',
 					'google-listings-and-ads'
 				),
-				description: isServiceBased
+				description: ! hasGoogleMCConnection
 					? __(
 							'Your WooCommerce coupons are not currently synced to your Google feed. Sync them today to show these offers to customers searching for your products.',
 							'google-listings-and-ads'
@@ -349,7 +349,7 @@ const useNotificationsSystemMap = () => {
 				],
 			},
 		} ),
-		[ isServiceBased ]
+		[ hasGoogleMCConnection ]
 	);
 
 	return { ...STATIC_MAP, ...dynamicMap };
