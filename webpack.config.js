@@ -158,6 +158,11 @@ const webpackConfig = {
 			'js/src/notifications-system',
 			'index.js'
 		),
+		'notification-slot': path.resolve(
+			process.cwd(),
+			'js/src/notification-system/woo-marketing-notifications-slot',
+			'index.js'
+		),
 		'order-attribution': path.resolve(
 			process.cwd(),
 			'js/src/meta-boxes/order-attribution',

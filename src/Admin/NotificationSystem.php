@@ -52,6 +52,18 @@ class NotificationSystem implements Service, Registerable {
 
 				$build_dir = "{$this->get_root_dir()}/js/build";
 
+				$slot_script = new AdminScriptWithBuiltDependenciesAsset(
+					'woocommerce-marketing-notifications-system-slot',
+					'js/build/notification-slot',
+					"{$build_dir}/notification-slot.asset.php",
+					new BuiltScriptDependencyArray(
+						[
+							'dependencies' => [ 'wp-data', 'wp-element' ],
+							'version'      => $this->get_version(),
+						]
+					)
+				);
+
 				$script = new AdminScriptWithBuiltDependenciesAsset(
 					'google-listings-and-ads-notifications-system',
 					'js/build/notifications-system',
@@ -71,8 +83,8 @@ class NotificationSystem implements Service, Registerable {
 					(string) filemtime( "{$build_dir}/notifications-system.css" )
 				);
 
-				$this->assets_handler->register_many( [ $script, $style ] );
-				$this->assets_handler->enqueue_many( [ $script, $style ] );
+				$this->assets_handler->register_many( [ $slot_script, $script, $style ] );
+				$this->assets_handler->enqueue_many( [ $slot_script, $script, $style ] );
 			}
 		);
 	}
