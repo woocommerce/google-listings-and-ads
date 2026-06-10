@@ -45,6 +45,13 @@
 		}
 	}
 
+	// Remove padding from card body when there is a table inside.
+	.components-card__body {
+		&:has(.woocommerce-table__table) {
+			padding: 0;
+		}
+	}
+
 	// Adjust InputControl suffix's empty right margin.
 	.components-input-control__suffix {
 		margin-right: $grid-unit;
