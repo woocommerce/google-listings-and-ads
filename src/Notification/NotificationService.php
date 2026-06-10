@@ -66,15 +66,7 @@ class NotificationService implements ContainerAwareInterface {
 			return [];
 		}
 
-		$evaluators = $this->container->get( NotificationEvaluatorInterface::class );
-
-		usort(
-			$evaluators,
-			static function ( NotificationEvaluatorInterface $a, NotificationEvaluatorInterface $b ): int {
-				return $a->get_priority() <=> $b->get_priority();
-			}
-		);
-
+		$evaluators    = $this->get_evaluators();
 		$state         = $this->get_state();
 		$state_changed = false;
 		$notifications = [];
@@ -111,6 +103,23 @@ class NotificationService implements ContainerAwareInterface {
 	}
 
 	/**
+	 * Whether the given ID belongs to a registered notification evaluator.
+	 *
+	 * @param string $id The notification ID.
+	 *
+	 * @return bool
+	 */
+	public function has( string $id ): bool {
+		foreach ( $this->get_evaluators() as $evaluator ) {
+			if ( $evaluator->get_id() === $id ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Permanently dismiss a notification so it is excluded from all future results.
 	 *
 	 * @param string $id The notification ID to dismiss.
@@ -118,7 +127,7 @@ class NotificationService implements ContainerAwareInterface {
 	 * @return void
 	 */
 	public function dismiss( string $id ): void {
-		if ( ! $this->can_manage() ) {
+		if ( ! $this->can_manage() || ! $this->has( $id ) ) {
 			return;
 		}
 
@@ -126,6 +135,24 @@ class NotificationService implements ContainerAwareInterface {
 		$state[ $id ]['dismissed'] = true;
 
 		$this->save_state( $state );
+	}
+
+	/**
+	 * Get all registered notification evaluators, ordered by priority (ascending).
+	 *
+	 * @return NotificationEvaluatorInterface[]
+	 */
+	protected function get_evaluators(): array {
+		$evaluators = $this->container->get( NotificationEvaluatorInterface::class );
+
+		usort(
+			$evaluators,
+			static function ( NotificationEvaluatorInterface $a, NotificationEvaluatorInterface $b ): int {
+				return $a->get_priority() <=> $b->get_priority();
+			}
+		);
+
+		return $evaluators;
 	}
 
 	/**
