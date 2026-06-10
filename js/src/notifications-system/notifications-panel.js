@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useEffect } from '@wordpress/element';
+import { useEffect, Fragment } from '@wordpress/element';
 import { Card, CardHeader, CardDivider } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Badge } from '@woocommerce/components';
@@ -74,9 +74,8 @@ const NotificationsPanel = () => {
 				}
 
 				return (
-					<>
+					<Fragment key={ id }>
 						<Notification
-							key={ id }
 							id={ id }
 							triggeredAt={ triggered_at }
 							{ ...config }
@@ -85,7 +84,7 @@ const NotificationsPanel = () => {
 						{ index !== notifications.length - 1 && (
 							<CardDivider />
 						) }
-					</>
+					</Fragment>
 				);
 			} ) }
 		</Card>
