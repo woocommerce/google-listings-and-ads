@@ -3,14 +3,23 @@
 	flex-direction: column;
 	gap: $grid-unit-40;
 
-	&__header {
-		padding: $grid-unit-20 $grid-unit-20 0;
+	.gla-notifications-panel__header {
+		padding: $grid-unit-20;
 	}
 
-	&__title {
+	.gla-notifications-panel__title {
 		align-items: center;
 		display: flex;
 		gap: $grid-unit-20;
 	}
 
+	.gla-notifications-panel__badge {
+		align-items: center;
+		display: flex;
+		font-size: 12px;
+		justify-content: center;
+		height: 24px;
+		min-width: unset;
+		width: 24px;
+	}
 }
