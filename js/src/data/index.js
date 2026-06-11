@@ -43,11 +43,11 @@ if ( ! select( STORE_KEY ) ) {
 					} )
 					.then( ( errorInfo ) => {
 						const url = getReconnectAccountUrl( errorInfo.code );
-	
+
 						if ( url ) {
 							getHistory().replace( url );
 						}
-	
+
 						return errorInfo;
 					} )
 					.then( ( errorInfo ) => {
@@ -58,13 +58,12 @@ if ( ! select( STORE_KEY ) ) {
 						} );
 					} );
 			}
-	
+
 			// Throws error response to subsequent middlewares
 			throw response;
 		} )
 	);
 }
-
 
 export { STORE_KEY };
 
