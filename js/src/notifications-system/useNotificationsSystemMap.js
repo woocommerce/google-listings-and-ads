@@ -14,6 +14,8 @@ import {
 	getProductFeedUrl,
 	getSettingsUrl,
 	getSetupAdsUrl,
+	getWCAdvancedSettingsUrl,
+	getOnboardingUrl,
 } from '~/utils/urls';
 
 /**
@@ -22,6 +24,13 @@ import {
  * @property {string}        description Notification body text.
  * @property {Array<Object>} actions     Array of AppButton prop objects for CTA buttons.
  */
+
+const getStartedUrl = getGetStartedUrl();
+const setupAdsUrl = getSetupAdsUrl();
+const dashboardUrl = getDashboardUrl();
+const settingsUrl = getSettingsUrl();
+const wcAdvancedSettingsUrl = getWCAdvancedSettingsUrl();
+const onboardingUrl = getOnboardingUrl();
 
 /**
  * Static notification configs — created once at module level, never re-created on render.
@@ -38,8 +47,7 @@ const STATIC_MAP = {
 		actions: [
 			{
 				id: 'continue-setup',
-				isPrimary: true,
-				href: getGetStartedUrl(),
+				href: getStartedUrl,
 				children: __( 'Continue Setup', 'google-listings-and-ads' ),
 			},
 		],
@@ -56,8 +64,7 @@ const STATIC_MAP = {
 		actions: [
 			{
 				id: 'setup-ads-campaign',
-				isPrimary: true,
-				href: getSetupAdsUrl(),
+				href: setupAdsUrl,
 				children: __(
 					'Set up Google Ads campaign',
 					'google-listings-and-ads'
@@ -77,8 +84,7 @@ const STATIC_MAP = {
 		actions: [
 			{
 				id: 'get-started',
-				isPrimary: true,
-				href: getSetupAdsUrl(),
+				href: setupAdsUrl,
 				children: __( 'Get started', 'google-listings-and-ads' ),
 			},
 		],
@@ -92,7 +98,6 @@ const STATIC_MAP = {
 		actions: [
 			{
 				id: 'view-product-issues',
-				isPrimary: true,
 				href: getProductFeedUrl(),
 				children: __(
 					'View Product Issues',
@@ -110,7 +115,6 @@ const STATIC_MAP = {
 		actions: [
 			{
 				id: 'view-recommendations',
-				isPrimary: true,
 				href: 'https://ads.google.com/aw/recommendations',
 				target: '_blank',
 				rel: 'noopener noreferrer',
@@ -133,8 +137,7 @@ const STATIC_MAP = {
 		actions: [
 			{
 				id: 'enable-feature',
-				isPrimary: true,
-				href: getSettingsUrl(),
+				href: settingsUrl,
 				children: __( 'Enable Feature', 'google-listings-and-ads' ),
 			},
 		],
@@ -151,8 +154,7 @@ const STATIC_MAP = {
 		actions: [
 			{
 				id: 'see-recommendations',
-				isPrimary: true,
-				href: getDashboardUrl(),
+				href: dashboardUrl,
 				children: __(
 					'See recommendations here',
 					'google-listings-and-ads'
@@ -172,8 +174,7 @@ const STATIC_MAP = {
 		actions: [
 			{
 				id: 'turn-on-tracking',
-				isPrimary: true,
-				href: 'admin.php?page=wc-settings&tab=advanced',
+				href: wcAdvancedSettingsUrl,
 				children: __( 'Turn on tracking', 'google-listings-and-ads' ),
 			},
 		],
@@ -210,8 +211,7 @@ const useNotificationsSystemMap = () => {
 				actions: [
 					{
 						id: 'complete-campaign-setup',
-						isPrimary: true,
-						href: getSetupAdsUrl(),
+						href: setupAdsUrl,
 						children: __(
 							'Complete Campaign Setup',
 							'google-listings-and-ads'
@@ -236,8 +236,7 @@ const useNotificationsSystemMap = () => {
 				actions: [
 					{
 						id: 'setup-here',
-						isPrimary: true,
-						href: getGetStartedUrl(),
+						href: onboardingUrl,
 						children: __( 'Setup here', 'google-listings-and-ads' ),
 					},
 				],
@@ -259,8 +258,7 @@ const useNotificationsSystemMap = () => {
 				actions: [
 					{
 						id: 'resume-campaign',
-						isPrimary: true,
-						href: getDashboardUrl(),
+						href: dashboardUrl,
 						children: __(
 							'Resume your campaign',
 							'google-listings-and-ads'
@@ -280,7 +278,6 @@ const useNotificationsSystemMap = () => {
 				actions: [
 					{
 						id: 'view-recommendations',
-						isPrimary: true,
 						href: 'https://ads.google.com/aw/recommendations',
 						target: '_blank',
 						rel: 'noopener noreferrer',
@@ -313,8 +310,7 @@ const useNotificationsSystemMap = () => {
 				actions: [
 					{
 						id: 'launch-campaign',
-						isPrimary: true,
-						href: getSetupAdsUrl(),
+						href: setupAdsUrl,
 						children: __(
 							'Launch a campaign today',
 							'google-listings-and-ads'
@@ -339,8 +335,7 @@ const useNotificationsSystemMap = () => {
 				actions: [
 					{
 						id: 'review-coupon-settings',
-						isPrimary: true,
-						href: getSettingsUrl(),
+						href: settingsUrl,
 						children: __(
 							'Review coupon settings',
 							'google-listings-and-ads'

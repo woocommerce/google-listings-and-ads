@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { getNewPath } from '@woocommerce/navigation';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -86,6 +87,13 @@ export const getProductFeedUrl = ( query = null ) => {
 
 export const getSettingsUrl = () => {
 	return getNewPath( null, settingsPath, null );
+};
+
+export const getWCAdvancedSettingsUrl = () => {
+	return addQueryArgs( 'admin.php', {
+		page: 'wc-settings',
+		tab: 'advanced',
+	} );
 };
 
 export const getShippingUrl = () => {
