@@ -1,49 +1,62 @@
-/* global MutationObserver */
-
 /**
  * External dependencies
  */
-import { registerStore, select, useSelect } from '@wordpress/data';
+import { createReduxStore, register, select } from '@wordpress/data';
 import { createRoot } from '@wordpress/element';
 
+/**
+ * Internal dependencies
+ */
+import useNotifications from './useNotifications';
+
 const STORE_NAME = 'woocommerce/marketing-notifications-system';
+const ACTION_REGISTER_NOTIFICATION = 'REGISTER_NOTIFICATION';
 
-// First plugin to run registers the store; others skip this block.
+/**
+ * This bundle may be loaded by multiple independent plugins (e.g. Google Listings
+ * & Ads, Reddit for WooCommerce). WordPress's wp_register_script ensures the JS
+ * file is only loaded once, but as a second safeguard we only register the shared
+ * data store if it hasn't been registered already — whichever plugin loads first
+ * wins, and all others use the same store instance.
+ */
+const marketingNotificationsStore = createReduxStore( STORE_NAME, {
+	reducer( state = [], action ) {
+		if ( action.type === ACTION_REGISTER_NOTIFICATION ) {
+			return [ ...state, action.notification ];
+		}
+		return state;
+	},
+
+	actions: {
+		registerNotification: ( notification ) => {
+			return { type: ACTION_REGISTER_NOTIFICATION, notification };
+		},
+	},
+
+	selectors: {
+		getNotifications: ( state ) => {
+			return [ ...state ].sort(
+				( a, b ) => b.triggeredAt - a.triggeredAt
+			);
+		},
+	},
+} );
+
 if ( ! select( STORE_NAME ) ) {
-	registerStore( STORE_NAME, {
-		reducer( state = [], action ) {
-			if ( action.type === 'REGISTER_NOTIFICATION' ) {
-				return [ ...state, action.notification ];
-			}
-			return state;
-		},
-
-		actions: {
-			registerNotification: ( notification ) => ( {
-				type: 'REGISTER_NOTIFICATION',
-				notification,
-			} ),
-		},
-
-		selectors: {
-			getNotifications: ( state ) =>
-				[ ...state ].sort( ( a, b ) => b.triggeredAt - a.triggeredAt ),
-		},
-	} );
+	register( marketingNotificationsStore );
 }
 
 function NotificationSystemSlot() {
-	const notifications = useSelect( ( sel ) =>
-		sel( STORE_NAME ).getNotifications()
-	);
+	const notifications = useNotifications();
 
-	if ( ! notifications.length ) {
+	if ( ! notifications?.length ) {
 		return null;
 	}
 
-	return notifications.map( ( notification, i ) => (
-		<notification.component key={ i } />
-	) );
+	return notifications.map( ( notification, i ) => {
+		const NotificationComponent = notification.component;
+		return <NotificationComponent key={ i } />;
+	} );
 }
 
 const MULTICHANNEL_CLASS = 'woocommerce-marketing-overview-multichannel';
@@ -56,8 +69,9 @@ function mount( multichannel ) {
 	let container = document.querySelector( `.${ CONTAINER_CLASS }` );
 
 	if ( container && currentRoot ) {
-		return;
-	} // another plugin already mounted
+		// Another plugin has already mounted the slot; nothing to do.
+		return false;
+	}
 
 	if ( ! container ) {
 		container = document.createElement( 'div' );
@@ -78,12 +92,13 @@ function mount( multichannel ) {
 
 	currentRoot = createRoot( container );
 	currentRoot.render( <NotificationSystemSlot /> );
+	return true;
 }
 
 const observer = new MutationObserver( () => {
 	const multichannel = document.querySelector( `.${ MULTICHANNEL_CLASS }` );
-	if ( multichannel ) {
-		mount( multichannel );
+	if ( multichannel && mount( multichannel ) ) {
+		observer.disconnect();
 	}
 } );
 
@@ -94,4 +109,5 @@ const existingMultichannel = document.querySelector(
 );
 if ( existingMultichannel ) {
 	mount( existingMultichannel );
+	observer.disconnect();
 }
