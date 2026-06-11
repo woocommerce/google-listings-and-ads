@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useEffect, Fragment } from '@wordpress/element';
+import { Fragment } from '@wordpress/element';
 import { Card, CardHeader, CardDivider } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Badge } from '@woocommerce/components';
@@ -9,7 +9,6 @@ import { Badge } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import { useAppDispatch } from '~/data';
 import useNotifications from '~/hooks/useNotifications';
 import Notification from './notification';
 import useNotificationsSystemMap from './useNotificationsSystemMap';
@@ -27,25 +26,7 @@ import './notifications-panel.scss';
  */
 const NotificationsPanel = () => {
 	const { notifications } = useNotifications();
-	const { invalidateResolutionForStoreSelector } = useAppDispatch();
 	const notificationMap = useNotificationsSystemMap();
-
-	useEffect( () => {
-		const handleVisibilityChange = () => {
-			if ( ! document.hidden ) {
-				invalidateResolutionForStoreSelector( 'getNotifications' );
-			}
-		};
-
-		document.addEventListener( 'visibilitychange', handleVisibilityChange );
-
-		return () => {
-			document.removeEventListener(
-				'visibilitychange',
-				handleVisibilityChange
-			);
-		};
-	}, [ invalidateResolutionForStoreSelector ] );
 
 	if ( ! notifications.length ) {
 		return null;
