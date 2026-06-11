@@ -72,10 +72,14 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCamp
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaignTwoWeeks as SetupCampaign2Note;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCouponSharing as SetupCouponSharingNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\AbandonedOnboardingEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CouponsNotSyncedEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\EnhancedConversionsOffEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\NotOnboarded90DaysEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\ProductIssuesEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\ReadyButNoSalesEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SalesNotGrowingEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SkippedCampaignEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\Sold10ItemsEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\TrackingOffEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
@@ -171,6 +175,10 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		NotOnboarded90DaysEvaluator::class     => true,
 		ProductIssuesEvaluator::class          => true,
 		SkippedCampaignEvaluator::class        => true,
+		Sold10ItemsEvaluator::class            => true,
+		ReadyButNoSalesEvaluator::class        => true,
+		CouponsNotSyncedEvaluator::class       => true,
+		SalesNotGrowingEvaluator::class        => true,
 		TrackingOffEvaluator::class            => true,
 		WcInstallTimestamp::class              => true,
 		TableManager::class                    => true,
@@ -322,6 +330,10 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( EnhancedConversionsOffEvaluator::class );
 		$this->share_with_tags( TrackingOffEvaluator::class );
 		$this->share_with_tags( ProductIssuesEvaluator::class );
+		$this->share_with_tags( Sold10ItemsEvaluator::class );
+		$this->share_with_tags( ReadyButNoSalesEvaluator::class, PolicyComplianceCheck::class, WC::class );
+		$this->share_with_tags( CouponsNotSyncedEvaluator::class, CouponHelper::class );
+		$this->share_with_tags( SalesNotGrowingEvaluator::class );
 		$this->share_with_tags( WcInstallTimestamp::class );
 
 		// Product attributes

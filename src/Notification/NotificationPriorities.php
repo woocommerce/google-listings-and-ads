@@ -20,4 +20,8 @@ class NotificationPriorities {
 	public const NOT_ONBOARDED_90_DAYS     = 40;
 	public const ENHANCED_CONVERSIONS_OFF  = 50;
 	public const TRACKING_OFF              = 60;
+	public const SOLD_10_ITEMS             = 70;
+	public const READY_BUT_NO_SALES        = 80;
+	public const COUPONS_NOT_SYNCED        = 90;
+	public const SALES_NOT_GROWING         = 100;
 }
