@@ -249,6 +249,28 @@ class BatchProductHelper implements Service {
 					$product->get_id(),
 					$adapted_product
 				);
+
+				// Emit one additional BatchProductRequestEntry per configured secondary market
+				// so each market's feed in Merchant Center receives the product.
+				foreach ( $this->market_service->get_markets() as $market_id => $market ) {
+					if ( 'primary' === $market_id ) {
+						continue;
+					}
+
+					$secondary_adapter = $this->product_factory->create(
+						$product,
+						$market['country'],
+						$mapping_rules,
+						$market['feed_label'],
+						$market['language']
+					);
+					$secondary_adapter->add_shipping_country( $market['country'] );
+
+					$request_entries[] = new BatchProductRequestEntry(
+						$product->get_id(),
+						$secondary_adapter
+					);
+				}
 			} catch ( GoogleListingsAndAdsException $exception ) {
 				do_action(
 					'woocommerce_gla_error',

@@ -8,6 +8,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupOrphanedMarketProductsJob;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -53,23 +55,31 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	protected WC $wc;
 
 	/**
+	 * @var JobRepository
+	 */
+	protected JobRepository $job_repository;
+
+	/**
 	 * MarketService constructor.
 	 *
 	 * @param TargetAudience    $target_audience
 	 * @param ShippingRateQuery $shipping_rate_query
 	 * @param ShippingTimeQuery $shipping_time_query
 	 * @param WC                $wc
+	 * @param JobRepository     $job_repository
 	 */
 	public function __construct(
 		TargetAudience $target_audience,
 		ShippingRateQuery $shipping_rate_query,
 		ShippingTimeQuery $shipping_time_query,
-		WC $wc
+		WC $wc,
+		JobRepository $job_repository
 	) {
 		$this->target_audience     = $target_audience;
 		$this->shipping_rate_query = $shipping_rate_query;
 		$this->shipping_time_query = $shipping_time_query;
 		$this->wc                  = $wc;
+		$this->job_repository      = $job_repository;
 	}
 
 	/**
@@ -252,6 +262,13 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$markets[ $id ] = $merged;
 		$this->options->update( OptionsInterface::MARKETS, $markets );
 
+		$old_feed_label = $existing['feed_label'] ?? null;
+		$new_feed_label = $merged['feed_label'] ?? null;
+		if ( $old_feed_label && $new_feed_label !== $old_feed_label ) {
+			$this->job_repository->get( CleanupOrphanedMarketProductsJob::class )
+				->schedule( [ 'feed_label' => $old_feed_label ] );
+		}
+
 		return $this->get_market( $id );
 	}
 
@@ -272,14 +289,20 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			);
 		}
 
-		$markets = $this->get_stored_secondary_markets();
-		$country = $markets[ $id ]['country'] ?? null;
+		$markets    = $this->get_stored_secondary_markets();
+		$country    = $markets[ $id ]['country'] ?? null;
+		$feed_label = $markets[ $id ]['feed_label'] ?? null;
 
 		unset( $markets[ $id ] );
 		$this->options->update( OptionsInterface::MARKETS, $markets );
 
 		if ( $country ) {
 			$this->restore_country_to_target_audience( $country );
+		}
+
+		if ( $feed_label ) {
+			$this->job_repository->get( CleanupOrphanedMarketProductsJob::class )
+				->schedule( [ 'feed_label' => $feed_label ] );
 		}
 	}
 

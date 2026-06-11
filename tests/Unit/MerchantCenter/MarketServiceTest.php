@@ -6,6 +6,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupOrphanedMarketProductsJob;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -37,6 +39,12 @@ class MarketServiceTest extends UnitTest {
 	/** @var MockObject|WC */
 	protected $wc;
 
+	/** @var MockObject|JobRepository */
+	protected $job_repository;
+
+	/** @var MockObject|CleanupOrphanedMarketProductsJob */
+	protected $cleanup_job;
+
 	/** @var MarketService */
 	protected $market_service;
 
@@ -48,12 +56,19 @@ class MarketServiceTest extends UnitTest {
 		$this->shipping_rate_query = $this->createMock( ShippingRateQuery::class );
 		$this->shipping_time_query = $this->createMock( ShippingTimeQuery::class );
 		$this->wc                  = $this->createMock( WC::class );
+		$this->job_repository      = $this->createMock( JobRepository::class );
+		$this->cleanup_job         = $this->createMock( CleanupOrphanedMarketProductsJob::class );
+
+		$this->job_repository->method( 'get' )
+			->with( CleanupOrphanedMarketProductsJob::class )
+			->willReturn( $this->cleanup_job );
 
 		$this->market_service = new MarketService(
 			$this->target_audience,
 			$this->shipping_rate_query,
 			$this->shipping_time_query,
-			$this->wc
+			$this->wc,
+			$this->job_repository
 		);
 		$this->market_service->set_options_object( $this->options );
 	}
@@ -499,6 +514,78 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( 'GB', $result['country'] );
 	}
 
+	public function test_update_market_schedules_cleanup_when_feed_label_changes(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => 'en',
+				'currency'   => 'GBP',
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->cleanup_job->expects( $this->once() )
+			->method( 'schedule' )
+			->with( [ 'feed_label' => 'GB' ] );
+
+		$this->market_service->update_market( 'gb', [ 'feed_label' => 'GB-PROMO' ] );
+	}
+
+	public function test_update_market_does_not_schedule_cleanup_when_non_feed_label_keys_change(): void {
+		$existing = [
+			'gb' => [
+				'country'       => 'GB',
+				'language'      => 'en',
+				'currency'      => 'GBP',
+				'feed_label'    => 'GB',
+				'shipping_rate' => 'flat',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->cleanup_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market(
+			'gb',
+			[
+				'country'       => 'IE',
+				'language'      => 'ga',
+				'currency'      => 'EUR',
+				'shipping_rate' => 'automatic',
+				'shipping_time' => 'automatic',
+			]
+		);
+	}
+
+	public function test_add_market_does_not_schedule_cleanup(): void {
+		$config = [
+			'country'    => 'DE',
+			'language'   => 'de',
+			'currency'   => 'EUR',
+			'feed_label' => 'DE',
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
+			]
+		);
+		$this->options->method( 'update' )->willReturn( true );
+
+		$this->cleanup_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->add_market( 'de', $config );
+	}
+
 	public function test_delete_market_throws_when_id_is_primary(): void {
 		$this->expectException( InvalidValue::class );
 
@@ -551,6 +638,35 @@ class MarketServiceTest extends UnitTest {
 		$this->assertArrayHasKey( OptionsInterface::TARGET_AUDIENCE, $update_calls );
 		$this->assertContains( 'US', $update_calls[ OptionsInterface::TARGET_AUDIENCE ]['countries'] );
 		$this->assertContains( 'CA', $update_calls[ OptionsInterface::TARGET_AUDIENCE ]['countries'] );
+	}
+
+	public function test_delete_market_schedules_cleanup_with_feed_label(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => 'en',
+				'currency'   => 'GBP',
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $existing ] );
+		$this->options->method( 'update' )->willReturn( true );
+
+		$this->cleanup_job->expects( $this->once() )
+			->method( 'schedule' )
+			->with( [ 'feed_label' => 'GB' ] );
+
+		$this->market_service->delete_market( 'gb' );
+	}
+
+	public function test_delete_market_primary_throws_and_does_not_schedule_cleanup(): void {
+		$this->cleanup_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->delete_market( 'primary' );
 	}
 
 	public function test_delete_market_country_restoration_is_idempotent(): void {
