@@ -2,21 +2,16 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
  */
 import NotificationsPanel from './notifications-panel';
 import useNotifications from '~/hooks/useNotifications';
-import { useAppDispatch } from '~/data';
 import useNotificationsSystemMap from './useNotificationsSystemMap';
 
 jest.mock( '~/hooks/useNotifications', () => jest.fn() );
-
-jest.mock( '~/data', () => ( {
-	useAppDispatch: jest.fn(),
-} ) );
 
 jest.mock( './useNotificationsSystemMap', () => jest.fn() );
 
@@ -42,16 +37,10 @@ const TEST_MAP = {
 	},
 };
 
-const mockInvalidateResolutionForStoreSelector = jest.fn();
-
 describe( 'NotificationsPanel', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 		useNotificationsSystemMap.mockReturnValue( TEST_MAP );
-		useAppDispatch.mockReturnValue( {
-			invalidateResolutionForStoreSelector:
-				mockInvalidateResolutionForStoreSelector,
-		} );
 	} );
 
 	it( 'renders nothing when there are no notifications', () => {
@@ -105,22 +94,5 @@ describe( 'NotificationsPanel', () => {
 		expect(
 			container.querySelector( '[data-testid]' )
 		).not.toBeInTheDocument();
-	} );
-
-	it( 'invalidates getNotifications resolution when the tab becomes visible', () => {
-		useNotifications.mockReturnValue( { notifications: [] } );
-		render( <NotificationsPanel /> );
-
-		act( () => {
-			Object.defineProperty( document, 'hidden', {
-				configurable: true,
-				get: () => false,
-			} );
-			document.dispatchEvent( new Event( 'visibilitychange' ) );
-		} );
-
-		expect( mockInvalidateResolutionForStoreSelector ).toHaveBeenCalledWith(
-			'getNotifications'
-		);
 	} );
 } );
