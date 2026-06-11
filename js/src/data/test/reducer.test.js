@@ -1114,9 +1114,9 @@ describe( 'reducer', () => {
 			} );
 
 			expect( state.notifications ).toEqual( notifications );
-			} );
+		} );
 	} );
-	
+
 	describe( 'Detailed errors', () => {
 		const path = 'detailed_errors';
 

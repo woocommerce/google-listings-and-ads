@@ -24,9 +24,7 @@ if ( ! select( STORE_NAME ) ) {
 
 		selectors: {
 			getNotifications: ( state ) =>
-				[ ...state ].sort(
-					( a, b ) => b.triggeredAt - a.triggeredAt
-				),
+				[ ...state ].sort( ( a, b ) => b.triggeredAt - a.triggeredAt ),
 		},
 	} );
 }
@@ -36,7 +34,9 @@ function NotificationSystemSlot() {
 		sel( STORE_NAME ).getNotifications()
 	);
 
-	if ( ! notifications.length ) return null;
+	if ( ! notifications.length ) {
+		return null;
+	}
 
 	return notifications.map( ( notification, i ) => (
 		<notification.component key={ i } />
@@ -52,7 +52,9 @@ let currentRoot = null;
 function mount( multichannel ) {
 	let container = document.querySelector( `.${ CONTAINER_CLASS }` );
 
-	if ( container && currentRoot ) return; // another plugin already mounted
+	if ( container && currentRoot ) {
+		return;
+	} // another plugin already mounted
 
 	if ( ! container ) {
 		container = document.createElement( 'div' );
