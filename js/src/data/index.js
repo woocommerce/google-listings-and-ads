@@ -29,41 +29,42 @@ if ( ! select( STORE_KEY ) ) {
 	} );
 
 	dispatch( STORE_KEY ).hydratePrefetchedData( glaData.initialWpData );
+
+	apiFetch.use(
+		createErrorResponseCatcher( ( response ) => {
+			if ( glaData.mcSetupComplete && response.status === 401 ) {
+				return ( response.json || response.text )
+					.call( response )
+					.then( ( errorInfo ) => {
+						if ( typeof errorInfo === 'string' ) {
+							return { message: errorInfo };
+						}
+						return errorInfo;
+					} )
+					.then( ( errorInfo ) => {
+						const url = getReconnectAccountUrl( errorInfo.code );
+	
+						if ( url ) {
+							getHistory().replace( url );
+						}
+	
+						return errorInfo;
+					} )
+					.then( ( errorInfo ) => {
+						// Inject the status code to let the subsequent handlers can identify the 401 response error.
+						return Promise.reject( {
+							...errorInfo,
+							statusCode: response.status,
+						} );
+					} );
+			}
+	
+			// Throws error response to subsequent middlewares
+			throw response;
+		} )
+	);
 }
 
-apiFetch.use(
-	createErrorResponseCatcher( ( response ) => {
-		if ( glaData.mcSetupComplete && response.status === 401 ) {
-			return ( response.json || response.text )
-				.call( response )
-				.then( ( errorInfo ) => {
-					if ( typeof errorInfo === 'string' ) {
-						return { message: errorInfo };
-					}
-					return errorInfo;
-				} )
-				.then( ( errorInfo ) => {
-					const url = getReconnectAccountUrl( errorInfo.code );
-
-					if ( url ) {
-						getHistory().replace( url );
-					}
-
-					return errorInfo;
-				} )
-				.then( ( errorInfo ) => {
-					// Inject the status code to let the subsequent handlers can identify the 401 response error.
-					return Promise.reject( {
-						...errorInfo,
-						statusCode: response.status,
-					} );
-				} );
-		}
-
-		// Throws error response to subsequent middlewares
-		throw response;
-	} )
-);
 
 export { STORE_KEY };
 
