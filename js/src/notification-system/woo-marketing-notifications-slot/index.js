@@ -1,5 +1,8 @@
 /* global MutationObserver */
 
+/**
+ * External dependencies
+ */
 import { registerStore, select, useSelect } from '@wordpress/data';
 import { createRoot } from '@wordpress/element';
 
