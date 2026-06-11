@@ -15,7 +15,15 @@ const CONTAINER_CLASS = 'gla-notification-system-container';
 
 let currentRoot = null;
 
-function mount( multichannel ) {
+/**
+ * Mounts the NotificationsPanel into the multichannel marketing overview element.
+ * Creates a container and inserts it after the introduction banner, or prepends
+ * it if no banner is present. Disconnects the observer once mounted.
+ *
+ * @param {Element}         multichannel The multichannel marketing overview element.
+ * @param {MutationObserver} obs          The observer to disconnect after mounting.
+ */
+function mount( multichannel, obs ) {
 	let container = document.querySelector( `.${ CONTAINER_CLASS }` );
 
 	if ( container && currentRoot ) {
@@ -41,13 +49,13 @@ function mount( multichannel ) {
 
 	currentRoot = createRoot( container );
 	currentRoot.render( <NotificationsPanel /> );
-	observer.disconnect();
+	obs.disconnect();
 }
 
-const observer = new MutationObserver( () => {
+const observer = new MutationObserver( ( _, obs ) => {
 	const multichannel = document.querySelector( `.${ MULTICHANNEL_CLASS }` );
 	if ( multichannel ) {
-		mount( multichannel );
+		mount( multichannel, obs );
 	}
 } );
 
@@ -59,6 +67,7 @@ observer.observe( document.body, {
 const existingMultichannel = document.querySelector(
 	`.${ MULTICHANNEL_CLASS }`
 );
+
 if ( existingMultichannel ) {
-	mount( existingMultichannel );
+	mount( existingMultichannel, observer );
 }
