@@ -41,6 +41,7 @@ function mount( multichannel ) {
 
 	currentRoot = createRoot( container );
 	currentRoot.render( <NotificationsPanel /> );
+	observer.disconnect();
 }
 
 const observer = new MutationObserver( () => {
