@@ -38,7 +38,7 @@ const useCreateGenAIAssets = () => {
 	 * Helper function to process Gen AI API responses, handling both success and error cases.
 	 *
 	 * @param {Object}  result       - The result object from Promise.allSettled.
-	 * @param {boolean} shouldNotify - Whether to show an error notice for rejected results.
+	 * @param {boolean} shouldNotify - Whether to show an error notice for rejected results. Default is true.
 	 * @return {Object|null} - The parsed JSON data from the response, or null if there was an error.
 	 */
 	const processGenAIResponse = useCallback(
@@ -46,28 +46,32 @@ const useCreateGenAIAssets = () => {
 			// Handle rejected promises (Network errors or apiFetch-thrown errors)
 			if ( result.status === 'rejected' ) {
 				const errorResponse = result.reason;
-
-				if ( shouldNotify ) {
-					let message = __(
-						"Google AI isn't able to generate assets for this page.",
+				let message =
+					errorResponse?.statusText ||
+					__(
+						'Unable to load AI-generated assets suggestions.',
 						'google-listings-and-ads'
 					);
 
-					if ( errorResponse?.status === 400 ) {
-						try {
-							const { errors } = await errorResponse.json();
+				// Handle 400 errors (URL not eligible for suggestions)
+				if ( errorResponse?.status === 400 ) {
+					message = null;
 
-							if ( errors?.FINAL_URL_UNSUPPORTED_LANGUAGE ) {
-								message = __(
-									"The language on your ad's landing page isn't supported for AI-generated assets.",
-									'google-listings-and-ads'
-								);
-							}
-						} catch ( error ) {
-							// Silently handle parse errors
+					try {
+						const { errors } = await errorResponse.json();
+
+						if ( errors?.FINAL_URL_UNSUPPORTED_LANGUAGE ) {
+							message = __(
+								"The language on your ad's landing page isn't supported for AI-generated assets.",
+								'google-listings-and-ads'
+							);
 						}
+					} catch ( error ) {
+						// Silently handle JSON parse errors
 					}
+				}
 
+				if ( shouldNotify ) {
 					createNotice( 'error', message );
 				}
 
