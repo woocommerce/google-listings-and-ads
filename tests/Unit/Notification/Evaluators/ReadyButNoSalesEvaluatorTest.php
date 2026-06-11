@@ -96,9 +96,9 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 
 		$this->policy_compliance_check->expects( $this->never() )->method( 'has_payment_gateways' );
 		$this->wc->expects( $this->never() )->method( 'get_shipping_zones' );
+		$evaluator->expects( $this->never() )->method( 'get_completed_order_count' );
 
 		$this->assertTrue( $evaluator->should_show() );
-		$this->assertFalse( $evaluator->query_called );
 	}
 
 	/**
@@ -106,31 +106,16 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 	 *
 	 * @param int $order_count
 	 *
-	 * @return ReadyButNoSalesEvaluator&object{query_called:bool}
+	 * @return ReadyButNoSalesEvaluator|MockObject
 	 */
 	private function create_evaluator_with_order_count( int $order_count ): ReadyButNoSalesEvaluator {
-		return new class( $this->policy_compliance_check, $this->wc, $order_count ) extends ReadyButNoSalesEvaluator {
-			/** @var bool */
-			public $query_called = false;
+		$evaluator = $this->getMockBuilder( ReadyButNoSalesEvaluator::class )
+			->setConstructorArgs( [ $this->policy_compliance_check, $this->wc ] )
+			->onlyMethods( [ 'get_completed_order_count' ] )
+			->getMock();
 
-			/** @var int */
-			private $order_count;
+		$evaluator->method( 'get_completed_order_count' )->willReturn( $order_count );
 
-			/**
-			 * @param PolicyComplianceCheck $policy_compliance_check
-			 * @param WC                    $wc
-			 * @param int                   $order_count
-			 */
-			public function __construct( PolicyComplianceCheck $policy_compliance_check, WC $wc, int $order_count ) {
-				parent::__construct( $policy_compliance_check, $wc );
-				$this->order_count = $order_count;
-			}
-
-			protected function get_completed_order_count(): int {
-				$this->query_called = true;
-
-				return $this->order_count;
-			}
-		};
+		return $evaluator;
 	}
 }

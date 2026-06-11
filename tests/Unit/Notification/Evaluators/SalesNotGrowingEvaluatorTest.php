@@ -79,21 +79,22 @@ class SalesNotGrowingEvaluatorTest extends UnitTest {
 			->with( OptionsInterface::INSTALL_TIMESTAMP )
 			->willReturn( time() - ( 6 * MONTH_IN_SECONDS ) );
 
+		$evaluator->expects( $this->never() )->method( 'get_gmv_for_period' );
+
 		$this->assertFalse( $evaluator->should_show() );
-		$this->assertFalse( $evaluator->query_called );
 	}
 
 	public function test_cache_hit_skips_query() {
 		$evaluator = $this->create_evaluator_with_gmv( 100.0, 250.0 );
 		$evaluator->set_options_object( $this->options );
-		$user_id   = $this->login_as_administrator();
+		$user_id = $this->login_as_administrator();
 
 		set_transient( 'gla_notif_sales-not-growing_' . $user_id, 0, HOUR_IN_SECONDS );
 
 		$this->options->expects( $this->never() )->method( 'get' );
+		$evaluator->expects( $this->never() )->method( 'get_gmv_for_period' );
 
 		$this->assertFalse( $evaluator->should_show() );
-		$this->assertFalse( $evaluator->query_called );
 	}
 
 	/**
@@ -102,41 +103,28 @@ class SalesNotGrowingEvaluatorTest extends UnitTest {
 	 * @param float $current_gmv
 	 * @param float $prior_gmv
 	 *
-	 * @return SalesNotGrowingEvaluator&object{query_called:bool}
+	 * @return SalesNotGrowingEvaluator|MockObject
 	 */
 	private function create_evaluator_with_gmv( float $current_gmv, float $prior_gmv ): SalesNotGrowingEvaluator {
-		return new class( $current_gmv, $prior_gmv ) extends SalesNotGrowingEvaluator {
-			/** @var bool */
-			public $query_called = false;
+		$evaluator = $this->getMockBuilder( SalesNotGrowingEvaluator::class )
+			->onlyMethods( [ 'get_gmv_for_period' ] )
+			->getMock();
 
-			/** @var float */
-			private $current_gmv;
+		$evaluator->method( 'get_gmv_for_period' )
+			->willReturnCallback(
+				function ( DateTime $start ) use ( $current_gmv, $prior_gmv ) {
+					$timezone      = wp_timezone();
+					$now           = new DateTime( 'now', $timezone );
+					$current_start = new DateTime( $now->format( 'Y-m-01 00:00:00' ), $timezone );
 
-			/** @var float */
-			private $prior_gmv;
+					if ( $start->format( 'Y-m-d' ) === $current_start->format( 'Y-m-d' ) ) {
+						return $current_gmv;
+					}
 
-			/**
-			 * @param float $current_gmv
-			 * @param float $prior_gmv
-			 */
-			public function __construct( float $current_gmv, float $prior_gmv ) {
-				$this->current_gmv = $current_gmv;
-				$this->prior_gmv   = $prior_gmv;
-			}
-
-			protected function get_gmv_for_period( DateTime $start, DateTime $end ): float {
-				$this->query_called = true;
-
-				$timezone = wp_timezone();
-				$now      = new DateTime( 'now', $timezone );
-				$current_start = new DateTime( $now->format( 'Y-m-01 00:00:00' ), $timezone );
-
-				if ( $start->format( 'Y-m-d' ) === $current_start->format( 'Y-m-d' ) ) {
-					return $this->current_gmv;
+					return $prior_gmv;
 				}
+			);
 
-				return $this->prior_gmv;
-			}
-		};
+		return $evaluator;
 	}
 }

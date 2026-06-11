@@ -94,9 +94,9 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 		set_transient( 'gla_notif_coupons-not-synced_' . $user_id, 0, HOUR_IN_SECONDS );
 
 		$this->coupon_helper->expects( $this->never() )->method( 'get_sync_status' );
+		$evaluator->expects( $this->never() )->method( 'get_coupons' );
 
 		$this->assertFalse( $evaluator->should_show() );
-		$this->assertFalse( $evaluator->query_called );
 	}
 
 	/**
@@ -104,31 +104,17 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 	 *
 	 * @param WC_Coupon[] $coupons
 	 *
-	 * @return CouponsNotSyncedEvaluator&object{query_called:bool}
+	 * @return CouponsNotSyncedEvaluator|MockObject
 	 */
 	private function create_evaluator_with_coupons( array $coupons ): CouponsNotSyncedEvaluator {
-		return new class( $this->coupon_helper, $coupons ) extends CouponsNotSyncedEvaluator {
-			/** @var bool */
-			public $query_called = false;
+		$evaluator = $this->getMockBuilder( CouponsNotSyncedEvaluator::class )
+			->setConstructorArgs( [ $this->coupon_helper ] )
+			->onlyMethods( [ 'get_coupons' ] )
+			->getMock();
 
-			/** @var WC_Coupon[] */
-			private $coupons;
+		$evaluator->method( 'get_coupons' )->willReturn( $coupons );
 
-			/**
-			 * @param CouponHelper $coupon_helper
-			 * @param WC_Coupon[]  $coupons
-			 */
-			public function __construct( CouponHelper $coupon_helper, array $coupons ) {
-				parent::__construct( $coupon_helper );
-				$this->coupons = $coupons;
-			}
-
-			protected function get_coupons(): array {
-				$this->query_called = true;
-
-				return $this->coupons;
-			}
-		};
+		return $evaluator;
 	}
 
 	/**

@@ -59,8 +59,9 @@ class Sold10ItemsEvaluatorTest extends UnitTest {
 
 		set_transient( 'gla_notif_sold-10-items_' . $user_id, 1, HOUR_IN_SECONDS );
 
+		$evaluator->expects( $this->never() )->method( 'get_completed_order_count' );
+
 		$this->assertTrue( $evaluator->should_show() );
-		$this->assertFalse( $evaluator->query_called );
 	}
 
 	/**
@@ -68,28 +69,15 @@ class Sold10ItemsEvaluatorTest extends UnitTest {
 	 *
 	 * @param int $order_count
 	 *
-	 * @return Sold10ItemsEvaluator&object{query_called:bool}
+	 * @return Sold10ItemsEvaluator|\PHPUnit\Framework\MockObject\MockObject
 	 */
 	private function create_evaluator_with_order_count( int $order_count ): Sold10ItemsEvaluator {
-		return new class( $order_count ) extends Sold10ItemsEvaluator {
-			/** @var bool */
-			public $query_called = false;
+		$evaluator = $this->getMockBuilder( Sold10ItemsEvaluator::class )
+			->onlyMethods( [ 'get_completed_order_count' ] )
+			->getMock();
 
-			/** @var int */
-			private $order_count;
+		$evaluator->method( 'get_completed_order_count' )->willReturn( $order_count );
 
-			/**
-			 * @param int $order_count
-			 */
-			public function __construct( int $order_count ) {
-				$this->order_count = $order_count;
-			}
-
-			protected function get_completed_order_count(): int {
-				$this->query_called = true;
-
-				return $this->order_count;
-			}
-		};
+		return $evaluator;
 	}
 }
