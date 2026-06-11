@@ -4,18 +4,15 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
-use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\GoogleListingsAndAdsException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product as GoogleProduct;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Product;
 use WC_Product_Variable;
 use WC_Product_Variation;
@@ -44,49 +41,25 @@ class BatchProductHelper implements Service {
 	protected $product_helper;
 
 	/**
-	 * @var ValidatorInterface
-	 */
-	protected $validator;
-
-	/**
-	 * @var ProductFactory
-	 */
-	protected $product_factory;
-
-	/**
 	 * @var TargetAudience
 	 */
 	protected $target_audience;
 
 	/**
-	 * @var AttributeMappingRulesQuery
-	 */
-	protected $attribute_mapping_rules_query;
-
-	/**
 	 * BatchProductHelper constructor.
 	 *
-	 * @param ProductMetaHandler         $meta_handler
-	 * @param ProductHelper              $product_helper
-	 * @param ValidatorInterface         $validator
-	 * @param ProductFactory             $product_factory
-	 * @param TargetAudience             $target_audience
-	 * @param AttributeMappingRulesQuery $attribute_mapping_rules_query
+	 * @param ProductMetaHandler $meta_handler
+	 * @param ProductHelper      $product_helper
+	 * @param TargetAudience     $target_audience
 	 */
 	public function __construct(
 		ProductMetaHandler $meta_handler,
 		ProductHelper $product_helper,
-		ValidatorInterface $validator,
-		ProductFactory $product_factory,
-		TargetAudience $target_audience,
-		AttributeMappingRulesQuery $attribute_mapping_rules_query
+		TargetAudience $target_audience
 	) {
-		$this->meta_handler                  = $meta_handler;
-		$this->product_helper                = $product_helper;
-		$this->validator                     = $validator;
-		$this->product_factory               = $product_factory;
-		$this->target_audience               = $target_audience;
-		$this->attribute_mapping_rules_query = $attribute_mapping_rules_query;
+		$this->meta_handler    = $meta_handler;
+		$this->product_helper  = $product_helper;
+		$this->target_audience = $target_audience;
 	}
 
 	/**
@@ -186,73 +159,6 @@ class BatchProductHelper implements Service {
 					$product->get_id(),
 					$google_id
 				);
-			}
-		}
-
-		return $request_entries;
-	}
-
-	/**
-	 * @param WC_Product[] $products
-	 *
-	 * @return BatchProductRequestEntry[]
-	 */
-	public function validate_and_generate_update_request_entries( array $products ): array {
-		$request_entries = [];
-		$mapping_rules   = $this->attribute_mapping_rules_query->get_results();
-
-		foreach ( $products as $product ) {
-			$this->validate_instanceof( $product, WC_Product::class );
-
-			try {
-				if ( ! $this->product_helper->is_sync_ready( $product ) ) {
-					do_action(
-						'woocommerce_gla_debug_message',
-						sprintf( 'Skipping product (ID: %s) because it is not ready to be synced.', $product->get_id() ),
-						__METHOD__
-					);
-
-					continue;
-				}
-
-				if ( $product instanceof WC_Product_Variable ) {
-					$request_entries = array_merge( $request_entries, $this->validate_and_generate_update_request_entries( $product->get_available_variations( 'objects' ) ) );
-					continue;
-				}
-
-				$target_countries    = $this->target_audience->get_target_countries();
-				$main_target_country = $this->target_audience->get_main_target_country();
-
-				// validate the product
-				$adapted_product   = $this->product_factory->create( $product, $main_target_country, $mapping_rules );
-				$validation_result = $this->validate_product( $adapted_product );
-				if ( $validation_result instanceof BatchInvalidProductEntry ) {
-					$this->mark_as_invalid( $validation_result );
-
-					do_action(
-						'woocommerce_gla_debug_message',
-						sprintf( 'Skipping product (ID: %s) because it does not pass validation: %s', $product->get_id(), wp_json_encode( $validation_result ) ),
-						__METHOD__
-					);
-
-					continue;
-				}
-
-				// add shipping for all selected target countries
-				array_walk( $target_countries, [ $adapted_product, 'add_shipping_country' ] );
-
-				$request_entries[] = new BatchProductRequestEntry(
-					$product->get_id(),
-					$adapted_product
-				);
-			} catch ( GoogleListingsAndAdsException $exception ) {
-				do_action(
-					'woocommerce_gla_error',
-					sprintf( 'Skipping product (ID: %s) due to exception: %s', $product->get_id(), $exception->getMessage() ),
-					__METHOD__
-				);
-
-				continue;
 			}
 		}
 
@@ -366,24 +272,6 @@ class BatchProductHelper implements Service {
 		}
 
 		return [ $parts[0], $parts[1], $parts[2] ];
-	}
-
-	/**
-	 * @param WCProductAdapter $product
-	 *
-	 * @return BatchInvalidProductEntry|true
-	 */
-	protected function validate_product( WCProductAdapter $product ) {
-		$violations = $this->validator->validate( $product );
-
-		if ( 0 !== count( $violations ) ) {
-			$invalid_product = new BatchInvalidProductEntry( $product->get_wc_product()->get_id() );
-			$invalid_product->map_validation_violations( $violations );
-
-			return $invalid_product;
-		}
-
-		return true;
 	}
 
 	/**

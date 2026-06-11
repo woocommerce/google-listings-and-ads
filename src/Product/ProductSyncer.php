@@ -9,7 +9,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPro
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -30,11 +29,6 @@ class ProductSyncer implements Service {
 
 	public const FAILURE_THRESHOLD        = 5;         // Number of failed attempts allowed per FAILURE_THRESHOLD_WINDOW
 	public const FAILURE_THRESHOLD_WINDOW = '3 hours'; // PHP supported Date and Time format: https://www.php.net/manual/en/datetime.formats.php
-
-	/**
-	 * @var GoogleProductService
-	 */
-	protected $google_service;
 
 	/**
 	 * @var MapiProductInputsService
@@ -69,7 +63,6 @@ class ProductSyncer implements Service {
 	/**
 	 * ProductSyncer constructor.
 	 *
-	 * @param GoogleProductService     $google_service
 	 * @param MapiProductInputsService $mapi_inputs
 	 * @param BatchProductHelper       $batch_helper
 	 * @param ProductHelper            $product_helper
@@ -78,7 +71,6 @@ class ProductSyncer implements Service {
 	 * @param ProductRepository        $product_repository
 	 */
 	public function __construct(
-		GoogleProductService $google_service,
 		MapiProductInputsService $mapi_inputs,
 		BatchProductHelper $batch_helper,
 		ProductHelper $product_helper,
@@ -86,7 +78,6 @@ class ProductSyncer implements Service {
 		WC $wc,
 		ProductRepository $product_repository
 	) {
-		$this->google_service     = $google_service;
 		$this->mapi_inputs        = $mapi_inputs;
 		$this->batch_helper       = $batch_helper;
 		$this->product_helper     = $product_helper;
@@ -210,74 +201,6 @@ class ProductSyncer implements Service {
 		}
 
 		return new BatchInvalidProductEntry( $wc_product_id, null, $errors );
-	}
-
-	/**
-	 * Submits an array of WooCommerce products to Google Merchant Center.
-	 *
-	 * @param BatchProductRequestEntry[] $product_entries
-	 *
-	 * @return BatchProductResponse Containing both the synced and invalid products.
-	 *
-	 * @throws ProductSyncerException If there are any errors while syncing products with Google Merchant Center.
-	 */
-	public function update_by_batch_requests( array $product_entries ): BatchProductResponse {
-		$this->validate_merchant_center_setup();
-
-		// bail if no valid products provided
-		if ( empty( $product_entries ) ) {
-			return new BatchProductResponse( [], [] );
-		}
-
-		$updated_products = [];
-		$invalid_products = [];
-		foreach ( array_chunk( $product_entries, GoogleProductService::BATCH_SIZE ) as $batch_entries ) {
-			try {
-				$response = $this->google_service->insert_batch( $batch_entries );
-
-				$updated_products = array_merge( $updated_products, $response->get_products() );
-				$invalid_products = array_merge( $invalid_products, $response->get_errors() );
-
-				// update the meta data for the synced and invalid products
-				array_walk( $updated_products, [ $this->batch_helper, 'mark_as_synced' ] );
-				array_walk( $invalid_products, [ $this->batch_helper, 'mark_as_invalid' ] );
-			} catch ( Exception $exception ) {
-				do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
-
-				throw new ProductSyncerException( sprintf( 'Error updating Google products: %s', $exception->getMessage() ), 0, $exception );
-			}
-		}
-
-		$this->handle_update_errors( $invalid_products );
-
-		do_action(
-			'woocommerce_gla_batch_updated_products',
-			$updated_products,
-			$invalid_products
-		);
-
-		do_action(
-			'woocommerce_gla_debug_message',
-			sprintf(
-				"Submitted %s products:\n%s",
-				count( $updated_products ),
-				wp_json_encode( $updated_products )
-			),
-			__METHOD__
-		);
-		if ( ! empty( $invalid_products ) ) {
-			do_action(
-				'woocommerce_gla_debug_message',
-				sprintf(
-					"%s products failed to sync with Merchant Center:\n%s",
-					count( $invalid_products ),
-					wp_json_encode( $invalid_products )
-				),
-				__METHOD__
-			);
-		}
-
-		return new BatchProductResponse( $updated_products, $invalid_products );
 	}
 
 	/**
