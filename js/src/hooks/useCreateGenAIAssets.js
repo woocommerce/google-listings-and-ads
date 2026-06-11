@@ -14,34 +14,6 @@ import { API_NAMESPACE, REQUEST_ACTIONS } from '~/data/constants';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 
 /**
- * Resolves the snackbar message for a rejected Gen AI asset request.
- *
- * @param {Response} errorResponse The rejected response object from apiFetch.
- * @return {Promise<string>} The resolved error message string.
- */
-const getGenAIErrorMessage = async ( errorResponse ) => {
-	if ( errorResponse?.status === 400 ) {
-		try {
-			const { errors } = await errorResponse.json();
-
-			if ( errors?.FINAL_URL_UNSUPPORTED_LANGUAGE ) {
-				return __(
-					"Google AI isn't able to generate assets for this page.",
-					'google-listings-and-ads'
-				);
-			}
-		} catch ( error ) {
-			// eslint-disable-next-line no-console
-		}
-	}
-
-	return __(
-		"Google AI wasn't able to generate assets.",
-		'google-listings-and-ads'
-	);
-};
-
-/**
  * Custom hook to generate Gen AI assets for a given URL and asset requests.
  *
  * @return {Object} An object containing the generateAssets function, isGeneratingAssets boolean, and abortGenerateAssets function.
@@ -65,28 +37,39 @@ const useCreateGenAIAssets = () => {
 	/**
 	 * Helper function to process Gen AI API responses, handling both success and error cases.
 	 *
-	 * @param {Object} result - The result object from Promise.allSettled.
+	 * @param {Object}  result       - The result object from Promise.allSettled.
+	 * @param {boolean} shouldNotify - Whether to show an error notice for rejected results.
 	 * @return {Object|null} - The parsed JSON data from the response, or null if there was an error.
 	 */
 	const processGenAIResponse = useCallback(
-		async ( result ) => {
+		async ( result, shouldNotify = true ) => {
 			// Handle rejected promises (Network errors or apiFetch-thrown errors)
 			if ( result.status === 'rejected' ) {
 				const errorResponse = result.reason;
 
-				// Silently handle 400 errors (URL not eligible for suggestions)
-				if ( errorResponse && errorResponse.status === 400 ) {
-					return null;
-				}
+				if ( shouldNotify ) {
+					let message = __(
+						"Google AI isn't able to generate assets for this page.",
+						'google-listings-and-ads'
+					);
 
-				createNotice(
-					'error',
-					errorResponse?.statusText ||
-						__(
-							'Unable to load AI-generated assets suggestions.',
-							'google-listings-and-ads'
-						)
-				);
+					if ( errorResponse?.status === 400 ) {
+						try {
+							const { errors } = await errorResponse.json();
+
+							if ( errors?.FINAL_URL_UNSUPPORTED_LANGUAGE ) {
+								message = __(
+									"The language on your ad's landing page isn't supported for AI-generated assets.",
+									'google-listings-and-ads'
+								);
+							}
+						} catch ( error ) {
+							// Silently handle parse errors
+						}
+					}
+
+					createNotice( 'error', message );
+				}
 
 				return null;
 			}
@@ -161,30 +144,22 @@ const useCreateGenAIAssets = () => {
 				}
 
 				// Both text and image requests can fail with the same error,
-				// this flag is used to prevent showing multiple snackbars.
-				let shownErrorSnackbar = false;
+				// this flag is used to prevent showing multiple notices.
+				let shownErrorNotice = false;
 
 				for ( let index = 0; index < results.length; index++ ) {
 					const { type, assetKey } = requests[ index ];
 					const result = results[ index ];
 
+					const data = await processGenAIResponse(
+						result,
+						! shownErrorNotice
+					);
+
 					if ( result.status === 'rejected' ) {
-						if ( ! shownErrorSnackbar ) {
-							shownErrorSnackbar = true;
-
-							const message = await getGenAIErrorMessage(
-								result.reason
-							);
-
-							createNotice( 'error', message, {
-								type: 'snackbar',
-							} );
-						}
-
+						shownErrorNotice = true;
 						continue;
 					}
-
-					const data = await processGenAIResponse( result );
 
 					if ( ! data || ! data.items ) {
 						continue;
