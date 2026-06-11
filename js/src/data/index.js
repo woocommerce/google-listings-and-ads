@@ -18,6 +18,7 @@ import reducer from './reducer';
 import { createErrorResponseCatcher } from './apiFetchMiddlewares';
 import { getReconnectAccountUrl } from '~/utils/urls';
 
+// Register the store if it's not already registered.
 if ( ! select( STORE_KEY ) ) {
 	registerStore( STORE_KEY, {
 		actions,
