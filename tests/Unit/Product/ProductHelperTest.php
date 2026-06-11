@@ -16,7 +16,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductT
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\SettingsTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Helper_Product;
@@ -1206,7 +1205,6 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertTrue( $this->product_helper->is_delete_failed_threshold_reached( $product ) );
 	}
 
-
 	/**
 	 * @param string $callback
 	 *
@@ -1235,160 +1233,6 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertTrue( $this->product_helper->is_update_failed_threshold_reached( $product ) );
 	}
 
-	public function test_is_ready_to_notify() {
-		/**
-		 * @var WC_Product $product
-		 */
-		$product = $this->get_notification_ready_product( WC_Helper_Product::create_simple_product() );
-		$this->assertTrue( $this->product_helper->is_ready_to_notify( $product ) );
-
-		$product->set_status( 'draft' );
-		$product->save();
-		$this->assertFalse( $this->product_helper->is_ready_to_notify( $product ) );
-
-		$product->set_status( 'publish' );
-		$product->add_meta_data( '_wc_gla_visibility', ChannelVisibility::DONT_SYNC_AND_SHOW, true );
-		$product->save();
-		$this->assertFalse( $this->product_helper->is_ready_to_notify( $product ) );
-	}
-
-	public function test_should_trigger_create_notification() {
-		/**
-		 * @var WC_Product $product
-		 */
-		$product = $this->get_notification_ready_product( WC_Helper_Product::create_simple_product() );
-		$this->assertTrue( $this->product_helper->should_trigger_create_notification( $product ) );
-
-		$product->set_status( 'draft' );
-		$product->save();
-		$this->assertFalse( $this->product_helper->should_trigger_create_notification( $product ) );
-
-		$product = $this->get_notification_ready_product( WC_Helper_Product::create_simple_product() );
-		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_CREATED );
-		$this->assertFalse( $this->product_helper->should_trigger_create_notification( $product ) );
-	}
-
-	public function test_should_trigger_create_notification_if_variation() {
-		/**
-		 * @var \WC_Product_Variable $product
-		 */
-		$product   = WC_Helper_Product::create_variation_product();
-		$variation = $product->get_available_variations( 'objects' );
-		$this->assertTrue( $this->product_helper->should_trigger_create_notification( $product ) );
-		$this->assertFalse( $this->product_helper->should_trigger_create_notification( $variation[0] ) );
-	}
-
-	public function test_should_not_trigger_update_notification() {
-		/**
-		 * @var WC_Product $product
-		 */
-		$product = $this->get_notification_ready_product( WC_Helper_Product::create_simple_product() );
-		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_CREATED );
-		$this->assertTrue( $this->product_helper->should_trigger_update_notification( $product ) );
-
-		$product->set_status( 'draft' );
-		$product->save();
-		$this->assertFalse( $this->product_helper->should_trigger_update_notification( $product ) );
-
-		$product = $this->get_notification_ready_product( WC_Helper_Product::create_simple_product() );
-		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_DELETED );
-		$this->assertFalse( $this->product_helper->should_trigger_update_notification( $product ) );
-	}
-
-	public function test_should_not_trigger_update_notification_if_variation() {
-		/**
-		 * @var \WC_Product_Variable $product
-		 */
-		$product = WC_Helper_Product::create_variation_product();
-		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_CREATED );
-		$variation = $product->get_available_variations( 'objects' );
-		$this->assertTrue( $this->product_helper->should_trigger_update_notification( $product ) );
-		$this->assertFalse( $this->product_helper->should_trigger_update_notification( $variation[0] ) );
-	}
-
-	public function test_should_trigger_delete_notification() {
-		/**
-		 * @var WC_Product $product
-		 */
-		$product = $this->get_notification_ready_product( WC_Helper_Product::create_simple_product() );
-		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_CREATED );
-		$this->assertFalse( $this->product_helper->should_trigger_delete_notification( $product ) );
-
-		$product->set_status( 'draft' );
-		$product->save();
-		$this->assertTrue( $this->product_helper->should_trigger_delete_notification( $product ) );
-
-		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_DELETED );
-		$this->assertFalse( $this->product_helper->should_trigger_delete_notification( $product ) );
-	}
-
-	public function test_should_trigger_delete_notification_if_variation() {
-		/**
-		 * @var \WC_Product_Variable $product
-		 */
-		$product = WC_Helper_Product::create_variation_product();
-		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_CREATED );
-		$variation = $product->get_available_variations( 'objects' );
-
-		$product->set_status( 'draft' );
-		$product->save();
-		$this->assertTrue( $this->product_helper->should_trigger_delete_notification( $product ) );
-		$this->assertTrue( $this->product_helper->should_trigger_delete_notification( $variation[0] ) );
-	}
-
-	public function test_has_notified_creation() {
-		/**
-		 * @var WC_Product $product
-		 */
-		$product = $this->get_notification_ready_product( WC_Helper_Product::create_simple_product() );
-		$this->assertFalse( $this->product_helper->has_notified_creation( $product ) );
-		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_CREATED );
-		$this->assertTrue( $this->product_helper->has_notified_creation( $product ) );
-		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_UPDATED );
-		$this->assertTrue( $this->product_helper->has_notified_creation( $product ) );
-		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_UPDATE );
-		$this->assertTrue( $this->product_helper->has_notified_creation( $product ) );
-		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_DELETE );
-		$this->assertTrue( $this->product_helper->has_notified_creation( $product ) );
-		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_DELETED );
-		$this->assertFalse( $this->product_helper->has_notified_creation( $product ) );
-
-		$google_product = $this->generate_google_product_mock();
-		$this->product_helper->mark_as_synced( $product, $google_product );
-		$this->assertTrue( $this->product_helper->has_notified_creation( $product ) );
-	}
-
-	public function test_has_notified_creation_variations() {
-		/**
-		 * @var \WC_Product_Variable $product
-		 */
-		$product    = WC_Helper_Product::create_variation_product();
-		$variations = $product->get_available_variations( 'objects' );
-
-		$this->assertFalse( $this->product_helper->has_notified_creation( $product ) );
-		$this->assertFalse( $this->product_helper->has_notified_creation( $variations[0] ) );
-		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_CREATED );
-		$this->assertTrue( $this->product_helper->has_notified_creation( $product ) );
-		$this->assertTrue( $this->product_helper->has_notified_creation( $variations[0] ) );
-		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_UPDATED );
-		$this->assertTrue( $this->product_helper->has_notified_creation( $product ) );
-		$this->assertTrue( $this->product_helper->has_notified_creation( $variations[0] ) );
-		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_UPDATE );
-		$this->assertTrue( $this->product_helper->has_notified_creation( $product ) );
-		$this->assertTrue( $this->product_helper->has_notified_creation( $variations[0] ) );
-		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_DELETE );
-		$this->assertTrue( $this->product_helper->has_notified_creation( $product ) );
-		$this->assertTrue( $this->product_helper->has_notified_creation( $variations[0] ) );
-		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_DELETED );
-		$this->assertFalse( $this->product_helper->has_notified_creation( $product ) );
-		$this->assertFalse( $this->product_helper->has_notified_creation( $variations[0] ) );
-
-		$google_product = $this->generate_google_product_mock();
-		$this->product_helper->mark_as_synced( $product, $google_product );
-		$this->assertTrue( $this->product_helper->has_notified_creation( $product ) );
-		$this->assertTrue( $this->product_helper->has_notified_creation( $variations[0] ) );
-	}
-
 	public function test_get_offer_id() {
 		$this->assertEquals( $this->product_helper->get_offer_id( 1 ), 'gla_1' );
 	}
@@ -1411,19 +1255,6 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 				return "custom_{$product_id}";
 			}
 		);
-	}
-
-	/**
-	 * Set and save product to make it Notification Ready
-	 *
-	 * @param WC_Product $product
-	 * @return WC_Product
-	 */
-	public function get_notification_ready_product( $product ) {
-		$product->set_status( 'publish' );
-		$product->add_meta_data( '_wc_gla_visibility', ChannelVisibility::SYNC_AND_SHOW, true );
-		$product->save();
-		return $product;
 	}
 
 	/**

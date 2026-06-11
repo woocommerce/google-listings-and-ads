@@ -45,6 +45,14 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  */
 
 /**
+ * Error object returned from the API.
+ *
+ * @typedef {Object} ApiError
+ * @property {string} code Error code.
+ * @property {string} message Error message.
+ */
+
+/**
  * Campaign data.
  *
  * @typedef {Object} Campaign
@@ -117,11 +125,10 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * @property {string} id The market ID.
  * @property {string} label The market label.
  * @property {Array<CountryCode>} countries Array of audience countries.
- * @property {string} language Language code in ISO 639-1 format. Example: 'en'.
- * @property {string} currency Currency code in ISO 4217 format. Example: 'USD'.
+ * @property {string[]} language Language codes in ISO 639-1 format. Example: ['en'].
+ * @property {string[]} currency Currency codes in ISO 4217 format. Example: ['USD'].
  * @property {'automatic'|'flat'|'manual'} shipping_rate Shipping rate type.
  * @property {'flat'|'manual'} shipping_time Shipping time type.
- * @property {number|null} [free_shipping] Free shipping threshold amount, or null when unset.
  */
 
 /**
@@ -891,6 +898,13 @@ export function receiveEnhancedConversionsStatus( status ) {
 	};
 }
 
+export function receiveAdsSettings( settings ) {
+	return {
+		type: TYPES.RECEIVE_ADS_SETTINGS,
+		settings,
+	};
+}
+
 /**
  * Update the enhanced conversions status.
  *
@@ -1378,6 +1392,41 @@ export function* receiveAdsRecommendations(
 	};
 }
 
+/**
+ * Action containing detailed error information.
+ *
+ * @param {string} slot - Unique key identifying the error (e.g., field name or error code).
+ * @param {ApiError|null} error - The original error object or additional error details.
+ * @return {{type: string, slot: string, error: ApiError|null}} Redux action with type `TYPES.RECEIVE_DETAILED_ERROR`.
+ */
+export function* receiveDetailedError( slot, error ) {
+	return {
+		type: TYPES.RECEIVE_DETAILED_ERROR,
+		slot,
+		error,
+	};
+}
+
+/**
+ * Clears error information for specific error slots.
+ *
+ * @param {Array<string>} slots - Array of unique keys identifying the errors to be cleared.
+ * @return {{type: string, slots: Array<string>}} Redux action with type `TYPES.CLEAR_DETAILED_ERROR_BY_SLOT`.
+ */
+export function* clearDetailedErrorBySlots( slots ) {
+	return {
+		type: TYPES.CLEAR_DETAILED_ERROR_BY_SLOT,
+		slots,
+	};
+}
+
+export function receiveCYOIncentives( cyoIncentives ) {
+	return {
+		type: TYPES.RECEIVE_CYO_INCENTIVES,
+		cyoIncentives,
+	};
+}
+
 export function* receiveGenAIMediaAssets( url, data, assetType ) {
 	if ( ! data?.items ) {
 		return {
@@ -1551,4 +1600,16 @@ export function* deleteMarket( id ) {
 		handleApiError( error );
 		throw error;
 	}
+}
+
+/**
+ * Returns an action object to receive supported languages and currencies data.
+ *
+ * @param {Object}        data           Response from the languages-currencies endpoint.
+ * @param {Array<Object>} data.languages Available languages.
+ * @param {Array<Object>} data.currencies Available currencies.
+ * @return {Object} Action object.
+ */
+export function receiveMcLanguagesCurrencies( data ) {
+	return { type: TYPES.RECEIVE_MC_LANGUAGES_CURRENCIES, data };
 }

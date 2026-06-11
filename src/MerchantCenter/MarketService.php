@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -53,23 +54,31 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	protected WC $wc;
 
 	/**
+	 * @var WPML
+	 */
+	protected WPML $wpml;
+
+	/**
 	 * MarketService constructor.
 	 *
 	 * @param TargetAudience    $target_audience
 	 * @param ShippingRateQuery $shipping_rate_query
 	 * @param ShippingTimeQuery $shipping_time_query
 	 * @param WC                $wc
+	 * @param WPML              $wpml
 	 */
 	public function __construct(
 		TargetAudience $target_audience,
 		ShippingRateQuery $shipping_rate_query,
 		ShippingTimeQuery $shipping_time_query,
-		WC $wc
+		WC $wc,
+		WPML $wpml
 	) {
 		$this->target_audience     = $target_audience;
 		$this->shipping_rate_query = $shipping_rate_query;
 		$this->shipping_time_query = $shipping_time_query;
 		$this->wc                  = $wc;
+		$this->wpml                = $wpml;
 	}
 
 	/**
@@ -127,15 +136,13 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @return array[]
 	 */
 	public function build_default_markets(): array {
-		$country  = $this->target_audience->get_main_target_country();
-		$language = substr( get_locale(), 0, 2 );
-		$currency = get_woocommerce_currency();
+		$country = $this->target_audience->get_main_target_country();
 
 		return [
 			'primary' => [
 				'country'    => $country,
-				'language'   => $language,
-				'currency'   => $currency,
+				'language'   => [ $this->get_site_primary_language() ],
+				'currency'   => [ $this->get_site_primary_currency() ],
 				'feed_label' => $country,
 			],
 		];
@@ -210,6 +217,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$config['shipping_time'] = $mc_settings['shipping_time'] ?? 'flat';
 		}
 
+		$config = $this->merge_language_currency_with_primary( $config );
+
 		$this->validate_secondary_market_config( $config );
 
 		$markets        = $this->get_stored_secondary_markets();
@@ -246,6 +255,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$markets  = $this->get_stored_secondary_markets();
 		$existing = $markets[ $id ] ?? [];
 		$merged   = array_merge( $existing, $config );
+
+		if ( array_key_exists( 'language', $config ) || array_key_exists( 'currency', $config ) ) {
+			$merged = $this->merge_language_currency_with_primary(
+				$merged,
+				array_key_exists( 'language', $config ),
+				array_key_exists( 'currency', $config )
+			);
+		}
 
 		$this->validate_secondary_market_config( $merged );
 
@@ -333,8 +350,25 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @return bool
 	 */
 	public function has_multilingual_support(): bool {
-		// Note: this will be updated in GOOWOO-561
-		return false;
+		return $this->wpml->is_active();
+	}
+
+	/**
+	 * Returns the store's active languages from the multilingual integration.
+	 *
+	 * @return array<int, array{code: string, label: string}>
+	 */
+	public function get_languages(): array {
+		return $this->wpml->get_languages();
+	}
+
+	/**
+	 * Returns the store's active currencies from the multilingual integration.
+	 *
+	 * @return array<int, array{code: string, symbol: string}>
+	 */
+	public function get_currencies(): array {
+		return $this->wpml->get_currencies();
 	}
 
 	/**
@@ -404,13 +438,141 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @throws InvalidValue When a required key is missing or not a non-empty string.
 	 */
 	private function validate_secondary_market_config( array $config ): void {
-		$required = [ 'country', 'language', 'currency', 'feed_label' ];
-
-		foreach ( $required as $key ) {
+		foreach ( [ 'country', 'feed_label' ] as $key ) {
 			if ( empty( $config[ $key ] ) || ! is_string( $config[ $key ] ) ) {
 				throw InvalidValue::is_empty( $key );
 			}
 		}
+
+		foreach ( [ 'language', 'currency' ] as $key ) {
+			if ( ! isset( $config[ $key ] ) || ! is_array( $config[ $key ] ) ) {
+				throw InvalidValue::is_empty( $key );
+			}
+		}
+	}
+
+	/**
+	 * Prepends the site primary language and currency to request-supplied values.
+	 *
+	 * Omitted keys or empty arrays result in a single-element array containing
+	 * only the site primary. Non-array values are rejected before merging.
+	 *
+	 * @param array $config
+	 * @param bool  $merge_language Whether to merge the language field.
+	 * @param bool  $merge_currency Whether to merge the currency field.
+	 *
+	 * @return array
+	 *
+	 * @throws InvalidValue When language or currency is present but not an array.
+	 */
+	private function merge_language_currency_with_primary(
+		array $config,
+		bool $merge_language = true,
+		bool $merge_currency = true
+	): array {
+		if ( $merge_language ) {
+			if ( array_key_exists( 'language', $config ) && ! is_array( $config['language'] ) ) {
+				throw InvalidValue::is_empty( 'language' );
+			}
+
+			$language_extras    = isset( $config['language'] ) && is_array( $config['language'] ) ? $config['language'] : [];
+			$config['language'] = array_values(
+				array_unique(
+					array_merge( [ $this->get_site_primary_language() ], $language_extras )
+				)
+			);
+		}
+
+		if ( $merge_currency ) {
+			if ( array_key_exists( 'currency', $config ) && ! is_array( $config['currency'] ) ) {
+				throw InvalidValue::is_empty( 'currency' );
+			}
+
+			$currency_extras    = isset( $config['currency'] ) && is_array( $config['currency'] ) ? $config['currency'] : [];
+			$config['currency'] = array_values(
+				array_unique(
+					array_merge( [ $this->get_site_primary_currency() ], $currency_extras )
+				)
+			);
+		}
+
+		return $config;
+	}
+
+	/**
+	 * Returns the site primary language code (ISO 639-1).
+	 *
+	 * Uses the WPML default language when multilingual support is active,
+	 * otherwise falls back to the WordPress locale.
+	 *
+	 * @return string
+	 */
+	private function get_site_primary_language(): string {
+		if ( $this->has_multilingual_support() ) {
+			$from_wpml = $this->resolve_primary_language_from_wpml();
+
+			if ( '' !== $from_wpml ) {
+				return $from_wpml;
+			}
+		}
+
+		return substr( get_locale(), 0, 2 );
+	}
+
+	/**
+	 * Returns the site primary currency code (ISO 4217).
+	 *
+	 * Uses the WooCommerce store currency when it appears in the WPML currency
+	 * list, otherwise the first WPML currency, when multilingual support is active.
+	 *
+	 * @return string
+	 */
+	private function get_site_primary_currency(): string {
+		if ( $this->has_multilingual_support() ) {
+			$from_wpml = $this->resolve_primary_currency_from_wpml();
+
+			if ( '' !== $from_wpml ) {
+				return $from_wpml;
+			}
+		}
+
+		return get_woocommerce_currency();
+	}
+
+	/**
+	 * Resolves the primary language from WPML integration data.
+	 *
+	 * @return string
+	 */
+	private function resolve_primary_language_from_wpml(): string {
+		$languages    = $this->get_languages();
+		$default_code = $this->wpml->get_default_language_code();
+
+		foreach ( $languages as $language ) {
+			if ( isset( $language['code'] ) && $default_code === $language['code'] ) {
+				return $language['code'];
+			}
+		}
+
+		return $languages[0]['code'] ?? '';
+	}
+
+	/**
+	 * Resolves the primary currency from WPML integration data.
+	 *
+	 * @return string
+	 */
+	private function resolve_primary_currency_from_wpml(): string {
+		$currencies     = $this->get_currencies();
+		$store_currency = get_woocommerce_currency();
+
+		foreach ( $currencies as $currency ) {
+			if ( isset( $currency['code'] ) && $store_currency === $currency['code'] ) {
+				return $currency['code'];
+			}
+		}
+
+		return $currencies[0]['code'] ?? '';
 	}
 
 	/**

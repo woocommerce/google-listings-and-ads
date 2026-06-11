@@ -41,12 +41,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection as YouTubeConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\ViewFactory;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DeprecatedFilters;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\InstallTimestamp;
@@ -82,7 +82,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\SyncStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
@@ -179,7 +178,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		PolicyComplianceCheck::class     => true,
 		ContactInformation::class        => true,
 		MerchantCenterService::class     => true,
-		NotificationsService::class      => true,
 		MarketService::class             => true,
 		TargetAudience::class            => true,
 		MerchantAccountState::class      => true,
@@ -199,7 +197,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		MerchantAccountService::class    => true,
 		MarketingChannelRegistrar::class => true,
 		OAuthService::class              => true,
-		SyncStatus::class                => true,
 		WPCLIMigrationGTIN::class        => true,
 		OnboardingCompleted::class       => true,
 		ServiceBasedMerchantState::class => true,
@@ -244,13 +241,10 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( TargetAudience::class, WC::class, OptionsInterface::class, GoogleHelper::class );
 
 		// Set up the MarketService.
-		$this->share_with_tags( MarketService::class, TargetAudience::class, ShippingRateQuery::class, ShippingTimeQuery::class, WC::class );
+		$this->share_with_tags( MarketService::class, TargetAudience::class, ShippingRateQuery::class, ShippingTimeQuery::class, WC::class, WPML::class );
 
 		// Set up MerchantCenter service, and inflect classes that need it.
 		$this->share_with_tags( MerchantCenterService::class );
-
-		// Set up Notifications service.
-		$this->share_with_tags( NotificationsService::class, MerchantCenterService::class, AccountService::class );
 
 		// Set up OAuthService service.
 		$this->share_with_tags( OAuthService::class );
@@ -289,7 +283,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( SiteVerificationMeta::class );
 		$this->conditionally_share_with_tags( MerchantSetupCompleted::class );
 		$this->conditionally_share_with_tags( AdsSetupCompleted::class );
-		$this->share_with_tags( SyncStatus::class );
 		$this->share_with_tags( AdsAccountService::class, AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountService::class, MerchantAccountState::class );
 		$this->share_with_tags( YouTubeConnection::class );
@@ -350,8 +343,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags(
 			CouponHelper::class,
 			CouponMetaHandler::class,
-			WC::class,
-			MerchantCenterService::class
+			WC::class
 		);
 		$this->share_with_tags(
 			CouponSyncer::class,

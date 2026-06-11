@@ -150,6 +150,160 @@ test.describe( 'Set up accounts', () => {
 		} );
 	} );
 
+	test.describe( 'Display the errors', () => {
+		test.describe( 'When Ads and MC accounts do not exists', () => {
+			test.beforeEach( async () => {
+				await setUpAccountsPage.mockJetpackConnected();
+				await setUpAccountsPage.mockGoogleConnected();
+			} );
+
+			test( 'Error should show in the combo card', async () => {
+				const once = setUpAccountsPage.withFulfillTimes( 1 );
+				const deferred = once.withFulfillDeferred();
+
+				await deferred.mockAdsAccountCreationError();
+				await deferred.mockMCAccountConnectionError();
+
+				await once.mockAdsHasNoAccounts();
+				await once.mockMCHasNoAccounts();
+				await once.mockAdsAccountDisconnected();
+				await once.mockAdsStatusDisconnected();
+				await once.mockMCNotConnected();
+
+				await setUpAccountsPage.goto();
+
+				const googleAccountCard =
+					setUpAccountsPage.getGoogleAccountCard();
+
+				await expect(
+					googleAccountCard.getByText(
+						'You don’t have Merchant Center nor Google Ads accounts, so we’re creating them for you.',
+						{
+							exact: true,
+						}
+					)
+				).toBeVisible();
+
+				deferred.continueFulfill();
+
+				// Ads error header and message
+				await expect(
+					googleAccountCard.getByText( 'Google Ads Creation Failed', {
+						exact: false,
+					} )
+				).toBeVisible();
+
+				await expect(
+					googleAccountCard.getByText(
+						'Unable to accept link for the customer account',
+						{
+							exact: false,
+						}
+					)
+				).toBeVisible();
+
+				// Merchant Center error header and message
+				await expect(
+					googleAccountCard.getByText( 'Connection Failed', {
+						exact: false,
+					} )
+				).toBeVisible();
+
+				await expect(
+					googleAccountCard.getByText(
+						'Unable to link merchant center account',
+						{
+							exact: false,
+						}
+					)
+				).toBeVisible();
+			} );
+		} );
+
+		test.describe( 'When Ads or MC accounts exists', () => {
+			test.beforeEach( async () => {
+				// Mock Jetpack as not connected
+				await setUpAccountsPage.mockJetpackConnected();
+
+				// Mock google as not connected.
+				// When pending even WPORG will not render yet.
+				// If not mocked will fail and render nothing,
+				// as Jetpack is mocked only on the client-side.
+				await setUpAccountsPage.mockGoogleConnected();
+				await setUpAccountsPage.goto();
+			} );
+
+			test( 'In Google Ads account card when connecting existing account', async () => {
+				await Promise.all( [
+					setUpAccountsPage.mockMCConnected(),
+					setUpAccountsPage.mockAdsAccountDisconnected(),
+					setUpAccountsPage.fulfillAdsAccounts( [
+						{
+							id: 111111,
+							name: 'GooWoo Ads Account 1',
+						},
+						{
+							id: 12345,
+							name: 'GooWoo Ads Account 2',
+						},
+					] ),
+					setUpAccountsPage.mockAdsStatusClaimed(),
+				] );
+
+				await setUpAccountsPage.goto();
+
+				await setUpAccountsPage.mockAdsAccountCreationError();
+
+				const googleAccountCard =
+					setUpAccountsPage.getGoogleAdsAccountCard();
+
+				const adsAccountDropdown =
+					googleAccountCard.locator( 'select' );
+				await adsAccountDropdown.selectOption( '111111' );
+
+				const connectButton = googleAccountCard.getByRole( 'button', {
+					name: 'Connect',
+				} );
+
+				await connectButton.click();
+
+				await expect(
+					googleAccountCard.getByText(
+						'Unable to accept link for the customer account. Request contains an invalid argument.'
+					)
+				).toBeVisible();
+			} );
+
+			test( 'In Merchant Center account card when connecting existing account', async () => {
+				await Promise.all( [
+					setUpAccountsPage.mockJetpackConnected(),
+					setUpAccountsPage.mockMCNotConnected(),
+					setUpAccountsPage.mockAdsAccountConnected(),
+					setUpAccountsPage.mockAdsStatusClaimed(),
+					setUpAccountsPage.mockMCHasAccounts(),
+					setUpAccountsPage.mockContactInformation(),
+					setUpAccountsPage.mockMCCreateAccountWebsiteNotClaimed(),
+					setUpAccountsPage.mockMCAccountConnectionError(),
+				] );
+
+				const getMCAccountCard = setUpAccountsPage.getMCAccountCard();
+				const mcAccountsSelect =
+					setUpAccountsPage.getMCAccountsSelect();
+				await mcAccountsSelect.selectOption( {
+					label: 'MC Account 2 ・ https://example.com (23456)',
+				} );
+				const connectButton = setUpAccountsPage.getConnectButton();
+				await connectButton.click();
+
+				await expect(
+					getMCAccountCard.getByText(
+						'Unable to link merchant center account'
+					)
+				).toBeVisible();
+			} );
+		} );
+	} );
+
 	test.describe( 'Connect Google account', () => {
 		test.beforeAll( async () => {
 			// Mock Jetpack as not connected

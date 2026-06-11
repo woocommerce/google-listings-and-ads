@@ -1,0 +1,15 @@
+.gla-shipping-info-notice {
+	&.components-notice:not(.app-notice) {
+		margin: 0;
+	}
+
+	a {
+		color: $gray-900;
+		text-decoration: underline;
+
+		&:hover,
+		&:focus {
+			color: $gray-700;
+		}
+	}
+}

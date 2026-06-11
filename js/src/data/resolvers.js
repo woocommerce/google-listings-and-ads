@@ -61,7 +61,10 @@ import {
 	receiveTours,
 	receiveGtinMigrationStatus,
 	receiveAdsRecommendations,
+	receiveCYOIncentives,
 	receiveEnhancedConversionsStatus,
+	receiveMcLanguagesCurrencies,
+	receiveAdsSettings,
 } from './actions';
 
 /**
@@ -680,6 +683,27 @@ export function* getEnableEnhancedConversions() {
 }
 
 /**
+ * Resolver to fetch the full ads settings object.
+ */
+export function* getAdsSettings() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/settings`,
+		} );
+
+		yield receiveAdsSettings( response );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the ads settings.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
  * Resolver for getting the Price Benchmark summary.
  */
 export function* getPriceBenchmarkSummary() {
@@ -797,6 +821,24 @@ export function* getAdsRecommendations( types, campaign_id = null ) {
 	}
 }
 
+export function* getCYOIncentives() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/incentives`,
+		} );
+
+		yield receiveCYOIncentives( response );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the CYO incentives.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
 export function* getYouTubeAccount() {
 	yield fetchYouTubeAccount();
 }
@@ -810,4 +852,21 @@ getYouTubeAccount.shouldInvalidate = ( action ) => {
 
 export function* getMarkets() {
 	yield fetchMarkets();
+}
+
+export function* getAvailableLanguagesCurrencies() {
+	try {
+		const data = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/markets/languages-currencies`,
+		} );
+		return receiveMcLanguagesCurrencies( data );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading supported languages and currencies.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }
