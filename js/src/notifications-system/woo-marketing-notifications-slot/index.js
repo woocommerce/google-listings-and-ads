@@ -13,37 +13,36 @@ const STORE_NAME = 'woocommerce/marketing-notifications-system';
 const ACTION_REGISTER_NOTIFICATION = 'REGISTER_NOTIFICATION';
 
 /**
- * This bundle may be loaded by multiple independent plugins (e.g. Google Listings
- * & Ads, Reddit for WooCommerce). WordPress's wp_register_script ensures the JS
+ * This bundle may be loaded by multiple independent plugins. WordPress's wp_register_script ensures the JS
  * file is only loaded once, but as a second safeguard we only register the shared
  * data store if it hasn't been registered already — whichever plugin loads first
  * wins, and all others use the same store instance.
  */
-const marketingNotificationsStore = createReduxStore( STORE_NAME, {
-	reducer( state = [], action ) {
-		if ( action.type === ACTION_REGISTER_NOTIFICATION ) {
-			return [ ...state, action.notification ];
-		}
-		return state;
-	},
-
-	actions: {
-		registerNotification: ( notification ) => {
-			return { type: ACTION_REGISTER_NOTIFICATION, notification };
-		},
-	},
-
-	selectors: {
-		getNotifications: ( state ) => {
-			return [ ...state ].sort(
-				( a, b ) => b.triggeredAt - a.triggeredAt
-			);
-		},
-	},
-} );
-
 if ( ! select( STORE_NAME ) ) {
-	register( marketingNotificationsStore );
+	register(
+		createReduxStore( STORE_NAME, {
+			reducer( state = [], action ) {
+				if ( action.type === ACTION_REGISTER_NOTIFICATION ) {
+					return [ ...state, action.notification ];
+				}
+				return state;
+			},
+
+			actions: {
+				registerNotification: ( notification ) => {
+					return { type: ACTION_REGISTER_NOTIFICATION, notification };
+				},
+			},
+
+			selectors: {
+				getNotifications: ( state ) => {
+					return [ ...state ].sort(
+						( a, b ) => b.triggeredAt - a.triggeredAt
+					);
+				},
+			},
+		} )
+	);
 }
 
 function NotificationSystemSlot() {

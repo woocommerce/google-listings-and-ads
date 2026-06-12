@@ -170,7 +170,7 @@ const webpackConfig = {
 		),
 		'notification-slot': path.resolve(
 			process.cwd(),
-			'js/src/notification-system/woo-marketing-notifications-slot',
+			'js/src/notifications-system/woo-marketing-notifications-slot',
 			'index.js'
 		),
 	} ),
