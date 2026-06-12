@@ -91,28 +91,28 @@ class MapiProductsService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Fetch all products for the account, following pagination.
+	 * Yield all products for the account, following pagination.
+	 *
+	 * Returns a generator so callers can stream the catalog without holding every
+	 * product in memory at once.
 	 *
 	 * @param int $page_size Maximum products to request per page.
 	 *
-	 * @return Product[]
+	 * @return iterable<Product>
 	 * @throws MerchantApiException On non-2xx response.
 	 */
-	public function list( int $page_size = 250 ): array {
-		$products   = [];
+	public function list( int $page_size = 250 ): iterable {
 		$page_token = '';
 
 		do {
 			$body = $this->client->get( $this->build_list_path( $page_size, $page_token ) );
 
 			foreach ( $body['products'] ?? [] as $product ) {
-				$products[] = Product::from_array( $product );
+				yield Product::from_array( $product );
 			}
 
 			$page_token = $body['nextPageToken'] ?? '';
 		} while ( '' !== $page_token );
-
-		return $products;
 	}
 
 	/**
