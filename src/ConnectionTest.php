@@ -1304,13 +1304,14 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 			$this->response = "Proxied request > get products for merchant {$options->get_merchant_id()}\n";
 
 			try {
-				$products = $service->list();
-				if ( empty( $products ) ) {
-					$this->response .= 'No products found';
+				$count = 0;
+				foreach ( $service->list() as $product ) {
+					$this->response .= "{$product->get_id()} {$product->get_title()}\n";
+					++$count;
 				}
 
-				foreach ( $products as $product ) {
-					$this->response .= "{$product->get_id()} {$product->get_title()}\n";
+				if ( 0 === $count ) {
+					$this->response .= 'No products found';
 				}
 			} catch ( MerchantApiException $e ) {
 				$this->response .= sprintf( "HTTP %d\n", $e->get_http_status() );
