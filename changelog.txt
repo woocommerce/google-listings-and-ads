@@ -1,5 +1,16 @@
 *** Google for WooCommerce Changelog ***
 
+= 3.7.1 - 2026-06-09 =
+* Add - Better User Guidance Feature.
+* Fix - Split budget recommendation and metrics cache keys by advertiser type so recommendations refresh correctly after the first campaign is created.
+* Fix - chore: pin third-party GitHub Actions to SHAs + enable Dependabot.
+* Fix - Update table paddings and borders within cards.
+* Fix - Remove API Pull infrastructure.
+* Fix - MainTabNav intermittently showing an incomplete tab list when MC connection state changes mid-session.
+* Fix - Shipping settings tab empty settings.
+* Fix - Update EU declaration modal title.
+* Fix - Exclude tall_portrait_marketing_image type and images with no type set from generated ad assets.
+
 = 3.7.0 - 2026-05-19 =
 * Add - Create Your Own Incentive (CYOI) feature.
 * Add - In-Product Placements feature.
