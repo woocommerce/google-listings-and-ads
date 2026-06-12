@@ -33,6 +33,7 @@ import './notification.scss';
  * @param {string} props.description Notification body text.
  * @param {number} props.triggeredAt Unix timestamp (seconds) when the notification was triggered.
  * @param {NotificationAction[]} props.actions CTA buttons.
+ * @param {Function} [props.onDismiss] Optional override for the dismiss handler. When omitted, dismissNotification is called on the GLA data store.
  */
 const Notification = ( {
 	id,
@@ -40,6 +41,7 @@ const Notification = ( {
 	description,
 	triggeredAt,
 	actions = [],
+	onDismiss,
 } ) => {
 	const { dismissNotification } = useAppDispatch();
 	const formattedDate = dateI18n(
@@ -48,7 +50,11 @@ const Notification = ( {
 	);
 
 	const handleDismissClick = () => {
-		dismissNotification( id );
+		if ( onDismiss ) {
+			onDismiss();
+		} else {
+			dismissNotification( id );
+		}
 	};
 
 	return (

@@ -173,6 +173,11 @@ const webpackConfig = {
 			'js/src/notifications-system/woo-marketing-notifications-slot',
 			'index.js'
 		),
+		'register-notifications': path.resolve(
+			process.cwd(),
+			'js/src/notifications-system',
+			'register-notifications.js'
+		),
 	} ),
 	output: {
 		...defaultConfig.output,

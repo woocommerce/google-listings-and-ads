@@ -52,6 +52,58 @@ class NotificationManager implements ContainerAwareInterface, Service, Registera
 
 		add_filter( 'google_for_woocommerce_admin_menu_notification_count', [ $this, 'performance_max_ad_strength_count' ] );
 		add_filter( 'google_for_woocommerce_admin_menu_notification_count', [ $this, 'raise_budget_recommendations_count' ] );
+
+		add_action(
+			'admin_enqueue_scripts',
+			function () {
+				if ( ! $this->is_marketing_overview_page() ) {
+					return;
+				}
+
+				$this->enqueue_register_notifications_script();
+			}
+		);
+	}
+
+	/**
+	 * Registers and enqueues the script that fetches GLA notifications and
+	 * dispatches them into the woocommerce/marketing-notifications-system store.
+	 */
+	private function enqueue_register_notifications_script(): void {
+		$build_dir  = "{$this->get_root_dir()}/js/build";
+		$asset_file = "{$build_dir}/register-notifications.asset.php";
+
+		// nosemgrep: audit.php.lang.security.file.inclusion-arg
+		$asset_data   = is_readable( $asset_file ) ? require $asset_file : [
+			'dependencies' => [],
+			'version'      => $this->get_version(),
+		];
+		$dependencies = array_merge(
+			$asset_data['dependencies'],
+			[ 'woocommerce-marketing-notifications-system-slot' ]
+		);
+
+		wp_register_script(
+			'gla-register-notifications',
+			$this->get_plugin_url( 'js/build/register-notifications.js' ),
+			$dependencies,
+			$asset_data['version'],
+			true
+		);
+
+		wp_enqueue_script( 'gla-register-notifications' );
+	}
+
+	/**
+	 * Determines if the current admin page is the WooCommerce Marketing overview page.
+	 *
+	 * @return bool
+	 */
+	private function is_marketing_overview_page(): bool {
+		$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+		$path = isset( $_GET['path'] ) ? sanitize_text_field( wp_unslash( $_GET['path'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+
+		return 'wc-admin' === $page && '/marketing' === $path;
 	}
 
 	/**
