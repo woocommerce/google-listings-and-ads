@@ -496,8 +496,9 @@ class WCProductInputAdapter {
 			return true;
 		}
 
-		$categories = explode( ',', (string) ( $rule['categories'] ?? '' ) );
-		$contains   = ! empty( array_intersect( $categories, $this->product_category_ids ) );
+		$categories   = explode( ',', (string) ( $rule['categories'] ?? '' ) );
+		$category_ids = array_map( 'strval', $this->product_category_ids );
+		$contains     = ! empty( array_intersect( $categories, $category_ids ) );
 
 		if ( AttributeMappingHelper::CATEGORY_CONDITION_TYPE_ONLY === $condition_type ) {
 			return $contains;
@@ -516,7 +517,7 @@ class WCProductInputAdapter {
 	 */
 	protected function get_source( string $source ): string {
 		$separator = strpos( $source, ':' );
-		if ( ! $separator ) {
+		if ( false === $separator ) {
 			return $source;
 		}
 
@@ -635,7 +636,18 @@ class WCProductInputAdapter {
 	 * other attribute mapping.
 	 */
 	protected function override_attributes(): void {
-		/** This filter is documented in src/Product/WCProductAdapter.php */
+		/**
+		 * Filters the attribute values to override on the Merchant API product input.
+		 *
+		 * Merchant API counterpart of the same filter in WCProductAdapter. Note: the
+		 * third parameter is now a WCProductInputAdapter (Merchant API) rather than a
+		 * WCProductAdapter (Content API), and overrides must use Merchant API attribute
+		 * keys and value shapes.
+		 *
+		 * @param array                 $overrides  Attribute values keyed by Merchant API attribute key.
+		 * @param WC_Product            $wc_product The WooCommerce product.
+		 * @param WCProductInputAdapter $adapter    The product input adapter.
+		 */
 		$overrides = apply_filters( 'woocommerce_gla_product_attribute_values', [], $this->wc_product, $this );
 
 		if ( is_array( $overrides ) ) {
