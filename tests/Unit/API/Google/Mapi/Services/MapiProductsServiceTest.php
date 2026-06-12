@@ -188,7 +188,7 @@ class MapiProductsServiceTest extends UnitTest {
 				]
 			);
 
-		$products = $this->service->list();
+		$products = iterator_to_array( $this->service->list() );
 
 		$this->assertCount( 3, $products );
 		$this->assertContainsOnlyInstancesOf( Product::class, $products );
@@ -196,12 +196,21 @@ class MapiProductsServiceTest extends UnitTest {
 		$this->assertSame( 'c', $products[2]->get_offer_id() );
 	}
 
-	public function test_list_returns_empty_array_when_no_products() {
+	public function test_list_yields_nothing_when_no_products() {
 		$this->client->expects( $this->once() )
 			->method( 'get' )
 			->with( 'products/v1/accounts/12345/products?pageSize=250' )
 			->willReturn( [ 'products' => [] ] );
 
-		$this->assertSame( [], $this->service->list() );
+		$this->assertSame( [], iterator_to_array( $this->service->list() ) );
+	}
+
+	public function test_list_request_uses_custom_page_size() {
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( 'products/v1/accounts/12345/products?pageSize=100' )
+			->willReturn( [ 'products' => [] ] );
+
+		iterator_to_array( $this->service->list( 100 ) );
 	}
 }
