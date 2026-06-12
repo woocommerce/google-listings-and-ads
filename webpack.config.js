@@ -153,6 +153,11 @@ const webpackConfig = {
 			'js/src/notification-manager',
 			'index.js'
 		),
+		'notifications-system': path.resolve(
+			process.cwd(),
+			'js/src/notifications-system',
+			'index.js'
+		),
 		'order-attribution': path.resolve(
 			process.cwd(),
 			'js/src/meta-boxes/order-attribution',
