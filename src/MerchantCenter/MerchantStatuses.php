@@ -403,6 +403,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			$wc_product    = $this->product_data_lookup[ $wc_product_id ] ?? null;
 
 			if ( ! $wc_product ) {
+				do_action(
+					'woocommerce_gla_debug_message',
+					sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $status['mc_id'] ?? $wc_product_id ),
+					__METHOD__
+				);
 				continue;
 			}
 			// Unsynced issues shouldn't be shown.
