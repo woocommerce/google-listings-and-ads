@@ -24,7 +24,7 @@ import SetupListings from './setup-listings';
 import SetupPaidAds from './setup-paid-ads';
 import EuPoliticalDeclarationProvider from '~/components/eu-political-declaration/eu-political-declaration-provider';
 import { STEP_NAME_KEY_MAP } from './constants';
-import { GUIDE_NAMES, glaData } from '~/constants';
+import { GUIDE_NAMES, SHIPPING_RATE_METHOD, glaData } from '~/constants';
 import { getProductFeedUrl } from '~/utils/urls';
 import {
 	recordStepperChangeEvent,
@@ -82,7 +82,9 @@ const SavedSetupStepper = ( { savedStep } ) => {
 		if ( settings?.shipping_rate === null ) {
 			saveSettings( {
 				...settings,
-				shipping_rate: glaData.isMultiLingualStore ? 'manual' : 'flat',
+				shipping_rate: glaData.isMultiLingualStore
+					? SHIPPING_RATE_METHOD.MANUAL
+					: SHIPPING_RATE_METHOD.FLAT,
 				shipping_time: 'flat',
 			} );
 		}
