@@ -30,8 +30,6 @@ const ShippingRateMethodSection = ( { children } ) => {
 	const { hasFinishedResolution, data: mcSetup } = useMCSetup();
 	const inputProps = getInputProps( 'shipping_rate' );
 	const { isMultiLingualStore } = glaData;
-	const isFlatShippingRate =
-		settings?.shipping_rate === SHIPPING_RATE_METHOD.FLAT;
 
 	// Take a one-time snapshot once settings have resolved.
 	// Using a ref so mid-session auto-saves (which flip isFlatShippingRate to
@@ -43,6 +41,8 @@ const ShippingRateMethodSection = ( { children } ) => {
 	// onboarding and the option is correctly hidden.
 	const showFlatOptionRef = useRef( null );
 	if ( showFlatOptionRef.current === null && settings !== undefined ) {
+		const isFlatShippingRate =
+			settings?.shipping_rate === SHIPPING_RATE_METHOD.FLAT;
 		showFlatOptionRef.current = ! isMultiLingualStore || isFlatShippingRate;
 	}
 	const showFlatOption = showFlatOptionRef.current ?? ! isMultiLingualStore;
