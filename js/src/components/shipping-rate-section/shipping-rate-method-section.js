@@ -33,7 +33,7 @@ const ShippingRateMethodSection = ( { children } ) => {
 	const isFlatShippingRate =
 		settings?.shipping_rate === SHIPPING_RATE_METHOD.FLAT;
 
-	// Take a one-time snapshot once both settings and MC setup have resolved.
+	// Take a one-time snapshot once settings have resolved.
 	// Using a ref so mid-session auto-saves (which flip isFlatShippingRate to
 	// false) don't hide the option after it was already shown.
 	// For multilingual stores the flat option is shown only when the stored
@@ -42,11 +42,7 @@ const ShippingRateMethodSection = ( { children } ) => {
 	// 'manual', never 'flat', so isFlatShippingRate is false on a clean
 	// onboarding and the option is correctly hidden.
 	const showFlatOptionRef = useRef( null );
-	if (
-		showFlatOptionRef.current === null &&
-		settings !== undefined &&
-		hasFinishedResolution
-	) {
+	if ( showFlatOptionRef.current === null && settings !== undefined ) {
 		showFlatOptionRef.current = ! isMultiLingualStore || isFlatShippingRate;
 	}
 	const showFlatOption = showFlatOptionRef.current ?? ! isMultiLingualStore;
