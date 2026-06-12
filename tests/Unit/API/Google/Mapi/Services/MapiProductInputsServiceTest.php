@@ -79,6 +79,16 @@ class MapiProductInputsServiceTest extends UnitTest {
 		);
 	}
 
+	protected function expected_delete_path( ProductInput $input, string $data_source ): string {
+		return sprintf(
+			'products/v1/accounts/12345/productInputs/%s~%s~%s?dataSource=%s',
+			$input->get_content_language(),
+			$input->get_feed_label(),
+			rawurlencode( $input->get_offer_id() ),
+			rawurlencode( $data_source )
+		);
+	}
+
 	protected function make_input( string $offer_id = 'sku42', string $language = 'en', string $feed = 'US' ): ProductInput {
 		return new ProductInput( $offer_id, $language, $feed, [ 'title' => 'Test' ] );
 	}
@@ -314,5 +324,86 @@ class MapiProductInputsServiceTest extends UnitTest {
 				new ProductInputPatch( $this->make_input( 'bad' ), [] ),
 			]
 		);
+	}
+
+	public function test_delete_resolves_data_source_and_calls_expected_path() {
+		$input = $this->make_input();
+
+		$this->client->expects( $this->once() )
+			->method( 'delete' )
+			->with( $this->expected_delete_path( $input, self::DS_EN_US ) )
+			->willReturn( [] );
+
+		$this->service->delete( $input );
+	}
+
+	public function test_delete_routes_different_market_to_a_different_data_source() {
+		$input = $this->make_input( 'sku42', 'fr', 'CA' );
+
+		$this->client->expects( $this->once() )
+			->method( 'delete' )
+			->with( $this->expected_delete_path( $input, self::DS_FR_CA ) )
+			->willReturn( [] );
+
+		$this->service->delete( $input );
+	}
+
+	public function test_delete_propagates_merchant_api_exception() {
+		$this->client->method( 'delete' )
+			->willThrowException( new MerchantApiException( 404, [], __METHOD__ ) );
+
+		$this->expectException( MerchantApiException::class );
+
+		$this->service->delete( $this->make_input() );
+	}
+
+	public function test_delete_many_keys_successes_and_failures_by_index() {
+		$this->client->method( 'request_async' )
+			->willReturnCallback(
+				function ( string $method, string $path ) {
+					if ( false !== strpos( $path, 'bad' ) ) {
+						return Create::rejectionFor( new MerchantApiException( 404, [], __METHOD__ ) );
+					}
+
+					return Create::promiseFor( [] );
+				}
+			);
+
+		$inputs = [
+			$this->make_input( 'good1' ),
+			$this->make_input( 'bad' ),
+			$this->make_input( 'good2' ),
+		];
+
+		$result = $this->service->delete_many( $inputs );
+
+		$this->assertCount( 2, $result['successes'] );
+		$this->assertCount( 1, $result['failures'] );
+		$this->assertArrayHasKey( 0, $result['successes'] );
+		$this->assertArrayHasKey( 2, $result['successes'] );
+		$this->assertArrayHasKey( 1, $result['failures'] );
+		$this->assertInstanceOf( MerchantApiException::class, $result['failures'][1] );
+	}
+
+	public function test_delete_many_routes_each_input_to_its_own_data_source() {
+		$paths_seen = [];
+
+		$this->client->method( 'request_async' )
+			->willReturnCallback(
+				function ( string $method, string $path ) use ( &$paths_seen ) {
+					$paths_seen[] = [ $method, $path ];
+
+					return Create::promiseFor( [] );
+				}
+			);
+
+		$us_input = $this->make_input( 'us_sku', 'en', 'US' );
+		$ca_input = $this->make_input( 'ca_sku', 'fr', 'CA' );
+
+		$this->service->delete_many( [ $us_input, $ca_input ] );
+
+		$this->assertSame( 'DELETE', $paths_seen[0][0] );
+		$this->assertSame( $this->expected_delete_path( $us_input, self::DS_EN_US ), $paths_seen[0][1] );
+		$this->assertSame( $this->expected_delete_path( $ca_input, self::DS_FR_CA ), $paths_seen[1][1] );
 	}
 }

@@ -209,6 +209,73 @@ class MapiProductInputsService implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Delete a single product. The target data source is resolved from the input's
+	 * contentLanguage + feedLabel.
+	 *
+	 * @param ProductInput $input Product to delete.
+	 *
+	 * @throws MerchantApiException On a non-2xx MAPI response.
+	 */
+	public function delete( ProductInput $input ): void {
+		$data_source = $this->data_sources->ensure_data_source_for(
+			$input->get_content_language(),
+			$input->get_feed_label()
+		);
+
+		$this->client->delete( $this->build_delete_path( $input, $data_source ) );
+	}
+
+	/**
+	 * Delete multiple products in parallel. Each input is routed to the data source
+	 * matching its (contentLanguage, feedLabel).
+	 *
+	 * @param ProductInput[] $inputs
+	 * @param int            $concurrency
+	 *
+	 * @return array{successes: array<int, ProductInput>, failures: array<int, MerchantApiException>}
+	 * @throws MerchantApiException On a non-2xx MAPI response while resolving a data source.
+	 */
+	public function delete_many( array $inputs, int $concurrency = 10 ): array {
+		$paths_by_index = [];
+		foreach ( $inputs as $index => $input ) {
+			$data_source              = $this->data_sources->ensure_data_source_for(
+				$input->get_content_language(),
+				$input->get_feed_label()
+			);
+			$paths_by_index[ $index ] = $this->build_delete_path( $input, $data_source );
+		}
+
+		$client = $this->client;
+
+		$requests = function () use ( $inputs, $client, $paths_by_index ) {
+			foreach ( $inputs as $index => $input ) {
+				yield $index => $client->request_async( 'DELETE', $paths_by_index[ $index ] );
+			}
+		};
+
+		$successes = [];
+		$failures  = [];
+
+		( new EachPromise(
+			$requests(),
+			[
+				'concurrency' => $concurrency,
+				'fulfilled'   => function ( array $body, int $index ) use ( &$successes, $inputs ) {
+					$successes[ $index ] = $inputs[ $index ];
+				},
+				'rejected'    => function ( $reason, int $index ) use ( &$failures ) {
+					$failures[ $index ] = $reason;
+				},
+			]
+		) )->promise()->wait();
+
+		return [
+			'successes' => $successes,
+			'failures'  => $failures,
+		];
+	}
+
+	/**
 	 * Build the productInputs.insert path with the resolved data source.
 	 *
 	 * @param string $data_source Data source resource name.
@@ -243,6 +310,26 @@ class MapiProductInputsService implements OptionsAwareInterface {
 			rawurlencode( $input->get_offer_id() ),
 			rawurlencode( $data_source ),
 			rawurlencode( implode( ',', $update_mask ) )
+		);
+	}
+
+	/**
+	 * Build the productInputs.delete path with the resolved data source.
+	 *
+	 * @param ProductInput $input       Products to delete.
+	 * @param string       $data_source Data source resource name.
+	 *
+	 * @return string
+	 */
+	protected function build_delete_path( ProductInput $input, string $data_source ): string {
+		return sprintf(
+			'%s/accounts/%s/productInputs/%s~%s~%s?dataSource=%s',
+			MapiPaths::PRODUCTS,
+			$this->options->get_merchant_id(),
+			$input->get_content_language(),
+			$input->get_feed_label(),
+			rawurlencode( $input->get_offer_id() ),
+			rawurlencode( $data_source )
 		);
 	}
 }

@@ -38,7 +38,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Event\ClearProductStatsCache;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection as YouTubeConnection;
@@ -324,15 +323,12 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			BatchProductHelper::class,
 			ProductMetaHandler::class,
 			ProductHelper::class,
-			ValidatorInterface::class,
-			ProductFactory::class,
 			TargetAudience::class,
 			AttributeMappingRulesQuery::class,
 			AttributeManager::class
 		);
 		$this->share_with_tags(
 			ProductSyncer::class,
-			GoogleProductService::class,
 			MapiProductInputsService::class,
 			BatchProductHelper::class,
 			ProductHelper::class,

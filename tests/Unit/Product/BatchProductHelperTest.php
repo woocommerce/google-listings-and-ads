@@ -3,34 +3,26 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Brand;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Color;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductMetaTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use PHPUnit\Framework\MockObject\MockObject;
-use Symfony\Component\Validator\ConstraintViolation;
-use Symfony\Component\Validator\ConstraintViolationList;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Helper_Product;
 use WC_Product;
-use WC_Product_Variable;
-use WC_Product_Variation;
 
 /**
  * Class BatchProductHelperTest
@@ -48,23 +40,17 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 	/** @var ProductHelper $product_helper */
 	protected $product_helper;
 
-	/** @var MockObject|ValidatorInterface $validator */
-	protected $validator;
-
-	/** @var ProductFactory $product_factory */
-	protected $product_factory;
-
 	/** @var MockObject|TargetAudience $target_audience */
 	protected $target_audience;
 
 	/** @var BatchProductHelper $batch_product_helper */
 	protected $batch_product_helper;
 
-	/** @var AttributeMappingRulesQuery $rules_query */
-	protected $rules_query;
-
 	/** @var WC $wc */
 	protected $wc;
+
+	/** @var AttributeMappingRulesQuery $rules_query */
+	protected $rules_query;
 
 	public function test_filter_synced_products_all_synced() {
 		$synced_product = WC_Helper_Product::create_simple_product();
@@ -188,132 +174,78 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertArrayNotHasKey( 'online:en:US:gla_' . $skipped_product->get_id(), $results );
 	}
 
-	public function test_validate_and_generate_update_request_entries() {
+	public function test_generate_mapi_delete_entries() {
 		$products = $this->create_and_return_supported_test_products();
 
-		$this->target_audience->expects( $this->any() )
-			->method( 'get_main_target_country' )
-			->willReturn( 'US' );
-		$this->validator->expects( $this->any() )
-			->method( 'validate' )
-			->willReturn( [] );
-
-		$this->rules_query->expects( $this->any() )
-			->method( 'get_results' )
-			->willReturn( [] );
-
-		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( $products );
-
-		// the number of results can be bigger because of variable products
-		$this->assertGreaterThanOrEqual( \count( $products ), \count( $results ) );
-
-		$this->assertContainsOnlyInstancesOf( BatchProductRequestEntry::class, $results );
-
-		// the products (including variations if a variable product) sent to the method should ALL be returned as results
-		$results_product_ids = array_map(
-			function ( BatchProductRequestEntry $request_entry ) {
-				return $request_entry->get_wc_product_id();
-			},
-			$results
-		);
-		$param_product_ids   = [];
 		foreach ( $products as $product ) {
-			if ( $product instanceof WC_Product_Variable ) {
-				foreach ( $product->get_children() as $child ) {
-					$param_product_ids[] = $child->get_id();
-				}
-			} else {
-				$param_product_ids[] = $product->get_id();
-			}
-		}
-		$this->assertEqualSets( $param_product_ids, $results_product_ids );
-	}
-
-	public function test_validate_and_generate_update_request_entries_skips_invalid_product() {
-		$products = $this->create_and_return_supported_test_products();
-
-		// skip one product from the list
-		$invalid_product = $products[0];
-
-		$this->validator->expects( $this->any() )
-			->method( 'validate' )
-			->willReturnCallback(
-				function ( WCProductAdapter $product ) use ( $invalid_product ) {
-					if ( $product->get_wc_product()->get_id() === $invalid_product->get_id() ) {
-						$violation_example = $this->createMock( ConstraintViolation::class );
-						$violations        = new ConstraintViolationList();
-						$violations->add( $violation_example );
-
-						return $violations;
-					}
-
-					return [];
-				}
+			$this->product_helper->mark_as_synced(
+				$product,
+				$this->generate_google_product_mock( "en~US~gla_{$product->get_id()}", 'US' )
 			);
-
-		$this->rules_query->expects( $this->any() )
-			->method( 'get_results' )
-			->willReturn( [] );
-
-		$this->target_audience->expects( $this->any() )
-			->method( 'get_main_target_country' )
-			->willReturn( 'US' );
-
-		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( $products );
-
-		$results_product_ids = array_map(
-			function ( BatchProductRequestEntry $request_entry ) {
-				return $request_entry->get_wc_product_id();
-			},
-			$results
-		);
-
-		$this->assertNotContains( $invalid_product->get_id(), $results_product_ids );
-	}
-
-	public function test_validate_and_generate_update_request_entries_skips_not_sync_ready() {
-		$products = $this->create_and_return_supported_test_products();
-
-		// skip one product from the list
-		$skipped_product = $products[0];
-		if ( $skipped_product instanceof WC_Product_Variation ) {
-			$this->product_meta->update_visibility( wc_get_product( $skipped_product->get_parent_id() ), ChannelVisibility::DONT_SYNC_AND_SHOW );
-		} else {
-			$this->product_meta->update_visibility( $skipped_product, ChannelVisibility::DONT_SYNC_AND_SHOW );
 		}
 
-		$this->target_audience->expects( $this->any() )
-			->method( 'get_main_target_country' )
-			->willReturn( 'US' );
-		$this->validator->expects( $this->any() )
-			->method( 'validate' )
-			->willReturn( [] );
-		$this->rules_query->expects( $this->any() )
-			->method( 'get_results' )
-			->willReturn( [] );
+		$results = $this->batch_product_helper->generate_mapi_delete_entries( $products );
 
-		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( $products );
+		$this->assertCount( count( $products ), $results );
+		foreach ( $results as $entry ) {
+			$this->assertInstanceOf( ProductInput::class, $entry['input'] );
+			$this->assertSame( "en~US~gla_{$entry['wc_product_id']}", $entry['google_id'] );
+			$this->assertSame( 'en', $entry['input']->get_content_language() );
+			$this->assertSame( 'US', $entry['input']->get_feed_label() );
+			$this->assertSame( "gla_{$entry['wc_product_id']}", $entry['input']->get_offer_id() );
+		}
+	}
 
-		$results_product_ids = array_map(
-			function ( BatchProductRequestEntry $request_entry ) {
-				return $request_entry->get_wc_product_id();
-			},
-			$results
+	public function test_generate_mapi_delete_entries_variable_product() {
+		$variable   = WC_Helper_Product::create_variation_product();
+		$variations = [];
+		foreach ( $variable->get_children() as $variation_id ) {
+			$variation = $this->wc->get_product( $variation_id );
+			$this->product_helper->mark_as_synced(
+				$variation,
+				$this->generate_google_product_mock( "en~US~gla_{$variation->get_id()}", 'US' )
+			);
+			$variations[] = $variation;
+		}
+
+		$results = $this->batch_product_helper->generate_mapi_delete_entries( [ $variable ] );
+
+		$this->assertCount( count( $variations ), $results );
+	}
+
+	public function test_generate_mapi_delete_entries_skips_products_without_google_id() {
+		$products = $this->create_and_return_supported_test_products();
+
+		foreach ( $products as $product ) {
+			$this->product_helper->mark_as_synced(
+				$product,
+				$this->generate_google_product_mock( "en~US~gla_{$product->get_id()}", 'US' )
+			);
+		}
+
+		$skipped_product = $products[0];
+		$this->product_meta->delete_google_ids( $skipped_product );
+
+		$results = $this->batch_product_helper->generate_mapi_delete_entries( $products );
+
+		$this->assertNotContains( $skipped_product->get_id(), array_column( $results, 'wc_product_id' ) );
+	}
+
+	public function test_generate_mapi_delete_entries_skips_malformed_id() {
+		$products = $this->create_and_return_supported_test_products();
+		$product  = $products[0];
+
+		$this->product_helper->mark_as_synced(
+			$product,
+			$this->generate_google_product_mock( 'malformed-id', 'US' )
 		);
 
-		$this->assertNotContains( $skipped_product->get_id(), $results_product_ids );
+		$results = $this->batch_product_helper->generate_mapi_delete_entries( [ $product ] );
+
+		$this->assertEmpty( $results );
 	}
 
-	public function test_validate_and_generate_update_request_entries_including_invalid_product() {
-		$products = [
-			$this->generate_simple_product_mock(),
-			new BatchProductEntry( 0, null ),
-		];
-		$this->expectException( InvalidClass::class );
-		$this->batch_product_helper->validate_and_generate_update_request_entries( $products );
-	}
-
-	public function test_generate_stale_products_request_entries() {
+	public function test_generate_stale_products_delete_entries() {
 		$products         = $this->create_and_return_supported_test_products();
 		$stale_product    = $products[0];
 		$stale_product_id = $stale_product->get_id();
@@ -321,30 +253,30 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->target_audience->expects( $this->once() )
 			->method( 'get_target_countries' )
 			->willReturn( [ 'US' ] );
-		$this->target_audience->expects( $this->any() )
-			->method( 'get_main_target_country' )
-			->willReturn( 'US' );
 
 		$stale_google_ids = [
-			'AU' => "online:en:AU:gla_{$stale_product_id}",
-			'DK' => "online:en:DK:gla_{$stale_product_id}",
-			'US' => "online:en:US:gla_{$stale_product_id}",
+			'AU' => "en~AU~gla_{$stale_product_id}",
+			'DK' => "en~DK~gla_{$stale_product_id}",
+			'US' => "en~US~gla_{$stale_product_id}",
 		];
 		$this->product_meta->update_google_ids( $stale_product, $stale_google_ids );
 
-		$results = $this->batch_product_helper->generate_stale_products_request_entries( $products );
+		$results = $this->batch_product_helper->generate_stale_products_delete_entries( $products );
 
 		$this->assertCount( 2, $results );
-		$this->assertContainsOnlyInstancesOf( BatchProductIDRequestEntry::class, $results );
-		$this->assertArrayHasKey( $stale_google_ids['AU'], $results );
-		$this->assertArrayHasKey( $stale_google_ids['DK'], $results );
 
-		foreach ( $results as $request_entry ) {
-			$this->assertEquals( $stale_product_id, $request_entry->get_wc_product_id() );
+		foreach ( $results as $entry ) {
+			$this->assertInstanceOf( ProductInput::class, $entry['input'] );
+			$this->assertSame( $stale_product_id, $entry['wc_product_id'] );
 		}
+
+		$google_ids = array_column( $results, 'google_id' );
+		$this->assertContains( $stale_google_ids['AU'], $google_ids );
+		$this->assertContains( $stale_google_ids['DK'], $google_ids );
+		$this->assertNotContains( $stale_google_ids['US'], $google_ids );
 	}
 
-	public function test_generate_stale_countries_request_entries() {
+	public function test_generate_stale_countries_delete_entries() {
 		$products         = $this->create_and_return_supported_test_products();
 		$stale_product    = $products[0];
 		$stale_product_id = $stale_product->get_id();
@@ -354,22 +286,25 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			->willReturn( 'US' );
 
 		$stale_google_ids = [
-			'AU' => "online:en:AU:gla_{$stale_product_id}",
-			'DK' => "online:en:DK:gla_{$stale_product_id}",
-			'US' => "online:en:US:gla_{$stale_product_id}",
+			'AU' => "en~AU~gla_{$stale_product_id}",
+			'DK' => "en~DK~gla_{$stale_product_id}",
+			'US' => "en~US~gla_{$stale_product_id}",
 		];
 		$this->product_meta->update_google_ids( $stale_product, $stale_google_ids );
 
-		$results = $this->batch_product_helper->generate_stale_countries_request_entries( $products );
+		$results = $this->batch_product_helper->generate_stale_countries_delete_entries( $products );
 
 		$this->assertCount( 2, $results );
-		$this->assertContainsOnlyInstancesOf( BatchProductIDRequestEntry::class, $results );
-		$this->assertArrayHasKey( $stale_google_ids['AU'], $results );
-		$this->assertArrayHasKey( $stale_google_ids['DK'], $results );
 
-		foreach ( $results as $request_entry ) {
-			$this->assertEquals( $stale_product_id, $request_entry->get_wc_product_id() );
+		foreach ( $results as $entry ) {
+			$this->assertInstanceOf( ProductInput::class, $entry['input'] );
+			$this->assertSame( $stale_product_id, $entry['wc_product_id'] );
 		}
+
+		$google_ids = array_column( $results, 'google_id' );
+		$this->assertContains( $stale_google_ids['AU'], $google_ids );
+		$this->assertContains( $stale_google_ids['DK'], $google_ids );
+		$this->assertNotContains( $stale_google_ids['US'], $google_ids );
 	}
 
 	public function test_generate_mapi_update_entries_merges_parent_and_variation_attributes() {
@@ -420,12 +355,10 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 		$this->target_audience      = $this->createMock( TargetAudience::class );
-		$this->validator            = $this->createMock( ValidatorInterface::class );
-		$this->rules_query          = $this->createMock( AttributeMappingRulesQuery::class );
 		$this->product_meta         = $this->container->get( ProductMetaHandler::class );
-		$this->product_factory      = $this->container->get( ProductFactory::class );
 		$this->wc                   = $this->container->get( WC::class );
 		$this->product_helper       = new ProductHelper( $this->product_meta, $this->wc, $this->target_audience );
-		$this->batch_product_helper = new BatchProductHelper( $this->product_meta, $this->product_helper, $this->validator, $this->product_factory, $this->target_audience, $this->rules_query, $this->container->get( AttributeManager::class ) );
+		$this->rules_query          = $this->createMock( AttributeMappingRulesQuery::class );
+		$this->batch_product_helper = new BatchProductHelper( $this->product_meta, $this->product_helper, $this->target_audience, $this->rules_query, $this->container->get( AttributeManager::class ) );
 	}
 }
