@@ -42,7 +42,7 @@ const ShippingRateMethodSection = ( { children } ) => {
 	const showFlatOptionRef = useRef( null );
 	if ( showFlatOptionRef.current === null && settings !== undefined ) {
 		const isFlatShippingRate =
-			settings?.shipping_rate === SHIPPING_RATE_METHOD.FLAT;
+			settings.shipping_rate === SHIPPING_RATE_METHOD.FLAT;
 		showFlatOptionRef.current = ! isMultiLingualStore || isFlatShippingRate;
 	}
 	const showFlatOption = showFlatOptionRef.current ?? ! isMultiLingualStore;
