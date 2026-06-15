@@ -46,10 +46,11 @@ const ShippingTimesCell = ( { market } ) => {
 	}
 
 	return sprintf(
-		// translators: 1: minimum shipping days, 2: maximum shipping days.
-		__( '%1$d - %2$d days', 'google-listings-and-ads' ),
+		// translators: 1: minimum shipping days, 2: maximum shipping days, 3: number of shipping days.
+		__( '%1$d - %2$d %3$s', 'google-listings-and-ads' ),
 		time,
-		maxTime
+		maxTime,
+		_n( 'day', 'days', maxTime, 'google-listings-and-ads' )
 	);
 };
 
