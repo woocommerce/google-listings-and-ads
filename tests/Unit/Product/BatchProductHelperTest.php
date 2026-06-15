@@ -296,7 +296,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 		$feed_labels_by_product = [];
 		foreach ( $results as $entry ) {
-			$wc_id                                = $entry->get_wc_product_id();
+			$wc_id                              = $entry->get_wc_product_id();
 			$feed_labels_by_product[ $wc_id ][] = $entry->get_product()->getFeedLabel();
 		}
 

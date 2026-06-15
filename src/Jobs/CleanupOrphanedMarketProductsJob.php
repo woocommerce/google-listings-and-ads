@@ -111,8 +111,8 @@ class CleanupOrphanedMarketProductsJob extends AbstractProductSyncerJob {
 				continue;
 			}
 
-			$google_id                       = $google_ids[ $feed_label ];
-			$request_entries[ $google_id ]   = new BatchProductIDRequestEntry( $product->get_id(), $google_id );
+			$google_id                     = $google_ids[ $feed_label ];
+			$request_entries[ $google_id ] = new BatchProductIDRequestEntry( $product->get_id(), $google_id );
 		}
 
 		if ( empty( $request_entries ) ) {

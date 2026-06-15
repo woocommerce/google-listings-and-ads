@@ -100,9 +100,9 @@ class CleanupOrphanedMarketProductsJobTest extends UnitTest {
 	}
 
 	public function test_process_items_builds_request_entry_per_product_for_feed_label() {
-		$product       = WC_Helper_Product::create_simple_product();
-		$google_id     = 'online:en:GB:gla_' . $product->get_id();
-		$other_id      = 'online:en:US:gla_' . $product->get_id();
+		$product   = WC_Helper_Product::create_simple_product();
+		$google_id = 'online:en:GB:gla_' . $product->get_id();
+		$other_id  = 'online:en:US:gla_' . $product->get_id();
 
 		$this->product_repository->method( 'find_synced_product_ids' )
 			->willReturn( [ $product->get_id() ] );
