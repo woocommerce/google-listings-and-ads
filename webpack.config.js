@@ -168,6 +168,11 @@ const webpackConfig = {
 			'js/src/meta-boxes/channel-visibility',
 			'index.js'
 		),
+		'woo-marketing-notifications-slot': path.resolve(
+			process.cwd(),
+			'js/src/notifications-system/woo-marketing-notifications-slot',
+			'index.js'
+		),
 	} ),
 	output: {
 		...defaultConfig.output,

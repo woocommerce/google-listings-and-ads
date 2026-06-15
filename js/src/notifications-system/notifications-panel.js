@@ -9,7 +9,7 @@ import { Badge } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import useNotifications from '~/hooks/useNotifications';
+import useNotifications from './woo-marketing-notifications-slot/useNotifications';
 import Notification from './notification';
 import useNotificationsSystemMap from './useNotificationsSystemMap';
 import Text from '~/components/app-text';
