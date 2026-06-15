@@ -439,6 +439,13 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				'validate_callback' => $this->get_supported_country_code_validate_callback(),
 				'readonly'          => true,
 			],
+			'start_date'                            => [
+				'type'        => [ 'string', 'null' ],
+				'description' => __( 'Campaign start date in YYYY-MM-DD format.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+				'nullable'    => true,
+			],
 			'targeted_locations'                    => [
 				'type'              => 'array',
 				'description'       => __( 'The locations that an Ads campaign is targeting in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),

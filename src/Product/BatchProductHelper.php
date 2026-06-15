@@ -220,13 +220,19 @@ class BatchProductHelper implements Service {
 
 				$primary_market = $this->market_service->get_primary_market();
 
+				// Each MC product carries exactly one contentLanguage. Markets
+				// store language as an array of codes; use the first entry.
+				$primary_language = is_array( $primary_market['language'] ?? null )
+					? (string) ( $primary_market['language'][0] ?? '' )
+					: (string) ( $primary_market['language'] ?? '' );
+
 				// validate the product
 				$adapted_product   = $this->product_factory->create(
 					$product,
 					$primary_market['country'],
 					$mapping_rules,
 					$primary_market['feed_label'],
-					$primary_market['language']
+					$primary_language
 				);
 				$validation_result = $this->validate_product( $adapted_product );
 				if ( $validation_result instanceof BatchInvalidProductEntry ) {
@@ -257,12 +263,16 @@ class BatchProductHelper implements Service {
 						continue;
 					}
 
+					$market_language = is_array( $market['language'] ?? null )
+						? (string) ( $market['language'][0] ?? '' )
+						: (string) ( $market['language'] ?? '' );
+
 					$secondary_adapter = $this->product_factory->create(
 						$product,
 						$market['country'],
 						$mapping_rules,
 						$market['feed_label'],
-						$market['language']
+						$market_language
 					);
 					$secondary_adapter->add_shipping_country( $market['country'] );
 

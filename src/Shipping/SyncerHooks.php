@@ -4,11 +4,9 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Shipping;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ShippingNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateShippingSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 
@@ -48,23 +46,16 @@ class SyncerHooks implements Service, Registerable {
 	protected $job_repository;
 
 	/**
-	 * @var NotificationsService $notifications_service
-	 */
-	protected $notifications_service;
-
-	/**
 	 * SyncerHooks constructor.
 	 *
 	 * @param MerchantCenterService $merchant_center
 	 * @param GoogleSettings        $google_settings
 	 * @param JobRepository         $job_repository
-	 * @param NotificationsService  $notifications_service
 	 */
-	public function __construct( MerchantCenterService $merchant_center, GoogleSettings $google_settings, JobRepository $job_repository, NotificationsService $notifications_service ) {
-		$this->google_settings       = $google_settings;
-		$this->merchant_center       = $merchant_center;
-		$this->job_repository        = $job_repository;
-		$this->notifications_service = $notifications_service;
+	public function __construct( MerchantCenterService $merchant_center, GoogleSettings $google_settings, JobRepository $job_repository ) {
+		$this->google_settings = $google_settings;
+		$this->merchant_center = $merchant_center;
+		$this->job_repository  = $job_repository;
 	}
 
 	/**
@@ -133,19 +124,11 @@ class SyncerHooks implements Service, Registerable {
 	 * @return void
 	 */
 	protected function handle_update_shipping_settings() {
-		// Bail if an event is already scheduled in the current request
 		if ( $this->already_scheduled ) {
 			return;
 		}
 
-		if ( $this->notifications_service->is_ready( NotificationsService::DATATYPE_SHIPPING ) ) {
-			$this->job_repository->get( ShippingNotificationJob::class )->schedule( [ 'topic' => NotificationsService::TOPIC_SHIPPING_UPDATED ] );
-		}
-
-		if ( $this->merchant_center->is_enabled_for_datatype( NotificationsService::DATATYPE_SHIPPING ) ) {
-			$this->job_repository->get( UpdateShippingSettings::class )->schedule();
-		}
-
+		$this->job_repository->get( UpdateShippingSettings::class )->schedule();
 		$this->already_scheduled = true;
 	}
 }

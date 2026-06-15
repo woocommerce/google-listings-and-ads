@@ -90,7 +90,7 @@ class CleanupOrphanedMarketProductsJobTest extends UnitTest {
 
 	public function test_schedule_schedules_immediate_with_feed_label() {
 		$this->action_scheduler->method( 'has_scheduled_action' )->willReturn( false );
-		$this->merchant_center->method( 'is_enabled_for_datatype' )->willReturn( true );
+		$this->merchant_center->method( 'is_ready_for_syncing' )->willReturn( true );
 
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'schedule_immediate' )
