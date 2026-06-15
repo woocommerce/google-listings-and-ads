@@ -18,7 +18,7 @@ const NOTIFICATIONS_STORE = 'woocommerce/marketing-notifications-system';
  *
  * @param {string} id Notification ID, used to call dismissNotification on dismiss.
  * @param {number} triggeredAt Unix timestamp (seconds) when the notification was triggered.
- * @returns {Function} A function that returns a React component.
+ * @return {Function} A function that returns a React component.
  */
 function createNotificationComponent( id, triggeredAt ) {
 	return function NotificationComponent() {
