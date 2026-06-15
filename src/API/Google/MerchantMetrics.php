@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignReportQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\MerchantFreeListingReportQuery;
@@ -11,8 +12,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\SearchResponse;
 use DateTime;
 use Exception;
 use Google\Ads\GoogleAds\V23\Services\GoogleAdsRow;
@@ -30,11 +29,11 @@ class MerchantMetrics implements OptionsAwareInterface {
 	use OptionsAwareTrait;
 
 	/**
-	 * The Google shopping client.
+	 * The Merchant API client.
 	 *
-	 * @var ShoppingContent
+	 * @var MerchantApiClient
 	 */
-	protected $shopping_client;
+	protected $mapi_client;
 
 	/**
 	 * The Google ads client.
@@ -58,16 +57,16 @@ class MerchantMetrics implements OptionsAwareInterface {
 	/**
 	 * MerchantMetrics constructor.
 	 *
-	 * @param ShoppingContent     $shopping_client
+	 * @param MerchantApiClient   $mapi_client
 	 * @param GoogleAdsClient     $ads_client
 	 * @param WP                  $wp
 	 * @param TransientsInterface $transients
 	 */
-	public function __construct( ShoppingContent $shopping_client, GoogleAdsClient $ads_client, WP $wp, TransientsInterface $transients ) {
-		$this->shopping_client = $shopping_client;
-		$this->ads_client      = $ads_client;
-		$this->wp              = $wp;
-		$this->transients      = $transients;
+	public function __construct( MerchantApiClient $mapi_client, GoogleAdsClient $ads_client, WP $wp, TransientsInterface $transients ) {
+		$this->mapi_client = $mapi_client;
+		$this->ads_client  = $ads_client;
+		$this->wp          = $wp;
+		$this->transients  = $transients;
 	}
 
 	/**
@@ -87,22 +86,21 @@ class MerchantMetrics implements OptionsAwareInterface {
 
 		// Google API requires a date clause to be set but there doesn't seem to be any limits on how wide the range
 		$query = ( new MerchantFreeListingReportQuery( [] ) )
-			->set_client( $this->shopping_client, $this->options->get_merchant_id() )
+			->set_client( $this->mapi_client, $this->options->get_merchant_id() )
 			->where_date_between( self::MAX_QUERY_START_DATE, $this->get_tomorrow() )
 			->fields( [ 'clicks', 'impressions' ] );
 
-		/** @var SearchResponse $response */
 		$response = $query->get_results();
 
-		if ( empty( $response ) || empty( $response->getResults() ) ) {
+		if ( empty( $response['results'] ) ) {
 			return [];
 		}
 
-		$report_row = $response->getResults()[0];
+		$view = $response['results'][0]['productPerformanceView'] ?? [];
 
 		return [
-			'clicks'      => (int) $report_row->getMetrics()->getClicks(),
-			'impressions' => (int) $report_row->getMetrics()->getImpressions(),
+			'clicks'      => (int) ( $view['clicks'] ?? 0 ),
+			'impressions' => (int) ( $view['impressions'] ?? 0 ),
 		];
 	}
 
