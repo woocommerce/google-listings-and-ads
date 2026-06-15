@@ -9,10 +9,11 @@ import { createRoot } from '@wordpress/element';
  */
 import useNotifications from './useNotifications';
 
-const STORE_NAME = 'woocommerce/marketing-notifications-system';
-const ACTION_REGISTER_NOTIFICATION = 'REGISTER_NOTIFICATION';
-const ACTION_REGISTER_NOTIFICATIONS = 'REGISTER_NOTIFICATIONS';
-const ACTION_DISMISS_NOTIFICATION = 'DISMISS_NOTIFICATION';
+import {
+	STORE_NAME,
+	REGISTER_NOTIFICATION,
+	DISMISS_NOTIFICATION,
+} from './constants';
 
 /**
  * This bundle may be loaded by multiple independent plugins. WordPress's wp_register_script ensures the JS
@@ -25,11 +26,9 @@ if ( ! select( STORE_NAME ) ) {
 		createReduxStore( STORE_NAME, {
 			reducer( state = [], action ) {
 				switch ( action.type ) {
-					case ACTION_REGISTER_NOTIFICATION:
-						return [ ...state, action.notification ];
-					case ACTION_REGISTER_NOTIFICATIONS:
+					case REGISTER_NOTIFICATION:
 						return [ ...state, ...action.notifications ];
-					case ACTION_DISMISS_NOTIFICATION:
+					case DISMISS_NOTIFICATION:
 						return state.filter( ( n ) => n.id !== action.id );
 					default:
 						return state;
@@ -37,16 +36,12 @@ if ( ! select( STORE_NAME ) ) {
 			},
 
 			actions: {
-				registerNotification: ( notification ) => ( {
-					type: ACTION_REGISTER_NOTIFICATION,
-					notification,
-				} ),
 				registerNotifications: ( notifications ) => ( {
-					type: ACTION_REGISTER_NOTIFICATIONS,
+					type: REGISTER_NOTIFICATION,
 					notifications,
 				} ),
 				dismissNotification: ( id ) => ( {
-					type: ACTION_DISMISS_NOTIFICATION,
+					type: DISMISS_NOTIFICATION,
 					id,
 				} ),
 			},
@@ -63,7 +58,7 @@ if ( ! select( STORE_NAME ) ) {
 }
 
 function NotificationSystemSlot() {
-	const notifications = useNotifications();
+	const { notifications } = useNotifications();
 
 	if ( ! notifications?.length ) {
 		return null;
