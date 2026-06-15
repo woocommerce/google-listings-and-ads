@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 
 defined( 'ABSPATH' ) || exit;
@@ -33,17 +34,30 @@ class UpdateShippingSettings extends AbstractActionSchedulerJob {
 	protected $google_settings;
 
 	/**
+	 * @var MarketService
+	 */
+	protected $market_service;
+
+	/**
 	 * UpdateShippingSettings constructor.
 	 *
 	 * @param ActionSchedulerInterface  $action_scheduler
 	 * @param ActionSchedulerJobMonitor $monitor
 	 * @param MerchantCenterService     $merchant_center
 	 * @param GoogleSettings            $google_settings
+	 * @param MarketService             $market_service
 	 */
-	public function __construct( ActionSchedulerInterface $action_scheduler, ActionSchedulerJobMonitor $monitor, MerchantCenterService $merchant_center, GoogleSettings $google_settings ) {
+	public function __construct(
+		ActionSchedulerInterface $action_scheduler,
+		ActionSchedulerJobMonitor $monitor,
+		MerchantCenterService $merchant_center,
+		GoogleSettings $google_settings,
+		MarketService $market_service
+	) {
 		parent::__construct( $action_scheduler, $monitor );
 		$this->merchant_center = $merchant_center;
 		$this->google_settings = $google_settings;
+		$this->market_service  = $market_service;
 	}
 
 	/**
@@ -95,9 +109,26 @@ class UpdateShippingSettings extends AbstractActionSchedulerJob {
 	/**
 	 * Can the WooCommerce shipping settings be synced to Google Merchant Center.
 	 *
+	 * Returns true when MC is connected and at least one configured market has a
+	 * non-manual shipping_rate with shipping_time === 'flat'. With multi-market
+	 * support a non-manual secondary can require a sync even when the primary
+	 * itself is set to 'manual'.
+	 *
 	 * @return bool
 	 */
 	protected function can_sync_shipping(): bool {
-		return $this->merchant_center->is_connected() && $this->google_settings->should_get_shipping_rates_from_woocommerce();
+		if ( ! $this->merchant_center->is_connected() ) {
+			return false;
+		}
+
+		foreach ( $this->market_service->get_markets() as $market ) {
+			$rate = $market['shipping_rate'] ?? null;
+			$time = $market['shipping_time'] ?? null;
+			if ( 'manual' !== $rate && 'flat' === $time ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

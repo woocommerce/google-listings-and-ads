@@ -43,6 +43,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateShippingSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateSyncableProductsCount;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateMerchantProductStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateMerchantPriceBenchmarks;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncer;
@@ -162,7 +163,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( PluginUpdate::class, JobRepository::class );
 
 		// Share shipping settings syncer job and hooks.
-		$this->share_action_scheduler_job( UpdateShippingSettings::class, MerchantCenterService::class, GoogleSettings::class );
+		$this->share_action_scheduler_job( UpdateShippingSettings::class, MerchantCenterService::class, GoogleSettings::class, MarketService::class );
 		$this->share_with_tags( Shipping\SyncerHooks::class, MerchantCenterService::class, GoogleSettings::class, JobRepository::class );
 
 		// Share plugin update jobs

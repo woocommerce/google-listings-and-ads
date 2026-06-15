@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupOrphanedMarketProductsJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateShippingSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -236,6 +237,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		if ( ! empty( $config['country'] ) ) {
 			$this->remove_country_from_target_audience( $config['country'] );
 		}
+
+		if ( 'manual' !== ( $config['shipping_rate'] ?? null ) ) {
+			$this->schedule_shipping_sync();
+		}
 	}
 
 	/**
@@ -276,6 +281,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				->schedule( [ 'feed_label' => $old_feed_label ] );
 		}
 
+		$shipping_keys = [ 'country', 'currency', 'shipping_rate', 'shipping_time' ];
+		foreach ( $shipping_keys as $key ) {
+			if ( ( $existing[ $key ] ?? null ) !== ( $merged[ $key ] ?? null ) ) {
+				$this->schedule_shipping_sync();
+				break;
+			}
+		}
+
 		return $this->get_market( $id );
 	}
 
@@ -296,9 +309,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			);
 		}
 
-		$markets    = $this->get_stored_secondary_markets();
-		$country    = $markets[ $id ]['country'] ?? null;
-		$feed_label = $markets[ $id ]['feed_label'] ?? null;
+		$markets       = $this->get_stored_secondary_markets();
+		$country       = $markets[ $id ]['country'] ?? null;
+		$feed_label    = $markets[ $id ]['feed_label'] ?? null;
+		$shipping_rate = $markets[ $id ]['shipping_rate'] ?? null;
 
 		unset( $markets[ $id ] );
 		$this->options->update( OptionsInterface::MARKETS, $markets );
@@ -310,6 +324,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		if ( $feed_label ) {
 			$this->job_repository->get( CleanupOrphanedMarketProductsJob::class )
 				->schedule( [ 'feed_label' => $feed_label ] );
+		}
+
+		if ( 'manual' !== $shipping_rate ) {
+			$this->schedule_shipping_sync();
 		}
 	}
 
@@ -382,6 +400,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 */
 	public function get_currencies(): array {
 		return $this->wpml->get_currencies();
+	}
+
+	/**
+	 * Schedules the shipping-settings sync job so MC shipping services are
+	 * regenerated for every non-manual market.
+	 */
+	private function schedule_shipping_sync(): void {
+		$this->job_repository->get( UpdateShippingSettings::class )->schedule();
 	}
 
 	/**
