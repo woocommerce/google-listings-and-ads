@@ -6,9 +6,11 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
@@ -60,6 +62,9 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 	/** @var WC $wc */
 	protected $wc;
 
+	/** @var AttributeMappingRulesQuery $rules_query */
+	protected $rules_query;
+
 	public function test_update() {
 		// $synced_products:   products that were successfully synced to Merchant Center
 		// $rejected_products: products that have errors and were rejected by Google API
@@ -72,6 +77,8 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 										$this->product_meta,
 										$this->product_helper,
 										$this->target_audience,
+										$this->rules_query,
+										$this->container->get( AttributeManager::class ),
 									]
 								)
 								->getMock();
@@ -501,6 +508,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 			->willReturn( true );
 
 		$this->mapi_inputs = $this->createMock( MapiProductInputsService::class );
+		$this->rules_query = $this->createMock( AttributeMappingRulesQuery::class );
 
 		$this->product_meta       = $this->container->get( ProductMetaHandler::class );
 		$this->batch_helper       = $this->container->get( BatchProductHelper::class );

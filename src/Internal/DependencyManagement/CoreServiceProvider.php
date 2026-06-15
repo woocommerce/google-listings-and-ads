@@ -323,7 +323,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			BatchProductHelper::class,
 			ProductMetaHandler::class,
 			ProductHelper::class,
-			TargetAudience::class
+			TargetAudience::class,
+			AttributeMappingRulesQuery::class,
+			AttributeManager::class
 		);
 		$this->share_with_tags(
 			ProductSyncer::class,

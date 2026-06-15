@@ -4,12 +4,16 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Brand;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Color;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
@@ -44,6 +48,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 	/** @var WC $wc */
 	protected $wc;
+
+	/** @var AttributeMappingRulesQuery $rules_query */
+	protected $rules_query;
 
 	public function test_filter_synced_products_all_synced() {
 		$synced_product = WC_Helper_Product::create_simple_product();
@@ -300,6 +307,37 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertNotContains( $stale_google_ids['US'], $google_ids );
 	}
 
+	public function test_generate_mapi_update_entries_merges_parent_and_variation_attributes() {
+		$this->target_audience->expects( $this->any() )->method( 'get_main_target_country' )->willReturn( 'US' );
+		$this->target_audience->expects( $this->any() )->method( 'get_target_countries' )->willReturn( [ 'US' ] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$attribute_manager = $this->container->get( AttributeManager::class );
+
+		$variable  = WC_Helper_Product::create_variation_product();
+		$variation = $this->wc->get_product( $variable->get_children()[0] );
+
+		// Parent-level attribute (inherited by the variation) plus a variation-level attribute.
+		$attribute_manager->update( $variable, new Brand( 'ParentBrand' ) );
+		$attribute_manager->update( $variation, new Color( 'VariationColor' ) );
+
+		$entries = $this->batch_product_helper->generate_mapi_update_entries( [ $variable ] );
+
+		$entry = null;
+		foreach ( $entries as $candidate ) {
+			if ( $candidate['product']->get_id() === $variation->get_id() ) {
+				$entry = $candidate;
+				break;
+			}
+		}
+
+		$this->assertNotNull( $entry, 'No entry generated for the variation.' );
+
+		$attrs = $entry['input']->get_attributes();
+		$this->assertSame( 'ParentBrand', $attrs['brand'] );
+		$this->assertSame( 'VariationColor', $attrs['color'] );
+	}
+
 	/**
 	 * @return WC_Product[]
 	 */
@@ -320,6 +358,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->product_meta         = $this->container->get( ProductMetaHandler::class );
 		$this->wc                   = $this->container->get( WC::class );
 		$this->product_helper       = new ProductHelper( $this->product_meta, $this->wc, $this->target_audience );
-		$this->batch_product_helper = new BatchProductHelper( $this->product_meta, $this->product_helper, $this->target_audience );
+		$this->rules_query          = $this->createMock( AttributeMappingRulesQuery::class );
+		$this->batch_product_helper = new BatchProductHelper( $this->product_meta, $this->product_helper, $this->target_audience, $this->rules_query, $this->container->get( AttributeManager::class ) );
 	}
 }

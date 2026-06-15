@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductInputAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
@@ -80,6 +81,15 @@ class WCProductInputAdapterTest extends UnitTest {
 		$attrs = ( new WCProductInputAdapter( $variation, 'US', $parent ) )->get_product_input()->get_attributes();
 
 		$this->assertSame( (string) $parent->get_id(), $attrs['itemGroupId'] );
+	}
+
+	public function test_variation_without_parent_throws() {
+		$parent     = WC_Helper_Product::create_variation_product();
+		$variations = $parent->get_children();
+		$variation  = wc_get_product( $variations[0] );
+
+		$this->expectException( InvalidValue::class );
+		new WCProductInputAdapter( $variation, 'US' );
 	}
 
 	public function test_maps_price_to_micros() {
@@ -325,5 +335,370 @@ class WCProductInputAdapterTest extends UnitTest {
 			],
 			$attrs['shippingWeight']
 		);
+	}
+
+	public function test_maps_string_attributes() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$attrs = ( new WCProductInputAdapter(
+			$product,
+			'US',
+			null,
+			[],
+			[
+				'brand'     => 'Acme',
+				'color'     => 'Red',
+				'material'  => 'Cotton',
+				'pattern'   => 'Striped',
+				'mpn'       => 'MPN123',
+				'condition' => 'new',
+				'ageGroup'  => 'adult',
+				'gender'    => 'unisex',
+			]
+		) )->get_product_input()->get_attributes();
+
+		$this->assertSame( 'Acme', $attrs['brand'] );
+		$this->assertSame( 'Red', $attrs['color'] );
+		$this->assertSame( 'Cotton', $attrs['material'] );
+		$this->assertSame( 'Striped', $attrs['pattern'] );
+		$this->assertSame( 'MPN123', $attrs['mpn'] );
+		$this->assertSame( 'new', $attrs['condition'] );
+		$this->assertSame( 'adult', $attrs['ageGroup'] );
+		$this->assertSame( 'unisex', $attrs['gender'] );
+	}
+
+	public function test_maps_size_attribute() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US', null, [], [ 'size' => 'XL' ] ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( 'XL', $attrs['size'] );
+	}
+
+	public function test_maps_array_attributes() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$attrs = ( new WCProductInputAdapter(
+			$product,
+			'US',
+			null,
+			[],
+			[
+				'gtin'     => '00012345678905',
+				'sizeType' => 'regular',
+			]
+		) )->get_product_input()->get_attributes();
+
+		$this->assertSame( [ '00012345678905' ], $attrs['gtins'] );
+		$this->assertSame( [ 'regular' ], $attrs['sizeTypes'] );
+		$this->assertArrayNotHasKey( 'gtin', $attrs );
+		$this->assertArrayNotHasKey( 'sizeType', $attrs );
+	}
+
+	public function test_coerces_boolean_and_multipack_attributes() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$attrs = ( new WCProductInputAdapter(
+			$product,
+			'US',
+			null,
+			[],
+			[
+				'isBundle'  => 'yes',
+				'adult'     => 'no',
+				'multipack' => '6',
+			]
+		) )->get_product_input()->get_attributes();
+
+		$this->assertSame( true, $attrs['isBundle'] );
+		$this->assertSame( false, $attrs['adult'] );
+		$this->assertSame( '6', $attrs['multipack'] );
+	}
+
+	public function test_skips_unsupported_attribute() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$attrs = ( new WCProductInputAdapter(
+			$product,
+			'US',
+			null,
+			[],
+			[
+				'notAReal' => 'x',
+				'brand'    => 'Acme',
+			]
+		) )->get_product_input()->get_attributes();
+
+		$this->assertArrayNotHasKey( 'notAReal', $attrs );
+		$this->assertSame( 'Acme', $attrs['brand'] );
+	}
+
+	public function test_applies_attribute_value_filter() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		add_filter(
+			'woocommerce_gla_product_attribute_value_brand',
+			function () {
+				return 'Filtered';
+			}
+		);
+		$attrs = ( new WCProductInputAdapter( $product, 'US', null, [], [ 'brand' => 'Original' ] ) )->get_product_input()->get_attributes();
+		remove_all_filters( 'woocommerce_gla_product_attribute_value_brand' );
+
+		$this->assertSame( 'Filtered', $attrs['brand'] );
+	}
+
+	public function test_applies_attribute_values_override_filter() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		add_filter(
+			'woocommerce_gla_product_attribute_values',
+			function ( $values ) {
+				$values['color'] = 'Blue';
+				return $values;
+			}
+		);
+		$attrs = ( new WCProductInputAdapter( $product, 'US', null, [], [ 'brand' => 'Acme' ] ) )->get_product_input()->get_attributes();
+		remove_all_filters( 'woocommerce_gla_product_attribute_values' );
+
+		$this->assertSame( 'Blue', $attrs['color'] );
+		$this->assertSame( 'Acme', $attrs['brand'] );
+	}
+
+	public function test_applies_mapping_rule_with_static_source() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$rules = [
+			[
+				'attribute'               => 'brand',
+				'source'                  => 'RuleBrand',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+		];
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US', null, [], [], $rules ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( 'RuleBrand', $attrs['brand'] );
+	}
+
+	public function test_mapping_rule_resolves_product_field_source() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_sku( 'SKU-123' );
+		$product->save();
+
+		$rules = [
+			[
+				'attribute'               => 'mpn',
+				'source'                  => 'product:sku',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+		];
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US', null, [], [], $rules ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( 'SKU-123', $attrs['mpn'] );
+	}
+
+	public function test_per_product_value_overrides_mapping_rule() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$rules = [
+			[
+				'attribute'               => 'brand',
+				'source'                  => 'RuleBrand',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+		];
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US', null, [], [ 'brand' => 'ProductBrand' ], $rules ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( 'ProductBrand', $attrs['brand'] );
+	}
+
+	public function test_mapping_rule_only_condition_matches_category() {
+		$term    = wp_insert_term( 'RuleCat', 'product_cat' );
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_category_ids( [ $term['term_id'] ] );
+		$product->save();
+
+		$rules = [
+			[
+				'attribute'               => 'brand',
+				'source'                  => 'MatchedBrand',
+				'category_condition_type' => 'ONLY',
+				'categories'              => (string) $term['term_id'],
+			],
+			[
+				'attribute'               => 'color',
+				'source'                  => 'ShouldNotApply',
+				'category_condition_type' => 'ONLY',
+				'categories'              => '999999',
+			],
+		];
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US', null, [], [], $rules ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( 'MatchedBrand', $attrs['brand'] );
+		$this->assertArrayNotHasKey( 'color', $attrs );
+	}
+
+	public function test_mapping_rule_skips_unsupported_attribute() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$rules = [
+			[
+				'attribute'               => 'notAReal',
+				'source'                  => 'x',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+		];
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US', null, [], [], $rules ) )->get_product_input()->get_attributes();
+
+		$this->assertArrayNotHasKey( 'notAReal', $attrs );
+	}
+
+	public function test_maps_product_types_from_categories() {
+		$parent = wp_insert_term( 'Clothing', 'product_cat' );
+		$child  = wp_insert_term( 'Shirts', 'product_cat', [ 'parent' => $parent['term_id'] ] );
+
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_category_ids( [ $child['term_id'] ] );
+		$product->save();
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( [ 'Clothing > Shirts' ], $attrs['productTypes'] );
+	}
+
+	public function test_product_types_capped_at_ten() {
+		$category_ids = [];
+		for ( $i = 1; $i <= 11; $i++ ) {
+			$term           = wp_insert_term( "CapCat{$i}", 'product_cat' );
+			$category_ids[] = $term['term_id'];
+		}
+
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_category_ids( $category_ids );
+		$product->save();
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertCount( 10, $attrs['productTypes'] );
+	}
+
+	public function test_mapping_rule_resolves_taxonomy_source() {
+		$term    = wp_insert_term( 'TaxoCat', 'product_cat' );
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_category_ids( [ $term['term_id'] ] );
+		$product->save();
+
+		$rules = [
+			[
+				'attribute'               => 'material',
+				'source'                  => 'taxonomy:product_cat',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+		];
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US', null, [], [], $rules ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( 'TaxoCat', $attrs['material'] );
+	}
+
+	public function test_mapping_rule_resolves_custom_attribute_source() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->update_meta_data( 'fabric', 'First | Second' );
+		$product->save();
+
+		$rules = [
+			[
+				'attribute'               => 'pattern',
+				'source'                  => 'attribute:fabric',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+		];
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US', null, [], [], $rules ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( 'First', $attrs['pattern'] );
+	}
+
+	public function test_mapping_rule_except_condition_excludes_matching_category() {
+		$term    = wp_insert_term( 'ExceptCat', 'product_cat' );
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_category_ids( [ $term['term_id'] ] );
+		$product->save();
+
+		$rules = [
+			[
+				'attribute'               => 'brand',
+				'source'                  => 'ShouldNotApply',
+				'category_condition_type' => 'EXCEPT',
+				'categories'              => (string) $term['term_id'],
+			],
+			[
+				'attribute'               => 'color',
+				'source'                  => 'ShouldApply',
+				'category_condition_type' => 'EXCEPT',
+				'categories'              => '999999',
+			],
+		];
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US', null, [], [], $rules ) )->get_product_input()->get_attributes();
+
+		$this->assertArrayNotHasKey( 'brand', $attrs );
+		$this->assertSame( 'ShouldApply', $attrs['color'] );
+	}
+
+	public function test_core_gtin_overrides_per_product_gtin() {
+		$product = WC_Helper_Product::create_simple_product();
+		if ( ! method_exists( $product, 'set_global_unique_id' ) ) {
+			$this->markTestSkipped( 'Core global unique id requires WooCommerce 9.2+.' );
+		}
+		$product->set_global_unique_id( '12-345' );
+		$product->save();
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US', null, [], [ 'gtin' => '99999' ] ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( [ '12345' ], $attrs['gtins'] );
+	}
+
+	public function test_override_filter_accepts_mapi_keys() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		add_filter(
+			'woocommerce_gla_product_attribute_values',
+			function () {
+				return [
+					'gtins' => [ '999' ],
+					'size'  => 'M',
+					'color' => 'Blue',
+				];
+			}
+		);
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+		remove_all_filters( 'woocommerce_gla_product_attribute_values' );
+
+		$this->assertSame( [ '999' ], $attrs['gtins'] );
+		$this->assertSame( 'M', $attrs['size'] );
+		$this->assertSame( 'Blue', $attrs['color'] );
 	}
 }
