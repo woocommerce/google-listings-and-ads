@@ -196,21 +196,12 @@ const webpackConfig = {
 				},
 				commons: {
 					name: 'commons',
+					minChunks: 2,
 					test( { resource } ) {
 						return /([\\/])js\1src\1(components|data|hooks|images|utils)\1/.test(
 							resource
 						);
 					},
-				},
-				'notifications-system-shared': {
-					name: 'notifications-system-shared',
-					test( { resource } ) {
-						return /([\\/])js\1src\1notifications-system\1/.test(
-							resource
-						);
-					},
-					chunks: 'all',
-					minChunks: 2,
 				},
 			},
 		},
