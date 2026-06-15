@@ -202,6 +202,16 @@ const webpackConfig = {
 						);
 					},
 				},
+				'notifications-system': {
+					name: 'notifications-system',
+					test( { resource } ) {
+						return /([\\/])js\1src\1notifications-system\1/.test(
+							resource
+						);
+					},
+					chunks: 'all',
+					minChunks: 2,
+				},
 			},
 		},
 	},

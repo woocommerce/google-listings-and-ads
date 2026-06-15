@@ -54,6 +54,9 @@ function NotificationSystemSlot() {
 
 	return notifications.map( ( notification, i ) => {
 		const NotificationComponent = notification.component;
+		if ( ! NotificationComponent ) {
+			return null;
+		}
 		return <NotificationComponent key={ i } />;
 	} );
 }
