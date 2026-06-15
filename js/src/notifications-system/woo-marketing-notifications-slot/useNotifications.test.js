@@ -8,12 +8,11 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import useNotifications from './useNotifications';
+import { STORE_NAME } from './constants';
 
 jest.mock( '@wordpress/data', () => ( {
 	useSelect: jest.fn(),
 } ) );
-
-const STORE_NAME = 'woocommerce/marketing-notifications-system';
 
 describe( 'useNotifications', () => {
 	beforeEach( () => {
@@ -22,8 +21,8 @@ describe( 'useNotifications', () => {
 
 	it( 'calls getNotifications on the shared store and returns the result', () => {
 		const notifications = [
-			{ triggeredAt: 2000, component: () => null },
-			{ triggeredAt: 1000, component: () => null },
+			{ triggered_at: 2000, component: () => null },
+			{ triggered_at: 1000, component: () => null },
 		];
 
 		const getNotifications = jest.fn().mockReturnValue( notifications );
