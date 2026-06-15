@@ -3,14 +3,14 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\MerchantQuery;
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class MerchantPriceBenchmarksProductReportQuery
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query
  */
-class MerchantPriceBenchmarksProductReportQuery extends MerchantQuery {
+class MerchantPriceBenchmarksProductReportQuery extends MapiReportQuery {
 
 	use ReportQueryTrait;
 
@@ -20,7 +20,7 @@ class MerchantPriceBenchmarksProductReportQuery extends MerchantQuery {
 	 * @param array $args Query arguments.
 	 */
 	public function __construct( array $args ) {
-		parent::__construct( 'MerchantPerformanceView' );
+		parent::__construct( 'product_performance_view' );
 
 		$this->set_initial_columns();
 		$this->handle_query_args( $args );
@@ -32,13 +32,25 @@ class MerchantPriceBenchmarksProductReportQuery extends MerchantQuery {
 	protected function set_initial_columns() {
 		$this->columns(
 			[
-				'offer_id'    => 'segments.offer_id',
-				'clicks'      => 'metrics.clicks',
-				'impressions' => 'metrics.impressions',
-				'ctr'         => 'metrics.ctr',
-				'conversions' => 'metrics.conversions',
+				'offer_id'    => 'product_performance_view.offer_id',
+				'clicks'      => 'product_performance_view.clicks',
+				'impressions' => 'product_performance_view.impressions',
+				'ctr'         => 'product_performance_view.click_through_rate',
+				'conversions' => 'product_performance_view.conversions',
 			]
 		);
+	}
+
+	/**
+	 * Add a where date between clause using the Merchant API date field.
+	 *
+	 * @param string $after  Start of date range (YYYY-MM-DD).
+	 * @param string $before End of date range (YYYY-MM-DD).
+	 *
+	 * @return QueryInterface
+	 */
+	public function where_date_between( string $after, string $before ): QueryInterface {
+		return $this->where( 'product_performance_view.date', [ $after, $before ], 'BETWEEN' );
 	}
 
 	/**
@@ -53,6 +65,6 @@ class MerchantPriceBenchmarksProductReportQuery extends MerchantQuery {
 			return $this;
 		}
 
-		return $this->where( 'segments.offer_id', $ids, 'IN' );
+		return $this->where( 'product_performance_view.offer_id', $ids, 'IN' );
 	}
 }
