@@ -180,6 +180,14 @@
 			{
 				"path": "./js/build/register-notifications.js",
 				"maxSize": "20 kB"
+			},
+			{
+				"path": "./js/build/dashboard.js",
+				"maxSize": "15 kB"
+			},
+			{
+				"path": "./js/build/onboarding.js",
+				"maxSize": "14 kB"
 			}
 		],
 		"ci": {
