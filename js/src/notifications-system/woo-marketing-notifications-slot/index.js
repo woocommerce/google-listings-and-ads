@@ -8,9 +8,7 @@ import { createRoot } from '@wordpress/element';
  * Internal dependencies
  */
 import useNotifications from './useNotifications';
-
-const STORE_NAME = 'woocommerce/marketing-notifications-system';
-const ACTION_REGISTER_NOTIFICATION = 'REGISTER_NOTIFICATION';
+import { STORE_NAME, REGISTER_NOTIFICATION } from './constants';
 
 /**
  * This bundle may be loaded by multiple independent plugins. WordPress's wp_register_script ensures the JS
@@ -22,7 +20,7 @@ if ( ! select( STORE_NAME ) ) {
 	register(
 		createReduxStore( STORE_NAME, {
 			reducer( state = [], action ) {
-				if ( action.type === ACTION_REGISTER_NOTIFICATION ) {
+				if ( action.type === REGISTER_NOTIFICATION ) {
 					return [ ...state, action.notification ];
 				}
 				return state;
@@ -30,7 +28,7 @@ if ( ! select( STORE_NAME ) ) {
 
 			actions: {
 				registerNotification: ( notification ) => {
-					return { type: ACTION_REGISTER_NOTIFICATION, notification };
+					return { type: REGISTER_NOTIFICATION, notification };
 				},
 			},
 
@@ -46,7 +44,7 @@ if ( ! select( STORE_NAME ) ) {
 }
 
 function NotificationSystemSlot() {
-	const notifications = useNotifications();
+	const { notifications } = useNotifications();
 
 	if ( ! notifications?.length ) {
 		return null;

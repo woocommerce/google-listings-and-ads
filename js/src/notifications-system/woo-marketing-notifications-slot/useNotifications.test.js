@@ -35,7 +35,7 @@ describe( 'useNotifications', () => {
 
 		expect( select ).toHaveBeenCalledWith( STORE_NAME );
 		expect( getNotifications ).toHaveBeenCalledTimes( 1 );
-		expect( result.current ).toEqual( notifications );
+		expect( result.current ).toEqual( { notifications } );
 	} );
 
 	it( 'returns an empty array when the store has no notifications', () => {
@@ -46,6 +46,6 @@ describe( 'useNotifications', () => {
 
 		const { result } = renderHook( () => useNotifications() );
 
-		expect( result.current ).toEqual( [] );
+		expect( result.current ).toEqual( { notifications: [] } );
 	} );
 } );
