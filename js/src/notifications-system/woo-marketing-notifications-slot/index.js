@@ -13,10 +13,14 @@ import {
 	STORE_NAME,
 	REGISTER_NOTIFICATION,
 	DISMISS_NOTIFICATION,
+	MULTICHANNEL_CLASS,
+	BANNER_CLASS,
+	CONTAINER_CLASS,
 } from './constants';
 
 /**
- * This bundle may be loaded by multiple independent plugins. WordPress's wp_register_script ensures the JS
+ * This bundle is registered in PHP under the handle 'woocommerce-marketing-notifications-system-slot'.
+ * It may be loaded by multiple independent plugins. WordPress's wp_register_script ensures the JS
  * file is only loaded once, but as a second safeguard we only register the shared
  * data store if it hasn't been registered already — whichever plugin loads first
  * wins, and all others use the same store instance.
@@ -49,7 +53,7 @@ if ( ! select( STORE_NAME ) ) {
 			selectors: {
 				getNotifications: ( state ) => {
 					return [ ...state ].sort(
-						( a, b ) => b.triggeredAt - a.triggeredAt
+						( a, b ) => b.triggered_at - a.triggered_at
 					);
 				},
 			},
@@ -64,18 +68,14 @@ function NotificationSystemSlot() {
 		return null;
 	}
 
-	return notifications.map( ( notification, i ) => {
+	return notifications.map( ( notification ) => {
 		const NotificationComponent = notification.component;
 		if ( ! NotificationComponent ) {
 			return null;
 		}
-		return <NotificationComponent key={ i } />;
+		return <NotificationComponent key={ notification.id } />;
 	} );
 }
-
-const MULTICHANNEL_CLASS = 'woocommerce-marketing-overview-multichannel';
-const BANNER_CLASS = 'woocommerce-marketing-introduction-banner';
-const CONTAINER_CLASS = 'woocommerce-marketing-notifications-container';
 
 let currentRoot = null;
 
@@ -93,6 +93,9 @@ function mount( multichannel ) {
 
 		const banner = multichannel.querySelector( `.${ BANNER_CLASS }` );
 
+		// Place the notifications container immediately after the introduction
+		// banner if one exists, otherwise prepend it to the top of the
+		// multichannel section so it is always the first thing the user sees.
 		if ( banner ) {
 			banner.insertAdjacentElement( 'afterend', container );
 		} else {

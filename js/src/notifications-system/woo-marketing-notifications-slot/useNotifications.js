@@ -3,7 +3,10 @@
  */
 import { useSelect } from '@wordpress/data';
 
-const STORE_NAME = 'woocommerce/marketing-notifications-system';
+/**
+ * Internal dependencies
+ */
+import { STORE_NAME } from './constants';
 
 /**
  * @return {{notifications: Array<Object>}} Notifications from the shared marketing notifications store.
