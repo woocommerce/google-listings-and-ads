@@ -15,15 +15,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingCo
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountAdsLink;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountUser;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductsListResponse;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductstatusesCustomBatchRequest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductstatusesCustomBatchResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RequestPhoneVerificationResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Resource\Accounts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Resource\Accountstatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Resource\Products;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Resource\Productstatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\VerifyPhoneNumberResponse;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -68,79 +63,6 @@ class MerchantTest extends UnitTest {
 
 		$this->merchant_id = 12345;
 		$this->options->method( 'get_merchant_id' )->willReturn( $this->merchant_id );
-	}
-
-	public function test_get_products_empty_list() {
-		$list_response = $this->createMock( ProductsListResponse::class );
-
-		$this->service->products->expects( $this->once() )
-			->method( 'listProducts' )
-			->with( $this->merchant_id )
-			->willReturn( $list_response );
-
-		$products = $this->merchant->get_products();
-		$this->assertEquals( $products, [] );
-	}
-
-	public function test_get_products() {
-		$list_response = $this->createMock( ProductsListResponse::class );
-
-		$product_list = [
-			$this->createMock( Product::class ),
-			$this->createMock( Product::class ),
-		];
-
-		$list_response->expects( $this->any() )
-			->method( 'getResources' )
-			->willReturn( $product_list );
-
-		$this->service->products->expects( $this->once() )
-			->method( 'listProducts' )
-			->with( $this->merchant_id )
-			->willReturn( $list_response );
-
-		$this->assertEquals(
-			$product_list,
-			$this->merchant->get_products()
-		);
-	}
-
-	public function test_get_products_multiple_pages() {
-		$list_response = $this->createMock( ProductsListResponse::class );
-
-		$token        = uniqid();
-		$product_list = [
-			$this->createMock( Product::class ),
-			$this->createMock( Product::class ),
-		];
-
-		$list_response->expects( $this->any() )
-			->method( 'getResources' )
-			->willReturn( $product_list );
-
-		$list_response->expects( $this->any() )
-			->method( 'getNextPageToken' )
-			->will(
-				$this->onConsecutiveCalls(
-					$token,
-					$token,
-					null
-				)
-			);
-
-		$this->service->products->expects( $this->exactly( 2 ) )
-			->method( 'listProducts' )
-			->withConsecutive(
-				[ $this->merchant_id ],
-				[ $this->merchant_id, [ 'pageToken' => $token ] ]
-			)
-			->willReturnOnConsecutiveCalls(
-				$list_response,
-				$list_response
-			);
-
-		$products = $this->merchant->get_products();
-		$this->assertCount( count( $product_list ) * 2, $products );
 	}
 
 	public function test_claim_website() {
@@ -398,36 +320,6 @@ class MerchantTest extends UnitTest {
 		$this->expectException( Exception::class );
 		$this->expectExceptionCode( 400 );
 		$this->merchant->get_accountstatus();
-	}
-
-	public function test_get_productstatuses_batch() {
-		$this->service->productstatuses = $this->createMock( Productstatuses::class );
-
-		$this->service->productstatuses->expects( $this->once() )
-			->method( 'custombatch' )
-			->with(
-				$this->callback(
-					function ( ProductstatusesCustomBatchRequest $request ) {
-						$this->assertEquals(
-							[
-								'batchId'    => 3,
-								'productId'  => 3,
-								'method'     => 'GET',
-								'merchantId' => $this->merchant_id,
-							],
-							$request->getEntries()[2]
-						);
-
-						return true;
-					}
-				)
-			)
-			->willReturn( $this->createMock( ProductstatusesCustomBatchResponse::class ) );
-
-		$this->assertInstanceOf(
-			ProductstatusesCustomBatchResponse::class,
-			$this->merchant->get_productstatuses_batch( [ 1, 2, 3 ] )
-		);
 	}
 
 	public function test_update_account() {

@@ -91,6 +91,31 @@ class MapiProductsService implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Yield all products for the account, following pagination.
+	 *
+	 * Returns a generator so callers can stream the catalog without holding every
+	 * product in memory at once.
+	 *
+	 * @param int $page_size Maximum products to request per page.
+	 *
+	 * @return iterable<Product>
+	 * @throws MerchantApiException On non-2xx response.
+	 */
+	public function list( int $page_size = 250 ): iterable {
+		$page_token = '';
+
+		do {
+			$body = $this->client->get( $this->build_list_path( $page_size, $page_token ) );
+
+			foreach ( $body['products'] ?? [] as $product ) {
+				yield Product::from_array( $product );
+			}
+
+			$page_token = $body['nextPageToken'] ?? '';
+		} while ( '' !== $page_token );
+	}
+
+	/**
 	 * Build the resource path for a product.
 	 *
 	 * @param string $google_product_id
@@ -104,5 +129,28 @@ class MapiProductsService implements OptionsAwareInterface {
 			$this->options->get_merchant_id(),
 			$google_product_id
 		);
+	}
+
+	/**
+	 * Build the resource path for listing products.
+	 *
+	 * @param int    $page_size
+	 * @param string $page_token
+	 *
+	 * @return string
+	 */
+	protected function build_list_path( int $page_size, string $page_token ): string {
+		$path = sprintf(
+			'%s/accounts/%s/products?pageSize=%d',
+			MapiPaths::PRODUCTS,
+			$this->options->get_merchant_id(),
+			$page_size
+		);
+
+		if ( '' !== $page_token ) {
+			$path .= '&pageToken=' . rawurlencode( $page_token );
+		}
+
+		return $path;
 	}
 }
