@@ -17,6 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AssetSuggestionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection as GoogleConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
@@ -72,11 +73,14 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCamp
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaignTwoWeeks as SetupCampaign2Note;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCouponSharing as SetupCouponSharingNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\AbandonedOnboardingEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CampaignNoSalesEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CouponsNotSyncedEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\EnhancedConversionsOffEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\NotOnboarded90DaysEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\PausedCampaignEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\ProductIssuesEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\ReadyButNoSalesEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\RecommendationsAvailableEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SalesNotGrowingEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SkippedCampaignEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\Sold10ItemsEvaluator;
@@ -146,83 +150,86 @@ class CoreServiceProvider extends AbstractServiceProvider {
 	 * @var array
 	 */
 	protected $provides = [
-		Installer::class                       => true,
-		AddressUtility::class                  => true,
-		AssetsHandlerInterface::class          => true,
-		ContactInformationNote::class          => true,
-		CompleteSetupTask::class               => true,
-		CompleteSetupNote::class               => true,
-		CouponHelper::class                    => true,
-		CouponMetaHandler::class               => true,
-		CouponSyncer::class                    => true,
-		DateTimeUtility::class                 => true,
-		EventTracking::class                   => true,
-		GlobalSiteTag::class                   => true,
-		ISOUtility::class                      => true,
-		SiteVerificationEvents::class          => true,
-		OptionsInterface::class                => true,
-		TransientsInterface::class             => true,
-		ReconnectWordPressNote::class          => true,
-		ReviewAfterClicksNote::class           => true,
-		RESTControllers::class                 => true,
-		Service::class                         => true,
-		SetupCampaignNote::class               => true,
-		SetupCampaign2Note::class              => true,
-		SetupCouponSharingNote::class          => true,
-		NotificationService::class             => true,
-		AbandonedOnboardingEvaluator::class    => true,
-		EnhancedConversionsOffEvaluator::class => true,
-		NotOnboarded90DaysEvaluator::class     => true,
-		ProductIssuesEvaluator::class          => true,
-		SkippedCampaignEvaluator::class        => true,
-		Sold10ItemsEvaluator::class            => true,
-		ReadyButNoSalesEvaluator::class        => true,
-		CouponsNotSyncedEvaluator::class       => true,
-		SalesNotGrowingEvaluator::class        => true,
-		TrackingOffEvaluator::class            => true,
-		WcInstallTimestamp::class              => true,
-		TableManager::class                    => true,
-		TrackerSnapshot::class                 => true,
-		Tracks::class                          => true,
-		TracksInterface::class                 => true,
-		ProductSyncer::class                   => true,
-		ProductHelper::class                   => true,
-		ProductMetaHandler::class              => true,
-		SiteVerificationMeta::class            => true,
-		BatchProductHelper::class              => true,
-		ProductFilter::class                   => true,
-		ProductRepository::class               => true,
-		ViewFactory::class                     => true,
-		DebugLogger::class                     => true,
-		MerchantStatuses::class                => true,
-		PriceBenchmarks::class                 => true,
-		PhoneVerification::class               => true,
-		PolicyComplianceCheck::class           => true,
-		ContactInformation::class              => true,
-		MerchantCenterService::class           => true,
-		NotificationsService::class            => true,
-		TargetAudience::class                  => true,
-		MerchantAccountState::class            => true,
-		AdsAccountState::class                 => true,
-		DBInstaller::class                     => true,
-		AttributeManager::class                => true,
-		ProductFactory::class                  => true,
-		AttributesTab::class                   => true,
-		VariationsAttributes::class            => true,
-		DeprecatedFilters::class               => true,
-		ZoneLocationsParser::class             => true,
-		ZoneMethodsParser::class               => true,
-		LocationRatesProcessor::class          => true,
-		ShippingZone::class                    => true,
-		AdsRecommendationsService::class       => true,
-		AdsAccountService::class               => true,
-		MerchantAccountService::class          => true,
-		MarketingChannelRegistrar::class       => true,
-		OAuthService::class                    => true,
-		SyncStatus::class                      => true,
-		WPCLIMigrationGTIN::class              => true,
-		OnboardingCompleted::class             => true,
-		ServiceBasedMerchantState::class       => true,
+		Installer::class                         => true,
+		AddressUtility::class                    => true,
+		AssetsHandlerInterface::class            => true,
+		ContactInformationNote::class            => true,
+		CompleteSetupTask::class                 => true,
+		CompleteSetupNote::class                 => true,
+		CouponHelper::class                      => true,
+		CouponMetaHandler::class                 => true,
+		CouponSyncer::class                      => true,
+		DateTimeUtility::class                   => true,
+		EventTracking::class                     => true,
+		GlobalSiteTag::class                     => true,
+		ISOUtility::class                        => true,
+		SiteVerificationEvents::class            => true,
+		OptionsInterface::class                  => true,
+		TransientsInterface::class               => true,
+		ReconnectWordPressNote::class            => true,
+		ReviewAfterClicksNote::class             => true,
+		RESTControllers::class                   => true,
+		Service::class                           => true,
+		SetupCampaignNote::class                 => true,
+		SetupCampaign2Note::class                => true,
+		SetupCouponSharingNote::class            => true,
+		NotificationService::class               => true,
+		AbandonedOnboardingEvaluator::class      => true,
+		EnhancedConversionsOffEvaluator::class   => true,
+		NotOnboarded90DaysEvaluator::class       => true,
+		ProductIssuesEvaluator::class            => true,
+		SkippedCampaignEvaluator::class          => true,
+		Sold10ItemsEvaluator::class              => true,
+		ReadyButNoSalesEvaluator::class          => true,
+		CouponsNotSyncedEvaluator::class         => true,
+		SalesNotGrowingEvaluator::class          => true,
+		PausedCampaignEvaluator::class           => true,
+		CampaignNoSalesEvaluator::class          => true,
+		RecommendationsAvailableEvaluator::class => true,
+		TrackingOffEvaluator::class              => true,
+		WcInstallTimestamp::class                => true,
+		TableManager::class                      => true,
+		TrackerSnapshot::class                   => true,
+		Tracks::class                            => true,
+		TracksInterface::class                   => true,
+		ProductSyncer::class                     => true,
+		ProductHelper::class                     => true,
+		ProductMetaHandler::class                => true,
+		SiteVerificationMeta::class              => true,
+		BatchProductHelper::class                => true,
+		ProductFilter::class                     => true,
+		ProductRepository::class                 => true,
+		ViewFactory::class                       => true,
+		DebugLogger::class                       => true,
+		MerchantStatuses::class                  => true,
+		PriceBenchmarks::class                   => true,
+		PhoneVerification::class                 => true,
+		PolicyComplianceCheck::class             => true,
+		ContactInformation::class                => true,
+		MerchantCenterService::class             => true,
+		NotificationsService::class              => true,
+		TargetAudience::class                    => true,
+		MerchantAccountState::class              => true,
+		AdsAccountState::class                   => true,
+		DBInstaller::class                       => true,
+		AttributeManager::class                  => true,
+		ProductFactory::class                    => true,
+		AttributesTab::class                     => true,
+		VariationsAttributes::class              => true,
+		DeprecatedFilters::class                 => true,
+		ZoneLocationsParser::class               => true,
+		ZoneMethodsParser::class                 => true,
+		LocationRatesProcessor::class            => true,
+		ShippingZone::class                      => true,
+		AdsRecommendationsService::class         => true,
+		AdsAccountService::class                 => true,
+		MerchantAccountService::class            => true,
+		MarketingChannelRegistrar::class         => true,
+		OAuthService::class                      => true,
+		SyncStatus::class                        => true,
+		WPCLIMigrationGTIN::class                => true,
+		OnboardingCompleted::class               => true,
+		ServiceBasedMerchantState::class         => true,
 	];
 
 	/**
@@ -334,6 +341,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( ReadyButNoSalesEvaluator::class, PolicyComplianceCheck::class, WC::class );
 		$this->share_with_tags( CouponsNotSyncedEvaluator::class, CouponHelper::class );
 		$this->share_with_tags( SalesNotGrowingEvaluator::class );
+		$this->share_with_tags( PausedCampaignEvaluator::class, AdsCampaign::class );
+		$this->share_with_tags( CampaignNoSalesEvaluator::class, AdsCampaign::class, AdsReport::class );
+		$this->share_with_tags( RecommendationsAvailableEvaluator::class, AdsRecommendationsService::class, AdsCampaign::class );
 		$this->share_with_tags( WcInstallTimestamp::class );
 
 		// Product attributes
