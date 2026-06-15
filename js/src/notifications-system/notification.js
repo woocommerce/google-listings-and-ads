@@ -5,6 +5,7 @@ import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import { CardBody, Flex, FlexBlock, FlexItem } from '@wordpress/components';
 import { closeSmall } from '@wordpress/icons';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -41,7 +42,7 @@ const Notification = ( {
 	description,
 	triggeredAt,
 	actions = [],
-	onDismiss,
+	onDismiss = noop,
 } ) => {
 	const { dismissNotification } = useAppDispatch();
 	const formattedDate = dateI18n(
@@ -49,12 +50,13 @@ const Notification = ( {
 		new Date( triggeredAt * 1000 )
 	);
 
-	const handleDismissClick = () => {
-		if ( onDismiss ) {
-			onDismiss();
-		} else {
-			dismissNotification( id );
+	const handleDismissClick = async () => {
+		try {
+			await dismissNotification( id );
+		} catch {
+			return;
 		}
+		onDismiss( id );
 	};
 
 	return (

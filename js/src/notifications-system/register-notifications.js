@@ -1,9 +1,8 @@
 /**
  * External dependencies
  */
-import { dispatch } from '@wordpress/data';
-import apiFetch from '@wordpress/api-fetch';
-import { createElement, useState } from '@wordpress/element';
+import { dispatch, resolveSelect } from '@wordpress/data';
+import { createElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -11,37 +10,27 @@ import { createElement, useState } from '@wordpress/element';
 import Notification from './notification';
 import useNotificationsSystemMap from './useNotificationsSystemMap';
 
-const API_NAMESPACE = '/wc/gla';
+const GLA_STORE = 'woocommerce/google-listings-and-ads';
 const NOTIFICATIONS_STORE = 'woocommerce/marketing-notifications-system';
 
 /**
- * Creates a self-contained React component for a single notification.
+ * Creates a notification component.
  *
- * The component looks up its display config from the notifications map at
- * render time and hides itself immediately when dismissed, calling DELETE
- * on the GLA notifications endpoint so the dismissal is persisted.
- *
- * @param {string} id          Notification ID.
+ * @param {string} id Notification ID, used to call dismissNotification on dismiss.
  * @param {number} triggeredAt Unix timestamp (seconds) when the notification was triggered.
- * @return {Function} React component.
+ * @returns {Function} A function that returns a React component.
  */
 function createNotificationComponent( id, triggeredAt ) {
 	return function NotificationComponent() {
-		const [ hidden, setHidden ] = useState( false );
 		const notificationMap = useNotificationsSystemMap();
 		const config = notificationMap[ id ];
 
-		if ( hidden || ! config ) {
+		if ( ! config ) {
 			return null;
 		}
 
-		const handleDismiss = () => {
-			setHidden( true );
-			apiFetch( {
-				path: `${ API_NAMESPACE }/notifications/${ id }`,
-				method: 'DELETE',
-			} );
-		};
+		const handleDismiss = () =>
+			dispatch( NOTIFICATIONS_STORE ).dismissNotification( id );
 
 		return createElement( Notification, {
 			id,
@@ -53,19 +42,18 @@ function createNotificationComponent( id, triggeredAt ) {
 }
 
 async function registerNotifications() {
-	const notifications = await apiFetch( {
-		path: `${ API_NAMESPACE }/notifications`,
-	} );
+	const glaNotifications =
+		await resolveSelect( GLA_STORE ).getNotifications();
+	const { registerNotifications: registerAll } =
+		dispatch( NOTIFICATIONS_STORE );
 
-	const { registerNotification } = dispatch( NOTIFICATIONS_STORE );
-
-	notifications.forEach( ( { id, triggered_at } ) => {
-		registerNotification( {
+	registerAll(
+		glaNotifications.map( ( { id, triggered_at } ) => ( {
 			id,
 			component: createNotificationComponent( id, triggered_at ),
 			triggeredAt: triggered_at,
-		} );
-	} );
+		} ) )
+	);
 }
 
 registerNotifications();
