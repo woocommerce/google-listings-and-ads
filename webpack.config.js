@@ -202,8 +202,8 @@ const webpackConfig = {
 						);
 					},
 				},
-				'notifications-system': {
-					name: 'notifications-system',
+				'notifications-system-shared': {
+					name: 'notifications-system-shared',
 					test( { resource } ) {
 						return /([\\/])js\1src\1notifications-system\1/.test(
 							resource
