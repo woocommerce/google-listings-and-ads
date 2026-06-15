@@ -34,6 +34,8 @@ import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
 } from '~/utils/tracks';
+import EuPoliticalDeclaration from '~/components/eu-political-declaration';
+import useEuPoliticalDeclarationContext from '~/hooks/useEuPoliticalDeclarationContext';
 
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'create-ads';
@@ -55,6 +57,8 @@ const CreatePaidAdsCampaign = () => {
 		createAdsWithAssetsCampaign,
 		updateCampaignAssetGroup,
 	} = useAppDispatch();
+	const { handleError: handleEuPoliticalDeclarationError } =
+		useEuPoliticalDeclarationContext();
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 
@@ -131,6 +135,8 @@ const CreatePaidAdsCampaign = () => {
 				)
 			);
 		} catch ( e ) {
+			handleEuPoliticalDeclarationError( e );
+
 			enhancer.signalFailedSubmission();
 			return;
 		}
@@ -200,6 +206,8 @@ const CreatePaidAdsCampaign = () => {
 					] }
 				/>
 			</CampaignAssetsForm>
+
+			<EuPoliticalDeclaration />
 		</>
 	);
 };
