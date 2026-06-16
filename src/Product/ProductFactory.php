@@ -46,13 +46,21 @@ class ProductFactory {
 	/**
 	 * @param WC_Product $product
 	 * @param string     $target_country
-	 * @param array      $mapping_rules The mapping rules setup by the user
+	 * @param array      $mapping_rules  The mapping rules setup by the user
+	 * @param string     $feed_label     Optional feed label (overrides contentLanguage when set).
+	 * @param string     $language       Optional ISO 639-1 language code.
 	 *
 	 * @return WCProductAdapter
 	 *
 	 * @throws InvalidValue When the product is a variation and its parent does not exist.
 	 */
-	public function create( WC_Product $product, string $target_country, array $mapping_rules ): WCProductAdapter {
+	public function create(
+		WC_Product $product,
+		string $target_country,
+		array $mapping_rules,
+		string $feed_label = '',
+		string $language = ''
+	): WCProductAdapter {
 		// We do not support syncing the parent variable product. Each variation is synced individually instead.
 		$this->validate_not_instanceof( $product, WC_Product_Variable::class );
 
@@ -66,7 +74,7 @@ class ProductFactory {
 			$attributes        = array_merge( $parent_attributes, $attributes );
 		}
 
-		return new WCProductAdapter(
+		$adapted = new WCProductAdapter(
 			[
 				'wc_product'        => $product,
 				'parent_wc_product' => $parent_product,
@@ -75,5 +83,13 @@ class ProductFactory {
 				'mapping_rules'     => $mapping_rules,
 			]
 		);
+
+		if ( $feed_label ) {
+			$adapted->set_feed_label( $feed_label );
+		} elseif ( $language ) {
+			$adapted->set_language( $language );
+		}
+
+		return $adapted;
 	}
 }
