@@ -46,7 +46,7 @@ const ShippingTimesCell = ( { market } ) => {
 	}
 
 	return sprintf(
-		// translators: 1: minimum shipping days, 2: maximum shipping days, 3: number of shipping days.
+		// translators: 1: minimum shipping days, 2: maximum shipping days, 3: shipping days unit (day or days).
 		__( '%1$d - %2$d %3$s', 'google-listings-and-ads' ),
 		time,
 		maxTime,
