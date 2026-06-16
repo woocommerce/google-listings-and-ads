@@ -1,5 +1,5 @@
 {
-	"description": "Default Claude Code settings for the WooCommerce repository",
+	"description": "Default Claude Code settings for the Google for WooCommerce repository",
 	"permissions": {
 		"allow": [ "Skill(gla-review)" ],
 		"deny": [],
