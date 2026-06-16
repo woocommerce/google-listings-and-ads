@@ -19,8 +19,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\Sold10It
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\TrackingOffEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use WP_REST_Request;
+use WP_Test_Spy_REST_Server;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -80,12 +82,15 @@ class CoreServiceProviderTest extends ContainerAwareUnitTest {
 	public function test_get_notifications_endpoint_returns_valid_response(): void {
 		$this->login_as_administrator();
 
-		/** @var NotificationController $controller */
-		$controller = $this->container->get( NotificationController::class );
+		global $wp_rest_server;
+		$wp_rest_server = new WP_Test_Spy_REST_Server();
+		$server         = new RESTServer( $wp_rest_server );
+
+		$controller = new NotificationController( $server, $this->container->get( NotificationService::class ) );
 		$controller->register();
 
 		$request  = new WP_REST_Request( 'GET', '/wc/gla/notifications' );
-		$response = rest_do_request( $request );
+		$response = $server->dispatch_request( $request );
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertArrayHasKey( 'notifications', $response->get_data() );
