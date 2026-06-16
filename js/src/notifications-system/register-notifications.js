@@ -24,6 +24,7 @@ function createNotificationComponent( id, triggeredAt ) {
 	return function NotificationComponent() {
 		const notificationMap = useNotificationsSystemMap();
 		const config = notificationMap[ id ];
+		// useDispatch is a React hook — valid here because NotificationComponent is a React component.
 		const { dismissNotification } = useDispatch( STORE_NAME );
 
 		if ( ! config ) {
@@ -49,8 +50,10 @@ async function initNotifications() {
 		return;
 	}
 
+	// dispatch is the imperative form — used outside React context, before any component mounts.
 	const { registerNotifications } = dispatch( STORE_NAME );
 
+	// triggered_at (snake_case) is the raw REST API field; mapped to triggeredAt (camelCase) in the registered object shape.
 	const notifications = glaNotifications.map( ( { id, triggered_at } ) => ( {
 		id,
 		component: createNotificationComponent( id, triggered_at ),
