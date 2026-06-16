@@ -98,8 +98,11 @@ class CoreServiceProviderTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_notification_controller_resolves_from_container(): void {
-		$controller = $this->container->get( NotificationController::class );
+		$this->assertTrue( $this->container->has( 'rest_controller' ) );
 
-		$this->assertInstanceOf( NotificationController::class, $controller );
+		$controllers        = $this->container->get( 'rest_controller' );
+		$controller_classes = array_map( 'get_class', $controllers );
+
+		$this->assertContains( NotificationController::class, $controller_classes );
 	}
 }
