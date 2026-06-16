@@ -1,6 +1,6 @@
 # Review Preferences
 
-Sourced from 30 merged PRs reviewed on `woocommerce/google-listings-and-ads` (PRs #3298–#3495).
+Sourced from 130 merged PRs on `woocommerce/google-listings-and-ads` (PRs #2419–#3495).
 
 ## Philosophy
 
@@ -20,10 +20,15 @@ These appear on nearly every PR where they occur:
 - **Prop drilling beyond 1 level** — flag and suggest a hook or context refactor; include a concrete restructuring sketch
 - **Fire-and-forget API calls** — every API call needs error handling
 - **Optimistic UI without failure rollback** — if the API call fails, the UI must not be left in a broken state
+- **Falsy check on a numeric value where `0` is valid** — `!someNumber` or `!obj?.prop` treats `0` as missing; use `someNumber == null` to detect only null/undefined
 
 ## Frequently flag 🟡
 
 Consistent patterns that come up across PRs:
+
+**PHP**
+- Unguarded array key access on filtered/external data — `$array['key']` where `$array` comes from a WP filter callback or external API response; use `$array['key'] ?? null` or `isset()` guard
+- Non-obvious implementation choices (encoding, date format, API workaround) with no inline comment — flag for a `// reason:` comment explaining the constraint
 
 **SCSS**
 - Hardcoded pixel values — use `$grid-unit-*` variables (`$grid-unit-10`, `$grid-unit-20`, etc.)
@@ -41,12 +46,17 @@ Consistent patterns that come up across PRs:
 - Prop spreading (`{ ...actionProps }`) — destructure explicitly so props are clear at the call site
 - JSDoc descriptions with alignment padding — keep tight, no extra spaces to align columns
 - Loose comparisons where strictness matters — note when `=== false` is intentional vs. fragile
+- Test helper function naming — prefer `expect[Component]To[Record/Emit/Render][Behavior]()` over `expect[Thing]With[Condition]()`; the name should encode subject, expected outcome, and trigger (e.g., `expectComponentToRecordEventWithFilteredProperties` not `expectEventWithPropertiesFilter`)
+- Event tracking property scoping — when reviewing tracks changes, check whether a new property is being added to a shared filter (`FILTER_BUDGET_RECOMMENDATIONS`, etc.) that applies across multiple events; properties specific to one event's context should not pollute shared filters
 
 ## Usually nits 🔵
 
 - SCSS file naming conventions
 - Folder name inconsistency (pluralization, hyphenation relative to adjacent folders)
 - Minor JSDoc formatting
+- `useCallback` without clear justification — only warranted for perf optimization, custom hook API, or preventing `useEffect` re-triggers; if none apply, suggest removing it to reduce complexity
+- `forwardRef` component missing `displayName` — every `forwardRef`-wrapped export should set `ComponentName.displayName = 'ComponentName'` for React DevTools / stack traces
+- JSDoc description vague verbs — "handle", "valid", "process" are too imprecise; request specific alternatives ("propagate to", "filter by", "properties defined in X")
 
 ## What gets through without comment
 
