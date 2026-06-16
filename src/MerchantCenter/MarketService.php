@@ -344,6 +344,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * Fans out a primary market update to the underlying settings stores.
 	 *
 	 * @param array $config Partial config — only supplied keys are written.
+	 *
+	 * @throws InvalidValue When `language` or `currency` is present but not an array.
 	 */
 	private function update_primary_market_fanout( array $config ): void {
 		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
