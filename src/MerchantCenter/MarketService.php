@@ -188,6 +188,30 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
+	 * Generates a market ID from a feed label.
+	 *
+	 * Centralises the ID-generation rule so any code path that creates a market
+	 * (REST controller, batch import, migration, CLI) produces consistent IDs.
+	 *
+	 * @param string $feed_label The market's feed label.
+	 *
+	 * @return string The sanitised market ID.
+	 *
+	 * @throws InvalidValue When the generated ID equals the reserved 'primary' key.
+	 */
+	public function generate_market_id( string $feed_label ): string {
+		$id = sanitize_title( $feed_label );
+
+		if ( 'primary' === $id ) {
+			throw new InvalidValue(
+				sprintf( 'The feed label "%s" generates the reserved market ID "primary".', $feed_label )
+			);
+		}
+
+		return $id;
+	}
+
+	/**
 	 * Adds a new market config to the store.
 	 *
 	 * Primary cannot be added — it is always synthesised from site settings.
