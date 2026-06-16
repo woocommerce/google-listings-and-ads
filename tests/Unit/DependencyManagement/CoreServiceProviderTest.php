@@ -80,7 +80,9 @@ class CoreServiceProviderTest extends ContainerAwareUnitTest {
 	public function test_get_notifications_endpoint_returns_valid_response(): void {
 		$this->login_as_administrator();
 
-		do_action( 'rest_api_init' );
+		/** @var NotificationController $controller */
+		$controller = $this->container->get( NotificationController::class );
+		$controller->register();
 
 		$request  = new WP_REST_Request( 'GET', '/wc/gla/notifications' );
 		$response = rest_do_request( $request );
