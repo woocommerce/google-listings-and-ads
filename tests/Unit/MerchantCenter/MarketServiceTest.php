@@ -419,6 +419,246 @@ class MarketServiceTest extends UnitTest {
 		$this->assertArrayHasKey( 'countries', $result );
 	}
 
+	public function test_update_market_primary_persists_multiple_languages_and_currencies(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->market_service->update_market(
+			'primary',
+			[
+				'language' => [ 'en', 'fr' ],
+				'currency' => [ 'USD', 'EUR' ],
+			]
+		);
+
+		$this->assertArrayHasKey( OptionsInterface::MERCHANT_CENTER, $update_calls );
+		$this->assertSame( [ 'en', 'fr' ], $update_calls[ OptionsInterface::MERCHANT_CENTER ]['language'] );
+		$this->assertSame( [ 'USD', 'EUR' ], $update_calls[ OptionsInterface::MERCHANT_CENTER ]['currency'] );
+	}
+
+	public function test_update_market_primary_deduplicates_languages_and_currencies(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->market_service->update_market(
+			'primary',
+			[
+				'language' => [ 'en', 'fr', 'en' ],
+				'currency' => [ 'USD', 'USD', 'EUR' ],
+			]
+		);
+
+		$this->assertSame( [ 'en', 'fr' ], $update_calls[ OptionsInterface::MERCHANT_CENTER ]['language'] );
+		$this->assertSame( [ 'USD', 'EUR' ], $update_calls[ OptionsInterface::MERCHANT_CENTER ]['currency'] );
+	}
+
+	public function test_update_market_primary_partial_update_preserves_other_keys(): void {
+		$existing_mc = [
+			'shipping_rate' => 'flat',
+			'shipping_time' => 'flat',
+			'language'      => [ 'en', 'fr' ],
+			'currency'      => [ 'USD', 'EUR' ],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => $existing_mc,
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->market_service->update_market(
+			'primary',
+			[ 'shipping_rate' => 'automatic' ]
+		);
+
+		$persisted = $update_calls[ OptionsInterface::MERCHANT_CENTER ];
+		$this->assertSame( 'automatic', $persisted['shipping_rate'] );
+		$this->assertSame( [ 'en', 'fr' ], $persisted['language'] );
+		$this->assertSame( [ 'USD', 'EUR' ], $persisted['currency'] );
+	}
+
+	public function test_update_market_primary_language_currency_update_preserves_shipping(): void {
+		$existing_mc = [
+			'shipping_rate' => 'automatic',
+			'shipping_time' => 'flat',
+			'language'      => [ 'en' ],
+			'currency'      => [ 'USD' ],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => $existing_mc,
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->market_service->update_market(
+			'primary',
+			[
+				'language' => [ 'en', 'fr' ],
+				'currency' => [ 'USD', 'EUR' ],
+			]
+		);
+
+		$persisted = $update_calls[ OptionsInterface::MERCHANT_CENTER ];
+		$this->assertSame( [ 'en', 'fr' ], $persisted['language'] );
+		$this->assertSame( [ 'USD', 'EUR' ], $persisted['currency'] );
+		$this->assertSame( 'automatic', $persisted['shipping_rate'] );
+		$this->assertSame( 'flat', $persisted['shipping_time'] );
+	}
+
+	public function test_update_market_primary_persists_empty_language_and_currency_arrays(): void {
+		$existing_mc = [
+			'shipping_rate' => 'flat',
+			'language'      => [ 'en', 'fr' ],
+			'currency'      => [ 'USD', 'EUR' ],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => $existing_mc,
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->market_service->update_market(
+			'primary',
+			[
+				'language' => [],
+				'currency' => [],
+			]
+		);
+
+		$persisted = $update_calls[ OptionsInterface::MERCHANT_CENTER ];
+		$this->assertSame( [], $persisted['language'] );
+		$this->assertSame( [], $persisted['currency'] );
+		$this->assertSame( 'flat', $persisted['shipping_rate'] );
+	}
+
+	public function test_update_market_primary_rejects_non_array_language(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->update_market(
+			'primary',
+			[ 'language' => 'en' ]
+		);
+	}
+
+	public function test_update_market_primary_rejects_non_array_currency(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->update_market(
+			'primary',
+			[ 'currency' => 'USD' ]
+		);
+	}
+
+	public function test_get_primary_market_returns_stored_language_and_currency_when_set(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'language' => [ 'en', 'fr' ],
+					'currency' => [ 'USD', 'EUR' ],
+				],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$result = $this->market_service->get_primary_market();
+
+		$this->assertSame( [ 'en', 'fr' ], $result['language'] );
+		$this->assertSame( [ 'USD', 'EUR' ], $result['currency'] );
+	}
+
+	public function test_get_primary_market_falls_back_to_defaults_when_stored_value_invalid(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'language' => 'en',
+					'currency' => 'USD',
+				],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$result = $this->market_service->get_primary_market();
+
+		$this->assertIsArray( $result['language'] );
+		$this->assertIsArray( $result['currency'] );
+		$this->assertNotSame( 'en', $result['language'] );
+		$this->assertNotSame( 'USD', $result['currency'] );
+	}
+
 	public function test_update_market_secondary_merges_and_persists(): void {
 		$existing = [
 			'gb' => [
