@@ -882,6 +882,163 @@ class MarketServiceTest extends UnitTest {
 		);
 	}
 
+	/**
+	 * @dataProvider provide_valid_feed_labels
+	 *
+	 * @param string $feed_label
+	 */
+	public function test_add_market_accepts_valid_feed_label( string $feed_label ): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'GB' ] ],
+			]
+		);
+
+		$persisted = null;
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$persisted ) {
+					if ( OptionsInterface::MARKETS === $key ) {
+						$persisted = $value;
+					}
+					return true;
+				}
+			);
+
+		$this->market_service->add_market(
+			'gb',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => $feed_label,
+			]
+		);
+
+		$this->assertSame( $feed_label, $persisted['gb']['feed_label'] );
+	}
+
+	/**
+	 * @dataProvider provide_invalid_feed_labels
+	 *
+	 * @param string $feed_label
+	 */
+	public function test_add_market_rejects_invalid_feed_label( string $feed_label ): void {
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->add_market(
+			'gb',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => $feed_label,
+			]
+		);
+	}
+
+	/**
+	 * @dataProvider provide_valid_feed_labels
+	 *
+	 * @param string $feed_label
+	 */
+	public function test_update_market_accepts_valid_feed_label( string $feed_label ): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$result = $this->market_service->update_market( 'gb', [ 'feed_label' => $feed_label ] );
+
+		$this->assertSame( $feed_label, $result['feed_label'] );
+	}
+
+	/**
+	 * @dataProvider provide_invalid_feed_labels
+	 *
+	 * @param string $feed_label
+	 */
+	public function test_update_market_rejects_invalid_feed_label( string $feed_label ): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $existing ] );
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->update_market( 'gb', [ 'feed_label' => $feed_label ] );
+	}
+
+	public function test_feed_label_rejection_message_references_pattern_and_value(): void {
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+
+		$this->expectException( InvalidValue::class );
+		$this->expectExceptionMessageMatches( '#feed_label.*\[A-Z0-9-\].*"us"#' );
+
+		$this->market_service->add_market(
+			'gb',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'us',
+			]
+		);
+	}
+
+	public function test_empty_feed_label_still_throws_is_empty_not_pattern(): void {
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+
+		$this->expectException( InvalidValue::class );
+		$this->expectExceptionMessage( 'The value of feed_label can not be empty.' );
+
+		$this->market_service->add_market(
+			'gb',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => '',
+			]
+		);
+	}
+
+	public function provide_valid_feed_labels(): array {
+		return [
+			'two-letter uppercase'   => [ 'US' ],
+			'uppercase with dash'    => [ 'GB-EN' ],
+			'alphanumeric'           => [ 'A1' ],
+			'twenty char max length' => [ 'A1-B2-C3-D4-E5-F6-G7' ],
+		];
+	}
+
+	public function provide_invalid_feed_labels(): array {
+		return [
+			'lowercase'        => [ 'us' ],
+			'twenty-one chars' => [ 'A1-B2-C3-D4-E5-F6-G7-' ],
+			'underscore'       => [ 'GB_EN' ],
+			'period'           => [ 'GB.EN' ],
+			'space'            => [ 'GB EN' ],
+			'at sign'          => [ 'GB@EN' ],
+		];
+	}
+
 	public function test_add_market_persists_array_language_and_currency(): void {
 		$config = [
 			'country'    => 'CH',

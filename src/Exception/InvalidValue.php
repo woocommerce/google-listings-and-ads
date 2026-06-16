@@ -85,6 +85,19 @@ class InvalidValue extends LogicException implements GoogleListingsAndAdsExcepti
 	}
 
 	/**
+	 * Create a new instance of the exception when a value does not match a required regex pattern.
+	 *
+	 * @param string $key     The name of the value.
+	 * @param string $pattern The regex pattern the value was checked against.
+	 * @param string $value   The offending value.
+	 *
+	 * @return static
+	 */
+	public static function does_not_match_pattern( string $key, string $pattern, string $value ): InvalidValue {
+		return new static( sprintf( 'The value of %s must match pattern %s; got "%s".', $key, $pattern, $value ) );
+	}
+
+	/**
 	 * Create a new instance of the exception when a value isn't a valid coupon ID.
 	 *
 	 * @param mixed $value The provided coupon ID that isn't valid.
