@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { dispatch, resolveSelect } from '@wordpress/data';
+import { dispatch, resolveSelect, useDispatch } from '@wordpress/data';
 import { createElement } from '@wordpress/element';
 
 /**
@@ -9,9 +9,9 @@ import { createElement } from '@wordpress/element';
  */
 import Notification from './notification';
 import useNotificationsSystemMap from './useNotificationsSystemMap';
+import { STORE_NAME } from './woo-marketing-notifications-slot/constants';
 
 const GLA_STORE = 'woocommerce/google-listings-and-ads';
-const NOTIFICATIONS_STORE = 'woocommerce/marketing-notifications-system';
 
 /**
  * Creates a notification component.
@@ -24,13 +24,13 @@ function createNotificationComponent( id, triggeredAt ) {
 	return function NotificationComponent() {
 		const notificationMap = useNotificationsSystemMap();
 		const config = notificationMap[ id ];
+		const { dismissNotification } = useDispatch( STORE_NAME );
 
 		if ( ! config ) {
 			return null;
 		}
 
-		const handleDismiss = () =>
-			dispatch( NOTIFICATIONS_STORE ).dismissNotification( id );
+		const handleDismiss = () => dismissNotification( id );
 
 		return createElement( Notification, {
 			id,
@@ -41,19 +41,23 @@ function createNotificationComponent( id, triggeredAt ) {
 	};
 }
 
-async function registerNotifications() {
+async function initNotifications() {
 	const glaNotifications =
 		await resolveSelect( GLA_STORE ).getNotifications();
-	const { registerNotifications: registerAll } =
-		dispatch( NOTIFICATIONS_STORE );
 
-	registerAll(
-		glaNotifications.map( ( { id, triggered_at } ) => ( {
-			id,
-			component: createNotificationComponent( id, triggered_at ),
-			triggeredAt: triggered_at,
-		} ) )
-	);
+	if ( ! glaNotifications.length ) {
+		return;
+	}
+
+	const { registerNotifications } = dispatch( STORE_NAME );
+
+	const notifications = glaNotifications.map( ( { id, triggered_at } ) => ( {
+		id,
+		component: createNotificationComponent( id, triggered_at ),
+		triggeredAt: triggered_at,
+	} ) );
+
+	registerNotifications( notifications );
 }
 
-registerNotifications();
+initNotifications();

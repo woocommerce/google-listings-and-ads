@@ -11,7 +11,7 @@ import useNotifications from './useNotifications';
 
 import {
 	STORE_NAME,
-	REGISTER_NOTIFICATION,
+	REGISTER_NOTIFICATIONS,
 	DISMISS_NOTIFICATION,
 	MULTICHANNEL_CLASS,
 	BANNER_CLASS,
@@ -30,10 +30,12 @@ if ( ! select( STORE_NAME ) ) {
 		createReduxStore( STORE_NAME, {
 			reducer( state = [], action ) {
 				switch ( action.type ) {
-					case REGISTER_NOTIFICATION:
+					case REGISTER_NOTIFICATIONS:
 						return [ ...state, ...action.notifications ];
 					case DISMISS_NOTIFICATION:
-						return state.filter( ( n ) => n.id !== action.id );
+						return state.filter( ( notification ) => {
+							return notification.id !== action.id;
+						} );
 					default:
 						return state;
 				}
@@ -41,7 +43,7 @@ if ( ! select( STORE_NAME ) ) {
 
 			actions: {
 				registerNotifications: ( notifications ) => ( {
-					type: REGISTER_NOTIFICATION,
+					type: REGISTER_NOTIFICATIONS,
 					notifications,
 				} ),
 				dismissNotification: ( id ) => ( {
