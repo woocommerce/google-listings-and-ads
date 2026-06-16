@@ -48,7 +48,7 @@ Apply every rule below.
 
 | Rule | Flag when… |
 |---|---|
-| Describes HOW at the right level | Too vague: no direction for an unfamiliar engineer. Too granular: specifies exact file paths, line numbers, or import statements |
+| Describes HOW at the right level | Too vague: no direction for an unfamiliar engineer. Too granular: specifies full file paths, line numbers, or import statements — use class names only |
 | Not a step-by-step todo list | IB reads as a mechanical checklist of tasks rather than contextual direction |
 | External links present where referenced | Mentions external docs, APIs, or prior art without a link |
 | Code references use GitHub permalinks | Links point to a branch URL (`/tree/{branch}/`) rather than a commit SHA permalink (`/blob/{sha}/`) — branch links are fragile |
@@ -103,8 +103,9 @@ If the IB is too high-level to verify specific claims (no named symbols, no spec
 
 Before the Validation Report, output a short high-level summary aimed at a tech lead (who may be FE-specialized and not deep in the BE details). Cover:
 - What type of change this is (BE only / FE only / both)
-- What's new in one or two sentences — what fires, what it does
-- Any new files or significant changes to existing ones (one line, no fine detail)
+- **Problem:** what was broken or missing before this ticket — one sentence, plain language
+- **Solution:** what this ticket does to fix it — one sentence, plain language, no class names
+- Any new files or significant changes to existing ones (class names only, one line, no fine detail)
 - Unmerged dependencies that must land first
 - Explicit callout if there are no JS, REST API, or DB schema changes
 
@@ -172,7 +173,7 @@ Output format:
 
 <corrected IB — contextual direction, appropriate links, abstract descriptions, no duplicated AC content.
 
-Format as a bulleted list — no subheadings, no sections. Use a blank line between logical groups (prerequisites, service changes, new class, registration) to aid scanning, but no bold headings. Where a parent bullet names a method or class and has multiple distinct sub-steps, use nested child bullets for those sub-steps (e.g. `update_market()` with before/after option-write steps, or a new class with `schedule()` and `process_items()` behaviours). Keep nesting to one level only. Do NOT include Test Coverage here — it goes in its own section below.>
+Format as a bulleted list — no subheadings, no bold section headings. Nested child bullets are allowed where a parent bullet has multiple distinct sub-steps. Use a blank line between logical groups (prerequisites, service changes, new class, registration) to aid scanning. Reference classes and methods by name only — never include full file paths. Do NOT include Test Coverage here — it goes in its own section below.>
 
 ---
 
