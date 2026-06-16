@@ -21,6 +21,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluat
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
+use PHPUnit\Framework\MockObject\MockObject;
 use WP_REST_Request;
 use WP_Test_Spy_REST_Server;
 
@@ -86,7 +87,11 @@ class CoreServiceProviderTest extends ContainerAwareUnitTest {
 		$wp_rest_server = new WP_Test_Spy_REST_Server();
 		$server         = new RESTServer( $wp_rest_server );
 
-		$controller = new NotificationController( $server, $this->container->get( NotificationService::class ) );
+		/** @var MockObject|NotificationService $service */
+		$service = $this->createMock( NotificationService::class );
+		$service->method( 'get_notifications' )->willReturn( [] );
+
+		$controller = new NotificationController( $server, $service );
 		$controller->register();
 
 		$request  = new WP_REST_Request( 'GET', '/wc/gla/notifications' );
