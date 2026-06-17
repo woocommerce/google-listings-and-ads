@@ -21,7 +21,7 @@ jobs:
           ref: develop
 
       - name: Prepare node
-        uses: woocommerce/grow/prepare-node@actions-v2
+        uses: woocommerce/grow/prepare-node@actions-v3
         with:
           node-version-file: ".nvmrc"
 

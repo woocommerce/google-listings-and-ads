@@ -62,7 +62,10 @@ jobs:
         with:
           name: google-listings-and-ads.zip
       - name: Run QIT Tests
-        # Update it with more stable path once merged.
+        # TODO: woocommerce/grow/run-qit-extension was removed in actions-v3 (broken and unused upstream).
+        # This step needs to be migrated to invoke the QIT CLI directly.
+        # Tracked separately; leaving on actions-v2 until that migration is done.
+        # See: https://github.com/woocommerce/grow/pull/239
         uses: woocommerce/grow/run-qit-extension@actions-v2
         with:
           qit-partner-user: ${{ secrets.QIT_PARTNER_USER }}

@@ -18,7 +18,7 @@ jobs:
   MergeTrunkDevelopPR:
     runs-on: ubuntu-latest
     steps:
-      - uses: woocommerce/grow/merge-trunk-develop-pr@actions-v2
+      - uses: woocommerce/grow/merge-trunk-develop-pr@actions-v3
 
   delete-simulate-release-branch:
     name: Delete simulate release branch
