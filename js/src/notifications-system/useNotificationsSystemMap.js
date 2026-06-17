@@ -20,9 +20,9 @@ import {
 
 /**
  * @typedef {Object} NotificationConfig
- * @property {string}        title       Notification headline.
- * @property {string}        description Notification body text.
- * @property {Array<Object>} actions     Array of AppButton prop objects for CTA buttons.
+ * @property {string} title Notification headline.
+ * @property {string} description Notification body text.
+ * @property {Array<Object>} actions Array of AppButton prop objects for CTA buttons.
  */
 
 const getStartedUrl = getGetStartedUrl();

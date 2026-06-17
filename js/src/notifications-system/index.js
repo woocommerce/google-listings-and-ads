@@ -1,14 +1,17 @@
 /**
  * External dependencies
  */
-import { dispatch, resolveSelect, useDispatch } from '@wordpress/data';
+import { resolveSelect } from '@wordpress/data';
 import { createElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { STORE_KEY as GLA_STORE_KEY } from '~/data/constants';
-import { STORE_KEY as MARKETING_NOTIFICATIONS_STORE_KEY } from './woo-marketing-notifications-slot/constants';
+import {
+	registerNotifications,
+	useDismissNotification,
+} from './woo-marketing-notifications-slot';
 import Notification from './notification';
 import useNotificationsSystemMap from './useNotificationsSystemMap';
 
@@ -22,16 +25,14 @@ import useNotificationsSystemMap from './useNotificationsSystemMap';
 function createNotificationComponent( id, triggeredAt ) {
 	return function NotificationComponent() {
 		const notificationMap = useNotificationsSystemMap();
-		const { dismissNotification } = useDispatch(
-			MARKETING_NOTIFICATIONS_STORE_KEY
-		);
+		const dismissNotification = useDismissNotification();
 		const config = notificationMap[ id ];
 
 		if ( ! config ) {
 			return null;
 		}
 
-		const { title, description, action } = config;
+		const { title, description, actions } = config;
 
 		const handleDismiss = () => {
 			dismissNotification( id );
@@ -41,7 +42,7 @@ function createNotificationComponent( id, triggeredAt ) {
 			id,
 			title,
 			description,
-			action,
+			actions,
 			triggeredAt,
 			onDismiss: handleDismiss,
 		} );
@@ -59,10 +60,6 @@ async function initNotifications() {
 	if ( ! glaNotifications.length ) {
 		return;
 	}
-
-	const { registerNotifications } = dispatch(
-		MARKETING_NOTIFICATIONS_STORE_KEY
-	);
 
 	const notifications = glaNotifications.map( ( { id, triggered_at } ) => {
 		return {

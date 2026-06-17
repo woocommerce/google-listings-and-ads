@@ -15,8 +15,8 @@ import { Badge } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import useNotifications from './useNotifications';
-import './notifications-panel.scss';
+import useNotifications from '../../hooks/useNotifications';
+import './index.scss';
 
 /**
  * Renders the list of active notifications for the Woo Marketing Notifications Slot.
