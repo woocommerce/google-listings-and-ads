@@ -13,7 +13,7 @@ import { STORE_NAME } from './constants';
  */
 const useNotifications = () => {
 	const notifications = useSelect( ( select ) => {
-		return select( STORE_NAME ).getNotifications();
+		return select( STORE_NAME )?.getNotifications() ?? [];
 	}, [] );
 
 	return { notifications };

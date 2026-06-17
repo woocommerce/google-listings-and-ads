@@ -13,7 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class NotificationSystemSlot
+ * Class NotificationsSystemSlot
  *
  * Registers and enqueues the plugin-agnostic notification slot bundle on the
  * WooCommerce Marketing overview page (page=wc-admin&path=/marketing).
@@ -23,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin
  */
-class NotificationSystemSlot implements Service, Registerable {
+class NotificationsSystemSlot implements Service, Registerable {
 
 	use PluginHelper;
 
@@ -33,7 +33,7 @@ class NotificationSystemSlot implements Service, Registerable {
 	protected $assets_handler;
 
 	/**
-	 * NotificationSystemSlot constructor.
+	 * NotificationsSystemSlot constructor.
 	 *
 	 * @param AssetsHandlerInterface $assets_handler
 	 */
@@ -56,7 +56,7 @@ class NotificationSystemSlot implements Service, Registerable {
 
 				$slot_script = new AdminScriptWithBuiltDependenciesAsset(
 					'woocommerce-marketing-notifications-system-slot',
-					'js/build/notification-slot',
+					'js/build/woo-marketing-notifications-slot',
 					"{$build_dir}/notification-slot.asset.php",
 					new BuiltScriptDependencyArray(
 						[

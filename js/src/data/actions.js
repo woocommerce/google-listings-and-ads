@@ -1502,7 +1502,7 @@ export function* disconnectYouTubeAccount() {
 		handleApiError(
 			error,
 			__(
-				'There was an error disconnecting your YouTube account.',
+				'Unable to disconnect your YouTube account.',
 				'google-listings-and-ads'
 			)
 		);

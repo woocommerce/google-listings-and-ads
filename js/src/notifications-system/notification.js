@@ -5,7 +5,6 @@ import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import { CardBody, Flex, FlexBlock, FlexItem } from '@wordpress/components';
 import { closeSmall } from '@wordpress/icons';
-import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -42,7 +41,7 @@ const Notification = ( {
 	description,
 	triggeredAt,
 	actions = [],
-	onDismiss = noop,
+	onDismiss,
 } ) => {
 	const { dismissNotification } = useAppDispatch();
 	const formattedDate = dateI18n(

@@ -55,8 +55,8 @@ async function initNotifications() {
 	const notifications = glaNotifications.map( ( { id, triggered_at } ) => {
 		return {
 			id,
+			triggered_at,
 			component: createNotificationComponent( id, triggered_at ),
-			triggeredAt: triggered_at,
 		};
 	} );
 
