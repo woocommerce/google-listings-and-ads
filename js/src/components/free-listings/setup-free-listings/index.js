@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useRef } from '@wordpress/element';
+import { useRef, useEffect } from '@wordpress/element';
 import { createSlotFill } from '@wordpress/components';
 import { Form } from '@woocommerce/components';
 import { pick, noop } from 'lodash';
@@ -91,6 +91,39 @@ const SetupFreeListings = ( {
 	submitLabel,
 } ) => {
 	const formRef = useRef();
+	const hasAutoSavedDefaultsRef = useRef( false );
+
+	// Auto-save default shipping times to the database when a new merchant has no
+	// saved times but has audience countries. Must be declared before the early return
+	// to satisfy React's rules of hooks.
+	// This mirrors the role ShippingCountriesForm.useEffect plays on develop, but moved
+	// here so that the form's initialValues can also be pre-populated (avoiding the
+	// validation race condition that occurs when the effect fires after the first render).
+	useEffect( () => {
+		if ( hasAutoSavedDefaultsRef.current ) {
+			return;
+		}
+		if ( ! shippingTimes || shippingTimes.length !== 0 ) {
+			return;
+		}
+		const countries = resolveFinalCountries( targetAudience ) || [];
+		if ( countries.length === 0 ) {
+			return;
+		}
+		hasAutoSavedDefaultsRef.current = true;
+		onShippingTimesChange(
+			countries.map( ( countryCode ) => ( {
+				countryCode,
+				time: 1,
+				maxTime: 5,
+			} ) )
+		);
+	}, [
+		targetAudience,
+		shippingTimes,
+		resolveFinalCountries,
+		onShippingTimesChange,
+	] );
 
 	if ( ! ( targetAudience && settings && shippingRates && shippingTimes ) ) {
 		return <AppSpinner />;
