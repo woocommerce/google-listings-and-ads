@@ -190,10 +190,15 @@ const STATIC_MAP = {
  * @return {Object.<string, NotificationConfig>} Map of notification ID to its display config.
  */
 const useNotificationsSystemMap = () => {
-	const { hasGoogleMCConnection } = useGoogleMCAccount();
+	const { hasGoogleMCConnection, hasFinishedResolution } =
+		useGoogleMCAccount();
 
-	const dynamicMap = useMemo(
-		() => ( {
+	const dynamicMap = useMemo( () => {
+		if ( ! hasFinishedResolution ) {
+			return {};
+		}
+
+		return {
 			'skipped-campaign-creation': {
 				title: __(
 					'Finish setting up Google Ads',
@@ -343,9 +348,8 @@ const useNotificationsSystemMap = () => {
 					},
 				],
 			},
-		} ),
-		[ hasGoogleMCConnection ]
-	);
+		};
+	}, [ hasFinishedResolution, hasGoogleMCConnection ] );
 
 	return { ...STATIC_MAP, ...dynamicMap };
 };
