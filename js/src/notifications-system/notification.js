@@ -34,7 +34,7 @@ import './notification.scss';
  * @param {string} props.description Notification body text.
  * @param {number} props.triggeredAt Unix timestamp (seconds) when the notification was triggered.
  * @param {NotificationAction[]} props.actions CTA buttons.
- * @param {Function} [props.onDismiss] Optional callback invoked after dismissNotification succeeds.
+ * @param {Function} [props.onDismiss] Callback invoked after dismissNotification succeeds.
  */
 const Notification = ( {
 	id,

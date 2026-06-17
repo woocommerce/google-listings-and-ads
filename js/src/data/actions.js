@@ -1502,7 +1502,7 @@ export function* disconnectYouTubeAccount() {
 		handleApiError(
 			error,
 			__(
-				'Unable to disconnect your YouTube account.',
+				'There was an error disconnecting your YouTube account.',
 				'google-listings-and-ads'
 			)
 		);
@@ -1542,7 +1542,7 @@ export function* dismissNotification( id ) {
 		handleApiError(
 			error,
 			__(
-				'Unable to dismiss the notification.',
+				'There was an error dismissing the notification.',
 				'google-listings-and-ads'
 			)
 		);

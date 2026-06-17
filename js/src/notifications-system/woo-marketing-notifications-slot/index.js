@@ -42,14 +42,18 @@ if ( ! select( STORE_NAME ) ) {
 			},
 
 			actions: {
-				registerNotifications: ( notifications ) => ( {
-					type: REGISTER_NOTIFICATIONS,
-					notifications,
-				} ),
-				dismissNotification: ( id ) => ( {
-					type: DISMISS_NOTIFICATION,
-					id,
-				} ),
+				registerNotifications: ( notifications ) => {
+					return {
+						type: REGISTER_NOTIFICATIONS,
+						notifications,
+					};
+				},
+				dismissNotification: ( id ) => {
+					return {
+						type: DISMISS_NOTIFICATION,
+						id,
+					};
+				},
 			},
 
 			selectors: {

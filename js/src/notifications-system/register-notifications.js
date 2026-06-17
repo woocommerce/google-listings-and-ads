@@ -7,11 +7,10 @@ import { createElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import { STORE_KEY } from '~/data/constants';
 import Notification from './notification';
 import useNotificationsSystemMap from './useNotificationsSystemMap';
 import { STORE_NAME } from './woo-marketing-notifications-slot/constants';
-
-const GLA_STORE = 'woocommerce/google-listings-and-ads';
 
 /**
  * Creates a notification component.
@@ -24,14 +23,15 @@ function createNotificationComponent( id, triggeredAt ) {
 	return function NotificationComponent() {
 		const notificationMap = useNotificationsSystemMap();
 		const config = notificationMap[ id ];
-		// useDispatch is a React hook — valid here because NotificationComponent is a React component.
 		const { dismissNotification } = useDispatch( STORE_NAME );
 
 		if ( ! config ) {
 			return null;
 		}
 
-		const handleDismiss = () => dismissNotification( id );
+		const handleDismiss = () => {
+			return dismissNotification( id );
+		};
 
 		return createElement( Notification, {
 			id,
@@ -44,21 +44,21 @@ function createNotificationComponent( id, triggeredAt ) {
 
 async function initNotifications() {
 	const glaNotifications =
-		await resolveSelect( GLA_STORE ).getNotifications();
+		await resolveSelect( STORE_KEY ).getNotifications();
 
 	if ( ! glaNotifications.length ) {
 		return;
 	}
 
-	// dispatch is the imperative form — used outside React context, before any component mounts.
 	const { registerNotifications } = dispatch( STORE_NAME );
 
-	// triggered_at (snake_case) is the raw REST API field; mapped to triggeredAt (camelCase) in the registered object shape.
-	const notifications = glaNotifications.map( ( { id, triggered_at } ) => ( {
-		id,
-		component: createNotificationComponent( id, triggered_at ),
-		triggeredAt: triggered_at,
-	} ) );
+	const notifications = glaNotifications.map( ( { id, triggered_at } ) => {
+		return {
+			id,
+			component: createNotificationComponent( id, triggered_at ),
+			triggeredAt: triggered_at,
+		};
+	} );
 
 	registerNotifications( notifications );
 }
