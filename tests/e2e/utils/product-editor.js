@@ -338,16 +338,6 @@ export function getClassicProductEditorUtils( page ) {
 				],
 			} );
 		},
-		async mockNotificationStatus( status ) {
-			const url = new URL( page.url() );
-			const productId = url.searchParams.get( 'post' );
-
-			await api.api().put( `products/${ productId }`, {
-				meta_data: [
-					{ key: '_wc_gla_notification_status', value: status },
-				],
-			} );
-		},
 	};
 
 	return {
