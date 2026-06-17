@@ -6,5 +6,5 @@ import './index.scss';
 
 init();
 
-export { registerNotifications } from './data';
-export { default as useDismissNotification } from './hooks/useDismissNotification';
+export { registerNotifications as registerNotificationsInMarketingSlot } from './data';
+export { default as useDismissNotificationFromMarketingSlot } from './hooks/useDismissNotification';

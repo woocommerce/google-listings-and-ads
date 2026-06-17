@@ -7,10 +7,10 @@ import { createElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { STORE_KEY as GLA_STORE_KEY } from '~/data/constants';
+import { STORE_KEY } from '~/data/constants';
 import {
-	registerNotifications,
-	useDismissNotification,
+	registerNotificationsInMarketingSlot,
+	useDismissNotificationFromMarketingSlot,
 } from './woo-marketing-notifications-slot';
 import Notification from './notification';
 import useNotificationsSystemMap from './useNotificationsSystemMap';
@@ -25,7 +25,7 @@ import useNotificationsSystemMap from './useNotificationsSystemMap';
 function createNotificationComponent( id, triggeredAt ) {
 	return function NotificationComponent() {
 		const notificationMap = useNotificationsSystemMap();
-		const dismissNotification = useDismissNotification();
+		const dismissNotification = useDismissNotificationFromMarketingSlot();
 		const config = notificationMap[ id ];
 
 		if ( ! config ) {
@@ -55,7 +55,7 @@ function createNotificationComponent( id, triggeredAt ) {
  */
 async function initNotifications() {
 	const glaNotifications =
-		await resolveSelect( GLA_STORE_KEY ).getNotifications();
+		await resolveSelect( STORE_KEY ).getNotifications();
 
 	if ( ! glaNotifications.length ) {
 		return;
@@ -69,7 +69,7 @@ async function initNotifications() {
 		};
 	} );
 
-	registerNotifications( notifications );
+	registerNotificationsInMarketingSlot( notifications );
 }
 
 initNotifications();
