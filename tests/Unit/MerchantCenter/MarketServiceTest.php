@@ -1190,6 +1190,28 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( [], $this->market_service->get_currencies() );
 	}
 
+	public function test_generate_market_id_sanitises_uppercase_feed_label(): void {
+		$this->assertSame( 'gb', $this->market_service->generate_market_id( 'GB' ) );
+	}
+
+	public function test_generate_market_id_converts_multi_word_label_to_slug(): void {
+		$this->assertSame( 'united-kingdom', $this->market_service->generate_market_id( 'United Kingdom' ) );
+	}
+
+	public function test_generate_market_id_throws_when_label_sanitises_to_reserved_primary(): void {
+		$this->expectException( InvalidValue::class );
+		$this->expectExceptionMessageMatches( '/reserved/' );
+
+		$this->market_service->generate_market_id( 'Primary' );
+	}
+
+	public function test_generate_market_id_throws_when_label_is_already_lowercase_primary(): void {
+		$this->expectException( InvalidValue::class );
+		$this->expectExceptionMessageMatches( '/reserved/' );
+
+		$this->market_service->generate_market_id( 'primary' );
+	}
+
 	/**
 	 * Verifies that shipping rates are fetched once per MarketService instance.
 	 *
