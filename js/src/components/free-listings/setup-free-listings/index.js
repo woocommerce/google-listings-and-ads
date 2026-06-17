@@ -54,6 +54,8 @@ const getSettings = ( values ) => {
 
 const alwaysTrue = () => true;
 
+const DEFAULT_SHIPPING_TIME = { time: 1, maxTime: 5 };
+
 const { Fill, Slot } = createSlotFill( 'gla/SetupFreeListings/SubmitButton' );
 
 /**
@@ -114,8 +116,7 @@ const SetupFreeListings = ( {
 		onShippingTimesChange(
 			countries.map( ( countryCode ) => ( {
 				countryCode,
-				time: 1,
-				maxTime: 5,
+				...DEFAULT_SHIPPING_TIME,
 			} ) )
 		);
 	}, [
@@ -137,8 +138,7 @@ const SetupFreeListings = ( {
 		shippingTimes.length === 0 && initialAudienceCountries.length > 0
 			? initialAudienceCountries.map( ( countryCode ) => ( {
 					countryCode,
-					time: 1,
-					maxTime: 5,
+					...DEFAULT_SHIPPING_TIME,
 			  } ) )
 			: shippingTimes;
 
