@@ -46,8 +46,8 @@ describe( 'Add time Modal', () => {
 
 		const [ minInput, maxInput ] = inputs;
 
-		expect( minInput ).toHaveValue( '' );
-		expect( maxInput ).toHaveValue( '' );
+		expect( minInput ).toHaveValue( '1' );
+		expect( maxInput ).toHaveValue( '5' );
 
 		fireEvent.blur( minInput, { target: { value: '2' } } );
 		expect( minInput ).toHaveValue( '2' );

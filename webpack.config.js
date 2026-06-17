@@ -22,7 +22,49 @@ const webpackConfig = {
 			// Remove `@wordpress/` rules for SVGs.
 			...defaultConfig.module.rules.filter( exceptSVGAndPNGRule ),
 			{
-				test: /\.(svg|png|jpe?g|gif)$/i,
+				test: /\.svg$/i,
+				oneOf: [
+					{
+						resourceQuery: /inline/,
+						issuer: /\.[jt]sx?$/,
+						use: [
+							{
+								loader: require.resolve( '@svgr/webpack' ),
+								options: {
+									svgoConfig: {
+										plugins: [
+											{
+												name: 'preset-default',
+												params: {
+													overrides: {
+														removeViewBox: false,
+													},
+												},
+											},
+											{
+												name: 'prefixIds',
+												params: {
+													prefix: true,
+												},
+											},
+										],
+									},
+									exportType: 'default',
+								},
+							},
+						],
+					},
+					// Default: emit SVG as a file
+					{
+						type: 'asset/resource',
+						generator: {
+							filename: 'images/[path][contenthash].[name][ext]',
+						},
+					},
+				],
+			},
+			{
+				test: /\.(png|jpe?g|gif)$/i,
 				type: 'asset/resource',
 				generator: {
 					filename: 'images/[path][contenthash].[name][ext]',
@@ -109,6 +151,16 @@ const webpackConfig = {
 		'notification-manager': path.resolve(
 			process.cwd(),
 			'js/src/notification-manager',
+			'index.js'
+		),
+		'order-attribution': path.resolve(
+			process.cwd(),
+			'js/src/meta-boxes/order-attribution',
+			'index.js'
+		),
+		'channel-visibility-meta-box': path.join(
+			__dirname,
+			'js/src/meta-boxes/channel-visibility',
 			'index.js'
 		),
 	} ),

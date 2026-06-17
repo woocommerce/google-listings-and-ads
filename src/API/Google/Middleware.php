@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidTerm;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidDomainName;
@@ -21,7 +22,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerExceptionInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\NotFoundExceptionInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
-use DateTime;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -165,6 +166,7 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
 			$message = $this->client_exception_message( $e, __( 'Error creating account', 'google-listings-and-ads' ) );
+			$status  = $e->getCode() ?: 400;
 
 			// Content API for Shopping: Invalid account name terms.
 			// Merchant API: Account name validation failed.
@@ -186,7 +188,8 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			}
 
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
-			throw new Exception( $message, $e->getCode() );
+
+			throw new Exception( $message, $status, $e );
 		}
 	}
 
@@ -236,11 +239,9 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
-
-			throw new Exception(
-				$this->client_exception_message( $e, __( 'Error linking merchant to MCA', 'google-listings-and-ads' ) ),
-				$e->getCode()
-			);
+			$message = $this->client_exception_message( $e, __( 'Error linking merchant to MCA', 'google-listings-and-ads' ) );
+			$status  = $e->getCode() ?: 400;
+			throw new Exception( $message, $status, $e );
 		}
 	}
 
@@ -283,10 +284,27 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 			do_action( 'woocommerce_gla_site_claim_failure', [ 'details' => 'google_manager' ] );
 
-			throw new Exception(
-				$this->client_exception_message( $e, __( 'Error claiming website', 'google-listings-and-ads' ) ),
-				$e->getCode()
-			);
+			if ( $e instanceof BadResponseException ) {
+				$decoded = json_decode( (string) $e->getResponse()->getBody(), true );
+				$error   = is_array( $decoded ) ? ( $decoded['error'] ?? [] ) : [];
+				$message = is_array( $error ) && isset( $error['message'] )
+					? (string) $error['message']
+					: $this->client_exception_message( $e, __( 'Error claiming website', 'google-listings-and-ads' ) );
+
+				throw new ExceptionWithResponseData(
+					$message,
+					$e->getCode() ?: 400,
+					null,
+					[
+						'code'  => 'API_ERROR',
+						'error' => $decoded,
+					]
+				);
+			}
+
+			$message = $this->client_exception_message( $e, __( 'Error claiming website', 'google-listings-and-ads' ) );
+			$status  = $e->getCode() ?: 400;
+			throw new Exception( $message, $status, $e );
 		}
 	}
 
@@ -403,6 +421,20 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
+
+			if ( $e instanceof BadResponseException ) {
+				$raw = json_decode( $e->getResponse()->getBody()->getContents(), true );
+
+				throw new ExceptionWithResponseData(
+					$raw['message'] ?? __( 'Error linking ads account', 'google-listings-and-ads' ),
+					$e->getCode() ?: 400,
+					null,
+					[
+						'code' => 'API_ERROR',
+						'data' => $raw,
+					]
+				);
+			}
 
 			throw new Exception(
 				$this->client_exception_message( $e, __( 'Error linking account', 'google-listings-and-ads' ) ),
@@ -627,7 +659,6 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 	 * Get a timezone string from WP Settings.
 	 *
 	 * @return string
-	 * @throws Exception If the DateTime instantiation fails.
 	 */
 	protected function get_site_timezone_string(): string {
 		/** @var WP $wp */
@@ -782,6 +813,54 @@ class Middleware implements ContainerAwareInterface, OptionsAwareInterface {
 
 			throw new Exception(
 				$this->client_exception_message( $e, __( 'Error fetching incentive credits.', 'google-listings-and-ads' ) ),
+				$e->getCode()
+			);
+		}
+	}
+
+	/**
+	 * Return the MCA ID for the WooCommerce Connect Server.
+	 *
+	 * @return int Positive MCA ID.
+	 * @throws Exception When the HTTP response is invalid, mcaId is missing, or mcaId is not a positive integer.
+	 */
+	public function get_wcs_mca_id(): int {
+		try {
+			/** @var Client $client */
+			$client   = $this->container->get( Client::class );
+			$result   = $client->get( $this->get_manager_url( 'mca' ) );
+			$response = json_decode( $result->getBody()->getContents(), true );
+
+			if ( 200 !== $result->getStatusCode() || ! is_array( $response ) || ! isset( $response['mcaId'] ) ) {
+				throw new Exception(
+					__( 'Invalid response when retrieving MCA ID from WooCommerce Connect Server.', 'google-listings-and-ads' ),
+					$result->getStatusCode()
+				);
+			}
+
+			$mca_id = filter_var(
+				$response['mcaId'],
+				FILTER_VALIDATE_INT,
+				[
+					'options' => [
+						'min_range' => 1,
+					],
+				]
+			);
+
+			if ( false === $mca_id ) {
+				throw new Exception(
+					__( 'Invalid response when retrieving MCA ID from WooCommerce Connect Server.', 'google-listings-and-ads' ),
+					$result->getStatusCode()
+				);
+			}
+
+			return $mca_id;
+		} catch ( ClientExceptionInterface $e ) {
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
+
+			throw new Exception(
+				$this->client_exception_message( $e, __( 'Error retrieving MCA ID from WooCommerce Connect Server', 'google-listings-and-ads' ) ),
 				$e->getCode()
 			);
 		}

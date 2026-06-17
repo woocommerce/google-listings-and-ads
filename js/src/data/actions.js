@@ -14,8 +14,9 @@ import {
 	REQUEST_ACTIONS,
 	EMPTY_ASSET_ENTITY_GROUP,
 } from './constants';
+import { EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE } from '~/constants';
 import { handleApiError } from '~/utils/handleError';
-import { adaptAdsCampaign } from './adapters';
+import { adaptAdsCampaign, adaptGenAIAssets } from './adapters';
 import { isWCIos, isWCAndroid } from '~/utils/isMobileApp';
 import { convertKeysFromSnakeCaseToCamelCase } from './utils';
 
@@ -41,6 +42,14 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * @property {string} currency Currency of the price.
  * @property {number} rate Shipping price.
  * @property {Object} options Options, such as `free_shipping_threshold`.
+ */
+
+/**
+ * Error object returned from the API.
+ *
+ * @typedef {Object} ApiError
+ * @property {string} code Error code.
+ * @property {string} message Error message.
  */
 
 /**
@@ -357,6 +366,28 @@ export function* syncSettings() {
 		path: `${ API_NAMESPACE }/mc/settings/sync`,
 		method: 'POST',
 	} );
+}
+
+/**
+ * Mark onboarding as complete for service-based merchants.
+ *
+ * @throws Will throw an error if the request failed.
+ */
+export function* completeOnboarding() {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/google/onboarding/complete`,
+			method: 'POST',
+		} );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error completing onboarding.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }
 
 export function* fetchJetpackAccount() {
@@ -755,6 +786,60 @@ export function* createAdsCampaign(
 			createdCampaign: adaptAdsCampaign( createdCampaign ),
 		};
 	} catch ( error ) {
+		if ( error.code !== 'eu_political_advertising_declaration_required' ) {
+			handleApiError( error );
+		}
+
+		throw error;
+	}
+}
+
+/**
+ * Create a new ads campaign with assets.
+ *
+ * @param {number} amount Daily average cost of the paid ads campaign.
+ * @param {Array<CountryCode>} countryCodes Country code of the paid ads campaign audience country. Example: 'US'.
+ * @param {AssetEntityGroupUpdateBody} assets Assets of the ads campaign.
+ * @param {boolean} [hasConfirmedEuPoliticalContent=false] Whether the user has confirmed that the ads campaign contains EU political content.
+ *
+ * @throws { { message: string } } Will throw an error if the campaign creation fails.
+ */
+export function* createAdsWithAssetsCampaign(
+	amount,
+	countryCodes,
+	assets,
+	hasConfirmedEuPoliticalContent = false
+) {
+	let label = 'wc-web';
+
+	if ( isWCIos() ) {
+		label = 'wc-ios';
+	} else if ( isWCAndroid() ) {
+		label = 'wc-android';
+	}
+
+	try {
+		const createdCampaign = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/campaigns`,
+			method: 'POST',
+			data: {
+				amount,
+				targeted_locations: countryCodes,
+				eu_political_advertising_confirmation:
+					hasConfirmedEuPoliticalContent,
+				label,
+				final_url: assets.final_url,
+				assets: assets.assets,
+				path1: assets.path1,
+				path2: assets.path2,
+			},
+		} );
+
+		return {
+			type: TYPES.CREATE_ADS_CAMPAIGN,
+			createdCampaign: adaptAdsCampaign( createdCampaign ),
+		};
+	} catch ( error ) {
 		handleApiError( error );
 
 		throw error;
@@ -784,7 +869,12 @@ export function* updateAdsCampaign( id, data ) {
 			data,
 		};
 	} catch ( error ) {
-		handleApiError( error );
+		if (
+			error?.code !==
+			EU_POLITICAL_ADVERTISING_DECLARATION_REQUIRED_ERROR_CODE
+		) {
+			handleApiError( error );
+		}
 
 		throw error;
 	}
@@ -794,6 +884,13 @@ export function receiveEnhancedConversionsStatus( status ) {
 	return {
 		type: TYPES.RECEIVE_ADS_ENHANCED_CONVERSIONS,
 		status,
+	};
+}
+
+export function receiveAdsSettings( settings ) {
+	return {
+		type: TYPES.RECEIVE_ADS_SETTINGS,
+		settings,
 	};
 }
 
@@ -1282,4 +1379,133 @@ export function* receiveAdsRecommendations(
 		recommendations,
 		recommendationTypes,
 	};
+}
+
+/**
+ * Action containing detailed error information.
+ *
+ * @param {string} slot - Unique key identifying the error (e.g., field name or error code).
+ * @param {ApiError|null} error - The original error object or additional error details.
+ * @return {{type: string, slot: string, error: ApiError|null}} Redux action with type `TYPES.RECEIVE_DETAILED_ERROR`.
+ */
+export function* receiveDetailedError( slot, error ) {
+	return {
+		type: TYPES.RECEIVE_DETAILED_ERROR,
+		slot,
+		error,
+	};
+}
+
+/**
+ * Clears error information for specific error slots.
+ *
+ * @param {Array<string>} slots - Array of unique keys identifying the errors to be cleared.
+ * @return {{type: string, slots: Array<string>}} Redux action with type `TYPES.CLEAR_DETAILED_ERROR_BY_SLOT`.
+ */
+export function* clearDetailedErrorBySlots( slots ) {
+	return {
+		type: TYPES.CLEAR_DETAILED_ERROR_BY_SLOT,
+		slots,
+	};
+}
+
+export function receiveCYOIncentives( cyoIncentives ) {
+	return {
+		type: TYPES.RECEIVE_CYO_INCENTIVES,
+		cyoIncentives,
+	};
+}
+
+export function* receiveGenAIMediaAssets( url, data, assetType ) {
+	if ( ! data?.items ) {
+		return {
+			type: TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS,
+			url,
+			assetType,
+			data: {},
+		};
+	}
+
+	return {
+		type: TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS,
+		url,
+		assetType,
+		data: adaptGenAIAssets( data.items, 'temporary_image_url', assetType ),
+	};
+}
+
+export function* receiveGenAITextAssets( url, data, assetType ) {
+	if ( ! data?.items ) {
+		return {
+			type: TYPES.RECEIVE_GEN_AI_TEXT_ASSETS,
+			url,
+			assetType,
+			data: {},
+		};
+	}
+
+	return {
+		type: TYPES.RECEIVE_GEN_AI_TEXT_ASSETS,
+		url,
+		assetType,
+		data: adaptGenAIAssets( data.items, 'text', assetType ),
+	};
+}
+
+export function* fetchYouTubeAccount() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/youtube/connection`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_YOUTUBE,
+			account: response,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading YouTube account info.',
+				'google-listings-and-ads'
+			)
+		);
+
+		// Set a default disconnected state to ensure loading state resolves
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_YOUTUBE,
+			account: {
+				status: 'disconnected',
+				channel: [],
+			},
+		};
+	}
+}
+
+/**
+ * Disconnect the connected YouTube account.
+ *
+ * @throws Will throw an error if the request failed.
+ */
+export function* disconnectYouTubeAccount() {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/youtube/connection`,
+			method: 'DELETE',
+		} );
+
+		return {
+			type: TYPES.DISCONNECT_ACCOUNTS_YOUTUBE,
+			invalidateRelatedState: true,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'Unable to disconnect your YouTube account.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
 }

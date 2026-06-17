@@ -200,21 +200,6 @@ test.describe( 'GTag events', () => {
 		} );
 	} );
 
-	test( 'Conversion event is sent on order complete page', async ( {
-		page,
-	} ) => {
-		await singleProductAddToCart( page, simpleProductID );
-
-		const event = trackGtagEvent( page, 'conversion', 'checkout' );
-		await checkout( page );
-
-		await event.then( ( request ) => {
-			const data = getEventData( request );
-			expect( data.value ).toEqual( productPrice );
-			expect( data.currency_code ).toEqual( 'USD' );
-		} );
-	} );
-
 	test( 'Purchase event is sent on order complete page', async ( {
 		page,
 	} ) => {

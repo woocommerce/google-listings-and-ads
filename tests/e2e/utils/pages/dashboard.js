@@ -33,12 +33,36 @@ export default class DashboardPage extends MockRequests {
 	}
 
 	/**
+	 * Get the visible tab titles from the main navigation.
+	 *
+	 * @return {Promise<string[]>} An array of tab titles in display order.
+	 */
+	async getTabTitles() {
+		const tabs = this.page.locator( '.app-tab-nav [role="tab"]' );
+		try {
+			await tabs.first().waitFor( { state: 'visible' } );
+		} catch ( e ) {
+			// Do nothing if tabs are not visible
+		}
+		return ( await tabs.allTextContents() ).map( ( t ) => t.trim() );
+	}
+
+	/**
 	 * Close the current page.
 	 *
 	 * @return {Promise<void>}
 	 */
 	async closePage() {
 		await this.page.close();
+	}
+
+	/**
+	 * Get summary cards on the dashboard.
+	 *
+	 * @return {Promise<import('@playwright/test').Locator>} Locator for summary cards.
+	 */
+	async getSummaryCards() {
+		return this.page.locator( '.gla-summary-card' );
 	}
 
 	/**
@@ -87,6 +111,7 @@ export default class DashboardPage extends MockRequests {
 
 		await this.mockAdsRecommendations();
 		await this.fulfillAdsReportProducts( adsReportProductsData );
+		await this.mockHasNoMissingEUDeclarationCampaigns();
 	}
 
 	/**

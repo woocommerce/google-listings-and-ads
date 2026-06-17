@@ -14,6 +14,7 @@ import useJetpackAccount from '~/hooks/useJetpackAccount';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
+import useYouTubeAccount from '~/hooks/useYouTubeAccount';
 import AppButton from '~/components/app-button';
 import SpinnerCard from '~/components/spinner-card';
 import { ConnectedWPComAccountCard } from '~/components/wpcom-account-card';
@@ -22,9 +23,11 @@ import { ConnectedGoogleAdsAccountCard } from '~/components/google-ads-account-c
 import { MerchantCenterAccountInfoCard } from '~/components/google-mc-account-card';
 import Section from '~/components/section';
 import LinkedAccountsSectionWrapper from './linked-accounts-section-wrapper';
+import ConnectMerchantCenterCard from './connect-merchant-center-card';
 import DisconnectModal, { ALL_ACCOUNTS, ADS_ACCOUNT } from './disconnect-modal';
 import { GOOGLE_ADS_ACCOUNT_STATUS } from '~/constants';
 import { queueRecordGlaEvent } from '~/utils/tracks';
+import YouTubeAccountCard from '~/components/youtube-account-card';
 
 const { CONNECTED, INCOMPLETE } = GOOGLE_ADS_ACCOUNT_STATUS;
 
@@ -40,17 +43,27 @@ const { CONNECTED, INCOMPLETE } = GOOGLE_ADS_ACCOUNT_STATUS;
  */
 export default function LinkedAccounts() {
 	const adminUrl = useAdminUrl();
-	const { jetpack } = useJetpackAccount();
-	const { google } = useGoogleAccount();
-	const { googleMCAccount } = useGoogleMCAccount();
-	const { googleAdsAccount } = useGoogleAdsAccount();
-
+	const { jetpack, hasFinishedResolution: hasResolvedJetpackAccount } =
+		useJetpackAccount();
+	const { google, hasFinishedResolution: hasResolvedGoogleAccount } =
+		useGoogleAccount();
+	const {
+		googleMCAccount,
+		hasFinishedResolution: hasResolvedMCAccount,
+		hasGoogleMCConnection,
+	} = useGoogleMCAccount();
+	const { googleAdsAccount, hasFinishedResolution: hasResolvedAdsAccount } =
+		useGoogleAdsAccount();
+	const { hasFinishedResolution: hasResolvedYouTubeAccount } =
+		useYouTubeAccount();
 	const isLoading = ! (
-		jetpack &&
-		google &&
-		googleMCAccount &&
-		googleAdsAccount
+		hasResolvedJetpackAccount &&
+		hasResolvedGoogleAccount &&
+		hasResolvedMCAccount &&
+		hasResolvedAdsAccount &&
+		hasResolvedYouTubeAccount
 	);
+
 	const hasAdsAccount = [ CONNECTED, INCOMPLETE ].includes(
 		googleAdsAccount?.status
 	);
@@ -92,28 +105,41 @@ export default function LinkedAccounts() {
 						googleAccount={ google }
 						hideAccountSwitch
 					/>
-					<MerchantCenterAccountInfoCard
-						googleMCAccount={ googleMCAccount }
-					/>
+
+					{ hasGoogleMCConnection ? (
+						<MerchantCenterAccountInfoCard
+							googleMCAccount={ googleMCAccount }
+						/>
+					) : (
+						<ConnectMerchantCenterCard />
+					) }
+
 					{ hasAdsAccount && (
 						<ConnectedGoogleAdsAccountCard
 							googleAdsAccount={ googleAdsAccount }
 							hideAccountSwitch
 						>
-							<Section.Card.Footer>
-								<AppButton
-									isDestructive
-									isLink
-									onClick={ openDisconnectAdsAccountModal }
-								>
-									{ __(
-										'Disconnect Google Ads account only',
-										'google-listings-and-ads'
-									) }
-								</AppButton>
-							</Section.Card.Footer>
+							{ hasGoogleMCConnection && (
+								<Section.Card.Footer>
+									<AppButton
+										isDestructive
+										isLink
+										onClick={
+											openDisconnectAdsAccountModal
+										}
+									>
+										{ __(
+											'Disconnect Google Ads account only',
+											'google-listings-and-ads'
+										) }
+									</AppButton>
+								</Section.Card.Footer>
+							) }
 						</ConnectedGoogleAdsAccountCard>
 					) }
+
+					<YouTubeAccountCard />
+
 					<Flex justify="flex-end">
 						<AppButton
 							isPrimary

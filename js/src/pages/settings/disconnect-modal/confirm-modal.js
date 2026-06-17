@@ -12,7 +12,8 @@ import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
 import WarningIcon from '~/components/warning-icon';
 import { useAppDispatch } from '~/data';
-import { ALL_ACCOUNTS, ADS_ACCOUNT } from './constants';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
+import { ALL_ACCOUNTS, ADS_ACCOUNT, ADS_ONLY } from './constants';
 
 const textDict = {
 	[ ALL_ACCOUNTS ]: {
@@ -32,6 +33,28 @@ const textDict = {
 			),
 			__(
 				'Any active product listings will continue to show on Google. They can be managed, edited, or deleted manually from Google Merchant Center (merchants.google.com).',
+				'google-listings-and-ads'
+			),
+			__(
+				'Any ongoing campaigns will continue to run. They can be managed, edited, or deleted manually from Google Ads (ads.google.com).',
+				'google-listings-and-ads'
+			),
+		],
+	},
+
+	[ ADS_ONLY ]: {
+		title: __( 'Disconnect all accounts', 'google-listings-and-ads' ),
+		confirmButton: __(
+			'Disconnect all accounts',
+			'google-listings-and-ads'
+		),
+		confirmation: __(
+			'Yes, I want to disconnect all my accounts.',
+			'google-listings-and-ads'
+		),
+		contents: [
+			__(
+				'I understand that I am disconnecting any WordPress.com account, Google account and Google Ads account connected to this extension.',
 				'google-listings-and-ads'
 			),
 			__(
@@ -77,9 +100,17 @@ export default function ConfirmModal( {
 	const [ isAgreed, setAgreed ] = useState( false );
 	const [ isDisconnecting, setDisconnecting ] = useState( false );
 	const dispatcher = useAppDispatch();
+	const { hasGoogleMCConnection } = useGoogleMCAccount();
+
+	let targetTextDict = ALL_ACCOUNTS;
+	if ( disconnectTarget === ADS_ACCOUNT ) {
+		targetTextDict = ADS_ACCOUNT;
+	} else if ( disconnectTarget === ALL_ACCOUNTS && ! hasGoogleMCConnection ) {
+		targetTextDict = ADS_ONLY;
+	}
 
 	const { title, confirmButton, confirmation, contents } =
-		textDict[ disconnectTarget ];
+		textDict[ targetTextDict ];
 
 	const handleRequestClose = () => {
 		if ( isDisconnecting ) {

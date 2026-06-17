@@ -12,13 +12,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareInterface
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
-use Google\Ads\GoogleAds\V20\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
-use Google\Ads\GoogleAds\V20\Enums\BiddingStrategyTypeEnum\BiddingStrategyType;
-use Google\Ads\GoogleAds\V20\Enums\RecommendationTypeEnum\RecommendationType;
-use Google\Ads\GoogleAds\V20\Resources\Recommendation\CampaignBudgetRecommendation;
-use Google\Ads\GoogleAds\V20\Services\GenerateRecommendationsRequest;
-use Google\Ads\GoogleAds\V20\Services\GenerateRecommendationsRequest\AssetGroupInfo;
-use Google\Ads\GoogleAds\V20\Services\GenerateRecommendationsRequest\BiddingInfo;
+use Google\Ads\GoogleAds\V23\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
+use Google\Ads\GoogleAds\V23\Enums\BiddingStrategyTypeEnum\BiddingStrategyType;
+use Google\Ads\GoogleAds\V23\Enums\RecommendationTypeEnum\RecommendationType;
+use Google\Ads\GoogleAds\V23\Resources\Recommendation\CampaignBudgetRecommendation;
+use Google\Ads\GoogleAds\V23\Services\GenerateRecommendationsRequest;
+use Google\Ads\GoogleAds\V23\Services\GenerateRecommendationsRequest\AssetGroupInfo;
+use Google\Ads\GoogleAds\V23\Services\GenerateRecommendationsRequest\BiddingInfo;
 use Google\ApiCore\ApiException;
 
 /**
@@ -43,12 +43,19 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 	protected $client;
 
 	/**
+	 * @var MerchantMetrics
+	 */
+	protected $merchant_metrics;
+
+	/**
 	 * BudgetRecommendations constructor.
 	 *
 	 * @param GoogleAdsClient $client
+	 * @param MerchantMetrics $merchant_metrics
 	 */
-	public function __construct( GoogleAdsClient $client ) {
-		$this->client = $client;
+	public function __construct( GoogleAdsClient $client, MerchantMetrics $merchant_metrics ) {
+		$this->client           = $client;
+		$this->merchant_metrics = $merchant_metrics;
 	}
 
 	/**
@@ -60,8 +67,9 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 	 * @return array|null List of recommendations (including metrics).
 	 */
 	public function get_recommendations( array $country_codes ): ?array {
-		$cache_key = strtolower( join( '-', $country_codes ) );
-		$transient = $this->transients->get( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS );
+		$is_new_customer = 0 === $this->merchant_metrics->get_campaign_count();
+		$cache_key       = strtolower( join( '-', $country_codes ) ) . ( $is_new_customer ? '-new' : '-existing' );
+		$transient       = $this->transients->get( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS );
 
 		// Check if we have the budget recommendations cached in the transient.
 		if ( $transient && ! empty( $transient[ $cache_key ] ) ) {
@@ -69,29 +77,35 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 		}
 
 		$location_ids = $this->get_location_ids( $country_codes );
+		$merchant_id  = $this->options->get_merchant_id();
 
-		$request = new GenerateRecommendationsRequest(
-			[
-				'customer_id'                => $this->options->get_ads_id(),
-				'merchant_center_account_id' => $this->options->get_merchant_id(),
-				'recommendation_types'       => [ RecommendationType::CAMPAIGN_BUDGET ],
-				'advertising_channel_type'   => AdvertisingChannelType::PERFORMANCE_MAX,
-				'positive_locations_ids'     => array_keys( $location_ids ),
-				'country_codes'              => $country_codes,
-				'bidding_info'               => new BiddingInfo(
+		$request_data = [
+			'customer_id'              => $this->options->get_ads_id(),
+			'recommendation_types'     => [ RecommendationType::CAMPAIGN_BUDGET ],
+			'advertising_channel_type' => AdvertisingChannelType::PERFORMANCE_MAX,
+			'positive_locations_ids'   => array_keys( $location_ids ),
+			'country_codes'            => $country_codes,
+			'is_new_customer'          => $is_new_customer,
+			'bidding_info'             => new BiddingInfo(
+				[
+					'bidding_strategy_type' => BiddingStrategyType::MAXIMIZE_CONVERSION_VALUE,
+				]
+			),
+			'asset_group_info'         => [
+				new AssetGroupInfo(
 					[
-						'bidding_strategy_type' => BiddingStrategyType::MAXIMIZE_CONVERSION_VALUE,
-					]
+						'final_url' => $this->get_site_url(),
+					],
 				),
-				'asset_group_info'           => [
-					new AssetGroupInfo(
-						[
-							'final_url' => $this->get_site_url(),
-						],
-					),
-				],
-			]
-		);
+			],
+		];
+
+		// Only include merchant_center_account_id if Merchant Center account is connected.
+		if ( $merchant_id > 0 ) {
+			$request_data['merchant_center_account_id'] = $merchant_id;
+		}
+
+		$request = new GenerateRecommendationsRequest( $request_data );
 
 		try {
 			$response = $this->client->getRecommendationServiceClient()->generateRecommendations( $request );

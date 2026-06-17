@@ -5,7 +5,7 @@ Requires at least: 6.6
 Tested up to: 6.9
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.5.2
+Stable tag: 3.7.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -52,7 +52,7 @@ Once you’re running Google Ads campaigns, the Google tag feature in the extens
 = Minimum Requirements =
 
 * WordPress 6.6 or greater
-* WooCommerce 9.7 or greater
+* WooCommerce 10.6 or greater
 * PHP version 7.4 or greater
 * PHP Architecture 64 bits
 * MySQL version 5.6 or greater
@@ -140,32 +140,38 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
-= 3.5.2 - 2026-01-29 =
-* Add - Sorting functionality in `AllProgramsTableCard` to allow users to reorder columns by key attributes.
-* Fix - Resolve an issue where website claim conflicts were not detected correctly during Google Merchant Center account setup in the onboarding flow.
-* Update - Add `timeZone` and `languageCode` fields to create-merchant request for Merchant API compatibility.
-* Update - Allow legacy conversion events to be disabled via a filter.
+= 3.7.1 - 2026-06-09 =
+* Add - Better User Guidance Feature.
+* Fix - Split budget recommendation and metrics cache keys by advertiser type so recommendations refresh correctly after the first campaign is created.
+* Fix - chore: pin third-party GitHub Actions to SHAs + enable Dependabot.
+* Fix - Update table paddings and borders within cards.
+* Fix - Remove API Pull infrastructure.
+* Fix - MainTabNav intermittently showing an incomplete tab list when MC connection state changes mid-session.
+* Fix - Shipping settings tab empty settings.
+* Fix - Update EU declaration modal title.
+* Fix - Exclude tall_portrait_marketing_image type and images with no type set from generated ad assets.
 
-= 3.5.1 - 2025-12-10 =
-* Add - EU political content confirmation checkbox for EU-based advertisers.
-* Fix - Button misaligned after navigating between tabs.
-* Fix - Correct the product edit URL to properly handle product variations in the Price Benchmark modal.
-* Fix - Fill missing intervals in products chart.
-* Fix - Prevent “Free Listings” from being automatically added after unselecting all campaigns in the comparison filter.
-* Fix - Setup enhanced conversion data when gtag is added by the Google Analytics extension.
-* Tweak - Make it possible to complete the onboarding flow using a site URL with paths.
-* Tweak - WC 10.4 compatibility.
-* Tweak - WP 6.9 compatibility.
-* Update - Modify `wc/gla/tours` API endpoint to retrieve all tours at once.
+= 3.7.0 - 2026-05-19 =
+* Add - Create Your Own Incentive (CYOI) feature.
+* Add - In-Product Placements feature.
+* Add - Restrict accepted image formats when creating campaign assets.
+* Dev - Upgrade Google Ads PHP Library to v23.
+* Dev - Added tracking for YouTube connected stores.
+* Fix - Cache miss on empty recommendations triggering live Ads API calls on every admin page load.
+* Fix - Shipping tab failing to render when no shipping options were set.
+* Fix - Sorting order of the programs column.
+* Update - Default values for shipping time inputs during onboarding.
+* Update - Success notice displayed after saving a campaign.
 
-= 3.5.0 - 2025-11-04 =
-* Add - Additional options to the skip paid ads survey.
-* Add - Recommendation for improving conversions by raising budgets.
-* Fix - Alignment issue on Reports page.
-* Fix - Error when syncing bundled products.
-* Fix - MC connection stuck in loading state when connection is interrupted.
-* Fix - Prevent floating point precision errors when converting to micro units by rounding before casting to integer.
-* Fix - Remove ads account status check from `ads/recommendations` endpoint.
-* Tweak - WC 10.3 compatibility.
+= 3.6.2 - 2026-04-27 =
+* Dev - Bump WooCommerce "tested up to" version 10.7.
+* Dev - Remove API Pull sync status rows from the Connection Test page.
+* Fix - Disconnect modal now shows Google Ads-specific copy and confirmation text when disconnecting only the Google Ads account, instead of always falling back to the "all accounts" variant.
+* Fix - Improve scheduling for job that updates non-EU campaigns.
+* Fix - Improved performance of the expiring products query for large catalogs.
+* Fix - Only schedule UpdateEuPoliticalCampaigns jobs with an Ads connection.
+* Fix - Unschedule all Action Scheduler jobs when the plugin is deactivated to prevent orphaned recurring tasks from accumulating failure logs.
+* Fix - Update gmc_merchant_id in YouTube Shopping reports.
+* Fix - Updated caniuse-lite browserslist database.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
