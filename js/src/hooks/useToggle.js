@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useState } from '@wordpress/element';
+import { useState, useCallback } from '@wordpress/element';
 
 /**
  * A hook to toggle a boolean state.
@@ -11,7 +11,7 @@ import { useState } from '@wordpress/element';
  */
 const useToggle = ( initialValue = false ) => {
 	const [ value, setValue ] = useState( initialValue );
-	const toggle = () => setValue( ( prev ) => ! prev );
+	const toggle = useCallback( () => setValue( ( prev ) => ! prev ), [] );
 	return [ value, toggle ];
 };
 
