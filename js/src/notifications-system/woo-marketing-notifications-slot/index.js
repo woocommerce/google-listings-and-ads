@@ -7,16 +7,16 @@ import { createRoot } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import useNotifications from './useNotifications';
-
 import {
-	STORE_NAME,
+	STORE_KEY,
 	REGISTER_NOTIFICATIONS,
 	DISMISS_NOTIFICATION,
 	MULTICHANNEL_CLASS,
 	BANNER_CLASS,
 	CONTAINER_CLASS,
 } from './constants';
+import NotificationsPanel from './notifications-panel';
+import './index.scss';
 
 /**
  * This bundle is registered in PHP under the handle 'woocommerce-marketing-notifications-system-slot'.
@@ -25,9 +25,9 @@ import {
  * data store if it hasn't been registered already — whichever plugin loads first
  * wins, and all others use the same store instance.
  */
-if ( ! select( STORE_NAME ) ) {
+if ( ! select( STORE_KEY ) ) {
 	register(
-		createReduxStore( STORE_NAME, {
+		createReduxStore( STORE_KEY, {
 			reducer( state = [], action ) {
 				switch ( action.type ) {
 					case REGISTER_NOTIFICATIONS:
@@ -67,22 +67,6 @@ if ( ! select( STORE_NAME ) ) {
 	);
 }
 
-function NotificationSystemSlot() {
-	const { notifications } = useNotifications();
-
-	if ( ! notifications?.length ) {
-		return null;
-	}
-
-	return notifications.map( ( notification ) => {
-		const NotificationComponent = notification.component;
-		if ( ! NotificationComponent ) {
-			return null;
-		}
-		return <NotificationComponent key={ notification.id } />;
-	} );
-}
-
 let currentRoot = null;
 
 function mount( multichannel ) {
@@ -114,7 +98,7 @@ function mount( multichannel ) {
 	}
 
 	currentRoot = createRoot( container );
-	currentRoot.render( <NotificationSystemSlot /> );
+	currentRoot.render( <NotificationsPanel /> );
 	return true;
 }
 
@@ -130,6 +114,7 @@ observer.observe( document.body, { childList: true, subtree: true } );
 const existingMultichannel = document.querySelector(
 	`.${ MULTICHANNEL_CLASS }`
 );
+
 if ( existingMultichannel ) {
 	mount( existingMultichannel );
 	observer.disconnect();

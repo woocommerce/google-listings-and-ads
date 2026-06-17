@@ -8,8 +8,6 @@ import { render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import NotificationsPanel from './notifications-panel';
-import useNotifications from './woo-marketing-notifications-slot/useNotifications';
-import useNotificationsSystemMap from './useNotificationsSystemMap';
 
 jest.mock( './woo-marketing-notifications-slot/useNotifications', () =>
 	jest.fn()
