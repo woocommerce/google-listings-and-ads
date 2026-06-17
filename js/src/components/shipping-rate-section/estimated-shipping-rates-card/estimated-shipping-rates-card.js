@@ -9,9 +9,9 @@ import GridiconPlusSmall from 'gridicons/dist/plus-small';
  */
 import Section from '~/components/section';
 import AppButton from '~/components/app-button';
-import AppButtonModalTrigger from '~/components/app-button-modal-trigger';
 import VerticalGapLayout from '~/components/vertical-gap-layout';
 import useStoreCurrency from '~/hooks/useStoreCurrency';
+import useToggle from '~/hooks/useToggle';
 import groupShippingRatesByCurrencyRate from './groupShippingRatesByCurrencyRate';
 import ShippingRateInputControl from './shipping-rate-input-control';
 import { AddRateFormModal } from './rate-form-modals';
@@ -42,6 +42,7 @@ export default function EstimatedShippingRatesCard( {
 	const { handleAddSubmit, getChangeHandler, getDeleteHandler } = getHandlers(
 		{ value, onChange }
 	);
+	const [ isAddModalOpen, toggleAddModal ] = useToggle();
 
 	/**
 	 * Function to render the shipping rate groups from `value`.
@@ -99,30 +100,28 @@ export default function EstimatedShippingRatesCard( {
 				} ) }
 				{ remainingCountries.length >= 1 && (
 					<div>
-						<AppButtonModalTrigger
-							button={
-								<AppButton
-									isSecondary
-									icon={ <GridiconPlusSmall /> }
-								>
-									{ __(
-										'Add another rate',
-										'google-listings-and-ads'
-									) }
-								</AppButton>
-							}
-							modal={
-								<AddRateFormModal
-									countryOptions={ remainingCountries }
-									initialValues={ {
-										countries: remainingCountries,
-										currency: currencyCode,
-										rate: 0,
-									} }
-									onSubmit={ handleAddSubmit }
-								/>
-							}
-						/>
+						<AppButton
+							isSecondary
+							icon={ <GridiconPlusSmall /> }
+							onClick={ toggleAddModal }
+						>
+							{ __(
+								'Add another rate',
+								'google-listings-and-ads'
+							) }
+						</AppButton>
+						{ isAddModalOpen && (
+							<AddRateFormModal
+								countryOptions={ remainingCountries }
+								initialValues={ {
+									countries: remainingCountries,
+									currency: currencyCode,
+									rate: 0,
+								} }
+								onSubmit={ handleAddSubmit }
+								onRequestClose={ toggleAddModal }
+							/>
+						) }
 					</div>
 				) }
 			</>

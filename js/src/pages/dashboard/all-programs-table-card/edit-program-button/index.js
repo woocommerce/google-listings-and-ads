@@ -8,25 +8,30 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AppButton from '~/components/app-button';
+import useToggle from '~/hooks/useToggle';
 import EditProgramPromptModal from './edit-program-prompt-modal';
-import AppButtonModalTrigger from '~/components/app-button-modal-trigger';
 
 const EditProgramButton = ( props ) => {
 	const { className, programId, ...buttonProps } = props;
+	const [ isOpen, toggleModal ] = useToggle();
 
 	return (
-		<AppButtonModalTrigger
-			button={
-				<AppButton
-					{ ...buttonProps }
-					isLink
-					className={ classnames( className ) }
-				>
-					{ __( 'Edit', 'google-listings-and-ads' ) }
-				</AppButton>
-			}
-			modal={ <EditProgramPromptModal programId={ programId } /> }
-		/>
+		<>
+			<AppButton
+				{ ...buttonProps }
+				isLink
+				className={ classnames( className ) }
+				onClick={ toggleModal }
+			>
+				{ __( 'Edit', 'google-listings-and-ads' ) }
+			</AppButton>
+			{ isOpen && (
+				<EditProgramPromptModal
+					programId={ programId }
+					onRequestClose={ toggleModal }
+				/>
+			) }
+		</>
 	);
 };
 

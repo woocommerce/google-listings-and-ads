@@ -13,8 +13,8 @@ import GridiconPlusSmall from 'gridicons/dist/plus-small';
  */
 import Section from '~/components/section';
 import AppButton from '~/components/app-button';
-import AppButtonModalTrigger from '~/components/app-button-modal-trigger';
 import VerticalGapLayout from '~/components/vertical-gap-layout';
+import useToggle from '~/hooks/useToggle';
 import { useAdaptiveFormInputProps } from '~/components/adaptive-form';
 import OfferFreeShippingCheckbox from '~/components/order-value-condition-section/offer-free-shipping-checkbox';
 import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
@@ -36,6 +36,7 @@ const MinimumOrderCard = ( { value = [], helper, onChange } ) => {
 	const offerFreeShippingCardInputProps = useAdaptiveFormInputProps(
 		'offer_free_shipping'
 	);
+	const [ isAddModalOpen, toggleAddModal ] = useToggle();
 
 	const renderGroups = () => {
 		const nonZeroShippingRates = value.filter( isNonFreeShippingRate );
@@ -105,28 +106,24 @@ const MinimumOrderCard = ( { value = [], helper, onChange } ) => {
 				} ) }
 				{ emptyThresholdGroup && (
 					<div>
-						<AppButtonModalTrigger
-							button={
-								<AppButton
-									isSecondary
-									icon={ <GridiconPlusSmall /> }
-								>
-									{ __(
-										'Add another condition',
-										'google-listings-and-ads'
-									) }
-								</AppButton>
-							}
-							modal={
-								<AddMinimumOrderFormModal
-									countryOptions={
-										emptyThresholdGroup.countries
-									}
-									initialValues={ emptyThresholdGroup }
-									onSubmit={ addHandler }
-								/>
-							}
-						/>
+						<AppButton
+							isSecondary
+							icon={ <GridiconPlusSmall /> }
+							onClick={ toggleAddModal }
+						>
+							{ __(
+								'Add another condition',
+								'google-listings-and-ads'
+							) }
+						</AppButton>
+						{ isAddModalOpen && (
+							<AddMinimumOrderFormModal
+								countryOptions={ emptyThresholdGroup.countries }
+								initialValues={ emptyThresholdGroup }
+								onSubmit={ addHandler }
+								onRequestClose={ toggleAddModal }
+							/>
+						) }
 					</div>
 				) }
 			</>
