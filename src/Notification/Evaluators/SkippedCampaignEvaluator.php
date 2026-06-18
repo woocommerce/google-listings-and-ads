@@ -5,9 +5,12 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationEvaluatorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 
@@ -16,14 +19,26 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class SkippedCampaignEvaluator
  *
- * Fires when MC setup is complete and Ads setup is not complete.
+ * Fires when Ads setup is complete and the merchant has no enabled Performance Max campaigns.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
-class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, MerchantCenterAwareInterface, AdsAwareInterface, Service {
+class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwareInterface, Service {
 
 	use AdsAwareTrait;
-	use MerchantCenterAwareTrait;
+	use CachedNotificationEvaluatorTrait;
+
+	/** @var AdsCampaign */
+	protected $ads_campaign;
+
+	/**
+	 * SkippedCampaignEvaluator constructor.
+	 *
+	 * @param AdsCampaign $ads_campaign
+	 */
+	public function __construct( AdsCampaign $ads_campaign ) {
+		$this->ads_campaign = $ads_campaign;
+	}
 
 	/**
 	 * Get the notification's unique ID.
@@ -35,12 +50,29 @@ class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, Mercha
 	}
 
 	/**
-	 * Whether the notification's condition is currently met.
+	 * Evaluate whether the notification condition is met.
 	 *
 	 * @return bool
 	 */
-	public function should_show(): bool {
-		return $this->merchant_center->is_setup_complete() && ! $this->ads_service->is_setup_complete();
+	protected function evaluate_condition(): bool {
+		if ( ! $this->ads_service->is_setup_complete() ) {
+			return false;
+		}
+
+		try {
+			foreach ( $this->ads_campaign->get_campaigns( true, false ) as $campaign ) {
+				if (
+					CampaignType::PERFORMANCE_MAX === $campaign['type']
+					&& CampaignStatus::ENABLED === $campaign['status']
+				) {
+					return false;
+				}
+			}
+		} catch ( ExceptionWithResponseData $e ) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
