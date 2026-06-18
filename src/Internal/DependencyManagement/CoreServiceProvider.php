@@ -107,7 +107,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WPAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantHooks;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRatesProcessor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingSuggestionService;
@@ -199,7 +198,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		PolicyComplianceCheck::class           => true,
 		ContactInformation::class              => true,
 		MerchantCenterService::class           => true,
-		NotificationsService::class            => true,
 		TargetAudience::class                  => true,
 		MerchantAccountState::class            => true,
 		AdsAccountState::class                 => true,
@@ -218,7 +216,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		MerchantAccountService::class          => true,
 		MarketingChannelRegistrar::class       => true,
 		OAuthService::class                    => true,
-		SyncStatus::class                      => true,
 		WPCLIMigrationGTIN::class              => true,
 		OnboardingCompleted::class             => true,
 		ServiceBasedMerchantState::class       => true,
@@ -329,7 +326,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( ReadyButNoSalesEvaluator::class, PolicyComplianceCheck::class, WC::class );
 		$this->share_with_tags( CouponsNotSyncedEvaluator::class, CouponHelper::class );
 		$this->share_with_tags( SalesNotGrowingEvaluator::class );
-		$this->share_with_tags( WcInstallTimestamp::class );
+		$this->share_with_tags( WcInstallTimestamp::class, WP::class );
 
 		// Product attributes
 		$this->conditionally_share_with_tags( AttributeManager::class, AttributeMappingRulesQuery::class, WC::class );

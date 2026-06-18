@@ -5,13 +5,16 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Class WcInstallTimestamp
  *
- * Records the WooCommerce install timestamp once when WooCommerce is installed.
+ * Copies the WooCommerce install timestamp into a GLA option once GLA is active.
+ * GLA requires WooCommerce, so this runs after both plugins are available and reads
+ * WooCommerce's existing install timestamp rather than recording the current time.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Options
  */
@@ -20,21 +23,50 @@ class WcInstallTimestamp implements OptionsAwareInterface, Registerable, Service
 	use OptionsAwareTrait;
 
 	/**
+	 * WooCommerce option that stores the store install timestamp.
+	 */
+	private const WC_ADMIN_INSTALL_TIMESTAMP_OPTION = 'woocommerce_admin_install_timestamp';
+
+	/**
+	 * @var WP
+	 */
+	protected $wp;
+
+	/**
+	 * WcInstallTimestamp constructor.
+	 *
+	 * @param WP $wp
+	 */
+	public function __construct( WP $wp ) {
+		$this->wp = $wp;
+	}
+
+	/**
 	 * Register a service.
 	 */
 	public function register(): void {
 		add_action(
-			'woocommerce_installed',
+			'admin_init',
 			function () {
-				$this->record_install_timestamp();
+				$this->maybe_record_wc_install_timestamp();
 			}
 		);
 	}
 
 	/**
-	 * Store the WooCommerce install timestamp once.
+	 * Store the WooCommerce install timestamp once, if not already recorded.
 	 */
-	protected function record_install_timestamp(): void {
-		$this->options->add( OptionsInterface::WC_INSTALL_TIMESTAMP, time() );
+	protected function maybe_record_wc_install_timestamp(): void {
+		if ( $this->options->get( OptionsInterface::WC_INSTALL_TIMESTAMP ) ) {
+			return;
+		}
+
+		$wc_install_timestamp = $this->wp->get_option( self::WC_ADMIN_INSTALL_TIMESTAMP_OPTION );
+
+		if ( ! is_numeric( $wc_install_timestamp ) || (int) $wc_install_timestamp <= 0 ) {
+			return;
+		}
+
+		$this->options->add( OptionsInterface::WC_INSTALL_TIMESTAMP, (int) $wc_install_timestamp );
 	}
 }
