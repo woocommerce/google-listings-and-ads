@@ -91,7 +91,19 @@ class NotificationController extends BaseController {
 	protected function get_delete_callback(): callable {
 		return function ( Request $request ) {
 			try {
-				$this->service->dismiss( (string) $request->get_param( 'id' ) );
+				$id = (string) $request->get_param( 'id' );
+
+				if ( ! $this->service->has( $id ) ) {
+					return new Response(
+						[
+							'message' => __( 'No notification found with the given ID.', 'google-listings-and-ads' ),
+							'id'      => $id,
+						],
+						404
+					);
+				}
+
+				$this->service->dismiss( $id );
 
 				return new Response( $this->get_notifications_response() );
 			} catch ( Exception $e ) {

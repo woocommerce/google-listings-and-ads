@@ -1,4 +1,3 @@
-/* global MutationObserver */
 ( function () {
 	const badge = document.querySelector(
 		'#toplevel_page_woocommerce-marketing .update-plugins'

@@ -4,15 +4,15 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\NotificationsSystemSlot;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\BulkEdit\BulkEditInitializer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\NotificationSystem;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\BulkEdit\CouponBulkEdit;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\CouponChannelVisibilityMetaBox;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Redirect;
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\SystemStatusService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\ConnectionTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
@@ -57,25 +57,25 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 	 * @var array
 	 */
 	protected $provides = [
-		Admin::class               => true,
-		AttributeMapping::class    => true,
-		BulkEditInitializer::class => true,
-		ConnectionTest::class      => true,
-		CouponBulkEdit::class      => true,
-		Dashboard::class           => true,
-		NotificationManager::class => true,
-		GetStarted::class          => true,
-		MetaBoxInterface::class    => true,
-		MetaBoxInitializer::class  => true,
-		ProductFeed::class         => true,
-		Redirect::class            => true,
-		Reports::class             => true,
-		Settings::class            => true,
-		SetupAds::class            => true,
-		SetupMerchantCenter::class => true,
-		Shipping::class            => true,
-		SystemStatusService::class => true,
-		Service::class             => true,
+		Admin::class                   => true,
+		AttributeMapping::class        => true,
+		BulkEditInitializer::class     => true,
+		ConnectionTest::class          => true,
+		CouponBulkEdit::class          => true,
+		Dashboard::class               => true,
+		NotificationManager::class     => true,
+		NotificationsSystemSlot::class => true,
+		GetStarted::class              => true,
+		MetaBoxInterface::class        => true,
+		MetaBoxInitializer::class      => true,
+		ProductFeed::class             => true,
+		Redirect::class                => true,
+		Reports::class                 => true,
+		Settings::class                => true,
+		SetupAds::class                => true,
+		SetupMerchantCenter::class     => true,
+		Shipping::class                => true,
+		Service::class                 => true,
 	];
 
 	/**
@@ -112,6 +112,8 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		$this->share_with_tags( AttributeMapping::class );
 		$this->share_with_tags( Dashboard::class, OnboardingCompleted::class );
 		$this->share_with_tags( NotificationManager::class, AssetsHandlerInterface::class, NotificationService::class );
+		$this->share_with_tags( NotificationsSystemSlot::class, AssetsHandlerInterface::class );
+		$this->share_with_tags( NotificationSystem::class, AssetsHandlerInterface::class );
 		$this->share_with_tags( GetStarted::class, OnboardingCompleted::class );
 		$this->share_with_tags( ProductFeed::class );
 		$this->share_with_tags( Reports::class );
@@ -119,6 +121,5 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		$this->share_with_tags( SetupAds::class );
 		$this->share_with_tags( SetupMerchantCenter::class );
 		$this->share_with_tags( Shipping::class );
-		$this->share_with_tags( SystemStatusService::class, NotificationsService::class, MerchantCenterService::class );
 	}
 }

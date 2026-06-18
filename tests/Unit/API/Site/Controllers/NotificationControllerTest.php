@@ -64,6 +64,11 @@ class NotificationControllerTest extends RESTControllerUnitTest {
 
 	public function test_delete_notification_route() {
 		$this->service->expects( $this->once() )
+			->method( 'has' )
+			->with( 'test_notification' )
+			->willReturn( true );
+
+		$this->service->expects( $this->once() )
 			->method( 'dismiss' )
 			->with( 'test_notification' );
 
@@ -79,11 +84,38 @@ class NotificationControllerTest extends RESTControllerUnitTest {
 
 	public function test_delete_notification_invalid_id() {
 		$this->service->expects( $this->never() )
+			->method( 'has' );
+
+		$this->service->expects( $this->never() )
 			->method( 'dismiss' );
 
 		$response = $this->do_request( self::ROUTE . '/$$$', 'DELETE' );
 
 		$this->assertEquals( 404, $response->get_status() );
+	}
+
+	public function test_delete_notification_unknown_id() {
+		$this->service->expects( $this->once() )
+			->method( 'has' )
+			->with( 'this_id_never_existed' )
+			->willReturn( false );
+
+		$this->service->expects( $this->never() )
+			->method( 'dismiss' );
+
+		$this->service->expects( $this->never() )
+			->method( 'get_notifications' );
+
+		$response = $this->do_request( self::ROUTE . '/this_id_never_existed', 'DELETE' );
+
+		$this->assertEquals( 404, $response->get_status() );
+		$this->assertEquals(
+			[
+				'message' => 'No notification found with the given ID.',
+				'id'      => 'this_id_never_existed',
+			],
+			$response->get_data()
+		);
 	}
 
 	public function test_get_notifications_without_permission() {
