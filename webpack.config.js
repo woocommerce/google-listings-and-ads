@@ -153,6 +153,11 @@ const webpackConfig = {
 			'js/src/notification-manager',
 			'index.js'
 		),
+		'notifications-system': path.resolve(
+			process.cwd(),
+			'js/src/notifications-system',
+			'index.js'
+		),
 		'order-attribution': path.resolve(
 			process.cwd(),
 			'js/src/meta-boxes/order-attribution',
@@ -161,6 +166,11 @@ const webpackConfig = {
 		'channel-visibility-meta-box': path.join(
 			__dirname,
 			'js/src/meta-boxes/channel-visibility',
+			'index.js'
+		),
+		'woo-marketing-notifications-slot': path.resolve(
+			process.cwd(),
+			'js/src/notifications-system/woo-marketing-notifications-slot',
 			'index.js'
 		),
 	} ),

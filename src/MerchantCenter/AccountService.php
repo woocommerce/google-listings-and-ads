@@ -8,7 +8,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
@@ -28,7 +27,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException;
 use Exception;
 use Jetpack_Options;
 
@@ -142,6 +141,10 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		} catch ( ExceptionWithResponseData $e ) {
 			throw $e;
 		} catch ( Exception $e ) {
+			if ( $e->getPrevious() instanceof BadResponseException ) {
+				throw $this->prepare_api_error_exception( $e );
+			}
+
 			throw $this->prepare_exception( $e->getMessage(), [], $e->getCode() );
 		}
 	}
@@ -166,6 +169,9 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		} catch ( ExceptionWithResponseData | ApiNotReady $e ) {
 			throw $e;
 		} catch ( Exception $e ) {
+			if ( $e->getPrevious() instanceof BadResponseException ) {
+				throw $this->prepare_api_error_exception( $e );
+			}
 			throw $this->prepare_exception( $e->getMessage(), [], $e->getCode() );
 		}
 	}
@@ -221,9 +227,6 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 	 * @return array
 	 */
 	public function get_connected_status(): array {
-		/** @var NotificationsService $notifications_service */
-		$notifications_service = $this->container->get( NotificationsService::class );
-
 		$id                    = $this->options->get_merchant_id();
 		$wpcom_rest_api_status = $this->options->get( OptionsInterface::WPCOM_REST_API_STATUS );
 
@@ -243,10 +246,9 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		}
 
 		$status = [
-			'id'                           => $id,
-			'status'                       => $id ? 'connected' : 'disconnected',
-			'notification_service_enabled' => $notifications_service->is_enabled(),
-			'wpcom_rest_api_status'        => $wpcom_rest_api_status,
+			'id'                    => $id,
+			'status'                => $id ? 'connected' : 'disconnected',
+			'wpcom_rest_api_status' => $wpcom_rest_api_status,
 		];
 
 		$incomplete = $this->state->last_incomplete_step();
@@ -552,6 +554,30 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 		}
 
 		return new ExceptionWithResponseData( $message, $code ?: 400, null, $data );
+	}
+
+	/**
+	 * Prepares an API error Exception to be thrown with Merchant data.
+	 *
+	 * @param Exception $e The caught exception.
+	 *
+	 * @return ExceptionWithResponseData
+	 */
+	private function prepare_api_error_exception( Exception $e ) {
+		/** @var BadResponseException $prev */
+		$prev    = $e->getPrevious();
+		$body    = method_exists( $prev, 'getResponse' ) && $prev->getResponse() ? (string) $prev->getResponse()->getBody() : '';
+		$decoded = json_decode( $body, true );
+		$error   = is_array( $decoded ) ? ( $decoded['error'] ?? [] ) : [];
+		$message = is_array( $error ) && isset( $error['message'] ) ? (string) $error['message'] : $e->getMessage();
+		return $this->prepare_exception(
+			$message,
+			[
+				'code'  => 'API_ERROR',
+				'error' => $decoded,
+			],
+			$e->getCode() ?: 400
+		);
 	}
 
 	/**

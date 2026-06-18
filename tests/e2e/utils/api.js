@@ -142,20 +142,6 @@ export async function clearCompleteMCSetup() {
 }
 
 /**
- * Set Notifications Ready.
- */
-export async function setNotificationsReady() {
-	await api().post( 'gla-test/notifications-ready' );
-}
-
-/**
- * Clear Onboarded Merchant.
- */
-export async function clearNotificationsReady() {
-	await api().delete( 'gla-test/notifications-ready' );
-}
-
-/**
  * Set gla_install_version for Hiding GTIN
  */
 export async function setVersionForHideGtin() {
