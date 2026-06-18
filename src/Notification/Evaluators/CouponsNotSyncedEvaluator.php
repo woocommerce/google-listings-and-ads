@@ -90,10 +90,19 @@ class CouponsNotSyncedEvaluator implements NotificationEvaluatorInterface, Servi
 	 * @return WC_Coupon[]
 	 */
 	protected function get_coupons(): array {
-		return wc_get_coupons(
+		$coupon_posts = get_posts(
 			[
-				'limit' => -1,
+				'post_type'      => 'shop_coupon',
+				'posts_per_page' => -1,
+				'post_status'    => 'publish',
 			]
+		);
+
+		return array_map(
+			static function ( $post ) {
+				return new WC_Coupon( $post->ID );
+			},
+			$coupon_posts
 		);
 	}
 }
