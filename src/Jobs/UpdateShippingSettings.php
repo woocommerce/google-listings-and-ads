@@ -109,11 +109,6 @@ class UpdateShippingSettings extends AbstractActionSchedulerJob {
 	/**
 	 * Can the WooCommerce shipping settings be synced to Google Merchant Center.
 	 *
-	 * Returns true when MC is connected and at least one configured market has a
-	 * non-manual shipping_rate with shipping_time === 'flat'. With multi-market
-	 * support a non-manual secondary can require a sync even when the primary
-	 * itself is set to 'manual'.
-	 *
 	 * @return bool
 	 */
 	protected function can_sync_shipping(): bool {
@@ -121,14 +116,6 @@ class UpdateShippingSettings extends AbstractActionSchedulerJob {
 			return false;
 		}
 
-		foreach ( $this->market_service->get_markets() as $market ) {
-			$rate = $market['shipping_rate'] ?? null;
-			$time = $market['shipping_time'] ?? null;
-			if ( 'manual' !== $rate && 'flat' === $time ) {
-				return true;
-			}
-		}
-
-		return false;
+		return $this->market_service->has_syncable_markets();
 	}
 }

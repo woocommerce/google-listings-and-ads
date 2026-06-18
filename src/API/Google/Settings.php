@@ -83,26 +83,13 @@ class Settings implements ContainerAwareInterface {
 	/**
 	 * Whether we should synchronize settings with the Merchant Center.
 	 *
-	 * Returns true when at least one configured market has a non-manual
-	 * shipping_rate combined with shipping_time === 'flat'. A non-manual
-	 * secondary market is enough to require a sync even when the primary
-	 * is configured as 'manual'.
-	 *
 	 * @return bool
 	 */
 	protected function should_sync_shipping(): bool {
 		/** @var MarketService $market_service */
 		$market_service = $this->container->get( MarketService::class );
 
-		foreach ( $market_service->get_markets() as $market ) {
-			$rate = $market['shipping_rate'] ?? null;
-			$time = $market['shipping_time'] ?? null;
-			if ( 'manual' !== $rate && 'flat' === $time ) {
-				return true;
-			}
-		}
-
-		return false;
+		return $market_service->has_syncable_markets();
 	}
 
 	/**

@@ -38,23 +38,9 @@ class UpdateShippingSettingsTest extends UnitTest {
 	/** @var UpdateShippingSettings $job */
 	protected $job;
 
-	private const MARKET_NON_MANUAL_FLAT = [
-		'shipping_rate' => 'flat',
-		'shipping_time' => 'flat',
-	];
-
-	private const MARKET_MANUAL = [
-		'shipping_rate' => 'manual',
-		'shipping_time' => 'flat',
-	];
-
-	public function test_job_is_scheduled_when_any_market_is_non_manual_flat() {
+	public function test_job_is_scheduled_when_market_service_has_syncable_markets() {
 		$this->merchant_center->method( 'is_connected' )->willReturn( true );
-		$this->market_service->method( 'get_markets' )->willReturn(
-			[
-				'primary' => self::MARKET_NON_MANUAL_FLAT,
-			]
-		);
+		$this->market_service->method( 'has_syncable_markets' )->willReturn( true );
 
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'schedule_immediate' )
@@ -63,30 +49,9 @@ class UpdateShippingSettingsTest extends UnitTest {
 		$this->job->schedule();
 	}
 
-	public function test_job_is_scheduled_when_only_secondary_is_non_manual_and_primary_is_manual() {
+	public function test_job_is_not_scheduled_when_market_service_has_no_syncable_markets() {
 		$this->merchant_center->method( 'is_connected' )->willReturn( true );
-		$this->market_service->method( 'get_markets' )->willReturn(
-			[
-				'primary' => self::MARKET_MANUAL,
-				'fr'      => self::MARKET_NON_MANUAL_FLAT,
-			]
-		);
-
-		$this->action_scheduler->expects( $this->once() )
-			->method( 'schedule_immediate' )
-			->with( $this->job->get_process_item_hook() );
-
-		$this->job->schedule();
-	}
-
-	public function test_job_is_not_scheduled_when_every_market_is_manual() {
-		$this->merchant_center->method( 'is_connected' )->willReturn( true );
-		$this->market_service->method( 'get_markets' )->willReturn(
-			[
-				'primary' => self::MARKET_MANUAL,
-				'fr'      => self::MARKET_MANUAL,
-			]
-		);
+		$this->market_service->method( 'has_syncable_markets' )->willReturn( false );
 
 		$this->action_scheduler->expects( $this->never() )
 			->method( 'schedule_immediate' );
@@ -96,11 +61,7 @@ class UpdateShippingSettingsTest extends UnitTest {
 
 	public function test_job_is_not_scheduled_if_mc_not_connected() {
 		$this->merchant_center->method( 'is_connected' )->willReturn( false );
-		$this->market_service->method( 'get_markets' )->willReturn(
-			[
-				'primary' => self::MARKET_NON_MANUAL_FLAT,
-			]
-		);
+		$this->market_service->method( 'has_syncable_markets' )->willReturn( true );
 
 		$this->action_scheduler->expects( $this->never() )
 			->method( 'schedule_immediate' );
@@ -110,11 +71,7 @@ class UpdateShippingSettingsTest extends UnitTest {
 
 	public function test_process_items() {
 		$this->merchant_center->method( 'is_connected' )->willReturn( true );
-		$this->market_service->method( 'get_markets' )->willReturn(
-			[
-				'primary' => self::MARKET_NON_MANUAL_FLAT,
-			]
-		);
+		$this->market_service->method( 'has_syncable_markets' )->willReturn( true );
 
 		$this->google_settings->expects( $this->once() )->method( 'sync_shipping' );
 
@@ -123,11 +80,7 @@ class UpdateShippingSettingsTest extends UnitTest {
 
 	public function test_process_items_fails_if_mc_not_connected() {
 		$this->merchant_center->method( 'is_connected' )->willReturn( false );
-		$this->market_service->method( 'get_markets' )->willReturn(
-			[
-				'primary' => self::MARKET_NON_MANUAL_FLAT,
-			]
-		);
+		$this->market_service->method( 'has_syncable_markets' )->willReturn( true );
 
 		$this->google_settings->expects( $this->never() )->method( 'sync_shipping' );
 
@@ -136,13 +89,9 @@ class UpdateShippingSettingsTest extends UnitTest {
 		do_action( $this->job->get_process_item_hook(), [] );
 	}
 
-	public function test_process_items_fails_when_every_market_is_manual() {
+	public function test_process_items_fails_when_market_service_has_no_syncable_markets() {
 		$this->merchant_center->method( 'is_connected' )->willReturn( true );
-		$this->market_service->method( 'get_markets' )->willReturn(
-			[
-				'primary' => self::MARKET_MANUAL,
-			]
-		);
+		$this->market_service->method( 'has_syncable_markets' )->willReturn( false );
 
 		$this->google_settings->expects( $this->never() )->method( 'sync_shipping' );
 

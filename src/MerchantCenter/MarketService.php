@@ -405,6 +405,27 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
+	 * Whether any configured market needs its shipping settings synced to Merchant Center.
+	 *
+	 * Returns true when at least one market has a non-`manual` `shipping_rate`
+	 * combined with `shipping_time === 'flat'`. A non-`manual` secondary market
+	 * is enough to require a sync even when the primary itself is `manual`.
+	 *
+	 * @return bool
+	 */
+	public function has_syncable_markets(): bool {
+		foreach ( $this->get_markets() as $market ) {
+			$rate = $market['shipping_rate'] ?? null;
+			$time = $market['shipping_time'] ?? null;
+			if ( 'manual' !== $rate && 'flat' === $time ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Returns true if a supported multilingual integration is active.
 	 *
 	 * @return bool

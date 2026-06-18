@@ -78,49 +78,14 @@ class SettingsTest extends UnitTest {
 		$this->settings->set_container( $this->container );
 	}
 
-	public function test_should_sync_shipping_true_when_only_secondary_is_non_manual(): void {
-		$this->market_service->method( 'get_markets' )->willReturn(
-			[
-				'primary' => [
-					'shipping_rate' => 'manual',
-					'shipping_time' => 'flat',
-				],
-				'fr'      => [
-					'shipping_rate' => 'flat',
-					'shipping_time' => 'flat',
-				],
-			]
-		);
+	public function test_should_sync_shipping_returns_true_when_market_service_has_syncable_markets(): void {
+		$this->market_service->method( 'has_syncable_markets' )->willReturn( true );
 
 		$this->assertTrue( $this->invoke( 'should_sync_shipping' ) );
 	}
 
-	public function test_should_sync_shipping_false_when_every_market_is_manual(): void {
-		$this->market_service->method( 'get_markets' )->willReturn(
-			[
-				'primary' => [
-					'shipping_rate' => 'manual',
-					'shipping_time' => 'flat',
-				],
-				'fr'      => [
-					'shipping_rate' => 'manual',
-					'shipping_time' => 'flat',
-				],
-			]
-		);
-
-		$this->assertFalse( $this->invoke( 'should_sync_shipping' ) );
-	}
-
-	public function test_should_sync_shipping_false_when_shipping_time_not_flat(): void {
-		$this->market_service->method( 'get_markets' )->willReturn(
-			[
-				'primary' => [
-					'shipping_rate' => 'flat',
-					'shipping_time' => 'manual',
-				],
-			]
-		);
+	public function test_should_sync_shipping_returns_false_when_market_service_has_no_syncable_markets(): void {
+		$this->market_service->method( 'has_syncable_markets' )->willReturn( false );
 
 		$this->assertFalse( $this->invoke( 'should_sync_shipping' ) );
 	}

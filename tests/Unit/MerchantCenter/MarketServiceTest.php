@@ -1432,6 +1432,69 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->get_markets();
 	}
 
+	public function test_has_syncable_markets_true_when_only_secondary_is_non_manual(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'manual',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'fr' => [
+						'country'       => 'FR',
+						'feed_label'    => 'FR',
+						'language'      => [ 'fr' ],
+						'currency'      => [ 'EUR' ],
+						'shipping_rate' => 'flat',
+						'shipping_time' => 'flat',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->assertTrue( $this->market_service->has_syncable_markets() );
+	}
+
+	public function test_has_syncable_markets_false_when_every_market_is_manual(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'manual',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'fr' => [
+						'country'       => 'FR',
+						'feed_label'    => 'FR',
+						'language'      => [ 'fr' ],
+						'currency'      => [ 'EUR' ],
+						'shipping_rate' => 'manual',
+						'shipping_time' => 'flat',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->assertFalse( $this->market_service->has_syncable_markets() );
+	}
+
+	public function test_has_syncable_markets_false_when_shipping_time_not_flat(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'manual',
+				],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->assertFalse( $this->market_service->has_syncable_markets() );
+	}
+
 	/**
 	 * Sets up the options mock to return specific values for different option keys.
 	 *
