@@ -85,7 +85,7 @@ const shouldReturnResponseBody = ( options ) => {
  * const handleSwitch = async () => {
  * 		// make the apiFetch call here.
  * 		// account is the response body.
- * 		// you can provide option in the function call and it will be merged with the original option.
+ * 		// you can provide `data` and `query` to override those options for this specific call.
  * 		const account = await fetchMCAccountSwitchUrl();
  *
  * 		receiveMCAccount( account );
@@ -112,7 +112,7 @@ const shouldReturnResponseBody = ( options ) => {
  * ```
  *
  * @param {import('@wordpress/api-fetch').APIFetchOptions} [options] options to be forwarded to `apiFetch`.
- * @param {defaultState} initialState overwrite default state.
+ * @param {Object} [initialState] initial state values merged with the default state `{ loading, error, data, response, options }`.
  * @return {Array} `[ apiFetchCallback, fetchResult ]`
  * 		- `apiFetchCallback` is the function to be called to trigger `apiFetch`.
  * 							You call apiFetchCallback in your event handler.
@@ -122,7 +122,7 @@ const shouldReturnResponseBody = ( options ) => {
  * 							You can optionally pass in a reset state and it will be merged with the initial state.
  * 		`apiFetchCallback` accepts an optional `overwriteOptions` argument with only `data` and `query` properties.
  * 		- `data` overrides the request body for the call.
- * 		- `query` appends or overrides URL query parameters for the call.
+ * 		- `query` overrides the URL query parameters for the call.
  */
 const useApiFetchCallback = ( options, initialState = defaultState ) => {
 	const optionsRefValue = useIsEqualRefValue( options );
