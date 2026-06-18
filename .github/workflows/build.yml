@@ -20,7 +20,7 @@ jobs:
       FORCE_COLOR: 2
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Prepare PHP
         uses: woocommerce/grow/prepare-php@actions-v3

@@ -32,7 +32,7 @@ jobs:
       changelog_block: ${{ steps.generate.outputs.changelog_block }}
     steps:
       - name: Checkout release branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ env.RELEASE_BRANCH }}
           token: ${{ secrets.ORG_DEPLOY_SECRET }}

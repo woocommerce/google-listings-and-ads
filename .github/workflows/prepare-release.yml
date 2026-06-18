@@ -60,7 +60,7 @@ jobs:
           fi
 
       - name: Checkout source branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ inputs.source_branch }}
           token: ${{ secrets.ORG_DEPLOY_SECRET }}

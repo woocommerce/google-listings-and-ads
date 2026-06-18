@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           # Checks out a branch instead of a commit in detached HEAD state
           ref: ${{ github.head_ref }}
