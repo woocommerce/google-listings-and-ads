@@ -598,6 +598,7 @@ class MarketServiceTest extends UnitTest {
 		);
 
 		$this->expectException( InvalidValue::class );
+		$this->expectExceptionMessage( 'The value of language must be of type array.' );
 
 		$this->market_service->update_market(
 			'primary',
@@ -614,6 +615,7 @@ class MarketServiceTest extends UnitTest {
 		);
 
 		$this->expectException( InvalidValue::class );
+		$this->expectExceptionMessage( 'The value of currency must be of type array.' );
 
 		$this->market_service->update_market(
 			'primary',

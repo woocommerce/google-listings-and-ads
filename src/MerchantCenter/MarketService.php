@@ -410,7 +410,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				continue;
 			}
 			if ( ! is_array( $config[ $key ] ) ) {
-				throw InvalidValue::is_empty( $key );
+				throw InvalidValue::not_array( $key );
 			}
 			$mc_settings[ $key ] = array_values( array_unique( $config[ $key ] ) );
 			$mc_updated          = true;
@@ -458,8 +458,11 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		}
 
 		foreach ( [ 'language', 'currency' ] as $key ) {
-			if ( ! isset( $config[ $key ] ) || ! is_array( $config[ $key ] ) ) {
+			if ( ! isset( $config[ $key ] ) ) {
 				throw InvalidValue::is_empty( $key );
+			}
+			if ( ! is_array( $config[ $key ] ) ) {
+				throw InvalidValue::not_array( $key );
 			}
 		}
 	}
@@ -485,7 +488,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	): array {
 		if ( $merge_language ) {
 			if ( array_key_exists( 'language', $config ) && ! is_array( $config['language'] ) ) {
-				throw InvalidValue::is_empty( 'language' );
+				throw InvalidValue::not_array( 'language' );
 			}
 
 			$language_extras    = isset( $config['language'] ) && is_array( $config['language'] ) ? $config['language'] : [];
@@ -498,7 +501,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 		if ( $merge_currency ) {
 			if ( array_key_exists( 'currency', $config ) && ! is_array( $config['currency'] ) ) {
-				throw InvalidValue::is_empty( 'currency' );
+				throw InvalidValue::not_array( 'currency' );
 			}
 
 			$currency_extras    = isset( $config['currency'] ) && is_array( $config['currency'] ) ? $config['currency'] : [];
