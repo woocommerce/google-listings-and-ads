@@ -11,8 +11,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeD
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\Utilities\OrderUtil;
 use DateTime;
-use WC_Order;
+use DateTimeZone;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -102,23 +103,59 @@ class SalesNotGrowingEvaluator implements NotificationEvaluatorInterface, Option
 	 * @return float
 	 */
 	protected function get_gmv_for_period( DateTime $start, DateTime $end ): float {
-		$orders = wc_get_orders(
-			[
-				'status'       => 'completed',
-				'date_created' => $start->format( 'Y-m-d H:i:s' ) . '...' . $end->format( 'Y-m-d H:i:s' ),
-				'limit'        => -1,
-				'return'       => 'objects',
-			]
-		);
+		global $wpdb;
 
-		$gmv = 0.0;
+		$start_sql = $this->format_datetime_as_gmt( $start );
+		$end_sql   = $this->format_datetime_as_gmt( $end );
 
-		foreach ( $orders as $order ) {
-			if ( $order instanceof WC_Order ) {
-				$gmv += (float) $order->get_total();
-			}
+		if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name from $wpdb->prefix.
+			$sum = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COALESCE( SUM( total_amount ), 0 )
+					FROM {$wpdb->prefix}wc_orders
+					WHERE type = 'shop_order'
+						AND status = %s
+						AND date_created_gmt >= %s
+						AND date_created_gmt <= %s",
+					'wc-completed',
+					$start_sql,
+					$end_sql
+				)
+			);
+		} else {
+			$sum = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COALESCE( SUM( meta.meta_value + 0 ), 0 )
+					FROM {$wpdb->posts} AS posts
+					INNER JOIN {$wpdb->postmeta} AS meta
+						ON posts.ID = meta.post_id
+					WHERE posts.post_type = 'shop_order'
+						AND posts.post_status = %s
+						AND meta.meta_key = '_order_total'
+						AND posts.post_date_gmt >= %s
+						AND posts.post_date_gmt <= %s",
+					'wc-completed',
+					$start_sql,
+					$end_sql
+				)
+			);
 		}
 
-		return $gmv;
+		return (float) $sum;
+	}
+
+	/**
+	 * Format a site-timezone datetime for comparison against GMT database columns.
+	 *
+	 * @param DateTime $date
+	 *
+	 * @return string
+	 */
+	protected function format_datetime_as_gmt( DateTime $date ): string {
+		$utc = clone $date;
+		$utc->setTimezone( new DateTimeZone( 'UTC' ) );
+
+		return $utc->format( 'Y-m-d H:i:s' );
 	}
 }
