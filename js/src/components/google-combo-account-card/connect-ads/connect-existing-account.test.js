@@ -57,6 +57,8 @@ describe( 'ConnectExistingAccount', () => {
 	let connectGoogleAdsAccount;
 	let fetchGoogleAdsAccountStatus;
 	let disconnectGoogleAdsAccount;
+	let clearDetailedErrorBySlots;
+	let receiveDetailedError;
 
 	beforeEach( () => {
 		connectGoogleAdsAccount = jest
@@ -72,10 +74,18 @@ describe( 'ConnectExistingAccount', () => {
 			.mockName( 'disconnectGoogleAdsAccount' )
 			.mockReturnValue( Promise.resolve() );
 
+		clearDetailedErrorBySlots = jest
+			.fn()
+			.mockName( 'clearDetailedErrorBySlots' );
+
+		receiveDetailedError = jest.fn().mockName( 'receiveDetailedError' );
+
 		useApiFetchCallback.mockReturnValue( [ connectGoogleAdsAccount ] );
 		useAppDispatch.mockReturnValue( {
 			fetchGoogleAdsAccountStatus,
 			disconnectGoogleAdsAccount,
+			clearDetailedErrorBySlots,
+			receiveDetailedError,
 		} );
 	} );
 

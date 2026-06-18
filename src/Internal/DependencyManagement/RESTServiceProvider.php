@@ -33,7 +33,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\Recomme
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\GTINMigrationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\NotificationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\OnboardingController;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\RestAPI\SyncController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\TourController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\DisconnectController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ConnectController;
@@ -67,7 +66,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCen
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\PriceBenchmarksController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\RestAPI\AuthController as RestAPIAuthController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\YouTube\AccountController as YouTubeAccountController;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection as YouTubeConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductFeedQueryHelper;
@@ -168,7 +166,6 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( RestAPIAuthController::class, OAuthService::class, MerchantAccountService::class );
 		$this->share( GTINMigrationController::class, JobRepository::class );
 		$this->share( PriceBenchmarksController::class );
-		$this->share( SyncController::class, NotificationsService::class );
 		$this->share( RecommendationsController::class, AdsAccountService::class );
 		$this->share( AdsSettingsController::class );
 		$this->share( ConnectController::class, Middleware::class, OptionsInterface::class );
