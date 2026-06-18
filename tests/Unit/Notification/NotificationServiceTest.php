@@ -125,6 +125,40 @@ class NotificationServiceTest extends UnitTest {
 		$this->assertEquals( [], $this->service->get_notifications() );
 	}
 
+	public function test_has_returns_true_for_registered_evaluator_id() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'notification-a', 10, true ),
+			]
+		);
+
+		$this->assertTrue( $this->service->has( 'notification-a' ) );
+	}
+
+	public function test_has_returns_false_for_unknown_id() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'notification-a', 10, true ),
+			]
+		);
+
+		$this->assertFalse( $this->service->has( 'unknown-id' ) );
+	}
+
+	public function test_dismiss_unknown_id_does_not_persist_state() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'notification-a', 10, true ),
+			]
+		);
+
+		$this->service->dismiss( 'unknown-id' );
+
+		$state = get_user_meta( get_current_user_id(), 'gla_notifications_state', true );
+
+		$this->assertFalse( isset( $state['unknown-id'] ) );
+	}
+
 	/**
 	 * Have the mocked container return the given evaluators.
 	 *
