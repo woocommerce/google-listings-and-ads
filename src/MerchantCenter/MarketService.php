@@ -301,6 +301,12 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$this->restore_country_to_target_audience( $country );
 		}
 
+		/**
+		 * Fires after a secondary market is deleted and its shipping data is synced back to the primary.
+		 *
+		 * @param string      $id      Market ID that was deleted.
+		 * @param string|null $country ISO 3166-1 alpha-2 country code of the deleted market, or null if the market had no country.
+		 */
 		do_action( 'woocommerce_gla_market_deleted', $id, $country );
 	}
 

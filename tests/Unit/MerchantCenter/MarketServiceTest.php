@@ -1001,7 +1001,7 @@ class MarketServiceTest extends UnitTest {
 			$this->market_service->delete_market( 'primary' );
 			$this->fail( 'Expected InvalidValue exception.' );
 		} catch ( InvalidValue $e ) {
-			// Expected.
+			$this->assertInstanceOf( InvalidValue::class, $e );
 		} finally {
 			remove_action( 'woocommerce_gla_market_deleted', $listener );
 		}
