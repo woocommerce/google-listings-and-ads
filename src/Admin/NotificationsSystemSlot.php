@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -68,6 +69,16 @@ class NotificationsSystemSlot implements Service, Registerable {
 
 				$this->assets_handler->register( $slot_script );
 				$this->assets_handler->enqueue( $slot_script );
+
+				$slot_style = new AdminStyleAsset(
+					'woocommerce-marketing-notifications-system-slot-css',
+					'js/build/woo-marketing-notifications-slot',
+					[],
+					(string) filemtime( "{$build_dir}/woo-marketing-notifications-slot.css" )
+				);
+
+				$this->assets_handler->register( $slot_style );
+				$this->assets_handler->enqueue( $slot_style );
 			}
 		);
 	}
