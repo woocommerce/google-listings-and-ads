@@ -51,12 +51,11 @@ interface OptionsInterface {
 	public const WP_TOS_ACCEPTED                           = 'wp_tos_accepted';
 	public const WPCOM_REST_API_STATUS                     = 'wpcom_rest_api_status';
 	public const GTIN_MIGRATION_STATUS                     = 'gtin_migration_status';
-	public const API_PULL_SYNC_MODE                        = 'api_pull_sync_mode';
 	public const YOUTUBE_ORDER_IDS_CACHE                   = 'youtube_export_order_ids';
 	public const YOUTUBE_EXPORT_FILES                      = 'youtube_export_files';
 	public const YOUTUBE_THIRD_PARTY_LINK                  = 'youtube_third_party_link';
 	public const ONBOARDING_COMPLETED_AT                   = 'onboarding_completed_at';
-	public const WC_INSTALL_TIMESTAMP                      = 'gla_wc_install_timestamp';
+	public const WC_INSTALL_TIMESTAMP                      = 'wc_install_timestamp';
 	public const IS_SERVICE_BASED_MERCHANT                 = 'is_service_based_merchant';
 
 	public const VALID_OPTIONS = [
@@ -99,7 +98,6 @@ interface OptionsInterface {
 		self::WPCOM_REST_API_STATUS                     => true,
 		self::GOOGLE_WPCOM_AUTH_NONCE                   => true,
 		self::GTIN_MIGRATION_STATUS                     => true,
-		self::API_PULL_SYNC_MODE                        => true,
 		self::YOUTUBE_ORDER_IDS_CACHE                   => true,
 		self::YOUTUBE_EXPORT_FILES                      => true,
 		self::YOUTUBE_THIRD_PARTY_LINK                  => true,

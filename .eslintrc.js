@@ -38,6 +38,7 @@ module.exports = {
 	},
 	globals: {
 		getComputedStyle: 'readonly',
+		MutationObserver: 'readonly',
 	},
 	rules: {
 		'@wordpress/i18n-text-domain': [

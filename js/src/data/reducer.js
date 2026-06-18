@@ -88,6 +88,7 @@ const DEFAULT_STATE = {
 		},
 		summary: {},
 	},
+	detailed_errors: [],
 	gen_ai_assets: {},
 };
 
@@ -646,6 +647,31 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				state,
 				[ 'ads', 'recommendations', recommendationTypes ],
 				recommendations
+			);
+		}
+
+		case TYPES.RECEIVE_DETAILED_ERROR: {
+			const { slot, error } = action;
+
+			return setIn( state, 'detailed_errors', [
+				...state.detailed_errors,
+				{
+					error,
+					slot,
+				},
+			] );
+		}
+
+		case TYPES.CLEAR_DETAILED_ERROR_BY_SLOT: {
+			const { slots } = action;
+			const toClear = new Set( slots );
+
+			return setIn(
+				state,
+				'detailed_errors',
+				state.detailed_errors.filter(
+					( error ) => ! toClear.has( error.slot )
+				)
 			);
 		}
 
