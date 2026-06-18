@@ -90,6 +90,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Ucp\UcpProductAttributes;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
@@ -166,6 +167,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		SiteVerificationMeta::class      => true,
 		BatchProductHelper::class        => true,
 		ProductFilter::class             => true,
+		UcpProductAttributes::class      => true,
 		ProductRepository::class         => true,
 		ViewFactory::class               => true,
 		DebugLogger::class               => true,
@@ -312,6 +314,10 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( ProductMetaHandler::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class, WC::class, TargetAudience::class );
 		$this->share_with_tags( ProductFilter::class, ProductHelper::class );
+
+		// Google UCP (Universal Commerce Protocol) feed eligibility (draft / WOOAI-634).
+		$this->share_with_tags( UcpProductAttributes::class );
+
 		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class, ProductFilter::class );
 		$this->share_with_tags( ProductFactory::class, AttributeManager::class, WC::class );
 		$this->share_with_tags(
