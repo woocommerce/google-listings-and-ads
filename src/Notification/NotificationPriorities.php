@@ -24,4 +24,7 @@ class NotificationPriorities {
 	public const READY_BUT_NO_SALES        = 80;
 	public const COUPONS_NOT_SYNCED        = 90;
 	public const SALES_NOT_GROWING         = 100;
+	public const PAUSED_CAMPAIGN           = 110;
+	public const CAMPAIGN_NO_SALES         = 120;
+	public const RECOMMENDATIONS_AVAILABLE = 130;
 }
