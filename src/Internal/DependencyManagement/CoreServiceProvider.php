@@ -70,6 +70,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReviewAfterConversions as 
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaignTwoWeeks as SetupCampaign2Note;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCouponSharing as SetupCouponSharingNote;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
@@ -156,6 +157,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		SetupCampaignNote::class         => true,
 		SetupCampaign2Note::class        => true,
 		SetupCouponSharingNote::class    => true,
+		NotificationService::class       => true,
 		TableManager::class              => true,
 		TrackerSnapshot::class           => true,
 		Tracks::class                    => true,
@@ -291,6 +293,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( SetupCampaign2Note::class, MerchantCenterService::class );
 		$this->share_with_tags( SetupCouponSharingNote::class, MerchantStatuses::class );
 		$this->share_with_tags( NoteInitializer::class, ActionScheduler::class );
+
+		// Notifications.
+		$this->share_with_tags( NotificationService::class, WP::class );
 
 		// Product attributes
 		$this->conditionally_share_with_tags( AttributeManager::class, AttributeMappingRulesQuery::class, WC::class );
