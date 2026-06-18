@@ -37,7 +37,7 @@ class WcInstallTimestampTest extends UnitTest {
 		$this->wp      = $this->createMock( WP::class );
 		$this->service = new WcInstallTimestamp();
 		$this->service->set_options_object( $this->options );
-		$this->service->set_wp_object( $this->wp );
+		$this->service->set_wp_proxy_object( $this->wp );
 	}
 
 	public function test_records_install_timestamp_once_on_woocommerce_installed() {
