@@ -66,6 +66,11 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	protected JobRepository $job_repository;
 
 	/**
+	 * @var ?array
+	 */
+	private ?array $cached_shipping_rates = null;
+
+	/**
 	 * MarketService constructor.
 	 *
 	 * @param TargetAudience    $target_audience
@@ -108,7 +113,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$secondary = is_array( $stored ) ? $stored : [];
 		unset( $secondary['primary'] );
 
-		$all_rates     = $this->shipping_rate_query->get_all_shipping_rates();
+		$all_rates     = $this->get_cached_shipping_rates();
 		$all_countries = $this->wc->get_countries();
 
 		foreach ( $secondary as &$market ) {
@@ -195,6 +200,30 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$markets = $this->get_markets();
 
 		return $markets[ $id ] ?? null;
+	}
+
+	/**
+	 * Generates a market ID from a feed label.
+	 *
+	 * Centralises the ID-generation rule so any code path that creates a market
+	 * (REST controller, batch import, migration, CLI) produces consistent IDs.
+	 *
+	 * @param string $feed_label The market's feed label.
+	 *
+	 * @return string The sanitised market ID.
+	 *
+	 * @throws InvalidValue When the generated ID equals the reserved 'primary' key.
+	 */
+	public function generate_market_id( string $feed_label ): string {
+		$id = sanitize_title( $feed_label );
+
+		if ( 'primary' === $id ) {
+			throw new InvalidValue(
+				sprintf( 'The feed label "%s" generates the reserved market ID "primary".', $feed_label )
+			);
+		}
+
+		return $id;
 	}
 
 	/**
@@ -434,13 +463,29 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 */
 	private function get_primary_free_shipping_threshold(): ?float {
 		$country = $this->target_audience->get_main_target_country();
-		$rates   = $this->shipping_rate_query->get_all_shipping_rates();
+		$rates   = $this->get_cached_shipping_rates();
 
 		if ( isset( $rates[ $country ]['free_shipping_threshold'] ) ) {
 			return (float) $rates[ $country ]['free_shipping_threshold'];
 		}
 
 		return null;
+	}
+
+	/**
+	 * Returns shipping rates, fetched lazily and cached on the service instance.
+	 *
+	 * The container shares MarketService across a request, so this cache lives for
+	 * the request and is discarded when the instance is destroyed.
+	 *
+	 * @return array
+	 */
+	private function get_cached_shipping_rates(): array {
+		if ( null === $this->cached_shipping_rates ) {
+			$this->cached_shipping_rates = $this->shipping_rate_query->get_all_shipping_rates();
+		}
+
+		return $this->cached_shipping_rates;
 	}
 
 	/**
