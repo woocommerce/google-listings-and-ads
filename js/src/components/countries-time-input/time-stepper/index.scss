@@ -1,11 +1,7 @@
 .gla-countries-time-stepper {
 	width: $gla-width-smaller;
 
-	:dir(ltr) .gla-countries-time-suffix {
-		margin-right: $grid-unit-05;
-	}
-
-	:dir(rtl) .gla-countries-time-suffix {
-		margin-left: $grid-unit-05;
+	.gla-countries-time-suffix {
+		margin-inline-end: $grid-unit-05;
 	}
 }
