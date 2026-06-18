@@ -125,6 +125,14 @@ class NotificationServiceTest extends UnitTest {
 		$this->assertEquals( [], $this->service->get_notifications() );
 	}
 
+	public function test_returns_empty_array_when_no_evaluators_are_registered() {
+		$this->container->method( 'has' )
+			->with( NotificationEvaluatorInterface::class )
+			->willReturn( false );
+
+		$this->assertEquals( [], $this->service->get_notifications() );
+	}
+
 	public function test_has_returns_true_for_registered_evaluator_id() {
 		$this->set_evaluators(
 			[
@@ -167,6 +175,10 @@ class NotificationServiceTest extends UnitTest {
 	 * @return void
 	 */
 	private function set_evaluators( array $evaluators ): void {
+		$this->container->method( 'has' )
+			->with( NotificationEvaluatorInterface::class )
+			->willReturn( true );
+
 		$this->container->method( 'get' )
 			->with( NotificationEvaluatorInterface::class )
 			->willReturn( $evaluators );
