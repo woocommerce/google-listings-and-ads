@@ -62,14 +62,28 @@ class UcpEnablement {
 		}
 
 		// Fallback: detect the woocommerce-ai plugin and read its option directly.
-		if ( ! defined( 'WCAI_VERSION' ) ) {
+		$version = static::detected_wcai_version();
+		if ( null === $version ) {
 			return false;
 		}
 
-		if ( version_compare( (string) constant( 'WCAI_VERSION' ), self::MIN_WCAI_VERSION, '<' ) ) {
+		if ( version_compare( $version, self::MIN_WCAI_VERSION, '<' ) ) {
 			return false;
 		}
 
 		return 'yes' === get_option( self::FEATURE_OPTION );
+	}
+
+	/**
+	 * The detected woocommerce-ai plugin version, or null when the plugin is not present.
+	 *
+	 * Reads the `WCAI_VERSION` constant defined by woocommerce-ai. Isolated into its own method
+	 * (and called via late static binding) so the plugin-detection branches can be exercised in
+	 * tests without defining a process-global constant.
+	 *
+	 * @return string|null
+	 */
+	protected static function detected_wcai_version(): ?string {
+		return defined( 'WCAI_VERSION' ) ? (string) constant( 'WCAI_VERSION' ) : null;
 	}
 }
