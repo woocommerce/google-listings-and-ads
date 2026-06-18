@@ -196,6 +196,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 		$created = false;
 
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'de' );
+
 		$this->market_service->method( 'add_market' )
 			->willReturnCallback(
 				function () use ( &$created ) {
@@ -258,6 +260,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 		$created = false;
 
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'gb' );
+
 		$this->market_service->method( 'add_market' )
 			->with(
 				'gb',
@@ -298,6 +302,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 	public function test_post_market_with_empty_language_currency_arrays_passes_empty_arrays(): void {
 		$created = false;
+
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'gb' );
 
 		$this->market_service->method( 'add_market' )
 			->with(
@@ -340,6 +346,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_post_market_returns_400_when_add_market_throws_invalid_value(): void {
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'de' );
+
 		$this->market_service->method( 'get_market' )
 			->willReturn( null );
 
@@ -359,7 +367,30 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
+	public function test_post_market_returns_400_when_generate_market_id_rejects_reserved_id(): void {
+		$this->market_service->method( 'generate_market_id' )
+			->willThrowException( new InvalidValue( 'reserved-id rejection' ) );
+
+		$response = $this->do_request(
+			self::ROUTE_MARKETS,
+			'POST',
+			[
+				'country'  => 'XX',
+				'language' => [ 'en' ],
+				'currency' => [ 'USD' ],
+			]
+		);
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertSame(
+			'Cannot create a market with a reserved ID.',
+			$response->get_data()['message']
+		);
+	}
+
 	public function test_post_market_returns_409_when_id_already_exists(): void {
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'gb' );
+
 		$this->market_service->method( 'get_market' )
 			->with( 'gb' )
 			->willReturn( self::SECONDARY_MARKET );
@@ -585,6 +616,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 		$created = false;
 
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'jp' );
+
 		$this->market_service->method( 'add_market' )
 			->willReturnCallback(
 				function () use ( &$created ) {
@@ -616,6 +649,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_post_market_free_shipping_cannot_be_set_in_payload(): void {
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'jp' );
+
 		$this->market_service->method( 'get_market' )
 			->willReturnOnConsecutiveCalls( null, [] );
 
@@ -685,6 +720,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 		$created = false;
 
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'ch' );
+
 		$this->market_service->method( 'add_market' )
 			->willReturnCallback(
 				function () use ( &$created ) {
@@ -728,6 +765,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		];
 
 		$created = false;
+
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'ch' );
 
 		$this->market_service->method( 'add_market' )
 			->willReturnCallback(

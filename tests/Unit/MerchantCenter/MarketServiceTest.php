@@ -1379,6 +1379,59 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( [], $this->market_service->get_currencies() );
 	}
 
+	public function test_generate_market_id_sanitises_uppercase_feed_label(): void {
+		$this->assertSame( 'gb', $this->market_service->generate_market_id( 'GB' ) );
+	}
+
+	public function test_generate_market_id_converts_multi_word_label_to_slug(): void {
+		$this->assertSame( 'united-kingdom', $this->market_service->generate_market_id( 'United Kingdom' ) );
+	}
+
+	public function test_generate_market_id_throws_when_label_sanitises_to_reserved_primary(): void {
+		$this->expectException( InvalidValue::class );
+		$this->expectExceptionMessageMatches( '/reserved/' );
+
+		$this->market_service->generate_market_id( 'Primary' );
+	}
+
+	public function test_generate_market_id_throws_when_label_is_already_lowercase_primary(): void {
+		$this->expectException( InvalidValue::class );
+		$this->expectExceptionMessageMatches( '/reserved/' );
+
+		$this->market_service->generate_market_id( 'primary' );
+	}
+
+	/**
+	 * Verifies that shipping rates are fetched once per MarketService instance.
+	 *
+	 * The assertion is on the mock, not on a return value: `expects( $this->once() )`
+	 * tells PHPUnit to fail at teardown if `get_all_shipping_rates()` is invoked
+	 * 0 times or 2+ times across the three service calls below.
+	 *
+	 * The three calls mirror the controller's create-market flow — `get_market()`
+	 * for the existence check, `get_market()` for the read-back, plus a `get_markets()`
+	 * for good measure — so a working cache yields one query, a broken cache yields three.
+	 *
+	 * Does not use `set_up_primary_market_dependencies()` because that helper attaches
+	 * a `->method('get_all_shipping_rates')` matcher to the same mock method; stacking
+	 * that with `expects( $this->once() )->method(...)` creates two rules per call and
+	 * makes the count expectation unreliable.
+	 */
+	public function test_shipping_rates_fetched_once_across_multiple_get_markets_calls(): void {
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US' ] );
+
+		$this->shipping_rate_query->expects( $this->once() )
+			->method( 'get_all_shipping_rates' )
+			->willReturn( [] );
+
+		$this->market_service->get_market( 'some-id' );
+		$this->market_service->get_market( 'some-id' );
+		$this->market_service->get_markets();
+	}
+
 	/**
 	 * Sets up the options mock to return specific values for different option keys.
 	 *

@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
@@ -442,6 +443,107 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		);
 
 		$this->assertNotContains( $invalid_product->get_id(), $results_product_ids );
+	}
+
+	public function test_validate_and_generate_update_request_entries_secondary_throw_discards_primary() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		// Use the real factory to build a valid primary adapter, then route the
+		// secondary call through a mock that throws so the catch in the production
+		// code fires after the primary entry has been staged.
+		$real_factory    = $this->container->get( ProductFactory::class );
+		$primary_adapter = $real_factory->create( $product, 'US', [], 'US', 'en' );
+
+		$factory_mock = $this->createMock( ProductFactory::class );
+		$factory_mock->method( 'create' )
+			->willReturnCallback(
+				function ( WC_Product $p, string $country ) use ( $primary_adapter ) {
+					if ( 'US' === $country ) {
+						return $primary_adapter;
+					}
+					throw new InvalidValue( 'simulated secondary factory failure' );
+				}
+			);
+
+		$helper = new BatchProductHelper(
+			$this->product_meta,
+			$this->product_helper,
+			$this->validator,
+			$factory_mock,
+			$this->rules_query,
+			$this->market_service
+		);
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'DE' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+				'de'      => [
+					'country'    => 'DE',
+					'feed_label' => 'DE',
+					'language'   => 'de',
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $helper->validate_and_generate_update_request_entries( [ $product ] );
+
+		// Nothing should land: the primary entry must not survive a secondary failure.
+		$this->assertCount( 0, $results );
+	}
+
+	public function test_validate_and_generate_update_request_entries_skips_product_when_secondary_invalid() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'DE' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+				'de'      => [
+					'country'    => 'DE',
+					'feed_label' => 'DE',
+					'language'   => 'de',
+				],
+			]
+		);
+
+		// Primary adapter passes validation; the secondary (DE) adapter fails.
+		$this->validator->expects( $this->any() )
+			->method( 'validate' )
+			->willReturnCallback(
+				function ( WCProductAdapter $adapter ) {
+					if ( 'DE' === $adapter->getFeedLabel() ) {
+						$violations = new ConstraintViolationList();
+						$violations->add( $this->createMock( ConstraintViolation::class ) );
+						return $violations;
+					}
+
+					return [];
+				}
+			);
+
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( [ $product ] );
+
+		$this->assertCount( 0, $results );
+
+		// Re-fetch the product so the meta read does not hit the original
+		// instance's stale cache — mark_as_invalid persisted against a fresh
+		// instance via ProductHelper::get_wc_product().
+		$refreshed = $this->wc->get_product( $product->get_id() );
+		$this->assertNotEmpty( $this->product_meta->get_errors( $refreshed ) );
 	}
 
 	public function test_validate_and_generate_update_request_entries_skips_not_sync_ready() {
