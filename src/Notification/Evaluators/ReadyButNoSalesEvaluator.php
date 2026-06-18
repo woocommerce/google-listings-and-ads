@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class ReadyButNoSalesEvaluator
  *
- * Fires when payment gateways are active, shipping zones are configured, and the order count is zero.
+ * Fires when payment gateways are active, shipping methods are configured, and the order count is zero.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
@@ -60,11 +60,32 @@ class ReadyButNoSalesEvaluator implements NotificationEvaluatorInterface, Servic
 			return false;
 		}
 
-		if ( empty( $this->wc->get_shipping_zones() ) ) {
+		if ( ! $this->store_has_any_enabled_shipping_method() ) {
 			return false;
 		}
 
 		return 0 === $this->get_completed_order_count();
+	}
+
+	/**
+	 * Whether the store has at least one enabled shipping method in any zone.
+	 *
+	 * Includes the default zone (id 0), which is omitted from get_shipping_zones().
+	 *
+	 * @return bool
+	 */
+	protected function store_has_any_enabled_shipping_method(): bool {
+		foreach ( $this->wc->get_shipping_zones() as $zone_data ) {
+			$zone = $this->wc->get_shipping_zone( (int) $zone_data['zone_id'] );
+
+			if ( $zone && ! empty( $zone->get_shipping_methods( true ) ) ) {
+				return true;
+			}
+		}
+
+		$default_zone = $this->wc->get_shipping_zone( 0 );
+
+		return $default_zone && ! empty( $default_zone->get_shipping_methods( true ) );
 	}
 
 	/**
