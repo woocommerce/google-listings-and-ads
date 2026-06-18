@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useCallback, useReducer } from '@wordpress/element';
+import { useCallback, useMemo, useReducer } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 
 /**
@@ -120,21 +120,30 @@ const shouldReturnResponseBody = ( options ) => {
  * 							`{ loading, error, data, response, options, reset }`.
  * 							`reset` is a function to reset things to initial state (clearing error, data, response and options).
  * 							You can optionally pass in a reset state and it will be merged with the initial state.
+ * 		`apiFetchCallback` accepts an optional `overwriteOptions` argument with only `data` and `query` properties.
+ * 		- `data` overrides the request body for the call.
+ * 		- `query` appends or overrides URL query parameters for the call.
  */
 const useApiFetchCallback = ( options, initialState = defaultState ) => {
 	const optionsRefValue = useIsEqualRefValue( options );
-	const mergedState = {
-		...defaultState,
-		...initialState,
-	};
+	const initialStateRefValue = useIsEqualRefValue( initialState );
+	const mergedState = useMemo(
+		() => ( { ...defaultState, ...initialStateRefValue } ),
+		[ initialStateRefValue ]
+	);
 	const [ state, dispatch ] = useReducer( reducer, mergedState );
 
 	const enhancedApiFetch = useCallback(
 		async ( overwriteOptions ) => {
-			const mergedOptions = {
-				...optionsRefValue,
-				...overwriteOptions,
-			};
+			const mergedOptions = { ...optionsRefValue };
+			if ( overwriteOptions ) {
+				if ( 'data' in overwriteOptions ) {
+					mergedOptions.data = overwriteOptions.data;
+				}
+				if ( 'query' in overwriteOptions ) {
+					mergedOptions.query = overwriteOptions.query;
+				}
+			}
 
 			dispatch( { type: TYPES.START, options: mergedOptions } );
 
@@ -200,12 +209,15 @@ const useApiFetchCallback = ( options, initialState = defaultState ) => {
 		[ optionsRefValue ]
 	);
 
-	const reset = ( resetState ) => {
-		dispatch( {
-			type: TYPES.RESET,
-			state: { ...mergedState, ...resetState },
-		} );
-	};
+	const reset = useCallback(
+		( resetState ) => {
+			dispatch( {
+				type: TYPES.RESET,
+				state: { ...mergedState, ...resetState },
+			} );
+		},
+		[ mergedState ]
+	);
 
 	const fetchResult = {
 		...state,
