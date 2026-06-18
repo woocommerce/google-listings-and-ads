@@ -9,6 +9,7 @@ import { createRoot } from '@wordpress/element';
 import { MULTICHANNEL_CLASS, BANNER_CLASS, CONTAINER_CLASS } from './constants';
 import { registerStore } from './data';
 import NotificationsPanel from './components/notifications-panel';
+import './slot.scss';
 
 /**
  * Mounts the NotificationsPanel into the multichannel section.
@@ -52,6 +53,7 @@ function observeAndMount() {
 		const multichannel = document.querySelector(
 			`.${ MULTICHANNEL_CLASS }`
 		);
+
 		if ( multichannel && mount( multichannel ) ) {
 			observer.disconnect();
 		}
