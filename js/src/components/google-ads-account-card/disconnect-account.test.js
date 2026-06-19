@@ -11,6 +11,7 @@ import { recordEvent } from '@woocommerce/tracks';
  */
 import DisconnectAccount from './disconnect-account';
 import { useAppDispatch } from '~/data';
+import { ERROR_SLOTS } from '~/data/constants';
 import { FILTER_ONBOARDING } from '~/utils/tracks';
 import expectComponentToRecordEventWithFilteredProperties from '~/tests/expectComponentToRecordEventWithFilteredProperties';
 
@@ -27,12 +28,19 @@ jest.mock( '@woocommerce/tracks', () => {
 
 describe( 'DisconnectAccount', () => {
 	let disconnectGoogleAdsAccount;
+	let clearDetailedErrorBySlots;
 
 	beforeEach( () => {
 		disconnectGoogleAdsAccount = jest
 			.fn()
 			.mockName( 'disconnectGoogleAdsAccount' );
-		useAppDispatch.mockReturnValue( { disconnectGoogleAdsAccount } );
+		clearDetailedErrorBySlots = jest
+			.fn()
+			.mockName( 'clearDetailedErrorBySlots' );
+		useAppDispatch.mockReturnValue( {
+			disconnectGoogleAdsAccount,
+			clearDetailedErrorBySlots,
+		} );
 	} );
 
 	afterEach( () => {
@@ -130,6 +138,19 @@ describe( 'DisconnectAccount', () => {
 		await act( async () => reject() );
 
 		expect( button ).toBeEnabled();
+	} );
+
+	it( 'should clear the Ads connection error slot when the button is clicked', async () => {
+		const user = userEvent.setup();
+
+		disconnectGoogleAdsAccount.mockRejectedValue();
+
+		render( <DisconnectAccount /> );
+		await user.click( screen.getByRole( 'button' ) );
+
+		expect( clearDetailedErrorBySlots ).toHaveBeenCalledWith( [
+			ERROR_SLOTS.GOOGLE_ADS_CONNECTION_ERROR_SLOT,
+		] );
 	} );
 
 	it( 'should record click events and be aware of extra event properties from filters', async () => {

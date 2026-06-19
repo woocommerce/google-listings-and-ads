@@ -20,6 +20,7 @@ import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import AdsAccountSelectControl from '~/components/ads-account-select-control';
 import { useAppDispatch } from '~/data';
+import { ERROR_SLOTS } from '~/data/constants';
 import { handleApiError } from '~/utils/handleError';
 import './index.scss';
 
@@ -39,7 +40,8 @@ const ConnectAds = ( props ) => {
 		data: { id: value },
 	} );
 	const { refetchGoogleAdsAccount } = useGoogleAdsAccount();
-	const { fetchGoogleAdsAccountStatus } = useAppDispatch();
+	const { fetchGoogleAdsAccountStatus, clearDetailedErrorBySlots } =
+		useAppDispatch();
 
 	/**
 	 * Boolean to display blurb message to advise users
@@ -48,6 +50,13 @@ const ConnectAds = ( props ) => {
 	 * The message is displayed when there are more than one Google Ads account.
 	 */
 	const displayMessage = accounts.length > 1;
+
+	const handleCreateNewClick = () => {
+		clearDetailedErrorBySlots( [
+			ERROR_SLOTS.GOOGLE_ADS_CONNECTION_ERROR_SLOT,
+		] );
+		onCreateNew();
+	};
 
 	const handleConnectClick = async () => {
 		if ( ! value ) {
@@ -131,7 +140,7 @@ const ConnectAds = ( props ) => {
 				<AppButton
 					isTertiary
 					disabled={ isLoading }
-					onClick={ onCreateNew }
+					onClick={ handleCreateNewClick }
 				>
 					{ __(
 						'Or, create a new Google Ads account',

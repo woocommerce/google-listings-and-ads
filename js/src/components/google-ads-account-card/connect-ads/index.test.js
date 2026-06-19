@@ -76,7 +76,12 @@ describe( 'ConnectAds', () => {
 		fetchGoogleAdsAccountStatus = jest
 			.fn()
 			.mockName( 'fetchGoogleAdsAccountStatus' );
-		useAppDispatch.mockReturnValue( { fetchGoogleAdsAccountStatus } );
+		useAppDispatch.mockReturnValue( {
+			fetchGoogleAdsAccountStatus,
+			clearDetailedErrorBySlots: jest
+				.fn()
+				.mockName( 'clearDetailedErrorBySlots' ),
+		} );
 	} );
 
 	afterEach( () => {

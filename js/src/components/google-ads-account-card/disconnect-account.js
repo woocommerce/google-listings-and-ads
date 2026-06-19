@@ -9,6 +9,7 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import { useAppDispatch } from '~/data';
+import { ERROR_SLOTS } from '~/data/constants';
 import AppButton from '~/components/app-button';
 import useEventPropertiesFilter from '~/hooks/useEventPropertiesFilter';
 import { FILTER_ONBOARDING } from '~/utils/tracks';
@@ -30,12 +31,16 @@ import { FILTER_ONBOARDING } from '~/utils/tracks';
  * @param {Function} [props.onDisconnected] Callback after the account is disconnected.
  */
 const DisconnectAccount = ( { onDisconnected = noop } ) => {
-	const { disconnectGoogleAdsAccount } = useAppDispatch();
+	const { disconnectGoogleAdsAccount, clearDetailedErrorBySlots } =
+		useAppDispatch();
 	const [ isDisconnecting, setDisconnecting ] = useState( false );
 	const getEventProps = useEventPropertiesFilter( FILTER_ONBOARDING );
 
 	const handleSwitch = () => {
 		setDisconnecting( true );
+		clearDetailedErrorBySlots( [
+			ERROR_SLOTS.GOOGLE_ADS_CONNECTION_ERROR_SLOT,
+		] );
 		disconnectGoogleAdsAccount( true )
 			.then( () => onDisconnected() )
 			.catch( () => setDisconnecting( false ) );

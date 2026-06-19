@@ -47,7 +47,13 @@ const useUpsertAdsAccount = () => {
 		setCurrentAction( isCreation ? 'create' : 'update' );
 
 		try {
-			await fetchCreateAccount( { parse: false } );
+			const response = await fetchCreateAccount( { parse: false } );
+
+			// apiFetch with parse:false resolves on non-2xx without throwing,
+			// so we must check response.ok and throw manually to enter the catch block.
+			if ( ! response.ok ) {
+				throw response;
+			}
 		} catch ( e ) {
 			// For status code 428, we want to allow users to continue and proceed,
 			// so we swallow the error for status code 428,
@@ -67,6 +73,8 @@ const useUpsertAdsAccount = () => {
 						),
 					}
 				);
+				setCurrentAction( null );
+				return;
 			}
 		}
 
