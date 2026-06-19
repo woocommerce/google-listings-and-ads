@@ -44,7 +44,7 @@ jobs:
           repo_url: https://github.com/woocommerce/google-listings-and-ads
           branch: ${{ github.ref_name }}
           version: ${{ github.event.inputs.version }}
-          node_version: '24'
+          node_version: '20'
           npm_version: '10'
           simulate: ${{ github.event.inputs.simulate }}
           github_release: ${{ github.event.inputs.deploy_github }}
