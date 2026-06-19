@@ -143,6 +143,15 @@ const SavedSetupStepper = ( { savedStep } ) => {
 	const initTargetAudience = targetAudience?.location ? targetAudience : null;
 	const initSettings = settings?.shipping_rate ? settings : null;
 
+	// If the store is multilingual and the shipping rate is flat, we need to change it to manual
+	// because flat shipping rates are not supported for multilingual stores.
+	if (
+		initSettings?.shipping_rate === SHIPPING_RATE_METHOD.FLAT &&
+		glaData.isMultiLingualStore
+	) {
+		initSettings.shipping_rate = SHIPPING_RATE_METHOD.MANUAL;
+	}
+
 	return (
 		<Stepper
 			className="gla-setup-stepper"
