@@ -52,7 +52,8 @@ describe( 'useUpsertAdsAccount', () => {
 		extractDetailedApiError.mockResolvedValue( {
 			data: {
 				statusCode: 406,
-				message: 'Account creation limit reached. Contact support for help.',
+				message:
+					'Account creation limit reached. Contact support for help.',
 			},
 		} );
 
@@ -67,7 +68,8 @@ describe( 'useUpsertAdsAccount', () => {
 			ERROR_SLOTS.GOOGLE_ADS_CONNECTION_ERROR_SLOT,
 			expect.objectContaining( {
 				statusCode: 406,
-				message: 'Account creation limit reached. Contact support for help.',
+				message:
+					'Account creation limit reached. Contact support for help.',
 				title: 'Google Ads Creation Failed',
 			} )
 		);
