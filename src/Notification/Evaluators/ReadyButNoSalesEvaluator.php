@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class ReadyButNoSalesEvaluator
  *
- * Fires when payment gateways are active, shipping methods are configured, and the order count is zero.
+ * Fires when at least one payment method and one shipping method are configured and the store has zero sales.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
@@ -47,7 +47,7 @@ class ReadyButNoSalesEvaluator implements NotificationEvaluatorInterface, Servic
 	 * @return string
 	 */
 	public function get_id(): string {
-		return 'ready-but-no-sales';
+		return 'payments-shipping-no-sales';
 	}
 
 	/**

@@ -43,7 +43,7 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 	}
 
 	public function test_get_id() {
-		$this->assertEquals( 'ready-but-no-sales', $this->evaluator->get_id() );
+		$this->assertEquals( 'payments-shipping-no-sales', $this->evaluator->get_id() );
 	}
 
 	public function test_get_priority() {
@@ -106,7 +106,7 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 		$evaluator = $this->create_evaluator_with_order_count( 0 );
 		$user_id   = $this->login_as_administrator();
 
-		set_transient( 'gla_notif_ready-but-no-sales_' . $user_id, 1, HOUR_IN_SECONDS );
+		set_transient( 'gla_notif_payments-shipping-no-sales_' . $user_id, 1, HOUR_IN_SECONDS );
 
 		$this->policy_compliance_check->expects( $this->never() )->method( 'has_payment_gateways' );
 		$evaluator->expects( $this->never() )->method( 'store_has_any_enabled_shipping_method' );
