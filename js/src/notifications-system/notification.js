@@ -33,6 +33,7 @@ import './notification.scss';
  * @param {string} props.description Notification body text.
  * @param {number} props.triggeredAt Unix timestamp (seconds) when the notification was triggered.
  * @param {NotificationAction[]} props.actions CTA buttons.
+ * @param {Function} [props.onDismiss] Callback invoked after dismissNotification succeeds.
  */
 const Notification = ( {
 	id,
@@ -40,6 +41,7 @@ const Notification = ( {
 	description,
 	triggeredAt,
 	actions = [],
+	onDismiss,
 } ) => {
 	const { dismissNotification } = useAppDispatch();
 	const formattedDate = dateI18n(
@@ -47,8 +49,13 @@ const Notification = ( {
 		new Date( triggeredAt * 1000 )
 	);
 
-	const handleDismissClick = () => {
-		dismissNotification( id );
+	const handleDismissClick = async () => {
+		try {
+			await dismissNotification( id );
+			onDismiss( id );
+		} catch {
+			// dismissNotification failed, do not dismiss from slot store
+		}
 	};
 
 	return (

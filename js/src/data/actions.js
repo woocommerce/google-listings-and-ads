@@ -1528,13 +1528,24 @@ export function receiveNotifications( notifications ) {
  * @throws Will throw an error if the request failed.
  */
 export function* dismissNotification( id ) {
-	yield apiFetch( {
-		path: `${ API_NAMESPACE }/notifications/${ id }`,
-		method: 'DELETE',
-	} );
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/notifications/${ id }`,
+			method: 'DELETE',
+		} );
 
-	return {
-		type: TYPES.DISMISS_NOTIFICATION,
-		id,
-	};
+		return {
+			type: TYPES.DISMISS_NOTIFICATION,
+			id,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error dismissing the notification.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
 }
