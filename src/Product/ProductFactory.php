@@ -47,7 +47,7 @@ class ProductFactory {
 	 * @param WC_Product $product
 	 * @param string     $target_country
 	 * @param array      $mapping_rules  The mapping rules setup by the user
-	 * @param string     $feed_label     Optional feed label (overrides contentLanguage when set).
+	 * @param string     $feed_label     Optional feed label.
 	 * @param string     $language       Optional ISO 639-1 language code.
 	 *
 	 * @return WCProductAdapter
@@ -86,7 +86,8 @@ class ProductFactory {
 
 		if ( $feed_label ) {
 			$adapted->set_feed_label( $feed_label );
-		} elseif ( $language ) {
+		}
+		if ( $language ) {
 			$adapted->set_language( $language );
 		}
 

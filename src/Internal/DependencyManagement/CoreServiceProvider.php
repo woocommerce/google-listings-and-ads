@@ -50,6 +50,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DeprecatedFilters;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\InstallTimestamp;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\Logging\DebugLogger;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
@@ -243,7 +244,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( TargetAudience::class, WC::class, OptionsInterface::class, GoogleHelper::class );
 
 		// Set up the MarketService.
-		$this->share_with_tags( MarketService::class, TargetAudience::class, ShippingRateQuery::class, ShippingTimeQuery::class, WC::class, WPML::class );
+		$this->share_with_tags( MarketService::class, TargetAudience::class, ShippingRateQuery::class, ShippingTimeQuery::class, WC::class, WPML::class, JobRepository::class );
 
 		// Set up MerchantCenter service, and inflect classes that need it.
 		$this->share_with_tags( MerchantCenterService::class );
