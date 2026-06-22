@@ -28,6 +28,14 @@ abstract class AbstractShippingSettingsAdapter extends GoogleShippingSettings {
 	protected $delivery_times;
 
 	/**
+	 * Optional map of country code => ISO 4217 currency code used to override
+	 * `$currency` on a per-country basis. Populated from configured markets.
+	 *
+	 * @var array<string, string>
+	 */
+	protected $country_currency_map = [];
+
+	/**
 	 * Initialize this object's properties from an array.
 	 *
 	 * @param array $properties Used to seed this object's properties.
@@ -39,14 +47,29 @@ abstract class AbstractShippingSettingsAdapter extends GoogleShippingSettings {
 	public function mapTypes( $properties ) {
 		$this->validate_gla_data( $properties );
 
-		$this->currency       = $properties['currency'];
-		$this->delivery_times = $properties['delivery_times'];
+		$this->currency             = $properties['currency'];
+		$this->delivery_times       = $properties['delivery_times'];
+		$this->country_currency_map = isset( $properties['country_currency_map'] ) && is_array( $properties['country_currency_map'] )
+			? $properties['country_currency_map']
+			: [];
 
 		$this->map_gla_data( $properties );
 
 		$this->unset_gla_data( $properties );
 
 		parent::mapTypes( $properties );
+	}
+
+	/**
+	 * Returns the currency to use for a given country's shipping service,
+	 * preferring the per-country mapping when supplied and falling back to the
+	 * adapter's default `$currency` otherwise.
+	 *
+	 * @param string $country
+	 * @return string
+	 */
+	protected function get_currency_for_country( string $country ): string {
+		return $this->country_currency_map[ $country ] ?? $this->currency;
 	}
 
 	/**
@@ -98,6 +121,7 @@ abstract class AbstractShippingSettingsAdapter extends GoogleShippingSettings {
 	protected function unset_gla_data( array &$data ): void {
 		unset( $data['currency'] );
 		unset( $data['delivery_times'] );
+		unset( $data['country_currency_map'] );
 	}
 
 	/**

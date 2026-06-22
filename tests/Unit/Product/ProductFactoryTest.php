@@ -129,15 +129,15 @@ class ProductFactoryTest extends ContainerAwareUnitTest {
 		$this->assertNull( $adapted->getFeedLabel() );
 	}
 
-	public function test_create_with_feed_label_takes_precedence_over_language() {
+	public function test_create_with_feed_label_and_language_sets_both() {
 		$product = WC_Helper_Product::create_simple_product();
 
 		$this->attribute_manager->method( 'get_all_values' )->willReturn( [] );
 
-		$adapted = $this->product_factory->create( $product, 'US', [], 'US', 'en' );
+		$adapted = $this->product_factory->create( $product, 'US', [], 'FR', 'fr' );
 
-		$this->assertSame( 'US', $adapted->getFeedLabel() );
-		$this->assertNotEmpty( $adapted->getContentLanguage() );
+		$this->assertSame( 'FR', $adapted->getFeedLabel() );
+		$this->assertSame( 'fr', $adapted->getContentLanguage() );
 	}
 
 	public function test_create_without_optional_params_uses_content_language() {
