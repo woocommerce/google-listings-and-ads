@@ -710,6 +710,20 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertSame( [], $input->get_custom_attributes() );
 	}
 
+	public function test_adapter_custom_attribute_accessors() {
+		$product = WC_Helper_Product::create_simple_product();
+		$adapter = new WCProductInputAdapter( $product, 'US' );
+
+		$this->assertSame( [], $adapter->get_custom_attributes() );
+
+		$adapter->add_custom_attribute( [ 'name' => 'x', 'value' => '1' ] );
+		$this->assertSame( [ [ 'name' => 'x', 'value' => '1' ] ], $adapter->get_custom_attributes() );
+
+		// set_custom_attributes replaces (and reindexes) the existing list.
+		$adapter->set_custom_attributes( [ 2 => [ 'name' => 'y', 'value' => '2' ] ] );
+		$this->assertSame( [ [ 'name' => 'y', 'value' => '2' ] ], $adapter->get_custom_attributes() );
+	}
+
 	public function test_filter_can_add_custom_attributes() {
 		$product = WC_Helper_Product::create_simple_product();
 
