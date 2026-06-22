@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupOrphanedMarketProductsJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateShippingSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -49,24 +50,38 @@ class MarketServiceTest extends UnitTest {
 	/** @var MockObject|CleanupOrphanedMarketProductsJob */
 	protected $cleanup_job;
 
+	/** @var MockObject|UpdateShippingSettings */
+	protected $shipping_settings_job;
+
 	/** @var MarketService */
 	protected $market_service;
 
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->target_audience     = $this->createMock( TargetAudience::class );
-		$this->options             = $this->createMock( OptionsInterface::class );
-		$this->shipping_rate_query = $this->createMock( ShippingRateQuery::class );
-		$this->shipping_time_query = $this->createMock( ShippingTimeQuery::class );
-		$this->wc                  = $this->createMock( WC::class );
-		$this->wpml                = $this->createMock( WPML::class );
-		$this->job_repository      = $this->createMock( JobRepository::class );
-		$this->cleanup_job         = $this->createMock( CleanupOrphanedMarketProductsJob::class );
+		$this->target_audience       = $this->createMock( TargetAudience::class );
+		$this->options               = $this->createMock( OptionsInterface::class );
+		$this->shipping_rate_query   = $this->createMock( ShippingRateQuery::class );
+		$this->shipping_time_query   = $this->createMock( ShippingTimeQuery::class );
+		$this->wc                    = $this->createMock( WC::class );
+		$this->wpml                  = $this->createMock( WPML::class );
+		$this->job_repository        = $this->createMock( JobRepository::class );
+		$this->cleanup_job           = $this->createMock( CleanupOrphanedMarketProductsJob::class );
+		$this->shipping_settings_job = $this->createMock( UpdateShippingSettings::class );
 
 		$this->job_repository->method( 'get' )
-			->with( CleanupOrphanedMarketProductsJob::class )
-			->willReturn( $this->cleanup_job );
+			->willReturnCallback(
+				function ( $classname ) {
+					switch ( $classname ) {
+						case CleanupOrphanedMarketProductsJob::class:
+							return $this->cleanup_job;
+						case UpdateShippingSettings::class:
+							return $this->shipping_settings_job;
+						default:
+							return null;
+					}
+				}
+			);
 
 		$this->market_service = new MarketService(
 			$this->target_audience,
@@ -595,6 +610,10 @@ class MarketServiceTest extends UnitTest {
 			->method( 'schedule' )
 			->with( [ 'feed_label' => 'GB' ] );
 
+		// feed_label rename alone does not touch country/currency/shipping_rate/shipping_time.
+		$this->shipping_settings_job->expects( $this->never() )
+			->method( 'schedule' );
+
 		$this->market_service->update_market( 'gb', [ 'feed_label' => 'GB-PROMO' ] );
 	}
 
@@ -616,6 +635,10 @@ class MarketServiceTest extends UnitTest {
 		$this->cleanup_job->expects( $this->never() )
 			->method( 'schedule' );
 
+		// Shipping-relevant fields (country, currency, shipping_rate, shipping_time) DID change.
+		$this->shipping_settings_job->expects( $this->once() )
+			->method( 'schedule' );
+
 		$this->market_service->update_market(
 			'gb',
 			[
@@ -626,6 +649,71 @@ class MarketServiceTest extends UnitTest {
 				'shipping_time' => 'automatic',
 			]
 		);
+	}
+
+	public function test_add_market_with_manual_shipping_rate_does_not_schedule_shipping_sync(): void {
+		$config = [
+			'country'       => 'DE',
+			'language'      => [ 'de' ],
+			'currency'      => [ 'EUR' ],
+			'feed_label'    => 'DE',
+			'shipping_rate' => 'manual',
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
+			]
+		);
+		$this->options->method( 'update' )->willReturn( true );
+
+		$this->shipping_settings_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->add_market( 'de', $config );
+	}
+
+	public function test_update_market_does_not_schedule_shipping_sync_when_only_language_changes(): void {
+		$existing = [
+			'gb' => [
+				'country'       => 'GB',
+				'language'      => [ 'en' ],
+				'currency'      => [ 'GBP' ],
+				'feed_label'    => 'GB',
+				'shipping_rate' => 'flat',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->shipping_settings_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'language' => [ 'en', 'cy' ] ] );
+	}
+
+	public function test_delete_market_with_manual_shipping_rate_does_not_schedule_shipping_sync(): void {
+		$existing = [
+			'gb' => [
+				'country'       => 'GB',
+				'language'      => [ 'en' ],
+				'currency'      => [ 'GBP' ],
+				'feed_label'    => 'GB',
+				'shipping_rate' => 'manual',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $existing ] );
+		$this->options->method( 'update' )->willReturn( true );
+
+		$this->shipping_settings_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->delete_market( 'gb' );
 	}
 
 	public function test_add_market_does_not_schedule_cleanup(): void {
@@ -645,6 +733,10 @@ class MarketServiceTest extends UnitTest {
 		$this->options->method( 'update' )->willReturn( true );
 
 		$this->cleanup_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		// shipping_rate defaults to 'flat' (non-manual) → shipping sync IS scheduled.
+		$this->shipping_settings_job->expects( $this->once() )
 			->method( 'schedule' );
 
 		$this->market_service->add_market( 'de', $config );
@@ -707,10 +799,12 @@ class MarketServiceTest extends UnitTest {
 	public function test_delete_market_schedules_cleanup_with_feed_label(): void {
 		$existing = [
 			'gb' => [
-				'country'    => 'GB',
-				'language'   => [ 'en' ],
-				'currency'   => [ 'GBP' ],
-				'feed_label' => 'GB',
+				'country'       => 'GB',
+				'language'      => [ 'en' ],
+				'currency'      => [ 'GBP' ],
+				'feed_label'    => 'GB',
+				'shipping_rate' => 'flat',
+				'shipping_time' => 'flat',
 			],
 		];
 
@@ -721,11 +815,18 @@ class MarketServiceTest extends UnitTest {
 			->method( 'schedule' )
 			->with( [ 'feed_label' => 'GB' ] );
 
+		// Non-manual shipping_rate → shipping sync also scheduled.
+		$this->shipping_settings_job->expects( $this->once() )
+			->method( 'schedule' );
+
 		$this->market_service->delete_market( 'gb' );
 	}
 
 	public function test_delete_market_primary_throws_and_does_not_schedule_cleanup(): void {
 		$this->cleanup_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->shipping_settings_job->expects( $this->never() )
 			->method( 'schedule' );
 
 		$this->expectException( InvalidValue::class );
@@ -1329,6 +1430,69 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->get_market( 'some-id' );
 		$this->market_service->get_market( 'some-id' );
 		$this->market_service->get_markets();
+	}
+
+	public function test_has_syncable_markets_true_when_only_secondary_is_non_manual(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'manual',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'fr' => [
+						'country'       => 'FR',
+						'feed_label'    => 'FR',
+						'language'      => [ 'fr' ],
+						'currency'      => [ 'EUR' ],
+						'shipping_rate' => 'flat',
+						'shipping_time' => 'flat',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->assertTrue( $this->market_service->has_syncable_markets() );
+	}
+
+	public function test_has_syncable_markets_false_when_every_market_is_manual(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'manual',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'fr' => [
+						'country'       => 'FR',
+						'feed_label'    => 'FR',
+						'language'      => [ 'fr' ],
+						'currency'      => [ 'EUR' ],
+						'shipping_rate' => 'manual',
+						'shipping_time' => 'flat',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->assertFalse( $this->market_service->has_syncable_markets() );
+	}
+
+	public function test_has_syncable_markets_false_when_shipping_time_not_flat(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'manual',
+				],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->assertFalse( $this->market_service->has_syncable_markets() );
 	}
 
 	/**
