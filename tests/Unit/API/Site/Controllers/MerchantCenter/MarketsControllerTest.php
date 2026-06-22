@@ -838,7 +838,10 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 			->willReturnCallback(
 				function ( string $id ) use ( &$created ) {
 					if ( 'gb' === $id && $created ) {
-						return [ 'country' => 'GB', 'feed_label' => 'GB' ];
+						return [
+							'country'    => 'GB',
+							'feed_label' => 'GB',
+						];
 					}
 					return null;
 				}
