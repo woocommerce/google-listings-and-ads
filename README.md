@@ -77,9 +77,13 @@ The Dependency Extraction Webpack Plugin makes working with frontend dependencie
 There are a number of helper scripts exposed via our package.json (below list is not exhaustive, you can view the [package.json](./package.json#L90) file directly to see all):
 
 -   `npm run lint:js` : Run eslint over the javascript files
+-   `npm run lint:js:ci` : Run JS lint with same args as CI (e.g. `--quiet --format ./eslintFormatter.cjs`)
 -   `npm run lint:css` : Run stylelint over the javascript files
+-   `npm run lint:css:ci` : Run CSS lint with same args as CI (e.g. `--custom-formatter ./stylelintFormatter.cjs`)
 -   `npm run test:js` : Run the JS test suite
 -   `npm run test:js:watch` : Run the JS test suite, watch for changes
+-   `npm run test:php` : Run the PHP unit test suite inside wp-env
+-   `npm run setup:wp-env` : Start wp-env, install Composer deps, and install git/subversion in the container (run before `test:php` on first-time or after env reset)
 
 ## WordPress Code Standards
 
@@ -132,6 +136,22 @@ vendor/bin/phpunit
 ```
 
 The tests will execute and you'll be presented with a summary.
+
+### Running PHP unit tests with wp-env
+
+You can run the PHP unit test suite inside the same wp-env Docker stack used for E2E:
+
+```bash
+npm run test:php
+```
+
+You can also lint and test JS and PHP in one command:
+
+```bash
+npm run test:all
+```
+
+On first-time setup or after resetting the environment, run `npm run setup:wp-env` first (starts wp-env, installs Composer dependencies, and installs git/subversion in the container so tests can run).
 
 ## E2E Testing
 
