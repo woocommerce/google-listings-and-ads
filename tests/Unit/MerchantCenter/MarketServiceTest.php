@@ -426,6 +426,7 @@ class MarketServiceTest extends UnitTest {
 				OptionsInterface::MARKETS         => [],
 			]
 		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
 
 		$update_calls = [];
 		$this->options->method( 'update' )
@@ -456,6 +457,7 @@ class MarketServiceTest extends UnitTest {
 				OptionsInterface::MARKETS         => [],
 			]
 		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
 
 		$update_calls = [];
 		$this->options->method( 'update' )
@@ -492,6 +494,7 @@ class MarketServiceTest extends UnitTest {
 				OptionsInterface::MARKETS         => [],
 			]
 		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
 
 		$update_calls = [];
 		$this->options->method( 'update' )
@@ -527,6 +530,7 @@ class MarketServiceTest extends UnitTest {
 				OptionsInterface::MARKETS         => [],
 			]
 		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
 
 		$update_calls = [];
 		$this->options->method( 'update' )
@@ -565,6 +569,7 @@ class MarketServiceTest extends UnitTest {
 				OptionsInterface::MARKETS         => [],
 			]
 		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
 
 		$update_calls = [];
 		$this->options->method( 'update' )
