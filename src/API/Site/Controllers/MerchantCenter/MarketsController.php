@@ -131,7 +131,7 @@ class MarketsController extends BaseController {
 		return function ( Request $request ) {
 			$config = [
 				'country'    => $request->get_param( 'country' ),
-				'feed_label' => $request->get_param( 'country' ),
+				'feed_label' => $request->get_param( 'feed_label' ) ?? $request->get_param( 'country' ),
 			];
 
 			if ( null !== $request->get_param( 'language' ) ) {
@@ -388,8 +388,7 @@ class MarketsController extends BaseController {
 			'feed_label'    => [
 				'type'              => 'string',
 				'description'       => __( 'Google feed label.', 'google-listings-and-ads' ),
-				'context'           => [ 'view' ],
-				'readonly'          => true,
+				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'shipping_rate' => [
