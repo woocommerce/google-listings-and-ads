@@ -716,12 +716,40 @@ class WCProductInputAdapterTest extends UnitTest {
 
 		$this->assertSame( [], $adapter->get_custom_attributes() );
 
-		$adapter->add_custom_attribute( [ 'name' => 'x', 'value' => '1' ] );
-		$this->assertSame( [ [ 'name' => 'x', 'value' => '1' ] ], $adapter->get_custom_attributes() );
+		$adapter->add_custom_attribute(
+			[
+				'name'  => 'x',
+				'value' => '1',
+			]
+		);
+		$this->assertSame(
+			[
+				[
+					'name'  => 'x',
+					'value' => '1',
+				],
+			],
+			$adapter->get_custom_attributes()
+		);
 
 		// set_custom_attributes replaces (and reindexes) the existing list.
-		$adapter->set_custom_attributes( [ 2 => [ 'name' => 'y', 'value' => '2' ] ] );
-		$this->assertSame( [ [ 'name' => 'y', 'value' => '2' ] ], $adapter->get_custom_attributes() );
+		$adapter->set_custom_attributes(
+			[
+				2 => [
+					'name'  => 'y',
+					'value' => '2',
+				],
+			]
+		);
+		$this->assertSame(
+			[
+				[
+					'name'  => 'y',
+					'value' => '2',
+				],
+			],
+			$adapter->get_custom_attributes()
+		);
 	}
 
 	public function test_filter_can_add_custom_attributes() {
@@ -733,7 +761,12 @@ class WCProductInputAdapterTest extends UnitTest {
 				$adapter->add_custom_attribute(
 					[
 						'name'        => 'native_commerce',
-						'groupValues' => [ [ 'name' => 'checkout_eligibility', 'value' => 'true' ] ],
+						'groupValues' => [
+							[
+								'name'  => 'checkout_eligibility',
+								'value' => 'true',
+							],
+						],
 					]
 				);
 				$adapter->add_custom_attribute(
@@ -756,7 +789,12 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertCount( 2, $custom_attributes );
 		$this->assertSame( 'native_commerce', $custom_attributes[0]['name'] );
 		$this->assertSame(
-			[ [ 'name' => 'checkout_eligibility', 'value' => 'true' ] ],
+			[
+				[
+					'name'  => 'checkout_eligibility',
+					'value' => 'true',
+				],
+			],
 			$custom_attributes[0]['groupValues']
 		);
 		$this->assertSame( 'merchant_item_id', $custom_attributes[1]['name'] );
@@ -774,8 +812,14 @@ class WCProductInputAdapterTest extends UnitTest {
 		$adapter = new WCProductInputAdapter( $product, 'US' );
 		$adapter->set_custom_attributes(
 			[
-				[ 'name' => 'a', 'value' => '1' ],
-				[ 'name' => 'b', 'value' => '2' ],
+				[
+					'name'  => 'a',
+					'value' => '1',
+				],
+				[
+					'name'  => 'b',
+					'value' => '2',
+				],
 			]
 		);
 
@@ -784,8 +828,14 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertArrayHasKey( 'customAttributes', $serialized );
 		$this->assertSame(
 			[
-				[ 'name' => 'a', 'value' => '1' ],
-				[ 'name' => 'b', 'value' => '2' ],
+				[
+					'name'  => 'a',
+					'value' => '1',
+				],
+				[
+					'name'  => 'b',
+					'value' => '2',
+				],
 			],
 			$serialized['customAttributes']
 		);
