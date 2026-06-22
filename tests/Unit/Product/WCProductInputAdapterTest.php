@@ -702,6 +702,9 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertSame( 'Blue', $attrs['color'] );
 	}
 
+	/**
+	 * A product input has no custom attributes unless something adds them.
+	 */
 	public function test_no_custom_attributes_by_default() {
 		$product = WC_Helper_Product::create_simple_product();
 
@@ -710,6 +713,9 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertSame( [], $input->get_custom_attributes() );
 	}
 
+	/**
+	 * The adapter's get/add/set custom-attribute accessors behave as expected.
+	 */
 	public function test_adapter_custom_attribute_accessors() {
 		$product = WC_Helper_Product::create_simple_product();
 		$adapter = new WCProductInputAdapter( $product, 'US' );
@@ -752,6 +758,10 @@ class WCProductInputAdapterTest extends UnitTest {
 		);
 	}
 
+	/**
+	 * The attribute-values filter can attach custom attributes to the product input
+	 * without leaking them into the typed product attributes.
+	 */
 	public function test_filter_can_add_custom_attributes() {
 		$product = WC_Helper_Product::create_simple_product();
 
@@ -806,6 +816,9 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertArrayNotHasKey( 'native_commerce', $attrs );
 	}
 
+	/**
+	 * Custom attributes set on the adapter are serialized under customAttributes.
+	 */
 	public function test_set_custom_attributes_replaces_and_serializes() {
 		$product = WC_Helper_Product::create_simple_product();
 
