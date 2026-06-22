@@ -811,6 +811,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 		$created = false;
 
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'gb-en' );
+
 		$this->market_service->method( 'add_market' )
 			->with(
 				'gb-en',
@@ -856,6 +858,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 	public function test_post_market_falls_back_to_country_when_feed_label_absent(): void {
 		$created = false;
+
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'gb' );
 
 		$this->market_service->method( 'add_market' )
 			->with(
