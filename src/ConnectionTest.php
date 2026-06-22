@@ -670,6 +670,20 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 			return;
 		}
 
+		add_filter(
+			'woocommerce_gla_ads_id',
+			function ( $id ) {
+				return ! empty( $_GET['customer_id'] ) ? intval( $_GET['customer_id'] ) : $id; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			}
+		);
+
+		add_filter(
+			'woocommerce_gla_merchant_id',
+			function ( $id ) {
+				return ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : $id; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			}
+		);
+
 		/** @var Manager $manager */
 		$manager = $this->container->get( Manager::class );
 

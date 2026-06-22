@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
@@ -26,6 +27,7 @@ defined( 'ABSPATH' ) || exit;
  * Class Settings
  *
  * Container used for:
+ * - MarketService
  * - OptionsInterface
  * - ShippingRateQuery
  * - ShippingTimeQuery
@@ -79,14 +81,15 @@ class Settings implements ContainerAwareInterface {
 	}
 
 	/**
-	 * Whether we should synchronize settings with the Merchant Center
+	 * Whether we should synchronize settings with the Merchant Center.
 	 *
 	 * @return bool
 	 */
 	protected function should_sync_shipping(): bool {
-		$shipping_rate = $this->get_settings()['shipping_rate'] ?? '';
-		$shipping_time = $this->get_settings()['shipping_time'] ?? '';
-		return in_array( $shipping_rate, [ 'flat', 'automatic' ], true ) && 'flat' === $shipping_time;
+		/** @var MarketService $market_service */
+		$market_service = $this->container->get( MarketService::class );
+
+		return $market_service->has_syncable_markets();
 	}
 
 	/**
@@ -103,6 +106,13 @@ class Settings implements ContainerAwareInterface {
 	/**
 	 * Generate a ShippingSettings object for syncing the store shipping settings to Merchant Center.
 	 *
+	 * Builds a `[ country => currency ]` map from every non-manual market and
+	 * passes it into the chosen adapter so that each per-country shipping service
+	 * gets that market's own currency rather than a single store-wide value.
+	 *
+	 * The adapter choice still follows the primary's rate mode (`automatic`
+	 * → WC adapter; otherwise → DB adapter), matching pre-multi-market behaviour.
+	 *
 	 * @return ShippingSettings
 	 *
 	 * @since 2.1.0
@@ -114,25 +124,76 @@ class Settings implements ContainerAwareInterface {
 		$wc_proxy = $this->container->get( WC::class );
 		$currency = $wc_proxy->get_woocommerce_currency();
 
+		$country_currency_map = $this->build_country_currency_map();
+
 		if ( $this->should_get_shipping_rates_from_woocommerce() ) {
 			return new WCShippingSettingsAdapter(
 				[
-					'currency'          => $currency,
-					'rates_collections' => $this->get_shipping_rates_collections_from_woocommerce(),
-					'delivery_times'    => $times,
-					'accountId'         => $this->get_account_id(),
+					'currency'             => $currency,
+					'country_currency_map' => $country_currency_map,
+					'rates_collections'    => $this->get_shipping_rates_collections_from_woocommerce(),
+					'delivery_times'       => $times,
+					'accountId'            => $this->get_account_id(),
 				]
 			);
 		}
 
 		return new DBShippingSettingsAdapter(
 			[
-				'currency'       => $currency,
-				'db_rates'       => $this->get_shipping_rates_from_database(),
-				'delivery_times' => $times,
-				'accountId'      => $this->get_account_id(),
+				'currency'             => $currency,
+				'country_currency_map' => $country_currency_map,
+				'db_rates'             => $this->get_shipping_rates_from_database(),
+				'delivery_times'       => $times,
+				'accountId'            => $this->get_account_id(),
 			]
 		);
+	}
+
+	/**
+	 * Returns a `[ country => currency ]` map for every non-manual market.
+	 *
+	 * Each market contributes its country and the first entry of its `currency[]`
+	 * array. Manual markets are skipped — they don't get an MC shipping service.
+	 *
+	 * @return array<string, string>
+	 */
+	protected function build_country_currency_map(): array {
+		/** @var MarketService $market_service */
+		$market_service = $this->container->get( MarketService::class );
+
+		$map = [];
+		foreach ( $market_service->get_markets() as $market ) {
+			if ( 'manual' === ( $market['shipping_rate'] ?? null ) ) {
+				continue;
+			}
+			$country = $market['country'] ?? null;
+			if ( ! $country ) {
+				continue;
+			}
+			$map[ $country ] = $this->resolve_market_currency( $market );
+		}
+
+		return $map;
+	}
+
+	/**
+	 * Resolves a market's currency, taking the first element of its `currency[]`
+	 * array and falling back to the store currency.
+	 *
+	 * @param array $market
+	 * @return string
+	 */
+	private function resolve_market_currency( array $market ): string {
+		if ( ! empty( $market['currency'] ) && is_array( $market['currency'] ) ) {
+			$first = reset( $market['currency'] );
+			if ( is_string( $first ) && '' !== $first ) {
+				return $first;
+			}
+		}
+
+		/** @var WC $wc_proxy */
+		$wc_proxy = $this->container->get( WC::class );
+		return $wc_proxy->get_woocommerce_currency();
 	}
 
 	/**
