@@ -71,6 +71,16 @@ export const getSettings = ( state ) => {
  */
 
 /**
+ * @typedef {import('./actions').ApiError} ApiError
+ */
+
+/**
+ * @typedef {Object} DetailedErrors
+ * @property {string} slot Slot identifier for the error.
+ * @property {ApiError} error Error object.
+ */
+
+/**
  * Select jetpack connection state.
  *
  * @param {Object} state The current store state will be injected by `wp.data`.
@@ -529,6 +539,28 @@ export const getAdsRecommendations = ( state, types, campaign_id = null ) => {
 	const keyToHash = campaign_id ? [ campaign_id, ...types ] : types;
 	const key = arrayToUnderscoreKey( keyToHash );
 	return state.ads.recommendations[ key ] || null;
+};
+
+/**
+ * Get detailed error objects whose `slot` matches any of the provided slots.
+ *
+ * If `slots` is not an array or is empty, the function returns null.
+ * The function filters `state.detailed_errors`, skipping falsy entries, and
+ * returns only those errors whose `slot` value is included in `errorSlots`.
+ *
+ * @param {Object} state - State containing detailed errors.
+ * @param {Array<DetailedErrors>} state.detailed_errors - Array of detailed error objects.
+ * @param {Array<string|number>} slots - Array of slot identifiers to match against each error's `slot`.
+ * @return {Array<Object>} Array of matching error objects, or an empty array when `slots` is not a non-empty array.
+ */
+export const getDetailedErrorBySlots = ( state, slots ) => {
+	if ( ! Array.isArray( slots ) || slots.length === 0 ) {
+		return [];
+	}
+
+	return state.detailed_errors.filter( ( error ) => {
+		return slots.includes( error?.slot );
+	} );
 };
 
 /**

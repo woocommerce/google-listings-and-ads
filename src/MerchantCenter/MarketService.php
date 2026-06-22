@@ -9,6 +9,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupOrphanedMarketProductsJob;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateShippingSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -59,6 +62,16 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	protected WPML $wpml;
 
 	/**
+	 * @var JobRepository
+	 */
+	protected JobRepository $job_repository;
+
+	/**
+	 * @var ?array
+	 */
+	private ?array $cached_shipping_rates = null;
+
+	/**
 	 * MarketService constructor.
 	 *
 	 * @param TargetAudience    $target_audience
@@ -66,19 +79,22 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @param ShippingTimeQuery $shipping_time_query
 	 * @param WC                $wc
 	 * @param WPML              $wpml
+	 * @param JobRepository     $job_repository
 	 */
 	public function __construct(
 		TargetAudience $target_audience,
 		ShippingRateQuery $shipping_rate_query,
 		ShippingTimeQuery $shipping_time_query,
 		WC $wc,
-		WPML $wpml
+		WPML $wpml,
+		JobRepository $job_repository
 	) {
 		$this->target_audience     = $target_audience;
 		$this->shipping_rate_query = $shipping_rate_query;
 		$this->shipping_time_query = $shipping_time_query;
 		$this->wc                  = $wc;
 		$this->wpml                = $wpml;
+		$this->job_repository      = $job_repository;
 	}
 
 	/**
@@ -98,7 +114,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$secondary = is_array( $stored ) ? $stored : [];
 		unset( $secondary['primary'] );
 
-		$all_rates     = $this->shipping_rate_query->get_all_shipping_rates();
+		$all_rates     = $this->get_cached_shipping_rates();
 		$all_countries = $this->wc->get_countries();
 
 		foreach ( $secondary as &$market ) {
@@ -188,6 +204,30 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
+	 * Generates a market ID from a feed label.
+	 *
+	 * Centralises the ID-generation rule so any code path that creates a market
+	 * (REST controller, batch import, migration, CLI) produces consistent IDs.
+	 *
+	 * @param string $feed_label The market's feed label.
+	 *
+	 * @return string The sanitised market ID.
+	 *
+	 * @throws InvalidValue When the generated ID equals the reserved 'primary' key.
+	 */
+	public function generate_market_id( string $feed_label ): string {
+		$id = sanitize_title( $feed_label );
+
+		if ( 'primary' === $id ) {
+			throw new InvalidValue(
+				sprintf( 'The feed label "%s" generates the reserved market ID "primary".', $feed_label )
+			);
+		}
+
+		return $id;
+	}
+
+	/**
 	 * Adds a new market config to the store.
 	 *
 	 * Primary cannot be added — it is always synthesised from site settings.
@@ -217,8 +257,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$config['shipping_time'] = $mc_settings['shipping_time'] ?? 'flat';
 		}
 
-		$config = $this->apply_language_currency_defaults( $config );
-
 		$this->validate_secondary_market_config( $config );
 
 		$markets        = $this->get_stored_secondary_markets();
@@ -227,6 +265,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 		if ( ! empty( $config['country'] ) ) {
 			$this->remove_country_from_target_audience( $config['country'] );
+		}
+
+		if ( 'manual' !== ( $config['shipping_rate'] ?? null ) ) {
+			$this->schedule_shipping_sync();
 		}
 	}
 
@@ -256,18 +298,25 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$existing = $markets[ $id ] ?? [];
 		$merged   = array_merge( $existing, $config );
 
-		if ( array_key_exists( 'language', $config ) || array_key_exists( 'currency', $config ) ) {
-			$merged = $this->apply_language_currency_defaults(
-				$merged,
-				array_key_exists( 'language', $config ),
-				array_key_exists( 'currency', $config )
-			);
-		}
-
 		$this->validate_secondary_market_config( $merged );
 
 		$markets[ $id ] = $merged;
 		$this->options->update( OptionsInterface::MARKETS, $markets );
+
+		$old_feed_label = $existing['feed_label'] ?? null;
+		$new_feed_label = $merged['feed_label'] ?? null;
+		if ( $old_feed_label && $new_feed_label !== $old_feed_label ) {
+			$this->job_repository->get( CleanupOrphanedMarketProductsJob::class )
+				->schedule( [ 'feed_label' => $old_feed_label ] );
+		}
+
+		$shipping_keys = [ 'country', 'currency', 'shipping_rate', 'shipping_time' ];
+		foreach ( $shipping_keys as $key ) {
+			if ( ( $existing[ $key ] ?? null ) !== ( $merged[ $key ] ?? null ) ) {
+				$this->schedule_shipping_sync();
+				break;
+			}
+		}
 
 		return $this->get_market( $id );
 	}
@@ -289,8 +338,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			);
 		}
 
-		$markets = $this->get_stored_secondary_markets();
-		$country = $markets[ $id ]['country'] ?? null;
+		$markets       = $this->get_stored_secondary_markets();
+		$country       = $markets[ $id ]['country'] ?? null;
+		$feed_label    = $markets[ $id ]['feed_label'] ?? null;
+		$shipping_rate = $markets[ $id ]['shipping_rate'] ?? null;
 
 		unset( $markets[ $id ] );
 		$this->options->update( OptionsInterface::MARKETS, $markets );
@@ -298,6 +349,80 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		if ( $country ) {
 			$this->restore_country_to_target_audience( $country );
 		}
+
+		if ( $feed_label ) {
+			$this->job_repository->get( CleanupOrphanedMarketProductsJob::class )
+				->schedule( [ 'feed_label' => $feed_label ] );
+		}
+
+		if ( 'manual' !== $shipping_rate ) {
+			$this->schedule_shipping_sync();
+		}
+	}
+
+	/**
+	 * Returns the feed label values for every configured market.
+	 *
+	 * @return array
+	 */
+	public function get_all_feed_labels(): array {
+		$secondary   = $this->get_stored_secondary_markets();
+		$feed_labels = array_column( array_values( $secondary ), 'feed_label' );
+		array_unshift( $feed_labels, $this->get_main_feed_label() );
+
+		return $feed_labels;
+	}
+
+	/**
+	 * Returns the feed label for the primary market.
+	 *
+	 * @return string Defaults to the store's main target country code when no
+	 *                custom feedLabel has been configured.
+	 */
+	public function get_main_feed_label(): string {
+		return $this->target_audience->get_main_target_country();
+	}
+
+	/**
+	 * Returns every country code across all markets without duplicates.
+	 *
+	 * The primary market contributes its target_audience countries; each
+	 * secondary market contributes its single `country` value. No DB queries.
+	 *
+	 * @return string[]
+	 */
+	public function get_all_countries(): array {
+		$secondary = $this->get_stored_secondary_markets();
+		$countries = $this->target_audience->get_target_countries();
+
+		if ( ! empty( $secondary ) ) {
+			foreach ( $secondary as $market ) {
+				$countries[] = $market['country'];
+			}
+		}
+
+		return array_unique( $countries );
+	}
+
+	/**
+	 * Whether any configured market needs its shipping settings synced to Merchant Center.
+	 *
+	 * Returns true when at least one market has a non-`manual` `shipping_rate`
+	 * combined with `shipping_time === 'flat'`. A non-`manual` secondary market
+	 * is enough to require a sync even when the primary itself is `manual`.
+	 *
+	 * @return bool
+	 */
+	public function has_syncable_markets(): bool {
+		foreach ( $this->get_markets() as $market ) {
+			$rate = $market['shipping_rate'] ?? null;
+			$time = $market['shipping_time'] ?? null;
+			if ( 'manual' !== $rate && 'flat' === $time ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -325,6 +450,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 */
 	public function get_currencies(): array {
 		return $this->wpml->get_currencies();
+	}
+
+	/**
+	 * Schedules the shipping-settings sync job so MC shipping services are
+	 * regenerated for every non-manual market.
+	 */
+	private function schedule_shipping_sync(): void {
+		$this->job_repository->get( UpdateShippingSettings::class )->schedule();
 	}
 
 	/**
@@ -377,13 +510,29 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 */
 	private function get_primary_free_shipping_threshold(): ?float {
 		$country = $this->target_audience->get_main_target_country();
-		$rates   = $this->shipping_rate_query->get_all_shipping_rates();
+		$rates   = $this->get_cached_shipping_rates();
 
 		if ( isset( $rates[ $country ]['free_shipping_threshold'] ) ) {
 			return (float) $rates[ $country ]['free_shipping_threshold'];
 		}
 
 		return null;
+	}
+
+	/**
+	 * Returns shipping rates, fetched lazily and cached on the service instance.
+	 *
+	 * The container shares MarketService across a request, so this cache lives for
+	 * the request and is discarded when the instance is destroyed.
+	 *
+	 * @return array
+	 */
+	private function get_cached_shipping_rates(): array {
+		if ( null === $this->cached_shipping_rates ) {
+			$this->cached_shipping_rates = $this->shipping_rate_query->get_all_shipping_rates();
+		}
+
+		return $this->cached_shipping_rates;
 	}
 
 	/**
@@ -405,69 +554,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				throw InvalidValue::is_empty( $key );
 			}
 		}
-	}
-
-	/**
-	 * Normalises the language and currency fields against the site primary.
-	 *
-	 * User-supplied non-empty arrays are stored as-is. Omitted keys or empty
-	 * arrays fall back to a single-element array containing the site primary.
-	 * Non-array values are rejected.
-	 *
-	 * @param array $config
-	 * @param bool  $apply_language Whether to normalise the language field.
-	 * @param bool  $apply_currency Whether to normalise the currency field.
-	 *
-	 * @return array
-	 *
-	 * @throws InvalidValue When language or currency is present but not an array.
-	 */
-	private function apply_language_currency_defaults(
-		array $config,
-		bool $apply_language = true,
-		bool $apply_currency = true
-	): array {
-		if ( $apply_language ) {
-			$config['language'] = $this->resolve_locale_field(
-				$config,
-				'language',
-				$this->get_site_primary_language()
-			);
-		}
-
-		if ( $apply_currency ) {
-			$config['currency'] = $this->resolve_locale_field(
-				$config,
-				'currency',
-				$this->get_site_primary_currency()
-			);
-		}
-
-		return $config;
-	}
-
-	/**
-	 * Resolves a locale-style array field, falling back to the site primary.
-	 *
-	 * Returns the supplied values as-is when a non-empty array is provided, or
-	 * a single-element array containing the site primary when omitted or empty.
-	 *
-	 * @param array  $config
-	 * @param string $key
-	 * @param string $primary
-	 *
-	 * @return string[]
-	 *
-	 * @throws InvalidValue When the field is present but not an array.
-	 */
-	private function resolve_locale_field( array $config, string $key, string $primary ): array {
-		if ( array_key_exists( $key, $config ) && ! is_array( $config[ $key ] ) ) {
-			throw InvalidValue::is_empty( $key );
-		}
-
-		$values = isset( $config[ $key ] ) && is_array( $config[ $key ] ) ? array_values( $config[ $key ] ) : [];
-
-		return empty( $values ) ? [ $primary ] : $values;
 	}
 
 	/**

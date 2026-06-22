@@ -7,7 +7,7 @@ import { useMemo } from '@wordpress/element';
  * Internal dependencies
  */
 import { glaData } from '~/constants';
-import useAvailableLanguages from '~/hooks/useAvailableLanguages';
+import useAvailableStoreLanguages from '~/hooks/useAvailableStoreLanguages';
 
 /**
  * @typedef {Object} LanguageCellRow
@@ -30,7 +30,7 @@ import useAvailableLanguages from '~/hooks/useAvailableLanguages';
  */
 const LanguageCell = ( { market } ) => {
 	const { languages, hasFinishedResolution: hasResolvedLanguages } =
-		useAvailableLanguages();
+		useAvailableStoreLanguages();
 
 	const languagesByCode = useMemo(
 		() =>

@@ -288,6 +288,49 @@ class WCProductAdapterTest extends UnitTest {
 		$this->assertEquals( 'fr', $adapted_product->getContentLanguage() );
 	}
 
+	public function test_set_feed_label_sets_feed_label() {
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => WC_Helper_Product::create_simple_product( false ),
+				'targetCountry' => 'US',
+			]
+		);
+
+		$adapted_product->set_feed_label( 'US' );
+
+		$this->assertSame( 'US', $adapted_product->getFeedLabel() );
+		$this->assertNotEmpty( $adapted_product->getContentLanguage() );
+	}
+
+	public function test_set_language_sets_content_language_when_no_feed_label() {
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => WC_Helper_Product::create_simple_product( false ),
+				'targetCountry' => 'US',
+			]
+		);
+
+		$adapted_product->set_language( 'fr' );
+
+		$this->assertSame( 'fr', $adapted_product->getContentLanguage() );
+		$this->assertNull( $adapted_product->getFeedLabel() );
+	}
+
+	public function test_set_language_after_set_feed_label_overrides_cleared_content_language() {
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => WC_Helper_Product::create_simple_product( false ),
+				'targetCountry' => 'US',
+			]
+		);
+
+		$adapted_product->set_feed_label( 'US' );
+		$adapted_product->set_language( 'fr' );
+
+		$this->assertSame( 'US', $adapted_product->getFeedLabel() );
+		$this->assertSame( 'fr', $adapted_product->getContentLanguage() );
+	}
+
 	public function test_offer_id_is_set() {
 		$product         = WC_Helper_Product::create_simple_product( false );
 		$adapted_product = new WCProductAdapter(
