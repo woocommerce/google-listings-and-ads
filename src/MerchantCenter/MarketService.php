@@ -181,8 +181,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			'label'         => __( 'Primary Market', 'google-listings-and-ads' ),
 			'countries'     => $this->target_audience->get_target_countries(),
 			'country'       => $defaults['country'],
-			'language'      => $defaults['language'],
-			'currency'      => $defaults['currency'],
+			'language'      => is_array( $mc_settings['language'] ?? null ) ? $mc_settings['language'] : $defaults['language'],
+			'currency'      => is_array( $mc_settings['currency'] ?? null ) ? $mc_settings['currency'] : $defaults['currency'],
 			'feed_label'    => $defaults['feed_label'],
 			'shipping_rate' => $mc_settings['shipping_rate'] ?? null,
 			'shipping_time' => $mc_settings['shipping_time'] ?? null,
@@ -477,6 +477,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * Fans out a primary market update to the underlying settings stores.
 	 *
 	 * @param array $config Partial config — only supplied keys are written.
+	 *
+	 * @throws InvalidValue When `language` or `currency` is present but not an array.
 	 */
 	private function update_primary_market_fanout( array $config ): void {
 		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
@@ -490,6 +492,17 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		if ( array_key_exists( 'shipping_time', $config ) ) {
 			$mc_settings['shipping_time'] = $config['shipping_time'];
 			$mc_updated                   = true;
+		}
+
+		foreach ( [ 'language', 'currency' ] as $key ) {
+			if ( ! array_key_exists( $key, $config ) ) {
+				continue;
+			}
+			if ( ! is_array( $config[ $key ] ) ) {
+				throw InvalidValue::not_array( $key );
+			}
+			$mc_settings[ $key ] = array_values( array_unique( $config[ $key ] ) );
+			$mc_updated          = true;
 		}
 
 		if ( $mc_updated ) {
@@ -550,8 +563,11 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		}
 
 		foreach ( [ 'language', 'currency' ] as $key ) {
-			if ( ! isset( $config[ $key ] ) || ! is_array( $config[ $key ] ) ) {
+			if ( ! isset( $config[ $key ] ) ) {
 				throw InvalidValue::is_empty( $key );
+			}
+			if ( ! is_array( $config[ $key ] ) ) {
+				throw InvalidValue::not_array( $key );
 			}
 		}
 	}
