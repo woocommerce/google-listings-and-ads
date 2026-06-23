@@ -14,7 +14,11 @@ import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
 const FormContent = () => {
 	const { values } = useAdaptiveFormContext();
 
-	const shouldDisplayShippingTime = values.shipping_time === 'flat';
+	const hasCountries =
+		values.location === 'all' || values.countries.length > 0;
+	const shouldDisplayShippingTime =
+		values.shipping_time === 'flat' && hasCountries;
+	const shouldDisplayShippingRate = hasCountries;
 	const shouldDisplayOrderValueCondition =
 		values.shipping_rate === 'flat' &&
 		values.shipping_country_rates.some( isNonFreeShippingRate );
@@ -22,7 +26,7 @@ const FormContent = () => {
 	return (
 		<>
 			<ChooseAudienceSection />
-			<ShippingRateSection />
+			{ shouldDisplayShippingRate && <ShippingRateSection /> }
 			{ shouldDisplayOrderValueCondition && (
 				<OrderValueConditionSection />
 			) }
