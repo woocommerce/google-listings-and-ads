@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification\Evaluators;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\ProductIssuesEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
@@ -19,6 +20,9 @@ defined( 'ABSPATH' ) || exit;
  */
 class ProductIssuesEvaluatorTest extends UnitTest {
 
+	/** @var MockObject|MerchantCenterService $merchant_center */
+	protected $merchant_center;
+
 	/** @var MockObject|TransientsInterface $transients */
 	protected $transients;
 
@@ -31,8 +35,10 @@ class ProductIssuesEvaluatorTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->transients = $this->createMock( TransientsInterface::class );
-		$this->evaluator  = new ProductIssuesEvaluator();
+		$this->merchant_center = $this->createMock( MerchantCenterService::class );
+		$this->transients      = $this->createMock( TransientsInterface::class );
+		$this->evaluator       = new ProductIssuesEvaluator();
+		$this->evaluator->set_merchant_center_object( $this->merchant_center );
 		$this->evaluator->set_transients_object( $this->transients );
 	}
 
@@ -49,6 +55,7 @@ class ProductIssuesEvaluatorTest extends UnitTest {
 	}
 
 	public function test_should_show_when_disapproved_products_exist() {
+		$this->merchant_center->method( 'is_connected' )->willReturn( true );
 		$this->transients->method( 'get' )
 			->with( TransientsInterface::MC_STATUSES )
 			->willReturn(
@@ -65,6 +72,7 @@ class ProductIssuesEvaluatorTest extends UnitTest {
 	}
 
 	public function test_should_not_show_when_no_disapproved_products() {
+		$this->merchant_center->method( 'is_connected' )->willReturn( true );
 		$this->transients->method( 'get' )
 			->with( TransientsInterface::MC_STATUSES )
 			->willReturn(
@@ -81,9 +89,19 @@ class ProductIssuesEvaluatorTest extends UnitTest {
 	}
 
 	public function test_should_not_show_when_transient_missing() {
+		$this->merchant_center->method( 'is_connected' )->willReturn( true );
 		$this->transients->method( 'get' )
 			->with( TransientsInterface::MC_STATUSES )
 			->willReturn( null );
+
+		$this->assertFalse( $this->evaluator->should_show() );
+	}
+
+	public function test_should_not_show_when_mc_not_connected() {
+		$this->merchant_center->method( 'is_connected' )->willReturn( false );
+
+		$this->transients->expects( $this->never() )
+			->method( 'get' );
 
 		$this->assertFalse( $this->evaluator->should_show() );
 	}

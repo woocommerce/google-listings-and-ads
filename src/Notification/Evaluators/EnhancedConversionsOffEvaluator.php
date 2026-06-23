@@ -46,7 +46,7 @@ class EnhancedConversionsOffEvaluator implements NotificationEvaluatorInterface,
 			return false;
 		}
 
-		return ! boolval( $this->options->get( OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED, false ) );
+		return ! $this->options->get( OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED, false );
 	}
 
 	/**

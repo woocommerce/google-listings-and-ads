@@ -8,7 +8,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\WcInstallTimestamp;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
-use ReflectionClass;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -43,8 +42,8 @@ class WcInstallTimestampTest extends UnitTest {
 	public function test_register_adds_admin_init_action() {
 		$this->service->register();
 
-		$this->assertTrue(
-			has_action( 'admin_init' ),
+		$this->assertNotFalse(
+			has_action( 'admin_init', [ $this->service, 'record_wc_install_timestamp' ] ),
 			'admin_init action should be registered'
 		);
 	}
@@ -69,7 +68,7 @@ class WcInstallTimestampTest extends UnitTest {
 				$wc_install_timestamp
 			);
 
-		$this->invoke_maybe_record_wc_install_timestamp();
+		$this->service->record_wc_install_timestamp();
 	}
 
 	public function test_does_not_record_when_gla_option_already_exists() {
@@ -84,7 +83,7 @@ class WcInstallTimestampTest extends UnitTest {
 		$this->options->expects( $this->never() )
 			->method( 'add' );
 
-		$this->invoke_maybe_record_wc_install_timestamp();
+		$this->service->record_wc_install_timestamp();
 	}
 
 	public function test_does_not_record_when_woocommerce_install_timestamp_missing() {
@@ -101,7 +100,7 @@ class WcInstallTimestampTest extends UnitTest {
 		$this->options->expects( $this->never() )
 			->method( 'add' );
 
-		$this->invoke_maybe_record_wc_install_timestamp();
+		$this->service->record_wc_install_timestamp();
 	}
 
 	public function test_does_not_record_when_woocommerce_install_timestamp_invalid() {
@@ -118,16 +117,23 @@ class WcInstallTimestampTest extends UnitTest {
 		$this->options->expects( $this->never() )
 			->method( 'add' );
 
-		$this->invoke_maybe_record_wc_install_timestamp();
+		$this->service->record_wc_install_timestamp();
 	}
 
-	/**
-	 * Invoke the protected maybe_record_wc_install_timestamp method.
-	 */
-	protected function invoke_maybe_record_wc_install_timestamp(): void {
-		$reflection = new ReflectionClass( $this->service );
-		$method     = $reflection->getMethod( 'maybe_record_wc_install_timestamp' );
-		$method->setAccessible( true );
-		$method->invoke( $this->service );
+	public function test_does_not_record_when_woocommerce_install_timestamp_is_zero() {
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::WC_INSTALL_TIMESTAMP )
+			->willReturn( null );
+
+		$this->wp->expects( $this->once() )
+			->method( 'get_option' )
+			->with( 'woocommerce_admin_install_timestamp' )
+			->willReturn( '0' );
+
+		$this->options->expects( $this->never() )
+			->method( 'add' );
+
+		$this->service->record_wc_install_timestamp();
 	}
 }

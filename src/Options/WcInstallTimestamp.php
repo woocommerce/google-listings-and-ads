@@ -45,18 +45,20 @@ class WcInstallTimestamp implements OptionsAwareInterface, Registerable, Service
 	 * Register a service.
 	 */
 	public function register(): void {
-		add_action(
-			'admin_init',
-			function () {
-				$this->maybe_record_wc_install_timestamp();
-			}
-		);
+		add_action( 'admin_init', [ $this, 'record_wc_install_timestamp' ] );
+	}
+
+	/**
+	 * Copy the WooCommerce install timestamp into a GLA option once.
+	 */
+	public function record_wc_install_timestamp(): void {
+		$this->maybe_record_wc_install_timestamp();
 	}
 
 	/**
 	 * Store the WooCommerce install timestamp once, if not already recorded.
 	 */
-	protected function maybe_record_wc_install_timestamp(): void {
+	private function maybe_record_wc_install_timestamp(): void {
 		if ( $this->options->get( OptionsInterface::WC_INSTALL_TIMESTAMP ) ) {
 			return;
 		}
