@@ -79,7 +79,7 @@ class NotOnboarded90DaysEvaluator implements NotificationEvaluatorInterface, Opt
 	 *
 	 * @return int|null
 	 */
-	protected function get_reference_timestamp(): ?int {
+	private function get_reference_timestamp(): ?int {
 		$wc_timestamp     = $this->options->get( OptionsInterface::WC_INSTALL_TIMESTAMP );
 		$plugin_timestamp = $this->options->get( OptionsInterface::INSTALL_TIMESTAMP );
 

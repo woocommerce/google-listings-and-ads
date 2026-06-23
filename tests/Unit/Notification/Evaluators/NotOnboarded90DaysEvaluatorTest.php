@@ -97,9 +97,11 @@ class NotOnboarded90DaysEvaluatorTest extends UnitTest {
 	}
 
 	public function test_should_not_show_when_google_connected() {
-		$this->options->method( 'get' )
-			->with( OptionsInterface::GOOGLE_CONNECTED, false )
-			->willReturn( true );
+		$this->options->method( 'get' )->willReturnMap(
+			[
+				[ OptionsInterface::GOOGLE_CONNECTED, false, true ],
+			]
+		);
 
 		$this->assertFalse( $this->evaluator->should_show() );
 	}
