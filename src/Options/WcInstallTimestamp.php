@@ -30,7 +30,7 @@ class WcInstallTimestamp implements OptionsAwareInterface, Registerable, Service
 	/**
 	 * @var WP
 	 */
-	protected $wp;
+	private $wp;
 
 	/**
 	 * WcInstallTimestamp constructor.
