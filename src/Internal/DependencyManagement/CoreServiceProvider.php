@@ -212,7 +212,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		WPCLIMigrationGTIN::class              => true,
 		OnboardingCompleted::class             => true,
 		ServiceBasedMerchantState::class       => true,
-		ServiceBasedMerchantHooks::class     => true,
+		ServiceBasedMerchantHooks::class       => true,
 	];
 
 	/**
