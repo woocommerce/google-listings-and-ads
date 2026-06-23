@@ -24,7 +24,12 @@ import SetupListings from './setup-listings';
 import SetupPaidAds from './setup-paid-ads';
 import EuPoliticalDeclarationProvider from '~/components/eu-political-declaration/eu-political-declaration-provider';
 import { STEP_NAME_KEY_MAP } from './constants';
-import { GUIDE_NAMES, SHIPPING_RATE_METHOD, glaData } from '~/constants';
+import {
+	GUIDE_NAMES,
+	SHIPPING_RATE_METHOD,
+	SHIPPING_TIME_METHOD,
+	glaData,
+} from '~/constants';
 import { getProductFeedUrl } from '~/utils/urls';
 import {
 	recordStepperChangeEvent,
@@ -85,7 +90,9 @@ const SavedSetupStepper = ( { savedStep } ) => {
 				shipping_rate: glaData.isMultiLingualStore
 					? SHIPPING_RATE_METHOD.MANUAL
 					: SHIPPING_RATE_METHOD.FLAT,
-				shipping_time: 'flat',
+				shipping_time: glaData.isMultiLingualStore
+					? SHIPPING_TIME_METHOD.MANUAL
+					: SHIPPING_TIME_METHOD.FLAT,
 			} );
 		}
 	}, [ settings, saveSettings ] );
@@ -150,6 +157,7 @@ const SavedSetupStepper = ( { savedStep } ) => {
 		glaData.isMultiLingualStore
 	) {
 		initSettings.shipping_rate = SHIPPING_RATE_METHOD.MANUAL;
+		initSettings.shipping_time = SHIPPING_TIME_METHOD.MANUAL;
 	}
 
 	return (
