@@ -26,7 +26,7 @@ class NotOnboarded90DaysEvaluator implements NotificationEvaluatorInterface, Opt
 	use OptionsAwareTrait;
 
 	/** @var OnboardingCompleted */
-	protected $onboarding_completed;
+	private $onboarding_completed;
 
 	/**
 	 * NotOnboarded90DaysEvaluator constructor.

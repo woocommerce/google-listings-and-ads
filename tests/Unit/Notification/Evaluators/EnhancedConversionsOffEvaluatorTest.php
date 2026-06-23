@@ -64,6 +64,32 @@ class EnhancedConversionsOffEvaluatorTest extends UnitTest {
 		$this->assertTrue( $this->evaluator->should_show() );
 	}
 
+	public function test_should_show_when_wp_tos_accepted() {
+		$this->ads_service->method( 'is_setup_complete' )->willReturn( true );
+		$this->options->method( 'get' )->willReturnMap(
+			[
+				[ OptionsInterface::WP_TOS_ACCEPTED, false, true ],
+				[ OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED, false, false ],
+			]
+		);
+		$this->options->method( 'get_merchant_id' )->willReturn( 12345 );
+
+		$this->assertTrue( $this->evaluator->should_show() );
+	}
+
+	public function test_should_show_when_merchant_id_is_set() {
+		$this->ads_service->method( 'is_setup_complete' )->willReturn( true );
+		$this->options->method( 'get' )->willReturnMap(
+			[
+				[ OptionsInterface::WP_TOS_ACCEPTED, false, true ],
+				[ OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED, false, false ],
+			]
+		);
+		$this->options->method( 'get_merchant_id' )->willReturn( 12345 );
+
+		$this->assertTrue( $this->evaluator->should_show() );
+	}
+
 	public function test_should_not_show_when_ads_incomplete() {
 		$this->ads_service->method( 'is_setup_complete' )->willReturn( false );
 
