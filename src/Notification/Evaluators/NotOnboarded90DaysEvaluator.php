@@ -11,19 +11,28 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WPAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WPAwareTrait;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Class NotOnboarded90DaysEvaluator
  *
- * Fires when onboarding is not completed and WooCommerce was installed more than 90 days ago.
+ * Fires when Google for WooCommerce onboarding is not complete, WooCommerce onboarding
+ * has been completed or skipped, and WooCommerce has been installed for 90+ days.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
-class NotOnboarded90DaysEvaluator implements NotificationEvaluatorInterface, OptionsAwareInterface, Service {
+class NotOnboarded90DaysEvaluator implements NotificationEvaluatorInterface, OptionsAwareInterface, WPAwareInterface, Service {
 
 	use OptionsAwareTrait;
+	use WPAwareTrait;
+
+	/**
+	 * WooCommerce option that stores onboarding wizard progress.
+	 */
+	private const WC_ONBOARDING_PROFILE_OPTION = 'woocommerce_onboarding_profile';
 
 	/** @var OnboardingCompleted */
 	private $onboarding_completed;
@@ -56,13 +65,17 @@ class NotOnboarded90DaysEvaluator implements NotificationEvaluatorInterface, Opt
 			return false;
 		}
 
+		if ( ! $this->has_completed_or_skipped_wc_onboarding() ) {
+			return false;
+		}
+
 		$install_timestamp = $this->options->get( OptionsInterface::WC_INSTALL_TIMESTAMP );
 
 		if ( ! $install_timestamp ) {
 			return false;
 		}
 
-		return ( time() - (int) $install_timestamp ) > ( 90 * DAY_IN_SECONDS );
+		return ( time() - (int) $install_timestamp ) >= ( 90 * DAY_IN_SECONDS );
 	}
 
 	/**
@@ -81,5 +94,24 @@ class NotOnboarded90DaysEvaluator implements NotificationEvaluatorInterface, Opt
 	 */
 	public function get_snooze_duration(): ?int {
 		return NotificationSnoozeDurations::NOT_ONBOARDED_90_DAYS;
+	}
+
+	/**
+	 * Whether the merchant has completed or skipped WooCommerce onboarding.
+	 *
+	 * @return bool
+	 */
+	protected function has_completed_or_skipped_wc_onboarding(): bool {
+		$profile = $this->wp->get_option( self::WC_ONBOARDING_PROFILE_OPTION, [] );
+
+		if ( ! is_array( $profile ) ) {
+			return false;
+		}
+
+		if ( ! empty( $profile['completed'] ) ) {
+			return true;
+		}
+
+		return ! empty( $profile['skipped'] );
 	}
 }
