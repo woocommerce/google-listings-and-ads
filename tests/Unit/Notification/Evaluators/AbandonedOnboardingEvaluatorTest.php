@@ -197,8 +197,6 @@ class AbandonedOnboardingEvaluatorTest extends UnitTest {
 				[ OptionsInterface::WP_TOS_ACCEPTED, false, true ],
 			]
 		);
-		$this->options->method( 'get_merchant_id' )->willReturn( 0 );
-		$this->options->method( 'get_ads_id' )->willReturn( 0 );
 		$this->merchant_account_state->method( 'get' )->with( false )->willReturn( [] );
 	}
 
@@ -212,8 +210,6 @@ class AbandonedOnboardingEvaluatorTest extends UnitTest {
 				[ OptionsInterface::WP_TOS_ACCEPTED, false, false ],
 			]
 		);
-		$this->options->method( 'get_merchant_id' )->willReturn( 0 );
-		$this->options->method( 'get_ads_id' )->willReturn( 0 );
 		$this->merchant_account_state->method( 'get' )->with( false )->willReturn( [] );
 	}
 
