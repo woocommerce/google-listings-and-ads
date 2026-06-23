@@ -37,6 +37,12 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	use OptionsAwareTrait;
 
 	/**
+	 * Google Content API constraint on `feedLabel`: up to 20 characters,
+	 * uppercase letters, digits and dashes only.
+	 */
+	private const FEED_LABEL_PATTERN = '/^[A-Z0-9-]{1,20}$/';
+
+	/**
 	 * @var TargetAudience
 	 */
 	protected TargetAudience $target_audience;
@@ -560,6 +566,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			if ( empty( $config[ $key ] ) || ! is_string( $config[ $key ] ) ) {
 				throw InvalidValue::is_empty( $key );
 			}
+		}
+
+		if ( ! preg_match( self::FEED_LABEL_PATTERN, $config['feed_label'] ) ) {
+			throw InvalidValue::does_not_match_pattern( 'feed_label', self::FEED_LABEL_PATTERN, $config['feed_label'] );
 		}
 
 		foreach ( [ 'language', 'currency' ] as $key ) {
