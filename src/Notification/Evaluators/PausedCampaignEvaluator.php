@@ -29,7 +29,7 @@ class PausedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwar
 	use CachedNotificationEvaluatorTrait;
 
 	/** @var AdsCampaign */
-	protected $ads_campaign;
+	private $ads_campaign;
 
 	/**
 	 * PausedCampaignEvaluator constructor.

@@ -206,7 +206,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		PolicyComplianceCheck::class             => true,
 		ContactInformation::class                => true,
 		MerchantCenterService::class             => true,
-		NotificationsService::class              => true,
 		TargetAudience::class                    => true,
 		MerchantAccountState::class              => true,
 		AdsAccountState::class                   => true,
@@ -225,10 +224,10 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		MerchantAccountService::class            => true,
 		MarketingChannelRegistrar::class         => true,
 		OAuthService::class                      => true,
-		SyncStatus::class                        => true,
 		WPCLIMigrationGTIN::class                => true,
 		OnboardingCompleted::class               => true,
 		ServiceBasedMerchantState::class         => true,
+		ServiceBasedMerchantHooks::class         => true,
 	];
 
 	/**
@@ -334,7 +333,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( ProductIssuesEvaluator::class );
 		$this->share_with_tags( Sold10ItemsEvaluator::class );
 		$this->share_with_tags( ReadyButNoSalesEvaluator::class, PolicyComplianceCheck::class, WC::class );
-		$this->share_with_tags( CouponsNotSyncedEvaluator::class, CouponHelper::class );
+		$this->share_with_tags( CouponsNotSyncedEvaluator::class );
 		$this->share_with_tags( SalesNotGrowingEvaluator::class );
 		$this->share_with_tags( WcInstallTimestamp::class, WP::class );
 		$this->share_with_tags( PausedCampaignEvaluator::class, AdsCampaign::class );

@@ -3,12 +3,10 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification\Evaluators;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CouponsNotSyncedEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Coupon;
 
@@ -21,9 +19,6 @@ defined( 'ABSPATH' ) || exit;
  */
 class CouponsNotSyncedEvaluatorTest extends UnitTest {
 
-	/** @var MockObject|CouponHelper $coupon_helper */
-	protected $coupon_helper;
-
 	/** @var CouponsNotSyncedEvaluator $evaluator */
 	protected $evaluator;
 
@@ -33,8 +28,7 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->coupon_helper = $this->createMock( CouponHelper::class );
-		$this->evaluator     = new CouponsNotSyncedEvaluator( $this->coupon_helper );
+		$this->evaluator = new CouponsNotSyncedEvaluator();
 	}
 
 	public function test_get_id() {
@@ -53,66 +47,81 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 		$supported_coupon   = $this->create_coupon( 1, false, [] );
 		$unsupported_coupon = $this->create_coupon( 2, true, [ 'test@example.com' ] );
 
-		$evaluator = $this->create_evaluator_with_coupons( [ $unsupported_coupon, $supported_coupon ] );
-
-		$this->coupon_helper->method( 'get_sync_status' )
-			->willReturnCallback(
-				function ( WC_Coupon $coupon ) use ( $supported_coupon ) {
-					if ( $coupon->get_id() === $supported_coupon->get_id() ) {
-						return SyncStatus::NOT_SYNCED;
-					}
-
-					return SyncStatus::SYNCED;
-				}
-			);
+		$evaluator = $this->create_evaluator(
+			[
+				1 => [ 2 ],
+				2 => [ 1 ],
+			],
+			[
+				2 => $unsupported_coupon,
+				1 => $supported_coupon,
+			]
+		);
 
 		$this->assertTrue( $evaluator->should_show() );
 	}
 
 	public function test_should_not_show_when_supported_coupons_are_synced() {
-		$supported_coupon = $this->create_coupon( 1, false, [] );
-		$evaluator        = $this->create_evaluator_with_coupons( [ $supported_coupon ] );
-
-		$this->coupon_helper->method( 'get_sync_status' )->willReturn( SyncStatus::SYNCED );
+		$evaluator = $this->create_evaluator( [], [] );
 
 		$this->assertFalse( $evaluator->should_show() );
 	}
 
 	public function test_should_not_show_when_only_unsupported_coupons_are_not_synced() {
 		$unsupported_coupon = $this->create_coupon( 1, true, [ 'test@example.com' ] );
-		$evaluator          = $this->create_evaluator_with_coupons( [ $unsupported_coupon ] );
 
-		$this->coupon_helper->expects( $this->never() )->method( 'get_sync_status' );
+		$evaluator = $this->create_evaluator(
+			[
+				1 => [ 1 ],
+				2 => [],
+			],
+			[
+				1 => $unsupported_coupon,
+			]
+		);
 
 		$this->assertFalse( $evaluator->should_show() );
 	}
 
 	public function test_cache_hit_skips_query() {
-		$evaluator = $this->create_evaluator_with_coupons( [ $this->create_coupon( 1, false, [] ) ] );
+		$evaluator = $this->create_evaluator( [ 1 => [ 1 ] ], [] );
 		$user_id   = $this->login_as_administrator();
 
 		set_transient( 'gla_notif_coupons-not-synced_' . $user_id, 0, HOUR_IN_SECONDS );
 
-		$this->coupon_helper->expects( $this->never() )->method( 'get_sync_status' );
-		$evaluator->expects( $this->never() )->method( 'get_coupons' );
+		$evaluator->expects( $this->never() )->method( 'get_not_synced_coupon_post_ids' );
 
 		$this->assertFalse( $evaluator->should_show() );
 	}
 
 	/**
-	 * Create a test evaluator with stubbed coupons.
+	 * Create a test evaluator with stubbed query pages and coupons.
 	 *
-	 * @param WC_Coupon[] $coupons
+	 * @param array<int, int[]>     $post_ids_by_page Post IDs returned per page.
+	 * @param array<int, WC_Coupon> $coupons_by_id    Coupon objects keyed by post ID.
 	 *
 	 * @return CouponsNotSyncedEvaluator|MockObject
 	 */
-	private function create_evaluator_with_coupons( array $coupons ): CouponsNotSyncedEvaluator {
+	private function create_evaluator( array $post_ids_by_page, array $coupons_by_id ): CouponsNotSyncedEvaluator {
 		$evaluator = $this->getMockBuilder( CouponsNotSyncedEvaluator::class )
-			->setConstructorArgs( [ $this->coupon_helper ] )
-			->onlyMethods( [ 'get_coupons' ] )
+			->onlyMethods( [ 'get_not_synced_coupon_post_ids', 'create_coupon' ] )
 			->getMock();
 
-		$evaluator->method( 'get_coupons' )->willReturn( $coupons );
+		$evaluator->method( 'get_not_synced_coupon_post_ids' )
+			->willReturnCallback(
+				static function ( int $page ) use ( $post_ids_by_page ) {
+					return $post_ids_by_page[ $page ] ?? [];
+				}
+			);
+
+		if ( ! empty( $coupons_by_id ) ) {
+			$evaluator->method( 'create_coupon' )
+				->willReturnCallback(
+					static function ( int $post_id ) use ( $coupons_by_id ) {
+						return $coupons_by_id[ $post_id ];
+					}
+				);
+		}
 
 		return $evaluator;
 	}

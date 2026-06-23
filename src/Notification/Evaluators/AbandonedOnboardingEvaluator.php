@@ -30,7 +30,7 @@ class AbandonedOnboardingEvaluator implements NotificationEvaluatorInterface, Me
 	use OptionsAwareTrait;
 
 	/** @var MerchantAccountState */
-	protected $merchant_account_state;
+	private $merchant_account_state;
 
 	/**
 	 * AbandonedOnboardingEvaluator constructor.
@@ -86,12 +86,12 @@ class AbandonedOnboardingEvaluator implements NotificationEvaluatorInterface, Me
 	 *
 	 * @return bool
 	 */
-	protected function has_onboarding_step_started(): bool {
-		if ( boolval( $this->options->get( OptionsInterface::GOOGLE_CONNECTED, false ) ) ) {
+	private function has_onboarding_step_started(): bool {
+		if ( $this->options->get( OptionsInterface::GOOGLE_CONNECTED, false ) ) {
 			return true;
 		}
 
-		if ( boolval( $this->options->get( OptionsInterface::WP_TOS_ACCEPTED, false ) ) ) {
+		if ( $this->options->get( OptionsInterface::WP_TOS_ACCEPTED, false ) ) {
 			return true;
 		}
 
