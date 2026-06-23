@@ -11,7 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
@@ -42,8 +42,8 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 	/** @var MockObject|GoogleProductService $google_service */
 	protected $google_service;
 
-	/** @var MockObject|TargetAudience $target_audience */
-	protected $target_audience;
+	/** @var MockObject|MarketService $market_service */
+	protected $market_service;
 
 	/** @var MockObject|MerchantCenterService $merchant_center */
 	protected $merchant_center;
@@ -80,8 +80,8 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 										$this->product_helper,
 										$validator,
 										$product_factory,
-										$this->target_audience,
 										$this->rules_query,
+										$this->market_service,
 									]
 								)
 								->getMock();
@@ -576,7 +576,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->target_audience = $this->createMock( TargetAudience::class );
+		$this->market_service  = $this->createMock( MarketService::class );
 		$this->merchant_center = $this->createMock( MerchantCenterService::class );
 		$this->merchant_center->expects( $this->any() )
 			->method( 'is_ready_for_syncing' )

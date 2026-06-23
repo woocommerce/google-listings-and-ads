@@ -50,6 +50,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DeprecatedFilters;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\InstallTimestamp;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\Logging\DebugLogger;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
@@ -99,6 +100,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WPAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantHooks;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRatesProcessor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingSuggestionService;
@@ -200,6 +202,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		WPCLIMigrationGTIN::class        => true,
 		OnboardingCompleted::class       => true,
 		ServiceBasedMerchantState::class => true,
+		ServiceBasedMerchantHooks::class => true,
 	];
 
 	/**
@@ -241,7 +244,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( TargetAudience::class, WC::class, OptionsInterface::class, GoogleHelper::class );
 
 		// Set up the MarketService.
-		$this->share_with_tags( MarketService::class, TargetAudience::class, ShippingRateQuery::class, ShippingTimeQuery::class, WC::class, WPML::class );
+		$this->share_with_tags( MarketService::class, TargetAudience::class, ShippingRateQuery::class, ShippingTimeQuery::class, WC::class, WPML::class, JobRepository::class );
 
 		// Set up MerchantCenter service, and inflect classes that need it.
 		$this->share_with_tags( MerchantCenterService::class );
@@ -309,13 +312,14 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		$this->share_with_tags( MerchantAccountState::class );
 		$this->share_with_tags( ServiceBasedMerchantState::class );
+		$this->conditionally_share_with_tags( ServiceBasedMerchantHooks::class, ServiceBasedMerchantState::class );
 		$this->share_with_tags( MerchantStatuses::class );
 		$this->share_with_tags( PriceBenchmarks::class );
 		$this->share_with_tags( PhoneVerification::class, Merchant::class, WP::class, ISOUtility::class );
 		$this->share_with_tags( PolicyComplianceCheck::class, WC::class, GoogleHelper::class, TargetAudience::class );
 		$this->share_with_tags( ContactInformation::class, Merchant::class, GoogleSettings::class );
 		$this->share_with_tags( ProductMetaHandler::class );
-		$this->share( ProductHelper::class, ProductMetaHandler::class, WC::class, TargetAudience::class );
+		$this->share( ProductHelper::class, ProductMetaHandler::class, WC::class, MarketService::class );
 		$this->share_with_tags( ProductFilter::class, ProductHelper::class );
 		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class, ProductFilter::class );
 		$this->share_with_tags( ProductFactory::class, AttributeManager::class, WC::class );
@@ -325,8 +329,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			ProductHelper::class,
 			ValidatorInterface::class,
 			ProductFactory::class,
-			TargetAudience::class,
-			AttributeMappingRulesQuery::class
+			AttributeMappingRulesQuery::class,
+			MarketService::class
 		);
 		$this->share_with_tags(
 			ProductSyncer::class,

@@ -107,6 +107,50 @@ class ProductFactoryTest extends ContainerAwareUnitTest {
 		$this->assertEquals( 'polka dot', $adapted_product->getPattern() );
 	}
 
+	public function test_create_with_feed_label_sets_feed_label() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->attribute_manager->method( 'get_all_values' )->willReturn( [] );
+
+		$adapted = $this->product_factory->create( $product, 'US', [], 'US' );
+
+		$this->assertSame( 'US', $adapted->getFeedLabel() );
+		$this->assertNotEmpty( $adapted->getContentLanguage() );
+	}
+
+	public function test_create_with_language_sets_content_language_when_no_feed_label() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->attribute_manager->method( 'get_all_values' )->willReturn( [] );
+
+		$adapted = $this->product_factory->create( $product, 'US', [], '', 'fr' );
+
+		$this->assertSame( 'fr', $adapted->getContentLanguage() );
+		$this->assertNull( $adapted->getFeedLabel() );
+	}
+
+	public function test_create_with_feed_label_and_language_sets_both() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->attribute_manager->method( 'get_all_values' )->willReturn( [] );
+
+		$adapted = $this->product_factory->create( $product, 'US', [], 'FR', 'fr' );
+
+		$this->assertSame( 'FR', $adapted->getFeedLabel() );
+		$this->assertSame( 'fr', $adapted->getContentLanguage() );
+	}
+
+	public function test_create_without_optional_params_uses_content_language() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->attribute_manager->method( 'get_all_values' )->willReturn( [] );
+
+		$adapted = $this->product_factory->create( $product, 'US', [] );
+
+		$this->assertNull( $adapted->getFeedLabel() );
+		$this->assertNotEmpty( $adapted->getContentLanguage() );
+	}
+
 	public function test_create_variable_product_fails() {
 		$variable = WC_Helper_Product::create_variation_product();
 		$this->expectException( InvalidClass::class );

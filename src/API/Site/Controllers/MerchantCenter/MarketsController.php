@@ -131,7 +131,7 @@ class MarketsController extends BaseController {
 		return function ( Request $request ) {
 			$config = [
 				'country'    => $request->get_param( 'country' ),
-				'feed_label' => $request->get_param( 'country' ),
+				'feed_label' => $request->get_param( 'feed_label' ) ?? $request->get_param( 'country' ),
 			];
 
 			if ( null !== $request->get_param( 'language' ) ) {
@@ -142,10 +142,9 @@ class MarketsController extends BaseController {
 				$config['currency'] = $request->get_param( 'currency' );
 			}
 
-			// TODO: Move ID generation into MarketService::generate_market_id().
-			$id = sanitize_title( $config['feed_label'] );
-
-			if ( 'primary' === $id ) {
+			try {
+				$id = $this->market_service->generate_market_id( $config['feed_label'] );
+			} catch ( InvalidValue $e ) {
 				return new Response(
 					[ 'message' => __( 'Cannot create a market with a reserved ID.', 'google-listings-and-ads' ) ],
 					400
@@ -388,8 +387,7 @@ class MarketsController extends BaseController {
 			'feed_label'    => [
 				'type'              => 'string',
 				'description'       => __( 'Google feed label.', 'google-listings-and-ads' ),
-				'context'           => [ 'view' ],
-				'readonly'          => true,
+				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'shipping_rate' => [
