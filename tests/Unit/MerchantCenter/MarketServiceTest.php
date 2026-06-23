@@ -1929,8 +1929,8 @@ class MarketServiceTest extends UnitTest {
 				}
 			);
 
-		$fired_count    = 0;
-		$captured_id    = null;
+		$fired_count     = 0;
+		$captured_id     = null;
 		$captured_config = null;
 		add_action(
 			'woocommerce_gla_market_added',
@@ -2125,8 +2125,8 @@ class MarketServiceTest extends UnitTest {
 		);
 		$this->options->method( 'update' )->willReturn( true );
 
-		$fired_count    = 0;
-		$captured_id    = null;
+		$fired_count     = 0;
+		$captured_id     = null;
 		$captured_config = null;
 		add_action(
 			'woocommerce_gla_market_deleted',
