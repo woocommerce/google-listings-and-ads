@@ -39,16 +39,27 @@ class WcInstallTimestampTest extends UnitTest {
 		$this->service->set_options_object( $this->options );
 	}
 
-	public function test_records_wc_install_timestamp_from_woocommerce_option_on_register() {
+	public function test_register_adds_admin_init_action() {
+		$this->service->register();
+
+		$this->assertNotFalse(
+			has_action( 'admin_init', [ $this->service, 'record_wc_install_timestamp' ] ),
+			'admin_init action should be registered'
+		);
+	}
+
+	public function test_records_wc_install_timestamp_from_woocommerce_option() {
 		$wc_install_timestamp = time() - ( 120 * DAY_IN_SECONDS );
 
-		$this->options->method( 'get' )
+		$this->options->expects( $this->once() )
+			->method( 'get' )
 			->with( OptionsInterface::WC_INSTALL_TIMESTAMP )
 			->willReturn( null );
 
-		$this->wp->method( 'get_option' )
+		$this->wp->expects( $this->once() )
+			->method( 'get_option' )
 			->with( 'woocommerce_admin_install_timestamp' )
-			->willReturn( $wc_install_timestamp );
+			->willReturn( (string) $wc_install_timestamp );
 
 		$this->options->expects( $this->once() )
 			->method( 'add' )
@@ -57,11 +68,12 @@ class WcInstallTimestampTest extends UnitTest {
 				$wc_install_timestamp
 			);
 
-		$this->service->register();
+		$this->service->record_wc_install_timestamp();
 	}
 
 	public function test_does_not_record_when_gla_option_already_exists() {
-		$this->options->method( 'get' )
+		$this->options->expects( $this->once() )
+			->method( 'get' )
 			->with( OptionsInterface::WC_INSTALL_TIMESTAMP )
 			->willReturn( time() - ( 120 * DAY_IN_SECONDS ) );
 
@@ -71,36 +83,57 @@ class WcInstallTimestampTest extends UnitTest {
 		$this->options->expects( $this->never() )
 			->method( 'add' );
 
-		$this->service->register();
+		$this->service->record_wc_install_timestamp();
 	}
 
 	public function test_does_not_record_when_woocommerce_install_timestamp_missing() {
-		$this->options->method( 'get' )
+		$this->options->expects( $this->once() )
+			->method( 'get' )
 			->with( OptionsInterface::WC_INSTALL_TIMESTAMP )
 			->willReturn( null );
 
-		$this->wp->method( 'get_option' )
+		$this->wp->expects( $this->once() )
+			->method( 'get_option' )
 			->with( 'woocommerce_admin_install_timestamp' )
 			->willReturn( false );
 
 		$this->options->expects( $this->never() )
 			->method( 'add' );
 
-		$this->service->register();
+		$this->service->record_wc_install_timestamp();
 	}
 
 	public function test_does_not_record_when_woocommerce_install_timestamp_invalid() {
-		$this->options->method( 'get' )
+		$this->options->expects( $this->once() )
+			->method( 'get' )
 			->with( OptionsInterface::WC_INSTALL_TIMESTAMP )
 			->willReturn( null );
 
-		$this->wp->method( 'get_option' )
+		$this->wp->expects( $this->once() )
+			->method( 'get_option' )
 			->with( 'woocommerce_admin_install_timestamp' )
 			->willReturn( 'not-a-timestamp' );
 
 		$this->options->expects( $this->never() )
 			->method( 'add' );
 
-		$this->service->register();
+		$this->service->record_wc_install_timestamp();
+	}
+
+	public function test_does_not_record_when_woocommerce_install_timestamp_is_zero() {
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::WC_INSTALL_TIMESTAMP )
+			->willReturn( null );
+
+		$this->wp->expects( $this->once() )
+			->method( 'get_option' )
+			->with( 'woocommerce_admin_install_timestamp' )
+			->willReturn( '0' );
+
+		$this->options->expects( $this->never() )
+			->method( 'add' );
+
+		$this->service->record_wc_install_timestamp();
 	}
 }

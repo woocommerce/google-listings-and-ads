@@ -4,6 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareInterface;
@@ -20,8 +22,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
-class ProductIssuesEvaluator implements NotificationEvaluatorInterface, TransientsAwareInterface, Service {
+class ProductIssuesEvaluator implements NotificationEvaluatorInterface, MerchantCenterAwareInterface, TransientsAwareInterface, Service {
 
+	use MerchantCenterAwareTrait;
 	use TransientsAwareTrait;
 
 	/**
@@ -39,19 +42,19 @@ class ProductIssuesEvaluator implements NotificationEvaluatorInterface, Transien
 	 * @return bool
 	 */
 	public function should_show(): bool {
-		$mc_statuses = $this->transients->get( TransientsInterface::MC_STATUSES );
-
-		if ( ! is_array( $mc_statuses ) || empty( $mc_statuses['statistics'] ) ) {
+		if ( ! $this->merchant_center->is_connected() ) {
 			return false;
 		}
 
-		foreach ( $mc_statuses['statistics'] as $status => $count ) {
-			if ( MCStatus::DISAPPROVED === $status && $count > 0 ) {
-				return true;
-			}
+		$mc_statuses = $this->transients->get( TransientsInterface::MC_STATUSES );
+
+		if ( ! is_array( $mc_statuses ) ) {
+			return false;
 		}
 
-		return false;
+		$statistics = $mc_statuses['statistics'] ?? [];
+
+		return ( $statistics[ MCStatus::DISAPPROVED ] ?? 0 ) > 0;
 	}
 
 	/**
