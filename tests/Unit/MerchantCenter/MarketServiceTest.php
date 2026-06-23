@@ -1899,6 +1899,288 @@ class MarketServiceTest extends UnitTest {
 		$this->assertFalse( $this->market_service->has_syncable_markets() );
 	}
 
+	public function test_add_market_fires_market_added_hook_on_success(): void {
+		$config = [
+			'country'    => 'GB',
+			'language'   => [ 'en' ],
+			'currency'   => [ 'GBP' ],
+			'feed_label' => 'GB',
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'automatic',
+				],
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
+			]
+		);
+
+		$persisted_markets = null;
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$persisted_markets ) {
+					if ( OptionsInterface::MARKETS === $key ) {
+						$persisted_markets = $value;
+					}
+					return true;
+				}
+			);
+
+		$fired_count    = 0;
+		$captured_id    = null;
+		$captured_config = null;
+		add_action(
+			'woocommerce_gla_market_added',
+			function ( $id, $hook_config ) use ( &$fired_count, &$captured_id, &$captured_config ) {
+				++$fired_count;
+				$captured_id     = $id;
+				$captured_config = $hook_config;
+			},
+			10,
+			2
+		);
+
+		$this->market_service->add_market( 'gb', $config );
+
+		$this->assertSame( 1, $fired_count );
+		$this->assertSame( 'gb', $captured_id );
+		$this->assertSame( $persisted_markets['gb'], $captured_config );
+		$this->assertSame( 'automatic', $captured_config['shipping_rate'] );
+		$this->assertSame( 'automatic', $captured_config['shipping_time'] );
+		$this->assertSame( [ 'en' ], $captured_config['language'] );
+		$this->assertSame( [ 'GBP' ], $captured_config['currency'] );
+	}
+
+	public function test_add_market_does_not_fire_market_added_hook_when_id_is_primary(): void {
+		$fired = false;
+		add_action(
+			'woocommerce_gla_market_added',
+			function () use ( &$fired ) {
+				$fired = true;
+			}
+		);
+
+		$this->expectException( InvalidValue::class );
+
+		try {
+			$this->market_service->add_market( 'primary', [] );
+		} finally {
+			$this->assertFalse( $fired );
+		}
+	}
+
+	public function test_add_market_does_not_fire_market_added_hook_when_validation_fails(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+
+		$fired = false;
+		add_action(
+			'woocommerce_gla_market_added',
+			function () use ( &$fired ) {
+				$fired = true;
+			}
+		);
+
+		$this->expectException( InvalidValue::class );
+
+		try {
+			$this->market_service->add_market(
+				'gb',
+				[
+					'country'    => 'GB',
+					'feed_label' => '',
+					'language'   => [ 'en' ],
+					'currency'   => [ 'GBP' ],
+				]
+			);
+		} finally {
+			$this->assertFalse( $fired );
+		}
+	}
+
+	public function test_update_market_fires_market_updated_hook_on_primary_success(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$fired_count     = 0;
+		$captured_id     = null;
+		$captured_market = null;
+		add_action(
+			'woocommerce_gla_market_updated',
+			function ( $id, $updated_market ) use ( &$fired_count, &$captured_id, &$captured_market ) {
+				++$fired_count;
+				$captured_id     = $id;
+				$captured_market = $updated_market;
+			},
+			10,
+			2
+		);
+
+		$result = $this->market_service->update_market( 'primary', [ 'shipping_rate' => 'flat' ] );
+
+		$this->assertSame( 1, $fired_count );
+		$this->assertSame( 'primary', $captured_id );
+		$this->assertSame( $result, $captured_market );
+		foreach ( [ 'id', 'label', 'countries', 'country', 'language', 'currency', 'feed_label', 'shipping_rate', 'shipping_time', 'free_shipping' ] as $key ) {
+			$this->assertArrayHasKey( $key, $captured_market );
+		}
+	}
+
+	public function test_update_market_fires_market_updated_hook_on_secondary_success(): void {
+		$existing = [
+			'gb' => [
+				'country'       => 'GB',
+				'language'      => [ 'en' ],
+				'currency'      => [ 'GBP' ],
+				'feed_label'    => 'GB',
+				'shipping_rate' => 'flat',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$fired_count     = 0;
+		$captured_id     = null;
+		$captured_market = null;
+		add_action(
+			'woocommerce_gla_market_updated',
+			function ( $id, $updated_market ) use ( &$fired_count, &$captured_id, &$captured_market ) {
+				++$fired_count;
+				$captured_id     = $id;
+				$captured_market = $updated_market;
+			},
+			10,
+			2
+		);
+
+		$result = $this->market_service->update_market( 'gb', [ 'currency' => [ 'EUR' ] ] );
+
+		$this->assertSame( 1, $fired_count );
+		$this->assertSame( 'gb', $captured_id );
+		$this->assertSame( $result, $captured_market );
+		foreach ( [ 'countries', 'label', 'free_shipping' ] as $key ) {
+			$this->assertArrayHasKey( $key, $captured_market );
+		}
+	}
+
+	public function test_update_market_does_not_fire_market_updated_hook_when_validation_fails(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $existing ] );
+
+		$fired = false;
+		add_action(
+			'woocommerce_gla_market_updated',
+			function () use ( &$fired ) {
+				$fired = true;
+			}
+		);
+
+		$this->expectException( InvalidValue::class );
+
+		try {
+			$this->market_service->update_market( 'gb', [ 'feed_label' => '' ] );
+		} finally {
+			$this->assertFalse( $fired );
+		}
+	}
+
+	public function test_delete_market_fires_market_deleted_hook_on_success(): void {
+		$existing_entry = [
+			'country'       => 'GB',
+			'language'      => [ 'en' ],
+			'currency'      => [ 'GBP' ],
+			'feed_label'    => 'GB',
+			'shipping_rate' => 'flat',
+			'shipping_time' => 'flat',
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [ 'gb' => $existing_entry ],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
+			]
+		);
+		$this->options->method( 'update' )->willReturn( true );
+
+		$fired_count    = 0;
+		$captured_id    = null;
+		$captured_config = null;
+		add_action(
+			'woocommerce_gla_market_deleted',
+			function ( $id, $deleted_config ) use ( &$fired_count, &$captured_id, &$captured_config ) {
+				++$fired_count;
+				$captured_id     = $id;
+				$captured_config = $deleted_config;
+			},
+			10,
+			2
+		);
+
+		$this->market_service->delete_market( 'gb' );
+
+		$this->assertSame( 1, $fired_count );
+		$this->assertSame( 'gb', $captured_id );
+		$this->assertSame( $existing_entry, $captured_config );
+	}
+
+	public function test_delete_market_does_not_fire_market_deleted_hook_when_id_is_primary(): void {
+		$fired = false;
+		add_action(
+			'woocommerce_gla_market_deleted',
+			function () use ( &$fired ) {
+				$fired = true;
+			}
+		);
+
+		$this->expectException( InvalidValue::class );
+
+		try {
+			$this->market_service->delete_market( 'primary' );
+		} finally {
+			$this->assertFalse( $fired );
+		}
+	}
+
+	public function test_delete_market_does_not_fire_market_deleted_hook_when_id_not_in_stored_markets(): void {
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$fired = false;
+		add_action(
+			'woocommerce_gla_market_deleted',
+			function () use ( &$fired ) {
+				$fired = true;
+			}
+		);
+
+		$this->market_service->delete_market( 'unknown' );
+
+		$this->assertFalse( $fired );
+	}
+
 	/**
 	 * Sets up the options mock to return specific values for different option keys.
 	 *

@@ -276,6 +276,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		if ( 'manual' !== ( $config['shipping_rate'] ?? null ) ) {
 			$this->schedule_shipping_sync();
 		}
+
+		/**
+		 * Fires after a secondary market is successfully added.
+		 *
+		 * @param string $id     The market ID.
+		 * @param array  $config The market configuration as persisted, including shipping_rate and shipping_time defaults.
+		 */
+		do_action( 'woocommerce_gla_market_added', $id, $config );
 	}
 
 	/**
@@ -296,8 +304,17 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	public function update_market( string $id, array $config ): array {
 		if ( 'primary' === $id ) {
 			$this->update_primary_market_fanout( $config );
+			$updated_market = $this->get_market( $id );
 
-			return $this->get_market( $id );
+			/**
+			 * Fires after a market is successfully updated.
+			 *
+			 * @param string $id             The market ID.
+			 * @param array  $updated_market The updated market.
+			 */
+			do_action( 'woocommerce_gla_market_updated', $id, $updated_market );
+
+			return $updated_market;
 		}
 
 		$markets  = $this->get_stored_secondary_markets();
@@ -324,7 +341,17 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			}
 		}
 
-		return $this->get_market( $id );
+		$updated_market = $this->get_market( $id );
+
+		/**
+		 * Fires after a market is successfully updated.
+		 *
+		 * @param string $id             The market ID.
+		 * @param array  $updated_market The updated market.
+		 */
+		do_action( 'woocommerce_gla_market_updated', $id, $updated_market );
+
+		return $updated_market;
 	}
 
 	/**
@@ -344,10 +371,15 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			);
 		}
 
-		$markets       = $this->get_stored_secondary_markets();
-		$country       = $markets[ $id ]['country'] ?? null;
-		$feed_label    = $markets[ $id ]['feed_label'] ?? null;
-		$shipping_rate = $markets[ $id ]['shipping_rate'] ?? null;
+		$markets = $this->get_stored_secondary_markets();
+		if ( ! isset( $markets[ $id ] ) ) {
+			return;
+		}
+
+		$deleted_config = $markets[ $id ];
+		$country        = $deleted_config['country'] ?? null;
+		$feed_label     = $deleted_config['feed_label'] ?? null;
+		$shipping_rate  = $deleted_config['shipping_rate'] ?? null;
 
 		unset( $markets[ $id ] );
 		$this->options->update( OptionsInterface::MARKETS, $markets );
@@ -364,6 +396,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		if ( 'manual' !== $shipping_rate ) {
 			$this->schedule_shipping_sync();
 		}
+
+		/**
+		 * Fires after a secondary market is successfully deleted.
+		 *
+		 * @param string $id             The market ID.
+		 * @param array  $deleted_config The market configuration as it existed at the time of deletion.
+		 */
+		do_action( 'woocommerce_gla_market_deleted', $id, $deleted_config );
 	}
 
 	/**
