@@ -47,7 +47,7 @@ class ReadyButNoSalesEvaluator implements NotificationEvaluatorInterface, Servic
 	 * @return string
 	 */
 	public function get_id(): string {
-		return 'payments-shipping-no-sales';
+		return 'ready-but-no-sales';
 	}
 
 	/**
