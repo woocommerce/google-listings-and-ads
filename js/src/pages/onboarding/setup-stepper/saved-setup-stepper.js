@@ -28,6 +28,8 @@ import {
 	GUIDE_NAMES,
 	SHIPPING_RATE_METHOD,
 	SHIPPING_TIME_METHOD,
+	DEFAULT_SHIPPING_MIN_TIME,
+	DEFAULT_SHIPPING_MAX_TIME,
 	glaData,
 } from '~/constants';
 import { getProductFeedUrl } from '~/utils/urls';
@@ -96,6 +98,27 @@ const SavedSetupStepper = ( { savedStep } ) => {
 			} );
 		}
 	}, [ settings, saveSettings ] );
+
+	// Auto-save default shipping times when no times have been saved yet.
+	useEffect( () => {
+		if ( hasResolvedShippingTimes && ! shippingTimes.length ) {
+			const countries = getFinalCountries( targetAudience );
+			if ( countries.length ) {
+				const defaultTimes = countries.map( ( countryCode ) => ( {
+					countryCode,
+					time: DEFAULT_SHIPPING_MIN_TIME,
+					maxTime: DEFAULT_SHIPPING_MAX_TIME,
+				} ) );
+				saveShippingTimes( defaultTimes );
+			}
+		}
+	}, [
+		hasResolvedShippingTimes,
+		shippingTimes,
+		getFinalCountries,
+		targetAudience,
+		saveShippingTimes,
+	] );
 
 	/**
 	 * Handles "onContinue" callback to set the current step and record event tracking.
