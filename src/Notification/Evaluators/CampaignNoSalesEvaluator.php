@@ -81,12 +81,15 @@ class CampaignNoSalesEvaluator implements NotificationEvaluatorInterface, AdsAwa
 			return false;
 		}
 
+		$timezone = wp_timezone();
+		$now      = new DateTime( 'now', $timezone );
+
 		try {
 			$report_data = $this->ads_report->get_report_data(
 				'campaigns',
 				[
-					'after'  => new DateTime( '-90 days' ),
-					'before' => new DateTime(),
+					'after'  => ( clone $now )->modify( '-90 days' ),
+					'before' => $now,
 					'fields' => [ 'conversions' ],
 				]
 			);
