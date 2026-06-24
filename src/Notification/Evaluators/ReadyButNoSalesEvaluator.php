@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PolicyComplianceCheck;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationEvaluatorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
@@ -24,21 +23,16 @@ class ReadyButNoSalesEvaluator implements NotificationEvaluatorInterface, Servic
 
 	use CachedNotificationEvaluatorTrait;
 
-	/** @var PolicyComplianceCheck */
-	protected $policy_compliance_check;
-
 	/** @var WC */
 	protected $wc;
 
 	/**
 	 * ReadyButNoSalesEvaluator constructor.
 	 *
-	 * @param PolicyComplianceCheck $policy_compliance_check
-	 * @param WC                    $wc
+	 * @param WC $wc
 	 */
-	public function __construct( PolicyComplianceCheck $policy_compliance_check, WC $wc ) {
-		$this->policy_compliance_check = $policy_compliance_check;
-		$this->wc                      = $wc;
+	public function __construct( WC $wc ) {
+		$this->wc = $wc;
 	}
 
 	/**
@@ -56,7 +50,7 @@ class ReadyButNoSalesEvaluator implements NotificationEvaluatorInterface, Servic
 	 * @return bool
 	 */
 	protected function evaluate_condition(): bool {
-		if ( ! $this->policy_compliance_check->has_payment_gateways() ) {
+		if ( ! $this->wc->has_enabled_payment_gateways() ) {
 			return false;
 		}
 

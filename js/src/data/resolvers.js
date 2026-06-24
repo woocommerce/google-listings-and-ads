@@ -855,7 +855,7 @@ export function* getNotifications() {
 			path: `${ API_NAMESPACE }/notifications`,
 		} );
 
-		yield receiveNotifications( response );
+		yield receiveNotifications( response.notifications ?? [] );
 	} catch ( error ) {
 		handleApiError(
 			error,
