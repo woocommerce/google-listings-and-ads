@@ -240,4 +240,54 @@ class MerchantReportTest extends UnitTest {
 		);
 		$this->assertCount( 1, $data['intervals'] );
 	}
+
+	public function test_get_report_data_free_listings() {
+		$args = [
+			'fields'   => [ 'clicks', 'impressions' ],
+			'interval' => 'day',
+			'after'    => '2026-06-01',
+			'before'   => '2026-06-02',
+		];
+
+		$this->mapi_client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn(
+				[
+					'results'       => [
+						[
+							// Free listings rows have no offerId; they aggregate into totals and intervals.
+							'productPerformanceView' => [
+								'date'        => [
+									'year'  => 2026,
+									'month' => 6,
+									'day'   => 1,
+								],
+								'clicks'      => 5,
+								'impressions' => 100,
+							],
+						],
+					],
+					'nextPageToken' => null,
+				]
+			);
+
+		$data = $this->merchant_report->get_report_data( 'free_listings', $args );
+
+		$this->assertSame(
+			[
+				'clicks'      => 5,
+				'impressions' => 100,
+			],
+			$data['totals']
+		);
+		$this->assertCount( 1, $data['free_listings'] );
+		$this->assertSame(
+			[
+				'clicks'      => 5,
+				'impressions' => 100,
+			],
+			$data['free_listings'][0]['subtotals']
+		);
+		$this->assertCount( 1, $data['intervals'] );
+	}
 }
