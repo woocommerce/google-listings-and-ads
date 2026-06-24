@@ -30,7 +30,6 @@ import {
 	adaptRaiseAdsBudgetRecommendations,
 } from './adapters';
 import { fetchWithHeaders, awaitPromise, recordGlaDataEvent } from './controls';
-
 import {
 	fetchShippingRates,
 	fetchShippingTimes,
