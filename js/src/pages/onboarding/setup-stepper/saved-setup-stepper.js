@@ -51,8 +51,11 @@ const SavedSetupStepper = ( { savedStep } ) => {
 	const adminUrl = useAdminUrl();
 	const { settings, saveSettings } = useSettings();
 	const { data: suggestedAudience } = useTargetAudienceWithSuggestions();
-	const { targetAudience, getFinalCountries } =
-		useTargetAudienceFinalCountryCodes();
+	const {
+		targetAudience,
+		getFinalCountries,
+		loaded: hasResolvedTargetAudience,
+	} = useTargetAudienceFinalCountryCodes();
 	const {
 		hasFinishedResolution: hasResolvedShippingRates,
 		data: shippingRates,
@@ -101,19 +104,26 @@ const SavedSetupStepper = ( { savedStep } ) => {
 
 	// Auto-save default shipping times when no times have been saved yet.
 	useEffect( () => {
-		if ( hasResolvedShippingTimes && ! shippingTimes.length ) {
+		if (
+			hasResolvedTargetAudience &&
+			hasResolvedShippingTimes &&
+			! shippingTimes.length
+		) {
 			const countries = getFinalCountries( targetAudience );
-			if ( countries.length ) {
+
+			if ( countries?.length ) {
 				const defaultTimes = countries.map( ( countryCode ) => ( {
 					countryCode,
 					time: DEFAULT_SHIPPING_MIN_TIME,
 					maxTime: DEFAULT_SHIPPING_MAX_TIME,
 				} ) );
+
 				saveShippingTimes( defaultTimes );
 			}
 		}
 	}, [
 		hasResolvedShippingTimes,
+		hasResolvedTargetAudience,
 		shippingTimes,
 		getFinalCountries,
 		targetAudience,
@@ -171,17 +181,21 @@ const SavedSetupStepper = ( { savedStep } ) => {
 	const initShippingRates = hasResolvedShippingRates ? shippingRates : null;
 	const initShippingTimes = hasResolvedShippingTimes ? shippingTimes : null;
 	const initTargetAudience = targetAudience?.location ? targetAudience : null;
-	const initSettings = settings?.shipping_rate ? settings : null;
+	const baseSettings = settings?.shipping_rate ? { ...settings } : null;
 
-	// If the store is multilingual and the shipping rate is flat, we need to change it to manual
-	// because flat shipping rates are not supported for multilingual stores.
-	if (
-		initSettings?.shipping_rate === SHIPPING_RATE_METHOD.FLAT &&
-		glaData.isMultiLingualStore
-	) {
-		initSettings.shipping_rate = SHIPPING_RATE_METHOD.MANUAL;
-		initSettings.shipping_time = SHIPPING_TIME_METHOD.MANUAL;
-	}
+	// If the store is multilingual and the shipping rate method is set to flat,
+	// we need to override it to manual to allow for per-country shipping rates.
+	const needsManualOverride =
+		baseSettings?.shipping_rate === SHIPPING_RATE_METHOD.FLAT &&
+		glaData.isMultiLingualStore;
+
+	const initSettings = needsManualOverride
+		? {
+				...baseSettings,
+				shipping_rate: SHIPPING_RATE_METHOD.MANUAL,
+				shipping_time: SHIPPING_TIME_METHOD.MANUAL,
+		  }
+		: baseSettings;
 
 	return (
 		<Stepper
