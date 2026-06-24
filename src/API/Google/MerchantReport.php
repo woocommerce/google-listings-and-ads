@@ -297,7 +297,10 @@ class MerchantReport implements OptionsAwareInterface {
 			throw InvalidValue::not_in_allowed_list( $interval, [ 'day' ] );
 		}
 
-		$date = new DateTime( sprintf( '%d-%d-%d', $date['year'] ?? 0, $date['month'] ?? 0, $date['day'] ?? 0 ) );
+		$date = DateTime::createFromFormat(
+			'Y-m-d|',
+			sprintf( '%d-%d-%d', $date['year'] ?? 0, $date['month'] ?? 0, $date['day'] ?? 0 )
+		);
 		return TimeInterval::time_interval_id( $interval, $date );
 	}
 }
