@@ -61,6 +61,23 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 		$this->assertTrue( $evaluator->should_show() );
 	}
 
+	public function test_should_show_when_supported_coupon_is_on_same_page_as_unsupported_coupons() {
+		$unsupported_coupon = $this->create_coupon( 1, true, [ 'test@example.com' ] );
+		$supported_coupon   = $this->create_coupon( 2, false, [] );
+
+		$evaluator = $this->create_evaluator(
+			[
+				1 => [ 1, 2 ],
+			],
+			[
+				1 => $unsupported_coupon,
+				2 => $supported_coupon,
+			]
+		);
+
+		$this->assertTrue( $evaluator->should_show() );
+	}
+
 	public function test_should_not_show_when_supported_coupons_are_synced() {
 		$evaluator = $this->create_evaluator( [], [] );
 
