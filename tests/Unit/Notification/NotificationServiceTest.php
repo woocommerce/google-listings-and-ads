@@ -198,6 +198,7 @@ class NotificationServiceTest extends UnitTest {
 		$evaluator->method( 'get_id' )->willReturn( $id );
 		$evaluator->method( 'get_priority' )->willReturn( $priority );
 		$evaluator->method( 'should_show' )->willReturn( $should_show );
+		$evaluator->method( 'get_snooze_duration' )->willReturn( null );
 
 		return $evaluator;
 	}
