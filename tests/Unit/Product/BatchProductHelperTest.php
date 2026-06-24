@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
@@ -237,6 +238,161 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertEqualSets( $param_product_ids, $results_product_ids );
 	}
 
+	public function test_validate_and_generate_update_request_entries_primary_only_single_entry_per_product() {
+		$products = $this->create_and_return_supported_test_products();
+
+		$this->set_up_market_service_stubs(
+			[ 'US' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( $products );
+
+		$param_product_ids = $this->flatten_to_simple_product_ids( $products );
+
+		$this->assertCount( count( $param_product_ids ), $results );
+
+		foreach ( $results as $entry ) {
+			$this->assertSame( 'US', $entry->get_product()->getFeedLabel() );
+			$this->assertSame( 'US', $entry->get_product()->getTargetCountry() );
+		}
+	}
+
+	public function test_validate_and_generate_update_request_entries_primary_plus_secondary_two_entries_per_product() {
+		$products = $this->create_and_return_supported_test_products();
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'DE' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+				'de'      => [
+					'country'    => 'DE',
+					'feed_label' => 'DE',
+					'language'   => 'de',
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( $products );
+
+		$param_product_ids = $this->flatten_to_simple_product_ids( $products );
+
+		$this->assertCount( count( $param_product_ids ) * 2, $results );
+
+		$feed_labels_by_product = [];
+		foreach ( $results as $entry ) {
+			$wc_id                              = $entry->get_wc_product_id();
+			$feed_labels_by_product[ $wc_id ][] = $entry->get_product()->getFeedLabel();
+		}
+
+		foreach ( $feed_labels_by_product as $labels ) {
+			sort( $labels );
+			$this->assertSame( [ 'DE', 'US' ], $labels );
+		}
+	}
+
+	public function test_validate_and_generate_update_request_entries_two_secondaries_three_entries_per_product() {
+		$products = $this->create_and_return_supported_test_products();
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'DE', 'FR' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+				'de'      => [
+					'country'    => 'DE',
+					'feed_label' => 'DE',
+					'language'   => 'de',
+				],
+				'fr'      => [
+					'country'    => 'FR',
+					'feed_label' => 'FR',
+					'language'   => 'fr',
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( $products );
+
+		$param_product_ids = $this->flatten_to_simple_product_ids( $products );
+
+		$this->assertCount( count( $param_product_ids ) * 3, $results );
+	}
+
+	public function test_validate_and_generate_update_request_entries_secondary_shipping_scoped_to_own_country() {
+		$products = [ WC_Helper_Product::create_simple_product() ];
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'CA', 'DE' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+				'de'      => [
+					'country'    => 'DE',
+					'feed_label' => 'DE',
+					'language'   => 'de',
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( $products );
+
+		$this->assertCount( 2, $results );
+
+		$by_label = [];
+		foreach ( $results as $entry ) {
+			$by_label[ $entry->get_product()->getFeedLabel() ] = $entry->get_product()->getShipping();
+		}
+
+		$secondary_shipping_countries = array_map(
+			static function ( $s ) {
+				return $s->getCountry();
+			},
+			$by_label['DE']
+		);
+		$this->assertEqualSets( [ 'DE' ], $secondary_shipping_countries );
+
+		$primary_shipping_countries = array_map(
+			static function ( $s ) {
+				return $s->getCountry();
+			},
+			$by_label['US']
+		);
+		// Primary's add_shipping_country walk is unchanged from GOOWOO-591: all countries
+		// (including the secondary's) plus the product's own target country are present.
+		foreach ( [ 'US', 'CA', 'DE' ] as $expected_country ) {
+			$this->assertContains( $expected_country, $primary_shipping_countries );
+		}
+	}
+
 	public function test_validate_and_generate_update_request_entries_skips_invalid_product() {
 		$products = $this->create_and_return_supported_test_products();
 
@@ -287,6 +443,107 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		);
 
 		$this->assertNotContains( $invalid_product->get_id(), $results_product_ids );
+	}
+
+	public function test_validate_and_generate_update_request_entries_secondary_throw_discards_primary() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		// Use the real factory to build a valid primary adapter, then route the
+		// secondary call through a mock that throws so the catch in the production
+		// code fires after the primary entry has been staged.
+		$real_factory    = $this->container->get( ProductFactory::class );
+		$primary_adapter = $real_factory->create( $product, 'US', [], 'US', 'en' );
+
+		$factory_mock = $this->createMock( ProductFactory::class );
+		$factory_mock->method( 'create' )
+			->willReturnCallback(
+				function ( WC_Product $p, string $country ) use ( $primary_adapter ) {
+					if ( 'US' === $country ) {
+						return $primary_adapter;
+					}
+					throw new InvalidValue( 'simulated secondary factory failure' );
+				}
+			);
+
+		$helper = new BatchProductHelper(
+			$this->product_meta,
+			$this->product_helper,
+			$this->validator,
+			$factory_mock,
+			$this->rules_query,
+			$this->market_service
+		);
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'DE' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+				'de'      => [
+					'country'    => 'DE',
+					'feed_label' => 'DE',
+					'language'   => 'de',
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $helper->validate_and_generate_update_request_entries( [ $product ] );
+
+		// Nothing should land: the primary entry must not survive a secondary failure.
+		$this->assertCount( 0, $results );
+	}
+
+	public function test_validate_and_generate_update_request_entries_skips_product_when_secondary_invalid() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'DE' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+				'de'      => [
+					'country'    => 'DE',
+					'feed_label' => 'DE',
+					'language'   => 'de',
+				],
+			]
+		);
+
+		// Primary adapter passes validation; the secondary (DE) adapter fails.
+		$this->validator->expects( $this->any() )
+			->method( 'validate' )
+			->willReturnCallback(
+				function ( WCProductAdapter $adapter ) {
+					if ( 'DE' === $adapter->getFeedLabel() ) {
+						$violations = new ConstraintViolationList();
+						$violations->add( $this->createMock( ConstraintViolation::class ) );
+						return $violations;
+					}
+
+					return [];
+				}
+			);
+
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( [ $product ] );
+
+		$this->assertCount( 0, $results );
+
+		// Re-fetch the product so the meta read does not hit the original
+		// instance's stale cache — mark_as_invalid persisted against a fresh
+		// instance via ProductHelper::get_wc_product().
+		$refreshed = $this->wc->get_product( $product->get_id() );
+		$this->assertNotEmpty( $this->product_meta->get_errors( $refreshed ) );
 	}
 
 	public function test_validate_and_generate_update_request_entries_skips_not_sync_ready() {
@@ -408,6 +665,38 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$test_products[] = WC_Helper_Product::create_simple_product();
 
 		return $test_products;
+	}
+
+	/**
+	 * Configure the MarketService mock so the helper can build primary + secondary entries.
+	 *
+	 * @param string[] $all_countries Return value for get_all_countries().
+	 * @param array[]  $markets       Return value for get_markets() keyed by market ID.
+	 */
+	private function set_up_market_service_stubs( array $all_countries, array $markets ): void {
+		$this->market_service->method( 'get_primary_market' )->willReturn( $markets['primary'] );
+		$this->market_service->method( 'get_all_countries' )->willReturn( $all_countries );
+		$this->market_service->method( 'get_markets' )->willReturn( $markets );
+	}
+
+	/**
+	 * Resolves variable products to their variation IDs; passes simple products through.
+	 *
+	 * @param WC_Product[] $products
+	 * @return int[]
+	 */
+	private function flatten_to_simple_product_ids( array $products ): array {
+		$ids = [];
+		foreach ( $products as $product ) {
+			if ( $product instanceof WC_Product_Variable ) {
+				foreach ( $product->get_children() as $child_id ) {
+					$ids[] = $child_id;
+				}
+			} else {
+				$ids[] = $product->get_id();
+			}
+		}
+		return $ids;
 	}
 
 	/**

@@ -7,6 +7,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupOrphanedMarketProductsJob;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateShippingSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -41,25 +44,52 @@ class MarketServiceTest extends UnitTest {
 	/** @var MockObject|WPML */
 	protected $wpml;
 
+	/** @var MockObject|JobRepository */
+	protected $job_repository;
+
+	/** @var MockObject|CleanupOrphanedMarketProductsJob */
+	protected $cleanup_job;
+
+	/** @var MockObject|UpdateShippingSettings */
+	protected $shipping_settings_job;
+
 	/** @var MarketService */
 	protected $market_service;
 
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->target_audience     = $this->createMock( TargetAudience::class );
-		$this->options             = $this->createMock( OptionsInterface::class );
-		$this->shipping_rate_query = $this->createMock( ShippingRateQuery::class );
-		$this->shipping_time_query = $this->createMock( ShippingTimeQuery::class );
-		$this->wc                  = $this->createMock( WC::class );
-		$this->wpml                = $this->createMock( WPML::class );
+		$this->target_audience       = $this->createMock( TargetAudience::class );
+		$this->options               = $this->createMock( OptionsInterface::class );
+		$this->shipping_rate_query   = $this->createMock( ShippingRateQuery::class );
+		$this->shipping_time_query   = $this->createMock( ShippingTimeQuery::class );
+		$this->wc                    = $this->createMock( WC::class );
+		$this->wpml                  = $this->createMock( WPML::class );
+		$this->job_repository        = $this->createMock( JobRepository::class );
+		$this->cleanup_job           = $this->createMock( CleanupOrphanedMarketProductsJob::class );
+		$this->shipping_settings_job = $this->createMock( UpdateShippingSettings::class );
+
+		$this->job_repository->method( 'get' )
+			->willReturnCallback(
+				function ( $classname ) {
+					switch ( $classname ) {
+						case CleanupOrphanedMarketProductsJob::class:
+							return $this->cleanup_job;
+						case UpdateShippingSettings::class:
+							return $this->shipping_settings_job;
+						default:
+							return null;
+					}
+				}
+			);
 
 		$this->market_service = new MarketService(
 			$this->target_audience,
 			$this->shipping_rate_query,
 			$this->shipping_time_query,
 			$this->wc,
-			$this->wpml
+			$this->wpml,
+			$this->job_repository
 		);
 		$this->market_service->set_options_object( $this->options );
 	}
@@ -289,8 +319,8 @@ class MarketServiceTest extends UnitTest {
 		$this->assertArrayHasKey( OptionsInterface::MARKETS, $update_calls );
 		$stored_gb = $update_calls[ OptionsInterface::MARKETS ]['gb'];
 		$this->assertSame( 'GB', $stored_gb['country'] );
-		$this->assertSame( [ substr( get_locale(), 0, 2 ) ], $stored_gb['language'] );
-		$this->assertSame( [ get_woocommerce_currency(), 'GBP' ], $stored_gb['currency'] );
+		$this->assertSame( [ 'en' ], $stored_gb['language'] );
+		$this->assertSame( [ 'GBP' ], $stored_gb['currency'] );
 		$this->assertSame( 'GB', $stored_gb['feed_label'] );
 		$this->assertSame( 'flat', $stored_gb['shipping_rate'] );
 		$this->assertSame( 'flat', $stored_gb['shipping_time'] );
@@ -419,7 +449,254 @@ class MarketServiceTest extends UnitTest {
 		$this->assertArrayHasKey( 'countries', $result );
 	}
 
-	public function test_update_market_secondary_merges_and_persists(): void {
+	public function test_update_market_primary_persists_multiple_languages_and_currencies(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->market_service->update_market(
+			'primary',
+			[
+				'language' => [ 'en', 'fr' ],
+				'currency' => [ 'USD', 'EUR' ],
+			]
+		);
+
+		$this->assertArrayHasKey( OptionsInterface::MERCHANT_CENTER, $update_calls );
+		$this->assertSame( [ 'en', 'fr' ], $update_calls[ OptionsInterface::MERCHANT_CENTER ]['language'] );
+		$this->assertSame( [ 'USD', 'EUR' ], $update_calls[ OptionsInterface::MERCHANT_CENTER ]['currency'] );
+	}
+
+	public function test_update_market_primary_deduplicates_languages_and_currencies(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->market_service->update_market(
+			'primary',
+			[
+				'language' => [ 'en', 'fr', 'en' ],
+				'currency' => [ 'USD', 'USD', 'EUR' ],
+			]
+		);
+
+		$this->assertSame( [ 'en', 'fr' ], $update_calls[ OptionsInterface::MERCHANT_CENTER ]['language'] );
+		$this->assertSame( [ 'USD', 'EUR' ], $update_calls[ OptionsInterface::MERCHANT_CENTER ]['currency'] );
+	}
+
+	public function test_update_market_primary_partial_update_preserves_other_keys(): void {
+		$existing_mc = [
+			'shipping_rate' => 'flat',
+			'shipping_time' => 'flat',
+			'language'      => [ 'en', 'fr' ],
+			'currency'      => [ 'USD', 'EUR' ],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => $existing_mc,
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->market_service->update_market(
+			'primary',
+			[ 'shipping_rate' => 'automatic' ]
+		);
+
+		$persisted = $update_calls[ OptionsInterface::MERCHANT_CENTER ];
+		$this->assertSame( 'automatic', $persisted['shipping_rate'] );
+		$this->assertSame( [ 'en', 'fr' ], $persisted['language'] );
+		$this->assertSame( [ 'USD', 'EUR' ], $persisted['currency'] );
+	}
+
+	public function test_update_market_primary_language_currency_update_preserves_shipping(): void {
+		$existing_mc = [
+			'shipping_rate' => 'automatic',
+			'shipping_time' => 'flat',
+			'language'      => [ 'en' ],
+			'currency'      => [ 'USD' ],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => $existing_mc,
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->market_service->update_market(
+			'primary',
+			[
+				'language' => [ 'en', 'fr' ],
+				'currency' => [ 'USD', 'EUR' ],
+			]
+		);
+
+		$persisted = $update_calls[ OptionsInterface::MERCHANT_CENTER ];
+		$this->assertSame( [ 'en', 'fr' ], $persisted['language'] );
+		$this->assertSame( [ 'USD', 'EUR' ], $persisted['currency'] );
+		$this->assertSame( 'automatic', $persisted['shipping_rate'] );
+		$this->assertSame( 'flat', $persisted['shipping_time'] );
+	}
+
+	public function test_update_market_primary_persists_empty_language_and_currency_arrays(): void {
+		$existing_mc = [
+			'shipping_rate' => 'flat',
+			'language'      => [ 'en', 'fr' ],
+			'currency'      => [ 'USD', 'EUR' ],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => $existing_mc,
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->market_service->update_market(
+			'primary',
+			[
+				'language' => [],
+				'currency' => [],
+			]
+		);
+
+		$persisted = $update_calls[ OptionsInterface::MERCHANT_CENTER ];
+		$this->assertSame( [], $persisted['language'] );
+		$this->assertSame( [], $persisted['currency'] );
+		$this->assertSame( 'flat', $persisted['shipping_rate'] );
+	}
+
+	public function test_update_market_primary_rejects_non_array_language(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+
+		$this->expectException( InvalidValue::class );
+		$this->expectExceptionMessage( 'The value of language must be of type array.' );
+
+		$this->market_service->update_market(
+			'primary',
+			[ 'language' => 'en' ]
+		);
+	}
+
+	public function test_update_market_primary_rejects_non_array_currency(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+
+		$this->expectException( InvalidValue::class );
+		$this->expectExceptionMessage( 'The value of currency must be of type array.' );
+
+		$this->market_service->update_market(
+			'primary',
+			[ 'currency' => 'USD' ]
+		);
+	}
+
+	public function test_get_primary_market_returns_stored_language_and_currency_when_set(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'language' => [ 'en', 'fr' ],
+					'currency' => [ 'USD', 'EUR' ],
+				],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$result = $this->market_service->get_primary_market();
+
+		$this->assertSame( [ 'en', 'fr' ], $result['language'] );
+		$this->assertSame( [ 'USD', 'EUR' ], $result['currency'] );
+	}
+
+	public function test_get_primary_market_falls_back_to_defaults_when_stored_value_invalid(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'language' => 'en',
+					'currency' => 'USD',
+				],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$result = $this->market_service->get_primary_market();
+
+		$this->assertIsArray( $result['language'] );
+		$this->assertIsArray( $result['currency'] );
+		$this->assertNotSame( 'en', $result['language'] );
+		$this->assertNotSame( 'USD', $result['currency'] );
+	}
+
+	public function test_update_market_secondary_persists_supplied_currency_verbatim(): void {
 		$existing = [
 			'gb' => [
 				'country'    => 'GB',
@@ -445,11 +722,11 @@ class MarketServiceTest extends UnitTest {
 
 		$this->market_service->update_market( 'gb', [ 'currency' => [ 'EUR' ] ] );
 
-		$this->assertSame( [ get_woocommerce_currency(), 'EUR' ], $persisted['gb']['currency'] );
+		$this->assertSame( [ 'EUR' ], $persisted['gb']['currency'] );
 		$this->assertSame( 'GB', $persisted['gb']['country'] );
 	}
 
-	public function test_update_market_does_not_remerge_language_when_language_omitted(): void {
+	public function test_update_market_preserves_existing_language_when_omitted(): void {
 		$existing = [
 			'gb' => [
 				'country'    => 'GB',
@@ -478,7 +755,7 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( [ 'en', 'de' ], $persisted['gb']['language'] );
 	}
 
-	public function test_update_market_merges_language_with_primary_when_language_provided(): void {
+	public function test_update_market_saves_supplied_language_verbatim(): void {
 		$existing = [
 			'gb' => [
 				'country'    => 'GB',
@@ -504,10 +781,7 @@ class MarketServiceTest extends UnitTest {
 
 		$this->market_service->update_market( 'gb', [ 'language' => [ 'fr', 'de' ] ] );
 
-		$this->assertSame(
-			[ substr( get_locale(), 0, 2 ), 'fr', 'de' ],
-			$persisted['gb']['language']
-		);
+		$this->assertSame( [ 'fr', 'de' ], $persisted['gb']['language'] );
 	}
 
 	public function test_update_market_secondary_validates_merged_config(): void {
@@ -566,6 +840,155 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( 'GB', $result['country'] );
 	}
 
+	public function test_update_market_schedules_cleanup_when_feed_label_changes(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->cleanup_job->expects( $this->once() )
+			->method( 'schedule' )
+			->with( [ 'feed_label' => 'GB' ] );
+
+		// feed_label rename alone does not touch country/currency/shipping_rate/shipping_time.
+		$this->shipping_settings_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'feed_label' => 'GB-PROMO' ] );
+	}
+
+	public function test_update_market_does_not_schedule_cleanup_when_non_feed_label_keys_change(): void {
+		$existing = [
+			'gb' => [
+				'country'       => 'GB',
+				'language'      => [ 'en' ],
+				'currency'      => [ 'GBP' ],
+				'feed_label'    => 'GB',
+				'shipping_rate' => 'flat',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->cleanup_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		// Shipping-relevant fields (country, currency, shipping_rate, shipping_time) DID change.
+		$this->shipping_settings_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market(
+			'gb',
+			[
+				'country'       => 'IE',
+				'language'      => [ 'ga' ],
+				'currency'      => [ 'EUR' ],
+				'shipping_rate' => 'automatic',
+				'shipping_time' => 'automatic',
+			]
+		);
+	}
+
+	public function test_add_market_with_manual_shipping_rate_does_not_schedule_shipping_sync(): void {
+		$config = [
+			'country'       => 'DE',
+			'language'      => [ 'de' ],
+			'currency'      => [ 'EUR' ],
+			'feed_label'    => 'DE',
+			'shipping_rate' => 'manual',
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
+			]
+		);
+		$this->options->method( 'update' )->willReturn( true );
+
+		$this->shipping_settings_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->add_market( 'de', $config );
+	}
+
+	public function test_update_market_does_not_schedule_shipping_sync_when_only_language_changes(): void {
+		$existing = [
+			'gb' => [
+				'country'       => 'GB',
+				'language'      => [ 'en' ],
+				'currency'      => [ 'GBP' ],
+				'feed_label'    => 'GB',
+				'shipping_rate' => 'flat',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->shipping_settings_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'language' => [ 'en', 'cy' ] ] );
+	}
+
+	public function test_delete_market_with_manual_shipping_rate_does_not_schedule_shipping_sync(): void {
+		$existing = [
+			'gb' => [
+				'country'       => 'GB',
+				'language'      => [ 'en' ],
+				'currency'      => [ 'GBP' ],
+				'feed_label'    => 'GB',
+				'shipping_rate' => 'manual',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $existing ] );
+		$this->options->method( 'update' )->willReturn( true );
+
+		$this->shipping_settings_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->delete_market( 'gb' );
+	}
+
+	public function test_add_market_does_not_schedule_cleanup(): void {
+		$config = [
+			'country'    => 'DE',
+			'language'   => [ 'de' ],
+			'currency'   => [ 'EUR' ],
+			'feed_label' => 'DE',
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
+			]
+		);
+		$this->options->method( 'update' )->willReturn( true );
+
+		$this->cleanup_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		// shipping_rate defaults to 'flat' (non-manual) → shipping sync IS scheduled.
+		$this->shipping_settings_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->market_service->add_market( 'de', $config );
+	}
+
 	public function test_delete_market_throws_when_id_is_primary(): void {
 		$this->expectException( InvalidValue::class );
 
@@ -618,6 +1041,44 @@ class MarketServiceTest extends UnitTest {
 		$this->assertArrayHasKey( OptionsInterface::TARGET_AUDIENCE, $update_calls );
 		$this->assertContains( 'US', $update_calls[ OptionsInterface::TARGET_AUDIENCE ]['countries'] );
 		$this->assertContains( 'CA', $update_calls[ OptionsInterface::TARGET_AUDIENCE ]['countries'] );
+	}
+
+	public function test_delete_market_schedules_cleanup_with_feed_label(): void {
+		$existing = [
+			'gb' => [
+				'country'       => 'GB',
+				'language'      => [ 'en' ],
+				'currency'      => [ 'GBP' ],
+				'feed_label'    => 'GB',
+				'shipping_rate' => 'flat',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $existing ] );
+		$this->options->method( 'update' )->willReturn( true );
+
+		$this->cleanup_job->expects( $this->once() )
+			->method( 'schedule' )
+			->with( [ 'feed_label' => 'GB' ] );
+
+		// Non-manual shipping_rate → shipping sync also scheduled.
+		$this->shipping_settings_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->market_service->delete_market( 'gb' );
+	}
+
+	public function test_delete_market_primary_throws_and_does_not_schedule_cleanup(): void {
+		$this->cleanup_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->shipping_settings_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->delete_market( 'primary' );
 	}
 
 	public function test_delete_market_country_restoration_is_idempotent(): void {
@@ -975,6 +1436,163 @@ class MarketServiceTest extends UnitTest {
 		);
 	}
 
+	/**
+	 * @dataProvider provide_valid_feed_labels
+	 *
+	 * @param string $feed_label
+	 */
+	public function test_add_market_accepts_valid_feed_label( string $feed_label ): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'GB' ] ],
+			]
+		);
+
+		$persisted = null;
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$persisted ) {
+					if ( OptionsInterface::MARKETS === $key ) {
+						$persisted = $value;
+					}
+					return true;
+				}
+			);
+
+		$this->market_service->add_market(
+			'gb',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => $feed_label,
+			]
+		);
+
+		$this->assertSame( $feed_label, $persisted['gb']['feed_label'] );
+	}
+
+	/**
+	 * @dataProvider provide_invalid_feed_labels
+	 *
+	 * @param string $feed_label
+	 */
+	public function test_add_market_rejects_invalid_feed_label( string $feed_label ): void {
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->add_market(
+			'gb',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => $feed_label,
+			]
+		);
+	}
+
+	/**
+	 * @dataProvider provide_valid_feed_labels
+	 *
+	 * @param string $feed_label
+	 */
+	public function test_update_market_accepts_valid_feed_label( string $feed_label ): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$result = $this->market_service->update_market( 'gb', [ 'feed_label' => $feed_label ] );
+
+		$this->assertSame( $feed_label, $result['feed_label'] );
+	}
+
+	/**
+	 * @dataProvider provide_invalid_feed_labels
+	 *
+	 * @param string $feed_label
+	 */
+	public function test_update_market_rejects_invalid_feed_label( string $feed_label ): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $existing ] );
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->update_market( 'gb', [ 'feed_label' => $feed_label ] );
+	}
+
+	public function test_feed_label_rejection_message_references_pattern_and_value(): void {
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+
+		$this->expectException( InvalidValue::class );
+		$this->expectExceptionMessageMatches( '#feed_label.*\[A-Z0-9-\].*"us"#' );
+
+		$this->market_service->add_market(
+			'gb',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'us',
+			]
+		);
+	}
+
+	public function test_empty_feed_label_still_throws_is_empty_not_pattern(): void {
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+
+		$this->expectException( InvalidValue::class );
+		$this->expectExceptionMessage( 'The value of feed_label can not be empty.' );
+
+		$this->market_service->add_market(
+			'gb',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => '',
+			]
+		);
+	}
+
+	public function provide_valid_feed_labels(): array {
+		return [
+			'two-letter uppercase'   => [ 'US' ],
+			'uppercase with dash'    => [ 'GB-EN' ],
+			'alphanumeric'           => [ 'A1' ],
+			'twenty char max length' => [ 'A1-B2-C3-D4-E5-F6-G7' ],
+		];
+	}
+
+	public function provide_invalid_feed_labels(): array {
+		return [
+			'lowercase'        => [ 'us' ],
+			'twenty-one chars' => [ 'A1-B2-C3-D4-E5-F6-G7-' ],
+			'underscore'       => [ 'GB_EN' ],
+			'period'           => [ 'GB.EN' ],
+			'space'            => [ 'GB EN' ],
+			'at sign'          => [ 'GB@EN' ],
+		];
+	}
+
 	public function test_add_market_persists_array_language_and_currency(): void {
 		$config = [
 			'country'    => 'CH',
@@ -1002,46 +1620,24 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->add_market( 'ch', $config );
 
 		$stored_ch = $update_calls[ OptionsInterface::MARKETS ]['ch'];
-		$this->assertSame(
-			[ substr( get_locale(), 0, 2 ), 'de', 'fr', 'it' ],
-			$stored_ch['language']
-		);
-		$this->assertSame(
-			[ get_woocommerce_currency(), 'CHF', 'EUR' ],
-			$stored_ch['currency']
-		);
+		$this->assertSame( [ 'de', 'fr', 'it' ], $stored_ch['language'] );
+		$this->assertSame( [ 'CHF', 'EUR' ], $stored_ch['currency'] );
 	}
 
-	public function test_add_market_without_language_currency_stores_site_primary_only(): void {
+	public function test_add_market_throws_when_language_currency_omitted(): void {
 		$config = [
 			'country'    => 'GB',
 			'feed_label' => 'GB',
 		];
 
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MARKETS         => [],
-				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'GB' ] ],
-			]
-		);
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
 
-		$update_calls = [];
-		$this->options->method( 'update' )
-			->willReturnCallback(
-				function ( $key, $value ) use ( &$update_calls ) {
-					$update_calls[ $key ] = $value;
-					return true;
-				}
-			);
+		$this->expectException( InvalidValue::class );
 
 		$this->market_service->add_market( 'gb', $config );
-
-		$stored_gb = $update_calls[ OptionsInterface::MARKETS ]['gb'];
-		$this->assertSame( [ substr( get_locale(), 0, 2 ) ], $stored_gb['language'] );
-		$this->assertSame( [ get_woocommerce_currency() ], $stored_gb['currency'] );
 	}
 
-	public function test_add_market_with_empty_language_currency_arrays_stores_site_primary_only(): void {
+	public function test_add_market_persists_empty_language_currency_arrays_verbatim(): void {
 		$config = [
 			'country'    => 'GB',
 			'language'   => [],
@@ -1068,11 +1664,11 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->add_market( 'gb', $config );
 
 		$stored_gb = $update_calls[ OptionsInterface::MARKETS ]['gb'];
-		$this->assertSame( [ substr( get_locale(), 0, 2 ) ], $stored_gb['language'] );
-		$this->assertSame( [ get_woocommerce_currency() ], $stored_gb['currency'] );
+		$this->assertSame( [], $stored_gb['language'] );
+		$this->assertSame( [], $stored_gb['currency'] );
 	}
 
-	public function test_add_market_with_extra_languages_prepends_site_primary(): void {
+	public function test_add_market_saves_supplied_languages_verbatim(): void {
 		$config = [
 			'country'    => 'FR',
 			'language'   => [ 'fr', 'de' ],
@@ -1099,10 +1695,7 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->add_market( 'fr', $config );
 
 		$stored_fr = $update_calls[ OptionsInterface::MARKETS ]['fr'];
-		$this->assertSame(
-			[ substr( get_locale(), 0, 2 ), 'fr', 'de' ],
-			$stored_fr['language']
-		);
+		$this->assertSame( [ 'fr', 'de' ], $stored_fr['language'] );
 	}
 
 	public function test_has_multilingual_support_returns_true(): void {
@@ -1241,6 +1834,351 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->get_market( 'some-id' );
 		$this->market_service->get_market( 'some-id' );
 		$this->market_service->get_markets();
+	}
+
+	public function test_has_syncable_markets_true_when_only_secondary_is_non_manual(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'manual',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'fr' => [
+						'country'       => 'FR',
+						'feed_label'    => 'FR',
+						'language'      => [ 'fr' ],
+						'currency'      => [ 'EUR' ],
+						'shipping_rate' => 'flat',
+						'shipping_time' => 'flat',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->assertTrue( $this->market_service->has_syncable_markets() );
+	}
+
+	public function test_has_syncable_markets_false_when_every_market_is_manual(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'manual',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'fr' => [
+						'country'       => 'FR',
+						'feed_label'    => 'FR',
+						'language'      => [ 'fr' ],
+						'currency'      => [ 'EUR' ],
+						'shipping_rate' => 'manual',
+						'shipping_time' => 'flat',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->assertFalse( $this->market_service->has_syncable_markets() );
+	}
+
+	public function test_has_syncable_markets_false_when_shipping_time_not_flat(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'manual',
+				],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->assertFalse( $this->market_service->has_syncable_markets() );
+	}
+
+	public function test_add_market_fires_market_added_hook_on_success(): void {
+		$config = [
+			'country'    => 'GB',
+			'language'   => [ 'en' ],
+			'currency'   => [ 'GBP' ],
+			'feed_label' => 'GB',
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'automatic',
+				],
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
+			]
+		);
+
+		$persisted_markets = null;
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$persisted_markets ) {
+					if ( OptionsInterface::MARKETS === $key ) {
+						$persisted_markets = $value;
+					}
+					return true;
+				}
+			);
+
+		$fired_count     = 0;
+		$captured_id     = null;
+		$captured_config = null;
+		add_action(
+			'woocommerce_gla_market_added',
+			function ( $id, $hook_config ) use ( &$fired_count, &$captured_id, &$captured_config ) {
+				++$fired_count;
+				$captured_id     = $id;
+				$captured_config = $hook_config;
+			},
+			10,
+			2
+		);
+
+		$this->market_service->add_market( 'gb', $config );
+
+		$this->assertSame( 1, $fired_count );
+		$this->assertSame( 'gb', $captured_id );
+		$this->assertSame( $persisted_markets['gb'], $captured_config );
+		$this->assertSame( 'automatic', $captured_config['shipping_rate'] );
+		$this->assertSame( 'automatic', $captured_config['shipping_time'] );
+		$this->assertSame( [ 'en' ], $captured_config['language'] );
+		$this->assertSame( [ 'GBP' ], $captured_config['currency'] );
+	}
+
+	public function test_add_market_does_not_fire_market_added_hook_when_id_is_primary(): void {
+		$fired = false;
+		add_action(
+			'woocommerce_gla_market_added',
+			function () use ( &$fired ) {
+				$fired = true;
+			}
+		);
+
+		$this->expectException( InvalidValue::class );
+
+		try {
+			$this->market_service->add_market( 'primary', [] );
+		} finally {
+			$this->assertFalse( $fired );
+		}
+	}
+
+	public function test_add_market_does_not_fire_market_added_hook_when_validation_fails(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+
+		$fired = false;
+		add_action(
+			'woocommerce_gla_market_added',
+			function () use ( &$fired ) {
+				$fired = true;
+			}
+		);
+
+		$this->expectException( InvalidValue::class );
+
+		try {
+			$this->market_service->add_market(
+				'gb',
+				[
+					'country'    => 'GB',
+					'feed_label' => '',
+					'language'   => [ 'en' ],
+					'currency'   => [ 'GBP' ],
+				]
+			);
+		} finally {
+			$this->assertFalse( $fired );
+		}
+	}
+
+	public function test_update_market_fires_market_updated_hook_on_primary_success(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$fired_count     = 0;
+		$captured_id     = null;
+		$captured_market = null;
+		add_action(
+			'woocommerce_gla_market_updated',
+			function ( $id, $updated_market ) use ( &$fired_count, &$captured_id, &$captured_market ) {
+				++$fired_count;
+				$captured_id     = $id;
+				$captured_market = $updated_market;
+			},
+			10,
+			2
+		);
+
+		$result = $this->market_service->update_market( 'primary', [ 'shipping_rate' => 'flat' ] );
+
+		$this->assertSame( 1, $fired_count );
+		$this->assertSame( 'primary', $captured_id );
+		$this->assertSame( $result, $captured_market );
+		foreach ( [ 'id', 'label', 'countries', 'country', 'language', 'currency', 'feed_label', 'shipping_rate', 'shipping_time', 'free_shipping' ] as $key ) {
+			$this->assertArrayHasKey( $key, $captured_market );
+		}
+	}
+
+	public function test_update_market_fires_market_updated_hook_on_secondary_success(): void {
+		$existing = [
+			'gb' => [
+				'country'       => 'GB',
+				'language'      => [ 'en' ],
+				'currency'      => [ 'GBP' ],
+				'feed_label'    => 'GB',
+				'shipping_rate' => 'flat',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$fired_count     = 0;
+		$captured_id     = null;
+		$captured_market = null;
+		add_action(
+			'woocommerce_gla_market_updated',
+			function ( $id, $updated_market ) use ( &$fired_count, &$captured_id, &$captured_market ) {
+				++$fired_count;
+				$captured_id     = $id;
+				$captured_market = $updated_market;
+			},
+			10,
+			2
+		);
+
+		$result = $this->market_service->update_market( 'gb', [ 'currency' => [ 'EUR' ] ] );
+
+		$this->assertSame( 1, $fired_count );
+		$this->assertSame( 'gb', $captured_id );
+		$this->assertSame( $result, $captured_market );
+		foreach ( [ 'countries', 'label', 'free_shipping' ] as $key ) {
+			$this->assertArrayHasKey( $key, $captured_market );
+		}
+	}
+
+	public function test_update_market_does_not_fire_market_updated_hook_when_validation_fails(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $existing ] );
+
+		$fired = false;
+		add_action(
+			'woocommerce_gla_market_updated',
+			function () use ( &$fired ) {
+				$fired = true;
+			}
+		);
+
+		$this->expectException( InvalidValue::class );
+
+		try {
+			$this->market_service->update_market( 'gb', [ 'feed_label' => '' ] );
+		} finally {
+			$this->assertFalse( $fired );
+		}
+	}
+
+	public function test_delete_market_fires_market_deleted_hook_on_success(): void {
+		$existing_entry = [
+			'country'       => 'GB',
+			'language'      => [ 'en' ],
+			'currency'      => [ 'GBP' ],
+			'feed_label'    => 'GB',
+			'shipping_rate' => 'flat',
+			'shipping_time' => 'flat',
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [ 'gb' => $existing_entry ],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
+			]
+		);
+		$this->options->method( 'update' )->willReturn( true );
+
+		$fired_count     = 0;
+		$captured_id     = null;
+		$captured_config = null;
+		add_action(
+			'woocommerce_gla_market_deleted',
+			function ( $id, $deleted_config ) use ( &$fired_count, &$captured_id, &$captured_config ) {
+				++$fired_count;
+				$captured_id     = $id;
+				$captured_config = $deleted_config;
+			},
+			10,
+			2
+		);
+
+		$this->market_service->delete_market( 'gb' );
+
+		$this->assertSame( 1, $fired_count );
+		$this->assertSame( 'gb', $captured_id );
+		$this->assertSame( $existing_entry, $captured_config );
+	}
+
+	public function test_delete_market_does_not_fire_market_deleted_hook_when_id_is_primary(): void {
+		$fired = false;
+		add_action(
+			'woocommerce_gla_market_deleted',
+			function () use ( &$fired ) {
+				$fired = true;
+			}
+		);
+
+		$this->expectException( InvalidValue::class );
+
+		try {
+			$this->market_service->delete_market( 'primary' );
+		} finally {
+			$this->assertFalse( $fired );
+		}
+	}
+
+	public function test_delete_market_does_not_fire_market_deleted_hook_when_id_not_in_stored_markets(): void {
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$fired = false;
+		add_action(
+			'woocommerce_gla_market_deleted',
+			function () use ( &$fired ) {
+				$fired = true;
+			}
+		);
+
+		$this->market_service->delete_market( 'unknown' );
+
+		$this->assertFalse( $fired );
 	}
 
 	/**

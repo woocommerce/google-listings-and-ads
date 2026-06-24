@@ -226,7 +226,7 @@ class BatchProductHelper implements Service {
 					$primary_market['country'],
 					$mapping_rules,
 					$primary_market['feed_label'],
-					$primary_market['language']
+					$this->extract_language( $primary_market )
 				);
 				$validation_result = $this->validate_product( $adapted_product );
 				if ( $validation_result instanceof BatchInvalidProductEntry ) {
@@ -245,10 +245,51 @@ class BatchProductHelper implements Service {
 				$all_countries = $this->market_service->get_all_countries();
 				array_walk( $all_countries, [ $adapted_product, 'add_shipping_country' ] );
 
-				$request_entries[] = new BatchProductRequestEntry(
+				// Stage entries per product so a throw or validation failure in
+				// any secondary market discards the whole product's entries
+				// preventing the primary feed from receiving the product while
+				// a secondary feed silently misses it.
+				$product_entries   = [];
+				$product_entries[] = new BatchProductRequestEntry(
 					$product->get_id(),
 					$adapted_product
 				);
+
+				foreach ( $this->market_service->get_markets() as $market_id => $market ) {
+					if ( 'primary' === $market_id ) {
+						continue;
+					}
+
+					$secondary_adapter = $this->product_factory->create(
+						$product,
+						$market['country'],
+						$mapping_rules,
+						$market['feed_label'],
+						$this->extract_language( $market )
+					);
+
+					$secondary_validation = $this->validate_product( $secondary_adapter );
+					if ( $secondary_validation instanceof BatchInvalidProductEntry ) {
+						$this->mark_as_invalid( $secondary_validation );
+
+						do_action(
+							'woocommerce_gla_debug_message',
+							sprintf( 'Skipping product (ID: %s) because it does not pass validation for secondary market %s: %s', $product->get_id(), $market_id, wp_json_encode( $secondary_validation ) ),
+							__METHOD__
+						);
+
+						continue 2;
+					}
+
+					$secondary_adapter->add_shipping_country( $market['country'] );
+
+					$product_entries[] = new BatchProductRequestEntry(
+						$product->get_id(),
+						$secondary_adapter
+					);
+				}
+
+				array_push( $request_entries, ...$product_entries );
 			} catch ( GoogleListingsAndAdsException $exception ) {
 				do_action(
 					'woocommerce_gla_error',
@@ -261,6 +302,22 @@ class BatchProductHelper implements Service {
 		}
 
 		return $request_entries;
+	}
+
+	/**
+	 * Extracts a single language code from a market config.
+	 *
+	 * Each MC product carries exactly one contentLanguage. Markets store
+	 * language as an array of codes; the first entry is used.
+	 *
+	 * @param array $market A market config array as returned by MarketService.
+	 *
+	 * @return string The single language code, or empty string when none is set.
+	 */
+	protected function extract_language( array $market ): string {
+		return is_array( $market['language'] ?? null )
+			? (string) ( $market['language'][0] ?? '' )
+			: (string) ( $market['language'] ?? '' );
 	}
 
 	/**
