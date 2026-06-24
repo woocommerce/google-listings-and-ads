@@ -281,9 +281,9 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		 * Fires after a secondary market is successfully added.
 		 *
 		 * @param string $id     The market ID.
-		 * @param array  $config The market configuration as persisted, including shipping_rate and shipping_time defaults.
+		 * @param array  $market The newly added market, fully resolved (same shape as get_market()).
 		 */
-		do_action( 'woocommerce_gla_market_added', $id, $config );
+		do_action( 'woocommerce_gla_market_added', $id, $this->get_market( $id ) );
 	}
 
 	/**
@@ -304,17 +304,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	public function update_market( string $id, array $config ): array {
 		if ( 'primary' === $id ) {
 			$this->update_primary_market_fanout( $config );
-			$updated_market = $this->get_market( $id );
 
-			/**
-			 * Fires after a market is successfully updated.
-			 *
-			 * @param string $id             The market ID.
-			 * @param array  $updated_market The updated market.
-			 */
-			do_action( 'woocommerce_gla_market_updated', $id, $updated_market );
-
-			return $updated_market;
+			return $this->fire_market_updated_action( $id );
 		}
 
 		$markets  = $this->get_stored_secondary_markets();
@@ -341,13 +332,24 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			}
 		}
 
+		return $this->fire_market_updated_action( $id );
+	}
+
+	/**
+	 * Fires the woocommerce_gla_market_updated action and returns the resolved market.
+	 *
+	 * @param string $id The market ID.
+	 *
+	 * @return array The updated market, fully resolved (same shape as get_market()).
+	 */
+	private function fire_market_updated_action( string $id ): array {
 		$updated_market = $this->get_market( $id );
 
 		/**
 		 * Fires after a market is successfully updated.
 		 *
 		 * @param string $id             The market ID.
-		 * @param array  $updated_market The updated market.
+		 * @param array  $updated_market The updated market, fully resolved (same shape as get_market()).
 		 */
 		do_action( 'woocommerce_gla_market_updated', $id, $updated_market );
 
@@ -373,7 +375,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 		$markets = $this->get_stored_secondary_markets();
 		if ( ! isset( $markets[ $id ] ) ) {
-			return;
+			return; // Avoid spurious options write and shipping sync for a non-existent market.
 		}
 
 		$deleted_config = $markets[ $id ];

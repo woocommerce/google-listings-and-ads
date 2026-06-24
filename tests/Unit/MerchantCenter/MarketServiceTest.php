@@ -1907,7 +1907,7 @@ class MarketServiceTest extends UnitTest {
 			'feed_label' => 'GB',
 		];
 
-		$this->set_up_options_get(
+		$this->set_up_options_get_with_tracking(
 			[
 				OptionsInterface::MERCHANT_CENTER => [
 					'shipping_rate' => 'automatic',
@@ -1917,27 +1917,17 @@ class MarketServiceTest extends UnitTest {
 				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
 			]
 		);
-
-		$persisted_markets = null;
-		$this->options->method( 'update' )
-			->willReturnCallback(
-				function ( $key, $value ) use ( &$persisted_markets ) {
-					if ( OptionsInterface::MARKETS === $key ) {
-						$persisted_markets = $value;
-					}
-					return true;
-				}
-			);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
 
 		$fired_count     = 0;
 		$captured_id     = null;
-		$captured_config = null;
+		$captured_market = null;
 		add_action(
 			'woocommerce_gla_market_added',
-			function ( $id, $hook_config ) use ( &$fired_count, &$captured_id, &$captured_config ) {
+			function ( $id, $hook_market ) use ( &$fired_count, &$captured_id, &$captured_market ) {
 				++$fired_count;
 				$captured_id     = $id;
-				$captured_config = $hook_config;
+				$captured_market = $hook_market;
 			},
 			10,
 			2
@@ -1947,11 +1937,13 @@ class MarketServiceTest extends UnitTest {
 
 		$this->assertSame( 1, $fired_count );
 		$this->assertSame( 'gb', $captured_id );
-		$this->assertSame( $persisted_markets['gb'], $captured_config );
-		$this->assertSame( 'automatic', $captured_config['shipping_rate'] );
-		$this->assertSame( 'automatic', $captured_config['shipping_time'] );
-		$this->assertSame( [ 'en' ], $captured_config['language'] );
-		$this->assertSame( [ 'GBP' ], $captured_config['currency'] );
+		$this->assertSame( 'automatic', $captured_market['shipping_rate'] );
+		$this->assertSame( 'automatic', $captured_market['shipping_time'] );
+		$this->assertSame( [ 'en' ], $captured_market['language'] );
+		$this->assertSame( [ 'GBP' ], $captured_market['currency'] );
+		foreach ( [ 'countries', 'label', 'free_shipping' ] as $key ) {
+			$this->assertArrayHasKey( $key, $captured_market );
+		}
 	}
 
 	public function test_add_market_does_not_fire_market_added_hook_when_id_is_primary(): void {
