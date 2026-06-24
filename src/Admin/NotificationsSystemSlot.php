@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -13,7 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class NotificationSystemSlot
+ * Class NotificationsSystemSlot
  *
  * Registers and enqueues the plugin-agnostic notification slot bundle on the
  * WooCommerce Marketing overview page (page=wc-admin&path=/marketing).
@@ -23,7 +24,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin
  */
-class NotificationSystemSlot implements Service, Registerable {
+class NotificationsSystemSlot implements Service, Registerable {
 
 	use PluginHelper;
 
@@ -33,7 +34,7 @@ class NotificationSystemSlot implements Service, Registerable {
 	protected $assets_handler;
 
 	/**
-	 * NotificationSystemSlot constructor.
+	 * NotificationsSystemSlot constructor.
 	 *
 	 * @param AssetsHandlerInterface $assets_handler
 	 */
@@ -56,7 +57,7 @@ class NotificationSystemSlot implements Service, Registerable {
 
 				$slot_script = new AdminScriptWithBuiltDependenciesAsset(
 					'woocommerce-marketing-notifications-system-slot',
-					'js/build/notification-slot',
+					'js/build/woo-marketing-notifications-slot',
 					"{$build_dir}/notification-slot.asset.php",
 					new BuiltScriptDependencyArray(
 						[
@@ -68,6 +69,16 @@ class NotificationSystemSlot implements Service, Registerable {
 
 				$this->assets_handler->register( $slot_script );
 				$this->assets_handler->enqueue( $slot_script );
+
+				$slot_style = new AdminStyleAsset(
+					'woocommerce-marketing-notifications-system-slot-css',
+					'js/build/woo-marketing-notifications-slot',
+					[],
+					(string) filemtime( "{$build_dir}/woo-marketing-notifications-slot.css" )
+				);
+
+				$this->assets_handler->register( $slot_style );
+				$this->assets_handler->enqueue( $slot_style );
 			}
 		);
 	}

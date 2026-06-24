@@ -58,7 +58,7 @@ class NotificationSystem implements Service, Registerable {
 					"{$build_dir}/notifications-system.asset.php",
 					new BuiltScriptDependencyArray(
 						[
-							'dependencies' => [],
+							'dependencies' => [ 'woocommerce-marketing-notifications-system-slot' ],
 							'version'      => $this->get_version(),
 						]
 					)

@@ -24,6 +24,11 @@ class TrackingOffEvaluator implements NotificationEvaluatorInterface, WPAwareInt
 	use WPAwareTrait;
 
 	/**
+	 * WooCommerce option that stores whether usage tracking is enabled.
+	 */
+	private const WC_ALLOW_TRACKING_OPTION = 'woocommerce_allow_tracking';
+
+	/**
 	 * Get the notification's unique ID.
 	 *
 	 * @return string
@@ -38,7 +43,7 @@ class TrackingOffEvaluator implements NotificationEvaluatorInterface, WPAwareInt
 	 * @return bool
 	 */
 	public function should_show(): bool {
-		return 'yes' !== $this->wp->get_option( 'woocommerce_allow_tracking', 'no' );
+		return 'yes' !== $this->wp->get_option( self::WC_ALLOW_TRACKING_OPTION, 'no' );
 	}
 
 	/**
