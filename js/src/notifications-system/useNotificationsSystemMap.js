@@ -72,7 +72,7 @@ const STATIC_MAP = {
 			},
 		],
 	},
-	'payments-shipping-no-sales': {
+	'ready-but-no-sales': {
 		title: __(
 			'Get more sales with Google Ads',
 			'google-listings-and-ads'

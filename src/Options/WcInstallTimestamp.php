@@ -23,7 +23,7 @@ class WcInstallTimestamp implements OptionsAwareInterface, Registerable, Service
 	use OptionsAwareTrait;
 
 	/**
-	 * WooCommerce option that stores the store install timestamp.
+	 * WooCommerce core option that stores the WooCommerce Admin install timestamp.
 	 */
 	private const WC_ADMIN_INSTALL_TIMESTAMP_OPTION = 'woocommerce_admin_install_timestamp';
 
