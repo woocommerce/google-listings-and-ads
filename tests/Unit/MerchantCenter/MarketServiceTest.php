@@ -83,6 +83,13 @@ class MarketServiceTest extends UnitTest {
 				}
 			);
 
+		// Safe defaults so get_market() can be called without per-test setup.
+		// Tests that need specific values override these via set_up_primary_market_dependencies().
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn( [] );
+		$this->wc->method( 'get_countries' )->willReturn( [] );
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( '' );
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [] );
+
 		$this->market_service = new MarketService(
 			$this->target_audience,
 			$this->shipping_rate_query,
