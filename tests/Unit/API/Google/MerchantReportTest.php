@@ -141,6 +141,35 @@ class MerchantReportTest extends UnitTest {
 		);
 	}
 
+	public function test_get_product_view_report_handles_missing_expiration_date() {
+		$this->product_helper->method( 'get_wc_product_id' )->willReturnCallback(
+			function ( $mc_id ) {
+				return 'en~US~gla_884' === $mc_id ? 884 : 0;
+			}
+		);
+
+		$this->mapi_client->expects( $this->once() )
+			->method( 'post' )
+			->willReturn(
+				[
+					'results'       => [
+						[
+							// A product returned without an expirationDate must not break parsing.
+							'productView' => [
+								'id' => 'en~US~gla_884',
+								'aggregatedReportingContextStatus' => 'ELIGIBLE',
+							],
+						],
+					],
+					'nextPageToken' => null,
+				]
+			);
+
+		$report = $this->merchant_report->get_product_view_report();
+
+		$this->assertNull( $report['statuses'][884]['expiration_date'] );
+	}
+
 	public function test_get_product_view_report_with_exception() {
 		$this->mapi_client->expects( $this->once() )
 			->method( 'post' )
