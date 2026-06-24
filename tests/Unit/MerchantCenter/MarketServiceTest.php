@@ -83,13 +83,6 @@ class MarketServiceTest extends UnitTest {
 				}
 			);
 
-		// Safe defaults so get_market() can be called without per-test setup.
-		// Tests that need specific values override these via set_up_primary_market_dependencies().
-		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn( [] );
-		$this->wc->method( 'get_countries' )->willReturn( [] );
-		$this->target_audience->method( 'get_main_target_country' )->willReturn( '' );
-		$this->target_audience->method( 'get_target_countries' )->willReturn( [] );
-
 		$this->market_service = new MarketService(
 			$this->target_audience,
 			$this->shipping_rate_query,
@@ -1914,7 +1907,7 @@ class MarketServiceTest extends UnitTest {
 			'feed_label' => 'GB',
 		];
 
-		$this->set_up_options_get_with_tracking(
+		$this->set_up_options_get(
 			[
 				OptionsInterface::MERCHANT_CENTER => [
 					'shipping_rate' => 'automatic',
@@ -1924,17 +1917,27 @@ class MarketServiceTest extends UnitTest {
 				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
 			]
 		);
-		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$persisted_markets = null;
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$persisted_markets ) {
+					if ( OptionsInterface::MARKETS === $key ) {
+						$persisted_markets = $value;
+					}
+					return true;
+				}
+			);
 
 		$fired_count     = 0;
 		$captured_id     = null;
-		$captured_market = null;
+		$captured_config = null;
 		add_action(
 			'woocommerce_gla_market_added',
-			function ( $id, $hook_market ) use ( &$fired_count, &$captured_id, &$captured_market ) {
+			function ( $id, $hook_config ) use ( &$fired_count, &$captured_id, &$captured_config ) {
 				++$fired_count;
 				$captured_id     = $id;
-				$captured_market = $hook_market;
+				$captured_config = $hook_config;
 			},
 			10,
 			2
@@ -1944,13 +1947,11 @@ class MarketServiceTest extends UnitTest {
 
 		$this->assertSame( 1, $fired_count );
 		$this->assertSame( 'gb', $captured_id );
-		$this->assertSame( 'automatic', $captured_market['shipping_rate'] );
-		$this->assertSame( 'automatic', $captured_market['shipping_time'] );
-		$this->assertSame( [ 'en' ], $captured_market['language'] );
-		$this->assertSame( [ 'GBP' ], $captured_market['currency'] );
-		foreach ( [ 'countries', 'label', 'free_shipping' ] as $key ) {
-			$this->assertArrayHasKey( $key, $captured_market );
-		}
+		$this->assertSame( $persisted_markets['gb'], $captured_config );
+		$this->assertSame( 'automatic', $captured_config['shipping_rate'] );
+		$this->assertSame( 'automatic', $captured_config['shipping_time'] );
+		$this->assertSame( [ 'en' ], $captured_config['language'] );
+		$this->assertSame( [ 'GBP' ], $captured_config['currency'] );
 	}
 
 	public function test_add_market_does_not_fire_market_added_hook_when_id_is_primary(): void {

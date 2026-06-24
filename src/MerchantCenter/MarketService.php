@@ -281,9 +281,9 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		 * Fires after a secondary market is successfully added.
 		 *
 		 * @param string $id     The market ID.
-		 * @param array  $market The newly added market, fully resolved (same shape as get_market()).
+		 * @param array  $config The market configuration as persisted, including shipping_rate and shipping_time defaults.
 		 */
-		do_action( 'woocommerce_gla_market_added', $id, $this->get_market( $id ) );
+		do_action( 'woocommerce_gla_market_added', $id, $config );
 	}
 
 	/**
