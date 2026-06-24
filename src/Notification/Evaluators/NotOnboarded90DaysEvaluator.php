@@ -7,7 +7,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -17,25 +16,14 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class NotOnboarded90DaysEvaluator
  *
- * Fires when onboarding is not completed and WooCommerce was installed more than 90 days ago.
+ * Fires when the merchant has not connected a Google account and either WooCommerce
+ * or the plugin has been active for 90 or more days.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
 class NotOnboarded90DaysEvaluator implements NotificationEvaluatorInterface, OptionsAwareInterface, Service {
 
 	use OptionsAwareTrait;
-
-	/** @var OnboardingCompleted */
-	private $onboarding_completed;
-
-	/**
-	 * NotOnboarded90DaysEvaluator constructor.
-	 *
-	 * @param OnboardingCompleted $onboarding_completed
-	 */
-	public function __construct( OnboardingCompleted $onboarding_completed ) {
-		$this->onboarding_completed = $onboarding_completed;
-	}
 
 	/**
 	 * Get the notification's unique ID.
@@ -52,17 +40,17 @@ class NotOnboarded90DaysEvaluator implements NotificationEvaluatorInterface, Opt
 	 * @return bool
 	 */
 	public function should_show(): bool {
-		if ( $this->onboarding_completed->is_onboarding_complete() ) {
+		if ( boolval( $this->options->get( OptionsInterface::GOOGLE_CONNECTED, false ) ) ) {
 			return false;
 		}
 
-		$install_timestamp = $this->options->get( OptionsInterface::WC_INSTALL_TIMESTAMP );
+		$reference_timestamp = $this->get_reference_timestamp();
 
-		if ( ! $install_timestamp ) {
+		if ( ! $reference_timestamp ) {
 			return false;
 		}
 
-		return ( time() - (int) $install_timestamp ) > ( 90 * DAY_IN_SECONDS );
+		return ( time() - $reference_timestamp ) >= ( 90 * DAY_IN_SECONDS );
 	}
 
 	/**
@@ -81,5 +69,31 @@ class NotOnboarded90DaysEvaluator implements NotificationEvaluatorInterface, Opt
 	 */
 	public function get_snooze_duration(): ?int {
 		return NotificationSnoozeDurations::NOT_ONBOARDED_90_DAYS;
+	}
+
+	/**
+	 * Get the earliest available install timestamp for eligibility checks.
+	 *
+	 * Uses the older of the WooCommerce and plugin install timestamps so merchants
+	 * who had Woo before installing G4W are evaluated from their Woo install date.
+	 *
+	 * @return int|null
+	 */
+	private function get_reference_timestamp(): ?int {
+		$wc_timestamp     = $this->options->get( OptionsInterface::WC_INSTALL_TIMESTAMP );
+		$plugin_timestamp = $this->options->get( OptionsInterface::INSTALL_TIMESTAMP );
+
+		$timestamps = array_filter(
+			[
+				is_numeric( $wc_timestamp ) ? (int) $wc_timestamp : null,
+				is_numeric( $plugin_timestamp ) ? (int) $plugin_timestamp : null,
+			]
+		);
+
+		if ( empty( $timestamps ) ) {
+			return null;
+		}
+
+		return min( $timestamps );
 	}
 }
