@@ -3,8 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountIssuesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductsService;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductMetaQueryHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
@@ -489,29 +489,34 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
 	protected function refresh_account_issues(): void {
-		/** @var Merchant $merchant */
-		$merchant       = $this->container->get( Merchant::class );
 		$account_issues = [];
 		$created_at     = $this->cache_created_time->format( 'Y-m-d H:i:s' );
-		$issues         = $merchant->get_accountstatus()->getAccountLevelIssues() ?? [];
-		foreach ( $issues as $issue ) {
-			$key = md5( $issue->getTitle() );
+
+		/** @var MapiAccountIssuesService $account_issues_service */
+		$account_issues_service = $this->container->get( MapiAccountIssuesService::class );
+		foreach ( $account_issues_service->get_account_issues() as $issue ) {
+			$title        = $issue['title'] ?? '';
+			$key          = md5( $title );
+			$region_codes = $this->account_issue_region_codes( $issue );
 
 			if ( isset( $account_issues[ $key ] ) ) {
-				$account_issues[ $key ]['applicable_countries'][] = $issue->getCountry();
+				$account_issues[ $key ]['applicable_countries'] = array_merge(
+					$account_issues[ $key ]['applicable_countries'],
+					$region_codes
+				);
 			} else {
 				$account_issues[ $key ] = [
 					'product_id'           => 0,
 					'product'              => __( 'All products', 'google-listings-and-ads' ),
-					'code'                 => $issue->getId(),
-					'issue'                => $issue->getTitle(),
-					'action'               => $issue->getDetail(),
-					'action_url'           => $issue->getDocumentation(),
+					'code'                 => $this->account_issue_code( $issue['name'] ?? '' ),
+					'issue'                => $title,
+					'action'               => $issue['detail'] ?? '',
+					'action_url'           => $issue['documentationUri'] ?? '',
 					'created_at'           => $created_at,
 					'type'                 => self::TYPE_ACCOUNT,
-					'severity'             => $issue->getSeverity(),
+					'severity'             => $this->account_issue_severity( $issue['severity'] ?? '' ),
 					'source'               => 'mc',
-					'applicable_countries' => [ $issue->getCountry() ],
+					'applicable_countries' => $region_codes,
 				];
 
 				$account_issues[ $key ] = $this->maybe_override_issue_values( $account_issues[ $key ] );
@@ -535,6 +540,65 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		/** @var MerchantIssueQuery $issue_query */
 		$issue_query = $this->container->get( MerchantIssueQuery::class );
 		$issue_query->update_or_insert( $account_issues );
+	}
+
+	/**
+	 * Extract the region codes a Merchant API account issue impacts.
+	 *
+	 * @param array $issue AccountIssue resource, decoded as an array.
+	 *
+	 * @return string[]
+	 */
+	protected function account_issue_region_codes( array $issue ): array {
+		$codes = [];
+		foreach ( $issue['impactedDestinations'] ?? [] as $destination ) {
+			foreach ( $destination['impacts'] ?? [] as $impact ) {
+				if ( ! empty( $impact['regionCode'] ) ) {
+					$codes[] = $impact['regionCode'];
+				}
+			}
+		}
+
+		return $codes;
+	}
+
+	/**
+	 * Derive the issue code from a Merchant API account issue resource name
+	 * (accounts/{account}/issues/{issue}).
+	 *
+	 * @param string $name
+	 *
+	 * @return string
+	 */
+	protected function account_issue_code( string $name ): string {
+		if ( '' === $name ) {
+			return '';
+		}
+
+		$parts = explode( '/', $name );
+
+		// The Merchant API uses kebab-case issue ids, while the Content API codes
+		// (and the maybe_override_issue_values matches) are snake_case. Normalize so
+		// the override matching and the stored code keep the pre-migration convention.
+		return str_replace( '-', '_', (string) end( $parts ) );
+	}
+
+	/**
+	 * Map a Merchant API account issue severity.
+	 *
+	 * CRITICAL, ERROR and SUGGESTION keep the pre-migration lower-case values.
+	 * SEVERITY_UNSPECIFIED (and any unrecognized value) folds into 'error' so the
+	 * issue stays in the error bucket for both get_issue_severity() and the
+	 * only-errors filter.
+	 *
+	 * @param string $severity
+	 *
+	 * @return string
+	 */
+	protected function account_issue_severity( string $severity ): string {
+		$severity = strtolower( $severity );
+
+		return in_array( $severity, [ 'critical', self::SEVERITY_ERROR, 'suggestion' ], true ) ? $severity : self::SEVERITY_ERROR;
 	}
 
 	/**
