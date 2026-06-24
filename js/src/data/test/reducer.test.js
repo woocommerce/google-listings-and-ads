@@ -1088,7 +1088,7 @@ describe( 'reducer', () => {
 		it( 'RECEIVE_NOTIFICATIONS populates state.notifications', () => {
 			const state = reducer( prepareState(), {
 				type: TYPES.RECEIVE_NOTIFICATIONS,
-				notifications,
+				notifications: { notifications },
 			} );
 
 			expect( state.notifications ).toEqual( notifications );
