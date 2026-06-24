@@ -1,5 +1,8 @@
 *** Google for WooCommerce Changelog ***
 
+= Unreleased =
+* Migrate Merchant Center reporting to the Merchant APIhe `gla_merchant_query_response` filter is removed as part of dropping the Content API report layer.
+
 = 3.7.0 - 2026-05-19 =
 * Add - Create Your Own Incentive (CYOI) feature.
 * Add - In-Product Placements feature.
