@@ -104,6 +104,8 @@ class MerchantReport implements OptionsAwareInterface {
 
 			return $product_view_data;
 		} catch ( MerchantApiException $e ) {
+			// The woocommerce_gla_mc_client_exception action is fired by MerchantApiException::__construct();
+			// the call-site context differs from the pre-MAPI code (now MapiReportQuery::query_results).
 			throw new Exception( __( 'Unable to retrieve Product View Report.', 'google-listings-and-ads' ) . $e->getMessage(), $e->get_http_status() );
 		}
 	}
@@ -189,6 +191,8 @@ class MerchantReport implements OptionsAwareInterface {
 
 			return $this->report_data;
 		} catch ( MerchantApiException $e ) {
+			// The woocommerce_gla_mc_client_exception action is fired by MerchantApiException::__construct();
+			// the call-site context differs from the pre-MAPI code (now MapiReportQuery::query_results).
 			throw new Exception( __( 'Unable to retrieve report data.', 'google-listings-and-ads' ), $e->get_http_status() );
 		}
 	}
