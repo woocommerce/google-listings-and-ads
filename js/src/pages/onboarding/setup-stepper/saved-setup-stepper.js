@@ -111,7 +111,16 @@ const SavedSetupStepper = ( { savedStep } ) => {
 					time: DEFAULT_SHIPPING_MIN_TIME,
 					maxTime: DEFAULT_SHIPPING_MAX_TIME,
 				} ) );
-				saveShippingTimes( defaultTimes );
+
+				saveShippingTimes( defaultTimes ).catch( () =>
+					createNotice(
+						'error',
+						__(
+							'There was an error saving shipping times.',
+							'google-listings-and-ads'
+						)
+					)
+				);
 			}
 		}
 	}, [
@@ -119,6 +128,7 @@ const SavedSetupStepper = ( { savedStep } ) => {
 		shippingTimes,
 		targetAudience,
 		saveShippingTimes,
+		createNotice,
 	] );
 
 	/**
