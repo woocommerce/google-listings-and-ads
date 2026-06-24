@@ -81,4 +81,16 @@ abstract class MapiReportQuery extends Query {
 			$body
 		);
 	}
+
+	/**
+	 * Add a where date between clause using the Merchant API date field for this query's view.
+	 *
+	 * @param string $after  Start of date range (YYYY-MM-DD).
+	 * @param string $before End of date range (YYYY-MM-DD).
+	 *
+	 * @return QueryInterface
+	 */
+	public function where_date_between( string $after, string $before ): QueryInterface {
+		return $this->where( "{$this->resource}.date", [ $after, $before ], 'BETWEEN' );
+	}
 }

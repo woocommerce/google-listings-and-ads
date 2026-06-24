@@ -69,18 +69,6 @@ abstract class MerchantReportQuery extends MapiReportQuery {
 	}
 
 	/**
-	 * Add a where date between clause using the Merchant API date field.
-	 *
-	 * @param string $after  Start of date range (YYYY-MM-DD).
-	 * @param string $before End of date range (YYYY-MM-DD).
-	 *
-	 * @return QueryInterface
-	 */
-	public function where_date_between( string $after, string $before ): QueryInterface {
-		return $this->where( 'product_performance_view.date', [ $after, $before ], 'BETWEEN' );
-	}
-
-	/**
 	 * Set the initial columns for this query.
 	 */
 	abstract protected function set_initial_columns();
