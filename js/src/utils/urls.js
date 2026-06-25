@@ -141,7 +141,7 @@ export const getReconnectAccountUrl = ( code ) => {
  *
  * @return {string} The URL of the coupons index page.
  */
-export const getCouponsUrl = () => {
+export const getWCCouponsUrl = () => {
 	return addQueryArgs( 'edit.php', {
 		post_type: 'shop_coupon',
 	} );

@@ -16,7 +16,7 @@ import {
 	getSetupAdsUrl,
 	getWCAdvancedSettingsUrl,
 	getOnboardingUrl,
-	getCouponsUrl,
+	getWCCouponsUrl,
 } from '~/utils/urls';
 
 /**
@@ -32,7 +32,7 @@ const dashboardUrl = getDashboardUrl();
 const settingsUrl = getSettingsUrl();
 const wcAdvancedSettingsUrl = getWCAdvancedSettingsUrl();
 const onboardingUrl = getOnboardingUrl();
-const couponsUrl = getCouponsUrl();
+const couponsUrl = getWCCouponsUrl();
 
 /**
  * Static notification configs — created once at module level, never re-created on render.
