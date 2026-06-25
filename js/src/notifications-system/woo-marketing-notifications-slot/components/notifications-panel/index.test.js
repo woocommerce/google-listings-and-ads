@@ -11,7 +11,7 @@ import NotificationsPanel from './index';
 import useNotifications from '../../hooks/useNotifications';
 
 jest.mock( '../../hooks/useNotifications' );
-jest.mock( '../../../notification-skeleton', () => () => (
+jest.mock( '../notifications-sekeleton/', () => () => (
 	<div data-testid="notification-skeleton" />
 ) );
 
