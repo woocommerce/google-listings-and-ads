@@ -16,6 +16,7 @@ import { Badge } from '@woocommerce/components';
  * Internal dependencies
  */
 import useNotifications from '../../hooks/useNotifications';
+import NotificationSkeleton from '../../../notification-skeleton';
 import './index.scss';
 
 /**
@@ -51,13 +52,9 @@ const NotificationsPanel = () => {
 			</CardHeader>
 
 			{ notifications.map( ( { component: Notification, id }, index ) => {
-				if ( ! Notification ) {
-					return null;
-				}
-
 				return (
 					<Fragment key={ id }>
-						<Notification />
+						{ Notification ? <Notification /> : <NotificationSkeleton /> }
 
 						{ index !== notifications.length - 1 && (
 							<CardDivider />

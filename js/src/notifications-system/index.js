@@ -14,6 +14,7 @@ import {
 	useDismissNotificationFromMarketingSlot,
 } from './woo-marketing-notifications-slot';
 import Notification from './notification';
+import NotificationSkeleton from './notification-skeleton';
 import useNotificationsSystemMap from './useNotificationsSystemMap';
 
 /**
@@ -30,7 +31,7 @@ function createNotificationComponent( id, triggeredAt ) {
 		const config = notificationMap[ id ];
 
 		if ( ! config ) {
-			return null;
+			return <NotificationSkeleton />;
 		}
 
 		const { title, description, actions } = config;

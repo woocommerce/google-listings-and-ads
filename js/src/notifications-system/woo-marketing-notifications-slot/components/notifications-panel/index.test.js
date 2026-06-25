@@ -11,6 +11,9 @@ import NotificationsPanel from './index';
 import useNotifications from '../../hooks/useNotifications';
 
 jest.mock( '../../hooks/useNotifications' );
+jest.mock( '../../../notification-skeleton', () => () => (
+	<div data-testid="notification-skeleton" />
+) );
 
 const MockNotificationA = () => <div data-testid="notification-a" />;
 const MockNotificationB = () => <div data-testid="notification-b" />;
@@ -38,7 +41,7 @@ describe( 'NotificationsPanel', () => {
 		expect( screen.getByTestId( 'notification-b' ) ).toBeInTheDocument();
 	} );
 
-	it( 'skips notifications with no component without error', () => {
+	it( 'renders a skeleton for notifications with no component', () => {
 		useNotifications.mockReturnValue( {
 			notifications: [
 				{ id: 'a', triggered_at: 1000, component: MockNotificationA },
@@ -48,8 +51,19 @@ describe( 'NotificationsPanel', () => {
 		render( <NotificationsPanel /> );
 		expect( screen.getByTestId( 'notification-a' ) ).toBeInTheDocument();
 		expect(
-			screen.queryByTestId( 'notification-no-component' )
-		).not.toBeInTheDocument();
+			screen.getByTestId( 'notification-skeleton' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'badge count matches the total number of notifications including unresolved ones', () => {
+		useNotifications.mockReturnValue( {
+			notifications: [
+				{ id: 'a', triggered_at: 1000, component: MockNotificationA },
+				{ id: 'b', triggered_at: 2000, component: null },
+			],
+		} );
+		render( <NotificationsPanel /> );
+		expect( screen.getByText( '2' ) ).toBeInTheDocument();
 	} );
 
 	it( 'displays a badge with the notification count', () => {
