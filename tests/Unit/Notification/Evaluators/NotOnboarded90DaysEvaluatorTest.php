@@ -91,7 +91,7 @@ class NotOnboarded90DaysEvaluatorTest extends UnitTest {
 		$this->mock_wc_onboarding_profile( [ 'completed' => true ] );
 		$this->options->method( 'get' )->willReturnMap(
 			[
-				[ OptionsInterface::WC_INSTALL_TIMESTAMP, null, time() - ( 120 * DAY_IN_SECONDS ) ],
+				[ OptionsInterface::WC_INSTALL_TIMESTAMP, null, time() - ( 91 * DAY_IN_SECONDS ) ],
 				[ OptionsInterface::INSTALL_TIMESTAMP, null, time() - ( 10 * DAY_IN_SECONDS ) ],
 			]
 		);

@@ -40,7 +40,7 @@ class WcInstallTimestampTest extends UnitTest {
 	}
 
 	public function test_register_records_wc_install_timestamp_immediately() {
-		$wc_install_timestamp = time() - ( 120 * DAY_IN_SECONDS );
+		$wc_install_timestamp = time() - ( 91 * DAY_IN_SECONDS );
 
 		$this->options->expects( $this->once() )
 			->method( 'get' )
@@ -76,7 +76,7 @@ class WcInstallTimestampTest extends UnitTest {
 	}
 
 	public function test_records_wc_install_timestamp_from_woocommerce_option() {
-		$wc_install_timestamp = time() - ( 120 * DAY_IN_SECONDS );
+		$wc_install_timestamp = time() - ( 91 * DAY_IN_SECONDS );
 
 		$this->options->expects( $this->once() )
 			->method( 'get' )
@@ -102,7 +102,7 @@ class WcInstallTimestampTest extends UnitTest {
 		$this->options->expects( $this->once() )
 			->method( 'get' )
 			->with( OptionsInterface::WC_INSTALL_TIMESTAMP )
-			->willReturn( time() - ( 120 * DAY_IN_SECONDS ) );
+			->willReturn( time() - ( 91 * DAY_IN_SECONDS ) );
 
 		$this->wp->expects( $this->never() )
 			->method( 'get_option' );
