@@ -245,7 +245,12 @@ class MerchantTest extends UnitTest {
 	public function test_get_claimed_url_hash_not_claimed() {
 		$url = 'https://site.test';
 		$this->homepage_service->method( 'get_homepage' )
-			->willReturn( [ 'uri' => $url, 'claimed' => false ] );
+			->willReturn(
+				[
+					'uri'     => $url,
+					'claimed' => false,
+				]
+			);
 
 		$this->assertNull( $this->merchant->get_claimed_url_hash() );
 	}
@@ -253,7 +258,12 @@ class MerchantTest extends UnitTest {
 	public function test_get_claimed_url_hash_from_account() {
 		$url = 'https://site.test';
 		$this->homepage_service->method( 'get_homepage' )
-			->willReturn( [ 'uri' => $url, 'claimed' => true ] );
+			->willReturn(
+				[
+					'uri'     => $url,
+					'claimed' => true,
+				]
+			);
 
 		$this->assertEquals( md5( $url ), $this->merchant->get_claimed_url_hash() );
 	}
@@ -261,7 +271,12 @@ class MerchantTest extends UnitTest {
 	public function test_get_claimed_url_hash_with_trailing_slash() {
 		$url = 'https://site.test';
 		$this->homepage_service->method( 'get_homepage' )
-			->willReturn( [ 'uri' => trailingslashit( $url ), 'claimed' => true ] );
+			->willReturn(
+				[
+					'uri'     => trailingslashit( $url ),
+					'claimed' => true,
+				]
+			);
 
 		$this->assertEquals( md5( $url ), $this->merchant->get_claimed_url_hash() );
 	}
