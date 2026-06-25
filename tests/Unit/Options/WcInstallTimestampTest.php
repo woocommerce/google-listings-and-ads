@@ -39,7 +39,34 @@ class WcInstallTimestampTest extends UnitTest {
 		$this->service->set_options_object( $this->options );
 	}
 
+	public function test_register_records_wc_install_timestamp_immediately() {
+		$wc_install_timestamp = time() - ( 120 * DAY_IN_SECONDS );
+
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::WC_INSTALL_TIMESTAMP )
+			->willReturn( null );
+
+		$this->wp->expects( $this->once() )
+			->method( 'get_option' )
+			->with( 'woocommerce_admin_install_timestamp' )
+			->willReturn( (string) $wc_install_timestamp );
+
+		$this->options->expects( $this->once() )
+			->method( 'add' )
+			->with(
+				OptionsInterface::WC_INSTALL_TIMESTAMP,
+				$wc_install_timestamp
+			);
+
+		$this->service->register();
+	}
+
 	public function test_register_adds_admin_init_action() {
+		$this->options->method( 'get' )
+			->with( OptionsInterface::WC_INSTALL_TIMESTAMP )
+			->willReturn( time() - DAY_IN_SECONDS );
+
 		$this->service->register();
 
 		$this->assertNotFalse(
