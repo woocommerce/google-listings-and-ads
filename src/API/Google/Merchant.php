@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountHomepageService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -40,12 +42,21 @@ class Merchant implements OptionsAwareInterface {
 	protected $service;
 
 	/**
+	 * The Merchant API homepage service.
+	 *
+	 * @var MapiAccountHomepageService
+	 */
+	protected $homepage_service;
+
+	/**
 	 * Merchant constructor.
 	 *
-	 * @param ShoppingContent $service
+	 * @param ShoppingContent            $service
+	 * @param MapiAccountHomepageService $homepage_service
 	 */
-	public function __construct( ShoppingContent $service ) {
-		$this->service = $service;
+	public function __construct( ShoppingContent $service, MapiAccountHomepageService $homepage_service ) {
+		$this->service          = $service;
+		$this->homepage_service = $homepage_service;
 	}
 
 	/**
@@ -56,11 +67,10 @@ class Merchant implements OptionsAwareInterface {
 	 */
 	public function claimwebsite(): bool {
 		try {
-			$id = $this->options->get_merchant_id();
-			$this->service->accounts->claimwebsite( $id, $id );
+			$this->homepage_service->claim();
 			do_action( 'woocommerce_gla_site_claim_success', [ 'details' => 'google_proxy' ] );
-		} catch ( GoogleException $e ) {
-			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
+		} catch ( MerchantApiException $e ) {
+			// The woocommerce_gla_mc_client_exception action is fired by MerchantApiException::__construct().
 			do_action( 'woocommerce_gla_site_claim_failure', [ 'details' => 'google_proxy' ] );
 
 			if ( $this->is_website_claim_conflict_error( $e ) ) {
@@ -82,51 +92,18 @@ class Merchant implements OptionsAwareInterface {
 	/**
 	 * Check if the exception indicates a website claim conflict error.
 	 *
-	 * This handles Content API error format by checking structured error data.
-	 * The API used to return 403, but now returns 400 with specific error details.
+	 * The Merchant API returns a FAILED_PRECONDITION status when the homepage is
+	 * already claimed by another account and overwrite was not requested.
 	 *
-	 * Content API error structure:
-	 * - code: 400
-	 * - errors[].domain: "content.ContentErrorDomain"
-	 * - errors[].message: contains "overwrite"
-	 *
-	 * TODO: When migrating to Merchant API, it may have a different error format.
-	 * Possible fields to check:
-	 * - code: 400
-	 * - status: "FAILED_PRECONDITION"
-	 * - details[].metadata.REASON: "INVALID_TRANSITION_CLAIMED_DESCENDANTS"
-	 *
-	 * @param GoogleException $e The exception to check.
+	 * @param MerchantApiException $e The exception to check.
 	 * @return bool True if the error indicates a claim conflict.
 	 */
-	private function is_website_claim_conflict_error( GoogleException $e ): bool {
-		$code = $e->getCode();
-
-		// The API used to return 403, kept here in case some undiscovered conditions still return it.
-		if ( $code === 403 ) {
+	private function is_website_claim_conflict_error( MerchantApiException $e ): bool {
+		if ( 403 === $e->get_http_status() ) {
 			return true;
 		}
 
-		if ( $code !== 400 ) {
-			return false;
-		}
-
-		// Check structured error data from Content API.
-		if ( $e instanceof GoogleServiceException ) {
-			$errors = $e->getErrors();
-			if ( is_array( $errors ) ) {
-				foreach ( $errors as $error ) {
-					$is_content_api_domain = isset( $error['domain'] ) && $error['domain'] === 'content.ContentErrorDomain';
-					$has_overwrite_message = isset( $error['message'] ) && stripos( $error['message'], 'overwrite' ) !== false;
-
-					if ( $is_content_api_domain && $has_overwrite_message ) {
-						return true;
-					}
-				}
-			}
-		}
-
-		return false;
+		return 'FAILED_PRECONDITION' === ( $e->get_response_body()['error']['status'] ?? '' );
 	}
 
 	/**
@@ -243,9 +220,10 @@ class Merchant implements OptionsAwareInterface {
 
 		if ( empty( $claimed_url_hash ) && $this->options->get_merchant_id() ) {
 			try {
-				$account_url = $this->get_account()->getWebsiteUrl();
+				$homepage    = $this->homepage_service->get_homepage();
+				$account_url = $homepage['uri'] ?? '';
 
-				if ( empty( $account_url ) || ! $this->get_accountstatus()->getWebsiteClaimed() ) {
+				if ( empty( $account_url ) || empty( $homepage['claimed'] ) ) {
 					return null;
 				}
 
