@@ -13,9 +13,7 @@ import {
 	registerNotificationsInMarketingSlot,
 	useDismissNotificationFromMarketingSlot,
 } from './woo-marketing-notifications-slot';
-import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import Notification from './notification';
-import NotificationSkeleton from './woo-marketing-notifications-slot/components/notifications-skeleton';
 import useNotificationsSystemMap from './useNotificationsSystemMap';
 
 /**
@@ -28,15 +26,14 @@ import useNotificationsSystemMap from './useNotificationsSystemMap';
 function createNotificationComponent( id, triggeredAt ) {
 	return function NotificationComponent() {
 		const notificationMap = useNotificationsSystemMap();
-		const { hasFinishedResolution } = useGoogleMCAccount();
 		const dismissNotification = useDismissNotificationFromMarketingSlot();
 		const config = notificationMap[ id ];
 
 		if ( ! config ) {
-			return hasFinishedResolution ? null : <NotificationSkeleton />;
+			return null;
 		}
 
-		const { title, description, actions } = config;
+		const { isReady = true, title, description, actions } = config;
 
 		const handleDismiss = () => {
 			dismissNotification( id );
@@ -48,6 +45,7 @@ function createNotificationComponent( id, triggeredAt ) {
 			description,
 			actions,
 			triggeredAt,
+			isReady,
 			onDismiss: handleDismiss,
 		} );
 	};

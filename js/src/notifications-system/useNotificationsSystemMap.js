@@ -23,6 +23,7 @@ import {
  * @property {string} title Notification headline.
  * @property {string} description Notification body text.
  * @property {Array<Object>} actions Array of AppButton prop objects for CTA buttons.
+ * @property {boolean} [isReady] Whether the config data has finished resolving. Defaults to true for static configs.
  */
 
 const getStartedUrl = getGetStartedUrl();
@@ -195,11 +196,19 @@ const useNotificationsSystemMap = () => {
 
 	const dynamicMap = useMemo( () => {
 		if ( ! hasFinishedResolution ) {
-			return {};
+			return {
+				'skipped-campaign-creation': { isReady: false },
+				'not-onboarded-90-days': { isReady: false },
+				'paused-campaign': { isReady: false },
+				'active-campaign-zero-sales': { isReady: false },
+				'sales-not-growing': { isReady: false },
+				'coupons-not-synced': { isReady: false },
+			};
 		}
 
 		return {
 			'skipped-campaign-creation': {
+				isReady: true,
 				title: __(
 					'Finish setting up Google Ads',
 					'google-listings-and-ads'
@@ -225,6 +234,7 @@ const useNotificationsSystemMap = () => {
 				],
 			},
 			'not-onboarded-90-days': {
+				isReady: true,
 				title: __(
 					'Finish your Google for WooCommerce connection',
 					'google-listings-and-ads'
@@ -247,6 +257,7 @@ const useNotificationsSystemMap = () => {
 				],
 			},
 			'paused-campaign': {
+				isReady: true,
 				title: __(
 					'Your Google Ads campaign is paused',
 					'google-listings-and-ads'
@@ -272,6 +283,7 @@ const useNotificationsSystemMap = () => {
 				],
 			},
 			'active-campaign-zero-sales': {
+				isReady: true,
 				title: __(
 					'Drive traffic from Google Ads',
 					'google-listings-and-ads'
@@ -294,6 +306,7 @@ const useNotificationsSystemMap = () => {
 				],
 			},
 			'sales-not-growing': {
+				isReady: true,
 				title: ! hasGoogleMCConnection
 					? __(
 							'Increase your site traffic',
@@ -324,6 +337,7 @@ const useNotificationsSystemMap = () => {
 				],
 			},
 			'coupons-not-synced': {
+				isReady: true,
 				title: __(
 					'Promote your coupons on Google',
 					'google-listings-and-ads'
