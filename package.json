@@ -189,10 +189,6 @@
 				"maxSize": "11 kB"
 			},
 			{
-				"path": "./js/build/blocks.js",
-				"maxSize": "10 kB"
-			},
-			{
 				"path": "./js/build/get-started-page.js",
 				"maxSize": "10 kB"
 			},
