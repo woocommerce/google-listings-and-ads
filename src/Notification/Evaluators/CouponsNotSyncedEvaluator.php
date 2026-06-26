@@ -27,6 +27,11 @@ class CouponsNotSyncedEvaluator implements NotificationEvaluatorInterface, Servi
 	use CachedNotificationEvaluatorTrait;
 
 	/**
+	 * Number of coupon post IDs to fetch per query.
+	 */
+	private const COUPONS_PER_PAGE = 50;
+
+	/**
 	 * Database meta key for coupon sync status.
 	 */
 	private const SYNC_STATUS_META_KEY = '_wc_gla_' . CouponMetaHandler::KEY_SYNC_STATUS;
@@ -55,8 +60,10 @@ class CouponsNotSyncedEvaluator implements NotificationEvaluatorInterface, Servi
 				return false;
 			}
 
-			if ( CouponSyncer::is_coupon_supported( $this->create_coupon( $coupon_post_ids[0] ) ) ) {
-				return true;
+			foreach ( $coupon_post_ids as $post_id ) {
+				if ( CouponSyncer::is_coupon_supported( $this->create_coupon( $post_id ) ) ) {
+					return true;
+				}
 			}
 
 			++$page;
@@ -93,7 +100,7 @@ class CouponsNotSyncedEvaluator implements NotificationEvaluatorInterface, Servi
 			[
 				'post_type'      => 'shop_coupon',
 				'post_status'    => 'publish',
-				'posts_per_page' => 1,
+				'posts_per_page' => self::COUPONS_PER_PAGE,
 				'paged'          => $page,
 				'fields'         => 'ids',
 				'meta_query'     => [
