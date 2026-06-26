@@ -4,7 +4,9 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountBusinessInfoService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountHomepageService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountUsersService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -49,14 +51,32 @@ class Merchant implements OptionsAwareInterface {
 	protected $homepage_service;
 
 	/**
+	 * The Merchant API business info service.
+	 *
+	 * @var MapiAccountBusinessInfoService
+	 */
+	protected $business_info_service;
+
+	/**
+	 * The Merchant API users service.
+	 *
+	 * @var MapiAccountUsersService
+	 */
+	protected $users_service;
+
+	/**
 	 * Merchant constructor.
 	 *
-	 * @param ShoppingContent            $service
-	 * @param MapiAccountHomepageService $homepage_service
+	 * @param ShoppingContent                $service
+	 * @param MapiAccountHomepageService     $homepage_service
+	 * @param MapiAccountBusinessInfoService $business_info_service
+	 * @param MapiAccountUsersService        $users_service
 	 */
-	public function __construct( ShoppingContent $service, MapiAccountHomepageService $homepage_service ) {
-		$this->service          = $service;
-		$this->homepage_service = $homepage_service;
+	public function __construct( ShoppingContent $service, MapiAccountHomepageService $homepage_service, MapiAccountBusinessInfoService $business_info_service, MapiAccountUsersService $users_service ) {
+		$this->service               = $service;
+		$this->homepage_service      = $homepage_service;
+		$this->business_info_service = $business_info_service;
+		$this->users_service         = $users_service;
 	}
 
 	/**
@@ -312,6 +332,16 @@ class Merchant implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Get the business information for the connected Merchant Center account.
+	 *
+	 * @return array The businessInfo resource decoded as an array.
+	 * @throws MerchantApiException If the business info can't be retrieved.
+	 */
+	public function get_business_info(): array {
+		return $this->business_info_service->get_business_info();
+	}
+
+	/**
 	 * Check if we have access to the merchant account.
 	 *
 	 * @param string $email Email address of the connected account.
@@ -319,21 +349,17 @@ class Merchant implements OptionsAwareInterface {
 	 * @return bool
 	 */
 	public function has_access( string $email ): bool {
-		$id = $this->options->get_merchant_id();
-
 		try {
-			$account = $this->service->accounts->get( $id, $id );
-
-			foreach ( $account->getUsers() as $user ) {
-				if ( $email === $user->getEmailAddress() && $user->getAdmin() ) {
-					return true;
-				}
-			}
-		} catch ( GoogleException $e ) {
-			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
+			$user = $this->users_service->get_current_user();
+		} catch ( MerchantApiException $e ) {
+			// The woocommerce_gla_mc_client_exception action is fired by MerchantApiException::__construct().
+			return false;
 		}
 
-		return false;
+		$name_parts = explode( '/', $user['name'] ?? '' );
+		$user_email = (string) end( $name_parts );
+
+		return $email === $user_email && in_array( 'ADMIN', $user['accessRights'] ?? [], true );
 	}
 
 	/**
