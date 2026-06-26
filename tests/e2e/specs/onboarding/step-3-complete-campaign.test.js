@@ -448,6 +448,9 @@ test.describe( 'Complete your campaign', () => {
 				} );
 
 				test( 'Suggest a higher budget for getting back free credits', async () => {
+					await expect(
+						page.getByLabel( 'recommended' )
+					).toBeChecked();
 					await setupBudgetPage.fillBudget( '8' );
 					await completeCampaign.clickCompleteSetupButton();
 

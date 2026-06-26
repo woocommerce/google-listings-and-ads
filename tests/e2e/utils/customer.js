@@ -56,10 +56,8 @@ export async function relatedProductAddToCart( page ) {
  *
  * @param {Page} page
  */
-export async function blockProductAddToCart( page, productId = null ) {
-	const addToCart = productId
-		? `[data-product_id="${ productId }"].add_to_cart_button:not([disabled])`
-		: '.wp-block-button__link.add_to_cart_button:not([disabled])';
+export async function blockProductAddToCart( page ) {
+	const addToCart = '.wp-block-button__link.add_to_cart_button:not([disabled])';
 
 	const button = page.locator( addToCart ).first();
 	await button.click();

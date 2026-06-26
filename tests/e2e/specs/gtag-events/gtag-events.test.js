@@ -83,7 +83,7 @@ test.describe( 'GTag events', () => {
 
 		// Go to block shop page
 		await page.goto( pageSlug );
-		await blockProductAddToCart( page, simpleProductID );
+		await blockProductAddToCart( page );
 
 		await event.then( ( request ) => {
 			const data = getEventData( request );

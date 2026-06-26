@@ -105,7 +105,7 @@ test.describe( 'Notification Badge', () => {
 				.locator( 'span.update-plugins' )
 				.filter( { hasText: '1' } );
 
-			expect( badge ).not.toBeVisible();
+			await expect( badge ).not.toBeVisible();
 		} );
 	} );
 } );
