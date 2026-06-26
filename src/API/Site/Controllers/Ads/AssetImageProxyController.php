@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
@@ -18,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  * Proxies AI-generated images to bypass adblocker issues by fetching images server-side
  * and streaming them back to the client.
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\GenAI
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
 class AssetImageProxyController extends BaseController {
 
@@ -27,7 +26,7 @@ class AssetImageProxyController extends BaseController {
 	 *
 	 * @var array
 	 */
-	protected $allowed_domains = [
+	private $allowed_domains = [
 		'tpc.googlesyndication.com',
 	];
 
@@ -36,7 +35,7 @@ class AssetImageProxyController extends BaseController {
 	 *
 	 * @var array
 	 */
-	protected $allowed_mime_types = [
+	private $allowed_mime_types = [
 		'image/jpeg',
 		'image/jpg',
 		'image/png',
@@ -47,16 +46,7 @@ class AssetImageProxyController extends BaseController {
 	 *
 	 * @var int
 	 */
-	protected $max_image_size = 10485760;
-
-	/**
-	 * AssetImageProxyController constructor.
-	 *
-	 * @param RESTServer $server
-	 */
-	public function __construct( RESTServer $server ) {
-		parent::__construct( $server );
-	}
+	private $max_image_size = 10485760;
 
 	/**
 	 * Register rest routes with WordPress.
@@ -95,8 +85,9 @@ class AssetImageProxyController extends BaseController {
 			}
 
 			// Check for valid nonce in query parameter (for img tag requests).
+			// get_current_user_id() > 0 ensures anonymous sessions cannot use this path.
 			$nonce = $request->get_param( '_wpnonce' );
-			if ( $nonce && wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+			if ( $nonce && get_current_user_id() > 0 && wp_verify_nonce( $nonce, 'wp_rest' ) ) {
 				return true;
 			}
 
@@ -244,7 +235,7 @@ class AssetImageProxyController extends BaseController {
 	 *
 	 * @return bool
 	 */
-	protected function is_valid_image_type( string $content_type ): bool {
+	private function is_valid_image_type( string $content_type ): bool {
 		// Remove charset and other parameters from content type.
 		$content_type = strtolower( trim( explode( ';', $content_type )[0] ) );
 		return in_array( $content_type, $this->allowed_mime_types, true );
@@ -260,11 +251,11 @@ class AssetImageProxyController extends BaseController {
 	 *
 	 * @return Response
 	 */
-	protected function create_image_response( string $image_data, string $content_type ): Response {
+	private function create_image_response( string $image_data, string $content_type ): Response {
 		$response = new Response( $image_data, 200 );
 		$response->header( 'Content-Type', $content_type );
 		$response->header( 'Content-Length', (string) strlen( $image_data ) );
-		$response->header( 'Cache-Control', 'public, max-age=31536000, immutable' );
+		$response->header( 'Cache-Control', 'public, max-age=86400' );
 		$response->header( 'X-Content-Type-Options', 'nosniff' );
 		$response->header( 'X-GLA-Image-Proxy', '1' );
 

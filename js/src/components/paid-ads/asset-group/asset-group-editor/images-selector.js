@@ -50,7 +50,7 @@ export default function ImagesSelector( {
 	maxNumberOfImages = -1,
 	reachedMaxNumberTip,
 	children,
-	getDisplayImageUrl = noop,
+	getDisplayImageUrl = ( url ) => url,
 	onChange = noop,
 } ) {
 	const { values } = useAdaptiveFormContext();
