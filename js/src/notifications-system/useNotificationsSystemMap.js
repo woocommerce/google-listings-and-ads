@@ -246,7 +246,7 @@ const useNotificationsSystemMap = () => {
 					},
 				],
 			},
-			'no-active-campaign': {
+			'paused-campaign': {
 				title: __(
 					'Your Google Ads campaign is paused',
 					'google-listings-and-ads'
