@@ -16,6 +16,7 @@ import {
 	getSetupAdsUrl,
 	getWCAdvancedSettingsUrl,
 	getOnboardingUrl,
+	getWCCouponsUrl,
 } from '~/utils/urls';
 
 /**
@@ -32,6 +33,7 @@ const dashboardUrl = getDashboardUrl();
 const settingsUrl = getSettingsUrl();
 const wcAdvancedSettingsUrl = getWCAdvancedSettingsUrl();
 const onboardingUrl = getOnboardingUrl();
+const wcCouponsUrl = getWCCouponsUrl();
 
 /**
  * Static notification configs — created once at module level, never re-created on render.
@@ -354,7 +356,7 @@ const useNotificationsSystemMap = () => {
 				actions: [
 					{
 						id: 'review-coupon-settings',
-						href: settingsUrl,
+						href: wcCouponsUrl,
 						children: __(
 							'Review coupon settings',
 							'google-listings-and-ads'
