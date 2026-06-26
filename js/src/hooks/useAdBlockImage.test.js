@@ -13,6 +13,7 @@ import getProxiedImageUrl from '~/utils/getProxiedImageUrl';
 jest.mock( 'just-detect-adblock', () => ( {
 	detectAnyAdblocker: jest.fn(),
 } ) );
+
 jest.mock( '~/utils/getProxiedImageUrl', () =>
 	jest.fn( ( url ) => `proxied:${ url }` )
 );
@@ -25,7 +26,7 @@ describe( 'useAdBlockImage', () => {
 		jest.clearAllMocks();
 		// jsdom always reports offsetHeight as 0, which would trigger DOM bait detection.
 		// Override to 1 so DOM check doesn't interfere with library-detection tests.
-		Object.defineProperty( HTMLElement.prototype, 'offsetHeight', {
+		Object.defineProperty( window.HTMLElement.prototype, 'offsetHeight', {
 			configurable: true,
 			get: jest.fn().mockReturnValue( 1 ),
 		} );
@@ -48,18 +49,14 @@ describe( 'useAdBlockImage', () => {
 		detectAnyAdblocker.mockResolvedValue( false );
 		const { result } = renderHook( () => useAdBlockImage() );
 
-		await waitFor( () =>
-			expect( result.current.isLoading ).toBe( false )
-		);
+		await waitFor( () => expect( result.current.isLoading ).toBe( false ) );
 	} );
 
 	it( 'sets isDetected=true when library detects an adblocker', async () => {
 		detectAnyAdblocker.mockResolvedValue( true );
 		const { result } = renderHook( () => useAdBlockImage() );
 
-		await waitFor( () =>
-			expect( result.current.isDetected ).toBe( true )
-		);
+		await waitFor( () => expect( result.current.isDetected ).toBe( true ) );
 		expect( result.current.isLoading ).toBe( false );
 	} );
 
@@ -67,9 +64,7 @@ describe( 'useAdBlockImage', () => {
 		detectAnyAdblocker.mockResolvedValue( false );
 		const { result } = renderHook( () => useAdBlockImage() );
 
-		await waitFor( () =>
-			expect( result.current.isLoading ).toBe( false )
-		);
+		await waitFor( () => expect( result.current.isLoading ).toBe( false ) );
 		expect( result.current.isDetected ).toBe( false );
 	} );
 
@@ -77,10 +72,8 @@ describe( 'useAdBlockImage', () => {
 		detectAnyAdblocker.mockRejectedValue( new Error( 'Detection failed' ) );
 		const { result } = renderHook( () => useAdBlockImage() );
 
-		await waitFor( () => {
-			expect( result.current.isDetected ).toBe( true );
-			expect( result.current.isLoading ).toBe( false );
-		} );
+		await waitFor( () => expect( result.current.isDetected ).toBe( true ) );
+		await waitFor( () => expect( result.current.isLoading ).toBe( false ) );
 	} );
 
 	describe( 'getDisplayImageUrl', () => {
@@ -133,7 +126,9 @@ describe( 'useAdBlockImage', () => {
 			);
 
 			expect( result.current.getDisplayImageUrl( null ) ).toBeNull();
-			expect( result.current.getDisplayImageUrl( undefined ) ).toBeUndefined();
+			expect(
+				result.current.getDisplayImageUrl( undefined )
+			).toBeUndefined();
 		} );
 	} );
 } );

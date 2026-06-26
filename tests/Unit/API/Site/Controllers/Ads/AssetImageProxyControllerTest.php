@@ -320,10 +320,13 @@ class AssetImageProxyControllerTest extends RESTControllerUnitTest {
 
 	/**
 	 * Test that requests with valid nonce can access the endpoint.
+	 *
+	 * Uses a subscriber-level user: logged in (user ID > 0) but without manage_woocommerce,
+	 * so can_manage() fails and the nonce path is exercised.
 	 */
 	public function test_valid_nonce_allows_access(): void {
-		// Remove admin capabilities to test nonce-only authentication.
-		wp_set_current_user( 0 );
+		$subscriber_id = self::factory()->user->create( [ 'role' => 'subscriber' ] );
+		wp_set_current_user( $subscriber_id );
 
 		$image_data = base64_decode( '/9j/4AAQSkZJRg==' ); // Minimal valid JPEG header.
 
@@ -338,7 +341,7 @@ class AssetImageProxyControllerTest extends RESTControllerUnitTest {
 			}
 		);
 
-		// Create a valid nonce.
+		// Create a valid nonce for the subscriber user.
 		$nonce = wp_create_nonce( 'wp_rest' );
 
 		$params   = [
@@ -347,7 +350,7 @@ class AssetImageProxyControllerTest extends RESTControllerUnitTest {
 		];
 		$response = $this->do_request( self::ROUTE_IMAGE_PROXY, 'GET', $params );
 
-		$this->assertEquals( 200, $response->get_status(), 'Valid nonce should grant access to endpoint' );
+		$this->assertEquals( 200, $response->get_status(), 'Logged-in user with valid nonce should access endpoint' );
 	}
 
 	/**
