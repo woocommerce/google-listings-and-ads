@@ -75,7 +75,7 @@ jobs:
 
       - name: Publish build artifact
         if: ${{ ! ( github.event_name == 'push' && github.ref_name == 'develop' ) }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: google-listings-and-ads.zip
           path: ${{ github.workspace }}/google-listings-and-ads.zip
