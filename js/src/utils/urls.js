@@ -135,3 +135,14 @@ export const getReconnectAccountUrl = ( code ) => {
 
 	return getNewPath( { subpath }, settingsPath, null );
 };
+
+/**
+ * Returns the URL of the WooCommerce coupons index page.
+ *
+ * @return {string} The URL of the coupons index page.
+ */
+export const getWCCouponsUrl = () => {
+	return addQueryArgs( 'edit.php', {
+		post_type: 'shop_coupon',
+	} );
+};
