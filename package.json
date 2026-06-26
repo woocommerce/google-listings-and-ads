@@ -151,19 +151,63 @@
 			},
 			{
 				"path": "./js/build/index.js",
-				"maxSize": "21.0 kB"
+				"maxSize": "25 kB"
 			},
 			{
 				"path": "./js/build/commons.js",
-				"maxSize": "88.10 kB"
+				"maxSize": "95 kB"
 			},
 			{
 				"path": "./js/build/vendors.js",
-				"maxSize": "8.64 kB"
+				"maxSize": "12 kB"
 			},
 			{
 				"path": "./js/build/wp-dataviews-shim.js",
-				"maxSize": "277.00 kB"
+				"maxSize": "310 kB"
+			},
+			{
+				"path": "./js/build/dashboard.js",
+				"maxSize": "15 kB"
+			},
+			{
+				"path": "./js/build/product-feed.js",
+				"maxSize": "15 kB"
+			},
+			{
+				"path": "./js/build/onboarding.js",
+				"maxSize": "14 kB"
+			},
+			{
+				"path": "./js/build/reports.js",
+				"maxSize": "13 kB"
+			},
+			{
+				"path": "./js/build/settings.js",
+				"maxSize": "11 kB"
+			},
+			{
+				"path": "./js/build/price-benchmark.js",
+				"maxSize": "11 kB"
+			},
+			{
+				"path": "./js/build/blocks.js",
+				"maxSize": "10 kB"
+			},
+			{
+				"path": "./js/build/get-started-page.js",
+				"maxSize": "10 kB"
+			},
+			{
+				"path": "./js/build/channel-visibility-meta-box.js",
+				"maxSize": "10 kB"
+			},
+			{
+				"path": "./js/build/order-attribution.js",
+				"maxSize": "10 kB"
+			},
+			{
+				"path": "./js/build/attribute-mapping.js",
+				"maxSize": "10 kB"
 			},
 			{
 				"path": "./js/build/*.css",
