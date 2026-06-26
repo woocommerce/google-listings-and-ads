@@ -12,7 +12,7 @@ import { closeSmall } from '@wordpress/icons';
 import { glaData } from '~/constants';
 import { useAppDispatch } from '~/data';
 import AppButton from '~/components/app-button';
-import NotificationSkeleton from './woo-marketing-notifications-slot/components/notifications-skeleton';
+import NotificationSkeleton from './notifications-skeleton';
 import googleLogoURL from '~/images/logo/google-g-logo.svg';
 import './notification.scss';
 

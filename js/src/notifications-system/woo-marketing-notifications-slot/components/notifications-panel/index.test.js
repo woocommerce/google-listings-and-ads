@@ -47,7 +47,9 @@ describe( 'NotificationsPanel', () => {
 		} );
 		render( <NotificationsPanel /> );
 		expect( screen.getByTestId( 'notification-a' ) ).toBeInTheDocument();
-		expect( screen.queryByTestId( 'no-component' ) ).not.toBeInTheDocument();
+		expect(
+			screen.queryByTestId( 'no-component' )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'displays a badge with the notification count', () => {
