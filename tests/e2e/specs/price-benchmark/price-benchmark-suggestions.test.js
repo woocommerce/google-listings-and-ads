@@ -89,10 +89,7 @@ test.describe( 'Price Benchmark Page', () => {
 		} );
 
 		test( 'Displays error message when data view fails to load', async () => {
-			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions( [] );
-			await priceBenchmarkPage.goto();
-
-			// Mock 500 response for the data view script only once.
+			// Mock must be registered before goto() so it intercepts the script request during page load.
 			const once = priceBenchmarkPage.withFulfillTimes( 1 );
 			await once.fulfillRequest(
 				/\/js\/build\/wp-dataviews-shim.js(\/.*)?\b/,
@@ -100,6 +97,9 @@ test.describe( 'Price Benchmark Page', () => {
 				500,
 				[ 'GET' ]
 			);
+
+			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions( [] );
+			await priceBenchmarkPage.goto();
 
 			const errorMessage = page.locator(
 				'.gla-price-benchmark__error-message'
@@ -203,6 +203,8 @@ test.describe( 'Price Benchmark Page', () => {
 				},
 				404
 			);
+			// Reload after mocks are registered so the component fetches with the 404 summary response.
+			await priceBenchmarkPage.goto();
 
 			const errorMessage = page.locator(
 				'.components-snackbar__content'
