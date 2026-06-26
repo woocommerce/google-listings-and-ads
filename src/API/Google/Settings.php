@@ -388,16 +388,16 @@ class Settings implements ContainerAwareInterface {
 	 *
 	 * @since 1.4.0
 	 */
-	protected function maybe_get_state_name( string $state_code, string $country ): string {
+	public function maybe_get_state_name( string $state_code, string $country ): string {
 		/** @var WC $wc */
 		$wc = $this->container->get( WC::class );
 
 		$states = $country ? array_filter( (array) $wc->get_wc_countries()->get_states( $country ) ) : [];
 
 		if ( ! empty( $states ) ) {
-			$state_code = wc_strtoupper( $state_code );
-			if ( isset( $states[ $state_code ] ) ) {
-				return $states[ $state_code ];
+			$upper_code = wc_strtoupper( $state_code );
+			if ( isset( $states[ $upper_code ] ) ) {
+				return $states[ $upper_code ];
 			}
 		}
 
