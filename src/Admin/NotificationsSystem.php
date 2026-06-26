@@ -8,7 +8,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
@@ -16,14 +15,14 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class NotificationSystem
+ * Class NotificationsSystem
  *
  * Enqueues the notifications-system JS bundle and its paired CSS on the
  * WooCommerce Marketing overview page (page=wc-admin&path=/marketing).
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin
  */
-class NotificationSystem implements Service, Registerable {
+class NotificationsSystem implements Service, Registerable {
 
 	use PluginHelper;
 
@@ -33,30 +32,22 @@ class NotificationSystem implements Service, Registerable {
 	private $assets_handler;
 
 	/**
-	 * @var MerchantCenterService
-	 */
-	private $merchant_center;
-
-	/**
 	 * @var OptionsInterface
 	 */
 	private $options;
 
 	/**
-	 * NotificationSystem constructor.
+	 * NotificationsSystem constructor.
 	 *
 	 * @param AssetsHandlerInterface $assets_handler
-	 * @param MerchantCenterService  $merchant_center
 	 * @param OptionsInterface       $options
 	 */
 	public function __construct(
 		AssetsHandlerInterface $assets_handler,
-		MerchantCenterService $merchant_center,
 		OptionsInterface $options
 	) {
-		$this->assets_handler  = $assets_handler;
-		$this->merchant_center = $merchant_center;
-		$this->options         = $options;
+		$this->assets_handler = $assets_handler;
+		$this->options        = $options;
 	}
 
 	/**
@@ -104,9 +95,8 @@ class NotificationSystem implements Service, Registerable {
 	 */
 	private function get_gla_data(): array {
 		return [
-			'dateFormat'      => get_option( 'date_format' ),
-			'mcSetupComplete' => $this->merchant_center->is_setup_complete(),
-			'initialWpData'   => [
+			'dateFormat'    => get_option( 'date_format' ),
+			'initialWpData' => [
 				'version' => $this->get_version(),
 				'mcId'    => $this->options->get_merchant_id() ?: null,
 				'adsId'   => $this->options->get_ads_id() ?: null,

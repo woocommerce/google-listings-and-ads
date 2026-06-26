@@ -3,11 +3,10 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Admin;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\NotificationSystem;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\NotificationsSystem;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\Asset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -16,23 +15,20 @@ use ReflectionClass;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class NotificationSystemTest
+ * Class NotificationsSystemTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Admin
  */
-class NotificationSystemTest extends UnitTest {
+class NotificationsSystemTest extends UnitTest {
 
 	/** @var MockObject|AssetsHandlerInterface $assets_handler */
 	protected $assets_handler;
 
-	/** @var MockObject|MerchantCenterService $merchant_center */
-	protected $merchant_center;
-
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
-	/** @var NotificationSystem $notification_system */
-	protected $notification_system;
+	/** @var NotificationsSystem $notifications_system */
+	protected $notifications_system;
 
 	/** @var string $build_dir */
 	protected $build_dir;
@@ -45,13 +41,11 @@ class NotificationSystemTest extends UnitTest {
 
 		$this->login_as_administrator();
 
-		$this->assets_handler  = $this->createMock( AssetsHandlerInterface::class );
-		$this->merchant_center = $this->createMock( MerchantCenterService::class );
-		$this->options         = $this->createMock( OptionsInterface::class );
+		$this->assets_handler = $this->createMock( AssetsHandlerInterface::class );
+		$this->options        = $this->createMock( OptionsInterface::class );
 
-		$this->notification_system = new NotificationSystem(
+		$this->notifications_system = new NotificationsSystem(
 			$this->assets_handler,
-			$this->merchant_center,
 			$this->options
 		);
 
@@ -78,7 +72,6 @@ class NotificationSystemTest extends UnitTest {
 	public function test_enqueues_assets_on_marketing_overview_page() {
 		$this->set_marketing_overview_page();
 
-		$this->merchant_center->method( 'is_setup_complete' )->willReturn( true );
 		$this->options->method( 'get_merchant_id' )->willReturn( 123 );
 		$this->options->method( 'get_ads_id' )->willReturn( 456 );
 
@@ -113,7 +106,7 @@ class NotificationSystemTest extends UnitTest {
 				)
 			);
 
-		$this->notification_system->register();
+		$this->notifications_system->register();
 		set_current_screen( 'dashboard' );
 		do_action( 'admin_enqueue_scripts' );
 	}
@@ -125,7 +118,7 @@ class NotificationSystemTest extends UnitTest {
 		$this->assets_handler->expects( $this->never() )->method( 'register_many' );
 		$this->assets_handler->expects( $this->never() )->method( 'enqueue_many' );
 
-		$this->notification_system->register();
+		$this->notifications_system->register();
 		set_current_screen( 'dashboard' );
 		do_action( 'admin_enqueue_scripts' );
 	}
@@ -135,7 +128,6 @@ class NotificationSystemTest extends UnitTest {
 
 		update_option( 'date_format', 'F j, Y' );
 
-		$this->merchant_center->method( 'is_setup_complete' )->willReturn( true );
 		$this->options->method( 'get_merchant_id' )->willReturn( 123 );
 		$this->options->method( 'get_ads_id' )->willReturn( 456 );
 
@@ -148,7 +140,6 @@ class NotificationSystemTest extends UnitTest {
 						$gla_data = $this->get_inline_script_data( $script, 'glaData' );
 
 						$this->assertSame( 'F j, Y', $gla_data['dateFormat'] );
-						$this->assertTrue( $gla_data['mcSetupComplete'] );
 						$this->assertSame( 123, $gla_data['initialWpData']['mcId'] );
 						$this->assertSame( 456, $gla_data['initialWpData']['adsId'] );
 						$this->assertNotEmpty( $gla_data['initialWpData']['version'] );
@@ -160,7 +151,7 @@ class NotificationSystemTest extends UnitTest {
 
 		$this->assets_handler->expects( $this->once() )->method( 'enqueue_many' );
 
-		$this->notification_system->register();
+		$this->notifications_system->register();
 		set_current_screen( 'dashboard' );
 		do_action( 'admin_enqueue_scripts' );
 	}

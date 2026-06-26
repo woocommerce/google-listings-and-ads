@@ -24,7 +24,7 @@ class ReadyButNoSalesEvaluator implements NotificationEvaluatorInterface, Servic
 	use CachedNotificationEvaluatorTrait;
 
 	/** @var WC */
-	protected $wc;
+	private $wc;
 
 	/**
 	 * ReadyButNoSalesEvaluator constructor.
