@@ -6,7 +6,7 @@ import { CardBody, Flex, FlexBlock, FlexItem } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import './notifications-skeleton.scss';
+import './notification-skeleton.scss';
 
 /**
  * Skeleton placeholder for a notification card, rendered while the notification's
