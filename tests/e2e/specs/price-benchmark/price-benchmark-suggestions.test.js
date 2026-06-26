@@ -89,7 +89,8 @@ test.describe( 'Price Benchmark Page', () => {
 		} );
 
 		test( 'Displays error message when data view fails to load', async () => {
-			// Mock must be registered before goto() so it intercepts the script request during page load.
+			// wp-dataviews-shim.js is loaded as a blocking script during HTML parsing,
+			// not lazily — the route must be registered before goto() or the request is already gone.
 			const once = priceBenchmarkPage.withFulfillTimes( 1 );
 			await once.fulfillRequest(
 				/\/js\/build\/wp-dataviews-shim.js(\/.*)?\b/,
