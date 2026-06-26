@@ -4,7 +4,9 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountBusinessInfoService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountHomepageService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountUsersService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -42,6 +44,12 @@ class MerchantTest extends UnitTest {
 	/** @var MockObject|MapiAccountHomepageService $homepage_service */
 	protected $homepage_service;
 
+	/** @var MockObject|MapiAccountBusinessInfoService $business_info_service */
+	protected $business_info_service;
+
+	/** @var MockObject|MapiAccountUsersService $users_service */
+	protected $users_service;
+
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
@@ -62,9 +70,11 @@ class MerchantTest extends UnitTest {
 		$this->service->freelistingsprogram = $this->createMock( ShoppingContent\Resource\Freelistingsprogram::class );
 		$this->service->shoppingadsprogram  = $this->createMock( ShoppingContent\Resource\Shoppingadsprogram::class );
 
-		$this->homepage_service = $this->createMock( MapiAccountHomepageService::class );
-		$this->options          = $this->createMock( OptionsInterface::class );
-		$this->merchant         = new Merchant( $this->service, $this->homepage_service );
+		$this->homepage_service      = $this->createMock( MapiAccountHomepageService::class );
+		$this->business_info_service = $this->createMock( MapiAccountBusinessInfoService::class );
+		$this->users_service         = $this->createMock( MapiAccountUsersService::class );
+		$this->options               = $this->createMock( OptionsInterface::class );
+		$this->merchant              = new Merchant( $this->service, $this->homepage_service, $this->business_info_service, $this->users_service );
 		$this->merchant->set_options_object( $this->options );
 
 		$this->merchant_id = 12345;
@@ -424,38 +434,68 @@ class MerchantTest extends UnitTest {
 		);
 	}
 
+	public function test_get_business_info() {
+		$business_info = [
+			'name'    => 'accounts/12345/businessInfo',
+			'address' => [ 'regionCode' => 'US' ],
+		];
+
+		$this->business_info_service->expects( $this->once() )
+			->method( 'get_business_info' )
+			->willReturn( $business_info );
+
+		$this->assertSame( $business_info, $this->merchant->get_business_info() );
+	}
+
 	public function test_has_access_to_account() {
-		$account = $this->createMock( Account::class );
-		$user    = $this->createMock( AccountUser::class );
-		$email   = 'john@doe.email';
+		$email = 'john@doe.email';
 
-		$user->expects( $this->once() )
-			->method( 'getEmailAddress' )
-			->willReturn( $email );
+		$this->users_service->expects( $this->once() )
+			->method( 'get_current_user' )
+			->willReturn(
+				[
+					'name'         => 'accounts/12345/users/' . $email,
+					'accessRights' => [ 'ADMIN', 'STANDARD' ],
+				]
+			);
 
-		$user->expects( $this->once() )
-			->method( 'getAdmin' )
-			->willReturn( true );
+		$this->assertTrue( $this->merchant->has_access( $email ) );
+	}
 
-		$account->expects( $this->once() )
-			->method( 'getUsers' )
-			->willReturn( [ $user ] );
+	public function test_no_access_when_not_admin() {
+		$email = 'john@doe.email';
 
-		$this->mock_get_account( $account );
+		$this->users_service->expects( $this->once() )
+			->method( 'get_current_user' )
+			->willReturn(
+				[
+					'name'         => 'accounts/12345/users/' . $email,
+					'accessRights' => [ 'STANDARD' ],
+				]
+			);
 
-		$this->assertTrue(
-			$this->merchant->has_access( $email )
-		);
+		$this->assertFalse( $this->merchant->has_access( $email ) );
+	}
+
+	public function test_no_access_when_email_mismatch() {
+		$this->users_service->expects( $this->once() )
+			->method( 'get_current_user' )
+			->willReturn(
+				[
+					'name'         => 'accounts/12345/users/someone@else.email',
+					'accessRights' => [ 'ADMIN' ],
+				]
+			);
+
+		$this->assertFalse( $this->merchant->has_access( 'john@doe.email' ) );
 	}
 
 	public function test_no_access_to_account() {
-		$email = 'john@doe.email';
+		$this->users_service->expects( $this->once() )
+			->method( 'get_current_user' )
+			->willThrowException( $this->merchant_api_exception( 500 ) );
 
-		$this->mock_get_account_exception( $this->get_google_exception( 'No access' ) );
-
-		$this->assertFalse(
-			$this->merchant->has_access( $email )
-		);
+		$this->assertFalse( $this->merchant->has_access( 'john@doe.email' ) );
 	}
 
 	public function test_update_merchant_id() {
