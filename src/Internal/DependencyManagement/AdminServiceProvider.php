@@ -34,6 +34,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterSer
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\ChannelVisibilityMetaBox;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
@@ -64,6 +65,7 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		CouponBulkEdit::class          => true,
 		Dashboard::class               => true,
 		NotificationManager::class     => true,
+		NotificationSystem::class      => true,
 		NotificationsSystemSlot::class => true,
 		GetStarted::class              => true,
 		MetaBoxInterface::class        => true,
@@ -113,7 +115,7 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		$this->share_with_tags( Dashboard::class, OnboardingCompleted::class );
 		$this->share_with_tags( NotificationManager::class, AssetsHandlerInterface::class, NotificationService::class );
 		$this->share_with_tags( NotificationsSystemSlot::class, AssetsHandlerInterface::class );
-		$this->share_with_tags( NotificationSystem::class, AssetsHandlerInterface::class );
+		$this->share_with_tags( NotificationSystem::class, AssetsHandlerInterface::class, MerchantCenterService::class, OptionsInterface::class );
 		$this->share_with_tags( GetStarted::class, OnboardingCompleted::class );
 		$this->share_with_tags( ProductFeed::class );
 		$this->share_with_tags( Reports::class );

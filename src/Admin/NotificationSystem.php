@@ -8,6 +8,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 
@@ -28,15 +30,33 @@ class NotificationSystem implements Service, Registerable {
 	/**
 	 * @var AssetsHandlerInterface
 	 */
-	protected $assets_handler;
+	private $assets_handler;
+
+	/**
+	 * @var MerchantCenterService
+	 */
+	private $merchant_center;
+
+	/**
+	 * @var OptionsInterface
+	 */
+	private $options;
 
 	/**
 	 * NotificationSystem constructor.
 	 *
 	 * @param AssetsHandlerInterface $assets_handler
+	 * @param MerchantCenterService  $merchant_center
+	 * @param OptionsInterface       $options
 	 */
-	public function __construct( AssetsHandlerInterface $assets_handler ) {
-		$this->assets_handler = $assets_handler;
+	public function __construct(
+		AssetsHandlerInterface $assets_handler,
+		MerchantCenterService $merchant_center,
+		OptionsInterface $options
+	) {
+		$this->assets_handler  = $assets_handler;
+		$this->merchant_center = $merchant_center;
+		$this->options         = $options;
 	}
 
 	/**
@@ -52,7 +72,7 @@ class NotificationSystem implements Service, Registerable {
 
 				$build_dir = "{$this->get_root_dir()}/js/build";
 
-				$script = new AdminScriptWithBuiltDependenciesAsset(
+				$script = ( new AdminScriptWithBuiltDependenciesAsset(
 					'google-listings-and-ads-notifications-system',
 					'js/build/notifications-system',
 					"{$build_dir}/notifications-system.asset.php",
@@ -62,7 +82,7 @@ class NotificationSystem implements Service, Registerable {
 							'version'      => $this->get_version(),
 						]
 					)
-				);
+				) )->add_inline_script( 'glaData', $this->get_gla_data() );
 
 				$style = new AdminStyleAsset(
 					'google-listings-and-ads-notifications-system-css',
@@ -75,6 +95,23 @@ class NotificationSystem implements Service, Registerable {
 				$this->assets_handler->enqueue_many( [ $script, $style ] );
 			}
 		);
+	}
+
+	/**
+	 * Get the inline glaData required by the notifications-system bundle.
+	 *
+	 * @return array
+	 */
+	private function get_gla_data(): array {
+		return [
+			'dateFormat'      => get_option( 'date_format' ),
+			'mcSetupComplete' => $this->merchant_center->is_setup_complete(),
+			'initialWpData'   => [
+				'version' => $this->get_version(),
+				'mcId'    => $this->options->get_merchant_id() ?: null,
+				'adsId'   => $this->options->get_ads_id() ?: null,
+			],
+		];
 	}
 
 	/**

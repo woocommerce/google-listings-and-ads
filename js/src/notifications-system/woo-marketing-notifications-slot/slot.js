@@ -11,21 +11,82 @@ import { registerStore } from './data';
 import NotificationsPanel from './components/notifications-panel';
 import './slot.scss';
 
+let root = null;
+let mountedContainer = null;
+
+/**
+ * Unmount the React root and clear slot state.
+ */
+function unmount() {
+	if ( root ) {
+		root.unmount();
+		root = null;
+	}
+
+	mountedContainer = null;
+}
+
+/**
+ * Remove a stale root when React has detached the container from the DOM.
+ */
+function unmountIfContainerDetached() {
+	if ( mountedContainer && ! mountedContainer.isConnected ) {
+		unmount();
+	}
+}
+
+/**
+ * Ensure the notifications container sits immediately after the banner,
+ * or at the top of the multichannel section when no banner is present.
+ *
+ * @param {HTMLElement} multichannel
+ * @param {HTMLElement} container
+ */
+function repositionContainer( multichannel, container ) {
+	const banner = multichannel.querySelector( `.${ BANNER_CLASS }` );
+
+	if ( banner ) {
+		if ( container.previousElementSibling !== banner ) {
+			banner.insertAdjacentElement( 'afterend', container );
+		}
+
+		return;
+	}
+
+	if ( multichannel.firstChild !== container ) {
+		multichannel.insertBefore( container, multichannel.firstChild );
+	}
+}
+
 /**
  * Mounts the NotificationsPanel into the multichannel section.
  *
- * Returns false if another plugin has already mounted the slot or if the
- * multichannel element is not yet in the DOM.
+ * Returns false if another plugin has already mounted the slot elsewhere.
+ *
+ * @param {HTMLElement} multichannel
+ * @return {boolean} Whether a new slot container was mounted.
  */
 function mount( multichannel ) {
-	let container = document.querySelector( `.${ CONTAINER_CLASS }` );
+	unmountIfContainerDetached();
 
-	if ( container ) {
-		// Another plugin has already mounted the slot; nothing to do.
+	const existingInMultichannel = multichannel.querySelector(
+		`.${ CONTAINER_CLASS }`
+	);
+
+	if ( existingInMultichannel ) {
+		repositionContainer( multichannel, existingInMultichannel );
+		mountedContainer = existingInMultichannel;
 		return false;
 	}
 
-	container = document.createElement( 'div' );
+	const existingGlobal = document.querySelector( `.${ CONTAINER_CLASS }` );
+
+	if ( existingGlobal ) {
+		// Another plugin has already mounted the slot elsewhere.
+		return false;
+	}
+
+	const container = document.createElement( 'div' );
 	container.className = CONTAINER_CLASS;
 
 	const banner = multichannel.querySelector( `.${ BANNER_CLASS }` );
@@ -39,36 +100,38 @@ function mount( multichannel ) {
 		multichannel.insertBefore( container, multichannel.firstChild );
 	}
 
-	createRoot( container ).render( <NotificationsPanel /> );
+	root = createRoot( container );
+	root.render( <NotificationsPanel /> );
+	mountedContainer = container;
+
 	return true;
 }
 
 /**
- * Observes the DOM for the multichannel section and mounts the slot when found.
+ * Sync the slot with the current marketing overview DOM.
+ */
+function sync() {
+	const multichannel = document.querySelector( `.${ MULTICHANNEL_CLASS }` );
+
+	if ( ! multichannel ) {
+		return;
+	}
+
+	mount( multichannel );
+}
+
+/**
+ * Observes the DOM for the multichannel section and keeps the slot in sync.
  *
- * Also handles the case where the section is already present at call time.
+ * The observer stays connected so the panel can remount when React removes
+ * and re-inserts the marketing banner without creating duplicate containers.
  */
 function observeAndMount() {
-	const observer = new MutationObserver( () => {
-		const multichannel = document.querySelector(
-			`.${ MULTICHANNEL_CLASS }`
-		);
-
-		if ( multichannel && mount( multichannel ) ) {
-			observer.disconnect();
-		}
-	} );
+	const observer = new MutationObserver( sync );
 
 	observer.observe( document.body, { childList: true, subtree: true } );
 
-	const existingMultichannel = document.querySelector(
-		`.${ MULTICHANNEL_CLASS }`
-	);
-
-	if ( existingMultichannel ) {
-		mount( existingMultichannel );
-		observer.disconnect();
-	}
+	sync();
 }
 
 export default function init() {
