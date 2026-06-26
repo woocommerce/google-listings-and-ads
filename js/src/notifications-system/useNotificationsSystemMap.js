@@ -24,7 +24,7 @@ import {
  * @property {string} title Notification headline.
  * @property {string} description Notification body text.
  * @property {Array<Object>} actions Array of AppButton prop objects for CTA buttons.
- * @property {boolean} [isReady] Whether the config data has finished resolving. Defaults to true for static configs.
+ * @property {boolean} [isReady] Whether the config data has finished resolving. Omitted for static configs (renders immediately); set to a resolution flag for dynamic configs.
  */
 
 const getStartedUrl = getGetStartedUrl();
@@ -197,20 +197,9 @@ const useNotificationsSystemMap = () => {
 		useGoogleMCAccount();
 
 	const dynamicMap = useMemo( () => {
-		if ( ! hasFinishedResolution ) {
-			return {
-				'skipped-campaign-creation': { isReady: false },
-				'not-onboarded-90-days': { isReady: false },
-				'paused-campaign': { isReady: false },
-				'active-campaign-zero-sales': { isReady: false },
-				'sales-not-growing': { isReady: false },
-				'coupons-not-synced': { isReady: false },
-			};
-		}
-
 		return {
 			'skipped-campaign-creation': {
-				isReady: true,
+				isReady: hasFinishedResolution,
 				title: __(
 					'Finish setting up Google Ads',
 					'google-listings-and-ads'
@@ -236,7 +225,7 @@ const useNotificationsSystemMap = () => {
 				],
 			},
 			'not-onboarded-90-days': {
-				isReady: true,
+				isReady: hasFinishedResolution,
 				title: __(
 					'Finish your Google for WooCommerce connection',
 					'google-listings-and-ads'
@@ -259,7 +248,7 @@ const useNotificationsSystemMap = () => {
 				],
 			},
 			'paused-campaign': {
-				isReady: true,
+				isReady: hasFinishedResolution,
 				title: __(
 					'Your Google Ads campaign is paused',
 					'google-listings-and-ads'
@@ -285,7 +274,7 @@ const useNotificationsSystemMap = () => {
 				],
 			},
 			'active-campaign-zero-sales': {
-				isReady: true,
+				isReady: hasFinishedResolution,
 				title: __(
 					'Drive traffic from Google Ads',
 					'google-listings-and-ads'
@@ -308,7 +297,7 @@ const useNotificationsSystemMap = () => {
 				],
 			},
 			'sales-not-growing': {
-				isReady: true,
+				isReady: hasFinishedResolution,
 				title: ! hasGoogleMCConnection
 					? __(
 							'Increase your site traffic',
@@ -339,7 +328,7 @@ const useNotificationsSystemMap = () => {
 				],
 			},
 			'coupons-not-synced': {
-				isReady: true,
+				isReady: hasFinishedResolution,
 				title: __(
 					'Promote your coupons on Google',
 					'google-listings-and-ads'

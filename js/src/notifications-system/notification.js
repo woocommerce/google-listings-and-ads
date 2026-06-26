@@ -44,11 +44,11 @@ const Notification = ( {
 	triggeredAt,
 	actions = [],
 	onDismiss,
-	isReady = true,
+	isReady,
 } ) => {
 	const { dismissNotification } = useAppDispatch();
 
-	if ( ! isReady ) {
+	if ( isReady === false ) {
 		return <NotificationSkeleton />;
 	}
 
