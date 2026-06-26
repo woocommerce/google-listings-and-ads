@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification\Evaluators;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PolicyComplianceCheck;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\ReadyButNoSalesEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
@@ -22,9 +21,6 @@ defined( 'ABSPATH' ) || exit;
  */
 class ReadyButNoSalesEvaluatorTest extends UnitTest {
 
-	/** @var MockObject|PolicyComplianceCheck $policy_compliance_check */
-	protected $policy_compliance_check;
-
 	/** @var MockObject|WC $wc */
 	protected $wc;
 
@@ -37,9 +33,8 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->policy_compliance_check = $this->createMock( PolicyComplianceCheck::class );
-		$this->wc                      = $this->createMock( WC::class );
-		$this->evaluator               = new ReadyButNoSalesEvaluator( $this->policy_compliance_check, $this->wc );
+		$this->wc        = $this->createMock( WC::class );
+		$this->evaluator = new ReadyButNoSalesEvaluator( $this->wc );
 	}
 
 	public function test_get_id() {
@@ -57,7 +52,7 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 	public function test_should_show_when_store_is_ready_and_has_no_completed_orders() {
 		$evaluator = $this->create_evaluator_with_order_count( 0 );
 
-		$this->policy_compliance_check->method( 'has_payment_gateways' )->willReturn( true );
+		$this->wc->method( 'has_enabled_payment_gateways' )->willReturn( true );
 
 		$this->assertTrue( $evaluator->should_show() );
 	}
@@ -68,7 +63,7 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 			->with( true )
 			->willReturn( [ $this->createMock( WC_Shipping_Method::class ) ] );
 
-		$this->policy_compliance_check->method( 'has_payment_gateways' )->willReturn( true );
+		$this->wc->method( 'has_enabled_payment_gateways' )->willReturn( true );
 		$this->wc->method( 'get_shipping_zones' )->willReturn( [] );
 		$this->wc->method( 'get_shipping_zone' )->with( 0 )->willReturn( $default_zone );
 
@@ -80,7 +75,7 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 	public function test_should_not_show_when_payment_gateways_are_missing() {
 		$evaluator = $this->create_evaluator_with_order_count( 0 );
 
-		$this->policy_compliance_check->method( 'has_payment_gateways' )->willReturn( false );
+		$this->wc->method( 'has_enabled_payment_gateways' )->willReturn( false );
 		$evaluator->expects( $this->never() )->method( 'store_has_any_enabled_shipping_method' );
 
 		$this->assertFalse( $evaluator->should_show() );
@@ -89,7 +84,7 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 	public function test_should_not_show_when_shipping_methods_are_missing() {
 		$evaluator = $this->create_evaluator_with_order_count( 0, false );
 
-		$this->policy_compliance_check->method( 'has_payment_gateways' )->willReturn( true );
+		$this->wc->method( 'has_enabled_payment_gateways' )->willReturn( true );
 
 		$this->assertFalse( $evaluator->should_show() );
 	}
@@ -97,7 +92,7 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 	public function test_should_not_show_when_completed_orders_exist() {
 		$evaluator = $this->create_evaluator_with_order_count( 1 );
 
-		$this->policy_compliance_check->method( 'has_payment_gateways' )->willReturn( true );
+		$this->wc->method( 'has_enabled_payment_gateways' )->willReturn( true );
 
 		$this->assertFalse( $evaluator->should_show() );
 	}
@@ -108,7 +103,7 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 
 		set_transient( 'gla_notif_ready-but-no-sales_' . $user_id, 1, HOUR_IN_SECONDS );
 
-		$this->policy_compliance_check->expects( $this->never() )->method( 'has_payment_gateways' );
+		$this->wc->expects( $this->never() )->method( 'has_enabled_payment_gateways' );
 		$evaluator->expects( $this->never() )->method( 'store_has_any_enabled_shipping_method' );
 		$evaluator->expects( $this->never() )->method( 'get_completed_order_count' );
 
@@ -131,7 +126,7 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 		}
 
 		$evaluator = $this->getMockBuilder( ReadyButNoSalesEvaluator::class )
-			->setConstructorArgs( [ $this->policy_compliance_check, $this->wc ] )
+			->setConstructorArgs( [ $this->wc ] )
 			->onlyMethods( $only_methods )
 			->getMock();
 

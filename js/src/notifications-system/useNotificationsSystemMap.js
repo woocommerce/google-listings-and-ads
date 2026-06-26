@@ -16,13 +16,14 @@ import {
 	getSetupAdsUrl,
 	getWCAdvancedSettingsUrl,
 	getOnboardingUrl,
+	getWCCouponsUrl,
 } from '~/utils/urls';
 
 /**
  * @typedef {Object} NotificationConfig
- * @property {string}        title       Notification headline.
- * @property {string}        description Notification body text.
- * @property {Array<Object>} actions     Array of AppButton prop objects for CTA buttons.
+ * @property {string} title Notification headline.
+ * @property {string} description Notification body text.
+ * @property {Array<Object>} actions Array of AppButton prop objects for CTA buttons.
  */
 
 const getStartedUrl = getGetStartedUrl();
@@ -31,6 +32,7 @@ const dashboardUrl = getDashboardUrl();
 const settingsUrl = getSettingsUrl();
 const wcAdvancedSettingsUrl = getWCAdvancedSettingsUrl();
 const onboardingUrl = getOnboardingUrl();
+const wcCouponsUrl = getWCCouponsUrl();
 
 /**
  * Static notification configs — created once at module level, never re-created on render.
@@ -106,7 +108,7 @@ const STATIC_MAP = {
 			},
 		],
 	},
-	'active-campaign-zero-sales': {
+	'campaign-no-sales': {
 		title: __( 'Drive traffic from Google Ads', 'google-listings-and-ads' ),
 		description: __(
 			"Your campaign is active, but hasn't generated sales yet. Review your account recommendations in Google Ads to find specific ways to improve your performance.",
@@ -190,10 +192,15 @@ const STATIC_MAP = {
  * @return {Object.<string, NotificationConfig>} Map of notification ID to its display config.
  */
 const useNotificationsSystemMap = () => {
-	const { hasGoogleMCConnection } = useGoogleMCAccount();
+	const { hasGoogleMCConnection, hasFinishedResolution } =
+		useGoogleMCAccount();
 
-	const dynamicMap = useMemo(
-		() => ( {
+	const dynamicMap = useMemo( () => {
+		if ( ! hasFinishedResolution ) {
+			return {};
+		}
+
+		return {
 			'skipped-campaign-creation': {
 				title: __(
 					'Finish setting up Google Ads',
@@ -266,7 +273,7 @@ const useNotificationsSystemMap = () => {
 					},
 				],
 			},
-			'active-campaign-zero-sales': {
+			'campaign-no-sales': {
 				title: __(
 					'Drive traffic from Google Ads',
 					'google-listings-and-ads'
@@ -335,7 +342,7 @@ const useNotificationsSystemMap = () => {
 				actions: [
 					{
 						id: 'review-coupon-settings',
-						href: settingsUrl,
+						href: wcCouponsUrl,
 						children: __(
 							'Review coupon settings',
 							'google-listings-and-ads'
@@ -343,9 +350,8 @@ const useNotificationsSystemMap = () => {
 					},
 				],
 			},
-		} ),
-		[ hasGoogleMCConnection ]
-	);
+		};
+	}, [ hasFinishedResolution, hasGoogleMCConnection ] );
 
 	return { ...STATIC_MAP, ...dynamicMap };
 };

@@ -327,12 +327,12 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( NotificationService::class, WP::class );
 		$this->share_with_tags( SkippedCampaignEvaluator::class, AdsCampaign::class );
 		$this->share_with_tags( AbandonedOnboardingEvaluator::class, MerchantAccountState::class, ServiceBasedMerchantState::class );
-		$this->share_with_tags( NotOnboarded90DaysEvaluator::class );
+		$this->share_with_tags( NotOnboarded90DaysEvaluator::class, OnboardingCompleted::class );
 		$this->share_with_tags( EnhancedConversionsOffEvaluator::class );
 		$this->share_with_tags( TrackingOffEvaluator::class );
 		$this->share_with_tags( ProductIssuesEvaluator::class, ServiceBasedMerchantState::class );
 		$this->share_with_tags( Sold10ItemsEvaluator::class );
-		$this->share_with_tags( ReadyButNoSalesEvaluator::class, PolicyComplianceCheck::class, WC::class );
+		$this->share_with_tags( ReadyButNoSalesEvaluator::class, WC::class );
 		$this->share_with_tags( CouponsNotSyncedEvaluator::class );
 		$this->share_with_tags( SalesNotGrowingEvaluator::class );
 		$this->share_with_tags( WcInstallTimestamp::class, WP::class );

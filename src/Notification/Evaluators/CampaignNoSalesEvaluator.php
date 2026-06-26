@@ -31,10 +31,10 @@ class CampaignNoSalesEvaluator implements NotificationEvaluatorInterface, AdsAwa
 	use CachedNotificationEvaluatorTrait;
 
 	/** @var AdsCampaign */
-	protected $ads_campaign;
+	private $ads_campaign;
 
 	/** @var AdsReport */
-	protected $ads_report;
+	private $ads_report;
 
 	/**
 	 * CampaignNoSalesEvaluator constructor.

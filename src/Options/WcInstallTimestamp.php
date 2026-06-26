@@ -30,7 +30,7 @@ class WcInstallTimestamp implements OptionsAwareInterface, Registerable, Service
 	/**
 	 * @var WP
 	 */
-	protected $wp;
+	private $wp;
 
 	/**
 	 * WcInstallTimestamp constructor.
@@ -45,6 +45,10 @@ class WcInstallTimestamp implements OptionsAwareInterface, Registerable, Service
 	 * Register a service.
 	 */
 	public function register(): void {
+		// Backfill immediately when GLA loads so existing Woo stores are covered
+		// without waiting for admin_init.
+		$this->record_wc_install_timestamp();
+
 		add_action( 'admin_init', [ $this, 'record_wc_install_timestamp' ] );
 	}
 

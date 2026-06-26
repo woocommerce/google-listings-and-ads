@@ -222,6 +222,22 @@ class WC {
 	}
 
 	/**
+	 * Whether at least one payment gateway is enabled in store settings.
+	 *
+	 * Unlike get_available_payment_gateways(), this does not require gateways to
+	 * pass checkout availability checks (e.g. cart context or gateway configuration).
+	 */
+	public function has_enabled_payment_gateways(): bool {
+		foreach ( WCCore()->payment_gateways->payment_gateways() as $gateway ) {
+			if ( 'yes' === $gateway->enabled ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Returns the WooCommerce object container.
 	 *
 	 * @return Container

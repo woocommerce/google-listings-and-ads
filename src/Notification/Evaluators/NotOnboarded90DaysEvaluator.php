@@ -7,23 +7,45 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WPAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WPAwareTrait;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Class NotOnboarded90DaysEvaluator
  *
- * Fires when the merchant has not connected a Google account and either WooCommerce
- * or the plugin has been active for 90 or more days.
+ * Fires when Google for WooCommerce onboarding is not complete, WooCommerce onboarding
+ * has been completed or skipped, and either WooCommerce or the plugin has been active
+ * for 90 or more days.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
-class NotOnboarded90DaysEvaluator implements NotificationEvaluatorInterface, OptionsAwareInterface, Service {
+class NotOnboarded90DaysEvaluator implements NotificationEvaluatorInterface, OptionsAwareInterface, WPAwareInterface, Service {
 
 	use OptionsAwareTrait;
+	use WPAwareTrait;
+
+	/**
+	 * WooCommerce option that stores onboarding wizard progress.
+	 */
+	private const WC_ONBOARDING_PROFILE_OPTION = 'woocommerce_onboarding_profile';
+
+	/** @var OnboardingCompleted */
+	private $onboarding_completed;
+
+	/**
+	 * NotOnboarded90DaysEvaluator constructor.
+	 *
+	 * @param OnboardingCompleted $onboarding_completed
+	 */
+	public function __construct( OnboardingCompleted $onboarding_completed ) {
+		$this->onboarding_completed = $onboarding_completed;
+	}
 
 	/**
 	 * Get the notification's unique ID.
@@ -40,7 +62,11 @@ class NotOnboarded90DaysEvaluator implements NotificationEvaluatorInterface, Opt
 	 * @return bool
 	 */
 	public function should_show(): bool {
-		if ( boolval( $this->options->get( OptionsInterface::GOOGLE_CONNECTED, false ) ) ) {
+		if ( $this->onboarding_completed->is_onboarding_complete() ) {
+			return false;
+		}
+
+		if ( ! $this->has_completed_or_skipped_wc_onboarding() ) {
 			return false;
 		}
 
@@ -95,5 +121,24 @@ class NotOnboarded90DaysEvaluator implements NotificationEvaluatorInterface, Opt
 		}
 
 		return min( $timestamps );
+	}
+
+	/**
+	 * Whether the merchant has completed or skipped WooCommerce onboarding.
+	 *
+	 * @return bool
+	 */
+	protected function has_completed_or_skipped_wc_onboarding(): bool {
+		$profile = $this->wp->get_option( self::WC_ONBOARDING_PROFILE_OPTION, [] );
+
+		if ( ! is_array( $profile ) ) {
+			return false;
+		}
+
+		if ( ! empty( $profile['completed'] ) ) {
+			return true;
+		}
+
+		return ! empty( $profile['skipped'] );
 	}
 }
