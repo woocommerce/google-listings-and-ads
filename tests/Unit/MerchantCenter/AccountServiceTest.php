@@ -7,7 +7,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
@@ -86,9 +85,6 @@ class AccountServiceTest extends UnitTest {
 	/** @var MockObject|TransientsInterface $transients */
 	protected $transients;
 
-	/** @var MockObject|NotificationsService $transients */
-	protected $notifications_service;
-
 	/** @var MockObject|ServiceBasedMerchantState $service_based_merchant_state */
 	protected $service_based_merchant_state;
 
@@ -143,7 +139,6 @@ class AccountServiceTest extends UnitTest {
 		$this->ads_state                    = $this->createMock( AdsAccountState::class );
 		$this->options                      = $this->createMock( OptionsInterface::class );
 		$this->transients                   = $this->createMock( TransientsInterface::class );
-		$this->notifications_service        = $this->createMock( NotificationsService::class );
 		$this->service_based_merchant_state = $this->createMock( ServiceBasedMerchantState::class );
 
 		$this->container = new Container();
@@ -155,7 +150,6 @@ class AccountServiceTest extends UnitTest {
 		$this->container->addShared( MerchantIssueTable::class, $this->issue_table );
 		$this->container->addShared( MerchantStatuses::class, $this->merchant_statuses );
 		$this->container->addShared( Middleware::class, $this->middleware );
-		$this->container->addShared( NotificationsService::class, $this->notifications_service );
 		$this->container->addShared( SiteVerification::class, $this->site_verification );
 		$this->container->addShared( ShippingRateTable::class, $this->rate_table );
 		$this->container->addShared( ShippingTimeTable::class, $this->time_table );
@@ -799,10 +793,6 @@ class AccountServiceTest extends UnitTest {
 			->method( 'get_merchant_id' )
 			->willReturn( self::TEST_ACCOUNT_ID );
 
-		$this->notifications_service->expects( $this->once() )
-			->method( 'is_enabled' )
-			->willReturn( true );
-
 		$this->transients->expects( $this->exactly( 1 ) )
 			->method( 'get' )
 			->with( TransientsInterface::WPCOM_API_STATUS )
@@ -820,45 +810,9 @@ class AccountServiceTest extends UnitTest {
 
 		$this->assertEquals(
 			[
-				'id'                           => self::TEST_ACCOUNT_ID,
-				'status'                       => 'connected',
-				'notification_service_enabled' => true,
-				'wpcom_rest_api_status'        => 'approved',
-			],
-			$this->account->get_connected_status()
-		);
-	}
-
-	public function test_get_connected_status_when_notifications_disabled() {
-		$this->options->expects( $this->once() )
-			->method( 'get_merchant_id' )
-			->willReturn( self::TEST_ACCOUNT_ID );
-
-		$this->notifications_service->expects( $this->once() )
-			->method( 'is_enabled' )
-			->willReturn( false );
-
-		$this->transients->expects( $this->exactly( 1 ) )
-			->method( 'get' )
-			->with( TransientsInterface::WPCOM_API_STATUS )
-			->willReturn(
-				[
-					'is_healthy'               => true,
-					'is_wc_rest_api_healthy'   => true,
-					'is_partner_token_healthy' => true,
-				]
-			);
-
-		$this->options->method( 'get' )
-			->with( OptionsInterface::WPCOM_REST_API_STATUS )
-			->willReturn( 'approved' );
-
-		$this->assertEquals(
-			[
-				'id'                           => self::TEST_ACCOUNT_ID,
-				'status'                       => 'connected',
-				'notification_service_enabled' => false,
-				'wpcom_rest_api_status'        => 'approved',
+				'id'                    => self::TEST_ACCOUNT_ID,
+				'status'                => 'connected',
+				'wpcom_rest_api_status' => 'approved',
 			],
 			$this->account->get_connected_status()
 		);
@@ -882,21 +836,16 @@ class AccountServiceTest extends UnitTest {
 			->method( 'get_merchant_id' )
 			->willReturn( self::TEST_ACCOUNT_ID );
 
-		$this->notifications_service->expects( $this->once() )
-			->method( 'is_enabled' )
-			->willReturn( true );
-
 		$this->state->expects( $this->once() )
 			->method( 'last_incomplete_step' )
 			->willReturn( 'verify' );
 
 		$this->assertEquals(
 			[
-				'id'                           => self::TEST_ACCOUNT_ID,
-				'status'                       => 'incomplete',
-				'step'                         => 'verify',
-				'notification_service_enabled' => true,
-				'wpcom_rest_api_status'        => 'approved',  // Updated to reflect new client credentials logic
+				'id'                    => self::TEST_ACCOUNT_ID,
+				'status'                => 'incomplete',
+				'step'                  => 'verify',
+				'wpcom_rest_api_status' => 'approved',  // Updated to reflect new client credentials logic
 			],
 			$account_mock->get_connected_status()
 		);
@@ -906,10 +855,6 @@ class AccountServiceTest extends UnitTest {
 		$this->options->expects( $this->once() )
 			->method( 'get_merchant_id' )
 			->willReturn( self::TEST_ACCOUNT_ID );
-
-		$this->notifications_service->expects( $this->once() )
-			->method( 'is_enabled' )
-			->willReturn( true );
 
 		$this->transients->expects( $this->exactly( 1 ) )
 			->method( 'get' )
@@ -928,15 +873,13 @@ class AccountServiceTest extends UnitTest {
 
 		$this->assertEquals(
 			[
-				'id'                           => self::TEST_ACCOUNT_ID,
-				'status'                       => 'connected',
-				'notification_service_enabled' => true,
-				'wpcom_rest_api_status'        => 'error',
+				'id'                    => self::TEST_ACCOUNT_ID,
+				'status'                => 'connected',
+				'wpcom_rest_api_status' => 'error',
 			],
 			$this->account->get_connected_status()
 		);
 	}
-
 
 	public function test_get_setup_status() {
 		$this->mc_service->expects( $this->once() )

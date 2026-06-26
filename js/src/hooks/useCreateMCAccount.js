@@ -9,10 +9,12 @@ import { __ } from '@wordpress/i18n';
 import { useAppDispatch } from '~/data';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
+import extractDetailedApiError from '~/utils/extractDetailedApiError';
+import { ERROR_SLOTS } from '~/data/constants';
 
 const useCreateMCAccount = () => {
 	const { createNotice } = useDispatchCoreNotices();
-	const { invalidateResolution } = useAppDispatch();
+	const { invalidateResolution, receiveDetailedError } = useAppDispatch();
 	const [ fetchCreateMCAccount, result ] = useApiFetchCallback( {
 		path: `/wc/gla/mc/accounts`,
 		method: 'POST',
@@ -26,15 +28,30 @@ const useCreateMCAccount = () => {
 			} );
 			invalidateResolution( 'getGoogleMCAccount', [] );
 		} catch ( e ) {
-			if ( ! [ 403, 503 ].includes( e.status ) ) {
-				const body = await e.json();
-				const message =
-					body.message ||
+			if ( e?.code === 'fetch_error' ) {
+				createNotice(
+					'error',
 					__(
-						'Unable to create Merchant Center account. Please try again later.',
+						'Unable to connect your Google Merchant Center account. Please check your connection and try again.',
 						'google-listings-and-ads'
-					);
-				createNotice( 'error', message );
+					)
+				);
+				return;
+			}
+
+			const detailedError = await extractDetailedApiError( e );
+
+			if ( detailedError ) {
+				receiveDetailedError(
+					ERROR_SLOTS.GOOGLE_MC_CONNECTION_ERROR_SLOT,
+					{
+						...detailedError.data,
+						title: __(
+							'Connection Failed',
+							'google-listings-and-ads'
+						),
+					}
+				);
 			}
 		}
 	};

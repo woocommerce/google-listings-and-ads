@@ -971,6 +971,24 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	}
 
 	/**
+	 * Sets the feed label
+	 *
+	 * @param string $feed_label
+	 */
+	public function set_feed_label( string $feed_label ): void {
+		$this->setFeedLabel( $feed_label );
+	}
+
+	/**
+	 * Sets the content language
+	 *
+	 * @param string $language ISO 639-1 language code.
+	 */
+	public function set_language( string $language ): void {
+		$this->setContentLanguage( $language );
+	}
+
+	/**
 	 * Performs the attribute mapping.
 	 * This function applies rules setting values for the different attributes in the product.
 	 *

@@ -5,7 +5,7 @@ Requires at least: 6.6
 Tested up to: 6.9
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.7.0
+Stable tag: 3.7.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -52,7 +52,7 @@ Once you’re running Google Ads campaigns, the Google tag feature in the extens
 = Minimum Requirements =
 
 * WordPress 6.6 or greater
-* WooCommerce 9.7 or greater
+* WooCommerce 10.6 or greater
 * PHP version 7.4 or greater
 * PHP Architecture 64 bits
 * MySQL version 5.6 or greater
@@ -140,6 +140,17 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.7.1 - 2026-06-09 =
+* Add - Better User Guidance Feature.
+* Fix - Split budget recommendation and metrics cache keys by advertiser type so recommendations refresh correctly after the first campaign is created.
+* Fix - chore: pin third-party GitHub Actions to SHAs + enable Dependabot.
+* Fix - Update table paddings and borders within cards.
+* Fix - Remove API Pull infrastructure.
+* Fix - MainTabNav intermittently showing an incomplete tab list when MC connection state changes mid-session.
+* Fix - Shipping settings tab empty settings.
+* Fix - Update EU declaration modal title.
+* Fix - Exclude tall_portrait_marketing_image type and images with no type set from generated ad assets.
+
 = 3.7.0 - 2026-05-19 =
 * Add - Create Your Own Incentive (CYOI) feature.
 * Add - In-Product Placements feature.
@@ -162,11 +173,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix - Unschedule all Action Scheduler jobs when the plugin is deactivated to prevent orphaned recurring tasks from accumulating failure logs.
 * Fix - Update gmc_merchant_id in YouTube Shopping reports.
 * Fix - Updated caniuse-lite browserslist database.
-
-= 3.6.1 - 2026-03-31 =
-* Add - EU political ads declaration modal for compliance with Google's political advertising requirements.
-* Dev - Refactor YouTube card E2E tests.
-* Fix - Cache GAQL query for highest spend campaign.
-* Fix - Remove legacy conversion event.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

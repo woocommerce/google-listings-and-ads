@@ -5,7 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 
 defined( 'ABSPATH' ) || exit;
@@ -34,17 +34,30 @@ class UpdateShippingSettings extends AbstractActionSchedulerJob {
 	protected $google_settings;
 
 	/**
+	 * @var MarketService
+	 */
+	protected $market_service;
+
+	/**
 	 * UpdateShippingSettings constructor.
 	 *
 	 * @param ActionSchedulerInterface  $action_scheduler
 	 * @param ActionSchedulerJobMonitor $monitor
 	 * @param MerchantCenterService     $merchant_center
 	 * @param GoogleSettings            $google_settings
+	 * @param MarketService             $market_service
 	 */
-	public function __construct( ActionSchedulerInterface $action_scheduler, ActionSchedulerJobMonitor $monitor, MerchantCenterService $merchant_center, GoogleSettings $google_settings ) {
+	public function __construct(
+		ActionSchedulerInterface $action_scheduler,
+		ActionSchedulerJobMonitor $monitor,
+		MerchantCenterService $merchant_center,
+		GoogleSettings $google_settings,
+		MarketService $market_service
+	) {
 		parent::__construct( $action_scheduler, $monitor );
 		$this->merchant_center = $merchant_center;
 		$this->google_settings = $google_settings;
+		$this->market_service  = $market_service;
 	}
 
 	/**
@@ -99,7 +112,10 @@ class UpdateShippingSettings extends AbstractActionSchedulerJob {
 	 * @return bool
 	 */
 	protected function can_sync_shipping(): bool {
-		// Confirm that the Merchant Center account is connected, the user has chosen for the shipping rates to be synced from WooCommerce settings and the Push Sync is enabled for Shipping.
-		return $this->merchant_center->is_connected() && $this->google_settings->should_get_shipping_rates_from_woocommerce() && $this->merchant_center->is_enabled_for_datatype( NotificationsService::DATATYPE_SHIPPING );
+		if ( ! $this->merchant_center->is_connected() ) {
+			return false;
+		}
+
+		return $this->market_service->has_syncable_markets();
 	}
 }

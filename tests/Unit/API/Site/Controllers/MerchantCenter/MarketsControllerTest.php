@@ -200,6 +200,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 		$created = false;
 
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'de' );
+
 		$this->market_service->method( 'add_market' )
 			->willReturnCallback(
 				function () use ( &$created ) {
@@ -262,6 +264,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 		$created = false;
 
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'gb' );
+
 		$this->market_service->method( 'add_market' )
 			->with(
 				'gb',
@@ -302,6 +306,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 	public function test_post_market_with_empty_language_currency_arrays_passes_empty_arrays(): void {
 		$created = false;
+
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'gb' );
 
 		$this->market_service->method( 'add_market' )
 			->with(
@@ -344,6 +350,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_post_market_returns_400_when_add_market_throws_invalid_value(): void {
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'de' );
+
 		$this->market_service->method( 'get_market' )
 			->willReturn( null );
 
@@ -363,7 +371,30 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
+	public function test_post_market_returns_400_when_generate_market_id_rejects_reserved_id(): void {
+		$this->market_service->method( 'generate_market_id' )
+			->willThrowException( new InvalidValue( 'reserved-id rejection' ) );
+
+		$response = $this->do_request(
+			self::ROUTE_MARKETS,
+			'POST',
+			[
+				'country'  => 'XX',
+				'language' => [ 'en' ],
+				'currency' => [ 'USD' ],
+			]
+		);
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertSame(
+			'Cannot create a market with a reserved ID.',
+			$response->get_data()['message']
+		);
+	}
+
 	public function test_post_market_returns_409_when_id_already_exists(): void {
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'gb' );
+
 		$this->market_service->method( 'get_market' )
 			->with( 'gb' )
 			->willReturn( self::SECONDARY_MARKET );
@@ -591,6 +622,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 		$created = false;
 
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'jp' );
+
 		$this->market_service->method( 'add_market' )
 			->willReturnCallback(
 				function () use ( &$created ) {
@@ -622,6 +655,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_post_market_free_shipping_cannot_be_set_in_payload(): void {
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'jp' );
+
 		$this->market_service->method( 'get_market' )
 			->willReturnOnConsecutiveCalls( null, [] );
 
@@ -662,7 +697,6 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 						return isset( $params['shipping_rate'] )
 							&& ! isset( $params['id'] )
 							&& ! isset( $params['label'] )
-							&& ! isset( $params['feed_label'] )
 							&& ! isset( $params['free_shipping'] );
 					}
 				)
@@ -690,6 +724,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		];
 
 		$created = false;
+
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'ch' );
 
 		$this->market_service->method( 'add_market' )
 			->willReturnCallback(
@@ -735,6 +771,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 		$created = false;
 
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'ch' );
+
 		$this->market_service->method( 'add_market' )
 			->willReturnCallback(
 				function () use ( &$created ) {
@@ -764,5 +802,164 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( 201, $response->get_status() );
 		$this->assertEquals( [ 'CHF', 'EUR' ], $response->get_data()['currency'] );
+	}
+
+	public function test_post_market_uses_client_supplied_feed_label(): void {
+		$created_market = [
+			'country'       => 'GB',
+			'language'      => [ 'en' ],
+			'currency'      => [ 'GBP' ],
+			'feed_label'    => 'GB-EN',
+			'shipping_rate' => 'flat',
+			'shipping_time' => 'flat',
+			'free_shipping' => null,
+		];
+
+		$created = false;
+
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'gb-en' );
+
+		$this->market_service->method( 'add_market' )
+			->with(
+				'gb-en',
+				$this->callback(
+					function ( $config ) {
+						return 'GB' === $config['country']
+							&& 'GB-EN' === $config['feed_label'];
+					}
+				)
+			)
+			->willReturnCallback(
+				function () use ( &$created ) {
+					$created = true;
+				}
+			);
+
+		$this->market_service->method( 'get_market' )
+			->willReturnCallback(
+				function ( string $id ) use ( &$created, $created_market ) {
+					if ( 'gb-en' === $id && $created ) {
+						return $created_market;
+					}
+					return null;
+				}
+			);
+
+		$response = $this->do_request(
+			self::ROUTE_MARKETS,
+			'POST',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB-EN',
+			]
+		);
+
+		$this->assertEquals( 201, $response->get_status() );
+		$data = $response->get_data();
+		$this->assertEquals( 'gb-en', $data['id'] );
+		$this->assertEquals( 'GB-EN', $data['feed_label'] );
+	}
+
+	public function test_post_market_falls_back_to_country_when_feed_label_absent(): void {
+		$created = false;
+
+		$this->market_service->method( 'generate_market_id' )->willReturn( 'gb' );
+
+		$this->market_service->method( 'add_market' )
+			->with(
+				'gb',
+				$this->callback(
+					function ( $config ) {
+						return 'GB' === $config['country']
+							&& 'GB' === $config['feed_label'];
+					}
+				)
+			)
+			->willReturnCallback(
+				function () use ( &$created ) {
+					$created = true;
+				}
+			);
+
+		$this->market_service->method( 'get_market' )
+			->willReturnCallback(
+				function ( string $id ) use ( &$created ) {
+					if ( 'gb' === $id && $created ) {
+						return [
+							'country'    => 'GB',
+							'feed_label' => 'GB',
+						];
+					}
+					return null;
+				}
+			);
+
+		$response = $this->do_request(
+			self::ROUTE_MARKETS,
+			'POST',
+			[
+				'country' => 'GB',
+			]
+		);
+
+		$this->assertEquals( 201, $response->get_status() );
+	}
+
+	public function test_post_market_returns_400_when_feed_label_pattern_invalid(): void {
+		$this->market_service->method( 'get_market' )
+			->willReturn( null );
+
+		$this->market_service->method( 'add_market' )
+			->willThrowException(
+				InvalidValue::does_not_match_pattern( 'feed_label', '/^[A-Z0-9-]{1,20}$/', 'gb-en' )
+			);
+
+		$response = $this->do_request(
+			self::ROUTE_MARKETS,
+			'POST',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'gb-en',
+			]
+		);
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertStringContainsString( 'feed_label', $response->get_data()['message'] );
+		$this->assertStringContainsString( 'gb-en', $response->get_data()['message'] );
+	}
+
+	public function test_put_passes_feed_label_through(): void {
+		$this->market_service->method( 'get_market' )
+			->with( 'gb' )
+			->willReturn( self::SECONDARY_MARKET );
+
+		$this->market_service->expects( $this->once() )
+			->method( 'update_market' )
+			->with(
+				'gb',
+				$this->callback(
+					function ( $params ) {
+						return isset( $params['feed_label'] )
+							&& 'GB-EN' === $params['feed_label'];
+					}
+				)
+			)
+			->willReturn(
+				array_merge( self::SECONDARY_MARKET, [ 'feed_label' => 'GB-EN' ] )
+			);
+
+		$response = $this->do_request(
+			self::ROUTE_MARKET . 'gb',
+			'PUT',
+			[
+				'feed_label' => 'GB-EN',
+			]
+		);
+
+		$this->assertEquals( 200, $response->get_status() );
 	}
 }
