@@ -12,6 +12,7 @@ import { closeSmall } from '@wordpress/icons';
 import { glaData } from '~/constants';
 import { useAppDispatch } from '~/data';
 import AppButton from '~/components/app-button';
+import NotificationSkeleton from './notification-skeleton';
 import googleLogoURL from '~/images/logo/google-g-logo.svg';
 import './notification.scss';
 
@@ -34,6 +35,7 @@ import './notification.scss';
  * @param {number} props.triggeredAt Unix timestamp (seconds) when the notification was triggered.
  * @param {NotificationAction[]} props.actions CTA buttons.
  * @param {Function} [props.onDismiss] Callback invoked after dismissNotification succeeds.
+ * @param {boolean} [props.isReady] Whether the notification data is ready. Renders a skeleton when false.
  */
 const Notification = ( {
 	id,
@@ -42,8 +44,14 @@ const Notification = ( {
 	triggeredAt,
 	actions = [],
 	onDismiss,
+	isReady,
 } ) => {
 	const { dismissNotification } = useAppDispatch();
+
+	if ( isReady === false ) {
+		return <NotificationSkeleton />;
+	}
+
 	const formattedDate = dateI18n(
 		glaData.dateFormat,
 		new Date( triggeredAt * 1000 )

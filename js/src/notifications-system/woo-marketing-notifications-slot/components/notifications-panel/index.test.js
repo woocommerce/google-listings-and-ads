@@ -38,7 +38,7 @@ describe( 'NotificationsPanel', () => {
 		expect( screen.getByTestId( 'notification-b' ) ).toBeInTheDocument();
 	} );
 
-	it( 'skips notifications with no component without error', () => {
+	it( 'skips rendering for notifications with no component', () => {
 		useNotifications.mockReturnValue( {
 			notifications: [
 				{ id: 'a', triggered_at: 1000, component: MockNotificationA },
@@ -48,7 +48,7 @@ describe( 'NotificationsPanel', () => {
 		render( <NotificationsPanel /> );
 		expect( screen.getByTestId( 'notification-a' ) ).toBeInTheDocument();
 		expect(
-			screen.queryByTestId( 'notification-no-component' )
+			screen.queryByTestId( 'no-component' )
 		).not.toBeInTheDocument();
 	} );
 
