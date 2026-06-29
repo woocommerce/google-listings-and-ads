@@ -61,6 +61,15 @@ class PausedCampaignEvaluatorTest extends UnitTest {
 		$this->assertFalse( $this->evaluator->should_show() );
 	}
 
+	public function test_should_not_show_when_no_campaigns() {
+		$this->ads_service->method( 'is_setup_complete' )->willReturn( true );
+		$this->ads_campaign->method( 'get_campaigns' )
+			->with( true, false )
+			->willReturn( [] );
+
+		$this->assertFalse( $this->evaluator->should_show() );
+	}
+
 	public function test_should_show_when_paused_campaign_present() {
 		$this->ads_service->method( 'is_setup_complete' )->willReturn( true );
 		$this->ads_campaign->method( 'get_campaigns' )
