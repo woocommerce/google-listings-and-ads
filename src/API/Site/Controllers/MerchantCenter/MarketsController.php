@@ -366,7 +366,7 @@ class MarketsController extends BaseController {
 			],
 			'country'       => [
 				'type'              => 'string',
-				'description'       => __( 'Primary country code in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
+				'description'       => __( 'Primary country code in ISO 3166-1 alpha-2 format. Null for the primary market.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
@@ -386,7 +386,7 @@ class MarketsController extends BaseController {
 			],
 			'feed_label'    => [
 				'type'              => 'string',
-				'description'       => __( 'Google feed label.', 'google-listings-and-ads' ),
+				'description'       => __( 'Google feed label. Null for the primary market.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],

@@ -151,26 +151,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Generates the default markets configuration from site settings.
-	 *
-	 * Returns a config-shape primary keyed by 'primary'.
-	 *
-	 * @return array[]
-	 */
-	public function build_default_markets(): array {
-		$country = $this->target_audience->get_main_target_country();
-
-		return [
-			'primary' => [
-				'country'    => $country,
-				'language'   => [ $this->get_site_primary_language() ],
-				'currency'   => [ $this->get_site_primary_currency() ],
-				'feed_label' => $country,
-			],
-		];
-	}
-
-	/**
 	 * Builds and returns the full response-ready primary market.
 	 *
 	 * Composes from TargetAudience, MerchantCenter options, site locale/currency,
@@ -179,17 +159,18 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @return array
 	 */
 	public function get_primary_market(): array {
-		$defaults    = $this->build_default_markets()['primary'];
-		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+		$mc_settings      = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+		$default_language = [ $this->get_site_primary_language() ];
+		$default_currency = [ $this->get_site_primary_currency() ];
 
 		return [
 			'id'            => 'primary',
 			'label'         => __( 'Primary Market', 'google-listings-and-ads' ),
 			'countries'     => $this->target_audience->get_target_countries(),
-			'country'       => $defaults['country'],
-			'language'      => is_array( $mc_settings['language'] ?? null ) ? $mc_settings['language'] : $defaults['language'],
-			'currency'      => is_array( $mc_settings['currency'] ?? null ) ? $mc_settings['currency'] : $defaults['currency'],
-			'feed_label'    => $defaults['feed_label'],
+			'country'       => null,
+			'language'      => is_array( $mc_settings['language'] ?? null ) ? $mc_settings['language'] : $default_language,
+			'currency'      => is_array( $mc_settings['currency'] ?? null ) ? $mc_settings['currency'] : $default_currency,
+			'feed_label'    => null,
 			'shipping_rate' => $mc_settings['shipping_rate'] ?? null,
 			'shipping_time' => $mc_settings['shipping_time'] ?? null,
 			'free_shipping' => $this->get_primary_free_shipping_threshold(),
@@ -566,6 +547,9 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 	/**
 	 * Returns the free-shipping threshold for the primary market's country.
+	 *
+	 * Uses get_main_target_country() as a single-country fallback for the aggregated
+	 * free_shipping field; multi-country aggregation is out of scope.
 	 *
 	 * @return float|null The threshold amount, or null when unset.
 	 */
