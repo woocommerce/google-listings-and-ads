@@ -546,10 +546,10 @@ class WPMLTest extends UnitTest {
 	}
 
 	/**
-	 * @param bool                          $is_active
-	 * @param string[]                      $currency_codes
-	 * @param bool|null                     $wcml_multi_currency_on When non-null, stubs is_wcml_multi_currency_on() to this value.
-	 * @param array<string, string>|false   $custom_prices          Return value for get_wcml_custom_prices() (default false = auto mode).
+	 * @param bool                        $is_active
+	 * @param string[]                    $currency_codes
+	 * @param bool|null                   $wcml_multi_currency_on When non-null, stubs is_wcml_multi_currency_on() to this value.
+	 * @param array<string, string>|false $custom_prices          Return value for get_wcml_custom_prices() (default false = auto mode).
 	 *
 	 * @return WPML&MockObject
 	 */
