@@ -33,7 +33,7 @@ function createNotificationComponent( id, triggeredAt ) {
 			return null;
 		}
 
-		const { title, description, actions } = config;
+		const { title, description, actions, isReady } = config;
 
 		const handleDismiss = () => {
 			dismissNotification( id );
@@ -45,6 +45,7 @@ function createNotificationComponent( id, triggeredAt ) {
 			description,
 			actions,
 			triggeredAt,
+			isReady,
 			onDismiss: handleDismiss,
 		} );
 	};
