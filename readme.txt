@@ -141,12 +141,11 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 == Changelog ==
 
 = 3.7.2 - 2026-06-29 =
-* Fix - [GOOWOO-523] [Security] Remove $_GET parameter overrides in Options::get_ads_id() and Options::get_merchant_id().
-* Fix - Added an option to connect a Merchant Center account when a service-based user adds physical products.
+* Add - Added an option to connect a Merchant Center account when a service-based user adds physical products.
+* Dev - Remove $_GET parameter overrides in Options::get_ads_id() and Options::get_merchant_id().
 * Fix - Align the main tab navigation's keyboard-focus indicator with the WordPress core style and stop showing a focus indicator on mouse press.
 * Fix - Ensure incomplete connection states show as disconnected.
 * Fix - Fix flaky E2E tests for onboarding step-3 campaign flow.
-* Fix - Fix PHP Unit Tests Failure.
 * Fix - Fix webpack commons chunk misconfiguration causing disproportionate bundle growth; add dedicated bundlewatch entries for all page chunks with realistic size limits.
 * Fix - Resolved console log errors when selecting AI generated images in campaigns.
 
