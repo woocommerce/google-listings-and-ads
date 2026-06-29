@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationEvaluatorTrait;
@@ -26,17 +26,15 @@ class CouponsNotSyncedEvaluator implements NotificationEvaluatorInterface, Servi
 
 	use CachedNotificationEvaluatorTrait;
 
-	/** @var CouponHelper */
-	protected $coupon_helper;
+	/**
+	 * Number of coupon post IDs to fetch per query.
+	 */
+	private const COUPONS_PER_PAGE = 50;
 
 	/**
-	 * CouponsNotSyncedEvaluator constructor.
-	 *
-	 * @param CouponHelper $coupon_helper
+	 * Database meta key for coupon sync status.
 	 */
-	public function __construct( CouponHelper $coupon_helper ) {
-		$this->coupon_helper = $coupon_helper;
-	}
+	private const SYNC_STATUS_META_KEY = '_wc_gla_' . CouponMetaHandler::KEY_SYNC_STATUS;
 
 	/**
 	 * Get the notification's unique ID.
@@ -53,17 +51,23 @@ class CouponsNotSyncedEvaluator implements NotificationEvaluatorInterface, Servi
 	 * @return bool
 	 */
 	protected function evaluate_condition(): bool {
-		foreach ( $this->get_coupons() as $coupon ) {
-			if ( ! CouponSyncer::is_coupon_supported( $coupon ) ) {
-				continue;
+		$page = 1;
+
+		while ( true ) {
+			$coupon_post_ids = $this->get_not_synced_coupon_post_ids( $page );
+
+			if ( empty( $coupon_post_ids ) ) {
+				return false;
 			}
 
-			if ( SyncStatus::NOT_SYNCED === $this->coupon_helper->get_sync_status( $coupon ) ) {
-				return true;
+			foreach ( $coupon_post_ids as $post_id ) {
+				if ( CouponSyncer::is_coupon_supported( $this->create_coupon( $post_id ) ) ) {
+					return true;
+				}
 			}
+
+			++$page;
 		}
-
-		return false;
 	}
 
 	/**
@@ -85,24 +89,40 @@ class CouponsNotSyncedEvaluator implements NotificationEvaluatorInterface, Servi
 	}
 
 	/**
-	 * Get all WooCommerce coupons.
+	 * Get a page of post IDs for published coupons with a NOT_SYNCED sync status.
 	 *
-	 * @return WC_Coupon[]
+	 * @param int $page Page number for paginated queries.
+	 *
+	 * @return int[]
 	 */
-	protected function get_coupons(): array {
+	protected function get_not_synced_coupon_post_ids( int $page = 1 ): array {
 		$coupon_posts = get_posts(
 			[
 				'post_type'      => 'shop_coupon',
-				'posts_per_page' => -1,
 				'post_status'    => 'publish',
+				'posts_per_page' => self::COUPONS_PER_PAGE,
+				'paged'          => $page,
+				'fields'         => 'ids',
+				'meta_query'     => [
+					[
+						'key'   => self::SYNC_STATUS_META_KEY,
+						'value' => SyncStatus::NOT_SYNCED,
+					],
+				],
 			]
 		);
 
-		return array_map(
-			static function ( $post ) {
-				return new WC_Coupon( $post->ID );
-			},
-			$coupon_posts
-		);
+		return array_map( 'intval', $coupon_posts );
+	}
+
+	/**
+	 * Create a coupon object for a post ID.
+	 *
+	 * @param int $post_id Coupon post ID.
+	 *
+	 * @return WC_Coupon
+	 */
+	protected function create_coupon( int $post_id ): WC_Coupon {
+		return new WC_Coupon( $post_id );
 	}
 }

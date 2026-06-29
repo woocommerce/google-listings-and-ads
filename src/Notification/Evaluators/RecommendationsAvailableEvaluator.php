@@ -28,10 +28,10 @@ class RecommendationsAvailableEvaluator implements NotificationEvaluatorInterfac
 	use CachedNotificationEvaluatorTrait;
 
 	/** @var AdsRecommendationsService */
-	protected $ads_recommendations;
+	private $ads_recommendations;
 
 	/** @var AdsCampaign */
-	protected $ads_campaign;
+	private $ads_campaign;
 
 	/**
 	 * RecommendationsAvailableEvaluator constructor.

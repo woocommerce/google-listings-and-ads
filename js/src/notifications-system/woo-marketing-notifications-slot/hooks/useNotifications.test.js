@@ -8,7 +8,7 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import useNotifications from './useNotifications';
-import { STORE_NAME } from './constants';
+import { STORE_KEY } from '../data/constants';
 
 jest.mock( '@wordpress/data', () => ( {
 	useSelect: jest.fn(),
@@ -32,7 +32,7 @@ describe( 'useNotifications', () => {
 
 		const { result } = renderHook( () => useNotifications() );
 
-		expect( select ).toHaveBeenCalledWith( STORE_NAME );
+		expect( select ).toHaveBeenCalledWith( STORE_KEY );
 		expect( getNotifications ).toHaveBeenCalledTimes( 1 );
 		expect( result.current ).toEqual( { notifications } );
 	} );

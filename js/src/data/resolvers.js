@@ -30,7 +30,6 @@ import {
 	adaptRaiseAdsBudgetRecommendations,
 } from './adapters';
 import { fetchWithHeaders, awaitPromise, recordGlaDataEvent } from './controls';
-
 import {
 	fetchShippingRates,
 	fetchShippingTimes,
@@ -855,7 +854,7 @@ export function* getNotifications() {
 			path: `${ API_NAMESPACE }/notifications`,
 		} );
 
-		yield receiveNotifications( response );
+		yield receiveNotifications( response.notifications ?? [] );
 	} catch ( error ) {
 		handleApiError(
 			error,

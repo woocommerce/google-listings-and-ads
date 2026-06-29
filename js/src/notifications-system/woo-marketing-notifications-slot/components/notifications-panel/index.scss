@@ -1,15 +1,9 @@
-.gla-notifications-panel {
+.gla-woo-marketing-notifications-slot-panel {
 	display: flex;
 	flex-direction: column;
 	gap: $grid-unit-40;
 
-	.gla-notifications-panel__title {
-		align-items: center;
-		display: flex;
-		gap: $grid-unit-20;
-	}
-
-	.gla-notifications-panel__badge {
+	.gla-woo-marketing-notifications-slot-panel__badge {
 		align-items: center;
 		display: flex;
 		font-size: 12px;
@@ -19,3 +13,4 @@
 		width: 24px;
 	}
 }
+

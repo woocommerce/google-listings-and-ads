@@ -1,73 +1,78 @@
 /**
  * External dependencies
  */
-import { createRoot } from '@wordpress/element';
+import { resolveSelect } from '@wordpress/data';
+import { createElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import NotificationsPanel from './notifications-panel';
-import './index.scss';
-
-const MULTICHANNEL_CLASS = 'woocommerce-marketing-overview-multichannel';
-const BANNER_CLASS = 'woocommerce-marketing-introduction-banner';
-const CONTAINER_CLASS = 'gla-notification-system-container';
-
-let currentRoot = null;
+import { STORE_KEY } from '~/data/constants';
+import {
+	initMarketingNotificationsSlot,
+	registerNotificationsInMarketingSlot,
+	useDismissNotificationFromMarketingSlot,
+} from './woo-marketing-notifications-slot';
+import Notification from './notification';
+import useNotificationsSystemMap from './useNotificationsSystemMap';
 
 /**
- * Mounts the NotificationsPanel into the multichannel marketing overview element.
- * Creates a container and inserts it after the introduction banner, or prepends
- * it if no banner is present. Disconnects the observer once mounted.
+ * Creates a notification component.
  *
- * @param {Element} multichannel The multichannel marketing overview element.
- * @param {MutationObserver} mountObserver The observer to disconnect after mounting.
+ * @param {string} id Notification ID, used to call dismissNotification on dismiss.
+ * @param {number} triggeredAt Unix timestamp (seconds) when the notification was triggered.
+ * @return {Function} A function that returns a React component.
  */
-function mount( multichannel, mountObserver ) {
-	let container = document.querySelector( `.${ CONTAINER_CLASS }` );
+function createNotificationComponent( id, triggeredAt ) {
+	return function NotificationComponent() {
+		const notificationMap = useNotificationsSystemMap();
+		const dismissNotification = useDismissNotificationFromMarketingSlot();
+		const config = notificationMap[ id ];
 
-	if ( container && currentRoot ) {
+		if ( ! config ) {
+			return null;
+		}
+
+		const { title, description, actions, isReady } = config;
+
+		const handleDismiss = () => {
+			dismissNotification( id );
+		};
+
+		return createElement( Notification, {
+			id,
+			title,
+			description,
+			actions,
+			triggeredAt,
+			isReady,
+			onDismiss: handleDismiss,
+		} );
+	};
+}
+
+/**
+ * Initializes the notifications system by fetching notifications from the GLA store
+ * and registering them in the marketing notifications store.
+ */
+async function initNotifications() {
+	const glaNotifications =
+		await resolveSelect( STORE_KEY ).getNotifications();
+
+	if ( ! glaNotifications.length ) {
 		return;
 	}
 
-	if ( ! container ) {
-		container = document.createElement( 'div' );
-		container.className = CONTAINER_CLASS;
+	const notifications = glaNotifications.map( ( { id, triggered_at } ) => {
+		return {
+			id,
+			triggered_at, // The triggered_at timestamp is used for sorting notifications in the marketing notifications store.
+			component: createNotificationComponent( id, triggered_at ),
+		};
+	} );
 
-		const banner = multichannel.querySelector( `.${ BANNER_CLASS }` );
-
-		if ( banner ) {
-			banner.insertAdjacentElement( 'afterend', container );
-		} else {
-			multichannel.insertBefore( container, multichannel.firstChild );
-		}
-	}
-
-	if ( currentRoot ) {
-		currentRoot.unmount();
-	}
-
-	currentRoot = createRoot( container );
-	currentRoot.render( <NotificationsPanel /> );
-	mountObserver.disconnect();
+	initMarketingNotificationsSlot();
+	registerNotificationsInMarketingSlot( notifications );
 }
 
-const observer = new MutationObserver( ( _, mountObserver ) => {
-	const multichannel = document.querySelector( `.${ MULTICHANNEL_CLASS }` );
-	if ( multichannel ) {
-		mount( multichannel, mountObserver );
-	}
-} );
-
-observer.observe( document.body, {
-	childList: true,
-	subtree: true,
-} );
-
-const existingMultichannel = document.querySelector(
-	`.${ MULTICHANNEL_CLASS }`
-);
-
-if ( existingMultichannel ) {
-	mount( existingMultichannel, observer );
-}
+initNotifications();

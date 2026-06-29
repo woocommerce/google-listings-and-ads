@@ -84,7 +84,7 @@ class SalesNotGrowingEvaluator implements NotificationEvaluatorInterface, Option
 	 *
 	 * @return bool
 	 */
-	protected function is_installed_for_at_least_one_year(): bool {
+	private function is_installed_for_at_least_one_year(): bool {
 		$install_timestamp = $this->options->get( OptionsInterface::INSTALL_TIMESTAMP );
 
 		if ( ! $install_timestamp ) {
@@ -152,7 +152,7 @@ class SalesNotGrowingEvaluator implements NotificationEvaluatorInterface, Option
 	 *
 	 * @return string
 	 */
-	protected function format_datetime_as_gmt( DateTime $date ): string {
+	private function format_datetime_as_gmt( DateTime $date ): string {
 		$utc = clone $date;
 		$utc->setTimezone( new DateTimeZone( 'UTC' ) );
 

@@ -29,7 +29,7 @@ class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwa
 	use CachedNotificationEvaluatorTrait;
 
 	/** @var AdsCampaign */
-	protected $ads_campaign;
+	private $ads_campaign;
 
 	/**
 	 * SkippedCampaignEvaluator constructor.
