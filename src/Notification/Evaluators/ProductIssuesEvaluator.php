@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
@@ -27,6 +28,18 @@ class ProductIssuesEvaluator implements NotificationEvaluatorInterface, Merchant
 	use MerchantCenterAwareTrait;
 	use TransientsAwareTrait;
 
+	/** @var ServiceBasedMerchantState */
+	private $service_based_merchant_state;
+
+	/**
+	 * ProductIssuesEvaluator constructor.
+	 *
+	 * @param ServiceBasedMerchantState $service_based_merchant_state
+	 */
+	public function __construct( ServiceBasedMerchantState $service_based_merchant_state ) {
+		$this->service_based_merchant_state = $service_based_merchant_state;
+	}
+
 	/**
 	 * Get the notification's unique ID.
 	 *
@@ -42,6 +55,10 @@ class ProductIssuesEvaluator implements NotificationEvaluatorInterface, Merchant
 	 * @return bool
 	 */
 	public function should_show(): bool {
+		if ( $this->service_based_merchant_state->is_service_based_merchant() ) {
+			return false;
+		}
+
 		if ( ! $this->merchant_center->is_connected() ) {
 			return false;
 		}
