@@ -88,7 +88,7 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	 *
 	 * @return \Google\Ads\GoogleAds\V23\Services\Client\AssetGenerationServiceClient
 	 */
-	protected function get_client() {
+	private function get_client() {
 		if ( ! isset( $this->client ) ) {
 			$this->client = $this->google_ads_client->getAssetGenerationServiceClient();
 		}

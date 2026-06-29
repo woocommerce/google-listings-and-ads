@@ -4,6 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
@@ -20,6 +22,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwa
 class RESTControllers implements ContainerAwareInterface, Service, Registerable {
 
 	use ContainerAwareTrait;
+	use ValidateInterface;
 
 	/**
 	 * Register a service.
@@ -39,24 +42,18 @@ class RESTControllers implements ContainerAwareInterface, Service, Registerable 
 	 * The DI container can return a class-name string instead of an instance
 	 * when the underlying class fails to autoload at definition-resolution time.
 	 * That has been observed during the plugin upgrade flow, where in-memory
-	 * autoload state lagged the new files on disk and triggered a fatal
-	 * `InvalidClass` from the previous validate-then-throw approach. Skip
-	 * non-instance entries here and log them so a transient autoload failure
-	 * on a single page render does not take down the whole admin.
+	 * autoload state lagged the new files on disk. Catching the InvalidClass
+	 * exception thrown by validate_instanceof prevents a transient autoload
+	 * failure on a single page render from taking down the whole admin.
 	 */
 	protected function register_controllers(): void {
+		/** @var BaseController[] $controllers */
 		$controllers = $this->container->get( 'rest_controller' );
 		foreach ( $controllers as $controller ) {
-			if ( ! $controller instanceof BaseController ) {
-				$description = is_string( $controller )
-					? sprintf( 'class-name string "%s"', $controller )
-					: ( is_object( $controller ) ? sprintf( 'instance of %s', get_class( $controller ) ) : gettype( $controller ) );
-
-				do_action(
-					'woocommerce_gla_debug_message',
-					sprintf( 'Expected a BaseController instance from the container; got %s. Skipping.', $description ),
-					__METHOD__
-				);
+			try {
+				$this->validate_instanceof( $controller, BaseController::class );
+			} catch ( InvalidClass $e ) {
+				do_action( 'woocommerce_gla_error', $e->getMessage(), __METHOD__ );
 				continue;
 			}
 			$controller->register();

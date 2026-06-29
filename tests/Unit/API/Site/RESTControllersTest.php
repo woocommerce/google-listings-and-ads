@@ -19,7 +19,7 @@ class RESTControllersTest extends UnitTest {
 	 * Regression: when the DI container returns a class-name string instead of
 	 * a resolved BaseController instance (observed during plugin upgrade when
 	 * autoloader state lags new files on disk), registration must skip the
-	 * entry and log a debug message rather than throwing a fatal.
+	 * entry and log an error rather than throwing a fatal.
 	 */
 	public function test_register_controllers_skips_string_entries_without_fatal() {
 		$controller = $this->createMock( BaseController::class );
@@ -36,13 +36,10 @@ class RESTControllersTest extends UnitTest {
 			);
 
 		$captured = [];
-		$listener = function ( $message, $context ) use ( &$captured ) {
-			$captured[] = [
-				'message' => $message,
-				'context' => $context,
-			];
+		$listener = function ( $message ) use ( &$captured ) {
+			$captured[] = $message;
 		};
-		add_action( 'woocommerce_gla_debug_message', $listener, 10, 2 );
+		add_action( 'woocommerce_gla_error', $listener, 10, 2 );
 
 		$rest_controllers = new RESTControllers();
 		$rest_controllers->set_container( $container );
@@ -52,12 +49,11 @@ class RESTControllersTest extends UnitTest {
 		$method->setAccessible( true );
 		$method->invoke( $rest_controllers );
 
-		remove_action( 'woocommerce_gla_debug_message', $listener, 10 );
+		remove_action( 'woocommerce_gla_error', $listener, 10 );
 
-		$this->assertCount( 1, $captured, 'A debug message should be logged for the skipped string entry.' );
-		$this->assertStringContainsString( 'Expected a BaseController instance', $captured[0]['message'] );
-		$this->assertStringContainsString( 'class-name string', $captured[0]['message'] );
-		$this->assertStringContainsString( 'AssetGenerationController', $captured[0]['message'] );
+		$this->assertCount( 1, $captured, 'An error should be logged for the skipped string entry.' );
+		$this->assertStringContainsString( 'must implement', $captured[0] );
+		$this->assertStringContainsString( 'BaseController', $captured[0] );
 	}
 
 	/**
@@ -75,7 +71,7 @@ class RESTControllersTest extends UnitTest {
 		$listener = function ( $message ) use ( &$captured ) {
 			$captured[] = $message;
 		};
-		add_action( 'woocommerce_gla_debug_message', $listener );
+		add_action( 'woocommerce_gla_error', $listener );
 
 		$rest_controllers = new RESTControllers();
 		$rest_controllers->set_container( $container );
@@ -85,17 +81,18 @@ class RESTControllersTest extends UnitTest {
 		$method->setAccessible( true );
 		$method->invoke( $rest_controllers );
 
-		remove_action( 'woocommerce_gla_debug_message', $listener );
+		remove_action( 'woocommerce_gla_error', $listener );
 
 		$this->assertCount( 1, $captured );
-		$this->assertStringContainsString( 'instance of stdClass', $captured[0] );
+		$this->assertStringContainsString( 'stdClass', $captured[0] );
+		$this->assertStringContainsString( 'must implement', $captured[0] );
 	}
 
 	/**
 	 * The loop must keep registering valid controllers no matter where invalid
 	 * entries appear in the container's returned array, and log exactly one
-	 * debug message per invalid entry. Proves a single bad entry never
-	 * cascades into skipping otherwise-valid controllers.
+	 * error per invalid entry. Proves a single bad entry never cascades into
+	 * skipping otherwise-valid controllers.
 	 */
 	public function test_register_controllers_registers_valid_entries_alongside_invalid_ones() {
 		$first  = $this->createMock( BaseController::class );
@@ -120,7 +117,7 @@ class RESTControllersTest extends UnitTest {
 		$listener = function ( $message ) use ( &$captured ) {
 			$captured[] = $message;
 		};
-		add_action( 'woocommerce_gla_debug_message', $listener );
+		add_action( 'woocommerce_gla_error', $listener );
 
 		$rest_controllers = new RESTControllers();
 		$rest_controllers->set_container( $container );
@@ -130,8 +127,8 @@ class RESTControllersTest extends UnitTest {
 		$method->setAccessible( true );
 		$method->invoke( $rest_controllers );
 
-		remove_action( 'woocommerce_gla_debug_message', $listener );
+		remove_action( 'woocommerce_gla_error', $listener );
 
-		$this->assertCount( 3, $captured, 'One debug message expected per invalid entry (string, stdClass, null).' );
+		$this->assertCount( 3, $captured, 'One error expected per invalid entry (string, stdClass, null).' );
 	}
 }
