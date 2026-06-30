@@ -18,6 +18,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\Product;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountIssuesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
@@ -59,6 +60,7 @@ class MerchantStatusesTest extends UnitTest {
 
 	private $merchant;
 	private $mapi_products_service;
+	private $mapi_account_issues_service;
 	private $merchant_issue_query;
 	private $merchant_center_service;
 	private $account_status;
@@ -85,6 +87,7 @@ class MerchantStatusesTest extends UnitTest {
 		parent::setUp();
 		$this->merchant                             = $this->createMock( Merchant::class );
 		$this->mapi_products_service                = $this->createMock( MapiProductsService::class );
+		$this->mapi_account_issues_service          = $this->createMock( MapiAccountIssuesService::class );
 		$this->merchant_issue_query                 = $this->createMock( MerchantIssueQuery::class );
 		$this->merchant_center_service              = $this->createMock( MerchantCenterService::class );
 		$this->account_status                       = $this->createMock( ShoppingContent\AccountStatus::class );
@@ -102,6 +105,7 @@ class MerchantStatusesTest extends UnitTest {
 		$this->container = new Container();
 		$this->container->addShared( Merchant::class, $this->merchant );
 		$this->container->addShared( MapiProductsService::class, $this->mapi_products_service );
+		$this->container->addShared( MapiAccountIssuesService::class, $this->mapi_account_issues_service );
 		$this->container->addShared( MerchantIssueQuery::class, $this->merchant_issue_query );
 		$this->container->addShared( MerchantCenterService::class, $this->merchant_center_service );
 		$this->container->addShared( TransientsInterface::class, $this->transients );
@@ -141,53 +145,46 @@ class MerchantStatusesTest extends UnitTest {
 	public function test_refresh_account_issues() {
 		$this->product_meta_query_helper->expects( $this->any() )->method( 'get_all_values' )->willReturn( [] );
 
-		$this->account_status->expects( $this->any() )
-		->method( 'getAccountLevelIssues' )
+		$this->mapi_account_issues_service->expects( $this->once() )
+		->method( 'get_account_issues' )
 		->willReturn(
 			[
-				'one'   => new ShoppingContent\AccountStatusAccountLevelIssue(
-					[
-						'id'            => 'id',
-						'title'         => 'title',
-						'country'       => 'US',
-						'destination'   => 'destination',
-						'detail'        => 'detail',
-						'documentation' => 'https://example.com',
-						'severity'      => 'critical',
-					]
-				),
-				'two'   => new ShoppingContent\AccountStatusAccountLevelIssue(
-					[
-						'id'            => 'id2',
-						'title'         => 'title2',
-						'country'       => 'CA',
-						'destination'   => 'destination2',
-						'detail'        => 'detail2',
-						'documentation' => 'https://example.com/2',
-						'severity'      => 'error',
-					]
-				),
-				'three' => new ShoppingContent\AccountStatusAccountLevelIssue(
-					[
-						'id'            => 'id2',
-						'title'         => 'title2',
-						'country'       => 'US',
-						'destination'   => 'destination2',
-						'detail'        => 'detail2',
-						'documentation' => 'https://example.com/2',
-						'severity'      => 'error',
-					]
-				),
+				[
+					'name'                 => 'accounts/12345/issues/id',
+					'title'                => 'title',
+					'detail'               => 'detail',
+					'documentationUri'     => 'https://example.com',
+					'severity'             => 'CRITICAL',
+					'impactedDestinations' => [
+						[ 'impacts' => [ [ 'regionCode' => 'US' ] ] ],
+					],
+				],
+				[
+					'name'                 => 'accounts/12345/issues/id2',
+					'title'                => 'title2',
+					'detail'               => 'detail2',
+					'documentationUri'     => 'https://example.com/2',
+					'severity'             => 'ERROR',
+					'impactedDestinations' => [
+						[ 'impacts' => [ [ 'regionCode' => 'CA' ], [ 'regionCode' => 'US' ] ] ],
+					],
+				],
+				[
+					'name'                 => 'accounts/12345/issues/id3',
+					'title'                => 'title3',
+					'detail'               => 'detail3',
+					'documentationUri'     => 'https://example.com/3',
+					'severity'             => 'SEVERITY_UNSPECIFIED',
+					'impactedDestinations' => [
+						[ 'impacts' => [ [ 'regionCode' => 'GB' ] ] ],
+					],
+				],
 			]
 		);
 
 		$this->merchant_center_service->expects( $this->any() )
 		->method( 'is_connected' )
 		->willReturn( true );
-
-		$this->merchant->expects( $this->any() )
-		->method( 'get_accountstatus' )
-		->willReturn( $this->account_status );
 
 		$issues = [
 			md5( 'title' )  => [
@@ -216,11 +213,70 @@ class MerchantStatusesTest extends UnitTest {
 				'source'               => 'mc',
 				'applicable_countries' => '["CA","US"]',
 			],
+			md5( 'title3' ) => [
+				'product_id'           => 0,
+				'product'              => 'All products',
+				'code'                 => 'id3',
+				'issue'                => 'title3',
+				'action'               => 'detail3',
+				'action_url'           => 'https://example.com/3',
+				'created_at'           => $this->merchant_statuses->get_cache_created_time()->format( 'Y-m-d H:i:s' ),
+				'type'                 => 'account',
+				'severity'             => 'error',
+				'source'               => 'mc',
+				'applicable_countries' => '["GB"]',
+			],
 		];
 
 		$this->merchant_issue_query->expects( $this->exactly( 2 ) )
 		->method( 'update_or_insert' )
 		->withConsecutive( [ $issues ], [] );
+		$this->merchant_statuses->refresh_account_and_presync_issues();
+	}
+
+	public function test_refresh_account_issues_overrides_home_page_issue() {
+		$this->product_meta_query_helper->expects( $this->any() )->method( 'get_all_values' )->willReturn( [] );
+
+		$this->mapi_account_issues_service->expects( $this->once() )
+		->method( 'get_account_issues' )
+		->willReturn(
+			[
+				[
+					'name'                 => 'accounts/12345/issues/home-page-issue',
+					'title'                => 'Some original Google title',
+					'detail'               => 'detail',
+					'documentationUri'     => 'https://example.com',
+					'severity'             => 'ERROR',
+					'impactedDestinations' => [
+						[ 'impacts' => [ [ 'regionCode' => 'US' ] ] ],
+					],
+				],
+			]
+		);
+
+		$this->merchant_center_service->expects( $this->any() )
+		->method( 'is_connected' )
+		->willReturn( true );
+
+		$expected = [
+			md5( 'Some original Google title' ) => [
+				'product_id'           => 0,
+				'product'              => 'All products',
+				'code'                 => 'home_page_issue',
+				'issue'                => 'Website claim is lost, need to re verify and claim your website. Please reference the support link',
+				'action'               => 'detail',
+				'action_url'           => 'https://woocommerce.com/document/google-for-woocommerce/faq/#reverify-website',
+				'created_at'           => $this->merchant_statuses->get_cache_created_time()->format( 'Y-m-d H:i:s' ),
+				'type'                 => 'account',
+				'severity'             => 'error',
+				'source'               => 'mc',
+				'applicable_countries' => '["US"]',
+			],
+		];
+
+		$this->merchant_issue_query->expects( $this->exactly( 2 ) )
+		->method( 'update_or_insert' )
+		->withConsecutive( [ $expected ], [] );
 		$this->merchant_statuses->refresh_account_and_presync_issues();
 	}
 
