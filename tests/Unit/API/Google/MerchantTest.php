@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountHomepageService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -37,6 +39,9 @@ class MerchantTest extends UnitTest {
 	/** @var MockObject|ShoppingContent $service */
 	protected $service;
 
+	/** @var MockObject|MapiAccountHomepageService $homepage_service */
+	protected $homepage_service;
+
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
@@ -57,8 +62,9 @@ class MerchantTest extends UnitTest {
 		$this->service->freelistingsprogram = $this->createMock( ShoppingContent\Resource\Freelistingsprogram::class );
 		$this->service->shoppingadsprogram  = $this->createMock( ShoppingContent\Resource\Shoppingadsprogram::class );
 
-		$this->options  = $this->createMock( OptionsInterface::class );
-		$this->merchant = new Merchant( $this->service );
+		$this->homepage_service = $this->createMock( MapiAccountHomepageService::class );
+		$this->options          = $this->createMock( OptionsInterface::class );
+		$this->merchant         = new Merchant( $this->service, $this->homepage_service );
 		$this->merchant->set_options_object( $this->options );
 
 		$this->merchant_id = 12345;
@@ -66,57 +72,43 @@ class MerchantTest extends UnitTest {
 	}
 
 	public function test_claim_website() {
-		$this->service->accounts->expects( $this->once() )
-			->method( 'claimwebsite' )
-			->with( $this->merchant_id, $this->merchant_id );
+		$this->homepage_service->expects( $this->once() )
+			->method( 'claim' )
+			->willReturn( [ 'claimed' => true ] );
 		$this->assertTrue( $this->merchant->claimwebsite() );
 	}
 
 	public function test_claimwebsite_error() {
-		$this->service->accounts->expects( $this->once() )
-			->method( 'claimwebsite' )
-			->with( $this->merchant_id, $this->merchant_id )
-			->will(
-				$this->throwException(
-					new GoogleException()
-				)
-			);
+		$this->homepage_service->expects( $this->once() )
+			->method( 'claim' )
+			->willThrowException( $this->merchant_api_exception( 500 ) );
 
 		$this->expectException( Exception::class );
 		$this->merchant->claimwebsite();
 	}
 
 	public function test_website_already_claimed() {
-		$this->service->accounts->expects( $this->once() )
-			->method( 'claimwebsite' )
-			->with( $this->merchant_id, $this->merchant_id )
-			->will(
-				$this->throwException(
-					new GoogleException( 'claimed', 403 )
-				)
-			);
+		$this->homepage_service->expects( $this->once() )
+			->method( 'claim' )
+			->willThrowException( $this->merchant_api_exception( 403 ) );
 
 		$this->expectException( Exception::class );
 		$this->expectExceptionCode( 403 );
 		$this->merchant->claimwebsite();
 	}
 
-	public function test_website_claim_conflict_content_api() {
-		$message = "There exist other accounts with homepage that conflicts with the homepage of account 1234567890. Set the parameter 'overwrite' to true if you want to take the claim and remove it from these accounts: user@example.com";
-		$error   = [
-			'domain'  => 'content.ContentErrorDomain',
-			'reason'  => 'invalid_parameter',
-			'message' => $message,
+	public function test_website_claim_conflict() {
+		$body = [
+			'error' => [
+				'code'    => 400,
+				'status'  => 'FAILED_PRECONDITION',
+				'message' => 'The homepage is already claimed by another account.',
+			],
 		];
 
-		$this->service->accounts->expects( $this->once() )
-			->method( 'claimwebsite' )
-			->with( $this->merchant_id, $this->merchant_id )
-			->will(
-				$this->throwException(
-					new GoogleServiceException( $message, 400, null, [ $error ] )
-				)
-			);
+		$this->homepage_service->expects( $this->once() )
+			->method( 'claim' )
+			->willThrowException( $this->merchant_api_exception( 400, $body ) );
 
 		$this->expectException( Exception::class );
 		$this->expectExceptionCode( 403 );
@@ -125,44 +117,17 @@ class MerchantTest extends UnitTest {
 	}
 
 	public function test_claimwebsite_non_conflict_400_error() {
-		$message = 'Request contains an invalid argument.';
-		$error   = [
-			'domain'  => 'content.ContentErrorDomain',
-			'reason'  => 'invalid',
-			'message' => $message,
+		$body = [
+			'error' => [
+				'code'    => 400,
+				'status'  => 'INVALID_ARGUMENT',
+				'message' => 'Request contains an invalid argument.',
+			],
 		];
 
-		$this->service->accounts->expects( $this->once() )
-			->method( 'claimwebsite' )
-			->with( $this->merchant_id, $this->merchant_id )
-			->will(
-				$this->throwException(
-					new GoogleServiceException( $message, 400, null, [ $error ] )
-				)
-			);
-
-		$this->expectException( Exception::class );
-		$this->expectExceptionCode( 400 );
-		$this->expectExceptionMessage( 'Unable to claim website.' );
-		$this->merchant->claimwebsite();
-	}
-
-	public function test_claimwebsite_non_content_api_domain_error() {
-		$message = "There exist other accounts with homepage that conflicts. Set the parameter 'overwrite' to true.";
-		$error   = [
-			'domain'  => 'global',
-			'reason'  => 'forbidden',
-			'message' => $message,
-		];
-
-		$this->service->accounts->expects( $this->once() )
-			->method( 'claimwebsite' )
-			->with( $this->merchant_id, $this->merchant_id )
-			->will(
-				$this->throwException(
-					new GoogleServiceException( $message, 400, null, [ $error ] )
-				)
-			);
+		$this->homepage_service->expects( $this->once() )
+			->method( 'claim' )
+			->willThrowException( $this->merchant_api_exception( 400, $body ) );
 
 		$this->expectException( Exception::class );
 		$this->expectExceptionCode( 400 );
@@ -279,30 +244,46 @@ class MerchantTest extends UnitTest {
 
 	public function test_get_claimed_url_hash_not_claimed() {
 		$url = 'https://site.test';
-		$this->mock_get_account( $this->get_account_with_url( $url ) );
-		$this->mock_get_account_status( $this->get_status_website_claimed( false ) );
+		$this->homepage_service->method( 'get_homepage' )
+			->willReturn(
+				[
+					'uri'     => $url,
+					'claimed' => false,
+				]
+			);
 
 		$this->assertNull( $this->merchant->get_claimed_url_hash() );
 	}
 
 	public function test_get_claimed_url_hash_from_account() {
 		$url = 'https://site.test';
-		$this->mock_get_account( $this->get_account_with_url( $url ) );
-		$this->mock_get_account_status( $this->get_status_website_claimed() );
+		$this->homepage_service->method( 'get_homepage' )
+			->willReturn(
+				[
+					'uri'     => $url,
+					'claimed' => true,
+				]
+			);
 
 		$this->assertEquals( md5( $url ), $this->merchant->get_claimed_url_hash() );
 	}
 
 	public function test_get_claimed_url_hash_with_trailing_slash() {
 		$url = 'https://site.test';
-		$this->mock_get_account( $this->get_account_with_url( trailingslashit( $url ) ) );
-		$this->mock_get_account_status( $this->get_status_website_claimed() );
+		$this->homepage_service->method( 'get_homepage' )
+			->willReturn(
+				[
+					'uri'     => trailingslashit( $url ),
+					'claimed' => true,
+				]
+			);
 
 		$this->assertEquals( md5( $url ), $this->merchant->get_claimed_url_hash() );
 	}
 
 	public function test_get_claimed_url_hash_from_account_failure() {
-		$this->mock_get_account_exception( $this->get_google_service_exception() );
+		$this->homepage_service->method( 'get_homepage' )
+			->willThrowException( $this->merchant_api_exception( 500 ) );
 
 		$this->assertNull( $this->merchant->get_claimed_url_hash() );
 	}
@@ -605,5 +586,9 @@ class MerchantTest extends UnitTest {
 			->method( 'get' )
 			->with( $this->merchant_id, $this->merchant_id )
 			->will( $this->throwException( $exception ) );
+	}
+
+	private function merchant_api_exception( int $http_status, array $response_body = [] ): MerchantApiException {
+		return new MerchantApiException( $http_status, $response_body, __METHOD__ );
 	}
 }

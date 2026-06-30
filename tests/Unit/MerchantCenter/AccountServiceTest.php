@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountHomepageService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
@@ -52,6 +53,9 @@ class AccountServiceTest extends UnitTest {
 
 	/** @var MockObject|Merchant $merchant */
 	protected $merchant;
+
+	/** @var MockObject|MapiAccountHomepageService $homepage_service */
+	protected $homepage_service;
 
 	/** @var MockObject|MerchantCenterService $mc_service */
 	protected $mc_service;
@@ -132,6 +136,7 @@ class AccountServiceTest extends UnitTest {
 		$this->ads                          = $this->createMock( Ads::class );
 		$this->cleanup_synced               = $this->createMock( CleanupSyncedProducts::class );
 		$this->merchant                     = $this->createMock( Merchant::class );
+		$this->homepage_service             = $this->createMock( MapiAccountHomepageService::class );
 		$this->mc_service                   = $this->createMock( MerchantCenterService::class );
 		$this->issue_table                  = $this->createMock( MerchantIssueTable::class );
 		$this->merchant_statuses            = $this->createMock( MerchantStatuses::class );
@@ -151,6 +156,7 @@ class AccountServiceTest extends UnitTest {
 		$this->container->addShared( AdsAccountState::class, $this->ads_state );
 		$this->container->addShared( CleanupSyncedProducts::class, $this->cleanup_synced );
 		$this->container->addShared( Merchant::class, $this->merchant );
+		$this->container->addShared( MapiAccountHomepageService::class, $this->homepage_service );
 		$this->container->addShared( MerchantCenterService::class, $this->mc_service );
 		$this->container->addShared( MerchantIssueTable::class, $this->issue_table );
 		$this->container->addShared( MerchantStatuses::class, $this->merchant_statuses );
@@ -322,9 +328,10 @@ class AccountServiceTest extends UnitTest {
 			->method( 'get_account' )
 			->willReturn( $this->get_account_with_url( self::TEST_OLD_URL ) );
 
-		$this->merchant->expects( $this->any() )
-			->method( 'get_accountstatus' )
-			->willReturn( $this->get_status_website_claimed() );
+		$this->homepage_service->expects( $this->any() )
+			->method( 'get_homepage' )
+			->with( self::TEST_ACCOUNT_ID )
+			->willReturn( [ 'claimed' => true ] );
 
 		try {
 			$this->account->use_existing_account_id( self::TEST_ACCOUNT_ID );
@@ -507,9 +514,10 @@ class AccountServiceTest extends UnitTest {
 				]
 			);
 
-		$this->merchant->expects( $this->any() )
-			->method( 'get_accountstatus' )
-			->willReturn( $this->get_status_website_claimed() );
+		$this->homepage_service->expects( $this->any() )
+			->method( 'get_homepage' )
+			->with( self::TEST_ACCOUNT_ID )
+			->willReturn( [ 'claimed' => true ] );
 
 		$this->merchant->expects( $this->never() )
 			->method( 'claimwebsite' );
