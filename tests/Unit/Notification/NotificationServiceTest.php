@@ -6,6 +6,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\SiteScopedNotificationEvaluatorInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
@@ -36,8 +38,12 @@ class NotificationServiceTest extends UnitTest {
 
 		$this->container = $this->createMock( Container::class );
 
+		$options = new Options();
+		$options->set_wp_proxy_object( new WP() );
+
 		$this->service = new NotificationService( new WP() );
 		$this->service->set_container( $this->container );
+		$this->service->set_options_object( $options );
 	}
 
 	public function test_returns_ids_in_priority_order() {
@@ -177,7 +183,7 @@ class NotificationServiceTest extends UnitTest {
 
 		$this->service->get_notifications();
 
-		$site_state = get_option( 'gla_notifications_site_state', [] );
+		$site_state = get_option( 'gla_' . OptionsInterface::NOTIFICATIONS_SITE_STATE, [] );
 		$user_state = get_user_meta( get_current_user_id(), 'gla_notifications_state', true );
 
 		$this->assertNotEmpty( $site_state['sold-10-items']['triggered_at'] );

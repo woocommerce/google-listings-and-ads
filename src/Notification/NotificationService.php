@@ -6,6 +6,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Notification;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\PermissionsTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 
 defined( 'ABSPATH' ) || exit;
@@ -23,20 +26,16 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification
  */
-class NotificationService implements ContainerAwareInterface {
+class NotificationService implements ContainerAwareInterface, OptionsAwareInterface {
 
 	use ContainerAwareTrait;
+	use OptionsAwareTrait;
 	use PermissionsTrait;
 
 	/**
 	 * The user_meta key under which per-user notifications state is stored.
 	 */
 	protected const STATE_META_KEY = 'gla_notifications_state';
-
-	/**
-	 * The site option key under which merchant-scoped notifications state is stored.
-	 */
-	protected const SITE_STATE_OPTION_KEY = 'gla_notifications_site_state';
 
 	/**
 	 * The current schema version of the persisted state.
@@ -244,7 +243,7 @@ class NotificationService implements ContainerAwareInterface {
 	 * @return array
 	 */
 	protected function get_site_state(): array {
-		$state = $this->wp->get_option( self::SITE_STATE_OPTION_KEY, [] );
+		$state = $this->options->get( OptionsInterface::NOTIFICATIONS_SITE_STATE, [] );
 
 		if ( ! is_array( $state ) || empty( $state ) ) {
 			return [ self::VERSION_KEY => self::SCHEMA_VERSION ];
@@ -263,6 +262,6 @@ class NotificationService implements ContainerAwareInterface {
 	protected function save_site_state( array $state ): void {
 		$state[ self::VERSION_KEY ] = self::SCHEMA_VERSION;
 
-		$this->wp->update_option( self::SITE_STATE_OPTION_KEY, $state );
+		$this->options->update( OptionsInterface::NOTIFICATIONS_SITE_STATE, $state );
 	}
 }

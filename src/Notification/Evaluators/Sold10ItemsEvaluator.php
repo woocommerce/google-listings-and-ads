@@ -97,39 +97,36 @@ class Sold10ItemsEvaluator implements SiteScopedNotificationEvaluatorInterface, 
 		$status_placeholders = implode( ', ', array_fill( 0, count( $wc_statuses ), '%s' ) );
 		$query_limit         = $minimum + 1;
 
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- dynamic IN() placeholders.
 		if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
-			$count = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT COUNT(*) FROM (
-						SELECT id
-						FROM {$wpdb->prefix}wc_orders
-						WHERE type = 'shop_order'
-							AND status IN ( {$status_placeholders} )
-							AND total_amount > 0
-						LIMIT %d
-					) AS revenue_orders",
-					array_merge( $wc_statuses, [ $query_limit ] )
-				)
-			);
+			$query = "SELECT COUNT(*) FROM (
+				SELECT id
+				FROM {$wpdb->prefix}wc_orders
+				WHERE type = 'shop_order'
+					AND status IN ( {$status_placeholders} )
+					AND total_amount > 0
+				LIMIT %d
+			) AS revenue_orders";
 		} else {
-			$count = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT COUNT(*) FROM (
-						SELECT posts.ID
-						FROM {$wpdb->posts} AS posts
-						INNER JOIN {$wpdb->postmeta} AS meta
-							ON posts.ID = meta.post_id
-						WHERE posts.post_type = 'shop_order'
-							AND posts.post_status IN ( {$status_placeholders} )
-							AND meta.meta_key = '_order_total'
-							AND meta.meta_value + 0 > 0
-						LIMIT %d
-					) AS revenue_orders",
-					array_merge( $wc_statuses, [ $query_limit ] )
-				)
-			);
+			$query = "SELECT COUNT(*) FROM (
+				SELECT posts.ID
+				FROM {$wpdb->posts} AS posts
+				INNER JOIN {$wpdb->postmeta} AS meta
+					ON posts.ID = meta.post_id
+				WHERE posts.post_type = 'shop_order'
+					AND posts.post_status IN ( {$status_placeholders} )
+					AND meta.meta_key = '_order_total'
+					AND meta.meta_value + 0 > 0
+				LIMIT %d
+			) AS revenue_orders";
 		}
+
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- dynamic IN() placeholders.
+		$count = $wpdb->get_var(
+			$wpdb->prepare(
+				$query,
+				array_merge( $wc_statuses, [ $query_limit ] )
+			)
+		);
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 
 		return (int) $count >= $minimum;
@@ -141,6 +138,7 @@ class Sold10ItemsEvaluator implements SiteScopedNotificationEvaluatorInterface, 
 	 * @return string[]
 	 */
 	private function get_paid_order_statuses(): array {
+		// compatibility-code "WC < 3.0" -- wc_get_is_paid_statuses() added in 3.0
 		if ( function_exists( 'wc_get_is_paid_statuses' ) ) {
 			return wc_get_is_paid_statuses();
 		}
