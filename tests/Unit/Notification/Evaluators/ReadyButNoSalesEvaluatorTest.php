@@ -50,7 +50,7 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 	}
 
 	public function test_should_show_when_store_is_ready_and_has_no_completed_orders() {
-		$evaluator = $this->create_evaluator_with_order_count( 0 );
+		$evaluator = $this->create_evaluator_with_completed_orders( false );
 
 		$this->wc->method( 'has_enabled_payment_gateways' )->willReturn( true );
 
@@ -67,13 +67,13 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 		$this->wc->method( 'get_shipping_zones' )->willReturn( [] );
 		$this->wc->method( 'get_shipping_zone' )->with( 0 )->willReturn( $default_zone );
 
-		$evaluator = $this->create_evaluator_with_order_count( 0, null );
+		$evaluator = $this->create_evaluator_with_completed_orders( false, null );
 
 		$this->assertTrue( $evaluator->should_show() );
 	}
 
 	public function test_should_not_show_when_payment_gateways_are_missing() {
-		$evaluator = $this->create_evaluator_with_order_count( 0 );
+		$evaluator = $this->create_evaluator_with_completed_orders( false );
 
 		$this->wc->method( 'has_enabled_payment_gateways' )->willReturn( false );
 		$evaluator->expects( $this->never() )->method( 'store_has_any_enabled_shipping_method' );
@@ -82,7 +82,7 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 	}
 
 	public function test_should_not_show_when_shipping_methods_are_missing() {
-		$evaluator = $this->create_evaluator_with_order_count( 0, false );
+		$evaluator = $this->create_evaluator_with_completed_orders( false, false );
 
 		$this->wc->method( 'has_enabled_payment_gateways' )->willReturn( true );
 
@@ -90,7 +90,7 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 	}
 
 	public function test_should_not_show_when_completed_orders_exist() {
-		$evaluator = $this->create_evaluator_with_order_count( 1 );
+		$evaluator = $this->create_evaluator_with_completed_orders( true );
 
 		$this->wc->method( 'has_enabled_payment_gateways' )->willReturn( true );
 
@@ -98,28 +98,28 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 	}
 
 	public function test_cache_hit_skips_query() {
-		$evaluator = $this->create_evaluator_with_order_count( 0 );
+		$evaluator = $this->create_evaluator_with_completed_orders( false );
 		$user_id   = $this->login_as_administrator();
 
 		set_transient( 'gla_notif_ready-but-no-sales_' . $user_id, 1, HOUR_IN_SECONDS );
 
 		$this->wc->expects( $this->never() )->method( 'has_enabled_payment_gateways' );
 		$evaluator->expects( $this->never() )->method( 'store_has_any_enabled_shipping_method' );
-		$evaluator->expects( $this->never() )->method( 'get_completed_order_count' );
+		$evaluator->expects( $this->never() )->method( 'has_completed_orders' );
 
 		$this->assertTrue( $evaluator->should_show() );
 	}
 
 	/**
-	 * Create a test evaluator with a stubbed completed order count.
+	 * Create a test evaluator with a stubbed completed orders check.
 	 *
-	 * @param int       $order_count
+	 * @param bool      $has_completed_orders
 	 * @param bool|null $has_shipping_methods When null, the real shipping check runs.
 	 *
 	 * @return ReadyButNoSalesEvaluator|MockObject
 	 */
-	private function create_evaluator_with_order_count( int $order_count, ?bool $has_shipping_methods = true ): ReadyButNoSalesEvaluator {
-		$only_methods = [ 'get_completed_order_count' ];
+	private function create_evaluator_with_completed_orders( bool $has_completed_orders, ?bool $has_shipping_methods = true ): ReadyButNoSalesEvaluator {
+		$only_methods = [ 'has_completed_orders' ];
 
 		if ( null !== $has_shipping_methods ) {
 			$only_methods[] = 'store_has_any_enabled_shipping_method';
@@ -130,7 +130,7 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 			->onlyMethods( $only_methods )
 			->getMock();
 
-		$evaluator->method( 'get_completed_order_count' )->willReturn( $order_count );
+		$evaluator->method( 'has_completed_orders' )->willReturn( $has_completed_orders );
 
 		if ( null !== $has_shipping_methods ) {
 			$evaluator->method( 'store_has_any_enabled_shipping_method' )->willReturn( $has_shipping_methods );
