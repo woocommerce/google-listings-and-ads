@@ -8,7 +8,6 @@ import { expect } from '@playwright/test';
  */
 import * as api from './api';
 
-
 async function getAvailableProductAttributesWithTestValues(
 	locator,
 	funcGetDateAndTime
