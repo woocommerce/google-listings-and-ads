@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { createRoot } from '@wordpress/element';
+import debounce from 'lodash/debounce';
 
 /**
  * Internal dependencies
@@ -127,7 +128,7 @@ function sync() {
  * and re-inserts the marketing banner without creating duplicate containers.
  */
 function observeAndMount() {
-	const observer = new MutationObserver( sync );
+	const observer = new MutationObserver( debounce( sync ) );
 
 	observer.observe( document.body, { childList: true, subtree: true } );
 
