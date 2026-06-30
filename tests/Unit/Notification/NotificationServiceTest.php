@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
@@ -167,6 +168,79 @@ class NotificationServiceTest extends UnitTest {
 		$this->assertFalse( isset( $state['unknown-id'] ) );
 	}
 
+	public function test_login_scoped_dismissal_stays_hidden_until_next_login() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'notification-a', 10, true, NotificationSnoozeDurations::UNTIL_NEXT_LOGIN ),
+			]
+		);
+
+		$this->service->get_notifications();
+		$this->service->dismiss( 'notification-a' );
+
+		$this->assertEquals( [], $this->service->get_notifications() );
+	}
+
+	public function test_login_scoped_dismissal_reappears_after_login() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'notification-a', 10, true, NotificationSnoozeDurations::UNTIL_NEXT_LOGIN ),
+			]
+		);
+
+		$this->service->get_notifications();
+		$this->service->dismiss( 'notification-a' );
+
+		$user = get_user_by( 'id', get_current_user_id() );
+		$this->service->clear_login_scoped_dismissals( $user->user_login, $user );
+
+		$ids = wp_list_pluck( $this->service->get_notifications(), 'id' );
+
+		$this->assertEquals( [ 'notification-a' ], $ids );
+	}
+
+	public function test_login_scoped_clear_does_not_affect_permanent_dismissals() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'notification-a', 10, true ),
+				$this->create_mocked_evaluator( 'notification-b', 20, true, NotificationSnoozeDurations::UNTIL_NEXT_LOGIN ),
+			]
+		);
+
+		$this->service->get_notifications();
+		$this->service->dismiss( 'notification-a' );
+		$this->service->dismiss( 'notification-b' );
+
+		$user = get_user_by( 'id', get_current_user_id() );
+		$this->service->clear_login_scoped_dismissals( $user->user_login, $user );
+
+		$ids = wp_list_pluck( $this->service->get_notifications(), 'id' );
+
+		$this->assertEquals( [ 'notification-b' ], $ids );
+	}
+
+	public function test_time_based_snooze_hides_until_duration_expires() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'notification-a', 10, true, HOUR_IN_SECONDS ),
+			]
+		);
+
+		$this->service->get_notifications();
+		$this->service->dismiss( 'notification-a' );
+
+		$this->assertEquals( [], $this->service->get_notifications() );
+
+		$state = get_user_meta( get_current_user_id(), 'gla_notifications_state', true );
+		$state['notification-a']['snoozed_until'] = time() - 1;
+
+		update_user_meta( get_current_user_id(), 'gla_notifications_state', $state );
+
+		$ids = wp_list_pluck( $this->service->get_notifications(), 'id' );
+
+		$this->assertEquals( [ 'notification-a' ], $ids );
+	}
+
 	/**
 	 * Have the mocked container return the given evaluators.
 	 *
@@ -187,18 +261,19 @@ class NotificationServiceTest extends UnitTest {
 	/**
 	 * Create a mocked notification evaluator.
 	 *
-	 * @param string $id          The notification ID.
-	 * @param int    $priority    The notification priority.
-	 * @param bool   $should_show Whether the condition is met.
+	 * @param string   $id          The notification ID.
+	 * @param int      $priority    The notification priority.
+	 * @param bool     $should_show Whether the condition is met.
+	 * @param int|null $snooze      The snooze duration in seconds.
 	 *
 	 * @return MockObject|NotificationEvaluatorInterface
 	 */
-	private function create_mocked_evaluator( string $id, int $priority, bool $should_show ): MockObject {
+	private function create_mocked_evaluator( string $id, int $priority, bool $should_show, ?int $snooze = null ): MockObject {
 		$evaluator = $this->createMock( NotificationEvaluatorInterface::class );
 		$evaluator->method( 'get_id' )->willReturn( $id );
 		$evaluator->method( 'get_priority' )->willReturn( $priority );
 		$evaluator->method( 'should_show' )->willReturn( $should_show );
-		$evaluator->method( 'get_snooze_duration' )->willReturn( null );
+		$evaluator->method( 'get_snooze_duration' )->willReturn( $snooze );
 
 		return $evaluator;
 	}

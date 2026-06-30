@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification\Ev
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\ProductIssuesEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -55,8 +56,8 @@ class ProductIssuesEvaluatorTest extends UnitTest {
 		$this->assertEquals( NotificationPriorities::PRODUCT_ISSUES, $this->evaluator->get_priority() );
 	}
 
-	public function test_get_snooze_duration_is_null() {
-		$this->assertNull( $this->evaluator->get_snooze_duration() );
+	public function test_get_snooze_duration_is_until_next_login() {
+		$this->assertEquals( NotificationSnoozeDurations::UNTIL_NEXT_LOGIN, $this->evaluator->get_snooze_duration() );
 	}
 
 	public function test_should_show_when_disapproved_products_exist() {

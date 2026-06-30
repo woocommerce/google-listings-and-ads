@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsAwareTrait;
@@ -89,6 +90,6 @@ class ProductIssuesEvaluator implements NotificationEvaluatorInterface, Merchant
 	 * @return int|null
 	 */
 	public function get_snooze_duration(): ?int {
-		return null;
+		return NotificationSnoozeDurations::UNTIL_NEXT_LOGIN;
 	}
 }

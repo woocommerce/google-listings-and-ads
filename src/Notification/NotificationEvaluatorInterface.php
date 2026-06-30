@@ -43,7 +43,9 @@ interface NotificationEvaluatorInterface {
 	/**
 	 * Get the snooze duration in seconds for temporary dismissals.
 	 *
+	 * Return NotificationSnoozeDurations::UNTIL_NEXT_LOGIN when dismissal resets on the next login.
 	 * Return null when dismissal is permanent.
+	 * Return a positive integer for time-based snooze durations in seconds.
 	 *
 	 * @return int|null
 	 */
