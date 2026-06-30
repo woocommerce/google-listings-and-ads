@@ -50,6 +50,23 @@ function createSlot() {
 	}
 
 	/**
+	 * Insert the container immediately after the banner, or prepend it to the
+	 * multichannel section when no banner is present.
+	 *
+	 * @param {HTMLElement} multichannel
+	 * @param {HTMLElement} container
+	 */
+	function placeContainer( multichannel, container ) {
+		const banner = multichannel.querySelector( `.${ BANNER_CLASS }` );
+
+		if ( banner ) {
+			banner.insertAdjacentElement( 'afterend', container );
+		} else {
+			multichannel.insertBefore( container, multichannel.firstChild );
+		}
+	}
+
+	/**
 	 * Ensure the notifications container sits immediately after the banner,
 	 * or at the top of the multichannel section when no banner is present.
 	 *
@@ -75,10 +92,7 @@ function createSlot() {
 	/**
 	 * Mounts the NotificationsPanel into the multichannel section.
 	 *
-	 * Returns false if another plugin has already mounted the slot elsewhere.
-	 *
 	 * @param {HTMLElement} multichannel
-	 * @return {boolean} Whether a new slot container was mounted.
 	 */
 	function mount( multichannel ) {
 		unmountIfContainerDetached();
@@ -90,7 +104,7 @@ function createSlot() {
 		if ( existingInMultichannel ) {
 			repositionContainer( multichannel, existingInMultichannel );
 			mountedContainer = existingInMultichannel;
-			return false;
+			return;
 		}
 
 		const existingGlobal = document.querySelector(
@@ -99,28 +113,20 @@ function createSlot() {
 
 		if ( existingGlobal ) {
 			// Another plugin has already mounted the slot elsewhere.
-			return false;
+			return;
 		}
 
 		const container = document.createElement( 'div' );
 		container.className = CONTAINER_CLASS;
 
-		const banner = multichannel.querySelector( `.${ BANNER_CLASS }` );
-
 		// Place the notifications container immediately after the introduction
 		// banner if one exists, otherwise prepend it to the top of the
 		// multichannel section so it is always the first thing the user sees.
-		if ( banner ) {
-			banner.insertAdjacentElement( 'afterend', container );
-		} else {
-			multichannel.insertBefore( container, multichannel.firstChild );
-		}
+		placeContainer( multichannel, container );
 
 		root = createRoot( container );
 		root.render( <NotificationsPanel /> );
 		mountedContainer = container;
-
-		return true;
 	}
 
 	/**
