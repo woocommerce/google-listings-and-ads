@@ -715,11 +715,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * Whether a product is expiring.
 	 *
-	 * @param DateTime $expiration_date
+	 * @param DateTime|null $expiration_date
 	 *
 	 * @return bool Whether the product is expiring.
 	 */
-	protected function product_is_expiring( DateTime $expiration_date ): bool {
+	protected function product_is_expiring( ?DateTime $expiration_date ): bool {
 		if ( ! $expiration_date ) {
 			return false;
 		}

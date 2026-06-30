@@ -148,10 +148,10 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( BudgetRecommendations::class, GoogleAdsClient::class );
 
 		$this->share( Merchant::class, ShoppingContent::class );
-		$this->share( MerchantMetrics::class, ShoppingContent::class, GoogleAdsClient::class, WP::class, TransientsInterface::class );
-		$this->share( MerchantReport::class, ShoppingContent::class, ProductHelper::class );
+		$this->share( MerchantMetrics::class, MerchantApiClient::class, GoogleAdsClient::class, WP::class, TransientsInterface::class );
+		$this->share( MerchantReport::class, ProductHelper::class, MerchantApiClient::class );
 
-		$this->share( MerchantPriceBenchmarks::class, ShoppingContent::class );
+		$this->share( MerchantPriceBenchmarks::class, MerchantApiClient::class );
 
 		$this->share( SiteVerification::class );
 
