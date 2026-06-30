@@ -20,6 +20,8 @@ jest.mock( './data', () => ( {
 
 jest.mock( './components/notifications-panel', () => () => null );
 
+jest.mock( 'lodash/debounce', () => jest.fn( ( fn ) => fn ) );
+
 global.MutationObserver = jest.fn().mockImplementation( ( callback ) => {
 	observerCallbacks.push( callback );
 
