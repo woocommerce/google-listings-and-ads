@@ -12,7 +12,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\Campaign
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
-use DateTime;
 use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
@@ -137,14 +136,9 @@ class CampaignNoSalesEvaluatorTest extends UnitTest {
 		$this->ads_report->method( 'get_report_data' )
 			->with(
 				'campaigns',
-				$this->callback(
-					function ( array $args ): bool {
-						return isset( $args['after'], $args['before'], $args['fields'] )
-							&& $args['after'] instanceof DateTime
-							&& $args['before'] instanceof DateTime
-							&& [ 'conversions' ] === $args['fields'];
-					}
-				)
+				[
+					'fields' => [ 'conversions' ],
+				]
 			)
 			->willReturn(
 				[

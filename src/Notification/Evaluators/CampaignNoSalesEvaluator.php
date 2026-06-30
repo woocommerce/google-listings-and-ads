@@ -15,7 +15,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationE
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
-use DateTime;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -102,15 +101,10 @@ class CampaignNoSalesEvaluator implements NotificationEvaluatorInterface, AdsAwa
 			return false;
 		}
 
-		$timezone = wp_timezone();
-		$now      = new DateTime( 'now', $timezone );
-
 		try {
 			$report_data = $this->ads_report->get_report_data(
 				'campaigns',
 				[
-					'after'  => ( clone $now )->modify( '-90 days' ),
-					'before' => $now,
 					'fields' => [ 'conversions' ],
 				]
 			);
