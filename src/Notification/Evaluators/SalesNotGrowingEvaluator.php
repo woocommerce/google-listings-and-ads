@@ -127,7 +127,7 @@ class SalesNotGrowingEvaluator implements NotificationEvaluatorInterface, Option
 					AND posts.post_date_gmt <= %s";
 		}
 
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table names from $wpdb.
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- table names from $wpdb.
 		$sum = $wpdb->get_var(
 			$wpdb->prepare(
 				$query,
@@ -136,7 +136,7 @@ class SalesNotGrowingEvaluator implements NotificationEvaluatorInterface, Option
 				$end_sql
 			)
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
 
 		return (float) $sum;
 	}
