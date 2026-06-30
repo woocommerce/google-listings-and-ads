@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useEffect, useRef } from '@wordpress/element';
+import { useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -30,7 +30,6 @@ export default function ShippingCountriesForm( {
 	audienceCountries,
 	onChange,
 } ) {
-	const mountedRef = useRef( false );
 	const actualCountryCount = shippingTimes.length;
 	const actualCountries = new Map(
 		shippingTimes.map( ( time ) => [ time.countryCode, time ] )
@@ -43,12 +42,8 @@ export default function ShippingCountriesForm( {
 	// Group countries with the same time.
 	const countriesTimeArray = getShippingTimesGroups( shippingTimes );
 
+	const audienceCountriesKey = audienceCountries.join( ',' );
 	useEffect( () => {
-		if ( mountedRef.current ) {
-			return;
-		}
-		mountedRef.current = true;
-
 		// Prefill to-be-added time if there are selected audience countries, but no times provided yet.
 		if ( actualCountryCount === 0 && audienceCountries.length > 0 ) {
 			onChange(
@@ -59,7 +54,8 @@ export default function ShippingCountriesForm( {
 				} ) )
 			);
 		}
-	} );
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ audienceCountriesKey ] );
 
 	// Given the limitations of `<Form>` component we can communicate up only onChange.
 	// Therefore we loose the information whether it was add, change, delete.

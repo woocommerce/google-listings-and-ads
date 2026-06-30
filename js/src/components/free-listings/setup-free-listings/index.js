@@ -107,7 +107,12 @@ const SetupFreeListings = ( {
 		const { setValue } = formRef.current;
 
 		if ( change.name === 'shipping_country_rates' ) {
-			onShippingRatesChange( values.shipping_country_rates );
+			const validShippingRates = values.shipping_country_rates.filter(
+				( { rate } ) => {
+					return Number.isFinite( rate );
+				}
+			);
+			onShippingRatesChange( validShippingRates );
 
 			// If all the shipping rates are free shipping,
 			// we set the offer_free_shipping to undefined,

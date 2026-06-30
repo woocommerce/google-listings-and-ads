@@ -60,7 +60,7 @@ export default function EstimatedShippingRatesCard( {
 			const prefilledGroup = {
 				countries: audienceCountries,
 				currency: currencyCode,
-				rate: undefined,
+				rate: 0,
 			};
 
 			return (
