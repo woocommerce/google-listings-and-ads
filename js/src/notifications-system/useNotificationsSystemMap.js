@@ -16,13 +16,15 @@ import {
 	getSetupAdsUrl,
 	getWCAdvancedSettingsUrl,
 	getOnboardingUrl,
+	getWCCouponsUrl,
 } from '~/utils/urls';
 
 /**
  * @typedef {Object} NotificationConfig
- * @property {string}        title       Notification headline.
- * @property {string}        description Notification body text.
- * @property {Array<Object>} actions     Array of AppButton prop objects for CTA buttons.
+ * @property {string} title Notification headline.
+ * @property {string} description Notification body text.
+ * @property {Array<Object>} actions Array of AppButton prop objects for CTA buttons.
+ * @property {boolean} [isReady] Whether the config data has finished resolving. Omitted for static configs (renders immediately); set to a resolution flag for dynamic configs.
  */
 
 const getStartedUrl = getGetStartedUrl();
@@ -31,6 +33,7 @@ const dashboardUrl = getDashboardUrl();
 const settingsUrl = getSettingsUrl();
 const wcAdvancedSettingsUrl = getWCAdvancedSettingsUrl();
 const onboardingUrl = getOnboardingUrl();
+const wcCouponsUrl = getWCCouponsUrl();
 
 /**
  * Static notification configs — created once at module level, never re-created on render.
@@ -72,7 +75,7 @@ const STATIC_MAP = {
 			},
 		],
 	},
-	'payments-shipping-no-sales': {
+	'ready-but-no-sales': {
 		title: __(
 			'Get more sales with Google Ads',
 			'google-listings-and-ads'
@@ -106,7 +109,7 @@ const STATIC_MAP = {
 			},
 		],
 	},
-	'active-campaign-zero-sales': {
+	'campaign-no-sales': {
 		title: __( 'Drive traffic from Google Ads', 'google-listings-and-ads' ),
 		description: __(
 			"Your campaign is active, but hasn't generated sales yet. Review your account recommendations in Google Ads to find specific ways to improve your performance.",
@@ -190,11 +193,13 @@ const STATIC_MAP = {
  * @return {Object.<string, NotificationConfig>} Map of notification ID to its display config.
  */
 const useNotificationsSystemMap = () => {
-	const { hasGoogleMCConnection } = useGoogleMCAccount();
+	const { hasGoogleMCConnection, hasFinishedResolution } =
+		useGoogleMCAccount();
 
-	const dynamicMap = useMemo(
-		() => ( {
+	const dynamicMap = useMemo( () => {
+		return {
 			'skipped-campaign-creation': {
+				isReady: hasFinishedResolution,
 				title: __(
 					'Finish setting up Google Ads',
 					'google-listings-and-ads'
@@ -220,6 +225,7 @@ const useNotificationsSystemMap = () => {
 				],
 			},
 			'not-onboarded-90-days': {
+				isReady: hasFinishedResolution,
 				title: __(
 					'Finish your Google for WooCommerce connection',
 					'google-listings-and-ads'
@@ -242,6 +248,7 @@ const useNotificationsSystemMap = () => {
 				],
 			},
 			'paused-campaign': {
+				isReady: hasFinishedResolution,
 				title: __(
 					'Your Google Ads campaign is paused',
 					'google-listings-and-ads'
@@ -266,7 +273,8 @@ const useNotificationsSystemMap = () => {
 					},
 				],
 			},
-			'active-campaign-zero-sales': {
+			'campaign-no-sales': {
+				isReady: hasFinishedResolution,
 				title: __(
 					'Drive traffic from Google Ads',
 					'google-listings-and-ads'
@@ -289,6 +297,7 @@ const useNotificationsSystemMap = () => {
 				],
 			},
 			'sales-not-growing': {
+				isReady: hasFinishedResolution,
 				title: ! hasGoogleMCConnection
 					? __(
 							'Increase your site traffic',
@@ -319,6 +328,7 @@ const useNotificationsSystemMap = () => {
 				],
 			},
 			'coupons-not-synced': {
+				isReady: hasFinishedResolution,
 				title: __(
 					'Promote your coupons on Google',
 					'google-listings-and-ads'
@@ -335,7 +345,7 @@ const useNotificationsSystemMap = () => {
 				actions: [
 					{
 						id: 'review-coupon-settings',
-						href: settingsUrl,
+						href: wcCouponsUrl,
 						children: __(
 							'Review coupon settings',
 							'google-listings-and-ads'
@@ -343,9 +353,8 @@ const useNotificationsSystemMap = () => {
 					},
 				],
 			},
-		} ),
-		[ hasGoogleMCConnection ]
-	);
+		};
+	}, [ hasFinishedResolution, hasGoogleMCConnection ] );
 
 	return { ...STATIC_MAP, ...dynamicMap };
 };

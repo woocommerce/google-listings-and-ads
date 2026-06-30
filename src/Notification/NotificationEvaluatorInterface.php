@@ -39,4 +39,13 @@ interface NotificationEvaluatorInterface {
 	 * @return int
 	 */
 	public function get_priority(): int;
+
+	/**
+	 * Get the snooze duration in seconds for temporary dismissals.
+	 *
+	 * Return null when dismissal is permanent.
+	 *
+	 * @return int|null
+	 */
+	public function get_snooze_duration(): ?int;
 }

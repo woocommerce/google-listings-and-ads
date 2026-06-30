@@ -143,6 +143,10 @@ class NotificationService implements ContainerAwareInterface {
 	 * @return NotificationEvaluatorInterface[]
 	 */
 	protected function get_evaluators(): array {
+		if ( ! $this->container->has( NotificationEvaluatorInterface::class ) ) {
+			return [];
+		}
+
 		$evaluators = $this->container->get( NotificationEvaluatorInterface::class );
 
 		usort(
