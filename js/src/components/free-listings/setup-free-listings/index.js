@@ -8,12 +8,15 @@ import { pick, noop } from 'lodash';
 /**
  * Internal dependencies
  */
+import {
+	DEFAULT_SHIPPING_MIN_TIME,
+	DEFAULT_SHIPPING_MAX_TIME,
+} from '~/constants';
 import AppSpinner from '~/components/app-spinner';
 import AppButton from '~/components/app-button';
 import AdaptiveForm from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
 import checkErrors from '~/components/free-listings/configure-product-listings/checkErrors';
-import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 import getOfferFreeShippingInitialValue from '~/utils/getOfferFreeShippingInitialValue';
 import isNonFreeShippingRate from '~/utils/isNonFreeShippingRate';
 import FormContent from './form-content';
@@ -304,11 +307,7 @@ const SetupFreeListings = ( {
 					location: targetAudience.location,
 					countries: targetAudience.countries || [],
 					// These are the fields for settings.
-					shipping_rate:
-						glaData.isMultiLingualStore &&
-						settings.shipping_rate === SHIPPING_RATE_METHOD.FLAT
-							? SHIPPING_RATE_METHOD.MANUAL
-							: settings.shipping_rate,
+					shipping_rate: settings.shipping_rate,
 					shipping_time: settings.shipping_time,
 					// This is used in UI only, not used in API.
 					offer_free_shipping:
@@ -317,9 +316,11 @@ const SetupFreeListings = ( {
 					// Derived from the first entry; the full per-country array is in shipping_country_rates.
 					flat_shipping_rate: shippingRates?.[ 0 ]?.rate,
 					// Simple flat time values for all countries (UI only, derived from shippingTimes).
-					flat_shipping_min_time: shippingTimes?.[ 0 ]?.time ?? null,
+					flat_shipping_min_time:
+						shippingTimes?.[ 0 ]?.time ?? DEFAULT_SHIPPING_MIN_TIME,
 					flat_shipping_max_time:
-						shippingTimes?.[ 0 ]?.maxTime ?? null,
+						shippingTimes?.[ 0 ]?.maxTime ??
+						DEFAULT_SHIPPING_MAX_TIME,
 					// Glue shipping rates and times together, as the Form does not support nested structures.
 					shipping_country_rates: shippingRates,
 					shipping_country_times: shippingTimes,

@@ -400,4 +400,52 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 			]
 		);
 	}
+
+	public function test_country_currency_map_overrides_per_service_currency() {
+		$db_rates = [
+			[
+				'country' => 'US',
+				'rate'    => 10,
+				'options' => [],
+			],
+			[
+				'country' => 'FR',
+				'rate'    => 5,
+				'options' => [],
+			],
+		];
+
+		$settings = new DBShippingSettingsAdapter(
+			[
+				'currency'             => 'USD',
+				'country_currency_map' => [
+					'FR' => 'EUR',
+				],
+				'delivery_times'       => [
+					'US' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+					'FR' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+				],
+				'db_rates'             => $db_rates,
+			]
+		);
+
+		$services = $settings->getServices();
+
+		$this->assertCount( 2, $services );
+		foreach ( $services as $service ) {
+			if ( 'US' === $service->getDeliveryCountry() ) {
+				$this->assertEquals( 'USD', $service->getCurrency() );
+				$this->assertEquals( 'USD', $service->getRateGroups()[0]->getSingleValue()->getFlatRate()->getCurrency() );
+			} elseif ( 'FR' === $service->getDeliveryCountry() ) {
+				$this->assertEquals( 'EUR', $service->getCurrency() );
+				$this->assertEquals( 'EUR', $service->getRateGroups()[0]->getSingleValue()->getFlatRate()->getCurrency() );
+			}
+		}
+	}
 }

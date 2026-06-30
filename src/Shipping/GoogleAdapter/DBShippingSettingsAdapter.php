@@ -66,12 +66,11 @@ class DBShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 		$services = [];
 		// Per-row currency drives the synced service so multi-market stores don't
 		// have their secondary-market rates pushed in the primary store currency.
-		// Fall back to the adapter-level currency for legacy rows missing one.
+		// Fall back to the per-country currency map for legacy rows missing one.
 		foreach ( $db_rates as $db_rate ) {
-			$country  = $db_rate['country'] ?? null;
-			$rate     = $db_rate['rate'] ?? null;
-			$options  = $db_rate['options'] ?? [];
-			$currency = ! empty( $db_rate['currency'] ) ? $db_rate['currency'] : $this->currency;
+			$country = $db_rate['country'] ?? null;
+			$rate    = $db_rate['rate'] ?? null;
+			$options = $db_rate['options'] ?? [];
 
 			if ( null === $country || null === $rate ) {
 				continue;
@@ -81,6 +80,10 @@ class DBShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 			if ( $rate < 0 ) {
 				continue;
 			}
+
+			$currency = ! empty( $db_rate['currency'] )
+				? $db_rate['currency']
+				: $this->get_currency_for_country( $country );
 
 			$service = $this->create_shipping_service( $country, $currency, (float) $rate );
 
