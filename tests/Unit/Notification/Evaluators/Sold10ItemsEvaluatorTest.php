@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification\Evaluators;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\Sold10ItemsEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationCacheKeys;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\SiteScopedNotificationEvaluatorInterface;
@@ -61,7 +62,7 @@ class Sold10ItemsEvaluatorTest extends UnitTest {
 	public function test_cache_hit_skips_query() {
 		$evaluator = $this->create_evaluator_with_revenue_order_threshold( false );
 
-		set_transient( 'gla_notif_sold-10-items', 1, HOUR_IN_SECONDS );
+		set_transient( NotificationCacheKeys::for_site( 'sold-10-items' ), 1, HOUR_IN_SECONDS );
 
 		$evaluator->expects( $this->never() )->method( 'has_minimum_revenue_orders' );
 

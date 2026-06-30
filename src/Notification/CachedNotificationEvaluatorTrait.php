@@ -45,6 +45,6 @@ trait CachedNotificationEvaluatorTrait {
 	 * @return string
 	 */
 	protected function get_cache_key(): string {
-		return 'gla_notif_' . $this->get_id() . '_' . get_current_user_id();
+		return NotificationCacheKeys::for_user( $this->get_id() );
 	}
 }

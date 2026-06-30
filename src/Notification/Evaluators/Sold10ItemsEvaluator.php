@@ -5,10 +5,10 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationEvaluatorTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationCacheKeys;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\SiteScopedNotificationEvaluatorInterface;
-use Automattic\WooCommerce\Utilities\OrderUtil;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -67,7 +67,7 @@ class Sold10ItemsEvaluator implements SiteScopedNotificationEvaluatorInterface, 
 	 * @return string
 	 */
 	protected function get_cache_key(): string {
-		return 'gla_notif_' . $this->get_id();
+		return NotificationCacheKeys::for_site( $this->get_id() );
 	}
 
 	/**
@@ -81,68 +81,23 @@ class Sold10ItemsEvaluator implements SiteScopedNotificationEvaluatorInterface, 
 	 * @return bool
 	 */
 	protected function has_minimum_revenue_orders( int $minimum ): bool {
-		global $wpdb;
-
-		$statuses = $this->get_paid_order_statuses();
+		$statuses = wc_get_is_paid_statuses();
 		if ( empty( $statuses ) ) {
 			return false;
 		}
 
-		$wc_statuses         = array_map(
-			static function ( string $status ): string {
-				return 'wc-' . $status;
-			},
-			$statuses
+		$orders = wc_get_orders(
+			[
+				'status' => $statuses,
+				'total'  => [
+					'value'    => 0,
+					'operator' => '>',
+				],
+				'limit'  => $minimum + 1,
+				'return' => 'ids',
+			]
 		);
-		$status_placeholders = implode( ', ', array_fill( 0, count( $wc_statuses ), '%s' ) );
-		$query_limit         = $minimum + 1;
 
-		if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
-			$query = "SELECT COUNT(*) FROM (
-				SELECT id
-				FROM {$wpdb->prefix}wc_orders
-				WHERE type = 'shop_order'
-					AND status IN ( {$status_placeholders} )
-					AND total_amount > 0
-				LIMIT %d
-			) AS revenue_orders";
-		} else {
-			$query = "SELECT COUNT(*) FROM (
-				SELECT posts.ID
-				FROM {$wpdb->posts} AS posts
-				INNER JOIN {$wpdb->postmeta} AS meta
-					ON posts.ID = meta.post_id
-				WHERE posts.post_type = 'shop_order'
-					AND posts.post_status IN ( {$status_placeholders} )
-					AND meta.meta_key = '_order_total'
-					AND meta.meta_value + 0 > 0
-				LIMIT %d
-			) AS revenue_orders";
-		}
-
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- dynamic IN() placeholders.
-		$count = $wpdb->get_var(
-			$wpdb->prepare(
-				$query,
-				array_merge( $wc_statuses, [ $query_limit ] )
-			)
-		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
-
-		return (int) $count >= $minimum;
-	}
-
-	/**
-	 * Returns WooCommerce order statuses that represent paid orders.
-	 *
-	 * @return string[]
-	 */
-	private function get_paid_order_statuses(): array {
-		// compatibility-code "WC < 3.0" -- wc_get_is_paid_statuses() added in 3.0
-		if ( function_exists( 'wc_get_is_paid_statuses' ) ) {
-			return wc_get_is_paid_statuses();
-		}
-
-		return [ 'processing', 'completed' ];
+		return count( $orders ) >= $minimum;
 	}
 }

@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsRecommendationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\RecommendationsAvailableEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationCacheKeys;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -129,7 +130,7 @@ class RecommendationsAvailableEvaluatorTest extends UnitTest {
 	public function test_cache_hit_skips_api_call() {
 		$user_id = $this->login_as_administrator();
 
-		set_transient( 'gla_notif_recommendations-available_' . $user_id, 0, HOUR_IN_SECONDS );
+		set_transient( NotificationCacheKeys::for_user( 'recommendations-available', $user_id ), 0, HOUR_IN_SECONDS );
 
 		$this->ads_recommendations->expects( $this->never() )->method( 'get_recommendations' );
 		$this->ads_campaign->expects( $this->never() )->method( 'get_highest_spend_campaign' );

@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification\Evaluators;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SalesNotGrowingEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationCacheKeys;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -89,7 +90,7 @@ class SalesNotGrowingEvaluatorTest extends UnitTest {
 		$evaluator->set_options_object( $this->options );
 		$user_id = $this->login_as_administrator();
 
-		set_transient( 'gla_notif_sales-not-growing_' . $user_id, 0, HOUR_IN_SECONDS );
+		set_transient( NotificationCacheKeys::for_user( 'sales-not-growing', $user_id ), 0, HOUR_IN_SECONDS );
 
 		$this->options->expects( $this->never() )->method( 'get' );
 		$evaluator->expects( $this->never() )->method( 'get_gmv_for_period' );
