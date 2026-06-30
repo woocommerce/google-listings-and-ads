@@ -337,7 +337,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( SalesNotGrowingEvaluator::class );
 		$this->share_with_tags( WcInstallTimestamp::class, WP::class );
 		$this->share_with_tags( PausedCampaignEvaluator::class, AdsCampaign::class );
-		$this->share_with_tags( CampaignNoSalesEvaluator::class, AdsCampaign::class, AdsReport::class );
+		$this->share_with_tags( CampaignNoSalesEvaluator::class, AdsCampaign::class, AdsReport::class, AdsRecommendationsService::class );
 		$this->share_with_tags( RecommendationsAvailableEvaluator::class, AdsRecommendationsService::class, AdsCampaign::class );
 
 		// Product attributes
