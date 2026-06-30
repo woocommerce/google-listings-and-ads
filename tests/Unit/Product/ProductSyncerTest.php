@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntr
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
@@ -82,6 +83,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 										$product_factory,
 										$this->rules_query,
 										$this->market_service,
+										$this->createMock( WPML::class ),
 									]
 								)
 								->getMock();

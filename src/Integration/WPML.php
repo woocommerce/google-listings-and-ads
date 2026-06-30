@@ -44,6 +44,29 @@ class WPML implements IntegrationInterface {
 	}
 
 	/**
+	 * Returns the WPML language code for a given post ID.
+	 *
+	 * @param int $post_id The post ID.
+	 *
+	 * @return string The language code, or empty string when WPML is inactive or no language is recorded.
+	 */
+	public function get_post_language( int $post_id ): string {
+		if ( ! $this->is_active() ) {
+			return '';
+		}
+
+		$details = apply_filters( 'wpml_post_language_details', null, $post_id );
+
+		if ( ! is_array( $details ) ) {
+			return '';
+		}
+
+		$code = $details['language_code'] ?? '';
+
+		return is_string( $code ) ? $code : '';
+	}
+
+	/**
 	 * Returns the store's active WPML languages.
 	 *
 	 * @return array<int, array{code: string, label: string}>

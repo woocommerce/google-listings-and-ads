@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product as GoogleProduct;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -62,6 +63,11 @@ class BatchProductHelper implements Service {
 	protected $market_service;
 
 	/**
+	 * @var WPML
+	 */
+	protected $wpml;
+
+	/**
 	 * BatchProductHelper constructor.
 	 *
 	 * @param ProductMetaHandler         $meta_handler
@@ -70,6 +76,7 @@ class BatchProductHelper implements Service {
 	 * @param ProductFactory             $product_factory
 	 * @param AttributeMappingRulesQuery $attribute_mapping_rules_query
 	 * @param MarketService              $market_service
+	 * @param WPML                       $wpml
 	 */
 	public function __construct(
 		ProductMetaHandler $meta_handler,
@@ -77,7 +84,8 @@ class BatchProductHelper implements Service {
 		ValidatorInterface $validator,
 		ProductFactory $product_factory,
 		AttributeMappingRulesQuery $attribute_mapping_rules_query,
-		MarketService $market_service
+		MarketService $market_service,
+		WPML $wpml
 	) {
 		$this->meta_handler                  = $meta_handler;
 		$this->product_helper                = $product_helper;
@@ -85,6 +93,7 @@ class BatchProductHelper implements Service {
 		$this->product_factory               = $product_factory;
 		$this->attribute_mapping_rules_query = $attribute_mapping_rules_query;
 		$this->market_service                = $market_service;
+		$this->wpml                          = $wpml;
 	}
 
 	/**
@@ -198,6 +207,7 @@ class BatchProductHelper implements Service {
 	public function validate_and_generate_update_request_entries( array $products ): array {
 		$request_entries = [];
 		$mapping_rules   = $this->attribute_mapping_rules_query->get_results();
+		$wpml_active     = $this->market_service->has_multilingual_support();
 
 		foreach ( $products as $product ) {
 			$this->validate_instanceof( $product, WC_Product::class );
@@ -218,45 +228,53 @@ class BatchProductHelper implements Service {
 					continue;
 				}
 
-				$primary_market = $this->market_service->get_primary_market();
-
-				// validate the product
-				$adapted_product   = $this->product_factory->create(
-					$product,
-					$primary_market['country'],
-					$mapping_rules,
-					$primary_market['feed_label'],
-					$this->extract_language( $primary_market )
-				);
-				$validation_result = $this->validate_product( $adapted_product );
-				if ( $validation_result instanceof BatchInvalidProductEntry ) {
-					$this->mark_as_invalid( $validation_result );
-
-					do_action(
-						'woocommerce_gla_debug_message',
-						sprintf( 'Skipping product (ID: %s) because it does not pass validation: %s', $product->get_id(), wp_json_encode( $validation_result ) ),
-						__METHOD__
-					);
-
-					continue;
-				}
-
-				// add shipping for all countries across all markets
-				$all_countries = $this->market_service->get_all_countries();
-				array_walk( $all_countries, [ $adapted_product, 'add_shipping_country' ] );
+				$product_language = $wpml_active ? $this->wpml->get_post_language( $product->get_id() ) : '';
 
 				// Stage entries per product so a throw or validation failure in
 				// any secondary market discards the whole product's entries
 				// preventing the primary feed from receiving the product while
 				// a secondary feed silently misses it.
-				$product_entries   = [];
-				$product_entries[] = new BatchProductRequestEntry(
-					$product->get_id(),
-					$adapted_product
-				);
+				$product_entries = [];
+
+				$primary_market = $this->market_service->get_primary_market();
+
+				if ( $this->product_matches_market( $product_language, $primary_market, $wpml_active ) ) {
+					$adapted_product   = $this->product_factory->create(
+						$product,
+						$primary_market['country'],
+						$mapping_rules,
+						$primary_market['feed_label'],
+						$product_language
+					);
+					$validation_result = $this->validate_product( $adapted_product );
+					if ( $validation_result instanceof BatchInvalidProductEntry ) {
+						$this->mark_as_invalid( $validation_result );
+
+						do_action(
+							'woocommerce_gla_debug_message',
+							sprintf( 'Skipping product (ID: %s) because it does not pass validation: %s', $product->get_id(), wp_json_encode( $validation_result ) ),
+							__METHOD__
+						);
+
+						continue;
+					}
+
+					// add shipping for all countries across all markets
+					$all_countries = $this->market_service->get_all_countries();
+					array_walk( $all_countries, [ $adapted_product, 'add_shipping_country' ] );
+
+					$product_entries[] = new BatchProductRequestEntry(
+						$product->get_id(),
+						$adapted_product
+					);
+				}
 
 				foreach ( $this->market_service->get_markets() as $market_id => $market ) {
 					if ( 'primary' === $market_id ) {
+						continue;
+					}
+
+					if ( ! $this->product_matches_market( $product_language, $market, $wpml_active ) ) {
 						continue;
 					}
 
@@ -265,7 +283,7 @@ class BatchProductHelper implements Service {
 						$market['country'],
 						$mapping_rules,
 						$market['feed_label'],
-						$this->extract_language( $market )
+						$product_language
 					);
 
 					$secondary_validation = $this->validate_product( $secondary_adapter );
@@ -289,7 +307,9 @@ class BatchProductHelper implements Service {
 					);
 				}
 
-				array_push( $request_entries, ...$product_entries );
+				if ( ! empty( $product_entries ) ) {
+					array_push( $request_entries, ...$product_entries );
+				}
 			} catch ( GoogleListingsAndAdsException $exception ) {
 				do_action(
 					'woocommerce_gla_error',
@@ -305,19 +325,41 @@ class BatchProductHelper implements Service {
 	}
 
 	/**
-	 * Extracts a single language code from a market config.
+	 * Determines whether a product's language matches a market's accepted languages.
 	 *
-	 * Each MC product carries exactly one contentLanguage. Markets store
-	 * language as an array of codes; the first entry is used.
+	 * When WPML is inactive the matching step is skipped and every product matches every market.
+	 * When WPML is active an empty market language list also matches every product (it means
+	 * "this market accepts any product"). Otherwise the product's WPML language must be in
+	 * the market's language list, after converting any locale-form values ("en_US") to the
+	 * short-code form ("en") that WPML uses.
 	 *
-	 * @param array $market A market config array as returned by MarketService.
+	 * @param string $product_language The product's WPML language code, or empty string.
+	 * @param array  $market           A market config array as returned by MarketService.
+	 * @param bool   $wpml_active      Whether WPML is active for this site.
 	 *
-	 * @return string The single language code, or empty string when none is set.
+	 * @return bool
 	 */
-	protected function extract_language( array $market ): string {
-		return is_array( $market['language'] ?? null )
-			? (string) ( $market['language'][0] ?? '' )
-			: (string) ( $market['language'] ?? '' );
+	protected function product_matches_market( string $product_language, array $market, bool $wpml_active ): bool {
+		if ( ! $wpml_active ) {
+			return true;
+		}
+
+		$market_languages = is_array( $market['language'] ?? null ) ? $market['language'] : [];
+
+		if ( empty( $market_languages ) ) {
+			return true;
+		}
+
+		$normalised = array_map(
+			static function ( $value ) {
+				$value = (string) $value;
+
+				return false === strpos( $value, '_' ) ? $value : strtolower( substr( $value, 0, 2 ) );
+			},
+			$market_languages
+		);
+
+		return in_array( $product_language, $normalised, true );
 	}
 
 	/**
