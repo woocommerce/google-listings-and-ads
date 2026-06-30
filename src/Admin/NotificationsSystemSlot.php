@@ -31,7 +31,7 @@ class NotificationsSystemSlot implements Service, Registerable {
 	/**
 	 * @var AssetsHandlerInterface
 	 */
-	protected $assets_handler;
+	private $assets_handler;
 
 	/**
 	 * NotificationsSystemSlot constructor.
@@ -58,7 +58,7 @@ class NotificationsSystemSlot implements Service, Registerable {
 				$slot_script = new AdminScriptWithBuiltDependenciesAsset(
 					'woocommerce-marketing-notifications-system-slot',
 					'js/build/woo-marketing-notifications-slot',
-					"{$build_dir}/notification-slot.asset.php",
+					"{$build_dir}/woo-marketing-notifications-slot.asset.php",
 					new BuiltScriptDependencyArray(
 						[
 							'dependencies' => [ 'wp-data', 'wp-element' ],

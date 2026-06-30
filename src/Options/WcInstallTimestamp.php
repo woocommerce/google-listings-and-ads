@@ -23,7 +23,7 @@ class WcInstallTimestamp implements OptionsAwareInterface, Registerable, Service
 	use OptionsAwareTrait;
 
 	/**
-	 * WooCommerce option that stores the store install timestamp.
+	 * WooCommerce core option that stores the WooCommerce Admin install timestamp.
 	 */
 	private const WC_ADMIN_INSTALL_TIMESTAMP_OPTION = 'woocommerce_admin_install_timestamp';
 
@@ -45,6 +45,10 @@ class WcInstallTimestamp implements OptionsAwareInterface, Registerable, Service
 	 * Register a service.
 	 */
 	public function register(): void {
+		// Backfill immediately when GLA loads so existing Woo stores are covered
+		// without waiting for admin_init.
+		$this->record_wc_install_timestamp();
+
 		add_action( 'admin_init', [ $this, 'record_wc_install_timestamp' ] );
 	}
 

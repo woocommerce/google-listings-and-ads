@@ -9,7 +9,7 @@ import { createElement } from '@wordpress/element';
  */
 import { STORE_KEY } from '~/data/constants';
 import {
-	initMarketingNotificationsSlot,
+	createMarketingNotificationsSlot,
 	registerNotificationsInMarketingSlot,
 	useDismissNotificationFromMarketingSlot,
 } from './woo-marketing-notifications-slot';
@@ -71,7 +71,7 @@ async function initNotifications() {
 		};
 	} );
 
-	initMarketingNotificationsSlot();
+	createMarketingNotificationsSlot();
 	registerNotificationsInMarketingSlot( notifications );
 }
 

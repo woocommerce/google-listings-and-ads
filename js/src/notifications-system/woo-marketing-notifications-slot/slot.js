@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { createRoot } from '@wordpress/element';
+import debounce from 'lodash/debounce';
 
 /**
  * Internal dependencies
@@ -12,66 +13,155 @@ import NotificationsPanel from './components/notifications-panel';
 import './slot.scss';
 
 /**
- * Mounts the NotificationsPanel into the multichannel section.
+ * Creates a self-contained controller for the WooCommerce Marketing notifications slot.
  *
- * Returns false if another plugin has already mounted the slot or if the
- * multichannel element is not yet in the DOM.
+ * A persistent MutationObserver on `document.body` calls `sync()` on every DOM
+ * change. `sync()` finds the multichannel section and delegates to `mount()`,
+ * which positions the NotificationsPanel container inside it. The observer is
+ * never disconnected because the marketing page itself mounts and unmounts as a
+ * React component. Before each mount, stale roots are torn down via
+ * `unmountIfContainerDetached()`.
+ *
+ * @return {Function} init — call once per page load to activate the slot.
  */
-function mount( multichannel ) {
-	let container = document.querySelector( `.${ CONTAINER_CLASS }` );
+function createSlot() {
+	let root = null;
+	let mountedContainer = null;
 
-	if ( container ) {
-		// Another plugin has already mounted the slot; nothing to do.
-		return false;
+	/**
+	 * Unmount the React root and clear slot state.
+	 */
+	function unmount() {
+		if ( root ) {
+			root.unmount();
+			root = null;
+		}
+
+		mountedContainer = null;
 	}
 
-	container = document.createElement( 'div' );
-	container.className = CONTAINER_CLASS;
-
-	const banner = multichannel.querySelector( `.${ BANNER_CLASS }` );
-
-	// Place the notifications container immediately after the introduction
-	// banner if one exists, otherwise prepend it to the top of the
-	// multichannel section so it is always the first thing the user sees.
-	if ( banner ) {
-		banner.insertAdjacentElement( 'afterend', container );
-	} else {
-		multichannel.insertBefore( container, multichannel.firstChild );
+	/**
+	 * Remove a stale root when React has detached the container from the DOM.
+	 */
+	function unmountIfContainerDetached() {
+		if ( mountedContainer && ! mountedContainer.isConnected ) {
+			unmount();
+		}
 	}
 
-	createRoot( container ).render( <NotificationsPanel /> );
-	return true;
-}
+	/**
+	 * Insert the container immediately after the banner, or prepend it to the
+	 * multichannel section when no banner is present.
+	 *
+	 * @param {HTMLElement} multichannel
+	 * @param {HTMLElement} container
+	 */
+	function placeContainer( multichannel, container ) {
+		const banner = multichannel.querySelector( `.${ BANNER_CLASS }` );
 
-/**
- * Observes the DOM for the multichannel section and mounts the slot when found.
- *
- * Also handles the case where the section is already present at call time.
- */
-function observeAndMount() {
-	const observer = new MutationObserver( () => {
+		if ( banner ) {
+			banner.insertAdjacentElement( 'afterend', container );
+		} else {
+			multichannel.insertBefore( container, multichannel.firstChild );
+		}
+	}
+
+	/**
+	 * Ensure the notifications container sits immediately after the banner,
+	 * or at the top of the multichannel section when no banner is present.
+	 *
+	 * @param {HTMLElement} multichannel
+	 * @param {HTMLElement} container
+	 */
+	function repositionContainer( multichannel, container ) {
+		const banner = multichannel.querySelector( `.${ BANNER_CLASS }` );
+
+		if ( banner ) {
+			if ( container.previousElementSibling !== banner ) {
+				banner.insertAdjacentElement( 'afterend', container );
+			}
+
+			return;
+		}
+
+		if ( multichannel.firstChild !== container ) {
+			multichannel.insertBefore( container, multichannel.firstChild );
+		}
+	}
+
+	/**
+	 * Mounts the NotificationsPanel into the multichannel section.
+	 *
+	 * @param {HTMLElement} multichannel
+	 */
+	function mount( multichannel ) {
+		unmountIfContainerDetached();
+
+		const existingInMultichannel = multichannel.querySelector(
+			`.${ CONTAINER_CLASS }`
+		);
+
+		if ( existingInMultichannel ) {
+			repositionContainer( multichannel, existingInMultichannel );
+			mountedContainer = existingInMultichannel;
+			return;
+		}
+
+		const existingGlobal = document.querySelector(
+			`.${ CONTAINER_CLASS }`
+		);
+
+		if ( existingGlobal ) {
+			// Another plugin has already mounted the slot elsewhere.
+			return;
+		}
+
+		const container = document.createElement( 'div' );
+		container.className = CONTAINER_CLASS;
+
+		// Place the notifications container immediately after the introduction
+		// banner if one exists, otherwise prepend it to the top of the
+		// multichannel section so it is always the first thing the user sees.
+		placeContainer( multichannel, container );
+
+		root = createRoot( container );
+		root.render( <NotificationsPanel /> );
+		mountedContainer = container;
+	}
+
+	/**
+	 * Sync the slot with the current marketing overview DOM.
+	 */
+	function sync() {
 		const multichannel = document.querySelector(
 			`.${ MULTICHANNEL_CLASS }`
 		);
 
-		if ( multichannel && mount( multichannel ) ) {
-			observer.disconnect();
+		if ( ! multichannel ) {
+			return;
 		}
-	} );
 
-	observer.observe( document.body, { childList: true, subtree: true } );
-
-	const existingMultichannel = document.querySelector(
-		`.${ MULTICHANNEL_CLASS }`
-	);
-
-	if ( existingMultichannel ) {
-		mount( existingMultichannel );
-		observer.disconnect();
+		mount( multichannel );
 	}
+
+	/**
+	 * Observes the DOM for the multichannel section and keeps the slot in sync.
+	 *
+	 * The observer stays connected so the panel can remount when React removes
+	 * and re-inserts the marketing banner without creating duplicate containers.
+	 */
+	function observeAndMount() {
+		const observer = new MutationObserver( debounce( sync, 0 ) );
+
+		observer.observe( document.body, { childList: true, subtree: true } );
+
+		sync();
+	}
+
+	return function init() {
+		registerStore();
+		observeAndMount();
+	};
 }
 
-export default function init() {
-	registerStore();
-	observeAndMount();
-}
+export default createSlot();

@@ -63,9 +63,38 @@ class NotOnboarded90DaysEvaluatorTest extends UnitTest {
 	public function test_should_show_when_not_onboarded_and_wc_installed_over_90_days_ago() {
 		$this->onboarding_completed->method( 'is_onboarding_complete' )->willReturn( false );
 		$this->mock_wc_onboarding_profile( [ 'completed' => true ] );
-		$this->options->method( 'get' )
-			->with( OptionsInterface::WC_INSTALL_TIMESTAMP )
-			->willReturn( time() - ( 91 * DAY_IN_SECONDS ) );
+		$this->options->method( 'get' )->willReturnMap(
+			[
+				[ OptionsInterface::WC_INSTALL_TIMESTAMP, null, time() - ( 91 * DAY_IN_SECONDS ) ],
+				[ OptionsInterface::INSTALL_TIMESTAMP, null, null ],
+			]
+		);
+
+		$this->assertTrue( $this->evaluator->should_show() );
+	}
+
+	public function test_should_show_when_not_onboarded_and_plugin_installed_over_90_days_ago() {
+		$this->onboarding_completed->method( 'is_onboarding_complete' )->willReturn( false );
+		$this->mock_wc_onboarding_profile( [ 'completed' => true ] );
+		$this->options->method( 'get' )->willReturnMap(
+			[
+				[ OptionsInterface::WC_INSTALL_TIMESTAMP, null, null ],
+				[ OptionsInterface::INSTALL_TIMESTAMP, null, time() - ( 91 * DAY_IN_SECONDS ) ],
+			]
+		);
+
+		$this->assertTrue( $this->evaluator->should_show() );
+	}
+
+	public function test_should_show_when_wc_is_older_than_plugin_and_over_90_days() {
+		$this->onboarding_completed->method( 'is_onboarding_complete' )->willReturn( false );
+		$this->mock_wc_onboarding_profile( [ 'completed' => true ] );
+		$this->options->method( 'get' )->willReturnMap(
+			[
+				[ OptionsInterface::WC_INSTALL_TIMESTAMP, null, time() - ( 91 * DAY_IN_SECONDS ) ],
+				[ OptionsInterface::INSTALL_TIMESTAMP, null, time() - ( 10 * DAY_IN_SECONDS ) ],
+			]
+		);
 
 		$this->assertTrue( $this->evaluator->should_show() );
 	}
@@ -73,9 +102,12 @@ class NotOnboarded90DaysEvaluatorTest extends UnitTest {
 	public function test_should_show_when_wc_onboarding_was_skipped() {
 		$this->onboarding_completed->method( 'is_onboarding_complete' )->willReturn( false );
 		$this->mock_wc_onboarding_profile( [ 'skipped' => true ] );
-		$this->options->method( 'get' )
-			->with( OptionsInterface::WC_INSTALL_TIMESTAMP )
-			->willReturn( time() - ( 91 * DAY_IN_SECONDS ) );
+		$this->options->method( 'get' )->willReturnMap(
+			[
+				[ OptionsInterface::WC_INSTALL_TIMESTAMP, null, time() - ( 91 * DAY_IN_SECONDS ) ],
+				[ OptionsInterface::INSTALL_TIMESTAMP, null, null ],
+			]
+		);
 
 		$this->assertTrue( $this->evaluator->should_show() );
 	}
@@ -83,9 +115,12 @@ class NotOnboarded90DaysEvaluatorTest extends UnitTest {
 	public function test_should_show_when_exactly_90_days_have_elapsed() {
 		$this->onboarding_completed->method( 'is_onboarding_complete' )->willReturn( false );
 		$this->mock_wc_onboarding_profile( [ 'completed' => true ] );
-		$this->options->method( 'get' )
-			->with( OptionsInterface::WC_INSTALL_TIMESTAMP )
-			->willReturn( time() - ( 90 * DAY_IN_SECONDS ) );
+		$this->options->method( 'get' )->willReturnMap(
+			[
+				[ OptionsInterface::WC_INSTALL_TIMESTAMP, null, time() - ( 90 * DAY_IN_SECONDS ) ],
+				[ OptionsInterface::INSTALL_TIMESTAMP, null, null ],
+			]
+		);
 
 		$this->assertTrue( $this->evaluator->should_show() );
 	}
@@ -121,22 +156,28 @@ class NotOnboarded90DaysEvaluatorTest extends UnitTest {
 		$this->assertFalse( $this->evaluator->should_show() );
 	}
 
-	public function test_should_not_show_when_wc_install_timestamp_missing() {
+	public function test_should_not_show_when_install_timestamps_missing() {
 		$this->onboarding_completed->method( 'is_onboarding_complete' )->willReturn( false );
 		$this->mock_wc_onboarding_profile( [ 'completed' => true ] );
-		$this->options->method( 'get' )
-			->with( OptionsInterface::WC_INSTALL_TIMESTAMP )
-			->willReturn( null );
+		$this->options->method( 'get' )->willReturnMap(
+			[
+				[ OptionsInterface::WC_INSTALL_TIMESTAMP, null, null ],
+				[ OptionsInterface::INSTALL_TIMESTAMP, null, null ],
+			]
+		);
 
 		$this->assertFalse( $this->evaluator->should_show() );
 	}
 
-	public function test_should_not_show_when_wc_installed_less_than_90_days_ago() {
+	public function test_should_not_show_when_installed_less_than_90_days_ago() {
 		$this->onboarding_completed->method( 'is_onboarding_complete' )->willReturn( false );
 		$this->mock_wc_onboarding_profile( [ 'completed' => true ] );
-		$this->options->method( 'get' )
-			->with( OptionsInterface::WC_INSTALL_TIMESTAMP )
-			->willReturn( time() - ( 30 * DAY_IN_SECONDS ) );
+		$this->options->method( 'get' )->willReturnMap(
+			[
+				[ OptionsInterface::WC_INSTALL_TIMESTAMP, null, time() - ( 30 * DAY_IN_SECONDS ) ],
+				[ OptionsInterface::INSTALL_TIMESTAMP, null, time() - ( 30 * DAY_IN_SECONDS ) ],
+			]
+		);
 
 		$this->assertFalse( $this->evaluator->should_show() );
 	}

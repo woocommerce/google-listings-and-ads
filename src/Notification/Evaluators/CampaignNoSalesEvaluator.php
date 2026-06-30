@@ -6,24 +6,26 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationEvaluatorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
+use DateTime;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class SkippedCampaignEvaluator
+ * Class CampaignNoSalesEvaluator
  *
- * Fires when Ads setup is complete and the merchant has no enabled Performance Max campaigns.
+ * Fires when at least one enabled campaign has recorded zero conversions over the last 90 days.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
-class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwareInterface, Service {
+class CampaignNoSalesEvaluator implements NotificationEvaluatorInterface, AdsAwareInterface, Service {
 
 	use AdsAwareTrait;
 	use CachedNotificationEvaluatorTrait;
@@ -31,13 +33,18 @@ class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwa
 	/** @var AdsCampaign */
 	private $ads_campaign;
 
+	/** @var AdsReport */
+	private $ads_report;
+
 	/**
-	 * SkippedCampaignEvaluator constructor.
+	 * CampaignNoSalesEvaluator constructor.
 	 *
 	 * @param AdsCampaign $ads_campaign
+	 * @param AdsReport   $ads_report
 	 */
-	public function __construct( AdsCampaign $ads_campaign ) {
+	public function __construct( AdsCampaign $ads_campaign, AdsReport $ads_report ) {
 		$this->ads_campaign = $ads_campaign;
+		$this->ads_report   = $ads_report;
 	}
 
 	/**
@@ -46,7 +53,7 @@ class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwa
 	 * @return string
 	 */
 	public function get_id(): string {
-		return 'skipped-campaign-creation';
+		return 'campaign-no-sales';
 	}
 
 	/**
@@ -60,19 +67,51 @@ class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwa
 		}
 
 		try {
-			foreach ( $this->ads_campaign->get_campaigns( true, false ) as $campaign ) {
-				if (
-					CampaignType::PERFORMANCE_MAX === $campaign['type']
-					&& CampaignStatus::ENABLED === $campaign['status']
-				) {
-					return false;
+			$enabled_campaigns = array_filter(
+				$this->ads_campaign->get_campaigns( true, false ),
+				static function ( array $campaign ): bool {
+					return CampaignStatus::ENABLED === $campaign['status'];
 				}
-			}
+			);
 		} catch ( ExceptionWithResponseData $e ) {
 			return false;
 		}
 
-		return true;
+		if ( empty( $enabled_campaigns ) ) {
+			return false;
+		}
+
+		$timezone = wp_timezone();
+		$now      = new DateTime( 'now', $timezone );
+
+		try {
+			$report_data = $this->ads_report->get_report_data(
+				'campaigns',
+				[
+					'after'  => ( clone $now )->modify( '-90 days' ),
+					'before' => $now,
+					'fields' => [ 'conversions' ],
+				]
+			);
+		} catch ( ExceptionWithResponseData $e ) {
+			return false;
+		}
+
+		$campaign_conversions = [];
+
+		foreach ( $report_data['campaigns'] ?? [] as $campaign_report ) {
+			$campaign_conversions[ $campaign_report['id'] ] = $campaign_report['subtotals']['conversions'] ?? 0;
+		}
+
+		foreach ( $enabled_campaigns as $campaign ) {
+			$conversions = $campaign_conversions[ $campaign['id'] ] ?? 0;
+
+			if ( 0.0 === (float) $conversions ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -81,7 +120,7 @@ class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwa
 	 * @return int
 	 */
 	public function get_priority(): int {
-		return NotificationPriorities::SKIPPED_CAMPAIGN_CREATION;
+		return NotificationPriorities::CAMPAIGN_NO_SALES;
 	}
 
 	/**
@@ -90,6 +129,6 @@ class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwa
 	 * @return int|null
 	 */
 	public function get_snooze_duration(): ?int {
-		return null;
+		return NotificationSnoozeDurations::CAMPAIGN_NO_SALES;
 	}
 }

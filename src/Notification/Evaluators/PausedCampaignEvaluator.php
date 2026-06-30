@@ -7,23 +7,23 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationEvaluatorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class SkippedCampaignEvaluator
+ * Class PausedCampaignEvaluator
  *
- * Fires when Ads setup is complete and the merchant has no enabled Performance Max campaigns.
+ * Fires when at least one campaign is paused.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
-class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwareInterface, Service {
+class PausedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwareInterface, Service {
 
 	use AdsAwareTrait;
 	use CachedNotificationEvaluatorTrait;
@@ -32,7 +32,7 @@ class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwa
 	private $ads_campaign;
 
 	/**
-	 * SkippedCampaignEvaluator constructor.
+	 * PausedCampaignEvaluator constructor.
 	 *
 	 * @param AdsCampaign $ads_campaign
 	 */
@@ -46,7 +46,7 @@ class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwa
 	 * @return string
 	 */
 	public function get_id(): string {
-		return 'skipped-campaign-creation';
+		return 'paused-campaign';
 	}
 
 	/**
@@ -61,18 +61,15 @@ class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwa
 
 		try {
 			foreach ( $this->ads_campaign->get_campaigns( true, false ) as $campaign ) {
-				if (
-					CampaignType::PERFORMANCE_MAX === $campaign['type']
-					&& CampaignStatus::ENABLED === $campaign['status']
-				) {
-					return false;
+				if ( CampaignStatus::PAUSED === $campaign['status'] ) {
+					return true;
 				}
 			}
 		} catch ( ExceptionWithResponseData $e ) {
 			return false;
 		}
 
-		return true;
+		return false;
 	}
 
 	/**
@@ -81,7 +78,7 @@ class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwa
 	 * @return int
 	 */
 	public function get_priority(): int {
-		return NotificationPriorities::SKIPPED_CAMPAIGN_CREATION;
+		return NotificationPriorities::PAUSED_CAMPAIGN;
 	}
 
 	/**
@@ -90,6 +87,6 @@ class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwa
 	 * @return int|null
 	 */
 	public function get_snooze_duration(): ?int {
-		return null;
+		return NotificationSnoozeDurations::PAUSED_CAMPAIGN;
 	}
 }

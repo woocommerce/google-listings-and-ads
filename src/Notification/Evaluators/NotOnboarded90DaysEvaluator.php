@@ -20,7 +20,8 @@ defined( 'ABSPATH' ) || exit;
  * Class NotOnboarded90DaysEvaluator
  *
  * Fires when Google for WooCommerce onboarding is not complete, WooCommerce onboarding
- * has been completed or skipped, and WooCommerce has been installed for 90+ days.
+ * has been completed or skipped, and either WooCommerce or the plugin has been active
+ * for 90 or more days.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
@@ -69,13 +70,13 @@ class NotOnboarded90DaysEvaluator implements NotificationEvaluatorInterface, Opt
 			return false;
 		}
 
-		$install_timestamp = $this->options->get( OptionsInterface::WC_INSTALL_TIMESTAMP );
+		$reference_timestamp = $this->get_reference_timestamp();
 
-		if ( ! $install_timestamp ) {
+		if ( ! $reference_timestamp ) {
 			return false;
 		}
 
-		return ( time() - (int) $install_timestamp ) >= ( 90 * DAY_IN_SECONDS );
+		return ( time() - $reference_timestamp ) >= ( 90 * DAY_IN_SECONDS );
 	}
 
 	/**
@@ -94,6 +95,32 @@ class NotOnboarded90DaysEvaluator implements NotificationEvaluatorInterface, Opt
 	 */
 	public function get_snooze_duration(): ?int {
 		return NotificationSnoozeDurations::NOT_ONBOARDED_90_DAYS;
+	}
+
+	/**
+	 * Get the earliest available install timestamp for eligibility checks.
+	 *
+	 * Uses the older of the WooCommerce and plugin install timestamps so merchants
+	 * who had Woo before installing G4W are evaluated from their Woo install date.
+	 *
+	 * @return int|null
+	 */
+	private function get_reference_timestamp(): ?int {
+		$wc_timestamp     = $this->options->get( OptionsInterface::WC_INSTALL_TIMESTAMP );
+		$plugin_timestamp = $this->options->get( OptionsInterface::INSTALL_TIMESTAMP );
+
+		$timestamps = array_filter(
+			[
+				is_numeric( $wc_timestamp ) ? (int) $wc_timestamp : null,
+				is_numeric( $plugin_timestamp ) ? (int) $plugin_timestamp : null,
+			]
+		);
+
+		if ( empty( $timestamps ) ) {
+			return null;
+		}
+
+		return min( $timestamps );
 	}
 
 	/**
