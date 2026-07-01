@@ -447,6 +447,18 @@ class MerchantTest extends UnitTest {
 		$this->assertSame( $business_info, $this->merchant->get_business_info() );
 	}
 
+	public function test_update_business_info() {
+		$business_info = [ 'address' => [ 'regionCode' => 'US' ] ];
+		$response      = [ 'name' => 'accounts/12345/businessInfo' ];
+
+		$this->business_info_service->expects( $this->once() )
+			->method( 'update_business_info' )
+			->with( $business_info, 'address' )
+			->willReturn( $response );
+
+		$this->assertSame( $response, $this->merchant->update_business_info( $business_info, 'address' ) );
+	}
+
 	public function test_has_access_to_account() {
 		$email = 'john@doe.email';
 
