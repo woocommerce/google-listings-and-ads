@@ -331,7 +331,7 @@ class BatchProductHelper implements Service {
 	 *
 	 * @return string The single currency code, or empty string when none is set.
 	 */
-	protected function extract_currency( array $market ): string {
+	private static function extract_currency( array $market ): string {
 		return is_array( $market['currency'] ?? null )
 			? (string) ( $market['currency'][0] ?? '' )
 			: (string) ( $market['currency'] ?? '' );
