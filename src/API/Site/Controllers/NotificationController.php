@@ -120,7 +120,17 @@ class NotificationController extends BaseController {
 	protected function get_notifications_response(): array {
 		return [
 			'notifications' => $this->service->get_notifications(),
+			'menu_count'    => $this->get_menu_notification_count(),
 		];
+	}
+
+	/**
+	 * Get the aggregated admin menu notification count.
+	 *
+	 * @return int
+	 */
+	protected function get_menu_notification_count(): int {
+		return (int) apply_filters( 'google_for_woocommerce_admin_menu_notification_count', 0 );
 	}
 
 	/**
@@ -139,6 +149,12 @@ class NotificationController extends BaseController {
 					'type'       => 'object',
 					'properties' => $this->get_notification_item_properties(),
 				],
+			],
+			'menu_count'    => [
+				'type'        => 'integer',
+				'description' => __( 'Aggregated admin menu notification count.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
 			],
 		];
 	}

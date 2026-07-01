@@ -3,3 +3,5 @@
 export const MULTICHANNEL_CLASS = 'woocommerce-marketing-overview-multichannel';
 export const BANNER_CLASS = 'woocommerce-marketing-introduction-banner';
 export const CONTAINER_CLASS = 'gla-woo-marketing-notifications-slot-container';
+export const SYNC_MARKETING_NOTIFICATIONS_EVENT =
+	'gla-sync-marketing-notifications';

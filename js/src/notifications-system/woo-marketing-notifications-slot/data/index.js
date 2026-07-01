@@ -34,3 +34,7 @@ export function registerStore() {
 export const registerNotifications = ( notifications ) => {
 	dispatch( STORE_KEY ).registerNotifications( notifications );
 };
+
+export const setNotifications = ( notifications ) => {
+	dispatch( STORE_KEY ).setNotifications( notifications );
+};

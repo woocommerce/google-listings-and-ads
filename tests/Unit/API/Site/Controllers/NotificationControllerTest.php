@@ -56,10 +56,23 @@ class NotificationControllerTest extends RESTControllerUnitTest {
 			->method( 'get_notifications' )
 			->willReturn( self::TEST_NOTIFICATIONS );
 
+		add_filter(
+			'google_for_woocommerce_admin_menu_notification_count',
+			static function () {
+				return 5;
+			}
+		);
+
 		$response = $this->do_request( self::ROUTE );
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertEquals( [ 'notifications' => self::TEST_NOTIFICATIONS ], $response->get_data() );
+		$this->assertEquals(
+			[
+				'notifications' => self::TEST_NOTIFICATIONS,
+				'menu_count'    => 5,
+			],
+			$response->get_data()
+		);
 	}
 
 	public function test_delete_notification_route() {
@@ -76,10 +89,23 @@ class NotificationControllerTest extends RESTControllerUnitTest {
 			->method( 'get_notifications' )
 			->willReturn( [ self::TEST_NOTIFICATIONS[1] ] );
 
+		add_filter(
+			'google_for_woocommerce_admin_menu_notification_count',
+			static function () {
+				return 4;
+			}
+		);
+
 		$response = $this->do_request( self::ROUTE_DELETE, 'DELETE' );
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertEquals( [ 'notifications' => [ self::TEST_NOTIFICATIONS[1] ] ], $response->get_data() );
+		$this->assertEquals(
+			[
+				'notifications' => [ self::TEST_NOTIFICATIONS[1] ],
+				'menu_count'    => 4,
+			],
+			$response->get_data()
+		);
 	}
 
 	public function test_delete_notification_invalid_id() {

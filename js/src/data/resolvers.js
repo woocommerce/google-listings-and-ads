@@ -854,7 +854,10 @@ export function* getNotifications() {
 			path: `${ API_NAMESPACE }/notifications`,
 		} );
 
-		yield receiveNotifications( response.notifications ?? [] );
+		yield receiveNotifications(
+			response.notifications ?? [],
+			response.menu_count ?? null
+		);
 	} catch ( error ) {
 		handleApiError(
 			error,
@@ -867,5 +870,8 @@ export function* getNotifications() {
 }
 
 getNotifications.shouldInvalidate = ( action ) => {
-	return action.type === TYPES.DISMISS_NOTIFICATION;
+	return (
+		action.type === TYPES.RECEIVE_ADS_ENHANCED_CONVERSIONS &&
+		action.status === true
+	);
 };

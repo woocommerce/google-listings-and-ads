@@ -8,6 +8,9 @@ export default function reducer( state = [], action ) {
 		case TYPES.REGISTER_NOTIFICATIONS:
 			return [ ...state, ...action.notifications ];
 
+		case TYPES.SET_NOTIFICATIONS:
+			return action.notifications;
+
 		case TYPES.DISMISS_NOTIFICATION:
 			return state.filter(
 				( notification ) => notification.id !== action.id

@@ -7,7 +7,7 @@ import debounce from 'lodash/debounce';
 /**
  * Internal dependencies
  */
-import { MULTICHANNEL_CLASS, BANNER_CLASS, CONTAINER_CLASS } from './constants';
+import { MULTICHANNEL_CLASS, BANNER_CLASS, CONTAINER_CLASS, SYNC_MARKETING_NOTIFICATIONS_EVENT } from './constants';
 import { registerStore } from './data';
 import NotificationsPanel from './components/notifications-panel';
 import './slot.scss';
@@ -127,6 +127,10 @@ function createSlot() {
 		root = createRoot( container );
 		root.render( <NotificationsPanel /> );
 		mountedContainer = container;
+
+		window.dispatchEvent(
+			new CustomEvent( SYNC_MARKETING_NOTIFICATIONS_EVENT )
+		);
 	}
 
 	/**

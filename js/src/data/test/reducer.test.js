@@ -1094,6 +1094,17 @@ describe( 'reducer', () => {
 			expect( state.notifications ).toEqual( notifications );
 		} );
 
+		it( 'RECEIVE_NOTIFICATIONS populates state.menuNotificationCount when provided', () => {
+			const state = reducer( prepareState(), {
+				type: TYPES.RECEIVE_NOTIFICATIONS,
+				notifications,
+				menuCount: 7,
+			} );
+
+			expect( state.notifications ).toEqual( notifications );
+			expect( state.menuNotificationCount ).toBe( 7 );
+		} );
+
 		it( 'DISMISS_NOTIFICATION removes the matching notification by id', () => {
 			const initial = prepareState( 'notifications', notifications );
 			const state = reducer( initial, {

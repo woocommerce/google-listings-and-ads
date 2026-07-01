@@ -620,3 +620,18 @@ export const getGenAITextAssets = ( state, url, assetType ) => {
 export const getNotifications = ( state ) => {
 	return state.notifications ?? [];
 };
+
+/**
+ * @param {Object} state
+ * @return {number|null} Aggregated admin menu notification count, or null if not loaded.
+ */
+export const getMenuNotificationCount = ( state ) => {
+	if (
+		state.menuNotificationCount === null ||
+		state.menuNotificationCount === undefined
+	) {
+		return null;
+	}
+
+	return state.menuNotificationCount;
+};

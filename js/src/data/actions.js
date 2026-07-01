@@ -1512,12 +1512,14 @@ export function* disconnectYouTubeAccount() {
 
 /**
  * @param {Array} notifications
+ * @param {number|null} [menuCount]
  * @return {Object} Action object.
  */
-export function receiveNotifications( notifications ) {
+export function receiveNotifications( notifications, menuCount = null ) {
 	return {
 		type: TYPES.RECEIVE_NOTIFICATIONS,
 		notifications,
+		menuCount,
 	};
 }
 
@@ -1529,15 +1531,15 @@ export function receiveNotifications( notifications ) {
  */
 export function* dismissNotification( id ) {
 	try {
-		yield apiFetch( {
+		const response = yield apiFetch( {
 			path: `${ API_NAMESPACE }/notifications/${ id }`,
 			method: 'DELETE',
 		} );
 
-		return {
-			type: TYPES.DISMISS_NOTIFICATION,
-			id,
-		};
+		yield receiveNotifications(
+			response.notifications ?? [],
+			response.menu_count ?? null
+		);
 	} catch ( error ) {
 		handleApiError(
 			error,

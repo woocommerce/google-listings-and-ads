@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { getNotifications } from '../selectors';
+import { getNotifications, getMenuNotificationCount } from '../selectors';
 
 describe( 'getNotifications', () => {
 	it( 'returns state.notifications when present', () => {
@@ -21,5 +21,23 @@ describe( 'getNotifications', () => {
 
 	it( 'returns empty array when state.notifications is null', () => {
 		expect( getNotifications( { notifications: null } ) ).toEqual( [] );
+	} );
+} );
+
+describe( 'getMenuNotificationCount', () => {
+	it( 'returns state.menuNotificationCount when present', () => {
+		expect( getMenuNotificationCount( { menuNotificationCount: 3 } ) ).toBe(
+			3
+		);
+	} );
+
+	it( 'returns null when state.menuNotificationCount is undefined', () => {
+		expect( getMenuNotificationCount( {} ) ).toBeNull();
+	} );
+
+	it( 'returns null when state.menuNotificationCount is null', () => {
+		expect(
+			getMenuNotificationCount( { menuNotificationCount: null } )
+		).toBeNull();
 	} );
 } );

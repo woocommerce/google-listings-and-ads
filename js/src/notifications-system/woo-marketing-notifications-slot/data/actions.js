@@ -8,6 +8,11 @@ export const registerNotifications = ( notifications ) => ( {
 	notifications,
 } );
 
+export const setNotifications = ( notifications ) => ( {
+	type: TYPES.SET_NOTIFICATIONS,
+	notifications,
+} );
+
 export const dismissNotification = ( id ) => ( {
 	type: TYPES.DISMISS_NOTIFICATION,
 	id,

@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { resolveSelect } from '@wordpress/data';
+import { subscribe, select, resolveSelect } from '@wordpress/data';
 import { createElement } from '@wordpress/element';
 
 /**
@@ -10,8 +10,9 @@ import { createElement } from '@wordpress/element';
 import { STORE_KEY } from '~/data/constants';
 import {
 	createMarketingNotificationsSlot,
-	registerNotificationsInMarketingSlot,
+	setNotificationsInMarketingSlot,
 	useDismissNotificationFromMarketingSlot,
+	SYNC_MARKETING_NOTIFICATIONS_EVENT,
 } from './woo-marketing-notifications-slot';
 import Notification from './notification';
 import useNotificationsSystemMap from './useNotificationsSystemMap';
@@ -52,27 +53,67 @@ function createNotificationComponent( id, triggeredAt ) {
 }
 
 /**
+ * @param {Array} glaNotifications
+ * @return {string} Stable key for comparing notification lists.
+ */
+function getNotificationsKey( glaNotifications ) {
+	return glaNotifications
+		.map( ( { id, triggered_at } ) => `${ id }:${ triggered_at }` )
+		.join( ',' );
+}
+
+/**
+ * @param {Array} glaNotifications
+ */
+function syncMarketingSlot( glaNotifications ) {
+	createMarketingNotificationsSlot();
+
+	const notifications = glaNotifications.map( ( { id, triggered_at } ) => {
+		return {
+			id,
+			triggered_at,
+			component: createNotificationComponent( id, triggered_at ),
+		};
+	} );
+
+	setNotificationsInMarketingSlot( notifications );
+}
+
+let lastSyncedKey = '';
+
+/**
+ * Sync the marketing slot from the current GLA store state.
+ */
+function syncFromCurrentGlaStore() {
+	const glaNotifications = select( STORE_KEY ).getNotifications();
+	const key = getNotificationsKey( glaNotifications );
+
+	if ( key === lastSyncedKey ) {
+		return;
+	}
+
+	lastSyncedKey = key;
+	syncMarketingSlot( glaNotifications );
+}
+
+/**
  * Initializes the notifications system by fetching notifications from the GLA store
- * and registering them in the marketing notifications store.
+ * and syncing them in the marketing notifications store.
  */
 async function initNotifications() {
 	const glaNotifications =
 		await resolveSelect( STORE_KEY ).getNotifications();
 
-	if ( ! glaNotifications.length ) {
-		return;
-	}
+	lastSyncedKey = getNotificationsKey( glaNotifications );
+	syncMarketingSlot( glaNotifications );
 
-	const notifications = glaNotifications.map( ( { id, triggered_at } ) => {
-		return {
-			id,
-			triggered_at, // The triggered_at timestamp is used for sorting notifications in the marketing notifications store.
-			component: createNotificationComponent( id, triggered_at ),
-		};
+	subscribe( () => {
+		syncFromCurrentGlaStore();
+	}, STORE_KEY );
+
+	window.addEventListener( SYNC_MARKETING_NOTIFICATIONS_EVENT, () => {
+		syncFromCurrentGlaStore();
 	} );
-
-	createMarketingNotificationsSlot();
-	registerNotificationsInMarketingSlot( notifications );
 }
 
 initNotifications();

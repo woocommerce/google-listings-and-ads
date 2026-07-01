@@ -740,7 +740,21 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_NOTIFICATIONS: {
-			return setIn( state, 'notifications', action.notifications );
+			let nextState = setIn(
+				state,
+				'notifications',
+				action.notifications
+			);
+
+			if ( action.menuCount !== null && action.menuCount !== undefined ) {
+				nextState = setIn(
+					nextState,
+					'menuNotificationCount',
+					action.menuCount
+				);
+			}
+
+			return nextState;
 		}
 
 		case TYPES.DISMISS_NOTIFICATION: {
