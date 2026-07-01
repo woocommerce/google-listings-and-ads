@@ -3,12 +3,13 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification\Evaluators;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CouponsNotSyncedEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
-use WC_Coupon;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -28,7 +29,10 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->evaluator = new CouponsNotSyncedEvaluator();
+		$this->evaluator = new CouponsNotSyncedEvaluator(
+			$this->createMock( MerchantCenterService::class ),
+			$this->createMock( TargetAudience::class )
+		);
 	}
 
 	public function test_get_id() {
@@ -43,122 +47,70 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 		$this->assertEquals( NotificationSnoozeDurations::COUPONS_NOT_SYNCED, $this->evaluator->get_snooze_duration() );
 	}
 
-	public function test_should_show_when_supported_coupon_is_not_synced() {
-		$supported_coupon   = $this->create_coupon( 1, false, [] );
-		$unsupported_coupon = $this->create_coupon( 2, true, [ 'test@example.com' ] );
-
-		$evaluator = $this->create_evaluator(
-			[
-				1 => [ 2 ],
-				2 => [ 1 ],
-			],
-			[
-				2 => $unsupported_coupon,
-				1 => $supported_coupon,
-			]
-		);
+	public function test_should_show_when_merchant_has_coupon_and_none_synced() {
+		$evaluator = $this->create_evaluator( true, true, false );
 
 		$this->assertTrue( $evaluator->should_show() );
 	}
 
-	public function test_should_show_when_supported_coupon_is_on_same_page_as_unsupported_coupons() {
-		$unsupported_coupon = $this->create_coupon( 1, true, [ 'test@example.com' ] );
-		$supported_coupon   = $this->create_coupon( 2, false, [] );
+	public function test_should_not_show_when_target_market_is_not_supported() {
+		$evaluator = $this->create_evaluator( false, true, false );
 
-		$evaluator = $this->create_evaluator(
-			[
-				1 => [ 1, 2 ],
-			],
-			[
-				1 => $unsupported_coupon,
-				2 => $supported_coupon,
-			]
-		);
-
-		$this->assertTrue( $evaluator->should_show() );
-	}
-
-	public function test_should_not_show_when_supported_coupons_are_synced() {
-		$evaluator = $this->create_evaluator( [], [] );
+		$evaluator->expects( $this->never() )->method( 'has_coupon' );
+		$evaluator->expects( $this->never() )->method( 'has_synced_coupon' );
 
 		$this->assertFalse( $evaluator->should_show() );
 	}
 
-	public function test_should_not_show_when_only_unsupported_coupons_are_not_synced() {
-		$unsupported_coupon = $this->create_coupon( 1, true, [ 'test@example.com' ] );
+	public function test_should_not_show_when_merchant_has_no_coupons() {
+		$evaluator = $this->create_evaluator( true, false, false );
 
-		$evaluator = $this->create_evaluator(
-			[
-				1 => [ 1 ],
-				2 => [],
-			],
-			[
-				1 => $unsupported_coupon,
-			]
-		);
+		$evaluator->expects( $this->never() )->method( 'has_synced_coupon' );
+
+		$this->assertFalse( $evaluator->should_show() );
+	}
+
+	public function test_should_not_show_when_a_coupon_is_already_synced() {
+		$evaluator = $this->create_evaluator( true, true, true );
 
 		$this->assertFalse( $evaluator->should_show() );
 	}
 
 	public function test_cache_hit_skips_query() {
-		$evaluator = $this->create_evaluator( [ 1 => [ 1 ] ], [] );
+		$evaluator = $this->create_evaluator( true, true, false );
 		$user_id   = $this->login_as_administrator();
 
 		set_transient( 'gla_notif_coupons-not-synced_' . $user_id, 0, HOUR_IN_SECONDS );
 
-		$evaluator->expects( $this->never() )->method( 'get_not_synced_coupon_post_ids' );
+		$evaluator->expects( $this->never() )->method( 'has_coupon' );
 
 		$this->assertFalse( $evaluator->should_show() );
 	}
 
 	/**
-	 * Create a test evaluator with stubbed query pages and coupons.
+	 * Create a test evaluator with stubbed dependencies and query results.
 	 *
-	 * @param array<int, int[]>     $post_ids_by_page Post IDs returned per page.
-	 * @param array<int, WC_Coupon> $coupons_by_id    Coupon objects keyed by post ID.
+	 * @param bool $supported_market Whether the target market supports coupon channel visibility.
+	 * @param bool $has_coupon       Whether the merchant has at least one coupon.
+	 * @param bool $has_synced       Whether at least one coupon is already synced to Google.
 	 *
 	 * @return CouponsNotSyncedEvaluator|MockObject
 	 */
-	private function create_evaluator( array $post_ids_by_page, array $coupons_by_id ): CouponsNotSyncedEvaluator {
+	private function create_evaluator( bool $supported_market, bool $has_coupon, bool $has_synced ): CouponsNotSyncedEvaluator {
+		$merchant_center = $this->createMock( MerchantCenterService::class );
+		$target_audience = $this->createMock( TargetAudience::class );
+
+		$target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+		$merchant_center->method( 'is_promotion_supported_country' )->willReturn( $supported_market );
+
 		$evaluator = $this->getMockBuilder( CouponsNotSyncedEvaluator::class )
-			->onlyMethods( [ 'get_not_synced_coupon_post_ids', 'create_coupon' ] )
+			->setConstructorArgs( [ $merchant_center, $target_audience ] )
+			->onlyMethods( [ 'has_coupon', 'has_synced_coupon' ] )
 			->getMock();
 
-		$evaluator->method( 'get_not_synced_coupon_post_ids' )
-			->willReturnCallback(
-				static function ( int $page ) use ( $post_ids_by_page ) {
-					return $post_ids_by_page[ $page ] ?? [];
-				}
-			);
-
-		if ( ! empty( $coupons_by_id ) ) {
-			$evaluator->method( 'create_coupon' )
-				->willReturnCallback(
-					static function ( int $post_id ) use ( $coupons_by_id ) {
-						return $coupons_by_id[ $post_id ];
-					}
-				);
-		}
+		$evaluator->method( 'has_coupon' )->willReturn( $has_coupon );
+		$evaluator->method( 'has_synced_coupon' )->willReturn( $has_synced );
 
 		return $evaluator;
-	}
-
-	/**
-	 * Create a coupon for testing.
-	 *
-	 * @param int      $id
-	 * @param bool     $virtual
-	 * @param string[] $email_restrictions
-	 *
-	 * @return WC_Coupon
-	 */
-	private function create_coupon( int $id, bool $virtual, array $email_restrictions ): WC_Coupon {
-		$coupon = $this->createMock( WC_Coupon::class );
-		$coupon->method( 'get_id' )->willReturn( $id );
-		$coupon->method( 'get_virtual' )->willReturn( $virtual );
-		$coupon->method( 'get_email_restrictions' )->willReturn( $email_restrictions );
-		$coupon->method( 'get_exclude_sale_items' )->willReturn( false );
-
-		return $coupon;
 	}
 }
