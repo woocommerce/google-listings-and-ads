@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupOrphanedLanguageProductsJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupOrphanedMarketProductsJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
@@ -51,6 +52,9 @@ class MarketServiceTest extends UnitTest {
 	/** @var MockObject|CleanupOrphanedMarketProductsJob */
 	protected $cleanup_job;
 
+	/** @var MockObject|CleanupOrphanedLanguageProductsJob */
+	protected $language_cleanup_job;
+
 	/** @var MockObject|UpdateShippingSettings */
 	protected $shipping_settings_job;
 
@@ -71,6 +75,7 @@ class MarketServiceTest extends UnitTest {
 		$this->wpml                    = $this->createMock( WPML::class );
 		$this->job_repository          = $this->createMock( JobRepository::class );
 		$this->cleanup_job             = $this->createMock( CleanupOrphanedMarketProductsJob::class );
+		$this->language_cleanup_job    = $this->createMock( CleanupOrphanedLanguageProductsJob::class );
 		$this->shipping_settings_job   = $this->createMock( UpdateShippingSettings::class );
 		$this->update_all_products_job = $this->createMock( UpdateAllProducts::class );
 
@@ -80,6 +85,8 @@ class MarketServiceTest extends UnitTest {
 					switch ( $classname ) {
 						case CleanupOrphanedMarketProductsJob::class:
 							return $this->cleanup_job;
+						case CleanupOrphanedLanguageProductsJob::class:
+							return $this->language_cleanup_job;
 						case UpdateShippingSettings::class:
 							return $this->shipping_settings_job;
 						case UpdateAllProducts::class:
@@ -3064,6 +3071,174 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->delete_market( 'unknown' );
 
 		$this->assertFalse( $fired );
+	}
+
+	public function test_update_market_secondary_schedules_language_cleanup_when_language_removed(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en', 'cy' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->language_cleanup_job->expects( $this->once() )
+			->method( 'schedule' )
+			->with(
+				[
+					'keys'              => [ 'GB' ],
+					'removed_languages' => [ 'cy' ],
+				]
+			);
+
+		$this->market_service->update_market( 'gb', [ 'language' => [ 'en' ] ] );
+	}
+
+	public function test_update_market_secondary_does_not_schedule_language_cleanup_when_language_added(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->language_cleanup_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'language' => [ 'en', 'cy' ] ] );
+	}
+
+	public function test_update_market_secondary_does_not_schedule_language_cleanup_when_language_reordered(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en', 'cy' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->language_cleanup_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'language' => [ 'cy', 'en' ] ] );
+	}
+
+	public function test_update_market_secondary_uses_old_feed_label_when_feed_label_also_changes(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en', 'cy' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->language_cleanup_job->expects( $this->once() )
+			->method( 'schedule' )
+			->with(
+				[
+					'keys'              => [ 'GB' ],
+					'removed_languages' => [ 'cy' ],
+				]
+			);
+
+		$this->market_service->update_market(
+			'gb',
+			[
+				'language'   => [ 'en' ],
+				'feed_label' => 'GB-PROMO',
+			]
+		);
+	}
+
+	public function test_update_market_primary_schedules_language_cleanup_when_language_removed(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'language' => [ 'en', 'fr' ],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US', 'CA' ] );
+
+		$this->language_cleanup_job->expects( $this->once() )
+			->method( 'schedule' )
+			->with(
+				[
+					'keys'              => [ 'US', 'CA' ],
+					'removed_languages' => [ 'fr' ],
+				]
+			);
+
+		$this->market_service->update_market( 'primary', [ 'language' => [ 'en' ] ] );
+	}
+
+	public function test_update_market_primary_does_not_schedule_when_language_unchanged(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'language' => [ 'en', 'fr' ],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->language_cleanup_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->market_service->update_market( 'primary', [ 'currency' => [ 'USD' ] ] );
+	}
+
+	public function test_update_market_primary_normalises_locale_form_against_short_codes(): void {
+		// Existing stored language uses the locale form 'en_US'; the merchant supplies
+		// short codes for the new value. Only the genuinely-removed code should be reported.
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'language' => [ 'en_US', 'fr' ],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->language_cleanup_job->expects( $this->once() )
+			->method( 'schedule' )
+			->with(
+				[
+					'keys'              => [ 'US' ],
+					'removed_languages' => [ 'fr' ],
+				]
+			);
+
+		$this->market_service->update_market( 'primary', [ 'language' => [ 'en' ] ] );
+	}
+
+	public function test_update_market_primary_does_not_schedule_when_target_audience_empty(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'language' => [ 'en', 'fr' ],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [] );
+
+		$this->language_cleanup_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->market_service->update_market( 'primary', [ 'language' => [ 'en' ] ] );
 	}
 
 	/**

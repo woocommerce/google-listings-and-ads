@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupOrphanedLanguageProductsJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupOrphanedMarketProductsJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
@@ -290,10 +291,22 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 */
 	public function update_market( string $id, array $config ): array {
 		if ( 'primary' === $id ) {
+			$language_change_pending = array_key_exists( 'language', $config );
+			$primary_existing_langs  = $language_change_pending ? $this->get_existing_primary_languages() : [];
+			$primary_countries       = $language_change_pending ? $this->target_audience->get_target_countries() : [];
+
 			$existing_target = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
 			$existing_mc     = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
 
 			$this->update_primary_market_fanout( $config );
+
+			if ( $language_change_pending ) {
+				$this->schedule_language_cleanup(
+					$primary_existing_langs,
+					$config['language'],
+					$primary_countries
+				);
+			}
 
 			$merged_target = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
 			$merged_mc     = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
@@ -334,6 +347,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				->schedule( [ 'feed_label' => $old_feed_label ] );
 		}
 
+		if ( $old_feed_label ) {
+			$this->schedule_language_cleanup(
+				$existing['language'] ?? [],
+				$merged['language'] ?? [],
+				[ $old_feed_label ]
+			);
+		}
+
 		$shipping_keys = [ 'country', 'currency', 'shipping_rate', 'shipping_time' ];
 		foreach ( $shipping_keys as $key ) {
 			if ( ( $existing[ $key ] ?? null ) !== ( $merged[ $key ] ?? null ) ) {
@@ -359,6 +380,80 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		}
 
 		return $this->fire_market_updated_action( $id );
+	}
+
+	/**
+	 * Schedules CleanupOrphanedLanguageProductsJob when languages were removed
+	 * from a market's `language[]` set.
+	 *
+	 * Language codes are normalised before comparison so locale-form values
+	 * (e.g. `en_US`) compare equal to WPML short codes (e.g. `en`).
+	 *
+	 * @param array         $existing_languages The market's languages before the update.
+	 * @param array         $new_languages      The market's languages after the update.
+	 * @param array<string> $keys               `google_ids` keys belonging to the market
+	 *                                          (feed_label for secondary, target countries for primary).
+	 */
+	private function schedule_language_cleanup( array $existing_languages, array $new_languages, array $keys ): void {
+		if ( empty( $keys ) ) {
+			return;
+		}
+
+		$normalised_existing = $this->normalise_language_codes( $existing_languages );
+		$normalised_new      = $this->normalise_language_codes( $new_languages );
+		$removed             = array_values( array_diff( $normalised_existing, $normalised_new ) );
+
+		if ( empty( $removed ) ) {
+			return;
+		}
+
+		$this->job_repository->get( CleanupOrphanedLanguageProductsJob::class )
+			->schedule(
+				[
+					'keys'              => $keys,
+					'removed_languages' => $removed,
+				]
+			);
+	}
+
+	/**
+	 * Returns the primary market's language list from the MERCHANT_CENTER option,
+	 * falling back to a single-entry list with the site-derived default. Mirrors
+	 * the language fallback in get_primary_market() but does not trigger the
+	 * shipping-rate or target-audience lookups that get_primary_market() performs.
+	 *
+	 * @return array
+	 */
+	private function get_existing_primary_languages(): array {
+		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+
+		if ( is_array( $mc_settings['language'] ?? null ) ) {
+			return $mc_settings['language'];
+		}
+
+		return [ $this->get_site_primary_language() ];
+	}
+
+	/**
+	 * Normalises an array of language codes to WPML's short-code form so that
+	 * locale strings (`en_US`) compare equal to short codes (`en`). Mirrors
+	 * the rule in BatchProductHelper::product_matches_market().
+	 *
+	 * @param array $codes
+	 *
+	 * @return string[]
+	 */
+	private function normalise_language_codes( array $codes ): array {
+		$normalised = [];
+		foreach ( $codes as $code ) {
+			$code = (string) $code;
+			if ( '' === $code ) {
+				continue;
+			}
+			$normalised[] = false === strpos( $code, '_' ) ? $code : strtolower( substr( $code, 0, 2 ) );
+		}
+
+		return array_values( array_unique( $normalised ) );
 	}
 
 	/**
