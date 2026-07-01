@@ -57,4 +57,19 @@ class MapiAccountBusinessInfoServiceTest extends UnitTest {
 
 		$this->assertSame( $business_info, $this->service->get_business_info() );
 	}
+
+	public function test_update_business_info() {
+		$business_info = [ 'address' => [ 'regionCode' => 'US' ] ];
+		$response      = [
+			'name'    => 'accounts/12345/businessInfo',
+			'address' => [ 'regionCode' => 'US' ],
+		];
+
+		$this->client->expects( $this->once() )
+			->method( 'patch' )
+			->with( self::PATH . '?updateMask=address', $business_info )
+			->willReturn( $response );
+
+		$this->assertSame( $response, $this->service->update_business_info( $business_info, 'address' ) );
+	}
 }
