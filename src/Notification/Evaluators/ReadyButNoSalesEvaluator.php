@@ -58,7 +58,7 @@ class ReadyButNoSalesEvaluator implements NotificationEvaluatorInterface, Servic
 			return false;
 		}
 
-		return 0 === $this->get_completed_order_count();
+		return ! $this->has_completed_orders();
 	}
 
 	/**
@@ -101,11 +101,11 @@ class ReadyButNoSalesEvaluator implements NotificationEvaluatorInterface, Servic
 	}
 
 	/**
-	 * Count completed orders.
+	 * Whether the store has at least one completed order.
 	 *
-	 * @return int
+	 * @return bool
 	 */
-	protected function get_completed_order_count(): int {
+	protected function has_completed_orders(): bool {
 		$orders = wc_get_orders(
 			[
 				'status' => 'completed',
@@ -114,6 +114,6 @@ class ReadyButNoSalesEvaluator implements NotificationEvaluatorInterface, Servic
 			]
 		);
 
-		return count( $orders );
+		return ! empty( $orders );
 	}
 }
