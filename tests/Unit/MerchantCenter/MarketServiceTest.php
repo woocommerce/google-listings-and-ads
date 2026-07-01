@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupOrphanedLanguageProductsJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupOrphanedMarketProductsJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateShippingSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
@@ -57,22 +58,26 @@ class MarketServiceTest extends UnitTest {
 	/** @var MockObject|UpdateShippingSettings */
 	protected $shipping_settings_job;
 
+	/** @var MockObject|UpdateAllProducts */
+	protected $update_all_products_job;
+
 	/** @var MarketService */
 	protected $market_service;
 
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->target_audience       = $this->createMock( TargetAudience::class );
-		$this->options               = $this->createMock( OptionsInterface::class );
-		$this->shipping_rate_query   = $this->createMock( ShippingRateQuery::class );
-		$this->shipping_time_query   = $this->createMock( ShippingTimeQuery::class );
-		$this->wc                    = $this->createMock( WC::class );
-		$this->wpml                  = $this->createMock( WPML::class );
-		$this->job_repository        = $this->createMock( JobRepository::class );
-		$this->cleanup_job           = $this->createMock( CleanupOrphanedMarketProductsJob::class );
-		$this->language_cleanup_job  = $this->createMock( CleanupOrphanedLanguageProductsJob::class );
-		$this->shipping_settings_job = $this->createMock( UpdateShippingSettings::class );
+		$this->target_audience         = $this->createMock( TargetAudience::class );
+		$this->options                 = $this->createMock( OptionsInterface::class );
+		$this->shipping_rate_query     = $this->createMock( ShippingRateQuery::class );
+		$this->shipping_time_query     = $this->createMock( ShippingTimeQuery::class );
+		$this->wc                      = $this->createMock( WC::class );
+		$this->wpml                    = $this->createMock( WPML::class );
+		$this->job_repository          = $this->createMock( JobRepository::class );
+		$this->cleanup_job             = $this->createMock( CleanupOrphanedMarketProductsJob::class );
+		$this->language_cleanup_job    = $this->createMock( CleanupOrphanedLanguageProductsJob::class );
+		$this->shipping_settings_job   = $this->createMock( UpdateShippingSettings::class );
+		$this->update_all_products_job = $this->createMock( UpdateAllProducts::class );
 
 		$this->job_repository->method( 'get' )
 			->willReturnCallback(
@@ -84,6 +89,8 @@ class MarketServiceTest extends UnitTest {
 							return $this->language_cleanup_job;
 						case UpdateShippingSettings::class:
 							return $this->shipping_settings_job;
+						case UpdateAllProducts::class:
+							return $this->update_all_products_job;
 						default:
 							return null;
 					}
@@ -1003,10 +1010,322 @@ class MarketServiceTest extends UnitTest {
 		$this->set_up_options_get( [ OptionsInterface::MARKETS => $existing ] );
 		$this->options->method( 'update' )->willReturn( true );
 
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
 		$this->shipping_settings_job->expects( $this->never() )
 			->method( 'schedule' );
 
 		$this->market_service->delete_market( 'gb' );
+	}
+
+	public function test_add_market_secondary_schedules_update_all_products(): void {
+		$config = [
+			'country'    => 'GB',
+			'language'   => [ 'en' ],
+			'currency'   => [ 'GBP' ],
+			'feed_label' => 'GB',
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
+			]
+		);
+		$this->options->method( 'update' )->willReturn( true );
+
+		$this->update_all_products_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->market_service->add_market( 'gb', $config );
+	}
+
+	public function test_add_market_primary_does_not_schedule_update_all_products(): void {
+		$this->update_all_products_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->add_market( 'primary', [] );
+	}
+
+	public function test_add_market_invalid_config_does_not_schedule_update_all_products(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+
+		$this->update_all_products_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->add_market(
+			'gb',
+			[
+				'country'    => 'GB',
+				'feed_label' => '',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+			]
+		);
+	}
+
+	public function test_update_market_secondary_schedules_update_all_products_when_country_differs(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->update_all_products_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'country' => 'IE' ] );
+	}
+
+	public function test_update_market_primary_schedules_update_all_products_when_target_audience_countries_change(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->update_all_products_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market(
+			'primary',
+			[ 'countries' => [ 'US', 'CA' ] ]
+		);
+	}
+
+	public function test_update_market_primary_schedules_update_all_products_when_target_audience_countries_reordered(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US', 'GB' ] ],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US', 'GB' ] );
+
+		$this->update_all_products_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market(
+			'primary',
+			[ 'countries' => [ 'GB', 'US' ] ]
+		);
+	}
+
+	public function test_update_market_secondary_schedules_update_all_products_when_feed_label_differs(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->update_all_products_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'feed_label' => 'GB-PROMO' ] );
+	}
+
+	public function test_update_market_secondary_schedules_update_all_products_when_language_differs(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->update_all_products_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'language' => [ 'en', 'cy' ] ] );
+	}
+
+	public function test_update_market_secondary_schedules_update_all_products_when_currency_differs(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->update_all_products_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'currency' => [ 'EUR' ] ] );
+	}
+
+	public function test_update_market_does_not_schedule_update_all_products_when_only_shipping_rate_differs(): void {
+		$existing = [
+			'gb' => [
+				'country'       => 'GB',
+				'language'      => [ 'en' ],
+				'currency'      => [ 'GBP' ],
+				'feed_label'    => 'GB',
+				'shipping_rate' => 'flat',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->update_all_products_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'shipping_rate' => 'automatic' ] );
+	}
+
+	public function test_update_market_does_not_schedule_update_all_products_when_only_shipping_time_differs(): void {
+		$existing = [
+			'gb' => [
+				'country'       => 'GB',
+				'language'      => [ 'en' ],
+				'currency'      => [ 'GBP' ],
+				'feed_label'    => 'GB',
+				'shipping_rate' => 'flat',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->update_all_products_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'shipping_time' => 'automatic' ] );
+	}
+
+	public function test_update_market_does_not_schedule_update_all_products_when_no_fields_differ(): void {
+		$existing = [
+			'gb' => [
+				'country'       => 'GB',
+				'language'      => [ 'en' ],
+				'currency'      => [ 'GBP' ],
+				'feed_label'    => 'GB',
+				'shipping_rate' => 'flat',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->update_all_products_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [] );
+	}
+
+	public function test_update_market_does_not_schedule_update_all_products_when_language_reordered(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en', 'cy' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->update_all_products_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'language' => [ 'cy', 'en' ] ] );
+	}
+
+	public function test_update_market_does_not_schedule_update_all_products_when_currency_reordered(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP', 'EUR' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->update_all_products_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'currency' => [ 'EUR', 'GBP' ] ] );
+	}
+
+	public function test_delete_market_secondary_schedules_update_all_products(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $existing ] );
+		$this->options->method( 'update' )->willReturn( true );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$this->update_all_products_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->market_service->delete_market( 'gb' );
+	}
+
+	public function test_delete_market_primary_does_not_schedule_update_all_products(): void {
+		$this->update_all_products_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->delete_market( 'primary' );
+	}
+
+	public function test_delete_market_unknown_id_does_not_schedule_update_all_products(): void {
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+
+		$this->update_all_products_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->delete_market( 'unknown' );
 	}
 
 	public function test_add_market_does_not_schedule_cleanup(): void {
@@ -1078,6 +1397,9 @@ class MarketServiceTest extends UnitTest {
 				}
 			);
 
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
 		$this->market_service->delete_market( 'us' );
 
 		$this->assertArrayHasKey( OptionsInterface::MARKETS, $update_calls );
@@ -1103,6 +1425,9 @@ class MarketServiceTest extends UnitTest {
 
 		$this->set_up_options_get( [ OptionsInterface::MARKETS => $existing ] );
 		$this->options->method( 'update' )->willReturn( true );
+
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
 
 		$this->cleanup_job->expects( $this->once() )
 			->method( 'schedule' )
@@ -1158,10 +1483,444 @@ class MarketServiceTest extends UnitTest {
 				}
 			);
 
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
 		$this->market_service->delete_market( 'gb' );
 
 		$this->assertArrayHasKey( OptionsInterface::MARKETS, $update_calls );
 		$this->assertArrayNotHasKey( OptionsInterface::TARGET_AUDIENCE, $update_calls );
+	}
+
+	public function test_delete_market_updates_existing_rate_row_with_primary_values(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'    => 'FR',
+						'language'   => [ 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'FR',
+					],
+				],
+			]
+		);
+
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+
+		$this->shipping_rate_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 1,
+					'country'  => 'US',
+					'currency' => 'USD',
+					'rate'     => '5.00',
+					'options'  => [ 'free_shipping_threshold' => 50.0 ],
+				],
+				[
+					'id'       => 2,
+					'country'  => 'FR',
+					'currency' => 'EUR',
+					'rate'     => '20.00',
+					'options'  => [],
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$this->shipping_rate_query->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				[
+					'country'  => 'FR',
+					'currency' => 'USD',
+					'rate'     => '5.00',
+					'options'  => [ 'free_shipping_threshold' => 50.0 ],
+				],
+				[ 'id' => 2 ]
+			);
+		$this->shipping_rate_query->expects( $this->never() )->method( 'insert' );
+		$this->shipping_rate_query->expects( $this->never() )->method( 'delete' );
+
+		$this->market_service->delete_market( 'fr' );
+	}
+
+	public function test_delete_market_updates_existing_time_row_with_primary_values(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'    => 'FR',
+						'language'   => [ 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'FR',
+					],
+				],
+			]
+		);
+
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 1,
+					'country'  => 'US',
+					'time'     => '1',
+					'max_time' => '3',
+				],
+				[
+					'id'       => 2,
+					'country'  => 'FR',
+					'time'     => '3',
+					'max_time' => '7',
+				],
+			]
+		);
+
+		$this->shipping_time_query->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				[
+					'country'  => 'FR',
+					'time'     => '1',
+					'max_time' => '3',
+				],
+				[ 'id' => 2 ]
+			);
+		$this->shipping_time_query->expects( $this->never() )->method( 'insert' );
+		$this->shipping_time_query->expects( $this->never() )->method( 'delete' );
+
+		$this->market_service->delete_market( 'fr' );
+	}
+
+	public function test_delete_market_inserts_rate_row_when_target_missing(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'    => 'FR',
+						'language'   => [ 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'FR',
+					],
+				],
+			]
+		);
+
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+
+		$this->shipping_rate_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 1,
+					'country'  => 'US',
+					'currency' => 'USD',
+					'rate'     => '5.00',
+					'options'  => [ 'free_shipping_threshold' => 50.0 ],
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$this->shipping_rate_query->expects( $this->once() )
+			->method( 'insert' )
+			->with(
+				[
+					'country'  => 'FR',
+					'currency' => 'USD',
+					'rate'     => '5.00',
+					'options'  => [ 'free_shipping_threshold' => 50.0 ],
+				]
+			);
+		$this->shipping_rate_query->expects( $this->never() )->method( 'update' );
+		$this->shipping_rate_query->expects( $this->never() )->method( 'delete' );
+
+		$this->market_service->delete_market( 'fr' );
+	}
+
+	public function test_delete_market_inserts_time_row_when_target_missing(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'    => 'FR',
+						'language'   => [ 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'FR',
+					],
+				],
+			]
+		);
+
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 1,
+					'country'  => 'US',
+					'time'     => '1',
+					'max_time' => '3',
+				],
+			]
+		);
+
+		$this->shipping_time_query->expects( $this->once() )
+			->method( 'insert' )
+			->with(
+				[
+					'country'  => 'FR',
+					'time'     => '1',
+					'max_time' => '3',
+				]
+			);
+		$this->shipping_time_query->expects( $this->never() )->method( 'update' );
+		$this->shipping_time_query->expects( $this->never() )->method( 'delete' );
+
+		$this->market_service->delete_market( 'fr' );
+	}
+
+	public function test_delete_market_deletes_orphan_rate_row_when_source_missing(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'    => 'FR',
+						'language'   => [ 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'FR',
+					],
+				],
+			]
+		);
+
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+
+		$this->shipping_rate_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 2,
+					'country'  => 'FR',
+					'currency' => 'EUR',
+					'rate'     => '20.00',
+					'options'  => [],
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$this->shipping_rate_query->expects( $this->once() )
+			->method( 'delete' )
+			->with( 'country', 'FR' );
+		$this->shipping_rate_query->expects( $this->never() )->method( 'update' );
+		$this->shipping_rate_query->expects( $this->never() )->method( 'insert' );
+
+		$this->market_service->delete_market( 'fr' );
+	}
+
+	public function test_delete_market_deletes_orphan_time_row_when_source_missing(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'    => 'FR',
+						'language'   => [ 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'FR',
+					],
+				],
+			]
+		);
+
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 2,
+					'country'  => 'FR',
+					'time'     => '3',
+					'max_time' => '7',
+				],
+			]
+		);
+
+		$this->shipping_time_query->expects( $this->once() )
+			->method( 'delete' )
+			->with( 'country', 'FR' );
+		$this->shipping_time_query->expects( $this->never() )->method( 'update' );
+		$this->shipping_time_query->expects( $this->never() )->method( 'insert' );
+
+		$this->market_service->delete_market( 'fr' );
+	}
+
+	public function test_delete_market_does_nothing_to_rate_query_when_both_rate_rows_missing(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'    => 'FR',
+						'language'   => [ 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'FR',
+					],
+				],
+			]
+		);
+
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$this->shipping_rate_query->expects( $this->never() )->method( 'update' );
+		$this->shipping_rate_query->expects( $this->never() )->method( 'insert' );
+		$this->shipping_rate_query->expects( $this->never() )->method( 'delete' );
+
+		$this->market_service->delete_market( 'fr' );
+	}
+
+	public function test_delete_market_does_nothing_to_time_query_when_both_time_rows_missing(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'    => 'FR',
+						'language'   => [ 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'FR',
+					],
+				],
+			]
+		);
+
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$this->shipping_time_query->expects( $this->never() )->method( 'update' );
+		$this->shipping_time_query->expects( $this->never() )->method( 'insert' );
+		$this->shipping_time_query->expects( $this->never() )->method( 'delete' );
+
+		$this->market_service->delete_market( 'fr' );
+	}
+
+	public function test_delete_market_primary_throw_does_not_run_sync_or_fire_hook(): void {
+		$hook_fired = false;
+		$listener   = function () use ( &$hook_fired ) {
+			$hook_fired = true;
+		};
+		add_action( 'woocommerce_gla_market_deleted', $listener );
+
+		$this->shipping_rate_query->expects( $this->never() )->method( 'get_results' );
+		$this->shipping_rate_query->expects( $this->never() )->method( 'update' );
+		$this->shipping_rate_query->expects( $this->never() )->method( 'insert' );
+		$this->shipping_rate_query->expects( $this->never() )->method( 'delete' );
+		$this->shipping_time_query->expects( $this->never() )->method( 'get_results' );
+		$this->shipping_time_query->expects( $this->never() )->method( 'update' );
+		$this->shipping_time_query->expects( $this->never() )->method( 'insert' );
+		$this->shipping_time_query->expects( $this->never() )->method( 'delete' );
+
+		try {
+			$this->market_service->delete_market( 'primary' );
+			$this->fail( 'Expected InvalidValue exception.' );
+		} catch ( InvalidValue $e ) {
+			$this->assertInstanceOf( InvalidValue::class, $e );
+		} finally {
+			remove_action( 'woocommerce_gla_market_deleted', $listener );
+		}
+
+		$this->assertFalse( $hook_fired );
+	}
+
+	public function test_delete_market_fires_woocommerce_gla_market_deleted_hook_once_with_id_and_deleted_config(): void {
+		$stored_config = [
+			'country'    => 'FR',
+			'language'   => [ 'fr' ],
+			'currency'   => [ 'EUR' ],
+			'feed_label' => 'FR',
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [ 'fr' => $stored_config ],
+			]
+		);
+
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$captured = [];
+		$listener = function ( $market_id, $deleted_config ) use ( &$captured ) {
+			$captured[] = [ $market_id, $deleted_config ];
+		};
+		add_action( 'woocommerce_gla_market_deleted', $listener, 10, 2 );
+
+		try {
+			$this->market_service->delete_market( 'fr' );
+		} finally {
+			remove_action( 'woocommerce_gla_market_deleted', $listener, 10 );
+		}
+
+		$this->assertCount( 1, $captured );
+		$this->assertSame( [ 'fr', $stored_config ], $captured[0] );
+	}
+
+	public function test_delete_market_coerces_null_options_to_empty_array(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'    => 'FR',
+						'language'   => [ 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'FR',
+					],
+				],
+			]
+		);
+
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+
+		$this->shipping_rate_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 1,
+					'country'  => 'US',
+					'currency' => 'USD',
+					'rate'     => '5.00',
+					'options'  => null,
+				],
+				[
+					'id'       => 2,
+					'country'  => 'FR',
+					'currency' => 'EUR',
+					'rate'     => '20.00',
+					'options'  => [],
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$this->shipping_rate_query->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				[
+					'country'  => 'FR',
+					'currency' => 'USD',
+					'rate'     => '5.00',
+					'options'  => [],
+				],
+				[ 'id' => 2 ]
+			);
+
+		$this->market_service->delete_market( 'fr' );
 	}
 
 	public function test_update_markets_strips_primary_key(): void {
@@ -1306,7 +2065,12 @@ class MarketServiceTest extends UnitTest {
 			],
 		];
 
-		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $secondary,
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'flat' ],
+			]
+		);
 		$this->set_up_primary_market_dependencies(
 			'US',
 			[ 'US' ],
@@ -1322,6 +2086,99 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( [ 'DE' ], $result['de']['countries'] );
 		$this->assertSame( 'Germany', $result['de']['label'] );
 		$this->assertSame( 75.0, $result['de']['free_shipping'] );
+	}
+
+	public function test_get_markets_free_shipping_null_for_all_markets_when_mode_automatic(): void {
+		$secondary = [
+			'de' => [
+				'country'    => 'DE',
+				'language'   => [ 'de' ],
+				'currency'   => [ 'EUR' ],
+				'feed_label' => 'DE',
+			],
+			'fr' => [
+				'country'    => 'FR',
+				'language'   => [ 'fr' ],
+				'currency'   => [ 'EUR' ],
+				'feed_label' => 'FR',
+			],
+		];
+
+		// Rows persist in the DB across mode switches, so this fixture mimics a
+		// merchant who had flat rates configured and then switched to automatic.
+		$rates = [
+			'US' => [
+				'country_code'            => 'US',
+				'currency'                => 'USD',
+				'rate'                    => '5.00',
+				'free_shipping_threshold' => 50.0,
+			],
+			'DE' => [
+				'country_code'            => 'DE',
+				'currency'                => 'EUR',
+				'rate'                    => '5.00',
+				'free_shipping_threshold' => 75.0,
+			],
+			'FR' => [
+				'country_code'            => 'FR',
+				'currency'                => 'EUR',
+				'rate'                    => '5.00',
+				'free_shipping_threshold' => 80.0,
+			],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $secondary,
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'automatic' ],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ], $rates );
+
+		$result = $this->market_service->get_markets();
+
+		$this->assertNull( $result['primary']['free_shipping'] );
+		$this->assertNull( $result['de']['free_shipping'] );
+		$this->assertNull( $result['fr']['free_shipping'] );
+	}
+
+	public function test_get_markets_free_shipping_null_when_mode_manual_or_unset(): void {
+		$secondary = [
+			'de' => [
+				'country'    => 'DE',
+				'language'   => [ 'de' ],
+				'currency'   => [ 'EUR' ],
+				'feed_label' => 'DE',
+			],
+		];
+
+		$rates = [
+			'US' => [
+				'country_code'            => 'US',
+				'currency'                => 'USD',
+				'rate'                    => '5.00',
+				'free_shipping_threshold' => 50.0,
+			],
+			'DE' => [
+				'country_code'            => 'DE',
+				'currency'                => 'EUR',
+				'rate'                    => '5.00',
+				'free_shipping_threshold' => 75.0,
+			],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $secondary,
+				OptionsInterface::MERCHANT_CENTER => [ 'shipping_rate' => 'manual' ],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ], $rates );
+
+		$result = $this->market_service->get_markets();
+
+		$this->assertNull( $result['primary']['free_shipping'] );
+		$this->assertNull( $result['de']['free_shipping'] );
 	}
 
 	public function test_get_markets_secondary_free_shipping_null_when_no_rate_entry(): void {
@@ -2157,6 +3014,8 @@ class MarketServiceTest extends UnitTest {
 			]
 		);
 		$this->options->method( 'update' )->willReturn( true );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
 
 		$fired_count     = 0;
 		$captured_id     = null;

@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
@@ -35,6 +36,9 @@ class ProductFactoryTest extends ContainerAwareUnitTest {
 
 	/** @var WC $wc */
 	protected $wc;
+
+	/** @var MockObject|WPML $wpml */
+	protected $wpml;
 
 	public function test_create() {
 		$product = WC_Helper_Product::create_simple_product();
@@ -157,6 +161,76 @@ class ProductFactoryTest extends ContainerAwareUnitTest {
 		$this->product_factory->create( $variable, 'US', [] );
 	}
 
+	public function test_create_without_currency_override_uses_store_currency() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 10,
+				'regular_price' => 10,
+			]
+		);
+
+		$this->attribute_manager->method( 'get_all_values' )->willReturn( [] );
+
+		$adapted = $this->product_factory->create( $product, 'US', [] );
+
+		$this->assertEquals( get_woocommerce_currency(), $adapted->getPrice()->getCurrency() );
+	}
+
+	public function test_create_with_currency_override_passes_it_to_adapter() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 10,
+				'regular_price' => 10,
+			]
+		);
+
+		$this->attribute_manager->method( 'get_all_values' )->willReturn( [] );
+		$this->wpml->method( 'get_product_price_in_currency' )->willReturn( 8.0 );
+		$this->wpml->method( 'get_product_sale_price_in_currency' )->willReturn( null );
+
+		$adapted = $this->product_factory->create( $product, 'FR', [], 'FR-fr', 'fr', 'EUR' );
+
+		$this->assertEquals( 'EUR', $adapted->getPrice()->getCurrency() );
+		$this->assertEquals( 8.0, $adapted->getPrice()->getValue() );
+	}
+
+	public function test_factory_constructs_without_wpml_for_backward_compatibility() {
+		$factory = new ProductFactory( $this->attribute_manager, $this->wc );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 10,
+				'regular_price' => 10,
+			]
+		);
+
+		$this->attribute_manager->method( 'get_all_values' )->willReturn( [] );
+
+		$adapted = $factory->create( $product, 'FR', [], 'FR-fr', 'fr', 'EUR' );
+
+		// No WPML injected, so currency_override has no effect; falls back to store currency.
+		$this->assertEquals( get_woocommerce_currency(), $adapted->getPrice()->getCurrency() );
+	}
+
+	public function test_create_with_null_currency_override_uses_store_currency() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 10,
+				'regular_price' => 10,
+			]
+		);
+
+		$this->attribute_manager->method( 'get_all_values' )->willReturn( [] );
+
+		$adapted = $this->product_factory->create( $product, 'FR', [], 'FR-fr', 'fr' );
+
+		$this->assertEquals( get_woocommerce_currency(), $adapted->getPrice()->getCurrency() );
+	}
+
 	/**
 	 * Runs before each test is executed.
 	 */
@@ -165,6 +239,7 @@ class ProductFactoryTest extends ContainerAwareUnitTest {
 		$this->attribute_manager = $this->createMock( AttributeManager::class );
 		$this->rules_query       = $this->createMock( AttributeMappingRulesQuery::class );
 		$this->wc                = $this->container->get( WC::class );
-		$this->product_factory   = new ProductFactory( $this->attribute_manager, $this->wc );
+		$this->wpml              = $this->createMock( WPML::class );
+		$this->product_factory   = new ProductFactory( $this->attribute_manager, $this->wc, $this->wpml );
 	}
 }

@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupOrphanedLanguageProductsJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupOrphanedMarketProductsJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateShippingSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -123,11 +124,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 		$all_rates     = $this->get_cached_shipping_rates();
 		$all_countries = $this->wc->get_countries();
+		$is_flat_mode  = $this->is_flat_shipping_rate();
 
 		foreach ( $secondary as &$market ) {
 			$country = $market['country'] ?? null;
 
-			$market['free_shipping'] = ( $country && isset( $all_rates[ $country ]['free_shipping_threshold'] ) )
+			// DB rate rows are retained when the merchant switches modes so they
+			// can be restored later, so the read boundary has to gate them.
+			$market['free_shipping'] = ( $is_flat_mode && $country && isset( $all_rates[ $country ]['free_shipping_threshold'] ) )
 				? (float) $all_rates[ $country ]['free_shipping_threshold']
 				: null;
 
@@ -259,6 +263,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$this->schedule_shipping_sync();
 		}
 
+		$this->job_repository->get( UpdateAllProducts::class )->schedule();
+
 		/**
 		 * Fires after a secondary market is successfully added.
 		 *
@@ -289,6 +295,9 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$primary_existing_langs  = $language_change_pending ? $this->get_existing_primary_languages() : [];
 			$primary_countries       = $language_change_pending ? $this->target_audience->get_target_countries() : [];
 
+			$existing_target = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
+			$existing_mc     = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+
 			$this->update_primary_market_fanout( $config );
 
 			if ( $language_change_pending ) {
@@ -297,6 +306,26 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 					$config['language'],
 					$primary_countries
 				);
+			}
+
+			$merged_target = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
+			$merged_mc     = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+
+			$existing_countries = $existing_target['countries'] ?? [];
+			$merged_countries   = $merged_target['countries'] ?? [];
+			$existing_language  = $existing_mc['language'] ?? [];
+			$merged_language    = $merged_mc['language'] ?? [];
+			$existing_currency  = $existing_mc['currency'] ?? [];
+			$merged_currency    = $merged_mc['currency'] ?? [];
+
+			$resync_needed = $existing_countries !== $merged_countries
+				|| array_diff( $existing_language, $merged_language ) !== []
+				|| array_diff( $merged_language, $existing_language ) !== []
+				|| array_diff( $existing_currency, $merged_currency ) !== []
+				|| array_diff( $merged_currency, $existing_currency ) !== [];
+
+			if ( $resync_needed ) {
+				$this->job_repository->get( UpdateAllProducts::class )->schedule();
 			}
 
 			return $this->fire_market_updated_action( $id );
@@ -332,6 +361,22 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				$this->schedule_shipping_sync();
 				break;
 			}
+		}
+
+		$existing_language = $existing['language'] ?? [];
+		$merged_language   = $merged['language'] ?? [];
+		$existing_currency = $existing['currency'] ?? [];
+		$merged_currency   = $merged['currency'] ?? [];
+
+		$resync_needed = ( $existing['country'] ?? null ) !== ( $merged['country'] ?? null )
+			|| ( $existing['feed_label'] ?? null ) !== ( $merged['feed_label'] ?? null )
+			|| array_diff( $existing_language, $merged_language ) !== []
+			|| array_diff( $merged_language, $existing_language ) !== []
+			|| array_diff( $existing_currency, $merged_currency ) !== []
+			|| array_diff( $merged_currency, $existing_currency ) !== [];
+
+		if ( $resync_needed ) {
+			$this->job_repository->get( UpdateAllProducts::class )->schedule();
 		}
 
 		return $this->fire_market_updated_action( $id );
@@ -463,6 +508,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$this->options->update( OptionsInterface::MARKETS, $markets );
 
 		if ( $country ) {
+			$this->adopt_primary_rate_for_country( $country );
+			$this->adopt_primary_time_for_country( $country );
 			$this->restore_country_to_target_audience( $country );
 		}
 
@@ -474,6 +521,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		if ( 'manual' !== $shipping_rate ) {
 			$this->schedule_shipping_sync();
 		}
+
+		$this->job_repository->get( UpdateAllProducts::class )->schedule();
 
 		/**
 		 * Fires after a secondary market is successfully deleted.
@@ -649,6 +698,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @return float|null The threshold amount, or null when unset.
 	 */
 	private function get_primary_free_shipping_threshold(): ?float {
+		if ( ! $this->is_flat_shipping_rate() ) {
+			return null;
+		}
+
 		$country = $this->target_audience->get_main_target_country();
 		$rates   = $this->get_cached_shipping_rates();
 
@@ -657,6 +710,20 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Whether the global shipping rate mode is 'flat'.
+	 *
+	 * DB-stored rates only flow to MC in flat mode; automatic mode is driven by
+	 * WC shipping zones, and manual mode is handled outside the plugin.
+	 *
+	 * @return bool
+	 */
+	private function is_flat_shipping_rate(): bool {
+		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+
+		return is_array( $mc_settings ) && 'flat' === ( $mc_settings['shipping_rate'] ?? null );
 	}
 
 	/**
@@ -805,6 +872,99 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		if ( count( $filtered ) !== count( $target_audience['countries'] ) ) {
 			$target_audience['countries'] = $filtered;
 			$this->options->update( OptionsInterface::TARGET_AUDIENCE, $target_audience );
+		}
+	}
+
+	/**
+	 * Overwrites the deleted country's shipping rate row with the primary market's values.
+	 *
+	 * Reads the full ShippingRateTable once and filters in PHP. When both rows exist the target
+	 * row is updated. When only the primary row exists the target row is inserted. When only the
+	 * target row exists it is deleted so the existing shipping sync pipeline can recompute the
+	 * country's rate on the next run. When neither row exists nothing happens.
+	 *
+	 * @param string $country ISO 3166-1 alpha-2 country code of the deleted secondary market.
+	 */
+	private function adopt_primary_rate_for_country( string $country ): void {
+		$primary_country = $this->target_audience->get_main_target_country();
+		$rows            = $this->shipping_rate_query->get_results();
+
+		$primary_row  = null;
+		$existing_row = null;
+
+		foreach ( $rows as $row ) {
+			if ( $row['country'] === $primary_country ) {
+				$primary_row = $row;
+			}
+			if ( $row['country'] === $country ) {
+				$existing_row = $row;
+			}
+		}
+
+		if ( $primary_row ) {
+			$primary_options = $primary_row['options'] ?? null;
+			$data            = [
+				'country'  => $country,
+				'currency' => $primary_row['currency'],
+				'rate'     => $primary_row['rate'],
+				'options'  => is_array( $primary_options ) ? $primary_options : [],
+			];
+
+			if ( $existing_row ) {
+				$this->shipping_rate_query->update( $data, [ 'id' => $existing_row['id'] ] );
+			} else {
+				$this->shipping_rate_query->insert( $data );
+			}
+
+			return;
+		}
+
+		if ( $existing_row ) {
+			$this->shipping_rate_query->delete( 'country', $country );
+		}
+	}
+
+	/**
+	 * Overwrites the deleted country's shipping time row with the primary market's values.
+	 *
+	 * Same shape as adopt_primary_rate_for_country against ShippingTimeQuery / ShippingTimeTable.
+	 *
+	 * @param string $country ISO 3166-1 alpha-2 country code of the deleted secondary market.
+	 */
+	private function adopt_primary_time_for_country( string $country ): void {
+		$primary_country = $this->target_audience->get_main_target_country();
+		$rows            = $this->shipping_time_query->get_results();
+
+		$primary_row  = null;
+		$existing_row = null;
+
+		foreach ( $rows as $row ) {
+			if ( $row['country'] === $primary_country ) {
+				$primary_row = $row;
+			}
+			if ( $row['country'] === $country ) {
+				$existing_row = $row;
+			}
+		}
+
+		if ( $primary_row ) {
+			$data = [
+				'country'  => $country,
+				'time'     => $primary_row['time'],
+				'max_time' => $primary_row['max_time'],
+			];
+
+			if ( $existing_row ) {
+				$this->shipping_time_query->update( $data, [ 'id' => $existing_row['id'] ] );
+			} else {
+				$this->shipping_time_query->insert( $data );
+			}
+
+			return;
+		}
+
+		if ( $existing_row ) {
+			$this->shipping_time_query->delete( 'country', $country );
 		}
 	}
 

@@ -6,7 +6,11 @@ import { expect, test } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import { clearOnboardedMerchant } from '../../utils/api';
+import {
+	setOnboardedMerchant,
+	clearOnboardedMerchant,
+	clearServiceBasedMerchant,
+} from '../../utils/api';
 import priceBenchmarkSuggestionsData from '../../utils/__fixtures__/price-benchmark-suggestions.json';
 import priceBenchmarkProductSuggestionsData from '../../utils/__fixtures__/price-benchmark-product-suggestions.json';
 import PriceBenchmarkPage from '../../utils/pages/price-benchmark';
@@ -38,11 +42,14 @@ test.describe( 'Price Benchmark Page', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		priceBenchmarkPage = new PriceBenchmarkPage( page );
+		await setOnboardedMerchant();
+		await clearServiceBasedMerchant();
 		await priceBenchmarkPage.mockRequests();
 	} );
 
 	test.afterAll( async () => {
 		await clearOnboardedMerchant();
+		await clearServiceBasedMerchant();
 		await page.close();
 	} );
 
@@ -219,8 +226,7 @@ test.describe( 'Price Benchmark Page', () => {
 
 	test.describe( 'Price Comparison Chart with Data', () => {
 		test.beforeAll( async () => {
-			// Set up common test data once for this group
-			await priceBenchmarkPage.goto();
+			// Register mocks before goto() so previous test group's stale handlers don't intercept.
 			await priceBenchmarkPage.fulfillPriceBenchmarkSuggestions(
 				priceBenchmarkSuggestionsData
 			);
@@ -231,6 +237,7 @@ test.describe( 'Price Benchmark Page', () => {
 				price_unknown: 40,
 				total_products: 100,
 			} );
+			await priceBenchmarkPage.goto();
 		} );
 
 		test( 'Render the chart if there are products', async () => {

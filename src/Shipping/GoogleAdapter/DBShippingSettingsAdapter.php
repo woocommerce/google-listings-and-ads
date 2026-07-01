@@ -64,14 +64,28 @@ class DBShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 	 */
 	protected function map_db_rates( array $db_rates ) {
 		$services = [];
-		foreach ( $db_rates as ['country' => $country, 'rate' => $rate, 'options' => $options] ) {
+		// Per-row currency drives the synced service so multi-market stores don't
+		// have their secondary-market rates pushed in the primary store currency.
+		// Fall back to the per-country currency map for legacy rows missing one.
+		foreach ( $db_rates as $db_rate ) {
+			$country = $db_rate['country'] ?? null;
+			$rate    = $db_rate['rate'] ?? null;
+			$options = $db_rate['options'] ?? [];
+
+			if ( null === $country || null === $rate ) {
+				continue;
+			}
+
 			// No negative rates.
 			if ( $rate < 0 ) {
 				continue;
 			}
 
-			$currency = $this->get_currency_for_country( $country );
-			$service  = $this->create_shipping_service( $country, $currency, (float) $rate );
+			$currency = ! empty( $db_rate['currency'] )
+				? $db_rate['currency']
+				: $this->get_currency_for_country( $country );
+
+			$service = $this->create_shipping_service( $country, $currency, (float) $rate );
 
 			if ( isset( $options['free_shipping_threshold'] ) ) {
 				$minimum_order_value = (float) $options['free_shipping_threshold'];

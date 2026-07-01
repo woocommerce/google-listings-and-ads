@@ -906,6 +906,258 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		}
 	}
 
+	public function test_secondary_market_currency_passed_to_factory() {
+		$product         = WC_Helper_Product::create_simple_product();
+		$real_factory    = $this->container->get( ProductFactory::class );
+		$primary_adapter = $real_factory->create( $product, 'US', [], 'US', 'en' );
+
+		$captured_secondary_args = null;
+
+		$factory_mock = $this->createMock( ProductFactory::class );
+		$factory_mock->method( 'create' )
+			->willReturnCallback(
+				function ( WC_Product $p, string $country, array $rules, string $feed_label, string $language, ?string $currency_override = null ) use ( $primary_adapter, $real_factory, $product, &$captured_secondary_args ) {
+					if ( 'US' === $country ) {
+						return $primary_adapter;
+					}
+					$captured_secondary_args = [
+						'country'           => $country,
+						'feed_label'        => $feed_label,
+						'language'          => $language,
+						'currency_override' => $currency_override,
+					];
+					return $real_factory->create( $product, $country, $rules, $feed_label, $language, $currency_override );
+				}
+			);
+
+		$helper = new BatchProductHelper(
+			$this->product_meta,
+			$this->product_helper,
+			$this->validator,
+			$factory_mock,
+			$this->rules_query,
+			$this->market_service,
+			$this->wpml
+		);
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'DE' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+				'de'      => [
+					'country'    => 'DE',
+					'feed_label' => 'DE',
+					'language'   => [ 'de' ],
+					'currency'   => [ 'EUR' ],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$helper->validate_and_generate_update_request_entries( [ $product ] );
+
+		$this->assertSame( 'EUR', $captured_secondary_args['currency_override'] );
+	}
+
+	public function test_secondary_market_empty_currency_array_passes_empty_string() {
+		$product         = WC_Helper_Product::create_simple_product();
+		$real_factory    = $this->container->get( ProductFactory::class );
+		$primary_adapter = $real_factory->create( $product, 'US', [], 'US', 'en' );
+
+		$captured_currency_override = null;
+
+		$factory_mock = $this->createMock( ProductFactory::class );
+		$factory_mock->method( 'create' )
+			->willReturnCallback(
+				function ( WC_Product $p, string $country, array $rules, string $feed_label, string $language, ?string $currency_override = null ) use ( $primary_adapter, $real_factory, $product, &$captured_currency_override ) {
+					if ( 'US' === $country ) {
+						return $primary_adapter;
+					}
+					$captured_currency_override = $currency_override;
+					return $real_factory->create( $product, $country, $rules, $feed_label, $language, $currency_override );
+				}
+			);
+
+		$helper = new BatchProductHelper(
+			$this->product_meta,
+			$this->product_helper,
+			$this->validator,
+			$factory_mock,
+			$this->rules_query,
+			$this->market_service,
+			$this->wpml
+		);
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'DE' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+				'de'      => [
+					'country'    => 'DE',
+					'feed_label' => 'DE',
+					'language'   => [ 'de' ],
+					'currency'   => [],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$helper->validate_and_generate_update_request_entries( [ $product ] );
+
+		$this->assertSame( '', $captured_currency_override );
+	}
+
+	public function test_secondary_market_multiple_currencies_uses_first() {
+		$product         = WC_Helper_Product::create_simple_product();
+		$real_factory    = $this->container->get( ProductFactory::class );
+		$primary_adapter = $real_factory->create( $product, 'US', [], 'US', 'en' );
+
+		$captured_currency_override = null;
+
+		$factory_mock = $this->createMock( ProductFactory::class );
+		$factory_mock->method( 'create' )
+			->willReturnCallback(
+				function ( WC_Product $p, string $country, array $rules, string $feed_label, string $language, ?string $currency_override = null ) use ( $primary_adapter, $real_factory, $product, &$captured_currency_override ) {
+					if ( 'US' === $country ) {
+						return $primary_adapter;
+					}
+					$captured_currency_override = $currency_override;
+					return $real_factory->create( $product, $country, $rules, $feed_label, $language, $currency_override );
+				}
+			);
+
+		$helper = new BatchProductHelper(
+			$this->product_meta,
+			$this->product_helper,
+			$this->validator,
+			$factory_mock,
+			$this->rules_query,
+			$this->market_service,
+			$this->wpml
+		);
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'DE' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+				'de'      => [
+					'country'    => 'DE',
+					'feed_label' => 'DE',
+					'language'   => [ 'de' ],
+					'currency'   => [ 'EUR', 'CHF' ],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$helper->validate_and_generate_update_request_entries( [ $product ] );
+
+		$this->assertSame( 'EUR', $captured_currency_override );
+	}
+
+	public function test_two_secondary_markets_each_receive_their_own_currency() {
+		$product         = WC_Helper_Product::create_simple_product();
+		$real_factory    = $this->container->get( ProductFactory::class );
+		$primary_adapter = $real_factory->create( $product, 'US', [], 'US', 'en' );
+
+		$captured_currencies_by_country = [];
+
+		$factory_mock = $this->createMock( ProductFactory::class );
+		$factory_mock->method( 'create' )
+			->willReturnCallback(
+				function ( WC_Product $p, string $country, array $rules, string $feed_label, string $language, ?string $currency_override = null ) use ( $primary_adapter, $real_factory, $product, &$captured_currencies_by_country ) {
+					if ( 'US' === $country ) {
+						return $primary_adapter;
+					}
+					$captured_currencies_by_country[ $country ] = $currency_override;
+					return $real_factory->create( $product, $country, $rules, $feed_label, $language, $currency_override );
+				}
+			);
+
+		$helper = new BatchProductHelper(
+			$this->product_meta,
+			$this->product_helper,
+			$this->validator,
+			$factory_mock,
+			$this->rules_query,
+			$this->market_service,
+			$this->wpml
+		);
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'DE', 'AU' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+				'de'      => [
+					'country'    => 'DE',
+					'feed_label' => 'DE',
+					'language'   => [ 'de' ],
+					'currency'   => [ 'EUR' ],
+				],
+				'au'      => [
+					'country'    => 'AU',
+					'feed_label' => 'AU',
+					'language'   => [ 'en' ],
+					'currency'   => [ 'AUD' ],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$helper->validate_and_generate_update_request_entries( [ $product ] );
+
+		$this->assertSame( 'EUR', $captured_currencies_by_country['DE'] );
+		$this->assertSame( 'AUD', $captured_currencies_by_country['AU'] );
+	}
+
+	public function test_primary_entry_uses_store_currency_regardless_of_market_currency_array() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->set_up_market_service_stubs(
+			[ 'US' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+					'currency'   => [ 'EUR' ],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( [ $product ] );
+
+		$this->assertCount( 1, $results );
+		$this->assertSame( get_woocommerce_currency(), $results[0]->get_product()->getPrice()->getCurrency() );
+	}
+
 	/**
 	 * @return WC_Product[]
 	 */

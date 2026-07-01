@@ -677,9 +677,9 @@ Triggered when the "Add selected images" button is clicked.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`finalUrl` | `string` | The final URL for which the images were generated.
-`assetKey` | `string` | The asset key for which the images were generated.
-`numberOfSelectedImages` | `number` | The number of images that were selected to be added.
+`final_url` | `string` | The final URL for which the images were generated.
+`asset_key` | `string` | The asset key for which the images were generated.
+`num_selected_images` | `number` | The number of images that were selected to be added.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L41) when the "Add selected images" button is clicked.
 

@@ -283,7 +283,8 @@ class BatchProductHelper implements Service {
 						$market['country'],
 						$mapping_rules,
 						$market['feed_label'],
-						$product_language
+						$product_language,
+						$this->extract_currency( $market )
 					);
 
 					$secondary_validation = $this->validate_product( $secondary_adapter );
@@ -339,7 +340,7 @@ class BatchProductHelper implements Service {
 	 *
 	 * @return bool
 	 */
-	protected function product_matches_market( string $product_language, array $market, bool $wpml_active ): bool {
+	private static function product_matches_market( string $product_language, array $market, bool $wpml_active ): bool {
 		if ( ! $wpml_active ) {
 			return true;
 		}
@@ -360,6 +361,22 @@ class BatchProductHelper implements Service {
 		);
 
 		return in_array( $product_language, $normalised, true );
+	}
+
+	/**
+	 * Extracts a single currency code from a market config.
+	 *
+	 * Each MC product carries exactly one price.currency. Markets store currency
+	 * as an array of codes; the first entry is used.
+	 *
+	 * @param array $market A market config array as returned by MarketService.
+	 *
+	 * @return string The single currency code, or empty string when none is set.
+	 */
+	private static function extract_currency( array $market ): string {
+		return is_array( $market['currency'] ?? null )
+			? (string) ( $market['currency'][0] ?? '' )
+			: (string) ( $market['currency'] ?? '' );
 	}
 
 	/**
