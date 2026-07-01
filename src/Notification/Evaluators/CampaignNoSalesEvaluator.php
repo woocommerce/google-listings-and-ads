@@ -78,6 +78,7 @@ class CampaignNoSalesEvaluator implements NotificationEvaluatorInterface, AdsAwa
 					'CAMPAIGN_BUDGET',
 					'MARGINAL_ROI_CAMPAIGN_BUDGET',
 				],
+				// campaign_id = 0 fetches recommendations account-wide, not filtered to a specific campaign.
 				'campaign_id' => 0,
 			]
 		);
