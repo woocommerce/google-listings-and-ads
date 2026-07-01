@@ -231,7 +231,7 @@ class NotificationServiceTest extends UnitTest {
 
 		$this->assertEquals( [], $this->service->get_notifications() );
 
-		$state = get_user_meta( get_current_user_id(), 'gla_notifications_state', true );
+		$state                                    = get_user_meta( get_current_user_id(), 'gla_notifications_state', true );
 		$state['notification-a']['snoozed_until'] = time() - 1;
 
 		update_user_meta( get_current_user_id(), 'gla_notifications_state', $state );
