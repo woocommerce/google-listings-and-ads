@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupOrphanedMarketProductsJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateShippingSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -122,11 +123,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 		$all_rates     = $this->get_cached_shipping_rates();
 		$all_countries = $this->wc->get_countries();
+		$is_flat_mode  = $this->is_flat_shipping_rate();
 
 		foreach ( $secondary as &$market ) {
 			$country = $market['country'] ?? null;
 
-			$market['free_shipping'] = ( $country && isset( $all_rates[ $country ]['free_shipping_threshold'] ) )
+			// DB rate rows are retained when the merchant switches modes so they
+			// can be restored later, so the read boundary has to gate them.
+			$market['free_shipping'] = ( $is_flat_mode && $country && isset( $all_rates[ $country ]['free_shipping_threshold'] ) )
 				? (float) $all_rates[ $country ]['free_shipping_threshold']
 				: null;
 
@@ -258,6 +262,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$this->schedule_shipping_sync();
 		}
 
+		$this->job_repository->get( UpdateAllProducts::class )->schedule();
+
 		/**
 		 * Fires after a secondary market is successfully added.
 		 *
@@ -284,7 +290,30 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 */
 	public function update_market( string $id, array $config ): array {
 		if ( 'primary' === $id ) {
+			$existing_target = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
+			$existing_mc     = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+
 			$this->update_primary_market_fanout( $config );
+
+			$merged_target = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
+			$merged_mc     = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+
+			$existing_countries = $existing_target['countries'] ?? [];
+			$merged_countries   = $merged_target['countries'] ?? [];
+			$existing_language  = $existing_mc['language'] ?? [];
+			$merged_language    = $merged_mc['language'] ?? [];
+			$existing_currency  = $existing_mc['currency'] ?? [];
+			$merged_currency    = $merged_mc['currency'] ?? [];
+
+			$resync_needed = $existing_countries !== $merged_countries
+				|| array_diff( $existing_language, $merged_language ) !== []
+				|| array_diff( $merged_language, $existing_language ) !== []
+				|| array_diff( $existing_currency, $merged_currency ) !== []
+				|| array_diff( $merged_currency, $existing_currency ) !== [];
+
+			if ( $resync_needed ) {
+				$this->job_repository->get( UpdateAllProducts::class )->schedule();
+			}
 
 			return $this->fire_market_updated_action( $id );
 		}
@@ -311,6 +340,22 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				$this->schedule_shipping_sync();
 				break;
 			}
+		}
+
+		$existing_language = $existing['language'] ?? [];
+		$merged_language   = $merged['language'] ?? [];
+		$existing_currency = $existing['currency'] ?? [];
+		$merged_currency   = $merged['currency'] ?? [];
+
+		$resync_needed = ( $existing['country'] ?? null ) !== ( $merged['country'] ?? null )
+			|| ( $existing['feed_label'] ?? null ) !== ( $merged['feed_label'] ?? null )
+			|| array_diff( $existing_language, $merged_language ) !== []
+			|| array_diff( $merged_language, $existing_language ) !== []
+			|| array_diff( $existing_currency, $merged_currency ) !== []
+			|| array_diff( $merged_currency, $existing_currency ) !== [];
+
+		if ( $resync_needed ) {
+			$this->job_repository->get( UpdateAllProducts::class )->schedule();
 		}
 
 		return $this->fire_market_updated_action( $id );
@@ -379,6 +424,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		if ( 'manual' !== $shipping_rate ) {
 			$this->schedule_shipping_sync();
 		}
+
+		$this->job_repository->get( UpdateAllProducts::class )->schedule();
 
 		/**
 		 * Fires after a secondary market is successfully deleted.
@@ -554,6 +601,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @return float|null The threshold amount, or null when unset.
 	 */
 	private function get_primary_free_shipping_threshold(): ?float {
+		if ( ! $this->is_flat_shipping_rate() ) {
+			return null;
+		}
+
 		$country = $this->target_audience->get_main_target_country();
 		$rates   = $this->get_cached_shipping_rates();
 
@@ -562,6 +613,20 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Whether the global shipping rate mode is 'flat'.
+	 *
+	 * DB-stored rates only flow to MC in flat mode; automatic mode is driven by
+	 * WC shipping zones, and manual mode is handled outside the plugin.
+	 *
+	 * @return bool
+	 */
+	private function is_flat_shipping_rate(): bool {
+		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+
+		return is_array( $mc_settings ) && 'flat' === ( $mc_settings['shipping_rate'] ?? null );
 	}
 
 	/**
