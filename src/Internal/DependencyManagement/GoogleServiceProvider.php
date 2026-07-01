@@ -25,6 +25,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClien
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountBusinessInfoService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountHomepageService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountIssuesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountRegionsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountShippingSettingsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountUsersService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
@@ -85,42 +87,44 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 * @var array
 	 */
 	protected $provides = [
-		Client::class                         => true,
-		ShoppingContent::class                => true,
-		GoogleAdsClient::class                => true,
-		GuzzleClient::class                   => true,
-		Middleware::class                     => true,
-		Merchant::class                       => true,
-		MerchantMetrics::class                => true,
-		Ads::class                            => true,
-		AdsIncentives::class                  => true,
-		AdsAssetGroup::class                  => true,
-		AdsCampaign::class                    => true,
-		AdsCampaignAsset::class               => true,
-		AdsCampaignBudget::class              => true,
-		AdsCampaignLabel::class               => true,
-		AdsConversionAction::class            => true,
-		AdsReport::class                      => true,
-		AdsRecommendationsService::class      => true,
-		AdsAssetGenerationService::class      => true,
-		AdsAssetGroupAsset::class             => true,
-		AdsAsset::class                       => true,
-		BudgetMetrics::class                  => true,
-		BudgetRecommendations::class          => true,
-		'connect_server_root'                 => true,
-		Connection::class                     => true,
-		GoogleProductService::class           => true,
-		GooglePromotionService::class         => true,
-		MerchantApiClient::class              => true,
-		MapiProductsService::class            => true,
-		MapiDataSourcesService::class         => true,
-		MapiProductInputsService::class       => true,
-		MapiAccountIssuesService::class       => true,
-		MapiAccountHomepageService::class     => true,
-		MapiAccountBusinessInfoService::class => true,
-		MapiAccountUsersService::class        => true,
-		SiteVerification::class               => true,
-		Settings::class                       => true,
+		Client::class                             => true,
+		ShoppingContent::class                    => true,
+		GoogleAdsClient::class                    => true,
+		GuzzleClient::class                       => true,
+		Middleware::class                         => true,
+		Merchant::class                           => true,
+		MerchantMetrics::class                    => true,
+		Ads::class                                => true,
+		AdsIncentives::class                      => true,
+		AdsAssetGroup::class                      => true,
+		AdsCampaign::class                        => true,
+		AdsCampaignAsset::class                   => true,
+		AdsCampaignBudget::class                  => true,
+		AdsCampaignLabel::class                   => true,
+		AdsConversionAction::class                => true,
+		AdsReport::class                          => true,
+		AdsRecommendationsService::class          => true,
+		AdsAssetGenerationService::class          => true,
+		AdsAssetGroupAsset::class                 => true,
+		AdsAsset::class                           => true,
+		BudgetMetrics::class                      => true,
+		BudgetRecommendations::class              => true,
+		'connect_server_root'                     => true,
+		Connection::class                         => true,
+		GoogleProductService::class               => true,
+		GooglePromotionService::class             => true,
+		MerchantApiClient::class                  => true,
+		MapiProductsService::class                => true,
+		MapiDataSourcesService::class             => true,
+		MapiProductInputsService::class           => true,
+		MapiAccountIssuesService::class           => true,
+		MapiAccountHomepageService::class         => true,
+		MapiAccountBusinessInfoService::class     => true,
+		MapiAccountUsersService::class            => true,
+		MapiAccountShippingSettingsService::class => true,
+		MapiAccountRegionsService::class          => true,
+		SiteVerification::class                   => true,
+		Settings::class                           => true,
 	];
 
 	/**
@@ -234,6 +238,8 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( MapiAccountHomepageService::class, MerchantApiClient::class );
 		$this->share( MapiAccountBusinessInfoService::class, MerchantApiClient::class );
 		$this->share( MapiAccountUsersService::class, MerchantApiClient::class );
+		$this->share( MapiAccountShippingSettingsService::class, MerchantApiClient::class );
+		$this->share( MapiAccountRegionsService::class, MerchantApiClient::class );
 	}
 
 	/**
