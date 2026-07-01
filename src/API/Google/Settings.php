@@ -16,15 +16,14 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\CountryRatesCollection;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\AbstractShippingSettingsAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\DBShippingSettingsAdapter;
-use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\MapiShippingSettingsConverter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\WCShippingSettingsAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountAddress;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountTax;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountTaxTaxRule as TaxRule;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ShippingSettings;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -77,15 +76,14 @@ class Settings implements ContainerAwareInterface {
 			return;
 		}
 
-		$settings  = $this->generate_shipping_settings();
-		$converter = new MapiShippingSettingsConverter();
+		$adapter = $this->generate_shipping_settings();
 
 		// Regions must exist before the settings that reference them are inserted.
-		$this->sync_shipping_regions( $converter->convert_regions( $settings ) );
+		$this->sync_shipping_regions( $adapter->get_regions() );
 
 		/** @var MapiAccountShippingSettingsService $shipping_service */
 		$shipping_service = $this->container->get( MapiAccountShippingSettingsService::class );
-		$shipping_service->insert_shipping_settings( $converter->convert( $settings ) );
+		$shipping_service->insert_shipping_settings( [ 'services' => $adapter->get_services() ] );
 	}
 
 	/**
@@ -141,13 +139,13 @@ class Settings implements ContainerAwareInterface {
 	}
 
 	/**
-	 * Generate a ShippingSettings object for syncing the store shipping settings to Merchant Center.
+	 * Generate the shipping settings adapter for syncing the store shipping settings to Merchant Center.
 	 *
-	 * @return ShippingSettings
+	 * @return AbstractShippingSettingsAdapter
 	 *
 	 * @since 2.1.0
 	 */
-	protected function generate_shipping_settings(): ShippingSettings {
+	protected function generate_shipping_settings(): AbstractShippingSettingsAdapter {
 		$times = $this->get_shipping_times();
 
 		/** @var WC $wc_proxy */
@@ -160,7 +158,6 @@ class Settings implements ContainerAwareInterface {
 					'currency'          => $currency,
 					'rates_collections' => $this->get_shipping_rates_collections_from_woocommerce(),
 					'delivery_times'    => $times,
-					'accountId'         => $this->get_account_id(),
 				]
 			);
 		}
@@ -170,7 +167,6 @@ class Settings implements ContainerAwareInterface {
 				'currency'       => $currency,
 				'db_rates'       => $this->get_shipping_rates_from_database(),
 				'delivery_times' => $times,
-				'accountId'      => $this->get_account_id(),
 			]
 		);
 	}
