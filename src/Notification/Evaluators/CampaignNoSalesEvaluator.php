@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsRecommendationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
@@ -14,14 +15,14 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationE
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
-use DateTime;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Class CampaignNoSalesEvaluator
  *
- * Fires when at least one enabled campaign has recorded zero conversions over the last 90 days.
+ * Fires when at least one enabled campaign has recorded zero attributed sales and no raise budget
+ * recommendation is available.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
@@ -36,15 +37,20 @@ class CampaignNoSalesEvaluator implements NotificationEvaluatorInterface, AdsAwa
 	/** @var AdsReport */
 	private $ads_report;
 
+	/** @var AdsRecommendationsService */
+	private $ads_recommendations;
+
 	/**
 	 * CampaignNoSalesEvaluator constructor.
 	 *
-	 * @param AdsCampaign $ads_campaign
-	 * @param AdsReport   $ads_report
+	 * @param AdsCampaign               $ads_campaign
+	 * @param AdsReport                 $ads_report
+	 * @param AdsRecommendationsService $ads_recommendations
 	 */
-	public function __construct( AdsCampaign $ads_campaign, AdsReport $ads_report ) {
-		$this->ads_campaign = $ads_campaign;
-		$this->ads_report   = $ads_report;
+	public function __construct( AdsCampaign $ads_campaign, AdsReport $ads_report, AdsRecommendationsService $ads_recommendations ) {
+		$this->ads_campaign        = $ads_campaign;
+		$this->ads_report          = $ads_report;
+		$this->ads_recommendations = $ads_recommendations;
 	}
 
 	/**
@@ -66,6 +72,21 @@ class CampaignNoSalesEvaluator implements NotificationEvaluatorInterface, AdsAwa
 			return false;
 		}
 
+		$budget_recommendations = $this->ads_recommendations->get_recommendations(
+			[
+				'types'       => [
+					'CAMPAIGN_BUDGET',
+					'MARGINAL_ROI_CAMPAIGN_BUDGET',
+				],
+				// campaign_id = 0 fetches recommendations account-wide, not filtered to a specific campaign.
+				'campaign_id' => 0,
+			]
+		);
+
+		if ( ! empty( $budget_recommendations ) ) {
+			return false;
+		}
+
 		try {
 			$enabled_campaigns = array_filter(
 				$this->ads_campaign->get_campaigns( true, false ),
@@ -81,15 +102,10 @@ class CampaignNoSalesEvaluator implements NotificationEvaluatorInterface, AdsAwa
 			return false;
 		}
 
-		$timezone = wp_timezone();
-		$now      = new DateTime( 'now', $timezone );
-
 		try {
 			$report_data = $this->ads_report->get_report_data(
 				'campaigns',
 				[
-					'after'  => ( clone $now )->modify( '-90 days' ),
-					'before' => $now,
 					'fields' => [ 'conversions' ],
 				]
 			);
