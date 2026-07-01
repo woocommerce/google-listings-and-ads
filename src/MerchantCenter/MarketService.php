@@ -123,11 +123,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 		$all_rates     = $this->get_cached_shipping_rates();
 		$all_countries = $this->wc->get_countries();
+		$is_flat_mode  = $this->is_flat_shipping_rate();
 
 		foreach ( $secondary as &$market ) {
 			$country = $market['country'] ?? null;
 
-			$market['free_shipping'] = ( $country && isset( $all_rates[ $country ]['free_shipping_threshold'] ) )
+			// DB rate rows are retained when the merchant switches modes so they
+			// can be restored later, so the read boundary has to gate them.
+			$market['free_shipping'] = ( $is_flat_mode && $country && isset( $all_rates[ $country ]['free_shipping_threshold'] ) )
 				? (float) $all_rates[ $country ]['free_shipping_threshold']
 				: null;
 
@@ -598,6 +601,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @return float|null The threshold amount, or null when unset.
 	 */
 	private function get_primary_free_shipping_threshold(): ?float {
+		if ( ! $this->is_flat_shipping_rate() ) {
+			return null;
+		}
+
 		$country = $this->target_audience->get_main_target_country();
 		$rates   = $this->get_cached_shipping_rates();
 
@@ -606,6 +613,20 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Whether the global shipping rate mode is 'flat'.
+	 *
+	 * DB-stored rates only flow to MC in flat mode; automatic mode is driven by
+	 * WC shipping zones, and manual mode is handled outside the plugin.
+	 *
+	 * @return bool
+	 */
+	private function is_flat_shipping_rate(): bool {
+		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+
+		return is_array( $mc_settings ) && 'flat' === ( $mc_settings['shipping_rate'] ?? null );
 	}
 
 	/**

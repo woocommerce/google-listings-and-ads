@@ -186,6 +186,129 @@ class SettingsTest extends UnitTest {
 		$this->assertSame( [ 'US' => 'USD' ], $map );
 	}
 
+	public function test_generate_shipping_settings_prefers_per_row_currency_over_country_map(): void {
+		// MarketService says FR is USD, but the DB row for FR carries EUR. The
+		// per-row currency must win so secondary-market rates aren't silently
+		// rewritten to the primary store currency.
+		$this->market_service->method( 'get_markets' )->willReturn(
+			[
+				'primary' => [
+					'country'       => 'US',
+					'currency'      => [ 'USD' ],
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				'fr'      => [
+					'country'       => 'FR',
+					'currency'      => [ 'USD' ],
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
+
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( $key, $fallback = null ) {
+				switch ( $key ) {
+					case OptionsInterface::MERCHANT_CENTER:
+						return [ 'shipping_rate' => 'flat' ];
+					case OptionsInterface::MERCHANT_ID:
+						return 1234567890;
+					default:
+						return $fallback;
+				}
+			}
+		);
+		$this->wc_proxy->method( 'get_woocommerce_currency' )->willReturn( 'USD' );
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn(
+			[
+				'US' => [
+					'time'     => 1,
+					'max_time' => 2,
+				],
+				'FR' => [
+					'time'     => 2,
+					'max_time' => 4,
+				],
+			]
+		);
+		$this->shipping_rate_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'country'  => 'US',
+					'currency' => 'USD',
+					'rate'     => 10,
+					'options'  => [],
+				],
+				[
+					'country'  => 'FR',
+					'currency' => 'EUR',
+					'rate'     => 5,
+					'options'  => [],
+				],
+			]
+		);
+
+		$adapter = $this->invoke( 'generate_shipping_settings' );
+
+		$this->assertInstanceOf( DBShippingSettingsAdapter::class, $adapter );
+
+		$by_country = [];
+		foreach ( $adapter->getServices() as $service ) {
+			$by_country[ $service->getDeliveryCountry() ] = $service;
+		}
+
+		$this->assertSame( 'USD', $by_country['US']->getCurrency() );
+		$this->assertSame( 'EUR', $by_country['FR']->getCurrency() );
+	}
+
+	public function test_generate_shipping_settings_routes_automatic_mode_through_wc_adapter(): void {
+		$this->market_service->method( 'get_markets' )->willReturn(
+			[
+				'primary' => [
+					'country'       => 'US',
+					'currency'      => [ 'USD' ],
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
+
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( $key, $fallback = null ) {
+				switch ( $key ) {
+					case OptionsInterface::MERCHANT_CENTER:
+						return [ 'shipping_rate' => 'automatic' ];
+					case OptionsInterface::TARGET_AUDIENCE:
+						return [ 'countries' => [ 'US' ] ];
+					case OptionsInterface::MERCHANT_ID:
+						return 1234567890;
+					default:
+						return $fallback;
+				}
+			}
+		);
+
+		$this->wc_proxy->method( 'get_woocommerce_currency' )->willReturn( 'USD' );
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US' ] );
+		$this->shipping_zone->method( 'get_shipping_rates_for_country' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn(
+			[
+				'US' => [
+					'time'     => 1,
+					'max_time' => 3,
+				],
+			]
+		);
+		// Automatic mode is gated, so the DB rate query must never be touched.
+		$this->shipping_rate_query->expects( $this->never() )->method( 'get_results' );
+
+		$adapter = $this->invoke( 'generate_shipping_settings' );
+
+		$this->assertInstanceOf( WCShippingSettingsAdapter::class, $adapter );
+		$this->assertNotInstanceOf( DBShippingSettingsAdapter::class, $adapter );
+	}
+
 	/**
 	 * Invokes a protected method on the Settings instance via reflection so we
 	 * can test the multi-market gates without exposing internals.
