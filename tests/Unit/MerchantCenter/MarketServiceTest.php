@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupOrphanedMarketProductsJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateShippingSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
@@ -53,21 +54,25 @@ class MarketServiceTest extends UnitTest {
 	/** @var MockObject|UpdateShippingSettings */
 	protected $shipping_settings_job;
 
+	/** @var MockObject|UpdateAllProducts */
+	protected $update_all_products_job;
+
 	/** @var MarketService */
 	protected $market_service;
 
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->target_audience       = $this->createMock( TargetAudience::class );
-		$this->options               = $this->createMock( OptionsInterface::class );
-		$this->shipping_rate_query   = $this->createMock( ShippingRateQuery::class );
-		$this->shipping_time_query   = $this->createMock( ShippingTimeQuery::class );
-		$this->wc                    = $this->createMock( WC::class );
-		$this->wpml                  = $this->createMock( WPML::class );
-		$this->job_repository        = $this->createMock( JobRepository::class );
-		$this->cleanup_job           = $this->createMock( CleanupOrphanedMarketProductsJob::class );
-		$this->shipping_settings_job = $this->createMock( UpdateShippingSettings::class );
+		$this->target_audience         = $this->createMock( TargetAudience::class );
+		$this->options                 = $this->createMock( OptionsInterface::class );
+		$this->shipping_rate_query     = $this->createMock( ShippingRateQuery::class );
+		$this->shipping_time_query     = $this->createMock( ShippingTimeQuery::class );
+		$this->wc                      = $this->createMock( WC::class );
+		$this->wpml                    = $this->createMock( WPML::class );
+		$this->job_repository          = $this->createMock( JobRepository::class );
+		$this->cleanup_job             = $this->createMock( CleanupOrphanedMarketProductsJob::class );
+		$this->shipping_settings_job   = $this->createMock( UpdateShippingSettings::class );
+		$this->update_all_products_job = $this->createMock( UpdateAllProducts::class );
 
 		$this->job_repository->method( 'get' )
 			->willReturnCallback(
@@ -77,6 +82,8 @@ class MarketServiceTest extends UnitTest {
 							return $this->cleanup_job;
 						case UpdateShippingSettings::class:
 							return $this->shipping_settings_job;
+						case UpdateAllProducts::class:
+							return $this->update_all_products_job;
 						default:
 							return null;
 					}
@@ -1000,6 +1007,313 @@ class MarketServiceTest extends UnitTest {
 			->method( 'schedule' );
 
 		$this->market_service->delete_market( 'gb' );
+	}
+
+	public function test_add_market_secondary_schedules_update_all_products(): void {
+		$config = [
+			'country'    => 'GB',
+			'language'   => [ 'en' ],
+			'currency'   => [ 'GBP' ],
+			'feed_label' => 'GB',
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
+			]
+		);
+		$this->options->method( 'update' )->willReturn( true );
+
+		$this->update_all_products_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->market_service->add_market( 'gb', $config );
+	}
+
+	public function test_add_market_primary_does_not_schedule_update_all_products(): void {
+		$this->update_all_products_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->add_market( 'primary', [] );
+	}
+
+	public function test_add_market_invalid_config_does_not_schedule_update_all_products(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+
+		$this->update_all_products_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->add_market(
+			'gb',
+			[
+				'country'    => 'GB',
+				'feed_label' => '',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+			]
+		);
+	}
+
+	public function test_update_market_secondary_schedules_update_all_products_when_country_differs(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->update_all_products_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'country' => 'IE' ] );
+	}
+
+	public function test_update_market_primary_schedules_update_all_products_when_target_audience_countries_change(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->update_all_products_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market(
+			'primary',
+			[ 'countries' => [ 'US', 'CA' ] ]
+		);
+	}
+
+	public function test_update_market_primary_schedules_update_all_products_when_target_audience_countries_reordered(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US', 'GB' ] ],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US', 'GB' ] );
+
+		$this->update_all_products_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market(
+			'primary',
+			[ 'countries' => [ 'GB', 'US' ] ]
+		);
+	}
+
+	public function test_update_market_secondary_schedules_update_all_products_when_feed_label_differs(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->update_all_products_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'feed_label' => 'GB-PROMO' ] );
+	}
+
+	public function test_update_market_secondary_schedules_update_all_products_when_language_differs(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->update_all_products_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'language' => [ 'en', 'cy' ] ] );
+	}
+
+	public function test_update_market_secondary_schedules_update_all_products_when_currency_differs(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->update_all_products_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'currency' => [ 'EUR' ] ] );
+	}
+
+	public function test_update_market_does_not_schedule_update_all_products_when_only_shipping_rate_differs(): void {
+		$existing = [
+			'gb' => [
+				'country'       => 'GB',
+				'language'      => [ 'en' ],
+				'currency'      => [ 'GBP' ],
+				'feed_label'    => 'GB',
+				'shipping_rate' => 'flat',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->update_all_products_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'shipping_rate' => 'automatic' ] );
+	}
+
+	public function test_update_market_does_not_schedule_update_all_products_when_only_shipping_time_differs(): void {
+		$existing = [
+			'gb' => [
+				'country'       => 'GB',
+				'language'      => [ 'en' ],
+				'currency'      => [ 'GBP' ],
+				'feed_label'    => 'GB',
+				'shipping_rate' => 'flat',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->update_all_products_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'shipping_time' => 'automatic' ] );
+	}
+
+	public function test_update_market_does_not_schedule_update_all_products_when_no_fields_differ(): void {
+		$existing = [
+			'gb' => [
+				'country'       => 'GB',
+				'language'      => [ 'en' ],
+				'currency'      => [ 'GBP' ],
+				'feed_label'    => 'GB',
+				'shipping_rate' => 'flat',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->update_all_products_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [] );
+	}
+
+	public function test_update_market_does_not_schedule_update_all_products_when_language_reordered(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en', 'cy' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->update_all_products_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'language' => [ 'cy', 'en' ] ] );
+	}
+
+	public function test_update_market_does_not_schedule_update_all_products_when_currency_reordered(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP', 'EUR' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->update_all_products_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'currency' => [ 'EUR', 'GBP' ] ] );
+	}
+
+	public function test_delete_market_secondary_schedules_update_all_products(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $existing ] );
+		$this->options->method( 'update' )->willReturn( true );
+
+		$this->update_all_products_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->market_service->delete_market( 'gb' );
+	}
+
+	public function test_delete_market_primary_does_not_schedule_update_all_products(): void {
+		$this->update_all_products_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->delete_market( 'primary' );
+	}
+
+	public function test_delete_market_unknown_id_does_not_schedule_update_all_products(): void {
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+
+		$this->update_all_products_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->delete_market( 'unknown' );
 	}
 
 	public function test_add_market_does_not_schedule_cleanup(): void {

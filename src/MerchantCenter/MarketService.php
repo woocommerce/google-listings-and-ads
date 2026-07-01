@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupOrphanedMarketProductsJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateShippingSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -258,6 +259,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$this->schedule_shipping_sync();
 		}
 
+		$this->job_repository->get( UpdateAllProducts::class )->schedule();
+
 		/**
 		 * Fires after a secondary market is successfully added.
 		 *
@@ -284,7 +287,30 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 */
 	public function update_market( string $id, array $config ): array {
 		if ( 'primary' === $id ) {
+			$existing_target = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
+			$existing_mc     = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+
 			$this->update_primary_market_fanout( $config );
+
+			$merged_target = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
+			$merged_mc     = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+
+			$existing_countries = $existing_target['countries'] ?? [];
+			$merged_countries   = $merged_target['countries'] ?? [];
+			$existing_language  = $existing_mc['language'] ?? [];
+			$merged_language    = $merged_mc['language'] ?? [];
+			$existing_currency  = $existing_mc['currency'] ?? [];
+			$merged_currency    = $merged_mc['currency'] ?? [];
+
+			$resync_needed = $existing_countries !== $merged_countries
+				|| array_diff( $existing_language, $merged_language ) !== []
+				|| array_diff( $merged_language, $existing_language ) !== []
+				|| array_diff( $existing_currency, $merged_currency ) !== []
+				|| array_diff( $merged_currency, $existing_currency ) !== [];
+
+			if ( $resync_needed ) {
+				$this->job_repository->get( UpdateAllProducts::class )->schedule();
+			}
 
 			return $this->fire_market_updated_action( $id );
 		}
@@ -311,6 +337,22 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				$this->schedule_shipping_sync();
 				break;
 			}
+		}
+
+		$existing_language = $existing['language'] ?? [];
+		$merged_language   = $merged['language'] ?? [];
+		$existing_currency = $existing['currency'] ?? [];
+		$merged_currency   = $merged['currency'] ?? [];
+
+		$resync_needed = ( $existing['country'] ?? null ) !== ( $merged['country'] ?? null )
+			|| ( $existing['feed_label'] ?? null ) !== ( $merged['feed_label'] ?? null )
+			|| array_diff( $existing_language, $merged_language ) !== []
+			|| array_diff( $merged_language, $existing_language ) !== []
+			|| array_diff( $existing_currency, $merged_currency ) !== []
+			|| array_diff( $merged_currency, $existing_currency ) !== [];
+
+		if ( $resync_needed ) {
+			$this->job_repository->get( UpdateAllProducts::class )->schedule();
 		}
 
 		return $this->fire_market_updated_action( $id );
@@ -379,6 +421,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		if ( 'manual' !== $shipping_rate ) {
 			$this->schedule_shipping_sync();
 		}
+
+		$this->job_repository->get( UpdateAllProducts::class )->schedule();
 
 		/**
 		 * Fires after a secondary market is successfully deleted.
