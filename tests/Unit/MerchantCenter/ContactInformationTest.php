@@ -80,6 +80,28 @@ class ContactInformationTest extends ContainerAwareUnitTest {
 		$this->assertEquals( 'US', $address->getCountry() );
 	}
 
+	public function test_empty_address_fields_map_to_null() {
+		$this->merchant->expects( $this->any() )
+			->method( 'get_business_info' )
+			->willReturn(
+				[
+					'name'    => 'accounts/12345/businessInfo',
+					'address' => [
+						'regionCode'   => 'US',
+						'addressLines' => [ '' ],
+					],
+				]
+			);
+
+		$address = $this->contact_information->get_contact_information()->getAddress();
+
+		$this->assertSame( 'US', $address->getCountry() );
+		$this->assertNull( $address->getRegion() );
+		$this->assertNull( $address->getLocality() );
+		$this->assertNull( $address->getPostalCode() );
+		$this->assertNull( $address->getStreetAddress() );
+	}
+
 	public function test_region_code_maps_to_state_name() {
 		// Use the real Settings so the actual code->name conversion (and WC state data) runs.
 		$contact = new ContactInformation( $this->merchant, $this->container->get( Settings::class ) );
@@ -100,28 +122,38 @@ class ContactInformationTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_update_address() {
-		$this->merchant->expects( $this->any() )
-			->method( 'get_account' )
-			->willReturn( $this->get_empty_account() );
-
 		$this->google_settings->expects( $this->any() )
 			->method( 'get_store_address' )
 			->willReturn( $this->get_sample_address() );
 
+		$this->google_settings->expects( $this->any() )
+			->method( 'maybe_get_state_name' )
+			->willReturnArgument( 0 );
+
+		$expected_address = [
+			'regionCode'         => 'US',
+			'administrativeArea' => 'California',
+			'locality'           => 'San Francisco',
+			'postalCode'         => '12345',
+			'addressLines'       => [ '123 Main St.' ],
+		];
+
+		$this->merchant->expects( $this->once() )
+			->method( 'update_business_info' )
+			->with( [ 'address' => $expected_address ], 'address' )
+			->willReturn(
+				[
+					'name'    => 'accounts/12345/businessInfo',
+					'address' => $expected_address,
+				]
+			);
+
 		$results = $this->contact_information->update_address_based_on_store_settings();
 
-		$this->assertEquals(
-			$this->get_sample_address()->getPostalCode(),
-			$results->getAddress()->getPostalCode()
-		);
-		$this->assertEquals(
-			$this->get_sample_address()->getStreetAddress(),
-			$results->getAddress()->getStreetAddress()
-		);
-		$this->assertEquals(
-			$this->get_sample_address()->getCountry(),
-			$results->getAddress()->getCountry()
-		);
+		$this->assertEquals( '12345', $results->getAddress()->getPostalCode() );
+		$this->assertEquals( '123 Main St.', $results->getAddress()->getStreetAddress() );
+		$this->assertEquals( 'California', $results->getAddress()->getRegion() );
+		$this->assertEquals( 'US', $results->getAddress()->getCountry() );
 	}
 
 	public function test_maps_phone_and_verification_state() {
