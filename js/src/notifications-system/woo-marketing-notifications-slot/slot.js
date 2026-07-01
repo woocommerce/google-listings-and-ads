@@ -7,7 +7,12 @@ import debounce from 'lodash/debounce';
 /**
  * Internal dependencies
  */
-import { MULTICHANNEL_CLASS, BANNER_CLASS, CONTAINER_CLASS, SYNC_MARKETING_NOTIFICATIONS_EVENT } from './constants';
+import {
+	MULTICHANNEL_CLASS,
+	BANNER_CLASS,
+	CONTAINER_CLASS,
+	SYNC_MARKETING_NOTIFICATIONS_EVENT,
+} from './constants';
 import { registerStore } from './data';
 import NotificationsPanel from './components/notifications-panel';
 import './slot.scss';
