@@ -109,14 +109,39 @@ class ContactInformation implements Service {
 			$region = $this->settings->maybe_get_state_name( $region, $country );
 		}
 
+		$street = implode( "\n", $address['addressLines'] ?? [] );
+
 		$account_address = new AccountAddress();
-		$account_address->setCountry( $country );
-		$account_address->setPostalCode( $address['postalCode'] ?? '' );
-		$account_address->setLocality( $address['locality'] ?? '' );
-		$account_address->setRegion( $region );
-		$account_address->setStreetAddress( implode( "\n", $address['addressLines'] ?? [] ) );
+		$account_address->setCountry( ! empty( $country ) ? $country : null );
+		$account_address->setPostalCode( ! empty( $address['postalCode'] ) ? $address['postalCode'] : null );
+		$account_address->setLocality( ! empty( $address['locality'] ) ? $address['locality'] : null );
+		$account_address->setRegion( ! empty( $region ) ? $region : null );
+		$account_address->setStreetAddress( ! empty( $street ) ? $street : null );
 
 		return $account_address;
+	}
+
+	/**
+	 * Map an AccountAddress onto a Merchant API PostalAddress.
+	 *
+	 * @param AccountAddress $address
+	 *
+	 * @return array PostalAddress fields for the businessInfo resource.
+	 */
+	protected function map_to_postal_address( AccountAddress $address ): array {
+		$postal_address = [
+			'regionCode'         => (string) $address->getCountry(),
+			'administrativeArea' => (string) $address->getRegion(),
+			'locality'           => (string) $address->getLocality(),
+			'postalCode'         => (string) $address->getPostalCode(),
+		];
+
+		$street = (string) $address->getStreetAddress();
+		if ( '' !== $street ) {
+			$postal_address['addressLines'] = explode( "\n", $street );
+		}
+
+		return $postal_address;
 	}
 
 	/**
@@ -128,16 +153,14 @@ class ContactInformation implements Service {
 	 * @throws ExceptionWithResponseData If the Merchant Center account can't be retrieved or updated.
 	 */
 	public function update_address_based_on_store_settings(): AccountBusinessInformation {
-		// Read the current business information from the account so the address update
-		// preserves the other fields (phone, customer service) instead of the reduced
-		// view returned by get_contact_information().
-		$account              = $this->merchant->get_account();
-		$business_information = $account->getBusinessInformation() ?: new AccountBusinessInformation();
-		$business_information->setAddress( $this->settings->get_store_address() );
+		$address = $this->map_to_postal_address( $this->settings->get_store_address() );
 
-		$account->setBusinessInformation( $business_information );
-		$this->merchant->update_account( $account );
+		try {
+			$business_info = $this->merchant->update_business_info( [ 'address' => $address ], 'address' );
+		} catch ( MerchantApiException $e ) {
+			throw new ExceptionWithResponseData( $e->getMessage(), $e->getCode(), $e );
+		}
 
-		return $business_information;
+		return $this->map_business_info( $business_info );
 	}
 }
