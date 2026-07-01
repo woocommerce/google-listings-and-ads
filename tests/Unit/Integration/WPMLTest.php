@@ -21,6 +21,8 @@ class WPMLTest extends UnitTest {
 
 	public function tearDown(): void {
 		remove_all_filters( 'wpml_active_languages' );
+		remove_all_filters( 'wpml_default_language' );
+		remove_all_filters( 'wpml_post_language_details' );
 		remove_all_filters( 'wcml_raw_price_amount' );
 
 		parent::tearDown();
@@ -153,6 +155,51 @@ class WPMLTest extends UnitTest {
 		);
 
 		$this->assertSame( [], $integration->get_languages() );
+	}
+
+	public function test_get_post_language_returns_empty_when_not_active(): void {
+		$integration = $this->create_integration( false );
+
+		$this->assertSame( '', $integration->get_post_language( 42 ) );
+	}
+
+	public function test_get_post_language_returns_code_from_filter(): void {
+		$integration = $this->create_integration( true );
+
+		add_filter(
+			'wpml_post_language_details',
+			function () {
+				return [ 'language_code' => 'fr' ];
+			}
+		);
+
+		$this->assertSame( 'fr', $integration->get_post_language( 42 ) );
+	}
+
+	public function test_get_post_language_returns_empty_when_filter_returns_non_array(): void {
+		$integration = $this->create_integration( true );
+
+		add_filter(
+			'wpml_post_language_details',
+			function () {
+				return null;
+			}
+		);
+
+		$this->assertSame( '', $integration->get_post_language( 42 ) );
+	}
+
+	public function test_get_post_language_returns_empty_when_filter_missing_language_code(): void {
+		$integration = $this->create_integration( true );
+
+		add_filter(
+			'wpml_post_language_details',
+			function () {
+				return [ 'other' => 'value' ];
+			}
+		);
+
+		$this->assertSame( '', $integration->get_post_language( 42 ) );
 	}
 
 	public function test_get_currencies_returns_empty_when_not_active(): void {

@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
@@ -54,6 +55,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 	/** @var MockObject|MarketService $market_service */
 	protected $market_service;
+
+	/** @var MockObject|WPML $wpml */
+	protected $wpml;
 
 	/** @var BatchProductHelper $batch_product_helper */
 	protected $batch_product_helper;
@@ -393,6 +397,251 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		}
 	}
 
+	public function test_validate_and_generate_update_request_entries_wpml_match_emits_with_product_language() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->market_service->method( 'has_multilingual_support' )->willReturn( true );
+		$this->wpml->method( 'get_post_language' )->willReturn( 'fr' );
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'FR' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => [ 'en' ],
+				],
+				'fr-fr'   => [
+					'country'    => 'FR',
+					'feed_label' => 'FR-fr',
+					'language'   => [ 'fr', 'en' ],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( [ $product ] );
+
+		// Product language 'fr' is not in primary's ['en']; only the FR-fr secondary entry is emitted.
+		$this->assertCount( 1, $results );
+		$entry = $results[0];
+		$this->assertSame( 'FR', $entry->get_product()->getTargetCountry() );
+		$this->assertSame( 'FR-fr', $entry->get_product()->getFeedLabel() );
+		$this->assertSame( 'fr', $entry->get_product()->getContentLanguage() );
+	}
+
+	public function test_validate_and_generate_update_request_entries_wpml_match_alternate_language_in_set() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->market_service->method( 'has_multilingual_support' )->willReturn( true );
+		$this->wpml->method( 'get_post_language' )->willReturn( 'en' );
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'FR' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => [],
+				],
+				'fr-fr'   => [
+					'country'    => 'FR',
+					'feed_label' => 'FR-fr',
+					'language'   => [ 'fr', 'en' ],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( [ $product ] );
+
+		$secondary_entries = array_filter(
+			$results,
+			static function ( BatchProductRequestEntry $entry ) {
+				return 'FR-fr' === $entry->get_product()->getFeedLabel();
+			}
+		);
+
+		$this->assertCount( 1, $secondary_entries );
+		$entry = array_values( $secondary_entries )[0];
+		$this->assertSame( 'en', $entry->get_product()->getContentLanguage() );
+	}
+
+	public function test_validate_and_generate_update_request_entries_wpml_no_match_emits_no_entry_for_market() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->market_service->method( 'has_multilingual_support' )->willReturn( true );
+		$this->wpml->method( 'get_post_language' )->willReturn( 'de' );
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'FR' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => [ 'en' ],
+				],
+				'fr-fr'   => [
+					'country'    => 'FR',
+					'feed_label' => 'FR-fr',
+					'language'   => [ 'fr', 'en' ],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( [ $product ] );
+
+		// Product language 'de' is in neither market's list; nothing is emitted.
+		$this->assertCount( 0, $results );
+	}
+
+	public function test_validate_and_generate_update_request_entries_wpml_primary_locale_form_matches_short_code() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->market_service->method( 'has_multilingual_support' )->willReturn( true );
+		$this->wpml->method( 'get_post_language' )->willReturn( 'en' );
+
+		$this->set_up_market_service_stubs(
+			[ 'US' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => [ 'en_US' ],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( [ $product ] );
+
+		// 'en_US' in the market list is converted to 'en' before comparison, so the product matches the primary.
+		$this->assertCount( 1, $results );
+		$this->assertSame( 'US', $results[0]->get_product()->getFeedLabel() );
+		$this->assertSame( 'en', $results[0]->get_product()->getContentLanguage() );
+	}
+
+	public function test_validate_and_generate_update_request_entries_wpml_inactive_empty_language_emits_for_every_market() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->market_service->method( 'has_multilingual_support' )->willReturn( false );
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'FR' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => [],
+				],
+				'fr-fr'   => [
+					'country'    => 'FR',
+					'feed_label' => 'FR-fr',
+					'language'   => [],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( [ $product ] );
+
+		$this->assertCount( 2, $results );
+
+		// When WPML is inactive and no $language is passed to ProductFactory::create(), the
+		// adapter's default contentLanguage from get_locale() is used. The empty string is
+		// the signal: WCProductAdapter::set_language() is not called and the default stands.
+		foreach ( $results as $entry ) {
+			$this->assertNotSame( '', $entry->get_product()->getContentLanguage() );
+		}
+	}
+
+	public function test_validate_and_generate_update_request_entries_wpml_inactive_non_empty_language_ignored() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->market_service->method( 'has_multilingual_support' )->willReturn( false );
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'FR' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => [ 'en' ],
+				],
+				'fr-fr'   => [
+					'country'    => 'FR',
+					'feed_label' => 'FR-fr',
+					'language'   => [ 'fr' ],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( [ $product ] );
+
+		// With WPML inactive, the market's language[] is ignored: every market still emits an entry.
+		$this->assertCount( 2, $results );
+	}
+
+	public function test_validate_and_generate_update_request_entries_wpml_variable_product_matching_variations_only() {
+		$variable    = WC_Helper_Product::create_variation_product();
+		$variations  = array_map( 'wc_get_product', $variable->get_children() );
+		$matching_id = $variations[0]->get_id();
+
+		$this->market_service->method( 'has_multilingual_support' )->willReturn( true );
+		$this->wpml->method( 'get_post_language' )
+			->willReturnCallback(
+				static function ( int $post_id ) use ( $matching_id ) {
+					return $post_id === $matching_id ? 'fr' : 'de';
+				}
+			);
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'FR' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => [],
+				],
+				'fr-fr'   => [
+					'country'    => 'FR',
+					'feed_label' => 'FR-fr',
+					'language'   => [ 'fr' ],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( [ $variable ] );
+
+		$fr_entries = array_filter(
+			$results,
+			static function ( BatchProductRequestEntry $entry ) {
+				return 'FR-fr' === $entry->get_product()->getFeedLabel();
+			}
+		);
+
+		$this->assertCount( 1, $fr_entries );
+		$entry = array_values( $fr_entries )[0];
+		$this->assertSame( $matching_id, $entry->get_wc_product_id() );
+	}
+
 	public function test_validate_and_generate_update_request_entries_skips_invalid_product() {
 		$products = $this->create_and_return_supported_test_products();
 
@@ -471,7 +720,8 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			$this->validator,
 			$factory_mock,
 			$this->rules_query,
-			$this->market_service
+			$this->market_service,
+			$this->wpml
 		);
 
 		$this->set_up_market_service_stubs(
@@ -686,7 +936,8 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			$this->validator,
 			$factory_mock,
 			$this->rules_query,
-			$this->market_service
+			$this->market_service,
+			$this->wpml
 		);
 
 		$this->set_up_market_service_stubs(
@@ -739,7 +990,8 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			$this->validator,
 			$factory_mock,
 			$this->rules_query,
-			$this->market_service
+			$this->market_service,
+			$this->wpml
 		);
 
 		$this->set_up_market_service_stubs(
@@ -792,7 +1044,8 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			$this->validator,
 			$factory_mock,
 			$this->rules_query,
-			$this->market_service
+			$this->market_service,
+			$this->wpml
 		);
 
 		$this->set_up_market_service_stubs(
@@ -845,7 +1098,8 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			$this->validator,
 			$factory_mock,
 			$this->rules_query,
-			$this->market_service
+			$this->market_service,
+			$this->wpml
 		);
 
 		$this->set_up_market_service_stubs(
@@ -953,12 +1207,13 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 		$this->market_service       = $this->createMock( MarketService::class );
+		$this->wpml                 = $this->createMock( WPML::class );
 		$this->validator            = $this->createMock( ValidatorInterface::class );
 		$this->rules_query          = $this->createMock( AttributeMappingRulesQuery::class );
 		$this->product_meta         = $this->container->get( ProductMetaHandler::class );
 		$this->product_factory      = $this->container->get( ProductFactory::class );
 		$this->wc                   = $this->container->get( WC::class );
 		$this->product_helper       = new ProductHelper( $this->product_meta, $this->wc, $this->market_service );
-		$this->batch_product_helper = new BatchProductHelper( $this->product_meta, $this->product_helper, $this->validator, $this->product_factory, $this->rules_query, $this->market_service );
+		$this->batch_product_helper = new BatchProductHelper( $this->product_meta, $this->product_helper, $this->validator, $this->product_factory, $this->rules_query, $this->market_service, $this->wpml );
 	}
 }
