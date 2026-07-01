@@ -342,6 +342,19 @@ class Merchant implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Update the business information for the connected Merchant Center account.
+	 *
+	 * @param array  $business_info BusinessInfo fields to write.
+	 * @param string $update_mask   Comma-separated list of fields to update.
+	 *
+	 * @return array The updated businessInfo.
+	 * @throws MerchantApiException If the business info can't be updated.
+	 */
+	public function update_business_info( array $business_info, string $update_mask ): array {
+		return $this->business_info_service->update_business_info( $business_info, $update_mask );
+	}
+
+	/**
 	 * Check if we have access to the merchant account.
 	 *
 	 * @param string $email Email address of the connected account.
