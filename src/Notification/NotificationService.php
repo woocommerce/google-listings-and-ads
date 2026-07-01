@@ -163,7 +163,6 @@ class NotificationService implements ContainerAwareInterface, Registerable, Serv
 	 * @return void
 	 */
 	public function clear_login_scoped_dismissals( string $user_login, WP_User $user ): void {
-
 		$state = $this->get_state_for_user( $user->ID );
 
 		if ( empty( $state ) ) {
