@@ -339,7 +339,7 @@ class BatchProductHelper implements Service {
 	 *
 	 * @return bool
 	 */
-	protected function product_matches_market( string $product_language, array $market, bool $wpml_active ): bool {
+	private static function product_matches_market( string $product_language, array $market, bool $wpml_active ): bool {
 		if ( ! $wpml_active ) {
 			return true;
 		}
