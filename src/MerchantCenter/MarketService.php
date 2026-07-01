@@ -413,6 +413,8 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$this->options->update( OptionsInterface::MARKETS, $markets );
 
 		if ( $country ) {
+			$this->adopt_primary_rate_for_country( $country );
+			$this->adopt_primary_time_for_country( $country );
 			$this->restore_country_to_target_audience( $country );
 		}
 
@@ -775,6 +777,99 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		if ( count( $filtered ) !== count( $target_audience['countries'] ) ) {
 			$target_audience['countries'] = $filtered;
 			$this->options->update( OptionsInterface::TARGET_AUDIENCE, $target_audience );
+		}
+	}
+
+	/**
+	 * Overwrites the deleted country's shipping rate row with the primary market's values.
+	 *
+	 * Reads the full ShippingRateTable once and filters in PHP. When both rows exist the target
+	 * row is updated. When only the primary row exists the target row is inserted. When only the
+	 * target row exists it is deleted so the existing shipping sync pipeline can recompute the
+	 * country's rate on the next run. When neither row exists nothing happens.
+	 *
+	 * @param string $country ISO 3166-1 alpha-2 country code of the deleted secondary market.
+	 */
+	private function adopt_primary_rate_for_country( string $country ): void {
+		$primary_country = $this->target_audience->get_main_target_country();
+		$rows            = $this->shipping_rate_query->get_results();
+
+		$primary_row  = null;
+		$existing_row = null;
+
+		foreach ( $rows as $row ) {
+			if ( $row['country'] === $primary_country ) {
+				$primary_row = $row;
+			}
+			if ( $row['country'] === $country ) {
+				$existing_row = $row;
+			}
+		}
+
+		if ( $primary_row ) {
+			$primary_options = $primary_row['options'] ?? null;
+			$data            = [
+				'country'  => $country,
+				'currency' => $primary_row['currency'],
+				'rate'     => $primary_row['rate'],
+				'options'  => is_array( $primary_options ) ? $primary_options : [],
+			];
+
+			if ( $existing_row ) {
+				$this->shipping_rate_query->update( $data, [ 'id' => $existing_row['id'] ] );
+			} else {
+				$this->shipping_rate_query->insert( $data );
+			}
+
+			return;
+		}
+
+		if ( $existing_row ) {
+			$this->shipping_rate_query->delete( 'country', $country );
+		}
+	}
+
+	/**
+	 * Overwrites the deleted country's shipping time row with the primary market's values.
+	 *
+	 * Same shape as adopt_primary_rate_for_country against ShippingTimeQuery / ShippingTimeTable.
+	 *
+	 * @param string $country ISO 3166-1 alpha-2 country code of the deleted secondary market.
+	 */
+	private function adopt_primary_time_for_country( string $country ): void {
+		$primary_country = $this->target_audience->get_main_target_country();
+		$rows            = $this->shipping_time_query->get_results();
+
+		$primary_row  = null;
+		$existing_row = null;
+
+		foreach ( $rows as $row ) {
+			if ( $row['country'] === $primary_country ) {
+				$primary_row = $row;
+			}
+			if ( $row['country'] === $country ) {
+				$existing_row = $row;
+			}
+		}
+
+		if ( $primary_row ) {
+			$data = [
+				'country'  => $country,
+				'time'     => $primary_row['time'],
+				'max_time' => $primary_row['max_time'],
+			];
+
+			if ( $existing_row ) {
+				$this->shipping_time_query->update( $data, [ 'id' => $existing_row['id'] ] );
+			} else {
+				$this->shipping_time_query->insert( $data );
+			}
+
+			return;
+		}
+
+		if ( $existing_row ) {
+			$this->shipping_time_query->delete( 'country', $country );
 		}
 	}
 
