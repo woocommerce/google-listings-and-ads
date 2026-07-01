@@ -32,10 +32,10 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		'id'            => 'primary',
 		'label'         => 'Primary Market',
 		'countries'     => [ 'US' ],
-		'country'       => 'US',
+		'country'       => null,
 		'language'      => [ 'en' ],
 		'currency'      => [ 'USD' ],
-		'feed_label'    => 'US',
+		'feed_label'    => null,
 		'shipping_rate' => 'flat',
 		'shipping_time' => 'flat',
 	];
@@ -92,6 +92,9 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertArrayHasKey( 'label', $primary );
 		$this->assertArrayHasKey( 'countries', $primary );
 		$this->assertArrayHasKey( 'country', $primary );
+		$this->assertArrayHasKey( 'feed_label', $primary );
+		$this->assertNull( $primary['country'] );
+		$this->assertNull( $primary['feed_label'] );
 		$this->assertArrayHasKey( 'shipping_rate', $primary );
 		$this->assertArrayHasKey( 'shipping_time', $primary );
 	}
@@ -103,7 +106,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( 'Primary Market', $primary['label'] );
 		$this->assertEquals( [ 'US' ], $primary['countries'] );
-		$this->assertEquals( 'US', $primary['country'] );
+		$this->assertNull( $primary['country'] );
+		$this->assertNull( $primary['feed_label'] );
 		$this->assertEquals( 'flat', $primary['shipping_rate'] );
 		$this->assertEquals( 'flat', $primary['shipping_time'] );
 	}
@@ -601,6 +605,8 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'gb', $secondary['id'] );
 		$this->assertEquals( 'United Kingdom (UK)', $secondary['label'] );
 		$this->assertEquals( [ 'GB' ], $secondary['countries'] );
+		$this->assertSame( 'GB', $secondary['country'] );
+		$this->assertSame( 'GB', $secondary['feed_label'] );
 	}
 
 	public function test_post_market_without_shipping_mode_succeeds(): void {

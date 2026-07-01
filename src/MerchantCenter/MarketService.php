@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupOrphanedMarketProductsJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateShippingSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -122,11 +123,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 		$all_rates     = $this->get_cached_shipping_rates();
 		$all_countries = $this->wc->get_countries();
+		$is_flat_mode  = $this->is_flat_shipping_rate();
 
 		foreach ( $secondary as &$market ) {
 			$country = $market['country'] ?? null;
 
-			$market['free_shipping'] = ( $country && isset( $all_rates[ $country ]['free_shipping_threshold'] ) )
+			// DB rate rows are retained when the merchant switches modes so they
+			// can be restored later, so the read boundary has to gate them.
+			$market['free_shipping'] = ( $is_flat_mode && $country && isset( $all_rates[ $country ]['free_shipping_threshold'] ) )
 				? (float) $all_rates[ $country ]['free_shipping_threshold']
 				: null;
 
@@ -151,26 +155,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Generates the default markets configuration from site settings.
-	 *
-	 * Returns a config-shape primary keyed by 'primary'.
-	 *
-	 * @return array[]
-	 */
-	public function build_default_markets(): array {
-		$country = $this->target_audience->get_main_target_country();
-
-		return [
-			'primary' => [
-				'country'    => $country,
-				'language'   => [ $this->get_site_primary_language() ],
-				'currency'   => [ $this->get_site_primary_currency() ],
-				'feed_label' => $country,
-			],
-		];
-	}
-
-	/**
 	 * Builds and returns the full response-ready primary market.
 	 *
 	 * Composes from TargetAudience, MerchantCenter options, site locale/currency,
@@ -179,17 +163,18 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @return array
 	 */
 	public function get_primary_market(): array {
-		$defaults    = $this->build_default_markets()['primary'];
-		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+		$mc_settings      = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+		$default_language = [ $this->get_site_primary_language() ];
+		$default_currency = [ $this->get_site_primary_currency() ];
 
 		return [
 			'id'            => 'primary',
 			'label'         => __( 'Primary Market', 'google-listings-and-ads' ),
 			'countries'     => $this->target_audience->get_target_countries(),
-			'country'       => $defaults['country'],
-			'language'      => is_array( $mc_settings['language'] ?? null ) ? $mc_settings['language'] : $defaults['language'],
-			'currency'      => is_array( $mc_settings['currency'] ?? null ) ? $mc_settings['currency'] : $defaults['currency'],
-			'feed_label'    => $defaults['feed_label'],
+			'country'       => null,
+			'language'      => is_array( $mc_settings['language'] ?? null ) ? $mc_settings['language'] : $default_language,
+			'currency'      => is_array( $mc_settings['currency'] ?? null ) ? $mc_settings['currency'] : $default_currency,
+			'feed_label'    => null,
 			'shipping_rate' => $mc_settings['shipping_rate'] ?? null,
 			'shipping_time' => $mc_settings['shipping_time'] ?? null,
 			'free_shipping' => $this->get_primary_free_shipping_threshold(),
@@ -276,6 +261,16 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		if ( 'manual' !== ( $config['shipping_rate'] ?? null ) ) {
 			$this->schedule_shipping_sync();
 		}
+
+		$this->job_repository->get( UpdateAllProducts::class )->schedule();
+
+		/**
+		 * Fires after a secondary market is successfully added.
+		 *
+		 * @param string $id     The market ID.
+		 * @param array  $config The market configuration as persisted, including shipping_rate and shipping_time defaults.
+		 */
+		do_action( 'woocommerce_gla_market_added', $id, $config );
 	}
 
 	/**
@@ -295,9 +290,32 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 */
 	public function update_market( string $id, array $config ): array {
 		if ( 'primary' === $id ) {
+			$existing_target = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
+			$existing_mc     = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+
 			$this->update_primary_market_fanout( $config );
 
-			return $this->get_market( $id );
+			$merged_target = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
+			$merged_mc     = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+
+			$existing_countries = $existing_target['countries'] ?? [];
+			$merged_countries   = $merged_target['countries'] ?? [];
+			$existing_language  = $existing_mc['language'] ?? [];
+			$merged_language    = $merged_mc['language'] ?? [];
+			$existing_currency  = $existing_mc['currency'] ?? [];
+			$merged_currency    = $merged_mc['currency'] ?? [];
+
+			$resync_needed = $existing_countries !== $merged_countries
+				|| array_diff( $existing_language, $merged_language ) !== []
+				|| array_diff( $merged_language, $existing_language ) !== []
+				|| array_diff( $existing_currency, $merged_currency ) !== []
+				|| array_diff( $merged_currency, $existing_currency ) !== [];
+
+			if ( $resync_needed ) {
+				$this->job_repository->get( UpdateAllProducts::class )->schedule();
+			}
+
+			return $this->fire_market_updated_action( $id );
 		}
 
 		$markets  = $this->get_stored_secondary_markets();
@@ -324,7 +342,44 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			}
 		}
 
-		return $this->get_market( $id );
+		$existing_language = $existing['language'] ?? [];
+		$merged_language   = $merged['language'] ?? [];
+		$existing_currency = $existing['currency'] ?? [];
+		$merged_currency   = $merged['currency'] ?? [];
+
+		$resync_needed = ( $existing['country'] ?? null ) !== ( $merged['country'] ?? null )
+			|| ( $existing['feed_label'] ?? null ) !== ( $merged['feed_label'] ?? null )
+			|| array_diff( $existing_language, $merged_language ) !== []
+			|| array_diff( $merged_language, $existing_language ) !== []
+			|| array_diff( $existing_currency, $merged_currency ) !== []
+			|| array_diff( $merged_currency, $existing_currency ) !== [];
+
+		if ( $resync_needed ) {
+			$this->job_repository->get( UpdateAllProducts::class )->schedule();
+		}
+
+		return $this->fire_market_updated_action( $id );
+	}
+
+	/**
+	 * Fires the woocommerce_gla_market_updated action and returns the resolved market.
+	 *
+	 * @param string $id The market ID.
+	 *
+	 * @return array The updated market, fully resolved (same shape as get_market()).
+	 */
+	private function fire_market_updated_action( string $id ): array {
+		$updated_market = $this->get_market( $id );
+
+		/**
+		 * Fires after a market is successfully updated.
+		 *
+		 * @param string $id             The market ID.
+		 * @param array  $updated_market The updated market, fully resolved (same shape as get_market()).
+		 */
+		do_action( 'woocommerce_gla_market_updated', $id, $updated_market );
+
+		return $updated_market;
 	}
 
 	/**
@@ -344,10 +399,15 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			);
 		}
 
-		$markets       = $this->get_stored_secondary_markets();
-		$country       = $markets[ $id ]['country'] ?? null;
-		$feed_label    = $markets[ $id ]['feed_label'] ?? null;
-		$shipping_rate = $markets[ $id ]['shipping_rate'] ?? null;
+		$markets = $this->get_stored_secondary_markets();
+		if ( ! isset( $markets[ $id ] ) ) {
+			return; // Avoid spurious options write and shipping sync for a non-existent market.
+		}
+
+		$deleted_config = $markets[ $id ];
+		$country        = $deleted_config['country'] ?? null;
+		$feed_label     = $deleted_config['feed_label'] ?? null;
+		$shipping_rate  = $deleted_config['shipping_rate'] ?? null;
 
 		unset( $markets[ $id ] );
 		$this->options->update( OptionsInterface::MARKETS, $markets );
@@ -367,13 +427,15 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$this->schedule_shipping_sync();
 		}
 
+		$this->job_repository->get( UpdateAllProducts::class )->schedule();
+
 		/**
-		 * Fires after a secondary market is deleted and its shipping data is synced back to the primary.
+		 * Fires after a secondary market is successfully deleted.
 		 *
-		 * @param string      $id      Market ID that was deleted.
-		 * @param string|null $country ISO 3166-1 alpha-2 country code of the deleted market, or null if the market had no country.
+		 * @param string $id             The market ID.
+		 * @param array  $deleted_config The market configuration as it existed at the time of deletion.
 		 */
-		do_action( 'woocommerce_gla_market_deleted', $id, $country );
+		do_action( 'woocommerce_gla_market_deleted', $id, $deleted_config );
 	}
 
 	/**
@@ -535,9 +597,16 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	/**
 	 * Returns the free-shipping threshold for the primary market's country.
 	 *
+	 * Uses get_main_target_country() as a single-country fallback for the aggregated
+	 * free_shipping field; multi-country aggregation is out of scope.
+	 *
 	 * @return float|null The threshold amount, or null when unset.
 	 */
 	private function get_primary_free_shipping_threshold(): ?float {
+		if ( ! $this->is_flat_shipping_rate() ) {
+			return null;
+		}
+
 		$country = $this->target_audience->get_main_target_country();
 		$rates   = $this->get_cached_shipping_rates();
 
@@ -546,6 +615,20 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Whether the global shipping rate mode is 'flat'.
+	 *
+	 * DB-stored rates only flow to MC in flat mode; automatic mode is driven by
+	 * WC shipping zones, and manual mode is handled outside the plugin.
+	 *
+	 * @return bool
+	 */
+	private function is_flat_shipping_rate(): bool {
+		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+
+		return is_array( $mc_settings ) && 'flat' === ( $mc_settings['shipping_rate'] ?? null );
 	}
 
 	/**
