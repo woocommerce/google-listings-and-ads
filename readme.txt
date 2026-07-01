@@ -5,7 +5,7 @@ Requires at least: 6.6
 Tested up to: 6.9
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.7.1
+Stable tag: 3.7.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -140,6 +140,15 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.7.2 - 2026-06-29 =
+* Add - Added an option to connect a Merchant Center account when a service-based user adds physical products.
+* Dev - Remove $_GET parameter overrides in Options::get_ads_id() and Options::get_merchant_id().
+* Fix - Align the main tab navigation's keyboard-focus indicator with the WordPress core style and stop showing a focus indicator on mouse press.
+* Fix - Ensure incomplete connection states show as disconnected.
+* Fix - Fix flaky E2E tests for onboarding step-3 campaign flow.
+* Fix - Fix webpack commons chunk misconfiguration causing disproportionate bundle growth; add dedicated bundlewatch entries for all page chunks with realistic size limits.
+* Fix - Resolved console log errors when selecting AI generated images in campaigns.
+
 = 3.7.1 - 2026-06-09 =
 * Add - Better User Guidance Feature.
 * Fix - Split budget recommendation and metrics cache keys by advertiser type so recommendations refresh correctly after the first campaign is created.
@@ -162,16 +171,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix - Sorting order of the programs column.
 * Update - Default values for shipping time inputs during onboarding.
 * Update - Success notice displayed after saving a campaign.
-
-= 3.6.2 - 2026-04-27 =
-* Dev - Bump WooCommerce "tested up to" version 10.7.
-* Dev - Remove API Pull sync status rows from the Connection Test page.
-* Fix - Disconnect modal now shows Google Ads-specific copy and confirmation text when disconnecting only the Google Ads account, instead of always falling back to the "all accounts" variant.
-* Fix - Improve scheduling for job that updates non-EU campaigns.
-* Fix - Improved performance of the expiring products query for large catalogs.
-* Fix - Only schedule UpdateEuPoliticalCampaigns jobs with an Ads connection.
-* Fix - Unschedule all Action Scheduler jobs when the plugin is deactivated to prevent orphaned recurring tasks from accumulating failure logs.
-* Fix - Update gmc_merchant_id in YouTube Shopping reports.
-* Fix - Updated caniuse-lite browserslist database.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
