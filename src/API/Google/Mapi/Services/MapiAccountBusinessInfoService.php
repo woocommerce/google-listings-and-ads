@@ -46,6 +46,22 @@ class MapiAccountBusinessInfoService implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Update the business information for the connected merchant account.
+	 *
+	 * @param array  $business_info BusinessInfo fields to write.
+	 * @param string $update_mask   Comma-separated list of fields to update.
+	 *
+	 * @return array The updated BusinessInfo.
+	 * @throws MerchantApiException On a non-2xx MAPI response.
+	 */
+	public function update_business_info( array $business_info, string $update_mask ): array {
+		return $this->client->patch(
+			$this->build_path() . '?updateMask=' . rawurlencode( $update_mask ),
+			$business_info
+		);
+	}
+
+	/**
 	 * Build the businessInfo resource path for the connected merchant account.
 	 *
 	 * @return string
