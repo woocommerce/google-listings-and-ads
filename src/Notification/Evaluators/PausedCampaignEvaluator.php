@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class PausedCampaignEvaluator
  *
- * Fires when at least one campaign is paused.
+ * Fires when the merchant has at least one campaign that is not in enabled status.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
@@ -60,13 +60,19 @@ class PausedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwar
 		}
 
 		try {
-			foreach ( $this->ads_campaign->get_campaigns( true, false ) as $campaign ) {
-				if ( CampaignStatus::PAUSED === $campaign['status'] ) {
-					return true;
-				}
-			}
+			$campaigns = $this->ads_campaign->get_campaigns( true, false );
 		} catch ( ExceptionWithResponseData $e ) {
 			return false;
+		}
+
+		if ( empty( $campaigns ) ) {
+			return false;
+		}
+
+		foreach ( $campaigns as $campaign ) {
+			if ( CampaignStatus::ENABLED !== $campaign['status'] ) {
+				return true;
+			}
 		}
 
 		return false;
