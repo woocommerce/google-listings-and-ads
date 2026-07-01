@@ -3,6 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountRegionsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountShippingSettingsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
@@ -14,6 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\CountryRatesCollection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\DBShippingSettingsAdapter;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\MapiShippingSettingsConverter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\WCShippingSettingsAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
@@ -73,13 +77,45 @@ class Settings implements ContainerAwareInterface {
 			return;
 		}
 
-		$settings = $this->generate_shipping_settings();
+		$settings  = $this->generate_shipping_settings();
+		$converter = new MapiShippingSettingsConverter();
 
-		$this->get_shopping_service()->shippingsettings->update(
-			$this->get_merchant_id(),
-			$this->get_account_id(),
-			$settings
-		);
+		// Regions must exist before the settings that reference them are inserted.
+		$this->sync_shipping_regions( $converter->convert_regions( $settings ) );
+
+		/** @var MapiAccountShippingSettingsService $shipping_service */
+		$shipping_service = $this->container->get( MapiAccountShippingSettingsService::class );
+		$shipping_service->insert_shipping_settings( $converter->convert( $settings ) );
+	}
+
+	/**
+	 * Create or update the Merchant API regions referenced by the shipping settings.
+	 *
+	 * Regions replace the Content API's inline postalCodeGroups; they are created
+	 * up front so the rate-group tables can reference them by id.
+	 *
+	 * @param array<string, array> $regions Map of region id to Region resource.
+	 *
+	 * @throws MerchantApiException If a region cannot be created or updated.
+	 */
+	protected function sync_shipping_regions( array $regions ): void {
+		if ( empty( $regions ) ) {
+			return;
+		}
+
+		/** @var MapiAccountRegionsService $regions_service */
+		$regions_service = $this->container->get( MapiAccountRegionsService::class );
+
+		foreach ( $regions as $region_id => $region ) {
+			try {
+				$regions_service->insert_region( (string) $region_id, $region );
+			} catch ( MerchantApiException $e ) {
+				// The Merchant API reports an already existing region as a 400, so we
+				// do not branch on the status: fall back to updating it to match the
+				// current settings, which surfaces its own error for a genuine failure.
+				$regions_service->update_region( (string) $region_id, $region, 'displayName,postalCodeArea' );
+			}
+		}
 	}
 
 	/**
