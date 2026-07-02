@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponMetaHandler;
+use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
@@ -12,23 +13,33 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluat
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
+use WC_Coupon;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Class CouponsNotSyncedEvaluator
  *
- * Fires when the merchant has at least one WooCommerce coupon but has not synced
- * any coupons to Google, and the target market supports coupon channel visibility.
+ * Fires when the merchant has at least one supported WooCommerce coupon but has
+ * not synced any coupons to Google, and the target market supports coupon channel
+ * visibility.
  *
- * Markets that do not support coupon channel visibility are excluded here so the
- * notification is never shown when there is nothing the merchant could sync.
+ * Only coupons that can actually be synced are considered (see
+ * CouponSyncer::is_coupon_supported() — excludes virtual, email-restricted, and
+ * exclude-sale-items coupons). Markets that do not support coupon channel
+ * visibility are excluded too, so the notification is never shown when there is
+ * nothing the merchant could sync.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
 class CouponsNotSyncedEvaluator implements NotificationEvaluatorInterface, Service {
 
 	use CachedNotificationEvaluatorTrait;
+
+	/**
+	 * Number of coupon post IDs to fetch per query.
+	 */
+	private const COUPONS_PER_PAGE = 50;
 
 	/**
 	 * Database meta key for coupon sync status.
@@ -68,8 +79,8 @@ class CouponsNotSyncedEvaluator implements NotificationEvaluatorInterface, Servi
 	/**
 	 * Evaluate whether the notification condition is met.
 	 *
-	 * The signal fires once the merchant has at least one coupon but has not
-	 * synced any coupons to Google yet.
+	 * The signal fires once the merchant has at least one supported coupon but has
+	 * not synced any coupons to Google yet.
 	 *
 	 * @return bool
 	 */
@@ -77,17 +88,18 @@ class CouponsNotSyncedEvaluator implements NotificationEvaluatorInterface, Servi
 		// Coupons can only be synced when the target market supports coupon channel
 		// visibility. Bail early for unsupported markets so we never nudge merchants
 		// to sync coupons that Google would reject.
-		if ( ! $this->is_target_market_supported() ) {
+		$target_country = $this->target_audience->get_main_target_country();
+		if ( ! $this->merchant_center->is_promotion_supported_country( $target_country ) ) {
 			return false;
 		}
 
-		// The merchant needs at least one coupon before we can prompt them to sync.
-		if ( ! $this->has_coupon() ) {
+		// If any coupon is already synced to Google, the merchant has started syncing.
+		if ( $this->has_synced_coupon() ) {
 			return false;
 		}
 
-		// Only fire while none of the coupons have been synced to Google yet.
-		return ! $this->has_synced_coupon();
+		// Only fire when there is at least one coupon that could actually be synced.
+		return $this->has_supported_coupon();
 	}
 
 	/**
@@ -109,32 +121,63 @@ class CouponsNotSyncedEvaluator implements NotificationEvaluatorInterface, Servi
 	}
 
 	/**
-	 * Whether the merchant's main target country supports coupon channel visibility.
+	 * Whether the merchant has at least one coupon that is supported for syncing.
+	 *
+	 * Pages through published coupons and returns true as soon as a supported one
+	 * is found (see CouponSyncer::is_coupon_supported()).
 	 *
 	 * @return bool
 	 */
-	protected function is_target_market_supported(): bool {
-		return $this->merchant_center->is_promotion_supported_country(
-			$this->target_audience->get_main_target_country()
-		);
+	protected function has_supported_coupon(): bool {
+		$page = 1;
+
+		while ( true ) {
+			$coupon_post_ids = $this->get_coupon_post_ids( $page );
+
+			if ( empty( $coupon_post_ids ) ) {
+				return false;
+			}
+
+			foreach ( $coupon_post_ids as $post_id ) {
+				if ( CouponSyncer::is_coupon_supported( $this->create_coupon( $post_id ) ) ) {
+					return true;
+				}
+			}
+
+			++$page;
+		}
 	}
 
 	/**
-	 * Whether the merchant has at least one published coupon.
+	 * Get a page of published coupon post IDs.
 	 *
-	 * @return bool
+	 * @param int $page Page number for paginated queries.
+	 *
+	 * @return int[]
 	 */
-	protected function has_coupon(): bool {
-		$coupons = get_posts(
+	protected function get_coupon_post_ids( int $page = 1 ): array {
+		$coupon_posts = get_posts(
 			[
 				'post_type'      => 'shop_coupon',
 				'post_status'    => 'publish',
-				'posts_per_page' => 1,
+				'posts_per_page' => self::COUPONS_PER_PAGE,
+				'paged'          => $page,
 				'fields'         => 'ids',
 			]
 		);
 
-		return ! empty( $coupons );
+		return array_map( 'intval', $coupon_posts );
+	}
+
+	/**
+	 * Create a coupon object for a post ID.
+	 *
+	 * @param int $post_id Coupon post ID.
+	 *
+	 * @return WC_Coupon
+	 */
+	protected function create_coupon( int $post_id ): WC_Coupon {
+		return new WC_Coupon( $post_id );
 	}
 
 	/**
