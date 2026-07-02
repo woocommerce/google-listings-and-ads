@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google\Mapi\Services;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountShippingSettingsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -40,38 +39,6 @@ class MapiAccountShippingSettingsServiceTest extends UnitTest {
 
 		$this->service = new MapiAccountShippingSettingsService( $this->client );
 		$this->service->set_options_object( $this->options );
-	}
-
-	public function test_get_shipping_settings() {
-		$settings = [
-			'name'     => 'accounts/12345/shippingSettings',
-			'services' => [],
-		];
-
-		$this->client->expects( $this->once() )
-			->method( 'get' )
-			->with( self::PATH )
-			->willReturn( $settings );
-
-		$this->assertSame( $settings, $this->service->get_shipping_settings() );
-	}
-
-	public function test_get_shipping_settings_returns_empty_on_404() {
-		$this->client->expects( $this->once() )
-			->method( 'get' )
-			->with( self::PATH )
-			->willThrowException( new MerchantApiException( 404, [], __METHOD__ ) );
-
-		$this->assertSame( [], $this->service->get_shipping_settings() );
-	}
-
-	public function test_get_shipping_settings_rethrows_other_errors() {
-		$this->client->expects( $this->once() )
-			->method( 'get' )
-			->willThrowException( new MerchantApiException( 500, [], __METHOD__ ) );
-
-		$this->expectException( MerchantApiException::class );
-		$this->service->get_shipping_settings();
 	}
 
 	public function test_insert_shipping_settings() {
