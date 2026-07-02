@@ -36,28 +36,11 @@ class MapiAccountShippingSettingsService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Retrieve the shipping settings for the connected merchant account.
-	 *
-	 * The Merchant API returns a 404 when the account has no shipping settings
-	 * yet; that is mapped to an empty array so callers can treat it as "none".
-	 *
-	 * @return array ShippingSettings resource decoded as an array, empty when none exist.
-	 * @throws MerchantApiException On a non-2xx MAPI response other than 404.
-	 */
-	public function get_shipping_settings(): array {
-		try {
-			return $this->client->get( $this->build_path() );
-		} catch ( MerchantApiException $e ) {
-			if ( 404 === $e->get_http_status() ) {
-				return [];
-			}
-
-			throw $e;
-		}
-	}
-
-	/**
 	 * Insert (create or replace) the shipping settings for the connected merchant account.
+	 *
+	 * The shippingSettings:insert custom method is an unconditional full replacement,
+	 * so it takes no etag / If-Match precondition (the resource's etag only guards a
+	 * read-modify-write, which this write path does not perform).
 	 *
 	 * @param array $shipping_settings ShippingSettings resource to write.
 	 *
