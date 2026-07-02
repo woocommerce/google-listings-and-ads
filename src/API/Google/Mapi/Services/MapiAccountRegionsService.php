@@ -38,18 +38,6 @@ class MapiAccountRegionsService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * List the regions defined for the connected merchant account.
-	 *
-	 * @return array Region resources decoded as arrays (empty when none exist).
-	 * @throws MerchantApiException On a non-2xx MAPI response.
-	 */
-	public function get_regions(): array {
-		$response = $this->client->get( $this->build_path() );
-
-		return $response['regions'] ?? [];
-	}
-
-	/**
 	 * Create a region for the connected merchant account.
 	 *
 	 * @param string $region_id The region id (referenced by rate-group tables).
@@ -80,18 +68,6 @@ class MapiAccountRegionsService implements OptionsAwareInterface {
 			$this->build_region_path( $region_id ) . '?updateMask=' . rawurlencode( $update_mask ),
 			$region
 		);
-	}
-
-	/**
-	 * Delete a region for the connected merchant account.
-	 *
-	 * @param string $region_id The region id.
-	 *
-	 * @return array Decoded response body (empty on success).
-	 * @throws MerchantApiException On a non-2xx MAPI response.
-	 */
-	public function delete_region( string $region_id ): array {
-		return $this->client->delete( $this->build_region_path( $region_id ) );
 	}
 
 	/**
