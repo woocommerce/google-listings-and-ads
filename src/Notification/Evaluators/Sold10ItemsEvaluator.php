@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationCacheKe
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\SiteScopedNotificationEvaluatorInterface;
+use Automattic\WooCommerce\Utilities\OrderUtil;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -86,17 +87,32 @@ class Sold10ItemsEvaluator implements SiteScopedNotificationEvaluatorInterface, 
 			return false;
 		}
 
-		$orders = wc_get_orders(
-			[
-				'status' => $statuses,
-				'total'  => [
-					'value'    => 0,
-					'operator' => '>',
+		$query_args = [
+			'status' => $statuses,
+			'limit'  => $minimum + 1,
+			'return' => 'ids',
+		];
+
+		// The 'total' => [ 'value' => 0, 'operator' => '>' ] shorthand is only honoured
+		// by the HPOS orders-table query. Under legacy post-meta storage it degrades to a
+		// generic "IN" meta query and matches only zero-total orders, so branch explicitly.
+		if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			$query_args['total'] = [
+				'value'    => 0,
+				'operator' => '>',
+			];
+		} else {
+			$query_args['meta_query'] = [
+				[
+					'key'     => '_order_total',
+					'value'   => 0,
+					'compare' => '>',
+					'type'    => 'NUMERIC',
 				],
-				'limit'  => $minimum + 1,
-				'return' => 'ids',
-			]
-		);
+			];
+		}
+
+		$orders = wc_get_orders( $query_args );
 
 		return count( $orders ) >= $minimum;
 	}
