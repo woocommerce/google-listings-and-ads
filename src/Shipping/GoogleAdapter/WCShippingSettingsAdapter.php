@@ -125,6 +125,7 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 				$country
 			),
 			'active'            => true,
+			// One service per country; deliveryCountries is an array as MAPI requires.
 			'deliveryCountries' => [ $country ],
 			'currencyCode'      => $this->currency,
 			'deliveryTime'      => $this->get_delivery_time( $country ),
