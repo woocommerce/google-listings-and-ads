@@ -50,7 +50,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DeprecatedFilters;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\InstallTimestamp;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\Logging\DebugLogger;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService as MerchantAccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\ContactInformation;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
@@ -326,7 +325,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Notifications.
 		$this->share_with_tags( NotificationService::class, WP::class );
 		$this->share_with_tags( SkippedCampaignEvaluator::class, AdsCampaign::class );
-		$this->share_with_tags( AbandonedOnboardingEvaluator::class, AccountService::class, ServiceBasedMerchantState::class );
+		$this->share_with_tags( AbandonedOnboardingEvaluator::class, ServiceBasedMerchantState::class );
 		$this->share_with_tags( NotOnboarded90DaysEvaluator::class, OnboardingCompleted::class );
 		$this->share_with_tags( EnhancedConversionsOffEvaluator::class );
 		$this->share_with_tags( TrackingOffEvaluator::class );

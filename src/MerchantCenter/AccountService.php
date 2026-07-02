@@ -222,18 +222,6 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 	}
 
 	/**
-	 * Determine whether the Merchant Center account is fully connected.
-	 *
-	 * @return bool
-	 */
-	public function is_connected(): bool {
-		return $this->has_completed_connection(
-			$this->options->get_merchant_id(),
-			$this->state->last_incomplete_step()
-		);
-	}
-
-	/**
 	 * Get the connected merchant account.
 	 *
 	 * @return array
@@ -257,32 +245,19 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 			$this->options->update( OptionsInterface::WPCOM_REST_API_STATUS, $wpcom_rest_api_status );
 		}
 
-		$incomplete_step = $this->state->last_incomplete_step();
-		$is_connected    = $this->has_completed_connection( $id, $incomplete_step );
-
 		$status = [
 			'id'                    => $id,
-			'status'                => $is_connected ? 'connected' : ( $id ? 'incomplete' : 'disconnected' ),
+			'status'                => $id ? 'connected' : 'disconnected',
 			'wpcom_rest_api_status' => $wpcom_rest_api_status,
 		];
 
-		if ( $id && ! $is_connected ) {
-			$status['step'] = $incomplete_step;
+		$incomplete = $this->state->last_incomplete_step();
+		if ( ! empty( $incomplete ) ) {
+			$status['status'] = 'incomplete';
+			$status['step']   = $incomplete;
 		}
 
 		return $status;
-	}
-
-	/**
-	 * Determine whether a merchant ID has completed account setup.
-	 *
-	 * @param int    $merchant_id
-	 * @param string $incomplete_step
-	 *
-	 * @return bool
-	 */
-	protected function has_completed_connection( int $merchant_id, string $incomplete_step ): bool {
-		return $merchant_id > 0 && '' === $incomplete_step;
 	}
 
 	/**

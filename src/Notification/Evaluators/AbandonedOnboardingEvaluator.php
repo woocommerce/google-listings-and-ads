@@ -6,7 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
@@ -29,20 +28,15 @@ class AbandonedOnboardingEvaluator implements NotificationEvaluatorInterface, Me
 	use AdsAwareTrait;
 	use MerchantCenterAwareTrait;
 
-	/** @var AccountService */
-	private $account_service;
-
 	/** @var ServiceBasedMerchantState */
 	private $service_based_merchant_state;
 
 	/**
 	 * AbandonedOnboardingEvaluator constructor.
 	 *
-	 * @param AccountService            $account_service
 	 * @param ServiceBasedMerchantState $service_based_merchant_state
 	 */
-	public function __construct( AccountService $account_service, ServiceBasedMerchantState $service_based_merchant_state ) {
-		$this->account_service              = $account_service;
+	public function __construct( ServiceBasedMerchantState $service_based_merchant_state ) {
 		$this->service_based_merchant_state = $service_based_merchant_state;
 	}
 
@@ -127,6 +121,6 @@ class AbandonedOnboardingEvaluator implements NotificationEvaluatorInterface, Me
 			return false;
 		}
 
-		return ! $this->account_service->is_connected();
+		return ! $this->merchant_center->connected_account();
 	}
 }

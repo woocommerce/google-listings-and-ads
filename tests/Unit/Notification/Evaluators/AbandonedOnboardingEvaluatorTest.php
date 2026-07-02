@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification\Evaluators;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\AbandonedOnboardingEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
@@ -21,9 +20,6 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification\Evaluators
  */
 class AbandonedOnboardingEvaluatorTest extends UnitTest {
-
-	/** @var MockObject|AccountService $account_service */
-	protected $account_service;
 
 	/** @var MockObject|ServiceBasedMerchantState $service_based_merchant_state */
 	protected $service_based_merchant_state;
@@ -43,13 +39,11 @@ class AbandonedOnboardingEvaluatorTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->account_service              = $this->createMock( AccountService::class );
 		$this->service_based_merchant_state = $this->createMock( ServiceBasedMerchantState::class );
 		$this->merchant_center              = $this->createMock( MerchantCenterService::class );
 		$this->ads_service                  = $this->createMock( AdsService::class );
 
 		$this->evaluator = new AbandonedOnboardingEvaluator(
-			$this->account_service,
 			$this->service_based_merchant_state
 		);
 		$this->evaluator->set_merchant_center_object( $this->merchant_center );
@@ -91,7 +85,7 @@ class AbandonedOnboardingEvaluatorTest extends UnitTest {
 		$this->merchant_center->method( 'is_google_connected' )->willReturn( true );
 		$this->ads_service->method( 'connected_account' )->willReturn( true );
 		$this->service_based_merchant_state->method( 'is_service_based_merchant' )->willReturn( false );
-		$this->account_service->method( 'is_connected' )->willReturn( false );
+		$this->merchant_center->method( 'connected_account' )->willReturn( false );
 
 		$this->assertTrue( $this->evaluator->should_show() );
 	}
@@ -157,7 +151,7 @@ class AbandonedOnboardingEvaluatorTest extends UnitTest {
 		$this->merchant_center->method( 'is_google_connected' )->willReturn( true );
 		$this->ads_service->method( 'connected_account' )->willReturn( true );
 		$this->service_based_merchant_state->method( 'is_service_based_merchant' )->willReturn( false );
-		$this->account_service->method( 'is_connected' )->willReturn( true );
+		$this->merchant_center->method( 'connected_account' )->willReturn( true );
 
 		$this->assertFalse( $this->evaluator->should_show() );
 	}

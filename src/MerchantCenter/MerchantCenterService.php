@@ -244,11 +244,13 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	}
 
 	/**
-	 * Check if account has been connected.
+	 * Check if the Merchant Center account connection has completed all setup steps.
+	 *
+	 * True once a merchant ID exists and no account setup steps remain.
 	 *
 	 * @return bool
 	 */
-	protected function connected_account(): bool {
+	public function connected_account(): bool {
 		$id = $this->options->get_merchant_id();
 		return $id && ! $this->container->get( MerchantAccountState::class )->last_incomplete_step();
 	}
