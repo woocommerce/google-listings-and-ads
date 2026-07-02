@@ -92,6 +92,7 @@ class DBShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 				$country
 			),
 			'active'            => true,
+			// One service per country; deliveryCountries is an array as MAPI requires.
 			'deliveryCountries' => [ $country ],
 			'currencyCode'      => $this->currency,
 			'deliveryTime'      => $this->get_delivery_time( $country ),
@@ -108,13 +109,9 @@ class DBShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 	 * @return array
 	 */
 	protected function create_rate_group( float $rate ): array {
+		// No name: keep the rate-group shape consistent with the other adapters
+		// (WC / postcode / state), which do not set an optional display label.
 		return [
-			'name'        => sprintf(
-				/* translators: %1 is the shipping rate, %2 is the currency (e.g. USD) */
-				__( 'Flat rate - %1$s %2$s', 'google-listings-and-ads' ),
-				$rate,
-				$this->currency
-			),
 			'singleValue' => [ 'flatRate' => $this->create_price( $rate ) ],
 		];
 	}
