@@ -88,7 +88,7 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 	}
 
 	public function test_should_not_show_when_only_unsupported_coupons_exist() {
-		$virtual_coupon         = $this->create_coupon( 1, true, [] );
+		$virtual_coupon          = $this->create_coupon( 1, true, [] );
 		$email_restricted_coupon = $this->create_coupon( 2, false, [ 'test@example.com' ] );
 		$sale_excluded_coupon    = $this->create_coupon( 3, false, [], true );
 
