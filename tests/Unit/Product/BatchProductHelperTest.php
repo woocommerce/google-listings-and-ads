@@ -197,11 +197,15 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			->method( 'get_primary_market' )
 			->willReturn(
 				[
-					'country'    => 'US',
-					'feed_label' => 'US',
+					'country'    => null,
+					'feed_label' => null,
 					'language'   => 'en',
 				]
 			);
+
+		$this->market_service->expects( $this->any() )
+			->method( 'get_main_feed_label' )
+			->willReturn( 'US' );
 
 		$this->market_service->expects( $this->any() )
 			->method( 'get_all_countries' )
@@ -672,11 +676,15 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			->method( 'get_primary_market' )
 			->willReturn(
 				[
-					'country'    => 'US',
-					'feed_label' => 'US',
+					'country'    => null,
+					'feed_label' => null,
 					'language'   => 'en',
 				]
 			);
+
+		$this->market_service->expects( $this->any() )
+			->method( 'get_main_feed_label' )
+			->willReturn( 'US' );
 
 		$this->market_service->expects( $this->any() )
 			->method( 'get_all_countries' )
@@ -811,11 +819,15 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			->method( 'get_primary_market' )
 			->willReturn(
 				[
-					'country'    => 'US',
-					'feed_label' => 'US',
+					'country'    => null,
+					'feed_label' => null,
 					'language'   => 'en',
 				]
 			);
+
+		$this->market_service->expects( $this->any() )
+			->method( 'get_main_feed_label' )
+			->willReturn( 'US' );
 
 		$this->market_service->expects( $this->any() )
 			->method( 'get_all_countries' )
@@ -1172,13 +1184,24 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * Configure the MarketService mock so the helper can build primary + secondary entries.
 	 *
+	 * The primary entry's feed_label is used as the get_main_feed_label() stub, then the
+	 * primary's country/feed_label keys are nulled to match the real MarketService contract:
+	 * get_primary_market() always returns null for both, and the primary feed label is only
+	 * exposed via get_main_feed_label().
+	 *
 	 * @param string[] $all_countries Return value for get_all_countries().
 	 * @param array[]  $markets       Return value for get_markets() keyed by market ID.
 	 */
 	private function set_up_market_service_stubs( array $all_countries, array $markets ): void {
+		$main_feed_label = $markets['primary']['feed_label'];
+
+		$markets['primary']['country']    = null;
+		$markets['primary']['feed_label'] = null;
+
 		$this->market_service->method( 'get_primary_market' )->willReturn( $markets['primary'] );
 		$this->market_service->method( 'get_all_countries' )->willReturn( $all_countries );
 		$this->market_service->method( 'get_markets' )->willReturn( $markets );
+		$this->market_service->method( 'get_main_feed_label' )->willReturn( $main_feed_label );
 	}
 
 	/**

@@ -239,11 +239,15 @@ class BatchProductHelper implements Service {
 				$primary_market = $this->market_service->get_primary_market();
 
 				if ( $this->product_matches_market( $product_language, $primary_market, $wpml_active ) ) {
+					// The primary market never stores scalar country/feed_label values
+					// (it is multi-country); its feed label is the main target country.
+					$main_feed_label = $this->market_service->get_main_feed_label();
+
 					$adapted_product   = $this->product_factory->create(
 						$product,
-						$primary_market['country'],
+						$main_feed_label,
 						$mapping_rules,
-						$primary_market['feed_label'],
+						$main_feed_label,
 						$product_language
 					);
 					$validation_result = $this->validate_product( $adapted_product );
