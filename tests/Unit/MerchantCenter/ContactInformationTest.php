@@ -198,4 +198,17 @@ class ContactInformationTest extends ContainerAwareUnitTest {
 		$this->expectException( ExceptionWithResponseData::class );
 		$this->contact_information->get_contact_information();
 	}
+
+	public function test_update_address_exception() {
+		$this->google_settings->expects( $this->any() )
+			->method( 'get_store_address' )
+			->willReturn( $this->get_sample_address() );
+
+		$this->merchant->expects( $this->any() )
+			->method( 'update_business_info' )
+			->willThrowException( new MerchantApiException( 500, [], __METHOD__ ) );
+
+		$this->expectException( ExceptionWithResponseData::class );
+		$this->contact_information->update_address_based_on_store_settings();
+	}
 }
