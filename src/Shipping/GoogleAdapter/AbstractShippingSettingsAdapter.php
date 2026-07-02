@@ -100,6 +100,9 @@ abstract class AbstractShippingSettingsAdapter {
 	/**
 	 * Build a Merchant API price for the store currency.
 	 *
+	 * Convenience wrapper over MapiPriceTrait::mapi_price() that supplies the
+	 * adapter's configured currency.
+	 *
 	 * @param float $amount
 	 *
 	 * @return array
