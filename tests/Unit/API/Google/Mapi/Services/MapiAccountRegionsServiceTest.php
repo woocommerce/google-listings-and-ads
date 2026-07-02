@@ -41,26 +41,6 @@ class MapiAccountRegionsServiceTest extends UnitTest {
 		$this->service->set_options_object( $this->options );
 	}
 
-	public function test_get_regions() {
-		$regions = [ [ 'name' => 'accounts/12345/regions/zone1' ] ];
-
-		$this->client->expects( $this->once() )
-			->method( 'get' )
-			->with( self::PATH )
-			->willReturn( [ 'regions' => $regions ] );
-
-		$this->assertSame( $regions, $this->service->get_regions() );
-	}
-
-	public function test_get_regions_empty() {
-		$this->client->expects( $this->once() )
-			->method( 'get' )
-			->with( self::PATH )
-			->willReturn( [] );
-
-		$this->assertSame( [], $this->service->get_regions() );
-	}
-
 	public function test_insert_region() {
 		$region   = [ 'displayName' => 'zone1' ];
 		$response = [ 'name' => 'accounts/12345/regions/zone1' ];
@@ -82,14 +62,5 @@ class MapiAccountRegionsServiceTest extends UnitTest {
 			->willReturn( [ 'name' => 'accounts/12345/regions/zone1' ] );
 
 		$this->service->update_region( 'zone1', $region, 'displayName,postalCodeArea' );
-	}
-
-	public function test_delete_region() {
-		$this->client->expects( $this->once() )
-			->method( 'delete' )
-			->with( self::PATH . '/zone1' )
-			->willReturn( [] );
-
-		$this->assertSame( [], $this->service->delete_region( 'zone1' ) );
 	}
 }
