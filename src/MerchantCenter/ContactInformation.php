@@ -129,12 +129,19 @@ class ContactInformation implements Service {
 	 * @return array PostalAddress fields for the businessInfo resource.
 	 */
 	protected function map_to_postal_address( AccountAddress $address ): array {
-		$postal_address = [
-			'regionCode'         => (string) $address->getCountry(),
-			'administrativeArea' => (string) $address->getRegion(),
-			'locality'           => (string) $address->getLocality(),
-			'postalCode'         => (string) $address->getPostalCode(),
-		];
+		// Omit empty fields so a partial store address does not overwrite
+		// previously-set sub-fields on the businessInfo resource with blanks.
+		$postal_address = array_filter(
+			[
+				'regionCode'         => (string) $address->getCountry(),
+				'administrativeArea' => (string) $address->getRegion(),
+				'locality'           => (string) $address->getLocality(),
+				'postalCode'         => (string) $address->getPostalCode(),
+			],
+			static function ( string $value ): bool {
+				return '' !== $value;
+			}
+		);
 
 		$street = (string) $address->getStreetAddress();
 		if ( '' !== $street ) {
