@@ -155,21 +155,8 @@ class CleanupOrphanedLanguageProductsJob extends AbstractProductSyncerJob {
 			return;
 		}
 
-		$response = $this->product_syncer->delete_by_batch_requests( $request_entries );
-
-		foreach ( $response->get_products() as $deleted ) {
-			$google_product = $deleted->get_google_product();
-			if ( null === $google_product ) {
-				continue;
-			}
-
-			try {
-				$product = $this->product_helper->get_wc_product( $deleted->get_wc_product_id() );
-			} catch ( InvalidValue $exception ) {
-				continue;
-			}
-
-			$this->product_helper->remove_google_id( $product, $google_product->getId() );
-		}
+		// The delete call also removes each deleted entry's Google ID from the
+		// product's tracked IDs, leaving other markets' entries untouched.
+		$this->product_syncer->delete_by_batch_requests( $request_entries );
 	}
 }

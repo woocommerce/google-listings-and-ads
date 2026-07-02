@@ -415,9 +415,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 					'feed_label' => 'US',
 					'language'   => [ 'en' ],
 				],
-				'fr-fr'   => [
+				'fr'      => [
 					'country'    => 'FR',
-					'feed_label' => 'FR-fr',
+					'feed_label' => 'FR',
 					'language'   => [ 'fr', 'en' ],
 				],
 			]
@@ -428,12 +428,42 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( [ $product ] );
 
-		// Product language 'fr' is not in primary's ['en']; only the FR-fr secondary entry is emitted.
+		// Product language 'fr' is not in primary's ['en']; only the France secondary
+		// entry is emitted, under the language-derived feed label. The suffixed label
+		// no longer matches the country code, so targetCountry is left out of the payload.
 		$this->assertCount( 1, $results );
 		$entry = $results[0];
-		$this->assertSame( 'FR', $entry->get_product()->getTargetCountry() );
-		$this->assertSame( 'FR-fr', $entry->get_product()->getFeedLabel() );
+		$this->assertNull( $entry->get_product()->getTargetCountry() );
+		$this->assertSame( 'FR-FR', $entry->get_product()->getFeedLabel() );
 		$this->assertSame( 'fr', $entry->get_product()->getContentLanguage() );
+	}
+
+	public function test_validate_and_generate_update_request_entries_primary_gets_language_derived_feed_label() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->market_service->method( 'has_multilingual_support' )->willReturn( true );
+		$this->wpml->method( 'get_post_language' )->willReturn( 'fr' );
+
+		$this->set_up_market_service_stubs(
+			[ 'US' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => [ 'en', 'fr' ],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( [ $product ] );
+
+		$this->assertCount( 1, $results );
+		$this->assertSame( 'US-FR', $results[0]->get_product()->getFeedLabel() );
+		$this->assertNull( $results[0]->get_product()->getTargetCountry() );
+		$this->assertSame( 'fr', $results[0]->get_product()->getContentLanguage() );
 	}
 
 	public function test_validate_and_generate_update_request_entries_wpml_match_alternate_language_in_set() {
@@ -621,9 +651,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 					'feed_label' => 'US',
 					'language'   => [],
 				],
-				'fr-fr'   => [
+				'fr'      => [
 					'country'    => 'FR',
-					'feed_label' => 'FR-fr',
+					'feed_label' => 'FR',
 					'language'   => [ 'fr' ],
 				],
 			]
@@ -634,10 +664,12 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( [ $variable ] );
 
+		// The fr-language variation syncs to the France market under the
+		// language-derived feed label.
 		$fr_entries = array_filter(
 			$results,
 			static function ( BatchProductRequestEntry $entry ) {
-				return 'FR-fr' === $entry->get_product()->getFeedLabel();
+				return 'FR-FR' === $entry->get_product()->getFeedLabel();
 			}
 		);
 
@@ -896,8 +928,8 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$stale_product_id = $stale_product->get_id();
 
 		$this->market_service->expects( $this->once() )
-			->method( 'get_main_feed_label' )
-			->willReturn( 'US' );
+			->method( 'get_all_feed_labels' )
+			->willReturn( [ 'US' ] );
 
 		$stale_google_ids = [
 			'AU' => "online:en:AU:gla_{$stale_product_id}",
@@ -915,6 +947,30 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 		foreach ( $results as $request_entry ) {
 			$this->assertEquals( $stale_product_id, $request_entry->get_wc_product_id() );
+		}
+	}
+
+	public function test_stale_entry_generators_keep_language_suffixed_keys_of_configured_markets() {
+		$products         = $this->create_and_return_supported_test_products();
+		$stale_product    = $products[0];
+		$stale_product_id = $stale_product->get_id();
+
+		$this->market_service->expects( $this->any() )
+			->method( 'get_all_feed_labels' )
+			->willReturn( [ 'US', 'BE', 'BE-FR' ] );
+
+		$google_ids = [
+			'US'    => "online:en:US:gla_{$stale_product_id}",
+			'BE-FR' => "online:fr:BE-FR:gla_{$stale_product_id}",
+			'DK'    => "online:en:DK:gla_{$stale_product_id}",
+		];
+		$this->product_meta->update_google_ids( $stale_product, $google_ids );
+
+		foreach ( [ 'generate_stale_products_request_entries', 'generate_stale_countries_request_entries' ] as $method ) {
+			$results = $this->batch_product_helper->{$method}( $products );
+
+			$this->assertCount( 1, $results, "{$method} flagged the wrong entries as stale" );
+			$this->assertArrayHasKey( $google_ids['DK'], $results );
 		}
 	}
 
@@ -1202,6 +1258,19 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->market_service->method( 'get_all_countries' )->willReturn( $all_countries );
 		$this->market_service->method( 'get_markets' )->willReturn( $markets );
 		$this->market_service->method( 'get_main_feed_label' )->willReturn( $main_feed_label );
+
+		// Mirrors MarketService::get_language_feed_label() with 'en' as the site
+		// default language: bare label for the default, suffixed otherwise.
+		$this->market_service->method( 'get_language_feed_label' )->willReturnCallback(
+			static function ( string $base_feed_label, string $language ): string {
+				$language = false === strpos( $language, '_' ) ? $language : strtolower( substr( $language, 0, 2 ) );
+				if ( '' === $language || 'en' === $language ) {
+					return $base_feed_label;
+				}
+
+				return $base_feed_label . '-' . strtoupper( $language );
+			}
+		);
 	}
 
 	/**

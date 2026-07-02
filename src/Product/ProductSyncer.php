@@ -211,10 +211,14 @@ class ProductSyncer implements Service {
 			try {
 				$response = $this->google_service->delete_batch( $batch_entries );
 
-				$deleted_products = array_merge( $deleted_products, $response->get_products() );
+				$batch_deleted    = $response->get_products();
+				$deleted_products = array_merge( $deleted_products, $batch_deleted );
 				$invalid_products = array_merge( $invalid_products, $response->get_errors() );
 
-				array_walk( $deleted_products, [ $this->batch_helper, 'mark_as_unsynced' ] );
+				// Remove only the deleted entries' IDs so a product synced for
+				// several markets or languages keeps the tracking for entries
+				// that were not part of this delete request.
+				array_walk( $batch_deleted, [ $this->batch_helper, 'remove_google_id_for_entry' ] );
 			} catch ( Exception $exception ) {
 				do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
 

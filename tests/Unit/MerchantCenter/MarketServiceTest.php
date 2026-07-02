@@ -908,7 +908,7 @@ class MarketServiceTest extends UnitTest {
 
 		$this->cleanup_job->expects( $this->once() )
 			->method( 'schedule' )
-			->with( [ 'feed_label' => 'GB' ] );
+			->with( [ 'feed_labels' => [ 'GB' ] ] );
 
 		// feed_label rename alone does not touch country/currency/shipping_rate/shipping_time.
 		$this->shipping_settings_job->expects( $this->never() )
@@ -1431,7 +1431,7 @@ class MarketServiceTest extends UnitTest {
 
 		$this->cleanup_job->expects( $this->once() )
 			->method( 'schedule' )
-			->with( [ 'feed_label' => 'GB' ] );
+			->with( [ 'feed_labels' => [ 'GB' ] ] );
 
 		// Non-manual shipping_rate → shipping sync also scheduled.
 		$this->shipping_settings_job->expects( $this->once() )
@@ -2465,21 +2465,22 @@ class MarketServiceTest extends UnitTest {
 
 	public function provide_valid_feed_labels(): array {
 		return [
-			'two-letter uppercase'   => [ 'US' ],
-			'uppercase with dash'    => [ 'GB-EN' ],
-			'alphanumeric'           => [ 'A1' ],
-			'twenty char max length' => [ 'A1-B2-C3-D4-E5-F6-G7' ],
+			'two-letter uppercase'      => [ 'US' ],
+			'uppercase with dash'       => [ 'GB-EN' ],
+			'alphanumeric'              => [ 'A1' ],
+			'seventeen char max length' => [ 'A1-B2-C3-D4-E5-F6' ],
 		];
 	}
 
 	public function provide_invalid_feed_labels(): array {
 		return [
-			'lowercase'        => [ 'us' ],
-			'twenty-one chars' => [ 'A1-B2-C3-D4-E5-F6-G7-' ],
-			'underscore'       => [ 'GB_EN' ],
-			'period'           => [ 'GB.EN' ],
-			'space'            => [ 'GB EN' ],
-			'at sign'          => [ 'GB@EN' ],
+			'lowercase'      => [ 'us' ],
+			'eighteen chars' => [ 'A1-B2-C3-D4-E5-F6G' ],
+			'twenty chars'   => [ 'A1-B2-C3-D4-E5-F6-G7' ],
+			'underscore'     => [ 'GB_EN' ],
+			'period'         => [ 'GB.EN' ],
+			'space'          => [ 'GB EN' ],
+			'at sign'        => [ 'GB@EN' ],
 		];
 	}
 
@@ -3090,7 +3091,7 @@ class MarketServiceTest extends UnitTest {
 			->method( 'schedule' )
 			->with(
 				[
-					'keys'              => [ 'GB' ],
+					'keys'              => [ 'GB-CY' ],
 					'removed_languages' => [ 'cy' ],
 				]
 			);
@@ -3151,7 +3152,7 @@ class MarketServiceTest extends UnitTest {
 			->method( 'schedule' )
 			->with(
 				[
-					'keys'              => [ 'GB' ],
+					'keys'              => [ 'GB-CY' ],
 					'removed_languages' => [ 'cy' ],
 				]
 			);
@@ -3179,7 +3180,7 @@ class MarketServiceTest extends UnitTest {
 			->method( 'schedule' )
 			->with(
 				[
-					'keys'              => [ 'US', 'CA' ],
+					'keys'              => [ 'US-FR', 'CA-FR' ],
 					'removed_languages' => [ 'fr' ],
 				]
 			);
@@ -3218,7 +3219,7 @@ class MarketServiceTest extends UnitTest {
 			->method( 'schedule' )
 			->with(
 				[
-					'keys'              => [ 'US' ],
+					'keys'              => [ 'US-FR' ],
 					'removed_languages' => [ 'fr' ],
 				]
 			);
@@ -3239,6 +3240,218 @@ class MarketServiceTest extends UnitTest {
 		$this->language_cleanup_job->expects( $this->never() )->method( 'schedule' );
 
 		$this->market_service->update_market( 'primary', [ 'language' => [ 'en' ] ] );
+	}
+
+	public function test_get_language_feed_label_returns_bare_label_for_site_default_language(): void {
+		$this->set_up_wpml_languages( 'en', [ 'en', 'fr' ] );
+
+		$this->assertSame( 'BE', $this->market_service->get_language_feed_label( 'BE', 'en' ) );
+		$this->assertSame( 'BE', $this->market_service->get_language_feed_label( 'BE', 'en_US' ) );
+		$this->assertSame( 'BE', $this->market_service->get_language_feed_label( 'BE', '' ) );
+	}
+
+	public function test_get_language_feed_label_suffixes_non_default_languages(): void {
+		$this->set_up_wpml_languages( 'en', [ 'en', 'fr' ] );
+
+		$this->assertSame( 'BE-FR', $this->market_service->get_language_feed_label( 'BE', 'fr' ) );
+		$this->assertSame( 'BE-FR', $this->market_service->get_language_feed_label( 'BE', 'fr_FR' ) );
+	}
+
+	public function test_get_all_feed_labels_expands_each_market_over_its_languages(): void {
+		$this->set_up_wpml_languages( 'en', [ 'en', 'fr', 'nl' ] );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [ 'language' => [ 'en' ] ],
+				OptionsInterface::MARKETS         => [
+					'be' => [
+						'country'    => 'BE',
+						'language'   => [ 'nl', 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'BE',
+					],
+				],
+			]
+		);
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+
+		$this->assertSame( [ 'US', 'BE-NL', 'BE-FR' ], $this->market_service->get_all_feed_labels() );
+	}
+
+	public function test_get_all_feed_labels_expands_empty_language_list_to_all_site_languages(): void {
+		$this->set_up_wpml_languages( 'en', [ 'en', 'fr' ] );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [ 'language' => [ 'en' ] ],
+				OptionsInterface::MARKETS         => [
+					'be' => [
+						'country'    => 'BE',
+						'language'   => [],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'BE',
+					],
+				],
+			]
+		);
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+
+		$this->assertSame( [ 'US', 'BE', 'BE-FR' ], $this->market_service->get_all_feed_labels() );
+	}
+
+	public function test_get_feed_labels_for_language_returns_labels_of_markets_accepting_it(): void {
+		$this->set_up_wpml_languages( 'en', [ 'en', 'fr' ] );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [ 'language' => [ 'en' ] ],
+				OptionsInterface::MARKETS         => [
+					'be' => [
+						'country'    => 'BE',
+						'language'   => [ 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'BE',
+					],
+				],
+			]
+		);
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+
+		$this->assertSame( [ 'BE-FR' ], $this->market_service->get_feed_labels_for_language( 'fr' ) );
+		$this->assertSame( [ 'US' ], $this->market_service->get_feed_labels_for_language( 'en' ) );
+	}
+
+	public function test_add_market_copies_primary_shipping_rows_for_uncovered_country(): void {
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+		$this->options->method( 'update' )->willReturn( true );
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+
+		$this->shipping_rate_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 1,
+					'country'  => 'US',
+					'currency' => 'USD',
+					'rate'     => 5.0,
+					'options'  => [],
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 1,
+					'country'  => 'US',
+					'time'     => 3,
+					'max_time' => 7,
+				],
+			]
+		);
+
+		$this->shipping_rate_query->expects( $this->once() )
+			->method( 'insert' )
+			->with(
+				[
+					'country'  => 'GB',
+					'currency' => 'USD',
+					'rate'     => 5.0,
+					'options'  => [],
+				]
+			);
+		$this->shipping_time_query->expects( $this->once() )
+			->method( 'insert' )
+			->with(
+				[
+					'country'  => 'GB',
+					'time'     => 3,
+					'max_time' => 7,
+				]
+			);
+
+		$this->market_service->add_market(
+			'gb',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			]
+		);
+	}
+
+	public function test_add_market_leaves_existing_shipping_rows_untouched(): void {
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+		$this->options->method( 'update' )->willReturn( true );
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+
+		$this->shipping_rate_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 1,
+					'country'  => 'US',
+					'currency' => 'USD',
+					'rate'     => 5.0,
+					'options'  => [],
+				],
+				[
+					'id'       => 2,
+					'country'  => 'GB',
+					'currency' => 'GBP',
+					'rate'     => 8.0,
+					'options'  => [],
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 1,
+					'country'  => 'US',
+					'time'     => 3,
+					'max_time' => 7,
+				],
+				[
+					'id'       => 2,
+					'country'  => 'GB',
+					'time'     => 5,
+					'max_time' => 10,
+				],
+			]
+		);
+
+		$this->shipping_rate_query->expects( $this->never() )->method( 'insert' );
+		$this->shipping_rate_query->expects( $this->never() )->method( 'update' );
+		$this->shipping_time_query->expects( $this->never() )->method( 'insert' );
+		$this->shipping_time_query->expects( $this->never() )->method( 'update' );
+
+		$this->market_service->add_market(
+			'gb',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			]
+		);
+	}
+
+	/**
+	 * Configures the WPML mock as an active multilingual integration.
+	 *
+	 * @param string   $default_code The site default language code.
+	 * @param string[] $codes        All active language codes.
+	 */
+	private function set_up_wpml_languages( string $default_code, array $codes ): void {
+		$this->wpml->method( 'is_active' )->willReturn( true );
+		$this->wpml->method( 'get_default_language_code' )->willReturn( $default_code );
+		$this->wpml->method( 'get_languages' )->willReturn(
+			array_map(
+				static function ( $code ) {
+					return [
+						'code'  => $code,
+						'label' => strtoupper( $code ),
+					];
+				},
+				$codes
+			)
+		);
 	}
 
 	/**

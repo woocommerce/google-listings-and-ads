@@ -181,11 +181,12 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 		$products = array_merge( $deleted_products, $rejected_products );
 
-		// first we mark all products as synced
+		// first we mark all products as synced, tracked under the same Google IDs
+		// used in the delete request entries below
 		array_walk(
 			$products,
 			function ( WC_Product $product ) {
-				$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
+				$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( $this->generate_google_id( $product ) ) );
 			}
 		);
 
@@ -199,6 +200,24 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 		$results = $this->product_syncer->delete_by_batch_requests( $product_entries );
 		$this->assert_delete_results_are_valid( $results, $deleted_products, $rejected_products );
+	}
+
+	public function test_delete_by_batch_requests_keeps_tracking_for_entries_not_in_the_request() {
+		$product = WC_Helper_Product::create_simple_product();
+		$this->mock_google_service( [ $product->get_id() => $product ], [] );
+
+		$us_google_id = 'online:en:US:gla_' . $product->get_id();
+		$fr_google_id = 'online:fr:BE-FR:gla_' . $product->get_id();
+		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( $us_google_id, 'US' ) );
+		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( $fr_google_id, 'BE-FR' ) );
+
+		$this->product_syncer->delete_by_batch_requests(
+			[ new BatchProductIDRequestEntry( $product->get_id(), $fr_google_id ) ]
+		);
+
+		$wc_product = wc_get_product( $product->get_id() );
+		$this->assertTrue( $this->product_helper->is_product_synced( $wc_product ) );
+		$this->assertSame( [ 'US' => $us_google_id ], $this->product_meta->get_google_ids( $wc_product ) );
 	}
 
 	protected function assert_delete_results_are_valid( $results, $deleted_products, $rejected_products ) {
@@ -406,12 +425,12 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 			$products
 		);
 
-		// first we mark all products as synced and
-		// set the product status to trash
+		// first we mark all products as synced, tracked under the same Google IDs
+		// used in the delete request entries, and set the product status to trash
 		array_walk(
 			$products,
 			function ( WC_Product $product ) {
-				$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
+				$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( $this->generate_google_id( $product ) ) );
 				$product->set_status( 'trash' );
 				$product->save();
 			}
@@ -449,12 +468,12 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 			$products
 		);
 
-		// first we mark all products as synced and
-		// set the product's catalog visibility to hidden
+		// first we mark all products as synced, tracked under the same Google IDs
+		// used in the delete request entries, and set the catalog visibility to hidden
 		array_walk(
 			$products,
 			function ( WC_Product $product ) {
-				$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
+				$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( $this->generate_google_id( $product ) ) );
 				$product->set_catalog_visibility( 'hidden' );
 				$product->save();
 			}
@@ -492,12 +511,12 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 			$products
 		);
 
-		// first we mark all products as synced and
-		// set the product status to draft
+		// first we mark all products as synced, tracked under the same Google IDs
+		// used in the delete request entries, and set the product status to draft
 		array_walk(
 			$products,
 			function ( WC_Product $product ) {
-				$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
+				$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( $this->generate_google_id( $product ) ) );
 				$product->set_status( 'draft' );
 				$product->save();
 			}
@@ -545,9 +564,35 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 			->method( 'insert_batch' )
 			->willReturnCallback( $callback );
 
+		// Mirrors GoogleProductService::parse_batch_responses(): successful delete
+		// responses carry a product holding the requested Google ID.
+		$delete_callback = function ( array $product_entries ) use ( $successful_products, $failed_products ) {
+			$errors  = [];
+			$entries = [];
+			foreach ( $product_entries as $product_entry ) {
+				if ( isset( $successful_products[ $product_entry->get_wc_product_id() ] ) ) {
+					$entries[] = new BatchProductEntry(
+						$product_entry->get_wc_product_id(),
+						$this->generate_google_product_mock( $product_entry->get_product_id() )
+					);
+				} elseif ( isset( $failed_products[ $product_entry->get_wc_product_id() ] ) ) {
+					$errors[] = new BatchInvalidProductEntry(
+						$product_entry->get_wc_product_id(),
+						$product_entry->get_product_id(),
+						[
+							'Error',
+							GoogleProductService::INTERNAL_ERROR_REASON => 'Internal Error!',
+						]
+					);
+				}
+			}
+
+			return new BatchProductResponse( $entries, $errors );
+		};
+
 		$this->google_service->expects( $this->any() )
 			->method( 'delete_batch' )
-			->willReturnCallback( $callback );
+			->willReturnCallback( $delete_callback );
 	}
 
 	/**

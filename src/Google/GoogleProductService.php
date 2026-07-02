@@ -202,7 +202,16 @@ class GoogleProductService implements OptionsAwareInterface, Service {
 			}
 
 			if ( empty( $response->getErrors() ) ) {
-				$result_products[] = new BatchProductEntry( $wc_product_id, $response->getProduct() );
+				$google_product = $response->getProduct();
+
+				// Successful delete responses carry no product body. Attach the
+				// requested ID so consumers can tell which entry was deleted.
+				if ( empty( $google_product ) && ! empty( $google_product_id ) ) {
+					$google_product = new GoogleProduct();
+					$google_product->setId( $google_product_id );
+				}
+
+				$result_products[] = new BatchProductEntry( $wc_product_id, $google_product );
 			} else {
 				$errors[] = new BatchInvalidProductEntry( $wc_product_id, $google_product_id, self::get_batch_response_error_messages( $response ) );
 			}

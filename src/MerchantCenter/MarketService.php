@@ -40,9 +40,11 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 	/**
 	 * Google Content API constraint on `feedLabel`: up to 20 characters,
-	 * uppercase letters, digits and dashes only.
+	 * uppercase letters, digits and dashes only. Stored labels are capped at
+	 * 17 characters so a derived per-language label (a dash plus a two-letter
+	 * language code) stays within the 20-character limit.
 	 */
-	private const FEED_LABEL_PATTERN = '/^[A-Z0-9-]{1,20}$/';
+	private const FEED_LABEL_PATTERN = '/^[A-Z0-9-]{1,17}$/';
 
 	/**
 	 * @var TargetAudience
@@ -257,6 +259,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 		if ( ! empty( $config['country'] ) ) {
 			$this->remove_country_from_target_audience( $config['country'] );
+			$this->extend_shipping_to_country( $config['country'] );
 		}
 
 		if ( 'manual' !== ( $config['shipping_rate'] ?? null ) ) {
@@ -344,7 +347,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$new_feed_label = $merged['feed_label'] ?? null;
 		if ( $old_feed_label && $new_feed_label !== $old_feed_label ) {
 			$this->job_repository->get( CleanupOrphanedMarketProductsJob::class )
-				->schedule( [ 'feed_label' => $old_feed_label ] );
+				->schedule(
+					[
+						'feed_labels' => $this->get_market_feed_label_variants(
+							$old_feed_label,
+							is_array( $existing['language'] ?? null ) ? $existing['language'] : []
+						),
+					]
+				);
 		}
 
 		if ( $old_feed_label ) {
@@ -391,11 +401,13 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 *
 	 * @param array         $existing_languages The market's languages before the update.
 	 * @param array         $new_languages      The market's languages after the update.
-	 * @param array<string> $keys               `google_ids` keys belonging to the market
-	 *                                          (feed_label for secondary, target countries for primary).
+	 * @param array<string> $base_labels        The market's base feed labels (the stored
+	 *                                          feed_label for secondary, target countries
+	 *                                          for primary), expanded to per-language
+	 *                                          `google_ids` keys before scheduling.
 	 */
-	private function schedule_language_cleanup( array $existing_languages, array $new_languages, array $keys ): void {
-		if ( empty( $keys ) ) {
+	private function schedule_language_cleanup( array $existing_languages, array $new_languages, array $base_labels ): void {
+		if ( empty( $base_labels ) ) {
 			return;
 		}
 
@@ -406,6 +418,16 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		if ( empty( $removed ) ) {
 			return;
 		}
+
+		// A removed language's entries are tracked under that language's derived
+		// label, so the keys handed to the cleanup job must be derived the same way.
+		$keys = [];
+		foreach ( $base_labels as $base_label ) {
+			foreach ( $removed as $removed_language ) {
+				$keys[] = $this->get_language_feed_label( (string) $base_label, $removed_language );
+			}
+		}
+		$keys = array_values( array_unique( $keys ) );
 
 		$this->job_repository->get( CleanupOrphanedLanguageProductsJob::class )
 			->schedule(
@@ -515,7 +537,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 		if ( $feed_label ) {
 			$this->job_repository->get( CleanupOrphanedMarketProductsJob::class )
-				->schedule( [ 'feed_label' => $feed_label ] );
+				->schedule(
+					[
+						'feed_labels' => $this->get_market_feed_label_variants(
+							$feed_label,
+							is_array( $deleted_config['language'] ?? null ) ? $deleted_config['language'] : []
+						),
+					]
+				);
 		}
 
 		if ( 'manual' !== $shipping_rate ) {
@@ -534,16 +563,173 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Returns the feed label values for every configured market.
+	 * Returns every valid `google_ids` tracking key across all configured markets:
+	 * one derived feed label per market per language.
 	 *
-	 * @return array
+	 * Entries in the site default language use the market's stored feed label,
+	 * so single-language stores keep the bare labels they have today.
+	 *
+	 * @return string[]
 	 */
 	public function get_all_feed_labels(): array {
-		$secondary   = $this->get_stored_secondary_markets();
-		$feed_labels = array_column( array_values( $secondary ), 'feed_label' );
-		array_unshift( $feed_labels, $this->get_main_feed_label() );
+		$feed_labels = [];
 
-		return $feed_labels;
+		foreach ( $this->get_market_labels_with_languages() as $market ) {
+			if ( '' === $market['feed_label'] ) {
+				continue;
+			}
+
+			foreach ( $this->expand_market_languages( $market['languages'] ) as $language ) {
+				$feed_labels[] = $this->get_language_feed_label( $market['feed_label'], $language );
+			}
+		}
+
+		return array_values( array_unique( $feed_labels ) );
+	}
+
+	/**
+	 * Returns the feed label to use for a product entry in the given language.
+	 *
+	 * Entries in the site default language keep the market's stored feed label,
+	 * matching the identity existing single-language stores already have in
+	 * Google Merchant Center. Entries in any other language get a dash and the
+	 * uppercase ISO 639-1 code appended, e.g. "BE-FR".
+	 *
+	 * @param string $base_feed_label The market's stored feed label.
+	 * @param string $language        ISO 639-1 code or locale string. Empty when
+	 *                                no multilingual integration is active.
+	 *
+	 * @return string
+	 */
+	public function get_language_feed_label( string $base_feed_label, string $language ): string {
+		$normalised = $this->normalise_language_codes( [ $language ] );
+		$language   = $normalised[0] ?? '';
+
+		if ( '' === $language || $this->get_normalised_site_language() === $language ) {
+			return $base_feed_label;
+		}
+
+		return $base_feed_label . '-' . strtoupper( $language );
+	}
+
+	/**
+	 * Returns the derived feed label of every market that accepts the given language.
+	 *
+	 * A market with an empty language list accepts every language, mirroring the
+	 * matching rule used when generating sync requests. Used to decide whether a
+	 * product has been synced everywhere its language allows.
+	 *
+	 * @param string $language ISO 639-1 code or locale string.
+	 *
+	 * @return string[]
+	 */
+	public function get_feed_labels_for_language( string $language ): array {
+		$normalised = $this->normalise_language_codes( [ $language ] );
+		$language   = $normalised[0] ?? '';
+
+		if ( '' === $language ) {
+			$language = $this->get_normalised_site_language();
+		}
+
+		$feed_labels = [];
+		foreach ( $this->get_market_labels_with_languages() as $market ) {
+			if ( '' === $market['feed_label'] ) {
+				continue;
+			}
+
+			$market_languages = $this->normalise_language_codes( $market['languages'] );
+			if ( ! empty( $market_languages ) && ! in_array( $language, $market_languages, true ) ) {
+				continue;
+			}
+
+			$feed_labels[] = $this->get_language_feed_label( $market['feed_label'], $language );
+		}
+
+		return array_values( array_unique( $feed_labels ) );
+	}
+
+	/**
+	 * Returns each market's stored feed label together with its configured languages.
+	 *
+	 * The primary market contributes the main feed label with the primary
+	 * language list; each secondary market contributes its stored values.
+	 *
+	 * @return array<int, array{feed_label: string, languages: array}>
+	 */
+	private function get_market_labels_with_languages(): array {
+		$markets = [
+			[
+				'feed_label' => $this->get_main_feed_label(),
+				'languages'  => $this->get_existing_primary_languages(),
+			],
+		];
+
+		foreach ( $this->get_stored_secondary_markets() as $market ) {
+			$markets[] = [
+				'feed_label' => (string) ( $market['feed_label'] ?? '' ),
+				'languages'  => is_array( $market['language'] ?? null ) ? $market['language'] : [],
+			];
+		}
+
+		return $markets;
+	}
+
+	/**
+	 * Resolves the effective language list for a market.
+	 *
+	 * An empty list means the market accepts every language, so it expands to
+	 * all active site languages when a multilingual integration is active.
+	 * Without a multilingual integration every product syncs in the site
+	 * default language, so only that language applies.
+	 *
+	 * @param array $languages The market's configured languages.
+	 *
+	 * @return string[]
+	 */
+	private function expand_market_languages( array $languages ): array {
+		if ( ! $this->has_multilingual_support() ) {
+			return [ $this->get_normalised_site_language() ];
+		}
+
+		if ( empty( $languages ) ) {
+			$languages = array_column( $this->get_languages(), 'code' );
+		}
+
+		$languages = $this->normalise_language_codes( $languages );
+
+		return empty( $languages ) ? [ $this->get_normalised_site_language() ] : $languages;
+	}
+
+	/**
+	 * Returns every `google_ids` key a market's entries can be stored under:
+	 * the base feed label plus each per-language variant.
+	 *
+	 * The base label is always included so entries synced before a language
+	 * configuration change are covered too.
+	 *
+	 * @param string $feed_label The market's stored feed label.
+	 * @param array  $languages  The market's configured languages.
+	 *
+	 * @return string[]
+	 */
+	private function get_market_feed_label_variants( string $feed_label, array $languages ): array {
+		$variants = [ $feed_label ];
+		foreach ( $this->expand_market_languages( $languages ) as $language ) {
+			$variants[] = $this->get_language_feed_label( $feed_label, $language );
+		}
+
+		return array_values( array_unique( $variants ) );
+	}
+
+	/**
+	 * Returns the site default language as a normalised short code.
+	 *
+	 * @return string
+	 */
+	private function get_normalised_site_language(): string {
+		$normalised = $this->normalise_language_codes( [ $this->get_site_primary_language() ] );
+
+		return $normalised[0] ?? '';
 	}
 
 	/**
@@ -876,6 +1062,47 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
+	 * Extends existing shipping settings to a newly targeted country.
+	 *
+	 * Copies the primary market's shipping rate and time rows for the country
+	 * when no row exists for it yet. Existing rows are never overwritten, so a
+	 * country that is already covered keeps its configured values.
+	 *
+	 * @param string $country ISO 3166-1 alpha-2 country code of the added market.
+	 */
+	private function extend_shipping_to_country( string $country ): void {
+		$has_rate_row = false;
+		$rate_rows    = $this->shipping_rate_query->get_results() ?? [];
+		foreach ( $rate_rows as $row ) {
+			if ( $row['country'] === $country ) {
+				$has_rate_row = true;
+				break;
+			}
+		}
+
+		if ( ! $has_rate_row ) {
+			$this->adopt_primary_rate_for_country( $country );
+		}
+
+		$has_time_row = false;
+		$time_rows    = $this->shipping_time_query->get_results() ?? [];
+		foreach ( $time_rows as $row ) {
+			if ( $row['country'] === $country ) {
+				$has_time_row = true;
+				break;
+			}
+		}
+
+		if ( ! $has_time_row ) {
+			$this->adopt_primary_time_for_country( $country );
+		}
+
+		// Rows may have been inserted, so reads later in the request must not
+		// serve the pre-insert cache.
+		$this->cached_shipping_rates = null;
+	}
+
+	/**
 	 * Overwrites the deleted country's shipping rate row with the primary market's values.
 	 *
 	 * Reads the full ShippingRateTable once and filters in PHP. When both rows exist the target
@@ -887,7 +1114,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 */
 	private function adopt_primary_rate_for_country( string $country ): void {
 		$primary_country = $this->target_audience->get_main_target_country();
-		$rows            = $this->shipping_rate_query->get_results();
+		$rows            = $this->shipping_rate_query->get_results() ?? [];
 
 		$primary_row  = null;
 		$existing_row = null;
@@ -933,7 +1160,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 */
 	private function adopt_primary_time_for_country( string $country ): void {
 		$primary_country = $this->target_audience->get_main_target_country();
-		$rows            = $this->shipping_time_query->get_results();
+		$rows            = $this->shipping_time_query->get_results() ?? [];
 
 		$primary_row  = null;
 		$existing_row = null;

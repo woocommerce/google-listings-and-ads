@@ -133,6 +133,32 @@ class BatchProductHelper implements Service {
 	}
 
 	/**
+	 * Removes a deleted entry's Google ID from its product's tracked IDs.
+	 *
+	 * Only the entry's own ID is removed, so entries synced for the product's
+	 * other markets or languages keep their tracking. When the last tracked ID
+	 * is removed the product is marked fully un-synced. Entries carrying no
+	 * Google product fall back to marking the product fully un-synced.
+	 *
+	 * @param BatchProductEntry $product_entry
+	 */
+	public function remove_google_id_for_entry( BatchProductEntry $product_entry ) {
+		try {
+			$wc_product = $this->product_helper->get_wc_product( $product_entry->get_wc_product_id() );
+		} catch ( InvalidValue $exception ) {
+			return;
+		}
+
+		$google_product = $product_entry->get_google_product();
+		if ( null === $google_product || empty( $google_product->getId() ) ) {
+			$this->product_helper->mark_as_unsynced( $wc_product );
+			return;
+		}
+
+		$this->product_helper->remove_google_id( $wc_product, $google_product->getId() );
+	}
+
+	/**
 	 * Mark a batch of WooCommerce product IDs as unsynced.
 	 * Invalid products will be skipped.
 	 *
@@ -247,7 +273,7 @@ class BatchProductHelper implements Service {
 						$product,
 						$main_feed_label,
 						$mapping_rules,
-						$main_feed_label,
+						$this->market_service->get_language_feed_label( $main_feed_label, $product_language ),
 						$product_language
 					);
 					$validation_result = $this->validate_product( $adapted_product );
@@ -286,7 +312,7 @@ class BatchProductHelper implements Service {
 						$product,
 						$market['country'],
 						$mapping_rules,
-						$market['feed_label'],
+						$this->market_service->get_language_feed_label( $market['feed_label'], $product_language ),
 						$product_language,
 						$this->extract_currency( $market )
 					);
@@ -426,8 +452,13 @@ class BatchProductHelper implements Service {
 	}
 
 	/**
-	 * Returns an array of request entries for Google products that should no
-	 * longer be submitted for every target country.
+	 * Returns an array of request entries for Google products whose tracking
+	 * keys no longer belong to any configured market or language.
+	 *
+	 * The diff runs against every valid derived feed label rather than only the
+	 * main feed label, so entries belonging to secondary markets and to
+	 * per-language feeds survive while keys from dropped target countries are
+	 * still flagged as stale.
 	 *
 	 * @since 1.1.0
 	 *
@@ -436,12 +467,12 @@ class BatchProductHelper implements Service {
 	 * @return BatchProductIDRequestEntry[]
 	 */
 	public function generate_stale_countries_request_entries( array $products ): array {
-		$main_feed_label = $this->market_service->get_main_feed_label();
+		$feed_labels = $this->market_service->get_all_feed_labels();
 
 		$request_entries = [];
 		foreach ( $products as $product ) {
 			$google_ids = $this->meta_handler->get_google_ids( $product ) ?: [];
-			$stale_ids  = array_diff_key( $google_ids, array_flip( [ $main_feed_label ] ) );
+			$stale_ids  = array_diff_key( $google_ids, array_flip( $feed_labels ) );
 			foreach ( $stale_ids as $stale_id ) {
 				$request_entries[ $stale_id ] = new BatchProductIDRequestEntry(
 					$product->get_id(),

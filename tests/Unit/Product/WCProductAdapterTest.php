@@ -303,6 +303,35 @@ class WCProductAdapterTest extends UnitTest {
 		$this->assertNotEmpty( $adapted_product->getContentLanguage() );
 	}
 
+	public function test_set_feed_label_keeps_target_country_when_label_matches_it() {
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => WC_Helper_Product::create_simple_product( false ),
+				'targetCountry' => 'US',
+			]
+		);
+
+		$adapted_product->set_feed_label( 'US' );
+
+		$this->assertSame( 'US', $adapted_product->getTargetCountry() );
+		$this->assertArrayHasKey( 'targetCountry', (array) $adapted_product->toSimpleObject() );
+	}
+
+	public function test_set_feed_label_with_language_suffix_clears_target_country_from_payload() {
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => WC_Helper_Product::create_simple_product( false ),
+				'targetCountry' => 'US',
+			]
+		);
+
+		$adapted_product->set_feed_label( 'US-FR' );
+
+		$this->assertSame( 'US-FR', $adapted_product->getFeedLabel() );
+		$this->assertNull( $adapted_product->getTargetCountry() );
+		$this->assertArrayNotHasKey( 'targetCountry', (array) $adapted_product->toSimpleObject() );
+	}
+
 	public function test_set_language_sets_content_language_when_no_feed_label() {
 		$adapted_product = new WCProductAdapter(
 			[
