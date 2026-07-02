@@ -55,4 +55,19 @@ class MapiAccountUsersServiceTest extends UnitTest {
 
 		$this->assertSame( $user, $this->service->get_current_user() );
 	}
+
+	public function test_get_current_user_builds_path_from_merchant_id() {
+		$options = $this->createMock( OptionsInterface::class );
+		$options->method( 'get_merchant_id' )->willReturn( 67890 );
+
+		$service = new MapiAccountUsersService( $this->client );
+		$service->set_options_object( $options );
+
+		$this->client->expects( $this->once() )
+			->method( 'get' )
+			->with( 'accounts/v1/accounts/67890/users/me' )
+			->willReturn( [] );
+
+		$service->get_current_user();
+	}
 }
