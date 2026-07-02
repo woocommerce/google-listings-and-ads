@@ -24,7 +24,7 @@ trait MapiPriceTrait {
 	 */
 	protected function mapi_price( float $amount, string $currency ): array {
 		return [
-			'amountMicros' => sprintf( '%.0f', round( $amount * 1000000 ) ),
+			'amountMicros' => sprintf( '%.0f', $amount * 1000000 ),
 			'currencyCode' => $currency,
 		];
 	}
