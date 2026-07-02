@@ -94,6 +94,7 @@ class MerchantTest extends UnitTest {
 			->willThrowException( $this->merchant_api_exception( 500 ) );
 
 		$this->expectException( Exception::class );
+		$this->expectExceptionCode( 500 );
 		$this->merchant->claimwebsite();
 	}
 
