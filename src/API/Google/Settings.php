@@ -108,9 +108,12 @@ class Settings implements ContainerAwareInterface {
 			try {
 				$regions_service->insert_region( (string) $region_id, $region );
 			} catch ( MerchantApiException $e ) {
-				// The Merchant API reports an already existing region as a 400, so we
-				// do not branch on the status: fall back to updating it to match the
-				// current settings, which surfaces its own error for a genuine failure.
+				// The Merchant API reports an already-existing region as a 400.
+				if ( 400 !== $e->get_http_status() ) {
+					do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+					throw $e;
+				}
+
 				$regions_service->update_region( (string) $region_id, $region, 'displayName,postalCodeArea' );
 			}
 		}
