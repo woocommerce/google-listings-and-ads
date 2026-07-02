@@ -55,8 +55,12 @@ class MapiAccountBusinessInfoService implements OptionsAwareInterface {
 	 * @throws MerchantApiException On a non-2xx MAPI response.
 	 */
 	public function update_business_info( array $business_info, string $update_mask ): array {
+		// Encode each field name individually so the commas separating a
+		// multi-field mask are preserved rather than percent-encoded.
+		$encoded_mask = implode( ',', array_map( 'rawurlencode', explode( ',', $update_mask ) ) );
+
 		return $this->client->patch(
-			$this->build_path() . '?updateMask=' . rawurlencode( $update_mask ),
+			$this->build_path() . '?updateMask=' . $encoded_mask,
 			$business_info
 		);
 	}
