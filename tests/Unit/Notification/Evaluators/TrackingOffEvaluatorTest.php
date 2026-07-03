@@ -6,9 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification\Ev
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\TrackingOffEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
-use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -19,9 +17,6 @@ defined( 'ABSPATH' ) || exit;
  */
 class TrackingOffEvaluatorTest extends UnitTest {
 
-	/** @var MockObject|WP $wp */
-	protected $wp;
-
 	/** @var TrackingOffEvaluator $evaluator */
 	protected $evaluator;
 
@@ -31,9 +26,7 @@ class TrackingOffEvaluatorTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->wp        = $this->createMock( WP::class );
 		$this->evaluator = new TrackingOffEvaluator();
-		$this->evaluator->set_wp_proxy_object( $this->wp );
 	}
 
 	public function test_get_id() {
@@ -49,18 +42,25 @@ class TrackingOffEvaluatorTest extends UnitTest {
 	}
 
 	public function test_should_show_when_tracking_disabled() {
-		$this->wp->method( 'get_option' )
-			->with( 'woocommerce_allow_tracking', 'no' )
-			->willReturn( 'no' );
+		update_option( 'woocommerce_allow_tracking', 'no' );
 
 		$this->assertTrue( $this->evaluator->should_show() );
 	}
 
 	public function test_should_not_show_when_tracking_enabled() {
-		$this->wp->method( 'get_option' )
-			->with( 'woocommerce_allow_tracking', 'no' )
-			->willReturn( 'yes' );
+		update_option( 'woocommerce_allow_tracking', 'yes' );
 
 		$this->assertFalse( $this->evaluator->should_show() );
+	}
+
+	public function test_should_show_when_tracking_disabled_by_filter() {
+		// Even with the opt-in on, a tracking filter can turn tracking off. The signal
+		// should track that (matching isWCTracksEnabled), not just the raw option.
+		update_option( 'woocommerce_allow_tracking', 'yes' );
+		add_filter( 'woocommerce_apply_tracking', '__return_false' );
+
+		$this->assertTrue( $this->evaluator->should_show() );
+
+		remove_filter( 'woocommerce_apply_tracking', '__return_false' );
 	}
 }

@@ -89,10 +89,11 @@ export const getSettingsUrl = () => {
 	return getNewPath( null, settingsPath, null );
 };
 
-export const getWCAdvancedSettingsUrl = () => {
+export const getWCTrackingSettingsUrl = () => {
 	return addQueryArgs( 'admin.php', {
 		page: 'wc-settings',
 		tab: 'advanced',
+		section: 'woocommerce_com',
 	} );
 };
 
