@@ -8,7 +8,8 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Trait CachedNotificationEvaluatorTrait
  *
- * Caches evaluator results per user for one hour to avoid repeated database queries.
+ * Caches evaluator results for one hour to avoid repeated database queries. Scope (user or
+ * site) is determined by get_cache_key().
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification
  */
