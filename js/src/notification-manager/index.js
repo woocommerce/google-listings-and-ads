@@ -45,4 +45,33 @@
 		attributes: true,
 		attributeFilter: [ 'class' ],
 	} );
+
+	if ( wp && wp.hooks ) {
+		wp.hooks.addAction(
+			'gla_notification_dismissed',
+			'gla/notification-manager',
+			function () {
+				const countEl = badge.querySelector( '.update-count' );
+
+				if ( ! countEl ) {
+					return;
+				}
+
+				const newCount = Math.max(
+					0,
+					parseInt( countEl.textContent, 10 ) - 1
+				);
+
+				if ( newCount === 0 ) {
+					badge.style.display = 'none';
+				} else {
+					countEl.textContent = newCount;
+					badge.className = badge.className.replace(
+						/\bcount-\d+\b/,
+						'count-' + newCount
+					);
+				}
+			}
+		);
+	}
 } )();
