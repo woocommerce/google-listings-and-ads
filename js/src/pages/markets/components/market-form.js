@@ -55,7 +55,7 @@ const MarketForm = ( {
 	const { saveShippingRates } = useSaveShippingRates();
 	const { saveShippingTimes } = useSaveShippingTimes();
 	const [ isSaving, setIsSaving ] = useState( false );
-	const { createMarket, updateMarket, invalidateResolution } =
+	const { createMarket, updateMarket, syncSettings, invalidateResolution } =
 		useAppDispatch();
 	const marketId = initialMarket?.id;
 	const isEditing = Boolean( marketId );
@@ -87,8 +87,8 @@ const MarketForm = ( {
 
 	const handleSubmit = async ( values ) => {
 		const {
-			shipping_country_rates,
-			shipping_country_times,
+			shipping_country_rates: shippingCountryRates,
+			shipping_country_times: shippingCountryTimes,
 			countries, // omit countries from the data sent to the API since it's already included in the shipping_country_rates and shipping_country_times, and including it in both places causes confusion; to be removed once the API is updated to accept countries only in the shipping rates and times.
 			...data
 		} = values;
@@ -109,13 +109,52 @@ const MarketForm = ( {
 			// rates + times, AUTOMATIC includes times only, MANUAL includes neither.
 			const { shipping_rate: shippingRateMethod } = settings;
 			const saves = [];
+			// Countries in the store that are outside the primary target
+			// audience belong to secondary markets — exclude them so they
+			// are never deleted when saving the primary market.
+			const excludedCountryCodes = isPrimaryMarket
+				? shippingRates
+						.filter(
+							( shippingRate ) =>
+								! countries.includes( shippingRate.country )
+						)
+						.map( ( shippingRate ) => shippingRate.country )
+				: [];
+
 			if ( shippingRateMethod === SHIPPING_RATE_METHOD.FLAT ) {
-				saves.push( saveShippingRates( shipping_country_rates ) );
+				saves.push(
+					saveShippingRates(
+						shippingCountryRates,
+						excludedCountryCodes
+					)
+				);
 			}
 			if ( shippingRateMethod !== SHIPPING_RATE_METHOD.MANUAL ) {
-				saves.push( saveShippingTimes( shipping_country_times ) );
+				// Times use `countryCode`; re-derive from the times store for
+				// correctness (rates and times may cover different country sets).
+				const excludedTimeCountryCodes = isPrimaryMarket
+					? shippingTimes
+							.filter(
+								( shippingTime ) =>
+									! countries.includes(
+										shippingTime.countryCode
+									)
+							)
+							.map( ( shippingTime ) => shippingTime.countryCode )
+					: [];
+				saves.push(
+					saveShippingTimes(
+						shippingCountryTimes,
+						excludedTimeCountryCodes
+					)
+				);
 			}
 			await Promise.all( saves );
+
+			// If the user has made changes to the shipping rates or times, we need to sync the settings to ensure the changes are reflected in the UI and persisted correctly. This is necessary because the shipping rates and times are stored separately from the market data, and changes to them may not trigger a re-fetch of the market data on their own.
+			if ( saves.length > 0 ) {
+				await syncSettings();
+			}
 
 			invalidateResolution( 'getTargetAudience', [] );
 			onSubmit();
