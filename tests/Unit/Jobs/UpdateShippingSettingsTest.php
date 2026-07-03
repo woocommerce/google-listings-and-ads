@@ -38,10 +38,6 @@ class UpdateShippingSettingsTest extends UnitTest {
 			->method( 'is_connected' )
 			->willReturn( true );
 
-		$this->merchant_center->expects( $this->any() )
-			->method( 'is_enabled_for_datatype' )
-			->willReturn( true );
-
 		$this->google_settings->expects( $this->any() )
 			->method( 'should_get_shipping_rates_from_woocommerce' )
 			->willReturn( true );
@@ -88,10 +84,6 @@ class UpdateShippingSettingsTest extends UnitTest {
 			->method( 'is_connected' )
 			->willReturn( true );
 
-		$this->merchant_center->expects( $this->any() )
-			->method( 'is_enabled_for_datatype' )
-			->willReturn( true );
-
 		$this->google_settings->expects( $this->any() )
 			->method( 'should_get_shipping_rates_from_woocommerce' )
 			->willReturn( true );
@@ -123,25 +115,6 @@ class UpdateShippingSettingsTest extends UnitTest {
 		$this->google_settings->expects( $this->any() )
 			->method( 'should_get_shipping_rates_from_woocommerce' )
 			->willReturn( false );
-
-		$this->google_settings->expects( $this->never() )
-			->method( 'sync_shipping' );
-
-		do_action( $this->job->get_process_item_hook(), [] );
-	}
-
-	public function test_process_items_skipped_if_push_sync_is_disabled() {
-		$this->merchant_center->expects( $this->any() )
-			->method( 'is_connected' )
-			->willReturn( true );
-
-		$this->merchant_center->expects( $this->any() )
-			->method( 'is_enabled_for_datatype' )
-			->willReturn( false );
-
-		$this->google_settings->expects( $this->any() )
-			->method( 'should_get_shipping_rates_from_woocommerce' )
-			->willReturn( true );
 
 		$this->google_settings->expects( $this->never() )
 			->method( 'sync_shipping' );

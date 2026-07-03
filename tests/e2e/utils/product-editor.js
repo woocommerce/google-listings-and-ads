@@ -101,6 +101,11 @@ export function getClassicProductEditorUtils( page ) {
 			return page.locator( '#channel_visibility' );
 		},
 
+		getChannelVisibilityMetaBoxContent() {
+			const metaBox = this.getChannelVisibilityMetaBox();
+			return metaBox.locator( '.gla-channel-visibility__content' );
+		},
+
 		getChannelVisibilityHeading() {
 			return this.getChannelVisibilityMetaBox().getByRole( 'heading', {
 				name: 'Channel visibility',
@@ -118,9 +123,10 @@ export function getClassicProductEditorUtils( page ) {
 
 			return {
 				selection: metaBox.getByRole( 'combobox' ),
-				help: metaBox.locator( '.description' ),
-				notice: metaBox.locator( '.sync-status' ),
-				status: metaBox.locator( '.sync-status p' ).nth( 1 ),
+				notice: metaBox.locator( '.components-notice' ),
+				status: metaBox.locator(
+					'.gla-channel-visibility__sync-status'
+				),
 				issues: metaBox.getByRole( 'listitem' ),
 			};
 		},
@@ -329,16 +335,6 @@ export function getClassicProductEditorUtils( page ) {
 				meta_data: [
 					{ key: '_wc_gla_sync_status', value: syncStatus },
 					{ key: '_wc_gla_errors', value: issues },
-				],
-			} );
-		},
-		async mockNotificationStatus( status ) {
-			const url = new URL( page.url() );
-			const productId = url.searchParams.get( 'post' );
-
-			await api.api().put( `products/${ productId }`, {
-				meta_data: [
-					{ key: '_wc_gla_notification_status', value: status },
 				],
 			} );
 		},

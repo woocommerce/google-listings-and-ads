@@ -15,6 +15,8 @@ import {
 	CREATING_BOTH_ACCOUNTS,
 	CREATING_MC_ACCOUNT,
 } from '~/components/google-combo-account-card/constants';
+import { ERROR_SLOTS } from '~/data/constants';
+import { useAppDispatch } from '~/data';
 
 const useShouldCreateMCAccount = () => {
 	const {
@@ -55,6 +57,11 @@ const useAutoCreateAdsMCAccounts = ( createMCAccount ) => {
 	const shouldCreateAds = useShouldCreateAdsAccount();
 	const shouldCreateMC = useShouldCreateMCAccount();
 	const [ upsertAdsAccount ] = useUpsertAdsAccount();
+	const { clearDetailedErrorBySlots } = useAppDispatch();
+	const {
+		GOOGLE_ADS_CONNECTION_ERROR_SLOT,
+		GOOGLE_MC_CONNECTION_ERROR_SLOT,
+	} = ERROR_SLOTS;
 
 	useEffect( () => {
 		if (
@@ -85,11 +92,23 @@ const useAutoCreateAdsMCAccounts = ( createMCAccount ) => {
 		if ( which ) {
 			const handleCreateAccountCallback = async () => {
 				if ( which === CREATING_BOTH_ACCOUNTS ) {
+					const slotsToClear = [
+						GOOGLE_ADS_CONNECTION_ERROR_SLOT,
+						GOOGLE_MC_CONNECTION_ERROR_SLOT,
+					];
+					clearDetailedErrorBySlots( slotsToClear );
+
 					await createMCAccount();
 					await upsertAdsAccount();
 				} else if ( which === CREATING_MC_ACCOUNT ) {
+					const slotsToClear = [ GOOGLE_MC_CONNECTION_ERROR_SLOT ];
+					clearDetailedErrorBySlots( slotsToClear );
+
 					await createMCAccount();
 				} else if ( which === CREATING_ADS_ACCOUNT ) {
+					const slotsToClear = [ GOOGLE_ADS_CONNECTION_ERROR_SLOT ];
+					clearDetailedErrorBySlots( slotsToClear );
+
 					await upsertAdsAccount();
 				}
 				setCreatingWhich( null );
@@ -97,7 +116,15 @@ const useAutoCreateAdsMCAccounts = ( createMCAccount ) => {
 
 			handleCreateAccountCallback();
 		}
-	}, [ createMCAccount, shouldCreateAds, shouldCreateMC, upsertAdsAccount ] );
+	}, [
+		GOOGLE_ADS_CONNECTION_ERROR_SLOT,
+		GOOGLE_MC_CONNECTION_ERROR_SLOT,
+		clearDetailedErrorBySlots,
+		createMCAccount,
+		shouldCreateAds,
+		shouldCreateMC,
+		upsertAdsAccount,
+	] );
 
 	return {
 		hasDetermined,

@@ -118,5 +118,27 @@ module.exports.checkRequest = ( request, h ) => {
 		}
 	}
 
+	if (
+		request.params.path.includes( 'google/manager/link-customer' ) &&
+		request.method === 'post'
+	) {
+		return h
+			.response(
+				require( './mocks/ads/connection/link-existing-account-error.json' )
+			)
+			.code( 400 );
+	}
+
+	if (
+		request.params.path.includes( 'google/manager/link-merchant' ) &&
+		request.method === 'post'
+	) {
+		return h
+			.response(
+				require( './mocks/mc/connection/link-existing-account-error.json' )
+			)
+			.code( 400 );
+	}
+
 	return false;
 };

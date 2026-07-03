@@ -11,12 +11,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\AsyncActionRunne
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\RowBuilder\OrderItemRowBuilder;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\Services\YouTubeOrders;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Exports\Writer\CsvExportWriter;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\AbstractProductSyncerBatchedJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobInterface;
@@ -29,10 +30,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\MigrateGTIN;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\CouponNotificationJob;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ProductNotificationJob;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\SettingsNotificationJob;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ShippingNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ResubmitExpiringProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
@@ -61,11 +58,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PriceBenchmarks;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection as YouTubeConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsIncentives;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CheckUnclaimedIncentive;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateEuPoliticalCampaigns;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping;
-use Automattic\WooCommerce\GoogleListingsAndAds\Settings;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -126,20 +124,6 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_coupon_syncer_job( UpdateCoupon::class );
 		$this->share_coupon_syncer_job( DeleteCoupon::class );
 
-		// share product notifications job
-		$this->share_action_scheduler_job(
-			ProductNotificationJob::class,
-			NotificationsService::class,
-			ProductHelper::class
-		);
-
-		// share coupon notifications job
-		$this->share_action_scheduler_job(
-			CouponNotificationJob::class,
-			NotificationsService::class,
-			CouponHelper::class
-		);
-
 		// share GTIN migration job
 		$this->share_action_scheduler_job(
 			MigrateGTIN::class,
@@ -160,7 +144,6 @@ class JobServiceProvider extends AbstractServiceProvider {
 			ProductHelper::class,
 			JobRepository::class,
 			MerchantCenterService::class,
-			NotificationsService::class,
 			WC::class
 		);
 
@@ -169,7 +152,6 @@ class JobServiceProvider extends AbstractServiceProvider {
 			CouponHelper::class,
 			JobRepository::class,
 			MerchantCenterService::class,
-			NotificationsService::class,
 			WC::class,
 			WP::class
 		);
@@ -177,24 +159,9 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( StartProductSync::class, JobRepository::class );
 		$this->share_with_tags( PluginUpdate::class, JobRepository::class );
 
-		// Share shipping notifications job
-		$this->share_action_scheduler_job(
-			ShippingNotificationJob::class,
-			NotificationsService::class
-		);
-
-		// Share settings notifications job
-		$this->share_action_scheduler_job(
-			SettingsNotificationJob::class,
-			NotificationsService::class
-		);
-
-		// Share settings syncer hooks
-		$this->share_with_tags( Settings\SyncerHooks::class, JobRepository::class, NotificationsService::class );
-
 		// Share shipping settings syncer job and hooks.
 		$this->share_action_scheduler_job( UpdateShippingSettings::class, MerchantCenterService::class, GoogleSettings::class );
-		$this->share_with_tags( Shipping\SyncerHooks::class, MerchantCenterService::class, GoogleSettings::class, JobRepository::class, NotificationsService::class );
+		$this->share_with_tags( Shipping\SyncerHooks::class, MerchantCenterService::class, GoogleSettings::class, JobRepository::class );
 
 		// Share plugin update jobs
 		$this->share_product_syncer_job( CleanupProductTargetCountriesJob::class );
@@ -204,7 +171,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 
 		// YouTube Merchant Reported Conversions.
 		$this->share_with_tags( YouTubeOrders::class );
-		$this->share_with_tags( OrderItemRowBuilder::class );
+		$this->share_with_tags( OrderItemRowBuilder::class, Middleware::class );
 		$this->share_with_tags( CsvExportWriter::class );
 
 		$this->share_action_scheduler_job( CreateYouTubeOrderIdsCache::class, YouTubeOrders::class, JobRepository::class );
@@ -214,7 +181,9 @@ class JobServiceProvider extends AbstractServiceProvider {
 
 		$this->share_action_scheduler_job( UpdateMerchantPriceBenchmarks::class, MerchantCenterService::class, PriceBenchmarks::class );
 
-		$this->share_action_scheduler_job( UpdateEuPoliticalCampaigns::class, AdsCampaign::class );
+		$this->share_action_scheduler_job( UpdateEuPoliticalCampaigns::class, AdsCampaign::class, AdsService::class );
+
+		$this->share_action_scheduler_job( CheckUnclaimedIncentive::class, AdsIncentives::class, Middleware::class );
 	}
 
 	/**
@@ -275,7 +244,6 @@ class JobServiceProvider extends AbstractServiceProvider {
 			CouponHelper::class,
 			CouponSyncer::class,
 			WC::class,
-			MerchantCenterService::class,
 			...$arguments
 		);
 	}
