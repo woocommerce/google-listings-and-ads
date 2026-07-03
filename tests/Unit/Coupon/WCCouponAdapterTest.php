@@ -178,12 +178,17 @@ class WCCouponAdapterTest extends UnitTest {
 	}
 
 	public function test_disable_promotion() {
-		$coupon    = $this->create_ready_to_sync_coupon();
-		$postdate  = gmdate( DATE_ATOM );
-		$post_args = [
+		$coupon = $this->create_ready_to_sync_coupon();
+
+		// `wp_update_post()` expects the post date without a UTC offset (`Y-m-d\TH:i:s`).
+		// Passing a full `DATE_ATOM` string (with `+00:00`) is mishandled on non-UTC
+		// servers and shifts the stored date, so build the expected ATOM value from it.
+		$post_date  = gmdate( 'Y-m-d\TH:i:s' );
+		$start_time = $post_date . '+00:00';
+		$post_args  = [
 			'ID'            => $coupon->get_id(),
-			'post_date'     => $postdate,
-			'post_date_gmt' => $postdate,
+			'post_date'     => $post_date,
+			'post_date_gmt' => $post_date,
 		];
 		wp_update_post( $post_args );
 
@@ -198,8 +203,8 @@ class WCCouponAdapterTest extends UnitTest {
 		$now   = gmdate( DATE_ATOM );
 
 		//phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-		$this->assertEquals( $postdate, $dates->startTime );
-		$this->assertGreaterThanOrEqual( $postdate, $dates->endTime );
+		$this->assertEquals( $start_time, $dates->startTime );
+		$this->assertGreaterThanOrEqual( $start_time, $dates->endTime );
 		$this->assertLessThanOrEqual( $now, $dates->endTime );
 		//phpcs:enable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 	}

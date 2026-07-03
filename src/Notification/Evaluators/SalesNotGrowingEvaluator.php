@@ -8,9 +8,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationE
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\Utilities\OrderUtil;
 use DateTime;
 use DateTimeZone;
@@ -22,12 +19,15 @@ defined( 'ABSPATH' ) || exit;
  *
  * Fires when GMV for the current calendar month is less than the same month in the prior year.
  *
+ * Only merchants with more than one year of sales data are considered; stores whose
+ * earliest sale is less than a year old are excluded because there is no prior-year
+ * period to compare against.
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
-class SalesNotGrowingEvaluator implements NotificationEvaluatorInterface, OptionsAwareInterface, Service {
+class SalesNotGrowingEvaluator implements NotificationEvaluatorInterface, Service {
 
 	use CachedNotificationEvaluatorTrait;
-	use OptionsAwareTrait;
 
 	/**
 	 * Get the notification's unique ID.
@@ -44,7 +44,7 @@ class SalesNotGrowingEvaluator implements NotificationEvaluatorInterface, Option
 	 * @return bool
 	 */
 	protected function evaluate_condition(): bool {
-		if ( ! $this->is_installed_for_at_least_one_year() ) {
+		if ( ! $this->has_more_than_one_year_of_sales() ) {
 			return false;
 		}
 
@@ -80,18 +80,60 @@ class SalesNotGrowingEvaluator implements NotificationEvaluatorInterface, Option
 	}
 
 	/**
-	 * Whether the plugin has been installed for at least one year.
+	 * Whether the store has more than one year of sales data, i.e. its earliest
+	 * completed order is more than a year old.
 	 *
 	 * @return bool
 	 */
-	private function is_installed_for_at_least_one_year(): bool {
-		$install_timestamp = $this->options->get( OptionsInterface::INSTALL_TIMESTAMP );
+	protected function has_more_than_one_year_of_sales(): bool {
+		$first_order_date = $this->get_first_order_date();
 
-		if ( ! $install_timestamp ) {
+		if ( null === $first_order_date ) {
 			return false;
 		}
 
-		return ( time() - (int) $install_timestamp ) >= YEAR_IN_SECONDS;
+		$one_year_ago = ( new DateTime( 'now', new DateTimeZone( 'UTC' ) ) )->modify( '-1 year' );
+
+		return $first_order_date < $one_year_ago;
+	}
+
+	/**
+	 * Get the creation date of the store's earliest completed order, or null when
+	 * there are no completed orders.
+	 *
+	 * @return DateTime|null
+	 */
+	protected function get_first_order_date(): ?DateTime {
+		global $wpdb;
+
+		if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name from $wpdb->prefix.
+			$date = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT MIN( date_created_gmt )
+					FROM {$wpdb->prefix}wc_orders
+					WHERE type = 'shop_order'
+						AND status = %s",
+					'wc-completed'
+				)
+			);
+		} else {
+			$date = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT MIN( post_date_gmt )
+					FROM {$wpdb->posts}
+					WHERE post_type = 'shop_order'
+						AND post_status = %s",
+					'wc-completed'
+				)
+			);
+		}
+
+		if ( empty( $date ) ) {
+			return null;
+		}
+
+		return new DateTime( $date, new DateTimeZone( 'UTC' ) );
 	}
 
 	/**
