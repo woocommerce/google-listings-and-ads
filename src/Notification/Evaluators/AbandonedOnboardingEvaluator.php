@@ -55,7 +55,8 @@ class AbandonedOnboardingEvaluator implements NotificationEvaluatorInterface, Me
 	 * @return bool
 	 */
 	public function should_show(): bool {
-		if ( ! $this->has_onboarding_step_started() ) {
+		// Google account connection is the first intentional GLA onboarding action.
+		if ( ! $this->merchant_center->is_google_connected() ) {
 			return false;
 		}
 
@@ -97,17 +98,6 @@ class AbandonedOnboardingEvaluator implements NotificationEvaluatorInterface, Me
 	}
 
 	/**
-	 * Determine whether onboarding has been started.
-	 *
-	 * Google account connection is the first intentional GLA onboarding action.
-	 *
-	 * @return bool
-	 */
-	private function has_onboarding_step_started(): bool {
-		return $this->merchant_center->is_google_connected();
-	}
-
-	/**
 	 * Determine whether the merchant abandoned onboarding during account setup.
 	 *
 	 * @return bool
@@ -117,10 +107,15 @@ class AbandonedOnboardingEvaluator implements NotificationEvaluatorInterface, Me
 			return true;
 		}
 
+		// Service-based merchants can't connect a Merchant Center account or enter
+		// contact information, so those steps don't apply to them.
 		if ( $this->service_based_merchant_state->is_service_based_merchant() ) {
 			return false;
 		}
 
-		return ! $this->merchant_center->connected_account();
+		// Non-service-based merchants must connect their Merchant Center account and
+		// enter their contact information to complete account setup.
+		return ! $this->merchant_center->connected_account()
+			|| ! $this->merchant_center->is_mc_contact_information_setup();
 	}
 }

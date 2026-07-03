@@ -152,6 +152,30 @@ class AbandonedOnboardingEvaluatorTest extends UnitTest {
 		$this->ads_service->method( 'connected_account' )->willReturn( true );
 		$this->service_based_merchant_state->method( 'is_service_based_merchant' )->willReturn( false );
 		$this->merchant_center->method( 'connected_account' )->willReturn( true );
+		$this->merchant_center->method( 'is_mc_contact_information_setup' )->willReturn( true );
+
+		$this->assertFalse( $this->evaluator->should_show() );
+	}
+
+	public function test_should_show_when_accounts_step_and_contact_information_not_setup() {
+		$this->mock_onboarding_started_via_google();
+		$this->mock_accounts_setup_step();
+		$this->merchant_center->method( 'is_google_connected' )->willReturn( true );
+		$this->ads_service->method( 'connected_account' )->willReturn( true );
+		$this->service_based_merchant_state->method( 'is_service_based_merchant' )->willReturn( false );
+		$this->merchant_center->method( 'connected_account' )->willReturn( true );
+		$this->merchant_center->method( 'is_mc_contact_information_setup' )->willReturn( false );
+
+		$this->assertTrue( $this->evaluator->should_show() );
+	}
+
+	public function test_should_not_show_when_accounts_step_and_contact_info_missing_for_service_based_merchant() {
+		$this->mock_onboarding_started_via_google();
+		$this->mock_accounts_setup_step();
+		$this->merchant_center->method( 'is_google_connected' )->willReturn( true );
+		$this->ads_service->method( 'connected_account' )->willReturn( true );
+		$this->service_based_merchant_state->method( 'is_service_based_merchant' )->willReturn( true );
+		$this->merchant_center->expects( $this->never() )->method( 'is_mc_contact_information_setup' );
 
 		$this->assertFalse( $this->evaluator->should_show() );
 	}

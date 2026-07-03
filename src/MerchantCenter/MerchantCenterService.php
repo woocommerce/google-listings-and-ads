@@ -307,7 +307,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 *
 	 * @return boolean
 	 */
-	protected function is_mc_contact_information_setup(): bool {
+	public function is_mc_contact_information_setup(): bool {
 		$is_setup = [
 			'address' => false,
 		];
