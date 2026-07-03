@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification\Evaluators;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\ReadyButNoSalesEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationCacheKeys;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
@@ -101,7 +102,7 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 		$evaluator = $this->create_evaluator_with_completed_orders( false );
 		$user_id   = $this->login_as_administrator();
 
-		set_transient( 'gla_notif_ready-but-no-sales_' . $user_id, 1, HOUR_IN_SECONDS );
+		set_transient( NotificationCacheKeys::for_user( 'ready-but-no-sales', $user_id ), 1, HOUR_IN_SECONDS );
 
 		$this->wc->expects( $this->never() )->method( 'has_enabled_payment_gateways' );
 		$evaluator->expects( $this->never() )->method( 'store_has_any_enabled_shipping_method' );
