@@ -70,6 +70,30 @@ class Sold10ItemsEvaluatorTest extends UnitTest {
 	}
 
 	/**
+	 * Integration: exercises the real order query and confirms only paid orders that
+	 * generated revenue are counted (zero-total and unpaid orders are excluded).
+	 *
+	 * Runs against the post-based (legacy) order store, which is what the unit-test
+	 * environment uses. The HPOS branch cannot be exercised here because the WP test
+	 * suite's transactional temporary tables break HPOS order reads; it is verified
+	 * separately against a real orders-table store.
+	 */
+	public function test_has_minimum_revenue_orders_excludes_zero_total_and_unpaid_orders() {
+		// Paid orders that generated revenue.
+		$this->create_order( 'completed', 50 );
+		$this->create_order( 'processing', 20 );
+		$this->create_order( 'completed', 10 );
+
+		// Excluded: zero-total paid orders and unpaid orders.
+		$this->create_order( 'completed', 0 );
+		$this->create_order( 'pending', 99 );
+		$this->create_order( 'failed', 99 );
+
+		$this->assertTrue( $this->invoke_has_minimum_revenue_orders( 3 ) );
+		$this->assertFalse( $this->invoke_has_minimum_revenue_orders( 4 ) );
+	}
+
+	/**
 	 * Create a test evaluator with a stubbed revenue-order threshold result.
 	 *
 	 * @param bool $meets_threshold
@@ -84,5 +108,32 @@ class Sold10ItemsEvaluatorTest extends UnitTest {
 		$evaluator->method( 'has_minimum_revenue_orders' )->willReturn( $meets_threshold );
 
 		return $evaluator;
+	}
+
+	/**
+	 * Invoke the protected has_minimum_revenue_orders() method.
+	 *
+	 * @param int $minimum
+	 *
+	 * @return bool
+	 */
+	private function invoke_has_minimum_revenue_orders( int $minimum ): bool {
+		$method = new \ReflectionMethod( $this->evaluator, 'has_minimum_revenue_orders' );
+		$method->setAccessible( true );
+
+		return $method->invoke( $this->evaluator, $minimum );
+	}
+
+	/**
+	 * Create a WooCommerce order with the given status and total.
+	 *
+	 * @param string $status
+	 * @param float  $total
+	 */
+	private function create_order( string $status, float $total ): void {
+		$order = wc_create_order();
+		$order->set_status( $status );
+		$order->set_total( $total );
+		$order->save();
 	}
 }

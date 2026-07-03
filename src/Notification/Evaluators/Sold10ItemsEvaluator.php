@@ -72,7 +72,7 @@ class Sold10ItemsEvaluator implements SiteScopedNotificationEvaluatorInterface, 
 	}
 
 	/**
-	 * Whether the store has at least $minimum paid orders with revenue.
+	 * Whether the store has at least $minimum paid orders that generated revenue.
 	 *
 	 * Uses WooCommerce paid order statuses and excludes zero-total orders so
 	 * only orders that generated revenue count toward the milestone.
@@ -87,33 +87,62 @@ class Sold10ItemsEvaluator implements SiteScopedNotificationEvaluatorInterface, 
 			return false;
 		}
 
-		$query_args = [
-			'status' => $statuses,
-			'limit'  => $minimum + 1,
-			'return' => 'ids',
-		];
+		return $this->count_revenue_orders( $statuses, $minimum ) >= $minimum;
+	}
 
-		// The 'total' => [ 'value' => 0, 'operator' => '>' ] shorthand is only honoured
-		// by the HPOS orders-table query. Under legacy post-meta storage it degrades to a
-		// generic "IN" meta query and matches only zero-total orders, so branch explicitly.
+	/**
+	 * Count paid orders with a total greater than zero, up to $limit.
+	 *
+	 * A direct query is used because neither wc_get_orders() nor the HPOS
+	 * orders-table query supports a numeric range comparison on the native total
+	 * column: the ['value' => ..., 'operator' => '>'] shape is only honoured for
+	 * meta queries, and on an orders-table store it silently degrades to
+	 * "total_amount IN (0, 0)" — i.e. zero-total orders, the opposite of revenue.
+	 *
+	 * @param string[] $statuses Paid order statuses (without the "wc-" prefix).
+	 * @param int      $limit    Maximum number of orders to count.
+	 *
+	 * @return int
+	 */
+	protected function count_revenue_orders( array $statuses, int $limit ): int {
+		global $wpdb;
+
+		$statuses     = array_map(
+			static function ( string $status ): string {
+				return 'wc-' . $status;
+			},
+			$statuses
+		);
+		$placeholders = implode( ', ', array_fill( 0, count( $statuses ), '%s' ) );
+
 		if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
-			$query_args['total'] = [
-				'value'    => 0,
-				'operator' => '>',
-			];
+			$query = "SELECT id
+				FROM {$wpdb->prefix}wc_orders
+				WHERE type = 'shop_order'
+					AND total_amount > 0
+					AND status IN ( $placeholders )
+				LIMIT %d";
 		} else {
-			$query_args['meta_query'] = [
-				[
-					'key'     => '_order_total',
-					'value'   => 0,
-					'compare' => '>',
-					'type'    => 'NUMERIC',
-				],
-			];
+			$query = "SELECT posts.ID
+				FROM {$wpdb->posts} AS posts
+				INNER JOIN {$wpdb->postmeta} AS meta
+					ON posts.ID = meta.post_id
+				WHERE posts.post_type = 'shop_order'
+					AND posts.post_status IN ( $placeholders )
+					AND meta.meta_key = '_order_total'
+					AND meta.meta_value + 0 > 0
+				LIMIT %d";
 		}
 
-		$orders = wc_get_orders( $query_args );
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- table names from $wpdb and built %s placeholders.
+		$ids = $wpdb->get_col(
+			$wpdb->prepare(
+				$query,
+				array_merge( $statuses, [ $limit ] )
+			)
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
 
-		return count( $orders ) >= $minimum;
+		return count( $ids );
 	}
 }
