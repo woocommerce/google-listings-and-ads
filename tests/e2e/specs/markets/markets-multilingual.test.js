@@ -128,13 +128,16 @@ test.describe( 'Markets – multilingual store', () => {
 			await expect( modal ).not.toBeVisible();
 		} );
 
-		test( 'secondary market edit has no audience section; Add modal shows country select', async () => {
+		test( 'secondary market edit has no audience section but shows shipping notice; Add modal shows country select and notice', async () => {
 			await marketsPage.getEditButton( 1 ).click();
 			const editModal = marketsPage.getEditMarketModal( 'France' );
 			await expect( editModal ).toBeVisible();
 			await expect(
 				editModal.locator( '.woocommerce-tree-select-control' )
 			).not.toBeAttached();
+			await expect(
+				marketsPage.getShippingInfoNotice( editModal )
+			).toContainText( 'Shipping is managed in Google Merchant Center' );
 			await editModal.getByRole( 'button', { name: 'Cancel' } ).click();
 			await expect( editModal ).not.toBeVisible();
 
@@ -142,6 +145,9 @@ test.describe( 'Markets – multilingual store', () => {
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
 			await expect( addModal.getByLabel( 'Market' ) ).toBeVisible();
+			await expect(
+				marketsPage.getShippingInfoNotice( addModal )
+			).toContainText( 'Shipping is managed in Google Merchant Center' );
 			await addModal.getByRole( 'button', { name: 'Cancel' } ).click();
 			await expect( addModal ).not.toBeVisible();
 		} );
@@ -187,6 +193,50 @@ test.describe( 'Markets – multilingual store', () => {
 			await expect( modal ).toBeVisible();
 
 			await modal.getByRole( 'button', { name: 'Cancel' } ).click();
+		} );
+
+		test( 'successful save closes the Add modal', async () => {
+			await marketsPage.fulfillCreateMarket( {
+				id: 'ca',
+				label: 'Canada',
+			} );
+
+			await marketsPage.getHeaderAddMarketButton().click();
+			const addModal = marketsPage.getAddMarketModal();
+			await expect( addModal ).toBeVisible();
+
+			await expect( addModal.getByLabel( 'Market' ) ).toHaveValue( 'CA' );
+
+			await addModal
+				.getByRole( 'button', { name: 'Add market' } )
+				.click();
+
+			await expect( addModal ).not.toBeVisible();
+		} );
+
+		test( 'API error shows snackbar and keeps Add modal open', async () => {
+			await marketsPage.fulfillCreateMarket(
+				{ message: 'Internal server error' },
+				500
+			);
+
+			await marketsPage.getHeaderAddMarketButton().click();
+			const addModal = marketsPage.getAddMarketModal();
+			await expect( addModal ).toBeVisible();
+
+			await expect( addModal.getByLabel( 'Market' ) ).toHaveValue( 'CA' );
+
+			await addModal
+				.getByRole( 'button', { name: 'Add market' } )
+				.click();
+
+			await expect(
+				page.locator( '.components-snackbar__content' )
+			).toBeVisible();
+
+			await expect( addModal ).toBeVisible();
+
+			await addModal.getByRole( 'button', { name: 'Cancel' } ).click();
 		} );
 	} );
 
@@ -276,6 +326,10 @@ test.describe( 'Markets – multilingual store', () => {
 				modal.getByText( 'Estimated shipping times' )
 			).toBeVisible();
 
+			await expect(
+				marketsPage.getShippingInfoNotice( modal )
+			).not.toBeVisible();
+
 			await modal.getByRole( 'button', { name: 'Cancel' } ).click();
 			await expect( modal ).not.toBeVisible();
 		} );
@@ -339,6 +393,50 @@ test.describe( 'Markets – multilingual store', () => {
 			await expect( modal ).toBeVisible();
 
 			await modal.getByRole( 'button', { name: 'Cancel' } ).click();
+		} );
+
+		test( 'successful save closes the Add modal', async () => {
+			await marketsPage.fulfillCreateMarket( {
+				id: 'ca',
+				label: 'Canada',
+			} );
+
+			await marketsPage.getHeaderAddMarketButton().click();
+			const addModal = marketsPage.getAddMarketModal();
+			await expect( addModal ).toBeVisible();
+
+			await expect( addModal.getByLabel( 'Market' ) ).toHaveValue( 'CA' );
+
+			await addModal
+				.getByRole( 'button', { name: 'Add market' } )
+				.click();
+
+			await expect( addModal ).not.toBeVisible();
+		} );
+
+		test( 'API error shows snackbar and keeps Add modal open', async () => {
+			await marketsPage.fulfillCreateMarket(
+				{ message: 'Internal server error' },
+				500
+			);
+
+			await marketsPage.getHeaderAddMarketButton().click();
+			const addModal = marketsPage.getAddMarketModal();
+			await expect( addModal ).toBeVisible();
+
+			await expect( addModal.getByLabel( 'Market' ) ).toHaveValue( 'CA' );
+
+			await addModal
+				.getByRole( 'button', { name: 'Add market' } )
+				.click();
+
+			await expect(
+				page.locator( '.components-snackbar__content' )
+			).toBeVisible();
+
+			await expect( addModal ).toBeVisible();
+
+			await addModal.getByRole( 'button', { name: 'Cancel' } ).click();
 		} );
 	} );
 
@@ -439,13 +537,16 @@ test.describe( 'Markets – multilingual store', () => {
 			await expect( modal ).not.toBeVisible();
 		} );
 
-		test( 'secondary market edit has no audience section; Add modal shows country select', async () => {
+		test( 'secondary market edit has no audience section, shows shipping rate notice; Add modal shows country select and notice', async () => {
 			await marketsPage.getEditButton( 1 ).click();
 			const editModal = marketsPage.getEditMarketModal( 'France' );
 			await expect( editModal ).toBeVisible();
 			await expect(
 				editModal.locator( '.woocommerce-tree-select-control' )
 			).not.toBeAttached();
+			await expect(
+				marketsPage.getShippingInfoNotice( editModal )
+			).toContainText( 'Shipping rates are synced automatically' );
 			await editModal.getByRole( 'button', { name: 'Cancel' } ).click();
 			await expect( editModal ).not.toBeVisible();
 
@@ -453,6 +554,9 @@ test.describe( 'Markets – multilingual store', () => {
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
 			await expect( addModal.getByLabel( 'Market' ) ).toBeVisible();
+			await expect(
+				marketsPage.getShippingInfoNotice( addModal )
+			).toContainText( 'Shipping rates are synced automatically' );
 			await addModal.getByRole( 'button', { name: 'Cancel' } ).click();
 			await expect( addModal ).not.toBeVisible();
 		} );
@@ -498,6 +602,50 @@ test.describe( 'Markets – multilingual store', () => {
 			await expect( modal ).toBeVisible();
 
 			await modal.getByRole( 'button', { name: 'Cancel' } ).click();
+		} );
+
+		test( 'successful save closes the Add modal', async () => {
+			await marketsPage.fulfillCreateMarket( {
+				id: 'ca',
+				label: 'Canada',
+			} );
+
+			await marketsPage.getHeaderAddMarketButton().click();
+			const addModal = marketsPage.getAddMarketModal();
+			await expect( addModal ).toBeVisible();
+
+			await expect( addModal.getByLabel( 'Market' ) ).toHaveValue( 'CA' );
+
+			await addModal
+				.getByRole( 'button', { name: 'Add market' } )
+				.click();
+
+			await expect( addModal ).not.toBeVisible();
+		} );
+
+		test( 'API error shows snackbar and keeps Add modal open', async () => {
+			await marketsPage.fulfillCreateMarket(
+				{ message: 'Internal server error' },
+				500
+			);
+
+			await marketsPage.getHeaderAddMarketButton().click();
+			const addModal = marketsPage.getAddMarketModal();
+			await expect( addModal ).toBeVisible();
+
+			await expect( addModal.getByLabel( 'Market' ) ).toHaveValue( 'CA' );
+
+			await addModal
+				.getByRole( 'button', { name: 'Add market' } )
+				.click();
+
+			await expect(
+				page.locator( '.components-snackbar__content' )
+			).toBeVisible();
+
+			await expect( addModal ).toBeVisible();
+
+			await addModal.getByRole( 'button', { name: 'Cancel' } ).click();
 		} );
 	} );
 } );
