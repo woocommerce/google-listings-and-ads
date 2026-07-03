@@ -3,6 +3,7 @@
  */
 import { resolveSelect } from '@wordpress/data';
 import { createElement } from '@wordpress/element';
+import { doAction } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -37,6 +38,7 @@ function createNotificationComponent( id, triggeredAt ) {
 
 		const handleDismiss = () => {
 			dismissNotification( id );
+			doAction( 'gla_notification_dismissed' );
 		};
 
 		return createElement( Notification, {
