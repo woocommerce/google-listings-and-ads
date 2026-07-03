@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\PausedCampaignEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationCacheKeys;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -100,7 +101,7 @@ class PausedCampaignEvaluatorTest extends UnitTest {
 	public function test_cache_hit_skips_api_call() {
 		$user_id = $this->login_as_administrator();
 
-		set_transient( 'gla_notif_paused-campaign_' . $user_id, 0, HOUR_IN_SECONDS );
+		set_transient( NotificationCacheKeys::for_user( 'paused-campaign', $user_id ), 0, HOUR_IN_SECONDS );
 
 		$this->ads_campaign->expects( $this->never() )->method( 'get_campaigns' );
 
