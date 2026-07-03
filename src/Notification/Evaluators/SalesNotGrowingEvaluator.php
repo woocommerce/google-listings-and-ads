@@ -151,38 +151,34 @@ class SalesNotGrowingEvaluator implements NotificationEvaluatorInterface, Servic
 		$end_sql   = $this->format_datetime_as_gmt( $end );
 
 		if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name from $wpdb->prefix.
-			$sum = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT COALESCE( SUM( total_amount ), 0 )
-					FROM {$wpdb->prefix}wc_orders
-					WHERE type = 'shop_order'
-						AND status = %s
-						AND date_created_gmt >= %s
-						AND date_created_gmt <= %s",
-					'wc-completed',
-					$start_sql,
-					$end_sql
-				)
-			);
+			$query = "SELECT COALESCE( SUM( total_amount ), 0 )
+				FROM {$wpdb->prefix}wc_orders
+				WHERE type = 'shop_order'
+					AND status = %s
+					AND date_created_gmt >= %s
+					AND date_created_gmt <= %s";
 		} else {
-			$sum = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT COALESCE( SUM( meta.meta_value + 0 ), 0 )
-					FROM {$wpdb->posts} AS posts
-					INNER JOIN {$wpdb->postmeta} AS meta
-						ON posts.ID = meta.post_id
-					WHERE posts.post_type = 'shop_order'
-						AND posts.post_status = %s
-						AND meta.meta_key = '_order_total'
-						AND posts.post_date_gmt >= %s
-						AND posts.post_date_gmt <= %s",
-					'wc-completed',
-					$start_sql,
-					$end_sql
-				)
-			);
+			$query = "SELECT COALESCE( SUM( meta.meta_value + 0 ), 0 )
+				FROM {$wpdb->posts} AS posts
+				INNER JOIN {$wpdb->postmeta} AS meta
+					ON posts.ID = meta.post_id
+				WHERE posts.post_type = 'shop_order'
+					AND posts.post_status = %s
+					AND meta.meta_key = '_order_total'
+					AND posts.post_date_gmt >= %s
+					AND posts.post_date_gmt <= %s";
 		}
+
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- table names from $wpdb.
+		$sum = $wpdb->get_var(
+			$wpdb->prepare(
+				$query,
+				'wc-completed',
+				$start_sql,
+				$end_sql
+			)
+		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
 
 		return (float) $sum;
 	}

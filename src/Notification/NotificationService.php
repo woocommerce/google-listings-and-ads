@@ -6,6 +6,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Notification;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\PermissionsTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 
 defined( 'ABSPATH' ) || exit;
@@ -15,20 +18,22 @@ defined( 'ABSPATH' ) || exit;
  *
  * Evaluates notification conditions in a uniform, pluggable way. Evaluators are
  * resolved as a tagged collection via the container (mirrors NoteInitializer),
- * sorted by priority, and the triggered/dismissed state is persisted per user.
+ * sorted by priority, and the triggered/dismissed state is persisted per user
+ * or per site for site-scoped evaluators.
  *
  * ContainerAware used to access:
  * - NotificationEvaluatorInterface
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification
  */
-class NotificationService implements ContainerAwareInterface {
+class NotificationService implements ContainerAwareInterface, OptionsAwareInterface {
 
 	use ContainerAwareTrait;
+	use OptionsAwareTrait;
 	use PermissionsTrait;
 
 	/**
-	 * The user_meta key under which the notifications state is stored.
+	 * The user_meta key under which per-user notifications state is stored.
 	 */
 	protected const STATE_META_KEY = 'gla_notifications_state';
 
@@ -66,37 +71,59 @@ class NotificationService implements ContainerAwareInterface {
 			return [];
 		}
 
-		$evaluators    = $this->get_evaluators();
-		$state         = $this->get_state();
-		$state_changed = false;
-		$notifications = [];
+		$evaluators         = $this->get_evaluators();
+		$user_state         = $this->get_user_state();
+		$site_state         = $this->get_site_state();
+		$user_state_changed = false;
+		$site_state_changed = false;
+		$notifications      = [];
 
 		foreach ( $evaluators as $evaluator ) {
-			$id = $evaluator->get_id();
+			$id          = $evaluator->get_id();
+			$site_scoped = $evaluator instanceof SiteScopedNotificationEvaluatorInterface;
+
+			if ( $site_scoped ) {
+				$state = &$site_state;
+			} else {
+				$state = &$user_state;
+			}
 
 			// A permanently-dismissed notification is excluded from all future results.
 			if ( ! empty( $state[ $id ]['dismissed'] ) ) {
+				unset( $state );
 				continue;
 			}
 
 			if ( ! $evaluator->should_show() ) {
+				unset( $state );
 				continue;
 			}
 
 			// Record the trigger time the first time the condition is met, and never overwrite it.
 			if ( ! isset( $state[ $id ]['triggered_at'] ) ) {
 				$state[ $id ]['triggered_at'] = time();
-				$state_changed                = true;
+
+				if ( $site_scoped ) {
+					$site_state_changed = true;
+				} else {
+					$user_state_changed = true;
+				}
 			}
 
 			$notifications[] = [
 				'id'           => $id,
 				'triggered_at' => $state[ $id ]['triggered_at'],
 			];
+
+			unset( $state );
 		}
 
-		if ( $state_changed ) {
-			$this->save_state( $state );
+		if ( $user_state_changed ) {
+			$this->save_user_state( $user_state );
+		}
+
+		if ( $site_state_changed ) {
+			$this->save_site_state( $site_state );
 		}
 
 		return $notifications;
@@ -110,13 +137,7 @@ class NotificationService implements ContainerAwareInterface {
 	 * @return bool
 	 */
 	public function has( string $id ): bool {
-		foreach ( $this->get_evaluators() as $evaluator ) {
-			if ( $evaluator->get_id() === $id ) {
-				return true;
-			}
-		}
-
-		return false;
+		return null !== $this->find_evaluator( $id );
 	}
 
 	/**
@@ -127,14 +148,26 @@ class NotificationService implements ContainerAwareInterface {
 	 * @return void
 	 */
 	public function dismiss( string $id ): void {
-		if ( ! $this->can_manage() || ! $this->has( $id ) ) {
+		if ( ! $this->can_manage() ) {
 			return;
 		}
 
-		$state                     = $this->get_state();
-		$state[ $id ]['dismissed'] = true;
+		$evaluator = $this->find_evaluator( $id );
+		if ( null === $evaluator ) {
+			return;
+		}
 
-		$this->save_state( $state );
+		if ( $evaluator instanceof SiteScopedNotificationEvaluatorInterface ) {
+			$state                     = $this->get_site_state();
+			$state[ $id ]['dismissed'] = true;
+			$this->save_site_state( $state );
+
+			return;
+		}
+
+		$state                     = $this->get_user_state();
+		$state[ $id ]['dismissed'] = true;
+		$this->save_user_state( $state );
 	}
 
 	/**
@@ -160,11 +193,28 @@ class NotificationService implements ContainerAwareInterface {
 	}
 
 	/**
-	 * Read the persisted notifications state for the current user.
+	 * Find a registered evaluator by notification ID.
+	 *
+	 * @param string $id
+	 *
+	 * @return NotificationEvaluatorInterface|null
+	 */
+	protected function find_evaluator( string $id ): ?NotificationEvaluatorInterface {
+		foreach ( $this->get_evaluators() as $evaluator ) {
+			if ( $evaluator->get_id() === $id ) {
+				return $evaluator;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Read the persisted per-user notifications state.
 	 *
 	 * @return array
 	 */
-	protected function get_state(): array {
+	protected function get_user_state(): array {
 		$state = $this->wp->get_user_meta( $this->wp->get_current_user_id(), self::STATE_META_KEY );
 
 		if ( ! is_array( $state ) || empty( $state ) ) {
@@ -175,15 +225,43 @@ class NotificationService implements ContainerAwareInterface {
 	}
 
 	/**
-	 * Persist the notifications state for the current user.
+	 * Persist the per-user notifications state.
 	 *
 	 * @param array $state The state to persist.
 	 *
 	 * @return void
 	 */
-	protected function save_state( array $state ): void {
+	protected function save_user_state( array $state ): void {
 		$state[ self::VERSION_KEY ] = self::SCHEMA_VERSION;
 
 		$this->wp->update_user_meta( $this->wp->get_current_user_id(), self::STATE_META_KEY, $state );
+	}
+
+	/**
+	 * Read the persisted site-wide notifications state.
+	 *
+	 * @return array
+	 */
+	protected function get_site_state(): array {
+		$state = $this->options->get( OptionsInterface::NOTIFICATIONS_SITE_STATE, [] );
+
+		if ( ! is_array( $state ) || empty( $state ) ) {
+			return [ self::VERSION_KEY => self::SCHEMA_VERSION ];
+		}
+
+		return $state;
+	}
+
+	/**
+	 * Persist the site-wide notifications state.
+	 *
+	 * @param array $state The state to persist.
+	 *
+	 * @return void
+	 */
+	protected function save_site_state( array $state ): void {
+		$state[ self::VERSION_KEY ] = self::SCHEMA_VERSION;
+
+		$this->options->update( OptionsInterface::NOTIFICATIONS_SITE_STATE, $state );
 	}
 }
