@@ -74,6 +74,9 @@ class WCProductInputAdapter {
 	/** @var array */
 	protected $attributes = [];
 
+	/** @var array Merchant API custom attributes to attach to the product input. */
+	protected $custom_attributes = [];
+
 	/** @var string[] Target countries to add shipping entries for. */
 	protected $shipping_countries = [];
 
@@ -139,8 +142,44 @@ class WCProductInputAdapter {
 			$this->offer_id,
 			$this->content_language,
 			$this->feed_label,
-			$this->attributes
+			$this->attributes,
+			$this->custom_attributes
 		);
+	}
+
+	/**
+	 * Get the Merchant API custom attributes that will be attached to the product input.
+	 *
+	 * @return array
+	 */
+	public function get_custom_attributes(): array {
+		return $this->custom_attributes;
+	}
+
+	/**
+	 * Replace the Merchant API custom attributes attached to the product input.
+	 *
+	 * Each entry is a plain array matching the Merchant API CustomAttribute shape, e.g.
+	 * `[ 'name' => 'foo', 'value' => 'bar' ]` or
+	 * `[ 'name' => 'foo', 'groupValues' => [ [ 'name' => 'k', 'value' => 'v' ] ] ]`.
+	 *
+	 * @param array $custom_attributes
+	 */
+	public function set_custom_attributes( array $custom_attributes ): void {
+		$this->custom_attributes = array_values( $custom_attributes );
+	}
+
+	/**
+	 * Append a single Merchant API custom attribute to the product input.
+	 *
+	 * Intended for use from the `woocommerce_gla_product_attribute_values` filter, where the
+	 * adapter is passed as the third argument, so extensions can attach custom attributes
+	 * without modifying core GLA code.
+	 *
+	 * @param array $custom_attribute A plain array matching the Merchant API CustomAttribute shape.
+	 */
+	public function add_custom_attribute( array $custom_attribute ): void {
+		$this->custom_attributes[] = $custom_attribute;
 	}
 
 	/**

@@ -701,4 +701,156 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertSame( 'M', $attrs['size'] );
 		$this->assertSame( 'Blue', $attrs['color'] );
 	}
+
+	/**
+	 * A product input has no custom attributes unless something adds them.
+	 */
+	public function test_no_custom_attributes_by_default() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$input = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input();
+
+		$this->assertSame( [], $input->get_custom_attributes() );
+	}
+
+	/**
+	 * The adapter's get/add/set custom-attribute accessors behave as expected.
+	 */
+	public function test_adapter_custom_attribute_accessors() {
+		$product = WC_Helper_Product::create_simple_product();
+		$adapter = new WCProductInputAdapter( $product, 'US' );
+
+		$this->assertSame( [], $adapter->get_custom_attributes() );
+
+		$adapter->add_custom_attribute(
+			[
+				'name'  => 'x',
+				'value' => '1',
+			]
+		);
+		$this->assertSame(
+			[
+				[
+					'name'  => 'x',
+					'value' => '1',
+				],
+			],
+			$adapter->get_custom_attributes()
+		);
+
+		// set_custom_attributes replaces (and reindexes) the existing list.
+		$adapter->set_custom_attributes(
+			[
+				2 => [
+					'name'  => 'y',
+					'value' => '2',
+				],
+			]
+		);
+		$this->assertSame(
+			[
+				[
+					'name'  => 'y',
+					'value' => '2',
+				],
+			],
+			$adapter->get_custom_attributes()
+		);
+	}
+
+	/**
+	 * The attribute-values filter can attach custom attributes to the product input
+	 * without leaking them into the typed product attributes.
+	 */
+	public function test_filter_can_add_custom_attributes() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		add_filter(
+			'woocommerce_gla_product_attribute_values',
+			function ( $overrides, $wc_product, $adapter ) {
+				$adapter->add_custom_attribute(
+					[
+						'name'        => 'native_commerce',
+						'groupValues' => [
+							[
+								'name'  => 'checkout_eligibility',
+								'value' => 'true',
+							],
+						],
+					]
+				);
+				$adapter->add_custom_attribute(
+					[
+						'name'  => 'merchant_item_id',
+						'value' => '123',
+					]
+				);
+
+				return $overrides;
+			},
+			10,
+			3
+		);
+
+		$input = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input();
+		remove_all_filters( 'woocommerce_gla_product_attribute_values' );
+
+		$custom_attributes = $input->get_custom_attributes();
+		$this->assertCount( 2, $custom_attributes );
+		$this->assertSame( 'native_commerce', $custom_attributes[0]['name'] );
+		$this->assertSame(
+			[
+				[
+					'name'  => 'checkout_eligibility',
+					'value' => 'true',
+				],
+			],
+			$custom_attributes[0]['groupValues']
+		);
+		$this->assertSame( 'merchant_item_id', $custom_attributes[1]['name'] );
+		$this->assertSame( '123', $custom_attributes[1]['value'] );
+
+		// Custom attributes must not leak into the typed product attributes.
+		$attrs = $input->get_attributes();
+		$this->assertArrayNotHasKey( 'customAttributes', $attrs );
+		$this->assertArrayNotHasKey( 'native_commerce', $attrs );
+	}
+
+	/**
+	 * Custom attributes set on the adapter are serialized under customAttributes.
+	 */
+	public function test_set_custom_attributes_replaces_and_serializes() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$adapter = new WCProductInputAdapter( $product, 'US' );
+		$adapter->set_custom_attributes(
+			[
+				[
+					'name'  => 'a',
+					'value' => '1',
+				],
+				[
+					'name'  => 'b',
+					'value' => '2',
+				],
+			]
+		);
+
+		$serialized = $adapter->get_product_input()->to_array();
+
+		$this->assertArrayHasKey( 'customAttributes', $serialized );
+		$this->assertSame(
+			[
+				[
+					'name'  => 'a',
+					'value' => '1',
+				],
+				[
+					'name'  => 'b',
+					'value' => '2',
+				],
+			],
+			$serialized['customAttributes']
+		);
+	}
 }
