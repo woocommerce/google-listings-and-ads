@@ -14,7 +14,7 @@ import {
 	getProductFeedUrl,
 	getSettingsUrl,
 	getSetupAdsUrl,
-	getWCAdvancedSettingsUrl,
+	getWCTrackingSettingsUrl,
 	getOnboardingUrl,
 	getWCCouponsUrl,
 } from '~/utils/urls';
@@ -31,7 +31,7 @@ const getStartedUrl = getGetStartedUrl();
 const setupAdsUrl = getSetupAdsUrl();
 const dashboardUrl = getDashboardUrl();
 const settingsUrl = getSettingsUrl();
-const wcAdvancedSettingsUrl = getWCAdvancedSettingsUrl();
+const wcTrackingSettingsUrl = getWCTrackingSettingsUrl();
 const onboardingUrl = getOnboardingUrl();
 const wcCouponsUrl = getWCCouponsUrl();
 
@@ -177,7 +177,7 @@ const STATIC_MAP = {
 		actions: [
 			{
 				id: 'turn-on-tracking',
-				href: wcAdvancedSettingsUrl,
+				href: wcTrackingSettingsUrl,
 				children: __( 'Turn on tracking', 'google-listings-and-ads' ),
 			},
 		],
