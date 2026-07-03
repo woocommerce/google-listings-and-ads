@@ -71,7 +71,7 @@ class TrackingOffEvaluator implements NotificationEvaluatorInterface, Service {
 	 *
 	 * @return bool
 	 */
-	protected function is_wc_tracking_enabled(): bool {
+	private function is_wc_tracking_enabled(): bool {
 		if ( ! class_exists( WC_Site_Tracking::class ) ) {
 			return false;
 		}
