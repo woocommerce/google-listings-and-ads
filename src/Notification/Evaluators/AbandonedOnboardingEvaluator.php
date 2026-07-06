@@ -3,15 +3,12 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -23,22 +20,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
-class AbandonedOnboardingEvaluator implements NotificationEvaluatorInterface, MerchantCenterAwareInterface, AdsAwareInterface, Service {
+class AbandonedOnboardingEvaluator implements NotificationEvaluatorInterface, MerchantCenterAwareInterface, Service {
 
-	use AdsAwareTrait;
 	use MerchantCenterAwareTrait;
-
-	/** @var ServiceBasedMerchantState */
-	private $service_based_merchant_state;
-
-	/**
-	 * AbandonedOnboardingEvaluator constructor.
-	 *
-	 * @param ServiceBasedMerchantState $service_based_merchant_state
-	 */
-	public function __construct( ServiceBasedMerchantState $service_based_merchant_state ) {
-		$this->service_based_merchant_state = $service_based_merchant_state;
-	}
 
 	/**
 	 * Get the notification's unique ID.
@@ -66,17 +50,12 @@ class AbandonedOnboardingEvaluator implements NotificationEvaluatorInterface, Me
 			return false;
 		}
 
-		$step = $setup_status['step'] ?? 'accounts';
+		$step = $setup_status['step'] ?? '';
 
-		if ( ! in_array( $step, [ 'accounts', 'product_listings' ], true ) ) {
-			return false;
-		}
-
-		if ( 'product_listings' === $step ) {
-			return true;
-		}
-
-		return $this->is_abandoned_at_account_setup();
+		// Only an incomplete account setup (Step 1) or product feed configuration (Step 2)
+		// counts as abandoned. The setup status already derives the step from the account
+		// connection state, so there is no need to re-check the individual accounts here.
+		return in_array( $step, [ 'accounts', 'product_listings' ], true );
 	}
 
 	/**
@@ -95,27 +74,5 @@ class AbandonedOnboardingEvaluator implements NotificationEvaluatorInterface, Me
 	 */
 	public function get_snooze_duration(): ?int {
 		return NotificationSnoozeDurations::ABANDONED_ONBOARDING;
-	}
-
-	/**
-	 * Determine whether the merchant abandoned onboarding during account setup.
-	 *
-	 * @return bool
-	 */
-	private function is_abandoned_at_account_setup(): bool {
-		if ( ! $this->ads_service->connected_account() ) {
-			return true;
-		}
-
-		// Service-based merchants can't connect a Merchant Center account or enter
-		// contact information, so those steps don't apply to them.
-		if ( $this->service_based_merchant_state->is_service_based_merchant() ) {
-			return false;
-		}
-
-		// Non-service-based merchants must connect their Merchant Center account and
-		// enter their contact information to complete account setup.
-		return ! $this->merchant_center->connected_account()
-			|| ! $this->merchant_center->is_mc_contact_information_setup();
 	}
 }

@@ -325,7 +325,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Notifications.
 		$this->share_with_tags( NotificationService::class, WP::class );
 		$this->share_with_tags( SkippedCampaignEvaluator::class, OnboardingCompleted::class );
-		$this->share_with_tags( AbandonedOnboardingEvaluator::class, ServiceBasedMerchantState::class );
+		$this->share_with_tags( AbandonedOnboardingEvaluator::class );
 		$this->share_with_tags( NotOnboarded90DaysEvaluator::class, OnboardingCompleted::class );
 		$this->share_with_tags( EnhancedConversionsOffEvaluator::class );
 		$this->share_with_tags( TrackingOffEvaluator::class );
