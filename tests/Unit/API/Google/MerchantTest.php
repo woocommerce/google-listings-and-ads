@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountBusinessInfoService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountHomepageService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountServicesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountUsersService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
@@ -16,7 +17,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as Googl
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\Exception as GoogleServiceException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Account;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountAdsLink;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountUser;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RequestPhoneVerificationResponse;
@@ -50,6 +50,9 @@ class MerchantTest extends UnitTest {
 	/** @var MockObject|MapiAccountUsersService $users_service */
 	protected $users_service;
 
+	/** @var MockObject|MapiAccountServicesService $services_service */
+	protected $services_service;
+
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
@@ -73,8 +76,9 @@ class MerchantTest extends UnitTest {
 		$this->homepage_service      = $this->createMock( MapiAccountHomepageService::class );
 		$this->business_info_service = $this->createMock( MapiAccountBusinessInfoService::class );
 		$this->users_service         = $this->createMock( MapiAccountUsersService::class );
+		$this->services_service      = $this->createMock( MapiAccountServicesService::class );
 		$this->options               = $this->createMock( OptionsInterface::class );
-		$this->merchant              = new Merchant( $this->service, $this->homepage_service, $this->business_info_service, $this->users_service );
+		$this->merchant              = new Merchant( $this->service, $this->homepage_service, $this->business_info_service, $this->users_service, $this->services_service );
 		$this->merchant->set_options_object( $this->options );
 
 		$this->merchant_id = 12345;
@@ -352,87 +356,72 @@ class MerchantTest extends UnitTest {
 	}
 
 	public function test_link_ads_id() {
-		$account = $this->createMock( Account::class );
-		$ads_id  = 12345;
+		$ads_id = 12345;
 
-		$account->expects( $this->once() )
-			->method( 'getAdsLinks' )
-			->willReturn( [] );
+		$this->services_service->expects( $this->once() )
+			->method( 'get_google_ads_link' )
+			->with( $ads_id )
+			->willReturn( null );
 
-		$account->expects( $this->once() )
-			->method( 'setAdsLinks' )
-			->with(
-				$this->callback(
-					function ( array $links ) use ( $ads_id ) {
-						$this->assertEquals( $ads_id, $links[0]->getAdsId() );
-						$this->assertEquals( 'active', $links[0]->getStatus() );
+		$this->services_service->expects( $this->once() )
+			->method( 'propose_google_ads_link' )
+			->with( $ads_id )
+			->willReturn( [ 'handshake' => [ 'approvalState' => 'PENDING' ] ] );
 
-						return true;
-					}
-				)
-			);
+		$this->assertTrue( $this->merchant->link_ads_id( $ads_id ) );
+	}
 
-		$this->mock_get_account( $account );
+	public function test_link_ads_id_propose_established() {
+		$ads_id = 12345;
 
-		$this->service->accounts->expects( $this->once() )
-			->method( 'update' )
-			->willReturn( $account );
+		$this->services_service->method( 'get_google_ads_link' )->willReturn( null );
 
-		$this->assertTrue(
-			$this->merchant->link_ads_id( $ads_id )
-		);
+		$this->services_service->expects( $this->once() )
+			->method( 'propose_google_ads_link' )
+			->with( $ads_id )
+			->willReturn( [ 'handshake' => [ 'approvalState' => 'ESTABLISHED' ] ] );
+
+		$this->assertFalse( $this->merchant->link_ads_id( $ads_id ) );
 	}
 
 	public function test_link_ads_id_exist_link_awaiting_approval() {
-		$account  = $this->createMock( Account::class );
-		$ads_link = $this->createMock( AccountAdsLink::class );
-		$ads_id   = 12345;
+		$ads_id = 12345;
 
-		$ads_link->expects( $this->any() )
-			->method( 'getAdsId' )
-			->willReturn( $ads_id );
+		$this->services_service->expects( $this->once() )
+			->method( 'get_google_ads_link' )
+			->with( $ads_id )
+			->willReturn( [ 'handshake' => [ 'approvalState' => 'PENDING' ] ] );
 
-		$ads_link->expects( $this->any() )
-			->method( 'getStatus' )
-			->willReturn( 'pending' );
+		$this->services_service->expects( $this->never() )->method( 'propose_google_ads_link' );
 
-		$account->expects( $this->once() )
-			->method( 'getAdsLinks' )
-			->willReturn( [ $ads_link ] );
-
-		$account->expects( $this->never() )->method( 'setAdsLinks' );
-
-		$this->mock_get_account( $account );
-
-		$this->service->accounts->expects( $this->never() )->method( 'update' );
-
-		$this->assertTrue(
-			$this->merchant->link_ads_id( $ads_id )
-		);
+		$this->assertTrue( $this->merchant->link_ads_id( $ads_id ) );
 	}
 
 	public function test_ads_id_already_linked() {
-		$account  = $this->createMock( Account::class );
-		$ads_link = $this->createMock( AccountAdsLink::class );
-		$ads_id   = 12345;
+		$ads_id = 12345;
 
-		$ads_link->expects( $this->any() )
-			->method( 'getAdsId' )
-			->willReturn( $ads_id );
+		$this->services_service->expects( $this->once() )
+			->method( 'get_google_ads_link' )
+			->with( $ads_id )
+			->willReturn( [ 'handshake' => [ 'approvalState' => 'ESTABLISHED' ] ] );
 
-		$ads_link->expects( $this->any() )
-			->method( 'getStatus' )
-			->willReturn( 'active' );
+		$this->services_service->expects( $this->never() )->method( 'propose_google_ads_link' );
 
-		$account->expects( $this->once() )
-			->method( 'getAdsLinks' )
-			->willReturn( [ $ads_link ] );
+		$this->assertFalse( $this->merchant->link_ads_id( $ads_id ) );
+	}
 
-		$this->mock_get_account( $account );
+	public function test_link_ads_id_translates_exception() {
+		$body = [ 'error' => [ 'code' => 500, 'message' => 'Internal error', 'status' => 'INTERNAL' ] ];
+		$this->services_service->method( 'get_google_ads_link' )
+			->willThrowException( new MerchantApiException( 500, $body, __METHOD__ ) );
 
-		$this->assertFalse(
-			$this->merchant->link_ads_id( $ads_id )
-		);
+		try {
+			$this->merchant->link_ads_id( 12345 );
+			$this->fail( 'Expected ExceptionWithResponseData to be thrown.' );
+		} catch ( ExceptionWithResponseData $e ) {
+			$this->assertSame( 500, $e->getCode() );
+			$this->assertSame( $body, $e->get_response_data() );
+		}
 	}
 
 	public function test_get_business_info() {
