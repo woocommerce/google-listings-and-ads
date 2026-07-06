@@ -23,9 +23,9 @@ import './index.scss';
  * Triggered when the "Add selected images" button is clicked.
  *
  * @event gla_gen_ai_image_picker_add_selected_images_click
- * @property {string} finalUrl The final URL for which the images were generated.
- * @property {string} assetKey The asset key for which the images were generated.
- * @property {number} numberOfSelectedImages The number of images that were selected to be added.
+ * @property {string} final_url The final URL for which the images were generated.
+ * @property {string} asset_key The asset key for which the images were generated.
+ * @property {number} num_selected_images The number of images that were selected to be added.
  */
 
 /**
@@ -137,9 +137,9 @@ export default function GenAIImagePicker( { assetKey, onAddSelectedImages } ) {
 					disabled={ selectedImages.length === 0 }
 					eventName="gla_gen_ai_image_picker_add_selected_images_click"
 					eventProps={ {
-						finalUrl,
-						assetKey,
-						numberOfSelectedImages: selectedImages.length,
+						final_url: finalUrl,
+						asset_key: assetKey,
+						num_selected_images: selectedImages.length,
 					} }
 				/>
 			</FlexBlock>
