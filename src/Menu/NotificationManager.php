@@ -75,7 +75,7 @@ class NotificationManager implements ContainerAwareInterface, Service, Registera
 			"{$this->get_root_dir()}/js/build/notification-manager.asset.php",
 			new BuiltScriptDependencyArray(
 				[
-					'dependencies' => [],
+					'dependencies' => [ 'wp-hooks' ],
 					'version'      => $this->get_version(),
 				]
 			),
