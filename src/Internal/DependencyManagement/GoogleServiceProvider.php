@@ -26,6 +26,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAcc
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountHomepageService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountIssuesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountRegionsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountServicesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountShippingSettingsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountUsersService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
@@ -123,6 +124,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		MapiAccountUsersService::class            => true,
 		MapiAccountShippingSettingsService::class => true,
 		MapiAccountRegionsService::class          => true,
+		MapiAccountServicesService::class         => true,
 		SiteVerification::class                   => true,
 		Settings::class                           => true,
 	];
@@ -159,7 +161,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( BudgetMetrics::class, GoogleAdsClient::class );
 		$this->share( BudgetRecommendations::class, GoogleAdsClient::class );
 
-		$this->share( Merchant::class, ShoppingContent::class, MapiAccountHomepageService::class, MapiAccountBusinessInfoService::class, MapiAccountUsersService::class );
+		$this->share( Merchant::class, ShoppingContent::class, MapiAccountHomepageService::class, MapiAccountBusinessInfoService::class, MapiAccountUsersService::class, MapiAccountServicesService::class );
 		$this->share( MerchantMetrics::class, MerchantApiClient::class, GoogleAdsClient::class, WP::class, TransientsInterface::class );
 		$this->share( MerchantReport::class, ProductHelper::class, MerchantApiClient::class );
 
@@ -240,6 +242,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( MapiAccountUsersService::class, MerchantApiClient::class );
 		$this->share( MapiAccountShippingSettingsService::class, MerchantApiClient::class );
 		$this->share( MapiAccountRegionsService::class, MerchantApiClient::class );
+		$this->share( MapiAccountServicesService::class, MerchantApiClient::class );
 	}
 
 	/**

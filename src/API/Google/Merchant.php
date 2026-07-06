@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountBusinessInfoService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountHomepageService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountServicesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountUsersService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -15,7 +16,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as Googl
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\Exception as GoogleServiceException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Account;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountAdsLink;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RequestPhoneVerificationRequest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RequestReviewFreeListingsRequest;
@@ -65,18 +65,27 @@ class Merchant implements OptionsAwareInterface {
 	protected $users_service;
 
 	/**
+	 * The Merchant API account services service.
+	 *
+	 * @var MapiAccountServicesService
+	 */
+	protected $services_service;
+
+	/**
 	 * Merchant constructor.
 	 *
 	 * @param ShoppingContent                $service
 	 * @param MapiAccountHomepageService     $homepage_service
 	 * @param MapiAccountBusinessInfoService $business_info_service
 	 * @param MapiAccountUsersService        $users_service
+	 * @param MapiAccountServicesService     $services_service
 	 */
-	public function __construct( ShoppingContent $service, MapiAccountHomepageService $homepage_service, MapiAccountBusinessInfoService $business_info_service, MapiAccountUsersService $users_service ) {
+	public function __construct( ShoppingContent $service, MapiAccountHomepageService $homepage_service, MapiAccountBusinessInfoService $business_info_service, MapiAccountUsersService $users_service, MapiAccountServicesService $services_service ) {
 		$this->service               = $service;
 		$this->homepage_service      = $homepage_service;
 		$this->business_info_service = $business_info_service;
 		$this->users_service         = $users_service;
+		$this->services_service      = $services_service;
 	}
 
 	/**
@@ -312,23 +321,18 @@ class Merchant implements OptionsAwareInterface {
 	 * @throws ExceptionWithResponseData When unable to retrieve or update account data.
 	 */
 	public function link_ads_id( int $ads_id ): bool {
-		$account   = $this->get_account();
-		$ads_links = $account->getAdsLinks() ?? [];
-
-		// Stop early if we already have a link setup.
-		foreach ( $ads_links as $link ) {
-			if ( $ads_id === absint( $link->getAdsId() ) ) {
-				return $link->getStatus() !== 'active';
+		try {
+			$link = $this->services_service->get_google_ads_link( $ads_id );
+			if ( null === $link ) {
+				$link = $this->services_service->propose_google_ads_link( $ads_id );
 			}
+		} catch ( MerchantApiException $e ) {
+			throw new ExceptionWithResponseData( $e->getMessage(), $e->getCode(), $e, $e->get_response_body() );
 		}
 
-		$link = new AccountAdsLink();
-		$link->setAdsId( $ads_id );
-		$link->setStatus( 'active' );
-		$account->setAdsLinks( array_merge( $ads_links, [ $link ] ) );
-		$this->update_account( $account );
-
-		return true;
+		// The MAPI handshake is ESTABLISHED once both sides have approved; anything
+		// else means the Ads-side acceptance is still pending.
+		return 'ESTABLISHED' !== ( $link['handshake']['approvalState'] ?? '' );
 	}
 
 	/**
