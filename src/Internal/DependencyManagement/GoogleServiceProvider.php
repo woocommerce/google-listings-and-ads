@@ -32,6 +32,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAcc
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPromotionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
@@ -45,7 +46,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReconnectWordPress;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -113,11 +113,11 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		'connect_server_root'                     => true,
 		Connection::class                         => true,
 		GoogleProductService::class               => true,
-		GooglePromotionService::class             => true,
 		MerchantApiClient::class                  => true,
 		MapiProductsService::class                => true,
 		MapiDataSourcesService::class             => true,
 		MapiProductInputsService::class           => true,
+		MapiPromotionsService::class              => true,
 		MapiAccountIssuesService::class           => true,
 		MapiAccountHomepageService::class         => true,
 		MapiAccountBusinessInfoService::class     => true,
@@ -226,7 +226,6 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			$this->get_connect_server_url_root( 'google/google-sv' )
 		);
 		$this->share( GoogleProductService::class, ShoppingContent::class );
-		$this->share( GooglePromotionService::class, ShoppingContent::class );
 
 		$this->share(
 			MerchantApiClient::class,
@@ -236,6 +235,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( MapiProductsService::class, MerchantApiClient::class );
 		$this->share( MapiDataSourcesService::class, MerchantApiClient::class );
 		$this->share( MapiProductInputsService::class, MerchantApiClient::class, MapiDataSourcesService::class );
+		$this->share( MapiPromotionsService::class, MerchantApiClient::class );
 		$this->share( MapiAccountIssuesService::class, MerchantApiClient::class );
 		$this->share( MapiAccountHomepageService::class, MerchantApiClient::class );
 		$this->share( MapiAccountBusinessInfoService::class, MerchantApiClient::class );
