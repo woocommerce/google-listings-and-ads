@@ -3,22 +3,29 @@
  */
 import { addAction } from '@wordpress/hooks';
 
+/**
+ * Internal dependencies
+ */
+import { GLA_NOTIFICATION_DISMISSED } from '~/constants';
+
 ( function () {
-	const badge = document.querySelector(
-		'#toplevel_page_woocommerce-marketing .update-plugins'
+	const marketingMenu = document.getElementById(
+		'toplevel_page_woocommerce-marketing'
 	);
+
+	if ( ! marketingMenu ) {
+		return;
+	}
+
+	const badge = marketingMenu.querySelector( '.update-plugins' );
 
 	if ( ! badge ) {
 		return;
 	}
 
-	const marketingMenu = document.getElementById(
-		'toplevel_page_woocommerce-marketing'
-	);
-
 	const observer = new MutationObserver( function () {
 		if ( marketingMenu.classList.contains( 'wp-has-current-submenu' ) ) {
-			const subMenu = document.querySelector(
+			const subMenu = marketingMenu.querySelector(
 				'[href="admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard"]'
 			);
 
@@ -31,8 +38,8 @@ import { addAction } from '@wordpress/hooks';
 				subMenu.appendChild( badge );
 			}
 		} else {
-			const topMenu = document.querySelector(
-				'.toplevel_page_woocommerce-marketing > a > .wp-menu-name'
+			const topMenu = marketingMenu.querySelector(
+				':scope > a > .wp-menu-name'
 			);
 
 			if ( topMenu && ! topMenu.contains( badge ) ) {
@@ -51,30 +58,29 @@ import { addAction } from '@wordpress/hooks';
 		attributeFilter: [ 'class' ],
 	} );
 
-	addAction(
-		'gla_notification_dismissed',
-		'gla/notification-manager',
-		function () {
-			const countEl = badge.querySelector( '.update-count' );
+	function handleNotificationDismissed() {
+		const countEl = badge.querySelector( '.update-count' );
 
-			if ( ! countEl ) {
-				return;
-			}
-
-			const newCount = Math.max(
-				0,
-				parseInt( countEl.textContent, 10 ) - 1
-			);
-
-			if ( newCount === 0 ) {
-				badge.style.display = 'none';
-			} else {
-				countEl.textContent = newCount;
-				badge.className = badge.className.replace(
-					/\bcount-\d+\b/,
-					'count-' + newCount
-				);
-			}
+		if ( ! countEl ) {
+			return;
 		}
+
+		const newCount = Math.max( 0, parseInt( countEl.textContent, 10 ) - 1 );
+
+		if ( newCount === 0 ) {
+			badge.style.display = 'none';
+		} else {
+			countEl.textContent = newCount;
+			badge.className = badge.className.replace(
+				/\bcount-\d+\b/,
+				'count-' + newCount
+			);
+		}
+	}
+
+	addAction(
+		GLA_NOTIFICATION_DISMISSED,
+		'gla/notification-manager',
+		handleNotificationDismissed
 	);
 } )();

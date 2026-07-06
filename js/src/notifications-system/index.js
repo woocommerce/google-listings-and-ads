@@ -16,6 +16,7 @@ import {
 } from './woo-marketing-notifications-slot';
 import Notification from './notification';
 import useNotificationsSystemMap from './useNotificationsSystemMap';
+import { GLA_NOTIFICATION_DISMISSED } from '~/constants';
 
 /**
  * Creates a notification component.
@@ -38,7 +39,7 @@ function createNotificationComponent( id, triggeredAt ) {
 
 		const handleDismiss = () => {
 			dismissNotification( id );
-			doAction( 'gla_notification_dismissed' );
+			doAction( GLA_NOTIFICATION_DISMISSED );
 		};
 
 		return createElement( Notification, {
