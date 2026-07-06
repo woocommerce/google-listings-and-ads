@@ -18,4 +18,5 @@ final class MapiPaths {
 	public const DATASOURCES = 'datasources/v1';
 	public const REPORTS     = 'reports/v1';
 	public const ACCOUNTS    = 'accounts/v1';
+	public const PROMOTIONS  = 'promotions/v1';
 }
