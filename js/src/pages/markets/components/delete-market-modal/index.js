@@ -20,7 +20,8 @@ import AppButton from '~/components/app-button';
  * @param {() => void} props.onRequestClose Called when the user cancels or after a successful delete.
  */
 const DeleteMarketModal = ( { market, onRequestClose } ) => {
-	const { deleteMarket, invalidateResolution } = useAppDispatch();
+	const { deleteMarket, invalidateResolution, syncSettings } =
+		useAppDispatch();
 	const countryNames = useCountryKeyNameMap();
 	const [ deleting, setDeleting ] = useState( false );
 
@@ -30,14 +31,27 @@ const DeleteMarketModal = ( { market, onRequestClose } ) => {
 		setDeleting( true );
 		try {
 			await deleteMarket( market.id );
-			invalidateResolution( 'getTargetAudience', [] );
-			onRequestClose();
 		} catch ( error ) {
 			// `handleApiError` in the store action already dispatches an error
 			// notice. We just need to re-enable the buttons so the user can
 			// retry or cancel.
 			setDeleting( false );
+			return;
 		}
+
+		try {
+			// Push the deletion to Merchant Center right away: the deleted
+			// market's shipping service must be replaced or removed there,
+			// and the background job alone can be delayed or gated off.
+			await syncSettings();
+		} catch ( error ) {
+			// The market itself was deleted, so close as normal; the sync
+			// failure has already surfaced as an error notice from the store
+			// action.
+		}
+
+		invalidateResolution( 'getTargetAudience', [] );
+		onRequestClose();
 	};
 
 	return (

@@ -380,6 +380,41 @@ class MarketServiceTest extends UnitTest {
 
 		$this->assertArrayHasKey( OptionsInterface::TARGET_AUDIENCE, $update_calls );
 		$this->assertSame( [ 'US', 'CA' ], $update_calls[ OptionsInterface::TARGET_AUDIENCE ]['countries'] );
+		$this->assertTrue( $update_calls[ OptionsInterface::MARKETS ]['gb']['was_in_primary'] );
+	}
+
+	public function test_add_market_records_was_in_primary_false_when_country_was_not_targeted(): void {
+		$config = [
+			'country'    => 'DE',
+			'language'   => [ 'de' ],
+			'currency'   => [ 'EUR' ],
+			'feed_label' => 'DE',
+		];
+
+		$ta = [
+			'location'  => 'selected',
+			'countries' => [ 'US', 'GB' ],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => $ta,
+			]
+		);
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->market_service->add_market( 'de', $config );
+
+		$this->assertFalse( $update_calls[ OptionsInterface::MARKETS ]['de']['was_in_primary'] );
 	}
 
 	public function test_add_market_country_removal_is_idempotent(): void {
@@ -1363,16 +1398,18 @@ class MarketServiceTest extends UnitTest {
 	public function test_delete_market_removes_and_restores_country_to_target_audience(): void {
 		$existing = [
 			'us' => [
-				'country'    => 'US',
-				'language'   => [ 'en' ],
-				'currency'   => [ 'USD' ],
-				'feed_label' => 'US',
+				'country'        => 'US',
+				'language'       => [ 'en' ],
+				'currency'       => [ 'USD' ],
+				'feed_label'     => 'US',
+				'was_in_primary' => true,
 			],
 			'gb' => [
-				'country'    => 'GB',
-				'language'   => [ 'en' ],
-				'currency'   => [ 'GBP' ],
-				'feed_label' => 'GB',
+				'country'        => 'GB',
+				'language'       => [ 'en' ],
+				'currency'       => [ 'GBP' ],
+				'feed_label'     => 'GB',
+				'was_in_primary' => true,
 			],
 		];
 
@@ -1409,6 +1446,96 @@ class MarketServiceTest extends UnitTest {
 		$this->assertArrayHasKey( OptionsInterface::TARGET_AUDIENCE, $update_calls );
 		$this->assertContains( 'US', $update_calls[ OptionsInterface::TARGET_AUDIENCE ]['countries'] );
 		$this->assertContains( 'CA', $update_calls[ OptionsInterface::TARGET_AUDIENCE ]['countries'] );
+	}
+
+	public function test_delete_market_never_in_primary_removes_shipping_rows_and_leaves_audience(): void {
+		$existing = [
+			'gb' => [
+				'country'        => 'GB',
+				'language'       => [ 'en' ],
+				'currency'       => [ 'GBP' ],
+				'feed_label'     => 'GB',
+				'was_in_primary' => false,
+			],
+		];
+
+		$ta = [
+			'location'  => 'selected',
+			'countries' => [ 'US' ],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $existing,
+				OptionsInterface::TARGET_AUDIENCE => $ta,
+			]
+		);
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->shipping_rate_query->expects( $this->once() )
+			->method( 'delete' )
+			->with( 'country', 'GB' );
+		$this->shipping_time_query->expects( $this->once() )
+			->method( 'delete' )
+			->with( 'country', 'GB' );
+		$this->shipping_rate_query->expects( $this->never() )->method( 'update' );
+		$this->shipping_rate_query->expects( $this->never() )->method( 'insert' );
+
+		$this->market_service->delete_market( 'gb' );
+
+		$this->assertArrayHasKey( OptionsInterface::MARKETS, $update_calls );
+		$this->assertArrayNotHasKey( OptionsInterface::TARGET_AUDIENCE, $update_calls );
+	}
+
+	public function test_delete_market_missing_was_in_primary_flag_defaults_to_removal(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$ta = [
+			'location'  => 'selected',
+			'countries' => [ 'US' ],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $existing,
+				OptionsInterface::TARGET_AUDIENCE => $ta,
+			]
+		);
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->shipping_rate_query->expects( $this->once() )
+			->method( 'delete' )
+			->with( 'country', 'GB' );
+		$this->shipping_time_query->expects( $this->once() )
+			->method( 'delete' )
+			->with( 'country', 'GB' );
+
+		$this->market_service->delete_market( 'gb' );
+
+		$this->assertArrayNotHasKey( OptionsInterface::TARGET_AUDIENCE, $update_calls );
 	}
 
 	public function test_delete_market_schedules_cleanup_with_feed_label(): void {
@@ -1455,10 +1582,11 @@ class MarketServiceTest extends UnitTest {
 	public function test_delete_market_country_restoration_is_idempotent(): void {
 		$existing = [
 			'gb' => [
-				'country'    => 'GB',
-				'language'   => [ 'en' ],
-				'currency'   => [ 'GBP' ],
-				'feed_label' => 'GB',
+				'country'        => 'GB',
+				'language'       => [ 'en' ],
+				'currency'       => [ 'GBP' ],
+				'feed_label'     => 'GB',
+				'was_in_primary' => true,
 			],
 		];
 
@@ -1497,10 +1625,11 @@ class MarketServiceTest extends UnitTest {
 			[
 				OptionsInterface::MARKETS => [
 					'fr' => [
-						'country'    => 'FR',
-						'language'   => [ 'fr' ],
-						'currency'   => [ 'EUR' ],
-						'feed_label' => 'FR',
+						'country'        => 'FR',
+						'language'       => [ 'fr' ],
+						'currency'       => [ 'EUR' ],
+						'feed_label'     => 'FR',
+						'was_in_primary' => true,
 					],
 				],
 			]
@@ -1550,10 +1679,11 @@ class MarketServiceTest extends UnitTest {
 			[
 				OptionsInterface::MARKETS => [
 					'fr' => [
-						'country'    => 'FR',
-						'language'   => [ 'fr' ],
-						'currency'   => [ 'EUR' ],
-						'feed_label' => 'FR',
+						'country'        => 'FR',
+						'language'       => [ 'fr' ],
+						'currency'       => [ 'EUR' ],
+						'feed_label'     => 'FR',
+						'was_in_primary' => true,
 					],
 				],
 			]
@@ -1600,10 +1730,11 @@ class MarketServiceTest extends UnitTest {
 			[
 				OptionsInterface::MARKETS => [
 					'fr' => [
-						'country'    => 'FR',
-						'language'   => [ 'fr' ],
-						'currency'   => [ 'EUR' ],
-						'feed_label' => 'FR',
+						'country'        => 'FR',
+						'language'       => [ 'fr' ],
+						'currency'       => [ 'EUR' ],
+						'feed_label'     => 'FR',
+						'was_in_primary' => true,
 					],
 				],
 			]
@@ -1645,10 +1776,11 @@ class MarketServiceTest extends UnitTest {
 			[
 				OptionsInterface::MARKETS => [
 					'fr' => [
-						'country'    => 'FR',
-						'language'   => [ 'fr' ],
-						'currency'   => [ 'EUR' ],
-						'feed_label' => 'FR',
+						'country'        => 'FR',
+						'language'       => [ 'fr' ],
+						'currency'       => [ 'EUR' ],
+						'feed_label'     => 'FR',
+						'was_in_primary' => true,
 					],
 				],
 			]
@@ -1688,10 +1820,11 @@ class MarketServiceTest extends UnitTest {
 			[
 				OptionsInterface::MARKETS => [
 					'fr' => [
-						'country'    => 'FR',
-						'language'   => [ 'fr' ],
-						'currency'   => [ 'EUR' ],
-						'feed_label' => 'FR',
+						'country'        => 'FR',
+						'language'       => [ 'fr' ],
+						'currency'       => [ 'EUR' ],
+						'feed_label'     => 'FR',
+						'was_in_primary' => true,
 					],
 				],
 			]
@@ -1726,10 +1859,11 @@ class MarketServiceTest extends UnitTest {
 			[
 				OptionsInterface::MARKETS => [
 					'fr' => [
-						'country'    => 'FR',
-						'language'   => [ 'fr' ],
-						'currency'   => [ 'EUR' ],
-						'feed_label' => 'FR',
+						'country'        => 'FR',
+						'language'       => [ 'fr' ],
+						'currency'       => [ 'EUR' ],
+						'feed_label'     => 'FR',
+						'was_in_primary' => true,
 					],
 				],
 			]
@@ -1763,10 +1897,11 @@ class MarketServiceTest extends UnitTest {
 			[
 				OptionsInterface::MARKETS => [
 					'fr' => [
-						'country'    => 'FR',
-						'language'   => [ 'fr' ],
-						'currency'   => [ 'EUR' ],
-						'feed_label' => 'FR',
+						'country'        => 'FR',
+						'language'       => [ 'fr' ],
+						'currency'       => [ 'EUR' ],
+						'feed_label'     => 'FR',
+						'was_in_primary' => true,
 					],
 				],
 			]
@@ -1789,10 +1924,11 @@ class MarketServiceTest extends UnitTest {
 			[
 				OptionsInterface::MARKETS => [
 					'fr' => [
-						'country'    => 'FR',
-						'language'   => [ 'fr' ],
-						'currency'   => [ 'EUR' ],
-						'feed_label' => 'FR',
+						'country'        => 'FR',
+						'language'       => [ 'fr' ],
+						'currency'       => [ 'EUR' ],
+						'feed_label'     => 'FR',
+						'was_in_primary' => true,
 					],
 				],
 			]
@@ -1877,10 +2013,11 @@ class MarketServiceTest extends UnitTest {
 			[
 				OptionsInterface::MARKETS => [
 					'fr' => [
-						'country'    => 'FR',
-						'language'   => [ 'fr' ],
-						'currency'   => [ 'EUR' ],
-						'feed_label' => 'FR',
+						'country'        => 'FR',
+						'language'       => [ 'fr' ],
+						'currency'       => [ 'EUR' ],
+						'feed_label'     => 'FR',
+						'was_in_primary' => true,
 					],
 				],
 			]

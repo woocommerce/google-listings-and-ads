@@ -253,6 +253,12 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 		$this->validate_secondary_market_config( $config );
 
+		// Recorded so delete_market() knows whether the country should rejoin
+		// the primary market (it was moved out of it here) or stop being
+		// targeted entirely (it was never a primary country).
+		$config['was_in_primary'] = ! empty( $config['country'] )
+			&& $this->is_country_in_target_audience( $config['country'] );
+
 		$markets        = $this->get_stored_secondary_markets();
 		$markets[ $id ] = $config;
 		$this->options->update( OptionsInterface::MARKETS, $markets );
@@ -530,9 +536,13 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$this->options->update( OptionsInterface::MARKETS, $markets );
 
 		if ( $country ) {
-			$this->adopt_primary_rate_for_country( $country );
-			$this->adopt_primary_time_for_country( $country );
-			$this->restore_country_to_target_audience( $country );
+			if ( ! empty( $deleted_config['was_in_primary'] ) ) {
+				$this->adopt_primary_rate_for_country( $country );
+				$this->adopt_primary_time_for_country( $country );
+				$this->restore_country_to_target_audience( $country );
+			} else {
+				$this->remove_shipping_rows_for_country( $country );
+			}
 		}
 
 		if ( $feed_label ) {
@@ -1213,5 +1223,37 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$target_audience['countries'][] = $country;
 			$this->options->update( OptionsInterface::TARGET_AUDIENCE, $target_audience );
 		}
+	}
+
+	/**
+	 * Whether a country is currently in the primary feed's TargetAudience countries list.
+	 *
+	 * @param string $country ISO 3166-1 alpha-2 country code.
+	 *
+	 * @return bool
+	 */
+	private function is_country_in_target_audience( string $country ): bool {
+		$target_audience = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
+
+		return ! empty( $target_audience['countries'] )
+			&& is_array( $target_audience['countries'] )
+			&& in_array( $country, $target_audience['countries'], true );
+	}
+
+	/**
+	 * Removes a country's shipping rate and time rows.
+	 *
+	 * Used when a deleted market's country is not returning to the primary
+	 * market: with no rows and no target audience entry, the country is
+	 * omitted from the next shipping settings payload, and Google deletes its
+	 * shipping service because shippingsettings.update replaces the full
+	 * resource ("any fields that are not provided are deleted").
+	 *
+	 * @param string $country ISO 3166-1 alpha-2 country code.
+	 */
+	private function remove_shipping_rows_for_country( string $country ): void {
+		$this->shipping_rate_query->delete( 'country', $country );
+		$this->shipping_time_query->delete( 'country', $country );
+		$this->cached_shipping_rates = null;
 	}
 }

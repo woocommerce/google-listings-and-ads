@@ -151,10 +151,11 @@ const MarketForm = ( {
 			}
 			await Promise.all( saves );
 
-			// If the user has made changes to the shipping rates or times, we need to sync the settings to ensure the changes are reflected in the UI and persisted correctly. This is necessary because the shipping rates and times are stored separately from the market data, and changes to them may not trigger a re-fetch of the market data on their own.
-			if ( saves.length > 0 ) {
-				await syncSettings();
-			}
+			// Always sync after a successful save: creating or updating a
+			// market changes shipping data on the server (target audience,
+			// adopted rate/time rows) even when the form itself saved no
+			// shipping rates or times.
+			await syncSettings();
 
 			invalidateResolution( 'getTargetAudience', [] );
 			onSubmit();

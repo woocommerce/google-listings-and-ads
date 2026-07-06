@@ -30,13 +30,16 @@ const NON_PRIMARY_MARKET = {
 
 describe( 'DeleteMarketModal', () => {
 	let deleteMarketMock;
+	let syncSettingsMock;
 	let onRequestCloseMock;
 
 	beforeEach( () => {
 		deleteMarketMock = jest.fn().mockResolvedValue( undefined );
+		syncSettingsMock = jest.fn().mockResolvedValue( undefined );
 		onRequestCloseMock = jest.fn();
 		useAppDispatch.mockReturnValue( {
 			deleteMarket: deleteMarketMock,
+			syncSettings: syncSettingsMock,
 			invalidateResolution: jest.fn(),
 		} );
 		useCountryKeyNameMap.mockReturnValue( { FR: 'France' } );
@@ -95,6 +98,40 @@ describe( 'DeleteMarketModal', () => {
 		} );
 	} );
 
+	test( 'Confirm dispatches syncSettings after a successful delete', async () => {
+		const user = userEvent.setup();
+		render(
+			<DeleteMarketModal
+				market={ NON_PRIMARY_MARKET }
+				onRequestClose={ onRequestCloseMock }
+			/>
+		);
+
+		await user.click( screen.getByRole( 'button', { name: 'Delete' } ) );
+
+		await waitFor( () => {
+			expect( syncSettingsMock ).toHaveBeenCalledTimes( 1 );
+		} );
+	} );
+
+	test( 'a failed sync still closes the modal after a successful delete', async () => {
+		syncSettingsMock.mockRejectedValue( new Error( 'sync failed' ) );
+
+		const user = userEvent.setup();
+		render(
+			<DeleteMarketModal
+				market={ NON_PRIMARY_MARKET }
+				onRequestClose={ onRequestCloseMock }
+			/>
+		);
+
+		await user.click( screen.getByRole( 'button', { name: 'Delete' } ) );
+
+		await waitFor( () => {
+			expect( onRequestCloseMock ).toHaveBeenCalledTimes( 1 );
+		} );
+	} );
+
 	test( 'disables both buttons while the request is in flight', async () => {
 		// Hold the promise open so we can observe the in-flight state.
 		let resolveDelete;
@@ -146,6 +183,7 @@ describe( 'DeleteMarketModal', () => {
 			expect( deleteMarketMock ).toHaveBeenCalledTimes( 1 );
 		} );
 		expect( onRequestCloseMock ).not.toHaveBeenCalled();
+		expect( syncSettingsMock ).not.toHaveBeenCalled();
 		await waitFor( () => {
 			expect( deleteButton ).toBeEnabled();
 		} );
