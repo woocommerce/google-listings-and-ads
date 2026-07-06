@@ -38,7 +38,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Event\ClearProductStatsCache;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPromotionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection as YouTubeConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
@@ -347,7 +348,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		);
 		$this->share_with_tags(
 			CouponSyncer::class,
-			GooglePromotionService::class,
+			MapiPromotionsService::class,
+			MapiDataSourcesService::class,
 			CouponHelper::class,
 			ValidatorInterface::class,
 			MerchantCenterService::class,
