@@ -2,15 +2,16 @@
 declare(strict_types = 1);
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Coupon;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPromotionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\DeleteCouponEntry;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\InvalidCouponEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as GoogleException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Exception;
 use WC_Coupon;
@@ -28,11 +29,18 @@ class CouponSyncer implements Service {
 	// Number of failed attempts allowed per FAILURE_THRESHOLD_WINDOW
 	public const FAILURE_THRESHOLD_WINDOW = '3 hours';
 
+	/** Error code used to flag promotions that failed with an internal (5xx) error. */
+	public const INTERNAL_ERROR_CODE = 500;
+
 	/**
-	 *
-	 * @var GooglePromotionService
+	 * @var MapiPromotionsService
 	 */
-	protected $google_service;
+	protected $promotions_service;
+
+	/**
+	 * @var MapiDataSourcesService
+	 */
+	protected $data_sources;
 
 	/**
 	 *
@@ -66,7 +74,8 @@ class CouponSyncer implements Service {
 	/**
 	 * CouponSyncer constructor.
 	 *
-	 * @param GooglePromotionService $google_service
+	 * @param MapiPromotionsService  $promotions_service
+	 * @param MapiDataSourcesService $data_sources
 	 * @param CouponHelper           $coupon_helper
 	 * @param ValidatorInterface     $validator
 	 * @param MerchantCenterService  $merchant_center
@@ -74,19 +83,21 @@ class CouponSyncer implements Service {
 	 * @param WC                     $wc
 	 */
 	public function __construct(
-		GooglePromotionService $google_service,
+		MapiPromotionsService $promotions_service,
+		MapiDataSourcesService $data_sources,
 		CouponHelper $coupon_helper,
 		ValidatorInterface $validator,
 		MerchantCenterService $merchant_center,
 		TargetAudience $target_audience,
 		WC $wc
 	) {
-		$this->google_service  = $google_service;
-		$this->coupon_helper   = $coupon_helper;
-		$this->validator       = $validator;
-		$this->merchant_center = $merchant_center;
-		$this->target_audience = $target_audience;
-		$this->wc              = $wc;
+		$this->promotions_service = $promotions_service;
+		$this->data_sources       = $data_sources;
+		$this->coupon_helper      = $coupon_helper;
+		$this->validator          = $validator;
+		$this->merchant_center    = $merchant_center;
+		$this->target_audience    = $target_audience;
+		$this->wc                 = $wc;
 	}
 
 	/**
@@ -151,20 +162,27 @@ class CouponSyncer implements Service {
 			return;
 		}
 
+		$promotion = $adapted_coupon->get_promotion();
+
 		try {
+			$data_source = $this->data_sources->ensure_promotion_data_source_for(
+				$promotion['contentLanguage'],
+				$promotion['targetCountry']
+			);
+
 			do_action(
 				'woocommerce_gla_debug_message',
 				sprintf(
 					'Start to upload coupon (ID: %s) as promotion structure: %s',
 					$coupon->get_id(),
-					wp_json_encode( $adapted_coupon )
+					wp_json_encode( $promotion )
 				),
 				__METHOD__
 			);
-			$response = $this->google_service->create( $adapted_coupon );
+			$response = $this->promotions_service->insert_promotion( $data_source, $promotion );
 			$this->coupon_helper->mark_as_synced(
 				$coupon,
-				$response->getId(),
+				(string) ( $response['promotionId'] ?? '' ),
 				$target_country
 			);
 			do_action( 'woocommerce_gla_updated_coupon', $adapted_coupon );
@@ -173,11 +191,11 @@ class CouponSyncer implements Service {
 				'woocommerce_gla_debug_message',
 				sprintf(
 					"Submitted promotion:\n%s",
-					wp_json_encode( $adapted_coupon )
+					wp_json_encode( $promotion )
 				),
 				__METHOD__
 			);
-		} catch ( GoogleException $google_exception ) {
+		} catch ( MerchantApiException $google_exception ) {
 			$invalid_promotion = new InvalidCouponEntry(
 				$coupon->get_id(),
 				[
@@ -254,23 +272,26 @@ class CouponSyncer implements Service {
 		$wc_coupon_exist    = $wc_coupon instanceof WC_Coupon;
 		foreach ( $synced_google_ids as $target_country => $google_id ) {
 			try {
-				$adapted_coupon = $coupon->get_google_promotion();
-				$adapted_coupon->setTargetCountry( $target_country );
+				$promotion                  = $coupon->get_google_promotion();
+				$promotion['targetCountry'] = $target_country;
+				$data_source                = $this->data_sources->ensure_promotion_data_source_for(
+					$promotion['contentLanguage'],
+					$target_country
+				);
 
 				do_action(
 					'woocommerce_gla_debug_message',
 					sprintf(
 						'Start to delete coupon (ID: %s) as promotion structure: %s',
 						$coupon->get_wc_coupon_id(),
-						wp_json_encode( $adapted_coupon )
+						wp_json_encode( $promotion )
 					),
 					__METHOD__
 				);
-				// DeleteCouponEntry is generated with promotion effective date expired
-				// when WC coupon is able to be deleted.
-				// To soft-delete the promotion from Google side,
-				// we will update Google promotion with expired effective date.
-				$response = $this->google_service->create( $adapted_coupon );
+				// DeleteCouponEntry is generated with the promotion effective date expired
+				// when the WC coupon can be deleted. To soft-delete the promotion on the
+				// Google side, we upsert it with the expired effective date.
+				$response = $this->promotions_service->insert_promotion( $data_source, $promotion );
 				array_push( $deleted_promotions, $response );
 				if ( $wc_coupon_exist ) {
 					$this->coupon_helper->remove_google_id_by_country(
@@ -278,7 +299,7 @@ class CouponSyncer implements Service {
 						$target_country
 					);
 				}
-			} catch ( GoogleException $google_exception ) {
+			} catch ( MerchantApiException $google_exception ) {
 				array_push(
 					$invalid_promotions,
 					new InvalidCouponEntry(
@@ -389,7 +410,7 @@ class CouponSyncer implements Service {
 		$internal_error_coupon_ids = [];
 		foreach ( $invalid_coupons as $invalid_coupon ) {
 			if ( $invalid_coupon->has_error(
-				GooglePromotionService::INTERNAL_ERROR_CODE
+				self::INTERNAL_ERROR_CODE
 			) ) {
 				$coupon_id                               = $invalid_coupon->get_wc_coupon_id();
 				$internal_error_coupon_ids[ $coupon_id ] = $invalid_coupon->get_target_country();
@@ -427,7 +448,7 @@ class CouponSyncer implements Service {
 		$internal_error_coupon_ids = [];
 		foreach ( $invalid_coupons as $invalid_coupon ) {
 			if ( $invalid_coupon->has_error(
-				GooglePromotionService::INTERNAL_ERROR_CODE
+				self::INTERNAL_ERROR_CODE
 			) ) {
 				$coupon_id                               = $invalid_coupon->get_wc_coupon_id();
 				$internal_error_coupon_ids[ $coupon_id ] = $invalid_coupon->get_google_promotion_id();
