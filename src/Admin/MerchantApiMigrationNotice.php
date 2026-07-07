@@ -3,8 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\AdminConditional;
-use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
@@ -24,9 +22,8 @@ use stdClass;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin
  */
-class MerchantApiMigrationNotice implements Service, Registerable, Conditional {
+class MerchantApiMigrationNotice implements Service, Registerable {
 
-	use AdminConditional;
 	use PluginHelper;
 
 	/**
