@@ -68,10 +68,9 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * Account status data. Indicates the current status for the Google MC account.
  *
  * @typedef {Object} AccountStatus
- * @property {string} status Account status. See the available statuses here https://developers.google.com/shopping-content/reference/rest/v2.1/State
- * @property {number} cooldown Cooldown period timestamp indicating how long the user should wait until the next request
- * @property {Array} issues List of issue keys for this account
- * @property {Array} reviewEligibleRegions List of region codes available for review
+ * @property {string} status Derived account review status.
+ * @property {Array} issues Titles of the account issues blocking approval.
+ * @property {Object|null} reviewAction The account-review action (in-app or redirect), or null when none is available.
  */
 
 /**
