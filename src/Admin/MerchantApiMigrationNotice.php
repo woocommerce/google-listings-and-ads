@@ -123,13 +123,7 @@ class MerchantApiMigrationNotice implements Service, Registerable {
 	 * @return string
 	 */
 	private function pad_version( string $version ): string {
-		$parts = explode( '.', $version );
-
-		while ( count( $parts ) < 3 ) {
-			$parts[] = '0';
-		}
-
-		return implode( '.', $parts );
+		return implode( '.', array_pad( explode( '.', $version ), 3, '0' ) );
 	}
 
 	/**
