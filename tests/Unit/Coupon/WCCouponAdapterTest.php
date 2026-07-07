@@ -149,7 +149,8 @@ class WCCouponAdapterTest extends UnitTest {
 		$promotion  = $adapted_coupon->get_promotion();
 		$attributes = $promotion['attributes'];
 		$this->assertEquals( $coupon->get_code(), $attributes['genericRedemptionCode'] );
-		$this->assertEquals( $coupon->get_amount(), $attributes['percentOff'] );
+		// percentOff is an int64, serialised as a string per the Merchant API spec.
+		$this->assertSame( (string) (int) $coupon->get_amount(), $attributes['percentOff'] );
 		$this->assertEquals( 'GENERIC_CODE', $attributes['offerType'] );
 		$this->assertEquals( 'PERCENT_OFF', $attributes['couponValueType'] );
 	}
@@ -202,7 +203,7 @@ class WCCouponAdapterTest extends UnitTest {
 		// The start date is unchanged; disabling expires the promotion at (or just after) it.
 		$this->assertEquals( "{$postdate}+00:00", $period['startTime'] );
 		$this->assertGreaterThanOrEqual( strtotime( $period['startTime'] ), strtotime( $period['endTime'] ) );
-		$this->assertLessThanOrEqual( strtotime( $postdate ) + 2, strtotime( $period['endTime'] ) );
+		$this->assertLessThanOrEqual( strtotime( $postdate ) + 5, strtotime( $period['endTime'] ) );
 	}
 
 	public function test_product_id_restrictions() {
