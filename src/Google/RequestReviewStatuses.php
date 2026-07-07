@@ -5,168 +5,139 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 
 /**
- * Helper class for Account request Review feature
+ * Helper class for the Account Request Review feature.
+ *
+ * Maps the Merchant API Issue Resolution `renderaccountissues` response onto the
+ * review status the Request Review UI consumes. The old Content API program model
+ * (per-region eligibility, cooldown windows) has no Merchant API equivalent, so the
+ * status is derived from issue severity and the availability of the account-review
+ * action.
  */
 class RequestReviewStatuses implements Service {
 
-	public const ENABLED        = 'ENABLED';
-	public const DISAPPROVED    = 'DISAPPROVED';
-	public const WARNING        = 'WARNING';
-	public const UNDER_REVIEW   = 'UNDER_REVIEW';
-	public const PENDING_REVIEW = 'PENDING_REVIEW';
-	public const ONBOARDING     = 'ONBOARDING';
-	public const APPROVED       = 'APPROVED';
-	public const NO_OFFERS      = 'NO_OFFERS_UPLOADED';
-	public const ELIGIBLE       = 'ELIGIBLE';
+	/** Derived account-review states. */
+	public const APPROVED     = 'APPROVED';
+	public const DISAPPROVED  = 'DISAPPROVED';
+	public const WARNING      = 'WARNING';
+	public const UNDER_REVIEW = 'UNDER_REVIEW';
 
+	/** Issue Resolution impact severities. */
+	public const SEVERITY_ERROR   = 'ERROR';
+	public const SEVERITY_WARNING = 'WARNING';
+	public const SEVERITY_INFO    = 'INFO';
+
+	/** The external action type that maps to requesting an account review in Merchant Center. */
+	public const EXTERNAL_REVIEW_ACTION = 'REVIEW_ACCOUNT_ISSUE_IN_MERCHANT_CENTER';
 
 	public const MC_ACCOUNT_REVIEW_LIFETIME = MINUTE_IN_SECONDS * 20; // 20 minutes
 
 	/**
-	 * Merges the different program statuses, issues and cooldown period date.
+	 * Reduce a `renderaccountissues` response to the review status the UI needs.
 	 *
-	 * @param array $response Associative array containing the response data from Google API
-	 * @return array The computed status, with the issues and cooldown period.
+	 * @param array $response RenderAccountIssuesResponse decoded as an array.
+	 *
+	 * @return array {
+	 *     @type string     $status       Derived account-review status.
+	 *     @type string[]   $issues       Titles of the account issues blocking approval.
+	 *     @type array|null $reviewAction The account-review action (in-app or redirect), or null.
+	 * }
 	 */
-	public function get_statuses_from_response( array $response ) {
-		$issues   = [];
-		$cooldown = 0;
-		$status   = null;
+	public function get_statuses_from_response( array $response ): array {
+		$issues        = [];
+		$review_action = null;
+		$has_error     = false;
+		$has_warning   = false;
 
-		$valid_program_states    = [ self::ENABLED, self::NO_OFFERS ];
-		$review_eligible_regions = [];
+		foreach ( $response['renderedIssues'] ?? [] as $issue ) {
+			$severity    = $issue['impact']['severity'] ?? '';
+			$has_error   = $has_error || self::SEVERITY_ERROR === $severity;
+			$has_warning = $has_warning || self::SEVERITY_WARNING === $severity;
 
-		foreach ( $response as $program_type_name => $program_type ) {
-
-			// In case any Program is with no offers we consider it Onboarding
-			if ( $program_type['globalState'] === self::NO_OFFERS ) {
-				$status = self::ONBOARDING;
-				break;
+			// Only issues that affect approval (error/warning) belong in the review list;
+			// informational issues are surfaced elsewhere and do not block a review.
+			if ( ! empty( $issue['title'] ) && ( self::SEVERITY_ERROR === $severity || self::SEVERITY_WARNING === $severity ) ) {
+				$issues[] = $issue['title'];
 			}
 
-			// In case any Program is not enabled or there are no regionStatuses we return null status
-			if ( ! isset( $program_type['regionStatuses'] ) || ! in_array( $program_type['globalState'], $valid_program_states, true ) ) {
-				continue;
-			}
-
-			// Otherwise, we compute the new status, issues and cooldown period
-			foreach ( $program_type['regionStatuses'] as $region_status ) {
-				$issues                  = array_merge( $issues, $region_status['reviewIssues'] ?? [] );
-				$cooldown                = $this->maybe_update_cooldown_period( $region_status, $cooldown );
-				$status                  = $this->maybe_update_status( $region_status['eligibilityStatus'], $status );
-				$review_eligible_regions = $this->maybe_load_eligible_region( $region_status, $review_eligible_regions, $program_type_name );
+			if ( null === $review_action ) {
+				$review_action = $this->find_review_action( $issue['actions'] ?? [] );
 			}
 		}
 
 		return [
-			'issues'                => array_map( 'strtolower', array_values( array_unique( $issues ) ) ),
-			'cooldown'              => $this->get_cooldown( $cooldown ), // add lifetime cache to cooldown time
-			'status'                => $status,
-			'reviewEligibleRegions' => array_unique( $review_eligible_regions ),
+			'status'       => $this->derive_status( $has_error, $has_warning ),
+			'issues'       => array_values( array_unique( $issues ) ),
+			'reviewAction' => $review_action,
 		];
 	}
-	/**
-	 * Updates the cooldown period in case the new cooldown period date is available and later than the current cooldown period.
-	 *
-	 * @param array $region_status Associative array containing (maybe) a cooldown date property.
-	 * @param int   $cooldown Referenced current cooldown to compare with
-	 *
-	 * @return int The cooldown
-	 */
-	private function maybe_update_cooldown_period( $region_status, $cooldown ) {
-		if (
-			isset( $region_status['reviewIneligibilityReasonDetails'] ) &&
-			isset( $region_status['reviewIneligibilityReasonDetails']['cooldownTime'] )
-		) {
-			$region_cooldown = intval( strtotime( $region_status['reviewIneligibilityReasonDetails']['cooldownTime'] ) );
 
-			if ( ! $cooldown || $region_cooldown > $cooldown ) {
-				$cooldown = $region_cooldown;
+	/**
+	 * Find the account-review action among an issue's actions.
+	 *
+	 * The review action appears as an `externalAction` of type
+	 * REVIEW_ACCOUNT_ISSUE_IN_MERCHANT_CENTER when issues are rendered for redirect, or as
+	 * its `builtinUserInputAction` counterpart when rendered for in-app completion. This is
+	 * the one piece that needs validating against a real disapproved account (this test
+	 * account has no issues).
+	 *
+	 * @param array $actions List of Action resources for a rendered issue.
+	 *
+	 * @return array|null Normalised review action, or null when none is present.
+	 */
+	private function find_review_action( array $actions ): ?array {
+		foreach ( $actions as $action ) {
+			if ( self::EXTERNAL_REVIEW_ACTION === ( $action['externalAction']['type'] ?? '' ) ) {
+				return [
+					'type'        => 'redirect',
+					'isAvailable' => (bool) ( $action['isAvailable'] ?? false ),
+					'buttonLabel' => $action['buttonLabel'] ?? '',
+					'uri'         => esc_url_raw( $action['externalAction']['uri'] ?? '' ),
+				];
+			}
+
+			// An in-app action is only triggerable with an action context and a flow id;
+			// skip it otherwise so we never post an empty flow to triggeraction.
+			$flow_id = $action['builtinUserInputAction']['flows'][0]['id'] ?? '';
+			if ( isset( $action['builtinUserInputAction']['actionContext'] ) && '' !== $flow_id ) {
+				return [
+					'type'          => 'in_app',
+					'isAvailable'   => (bool) ( $action['isAvailable'] ?? false ),
+					'buttonLabel'   => $action['buttonLabel'] ?? '',
+					'actionContext' => $action['builtinUserInputAction']['actionContext'],
+					'flowId'        => $flow_id,
+				];
 			}
 		}
 
-		return $cooldown;
+		return null;
 	}
 
 	/**
-	 * Updates the status reference in case the new status has more priority.
+	 * Derive a coarse account-review status from the issue severities present.
 	 *
-	 * @param String $new_status New status to check has more priority than the current one
-	 * @param String $status Referenced current status
+	 * @param bool $has_error   Whether any issue has ERROR severity.
+	 * @param bool $has_warning Whether any issue has WARNING severity.
 	 *
-	 * @return String The status
+	 * @return string
 	 */
-	private function maybe_update_status( $new_status, $status ) {
-		$status_priority_list = [
-			self::ONBOARDING, // highest priority
-			self::DISAPPROVED,
-			self::WARNING,
-			self::UNDER_REVIEW,
-			self::PENDING_REVIEW,
-			self::APPROVED,
-		];
-
-		$current_status_priority = array_search( $status, $status_priority_list, true );
-		$new_status_priority     = array_search( $new_status, $status_priority_list, true );
-
-		if ( $new_status_priority !== false && ( is_null( $status ) || $current_status_priority > $new_status_priority ) ) {
-			return $new_status;
+	private function derive_status( bool $has_error, bool $has_warning ): string {
+		if ( $has_error ) {
+			return self::DISAPPROVED;
 		}
 
-		return $status;
-	}
-
-
-	/**
-	 * Updates the regions where a request review is allowed.
-	 *
-	 * @param array                                      $region_status Associative array containing the region eligibility.
-	 * @param array                                      $review_eligible_regions Indexed array with the current eligible regions.
-	 * @param "freeListingsProgram"|"shoppingAdsProgram" $type The program type.
-	 *
-	 * @return array The (maybe) modified $review_eligible_regions array
-	 */
-	private function maybe_load_eligible_region( $region_status, $review_eligible_regions, $type = 'freeListingsProgram' ) {
-		if (
-			! empty( $region_status['regionCodes'] ) &&
-			isset( $region_status['reviewEligibilityStatus'] ) &&
-			$region_status['reviewEligibilityStatus'] === self::ELIGIBLE
-		) {
-
-			$region_codes = $region_status['regionCodes'];
-			sort( $region_codes ); // sometimes the regions come unsorted between the different programs
-			$region_id = $region_codes[0];
-
-			if ( ! isset( $review_eligible_regions[ $region_id ] ) ) {
-				$review_eligible_regions[ $region_id ] = [];
-			}
-
-			$review_eligible_regions[ $region_id ][] = strtolower( $type ); // lowercase as is how we expect it in WCS
-
+		if ( $has_warning ) {
+			return self::WARNING;
 		}
 
-		return $review_eligible_regions;
+		return self::APPROVED;
 	}
 
 	/**
-	 * Allows a hook to modify the lifetime of the Account review data.
+	 * Allows a hook to modify the lifetime of the Account review data cache.
 	 *
 	 * @return int
 	 */
 	public function get_account_review_lifetime(): int {
 		return apply_filters( 'woocommerce_gla_mc_account_review_lifetime', self::MC_ACCOUNT_REVIEW_LIFETIME );
-	}
-
-	/**
-	 * @param int $cooldown The cooldown in PHP format (seconds)
-	 *
-	 * @return int The cooldown in milliseconds and adding the lifetime cache
-	 */
-	private function get_cooldown( int $cooldown ) {
-		if ( $cooldown ) {
-			$cooldown = ( $cooldown + $this->get_account_review_lifetime() ) * 1000;
-		}
-
-		return $cooldown;
 	}
 }
