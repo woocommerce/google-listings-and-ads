@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Admin;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MerchantApiMigrationNotice;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 
 use PHPUnit\Framework\MockObject\MockObject;
@@ -16,6 +17,9 @@ class MerchantApiMigrationNoticeTest extends TestCase {
 	/** @var MockObject|WP $wp */
 	protected $wp;
 
+	/** @var MockObject|MerchantCenterService $merchant_center */
+	protected $merchant_center;
+
 	/**
 	 * Setup tests
 	 *
@@ -24,7 +28,8 @@ class MerchantApiMigrationNoticeTest extends TestCase {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->wp = $this->createMock( WP::class );
+		$this->wp              = $this->createMock( WP::class );
+		$this->merchant_center = $this->createMock( MerchantCenterService::class );
 	}
 
 	/**
@@ -56,6 +61,21 @@ class MerchantApiMigrationNoticeTest extends TestCase {
 		$this->wp->method( 'get_site_transient' )->with( 'update_plugins' )->willReturn( $this->get_transient_with_update( '3.8.0' ) );
 
 		$instance = $this->get_notice_instance( '3.7.5' );
+
+		$this->assertSame( '', $this->capture_render_output( $instance ) );
+	}
+
+	/**
+	 * Test nothing renders when Merchant Center is not connected, even when a
+	 * qualifying update is available.
+	 *
+	 * @return void
+	 */
+	public function test_maybe_render_outputs_nothing_when_merchant_center_is_not_connected(): void {
+		$this->wp->method( 'current_user_can' )->with( 'update_plugins' )->willReturn( true );
+		$this->wp->method( 'get_site_transient' )->with( 'update_plugins' )->willReturn( $this->get_transient_with_update( '3.8.0' ) );
+
+		$instance = $this->get_notice_instance( '3.7.5', false );
 
 		$this->assertSame( '', $this->capture_render_output( $instance ) );
 	}
@@ -215,7 +235,7 @@ class MerchantApiMigrationNoticeTest extends TestCase {
 	 * @return void
 	 */
 	public function test_can_be_instantiated_with_real_wp_proxy(): void {
-		$this->assertInstanceOf( MerchantApiMigrationNotice::class, new MerchantApiMigrationNotice( new WP() ) );
+		$this->assertInstanceOf( MerchantApiMigrationNotice::class, new MerchantApiMigrationNotice( new WP(), $this->merchant_center ) );
 	}
 
 	/**
@@ -223,12 +243,15 @@ class MerchantApiMigrationNoticeTest extends TestCase {
 	 * basename stubbed, leaving all rendering logic real.
 	 *
 	 * @param string $installed_version Value returned by the stubbed `get_version`.
+	 * @param bool   $is_connected      Value returned by the stubbed `MerchantCenterService::is_connected`.
 	 *
 	 * @return MockObject|MerchantApiMigrationNotice
 	 */
-	private function get_notice_instance( string $installed_version = '3.7.5' ) {
+	private function get_notice_instance( string $installed_version = '3.7.5', bool $is_connected = true ) {
+		$this->merchant_center->method( 'is_connected' )->willReturn( $is_connected );
+
 		$instance = $this->getMockBuilder( MerchantApiMigrationNotice::class )
-			->setConstructorArgs( [ $this->wp ] )
+			->setConstructorArgs( [ $this->wp, $this->merchant_center ] )
 			->onlyMethods( [ 'get_version', 'get_plugin_basename' ] )
 			->getMock();
 

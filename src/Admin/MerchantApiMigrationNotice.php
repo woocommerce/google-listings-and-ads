@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\AdminConditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use stdClass;
@@ -50,12 +51,19 @@ class MerchantApiMigrationNotice implements Service, Registerable, Conditional {
 	protected $wp;
 
 	/**
+	 * @var MerchantCenterService
+	 */
+	protected $merchant_center;
+
+	/**
 	 * MerchantApiMigrationNotice constructor.
 	 *
-	 * @param WP $wp
+	 * @param WP                    $wp
+	 * @param MerchantCenterService $merchant_center
 	 */
-	public function __construct( WP $wp ) {
-		$this->wp = $wp;
+	public function __construct( WP $wp, MerchantCenterService $merchant_center ) {
+		$this->wp              = $wp;
+		$this->merchant_center = $merchant_center;
 	}
 
 	/**
@@ -88,6 +96,10 @@ class MerchantApiMigrationNotice implements Service, Registerable, Conditional {
 	 */
 	private function should_render(): bool {
 		if ( ! $this->wp->current_user_can( 'update_plugins' ) ) {
+			return false;
+		}
+
+		if ( ! $this->merchant_center->is_connected() ) {
 			return false;
 		}
 

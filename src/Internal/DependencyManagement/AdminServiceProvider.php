@@ -95,7 +95,7 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		);
 		$this->share_with_tags( PHPViewFactory::class );
 		$this->share_with_tags( Redirect::class, WP::class, OnboardingCompleted::class );
-		$this->share_with_tags( MerchantApiMigrationNotice::class, WP::class );
+		$this->share_with_tags( MerchantApiMigrationNotice::class, WP::class, MerchantCenterService::class );
 
 		// Share bulk edit views
 		$this->share_with_tags( CouponBulkEdit::class, CouponMetaHandler::class, MerchantCenterService::class, TargetAudience::class );
