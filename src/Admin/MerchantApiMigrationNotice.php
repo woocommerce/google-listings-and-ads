@@ -103,7 +103,9 @@ class MerchantApiMigrationNotice implements Service, Registerable, Conditional {
 			return false;
 		}
 
-		if ( ! version_compare( $this->get_version(), self::MIGRATION_TARGET_VERSION, '<' ) ) {
+		$target = $this->pad_version( self::MIGRATION_TARGET_VERSION );
+
+		if ( ! version_compare( $this->pad_version( $this->get_version() ), $target, '<' ) ) {
 			return false;
 		}
 
@@ -112,7 +114,25 @@ class MerchantApiMigrationNotice implements Service, Registerable, Conditional {
 			return false;
 		}
 
-		return version_compare( $update->new_version ?? '', self::MIGRATION_TARGET_VERSION, '>=' );
+		return version_compare( $this->pad_version( $update->new_version ?? '' ), $target, '>=' );
+	}
+
+	/**
+	 * Pad a version string to at least three components so `version_compare`
+	 * treats versions like "3.8" and "3.8.0" as equal.
+	 *
+	 * @param string $version Version string.
+	 *
+	 * @return string
+	 */
+	private function pad_version( string $version ): string {
+		$parts = explode( '.', $version );
+
+		while ( count( $parts ) < 3 ) {
+			$parts[] = '0';
+		}
+
+		return implode( '.', $parts );
 	}
 
 	/**

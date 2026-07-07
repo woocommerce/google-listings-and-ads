@@ -144,6 +144,41 @@ class MerchantApiMigrationNoticeTest extends TestCase {
 	}
 
 	/**
+	 * Test nothing renders when the installed version is a two-part string equal
+	 * to the migration target ("3.8" vs "3.8.0"), which raw `version_compare`
+	 * would wrongly treat as below the target.
+	 *
+	 * @return void
+	 */
+	public function test_maybe_render_outputs_nothing_when_installed_version_is_two_part_equal_to_target(): void {
+		$this->wp->method( 'current_user_can' )->with( 'update_plugins' )->willReturn( true );
+		$this->wp->method( 'get_site_transient' )->with( 'update_plugins' )->willReturn( $this->get_transient_with_update( '3.9.0' ) );
+
+		$instance = $this->get_notice_instance( '3.8' );
+
+		$this->assertSame( '', $this->capture_render_output( $instance ) );
+	}
+
+	/**
+	 * Test the banner renders when the available update is a two-part string equal
+	 * to the migration target ("3.8" vs "3.8.0"), which raw `version_compare`
+	 * would wrongly treat as below the target.
+	 *
+	 * @return void
+	 */
+	public function test_maybe_render_outputs_banner_when_available_version_is_two_part_equal_to_target(): void {
+		$this->wp->method( 'current_user_can' )->with( 'update_plugins' )->willReturn( true );
+		$this->wp->method( 'get_site_transient' )->with( 'update_plugins' )->willReturn( $this->get_transient_with_update( '3.8' ) );
+
+		$instance = $this->get_notice_instance( '3.7.5' );
+
+		$output = $this->capture_render_output( $instance );
+
+		$this->assertStringContainsString( 'notice-warning', $output );
+		$this->assertStringContainsString( 'Critical Update:', $output );
+	}
+
+	/**
 	 * Test nothing renders when the installed version is above the migration target.
 	 *
 	 * @return void
