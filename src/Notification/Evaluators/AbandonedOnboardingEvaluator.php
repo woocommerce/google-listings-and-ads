@@ -9,37 +9,20 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\AccountState;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Class AbandonedOnboardingEvaluator
  *
- * Fires when MC setup is not complete and at least one onboarding step has started.
+ * Fires when onboarding is incomplete and the merchant abandoned at Step 1 (Account Setup)
+ * or Step 2 (Product Feed Configuration), using the same step tracking as the mc/setup endpoint.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
-class AbandonedOnboardingEvaluator implements NotificationEvaluatorInterface, MerchantCenterAwareInterface, OptionsAwareInterface, Service {
+class AbandonedOnboardingEvaluator implements NotificationEvaluatorInterface, MerchantCenterAwareInterface, Service {
 
 	use MerchantCenterAwareTrait;
-	use OptionsAwareTrait;
-
-	/** @var MerchantAccountState */
-	private $merchant_account_state;
-
-	/**
-	 * AbandonedOnboardingEvaluator constructor.
-	 *
-	 * @param MerchantAccountState $merchant_account_state
-	 */
-	public function __construct( MerchantAccountState $merchant_account_state ) {
-		$this->merchant_account_state = $merchant_account_state;
-	}
 
 	/**
 	 * Get the notification's unique ID.
@@ -56,11 +39,23 @@ class AbandonedOnboardingEvaluator implements NotificationEvaluatorInterface, Me
 	 * @return bool
 	 */
 	public function should_show(): bool {
-		if ( $this->merchant_center->is_setup_complete() ) {
+		// Google account connection is the first intentional GLA onboarding action.
+		if ( ! $this->merchant_center->is_google_connected() ) {
 			return false;
 		}
 
-		return $this->has_onboarding_step_started();
+		$setup_status = $this->merchant_center->get_setup_status();
+
+		if ( 'complete' === ( $setup_status['status'] ?? '' ) ) {
+			return false;
+		}
+
+		$step = $setup_status['step'] ?? '';
+
+		// Only an incomplete account setup (Step 1) or product feed configuration (Step 2)
+		// counts as abandoned. The setup status already derives the step from the account
+		// connection state, so there is no need to re-check the individual accounts here.
+		return in_array( $step, [ 'accounts', 'product_listings' ], true );
 	}
 
 	/**
@@ -79,32 +74,5 @@ class AbandonedOnboardingEvaluator implements NotificationEvaluatorInterface, Me
 	 */
 	public function get_snooze_duration(): ?int {
 		return NotificationSnoozeDurations::ABANDONED_ONBOARDING;
-	}
-
-	/**
-	 * Determine whether at least one onboarding step has been started.
-	 *
-	 * @return bool
-	 */
-	private function has_onboarding_step_started(): bool {
-		if ( $this->options->get( OptionsInterface::GOOGLE_CONNECTED, false ) ) {
-			return true;
-		}
-
-		if ( $this->options->get( OptionsInterface::WP_TOS_ACCEPTED, false ) ) {
-			return true;
-		}
-
-		if ( $this->options->get_merchant_id() > 0 ) {
-			return true;
-		}
-
-		foreach ( $this->merchant_account_state->get( false ) as $step ) {
-			if ( isset( $step['status'] ) && AccountState::STEP_DONE === $step['status'] ) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 }

@@ -50,7 +50,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DeprecatedFilters;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\InstallTimestamp;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\Logging\DebugLogger;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService as MerchantAccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\ContactInformation;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
@@ -326,18 +325,18 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Notifications.
 		$this->share_with_tags( NotificationService::class, WP::class );
 		$this->share_with_tags( SkippedCampaignEvaluator::class, OnboardingCompleted::class );
-		$this->share_with_tags( AbandonedOnboardingEvaluator::class, MerchantAccountState::class );
+		$this->share_with_tags( AbandonedOnboardingEvaluator::class );
 		$this->share_with_tags( NotOnboarded90DaysEvaluator::class, OnboardingCompleted::class );
 		$this->share_with_tags( EnhancedConversionsOffEvaluator::class );
 		$this->share_with_tags( TrackingOffEvaluator::class );
-		$this->share_with_tags( ProductIssuesEvaluator::class );
+		$this->share_with_tags( ProductIssuesEvaluator::class, ServiceBasedMerchantState::class );
 		$this->share_with_tags( Sold10ItemsEvaluator::class );
 		$this->share_with_tags( ReadyButNoSalesEvaluator::class, WC::class );
 		$this->share_with_tags( CouponsNotSyncedEvaluator::class, MerchantCenterService::class, TargetAudience::class );
 		$this->share_with_tags( SalesNotGrowingEvaluator::class );
 		$this->share_with_tags( WcInstallTimestamp::class, WP::class );
 		$this->share_with_tags( PausedCampaignEvaluator::class, AdsCampaign::class );
-		$this->share_with_tags( CampaignNoSalesEvaluator::class, AdsCampaign::class, AdsReport::class );
+		$this->share_with_tags( CampaignNoSalesEvaluator::class, AdsCampaign::class, AdsReport::class, AdsRecommendationsService::class );
 		$this->share_with_tags( RecommendationsAvailableEvaluator::class, AdsRecommendationsService::class, AdsCampaign::class );
 
 		// Product attributes
