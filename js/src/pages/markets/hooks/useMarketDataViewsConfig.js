@@ -242,8 +242,7 @@ const buildFlatConfig = ( { markets, ratesByCountry, timesByCountry } ) => {
 	const data = markets.map( ( market ) => {
 		let country = market.country;
 		if ( isPrimaryMarket( market ) && market.countries.length > 0 ) {
-			// For the primary market, use the first country in the list to look up rates and times,
-			// since theoretically there should not be the country property for that market.
+			// Primary's country is null by API contract — use the first targeted country for rate/time lookups.
 			country = market.countries[ 0 ];
 		}
 
@@ -302,9 +301,7 @@ const buildAutomaticConfig = ( { markets, timesByCountry } ) => {
 	const data = markets.map( ( market ) => {
 		let country = market.country;
 		if ( isPrimaryMarket( market ) && market.countries?.length > 0 ) {
-			// For the primary market, use the first country in the list to look up
-			// times, since theoretically there should not be a country property for
-			// that market.
+			// Primary's country is null by API contract — use the first targeted country for time lookups.
 			country = market.countries[ 0 ];
 		}
 
@@ -350,6 +347,11 @@ const buildDefaultConfig = ( { markets, countryNames, timesByCountry } ) => {
 	const fields = [ ALL_FIELDS.market, ALL_FIELDS.shippingTime ];
 
 	const data = markets.map( ( market ) => {
+		let country = market.country;
+		if ( isPrimaryMarket( market ) && market.countries?.length > 0 ) {
+			country = market.countries[ 0 ];
+		}
+
 		const marketCell = isPrimaryMarket( market )
 			? sprintf(
 					// translators: 1: market label, 2: number of countries.
@@ -367,7 +369,7 @@ const buildDefaultConfig = ( { markets, countryNames, timesByCountry } ) => {
 		return {
 			...market,
 			label: marketCell,
-			shipping_time_config: timesByCountry[ market.country ],
+			shipping_time_config: timesByCountry[ country ],
 		};
 	} );
 

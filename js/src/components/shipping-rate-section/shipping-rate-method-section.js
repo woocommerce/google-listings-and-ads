@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
+import { createInterpolateElement, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -30,6 +30,22 @@ const ShippingRateMethodSection = ( { children } ) => {
 	const { hasFinishedResolution, data: mcSetup } = useMCSetup();
 	const inputProps = getInputProps( 'shipping_rate' );
 	const { isMultiLingualStore } = glaData;
+
+	// Take a one-time snapshot once settings have resolved.
+	// Using a ref so mid-session auto-saves (which flip isFlatShippingRate to
+	// false) don't hide the option after it was already shown.
+	// For multilingual stores the flat option is shown only when the stored
+	// value is already 'flat' (i.e. the merchant previously configured it).
+	// The SavedSetupStepper auto-save initialises multilingual stores to
+	// 'manual', never 'flat', so isFlatShippingRate is false on a clean
+	// onboarding and the option is correctly hidden.
+	const showFlatOptionRef = useRef( null );
+	if ( showFlatOptionRef.current === null && settings !== undefined ) {
+		const isFlatShippingRate =
+			settings.shipping_rate === SHIPPING_RATE_METHOD.FLAT;
+		showFlatOptionRef.current = ! isMultiLingualStore || isFlatShippingRate;
+	}
+	const showFlatOption = showFlatOptionRef.current ?? ! isMultiLingualStore;
 
 	// Hide the automatic shipping rate option if there are no shipping rates and the merchant is onboarding.
 	const hideAutomaticShippingRate =
@@ -82,7 +98,7 @@ const ShippingRateMethodSection = ( { children } ) => {
 							</AppRadioContentControl>
 						) }
 
-						{ ! isMultiLingualStore && (
+						{ showFlatOption && (
 							<AppRadioContentControl
 								{ ...inputProps }
 								label={ __(

@@ -3,6 +3,10 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Integration;
 
+use DateTime;
+use WC_DateTime;
+use WC_Product;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -41,6 +45,29 @@ class WPML implements IntegrationInterface {
 		$default = apply_filters( 'wpml_default_language', null );
 
 		return is_string( $default ) && '' !== $default ? $default : '';
+	}
+
+	/**
+	 * Returns the WPML language code for a given post ID.
+	 *
+	 * @param int $post_id The post ID.
+	 *
+	 * @return string The language code, or empty string when WPML is inactive or no language is recorded.
+	 */
+	public function get_post_language( int $post_id ): string {
+		if ( ! $this->is_active() ) {
+			return '';
+		}
+
+		$details = apply_filters( 'wpml_post_language_details', null, $post_id );
+
+		if ( ! is_array( $details ) ) {
+			return '';
+		}
+
+		$code = $details['language_code'] ?? '';
+
+		return is_string( $code ) ? $code : '';
 	}
 
 	/**
@@ -96,13 +123,113 @@ class WPML implements IntegrationInterface {
 	}
 
 	/**
+	 * Returns the regular price for a product converted into the given currency via WCML.
+	 *
+	 * @param WC_Product $product
+	 * @param string     $currency ISO 4217 currency code.
+	 *
+	 * @return float|null Converted regular price, or null when WPML is inactive, WCML multi-currency
+	 *                    is off, or the product has no regular price.
+	 */
+	public function get_product_price_in_currency( WC_Product $product, string $currency ): ?float {
+		if ( ! $this->is_active() || ! $this->is_wcml_multi_currency_on() ) {
+			return null;
+		}
+
+		$custom_prices = $this->get_wcml_custom_prices( (int) $product->get_id(), $currency );
+		if ( false !== $custom_prices ) {
+			return isset( $custom_prices['_regular_price'] ) && '' !== $custom_prices['_regular_price']
+				? (float) $custom_prices['_regular_price']
+				: null;
+		}
+
+		$regular_price = $product->get_regular_price();
+		if ( '' === $regular_price ) {
+			return null;
+		}
+
+		return (float) apply_filters( 'wcml_raw_price_amount', (float) $regular_price, $currency );
+	}
+
+	/**
+	 * Returns the sale price for a product converted into the given currency via WCML.
+	 *
+	 * @param WC_Product $product
+	 * @param string     $currency ISO 4217 currency code.
+	 *
+	 * @return float|null Converted sale price, or null when WPML is inactive, WCML multi-currency
+	 *                    is off, or the product has no sale price.
+	 */
+	public function get_product_sale_price_in_currency( WC_Product $product, string $currency ): ?float {
+		if ( ! $this->is_active() || ! $this->is_wcml_multi_currency_on() ) {
+			return null;
+		}
+
+		$custom_prices = $this->get_wcml_custom_prices( (int) $product->get_id(), $currency );
+		if ( false !== $custom_prices ) {
+			// Manual mode: WCML's get_product_custom_prices has already applied any
+			// per-currency or base sale-date range. An empty _sale_price means the sale
+			// is not currently active for this currency.
+			return isset( $custom_prices['_sale_price'] ) && '' !== $custom_prices['_sale_price']
+				? (float) $custom_prices['_sale_price']
+				: null;
+		}
+
+		$sale_price = $product->get_sale_price();
+		if ( '' === $sale_price ) {
+			return null;
+		}
+
+		// Auto mode: WCML's filter only performs exchange-rate conversion; it does not
+		// apply the base WC sale-end date. Honour that date here so an expired base sale
+		// is not auto-converted and emitted in the override currency.
+		$sale_end_date = $product->get_date_on_sale_to();
+		if ( ! empty( $sale_end_date ) && $sale_end_date < new WC_DateTime() ) {
+			return null;
+		}
+
+		return (float) apply_filters( 'wcml_raw_price_amount', (float) $sale_price, $currency );
+	}
+
+	/**
+	 * Returns the sale effective-date string for a product in a given currency, or null
+	 * when no per-currency dates are configured (the caller should fall back to base
+	 * WC sale dates in that case).
+	 *
+	 * WCML stores per-currency sale dates as Unix timestamps under post meta keys
+	 * `_sale_price_dates_from_{currency}` and `_sale_price_dates_to_{currency}`.
+	 *
+	 * @param WC_Product $product
+	 * @param string     $currency ISO 4217 currency code.
+	 *
+	 * @return string|null
+	 */
+	public function get_product_sale_dates_in_currency( WC_Product $product, string $currency ): ?string {
+		if ( ! $this->is_active() || ! $this->is_wcml_multi_currency_on() ) {
+			return null;
+		}
+
+		$from_meta = get_post_meta( $product->get_id(), '_sale_price_dates_from_' . $currency, true );
+		$to_meta   = get_post_meta( $product->get_id(), '_sale_price_dates_to_' . $currency, true );
+
+		if ( ! $from_meta && ! $to_meta ) {
+			return null;
+		}
+
+		$from = $from_meta ? gmdate( DateTime::ATOM, (int) $from_meta ) : '';
+		$to   = $to_meta ? gmdate( DateTime::ATOM, (int) $to_meta ) : '';
+
+		return sprintf( '%s/%s', $from, $to );
+	}
+
+	/**
 	 * Returns WCML currency codes when multi-currency is enabled, or the single WooCommerce
 	 * store currency as a fallback when WCML multi-currency is off or unavailable.
 	 *
 	 * @return string[]
 	 */
 	protected function get_active_currency_codes(): array {
-		if ( function_exists( 'wcml_is_multi_currency_on' ) && wcml_is_multi_currency_on() ) {
+		if ( $this->is_wcml_multi_currency_on() ) {
 			global $woocommerce_wpml;
 
 			if ( isset( $woocommerce_wpml ) && is_object( $woocommerce_wpml ) && method_exists( $woocommerce_wpml, 'get_multi_currency' ) ) {
@@ -119,6 +246,47 @@ class WPML implements IntegrationInterface {
 		$currency = function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : '';
 
 		return is_string( $currency ) && '' !== $currency ? [ $currency ] : [];
+	}
+
+	/**
+	 * Returns whether WCML multi-currency is enabled.
+	 *
+	 * @return bool
+	 */
+	protected function is_wcml_multi_currency_on(): bool {
+		return function_exists( 'wcml_is_multi_currency_on' ) && wcml_is_multi_currency_on();
+	}
+
+	/**
+	 * Returns WCML's manual per-currency prices for a product, or false when manual prices
+	 * are not configured for that product+currency.
+	 *
+	 * Wraps WCML's own custom-prices lookup so callers can prefer manual values when set,
+	 * and fall back to the wcml_raw_price_amount auto-conversion filter otherwise.
+	 *
+	 * @param int    $product_id
+	 * @param string $currency
+	 *
+	 * @return array<string, string>|false
+	 */
+	protected function get_wcml_custom_prices( int $product_id, string $currency ) {
+		global $woocommerce_wpml;
+
+		if ( ! isset( $woocommerce_wpml ) || ! is_object( $woocommerce_wpml ) ) {
+			return false;
+		}
+
+		if ( ! isset( $woocommerce_wpml->multi_currency ) || ! isset( $woocommerce_wpml->multi_currency->custom_prices ) ) {
+			return false;
+		}
+
+		$custom_prices = $woocommerce_wpml->multi_currency->custom_prices;
+
+		if ( ! is_object( $custom_prices ) || ! method_exists( $custom_prices, 'get_product_custom_prices' ) ) {
+			return false;
+		}
+
+		return $custom_prices->get_product_custom_prices( $product_id, $currency );
 	}
 
 	/**

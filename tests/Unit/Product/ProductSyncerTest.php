@@ -10,8 +10,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntr
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
@@ -42,8 +43,8 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 	/** @var MockObject|GoogleProductService $google_service */
 	protected $google_service;
 
-	/** @var MockObject|TargetAudience $target_audience */
-	protected $target_audience;
+	/** @var MockObject|MarketService $market_service */
+	protected $market_service;
 
 	/** @var MockObject|MerchantCenterService $merchant_center */
 	protected $merchant_center;
@@ -80,8 +81,9 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 										$this->product_helper,
 										$validator,
 										$product_factory,
-										$this->target_audience,
 										$this->rules_query,
+										$this->market_service,
+										$this->createMock( WPML::class ),
 									]
 								)
 								->getMock();
@@ -548,70 +550,6 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 			->willReturnCallback( $callback );
 	}
 
-	public function test_update_throws_exception_when_mc_is_blocked() {
-		$merchant_center = $this->createMock( MerchantCenterService::class );
-		$merchant_center->expects( $this->any() )
-			->method( 'should_push' )
-			->willReturn( true );
-		$this->merchant_center->expects( $this->any() )
-			->method( 'is_enabled_for_datatype' )
-			->with( 'products' )
-			->willReturn( false );
-		$this->product_syncer = $this->get_product_syncer( [ 'merchant_center' => $merchant_center ] );
-
-		$this->expectException( ProductSyncerException::class );
-
-		$this->product_syncer->update( [] );
-	}
-
-	public function test_update_by_batch_throws_exception_when_mc_is_blocked() {
-		$merchant_center = $this->createMock( MerchantCenterService::class );
-		$merchant_center->expects( $this->any() )
-			->method( 'should_push' )
-			->willReturn( true );
-		$this->merchant_center->expects( $this->any() )
-			->method( 'is_enabled_for_datatype' )
-			->with( 'products' )
-			->willReturn( false );
-		$this->product_syncer = $this->get_product_syncer( [ 'merchant_center' => $merchant_center ] );
-
-		$this->expectException( ProductSyncerException::class );
-
-		$this->product_syncer->update_by_batch_requests( [] );
-	}
-
-	public function test_delete_throws_exception_when_mc_is_blocked() {
-		$merchant_center = $this->createMock( MerchantCenterService::class );
-		$merchant_center->expects( $this->any() )
-			->method( 'should_push' )
-			->willReturn( true );
-		$this->merchant_center->expects( $this->any() )
-			->method( 'is_enabled_for_datatype' )
-			->with( 'products' )
-			->willReturn( false );
-		$this->product_syncer = $this->get_product_syncer( [ 'merchant_center' => $merchant_center ] );
-
-		$this->expectException( ProductSyncerException::class );
-
-		$this->product_syncer->delete( [] );
-	}
-
-	public function test_delete_by_batch_throws_exception_when_mc_is_blocked() {
-		$merchant_center = $this->createMock( MerchantCenterService::class );
-		$merchant_center->expects( $this->any() )
-			->method( 'should_push' )
-			->willReturn( true );
-		$this->merchant_center->expects( $this->any() )
-			->method( 'is_enabled_for_datatype' )
-			->with( 'products' )
-			->willReturn( false );
-		$this->product_syncer = $this->get_product_syncer( [ 'merchant_center' => $merchant_center ] );
-
-		$this->expectException( ProductSyncerException::class );
-
-		$this->product_syncer->delete_by_batch_requests( [] );
-	}
-
 	/**
 	 * Function to return an instance of ProductSyncer.
 	 *
@@ -640,7 +578,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->target_audience = $this->createMock( TargetAudience::class );
+		$this->market_service  = $this->createMock( MarketService::class );
 		$this->merchant_center = $this->createMock( MerchantCenterService::class );
 		$this->merchant_center->expects( $this->any() )
 			->method( 'is_ready_for_syncing' )
@@ -648,11 +586,6 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 		$this->merchant_center->expects( $this->any() )
 			->method( 'should_push' )
-			->willReturn( true );
-
-		$this->merchant_center->expects( $this->any() )
-			->method( 'is_enabled_for_datatype' )
-			->with( 'products' )
 			->willReturn( true );
 
 		$this->google_service = $this->createMock( GoogleProductService::class );
