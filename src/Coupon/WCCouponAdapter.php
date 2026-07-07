@@ -373,7 +373,7 @@ class WCCouponAdapter implements Validatable {
 	/**
 	 * Map a WooCommerce amount to a Merchant API Price { amountMicros, currencyCode }.
 	 *
-	 * @param mixed $wc_amount
+	 * @param string|float $wc_amount
 	 *
 	 * @return array
 	 */
