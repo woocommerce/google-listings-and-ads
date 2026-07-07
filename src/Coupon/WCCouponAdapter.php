@@ -49,7 +49,7 @@ class WCCouponAdapter implements Validatable {
 
 	public const COUPON_VALUE_TYPE_PERCENT_OFF = 'PERCENT_OFF';
 
-	protected const DATE_TIME_FORMAT = 'Y-m-d h:i:sa';
+	protected const DATE_TIME_FORMAT = 'Y-m-d H:i:s';
 
 	public const COUNTRIES_WITH_FREE_SHIPPING_DESTINATION = [ 'BR', 'IT', 'ES', 'JP', 'NL', 'KR', 'US' ];
 
