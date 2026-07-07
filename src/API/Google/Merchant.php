@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAcc
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountHomepageService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountServicesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountUsersService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiIssueResolutionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -18,10 +19,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingCo
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Account;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RequestPhoneVerificationRequest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RequestReviewFreeListingsRequest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RequestReviewShoppingAdsRequest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\VerifyPhoneNumberRequest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\ResponseInterface;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -72,6 +70,13 @@ class Merchant implements OptionsAwareInterface {
 	protected $services_service;
 
 	/**
+	 * The Merchant API issue resolution service.
+	 *
+	 * @var MapiIssueResolutionService
+	 */
+	protected $issue_resolution_service;
+
+	/**
 	 * Merchant constructor.
 	 *
 	 * @param ShoppingContent                $service
@@ -79,13 +84,15 @@ class Merchant implements OptionsAwareInterface {
 	 * @param MapiAccountBusinessInfoService $business_info_service
 	 * @param MapiAccountUsersService        $users_service
 	 * @param MapiAccountServicesService     $services_service
+	 * @param MapiIssueResolutionService     $issue_resolution_service
 	 */
-	public function __construct( ShoppingContent $service, MapiAccountHomepageService $homepage_service, MapiAccountBusinessInfoService $business_info_service, MapiAccountUsersService $users_service, MapiAccountServicesService $services_service ) {
-		$this->service               = $service;
-		$this->homepage_service      = $homepage_service;
-		$this->business_info_service = $business_info_service;
-		$this->users_service         = $users_service;
-		$this->services_service      = $services_service;
+	public function __construct( ShoppingContent $service, MapiAccountHomepageService $homepage_service, MapiAccountBusinessInfoService $business_info_service, MapiAccountUsersService $users_service, MapiAccountServicesService $services_service, MapiIssueResolutionService $issue_resolution_service ) {
+		$this->service                  = $service;
+		$this->homepage_service         = $homepage_service;
+		$this->business_info_service    = $business_info_service;
+		$this->users_service            = $users_service;
+		$this->services_service         = $services_service;
+		$this->issue_resolution_service = $issue_resolution_service;
 	}
 
 	/**
@@ -402,55 +409,48 @@ class Merchant implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Get the review status for an MC account
+	 * Render the account-level issues and their resolution actions for the connected account.
 	 *
 	 * @since 2.7.1
 	 *
-	 * @return array An array with the status for freeListingsProgram and shoppingAdsProgram
-	 * @throws Exception When an exception happens in the Google API.
+	 * @return array The RenderAccountIssuesResponse (renderedIssues with their actions).
+	 * @throws Exception When an exception happens in the Merchant API.
 	 */
 	public function get_account_review_status() {
 		try {
-			$id = $this->options->get_merchant_id();
-			return [
-				'freeListingsProgram' => $this->service->freelistingsprogram->get( $id ),
-				'shoppingAdsProgram'  => $this->service->shoppingadsprogram->get( $id ),
-			];
-		} catch ( GoogleException $e ) {
-			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
+			return $this->issue_resolution_service->render_account_issues();
+		} catch ( MerchantApiException $e ) {
+			// The woocommerce_gla_mc_client_exception action is fired by MerchantApiException::__construct().
 			throw new Exception( $e->getMessage(), $e->getCode() );
 		}
 	}
 
 	/**
-	 * Request a review for an MC account
+	 * Trigger the in-app account-review action.
+	 *
+	 * Completes the review request without leaving the store, using the action context and
+	 * flow taken from the rendered review action.
 	 *
 	 * @since 2.7.1
 	 *
-	 * @param string $region_code The region code to request the review
-	 * @param array  $types The types of programs to request the review
+	 * @param string $action_context The action context taken from the rendered review action.
+	 * @param string $action_flow_id The review action flow id.
+	 * @param array  $input_values   Optional input values for the action flow.
 	 *
-	 * @return ResponseInterface The Google API response
-	 * @throws Exception When the request review produces an exception in the Google side or when
-	 * the programs are not supported.
+	 * @return array The Merchant API response.
+	 * @throws Exception When the trigger produces an exception on the Merchant API side.
 	 */
-	public function account_request_review( $region_code, $types ) {
+	public function trigger_review_action( string $action_context, string $action_flow_id, array $input_values = [] ): array {
 		try {
-			$id = $this->options->get_merchant_id();
-
-			if ( in_array( 'freelistingsprogram', $types, true ) ) {
-				$request = new RequestReviewFreeListingsRequest();
-				$request->setRegionCode( $region_code );
-				return $this->service->freelistingsprogram->requestreview( $id, $request );
-			} elseif ( in_array( 'shoppingadsprogram', $types, true ) ) {
-				$request = new RequestReviewShoppingAdsRequest();
-				$request->setRegionCode( $region_code );
-				return $this->service->shoppingadsprogram->requestreview( $id, $request );
-			} else {
-				throw new Exception( 'Program type not supported', 400 );
-			}
-		} catch ( GoogleException $e ) {
-			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
+			return $this->issue_resolution_service->trigger_action(
+				$action_context,
+				[
+					'actionFlowId' => $action_flow_id,
+					'inputValues'  => $input_values,
+				]
+			);
+		} catch ( MerchantApiException $e ) {
+			// The woocommerce_gla_mc_client_exception action is fired by MerchantApiException::__construct().
 			throw new Exception( $e->getMessage(), $e->getCode() );
 		}
 	}
