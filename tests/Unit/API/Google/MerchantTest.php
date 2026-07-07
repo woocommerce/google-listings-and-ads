@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAcc
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountHomepageService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountServicesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountUsersService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiIssueResolutionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -52,6 +53,9 @@ class MerchantTest extends UnitTest {
 	/** @var MockObject|MapiAccountServicesService $services_service */
 	protected $services_service;
 
+	/** @var MockObject|MapiIssueResolutionService $issue_resolution_service */
+	protected $issue_resolution_service;
+
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
@@ -66,18 +70,17 @@ class MerchantTest extends UnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->service                      = $this->createMock( ShoppingContent::class );
-		$this->service->accounts            = $this->createMock( Accounts::class );
-		$this->service->products            = $this->createMock( Products::class );
-		$this->service->freelistingsprogram = $this->createMock( ShoppingContent\Resource\Freelistingsprogram::class );
-		$this->service->shoppingadsprogram  = $this->createMock( ShoppingContent\Resource\Shoppingadsprogram::class );
+		$this->service           = $this->createMock( ShoppingContent::class );
+		$this->service->accounts = $this->createMock( Accounts::class );
+		$this->service->products = $this->createMock( Products::class );
 
-		$this->homepage_service      = $this->createMock( MapiAccountHomepageService::class );
-		$this->business_info_service = $this->createMock( MapiAccountBusinessInfoService::class );
-		$this->users_service         = $this->createMock( MapiAccountUsersService::class );
-		$this->services_service      = $this->createMock( MapiAccountServicesService::class );
-		$this->options               = $this->createMock( OptionsInterface::class );
-		$this->merchant              = new Merchant( $this->service, $this->homepage_service, $this->business_info_service, $this->users_service, $this->services_service );
+		$this->homepage_service         = $this->createMock( MapiAccountHomepageService::class );
+		$this->business_info_service    = $this->createMock( MapiAccountBusinessInfoService::class );
+		$this->users_service            = $this->createMock( MapiAccountUsersService::class );
+		$this->services_service         = $this->createMock( MapiAccountServicesService::class );
+		$this->issue_resolution_service = $this->createMock( MapiIssueResolutionService::class );
+		$this->options                  = $this->createMock( OptionsInterface::class );
+		$this->merchant                 = new Merchant( $this->service, $this->homepage_service, $this->business_info_service, $this->users_service, $this->services_service, $this->issue_resolution_service );
 		$this->merchant->set_options_object( $this->options );
 
 		$this->merchant_id = 12345;
@@ -514,35 +517,35 @@ class MerchantTest extends UnitTest {
 	}
 
 	public function test_get_account_review_status() {
-		$this->options->expects( $this->once() )->method( 'get_merchant_id' )->willReturn( $this->merchant_id );
-
-		$review_status = [
-			'freeListingsProgram' => 'freeListingsProgram',
-			'shoppingAdsProgram'  => 'shoppingAdsProgram',
+		$response = [
+			'renderedIssues' => [
+				[
+					'title'   => 'Account suspended',
+					'impact'  => [ 'severity' => 'ERROR' ],
+					'actions' => [],
+				],
+			],
 		];
 
-		$this->service->freelistingsprogram->expects( $this->once() )
-								->method( 'get' )
-								->with( $this->merchant_id )
-								->willReturn( 'freeListingsProgram' );
+		$this->issue_resolution_service->expects( $this->once() )
+			->method( 'render_account_issues' )
+			->willReturn( $response );
 
-		$this->service->shoppingadsprogram->expects( $this->once() )
-											->method( 'get' )
-											->with( $this->merchant_id )
-											->willReturn( 'shoppingAdsProgram' );
-
-		$this->assertEquals( $this->merchant->get_account_review_status(), $review_status );
+		$this->assertSame( $response, $this->merchant->get_account_review_status() );
 	}
 
 	public function test_get_account_review_status_exception() {
-		$this->options->expects( $this->once() )->method( 'get_merchant_id' )->willReturn( $this->merchant_id );
+		$body = [
+			'error' => [
+				'code'    => 400,
+				'message' => 'Some exception',
+				'status'  => 'INVALID_ARGUMENT',
+			],
+		];
 
-		$this->service->freelistingsprogram->expects( $this->once() )
-											->method( 'get' )
-											->with( $this->merchant_id )
-											->willThrowException(
-												new GoogleException( 'Some exception', 400 )
-											);
+		$this->issue_resolution_service->expects( $this->once() )
+			->method( 'render_account_issues' )
+			->willThrowException( $this->merchant_api_exception( 400, $body ) );
 
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'Some exception' );
@@ -551,58 +554,41 @@ class MerchantTest extends UnitTest {
 		$this->merchant->get_account_review_status();
 	}
 
-	public function test_request_review_freelistings() {
-		$types    = [ 'freelistingsprogram', 'shoppingadsprogram' ];
-		$response = [ 'statusCode' => 200 ];
-		$this->service->freelistingsprogram->expects( $this->once() )
-											->method( 'requestreview' )
-											->willReturn( $response );
+	public function test_trigger_review_action() {
+		$response = [ 'name' => 'accounts/12345/some-action' ];
 
-		$this->service->shoppingadsprogram->expects( $this->never() )
-											->method( 'requestreview' );
+		$this->issue_resolution_service->expects( $this->once() )
+			->method( 'trigger_action' )
+			->with(
+				'action-context-token',
+				[
+					'actionFlowId' => 'review-flow',
+					'inputValues'  => [],
+				]
+			)
+			->willReturn( $response );
 
-		$this->assertEquals( $this->merchant->account_request_review( 'ES', $types ), $response );
+		$this->assertSame( $response, $this->merchant->trigger_review_action( 'action-context-token', 'review-flow' ) );
 	}
 
-	public function test_request_review_shoppingads() {
-		$types    = [ 'shoppingadsprogram' ];
-		$response = [ 'statusCode' => 200 ];
-		$this->service->shoppingadsprogram->expects( $this->once() )
-											->method( 'requestreview' )
-											->willReturn( $response );
+	public function test_trigger_review_action_exception() {
+		$body = [
+			'error' => [
+				'code'    => 403,
+				'message' => 'Action not allowed',
+				'status'  => 'PERMISSION_DENIED',
+			],
+		];
 
-		$this->service->freelistingsprogram->expects( $this->never() )
-											->method( 'requestreview' );
-
-		$this->assertEquals( $this->merchant->account_request_review( 'ES', $types ), $response );
-	}
-
-	public function test_request_review_no_valid_type() {
-		$types = [ 'bad_dummy_type' ];
-		$this->service->freelistingsprogram->expects( $this->never() )
-											->method( 'requestreview' );
-
-		$this->service->shoppingadsprogram->expects( $this->never() )
-											->method( 'requestreview' );
+		$this->issue_resolution_service->expects( $this->once() )
+			->method( 'trigger_action' )
+			->willThrowException( $this->merchant_api_exception( 403, $body ) );
 
 		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Program type not supported' );
-		$this->expectExceptionCode( 400 );
+		$this->expectExceptionMessage( 'Action not allowed' );
+		$this->expectExceptionCode( 403 );
 
-		$this->merchant->account_request_review( 'ES', $types );
-	}
-
-	public function test_request_review_exception() {
-		$types = [ 'freelistingsprogram' ];
-		$this->service->freelistingsprogram->expects( $this->once() )
-											->method( 'requestreview' )
-											->willThrowException( new GoogleException( 'Some exception', 400 ) );
-
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Some exception' );
-		$this->expectExceptionCode( 400 );
-
-		$this->merchant->account_request_review( 'ES', $types );
+		$this->merchant->trigger_review_action( 'action-context-token', 'review-flow' );
 	}
 
 	private function mock_get_account( Account $account ) {
