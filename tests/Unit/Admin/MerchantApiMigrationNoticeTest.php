@@ -177,7 +177,7 @@ class MerchantApiMigrationNoticeTest extends TestCase {
 		$this->assertStringContainsString( 'August 18, 2026', $output );
 		$this->assertStringContainsString( 'Update Plugin Now', $output );
 		$this->assertStringContainsString( 'Read Migration Details', $output );
-		$this->assertStringContainsString( 'href="' . esc_url( admin_url( 'plugins.php' ) ) . '"', $output );
+		$this->assertStringContainsString( 'href="' . esc_url( self_admin_url( 'plugins.php' ) ) . '"', $output );
 		$this->assertStringContainsString( 'href="' . esc_url( MerchantApiMigrationNotice::MIGRATION_DETAILS_URL ) . '"', $output );
 		$this->assertStringContainsString( 'https://ads-developers.googleblog.com/2026/04/merchant-api-is-coming-to-google-ads.html', $output );
 		$this->assertStringContainsString( 'target="_blank"', $output );
