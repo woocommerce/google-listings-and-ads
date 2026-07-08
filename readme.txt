@@ -140,6 +140,9 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.7.3 - 2026-07-08 =
+* Fix - [GOOWOO-380] Display notification banner encouraging user to update their plugin before deprecation of API.
+
 = 3.7.2 - 2026-06-29 =
 * Add - Added an option to connect a Merchant Center account when a service-based user adds physical products.
 * Dev - Remove $_GET parameter overrides in Options::get_ads_id() and Options::get_merchant_id().
@@ -159,17 +162,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix - Shipping settings tab empty settings.
 * Fix - Update EU declaration modal title.
 * Fix - Exclude tall_portrait_marketing_image type and images with no type set from generated ad assets.
-
-= 3.7.0 - 2026-05-19 =
-* Add - Create Your Own Incentive (CYOI) feature.
-* Add - In-Product Placements feature.
-* Add - Restrict accepted image formats when creating campaign assets.
-* Dev - Upgrade Google Ads PHP Library to v23.
-* Dev - Added tracking for YouTube connected stores.
-* Fix - Cache miss on empty recommendations triggering live Ads API calls on every admin page load.
-* Fix - Shipping tab failing to render when no shipping options were set.
-* Fix - Sorting order of the programs column.
-* Update - Default values for shipping time inputs during onboarding.
-* Update - Success notice displayed after saving a campaign.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
