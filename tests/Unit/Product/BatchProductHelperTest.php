@@ -1255,7 +1255,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 	 * exposed via get_main_feed_label().
 	 *
 	 * @param string[] $all_countries Return value for get_all_countries().
-	 * @param array[]  $markets       Return value for get_markets() keyed by market ID.
+	 * @param array[]  $markets       Return value for get_participating_markets() keyed by market ID.
 	 */
 	private function set_up_market_service_stubs( array $all_countries, array $markets ): void {
 		$main_feed_label = $markets['primary']['feed_label'];
@@ -1265,7 +1265,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 		$this->market_service->method( 'get_primary_market' )->willReturn( $markets['primary'] );
 		$this->market_service->method( 'get_all_countries' )->willReturn( $all_countries );
-		$this->market_service->method( 'get_markets' )->willReturn( $markets );
+		$this->market_service->method( 'get_participating_markets' )->willReturn( $markets );
 		$this->market_service->method( 'get_main_feed_label' )->willReturn( $main_feed_label );
 
 		// Mirrors MarketService::get_market_feed_label(): the stored label plus

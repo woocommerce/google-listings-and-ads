@@ -110,9 +110,68 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	/**
 	 * Register the service.
 	 *
-	 * No WordPress hooks are needed for this pure data service.
+	 * Watches for changes in currency conversion availability so market
+	 * participation changes propagate to Merchant Center without waiting for
+	 * an unrelated sync.
 	 */
-	public function register(): void {}
+	public function register(): void {
+		add_action(
+			'init',
+			function () {
+				$this->handle_conversion_availability_change();
+			}
+		);
+	}
+
+	/**
+	 * Schedules a full product re-sync and a shipping settings sync when
+	 * currency conversion availability changes (WPML activated or deactivated,
+	 * or WCML multi-currency toggled).
+	 *
+	 * Markets priced in a non-store currency take part in syncing only while
+	 * conversion is available, so an availability change re-labels what should
+	 * exist in Merchant Center: the scheduled re-sync's stale-entry cleanup
+	 * removes entries for markets that dropped out, and re-syncs markets that
+	 * rejoined. Stores without such markets skip the scheduling entirely.
+	 */
+	private function handle_conversion_availability_change(): void {
+		$available = $this->wpml->can_convert_currency() ? 'yes' : 'no';
+		$stored    = $this->options->get( OptionsInterface::CURRENCY_CONVERSION_AVAILABLE );
+
+		if ( $available === $stored ) {
+			return;
+		}
+
+		$this->options->update( OptionsInterface::CURRENCY_CONVERSION_AVAILABLE, $available );
+
+		// First run only records the state; there is no change to act on.
+		if ( null === $stored ) {
+			return;
+		}
+
+		if ( ! $this->has_markets_requiring_conversion() ) {
+			return;
+		}
+
+		$this->schedule_shipping_sync();
+		$this->job_repository->get( UpdateAllProducts::class )->schedule();
+	}
+
+	/**
+	 * Whether any stored secondary market is priced in a currency other than
+	 * the store currency, i.e. depends on conversion availability to take part.
+	 *
+	 * @return bool
+	 */
+	private function has_markets_requiring_conversion(): bool {
+		foreach ( $this->get_stored_secondary_markets() as $market ) {
+			if ( get_woocommerce_currency() !== $this->get_market_currency( $market ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 	/**
 	 * Returns all markets, keyed by ID with the synthesised primary always first.
@@ -143,6 +202,94 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		unset( $market );
 
 		return [ 'primary' => $this->get_primary_market() ] + $secondary;
+	}
+
+	/**
+	 * Returns the markets that currently take part in syncing to Google.
+	 *
+	 * Same as get_markets() minus secondary markets priced in a non-store
+	 * currency while currency conversion is unavailable — their prices cannot
+	 * be converted, and submitting store-currency prices against a
+	 * market-currency service and feed label is rejected by Google. Stored
+	 * market data is never modified; an excluded market reappears here the
+	 * moment conversion is available again.
+	 *
+	 * Use get_markets() for anything user-facing (the Markets page must keep
+	 * showing every saved market); use this for anything that feeds Google.
+	 *
+	 * @return array[] Keyed by market ID ('primary', then secondary IDs).
+	 */
+	public function get_participating_markets(): array {
+		$markets = $this->get_markets();
+
+		foreach ( $markets as $id => $market ) {
+			if ( 'primary' === $id ) {
+				continue;
+			}
+
+			if ( ! $this->is_market_participating( $market ) ) {
+				unset( $markets[ $id ] );
+			}
+		}
+
+		return $markets;
+	}
+
+	/**
+	 * Returns the countries of stored secondary markets that are currently
+	 * excluded from syncing (see get_participating_markets()). Used to keep
+	 * those countries' shipping services out of the Merchant Center shipping
+	 * settings while their markets sit out.
+	 *
+	 * @return string[]
+	 */
+	public function get_excluded_market_countries(): array {
+		$countries = [];
+
+		foreach ( $this->get_stored_secondary_markets() as $market ) {
+			if ( $this->is_market_participating( $market ) ) {
+				continue;
+			}
+
+			if ( ! empty( $market['country'] ) ) {
+				$countries[] = $market['country'];
+			}
+		}
+
+		return array_values( array_unique( $countries ) );
+	}
+
+	/**
+	 * Whether a secondary market currently takes part in syncing to Google.
+	 *
+	 * A market priced in the store currency always takes part. A market priced
+	 * in any other currency takes part only while price conversion is
+	 * available (WPML active with WCML multi-currency on).
+	 *
+	 * @param array $market The market config.
+	 *
+	 * @return bool
+	 */
+	private function is_market_participating( array $market ): bool {
+		if ( get_woocommerce_currency() === $this->get_market_currency( $market ) ) {
+			return true;
+		}
+
+		return $this->wpml->can_convert_currency();
+	}
+
+	/**
+	 * Returns the stored secondary markets that currently take part in syncing.
+	 *
+	 * @return array[]
+	 */
+	private function get_participating_secondary_markets(): array {
+		return array_filter(
+			$this->get_stored_secondary_markets(),
+			function ( array $market ): bool {
+				return $this->is_market_participating( $market );
+			}
+		);
 	}
 
 	/**
@@ -699,8 +846,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * Returns each market's derived feed label together with its configured languages.
 	 *
 	 * The primary market contributes its bare main feed label with the primary
-	 * language list; each secondary market contributes its currency-derived
-	 * label with its stored language list.
+	 * language list; each participating secondary market contributes its
+	 * currency-derived label with its stored language list. Excluded markets
+	 * (see get_participating_markets()) contribute nothing, which is what lets
+	 * the stale-entry cleanup remove their Merchant Center entries.
 	 *
 	 * @return array<int, array{feed_label: string, languages: array}>
 	 */
@@ -712,7 +861,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			],
 		];
 
-		foreach ( $this->get_stored_secondary_markets() as $market ) {
+		foreach ( $this->get_participating_secondary_markets() as $market ) {
 			$base_feed_label = (string) ( $market['feed_label'] ?? '' );
 
 			$markets[] = [
@@ -771,15 +920,18 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Returns every country code across all markets without duplicates.
+	 * Returns every country code across all participating markets without duplicates.
 	 *
 	 * The primary market contributes its target_audience countries; each
-	 * secondary market contributes its single `country` value. No DB queries.
+	 * participating secondary market contributes its single `country` value.
+	 * Excluded markets (see get_participating_markets()) contribute nothing
+	 * so products stop advertising shipping to countries that are not being
+	 * synced. No DB queries.
 	 *
 	 * @return string[]
 	 */
 	public function get_all_countries(): array {
-		$secondary = $this->get_stored_secondary_markets();
+		$secondary = $this->get_participating_secondary_markets();
 		$countries = $this->target_audience->get_target_countries();
 
 		if ( ! empty( $secondary ) ) {
@@ -793,19 +945,20 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 	/**
 	 * Returns every country that should receive a Merchant Center shipping
-	 * service: the primary market's target countries plus each non-manual
-	 * secondary market's country.
+	 * service: the primary market's target countries plus each participating,
+	 * non-manual secondary market's country.
 	 *
 	 * Manual markets are excluded because their shipping is managed outside
 	 * the plugin, mirroring the per-market currency map in the Google
-	 * Settings service.
+	 * Settings service. Markets excluded from syncing (see
+	 * get_participating_markets()) get no shipping service either.
 	 *
 	 * @return string[]
 	 */
 	public function get_shipping_sync_countries(): array {
 		$countries = $this->target_audience->get_target_countries();
 
-		foreach ( $this->get_stored_secondary_markets() as $market ) {
+		foreach ( $this->get_participating_secondary_markets() as $market ) {
 			if ( 'manual' === ( $market['shipping_rate'] ?? null ) ) {
 				continue;
 			}
@@ -821,14 +974,15 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	/**
 	 * Whether any configured market needs its shipping settings synced to Merchant Center.
 	 *
-	 * Returns true when at least one market has a non-`manual` `shipping_rate`
-	 * combined with `shipping_time === 'flat'`. A non-`manual` secondary market
-	 * is enough to require a sync even when the primary itself is `manual`.
+	 * Returns true when at least one participating market has a non-`manual`
+	 * `shipping_rate` combined with `shipping_time === 'flat'`. A non-`manual`
+	 * secondary market is enough to require a sync even when the primary
+	 * itself is `manual`.
 	 *
 	 * @return bool
 	 */
 	public function has_syncable_markets(): bool {
-		foreach ( $this->get_markets() as $market ) {
+		foreach ( $this->get_participating_markets() as $market ) {
 			$rate = $market['shipping_rate'] ?? null;
 			$time = $market['shipping_time'] ?? null;
 			if ( 'manual' !== $rate && 'flat' === $time ) {

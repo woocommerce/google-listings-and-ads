@@ -148,10 +148,13 @@ class Settings implements ContainerAwareInterface {
 	}
 
 	/**
-	 * Returns a `[ country => currency ]` map for every non-manual market.
+	 * Returns a `[ country => currency ]` map for every participating,
+	 * non-manual market.
 	 *
 	 * Each market contributes its country and the first entry of its `currency[]`
 	 * array. Manual markets are skipped — they don't get an MC shipping service.
+	 * Markets excluded from syncing while currency conversion is unavailable
+	 * are skipped for the same reason.
 	 *
 	 * @return array<string, string>
 	 */
@@ -160,7 +163,7 @@ class Settings implements ContainerAwareInterface {
 		$market_service = $this->container->get( MarketService::class );
 
 		$map = [];
-		foreach ( $market_service->get_markets() as $market ) {
+		foreach ( $market_service->get_participating_markets() as $market ) {
 			if ( 'manual' === ( $market['shipping_rate'] ?? null ) ) {
 				continue;
 			}
@@ -265,12 +268,33 @@ class Settings implements ContainerAwareInterface {
 	/**
 	 * Get shipping rate data.
 	 *
+	 * Rows belonging to secondary markets that are currently excluded from
+	 * syncing (non-store currency while conversion is unavailable) are left
+	 * out, so those countries get no Merchant Center shipping service while
+	 * their markets sit out. All other rows pass through untouched.
+	 *
 	 * @return array
 	 */
 	protected function get_shipping_rates_from_database(): array {
 		$rate_query = $this->container->get( ShippingRateQuery::class );
+		/** @var MarketService $market_service */
+		$market_service = $this->container->get( MarketService::class );
 
-		return $rate_query->get_results();
+		$excluded_countries = $market_service->get_excluded_market_countries();
+		$rates              = $rate_query->get_results();
+
+		if ( empty( $excluded_countries ) ) {
+			return $rates;
+		}
+
+		return array_values(
+			array_filter(
+				$rates,
+				function ( array $rate ) use ( $excluded_countries ): bool {
+					return ! in_array( $rate['country'] ?? null, $excluded_countries, true );
+				}
+			)
+		);
 	}
 
 	/**

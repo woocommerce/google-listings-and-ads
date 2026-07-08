@@ -26,6 +26,7 @@ interface OptionsInterface {
 	public const CAMPAIGN_CONVERT_STATUS                   = 'campaign_convert_status';
 	public const CLAIMED_URL_HASH                          = 'claimed_url_hash';
 	public const CONTACT_INFO_SETUP                        = 'contact_info_setup';
+	public const CURRENCY_CONVERSION_AVAILABLE             = 'currency_conversion_available';
 	public const DELAYED_ACTIVATE                          = 'delayed_activate';
 	public const DB_VERSION                                = 'db_version';
 	public const FILE_VERSION                              = 'file_version';
@@ -73,6 +74,7 @@ interface OptionsInterface {
 		self::CAMPAIGN_CONVERT_STATUS                   => true,
 		self::CLAIMED_URL_HASH                          => true,
 		self::CONTACT_INFO_SETUP                        => true,
+		self::CURRENCY_CONVERSION_AVAILABLE             => true,
 		self::DB_VERSION                                => true,
 		self::FILE_VERSION                              => true,
 		self::GOOGLE_CONNECTED                          => true,

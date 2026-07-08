@@ -28,6 +28,12 @@ class WPMLTest extends UnitTest {
 		parent::tearDown();
 	}
 
+	public function test_can_convert_currency_requires_wpml_and_multi_currency(): void {
+		$this->assertFalse( $this->create_integration( false )->can_convert_currency() );
+		$this->assertFalse( $this->create_integration( true, [], false )->can_convert_currency() );
+		$this->assertTrue( $this->create_integration( true, [], true )->can_convert_currency() );
+	}
+
 	public function test_get_languages_returns_empty_when_not_active(): void {
 		$integration = $this->create_integration( false );
 

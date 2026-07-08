@@ -94,7 +94,7 @@ class SettingsTest extends UnitTest {
 	}
 
 	public function test_generate_shipping_settings_produces_db_adapter_with_per_country_currency(): void {
-		$this->market_service->method( 'get_markets' )->willReturn(
+		$this->market_service->method( 'get_participating_markets' )->willReturn(
 			[
 				'primary' => [
 					'country'       => 'US',
@@ -165,7 +165,7 @@ class SettingsTest extends UnitTest {
 	}
 
 	public function test_generate_shipping_settings_skips_manual_markets_from_currency_map(): void {
-		$this->market_service->method( 'get_markets' )->willReturn(
+		$this->market_service->method( 'get_participating_markets' )->willReturn(
 			[
 				'primary' => [
 					'country'       => 'US',
@@ -193,7 +193,7 @@ class SettingsTest extends UnitTest {
 		// MarketService says FR is USD, but the DB row for FR carries EUR. The
 		// per-row currency must win so secondary-market rates aren't silently
 		// rewritten to the primary store currency.
-		$this->market_service->method( 'get_markets' )->willReturn(
+		$this->market_service->method( 'get_participating_markets' )->willReturn(
 			[
 				'primary' => [
 					'country'       => 'US',
@@ -266,7 +266,7 @@ class SettingsTest extends UnitTest {
 	}
 
 	public function test_generate_shipping_settings_routes_automatic_mode_through_wc_adapter(): void {
-		$this->market_service->method( 'get_markets' )->willReturn(
+		$this->market_service->method( 'get_participating_markets' )->willReturn(
 			[
 				'primary' => [
 					'country'       => 'US',
@@ -313,7 +313,7 @@ class SettingsTest extends UnitTest {
 	}
 
 	public function test_automatic_mode_builds_services_for_secondary_market_countries(): void {
-		$this->market_service->method( 'get_markets' )->willReturn(
+		$this->market_service->method( 'get_participating_markets' )->willReturn(
 			[
 				'primary' => [
 					'country'       => null,
@@ -387,6 +387,73 @@ class SettingsTest extends UnitTest {
 
 		// The France service carries the market's own currency.
 		$this->assertSame( 'EUR', $by_country['FR']->getCurrency() );
+	}
+
+	public function test_flat_mode_excludes_rate_rows_for_excluded_market_countries(): void {
+		$this->market_service->method( 'get_participating_markets' )->willReturn(
+			[
+				'primary' => [
+					'country'       => null,
+					'currency'      => [ 'USD' ],
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
+		// France's market is excluded (non-store currency, conversion unavailable),
+		// so its rate row must not produce a Merchant Center shipping service.
+		$this->market_service->method( 'get_excluded_market_countries' )->willReturn( [ 'FR' ] );
+
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( $key, $fallback = null ) {
+				switch ( $key ) {
+					case OptionsInterface::MERCHANT_CENTER:
+						return [ 'shipping_rate' => 'flat' ];
+					case OptionsInterface::MERCHANT_ID:
+						return 1234567890;
+					default:
+						return $fallback;
+				}
+			}
+		);
+		$this->wc_proxy->method( 'get_woocommerce_currency' )->willReturn( 'USD' );
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn(
+			[
+				'US' => [
+					'time'     => 1,
+					'max_time' => 2,
+				],
+				'FR' => [
+					'time'     => 2,
+					'max_time' => 4,
+				],
+			]
+		);
+		$this->shipping_rate_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'country' => 'US',
+					'rate'    => 10,
+					'options' => [],
+				],
+				[
+					'country' => 'FR',
+					'rate'    => 5,
+					'options' => [],
+				],
+			]
+		);
+
+		$adapter = $this->invoke( 'generate_shipping_settings' );
+
+		$countries = array_map(
+			static function ( $service ) {
+				return $service->getDeliveryCountry();
+			},
+			$adapter->getServices()
+		);
+
+		$this->assertSame( [ 'US' ], $countries );
 	}
 
 	/**
