@@ -141,7 +141,7 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 == Changelog ==
 
 = 3.7.3 - 2026-07-08 =
-* Fix - [GOOWOO-380] Display notification banner encouraging user to update their plugin before deprecation of API.
+* Add - Added update notification when plugin version 3.8.0 is available
 
 = 3.7.2 - 2026-06-29 =
 * Add - Added an option to connect a Merchant Center account when a service-based user adds physical products.
