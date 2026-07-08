@@ -41,10 +41,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	/**
 	 * Google Content API constraint on `feedLabel`: up to 20 characters,
 	 * uppercase letters, digits and dashes only. Stored labels are capped at
-	 * 17 characters so a derived per-language label (a dash plus a two-letter
-	 * language code) stays within the 20-character limit.
+	 * 16 characters so a derived per-currency label (a dash plus a three-letter
+	 * currency code) stays within the 20-character limit.
 	 */
-	private const FEED_LABEL_PATTERN = '/^[A-Z0-9-]{1,17}$/';
+	private const FEED_LABEL_PATTERN = '/^[A-Z0-9-]{1,16}$/';
 
 	/**
 	 * @var TargetAudience
@@ -251,6 +251,11 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$config['shipping_time'] = $mc_settings['shipping_time'] ?? 'flat';
 		}
 
+		// The market form omits the language and currency fields for some
+		// shipping methods and for stores without a multilingual integration,
+		// so missing values fall back to the site defaults.
+		$config = $this->apply_locale_defaults( $config );
+
 		$this->validate_secondary_market_config( $config );
 
 		// Recorded so delete_market() knows whether the country should rejoin
@@ -344,6 +349,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$existing = $markets[ $id ] ?? [];
 		$merged   = array_merge( $existing, $config );
 
+		// Markets stored before locale defaulting was introduced may lack the
+		// language and currency keys, so partial updates must not fail on them.
+		$merged = $this->apply_locale_defaults( $merged );
+
 		$this->validate_secondary_market_config( $merged );
 
 		$markets[ $id ] = $merged;
@@ -351,13 +360,24 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 		$old_feed_label = $existing['feed_label'] ?? null;
 		$new_feed_label = $merged['feed_label'] ?? null;
-		if ( $old_feed_label && $new_feed_label !== $old_feed_label ) {
+
+		// The derived label includes the market currency, so a currency change
+		// re-labels the market's entries exactly like a feed_label change does;
+		// either way the entries under the old derived label become orphans.
+		$old_derived_label = $old_feed_label
+			? $this->get_market_feed_label( $old_feed_label, $this->get_market_currency( $existing ) )
+			: null;
+		$new_derived_label = $new_feed_label
+			? $this->get_market_feed_label( $new_feed_label, $this->get_market_currency( $merged ) )
+			: null;
+
+		if ( $old_feed_label && $old_derived_label !== $new_derived_label ) {
 			$this->job_repository->get( CleanupOrphanedMarketProductsJob::class )
 				->schedule(
 					[
 						'feed_labels' => $this->get_market_feed_label_variants(
 							$old_feed_label,
-							is_array( $existing['language'] ?? null ) ? $existing['language'] : []
+							$this->get_market_currency( $existing )
 						),
 					]
 				);
@@ -367,7 +387,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$this->schedule_language_cleanup(
 				$existing['language'] ?? [],
 				$merged['language'] ?? [],
-				[ $old_feed_label ]
+				$this->get_market_feed_label_variants(
+					$old_feed_label,
+					$this->get_market_currency( $existing )
+				)
 			);
 		}
 
@@ -405,15 +428,18 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * Language codes are normalised before comparison so locale-form values
 	 * (e.g. `en_US`) compare equal to WPML short codes (e.g. `en`).
 	 *
+	 * Feed labels no longer encode the language, so the keys are the market's
+	 * `google_ids` keys as-is (label variants for a secondary market, target
+	 * country codes for the primary). The cleanup job narrows the deletion to
+	 * the removed languages by each product's own post language.
+	 *
 	 * @param array         $existing_languages The market's languages before the update.
 	 * @param array         $new_languages      The market's languages after the update.
-	 * @param array<string> $base_labels        The market's base feed labels (the stored
-	 *                                          feed_label for secondary, target countries
-	 *                                          for primary), expanded to per-language
-	 *                                          `google_ids` keys before scheduling.
+	 * @param array<string> $keys               The `google_ids` keys the market's entries
+	 *                                          are tracked under.
 	 */
-	private function schedule_language_cleanup( array $existing_languages, array $new_languages, array $base_labels ): void {
-		if ( empty( $base_labels ) ) {
+	private function schedule_language_cleanup( array $existing_languages, array $new_languages, array $keys ): void {
+		if ( empty( $keys ) ) {
 			return;
 		}
 
@@ -425,15 +451,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			return;
 		}
 
-		// A removed language's entries are tracked under that language's derived
-		// label, so the keys handed to the cleanup job must be derived the same way.
-		$keys = [];
-		foreach ( $base_labels as $base_label ) {
-			foreach ( $removed as $removed_language ) {
-				$keys[] = $this->get_language_feed_label( (string) $base_label, $removed_language );
-			}
-		}
-		$keys = array_values( array_unique( $keys ) );
+		$keys = array_values( array_unique( array_map( 'strval', $keys ) ) );
 
 		$this->job_repository->get( CleanupOrphanedLanguageProductsJob::class )
 			->schedule(
@@ -551,7 +569,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 					[
 						'feed_labels' => $this->get_market_feed_label_variants(
 							$feed_label,
-							is_array( $deleted_config['language'] ?? null ) ? $deleted_config['language'] : []
+							$this->get_market_currency( $deleted_config )
 						),
 					]
 				);
@@ -574,10 +592,11 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 	/**
 	 * Returns every valid `google_ids` tracking key across all configured markets:
-	 * one derived feed label per market per language.
+	 * one derived feed label per market.
 	 *
-	 * Entries in the site default language use the market's stored feed label,
-	 * so single-language stores keep the bare labels they have today.
+	 * The primary market keeps its bare label so existing entries keep the
+	 * identity they already have in Google Merchant Center; each secondary
+	 * market contributes its currency-derived label.
 	 *
 	 * @return string[]
 	 */
@@ -589,37 +608,55 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				continue;
 			}
 
-			foreach ( $this->expand_market_languages( $market['languages'] ) as $language ) {
-				$feed_labels[] = $this->get_language_feed_label( $market['feed_label'], $language );
-			}
+			$feed_labels[] = $market['feed_label'];
 		}
 
 		return array_values( array_unique( $feed_labels ) );
 	}
 
 	/**
-	 * Returns the feed label to use for a product entry in the given language.
+	 * Returns the feed label to use for a secondary market's product entries.
 	 *
-	 * Entries in the site default language keep the market's stored feed label,
-	 * matching the identity existing single-language stores already have in
-	 * Google Merchant Center. Entries in any other language get a dash and the
-	 * uppercase ISO 639-1 code appended, e.g. "BE-FR".
+	 * The market's stored feed label gets a dash and the uppercase ISO 4217
+	 * currency code appended, e.g. "FR-EUR". Currency has to be part of the
+	 * label because Google does not include it in an entry's identity
+	 * (channel:contentLanguage:feedLabel:offerId), so entries priced in
+	 * different currencies need different labels. Language is already part of
+	 * that identity via contentLanguage and never appears in the label.
+	 *
+	 * The primary market never uses this derivation — it keeps its bare label
+	 * (see get_main_feed_label()) so existing entries keep their identity.
 	 *
 	 * @param string $base_feed_label The market's stored feed label.
-	 * @param string $language        ISO 639-1 code or locale string. Empty when
-	 *                                no multilingual integration is active.
+	 * @param string $currency        ISO 4217 currency code. Empty falls back to
+	 *                                the store currency, matching the currency
+	 *                                the entries' prices are submitted in.
 	 *
 	 * @return string
 	 */
-	public function get_language_feed_label( string $base_feed_label, string $language ): string {
-		$normalised = $this->normalise_language_codes( [ $language ] );
-		$language   = $normalised[0] ?? '';
-
-		if ( '' === $language || $this->get_normalised_site_language() === $language ) {
-			return $base_feed_label;
+	public function get_market_feed_label( string $base_feed_label, string $currency ): string {
+		if ( '' === $currency ) {
+			$currency = get_woocommerce_currency();
 		}
 
-		return $base_feed_label . '-' . strtoupper( $language );
+		return $base_feed_label . '-' . strtoupper( $currency );
+	}
+
+	/**
+	 * Returns a market's effective currency code: the first configured entry
+	 * of its `currency[]` list, or the store currency when none is set. This
+	 * is the currency the market's prices are submitted in.
+	 *
+	 * @param array $market The market config.
+	 *
+	 * @return string
+	 */
+	private function get_market_currency( array $market ): string {
+		$currency = is_array( $market['currency'] ?? null )
+			? (string) ( $market['currency'][0] ?? '' )
+			: (string) ( $market['currency'] ?? '' );
+
+		return '' === $currency ? get_woocommerce_currency() : $currency;
 	}
 
 	/**
@@ -652,17 +689,18 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				continue;
 			}
 
-			$feed_labels[] = $this->get_language_feed_label( $market['feed_label'], $language );
+			$feed_labels[] = $market['feed_label'];
 		}
 
 		return array_values( array_unique( $feed_labels ) );
 	}
 
 	/**
-	 * Returns each market's stored feed label together with its configured languages.
+	 * Returns each market's derived feed label together with its configured languages.
 	 *
-	 * The primary market contributes the main feed label with the primary
-	 * language list; each secondary market contributes its stored values.
+	 * The primary market contributes its bare main feed label with the primary
+	 * language list; each secondary market contributes its currency-derived
+	 * label with its stored language list.
 	 *
 	 * @return array<int, array{feed_label: string, languages: array}>
 	 */
@@ -675,8 +713,12 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		];
 
 		foreach ( $this->get_stored_secondary_markets() as $market ) {
+			$base_feed_label = (string) ( $market['feed_label'] ?? '' );
+
 			$markets[] = [
-				'feed_label' => (string) ( $market['feed_label'] ?? '' ),
+				'feed_label' => '' === $base_feed_label
+					? ''
+					: $this->get_market_feed_label( $base_feed_label, $this->get_market_currency( $market ) ),
 				'languages'  => is_array( $market['language'] ?? null ) ? $market['language'] : [],
 			];
 		}
@@ -685,50 +727,26 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Resolves the effective language list for a market.
-	 *
-	 * An empty list means the market accepts every language, so it expands to
-	 * all active site languages when a multilingual integration is active.
-	 * Without a multilingual integration every product syncs in the site
-	 * default language, so only that language applies.
-	 *
-	 * @param array $languages The market's configured languages.
-	 *
-	 * @return string[]
-	 */
-	private function expand_market_languages( array $languages ): array {
-		if ( ! $this->has_multilingual_support() ) {
-			return [ $this->get_normalised_site_language() ];
-		}
-
-		if ( empty( $languages ) ) {
-			$languages = array_column( $this->get_languages(), 'code' );
-		}
-
-		$languages = $this->normalise_language_codes( $languages );
-
-		return empty( $languages ) ? [ $this->get_normalised_site_language() ] : $languages;
-	}
-
-	/**
 	 * Returns every `google_ids` key a market's entries can be stored under:
-	 * the base feed label plus each per-language variant.
+	 * the stored base feed label plus the currency-derived label.
 	 *
-	 * The base label is always included so entries synced before a language
-	 * configuration change are covered too.
+	 * The base label is always included so entries synced before the
+	 * currency-derived labelling scheme are covered too.
 	 *
 	 * @param string $feed_label The market's stored feed label.
-	 * @param array  $languages  The market's configured languages.
+	 * @param string $currency   The market's effective currency code.
 	 *
 	 * @return string[]
 	 */
-	private function get_market_feed_label_variants( string $feed_label, array $languages ): array {
-		$variants = [ $feed_label ];
-		foreach ( $this->expand_market_languages( $languages ) as $language ) {
-			$variants[] = $this->get_language_feed_label( $feed_label, $language );
-		}
-
-		return array_values( array_unique( $variants ) );
+	private function get_market_feed_label_variants( string $feed_label, string $currency ): array {
+		return array_values(
+			array_unique(
+				[
+					$feed_label,
+					$this->get_market_feed_label( $feed_label, $currency ),
+				]
+			)
+		);
 	}
 
 	/**
@@ -771,6 +789,33 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		}
 
 		return array_unique( $countries );
+	}
+
+	/**
+	 * Returns every country that should receive a Merchant Center shipping
+	 * service: the primary market's target countries plus each non-manual
+	 * secondary market's country.
+	 *
+	 * Manual markets are excluded because their shipping is managed outside
+	 * the plugin, mirroring the per-market currency map in the Google
+	 * Settings service.
+	 *
+	 * @return string[]
+	 */
+	public function get_shipping_sync_countries(): array {
+		$countries = $this->target_audience->get_target_countries();
+
+		foreach ( $this->get_stored_secondary_markets() as $market ) {
+			if ( 'manual' === ( $market['shipping_rate'] ?? null ) ) {
+				continue;
+			}
+
+			if ( ! empty( $market['country'] ) ) {
+				$countries[] = $market['country'];
+			}
+		}
+
+		return array_values( array_unique( $countries ) );
 	}
 
 	/**
@@ -936,6 +981,30 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		}
 
 		return $this->cached_shipping_rates;
+	}
+
+	/**
+	 * Fills in a secondary market config's missing locale values.
+	 *
+	 * A missing `language` defaults to the site primary language and a missing
+	 * `currency` to the site primary currency (the WooCommerce store currency
+	 * when no multilingual integration is active). Present values, including
+	 * empty arrays, are left untouched.
+	 *
+	 * @param array $config The market config.
+	 *
+	 * @return array The config with locale defaults applied.
+	 */
+	private function apply_locale_defaults( array $config ): array {
+		if ( ! isset( $config['language'] ) ) {
+			$config['language'] = [ $this->get_site_primary_language() ];
+		}
+
+		if ( ! isset( $config['currency'] ) ) {
+			$config['currency'] = [ $this->get_site_primary_currency() ];
+		}
+
+		return $config;
 	}
 
 	/**

@@ -21,8 +21,10 @@ defined( 'ABSPATH' ) || exit;
  * Deletes Merchant Center entries left orphaned when a language is removed from
  * a market's language set. Scheduled by MarketService when an update reduces
  * the set of accepted languages; carries the market's identifying keys
- * (feed_label for a secondary market, target country codes for the primary) and
- * the language codes that were removed.
+ * (feed label variants for a secondary market, target country codes for the
+ * primary) and the language codes that were removed. The keys alone do not
+ * identify a language — the job narrows the deletion to products whose own
+ * post language is in the removed set.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
@@ -76,8 +78,8 @@ class CleanupOrphanedLanguageProductsJob extends AbstractProductSyncerJob {
 	 * Schedule the job.
 	 *
 	 * @param array $args Accepts `[ 'keys' => string[], 'removed_languages' => string[] ]`.
-	 *                    `keys` is the set of `google_ids` keys to inspect (a single
-	 *                    feed_label for a secondary market, target country codes
+	 *                    `keys` is the set of `google_ids` keys to inspect (the feed
+	 *                    label variants for a secondary market, target country codes
 	 *                    for the primary). `removed_languages` is the set of language
 	 *                    codes (short form, e.g. `fr`) that the market no longer accepts.
 	 *

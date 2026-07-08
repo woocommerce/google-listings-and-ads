@@ -266,14 +266,16 @@ class BatchProductHelper implements Service {
 
 				if ( $this->product_matches_market( $product_language, $primary_market, $wpml_active ) ) {
 					// The primary market never stores scalar country/feed_label values
-					// (it is multi-country); its feed label is the main target country.
+					// (it is multi-country); its feed label is the main target country,
+					// kept bare for every language so existing entries keep their
+					// Merchant Center identity.
 					$main_feed_label = $this->market_service->get_main_feed_label();
 
 					$adapted_product   = $this->product_factory->create(
 						$product,
 						$main_feed_label,
 						$mapping_rules,
-						$this->market_service->get_language_feed_label( $main_feed_label, $product_language ),
+						$main_feed_label,
 						$product_language
 					);
 					$validation_result = $this->validate_product( $adapted_product );
@@ -308,13 +310,18 @@ class BatchProductHelper implements Service {
 						continue;
 					}
 
+					// The derived label carries the same currency the entry's
+					// prices are submitted in (falling back to the store
+					// currency inside the derivation when the market has none).
+					$market_currency = $this->extract_currency( $market );
+
 					$secondary_adapter = $this->product_factory->create(
 						$product,
 						$market['country'],
 						$mapping_rules,
-						$this->market_service->get_language_feed_label( $market['feed_label'], $product_language ),
+						$this->market_service->get_market_feed_label( $market['feed_label'], $market_currency ),
 						$product_language,
-						$this->extract_currency( $market )
+						$market_currency
 					);
 
 					$secondary_validation = $this->validate_product( $secondary_adapter );

@@ -8,7 +8,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\CountryRatesCollection;
@@ -33,7 +32,6 @@ defined( 'ABSPATH' ) || exit;
  * - ShippingTimeQuery
  * - ShippingZone
  * - ShoppingContent
- * - TargetAudience
  * - WC
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
@@ -278,17 +276,23 @@ class Settings implements ContainerAwareInterface {
 	/**
 	 * Get shipping rate data from WooCommerce shipping settings.
 	 *
-	 * @return CountryRatesCollection[] Array of rates collections for each target country specified in settings.
+	 * Covers every country needing a Merchant Center shipping service: the
+	 * primary market's target countries plus each non-manual secondary
+	 * market's country. Secondary market countries are removed from the
+	 * target audience when the market is added, so iterating the target
+	 * audience alone would leave them without a shipping service.
+	 *
+	 * @return CountryRatesCollection[] Array of rates collections for each country needing a shipping service.
 	 */
 	protected function get_shipping_rates_collections_from_woocommerce(): array {
-		/** @var TargetAudience $target_audience */
-		$target_audience  = $this->container->get( TargetAudience::class );
-		$target_countries = $target_audience->get_target_countries();
+		/** @var MarketService $market_service */
+		$market_service = $this->container->get( MarketService::class );
+		$countries      = $market_service->get_shipping_sync_countries();
 		/** @var ShippingZone $shipping_zone */
 		$shipping_zone = $this->container->get( ShippingZone::class );
 
 		$rates = [];
-		foreach ( $target_countries as $country ) {
+		foreach ( $countries as $country ) {
 			$location_rates    = $shipping_zone->get_shipping_rates_for_country( $country );
 			$rates[ $country ] = new CountryRatesCollection( $country, $location_rates );
 		}

@@ -311,7 +311,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 		foreach ( $feed_labels_by_product as $labels ) {
 			sort( $labels );
-			$this->assertSame( [ 'DE', 'US' ], $labels );
+			// The secondary market has no currency configured, so its derived
+			// label falls back to the store currency; the primary stays bare.
+			$this->assertSame( [ 'DE-' . get_woocommerce_currency(), 'US' ], $labels );
 		}
 	}
 
@@ -384,7 +386,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			static function ( $s ) {
 				return $s->getCountry();
 			},
-			$by_label['DE']
+			$by_label[ 'DE-' . get_woocommerce_currency() ]
 		);
 		$this->assertEqualSets( [ 'DE' ], $secondary_shipping_countries );
 
@@ -429,16 +431,18 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( [ $product ] );
 
 		// Product language 'fr' is not in primary's ['en']; only the France secondary
-		// entry is emitted, under the language-derived feed label. The suffixed label
-		// no longer matches the country code, so targetCountry is left out of the payload.
+		// entry is emitted, under the currency-derived feed label (falling back to
+		// the store currency since the market has none configured). The suffixed
+		// label no longer matches the country code, so targetCountry is left out
+		// of the payload.
 		$this->assertCount( 1, $results );
 		$entry = $results[0];
 		$this->assertNull( $entry->get_product()->getTargetCountry() );
-		$this->assertSame( 'FR-FR', $entry->get_product()->getFeedLabel() );
+		$this->assertSame( 'FR-' . get_woocommerce_currency(), $entry->get_product()->getFeedLabel() );
 		$this->assertSame( 'fr', $entry->get_product()->getContentLanguage() );
 	}
 
-	public function test_validate_and_generate_update_request_entries_primary_gets_language_derived_feed_label() {
+	public function test_validate_and_generate_update_request_entries_primary_keeps_bare_feed_label_for_every_language() {
 		$product = WC_Helper_Product::create_simple_product();
 
 		$this->market_service->method( 'has_multilingual_support' )->willReturn( true );
@@ -460,9 +464,12 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( [ $product ] );
 
+		// The primary label never varies by language: Google records the entry's
+		// language separately (contentLanguage), and keeping the bare label
+		// preserves the identity of existing production entries.
 		$this->assertCount( 1, $results );
-		$this->assertSame( 'US-FR', $results[0]->get_product()->getFeedLabel() );
-		$this->assertNull( $results[0]->get_product()->getTargetCountry() );
+		$this->assertSame( 'US', $results[0]->get_product()->getFeedLabel() );
+		$this->assertSame( 'US', $results[0]->get_product()->getTargetCountry() );
 		$this->assertSame( 'fr', $results[0]->get_product()->getContentLanguage() );
 	}
 
@@ -496,7 +503,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$secondary_entries = array_filter(
 			$results,
 			static function ( BatchProductRequestEntry $entry ) {
-				return 'FR-fr' === $entry->get_product()->getFeedLabel();
+				return 'FR-fr-' . get_woocommerce_currency() === $entry->get_product()->getFeedLabel();
 			}
 		);
 
@@ -665,11 +672,11 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( [ $variable ] );
 
 		// The fr-language variation syncs to the France market under the
-		// language-derived feed label.
+		// currency-derived feed label (store currency, as the market has none).
 		$fr_entries = array_filter(
 			$results,
 			static function ( BatchProductRequestEntry $entry ) {
-				return 'FR-FR' === $entry->get_product()->getFeedLabel();
+				return 'FR-' . get_woocommerce_currency() === $entry->get_product()->getFeedLabel();
 			}
 		);
 
@@ -809,11 +816,13 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		);
 
 		// Primary adapter passes validation; the secondary (DE) adapter fails.
+		// The secondary's derived feed label carries the store currency since
+		// the market has no currency configured.
 		$this->validator->expects( $this->any() )
 			->method( 'validate' )
 			->willReturnCallback(
 				function ( WCProductAdapter $adapter ) {
-					if ( 'DE' === $adapter->getFeedLabel() ) {
+					if ( 'DE-' . get_woocommerce_currency() === $adapter->getFeedLabel() ) {
 						$violations = new ConstraintViolationList();
 						$violations->add( $this->createMock( ConstraintViolation::class ) );
 						return $violations;
@@ -950,19 +959,19 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		}
 	}
 
-	public function test_stale_entry_generators_keep_language_suffixed_keys_of_configured_markets() {
+	public function test_stale_entry_generators_keep_currency_derived_keys_of_configured_markets() {
 		$products         = $this->create_and_return_supported_test_products();
 		$stale_product    = $products[0];
 		$stale_product_id = $stale_product->get_id();
 
 		$this->market_service->expects( $this->any() )
 			->method( 'get_all_feed_labels' )
-			->willReturn( [ 'US', 'BE', 'BE-FR' ] );
+			->willReturn( [ 'US', 'BE', 'BE-EUR' ] );
 
 		$google_ids = [
-			'US'    => "online:en:US:gla_{$stale_product_id}",
-			'BE-FR' => "online:fr:BE-FR:gla_{$stale_product_id}",
-			'DK'    => "online:en:DK:gla_{$stale_product_id}",
+			'US'     => "online:en:US:gla_{$stale_product_id}",
+			'BE-EUR' => "online:fr:BE-EUR:gla_{$stale_product_id}",
+			'DK'     => "online:en:DK:gla_{$stale_product_id}",
 		];
 		$this->product_meta->update_google_ids( $stale_product, $google_ids );
 
@@ -1259,16 +1268,16 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->market_service->method( 'get_markets' )->willReturn( $markets );
 		$this->market_service->method( 'get_main_feed_label' )->willReturn( $main_feed_label );
 
-		// Mirrors MarketService::get_language_feed_label() with 'en' as the site
-		// default language: bare label for the default, suffixed otherwise.
-		$this->market_service->method( 'get_language_feed_label' )->willReturnCallback(
-			static function ( string $base_feed_label, string $language ): string {
-				$language = false === strpos( $language, '_' ) ? $language : strtolower( substr( $language, 0, 2 ) );
-				if ( '' === $language || 'en' === $language ) {
-					return $base_feed_label;
+		// Mirrors MarketService::get_market_feed_label(): the stored label plus
+		// the uppercase currency, falling back to the store currency when the
+		// market has none.
+		$this->market_service->method( 'get_market_feed_label' )->willReturnCallback(
+			static function ( string $base_feed_label, string $currency ): string {
+				if ( '' === $currency ) {
+					$currency = get_woocommerce_currency();
 				}
 
-				return $base_feed_label . '-' . strtoupper( $language );
+				return $base_feed_label . '-' . strtoupper( $currency );
 			}
 		);
 	}
