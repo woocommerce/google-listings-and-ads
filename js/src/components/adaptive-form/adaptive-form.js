@@ -25,9 +25,7 @@ function isEvent( value ) {
 /**
  * @typedef {Object} AdaptiveFormHandler
  * @property {(initialValues: Object) => void} resetForm Reset form with given initial values.
- * @property {(name: string | Object, value?: *) => void} setValue Set the `name` field of the form
- *   states to the given `value`. Alternatively, pass a single object of `{ fieldName: value }` pairs
- *   to update multiple fields together as one atomic, queued update.
+ * @property {(name: string, value: *) => void} setValue Set the `name` field of the form states to the given `value`.
  */
 
 /**
@@ -149,18 +147,11 @@ function AdaptiveForm( { onSubmit, extendAdapter, children, ...props }, ref ) {
 					// Ref:
 					// - https://github.com/woocommerce/woocommerce/blob/7.1.0/packages/js/components/src/form/form.tsx#L209-L211
 					// - https://github.com/woocommerce/woocommerce/blob/7.1.0/packages/js/components/src/form/form.tsx#L182-L197
-					const valuesToSet =
-						typeof name === 'object' && name !== null
-							? name
-							: { [ name ]: value };
-
 					if ( formContext.setValues ) {
-						formContext.setValues( valuesToSet );
+						formContext.setValues( { [ name ]: value } );
 					} else {
 						// WC < 7.1 goes here as `setValues` was introduced in 7.1.
-						Object.keys( valuesToSet ).forEach( ( key ) =>
-							setValue( key, valuesToSet[ key ] )
-						);
+						setValue( name, value );
 					}
 				};
 

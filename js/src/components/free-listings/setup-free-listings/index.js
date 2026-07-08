@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useRef } from '@wordpress/element';
+import { useRef, useEffect } from '@wordpress/element';
 import { createSlotFill } from '@wordpress/components';
 import { pick, noop } from 'lodash';
 
@@ -14,7 +14,9 @@ import {
 } from '~/constants';
 import AppSpinner from '~/components/app-spinner';
 import AppButton from '~/components/app-button';
-import AdaptiveForm from '~/components/adaptive-form';
+import AdaptiveForm, {
+	useAdaptiveFormContext,
+} from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
 import checkErrors from '~/components/free-listings/configure-product-listings/checkErrors';
 import getOfferFreeShippingInitialValue from '~/utils/getOfferFreeShippingInitialValue';
@@ -59,6 +61,99 @@ const getSettings = ( values ) => {
 const alwaysTrue = () => true;
 
 const { Fill, Slot } = createSlotFill( 'gla/SetupFreeListings/SubmitButton' );
+
+/**
+ * Watches the resolved audience countries and keeps `shipping_country_rates` /
+ * `shipping_country_times` in sync whenever countries are added to or removed
+ * from the audience — filling in newly added countries with the currently
+ * selected flat rate/time, and dropping entries for countries no longer in
+ * the audience.
+ *
+ * @param {Object} props
+ * @param {(values: Object) => Array<CountryCode>} props.resolveFinalCountries Callback to resolve the given form `values` to the final list of audience countries.
+ * @param {string} props.currencyCode Store currency code, used when filling in a rate for a newly added country.
+ */
+const SyncShippingWithAudience = ( { resolveFinalCountries, currencyCode } ) => {
+	const { values, setValues } = useAdaptiveFormContext();
+	const audienceCountries = resolveFinalCountries( values );
+	const audienceCountriesKey = audienceCountries.join( ',' );
+	const isFirstRun = useRef( true );
+
+	useEffect( () => {
+		if ( isFirstRun.current ) {
+			isFirstRun.current = false;
+			return;
+		}
+
+		const filteredRates = values.shipping_country_rates.filter(
+			( shippingCountryRate ) =>
+				audienceCountries.includes( shippingCountryRate.country )
+		);
+		const missingCountries = audienceCountries.filter(
+			( country ) =>
+				! filteredRates.some( ( rate ) => rate.country === country )
+		);
+		const existingThreshold = filteredRates.find(
+			isNonFreeShippingRate
+		)?.options?.free_shipping_threshold;
+		const nextRates =
+			values.flat_shipping_rate !== undefined &&
+			missingCountries.length > 0
+				? [
+						...filteredRates,
+						...missingCountries.map( ( country ) => ( {
+							options: {
+								free_shipping_threshold: existingThreshold,
+							},
+							country,
+							currency: currencyCode,
+							rate: values.flat_shipping_rate,
+						} ) ),
+				  ]
+				: filteredRates;
+		const ratesChanged =
+			nextRates.length !== values.shipping_country_rates.length;
+
+		// For times: filter removed countries AND add newly added countries.
+		const filteredTimes = values.shipping_country_times.filter(
+			( shippingTime ) =>
+				audienceCountries.includes( shippingTime.countryCode )
+		);
+		const missingTimesCountries = audienceCountries.filter(
+			( country ) =>
+				! filteredTimes.some(
+					( shippingTime ) => shippingTime.countryCode === country
+				)
+		);
+		const nextTimes =
+			values.flat_shipping_min_time !== null &&
+			values.flat_shipping_max_time !== null &&
+			missingTimesCountries.length > 0
+				? [
+						...filteredTimes,
+						...missingTimesCountries.map( ( countryCode ) => ( {
+							countryCode,
+							time: values.flat_shipping_min_time,
+							maxTime: values.flat_shipping_max_time,
+						} ) ),
+				  ]
+				: filteredTimes;
+		const timesChanged =
+			nextTimes.length !== values.shipping_country_times.length;
+
+		if ( ratesChanged || timesChanged ) {
+			setValues( {
+				...( ratesChanged && { shipping_country_rates: nextRates } ),
+				...( timesChanged && {
+					shipping_country_times: nextTimes,
+				} ),
+			} );
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ audienceCountriesKey ] );
+
+	return null;
+};
 
 /**
  * Setup step to configure product feed.
@@ -215,76 +310,6 @@ const SetupFreeListings = ( {
 		} else if ( TARGET_AUDIENCE_FIELDS.includes( change.name ) ) {
 			onTargetAudienceChange( pick( values, TARGET_AUDIENCE_FIELDS ) );
 
-			// Sync shipping_country_rates with the updated audience countries.
-			const audienceCountries = resolveFinalCountries( values );
-
-			// Filter removed countries AND fill in newly added countries using the current flat rate.
-			const filteredRates = values.shipping_country_rates.filter(
-				( shippingCountryRate ) =>
-					audienceCountries.includes( shippingCountryRate.country )
-			);
-			const missingCountries = audienceCountries.filter(
-				( country ) =>
-					! filteredRates.some( ( rate ) => rate.country === country )
-			);
-			const existingThreshold = filteredRates.find(
-				isNonFreeShippingRate
-			)?.options?.free_shipping_threshold;
-			const nextRates =
-				values.flat_shipping_rate !== undefined &&
-				missingCountries.length > 0
-					? [
-							...filteredRates,
-							...missingCountries.map( ( country ) => ( {
-								options: {
-									free_shipping_threshold: existingThreshold,
-								},
-								country,
-								currency: currencyCode,
-								rate: values.flat_shipping_rate,
-							} ) ),
-					  ]
-					: filteredRates;
-			const ratesChanged =
-				nextRates.length !== values.shipping_country_rates.length;
-
-			// For times: filter removed countries AND add newly added countries.
-			const filteredTimes = values.shipping_country_times.filter(
-				( shippingTime ) =>
-					audienceCountries.includes( shippingTime.countryCode )
-			);
-			const missingTimesCountries = audienceCountries.filter(
-				( country ) =>
-					! filteredTimes.some(
-						( shippingTime ) => shippingTime.countryCode === country
-					)
-			);
-			const nextTimes =
-				values.flat_shipping_min_time !== null &&
-				values.flat_shipping_max_time !== null &&
-				missingTimesCountries.length > 0
-					? [
-							...filteredTimes,
-							...missingTimesCountries.map( ( countryCode ) => ( {
-								countryCode,
-								time: values.flat_shipping_min_time,
-								maxTime: values.flat_shipping_max_time,
-							} ) ),
-					  ]
-					: filteredTimes;
-			const timesChanged =
-				nextTimes.length !== values.shipping_country_times.length;
-
-			if ( ratesChanged || timesChanged ) {
-				setValue( {
-					...( ratesChanged && {
-						shipping_country_rates: nextRates,
-					} ),
-					...( timesChanged && {
-						shipping_country_times: nextTimes,
-					} ),
-				} );
-			}
 		}
 	};
 
@@ -353,6 +378,10 @@ const SetupFreeListings = ( {
 
 					return (
 						<>
+							<SyncShippingWithAudience
+								resolveFinalCountries={ resolveFinalCountries }
+								currencyCode={ currencyCode }
+							/>
 							<FormContent />
 							<Fill>
 								<AppButton
