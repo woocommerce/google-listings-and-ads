@@ -18,7 +18,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\Exception 
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Account;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountStatus;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountUser;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RequestPhoneVerificationResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Resource\Accounts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Resource\Accountstatuses;
@@ -411,7 +410,13 @@ class MerchantTest extends UnitTest {
 	}
 
 	public function test_link_ads_id_translates_exception() {
-		$body = [ 'error' => [ 'code' => 500, 'message' => 'Internal error', 'status' => 'INTERNAL' ] ];
+		$body = [
+			'error' => [
+				'code'    => 500,
+				'message' => 'Internal error',
+				'status'  => 'INTERNAL',
+			],
+		];
 		$this->services_service->method( 'get_google_ads_link' )
 			->willThrowException( new MerchantApiException( 500, $body, __METHOD__ ) );
 
