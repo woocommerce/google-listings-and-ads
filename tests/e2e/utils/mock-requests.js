@@ -953,38 +953,27 @@ export default class MockRequests {
 	 * Mock MC as connected.
 	 *
 	 * @param {number} id
-	 * @param {boolean} notificationServiceEnabled
 	 * @param {null|'approved'|'error'|'dissaproved'} wpcomRestApiStatus
 	 */
-	async mockMCConnected(
-		id = 1234,
-		notificationServiceEnabled = false,
-		wpcomRestApiStatus = null
-	) {
+	async mockMCConnected( id = 1234, wpcomRestApiStatus = null ) {
 		await this.fulfillMCConnection( {
 			id,
 			status: 'connected',
-			notification_service_enabled: notificationServiceEnabled,
 			wpcom_rest_api_status: wpcomRestApiStatus,
 		} );
 	}
 
 	/**
 	 * Mock MC as incomplete.
+	 *
 	 * @param {number} id
 	 * @param {string} step
-	 * @param {boolean} notificationServiceEnabled
 	 */
-	async mockMCIncomplete(
-		id = 1234,
-		step = 'accounts',
-		notificationServiceEnabled = false
-	) {
+	async mockMCIncomplete( id = 1234, step = 'accounts' ) {
 		await this.fulfillMCConnection( {
 			id,
 			status: 'incomplete',
 			step,
-			notification_service_enabled: notificationServiceEnabled,
 		} );
 	}
 

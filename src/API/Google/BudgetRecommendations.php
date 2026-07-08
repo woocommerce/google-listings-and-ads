@@ -43,12 +43,19 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 	protected $client;
 
 	/**
+	 * @var MerchantMetrics
+	 */
+	protected $merchant_metrics;
+
+	/**
 	 * BudgetRecommendations constructor.
 	 *
 	 * @param GoogleAdsClient $client
+	 * @param MerchantMetrics $merchant_metrics
 	 */
-	public function __construct( GoogleAdsClient $client ) {
-		$this->client = $client;
+	public function __construct( GoogleAdsClient $client, MerchantMetrics $merchant_metrics ) {
+		$this->client           = $client;
+		$this->merchant_metrics = $merchant_metrics;
 	}
 
 	/**
@@ -60,8 +67,9 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 	 * @return array|null List of recommendations (including metrics).
 	 */
 	public function get_recommendations( array $country_codes ): ?array {
-		$cache_key = strtolower( join( '-', $country_codes ) );
-		$transient = $this->transients->get( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS );
+		$is_new_customer = 0 === $this->merchant_metrics->get_campaign_count();
+		$cache_key       = strtolower( join( '-', $country_codes ) ) . ( $is_new_customer ? '-new' : '-existing' );
+		$transient       = $this->transients->get( TransientsInterface::ADS_BUDGET_RECOMMENDATIONS );
 
 		// Check if we have the budget recommendations cached in the transient.
 		if ( $transient && ! empty( $transient[ $cache_key ] ) ) {
@@ -77,6 +85,7 @@ class BudgetRecommendations implements OptionsAwareInterface, TransientsAwareInt
 			'advertising_channel_type' => AdvertisingChannelType::PERFORMANCE_MAX,
 			'positive_locations_ids'   => array_keys( $location_ids ),
 			'country_codes'            => $country_codes,
+			'is_new_customer'          => $is_new_customer,
 			'bidding_info'             => new BiddingInfo(
 				[
 					'bidding_strategy_type' => BiddingStrategyType::MAXIMIZE_CONVERSION_VALUE,

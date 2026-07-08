@@ -5,12 +5,16 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAssetGenerationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
+use Google\Ads\GoogleAds\V23\Services\GeneratedImage;
+use Google\Ads\GoogleAds\V23\Services\GenerateImagesResponse;
 use Google\ApiCore\ApiException;
 use PHPUnit\Framework\MockObject\MockObject;
 use Exception;
+use RuntimeException;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -250,11 +254,11 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 			AdsAssetGenerationService::VALID_IMAGE_TYPES
 		);
 
-		$image_asset = $this->createMock( \Google\Ads\GoogleAds\V22\Services\GeneratedImage::class );
+		$image_asset = $this->createMock( GeneratedImage::class );
 		$image_asset->method( 'getImageTemporaryUrl' )->willReturn( 'https://example.com/image.jpg' );
 		$image_asset->method( 'getAssetFieldType' )->willReturn( AssetFieldType::number( 'marketing_image' ) );
 
-		$response = $this->createMock( \Google\Ads\GoogleAds\V22\Services\GenerateImagesResponse::class );
+		$response = $this->createMock( GenerateImagesResponse::class );
 		$response->method( 'getGeneratedImages' )->willReturn( [ $image_asset ] );
 
 		$this->asset_generation_service
@@ -273,5 +277,35 @@ class AdsAssetGenerationServiceTest extends UnitTest {
 			->willReturn( $response );
 
 		$this->service->generate_images( [] );
+	}
+
+	/**
+	 * Regression: constructing the service must not eagerly build the
+	 * Google Ads V23 Asset Generation service client. The container resolves
+	 * this class during `rest_api_init` (via REST controller tags), which
+	 * happens before V23 service clients are guaranteed to be loadable —
+	 * eager construction in 3.7.x produced a fatal on admin page loads after
+	 * a plugin update.
+	 */
+	public function test_constructor_does_not_resolve_service_client() {
+		$ads_client = $this->createMock( GoogleAdsClient::class );
+		$ads_client->expects( $this->never() )->method( 'getAssetGenerationServiceClient' );
+
+		new AdsAssetGenerationService( $ads_client );
+	}
+
+	/**
+	 * Regression: even when the underlying V23 service client factory
+	 * throws, constructing the service must succeed — the factory call is
+	 * deferred to the first generate_* call site.
+	 */
+	public function test_constructor_succeeds_when_service_client_factory_throws() {
+		$ads_client = $this->createMock( GoogleAdsClient::class );
+		$ads_client->method( 'getAssetGenerationServiceClient' )
+			->willThrowException( new RuntimeException( 'V23 Service Clients are not fully loaded.' ) );
+
+		new AdsAssetGenerationService( $ads_client );
+
+		$this->assertTrue( true, 'Constructor must not invoke the V23 service client factory.' );
 	}
 }
