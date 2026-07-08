@@ -15,11 +15,13 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class MapiDataSourcesService
  *
- * Resolves the plugin's product data source per (contentLanguage, feedLabel) pair.
- * Reuses an existing primary data source matching the pair when one is already on
- * the merchant, otherwise creates one. Resolved sources are cached in options as
- * a map keyed by "lang|feed". Resolution is lazy: the first product write into a
- * given market triggers the lookup/create.
+ * Resolves the plugin's data sources: the product data source per (contentLanguage,
+ * feedLabel) pair and the promotion data source per (contentLanguage, targetCountry)
+ * pair. Both flavours share one discover-or-create routine parameterised by a type
+ * descriptor; they differ only in the data source field, the secondary identity field,
+ * and the cache-key prefix. Reuses an existing matching data source when one is already
+ * on the merchant, otherwise creates one. Resolved names are cached in options.
+ * Resolution is lazy: the first write into a given market triggers the lookup/create.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services
  */
@@ -29,6 +31,20 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 
 	/** Display name prefix used when creating the plugin's data sources. */
 	public const DATA_SOURCE_DISPLAY_NAME = 'Google for WooCommerce';
+
+	/** Descriptor for the primary product data source. */
+	private const PRODUCT_SOURCE = [
+		'source_field' => 'primaryProductDataSource',
+		'match_field'  => 'feedLabel',
+		'cache_prefix' => '',
+	];
+
+	/** Descriptor for the promotion data source. */
+	private const PROMOTION_SOURCE = [
+		'source_field' => 'promotionDataSource',
+		'match_field'  => 'targetCountry',
+		'cache_prefix' => 'promotion|',
+	];
 
 	/** @var MerchantApiClient */
 	protected $client;
@@ -47,22 +63,52 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 * (contentLanguage, feedLabel) pair. Discovers or creates one as needed and
 	 * caches the result.
 	 *
-	 * @param string $content_language language code
-	 * @param string $feed_label       Feed label
+	 * @param string $content_language Language code.
+	 * @param string $feed_label       Feed label.
 	 *
 	 * @return string Data source resource name.
 	 * @throws MerchantApiException On a non-2xx MAPI response.
 	 */
 	public function ensure_data_source_for( string $content_language, string $feed_label ): string {
-		$cache_key = $this->cache_key( $content_language, $feed_label );
+		return $this->ensure_data_source( self::PRODUCT_SOURCE, $content_language, $feed_label );
+	}
+
+	/**
+	 * Return the resource name of the promotion data source for the given
+	 * (contentLanguage, targetCountry) pair. Discovers or creates one as needed
+	 * and caches the result.
+	 *
+	 * @param string $content_language Language code.
+	 * @param string $target_country   Target country code.
+	 *
+	 * @return string Data source resource name.
+	 * @throws MerchantApiException On a non-2xx MAPI response.
+	 */
+	public function ensure_promotion_data_source_for( string $content_language, string $target_country ): string {
+		return $this->ensure_data_source( self::PROMOTION_SOURCE, $content_language, $target_country );
+	}
+
+	/**
+	 * Return (from cache, else discover, else create) the resource name of the data
+	 * source of the given type for a (contentLanguage, match) pair.
+	 *
+	 * @param array  $type             One of the *_SOURCE descriptors.
+	 * @param string $content_language Language code.
+	 * @param string $match_value      Secondary identity value (feed label or target country).
+	 *
+	 * @return string Data source resource name.
+	 * @throws MerchantApiException On a non-2xx MAPI response.
+	 */
+	private function ensure_data_source( array $type, string $content_language, string $match_value ): string {
+		$cache_key = $type['cache_prefix'] . $content_language . '|' . $match_value;
 		$cache     = (array) $this->options->get( OptionsInterface::MAPI_DATA_SOURCES, [] );
 
 		if ( isset( $cache[ $cache_key ] ) && '' !== $cache[ $cache_key ] ) {
 			return (string) $cache[ $cache_key ];
 		}
 
-		$name = $this->find_existing_data_source( $content_language, $feed_label )
-			?? $this->create_data_source( $content_language, $feed_label );
+		$name = $this->find_existing_data_source( $type, $content_language, $match_value )
+			?? $this->create_data_source( $type, $content_language, $match_value );
 
 		$cache[ $cache_key ] = $name;
 		$this->options->update( OptionsInterface::MAPI_DATA_SOURCES, $cache );
@@ -71,42 +117,31 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Build the cache key for a (language, feed) pair.
+	 * List existing data sources and return the resource name of the one of the given
+	 * type matching the (contentLanguage, match) pair, if any.
 	 *
-	 * @param string $content_language
-	 * @param string $feed_label
-	 *
-	 * @return string
-	 */
-	protected function cache_key( string $content_language, string $feed_label ): string {
-		return $content_language . '|' . $feed_label;
-	}
-
-	/**
-	 * List existing data sources and return the resource name of the primary
-	 * product data source matching the given (language, feed) pair, if any.
-	 *
-	 * @param string $content_language
-	 * @param string $feed_label
+	 * @param array  $type             One of the *_SOURCE descriptors.
+	 * @param string $content_language Language code.
+	 * @param string $match_value      Secondary identity value (feed label or target country).
 	 *
 	 * @return string|null
 	 * @throws MerchantApiException On a non-2xx MAPI response.
 	 */
-	protected function find_existing_data_source( string $content_language, string $feed_label ): ?string {
+	private function find_existing_data_source( array $type, string $content_language, string $match_value ): ?string {
 		$page_token = '';
 
 		do {
 			$response = $this->client->get( $this->build_list_path( $page_token ) );
 
 			foreach ( $response['dataSources'] ?? [] as $source ) {
-				$primary = $source['primaryProductDataSource'] ?? null;
-				if ( ! is_array( $primary ) || ! isset( $source['name'] ) ) {
+				$descriptor = $source[ $type['source_field'] ] ?? null;
+				if ( ! is_array( $descriptor ) || ! isset( $source['name'] ) ) {
 					continue;
 				}
 
 				if (
-					$content_language === ( $primary['contentLanguage'] ?? '' )
-					&& $feed_label === ( $primary['feedLabel'] ?? '' )
+					$content_language === ( $descriptor['contentLanguage'] ?? '' )
+					&& $match_value === ( $descriptor[ $type['match_field'] ] ?? '' )
 				) {
 					return $source['name'];
 				}
@@ -125,7 +160,7 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	 *
 	 * @return string
 	 */
-	protected function build_list_path( string $page_token ): string {
+	private function build_list_path( string $page_token ): string {
 		$path = sprintf(
 			'%s/accounts/%s/dataSources',
 			MapiPaths::DATASOURCES,
@@ -140,22 +175,23 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Create a new primary product data source for the given (language, feed) pair.
+	 * Create a new data source of the given type for the (contentLanguage, match) pair.
 	 *
-	 * @param string $content_language
-	 * @param string $feed_label
+	 * @param array  $type             One of the *_SOURCE descriptors.
+	 * @param string $content_language Language code.
+	 * @param string $match_value      Secondary identity value (feed label or target country).
 	 *
 	 * @return string The created data source resource name.
 	 * @throws MerchantApiException On a non-2xx MAPI response.
 	 */
-	protected function create_data_source( string $content_language, string $feed_label ): string {
+	private function create_data_source( array $type, string $content_language, string $match_value ): string {
 		$response = $this->client->post(
 			sprintf( '%s/accounts/%s/dataSources', MapiPaths::DATASOURCES, $this->options->get_merchant_id() ),
 			[
-				'displayName'              => sprintf( '%s (%s/%s)', self::DATA_SOURCE_DISPLAY_NAME, $content_language, $feed_label ),
-				'primaryProductDataSource' => [
-					'contentLanguage' => $content_language,
-					'feedLabel'       => $feed_label,
+				'displayName'         => sprintf( '%s (%s/%s)', self::DATA_SOURCE_DISPLAY_NAME, $content_language, $match_value ),
+				$type['source_field'] => [
+					'contentLanguage'    => $content_language,
+					$type['match_field'] => $match_value,
 				],
 			]
 		);

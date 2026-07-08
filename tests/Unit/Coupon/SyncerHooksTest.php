@@ -120,7 +120,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$adapted_coupon->disable_promotion( $coupon );
 		$expected_coupon_entry = new DeleteCouponEntry(
 			$coupon->get_id(),
-			$adapted_coupon,
+			$adapted_coupon->get_promotion(),
 			[ 'US' => 'google_id' ]
 		);
 		$this->delete_coupon_job->expects( $this->once() )
@@ -146,7 +146,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$adapted_coupon->disable_promotion( $coupon );
 		$expected_coupon_entry = new DeleteCouponEntry(
 			$coupon->get_id(),
-			$adapted_coupon,
+			$adapted_coupon->get_promotion(),
 			[ 'US' => 'google_id' ]
 		);
 		$this->delete_coupon_job->expects( $this->once() )
