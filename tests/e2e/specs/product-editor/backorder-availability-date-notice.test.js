@@ -80,6 +80,10 @@ test.describe( 'Backorder availability date notice', () => {
 	test( 'Clicking the notice link switches to the Google for WooCommerce tab', async () => {
 		await editorUtils.getStockStatusInput( 'onbackorder' ).check();
 
+		await expect(
+			editorUtils.getBackorderAvailabilityDateNotice()
+		).toBeVisible();
+
 		await editorUtils.getNoticeTabLink().click();
 
 		await expect( editorUtils.getPluginTab() ).toHaveClass( /active/ );

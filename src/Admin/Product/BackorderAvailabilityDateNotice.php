@@ -94,15 +94,11 @@ class BackorderAvailabilityDateNotice implements Service, Registerable, Conditio
 	}
 
 	/**
-	 * Output the notice container. Hidden by default; JS mounts the React Notice
-	 * component inside and controls visibility based on backorder/date selection.
+	 * Output the notice container. React mounts inside and controls visibility
+	 * based on backorder/date selection; the empty container collapses to 0 height when hidden.
 	 */
 	public function render_notice(): void {
-		$product         = $this->get_current_product();
-		$initial_visible = $product && $this->should_show_notice( $product );
-		$hidden_style    = $initial_visible ? '' : 'display: none;';
-
-		echo '<div class="gla-backorder-availability-date-notice" style="' . esc_attr( $hidden_style ) . '"></div>';
+		echo '<div class="gla-backorder-availability-date-notice"></div>';
 	}
 
 	/**
