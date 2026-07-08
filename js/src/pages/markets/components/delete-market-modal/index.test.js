@@ -114,7 +114,7 @@ describe( 'DeleteMarketModal', () => {
 		} );
 	} );
 
-	test( 'a failed sync still closes the modal after a successful delete', async () => {
+	test( 'a failed sync after a successful delete keeps the modal open', async () => {
 		syncSettingsMock.mockRejectedValue( new Error( 'sync failed' ) );
 
 		const user = userEvent.setup();
@@ -125,11 +125,43 @@ describe( 'DeleteMarketModal', () => {
 			/>
 		);
 
-		await user.click( screen.getByRole( 'button', { name: 'Delete' } ) );
+		const deleteButton = screen.getByRole( 'button', { name: 'Delete' } );
+		await user.click( deleteButton );
+
+		await waitFor( () => {
+			expect( syncSettingsMock ).toHaveBeenCalledTimes( 1 );
+		} );
+		expect( onRequestCloseMock ).not.toHaveBeenCalled();
+		await waitFor( () => {
+			expect( deleteButton ).toBeEnabled();
+		} );
+	} );
+
+	test( 'retrying after a failed sync re-runs only the sync, not the delete', async () => {
+		syncSettingsMock.mockRejectedValueOnce( new Error( 'sync failed' ) );
+
+		const user = userEvent.setup();
+		render(
+			<DeleteMarketModal
+				market={ NON_PRIMARY_MARKET }
+				onRequestClose={ onRequestCloseMock }
+			/>
+		);
+
+		const deleteButton = screen.getByRole( 'button', { name: 'Delete' } );
+		await user.click( deleteButton );
+
+		await waitFor( () => {
+			expect( deleteButton ).toBeEnabled();
+		} );
+
+		await user.click( deleteButton );
 
 		await waitFor( () => {
 			expect( onRequestCloseMock ).toHaveBeenCalledTimes( 1 );
 		} );
+		expect( deleteMarketMock ).toHaveBeenCalledTimes( 1 );
+		expect( syncSettingsMock ).toHaveBeenCalledTimes( 2 );
 	} );
 
 	test( 'disables both buttons while the request is in flight', async () => {

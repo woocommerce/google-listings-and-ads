@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useRef, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -24,34 +24,32 @@ const DeleteMarketModal = ( { market, onRequestClose } ) => {
 		useAppDispatch();
 	const countryNames = useCountryKeyNameMap();
 	const [ deleting, setDeleting ] = useState( false );
+	const deletedRef = useRef( false );
 
 	const marketName = countryNames[ market.country ];
 
 	const handleConfirm = async () => {
 		setDeleting( true );
 		try {
-			await deleteMarket( market.id );
-		} catch ( error ) {
-			// `handleApiError` in the store action already dispatches an error
-			// notice. We just need to re-enable the buttons so the user can
-			// retry or cancel.
-			setDeleting( false );
-			return;
-		}
+			// The guard keeps a retry after a failed sync from re-sending
+			// the DELETE request for a market that no longer exists.
+			if ( ! deletedRef.current ) {
+				await deleteMarket( market.id );
+				deletedRef.current = true;
+			}
 
-		try {
 			// Push the deletion to Merchant Center right away: the deleted
 			// market's shipping service must be replaced or removed there,
 			// and the background job alone can be delayed or gated off.
 			await syncSettings();
-		} catch ( error ) {
-			// The market itself was deleted, so close as normal; the sync
-			// failure has already surfaced as an error notice from the store
-			// action.
-		}
 
-		invalidateResolution( 'getTargetAudience', [] );
-		onRequestClose();
+			invalidateResolution( 'getTargetAudience', [] );
+			onRequestClose();
+		} catch ( error ) {
+			// Do nothing. Keep the modal open.
+		} finally {
+			setDeleting( false );
+		}
 	};
 
 	return (
