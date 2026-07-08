@@ -6,7 +6,9 @@ import { Flex } from '@wordpress/components';
 /**
  * Internal dependencies
  */
+import { glaData } from '~/constants';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
+import useStoreCurrency from '~/hooks/useStoreCurrency';
 import FreeShippingThresholdControl from '~/components/free-shipping-threshold-control';
 
 /**
@@ -22,7 +24,12 @@ const FreeShippingThresholdField = () => {
 	const { onChange, value: threshold } = getInputProps(
 		'free_shipping_threshold'
 	);
-	const { currency } = values;
+	const { code: storeCurrencyCode } = useStoreCurrency();
+	// Flat rate markets don't carry a per-market currency, so fall back to
+	// the store currency on non-multilingual stores.
+	const currency = glaData.isMultiLingualStore
+		? values.currency
+		: storeCurrencyCode;
 	const shouldDisplayFreeShippingThreshold = values.flat_shipping_rate > 0;
 
 	if ( ! shouldDisplayFreeShippingThreshold ) {
