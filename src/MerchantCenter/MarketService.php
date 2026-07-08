@@ -120,15 +120,14 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @return array[] Keyed by market ID ('primary', then secondary IDs).
 	 */
 	public function get_markets(): array {
-		$stored    = $this->options->get( OptionsInterface::MARKETS );
-		$secondary = is_array( $stored ) ? $stored : [];
-		unset( $secondary['primary'] );
+		$secondary = $this->get_stored_secondary_markets();
 
 		$all_rates     = $this->get_cached_shipping_rates();
 		$all_countries = $this->wc->get_countries();
 		$is_flat_mode  = $this->is_flat_shipping_rate();
 
 		foreach ( $secondary as &$market ) {
+			$market  = $this->apply_site_locale_when_not_multilingual( $market );
 			$country = $market['country'] ?? null;
 
 			// DB rate rows are retained when the merchant switches modes so they
@@ -713,6 +712,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		];
 
 		foreach ( $this->get_stored_secondary_markets() as $market ) {
+			$market          = $this->apply_site_locale_when_not_multilingual( $market );
 			$base_feed_label = (string) ( $market['feed_label'] ?? '' );
 
 			$markets[] = [
@@ -877,6 +877,11 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	/**
 	 * Returns the stored secondary markets from the Markets option.
 	 *
+	 * Returns the stored values verbatim: write paths (add, update, delete)
+	 * merge against this data, so stored locale values must survive partial
+	 * updates even while no multilingual integration is active. Consumption
+	 * paths mask locale values via apply_site_locale_when_not_multilingual().
+	 *
 	 * @return array[]
 	 */
 	private function get_stored_secondary_markets(): array {
@@ -885,6 +890,33 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		unset( $markets['primary'] );
 
 		return $markets;
+	}
+
+	/**
+	 * Overrides a market config's locale values with the site defaults when no
+	 * multilingual integration is active, and returns it unchanged otherwise.
+	 *
+	 * Without an integration the store cannot produce translated content or
+	 * converted prices, so locale values saved while an integration was still
+	 * active (for example a EUR currency on a USD store) must not drive feed
+	 * labels, submitted prices, or shipping currencies. The stored option is
+	 * left untouched so the values come back when the integration returns.
+	 *
+	 * @param array $market The market config.
+	 *
+	 * @return array The config with `language` and `currency` replaced by the
+	 *               site primary language and the store currency when the site
+	 *               is not multilingual.
+	 */
+	private function apply_site_locale_when_not_multilingual( array $market ): array {
+		if ( $this->has_multilingual_support() ) {
+			return $market;
+		}
+
+		$market['language'] = [ $this->get_site_primary_language() ];
+		$market['currency'] = [ $this->get_site_primary_currency() ];
+
+		return $market;
 	}
 
 	/**

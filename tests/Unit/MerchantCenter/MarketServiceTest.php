@@ -2121,6 +2121,10 @@ class MarketServiceTest extends UnitTest {
 	}
 
 	public function test_get_all_feed_labels_includes_secondary_markets(): void {
+		// Stored currencies only drive the derived labels while a multilingual
+		// integration is active; without one the site locale takes over.
+		$this->wpml->method( 'is_active' )->willReturn( true );
+
 		$secondary = [
 			'gb' => [
 				'country'    => 'GB',
@@ -3498,6 +3502,124 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame(
 			[ 'US', 'BE-' . get_woocommerce_currency() ],
 			$this->market_service->get_all_feed_labels()
+		);
+	}
+
+	public function test_get_all_feed_labels_ignores_stored_currency_when_not_multilingual(): void {
+		// A currency saved while a multilingual integration was active (for
+		// example EUR on a USD store) must not drive the derived label once
+		// the integration is gone: without it the store can only submit
+		// prices in its own currency.
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'ae' => [
+						'country'    => 'AE',
+						'language'   => [ 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'AE',
+					],
+				],
+			]
+		);
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+
+		$this->assertSame(
+			[ 'US', 'AE-' . get_woocommerce_currency() ],
+			$this->market_service->get_all_feed_labels()
+		);
+	}
+
+	public function test_get_markets_uses_site_locale_when_not_multilingual(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'ae' => [
+						'country'    => 'AE',
+						'language'   => [ 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'AE',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$result = $this->market_service->get_markets();
+
+		$this->assertSame( [ substr( get_locale(), 0, 2 ) ], $result['ae']['language'] );
+		$this->assertSame( [ get_woocommerce_currency() ], $result['ae']['currency'] );
+	}
+
+	public function test_get_markets_keeps_stored_locale_when_multilingual(): void {
+		$this->set_up_wpml_languages( 'en', [ 'en', 'fr' ] );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'ae' => [
+						'country'    => 'AE',
+						'language'   => [ 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'AE',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$result = $this->market_service->get_markets();
+
+		$this->assertSame( [ 'fr' ], $result['ae']['language'] );
+		$this->assertSame( [ 'EUR' ], $result['ae']['currency'] );
+	}
+
+	public function test_get_markets_masking_does_not_touch_the_stored_option(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'ae' => [
+						'country'    => 'AE',
+						'language'   => [ 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'AE',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->market_service->get_markets();
+	}
+
+	public function test_get_feed_labels_for_language_ignores_stored_language_when_not_multilingual(): void {
+		// Without a multilingual integration every product syncs to every
+		// market in the site language, so the applicable labels for the site
+		// language must include every market regardless of the languages
+		// stored on it. Otherwise the error-clearing comparison in
+		// ProductHelper::mark_as_synced() runs against fewer labels than the
+		// sync actually creates.
+		$site_language = substr( get_locale(), 0, 2 );
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [ 'language' => [ $site_language ] ],
+				OptionsInterface::MARKETS         => [
+					'ae' => [
+						'country'    => 'AE',
+						'language'   => [ 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'AE',
+					],
+				],
+			]
+		);
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+
+		$this->assertSame(
+			[ 'US', 'AE-' . get_woocommerce_currency() ],
+			$this->market_service->get_feed_labels_for_language( $site_language )
 		);
 	}
 
