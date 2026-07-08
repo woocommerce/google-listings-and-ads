@@ -10,6 +10,7 @@ import { useState, useCallback } from '@wordpress/element';
 import useTargetAudienceFinalCountryCodes from '~/hooks/useTargetAudienceFinalCountryCodes';
 import useSettings from '~/hooks/useSettings';
 import AppButton from '~/components/app-button';
+import usePrimaryMarketDetails from '../hooks/usePrimaryMarketDetails';
 import AddMarketModal from './add-market-modal';
 
 /**
@@ -20,6 +21,10 @@ import AddMarketModal from './add-market-modal';
 
 /**
  * Component for the "Add market" button on the markets page, which opens a modal to add a new market.
+ *
+ * Hidden when the primary market's audience covers only a single country, since
+ * markets are derived from the primary market's countries and none remain to add.
+ *
  * @fires gla_add_market_button_clicked event when the button is clicked
  */
 const AddMarketButton = () => {
@@ -27,9 +32,20 @@ const AddMarketButton = () => {
 	const { targetAudience, loaded: hasResolvedTargetAudience } =
 		useTargetAudienceFinalCountryCodes();
 	const { settings } = useSettings();
+	const {
+		data: primaryMarket,
+		hasFinishedResolution: hasResolvedPrimaryMarket,
+	} = usePrimaryMarketDetails();
 
 	const handleOpen = useCallback( () => setIsOpen( true ), [] );
 	const handleClose = useCallback( () => setIsOpen( false ), [] );
+
+	if (
+		! hasResolvedPrimaryMarket ||
+		primaryMarket?.countries?.length === 1
+	) {
+		return null;
+	}
 
 	return (
 		<>
