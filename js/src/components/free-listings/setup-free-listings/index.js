@@ -245,9 +245,8 @@ const SetupFreeListings = ( {
 							} ) ),
 					  ]
 					: filteredRates;
-			if ( nextRates.length !== values.shipping_country_rates.length ) {
-				setValue( 'shipping_country_rates', nextRates );
-			}
+			const ratesChanged =
+				nextRates.length !== values.shipping_country_rates.length;
 
 			// For times: filter removed countries AND add newly added countries.
 			const filteredTimes = values.shipping_country_times.filter(
@@ -273,9 +272,18 @@ const SetupFreeListings = ( {
 							} ) ),
 					  ]
 					: filteredTimes;
+			const timesChanged =
+				nextTimes.length !== values.shipping_country_times.length;
 
-			if ( nextTimes.length !== values.shipping_country_times.length ) {
-				setValue( 'shipping_country_times', nextTimes );
+			if ( ratesChanged || timesChanged ) {
+				setValue( {
+					...( ratesChanged && {
+						shipping_country_rates: nextRates,
+					} ),
+					...( timesChanged && {
+						shipping_country_times: nextTimes,
+					} ),
+				} );
 			}
 		}
 	};
