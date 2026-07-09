@@ -310,16 +310,19 @@ class BatchProductHelper implements Service {
 						continue;
 					}
 
-					// The derived label carries the same currency the entry's
-					// prices are submitted in (falling back to the store
-					// currency inside the derivation when the market has none).
+					// The derived label carries the language the entry syncs
+					// under and the currency its prices are submitted in
+					// (both falling back to site defaults inside the
+					// derivation). A market with no configured languages
+					// accepts every product under its site-language label.
 					$market_currency = $this->extract_currency( $market );
+					$market_language = empty( $market['language'] ) ? '' : $product_language;
 
 					$secondary_adapter = $this->product_factory->create(
 						$product,
 						$market['country'],
 						$mapping_rules,
-						$this->market_service->get_market_feed_label( $market['feed_label'], $market_currency ),
+						$this->market_service->get_market_feed_label( $market['feed_label'], $market_language, $market_currency ),
 						$product_language,
 						$market_currency
 					);

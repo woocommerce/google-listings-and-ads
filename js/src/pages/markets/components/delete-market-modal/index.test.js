@@ -11,11 +11,15 @@ import userEvent from '@testing-library/user-event';
 import DeleteMarketModal from '.';
 import { useAppDispatch } from '~/data';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
+import { handleApiError } from '~/utils/handleError';
 
 jest.mock( '~/data', () => ( {
 	useAppDispatch: jest.fn(),
 } ) );
 jest.mock( '~/hooks/useCountryKeyNameMap' );
+jest.mock( '~/utils/handleError', () => ( {
+	handleApiError: jest.fn(),
+} ) );
 
 const NON_PRIMARY_MARKET = {
 	id: 'fr',
@@ -32,15 +36,18 @@ describe( 'DeleteMarketModal', () => {
 	let deleteMarketMock;
 	let syncSettingsMock;
 	let onRequestCloseMock;
+	let invalidateResolutionMock;
 
 	beforeEach( () => {
 		deleteMarketMock = jest.fn().mockResolvedValue( undefined );
 		syncSettingsMock = jest.fn().mockResolvedValue( undefined );
 		onRequestCloseMock = jest.fn();
+		invalidateResolutionMock = jest.fn();
+		handleApiError.mockClear();
 		useAppDispatch.mockReturnValue( {
 			deleteMarket: deleteMarketMock,
 			syncSettings: syncSettingsMock,
-			invalidateResolution: jest.fn(),
+			invalidateResolution: invalidateResolutionMock,
 		} );
 		useCountryKeyNameMap.mockReturnValue( { FR: 'France' } );
 	} );
@@ -114,7 +121,7 @@ describe( 'DeleteMarketModal', () => {
 		} );
 	} );
 
-	test( 'a failed sync after a successful delete keeps the modal open', async () => {
+	test( 'a failed sync after a successful delete keeps the modal open, shows an error notice, and still invalidates the target audience', async () => {
 		syncSettingsMock.mockRejectedValue( new Error( 'sync failed' ) );
 
 		const user = userEvent.setup();
@@ -132,6 +139,13 @@ describe( 'DeleteMarketModal', () => {
 			expect( syncSettingsMock ).toHaveBeenCalledTimes( 1 );
 		} );
 		expect( onRequestCloseMock ).not.toHaveBeenCalled();
+		expect( handleApiError ).toHaveBeenCalledTimes( 1 );
+		// The deletion succeeded, so the target audience changed server-side
+		// and must refresh even though the sync failed.
+		expect( invalidateResolutionMock ).toHaveBeenCalledWith(
+			'getTargetAudience',
+			[]
+		);
 		await waitFor( () => {
 			expect( deleteButton ).toBeEnabled();
 		} );
@@ -162,6 +176,9 @@ describe( 'DeleteMarketModal', () => {
 		} );
 		expect( deleteMarketMock ).toHaveBeenCalledTimes( 1 );
 		expect( syncSettingsMock ).toHaveBeenCalledTimes( 2 );
+		// The invalidation belongs to the deletion, so it does not repeat on
+		// the retry click.
+		expect( invalidateResolutionMock ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	test( 'disables both buttons while the request is in flight', async () => {
