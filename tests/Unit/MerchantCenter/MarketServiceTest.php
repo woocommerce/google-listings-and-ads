@@ -936,6 +936,62 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( 'GB', $result['country'] );
 	}
 
+	/**
+	 * A shipping-only edit (the Edit Market screen echoing the global method back on
+	 * save, while the stored snapshot is stale) must be a no-op: no shipping sync is
+	 * scheduled and the stored snapshot is left untouched. This is the exact scenario
+	 * the ticket names, and locks in both halves of the drop behaviour.
+	 */
+	public function test_update_market_secondary_shipping_only_edit_does_not_schedule_shipping_sync(): void {
+		$existing = [
+			'gb' => [
+				'country'       => 'GB',
+				'language'      => [ 'en' ],
+				'currency'      => [ 'GBP' ],
+				'feed_label'    => 'GB',
+				// Stale snapshot from before the merchant switched the global method.
+				'shipping_rate' => 'automatic',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $existing,
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'manual',
+					'shipping_time' => 'manual',
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->shipping_settings_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		// The Edit Market screen echoes the global method back on save.
+		$this->market_service->update_market(
+			'gb',
+			[
+				'shipping_rate' => 'manual',
+				'shipping_time' => 'manual',
+			]
+		);
+
+		// The submitted params were dropped, not persisted: the stored snapshot is untouched.
+		$this->assertSame( 'automatic', $update_calls[ OptionsInterface::MARKETS ]['gb']['shipping_rate'] );
+		$this->assertSame( 'flat', $update_calls[ OptionsInterface::MARKETS ]['gb']['shipping_time'] );
+	}
+
 	public function test_update_market_secondary_returns_updated_market(): void {
 		$existing = [
 			'gb' => [
