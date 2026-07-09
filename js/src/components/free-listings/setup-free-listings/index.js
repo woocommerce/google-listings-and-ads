@@ -73,7 +73,10 @@ const { Fill, Slot } = createSlotFill( 'gla/SetupFreeListings/SubmitButton' );
  * @param {(values: Object) => Array<CountryCode>} props.resolveFinalCountries Callback to resolve the given form `values` to the final list of audience countries.
  * @param {string} props.currencyCode Store currency code, used when filling in a rate for a newly added country.
  */
-const SyncShippingWithAudience = ( { resolveFinalCountries, currencyCode } ) => {
+const SyncShippingWithAudience = ( {
+	resolveFinalCountries,
+	currencyCode,
+} ) => {
 	const { values, setValues } = useAdaptiveFormContext();
 	const audienceCountries = resolveFinalCountries( values );
 	const audienceCountriesKey = audienceCountries.join( ',' );
@@ -93,9 +96,8 @@ const SyncShippingWithAudience = ( { resolveFinalCountries, currencyCode } ) => 
 			( country ) =>
 				! filteredRates.some( ( rate ) => rate.country === country )
 		);
-		const existingThreshold = filteredRates.find(
-			isNonFreeShippingRate
-		)?.options?.free_shipping_threshold;
+		const existingThreshold = filteredRates.find( isNonFreeShippingRate )
+			?.options?.free_shipping_threshold;
 		const nextRates =
 			values.flat_shipping_rate !== undefined &&
 			missingCountries.length > 0
@@ -309,7 +311,6 @@ const SetupFreeListings = ( {
 			}
 		} else if ( TARGET_AUDIENCE_FIELDS.includes( change.name ) ) {
 			onTargetAudienceChange( pick( values, TARGET_AUDIENCE_FIELDS ) );
-
 		}
 	};
 
