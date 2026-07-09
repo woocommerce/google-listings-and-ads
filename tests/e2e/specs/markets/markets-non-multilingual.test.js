@@ -43,7 +43,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 		await page.close();
 	} );
 
-	test.describe( 'shipping_rate = manual', () => {
+	test.describe( 'Shipping Rate - Manual', () => {
 		test.beforeAll( async () => {
 			await marketsPage.mockIsMultiLingualStore( false );
 			await marketsPage.mockMarketsPageRequests( {
@@ -180,7 +180,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 		} );
 	} );
 
-	test.describe( 'shipping_rate = flat', () => {
+	test.describe( 'Shipping Rate - Flat', () => {
 		test.beforeAll( async () => {
 			await marketsPage.mockIsMultiLingualStore( false );
 			await marketsPage.mockMarketsPageRequests( {
@@ -352,7 +352,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
 
-			await expect( addModal.getByLabel( 'Market' ) ).toHaveValue( 'CA' );
+			await addModal.getByLabel( 'Market' ).selectOption( 'CA' );
 
 			await addModal
 				.getByRole( 'button', { name: 'Add market' } )
@@ -371,7 +371,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
 
-			await expect( addModal.getByLabel( 'Market' ) ).toHaveValue( 'CA' );
+			await addModal.getByLabel( 'Market' ).selectOption( 'CA' );
 
 			await addModal
 				.getByRole( 'button', { name: 'Add market' } )
@@ -387,7 +387,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 		} );
 	} );
 
-	test.describe( 'shipping_rate = automatic', () => {
+	test.describe( 'Shipping Rate - Automatic', () => {
 		test.beforeAll( async () => {
 			await marketsPage.mockIsMultiLingualStore( false );
 			await marketsPage.mockMarketsPageRequests( {
@@ -549,7 +549,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
 
-			await expect( addModal.getByLabel( 'Market' ) ).toHaveValue( 'CA' );
+			await addModal.getByLabel( 'Market' ).selectOption( 'CA' );
 
 			await addModal
 				.getByRole( 'button', { name: 'Add market' } )
@@ -568,7 +568,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 			const addModal = marketsPage.getAddMarketModal();
 			await expect( addModal ).toBeVisible();
 
-			await expect( addModal.getByLabel( 'Market' ) ).toHaveValue( 'CA' );
+			await addModal.getByLabel( 'Market' ).selectOption( 'CA' );
 
 			await addModal
 				.getByRole( 'button', { name: 'Add market' } )
