@@ -7,6 +7,7 @@ import { Flex } from '@wordpress/components';
  * Internal dependencies
  */
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
+import useStoreCurrency from '~/hooks/useStoreCurrency';
 import FreeShippingThresholdControl from '~/components/free-shipping-threshold-control';
 
 /**
@@ -22,7 +23,10 @@ const FreeShippingThresholdField = () => {
 	const { onChange, value: threshold } = getInputProps(
 		'free_shipping_threshold'
 	);
-	const { currency } = values;
+	// Flat rate costs (and their free shipping threshold) are always
+	// denominated in the store currency, not the market's target-audience
+	// currency/currencies — same as the flat_shipping_rate field above it.
+	const { code: currency } = useStoreCurrency();
 	const shouldDisplayFreeShippingThreshold = values.flat_shipping_rate > 0;
 
 	if ( ! shouldDisplayFreeShippingThreshold ) {
