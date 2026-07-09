@@ -72,7 +72,6 @@ class AdminServiceProvider extends AbstractServiceProvider implements Conditiona
 		Settings::class                   => true,
 		SetupAds::class                   => true,
 		SetupMerchantCenter::class        => true,
-		Shipping::class                   => true,
 		Service::class                    => true,
 	];
 
