@@ -420,4 +420,27 @@ class WP {
 	public function update_user_meta( int $user_id, string $key, $value ) {
 		return update_user_meta( $user_id, $key, $value );
 	}
+
+	/**
+	 * Wrapper of get_site_transient.
+	 *
+	 * @param string $transient Transient name.
+	 *
+	 * @return mixed Value of the transient, or false if it does not exist.
+	 */
+	public function get_site_transient( string $transient ) {
+		return get_site_transient( $transient );
+	}
+
+	/**
+	 * Wrapper of current_user_can.
+	 *
+	 * @param string $capability Capability name.
+	 * @param mixed  ...$args    Optional further parameters, typically starting with an object ID.
+	 *
+	 * @return bool Whether the current user has the given capability.
+	 */
+	public function current_user_can( string $capability, ...$args ): bool {
+		return current_user_can( $capability, ...$args );
+	}
 }
