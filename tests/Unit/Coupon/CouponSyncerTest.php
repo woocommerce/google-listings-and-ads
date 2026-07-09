@@ -217,46 +217,6 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 		);
 	}
 
-	public function test_update_throws_exception_when_mc_is_blocked() {
-		$coupon          = $this->create_ready_to_sync_coupon();
-		$merchant_center = $this->createMock( MerchantCenterService::class );
-		$merchant_center->expects( $this->once() )
-			->method( 'is_ready_for_syncing' )
-			->willReturn( true );
-		$merchant_center->expects( $this->once() )
-			->method( 'should_push' )
-			->willReturn( true );
-		$merchant_center->expects( $this->once() )
-			->method( 'is_enabled_for_datatype' )
-			->with( 'coupons' )
-			->willReturn( false );
-		$this->coupon_syncer = $this->get_coupon_syncer( [ 'merchant_center' => $merchant_center ] );
-
-		$this->expectException( CouponSyncerException::class );
-
-		$this->coupon_syncer->update( $coupon );
-	}
-
-	public function test_delete_throws_exception_when_mc_is_blocked() {
-		$coupon          = $this->create_ready_to_delete_coupon();
-		$merchant_center = $this->createMock( MerchantCenterService::class );
-		$merchant_center->expects( $this->once() )
-			->method( 'is_ready_for_syncing' )
-			->willReturn( true );
-		$merchant_center->expects( $this->once() )
-			->method( 'should_push' )
-			->willReturn( true );
-		$merchant_center->expects( $this->once() )
-			->method( 'is_enabled_for_datatype' )
-			->with( 'coupons' )
-			->willReturn( false );
-		$this->coupon_syncer = $this->get_coupon_syncer( [ 'merchant_center' => $merchant_center ] );
-
-		$this->expectException( CouponSyncerException::class );
-
-		$this->coupon_syncer->delete( $this->generate_delete_coupon_entry( $coupon ) );
-	}
-
 	/**
 	 * Mock the Merchant API promotion services so that inserting the given coupon
 	 * succeeds and any other coupon fails with an internal error.
@@ -324,10 +284,6 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 			->willReturn( true );
 		$this->merchant_center->expects( $this->any() )
 			->method( 'is_promotion_supported_country' )
-			->willReturn( true );
-		$this->merchant_center->expects( $this->any() )
-			->method( 'is_enabled_for_datatype' )
-			->with( 'coupons' )
 			->willReturn( true );
 
 		$this->target_audience = $this->createMock( TargetAudience::class );
