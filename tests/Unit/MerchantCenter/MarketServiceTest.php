@@ -3533,18 +3533,20 @@ class MarketServiceTest extends UnitTest {
 		);
 	}
 
-	public function test_get_all_feed_labels_ignores_stored_currency_when_not_multilingual(): void {
-		// A currency saved while a multilingual integration was active (for
-		// example EUR on a USD store) must not drive the derived label once
-		// the integration is gone: without it the store can only submit
-		// prices in its own currency.
+	public function test_get_all_feed_labels_ignores_stored_language_when_not_multilingual(): void {
+		// A language saved while a multilingual integration was active must
+		// not drive the derived label once the integration is gone: without
+		// it every product syncs in the site language. The market keeps the
+		// store currency so it still takes part in syncing; a market stored
+		// with a non-store currency is excluded entirely, covered by
+		// test_get_all_feed_labels_omits_excluded_market_so_stale_cleanup_removes_its_entries.
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MARKETS => [
 					'ae' => [
 						'country'    => 'AE',
 						'language'   => [ 'fr' ],
-						'currency'   => [ 'EUR' ],
+						'currency'   => [ get_woocommerce_currency() ],
 						'feed_label' => 'AE',
 					],
 				],
@@ -3637,7 +3639,7 @@ class MarketServiceTest extends UnitTest {
 					'ae' => [
 						'country'    => 'AE',
 						'language'   => [ 'fr' ],
-						'currency'   => [ 'EUR' ],
+						'currency'   => [ get_woocommerce_currency() ],
 						'feed_label' => 'AE',
 					],
 				],

@@ -222,12 +222,19 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	public function get_participating_markets(): array {
 		$markets = $this->get_markets();
 
-		foreach ( $markets as $id => $market ) {
+		// Participation is judged on the stored rows, not on get_markets()
+		// output: locale masking rewrites a market's currency to the store
+		// currency when no multilingual integration is active, which would
+		// hide the very currency mismatch the participation rule exists to
+		// catch.
+		$participating_ids = array_keys( $this->get_participating_secondary_markets() );
+
+		foreach ( array_keys( $markets ) as $id ) {
 			if ( 'primary' === $id ) {
 				continue;
 			}
 
-			if ( ! $this->is_market_participating( $market ) ) {
+			if ( ! in_array( $id, $participating_ids, true ) ) {
 				unset( $markets[ $id ] );
 			}
 		}
