@@ -22,7 +22,7 @@ import OfferFreeShippingCheckbox from '~/components/order-value-condition-sectio
  *
  * @param {Object} props React props.
  * @param {number} props.threshold The current free shipping threshold.
- * @param {string} props.currency The currency to display for the threshold.
+ * @param {string} [props.currency] The currency to display for the threshold. Defaults to the store currency when omitted.
  * @param {(nextValue: number) => void} props.onChange Callback called with the updated threshold once it changes.
  */
 const FreeShippingThresholdControl = ( { onChange, threshold, currency } ) => {
@@ -50,7 +50,8 @@ const FreeShippingThresholdControl = ( { onChange, threshold, currency } ) => {
 			{ values.offer_free_shipping && (
 				<AppInputPriceControl
 					label={ __( 'Cost', 'google-listings-and-ads' ) }
-					suffix={ currency }
+					// Only override the default store-currency suffix when a currency is explicitly given.
+					{ ...( currency && { suffix: currency } ) }
 					value={ threshold }
 					onBlur={ handleBlur }
 				/>
