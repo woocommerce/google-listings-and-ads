@@ -1117,6 +1117,8 @@ export function* sendMCReviewRequest() {
 
 		return yield receiveMCReviewRequest( response );
 	} catch ( error ) {
+		// A 403 here means the account has an in-app review action rendered but is not on
+		// Google's triggeraction allowlist; it currently surfaces as a generic error notice.
 		handleApiError( error );
 		throw error;
 	}
