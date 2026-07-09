@@ -27,7 +27,7 @@
 		margin-top: $grid-unit-05;
 
 		> * + *::before {
-			content: "·";
+			content: "\00B7";
 			margin-right: $grid-unit-10;
 			color: $gray-700;
 		}
