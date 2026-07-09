@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\SiteScopedNotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -174,10 +175,83 @@ class NotificationServiceTest extends UnitTest {
 		$this->assertFalse( isset( $state['unknown-id'] ) );
 	}
 
+	public function test_login_scoped_dismissal_stays_hidden_until_next_login() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'notification-a', 10, true, NotificationSnoozeDurations::UNTIL_NEXT_LOGIN ),
+			]
+		);
+
+		$this->service->get_notifications();
+		$this->service->dismiss( 'notification-a' );
+
+		$this->assertEquals( [], $this->service->get_notifications() );
+	}
+
+	public function test_login_scoped_dismissal_reappears_after_login() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'notification-a', 10, true, NotificationSnoozeDurations::UNTIL_NEXT_LOGIN ),
+			]
+		);
+
+		$this->service->get_notifications();
+		$this->service->dismiss( 'notification-a' );
+
+		$user = get_user_by( 'id', get_current_user_id() );
+		$this->service->clear_login_scoped_dismissals( $user->user_login, $user );
+
+		$ids = wp_list_pluck( $this->service->get_notifications(), 'id' );
+
+		$this->assertEquals( [ 'notification-a' ], $ids );
+	}
+
+	public function test_login_scoped_clear_does_not_affect_permanent_dismissals() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'notification-a', 10, true ),
+				$this->create_mocked_evaluator( 'notification-b', 20, true, NotificationSnoozeDurations::UNTIL_NEXT_LOGIN ),
+			]
+		);
+
+		$this->service->get_notifications();
+		$this->service->dismiss( 'notification-a' );
+		$this->service->dismiss( 'notification-b' );
+
+		$user = get_user_by( 'id', get_current_user_id() );
+		$this->service->clear_login_scoped_dismissals( $user->user_login, $user );
+
+		$ids = wp_list_pluck( $this->service->get_notifications(), 'id' );
+
+		$this->assertEquals( [ 'notification-b' ], $ids );
+	}
+
+	public function test_time_based_snooze_hides_until_duration_expires() {
+		$this->set_evaluators(
+			[
+				$this->create_mocked_evaluator( 'notification-a', 10, true, HOUR_IN_SECONDS ),
+			]
+		);
+
+		$this->service->get_notifications();
+		$this->service->dismiss( 'notification-a' );
+
+		$this->assertEquals( [], $this->service->get_notifications() );
+
+		$state                                    = get_user_meta( get_current_user_id(), 'gla_notifications_state', true );
+		$state['notification-a']['snoozed_until'] = time() - 1;
+
+		update_user_meta( get_current_user_id(), 'gla_notifications_state', $state );
+
+		$ids = wp_list_pluck( $this->service->get_notifications(), 'id' );
+
+		$this->assertEquals( [ 'notification-a' ], $ids );
+	}
+
 	public function test_site_scoped_notification_persists_state_in_site_option() {
 		$this->set_evaluators(
 			[
-				$this->create_mocked_evaluator( 'sold-10-items', 10, true, true ),
+				$this->create_mocked_evaluator( 'sold-10-items', 10, true, null, true ),
 			]
 		);
 
@@ -193,7 +267,7 @@ class NotificationServiceTest extends UnitTest {
 	public function test_site_scoped_dismiss_is_shared_across_users() {
 		$this->set_evaluators(
 			[
-				$this->create_mocked_evaluator( 'sold-10-items', 10, true, true ),
+				$this->create_mocked_evaluator( 'sold-10-items', 10, true, null, true ),
 			]
 		);
 
@@ -209,7 +283,7 @@ class NotificationServiceTest extends UnitTest {
 	public function test_triggered_at_is_set_once_for_site_scoped_notifications() {
 		$this->set_evaluators(
 			[
-				$this->create_mocked_evaluator( 'sold-10-items', 10, true, true ),
+				$this->create_mocked_evaluator( 'sold-10-items', 10, true, null, true ),
 			]
 		);
 
@@ -240,20 +314,21 @@ class NotificationServiceTest extends UnitTest {
 	/**
 	 * Create a mocked notification evaluator.
 	 *
-	 * @param string $id          The notification ID.
-	 * @param int    $priority    The notification priority.
-	 * @param bool   $should_show Whether the condition is met.
-	 * @param bool   $site_scoped Whether state is stored site-wide.
+	 * @param string   $id          The notification ID.
+	 * @param int      $priority    The notification priority.
+	 * @param bool     $should_show Whether the condition is met.
+	 * @param int|null $snooze      The snooze duration in seconds.
+	 * @param bool     $site_scoped Whether state is stored site-wide.
 	 *
 	 * @return MockObject|NotificationEvaluatorInterface
 	 */
-	private function create_mocked_evaluator( string $id, int $priority, bool $should_show, bool $site_scoped = false ): MockObject {
+	private function create_mocked_evaluator( string $id, int $priority, bool $should_show, ?int $snooze = null, bool $site_scoped = false ): MockObject {
 		$interface = $site_scoped ? SiteScopedNotificationEvaluatorInterface::class : NotificationEvaluatorInterface::class;
 		$evaluator = $this->createMock( $interface );
 		$evaluator->method( 'get_id' )->willReturn( $id );
 		$evaluator->method( 'get_priority' )->willReturn( $priority );
 		$evaluator->method( 'should_show' )->willReturn( $should_show );
-		$evaluator->method( 'get_snooze_duration' )->willReturn( null );
+		$evaluator->method( 'get_snooze_duration' )->willReturn( $snooze );
 
 		return $evaluator;
 	}

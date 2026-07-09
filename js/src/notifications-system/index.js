@@ -3,6 +3,7 @@
  */
 import { resolveSelect } from '@wordpress/data';
 import { createElement } from '@wordpress/element';
+import { doAction } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -15,6 +16,7 @@ import {
 } from './woo-marketing-notifications-slot';
 import Notification from './notification';
 import useNotificationsSystemMap from './useNotificationsSystemMap';
+import { GLA_NOTIFICATION_DISMISSED } from '~/constants';
 
 /**
  * Creates a notification component.
@@ -37,6 +39,7 @@ function createNotificationComponent( id, triggeredAt ) {
 
 		const handleDismiss = () => {
 			dismissNotification( id );
+			doAction( GLA_NOTIFICATION_DISMISSED );
 		};
 
 		return createElement( Notification, {

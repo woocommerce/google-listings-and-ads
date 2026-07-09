@@ -4,12 +4,15 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Notification;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\PermissionsTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use WP_User;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -26,7 +29,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification
  */
-class NotificationService implements ContainerAwareInterface, OptionsAwareInterface {
+class NotificationService implements ContainerAwareInterface, OptionsAwareInterface, Registerable, Service {
 
 	use ContainerAwareTrait;
 	use OptionsAwareTrait;
@@ -62,6 +65,13 @@ class NotificationService implements ContainerAwareInterface, OptionsAwareInterf
 	}
 
 	/**
+	 * Register hooks for notification state management.
+	 */
+	public function register(): void {
+		add_action( 'wp_login', [ $this, 'clear_login_scoped_dismissals' ], 10, 2 );
+	}
+
+	/**
 	 * Get the notifications that should currently be shown, ordered by priority (ascending).
 	 *
 	 * @return array[] List of [ 'id' => string, 'triggered_at' => int ] entries.
@@ -88,8 +98,7 @@ class NotificationService implements ContainerAwareInterface, OptionsAwareInterf
 				$state = &$user_state;
 			}
 
-			// A permanently-dismissed notification is excluded from all future results.
-			if ( ! empty( $state[ $id ]['dismissed'] ) ) {
+			if ( $this->is_dismissed( $evaluator, $state[ $id ] ?? [] ) ) {
 				unset( $state );
 				continue;
 			}
@@ -141,7 +150,11 @@ class NotificationService implements ContainerAwareInterface, OptionsAwareInterf
 	}
 
 	/**
-	 * Permanently dismiss a notification so it is excluded from all future results.
+	 * Dismiss a notification according to the evaluator's snooze configuration.
+	 *
+	 * Snoozable notifications are hidden until their snooze expires; all others are
+	 * dismissed permanently. State is persisted per site for site-scoped evaluators,
+	 * otherwise per user.
 	 *
 	 * @param string $id The notification ID to dismiss.
 	 *
@@ -157,17 +170,60 @@ class NotificationService implements ContainerAwareInterface, OptionsAwareInterf
 			return;
 		}
 
-		if ( $evaluator instanceof SiteScopedNotificationEvaluatorInterface ) {
-			$state                     = $this->get_site_state();
-			$state[ $id ]['dismissed'] = true;
-			$this->save_site_state( $state );
+		$site_scoped = $evaluator instanceof SiteScopedNotificationEvaluatorInterface;
+		$state       = $site_scoped ? $this->get_site_state() : $this->get_user_state();
+		$snooze      = $evaluator->get_snooze_duration();
 
+		if ( is_int( $snooze ) && $snooze > 0 ) {
+			$state[ $id ]['snoozed_until'] = time() + $snooze;
+			unset( $state[ $id ]['dismissed'] );
+		} else {
+			$state[ $id ]['dismissed'] = true;
+			unset( $state[ $id ]['snoozed_until'] );
+		}
+
+		if ( $site_scoped ) {
+			$this->save_site_state( $state );
+		} else {
+			$this->save_user_state( $state );
+		}
+	}
+
+	/**
+	 * Clear login-scoped dismissals when a user logs in.
+	 *
+	 * @param string  $user_login The user's login name.
+	 * @param WP_User $user         The authenticated user.
+	 *
+	 * @return void
+	 */
+	public function clear_login_scoped_dismissals( string $user_login, WP_User $user ): void {
+		$state = $this->get_state_for_user( $user->ID );
+
+		if ( empty( $state ) ) {
 			return;
 		}
 
-		$state                     = $this->get_user_state();
-		$state[ $id ]['dismissed'] = true;
-		$this->save_user_state( $state );
+		$state_changed = false;
+
+		foreach ( $this->get_evaluators() as $evaluator ) {
+			if ( NotificationSnoozeDurations::UNTIL_NEXT_LOGIN !== $evaluator->get_snooze_duration() ) {
+				continue;
+			}
+
+			$id = $evaluator->get_id();
+
+			if ( empty( $state[ $id ]['dismissed'] ) ) {
+				continue;
+			}
+
+			unset( $state[ $id ]['dismissed'] );
+			$state_changed = true;
+		}
+
+		if ( $state_changed ) {
+			$this->save_state_for_user( $user->ID, $state );
+		}
 	}
 
 	/**
@@ -195,7 +251,7 @@ class NotificationService implements ContainerAwareInterface, OptionsAwareInterf
 	/**
 	 * Find a registered evaluator by notification ID.
 	 *
-	 * @param string $id
+	 * @param string $id The notification ID.
 	 *
 	 * @return NotificationEvaluatorInterface|null
 	 */
@@ -210,12 +266,52 @@ class NotificationService implements ContainerAwareInterface, OptionsAwareInterf
 	}
 
 	/**
-	 * Read the persisted per-user notifications state.
+	 * Whether a notification is currently dismissed for the given persisted state entry.
+	 *
+	 * @param NotificationEvaluatorInterface $evaluator The notification evaluator.
+	 * @param array                          $entry     The persisted state entry for the notification.
+	 *
+	 * @return bool
+	 */
+	protected function is_dismissed( NotificationEvaluatorInterface $evaluator, array $entry ): bool {
+		$snooze = $evaluator->get_snooze_duration();
+
+		if ( is_int( $snooze ) && $snooze > 0 ) {
+			return ! empty( $entry['snoozed_until'] ) && time() < (int) $entry['snoozed_until'];
+		}
+
+		return ! empty( $entry['dismissed'] );
+	}
+
+	/**
+	 * Read the persisted notifications state for the current user.
 	 *
 	 * @return array
 	 */
 	protected function get_user_state(): array {
-		$state = $this->wp->get_user_meta( $this->wp->get_current_user_id(), self::STATE_META_KEY );
+		return $this->get_state_for_user( $this->wp->get_current_user_id() );
+	}
+
+	/**
+	 * Persist the notifications state for the current user.
+	 *
+	 * @param array $state The state to persist.
+	 *
+	 * @return void
+	 */
+	protected function save_user_state( array $state ): void {
+		$this->save_state_for_user( $this->wp->get_current_user_id(), $state );
+	}
+
+	/**
+	 * Read the persisted notifications state for a user.
+	 *
+	 * @param int $user_id The user ID.
+	 *
+	 * @return array
+	 */
+	protected function get_state_for_user( int $user_id ): array {
+		$state = $this->wp->get_user_meta( $user_id, self::STATE_META_KEY );
 
 		if ( ! is_array( $state ) || empty( $state ) ) {
 			return [ self::VERSION_KEY => self::SCHEMA_VERSION ];
@@ -225,16 +321,17 @@ class NotificationService implements ContainerAwareInterface, OptionsAwareInterf
 	}
 
 	/**
-	 * Persist the per-user notifications state.
+	 * Persist the notifications state for a user.
 	 *
-	 * @param array $state The state to persist.
+	 * @param int   $user_id The user ID.
+	 * @param array $state   The state to persist.
 	 *
 	 * @return void
 	 */
-	protected function save_user_state( array $state ): void {
+	protected function save_state_for_user( int $user_id, array $state ): void {
 		$state[ self::VERSION_KEY ] = self::SCHEMA_VERSION;
 
-		$this->wp->update_user_meta( $this->wp->get_current_user_id(), self::STATE_META_KEY, $state );
+		$this->wp->update_user_meta( $user_id, self::STATE_META_KEY, $state );
 	}
 
 	/**
