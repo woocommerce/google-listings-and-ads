@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiIssueResolutionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
@@ -126,6 +127,13 @@ class RequestReviewController extends BaseOptionsController {
 
 				// Only the in-app action can be completed server-side; the redirect variant is opened in the browser.
 				if ( 'in_app' !== ( $action['type'] ?? '' ) ) {
+					do_action(
+						'woocommerce_gla_request_review_failure',
+						[
+							'error'                 => 'redirect_required',
+							'account_review_status' => $review_status,
+						]
+					);
 					throw new Exception( __( 'This review request must be completed in Merchant Center.', 'google-listings-and-ads' ), 400 );
 				}
 
@@ -143,8 +151,10 @@ class RequestReviewController extends BaseOptionsController {
 				 *
 				 * The account can already be under review when the action is triggered, which the
 				 * Merchant API reports as an error. There is no dedicated signal for this yet
-				 * (triggeraction is allowlist-gated), so match the
-				 * message, scoped to client errors so a 5xx is never misread as success.
+				 * (triggeraction is allowlist-gated), so match the message, scoped to client errors
+				 * so a 5xx is never misread as success. Prefer a structured check on
+				 * MerchantApiException's response body / errors once the exact error shape for the
+				 * "already under review" case has been confirmed against a live allowlisted account.
 				 */
 				$code = $e->getCode();
 				if ( $code >= 400 && $code < 500 && stripos( $e->getMessage(), 'under review' ) !== false ) {
@@ -167,8 +177,11 @@ class RequestReviewController extends BaseOptionsController {
 			'reviewAction' => null,
 		];
 
-		// Update Account status when successful response
-		$this->set_cached_review_status( $new_status );
+		// UNDER_REVIEW is an optimistic, client-side state: the Merchant API has no "under review"
+		// signal, so it cannot be re-derived from a fresh render. Cache it for the longer
+		// under-review window; once it expires the status reverts to the live severity-based
+		// status from renderaccountissues.
+		$this->set_cached_review_status( $new_status, $this->request_review_statuses->get_under_review_lifetime() );
 
 		return new Response( $new_status );
 	}
@@ -201,12 +214,13 @@ class RequestReviewController extends BaseOptionsController {
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 				'properties'  => [
-					'type'          => [ 'type' => 'string' ],
-					'isAvailable'   => [ 'type' => 'boolean' ],
-					'buttonLabel'   => [ 'type' => 'string' ],
-					'uri'           => [ 'type' => 'string' ],
-					'actionContext' => [ 'type' => 'string' ],
-					'flowId'        => [ 'type' => 'string' ],
+					'type'        => [ 'type' => 'string' ],
+					'isAvailable' => [ 'type' => 'boolean' ],
+					'buttonLabel' => [ 'type' => 'string' ],
+					'uri'         => [
+						'type'        => 'string',
+						'description' => __( 'Merchant Center URL for the redirect action; absent for in-app actions.', 'google-listings-and-ads' ),
+					],
 				],
 			],
 		];
@@ -227,13 +241,14 @@ class RequestReviewController extends BaseOptionsController {
 	/**
 	 * Save the Account Review Status data inside a transient for caching purposes.
 	 *
-	 * @param array $value The Account Review Status data to save in the transient
+	 * @param array    $value    The Account Review Status data to save in the transient
+	 * @param int|null $lifetime Optional cache lifetime in seconds; defaults to the account review lifetime.
 	 */
-	private function set_cached_review_status( $value ): void {
+	private function set_cached_review_status( $value, ?int $lifetime = null ): void {
 		$this->transients->set(
 			TransientsInterface::MC_ACCOUNT_REVIEW,
 			$value,
-			$this->request_review_statuses->get_account_review_lifetime()
+			$lifetime ?? $this->request_review_statuses->get_account_review_lifetime()
 		);
 	}
 
@@ -258,9 +273,41 @@ class RequestReviewController extends BaseOptionsController {
 		$review_status = $this->get_cached_review_status();
 
 		if ( is_null( $review_status ) ) {
-			$response      = $this->get_account_review_status();
-			$review_status = $this->request_review_statuses->get_statuses_from_response( $response );
+			$review_status = $this->render_review_status();
 			$this->set_cached_review_status( $review_status );
+		}
+
+		return $review_status;
+	}
+
+	/**
+	 * Render the review status for the GET response.
+	 *
+	 * The account issues are first rendered with in-app (built-in) actions. When the account
+	 * has issues but the render returns no triggerable action - which happens when the account
+	 * is not on Google's triggeraction allowlist - it re-renders with the Merchant Center
+	 * redirect action so a working "Request review" control stays visible instead of silently
+	 * disappearing.
+	 *
+	 * `actionContext`/`flowId` are consumed only server-side by the POST handler (which
+	 * re-renders fresh), so they are stripped from the client-facing payload here.
+	 *
+	 * @return array
+	 * @throws Exception If the render fails.
+	 */
+	private function render_review_status(): array {
+		$review_status = $this->request_review_statuses->get_statuses_from_response(
+			$this->get_account_review_status()
+		);
+
+		if ( ! empty( $review_status['issues'] ) && empty( $review_status['reviewAction'] ) ) {
+			$review_status = $this->request_review_statuses->get_statuses_from_response(
+				$this->get_account_review_status( MapiIssueResolutionService::USER_INPUT_REDIRECT )
+			);
+		}
+
+		if ( is_array( $review_status['reviewAction'] ?? null ) ) {
+			unset( $review_status['reviewAction']['actionContext'], $review_status['reviewAction']['flowId'] );
 		}
 
 		return $review_status;
@@ -269,16 +316,18 @@ class RequestReviewController extends BaseOptionsController {
 	/**
 	 * Get Account Review Status
 	 *
+	 * @param string $user_input_action_option How user-input actions are rendered (in-app built-in vs redirect).
+	 *
 	 * @return array the response data
 	 * @throws Exception When there is an invalid response.
 	 */
-	public function get_account_review_status() {
+	public function get_account_review_status( string $user_input_action_option = MapiIssueResolutionService::USER_INPUT_BUILT_IN ) {
 		try {
 			if ( ! $this->middleware->is_subaccount() ) {
 				return [];
 			}
 
-			$response = $this->merchant->get_account_review_status();
+			$response = $this->merchant->get_account_review_status( $user_input_action_option );
 			do_action( 'woocommerce_gla_request_review_response', $response );
 			return $response;
 		} catch ( Exception $e ) {
