@@ -40,10 +40,7 @@ const AddMarketButton = () => {
 	const handleOpen = useCallback( () => setIsOpen( true ), [] );
 	const handleClose = useCallback( () => setIsOpen( false ), [] );
 
-	if (
-		! hasResolvedPrimaryMarket ||
-		primaryMarket?.countries?.length === 1
-	) {
+	if ( ! hasResolvedPrimaryMarket || primaryMarket?.countries?.length <= 1 ) {
 		return null;
 	}
 
