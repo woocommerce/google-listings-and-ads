@@ -112,11 +112,9 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				'status'       => RequestReviewStatuses::DISAPPROVED,
 				'issues'       => [ 'Account suspended' ],
 				'reviewAction' => [
-					'type'          => 'in_app',
-					'isAvailable'   => true,
-					'buttonLabel'   => 'Request review',
-					'actionContext' => 'ctx-token',
-					'flowId'        => 'flow-1',
+					'type'        => 'in_app',
+					'isAvailable' => true,
+					'buttonLabel' => 'Request review',
 				],
 			],
 			$response->get_data()
@@ -124,7 +122,9 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_status_warning() {
-		$this->merchant->expects( $this->once() )
+		// Issues but no action, so the built-in render falls back to a redirect render;
+		// the stubbed response still has no action, so reviewAction stays null.
+		$this->merchant->expects( $this->exactly( 2 ) )
 			->method( 'get_account_review_status' )
 			->willReturn(
 				$this->render_response( RequestReviewStatuses::SEVERITY_WARNING, 'Limited visibility' )
@@ -312,6 +312,43 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_post_request_review();
 		$this->assertEquals( 'error', $response->get_data()['message'] );
 		$this->assertEquals( 401, $response->get_status() );
+	}
+
+	public function test_get_redirect_fallback_when_built_in_returns_no_action() {
+		// Built-in render returns issues but no triggerable action (account not on the
+		// triggeraction allowlist); the controller re-renders as a redirect so a working
+		// "Request review" link stays visible instead of silently disappearing.
+		$this->merchant->expects( $this->exactly( 2 ) )
+			->method( 'get_account_review_status' )
+			->willReturnOnConsecutiveCalls(
+				$this->render_response( RequestReviewStatuses::SEVERITY_ERROR, 'Account suspended', [] ),
+				$this->render_response( RequestReviewStatuses::SEVERITY_ERROR, 'Account suspended', [ $this->redirect_action() ] )
+			);
+
+		$response = $this->do_get_request_review();
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( 'redirect', $response->get_data()['reviewAction']['type'] );
+		$this->assertEquals( 'https://merchants.google.com/review', $response->get_data()['reviewAction']['uri'] );
+	}
+
+	public function test_request_review_permission_denied() {
+		$this->merchant->expects( $this->once() )
+			->method( 'get_account_review_status' )
+			->willReturn(
+				$this->render_response(
+					RequestReviewStatuses::SEVERITY_ERROR,
+					'Account suspended',
+					[ $this->in_app_action() ]
+				)
+			);
+
+		$this->merchant->expects( $this->once() )
+			->method( 'trigger_review_action' )
+			->willThrowException( new Exception( 'Action not allowed', 403 ) );
+
+		$response = $this->do_post_request_review();
+		$this->assertEquals( 403, $response->get_status() );
+		$this->assertEquals( 'Action not allowed', $response->get_data()['message'] );
 	}
 
 	private function do_post_request_review() {

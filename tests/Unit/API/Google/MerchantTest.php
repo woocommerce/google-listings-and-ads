@@ -559,13 +559,7 @@ class MerchantTest extends UnitTest {
 
 		$this->issue_resolution_service->expects( $this->once() )
 			->method( 'trigger_action' )
-			->with(
-				'action-context-token',
-				[
-					'actionFlowId' => 'review-flow',
-					'inputValues'  => [],
-				]
-			)
+			->with( 'action-context-token', 'review-flow', [] )
 			->willReturn( $response );
 
 		$this->assertSame( $response, $this->merchant->trigger_review_action( 'action-context-token', 'review-flow' ) );

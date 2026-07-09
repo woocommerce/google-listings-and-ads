@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
@@ -30,6 +31,14 @@ class RequestReviewStatuses implements Service {
 	public const EXTERNAL_REVIEW_ACTION = 'REVIEW_ACCOUNT_ISSUE_IN_MERCHANT_CENTER';
 
 	public const MC_ACCOUNT_REVIEW_LIFETIME = MINUTE_IN_SECONDS * 20; // 20 minutes
+
+	/**
+	 * Lifetime of the optimistic UNDER_REVIEW cache entry. The Merchant API exposes no
+	 * "under review" signal, so after a successful request we hold the client-side
+	 * UNDER_REVIEW status for this longer window (reviews take at least several days) before
+	 * it reverts to the live severity-based status.
+	 */
+	public const UNDER_REVIEW_LIFETIME = DAY_IN_SECONDS * 3; // 3 days
 
 	/**
 	 * Reduce a `renderaccountissues` response to the review status the UI needs.
@@ -139,5 +148,14 @@ class RequestReviewStatuses implements Service {
 	 */
 	public function get_account_review_lifetime(): int {
 		return apply_filters( 'woocommerce_gla_mc_account_review_lifetime', self::MC_ACCOUNT_REVIEW_LIFETIME );
+	}
+
+	/**
+	 * Lifetime of the optimistic UNDER_REVIEW cache entry.
+	 *
+	 * @return int
+	 */
+	public function get_under_review_lifetime(): int {
+		return apply_filters( 'woocommerce_gla_mc_under_review_lifetime', self::UNDER_REVIEW_LIFETIME );
 	}
 }

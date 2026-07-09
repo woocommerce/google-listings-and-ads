@@ -227,6 +227,27 @@ class RequestReviewStatusesTest extends UnitTest {
 		$this->assertSame( 'in_app', $result['reviewAction']['type'] );
 	}
 
+	public function test_finds_redirect_action_across_issues() {
+		$redirect = [
+			'isAvailable'    => true,
+			'externalAction' => [
+				'type' => RequestReviewStatuses::EXTERNAL_REVIEW_ACTION,
+				'uri'  => 'https://merchants.google.com/review',
+			],
+		];
+
+		$result = $this->statuses->get_statuses_from_response(
+			$this->response(
+				[
+					$this->issue( RequestReviewStatuses::SEVERITY_ERROR, 'First', [] ),
+					$this->issue( RequestReviewStatuses::SEVERITY_ERROR, 'Second', [ $redirect ] ),
+				]
+			)
+		);
+
+		$this->assertSame( 'redirect', $result['reviewAction']['type'] );
+	}
+
 	public function test_account_review_lifetime_is_filterable() {
 		$this->assertSame(
 			RequestReviewStatuses::MC_ACCOUNT_REVIEW_LIFETIME,

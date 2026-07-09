@@ -72,18 +72,22 @@ class MapiIssueResolutionService implements OptionsAwareInterface {
 	 * Trigger a built-in user-input action in-app (allowlist-restricted).
 	 *
 	 * @param string $action_context Opaque token identifying the action, taken from a rendered action.
-	 * @param array  $action_input   The action flow id and its input values.
+	 * @param string $action_flow_id The action flow id to trigger.
+	 * @param array  $input_values   Optional input values for the action flow.
 	 * @param string $language_code  Optional language for the response.
 	 *
 	 * @return array TriggerActionResponse decoded as an array.
 	 * @throws MerchantApiException On a non-2xx MAPI response.
 	 */
-	public function trigger_action( string $action_context, array $action_input, string $language_code = '' ): array {
+	public function trigger_action( string $action_context, string $action_flow_id, array $input_values = [], string $language_code = '' ): array {
 		return $this->client->post(
 			$this->build_path( ':triggeraction', $language_code ),
 			[
 				'actionContext' => $action_context,
-				'actionInput'   => $action_input,
+				'actionInput'   => [
+					'actionFlowId' => $action_flow_id,
+					'inputValues'  => $input_values,
+				],
 			]
 		);
 	}

@@ -102,13 +102,7 @@ class MapiIssueResolutionServiceTest extends UnitTest {
 
 		$this->assertSame(
 			$response,
-			$this->service->trigger_action(
-				'ctx-token',
-				[
-					'actionFlowId' => 'flow-1',
-					'inputValues'  => [],
-				]
-			)
+			$this->service->trigger_action( 'ctx-token', 'flow-1' )
 		);
 	}
 }
