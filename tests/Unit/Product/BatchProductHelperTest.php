@@ -275,6 +275,40 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		}
 	}
 
+	public function test_validate_and_generate_update_request_entries_primary_null_country_uses_main_feed_label() {
+		// Regression test for the original issue-3 TypeError: the real
+		// MarketService contract has get_primary_market() returning null for
+		// both country and feed_label (the primary market targets multiple
+		// countries), and the helper must resolve the main feed label itself
+		// instead of passing those nulls into ProductFactory::create().
+		// Stubbed directly, without set_up_market_service_stubs(), so the
+		// null return is explicit in the test.
+		$products = $this->create_and_return_supported_test_products();
+
+		$primary = [
+			'country'    => null,
+			'feed_label' => null,
+			'language'   => [],
+		];
+
+		$this->market_service->method( 'get_primary_market' )->willReturn( $primary );
+		$this->market_service->method( 'get_markets' )->willReturn( [ 'primary' => $primary ] );
+		$this->market_service->method( 'get_all_countries' )->willReturn( [ 'US' ] );
+		$this->market_service->method( 'get_main_feed_label' )->willReturn( 'US' );
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( $products );
+
+		$this->assertCount( count( $this->flatten_to_simple_product_ids( $products ) ), $results );
+
+		foreach ( $results as $entry ) {
+			$this->assertSame( 'US', $entry->get_product()->getFeedLabel() );
+			$this->assertSame( 'US', $entry->get_product()->getTargetCountry() );
+		}
+	}
+
 	public function test_validate_and_generate_update_request_entries_primary_plus_secondary_two_entries_per_product() {
 		$products = $this->create_and_return_supported_test_products();
 
@@ -313,7 +347,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			sort( $labels );
 			// The secondary market has no currency configured, so its derived
 			// label falls back to the store currency; the primary stays bare.
-			$this->assertSame( [ 'DE-' . get_woocommerce_currency(), 'US' ], $labels );
+			$this->assertSame( [ 'DE-' . strtoupper( substr( get_locale(), 0, 2 ) ) . '-' . get_woocommerce_currency(), 'US' ], $labels );
 		}
 	}
 
@@ -386,7 +420,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			static function ( $s ) {
 				return $s->getCountry();
 			},
-			$by_label[ 'DE-' . get_woocommerce_currency() ]
+			$by_label[ 'DE-' . strtoupper( substr( get_locale(), 0, 2 ) ) . '-' . get_woocommerce_currency() ]
 		);
 		$this->assertEqualSets( [ 'DE' ], $secondary_shipping_countries );
 
@@ -438,7 +472,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertCount( 1, $results );
 		$entry = $results[0];
 		$this->assertNull( $entry->get_product()->getTargetCountry() );
-		$this->assertSame( 'FR-' . get_woocommerce_currency(), $entry->get_product()->getFeedLabel() );
+		$this->assertSame( 'FR-FR-' . get_woocommerce_currency(), $entry->get_product()->getFeedLabel() );
 		$this->assertSame( 'fr', $entry->get_product()->getContentLanguage() );
 	}
 
@@ -489,7 +523,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 				],
 				'fr-fr'   => [
 					'country'    => 'FR',
-					'feed_label' => 'FR-fr',
+					'feed_label' => 'FR',
 					'language'   => [ 'fr', 'en' ],
 				],
 			]
@@ -503,7 +537,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$secondary_entries = array_filter(
 			$results,
 			static function ( BatchProductRequestEntry $entry ) {
-				return 'FR-fr-' . get_woocommerce_currency() === $entry->get_product()->getFeedLabel();
+				return 'FR-EN-' . get_woocommerce_currency() === $entry->get_product()->getFeedLabel();
 			}
 		);
 
@@ -528,7 +562,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 				],
 				'fr-fr'   => [
 					'country'    => 'FR',
-					'feed_label' => 'FR-fr',
+					'feed_label' => 'FR',
 					'language'   => [ 'fr', 'en' ],
 				],
 			]
@@ -586,7 +620,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 				],
 				'fr-fr'   => [
 					'country'    => 'FR',
-					'feed_label' => 'FR-fr',
+					'feed_label' => 'FR',
 					'language'   => [],
 				],
 			]
@@ -622,7 +656,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 				],
 				'fr-fr'   => [
 					'country'    => 'FR',
-					'feed_label' => 'FR-fr',
+					'feed_label' => 'FR',
 					'language'   => [ 'fr' ],
 				],
 			]
@@ -672,11 +706,12 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( [ $variable ] );
 
 		// The fr-language variation syncs to the France market under the
-		// currency-derived feed label (store currency, as the market has none).
+		// language-currency derived feed label (the variation's own language,
+		// and the store currency as the market has none configured).
 		$fr_entries = array_filter(
 			$results,
 			static function ( BatchProductRequestEntry $entry ) {
-				return 'FR-' . get_woocommerce_currency() === $entry->get_product()->getFeedLabel();
+				return 'FR-FR-' . get_woocommerce_currency() === $entry->get_product()->getFeedLabel();
 			}
 		);
 
@@ -822,7 +857,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			->method( 'validate' )
 			->willReturnCallback(
 				function ( WCProductAdapter $adapter ) {
-					if ( 'DE-' . get_woocommerce_currency() === $adapter->getFeedLabel() ) {
+					if ( 'DE-' . strtoupper( substr( get_locale(), 0, 2 ) ) . '-' . get_woocommerce_currency() === $adapter->getFeedLabel() ) {
 						$violations = new ConstraintViolationList();
 						$violations->add( $this->createMock( ConstraintViolation::class ) );
 						return $violations;
@@ -1269,15 +1304,18 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->market_service->method( 'get_main_feed_label' )->willReturn( $main_feed_label );
 
 		// Mirrors MarketService::get_market_feed_label(): the stored label plus
-		// the uppercase currency, falling back to the store currency when the
-		// market has none.
+		// the uppercase two-letter language code plus the uppercase currency,
+		// falling back to the site language and the store currency when empty.
 		$this->market_service->method( 'get_market_feed_label' )->willReturnCallback(
-			static function ( string $base_feed_label, string $currency ): string {
+			static function ( string $base_feed_label, string $language, string $currency ): string {
+				if ( '' === $language ) {
+					$language = substr( get_locale(), 0, 2 );
+				}
 				if ( '' === $currency ) {
 					$currency = get_woocommerce_currency();
 				}
 
-				return $base_feed_label . '-' . strtoupper( $currency );
+				return strtoupper( $base_feed_label . '-' . substr( $language, 0, 2 ) . '-' . $currency );
 			}
 		);
 	}
