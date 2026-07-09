@@ -413,12 +413,14 @@ class Merchant implements OptionsAwareInterface {
 	 *
 	 * @since 2.7.1
 	 *
+	 * @param string $user_input_action_option How user-input actions are rendered (in-app built-in vs redirect).
+	 *
 	 * @return array The RenderAccountIssuesResponse (renderedIssues with their actions).
 	 * @throws Exception When an exception happens in the Merchant API.
 	 */
-	public function get_account_review_status() {
+	public function get_account_review_status( string $user_input_action_option = MapiIssueResolutionService::USER_INPUT_BUILT_IN ) {
 		try {
-			return $this->issue_resolution_service->render_account_issues();
+			return $this->issue_resolution_service->render_account_issues( $user_input_action_option );
 		} catch ( MerchantApiException $e ) {
 			// The woocommerce_gla_mc_client_exception action is fired by MerchantApiException::__construct().
 			throw new Exception( $e->getMessage(), $e->getCode() );
@@ -444,10 +446,8 @@ class Merchant implements OptionsAwareInterface {
 		try {
 			return $this->issue_resolution_service->trigger_action(
 				$action_context,
-				[
-					'actionFlowId' => $action_flow_id,
-					'inputValues'  => $input_values,
-				]
+				$action_flow_id,
+				$input_values
 			);
 		} catch ( MerchantApiException $e ) {
 			// The woocommerce_gla_mc_client_exception action is fired by MerchantApiException::__construct().
