@@ -64,6 +64,8 @@ describe( 'Request Review Notice', () => {
 		expect( link.getAttribute( 'href' ) ).toBe(
 			'https://merchants.google.com/review'
 		);
+		expect( link.getAttribute( 'target' ) ).toBe( '_blank' );
+		expect( link.getAttribute( 'rel' ) ).toContain( 'noopener' );
 
 		fireEvent.click( link );
 		expect( onRequestReviewClick ).not.toHaveBeenCalled();
