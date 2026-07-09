@@ -42,6 +42,7 @@ interface OptionsInterface {
 	public const MARKETS                                   = 'markets';
 	public const REDIRECT_TO_ONBOARDING                    = 'redirect_to_onboarding';
 	public const SHIPPING_RATES                            = 'shipping_rates';
+	public const SHIPPING_SYNC_FAILURE                     = 'shipping_sync_failure';
 	public const SHIPPING_TIMES                            = 'shipping_times';
 	public const SITE_VERIFICATION                         = 'site_verification';
 	public const SYNCABLE_PRODUCTS_COUNT                   = 'syncable_products_count';
@@ -88,6 +89,7 @@ interface OptionsInterface {
 		self::MARKETS                                   => true,
 		self::DELAYED_ACTIVATE                          => true,
 		self::SHIPPING_RATES                            => true,
+		self::SHIPPING_SYNC_FAILURE                     => true,
 		self::SHIPPING_TIMES                            => true,
 		self::REDIRECT_TO_ONBOARDING                    => true,
 		self::SITE_VERIFICATION                         => true,

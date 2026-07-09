@@ -73,6 +73,37 @@ abstract class AbstractShippingSettingsAdapter extends GoogleShippingSettings {
 	}
 
 	/**
+	 * Whether an estimated delivery time is configured for the given country.
+	 *
+	 * @param string $country
+	 *
+	 * @return bool
+	 */
+	protected function has_delivery_time( string $country ): bool {
+		return array_key_exists( $country, $this->delivery_times );
+	}
+
+	/**
+	 * Reports a country left out of the shipping settings because it has a
+	 * shipping rate but no shipping time, naming the country and the missing
+	 * data. Leaving it out removes that country's Merchant Center shipping
+	 * service until the data is fixed, and keeps one bad country from
+	 * cancelling the whole shipping settings update.
+	 *
+	 * @param string $country
+	 */
+	protected function report_country_missing_delivery_time( string $country ): void {
+		do_action(
+			'woocommerce_gla_error',
+			sprintf(
+				'Skipping the shipping service for country %s: it has a shipping rate but no shipping time. Its Merchant Center shipping service is left out of the sync until a shipping time is configured for it.',
+				$country
+			),
+			__METHOD__
+		);
+	}
+
+	/**
 	 * Return estimated delivery time for a given country in days.
 	 *
 	 * @param string $country

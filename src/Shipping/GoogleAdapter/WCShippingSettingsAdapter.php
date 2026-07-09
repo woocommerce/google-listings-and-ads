@@ -76,6 +76,15 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 		$postcode_groups = [];
 		$services        = [];
 		foreach ( $rates_collections as $rates_collection ) {
+			// A country with rates but no shipping time is left out entirely,
+			// prices and postcode lists alike, with an error, so one bad
+			// country cannot cancel the whole update and no postcode list is
+			// sent without the service it belongs to.
+			if ( ! $this->has_delivery_time( $rates_collection->get_country() ) ) {
+				$this->report_country_missing_delivery_time( $rates_collection->get_country() );
+				continue;
+			}
+
 			$postcode_groups = array_merge( $postcode_groups, $this->get_location_rates_postcode_groups( $rates_collection->get_location_rates() ) );
 
 			foreach ( $rates_collection->get_rates_grouped_by_service() as $service_collection ) {
