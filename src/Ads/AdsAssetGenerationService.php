@@ -76,7 +76,24 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 	 */
 	public function __construct( GoogleAdsClient $client ) {
 		$this->google_ads_client = $client;
-		$this->client            = $client->getAssetGenerationServiceClient();
+	}
+
+	/**
+	 * Lazily resolve the Asset Generation service client.
+	 *
+	 * Why: building the V23 service client at construction time runs during
+	 * REST controller registration on `rest_api_init`, before the Google Ads
+	 * V23 client library is guaranteed to be fully loaded. Deferring it to
+	 * the first call site avoids a fatal during plugin update / admin boot.
+	 *
+	 * @return \Google\Ads\GoogleAds\V23\Services\Client\AssetGenerationServiceClient
+	 */
+	private function get_client() {
+		if ( ! isset( $this->client ) ) {
+			$this->client = $this->google_ads_client->getAssetGenerationServiceClient();
+		}
+
+		return $this->client;
 	}
 
 	/**
@@ -117,7 +134,7 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 		);
 
 		try {
-			$response = $this->client->generateText( $request );
+			$response = $this->get_client()->generateText( $request );
 
 			$results = [];
 			foreach ( $response->getGeneratedText() as $text_asset ) {
@@ -165,11 +182,12 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 
 		$final_url = $args['final_url'] ?? $this->get_site_url();
 
-		// Convert asset field types from lowercase strings to enum numbers (if provided).
-		$asset_field_types = [];
-		if ( ! empty( $args['asset_field_types'] ) ) {
-			$asset_field_types = $this->convert_types_to_enums( $args['asset_field_types'], self::VALID_IMAGE_TYPES );
+		// Default to all valid image types if not specified.
+		if ( empty( $args['asset_field_types'] ) ) {
+			$args['asset_field_types'] = self::VALID_IMAGE_TYPES;
 		}
+
+		$asset_field_types = $this->convert_types_to_enums( $args['asset_field_types'], self::VALID_IMAGE_TYPES );
 
 		$request_data = [
 			'customer_id'              => $customer_id,
@@ -179,17 +197,13 @@ class AdsAssetGenerationService implements OptionsAwareInterface, Service {
 					'final_url' => $final_url,
 				]
 			),
+			'asset_field_types'        => $asset_field_types,
 		];
-
-		// Add asset_field_types only if provided.
-		if ( ! empty( $asset_field_types ) ) {
-			$request_data['asset_field_types'] = $asset_field_types;
-		}
 
 		$request = new GenerateImagesRequest( $request_data );
 
 		try {
-			$response = $this->client->generateImages( $request );
+			$response = $this->get_client()->generateImages( $request );
 
 			$results = [];
 			foreach ( $response->getGeneratedImages() as $image_asset ) {

@@ -23,6 +23,7 @@ import { ConnectedGoogleAdsAccountCard } from '~/components/google-ads-account-c
 import { MerchantCenterAccountInfoCard } from '~/components/google-mc-account-card';
 import Section from '~/components/section';
 import LinkedAccountsSectionWrapper from './linked-accounts-section-wrapper';
+import ConnectMerchantCenterCard from './connect-merchant-center-card';
 import DisconnectModal, { ALL_ACCOUNTS, ADS_ACCOUNT } from './disconnect-modal';
 import { GOOGLE_ADS_ACCOUNT_STATUS } from '~/constants';
 import { queueRecordGlaEvent } from '~/utils/tracks';
@@ -105,10 +106,12 @@ export default function LinkedAccounts() {
 						hideAccountSwitch
 					/>
 
-					{ hasGoogleMCConnection && (
+					{ hasGoogleMCConnection ? (
 						<MerchantCenterAccountInfoCard
 							googleMCAccount={ googleMCAccount }
 						/>
+					) : (
+						<ConnectMerchantCenterCard />
 					) }
 
 					{ hasAdsAccount && (

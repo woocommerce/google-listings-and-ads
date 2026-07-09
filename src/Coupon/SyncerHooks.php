@@ -3,18 +3,15 @@ declare(strict_types = 1);
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Coupon;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\DeleteCouponEntry;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteCoupon;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\CouponNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateCoupon;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
 use WC_Coupon;
 defined( 'ABSPATH' ) || exit();
 
@@ -67,11 +64,6 @@ class SyncerHooks implements Service, Registerable {
 	protected $merchant_center;
 
 	/**
-	 * @var NotificationsService
-	 */
-	protected $notifications_service;
-
-	/**
 	 *
 	 * @var WC
 	 */
@@ -90,7 +82,6 @@ class SyncerHooks implements Service, Registerable {
 	 * @param CouponHelper          $coupon_helper
 	 * @param JobRepository         $job_repository
 	 * @param MerchantCenterService $merchant_center
-	 * @param NotificationsService  $notifications_service
 	 * @param WC                    $wc
 	 * @param WP                    $wp
 	 */
@@ -98,16 +89,14 @@ class SyncerHooks implements Service, Registerable {
 		CouponHelper $coupon_helper,
 		JobRepository $job_repository,
 		MerchantCenterService $merchant_center,
-		NotificationsService $notifications_service,
 		WC $wc,
 		WP $wp
 	) {
-		$this->coupon_helper         = $coupon_helper;
-		$this->job_repository        = $job_repository;
-		$this->merchant_center       = $merchant_center;
-		$this->notifications_service = $notifications_service;
-		$this->wc                    = $wc;
-		$this->wp                    = $wp;
+		$this->coupon_helper   = $coupon_helper;
+		$this->job_repository  = $job_repository;
+		$this->merchant_center = $merchant_center;
+		$this->wc              = $wc;
+		$this->wp              = $wp;
 	}
 
 	/**
@@ -194,15 +183,6 @@ class SyncerHooks implements Service, Registerable {
 	protected function handle_update_coupon( WC_Coupon $coupon ) {
 		$coupon_id = $coupon->get_id();
 
-		if ( $this->notifications_service->is_ready( NotificationsService::DATATYPE_COUPON ) ) {
-			$this->handle_update_coupon_notification( $coupon );
-		}
-
-		// Only proceed with coupon syncing if PUSH is enabled for this data type
-		if ( ! $this->merchant_center->is_enabled_for_datatype( NotificationsService::DATATYPE_COUPON ) ) {
-			return;
-		}
-
 		// Schedule an update job if product sync is enabled.
 		if ( $this->coupon_helper->is_sync_ready( $coupon ) ) {
 			$this->coupon_helper->mark_as_pending( $coupon );
@@ -246,11 +226,6 @@ class SyncerHooks implements Service, Registerable {
 	protected function handle_pre_delete_coupon( int $coupon_id ) {
 		$coupon = $this->wc->maybe_get_coupon( $coupon_id );
 
-		// Only proceed with coupon deletion if PUSH is enabled for this data type
-		if ( ! $this->merchant_center->is_enabled_for_datatype( NotificationsService::DATATYPE_COUPON ) ) {
-			return;
-		}
-
 		if ( $coupon instanceof WC_Coupon &&
 			$this->coupon_helper->is_coupon_synced( $coupon ) ) {
 			$this->delete_requests_map[ $coupon_id ] = new DeleteCouponEntry(
@@ -287,15 +262,6 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $coupon_id
 	 */
 	protected function handle_delete_coupon( int $coupon_id ) {
-		if ( $this->notifications_service->is_ready( NotificationsService::DATATYPE_COUPON ) ) {
-			$this->maybe_send_delete_notification( $coupon_id );
-		}
-
-		// Only proceed with coupon deletion if PUSH is enabled for this data type
-		if ( ! $this->merchant_center->is_enabled_for_datatype( NotificationsService::DATATYPE_COUPON ) ) {
-			return;
-		}
-
 		if ( ! isset( $this->delete_requests_map[ $coupon_id ] ) ) {
 			return;
 		}
@@ -309,26 +275,6 @@ class SyncerHooks implements Service, Registerable {
 				]
 			);
 			$this->set_already_scheduled_to_delete( $coupon_id );
-		}
-	}
-
-	/**
-	 * Send the notification for coupon deletion
-	 *
-	 * @since 2.8.0
-	 * @param int $coupon_id
-	 */
-	protected function maybe_send_delete_notification( int $coupon_id ): void {
-		$coupon = $this->wc->maybe_get_coupon( $coupon_id );
-
-		if ( $coupon instanceof WC_Coupon && $this->coupon_helper->should_trigger_delete_notification( $coupon ) ) {
-			$this->coupon_helper->set_notification_status( $coupon, NotificationStatus::NOTIFICATION_PENDING_DELETE );
-			$this->job_repository->get( CouponNotificationJob::class )->schedule(
-				[
-					'item_id' => $coupon->get_id(),
-					'topic'   => NotificationsService::TOPIC_COUPON_DELETED,
-				]
-			);
 		}
 	}
 
@@ -405,39 +351,6 @@ class SyncerHooks implements Service, Registerable {
 	 */
 	protected function set_already_scheduled_to_delete( int $coupon_id ): void {
 		$this->set_already_scheduled( $coupon_id, self::SCHEDULE_TYPE_DELETE );
-	}
-
-	/**
-	 * Schedules notifications for an updated coupon
-	 *
-	 * @param WC_Coupon $coupon
-	 */
-	protected function handle_update_coupon_notification( WC_Coupon $coupon ) {
-		if ( $this->coupon_helper->should_trigger_create_notification( $coupon ) ) {
-			$this->coupon_helper->set_notification_status( $coupon, NotificationStatus::NOTIFICATION_PENDING_CREATE );
-			$this->job_repository->get( CouponNotificationJob::class )->schedule(
-				[
-					'item_id' => $coupon->get_id(),
-					'topic'   => NotificationsService::TOPIC_COUPON_CREATED,
-				]
-			);
-		} elseif ( $this->coupon_helper->should_trigger_update_notification( $coupon ) ) {
-			$this->coupon_helper->set_notification_status( $coupon, NotificationStatus::NOTIFICATION_PENDING_UPDATE );
-			$this->job_repository->get( CouponNotificationJob::class )->schedule(
-				[
-					'item_id' => $coupon->get_id(),
-					'topic'   => NotificationsService::TOPIC_COUPON_UPDATED,
-				]
-			);
-		} elseif ( $this->coupon_helper->should_trigger_delete_notification( $coupon ) ) {
-			$this->coupon_helper->set_notification_status( $coupon, NotificationStatus::NOTIFICATION_PENDING_DELETE );
-			$this->job_repository->get( CouponNotificationJob::class )->schedule(
-				[
-					'item_id' => $coupon->get_id(),
-					'topic'   => NotificationsService::TOPIC_COUPON_DELETED,
-				]
-			);
-		}
 	}
 
 	/**
