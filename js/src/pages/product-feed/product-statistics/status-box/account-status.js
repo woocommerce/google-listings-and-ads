@@ -49,12 +49,16 @@ const AccountStatus = () => {
 	if ( statusKey === 'APPROVED' ) {
 		const statistics = productData?.statistics;
 
-		// Wait for the product statistics before choosing between Approved and Onboarding.
+		// `statistics` is undefined until the product-statistics store resolves; render nothing
+		// until then rather than briefly flashing Approved.
 		if ( ! statistics ) {
 			return null;
 		}
 
 		if ( ! hasProducts( statistics ) ) {
+			// Also applies to an account that was approved but has since had all its products
+			// removed; MAPI reports no issues either way, so it can't be told apart from a
+			// brand-new account.
 			statusKey = 'ONBOARDING';
 		}
 	}
