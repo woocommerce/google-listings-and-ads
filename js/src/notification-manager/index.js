@@ -65,7 +65,13 @@ import { GLA_NOTIFICATION_DISMISSED } from '~/constants';
 			return;
 		}
 
-		const newCount = Math.max( 0, parseInt( countEl.textContent, 10 ) - 1 );
+		const currentCount = parseInt( countEl.textContent, 10 );
+
+		if ( Number.isNaN( currentCount ) ) {
+			return;
+		}
+
+		const newCount = Math.max( 0, currentCount - 1 );
 
 		if ( newCount === 0 ) {
 			badge.style.display = 'none';
