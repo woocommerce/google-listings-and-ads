@@ -298,6 +298,9 @@ export default class MarketsPage extends MockRequests {
 
 		await this.fulfillShippingRates( SHIPPING_RATES );
 		await this.fulfillShippingTimes( SHIPPING_TIMES );
+
+		// Saving flat/automatic rates triggers a settings sync request.
+		await this.mockSuccessfulSettingsSyncRequest();
 	}
 
 	/**
