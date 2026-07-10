@@ -379,6 +379,7 @@ const MarketForm = ( {
 			'shipping_country_times',
 		];
 		const flatRateFields = [
+			'currency',
 			'flat_shipping_rate',
 			'offer_free_shipping',
 			'free_shipping_threshold',
