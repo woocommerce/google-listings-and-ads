@@ -333,7 +333,10 @@ const useNotificationsSystemMap = () => {
 		};
 	}, [ hasFinishedResolution, hasGoogleMCConnection ] );
 
-	return { ...STATIC_MAP, ...dynamicMap };
+	return useMemo(
+		() => ( { ...STATIC_MAP, ...dynamicMap } ),
+		[ dynamicMap ]
+	);
 };
 
 export default useNotificationsSystemMap;
