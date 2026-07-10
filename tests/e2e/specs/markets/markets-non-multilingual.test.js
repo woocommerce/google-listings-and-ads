@@ -107,6 +107,10 @@ test.describe( 'Markets – non-multilingual store', () => {
 				marketsPage.getLocaleSection( modal )
 			).not.toBeAttached();
 
+			await expect(
+				modal.getByLabel( 'Free shipping over a specific order value' )
+			).not.toBeAttached();
+
 			await modal.getByRole( 'button', { name: 'Cancel' } ).click();
 			await expect( modal ).not.toBeVisible();
 		} );
@@ -171,7 +175,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 			await modal.getByRole( 'button', { name: 'Save' } ).click();
 
 			await expect(
-				page.locator( '.components-snackbar__content' )
+				page.locator( '.components-snackbar__content' ).last()
 			).toBeVisible();
 
 			await expect( modal ).toBeVisible();
@@ -277,6 +281,144 @@ test.describe( 'Markets – non-multilingual store', () => {
 			await expect( modal ).not.toBeVisible();
 		} );
 
+		test( 'shows the existing free shipping threshold for the primary market', async () => {
+			await marketsPage.getEditButton( 0 ).click();
+
+			const modal = marketsPage.getEditPrimaryMarketModal();
+			await expect( modal ).toBeVisible();
+
+			await expect(
+				modal.getByLabel( 'Free shipping over a specific order value' )
+			).toBeChecked();
+			await expect( modal.getByLabel( 'Cost' ) ).toHaveValue( '50.00' );
+
+			await modal.getByRole( 'button', { name: 'Cancel' } ).click();
+			await expect( modal ).not.toBeVisible();
+		} );
+
+		test( 'unchecking free shipping hides the Cost input', async () => {
+			await marketsPage.getEditButton( 0 ).click();
+
+			const modal = marketsPage.getEditPrimaryMarketModal();
+			await expect( modal ).toBeVisible();
+
+			await modal
+				.getByLabel( 'Free shipping over a specific order value' )
+				.uncheck();
+
+			await expect( modal.getByLabel( 'Cost' ) ).not.toBeVisible();
+
+			await modal.getByRole( 'button', { name: 'Cancel' } ).click();
+			await expect( modal ).not.toBeVisible();
+		} );
+
+		test( 'secondary market with no threshold shows an unchecked checkbox; checking it reveals the Cost input', async () => {
+			await marketsPage.getEditButton( 1 ).click();
+
+			const modal = marketsPage.getEditMarketModal( 'France' );
+			await expect( modal ).toBeVisible();
+
+			const checkbox = modal.getByLabel(
+				'Free shipping over a specific order value'
+			);
+			await expect( checkbox ).not.toBeChecked();
+			await expect( modal.getByLabel( 'Cost' ) ).not.toBeVisible();
+
+			await checkbox.check();
+			await expect( modal.getByLabel( 'Cost' ) ).toBeVisible();
+
+			await modal.getByRole( 'button', { name: 'Cancel' } ).click();
+			await expect( modal ).not.toBeVisible();
+		} );
+
+		test( 'checking free shipping without a value blocks Save and shows a validation error', async () => {
+			await marketsPage.getEditButton( 1 ).click();
+
+			const modal = marketsPage.getEditMarketModal( 'France' );
+			await expect( modal ).toBeVisible();
+
+			await modal
+				.getByLabel( 'Free shipping over a specific order value' )
+				.check();
+
+			await modal.getByRole( 'button', { name: 'Save' } ).click();
+
+			await expect(
+				modal.getByText(
+					'Please enter minimum order for free shipping.'
+				)
+			).toBeVisible();
+			await expect( modal ).toBeVisible();
+
+			await modal.getByRole( 'button', { name: 'Cancel' } ).click();
+			await expect( modal ).not.toBeVisible();
+		} );
+
+		test( 'editing the Cost value and saving sends the updated threshold', async () => {
+			await marketsPage.fulfillMarketUpdate(
+				PRIMARY_MARKET.id,
+				PRIMARY_MARKET
+			);
+
+			await marketsPage.getEditButton( 0 ).click();
+
+			const modal = marketsPage.getEditPrimaryMarketModal();
+			await expect( modal ).toBeVisible();
+
+			const costInput = modal.getByLabel( 'Cost' );
+			await costInput.fill( '75' );
+			// Blur by clicking elsewhere in the modal, so the new value commits
+			// to the form before Save is pressed.
+			await modal.getByText( 'Estimated shipping rates' ).click();
+
+			const ratesBatchRequest = page.waitForRequest(
+				( request ) =>
+					request.url().includes( '/mc/shipping/rates/batch' ) &&
+					request.method() === 'POST'
+			);
+
+			await modal.getByRole( 'button', { name: 'Save' } ).click();
+
+			const request = await ratesBatchRequest;
+			const body = request.postDataJSON();
+
+			expect(
+				body.rates.every(
+					( rate ) => rate.options.free_shipping_threshold === 75
+				)
+			).toBe( true );
+
+			await expect( modal ).not.toBeVisible();
+		} );
+
+		test( 'saving with an unchanged Cost value does not send a rates batch request', async () => {
+			await marketsPage.fulfillMarketUpdate(
+				PRIMARY_MARKET.id,
+				PRIMARY_MARKET
+			);
+
+			let ratesBatchRequested = false;
+			page.on( 'request', ( request ) => {
+				if ( request.url().includes( '/mc/shipping/rates/batch' ) ) {
+					ratesBatchRequested = true;
+				}
+			} );
+
+			await marketsPage.getEditButton( 0 ).click();
+
+			const modal = marketsPage.getEditPrimaryMarketModal();
+			await expect( modal ).toBeVisible();
+
+			const costInput = modal.getByLabel( 'Cost' );
+			await costInput.fill( '50' );
+			await modal.getByText( 'Estimated shipping rates' ).click();
+
+			await modal.getByRole( 'button', { name: 'Save' } ).click();
+
+			await expect( modal ).not.toBeVisible();
+			expect( ratesBatchRequested ).toBe( false );
+		} );
+
 		test( 'secondary market edit has no audience section, no shipping notice; Add modal shows country select', async () => {
 			// Index 1 targets the France row Edit button.
 			await marketsPage.getEditButton( 1 ).click();
@@ -334,7 +476,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 			await modal.getByRole( 'button', { name: 'Save' } ).click();
 
 			await expect(
-				page.locator( '.components-snackbar__content' )
+				page.locator( '.components-snackbar__content' ).last()
 			).toBeVisible();
 
 			await expect( modal ).toBeVisible();
@@ -378,12 +520,57 @@ test.describe( 'Markets – non-multilingual store', () => {
 				.click();
 
 			await expect(
-				page.locator( '.components-snackbar__content' )
+				page.locator( '.components-snackbar__content' ).last()
 			).toBeVisible();
 
 			await expect( addModal ).toBeVisible();
 
 			await addModal.getByRole( 'button', { name: 'Cancel' } ).click();
+		} );
+
+		test( 'API error shows snackbar and keeps Delete modal open', async () => {
+			await marketsPage.fulfillMarketDelete(
+				SECONDARY_MARKET.id,
+				{ message: 'Internal server error' },
+				500
+			);
+
+			await marketsPage.openDeleteMarketModal( 'France' );
+
+			const modal = marketsPage.getDeleteMarketModal();
+			await expect( modal ).toBeVisible();
+
+			await modal.getByRole( 'button', { name: 'Delete' } ).click();
+
+			// `.last()`: the preceding "Add modal" error test's snackbar may
+			// still be visible (snackbars auto-dismiss after a delay).
+			await expect(
+				page.locator( '.components-snackbar__content' ).last()
+			).toBeVisible();
+
+			await expect( modal ).toBeVisible();
+
+			await modal.getByRole( 'button', { name: 'Cancel' } ).click();
+		} );
+
+		// Runs last in this describe block: it permanently removes France from
+		// the mocked markets list, and the next describe block navigates fresh.
+		test( 'successful delete removes the market row and closes the modal', async () => {
+			await marketsPage.fulfillMarketDelete( SECONDARY_MARKET.id, {} );
+			await marketsPage.fulfillMarkets( [ PRIMARY_MARKET ] );
+
+			await marketsPage.openDeleteMarketModal( 'France' );
+
+			const modal = marketsPage.getDeleteMarketModal();
+			await expect( modal ).toBeVisible();
+			await expect( modal ).toContainText( 'France' );
+
+			await modal.getByRole( 'button', { name: 'Delete' } ).click();
+
+			await expect( modal ).not.toBeVisible();
+			await expect(
+				page.getByRole( 'cell', { name: 'France' } )
+			).not.toBeVisible();
 		} );
 	} );
 
@@ -531,7 +718,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 			await modal.getByRole( 'button', { name: 'Save' } ).click();
 
 			await expect(
-				page.locator( '.components-snackbar__content' )
+				page.locator( '.components-snackbar__content' ).last()
 			).toBeVisible();
 
 			await expect( modal ).toBeVisible();
@@ -575,7 +762,7 @@ test.describe( 'Markets – non-multilingual store', () => {
 				.click();
 
 			await expect(
-				page.locator( '.components-snackbar__content' )
+				page.locator( '.components-snackbar__content' ).last()
 			).toBeVisible();
 
 			await expect( addModal ).toBeVisible();

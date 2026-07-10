@@ -154,6 +154,27 @@ export default class MarketsPage extends MockRequests {
 	}
 
 	/**
+	 * Fulfill the market delete request for a given market ID.
+	 *
+	 * Although the action uses `method: 'DELETE'`, WordPress's apiFetch http-v1
+	 * middleware converts it to POST with an X-HTTP-Method-Override header,
+	 * so Playwright sees the request as POST.
+	 *
+	 * @param {string} id      Market ID, e.g. 'fr'.
+	 * @param {Object} payload
+	 * @param {number} [status=200]
+	 * @return {Promise<void>}
+	 */
+	async fulfillMarketDelete( id, payload, status = 200 ) {
+		await this.fulfillRequest(
+			new RegExp( `\\/wc\\/gla\\/mc\\/markets\\/${ id }\\b` ),
+			payload,
+			status,
+			[ 'POST' ]
+		);
+	}
+
+	/**
 	 * Fulfill POST /wc/gla/mc/markets (create).
 	 *
 	 * @param {Object} payload
@@ -215,7 +236,7 @@ export default class MarketsPage extends MockRequests {
 	}
 
 	/**
-	 * Fulfill PATCH /wc/gla/mc/shipping/rates/batch.
+	 * Fulfill POST /wc/gla/mc/shipping/rates/batch (upsert).
 	 *
 	 * @param {Object} payload
 	 * @param {number} [status=200]
@@ -226,12 +247,12 @@ export default class MarketsPage extends MockRequests {
 			/\/wc\/gla\/mc\/shipping\/rates\/batch\b/,
 			payload,
 			status,
-			[ 'PATCH' ]
+			[ 'POST' ]
 		);
 	}
 
 	/**
-	 * Fulfill PATCH /wc/gla/mc/shipping/times/batch.
+	 * Fulfill POST /wc/gla/mc/shipping/times/batch (upsert).
 	 *
 	 * @param {Object} payload
 	 * @param {number} [status=200]
@@ -242,7 +263,7 @@ export default class MarketsPage extends MockRequests {
 			/\/wc\/gla\/mc\/shipping\/times\/batch\b/,
 			payload,
 			status,
-			[ 'PATCH' ]
+			[ 'POST' ]
 		);
 	}
 
@@ -338,6 +359,30 @@ export default class MarketsPage extends MockRequests {
 	 */
 	getDeleteButtons() {
 		return this.page.getByRole( 'button', { name: 'Actions' } );
+	}
+
+	/**
+	 * Opens the Delete confirmation modal for the row matching `rowText`, via
+	 * the row's "Actions" overflow menu.
+	 *
+	 * @param {string} rowText Text used to locate the row, e.g. a market name.
+	 * @return {Promise<void>}
+	 */
+	async openDeleteMarketModal( rowText ) {
+		await this.page
+			.getByRole( 'row' )
+			.filter( { hasText: rowText } )
+			.getByRole( 'button', { name: 'Actions' } )
+			.click();
+
+		await this.page.getByRole( 'menuitem', { name: 'Delete' } ).click();
+	}
+
+	/**
+	 * @return {import('@playwright/test').Locator} Locator for the "Delete market" confirmation dialog.
+	 */
+	getDeleteMarketModal() {
+		return this.page.getByRole( 'dialog', { name: 'Delete market' } );
 	}
 
 	/**
