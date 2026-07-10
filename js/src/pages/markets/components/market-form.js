@@ -27,6 +27,21 @@ import ValidationErrors from '~/components/validation-errors';
 import AppSpinner from '~/components/app-spinner';
 import checkIsPrimaryMarket from '../utils/isPrimaryMarket';
 
+const CURRENCY_FIELD = 'currency';
+const LOCALE_FIELDS = [ 'language', CURRENCY_FIELD ];
+const SHIPPING_TIME_FIELDS = [
+	'flat_shipping_min_time',
+	'flat_shipping_max_time',
+	'shipping_country_times',
+];
+const FLAT_RATE_FIELDS = [
+	CURRENCY_FIELD,
+	'flat_shipping_rate',
+	'offer_free_shipping',
+	'free_shipping_threshold',
+	'shipping_country_rates',
+];
+
 /**
  * Form component for creating or editing a market.
  * This component is used within the AddMarketModal and EditMarketModal.
@@ -372,36 +387,22 @@ const MarketForm = ( {
 
 		const { isMultiLingualStore } = glaData;
 		const audienceField = isPrimaryMarket ? 'countries' : 'country';
-		const localeFields = [ 'language', 'currency' ];
-		const shippingTimeFields = [
-			'flat_shipping_min_time',
-			'flat_shipping_max_time',
-			'shipping_country_times',
-		];
-		const flatRateFields = [
-			'currency',
-			'flat_shipping_rate',
-			'offer_free_shipping',
-			'free_shipping_threshold',
-			'shipping_country_rates',
-		];
-
 		const fieldsByMethod = {
 			[ SHIPPING_RATE_METHOD.MANUAL ]: [
 				...( isPrimaryMarket || isMultiLingualStore
 					? [ audienceField ]
 					: [] ),
-				...( isMultiLingualStore ? localeFields : [] ),
+				...( isMultiLingualStore ? LOCALE_FIELDS : [] ),
 			],
 			[ SHIPPING_RATE_METHOD.FLAT ]: [
 				audienceField,
-				...flatRateFields,
-				...shippingTimeFields,
+				...FLAT_RATE_FIELDS,
+				...SHIPPING_TIME_FIELDS,
 			],
 			[ SHIPPING_RATE_METHOD.AUTOMATIC ]: [
 				audienceField,
-				...( isMultiLingualStore ? localeFields : [] ),
-				...shippingTimeFields,
+				...( isMultiLingualStore ? LOCALE_FIELDS : [] ),
+				...SHIPPING_TIME_FIELDS,
 			],
 		};
 
