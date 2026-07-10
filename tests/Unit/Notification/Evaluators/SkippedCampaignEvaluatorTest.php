@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SkippedC
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationCacheKeys;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -33,6 +34,9 @@ class SkippedCampaignEvaluatorTest extends UnitTest {
 	/** @var MockObject|OnboardingCompleted $onboarding_completed */
 	protected $onboarding_completed;
 
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
 	/** @var SkippedCampaignEvaluator $evaluator */
 	protected $evaluator;
 
@@ -45,8 +49,10 @@ class SkippedCampaignEvaluatorTest extends UnitTest {
 		$this->ads_service          = $this->createMock( AdsService::class );
 		$this->ads_campaign         = $this->createMock( AdsCampaign::class );
 		$this->onboarding_completed = $this->createMock( OnboardingCompleted::class );
+		$this->options              = $this->createMock( OptionsInterface::class );
 		$this->evaluator            = new SkippedCampaignEvaluator( $this->ads_campaign, $this->onboarding_completed );
 		$this->evaluator->set_ads_object( $this->ads_service );
+		$this->evaluator->set_options_object( $this->options );
 	}
 
 	public function test_get_id() {
@@ -120,7 +126,7 @@ class SkippedCampaignEvaluatorTest extends UnitTest {
 		$this->assertFalse( $this->evaluator->should_show() );
 	}
 
-	public function test_should_not_show_when_only_paused_pmax_campaign_present() {
+	public function test_should_show_when_only_paused_pmax_campaign_present() {
 		$this->mock_onboarded_with_ads_skipped();
 		$this->ads_campaign->method( 'get_campaigns' )
 			->with( true, false )
@@ -134,7 +140,7 @@ class SkippedCampaignEvaluatorTest extends UnitTest {
 				]
 			);
 
-		$this->assertFalse( $this->evaluator->should_show() );
+		$this->assertTrue( $this->evaluator->should_show() );
 	}
 
 	public function test_should_not_show_when_pmax_campaign_created_outside_onboarding() {
@@ -177,11 +183,22 @@ class SkippedCampaignEvaluatorTest extends UnitTest {
 		$this->assertFalse( $this->evaluator->should_show() );
 	}
 
+	public function test_should_not_show_when_no_ads_account_connected() {
+		$this->onboarding_completed->method( 'is_onboarding_complete' )->willReturn( true );
+		$this->ads_service->method( 'is_setup_complete' )->willReturn( false );
+		$this->options->method( 'get_ads_id' )->willReturn( 0 );
+		$this->ads_campaign->expects( $this->never() )->method( 'get_campaigns' );
+
+		$this->assertFalse( $this->evaluator->should_show() );
+	}
+
 	/**
-	 * Mock a merchant that finished onboarding but did not complete Ads setup.
+	 * Mock a merchant that finished onboarding, did not complete Ads setup, but has a
+	 * connected Ads account ID (so the campaign query is reached).
 	 */
 	private function mock_onboarded_with_ads_skipped(): void {
 		$this->onboarding_completed->method( 'is_onboarding_complete' )->willReturn( true );
 		$this->ads_service->method( 'is_setup_complete' )->willReturn( false );
+		$this->options->method( 'get_ads_id' )->willReturn( 123 );
 	}
 }

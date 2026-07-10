@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -13,6 +14,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationE
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -20,18 +23,19 @@ defined( 'ABSPATH' ) || exit;
  * Class SkippedCampaignEvaluator
  *
  * Fires when the merchant finished onboarding but skipped campaign creation: onboarding
- * is complete, Ads setup was not completed, and the account has no Performance Max
- * campaigns (enabled or paused) — including any created outside the onboarding flow.
+ * is complete, Ads setup was not completed, and the account has no enabled Performance
+ * Max campaigns — including any created outside the onboarding flow.
  *
- * A paused Performance Max campaign therefore suppresses this notification rather than
- * triggering it; that case is surfaced by the separate paused-campaign notification.
+ * A paused-only Performance Max campaign does not suppress this notification; that case
+ * is surfaced by the separate paused-campaign notification instead.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
-class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwareInterface, Service {
+class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwareInterface, OptionsAwareInterface, Service {
 
 	use AdsAwareTrait;
 	use CachedNotificationEvaluatorTrait;
+	use OptionsAwareTrait;
 
 	/** @var AdsCampaign */
 	private $ads_campaign;
@@ -75,12 +79,27 @@ class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwa
 			return false;
 		}
 
+		// No Ads account connected — either never connected, or disconnected again in
+		// settings after being set up. Neither is "skipped campaign creation", and
+		// AdsCampaign::get_campaigns() requires a non-zero Ads ID and throws otherwise.
+		// (Deliberately not using AdsService::connected_account() here — it also requires
+		// every account-creation step but "billing" to be marked done, which isn't true
+		// for accounts connected via some paths, e.g. linking an existing Ads account.)
+		if ( ! $this->options->get_ads_id() ) {
+			return false;
+		}
+
 		try {
-			// Any Performance Max campaign (enabled or paused, including ones created
-			// outside the onboarding flow) means the merchant did not skip campaigns.
-			// Paused campaigns are surfaced by the separate paused-campaign notification.
-			foreach ( $this->ads_campaign->get_campaigns( true, false ) as $campaign ) {
-				if ( CampaignType::PERFORMANCE_MAX === ( $campaign['type'] ?? null ) ) {
+			$campaigns = $this->ads_campaign->get_campaigns( true, false );
+
+			// Any *enabled* Performance Max campaign (including ones created outside
+			// the onboarding flow) means the merchant did not skip campaigns. A
+			// paused-only PMax campaign does not suppress this notification — that
+			// case is surfaced by the separate paused-campaign notification instead.
+			foreach ( $campaigns as $campaign ) {
+				if ( CampaignType::PERFORMANCE_MAX === ( $campaign['type'] ?? null )
+					&& CampaignStatus::ENABLED === ( $campaign['status'] ?? null )
+				) {
 					return false;
 				}
 			}
