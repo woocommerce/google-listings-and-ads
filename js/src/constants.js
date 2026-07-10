@@ -127,13 +127,6 @@ export const ASSET_FORM_KEY = {
 	...ASSET_GROUP_KEY,
 };
 
-export const GOOGLE_WPCOM_APP_CONNECTED_STATUS = {
-	APPROVED: 'approved',
-	DISAPPROVED: 'disapproved',
-	ERROR: 'error',
-	DISABLED: 'disabled',
-};
-
 export const APP_RATINGS_BANNER_CONTEXT = 'app_ratings_banner';
 
 export const PRICE_BENCHMARK_CHART_COLORS = {

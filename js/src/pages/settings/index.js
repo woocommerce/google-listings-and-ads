@@ -10,7 +10,6 @@ import { getQuery, getHistory } from '@woocommerce/navigation';
 import { API_RESPONSE_CODES } from '~/constants';
 import useMenuEffect from '~/hooks/useMenuEffect';
 import useGoogleAccount from '~/hooks/useGoogleAccount';
-import useUpdateRestAPIAuthorizeStatusByUrlQuery from '~/hooks/useUpdateRestAPIAuthorizeStatusByUrlQuery';
 import { subpaths, getReconnectAccountUrl } from '~/utils/urls';
 import { ContactInformationPreview } from '~/components/contact-information';
 import TargetAudienceSection from '~/components/target-audience-section';
@@ -43,8 +42,6 @@ const Settings = () => {
 	const { subpath } = getQuery();
 	// Make the component highlight GLA entry in the WC legacy menu.
 	useMenuEffect();
-
-	useUpdateRestAPIAuthorizeStatusByUrlQuery();
 
 	const { google } = useGoogleAccount();
 	const isReconnectGooglePage = subpath === subpaths.reconnectGoogleAccount;

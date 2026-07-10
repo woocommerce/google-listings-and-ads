@@ -25,10 +25,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\MerchantTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
-use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\TrackingTrait;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
-use Jetpack_Options;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -40,7 +38,6 @@ defined( 'ABSPATH' ) || exit;
  */
 class AccountServiceTest extends UnitTest {
 
-	use TrackingTrait;
 	use MerchantTrait;
 
 	/** @var MockObject|Ads $ads */
@@ -922,129 +919,5 @@ class AccountServiceTest extends UnitTest {
 			->method( 'reset_service_based_merchant_status' );
 
 		$this->account->disconnect();
-	}
-
-	public function test_update_wpcom_api_authorization() {
-		$status = 'approved';
-		$nonce  = 'nonce-123';
-
-		$this->options->expects( $this->once() )
-			->method( 'get' )
-			->with( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE )
-			->willReturn( 'nonce-123' );
-
-		$this->options->expects( $this->once() )
-			->method( 'update' )
-			->with( OptionsInterface::WPCOM_REST_API_STATUS, 'approved' );
-
-		$this->options->expects( $this->once() )
-			->method( 'delete' )
-			->with( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE );
-
-		$this->expect_track_event(
-			'update_wpcom_api_authorization',
-			[
-				'status'  => 'approved',
-				'blog_id' => Jetpack_Options::get_option( 'id' ),
-			]
-		);
-
-		$this->account->update_wpcom_api_authorization( $status, $nonce );
-	}
-
-	public function test_update_wpcom_api_authorization_nonce_not_provided() {
-		$status = 'approved';
-		$nonce  = '';
-
-		$this->options->expects( $this->once() )
-			->method( 'get' )
-			->willReturn( 'nonce-123' );
-
-		$this->options->expects( $this->never() )
-			->method( 'update' );
-
-		$this->options->expects( $this->never() )
-			->method( 'delete' );
-
-		$this->expectException( ExceptionWithResponseData::class );
-		$this->expectExceptionMessage( 'Nonce is not provided, skip updating auth status.' );
-
-		$this->expect_track_event(
-			'update_wpcom_api_authorization',
-			[
-				'status'  => 'Nonce is not provided, skip updating auth status.',
-				'blog_id' => Jetpack_Options::get_option( 'id' ),
-			]
-		);
-
-		$this->account->update_wpcom_api_authorization( $status, $nonce );
-	}
-
-	public function test_update_wpcom_api_authorization_stored_nonce_not_in_db() {
-		$status = 'approved';
-		$nonce  = 'nonce-123';
-
-		$this->options->expects( $this->once() )
-			->method( 'get' )
-			->willReturn( '' );
-
-		$this->options->expects( $this->never() )
-			->method( 'update' );
-
-		$this->options->expects( $this->never() )
-			->method( 'delete' );
-
-		$this->expectException( ExceptionWithResponseData::class );
-		$this->expectExceptionMessage( 'No stored nonce found in the database, skip updating auth status.' );
-
-		$this->expect_track_event(
-			'update_wpcom_api_authorization',
-			[
-				'status'  => 'No stored nonce found in the database, skip updating auth status.',
-				'blog_id' => Jetpack_Options::get_option( 'id' ),
-			]
-		);
-
-		$this->account->update_wpcom_api_authorization( $status, $nonce );
-	}
-
-	public function test_update_wpcom_api_authorization_nonces_mismatch() {
-		$status = 'approved';
-		$nonce  = 'nonce-123';
-
-		$this->options->expects( $this->once() )
-			->method( 'get' )
-			->willReturn( 'nonce-456' );
-
-		$this->options->expects( $this->never() )
-			->method( 'update' );
-
-		$this->options->expects( $this->once() )
-			->method( 'delete' )
-			->with( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE );
-
-		$this->expectException( ExceptionWithResponseData::class );
-		$this->expectExceptionMessage( 'Nonces mismatch, skip updating auth status.' );
-
-		$this->expect_track_event(
-			'update_wpcom_api_authorization',
-			[
-				'status'  => 'Nonces mismatch, skip updating auth status.',
-				'blog_id' => Jetpack_Options::get_option( 'id' ),
-			]
-		);
-
-		$this->account->update_wpcom_api_authorization( $status, $nonce );
-	}
-
-	public function test_reset_wpcom_api_authorization_data() {
-		$this->options->expects( $this->exactly( 2 ) )
-			->method( 'delete' )
-			->withConsecutive(
-				[ OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE ],
-				[ OptionsInterface::WPCOM_REST_API_STATUS ],
-			);
-
-		$this->account->reset_wpcom_api_authorization_data();
 	}
 }
