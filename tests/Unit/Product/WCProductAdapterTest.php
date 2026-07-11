@@ -1678,6 +1678,99 @@ class WCProductAdapterTest extends UnitTest {
 		);
 	}
 
+	public function test_custom_attributes_can_be_added_via_filter() {
+		add_filter(
+			'woocommerce_gla_product_attribute_values',
+			function ( array $attributes, WC_Product $product, WCProductAdapter $google_product ) {
+				$google_product->add_custom_attribute(
+					[
+						'name'        => 'native_commerce',
+						'groupValues' => [
+							[
+								'name'  => 'checkout_eligibility',
+								'value' => 'true',
+							],
+						],
+					]
+				);
+				$google_product->add_custom_attribute(
+					[
+						'name'  => 'merchant_item_id',
+						'value' => (string) $product->get_id(),
+					]
+				);
+
+				return $attributes;
+			},
+			10,
+			3
+		);
+
+		$product         = WC_Helper_Product::create_simple_product();
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => $product,
+				'targetCountry' => 'US',
+			]
+		);
+
+		$custom_attributes = $adapted_product->getCustomAttributes();
+		$this->assertCount( 2, $custom_attributes );
+
+		$this->assertEquals( 'native_commerce', $custom_attributes[0]->getName() );
+		$this->assertEquals( 'checkout_eligibility', $custom_attributes[0]->getGroupValues()[0]->getName() );
+		$this->assertEquals( 'true', $custom_attributes[0]->getGroupValues()[0]->getValue() );
+
+		$this->assertEquals( 'merchant_item_id', $custom_attributes[1]->getName() );
+		$this->assertEquals( (string) $product->get_id(), $custom_attributes[1]->getValue() );
+	}
+
+	public function test_custom_attribute_accessors() {
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => WC_Helper_Product::create_simple_product(),
+				'targetCountry' => 'US',
+			]
+		);
+
+		$this->assertEquals( [], $adapted_product->get_custom_attributes() );
+
+		$adapted_product->add_custom_attribute(
+			[
+				'name'  => 'x',
+				'value' => '1',
+			]
+		);
+		$this->assertEquals(
+			[
+				[
+					'name'  => 'x',
+					'value' => '1',
+				],
+			],
+			$adapted_product->get_custom_attributes()
+		);
+
+		// set_custom_attributes replaces (and reindexes) the buffered list.
+		$adapted_product->set_custom_attributes(
+			[
+				2 => [
+					'name'  => 'y',
+					'value' => '2',
+				],
+			]
+		);
+		$this->assertEquals(
+			[
+				[
+					'name'  => 'y',
+					'value' => '2',
+				],
+			],
+			$adapted_product->get_custom_attributes()
+		);
+	}
+
 	/**
 	 * Validate a product property and return the first violation.
 	 *

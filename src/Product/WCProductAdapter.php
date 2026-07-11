@@ -69,6 +69,12 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	protected $product_category_ids;
 
 	/**
+	 * @var array Custom attributes to attach to the product, as plain arrays matching the
+	 *            Google `CustomAttribute` shape. Populated via self::add_custom_attribute().
+	 */
+	protected $custom_attributes = [];
+
+	/**
 	 * Initialize this object's properties from an array.
 	 *
 	 * @param array $properties Used to seed this object's properties.
@@ -156,8 +162,11 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		 *
 		 * @param WC_Product       $wc_product The WooCommerce product object.
 		 * @param WCProductAdapter $this       The Adapted Google product object. All WooCommerce product properties
-		 *                                     are already mapped to this object.
+		 *                                     are already mapped to this object. Custom attributes can be attached
+		 *                                     to the product by calling `$this->add_custom_attribute( [ 'name' => ...,
+		 *                                     'value' => ... ] )` on it from within this filter.
 		 *
+		 * @see WCProductAdapter::add_custom_attribute for attaching Google custom attributes to the product.
 		 * @see \Google\Service\ShoppingContent\Product for the list of product properties that can be overridden.
 		 * @see WCProductAdapter::map_gla_attributes for the docuementation of `woocommerce_gla_product_attribute_value_{$attribute_id}`
 		 *                                           filter, which allows modifying some attributes such as GTIN, MPN, etc.
@@ -166,9 +175,62 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		 */
 		$attributes = apply_filters( 'woocommerce_gla_product_attribute_values', [], $this->wc_product, $this );
 
+		// Custom attributes added via self::add_custom_attribute() (typically from within the filter
+		// above) are merged into the overrides so the base class converts them to typed
+		// CustomAttribute objects and attaches them to the product.
+		if ( ! empty( $this->custom_attributes ) ) {
+			$existing                       = $attributes['customAttributes'] ?? $this->getCustomAttributes() ?? [];
+			$attributes['customAttributes'] = array_merge( $existing, $this->custom_attributes );
+		}
+
 		if ( ! empty( $attributes ) ) {
 			parent::mapTypes( $attributes );
 		}
+	}
+
+	/**
+	 * Get the custom attributes buffered for this product.
+	 *
+	 * @since 3.8.0
+	 *
+	 * @return array
+	 */
+	public function get_custom_attributes(): array {
+		return $this->custom_attributes;
+	}
+
+	/**
+	 * Replace the custom attributes buffered for this product.
+	 *
+	 * Each entry is a plain array matching the Google `CustomAttribute` shape, e.g.
+	 * `[ 'name' => 'foo', 'value' => 'bar' ]` or
+	 * `[ 'name' => 'foo', 'groupValues' => [ [ 'name' => 'k', 'value' => 'v' ] ] ]`.
+	 *
+	 * @since 3.8.0
+	 *
+	 * @param array $custom_attributes
+	 *
+	 * @return void
+	 */
+	public function set_custom_attributes( array $custom_attributes ): void {
+		$this->custom_attributes = array_values( $custom_attributes );
+	}
+
+	/**
+	 * Append a single custom attribute to this product.
+	 *
+	 * Intended for use from the `woocommerce_gla_product_attribute_values` filter, where the adapter
+	 * is passed as the third argument, so extensions can attach custom attributes without modifying
+	 * core code.
+	 *
+	 * @since 3.8.0
+	 *
+	 * @param array $custom_attribute A plain array matching the Google `CustomAttribute` shape.
+	 *
+	 * @return void
+	 */
+	public function add_custom_attribute( array $custom_attribute ): void {
+		$this->custom_attributes[] = $custom_attribute;
 	}
 
 	/**
