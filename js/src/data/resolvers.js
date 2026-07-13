@@ -30,7 +30,6 @@ import {
 	adaptRaiseAdsBudgetRecommendations,
 } from './adapters';
 import { fetchWithHeaders, awaitPromise, recordGlaDataEvent } from './controls';
-
 import {
 	fetchShippingRates,
 	fetchShippingTimes,
@@ -63,6 +62,7 @@ import {
 	receiveCYOIncentives,
 	receiveEnhancedConversionsStatus,
 	receiveAdsSettings,
+	receiveNotifications,
 } from './actions';
 
 /**
@@ -846,4 +846,26 @@ getYouTubeAccount.shouldInvalidate = ( action ) => {
 		action.type === TYPES.DISCONNECT_ACCOUNTS_YOUTUBE &&
 		action.invalidateRelatedState
 	);
+};
+
+export function* getNotifications() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/notifications`,
+		} );
+
+		yield receiveNotifications( response.notifications ?? [] );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading notifications.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+getNotifications.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.DISMISS_NOTIFICATION;
 };

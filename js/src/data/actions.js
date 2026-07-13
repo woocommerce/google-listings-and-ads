@@ -1509,3 +1509,43 @@ export function* disconnectYouTubeAccount() {
 		throw error;
 	}
 }
+
+/**
+ * @param {Array} notifications
+ * @return {Object} Action object.
+ */
+export function receiveNotifications( notifications ) {
+	return {
+		type: TYPES.RECEIVE_NOTIFICATIONS,
+		notifications,
+	};
+}
+
+/**
+ * Dismiss a notification by ID.
+ *
+ * @param {string} id Notification ID.
+ * @throws Will throw an error if the request failed.
+ */
+export function* dismissNotification( id ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/notifications/${ id }`,
+			method: 'DELETE',
+		} );
+
+		return {
+			type: TYPES.DISMISS_NOTIFICATION,
+			id,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error dismissing the notification.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
