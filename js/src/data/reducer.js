@@ -58,9 +58,8 @@ const DEFAULT_STATE = {
 	},
 	mc_review_request: {
 		status: null,
-		cooldown: null,
 		issues: null,
-		reviewEligibleRegions: [],
+		reviewAction: null,
 	},
 	mc_product_feed: null,
 	report: {},

@@ -21,6 +21,19 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BudgetRecommendations;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountBusinessInfoService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountHomepageService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountIssuesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountRegionsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountServicesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountShippingSettingsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountUsersService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiIssueResolutionService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPromotionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
@@ -34,7 +47,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReconnectWordPress;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -77,34 +89,46 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 * @var array
 	 */
 	protected $provides = [
-		Client::class                    => true,
-		ShoppingContent::class           => true,
-		GoogleAdsClient::class           => true,
-		GuzzleClient::class              => true,
-		Middleware::class                => true,
-		Merchant::class                  => true,
-		MerchantMetrics::class           => true,
-		Ads::class                       => true,
-		AdsIncentives::class             => true,
-		AdsAssetGroup::class             => true,
-		AdsCampaign::class               => true,
-		AdsCampaignAsset::class          => true,
-		AdsCampaignBudget::class         => true,
-		AdsCampaignLabel::class          => true,
-		AdsConversionAction::class       => true,
-		AdsReport::class                 => true,
-		AdsRecommendationsService::class => true,
-		AdsAssetGenerationService::class => true,
-		AdsAssetGroupAsset::class        => true,
-		AdsAsset::class                  => true,
-		BudgetMetrics::class             => true,
-		BudgetRecommendations::class     => true,
-		'connect_server_root'            => true,
-		Connection::class                => true,
-		GoogleProductService::class      => true,
-		GooglePromotionService::class    => true,
-		SiteVerification::class          => true,
-		Settings::class                  => true,
+		Client::class                             => true,
+		ShoppingContent::class                    => true,
+		GoogleAdsClient::class                    => true,
+		GuzzleClient::class                       => true,
+		Middleware::class                         => true,
+		Merchant::class                           => true,
+		MerchantMetrics::class                    => true,
+		Ads::class                                => true,
+		AdsIncentives::class                      => true,
+		AdsAssetGroup::class                      => true,
+		AdsCampaign::class                        => true,
+		AdsCampaignAsset::class                   => true,
+		AdsCampaignBudget::class                  => true,
+		AdsCampaignLabel::class                   => true,
+		AdsConversionAction::class                => true,
+		AdsReport::class                          => true,
+		AdsRecommendationsService::class          => true,
+		AdsAssetGenerationService::class          => true,
+		AdsAssetGroupAsset::class                 => true,
+		AdsAsset::class                           => true,
+		BudgetMetrics::class                      => true,
+		BudgetRecommendations::class              => true,
+		'connect_server_root'                     => true,
+		Connection::class                         => true,
+		GoogleProductService::class               => true,
+		MerchantApiClient::class                  => true,
+		MapiProductsService::class                => true,
+		MapiDataSourcesService::class             => true,
+		MapiProductInputsService::class           => true,
+		MapiPromotionsService::class              => true,
+		MapiAccountIssuesService::class           => true,
+		MapiIssueResolutionService::class         => true,
+		MapiAccountHomepageService::class         => true,
+		MapiAccountBusinessInfoService::class     => true,
+		MapiAccountUsersService::class            => true,
+		MapiAccountShippingSettingsService::class => true,
+		MapiAccountRegionsService::class          => true,
+		MapiAccountServicesService::class         => true,
+		SiteVerification::class                   => true,
+		Settings::class                           => true,
 	];
 
 	/**
@@ -139,11 +163,11 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( BudgetMetrics::class, GoogleAdsClient::class, MerchantMetrics::class );
 		$this->share( BudgetRecommendations::class, GoogleAdsClient::class, MerchantMetrics::class );
 
-		$this->share( Merchant::class, ShoppingContent::class );
-		$this->share( MerchantMetrics::class, ShoppingContent::class, GoogleAdsClient::class, WP::class, TransientsInterface::class );
-		$this->share( MerchantReport::class, ShoppingContent::class, ProductHelper::class );
+		$this->share( Merchant::class, ShoppingContent::class, MapiAccountHomepageService::class, MapiAccountBusinessInfoService::class, MapiAccountUsersService::class, MapiAccountServicesService::class, MapiIssueResolutionService::class );
+		$this->share( MerchantMetrics::class, MerchantApiClient::class, GoogleAdsClient::class, WP::class, TransientsInterface::class );
+		$this->share( MerchantReport::class, ProductHelper::class, MerchantApiClient::class );
 
-		$this->share( MerchantPriceBenchmarks::class, ShoppingContent::class );
+		$this->share( MerchantPriceBenchmarks::class, MerchantApiClient::class );
 
 		$this->share( SiteVerification::class );
 
@@ -204,7 +228,24 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			$this->get_connect_server_url_root( 'google/google-sv' )
 		);
 		$this->share( GoogleProductService::class, ShoppingContent::class );
-		$this->share( GooglePromotionService::class, ShoppingContent::class );
+
+		$this->share(
+			MerchantApiClient::class,
+			ClientInterface::class,
+			$this->get_connect_server_url_root( 'google/google-merchant' )
+		);
+		$this->share( MapiProductsService::class, MerchantApiClient::class );
+		$this->share( MapiDataSourcesService::class, MerchantApiClient::class );
+		$this->share( MapiProductInputsService::class, MerchantApiClient::class, MapiDataSourcesService::class );
+		$this->share( MapiPromotionsService::class, MerchantApiClient::class );
+		$this->share( MapiAccountIssuesService::class, MerchantApiClient::class );
+		$this->share( MapiIssueResolutionService::class, MerchantApiClient::class );
+		$this->share( MapiAccountHomepageService::class, MerchantApiClient::class );
+		$this->share( MapiAccountBusinessInfoService::class, MerchantApiClient::class );
+		$this->share( MapiAccountUsersService::class, MerchantApiClient::class );
+		$this->share( MapiAccountShippingSettingsService::class, MerchantApiClient::class );
+		$this->share( MapiAccountRegionsService::class, MerchantApiClient::class );
+		$this->share( MapiAccountServicesService::class, MerchantApiClient::class );
 	}
 
 	/**
