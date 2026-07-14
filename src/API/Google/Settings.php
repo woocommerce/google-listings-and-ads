@@ -3,6 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountRegionsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountShippingSettingsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
@@ -11,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\CountryRatesCollection;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\AbstractShippingSettingsAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\DBShippingSettingsAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\WCShippingSettingsAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
@@ -18,7 +22,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingCo
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountAddress;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountTax;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountTaxTaxRule as TaxRule;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ShippingSettings;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -69,13 +72,47 @@ class Settings implements ContainerAwareInterface {
 			return;
 		}
 
-		$settings = $this->generate_shipping_settings();
+		$adapter = $this->generate_shipping_settings();
 
-		$this->get_shopping_service()->shippingsettings->update(
-			$this->get_merchant_id(),
-			$this->get_account_id(),
-			$settings
-		);
+		// Regions must exist before the settings that reference them are inserted.
+		$this->sync_shipping_regions( $adapter->get_regions() );
+
+		/** @var MapiAccountShippingSettingsService $shipping_service */
+		$shipping_service = $this->container->get( MapiAccountShippingSettingsService::class );
+		$shipping_service->insert_shipping_settings( [ 'services' => $adapter->get_services() ] );
+	}
+
+	/**
+	 * Create or update the Merchant API regions referenced by the shipping settings.
+	 *
+	 * Regions replace the Content API's inline postalCodeGroups; they are created
+	 * up front so the rate-group tables can reference them by id.
+	 *
+	 * @param array<string, array> $regions Map of region id to Region resource.
+	 *
+	 * @throws MerchantApiException If a region cannot be created or updated.
+	 */
+	protected function sync_shipping_regions( array $regions ): void {
+		if ( empty( $regions ) ) {
+			return;
+		}
+
+		/** @var MapiAccountRegionsService $regions_service */
+		$regions_service = $this->container->get( MapiAccountRegionsService::class );
+
+		foreach ( $regions as $region_id => $region ) {
+			try {
+				$regions_service->insert_region( (string) $region_id, $region );
+			} catch ( MerchantApiException $e ) {
+				// The Merchant API reports an already-existing region as a 400.
+				if ( 400 !== $e->get_http_status() ) {
+					do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+					throw $e;
+				}
+
+				$regions_service->update_region( (string) $region_id, $region, 'displayName,postalCodeArea' );
+			}
+		}
 	}
 
 	/**
@@ -101,13 +138,13 @@ class Settings implements ContainerAwareInterface {
 	}
 
 	/**
-	 * Generate a ShippingSettings object for syncing the store shipping settings to Merchant Center.
+	 * Generate the shipping settings adapter for syncing the store shipping settings to Merchant Center.
 	 *
-	 * @return ShippingSettings
+	 * @return AbstractShippingSettingsAdapter
 	 *
 	 * @since 2.1.0
 	 */
-	protected function generate_shipping_settings(): ShippingSettings {
+	protected function generate_shipping_settings(): AbstractShippingSettingsAdapter {
 		$times = $this->get_shipping_times();
 
 		/** @var WC $wc_proxy */
@@ -120,7 +157,6 @@ class Settings implements ContainerAwareInterface {
 					'currency'          => $currency,
 					'rates_collections' => $this->get_shipping_rates_collections_from_woocommerce(),
 					'delivery_times'    => $times,
-					'accountId'         => $this->get_account_id(),
 				]
 			);
 		}
@@ -130,7 +166,6 @@ class Settings implements ContainerAwareInterface {
 				'currency'       => $currency,
 				'db_rates'       => $this->get_shipping_rates_from_database(),
 				'delivery_times' => $times,
-				'accountId'      => $this->get_account_id(),
 			]
 		);
 	}
@@ -384,16 +419,16 @@ class Settings implements ContainerAwareInterface {
 	 *
 	 * @since 1.4.0
 	 */
-	protected function maybe_get_state_name( string $state_code, string $country ): string {
+	public function maybe_get_state_name( string $state_code, string $country ): string {
 		/** @var WC $wc */
 		$wc = $this->container->get( WC::class );
 
 		$states = $country ? array_filter( (array) $wc->get_wc_countries()->get_states( $country ) ) : [];
 
 		if ( ! empty( $states ) ) {
-			$state_code = wc_strtoupper( $state_code );
-			if ( isset( $states[ $state_code ] ) ) {
-				return $states[ $state_code ];
+			$upper_code = wc_strtoupper( $state_code );
+			if ( isset( $states[ $upper_code ] ) ) {
+				return $states[ $upper_code ];
 			}
 		}
 

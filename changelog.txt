@@ -1,5 +1,9 @@
 *** Google for WooCommerce Changelog ***
 
+= Unreleased =
+* Migrate Merchant Center reporting to the Merchant API
+* The `gla_merchant_query_response` filter is removed as part of dropping the Content API report layer.
+
 = 3.7.3 - 2026-07-08 =
 * Add - Added update notification when plugin version 3.8.0 is available
 
