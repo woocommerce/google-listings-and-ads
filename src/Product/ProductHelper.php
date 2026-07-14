@@ -305,8 +305,7 @@ class ProductHelper implements Service {
 	 * @return int the ID for the WC product linked to the provided Google product ID (0 if not found)
 	 */
 	public function get_wc_product_id( string $mc_product_id ): int {
-		// Maybe remove everything before the last colon ':'
-		$mc_product_id_tokens = explode( ':', $mc_product_id );
+		$mc_product_id_tokens = preg_split( '/[:~]/', $mc_product_id );
 		$mc_product_id        = end( $mc_product_id_tokens );
 
 		// Support a fully numeric ID both with and without the `gla_` prefix.
