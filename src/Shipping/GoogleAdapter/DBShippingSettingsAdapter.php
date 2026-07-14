@@ -47,23 +47,38 @@ class DBShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 	 * @return void
 	 */
 	protected function map_db_rates( array $db_rates ): void {
-		foreach ( $db_rates as ['country' => $country, 'rate' => $rate, 'options' => $options] ) {
+		// Per-row currency drives the synced service so multi-market stores don't
+		// have their secondary-market rates pushed in the primary store currency.
+		// Fall back to the per-country currency map for legacy rows missing one.
+		foreach ( $db_rates as $db_rate ) {
+			$country = $db_rate['country'] ?? null;
+			$rate    = $db_rate['rate'] ?? null;
+			$options = $db_rate['options'] ?? [];
+
+			if ( null === $country || null === $rate ) {
+				continue;
+			}
+
 			// No negative rates.
 			if ( $rate < 0 ) {
 				continue;
 			}
 
-			$service = $this->create_shipping_service( $country, (float) $rate );
+			$currency = ! empty( $db_rate['currency'] )
+				? $db_rate['currency']
+				: $this->get_currency_for_country( $country );
+
+			$service = $this->create_shipping_service( $country, $currency, (float) $rate );
 
 			if ( isset( $options['free_shipping_threshold'] ) ) {
 				$minimum_order_value = (float) $options['free_shipping_threshold'];
 
 				if ( $rate > 0 ) {
 					// Add a conditional free-shipping service if the current rate is not free.
-					$this->services[] = $this->create_conditional_free_shipping_service( $country, $minimum_order_value );
+					$this->services[] = $this->create_conditional_free_shipping_service( $country, $currency, $minimum_order_value );
 				} else {
 					// Set the minimum order value if the current rate is free.
-					$service['minimumOrderValue'] = $this->create_price( $minimum_order_value );
+					$service['minimumOrderValue'] = $this->mapi_price( $minimum_order_value, $currency );
 				}
 			}
 
@@ -75,11 +90,12 @@ class DBShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 	 * Create a shipping service.
 	 *
 	 * @param string $country
+	 * @param string $currency
 	 * @param float  $rate
 	 *
 	 * @return array
 	 */
-	protected function create_shipping_service( string $country, float $rate ): array {
+	protected function create_shipping_service( string $country, string $currency, float $rate ): array {
 		$unique = sprintf( '%04x', wp_rand( 0, 0xffff ) );
 
 		return [
@@ -88,31 +104,32 @@ class DBShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 				__( '[%1$s] Google for WooCommerce generated service - %2$s %3$s to %4$s', 'google-listings-and-ads' ),
 				$unique,
 				$rate,
-				$this->currency,
+				$currency,
 				$country
 			),
 			'active'            => true,
 			// One service per country; deliveryCountries is an array as MAPI requires.
 			'deliveryCountries' => [ $country ],
-			'currencyCode'      => $this->currency,
+			'currencyCode'      => $currency,
 			'deliveryTime'      => $this->get_delivery_time( $country ),
 			'shipmentType'      => 'DELIVERY',
-			'rateGroups'        => [ $this->create_rate_group( $rate ) ],
+			'rateGroups'        => [ $this->create_rate_group( $rate, $currency ) ],
 		];
 	}
 
 	/**
 	 * Create a single flat-rate rate group.
 	 *
-	 * @param float $rate
+	 * @param float  $rate
+	 * @param string $currency
 	 *
 	 * @return array
 	 */
-	protected function create_rate_group( float $rate ): array {
+	protected function create_rate_group( float $rate, string $currency ): array {
 		// No name: keep the rate-group shape consistent with the other adapters
 		// (WC / postcode / state), which do not set an optional display label.
 		return [
-			'singleValue' => [ 'flatRate' => $this->create_price( $rate ) ],
+			'singleValue' => [ 'flatRate' => $this->mapi_price( $rate, $currency ) ],
 		];
 	}
 
@@ -120,13 +137,14 @@ class DBShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 	 * Create a free shipping service conditional on a minimum order value.
 	 *
 	 * @param string $country
+	 * @param string $currency
 	 * @param float  $minimum_order_value
 	 *
 	 * @return array
 	 */
-	protected function create_conditional_free_shipping_service( string $country, float $minimum_order_value ): array {
-		$service                      = $this->create_shipping_service( $country, 0 );
-		$service['minimumOrderValue'] = $this->create_price( $minimum_order_value );
+	protected function create_conditional_free_shipping_service( string $country, string $currency, float $minimum_order_value ): array {
+		$service                      = $this->create_shipping_service( $country, $currency, 0 );
+		$service['minimumOrderValue'] = $this->mapi_price( $minimum_order_value, $currency );
 
 		return $service;
 	}

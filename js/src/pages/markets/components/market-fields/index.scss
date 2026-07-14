@@ -1,0 +1,16 @@
+.gla-market-fields {
+
+	.app-input-control .components-flex-item label.components-input-control__label {
+		color: $gray-900 !important;
+	}
+
+	.gla-market-fields__free-shipping-threshold {
+		.gla-validation-errors {
+			margin: 0;
+		}
+
+		.app-input-control {
+			max-width: 300px;
+		}
+	}
+}

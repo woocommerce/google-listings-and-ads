@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
 use WC_Product;
@@ -68,6 +69,18 @@ class WCProductInputAdapter {
 	/** @var string */
 	protected $feed_label;
 
+	/** @var string Country used for shipping entries and tax rules; may differ from the feed label. */
+	protected $target_country;
+
+	/** @var string Optional ISO 639-1 language override for the content language. */
+	protected $language = '';
+
+	/** @var string Optional ISO 4217 currency code overriding the store currency. */
+	protected $currency_override = '';
+
+	/** @var WPML|null WPML integration used for currency conversion when a currency override is set. */
+	protected $wpml = null;
+
 	/** @var bool */
 	protected $tax_excluded = false;
 
@@ -93,18 +106,26 @@ class WCProductInputAdapter {
 	 * WCProductInputAdapter constructor.
 	 *
 	 * @param WC_Product      $product            The WooCommerce product.
-	 * @param string          $target_country     Feed label.
+	 * @param string          $target_country     Country used for shipping and tax rules; also the default feed label.
 	 * @param WC_Product|null $parent_product     Parent product, required when $product is a variation.
 	 * @param string[]        $shipping_countries Additional target countries to add shipping entries for.
 	 * @param array           $gla_attributes     Per-product Google attribute values.
 	 * @param array           $mapping_rules      Attribute mapping rules to apply.
+	 * @param string          $feed_label         Optional feed label when it differs from the target country.
+	 * @param string          $language           Optional ISO 639-1 language code overriding the site locale.
+	 * @param string          $currency_override  Optional ISO 4217 currency code overriding the store currency.
+	 * @param WPML|null       $wpml               WPML integration used for currency conversion when a currency override is set.
 	 *
 	 * @throws InvalidValue When $product is a variation and a valid parent product is not provided.
 	 */
-	public function __construct( WC_Product $product, string $target_country, ?WC_Product $parent_product = null, array $shipping_countries = [], array $gla_attributes = [], array $mapping_rules = [] ) {
+	public function __construct( WC_Product $product, string $target_country, ?WC_Product $parent_product = null, array $shipping_countries = [], array $gla_attributes = [], array $mapping_rules = [], string $feed_label = '', string $language = '', string $currency_override = '', ?WPML $wpml = null ) {
 		$this->wc_product         = $product;
 		$this->parent_wc_product  = $parent_product;
-		$this->feed_label         = $target_country;
+		$this->target_country     = $target_country;
+		$this->feed_label         = '' !== $feed_label ? $feed_label : $target_country;
+		$this->language           = $language;
+		$this->currency_override  = $currency_override;
+		$this->wpml               = $wpml;
 		$this->shipping_countries = $shipping_countries;
 		$this->gla_attributes     = $gla_attributes;
 		$this->mapping_rules      = $mapping_rules;
@@ -186,7 +207,13 @@ class WCProductInputAdapter {
 	 * Resolve the product identity (offer id and content language).
 	 */
 	protected function map_identity(): void {
-		$this->offer_id         = $this->get_offer_id( $this->wc_product->get_id() );
+		$this->offer_id = $this->get_offer_id( $this->wc_product->get_id() );
+
+		if ( '' !== $this->language ) {
+			$this->content_language = $this->language;
+			return;
+		}
+
 		$this->content_language = empty( get_locale() ) ? 'en' : strtolower( substr( get_locale(), 0, 2 ) );
 	}
 
@@ -305,6 +332,22 @@ class WCProductInputAdapter {
 	 * Map the regular price, applying tax inclusion/exclusion rules.
 	 */
 	protected function map_price(): void {
+		if ( '' !== $this->currency_override && null !== $this->wpml ) {
+			$converted = $this->wpml->get_product_price_in_currency( $this->wc_product, $this->currency_override );
+
+			if ( null !== $converted ) {
+				$price = $this->tax_excluded
+					? wc_get_price_excluding_tax( $this->wc_product, [ 'price' => $converted ] )
+					: wc_get_price_including_tax( $this->wc_product, [ 'price' => $converted ] );
+
+				/** This filter is documented in src/Product/WCProductAdapter.php */
+				$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $this->wc_product, $this->tax_excluded );
+
+				$this->attributes['price'] = $this->to_money( (float) $price, strtoupper( $this->currency_override ) );
+				return;
+			}
+		}
+
 		$regular_price = $this->wc_product->get_regular_price();
 		if ( '' === $regular_price ) {
 			return;
@@ -369,7 +412,7 @@ class WCProductInputAdapter {
 	protected function map_shipping(): void {
 		$is_virtual = $this->is_virtual();
 
-		$countries = array_values( array_unique( array_filter( array_merge( [ $this->feed_label ], $this->shipping_countries ) ) ) );
+		$countries = array_values( array_unique( array_filter( array_merge( [ $this->target_country ], $this->shipping_countries ) ) ) );
 
 		$shipping = [];
 		foreach ( $countries as $country ) {
@@ -377,7 +420,7 @@ class WCProductInputAdapter {
 
 			// Virtual products override any country shipping cost with zero.
 			if ( $is_virtual ) {
-				$entry['price'] = $this->to_money( 0.0, get_woocommerce_currency() );
+				$entry['price'] = $this->to_money( 0.0, $this->effective_currency() );
 			}
 
 			$shipping[] = $entry;
@@ -741,9 +784,18 @@ class WCProductInputAdapter {
 	 * @return bool
 	 */
 	protected function resolve_tax_excluded(): bool {
-		$tax_excluded = in_array( $this->feed_label, [ 'US', 'CA' ], true );
+		$tax_excluded = in_array( $this->target_country, [ 'US', 'CA' ], true );
 
 		return boolval( apply_filters( 'woocommerce_gla_tax_excluded', $tax_excluded ) );
+	}
+
+	/**
+	 * The currency this product input is priced in: the override when set, the store currency otherwise.
+	 *
+	 * @return string
+	 */
+	protected function effective_currency(): string {
+		return '' !== $this->currency_override ? strtoupper( $this->currency_override ) : get_woocommerce_currency();
 	}
 
 	/**

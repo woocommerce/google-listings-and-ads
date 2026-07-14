@@ -116,8 +116,9 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 			$rate_groups[ $class ] = $this->create_rate_group( $location_rates, $shipping_area, $applicable_classes );
 		}
 
-		$country = $service_collection->get_country();
-		$service = [
+		$country  = $service_collection->get_country();
+		$currency = $this->get_currency_for_country( $country );
+		$service  = [
 			'serviceName'       => sprintf(
 				/* translators: %1 is a random 4-digit string, %2 is the country code */
 				__( '[%1$s] Google for WooCommerce generated service - %2$s', 'google-listings-and-ads' ),
@@ -127,7 +128,7 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 			'active'            => true,
 			// One service per country; deliveryCountries is an array as MAPI requires.
 			'deliveryCountries' => [ $country ],
-			'currencyCode'      => $this->currency,
+			'currencyCode'      => $currency,
 			'deliveryTime'      => $this->get_delivery_time( $country ),
 			'shipmentType'      => 'DELIVERY',
 			'rateGroups'        => array_values( $rate_groups ),
@@ -135,7 +136,7 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 
 		$min_order_amount = $service_collection->get_min_order_amount();
 		if ( $min_order_amount ) {
-			$service['minimumOrderValue'] = $this->create_price( (float) $min_order_amount );
+			$service['minimumOrderValue'] = $this->mapi_price( (float) $min_order_amount, $currency );
 		}
 
 		return $service;

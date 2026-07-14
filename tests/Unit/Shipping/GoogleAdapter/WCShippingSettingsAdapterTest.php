@@ -363,4 +363,59 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 			]
 		);
 	}
+
+	public function test_country_currency_map_overrides_per_service_currency() {
+		$min_order_rate = new ShippingRate( 0 );
+		$min_order_rate->set_min_order_amount( 1000 );
+
+		$us_rate = new LocationRate( new ShippingLocation( 1, 'US' ), new ShippingRate( 100 ) );
+		$fr_rate = new LocationRate( new ShippingLocation( 2, 'FR' ), new ShippingRate( 50 ) );
+		$fr_min  = new LocationRate( new ShippingLocation( 2, 'FR' ), $min_order_rate );
+
+		$settings = new WCShippingSettingsAdapter(
+			[
+				'currency'             => 'USD',
+				'country_currency_map' => [
+					'FR' => 'EUR',
+				],
+				'rates_collections'    => [
+					new CountryRatesCollection( 'US', [ $us_rate ] ),
+					new CountryRatesCollection( 'FR', [ $fr_rate, $fr_min ] ),
+				],
+				'delivery_times'       => [
+					'US' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+					'FR' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+				],
+			]
+		);
+
+		$services   = $settings->get_services();
+		$by_country = [];
+		foreach ( $services as $service ) {
+			$by_country[ $service['deliveryCountries'][0] ][] = $service;
+		}
+
+		$this->assertNotEmpty( $by_country['US'] );
+		$this->assertNotEmpty( $by_country['FR'] );
+
+		foreach ( $by_country['US'] as $service ) {
+			$this->assertEquals( 'USD', $service['currencyCode'] );
+			if ( isset( $service['minimumOrderValue'] ) ) {
+				$this->assertEquals( 'USD', $service['minimumOrderValue']['currencyCode'] );
+			}
+		}
+
+		foreach ( $by_country['FR'] as $service ) {
+			$this->assertEquals( 'EUR', $service['currencyCode'] );
+			if ( isset( $service['minimumOrderValue'] ) ) {
+				$this->assertEquals( 'EUR', $service['minimumOrderValue']['currencyCode'] );
+			}
+		}
+	}
 }

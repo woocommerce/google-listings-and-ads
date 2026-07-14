@@ -47,6 +47,7 @@ import {
 	fetchTargetAudience,
 	fetchMCSetup,
 	fetchYouTubeAccount,
+	fetchMarkets,
 	receiveGoogleAccountAccess,
 	receiveReport,
 	receiveMCProductStatistics,
@@ -62,6 +63,7 @@ import {
 	receiveAdsRecommendations,
 	receiveCYOIncentives,
 	receiveEnhancedConversionsStatus,
+	receiveMcLanguagesCurrencies,
 	receiveAdsSettings,
 } from './actions';
 
@@ -847,3 +849,24 @@ getYouTubeAccount.shouldInvalidate = ( action ) => {
 		action.invalidateRelatedState
 	);
 };
+
+export function* getMarkets() {
+	yield fetchMarkets();
+}
+
+export function* getAvailableLanguagesCurrencies() {
+	try {
+		const data = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/markets/languages-currencies`,
+		} );
+		return receiveMcLanguagesCurrencies( data );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error loading supported languages and currencies.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}

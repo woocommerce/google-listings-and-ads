@@ -39,6 +39,7 @@ interface OptionsInterface {
 	public const MERCHANT_ACCOUNT_STATE                    = 'merchant_account_state';
 	public const MERCHANT_CENTER                           = 'merchant_center';
 	public const MERCHANT_ID                               = 'merchant_id';
+	public const MARKETS                                   = 'markets';
 	public const REDIRECT_TO_ONBOARDING                    = 'redirect_to_onboarding';
 	public const SHIPPING_RATES                            = 'shipping_rates';
 	public const SHIPPING_TIMES                            = 'shipping_times';
@@ -84,6 +85,7 @@ interface OptionsInterface {
 		self::MERCHANT_ACCOUNT_STATE                    => true,
 		self::MERCHANT_CENTER                           => true,
 		self::MERCHANT_ID                               => true,
+		self::MARKETS                                   => true,
 		self::DELAYED_ACTIVATE                          => true,
 		self::SHIPPING_RATES                            => true,
 		self::SHIPPING_TIMES                            => true,

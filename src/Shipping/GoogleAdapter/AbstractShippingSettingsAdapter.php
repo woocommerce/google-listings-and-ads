@@ -42,6 +42,14 @@ abstract class AbstractShippingSettingsAdapter {
 	protected $regions = [];
 
 	/**
+	 * Optional map of country code => ISO 4217 currency code used to override
+	 * `$currency` on a per-country basis. Populated from configured markets.
+	 *
+	 * @var array<string, string>
+	 */
+	protected $country_currency_map = [];
+
+	/**
 	 * AbstractShippingSettingsAdapter constructor.
 	 *
 	 * @param array $properties Used to seed this object's properties.
@@ -51,8 +59,11 @@ abstract class AbstractShippingSettingsAdapter {
 	public function __construct( array $properties ) {
 		$this->validate_gla_data( $properties );
 
-		$this->currency       = $properties['currency'];
-		$this->delivery_times = $properties['delivery_times'];
+		$this->currency             = $properties['currency'];
+		$this->delivery_times       = $properties['delivery_times'];
+		$this->country_currency_map = isset( $properties['country_currency_map'] ) && is_array( $properties['country_currency_map'] )
+			? $properties['country_currency_map']
+			: [];
 
 		$this->map_gla_data( $properties );
 	}
@@ -73,6 +84,18 @@ abstract class AbstractShippingSettingsAdapter {
 	 */
 	public function get_regions(): array {
 		return $this->regions;
+	}
+
+	/**
+	 * Returns the currency to use for a given country's shipping service,
+	 * preferring the per-country mapping when supplied and falling back to the
+	 * adapter's default `$currency` otherwise.
+	 *
+	 * @param string $country
+	 * @return string
+	 */
+	protected function get_currency_for_country( string $country ): string {
+		return $this->country_currency_map[ $country ] ?? $this->currency;
 	}
 
 	/**
@@ -125,6 +148,17 @@ abstract class AbstractShippingSettingsAdapter {
 		if ( empty( $data['delivery_times'] ) || ! is_array( $data['delivery_times'] ) ) {
 			throw new InvalidValue( 'The value of "delivery_times" must be a non empty array.' );
 		}
+	}
+
+	/**
+	 * Remove the extra data we added to the input array since the MC API doesn't expect them (and it will fail).
+	 *
+	 * @param array $data
+	 */
+	protected function unset_gla_data( array &$data ): void {
+		unset( $data['currency'] );
+		unset( $data['delivery_times'] );
+		unset( $data['country_currency_map'] );
 	}
 
 	/**

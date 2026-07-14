@@ -49,6 +49,14 @@ jest.mock( '~/hooks/useSettings' );
 jest.mock( '~/hooks/useMCSetup' );
 
 describe( 'ShippingRateSection', () => {
+	beforeEach( () => {
+		global.glaData.isMultiLingualStore = false;
+	} );
+
+	afterEach( () => {
+		delete global.glaData.isMultiLingualStore;
+	} );
+
 	it( 'shouldnt render automatic rates if there are not shipping rates and it is onboarding', () => {
 		useMCSetup.mockImplementation( () => {
 			return {
@@ -203,5 +211,94 @@ describe( 'ShippingRateSection', () => {
 				'Automatically sync my store’s shipping settings to Google.'
 			)
 		).toBeInTheDocument();
+	} );
+
+	describe( 'when glaData.isMultiLingualStore is true', () => {
+		beforeEach( () => {
+			global.glaData.isMultiLingualStore = true;
+
+			useMCSetup.mockImplementation( () => {
+				return {
+					hasFinishedResolution: true,
+					data: { status: 'completed' },
+				};
+			} );
+
+			useSettings.mockImplementation( () => {
+				return {
+					settings: { shipping_rates_count: 1 },
+				};
+			} );
+		} );
+
+		it( 'should not render the flat shipping rate option', () => {
+			const { queryByText } = render( <ShippingRateSection /> );
+
+			expect(
+				queryByText(
+					'My shipping settings are simple. I can manually estimate flat shipping rates.'
+				)
+			).not.toBeInTheDocument();
+		} );
+
+		it( 'should still render the automatic and manual shipping rate options', () => {
+			const { getByText } = render( <ShippingRateSection /> );
+
+			expect(
+				getByText(
+					'Automatically sync my store’s shipping settings to Google.'
+				)
+			).toBeInTheDocument();
+
+			expect(
+				getByText(
+					'My shipping settings are complex. I will enter my shipping rates and times manually in Google Merchant Center.'
+				)
+			).toBeInTheDocument();
+		} );
+		it( 'should render the flat shipping rate option when the stored shipping_rate is flat', () => {
+			useSettings.mockImplementation( () => {
+				return {
+					settings: {
+						shipping_rates_count: 1,
+						shipping_rate: 'flat',
+					},
+				};
+			} );
+
+			const { getByText } = render( <ShippingRateSection /> );
+
+			expect(
+				getByText(
+					'My shipping settings are simple. I can manually estimate flat shipping rates.'
+				)
+			).toBeInTheDocument();
+		} );
+
+		it( 'should render the flat shipping rate option when onboarding and the stored shipping_rate is flat', () => {
+			useMCSetup.mockImplementation( () => {
+				return {
+					hasFinishedResolution: true,
+					data: { status: 'incomplete' },
+				};
+			} );
+
+			useSettings.mockImplementation( () => {
+				return {
+					settings: {
+						shipping_rates_count: 1,
+						shipping_rate: 'flat',
+					},
+				};
+			} );
+
+			const { getByText } = render( <ShippingRateSection /> );
+
+			expect(
+				getByText(
+					'My shipping settings are simple. I can manually estimate flat shipping rates.'
+				)
+			).toBeInTheDocument();
+		} );
 	} );
 } );

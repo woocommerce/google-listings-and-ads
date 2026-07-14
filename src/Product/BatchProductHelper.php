@@ -12,9 +12,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntr
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product as GoogleProduct;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Product;
 use WC_Product_Variable;
 use WC_Product_Variation;
@@ -43,14 +45,29 @@ class BatchProductHelper implements Service {
 	protected $product_helper;
 
 	/**
-	 * @var TargetAudience
+	 * @var ValidatorInterface
 	 */
-	protected $target_audience;
+	protected $validator;
+
+	/**
+	 * @var ProductFactory
+	 */
+	protected $product_factory;
 
 	/**
 	 * @var AttributeMappingRulesQuery
 	 */
 	protected $attribute_mapping_rules_query;
+
+	/**
+	 * @var MarketService
+	 */
+	protected $market_service;
+
+	/**
+	 * @var WPML
+	 */
+	protected $wpml;
 
 	/**
 	 * @var AttributeManager
@@ -62,21 +79,30 @@ class BatchProductHelper implements Service {
 	 *
 	 * @param ProductMetaHandler         $meta_handler
 	 * @param ProductHelper              $product_helper
-	 * @param TargetAudience             $target_audience
+	 * @param ValidatorInterface         $validator
+	 * @param ProductFactory             $product_factory
 	 * @param AttributeMappingRulesQuery $attribute_mapping_rules_query
+	 * @param MarketService              $market_service
+	 * @param WPML                       $wpml
 	 * @param AttributeManager           $attribute_manager
 	 */
 	public function __construct(
 		ProductMetaHandler $meta_handler,
 		ProductHelper $product_helper,
-		TargetAudience $target_audience,
+		ValidatorInterface $validator,
+		ProductFactory $product_factory,
 		AttributeMappingRulesQuery $attribute_mapping_rules_query,
+		MarketService $market_service,
+		WPML $wpml,
 		AttributeManager $attribute_manager
 	) {
 		$this->meta_handler                  = $meta_handler;
 		$this->product_helper                = $product_helper;
-		$this->target_audience               = $target_audience;
+		$this->validator                     = $validator;
+		$this->product_factory               = $product_factory;
 		$this->attribute_mapping_rules_query = $attribute_mapping_rules_query;
+		$this->market_service                = $market_service;
+		$this->wpml                          = $wpml;
 		$this->attribute_manager             = $attribute_manager;
 	}
 
@@ -185,18 +211,19 @@ class BatchProductHelper implements Service {
 
 	/**
 	 * Generate MAPI ProductInput entries for the given products. Expands variable
-	 * products into variations, skips products that are not sync-ready, and builds
-	 * a ProductInput per product targeting the main target country.
+	 * products into variations, skips products that are not sync-ready, validates
+	 * each market copy locally, and builds a ProductInput per product per matching
+	 * market (the primary market plus every secondary market whose language list
+	 * accepts the product).
 	 *
 	 * @param WC_Product[] $products
 	 *
 	 * @return array<int, array{product: WC_Product, country: string, input: ProductInput}>
 	 */
 	public function generate_mapi_update_entries( array $products ): array {
-		$entries          = [];
-		$country          = $this->target_audience->get_main_target_country();
-		$target_countries = $this->target_audience->get_target_countries();
-		$mapping_rules    = $this->attribute_mapping_rules_query->get_results();
+		$entries       = [];
+		$mapping_rules = $this->attribute_mapping_rules_query->get_results();
+		$wpml_active   = $this->market_service->has_multilingual_support();
 
 		foreach ( $products as $product ) {
 			$this->validate_instanceof( $product, WC_Product::class );
@@ -211,20 +238,81 @@ class BatchProductHelper implements Service {
 					continue;
 				}
 
-				$parent = $product instanceof WC_Product_Variation
-					? $this->product_helper->get_wc_product( $product->get_parent_id() )
-					: null;
+				$product_language = $wpml_active ? $this->wpml->get_post_language( $product->get_id() ) : '';
 
-				$attributes = $this->attribute_manager->get_all_values( $product );
-				if ( null !== $parent ) {
-					$attributes = array_merge( $this->attribute_manager->get_all_values( $parent ), $attributes );
+				// Stage entries per product so a throw or validation failure in
+				// any secondary market discards the whole product's entries
+				// preventing the primary feed from receiving the product while
+				// a secondary feed silently misses it.
+				$product_entries = [];
+
+				$primary_market = $this->market_service->get_primary_market();
+
+				if ( $this->product_matches_market( $product_language, $primary_market, $wpml_active ) ) {
+					// The primary market never stores scalar country/feed_label values
+					// (it is multi-country); its feed label is the main target country.
+					$main_feed_label = $this->market_service->get_main_feed_label();
+
+					$validation_result = $this->validate_product(
+						$this->product_factory->create( $product, $main_feed_label, $mapping_rules, $main_feed_label, $product_language )
+					);
+					if ( $validation_result instanceof BatchInvalidProductEntry ) {
+						$this->mark_as_invalid( $validation_result );
+
+						do_action(
+							'woocommerce_gla_debug_message',
+							sprintf( 'Skipping product (ID: %s) because it does not pass validation: %s', $product->get_id(), wp_json_encode( $validation_result ) ),
+							__METHOD__
+						);
+
+						continue;
+					}
+
+					// Add shipping for all countries across all markets.
+					$product_entries[] = [
+						'product' => $product,
+						'country' => $main_feed_label,
+						'input'   => $this->generate_product_input( $product, $main_feed_label, $main_feed_label, $this->market_service->get_all_countries(), $mapping_rules, $product_language ),
+					];
 				}
 
-				$entries[] = [
-					'product' => $product,
-					'country' => $country,
-					'input'   => ( new WCProductInputAdapter( $product, $country, $parent, $target_countries, $attributes, $mapping_rules ) )->get_product_input(),
-				];
+				foreach ( $this->market_service->get_markets() as $market_id => $market ) {
+					if ( 'primary' === $market_id ) {
+						continue;
+					}
+
+					if ( ! $this->product_matches_market( $product_language, $market, $wpml_active ) ) {
+						continue;
+					}
+
+					$market_currency = $this->extract_currency( $market );
+
+					$secondary_validation = $this->validate_product(
+						$this->product_factory->create( $product, $market['country'], $mapping_rules, $market['feed_label'], $product_language, $market_currency )
+					);
+					if ( $secondary_validation instanceof BatchInvalidProductEntry ) {
+						$this->mark_as_invalid( $secondary_validation );
+
+						do_action(
+							'woocommerce_gla_debug_message',
+							sprintf( 'Skipping product (ID: %s) because it does not pass validation for secondary market %s: %s', $product->get_id(), $market_id, wp_json_encode( $secondary_validation ) ),
+							__METHOD__
+						);
+
+						continue 2;
+					}
+
+					// Secondary market shipping is scoped to the market's own country.
+					$product_entries[] = [
+						'product' => $product,
+						'country' => $market['country'],
+						'input'   => $this->generate_product_input( $product, $market['country'], $market['feed_label'], [ $market['country'] ], $mapping_rules, $product_language, $market_currency ),
+					];
+				}
+
+				if ( ! empty( $product_entries ) ) {
+					array_push( $entries, ...$product_entries );
+				}
 			} catch ( GoogleListingsAndAdsException $exception ) {
 				do_action(
 					'woocommerce_gla_error',
@@ -237,6 +325,106 @@ class BatchProductHelper implements Service {
 		}
 
 		return $entries;
+	}
+
+	/**
+	 * Build the Merchant API ProductInput for a product and market.
+	 *
+	 * @param WC_Product $product
+	 * @param string     $target_country     Country used for shipping and tax rules.
+	 * @param string     $feed_label         Feed label for the product input.
+	 * @param string[]   $shipping_countries Countries to add shipping entries for.
+	 * @param array      $mapping_rules      Attribute mapping rules to apply.
+	 * @param string     $language           Optional ISO 639-1 language override.
+	 * @param string     $currency_override  Optional ISO 4217 currency code overriding the store currency.
+	 *
+	 * @return ProductInput
+	 */
+	protected function generate_product_input( WC_Product $product, string $target_country, string $feed_label, array $shipping_countries, array $mapping_rules, string $language = '', string $currency_override = '' ): ProductInput {
+		$parent = $product instanceof WC_Product_Variation
+			? $this->product_helper->get_wc_product( $product->get_parent_id() )
+			: null;
+
+		$attributes = $this->attribute_manager->get_all_values( $product );
+		if ( null !== $parent ) {
+			$attributes = array_merge( $this->attribute_manager->get_all_values( $parent ), $attributes );
+		}
+
+		$adapter = new WCProductInputAdapter( $product, $target_country, $parent, $shipping_countries, $attributes, $mapping_rules, $feed_label, $language, $currency_override, $this->wpml );
+
+		return $adapter->get_product_input();
+	}
+
+	/**
+	 * Determines whether a product's language matches a market's accepted languages.
+	 *
+	 * When WPML is inactive the matching step is skipped and every product matches every market.
+	 * When WPML is active an empty market language list also matches every product (it means
+	 * "this market accepts any product"). Otherwise the product's WPML language must be in
+	 * the market's language list, after converting any locale-form values ("en_US") to the
+	 * short-code form ("en") that WPML uses.
+	 *
+	 * @param string $product_language The product's WPML language code, or empty string.
+	 * @param array  $market           A market config array as returned by MarketService.
+	 * @param bool   $wpml_active      Whether WPML is active for this site.
+	 *
+	 * @return bool
+	 */
+	private static function product_matches_market( string $product_language, array $market, bool $wpml_active ): bool {
+		if ( ! $wpml_active ) {
+			return true;
+		}
+
+		$market_languages = is_array( $market['language'] ?? null ) ? $market['language'] : [];
+
+		if ( empty( $market_languages ) ) {
+			return true;
+		}
+
+		$normalised = array_map(
+			static function ( $value ) {
+				$value = (string) $value;
+
+				return false === strpos( $value, '_' ) ? $value : strtolower( substr( $value, 0, 2 ) );
+			},
+			$market_languages
+		);
+
+		return in_array( $product_language, $normalised, true );
+	}
+
+	/**
+	 * Extracts a single currency code from a market config.
+	 *
+	 * Each MC product carries exactly one price.currency. Markets store currency
+	 * as an array of codes; the first entry is used.
+	 *
+	 * @param array $market A market config array as returned by MarketService.
+	 *
+	 * @return string The single currency code, or empty string when none is set.
+	 */
+	private static function extract_currency( array $market ): string {
+		return is_array( $market['currency'] ?? null )
+			? (string) ( $market['currency'][0] ?? '' )
+			: (string) ( $market['currency'] ?? '' );
+	}
+
+	/**
+	 * @param WCProductAdapter $product
+	 *
+	 * @return BatchInvalidProductEntry|true
+	 */
+	protected function validate_product( WCProductAdapter $product ) {
+		$violations = $this->validator->validate( $product );
+
+		if ( 0 !== count( $violations ) ) {
+			$invalid_product = new BatchInvalidProductEntry( $product->get_wc_product()->get_id() );
+			$invalid_product->map_validation_violations( $violations );
+
+			return $invalid_product;
+		}
+
+		return true;
 	}
 
 	/**
@@ -300,21 +488,19 @@ class BatchProductHelper implements Service {
 
 	/**
 	 * Generate MAPI delete entries for products whose stored google_ids include
-	 * countries that are no longer in the target audience.
+	 * feed labels that no longer belong to any configured market.
 	 *
 	 * @param WC_Product[] $products
 	 *
 	 * @return array<int, array{wc_product_id: int, google_id: string, input: ProductInput}>
 	 */
 	public function generate_stale_products_delete_entries( array $products ): array {
-		$target_audience = $this->target_audience->get_target_countries();
-
-		return $this->build_stale_entries( $products, $target_audience );
+		return $this->build_stale_entries( $products, $this->market_service->get_all_feed_labels() );
 	}
 
 	/**
 	 * Generate MAPI delete entries for products whose stored google_ids target
-	 * countries other than the main target country.
+	 * feed labels other than the main feed label.
 	 *
 	 * @since 1.1.0
 	 *
@@ -323,24 +509,24 @@ class BatchProductHelper implements Service {
 	 * @return array<int, array{wc_product_id: int, google_id: string, input: ProductInput}>
 	 */
 	public function generate_stale_countries_delete_entries( array $products ): array {
-		return $this->build_stale_entries( $products, [ $this->target_audience->get_main_target_country() ] );
+		return $this->build_stale_entries( $products, [ $this->market_service->get_main_feed_label() ] );
 	}
 
 	/**
 	 * Build MAPI delete entries from products by keeping only the google_ids whose
-	 * country is NOT in $keep_countries. Malformed ids are skipped.
+	 * feed label is NOT in $keep_feed_labels. Malformed ids are skipped.
 	 *
 	 * @param WC_Product[] $products
-	 * @param string[]     $keep_countries
+	 * @param string[]     $keep_feed_labels
 	 *
 	 * @return array<int, array{wc_product_id: int, google_id: string, input: ProductInput}>
 	 */
-	protected function build_stale_entries( array $products, array $keep_countries ): array {
+	protected function build_stale_entries( array $products, array $keep_feed_labels ): array {
 		$entries = [];
 
 		foreach ( $products as $product ) {
 			$google_ids = $this->meta_handler->get_google_ids( $product ) ?: [];
-			$stale_ids  = array_diff_key( $google_ids, array_flip( $keep_countries ) );
+			$stale_ids  = array_diff_key( $google_ids, array_flip( $keep_feed_labels ) );
 
 			foreach ( $stale_ids as $google_id ) {
 				$identity = $this->parse_mapi_identity( (string) $google_id );

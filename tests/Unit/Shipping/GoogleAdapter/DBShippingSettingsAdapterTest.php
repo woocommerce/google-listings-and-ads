@@ -234,6 +234,160 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 		);
 	}
 
+	public function test_uses_per_row_currency_for_mixed_currency_rates() {
+		$db_rates = [
+			[
+				'country'  => 'US',
+				'currency' => 'USD',
+				'rate'     => 10,
+				'options'  => [],
+			],
+			[
+				'country'  => 'FR',
+				'currency' => 'EUR',
+				'rate'     => 8,
+				'options'  => [],
+			],
+		];
+
+		$settings = new DBShippingSettingsAdapter(
+			[
+				'currency'       => 'USD',
+				'delivery_times' => [
+					'US' => [
+						'time'     => 1,
+						'max_time' => 3,
+					],
+					'FR' => [
+						'time'     => 2,
+						'max_time' => 5,
+					],
+				],
+				'db_rates'       => $db_rates,
+			]
+		);
+
+		$services = $settings->get_services();
+
+		$this->assertCount( 2, $services );
+
+		foreach ( $services as $service ) {
+			$rate_currency = $service['rateGroups'][0]['singleValue']['flatRate']['currencyCode'];
+
+			if ( 'US' === $service['deliveryCountries'][0] ) {
+				$this->assertEquals( 'USD', $service['currencyCode'] );
+				$this->assertEquals( 'USD', $rate_currency );
+			} elseif ( 'FR' === $service['deliveryCountries'][0] ) {
+				$this->assertEquals( 'EUR', $service['currencyCode'] );
+				$this->assertEquals( 'EUR', $rate_currency );
+			}
+		}
+	}
+
+	public function test_falls_back_to_adapter_currency_when_row_currency_missing() {
+		$db_rates = [
+			[
+				'country' => 'US',
+				'rate'    => 10,
+				'options' => [],
+			],
+		];
+
+		$settings = new DBShippingSettingsAdapter(
+			[
+				'currency'       => 'GBP',
+				'delivery_times' => [
+					'US' => [
+						'time'     => 1,
+						'max_time' => 3,
+					],
+				],
+				'db_rates'       => $db_rates,
+			]
+		);
+
+		$services = $settings->get_services();
+
+		$this->assertCount( 1, $services );
+		$this->assertEquals( 'GBP', $services[0]['currencyCode'] );
+		$this->assertEquals(
+			'GBP',
+			$services[0]['rateGroups'][0]['singleValue']['flatRate']['currencyCode']
+		);
+	}
+
+	public function test_minimum_order_value_uses_row_currency_for_free_rate() {
+		$db_rates = [
+			[
+				'country'  => 'FR',
+				'currency' => 'EUR',
+				'rate'     => 0,
+				'options'  => [
+					'free_shipping_threshold' => 75,
+				],
+			],
+		];
+
+		$settings = new DBShippingSettingsAdapter(
+			[
+				'currency'       => 'USD',
+				'delivery_times' => [
+					'FR' => [
+						'time'     => 2,
+						'max_time' => 5,
+					],
+				],
+				'db_rates'       => $db_rates,
+			]
+		);
+
+		$services = $settings->get_services();
+
+		$this->assertCount( 1, $services );
+		$this->assertEquals( '75000000', $services[0]['minimumOrderValue']['amountMicros'] );
+		$this->assertEquals( 'EUR', $services[0]['minimumOrderValue']['currencyCode'] );
+	}
+
+	public function test_conditional_free_shipping_service_uses_row_currency() {
+		$db_rates = [
+			[
+				'country'  => 'FR',
+				'currency' => 'EUR',
+				'rate'     => 5.0,
+				'options'  => [
+					'free_shipping_threshold' => 100.0,
+				],
+			],
+		];
+
+		$settings = new DBShippingSettingsAdapter(
+			[
+				'currency'       => 'USD',
+				'delivery_times' => [
+					'FR' => [
+						'time'     => 2,
+						'max_time' => 5,
+					],
+				],
+				'db_rates'       => $db_rates,
+			]
+		);
+
+		$services = $settings->get_services();
+
+		$this->assertCount( 2, $services );
+
+		foreach ( $services as $service ) {
+			$rate_value = (float) $service['rateGroups'][0]['singleValue']['flatRate']['amountMicros'];
+			$this->assertEquals( 'EUR', $service['currencyCode'] );
+
+			if ( 0.0 === $rate_value ) {
+				$this->assertEquals( '100000000', $service['minimumOrderValue']['amountMicros'] );
+				$this->assertEquals( 'EUR', $service['minimumOrderValue']['currencyCode'] );
+			}
+		}
+	}
+
 	public function test_fails_if_no_delivery_times_provided() {
 		$this->expectException( InvalidValue::class );
 
@@ -249,5 +403,53 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 				],
 			]
 		);
+	}
+
+	public function test_country_currency_map_overrides_per_service_currency() {
+		$db_rates = [
+			[
+				'country' => 'US',
+				'rate'    => 10,
+				'options' => [],
+			],
+			[
+				'country' => 'FR',
+				'rate'    => 5,
+				'options' => [],
+			],
+		];
+
+		$settings = new DBShippingSettingsAdapter(
+			[
+				'currency'             => 'USD',
+				'country_currency_map' => [
+					'FR' => 'EUR',
+				],
+				'delivery_times'       => [
+					'US' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+					'FR' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+				],
+				'db_rates'             => $db_rates,
+			]
+		);
+
+		$services = $settings->get_services();
+
+		$this->assertCount( 2, $services );
+		foreach ( $services as $service ) {
+			if ( 'US' === $service['deliveryCountries'][0] ) {
+				$this->assertEquals( 'USD', $service['currencyCode'] );
+				$this->assertEquals( 'USD', $service['rateGroups'][0]['singleValue']['flatRate']['currencyCode'] );
+			} elseif ( 'FR' === $service['deliveryCountries'][0] ) {
+				$this->assertEquals( 'EUR', $service['currencyCode'] );
+				$this->assertEquals( 'EUR', $service['rateGroups'][0]['singleValue']['flatRate']['currencyCode'] );
+			}
+		}
 	}
 }

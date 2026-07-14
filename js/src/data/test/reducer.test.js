@@ -47,6 +47,9 @@ describe( 'reducer', () => {
 					sources: {}, // Todo: Change to [] after finishing the fix in backend
 				},
 				contact: null,
+				markets: [],
+				languages: null,
+				currencies: null,
 			},
 			ads_campaigns: null,
 			all_ads_campaigns: null,

@@ -39,8 +39,18 @@ export const API_RESPONSE_CODES = {
 };
 
 export const SHIPPING_RATE_METHOD = {
-	FLAT_RATE: 'flat_rate',
+	FLAT: 'flat',
+	MANUAL: 'manual',
+	AUTOMATIC: 'automatic',
 };
+
+export const SHIPPING_TIME_METHOD = {
+	FLAT: 'flat',
+	MANUAL: 'manual',
+};
+
+export const DEFAULT_SHIPPING_MIN_TIME = 1;
+export const DEFAULT_SHIPPING_MAX_TIME = 5;
 
 // Stepper key related
 const campaignStepEntries = [

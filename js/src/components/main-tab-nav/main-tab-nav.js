@@ -12,7 +12,6 @@ import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import AppTabNav from '~/components/app-tab-nav';
 import useMenuEffect from '~/hooks/useMenuEffect';
 import GtinMigrationBanner from '~/components/gtin-migration-banner';
-import { getShippingUrl } from '~/utils/urls';
 
 export const ALL_TABS = [
 	{
@@ -41,14 +40,14 @@ export const ALL_TABS = [
 		href: getNewPath( {}, '/google/attribute-mapping', {} ),
 	},
 	{
+		key: 'markets',
+		title: __( 'Markets', 'google-listings-and-ads' ),
+		href: getNewPath( {}, '/google/markets', {} ),
+	},
+	{
 		key: 'settings',
 		title: __( 'Settings', 'google-listings-and-ads' ),
 		href: getNewPath( {}, '/google/settings', {} ),
-	},
-	{
-		key: 'shipping',
-		title: __( 'Shipping', 'google-listings-and-ads' ),
-		href: getShippingUrl(),
 	},
 ];
 
