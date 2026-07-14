@@ -10,10 +10,9 @@ import { doAction } from '@wordpress/hooks';
  */
 import { STORE_KEY } from '~/data/constants';
 import {
-	createMarketingNotificationsSlot,
 	registerNotificationsInMarketingSlot,
 	useDismissNotificationFromMarketingSlot,
-} from './woo-marketing-notifications-slot';
+} from '~/notifications-system/woo-marketing-notifications-slot';
 import Notification from './notification';
 import useNotificationsSystemMap from './useNotificationsSystemMap';
 import { GLA_NOTIFICATION_DISMISSED } from '~/constants';
@@ -74,7 +73,6 @@ async function initNotifications() {
 		};
 	} );
 
-	createMarketingNotificationsSlot();
 	registerNotificationsInMarketingSlot( notifications );
 }
 

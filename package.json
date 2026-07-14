@@ -161,6 +161,10 @@
 				"maxSize": "25 kB"
 			},
 			{
+				"path": "./js/build/woo-marketing-notifications-slot.js",
+				"maxSize": "5 kB"
+			},
+			{
 				"path": "./js/build/vendors.js",
 				"maxSize": "12 kB"
 			},

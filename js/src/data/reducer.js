@@ -747,10 +747,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			const notifications = state.notifications.filter(
 				( notification ) => notification.id !== action.id
 			);
-			return {
-				...state,
-				notifications,
-			};
+			return setIn( state, 'notifications', notifications );
 		}
 
 		case TYPES.DISCONNECT_ACCOUNTS_ALL:

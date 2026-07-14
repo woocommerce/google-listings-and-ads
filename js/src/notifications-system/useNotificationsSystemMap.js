@@ -273,29 +273,6 @@ const useNotificationsSystemMap = () => {
 					},
 				],
 			},
-			'campaign-no-sales': {
-				isReady: hasFinishedResolution,
-				title: __(
-					'Drive traffic from Google Ads',
-					'google-listings-and-ads'
-				),
-				description: __(
-					"Your campaign is active, but hasn't generated sales yet. Review your account recommendations in Google Ads to find specific ways to improve your performance.",
-					'google-listings-and-ads'
-				),
-				actions: [
-					{
-						id: 'view-recommendations',
-						href: 'https://ads.google.com/aw/recommendations',
-						target: '_blank',
-						rel: 'noopener noreferrer',
-						children: __(
-							'View recommendations',
-							'google-listings-and-ads'
-						),
-					},
-				],
-			},
 			'sales-not-growing': {
 				isReady: hasFinishedResolution,
 				title: ! hasGoogleMCConnection
@@ -356,7 +333,10 @@ const useNotificationsSystemMap = () => {
 		};
 	}, [ hasFinishedResolution, hasGoogleMCConnection ] );
 
-	return { ...STATIC_MAP, ...dynamicMap };
+	return useMemo(
+		() => ( { ...STATIC_MAP, ...dynamicMap } ),
+		[ dynamicMap ]
+	);
 };
 
 export default useNotificationsSystemMap;
