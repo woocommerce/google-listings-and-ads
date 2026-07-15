@@ -14,6 +14,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\DBShippingSettingsAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\WCShippingSettingsAdapter;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRate;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingLocation;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
@@ -352,7 +355,7 @@ class SettingsTest extends UnitTest {
 		);
 
 		$this->wc_proxy->method( 'get_woocommerce_currency' )->willReturn( 'USD' );
-		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US' ] );
+		$this->market_service->method( 'get_shipping_sync_countries' )->willReturn( [ 'US' ] );
 		$this->shipping_zone->method( 'get_shipping_rates_for_country' )->willReturn( [] );
 		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn(
 			[
@@ -369,6 +372,83 @@ class SettingsTest extends UnitTest {
 
 		$this->assertInstanceOf( WCShippingSettingsAdapter::class, $adapter );
 		$this->assertNotInstanceOf( DBShippingSettingsAdapter::class, $adapter );
+	}
+
+	public function test_automatic_mode_builds_services_for_secondary_market_countries(): void {
+		$this->market_service->method( 'get_markets' )->willReturn(
+			[
+				'primary' => [
+					'country'       => null,
+					'currency'      => [ 'USD' ],
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+				'fr'      => [
+					'country'       => 'FR',
+					'currency'      => [ 'EUR' ],
+					'feed_label'    => 'FR',
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
+
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( $key, $fallback = null ) {
+				switch ( $key ) {
+					case OptionsInterface::MERCHANT_CENTER:
+						return [ 'shipping_rate' => 'automatic' ];
+					case OptionsInterface::MERCHANT_ID:
+						return 1234567890;
+					default:
+						return $fallback;
+				}
+			}
+		);
+
+		$this->wc_proxy->method( 'get_woocommerce_currency' )->willReturn( 'USD' );
+		// France's country is removed from the target audience when the market
+		// is added, so the country list must come from the market-aware method.
+		$this->market_service->method( 'get_shipping_sync_countries' )->willReturn( [ 'US', 'FR' ] );
+		$this->shipping_zone->method( 'get_shipping_rates_for_country' )->willReturnCallback(
+			static function ( string $country ) {
+				return [
+					new LocationRate( new ShippingLocation( 1, $country ), new ShippingRate( 10 ) ),
+				];
+			}
+		);
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn(
+			[
+				'US' => [
+					'time'     => 1,
+					'max_time' => 3,
+				],
+				'FR' => [
+					'time'     => 0,
+					'max_time' => 2,
+				],
+			]
+		);
+
+		$adapter = $this->invoke( 'generate_shipping_settings' );
+
+		$countries = array_map(
+			static function ( array $service ) {
+				return $service['deliveryCountries'][0];
+			},
+			$adapter->get_services()
+		);
+
+		$this->assertContains( 'US', $countries );
+		$this->assertContains( 'FR', $countries );
+
+		$by_country = [];
+		foreach ( $adapter->get_services() as $service ) {
+			$by_country[ $service['deliveryCountries'][0] ] = $service;
+		}
+
+		// The France service carries the market's own currency.
+		$this->assertSame( 'EUR', $by_country['FR']['currencyCode'] );
 	}
 
 	/**

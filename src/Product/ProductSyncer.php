@@ -255,13 +255,12 @@ class ProductSyncer implements Service {
 
 	/**
 	 * Delete the products described by the given request entries from Google Merchant Center,
-	 * leaving local sync meta untouched for successful deletions.
+	 * removing each deleted entry's own Google ID from its product's tracked IDs.
 	 *
-	 * Each successful entry in the response carries a Google product holding the deleted id,
-	 * so callers can update their own meta surgically (for example removing a single google id
-	 * while the product stays synced for its other feed labels). Not-found and retry handling
-	 * matches the other delete flows. Entries whose google id is not in the MAPI format are
-	 * skipped.
+	 * Only the deleted entry's ID is removed, so a product synced for several markets or
+	 * languages keeps the tracking for entries that were not part of the delete request.
+	 * Not-found and retry handling matches the other delete flows. Entries whose google id
+	 * is not in the MAPI format are skipped.
 	 *
 	 * @param BatchProductIDRequestEntry[] $request_entries
 	 *
@@ -317,7 +316,13 @@ class ProductSyncer implements Service {
 					$google_product = new GoogleProduct();
 					$google_product->setId( $entry['google_id'] );
 
-					$deleted_products[] = new BatchProductEntry( $entry['wc_product_id'], $google_product );
+					$deleted_entry      = new BatchProductEntry( $entry['wc_product_id'], $google_product );
+					$deleted_products[] = $deleted_entry;
+
+					// Remove only the deleted entry's ID so a product synced for
+					// several markets or languages keeps the tracking for entries
+					// that were not part of this delete request.
+					$this->batch_helper->remove_google_id_for_entry( $deleted_entry );
 				} elseif ( isset( $result['failures'][ $index ] ) ) {
 					$invalid_products[] = $this->build_delete_invalid_entry(
 						$entry['wc_product_id'],

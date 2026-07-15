@@ -58,6 +58,25 @@ describe( 'EditMarketModal', () => {
 		).toBeInTheDocument();
 	} );
 
+	test( 'renders the market-specific title for a secondary market', () => {
+		render(
+			<EditMarketModal
+				market={ {
+					id: 'be',
+					label: 'Belgium',
+					country: 'BE',
+					countries: [ 'BE' ],
+				} }
+				targetAudience={ targetAudience }
+				onRequestClose={ () => {} }
+			/>
+		);
+
+		expect(
+			screen.getByRole( 'dialog', { name: 'Edit Belgium' } )
+		).toBeInTheDocument();
+	} );
+
 	test( 'renders AppSpinner inside the modal while data is loading', () => {
 		const MarketFormMock = jest.requireMock( '../market-form' );
 		MarketFormMock.mockImplementationOnce( () => <AppSpinner /> );

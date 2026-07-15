@@ -55,7 +55,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$google_product = $this->generate_google_product_mock();
 
 		$this->market_service->expects( $this->any() )
-			->method( 'get_all_feed_labels' )
+			->method( 'get_feed_labels_for_language' )
 			->willReturn( [ $this->get_sample_target_country() ] );
 
 		// add some random errors residue from previous sync attempts
@@ -108,7 +108,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$google_product->method( 'getTargetCountry' )->willReturn( 'US' );
 		$google_product->method( 'getFeedLabel' )->willReturn( 'MY-FEED' );
 
-		$this->market_service->method( 'get_all_feed_labels' )->willReturn( [ 'MY-FEED' ] );
+		$this->market_service->method( 'get_feed_labels_for_language' )->willReturn( [ 'MY-FEED' ] );
 
 		$this->product_helper->mark_as_synced( $product, $google_product );
 
@@ -123,12 +123,60 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	 *
 	 * @dataProvider return_test_product_callbacks
 	 */
+	public function test_mark_as_synced_stores_two_languages_under_distinct_keys( string $callback ) {
+		$product = call_user_func( $callback );
+
+		$default_language_product = $this->createMock( \Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product::class );
+		$default_language_product->method( 'getId' )->willReturn( 'online:en:BE:gla_1' );
+		$default_language_product->method( 'getFeedLabel' )->willReturn( 'BE' );
+
+		$french_product = $this->createMock( \Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product::class );
+		$french_product->method( 'getId' )->willReturn( 'online:fr:BE-FR:gla_1' );
+		$french_product->method( 'getFeedLabel' )->willReturn( 'BE-FR' );
+
+		$this->product_helper->mark_as_synced( $product, $default_language_product );
+		$this->product_helper->mark_as_synced( $product, $french_product );
+
+		$this->assertEqualSets(
+			[
+				'BE'    => 'online:en:BE:gla_1',
+				'BE-FR' => 'online:fr:BE-FR:gla_1',
+			],
+			$this->product_meta->get_google_ids( $product )
+		);
+	}
+
+	public function test_mark_as_synced_clears_errors_using_language_applicable_labels() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$google_product = $this->createMock( \Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product::class );
+		$google_product->method( 'getId' )->willReturn( 'online:fr:BE-FR:gla_1' );
+		$google_product->method( 'getFeedLabel' )->willReturn( 'BE-FR' );
+		$google_product->method( 'getContentLanguage' )->willReturn( 'fr' );
+
+		$this->market_service->expects( $this->once() )
+			->method( 'get_feed_labels_for_language' )
+			->with( 'fr' )
+			->willReturn( [ 'BE-FR' ] );
+
+		$this->product_meta->update_errors( $product, [ 'Error 1' ] );
+
+		$this->product_helper->mark_as_synced( $product, $google_product );
+
+		$this->assertEmpty( $this->product_meta->get_errors( $product ) );
+	}
+
+	/**
+	 * @param string $callback
+	 *
+	 * @dataProvider return_test_product_callbacks
+	 */
 	public function test_mark_as_synced_deletes_errors_when_main_target_countries_synced( string $callback ) {
 		$product        = call_user_func( $callback );
 		$google_product = $this->generate_google_product_mock();
 
 		$this->market_service->expects( $this->any() )
-			->method( 'get_all_feed_labels' )
+			->method( 'get_feed_labels_for_language' )
 			->willReturn( [ $google_product->getTargetCountry() ] );
 
 		// add some random errors residue from previous sync attempts
@@ -153,7 +201,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$google_product = $this->generate_google_product_mock();
 
 		$this->market_service->expects( $this->any() )
-			->method( 'get_all_feed_labels' )
+			->method( 'get_feed_labels_for_language' )
 			->willReturn( [ 'AU', 'CA' ] );
 
 		// add some random errors residue from previous sync attempts
@@ -174,7 +222,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$variation      = $this->wc->get_product( $parent->get_children()[0] );
 
 		$this->market_service->expects( $this->any() )
-			->method( 'get_all_feed_labels' )
+			->method( 'get_feed_labels_for_language' )
 			->willReturn( [ $this->get_sample_target_country() ] );
 
 		// add some random errors residue from previous sync attempts
@@ -213,7 +261,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$variation->save();
 
 		$this->market_service->expects( $this->any() )
-			->method( 'get_all_feed_labels' )
+			->method( 'get_feed_labels_for_language' )
 			->willReturn( [ $this->get_sample_target_country() ] );
 
 		$this->product_helper->mark_as_synced( $variation, $google_product );

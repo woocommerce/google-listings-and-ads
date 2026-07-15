@@ -104,10 +104,13 @@ class ProductHelper implements Service {
 		$google_ids         = array_unique( array_merge( $current_google_ids, [ $key => $google_product->getId() ] ) );
 		$this->meta_handler->update_google_ids( $product, $google_ids );
 
-		// check if product is synced for all feed labels and remove any previous errors if it is
-		$synced_keys     = array_keys( $google_ids );
-		$all_feed_labels = $this->market_service->get_all_feed_labels() ?? [];
-		if ( empty( array_diff( $all_feed_labels, $synced_keys ) ) ) {
+		// Check whether the product is synced for every feed label its language
+		// can attain and remove any previous errors if it is. A product only ever
+		// syncs to markets accepting its language, so comparing against every
+		// market's labels would leave errors permanently uncleared.
+		$synced_keys       = array_keys( $google_ids );
+		$applicable_labels = $this->market_service->get_feed_labels_for_language( (string) $google_product->getContentLanguage() );
+		if ( empty( array_diff( $applicable_labels, $synced_keys ) ) ) {
 			$this->meta_handler->delete_errors( $product );
 			$this->meta_handler->delete_failed_sync_attempts( $product );
 			$this->meta_handler->delete_sync_failed_at( $product );

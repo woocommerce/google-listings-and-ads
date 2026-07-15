@@ -1054,6 +1054,16 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 */
 	public function set_feed_label( string $feed_label ): void {
 		$this->setFeedLabel( $feed_label );
+
+		// Google rejects entries whose feedLabel and targetCountry disagree, so
+		// a language-specific label is submitted with the feed label only and
+		// country eligibility comes from the shipping attribute. The country has
+		// already been applied to the tax and shipping mapping at this point.
+		// The parent setter is called directly because the overridden
+		// setTargetCountry() would remap prices and shipping.
+		if ( $feed_label !== $this->getTargetCountry() ) {
+			parent::setTargetCountry( null );
+		}
 	}
 
 	/**

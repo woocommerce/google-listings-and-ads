@@ -418,4 +418,62 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 			}
 		}
 	}
+
+	public function test_rate_group_prices_use_the_service_currency_for_overridden_countries() {
+		$fr_country_rate = new LocationRate( new ShippingLocation( 2, 'FR' ), new ShippingRate( 50 ) );
+
+		$fr_region        = new ShippingRegion( '654321', 'FR', [ new PostcodeRange( '75000' ) ] );
+		$fr_postcode_rate = new LocationRate( new ShippingLocation( 2, 'FR', null, $fr_region ), new ShippingRate( 60 ) );
+
+		$fr_state_rate = new LocationRate( new ShippingLocation( 2, 'FR', 'IDF' ), new ShippingRate( 70 ) );
+
+		$us_country_rate = new LocationRate( new ShippingLocation( 1, 'US' ), new ShippingRate( 100 ) );
+
+		$settings = new WCShippingSettingsAdapter(
+			[
+				'currency'             => 'USD',
+				'country_currency_map' => [
+					'FR' => 'EUR',
+				],
+				'rates_collections'    => [
+					new CountryRatesCollection( 'US', [ $us_country_rate ] ),
+					new CountryRatesCollection( 'FR', [ $fr_country_rate, $fr_postcode_rate, $fr_state_rate ] ),
+				],
+				'delivery_times'       => [
+					'US' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+					'FR' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+				],
+			]
+		);
+
+		foreach ( $settings->get_services() as $service ) {
+			$expected_currency = 'FR' === $service['deliveryCountries'][0] ? 'EUR' : 'USD';
+
+			foreach ( $service['rateGroups'] as $rate_group ) {
+				if ( isset( $rate_group['singleValue'] ) ) {
+					$this->assertEquals(
+						$expected_currency,
+						$rate_group['singleValue']['flatRate']['currencyCode']
+					);
+				}
+
+				if ( isset( $rate_group['mainTable'] ) ) {
+					foreach ( $rate_group['mainTable']['rows'] as $row ) {
+						foreach ( $row['cells'] as $cell ) {
+							$this->assertEquals(
+								$expected_currency,
+								$cell['flatRate']['currencyCode']
+							);
+						}
+					}
+				}
+			}
+		}
+	}
 }

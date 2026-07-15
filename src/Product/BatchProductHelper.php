@@ -143,6 +143,32 @@ class BatchProductHelper implements Service {
 	}
 
 	/**
+	 * Removes a deleted entry's Google ID from its product's tracked IDs.
+	 *
+	 * Only the entry's own ID is removed, so entries synced for the product's
+	 * other markets or languages keep their tracking. When the last tracked ID
+	 * is removed the product is marked fully un-synced. Entries carrying no
+	 * Google product fall back to marking the product fully un-synced.
+	 *
+	 * @param BatchProductEntry $product_entry
+	 */
+	public function remove_google_id_for_entry( BatchProductEntry $product_entry ) {
+		try {
+			$wc_product = $this->product_helper->get_wc_product( $product_entry->get_wc_product_id() );
+		} catch ( InvalidValue $exception ) {
+			return;
+		}
+
+		$google_product = $product_entry->get_google_product();
+		if ( null === $google_product || empty( $google_product->getId() ) ) {
+			$this->product_helper->mark_as_unsynced( $wc_product );
+			return;
+		}
+
+		$this->product_helper->remove_google_id( $wc_product, $google_product->getId() );
+	}
+
+	/**
 	 * Mark a batch of WooCommerce product IDs as unsynced.
 	 * Invalid products will be skipped.
 	 *
@@ -250,7 +276,9 @@ class BatchProductHelper implements Service {
 
 				if ( $this->product_matches_market( $product_language, $primary_market, $wpml_active ) ) {
 					// The primary market never stores scalar country/feed_label values
-					// (it is multi-country); its feed label is the main target country.
+					// (it is multi-country); its feed label is the main target country,
+					// kept bare for every language so existing entries keep their
+					// Merchant Center identity.
 					$main_feed_label = $this->market_service->get_main_feed_label();
 
 					$validation_result = $this->validate_product(
@@ -285,10 +313,17 @@ class BatchProductHelper implements Service {
 						continue;
 					}
 
-					$market_currency = $this->extract_currency( $market );
+					// The derived label carries the language the entry syncs
+					// under and the currency its prices are submitted in
+					// (both falling back to site defaults inside the
+					// derivation). A market with no configured languages
+					// accepts every product under its site-language label.
+					$market_currency   = $this->extract_currency( $market );
+					$market_language   = empty( $market['language'] ) ? '' : $product_language;
+					$market_feed_label = $this->market_service->get_market_feed_label( $market['feed_label'], $market_language, $market_currency );
 
 					$secondary_validation = $this->validate_product(
-						$this->product_factory->create( $product, $market['country'], $mapping_rules, $market['feed_label'], $product_language, $market_currency )
+						$this->product_factory->create( $product, $market['country'], $mapping_rules, $market_feed_label, $product_language, $market_currency )
 					);
 					if ( $secondary_validation instanceof BatchInvalidProductEntry ) {
 						$this->mark_as_invalid( $secondary_validation );
@@ -306,7 +341,7 @@ class BatchProductHelper implements Service {
 					$product_entries[] = [
 						'product' => $product,
 						'country' => $market['country'],
-						'input'   => $this->generate_product_input( $product, $market['country'], $market['feed_label'], [ $market['country'] ], $mapping_rules, $product_language, $market_currency ),
+						'input'   => $this->generate_product_input( $product, $market['country'], $market_feed_label, [ $market['country'] ], $mapping_rules, $product_language, $market_currency ),
 					];
 				}
 
@@ -499,8 +534,13 @@ class BatchProductHelper implements Service {
 	}
 
 	/**
-	 * Generate MAPI delete entries for products whose stored google_ids target
-	 * feed labels other than the main feed label.
+	 * Generate MAPI delete entries for products whose tracking keys no longer
+	 * belong to any configured market or language.
+	 *
+	 * The diff runs against every valid derived feed label rather than only the
+	 * main feed label, so entries belonging to secondary markets and to
+	 * per-language feeds survive while keys from dropped target countries are
+	 * still flagged as stale.
 	 *
 	 * @since 1.1.0
 	 *
@@ -509,7 +549,7 @@ class BatchProductHelper implements Service {
 	 * @return array<int, array{wc_product_id: int, google_id: string, input: ProductInput}>
 	 */
 	public function generate_stale_countries_delete_entries( array $products ): array {
-		return $this->build_stale_entries( $products, [ $this->market_service->get_main_feed_label() ] );
+		return $this->build_stale_entries( $products, $this->market_service->get_all_feed_labels() );
 	}
 
 	/**

@@ -69,22 +69,27 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 	 * @param LocationRate[] $location_rates
 	 * @param string         $shipping_area
 	 * @param array          $applicable_classes
+	 * @param string|null    $currency           Currency for the rate group prices. Must match the
+	 *                                           currency of the shipping service the group belongs to.
+	 *                                           Defaults to the store currency when omitted.
 	 *
 	 * @return array
 	 *
 	 * @throws InvalidArgument If an invalid value is provided for the shipping_area argument.
 	 */
-	protected function create_rate_group( array $location_rates, string $shipping_area, array $applicable_classes = [] ): array {
+	protected function create_rate_group( array $location_rates, string $shipping_area, array $applicable_classes = [], ?string $currency = null ): array {
+		$currency = $currency ?? $this->currency;
+
 		switch ( $shipping_area ) {
 			case ShippingLocation::COUNTRY_AREA:
 				// Each country can only have one global rate.
 				$country_rate = $location_rates[ array_key_first( $location_rates ) ];
-				return $this->create_single_value_rate_group( $country_rate, $applicable_classes );
+				return $this->create_single_value_rate_group( $country_rate, $applicable_classes, $currency );
 			case ShippingLocation::POSTCODE_AREA:
 				return ( new PostcodesRateGroupAdapter(
 					[
 						'location_rates'           => $location_rates,
-						'currency'                 => $this->currency,
+						'currency'                 => $currency,
 						'applicableShippingLabels' => $applicable_classes,
 					]
 				) )->to_array();
@@ -92,7 +97,7 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 				return ( new StatesRateGroupAdapter(
 					[
 						'location_rates'           => $location_rates,
-						'currency'                 => $this->currency,
+						'currency'                 => $currency,
 						'applicableShippingLabels' => $applicable_classes,
 					]
 				) )->to_array();
@@ -109,16 +114,19 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 	 * @return array
 	 */
 	protected function create_shipping_service( ServiceRatesCollection $service_collection ): array {
+		$country  = $service_collection->get_country();
+		$currency = $this->get_currency_for_country( $country );
+
+		// Rate group prices must be in the same currency as the service they
+		// belong to, so the per-country currency is resolved before building them.
 		$rate_groups   = [];
 		$shipping_area = $service_collection->get_shipping_area();
 		foreach ( $service_collection->get_rates_grouped_by_shipping_class() as $class => $location_rates ) {
 			$applicable_classes    = ! empty( $class ) ? [ $class ] : [];
-			$rate_groups[ $class ] = $this->create_rate_group( $location_rates, $shipping_area, $applicable_classes );
+			$rate_groups[ $class ] = $this->create_rate_group( $location_rates, $shipping_area, $applicable_classes, $currency );
 		}
 
-		$country  = $service_collection->get_country();
-		$currency = $this->get_currency_for_country( $country );
-		$service  = [
+		$service = [
 			'serviceName'       => sprintf(
 				/* translators: %1 is a random 4-digit string, %2 is the country code */
 				__( '[%1$s] Google for WooCommerce generated service - %2$s', 'google-listings-and-ads' ),
@@ -184,12 +192,15 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 	/**
 	 * @param LocationRate $location_rate
 	 * @param string[]     $shipping_classes
+	 * @param string|null  $currency         Currency for the rate group price. Must match the
+	 *                                       currency of the shipping service the group belongs to.
+	 *                                       Defaults to the store currency when omitted.
 	 *
 	 * @return array
 	 */
-	protected function create_single_value_rate_group( LocationRate $location_rate, array $shipping_classes = [] ): array {
+	protected function create_single_value_rate_group( LocationRate $location_rate, array $shipping_classes = [], ?string $currency = null ): array {
 		$rate_group = [
-			'singleValue' => [ 'flatRate' => $this->create_price( (float) $location_rate->get_shipping_rate()->get_rate() ) ],
+			'singleValue' => [ 'flatRate' => $this->mapi_price( (float) $location_rate->get_shipping_rate()->get_rate(), $currency ?? $this->currency ) ],
 		];
 
 		if ( ! empty( $shipping_classes ) ) {

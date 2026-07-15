@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { __ } from '@wordpress/i18n';
 import { useRef, useState } from '@wordpress/element';
 
 /**
@@ -8,6 +9,7 @@ import { useRef, useState } from '@wordpress/element';
  */
 import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 import { useAppDispatch } from '~/data';
+import { handleApiError } from '~/utils/handleError';
 import {
 	getTargetCountries,
 	ensureRateRows,
@@ -166,15 +168,28 @@ const MarketForm = ( {
 			}
 			await Promise.all( saves );
 
-			// If the user has made changes to the shipping rates or times, we need to sync the settings to ensure the changes are reflected in the UI and persisted correctly. This is necessary because the shipping rates and times are stored separately from the market data, and changes to them may not trigger a re-fetch of the market data on their own.
-			if ( saves.length > 0 ) {
+			// Always sync after a successful save: creating or updating a
+			// market changes shipping data on the server (target audience,
+			// adopted rate/time rows) even when the form itself saved no
+			// shipping rates or times.
+			try {
 				await syncSettings();
+			} catch ( error ) {
+				handleApiError(
+					error,
+					__(
+						'There was an error synchronizing settings to Google Merchant Center. Please try again.',
+						'google-listings-and-ads'
+					)
+				);
+				throw error;
 			}
 
 			invalidateResolution( 'getTargetAudience', [] );
 			onSubmit();
 		} catch ( error ) {
-			// Do nothing. Keep the modal open.
+			// Every awaited action has already dispatched its own error
+			// notice; this catch only keeps the modal open for retry/cancel.
 		} finally {
 			setIsSaving( false );
 		}
