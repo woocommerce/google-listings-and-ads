@@ -11,7 +11,7 @@ import { pick } from 'lodash';
  * Internal dependencies
  */
 import { glaData } from '~/constants';
-import { STORE_KEY } from '~/data';
+import { STORE_KEY } from '~/data/constants';
 
 /**
  * @typedef { import("~/data/actions").CountryCode } CountryCode
