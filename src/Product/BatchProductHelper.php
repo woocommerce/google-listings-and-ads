@@ -190,7 +190,7 @@ class BatchProductHelper implements Service {
 	 *
 	 * @param WC_Product[] $products
 	 *
-	 * @return array<int, array{product: WC_Product, country: string, input: ProductInput}>
+	 * @return array<int, array{product: WC_Product, country: string, input: ProductInput, hash: string}>
 	 */
 	public function generate_mapi_update_entries( array $products ): array {
 		$entries          = [];
