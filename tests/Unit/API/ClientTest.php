@@ -140,6 +140,28 @@ class ClientTest extends UnitTest {
 		$client->request( 'GET', 'https://testing.local' );
 	}
 
+	public function test_retry_runs_before_the_error_handler_on_the_full_stack() {
+		// Real stack order: error_handler pushed first (outermost), retry last (innermost). This
+		// POST is one is_retryable_request() rejects, so a 429 can only retry via the response
+		// branch, proving retry sees the response before error_handler throws.
+		$handler_stack = HandlerStack::create(
+			new MockHandler(
+				[
+					new Response( 429, [], 'rate limited' ),
+					new Response( 200, [], 'ok' ),
+				]
+			)
+		);
+		$handler_stack->remove( 'http_errors' );
+		$handler_stack->push( $this->invoke_handler( 'error_handler' ), 'http_errors' );
+		$handler_stack->push( $this->invoke_handler( 'retry_on_transient_error' ), 'retry_on_transient_error' );
+
+		$response = ( new Client( [ 'handler' => $handler_stack ] ) )
+			->request( 'POST', 'https://testing.local/datasources/v1/accounts/1/dataSources' );
+
+		$this->assertEquals( 200, $response->getStatusCode() );
+	}
+
 	public function test_retry_on_transient_error_retries_5xx_on_product_insert() {
 		$client = $this->mock_client_with_handler(
 			'retry_on_transient_error',
@@ -224,11 +246,10 @@ class ClientTest extends UnitTest {
 		$method = new ReflectionMethod( GoogleServiceProvider::class, 'retry_delay' );
 		$method->setAccessible( true );
 
-		// A high retry count must not exceed the cap (plus up to 1s jitter).
+		// A high retry count is clamped to the 30s cap (jitter is added inside the cap).
 		$delay = $method->invoke( $this->provider, 20, null );
 
-		$this->assertGreaterThanOrEqual( 30000, $delay );
-		$this->assertLessThanOrEqual( 31000, $delay );
+		$this->assertSame( 30000, $delay );
 	}
 
 	public function test_retry_on_transient_error_retries_no_response_transport_errors() {
