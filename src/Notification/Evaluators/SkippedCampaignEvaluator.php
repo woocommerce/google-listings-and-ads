@@ -5,11 +5,17 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationEvaluatorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -17,16 +23,22 @@ defined( 'ABSPATH' ) || exit;
  * Class SkippedCampaignEvaluator
  *
  * Fires when the merchant finished onboarding but skipped campaign creation: onboarding
- * is complete and Ads setup was not completed. Ads setup is marked complete once the
- * merchant creates a campaign through the plugin, so an incomplete Ads setup is a
- * reliable indicator that they skipped campaign creation.
+ * is complete, Ads setup was not completed, and the account has no enabled Performance
+ * Max campaigns — including any created outside the onboarding flow.
+ *
+ * A paused-only Performance Max campaign does not suppress this notification; that case
+ * is surfaced by the separate paused-campaign notification instead.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
-class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwareInterface, Service {
+class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwareInterface, OptionsAwareInterface, Service {
 
 	use AdsAwareTrait;
 	use CachedNotificationEvaluatorTrait;
+	use OptionsAwareTrait;
+
+	/** @var AdsCampaign */
+	private $ads_campaign;
 
 	/** @var OnboardingCompleted */
 	private $onboarding_completed;
@@ -34,9 +46,11 @@ class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwa
 	/**
 	 * SkippedCampaignEvaluator constructor.
 	 *
+	 * @param AdsCampaign         $ads_campaign
 	 * @param OnboardingCompleted $onboarding_completed
 	 */
-	public function __construct( OnboardingCompleted $onboarding_completed ) {
+	public function __construct( AdsCampaign $ads_campaign, OnboardingCompleted $onboarding_completed ) {
+		$this->ads_campaign         = $ads_campaign;
 		$this->onboarding_completed = $onboarding_completed;
 	}
 
@@ -60,9 +74,41 @@ class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwa
 			return false;
 		}
 
-		// Ads setup is marked complete once the merchant creates a campaign through the
-		// plugin, so an incomplete Ads setup means they skipped campaign creation.
-		return ! $this->ads_service->is_setup_complete();
+		// If Ads setup was completed, the merchant did not skip campaign creation.
+		if ( $this->ads_service->is_setup_complete() ) {
+			return false;
+		}
+
+		// No Ads account connected — either never connected, or disconnected again in
+		// settings after being set up. Neither is "skipped campaign creation", and
+		// AdsCampaign::get_campaigns() requires a non-zero Ads ID and throws otherwise.
+		// (Deliberately not using AdsService::connected_account() here — it also requires
+		// every account-creation step but "billing" to be marked done, which isn't true
+		// for accounts connected via some paths, e.g. linking an existing Ads account.)
+		if ( ! $this->options->get_ads_id() ) {
+			return false;
+		}
+
+		try {
+			$campaigns = $this->ads_campaign->get_campaigns( true, false );
+
+			// Any *enabled* Performance Max campaign (including ones created outside
+			// the onboarding flow) means the merchant did not skip campaigns. A
+			// paused-only PMax campaign does not suppress this notification — that
+			// case is surfaced by the separate paused-campaign notification instead.
+			foreach ( $campaigns as $campaign ) {
+				if ( CampaignType::PERFORMANCE_MAX === ( $campaign['type'] ?? null )
+					&& CampaignStatus::ENABLED === ( $campaign['status'] ?? null )
+				) {
+					return false;
+				}
+			}
+		} catch ( ExceptionWithResponseData $e ) {
+			// If the campaigns can't be retrieved, don't nag the merchant.
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
