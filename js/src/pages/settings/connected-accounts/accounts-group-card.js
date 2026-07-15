@@ -1,0 +1,45 @@
+/**
+ * Internal dependencies
+ */
+import Section from '~/components/section';
+import AccountRow from './account-row';
+
+/**
+ * Renders one group of accounts as a single Card: a header (title +
+ * description) followed by the account rows, separated by dividers.
+ *
+ * @param {Object} props Component props.
+ * @param {string} props.title Group title.
+ * @param {string} props.description Group description.
+ * @param {import('./useConnectedAccounts').ConnectedAccountItem[]} props.accounts Accounts in this group.
+ * @param {() => void} props.onDisconnect Called when the (Ads-only) Disconnect action is chosen.
+ * @return {JSX.Element} The group card.
+ */
+export default function AccountsGroupCard( {
+	title,
+	description,
+	accounts,
+	onDisconnect,
+} ) {
+	return (
+		<Section.Card className="gla-connected-accounts__card">
+			<Section.Card.Body>
+				<header className="gla-connected-accounts__group-header">
+					<h3 className="gla-connected-accounts__group-title">
+						{ title }
+					</h3>
+					<p className="gla-connected-accounts__group-description">
+						{ description }
+					</p>
+				</header>
+				{ accounts.map( ( account ) => (
+					<AccountRow
+						key={ account.id }
+						account={ account }
+						onDisconnect={ onDisconnect }
+					/>
+				) ) }
+			</Section.Card.Body>
+		</Section.Card>
+	);
+}

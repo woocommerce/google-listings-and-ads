@@ -1,0 +1,159 @@
+/**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
+ * Internal dependencies
+ */
+import useJetpackAccount from '~/hooks/useJetpackAccount';
+import useGoogleAccount from '~/hooks/useGoogleAccount';
+import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
+import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
+import useYouTubeAccount from '~/hooks/useYouTubeAccount';
+import getConnectedJetpackInfo from '~/utils/getConnectedJetpackInfo';
+import toAccountText from '~/utils/toAccountText';
+import { APPEARANCE } from '~/components/account-card';
+import { GOOGLE_ADS_ACCOUNT_STATUS, YOUTUBE_ACCOUNT_STATUS } from '~/constants';
+
+/**
+ * Account section keys used to group the connected account rows.
+ *
+ * @enum {string}
+ */
+export const ACCOUNT_SECTION = {
+	REQUIRED: 'required',
+	GROW: 'grow',
+};
+
+const { CONNECTED, INCOMPLETE } = GOOGLE_ADS_ACCOUNT_STATUS;
+
+/**
+ * @typedef {Object} ConnectedAccountItem
+ * @property {string} id Stable account identifier.
+ * @property {string} section One of {@link ACCOUNT_SECTION}.
+ * @property {string} appearance Account card appearance (maps to logo).
+ * @property {string} title Account name.
+ * @property {string} description Short account description.
+ * @property {boolean} connected Whether the account is currently connected.
+ * @property {string} [detail] Human-readable account detail (email, id, channel).
+ * @property {boolean} canDisconnect Whether an individual disconnect action is offered today.
+ * @property {boolean} [canConnect] Whether the account offers an in-page connect action when disconnected.
+ */
+
+/**
+ * Builds the account items rendered as rows in the Settings > Accounts subtab,
+ * together with the overall loading state. All accounts are returned, each with
+ * a `connected` flag so the row can render a status badge or a connect action.
+ *
+ * @return {{ accounts: ConnectedAccountItem[], isLoading: boolean }} Accounts and loading state.
+ */
+export default function useConnectedAccounts() {
+	const { jetpack, hasFinishedResolution: hasResolvedJetpack } =
+		useJetpackAccount();
+	const { google, hasFinishedResolution: hasResolvedGoogle } =
+		useGoogleAccount();
+	const {
+		googleMCAccount,
+		hasFinishedResolution: hasResolvedMC,
+		hasGoogleMCConnection,
+	} = useGoogleMCAccount();
+	const { googleAdsAccount, hasFinishedResolution: hasResolvedAds } =
+		useGoogleAdsAccount();
+	const { youTubeAccount, hasFinishedResolution: hasResolvedYouTube } =
+		useYouTubeAccount();
+
+	const isLoading = ! (
+		hasResolvedJetpack &&
+		hasResolvedGoogle &&
+		hasResolvedMC &&
+		hasResolvedAds &&
+		hasResolvedYouTube
+	);
+
+	const hasAdsAccount = [ CONNECTED, INCOMPLETE ].includes(
+		googleAdsAccount?.status
+	);
+	// Mirror the YouTube account card: connected and incomplete are both shown
+	// as an established connection.
+	const isYouTubeConnected = [
+		YOUTUBE_ACCOUNT_STATUS.CONNECTED,
+		YOUTUBE_ACCOUNT_STATUS.INCOMPLETE,
+	].includes( youTubeAccount?.status );
+
+	const accounts = [
+		{
+			id: 'wpcom',
+			section: ACCOUNT_SECTION.REQUIRED,
+			appearance: APPEARANCE.WPCOM,
+			title: __( 'WordPress.com', 'google-listings-and-ads' ),
+			description: __(
+				'The account that connects your store to Google for WooCommerce.',
+				'google-listings-and-ads'
+			),
+			connected: jetpack?.active === 'yes',
+			detail: jetpack ? getConnectedJetpackInfo( jetpack ) : '',
+			canDisconnect: false,
+		},
+		{
+			id: 'google',
+			section: ACCOUNT_SECTION.REQUIRED,
+			appearance: APPEARANCE.GOOGLE,
+			title: __( 'Google', 'google-listings-and-ads' ),
+			description: __(
+				'The account you use to log in to Google products.',
+				'google-listings-and-ads'
+			),
+			connected: Boolean( google?.email ),
+			detail: google?.email || '',
+			canDisconnect: false,
+		},
+		{
+			id: 'merchant-center',
+			section: ACCOUNT_SECTION.REQUIRED,
+			appearance: APPEARANCE.GOOGLE_MERCHANT_CENTER,
+			title: __( 'Merchant Center', 'google-listings-and-ads' ),
+			description: __(
+				'Where your product catalog is synced to appear on Google.',
+				'google-listings-and-ads'
+			),
+			connected: hasGoogleMCConnection,
+			detail: googleMCAccount?.id ? String( googleMCAccount.id ) : '',
+			canDisconnect: false,
+		},
+		{
+			id: 'google-ads',
+			section: ACCOUNT_SECTION.REQUIRED,
+			appearance: APPEARANCE.GOOGLE_ADS,
+			title: __( 'Google Ads', 'google-listings-and-ads' ),
+			description: __(
+				'Where your ad campaigns and conversion tracking are managed.',
+				'google-listings-and-ads'
+			),
+			connected: hasAdsAccount,
+			detail: googleAdsAccount?.id
+				? toAccountText( googleAdsAccount.id )
+				: '',
+			// Individual disconnect is only possible today for the Ads
+			// account, and only while a Merchant Center account is connected.
+			canDisconnect: hasAdsAccount && hasGoogleMCConnection,
+		},
+		{
+			id: 'youtube',
+			section: ACCOUNT_SECTION.GROW,
+			appearance: APPEARANCE.YOUTUBE,
+			title: __( 'YouTube', 'google-listings-and-ads' ),
+			description: __(
+				'Promote your products on YouTube via Shopping ads.',
+				'google-listings-and-ads'
+			),
+			connected: isYouTubeConnected,
+			detail: youTubeAccount?.channel?.label || '',
+			canDisconnect: false,
+			// YouTube offers an in-page connect action when disconnected.
+			canConnect: true,
+		},
+	];
+
+	return { accounts, isLoading };
+}
