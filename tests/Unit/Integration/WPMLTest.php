@@ -24,8 +24,111 @@ class WPMLTest extends UnitTest {
 		remove_all_filters( 'wpml_default_language' );
 		remove_all_filters( 'wpml_post_language_details' );
 		remove_all_filters( 'wcml_raw_price_amount' );
+		remove_all_filters( 'wpml_current_language' );
+		remove_all_actions( 'wpml_switch_language' );
 
 		parent::tearDown();
+	}
+
+	public function test_run_in_all_languages_invokes_callback_and_returns_value_when_not_active(): void {
+		$integration = $this->create_integration( false );
+
+		$called = false;
+		$result = $integration->run_in_all_languages(
+			function () use ( &$called ) {
+				$called = true;
+				return 'the-result';
+			}
+		);
+
+		$this->assertTrue( $called );
+		$this->assertSame( 'the-result', $result );
+	}
+
+	public function test_run_in_all_languages_does_not_switch_language_when_not_active(): void {
+		$integration = $this->create_integration( false );
+
+		$switched = [];
+		add_action(
+			'wpml_switch_language',
+			function ( $code ) use ( &$switched ) {
+				$switched[] = $code;
+			}
+		);
+
+		$integration->run_in_all_languages(
+			function () {
+				return null;
+			}
+		);
+
+		$this->assertSame( [], $switched );
+	}
+
+	public function test_run_in_all_languages_switches_to_all_and_restores_when_active(): void {
+		$integration = $this->create_integration( true );
+
+		// Pretend the site is currently in French.
+		add_filter(
+			'wpml_current_language',
+			function () {
+				return 'fr';
+			}
+		);
+
+		$switched          = [];
+		$language_in_scope = null;
+		add_action(
+			'wpml_switch_language',
+			function ( $code ) use ( &$switched ) {
+				$switched[] = $code;
+			}
+		);
+
+		$result = $integration->run_in_all_languages(
+			function () use ( &$switched, &$language_in_scope ) {
+				// The switch to 'all' must have happened before the callback runs.
+				$language_in_scope = end( $switched );
+				return 'done';
+			}
+		);
+
+		$this->assertSame( 'done', $result );
+		// Switched to 'all' before the callback, then restored to the captured language.
+		$this->assertSame( [ 'all', 'fr' ], $switched );
+		$this->assertSame( 'all', $language_in_scope );
+	}
+
+	public function test_run_in_all_languages_restores_language_even_when_callback_throws(): void {
+		$integration = $this->create_integration( true );
+
+		add_filter(
+			'wpml_current_language',
+			function () {
+				return 'en';
+			}
+		);
+
+		$switched = [];
+		add_action(
+			'wpml_switch_language',
+			function ( $code ) use ( &$switched ) {
+				$switched[] = $code;
+			}
+		);
+
+		try {
+			$integration->run_in_all_languages(
+				function () {
+					throw new \RuntimeException( 'boom' );
+				}
+			);
+			$this->fail( 'Expected exception was not thrown.' );
+		} catch ( \RuntimeException $e ) {
+			$this->assertSame( 'boom', $e->getMessage() );
+		}
+
+		$this->assertSame( [ 'all', 'en' ], $switched );
 	}
 
 	public function test_get_languages_returns_empty_when_not_active(): void {
