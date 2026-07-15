@@ -200,7 +200,7 @@ class MerchantApiClientTest extends UnitTest {
 
 		$body = (string) $request->getBody();
 		$this->assertStringContainsString( 'Content-ID: <item0>', $body );
-		$this->assertStringContainsString( 'POST /products/v1/a/productInputs:insert', $body );
+		$this->assertStringContainsString( 'POST /products/v1/a/productInputs:insert HTTP/1.1', $body );
 		$this->assertStringContainsString( '"offerId":"gla_10"', $body );
 	}
 
