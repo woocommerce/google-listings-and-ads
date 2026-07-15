@@ -271,7 +271,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 
 		$backoff = ( 2 ** max( 0, $retries - 1 ) ) * 1000;
 
-		return (int) min( $backoff, $max_delay ) + wp_rand( 0, 1000 );
+		return (int) min( $backoff + wp_rand( 0, 1000 ), $max_delay );
 	}
 
 	/**
@@ -289,7 +289,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 
 		$path = $request->getUri()->getPath();
 
-		return false !== strpos( $path, 'productInputs' ) || false !== strpos( $path, 'batch' );
+		return false !== strpos( $path, 'productInputs' ) || '/batch' === substr( $path, -6 );
 	}
 
 	/**
