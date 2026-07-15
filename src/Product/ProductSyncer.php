@@ -108,7 +108,7 @@ class ProductSyncer implements Service {
 	/**
 	 * Submit MAPI ProductInput entries to Merchant Center via productInputs.insert.
 	 *
-	 * @param array<int, array{product: WC_Product, country: string, input: ProductInput}> $entries
+	 * @param array<int, array{product: WC_Product, country: string, input: ProductInput, hash: string}> $entries
 	 *
 	 * @return BatchProductResponse Containing both the synced and invalid products.
 	 *
