@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountRegionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
@@ -20,6 +22,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionClass;
+use ReflectionMethod;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -29,6 +32,9 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
  */
 class SettingsTest extends UnitTest {
+
+	/** @var MockObject|MapiAccountRegionsService */
+	protected $regions_service;
 
 	/** @var MockObject|MarketService */
 	protected $market_service;
@@ -60,6 +66,7 @@ class SettingsTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
+		$this->regions_service     = $this->createMock( MapiAccountRegionsService::class );
 		$this->market_service      = $this->createMock( MarketService::class );
 		$this->options             = $this->createMock( OptionsInterface::class );
 		$this->wc_proxy            = $this->createMock( WC::class );
@@ -69,6 +76,7 @@ class SettingsTest extends UnitTest {
 		$this->shipping_zone       = $this->createMock( ShippingZone::class );
 
 		$this->container = new Container();
+		$this->container->addShared( MapiAccountRegionsService::class, $this->regions_service );
 		$this->container->addShared( MarketService::class, $this->market_service );
 		$this->container->addShared( OptionsInterface::class, $this->options );
 		$this->container->addShared( WC::class, $this->wc_proxy );
@@ -79,6 +87,60 @@ class SettingsTest extends UnitTest {
 
 		$this->settings = new Settings();
 		$this->settings->set_container( $this->container );
+	}
+
+	/**
+	 * Invoke the protected sync_shipping_regions().
+	 *
+	 * @param array $regions
+	 */
+	protected function sync_regions( array $regions ): void {
+		$method = new ReflectionMethod( Settings::class, 'sync_shipping_regions' );
+		$method->setAccessible( true );
+		$method->invoke( $this->settings, $regions );
+	}
+
+	public function test_sync_shipping_regions_noop_when_empty() {
+		$this->regions_service->expects( $this->never() )->method( 'insert_region' );
+		$this->regions_service->expects( $this->never() )->method( 'update_region' );
+
+		$this->sync_regions( [] );
+	}
+
+	public function test_sync_shipping_regions_inserts_new_regions() {
+		$region = [ 'displayName' => '90210' ];
+
+		$this->regions_service->expects( $this->once() )
+			->method( 'insert_region' )
+			->with( '90210', $region );
+		$this->regions_service->expects( $this->never() )
+			->method( 'update_region' );
+
+		$this->sync_regions( [ '90210' => $region ] );
+	}
+
+	public function test_sync_shipping_regions_updates_existing_region_on_400() {
+		$region = [ 'displayName' => '90210' ];
+
+		$this->regions_service->expects( $this->once() )
+			->method( 'insert_region' )
+			->willThrowException( new MerchantApiException( 400, [], __METHOD__ ) );
+		$this->regions_service->expects( $this->once() )
+			->method( 'update_region' )
+			->with( '90210', $region, 'displayName,postalCodeArea' );
+
+		$this->sync_regions( [ '90210' => $region ] );
+	}
+
+	public function test_sync_shipping_regions_rethrows_non_400() {
+		$this->regions_service->expects( $this->once() )
+			->method( 'insert_region' )
+			->willThrowException( new MerchantApiException( 401, [], __METHOD__ ) );
+		$this->regions_service->expects( $this->never() )
+			->method( 'update_region' );
+
+		$this->expectException( MerchantApiException::class );
+		$this->sync_regions( [ '90210' => [ 'displayName' => '90210' ] ] );
 	}
 
 	public function test_should_sync_shipping_returns_true_when_market_service_has_syncable_markets(): void {
@@ -156,12 +218,12 @@ class SettingsTest extends UnitTest {
 		$this->assertInstanceOf( DBShippingSettingsAdapter::class, $adapter );
 
 		$by_country = [];
-		foreach ( $adapter->getServices() as $service ) {
-			$by_country[ $service->getDeliveryCountry() ] = $service;
+		foreach ( $adapter->get_services() as $service ) {
+			$by_country[ $service['deliveryCountries'][0] ] = $service;
 		}
 
-		$this->assertSame( 'USD', $by_country['US']->getCurrency() );
-		$this->assertSame( 'EUR', $by_country['FR']->getCurrency() );
+		$this->assertSame( 'USD', $by_country['US']['currencyCode'] );
+		$this->assertSame( 'EUR', $by_country['FR']['currencyCode'] );
 	}
 
 	public function test_generate_shipping_settings_skips_manual_markets_from_currency_map(): void {
@@ -257,12 +319,12 @@ class SettingsTest extends UnitTest {
 		$this->assertInstanceOf( DBShippingSettingsAdapter::class, $adapter );
 
 		$by_country = [];
-		foreach ( $adapter->getServices() as $service ) {
-			$by_country[ $service->getDeliveryCountry() ] = $service;
+		foreach ( $adapter->get_services() as $service ) {
+			$by_country[ $service['deliveryCountries'][0] ] = $service;
 		}
 
-		$this->assertSame( 'USD', $by_country['US']->getCurrency() );
-		$this->assertSame( 'EUR', $by_country['FR']->getCurrency() );
+		$this->assertSame( 'USD', $by_country['US']['currencyCode'] );
+		$this->assertSame( 'EUR', $by_country['FR']['currencyCode'] );
 	}
 
 	public function test_generate_shipping_settings_routes_automatic_mode_through_wc_adapter(): void {
@@ -371,22 +433,22 @@ class SettingsTest extends UnitTest {
 		$adapter = $this->invoke( 'generate_shipping_settings' );
 
 		$countries = array_map(
-			static function ( $service ) {
-				return $service->getDeliveryCountry();
+			static function ( array $service ) {
+				return $service['deliveryCountries'][0];
 			},
-			$adapter->getServices()
+			$adapter->get_services()
 		);
 
 		$this->assertContains( 'US', $countries );
 		$this->assertContains( 'FR', $countries );
 
 		$by_country = [];
-		foreach ( $adapter->getServices() as $service ) {
-			$by_country[ $service->getDeliveryCountry() ] = $service;
+		foreach ( $adapter->get_services() as $service ) {
+			$by_country[ $service['deliveryCountries'][0] ] = $service;
 		}
 
 		// The France service carries the market's own currency.
-		$this->assertSame( 'EUR', $by_country['FR']->getCurrency() );
+		$this->assertSame( 'EUR', $by_country['FR']['currencyCode'] );
 	}
 
 	/**

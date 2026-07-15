@@ -1,5 +1,12 @@
 *** Google for WooCommerce Changelog ***
 
+= Unreleased =
+* Migrate Merchant Center reporting to the Merchant API
+* The `gla_merchant_query_response` filter is removed as part of dropping the Content API report layer.
+
+= 3.7.3 - 2026-07-08 =
+* Add - Added update notification when plugin version 3.8.0 is available
+
 = 3.7.2 - 2026-06-29 =
 * Add - Added an option to connect a Merchant Center account when a service-based user adds physical products.
 * Dev - Remove $_GET parameter overrides in Options::get_ads_id() and Options::get_merchant_id().

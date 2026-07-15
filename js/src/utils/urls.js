@@ -19,7 +19,6 @@ export const pagePaths = {
 	reports: '/google/reports',
 	productFeed: '/google/product-feed',
 	settings: '/google/settings',
-	shipping: '/google/shipping',
 };
 
 export const subpaths = {
@@ -82,10 +81,6 @@ export const getProductFeedUrl = ( query = null ) => {
 
 export const getSettingsUrl = () => {
 	return getNewPath( null, settingsPath, null );
-};
-
-export const getShippingUrl = () => {
-	return getNewPath( null, pagePaths.shipping, null );
 };
 
 export const geReportsUrl = () => {

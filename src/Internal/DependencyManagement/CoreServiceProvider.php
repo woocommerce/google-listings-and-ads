@@ -18,6 +18,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AssetSuggestionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection as GoogleConnection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
@@ -39,8 +40,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Event\ClearProductStatsCache;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiPromotionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\YouTube\Connection as YouTubeConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
@@ -331,11 +332,12 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			ProductFactory::class,
 			AttributeMappingRulesQuery::class,
 			MarketService::class,
-			WPML::class
+			WPML::class,
+			AttributeManager::class
 		);
 		$this->share_with_tags(
 			ProductSyncer::class,
-			GoogleProductService::class,
+			MapiProductInputsService::class,
 			BatchProductHelper::class,
 			ProductHelper::class,
 			MerchantCenterService::class,
@@ -352,7 +354,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		);
 		$this->share_with_tags(
 			CouponSyncer::class,
-			GooglePromotionService::class,
+			MapiPromotionsService::class,
+			MapiDataSourcesService::class,
 			CouponHelper::class,
 			ValidatorInterface::class,
 			MerchantCenterService::class,
