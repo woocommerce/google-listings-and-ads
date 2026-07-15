@@ -22,7 +22,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class MerchantApiClient {
 
-	private const BATCH_BOUNDARY = 'gla_mapi_batch_boundary';
+	private const BATCH_BOUNDARY_PREFIX = 'gla_mapi_batch_boundary';
 
 	/** @var ClientInterface */
 	protected $http;
@@ -200,14 +200,14 @@ class MerchantApiClient {
 	 * @return Request
 	 */
 	protected function build_batch_request( array $requests ): Request {
-		$boundary = self::BATCH_BOUNDARY . '_' . wp_generate_password( 16, false );
+		$boundary = self::BATCH_BOUNDARY_PREFIX . '_' . wp_generate_password( 16, false );
 		$body     = '';
 
 		foreach ( $requests as $key => $sub ) {
 			$body .= "--{$boundary}\r\n";
 			$body .= "Content-Type: application/http\r\n";
 			$body .= "Content-ID: <item{$key}>\r\n\r\n";
-			$body .= sprintf( "%s /%s\r\n", $sub['method'], ltrim( $sub['path'], '/' ) );
+			$body .= sprintf( "%s /%s HTTP/1.1\r\n", $sub['method'], ltrim( $sub['path'], '/' ) );
 
 			if ( isset( $sub['body'] ) ) {
 				$body .= "Content-Type: application/json\r\n\r\n";
@@ -237,6 +237,7 @@ class MerchantApiClient {
 	 */
 	protected function parse_batch_response( ResponseInterface $response ): array {
 		if ( ! preg_match( '/boundary=(?:"([^"]+)"|([^;\s]+))/', $response->getHeaderLine( 'Content-Type' ), $matches ) ) {
+			do_action( 'woocommerce_gla_error', 'Merchant API batch response had no parseable multipart boundary.', __METHOD__ );
 			return [];
 		}
 
