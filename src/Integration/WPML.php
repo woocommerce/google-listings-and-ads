@@ -33,6 +33,41 @@ class WPML implements IntegrationInterface {
 	public function init(): void {}
 
 	/**
+	 * Runs the given callback with WPML switched to the "all languages" context.
+	 *
+	 * WPML restricts every post query to the current language, so any product query
+	 * the plugin runs in a background job (sync, delete, cleanup, stale detection,
+	 * disconnect) would otherwise only ever see one language's products. Switching to
+	 * the reserved `all` language code makes WPML emit an all-languages WHERE clause
+	 * and stop translating queried IDs, so the plugin operates on every translation.
+	 *
+	 * When WPML is not active the callback is simply invoked, leaving single-language
+	 * and non-multilingual sites behaving exactly as before.
+	 *
+	 * @template T
+	 *
+	 * @param callable():T $callback The work to run in the all-languages context.
+	 *
+	 * @return T The callback's return value.
+	 */
+	public function run_in_all_languages( callable $callback ) {
+		if ( ! $this->is_active() ) {
+			return $callback();
+		}
+
+		$previous_language = apply_filters( 'wpml_current_language', null );
+
+		do_action( 'wpml_switch_language', 'all' );
+
+		try {
+			return $callback();
+		} finally {
+			// Restore the language that was active before we switched.
+			do_action( 'wpml_switch_language', $previous_language );
+		}
+	}
+
+	/**
 	 * Returns the site's default WPML language code.
 	 *
 	 * @return string ISO 639-1 language code, or empty when unavailable.
