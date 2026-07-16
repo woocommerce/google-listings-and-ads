@@ -67,13 +67,13 @@ class MarketServiceTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->target_audience         = $this->createMock( TargetAudience::class );
-		$this->options                 = $this->createMock( OptionsInterface::class );
-		$this->shipping_rate_query     = $this->createMock( ShippingRateQuery::class );
-		$this->shipping_time_query     = $this->createMock( ShippingTimeQuery::class );
-		$this->wc                      = $this->createMock( WC::class );
-		$this->wpml                    = $this->createMock( WPML::class );
-		$this->job_repository          = $this->createMock( JobRepository::class );
+		$this->target_audience     = $this->createMock( TargetAudience::class );
+		$this->options             = $this->createMock( OptionsInterface::class );
+		$this->shipping_rate_query = $this->createMock( ShippingRateQuery::class );
+		$this->shipping_time_query = $this->createMock( ShippingTimeQuery::class );
+		$this->wc                  = $this->createMock( WC::class );
+		$this->wpml                = $this->createMock( WPML::class );
+		$this->job_repository      = $this->createMock( JobRepository::class );
 
 		// A permissive producible-currency list so market validation accepts the
 		// currencies the fixtures across this file use. Producibility rejection

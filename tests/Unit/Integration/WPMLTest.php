@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Integration;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\WCMLSettingsStub;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_DateTime;
 use WC_Helper_Product;
@@ -55,12 +56,7 @@ class WPMLTest extends UnitTest {
 	public function test_get_default_currencies_empty_when_wcml_setting_malformed(): void {
 		global $woocommerce_wpml;
 		$previous         = $woocommerce_wpml;
-		$woocommerce_wpml = new class() {
-			// phpcs:ignore Squiz.Commenting.FunctionComment.Missing
-			public function get_setting( $key, $default = null ) {
-				return 'not-an-array';
-			}
-		};
+		$woocommerce_wpml = new WCMLSettingsStub( 'not-an-array' );
 
 		$this->assertSame( [], $this->create_integration( true, [], true )->get_default_currencies() );
 
@@ -70,21 +66,14 @@ class WPMLTest extends UnitTest {
 	public function test_get_default_currencies_reads_wcml_settings_and_skips_store_currency_pairings(): void {
 		global $woocommerce_wpml;
 		$previous         = $woocommerce_wpml;
-		$woocommerce_wpml = new class() {
-			// phpcs:ignore Squiz.Commenting.FunctionComment.Missing
-			public function get_setting( $key, $default = null ) {
-				if ( 'default_currencies' === $key ) {
-					return [
-						'de' => 'EUR',
-						// WCML stores 0 for a language that keeps the store currency.
-						'en' => 0,
-						'fr' => 'EUR',
-					];
-				}
-
-				return $default;
-			}
-		};
+		$woocommerce_wpml = new WCMLSettingsStub(
+			[
+				'de' => 'EUR',
+				// WCML stores 0 for a language that keeps the store currency.
+				'en' => 0,
+				'fr' => 'EUR',
+			]
+		);
 
 		$integration = $this->create_integration( true, [], true );
 
