@@ -184,6 +184,109 @@ test.describe( 'Settings', () => {
 		} );
 	} );
 
+	test.describe( 'Accounts subtab', () => {
+		test.beforeAll( async () => {
+			await settingsPage.mockAdsAccountConnected();
+			await settingsPage.mockMCConnected();
+			await settingsPage.mockYouTubeAccountNotConnected();
+			await settingsPage.gotoAccounts();
+			await page
+				.getByRole( 'button', {
+					name: 'Disconnect from all accounts',
+				} )
+				.waitFor();
+		} );
+
+		test( 'should render the redesigned account-management UI', async () => {
+			const accountTitles = page.locator(
+				'.gla-connected-accounts__title'
+			);
+
+			await expect( page ).toHaveURL(
+				/path=%2Fgoogle%2Fsettings&section=accounts$/
+			);
+			await expect(
+				page.getByRole( 'heading', { name: 'Required' } )
+			).toBeVisible();
+			await expect(
+				page.getByText( 'The extension needs these to run.' )
+			).toBeVisible();
+			await expect(
+				page.getByRole( 'heading', { name: 'Grow your reach' } )
+			).toBeVisible();
+			await expect(
+				page.getByText(
+					'Optional. Connect more Google services to your store.'
+				)
+			).toBeVisible();
+			await expect(
+				accountTitles.filter( { hasText: /^WordPress\.com$/ } )
+			).toBeVisible();
+			await expect(
+				accountTitles.filter( { hasText: /^Google$/ } )
+			).toBeVisible();
+			await expect(
+				accountTitles.filter( { hasText: /^Merchant Center$/ } )
+			).toBeVisible();
+			await expect(
+				accountTitles.filter( { hasText: /^Google Ads$/ } )
+			).toBeVisible();
+			await expect(
+				accountTitles.filter( { hasText: /^YouTube$/ } )
+			).toBeVisible();
+			await expect(
+				page.getByRole( 'button', {
+					name: 'Disconnect from all accounts',
+				} )
+			).toBeVisible();
+		} );
+
+		test( 'should not render General settings content on the Accounts subtab', async () => {
+			await expect(
+				page.getByRole( 'heading', {
+					name: 'Improve conversion accuracy',
+				} )
+			).toHaveCount( 0 );
+			await expect(
+				page.getByRole( 'checkbox', {
+					name: 'Send Enhanced Conversions data to Google Ads',
+				} )
+			).toHaveCount( 0 );
+			await expect(
+				page.getByRole( 'heading', { name: 'Contact information' } )
+			).toHaveCount( 0 );
+			await expect(
+				page.getByText( 'Tax rate (required for U.S. only)' )
+			).toHaveCount( 0 );
+		} );
+
+		test( 'should request a YouTube connection from the Accounts subtab', async () => {
+			await settingsPage.mockYouTubeAccountNotConnected();
+			await settingsPage
+				.withFulfillTimes( 1 )
+				.mockYouTubeConnect(
+					'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsettings&section=accounts&from-connect=1'
+				);
+			await settingsPage.gotoAccounts();
+
+			const requestPromise = settingsPage.registerYouTubeConnectRequest();
+
+			await settingsPage.getYouTubeConnectButton().click();
+
+			const request = await requestPromise;
+
+			expect( request.url() ).toContain( 'next_page_name=setup-youtube' );
+			await expect( page ).toHaveURL(
+				/path=%2Fgoogle%2Fsettings&section=accounts&from-connect=1$/
+			);
+			await expect(
+				page.getByRole( 'button', {
+					name: 'Disconnect from all accounts',
+				} )
+			).toBeVisible();
+		} );
+	} );
+
 	test.describe( 'YouTube Shopping', () => {
 		test.describe( 'when account is not connected', () => {
 			test( 'should show connect button when account is not connected', async () => {

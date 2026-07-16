@@ -67,6 +67,27 @@ describe( 'useConnectedAccounts', () => {
 		useServiceBasedMerchant.mockReturnValue( false );
 	} );
 
+	it( 'shows the Merchant Center setup action when Merchant Center is disconnected', () => {
+		useGoogleMCAccount.mockReturnValue( {
+			googleMCAccount: {
+				id: 0,
+				status: 'disconnected',
+			},
+			hasFinishedResolution: true,
+			hasGoogleMCConnection: false,
+		} );
+
+		const { result } = renderHook( () => useConnectedAccounts() );
+		const merchantCenterAccount = result.current.accounts.find(
+			( account ) => account.id === 'merchant-center'
+		);
+
+		expect( merchantCenterAccount ).toMatchObject( {
+			connected: false,
+			canConnect: true,
+		} );
+	} );
+
 	it( 'hides the YouTube row until Merchant Center is connected', () => {
 		useGoogleMCAccount.mockReturnValue( {
 			googleMCAccount: {
@@ -139,8 +160,7 @@ describe( 'useConnectedAccounts', () => {
 		expect( youTubeAccount ).toMatchObject( {
 			connected: true,
 			detail: 'My YouTube Channel',
-			detailUrl:
-				'https://www.youtube.com/channel/UC1234567890abcdef',
+			detailUrl: 'https://www.youtube.com/channel/UC1234567890abcdef',
 			canDisconnect: true,
 		} );
 	} );
