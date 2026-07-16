@@ -33,6 +33,19 @@ class WPML implements IntegrationInterface {
 	public function init(): void {}
 
 	/**
+	 * Returns whether product prices can be converted into another currency.
+	 *
+	 * This is the exact availability condition used by the price conversion
+	 * methods below: WPML active with WCML multi-currency enabled. Markets
+	 * priced in a non-store currency can only be synced when this holds.
+	 *
+	 * @return bool
+	 */
+	public function can_convert_currency(): bool {
+		return $this->is_active() && $this->is_wcml_multi_currency_on();
+	}
+
+	/**
 	 * Runs the given callback with WPML switched to the "all languages" context.
 	 *
 	 * WPML restricts every post query to the current language, so any product query
