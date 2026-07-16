@@ -11,10 +11,12 @@ import useGoogleAccount from '~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useYouTubeAccount from '~/hooks/useYouTubeAccount';
+import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import getConnectedJetpackInfo from '~/utils/getConnectedJetpackInfo';
 import toAccountText from '~/utils/toAccountText';
 import { APPEARANCE } from '~/components/account-card';
 import { GOOGLE_ADS_ACCOUNT_STATUS, YOUTUBE_ACCOUNT_STATUS } from '~/constants';
+import { YOUTUBE_ACCOUNT } from '../disconnect-modal';
 
 /**
  * Account section keys used to group the connected account rows.
@@ -38,6 +40,7 @@ const { CONNECTED, INCOMPLETE } = GOOGLE_ADS_ACCOUNT_STATUS;
  * @property {boolean} connected Whether the account is currently connected.
  * @property {string} [detail] Human-readable account detail (email, id, channel).
  * @property {boolean} canDisconnect Whether an individual disconnect action is offered today.
+ * @property {string} [disconnectTarget] Disconnect-modal target used when `canDisconnect` is true.
  * @property {boolean} [canConnect] Whether the account offers an in-page connect action when disconnected.
  */
 
@@ -62,6 +65,7 @@ export default function useConnectedAccounts() {
 		useGoogleAdsAccount();
 	const { youTubeAccount, hasFinishedResolution: hasResolvedYouTube } =
 		useYouTubeAccount();
+	const serviceBasedMerchant = useServiceBasedMerchant();
 
 	const isLoading = ! (
 		hasResolvedJetpack &&
@@ -120,6 +124,10 @@ export default function useConnectedAccounts() {
 			connected: hasGoogleMCConnection,
 			detail: googleMCAccount?.id ? String( googleMCAccount.id ) : '',
 			canDisconnect: false,
+			// Offer an in-page connect action when Merchant Center is not
+			// connected and the store is no longer classified as service-based
+			// (i.e. it now has physical products that need syncing to Google).
+			canConnect: ! serviceBasedMerchant,
 		},
 		{
 			id: 'google-ads',
@@ -134,9 +142,10 @@ export default function useConnectedAccounts() {
 			detail: googleAdsAccount?.id
 				? toAccountText( googleAdsAccount.id )
 				: '',
-			// Individual disconnect is only possible today for the Ads
-			// account, and only while a Merchant Center account is connected.
-			canDisconnect: hasAdsAccount && hasGoogleMCConnection,
+			// Individual disconnect is intentionally not offered for the Ads
+			// account: the extension does not function properly without it.
+			// Use "Disconnect from all accounts" to remove it.
+			canDisconnect: false,
 		},
 		{
 			id: 'youtube',
@@ -149,7 +158,9 @@ export default function useConnectedAccounts() {
 			),
 			connected: isYouTubeConnected,
 			detail: youTubeAccount?.channel?.label || '',
-			canDisconnect: false,
+			// YouTube can be individually disconnected while connected.
+			canDisconnect: isYouTubeConnected,
+			disconnectTarget: YOUTUBE_ACCOUNT,
 			// YouTube offers an in-page connect action when disconnected.
 			canConnect: true,
 		},

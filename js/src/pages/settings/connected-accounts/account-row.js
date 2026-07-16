@@ -10,6 +10,7 @@ import { moreVertical } from '@wordpress/icons';
  */
 import Badge from '~/components/badge';
 import YouTubeConnectButton from './youtube-connect-button';
+import MerchantCenterConnectButton from './merchant-center-connect-button';
 import { ACCOUNT_LOGOS } from './account-logos';
 
 /**
@@ -18,15 +19,17 @@ import { ACCOUNT_LOGOS } from './account-logos';
  *
  * @param {Object} props Component props.
  * @param {import('./useConnectedAccounts').ConnectedAccountItem} props.account Account item.
- * @param {() => void} props.onDisconnect Called when the (Ads-only) Disconnect action is chosen.
+ * @param {(target: string) => void} props.onDisconnect Called with the account's disconnect-modal target when the Disconnect action is chosen.
  * @return {JSX.Element} The row indicator.
  */
 function RowIndicator( { account, onDisconnect } ) {
 	if ( ! account.connected ) {
-		// Only YouTube can currently be in a not-connected state within these
-		// groups; render its connect action.
+		// Render the account's in-page connect action, where one is offered.
 		if ( account.id === 'youtube' ) {
 			return <YouTubeConnectButton />;
+		}
+		if ( account.id === 'merchant-center' ) {
+			return <MerchantCenterConnectButton />;
 		}
 		return null;
 	}
@@ -48,7 +51,7 @@ function RowIndicator( { account, onDisconnect } ) {
 								isDestructive
 								onClick={ () => {
 									onClose();
-									onDisconnect();
+									onDisconnect( account.disconnectTarget );
 								} }
 							>
 								{ __(
@@ -70,7 +73,7 @@ function RowIndicator( { account, onDisconnect } ) {
  *
  * @param {Object} props Component props.
  * @param {import('./useConnectedAccounts').ConnectedAccountItem} props.account Account item.
- * @param {() => void} props.onDisconnect Called when the (Ads-only) Disconnect action is chosen.
+ * @param {(target: string) => void} props.onDisconnect Called with the account's disconnect-modal target when the Disconnect action is chosen.
  * @return {JSX.Element} The account row.
  */
 export default function AccountRow( { account, onDisconnect } ) {

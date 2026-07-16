@@ -13,7 +13,7 @@ import AppButton from '~/components/app-button';
 import WarningIcon from '~/components/warning-icon';
 import { useAppDispatch } from '~/data';
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
-import { ALL_ACCOUNTS, ADS_ACCOUNT, ADS_ONLY } from './constants';
+import { ALL_ACCOUNTS, ADS_ONLY, YOUTUBE_ACCOUNT } from './constants';
 
 const textDict = {
 	[ ALL_ACCOUNTS ]: {
@@ -64,27 +64,23 @@ const textDict = {
 		],
 	},
 
-	[ ADS_ACCOUNT ]: {
-		title: __( 'Disconnect Google Ads account', 'google-listings-and-ads' ),
+	[ YOUTUBE_ACCOUNT ]: {
+		title: __( 'Disconnect YouTube account', 'google-listings-and-ads' ),
 		confirmButton: __(
-			'Disconnect Google Ads Account',
+			'Disconnect YouTube account',
 			'google-listings-and-ads'
 		),
 		confirmation: __(
-			'Yes, I want to disconnect my Google Ads account.',
+			'Yes, I want to disconnect my YouTube account.',
 			'google-listings-and-ads'
 		),
 		contents: [
 			__(
-				'I understand that I am disconnecting my Google Ads account from this WooCommerce extension.',
+				'I understand that I am disconnecting my YouTube account from this WooCommerce extension.',
 				'google-listings-and-ads'
 			),
 			__(
-				'Any ongoing campaigns will continue to run. They can be managed, edited, or deleted manually from Google Ads (ads.google.com).',
-				'google-listings-and-ads'
-			),
-			__(
-				'Some configurations for Google Ads created through WooCommerce may be lost. This cannot be undone.',
+				'Your products will no longer be promoted on YouTube via Shopping ads. You can reconnect a YouTube account at any time.',
 				'google-listings-and-ads'
 			),
 		],
@@ -103,8 +99,8 @@ export default function ConfirmModal( {
 	const { hasGoogleMCConnection } = useGoogleMCAccount();
 
 	let targetTextDict = ALL_ACCOUNTS;
-	if ( disconnectTarget === ADS_ACCOUNT ) {
-		targetTextDict = ADS_ACCOUNT;
+	if ( disconnectTarget === YOUTUBE_ACCOUNT ) {
+		targetTextDict = YOUTUBE_ACCOUNT;
 	} else if ( disconnectTarget === ALL_ACCOUNTS && ! hasGoogleMCConnection ) {
 		targetTextDict = ADS_ONLY;
 	}
@@ -120,10 +116,14 @@ export default function ConfirmModal( {
 	};
 
 	const handleConfirmClick = () => {
-		let disconnect =
-			disconnectTarget === ALL_ACCOUNTS
-				? dispatcher.disconnectAllAccounts
-				: dispatcher.disconnectGoogleAdsAccount;
+		let disconnect;
+		if ( disconnectTarget === ALL_ACCOUNTS ) {
+			disconnect = dispatcher.disconnectAllAccounts;
+		} else if ( disconnectTarget === YOUTUBE_ACCOUNT ) {
+			disconnect = dispatcher.disconnectYouTubeAccount;
+		} else {
+			disconnect = dispatcher.disconnectGoogleAdsAccount;
+		}
 
 		if ( disconnectAction ) {
 			disconnect = disconnectAction;

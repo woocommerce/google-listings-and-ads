@@ -12,7 +12,7 @@ import AccountRow from './account-row';
  * @param {string} props.title Group title.
  * @param {string} props.description Group description.
  * @param {import('./useConnectedAccounts').ConnectedAccountItem[]} props.accounts Accounts in this group.
- * @param {() => void} props.onDisconnect Called when the (Ads-only) Disconnect action is chosen.
+ * @param {(target: string) => void} props.onDisconnect Called with the account's disconnect-modal target when a Disconnect action is chosen.
  * @return {JSX.Element} The group card.
  */
 export default function AccountsGroupCard( {

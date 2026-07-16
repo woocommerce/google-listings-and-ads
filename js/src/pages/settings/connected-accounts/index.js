@@ -13,10 +13,7 @@ import useAdminUrl from '~/hooks/useAdminUrl';
 import AppButton from '~/components/app-button';
 import SpinnerCard from '~/components/spinner-card';
 import { queueRecordGlaEvent } from '~/utils/tracks';
-import DisconnectModal, {
-	ALL_ACCOUNTS,
-	ADS_ACCOUNT,
-} from '../disconnect-modal';
+import DisconnectModal, { ALL_ACCOUNTS } from '../disconnect-modal';
 import useConnectedAccounts, { ACCOUNT_SECTION } from './useConnectedAccounts';
 import AccountsGroupCard from './accounts-group-card';
 import './index.scss';
@@ -44,7 +41,7 @@ const SECTIONS = [
  * Accounts are disconnected from the Settings > Accounts subtab.
  *
  * @event gla_disconnected_accounts
- * @property {string} context (`all-accounts`|`ads-account`) - indicate which accounts have been disconnected.
+ * @property {string} context (`all-accounts`|`youtube-account`) - indicate which accounts have been disconnected.
  */
 
 /**
@@ -77,7 +74,11 @@ export default function ConnectedAccounts() {
 	};
 
 	if ( isLoading ) {
-		return <SpinnerCard />;
+		return (
+			<div className="gla-connected-accounts">
+				<SpinnerCard />
+			</div>
+		);
 	}
 
 	return (
@@ -112,7 +113,7 @@ export default function ConnectedAccounts() {
 						title={ section.title }
 						description={ section.description }
 						accounts={ sectionAccounts }
-						onDisconnect={ () => setOpenedModal( ADS_ACCOUNT ) }
+						onDisconnect={ setOpenedModal }
 					/>
 				);
 			} ) }
