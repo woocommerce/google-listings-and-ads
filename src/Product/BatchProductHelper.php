@@ -302,7 +302,11 @@ class BatchProductHelper implements Service {
 					];
 				}
 
-				foreach ( $this->market_service->get_markets() as $market_id => $market ) {
+				// Participating markets only: a market priced in a non-store
+				// currency sits out while conversion is unavailable, because
+				// submitting unconverted prices against its currency-derived
+				// label and shipping service is rejected by Google.
+				foreach ( $this->market_service->get_participating_markets() as $market_id => $market ) {
 					if ( 'primary' === $market_id ) {
 						continue;
 					}

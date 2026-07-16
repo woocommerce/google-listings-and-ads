@@ -166,7 +166,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( PluginUpdate::class, JobRepository::class );
 
 		// Share shipping settings syncer job and hooks.
-		$this->share_action_scheduler_job( UpdateShippingSettings::class, MerchantCenterService::class, GoogleSettings::class, MarketService::class );
+		$this->share_action_scheduler_job( UpdateShippingSettings::class, MerchantCenterService::class, GoogleSettings::class, MarketService::class, MerchantStatuses::class );
 		$this->share_with_tags( Shipping\SyncerHooks::class, MerchantCenterService::class, GoogleSettings::class, JobRepository::class );
 
 		// Share plugin update jobs
