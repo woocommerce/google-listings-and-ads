@@ -296,11 +296,20 @@ class BatchProductHelper implements Service {
 						continue;
 					}
 
+					// Each primary language entry is priced in that language's
+					// WooCommerce Multilingual default currency; a language
+					// without a pairing keeps the store currency.
+					$primary_currency = '';
+					if ( $wpml_active ) {
+						$entry_language   = '' !== $product_language ? $product_language : $this->wpml->get_default_language_code();
+						$primary_currency = $this->wpml->get_default_currency_for_language( $entry_language );
+					}
+
 					// Add shipping for all countries across all markets.
 					$product_entries[] = [
 						'product' => $product,
 						'country' => $main_feed_label,
-						'input'   => $this->generate_product_input( $product, $main_feed_label, $main_feed_label, $this->market_service->get_all_countries(), $mapping_rules, $product_language ),
+						'input'   => $this->generate_product_input( $product, $main_feed_label, $main_feed_label, $this->market_service->get_all_countries(), $mapping_rules, $product_language, $primary_currency ),
 					];
 				}
 
@@ -341,7 +350,7 @@ class BatchProductHelper implements Service {
 					$product_entries[] = [
 						'product' => $product,
 						'country' => $market['country'],
-						'input'   => $this->generate_product_input( $product, $market['country'], $market_feed_label, [ $market['country'] ], $mapping_rules, $product_language, $market_currency ),
+						'input'   => $this->generate_product_input( $product, $market['country'], $market_feed_label, [ $market['country'] ], $mapping_rules, $product_language, $market_currency, self::extract_exchange_rate( $market ) ),
 					];
 				}
 
@@ -372,10 +381,11 @@ class BatchProductHelper implements Service {
 	 * @param array      $mapping_rules      Attribute mapping rules to apply.
 	 * @param string     $language           Optional ISO 639-1 language override.
 	 * @param string     $currency_override  Optional ISO 4217 currency code overriding the store currency.
+	 * @param float      $exchange_rate      Fixed market exchange rate used to convert prices when WPML conversion is unavailable; 0.0 when unset.
 	 *
 	 * @return ProductInput
 	 */
-	protected function generate_product_input( WC_Product $product, string $target_country, string $feed_label, array $shipping_countries, array $mapping_rules, string $language = '', string $currency_override = '' ): ProductInput {
+	protected function generate_product_input( WC_Product $product, string $target_country, string $feed_label, array $shipping_countries, array $mapping_rules, string $language = '', string $currency_override = '', float $exchange_rate = 0.0 ): ProductInput {
 		$parent = $product instanceof WC_Product_Variation
 			? $this->product_helper->get_wc_product( $product->get_parent_id() )
 			: null;
@@ -385,7 +395,7 @@ class BatchProductHelper implements Service {
 			$attributes = array_merge( $this->attribute_manager->get_all_values( $parent ), $attributes );
 		}
 
-		$adapter = new WCProductInputAdapter( $product, $target_country, $parent, $shipping_countries, $attributes, $mapping_rules, $feed_label, $language, $currency_override, $this->wpml );
+		$adapter = new WCProductInputAdapter( $product, $target_country, $parent, $shipping_countries, $attributes, $mapping_rules, $feed_label, $language, $currency_override, $this->wpml, $exchange_rate );
 
 		return $adapter->get_product_input();
 	}
@@ -442,6 +452,19 @@ class BatchProductHelper implements Service {
 		return is_array( $market['currency'] ?? null )
 			? (string) ( $market['currency'][0] ?? '' )
 			: (string) ( $market['currency'] ?? '' );
+	}
+
+	/**
+	 * Extracts a market's fixed exchange rate from its config.
+	 *
+	 * @param array $market A market config array as returned by MarketService.
+	 *
+	 * @return float The rate, or 0.0 when none is configured.
+	 */
+	private static function extract_exchange_rate( array $market ): float {
+		return isset( $market['exchange_rate'] ) && is_numeric( $market['exchange_rate'] )
+			? (float) $market['exchange_rate']
+			: 0.0;
 	}
 
 	/**

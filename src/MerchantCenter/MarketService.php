@@ -111,9 +111,27 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	/**
 	 * Register the service.
 	 *
-	 * No WordPress hooks are needed for this pure data service.
+	 * Watches the WooCommerce Multilingual settings option: the primary
+	 * market's per-entry currencies are derived from its default currency per
+	 * language, so a change to those pairings must reschedule a full product
+	 * sync for the feed to follow them.
 	 */
-	public function register(): void {}
+	public function register(): void {
+		add_action(
+			'update_option__wcml_settings',
+			function ( $old_value, $value ) {
+				$old = is_array( $old_value ) ? ( $old_value['default_currencies'] ?? [] ) : [];
+				$new = is_array( $value ) ? ( $value['default_currencies'] ?? [] ) : [];
+
+				// Loose comparison: same pairings in a different order are not a change.
+				if ( $old != $new ) { // phpcs:ignore Universal.Operators.StrictComparisons.LooseNotEqual
+					$this->job_repository->get( UpdateAllProducts::class )->schedule();
+				}
+			},
+			10,
+			2
+		);
+	}
 
 	/**
 	 * Returns all markets, keyed by ID with the synthesised primary always first.
@@ -168,20 +186,48 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	public function get_primary_market(): array {
 		$mc_settings      = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
 		$default_language = [ $this->get_site_primary_language() ];
-		$default_currency = [ $this->get_site_primary_currency() ];
+
+		$languages = is_array( $mc_settings['language'] ?? null ) ? $mc_settings['language'] : $default_language;
 
 		return [
 			'id'            => 'primary',
 			'label'         => __( 'Primary Market', 'google-listings-and-ads' ),
 			'countries'     => $this->target_audience->get_target_countries(),
 			'country'       => null,
-			'language'      => is_array( $mc_settings['language'] ?? null ) ? $mc_settings['language'] : $default_language,
-			'currency'      => is_array( $mc_settings['currency'] ?? null ) ? $mc_settings['currency'] : $default_currency,
+			'language'      => $languages,
+			'currency'      => $this->get_primary_market_currencies( $languages ),
 			'feed_label'    => null,
 			'shipping_rate' => $mc_settings['shipping_rate'] ?? null,
 			'shipping_time' => $mc_settings['shipping_time'] ?? null,
 			'free_shipping' => $this->get_primary_free_shipping_threshold(),
 		];
+	}
+
+	/**
+	 * Returns the primary market's currencies, derived from the WooCommerce
+	 * Multilingual default currency per language: each primary language entry
+	 * is priced in its language's paired currency, and a language without a
+	 * pairing keeps the site primary currency. The stored primary currency
+	 * setting is never read; the per-language pairings are the single source
+	 * of truth.
+	 *
+	 * @param array $languages The primary market's language codes.
+	 *
+	 * @return string[]
+	 */
+	private function get_primary_market_currencies( array $languages ): array {
+		$currencies = [];
+
+		foreach ( $this->normalise_language_codes( $languages ) as $language ) {
+			$paired       = $this->wpml->get_default_currency_for_language( $language );
+			$currencies[] = '' !== $paired ? $paired : $this->get_site_primary_currency();
+		}
+
+		if ( empty( $currencies ) ) {
+			$currencies[] = $this->get_site_primary_currency();
+		}
+
+		return array_values( array_unique( $currencies ) );
 	}
 
 	/**
@@ -329,14 +375,13 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$merged_countries   = $merged_target['countries'] ?? [];
 			$existing_language  = $existing_mc['language'] ?? [];
 			$merged_language    = $merged_mc['language'] ?? [];
-			$existing_currency  = $existing_mc['currency'] ?? [];
-			$merged_currency    = $merged_mc['currency'] ?? [];
 
+			// The primary market's currencies are derived from the WooCommerce
+			// Multilingual per-language defaults and never written here, so a
+			// currency key on the update cannot require a resync.
 			$resync_needed = $existing_countries !== $merged_countries
 				|| array_diff( $existing_language, $merged_language ) !== []
-				|| array_diff( $merged_language, $existing_language ) !== []
-				|| array_diff( $existing_currency, $merged_currency ) !== []
-				|| array_diff( $merged_currency, $existing_currency ) !== [];
+				|| array_diff( $merged_language, $existing_language ) !== [];
 
 			if ( $resync_needed ) {
 				$this->job_repository->get( UpdateAllProducts::class )->schedule();
@@ -353,7 +398,9 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		// language and currency keys, so partial updates must not fail on them.
 		$merged = $this->apply_locale_defaults( $merged );
 
-		$this->validate_secondary_market_config( $merged );
+		$currency_source_touched = array_key_exists( 'currency', $config ) || array_key_exists( 'exchange_rate', $config );
+
+		$this->validate_secondary_market_config( $merged, $currency_source_touched );
 
 		$markets[ $id ] = $merged;
 		$this->options->update( OptionsInterface::MARKETS, $markets );
@@ -398,12 +445,18 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$existing_currency = $existing['currency'] ?? [];
 		$merged_currency   = $merged['currency'] ?? [];
 
+		// An exchange-rate change alters every feed price for the market, so
+		// it needs the same full resync as a currency change.
+		$existing_rate = isset( $existing['exchange_rate'] ) ? (float) $existing['exchange_rate'] : null;
+		$merged_rate   = isset( $merged['exchange_rate'] ) ? (float) $merged['exchange_rate'] : null;
+
 		$resync_needed = ( $existing['country'] ?? null ) !== ( $merged['country'] ?? null )
 			|| ( $existing['feed_label'] ?? null ) !== ( $merged['feed_label'] ?? null )
 			|| array_diff( $existing_language, $merged_language ) !== []
 			|| array_diff( $merged_language, $existing_language ) !== []
 			|| array_diff( $existing_currency, $merged_currency ) !== []
-			|| array_diff( $merged_currency, $existing_currency ) !== [];
+			|| array_diff( $merged_currency, $existing_currency ) !== []
+			|| $existing_rate !== $merged_rate;
 
 		if ( $resync_needed ) {
 			$this->job_repository->get( UpdateAllProducts::class )->schedule();
@@ -973,7 +1026,13 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		}
 
 		$market['language'] = [ $this->get_site_primary_language() ];
-		$market['currency'] = [ $this->get_site_primary_currency() ];
+
+		// A configured exchange rate is its own conversion source, so the
+		// market's stored currency stays meaningful without a multilingual
+		// integration and must survive the masking.
+		if ( empty( $market['exchange_rate'] ) ) {
+			$market['currency'] = [ $this->get_site_primary_currency() ];
+		}
 
 		return $market;
 	}
@@ -983,9 +1042,15 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 *
 	 * @param array $config Partial config — only supplied keys are written.
 	 *
-	 * @throws InvalidValue When `language` or `currency` is present but not an array.
+	 * @throws InvalidValue When `language` is present but not an array.
 	 */
 	private function update_primary_market_fanout( array $config ): void {
+		// The primary market's currencies are derived from the WooCommerce
+		// Multilingual default currency per language, so an incoming currency
+		// key is ignored rather than rejected: the Markets UI echoes the whole
+		// form back on every primary save.
+		unset( $config['currency'] );
+
 		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
 		$mc_updated  = false;
 
@@ -999,15 +1064,12 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$mc_updated                   = true;
 		}
 
-		foreach ( [ 'language', 'currency' ] as $key ) {
-			if ( ! array_key_exists( $key, $config ) ) {
-				continue;
+		if ( array_key_exists( 'language', $config ) ) {
+			if ( ! is_array( $config['language'] ) ) {
+				throw InvalidValue::not_array( 'language' );
 			}
-			if ( ! is_array( $config[ $key ] ) ) {
-				throw InvalidValue::not_array( $key );
-			}
-			$mc_settings[ $key ] = array_values( array_unique( $config[ $key ] ) );
-			$mc_updated          = true;
+			$mc_settings['language'] = array_values( array_unique( $config['language'] ) );
+			$mc_updated              = true;
 		}
 
 		if ( $mc_updated ) {
@@ -1101,11 +1163,18 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	/**
 	 * Validates that a secondary market config contains the required keys.
 	 *
-	 * @param array $config The config to validate (full or merged).
+	 * @param array $config                   The config to validate (full or merged).
+	 * @param bool  $validate_currency_source Whether to require the market's currency to be
+	 *                                        producible or covered by an exchange rate. True
+	 *                                        for creates and for updates that touch the
+	 *                                        currency or exchange rate; false for partial
+	 *                                        updates that leave them untouched, so unrelated
+	 *                                        edits of markets stored before this validation
+	 *                                        existed keep working.
 	 *
-	 * @throws InvalidValue When a required key is missing or not a non-empty string.
+	 * @throws InvalidValue When a required key is missing or invalid.
 	 */
-	private function validate_secondary_market_config( array $config ): void {
+	private function validate_secondary_market_config( array $config, bool $validate_currency_source = true ): void {
 		foreach ( [ 'country', 'feed_label' ] as $key ) {
 			if ( empty( $config[ $key ] ) || ! is_string( $config[ $key ] ) ) {
 				throw InvalidValue::is_empty( $key );
@@ -1122,6 +1191,28 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			}
 			if ( ! is_array( $config[ $key ] ) ) {
 				throw InvalidValue::not_array( $key );
+			}
+		}
+
+		if ( isset( $config['exchange_rate'] ) && ( ! is_numeric( $config['exchange_rate'] ) || (float) $config['exchange_rate'] <= 0 ) ) {
+			throw new InvalidValue( 'The exchange_rate must be a number greater than zero.' );
+		}
+
+		// A currency the site cannot produce is only valid with a fixed
+		// exchange rate to produce it at sync time.
+		if ( $validate_currency_source && empty( $config['exchange_rate'] ) ) {
+			$producible = array_column( $this->get_currencies(), 'code' );
+
+			if ( empty( $producible ) ) {
+				$producible = [ get_woocommerce_currency() ];
+			}
+
+			foreach ( $config['currency'] as $currency_code ) {
+				if ( ! in_array( (string) $currency_code, $producible, true ) ) {
+					throw new InvalidValue(
+						sprintf( 'The currency "%s" cannot be produced by this site. Configure an exchange rate for the market or use a producible currency.', $currency_code )
+					);
+				}
 			}
 		}
 	}

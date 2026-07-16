@@ -5,10 +5,12 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductInputAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
 use WC_Helper_Product;
+use WC_Tax;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -851,6 +853,223 @@ class WCProductInputAdapterTest extends UnitTest {
 				],
 			],
 			$serialized['customAttributes']
+		);
+	}
+
+	public function test_price_uses_target_country_tax_rate_when_tax_included() {
+		$this->enable_taxes();
+		$this->insert_tax_rate_for_country( 'DE', '19.0000' );
+		$this->insert_tax_rate_for_country( 'US', '8.0000' );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 100,
+				'regular_price' => 100,
+				'tax_status'    => 'taxable',
+				'tax_class'     => 'standard',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'DE' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '119000000', $attrs['price']['amountMicros'] );
+
+		// Tax-excluded countries emit the untaxed price even when they have their own rate row.
+		$attrs_us = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '100000000', $attrs_us['price']['amountMicros'] );
+	}
+
+	public function test_tax_exempt_product_gets_no_tax_in_tax_included_country() {
+		$this->enable_taxes();
+		$this->insert_tax_rate_for_country( 'DE', '19.0000' );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 100,
+				'regular_price' => 100,
+				'tax_status'    => 'none',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'DE' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '100000000', $attrs['price']['amountMicros'] );
+	}
+
+	public function test_target_country_without_rate_row_yields_zero_tax() {
+		$this->enable_taxes();
+		$this->insert_tax_rate_for_country( 'US', '8.0000' );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 100,
+				'regular_price' => 100,
+				'tax_status'    => 'taxable',
+				'tax_class'     => 'standard',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'FR' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '100000000', $attrs['price']['amountMicros'] );
+	}
+
+	public function test_inclusive_entered_prices_use_base_rate_before_target_rate() {
+		update_option( 'woocommerce_default_country', 'US:CA' );
+		$this->enable_taxes( true );
+		$this->insert_tax_rate_for_country( 'US', '8.0000' );
+		$this->insert_tax_rate_for_country( 'DE', '19.0000' );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 108,
+				'regular_price' => 108,
+				'tax_status'    => 'taxable',
+				'tax_class'     => 'standard',
+			]
+		);
+
+		// 108.00 entered inclusive of the 8% base rate is 100.00 net, then 19% for the DE target.
+		$attrs = ( new WCProductInputAdapter( $product, 'DE' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '119000000', $attrs['price']['amountMicros'] );
+	}
+
+	public function test_exchange_rate_converts_price_when_wpml_unavailable() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 100,
+				'regular_price' => 100,
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'DE', null, [], [], [], '', '', 'EUR', null, 0.92 ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '92000000', $attrs['price']['amountMicros'] );
+		$this->assertSame( 'EUR', $attrs['price']['currencyCode'] );
+	}
+
+	public function test_exchange_rate_conversion_applies_before_target_country_tax() {
+		$this->enable_taxes();
+		$this->insert_tax_rate_for_country( 'DE', '19.0000' );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 100,
+				'regular_price' => 100,
+				'tax_status'    => 'taxable',
+				'tax_class'     => 'standard',
+			]
+		);
+
+		// 100.00 converts to 92.00 EUR first, then the DE 19% rate applies: 109.48.
+		$attrs = ( new WCProductInputAdapter( $product, 'DE', null, [], [], [], '', '', 'EUR', null, 0.92 ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '109480000', $attrs['price']['amountMicros'] );
+		$this->assertSame( 'EUR', $attrs['price']['currencyCode'] );
+	}
+
+	public function test_wpml_conversion_preferred_over_exchange_rate() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 100,
+				'regular_price' => 100,
+			]
+		);
+
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_product_price_in_currency' )->willReturn( 90.0 );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'DE', null, [], [], [], '', '', 'EUR', $wpml, 0.92 ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '90000000', $attrs['price']['amountMicros'] );
+		$this->assertSame( 'EUR', $attrs['price']['currencyCode'] );
+	}
+
+	public function test_currency_override_without_conversion_source_logs_and_falls_back() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 100,
+				'regular_price' => 100,
+			]
+		);
+
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_product_price_in_currency' )->willReturn( null );
+
+		$logged = [];
+		add_action(
+			'woocommerce_gla_error',
+			function ( $message, $method ) use ( &$logged ) {
+				$logged[] = [ $message, $method ];
+			},
+			10,
+			2
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'DE', null, [], [], [], '', '', 'EUR', $wpml ) )->get_product_input()->get_attributes();
+
+		$this->assertCount( 1, $logged );
+		$this->assertStringContainsString( 'EUR', $logged[0][0] );
+		$this->assertSame( '100000000', $attrs['price']['amountMicros'] );
+		$this->assertSame( get_woocommerce_currency(), $attrs['price']['currencyCode'] );
+	}
+
+	public function test_virtual_product_zero_shipping_carries_entry_currency() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 100,
+				'regular_price' => 100,
+				'virtual'       => true,
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'DE', null, [], [], [], '', '', 'EUR', null, 1.0 ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( 'EUR', $attrs['price']['currencyCode'] );
+		$this->assertSame( '0', $attrs['shipping'][0]['price']['amountMicros'] );
+		$this->assertSame( 'EUR', $attrs['shipping'][0]['price']['currencyCode'] );
+	}
+
+	/**
+	 * Enables tax calculation for the test.
+	 *
+	 * @param bool $prices_include_tax Whether entered prices include tax.
+	 */
+	protected function enable_taxes( bool $prices_include_tax = false ): void {
+		add_filter( 'wc_tax_enabled', '__return_true' );
+		add_filter( 'woocommerce_prices_include_tax', $prices_include_tax ? '__return_true' : '__return_false' );
+	}
+
+	/**
+	 * Inserts a standard-class tax rate row for a country.
+	 *
+	 * @param string $country ISO 3166-1 alpha-2 country code.
+	 * @param string $rate    Percentage rate, e.g. '19.0000'.
+	 */
+	protected function insert_tax_rate_for_country( string $country, string $rate ): void {
+		WC_Tax::_insert_tax_rate(
+			[
+				'tax_rate_country'  => $country,
+				'tax_rate_state'    => '',
+				'tax_rate'          => $rate,
+				'tax_rate_name'     => 'TAX',
+				'tax_rate_priority' => '1',
+				'tax_rate_compound' => '0',
+				'tax_rate_shipping' => '1',
+				'tax_rate_order'    => '1',
+				'tax_rate_class'    => '',
+			]
 		);
 	}
 }

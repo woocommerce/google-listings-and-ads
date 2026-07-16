@@ -223,6 +223,56 @@ class WPML implements IntegrationInterface {
 	}
 
 	/**
+	 * Returns WCML's default currency for a language, from the pairing configured
+	 * in WCML's `default_currencies` setting.
+	 *
+	 * @param string $language_code ISO 639-1 language code.
+	 *
+	 * @return string ISO 4217 currency code, or empty string when WPML is inactive,
+	 *                WCML multi-currency is off, or the language keeps the store currency
+	 *                (stored by WCML as the value 0).
+	 */
+	public function get_default_currency_for_language( string $language_code ): string {
+		return $this->get_default_currencies()[ $language_code ] ?? '';
+	}
+
+	/**
+	 * Returns WCML's default currency per language.
+	 *
+	 * @return array<string, string> Language code mapped to ISO 4217 currency code.
+	 *                               Languages set to keep the store currency (stored
+	 *                               by WCML as the value 0) are omitted. Empty when
+	 *                               WPML is inactive or WCML multi-currency is off.
+	 */
+	public function get_default_currencies(): array {
+		if ( ! $this->is_active() || ! $this->is_wcml_multi_currency_on() ) {
+			return [];
+		}
+
+		global $woocommerce_wpml;
+
+		if ( ! isset( $woocommerce_wpml ) || ! is_object( $woocommerce_wpml ) || ! method_exists( $woocommerce_wpml, 'get_setting' ) ) {
+			return [];
+		}
+
+		$defaults = $woocommerce_wpml->get_setting( 'default_currencies', [] );
+
+		if ( ! is_array( $defaults ) ) {
+			return [];
+		}
+
+		$result = [];
+
+		foreach ( $defaults as $language => $currency ) {
+			if ( is_string( $language ) && is_string( $currency ) && '' !== $currency ) {
+				$result[ $language ] = $currency;
+			}
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Returns WCML currency codes when multi-currency is enabled, or the single WooCommerce
 	 * store currency as a fallback when WCML multi-currency is off or unavailable.
 	 *

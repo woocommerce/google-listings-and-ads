@@ -74,6 +74,39 @@ class MarketServiceTest extends UnitTest {
 		$this->wc                      = $this->createMock( WC::class );
 		$this->wpml                    = $this->createMock( WPML::class );
 		$this->job_repository          = $this->createMock( JobRepository::class );
+
+		// A permissive producible-currency list so market validation accepts the
+		// currencies the fixtures across this file use. Producibility rejection
+		// and get_currencies delegation are covered by tests that construct
+		// their own service with a locally configured WPML mock.
+		$this->wpml->method( 'get_currencies' )->willReturn(
+			[
+				[
+					'code'   => 'USD',
+					'symbol' => '$',
+				],
+				[
+					'code'   => 'EUR',
+					'symbol' => '€',
+				],
+				[
+					'code'   => 'GBP',
+					'symbol' => '£',
+				],
+				[
+					'code'   => 'CHF',
+					'symbol' => 'CHF',
+				],
+				[
+					'code'   => 'JPY',
+					'symbol' => '¥',
+				],
+				[
+					'code'   => 'CAD',
+					'symbol' => '$',
+				],
+			]
+		);
 		$this->cleanup_job             = $this->createMock( CleanupOrphanedMarketProductsJob::class );
 		$this->language_cleanup_job    = $this->createMock( CleanupOrphanedLanguageProductsJob::class );
 		$this->shipping_settings_job   = $this->createMock( UpdateShippingSettings::class );
@@ -563,9 +596,11 @@ class MarketServiceTest extends UnitTest {
 			]
 		);
 
+		// The primary currency is derived from the WooCommerce Multilingual
+		// per-language defaults, so the supplied currency key is ignored.
 		$this->assertArrayHasKey( OptionsInterface::MERCHANT_CENTER, $update_calls );
 		$this->assertSame( [ 'en', 'fr' ], $update_calls[ OptionsInterface::MERCHANT_CENTER ]['language'] );
-		$this->assertSame( [ 'USD', 'EUR' ], $update_calls[ OptionsInterface::MERCHANT_CENTER ]['currency'] );
+		$this->assertArrayNotHasKey( 'currency', $update_calls[ OptionsInterface::MERCHANT_CENTER ] );
 	}
 
 	public function test_update_market_primary_deduplicates_languages_and_currencies(): void {
@@ -595,7 +630,7 @@ class MarketServiceTest extends UnitTest {
 		);
 
 		$this->assertSame( [ 'en', 'fr' ], $update_calls[ OptionsInterface::MERCHANT_CENTER ]['language'] );
-		$this->assertSame( [ 'USD', 'EUR' ], $update_calls[ OptionsInterface::MERCHANT_CENTER ]['currency'] );
+		$this->assertArrayNotHasKey( 'currency', $update_calls[ OptionsInterface::MERCHANT_CENTER ] );
 	}
 
 	public function test_update_market_primary_partial_update_preserves_other_keys(): void {
@@ -669,7 +704,8 @@ class MarketServiceTest extends UnitTest {
 
 		$persisted = $update_calls[ OptionsInterface::MERCHANT_CENTER ];
 		$this->assertSame( [ 'en', 'fr' ], $persisted['language'] );
-		$this->assertSame( [ 'USD', 'EUR' ], $persisted['currency'] );
+		// The supplied currency key is ignored; the stored value stays as it was.
+		$this->assertSame( [ 'USD' ], $persisted['currency'] );
 		$this->assertSame( 'automatic', $persisted['shipping_rate'] );
 		$this->assertSame( 'flat', $persisted['shipping_time'] );
 	}
@@ -708,7 +744,8 @@ class MarketServiceTest extends UnitTest {
 
 		$persisted = $update_calls[ OptionsInterface::MERCHANT_CENTER ];
 		$this->assertSame( [], $persisted['language'] );
-		$this->assertSame( [], $persisted['currency'] );
+		// The supplied currency key is ignored; the stored value stays as it was.
+		$this->assertSame( [ 'USD', 'EUR' ], $persisted['currency'] );
 		$this->assertSame( 'flat', $persisted['shipping_rate'] );
 	}
 
@@ -729,24 +766,36 @@ class MarketServiceTest extends UnitTest {
 		);
 	}
 
-	public function test_update_market_primary_rejects_non_array_currency(): void {
+	public function test_update_market_primary_ignores_currency_key_even_when_not_array(): void {
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MERCHANT_CENTER => [],
 				OptionsInterface::MARKETS         => [],
 			]
 		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
 
-		$this->expectException( InvalidValue::class );
-		$this->expectExceptionMessage( 'The value of currency must be of type array.' );
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
 
-		$this->market_service->update_market(
+		// The Markets UI echoes the whole form back on every primary save, so a
+		// currency key is ignored (never rejected) and persists nothing.
+		$result = $this->market_service->update_market(
 			'primary',
 			[ 'currency' => 'USD' ]
 		);
+
+		$this->assertSame( 'primary', $result['id'] );
+		$this->assertArrayNotHasKey( OptionsInterface::MERCHANT_CENTER, $update_calls );
 	}
 
-	public function test_get_primary_market_returns_stored_language_and_currency_when_set(): void {
+	public function test_get_primary_market_returns_stored_language_and_derived_currency(): void {
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MERCHANT_CENTER => [
@@ -761,7 +810,9 @@ class MarketServiceTest extends UnitTest {
 		$result = $this->market_service->get_primary_market();
 
 		$this->assertSame( [ 'en', 'fr' ], $result['language'] );
-		$this->assertSame( [ 'USD', 'EUR' ], $result['currency'] );
+		// The stored currency setting is never read: with no multilingual
+		// integration every language keeps the site primary currency.
+		$this->assertSame( [ get_woocommerce_currency() ], $result['currency'] );
 	}
 
 	public function test_get_primary_market_falls_back_to_defaults_when_stored_value_invalid(): void {
@@ -2819,9 +2870,11 @@ class MarketServiceTest extends UnitTest {
 	}
 
 	public function test_get_primary_market_uses_wpml_default_language_when_active(): void {
-		$this->wpml->method( 'is_active' )->willReturn( true );
-		$this->wpml->method( 'get_default_language_code' )->willReturn( 'fr' );
-		$this->wpml->method( 'get_languages' )->willReturn(
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'is_active' )->willReturn( true );
+		$wpml->method( 'get_default_language_code' )->willReturn( 'fr' );
+		$wpml->method( 'get_default_currency_for_language' )->willReturn( '' );
+		$wpml->method( 'get_languages' )->willReturn(
 			[
 				[
 					'code'  => 'en',
@@ -2833,7 +2886,7 @@ class MarketServiceTest extends UnitTest {
 				],
 			]
 		);
-		$this->wpml->method( 'get_currencies' )->willReturn(
+		$wpml->method( 'get_currencies' )->willReturn(
 			[
 				[
 					'code'   => 'EUR',
@@ -2845,7 +2898,7 @@ class MarketServiceTest extends UnitTest {
 		$this->set_up_options_get( [ OptionsInterface::MERCHANT_CENTER => [] ] );
 		$this->set_up_primary_market_dependencies( 'FR', [ 'FR' ] );
 
-		$result = $this->market_service->get_primary_market();
+		$result = $this->create_service_with_wpml( $wpml )->get_primary_market();
 
 		$this->assertSame( [ 'fr' ], $result['language'] );
 		$this->assertSame( [ 'EUR' ], $result['currency'] );
@@ -2886,15 +2939,17 @@ class MarketServiceTest extends UnitTest {
 			],
 		];
 
-		$this->wpml->method( 'get_currencies' )->willReturn( $currencies );
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_currencies' )->willReturn( $currencies );
 
-		$this->assertSame( $currencies, $this->market_service->get_currencies() );
+		$this->assertSame( $currencies, $this->create_service_with_wpml( $wpml )->get_currencies() );
 	}
 
 	public function test_get_currencies_returns_empty_when_wpml_not_active(): void {
-		$this->wpml->method( 'get_currencies' )->willReturn( [] );
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_currencies' )->willReturn( [] );
 
-		$this->assertSame( [], $this->market_service->get_currencies() );
+		$this->assertSame( [], $this->create_service_with_wpml( $wpml )->get_currencies() );
 	}
 
 	public function test_generate_market_id_sanitises_uppercase_feed_label(): void {
@@ -3831,6 +3886,327 @@ class MarketServiceTest extends UnitTest {
 				'feed_label' => 'GB',
 			]
 		);
+	}
+
+	public function test_add_market_rejects_currency_the_site_cannot_produce(): void {
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_currencies' )->willReturn( [] );
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
+			]
+		);
+
+		$this->expectException( InvalidValue::class );
+		$this->expectExceptionMessage( 'cannot be produced' );
+
+		$this->create_service_with_wpml( $wpml )->add_market(
+			'de',
+			[
+				'country'    => 'DE',
+				'language'   => [ 'de' ],
+				'currency'   => [ 'EUR' ],
+				'feed_label' => 'DE',
+			]
+		);
+	}
+
+	public function test_add_market_accepts_unproducible_currency_with_exchange_rate(): void {
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_currencies' )->willReturn( [] );
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
+			]
+		);
+
+		$persisted = null;
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$persisted ) {
+					if ( OptionsInterface::MARKETS === $key ) {
+						$persisted = $value;
+					}
+					return true;
+				}
+			);
+
+		$this->create_service_with_wpml( $wpml )->add_market(
+			'de',
+			[
+				'country'       => 'DE',
+				'language'      => [ 'de' ],
+				'currency'      => [ 'EUR' ],
+				'feed_label'    => 'DE',
+				'exchange_rate' => 0.92,
+			]
+		);
+
+		$this->assertSame( 0.92, $persisted['de']['exchange_rate'] );
+	}
+
+	public function test_add_market_rejects_non_numeric_exchange_rate(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
+			]
+		);
+
+		$this->expectException( InvalidValue::class );
+		$this->expectExceptionMessage( 'exchange_rate' );
+
+		$this->market_service->add_market(
+			'de',
+			[
+				'country'       => 'DE',
+				'language'      => [ 'de' ],
+				'currency'      => [ 'EUR' ],
+				'feed_label'    => 'DE',
+				'exchange_rate' => 'not-a-number',
+			]
+		);
+	}
+
+	public function test_add_market_rejects_non_positive_exchange_rate(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
+			]
+		);
+
+		$this->expectException( InvalidValue::class );
+		$this->expectExceptionMessage( 'exchange_rate' );
+
+		$this->market_service->add_market(
+			'de',
+			[
+				'country'       => 'DE',
+				'language'      => [ 'de' ],
+				'currency'      => [ 'EUR' ],
+				'feed_label'    => 'DE',
+				'exchange_rate' => 0,
+			]
+		);
+	}
+
+	public function test_update_market_rejects_touched_currency_the_site_cannot_produce(): void {
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_currencies' )->willReturn( [] );
+
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->expectException( InvalidValue::class );
+		$this->expectExceptionMessage( 'cannot be produced' );
+
+		$this->create_service_with_wpml( $wpml )->update_market( 'gb', [ 'currency' => [ 'EUR' ] ] );
+	}
+
+	public function test_update_market_untouched_currency_is_not_revalidated(): void {
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_currencies' )->willReturn( [] );
+
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		// The stored GBP is not producible on this site, but an update that
+		// leaves the currency and exchange rate untouched must not fail on it.
+		$result = $this->create_service_with_wpml( $wpml )->update_market( 'gb', [ 'shipping_rate' => 'flat' ] );
+
+		$this->assertSame( 'flat', $result['shipping_rate'] );
+	}
+
+	public function test_update_market_secondary_schedules_update_all_products_when_only_exchange_rate_differs(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->update_all_products_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'exchange_rate' => 1.15 ] );
+	}
+
+	public function test_update_market_secondary_does_not_schedule_update_all_products_when_exchange_rate_unchanged(): void {
+		$existing = [
+			'gb' => [
+				'country'       => 'GB',
+				'language'      => [ 'en' ],
+				'currency'      => [ 'GBP' ],
+				'feed_label'    => 'GB',
+				'exchange_rate' => 1.15,
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->update_all_products_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'gb', [ 'exchange_rate' => 1.15 ] );
+	}
+
+	public function test_update_market_primary_currency_key_does_not_schedule_update_all_products(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [ 'currency' => [ 'USD' ] ],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->update_all_products_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'primary', [ 'currency' => [ 'EUR' ] ] );
+	}
+
+	public function test_get_markets_keeps_stored_currency_for_market_with_exchange_rate_when_not_multilingual(): void {
+		$secondary = [
+			'de' => [
+				'country'       => 'DE',
+				'language'      => [ 'de' ],
+				'currency'      => [ 'EUR' ],
+				'feed_label'    => 'DE',
+				'exchange_rate' => 0.92,
+			],
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$markets = $this->market_service->get_markets();
+
+		// The exchange rate is the market's own conversion source, so its
+		// stored currency survives the no-multilingual masking; the market
+		// without a rate is masked to the site currency as before.
+		$this->assertSame( [ 'EUR' ], $markets['de']['currency'] );
+		$this->assertSame( 0.92, $markets['de']['exchange_rate'] );
+		$this->assertSame( [ get_woocommerce_currency() ], $markets['gb']['currency'] );
+	}
+
+	public function test_get_primary_market_derives_currencies_from_wcml_language_defaults(): void {
+		$this->wpml->method( 'is_active' )->willReturn( true );
+		$this->wpml->method( 'get_default_currency_for_language' )
+			->willReturnMap(
+				[
+					[ 'en', '' ],
+					[ 'de', 'EUR' ],
+				]
+			);
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [ 'language' => [ 'en', 'de' ] ],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$result = $this->market_service->get_primary_market();
+
+		// 'de' pairs with EUR in the WooCommerce Multilingual defaults; 'en'
+		// has no pairing and keeps the site primary currency.
+		$this->assertSame( [ 'USD', 'EUR' ], $result['currency'] );
+	}
+
+	public function test_register_schedules_update_all_products_when_wcml_default_currencies_change(): void {
+		$this->market_service->register();
+
+		$this->update_all_products_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		do_action(
+			'update_option__wcml_settings',
+			[ 'default_currencies' => [ 'de' => 'EUR' ] ],
+			[ 'default_currencies' => [ 'de' => 'CHF' ] ]
+		);
+	}
+
+	public function test_register_does_not_schedule_when_wcml_default_currencies_unchanged(): void {
+		$this->market_service->register();
+
+		$this->update_all_products_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		do_action(
+			'update_option__wcml_settings',
+			[
+				'default_currencies' => [
+					'de' => 'EUR',
+					'fr' => 'EUR',
+				],
+				'other_setting'      => 1,
+			],
+			[
+				'default_currencies' => [
+					'fr' => 'EUR',
+					'de' => 'EUR',
+				],
+				'other_setting'      => 2,
+			]
+		);
+	}
+
+	/**
+	 * Builds a MarketService around a locally configured WPML mock, for tests
+	 * whose WPML behaviour must differ from the permissive setUp defaults.
+	 *
+	 * @param MockObject|WPML $wpml The locally configured WPML mock.
+	 *
+	 * @return MarketService
+	 */
+	private function create_service_with_wpml( $wpml ): MarketService {
+		$service = new MarketService(
+			$this->target_audience,
+			$this->shipping_rate_query,
+			$this->shipping_time_query,
+			$this->wc,
+			$wpml,
+			$this->job_repository
+		);
+		$service->set_options_object( $this->options );
+
+		return $service;
 	}
 
 	/**

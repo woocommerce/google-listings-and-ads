@@ -522,6 +522,83 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertSame( 'fr', $results[0]['input']->get_content_language() );
 	}
 
+	public function test_generate_mapi_update_entries_primary_entry_priced_in_language_default_currency() {
+		$product = WC_Helper_Product::create_simple_product(
+			true,
+			[
+				'price'         => 10,
+				'regular_price' => 10,
+			]
+		);
+
+		$this->market_service->method( 'has_multilingual_support' )->willReturn( true );
+		$this->wpml->method( 'get_post_language' )->willReturn( 'fr' );
+		$this->wpml->method( 'get_default_currency_for_language' )
+			->willReturnMap( [ [ 'fr', 'EUR' ] ] );
+		$this->wpml->method( 'get_product_price_in_currency' )->willReturn( 9.2 );
+
+		$this->set_up_market_service_stubs(
+			[ 'US' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => [ 'en', 'fr' ],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+
+		// The product's language pairs with EUR in the WooCommerce Multilingual
+		// defaults, so the primary entry is priced in EUR while keeping the
+		// bare primary feed label.
+		$this->assertCount( 1, $results );
+		$attributes = $results[0]['input']->get_attributes();
+		$this->assertSame( 'EUR', $attributes['price']['currencyCode'] );
+		$this->assertSame( '9200000', $attributes['price']['amountMicros'] );
+		$this->assertSame( 'US', $results[0]['input']->get_feed_label() );
+	}
+
+	public function test_generate_mapi_update_entries_primary_entry_keeps_store_currency_without_language_pairing() {
+		$product = WC_Helper_Product::create_simple_product(
+			true,
+			[
+				'price'         => 10,
+				'regular_price' => 10,
+			]
+		);
+
+		$this->market_service->method( 'has_multilingual_support' )->willReturn( true );
+		$this->wpml->method( 'get_post_language' )->willReturn( 'fr' );
+		$this->wpml->method( 'get_default_currency_for_language' )->willReturn( '' );
+
+		$this->set_up_market_service_stubs(
+			[ 'US' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => [ 'en', 'fr' ],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+
+		// A language with no WooCommerce Multilingual currency pairing keeps
+		// the store currency.
+		$this->assertCount( 1, $results );
+		$attributes = $results[0]['input']->get_attributes();
+		$this->assertSame( get_woocommerce_currency(), $attributes['price']['currencyCode'] );
+	}
+
 	public function test_generate_mapi_update_entries_wpml_match_alternate_language_in_set() {
 		$product = WC_Helper_Product::create_simple_product();
 

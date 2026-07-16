@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\Attribu
 use WC_Product;
 use WC_Product_Variable;
 use WC_Product_Variation;
+use WC_Tax;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -81,6 +82,9 @@ class WCProductInputAdapter {
 	/** @var WPML|null WPML integration used for currency conversion when a currency override is set. */
 	protected $wpml = null;
 
+	/** @var float Fixed market exchange rate used when WPML conversion is unavailable; 0.0 when unset. */
+	protected $exchange_rate = 0.0;
+
 	/** @var bool */
 	protected $tax_excluded = false;
 
@@ -115,10 +119,11 @@ class WCProductInputAdapter {
 	 * @param string          $language           Optional ISO 639-1 language code overriding the site locale.
 	 * @param string          $currency_override  Optional ISO 4217 currency code overriding the store currency.
 	 * @param WPML|null       $wpml               WPML integration used for currency conversion when a currency override is set.
+	 * @param float           $exchange_rate      Fixed market exchange rate used to convert prices when WPML conversion is unavailable; 0.0 when unset.
 	 *
 	 * @throws InvalidValue When $product is a variation and a valid parent product is not provided.
 	 */
-	public function __construct( WC_Product $product, string $target_country, ?WC_Product $parent_product = null, array $shipping_countries = [], array $gla_attributes = [], array $mapping_rules = [], string $feed_label = '', string $language = '', string $currency_override = '', ?WPML $wpml = null ) {
+	public function __construct( WC_Product $product, string $target_country, ?WC_Product $parent_product = null, array $shipping_countries = [], array $gla_attributes = [], array $mapping_rules = [], string $feed_label = '', string $language = '', string $currency_override = '', ?WPML $wpml = null, float $exchange_rate = 0.0 ) {
 		$this->wc_product         = $product;
 		$this->parent_wc_product  = $parent_product;
 		$this->target_country     = $target_country;
@@ -126,6 +131,7 @@ class WCProductInputAdapter {
 		$this->language           = $language;
 		$this->currency_override  = $currency_override;
 		$this->wpml               = $wpml;
+		$this->exchange_rate      = $exchange_rate;
 		$this->shipping_countries = $shipping_countries;
 		$this->gla_attributes     = $gla_attributes;
 		$this->mapping_rules      = $mapping_rules;
@@ -329,16 +335,23 @@ class WCProductInputAdapter {
 	}
 
 	/**
-	 * Map the regular price, applying tax inclusion/exclusion rules.
+	 * Map the regular price, applying currency conversion and the target
+	 * country's tax inclusion/exclusion rules.
 	 */
 	protected function map_price(): void {
-		if ( '' !== $this->currency_override && null !== $this->wpml ) {
-			$converted = $this->wpml->get_product_price_in_currency( $this->wc_product, $this->currency_override );
+		$regular_price = $this->wc_product->get_regular_price();
+
+		if ( '' !== $this->currency_override ) {
+			$converted = null !== $this->wpml
+				? $this->wpml->get_product_price_in_currency( $this->wc_product, $this->currency_override )
+				: null;
+
+			if ( null === $converted && $this->exchange_rate > 0 && '' !== $regular_price ) {
+				$converted = (float) $regular_price * $this->exchange_rate;
+			}
 
 			if ( null !== $converted ) {
-				$price = $this->tax_excluded
-					? wc_get_price_excluding_tax( $this->wc_product, [ 'price' => $converted ] )
-					: wc_get_price_including_tax( $this->wc_product, [ 'price' => $converted ] );
+				$price = $this->apply_tax_for_target_country( (float) $converted );
 
 				/** This filter is documented in src/Product/WCProductAdapter.php */
 				$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $this->wc_product, $this->tax_excluded );
@@ -346,20 +359,75 @@ class WCProductInputAdapter {
 				$this->attributes['price'] = $this->to_money( (float) $price, strtoupper( $this->currency_override ) );
 				return;
 			}
+
+			// A currency override with no conversion source falls through to
+			// the store-currency price, mislabelling the market's entries.
+			do_action(
+				'woocommerce_gla_error',
+				sprintf(
+					'No conversion source for the currency override "%s" (product ID: %s): WPML conversion is unavailable and the market has no exchange rate. Emitting the store currency price instead.',
+					$this->currency_override,
+					$this->wc_product->get_id()
+				),
+				__METHOD__
+			);
 		}
 
-		$regular_price = $this->wc_product->get_regular_price();
 		if ( '' === $regular_price ) {
 			return;
 		}
 
-		$price = $this->tax_excluded
-			? wc_get_price_excluding_tax( $this->wc_product, [ 'price' => $regular_price ] )
-			: wc_get_price_including_tax( $this->wc_product, [ 'price' => $regular_price ] );
+		$price = $this->apply_tax_for_target_country( (float) $regular_price );
 
 		$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $this->wc_product, $this->tax_excluded );
 
 		$this->attributes['price'] = $this->to_money( (float) $price, get_woocommerce_currency() );
+	}
+
+	/**
+	 * Apply tax to a price amount per the target country's own rate.
+	 *
+	 * Product sync runs in a background context where WooCommerce's price
+	 * helpers resolve the tax location to the store base address, never the
+	 * entry's target country, so the rate is looked up for the target country
+	 * directly. A country with no rate row in the tax tables yields zero tax,
+	 * matching how WooCommerce treats an unconfigured location.
+	 *
+	 * @param float $price Price amount in the entry's currency, as entered
+	 *                     (inclusive of the store base rate when the store
+	 *                     enters prices inclusive of tax).
+	 *
+	 * @return float
+	 */
+	protected function apply_tax_for_target_country( float $price ): float {
+		if ( ! $this->wc_product->is_taxable() ) {
+			return $price;
+		}
+
+		// Prices entered inclusive of tax carry the store's base rate; remove
+		// it to reach the net amount before the target country's rate applies.
+		if ( wc_prices_include_tax() ) {
+			$base_rates = WC_Tax::get_base_tax_rates( $this->wc_product->get_tax_class( 'unfiltered' ) );
+			$price     -= array_sum( WC_Tax::calc_tax( $price, $base_rates, true ) );
+		}
+
+		if ( $this->tax_excluded ) {
+			return round( $price, wc_get_price_decimals() );
+		}
+
+		$rates = WC_Tax::find_rates(
+			[
+				'country'   => $this->target_country,
+				'tax_class' => $this->wc_product->get_tax_class(),
+			]
+		);
+		$taxes = WC_Tax::calc_tax( $price, $rates, false );
+
+		$taxes_total = 'yes' === get_option( 'woocommerce_tax_round_at_subtotal' )
+			? array_sum( $taxes )
+			: array_sum( array_map( 'wc_round_tax_total', $taxes ) );
+
+		return round( $price + $taxes_total, wc_get_price_decimals() );
 	}
 
 	/**
