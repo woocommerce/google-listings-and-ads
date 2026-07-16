@@ -71,6 +71,15 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 	/** @var AttributeMappingRulesQuery $rules_query */
 	protected $rules_query;
 
+	/**
+	 * Converted price per currency code returned by the WPML stub configured in
+	 * set_up_market_service_stubs(); a null value marks the currency as
+	 * unconvertible. Currencies not in the map convert to the product's own price.
+	 *
+	 * @var array<string, float|null>
+	 */
+	protected $wpml_converted_prices = [];
+
 	public function test_filter_synced_products_all_synced() {
 		$synced_product = WC_Helper_Product::create_simple_product();
 		$this->product_helper->mark_as_synced( $synced_product, $this->generate_google_product_mock() );
@@ -1298,7 +1307,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertSame( 'AUD', $captured_currencies_by_country['AU'] );
 	}
 
-	public function test_primary_entry_uses_store_currency_regardless_of_market_currency_array() {
+	public function test_primary_bare_label_entry_keeps_store_currency_and_extra_currency_adds_derived_entry() {
 		$product = WC_Helper_Product::create_simple_product();
 
 		$this->set_up_market_service_stubs(
@@ -1308,7 +1317,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 					'country'    => 'US',
 					'feed_label' => 'US',
 					'language'   => 'en',
-					'currency'   => [ 'EUR' ],
+					'currency'   => [ get_woocommerce_currency(), 'EUR' ],
 				],
 			]
 		);
@@ -1318,8 +1327,131 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
 
-		$this->assertCount( 1, $results );
+		$this->assertCount( 2, $results );
+
+		// The bare-label entry always prices in the store currency.
+		$this->assertSame( 'US', $results[0]['input']->get_feed_label() );
 		$this->assertSame( get_woocommerce_currency(), $results[0]['input']->get_attributes()['price']['currencyCode'] );
+
+		// The additional currency gets its own derived-label entry with
+		// converted prices; both entries stay attached to the primary country.
+		$this->assertSame( 'US-EN-EUR', $results[1]['input']->get_feed_label() );
+		$this->assertSame( 'EUR', $results[1]['input']->get_attributes()['price']['currencyCode'] );
+		$this->assertSame( 'US', $results[1]['country'] );
+	}
+
+	public function test_secondary_market_with_two_currencies_emits_one_entry_per_currency() {
+		$product        = WC_Helper_Product::create_simple_product();
+		$store_currency = get_woocommerce_currency();
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'AE' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+				'ae'      => [
+					'country'    => 'AE',
+					'feed_label' => 'AE',
+					'language'   => [ 'en' ],
+					'currency'   => [ $store_currency, 'AED' ],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+
+		$this->assertCount( 3, $results );
+
+		$labels = array_map(
+			static function ( array $entry ): string {
+				return $entry['input']->get_feed_label();
+			},
+			$results
+		);
+
+		$this->assertContains( 'AE-EN-' . $store_currency, $labels );
+		$this->assertContains( 'AE-EN-AED', $labels );
+
+		foreach ( $results as $entry ) {
+			if ( 'AE-EN-AED' === $entry['input']->get_feed_label() ) {
+				$this->assertSame( 'AED', $entry['input']->get_attributes()['price']['currencyCode'] );
+			}
+			if ( 'AE-EN-' . $store_currency === $entry['input']->get_feed_label() ) {
+				$this->assertSame( $store_currency, $entry['input']->get_attributes()['price']['currencyCode'] );
+			}
+		}
+	}
+
+	public function test_unconvertible_currency_skips_only_that_currency_entry() {
+		$product        = WC_Helper_Product::create_simple_product();
+		$store_currency = get_woocommerce_currency();
+
+		// AED has no converted price, so its entry is skipped while the
+		// store-currency entry and the primary entry still sync.
+		$this->wpml_converted_prices['AED'] = null;
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'AE' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+				'ae'      => [
+					'country'    => 'AE',
+					'feed_label' => 'AE',
+					'language'   => [ 'en' ],
+					'currency'   => [ $store_currency, 'AED' ],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+
+		$this->assertCount( 2, $results );
+
+		$labels = array_map(
+			static function ( array $entry ): string {
+				return $entry['input']->get_feed_label();
+			},
+			$results
+		);
+
+		$this->assertContains( 'US', $labels );
+		$this->assertContains( 'AE-EN-' . $store_currency, $labels );
+		$this->assertNotContains( 'AE-EN-AED', $labels );
+	}
+
+	public function test_stale_entry_generators_keep_every_configured_currency_label() {
+		$products         = $this->create_and_return_supported_test_products();
+		$stale_product    = $products[0];
+		$stale_product_id = $stale_product->get_id();
+
+		$this->market_service->expects( $this->any() )
+			->method( 'get_all_feed_labels' )
+			->willReturn( [ 'US', 'AE-EN-USD', 'AE-EN-AED' ] );
+
+		$google_ids = [
+			'AE-EN-USD' => "en~AE-EN-USD~gla_{$stale_product_id}",
+			'AE-EN-AED' => "en~AE-EN-AED~gla_{$stale_product_id}",
+			'DK'        => "en~DK~gla_{$stale_product_id}",
+		];
+		$this->product_meta->update_google_ids( $stale_product, $google_ids );
+
+		$results = $this->batch_product_helper->generate_stale_products_delete_entries( $products );
+
+		$this->assertCount( 1, $results );
+		$this->assertContains( $google_ids['DK'], array_column( $results, 'google_id' ) );
 	}
 
 	/**
@@ -1354,6 +1486,38 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->market_service->method( 'get_all_countries' )->willReturn( $all_countries );
 		$this->market_service->method( 'get_participating_markets' )->willReturn( $markets );
 		$this->market_service->method( 'get_main_feed_label' )->willReturn( $main_feed_label );
+
+		// Mirrors MarketService::get_participating_currencies() with every
+		// configured currency treated as convertible: the market's configured
+		// currencies without duplicates, or the store currency when none are
+		// configured.
+		$this->market_service->method( 'get_participating_currencies' )->willReturnCallback(
+			static function ( array $market ): array {
+				$configured = is_array( $market['currency'] ?? null )
+					? $market['currency']
+					: [ $market['currency'] ?? '' ];
+
+				$currencies = array_values( array_unique( array_filter( array_map( 'strval', $configured ) ) ) );
+
+				return empty( $currencies ) ? [ get_woocommerce_currency() ] : $currencies;
+			}
+		);
+
+		// Non-store-currency entries are skipped when no converted price is
+		// available, so the WPML stub returns the product's own price for any
+		// requested currency; a test can mark a currency unconvertible via
+		// $this->wpml_converted_prices before calling this helper.
+		$this->wpml->method( 'get_product_price_in_currency' )->willReturnCallback(
+			function ( WC_Product $product, string $currency ): ?float {
+				if ( array_key_exists( $currency, $this->wpml_converted_prices ) ) {
+					return $this->wpml_converted_prices[ $currency ];
+				}
+
+				$price = $product->get_regular_price();
+
+				return '' === $price ? null : (float) $price;
+			}
+		);
 
 		// Mirrors MarketService::get_market_feed_label(): the stored label plus
 		// the uppercase two-letter language code plus the uppercase currency,

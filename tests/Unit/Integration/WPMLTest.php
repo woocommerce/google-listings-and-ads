@@ -425,6 +425,49 @@ class WPMLTest extends UnitTest {
 		$this->assertSame( 8.0, $integration->get_product_price_in_currency( $product, 'EUR' ) );
 	}
 
+	public function test_convert_amount_returns_null_when_not_active(): void {
+		$integration = $this->create_integration( false );
+
+		$this->assertNull( $integration->convert_amount( 10.0, 'EUR' ) );
+	}
+
+	public function test_convert_amount_returns_null_when_wcml_multi_currency_off(): void {
+		$integration = $this->create_integration( true, [], false );
+
+		$this->assertNull( $integration->convert_amount( 10.0, 'EUR' ) );
+	}
+
+	public function test_convert_amount_returns_converted_amount(): void {
+		$integration = $this->create_integration( true, [], true );
+
+		add_filter(
+			'wcml_raw_price_amount',
+			function ( $price ) {
+				return (float) $price * 0.8;
+			}
+		);
+
+		$this->assertSame( 8.0, $integration->convert_amount( 10.0, 'EUR' ) );
+	}
+
+	public function test_convert_amount_returns_null_for_inactive_currency(): void {
+		$integration = $this->create_integration( true, [ get_woocommerce_currency(), 'EUR' ], true );
+
+		// WCML's conversion filter returns 0 for a currency it does not have
+		// active, so an inactive currency must read as unconvertible, never
+		// as a zero amount.
+		$this->assertNull( $integration->convert_amount( 10.0, 'AED' ) );
+	}
+
+	public function test_get_product_price_in_currency_returns_null_for_inactive_currency(): void {
+		$integration = $this->create_integration( true, [ get_woocommerce_currency(), 'EUR' ], true );
+
+		$product = $this->createMock( WC_Product::class );
+		$product->method( 'get_regular_price' )->willReturn( '10' );
+
+		$this->assertNull( $integration->get_product_price_in_currency( $product, 'AED' ) );
+	}
+
 	public function test_get_product_sale_price_in_currency_returns_null_when_not_active(): void {
 		$integration = $this->create_integration( false );
 
@@ -711,6 +754,13 @@ class WPMLTest extends UnitTest {
 	 */
 	private function create_integration( bool $is_active, array $currency_codes = [], ?bool $wcml_multi_currency_on = null, $custom_prices = false ): WPML {
 		$methods = [ 'is_active', 'get_wcml_custom_prices' ];
+
+		// Conversion only happens into WCML-active currencies, so
+		// multi-currency tests get a permissive default set covering the
+		// store currency and EUR unless the test supplies its own codes.
+		if ( empty( $currency_codes ) && true === $wcml_multi_currency_on ) {
+			$currency_codes = [ get_woocommerce_currency(), 'EUR' ];
+		}
 
 		if ( ! empty( $currency_codes ) ) {
 			$methods[] = 'get_active_currency_codes';

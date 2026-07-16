@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping\GoogleAdapter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\CountryRatesCollection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\WCShippingSettingsAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingLocation;
@@ -399,6 +400,7 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 				'country_currency_map' => [
 					'FR' => 'EUR',
 				],
+				'wpml'                 => $this->create_wpml_doubling_converter(),
 				'rates_collections'    => [
 					new CountryRatesCollection( 'US', [ $us_rate ] ),
 					new CountryRatesCollection( 'FR', [ $fr_rate, $fr_min ] ),
@@ -456,6 +458,7 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 				'country_currency_map' => [
 					'FR' => 'EUR',
 				],
+				'wpml'                 => $this->create_wpml_doubling_converter(),
 				'rates_collections'    => [
 					new CountryRatesCollection( 'US', [ $us_country_rate ] ),
 					new CountryRatesCollection( 'FR', [ $fr_country_rate, $fr_postcode_rate, $fr_state_rate ] ),
@@ -482,6 +485,13 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 						$expected_currency,
 						$rate_group['singleValue']['flatRate']['currencyCode']
 					);
+
+					// Non-store-currency amounts are the converted values, not
+					// the store-currency amounts relabelled: 50 USD doubles to
+					// 100 EUR under the test converter.
+					if ( 'EUR' === $expected_currency ) {
+						$this->assertSame( '100000000', $rate_group['singleValue']['flatRate']['amountMicros'] );
+					}
 				}
 
 				if ( isset( $rate_group['mainTable'] ) ) {
@@ -496,5 +506,107 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 				}
 			}
 		}
+	}
+
+	public function test_creates_one_service_per_currency_for_a_multi_currency_country() {
+		$ae_rate = new LocationRate( new ShippingLocation( 1, 'AE' ), new ShippingRate( 50 ) );
+
+		$settings = new WCShippingSettingsAdapter(
+			[
+				'currency'             => 'USD',
+				'country_currency_map' => [
+					'AE' => [ 'USD', 'AED' ],
+				],
+				'wpml'                 => $this->create_wpml_doubling_converter(),
+				'rates_collections'    => [
+					new CountryRatesCollection( 'AE', [ $ae_rate ] ),
+				],
+				'delivery_times'       => [
+					'AE' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+				],
+			]
+		);
+
+		$services = $settings->get_services();
+
+		$this->assertCount( 2, $services );
+
+		$by_currency = [];
+		foreach ( $services as $service ) {
+			$by_currency[ $service['currencyCode'] ] = $service;
+			$this->assertEquals( 'AE', $service['deliveryCountries'][0] );
+		}
+
+		// The store-currency service keeps the WooCommerce amount; the AED
+		// service carries the converted amount (50 doubled to 100).
+		$this->assertSame( '50000000', $by_currency['USD']['rateGroups'][0]['singleValue']['flatRate']['amountMicros'] );
+		$this->assertSame( '100000000', $by_currency['AED']['rateGroups'][0]['singleValue']['flatRate']['amountMicros'] );
+
+		// Service names must be unique within the Merchant Center account.
+		$this->assertNotEquals( $by_currency['USD']['serviceName'], $by_currency['AED']['serviceName'] );
+	}
+
+	public function test_leaves_out_non_store_currency_service_when_conversion_unavailable() {
+		$reported = [];
+		add_action(
+			'woocommerce_gla_error',
+			function ( $message ) use ( &$reported ) {
+				$reported[] = $message;
+			}
+		);
+
+		$ae_rate = new LocationRate( new ShippingLocation( 1, 'AE' ), new ShippingRate( 50 ) );
+
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'convert_amount' )->willReturn( null );
+
+		$settings = new WCShippingSettingsAdapter(
+			[
+				'currency'             => 'USD',
+				'country_currency_map' => [
+					'AE' => [ 'USD', 'AED' ],
+				],
+				'wpml'                 => $wpml,
+				'rates_collections'    => [
+					new CountryRatesCollection( 'AE', [ $ae_rate ] ),
+				],
+				'delivery_times'       => [
+					'AE' => [
+						'time'     => 1,
+						'max_time' => 1,
+					],
+				],
+			]
+		);
+
+		$services = $settings->get_services();
+
+		// The store-currency service still syncs; the unconvertible AED
+		// service is left out with an error naming the country and currency.
+		$this->assertCount( 1, $services );
+		$this->assertEquals( 'USD', $services[0]['currencyCode'] );
+		$this->assertCount( 1, $reported );
+		$this->assertStringContainsString( 'AED', $reported[0] );
+		$this->assertStringContainsString( 'AE', $reported[0] );
+	}
+
+	/**
+	 * Returns a WPML mock whose convert_amount() doubles the amount, making
+	 * converted values visible in assertions.
+	 *
+	 * @return WPML
+	 */
+	private function create_wpml_doubling_converter(): WPML {
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'convert_amount' )->willReturnCallback(
+			static function ( float $amount ): float {
+				return $amount * 2;
+			}
+		);
+
+		return $wpml;
 	}
 }

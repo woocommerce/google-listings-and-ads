@@ -330,22 +330,31 @@ class WCProductInputAdapter {
 
 	/**
 	 * Map the regular price, applying tax inclusion/exclusion rules.
+	 *
+	 * With a currency override set, the price is always the converted value;
+	 * when no converted value is available the price is left unset, so a
+	 * store-currency amount is never submitted under a non-store-currency
+	 * feed label.
 	 */
 	protected function map_price(): void {
-		if ( '' !== $this->currency_override && null !== $this->wpml ) {
-			$converted = $this->wpml->get_product_price_in_currency( $this->wc_product, $this->currency_override );
+		if ( '' !== $this->currency_override ) {
+			$converted = null !== $this->wpml
+				? $this->wpml->get_product_price_in_currency( $this->wc_product, $this->currency_override )
+				: null;
 
-			if ( null !== $converted ) {
-				$price = $this->tax_excluded
-					? wc_get_price_excluding_tax( $this->wc_product, [ 'price' => $converted ] )
-					: wc_get_price_including_tax( $this->wc_product, [ 'price' => $converted ] );
-
-				/** This filter is documented in src/Product/WCProductAdapter.php */
-				$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $this->wc_product, $this->tax_excluded );
-
-				$this->attributes['price'] = $this->to_money( (float) $price, strtoupper( $this->currency_override ) );
+			if ( null === $converted ) {
 				return;
 			}
+
+			$price = $this->tax_excluded
+				? wc_get_price_excluding_tax( $this->wc_product, [ 'price' => $converted ] )
+				: wc_get_price_including_tax( $this->wc_product, [ 'price' => $converted ] );
+
+			/** This filter is documented in src/Product/WCProductAdapter.php */
+			$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $this->wc_product, $this->tax_excluded );
+
+			$this->attributes['price'] = $this->to_money( (float) $price, strtoupper( $this->currency_override ) );
+			return;
 		}
 
 		$regular_price = $this->wc_product->get_regular_price();
