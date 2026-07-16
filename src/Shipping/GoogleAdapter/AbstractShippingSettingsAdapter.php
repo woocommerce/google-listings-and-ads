@@ -4,19 +4,23 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\DeliveryTime;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ShippingSettings as GoogleShippingSettings;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Class AbstractShippingSettingsAdapter
  *
+ * Builds the Merchant API accounts.shippingSettings services (and the
+ * accounts.regions they reference) from the store shipping data.
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Shipping
  *
  * @since   2.1.0
  */
-abstract class AbstractShippingSettingsAdapter extends GoogleShippingSettings {
+abstract class AbstractShippingSettingsAdapter {
+
+	use MapiPriceTrait;
+
 	/**
 	 * @var string
 	 */
@@ -28,6 +32,16 @@ abstract class AbstractShippingSettingsAdapter extends GoogleShippingSettings {
 	protected $delivery_times;
 
 	/**
+	 * @var array The Merchant API service resources.
+	 */
+	protected $services = [];
+
+	/**
+	 * @var array<string, array> Map of region id to Merchant API Region resource.
+	 */
+	protected $regions = [];
+
+	/**
 	 * Optional map of country code => ISO 4217 currency code used to override
 	 * `$currency` on a per-country basis. Populated from configured markets.
 	 *
@@ -36,15 +50,13 @@ abstract class AbstractShippingSettingsAdapter extends GoogleShippingSettings {
 	protected $country_currency_map = [];
 
 	/**
-	 * Initialize this object's properties from an array.
+	 * AbstractShippingSettingsAdapter constructor.
 	 *
 	 * @param array $properties Used to seed this object's properties.
 	 *
-	 * @return void
-	 *
 	 * @throws InvalidValue When the required parameters are not provided, or they are invalid.
 	 */
-	public function mapTypes( $properties ) {
+	public function __construct( array $properties ) {
 		$this->validate_gla_data( $properties );
 
 		$this->currency             = $properties['currency'];
@@ -54,10 +66,24 @@ abstract class AbstractShippingSettingsAdapter extends GoogleShippingSettings {
 			: [];
 
 		$this->map_gla_data( $properties );
+	}
 
-		$this->unset_gla_data( $properties );
+	/**
+	 * Get the Merchant API shipping services.
+	 *
+	 * @return array
+	 */
+	public function get_services(): array {
+		return $this->services;
+	}
 
-		parent::mapTypes( $properties );
+	/**
+	 * Get the Merchant API regions referenced by the services, keyed by region id.
+	 *
+	 * @return array<string, array>
+	 */
+	public function get_regions(): array {
+		return $this->regions;
 	}
 
 	/**
@@ -104,26 +130,39 @@ abstract class AbstractShippingSettingsAdapter extends GoogleShippingSettings {
 	}
 
 	/**
-	 * Return estimated delivery time for a given country in days.
+	 * Return the Merchant API deliveryTime for a given country in days.
 	 *
 	 * @param string $country
 	 *
-	 * @return DeliveryTime
+	 * @return array
 	 *
 	 * @throws InvalidValue If no delivery time can be found for the country.
 	 */
-	protected function get_delivery_time( string $country ): DeliveryTime {
+	protected function get_delivery_time( string $country ): array {
 		if ( ! array_key_exists( $country, $this->delivery_times ) ) {
 			throw new InvalidValue( 'No estimated delivery time provided for country: ' . $country );
 		}
 
-		$time = new DeliveryTime();
-		$time->setMinHandlingTimeInDays( 0 );
-		$time->setMaxHandlingTimeInDays( 0 );
-		$time->setMinTransitTimeInDays( (int) $this->delivery_times[ $country ]['time'] );
-		$time->setMaxTransitTimeInDays( (int) $this->delivery_times[ $country ]['max_time'] );
+		return [
+			'minHandlingDays' => 0,
+			'maxHandlingDays' => 0,
+			'minTransitDays'  => (int) $this->delivery_times[ $country ]['time'],
+			'maxTransitDays'  => (int) $this->delivery_times[ $country ]['max_time'],
+		];
+	}
 
-		return $time;
+	/**
+	 * Build a Merchant API price for the store currency.
+	 *
+	 * Convenience wrapper over MapiPriceTrait::mapi_price() that supplies the
+	 * adapter's configured currency.
+	 *
+	 * @param float $amount
+	 *
+	 * @return array
+	 */
+	protected function create_price( float $amount ): array {
+		return $this->mapi_price( $amount, $this->currency );
 	}
 
 	/**
@@ -132,8 +171,6 @@ abstract class AbstractShippingSettingsAdapter extends GoogleShippingSettings {
 	 * @param array $data
 	 *
 	 * @throws InvalidValue When the required parameters are not provided, or they are invalid.
-	 *
-	 * @link AbstractShippingSettingsAdapter::mapTypes() The $data input comes from this method.
 	 */
 	protected function validate_gla_data( array $data ): void {
 		if ( empty( $data['currency'] ) || ! is_string( $data['currency'] ) ) {
@@ -156,7 +193,7 @@ abstract class AbstractShippingSettingsAdapter extends GoogleShippingSettings {
 	}
 
 	/**
-	 * Parses the already validated input data and maps the provided shipping rates into MC shipping settings.
+	 * Parses the already validated input data and maps the provided shipping rates into services.
 	 *
 	 * @param array $data Validated data.
 	 */

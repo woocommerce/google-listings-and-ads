@@ -474,14 +474,14 @@ Triggered when datepicker (date ranger picker) is updated,
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L41)
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
 
-### [`gla_disconnected_accounts`](../../js/src/pages/settings/linked-accounts.js#L33)
+### [`gla_disconnected_accounts`](../../js/src/pages/settings/linked-accounts.js#L34)
 Accounts are disconnected from the Setting page
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | (`all-accounts`\|`ads-account`) - indicate which accounts have been disconnected.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/linked-accounts.js#L43)
+- [`exports`](../../js/src/pages/settings/linked-accounts.js#L44)
 
 ### [`gla_documentation_link_click`](../../js/src/components/app-documentation-link/index.js#L6)
 When a documentation link is clicked.
@@ -667,11 +667,6 @@ Triggered when changing products & variations filter,
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L41)
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
 
-### [`gla_free_campaign_edited`](../../js/src/pages/shipping/index.js#L30)
-Saving changes of audience and/or shipping settings to the product feed.
-#### Emitters
-- [`exports`](../../js/src/pages/shipping/index.js#L46)
-
 ### [`gla_gen_ai_image_picker_add_selected_images_click`](../../js/src/components/paid-ads/asset-group/asset-group-editor/gen-ai-image-picker/index.js#L22)
 Triggered when the "Add selected images" button is clicked.
 #### Properties
@@ -821,14 +816,14 @@ Clicking on the button to link the YouTube account.
 #### Emitters
 - [`ConnectedYouTubeAccountCard`](../../js/src/components/youtube-account-card/connected-youtube-account-card.js#L42) When the user clicks on the button to link the YouTube account.
 
-### [`gla_mc_account_connect_button_click`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L23)
+### [`gla_mc_account_connect_button_click`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L24)
 Clicking on the button to connect an existing Google Merchant Center account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `id` | `number` | The account ID to be connected.
 #### Emitters
-- [`ConnectMC`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L48)
+- [`ConnectMC`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L49)
 
 ### [`gla_mc_account_connect_different_account_button_click`](../../js/src/components/google-mc-account-card/disconnect-account-button.js#L16)
 Clicking on the "connect to a different Google Merchant Center account" button.
@@ -843,7 +838,7 @@ Clicking on the button to reclaim URL for a Google Merchant Center account.
 #### Emitters
 - [`ReclaimUrlCard`](../../js/src/components/google-mc-account-card/reclaim-url-card/index.js#L42)
 
-### [`gla_mc_account_switch_account_button_click`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L30)
+### [`gla_mc_account_switch_account_button_click`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L31)
 Clicking on the "Switch account" button to select a different Google Merchant Center account to connect.
 #### Properties
 | name | type | description |
@@ -1181,7 +1176,7 @@ Setup Merchant Center
 #### Emitters
 - [`GetStartedCard`](../../js/src/pages/get-started/get-started-card/index.js#L23) with `{ triggered_by: 'start-onboarding-button', action: 'go-to-onboarding', context: 'get-started' }`.
 - [`GetStartedWithHeroCard`](../../js/src/pages/get-started/get-started-with-hero-card/index.js#L24) with `{ triggered_by: 'start-onboarding-button', action: 'go-to-onboarding', context: 'get-started-with-hero' }`.
-- [`SavedSetupStepper`](../../js/src/pages/onboarding/setup-stepper/saved-setup-stepper.js#L42)
+- [`SavedSetupStepper`](../../js/src/pages/onboarding/setup-stepper/saved-setup-stepper.js#L49)
 	- with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button', action: 'go-to-step2' | 'go-to-step3' }`.
 	- with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
 - [`SetupTopBar`](../../js/src/pages/onboarding/setup-top-bar.js#L17) with `{ triggered_by: 'back-button', action: 'leave' }`.

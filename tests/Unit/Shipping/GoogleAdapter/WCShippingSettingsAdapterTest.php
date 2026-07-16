@@ -5,8 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping\Google
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\CountryRatesCollection;
-use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\PostcodesRateGroupAdapter;
-use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\StatesRateGroupAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\WCShippingSettingsAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingLocation;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRate;
@@ -14,10 +12,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\PostcodeRange;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRegion;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\DeliveryTime;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\PostalCodeGroup;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Price;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Service as GoogleShippingService;
 
 /**
  * Class WCShippingSettingsAdapterTest
@@ -45,11 +39,12 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 			]
 		);
 
-		$services = $settings->getServices();
+		$services = $settings->get_services();
 
 		$this->assertCount( 1, $services );
-		$this->assertCount( 1, $services[0]->getRateGroups() );
-		$this->assertInstanceOf( PostcodesRateGroupAdapter::class, $services[0]->getRateGroups()[0] );
+		$this->assertCount( 1, $services[0]['rateGroups'] );
+		$this->assertArrayHasKey( 'postalCodeGroupNames', $services[0]['rateGroups'][0]['mainTable']['rowHeaders'] );
+		$this->assertArrayHasKey( '123456', $settings->get_regions() );
 	}
 
 	public function test_skips_country_without_delivery_time_and_reports_error() {
@@ -84,14 +79,14 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 			]
 		);
 
-		$services = $settings->getServices();
+		$services = $settings->get_services();
 
 		// The country without a shipping time is left out with an error naming
 		// it; the remaining country's service still syncs, and the skipped
-		// country's postcode list is not sent without its service.
+		// country's postcode region is not sent without its service.
 		$this->assertCount( 1, $services );
-		$this->assertEquals( 'US', $services[0]->getDeliveryCountry() );
-		$this->assertCount( 0, $settings->getPostalCodeGroups() );
+		$this->assertEquals( 'US', $services[0]['deliveryCountries'][0] );
+		$this->assertCount( 0, $settings->get_regions() );
 		$this->assertCount( 1, $reported );
 		$this->assertStringContainsString( 'AU', $reported[0] );
 	}
@@ -115,11 +110,12 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 			]
 		);
 
-		$services = $settings->getServices();
+		$services = $settings->get_services();
 
 		$this->assertCount( 1, $services );
-		$this->assertCount( 1, $services[0]->getRateGroups() );
-		$this->assertInstanceOf( StatesRateGroupAdapter::class, $services[0]->getRateGroups()[0] );
+		$this->assertCount( 1, $services[0]['rateGroups'] );
+		$this->assertArrayHasKey( 'locations', $services[0]['rateGroups'][0]['mainTable']['rowHeaders'] );
+		$this->assertEmpty( $settings->get_regions() );
 	}
 
 	public function test_creates_separate_services_per_country_and_min_order_amount() {
@@ -150,27 +146,25 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 			]
 		);
 
-		$services = $settings->getServices();
+		$services = $settings->get_services();
 
 		$this->assertCount( 3, $services );
 
-		/** @var GoogleShippingService[] $min_order_services */
 		$min_order_services = array_filter(
 			$services,
-			function ( GoogleShippingService $service ) {
-				return null !== $service->getMinimumOrderValue();
+			function ( array $service ) {
+				return isset( $service['minimumOrderValue'] );
 			}
 		);
 		$this->assertCount( 1, $min_order_services );
 
 		$min_order_service = $min_order_services[ array_key_first( $min_order_services ) ];
-		$this->assertEquals( 'US', $min_order_service->getDeliveryCountry() );
-		$this->assertInstanceOf( Price::class, $min_order_service->getMinimumOrderValue() );
-		$this->assertEquals( 1000, $min_order_service->getMinimumOrderValue()->getValue() );
-		$this->assertEquals( 'USD', $min_order_service->getMinimumOrderValue()->getCurrency() );
+		$this->assertEquals( 'US', $min_order_service['deliveryCountries'][0] );
+		$this->assertEquals( '1000000000', $min_order_service['minimumOrderValue']['amountMicros'] );
+		$this->assertEquals( 'USD', $min_order_service['minimumOrderValue']['currencyCode'] );
 	}
 
-	public function test_sets_postcode_groups() {
+	public function test_sets_regions() {
 		$region_1        = new ShippingRegion(
 			'123456',
 			'US',
@@ -210,49 +204,42 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 			]
 		);
 
-		$postcode_groups = $settings->getPostalCodeGroups();
+		$regions = $settings->get_regions();
 
-		$this->assertCount( 3, $postcode_groups );
-
-		$postcode_names = array_map(
-			function ( PostalCodeGroup $postal_code_group ) {
-				return $postal_code_group->getName();
-			},
-			$postcode_groups
-		);
+		$this->assertCount( 3, $regions );
 		$this->assertEqualSets(
 			[
 				'123456',
 				'234567',
 				'345678',
 			],
-			$postcode_names
+			array_keys( $regions )
 		);
 
-		foreach ( $postcode_groups as $postal_code_group ) {
-			switch ( $postal_code_group->getName() ) {
+		foreach ( $regions as $region_id => $region ) {
+			switch ( $region_id ) {
 				case '123456':
-					$this->assertEquals( 'US', $postal_code_group->getCountry() );
-					$this->assertCount( 2, $postal_code_group->getPostalCodeRanges() );
-					foreach ( $postal_code_group->getPostalCodeRanges() as $postal_code_range ) {
-						if ( '2000' === $postal_code_range->getPostalCodeRangeBegin() ) {
-							$this->assertEquals( '2001', $postal_code_range->getPostalCodeRangeEnd() );
+					$this->assertEquals( 'US', $region['postalCodeArea']['regionCode'] );
+					$this->assertCount( 2, $region['postalCodeArea']['postalCodes'] );
+					foreach ( $region['postalCodeArea']['postalCodes'] as $postal_code ) {
+						if ( '2000' === $postal_code['begin'] ) {
+							$this->assertEquals( '2001', $postal_code['end'] );
 						} else {
-							$this->assertEquals( '1000', $postal_code_range->getPostalCodeRangeBegin() );
+							$this->assertEquals( '1000', $postal_code['begin'] );
 						}
 					}
 					break;
 				case '234567':
-					$this->assertEquals( 'US', $postal_code_group->getCountry() );
-					$this->assertCount( 1, $postal_code_group->getPostalCodeRanges() );
-					$this->assertEquals( '9000', $postal_code_group->getPostalCodeRanges()[0]->getPostalCodeRangeBegin() );
-					$this->assertEquals( '9001', $postal_code_group->getPostalCodeRanges()[0]->getPostalCodeRangeEnd() );
+					$this->assertEquals( 'US', $region['postalCodeArea']['regionCode'] );
+					$this->assertCount( 1, $region['postalCodeArea']['postalCodes'] );
+					$this->assertEquals( '9000', $region['postalCodeArea']['postalCodes'][0]['begin'] );
+					$this->assertEquals( '9001', $region['postalCodeArea']['postalCodes'][0]['end'] );
 					break;
 				case '345678':
-					$this->assertEquals( 'AU', $postal_code_group->getCountry() );
-					$this->assertCount( 1, $postal_code_group->getPostalCodeRanges() );
-					$this->assertEquals( '9000', $postal_code_group->getPostalCodeRanges()[0]->getPostalCodeRangeBegin() );
-					$this->assertEquals( '9001', $postal_code_group->getPostalCodeRanges()[0]->getPostalCodeRangeEnd() );
+					$this->assertEquals( 'AU', $region['postalCodeArea']['regionCode'] );
+					$this->assertCount( 1, $region['postalCodeArea']['postalCodes'] );
+					$this->assertEquals( '9000', $region['postalCodeArea']['postalCodes'][0]['begin'] );
+					$this->assertEquals( '9001', $region['postalCodeArea']['postalCodes'][0]['end'] );
 					break;
 				default:
 					break;
@@ -284,33 +271,29 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 			]
 		);
 
-		$services = $settings->getServices();
+		$services = $settings->get_services();
 
 		$this->assertCount( 2, $services );
 
-		/** @var GoogleShippingService[] $us_services */
 		$us_services = array_filter(
 			$services,
-			function ( GoogleShippingService $service ) {
-				return 'US' === $service->getDeliveryCountry();
+			function ( array $service ) {
+				return 'US' === $service['deliveryCountries'][0];
 			}
 		);
 		$us_service  = $us_services[ array_key_first( $us_services ) ];
-		$this->assertInstanceOf( DeliveryTime::class, $us_service->getDeliveryTime() );
-		$this->assertEquals( 10, $us_service->getDeliveryTime()->getMinTransitTimeInDays() );
-		$this->assertEquals( 10, $us_service->getDeliveryTime()->getMaxTransitTimeInDays() );
+		$this->assertEquals( 10, $us_service['deliveryTime']['minTransitDays'] );
+		$this->assertEquals( 10, $us_service['deliveryTime']['maxTransitDays'] );
 
-		/** @var GoogleShippingService[] $au_services */
 		$au_services = array_filter(
 			$services,
-			function ( GoogleShippingService $service ) {
-				return 'AU' === $service->getDeliveryCountry();
+			function ( array $service ) {
+				return 'AU' === $service['deliveryCountries'][0];
 			}
 		);
 		$au_service  = $au_services[ array_key_first( $au_services ) ];
-		$this->assertInstanceOf( DeliveryTime::class, $au_service->getDeliveryTime() );
-		$this->assertEquals( 5, $au_service->getDeliveryTime()->getMinTransitTimeInDays() );
-		$this->assertEquals( 6, $au_service->getDeliveryTime()->getMaxTransitTimeInDays() );
+		$this->assertEquals( 5, $au_service['deliveryTime']['minTransitDays'] );
+		$this->assertEquals( 6, $au_service['deliveryTime']['maxTransitDays'] );
 	}
 
 	public function test_sets_the_currency_provided() {
@@ -337,9 +320,9 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 			]
 		);
 
-		$this->assertCount( 2, $settings->getServices() );
-		$this->assertEquals( 'EUR', $settings->getServices()[0]->getCurrency() );
-		$this->assertEquals( 'EUR', $settings->getServices()[1]->getCurrency() );
+		$this->assertCount( 2, $settings->get_services() );
+		$this->assertEquals( 'EUR', $settings->get_services()[0]['currencyCode'] );
+		$this->assertEquals( 'EUR', $settings->get_services()[1]['currencyCode'] );
 	}
 
 	public function test_fails_if_no_rates_collections_provided() {
@@ -433,26 +416,26 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 			]
 		);
 
-		$services   = $settings->getServices();
+		$services   = $settings->get_services();
 		$by_country = [];
 		foreach ( $services as $service ) {
-			$by_country[ $service->getDeliveryCountry() ][] = $service;
+			$by_country[ $service['deliveryCountries'][0] ][] = $service;
 		}
 
 		$this->assertNotEmpty( $by_country['US'] );
 		$this->assertNotEmpty( $by_country['FR'] );
 
 		foreach ( $by_country['US'] as $service ) {
-			$this->assertEquals( 'USD', $service->getCurrency() );
-			if ( $service->getMinimumOrderValue() ) {
-				$this->assertEquals( 'USD', $service->getMinimumOrderValue()->getCurrency() );
+			$this->assertEquals( 'USD', $service['currencyCode'] );
+			if ( isset( $service['minimumOrderValue'] ) ) {
+				$this->assertEquals( 'USD', $service['minimumOrderValue']['currencyCode'] );
 			}
 		}
 
 		foreach ( $by_country['FR'] as $service ) {
-			$this->assertEquals( 'EUR', $service->getCurrency() );
-			if ( $service->getMinimumOrderValue() ) {
-				$this->assertEquals( 'EUR', $service->getMinimumOrderValue()->getCurrency() );
+			$this->assertEquals( 'EUR', $service['currencyCode'] );
+			if ( isset( $service['minimumOrderValue'] ) ) {
+				$this->assertEquals( 'EUR', $service['minimumOrderValue']['currencyCode'] );
 			}
 		}
 	}
@@ -490,23 +473,23 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 			]
 		);
 
-		foreach ( $settings->getServices() as $service ) {
-			$expected_currency = 'FR' === $service->getDeliveryCountry() ? 'EUR' : 'USD';
+		foreach ( $settings->get_services() as $service ) {
+			$expected_currency = 'FR' === $service['deliveryCountries'][0] ? 'EUR' : 'USD';
 
-			foreach ( $service->getRateGroups() as $rate_group ) {
-				if ( $rate_group->getSingleValue() ) {
+			foreach ( $service['rateGroups'] as $rate_group ) {
+				if ( isset( $rate_group['singleValue'] ) ) {
 					$this->assertEquals(
 						$expected_currency,
-						$rate_group->getSingleValue()->getFlatRate()->getCurrency()
+						$rate_group['singleValue']['flatRate']['currencyCode']
 					);
 				}
 
-				if ( $rate_group->getMainTable() ) {
-					foreach ( $rate_group->getMainTable()->getRows() as $row ) {
-						foreach ( $row->getCells() as $cell ) {
+				if ( isset( $rate_group['mainTable'] ) ) {
+					foreach ( $rate_group['mainTable']['rows'] as $row ) {
+						foreach ( $row['cells'] as $cell ) {
 							$this->assertEquals(
 								$expected_currency,
-								$cell->getFlatRate()->getCurrency()
+								$cell['flatRate']['currencyCode']
 							);
 						}
 					}
