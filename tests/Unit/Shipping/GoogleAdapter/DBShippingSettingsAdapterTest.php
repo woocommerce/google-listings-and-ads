@@ -72,6 +72,51 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 		}
 	}
 
+	public function test_skips_country_without_delivery_time_and_reports_error() {
+		$reported = [];
+		add_action(
+			'woocommerce_gla_error',
+			function ( $message ) use ( &$reported ) {
+				$reported[] = $message;
+			}
+		);
+
+		$db_rates = [
+			[
+				'country' => 'US',
+				'rate'    => 10,
+				'options' => [],
+			],
+			[
+				'country' => 'AU',
+				'rate'    => 50,
+				'options' => [],
+			],
+		];
+
+		$settings = new DBShippingSettingsAdapter(
+			[
+				'currency'       => 'USD',
+				'delivery_times' => [
+					'US' => [
+						'time'     => 1,
+						'max_time' => 3,
+					],
+				],
+				'db_rates'       => $db_rates,
+			]
+		);
+
+		$services = $settings->get_services();
+
+		// The country without a shipping time is left out with an error naming
+		// it; the remaining country's service still syncs.
+		$this->assertCount( 1, $services );
+		$this->assertEquals( 'US', $services[0]['deliveryCountries'][0] );
+		$this->assertCount( 1, $reported );
+		$this->assertStringContainsString( 'AU', $reported[0] );
+	}
+
 	public function test_ignores_negative_rates() {
 		$db_rates = [
 			[
