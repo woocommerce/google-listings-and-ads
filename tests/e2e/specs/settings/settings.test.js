@@ -364,15 +364,22 @@ test.describe( 'Settings', () => {
 			).not.toBeVisible();
 		} );
 
-		test( 'should not show the YouTube Shopping section', async () => {
-			// Wait for a stable element that's always present on a loaded page
+		test( 'should hide YouTube on the Accounts tab until Merchant Center is connected', async () => {
+			await settingsPage.gotoAccounts();
+
 			await page
 				.getByRole( 'button', { name: 'Disconnect from all accounts' } )
 				.waitFor();
 
 			await expect(
-				page.getByText( 'YouTube Shopping' )
+				page.getByRole( 'button', { name: 'Set up Merchant Center' } )
+			).toBeVisible();
+			await expect( settingsPage.youTubeAccountRow ).not.toBeVisible();
+			await expect(
+				page.getByRole( 'heading', { name: 'Grow your reach' } )
 			).not.toBeVisible();
+
+			await settingsPage.goto();
 		} );
 
 		test( 'should show the Audience section', async () => {

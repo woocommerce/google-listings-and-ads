@@ -43,6 +43,7 @@ const { CONNECTED, INCOMPLETE } = GOOGLE_ADS_ACCOUNT_STATUS;
  * @property {boolean} canDisconnect Whether an individual disconnect action is offered today.
  * @property {string} [disconnectTarget] Disconnect-modal target used when `canDisconnect` is true.
  * @property {boolean} [canConnect] Whether the account offers an in-page connect action when disconnected.
+ * @property {boolean} [isVisible] Whether the account row should be shown in this UI.
  */
 
 /**
@@ -162,8 +163,10 @@ export default function useConnectedAccounts() {
 			// YouTube can be individually disconnected while connected.
 			canDisconnect: isYouTubeConnected,
 			disconnectTarget: YOUTUBE_ACCOUNT,
-			// YouTube offers an in-page connect action when disconnected.
-			canConnect: true,
+			// Match the previous Settings behavior: YouTube setup is only
+			// available after Merchant Center is connected.
+			canConnect: hasGoogleMCConnection,
+			isVisible: hasGoogleMCConnection,
 		},
 	];
 

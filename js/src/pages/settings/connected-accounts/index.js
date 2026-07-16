@@ -95,6 +95,7 @@ export default function ConnectedAccounts() {
 				const sectionAccounts = accounts.filter(
 					( account ) =>
 						account.section === section.key &&
+						account.isVisible !== false &&
 						// Show a row only when the account is connected or it
 						// offers a connect action here (e.g. YouTube). This
 						// matches the previous UI, which omitted a card entirely
