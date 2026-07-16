@@ -35,10 +35,20 @@ import AppSpinner from '~/components/app-spinner';
  */
 
 /**
+ * Continuing the ads-only onboarding flow with a paid campaign configured.
+ *
+ * @event gla_ads_only_onboarding_with_paid_ads_continue_button_click
+ * @property {string} level The selected level of the budget recommendation, e.g. 'low', 'recommended', 'high', 'custom'.
+ * @property {number} budget The budget for the campaign.
+ * @property {string} audiences The targeted audiences for the campaign.
+ */
+
+/**
  * Renders the onboarding step for setting up the paid ads (Google Ads account and paid campaign)
  * or skipping it, and then completing the onboarding flow.
  *
  * @fires gla_ads_only_onboarding_with_cyo_incentive_selected
+ * @fires gla_ads_only_onboarding_with_paid_ads_continue_button_click
  *
  * @param {Object} props
  * @param {Function} props.onSubmit Callback fired when the user submits the paid ads creation form. Passes dailyBudget and hasConfirmedEuPoliticalContent.

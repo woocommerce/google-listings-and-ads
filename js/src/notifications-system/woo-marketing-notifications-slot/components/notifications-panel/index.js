@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Fragment } from '@wordpress/element';
+import { Fragment, useEffect } from '@wordpress/element';
 import {
 	Card,
 	CardHeader,
@@ -16,17 +16,37 @@ import { Badge } from '@woocommerce/components';
  * Internal dependencies
  */
 import useNotifications from '../../hooks/useNotifications';
+import { recordGlaEvent, CONTEXT_MARKETING_OVERVIEW } from '~/utils/tracks';
 import './index.scss';
+
+/**
+ * The `NotificationsPanel` component is rendered.
+ *
+ * @event gla_notifications_system_notifications_panel_shown
+ * @property {string} context Where the panel is shown, e.g. `'marketing-overview'`.
+ */
 
 /**
  * Renders the list of active notifications for the Woo Marketing Notifications Slot.
  *
  * @return {JSX.Element|null} A panel of notification cards, or null if there are no active notifications.
+ * @fires gla_notifications_system_notifications_panel_shown with `{ context: 'marketing-overview' }`.
  */
 const NotificationsPanel = () => {
 	const { notifications } = useNotifications();
+	const hasNotifications = notifications.length > 0;
 
-	if ( ! notifications.length ) {
+	useEffect( () => {
+		if ( ! hasNotifications ) {
+			return;
+		}
+
+		recordGlaEvent( 'gla_notifications_system_notifications_panel_shown', {
+			context: CONTEXT_MARKETING_OVERVIEW,
+		} );
+	}, [ hasNotifications ] );
+
+	if ( ! hasNotifications ) {
 		return null;
 	}
 

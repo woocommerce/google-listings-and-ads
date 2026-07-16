@@ -150,7 +150,7 @@
 			},
 			{
 				"path": "./js/build/index.js",
-				"maxSize": "21.5 kB"
+				"maxSize": "21.6 kB"
 			},
 			{
 				"path": "./js/build/commons.js",
@@ -162,7 +162,7 @@
 			},
 			{
 				"path": "./js/build/woo-marketing-notifications-slot.js",
-				"maxSize": "5 kB"
+				"maxSize": "17.9 kB"
 			},
 			{
 				"path": "./js/build/vendors.js",
@@ -222,7 +222,7 @@
 			},
 			{
 				"path": "./google-listings-and-ads.zip",
-				"maxSize": "8.5 mB",
+				"maxSize": "8.6 mB",
 				"compression": "none"
 			}
 		],
