@@ -55,6 +55,15 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 	 */
 	protected function map_rates_collections( array $rates_collections ): void {
 		foreach ( $rates_collections as $rates_collection ) {
+			// A country with rates but no shipping time is left out entirely,
+			// prices and regions alike, with an error, so one bad country
+			// cannot cancel the whole update and no region is sent without
+			// the service it belongs to.
+			if ( ! $this->has_delivery_time( $rates_collection->get_country() ) ) {
+				$this->report_country_missing_delivery_time( $rates_collection->get_country() );
+				continue;
+			}
+
 			// array_replace, not array_merge: region ids are numeric strings and
 			// array_merge would renumber them, breaking the table -> region reference.
 			$this->regions = array_replace( $this->regions, $this->get_location_rates_regions( $rates_collection->get_location_rates() ) );
