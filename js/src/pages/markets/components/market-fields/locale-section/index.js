@@ -24,6 +24,10 @@ const LocaleSection = () => {
 		adapter: { isPrimaryMarket },
 	} = useAdaptiveFormContext();
 
+	// Flat shipping is incompatible with multilingual feeds (the Markets
+	// dashboard shows a warning for that combination), so the language and
+	// currency controls are never offered for it; the backend fills in the
+	// site language and store currency for markets saved without them.
 	if (
 		settings?.shipping_rate === SHIPPING_RATE_METHOD.FLAT ||
 		( isPrimaryMarket && ! glaData.isMultiLingualStore )

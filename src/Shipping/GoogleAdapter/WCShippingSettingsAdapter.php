@@ -4,18 +4,11 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidArgument;
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\CountryRatesCollection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ServiceRatesCollection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingLocation;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\PostalCodeGroup;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\PostalCodeRange;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Price;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RateGroup;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Service as GoogleShippingService;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Value;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -28,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 	/**
-	 * Parses the already validated input data and maps the provided shipping rates into MC shipping settings.
+	 * Parses the already validated input data and maps the provided shipping rates into services.
 	 *
 	 * @param array $data Validated data.
 	 */
@@ -42,8 +35,6 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 	 * @param array $data
 	 *
 	 * @throws InvalidValue When the required parameters are not provided, or they are invalid.
-	 *
-	 * @link AbstractShippingSettingsAdapter::mapTypes() The $data input comes from this method.
 	 */
 	protected function validate_gla_data( array $data ): void {
 		parent::validate_gla_data( $data );
@@ -56,136 +47,118 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 	}
 
 	/**
-	 * Remove the extra data we added to the input array since the MC API doesn't expect them (and it will fail).
-	 *
-	 * @param array $data
-	 */
-	protected function unset_gla_data( array &$data ): void {
-		unset( $data['rates_collections'] );
-		parent::unset_gla_data( $data );
-	}
-
-	/**
-	 * Map the collections of location rates for each country to the shipping settings.
+	 * Map the collections of location rates for each country to services and regions.
 	 *
 	 * @param CountryRatesCollection[] $rates_collections
 	 *
 	 * @return void
 	 */
-	protected function map_rates_collections( array $rates_collections ) {
-		$postcode_groups = [];
-		$services        = [];
+	protected function map_rates_collections( array $rates_collections ): void {
 		foreach ( $rates_collections as $rates_collection ) {
-			$postcode_groups = array_merge( $postcode_groups, $this->get_location_rates_postcode_groups( $rates_collection->get_location_rates() ) );
+			// array_replace, not array_merge: region ids are numeric strings and
+			// array_merge would renumber them, breaking the table -> region reference.
+			$this->regions = array_replace( $this->regions, $this->get_location_rates_regions( $rates_collection->get_location_rates() ) );
 
 			foreach ( $rates_collection->get_rates_grouped_by_service() as $service_collection ) {
-				$services[] = $this->create_shipping_service( $service_collection );
+				$this->services[] = $this->create_shipping_service( $service_collection );
 			}
 		}
-
-		$this->setServices( $services );
-		$this->setPostalCodeGroups( array_values( $postcode_groups ) );
 	}
 
 	/**
 	 * @param LocationRate[] $location_rates
 	 * @param string         $shipping_area
 	 * @param array          $applicable_classes
+	 * @param string|null    $currency           Currency for the rate group prices. Must match the
+	 *                                           currency of the shipping service the group belongs to.
+	 *                                           Defaults to the store currency when omitted.
 	 *
-	 * @return RateGroup
+	 * @return array
 	 *
 	 * @throws InvalidArgument If an invalid value is provided for the shipping_area argument.
 	 */
-	protected function create_rate_group( array $location_rates, string $shipping_area, array $applicable_classes = [] ): RateGroup {
+	protected function create_rate_group( array $location_rates, string $shipping_area, array $applicable_classes = [], ?string $currency = null ): array {
+		$currency = $currency ?? $this->currency;
+
 		switch ( $shipping_area ) {
 			case ShippingLocation::COUNTRY_AREA:
 				// Each country can only have one global rate.
 				$country_rate = $location_rates[ array_key_first( $location_rates ) ];
-				$rate_group   = $this->create_single_value_rate_group( $country_rate, $applicable_classes );
-				break;
+				return $this->create_single_value_rate_group( $country_rate, $applicable_classes, $currency );
 			case ShippingLocation::POSTCODE_AREA:
-				$rate_group = new PostcodesRateGroupAdapter(
+				return ( new PostcodesRateGroupAdapter(
 					[
 						'location_rates'           => $location_rates,
-						'currency'                 => $this->currency,
+						'currency'                 => $currency,
 						'applicableShippingLabels' => $applicable_classes,
 					]
-				);
-				break;
+				) )->to_array();
 			case ShippingLocation::STATE_AREA:
-				$rate_group = new StatesRateGroupAdapter(
+				return ( new StatesRateGroupAdapter(
 					[
 						'location_rates'           => $location_rates,
-						'currency'                 => $this->currency,
+						'currency'                 => $currency,
 						'applicableShippingLabels' => $applicable_classes,
 					]
-				);
-				break;
+				) )->to_array();
 			default:
 				throw new InvalidArgument( 'Invalid shipping area.' );
 		}
-
-		return $rate_group;
 	}
 
 	/**
-	 * Create a shipping service object.
+	 * Create a shipping service.
 	 *
 	 * @param ServiceRatesCollection $service_collection
 	 *
-	 * @return GoogleShippingService
+	 * @return array
 	 */
-	protected function create_shipping_service( ServiceRatesCollection $service_collection ): GoogleShippingService {
+	protected function create_shipping_service( ServiceRatesCollection $service_collection ): array {
+		$country  = $service_collection->get_country();
+		$currency = $this->get_currency_for_country( $country );
+
+		// Rate group prices must be in the same currency as the service they
+		// belong to, so the per-country currency is resolved before building them.
 		$rate_groups   = [];
 		$shipping_area = $service_collection->get_shipping_area();
 		foreach ( $service_collection->get_rates_grouped_by_shipping_class() as $class => $location_rates ) {
 			$applicable_classes    = ! empty( $class ) ? [ $class ] : [];
-			$rate_groups[ $class ] = $this->create_rate_group( $location_rates, $shipping_area, $applicable_classes );
+			$rate_groups[ $class ] = $this->create_rate_group( $location_rates, $shipping_area, $applicable_classes, $currency );
 		}
 
-		$country  = $service_collection->get_country();
-		$currency = $this->get_currency_for_country( $country );
-		$name     = sprintf(
-		/* translators: %1 is a random 4-digit string, %2 is the country code  */
-			__( '[%1$s] Google for WooCommerce generated service - %2$s', 'google-listings-and-ads' ),
-			sprintf( '%04x', wp_rand( 0, 0xffff ) ),
-			$country
-		);
-
-		$service = new GoogleShippingService(
-			[
-				'active'          => true,
-				'deliveryCountry' => $country,
-				'currency'        => $currency,
-				'name'            => $name,
-				'deliveryTime'    => $this->get_delivery_time( $country ),
-				'rateGroups'      => array_values( $rate_groups ),
-			]
-		);
+		$service = [
+			'serviceName'       => sprintf(
+				/* translators: %1 is a random 4-digit string, %2 is the country code */
+				__( '[%1$s] Google for WooCommerce generated service - %2$s', 'google-listings-and-ads' ),
+				sprintf( '%04x', wp_rand( 0, 0xffff ) ),
+				$country
+			),
+			'active'            => true,
+			// One service per country; deliveryCountries is an array as MAPI requires.
+			'deliveryCountries' => [ $country ],
+			'currencyCode'      => $currency,
+			'deliveryTime'      => $this->get_delivery_time( $country ),
+			'shipmentType'      => 'DELIVERY',
+			'rateGroups'        => array_values( $rate_groups ),
+		];
 
 		$min_order_amount = $service_collection->get_min_order_amount();
 		if ( $min_order_amount ) {
-			$min_order_value = new Price(
-				[
-					'currency' => $currency,
-					'value'    => $min_order_amount,
-				]
-			);
-			$service->setMinimumOrderValue( $min_order_value );
+			$service['minimumOrderValue'] = $this->mapi_price( (float) $min_order_amount, $currency );
 		}
 
 		return $service;
 	}
 
 	/**
-	 * Extract and return the postcode groups for the given location rates.
+	 * Extract and return the Merchant API regions for the given location rates, keyed by region id.
 	 *
 	 * @param LocationRate[] $location_rates
 	 *
-	 * @return PostalCodeGroup[]
+	 * @return array<string, array>
 	 */
-	protected function get_location_rates_postcode_groups( array $location_rates ): array {
-		$postcode_groups = [];
+	protected function get_location_rates_regions( array $location_rates ): array {
+		$regions = [];
 
 		foreach ( $location_rates as $location_rate ) {
 			$location = $location_rate->get_location();
@@ -194,56 +167,55 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 			}
 			$region = $location->get_shipping_region();
 
-			$postcode_ranges = [];
+			$postal_codes = [];
 			foreach ( $region->get_postcode_ranges() as $postcode_range ) {
-				$postcode_ranges[] = new PostalCodeRange(
-					[
-						'postalCodeRangeBegin' => $postcode_range->get_start_code(),
-						'postalCodeRangeEnd'   => $postcode_range->get_end_code(),
-					]
-				);
+				$postal_code = [ 'begin' => (string) $postcode_range->get_start_code() ];
+				$end         = (string) $postcode_range->get_end_code();
+				if ( '' !== $end ) {
+					$postal_code['end'] = $end;
+				}
+				$postal_codes[] = $postal_code;
 			}
 
-			$postcode_groups[ $region->get_id() ] = new PostalCodeGroup(
-				[
-					'name'             => $region->get_id(),
-					'country'          => $location->get_country(),
-					'postalCodeRanges' => $postcode_ranges,
-				]
-			);
+			$regions[ $region->get_id() ] = [
+				'displayName'    => (string) $region->get_id(),
+				'postalCodeArea' => [
+					'regionCode'  => (string) $location->get_country(),
+					'postalCodes' => $postal_codes,
+				],
+			];
 		}
 
-		return $postcode_groups;
+		return $regions;
 	}
 
 	/**
 	 * @param LocationRate $location_rate
 	 * @param string[]     $shipping_classes
+	 * @param string|null  $currency         Currency for the rate group price. Must match the
+	 *                                       currency of the shipping service the group belongs to.
+	 *                                       Defaults to the store currency when omitted.
 	 *
-	 * @return RateGroup
+	 * @return array
 	 */
-	protected function create_single_value_rate_group( LocationRate $location_rate, array $shipping_classes = [] ): RateGroup {
-		$price = new Price(
-			[
-				'currency' => $this->currency,
-				'value'    => $location_rate->get_shipping_rate()->get_rate(),
-			]
-		);
+	protected function create_single_value_rate_group( LocationRate $location_rate, array $shipping_classes = [], ?string $currency = null ): array {
+		$rate_group = [
+			'singleValue' => [ 'flatRate' => $this->mapi_price( (float) $location_rate->get_shipping_rate()->get_rate(), $currency ?? $this->currency ) ],
+		];
 
-		return new RateGroup(
-			[
-				'singleValue'              => new Value( [ 'flatRate' => $price ] ),
-				'applicableShippingLabels' => $shipping_classes,
-			]
-		);
+		if ( ! empty( $shipping_classes ) ) {
+			$rate_group['applicableShippingLabels'] = array_values( $shipping_classes );
+		}
+
+		return $rate_group;
 	}
 
 	/**
 	 * @param array $rates_collections
 	 *
-	 * @throws InvalidClass If any of the objects in the array is not an instance of CountryRatesCollection.
+	 * @throws InvalidValue If any of the objects in the array is not an instance of CountryRatesCollection.
 	 */
-	protected function validate_rates_collections( array $rates_collections ) {
+	protected function validate_rates_collections( array $rates_collections ): void {
 		array_walk(
 			$rates_collections,
 			function ( $obj ) {

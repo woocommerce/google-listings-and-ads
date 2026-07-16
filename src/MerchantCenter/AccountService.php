@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
 use Automattic\Jetpack\Connection\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountHomepageService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
@@ -274,6 +275,7 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 	 */
 	public function disconnect() {
 		$this->options->delete( OptionsInterface::CONTACT_INFO_SETUP );
+		$this->options->delete( OptionsInterface::MAPI_DATA_SOURCES );
 		$this->options->delete( OptionsInterface::MC_SETUP_COMPLETED_AT );
 		$this->options->delete( OptionsInterface::MERCHANT_ACCOUNT_STATE );
 		$this->options->delete( OptionsInterface::MERCHANT_CENTER );
@@ -351,7 +353,8 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 					case 'claim':
 						// At this step, the website URL is assumed to be correct.
 						// If the URL is already claimed, no claim should be attempted.
-						if ( $merchant->get_accountstatus( $merchant_id )->getWebsiteClaimed() ) {
+						$homepage = $this->container->get( MapiAccountHomepageService::class )->get_homepage( $merchant_id );
+						if ( ! empty( $homepage['claimed'] ) ) {
 							break;
 						}
 
@@ -475,7 +478,8 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 
 		if ( untrailingslashit( $site_url ) !== untrailingslashit( $account_url ) ) {
 
-			$is_website_claimed = $merchant->get_accountstatus( $merchant_id )->getWebsiteClaimed();
+			$homepage           = $this->container->get( MapiAccountHomepageService::class )->get_homepage( $merchant_id );
+			$is_website_claimed = ! empty( $homepage['claimed'] );
 
 			if ( ! empty( $account_url ) && $is_website_claimed && ! $this->allow_switch_url ) {
 				$state                              = $this->state->get();

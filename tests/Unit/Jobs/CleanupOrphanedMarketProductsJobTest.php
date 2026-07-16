@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
@@ -15,7 +14,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product as GoogleProduct;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Helper_Product;
 
@@ -76,27 +74,33 @@ class CleanupOrphanedMarketProductsJobTest extends UnitTest {
 		$this->assertEquals( self::JOB_NAME, $this->job->get_name() );
 	}
 
-	public function test_schedule_throws_when_feed_label_missing() {
+	public function test_schedule_throws_when_feed_labels_missing() {
 		$this->expectException( InvalidValue::class );
 
 		$this->job->schedule();
 	}
 
-	public function test_schedule_throws_when_feed_label_empty_string() {
+	public function test_schedule_throws_when_feed_labels_empty() {
 		$this->expectException( InvalidValue::class );
 
-		$this->job->schedule( [ 'feed_label' => '' ] );
+		$this->job->schedule( [ 'feed_labels' => [] ] );
 	}
 
-	public function test_schedule_schedules_immediate_with_feed_label() {
+	public function test_schedule_throws_when_feed_labels_not_an_array() {
+		$this->expectException( InvalidValue::class );
+
+		$this->job->schedule( [ 'feed_labels' => 'GB' ] );
+	}
+
+	public function test_schedule_schedules_immediate_with_feed_labels() {
 		$this->action_scheduler->method( 'has_scheduled_action' )->willReturn( false );
 		$this->merchant_center->method( 'is_ready_for_syncing' )->willReturn( true );
 
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'schedule_immediate' )
-			->with( self::PROCESS_ITEM_HOOK, [ [ 'GB' ] ] );
+			->with( self::PROCESS_ITEM_HOOK, [ [ 'feed_labels' => [ 'GB', 'GB-CY' ] ] ] );
 
-		$this->job->schedule( [ 'feed_label' => 'GB' ] );
+		$this->job->schedule( [ 'feed_labels' => [ 'GB', 'GB-CY' ] ] );
 	}
 
 	public function test_process_items_builds_request_entry_per_product_for_feed_label() {
@@ -136,12 +140,14 @@ class CleanupOrphanedMarketProductsJobTest extends UnitTest {
 			)
 			->willReturn( new BatchProductResponse( [], [] ) );
 
-		do_action( self::PROCESS_ITEM_HOOK, [ 'GB' ] );
+		do_action( self::PROCESS_ITEM_HOOK, [ 'feed_labels' => [ 'GB' ] ] );
 	}
 
-	public function test_process_items_calls_remove_google_id_on_success() {
-		$product   = WC_Helper_Product::create_simple_product();
-		$google_id = 'online:en:GB:gla_' . $product->get_id();
+	public function test_process_items_builds_request_entries_for_every_given_feed_label() {
+		$product      = WC_Helper_Product::create_simple_product();
+		$bare_id      = 'online:en:GB:gla_' . $product->get_id();
+		$language_id  = 'online:cy:GB-CY:gla_' . $product->get_id();
+		$unrelated_id = 'online:en:US:gla_' . $product->get_id();
 
 		$this->product_repository->method( 'find_synced_product_ids' )
 			->willReturn( [ $product->get_id() ] );
@@ -149,23 +155,36 @@ class CleanupOrphanedMarketProductsJobTest extends UnitTest {
 			->willReturn( [ $product ] );
 
 		$this->product_helper->method( 'get_synced_google_product_ids' )
-			->willReturn( [ 'GB' => $google_id ] );
-		$this->product_helper->method( 'get_wc_product' )
-			->with( $product->get_id() )
-			->willReturn( $product );
+			->willReturn(
+				[
+					'US'    => $unrelated_id,
+					'GB'    => $bare_id,
+					'GB-CY' => $language_id,
+				]
+			);
 
-		$google_product = $this->createMock( GoogleProduct::class );
-		$google_product->method( 'getId' )->willReturn( $google_id );
-		$deleted_entry = new BatchProductEntry( $product->get_id(), $google_product );
+		$this->product_syncer->expects( $this->once() )
+			->method( 'delete_by_batch_requests' )
+			->with(
+				$this->callback(
+					function ( $entries ) use ( $bare_id, $language_id ) {
+						$requested_ids = array_map(
+							function ( BatchProductIDRequestEntry $entry ) {
+								return $entry->get_product_id();
+							},
+							array_values( $entries )
+						);
+						sort( $requested_ids );
+						$expected = [ $bare_id, $language_id ];
+						sort( $expected );
 
-		$this->product_syncer->method( 'delete_by_batch_requests' )
-			->willReturn( new BatchProductResponse( [ $deleted_entry ], [] ) );
+						return $requested_ids === $expected;
+					}
+				)
+			)
+			->willReturn( new BatchProductResponse( [], [] ) );
 
-		$this->product_helper->expects( $this->once() )
-			->method( 'remove_google_id' )
-			->with( $product, $google_id );
-
-		do_action( self::PROCESS_ITEM_HOOK, [ 'GB' ] );
+		do_action( self::PROCESS_ITEM_HOOK, [ 'feed_labels' => [ 'GB', 'GB-CY' ] ] );
 	}
 
 	public function test_process_items_leaves_local_meta_intact_on_api_failure() {
@@ -187,7 +206,7 @@ class CleanupOrphanedMarketProductsJobTest extends UnitTest {
 		$this->product_helper->expects( $this->never() )
 			->method( 'remove_google_id' );
 
-		do_action( self::PROCESS_ITEM_HOOK, [ 'GB' ] );
+		do_action( self::PROCESS_ITEM_HOOK, [ 'feed_labels' => [ 'GB' ] ] );
 	}
 
 	public function test_process_items_skips_products_with_no_entry_for_feed_label() {
@@ -208,7 +227,7 @@ class CleanupOrphanedMarketProductsJobTest extends UnitTest {
 		$this->product_syncer->expects( $this->never() )
 			->method( 'delete_by_batch_requests' );
 
-		do_action( self::PROCESS_ITEM_HOOK, [ 'GB' ] );
+		do_action( self::PROCESS_ITEM_HOOK, [ 'feed_labels' => [ 'GB' ] ] );
 	}
 
 	public function test_process_items_returns_early_when_no_synced_products() {
@@ -217,6 +236,6 @@ class CleanupOrphanedMarketProductsJobTest extends UnitTest {
 		$this->product_syncer->expects( $this->never() )
 			->method( 'delete_by_batch_requests' );
 
-		do_action( self::PROCESS_ITEM_HOOK, [ 'GB' ] );
+		do_action( self::PROCESS_ITEM_HOOK, [ 'feed_labels' => [ 'GB' ] ] );
 	}
 }
