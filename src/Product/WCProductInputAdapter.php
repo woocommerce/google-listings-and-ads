@@ -335,17 +335,21 @@ class WCProductInputAdapter {
 		if ( '' !== $this->currency_override && null !== $this->wpml ) {
 			$converted = $this->wpml->get_product_price_in_currency( $this->wc_product, $this->currency_override );
 
-			if ( null !== $converted ) {
-				$price = $this->tax_excluded
-					? wc_get_price_excluding_tax( $this->wc_product, [ 'price' => $converted ] )
-					: wc_get_price_including_tax( $this->wc_product, [ 'price' => $converted ] );
-
-				/** This filter is documented in src/Product/WCProductAdapter.php */
-				$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $this->wc_product, $this->tax_excluded );
-
-				$this->attributes['price'] = $this->to_money( (float) $price, strtoupper( $this->currency_override ) );
+			// No price in the override currency: leave it unset so this currency's feed is skipped,
+			// not emitted with the store-currency price mislabelled.
+			if ( null === $converted ) {
 				return;
 			}
+
+			$price = $this->tax_excluded
+				? wc_get_price_excluding_tax( $this->wc_product, [ 'price' => $converted ] )
+				: wc_get_price_including_tax( $this->wc_product, [ 'price' => $converted ] );
+
+			/** This filter is documented in src/Product/WCProductAdapter.php */
+			$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $this->wc_product, $this->tax_excluded );
+
+			$this->attributes['price'] = $this->to_money( (float) $price, strtoupper( $this->currency_override ) );
+			return;
 		}
 
 		$regular_price = $this->wc_product->get_regular_price();
