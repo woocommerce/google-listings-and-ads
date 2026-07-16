@@ -16,6 +16,15 @@ import {
 import Notification from './notification';
 import useNotificationsSystemMap from './useNotificationsSystemMap';
 import { GLA_NOTIFICATION_DISMISSED } from '~/constants';
+import { recordGlaEvent, CONTEXT_MARKETING_OVERVIEW } from '~/utils/tracks';
+
+/**
+ * A merchant dismisses a notification.
+ *
+ * @event gla_notifications_system_notification_dismissed
+ * @property {string} context Where the notification is shown, e.g. `'marketing-overview'`.
+ * @property {string} id The notification ID.
+ */
 
 /**
  * Creates a notification component.
@@ -23,6 +32,7 @@ import { GLA_NOTIFICATION_DISMISSED } from '~/constants';
  * @param {string} id Notification ID, used to call dismissNotification on dismiss.
  * @param {number} triggeredAt Unix timestamp (seconds) when the notification was triggered.
  * @return {Function} A function that returns a React component.
+ * @fires gla_notifications_system_notification_dismissed with `{ context: 'marketing-overview', id }`.
  */
 function createNotificationComponent( id, triggeredAt ) {
 	return function NotificationComponent() {
@@ -39,6 +49,10 @@ function createNotificationComponent( id, triggeredAt ) {
 		const handleDismiss = () => {
 			dismissNotification( id );
 			doAction( GLA_NOTIFICATION_DISMISSED );
+			recordGlaEvent( 'gla_notifications_system_notification_dismissed', {
+				context: CONTEXT_MARKETING_OVERVIEW,
+				id,
+			} );
 		};
 
 		return createElement( Notification, {
