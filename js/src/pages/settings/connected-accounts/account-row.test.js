@@ -76,7 +76,7 @@ describe( 'AccountRow', () => {
 					appearance: APPEARANCE.YOUTUBE,
 					title: 'YouTube',
 					description:
-						'Promote your products on YouTube via Shopping ads.',
+						'List your products on YouTube and track sales from your videos.',
 					connected: true,
 					detail: 'My YouTube Channel',
 					detailUrl:

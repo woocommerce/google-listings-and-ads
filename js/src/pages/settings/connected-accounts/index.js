@@ -23,7 +23,7 @@ const SECTIONS = [
 		key: ACCOUNT_SECTION.REQUIRED,
 		title: __( 'Required', 'google-listings-and-ads' ),
 		description: __(
-			'Connected for you during setup. The extension needs these to run.',
+			'The extension needs these to run.',
 			'google-listings-and-ads'
 		),
 	},
@@ -31,7 +31,7 @@ const SECTIONS = [
 		key: ACCOUNT_SECTION.GROW,
 		title: __( 'Grow your reach', 'google-listings-and-ads' ),
 		description: __(
-			'Optional. Put your store in front of more shoppers, on Google Maps, Search, and YouTube.',
+			'Optional. Connect more Google services to your store.',
 			'google-listings-and-ads'
 		),
 	},

@@ -165,7 +165,7 @@ export default function useConnectedAccounts() {
 			appearance: APPEARANCE.YOUTUBE,
 			title: __( 'YouTube', 'google-listings-and-ads' ),
 			description: __(
-				'Promote your products on YouTube via Shopping ads.',
+				'List your products on YouTube and track sales from your videos.',
 				'google-listings-and-ads'
 			),
 			status: youTubeStatus,
