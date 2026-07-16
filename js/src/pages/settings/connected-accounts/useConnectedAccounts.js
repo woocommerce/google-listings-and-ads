@@ -38,6 +38,7 @@ const { CONNECTED, INCOMPLETE } = GOOGLE_ADS_ACCOUNT_STATUS;
  * @property {string} title Account name.
  * @property {string} description Short account description.
  * @property {boolean} connected Whether the account is currently connected.
+ * @property {string} [status] Raw connection status used for special-case rendering.
  * @property {string} [detail] Human-readable account detail (email, id, channel).
  * @property {boolean} canDisconnect Whether an individual disconnect action is offered today.
  * @property {string} [disconnectTarget] Disconnect-modal target used when `canDisconnect` is true.
@@ -78,12 +79,11 @@ export default function useConnectedAccounts() {
 	const hasAdsAccount = [ CONNECTED, INCOMPLETE ].includes(
 		googleAdsAccount?.status
 	);
-	// Mirror the YouTube account card: connected and incomplete are both shown
-	// as an established connection.
+	const youTubeStatus = youTubeAccount?.status;
 	const isYouTubeConnected = [
 		YOUTUBE_ACCOUNT_STATUS.CONNECTED,
 		YOUTUBE_ACCOUNT_STATUS.INCOMPLETE,
-	].includes( youTubeAccount?.status );
+	].includes( youTubeStatus );
 
 	const accounts = [
 		{
@@ -156,6 +156,7 @@ export default function useConnectedAccounts() {
 				'Promote your products on YouTube via Shopping ads.',
 				'google-listings-and-ads'
 			),
+			status: youTubeStatus,
 			connected: isYouTubeConnected,
 			detail: youTubeAccount?.channel?.label || '',
 			// YouTube can be individually disconnected while connected.

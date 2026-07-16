@@ -9,9 +9,47 @@ import { moreVertical } from '@wordpress/icons';
  * Internal dependencies
  */
 import Badge from '~/components/badge';
+import { YOUTUBE_ACCOUNT_STATUS } from '~/constants';
 import YouTubeConnectButton from './youtube-connect-button';
 import MerchantCenterConnectButton from './merchant-center-connect-button';
 import { ACCOUNT_LOGOS } from './account-logos';
+import IncompleteYouTubeAccountRow from './incomplete-youtube-account-row';
+
+/**
+ * Renders the per-account actions menu when an individual disconnect is supported.
+ *
+ * @param {Object} props Component props.
+ * @param {import('./useConnectedAccounts').ConnectedAccountItem} props.account Account item.
+ * @param {(target: string) => void} props.onDisconnect Called with the account's disconnect-modal target when the Disconnect action is chosen.
+ * @return {JSX.Element|null} The actions menu, if available.
+ */
+function AccountActions( { account, onDisconnect } ) {
+	if ( ! account.canDisconnect ) {
+		return null;
+	}
+
+	return (
+		<DropdownMenu
+			icon={ moreVertical }
+			label={ __( 'Account actions', 'google-listings-and-ads' ) }
+			popoverProps={ { placement: 'bottom-end' } }
+		>
+			{ ( { onClose } ) => (
+				<MenuGroup>
+					<MenuItem
+						isDestructive
+						onClick={ () => {
+							onClose();
+							onDisconnect( account.disconnectTarget );
+						} }
+					>
+						{ __( 'Disconnect', 'google-listings-and-ads' ) }
+					</MenuItem>
+				</MenuGroup>
+			) }
+		</DropdownMenu>
+	);
+}
 
 /**
  * Renders the right-hand side of an account row: the connection status (a
@@ -19,10 +57,10 @@ import { ACCOUNT_LOGOS } from './account-logos';
  *
  * @param {Object} props Component props.
  * @param {import('./useConnectedAccounts').ConnectedAccountItem} props.account Account item.
- * @param {(target: string) => void} props.onDisconnect Called with the account's disconnect-modal target when the Disconnect action is chosen.
+ * @param {JSX.Element|null} props.actions Account actions menu.
  * @return {JSX.Element} The row indicator.
  */
-function RowIndicator( { account, onDisconnect } ) {
+function RowIndicator( { account, actions } ) {
 	if ( ! account.connected ) {
 		// Render the account's in-page connect action, where one is offered.
 		if ( account.id === 'youtube' ) {
@@ -39,30 +77,7 @@ function RowIndicator( { account, onDisconnect } ) {
 			<Badge intent="success">
 				{ __( 'Connected', 'google-listings-and-ads' ) }
 			</Badge>
-			{ account.canDisconnect && (
-				<DropdownMenu
-					icon={ moreVertical }
-					label={ __( 'Account actions', 'google-listings-and-ads' ) }
-					popoverProps={ { placement: 'bottom-end' } }
-				>
-					{ ( { onClose } ) => (
-						<MenuGroup>
-							<MenuItem
-								isDestructive
-								onClick={ () => {
-									onClose();
-									onDisconnect( account.disconnectTarget );
-								} }
-							>
-								{ __(
-									'Disconnect',
-									'google-listings-and-ads'
-								) }
-							</MenuItem>
-						</MenuGroup>
-					) }
-				</DropdownMenu>
-			) }
+			{ actions }
 		</Flex>
 	);
 }
@@ -77,6 +92,25 @@ function RowIndicator( { account, onDisconnect } ) {
  * @return {JSX.Element} The account row.
  */
 export default function AccountRow( { account, onDisconnect } ) {
+	const actions = (
+		<AccountActions account={ account } onDisconnect={ onDisconnect } />
+	);
+
+	if (
+		account.id === 'youtube' &&
+		account.status === YOUTUBE_ACCOUNT_STATUS.INCOMPLETE
+	) {
+		return (
+			<IncompleteYouTubeAccountRow
+				account={ {
+					...account,
+					logo: ACCOUNT_LOGOS[ account.appearance ],
+				} }
+				actions={ actions }
+			/>
+		);
+	}
+
 	return (
 		<div className="gla-connected-accounts__row">
 			<img
@@ -100,10 +134,7 @@ export default function AccountRow( { account, onDisconnect } ) {
 				) }
 			</div>
 			<div className="gla-connected-accounts__indicator">
-				<RowIndicator
-					account={ account }
-					onDisconnect={ onDisconnect }
-				/>
+				<RowIndicator account={ account } actions={ actions } />
 			</div>
 		</div>
 	);

@@ -63,10 +63,24 @@
 		font-weight: 500;
 	}
 
+	&__notice {
+		margin-top: 12px;
+	}
+
 	&__indicator {
 		flex: 0 0 auto;
 		display: flex;
 		align-items: center;
 		align-self: center;
+	}
+
+	&__indicator--top {
+		align-self: flex-start;
+	}
+
+	&__indicator-actions {
+		display: flex;
+		align-items: center;
+		gap: 12px;
 	}
 }

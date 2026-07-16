@@ -188,7 +188,7 @@ test.describe( 'Settings', () => {
 		test.describe( 'when account is not connected', () => {
 			test( 'should show connect button when account is not connected', async () => {
 				await settingsPage.mockYouTubeAccountNotConnected();
-				await settingsPage.goto();
+				await settingsPage.gotoAccounts();
 
 				await expect(
 					settingsPage.getYouTubeConnectButton()
@@ -201,7 +201,7 @@ test.describe( 'Settings', () => {
 		test.describe( 'when account is connected', () => {
 			test.beforeAll( async () => {
 				await settingsPage.mockYouTubeAccountConnected();
-				await settingsPage.goto();
+				await settingsPage.gotoAccounts();
 			} );
 
 			test.afterAll( async () => {
@@ -210,10 +210,12 @@ test.describe( 'Settings', () => {
 
 			test( 'should show the channel name and disconnect button when account is connected', async () => {
 				await expect(
-					settingsPage.youTubeCard.getByText( 'My YouTube Channel' )
+					settingsPage.youTubeAccountRow.getByText(
+						'My YouTube Channel'
+					)
 				).toBeVisible();
 				await expect(
-					settingsPage.getYouTubeDisconnectButton()
+					settingsPage.getYouTubeAccountActionsButton()
 				).toBeVisible();
 			} );
 
@@ -224,7 +226,8 @@ test.describe( 'Settings', () => {
 				const requestPromise =
 					settingsPage.registerYouTubeDisconnectRequest();
 
-				await settingsPage.getYouTubeDisconnectButton().click();
+				await settingsPage.getYouTubeAccountActionsButton().click();
+				await settingsPage.getYouTubeDisconnectMenuItem().click();
 
 				await requestPromise;
 
@@ -236,9 +239,8 @@ test.describe( 'Settings', () => {
 
 		test.describe( 'when account setup is incomplete', () => {
 			test.beforeAll( async () => {
-				await settingsPage.mockYouTubeAccountConnected();
 				await settingsPage.mockYouTubeAccountIncomplete();
-				await settingsPage.goto();
+				await settingsPage.gotoAccounts();
 			} );
 
 			test.afterAll( async () => {
@@ -248,7 +250,7 @@ test.describe( 'Settings', () => {
 
 			test( 'should show a notice if the YouTube account is incomplete', async () => {
 				await expect(
-					settingsPage.youTubeCard.getByText(
+					settingsPage.youTubeAccountRow.getByText(
 						'Your YouTube account is connected, but setup isn’t complete yet.'
 					)
 				).toBeVisible();
@@ -265,7 +267,7 @@ test.describe( 'Settings', () => {
 				await requestPromise;
 
 				await expect(
-					settingsPage.youTubeCard.getByText(
+					settingsPage.youTubeAccountRow.getByText(
 						'The channel is not eligible for the linking program.'
 					)
 				).toBeVisible();
@@ -274,7 +276,7 @@ test.describe( 'Settings', () => {
 			test( 'should complete YouTube account setup successfully', async () => {
 				await settingsPage.mockEligibleYouTubeChannel();
 				// Reload so the page starts from the clean incomplete state.
-				await settingsPage.goto();
+				await settingsPage.gotoAccounts();
 
 				const requestPromise =
 					settingsPage.registerYouTubeCompleteSetupRequest();
@@ -284,12 +286,44 @@ test.describe( 'Settings', () => {
 				await requestPromise;
 
 				await settingsPage.mockYouTubeAccountConnected();
-				await settingsPage.goto();
+				await settingsPage.gotoAccounts();
 
 				await expect(
-					settingsPage.youTubeCard.getByText( 'My YouTube Channel' )
+					settingsPage.youTubeAccountRow.getByText(
+						'My YouTube Channel'
+					)
 				).toBeVisible();
 			} );
+		} );
+
+		test( 'should auto-complete YouTube setup after returning from OAuth to the Accounts tab', async () => {
+			await settingsPage.mockYouTubeAccountConnected();
+			await settingsPage
+				.withFulfillTimes( 1 )
+				.mockYouTubeAccountIncomplete();
+
+			try {
+				await settingsPage.mockEligibleYouTubeChannel();
+
+				const requestPromise =
+					settingsPage.registerYouTubeCompleteSetupRequest();
+
+				await settingsPage.gotoAccounts( 'youtube=connected' );
+
+				await requestPromise;
+
+				await expect(
+					settingsPage.youTubeAccountRow.getByText(
+						'My YouTube Channel'
+					)
+				).toBeVisible();
+				await expect( page ).toHaveURL(
+					/path=%2Fgoogle%2Fsettings&section=accounts$/
+				);
+			} finally {
+				await page.unroute( /\/wc\/gla\/youtube\/setup\/complete\b/ );
+				await page.unroute( /\/wc\/gla\/youtube\/connection\b/ );
+			}
 		} );
 	} );
 
