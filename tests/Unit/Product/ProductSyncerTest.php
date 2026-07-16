@@ -22,6 +22,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductT
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as GoogleException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product as GoogleProduct;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\ConnectException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Request;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Helper_Product;
 use WC_Product;
@@ -113,12 +116,13 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 	 *
 	 * @param array $synced_products   WC product IDs.
 	 * @param array $rejected_products WC product IDs.
+	 * @param int   $failure_status    HTTP status to use for failures (500 or 429 to retry).
 	 */
-	protected function mock_mapi_inputs( array $synced_products, array $rejected_products ): void {
+	protected function mock_mapi_inputs( array $synced_products, array $rejected_products, int $failure_status = 500 ): void {
 		$this->mapi_inputs->expects( $this->any() )
 			->method( 'insert_many' )
 			->willReturnCallback(
-				function ( array $inputs ) use ( $synced_products, $rejected_products ) {
+				function ( array $inputs ) use ( $synced_products, $rejected_products, $failure_status ) {
 					$successes = [];
 					$failures  = [];
 					foreach ( $inputs as $index => $input ) {
@@ -126,7 +130,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 						if ( isset( $synced_products[ $product_id ] ) ) {
 							$successes[ $index ] = $input;
 						} elseif ( isset( $rejected_products[ $product_id ] ) ) {
-							$failures[ $index ] = new MerchantApiException( 500, [], 'Internal Error!' );
+							$failures[ $index ] = new MerchantApiException( $failure_status, [], 'Internal Error!' );
 						}
 					}
 
@@ -157,6 +161,289 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 			$this->assertEquals( SyncStatus::HAS_ERRORS, $this->product_meta->get_sync_status( $wc_product ) );
 			$this->assertEquals( 1, $this->product_meta->get_failed_sync_attempts( $wc_product ) );
 		}
+	}
+
+	public function test_update_rate_limited_products_are_retried_not_dropped() {
+		[ $synced_products, $rejected_products ] = $this->create_multiple_simple_product_sets( 2, 2 );
+
+		$batch_helper = $this->getMockBuilder( BatchProductHelper::class )
+								->setMethods( [ 'generate_mapi_update_entries' ] )
+								->setConstructorArgs(
+									[
+										$this->product_meta,
+										$this->product_helper,
+										$this->target_audience,
+										$this->rules_query,
+										$this->container->get( AttributeManager::class ),
+									]
+								)
+								->getMock();
+		$batch_helper->expects( $this->once() )
+			->method( 'generate_mapi_update_entries' )
+			->willReturnCallback(
+				function ( array $products ) {
+					return array_map(
+						function ( WC_Product $product ) {
+							return [
+								'product' => $product,
+								'country' => 'US',
+								'input'   => new ProductInput( "gla_{$product->get_id()}", 'en', 'US', [ 'title' => $product->get_title() ] ),
+							];
+						},
+						$products
+					);
+				}
+			);
+
+		$this->mock_mapi_inputs( $synced_products, $rejected_products, 429 );
+		$product_syncer = $this->get_product_syncer( [ 'batch_helper' => $batch_helper ] );
+
+		$product_syncer->update( array_merge( $synced_products, $rejected_products ) );
+
+		// A 429 is transient: rate-limited products are rescheduled, not dropped as invalid.
+		$this->assertEquals( 1, did_action( 'woocommerce_gla_batch_retry_update_products' ) );
+		foreach ( $rejected_products as $product ) {
+			$wc_product = wc_get_product( $product->get_id() );
+			$this->assertEquals( SyncStatus::HAS_ERRORS, $this->product_meta->get_sync_status( $wc_product ) );
+		}
+	}
+
+	public function test_delete_rate_limited_products_are_retried_not_dropped() {
+		[ $deleted_products, $rejected_products ] = $this->create_multiple_simple_product_sets( 2, 2 );
+		$products                                 = array_merge( $deleted_products, $rejected_products );
+
+		array_walk(
+			$products,
+			function ( WC_Product $product ) {
+				$this->product_helper->mark_as_synced(
+					$product,
+					$this->generate_google_product_mock( "en~US~gla_{$product->get_id()}", 'US' )
+				);
+			}
+		);
+
+		$this->mock_mapi_delete( $deleted_products, $rejected_products, 429 );
+
+		$this->product_syncer->delete( $products );
+
+		// A 429 is transient: rate-limited deletes are rescheduled, not dropped as invalid.
+		$this->assertEquals( 1, did_action( 'woocommerce_gla_batch_retry_delete_products' ) );
+	}
+
+	public function test_sync_concurrency_is_filterable() {
+		[ $synced_products ] = $this->create_multiple_simple_product_sets( 1, 0 );
+
+		$batch_helper = $this->getMockBuilder( BatchProductHelper::class )
+								->setMethods( [ 'generate_mapi_update_entries' ] )
+								->setConstructorArgs(
+									[
+										$this->product_meta,
+										$this->product_helper,
+										$this->target_audience,
+										$this->rules_query,
+										$this->container->get( AttributeManager::class ),
+									]
+								)
+								->getMock();
+		$batch_helper->expects( $this->once() )
+			->method( 'generate_mapi_update_entries' )
+			->willReturnCallback(
+				function ( array $products ) {
+					return array_map(
+						function ( WC_Product $product ) {
+							return [
+								'product' => $product,
+								'country' => 'US',
+								'input'   => new ProductInput( "gla_{$product->get_id()}", 'en', 'US', [ 'title' => $product->get_title() ] ),
+							];
+						},
+						$products
+					);
+				}
+			);
+
+		$captured_concurrency = null;
+		$this->mapi_inputs->expects( $this->once() )
+			->method( 'insert_many' )
+			->willReturnCallback(
+				function ( array $inputs, int $concurrency ) use ( &$captured_concurrency ) {
+					$captured_concurrency = $concurrency;
+
+					return [
+						'successes' => $inputs,
+						'failures'  => [],
+					];
+				}
+			);
+
+		add_filter(
+			'woocommerce_gla_mapi_product_concurrency',
+			function () {
+				return 25;
+			}
+		);
+		$this->get_product_syncer( [ 'batch_helper' => $batch_helper ] )->update( $synced_products );
+		remove_all_filters( 'woocommerce_gla_mapi_product_concurrency' );
+
+		$this->assertEquals( 25, $captured_concurrency );
+	}
+
+	public function test_update_stores_the_sync_hash_on_success() {
+		[ $synced_products ] = $this->create_multiple_simple_product_sets( 1, 0 );
+		$product             = reset( $synced_products );
+
+		$batch_helper = $this->getMockBuilder( BatchProductHelper::class )
+								->setMethods( [ 'generate_mapi_update_entries' ] )
+								->setConstructorArgs(
+									[
+										$this->product_meta,
+										$this->product_helper,
+										$this->target_audience,
+										$this->rules_query,
+										$this->container->get( AttributeManager::class ),
+									]
+								)
+								->getMock();
+		$batch_helper->expects( $this->once() )
+			->method( 'generate_mapi_update_entries' )
+			->willReturnCallback(
+				function ( array $products ) {
+					return array_map(
+						function ( WC_Product $product ) {
+							return [
+								'product' => $product,
+								'country' => 'US',
+								'input'   => new ProductInput( "gla_{$product->get_id()}", 'en', 'US', [ 'title' => $product->get_title() ] ),
+								'hash'    => 'testhash123',
+							];
+						},
+						$products
+					);
+				}
+			);
+
+		$this->mapi_inputs->expects( $this->once() )
+			->method( 'insert_many' )
+			->willReturnCallback(
+				function ( array $inputs ) {
+					return [
+						'successes' => $inputs,
+						'failures'  => [],
+					];
+				}
+			);
+
+		$this->get_product_syncer( [ 'batch_helper' => $batch_helper ] )->update( $synced_products );
+
+		$this->assertEquals( 'testhash123', $this->product_meta->get_sync_hash( $product ) );
+	}
+
+	public function test_update_connection_errors_are_retried_not_dropped() {
+		[ , $rejected_products ] = $this->create_multiple_simple_product_sets( 0, 1 );
+
+		$batch_helper = $this->getMockBuilder( BatchProductHelper::class )
+								->setMethods( [ 'generate_mapi_update_entries' ] )
+								->setConstructorArgs(
+									[
+										$this->product_meta,
+										$this->product_helper,
+										$this->target_audience,
+										$this->rules_query,
+										$this->container->get( AttributeManager::class ),
+									]
+								)
+								->getMock();
+		$batch_helper->expects( $this->once() )
+			->method( 'generate_mapi_update_entries' )
+			->willReturnCallback(
+				function ( array $products ) {
+					return array_map(
+						function ( WC_Product $product ) {
+							return [
+								'product' => $product,
+								'country' => 'US',
+								'input'   => new ProductInput( "gla_{$product->get_id()}", 'en', 'US', [ 'title' => $product->get_title() ] ),
+							];
+						},
+						$products
+					);
+				}
+			);
+
+		$this->mapi_inputs->expects( $this->once() )
+			->method( 'insert_many' )
+			->willReturnCallback(
+				function ( array $inputs ) {
+					$failures = [];
+					foreach ( array_keys( $inputs ) as $index ) {
+						$failures[ $index ] = new ConnectException( 'Connection timed out', new Request( 'POST', 'https://example.test' ) );
+					}
+
+					return [
+						'successes' => [],
+						'failures'  => $failures,
+					];
+				}
+			);
+
+		$this->get_product_syncer( [ 'batch_helper' => $batch_helper ] )->update( $rejected_products );
+
+		// A connection error is transient: the product is rescheduled, not marked permanently invalid.
+		$this->assertEquals( 1, did_action( 'woocommerce_gla_batch_retry_update_products' ) );
+	}
+
+	public function test_update_no_response_transport_errors_are_retried_not_dropped() {
+		[ , $rejected_products ] = $this->create_multiple_simple_product_sets( 0, 1 );
+
+		$batch_helper = $this->getMockBuilder( BatchProductHelper::class )
+								->setMethods( [ 'generate_mapi_update_entries' ] )
+								->setConstructorArgs(
+									[
+										$this->product_meta,
+										$this->product_helper,
+										$this->target_audience,
+										$this->rules_query,
+										$this->container->get( AttributeManager::class ),
+									]
+								)
+								->getMock();
+		$batch_helper->expects( $this->once() )
+			->method( 'generate_mapi_update_entries' )
+			->willReturnCallback(
+				function ( array $products ) {
+					return array_map(
+						function ( WC_Product $product ) {
+							return [
+								'product' => $product,
+								'country' => 'US',
+								'input'   => new ProductInput( "gla_{$product->get_id()}", 'en', 'US', [ 'title' => $product->get_title() ] ),
+							];
+						},
+						$products
+					);
+				}
+			);
+
+		$this->mapi_inputs->expects( $this->once() )
+			->method( 'insert_many' )
+			->willReturnCallback(
+				function ( array $inputs ) {
+					$failures = [];
+					foreach ( array_keys( $inputs ) as $index ) {
+						$failures[ $index ] = new RequestException( 'connection reset', new Request( 'POST', 'https://example.test' ) );
+					}
+
+					return [
+						'successes' => [],
+						'failures'  => $failures,
+					];
+				}
+			);
+
+		$this->get_product_syncer( [ 'batch_helper' => $batch_helper ] )->update( $rejected_products );
+
+		// A transport error with no HTTP response is transient: the product is rescheduled.
+		$this->assertEquals( 1, did_action( 'woocommerce_gla_batch_retry_update_products' ) );
 	}
 
 	public function test_delete() {

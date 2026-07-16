@@ -338,6 +338,75 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertSame( 'VariationColor', $attrs['color'] );
 	}
 
+	public function test_generate_skips_unchanged_recently_synced_product() {
+		$this->target_audience->expects( $this->any() )->method( 'get_main_target_country' )->willReturn( 'US' );
+		$this->target_audience->expects( $this->any() )->method( 'get_target_countries' )->willReturn( [ 'US' ] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$product = WC_Helper_Product::create_simple_product();
+
+		// First pass builds the entry and its payload hash.
+		$entries = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		$this->assertCount( 1, $entries );
+		$hash = $entries[0]['hash'];
+
+		// Simulate a successful sync of that payload.
+		$this->product_meta->update_sync_hash( $product, $hash );
+		$this->product_meta->update_synced_at( $product, time() );
+
+		// Unchanged and recently synced: skipped.
+		$this->assertEmpty( $this->batch_product_helper->generate_mapi_update_entries( [ $product ] ) );
+
+		// Stale sync (older than the expiry window): not skipped, so it gets refreshed.
+		$this->product_meta->update_synced_at( $product, time() - ( 26 * DAY_IN_SECONDS ) );
+		$this->assertCount( 1, $this->batch_product_helper->generate_mapi_update_entries( [ $product ] ) );
+	}
+
+	public function test_force_resync_filter_includes_unchanged_product() {
+		$this->target_audience->expects( $this->any() )->method( 'get_main_target_country' )->willReturn( 'US' );
+		$this->target_audience->expects( $this->any() )->method( 'get_target_countries' )->willReturn( [ 'US' ] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$product = WC_Helper_Product::create_simple_product();
+		$entries = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		$this->product_meta->update_sync_hash( $product, $entries[0]['hash'] );
+		$this->product_meta->update_synced_at( $product, time() );
+
+		// Would be skipped without the filter.
+		$this->assertEmpty( $this->batch_product_helper->generate_mapi_update_entries( [ $product ] ) );
+
+		add_filter( 'woocommerce_gla_force_product_resync', '__return_true' );
+		$forced = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		remove_filter( 'woocommerce_gla_force_product_resync', '__return_true' );
+
+		$this->assertCount( 1, $forced );
+	}
+
+	public function test_freshness_filter_is_clamped_to_the_expiry_window() {
+		$this->target_audience->expects( $this->any() )->method( 'get_main_target_country' )->willReturn( 'US' );
+		$this->target_audience->expects( $this->any() )->method( 'get_target_countries' )->willReturn( [ 'US' ] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$product = WC_Helper_Product::create_simple_product();
+		$entries = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		$this->product_meta->update_sync_hash( $product, $entries[0]['hash'] );
+		// Synced 30 days ago: past the 25-day resubmission window.
+		$this->product_meta->update_synced_at( $product, time() - ( 30 * DAY_IN_SECONDS ) );
+
+		// A freshness filter above the expiry window must not let the product be skipped,
+		// or ResubmitExpiringProducts would no-op and the product could expire out of MC.
+		add_filter(
+			'woocommerce_gla_sync_hash_freshness',
+			function () {
+				return 60 * DAY_IN_SECONDS;
+			}
+		);
+		$entries2 = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		remove_all_filters( 'woocommerce_gla_sync_hash_freshness' );
+
+		$this->assertCount( 1, $entries2 );
+	}
+
 	/**
 	 * @return WC_Product[]
 	 */
