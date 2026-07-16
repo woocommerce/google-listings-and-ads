@@ -375,7 +375,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 					$this->get_market_feed_label_variants(
 						$old_feed_label,
 						is_array( $existing['language'] ?? null ) ? $existing['language'] : [],
-						$this->get_market_currency( $existing )
+						$this->get_market_currencies( $existing )
 					),
 					$new_labels
 				)
@@ -561,7 +561,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 						'feed_labels' => $this->get_market_feed_label_variants(
 							$feed_label,
 							is_array( $deleted_config['language'] ?? null ) ? $deleted_config['language'] : [],
-							$this->get_market_currency( $deleted_config )
+							$this->get_market_currencies( $deleted_config )
 						),
 					]
 				);
@@ -650,20 +650,55 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Returns a market's effective currency code: the first configured entry
-	 * of its `currency[]` list, or the store currency when none is set. This
-	 * is the currency the market's prices are submitted in.
+	 * Returns a market's configured currency codes (unfiltered), or an empty array when none are set.
 	 *
 	 * @param array $market The market config.
 	 *
-	 * @return string
+	 * @return string[]
 	 */
-	private function get_market_currency( array $market ): string {
-		$currency = is_array( $market['currency'] ?? null )
-			? (string) ( $market['currency'][0] ?? '' )
-			: (string) ( $market['currency'] ?? '' );
+	private function get_market_currencies( array $market ): array {
+		if ( ! is_array( $market['currency'] ?? null ) ) {
+			return [];
+		}
 
-		return '' === $currency ? get_woocommerce_currency() : $currency;
+		// Uppercase to match WCML's uppercase currency_options keys and dedupe case-insensitively.
+		$currencies = array_map(
+			static function ( $code ): string {
+				return strtoupper( (string) $code );
+			},
+			$market['currency']
+		);
+
+		return array_values( array_unique( array_filter( $currencies ) ) );
+	}
+
+	/**
+	 * The currencies a market emits a feed for under a language: its currency[] narrowed to those
+	 * enabled for the language via WCML. No configured currencies means one effective currency; an
+	 * empty language is not narrowed. May be empty if every currency is disabled for the language.
+	 *
+	 * @param array  $market   The market config.
+	 * @param string $language Language code the feed syncs under, or '' when the market has no languages.
+	 *
+	 * @return string[]
+	 */
+	public function get_market_currencies_for_language( array $market, string $language ): array {
+		$currencies = $this->get_market_currencies( $market );
+
+		if ( empty( $currencies ) ) {
+			// No configured currency: one feed under the '' sentinel (get_market_feed_label
+			// resolves it to the store currency).
+			return [ '' ];
+		}
+
+		$normalised = $this->normalise_language_codes( [ $language ] );
+		$language   = $normalised[0] ?? '';
+
+		if ( '' === $language ) {
+			return $currencies;
+		}
+
+		return $this->wpml->get_currencies_enabled_for_language( $currencies, $language );
 	}
 
 	/**
@@ -724,25 +759,27 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		foreach ( $this->get_stored_secondary_markets() as $market ) {
 			$market          = $this->apply_site_locale_when_not_multilingual( $market );
 			$base_feed_label = (string) ( $market['feed_label'] ?? '' );
-			$currency        = $this->get_market_currency( $market );
 			$languages       = is_array( $market['language'] ?? null ) ? $market['language'] : [];
 
 			if ( empty( $languages ) ) {
-				// A market with no configured languages accepts every product;
-				// all its entries sync under the site-language label, so it
-				// contributes that single label matching every language.
-				$markets[] = [
-					'feed_label' => $this->get_market_feed_label( $base_feed_label, '', $currency ),
-					'languages'  => [],
-				];
+				// A market with no languages syncs under the site-language label: one label
+				// per enabled currency.
+				foreach ( $this->get_market_currencies_for_language( $market, '' ) as $currency ) {
+					$markets[] = [
+						'feed_label' => $this->get_market_feed_label( $base_feed_label, '', $currency ),
+						'languages'  => [],
+					];
+				}
 				continue;
 			}
 
 			foreach ( $languages as $language ) {
-				$markets[] = [
-					'feed_label' => $this->get_market_feed_label( $base_feed_label, (string) $language, $currency ),
-					'languages'  => [ (string) $language ],
-				];
+				foreach ( $this->get_market_currencies_for_language( $market, (string) $language ) as $currency ) {
+					$markets[] = [
+						'feed_label' => $this->get_market_feed_label( $base_feed_label, (string) $language, $currency ),
+						'languages'  => [ (string) $language ],
+					];
+				}
 			}
 		}
 
@@ -750,34 +787,31 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Returns every `google_ids` key a market's entries can be stored under:
-	 * the stored base feed label, the superseded currency-only label, and one
-	 * language-currency label per configured language.
+	 * Returns every `google_ids` key a market's entries can be stored under: the base feed label,
+	 * the superseded currency-only label, and one language-currency label per configured language
+	 * and currency. The base and currency-only labels are always included so entries synced before
+	 * the language scheme are still cleaned up.
 	 *
-	 * The base label and the currency-only label are always included so
-	 * entries synced before the language component was added to the scheme
-	 * are still found and cleaned up.
-	 *
-	 * @param string $feed_label The market's stored feed label.
-	 * @param array  $languages  The market's configured language codes. An
-	 *                           empty list contributes the site-language label.
-	 * @param string $currency   The market's effective currency code.
+	 * @param string   $feed_label The market's stored feed label.
+	 * @param array    $languages  The market's configured language codes. An
+	 *                             empty list contributes the site-language label.
+	 * @param string[] $currencies The market's configured currency codes.
 	 *
 	 * @return string[]
 	 */
-	private function get_market_feed_label_variants( string $feed_label, array $languages, string $currency ): array {
-		if ( '' === $currency ) {
-			$currency = get_woocommerce_currency();
-		}
+	private function get_market_feed_label_variants( string $feed_label, array $languages, array $currencies ): array {
+		$currencies = empty( $currencies ) ? [ get_woocommerce_currency() ] : $currencies;
+		$languages  = empty( $languages ) ? [ '' ] : $languages;
 
-		$variants = [
-			$feed_label,
-			$feed_label . '-' . strtoupper( $currency ),
-		];
+		$variants = [ $feed_label ];
 
-		$languages = empty( $languages ) ? [ '' ] : $languages;
-		foreach ( $languages as $language ) {
-			$variants[] = $this->get_market_feed_label( $feed_label, (string) $language, $currency );
+		foreach ( $currencies as $currency ) {
+			$currency   = '' === (string) $currency ? get_woocommerce_currency() : (string) $currency;
+			$variants[] = $feed_label . '-' . strtoupper( $currency );
+
+			foreach ( $languages as $language ) {
+				$variants[] = $this->get_market_feed_label( $feed_label, (string) $language, $currency );
+			}
 		}
 
 		return array_values( array_unique( $variants ) );
@@ -798,11 +832,12 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			? $market['language']
 			: [ '' ];
 
-		$currency = $this->get_market_currency( $market );
-		$labels   = [];
+		$labels = [];
 
 		foreach ( $languages as $language ) {
-			$labels[] = $this->get_market_feed_label( $feed_label, (string) $language, $currency );
+			foreach ( $this->get_market_currencies_for_language( $market, (string) $language ) as $currency ) {
+				$labels[] = $this->get_market_feed_label( $feed_label, (string) $language, $currency );
+			}
 		}
 
 		return array_values( array_unique( $labels ) );
@@ -1122,6 +1157,23 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			}
 			if ( ! is_array( $config[ $key ] ) ) {
 				throw InvalidValue::not_array( $key );
+			}
+		}
+
+		// Every currency must be enabled for at least one selected language, else no feed could
+		// ever be generated for it.
+		$languages  = $this->normalise_language_codes( array_map( 'strval', $config['language'] ) );
+		$currencies = array_values( array_filter( array_map( 'strval', $config['currency'] ) ) );
+
+		if ( ! empty( $currencies ) && ! empty( $languages ) ) {
+			$enabled = [];
+			foreach ( $languages as $language ) {
+				$enabled = array_merge( $enabled, $this->wpml->get_currencies_enabled_for_language( $currencies, (string) $language ) );
+			}
+			$enabled = array_values( array_unique( $enabled ) );
+
+			if ( ! empty( array_diff( $currencies, $enabled ) ) ) {
+				throw InvalidValue::not_in_allowed_list( 'currency', $enabled );
 			}
 		}
 	}
