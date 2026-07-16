@@ -60,17 +60,16 @@ export default function ConnectedAccounts() {
 	const [ openedModal, setOpenedModal ] = useState( null );
 
 	const handleDisconnected = () => {
+		const disconnectedTarget = openedModal;
+
 		queueRecordGlaEvent( 'gla_disconnected_accounts', {
-			context: openedModal,
+			context: disconnectedTarget,
 		} );
 
-		// Reload WC admin page to update the `glaData` initiated from the static script.
-		const nextPage =
-			openedModal === ALL_ACCOUNTS
-				? adminUrl + getGetStartedUrl()
-				: window.location.href;
-
-		window.location.href = nextPage;
+		if ( disconnectedTarget === ALL_ACCOUNTS ) {
+			// Reload WC admin page to update the `glaData` initiated from the static script.
+			window.location.href = adminUrl + getGetStartedUrl();
+		}
 	};
 
 	if ( isLoading ) {

@@ -222,18 +222,36 @@ test.describe( 'Settings', () => {
 			test( 'should disconnect YouTube account and show Connect button', async () => {
 				await settingsPage.mockYouTubeAccountNotConnected();
 				await settingsPage.mockYouTubeDisconnect();
+				await page.evaluate( () => {
+					window.__youtubeDisconnectMarker = 'persisted';
+				} );
 
 				const requestPromise =
 					settingsPage.registerYouTubeDisconnectRequest();
 
 				await settingsPage.getYouTubeAccountActionsButton().click();
 				await settingsPage.getYouTubeDisconnectMenuItem().click();
+				await page
+					.getByRole( 'checkbox', {
+						name: 'Yes, I want to disconnect my YouTube account.',
+					} )
+					.check();
+				await page
+					.getByRole( 'button', {
+						name: 'Disconnect YouTube account',
+					} )
+					.click();
 
 				await requestPromise;
 
 				await expect(
 					settingsPage.getYouTubeConnectButton()
 				).toBeVisible();
+				await expect
+					.poll( () =>
+						page.evaluate( () => window.__youtubeDisconnectMarker )
+					)
+					.toBe( 'persisted' );
 			} );
 		} );
 
