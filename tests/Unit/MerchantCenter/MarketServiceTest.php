@@ -2218,6 +2218,8 @@ class MarketServiceTest extends UnitTest {
 
 		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
 		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		// Non-store-currency markets only contribute labels while conversion is available.
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
 
 		$result = $this->market_service->get_all_feed_labels();
 
@@ -2256,6 +2258,7 @@ class MarketServiceTest extends UnitTest {
 
 		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
 		$this->set_up_primary_market_dependencies( 'US', [ 'US', 'CA' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
 
 		$result = $this->market_service->get_all_countries();
 
@@ -3025,6 +3028,7 @@ class MarketServiceTest extends UnitTest {
 			]
 		);
 		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
 
 		$this->assertTrue( $this->market_service->has_syncable_markets() );
 	}
@@ -3556,6 +3560,7 @@ class MarketServiceTest extends UnitTest {
 			]
 		);
 		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
 
 		$this->assertSame( [ 'US', 'BE-NL-EUR', 'BE-FR-EUR' ], $this->market_service->get_all_feed_labels() );
 	}
@@ -3583,18 +3588,20 @@ class MarketServiceTest extends UnitTest {
 		);
 	}
 
-	public function test_get_all_feed_labels_ignores_stored_currency_when_not_multilingual(): void {
-		// A currency saved while a multilingual integration was active (for
-		// example EUR on a USD store) must not drive the derived label once
-		// the integration is gone: without it the store can only submit
-		// prices in its own currency.
+	public function test_get_all_feed_labels_ignores_stored_language_when_not_multilingual(): void {
+		// A language saved while a multilingual integration was active must
+		// not drive the derived label once the integration is gone: without
+		// it every product syncs in the site language. The market keeps the
+		// store currency so it still takes part in syncing; a market stored
+		// with a non-store currency is excluded entirely, covered by
+		// test_get_all_feed_labels_omits_excluded_market_so_stale_cleanup_removes_its_entries.
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MARKETS => [
 					'ae' => [
 						'country'    => 'AE',
 						'language'   => [ 'fr' ],
-						'currency'   => [ 'EUR' ],
+						'currency'   => [ get_woocommerce_currency() ],
 						'feed_label' => 'AE',
 					],
 				],
@@ -3687,7 +3694,7 @@ class MarketServiceTest extends UnitTest {
 					'ae' => [
 						'country'    => 'AE',
 						'language'   => [ 'fr' ],
-						'currency'   => [ 'EUR' ],
+						'currency'   => [ get_woocommerce_currency() ],
 						'feed_label' => 'AE',
 					],
 				],
@@ -3717,6 +3724,7 @@ class MarketServiceTest extends UnitTest {
 			]
 		);
 		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
 
 		$this->assertSame( [ 'BE-FR-EUR' ], $this->market_service->get_feed_labels_for_language( 'fr' ) );
 		$this->assertSame( [ 'US' ], $this->market_service->get_feed_labels_for_language( 'en' ) );
@@ -3744,6 +3752,7 @@ class MarketServiceTest extends UnitTest {
 			]
 		);
 		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US', 'CA' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
 
 		// Manual markets are excluded — their shipping is managed outside the plugin.
 		$this->assertSame(
@@ -3767,11 +3776,210 @@ class MarketServiceTest extends UnitTest {
 			]
 		);
 		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US', 'FR' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
 
 		$this->assertSame(
 			[ 'US', 'FR' ],
 			$this->market_service->get_shipping_sync_countries()
 		);
+	}
+
+	public function test_get_participating_markets_excludes_foreign_currency_market_without_conversion(): void {
+		$secondary = [
+			'fr' => [
+				'country'    => 'FR',
+				'language'   => [ 'fr' ],
+				'currency'   => [ 'EUR' ],
+				'feed_label' => 'FR',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+
+		$participating = $this->market_service->get_participating_markets();
+
+		$this->assertArrayHasKey( 'primary', $participating );
+		$this->assertArrayNotHasKey( 'fr', $participating );
+
+		// The stored market itself is untouched and still visible to the UI.
+		$this->assertArrayHasKey( 'fr', $this->market_service->get_markets() );
+	}
+
+	public function test_get_participating_markets_includes_foreign_currency_market_with_conversion(): void {
+		$secondary = [
+			'fr' => [
+				'country'    => 'FR',
+				'language'   => [ 'fr' ],
+				'currency'   => [ 'EUR' ],
+				'feed_label' => 'FR',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
+
+		$this->assertArrayHasKey( 'fr', $this->market_service->get_participating_markets() );
+	}
+
+	public function test_get_participating_markets_always_includes_store_currency_market(): void {
+		$secondary = [
+			'fr' => [
+				'country'    => 'FR',
+				'language'   => [ 'fr' ],
+				'currency'   => [ get_woocommerce_currency() ],
+				'feed_label' => 'FR',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+
+		$this->assertArrayHasKey( 'fr', $this->market_service->get_participating_markets() );
+	}
+
+	public function test_get_excluded_market_countries_lists_foreign_currency_markets_without_conversion(): void {
+		$secondary = [
+			'fr' => [
+				'country'    => 'FR',
+				'language'   => [ 'fr' ],
+				'currency'   => [ 'EUR' ],
+				'feed_label' => 'FR',
+			],
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ get_woocommerce_currency() ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+
+		$this->assertSame( [ 'FR' ], $this->market_service->get_excluded_market_countries() );
+	}
+
+	public function test_get_all_feed_labels_omits_excluded_market_so_stale_cleanup_removes_its_entries(): void {
+		$secondary = [
+			'fr' => [
+				'country'    => 'FR',
+				'language'   => [ 'fr' ],
+				'currency'   => [ 'EUR' ],
+				'feed_label' => 'FR',
+			],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $secondary,
+				OptionsInterface::MERCHANT_CENTER => [ 'language' => [ 'en' ] ],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+
+		$this->assertSame( [ 'US' ], $this->market_service->get_all_feed_labels() );
+	}
+
+	public function test_conversion_availability_change_schedules_resync_and_shipping_sync(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::CURRENCY_CONVERSION_AVAILABLE => 'yes',
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'    => 'FR',
+						'language'   => [ 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'FR',
+					],
+				],
+			]
+		);
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+
+		$this->shipping_settings_job->expects( $this->once() )->method( 'schedule' );
+		$this->update_all_products_job->expects( $this->once() )->method( 'schedule' );
+
+		$this->invoke_conversion_availability_handler();
+
+		$this->assertSame(
+			'no',
+			$this->options->get( OptionsInterface::CURRENCY_CONVERSION_AVAILABLE )
+		);
+	}
+
+	public function test_conversion_availability_first_run_records_state_without_scheduling(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'    => 'FR',
+						'language'   => [ 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'FR',
+					],
+				],
+			]
+		);
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+
+		$this->shipping_settings_job->expects( $this->never() )->method( 'schedule' );
+		$this->update_all_products_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->invoke_conversion_availability_handler();
+
+		$this->assertSame(
+			'no',
+			$this->options->get( OptionsInterface::CURRENCY_CONVERSION_AVAILABLE )
+		);
+	}
+
+	public function test_conversion_availability_change_without_foreign_currency_markets_does_not_schedule(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::CURRENCY_CONVERSION_AVAILABLE => 'yes',
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'    => 'FR',
+						'language'   => [ 'fr' ],
+						'currency'   => [ get_woocommerce_currency() ],
+						'feed_label' => 'FR',
+					],
+				],
+			]
+		);
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+
+		$this->shipping_settings_job->expects( $this->never() )->method( 'schedule' );
+		$this->update_all_products_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->invoke_conversion_availability_handler();
+	}
+
+	public function test_conversion_availability_unchanged_does_nothing(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::CURRENCY_CONVERSION_AVAILABLE => 'no',
+				OptionsInterface::MARKETS => [],
+			]
+		);
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+
+		$this->options->expects( $this->never() )->method( 'update' );
+		$this->shipping_settings_job->expects( $this->never() )->method( 'schedule' );
+		$this->update_all_products_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->invoke_conversion_availability_handler();
+	}
+
+	private function invoke_conversion_availability_handler(): void {
+		$method = ( new \ReflectionClass( MarketService::class ) )->getMethod( 'handle_conversion_availability_change' );
+		$method->setAccessible( true );
+		$method->invoke( $this->market_service );
 	}
 
 	public function test_add_market_copies_primary_shipping_rows_for_uncovered_country(): void {

@@ -242,9 +242,29 @@ class GoogleProductService implements OptionsAwareInterface, Service {
 	protected static function get_batch_response_error_messages( GoogleBatchResponseEntry $batch_response_entry ): array {
 		$errors = [];
 		foreach ( $batch_response_entry->getErrors()->getErrors() as $error ) {
-			$errors[ $error->getReason() ] = $error->getMessage();
+			$errors[ self::normalise_error_reason( (string) $error->getReason() ) ] = $error->getMessage();
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * Normalises a batch error reason to the camelCase form used by the reason
+	 * constants (e.g. `internal_error` becomes `internalError`).
+	 *
+	 * Google has sent the same failure under both spellings, and a reason that
+	 * does not match the constants is invisible to the retry and
+	 * failure-tracking logic keyed off these values.
+	 *
+	 * @param string $reason The error reason as sent by Google.
+	 *
+	 * @return string
+	 */
+	protected static function normalise_error_reason( string $reason ): string {
+		if ( false === strpos( $reason, '_' ) ) {
+			return $reason;
+		}
+
+		return lcfirst( str_replace( ' ', '', ucwords( str_replace( '_', ' ', $reason ) ) ) );
 	}
 }
