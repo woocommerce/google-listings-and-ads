@@ -47,6 +47,50 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 		$this->assertArrayHasKey( '123456', $settings->get_regions() );
 	}
 
+	public function test_skips_country_without_delivery_time_and_reports_error() {
+		$reported = [];
+		add_action(
+			'woocommerce_gla_error',
+			function ( $message ) use ( &$reported ) {
+				$reported[] = $message;
+			}
+		);
+
+		$location_rate_us = new LocationRate( new ShippingLocation( 1, 'US' ), new ShippingRate( 100 ) );
+
+		// The skipped country's rate is limited to a postcode region, proving
+		// its postcode list is excluded along with its prices.
+		$au_region        = new ShippingRegion( '654321', 'AU', [ new PostcodeRange( '2000' ) ] );
+		$location_rate_au = new LocationRate( new ShippingLocation( 2, 'AU', null, $au_region ), new ShippingRate( 50 ) );
+
+		$settings = new WCShippingSettingsAdapter(
+			[
+				'currency'          => 'USD',
+				'rates_collections' => [
+					new CountryRatesCollection( 'US', [ $location_rate_us ] ),
+					new CountryRatesCollection( 'AU', [ $location_rate_au ] ),
+				],
+				'delivery_times'    => [
+					'US' => [
+						'time'     => 2,
+						'max_time' => 3,
+					],
+				],
+			]
+		);
+
+		$services = $settings->get_services();
+
+		// The country without a shipping time is left out with an error naming
+		// it; the remaining country's service still syncs, and the skipped
+		// country's postcode region is not sent without its service.
+		$this->assertCount( 1, $services );
+		$this->assertEquals( 'US', $services[0]['deliveryCountries'][0] );
+		$this->assertCount( 0, $settings->get_regions() );
+		$this->assertCount( 1, $reported );
+		$this->assertStringContainsString( 'AU', $reported[0] );
+	}
+
 	public function test_creates_rate_group_for_state_rates() {
 		$location_1      = new ShippingLocation( 1, 'US', 'CA' );
 		$location_rate_1 = new LocationRate( $location_1, new ShippingRate( 100 ) );
@@ -320,29 +364,6 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 			[
 				'currency'          => 'USD',
 				'rates_collections' => [ new CountryRatesCollection( 'US', [] ) ],
-			]
-		);
-	}
-
-	public function test_fails_if_delivery_time_not_provided_for_country() {
-		$this->expectException( InvalidValue::class );
-
-		$location_rate_1 = new LocationRate( new ShippingLocation( 1, 'US' ), new ShippingRate( 100 ) );
-		$location_rate_2 = new LocationRate( new ShippingLocation( 2, 'AU' ), new ShippingRate( 200 ) );
-
-		new WCShippingSettingsAdapter(
-			[
-				'currency'          => 'USD',
-				'rates_collections' => [
-					new CountryRatesCollection( 'US', [ $location_rate_1 ] ),
-					new CountryRatesCollection( 'AU', [ $location_rate_2 ] ),
-				],
-				'delivery_times'    => [
-					'AU' => [
-						'time'     => 1,
-						'max_time' => 1,
-					],
-				],
 			]
 		);
 	}

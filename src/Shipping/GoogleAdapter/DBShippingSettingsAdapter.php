@@ -64,6 +64,13 @@ class DBShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 				continue;
 			}
 
+			// A country with a rate but no shipping time is left out with an
+			// error, so one bad country cannot cancel the whole update.
+			if ( ! $this->has_delivery_time( $country ) ) {
+				$this->report_country_missing_delivery_time( $country );
+				continue;
+			}
+
 			$currency = ! empty( $db_rate['currency'] )
 				? $db_rate['currency']
 				: $this->get_currency_for_country( $country );

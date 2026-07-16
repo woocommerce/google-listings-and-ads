@@ -33,6 +33,54 @@ class WPML implements IntegrationInterface {
 	public function init(): void {}
 
 	/**
+	 * Returns whether product prices can be converted into another currency.
+	 *
+	 * This is the exact availability condition used by the price conversion
+	 * methods below: WPML active with WCML multi-currency enabled. Markets
+	 * priced in a non-store currency can only be synced when this holds.
+	 *
+	 * @return bool
+	 */
+	public function can_convert_currency(): bool {
+		return $this->is_active() && $this->is_wcml_multi_currency_on();
+	}
+
+	/**
+	 * Runs the given callback with WPML switched to the "all languages" context.
+	 *
+	 * WPML restricts every post query to the current language, so any product query
+	 * the plugin runs in a background job (sync, delete, cleanup, stale detection,
+	 * disconnect) would otherwise only ever see one language's products. Switching to
+	 * the reserved `all` language code makes WPML emit an all-languages WHERE clause
+	 * and stop translating queried IDs, so the plugin operates on every translation.
+	 *
+	 * When WPML is not active the callback is simply invoked, leaving single-language
+	 * and non-multilingual sites behaving exactly as before.
+	 *
+	 * @template T
+	 *
+	 * @param callable():T $callback The work to run in the all-languages context.
+	 *
+	 * @return T The callback's return value.
+	 */
+	public function run_in_all_languages( callable $callback ) {
+		if ( ! $this->is_active() ) {
+			return $callback();
+		}
+
+		$previous_language = apply_filters( 'wpml_current_language', null );
+
+		do_action( 'wpml_switch_language', 'all' );
+
+		try {
+			return $callback();
+		} finally {
+			// Restore the language that was active before we switched.
+			do_action( 'wpml_switch_language', $previous_language );
+		}
+	}
+
+	/**
 	 * Returns the site's default WPML language code.
 	 *
 	 * @return string ISO 639-1 language code, or empty when unavailable.
