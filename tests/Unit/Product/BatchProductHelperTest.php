@@ -599,6 +599,60 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertSame( get_woocommerce_currency(), $attributes['price']['currencyCode'] );
 	}
 
+	public function test_generate_mapi_update_entries_secondary_market_exchange_rate_converts_price() {
+		$product = WC_Helper_Product::create_simple_product(
+			true,
+			[
+				'price'         => 100,
+				'regular_price' => 100,
+			]
+		);
+
+		$this->market_service->method( 'has_multilingual_support' )->willReturn( false );
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'DE' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => [ 'en' ],
+				],
+				'de'      => [
+					'country'       => 'DE',
+					'feed_label'    => 'DE',
+					'language'      => [],
+					'currency'      => [ 'EUR' ],
+					'exchange_rate' => 0.92,
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+
+		$this->assertCount( 2, $results );
+
+		$secondary = array_values(
+			array_filter(
+				$results,
+				static function ( array $entry ): bool {
+					return 'DE' === $entry['country'];
+				}
+			)
+		);
+
+		// The market's stored exchange rate reaches the emission adapter: the
+		// secondary entry's price is converted (100.00 at 0.92) and labelled
+		// with the market currency, without any WPML conversion available.
+		$this->assertCount( 1, $secondary );
+		$attributes = $secondary[0]['input']->get_attributes();
+		$this->assertSame( 'EUR', $attributes['price']['currencyCode'] );
+		$this->assertSame( '92000000', $attributes['price']['amountMicros'] );
+	}
+
 	public function test_generate_mapi_update_entries_wpml_match_alternate_language_in_set() {
 		$product = WC_Helper_Product::create_simple_product();
 

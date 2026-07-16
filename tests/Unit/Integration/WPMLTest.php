@@ -34,6 +34,74 @@ class WPMLTest extends UnitTest {
 		$this->assertSame( [], $integration->get_languages() );
 	}
 
+	public function test_get_default_currencies_empty_when_not_active(): void {
+		$this->assertSame( [], $this->create_integration( false )->get_default_currencies() );
+	}
+
+	public function test_get_default_currencies_empty_when_multi_currency_off(): void {
+		$this->assertSame( [], $this->create_integration( true, [], false )->get_default_currencies() );
+	}
+
+	public function test_get_default_currencies_empty_when_wcml_global_missing(): void {
+		global $woocommerce_wpml;
+		$previous         = $woocommerce_wpml;
+		$woocommerce_wpml = null;
+
+		$this->assertSame( [], $this->create_integration( true, [], true )->get_default_currencies() );
+
+		$woocommerce_wpml = $previous;
+	}
+
+	public function test_get_default_currencies_empty_when_wcml_setting_malformed(): void {
+		global $woocommerce_wpml;
+		$previous         = $woocommerce_wpml;
+		$woocommerce_wpml = new class() {
+			// phpcs:ignore Squiz.Commenting.FunctionComment.Missing
+			public function get_setting( $key, $default = null ) {
+				return 'not-an-array';
+			}
+		};
+
+		$this->assertSame( [], $this->create_integration( true, [], true )->get_default_currencies() );
+
+		$woocommerce_wpml = $previous;
+	}
+
+	public function test_get_default_currencies_reads_wcml_settings_and_skips_store_currency_pairings(): void {
+		global $woocommerce_wpml;
+		$previous         = $woocommerce_wpml;
+		$woocommerce_wpml = new class() {
+			// phpcs:ignore Squiz.Commenting.FunctionComment.Missing
+			public function get_setting( $key, $default = null ) {
+				if ( 'default_currencies' === $key ) {
+					return [
+						'de' => 'EUR',
+						// WCML stores 0 for a language that keeps the store currency.
+						'en' => 0,
+						'fr' => 'EUR',
+					];
+				}
+
+				return $default;
+			}
+		};
+
+		$integration = $this->create_integration( true, [], true );
+
+		$this->assertSame(
+			[
+				'de' => 'EUR',
+				'fr' => 'EUR',
+			],
+			$integration->get_default_currencies()
+		);
+		$this->assertSame( 'EUR', $integration->get_default_currency_for_language( 'de' ) );
+		$this->assertSame( '', $integration->get_default_currency_for_language( 'en' ) );
+		$this->assertSame( '', $integration->get_default_currency_for_language( 'nl' ) );
+
+		$woocommerce_wpml = $previous;
+	}
+
 	public function test_get_default_language_code_returns_empty_when_not_active(): void {
 		$integration = $this->create_integration( false );
 

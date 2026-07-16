@@ -361,16 +361,22 @@ class WCProductInputAdapter {
 			}
 
 			// A currency override with no conversion source falls through to
-			// the store-currency price, mislabelling the market's entries.
-			do_action(
-				'woocommerce_gla_error',
-				sprintf(
-					'No conversion source for the currency override "%s" (product ID: %s): WPML conversion is unavailable and the market has no exchange rate. Emitting the store currency price instead.',
-					$this->currency_override,
-					$this->wc_product->get_id()
-				),
-				__METHOD__
-			);
+			// the store-currency price. That only mislabels the market's
+			// entries when the override is a different currency: an override
+			// equal to the store currency (the masked value every market gets
+			// while no multilingual integration is active) needs no conversion
+			// and must not raise a false alarm on every sync.
+			if ( strtoupper( $this->currency_override ) !== get_woocommerce_currency() ) {
+				do_action(
+					'woocommerce_gla_error',
+					sprintf(
+						'No conversion source for the currency override "%s" (product ID: %s): WPML conversion is unavailable and the market has no exchange rate. Emitting the store currency price instead.',
+						$this->currency_override,
+						$this->wc_product->get_id()
+					),
+					__METHOD__
+				);
+			}
 		}
 
 		if ( '' === $regular_price ) {

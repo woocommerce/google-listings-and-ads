@@ -1024,6 +1024,38 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertSame( get_woocommerce_currency(), $attrs['price']['currencyCode'] );
 	}
 
+	public function test_store_currency_override_without_conversion_source_does_not_log() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 100,
+				'regular_price' => 100,
+			]
+		);
+
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_product_price_in_currency' )->willReturn( null );
+
+		$logged = [];
+		add_action(
+			'woocommerce_gla_error',
+			function ( $message, $method ) use ( &$logged ) {
+				$logged[] = [ $message, $method ];
+			},
+			10,
+			2
+		);
+
+		// An override equal to the store currency is what every secondary
+		// market carries while no multilingual integration is active; the
+		// emitted price and label are correct, so nothing may be logged.
+		$attrs = ( new WCProductInputAdapter( $product, 'DE', null, [], [], [], '', '', get_woocommerce_currency(), $wpml ) )->get_product_input()->get_attributes();
+
+		$this->assertCount( 0, $logged );
+		$this->assertSame( '100000000', $attrs['price']['amountMicros'] );
+		$this->assertSame( get_woocommerce_currency(), $attrs['price']['currencyCode'] );
+	}
+
 	public function test_virtual_product_zero_shipping_carries_entry_currency() {
 		$product = WC_Helper_Product::create_simple_product(
 			false,
