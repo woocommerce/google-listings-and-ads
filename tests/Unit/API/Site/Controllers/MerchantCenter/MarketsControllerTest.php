@@ -148,12 +148,14 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 	public function test_get_languages_currencies_returns_currencies_from_market_service(): void {
 		$currencies = [
 			[
-				'code'   => 'USD',
-				'symbol' => '$',
+				'code'      => 'USD',
+				'symbol'    => '$',
+				'languages' => [ 'en', 'fr' ],
 			],
 			[
-				'code'   => 'EUR',
-				'symbol' => '€',
+				'code'      => 'EUR',
+				'symbol'    => '€',
+				'languages' => [ 'fr' ],
 			],
 		];
 
@@ -185,6 +187,9 @@ class MarketsControllerTest extends RESTControllerUnitTest {
 		$this->assertArrayHasKey( 'label', $schema['properties']['languages']['items']['properties'] );
 		$this->assertArrayHasKey( 'code', $schema['properties']['currencies']['items']['properties'] );
 		$this->assertArrayHasKey( 'symbol', $schema['properties']['currencies']['items']['properties'] );
+		$this->assertArrayHasKey( 'languages', $schema['properties']['currencies']['items']['properties'] );
+		$this->assertEquals( 'array', $schema['properties']['currencies']['items']['properties']['languages']['type'] );
+		$this->assertEquals( 'string', $schema['properties']['currencies']['items']['properties']['languages']['items']['type'] );
 	}
 
 	public function test_post_market_returns_201_on_success(): void {
