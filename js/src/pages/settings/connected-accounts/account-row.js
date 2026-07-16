@@ -2,7 +2,13 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { DropdownMenu, MenuGroup, MenuItem, Flex } from '@wordpress/components';
+import {
+	DropdownMenu,
+	MenuGroup,
+	MenuItem,
+	Flex,
+	ExternalLink,
+} from '@wordpress/components';
 import { moreVertical } from '@wordpress/icons';
 
 /**
@@ -129,7 +135,13 @@ export default function AccountRow( { account, onDisconnect } ) {
 				</div>
 				{ account.detail && (
 					<div className="gla-connected-accounts__detail">
-						{ account.detail }
+						{ account.detailUrl ? (
+							<ExternalLink href={ account.detailUrl }>
+								{ account.detail }
+							</ExternalLink>
+						) : (
+							account.detail
+						) }
 					</div>
 				) }
 			</div>

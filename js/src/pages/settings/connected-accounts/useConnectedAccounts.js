@@ -13,6 +13,8 @@ import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useYouTubeAccount from '~/hooks/useYouTubeAccount';
 import useServiceBasedMerchant from '~/hooks/useServiceBasedMerchant';
 import getConnectedJetpackInfo from '~/utils/getConnectedJetpackInfo';
+import getGoogleAdsOverviewUrl from '~/utils/getGoogleAdsOverviewUrl';
+import getYouTubeChannelUrl from '~/utils/getYouTubeChannelUrl';
 import toAccountText from '~/utils/toAccountText';
 import { APPEARANCE } from '~/components/account-card';
 import { GOOGLE_ADS_ACCOUNT_STATUS, YOUTUBE_ACCOUNT_STATUS } from '~/constants';
@@ -29,6 +31,8 @@ export const ACCOUNT_SECTION = {
 };
 
 const { CONNECTED, INCOMPLETE } = GOOGLE_ADS_ACCOUNT_STATUS;
+const GOOGLE_MERCHANT_CENTER_OVERVIEW_URL =
+	'https://merchants.google.com/mc/overview?a=';
 
 /**
  * @typedef {Object} ConnectedAccountItem
@@ -40,6 +44,7 @@ const { CONNECTED, INCOMPLETE } = GOOGLE_ADS_ACCOUNT_STATUS;
  * @property {boolean} connected Whether the account is currently connected.
  * @property {string} [status] Raw connection status used for special-case rendering.
  * @property {string} [detail] Human-readable account detail (email, id, channel).
+ * @property {string} [detailUrl] External URL used to turn the detail into a link.
  * @property {boolean} canDisconnect Whether an individual disconnect action is offered today.
  * @property {string} [disconnectTarget] Disconnect-modal target used when `canDisconnect` is true.
  * @property {boolean} [canConnect] Whether the account offers an in-page connect action when disconnected.
@@ -124,6 +129,9 @@ export default function useConnectedAccounts() {
 			),
 			connected: hasGoogleMCConnection,
 			detail: googleMCAccount?.id ? String( googleMCAccount.id ) : '',
+			detailUrl: googleMCAccount?.id
+				? `${ GOOGLE_MERCHANT_CENTER_OVERVIEW_URL }${ googleMCAccount.id }`
+				: '',
 			canDisconnect: false,
 			// Offer an in-page connect action when Merchant Center is not
 			// connected and the store is no longer classified as service-based
@@ -143,6 +151,9 @@ export default function useConnectedAccounts() {
 			detail: googleAdsAccount?.id
 				? toAccountText( googleAdsAccount.id )
 				: '',
+			detailUrl: googleAdsAccount?.id
+				? getGoogleAdsOverviewUrl( googleAdsAccount )
+				: '',
 			// Individual disconnect is intentionally not offered for the Ads
 			// account: the extension does not function properly without it.
 			// Use "Disconnect from all accounts" to remove it.
@@ -160,6 +171,9 @@ export default function useConnectedAccounts() {
 			status: youTubeStatus,
 			connected: isYouTubeConnected,
 			detail: youTubeAccount?.channel?.label || '',
+			detailUrl: youTubeAccount?.channel?.id
+				? getYouTubeChannelUrl( youTubeAccount.channel )
+				: '',
 			// YouTube can be individually disconnected while connected.
 			canDisconnect: isYouTubeConnected,
 			disconnectTarget: YOUTUBE_ACCOUNT,
