@@ -190,7 +190,7 @@ class BatchProductHelper implements Service {
 	 *
 	 * @param WC_Product[] $products
 	 *
-	 * @return array<int, array{product: WC_Product, country: string, input: ProductInput}>
+	 * @return array<int, array{product: WC_Product, country: string, input: ProductInput, hash: string}>
 	 */
 	public function generate_mapi_update_entries( array $products ): array {
 		$entries          = [];
@@ -220,10 +220,18 @@ class BatchProductHelper implements Service {
 					$attributes = array_merge( $this->attribute_manager->get_all_values( $parent ), $attributes );
 				}
 
+				$input = ( new WCProductInputAdapter( $product, $country, $parent, $target_countries, $attributes, $mapping_rules ) )->get_product_input();
+				$hash  = $this->product_input_hash( $input );
+
+				if ( $this->can_skip_unchanged_product( $product, $hash ) ) {
+					continue;
+				}
+
 				$entries[] = [
 					'product' => $product,
 					'country' => $country,
-					'input'   => ( new WCProductInputAdapter( $product, $country, $parent, $target_countries, $attributes, $mapping_rules ) )->get_product_input(),
+					'input'   => $input,
+					'hash'    => $hash,
 				];
 			} catch ( GoogleListingsAndAdsException $exception ) {
 				do_action(
@@ -237,6 +245,46 @@ class BatchProductHelper implements Service {
 		}
 
 		return $entries;
+	}
+
+	/**
+	 * A stable hash of the ProductInput payload, used to skip re-syncing products
+	 * whose Merchant API payload is unchanged since the last successful sync.
+	 *
+	 * @param ProductInput $input
+	 *
+	 * @return string
+	 */
+	protected function product_input_hash( ProductInput $input ): string {
+		return md5( (string) wp_json_encode( $input->to_array() ) );
+	}
+
+	/**
+	 * Whether a product can be skipped because its payload is unchanged since the last
+	 * successful sync. Products old enough to be due for expiry resubmission are never
+	 * skipped, and woocommerce_gla_force_product_resync forces a full re-sync.
+	 *
+	 * @param WC_Product $product
+	 * @param string     $hash    The current ProductInput hash.
+	 *
+	 * @return bool
+	 */
+	protected function can_skip_unchanged_product( WC_Product $product, string $hash ): bool {
+		if ( apply_filters( 'woocommerce_gla_force_product_resync', false, $product ) ) {
+			return false;
+		}
+
+		if ( $this->meta_handler->get_sync_hash( $product ) !== $hash ) {
+			return false;
+		}
+
+		// Clamp to the expiry-resubmission window so a filtered freshness can never let an
+		// unchanged product be skipped past the point it is due for resubmission.
+		$max_freshness = ProductRepository::RESUBMIT_EXPIRY_DAYS * DAY_IN_SECONDS;
+		$freshness     = min( (int) apply_filters( 'woocommerce_gla_sync_hash_freshness', $max_freshness ), $max_freshness );
+		$synced_at     = (int) $this->meta_handler->get_synced_at( $product );
+
+		return $synced_at > ( time() - $freshness );
 	}
 
 	/**
