@@ -139,7 +139,7 @@ export default class SettingsPage extends MockRequests {
 	 */
 	getYouTubeAccountActionsButton() {
 		return this.youTubeAccountRow.getByRole( 'button', {
-			name: 'Account actions',
+			name: 'Account actions for YouTube',
 		} );
 	}
 
@@ -150,7 +150,7 @@ export default class SettingsPage extends MockRequests {
 	 */
 	getYouTubeDisconnectMenuItem() {
 		return this.page.getByRole( 'menuitem', {
-			name: 'Disconnect',
+			name: 'Disconnect YouTube',
 		} );
 	}
 

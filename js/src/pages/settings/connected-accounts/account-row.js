@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import {
 	DropdownMenu,
 	MenuGroup,
@@ -37,10 +37,21 @@ function AccountActions( { account, onDisconnect } ) {
 		return null;
 	}
 
+	const accountActionsLabel = sprintf(
+		/* translators: %s: account title, for example "YouTube". */
+		__( 'Account actions for %s', 'google-listings-and-ads' ),
+		account.title
+	);
+	const disconnectLabel = sprintf(
+		/* translators: %s: account title, for example "YouTube". */
+		__( 'Disconnect %s', 'google-listings-and-ads' ),
+		account.title
+	);
+
 	return (
 		<DropdownMenu
 			icon={ moreVertical }
-			label={ __( 'Account actions', 'google-listings-and-ads' ) }
+			label={ accountActionsLabel }
 			popoverProps={ { placement: 'bottom-end' } }
 		>
 			{ ( { onClose } ) => (
@@ -62,7 +73,7 @@ function AccountActions( { account, onDisconnect } ) {
 							onDisconnect( account.disconnectTarget );
 						} }
 					>
-						{ __( 'Disconnect', 'google-listings-and-ads' ) }
+						{ disconnectLabel }
 					</MenuItem>
 				</MenuGroup>
 			) }

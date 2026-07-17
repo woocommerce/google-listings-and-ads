@@ -75,7 +75,9 @@ describe( 'AccountRow', () => {
 			} )
 		).toHaveAttribute( 'href', 'https://ads.google.com/aw/overview' );
 		expect(
-			screen.queryByRole( 'button', { name: 'Account actions' } )
+			screen.queryByRole( 'button', {
+				name: 'Account actions for Google Ads',
+			} )
 		).not.toBeInTheDocument();
 	} );
 
@@ -156,10 +158,12 @@ describe( 'AccountRow', () => {
 		);
 
 		await user.click(
-			screen.getByRole( 'button', { name: 'Account actions' } )
+			screen.getByRole( 'button', {
+				name: 'Account actions for YouTube',
+			} )
 		);
 		await user.click(
-			screen.getByRole( 'menuitem', { name: 'Disconnect' } )
+			screen.getByRole( 'menuitem', { name: 'Disconnect YouTube' } )
 		);
 
 		expect( recordGlaEvent ).toHaveBeenCalledWith(
