@@ -151,9 +151,7 @@ export default function useConnectedAccounts() {
 			detail: googleAdsAccount?.id
 				? toAccountText( googleAdsAccount.id )
 				: '',
-			detailUrl: googleAdsAccount?.id
-				? getGoogleAdsOverviewUrl( googleAdsAccount )
-				: '',
+			detailUrl: googleAdsAccount?.id ? getGoogleAdsOverviewUrl() : '',
 			// Individual disconnect is intentionally not offered for the Ads
 			// account: the extension does not function properly without it.
 			// Use "Disconnect from all accounts" to remove it.
@@ -177,8 +175,8 @@ export default function useConnectedAccounts() {
 			// YouTube can be individually disconnected while connected.
 			canDisconnect: isYouTubeConnected,
 			disconnectTarget: YOUTUBE_ACCOUNT,
-			// Match the previous Settings behavior: YouTube setup is only
-			// available after Merchant Center is connected.
+			// Show the YouTube setup action only after Merchant Center is
+			// connected.
 			canConnect: hasGoogleMCConnection,
 			isVisible: hasGoogleMCConnection,
 		},

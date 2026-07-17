@@ -1,7 +1,7 @@
 const GOOGLE_ADS_OVERVIEW_URL = 'https://ads.google.com/aw/overview';
 
 /**
- * Return the Google Ads overview URL used in trunk.
+ * Return the Google Ads overview URL.
  *
  * @return {string} Google Ads overview URL.
  */

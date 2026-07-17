@@ -95,11 +95,8 @@ export default function ConnectedAccounts() {
 					( account ) =>
 						account.section === section.key &&
 						account.isVisible !== false &&
-						// Show a row only when the account is connected or it
-						// offers a connect action here (e.g. YouTube). This
-						// matches the previous UI, which omitted a card entirely
-						// when the account was disconnected and had no in-page
-						// connect flow (e.g. Google Ads).
+						// Show rows only for connected accounts or accounts
+						// that offer an in-page connect action here.
 						( account.connected || account.canConnect )
 				);
 

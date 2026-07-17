@@ -17,8 +17,8 @@ const ACCOUNTS_SETTINGS_PATH = '/google/settings';
 const ACCOUNTS_SETTINGS_QUERY = { section: 'accounts' };
 
 /**
- * Renders the redesigned Accounts row state for an incomplete YouTube setup,
- * preserving the previous completion CTA, error notice and OAuth return auto-complete behavior.
+ * Renders the incomplete YouTube account row with its setup CTA, error notice,
+ * and OAuth return auto-complete behavior.
  *
  * @param {Object} props Component props.
  * @param {import('./useConnectedAccounts').ConnectedAccountItem} props.account Account item.

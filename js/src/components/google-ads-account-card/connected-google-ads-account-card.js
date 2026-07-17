@@ -32,7 +32,7 @@ export default function ConnectedGoogleAdsAccountCard( {
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE_ADS }
 			description={
-				<ExternalLink href={ getGoogleAdsOverviewUrl( googleAdsAccount ) }>
+				<ExternalLink href={ getGoogleAdsOverviewUrl() }>
 					{ toAccountText( googleAdsAccount.id ) }
 				</ExternalLink>
 			}

@@ -9,7 +9,7 @@ import '@testing-library/jest-dom';
 import getGoogleAdsOverviewUrl from './getGoogleAdsOverviewUrl';
 
 describe( 'getGoogleAdsOverviewUrl', () => {
-	it( 'returns the Google Ads overview URL used in trunk', () => {
+	it( 'returns the Google Ads overview URL', () => {
 		expect( getGoogleAdsOverviewUrl() ).toBe(
 			'https://ads.google.com/aw/overview'
 		);

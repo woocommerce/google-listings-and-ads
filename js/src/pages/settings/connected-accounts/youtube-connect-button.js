@@ -13,7 +13,7 @@ import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 
 /**
- * Renders the "Connect" button for the YouTube account row.
+ * Renders the "Connect" button that starts the YouTube account flow.
  *
  * @return {JSX.Element} The connect button.
  */

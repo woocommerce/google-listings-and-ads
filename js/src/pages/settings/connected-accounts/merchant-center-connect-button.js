@@ -12,7 +12,7 @@ import { getOnboardingUrl } from '~/utils/urls';
 /**
  * Renders the "Set up Merchant Center" button for the Merchant Center account
  * row, shown when the account is not connected but the store now has physical
- * products. Routes to the onboarding flow, matching the previous settings card.
+ * products. Routes to the onboarding flow.
  *
  * @return {JSX.Element} The connect button.
  */
