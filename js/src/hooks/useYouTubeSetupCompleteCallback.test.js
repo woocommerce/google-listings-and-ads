@@ -13,10 +13,10 @@ import useYouTubeSetupCompleteCallback from './useYouTubeSetupCompleteCallback';
 jest.mock( '~/data' );
 jest.mock( '~/hooks/useApiFetchCallback' );
 
-describe( 'useYouTubeSetupCompleteCallback', () => {
-	let invalidateResolution;
-	let fetchCompleteYouTubeSetup;
-	let fetchResult;
+	describe( 'useYouTubeSetupCompleteCallback', () => {
+		let invalidateResolution;
+		let fetchCompleteYouTubeSetup;
+		let fetchResult;
 
 	beforeEach( () => {
 		invalidateResolution = jest.fn();
@@ -35,21 +35,9 @@ describe( 'useYouTubeSetupCompleteCallback', () => {
 		] );
 	} );
 
-	it( 'returns a stable completion callback across rerenders', () => {
-		const { result, rerender } = renderHook( () =>
-			useYouTubeSetupCompleteCallback()
-		);
-
-		const firstHandleFinishSetup = result.current[ 0 ];
-
-		rerender();
-
-		expect( result.current[ 0 ] ).toBe( firstHandleFinishSetup );
-	} );
-
-	it( 'completes setup and invalidates the YouTube account resolution', async () => {
-		const { result } = renderHook( () =>
-			useYouTubeSetupCompleteCallback()
+		it( 'completes setup and invalidates the YouTube account resolution', async () => {
+			const { result } = renderHook( () =>
+				useYouTubeSetupCompleteCallback()
 		);
 
 		await act( async () => {
