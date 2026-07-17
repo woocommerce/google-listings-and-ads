@@ -15,6 +15,7 @@ import { moreVertical } from '@wordpress/icons';
  * Internal dependencies
  */
 import Badge from '~/components/badge';
+import YouTubeMerchantTermsLink from '~/components/youtube-account-card/youtube-merchant-terms-link';
 import { YOUTUBE_ACCOUNT_STATUS } from '~/constants';
 import YouTubeConnectButton from './youtube-connect-button';
 import MerchantCenterConnectButton from './merchant-center-connect-button';
@@ -133,6 +134,11 @@ export default function AccountRow( { account, onDisconnect } ) {
 				<div className="gla-connected-accounts__description">
 					{ account.description }
 				</div>
+				{ account.id === 'youtube' && ! account.connected && (
+					<div className="gla-connected-accounts__detail gla-connected-accounts__detail--link">
+						<YouTubeMerchantTermsLink context="settings-youtube" />
+					</div>
+				) }
 				{ account.detail && (
 					<div className="gla-connected-accounts__detail">
 						{ account.detailUrl ? (

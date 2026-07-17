@@ -3,17 +3,16 @@
  */
 import { __ } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
-import { ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import { API_NAMESPACE } from '~/data/constants';
-import { recordGlaEvent } from '~/utils/tracks';
 import AppButton from '~/components/app-button';
 import AccountCard, { APPEARANCE } from '~/components/account-card';
 import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
+import YouTubeMerchantTermsLink from './youtube-merchant-terms-link';
 import './connect-youtube-account-card.scss';
 
 /**
@@ -22,9 +21,6 @@ import './connect-youtube-account-card.scss';
  * @event gla_youtube_account_connect_button_click
  * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
  */
-
-const TERMS_URL = 'https://www.youtube.com/t/merchant_terms';
-
 /**
  * @fires gla_youtube_account_connect_button_click
  * @fires gla_documentation_link_click with `{ context: 'settings-connect-youtube-account-card', link_id: 'youtube-merchant-terms' }` and the URL.
@@ -53,14 +49,6 @@ const ConnectYouTubeAccountCard = () => {
 		}
 	};
 
-	const handleClick = () => {
-		recordGlaEvent( 'gla_documentation_link_click', {
-			context: 'settings-connect-youtube-account-card',
-			link_id: 'youtube-merchant-terms',
-			href: TERMS_URL,
-		} );
-	};
-
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.YOUTUBE }
@@ -72,12 +60,7 @@ const ConnectYouTubeAccountCard = () => {
 							'google-listings-and-ads'
 						) }
 					</p>
-					<ExternalLink onClick={ handleClick } href={ TERMS_URL }>
-						{ __(
-							'YouTube Merchant Terms',
-							'google-listings-and-ads'
-						) }
-					</ExternalLink>
+					<YouTubeMerchantTermsLink />
 				</div>
 			}
 			indicator={

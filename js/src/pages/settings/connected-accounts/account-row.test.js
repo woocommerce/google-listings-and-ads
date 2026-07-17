@@ -9,6 +9,7 @@ import { render, screen } from '@testing-library/react';
  */
 import AccountRow from './account-row';
 import { APPEARANCE } from '~/components/account-card';
+import { YOUTUBE_MERCHANT_TERMS_URL } from '~/components/youtube-account-card/youtube-merchant-terms-link';
 
 describe( 'AccountRow', () => {
 	it( 'renders the Merchant Center account detail as an external link', () => {
@@ -96,5 +97,28 @@ describe( 'AccountRow', () => {
 			'href',
 			'https://www.youtube.com/channel/UC1234567890abcdef'
 		);
+	} );
+
+	it( 'renders the YouTube merchant terms link when the YouTube account is not connected', () => {
+		render(
+			<AccountRow
+				account={ {
+					id: 'youtube',
+					appearance: APPEARANCE.YOUTUBE,
+					title: 'YouTube',
+					description:
+						'List your products on YouTube and track sales from your videos.',
+					connected: false,
+					canDisconnect: false,
+				} }
+				onDisconnect={ jest.fn() }
+			/>
+		);
+
+		expect(
+			screen.getByRole( 'link', {
+				name: /YouTube Merchant Terms/i,
+			} )
+		).toHaveAttribute( 'href', YOUTUBE_MERCHANT_TERMS_URL );
 	} );
 } );
