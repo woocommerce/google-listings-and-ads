@@ -42,10 +42,9 @@ export default class PriceBenchmarkPage extends MockRequests {
 	async mockRequests() {
 		await Promise.all( [
 			this.fulfillMCReview( {
-				cooldown: 0,
+				status: 'APPROVED',
 				issues: [],
-				reviewEligibleRegions: [],
-				status: 'ONBOARDING',
+				reviewAction: null,
 			} ),
 
 			this.fulfillAccountIssuesRequest( {
