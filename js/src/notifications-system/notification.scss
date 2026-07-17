@@ -21,6 +21,10 @@
 		font-size: $gla-font-base;
 		color: $gray-900;
 		margin: 0;
+
+		a {
+			text-decoration: none;
+		}
 	}
 
 	.gla-notification__footer {
