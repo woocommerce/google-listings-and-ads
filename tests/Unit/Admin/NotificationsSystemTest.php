@@ -111,9 +111,23 @@ class NotificationsSystemTest extends UnitTest {
 		do_action( 'admin_enqueue_scripts' );
 	}
 
-	public function test_does_not_enqueue_assets_on_other_admin_pages() {
+	public function test_enqueues_assets_on_any_wc_admin_page() {
 		$_GET['page'] = 'wc-admin';
 		$_GET['path'] = '/analytics/overview';
+
+		$this->options->method( 'get_merchant_id' )->willReturn( 123 );
+		$this->options->method( 'get_ads_id' )->willReturn( 456 );
+
+		$this->assets_handler->expects( $this->once() )->method( 'register_many' );
+		$this->assets_handler->expects( $this->once() )->method( 'enqueue_many' );
+
+		$this->notifications_system->register();
+		set_current_screen( 'dashboard' );
+		do_action( 'admin_enqueue_scripts' );
+	}
+
+	public function test_does_not_enqueue_assets_outside_wc_admin() {
+		$_GET['page'] = 'wc-settings';
 
 		$this->assets_handler->expects( $this->never() )->method( 'register_many' );
 		$this->assets_handler->expects( $this->never() )->method( 'enqueue_many' );
