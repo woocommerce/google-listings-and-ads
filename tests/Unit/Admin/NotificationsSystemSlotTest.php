@@ -102,9 +102,20 @@ class NotificationsSystemSlotTest extends UnitTest {
 		do_action( 'admin_enqueue_scripts' );
 	}
 
-	public function test_does_not_enqueue_assets_on_other_admin_pages() {
+	public function test_enqueues_assets_on_any_wc_admin_page() {
 		$_GET['page'] = 'wc-admin';
 		$_GET['path'] = '/analytics/overview';
+
+		$this->assets_handler->expects( $this->exactly( 2 ) )->method( 'register' );
+		$this->assets_handler->expects( $this->exactly( 2 ) )->method( 'enqueue' );
+
+		$this->notifications_system_slot->register();
+		set_current_screen( 'dashboard' );
+		do_action( 'admin_enqueue_scripts' );
+	}
+
+	public function test_does_not_enqueue_assets_outside_wc_admin() {
+		$_GET['page'] = 'wc-settings';
 
 		$this->assets_handler->expects( $this->never() )->method( 'register' );
 		$this->assets_handler->expects( $this->never() )->method( 'enqueue' );
