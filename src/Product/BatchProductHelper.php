@@ -311,7 +311,7 @@ class BatchProductHelper implements Service {
 			}
 
 			foreach ( $google_ids as $google_id ) {
-				$identity = $this->parse_mapi_identity( (string) $google_id );
+				$identity = $this->parse_deletable_identity( (string) $google_id );
 				if ( null === $identity ) {
 					continue;
 				}
@@ -344,6 +344,32 @@ class BatchProductHelper implements Service {
 		}
 
 		return [ $parts[0], $parts[1], $parts[2] ];
+	}
+
+	/**
+	 * Resolve a stored google product id into a MAPI identity [language, feed, offerId] for
+	 * deletion, accepting both the native MAPI id (`en~US~gla_29`) and the legacy Content API id
+	 * (`online:en:US:gla_29`) that pre-migration syncs stored. This lets products synced before the
+	 * MAPI cutover still be removed from Merchant Center. Returns null if neither format matches.
+	 *
+	 * @param string $google_id
+	 *
+	 * @return array{0: string, 1: string, 2: string}|null
+	 */
+	public function parse_deletable_identity( string $google_id ): ?array {
+		$identity = $this->parse_mapi_identity( $google_id );
+		if ( null !== $identity ) {
+			return $identity;
+		}
+
+		// Legacy Content API id: channel:language:country:offerId. The target country is the feed
+		// for these single-feed products.
+		$parts = explode( ':', $google_id, 4 );
+		if ( count( $parts ) === 4 ) {
+			return [ $parts[1], $parts[2], $parts[3] ];
+		}
+
+		return null;
 	}
 
 	/**
@@ -391,7 +417,7 @@ class BatchProductHelper implements Service {
 			$stale_ids  = array_diff_key( $google_ids, array_flip( $keep_countries ) );
 
 			foreach ( $stale_ids as $google_id ) {
-				$identity = $this->parse_mapi_identity( (string) $google_id );
+				$identity = $this->parse_deletable_identity( (string) $google_id );
 				if ( null === $identity ) {
 					continue;
 				}
