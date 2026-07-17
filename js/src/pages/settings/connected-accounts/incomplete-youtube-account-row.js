@@ -34,6 +34,8 @@ export default function IncompleteYouTubeAccountRow( { account, actions } ) {
 		useYouTubeSetupCompleteCallback();
 
 	useEffect( () => {
+		let isActive = true;
+
 		async function completeSetup() {
 			containerRef.current?.scrollIntoView( {
 				behavior: isReducedMotion ? 'auto' : 'smooth',
@@ -43,6 +45,9 @@ export default function IncompleteYouTubeAccountRow( { account, actions } ) {
 
 			hasCompletedSetupRef.current = true;
 			await handleFinishSetup();
+			if ( ! isActive ) {
+				return;
+			}
 			getHistory().replace(
 				getNewPath(
 					ACCOUNTS_SETTINGS_QUERY,
@@ -55,6 +60,10 @@ export default function IncompleteYouTubeAccountRow( { account, actions } ) {
 		if ( isYouTubeOAuthReturn && ! hasCompletedSetupRef.current ) {
 			completeSetup();
 		}
+
+		return () => {
+			isActive = false;
+		};
 	}, [ handleFinishSetup, isReducedMotion, isYouTubeOAuthReturn ] );
 
 	return (

@@ -2,7 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { getHistory, getNewPath, getQuery } from '@woocommerce/navigation';
 
@@ -130,5 +130,33 @@ describe( 'IncompleteYouTubeAccountRow', () => {
 		expect( historyReplace ).toHaveBeenCalledWith(
 			'/google/settings?section=accounts'
 		);
+	} );
+
+	it( 'does not redirect after unmounting before OAuth setup completes', async () => {
+		getQuery.mockReturnValue( { youtube: 'connected' } );
+
+		let resolveHandleFinishSetup;
+		const finishSetupPromise = new Promise( ( resolve ) => {
+			resolveHandleFinishSetup = resolve;
+		} );
+
+		handleFinishSetup.mockReturnValue( finishSetupPromise );
+
+		const { unmount } = render(
+			<IncompleteYouTubeAccountRow account={ account } actions={ null } />
+		);
+
+		await waitFor( () => {
+			expect( handleFinishSetup ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		unmount();
+
+		await act( async () => {
+			resolveHandleFinishSetup();
+			await finishSetupPromise;
+		} );
+
+		expect( historyReplace ).not.toHaveBeenCalled();
 	} );
 } );
