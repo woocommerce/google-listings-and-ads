@@ -16,6 +16,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorit
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantState;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -23,8 +24,14 @@ defined( 'ABSPATH' ) || exit;
  * Class SkippedCampaignEvaluator
  *
  * Fires when the merchant finished onboarding but skipped campaign creation: onboarding
- * is complete, Ads setup was not completed, and the account has no enabled Performance
- * Max campaigns — including any created outside the onboarding flow.
+ * is complete and the account has no enabled Performance Max campaigns — including any
+ * created outside the onboarding flow.
+ *
+ * For retail (shopping) merchants, completing the Ads setup implies a campaign was created,
+ * so a completed Ads setup suppresses this notification. Service-based (ads-only) merchants
+ * always complete their Ads setup during onboarding — even when they skip campaign creation —
+ * so that shortcut does not apply to them; their "skipped" state is determined solely by the
+ * absence of an enabled Performance Max campaign.
  *
  * A paused-only Performance Max campaign does not suppress this notification; that case
  * is surfaced by the separate paused-campaign notification instead.
@@ -43,15 +50,20 @@ class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwa
 	/** @var OnboardingCompleted */
 	private $onboarding_completed;
 
+	/** @var ServiceBasedMerchantState */
+	private $service_based_merchant_state;
+
 	/**
 	 * SkippedCampaignEvaluator constructor.
 	 *
-	 * @param AdsCampaign         $ads_campaign
-	 * @param OnboardingCompleted $onboarding_completed
+	 * @param AdsCampaign               $ads_campaign
+	 * @param OnboardingCompleted       $onboarding_completed
+	 * @param ServiceBasedMerchantState $service_based_merchant_state
 	 */
-	public function __construct( AdsCampaign $ads_campaign, OnboardingCompleted $onboarding_completed ) {
-		$this->ads_campaign         = $ads_campaign;
-		$this->onboarding_completed = $onboarding_completed;
+	public function __construct( AdsCampaign $ads_campaign, OnboardingCompleted $onboarding_completed, ServiceBasedMerchantState $service_based_merchant_state ) {
+		$this->ads_campaign                 = $ads_campaign;
+		$this->onboarding_completed         = $onboarding_completed;
+		$this->service_based_merchant_state = $service_based_merchant_state;
 	}
 
 	/**
@@ -74,8 +86,13 @@ class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwa
 			return false;
 		}
 
-		// If Ads setup was completed, the merchant did not skip campaign creation.
-		if ( $this->ads_service->is_setup_complete() ) {
+		// For retail (shopping) merchants, a completed Ads setup implies a campaign was
+		// created, so the merchant did not skip campaign creation. This shortcut does not
+		// apply to service-based merchants: their ads-only onboarding always completes Ads
+		// setup, even when they skip campaign creation, so whether they skipped is
+		// determined solely by the absence of an enabled campaign checked below.
+		if ( ! $this->service_based_merchant_state->is_service_based_merchant()
+			&& $this->ads_service->is_setup_complete() ) {
 			return false;
 		}
 
