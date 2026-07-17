@@ -22,6 +22,7 @@ import getValidCurrencyCodes from '../../../utils/getValidCurrencyCodes';
 const LanguageSelectControl = () => {
 	const {
 		getInputProps,
+		setValues,
 		adapter: { renderRequestedValidation },
 	} = useAdaptiveFormContext();
 	const { languages, currencies, hasFinishedResolution } =
@@ -46,7 +47,7 @@ const LanguageSelectControl = () => {
 		label: language.label,
 	} ) );
 
-	const { onChange, selected } = getInputProps( 'language' );
+	const { selected } = getInputProps( 'language' );
 	const currencyInputProps = getInputProps( 'currency' );
 
 	const selectedOptions =
@@ -63,7 +64,6 @@ const LanguageSelectControl = () => {
 	 */
 	const handleLanguageChange = ( changedOptions ) => {
 		const newLanguages = changedOptions.map( ( option ) => option.value );
-		onChange( newLanguages );
 
 		const validCurrencyCodes = getValidCurrencyCodes(
 			currencies,
@@ -76,9 +76,12 @@ const LanguageSelectControl = () => {
 			validCurrencyCodes.has( code )
 		);
 
-		if ( prunedCurrencies.length !== selectedCurrencies.length ) {
-			currencyInputProps.onChange( prunedCurrencies );
-		}
+		setValues( {
+			language: newLanguages,
+			...( prunedCurrencies.length !== selectedCurrencies.length
+				? { currency: prunedCurrencies }
+				: {} ),
+		} );
 	};
 
 	return (
