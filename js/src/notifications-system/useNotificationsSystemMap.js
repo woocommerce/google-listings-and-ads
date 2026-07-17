@@ -1,16 +1,17 @@
 /**
  * External dependencies
  */
-import { useMemo } from '@wordpress/element';
+import { createInterpolateElement, useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import useGoogleMCAccount from '~/hooks/useGoogleMCAccount';
+import AppDocumentationLink from '~/components/app-documentation-link';
+import { CONTEXT_MARKETING_OVERVIEW } from '~/utils/tracks';
 import {
 	getDashboardUrl,
-	getGetStartedUrl,
 	getProductFeedUrl,
 	getSettingsUrl,
 	getSetupAdsUrl,
@@ -18,6 +19,26 @@ import {
 	getOnboardingUrl,
 	getWCCouponsUrl,
 } from '~/utils/urls';
+
+const TERMS_URL =
+	'https://ads.google.com/home/terms-and-conditions/incentives/';
+
+/**
+ * Renders the "Terms apply." link used across ad-credit notification descriptions.
+ *
+ * @param {string} linkId An identifier for this link, sent as part of track event properties.
+ */
+const TermsApplyLink = ( { linkId, children } ) => {
+	return (
+		<AppDocumentationLink
+			context={ CONTEXT_MARKETING_OVERVIEW }
+			linkId={ linkId }
+			href={ TERMS_URL }
+		>
+			{ children }
+		</AppDocumentationLink>
+	);
+};
 
 /**
  * @typedef {Object} NotificationConfig
@@ -27,7 +48,6 @@ import {
  * @property {boolean} [isReady] Whether the config data has finished resolving. Omitted for static configs (renders immediately); set to a resolution flag for dynamic configs.
  */
 
-const getStartedUrl = getGetStartedUrl();
 const setupAdsUrl = getSetupAdsUrl();
 const dashboardUrl = getDashboardUrl();
 const settingsUrl = getSettingsUrl();
@@ -43,14 +63,17 @@ const wcCouponsUrl = getWCCouponsUrl();
 const STATIC_MAP = {
 	'abandoned-onboarding': {
 		title: __( 'Finish your Google Ads setup', 'google-listings-and-ads' ),
-		description: __(
-			'Your Google Ads integration setup was interrupted. Complete the remaining configuration steps to ensure your store data is properly synced. Get $500 USD or more in Google ad credit. Offer for new advertisers only. Terms apply.',
-			'google-listings-and-ads'
+		description: createInterpolateElement(
+			__(
+				'Your Google Ads integration setup was interrupted. Complete the remaining configuration steps to ensure your store data is properly synced. Get $500 USD or more in Google ad credit. Offer for new advertisers only. <link>Terms apply.</link>',
+				'google-listings-and-ads'
+			),
+			{ link: <TermsApplyLink linkId="abandoned-onboarding" /> }
 		),
 		actions: [
 			{
 				id: 'continue-setup',
-				href: getStartedUrl,
+				href: onboardingUrl,
 				children: __( 'Continue Setup', 'google-listings-and-ads' ),
 			},
 		],
@@ -60,9 +83,12 @@ const STATIC_MAP = {
 			'Drive more sales with Google Ads',
 			'google-listings-and-ads'
 		),
-		description: __(
-			"Congrats on your first 10 sales – now let's find your next customer. Reach high-intent shoppers across Google. Get $500 USD or more in Google ad credit. Offer for new advertisers only. Terms apply.",
-			'google-listings-and-ads'
+		description: createInterpolateElement(
+			__(
+				"Congrats on your first 10 sales – now let's find your next customer. Reach high-intent shoppers across Google. Get $500 USD or more in Google ad credit. Offer for new advertisers only. <link>Terms apply.</link>",
+				'google-listings-and-ads'
+			),
+			{ link: <TermsApplyLink linkId="sold-10-items" /> }
 		),
 		actions: [
 			{
@@ -80,9 +106,12 @@ const STATIC_MAP = {
 			'Get more sales with Google Ads',
 			'google-listings-and-ads'
 		),
-		description: __(
-			"Reach the right shoppers when they're searching for products like yours across Google (including Search, Shopping, YouTube, and more) in just a few easy steps! Get $500 USD or more in Google ad credit. Offer for new advertisers only. Terms apply.",
-			'google-listings-and-ads'
+		description: createInterpolateElement(
+			__(
+				"Reach the right shoppers when they're searching for products like yours across Google (including Search, Shopping, YouTube, and more) in just a few easy steps! Get $500 USD or more in Google ad credit. Offer for new advertisers only. <link>Terms apply.</link>",
+				'google-listings-and-ads'
+			),
+			{ link: <TermsApplyLink linkId="ready-but-no-sales" /> }
 		),
 		actions: [
 			{
@@ -205,13 +234,27 @@ const useNotificationsSystemMap = () => {
 					'google-listings-and-ads'
 				),
 				description: ! hasGoogleMCConnection
-					? __(
-							'Your campaign is not live. Finish setup now to begin showing your business services across Google (Including Search, Shopping, YouTube, and more). Get $500 USD or more in Google ad credit. Offer for new advertisers only. Terms apply.',
-							'google-listings-and-ads'
+					? createInterpolateElement(
+							__(
+								'Your campaign is not live. Finish setup now to begin showing your business services across Google (Including Search, Shopping, YouTube, and more). Get $500 USD or more in Google ad credit. Offer for new advertisers only. <link>Terms apply.</link>',
+								'google-listings-and-ads'
+							),
+							{
+								link: (
+									<TermsApplyLink linkId="skipped-campaign-creation-no-mc" />
+								),
+							}
 					  )
-					: __(
-							'Your campaign is not live. Finish setup now to begin showing your products across Google (Including Search, Shopping, YouTube, and more). Get $500 USD or more in Google ad credit. Offer for new advertisers only. Terms apply.',
-							'google-listings-and-ads'
+					: createInterpolateElement(
+							__(
+								'Your campaign is not live. Finish setup now to begin showing your products across Google (Including Search, Shopping, YouTube, and more). Get $500 USD or more in Google ad credit. Offer for new advertisers only. <link>Terms apply.</link>',
+								'google-listings-and-ads'
+							),
+							{
+								link: (
+									<TermsApplyLink linkId="skipped-campaign-creation" />
+								),
+							}
 					  ),
 				actions: [
 					{
@@ -285,13 +328,27 @@ const useNotificationsSystemMap = () => {
 							'google-listings-and-ads'
 					  ),
 				description: ! hasGoogleMCConnection
-					? __(
-							'Generate more customers with Google Ads. Get $500 USD or more in Google ad credit. Offer for new advertisers only. Terms apply.',
-							'google-listings-and-ads'
+					? createInterpolateElement(
+							__(
+								'Generate more customers with Google Ads. Get $500 USD or more in Google ad credit. Offer for new advertisers only. <link>Terms apply.</link>',
+								'google-listings-and-ads'
+							),
+							{
+								link: (
+									<TermsApplyLink linkId="sales-not-growing-no-mc" />
+								),
+							}
 					  )
-					: __(
-							'Generate more sales with Google Ads. Get $500 USD or more in Google ad credit. Offer for new advertisers only. Terms apply.',
-							'google-listings-and-ads'
+					: createInterpolateElement(
+							__(
+								'Generate more sales with Google Ads. Get $500 USD or more in Google ad credit. Offer for new advertisers only. <link>Terms apply.</link>',
+								'google-listings-and-ads'
+							),
+							{
+								link: (
+									<TermsApplyLink linkId="sales-not-growing" />
+								),
+							}
 					  ),
 				actions: [
 					{
