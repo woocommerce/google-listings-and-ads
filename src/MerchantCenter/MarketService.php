@@ -1340,9 +1340,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		}
 
 		// Every currency must be enabled for at least one selected language, else no feed could
-		// ever be generated for it.
+		// ever be generated for it. Normalise through get_market_currencies() so the check runs on
+		// the same uppercased codes feed generation uses, otherwise a lowercase currency slips past.
 		$languages  = $this->normalise_language_codes( array_map( 'strval', $config['language'] ) );
-		$currencies = array_values( array_filter( array_map( 'strval', $config['currency'] ) ) );
+		$currencies = $this->get_market_currencies( $config );
 
 		if ( ! empty( $currencies ) && ! empty( $languages ) ) {
 			$enabled = [];
