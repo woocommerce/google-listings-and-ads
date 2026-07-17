@@ -440,14 +440,14 @@ Triggered when datepicker (date ranger picker) is updated,
 - [`ProductsReportFilters`](../../js/src/pages/reports/products/products-report-filters.js#L41)
 - [`ProgramsReportFilters`](../../js/src/pages/reports/programs/programs-report-filters.js#L43)
 
-### [`gla_disconnected_accounts`](../../js/src/pages/settings/linked-accounts.js#L33)
-Accounts are disconnected from the Setting page
+### [`gla_disconnected_accounts`](../../js/src/pages/settings/connected-accounts/index.js#L40)
+Accounts are disconnected from the Settings > Accounts subtab.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`context` | `string` | (`all-accounts`\|`ads-account`) - indicate which accounts have been disconnected.
+`context` | `string` | (`all-accounts`\|`youtube-account`) - indicate which accounts have been disconnected.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/linked-accounts.js#L43)
+- [`exports`](../../js/src/pages/settings/connected-accounts/index.js#L55)
 
 ### [`gla_documentation_link_click`](../../js/src/components/app-documentation-link/index.js#L6)
 When a documentation link is clicked.
@@ -466,7 +466,6 @@ When a documentation link is clicked.
 	- with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions' }`
 	- with `{ context: 'setup-mc-accounts', link_id: 'google-mc-terms-of-service', href: 'https://support.google.com/merchants/answer/160173' }`
 	- with `{ context: 'setup-ads', link_id: 'google-ads-terms-of-service', href: 'https://support.google.com/adspolicy/answer/54818' }`
-- [`YouTubeMerchantTermsLink`](../../js/src/components/youtube-merchant-terms-link.js#L23) with `{ context: 'settings-youtube', link_id: 'youtube-merchant-terms' }` and the URL.
 - [`CyoIncentivePicker`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L50) with `{ context: 'setup-ads' | 'setup-ads-only', link_id: 'incentives-terms-and-conditions-apply', href: 'https://ads.google.com/home/terms-and-conditions/incentives/' }`
 - [`DifferentCurrencyNotice`](../../js/src/components/different-currency-notice.js#L28)
 	- with `{ context: "dashboard", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
@@ -510,6 +509,7 @@ When a documentation link is clicked.
 - [`UnsupportedCountry`](../../js/src/pages/get-started/unsupported-notices/index.js#L73) with `{ context: "get-started", link_id: "supported-countries" }`
 - [`UnsupportedLanguage`](../../js/src/pages/get-started/unsupported-notices/index.js#L30) with `{ context: 'get-started', link_id: 'supported-languages', href: 'https://support.google.com/merchants/answer/160637' }`
 - [`exports`](../../js/src/components/paid-ads/ads-campaign/ads-campaign.js#L42) with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads' | 'setup-ads-only', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
+- [`exports`](../../js/src/components/youtube-merchant-terms-link.js#L25) with `{ context: 'settings-connect-youtube-account-card', link_id: 'youtube-merchant-terms' }` and the URL.
 
 ### [`gla_edit_mc_store_address`](../../js/src/components/contact-information/store-address-card.js#L166)
 Trigger when store address edit button is clicked.
@@ -674,7 +674,7 @@ Clicking on the "connect to a different Google account" button.
 #### Emitters
 - [`SwitchAccountButton`](../../js/src/components/google-account-card/switch-account-button.js#L25)
 
-### [`gla_google_ads_promo_create_campaign_click`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L35)
+### [`gla_google_ads_promo_create_campaign_click`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L37)
 Google Ads Promo "Create campaign" button is clicked.
 #### Properties
 | name | type | description |
@@ -682,7 +682,7 @@ Google Ads Promo "Create campaign" button is clicked.
 `context` | `string` | Context of the Google Ads Promo.
 `href` | `string` | URL of the "Create campaign" button.
 #### Emitters
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L52) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&subpath=%2Fcampaigns%2Fcreate&path=%2Fgoogle%2Fdashboard' }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L54) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&subpath=%2Fcampaigns%2Fcreate&path=%2Fgoogle%2Fdashboard' }`.
 
 ### [`gla_google_ads_promo_dismiss_click`](../../js/src/meta-boxes/channel-visibility/promo-cta.js#L14)
 Google Ads Promo "Dismiss" button is clicked.
@@ -702,9 +702,9 @@ Google Ads Promo "Get started" button is clicked.
 `href` | `string` | URL of the "Get started" button.
 #### Emitters
 - [`GetStartedCTA`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L28) with `{ context: channel-visibility-meta-box, href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L52) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L54) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
 
-### [`gla_google_ads_promo_get_started_click`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L27)
+### [`gla_google_ads_promo_get_started_click`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L29)
 Google Ads Promo "Get started" button is clicked.
 #### Properties
 | name | type | description |
@@ -713,27 +713,27 @@ Google Ads Promo "Get started" button is clicked.
 `href` | `string` | URL of the "Get started" button.
 #### Emitters
 - [`GetStartedCTA`](../../js/src/meta-boxes/channel-visibility/get-started-cta.js#L28) with `{ context: channel-visibility-meta-box, href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L52) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L54) with `{ context: 'order-attribution-meta-box', href: 'admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc' }`.
 
-### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L27)
+### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L28)
 Google Ads Promo banner is shown.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Context of the Google Ads Promo.
 #### Emitters
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L41) with `{ context: channel-visibility-meta-box }`.
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L52) with `{ context: 'order-attribution-meta-box' }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L42) with `{ context: channel-visibility-meta-box }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L54) with `{ context: 'order-attribution-meta-box' }`.
 
-### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L20)
+### [`gla_google_ads_promo_shown`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L22)
 Google Ads Promo component is shown.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Context of the Google Ads Promo.
 #### Emitters
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L41) with `{ context: channel-visibility-meta-box }`.
-- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L52) with `{ context: 'order-attribution-meta-box' }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/channel-visibility/google-ads-promo.js#L42) with `{ context: channel-visibility-meta-box }`.
+- [`GoogleAdsPromo`](../../js/src/meta-boxes/order-attribution/google-ads-promo.js#L54) with `{ context: 'order-attribution-meta-box' }`.
 
 ### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L195)
 Clicking on a Google Merchant Center link.
@@ -778,23 +778,23 @@ Triggered when the "Launch paid campaign" button is clicked to add a new paid ca
 #### Emitters
 - [`SetupPaidAds`](../../js/src/pages/ads-onboarding/ads-stepper/setup-paid-ads.js#L49) on submit
 
-### [`gla_link_youtube_account_button_click`](../../js/src/pages/settings/connected-accounts/incomplete-youtube-account-row.js#L92)
+### [`gla_link_youtube_account_button_click`](../../js/src/pages/settings/connected-accounts/incomplete-youtube-account-row.js#L19)
 Clicking on the button to link the YouTube account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
 #### Emitters
-- [`IncompleteYouTubeAccountRow`](../../js/src/pages/settings/connected-accounts/incomplete-youtube-account-row.js#L28) When the user clicks on the button to complete YouTube setup.
+- [`exports`](../../js/src/pages/settings/connected-accounts/incomplete-youtube-account-row.js#L37) When the user clicks on the button to complete YouTube setup.
 
-### [`gla_mc_account_connect_button_click`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L23)
+### [`gla_mc_account_connect_button_click`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L24)
 Clicking on the button to connect an existing Google Merchant Center account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `id` | `number` | The account ID to be connected.
 #### Emitters
-- [`ConnectMC`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L48)
+- [`ConnectMC`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L49)
 
 ### [`gla_mc_account_connect_different_account_button_click`](../../js/src/components/google-mc-account-card/disconnect-account-button.js#L16)
 Clicking on the "connect to a different Google Merchant Center account" button.
@@ -809,7 +809,7 @@ Clicking on the button to reclaim URL for a Google Merchant Center account.
 #### Emitters
 - [`ReclaimUrlCard`](../../js/src/components/google-mc-account-card/reclaim-url-card/index.js#L42)
 
-### [`gla_mc_account_switch_account_button_click`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L30)
+### [`gla_mc_account_switch_account_button_click`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L31)
 Clicking on the "Switch account" button to select a different Google Merchant Center account to connect.
 #### Properties
 | name | type | description |
@@ -952,7 +952,7 @@ Triggered when moving to another step during creating/editing a campaign.
 - [`CreatePaidAdsCampaign`](../../js/src/pages/create-paid-ads-campaign/index.js#L50)
 	- with `{ context: 'create-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
 	- with `{ context: 'create-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
-- [`EditPaidAdsCampaign`](../../js/src/pages/edit-paid-ads-campaign/index.js#L70)
+- [`EditPaidAdsCampaign`](../../js/src/pages/edit-paid-ads-campaign/index.js#L71)
 	- with `{ context: 'edit-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
 	- with `{ context: 'edit-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
 
@@ -1279,23 +1279,23 @@ Clicking on the button to connect WordPress.com account.
 #### Emitters
 - [`ConnectWPComAccountCard`](../../js/src/components/wpcom-account-card/connect-wpcom-account-card.js#L27)
 
-### [`gla_youtube_account_connect_button_click`](../../js/src/pages/settings/connected-accounts/youtube-connect-button.js#L49)
+### [`gla_youtube_account_connect_button_click`](../../js/src/pages/settings/connected-accounts/youtube-connect-button.js#L15)
 Clicking on the button to connect YouTube account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
 #### Emitters
-- [`YouTubeConnectButton`](../../js/src/pages/settings/connected-accounts/youtube-connect-button.js#L20)
+- [`exports`](../../js/src/pages/settings/connected-accounts/youtube-connect-button.js#L29)
 
-### [`gla_youtube_account_disconnect_button_click`](../../js/src/pages/settings/connected-accounts/account-row.js#L53)
+### [`gla_youtube_account_disconnect_button_click`](../../js/src/pages/settings/connected-accounts/account-row.js#L115)
 Clicking on the button to disconnect the YouTube account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
 #### Emitters
-- [`AccountRow`](../../js/src/pages/settings/connected-accounts/account-row.js#L112) When the user clicks on the button to disconnect the YouTube account.
+- [`exports`](../../js/src/pages/settings/connected-accounts/account-row.js#L133) When the user clicks on the button to disconnect the YouTube account.
 
 ### [`gla_youtube_shopping_tour_close_button_click`](../../js/src/components/tours/youtube-shopping-tour.js#L26)
 When the tour is closed.

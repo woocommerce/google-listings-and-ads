@@ -113,8 +113,17 @@ function RowIndicator( { account, actions } ) {
 }
 
 /**
+ * Clicking on the button to disconnect the YouTube account.
+ *
+ * @event gla_youtube_account_disconnect_button_click
+ * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
+ */
+
+/**
  * Renders a single account as a row inside a group card: logo, title,
  * description and detail on the left; status or connect action on the right.
+ *
+ * @fires gla_youtube_account_disconnect_button_click When the user clicks on the button to disconnect the YouTube account.
  *
  * @param {Object} props Component props.
  * @param {import('./useConnectedAccounts').ConnectedAccountItem} props.account Account item.
@@ -159,7 +168,7 @@ export default function AccountRow( { account, onDisconnect } ) {
 				</div>
 				{ account.id === 'youtube' && ! account.connected && (
 					<div className="gla-connected-accounts__detail gla-connected-accounts__detail--link">
-						<YouTubeMerchantTermsLink context="settings-youtube" />
+						<YouTubeMerchantTermsLink context="settings-connect-youtube-account-card" />
 					</div>
 				) }
 				{ account.detail && (

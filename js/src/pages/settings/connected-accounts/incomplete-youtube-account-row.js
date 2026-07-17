@@ -17,8 +17,17 @@ const ACCOUNTS_SETTINGS_PATH = '/google/settings';
 const ACCOUNTS_SETTINGS_QUERY = { section: 'accounts' };
 
 /**
+ * Clicking on the button to link the YouTube account.
+ *
+ * @event gla_link_youtube_account_button_click
+ * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
+ */
+
+/**
  * Renders the incomplete YouTube account row with its setup CTA, error notice,
  * and OAuth return auto-complete behavior.
+ *
+ * @fires gla_link_youtube_account_button_click When the user clicks on the button to complete YouTube setup.
  *
  * @param {Object} props Component props.
  * @param {import('./useConnectedAccounts').ConnectedAccountItem} props.account Account item.

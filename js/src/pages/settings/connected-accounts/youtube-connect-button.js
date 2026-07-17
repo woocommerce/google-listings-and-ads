@@ -13,7 +13,16 @@ import useDispatchCoreNotices from '~/hooks/useDispatchCoreNotices';
 import useApiFetchCallback from '~/hooks/useApiFetchCallback';
 
 /**
+ * Clicking on the button to connect YouTube account.
+ *
+ * @event gla_youtube_account_connect_button_click
+ * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
+ */
+
+/**
  * Renders the "Connect" button that starts the YouTube account flow.
+ *
+ * @fires gla_youtube_account_connect_button_click
  *
  * @return {JSX.Element} The connect button.
  */

@@ -15,13 +15,15 @@ export const YOUTUBE_MERCHANT_TERMS_URL =
 /**
  * Renders the YouTube Merchant Terms link and records the documentation click.
  *
+ * @fires gla_documentation_link_click with `{ context: 'settings-connect-youtube-account-card', link_id: 'youtube-merchant-terms' }` and the URL.
+ *
  * @param {Object} props Component props.
- * @param {string} [props.context='settings-youtube'] Tracking context.
+ * @param {string} [props.context='settings-connect-youtube-account-card'] Tracking context.
  * @param {string} [props.className] Optional class name.
  * @return {JSX.Element} The external link.
  */
 export default function YouTubeMerchantTermsLink( {
-	context = 'settings-youtube',
+	context = 'settings-connect-youtube-account-card',
 	className,
 } ) {
 	const handleClick = () => {

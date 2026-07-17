@@ -134,6 +134,40 @@ describe( 'AccountRow', () => {
 		).toHaveAttribute( 'href', YOUTUBE_MERCHANT_TERMS_URL );
 	} );
 
+	it( 'tracks the trunk YouTube merchant terms context when the link is clicked', async () => {
+		const user = userEvent.setup();
+
+		render(
+			<AccountRow
+				account={ {
+					id: 'youtube',
+					appearance: APPEARANCE.YOUTUBE,
+					title: 'YouTube',
+					description:
+						'List your products on YouTube and track sales from your videos.',
+					connected: false,
+					canDisconnect: false,
+				} }
+				onDisconnect={ jest.fn() }
+			/>
+		);
+
+		await user.click(
+			screen.getByRole( 'link', {
+				name: /YouTube Merchant Terms/i,
+			} )
+		);
+
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
+			'gla_documentation_link_click',
+			{
+				context: 'settings-connect-youtube-account-card',
+				link_id: 'youtube-merchant-terms',
+				href: YOUTUBE_MERCHANT_TERMS_URL,
+			}
+		);
+	} );
+
 	it( 'tracks the YouTube-specific disconnect click before opening the modal flow', async () => {
 		const user = userEvent.setup();
 		const onDisconnect = jest.fn();
