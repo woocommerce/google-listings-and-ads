@@ -1439,6 +1439,41 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertStringEndsWith( '-EUR', $secondary_labels[0] );
 	}
 
+	public function test_secondary_market_skipped_when_no_currency_enabled_for_language() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'DE' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+				'de'      => [
+					'country'    => 'DE',
+					'feed_label' => 'DE',
+					'language'   => [ 'de' ],
+					'currency'   => [ 'EUR' ],
+				],
+			],
+			// WCML enables no currency for the market's language, so no secondary feed can be built.
+			static function (): array {
+				return [];
+			}
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+
+		// The product still syncs to its primary market; the secondary market emits nothing rather
+		// than a store-currency price mislabelled for the disabled currency.
+		$this->assertCount( 1, $results );
+		$this->assertSame( 'US', $results[0]['input']->get_feed_label() );
+	}
+
 	public function test_primary_entry_uses_store_currency_regardless_of_market_currency_array() {
 		$product = WC_Helper_Product::create_simple_product();
 
@@ -1482,10 +1517,11 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 	 * get_primary_market() always returns null for both, and the primary feed label is only
 	 * exposed via get_main_feed_label().
 	 *
-	 * @param string[] $all_countries Return value for get_all_countries().
-	 * @param array[]  $markets       Return value for get_participating_markets() keyed by market ID.
+	 * @param string[]      $all_countries           Return value for get_all_countries().
+	 * @param array[]       $markets                 Return value for get_participating_markets() keyed by market ID.
+	 * @param callable|null $currencies_for_language Overrides the get_market_currencies_for_language() stub; defaults to every configured currency enabled.
 	 */
-	private function set_up_market_service_stubs( array $all_countries, array $markets ): void {
+	private function set_up_market_service_stubs( array $all_countries, array $markets, ?callable $currencies_for_language = null ): void {
 		$main_feed_label = $markets['primary']['feed_label'];
 
 		$markets['primary']['country']    = null;
@@ -1515,7 +1551,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		// Mirrors get_market_currencies_for_language() with WPML inactive: all configured currencies
 		// enabled, or the store currency when none are configured.
 		$this->market_service->method( 'get_market_currencies_for_language' )->willReturnCallback(
-			static function ( array $market ): array {
+			$currencies_for_language ?? static function ( array $market ): array {
 				$currencies = is_array( $market['currency'] ?? null )
 					? array_values( array_filter( array_map( 'strval', $market['currency'] ) ) )
 					: [];
