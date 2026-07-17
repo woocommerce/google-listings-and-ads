@@ -12,7 +12,10 @@ import AppButton from '~/components/app-button';
 import { getOnboardingUrl } from '~/utils/urls';
 
 jest.mock( '~/components/app-button', () =>
-	jest.fn().mockName( 'AppButton' ).mockImplementation( () => null )
+	jest
+		.fn()
+		.mockName( 'AppButton' )
+		.mockImplementation( () => null )
 );
 jest.mock( '~/utils/urls', () => ( {
 	getOnboardingUrl: jest.fn().mockName( 'getOnboardingUrl' ),

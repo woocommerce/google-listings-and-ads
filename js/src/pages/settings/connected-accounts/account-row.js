@@ -8,6 +8,7 @@ import {
 	MenuItem,
 	Flex,
 	ExternalLink,
+	__experimentalItem as Item,
 } from '@wordpress/components';
 import { moreVertical } from '@wordpress/icons';
 
@@ -130,7 +131,7 @@ export default function AccountRow( { account, onDisconnect } ) {
 	}
 
 	return (
-		<div className="gla-connected-accounts__row">
+		<Item className="gla-connected-accounts__row">
 			<img
 				className="gla-connected-accounts__logo"
 				src={ ACCOUNT_LOGOS[ account.appearance ] }
@@ -165,6 +166,6 @@ export default function AccountRow( { account, onDisconnect } ) {
 			<div className="gla-connected-accounts__indicator">
 				<RowIndicator account={ account } actions={ actions } />
 			</div>
-		</div>
+		</Item>
 	);
 }

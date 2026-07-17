@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { __experimentalItemGroup as ItemGroup } from '@wordpress/components';
+
+/**
  * Internal dependencies
  */
 import Section from '~/components/section';
@@ -32,13 +37,15 @@ export default function AccountsGroupCard( {
 						{ description }
 					</p>
 				</header>
-				{ accounts.map( ( account ) => (
-					<AccountRow
-						key={ account.id }
-						account={ account }
-						onDisconnect={ onDisconnect }
-					/>
-				) ) }
+				<ItemGroup isSeparated>
+					{ accounts.map( ( account ) => (
+						<AccountRow
+							key={ account.id }
+							account={ account }
+							onDisconnect={ onDisconnect }
+						/>
+					) ) }
+				</ItemGroup>
 			</Section.Card.Body>
 		</Section.Card>
 	);

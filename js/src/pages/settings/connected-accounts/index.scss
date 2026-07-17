@@ -24,20 +24,20 @@
 		color: $gray-700;
 	}
 
-	&__row {
+	// Rendered as the inner element of a `@wordpress/components` `Item`.
+	// Scope under `&__card` to override `Item`'s own emotion styles
+	// (padding and `display`) without `!important`.
+	&__card &__row {
 		display: flex;
 		align-items: flex-start;
 		flex-wrap: wrap;
 		gap: $grid-unit-20;
+		// Zero inline padding so the logo aligns with the group header;
+		// `ItemGroup isSeparated` draws the divider between rows.
 		padding: $grid-unit-20 0;
-		border-top: 1px solid $gray-100;
 
 		@include break-small {
 			flex-wrap: nowrap;
-		}
-
-		&:last-child {
-			padding-bottom: 0;
 		}
 	}
 

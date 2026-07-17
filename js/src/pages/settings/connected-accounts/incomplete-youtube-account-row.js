@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Notice } from '@wordpress/components';
+import { Notice, __experimentalItem as Item } from '@wordpress/components';
 import { useReducedMotion } from '@wordpress/compose';
 import { useEffect, useRef } from '@wordpress/element';
 import { getHistory, getNewPath, getQuery } from '@woocommerce/navigation';
@@ -67,7 +67,7 @@ export default function IncompleteYouTubeAccountRow( { account, actions } ) {
 	}, [ handleFinishSetup, isReducedMotion, isYouTubeOAuthReturn ] );
 
 	return (
-		<div className="gla-connected-accounts__row" ref={ containerRef }>
+		<Item className="gla-connected-accounts__row" ref={ containerRef }>
 			<img
 				className="gla-connected-accounts__logo"
 				src={ account.logo }
@@ -110,6 +110,6 @@ export default function IncompleteYouTubeAccountRow( { account, actions } ) {
 					{ actions }
 				</div>
 			</div>
-		</div>
+		</Item>
 	);
 }
