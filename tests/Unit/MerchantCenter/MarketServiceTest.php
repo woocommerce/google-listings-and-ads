@@ -370,6 +370,27 @@ class MarketServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_add_market_normalises_currency_case_before_enablement_check(): void {
+		// Regression: a lowercase currency must be uppercased before the enablement check so it is
+		// matched against WCML's uppercase codes, matching feed generation. Otherwise a disabled
+		// currency slips past validation and is left saved but unable to ever produce a feed.
+		$this->disabled_currencies['fr'] = [ 'GBP' ];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->add_market(
+			'fr',
+			[
+				'country'    => 'FR',
+				'feed_label' => 'FR',
+				'language'   => [ 'fr' ],
+				'currency'   => [ 'eur', 'gbp' ],
+			]
+		);
+	}
+
 	public function test_get_market_currencies_for_language_narrows_to_enabled(): void {
 		$this->disabled_currencies['fr'] = [ 'GBP' ];
 
