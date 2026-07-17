@@ -1,10 +1,16 @@
 /**
+ * @typedef {Object} CurrencyWithLanguages
+ * @property {string} code ISO 4217 currency code (e.g. `"USD", "EUR"`).
+ * @property {Array<string>} [languages] Language codes this currency is enabled for.
+ */
+
+/**
  * Determines which currencies are valid for the given selected language(s).
  * A currency is valid if it's enabled for at least one of the selected
  * languages (union across multiple selected languages). If no language is
  * selected, every currency is considered valid.
  *
- * @param {Array<{code: string, languages?: Array<string>}>} currencies Available currencies, each with the language codes it's enabled for.
+ * @param {Array<CurrencyWithLanguages>} currencies Available currencies, each with the language codes it's enabled for.
  * @param {Array<string>} selectedLanguages Currently selected language codes.
  * @return {Set<string>} Set of valid currency codes.
  */
