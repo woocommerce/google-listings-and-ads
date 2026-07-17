@@ -17,6 +17,7 @@ import { moreVertical } from '@wordpress/icons';
 import Badge from '~/components/badge';
 import YouTubeMerchantTermsLink from '~/components/youtube-account-card/youtube-merchant-terms-link';
 import { YOUTUBE_ACCOUNT_STATUS } from '~/constants';
+import { recordGlaEvent } from '~/utils/tracks';
 import YouTubeConnectButton from './youtube-connect-button';
 import MerchantCenterConnectButton from './merchant-center-connect-button';
 import { ACCOUNT_LOGOS } from './account-logos';
@@ -47,6 +48,16 @@ function AccountActions( { account, onDisconnect } ) {
 						isDestructive
 						onClick={ () => {
 							onClose();
+
+							if ( account.id === 'youtube' ) {
+								recordGlaEvent(
+									'gla_youtube_account_disconnect_button_click',
+									{
+										context: 'settings-youtube',
+									}
+								);
+							}
+
 							onDisconnect( account.disconnectTarget );
 						} }
 					>
