@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin;
 
+use Automattic\WooCommerce\Admin\PageController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
@@ -16,8 +17,9 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class NotificationsSystemSlot
  *
- * Registers and enqueues the plugin-agnostic notification slot bundle on the
- * WooCommerce Marketing overview page (page=wc-admin&path=/marketing).
+ * Registers and enqueues the plugin-agnostic notification slot bundle on all
+ * wc-admin pages, so the shared marketing-notifications store is always
+ * available regardless of which wc-admin route the SPA session started on.
  *
  * The slot bundle is registered with a stable, shared handle so that other
  * plugins can declare it as a script dependency without depending on GLA.
@@ -49,7 +51,7 @@ class NotificationsSystemSlot implements Service, Registerable {
 		add_action(
 			'admin_enqueue_scripts',
 			function () {
-				if ( ! $this->is_marketing_overview_page() ) {
+				if ( ! PageController::is_admin_page() ) {
 					return;
 				}
 
@@ -81,17 +83,5 @@ class NotificationsSystemSlot implements Service, Registerable {
 				$this->assets_handler->enqueue( $slot_style );
 			}
 		);
-	}
-
-	/**
-	 * Determine if the current admin page is the WooCommerce Marketing overview page.
-	 *
-	 * @return bool
-	 */
-	private function is_marketing_overview_page(): bool {
-		$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
-		$path = isset( $_GET['path'] ) ? sanitize_text_field( wp_unslash( $_GET['path'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
-
-		return 'wc-admin' === $page && '/marketing' === $path;
 	}
 }

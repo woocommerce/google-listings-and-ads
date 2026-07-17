@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin;
 
+use Automattic\WooCommerce\Admin\PageController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
@@ -17,8 +18,10 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class NotificationsSystem
  *
- * Enqueues the notifications-system JS bundle and its paired CSS on the
- * WooCommerce Marketing overview page (page=wc-admin&path=/marketing).
+ * Enqueues the notifications-system JS bundle and its paired CSS on all
+ * wc-admin pages. The bundle itself decides, client-side, whether the
+ * current SPA route is the Marketing overview page before fetching or
+ * rendering any notifications.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin
  */
@@ -57,7 +60,7 @@ class NotificationsSystem implements Service, Registerable {
 		add_action(
 			'admin_enqueue_scripts',
 			function () {
-				if ( ! $this->is_marketing_overview_page() ) {
+				if ( ! PageController::is_admin_page() ) {
 					return;
 				}
 
@@ -102,17 +105,5 @@ class NotificationsSystem implements Service, Registerable {
 				'adsId'   => $this->options->get_ads_id() ?: null,
 			],
 		];
-	}
-
-	/**
-	 * Determine if the current admin page is the WooCommerce Marketing overview page.
-	 *
-	 * @return bool
-	 */
-	private function is_marketing_overview_page(): bool {
-		$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
-		$path = isset( $_GET['path'] ) ? sanitize_text_field( wp_unslash( $_GET['path'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
-
-		return 'wc-admin' === $page && '/marketing' === $path;
 	}
 }
