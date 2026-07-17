@@ -1,8 +1,8 @@
 .gla-connected-accounts {
 	display: flex;
 	flex-direction: column;
-	gap: 24px;
-	margin: 24px auto 0;
+	gap: $grid-unit-30;
+	margin: $grid-unit-30 auto 0;
 	max-width: 700px;
 
 	&__card {
@@ -10,26 +10,31 @@
 	}
 
 	&__group-header {
-		margin-bottom: 8px;
+		margin-bottom: $grid-unit-10;
 	}
 
 	&__group-title {
-		margin: 0 0 4px;
-		font-size: 16px;
+		margin: 0 0 $grid-unit-05;
+		font-size: $editor-font-size;
 		font-weight: 600;
 	}
 
 	&__group-description {
 		margin: 0;
-		color: #757575;
+		color: $gray-700;
 	}
 
 	&__row {
 		display: flex;
 		align-items: flex-start;
-		gap: 16px;
-		padding: 20px 0;
-		border-top: 1px solid #f0f0f0;
+		flex-wrap: wrap;
+		gap: $grid-unit-20;
+		padding: $grid-unit-20 0;
+		border-top: 1px solid $gray-100;
+
+		@include break-small {
+			flex-wrap: nowrap;
+		}
 
 		&:last-child {
 			padding-bottom: 0;
@@ -53,13 +58,13 @@
 	}
 
 	&__description {
-		color: #757575;
+		color: $gray-700;
 		line-height: 20px;
 	}
 
 	&__detail {
-		margin-top: 8px;
-		color: #1e1e1e;
+		margin-top: $grid-unit-10;
+		color: $gray-900;
 		font-weight: 500;
 	}
 
@@ -68,14 +73,20 @@
 	}
 
 	&__notice {
-		margin-top: 12px;
+		margin-top: $grid-unit-15;
 	}
 
 	&__indicator {
-		flex: 0 0 auto;
+		flex: 1 1 100%;
 		display: flex;
 		align-items: center;
-		align-self: center;
+		justify-content: flex-start;
+
+		@include break-small {
+			flex: 0 0 auto;
+			align-self: center;
+			justify-content: flex-end;
+		}
 	}
 
 	&__indicator--top {
@@ -84,7 +95,12 @@
 
 	&__indicator-actions {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
-		gap: 12px;
+		gap: $grid-unit-15;
+
+		@include break-small {
+			flex-wrap: nowrap;
+		}
 	}
 }
