@@ -4,6 +4,7 @@
 import { resolveSelect } from '@wordpress/data';
 import { createElement } from '@wordpress/element';
 import { doAction } from '@wordpress/hooks';
+import { getPath, getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -67,11 +68,23 @@ function createNotificationComponent( id, triggeredAt ) {
 	};
 }
 
+const MARKETING_OVERVIEW_PATH = '/marketing';
+
+let hasInitialized = false;
+
 /**
  * Initializes the notifications system by fetching notifications from the GLA store
  * and registering them in the marketing notifications store.
+ *
+ * Guarded to run at most once per page session, since `registerNotificationsInMarketingSlot`
+ * appends to the store with no id-based dedup.
  */
 async function initNotifications() {
+	if ( hasInitialized ) {
+		return;
+	}
+	hasInitialized = true;
+
 	const glaNotifications =
 		await resolveSelect( STORE_KEY ).getNotifications();
 
@@ -90,4 +103,20 @@ async function initNotifications() {
 	registerNotificationsInMarketingSlot( notifications );
 }
 
-initNotifications();
+/**
+ * The notifications-system bundle is enqueued on every wc-admin page (it's a
+ * single-page app, so any page can SPA-navigate to Marketing overview without
+ * a full reload). Only fetch/register notifications once the current SPA
+ * route is actually the Marketing overview page.
+ */
+function initNotificationsIfOnMarketingOverview() {
+	if ( getPath() === MARKETING_OVERVIEW_PATH ) {
+		initNotifications();
+	}
+}
+
+initNotificationsIfOnMarketingOverview();
+
+// `getHistory().listen()` only fires on subsequent SPA navigations, not for
+// the current location, so the initial check above still runs separately.
+getHistory().listen( initNotificationsIfOnMarketingOverview );
