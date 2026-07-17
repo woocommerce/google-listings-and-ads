@@ -466,7 +466,7 @@ When a documentation link is clicked.
 	- with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions' }`
 	- with `{ context: 'setup-mc-accounts', link_id: 'google-mc-terms-of-service', href: 'https://support.google.com/merchants/answer/160173' }`
 	- with `{ context: 'setup-ads', link_id: 'google-ads-terms-of-service', href: 'https://support.google.com/adspolicy/answer/54818' }`
-- [`ConnectYouTubeAccountCard`](../../js/src/components/youtube-account-card/connect-youtube-account-card.js#L32) with `{ context: 'settings-connect-youtube-account-card', link_id: 'youtube-merchant-terms' }` and the URL.
+- [`YouTubeMerchantTermsLink`](../../js/src/components/youtube-merchant-terms-link.js#L23) with `{ context: 'settings-youtube', link_id: 'youtube-merchant-terms' }` and the URL.
 - [`CyoIncentivePicker`](../../js/src/components/paid-ads/ads-campaign/cyo-incentive-picker/cyo-incentive-picker.js#L50) with `{ context: 'setup-ads' | 'setup-ads-only', link_id: 'incentives-terms-and-conditions-apply', href: 'https://ads.google.com/home/terms-and-conditions/incentives/' }`
 - [`DifferentCurrencyNotice`](../../js/src/components/different-currency-notice.js#L28)
 	- with `{ context: "dashboard", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
@@ -778,14 +778,14 @@ Triggered when the "Launch paid campaign" button is clicked to add a new paid ca
 #### Emitters
 - [`SetupPaidAds`](../../js/src/pages/ads-onboarding/ads-stepper/setup-paid-ads.js#L49) on submit
 
-### [`gla_link_youtube_account_button_click`](../../js/src/components/youtube-account-card/connected-youtube-account-card.js#L26)
+### [`gla_link_youtube_account_button_click`](../../js/src/pages/settings/connected-accounts/incomplete-youtube-account-row.js#L92)
 Clicking on the button to link the YouTube account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
 #### Emitters
-- [`ConnectedYouTubeAccountCard`](../../js/src/components/youtube-account-card/connected-youtube-account-card.js#L42) When the user clicks on the button to link the YouTube account.
+- [`IncompleteYouTubeAccountRow`](../../js/src/pages/settings/connected-accounts/incomplete-youtube-account-row.js#L28) When the user clicks on the button to complete YouTube setup.
 
 ### [`gla_mc_account_connect_button_click`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L23)
 Clicking on the button to connect an existing Google Merchant Center account.
@@ -1279,23 +1279,23 @@ Clicking on the button to connect WordPress.com account.
 #### Emitters
 - [`ConnectWPComAccountCard`](../../js/src/components/wpcom-account-card/connect-wpcom-account-card.js#L27)
 
-### [`gla_youtube_account_connect_button_click`](../../js/src/components/youtube-account-card/connect-youtube-account-card.js#L19)
+### [`gla_youtube_account_connect_button_click`](../../js/src/pages/settings/connected-accounts/youtube-connect-button.js#L49)
 Clicking on the button to connect YouTube account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
 #### Emitters
-- [`ConnectYouTubeAccountCard`](../../js/src/components/youtube-account-card/connect-youtube-account-card.js#L32)
+- [`YouTubeConnectButton`](../../js/src/pages/settings/connected-accounts/youtube-connect-button.js#L20)
 
-### [`gla_youtube_account_disconnect_button_click`](../../js/src/components/youtube-account-card/disconnect-account.js#L13)
+### [`gla_youtube_account_disconnect_button_click`](../../js/src/pages/settings/connected-accounts/account-row.js#L53)
 Clicking on the button to disconnect the YouTube account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
 #### Emitters
-- [`DisconnectAccount`](../../js/src/components/youtube-account-card/disconnect-account.js#L25) When the user clicks on the button to disconnect the YouTube account.
+- [`AccountRow`](../../js/src/pages/settings/connected-accounts/account-row.js#L112) When the user clicks on the button to disconnect the YouTube account.
 
 ### [`gla_youtube_shopping_tour_close_button_click`](../../js/src/components/tours/youtube-shopping-tour.js#L26)
 When the tour is closed.

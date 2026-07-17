@@ -22,7 +22,7 @@ export default function MerchantCenterConnectButton() {
 			isSecondary
 			href={ getOnboardingUrl() }
 			eventName="gla_set_up_merchant_center_click"
-			eventProps={ { context: 'settings-accounts' } }
+			eventProps={ { context: 'settings-linked-accounts' } }
 		>
 			{ __( 'Set up Merchant Center', 'google-listings-and-ads' ) }
 		</AppButton>

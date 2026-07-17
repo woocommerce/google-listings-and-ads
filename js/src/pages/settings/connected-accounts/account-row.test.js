@@ -10,7 +10,7 @@ import { render, screen } from '@testing-library/react';
  */
 import AccountRow from './account-row';
 import { APPEARANCE } from '~/components/account-card';
-import { YOUTUBE_MERCHANT_TERMS_URL } from '~/components/youtube-account-card/youtube-merchant-terms-link';
+import { YOUTUBE_MERCHANT_TERMS_URL } from '~/components/youtube-merchant-terms-link';
 import { recordGlaEvent } from '~/utils/tracks';
 
 jest.mock( '~/utils/tracks', () => ( {

@@ -15,7 +15,7 @@ import { moreVertical } from '@wordpress/icons';
  * Internal dependencies
  */
 import Badge from '~/components/badge';
-import YouTubeMerchantTermsLink from '~/components/youtube-account-card/youtube-merchant-terms-link';
+import YouTubeMerchantTermsLink from '~/components/youtube-merchant-terms-link';
 import { YOUTUBE_ACCOUNT_STATUS } from '~/constants';
 import { recordGlaEvent } from '~/utils/tracks';
 import YouTubeConnectButton from './youtube-connect-button';
