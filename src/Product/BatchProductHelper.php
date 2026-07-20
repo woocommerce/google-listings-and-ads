@@ -333,6 +333,10 @@ class BatchProductHelper implements Service {
 	 * Parse a MAPI Google product id (e.g. `en~US~gla_29`) into its identity array
 	 * [language, feed, offerId].
 	 *
+	 * Tilde-only by design: a legacy Content API id (`online:en:US:gla_29`) returns null so the
+	 * status-read path skips it (the Merchant API rejects legacy ids as invalid resource names).
+	 * Deletion paths that must also accept legacy ids use parse_deletable_identity() instead.
+	 *
 	 * @param string $google_id
 	 *
 	 * @return array{0: string, 1: string, 2: string}|null
@@ -362,10 +366,11 @@ class BatchProductHelper implements Service {
 			return $identity;
 		}
 
-		// Legacy Content API id: channel:language:country:offerId. The target country is the feed
-		// for these single-feed products.
+		// Legacy Content API id: online:language:country:offerId. The target country is the feed
+		// for these single-feed products; only the `online` channel was ever stored, so anything
+		// else is not a legacy id we can delete.
 		$parts = explode( ':', $google_id, 4 );
-		if ( count( $parts ) === 4 ) {
+		if ( count( $parts ) === 4 && 'online' === $parts[0] ) {
 			return [ $parts[1], $parts[2], $parts[3] ];
 		}
 
