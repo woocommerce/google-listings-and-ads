@@ -276,6 +276,10 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			$this->batch_product_helper->parse_deletable_identity( 'online:en:US:gla_29' )
 		);
 		$this->assertNull( $this->batch_product_helper->parse_deletable_identity( 'malformed-id' ) );
+
+		// A four-part colon string that is not an `online` Content API id is not a legacy id.
+		$this->assertNull( $this->batch_product_helper->parse_deletable_identity( 'local:en:US:gla_29' ) );
+		$this->assertNull( $this->batch_product_helper->parse_deletable_identity( 'foo:bar:baz:qux' ) );
 	}
 
 	public function test_parse_mapi_identity_rejects_legacy_colon_id() {
@@ -317,6 +321,35 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertContains( $stale_google_ids['AU'], $google_ids );
 		$this->assertContains( $stale_google_ids['DK'], $google_ids );
 		$this->assertNotContains( $stale_google_ids['US'], $google_ids );
+	}
+
+	public function test_generate_stale_products_delete_entries_handles_legacy_colon_id() {
+		// Regression (GOOWOO-802): the stale-products cleanup path must convert a legacy Content API
+		// id, not skip it, or the out-of-audience country's entry lingers in Merchant Center.
+		$products         = $this->create_and_return_supported_test_products();
+		$stale_product    = $products[0];
+		$stale_product_id = $stale_product->get_id();
+
+		$this->target_audience->expects( $this->once() )
+			->method( 'get_target_countries' )
+			->willReturn( [ 'US' ] );
+
+		// AU is no longer in the target audience and stored under the legacy colon format.
+		$this->product_meta->update_google_ids(
+			$stale_product,
+			[
+				'AU' => "online:en:AU:gla_{$stale_product_id}",
+				'US' => "online:en:US:gla_{$stale_product_id}",
+			]
+		);
+
+		$results = $this->batch_product_helper->generate_stale_products_delete_entries( $products );
+
+		$this->assertCount( 1, $results );
+		$this->assertSame( "online:en:AU:gla_{$stale_product_id}", $results[0]['google_id'] );
+		$this->assertSame( 'en', $results[0]['input']->get_content_language() );
+		$this->assertSame( 'AU', $results[0]['input']->get_feed_label() );
+		$this->assertSame( "gla_{$stale_product_id}", $results[0]['input']->get_offer_id() );
 	}
 
 	public function test_generate_stale_countries_delete_entries() {
