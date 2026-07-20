@@ -44,7 +44,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	public function test_returns_cached_value_without_api_call() {
 		$this->options->method( 'get' )->willReturn(
 			[
-				'en|US' => 'accounts/12345/dataSources/999',
+				'product|en|US' => 'accounts/12345/dataSources/999',
 			]
 		);
 		$this->client->expects( $this->never() )->method( 'get' );
@@ -66,7 +66,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 					'dataSources' => [
 						[
 							'name'                     => 'accounts/12345/dataSources/100',
-							'displayName'              => 'Some existing source',
+							'displayName'              => 'Merchant API (en/US)',
 							'primaryProductDataSource' => [
 								'contentLanguage' => 'en',
 								'feedLabel'       => 'US',
@@ -75,11 +75,46 @@ class MapiDataSourcesServiceTest extends UnitTest {
 					],
 				]
 			);
+		// Already the plugin's own source: adopted without a rename.
+		$this->client->expects( $this->never() )->method( 'patch' );
 		$this->options->expects( $this->once() )
 			->method( 'update' )
 			->with(
 				OptionsInterface::MAPI_DATA_SOURCES,
-				[ 'en|US' => 'accounts/12345/dataSources/100' ]
+				[ 'product|en|US' => 'accounts/12345/dataSources/100' ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/100',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_adopts_and_renames_a_foreign_primary_source() {
+		// GOOWOO-805: a pre-existing primary source (e.g. the legacy "Content API" one) is adopted
+		// and renamed in place, not duplicated into a new source, so its products keep their place
+		// and get re-attributed to the Merchant API.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn(
+			[
+				'dataSources' => [
+					[
+						'name'                     => 'accounts/12345/dataSources/100',
+						'displayName'              => 'Content API',
+						'primaryProductDataSource' => [
+							'contentLanguage' => 'en',
+							'feedLabel'       => 'US',
+						],
+					],
+				],
+			]
+		);
+		$this->client->expects( $this->never() )->method( 'post' );
+		$this->client->expects( $this->once() )
+			->method( 'patch' )
+			->with(
+				self::LIST_PATH . '/100?updateMask=displayName',
+				[ 'displayName' => 'Merchant API (en/US)' ]
 			);
 
 		$this->assertSame(
@@ -115,7 +150,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 				self::LIST_PATH,
 				$this->callback(
 					function ( $body ) {
-						return 'Google for WooCommerce (en/US)' === $body['displayName']
+						return 'Merchant API (en/US)' === $body['displayName']
 							&& 'en' === $body['primaryProductDataSource']['contentLanguage']
 							&& 'US' === $body['primaryProductDataSource']['feedLabel']
 							&& ! isset( $body['fileInput'] );
@@ -140,7 +175,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			->method( 'update' )
 			->with(
 				OptionsInterface::MAPI_DATA_SOURCES,
-				[ 'fr|CA' => 'accounts/12345/dataSources/777' ]
+				[ 'product|fr|CA' => 'accounts/12345/dataSources/777' ]
 			);
 
 		$this->assertSame(
@@ -151,7 +186,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 
 	public function test_preserves_other_market_cache_entries_when_resolving_a_new_market() {
 		$this->options->method( 'get' )->willReturn(
-			[ 'en|US' => 'accounts/12345/dataSources/100' ]
+			[ 'product|en|US' => 'accounts/12345/dataSources/100' ]
 		);
 		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
 		$this->client->method( 'post' )->willReturn(
@@ -162,8 +197,8 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			->with(
 				OptionsInterface::MAPI_DATA_SOURCES,
 				[
-					'en|US' => 'accounts/12345/dataSources/100',
-					'fr|CA' => 'accounts/12345/dataSources/200',
+					'product|en|US' => 'accounts/12345/dataSources/100',
+					'product|fr|CA' => 'accounts/12345/dataSources/200',
 				]
 			);
 
@@ -199,6 +234,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 					'dataSources' => [
 						[
 							'name'                     => 'accounts/12345/dataSources/200',
+							'displayName'              => 'Merchant API (en/US)',
 							'primaryProductDataSource' => [
 								'contentLanguage' => 'en',
 								'feedLabel'       => 'US',
@@ -242,7 +278,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 					'dataSources' => [
 						[
 							'name'                => 'accounts/12345/dataSources/300',
-							'displayName'         => 'Existing promotions',
+							'displayName'         => 'Merchant API (en/US)',
 							'promotionDataSource' => [
 								'contentLanguage' => 'en',
 								'targetCountry'   => 'US',
@@ -251,11 +287,45 @@ class MapiDataSourcesServiceTest extends UnitTest {
 					],
 				]
 			);
+		// Already the plugin's own source: adopted without a rename.
+		$this->client->expects( $this->never() )->method( 'patch' );
 		$this->options->expects( $this->once() )
 			->method( 'update' )
 			->with(
 				OptionsInterface::MAPI_DATA_SOURCES,
 				[ 'promotion|en|US' => 'accounts/12345/dataSources/300' ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/300',
+			$this->service->ensure_promotion_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_adopts_and_renames_a_foreign_promotion_source() {
+		// GOOWOO-805: a pre-existing promotion source that is not the plugin's own is adopted and
+		// renamed in place, mirroring the product-source behavior.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn(
+			[
+				'dataSources' => [
+					[
+						'name'                => 'accounts/12345/dataSources/300',
+						'displayName'         => 'Content API promotions',
+						'promotionDataSource' => [
+							'contentLanguage' => 'en',
+							'targetCountry'   => 'US',
+						],
+					],
+				],
+			]
+		);
+		$this->client->expects( $this->never() )->method( 'post' );
+		$this->client->expects( $this->once() )
+			->method( 'patch' )
+			->with(
+				self::LIST_PATH . '/300?updateMask=displayName',
+				[ 'displayName' => 'Merchant API (en/US)' ]
 			);
 
 		$this->assertSame(
@@ -285,7 +355,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 				self::LIST_PATH,
 				$this->callback(
 					function ( $body ) {
-						return 'Google for WooCommerce (en/US)' === $body['displayName']
+						return 'Merchant API (en/US)' === $body['displayName']
 							&& 'en' === $body['promotionDataSource']['contentLanguage']
 							&& 'US' === $body['promotionDataSource']['targetCountry']
 							&& ! isset( $body['primaryProductDataSource'] );
@@ -320,10 +390,10 @@ class MapiDataSourcesServiceTest extends UnitTest {
 	}
 
 	public function test_promotion_and_product_caches_do_not_collide() {
-		// A product data source is cached under 'en|US'; resolving a promotion for the
+		// A product data source is cached under 'product|en|US'; resolving a promotion for the
 		// same language/country must use a distinct key and never return the product source.
 		$this->options->method( 'get' )->willReturn(
-			[ 'en|US' => 'accounts/12345/dataSources/100' ]
+			[ 'product|en|US' => 'accounts/12345/dataSources/100' ]
 		);
 		$this->client->method( 'get' )->willReturn( [ 'dataSources' => [] ] );
 		$this->client->method( 'post' )->willReturn(
@@ -334,7 +404,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			->with(
 				OptionsInterface::MAPI_DATA_SOURCES,
 				[
-					'en|US'           => 'accounts/12345/dataSources/100',
+					'product|en|US'   => 'accounts/12345/dataSources/100',
 					'promotion|en|US' => 'accounts/12345/dataSources/300',
 				]
 			);
