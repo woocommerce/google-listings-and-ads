@@ -36,7 +36,10 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	private const PRODUCT_SOURCE = [
 		'source_field' => 'primaryProductDataSource',
 		'match_field'  => 'feedLabel',
-		'cache_prefix' => '',
+		// Namespaced (was '') to invalidate resolutions cached before the resolver began adopting
+		// and renaming a pre-existing primary source (e.g. the legacy "Content API" one), so the
+		// one-time rename runs on existing installs.
+		'cache_prefix' => 'product|',
 	];
 
 	/** Descriptor for the promotion data source. */
@@ -107,8 +110,10 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 			return (string) $cache[ $cache_key ];
 		}
 
-		$name = $this->find_existing_data_source( $type, $content_language, $match_value )
-			?? $this->create_data_source( $type, $content_language, $match_value );
+		$existing = $this->find_existing_data_source( $type, $content_language, $match_value );
+		$name     = null !== $existing
+			? $this->adopt_data_source( $existing, $content_language, $match_value )
+			: $this->create_data_source( $type, $content_language, $match_value );
 
 		$cache[ $cache_key ] = $name;
 		$this->options->update( OptionsInterface::MAPI_DATA_SOURCES, $cache );
@@ -117,17 +122,31 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * List existing data sources and return the resource name of the one of the given
-	 * type matching the (contentLanguage, match) pair, if any.
+	 * The displayName the plugin gives its own data sources, used when creating one and when
+	 * adopting a pre-existing primary source, so a source fed by the plugin is labelled
+	 * consistently in Merchant Center regardless of how it was originally created.
+	 *
+	 * @param string $content_language
+	 * @param string $match_value
+	 *
+	 * @return string
+	 */
+	private function build_display_name( string $content_language, string $match_value ): string {
+		return sprintf( '%s (%s/%s)', self::DATA_SOURCE_DISPLAY_NAME, $content_language, $match_value );
+	}
+
+	/**
+	 * List existing data sources and return the one of the given type matching the
+	 * (contentLanguage, match) pair, if any.
 	 *
 	 * @param array  $type             One of the *_SOURCE descriptors.
 	 * @param string $content_language Language code.
 	 * @param string $match_value      Secondary identity value (feed label or target country).
 	 *
-	 * @return string|null
+	 * @return array|null The matched data source, or null when none matches.
 	 * @throws MerchantApiException On a non-2xx MAPI response.
 	 */
-	private function find_existing_data_source( array $type, string $content_language, string $match_value ): ?string {
+	private function find_existing_data_source( array $type, string $content_language, string $match_value ): ?array {
 		$page_token = '';
 
 		do {
@@ -143,7 +162,7 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 					$content_language === ( $descriptor['contentLanguage'] ?? '' )
 					&& $match_value === ( $descriptor[ $type['match_field'] ] ?? '' )
 				) {
-					return $source['name'];
+					return $source;
 				}
 			}
 
@@ -151,6 +170,45 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		} while ( '' !== $page_token );
 
 		return null;
+	}
+
+	/**
+	 * Adopt a pre-existing data source: when its displayName differs (e.g. a legacy "Content API"
+	 * source), rename it to the plugin's name so its products stay in place and are re-attributed
+	 * to the Merchant API in Merchant Center rather than duplicated into a new source. A failed
+	 * rename is logged and swallowed rather than propagated, so a transient MAPI error doesn't
+	 * fail the sync for an otherwise-usable data source.
+	 *
+	 * @param array  $source           The matched data source.
+	 * @param string $content_language Language code.
+	 * @param string $match_value      Secondary identity value (feed label or target country).
+	 *
+	 * @return string The data source resource name.
+	 */
+	private function adopt_data_source( array $source, string $content_language, string $match_value ): string {
+		$display_name = $this->build_display_name( $content_language, $match_value );
+
+		if ( $display_name !== ( $source['displayName'] ?? '' ) ) {
+			try {
+				$this->client->patch(
+					sprintf( '%s/%s?updateMask=displayName', MapiPaths::DATASOURCES, $source['name'] ),
+					[ 'displayName' => $display_name ]
+				);
+			} catch ( MerchantApiException $exception ) {
+				do_action(
+					'woocommerce_gla_error',
+					sprintf(
+						'Failed to rename data source %s to "%s": %s',
+						$source['name'],
+						$display_name,
+						$exception->getMessage()
+					),
+					__METHOD__
+				);
+			}
+		}
+
+		return $source['name'];
 	}
 
 	/**
@@ -188,7 +246,7 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		$response = $this->client->post(
 			sprintf( '%s/accounts/%s/dataSources', MapiPaths::DATASOURCES, $this->options->get_merchant_id() ),
 			[
-				'displayName'         => sprintf( '%s (%s/%s)', self::DATA_SOURCE_DISPLAY_NAME, $content_language, $match_value ),
+				'displayName'         => $this->build_display_name( $content_language, $match_value ),
 				$type['source_field'] => [
 					'contentLanguage'    => $content_language,
 					$type['match_field'] => $match_value,
