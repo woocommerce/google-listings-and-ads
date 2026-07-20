@@ -76,10 +76,18 @@ abstract class MapiReportQuery extends Query {
 			$body['pageToken'] = $this->search_args['pageToken'];
 		}
 
-		$this->results = $this->client->post(
+		$results = $this->client->post(
 			sprintf( '%s/accounts/%d/reports:search', MapiPaths::REPORTS, $this->id ),
 			$body
 		);
+
+		/**
+		 * Filter the report search response prior to setting the property.
+		 *
+		 * @param array $results The report search response.
+		 * @param array $body    The request body sent to the reports:search endpoint.
+		 */
+		$this->results = apply_filters( 'woocommerce_gla_mapi_report_query_response', $results, $body );
 	}
 
 	/**
