@@ -89,34 +89,21 @@ class MapiProductInputsService implements OptionsAwareInterface {
 			$paths_by_index[ $index ] = $this->build_path( $data_source );
 		}
 
-		$client = $this->client;
-
-		$requests = function () use ( $inputs, $client, $paths_by_index ) {
-			foreach ( $inputs as $index => $input ) {
-				yield $index => $client->request_async( 'POST', $paths_by_index[ $index ], $input->to_array() );
+		return $this->run_in_batches(
+			$inputs,
+			$concurrency,
+			__METHOD__,
+			function ( int $index, ProductInput $input ) use ( $paths_by_index ): array {
+				return [
+					'method' => 'POST',
+					'path'   => $paths_by_index[ $index ],
+					'body'   => $input->to_array(),
+				];
+			},
+			function ( array $body ): ProductInput {
+				return ProductInput::from_array( $body );
 			}
-		};
-
-		$successes = [];
-		$failures  = [];
-
-		( new EachPromise(
-			$requests(),
-			[
-				'concurrency' => $concurrency,
-				'fulfilled'   => function ( array $body, int $index ) use ( &$successes ) {
-					$successes[ $index ] = ProductInput::from_array( $body );
-				},
-				'rejected'    => function ( $reason, int $index ) use ( &$failures ) {
-					$failures[ $index ] = $reason;
-				},
-			]
-		) )->promise()->wait();
-
-		return [
-			'successes' => $successes,
-			'failures'  => $failures,
-		];
+		);
 	}
 
 	/**
@@ -245,26 +232,86 @@ class MapiProductInputsService implements OptionsAwareInterface {
 			$paths_by_index[ $index ] = $this->build_delete_path( $input, $data_source );
 		}
 
-		$client = $this->client;
-
-		$requests = function () use ( $inputs, $client, $paths_by_index ) {
-			foreach ( $inputs as $index => $input ) {
-				yield $index => $client->request_async( 'DELETE', $paths_by_index[ $index ] );
+		return $this->run_in_batches(
+			$inputs,
+			$concurrency,
+			__METHOD__,
+			function ( int $index ) use ( $paths_by_index ): array {
+				return [
+					'method' => 'DELETE',
+					'path'   => $paths_by_index[ $index ],
+				];
+			},
+			function ( array $body, ProductInput $input ): ProductInput {
+				return $input;
 			}
-		};
+		);
+	}
+
+	/**
+	 * Run product sub-requests in concurrent multipart batches, demuxing each
+	 * sub-response back to a per-input success (ProductInput) or failure
+	 * (MerchantApiException). A whole-batch failure marks every input in it as failed.
+	 *
+	 * @param ProductInput[] $inputs
+	 * @param int            $concurrency   Concurrent batch requests.
+	 * @param string         $operation     Method label used on sub-request failures.
+	 * @param callable       $build_request fn(int $index, ProductInput $input): array{method: string, path: string, body?: array}
+	 * @param callable       $on_success    fn(array $body, ProductInput $input): ProductInput
+	 *
+	 * @return array{successes: array<int, ProductInput>, failures: array<int, MerchantApiException>}
+	 */
+	private function run_in_batches( array $inputs, int $concurrency, string $operation, callable $build_request, callable $on_success ): array {
+		$client        = $this->client;
+		$index_batches = array_chunk( array_keys( $inputs ), $this->get_batch_size() );
 
 		$successes = [];
 		$failures  = [];
 
+		$promises = function () use ( $index_batches, $inputs, $client, $build_request ) {
+			foreach ( $index_batches as $batch_num => $indices ) {
+				$requests = [];
+				foreach ( $indices as $index ) {
+					$requests[ $index ] = $build_request( $index, $inputs[ $index ] );
+				}
+
+				yield $batch_num => $client->batch_async( $requests );
+			}
+		};
+
 		( new EachPromise(
-			$requests(),
+			$promises(),
 			[
 				'concurrency' => $concurrency,
-				'fulfilled'   => function ( array $body, int $index ) use ( &$successes, $inputs ) {
-					$successes[ $index ] = $inputs[ $index ];
+				'fulfilled'   => function ( array $batch_results, $batch_num ) use ( &$successes, &$failures, $inputs, $index_batches, $on_success, $operation ) {
+					foreach ( $batch_results as $index => $result ) {
+						// Ignore a sub-response for an id that was not in this batch (guards
+						// against a malformed or duplicate Content-ID in the response).
+						if ( ! isset( $inputs[ $index ] ) ) {
+							continue;
+						}
+
+						if ( $result['status'] >= 200 && $result['status'] < 300 ) {
+							$successes[ $index ] = $on_success( $result['body'], $inputs[ $index ] );
+						} else {
+							$failures[ $index ] = new MerchantApiException( $result['status'], $result['body'], $operation );
+						}
+					}
+
+					// A requested sub-request missing from the parsed response is a retryable
+					// failure, never a silent no-op.
+					foreach ( array_diff( $index_batches[ $batch_num ], array_keys( $batch_results ) ) as $index ) {
+						$failures[ $index ] = new MerchantApiException(
+							500,
+							[ 'error' => [ 'message' => 'No sub-response returned for this product in the batch response.' ] ],
+							$operation
+						);
+					}
 				},
-				'rejected'    => function ( $reason, int $index ) use ( &$failures ) {
-					$failures[ $index ] = $reason;
+				'rejected'    => function ( $reason, $batch_num ) use ( &$failures, $index_batches ) {
+					foreach ( $index_batches[ $batch_num ] as $index ) {
+						$failures[ $index ] = $reason;
+					}
 				},
 			]
 		) )->promise()->wait();
@@ -273,6 +320,15 @@ class MapiProductInputsService implements OptionsAwareInterface {
 			'successes' => $successes,
 			'failures'  => $failures,
 		];
+	}
+
+	/**
+	 * Number of product sub-requests to pack into a single batch HTTP request.
+	 *
+	 * @return int
+	 */
+	protected function get_batch_size(): int {
+		return max( 1, (int) apply_filters( 'woocommerce_gla_mapi_batch_size', 50 ) );
 	}
 
 	/**
