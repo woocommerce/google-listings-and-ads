@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Admin;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\NotificationsSystem;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\Asset;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -137,7 +138,11 @@ class NotificationsSystemTest extends UnitTest {
 		$this->options->method( 'get_merchant_id' )->willReturn( 123 );
 		$this->options->method( 'get_ads_id' )->willReturn( 456 );
 
-		$this->notifications_system->register();
+		// This test checks WordPress's actual registered script data below, so it
+		// needs a real handler here instead of the mocked $this->assets_handler.
+		$notifications_system = new NotificationsSystem( new AssetsHandler(), $this->options );
+
+		$notifications_system->register();
 		set_current_screen( 'dashboard' );
 		do_action( 'admin_enqueue_scripts' );
 
