@@ -134,11 +134,12 @@ class WCProductInputAdapter {
 		$this->map_gtin();
 		$this->override_attributes();
 
-		// availability, condition, gender, ageGroup and sizeType are all Merchant API enums
-		// (IN_STOCK, NEW, MALE, ADULT, REGULAR, etc.), but their values can arrive lowercase
-		// from a mapping rule, merchant-configured attribute meta, or the override filter
-		// (e.g. the pre-orders integration's `preorder`) — all of which store/accept the
-		// lowercase option keys used by the admin UI. Uppercase them here regardless of source.
+		// availability, condition, gender, ageGroup and sizeType (remapped to the plural
+		// sizeTypes MAPI key by set_attribute()) are all Merchant API enums (IN_STOCK, NEW,
+		// MALE, ADULT, REGULAR, etc.), but their values can arrive lowercase from a mapping
+		// rule, merchant-configured attribute meta, or the override filter (e.g. the
+		// pre-orders integration's `preorder`) — all of which store/accept the lowercase
+		// option keys used by the admin UI. Uppercase them here regardless of source.
 		$this->normalize_enum_attributes();
 	}
 
@@ -318,6 +319,8 @@ class WCProductInputAdapter {
 	 * attribute mapping or the override filter (e.g. the pre-orders integration's lowercase
 	 * `preorder`, or the lowercase option keys the admin UI stores for the others), so every
 	 * path needs uppercasing here rather than relying on the Merchant API normalising it.
+	 * Note: sizeType (singular) is remapped to the plural sizeTypes array key by
+	 * set_attribute(), which is why this operates on sizeTypes rather than sizeType.
 	 */
 	protected function normalize_enum_attributes(): void {
 		foreach ( [ 'availability', 'condition', 'gender', 'ageGroup' ] as $attribute_id ) {

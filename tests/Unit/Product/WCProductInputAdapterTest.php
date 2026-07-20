@@ -418,6 +418,45 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertSame( [ 'PETITE' ], $attrs['sizeTypes'] );
 	}
 
+	public function test_uppercases_enum_attributes_set_via_mapping_rule() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$rules = [
+			[
+				'attribute'               => 'condition',
+				'source'                  => 'refurbished',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'gender',
+				'source'                  => 'female',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'ageGroup',
+				'source'                  => 'toddler',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'sizeType',
+				'source'                  => 'petite',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+		];
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US', null, [], [], $rules ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( 'REFURBISHED', $attrs['condition'] );
+		$this->assertSame( 'FEMALE', $attrs['gender'] );
+		$this->assertSame( 'TODDLER', $attrs['ageGroup'] );
+		$this->assertSame( [ 'PETITE' ], $attrs['sizeTypes'] );
+	}
+
 	public function test_omits_images_when_product_has_none() {
 		$product = WC_Helper_Product::create_simple_product();
 		$product->set_image_id( '' );
