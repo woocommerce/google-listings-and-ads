@@ -310,7 +310,7 @@ class WCProductInputAdapterTest extends UnitTest {
 
 		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
 
-		$this->assertSame( 'in_stock', $attrs['availability'] );
+		$this->assertSame( 'IN_STOCK', $attrs['availability'] );
 	}
 
 	public function test_maps_availability_out_of_stock() {
@@ -320,7 +320,38 @@ class WCProductInputAdapterTest extends UnitTest {
 
 		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
 
-		$this->assertSame( 'out_of_stock', $attrs['availability'] );
+		$this->assertSame( 'OUT_OF_STOCK', $attrs['availability'] );
+	}
+
+	public function test_maps_availability_backorder() {
+		$product = WC_Helper_Product::create_simple_product( false );
+		$product->set_manage_stock( true );
+		$product->set_stock_status( 'instock' );
+		$product->set_backorders( 'yes' );
+		$product->set_stock_quantity( 0 );
+		$product->save();
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( 'BACKORDER', $attrs['availability'] );
+	}
+
+	public function test_uppercases_availability_set_via_override_filter() {
+		// Value injected by the override filter (e.g. the pre-orders integration's
+		// lowercase `preorder`) must still be sent as the Merchant API's uppercase enum.
+		$product = WC_Helper_Product::create_simple_product();
+
+		$cb = static function ( array $overrides ): array {
+			$overrides['availability'] = 'preorder';
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( 'PREORDER', $attrs['availability'] );
 	}
 
 	public function test_omits_images_when_product_has_none() {

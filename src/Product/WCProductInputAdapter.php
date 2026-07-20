@@ -26,9 +26,9 @@ class WCProductInputAdapter {
 
 	use PluginHelper;
 
-	public const AVAILABILITY_IN_STOCK     = 'in_stock';
-	public const AVAILABILITY_OUT_OF_STOCK = 'out_of_stock';
-	public const AVAILABILITY_BACKORDER    = 'backorder';
+	public const AVAILABILITY_IN_STOCK     = 'IN_STOCK';
+	public const AVAILABILITY_OUT_OF_STOCK = 'OUT_OF_STOCK';
+	public const AVAILABILITY_BACKORDER    = 'BACKORDER';
 
 	public const IMAGE_SIZE_FULL = 'full';
 
@@ -133,6 +133,10 @@ class WCProductInputAdapter {
 		$this->map_gla_attributes();
 		$this->map_gtin();
 		$this->override_attributes();
+
+		// Availability can arrive lowercase from a mapping rule or the override filter (e.g. the
+		// pre-orders integration's `preorder`); send the Merchant API's uppercase enum regardless.
+		$this->normalize_availability();
 	}
 
 	/**
@@ -302,6 +306,19 @@ class WCProductInputAdapter {
 		}
 
 		$this->attributes['availability'] = $availability;
+	}
+
+	/**
+	 * Normalise availability to the Merchant API's uppercase enum casing (IN_STOCK, OUT_OF_STOCK,
+	 * PREORDER, BACKORDER). map_availability() already emits the enum. This uppercases a value that
+	 * arrived through attribute mapping or the override filter (e.g. the pre-orders integration's
+	 * lowercase `preorder`), so every path sends the documented casing rather than relying on the
+	 * Merchant API normalising it.
+	 */
+	protected function normalize_availability(): void {
+		if ( ! empty( $this->attributes['availability'] ) && is_string( $this->attributes['availability'] ) ) {
+			$this->attributes['availability'] = strtoupper( $this->attributes['availability'] );
+		}
 	}
 
 	/**
