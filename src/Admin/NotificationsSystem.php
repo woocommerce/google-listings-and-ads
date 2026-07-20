@@ -23,6 +23,13 @@ defined( 'ABSPATH' ) || exit;
  * current SPA route is the Marketing overview page before fetching or
  * rendering any notifications.
  *
+ * The main `google-listings-and-ads` bundle isn't guaranteed to be present on
+ * every page this bundle loads on (e.g. the core WooCommerce Marketing
+ * overview page), so this bundle provides its own fallback `glaData`. It's
+ * injected as `window.glaData = window.glaData || {...}` (a merge, not an
+ * unconditional `var glaData = {...}` assignment) so that on pages where the
+ * main bundle's richer `glaData` is already present, this doesn't clobber it.
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin
  */
 class NotificationsSystem implements Service, Registerable {
@@ -66,7 +73,7 @@ class NotificationsSystem implements Service, Registerable {
 
 				$build_dir = "{$this->get_root_dir()}/js/build";
 
-				$script = ( new AdminScriptWithBuiltDependenciesAsset(
+				$script = new AdminScriptWithBuiltDependenciesAsset(
 					'google-listings-and-ads-notifications-system',
 					'js/build/notifications-system',
 					"{$build_dir}/notifications-system.asset.php",
@@ -76,7 +83,7 @@ class NotificationsSystem implements Service, Registerable {
 							'version'      => $this->get_version(),
 						]
 					)
-				) )->add_inline_script( 'glaData', $this->get_gla_data() );
+				);
 
 				$style = new AdminStyleAsset(
 					'google-listings-and-ads-notifications-system-css',
@@ -87,17 +94,25 @@ class NotificationsSystem implements Service, Registerable {
 
 				$this->assets_handler->register_many( [ $script, $style ] );
 				$this->assets_handler->enqueue_many( [ $script, $style ] );
+
+				wp_add_inline_script(
+					$script->get_handle(),
+					'window.glaData = window.glaData || ' . wp_json_encode( $this->get_gla_data() ) . ';',
+					'before'
+				);
 			}
 		);
 	}
 
 	/**
-	 * Get the inline glaData required by the notifications-system bundle.
+	 * Get the fallback glaData required by the notifications-system bundle when
+	 * the main bundle's own glaData isn't present on the current page.
 	 *
 	 * @return array
 	 */
 	private function get_gla_data(): array {
 		return [
+			'slug'          => $this->get_slug(),
 			'dateFormat'    => get_option( 'date_format' ),
 			'initialWpData' => [
 				'version' => $this->get_version(),
