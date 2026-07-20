@@ -124,14 +124,14 @@ class MapiProductInputsServiceTest extends UnitTest {
 		);
 
 		$messages = [];
-		add_action(
-			'woocommerce_gla_debug_message',
-			static function ( $message ) use ( &$messages ) {
-				$messages[] = $message;
-			}
-		);
+		$callback = static function ( $message ) use ( &$messages ) {
+			$messages[] = $message;
+		};
+		add_action( 'woocommerce_gla_debug_message', $callback );
 
 		$this->service->insert( $input );
+
+		remove_action( 'woocommerce_gla_debug_message', $callback );
 
 		$logged = implode( "\n", $messages );
 		$this->assertStringContainsString( 'productInputs.insert sku42', $logged );

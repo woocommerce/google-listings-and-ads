@@ -176,23 +176,37 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	/**
 	 * Adopt a pre-existing data source: when its displayName differs (e.g. a legacy "Content API"
 	 * source), rename it to the plugin's name so its products stay in place and are re-attributed
-	 * to the Merchant API in Merchant Center rather than duplicated into a new source.
+	 * to the Merchant API in Merchant Center rather than duplicated into a new source. A failed
+	 * rename is logged and swallowed rather than propagated, so a transient MAPI error doesn't
+	 * fail the sync for an otherwise-usable data source.
 	 *
 	 * @param array  $source           The matched data source.
 	 * @param string $content_language Language code.
 	 * @param string $match_value      Secondary identity value (feed label or target country).
 	 *
 	 * @return string The data source resource name.
-	 * @throws MerchantApiException On a non-2xx MAPI response.
 	 */
 	private function adopt_data_source( array $source, string $content_language, string $match_value ): string {
 		$display_name = $this->build_display_name( $content_language, $match_value );
 
 		if ( $display_name !== ( $source['displayName'] ?? '' ) ) {
-			$this->client->patch(
-				sprintf( '%s/%s?updateMask=displayName', MapiPaths::DATASOURCES, $source['name'] ),
-				[ 'displayName' => $display_name ]
-			);
+			try {
+				$this->client->patch(
+					sprintf( '%s/%s?updateMask=displayName', MapiPaths::DATASOURCES, $source['name'] ),
+					[ 'displayName' => $display_name ]
+				);
+			} catch ( MerchantApiException $exception ) {
+				do_action(
+					'woocommerce_gla_error',
+					sprintf(
+						'Failed to rename data source %s to "%s": %s',
+						$source['name'],
+						$display_name,
+						$exception->getMessage()
+					),
+					__METHOD__
+				);
+			}
 		}
 
 		return $source['name'];

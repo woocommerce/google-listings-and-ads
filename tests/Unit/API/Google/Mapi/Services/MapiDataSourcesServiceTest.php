@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google\Mapi\Services;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -115,6 +116,40 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			->with(
 				self::LIST_PATH . '/100?updateMask=displayName',
 				[ 'displayName' => 'Merchant API (en/US)' ]
+			);
+
+		$this->assertSame(
+			'accounts/12345/dataSources/100',
+			$this->service->ensure_data_source_for( 'en', 'US' )
+		);
+	}
+
+	public function test_still_returns_the_source_when_the_rename_fails() {
+		// GOOWOO-805 follow-up: a failed rename (e.g. transient MAPI error) must not fail the
+		// sync — the pre-existing source is still usable, only its label update is skipped.
+		$this->options->method( 'get' )->willReturn( [] );
+		$this->client->method( 'get' )->willReturn(
+			[
+				'dataSources' => [
+					[
+						'name'                     => 'accounts/12345/dataSources/100',
+						'displayName'              => 'Content API',
+						'primaryProductDataSource' => [
+							'contentLanguage' => 'en',
+							'feedLabel'       => 'US',
+						],
+					],
+				],
+			]
+		);
+		$this->client->method( 'patch' )->willThrowException(
+			new MerchantApiException( 500, [], 'patch' )
+		);
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with(
+				OptionsInterface::MAPI_DATA_SOURCES,
+				[ 'product|en|US' => 'accounts/12345/dataSources/100' ]
 			);
 
 		$this->assertSame(
