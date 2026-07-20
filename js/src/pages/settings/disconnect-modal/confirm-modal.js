@@ -17,7 +17,7 @@ import { ALL_ACCOUNTS, ADS_ONLY, YOUTUBE_ACCOUNT } from './constants';
 
 const textDict = {
 	[ ALL_ACCOUNTS ]: {
-		title: __( 'Disconnect all accounts', 'google-listings-and-ads' ),
+		title: __( 'Disconnect all accounts?', 'google-listings-and-ads' ),
 		confirmButton: __(
 			'Disconnect all accounts',
 			'google-listings-and-ads'
@@ -28,22 +28,18 @@ const textDict = {
 		),
 		contents: [
 			__(
-				'I understand that I am disconnecting any WordPress.com account, Google account, Google Merchant Center account and Google Ads account connected to this extension.',
+				'Your WordPress.com, Google, Merchant Center, and Google Ads accounts will be disconnected from your WooCommerce store. Some settings created in WooCommerce may be lost and can’t be restored.',
 				'google-listings-and-ads'
 			),
 			__(
-				'Any active product listings will continue to show on Google. They can be managed, edited, or deleted manually from Google Merchant Center (merchants.google.com).',
-				'google-listings-and-ads'
-			),
-			__(
-				'Any ongoing campaigns will continue to run. They can be managed, edited, or deleted manually from Google Ads (ads.google.com).',
+				'Your product listings will keep showing on Google, and your campaigns will keep running. To pause, edit, or delete them, go to Google Merchant Center (merchants.google.com) and Google Ads (ads.google.com).',
 				'google-listings-and-ads'
 			),
 		],
 	},
 
 	[ ADS_ONLY ]: {
-		title: __( 'Disconnect all accounts', 'google-listings-and-ads' ),
+		title: __( 'Disconnect all accounts?', 'google-listings-and-ads' ),
 		confirmButton: __(
 			'Disconnect all accounts',
 			'google-listings-and-ads'
@@ -54,18 +50,18 @@ const textDict = {
 		),
 		contents: [
 			__(
-				'I understand that I am disconnecting any WordPress.com account, Google account and Google Ads account connected to this extension.',
+				'Your WordPress.com, Google, and Google Ads accounts will be disconnected from your WooCommerce store. Some settings created in WooCommerce may be lost and can’t be restored.',
 				'google-listings-and-ads'
 			),
 			__(
-				'Any ongoing campaigns will continue to run. They can be managed, edited, or deleted manually from Google Ads (ads.google.com).',
+				'Your campaigns will keep running. To pause, edit, or delete them, go to Google Ads (ads.google.com).',
 				'google-listings-and-ads'
 			),
 		],
 	},
 
 	[ YOUTUBE_ACCOUNT ]: {
-		title: __( 'Disconnect YouTube account', 'google-listings-and-ads' ),
+		title: __( 'Disconnect YouTube account?', 'google-listings-and-ads' ),
 		confirmButton: __(
 			'Disconnect YouTube account',
 			'google-listings-and-ads'
@@ -76,11 +72,11 @@ const textDict = {
 		),
 		contents: [
 			__(
-				'I understand that I am disconnecting my YouTube account from this WooCommerce extension.',
+				'Your YouTube account will be disconnected from your WooCommerce store.',
 				'google-listings-and-ads'
 			),
 			__(
-				'Your products will no longer be promoted on YouTube via Shopping ads. You can reconnect a YouTube account at any time.',
+				'Your products will no longer be promoted on YouTube through Shopping ads. You can reconnect at any time.',
 				'google-listings-and-ads'
 			),
 		],
@@ -157,7 +153,7 @@ export default function ConfirmModal( {
 					disabled={ isDisconnecting }
 					onClick={ handleRequestClose }
 				>
-					{ __( 'Never mind', 'google-listings-and-ads' ) }
+					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
 					key="2"
