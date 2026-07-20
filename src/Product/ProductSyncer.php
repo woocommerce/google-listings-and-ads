@@ -281,7 +281,7 @@ class ProductSyncer implements Service {
 	public function delete_by_id_map( array $product_id_map ): BatchProductResponse {
 		$entries = [];
 		foreach ( $product_id_map as $google_id => $wc_product_id ) {
-			$identity = $this->batch_helper->parse_mapi_identity( (string) $google_id );
+			$identity = $this->batch_helper->parse_deletable_identity( (string) $google_id );
 			if ( null === $identity ) {
 				continue;
 			}

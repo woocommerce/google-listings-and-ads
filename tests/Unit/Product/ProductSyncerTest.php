@@ -539,6 +539,35 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		$this->assertEmpty( $results->get_errors() );
 	}
 
+	public function test_delete_by_id_map_deletes_legacy_colon_id() {
+		// The resync cleanup path must delete products stored under the
+		// pre-MAPI Content API id, converting it to the MAPI identity instead of skipping it.
+		$product   = WC_Helper_Product::create_simple_product();
+		$legacy_id = "online:en:US:gla_{$product->get_id()}";
+		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( $legacy_id, 'US' ) );
+
+		$captured = null;
+		$this->mapi_inputs->expects( $this->once() )
+			->method( 'delete_many' )
+			->willReturnCallback(
+				function ( array $inputs ) use ( &$captured ) {
+					$captured = $inputs[0];
+					return [
+						'successes' => [ 0 => $inputs[0] ],
+						'failures'  => [],
+					];
+				}
+			);
+
+		$results = $this->product_syncer->delete_by_id_map( [ $legacy_id => $product->get_id() ] );
+
+		$this->assertInstanceOf( ProductInput::class, $captured );
+		$this->assertSame( 'en', $captured->get_content_language() );
+		$this->assertSame( 'US', $captured->get_feed_label() );
+		$this->assertSame( "gla_{$product->get_id()}", $captured->get_offer_id() );
+		$this->assertCount( 1, $results->get_products() );
+	}
+
 	protected function assert_delete_results_are_valid( $results, $deleted_products, $rejected_products ) {
 		$this->assertEquals( 1, did_action( 'woocommerce_gla_batch_deleted_products' ) );
 		$this->assertEquals( 1, did_action( 'woocommerce_gla_batch_retry_delete_products' ) );
