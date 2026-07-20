@@ -29,9 +29,8 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 
 	use OptionsAwareTrait;
 
-	/** Display name prefix used when creating the plugin's data sources. Shown in Merchant Center's
-	 * data-source column, mirroring the legacy "Content API" label. */
-	public const DATA_SOURCE_DISPLAY_NAME = 'Merchant API';
+	/** Display name prefix used when creating the plugin's data sources. */
+	public const DATA_SOURCE_DISPLAY_NAME = 'Google for WooCommerce';
 
 	/** Descriptor for the primary product data source. */
 	private const PRODUCT_SOURCE = [

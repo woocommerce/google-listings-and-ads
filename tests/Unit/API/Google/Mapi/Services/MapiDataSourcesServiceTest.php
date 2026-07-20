@@ -67,7 +67,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 					'dataSources' => [
 						[
 							'name'                     => 'accounts/12345/dataSources/100',
-							'displayName'              => 'Merchant API (en/US)',
+							'displayName'              => 'Google for WooCommerce (en/US)',
 							'primaryProductDataSource' => [
 								'contentLanguage' => 'en',
 								'feedLabel'       => 'US',
@@ -115,7 +115,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			->method( 'patch' )
 			->with(
 				self::LIST_PATH . '/100?updateMask=displayName',
-				[ 'displayName' => 'Merchant API (en/US)' ]
+				[ 'displayName' => 'Google for WooCommerce (en/US)' ]
 			);
 
 		$this->assertSame(
@@ -185,7 +185,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 				self::LIST_PATH,
 				$this->callback(
 					function ( $body ) {
-						return 'Merchant API (en/US)' === $body['displayName']
+						return 'Google for WooCommerce (en/US)' === $body['displayName']
 							&& 'en' === $body['primaryProductDataSource']['contentLanguage']
 							&& 'US' === $body['primaryProductDataSource']['feedLabel']
 							&& ! isset( $body['fileInput'] );
@@ -269,7 +269,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 					'dataSources' => [
 						[
 							'name'                     => 'accounts/12345/dataSources/200',
-							'displayName'              => 'Merchant API (en/US)',
+							'displayName'              => 'Google for WooCommerce (en/US)',
 							'primaryProductDataSource' => [
 								'contentLanguage' => 'en',
 								'feedLabel'       => 'US',
@@ -313,7 +313,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 					'dataSources' => [
 						[
 							'name'                => 'accounts/12345/dataSources/300',
-							'displayName'         => 'Merchant API (en/US)',
+							'displayName'         => 'Google for WooCommerce (en/US)',
 							'promotionDataSource' => [
 								'contentLanguage' => 'en',
 								'targetCountry'   => 'US',
@@ -360,7 +360,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 			->method( 'patch' )
 			->with(
 				self::LIST_PATH . '/300?updateMask=displayName',
-				[ 'displayName' => 'Merchant API (en/US)' ]
+				[ 'displayName' => 'Google for WooCommerce (en/US)' ]
 			);
 
 		$this->assertSame(
@@ -390,7 +390,7 @@ class MapiDataSourcesServiceTest extends UnitTest {
 				self::LIST_PATH,
 				$this->callback(
 					function ( $body ) {
-						return 'Merchant API (en/US)' === $body['displayName']
+						return 'Google for WooCommerce (en/US)' === $body['displayName']
 							&& 'en' === $body['promotionDataSource']['contentLanguage']
 							&& 'US' === $body['promotionDataSource']['targetCountry']
 							&& ! isset( $body['primaryProductDataSource'] );
