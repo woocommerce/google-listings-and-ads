@@ -1,5 +1,32 @@
 *** Google for WooCommerce Changelog ***
 
+= 3.8.0 - 2026-07-20 =
+* Add - woocommerce_gla_mapi_report_query_response filter to MapiReportQuery.
+* Dev - Allow extensions to attach Merchant API custom attributes to synced products via the `woocommerce_gla_product_attribute_values` filter.
+* Fix - Break - Migrate to the Merchant API from the Content Shopping API.
+* Fix - Fix: GOOWOO-805: MAPI source label and debug logging.
+* Fix - Fix: GOOWOO-809: MAPI integration: `redemptionChannel` should not be scalar.
+* Fix - Fix: map sale price and sale price effective date for MAPI sync.
+* Fix - Fix: send required inputValues when requesting an account re-review.
+* Fix - GOOWOO-631: Phase 1.
+* Fix - GOOWOO-634: Phase 2: Product inserts.
+* Fix - GOOWOO-687: Phase 2: Product patch.
+* Fix - GOOWOO-692: Migrate product create + update sync to MAPI.
+* Fix - GOOWOO-709: Migrate product delete sync to MAPI.
+* Fix - GOOWOO-716: Cleanup: Migrate product create/update sync to the MAPI entirely.
+* Fix - GOOWOO-717 + GOOWOO-741: Migrate product status + listing to the Merchant API.
+* Fix - GOOWOO-723: Migrate product attributes and custom attribute mapping rules to the MAPI.
+* Fix - GOOWOO-744: Migrate reporting to the MAPI.
+* Fix - GOOWOO-756: Migrate content.shippingsettings.update to MAPI accounts.shippingSettings.insert.
+* Fix - GOOWOO-757: Migrate content.accounts.link to MAPI AccountService resource.
+* Fix - GOOWOO-760: Migrate content.freelistingsprogram.get to MAPI accounts.programs.get.
+* Fix - GOOWOO-786: MAPI product sync.
+* Fix - GOOWOO-793: Product status refresh rejects legacy-format product IDs.
+* Fix - Migrate coupon sync from the Content API to the Merchant API.
+* Fix - Migrate Merchant Center account issues to the MAPI.
+* Fix - Migrate Merchant Center business info and account access reads to the MAPI.
+* Fix - Migrate the Merchant Center website claim status and action to the Merchant API.
+
 = Unreleased =
 * Migrate Merchant Center reporting to the Merchant API
 * The `gla_merchant_query_response` filter is removed as part of dropping the Content API report layer.

@@ -140,6 +140,33 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.8.0 - 2026-07-20 =
+* Add - woocommerce_gla_mapi_report_query_response filter to MapiReportQuery.
+* Dev - Allow extensions to attach Merchant API custom attributes to synced products via the `woocommerce_gla_product_attribute_values` filter.
+* Fix - Break - Migrate to the Merchant API from the Content Shopping API.
+* Fix - Fix: GOOWOO-805: MAPI source label and debug logging.
+* Fix - Fix: GOOWOO-809: MAPI integration: `redemptionChannel` should not be scalar.
+* Fix - Fix: map sale price and sale price effective date for MAPI sync.
+* Fix - Fix: send required inputValues when requesting an account re-review.
+* Fix - GOOWOO-631: Phase 1.
+* Fix - GOOWOO-634: Phase 2: Product inserts.
+* Fix - GOOWOO-687: Phase 2: Product patch.
+* Fix - GOOWOO-692: Migrate product create + update sync to MAPI.
+* Fix - GOOWOO-709: Migrate product delete sync to MAPI.
+* Fix - GOOWOO-716: Cleanup: Migrate product create/update sync to the MAPI entirely.
+* Fix - GOOWOO-717 + GOOWOO-741: Migrate product status + listing to the Merchant API.
+* Fix - GOOWOO-723: Migrate product attributes and custom attribute mapping rules to the MAPI.
+* Fix - GOOWOO-744: Migrate reporting to the MAPI.
+* Fix - GOOWOO-756: Migrate content.shippingsettings.update to MAPI accounts.shippingSettings.insert.
+* Fix - GOOWOO-757: Migrate content.accounts.link to MAPI AccountService resource.
+* Fix - GOOWOO-760: Migrate content.freelistingsprogram.get to MAPI accounts.programs.get.
+* Fix - GOOWOO-786: MAPI product sync.
+* Fix - GOOWOO-793: Product status refresh rejects legacy-format product IDs.
+* Fix - Migrate coupon sync from the Content API to the Merchant API.
+* Fix - Migrate Merchant Center account issues to the MAPI.
+* Fix - Migrate Merchant Center business info and account access reads to the MAPI.
+* Fix - Migrate the Merchant Center website claim status and action to the Merchant API.
+
 = 3.7.3 - 2026-07-08 =
 * Add - Added update notification when plugin version 3.8.0 is available
 
@@ -151,16 +178,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix - Fix flaky E2E tests for onboarding step-3 campaign flow.
 * Fix - Fix webpack commons chunk misconfiguration causing disproportionate bundle growth; add dedicated bundlewatch entries for all page chunks with realistic size limits.
 * Fix - Resolved console log errors when selecting AI generated images in campaigns.
-
-= 3.7.1 - 2026-06-09 =
-* Add - Better User Guidance Feature.
-* Fix - Split budget recommendation and metrics cache keys by advertiser type so recommendations refresh correctly after the first campaign is created.
-* Fix - chore: pin third-party GitHub Actions to SHAs + enable Dependabot.
-* Fix - Update table paddings and borders within cards.
-* Fix - Remove API Pull infrastructure.
-* Fix - MainTabNav intermittently showing an incomplete tab list when MC connection state changes mid-session.
-* Fix - Shipping settings tab empty settings.
-* Fix - Update EU declaration modal title.
-* Fix - Exclude tall_portrait_marketing_image type and images with no type set from generated ad assets.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
