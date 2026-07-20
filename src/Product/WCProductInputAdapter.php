@@ -134,9 +134,12 @@ class WCProductInputAdapter {
 		$this->map_gtin();
 		$this->override_attributes();
 
-		// Availability can arrive lowercase from a mapping rule or the override filter (e.g. the
-		// pre-orders integration's `preorder`); send the Merchant API's uppercase enum regardless.
-		$this->normalize_availability();
+		// availability, condition, gender, ageGroup and sizeType are all Merchant API enums
+		// (IN_STOCK, NEW, MALE, ADULT, REGULAR, etc.), but their values can arrive lowercase
+		// from a mapping rule, merchant-configured attribute meta, or the override filter
+		// (e.g. the pre-orders integration's `preorder`) — all of which store/accept the
+		// lowercase option keys used by the admin UI. Uppercase them here regardless of source.
+		$this->normalize_enum_attributes();
 	}
 
 	/**
@@ -309,15 +312,27 @@ class WCProductInputAdapter {
 	}
 
 	/**
-	 * Normalise availability to the Merchant API's uppercase enum casing (IN_STOCK, OUT_OF_STOCK,
-	 * PREORDER, BACKORDER). map_availability() already emits the enum. This uppercases a value that
-	 * arrived through attribute mapping or the override filter (e.g. the pre-orders integration's
-	 * lowercase `preorder`), so every path sends the documented casing rather than relying on the
-	 * Merchant API normalising it.
+	 * Normalise availability, condition, gender, ageGroup and sizeTypes to the Merchant API's
+	 * uppercase enum casing (e.g. IN_STOCK, NEW, MALE, ADULT, REGULAR). map_availability()
+	 * already emits an uppercase value, but all of these can also arrive lowercase through
+	 * attribute mapping or the override filter (e.g. the pre-orders integration's lowercase
+	 * `preorder`, or the lowercase option keys the admin UI stores for the others), so every
+	 * path needs uppercasing here rather than relying on the Merchant API normalising it.
 	 */
-	protected function normalize_availability(): void {
-		if ( ! empty( $this->attributes['availability'] ) && is_string( $this->attributes['availability'] ) ) {
-			$this->attributes['availability'] = strtoupper( $this->attributes['availability'] );
+	protected function normalize_enum_attributes(): void {
+		foreach ( [ 'availability', 'condition', 'gender', 'ageGroup' ] as $attribute_id ) {
+			if ( ! empty( $this->attributes[ $attribute_id ] ) && is_string( $this->attributes[ $attribute_id ] ) ) {
+				$this->attributes[ $attribute_id ] = strtoupper( $this->attributes[ $attribute_id ] );
+			}
+		}
+
+		if ( ! empty( $this->attributes['sizeTypes'] ) && is_array( $this->attributes['sizeTypes'] ) ) {
+			$this->attributes['sizeTypes'] = array_map(
+				function ( $size_type ) {
+					return is_string( $size_type ) ? strtoupper( $size_type ) : $size_type;
+				},
+				$this->attributes['sizeTypes']
+			);
 		}
 	}
 

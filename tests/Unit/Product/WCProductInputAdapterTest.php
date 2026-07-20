@@ -354,6 +354,70 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertSame( 'PREORDER', $attrs['availability'] );
 	}
 
+	public function test_uppercases_condition_set_via_override_filter() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$cb = static function ( array $overrides ): array {
+			$overrides['condition'] = 'refurbished';
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( 'REFURBISHED', $attrs['condition'] );
+	}
+
+	public function test_uppercases_gender_set_via_override_filter() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$cb = static function ( array $overrides ): array {
+			$overrides['gender'] = 'female';
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( 'FEMALE', $attrs['gender'] );
+	}
+
+	public function test_uppercases_age_group_set_via_override_filter() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$cb = static function ( array $overrides ): array {
+			$overrides['ageGroup'] = 'toddler';
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( 'TODDLER', $attrs['ageGroup'] );
+	}
+
+	public function test_uppercases_size_types_set_via_override_filter() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$cb = static function ( array $overrides ): array {
+			$overrides['sizeTypes'] = [ 'petite' ];
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( [ 'PETITE' ], $attrs['sizeTypes'] );
+	}
+
 	public function test_omits_images_when_product_has_none() {
 		$product = WC_Helper_Product::create_simple_product();
 		$product->set_image_id( '' );
@@ -578,9 +642,9 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertSame( 'Cotton', $attrs['material'] );
 		$this->assertSame( 'Striped', $attrs['pattern'] );
 		$this->assertSame( 'MPN123', $attrs['mpn'] );
-		$this->assertSame( 'new', $attrs['condition'] );
-		$this->assertSame( 'adult', $attrs['ageGroup'] );
-		$this->assertSame( 'unisex', $attrs['gender'] );
+		$this->assertSame( 'NEW', $attrs['condition'] );
+		$this->assertSame( 'ADULT', $attrs['ageGroup'] );
+		$this->assertSame( 'UNISEX', $attrs['gender'] );
 	}
 
 	public function test_maps_size_attribute() {
@@ -608,7 +672,7 @@ class WCProductInputAdapterTest extends UnitTest {
 		) )->get_product_input()->get_attributes();
 
 		$this->assertSame( [ '00012345678905' ], $attrs['gtins'] );
-		$this->assertSame( [ 'regular' ], $attrs['sizeTypes'] );
+		$this->assertSame( [ 'REGULAR' ], $attrs['sizeTypes'] );
 		$this->assertArrayNotHasKey( 'gtin', $attrs );
 		$this->assertArrayNotHasKey( 'sizeType', $attrs );
 	}
