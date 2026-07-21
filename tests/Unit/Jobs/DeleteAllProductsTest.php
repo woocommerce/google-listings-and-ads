@@ -16,7 +16,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\JobTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -127,12 +126,6 @@ class DeleteAllProductsTest extends UnitTest {
 
 	public function test_process_item() {
 		$filtered_product_list = new FilteredProductList( $this->generate_simple_product_mocks_set( 1 ), 1 );
-		$request_entries       = [
-			new BatchProductIDRequestEntry(
-				$filtered_product_list->get()[0]->get_id(),
-				'mc_id'
-			),
-		];
 
 		$this->product_repository
 			->expects( $this->once() )
@@ -140,21 +133,14 @@ class DeleteAllProductsTest extends UnitTest {
 			->with( $filtered_product_list->get_product_ids() )
 			->willReturn( $filtered_product_list->get() );
 
-		$this->product_helper->expects( $this->once() )
-			->method( 'generate_delete_request_entries' )
-			->with( $filtered_product_list->get() )
-			->willReturn(
-				$request_entries
-			);
-
 		$this->action_scheduler
 			->method( 'has_scheduled_action' )
 			->willReturn( false );
 
 		$this->product_syncer
 			->expects( $this->once() )
-			->method( 'delete_by_batch_requests' )
-			->with( $request_entries );
+			->method( 'delete' )
+			->with( $filtered_product_list->get() );
 
 		do_action( self::PROCESS_ITEM_HOOK, $filtered_product_list->get_product_ids() );
 	}
