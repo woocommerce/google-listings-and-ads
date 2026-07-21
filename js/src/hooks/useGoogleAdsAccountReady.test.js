@@ -76,7 +76,7 @@ describe( 'useGoogleAdsAccountReady', () => {
 		expect( result.current.isLinkedToMerchantCenter ).toBe( false );
 	} );
 
-	it( 'returns isGoogleAdsReady as true and isLinkedToMerchantCenter as false when step is set_id and account has access', () => {
+	it( 'returns isGoogleAdsReady as false when step is set_id even when the account has access', () => {
 		useGoogleAdsAccountStatus.mockReturnValue( {
 			hasAccess: true,
 			step: 'set_id',
@@ -85,7 +85,7 @@ describe( 'useGoogleAdsAccountReady', () => {
 
 		const { result } = renderHook( () => useGoogleAdsAccountReady() );
 
-		expect( result.current.isGoogleAdsReady ).toBe( true );
+		expect( result.current.isGoogleAdsReady ).toBe( false );
 		expect( result.current.isLinkedToMerchantCenter ).toBe( false );
 	} );
 

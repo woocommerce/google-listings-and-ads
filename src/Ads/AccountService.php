@@ -122,6 +122,11 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 
 		$this->container->get( Middleware::class )->link_ads_account( $account_id );
 
+		// Concurrent requests may have completed steps while the remote call
+		// above was in flight; start from the current database value so those
+		// completions are not reverted.
+		$state = $this->state->get_fresh() ?: $state;
+
 		// Skip billing setup flow when using an existing account.
 		$state['set_id']['status']  = AdsAccountState::STEP_DONE;
 		$state['billing']['status'] = AdsAccountState::STEP_DONE;
@@ -391,6 +396,13 @@ class AccountService implements ContainerAwareInterface, OptionsAwareInterface, 
 	 * @throws Exception If the conversion action can't be created.
 	 */
 	private function create_conversion_action(): void {
+		// A conversion action can already be stored when resuming a setup whose
+		// recorded state was reverted; creating another would leave a duplicate
+		// in the Google Ads account.
+		if ( ! empty( $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION ) ) ) {
+			return;
+		}
+
 		$action = $this->container->get( AdsConversionAction::class )->create_conversion_action();
 		$this->options->update( OptionsInterface::ADS_CONVERSION_ACTION, $action );
 	}

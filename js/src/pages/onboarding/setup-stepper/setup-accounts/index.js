@@ -25,6 +25,7 @@ import Faqs from './faqs';
 import './index.scss';
 import useGoogleAdsAccount from '~/hooks/useGoogleAdsAccount';
 import useGoogleAdsAccountReady from '~/hooks/useGoogleAdsAccountReady';
+import useRepairAdsAccountSetup from '~/hooks/useRepairAdsAccountSetup';
 import useStoreAddressReady from '~/hooks/useStoreAddressReady';
 
 /**
@@ -94,6 +95,7 @@ const SetupAccounts = ( props ) => {
 	const isStoreAddressReady = useStoreAddressReady();
 	const { isGoogleAdsReady, isLinkedToMerchantCenter } =
 		useGoogleAdsAccountReady();
+	useRepairAdsAccountSetup();
 	const { updateGoogleMCContactInformation } = useAppDispatch();
 	const [ isSubmitting, setIsSubmitting ] = useState( false );
 
