@@ -186,18 +186,33 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	/**
 	 * Returns all markets, keyed by ID with the synthesised primary always first.
 	 *
+	 * The shipping method (`shipping_rate`/`shipping_time`) is a single, store-wide
+	 * setting held in the MERCHANT_CENTER option. Secondary markets keep their own
+	 * snapshot of it from when they were created, but those copies can drift out of
+	 * date (e.g. the merchant later switches the global rate to `manual`). Every
+	 * returned market therefore reflects the current global values rather than its
+	 * stored snapshot, so every consumer — the sync check, the currency map builder
+	 * and the REST responses — reads a single source of truth. The same is done for
+	 * `free_shipping` (see GOOWOO-698).
+	 *
 	 * @return array[] Keyed by market ID ('primary', then secondary IDs).
 	 */
 	public function get_markets(): array {
 		$secondary = $this->get_stored_secondary_markets();
 
-		$all_rates     = $this->get_cached_shipping_rates();
-		$all_countries = $this->wc->get_countries();
-		$is_flat_mode  = $this->is_flat_shipping_rate();
+		$all_rates       = $this->get_cached_shipping_rates();
+		$all_countries   = $this->wc->get_countries();
+		$is_flat_mode    = $this->is_flat_shipping_rate();
+		$global_shipping = $this->global_shipping_method();
 
 		foreach ( $secondary as &$market ) {
 			$market  = $this->apply_site_locale_when_not_multilingual( $market );
 			$country = $market['country'] ?? null;
+
+			// Overwrite the stored snapshot with the live global shipping method so
+			// no decision is ever made against a stale per-market copy.
+			$market['shipping_rate'] = $global_shipping['shipping_rate'];
+			$market['shipping_time'] = $global_shipping['shipping_time'];
 
 			// DB rate rows are retained when the merchant switches modes so they
 			// can be restored later, so the read boundary has to gate them.
@@ -434,7 +449,9 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$this->extend_shipping_to_country( $config['country'] );
 		}
 
-		if ( 'manual' !== ( $config['shipping_rate'] ?? null ) ) {
+		// The shipping method is global, so whether Merchant Center needs a sync is
+		// decided by the global setting, not by this market's stored snapshot.
+		if ( $this->global_shipping_is_syncable() ) {
 			$this->schedule_shipping_sync();
 		}
 
@@ -444,9 +461,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		 * Fires after a secondary market is successfully added.
 		 *
 		 * @param string $id     The market ID.
-		 * @param array  $config The market configuration as persisted, including shipping_rate and shipping_time defaults.
+		 * @param array  $config The market configuration as persisted. The shipping_rate/shipping_time
+		 *                       reflect the current global shipping method (see get_markets()).
 		 */
-		do_action( 'woocommerce_gla_market_added', $id, $config );
+		do_action( 'woocommerce_gla_market_added', $id, array_merge( $config, $this->global_shipping_method() ) );
 	}
 
 	/**
@@ -511,6 +529,12 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			return $this->fire_market_updated_action( $id );
 		}
 
+		// Secondary markets don't own a shipping method — it is driven by the global
+		// setting (see get_markets()). The Edit Market screen still submits these
+		// fields on every save, so drop them rather than letting them mutate the
+		// stored snapshot or trip the shipping-sync change detection below.
+		unset( $config['shipping_rate'], $config['shipping_time'] );
+
 		$markets  = $this->get_stored_secondary_markets();
 		$existing = $markets[ $id ] ?? [];
 		$merged   = array_merge( $existing, $config );
@@ -551,7 +575,9 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				->schedule( [ 'feed_labels' => $orphaned ] );
 		}
 
-		$shipping_keys = [ 'country', 'currency', 'shipping_rate', 'shipping_time' ];
+		// shipping_rate/shipping_time are global and were dropped above, so only a
+		// country or currency change can affect what this market syncs to Google.
+		$shipping_keys = [ 'country', 'currency' ];
 		foreach ( $shipping_keys as $key ) {
 			if ( ( $existing[ $key ] ?? null ) !== ( $merged[ $key ] ?? null ) ) {
 				$this->schedule_shipping_sync();
@@ -765,7 +791,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$deleted_config = $markets[ $id ];
 		$country        = $deleted_config['country'] ?? null;
 		$feed_label     = $deleted_config['feed_label'] ?? null;
-		$shipping_rate  = $deleted_config['shipping_rate'] ?? null;
 
 		unset( $markets[ $id ] );
 		$this->options->update( OptionsInterface::MARKETS, $markets );
@@ -793,7 +818,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				);
 		}
 
-		if ( 'manual' !== $shipping_rate ) {
+		// The shipping method is global. Deleting a market whose stored snapshot said
+		// `manual` while the global rate is flat/automatic must still notify Google,
+		// so the decision reads the global setting rather than the deleted snapshot.
+		if ( $this->global_shipping_is_syncable() ) {
 			$this->schedule_shipping_sync();
 		}
 
@@ -804,8 +832,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		 *
 		 * @param string $id             The market ID.
 		 * @param array  $deleted_config The market configuration as it existed at the time of deletion.
+		 *                               The shipping_rate/shipping_time reflect the current global
+		 *                               shipping method (see get_markets()).
 		 */
-		do_action( 'woocommerce_gla_market_deleted', $id, $deleted_config );
+		do_action( 'woocommerce_gla_market_deleted', $id, array_merge( $deleted_config, $this->global_shipping_method() ) );
 	}
 
 	/**
@@ -1179,18 +1209,21 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	/**
 	 * Whether any configured market needs its shipping settings synced to Merchant Center.
 	 *
-	 * Returns true when at least one participating market has a non-`manual`
-	 * `shipping_rate` combined with `shipping_time === 'flat'`. A non-`manual`
-	 * secondary market is enough to require a sync even when the primary
-	 * itself is `manual`.
+	 * A market is syncable when its `shipping_rate` is `flat` or `automatic` and its
+	 * `shipping_time` is `flat`. Anything else (`manual`, or a missing or unrecognised
+	 * value) is not syncable and must not schedule a sync, because the DB shipping
+	 * adapter would then be asked to push rates the merchant never entered.
+	 *
+	 * Only participating markets count: a syncable secondary market is enough to
+	 * require a sync even when the primary itself is `manual`, while markets
+	 * excluded from syncing (see get_participating_markets()) never require one.
+	 * Every market reflects the global shipping method (see get_markets()).
 	 *
 	 * @return bool
 	 */
 	public function has_syncable_markets(): bool {
 		foreach ( $this->get_participating_markets() as $market ) {
-			$rate = $market['shipping_rate'] ?? null;
-			$time = $market['shipping_time'] ?? null;
-			if ( 'manual' !== $rate && 'flat' === $time ) {
+			if ( $this->is_syncable_shipping_method( $market['shipping_rate'] ?? null, $market['shipping_time'] ?? null ) ) {
 				return true;
 			}
 		}
@@ -1356,6 +1389,52 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
 
 		return is_array( $mc_settings ) && 'flat' === ( $mc_settings['shipping_rate'] ?? null );
+	}
+
+	/**
+	 * Returns the store-wide shipping method from the MERCHANT_CENTER option.
+	 *
+	 * This is the single source of truth for every market's shipping_rate and
+	 * shipping_time; both values are null when the setting is unset.
+	 *
+	 * @return array{shipping_rate: string|null, shipping_time: string|null}
+	 */
+	private function global_shipping_method(): array {
+		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+		if ( ! is_array( $mc_settings ) ) {
+			$mc_settings = [];
+		}
+
+		return [
+			'shipping_rate' => $mc_settings['shipping_rate'] ?? null,
+			'shipping_time' => $mc_settings['shipping_time'] ?? null,
+		];
+	}
+
+	/**
+	 * Whether the global shipping method can be synced to Merchant Center.
+	 *
+	 * Used by add_market()/delete_market() to decide whether the change needs to be
+	 * pushed to Google. Mirrors the per-market predicate in has_syncable_markets().
+	 *
+	 * @return bool
+	 */
+	private function global_shipping_is_syncable(): bool {
+		$global = $this->global_shipping_method();
+
+		return $this->is_syncable_shipping_method( $global['shipping_rate'], $global['shipping_time'] );
+	}
+
+	/**
+	 * Whether a shipping method (rate + time) is syncable to Merchant Center.
+	 *
+	 * @param string|null $rate The shipping_rate value.
+	 * @param string|null $time The shipping_time value.
+	 *
+	 * @return bool True when the rate is `flat` or `automatic` and the time is `flat`.
+	 */
+	private function is_syncable_shipping_method( $rate, $time ): bool {
+		return in_array( $rate, [ 'flat', 'automatic' ], true ) && 'flat' === $time;
 	}
 
 	/**

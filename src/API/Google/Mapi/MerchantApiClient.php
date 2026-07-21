@@ -22,6 +22,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class MerchantApiClient {
 
+	private const BATCH_BOUNDARY_PREFIX = 'gla_mapi_batch_boundary';
+
 	/** @var ClientInterface */
 	protected $http;
 
@@ -144,6 +146,130 @@ class MerchantApiClient {
 	 */
 	public function delete( string $path ): array {
 		return $this->request( 'DELETE', $path );
+	}
+
+	/**
+	 * Send a batch of sub-requests as a single multipart/mixed HTTP request and return
+	 * the per-sub-request results keyed by the input key.
+	 *
+	 * @param array<int|string, array{method: string, path: string, body?: array}> $requests
+	 *
+	 * @return array<int|string, array{status: int, body: array}>
+	 * @throws MerchantApiException On a non-2xx response for the batch request itself.
+	 */
+	public function batch( array $requests ): array {
+		return $this->batch_async( $requests )->wait();
+	}
+
+	/**
+	 * Asynchronous variant of {@see batch()}.
+	 *
+	 * @param array<int|string, array{method: string, path: string, body?: array}> $requests
+	 *
+	 * @return PromiseInterface Resolves to array<int|string, array{status: int, body: array}>.
+	 */
+	public function batch_async( array $requests ): PromiseInterface {
+		$request      = $this->build_batch_request( $requests );
+		$method_label = __METHOD__;
+
+		return $this->http->sendAsync( $request )->then(
+			function ( ResponseInterface $response ): array {
+				return $this->parse_batch_response( $response );
+			},
+			function ( $reason ) use ( $method_label ) {
+				if ( $reason instanceof RequestException && $reason->hasResponse() ) {
+					throw new MerchantApiException(
+						$reason->getResponse()->getStatusCode(),
+						$this->decode_response( $reason->getResponse() ),
+						$method_label,
+						$reason
+					);
+				}
+
+				throw $reason;
+			}
+		);
+	}
+
+	/**
+	 * Build the multipart/mixed batch request. Each sub-request is an application/http
+	 * part tagged with a Content-ID so response parts can be mapped back by key.
+	 *
+	 * @param array<int|string, array{method: string, path: string, body?: array}> $requests
+	 *
+	 * @return Request
+	 */
+	protected function build_batch_request( array $requests ): Request {
+		$boundary = self::BATCH_BOUNDARY_PREFIX . '_' . wp_generate_password( 16, false );
+		$body     = '';
+
+		foreach ( $requests as $key => $sub ) {
+			$body .= "--{$boundary}\r\n";
+			$body .= "Content-Type: application/http\r\n";
+			$body .= "Content-ID: <item{$key}>\r\n\r\n";
+			$body .= sprintf( "%s /%s HTTP/1.1\r\n", $sub['method'], ltrim( $sub['path'], '/' ) );
+
+			if ( isset( $sub['body'] ) ) {
+				$body .= "Content-Type: application/json\r\n\r\n";
+				$body .= (string) wp_json_encode( $sub['body'] ) . "\r\n";
+			} else {
+				$body .= "\r\n";
+			}
+		}
+
+		$body .= "--{$boundary}--\r\n";
+
+		return new Request(
+			'POST',
+			$this->base_url . 'batch',
+			[ 'Content-Type' => "multipart/mixed; boundary={$boundary}" ],
+			$body
+		);
+	}
+
+	/**
+	 * Parse a multipart/mixed batch response into per-sub-request results keyed by the
+	 * original request key, extracted from each part's Content-ID.
+	 *
+	 * @param ResponseInterface $response
+	 *
+	 * @return array<int|string, array{status: int, body: array}>
+	 */
+	protected function parse_batch_response( ResponseInterface $response ): array {
+		if ( ! preg_match( '/boundary=(?:"([^"]+)"|([^;\s]+))/', $response->getHeaderLine( 'Content-Type' ), $matches ) ) {
+			do_action( 'woocommerce_gla_error', 'Merchant API batch response had no parseable multipart boundary.', __METHOD__ );
+			return [];
+		}
+
+		$boundary = '' !== ( $matches[1] ?? '' ) ? $matches[1] : $matches[2];
+		$results  = [];
+
+		foreach ( explode( '--' . $boundary, (string) $response->getBody() ) as $part ) {
+			$part = trim( $part );
+			if ( '' === $part || '--' === $part ) {
+				continue;
+			}
+
+			if ( ! preg_match( '/Content-ID:\s*<response-item([^>]+)>/i', $part, $id_match )
+				|| ! preg_match( '#HTTP/\d(?:\.\d)?\s+(\d+)#', $part, $status_match ) ) {
+				continue;
+			}
+
+			$http_offset = strpos( $part, 'HTTP/' );
+			$inner_body  = '';
+			if ( false !== $http_offset && preg_match( '/\r?\n\r?\n(.*)$/s', substr( $part, $http_offset ), $body_match ) ) {
+				$inner_body = trim( $body_match[1] );
+			}
+
+			$decoded = '' === $inner_body ? [] : json_decode( $inner_body, true );
+
+			$results[ $id_match[1] ] = [
+				'status' => (int) $status_match[1],
+				'body'   => is_array( $decoded ) ? $decoded : [],
+			];
+		}
+
+		return $results;
 	}
 
 	/**

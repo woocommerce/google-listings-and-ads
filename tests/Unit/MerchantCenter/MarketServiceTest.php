@@ -129,6 +129,43 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( 'primary', $result['primary']['id'] );
 	}
 
+	/**
+	 * Regression (GOOWOO-773): a secondary market's stored shipping snapshot must be
+	 * replaced by the current global method on read, so no consumer ever sees a stale
+	 * value. Here the stored snapshot is automatic/flat but the global rate is manual.
+	 */
+	public function test_get_markets_overwrites_secondary_shipping_with_global_method(): void {
+		$secondary = [
+			'fr' => [
+				'country'       => 'FR',
+				'language'      => [ 'fr' ],
+				'currency'      => [ 'EUR' ],
+				'feed_label'    => 'FR',
+				'shipping_rate' => 'automatic',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $secondary,
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'manual',
+					'shipping_time' => 'manual',
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$result = $this->market_service->get_markets();
+
+		$this->assertSame( 'manual', $result['fr']['shipping_rate'] );
+		$this->assertSame( 'manual', $result['fr']['shipping_time'] );
+		// The primary is composed from the same global option.
+		$this->assertSame( 'manual', $result['primary']['shipping_rate'] );
+		$this->assertSame( 'manual', $result['primary']['shipping_time'] );
+	}
+
 	public function test_get_markets_falls_back_to_default_when_empty(): void {
 		$this->set_up_options_get( [ OptionsInterface::MARKETS => null ] );
 		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
@@ -889,7 +926,18 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->update_market( 'gb', [ 'country' => '' ] );
 	}
 
-	public function test_update_market_secondary_partial_update_succeeds(): void {
+	/**
+	 * The Edit Market screen submits shipping_rate/shipping_time on every save, but
+	 * a secondary market does not own a shipping method — it is global. Those params
+	 * must be dropped (not persisted, not error), while the market's other fields
+	 * still save, and the returned market reflects the global shipping method.
+	 */
+	public function test_update_market_secondary_drops_shipping_params_but_saves_other_fields(): void {
+		// Stored locale values are only read back verbatim while a multilingual
+		// integration is active; without one the read boundary masks them to
+		// the site locale, which would hide the saved currency below.
+		$this->wpml->method( 'is_active' )->willReturn( true );
+
 		$existing = [
 			'gb' => [
 				'country'       => 'GB',
@@ -900,13 +948,88 @@ class MarketServiceTest extends UnitTest {
 			],
 		];
 
-		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MARKETS         => $existing,
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
 		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
 
-		$result = $this->market_service->update_market( 'gb', [ 'shipping_rate' => 'flat' ] );
+		$result = $this->market_service->update_market(
+			'gb',
+			[
+				'shipping_rate' => 'manual',
+				'shipping_time' => 'manual',
+				'currency'      => [ 'EUR' ],
+			]
+		);
 
+		// The submitted shipping params are dropped; the result reflects the global method.
 		$this->assertSame( 'flat', $result['shipping_rate'] );
+		$this->assertSame( 'flat', $result['shipping_time'] );
+		// The non-shipping field still saved.
+		$this->assertSame( [ 'EUR' ], $result['currency'] );
 		$this->assertSame( 'GB', $result['country'] );
+	}
+
+	/**
+	 * A shipping-only edit (the Edit Market screen echoing the global method back on
+	 * save, while the stored snapshot is stale) must be a no-op: no shipping sync is
+	 * scheduled and the stored snapshot is left untouched. This is the exact scenario
+	 * the ticket names, and locks in both halves of the drop behaviour.
+	 */
+	public function test_update_market_secondary_shipping_only_edit_does_not_schedule_shipping_sync(): void {
+		$existing = [
+			'gb' => [
+				'country'       => 'GB',
+				'language'      => [ 'en' ],
+				'currency'      => [ 'GBP' ],
+				'feed_label'    => 'GB',
+				// Stale snapshot from before the merchant switched the global method.
+				'shipping_rate' => 'automatic',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $existing,
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'manual',
+					'shipping_time' => 'manual',
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->shipping_settings_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		// The Edit Market screen echoes the global method back on save.
+		$this->market_service->update_market(
+			'gb',
+			[
+				'shipping_rate' => 'manual',
+				'shipping_time' => 'manual',
+			]
+		);
+
+		// The submitted params were dropped, not persisted: the stored snapshot is untouched.
+		$this->assertSame( 'automatic', $update_calls[ OptionsInterface::MARKETS ]['gb']['shipping_rate'] );
+		$this->assertSame( 'flat', $update_calls[ OptionsInterface::MARKETS ]['gb']['shipping_time'] );
 	}
 
 	public function test_update_market_secondary_returns_updated_market(): void {
@@ -1032,23 +1155,27 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->update_market( 'gb', [ 'language' => [ 'ga' ] ] );
 	}
 
-	public function test_add_market_with_manual_shipping_rate_does_not_schedule_shipping_sync(): void {
+	public function test_add_market_does_not_schedule_shipping_sync_when_global_is_manual(): void {
 		$config = [
-			'country'       => 'DE',
-			'language'      => [ 'de' ],
-			'currency'      => [ 'EUR' ],
-			'feed_label'    => 'DE',
-			'shipping_rate' => 'manual',
+			'country'    => 'DE',
+			'language'   => [ 'de' ],
+			'currency'   => [ 'EUR' ],
+			'feed_label' => 'DE',
 		];
 
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MARKETS         => [],
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'manual',
+					'shipping_time' => 'flat',
+				],
 				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
 			]
 		);
 		$this->options->method( 'update' )->willReturn( true );
 
+		// Global rate is manual → nothing to sync, regardless of the stored snapshot.
 		$this->shipping_settings_job->expects( $this->never() )
 			->method( 'schedule' );
 
@@ -1076,7 +1203,45 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->update_market( 'gb', [ 'language' => [ 'en', 'cy' ] ] );
 	}
 
-	public function test_delete_market_with_manual_shipping_rate_does_not_schedule_shipping_sync(): void {
+	public function test_delete_market_does_not_schedule_shipping_sync_when_global_is_manual(): void {
+		$existing = [
+			'gb' => [
+				'country'       => 'GB',
+				'language'      => [ 'en' ],
+				'currency'      => [ 'GBP' ],
+				'feed_label'    => 'GB',
+				// Stale snapshot says non-manual, but the global rate below is manual.
+				'shipping_rate' => 'automatic',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $existing,
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'manual',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
+		$this->options->method( 'update' )->willReturn( true );
+
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		// Global rate is manual → no sync, even though the deleted snapshot was automatic.
+		$this->shipping_settings_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->delete_market( 'gb' );
+	}
+
+	/**
+	 * Inverse direction: the deleted market's stale snapshot says `manual`, but the
+	 * global rate is `flat`, so Google must still be notified after deletion.
+	 */
+	public function test_delete_market_schedules_shipping_sync_when_global_is_flat_despite_stale_manual(): void {
 		$existing = [
 			'gb' => [
 				'country'       => 'GB',
@@ -1088,13 +1253,21 @@ class MarketServiceTest extends UnitTest {
 			],
 		];
 
-		$this->set_up_options_get( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $existing,
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
 		$this->options->method( 'update' )->willReturn( true );
 
 		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
 		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
 
-		$this->shipping_settings_job->expects( $this->never() )
+		$this->shipping_settings_job->expects( $this->once() )
 			->method( 'schedule' );
 
 		$this->market_service->delete_market( 'gb' );
@@ -1420,6 +1593,10 @@ class MarketServiceTest extends UnitTest {
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MARKETS         => [],
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
 				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
 			]
 		);
@@ -1428,7 +1605,7 @@ class MarketServiceTest extends UnitTest {
 		$this->cleanup_job->expects( $this->never() )
 			->method( 'schedule' );
 
-		// shipping_rate defaults to 'flat' (non-manual) → shipping sync IS scheduled.
+		// Global shipping method is flat/flat (syncable) → shipping sync IS scheduled.
 		$this->shipping_settings_job->expects( $this->once() )
 			->method( 'schedule' );
 
@@ -1596,7 +1773,15 @@ class MarketServiceTest extends UnitTest {
 			],
 		];
 
-		$this->set_up_options_get( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $existing,
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
 		$this->options->method( 'update' )->willReturn( true );
 
 		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
@@ -1606,7 +1791,7 @@ class MarketServiceTest extends UnitTest {
 			->method( 'schedule' )
 			->with( [ 'feed_labels' => [ 'GB', 'GB-EN-GBP' ] ] );
 
-		// Non-manual shipping_rate → shipping sync also scheduled.
+		// Global shipping method is flat/flat (syncable) → shipping sync also scheduled.
 		$this->shipping_settings_job->expects( $this->once() )
 			->method( 'schedule' );
 
@@ -2030,7 +2215,11 @@ class MarketServiceTest extends UnitTest {
 
 		$this->set_up_options_get(
 			[
-				OptionsInterface::MARKETS => [ 'fr' => $stored_config ],
+				OptionsInterface::MARKETS         => [ 'fr' => $stored_config ],
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
 			]
 		);
 
@@ -2050,8 +2239,16 @@ class MarketServiceTest extends UnitTest {
 			remove_action( 'woocommerce_gla_market_deleted', $listener, 10 );
 		}
 
+		// The payload carries the deleted config with the current global shipping method.
+		$expected_config = array_merge(
+			$stored_config,
+			[
+				'shipping_rate' => 'flat',
+				'shipping_time' => 'flat',
+			]
+		);
 		$this->assertCount( 1, $captured );
-		$this->assertSame( [ 'fr', $stored_config ], $captured[0] );
+		$this->assertSame( [ 'fr', $expected_config ], $captured[0] );
 	}
 
 	public function test_delete_market_coerces_null_options_to_empty_array(): void {
@@ -2433,6 +2630,12 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( 'manual', $stored_jp['shipping_time'] );
 	}
 
+	/**
+	 * An explicit shipping_rate/shipping_time in the add request is still persisted
+	 * as the stored snapshot. This is storage-only: the snapshot no longer drives any
+	 * decision (get_markets() overwrites it with the global method on read, and the
+	 * sync gate reads the global setting), but the write itself is preserved.
+	 */
 	public function test_add_market_explicit_shipping_mode_takes_precedence_over_mc_settings(): void {
 		$mc_settings = [
 			'shipping_rate' => 'automatic',
@@ -2953,7 +3156,14 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->get_markets();
 	}
 
-	public function test_has_syncable_markets_true_when_only_secondary_is_non_manual(): void {
+	/**
+	 * Regression (GOOWOO-773): a secondary market keeps a stale snapshot of the
+	 * shipping method (here `flat`) from when it was created. After the merchant
+	 * switches the global rate to `manual`, the sync check must follow the global
+	 * setting, not the stale snapshot — otherwise a sync is attempted with no DB
+	 * rates and the DB adapter throws (500 error on saving the setting).
+	 */
+	public function test_has_syncable_markets_false_when_global_is_manual_despite_stale_secondary(): void {
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MERCHANT_CENTER => [
@@ -2975,7 +3185,68 @@ class MarketServiceTest extends UnitTest {
 		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
 		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
 
+		$this->assertFalse( $this->market_service->has_syncable_markets() );
+	}
+
+	/**
+	 * The inverse of the regression case: a secondary market's stale snapshot says
+	 * `manual`, but the global rate is `flat`, so the store is syncable.
+	 */
+	public function test_has_syncable_markets_true_when_global_is_flat_despite_stale_manual_secondary(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'fr' => [
+						'country'       => 'FR',
+						'feed_label'    => 'FR',
+						'language'      => [ 'fr' ],
+						'currency'      => [ 'EUR' ],
+						'shipping_rate' => 'manual',
+						'shipping_time' => 'flat',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
 		$this->assertTrue( $this->market_service->has_syncable_markets() );
+	}
+
+	public function test_has_syncable_markets_true_when_global_is_automatic(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->assertTrue( $this->market_service->has_syncable_markets() );
+	}
+
+	/**
+	 * A missing/unset shipping_rate (with a flat time) is not syncable — the old
+	 * `'manual' !== $rate` check would have wrongly treated null as syncable.
+	 */
+	public function test_has_syncable_markets_false_when_rate_is_null(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->assertFalse( $this->market_service->has_syncable_markets() );
 	}
 
 	public function test_has_syncable_markets_false_when_every_market_is_manual(): void {
@@ -3238,6 +3509,10 @@ class MarketServiceTest extends UnitTest {
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MARKETS         => [ 'gb' => $existing_entry ],
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
 				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
 			]
 		);
@@ -3261,6 +3536,8 @@ class MarketServiceTest extends UnitTest {
 
 		$this->market_service->delete_market( 'gb' );
 
+		// The stored snapshot already matches the global method (flat/flat), so the
+		// payload equals the deleted config.
 		$this->assertSame( 1, $fired_count );
 		$this->assertSame( 'gb', $captured_id );
 		$this->assertSame( $existing_entry, $captured_config );

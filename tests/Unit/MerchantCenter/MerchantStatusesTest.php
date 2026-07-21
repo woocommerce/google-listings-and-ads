@@ -12,6 +12,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -28,6 +34,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use DateTime;
 use DateInterval;
 use Exception;
@@ -116,6 +123,19 @@ class MerchantStatusesTest extends UnitTest {
 		$this->container->addShared( UpdateMerchantProductStatuses::class, $this->update_merchant_product_statuses_job );
 		$this->container->addShared( UpdateAllProducts::class, $this->update_all_product_job );
 		$this->container->addShared( DeleteAllProducts::class, $this->delete_all_product_job );
+		$this->container->addShared(
+			BatchProductHelper::class,
+			new BatchProductHelper(
+				$this->createMock( ProductMetaHandler::class ),
+				$this->product_helper,
+				$this->createMock( ValidatorInterface::class ),
+				$this->createMock( ProductFactory::class ),
+				$this->createMock( AttributeMappingRulesQuery::class ),
+				$this->createMock( MarketService::class ),
+				$this->createMock( WPML::class ),
+				$this->createMock( AttributeManager::class )
+			)
+		);
 
 		$this->job_repository = new JobRepository();
 		$this->job_repository->set_container( $this->container );
@@ -700,6 +720,100 @@ class MerchantStatusesTest extends UnitTest {
 
 		$this->merchant_statuses->process_product_statuses(
 			$product_statuses
+		);
+	}
+
+	public function test_process_product_statuses_skips_legacy_google_ids() {
+		$product_valid  = WC_Helper_Product::create_simple_product();
+		$product_legacy = WC_Helper_Product::create_simple_product();
+
+		$this->product_repository->method( 'find_by_ids_as_associative_array' )
+		->willReturnCallback(
+			function ( $ids ) use ( $product_valid, $product_legacy ) {
+				$map = [
+					$product_valid->get_id()  => $product_valid,
+					$product_legacy->get_id() => $product_legacy,
+				];
+				return array_intersect_key( $map, array_flip( $ids ) );
+			}
+		);
+
+		$this->options->method( 'get' )->willReturn( null );
+
+		// product_valid carries a Merchant API id; product_legacy still has a pre-migration
+		// colon-format id that the Merchant API rejects as an invalid name.
+		$this->product_helper->method( 'get_synced_google_product_ids' )
+		->willReturnCallback(
+			function ( $product ) use ( $product_legacy ) {
+				if ( $product->get_id() === $product_legacy->get_id() ) {
+					return [ 'ES' => $this->get_mc_id( $product->get_id() ) ];
+				}
+				return [ 'ES' => $this->get_mapi_id( $product->get_id() ) ];
+			}
+		);
+
+		// Only the valid Merchant API id reaches the products service; the legacy id is filtered out.
+		$this->mapi_products_service->expects( $this->once() )
+		->method( 'get_many' )
+		->with( [ $this->get_mapi_id( $product_valid->get_id() ) ] )
+		->willReturn( [] );
+
+		$this->merchant_statuses->process_product_statuses(
+			[
+				[
+					'mc_id'           => $this->get_mc_id( $product_valid->get_id() ),
+					'product_id'      => $product_valid->get_id(),
+					'status'          => MCStatus::APPROVED,
+					'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
+				],
+				[
+					'mc_id'           => $this->get_mc_id( $product_legacy->get_id() ),
+					'product_id'      => $product_legacy->get_id(),
+					'status'          => MCStatus::APPROVED,
+					'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
+				],
+			]
+		);
+	}
+
+	public function test_process_product_statuses_keeps_valid_ids_when_a_product_has_mixed_ids() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->product_repository->method( 'find_by_ids_as_associative_array' )
+		->willReturnCallback(
+			function ( $ids ) use ( $product ) {
+				return array_intersect_key( [ $product->get_id() => $product ], array_flip( $ids ) );
+			}
+		);
+
+		$this->options->method( 'get' )->willReturn( null );
+
+		// One product synced in two countries: a legacy colon-format id and a Merchant API id.
+		$this->product_helper->method( 'get_synced_google_product_ids' )
+		->willReturnCallback(
+			function ( $wc_product ) {
+				return [
+					'ES' => $this->get_mc_id( $wc_product->get_id() ),
+					'US' => $this->get_mapi_id( $wc_product->get_id() ),
+				];
+			}
+		);
+
+		// Only the Merchant API id reaches the products service; the legacy id is dropped.
+		$this->mapi_products_service->expects( $this->once() )
+		->method( 'get_many' )
+		->with( [ $this->get_mapi_id( $product->get_id() ) ] )
+		->willReturn( [] );
+
+		$this->merchant_statuses->process_product_statuses(
+			[
+				[
+					'mc_id'           => $this->get_mapi_id( $product->get_id() ),
+					'product_id'      => $product->get_id(),
+					'status'          => MCStatus::APPROVED,
+					'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
+				],
+			]
 		);
 	}
 

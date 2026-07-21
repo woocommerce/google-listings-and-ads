@@ -147,4 +147,83 @@ class MerchantApiClientTest extends UnitTest {
 		$this->assertSame( 'accounts/1/products/b', $results['b']['name'] );
 		$this->assertSame( 'accounts/1/products/c', $results['c']['name'] );
 	}
+
+	public function test_batch_demuxes_per_subrequest_results() {
+		$boundary  = 'resp_boundary';
+		$multipart = $this->build_multipart_response(
+			$boundary,
+			[
+				0 => [ 200, [ 'name' => 'accounts/1/products/gla_10' ] ],
+				1 => [ 400, [ 'error' => [ 'message' => 'bad' ] ] ],
+			]
+		);
+		$this->mock->append( new Response( 200, [ 'Content-Type' => "multipart/mixed; boundary={$boundary}" ], $multipart ) );
+
+		$results = $this->client->batch(
+			[
+				0 => [
+					'method' => 'POST',
+					'path'   => 'products/v1/a/productInputs:insert',
+					'body'   => [ 'offerId' => 'gla_10' ],
+				],
+				1 => [
+					'method' => 'POST',
+					'path'   => 'products/v1/a/productInputs:insert',
+					'body'   => [ 'offerId' => 'gla_11' ],
+				],
+			]
+		);
+
+		$this->assertSame( 200, $results[0]['status'] );
+		$this->assertSame( 'accounts/1/products/gla_10', $results[0]['body']['name'] );
+		$this->assertSame( 400, $results[1]['status'] );
+		$this->assertSame( 'bad', $results[1]['body']['error']['message'] );
+	}
+
+	public function test_batch_sends_multipart_request() {
+		$this->mock->append( new Response( 200, [ 'Content-Type' => 'multipart/mixed; boundary=b' ], "--b--\r\n" ) );
+
+		$this->client->batch(
+			[
+				0 => [
+					'method' => 'POST',
+					'path'   => 'products/v1/a/productInputs:insert',
+					'body'   => [ 'offerId' => 'gla_10' ],
+				],
+			]
+		);
+
+		$request = $this->history[0]['request'];
+		$this->assertSame( 'POST', $request->getMethod() );
+		$this->assertSame( self::BASE_URL . 'batch', (string) $request->getUri() );
+		$this->assertStringContainsString( 'multipart/mixed; boundary=', $request->getHeaderLine( 'Content-Type' ) );
+
+		$body = (string) $request->getBody();
+		$this->assertStringContainsString( 'Content-ID: <item0>', $body );
+		$this->assertStringContainsString( 'POST /products/v1/a/productInputs:insert HTTP/1.1', $body );
+		$this->assertStringContainsString( '"offerId":"gla_10"', $body );
+	}
+
+	/**
+	 * Build a Google-style multipart/mixed batch response body.
+	 *
+	 * @param string                                     $boundary
+	 * @param array<int|string, array{0: int, 1: array}> $subs     Keyed by request key: [ status, body ].
+	 *
+	 * @return string
+	 */
+	protected function build_multipart_response( string $boundary, array $subs ): string {
+		$out = '';
+		foreach ( $subs as $key => $sub ) {
+			$out .= "--{$boundary}\r\n";
+			$out .= "Content-Type: application/http\r\n";
+			$out .= "Content-ID: <response-item{$key}>\r\n\r\n";
+			$out .= "HTTP/1.1 {$sub[0]} OK\r\n";
+			$out .= "Content-Type: application/json; charset=UTF-8\r\n\r\n";
+			$out .= wp_json_encode( $sub[1] ) . "\r\n\r\n";
+		}
+		$out .= "--{$boundary}--\r\n";
+
+		return $out;
+	}
 }
