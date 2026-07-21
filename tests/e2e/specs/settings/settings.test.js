@@ -6,7 +6,12 @@ import { expect, test } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import { clearOnboardedMerchant, setOnboardedMerchant } from '../../utils/api';
+import {
+	clearOnboardedMerchant,
+	clearServiceBasedMerchant,
+	setOnboardedMerchant,
+	setServiceBasedMerchant,
+} from '../../utils/api';
 import SettingsPage from '../../utils/pages/settings';
 
 test.use( { storageState: process.env.ADMINSTATE } );
@@ -298,12 +303,17 @@ test.describe( 'Settings', () => {
 
 	test.describe( 'No connected Google Merchant Center account', () => {
 		test.beforeAll( async () => {
+			await setServiceBasedMerchant();
 			await settingsPage.mockJetpackConnected();
 			await settingsPage.mockGoogleConnected();
 			await settingsPage.mockAdsAccountConnected();
 			await settingsPage.mockMCNotConnected();
 			await settingsPage.mockTargetAudienceCountries();
 			await settingsPage.goto();
+		} );
+
+		test.afterAll( async () => {
+			await clearServiceBasedMerchant();
 		} );
 
 		test( 'should not show Google Merchant Center account card', async () => {

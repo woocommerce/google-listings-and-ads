@@ -22,6 +22,13 @@ class ProductRepository implements Service {
 	use PluginHelper;
 
 	/**
+	 * Products whose synced_at is older than this many days are treated as nearly expired
+	 * and re-submitted (see find_expiring_product_ids). The delta-sync freshness window is
+	 * clamped to this so an unchanged product can never be skipped past its resubmission point.
+	 */
+	public const RESUBMIT_EXPIRY_DAYS = 25;
+
+	/**
 	 * @var ProductMetaHandler
 	 */
 	protected $meta_handler;
@@ -281,7 +288,7 @@ class ProductRepository implements Service {
 				[
 					'key'     => ProductMetaHandler::KEY_SYNCED_AT,
 					'compare' => '<',
-					'value'   => strtotime( '-25 days' ),
+					'value'   => strtotime( '-' . self::RESUBMIT_EXPIRY_DAYS . ' days' ),
 				],
 			],
 		];

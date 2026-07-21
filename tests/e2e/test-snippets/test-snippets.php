@@ -50,10 +50,10 @@ add_filter(
 add_filter(
 	'google_for_woocommerce_admin_menu_notification_count',
 	function( int $current_count ) {
-		if ( isset( $_GET['no_notifications'] ) && $_GET['no_notifications'] === true ) {
+		if ( isset( $_GET['no_notifications'] ) && $_GET['no_notifications'] === 'true' ) {
 			return 0;
 		}
 
-		return $current_count++;
+		return ++$current_count;
 	}
 );
