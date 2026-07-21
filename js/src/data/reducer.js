@@ -58,9 +58,8 @@ const DEFAULT_STATE = {
 	},
 	mc_review_request: {
 		status: null,
-		cooldown: null,
 		issues: null,
-		reviewEligibleRegions: [],
+		reviewAction: null,
 	},
 	mc_product_feed: null,
 	report: {},
@@ -72,10 +71,12 @@ const DEFAULT_STATE = {
 			inviteLink: null,
 			step: null,
 		},
+		cyo_incentives: {},
 		budgetRecommendations: {},
 		recommendations: {},
 		enable_enhanced_conversions: false,
 		budgetMetrics: {},
+		settings: null,
 	},
 	gtinMigrationStatus: null,
 	price_benchmark: {
@@ -85,6 +86,7 @@ const DEFAULT_STATE = {
 		},
 		summary: {},
 	},
+	detailed_errors: [],
 	gen_ai_assets: {},
 };
 
@@ -558,6 +560,10 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, 'ads.enable_enhanced_conversions', status );
 		}
 
+		case TYPES.RECEIVE_ADS_SETTINGS: {
+			return setIn( state, 'ads.settings', action.settings );
+		}
+
 		case TYPES.RECEIVE_PRICE_BENCHMARK_SUMMARY: {
 			const { data } = action;
 			return setIn( state, 'price_benchmark.summary', data );
@@ -640,6 +646,36 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				[ 'ads', 'recommendations', recommendationTypes ],
 				recommendations
 			);
+		}
+
+		case TYPES.RECEIVE_DETAILED_ERROR: {
+			const { slot, error } = action;
+
+			return setIn( state, 'detailed_errors', [
+				...state.detailed_errors,
+				{
+					error,
+					slot,
+				},
+			] );
+		}
+
+		case TYPES.CLEAR_DETAILED_ERROR_BY_SLOT: {
+			const { slots } = action;
+			const toClear = new Set( slots );
+
+			return setIn(
+				state,
+				'detailed_errors',
+				state.detailed_errors.filter(
+					( error ) => ! toClear.has( error.slot )
+				)
+			);
+		}
+
+		case TYPES.RECEIVE_CYO_INCENTIVES: {
+			const { cyoIncentives } = action;
+			return setIn( state, [ 'ads', 'cyo_incentives' ], cyoIncentives );
 		}
 
 		case TYPES.RECEIVE_GEN_AI_MEDIA_ASSETS: {

@@ -45,6 +45,14 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  */
 
 /**
+ * Error object returned from the API.
+ *
+ * @typedef {Object} ApiError
+ * @property {string} code Error code.
+ * @property {string} message Error message.
+ */
+
+/**
  * Campaign data.
  *
  * @typedef {Object} Campaign
@@ -68,10 +76,9 @@ import { convertKeysFromSnakeCaseToCamelCase } from './utils';
  * Account status data. Indicates the current status for the Google MC account.
  *
  * @typedef {Object} AccountStatus
- * @property {string} status Account status. See the available statuses here https://developers.google.com/shopping-content/reference/rest/v2.1/State
- * @property {number} cooldown Cooldown period timestamp indicating how long the user should wait until the next request
- * @property {Array} issues List of issue keys for this account
- * @property {Array} reviewEligibleRegions List of region codes available for review
+ * @property {string} status Derived account review status.
+ * @property {Array} issues Titles of the account issues blocking approval.
+ * @property {Object|null} reviewAction The account-review action (in-app or redirect), or null when none is available.
  */
 
 /**
@@ -879,6 +886,13 @@ export function receiveEnhancedConversionsStatus( status ) {
 	};
 }
 
+export function receiveAdsSettings( settings ) {
+	return {
+		type: TYPES.RECEIVE_ADS_SETTINGS,
+		settings,
+	};
+}
+
 /**
  * Update the enhanced conversions status.
  *
@@ -1111,6 +1125,8 @@ export function* sendMCReviewRequest() {
 
 		return yield receiveMCReviewRequest( response );
 	} catch ( error ) {
+		// A 403 here means the account has an in-app review action rendered but is not on
+		// Google's triggeraction allowlist; it currently surfaces as a generic error notice.
 		handleApiError( error );
 		throw error;
 	}
@@ -1363,6 +1379,41 @@ export function* receiveAdsRecommendations(
 		type: TYPES.RECEIVE_ADS_RECOMMENDATIONS,
 		recommendations,
 		recommendationTypes,
+	};
+}
+
+/**
+ * Action containing detailed error information.
+ *
+ * @param {string} slot - Unique key identifying the error (e.g., field name or error code).
+ * @param {ApiError|null} error - The original error object or additional error details.
+ * @return {{type: string, slot: string, error: ApiError|null}} Redux action with type `TYPES.RECEIVE_DETAILED_ERROR`.
+ */
+export function* receiveDetailedError( slot, error ) {
+	return {
+		type: TYPES.RECEIVE_DETAILED_ERROR,
+		slot,
+		error,
+	};
+}
+
+/**
+ * Clears error information for specific error slots.
+ *
+ * @param {Array<string>} slots - Array of unique keys identifying the errors to be cleared.
+ * @return {{type: string, slots: Array<string>}} Redux action with type `TYPES.CLEAR_DETAILED_ERROR_BY_SLOT`.
+ */
+export function* clearDetailedErrorBySlots( slots ) {
+	return {
+		type: TYPES.CLEAR_DETAILED_ERROR_BY_SLOT,
+		slots,
+	};
+}
+
+export function receiveCYOIncentives( cyoIncentives ) {
+	return {
+		type: TYPES.RECEIVE_CYO_INCENTIVES,
+		cyoIncentives,
 	};
 }
 
