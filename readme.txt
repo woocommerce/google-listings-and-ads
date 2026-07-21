@@ -2,7 +2,7 @@
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, product feed, ads, listings
 Requires at least: 6.6
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
 Stable tag: 3.8.0
@@ -140,9 +140,10 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
-= 3.8.0 - 2026-07-20 =
+= 3.8.0 - 2026-07-21 =
 * Break - Migrate to the Merchant API from the Content Shopping API.
 * Dev - Bump WooCommerce "tested up to" version 10.9.
+* Dev - Bump WordPress "tested up to" version 7.0.
 * Fix - Prevent adblockers from blocking auto-generated images in the preview.
 * Tweak - Enable brand guidelines on non-shopping campaigns.
 * Tweak - Remove beta block-based product editor integration ahead of its retirement in WooCommerce 11.0.
