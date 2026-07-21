@@ -164,6 +164,7 @@ test.describe( 'Configure product listings', () => {
 
 	test.describe( 'Shipping rate is simple', () => {
 		test.beforeAll( async () => {
+			await productListingsPage.fulfillShippingRates( [] );
 			await productListingsPage.fulfillShippingTimes( [] );
 			await page.reload();
 
