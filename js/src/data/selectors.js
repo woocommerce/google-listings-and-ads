@@ -71,6 +71,16 @@ export const getSettings = ( state ) => {
  */
 
 /**
+ * @typedef {import('./actions').ApiError} ApiError
+ */
+
+/**
+ * @typedef {Object} DetailedErrors
+ * @property {string} slot Slot identifier for the error.
+ * @property {ApiError} error Error object.
+ */
+
+/**
  * Select jetpack connection state.
  *
  * @param {Object} state The current store state will be injected by `wp.data`.
@@ -106,6 +116,10 @@ export const getGoogleAdsAccountBillingStatus = ( state ) => {
 
 export const getExistingGoogleAdsAccounts = ( state ) => {
 	return state.mc.accounts.existing_ads;
+};
+
+export const getYouTubeAccount = ( state ) => {
+	return state.mc.accounts.youtube;
 };
 
 /**
@@ -174,6 +188,16 @@ export const getAdsCampaigns = ( state, query ) => {
 };
 
 /**
+ * Get campaigns that are missing the EU political advertising declaration.
+ *
+ * @param {Object} state The current store state will be injected by `wp.data`.
+ * @return {Array<{id: number, name: string}>|null} List of campaigns missing the EU declaration, or null if not yet loaded.
+ */
+export const getAdsCampaignsMissingEuDeclaration = ( state ) => {
+	return state.ads_campaigns_missing_eu_declaration;
+};
+
+/**
  * Get the enhanced conversions setting.
  * This setting indicates whether enhanced conversions are enabled for the Google Ads account.
  *
@@ -182,6 +206,16 @@ export const getAdsCampaigns = ( state, query ) => {
  */
 export const getEnableEnhancedConversions = ( state ) => {
 	return state.ads.enable_enhanced_conversions;
+};
+
+/**
+ * Gets the ads settings object.
+ *
+ * @param {Object} state The current store state will be injected by `wp.data`.
+ * @return {Object|null} The ads settings object, or null if not yet loaded.
+ */
+export const getAdsSettings = ( state ) => {
+	return state.ads.settings;
 };
 
 /**
@@ -424,6 +458,16 @@ export const getAdsBudgetMetrics = ( state, countryCodes, budget ) => {
 };
 
 /**
+ * Retrieves the CYO incentives from the state.
+ *
+ * @param {Object} state The state
+ * @return {Array|null} The CYO incentives. It will be `null` if not yet fetched or fetched but doesn't exist.
+ */
+export const getCYOIncentives = ( state ) => {
+	return state.ads.cyo_incentives?.incentives ?? null;
+};
+
+/**
  * Return the GTIN Migration status.
  *
  * @param {Object} state The state
@@ -495,4 +539,70 @@ export const getAdsRecommendations = ( state, types, campaign_id = null ) => {
 	const keyToHash = campaign_id ? [ campaign_id, ...types ] : types;
 	const key = arrayToUnderscoreKey( keyToHash );
 	return state.ads.recommendations[ key ] || null;
+};
+
+/**
+ * Get detailed error objects whose `slot` matches any of the provided slots.
+ *
+ * If `slots` is not an array or is empty, the function returns null.
+ * The function filters `state.detailed_errors`, skipping falsy entries, and
+ * returns only those errors whose `slot` value is included in `errorSlots`.
+ *
+ * @param {Object} state - State containing detailed errors.
+ * @param {Array<DetailedErrors>} state.detailed_errors - Array of detailed error objects.
+ * @param {Array<string|number>} slots - Array of slot identifiers to match against each error's `slot`.
+ * @return {Array<Object>} Array of matching error objects, or an empty array when `slots` is not a non-empty array.
+ */
+export const getDetailedErrorBySlots = ( state, slots ) => {
+	if ( ! Array.isArray( slots ) || slots.length === 0 ) {
+		return [];
+	}
+
+	return state.detailed_errors.filter( ( error ) => {
+		return slots.includes( error?.slot );
+	} );
+};
+
+/**
+ * Retrieves the GenAI media assets from the state for a given URL and type.
+ *
+ * @param {Object} state - The Redux state object containing GenAI assets data.
+ * @param {string} url - The URL associated with the GenAI assets.
+ * @param {'marketing_image'|'square_marketing_image'|'portrait_marketing_image'|undefined} [assetType] - The type of media asset to retrieve.
+ * @return {Array<string>} The media assets for the specified URL and type, or an empty array if not found.
+ */
+export const getGenAIMediaAssets = ( state, url, assetType ) => {
+	const mediaAssets = state.gen_ai_assets?.[ url ]?.media;
+
+	if ( ! url || ! mediaAssets ) {
+		return [];
+	}
+
+	if ( assetType ) {
+		return mediaAssets[ assetType ] ?? [];
+	}
+
+	return mediaAssets;
+};
+
+/**
+ * Retrieves the GenAI text assets from the state for a given URL and type.
+ *
+ * @param {Object} state - The Redux state object containing GenAI assets data.
+ * @param {string} url - The URL associated with the GenAI assets.
+ * @param {'headline'|'long_headline'|'description'|undefined} [assetType] - The type of text asset to retrieve.
+ * @return {Array<string>} The text assets for the specified URL and type, or an empty array if not found.
+ */
+export const getGenAITextAssets = ( state, url, assetType ) => {
+	const textAssets = state.gen_ai_assets?.[ url ]?.text;
+
+	if ( ! url || ! textAssets ) {
+		return [];
+	}
+
+	if ( assetType ) {
+		return textAssets[ assetType ] ?? [];
+	}
+
+	return textAssets;
 };

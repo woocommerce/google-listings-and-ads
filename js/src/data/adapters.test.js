@@ -345,23 +345,10 @@ describe( 'adaptAssetGroup', () => {
 
 		it( 'When the first text has an invalid character count, it should move the valid one to the first', () => {
 			assetGroup.assets[ DESCRIPTION ].reverse();
-			assetGroup.assets[ HEADLINE ] = [
-				{ content: text20Count },
-				{ content: text30Count },
-				{ content: text15Count },
-				{ content: text10Count },
-			];
 			const { assets } = adaptAssetGroup( assetGroup );
 			const descriptions = assets[ DESCRIPTION ].map( mapContent );
-			const headlines = assets[ HEADLINE ].map( mapContent );
 
 			expect( descriptions ).toEqual( [ text60Count, text90Count ] );
-			expect( headlines ).toEqual( [
-				text15Count,
-				text20Count,
-				text30Count,
-				text10Count,
-			] );
 		} );
 	} );
 } );

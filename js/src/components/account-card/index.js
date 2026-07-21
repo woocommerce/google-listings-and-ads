@@ -10,11 +10,13 @@ import { Icon, store as storeIcon } from '@wordpress/icons';
  */
 import Section from '~/components/section';
 import Subsection from '~/components/subsection';
-import googleLogoURL from '~/images/logo/gogole-g-logo.svg';
+import googleLogoURL from '~/images/logo/google-g-logo.svg';
 import googleMCLogoURL from '~/images/logo/google-merchant-center-logo.svg';
 import googleAdsLogoURL from '~/images/logo/google-ads-logo.svg';
 import wpLogoURL from '~/images/logo/wp-logo.svg';
+import youTubeLogoURL from '~/images/logo/youtube-logo.svg';
 import finalUrlIconURL from '~/images/final-url-icon.svg';
+import DetailedError from '~/components/detailed-error';
 import './index.scss';
 
 /**
@@ -30,6 +32,7 @@ export const APPEARANCE = {
 	GOOGLE_ADS: 'google_ads',
 	ADDRESS: 'address',
 	FINAL_URL: 'final_url',
+	YOUTUBE: 'youtube',
 };
 
 const googleLogo = (
@@ -65,6 +68,15 @@ const wpLogo = (
 		alt={ __( 'WordPress.com Logo', 'google-listings-and-ads' ) }
 		width="40"
 		height="40"
+	/>
+);
+
+const youTubeLogo = (
+	<img
+		src={ youTubeLogoURL }
+		alt={ __( 'YouTube Logo', 'google-listings-and-ads' ) }
+		width="39"
+		height="28"
 	/>
 );
 
@@ -110,6 +122,10 @@ const appearanceDict = {
 		icon: finalUrlIcon,
 		title: __( 'Final URL', 'google-listings-and-ads' ),
 	},
+	[ APPEARANCE.YOUTUBE ]: {
+		icon: youTubeLogo,
+		title: __( 'YouTube', 'google-listings-and-ads' ),
+	},
 };
 
 // The `center` is the default alignment, and no need to append any additional class name.
@@ -143,6 +159,7 @@ const indicatorAlignStyleName = {
  * @param {JSX.Element} [props.detail] Detail content below the card description.
  * @param {boolean} [props.expandedDetail=false] Whether to expand the detail content.
  * @param {JSX.Element} [props.actions] Actions content below the card detail.
+ * @param {Array<string>} [props.errorSlots] Error slots passed to DetailedError component.
  * @param {Array<JSX.Element>} [props.children] Children to be rendered if needs more content within the card.
  * @param {Object} [props.restProps] Props to be forwarded to Section.Card.
  */
@@ -160,6 +177,7 @@ export default function AccountCard( {
 	detail,
 	expandedDetail = false,
 	actions,
+	errorSlots,
 	children,
 	...restProps
 } ) {
@@ -210,6 +228,11 @@ export default function AccountCard( {
 					{ indicator && (
 						<div className={ indicatorClassName }>
 							{ indicator }
+						</div>
+					) }
+					{ errorSlots && errorSlots.length > 0 && (
+						<div className="gla-account-card__error">
+							<DetailedError errorSlots={ errorSlots } />
 						</div>
 					) }
 					{ actions && (

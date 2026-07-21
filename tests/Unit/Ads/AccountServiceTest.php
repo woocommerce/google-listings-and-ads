@@ -227,6 +227,32 @@ class AccountServiceTest extends UnitTest {
 		$this->assertEquals( self::TEST_DISCONNECTED_DATA, $this->account->get_connected_account() );
 	}
 
+	public function test_get_connected_account_with_failed_set_id_step_returns_disconnected() {
+		$this->options->expects( $this->once() )
+			->method( 'get_ads_id' )
+			->willReturn( 0 );
+
+		$this->options->method( 'get' )
+			->withConsecutive(
+				[ OptionsInterface::ADS_ACCOUNT_OCID ],
+				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ],
+				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ]
+			)
+			->willReturnOnConsecutiveCalls(
+				null,
+				null,
+				null
+			);
+
+		// Simulate state left behind after a failed account creation or link attempt:
+		// the set_id step is the first incomplete step but no Ads ID was stored.
+		$this->state->expects( $this->once() )
+			->method( 'last_incomplete_step' )
+			->willReturn( 'set_id' );
+
+		$this->assertEquals( self::TEST_DISCONNECTED_DATA, $this->account->get_connected_account() );
+	}
+
 	public function test_use_existing_account_already_connected() {
 		$this->options->expects( $this->once() )
 			->method( 'get_ads_id' )
@@ -754,7 +780,7 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_disconnect() {
-		$this->options->expects( $this->exactly( 9 ) )
+		$this->options->expects( $this->exactly( 12 ) )
 			->method( 'delete' )
 			->withConsecutive(
 				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ],
@@ -763,7 +789,10 @@ class AccountServiceTest extends UnitTest {
 				[ OptionsInterface::ADS_BILLING_URL ],
 				[ OptionsInterface::ADS_CONVERSION_ACTION ],
 				[ OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED ],
+				[ OptionsInterface::ADS_EU_POLITICAL_DECLARATIONS_COMPLETE ],
+				[ OptionsInterface::ADS_HAS_UNCLAIMED_INCENTIVE ],
 				[ OptionsInterface::ADS_ID ],
+				[ OptionsInterface::ADS_INCENTIVE_APPLY_ERROR ],
 				[ OptionsInterface::ADS_SETUP_COMPLETED_AT ],
 				[ OptionsInterface::CAMPAIGN_CONVERT_STATUS ]
 			);
