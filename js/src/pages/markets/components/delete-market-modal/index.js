@@ -2,13 +2,14 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useRef, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { useAppDispatch } from '~/data';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
+import { handleApiError } from '~/utils/handleError';
 import AppModal from '~/components/app-modal';
 import AppButton from '~/components/app-button';
 
@@ -20,22 +21,48 @@ import AppButton from '~/components/app-button';
  * @param {() => void} props.onRequestClose Called when the user cancels or after a successful delete.
  */
 const DeleteMarketModal = ( { market, onRequestClose } ) => {
-	const { deleteMarket, invalidateResolution } = useAppDispatch();
+	const { deleteMarket, invalidateResolution, syncSettings } =
+		useAppDispatch();
 	const countryNames = useCountryKeyNameMap();
 	const [ deleting, setDeleting ] = useState( false );
+	const deletedRef = useRef( false );
 
 	const marketName = countryNames[ market.country ];
 
 	const handleConfirm = async () => {
 		setDeleting( true );
 		try {
-			await deleteMarket( market.id );
-			invalidateResolution( 'getTargetAudience', [] );
+			// The guard keeps a retry after a failed sync from re-sending
+			// the DELETE request for a market that no longer exists. The
+			// deletion changes the target audience server-side whether or
+			// not the sync succeeds, so the invalidation belongs with it.
+			if ( ! deletedRef.current ) {
+				await deleteMarket( market.id );
+				deletedRef.current = true;
+				invalidateResolution( 'getTargetAudience', [] );
+			}
+
+			// Push the deletion to Merchant Center right away: the deleted
+			// market's shipping service must be replaced or removed there,
+			// and the background job alone can be delayed or gated off.
+			try {
+				await syncSettings();
+			} catch ( error ) {
+				handleApiError(
+					error,
+					__(
+						'The market was deleted, but there was an error synchronizing the change to Google Merchant Center. Please try again.',
+						'google-listings-and-ads'
+					)
+				);
+				throw error;
+			}
+
 			onRequestClose();
 		} catch ( error ) {
-			// `handleApiError` in the store action already dispatches an error
-			// notice. We just need to re-enable the buttons so the user can
-			// retry or cancel.
+			// Every awaited action has already dispatched its own error
+			// notice; this catch only keeps the modal open for retry/cancel.
+		} finally {
 			setDeleting( false );
 		}
 	};

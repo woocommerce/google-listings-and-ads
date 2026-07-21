@@ -322,8 +322,13 @@ class MarketsController extends BaseController {
 						'items' => [
 							'type'       => 'object',
 							'properties' => [
-								'code'   => [ 'type' => 'string' ],
-								'symbol' => [ 'type' => 'string' ],
+								'code'      => [ 'type' => 'string' ],
+								'symbol'    => [ 'type' => 'string' ],
+								'languages' => [
+									'description' => __( 'Active language codes the currency is enabled for.', 'google-listings-and-ads' ),
+									'type'        => 'array',
+									'items'       => [ 'type' => 'string' ],
+								],
 							],
 						],
 					],

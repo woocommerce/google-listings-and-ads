@@ -33,6 +33,54 @@ class WPML implements IntegrationInterface {
 	public function init(): void {}
 
 	/**
+	 * Returns whether product prices can be converted into another currency.
+	 *
+	 * This is the exact availability condition used by the price conversion
+	 * methods below: WPML active with WCML multi-currency enabled. Markets
+	 * priced in a non-store currency can only be synced when this holds.
+	 *
+	 * @return bool
+	 */
+	public function can_convert_currency(): bool {
+		return $this->is_active() && $this->is_wcml_multi_currency_on();
+	}
+
+	/**
+	 * Runs the given callback with WPML switched to the "all languages" context.
+	 *
+	 * WPML restricts every post query to the current language, so any product query
+	 * the plugin runs in a background job (sync, delete, cleanup, stale detection,
+	 * disconnect) would otherwise only ever see one language's products. Switching to
+	 * the reserved `all` language code makes WPML emit an all-languages WHERE clause
+	 * and stop translating queried IDs, so the plugin operates on every translation.
+	 *
+	 * When WPML is not active the callback is simply invoked, leaving single-language
+	 * and non-multilingual sites behaving exactly as before.
+	 *
+	 * @template T
+	 *
+	 * @param callable():T $callback The work to run in the all-languages context.
+	 *
+	 * @return T The callback's return value.
+	 */
+	public function run_in_all_languages( callable $callback ) {
+		if ( ! $this->is_active() ) {
+			return $callback();
+		}
+
+		$previous_language = apply_filters( 'wpml_current_language', null );
+
+		do_action( 'wpml_switch_language', 'all' );
+
+		try {
+			return $callback();
+		} finally {
+			// Restore the language that was active before we switched.
+			do_action( 'wpml_switch_language', $previous_language );
+		}
+	}
+
+	/**
 	 * Returns the site's default WPML language code.
 	 *
 	 * @return string ISO 639-1 language code, or empty when unavailable.
@@ -112,7 +160,11 @@ class WPML implements IntegrationInterface {
 	 * Returns the store's active currencies from WCML when multi-currency is enabled,
 	 * or the WooCommerce store currency as a single entry otherwise.
 	 *
-	 * @return array<int, array{code: string, symbol: string}>
+	 * Each currency carries the active language codes it is enabled for, per WCML's
+	 * per-language currency configuration. When WCML multi-currency is off, every
+	 * currency lists all active language codes.
+	 *
+	 * @return array<int, array{code: string, symbol: string, languages: string[]}>
 	 */
 	public function get_currencies(): array {
 		if ( ! $this->is_active() ) {
@@ -290,14 +342,65 @@ class WPML implements IntegrationInterface {
 	}
 
 	/**
+	 * Returns the active language codes a currency is enabled for, according to WCML's
+	 * per-language currency configuration ("Currencies to display for each language").
+	 *
+	 * WCML stores the configuration as an integer flag per language code. A language
+	 * with no stored flag counts as enabled, matching WCML's own default for newly
+	 * added languages. Flags for languages that are no longer active are ignored.
+	 *
+	 * @param string   $currency              ISO 4217 currency code.
+	 * @param string[] $active_language_codes Active WPML language codes.
+	 *
+	 * @return string[]
+	 */
+	protected function get_enabled_language_codes_for_currency( string $currency, array $active_language_codes ): array {
+		$flags = $this->get_wcml_settings()['currency_options'][ $currency ]['languages'] ?? [];
+
+		if ( ! is_array( $flags ) ) {
+			$flags = [];
+		}
+
+		$enabled = [];
+
+		foreach ( $active_language_codes as $language_code ) {
+			if ( ! isset( $flags[ $language_code ] ) || $flags[ $language_code ] ) {
+				$enabled[] = $language_code;
+			}
+		}
+
+		return $enabled;
+	}
+
+	/**
+	 * Returns WCML's stored settings, or an empty array when unavailable.
+	 *
+	 * @return array
+	 */
+	protected function get_wcml_settings(): array {
+		global $woocommerce_wpml;
+
+		if ( ! isset( $woocommerce_wpml ) || ! is_object( $woocommerce_wpml ) || ! method_exists( $woocommerce_wpml, 'get_settings' ) ) {
+			return [];
+		}
+
+		$settings = $woocommerce_wpml->get_settings();
+
+		return is_array( $settings ) ? $settings : [];
+	}
+
+	/**
 	 * @param string[] $codes
 	 *
-	 * @return array<int, array{code: string, symbol: string}>
+	 * @return array<int, array{code: string, symbol: string, languages: string[]}>
 	 */
 	private function get_formatted_currencies( array $codes ): array {
 		if ( ! function_exists( 'get_woocommerce_currency_symbol' ) ) {
 			return [];
 		}
+
+		$active_language_codes = array_column( $this->get_languages(), 'code' );
+		$multi_currency_on     = $this->is_wcml_multi_currency_on();
 
 		$result = [];
 
@@ -313,8 +416,11 @@ class WPML implements IntegrationInterface {
 			}
 
 			$result[] = [
-				'code'   => $code,
-				'symbol' => html_entity_decode( $symbol, ENT_QUOTES, 'UTF-8' ),
+				'code'      => $code,
+				'symbol'    => html_entity_decode( $symbol, ENT_QUOTES, 'UTF-8' ),
+				'languages' => $multi_currency_on
+					? $this->get_enabled_language_codes_for_currency( $code, $active_language_codes )
+					: $active_language_codes,
 			];
 		}
 

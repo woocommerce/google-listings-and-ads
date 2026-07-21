@@ -11,11 +11,15 @@ import userEvent from '@testing-library/user-event';
 import DeleteMarketModal from '.';
 import { useAppDispatch } from '~/data';
 import useCountryKeyNameMap from '~/hooks/useCountryKeyNameMap';
+import { handleApiError } from '~/utils/handleError';
 
 jest.mock( '~/data', () => ( {
 	useAppDispatch: jest.fn(),
 } ) );
 jest.mock( '~/hooks/useCountryKeyNameMap' );
+jest.mock( '~/utils/handleError', () => ( {
+	handleApiError: jest.fn(),
+} ) );
 
 const NON_PRIMARY_MARKET = {
 	id: 'fr',
@@ -30,14 +34,20 @@ const NON_PRIMARY_MARKET = {
 
 describe( 'DeleteMarketModal', () => {
 	let deleteMarketMock;
+	let syncSettingsMock;
 	let onRequestCloseMock;
+	let invalidateResolutionMock;
 
 	beforeEach( () => {
 		deleteMarketMock = jest.fn().mockResolvedValue( undefined );
+		syncSettingsMock = jest.fn().mockResolvedValue( undefined );
 		onRequestCloseMock = jest.fn();
+		invalidateResolutionMock = jest.fn();
+		handleApiError.mockClear();
 		useAppDispatch.mockReturnValue( {
 			deleteMarket: deleteMarketMock,
-			invalidateResolution: jest.fn(),
+			syncSettings: syncSettingsMock,
+			invalidateResolution: invalidateResolutionMock,
 		} );
 		useCountryKeyNameMap.mockReturnValue( { FR: 'France' } );
 	} );
@@ -95,6 +105,82 @@ describe( 'DeleteMarketModal', () => {
 		} );
 	} );
 
+	test( 'Confirm dispatches syncSettings after a successful delete', async () => {
+		const user = userEvent.setup();
+		render(
+			<DeleteMarketModal
+				market={ NON_PRIMARY_MARKET }
+				onRequestClose={ onRequestCloseMock }
+			/>
+		);
+
+		await user.click( screen.getByRole( 'button', { name: 'Delete' } ) );
+
+		await waitFor( () => {
+			expect( syncSettingsMock ).toHaveBeenCalledTimes( 1 );
+		} );
+	} );
+
+	test( 'a failed sync after a successful delete keeps the modal open, shows an error notice, and still invalidates the target audience', async () => {
+		syncSettingsMock.mockRejectedValue( new Error( 'sync failed' ) );
+
+		const user = userEvent.setup();
+		render(
+			<DeleteMarketModal
+				market={ NON_PRIMARY_MARKET }
+				onRequestClose={ onRequestCloseMock }
+			/>
+		);
+
+		const deleteButton = screen.getByRole( 'button', { name: 'Delete' } );
+		await user.click( deleteButton );
+
+		await waitFor( () => {
+			expect( syncSettingsMock ).toHaveBeenCalledTimes( 1 );
+		} );
+		expect( onRequestCloseMock ).not.toHaveBeenCalled();
+		expect( handleApiError ).toHaveBeenCalledTimes( 1 );
+		// The deletion succeeded, so the target audience changed server-side
+		// and must refresh even though the sync failed.
+		expect( invalidateResolutionMock ).toHaveBeenCalledWith(
+			'getTargetAudience',
+			[]
+		);
+		await waitFor( () => {
+			expect( deleteButton ).toBeEnabled();
+		} );
+	} );
+
+	test( 'retrying after a failed sync re-runs only the sync, not the delete', async () => {
+		syncSettingsMock.mockRejectedValueOnce( new Error( 'sync failed' ) );
+
+		const user = userEvent.setup();
+		render(
+			<DeleteMarketModal
+				market={ NON_PRIMARY_MARKET }
+				onRequestClose={ onRequestCloseMock }
+			/>
+		);
+
+		const deleteButton = screen.getByRole( 'button', { name: 'Delete' } );
+		await user.click( deleteButton );
+
+		await waitFor( () => {
+			expect( deleteButton ).toBeEnabled();
+		} );
+
+		await user.click( deleteButton );
+
+		await waitFor( () => {
+			expect( onRequestCloseMock ).toHaveBeenCalledTimes( 1 );
+		} );
+		expect( deleteMarketMock ).toHaveBeenCalledTimes( 1 );
+		expect( syncSettingsMock ).toHaveBeenCalledTimes( 2 );
+		// The invalidation belongs to the deletion, so it does not repeat on
+		// the retry click.
+		expect( invalidateResolutionMock ).toHaveBeenCalledTimes( 1 );
+	} );
+
 	test( 'disables both buttons while the request is in flight', async () => {
 		// Hold the promise open so we can observe the in-flight state.
 		let resolveDelete;
@@ -146,6 +232,7 @@ describe( 'DeleteMarketModal', () => {
 			expect( deleteMarketMock ).toHaveBeenCalledTimes( 1 );
 		} );
 		expect( onRequestCloseMock ).not.toHaveBeenCalled();
+		expect( syncSettingsMock ).not.toHaveBeenCalled();
 		await waitFor( () => {
 			expect( deleteButton ).toBeEnabled();
 		} );

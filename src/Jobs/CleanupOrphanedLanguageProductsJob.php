@@ -21,8 +21,10 @@ defined( 'ABSPATH' ) || exit;
  * Deletes Merchant Center entries left orphaned when a language is removed from
  * a market's language set. Scheduled by MarketService when an update reduces
  * the set of accepted languages; carries the market's identifying keys
- * (feed_label for a secondary market, target country codes for the primary) and
- * the language codes that were removed.
+ * (feed label variants for a secondary market, target country codes for the
+ * primary) and the language codes that were removed. The keys alone do not
+ * identify a language — the job narrows the deletion to products whose own
+ * post language is in the removed set.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
@@ -76,8 +78,8 @@ class CleanupOrphanedLanguageProductsJob extends AbstractProductSyncerJob {
 	 * Schedule the job.
 	 *
 	 * @param array $args Accepts `[ 'keys' => string[], 'removed_languages' => string[] ]`.
-	 *                    `keys` is the set of `google_ids` keys to inspect (a single
-	 *                    feed_label for a secondary market, target country codes
+	 *                    `keys` is the set of `google_ids` keys to inspect (the feed
+	 *                    label variants for a secondary market, target country codes
 	 *                    for the primary). `removed_languages` is the set of language
 	 *                    codes (short form, e.g. `fr`) that the market no longer accepts.
 	 *
@@ -155,21 +157,8 @@ class CleanupOrphanedLanguageProductsJob extends AbstractProductSyncerJob {
 			return;
 		}
 
-		$response = $this->product_syncer->delete_by_batch_requests( $request_entries );
-
-		foreach ( $response->get_products() as $deleted ) {
-			$google_product = $deleted->get_google_product();
-			if ( null === $google_product ) {
-				continue;
-			}
-
-			try {
-				$product = $this->product_helper->get_wc_product( $deleted->get_wc_product_id() );
-			} catch ( InvalidValue $exception ) {
-				continue;
-			}
-
-			$this->product_helper->remove_google_id( $product, $google_product->getId() );
-		}
+		// The delete call also removes each deleted entry's Google ID from the
+		// product's tracked IDs, leaving other markets' entries untouched.
+		$this->product_syncer->delete_by_batch_requests( $request_entries );
 	}
 }

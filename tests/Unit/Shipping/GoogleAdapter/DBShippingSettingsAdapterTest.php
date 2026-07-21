@@ -44,28 +44,77 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 			]
 		);
 
-		$services = $settings->getServices();
+		$services = $settings->get_services();
 
 		$this->assertCount( 2, $services );
-		$this->assertCount( 1, $services[0]->getRateGroups() );
-		$this->assertCount( 1, $services[1]->getRateGroups() );
+		$this->assertCount( 1, $services[0]['rateGroups'] );
+		$this->assertCount( 1, $services[1]['rateGroups'] );
 
 		foreach ( $services as $service ) {
-			// Assert that the delivery country of both services is either US or AU
-			$this->assertTrue( in_array( $service->getDeliveryCountry(), [ 'US', 'AU' ], true ) );
+			$country   = $service['deliveryCountries'][0];
+			$flat_rate = $service['rateGroups'][0]['singleValue']['flatRate'];
 
-			if ( 'US' === $service->getDeliveryCountry() ) {
-				$this->assertEquals( 'USD', $service->getRateGroups()[0]->getSingleValue()->getFlatRate()->getCurrency() );
-				$this->assertEquals( 10, $service->getRateGroups()[0]->getSingleValue()->getFlatRate()->getValue() );
-				$this->assertEquals( 1, $service->getDeliveryTime()->getMinTransitTimeInDays() );
-				$this->assertEquals( 3, $service->getDeliveryTime()->getMaxTransitTimeInDays() );
-			} elseif ( 'AU' === $service->getDeliveryCountry() ) {
-				$this->assertEquals( 'USD', $service->getRateGroups()[0]->getSingleValue()->getFlatRate()->getCurrency() );
-				$this->assertEquals( 50, $service->getRateGroups()[0]->getSingleValue()->getFlatRate()->getValue() );
-				$this->assertEquals( 2, $service->getDeliveryTime()->getMinTransitTimeInDays() );
-				$this->assertEquals( 4, $service->getDeliveryTime()->getMaxTransitTimeInDays() );
+			// Assert that the delivery country of both services is either US or AU.
+			$this->assertTrue( in_array( $country, [ 'US', 'AU' ], true ) );
+			$this->assertSame( 'DELIVERY', $service['shipmentType'] );
+
+			if ( 'US' === $country ) {
+				$this->assertEquals( 'USD', $flat_rate['currencyCode'] );
+				$this->assertEquals( '10000000', $flat_rate['amountMicros'] );
+				$this->assertEquals( 1, $service['deliveryTime']['minTransitDays'] );
+				$this->assertEquals( 3, $service['deliveryTime']['maxTransitDays'] );
+			} elseif ( 'AU' === $country ) {
+				$this->assertEquals( 'USD', $flat_rate['currencyCode'] );
+				$this->assertEquals( '50000000', $flat_rate['amountMicros'] );
+				$this->assertEquals( 2, $service['deliveryTime']['minTransitDays'] );
+				$this->assertEquals( 4, $service['deliveryTime']['maxTransitDays'] );
 			}
 		}
+	}
+
+	public function test_skips_country_without_delivery_time_and_reports_error() {
+		$reported = [];
+		add_action(
+			'woocommerce_gla_error',
+			function ( $message ) use ( &$reported ) {
+				$reported[] = $message;
+			}
+		);
+
+		$db_rates = [
+			[
+				'country' => 'US',
+				'rate'    => 10,
+				'options' => [],
+			],
+			[
+				'country' => 'AU',
+				'rate'    => 50,
+				'options' => [],
+			],
+		];
+
+		$settings = new DBShippingSettingsAdapter(
+			[
+				'currency'       => 'USD',
+				'delivery_times' => [
+					'US' => [
+						'time'     => 1,
+						'max_time' => 3,
+					],
+				],
+				'db_rates'       => $db_rates,
+			]
+		);
+
+		$services = $settings->get_services();
+
+		// The country without a shipping time is left out with an error naming
+		// it; the remaining country's service still syncs.
+		$this->assertCount( 1, $services );
+		$this->assertEquals( 'US', $services[0]['deliveryCountries'][0] );
+		$this->assertCount( 1, $reported );
+		$this->assertStringContainsString( 'AU', $reported[0] );
 	}
 
 	public function test_ignores_negative_rates() {
@@ -90,7 +139,7 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 			]
 		);
 
-		$this->assertEmpty( $settings->getServices() );
+		$this->assertEmpty( $settings->get_services() );
 	}
 
 	public function test_sets_free_shipping_threshold_on_free_rates() {
@@ -117,11 +166,11 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 			]
 		);
 
-		$services = $settings->getServices();
+		$services = $settings->get_services();
 
 		$this->assertCount( 1, $services );
-		$this->assertEquals( 100, $services[0]->getMinimumOrderValue()->getValue() );
-		$this->assertCount( 1, $services[0]->getRateGroups() );
+		$this->assertEquals( '100000000', $services[0]['minimumOrderValue']['amountMicros'] );
+		$this->assertCount( 1, $services[0]['rateGroups'] );
 	}
 
 	public function test_creates_zero_flat_rate_for_free_shipping_no_threshold() {
@@ -146,11 +195,11 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 			]
 		);
 
-		$services = $settings->getServices();
+		$services = $settings->get_services();
 
 		$this->assertCount( 1, $services );
-		$this->assertCount( 1, $services[0]->getRateGroups() );
-		$this->assertEquals( 0, $services[0]->getRateGroups()[0]->getSingleValue()->getFlatRate()->getValue() );
+		$this->assertCount( 1, $services[0]['rateGroups'] );
+		$this->assertEquals( '0', $services[0]['rateGroups'][0]['singleValue']['flatRate']['amountMicros'] );
 	}
 
 	public function test_creates_separate_service_for_free_shipping_threshold() {
@@ -177,17 +226,17 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 			]
 		);
 
-		$services = $settings->getServices();
+		$services = $settings->get_services();
 
 		$this->assertCount( 2, $services );
-		$this->assertCount( 1, $services[0]->getRateGroups() );
-		$this->assertCount( 1, $services[1]->getRateGroups() );
+		$this->assertCount( 1, $services[0]['rateGroups'] );
+		$this->assertCount( 1, $services[1]['rateGroups'] );
 
 		foreach ( $services as $service ) {
-			if ( 0.0 === (float) $service->getRateGroups()[0]->getSingleValue()->getFlatRate()->getValue() ) {
-				$this->assertEquals( 100, $service->getMinimumOrderValue()->getValue() );
+			if ( '0' === $service['rateGroups'][0]['singleValue']['flatRate']['amountMicros'] ) {
+				$this->assertEquals( '100000000', $service['minimumOrderValue']['amountMicros'] );
 			} else {
-				$this->assertNull( $service->getMinimumOrderValue() );
+				$this->assertArrayNotHasKey( 'minimumOrderValue', $service );
 			}
 		}
 	}
@@ -263,18 +312,18 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 			]
 		);
 
-		$services = $settings->getServices();
+		$services = $settings->get_services();
 
 		$this->assertCount( 2, $services );
 
 		foreach ( $services as $service ) {
-			$rate_currency = $service->getRateGroups()[0]->getSingleValue()->getFlatRate()->getCurrency();
+			$rate_currency = $service['rateGroups'][0]['singleValue']['flatRate']['currencyCode'];
 
-			if ( 'US' === $service->getDeliveryCountry() ) {
-				$this->assertEquals( 'USD', $service->getCurrency() );
+			if ( 'US' === $service['deliveryCountries'][0] ) {
+				$this->assertEquals( 'USD', $service['currencyCode'] );
 				$this->assertEquals( 'USD', $rate_currency );
-			} elseif ( 'FR' === $service->getDeliveryCountry() ) {
-				$this->assertEquals( 'EUR', $service->getCurrency() );
+			} elseif ( 'FR' === $service['deliveryCountries'][0] ) {
+				$this->assertEquals( 'EUR', $service['currencyCode'] );
 				$this->assertEquals( 'EUR', $rate_currency );
 			}
 		}
@@ -302,13 +351,13 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 			]
 		);
 
-		$services = $settings->getServices();
+		$services = $settings->get_services();
 
 		$this->assertCount( 1, $services );
-		$this->assertEquals( 'GBP', $services[0]->getCurrency() );
+		$this->assertEquals( 'GBP', $services[0]['currencyCode'] );
 		$this->assertEquals(
 			'GBP',
-			$services[0]->getRateGroups()[0]->getSingleValue()->getFlatRate()->getCurrency()
+			$services[0]['rateGroups'][0]['singleValue']['flatRate']['currencyCode']
 		);
 	}
 
@@ -337,11 +386,11 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 			]
 		);
 
-		$services = $settings->getServices();
+		$services = $settings->get_services();
 
 		$this->assertCount( 1, $services );
-		$this->assertEquals( 75, $services[0]->getMinimumOrderValue()->getValue() );
-		$this->assertEquals( 'EUR', $services[0]->getMinimumOrderValue()->getCurrency() );
+		$this->assertEquals( '75000000', $services[0]['minimumOrderValue']['amountMicros'] );
+		$this->assertEquals( 'EUR', $services[0]['minimumOrderValue']['currencyCode'] );
 	}
 
 	public function test_conditional_free_shipping_service_uses_row_currency() {
@@ -369,17 +418,17 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 			]
 		);
 
-		$services = $settings->getServices();
+		$services = $settings->get_services();
 
 		$this->assertCount( 2, $services );
 
 		foreach ( $services as $service ) {
-			$rate_value = (float) $service->getRateGroups()[0]->getSingleValue()->getFlatRate()->getValue();
-			$this->assertEquals( 'EUR', $service->getCurrency() );
+			$rate_value = (float) $service['rateGroups'][0]['singleValue']['flatRate']['amountMicros'];
+			$this->assertEquals( 'EUR', $service['currencyCode'] );
 
 			if ( 0.0 === $rate_value ) {
-				$this->assertEquals( 100, $service->getMinimumOrderValue()->getValue() );
-				$this->assertEquals( 'EUR', $service->getMinimumOrderValue()->getCurrency() );
+				$this->assertEquals( '100000000', $service['minimumOrderValue']['amountMicros'] );
+				$this->assertEquals( 'EUR', $service['minimumOrderValue']['currencyCode'] );
 			}
 		}
 	}
@@ -435,16 +484,16 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 			]
 		);
 
-		$services = $settings->getServices();
+		$services = $settings->get_services();
 
 		$this->assertCount( 2, $services );
 		foreach ( $services as $service ) {
-			if ( 'US' === $service->getDeliveryCountry() ) {
-				$this->assertEquals( 'USD', $service->getCurrency() );
-				$this->assertEquals( 'USD', $service->getRateGroups()[0]->getSingleValue()->getFlatRate()->getCurrency() );
-			} elseif ( 'FR' === $service->getDeliveryCountry() ) {
-				$this->assertEquals( 'EUR', $service->getCurrency() );
-				$this->assertEquals( 'EUR', $service->getRateGroups()[0]->getSingleValue()->getFlatRate()->getCurrency() );
+			if ( 'US' === $service['deliveryCountries'][0] ) {
+				$this->assertEquals( 'USD', $service['currencyCode'] );
+				$this->assertEquals( 'USD', $service['rateGroups'][0]['singleValue']['flatRate']['currencyCode'] );
+			} elseif ( 'FR' === $service['deliveryCountries'][0] ) {
+				$this->assertEquals( 'EUR', $service['currencyCode'] );
+				$this->assertEquals( 'EUR', $service['rateGroups'][0]['singleValue']['flatRate']['currencyCode'] );
 			}
 		}
 	}

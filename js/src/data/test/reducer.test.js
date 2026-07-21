@@ -57,10 +57,9 @@ describe( 'reducer', () => {
 			campaign_asset_groups: {},
 			mc_setup: null,
 			mc_review_request: {
-				issues: null,
-				cooldown: null,
 				status: null,
-				reviewEligibleRegions: [],
+				issues: null,
+				reviewAction: null,
 			},
 			mc_product_statistics: null,
 			mc_issues: {

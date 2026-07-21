@@ -53,6 +53,19 @@ describe( 'LocaleSection', () => {
 		expect( container ).toBeEmptyDOMElement();
 	} );
 
+	test( 'renders null when shipping_rate is flat on a multilingual store', () => {
+		// Flat shipping is incompatible with multilingual feeds, so the
+		// controls stay hidden even when a multilingual plugin is active.
+		window.glaData.isMultiLingualStore = true;
+		useSettings.mockReturnValue( {
+			settings: { shipping_rate: 'flat' },
+		} );
+
+		const { container } = render( <LocaleSection /> );
+
+		expect( container ).toBeEmptyDOMElement();
+	} );
+
 	test( 'renders null for the primary market on a non-multilingual store', () => {
 		useAdaptiveFormContext.mockImplementation( () => ( {
 			adapter: { isPrimaryMarket: true },

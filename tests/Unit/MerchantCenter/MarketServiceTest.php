@@ -380,6 +380,41 @@ class MarketServiceTest extends UnitTest {
 
 		$this->assertArrayHasKey( OptionsInterface::TARGET_AUDIENCE, $update_calls );
 		$this->assertSame( [ 'US', 'CA' ], $update_calls[ OptionsInterface::TARGET_AUDIENCE ]['countries'] );
+		$this->assertTrue( $update_calls[ OptionsInterface::MARKETS ]['gb']['was_in_primary'] );
+	}
+
+	public function test_add_market_records_was_in_primary_false_when_country_was_not_targeted(): void {
+		$config = [
+			'country'    => 'DE',
+			'language'   => [ 'de' ],
+			'currency'   => [ 'EUR' ],
+			'feed_label' => 'DE',
+		];
+
+		$ta = [
+			'location'  => 'selected',
+			'countries' => [ 'US', 'GB' ],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => $ta,
+			]
+		);
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->market_service->add_market( 'de', $config );
+
+		$this->assertFalse( $update_calls[ OptionsInterface::MARKETS ]['de']['was_in_primary'] );
 	}
 
 	public function test_add_market_country_removal_is_idempotent(): void {
@@ -908,7 +943,7 @@ class MarketServiceTest extends UnitTest {
 
 		$this->cleanup_job->expects( $this->once() )
 			->method( 'schedule' )
-			->with( [ 'feed_label' => 'GB' ] );
+			->with( [ 'feed_labels' => [ 'GB', 'GB-GBP', 'GB-EN-GBP' ] ] );
 
 		// feed_label rename alone does not touch country/currency/shipping_rate/shipping_time.
 		$this->shipping_settings_job->expects( $this->never() )
@@ -917,7 +952,29 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->update_market( 'gb', [ 'feed_label' => 'GB-PROMO' ] );
 	}
 
-	public function test_update_market_does_not_schedule_cleanup_when_non_feed_label_keys_change(): void {
+	public function test_update_market_schedules_cleanup_when_currency_changes(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		// The derived label carries the currency, so a currency change re-labels
+		// the market's entries and the old label's entries become orphans.
+		$this->cleanup_job->expects( $this->once() )
+			->method( 'schedule' )
+			->with( [ 'feed_labels' => [ 'GB', 'GB-GBP', 'GB-EN-GBP' ] ] );
+
+		$this->market_service->update_market( 'gb', [ 'currency' => [ 'EUR' ] ] );
+	}
+
+	public function test_update_market_does_not_schedule_cleanup_when_only_shipping_fields_change(): void {
 		$existing = [
 			'gb' => [
 				'country'       => 'GB',
@@ -932,10 +989,12 @@ class MarketServiceTest extends UnitTest {
 		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
 		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
 
+		// Country and shipping fields play no part in the derived labels,
+		// so no entries are orphaned by this update.
 		$this->cleanup_job->expects( $this->never() )
 			->method( 'schedule' );
 
-		// Shipping-relevant fields (country, currency, shipping_rate, shipping_time) DID change.
+		// Shipping-relevant fields (country, shipping_rate, shipping_time) DID change.
 		$this->shipping_settings_job->expects( $this->once() )
 			->method( 'schedule' );
 
@@ -943,12 +1002,34 @@ class MarketServiceTest extends UnitTest {
 			'gb',
 			[
 				'country'       => 'IE',
-				'language'      => [ 'ga' ],
-				'currency'      => [ 'EUR' ],
 				'shipping_rate' => 'automatic',
 				'shipping_time' => 'automatic',
 			]
 		);
+	}
+
+	public function test_update_market_schedules_cleanup_when_language_changes(): void {
+		$existing = [
+			'gb' => [
+				'country'       => 'GB',
+				'language'      => [ 'en' ],
+				'currency'      => [ 'GBP' ],
+				'feed_label'    => 'GB',
+				'shipping_rate' => 'flat',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		// The derived label carries the language, so replacing the language
+		// orphans the old language's label; the new label is left alone.
+		$this->cleanup_job->expects( $this->once() )
+			->method( 'schedule' )
+			->with( [ 'feed_labels' => [ 'GB', 'GB-GBP', 'GB-EN-GBP' ] ] );
+
+		$this->market_service->update_market( 'gb', [ 'language' => [ 'ga' ] ] );
 	}
 
 	public function test_add_market_with_manual_shipping_rate_does_not_schedule_shipping_sync(): void {
@@ -1363,16 +1444,18 @@ class MarketServiceTest extends UnitTest {
 	public function test_delete_market_removes_and_restores_country_to_target_audience(): void {
 		$existing = [
 			'us' => [
-				'country'    => 'US',
-				'language'   => [ 'en' ],
-				'currency'   => [ 'USD' ],
-				'feed_label' => 'US',
+				'country'        => 'US',
+				'language'       => [ 'en' ],
+				'currency'       => [ 'USD' ],
+				'feed_label'     => 'US',
+				'was_in_primary' => true,
 			],
 			'gb' => [
-				'country'    => 'GB',
-				'language'   => [ 'en' ],
-				'currency'   => [ 'GBP' ],
-				'feed_label' => 'GB',
+				'country'        => 'GB',
+				'language'       => [ 'en' ],
+				'currency'       => [ 'GBP' ],
+				'feed_label'     => 'GB',
+				'was_in_primary' => true,
 			],
 		];
 
@@ -1411,6 +1494,96 @@ class MarketServiceTest extends UnitTest {
 		$this->assertContains( 'CA', $update_calls[ OptionsInterface::TARGET_AUDIENCE ]['countries'] );
 	}
 
+	public function test_delete_market_never_in_primary_removes_shipping_rows_and_leaves_audience(): void {
+		$existing = [
+			'gb' => [
+				'country'        => 'GB',
+				'language'       => [ 'en' ],
+				'currency'       => [ 'GBP' ],
+				'feed_label'     => 'GB',
+				'was_in_primary' => false,
+			],
+		];
+
+		$ta = [
+			'location'  => 'selected',
+			'countries' => [ 'US' ],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $existing,
+				OptionsInterface::TARGET_AUDIENCE => $ta,
+			]
+		);
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->shipping_rate_query->expects( $this->once() )
+			->method( 'delete' )
+			->with( 'country', 'GB' );
+		$this->shipping_time_query->expects( $this->once() )
+			->method( 'delete' )
+			->with( 'country', 'GB' );
+		$this->shipping_rate_query->expects( $this->never() )->method( 'update' );
+		$this->shipping_rate_query->expects( $this->never() )->method( 'insert' );
+
+		$this->market_service->delete_market( 'gb' );
+
+		$this->assertArrayHasKey( OptionsInterface::MARKETS, $update_calls );
+		$this->assertArrayNotHasKey( OptionsInterface::TARGET_AUDIENCE, $update_calls );
+	}
+
+	public function test_delete_market_missing_was_in_primary_flag_defaults_to_removal(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$ta = [
+			'location'  => 'selected',
+			'countries' => [ 'US' ],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $existing,
+				OptionsInterface::TARGET_AUDIENCE => $ta,
+			]
+		);
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->shipping_rate_query->expects( $this->once() )
+			->method( 'delete' )
+			->with( 'country', 'GB' );
+		$this->shipping_time_query->expects( $this->once() )
+			->method( 'delete' )
+			->with( 'country', 'GB' );
+
+		$this->market_service->delete_market( 'gb' );
+
+		$this->assertArrayNotHasKey( OptionsInterface::TARGET_AUDIENCE, $update_calls );
+	}
+
 	public function test_delete_market_schedules_cleanup_with_feed_label(): void {
 		$existing = [
 			'gb' => [
@@ -1431,7 +1604,7 @@ class MarketServiceTest extends UnitTest {
 
 		$this->cleanup_job->expects( $this->once() )
 			->method( 'schedule' )
-			->with( [ 'feed_label' => 'GB' ] );
+			->with( [ 'feed_labels' => [ 'GB', 'GB-GBP', 'GB-EN-GBP' ] ] );
 
 		// Non-manual shipping_rate → shipping sync also scheduled.
 		$this->shipping_settings_job->expects( $this->once() )
@@ -1455,10 +1628,11 @@ class MarketServiceTest extends UnitTest {
 	public function test_delete_market_country_restoration_is_idempotent(): void {
 		$existing = [
 			'gb' => [
-				'country'    => 'GB',
-				'language'   => [ 'en' ],
-				'currency'   => [ 'GBP' ],
-				'feed_label' => 'GB',
+				'country'        => 'GB',
+				'language'       => [ 'en' ],
+				'currency'       => [ 'GBP' ],
+				'feed_label'     => 'GB',
+				'was_in_primary' => true,
 			],
 		];
 
@@ -1497,10 +1671,11 @@ class MarketServiceTest extends UnitTest {
 			[
 				OptionsInterface::MARKETS => [
 					'fr' => [
-						'country'    => 'FR',
-						'language'   => [ 'fr' ],
-						'currency'   => [ 'EUR' ],
-						'feed_label' => 'FR',
+						'country'        => 'FR',
+						'language'       => [ 'fr' ],
+						'currency'       => [ 'EUR' ],
+						'feed_label'     => 'FR',
+						'was_in_primary' => true,
 					],
 				],
 			]
@@ -1550,10 +1725,11 @@ class MarketServiceTest extends UnitTest {
 			[
 				OptionsInterface::MARKETS => [
 					'fr' => [
-						'country'    => 'FR',
-						'language'   => [ 'fr' ],
-						'currency'   => [ 'EUR' ],
-						'feed_label' => 'FR',
+						'country'        => 'FR',
+						'language'       => [ 'fr' ],
+						'currency'       => [ 'EUR' ],
+						'feed_label'     => 'FR',
+						'was_in_primary' => true,
 					],
 				],
 			]
@@ -1600,10 +1776,11 @@ class MarketServiceTest extends UnitTest {
 			[
 				OptionsInterface::MARKETS => [
 					'fr' => [
-						'country'    => 'FR',
-						'language'   => [ 'fr' ],
-						'currency'   => [ 'EUR' ],
-						'feed_label' => 'FR',
+						'country'        => 'FR',
+						'language'       => [ 'fr' ],
+						'currency'       => [ 'EUR' ],
+						'feed_label'     => 'FR',
+						'was_in_primary' => true,
 					],
 				],
 			]
@@ -1645,10 +1822,11 @@ class MarketServiceTest extends UnitTest {
 			[
 				OptionsInterface::MARKETS => [
 					'fr' => [
-						'country'    => 'FR',
-						'language'   => [ 'fr' ],
-						'currency'   => [ 'EUR' ],
-						'feed_label' => 'FR',
+						'country'        => 'FR',
+						'language'       => [ 'fr' ],
+						'currency'       => [ 'EUR' ],
+						'feed_label'     => 'FR',
+						'was_in_primary' => true,
 					],
 				],
 			]
@@ -1688,10 +1866,11 @@ class MarketServiceTest extends UnitTest {
 			[
 				OptionsInterface::MARKETS => [
 					'fr' => [
-						'country'    => 'FR',
-						'language'   => [ 'fr' ],
-						'currency'   => [ 'EUR' ],
-						'feed_label' => 'FR',
+						'country'        => 'FR',
+						'language'       => [ 'fr' ],
+						'currency'       => [ 'EUR' ],
+						'feed_label'     => 'FR',
+						'was_in_primary' => true,
 					],
 				],
 			]
@@ -1726,10 +1905,11 @@ class MarketServiceTest extends UnitTest {
 			[
 				OptionsInterface::MARKETS => [
 					'fr' => [
-						'country'    => 'FR',
-						'language'   => [ 'fr' ],
-						'currency'   => [ 'EUR' ],
-						'feed_label' => 'FR',
+						'country'        => 'FR',
+						'language'       => [ 'fr' ],
+						'currency'       => [ 'EUR' ],
+						'feed_label'     => 'FR',
+						'was_in_primary' => true,
 					],
 				],
 			]
@@ -1763,10 +1943,11 @@ class MarketServiceTest extends UnitTest {
 			[
 				OptionsInterface::MARKETS => [
 					'fr' => [
-						'country'    => 'FR',
-						'language'   => [ 'fr' ],
-						'currency'   => [ 'EUR' ],
-						'feed_label' => 'FR',
+						'country'        => 'FR',
+						'language'       => [ 'fr' ],
+						'currency'       => [ 'EUR' ],
+						'feed_label'     => 'FR',
+						'was_in_primary' => true,
 					],
 				],
 			]
@@ -1789,10 +1970,11 @@ class MarketServiceTest extends UnitTest {
 			[
 				OptionsInterface::MARKETS => [
 					'fr' => [
-						'country'    => 'FR',
-						'language'   => [ 'fr' ],
-						'currency'   => [ 'EUR' ],
-						'feed_label' => 'FR',
+						'country'        => 'FR',
+						'language'       => [ 'fr' ],
+						'currency'       => [ 'EUR' ],
+						'feed_label'     => 'FR',
+						'was_in_primary' => true,
 					],
 				],
 			]
@@ -1877,10 +2059,11 @@ class MarketServiceTest extends UnitTest {
 			[
 				OptionsInterface::MARKETS => [
 					'fr' => [
-						'country'    => 'FR',
-						'language'   => [ 'fr' ],
-						'currency'   => [ 'EUR' ],
-						'feed_label' => 'FR',
+						'country'        => 'FR',
+						'language'       => [ 'fr' ],
+						'currency'       => [ 'EUR' ],
+						'feed_label'     => 'FR',
+						'was_in_primary' => true,
 					],
 				],
 			]
@@ -1963,29 +2146,35 @@ class MarketServiceTest extends UnitTest {
 	}
 
 	public function test_get_all_feed_labels_includes_secondary_markets(): void {
+		// Stored currencies only drive the derived labels while a multilingual
+		// integration is active; without one the site locale takes over.
+		$this->wpml->method( 'is_active' )->willReturn( true );
+
 		$secondary = [
 			'gb' => [
 				'country'    => 'GB',
-				'language'   => 'en',
-				'currency'   => 'GBP',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
 				'feed_label' => 'GB',
 			],
 			'de' => [
 				'country'    => 'DE',
-				'language'   => 'de',
-				'currency'   => 'EUR',
+				'language'   => [ 'de' ],
+				'currency'   => [ 'EUR' ],
 				'feed_label' => 'DE',
 			],
 		];
 
 		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
 		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		// Non-store-currency markets only contribute labels while conversion is available.
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
 
 		$result = $this->market_service->get_all_feed_labels();
 
 		$this->assertContains( 'US', $result );
-		$this->assertContains( 'GB', $result );
-		$this->assertContains( 'DE', $result );
+		$this->assertContains( 'GB-EN-GBP', $result );
+		$this->assertContains( 'DE-DE-EUR', $result );
 		$this->assertCount( 3, $result );
 	}
 
@@ -2018,6 +2207,7 @@ class MarketServiceTest extends UnitTest {
 
 		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
 		$this->set_up_primary_market_dependencies( 'US', [ 'US', 'CA' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
 
 		$result = $this->market_service->get_all_countries();
 
@@ -2465,21 +2655,22 @@ class MarketServiceTest extends UnitTest {
 
 	public function provide_valid_feed_labels(): array {
 		return [
-			'two-letter uppercase'   => [ 'US' ],
-			'uppercase with dash'    => [ 'GB-EN' ],
-			'alphanumeric'           => [ 'A1' ],
-			'twenty char max length' => [ 'A1-B2-C3-D4-E5-F6-G7' ],
+			'two-letter uppercase'     => [ 'US' ],
+			'uppercase with dash'      => [ 'GB-EN' ],
+			'alphanumeric'             => [ 'A1' ],
+			'thirteen char max length' => [ 'A1-B2-C3-D4-E' ],
 		];
 	}
 
 	public function provide_invalid_feed_labels(): array {
 		return [
-			'lowercase'        => [ 'us' ],
-			'twenty-one chars' => [ 'A1-B2-C3-D4-E5-F6-G7-' ],
-			'underscore'       => [ 'GB_EN' ],
-			'period'           => [ 'GB.EN' ],
-			'space'            => [ 'GB EN' ],
-			'at sign'          => [ 'GB@EN' ],
+			'lowercase'      => [ 'us' ],
+			'fourteen chars' => [ 'A1-B2-C3-D4-E5' ],
+			'twenty chars'   => [ 'A1-B2-C3-D4-E5-F6-G7' ],
+			'underscore'     => [ 'GB_EN' ],
+			'period'         => [ 'GB.EN' ],
+			'space'          => [ 'GB EN' ],
+			'at sign'        => [ 'GB@EN' ],
 		];
 	}
 
@@ -2514,17 +2705,53 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( [ 'CHF', 'EUR' ], $stored_ch['currency'] );
 	}
 
-	public function test_add_market_throws_when_language_currency_omitted(): void {
+	public function test_add_market_defaults_language_and_currency_when_omitted(): void {
+		// The market form omits the language and currency fields for some
+		// shipping methods and for stores without a multilingual integration,
+		// so the service must fall back to the site defaults instead of failing.
 		$config = [
 			'country'    => 'GB',
 			'feed_label' => 'GB',
 		];
 
-		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'GB' ] ],
+			]
+		);
 
-		$this->expectException( InvalidValue::class );
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
 
 		$this->market_service->add_market( 'gb', $config );
+
+		$stored_gb = $update_calls[ OptionsInterface::MARKETS ]['gb'];
+		$this->assertSame( [ substr( get_locale(), 0, 2 ) ], $stored_gb['language'] );
+		$this->assertSame( [ get_woocommerce_currency() ], $stored_gb['currency'] );
+	}
+
+	public function test_update_market_defaults_language_and_currency_for_market_stored_without_them(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$result = $this->market_service->update_market( 'gb', [ 'country' => 'GB' ] );
+
+		$this->assertSame( [ substr( get_locale(), 0, 2 ) ], $result['language'] );
+		$this->assertSame( [ get_woocommerce_currency() ], $result['currency'] );
 	}
 
 	public function test_add_market_persists_empty_language_currency_arrays_verbatim(): void {
@@ -2746,6 +2973,7 @@ class MarketServiceTest extends UnitTest {
 			]
 		);
 		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
 
 		$this->assertTrue( $this->market_service->has_syncable_markets() );
 	}
@@ -3073,7 +3301,7 @@ class MarketServiceTest extends UnitTest {
 		$this->assertFalse( $fired );
 	}
 
-	public function test_update_market_secondary_schedules_language_cleanup_when_language_removed(): void {
+	public function test_update_market_secondary_schedules_market_cleanup_when_language_removed(): void {
 		$existing = [
 			'gb' => [
 				'country'    => 'GB',
@@ -3086,19 +3314,18 @@ class MarketServiceTest extends UnitTest {
 		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
 		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
 
-		$this->language_cleanup_job->expects( $this->once() )
+		// A removed language's entries live under its own derived label, so
+		// label-based cleanup covers them; the removed label plus the
+		// pre-language-scheme keys are cleaned, the surviving label is not.
+		$this->cleanup_job->expects( $this->once() )
 			->method( 'schedule' )
-			->with(
-				[
-					'keys'              => [ 'GB' ],
-					'removed_languages' => [ 'cy' ],
-				]
-			);
+			->with( [ 'feed_labels' => [ 'GB', 'GB-GBP', 'GB-CY-GBP' ] ] );
+		$this->language_cleanup_job->expects( $this->never() )->method( 'schedule' );
 
 		$this->market_service->update_market( 'gb', [ 'language' => [ 'en' ] ] );
 	}
 
-	public function test_update_market_secondary_does_not_schedule_language_cleanup_when_language_added(): void {
+	public function test_update_market_secondary_does_not_schedule_cleanup_when_language_added(): void {
 		$existing = [
 			'gb' => [
 				'country'    => 'GB',
@@ -3111,12 +3338,13 @@ class MarketServiceTest extends UnitTest {
 		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
 		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
 
+		$this->cleanup_job->expects( $this->never() )->method( 'schedule' );
 		$this->language_cleanup_job->expects( $this->never() )->method( 'schedule' );
 
 		$this->market_service->update_market( 'gb', [ 'language' => [ 'en', 'cy' ] ] );
 	}
 
-	public function test_update_market_secondary_does_not_schedule_language_cleanup_when_language_reordered(): void {
+	public function test_update_market_secondary_does_not_schedule_cleanup_when_language_reordered(): void {
 		$existing = [
 			'gb' => [
 				'country'    => 'GB',
@@ -3129,12 +3357,13 @@ class MarketServiceTest extends UnitTest {
 		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
 		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
 
+		$this->cleanup_job->expects( $this->never() )->method( 'schedule' );
 		$this->language_cleanup_job->expects( $this->never() )->method( 'schedule' );
 
 		$this->market_service->update_market( 'gb', [ 'language' => [ 'cy', 'en' ] ] );
 	}
 
-	public function test_update_market_secondary_uses_old_feed_label_when_feed_label_also_changes(): void {
+	public function test_update_market_secondary_cleanup_uses_old_labels_when_feed_label_also_changes(): void {
 		$existing = [
 			'gb' => [
 				'country'    => 'GB',
@@ -3147,14 +3376,10 @@ class MarketServiceTest extends UnitTest {
 		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
 		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
 
-		$this->language_cleanup_job->expects( $this->once() )
+		$this->cleanup_job->expects( $this->once() )
 			->method( 'schedule' )
-			->with(
-				[
-					'keys'              => [ 'GB' ],
-					'removed_languages' => [ 'cy' ],
-				]
-			);
+			->with( [ 'feed_labels' => [ 'GB', 'GB-GBP', 'GB-EN-GBP', 'GB-CY-GBP' ] ] );
+		$this->language_cleanup_job->expects( $this->never() )->method( 'schedule' );
 
 		$this->market_service->update_market(
 			'gb',
@@ -3175,6 +3400,9 @@ class MarketServiceTest extends UnitTest {
 		);
 		$this->set_up_primary_market_dependencies( 'US', [ 'US', 'CA' ] );
 
+		// Primary entries are tracked under the bare target country codes; the
+		// cleanup job narrows the deletion to the removed languages by each
+		// product's own post language.
 		$this->language_cleanup_job->expects( $this->once() )
 			->method( 'schedule' )
 			->with(
@@ -3239,6 +3467,600 @@ class MarketServiceTest extends UnitTest {
 		$this->language_cleanup_job->expects( $this->never() )->method( 'schedule' );
 
 		$this->market_service->update_market( 'primary', [ 'language' => [ 'en' ] ] );
+	}
+
+	public function test_get_market_feed_label_appends_uppercase_language_and_currency(): void {
+		$this->assertSame( 'BE-FR-EUR', $this->market_service->get_market_feed_label( 'BE', 'fr', 'EUR' ) );
+		$this->assertSame( 'BE-FR-EUR', $this->market_service->get_market_feed_label( 'BE', 'FR', 'eur' ) );
+		$this->assertSame( 'BE-FR-EUR', $this->market_service->get_market_feed_label( 'BE', 'fr_FR', 'EUR' ) );
+		$this->assertSame( 'FR-NL-USD', $this->market_service->get_market_feed_label( 'FR', 'nl', 'USD' ) );
+	}
+
+	public function test_get_market_feed_label_returns_empty_string_for_empty_base_label(): void {
+		$this->assertSame( '', $this->market_service->get_market_feed_label( '', 'fr', 'EUR' ) );
+	}
+
+	public function test_get_market_feed_label_falls_back_to_site_language_and_store_currency_when_empty(): void {
+		$this->assertSame(
+			'BE-' . strtoupper( substr( get_locale(), 0, 2 ) ) . '-' . get_woocommerce_currency(),
+			$this->market_service->get_market_feed_label( 'BE', '', '' )
+		);
+	}
+
+	public function test_get_all_feed_labels_derives_one_label_per_language(): void {
+		// A Merchant Center feed is one language-currency pair, so a market
+		// with several languages contributes one derived label per language.
+		$this->set_up_wpml_languages( 'en', [ 'en', 'fr', 'nl' ] );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [ 'language' => [ 'en' ] ],
+				OptionsInterface::MARKETS         => [
+					'be' => [
+						'country'    => 'BE',
+						'language'   => [ 'nl', 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'BE',
+					],
+				],
+			]
+		);
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
+
+		$this->assertSame( [ 'US', 'BE-NL-EUR', 'BE-FR-EUR' ], $this->market_service->get_all_feed_labels() );
+	}
+
+	public function test_get_all_feed_labels_falls_back_to_store_currency_when_market_has_none(): void {
+		$this->set_up_wpml_languages( 'en', [ 'en', 'fr' ] );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [ 'language' => [ 'en' ] ],
+				OptionsInterface::MARKETS         => [
+					'be' => [
+						'country'    => 'BE',
+						'language'   => [],
+						'currency'   => [],
+						'feed_label' => 'BE',
+					],
+				],
+			]
+		);
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+
+		$this->assertSame(
+			[ 'US', 'BE-EN-' . get_woocommerce_currency() ],
+			$this->market_service->get_all_feed_labels()
+		);
+	}
+
+	public function test_get_all_feed_labels_ignores_stored_language_when_not_multilingual(): void {
+		// A language saved while a multilingual integration was active must
+		// not drive the derived label once the integration is gone: without
+		// it every product syncs in the site language. The market keeps the
+		// store currency so it still takes part in syncing; a market stored
+		// with a non-store currency is excluded entirely, covered by
+		// test_get_all_feed_labels_omits_excluded_market_so_stale_cleanup_removes_its_entries.
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'ae' => [
+						'country'    => 'AE',
+						'language'   => [ 'fr' ],
+						'currency'   => [ get_woocommerce_currency() ],
+						'feed_label' => 'AE',
+					],
+				],
+			]
+		);
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+
+		$this->assertSame(
+			[ 'US', 'AE-' . strtoupper( substr( get_locale(), 0, 2 ) ) . '-' . get_woocommerce_currency() ],
+			$this->market_service->get_all_feed_labels()
+		);
+	}
+
+	public function test_get_markets_uses_site_locale_when_not_multilingual(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'ae' => [
+						'country'    => 'AE',
+						'language'   => [ 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'AE',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$result = $this->market_service->get_markets();
+
+		$this->assertSame( [ substr( get_locale(), 0, 2 ) ], $result['ae']['language'] );
+		$this->assertSame( [ get_woocommerce_currency() ], $result['ae']['currency'] );
+	}
+
+	public function test_get_markets_keeps_stored_locale_when_multilingual(): void {
+		$this->set_up_wpml_languages( 'en', [ 'en', 'fr' ] );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'ae' => [
+						'country'    => 'AE',
+						'language'   => [ 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'AE',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$result = $this->market_service->get_markets();
+
+		$this->assertSame( [ 'fr' ], $result['ae']['language'] );
+		$this->assertSame( [ 'EUR' ], $result['ae']['currency'] );
+	}
+
+	public function test_get_markets_masking_does_not_touch_the_stored_option(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'ae' => [
+						'country'    => 'AE',
+						'language'   => [ 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'AE',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->market_service->get_markets();
+	}
+
+	public function test_get_feed_labels_for_language_ignores_stored_language_when_not_multilingual(): void {
+		// Without a multilingual integration every product syncs to every
+		// market in the site language, so the applicable labels for the site
+		// language must include every market regardless of the languages
+		// stored on it. Otherwise the error-clearing comparison in
+		// ProductHelper::mark_as_synced() runs against fewer labels than the
+		// sync actually creates.
+		$site_language = substr( get_locale(), 0, 2 );
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [ 'language' => [ $site_language ] ],
+				OptionsInterface::MARKETS         => [
+					'ae' => [
+						'country'    => 'AE',
+						'language'   => [ 'fr' ],
+						'currency'   => [ get_woocommerce_currency() ],
+						'feed_label' => 'AE',
+					],
+				],
+			]
+		);
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+
+		$this->assertSame(
+			[ 'US', 'AE-' . strtoupper( substr( get_locale(), 0, 2 ) ) . '-' . get_woocommerce_currency() ],
+			$this->market_service->get_feed_labels_for_language( $site_language )
+		);
+	}
+
+	public function test_get_feed_labels_for_language_returns_labels_of_markets_accepting_it(): void {
+		$this->set_up_wpml_languages( 'en', [ 'en', 'fr' ] );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [ 'language' => [ 'en' ] ],
+				OptionsInterface::MARKETS         => [
+					'be' => [
+						'country'    => 'BE',
+						'language'   => [ 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'BE',
+					],
+				],
+			]
+		);
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
+
+		$this->assertSame( [ 'BE-FR-EUR' ], $this->market_service->get_feed_labels_for_language( 'fr' ) );
+		$this->assertSame( [ 'US' ], $this->market_service->get_feed_labels_for_language( 'en' ) );
+	}
+
+	public function test_get_shipping_sync_countries_includes_non_manual_secondary_markets(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'       => 'FR',
+						'language'      => [ 'fr' ],
+						'currency'      => [ 'EUR' ],
+						'feed_label'    => 'FR',
+						'shipping_rate' => 'automatic',
+					],
+					'de' => [
+						'country'       => 'DE',
+						'language'      => [ 'de' ],
+						'currency'      => [ 'EUR' ],
+						'feed_label'    => 'DE',
+						'shipping_rate' => 'manual',
+					],
+				],
+			]
+		);
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US', 'CA' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
+
+		// Manual markets are excluded — their shipping is managed outside the plugin.
+		$this->assertSame(
+			[ 'US', 'CA', 'FR' ],
+			$this->market_service->get_shipping_sync_countries()
+		);
+	}
+
+	public function test_get_shipping_sync_countries_deduplicates_countries(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'       => 'FR',
+						'language'      => [ 'fr' ],
+						'currency'      => [ 'EUR' ],
+						'feed_label'    => 'FR',
+						'shipping_rate' => 'flat',
+					],
+				],
+			]
+		);
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US', 'FR' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
+
+		$this->assertSame(
+			[ 'US', 'FR' ],
+			$this->market_service->get_shipping_sync_countries()
+		);
+	}
+
+	public function test_get_participating_markets_excludes_foreign_currency_market_without_conversion(): void {
+		$secondary = [
+			'fr' => [
+				'country'    => 'FR',
+				'language'   => [ 'fr' ],
+				'currency'   => [ 'EUR' ],
+				'feed_label' => 'FR',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+
+		$participating = $this->market_service->get_participating_markets();
+
+		$this->assertArrayHasKey( 'primary', $participating );
+		$this->assertArrayNotHasKey( 'fr', $participating );
+
+		// The stored market itself is untouched and still visible to the UI.
+		$this->assertArrayHasKey( 'fr', $this->market_service->get_markets() );
+	}
+
+	public function test_get_participating_markets_includes_foreign_currency_market_with_conversion(): void {
+		$secondary = [
+			'fr' => [
+				'country'    => 'FR',
+				'language'   => [ 'fr' ],
+				'currency'   => [ 'EUR' ],
+				'feed_label' => 'FR',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
+
+		$this->assertArrayHasKey( 'fr', $this->market_service->get_participating_markets() );
+	}
+
+	public function test_get_participating_markets_always_includes_store_currency_market(): void {
+		$secondary = [
+			'fr' => [
+				'country'    => 'FR',
+				'language'   => [ 'fr' ],
+				'currency'   => [ get_woocommerce_currency() ],
+				'feed_label' => 'FR',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+
+		$this->assertArrayHasKey( 'fr', $this->market_service->get_participating_markets() );
+	}
+
+	public function test_get_excluded_market_countries_lists_foreign_currency_markets_without_conversion(): void {
+		$secondary = [
+			'fr' => [
+				'country'    => 'FR',
+				'language'   => [ 'fr' ],
+				'currency'   => [ 'EUR' ],
+				'feed_label' => 'FR',
+			],
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ get_woocommerce_currency() ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+
+		$this->assertSame( [ 'FR' ], $this->market_service->get_excluded_market_countries() );
+	}
+
+	public function test_get_all_feed_labels_omits_excluded_market_so_stale_cleanup_removes_its_entries(): void {
+		$secondary = [
+			'fr' => [
+				'country'    => 'FR',
+				'language'   => [ 'fr' ],
+				'currency'   => [ 'EUR' ],
+				'feed_label' => 'FR',
+			],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $secondary,
+				OptionsInterface::MERCHANT_CENTER => [ 'language' => [ 'en' ] ],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+
+		$this->assertSame( [ 'US' ], $this->market_service->get_all_feed_labels() );
+	}
+
+	public function test_conversion_availability_change_schedules_resync_and_shipping_sync(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::CURRENCY_CONVERSION_AVAILABLE => 'yes',
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'    => 'FR',
+						'language'   => [ 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'FR',
+					],
+				],
+			]
+		);
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+
+		$this->shipping_settings_job->expects( $this->once() )->method( 'schedule' );
+		$this->update_all_products_job->expects( $this->once() )->method( 'schedule' );
+
+		$this->invoke_conversion_availability_handler();
+
+		$this->assertSame(
+			'no',
+			$this->options->get( OptionsInterface::CURRENCY_CONVERSION_AVAILABLE )
+		);
+	}
+
+	public function test_conversion_availability_first_run_records_state_without_scheduling(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'    => 'FR',
+						'language'   => [ 'fr' ],
+						'currency'   => [ 'EUR' ],
+						'feed_label' => 'FR',
+					],
+				],
+			]
+		);
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+
+		$this->shipping_settings_job->expects( $this->never() )->method( 'schedule' );
+		$this->update_all_products_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->invoke_conversion_availability_handler();
+
+		$this->assertSame(
+			'no',
+			$this->options->get( OptionsInterface::CURRENCY_CONVERSION_AVAILABLE )
+		);
+	}
+
+	public function test_conversion_availability_change_without_foreign_currency_markets_does_not_schedule(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::CURRENCY_CONVERSION_AVAILABLE => 'yes',
+				OptionsInterface::MARKETS => [
+					'fr' => [
+						'country'    => 'FR',
+						'language'   => [ 'fr' ],
+						'currency'   => [ get_woocommerce_currency() ],
+						'feed_label' => 'FR',
+					],
+				],
+			]
+		);
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+
+		$this->shipping_settings_job->expects( $this->never() )->method( 'schedule' );
+		$this->update_all_products_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->invoke_conversion_availability_handler();
+	}
+
+	public function test_conversion_availability_unchanged_does_nothing(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::CURRENCY_CONVERSION_AVAILABLE => 'no',
+				OptionsInterface::MARKETS => [],
+			]
+		);
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+
+		$this->options->expects( $this->never() )->method( 'update' );
+		$this->shipping_settings_job->expects( $this->never() )->method( 'schedule' );
+		$this->update_all_products_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->invoke_conversion_availability_handler();
+	}
+
+	private function invoke_conversion_availability_handler(): void {
+		$method = ( new \ReflectionClass( MarketService::class ) )->getMethod( 'handle_conversion_availability_change' );
+		$method->setAccessible( true );
+		$method->invoke( $this->market_service );
+	}
+
+	public function test_add_market_copies_primary_shipping_rows_for_uncovered_country(): void {
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+		$this->options->method( 'update' )->willReturn( true );
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+
+		$this->shipping_rate_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 1,
+					'country'  => 'US',
+					'currency' => 'USD',
+					'rate'     => 5.0,
+					'options'  => [],
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 1,
+					'country'  => 'US',
+					'time'     => 3,
+					'max_time' => 7,
+				],
+			]
+		);
+
+		$this->shipping_rate_query->expects( $this->once() )
+			->method( 'insert' )
+			->with(
+				[
+					'country'  => 'GB',
+					'currency' => 'USD',
+					'rate'     => 5.0,
+					'options'  => [],
+				]
+			);
+		$this->shipping_time_query->expects( $this->once() )
+			->method( 'insert' )
+			->with(
+				[
+					'country'  => 'GB',
+					'time'     => 3,
+					'max_time' => 7,
+				]
+			);
+
+		$this->market_service->add_market(
+			'gb',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			]
+		);
+	}
+
+	public function test_add_market_leaves_existing_shipping_rows_untouched(): void {
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+		$this->options->method( 'update' )->willReturn( true );
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+
+		$this->shipping_rate_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 1,
+					'country'  => 'US',
+					'currency' => 'USD',
+					'rate'     => 5.0,
+					'options'  => [],
+				],
+				[
+					'id'       => 2,
+					'country'  => 'GB',
+					'currency' => 'GBP',
+					'rate'     => 8.0,
+					'options'  => [],
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_results' )->willReturn(
+			[
+				[
+					'id'       => 1,
+					'country'  => 'US',
+					'time'     => 3,
+					'max_time' => 7,
+				],
+				[
+					'id'       => 2,
+					'country'  => 'GB',
+					'time'     => 5,
+					'max_time' => 10,
+				],
+			]
+		);
+
+		$this->shipping_rate_query->expects( $this->never() )->method( 'insert' );
+		$this->shipping_rate_query->expects( $this->never() )->method( 'update' );
+		$this->shipping_time_query->expects( $this->never() )->method( 'insert' );
+		$this->shipping_time_query->expects( $this->never() )->method( 'update' );
+
+		$this->market_service->add_market(
+			'gb',
+			[
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP' ],
+				'feed_label' => 'GB',
+			]
+		);
+	}
+
+	/**
+	 * Configures the WPML mock as an active multilingual integration.
+	 *
+	 * @param string   $default_code The site default language code.
+	 * @param string[] $codes        All active language codes.
+	 */
+	private function set_up_wpml_languages( string $default_code, array $codes ): void {
+		$this->wpml->method( 'is_active' )->willReturn( true );
+		$this->wpml->method( 'get_default_language_code' )->willReturn( $default_code );
+		$this->wpml->method( 'get_languages' )->willReturn(
+			array_map(
+				static function ( $code ) {
+					return [
+						'code'  => $code,
+						'label' => strtoupper( $code ),
+					];
+				},
+				$codes
+			)
+		);
 	}
 
 	/**

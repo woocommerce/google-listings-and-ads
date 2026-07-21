@@ -24,8 +24,117 @@ class WPMLTest extends UnitTest {
 		remove_all_filters( 'wpml_default_language' );
 		remove_all_filters( 'wpml_post_language_details' );
 		remove_all_filters( 'wcml_raw_price_amount' );
+		remove_all_filters( 'wpml_current_language' );
+		remove_all_actions( 'wpml_switch_language' );
 
 		parent::tearDown();
+	}
+
+	public function test_can_convert_currency_requires_wpml_and_multi_currency(): void {
+		$this->assertFalse( $this->create_integration( false )->can_convert_currency() );
+		$this->assertFalse( $this->create_integration( true, [], false )->can_convert_currency() );
+		$this->assertTrue( $this->create_integration( true, [], true )->can_convert_currency() );
+	}
+
+	public function test_run_in_all_languages_invokes_callback_and_returns_value_when_not_active(): void {
+		$integration = $this->create_integration( false );
+
+		$called = false;
+		$result = $integration->run_in_all_languages(
+			function () use ( &$called ) {
+				$called = true;
+				return 'the-result';
+			}
+		);
+
+		$this->assertTrue( $called );
+		$this->assertSame( 'the-result', $result );
+	}
+
+	public function test_run_in_all_languages_does_not_switch_language_when_not_active(): void {
+		$integration = $this->create_integration( false );
+
+		$switched = [];
+		add_action(
+			'wpml_switch_language',
+			function ( $code ) use ( &$switched ) {
+				$switched[] = $code;
+			}
+		);
+
+		$integration->run_in_all_languages(
+			function () {
+				return null;
+			}
+		);
+
+		$this->assertSame( [], $switched );
+	}
+
+	public function test_run_in_all_languages_switches_to_all_and_restores_when_active(): void {
+		$integration = $this->create_integration( true );
+
+		// Pretend the site is currently in French.
+		add_filter(
+			'wpml_current_language',
+			function () {
+				return 'fr';
+			}
+		);
+
+		$switched          = [];
+		$language_in_scope = null;
+		add_action(
+			'wpml_switch_language',
+			function ( $code ) use ( &$switched ) {
+				$switched[] = $code;
+			}
+		);
+
+		$result = $integration->run_in_all_languages(
+			function () use ( &$switched, &$language_in_scope ) {
+				// The switch to 'all' must have happened before the callback runs.
+				$language_in_scope = end( $switched );
+				return 'done';
+			}
+		);
+
+		$this->assertSame( 'done', $result );
+		// Switched to 'all' before the callback, then restored to the captured language.
+		$this->assertSame( [ 'all', 'fr' ], $switched );
+		$this->assertSame( 'all', $language_in_scope );
+	}
+
+	public function test_run_in_all_languages_restores_language_even_when_callback_throws(): void {
+		$integration = $this->create_integration( true );
+
+		add_filter(
+			'wpml_current_language',
+			function () {
+				return 'en';
+			}
+		);
+
+		$switched = [];
+		add_action(
+			'wpml_switch_language',
+			function ( $code ) use ( &$switched ) {
+				$switched[] = $code;
+			}
+		);
+
+		try {
+			$integration->run_in_all_languages(
+				function () {
+					throw new \RuntimeException( 'boom' );
+				}
+			);
+			$this->fail( 'Expected exception was not thrown.' );
+		} catch ( \RuntimeException $e ) {
+			$this->assertSame( 'boom', $e->getMessage() );
+		}
+
+		$this->assertSame( [ 'all', 'en' ], $switched );
 	}
 
 	public function test_get_languages_returns_empty_when_not_active(): void {
@@ -214,12 +323,14 @@ class WPMLTest extends UnitTest {
 		$this->assertEquals(
 			[
 				[
-					'code'   => 'USD',
-					'symbol' => '$',
+					'code'      => 'USD',
+					'symbol'    => '$',
+					'languages' => [],
 				],
 				[
-					'code'   => 'EUR',
-					'symbol' => '€',
+					'code'      => 'EUR',
+					'symbol'    => '€',
+					'languages' => [],
 				],
 			],
 			$integration->get_currencies()
@@ -235,8 +346,9 @@ class WPMLTest extends UnitTest {
 		$this->assertSame(
 			[
 				[
-					'code'   => $currency,
-					'symbol' => $symbol,
+					'code'      => $currency,
+					'symbol'    => $symbol,
+					'languages' => [],
 				],
 			],
 			$integration->get_currencies()
@@ -249,8 +361,106 @@ class WPMLTest extends UnitTest {
 		$this->assertSame(
 			[
 				[
-					'code'   => 'USD',
-					'symbol' => '$',
+					'code'      => 'USD',
+					'symbol'    => '$',
+					'languages' => [],
+				],
+			],
+			$integration->get_currencies()
+		);
+	}
+
+	public function test_get_currencies_languages_reflect_wcml_per_language_config(): void {
+		$integration = $this->create_integration(
+			true,
+			[ 'USD', 'AED' ],
+			true,
+			false,
+			[
+				'currency_options' => [
+					'USD' => [
+						'languages' => [
+							'en' => 1,
+							'fr' => 1,
+						],
+					],
+					'AED' => [
+						'languages' => [
+							'en' => 0,
+							'fr' => 1,
+						],
+					],
+				],
+			]
+		);
+
+		$this->add_active_languages_filter();
+
+		$this->assertEquals(
+			[
+				[
+					'code'      => 'USD',
+					'symbol'    => '$',
+					'languages' => [ 'en', 'fr' ],
+				],
+				[
+					'code'      => 'AED',
+					'symbol'    => html_entity_decode( get_woocommerce_currency_symbol( 'AED' ), ENT_QUOTES, 'UTF-8' ),
+					'languages' => [ 'fr' ],
+				],
+			],
+			$integration->get_currencies()
+		);
+	}
+
+	public function test_get_currencies_languages_default_to_enabled_when_flags_missing(): void {
+		// EUR has no stored entry at all; USD only has a flag for a language that is
+		// no longer active. Both cases must resolve to all active languages, matching
+		// WCML's own default of enabling currencies for newly added languages.
+		$integration = $this->create_integration(
+			true,
+			[ 'USD', 'EUR' ],
+			true,
+			false,
+			[
+				'currency_options' => [
+					'USD' => [
+						'languages' => [ 'de' => 0 ],
+					],
+				],
+			]
+		);
+
+		$this->add_active_languages_filter();
+
+		$this->assertEquals(
+			[
+				[
+					'code'      => 'USD',
+					'symbol'    => '$',
+					'languages' => [ 'en', 'fr' ],
+				],
+				[
+					'code'      => 'EUR',
+					'symbol'    => '€',
+					'languages' => [ 'en', 'fr' ],
+				],
+			],
+			$integration->get_currencies()
+		);
+	}
+
+	public function test_get_currencies_languages_include_all_active_languages_when_multi_currency_off(): void {
+		$integration = $this->create_integration( true, [ 'USD' ], false );
+
+		$this->add_active_languages_filter();
+
+		$this->assertEquals(
+			[
+				[
+					'code'      => 'USD',
+					'symbol'    => '$',
+					'languages' => [ 'en', 'fr' ],
 				],
 			],
 			$integration->get_currencies()
@@ -593,14 +803,36 @@ class WPMLTest extends UnitTest {
 	}
 
 	/**
+	 * Registers an active-languages filter returning English and French.
+	 */
+	private function add_active_languages_filter(): void {
+		add_filter(
+			'wpml_active_languages',
+			function () {
+				return [
+					'en' => [
+						'code'            => 'en',
+						'translated_name' => 'English',
+					],
+					'fr' => [
+						'code'            => 'fr',
+						'translated_name' => 'French',
+					],
+				];
+			}
+		);
+	}
+
+	/**
 	 * @param bool                        $is_active
 	 * @param string[]                    $currency_codes
 	 * @param bool|null                   $wcml_multi_currency_on When non-null, stubs is_wcml_multi_currency_on() to this value.
 	 * @param array<string, string>|false $custom_prices          Return value for get_wcml_custom_prices() (default false = auto mode).
+	 * @param array|null                  $wcml_settings          When non-null, stubs get_wcml_settings() to this WCML settings map.
 	 *
 	 * @return WPML&MockObject
 	 */
-	private function create_integration( bool $is_active, array $currency_codes = [], ?bool $wcml_multi_currency_on = null, $custom_prices = false ): WPML {
+	private function create_integration( bool $is_active, array $currency_codes = [], ?bool $wcml_multi_currency_on = null, $custom_prices = false, ?array $wcml_settings = null ): WPML {
 		$methods = [ 'is_active', 'get_wcml_custom_prices' ];
 
 		if ( ! empty( $currency_codes ) ) {
@@ -609,6 +841,10 @@ class WPMLTest extends UnitTest {
 
 		if ( null !== $wcml_multi_currency_on ) {
 			$methods[] = 'is_wcml_multi_currency_on';
+		}
+
+		if ( null !== $wcml_settings ) {
+			$methods[] = 'get_wcml_settings';
 		}
 
 		$integration = $this->createPartialMock( WPML::class, $methods );
@@ -621,6 +857,10 @@ class WPMLTest extends UnitTest {
 
 		if ( null !== $wcml_multi_currency_on ) {
 			$integration->method( 'is_wcml_multi_currency_on' )->willReturn( $wcml_multi_currency_on );
+		}
+
+		if ( null !== $wcml_settings ) {
+			$integration->method( 'get_wcml_settings' )->willReturn( $wcml_settings );
 		}
 
 		return $integration;
