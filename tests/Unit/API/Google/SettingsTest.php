@@ -226,13 +226,20 @@ class SettingsTest extends UnitTest {
 		$this->assertSame( 'EUR', $by_country['FR']['currencyCode'] );
 	}
 
+	/**
+	 * The shipping method is global, so MarketService::get_markets() returns the same
+	 * method for every market (GOOWOO-773) — a mix of `manual` and non-`manual` markets
+	 * is no longer representable. When the global method is `manual`, every market is
+	 * skipped and the currency map is empty. build_country_currency_map keeps the guard
+	 * defensively so a stray manual market can never leak into the synced services.
+	 */
 	public function test_generate_shipping_settings_skips_manual_markets_from_currency_map(): void {
 		$this->market_service->method( 'get_participating_markets' )->willReturn(
 			[
 				'primary' => [
 					'country'       => 'US',
 					'currency'      => [ 'USD' ],
-					'shipping_rate' => 'flat',
+					'shipping_rate' => 'manual',
 					'shipping_time' => 'flat',
 				],
 				'fr'      => [
@@ -248,7 +255,42 @@ class SettingsTest extends UnitTest {
 
 		$map = $this->invoke( 'build_country_currency_map' );
 
-		$this->assertSame( [ 'US' => 'USD' ], $map );
+		$this->assertSame( [], $map );
+	}
+
+	/**
+	 * With a non-manual global method every market contributes to the currency map,
+	 * each with its own currency.
+	 */
+	public function test_generate_shipping_settings_includes_every_market_in_currency_map(): void {
+		$this->market_service->method( 'get_participating_markets' )->willReturn(
+			[
+				'primary' => [
+					'country'       => 'US',
+					'currency'      => [ 'USD' ],
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				'fr'      => [
+					'country'       => 'FR',
+					'currency'      => [ 'EUR' ],
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
+
+		$this->wc_proxy->method( 'get_woocommerce_currency' )->willReturn( 'USD' );
+
+		$map = $this->invoke( 'build_country_currency_map' );
+
+		$this->assertSame(
+			[
+				'US' => 'USD',
+				'FR' => 'EUR',
+			],
+			$map
+		);
 	}
 
 	public function test_generate_shipping_settings_prefers_per_row_currency_over_country_map(): void {
