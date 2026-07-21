@@ -70,7 +70,7 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 	public function register(): void {
 		$this->share_with_tags( NotificationService::class, WP::class );
 		$this->share_with_tags( SkippedCampaignEvaluator::class, AdsCampaign::class, OnboardingCompleted::class, ServiceBasedMerchantState::class );
-		$this->share_with_tags( AbandonedOnboardingEvaluator::class );
+		$this->share_with_tags( AbandonedOnboardingEvaluator::class, ServiceBasedMerchantState::class, OnboardingCompleted::class );
 		$this->share_with_tags( NotOnboarded90DaysEvaluator::class, OnboardingCompleted::class );
 		$this->share_with_tags( EnhancedConversionsOffEvaluator::class );
 		$this->share_with_tags( TrackingOffEvaluator::class );
