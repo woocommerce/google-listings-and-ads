@@ -71,7 +71,7 @@ const ALL_FIELDS = {
 		enableHiding: false,
 		enableSorting: false,
 		enableGlobalSearch: true,
-		getValue: ( { item } ) => item.label,
+		getValue: ( { item } ) => item.marketSearchValue || item.label,
 		render: ( { item } ) => {
 			return (
 				<span className="gla-markets-table__market-cell">
@@ -379,6 +379,32 @@ const buildDefaultConfig = ( { markets, countryNames, timesByCountry } ) => {
 };
 
 /**
+ * Adds a `marketSearchValue` to primary-market rows so the Market column's
+ * global search also matches on the names of countries grouped under the
+ * primary market (rendered as e.g. "Primary Market (3 countries)", which
+ * otherwise hides those country names from search).
+ *
+ * @param {Array.<Object>} data Pre-formatted rows from a scenario builder.
+ * @param {Object.<string,string>} countryNames Mapping of country code to country name.
+ * @return {Array.<Object>} Rows with `marketSearchValue` added to primary-market rows.
+ */
+const withMarketSearchValue = ( data, countryNames ) =>
+	data.map( ( row ) => {
+		if ( ! isPrimaryMarket( row ) || ! row.countries?.length ) {
+			return row;
+		}
+
+		const countryLabels = row.countries
+			.map( ( code ) => countryNames[ code ] || code )
+			.join( ' ' );
+
+		return {
+			...row,
+			marketSearchValue: `${ row.label } ${ countryLabels }`,
+		};
+	} );
+
+/**
  * Single source of truth for the MarketDataViews `{ fields, data }` shape.
  *
  * Picks the active scenario from `settings.shipping_rate` and
@@ -411,8 +437,10 @@ const useMarketDataViewsConfig = () => {
 	const shippingRateMethod = settings.shipping_rate;
 
 	if ( shippingRateMethod === SHIPPING_RATE_METHOD.MANUAL ) {
+		const { fields, data } = buildManualConfig( { markets } );
 		return {
-			...buildManualConfig( { markets } ),
+			fields,
+			data: withMarketSearchValue( data, countryNames ),
 			hasFinishedResolution,
 		};
 	}
@@ -425,11 +453,13 @@ const useMarketDataViewsConfig = () => {
 	);
 
 	if ( shippingRateMethod === SHIPPING_RATE_METHOD.AUTOMATIC ) {
+		const { fields, data } = buildAutomaticConfig( {
+			markets,
+			timesByCountry,
+		} );
 		return {
-			...buildAutomaticConfig( {
-				markets,
-				timesByCountry,
-			} ),
+			fields,
+			data: withMarketSearchValue( data, countryNames ),
 			hasFinishedResolution,
 		};
 	}
@@ -438,18 +468,26 @@ const useMarketDataViewsConfig = () => {
 		( shippingRatesData || [] ).map( ( rate ) => [ rate.country, rate ] )
 	);
 	if ( shippingRateMethod === SHIPPING_RATE_METHOD.FLAT ) {
+		const { fields, data } = buildFlatConfig( {
+			markets,
+			ratesByCountry,
+			timesByCountry,
+		} );
 		return {
-			...buildFlatConfig( {
-				markets,
-				ratesByCountry,
-				timesByCountry,
-			} ),
+			fields,
+			data: withMarketSearchValue( data, countryNames ),
 			hasFinishedResolution,
 		};
 	}
 
+	const { fields, data } = buildDefaultConfig( {
+		markets,
+		countryNames,
+		timesByCountry,
+	} );
 	return {
-		...buildDefaultConfig( { markets, countryNames, timesByCountry } ),
+		fields,
+		data: withMarketSearchValue( data, countryNames ),
 		hasFinishedResolution,
 	};
 };

@@ -420,4 +420,20 @@ describe( 'MarketDataViews', () => {
 			} )
 		).not.toBeInTheDocument();
 	} );
+
+	test( 'matches the primary Market row when searching a country grouped under it', () => {
+		render( <MarketDataViews /> );
+
+		const { onChangeView, view } = dataViewsCalls[ 0 ];
+		act( () => {
+			onChangeView( { ...view, search: 'Mauritius' } );
+		} );
+
+		expect(
+			screen.getByRole( 'cell', { name: 'Primary Market (2 countries)' } )
+		).toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'cell', { name: 'France' } )
+		).not.toBeInTheDocument();
+	} );
 } );
