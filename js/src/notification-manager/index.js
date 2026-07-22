@@ -23,10 +23,10 @@ import { GLA_NOTIFICATION_DISMISSED } from '~/constants';
 		return;
 	}
 
-	const observer = new MutationObserver( function () {
+	function placeBadge() {
 		if ( marketingMenu.classList.contains( 'wp-has-current-submenu' ) ) {
 			const subMenu = marketingMenu.querySelector(
-				'[href="admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard"]'
+				'.wp-submenu [href="admin.php?page=wc-admin&path=%2Fmarketing"]'
 			);
 
 			if ( subMenu && ! subMenu.contains( badge ) ) {
@@ -51,7 +51,14 @@ import { GLA_NOTIFICATION_DISMISSED } from '~/constants';
 				topMenu.appendChild( badge );
 			}
 		}
-	} );
+	}
+
+	// Place immediately for the server-rendered initial state (a hard page
+	// load never fires a class mutation), then keep watching for SPA route
+	// changes that toggle the submenu classes.
+	placeBadge();
+
+	const observer = new MutationObserver( placeBadge );
 
 	observer.observe( marketingMenu, {
 		attributes: true,
