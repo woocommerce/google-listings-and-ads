@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductInputAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
@@ -116,6 +117,31 @@ class WCProductInputAdapterTest extends UnitTest {
 		$product->save();
 
 		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertArrayNotHasKey( 'price', $attrs );
+	}
+
+	public function test_omits_price_when_currency_override_cannot_be_converted() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_regular_price( '19.99' );
+		$product->save();
+
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_product_price_in_currency' )->willReturn( null );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'AE', null, [], [], [], 'AE-EN-AED', '', 'AED', $wpml ) )->get_product_input()->get_attributes();
+
+		// A store-currency amount must never be submitted under a
+		// non-store-currency feed label, so the price stays unset.
+		$this->assertArrayNotHasKey( 'price', $attrs );
+	}
+
+	public function test_omits_price_when_currency_override_set_without_wpml() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_regular_price( '19.99' );
+		$product->save();
+
+		$attrs = ( new WCProductInputAdapter( $product, 'AE', null, [], [], [], 'AE-EN-AED', '', 'AED', null ) )->get_product_input()->get_attributes();
 
 		$this->assertArrayNotHasKey( 'price', $attrs );
 	}

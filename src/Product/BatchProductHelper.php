@@ -308,6 +308,56 @@ class BatchProductHelper implements Service {
 							'hash'    => $primary_hash,
 						];
 					}
+
+					// The bare-label entry above carries the store currency;
+					// each additional participating primary currency gets its
+					// own derived-label entry with converted prices.
+					foreach ( $this->market_service->get_participating_currencies( $primary_market ) as $primary_currency ) {
+						if ( get_woocommerce_currency() === $primary_currency ) {
+							continue;
+						}
+
+						if ( ! $this->product_priced_in_currency( $product, $primary_currency ) ) {
+							do_action(
+								'woocommerce_gla_debug_message',
+								sprintf( 'Skipping the %s primary market entry for product (ID: %s): its price cannot be converted into that currency.', $primary_currency, $product->get_id() ),
+								__METHOD__
+							);
+
+							continue;
+						}
+
+						$primary_currency_label = $this->market_service->get_market_feed_label( $main_feed_label, $product_language, $primary_currency );
+
+						$primary_currency_validation = $this->validate_product(
+							$this->product_factory->create( $product, $main_feed_label, $mapping_rules, $primary_currency_label, $product_language, $primary_currency )
+						);
+						if ( $primary_currency_validation instanceof BatchInvalidProductEntry ) {
+							$this->mark_as_invalid( $primary_currency_validation );
+
+							do_action(
+								'woocommerce_gla_debug_message',
+								sprintf( 'Skipping product (ID: %s) because it does not pass validation for the %s primary market feed: %s', $product->get_id(), $primary_currency, wp_json_encode( $primary_currency_validation ) ),
+								__METHOD__
+							);
+
+							continue 2;
+						}
+
+						$primary_currency_input = $this->generate_product_input( $product, $main_feed_label, $primary_currency_label, $this->market_service->get_all_countries(), $mapping_rules, $product_language, $primary_currency );
+						$primary_currency_hash  = $this->product_input_hash( $primary_currency_input );
+
+						if ( $this->can_skip_unchanged_product( $product, $primary_currency_hash ) ) {
+							continue;
+						}
+
+						$product_entries[] = [
+							'product' => $product,
+							'country' => $main_feed_label,
+							'input'   => $primary_currency_input,
+							'hash'    => $primary_currency_hash,
+						];
+					}
 				}
 
 				// Participating markets only: a market priced in a non-store
@@ -328,39 +378,57 @@ class BatchProductHelper implements Service {
 					// (both falling back to site defaults inside the
 					// derivation). A market with no configured languages
 					// accepts every product under its site-language label.
-					$market_currency   = $this->extract_currency( $market );
-					$market_language   = empty( $market['language'] ) ? '' : $product_language;
-					$market_feed_label = $this->market_service->get_market_feed_label( $market['feed_label'], $market_language, $market_currency );
+					// Every participating currency produces its own entry.
+					$market_language = empty( $market['language'] ) ? '' : $product_language;
 
-					$secondary_validation = $this->validate_product(
-						$this->product_factory->create( $product, $market['country'], $mapping_rules, $market_feed_label, $product_language, $market_currency )
-					);
-					if ( $secondary_validation instanceof BatchInvalidProductEntry ) {
-						$this->mark_as_invalid( $secondary_validation );
+					foreach ( $this->market_service->get_participating_currencies( $market ) as $market_currency ) {
+						if ( ! $this->product_priced_in_currency( $product, $market_currency ) ) {
+							do_action(
+								'woocommerce_gla_debug_message',
+								sprintf( 'Skipping the %s entry of secondary market %s for product (ID: %s): its price cannot be converted into that currency.', $market_currency, $market_id, $product->get_id() ),
+								__METHOD__
+							);
 
-						do_action(
-							'woocommerce_gla_debug_message',
-							sprintf( 'Skipping product (ID: %s) because it does not pass validation for secondary market %s: %s', $product->get_id(), $market_id, wp_json_encode( $secondary_validation ) ),
-							__METHOD__
+							continue;
+						}
+
+						$market_feed_label = $this->market_service->get_market_feed_label( $market['feed_label'], $market_language, $market_currency );
+
+						// Store-currency entries need no conversion, so they
+						// carry no currency override and price exactly as a
+						// single-currency market's entries always have.
+						$currency_override = get_woocommerce_currency() === $market_currency ? '' : $market_currency;
+
+						$secondary_validation = $this->validate_product(
+							$this->product_factory->create( $product, $market['country'], $mapping_rules, $market_feed_label, $product_language, $currency_override )
 						);
+						if ( $secondary_validation instanceof BatchInvalidProductEntry ) {
+							$this->mark_as_invalid( $secondary_validation );
 
-						continue 2;
+							do_action(
+								'woocommerce_gla_debug_message',
+								sprintf( 'Skipping product (ID: %s) because it does not pass validation for secondary market %s: %s', $product->get_id(), $market_id, wp_json_encode( $secondary_validation ) ),
+								__METHOD__
+							);
+
+							continue 3;
+						}
+
+						// Secondary market shipping is scoped to the market's own country.
+						$secondary_input = $this->generate_product_input( $product, $market['country'], $market_feed_label, [ $market['country'] ], $mapping_rules, $product_language, $currency_override );
+						$secondary_hash  = $this->product_input_hash( $secondary_input );
+
+						if ( $this->can_skip_unchanged_product( $product, $secondary_hash ) ) {
+							continue;
+						}
+
+						$product_entries[] = [
+							'product' => $product,
+							'country' => $market['country'],
+							'input'   => $secondary_input,
+							'hash'    => $secondary_hash,
+						];
 					}
-
-					// Secondary market shipping is scoped to the market's own country.
-					$secondary_input = $this->generate_product_input( $product, $market['country'], $market_feed_label, [ $market['country'] ], $mapping_rules, $product_language, $market_currency );
-					$secondary_hash  = $this->product_input_hash( $secondary_input );
-
-					if ( $this->can_skip_unchanged_product( $product, $secondary_hash ) ) {
-						continue;
-					}
-
-					$product_entries[] = [
-						'product' => $product,
-						'country' => $market['country'],
-						'input'   => $secondary_input,
-						'hash'    => $secondary_hash,
-					];
 				}
 
 				if ( ! empty( $product_entries ) ) {
@@ -447,19 +515,24 @@ class BatchProductHelper implements Service {
 	}
 
 	/**
-	 * Extracts a single currency code from a market config.
+	 * Whether a product can be priced in the given currency.
 	 *
-	 * Each MC product carries exactly one price.currency. Markets store currency
-	 * as an array of codes; the first entry is used.
+	 * The store currency always qualifies. Any other currency qualifies only
+	 * when WPML can produce a converted or manually set price for the product,
+	 * so a product is never submitted with a store-currency price under a
+	 * non-store-currency feed label.
 	 *
-	 * @param array $market A market config array as returned by MarketService.
+	 * @param WC_Product $product
+	 * @param string     $currency ISO 4217 currency code.
 	 *
-	 * @return string The single currency code, or empty string when none is set.
+	 * @return bool
 	 */
-	private static function extract_currency( array $market ): string {
-		return is_array( $market['currency'] ?? null )
-			? (string) ( $market['currency'][0] ?? '' )
-			: (string) ( $market['currency'] ?? '' );
+	private function product_priced_in_currency( WC_Product $product, string $currency ): bool {
+		if ( get_woocommerce_currency() === $currency ) {
+			return true;
+		}
+
+		return null !== $this->wpml->get_product_price_in_currency( $product, $currency );
 	}
 
 	/**

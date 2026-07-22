@@ -1066,7 +1066,7 @@ class MarketServiceTest extends UnitTest {
 
 		$this->cleanup_job->expects( $this->once() )
 			->method( 'schedule' )
-			->with( [ 'feed_labels' => [ 'GB', 'GB-GBP', 'GB-EN-GBP' ] ] );
+			->with( [ 'feed_labels' => [ 'GB', 'GB-EN-GBP' ] ] );
 
 		// feed_label rename alone does not touch country/currency/shipping_rate/shipping_time.
 		$this->shipping_settings_job->expects( $this->never() )
@@ -1092,7 +1092,7 @@ class MarketServiceTest extends UnitTest {
 		// the market's entries and the old label's entries become orphans.
 		$this->cleanup_job->expects( $this->once() )
 			->method( 'schedule' )
-			->with( [ 'feed_labels' => [ 'GB', 'GB-GBP', 'GB-EN-GBP' ] ] );
+			->with( [ 'feed_labels' => [ 'GB', 'GB-EN-GBP' ] ] );
 
 		$this->market_service->update_market( 'gb', [ 'currency' => [ 'EUR' ] ] );
 	}
@@ -1150,7 +1150,7 @@ class MarketServiceTest extends UnitTest {
 		// orphans the old language's label; the new label is left alone.
 		$this->cleanup_job->expects( $this->once() )
 			->method( 'schedule' )
-			->with( [ 'feed_labels' => [ 'GB', 'GB-GBP', 'GB-EN-GBP' ] ] );
+			->with( [ 'feed_labels' => [ 'GB', 'GB-EN-GBP' ] ] );
 
 		$this->market_service->update_market( 'gb', [ 'language' => [ 'ga' ] ] );
 	}
@@ -1789,7 +1789,7 @@ class MarketServiceTest extends UnitTest {
 
 		$this->cleanup_job->expects( $this->once() )
 			->method( 'schedule' )
-			->with( [ 'feed_labels' => [ 'GB', 'GB-GBP', 'GB-EN-GBP' ] ] );
+			->with( [ 'feed_labels' => [ 'GB', 'GB-EN-GBP' ] ] );
 
 		// Global shipping method is flat/flat (syncable) → shipping sync also scheduled.
 		$this->shipping_settings_job->expects( $this->once() )
@@ -3593,10 +3593,10 @@ class MarketServiceTest extends UnitTest {
 
 		// A removed language's entries live under its own derived label, so
 		// label-based cleanup covers them; the removed label plus the
-		// pre-language-scheme keys are cleaned, the surviving label is not.
+		// verbatim-label key are cleaned, the surviving label is not.
 		$this->cleanup_job->expects( $this->once() )
 			->method( 'schedule' )
-			->with( [ 'feed_labels' => [ 'GB', 'GB-GBP', 'GB-CY-GBP' ] ] );
+			->with( [ 'feed_labels' => [ 'GB', 'GB-CY-GBP' ] ] );
 		$this->language_cleanup_job->expects( $this->never() )->method( 'schedule' );
 
 		$this->market_service->update_market( 'gb', [ 'language' => [ 'en' ] ] );
@@ -3655,7 +3655,7 @@ class MarketServiceTest extends UnitTest {
 
 		$this->cleanup_job->expects( $this->once() )
 			->method( 'schedule' )
-			->with( [ 'feed_labels' => [ 'GB', 'GB-GBP', 'GB-EN-GBP', 'GB-CY-GBP' ] ] );
+			->with( [ 'feed_labels' => [ 'GB', 'GB-EN-GBP', 'GB-CY-GBP' ] ] );
 		$this->language_cleanup_job->expects( $this->never() )->method( 'schedule' );
 
 		$this->market_service->update_market(
@@ -4316,6 +4316,211 @@ class MarketServiceTest extends UnitTest {
 				'feed_label' => 'GB',
 			]
 		);
+	}
+
+	public function test_get_participating_currencies_drops_foreign_currency_without_conversion(): void {
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+
+		$market = [ 'currency' => [ get_woocommerce_currency(), 'AED' ] ];
+
+		$this->assertSame( [ get_woocommerce_currency() ], $this->market_service->get_participating_currencies( $market ) );
+	}
+
+	public function test_get_participating_currencies_includes_foreign_currency_with_conversion(): void {
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
+
+		$market = [ 'currency' => [ get_woocommerce_currency(), 'AED' ] ];
+
+		$this->assertSame( [ get_woocommerce_currency(), 'AED' ], $this->market_service->get_participating_currencies( $market ) );
+	}
+
+	public function test_get_all_feed_labels_includes_every_currency_of_a_market(): void {
+		$this->wpml->method( 'is_active' )->willReturn( true );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
+
+		$secondary = [
+			'ae' => [
+				'country'    => 'AE',
+				'language'   => [ 'en', 'fr' ],
+				'currency'   => [ get_woocommerce_currency(), 'AED' ],
+				'feed_label' => 'AE',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$result = $this->market_service->get_all_feed_labels();
+
+		$store_currency = get_woocommerce_currency();
+		$this->assertContains( 'US', $result );
+		$this->assertContains( 'AE-EN-' . $store_currency, $result );
+		$this->assertContains( 'AE-FR-' . $store_currency, $result );
+		$this->assertContains( 'AE-EN-AED', $result );
+		$this->assertContains( 'AE-FR-AED', $result );
+		$this->assertCount( 5, $result );
+	}
+
+	public function test_get_all_feed_labels_excludes_non_participating_currency(): void {
+		$this->wpml->method( 'is_active' )->willReturn( true );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+
+		$secondary = [
+			'ae' => [
+				'country'    => 'AE',
+				'language'   => [ 'en' ],
+				'currency'   => [ get_woocommerce_currency(), 'AED' ],
+				'feed_label' => 'AE',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$result = $this->market_service->get_all_feed_labels();
+
+		$this->assertContains( 'AE-EN-' . get_woocommerce_currency(), $result );
+		$this->assertNotContains( 'AE-EN-AED', $result );
+	}
+
+	public function test_get_all_feed_labels_includes_primary_extra_currency_labels(): void {
+		$this->wpml->method( 'is_active' )->willReturn( true );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::MERCHANT_CENTER => [
+					'language' => [ 'en', 'fr' ],
+					'currency' => [ get_woocommerce_currency(), 'EUR' ],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'GB', [ 'GB' ] );
+
+		$result = $this->market_service->get_all_feed_labels();
+
+		// The store currency keeps the bare label; only the extra currency
+		// gets per-language derived labels.
+		$this->assertContains( 'GB', $result );
+		$this->assertContains( 'GB-EN-EUR', $result );
+		$this->assertContains( 'GB-FR-EUR', $result );
+		$this->assertNotContains( 'GB-EN-' . get_woocommerce_currency(), $result );
+		$this->assertCount( 3, $result );
+	}
+
+	public function test_update_market_schedules_cleanup_for_removed_currency_labels(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP', 'EUR' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		// Removing EUR orphans the EUR label; the still-configured GBP
+		// language label stays out of the cleanup set.
+		$this->cleanup_job->expects( $this->once() )
+			->method( 'schedule' )
+			->with( [ 'feed_labels' => [ 'GB', 'GB-EN-EUR' ] ] );
+
+		$this->market_service->update_market( 'gb', [ 'currency' => [ 'GBP' ] ] );
+	}
+
+	public function test_update_market_primary_schedules_cleanup_for_removed_currency(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'language' => [ 'en', 'fr' ],
+					'currency' => [ get_woocommerce_currency(), 'EUR' ],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'GB' ] ],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'GB', [ 'GB' ] );
+
+		$this->cleanup_job->expects( $this->once() )
+			->method( 'schedule' )
+			->with( [ 'feed_labels' => [ 'GB-EN-EUR', 'GB-FR-EUR' ] ] );
+
+		$this->market_service->update_market( 'primary', [ 'currency' => [ get_woocommerce_currency() ] ] );
+	}
+
+	public function test_update_market_primary_removing_store_currency_schedules_no_cleanup(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'language' => [ 'en' ],
+					'currency' => [ get_woocommerce_currency(), 'EUR' ],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'GB' ] ],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'GB', [ 'GB' ] );
+
+		// The store currency's entries live under the bare main feed label,
+		// which stays current, so removing the store currency from the
+		// configured list must not clean anything up.
+		$this->cleanup_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'primary', [ 'currency' => [ 'EUR' ] ] );
+	}
+
+	public function test_delete_market_schedules_cleanup_with_every_currency_label(): void {
+		$store_currency = get_woocommerce_currency();
+
+		$existing = [
+			'ae' => [
+				'country'    => 'AE',
+				'language'   => [ 'en', 'fr' ],
+				'currency'   => [ $store_currency, 'AED' ],
+				'feed_label' => 'AE',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $existing ] );
+		$this->options->method( 'update' )->willReturn( true );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$this->cleanup_job->expects( $this->once() )
+			->method( 'schedule' )
+			->with(
+				[
+					'feed_labels' => [
+						'AE',
+						'AE-EN-' . $store_currency,
+						'AE-FR-' . $store_currency,
+						'AE-EN-AED',
+						'AE-FR-AED',
+					],
+				]
+			);
+
+		$this->market_service->delete_market( 'ae' );
+	}
+
+	public function test_conversion_availability_change_with_primary_extra_currency_schedules(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::CURRENCY_CONVERSION_AVAILABLE => 'yes',
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::MERCHANT_CENTER => [
+					'currency' => [ get_woocommerce_currency(), 'EUR' ],
+				],
+			]
+		);
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+
+		$this->shipping_settings_job->expects( $this->once() )->method( 'schedule' );
+		$this->update_all_products_job->expects( $this->once() )->method( 'schedule' );
+
+		$this->invoke_conversion_availability_handler();
 	}
 
 	/**

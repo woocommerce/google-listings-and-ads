@@ -188,6 +188,10 @@ class WPML implements IntegrationInterface {
 			return null;
 		}
 
+		if ( ! $this->is_active_currency( $currency ) ) {
+			return null;
+		}
+
 		$custom_prices = $this->get_wcml_custom_prices( (int) $product->get_id(), $currency );
 		if ( false !== $custom_prices ) {
 			return isset( $custom_prices['_regular_price'] ) && '' !== $custom_prices['_regular_price']
@@ -214,6 +218,10 @@ class WPML implements IntegrationInterface {
 	 */
 	public function get_product_sale_price_in_currency( WC_Product $product, string $currency ): ?float {
 		if ( ! $this->is_active() || ! $this->is_wcml_multi_currency_on() ) {
+			return null;
+		}
+
+		if ( ! $this->is_active_currency( $currency ) ) {
 			return null;
 		}
 
@@ -272,6 +280,45 @@ class WPML implements IntegrationInterface {
 		$to   = $to_meta ? gmdate( DateTime::ATOM, (int) $to_meta ) : '';
 
 		return sprintf( '%s/%s', $from, $to );
+	}
+
+	/**
+	 * Converts a store-currency amount into the given currency via WCML.
+	 *
+	 * Used for plain amounts with no product attached, such as shipping rates
+	 * and free-shipping thresholds; the product price converters above handle
+	 * per-product manual prices and sale dates.
+	 *
+	 * @param float  $amount   Amount in the store currency.
+	 * @param string $currency ISO 4217 currency code to convert into.
+	 *
+	 * @return float|null Converted amount, or null when WPML is inactive or
+	 *                    WCML multi-currency is off.
+	 */
+	public function convert_amount( float $amount, string $currency ): ?float {
+		if ( ! $this->is_active() || ! $this->is_wcml_multi_currency_on() ) {
+			return null;
+		}
+
+		if ( ! $this->is_active_currency( $currency ) ) {
+			return null;
+		}
+
+		return (float) apply_filters( 'wcml_raw_price_amount', $amount, $currency );
+	}
+
+	/**
+	 * Whether WCML can convert amounts into the given currency: it must be one
+	 * of WCML's active currencies. WCML's conversion filter returns 0 for a
+	 * currency it does not have active, so converting into an inactive
+	 * currency must read as unavailable, never as a zero amount.
+	 *
+	 * @param string $currency ISO 4217 currency code.
+	 *
+	 * @return bool
+	 */
+	protected function is_active_currency( string $currency ): bool {
+		return in_array( $currency, $this->get_active_currency_codes(), true );
 	}
 
 	/**
