@@ -856,7 +856,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertCount( 0, $results );
 	}
 
-	public function test_generate_mapi_update_entries_skips_product_when_secondary_invalid() {
+	public function test_generate_mapi_update_entries_skips_only_the_invalid_secondary() {
 		$product = WC_Helper_Product::create_simple_product();
 
 		$this->set_up_market_service_stubs(
@@ -896,7 +896,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
 
-		$this->assertCount( 0, $results );
+		// The invalid DE secondary is skipped, but the valid primary entry still survives.
+		$this->assertCount( 1, $results );
+		$this->assertSame( 'US', $results[0]['country'] );
 
 		// Re-fetch the product so the meta read does not hit the original
 		// instance's stale cache: mark_as_invalid persisted against a fresh
@@ -1412,6 +1414,210 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertSame( 'AUD', $captured_currencies_by_country['AU'] );
 	}
 
+	public function test_secondary_market_emits_a_feed_per_enabled_currency() {
+		$product         = WC_Helper_Product::create_simple_product();
+		$real_factory    = $this->container->get( ProductFactory::class );
+		$primary_adapter = $real_factory->create( $product, 'US', [], 'US', 'en' );
+
+		$captured_currencies_by_country = [];
+
+		$factory_mock = $this->createMock( ProductFactory::class );
+		$factory_mock->method( 'create' )
+			->willReturnCallback(
+				function ( WC_Product $p, string $country, array $rules, string $feed_label, string $language, ?string $currency_override = null ) use ( $primary_adapter, $real_factory, $product, &$captured_currencies_by_country ) {
+					if ( 'US' === $country ) {
+						return $primary_adapter;
+					}
+					$captured_currencies_by_country[ $country ][] = $currency_override;
+					return $real_factory->create( $product, $country, $rules, $feed_label, $language, $currency_override );
+				}
+			);
+
+		$helper = new BatchProductHelper(
+			$this->product_meta,
+			$this->product_helper,
+			$this->validator,
+			$factory_mock,
+			$this->rules_query,
+			$this->market_service,
+			$this->wpml,
+			$this->container->get( AttributeManager::class )
+		);
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'DE' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+				'de'      => [
+					'country'    => 'DE',
+					'feed_label' => 'DE',
+					'language'   => [ 'de' ],
+					'currency'   => [ 'EUR', 'USD' ],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$helper->generate_mapi_update_entries( [ $product ] );
+
+		// One secondary feed per configured currency for the market's language. The
+		// store-currency entry carries no override, so it prices exactly as a
+		// single-currency market's entries always have.
+		$this->assertSame( [ 'EUR', '' ], $captured_currencies_by_country['DE'] );
+	}
+
+	public function test_secondary_market_skips_only_the_currency_that_fails_validation() {
+		$product         = WC_Helper_Product::create_simple_product();
+		$real_factory    = $this->container->get( ProductFactory::class );
+		$primary_adapter = $real_factory->create( $product, 'US', [], 'US', 'en' );
+
+		$factory_mock = $this->createMock( ProductFactory::class );
+		$factory_mock->method( 'create' )
+			->willReturnCallback(
+				function ( WC_Product $p, string $country, array $rules, string $feed_label, string $language, ?string $currency_override = null ) use ( $primary_adapter, $real_factory, $product ) {
+					return 'US' === $country
+						? $primary_adapter
+						: $real_factory->create( $product, $country, $rules, $feed_label, $language, $currency_override );
+				}
+			);
+
+		$helper = new BatchProductHelper(
+			$this->product_meta,
+			$this->product_helper,
+			$this->validator,
+			$factory_mock,
+			$this->rules_query,
+			$this->market_service,
+			$this->wpml,
+			$this->container->get( AttributeManager::class )
+		);
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'DE' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+				'de'      => [
+					'country'    => 'DE',
+					'feed_label' => 'DE',
+					'language'   => [ 'de' ],
+					'currency'   => [ 'EUR', 'USD' ],
+				],
+			]
+		);
+
+		// The USD pair fails validation (e.g. the product has no USD price); EUR passes.
+		// A derived secondary feed label ends with its market currency.
+		$this->validator->expects( $this->any() )
+			->method( 'validate' )
+			->willReturnCallback(
+				function ( WCProductAdapter $adapter ) {
+					if ( '-USD' === substr( $adapter->getFeedLabel(), -4 ) ) {
+						$violations = new ConstraintViolationList();
+						$violations->add( $this->createMock( ConstraintViolation::class ) );
+						return $violations;
+					}
+
+					return [];
+				}
+			);
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$labels = array_map(
+			static function ( array $entry ): string {
+				return $entry['input']->get_feed_label();
+			},
+			$helper->generate_mapi_update_entries( [ $product ] )
+		);
+
+		$secondary_labels = array_values(
+			array_filter(
+				$labels,
+				static function ( string $label ): bool {
+					return 'DE-' === substr( $label, 0, 3 );
+				}
+			)
+		);
+
+		// Only the valid EUR pair survives; the invalid USD pair is skipped without dropping the
+		// product (its primary entry is still present).
+		$this->assertContains( 'US', $labels );
+		$this->assertCount( 1, $secondary_labels );
+		$this->assertStringEndsWith( '-EUR', $secondary_labels[0] );
+	}
+
+	public function test_secondary_market_skipped_when_no_currency_enabled_for_language() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'DE' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+				'de'      => [
+					'country'    => 'DE',
+					'feed_label' => 'DE',
+					'language'   => [ 'de' ],
+					'currency'   => [ 'EUR' ],
+				],
+			],
+			// WCML enables no currency for the market's language, so no secondary feed can be built.
+			static function (): array {
+				return [];
+			}
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+
+		// The product still syncs to its primary market; the secondary market emits nothing rather
+		// than a store-currency price mislabelled for the disabled currency.
+		$this->assertCount( 1, $results );
+		$this->assertSame( 'US', $results[0]['input']->get_feed_label() );
+	}
+
+	public function test_primary_entry_uses_store_currency_regardless_of_market_currency_array() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->set_up_market_service_stubs(
+			[ 'US' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+					'currency'   => [ 'EUR' ],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+
+		// The bare-label entry prices in the store currency even though the configured
+		// array does not list it; the configured currency adds its own derived entry.
+		$this->assertCount( 2, $results );
+		$this->assertSame( 'US', $results[0]['input']->get_feed_label() );
+		$this->assertSame( get_woocommerce_currency(), $results[0]['input']->get_attributes()['price']['currencyCode'] );
+		$this->assertSame( 'EUR', $results[1]['input']->get_attributes()['price']['currencyCode'] );
+	}
+
 	public function test_primary_bare_label_entry_keeps_store_currency_and_extra_currency_adds_derived_entry() {
 		$product = WC_Helper_Product::create_simple_product();
 
@@ -1677,10 +1883,11 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 	 * get_primary_market() always returns null for both, and the primary feed label is only
 	 * exposed via get_main_feed_label().
 	 *
-	 * @param string[] $all_countries Return value for get_all_countries().
-	 * @param array[]  $markets       Return value for get_participating_markets() keyed by market ID.
+	 * @param string[]      $all_countries           Return value for get_all_countries().
+	 * @param array[]       $markets                 Return value for get_participating_markets() keyed by market ID.
+	 * @param callable|null $currencies_for_language Overrides the get_market_currencies_for_language() stub; defaults to every configured currency enabled.
 	 */
-	private function set_up_market_service_stubs( array $all_countries, array $markets ): void {
+	private function set_up_market_service_stubs( array $all_countries, array $markets, ?callable $currencies_for_language = null ): void {
 		$main_feed_label = $markets['primary']['feed_label'];
 
 		$markets['primary']['country']    = null;
@@ -1736,6 +1943,18 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 				}
 
 				return strtoupper( $base_feed_label . '-' . substr( $language, 0, 2 ) . '-' . $currency );
+			}
+		);
+
+		// Mirrors get_market_currencies_for_language() with WPML inactive: all configured currencies
+		// enabled, or the store currency when none are configured.
+		$this->market_service->method( 'get_market_currencies_for_language' )->willReturnCallback(
+			$currencies_for_language ?? static function ( array $market ): array {
+				$currencies = is_array( $market['currency'] ?? null )
+					? array_values( array_filter( array_map( 'strval', $market['currency'] ) ) )
+					: [];
+
+				return empty( $currencies ) ? [ '' ] : $currencies;
 			}
 		);
 	}

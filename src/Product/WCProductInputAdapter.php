@@ -380,6 +380,8 @@ class WCProductInputAdapter {
 				? $this->wpml->get_product_price_in_currency( $this->wc_product, $this->currency_override )
 				: null;
 
+			// No price in the override currency: leave it unset so this currency's feed is skipped,
+			// not emitted with the store-currency price mislabelled.
 			if ( null === $converted ) {
 				return;
 			}

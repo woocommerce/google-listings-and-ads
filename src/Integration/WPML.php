@@ -175,6 +175,32 @@ class WPML implements IntegrationInterface {
 	}
 
 	/**
+	 * Returns the subset of the given currency codes that are enabled for a language.
+	 *
+	 * With WCML off or no per-language config, every currency is enabled (single-currency and
+	 * non-WCML stores are unaffected); the `woocommerce_gla_language_currencies` filter overrides.
+	 *
+	 * @param string[] $currencies Currency codes to filter.
+	 * @param string   $language   ISO 639-1 language code.
+	 *
+	 * @return string[] The enabled subset.
+	 */
+	public function get_currencies_enabled_for_language( array $currencies, string $language ): array {
+		$enabled = $this->filter_currencies_for_language( $currencies, $this->get_wcml_currency_options(), $language );
+
+		/**
+		 * Filters the currencies enabled for a language.
+		 *
+		 * @param string[] $enabled    Currency codes enabled for the language.
+		 * @param string   $language   Language code.
+		 * @param string[] $currencies The currency codes being filtered.
+		 */
+		$enabled = apply_filters( 'woocommerce_gla_language_currencies', $enabled, $language, $currencies );
+
+		return is_array( $enabled ) ? array_values( array_unique( $enabled ) ) : [];
+	}
+
+	/**
 	 * Returns the regular price for a product converted into the given currency via WCML.
 	 *
 	 * @param WC_Product $product
@@ -354,6 +380,67 @@ class WPML implements IntegrationInterface {
 	 */
 	protected function is_wcml_multi_currency_on(): bool {
 		return function_exists( 'wcml_is_multi_currency_on' ) && wcml_is_multi_currency_on();
+	}
+
+	/**
+	 * Narrows currency codes to those enabled for a language via WCML's per-currency options. No
+	 * options means all enabled; otherwise a currency is enabled unless its `languages` map disables
+	 * the language (no map means enabled everywhere).
+	 *
+	 * @param string[]                            $active   Active currency codes.
+	 * @param array<string, array<string, mixed>> $options  WCML currency options keyed by code.
+	 * @param string                              $language Language code.
+	 *
+	 * @return string[]
+	 */
+	protected function filter_currencies_for_language( array $active, array $options, string $language ): array {
+		if ( empty( $options ) ) {
+			return array_values( $active );
+		}
+
+		$enabled = [];
+
+		foreach ( $active as $code ) {
+			$languages = $options[ $code ]['languages'] ?? null;
+
+			if ( ! is_array( $languages ) || ! array_key_exists( $language, $languages ) || ! empty( $languages[ $language ] ) ) {
+				$enabled[] = $code;
+			}
+		}
+
+		return $enabled;
+	}
+
+	/**
+	 * Returns WCML's per-currency options keyed by code (each may carry a per-language enablement
+	 * map under `languages`), or empty when WCML multi-currency is off or unavailable.
+	 *
+	 * Shape `currency_options[code]['languages'][lang]` (1 enabled, 0 disabled, absent = enabled)
+	 * matches the WCML source but is not verified against a live install; the
+	 * `woocommerce_gla_language_currencies` filter overrides if it differs.
+	 *
+	 * @return array<string, array<string, mixed>>
+	 */
+	protected function get_wcml_currency_options(): array {
+		if ( ! $this->is_active() || ! $this->is_wcml_multi_currency_on() ) {
+			return [];
+		}
+
+		global $woocommerce_wpml;
+
+		if ( ! isset( $woocommerce_wpml ) || ! is_object( $woocommerce_wpml ) ) {
+			return [];
+		}
+
+		$options = null;
+
+		if ( method_exists( $woocommerce_wpml, 'get_setting' ) ) {
+			$options = $woocommerce_wpml->get_setting( 'currency_options' );
+		} elseif ( isset( $woocommerce_wpml->settings ) && is_array( $woocommerce_wpml->settings ) ) {
+			$options = $woocommerce_wpml->settings['currency_options'] ?? null;
+		}
+
+		return is_array( $options ) ? $options : [];
 	}
 
 	/**

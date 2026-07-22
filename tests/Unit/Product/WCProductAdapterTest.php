@@ -1907,7 +1907,7 @@ class WCProductAdapterTest extends UnitTest {
 		$this->assertEquals( 6.4, $adapted_product->getSalePrice()->getValue() );
 	}
 
-	public function test_currency_override_falls_back_to_store_currency_when_wpml_returns_null() {
+	public function test_currency_override_leaves_price_unset_when_wpml_returns_null() {
 		$product = WC_Helper_Product::create_simple_product(
 			false,
 			[
@@ -1929,10 +1929,10 @@ class WCProductAdapterTest extends UnitTest {
 			]
 		);
 
-		$this->assertEquals( get_woocommerce_currency(), $adapted_product->getPrice()->getCurrency() );
-		$this->assertEquals( 10, $adapted_product->getPrice()->getValue() );
-		$this->assertEquals( get_woocommerce_currency(), $adapted_product->getSalePrice()->getCurrency() );
-		$this->assertEquals( 8, $adapted_product->getSalePrice()->getValue() );
+		// No converted price in the override currency: price and sale price are left unset so the
+		// NotNull constraint fails and this currency's feed is skipped, not emitted mislabelled.
+		$this->assertNull( $adapted_product->getPrice() );
+		$this->assertNull( $adapted_product->getSalePrice() );
 	}
 
 	public function test_currency_override_without_wpml_instance_falls_back_to_store_currency() {

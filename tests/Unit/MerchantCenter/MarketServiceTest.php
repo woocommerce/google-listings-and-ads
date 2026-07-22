@@ -46,6 +46,9 @@ class MarketServiceTest extends UnitTest {
 	/** @var MockObject|WPML */
 	protected $wpml;
 
+	/** @var array<string, string[]> Currencies disabled per language for the wpml stub. */
+	protected $disabled_currencies = [];
+
 	/** @var MockObject|JobRepository */
 	protected $job_repository;
 
@@ -94,6 +97,17 @@ class MarketServiceTest extends UnitTest {
 						default:
 							return null;
 					}
+				}
+			);
+
+		// Currencies pass through unless a test disables them via $this->disabled_currencies
+		// (mirrors WPML per-language narrowing).
+		$this->wpml->method( 'get_currencies_enabled_for_language' )
+			->willReturnCallback(
+				function ( array $currencies, string $language ): array {
+					$disabled = $this->disabled_currencies[ $language ] ?? [];
+
+					return array_values( array_diff( $currencies, $disabled ) );
 				}
 			);
 
@@ -373,6 +387,56 @@ class MarketServiceTest extends UnitTest {
 				'currency' => [ 'GBP' ],
 			]
 		);
+	}
+
+	public function test_add_market_throws_when_currency_not_enabled_for_any_language(): void {
+		$this->disabled_currencies['fr'] = [ 'GBP' ];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->add_market(
+			'fr',
+			[
+				'country'    => 'FR',
+				'feed_label' => 'FR',
+				'language'   => [ 'fr' ],
+				'currency'   => [ 'EUR', 'GBP' ],
+			]
+		);
+	}
+
+	public function test_add_market_normalises_currency_case_before_enablement_check(): void {
+		// Regression: a lowercase currency must be uppercased before the enablement check so it is
+		// matched against WCML's uppercase codes, matching feed generation. Otherwise a disabled
+		// currency slips past validation and is left saved but unable to ever produce a feed.
+		$this->disabled_currencies['fr'] = [ 'GBP' ];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => [] ] );
+
+		$this->expectException( InvalidValue::class );
+
+		$this->market_service->add_market(
+			'fr',
+			[
+				'country'    => 'FR',
+				'feed_label' => 'FR',
+				'language'   => [ 'fr' ],
+				'currency'   => [ 'eur', 'gbp' ],
+			]
+		);
+	}
+
+	public function test_get_market_currencies_for_language_narrows_to_enabled(): void {
+		// Both gates apply: a currency must be convertible and enabled for the language.
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
+		$this->disabled_currencies['fr'] = [ 'GBP' ];
+
+		$market = [ 'currency' => [ 'EUR', 'GBP' ] ];
+
+		$this->assertSame( [ 'EUR' ], $this->market_service->get_market_currencies_for_language( $market, 'fr' ) );
+		$this->assertSame( [ 'EUR', 'GBP' ], $this->market_service->get_market_currencies_for_language( $market, 'de' ) );
 	}
 
 	public function test_add_market_persists_and_removes_country_from_target_audience(): void {
@@ -1097,6 +1161,36 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->update_market( 'gb', [ 'currency' => [ 'EUR' ] ] );
 	}
 
+	public function test_update_market_cleanup_covers_removed_currency_across_all_languages(): void {
+		$existing = [
+			'de' => [
+				'country'    => 'DE',
+				'language'   => [ 'en', 'de' ],
+				'currency'   => [ 'EUR', 'USD' ],
+				'feed_label' => 'DE',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		// Dropping USD orphans every USD variant across both languages (plus base and currency-only
+		// labels); the surviving EUR labels are not cleaned up.
+		$this->cleanup_job->expects( $this->once() )
+			->method( 'schedule' )
+			->with(
+				[
+					'feed_labels' => [
+						'DE',
+						'DE-EN-USD',
+						'DE-DE-USD',
+					],
+				]
+			);
+
+		$this->market_service->update_market( 'de', [ 'currency' => [ 'EUR' ] ] );
+	}
+
 	public function test_update_market_does_not_schedule_cleanup_when_only_shipping_fields_change(): void {
 		$existing = [
 			'gb' => [
@@ -1796,6 +1890,54 @@ class MarketServiceTest extends UnitTest {
 			->method( 'schedule' );
 
 		$this->market_service->delete_market( 'gb' );
+	}
+
+	public function test_delete_market_schedules_cleanup_across_all_language_currency_variants(): void {
+		$existing = [
+			'de' => [
+				'country'       => 'DE',
+				'language'      => [ 'en', 'de' ],
+				'currency'      => [ 'EUR', 'USD' ],
+				'feed_label'    => 'DE',
+				'shipping_rate' => 'flat',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $existing,
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
+		$this->options->method( 'update' )->willReturn( true );
+
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		// Every language x currency variant is cleaned up (plus the base label),
+		// not just the first currency.
+		$this->cleanup_job->expects( $this->once() )
+			->method( 'schedule' )
+			->with(
+				[
+					'feed_labels' => [
+						'DE',
+						'DE-EN-EUR',
+						'DE-DE-EUR',
+						'DE-EN-USD',
+						'DE-DE-USD',
+					],
+				]
+			);
+
+		$this->shipping_settings_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->market_service->delete_market( 'de' );
 	}
 
 	public function test_delete_market_primary_throws_and_does_not_schedule_cleanup(): void {
