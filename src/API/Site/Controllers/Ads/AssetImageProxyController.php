@@ -278,6 +278,25 @@ class AssetImageProxyController extends BaseController {
 	}
 
 	/**
+	 * Determine whether a rest_pre_serve_request $result is this endpoint's own successful
+	 * image response, i.e. one built by create_image_response(), and should be served as
+	 * raw binary rather than left to WordPress's default JSON handling.
+	 *
+	 * @param mixed $result The value passed to serve_image_response() by WordPress.
+	 *
+	 * @return bool
+	 */
+	private function is_image_proxy_response( $result ): bool {
+		if ( ! $result instanceof Response ) {
+			return false;
+		}
+
+		$headers = $result->get_headers();
+
+		return 200 === $result->get_status() && isset( $headers['X-GLA-Image-Proxy'] );
+	}
+
+	/**
 	 * Serve image proxy response as raw binary, bypassing JSON encoding.
 	 *
 	 * Hooked onto the `rest_pre_serve_request` filter from create_image_response(), so it's
@@ -299,12 +318,7 @@ class AssetImageProxyController extends BaseController {
 			return true;
 		}
 
-		if ( ! $result instanceof Response ) {
-			return false;
-		}
-
-		$headers = $result->get_headers();
-		if ( $result->get_status() !== 200 || ! isset( $headers['X-GLA-Image-Proxy'] ) ) {
+		if ( ! $this->is_image_proxy_response( $result ) ) {
 			return false;
 		}
 

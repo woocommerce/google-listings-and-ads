@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\AssetImageProxyController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
+use ReflectionMethod;
 use WP_Error;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
@@ -443,7 +444,64 @@ class AssetImageProxyControllerTest extends RESTControllerUnitTest {
 		$this->assertFalse( $result );
 	}
 
-	// serve_image_response()'s header()/echo success path isn't covered here: WP's PHPUnit
-	// bootstrap emits output before tests run, so header() always throws "headers already
-	// sent" under this suite's convertWarningsToExceptions config.
+	/**
+	 * Data provider for is_image_proxy_response(), the guard serve_image_response() uses
+	 * to decide whether a rest_pre_serve_request $result is its own image to serve raw.
+	 *
+	 * @return array[]
+	 */
+	public function data_image_proxy_response_candidates(): array {
+		return [
+			'own image response'               => [
+				$this->make_image_proxy_response( 200 ),
+				true,
+			],
+			'missing X-GLA-Image-Proxy header' => [
+				new Response( [ 'message' => 'ok' ], 200 ),
+				false,
+			],
+			'non-200 status'                   => [
+				$this->make_image_proxy_response( 404 ),
+				false,
+			],
+			'not a WP_REST_Response'            => [
+				new WP_Error( 'some_error' ),
+				false,
+			],
+		];
+	}
+
+	/**
+	 * Build a Response carrying the X-GLA-Image-Proxy header that create_image_response()
+	 * sets on a successful image fetch.
+	 *
+	 * @param int $status The response status.
+	 *
+	 * @return Response
+	 */
+	private function make_image_proxy_response( int $status ): Response {
+		$response = new Response( 'binary-data', $status );
+		$response->header( 'X-GLA-Image-Proxy', '1' );
+
+		return $response;
+	}
+
+	/**
+	 * Test that is_image_proxy_response() correctly identifies this endpoint's own
+	 * successful image response, and rejects anything else, independent of the
+	 * header()/echo side effects in serve_image_response() that this suite can't
+	 * exercise directly (WP's PHPUnit bootstrap emits output before tests run, so
+	 * header() always throws "headers already sent" under convertWarningsToExceptions).
+	 *
+	 * @dataProvider data_image_proxy_response_candidates
+	 *
+	 * @param mixed $result   The candidate value.
+	 * @param bool  $expected Whether it should be identified as this endpoint's own image response.
+	 */
+	public function test_is_image_proxy_response( $result, bool $expected ): void {
+		$method = new ReflectionMethod( AssetImageProxyController::class, 'is_image_proxy_response' );
+		$method->setAccessible( true );
+
+		$this->assertSame( $expected, $method->invoke( $this->controller, $result ) );
+	}
 }
