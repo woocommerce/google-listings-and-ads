@@ -303,6 +303,35 @@ class WCProductAdapterTest extends UnitTest {
 		$this->assertNotEmpty( $adapted_product->getContentLanguage() );
 	}
 
+	public function test_set_feed_label_keeps_target_country_when_label_matches_it() {
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => WC_Helper_Product::create_simple_product( false ),
+				'targetCountry' => 'US',
+			]
+		);
+
+		$adapted_product->set_feed_label( 'US' );
+
+		$this->assertSame( 'US', $adapted_product->getTargetCountry() );
+		$this->assertArrayHasKey( 'targetCountry', (array) $adapted_product->toSimpleObject() );
+	}
+
+	public function test_set_feed_label_with_language_suffix_clears_target_country_from_payload() {
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => WC_Helper_Product::create_simple_product( false ),
+				'targetCountry' => 'US',
+			]
+		);
+
+		$adapted_product->set_feed_label( 'US-FR' );
+
+		$this->assertSame( 'US-FR', $adapted_product->getFeedLabel() );
+		$this->assertNull( $adapted_product->getTargetCountry() );
+		$this->assertArrayNotHasKey( 'targetCountry', (array) $adapted_product->toSimpleObject() );
+	}
+
 	public function test_set_language_sets_content_language_when_no_feed_label() {
 		$adapted_product = new WCProductAdapter(
 			[
@@ -1878,7 +1907,7 @@ class WCProductAdapterTest extends UnitTest {
 		$this->assertEquals( 6.4, $adapted_product->getSalePrice()->getValue() );
 	}
 
-	public function test_currency_override_falls_back_to_store_currency_when_wpml_returns_null() {
+	public function test_currency_override_leaves_price_unset_when_wpml_returns_null() {
 		$product = WC_Helper_Product::create_simple_product(
 			false,
 			[
@@ -1900,10 +1929,10 @@ class WCProductAdapterTest extends UnitTest {
 			]
 		);
 
-		$this->assertEquals( get_woocommerce_currency(), $adapted_product->getPrice()->getCurrency() );
-		$this->assertEquals( 10, $adapted_product->getPrice()->getValue() );
-		$this->assertEquals( get_woocommerce_currency(), $adapted_product->getSalePrice()->getCurrency() );
-		$this->assertEquals( 8, $adapted_product->getSalePrice()->getValue() );
+		// No converted price in the override currency: price and sale price are left unset so the
+		// NotNull constraint fails and this currency's feed is skipped, not emitted mislabelled.
+		$this->assertNull( $adapted_product->getPrice() );
+		$this->assertNull( $adapted_product->getSalePrice() );
 	}
 
 	public function test_currency_override_without_wpml_instance_falls_back_to_store_currency() {

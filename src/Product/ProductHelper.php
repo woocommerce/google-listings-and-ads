@@ -104,10 +104,13 @@ class ProductHelper implements Service {
 		$google_ids         = array_unique( array_merge( $current_google_ids, [ $key => $google_product->getId() ] ) );
 		$this->meta_handler->update_google_ids( $product, $google_ids );
 
-		// check if product is synced for all feed labels and remove any previous errors if it is
-		$synced_keys     = array_keys( $google_ids );
-		$all_feed_labels = $this->market_service->get_all_feed_labels() ?? [];
-		if ( empty( array_diff( $all_feed_labels, $synced_keys ) ) ) {
+		// Check whether the product is synced for every feed label its language
+		// can attain and remove any previous errors if it is. A product only ever
+		// syncs to markets accepting its language, so comparing against every
+		// market's labels would leave errors permanently uncleared.
+		$synced_keys       = array_keys( $google_ids );
+		$applicable_labels = $this->market_service->get_feed_labels_for_language( (string) $google_product->getContentLanguage() );
+		if ( empty( array_diff( $applicable_labels, $synced_keys ) ) ) {
 			$this->meta_handler->delete_errors( $product );
 			$this->meta_handler->delete_failed_sync_attempts( $product );
 			$this->meta_handler->delete_sync_failed_at( $product );
@@ -123,6 +126,17 @@ class ProductHelper implements Service {
 
 			$this->mark_as_synced( $parent_product, $google_product );
 		}
+	}
+
+	/**
+	 * Store the hash of the ProductInput payload last successfully synced, used to
+	 * skip re-syncing unchanged products.
+	 *
+	 * @param WC_Product $product
+	 * @param string     $hash
+	 */
+	public function update_sync_hash( WC_Product $product, string $hash ): void {
+		$this->meta_handler->update_sync_hash( $product, $hash );
 	}
 
 	/**
@@ -305,8 +319,7 @@ class ProductHelper implements Service {
 	 * @return int the ID for the WC product linked to the provided Google product ID (0 if not found)
 	 */
 	public function get_wc_product_id( string $mc_product_id ): int {
-		// Maybe remove everything before the last colon ':'
-		$mc_product_id_tokens = explode( ':', $mc_product_id );
+		$mc_product_id_tokens = preg_split( '/[:~]/', $mc_product_id );
 		$mc_product_id        = end( $mc_product_id_tokens );
 
 		// Support a fully numeric ID both with and without the `gla_` prefix.

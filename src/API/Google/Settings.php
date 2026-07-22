@@ -3,15 +3,19 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountRegionsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAccountShippingSettingsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\CountryRatesCollection;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\AbstractShippingSettingsAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\DBShippingSettingsAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\WCShippingSettingsAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
@@ -19,7 +23,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingCo
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountAddress;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountTax;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountTaxTaxRule as TaxRule;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ShippingSettings;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -33,7 +36,6 @@ defined( 'ABSPATH' ) || exit;
  * - ShippingTimeQuery
  * - ShippingZone
  * - ShoppingContent
- * - TargetAudience
  * - WC
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
@@ -71,13 +73,47 @@ class Settings implements ContainerAwareInterface {
 			return;
 		}
 
-		$settings = $this->generate_shipping_settings();
+		$adapter = $this->generate_shipping_settings();
 
-		$this->get_shopping_service()->shippingsettings->update(
-			$this->get_merchant_id(),
-			$this->get_account_id(),
-			$settings
-		);
+		// Regions must exist before the settings that reference them are inserted.
+		$this->sync_shipping_regions( $adapter->get_regions() );
+
+		/** @var MapiAccountShippingSettingsService $shipping_service */
+		$shipping_service = $this->container->get( MapiAccountShippingSettingsService::class );
+		$shipping_service->insert_shipping_settings( [ 'services' => $adapter->get_services() ] );
+	}
+
+	/**
+	 * Create or update the Merchant API regions referenced by the shipping settings.
+	 *
+	 * Regions replace the Content API's inline postalCodeGroups; they are created
+	 * up front so the rate-group tables can reference them by id.
+	 *
+	 * @param array<string, array> $regions Map of region id to Region resource.
+	 *
+	 * @throws MerchantApiException If a region cannot be created or updated.
+	 */
+	protected function sync_shipping_regions( array $regions ): void {
+		if ( empty( $regions ) ) {
+			return;
+		}
+
+		/** @var MapiAccountRegionsService $regions_service */
+		$regions_service = $this->container->get( MapiAccountRegionsService::class );
+
+		foreach ( $regions as $region_id => $region ) {
+			try {
+				$regions_service->insert_region( (string) $region_id, $region );
+			} catch ( MerchantApiException $e ) {
+				// The Merchant API reports an already-existing region as a 400.
+				if ( 400 !== $e->get_http_status() ) {
+					do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+					throw $e;
+				}
+
+				$regions_service->update_region( (string) $region_id, $region, 'displayName,postalCodeArea' );
+			}
+		}
 	}
 
 	/**
@@ -104,7 +140,7 @@ class Settings implements ContainerAwareInterface {
 	}
 
 	/**
-	 * Generate a ShippingSettings object for syncing the store shipping settings to Merchant Center.
+	 * Generate the shipping settings adapter for syncing the store shipping settings to Merchant Center.
 	 *
 	 * Builds a `[ country => currency ]` map from every non-manual market and
 	 * passes it into the chosen adapter so that each per-country shipping service
@@ -113,11 +149,11 @@ class Settings implements ContainerAwareInterface {
 	 * The adapter choice still follows the primary's rate mode (`automatic`
 	 * → WC adapter; otherwise → DB adapter), matching pre-multi-market behaviour.
 	 *
-	 * @return ShippingSettings
+	 * @return AbstractShippingSettingsAdapter
 	 *
 	 * @since 2.1.0
 	 */
-	protected function generate_shipping_settings(): ShippingSettings {
+	protected function generate_shipping_settings(): AbstractShippingSettingsAdapter {
 		$times = $this->get_shipping_times();
 
 		/** @var WC $wc_proxy */
@@ -126,11 +162,15 @@ class Settings implements ContainerAwareInterface {
 
 		$country_currency_map = $this->build_country_currency_map();
 
+		/** @var WPML $wpml */
+		$wpml = $this->container->get( WPML::class );
+
 		if ( $this->should_get_shipping_rates_from_woocommerce() ) {
 			return new WCShippingSettingsAdapter(
 				[
 					'currency'             => $currency,
 					'country_currency_map' => $country_currency_map,
+					'wpml'                 => $wpml,
 					'rates_collections'    => $this->get_shipping_rates_collections_from_woocommerce(),
 					'delivery_times'       => $times,
 					'accountId'            => $this->get_account_id(),
@@ -142,6 +182,7 @@ class Settings implements ContainerAwareInterface {
 			[
 				'currency'             => $currency,
 				'country_currency_map' => $country_currency_map,
+				'wpml'                 => $wpml,
 				'db_rates'             => $this->get_shipping_rates_from_database(),
 				'delivery_times'       => $times,
 				'accountId'            => $this->get_account_id(),
@@ -150,19 +191,51 @@ class Settings implements ContainerAwareInterface {
 	}
 
 	/**
-	 * Returns a `[ country => currency ]` map for every non-manual market.
+	 * Returns a `[ country => currency[] ]` map for every participating,
+	 * non-manual market.
 	 *
-	 * Each market contributes its country and the first entry of its `currency[]`
-	 * array. Manual markets are skipped — they don't get an MC shipping service.
+	 * Each primary target country carries the store currency plus the primary
+	 * market's additional participating currencies; each secondary market's
+	 * country carries that market's participating currencies. Every listed
+	 * currency gets its own shipping service for the country, because Google
+	 * requires the shipping currency to match the product price currency.
+	 * Manual markets are skipped — they don't get an MC shipping service.
+	 * Markets and currencies excluded from syncing while currency conversion
+	 * is unavailable are skipped for the same reason.
 	 *
-	 * @return array<string, string>
+	 * @return array<string, string[]>
 	 */
 	protected function build_country_currency_map(): array {
 		/** @var MarketService $market_service */
 		$market_service = $this->container->get( MarketService::class );
 
+		/** @var WC $wc_proxy */
+		$wc_proxy       = $this->container->get( WC::class );
+		$store_currency = $wc_proxy->get_woocommerce_currency();
+
 		$map = [];
-		foreach ( $market_service->get_markets() as $market ) {
+
+		$primary = $market_service->get_primary_market();
+
+		if ( 'manual' !== ( $primary['shipping_rate'] ?? null ) ) {
+			$primary_currencies = array_values(
+				array_unique(
+					array_merge(
+						[ $store_currency ],
+						$market_service->get_participating_currencies( $primary )
+					)
+				)
+			);
+
+			foreach ( (array) ( $primary['countries'] ?? [] ) as $country ) {
+				$map[ $country ] = $primary_currencies;
+			}
+		}
+
+		foreach ( $market_service->get_participating_markets() as $market_id => $market ) {
+			if ( 'primary' === $market_id ) {
+				continue;
+			}
 			if ( 'manual' === ( $market['shipping_rate'] ?? null ) ) {
 				continue;
 			}
@@ -170,30 +243,13 @@ class Settings implements ContainerAwareInterface {
 			if ( ! $country ) {
 				continue;
 			}
-			$map[ $country ] = $this->resolve_market_currency( $market );
+
+			$currencies = $market_service->get_participating_currencies( $market );
+
+			$map[ $country ] = ! empty( $currencies ) ? $currencies : [ $store_currency ];
 		}
 
 		return $map;
-	}
-
-	/**
-	 * Resolves a market's currency, taking the first element of its `currency[]`
-	 * array and falling back to the store currency.
-	 *
-	 * @param array $market
-	 * @return string
-	 */
-	private function resolve_market_currency( array $market ): string {
-		if ( ! empty( $market['currency'] ) && is_array( $market['currency'] ) ) {
-			$first = reset( $market['currency'] );
-			if ( is_string( $first ) && '' !== $first ) {
-				return $first;
-			}
-		}
-
-		/** @var WC $wc_proxy */
-		$wc_proxy = $this->container->get( WC::class );
-		return $wc_proxy->get_woocommerce_currency();
 	}
 
 	/**
@@ -267,28 +323,55 @@ class Settings implements ContainerAwareInterface {
 	/**
 	 * Get shipping rate data.
 	 *
+	 * Rows belonging to secondary markets that are currently excluded from
+	 * syncing (non-store currency while conversion is unavailable) are left
+	 * out, so those countries get no Merchant Center shipping service while
+	 * their markets sit out. All other rows pass through untouched.
+	 *
 	 * @return array
 	 */
 	protected function get_shipping_rates_from_database(): array {
 		$rate_query = $this->container->get( ShippingRateQuery::class );
+		/** @var MarketService $market_service */
+		$market_service = $this->container->get( MarketService::class );
 
-		return $rate_query->get_results();
+		$excluded_countries = $market_service->get_excluded_market_countries();
+		$rates              = $rate_query->get_results();
+
+		if ( empty( $excluded_countries ) ) {
+			return $rates;
+		}
+
+		return array_values(
+			array_filter(
+				$rates,
+				function ( array $rate ) use ( $excluded_countries ): bool {
+					return ! in_array( $rate['country'] ?? null, $excluded_countries, true );
+				}
+			)
+		);
 	}
 
 	/**
 	 * Get shipping rate data from WooCommerce shipping settings.
 	 *
-	 * @return CountryRatesCollection[] Array of rates collections for each target country specified in settings.
+	 * Covers every country needing a Merchant Center shipping service: the
+	 * primary market's target countries plus each non-manual secondary
+	 * market's country. Secondary market countries are removed from the
+	 * target audience when the market is added, so iterating the target
+	 * audience alone would leave them without a shipping service.
+	 *
+	 * @return CountryRatesCollection[] Array of rates collections for each country needing a shipping service.
 	 */
 	protected function get_shipping_rates_collections_from_woocommerce(): array {
-		/** @var TargetAudience $target_audience */
-		$target_audience  = $this->container->get( TargetAudience::class );
-		$target_countries = $target_audience->get_target_countries();
+		/** @var MarketService $market_service */
+		$market_service = $this->container->get( MarketService::class );
+		$countries      = $market_service->get_shipping_sync_countries();
 		/** @var ShippingZone $shipping_zone */
 		$shipping_zone = $this->container->get( ShippingZone::class );
 
 		$rates = [];
-		foreach ( $target_countries as $country ) {
+		foreach ( $countries as $country ) {
 			$location_rates    = $shipping_zone->get_shipping_rates_for_country( $country );
 			$rates[ $country ] = new CountryRatesCollection( $country, $location_rates );
 		}
@@ -445,16 +528,16 @@ class Settings implements ContainerAwareInterface {
 	 *
 	 * @since 1.4.0
 	 */
-	protected function maybe_get_state_name( string $state_code, string $country ): string {
+	public function maybe_get_state_name( string $state_code, string $country ): string {
 		/** @var WC $wc */
 		$wc = $this->container->get( WC::class );
 
 		$states = $country ? array_filter( (array) $wc->get_wc_countries()->get_states( $country ) ) : [];
 
 		if ( ! empty( $states ) ) {
-			$state_code = wc_strtoupper( $state_code );
-			if ( isset( $states[ $state_code ] ) ) {
-				return $states[ $state_code ];
+			$upper_code = wc_strtoupper( $state_code );
+			if ( isset( $states[ $upper_code ] ) ) {
+				return $states[ $upper_code ];
 			}
 		}
 

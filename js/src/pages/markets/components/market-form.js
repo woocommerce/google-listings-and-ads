@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { __ } from '@wordpress/i18n';
 import { useRef, useState } from '@wordpress/element';
 
 /**
@@ -8,6 +9,7 @@ import { useRef, useState } from '@wordpress/element';
  */
 import { glaData, SHIPPING_RATE_METHOD } from '~/constants';
 import { useAppDispatch } from '~/data';
+import { handleApiError } from '~/utils/handleError';
 import {
 	getTargetCountries,
 	ensureRateRows,
@@ -26,6 +28,21 @@ import AdaptiveForm from '~/components/adaptive-form';
 import ValidationErrors from '~/components/validation-errors';
 import AppSpinner from '~/components/app-spinner';
 import checkIsPrimaryMarket from '../utils/isPrimaryMarket';
+
+const CURRENCY_FIELD = 'currency';
+const LOCALE_FIELDS = [ 'language', CURRENCY_FIELD ];
+const SHIPPING_TIME_FIELDS = [
+	'flat_shipping_min_time',
+	'flat_shipping_max_time',
+	'shipping_country_times',
+];
+const FLAT_RATE_FIELDS = [
+	CURRENCY_FIELD,
+	'flat_shipping_rate',
+	'offer_free_shipping',
+	'free_shipping_threshold',
+	'shipping_country_rates',
+];
 
 /**
  * Form component for creating or editing a market.
@@ -151,15 +168,28 @@ const MarketForm = ( {
 			}
 			await Promise.all( saves );
 
-			// If the user has made changes to the shipping rates or times, we need to sync the settings to ensure the changes are reflected in the UI and persisted correctly. This is necessary because the shipping rates and times are stored separately from the market data, and changes to them may not trigger a re-fetch of the market data on their own.
-			if ( saves.length > 0 ) {
+			// Always sync after a successful save: creating or updating a
+			// market changes shipping data on the server (target audience,
+			// adopted rate/time rows) even when the form itself saved no
+			// shipping rates or times.
+			try {
 				await syncSettings();
+			} catch ( error ) {
+				handleApiError(
+					error,
+					__(
+						'There was an error synchronizing settings to Google Merchant Center. Please try again.',
+						'google-listings-and-ads'
+					)
+				);
+				throw error;
 			}
 
 			invalidateResolution( 'getTargetAudience', [] );
 			onSubmit();
 		} catch ( error ) {
-			// Do nothing. Keep the modal open.
+			// Every awaited action has already dispatched its own error
+			// notice; this catch only keeps the modal open for retry/cancel.
 		} finally {
 			setIsSaving( false );
 		}
@@ -372,35 +402,22 @@ const MarketForm = ( {
 
 		const { isMultiLingualStore } = glaData;
 		const audienceField = isPrimaryMarket ? 'countries' : 'country';
-		const localeFields = [ 'language', 'currency' ];
-		const shippingTimeFields = [
-			'flat_shipping_min_time',
-			'flat_shipping_max_time',
-			'shipping_country_times',
-		];
-		const flatRateFields = [
-			'flat_shipping_rate',
-			'offer_free_shipping',
-			'free_shipping_threshold',
-			'shipping_country_rates',
-		];
-
 		const fieldsByMethod = {
 			[ SHIPPING_RATE_METHOD.MANUAL ]: [
 				...( isPrimaryMarket || isMultiLingualStore
 					? [ audienceField ]
 					: [] ),
-				...( isMultiLingualStore ? localeFields : [] ),
+				...( isMultiLingualStore ? LOCALE_FIELDS : [] ),
 			],
 			[ SHIPPING_RATE_METHOD.FLAT ]: [
 				audienceField,
-				...flatRateFields,
-				...shippingTimeFields,
+				...FLAT_RATE_FIELDS,
+				...SHIPPING_TIME_FIELDS,
 			],
 			[ SHIPPING_RATE_METHOD.AUTOMATIC ]: [
 				audienceField,
-				...( isMultiLingualStore ? localeFields : [] ),
-				...shippingTimeFields,
+				...( isMultiLingualStore ? LOCALE_FIELDS : [] ),
+				...SHIPPING_TIME_FIELDS,
 			],
 		};
 

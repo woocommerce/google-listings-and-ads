@@ -643,26 +643,30 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		if ( '' !== $this->currency_override && null !== $this->wpml ) {
 			$converted = $this->wpml->get_product_price_in_currency( $product, $this->currency_override );
 
-			if ( null !== $converted ) {
-				$price = $this->tax_excluded ?
-					wc_get_price_excluding_tax( $product, [ 'price' => $converted ] ) :
-					wc_get_price_including_tax( $product, [ 'price' => $converted ] );
-
-				/** This filter is documented in src/Product/WCProductAdapter.php */
-				$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $product, $this->tax_excluded );
-
-				$this->setPrice(
-					new GooglePrice(
-						[
-							'currency' => strtoupper( $this->currency_override ),
-							'value'    => $price,
-						]
-					)
-				);
-
-				$this->map_wc_product_sale_price( $product );
+			// No price in the override currency: leave it unset so the NotNull constraint fails and
+			// this currency's feed is skipped, not emitted with the store-currency price mislabelled.
+			if ( null === $converted ) {
 				return $this;
 			}
+
+			$price = $this->tax_excluded ?
+				wc_get_price_excluding_tax( $product, [ 'price' => $converted ] ) :
+				wc_get_price_including_tax( $product, [ 'price' => $converted ] );
+
+			/** This filter is documented in src/Product/WCProductAdapter.php */
+			$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $product, $this->tax_excluded );
+
+			$this->setPrice(
+				new GooglePrice(
+					[
+						'currency' => strtoupper( $this->currency_override ),
+						'value'    => $price,
+					]
+				)
+			);
+
+			$this->map_wc_product_sale_price( $product );
+			return $this;
 		}
 
 		// set regular price
@@ -1054,6 +1058,16 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 */
 	public function set_feed_label( string $feed_label ): void {
 		$this->setFeedLabel( $feed_label );
+
+		// Google rejects entries whose feedLabel and targetCountry disagree, so
+		// a language-specific label is submitted with the feed label only and
+		// country eligibility comes from the shipping attribute. The country has
+		// already been applied to the tax and shipping mapping at this point.
+		// The parent setter is called directly because the overridden
+		// setTargetCountry() would remap prices and shipping.
+		if ( $feed_label !== $this->getTargetCountry() ) {
+			parent::setTargetCountry( null );
+		}
 	}
 
 	/**

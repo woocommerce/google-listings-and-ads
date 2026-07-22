@@ -221,7 +221,7 @@ class CleanupOrphanedLanguageProductsJobTest extends UnitTest {
 		);
 	}
 
-	public function test_process_items_calls_remove_google_id_on_success() {
+	public function test_process_items_delegates_tracking_removal_to_the_delete_call() {
 		$product   = WC_Helper_Product::create_simple_product();
 		$google_id = 'online:fr:FR-fr:gla_' . $product->get_id();
 
@@ -229,18 +229,19 @@ class CleanupOrphanedLanguageProductsJobTest extends UnitTest {
 		$this->product_repository->method( 'find_by_ids' )->willReturn( [ $product ] );
 		$this->wpml->method( 'get_post_language' )->willReturn( 'fr' );
 		$this->product_helper->method( 'get_synced_google_product_ids' )->willReturn( [ 'FR-fr' => $google_id ] );
-		$this->product_helper->method( 'get_wc_product' )->with( $product->get_id() )->willReturn( $product );
 
 		$google_product = $this->createMock( GoogleProduct::class );
 		$google_product->method( 'getId' )->willReturn( $google_id );
 		$deleted_entry = new BatchProductEntry( $product->get_id(), $google_product );
 
-		$this->product_syncer->method( 'delete_by_batch_requests' )
+		$this->product_syncer->expects( $this->once() )
+			->method( 'delete_by_batch_requests' )
 			->willReturn( new BatchProductResponse( [ $deleted_entry ], [] ) );
 
-		$this->product_helper->expects( $this->once() )
-			->method( 'remove_google_id' )
-			->with( $product, $google_id );
+		// The per-key removal happens inside delete_by_batch_requests(), so the
+		// job itself must not touch the tracking meta again.
+		$this->product_helper->expects( $this->never() )
+			->method( 'remove_google_id' );
 
 		do_action(
 			self::PROCESS_ITEM_HOOK,

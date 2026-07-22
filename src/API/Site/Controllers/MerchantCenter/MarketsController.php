@@ -142,6 +142,10 @@ class MarketsController extends BaseController {
 				$config['currency'] = $request->get_param( 'currency' );
 			}
 
+			if ( null !== $request->get_param( 'exchange_rate' ) ) {
+				$config['exchange_rate'] = $request->get_param( 'exchange_rate' );
+			}
+
 			try {
 				$id = $this->market_service->generate_market_id( $config['feed_label'] );
 			} catch ( InvalidValue $e ) {
@@ -322,8 +326,13 @@ class MarketsController extends BaseController {
 						'items' => [
 							'type'       => 'object',
 							'properties' => [
-								'code'   => [ 'type' => 'string' ],
-								'symbol' => [ 'type' => 'string' ],
+								'code'      => [ 'type' => 'string' ],
+								'symbol'    => [ 'type' => 'string' ],
+								'languages' => [
+									'description' => __( 'Active language codes the currency is enabled for.', 'google-listings-and-ads' ),
+									'type'        => 'array',
+									'items'       => [ 'type' => 'string' ],
+								],
 							],
 						],
 					],
@@ -382,6 +391,12 @@ class MarketsController extends BaseController {
 				'description'       => __( 'Currency codes in ISO 4217 format.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'items'             => [ 'type' => 'string' ],
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'exchange_rate' => [
+				'type'              => 'number',
+				'description'       => __( 'Fixed exchange rate applied to store prices for this market: units of market currency per unit of store currency. Lets a secondary market use a currency the site cannot otherwise produce. Ignored for the primary market.', 'google-listings-and-ads' ),
+				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'feed_label'    => [

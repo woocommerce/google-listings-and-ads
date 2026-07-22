@@ -61,10 +61,6 @@ const Settings = lazy( () =>
 	import( /* webpackChunkName: "settings" */ './pages/settings' )
 );
 
-const Shipping = lazy( () =>
-	import( /* webpackChunkName: "shipping" */ './pages/shipping' )
-);
-
 export const pagePaths = new Set();
 
 const woocommerceTranslation =
@@ -171,15 +167,6 @@ const registerPluginAdminPages = () => {
 				],
 				container: Settings,
 				path: '/google/settings',
-				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
-			},
-			{
-				breadcrumbs: [
-					...initialBreadcrumbs,
-					__( 'Shipping', 'google-listings-and-ads' ),
-				],
-				container: Shipping,
-				path: '/google/shipping',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
 		];
