@@ -70,6 +70,8 @@ const ALL_FIELDS = {
 		label: __( 'Market', 'google-listings-and-ads' ),
 		enableHiding: false,
 		enableSorting: false,
+		enableGlobalSearch: true,
+		getValue: ( { item } ) => item.label,
 		render: ( { item } ) => {
 			return (
 				<span className="gla-markets-table__market-cell">
