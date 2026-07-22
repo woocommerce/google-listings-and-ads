@@ -170,6 +170,43 @@ class MerchantReportTest extends UnitTest {
 		$this->assertNull( $report['statuses'][884]['expiration_date'] );
 	}
 
+	public function test_get_product_view_report_applies_response_filter() {
+		$this->product_helper->method( 'get_wc_product_id' )->willReturnCallback(
+			function ( $mc_id ) {
+				return 'en~US~gla_885' === $mc_id ? 885 : 0;
+			}
+		);
+
+		$this->mapi_client->method( 'post' )->willReturn(
+			[
+				'results'       => [],
+				'nextPageToken' => null,
+			]
+		);
+
+		add_filter(
+			'woocommerce_gla_mapi_report_query_response',
+			function () {
+				return [
+					'results'       => [
+						[
+							'productView' => [
+								'id' => 'en~US~gla_885',
+								'aggregatedReportingContextStatus' => 'ELIGIBLE',
+							],
+						],
+					],
+					'nextPageToken' => null,
+				];
+			}
+		);
+
+		$report = $this->merchant_report->get_product_view_report();
+
+		$this->assertArrayHasKey( 885, $report['statuses'] );
+		$this->assertSame( MCStatus::APPROVED, $report['statuses'][885]['status'] );
+	}
+
 	public function test_get_product_view_report_with_exception() {
 		$this->mapi_client->expects( $this->once() )
 			->method( 'post' )

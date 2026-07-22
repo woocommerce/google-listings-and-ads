@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -42,12 +43,19 @@ abstract class AbstractShippingSettingsAdapter {
 	protected $regions = [];
 
 	/**
-	 * Optional map of country code => ISO 4217 currency code used to override
-	 * `$currency` on a per-country basis. Populated from configured markets.
+	 * Optional map of country code => list of ISO 4217 currency codes used to
+	 * override `$currency` on a per-country basis. Populated from configured
+	 * markets; each listed currency gets its own shipping service.
 	 *
-	 * @var array<string, string>
+	 * @var array<string, string[]>
 	 */
 	protected $country_currency_map = [];
+
+	/**
+	 * @var WPML|null WPML integration used to convert amounts for services in
+	 *                a non-store currency.
+	 */
+	protected $wpml;
 
 	/**
 	 * AbstractShippingSettingsAdapter constructor.
@@ -64,6 +72,9 @@ abstract class AbstractShippingSettingsAdapter {
 		$this->country_currency_map = isset( $properties['country_currency_map'] ) && is_array( $properties['country_currency_map'] )
 			? $properties['country_currency_map']
 			: [];
+		$this->wpml                 = isset( $properties['wpml'] ) && $properties['wpml'] instanceof WPML
+			? $properties['wpml']
+			: null;
 
 		$this->map_gla_data( $properties );
 	}
@@ -87,15 +98,63 @@ abstract class AbstractShippingSettingsAdapter {
 	}
 
 	/**
-	 * Returns the currency to use for a given country's shipping service,
-	 * preferring the per-country mapping when supplied and falling back to the
-	 * adapter's default `$currency` otherwise.
+	 * Returns the currencies whose shipping services a given country needs,
+	 * preferring the per-country mapping when supplied and falling back to a
+	 * single-entry list with the adapter's default `$currency` otherwise.
+	 * Every returned currency gets its own service for the country.
 	 *
 	 * @param string $country
-	 * @return string
+	 * @return string[]
 	 */
-	protected function get_currency_for_country( string $country ): string {
-		return $this->country_currency_map[ $country ] ?? $this->currency;
+	protected function get_currencies_for_country( string $country ): array {
+		$currencies = $this->country_currency_map[ $country ] ?? [];
+		$currencies = array_values( array_filter( array_map( 'strval', (array) $currencies ) ) );
+
+		return empty( $currencies ) ? [ $this->currency ] : $currencies;
+	}
+
+	/**
+	 * Converts a store-currency amount into the given service currency.
+	 *
+	 * The store currency needs no conversion and is returned unchanged. Any
+	 * other currency is converted via the WPML integration, returning null
+	 * when no integration was provided or conversion is unavailable, so the
+	 * caller can leave that currency's service out.
+	 *
+	 * @param float  $amount   Amount in the store currency.
+	 * @param string $currency ISO 4217 currency code of the service.
+	 *
+	 * @return float|null
+	 */
+	protected function convert_amount_for_service( float $amount, string $currency ): ?float {
+		if ( $currency === $this->currency ) {
+			return $amount;
+		}
+
+		if ( null === $this->wpml ) {
+			return null;
+		}
+
+		return $this->wpml->convert_amount( $amount, $currency );
+	}
+
+	/**
+	 * Reports a currency's shipping service left out for a country because its
+	 * amounts cannot be converted into that currency.
+	 *
+	 * @param string $country
+	 * @param string $currency
+	 */
+	protected function report_country_missing_conversion( string $country, string $currency ): void {
+		do_action(
+			'woocommerce_gla_error',
+			sprintf(
+				'Skipping the %1$s shipping service for country %2$s: the shipping amounts cannot be converted into that currency. Its Merchant Center shipping service is left out of the sync until currency conversion is available.',
+				$currency,
+				$country
+			),
+			__METHOD__
+		);
 	}
 
 	/**
@@ -190,6 +249,7 @@ abstract class AbstractShippingSettingsAdapter {
 		unset( $data['currency'] );
 		unset( $data['delivery_times'] );
 		unset( $data['country_currency_map'] );
+		unset( $data['wpml'] );
 	}
 
 	/**

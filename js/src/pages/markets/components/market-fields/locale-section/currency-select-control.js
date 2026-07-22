@@ -11,6 +11,7 @@ import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import AppSearchableSelectControl from '~/components/app-searchable-select-control';
 import AppInputControl from '~/components/app-input-control';
 import useAvailableStoreCurrencies from '~/hooks/useAvailableStoreCurrencies';
+import getValidCurrencyCodes from '../../../utils/getValidCurrencyCodes';
 
 /**
  * Renders the currency select control within the market edit form.
@@ -38,11 +39,20 @@ const CurrencySelectControl = () => {
 		);
 	}
 
-	const options = currencies?.map( ( currency ) => ( {
-		key: currency.code,
-		value: currency.code,
-		label: currency.code,
-	} ) );
+	const { selected: selectedLanguages } = getInputProps( 'language' );
+	const validCurrencyCodes = getValidCurrencyCodes(
+		currencies,
+		selectedLanguages
+	);
+
+	// Filter currencies to only include those that are valid for the selected languages
+	const options = currencies
+		?.filter( ( currency ) => validCurrencyCodes.has( currency.code ) )
+		.map( ( currency ) => ( {
+			key: currency.code,
+			value: currency.code,
+			label: currency.code,
+		} ) );
 
 	const { onChange, selected } = getInputProps( 'currency' );
 	const selectedOptions =

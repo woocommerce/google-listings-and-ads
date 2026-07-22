@@ -5,9 +5,11 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductInputAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
+use WC_DateTime;
 use WC_Helper_Product;
 
 defined( 'ABSPATH' ) || exit;
@@ -117,6 +119,214 @@ class WCProductInputAdapterTest extends UnitTest {
 		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
 
 		$this->assertArrayNotHasKey( 'price', $attrs );
+	}
+
+	public function test_omits_price_when_currency_override_cannot_be_converted() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_regular_price( '19.99' );
+		$product->save();
+
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_product_price_in_currency' )->willReturn( null );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'AE', null, [], [], [], 'AE-EN-AED', '', 'AED', $wpml ) )->get_product_input()->get_attributes();
+
+		// A store-currency amount must never be submitted under a
+		// non-store-currency feed label, so the price stays unset.
+		$this->assertArrayNotHasKey( 'price', $attrs );
+	}
+
+	public function test_omits_price_when_currency_override_set_without_wpml() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_regular_price( '19.99' );
+		$product->save();
+
+		$attrs = ( new WCProductInputAdapter( $product, 'AE', null, [], [], [], 'AE-EN-AED', '', 'AED', null ) )->get_product_input()->get_attributes();
+
+		$this->assertArrayNotHasKey( 'price', $attrs );
+	}
+
+	public function test_maps_sale_price_and_effective_date() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'             => 80,
+				'regular_price'     => 100,
+				'sale_price'        => 80,
+				'date_on_sale_from' => '2021-01-01',
+				'date_on_sale_to'   => '2099-01-01',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame(
+			[
+				'amountMicros' => '100000000',
+				'currencyCode' => get_woocommerce_currency(),
+			],
+			$attrs['price']
+		);
+		$this->assertSame(
+			[
+				'amountMicros' => '80000000',
+				'currencyCode' => get_woocommerce_currency(),
+			],
+			$attrs['salePrice']
+		);
+		$this->assertSame(
+			[
+				'startTime' => (string) $product->get_date_on_sale_from(),
+				'endTime'   => (string) $product->get_date_on_sale_to(),
+			],
+			$attrs['salePriceEffectiveDate']
+		);
+	}
+
+	public function test_sale_price_is_not_set_if_empty() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 100,
+				'regular_price' => 100,
+				'sale_price'    => '',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertArrayNotHasKey( 'salePrice', $attrs );
+		$this->assertArrayNotHasKey( 'salePriceEffectiveDate', $attrs );
+	}
+
+	public function test_sale_price_is_set_if_zero() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 100,
+				'regular_price' => 100,
+				'sale_price'    => 0,
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '0', $attrs['salePrice']['amountMicros'] );
+	}
+
+	public function test_sale_price_is_not_set_if_sale_end_date_passed() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'           => 100,
+				'regular_price'   => 100,
+				'sale_price'      => 50,
+				'date_on_sale_to' => '0000-01-01',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertArrayNotHasKey( 'salePrice', $attrs );
+		$this->assertArrayNotHasKey( 'salePriceEffectiveDate', $attrs );
+	}
+
+	public function test_sale_price_effective_date_start_is_set_to_now_if_empty() {
+		$now = (string) ( new WC_DateTime( 'now' ) );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'           => 50,
+				'regular_price'   => 100,
+				'sale_price'      => 50,
+				'date_on_sale_to' => '2099-01-01',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertArrayHasKey( 'salePriceEffectiveDate', $attrs );
+		$this->assertNotEmpty( $attrs['salePriceEffectiveDate']['startTime'] );
+		$this->assertGreaterThanOrEqual( new WC_DateTime( $now ), new WC_DateTime( $attrs['salePriceEffectiveDate']['startTime'] ) );
+		$this->assertSame( (string) new WC_DateTime( '2099-01-01' ), $attrs['salePriceEffectiveDate']['endTime'] );
+	}
+
+	public function test_sale_price_effective_date_start_is_not_set_if_in_past_and_no_end_date() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'             => 50,
+				'regular_price'     => 100,
+				'sale_price'        => 50,
+				'date_on_sale_from' => '0000-01-01',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertArrayNotHasKey( 'salePriceEffectiveDate', $attrs );
+	}
+
+	public function test_sale_price_effective_date_end_is_set_to_one_day_if_start_in_future_but_no_end() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'             => 100,
+				'regular_price'     => 100,
+				'sale_price'        => 50,
+				'date_on_sale_from' => '2099-01-01',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame(
+			[
+				'startTime' => (string) new WC_DateTime( '2099-01-01' ),
+				'endTime'   => (string) new WC_DateTime( '2099-01-02' ),
+			],
+			$attrs['salePriceEffectiveDate']
+		);
+	}
+
+	public function test_sale_price_effective_date_is_not_set_if_not_set() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 50,
+				'regular_price' => 100,
+				'sale_price'    => 50,
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertArrayHasKey( 'salePrice', $attrs );
+		$this->assertArrayNotHasKey( 'salePriceEffectiveDate', $attrs );
+	}
+
+	public function test_applies_sale_price_attribute_value_filter() {
+		add_filter(
+			'woocommerce_gla_product_attribute_value_sale_price',
+			function () {
+				return 20;
+			}
+		);
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 50,
+				'regular_price' => 100,
+				'sale_price'    => 50,
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+		remove_all_filters( 'woocommerce_gla_product_attribute_value_sale_price' );
+
+		$this->assertSame( '20000000', $attrs['salePrice']['amountMicros'] );
 	}
 
 	public function test_maps_availability_in_stock() {

@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiAcc
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -57,6 +58,9 @@ class SettingsTest extends UnitTest {
 	/** @var MockObject|ShippingZone */
 	protected $shipping_zone;
 
+	/** @var MockObject|WPML */
+	protected $wpml;
+
 	/** @var Container */
 	protected $container;
 
@@ -75,6 +79,25 @@ class SettingsTest extends UnitTest {
 		$this->shipping_rate_query = $this->createMock( ShippingRateQuery::class );
 		$this->shipping_zone       = $this->createMock( ShippingZone::class );
 
+		// Amounts convert one-to-one so currency assertions stay readable;
+		// tests exercising real conversion arithmetic live in the adapter tests.
+		$this->wpml = $this->createMock( WPML::class );
+		$this->wpml->method( 'convert_amount' )->willReturnCallback(
+			static function ( float $amount ): float {
+				return $amount;
+			}
+		);
+
+		// Mirrors MarketService::get_participating_currencies() with every
+		// configured currency treated as convertible.
+		$this->market_service->method( 'get_participating_currencies' )->willReturnCallback(
+			static function ( array $market ): array {
+				$configured = is_array( $market['currency'] ?? null ) ? $market['currency'] : [];
+
+				return array_values( array_unique( array_filter( array_map( 'strval', $configured ) ) ) );
+			}
+		);
+
 		$this->container = new Container();
 		$this->container->addShared( MapiAccountRegionsService::class, $this->regions_service );
 		$this->container->addShared( MarketService::class, $this->market_service );
@@ -84,6 +107,7 @@ class SettingsTest extends UnitTest {
 		$this->container->addShared( ShippingTimeQuery::class, $this->shipping_time_query );
 		$this->container->addShared( ShippingRateQuery::class, $this->shipping_rate_query );
 		$this->container->addShared( ShippingZone::class, $this->shipping_zone );
+		$this->container->addShared( WPML::class, $this->wpml );
 
 		$this->settings = new Settings();
 		$this->settings->set_container( $this->container );
@@ -226,13 +250,28 @@ class SettingsTest extends UnitTest {
 		$this->assertSame( 'EUR', $by_country['FR']['currencyCode'] );
 	}
 
+	/**
+	 * The shipping method is global, so MarketService::get_markets() returns the same
+	 * method for every market (GOOWOO-773) — a mix of `manual` and non-`manual` markets
+	 * is no longer representable. When the global method is `manual`, every market is
+	 * skipped and the currency map is empty. build_country_currency_map keeps the guard
+	 * defensively so a stray manual market can never leak into the synced services.
+	 */
 	public function test_generate_shipping_settings_skips_manual_markets_from_currency_map(): void {
+		$this->market_service->method( 'get_primary_market' )->willReturn(
+			[
+				'countries'     => [ 'US' ],
+				'country'       => null,
+				'currency'      => [ 'USD' ],
+				'shipping_rate' => 'flat',
+			]
+		);
 		$this->market_service->method( 'get_participating_markets' )->willReturn(
 			[
 				'primary' => [
-					'country'       => 'US',
+					'country'       => null,
 					'currency'      => [ 'USD' ],
-					'shipping_rate' => 'flat',
+					'shipping_rate' => 'manual',
 					'shipping_time' => 'flat',
 				],
 				'fr'      => [
@@ -248,13 +287,108 @@ class SettingsTest extends UnitTest {
 
 		$map = $this->invoke( 'build_country_currency_map' );
 
-		$this->assertSame( [ 'US' => 'USD' ], $map );
+		$this->assertSame( [ 'US' => [ 'USD' ] ], $map );
 	}
 
-	public function test_generate_shipping_settings_prefers_per_row_currency_over_country_map(): void {
-		// MarketService says FR is USD, but the DB row for FR carries EUR. The
-		// per-row currency must win so secondary-market rates aren't silently
-		// rewritten to the primary store currency.
+	/**
+	 * With a non-manual global method every market contributes to the currency map,
+	 * each with its own currency.
+	 */
+	public function test_generate_shipping_settings_includes_every_market_in_currency_map(): void {
+		$this->market_service->method( 'get_primary_market' )->willReturn(
+			[
+				'countries'     => [ 'US' ],
+				'country'       => null,
+				'currency'      => [ 'USD' ],
+				'shipping_rate' => 'flat',
+			]
+		);
+		$this->market_service->method( 'get_participating_markets' )->willReturn(
+			[
+				'primary' => [
+					'country'       => 'US',
+					'currency'      => [ 'USD' ],
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				'fr'      => [
+					'country'       => 'FR',
+					'currency'      => [ 'EUR' ],
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
+
+		$this->wc_proxy->method( 'get_woocommerce_currency' )->willReturn( 'USD' );
+
+		$map = $this->invoke( 'build_country_currency_map' );
+
+		$this->assertSame(
+			[
+				'US' => [ 'USD' ],
+				'FR' => [ 'EUR' ],
+			],
+			$map
+		);
+	}
+
+	public function test_country_currency_map_includes_primary_countries_with_extra_currencies(): void {
+		$this->market_service->method( 'get_primary_market' )->willReturn(
+			[
+				'countries'     => [ 'US', 'GB' ],
+				'country'       => null,
+				'currency'      => [ 'USD', 'EUR' ],
+				'shipping_rate' => 'flat',
+			]
+		);
+		$this->market_service->method( 'get_participating_markets' )->willReturn( [] );
+
+		$this->wc_proxy->method( 'get_woocommerce_currency' )->willReturn( 'USD' );
+
+		$map = $this->invoke( 'build_country_currency_map' );
+
+		$this->assertSame(
+			[
+				'US' => [ 'USD', 'EUR' ],
+				'GB' => [ 'USD', 'EUR' ],
+			],
+			$map
+		);
+	}
+
+	public function test_country_currency_map_lists_every_participating_currency_of_a_market(): void {
+		$this->market_service->method( 'get_participating_markets' )->willReturn(
+			[
+				'ae' => [
+					'country'       => 'AE',
+					'currency'      => [ 'USD', 'AED' ],
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
+
+		$this->wc_proxy->method( 'get_woocommerce_currency' )->willReturn( 'USD' );
+
+		$map = $this->invoke( 'build_country_currency_map' );
+
+		$this->assertSame( [ 'AE' => [ 'USD', 'AED' ] ], $map );
+	}
+
+	public function test_flat_mode_leaves_out_service_when_row_currency_conflicts_with_market_currencies(): void {
+		// MarketService says FR sells in USD, but the DB row for FR carries EUR
+		// amounts. There is no conversion path between the two, so no FR
+		// service is synced (a mislabelled or mismatched service would cause
+		// disapprovals) and the conflict is reported.
+		$reported = [];
+		add_action(
+			'woocommerce_gla_error',
+			function ( $message ) use ( &$reported ) {
+				$reported[] = $message;
+			}
+		);
+
 		$this->market_service->method( 'get_participating_markets' )->willReturn(
 			[
 				'primary' => [
@@ -318,13 +452,16 @@ class SettingsTest extends UnitTest {
 
 		$this->assertInstanceOf( DBShippingSettingsAdapter::class, $adapter );
 
-		$by_country = [];
-		foreach ( $adapter->get_services() as $service ) {
-			$by_country[ $service['deliveryCountries'][0] ] = $service;
-		}
+		$countries = array_map(
+			static function ( array $service ): string {
+				return $service['deliveryCountries'][0];
+			},
+			$adapter->get_services()
+		);
 
-		$this->assertSame( 'USD', $by_country['US']['currencyCode'] );
-		$this->assertSame( 'EUR', $by_country['FR']['currencyCode'] );
+		$this->assertSame( [ 'US' ], $countries );
+		$this->assertCount( 1, $reported );
+		$this->assertStringContainsString( 'FR', $reported[0] );
 	}
 
 	public function test_generate_shipping_settings_routes_automatic_mode_through_wc_adapter(): void {

@@ -57,12 +57,20 @@ class MerchantMetrics implements OptionsAwareInterface {
 	/**
 	 * MerchantMetrics constructor.
 	 *
+	 * The $mapi_client type hint is intentionally left off. During a plugin
+	 * upgrade WordPress overwrites files in place mid-request, so this class can
+	 * be loaded fresh (new signature) while the DI provider is still the old one
+	 * in memory, injecting the legacy ShoppingContent client. Omitting the hint
+	 * lets that transient construction succeed instead of fatally erroring; the
+	 * following request resolves the correct MerchantApiClient. See the guard in
+	 * RESTControllers::register_controllers() for the complementary protection.
+	 *
 	 * @param MerchantApiClient   $mapi_client
 	 * @param GoogleAdsClient     $ads_client
 	 * @param WP                  $wp
 	 * @param TransientsInterface $transients
 	 */
-	public function __construct( MerchantApiClient $mapi_client, GoogleAdsClient $ads_client, WP $wp, TransientsInterface $transients ) {
+	public function __construct( $mapi_client, GoogleAdsClient $ads_client, WP $wp, TransientsInterface $transients ) {
 		$this->mapi_client = $mapi_client;
 		$this->ads_client  = $ads_client;
 		$this->wp          = $wp;

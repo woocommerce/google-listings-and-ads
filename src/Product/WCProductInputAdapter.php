@@ -8,6 +8,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
+use DateInterval;
+use WC_DateTime;
 use WC_Product;
 use WC_Product_Variable;
 use WC_Product_Variation;
@@ -143,6 +145,7 @@ class WCProductInputAdapter {
 		$this->map_images();
 		$this->map_availability();
 		$this->map_price();
+		$this->map_sale_price();
 		$this->map_shipping();
 		$this->map_product_types();
 
@@ -330,10 +333,17 @@ class WCProductInputAdapter {
 
 	/**
 	 * Map the regular price, applying tax inclusion/exclusion rules.
+	 *
+	 * With a currency override set, the price is always the converted value;
+	 * when no converted value is available the price is left unset, so a
+	 * store-currency amount is never submitted under a non-store-currency
+	 * feed label.
 	 */
 	protected function map_price(): void {
-		if ( '' !== $this->currency_override && null !== $this->wpml ) {
-			$converted = $this->wpml->get_product_price_in_currency( $this->wc_product, $this->currency_override );
+		if ( '' !== $this->currency_override ) {
+			$converted = null !== $this->wpml
+				? $this->wpml->get_product_price_in_currency( $this->wc_product, $this->currency_override )
+				: null;
 
 			// No price in the override currency: leave it unset so this currency's feed is skipped,
 			// not emitted with the store-currency price mislabelled.
@@ -364,6 +374,103 @@ class WCProductInputAdapter {
 		$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $this->wc_product, $this->tax_excluded );
 
 		$this->attributes['price'] = $this->to_money( (float) $price, get_woocommerce_currency() );
+	}
+
+	/**
+	 * Map the sale price and sale price effective date, applying tax inclusion/exclusion rules.
+	 * Ported from WCProductAdapter::map_wc_product_sale_price to preserve behavior.
+	 */
+	protected function map_sale_price(): void {
+		// Grab the sale price of the base product. Some plugins (Dynamic pricing as an
+		// example) filter the active price, but not the sale price. If the active price
+		// < the regular price treat it as a sale price.
+		$regular_price = $this->wc_product->get_regular_price();
+		$sale_price    = $this->wc_product->get_sale_price();
+		$active_price  = $this->wc_product->get_price();
+		if (
+			( empty( $sale_price ) && $active_price < $regular_price ) ||
+			( ! empty( $sale_price ) && $active_price < $sale_price )
+		) {
+			$sale_price = $active_price;
+		}
+
+		if ( '' === $sale_price ) {
+			return;
+		}
+
+		$sale_price = $this->tax_excluded
+			? wc_get_price_excluding_tax( $this->wc_product, [ 'price' => $sale_price ] )
+			: wc_get_price_including_tax( $this->wc_product, [ 'price' => $sale_price ] );
+
+		/** This filter is documented in src/Product/WCProductAdapter.php */
+		$sale_price = apply_filters( 'woocommerce_gla_product_attribute_value_sale_price', $sale_price, $this->wc_product, $this->tax_excluded );
+
+		// If the sale price dates no longer apply, make sure we don't include a sale price.
+		$now                 = new WC_DateTime();
+		$sale_price_end_date = $this->wc_product->get_date_on_sale_to();
+		if ( ! empty( $sale_price_end_date ) && $sale_price_end_date < $now ) {
+			return;
+		}
+
+		$this->attributes['salePrice'] = $this->to_money( (float) $sale_price, get_woocommerce_currency() );
+
+		$effective_date = $this->get_sale_price_effective_date();
+		if ( null !== $effective_date ) {
+			$this->attributes['salePriceEffectiveDate'] = $effective_date;
+		}
+	}
+
+	/**
+	 * Return the sale effective dates for the WooCommerce product as a Merchant API
+	 * Interval (`startTime`/`endTime` RFC3339 timestamps), omitting either bound when
+	 * unset. Date-branch logic ported from WCProductAdapter::get_wc_product_sale_price_effective_date.
+	 *
+	 * @return array|null
+	 */
+	protected function get_sale_price_effective_date(): ?array {
+		$start_date = $this->wc_product->get_date_on_sale_from();
+		$end_date   = $this->wc_product->get_date_on_sale_to();
+
+		$now = new WC_DateTime();
+		// if we have a sale end date in the future, but no start date, set the start date to now()
+		if (
+			! empty( $end_date ) &&
+			$end_date > $now &&
+			empty( $start_date )
+		) {
+			$start_date = $now;
+		}
+		// if we have a sale start date in the past, but no end date, do not include the start date.
+		if (
+			! empty( $start_date ) &&
+			$start_date < $now &&
+			empty( $end_date )
+		) {
+			$start_date = null;
+		}
+		// if we have a start date in the future, but no end date, assume a one-day sale.
+		if (
+			! empty( $start_date ) &&
+			$start_date > $now &&
+			empty( $end_date )
+		) {
+			$end_date = clone $start_date;
+			$end_date->add( new DateInterval( 'P1D' ) );
+		}
+
+		if ( empty( $start_date ) && empty( $end_date ) ) {
+			return null;
+		}
+
+		$effective_date = [];
+		if ( ! empty( $start_date ) ) {
+			$effective_date['startTime'] = (string) $start_date;
+		}
+		if ( ! empty( $end_date ) ) {
+			$effective_date['endTime'] = (string) $end_date;
+		}
+
+		return $effective_date;
 	}
 
 	/**
