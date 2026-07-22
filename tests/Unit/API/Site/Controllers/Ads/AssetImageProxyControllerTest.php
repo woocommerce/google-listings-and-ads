@@ -6,6 +6,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\AssetImageProxyController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use WP_Error;
+use WP_REST_Request as Request;
+use WP_REST_Response as Response;
 
 /**
  * Class AssetImageProxyControllerTest
@@ -386,5 +388,58 @@ class AssetImageProxyControllerTest extends RESTControllerUnitTest {
 		$data = $response->get_data();
 		$this->assertArrayHasKey( 'code', $data );
 		$this->assertEquals( 'rest_forbidden', $data['code'] );
+	}
+
+	/**
+	 * Data provider of non-bool values for $served, the kind of value another callback
+	 * hooked onto the shared `rest_pre_serve_request` filter chain could pass through.
+	 *
+	 * @return array[]
+	 */
+	public function data_non_bool_served_values(): array {
+		return [
+			'null'         => [ null ],
+			'zero'         => [ 0 ],
+			'empty string' => [ '' ],
+			'empty array'  => [ [] ],
+		];
+	}
+
+	/**
+	 * Regression test for GOOWOO-834: `rest_pre_serve_request` is a global filter, so
+	 * WordPress core or another plugin's callback earlier in the same chain can pass a
+	 * non-bool value for $served (a literal `null` did exactly this in production). A
+	 * strict `bool` type hint on that parameter caused an uncaught TypeError for REST
+	 * responses that had nothing to do with this endpoint. serve_image_response() must
+	 * tolerate this instead of crashing.
+	 *
+	 * @dataProvider data_non_bool_served_values
+	 *
+	 * @param mixed $served A non-bool value for the $served argument.
+	 */
+	public function test_serve_image_response_does_not_throw_on_non_bool_served( $served ): void {
+		$unrelated_response = new Response( [ 'some' => 'data' ], 200 );
+		$request            = new Request( 'GET', '/wp/v2/posts' );
+
+		global $wp_rest_server;
+
+		$result = $this->controller->serve_image_response( $served, $unrelated_response, $request, $wp_rest_server );
+
+		$this->assertFalse( $result, 'A response without the image-proxy header should not be served as raw binary.' );
+	}
+
+	/**
+	 * Regression test for GOOWOO-834: $result may not be a WP_REST_Response at all if an
+	 * earlier callback on the same filter chain replaced it (e.g. with a WP_Error).
+	 * serve_image_response() must not assume the type.
+	 */
+	public function test_serve_image_response_does_not_throw_on_non_response_result(): void {
+		$request = new Request( 'GET', '/wp/v2/posts' );
+
+		global $wp_rest_server;
+
+		$result = $this->controller->serve_image_response( false, new WP_Error( 'some_error' ), $request, $wp_rest_server );
+
+		$this->assertFalse( $result );
 	}
 }
