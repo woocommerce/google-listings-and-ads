@@ -1182,8 +1182,8 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 					'description'  => 'Inserted via Connection Test.',
 					'link'         => home_url( '/' ),
 					'imageLink'    => 'https://via.placeholder.com/250',
-					'availability' => 'in_stock',
-					'condition'    => 'new',
+					'availability' => 'IN_STOCK',
+					'condition'    => 'NEW',
 					'price'        => [
 						'amountMicros' => '19990000',
 						'currencyCode' => 'USD',
@@ -1232,8 +1232,8 @@ class ConnectionTest implements ContainerAwareInterface, Service, Registerable {
 						'description'  => 'Inserted via Connection Test.',
 						'link'         => home_url( '/' ),
 						'imageLink'    => 'https://via.placeholder.com/250',
-						'availability' => 'in_stock',
-						'condition'    => 'new',
+						'availability' => 'IN_STOCK',
+						'condition'    => 'NEW',
 						'price'        => [
 							'amountMicros' => '19990000',
 							'currencyCode' => 'USD',

@@ -106,7 +106,8 @@ class RequestReviewStatuses implements Service {
 
 			// An in-app action is only triggerable with an action context and a flow id;
 			// skip it otherwise so we never post an empty flow to triggeraction.
-			$flow_id = $action['builtinUserInputAction']['flows'][0]['id'] ?? '';
+			$flow    = $action['builtinUserInputAction']['flows'][0] ?? [];
+			$flow_id = $flow['id'] ?? '';
 			if ( isset( $action['builtinUserInputAction']['actionContext'] ) && '' !== $flow_id ) {
 				return [
 					'type'          => 'in_app',
@@ -114,11 +115,42 @@ class RequestReviewStatuses implements Service {
 					'buttonLabel'   => $action['buttonLabel'] ?? '',
 					'actionContext' => $action['builtinUserInputAction']['actionContext'],
 					'flowId'        => $flow_id,
+					'inputValues'   => $this->build_input_values( $flow['inputs'] ?? [] ),
 				];
 			}
 		}
 
 		return null;
+	}
+
+	/**
+	 * Build the triggeraction inputValues for a review flow's input fields.
+	 *
+	 * The account-review flow gates on a confirmation checkbox ("I have resolved all the
+	 * issues"), so triggeraction rejects an empty inputValues when the flow has a required input.
+	 * Every checkbox in this flow is such a confirmation, which the merchant asserts by clicking
+	 * Request review, so all checkboxes are confirmed rather than keyed off the `required` flag
+	 * (which the render is not guaranteed to set). Text and choice inputs have no server-side
+	 * value and are left to the Merchant Center redirect flow.
+	 *
+	 * @param array $inputs The flow's InputField list.
+	 *
+	 * @return array<int, array{inputFieldId: string, checkboxInputValue: array{value: bool}}>
+	 */
+	private function build_input_values( array $inputs ): array {
+		$input_values = [];
+
+		foreach ( $inputs as $input ) {
+			$id = $input['id'] ?? '';
+			if ( '' !== $id && isset( $input['checkboxInput'] ) ) {
+				$input_values[] = [
+					'inputFieldId'       => $id,
+					'checkboxInputValue' => [ 'value' => true ],
+				];
+			}
+		}
+
+		return $input_values;
 	}
 
 	/**
