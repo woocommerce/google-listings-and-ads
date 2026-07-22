@@ -86,16 +86,19 @@ class AssetImageProxyController extends BaseController {
 
 			// Check for valid nonce in query parameter (for img tag requests).
 			// get_current_user_id() > 0 ensures anonymous sessions cannot use this path.
-			$nonce = $request->get_param( '_wpnonce' );
-			if ( $nonce && get_current_user_id() > 0 && wp_verify_nonce( $nonce, 'wp_rest' ) ) {
-				return true;
+			$nonce           = $request->get_param( '_wpnonce' );
+			$is_logged_in    = get_current_user_id() > 0;
+			$has_valid_nonce = $nonce && $is_logged_in && wp_verify_nonce( $nonce, 'wp_rest' );
+
+			if ( ! $has_valid_nonce ) {
+				return new \WP_Error(
+					'rest_forbidden',
+					__( 'Sorry, you are not allowed to do that.', 'google-listings-and-ads' ),
+					[ 'status' => 403 ]
+				);
 			}
 
-			return new \WP_Error(
-				'rest_forbidden',
-				__( 'Sorry, you are not allowed to do that.', 'google-listings-and-ads' ),
-				[ 'status' => 403 ]
-			);
+			return true;
 		};
 	}
 

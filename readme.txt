@@ -2,10 +2,10 @@
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, product feed, ads, listings
 Requires at least: 6.6
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 3.7.3
+Stable tag: 3.8.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -140,6 +140,14 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.8.0 - 2026-07-21 =
+* Break - Migrate to the Merchant API from the Content Shopping API.
+* Dev - Bump WooCommerce "tested up to" version 10.9.
+* Dev - Bump WordPress "tested up to" version 7.0.
+* Fix - Prevent adblockers from blocking auto-generated images in the preview.
+* Tweak - Enable brand guidelines on non-shopping campaigns.
+* Tweak - Remove beta block-based product editor integration ahead of its retirement in WooCommerce 11.0.
+
 = 3.7.3 - 2026-07-08 =
 * Add - Added update notification when plugin version 3.8.0 is available
 
@@ -151,16 +159,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix - Fix flaky E2E tests for onboarding step-3 campaign flow.
 * Fix - Fix webpack commons chunk misconfiguration causing disproportionate bundle growth; add dedicated bundlewatch entries for all page chunks with realistic size limits.
 * Fix - Resolved console log errors when selecting AI generated images in campaigns.
-
-= 3.7.1 - 2026-06-09 =
-* Add - Better User Guidance Feature.
-* Fix - Split budget recommendation and metrics cache keys by advertiser type so recommendations refresh correctly after the first campaign is created.
-* Fix - chore: pin third-party GitHub Actions to SHAs + enable Dependabot.
-* Fix - Update table paddings and borders within cards.
-* Fix - Remove API Pull infrastructure.
-* Fix - MainTabNav intermittently showing an incomplete tab list when MC connection state changes mid-session.
-* Fix - Shipping settings tab empty settings.
-* Fix - Update EU declaration modal title.
-* Fix - Exclude tall_portrait_marketing_image type and images with no type set from generated ad assets.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
