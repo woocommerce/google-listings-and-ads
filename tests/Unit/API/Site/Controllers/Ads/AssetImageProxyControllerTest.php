@@ -464,7 +464,7 @@ class AssetImageProxyControllerTest extends RESTControllerUnitTest {
 				$this->make_image_proxy_response( 404 ),
 				false,
 			],
-			'not a WP_REST_Response'            => [
+			'not a WP_REST_Response'           => [
 				new WP_Error( 'some_error' ),
 				false,
 			],
