@@ -287,14 +287,14 @@ class AssetImageProxyController extends BaseController {
 	 * before this one runs, so $served and $result must stay untyped/nullable here rather
 	 * than throwing under strict_types.
 	 *
-	 * @param mixed            $served  Whether the request has already been served.
-	 * @param mixed            $result  The response to serve.
-	 * @param \WP_REST_Request $request The request instance.
-	 * @param \WP_REST_Server  $server  The server instance.
+	 * @param mixed            $served   Whether the request has already been served.
+	 * @param mixed            $result   The response to serve.
+	 * @param \WP_REST_Request $_request Unused; required by the rest_pre_serve_request signature.
+	 * @param \WP_REST_Server  $_server  Unused; required by the rest_pre_serve_request signature.
 	 *
 	 * @return bool True if served, false to allow default handling.
 	 */
-	public function serve_image_response( $served, $result, $request, $server ): bool {
+	public function serve_image_response( $served, $result, $_request, $_server ): bool {
 		if ( $served ) {
 			return true;
 		}
@@ -321,6 +321,9 @@ class AssetImageProxyController extends BaseController {
 
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo $result->get_data();
+
+		// This response has been served; no need to keep evaluating it on this filter for the rest of the request.
+		remove_filter( 'rest_pre_serve_request', [ $this, 'serve_image_response' ], 10 );
 
 		return true;
 	}
