@@ -18,7 +18,6 @@ import { moreVertical } from '@wordpress/icons';
 import Badge from '~/components/badge';
 import YouTubeMerchantTermsLink from '~/components/youtube-merchant-terms-link';
 import { YOUTUBE_ACCOUNT_STATUS } from '~/constants';
-import { recordGlaEvent } from '~/utils/tracks';
 import YouTubeConnectButton from './youtube-connect-button';
 import MerchantCenterConnectButton from './merchant-center-connect-button';
 import { ACCOUNT_LOGOS } from './account-logos';
@@ -60,16 +59,6 @@ function AccountActions( { account, onDisconnect } ) {
 						isDestructive
 						onClick={ () => {
 							onClose();
-
-							if ( account.id === 'youtube' ) {
-								recordGlaEvent(
-									'gla_youtube_account_disconnect_button_click',
-									{
-										context: 'settings-youtube',
-									}
-								);
-							}
-
 							onDisconnect( account.disconnectTarget );
 						} }
 					>
@@ -113,17 +102,8 @@ function RowIndicator( { account, actions } ) {
 }
 
 /**
- * Clicking on the button to disconnect the YouTube account.
- *
- * @event gla_youtube_account_disconnect_button_click
- * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
- */
-
-/**
  * Renders a single account as a row inside a group card: logo, title,
  * description and detail on the left; status or connect action on the right.
- *
- * @fires gla_youtube_account_disconnect_button_click When the user clicks on the button to disconnect the YouTube account.
  *
  * @param {Object} props Component props.
  * @param {import('./useConnectedAccounts').ConnectedAccountItem} props.account Account item.

@@ -134,7 +134,7 @@ describe( 'AccountRow', () => {
 		);
 	} );
 
-	it( 'tracks the YouTube-specific disconnect click before opening the modal flow', async () => {
+	it( 'opens the disconnect modal flow without tracking a disconnection yet', async () => {
 		const user = userEvent.setup();
 		const onDisconnect = jest.fn();
 
@@ -166,12 +166,10 @@ describe( 'AccountRow', () => {
 			screen.getByRole( 'menuitem', { name: 'Disconnect YouTube' } )
 		);
 
-		expect( recordGlaEvent ).toHaveBeenCalledWith(
-			'gla_youtube_account_disconnect_button_click',
-			{
-				context: 'settings-youtube',
-			}
-		);
 		expect( onDisconnect ).toHaveBeenCalledWith( 'youtube-account' );
+		expect( recordGlaEvent ).not.toHaveBeenCalledWith(
+			'gla_youtube_account_disconnect_button_click',
+			expect.anything()
+		);
 	} );
 } );

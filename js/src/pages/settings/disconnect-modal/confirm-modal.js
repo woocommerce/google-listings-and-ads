@@ -83,6 +83,25 @@ const textDict = {
 	},
 };
 
+/**
+ * Clicking on the button to disconnect the YouTube account.
+ *
+ * @event gla_youtube_account_disconnect_button_click
+ * @property {string} context Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
+ */
+
+/**
+ * Renders the disconnect confirmation modal.
+ *
+ * @fires gla_youtube_account_disconnect_button_click When the user confirms the disconnection of the YouTube account.
+ *
+ * @param {Object} props Component props.
+ * @param {string} props.disconnectTarget Which accounts the modal disconnects.
+ * @param {() => void} props.onRequestClose Called when the modal is dismissed.
+ * @param {() => void} props.onDisconnected Called after a successful disconnection.
+ * @param {() => Promise<*>} [props.disconnectAction] Overrides the disconnect action inferred from `disconnectTarget`.
+ * @return {JSX.Element} The confirmation modal.
+ */
 export default function ConfirmModal( {
 	disconnectTarget,
 	onRequestClose,
@@ -103,6 +122,8 @@ export default function ConfirmModal( {
 
 	const { title, confirmButton, confirmation, contents } =
 		textDict[ targetTextDict ];
+
+	const isYouTubeTarget = disconnectTarget === YOUTUBE_ACCOUNT;
 
 	const handleRequestClose = () => {
 		if ( isDisconnecting ) {
@@ -161,6 +182,12 @@ export default function ConfirmModal( {
 					isDestructive
 					loading={ isDisconnecting }
 					disabled={ ! isAgreed }
+					eventName={
+						isYouTubeTarget
+							? 'gla_youtube_account_disconnect_button_click'
+							: undefined
+					}
+					eventProps={ { context: 'settings-youtube' } }
 					onClick={ handleConfirmClick }
 				>
 					{ confirmButton }

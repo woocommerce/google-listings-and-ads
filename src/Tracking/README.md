@@ -1288,14 +1288,14 @@ Clicking on the button to connect YouTube account.
 #### Emitters
 - [`exports`](../../js/src/pages/settings/connected-accounts/youtube-connect-button.js#L29)
 
-### [`gla_youtube_account_disconnect_button_click`](../../js/src/pages/settings/connected-accounts/account-row.js#L115)
+### [`gla_youtube_account_disconnect_button_click`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L86)
 Clicking on the button to disconnect the YouTube account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates from which page the button was clicked. Possible value: 'settings-youtube'.
 #### Emitters
-- [`exports`](../../js/src/pages/settings/connected-accounts/account-row.js#L133) When the user clicks on the button to disconnect the YouTube account.
+- [`exports`](../../js/src/pages/settings/disconnect-modal/confirm-modal.js#L105) When the user confirms the disconnection of the YouTube account.
 
 ### [`gla_youtube_shopping_tour_close_button_click`](../../js/src/components/tours/youtube-shopping-tour.js#L26)
 When the tour is closed.
