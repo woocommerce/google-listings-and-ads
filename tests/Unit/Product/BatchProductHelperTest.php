@@ -1146,8 +1146,8 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$stale_product    = $products[0];
 		$stale_product_id = $stale_product->get_id();
 
-		$this->target_audience->expects( $this->once() )
-			->method( 'get_target_countries' )
+		$this->market_service->expects( $this->once() )
+			->method( 'get_all_feed_labels' )
 			->willReturn( [ 'US' ] );
 
 		// AU is no longer in the target audience and stored under the legacy colon format.
@@ -1206,9 +1206,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$stale_product    = $products[0];
 		$stale_product_id = $stale_product->get_id();
 
-		$this->target_audience->expects( $this->once() )
-			->method( 'get_main_target_country' )
-			->willReturn( 'US' );
+		$this->market_service->expects( $this->once() )
+			->method( 'get_all_feed_labels' )
+			->willReturn( [ 'US' ] );
 
 		// AU is stale (not the main country) and stored under the legacy colon format.
 		$this->product_meta->update_google_ids(
