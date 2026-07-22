@@ -113,10 +113,12 @@ class NotificationManagerTest extends UnitTest {
 			);
 
 		// Force the "user is viewing one of the Marketing child pages" branch without
-		// depending on the real PageController singleton's registered page state.
+		// depending on the real PageController singleton's registered page state, and
+		// skip real asset registration (it reads the built js/build/ file, which
+		// isn't guaranteed to exist in a unit test run).
 		$this->notification_manager = $this->getMockBuilder( NotificationManager::class )
 			->setConstructorArgs( [ $this->assets_handler, $this->notification_service ] )
-			->onlyMethods( [ 'is_marketing_page' ] )
+			->onlyMethods( [ 'is_marketing_page', 'register_assets' ] )
 			->getMock();
 
 		$this->notification_manager->method( 'is_marketing_page' )->willReturn( true );

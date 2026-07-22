@@ -65,7 +65,7 @@ class NotificationManager implements ContainerAwareInterface, Service, Registera
 	 *
 	 * @return void
 	 */
-	private function register_assets(): void {
+	protected function register_assets(): void {
 		$notification_manager = new AdminScriptWithBuiltDependenciesAsset(
 			'notification-manager',
 			'js/build/notification-manager',
