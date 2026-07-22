@@ -4,7 +4,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncerException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\DeleteCouponEntry;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Promotion as GooglePromotion;
 
 defined( 'ABSPATH' ) || exit();
 
@@ -50,7 +49,7 @@ class DeleteCoupon extends AbstractCouponSyncerJob implements
 		$this->coupon_syncer->delete(
 			new DeleteCouponEntry(
 				$wc_coupon_id,
-				new GooglePromotion( $google_promotion ),
+				$google_promotion,
 				$google_ids
 			)
 		);
