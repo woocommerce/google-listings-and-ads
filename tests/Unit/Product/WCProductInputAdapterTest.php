@@ -336,7 +336,7 @@ class WCProductInputAdapterTest extends UnitTest {
 
 		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
 
-		$this->assertSame( 'in_stock', $attrs['availability'] );
+		$this->assertSame( 'IN_STOCK', $attrs['availability'] );
 	}
 
 	public function test_maps_availability_out_of_stock() {
@@ -346,7 +346,141 @@ class WCProductInputAdapterTest extends UnitTest {
 
 		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
 
-		$this->assertSame( 'out_of_stock', $attrs['availability'] );
+		$this->assertSame( 'OUT_OF_STOCK', $attrs['availability'] );
+	}
+
+	public function test_maps_availability_backorder() {
+		$product = WC_Helper_Product::create_simple_product( false );
+		$product->set_manage_stock( true );
+		$product->set_stock_status( 'instock' );
+		$product->set_backorders( 'yes' );
+		$product->set_stock_quantity( 0 );
+		$product->save();
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( 'BACKORDER', $attrs['availability'] );
+	}
+
+	public function test_uppercases_availability_set_via_override_filter() {
+		// Value injected by the override filter (e.g. the pre-orders integration's
+		// lowercase `preorder`) must still be sent as the Merchant API's uppercase enum.
+		$product = WC_Helper_Product::create_simple_product();
+
+		$cb = static function ( array $overrides ): array {
+			$overrides['availability'] = 'preorder';
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( 'PREORDER', $attrs['availability'] );
+	}
+
+	public function test_uppercases_condition_set_via_override_filter() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$cb = static function ( array $overrides ): array {
+			$overrides['condition'] = 'refurbished';
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( 'REFURBISHED', $attrs['condition'] );
+	}
+
+	public function test_uppercases_gender_set_via_override_filter() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$cb = static function ( array $overrides ): array {
+			$overrides['gender'] = 'female';
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( 'FEMALE', $attrs['gender'] );
+	}
+
+	public function test_uppercases_age_group_set_via_override_filter() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$cb = static function ( array $overrides ): array {
+			$overrides['ageGroup'] = 'toddler';
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( 'TODDLER', $attrs['ageGroup'] );
+	}
+
+	public function test_uppercases_size_types_set_via_override_filter() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$cb = static function ( array $overrides ): array {
+			$overrides['sizeTypes'] = [ 'petite' ];
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( [ 'PETITE' ], $attrs['sizeTypes'] );
+	}
+
+	public function test_uppercases_enum_attributes_set_via_mapping_rule() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$rules = [
+			[
+				'attribute'               => 'condition',
+				'source'                  => 'refurbished',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'gender',
+				'source'                  => 'female',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'ageGroup',
+				'source'                  => 'toddler',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'sizeType',
+				'source'                  => 'petite',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+		];
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US', null, [], [], $rules ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( 'REFURBISHED', $attrs['condition'] );
+		$this->assertSame( 'FEMALE', $attrs['gender'] );
+		$this->assertSame( 'TODDLER', $attrs['ageGroup'] );
+		$this->assertSame( [ 'PETITE' ], $attrs['sizeTypes'] );
 	}
 
 	public function test_omits_images_when_product_has_none() {
@@ -573,9 +707,9 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertSame( 'Cotton', $attrs['material'] );
 		$this->assertSame( 'Striped', $attrs['pattern'] );
 		$this->assertSame( 'MPN123', $attrs['mpn'] );
-		$this->assertSame( 'new', $attrs['condition'] );
-		$this->assertSame( 'adult', $attrs['ageGroup'] );
-		$this->assertSame( 'unisex', $attrs['gender'] );
+		$this->assertSame( 'NEW', $attrs['condition'] );
+		$this->assertSame( 'ADULT', $attrs['ageGroup'] );
+		$this->assertSame( 'UNISEX', $attrs['gender'] );
 	}
 
 	public function test_maps_size_attribute() {
@@ -603,7 +737,7 @@ class WCProductInputAdapterTest extends UnitTest {
 		) )->get_product_input()->get_attributes();
 
 		$this->assertSame( [ '00012345678905' ], $attrs['gtins'] );
-		$this->assertSame( [ 'regular' ], $attrs['sizeTypes'] );
+		$this->assertSame( [ 'REGULAR' ], $attrs['sizeTypes'] );
 		$this->assertArrayNotHasKey( 'gtin', $attrs );
 		$this->assertArrayNotHasKey( 'sizeType', $attrs );
 	}

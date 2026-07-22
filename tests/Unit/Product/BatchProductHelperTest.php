@@ -1003,6 +1003,53 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertEmpty( $results );
 	}
 
+	public function test_generate_mapi_delete_entries_deletes_legacy_colon_id() {
+		// A product synced before the MAPI cutover stores a legacy Content
+		// API id (online:lang:country:offerId). It must still produce a delete entry instead of
+		// being skipped, otherwise it lingers in Merchant Center after the product is deleted.
+		$products = $this->create_and_return_supported_test_products();
+		$product  = $products[0];
+
+		$this->product_helper->mark_as_synced(
+			$product,
+			$this->generate_google_product_mock( "online:en:US:gla_{$product->get_id()}", 'US' )
+		);
+
+		$results = $this->batch_product_helper->generate_mapi_delete_entries( [ $product ] );
+
+		$this->assertCount( 1, $results );
+		$this->assertSame( "online:en:US:gla_{$product->get_id()}", $results[0]['google_id'] );
+		$this->assertSame( 'en', $results[0]['input']->get_content_language() );
+		$this->assertSame( 'US', $results[0]['input']->get_feed_label() );
+		$this->assertSame( "gla_{$product->get_id()}", $results[0]['input']->get_offer_id() );
+	}
+
+	public function test_parse_deletable_identity_accepts_mapi_and_legacy_ids() {
+		$this->assertSame(
+			[ 'en', 'US', 'gla_29' ],
+			$this->batch_product_helper->parse_deletable_identity( 'en~US~gla_29' )
+		);
+		$this->assertSame(
+			[ 'en', 'US', 'gla_29' ],
+			$this->batch_product_helper->parse_deletable_identity( 'online:en:US:gla_29' )
+		);
+		$this->assertNull( $this->batch_product_helper->parse_deletable_identity( 'malformed-id' ) );
+
+		// A four-part colon string that is not an `online` Content API id is not a legacy id.
+		$this->assertNull( $this->batch_product_helper->parse_deletable_identity( 'local:en:US:gla_29' ) );
+		$this->assertNull( $this->batch_product_helper->parse_deletable_identity( 'foo:bar:baz:qux' ) );
+	}
+
+	public function test_parse_mapi_identity_rejects_legacy_colon_id() {
+		// parse_mapi_identity stays tilde-only: the status read path relies on it returning null for
+		// legacy ids, which the Merchant API rejects as invalid resource names.
+		$this->assertNull( $this->batch_product_helper->parse_mapi_identity( 'online:en:US:gla_29' ) );
+		$this->assertSame(
+			[ 'en', 'US', 'gla_29' ],
+			$this->batch_product_helper->parse_mapi_identity( 'en~US~gla_29' )
+		);
+	}
+
 	public function test_generate_stale_products_delete_entries() {
 		$products         = $this->create_and_return_supported_test_products();
 		$stale_product    = $products[0];
@@ -1034,6 +1081,35 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertNotContains( $stale_google_ids['US'], $google_ids );
 	}
 
+	public function test_generate_stale_products_delete_entries_handles_legacy_colon_id() {
+		// Regression (GOOWOO-802): the stale-products cleanup path must convert a legacy Content API
+		// id, not skip it, or the out-of-audience country's entry lingers in Merchant Center.
+		$products         = $this->create_and_return_supported_test_products();
+		$stale_product    = $products[0];
+		$stale_product_id = $stale_product->get_id();
+
+		$this->target_audience->expects( $this->once() )
+			->method( 'get_target_countries' )
+			->willReturn( [ 'US' ] );
+
+		// AU is no longer in the target audience and stored under the legacy colon format.
+		$this->product_meta->update_google_ids(
+			$stale_product,
+			[
+				'AU' => "online:en:AU:gla_{$stale_product_id}",
+				'US' => "online:en:US:gla_{$stale_product_id}",
+			]
+		);
+
+		$results = $this->batch_product_helper->generate_stale_products_delete_entries( $products );
+
+		$this->assertCount( 1, $results );
+		$this->assertSame( "online:en:AU:gla_{$stale_product_id}", $results[0]['google_id'] );
+		$this->assertSame( 'en', $results[0]['input']->get_content_language() );
+		$this->assertSame( 'AU', $results[0]['input']->get_feed_label() );
+		$this->assertSame( "gla_{$stale_product_id}", $results[0]['input']->get_offer_id() );
+	}
+
 	public function test_generate_stale_countries_delete_entries() {
 		$products         = $this->create_and_return_supported_test_products();
 		$stale_product    = $products[0];
@@ -1063,6 +1139,35 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertContains( $stale_google_ids['AU'], $google_ids );
 		$this->assertContains( $stale_google_ids['DK'], $google_ids );
 		$this->assertNotContains( $stale_google_ids['US'], $google_ids );
+	}
+
+	public function test_generate_stale_countries_delete_entries_handles_legacy_colon_id() {
+		// Regression (GOOWOO-802): the stale-country cleanup path must convert a legacy Content API
+		// id, not skip it, or the entry for the stale country lingers in Merchant Center.
+		$products         = $this->create_and_return_supported_test_products();
+		$stale_product    = $products[0];
+		$stale_product_id = $stale_product->get_id();
+
+		$this->target_audience->expects( $this->once() )
+			->method( 'get_main_target_country' )
+			->willReturn( 'US' );
+
+		// AU is stale (not the main country) and stored under the legacy colon format.
+		$this->product_meta->update_google_ids(
+			$stale_product,
+			[
+				'AU' => "online:en:AU:gla_{$stale_product_id}",
+				'US' => "online:en:US:gla_{$stale_product_id}",
+			]
+		);
+
+		$results = $this->batch_product_helper->generate_stale_countries_delete_entries( $products );
+
+		$this->assertCount( 1, $results );
+		$this->assertSame( "online:en:AU:gla_{$stale_product_id}", $results[0]['google_id'] );
+		$this->assertSame( 'en', $results[0]['input']->get_content_language() );
+		$this->assertSame( 'AU', $results[0]['input']->get_feed_label() );
+		$this->assertSame( "gla_{$stale_product_id}", $results[0]['input']->get_offer_id() );
 	}
 
 	public function test_generate_mapi_update_entries_merges_parent_and_variation_attributes() {

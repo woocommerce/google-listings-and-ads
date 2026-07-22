@@ -3,9 +3,11 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignCriterion;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignLabel;
@@ -921,6 +923,77 @@ class AdsCampaignTest extends UnitTest {
 		$this->campaign_label->expects( $this->once() )
 			->method( 'assign_label_to_campaign_by_label_name' )
 			->with( self::TEST_CAMPAIGN_ID, 'wc-gla' );
+
+		$this->assertEquals(
+			$expected,
+			$this->campaign->create_campaign( $campaign_data )
+		);
+	}
+
+	public function test_create_campaign_with_brand_assets() {
+		$business_name_asset = [
+			'field_type' => AssetFieldType::BUSINESS_NAME,
+			'content'    => 'My Shop',
+		];
+		$logo_asset          = [
+			'field_type' => AssetFieldType::LOGO,
+			'content'    => 'https://example.com/logo.png',
+		];
+		$headline_asset      = [
+			'field_type' => AssetFieldType::HEADLINE,
+			'content'    => 'Test headline',
+		];
+
+		$campaign_data = [
+			'name'                                  => 'New Campaign',
+			'amount'                                => 20,
+			'targeted_locations'                    => [ 'US' ],
+			'eu_political_advertising_confirmation' => false,
+			'final_url'                             => 'https://example.com',
+			'assets'                                => [ $business_name_asset, $headline_asset, $logo_asset ],
+		];
+
+		$this->wc->expects( $this->once() )
+			->method( 'get_base_country' )
+			->willReturn( self::BASE_COUNTRY );
+
+		$this->asset_group->expects( $this->once() )
+			->method( 'create_operations_with_assets' )
+			->with(
+				$this->anything(),
+				'New Campaign',
+				'https://example.com',
+				[ $headline_asset ]
+			)
+			->willReturn( [] );
+
+		$business_name_op = $this->generate_asset_create_operation( -10, AssetFieldType::BUSINESS_NAME, 'My Shop' );
+		$logo_op          = $this->generate_asset_create_operation( -11, AssetFieldType::LOGO, 'https://example.com/logo.png' );
+
+		$ads_asset = $this->createMock( AdsAsset::class );
+		$ads_asset->expects( $this->once() )
+			->method( 'create_operations' )
+			->with( [ $business_name_asset, $logo_asset ] )
+			->willReturn( [ $business_name_op, $logo_op ] );
+		$this->container->addShared( AdsAsset::class, $ads_asset );
+
+		$this->campaign_asset->expects( $this->once() )
+			->method( 'create_link_operations_for_resources' )
+			->with(
+				$this->anything(),
+				[ $business_name_op->getAssetOperation()->getCreate()->getResourceName() ],
+				[ $logo_op->getAssetOperation()->getCreate()->getResourceName() ]
+			)
+			->willReturn( [] );
+
+		$this->generate_campaign_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
+
+		$expected = [
+			'id'      => self::TEST_CAMPAIGN_ID,
+			'status'  => 'enabled',
+			'type'    => 'performance_max',
+			'country' => self::BASE_COUNTRY,
+		] + $campaign_data;
 
 		$this->assertEquals(
 			$expected,
