@@ -543,7 +543,9 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		// language and currency keys, so partial updates must not fail on them.
 		$merged = $this->apply_locale_defaults( $merged );
 
-		$this->validate_secondary_market_config( $merged );
+		$currency_source_touched = array_key_exists( 'currency', $config ) || array_key_exists( 'exchange_rate', $config );
+
+		$this->validate_secondary_market_config( $merged, $currency_source_touched );
 
 		$markets[ $id ] = $merged;
 		$this->options->update( OptionsInterface::MARKETS, $markets );
@@ -590,12 +592,18 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$existing_currency = $existing['currency'] ?? [];
 		$merged_currency   = $merged['currency'] ?? [];
 
+		// An exchange-rate change alters every feed price for the market, so
+		// it needs the same full resync as a currency change.
+		$existing_rate = isset( $existing['exchange_rate'] ) ? (float) $existing['exchange_rate'] : null;
+		$merged_rate   = isset( $merged['exchange_rate'] ) ? (float) $merged['exchange_rate'] : null;
+
 		$resync_needed = ( $existing['country'] ?? null ) !== ( $merged['country'] ?? null )
 			|| ( $existing['feed_label'] ?? null ) !== ( $merged['feed_label'] ?? null )
 			|| array_diff( $existing_language, $merged_language ) !== []
 			|| array_diff( $merged_language, $existing_language ) !== []
 			|| array_diff( $existing_currency, $merged_currency ) !== []
-			|| array_diff( $merged_currency, $existing_currency ) !== [];
+			|| array_diff( $merged_currency, $existing_currency ) !== []
+			|| $existing_rate !== $merged_rate;
 
 		if ( $resync_needed ) {
 			$this->job_repository->get( UpdateAllProducts::class )->schedule();
@@ -940,7 +948,9 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	/**
 	 * Returns the market currencies that currently take part in syncing: the
 	 * store currency always takes part, and any other currency only while
-	 * price conversion is available (WPML active with WCML multi-currency on).
+	 * price conversion is available (WPML active with WCML multi-currency on)
+	 * or while the market carries a configured exchange rate, which is its
+	 * own conversion source.
 	 *
 	 * @param array $market The market config.
 	 *
@@ -949,12 +959,13 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	public function get_participating_currencies( array $market ): array {
 		$store_currency = get_woocommerce_currency();
 		$can_convert    = $this->wpml->can_convert_currency();
+		$has_rate       = isset( $market['exchange_rate'] ) && is_numeric( $market['exchange_rate'] ) && (float) $market['exchange_rate'] > 0;
 
 		return array_values(
 			array_filter(
 				$this->get_market_currencies( $market ),
-				function ( string $currency ) use ( $store_currency, $can_convert ): bool {
-					return $currency === $store_currency || $can_convert;
+				function ( string $currency ) use ( $store_currency, $can_convert, $has_rate ): bool {
+					return $currency === $store_currency || $can_convert || $has_rate;
 				}
 			)
 		);
@@ -1334,7 +1345,13 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		}
 
 		$market['language'] = [ $this->get_site_primary_language() ];
-		$market['currency'] = [ $this->get_site_primary_currency() ];
+
+		// A configured exchange rate is its own conversion source, so the
+		// market's stored currency stays meaningful without a multilingual
+		// integration and must survive the masking.
+		if ( empty( $market['exchange_rate'] ) ) {
+			$market['currency'] = [ $this->get_site_primary_currency() ];
+		}
 
 		return $market;
 	}
@@ -1508,11 +1525,18 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	/**
 	 * Validates that a secondary market config contains the required keys.
 	 *
-	 * @param array $config The config to validate (full or merged).
+	 * @param array $config                   The config to validate (full or merged).
+	 * @param bool  $validate_currency_source Whether to require the market's currency to be
+	 *                                        producible or covered by an exchange rate. True
+	 *                                        for creates and for updates that touch the
+	 *                                        currency or exchange rate; false for partial
+	 *                                        updates that leave them untouched, so unrelated
+	 *                                        edits of markets stored before this validation
+	 *                                        existed keep working.
 	 *
-	 * @throws InvalidValue When a required key is missing or not a non-empty string.
+	 * @throws InvalidValue When a required key is missing or invalid.
 	 */
-	private function validate_secondary_market_config( array $config ): void {
+	private function validate_secondary_market_config( array $config, bool $validate_currency_source = true ): void {
 		foreach ( [ 'country', 'feed_label' ] as $key ) {
 			if ( empty( $config[ $key ] ) || ! is_string( $config[ $key ] ) ) {
 				throw InvalidValue::is_empty( $key );
@@ -1529,6 +1553,28 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			}
 			if ( ! is_array( $config[ $key ] ) ) {
 				throw InvalidValue::not_array( $key );
+			}
+		}
+
+		if ( isset( $config['exchange_rate'] ) && ( ! is_numeric( $config['exchange_rate'] ) || (float) $config['exchange_rate'] <= 0 ) ) {
+			throw new InvalidValue( 'The exchange_rate must be a number greater than zero.' );
+		}
+
+		// A currency the site cannot produce is only valid with a fixed
+		// exchange rate to produce it at sync time.
+		if ( $validate_currency_source && empty( $config['exchange_rate'] ) ) {
+			$producible = array_column( $this->get_currencies(), 'code' );
+
+			if ( empty( $producible ) ) {
+				$producible = [ get_woocommerce_currency() ];
+			}
+
+			foreach ( $config['currency'] as $currency_code ) {
+				if ( ! in_array( (string) $currency_code, $producible, true ) ) {
+					throw new InvalidValue(
+						sprintf( 'The currency "%s" cannot be produced by this site. Configure an exchange rate for the market or use a producible currency.', $currency_code )
+					);
+				}
 			}
 		}
 

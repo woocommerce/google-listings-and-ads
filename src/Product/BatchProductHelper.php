@@ -396,8 +396,9 @@ class BatchProductHelper implements Service {
 
 	/**
 	 * One MAPI update entry per (product language, enabled currency) for a secondary market. A pair
-	 * that fails validation (e.g. no price in that currency), cannot be priced in the currency, or
-	 * whose payload is unchanged since the last sync is skipped; the rest are emitted.
+	 * that fails validation (e.g. no price in that currency), cannot be priced in the currency
+	 * (unless the market's fixed exchange rate converts it), or whose payload is unchanged since
+	 * the last sync is skipped; the rest are emitted.
 	 *
 	 * @param WC_Product $product
 	 * @param string     $market_id
@@ -422,8 +423,12 @@ class BatchProductHelper implements Service {
 			);
 		}
 
+		// A configured exchange rate converts any product's price at sync time, so it keeps a
+		// currency's entries flowing when WPML cannot convert for this product.
+		$market_exchange_rate = self::extract_exchange_rate( $market );
+
 		foreach ( $currencies as $market_currency ) {
-			if ( ! $this->product_priced_in_currency( $product, $market_currency ) ) {
+			if ( ! $this->product_priced_in_currency( $product, $market_currency ) && $market_exchange_rate <= 0 ) {
 				do_action(
 					'woocommerce_gla_debug_message',
 					sprintf( 'Skipping the %s entry of secondary market %s for product (ID: %s): its price cannot be converted into that currency.', $market_currency, $market_id, $product->get_id() ),
@@ -455,7 +460,7 @@ class BatchProductHelper implements Service {
 			}
 
 			// Secondary market shipping is scoped to the market's own country.
-			$input = $this->generate_product_input( $product, $market['country'], $market_feed_label, [ $market['country'] ], $mapping_rules, $product_language, $currency_override );
+			$input = $this->generate_product_input( $product, $market['country'], $market_feed_label, [ $market['country'] ], $mapping_rules, $product_language, $currency_override, $market_exchange_rate );
 			$hash  = $this->product_input_hash( $input );
 
 			if ( $this->can_skip_unchanged_product( $product, $hash ) ) {
@@ -483,10 +488,11 @@ class BatchProductHelper implements Service {
 	 * @param array      $mapping_rules      Attribute mapping rules to apply.
 	 * @param string     $language           Optional ISO 639-1 language override.
 	 * @param string     $currency_override  Optional ISO 4217 currency code overriding the store currency.
+	 * @param float      $exchange_rate      Fixed market exchange rate used to convert prices when WPML conversion is unavailable; 0.0 when unset.
 	 *
 	 * @return ProductInput
 	 */
-	protected function generate_product_input( WC_Product $product, string $target_country, string $feed_label, array $shipping_countries, array $mapping_rules, string $language = '', string $currency_override = '' ): ProductInput {
+	protected function generate_product_input( WC_Product $product, string $target_country, string $feed_label, array $shipping_countries, array $mapping_rules, string $language = '', string $currency_override = '', float $exchange_rate = 0.0 ): ProductInput {
 		$parent = $product instanceof WC_Product_Variation
 			? $this->product_helper->get_wc_product( $product->get_parent_id() )
 			: null;
@@ -496,7 +502,7 @@ class BatchProductHelper implements Service {
 			$attributes = array_merge( $this->attribute_manager->get_all_values( $parent ), $attributes );
 		}
 
-		$adapter = new WCProductInputAdapter( $product, $target_country, $parent, $shipping_countries, $attributes, $mapping_rules, $feed_label, $language, $currency_override, $this->wpml );
+		$adapter = new WCProductInputAdapter( $product, $target_country, $parent, $shipping_countries, $attributes, $mapping_rules, $feed_label, $language, $currency_override, $this->wpml, $exchange_rate );
 
 		return $adapter->get_product_input();
 	}
@@ -558,6 +564,19 @@ class BatchProductHelper implements Service {
 		}
 
 		return null !== $this->wpml->get_product_price_in_currency( $product, $currency );
+	}
+
+	/**
+	 * Extracts a market's fixed exchange rate from its config.
+	 *
+	 * @param array $market A market config array as returned by MarketService.
+	 *
+	 * @return float The rate, or 0.0 when none is configured.
+	 */
+	private static function extract_exchange_rate( array $market ): float {
+		return isset( $market['exchange_rate'] ) && is_numeric( $market['exchange_rate'] )
+			? (float) $market['exchange_rate']
+			: 0.0;
 	}
 
 	/**
