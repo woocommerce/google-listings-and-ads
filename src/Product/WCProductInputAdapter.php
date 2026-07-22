@@ -394,6 +394,8 @@ class WCProductInputAdapter {
 				$converted = (float) $regular_price * $this->exchange_rate;
 			}
 
+			// No price in the override currency: leave it unset so this currency's feed is skipped,
+			// not emitted with the store-currency price mislabelled.
 			if ( null === $converted ) {
 				return;
 			}
