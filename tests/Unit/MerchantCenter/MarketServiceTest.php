@@ -162,6 +162,43 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( 'primary', $result['primary']['id'] );
 	}
 
+	/**
+	 * Regression (GOOWOO-773): a secondary market's stored shipping snapshot must be
+	 * replaced by the current global method on read, so no consumer ever sees a stale
+	 * value. Here the stored snapshot is automatic/flat but the global rate is manual.
+	 */
+	public function test_get_markets_overwrites_secondary_shipping_with_global_method(): void {
+		$secondary = [
+			'fr' => [
+				'country'       => 'FR',
+				'language'      => [ 'fr' ],
+				'currency'      => [ 'EUR' ],
+				'feed_label'    => 'FR',
+				'shipping_rate' => 'automatic',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $secondary,
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'manual',
+					'shipping_time' => 'manual',
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$result = $this->market_service->get_markets();
+
+		$this->assertSame( 'manual', $result['fr']['shipping_rate'] );
+		$this->assertSame( 'manual', $result['fr']['shipping_time'] );
+		// The primary is composed from the same global option.
+		$this->assertSame( 'manual', $result['primary']['shipping_rate'] );
+		$this->assertSame( 'manual', $result['primary']['shipping_time'] );
+	}
+
 	public function test_get_markets_falls_back_to_default_when_empty(): void {
 		$this->set_up_options_get( [ OptionsInterface::MARKETS => null ] );
 		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
@@ -596,11 +633,9 @@ class MarketServiceTest extends UnitTest {
 			]
 		);
 
-		// The primary currency is derived from the WooCommerce Multilingual
-		// per-language defaults, so the supplied currency key is ignored.
 		$this->assertArrayHasKey( OptionsInterface::MERCHANT_CENTER, $update_calls );
 		$this->assertSame( [ 'en', 'fr' ], $update_calls[ OptionsInterface::MERCHANT_CENTER ]['language'] );
-		$this->assertArrayNotHasKey( 'currency', $update_calls[ OptionsInterface::MERCHANT_CENTER ] );
+		$this->assertSame( [ 'USD', 'EUR' ], $update_calls[ OptionsInterface::MERCHANT_CENTER ]['currency'] );
 	}
 
 	public function test_update_market_primary_deduplicates_languages_and_currencies(): void {
@@ -630,7 +665,7 @@ class MarketServiceTest extends UnitTest {
 		);
 
 		$this->assertSame( [ 'en', 'fr' ], $update_calls[ OptionsInterface::MERCHANT_CENTER ]['language'] );
-		$this->assertArrayNotHasKey( 'currency', $update_calls[ OptionsInterface::MERCHANT_CENTER ] );
+		$this->assertSame( [ 'USD', 'EUR' ], $update_calls[ OptionsInterface::MERCHANT_CENTER ]['currency'] );
 	}
 
 	public function test_update_market_primary_partial_update_preserves_other_keys(): void {
@@ -704,8 +739,7 @@ class MarketServiceTest extends UnitTest {
 
 		$persisted = $update_calls[ OptionsInterface::MERCHANT_CENTER ];
 		$this->assertSame( [ 'en', 'fr' ], $persisted['language'] );
-		// The supplied currency key is ignored; the stored value stays as it was.
-		$this->assertSame( [ 'USD' ], $persisted['currency'] );
+		$this->assertSame( [ 'USD', 'EUR' ], $persisted['currency'] );
 		$this->assertSame( 'automatic', $persisted['shipping_rate'] );
 		$this->assertSame( 'flat', $persisted['shipping_time'] );
 	}
@@ -744,8 +778,7 @@ class MarketServiceTest extends UnitTest {
 
 		$persisted = $update_calls[ OptionsInterface::MERCHANT_CENTER ];
 		$this->assertSame( [], $persisted['language'] );
-		// The supplied currency key is ignored; the stored value stays as it was.
-		$this->assertSame( [ 'USD', 'EUR' ], $persisted['currency'] );
+		$this->assertSame( [], $persisted['currency'] );
 		$this->assertSame( 'flat', $persisted['shipping_rate'] );
 	}
 
@@ -766,36 +799,24 @@ class MarketServiceTest extends UnitTest {
 		);
 	}
 
-	public function test_update_market_primary_ignores_currency_key_even_when_not_array(): void {
+	public function test_update_market_primary_rejects_non_array_currency(): void {
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MERCHANT_CENTER => [],
 				OptionsInterface::MARKETS         => [],
 			]
 		);
-		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
 
-		$update_calls = [];
-		$this->options->method( 'update' )
-			->willReturnCallback(
-				function ( $key, $value ) use ( &$update_calls ) {
-					$update_calls[ $key ] = $value;
-					return true;
-				}
-			);
+		$this->expectException( InvalidValue::class );
+		$this->expectExceptionMessage( 'The value of currency must be of type array.' );
 
-		// The Markets UI echoes the whole form back on every primary save, so a
-		// currency key is ignored (never rejected) and persists nothing.
-		$result = $this->market_service->update_market(
+		$this->market_service->update_market(
 			'primary',
 			[ 'currency' => 'USD' ]
 		);
-
-		$this->assertSame( 'primary', $result['id'] );
-		$this->assertArrayNotHasKey( OptionsInterface::MERCHANT_CENTER, $update_calls );
 	}
 
-	public function test_get_primary_market_returns_stored_language_and_derived_currency(): void {
+	public function test_get_primary_market_returns_stored_language_and_currency_when_set(): void {
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MERCHANT_CENTER => [
@@ -810,9 +831,7 @@ class MarketServiceTest extends UnitTest {
 		$result = $this->market_service->get_primary_market();
 
 		$this->assertSame( [ 'en', 'fr' ], $result['language'] );
-		// The stored currency setting is never read: with no multilingual
-		// integration every language keeps the site primary currency.
-		$this->assertSame( [ get_woocommerce_currency() ], $result['currency'] );
+		$this->assertSame( [ 'USD', 'EUR' ], $result['currency'] );
 	}
 
 	public function test_get_primary_market_falls_back_to_defaults_when_stored_value_invalid(): void {
@@ -940,7 +959,18 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->update_market( 'gb', [ 'country' => '' ] );
 	}
 
-	public function test_update_market_secondary_partial_update_succeeds(): void {
+	/**
+	 * The Edit Market screen submits shipping_rate/shipping_time on every save, but
+	 * a secondary market does not own a shipping method — it is global. Those params
+	 * must be dropped (not persisted, not error), while the market's other fields
+	 * still save, and the returned market reflects the global shipping method.
+	 */
+	public function test_update_market_secondary_drops_shipping_params_but_saves_other_fields(): void {
+		// Stored locale values are only read back verbatim while a multilingual
+		// integration is active; without one the read boundary masks them to
+		// the site locale, which would hide the saved currency below.
+		$this->wpml->method( 'is_active' )->willReturn( true );
+
 		$existing = [
 			'gb' => [
 				'country'       => 'GB',
@@ -951,13 +981,88 @@ class MarketServiceTest extends UnitTest {
 			],
 		];
 
-		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MARKETS         => $existing,
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
 		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
 
-		$result = $this->market_service->update_market( 'gb', [ 'shipping_rate' => 'flat' ] );
+		$result = $this->market_service->update_market(
+			'gb',
+			[
+				'shipping_rate' => 'manual',
+				'shipping_time' => 'manual',
+				'currency'      => [ 'EUR' ],
+			]
+		);
 
+		// The submitted shipping params are dropped; the result reflects the global method.
 		$this->assertSame( 'flat', $result['shipping_rate'] );
+		$this->assertSame( 'flat', $result['shipping_time'] );
+		// The non-shipping field still saved.
+		$this->assertSame( [ 'EUR' ], $result['currency'] );
 		$this->assertSame( 'GB', $result['country'] );
+	}
+
+	/**
+	 * A shipping-only edit (the Edit Market screen echoing the global method back on
+	 * save, while the stored snapshot is stale) must be a no-op: no shipping sync is
+	 * scheduled and the stored snapshot is left untouched. This is the exact scenario
+	 * the ticket names, and locks in both halves of the drop behaviour.
+	 */
+	public function test_update_market_secondary_shipping_only_edit_does_not_schedule_shipping_sync(): void {
+		$existing = [
+			'gb' => [
+				'country'       => 'GB',
+				'language'      => [ 'en' ],
+				'currency'      => [ 'GBP' ],
+				'feed_label'    => 'GB',
+				// Stale snapshot from before the merchant switched the global method.
+				'shipping_rate' => 'automatic',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $existing,
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'manual',
+					'shipping_time' => 'manual',
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->shipping_settings_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		// The Edit Market screen echoes the global method back on save.
+		$this->market_service->update_market(
+			'gb',
+			[
+				'shipping_rate' => 'manual',
+				'shipping_time' => 'manual',
+			]
+		);
+
+		// The submitted params were dropped, not persisted: the stored snapshot is untouched.
+		$this->assertSame( 'automatic', $update_calls[ OptionsInterface::MARKETS ]['gb']['shipping_rate'] );
+		$this->assertSame( 'flat', $update_calls[ OptionsInterface::MARKETS ]['gb']['shipping_time'] );
 	}
 
 	public function test_update_market_secondary_returns_updated_market(): void {
@@ -994,7 +1099,7 @@ class MarketServiceTest extends UnitTest {
 
 		$this->cleanup_job->expects( $this->once() )
 			->method( 'schedule' )
-			->with( [ 'feed_labels' => [ 'GB', 'GB-GBP', 'GB-EN-GBP' ] ] );
+			->with( [ 'feed_labels' => [ 'GB', 'GB-EN-GBP' ] ] );
 
 		// feed_label rename alone does not touch country/currency/shipping_rate/shipping_time.
 		$this->shipping_settings_job->expects( $this->never() )
@@ -1020,7 +1125,7 @@ class MarketServiceTest extends UnitTest {
 		// the market's entries and the old label's entries become orphans.
 		$this->cleanup_job->expects( $this->once() )
 			->method( 'schedule' )
-			->with( [ 'feed_labels' => [ 'GB', 'GB-GBP', 'GB-EN-GBP' ] ] );
+			->with( [ 'feed_labels' => [ 'GB', 'GB-EN-GBP' ] ] );
 
 		$this->market_service->update_market( 'gb', [ 'currency' => [ 'EUR' ] ] );
 	}
@@ -1078,28 +1183,32 @@ class MarketServiceTest extends UnitTest {
 		// orphans the old language's label; the new label is left alone.
 		$this->cleanup_job->expects( $this->once() )
 			->method( 'schedule' )
-			->with( [ 'feed_labels' => [ 'GB', 'GB-GBP', 'GB-EN-GBP' ] ] );
+			->with( [ 'feed_labels' => [ 'GB', 'GB-EN-GBP' ] ] );
 
 		$this->market_service->update_market( 'gb', [ 'language' => [ 'ga' ] ] );
 	}
 
-	public function test_add_market_with_manual_shipping_rate_does_not_schedule_shipping_sync(): void {
+	public function test_add_market_does_not_schedule_shipping_sync_when_global_is_manual(): void {
 		$config = [
-			'country'       => 'DE',
-			'language'      => [ 'de' ],
-			'currency'      => [ 'EUR' ],
-			'feed_label'    => 'DE',
-			'shipping_rate' => 'manual',
+			'country'    => 'DE',
+			'language'   => [ 'de' ],
+			'currency'   => [ 'EUR' ],
+			'feed_label' => 'DE',
 		];
 
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MARKETS         => [],
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'manual',
+					'shipping_time' => 'flat',
+				],
 				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
 			]
 		);
 		$this->options->method( 'update' )->willReturn( true );
 
+		// Global rate is manual → nothing to sync, regardless of the stored snapshot.
 		$this->shipping_settings_job->expects( $this->never() )
 			->method( 'schedule' );
 
@@ -1127,7 +1236,45 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->update_market( 'gb', [ 'language' => [ 'en', 'cy' ] ] );
 	}
 
-	public function test_delete_market_with_manual_shipping_rate_does_not_schedule_shipping_sync(): void {
+	public function test_delete_market_does_not_schedule_shipping_sync_when_global_is_manual(): void {
+		$existing = [
+			'gb' => [
+				'country'       => 'GB',
+				'language'      => [ 'en' ],
+				'currency'      => [ 'GBP' ],
+				'feed_label'    => 'GB',
+				// Stale snapshot says non-manual, but the global rate below is manual.
+				'shipping_rate' => 'automatic',
+				'shipping_time' => 'flat',
+			],
+		];
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $existing,
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'manual',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
+		$this->options->method( 'update' )->willReturn( true );
+
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		// Global rate is manual → no sync, even though the deleted snapshot was automatic.
+		$this->shipping_settings_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->delete_market( 'gb' );
+	}
+
+	/**
+	 * Inverse direction: the deleted market's stale snapshot says `manual`, but the
+	 * global rate is `flat`, so Google must still be notified after deletion.
+	 */
+	public function test_delete_market_schedules_shipping_sync_when_global_is_flat_despite_stale_manual(): void {
 		$existing = [
 			'gb' => [
 				'country'       => 'GB',
@@ -1139,13 +1286,21 @@ class MarketServiceTest extends UnitTest {
 			],
 		];
 
-		$this->set_up_options_get( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $existing,
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
 		$this->options->method( 'update' )->willReturn( true );
 
 		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
 		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
 
-		$this->shipping_settings_job->expects( $this->never() )
+		$this->shipping_settings_job->expects( $this->once() )
 			->method( 'schedule' );
 
 		$this->market_service->delete_market( 'gb' );
@@ -1471,6 +1626,10 @@ class MarketServiceTest extends UnitTest {
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MARKETS         => [],
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
 				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
 			]
 		);
@@ -1479,7 +1638,7 @@ class MarketServiceTest extends UnitTest {
 		$this->cleanup_job->expects( $this->never() )
 			->method( 'schedule' );
 
-		// shipping_rate defaults to 'flat' (non-manual) → shipping sync IS scheduled.
+		// Global shipping method is flat/flat (syncable) → shipping sync IS scheduled.
 		$this->shipping_settings_job->expects( $this->once() )
 			->method( 'schedule' );
 
@@ -1647,7 +1806,15 @@ class MarketServiceTest extends UnitTest {
 			],
 		];
 
-		$this->set_up_options_get( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => $existing,
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
 		$this->options->method( 'update' )->willReturn( true );
 
 		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
@@ -1655,9 +1822,9 @@ class MarketServiceTest extends UnitTest {
 
 		$this->cleanup_job->expects( $this->once() )
 			->method( 'schedule' )
-			->with( [ 'feed_labels' => [ 'GB', 'GB-GBP', 'GB-EN-GBP' ] ] );
+			->with( [ 'feed_labels' => [ 'GB', 'GB-EN-GBP' ] ] );
 
-		// Non-manual shipping_rate → shipping sync also scheduled.
+		// Global shipping method is flat/flat (syncable) → shipping sync also scheduled.
 		$this->shipping_settings_job->expects( $this->once() )
 			->method( 'schedule' );
 
@@ -2081,7 +2248,11 @@ class MarketServiceTest extends UnitTest {
 
 		$this->set_up_options_get(
 			[
-				OptionsInterface::MARKETS => [ 'fr' => $stored_config ],
+				OptionsInterface::MARKETS         => [ 'fr' => $stored_config ],
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
 			]
 		);
 
@@ -2101,8 +2272,16 @@ class MarketServiceTest extends UnitTest {
 			remove_action( 'woocommerce_gla_market_deleted', $listener, 10 );
 		}
 
+		// The payload carries the deleted config with the current global shipping method.
+		$expected_config = array_merge(
+			$stored_config,
+			[
+				'shipping_rate' => 'flat',
+				'shipping_time' => 'flat',
+			]
+		);
 		$this->assertCount( 1, $captured );
-		$this->assertSame( [ 'fr', $stored_config ], $captured[0] );
+		$this->assertSame( [ 'fr', $expected_config ], $captured[0] );
 	}
 
 	public function test_delete_market_coerces_null_options_to_empty_array(): void {
@@ -2484,6 +2663,12 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( 'manual', $stored_jp['shipping_time'] );
 	}
 
+	/**
+	 * An explicit shipping_rate/shipping_time in the add request is still persisted
+	 * as the stored snapshot. This is storage-only: the snapshot no longer drives any
+	 * decision (get_markets() overwrites it with the global method on read, and the
+	 * sync gate reads the global setting), but the write itself is preserved.
+	 */
 	public function test_add_market_explicit_shipping_mode_takes_precedence_over_mc_settings(): void {
 		$mc_settings = [
 			'shipping_rate' => 'automatic',
@@ -2876,7 +3061,6 @@ class MarketServiceTest extends UnitTest {
 		$wpml = $this->createMock( WPML::class );
 		$wpml->method( 'is_active' )->willReturn( true );
 		$wpml->method( 'get_default_language_code' )->willReturn( 'fr' );
-		$wpml->method( 'get_default_currency_for_language' )->willReturn( '' );
 		$wpml->method( 'get_languages' )->willReturn(
 			[
 				[
@@ -3008,7 +3192,14 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->get_markets();
 	}
 
-	public function test_has_syncable_markets_true_when_only_secondary_is_non_manual(): void {
+	/**
+	 * Regression (GOOWOO-773): a secondary market keeps a stale snapshot of the
+	 * shipping method (here `flat`) from when it was created. After the merchant
+	 * switches the global rate to `manual`, the sync check must follow the global
+	 * setting, not the stale snapshot — otherwise a sync is attempted with no DB
+	 * rates and the DB adapter throws (500 error on saving the setting).
+	 */
+	public function test_has_syncable_markets_false_when_global_is_manual_despite_stale_secondary(): void {
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MERCHANT_CENTER => [
@@ -3030,7 +3221,68 @@ class MarketServiceTest extends UnitTest {
 		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
 		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
 
+		$this->assertFalse( $this->market_service->has_syncable_markets() );
+	}
+
+	/**
+	 * The inverse of the regression case: a secondary market's stale snapshot says
+	 * `manual`, but the global rate is `flat`, so the store is syncable.
+	 */
+	public function test_has_syncable_markets_true_when_global_is_flat_despite_stale_manual_secondary(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'fr' => [
+						'country'       => 'FR',
+						'feed_label'    => 'FR',
+						'language'      => [ 'fr' ],
+						'currency'      => [ 'EUR' ],
+						'shipping_rate' => 'manual',
+						'shipping_time' => 'flat',
+					],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
 		$this->assertTrue( $this->market_service->has_syncable_markets() );
+	}
+
+	public function test_has_syncable_markets_true_when_global_is_automatic(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->assertTrue( $this->market_service->has_syncable_markets() );
+	}
+
+	/**
+	 * A missing/unset shipping_rate (with a flat time) is not syncable — the old
+	 * `'manual' !== $rate` check would have wrongly treated null as syncable.
+	 */
+	public function test_has_syncable_markets_false_when_rate_is_null(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$this->assertFalse( $this->market_service->has_syncable_markets() );
 	}
 
 	public function test_has_syncable_markets_false_when_every_market_is_manual(): void {
@@ -3293,6 +3545,10 @@ class MarketServiceTest extends UnitTest {
 		$this->set_up_options_get(
 			[
 				OptionsInterface::MARKETS         => [ 'gb' => $existing_entry ],
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
 				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'US' ] ],
 			]
 		);
@@ -3316,6 +3572,8 @@ class MarketServiceTest extends UnitTest {
 
 		$this->market_service->delete_market( 'gb' );
 
+		// The stored snapshot already matches the global method (flat/flat), so the
+		// payload equals the deleted config.
 		$this->assertSame( 1, $fired_count );
 		$this->assertSame( 'gb', $captured_id );
 		$this->assertSame( $existing_entry, $captured_config );
@@ -3371,10 +3629,10 @@ class MarketServiceTest extends UnitTest {
 
 		// A removed language's entries live under its own derived label, so
 		// label-based cleanup covers them; the removed label plus the
-		// pre-language-scheme keys are cleaned, the surviving label is not.
+		// verbatim-label key are cleaned, the surviving label is not.
 		$this->cleanup_job->expects( $this->once() )
 			->method( 'schedule' )
-			->with( [ 'feed_labels' => [ 'GB', 'GB-GBP', 'GB-CY-GBP' ] ] );
+			->with( [ 'feed_labels' => [ 'GB', 'GB-CY-GBP' ] ] );
 		$this->language_cleanup_job->expects( $this->never() )->method( 'schedule' );
 
 		$this->market_service->update_market( 'gb', [ 'language' => [ 'en' ] ] );
@@ -3433,7 +3691,7 @@ class MarketServiceTest extends UnitTest {
 
 		$this->cleanup_job->expects( $this->once() )
 			->method( 'schedule' )
-			->with( [ 'feed_labels' => [ 'GB', 'GB-GBP', 'GB-EN-GBP', 'GB-CY-GBP' ] ] );
+			->with( [ 'feed_labels' => [ 'GB', 'GB-EN-GBP', 'GB-CY-GBP' ] ] );
 		$this->language_cleanup_job->expects( $this->never() )->method( 'schedule' );
 
 		$this->market_service->update_market(
@@ -4245,7 +4503,9 @@ class MarketServiceTest extends UnitTest {
 		// leaves the currency and exchange rate untouched must not fail on it.
 		$result = $this->create_service_with_wpml( $wpml )->update_market( 'gb', [ 'shipping_rate' => 'flat' ] );
 
-		$this->assertSame( 'flat', $result['shipping_rate'] );
+		// Secondary markets do not own a shipping method (the submitted value
+		// is dropped), so completion is asserted through the returned market.
+		$this->assertSame( 'GB', $result['country'] );
 	}
 
 	public function test_update_market_secondary_schedules_update_all_products_when_only_exchange_rate_differs(): void {
@@ -4287,21 +4547,6 @@ class MarketServiceTest extends UnitTest {
 		$this->market_service->update_market( 'gb', [ 'exchange_rate' => 1.15 ] );
 	}
 
-	public function test_update_market_primary_currency_key_does_not_schedule_update_all_products(): void {
-		$this->set_up_options_get_with_tracking(
-			[
-				OptionsInterface::MERCHANT_CENTER => [ 'currency' => [ 'USD' ] ],
-				OptionsInterface::MARKETS         => [],
-			]
-		);
-		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
-
-		$this->update_all_products_job->expects( $this->never() )
-			->method( 'schedule' );
-
-		$this->market_service->update_market( 'primary', [ 'currency' => [ 'EUR' ] ] );
-	}
-
 	public function test_get_markets_keeps_stored_currency_for_market_with_exchange_rate_when_not_multilingual(): void {
 		$secondary = [
 			'de' => [
@@ -4332,69 +4577,6 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( [ get_woocommerce_currency() ], $markets['gb']['currency'] );
 	}
 
-	public function test_get_primary_market_derives_currencies_from_wcml_language_defaults(): void {
-		$this->wpml->method( 'is_active' )->willReturn( true );
-		$this->wpml->method( 'get_default_currency_for_language' )
-			->willReturnMap(
-				[
-					[ 'en', '' ],
-					[ 'de', 'EUR' ],
-				]
-			);
-
-		$this->set_up_options_get(
-			[
-				OptionsInterface::MERCHANT_CENTER => [ 'language' => [ 'en', 'de' ] ],
-				OptionsInterface::MARKETS         => [],
-			]
-		);
-		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
-
-		$result = $this->market_service->get_primary_market();
-
-		// 'de' pairs with EUR in the WooCommerce Multilingual defaults; 'en'
-		// has no pairing and keeps the site primary currency.
-		$this->assertSame( [ 'USD', 'EUR' ], $result['currency'] );
-	}
-
-	public function test_register_schedules_update_all_products_when_wcml_default_currencies_change(): void {
-		$this->market_service->register();
-
-		$this->update_all_products_job->expects( $this->once() )
-			->method( 'schedule' );
-
-		do_action(
-			'update_option__wcml_settings',
-			[ 'default_currencies' => [ 'de' => 'EUR' ] ],
-			[ 'default_currencies' => [ 'de' => 'CHF' ] ]
-		);
-	}
-
-	public function test_register_does_not_schedule_when_wcml_default_currencies_unchanged(): void {
-		$this->market_service->register();
-
-		$this->update_all_products_job->expects( $this->never() )
-			->method( 'schedule' );
-
-		do_action(
-			'update_option__wcml_settings',
-			[
-				'default_currencies' => [
-					'de' => 'EUR',
-					'fr' => 'EUR',
-				],
-				'other_setting'      => 1,
-			],
-			[
-				'default_currencies' => [
-					'fr' => 'EUR',
-					'de' => 'EUR',
-				],
-				'other_setting'      => 2,
-			]
-		);
-	}
-
 	/**
 	 * Builds a MarketService around a locally configured WPML mock, for tests
 	 * whose WPML behaviour must differ from the permissive setUp defaults.
@@ -4415,6 +4597,211 @@ class MarketServiceTest extends UnitTest {
 		$service->set_options_object( $this->options );
 
 		return $service;
+	}
+
+	public function test_get_participating_currencies_drops_foreign_currency_without_conversion(): void {
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+
+		$market = [ 'currency' => [ get_woocommerce_currency(), 'AED' ] ];
+
+		$this->assertSame( [ get_woocommerce_currency() ], $this->market_service->get_participating_currencies( $market ) );
+	}
+
+	public function test_get_participating_currencies_includes_foreign_currency_with_conversion(): void {
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
+
+		$market = [ 'currency' => [ get_woocommerce_currency(), 'AED' ] ];
+
+		$this->assertSame( [ get_woocommerce_currency(), 'AED' ], $this->market_service->get_participating_currencies( $market ) );
+	}
+
+	public function test_get_all_feed_labels_includes_every_currency_of_a_market(): void {
+		$this->wpml->method( 'is_active' )->willReturn( true );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
+
+		$secondary = [
+			'ae' => [
+				'country'    => 'AE',
+				'language'   => [ 'en', 'fr' ],
+				'currency'   => [ get_woocommerce_currency(), 'AED' ],
+				'feed_label' => 'AE',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$result = $this->market_service->get_all_feed_labels();
+
+		$store_currency = get_woocommerce_currency();
+		$this->assertContains( 'US', $result );
+		$this->assertContains( 'AE-EN-' . $store_currency, $result );
+		$this->assertContains( 'AE-FR-' . $store_currency, $result );
+		$this->assertContains( 'AE-EN-AED', $result );
+		$this->assertContains( 'AE-FR-AED', $result );
+		$this->assertCount( 5, $result );
+	}
+
+	public function test_get_all_feed_labels_excludes_non_participating_currency(): void {
+		$this->wpml->method( 'is_active' )->willReturn( true );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+
+		$secondary = [
+			'ae' => [
+				'country'    => 'AE',
+				'language'   => [ 'en' ],
+				'currency'   => [ get_woocommerce_currency(), 'AED' ],
+				'feed_label' => 'AE',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $secondary ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		$result = $this->market_service->get_all_feed_labels();
+
+		$this->assertContains( 'AE-EN-' . get_woocommerce_currency(), $result );
+		$this->assertNotContains( 'AE-EN-AED', $result );
+	}
+
+	public function test_get_all_feed_labels_includes_primary_extra_currency_labels(): void {
+		$this->wpml->method( 'is_active' )->willReturn( true );
+		$this->wpml->method( 'can_convert_currency' )->willReturn( true );
+
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::MERCHANT_CENTER => [
+					'language' => [ 'en', 'fr' ],
+					'currency' => [ get_woocommerce_currency(), 'EUR' ],
+				],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'GB', [ 'GB' ] );
+
+		$result = $this->market_service->get_all_feed_labels();
+
+		// The store currency keeps the bare label; only the extra currency
+		// gets per-language derived labels.
+		$this->assertContains( 'GB', $result );
+		$this->assertContains( 'GB-EN-EUR', $result );
+		$this->assertContains( 'GB-FR-EUR', $result );
+		$this->assertNotContains( 'GB-EN-' . get_woocommerce_currency(), $result );
+		$this->assertCount( 3, $result );
+	}
+
+	public function test_update_market_schedules_cleanup_for_removed_currency_labels(): void {
+		$existing = [
+			'gb' => [
+				'country'    => 'GB',
+				'language'   => [ 'en' ],
+				'currency'   => [ 'GBP', 'EUR' ],
+				'feed_label' => 'GB',
+			],
+		];
+
+		$this->set_up_options_get_with_tracking( [ OptionsInterface::MARKETS => $existing ] );
+		$this->set_up_primary_market_dependencies( 'US', [ 'US' ] );
+
+		// Removing EUR orphans the EUR label; the still-configured GBP
+		// language label stays out of the cleanup set.
+		$this->cleanup_job->expects( $this->once() )
+			->method( 'schedule' )
+			->with( [ 'feed_labels' => [ 'GB', 'GB-EN-EUR' ] ] );
+
+		$this->market_service->update_market( 'gb', [ 'currency' => [ 'GBP' ] ] );
+	}
+
+	public function test_update_market_primary_schedules_cleanup_for_removed_currency(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'language' => [ 'en', 'fr' ],
+					'currency' => [ get_woocommerce_currency(), 'EUR' ],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'GB' ] ],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'GB', [ 'GB' ] );
+
+		$this->cleanup_job->expects( $this->once() )
+			->method( 'schedule' )
+			->with( [ 'feed_labels' => [ 'GB-EN-EUR', 'GB-FR-EUR' ] ] );
+
+		$this->market_service->update_market( 'primary', [ 'currency' => [ get_woocommerce_currency() ] ] );
+	}
+
+	public function test_update_market_primary_removing_store_currency_schedules_no_cleanup(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'language' => [ 'en' ],
+					'currency' => [ get_woocommerce_currency(), 'EUR' ],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [ 'countries' => [ 'GB' ] ],
+			]
+		);
+		$this->set_up_primary_market_dependencies( 'GB', [ 'GB' ] );
+
+		// The store currency's entries live under the bare main feed label,
+		// which stays current, so removing the store currency from the
+		// configured list must not clean anything up.
+		$this->cleanup_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->market_service->update_market( 'primary', [ 'currency' => [ 'EUR' ] ] );
+	}
+
+	public function test_delete_market_schedules_cleanup_with_every_currency_label(): void {
+		$store_currency = get_woocommerce_currency();
+
+		$existing = [
+			'ae' => [
+				'country'    => 'AE',
+				'language'   => [ 'en', 'fr' ],
+				'currency'   => [ $store_currency, 'AED' ],
+				'feed_label' => 'AE',
+			],
+		];
+
+		$this->set_up_options_get( [ OptionsInterface::MARKETS => $existing ] );
+		$this->options->method( 'update' )->willReturn( true );
+		$this->shipping_rate_query->method( 'get_results' )->willReturn( [] );
+		$this->shipping_time_query->method( 'get_results' )->willReturn( [] );
+
+		$this->cleanup_job->expects( $this->once() )
+			->method( 'schedule' )
+			->with(
+				[
+					'feed_labels' => [
+						'AE',
+						'AE-EN-' . $store_currency,
+						'AE-FR-' . $store_currency,
+						'AE-EN-AED',
+						'AE-FR-AED',
+					],
+				]
+			);
+
+		$this->market_service->delete_market( 'ae' );
+	}
+
+	public function test_conversion_availability_change_with_primary_extra_currency_schedules(): void {
+		$this->set_up_options_get_with_tracking(
+			[
+				OptionsInterface::CURRENCY_CONVERSION_AVAILABLE => 'yes',
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::MERCHANT_CENTER => [
+					'currency' => [ get_woocommerce_currency(), 'EUR' ],
+				],
+			]
+		);
+		$this->wpml->method( 'can_convert_currency' )->willReturn( false );
+
+		$this->shipping_settings_job->expects( $this->once() )->method( 'schedule' );
+		$this->update_all_products_job->expects( $this->once() )->method( 'schedule' );
+
+		$this->invoke_conversion_availability_handler();
 	}
 
 	/**

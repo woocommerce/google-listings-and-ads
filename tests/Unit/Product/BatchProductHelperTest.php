@@ -71,6 +71,15 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 	/** @var AttributeMappingRulesQuery $rules_query */
 	protected $rules_query;
 
+	/**
+	 * Converted price per currency code returned by the WPML stub configured in
+	 * set_up_market_service_stubs(); a null value marks the currency as
+	 * unconvertible. Currencies not in the map convert to the product's own price.
+	 *
+	 * @var array<string, float|null>
+	 */
+	protected $wpml_converted_prices = [];
+
 	public function test_filter_synced_products_all_synced() {
 		$synced_product = WC_Helper_Product::create_simple_product();
 		$this->product_helper->mark_as_synced( $synced_product, $this->generate_google_product_mock() );
@@ -522,83 +531,6 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertSame( 'fr', $results[0]['input']->get_content_language() );
 	}
 
-	public function test_generate_mapi_update_entries_primary_entry_priced_in_language_default_currency() {
-		$product = WC_Helper_Product::create_simple_product(
-			true,
-			[
-				'price'         => 10,
-				'regular_price' => 10,
-			]
-		);
-
-		$this->market_service->method( 'has_multilingual_support' )->willReturn( true );
-		$this->wpml->method( 'get_post_language' )->willReturn( 'fr' );
-		$this->wpml->method( 'get_default_currency_for_language' )
-			->willReturnMap( [ [ 'fr', 'EUR' ] ] );
-		$this->wpml->method( 'get_product_price_in_currency' )->willReturn( 9.2 );
-
-		$this->set_up_market_service_stubs(
-			[ 'US' ],
-			[
-				'primary' => [
-					'country'    => 'US',
-					'feed_label' => 'US',
-					'language'   => [ 'en', 'fr' ],
-				],
-			]
-		);
-
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
-		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
-
-		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
-
-		// The product's language pairs with EUR in the WooCommerce Multilingual
-		// defaults, so the primary entry is priced in EUR while keeping the
-		// bare primary feed label.
-		$this->assertCount( 1, $results );
-		$attributes = $results[0]['input']->get_attributes();
-		$this->assertSame( 'EUR', $attributes['price']['currencyCode'] );
-		$this->assertSame( '9200000', $attributes['price']['amountMicros'] );
-		$this->assertSame( 'US', $results[0]['input']->get_feed_label() );
-	}
-
-	public function test_generate_mapi_update_entries_primary_entry_keeps_store_currency_without_language_pairing() {
-		$product = WC_Helper_Product::create_simple_product(
-			true,
-			[
-				'price'         => 10,
-				'regular_price' => 10,
-			]
-		);
-
-		$this->market_service->method( 'has_multilingual_support' )->willReturn( true );
-		$this->wpml->method( 'get_post_language' )->willReturn( 'fr' );
-		$this->wpml->method( 'get_default_currency_for_language' )->willReturn( '' );
-
-		$this->set_up_market_service_stubs(
-			[ 'US' ],
-			[
-				'primary' => [
-					'country'    => 'US',
-					'feed_label' => 'US',
-					'language'   => [ 'en', 'fr' ],
-				],
-			]
-		);
-
-		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
-		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
-
-		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
-
-		// A language with no WooCommerce Multilingual currency pairing keeps
-		// the store currency.
-		$this->assertCount( 1, $results );
-		$attributes = $results[0]['input']->get_attributes();
-		$this->assertSame( get_woocommerce_currency(), $attributes['price']['currencyCode'] );
-	}
-
 	public function test_generate_mapi_update_entries_secondary_market_exchange_rate_converts_price() {
 		$product = WC_Helper_Product::create_simple_product(
 			true,
@@ -609,6 +541,10 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		);
 
 		$this->market_service->method( 'has_multilingual_support' )->willReturn( false );
+
+		// No WPML conversion for EUR, so the market's fixed exchange rate is
+		// the entry's only conversion source.
+		$this->wpml_converted_prices['EUR'] = null;
 
 		$this->set_up_market_service_stubs(
 			[ 'US', 'DE' ],
@@ -1125,6 +1061,53 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertEmpty( $results );
 	}
 
+	public function test_generate_mapi_delete_entries_deletes_legacy_colon_id() {
+		// A product synced before the MAPI cutover stores a legacy Content
+		// API id (online:lang:country:offerId). It must still produce a delete entry instead of
+		// being skipped, otherwise it lingers in Merchant Center after the product is deleted.
+		$products = $this->create_and_return_supported_test_products();
+		$product  = $products[0];
+
+		$this->product_helper->mark_as_synced(
+			$product,
+			$this->generate_google_product_mock( "online:en:US:gla_{$product->get_id()}", 'US' )
+		);
+
+		$results = $this->batch_product_helper->generate_mapi_delete_entries( [ $product ] );
+
+		$this->assertCount( 1, $results );
+		$this->assertSame( "online:en:US:gla_{$product->get_id()}", $results[0]['google_id'] );
+		$this->assertSame( 'en', $results[0]['input']->get_content_language() );
+		$this->assertSame( 'US', $results[0]['input']->get_feed_label() );
+		$this->assertSame( "gla_{$product->get_id()}", $results[0]['input']->get_offer_id() );
+	}
+
+	public function test_parse_deletable_identity_accepts_mapi_and_legacy_ids() {
+		$this->assertSame(
+			[ 'en', 'US', 'gla_29' ],
+			$this->batch_product_helper->parse_deletable_identity( 'en~US~gla_29' )
+		);
+		$this->assertSame(
+			[ 'en', 'US', 'gla_29' ],
+			$this->batch_product_helper->parse_deletable_identity( 'online:en:US:gla_29' )
+		);
+		$this->assertNull( $this->batch_product_helper->parse_deletable_identity( 'malformed-id' ) );
+
+		// A four-part colon string that is not an `online` Content API id is not a legacy id.
+		$this->assertNull( $this->batch_product_helper->parse_deletable_identity( 'local:en:US:gla_29' ) );
+		$this->assertNull( $this->batch_product_helper->parse_deletable_identity( 'foo:bar:baz:qux' ) );
+	}
+
+	public function test_parse_mapi_identity_rejects_legacy_colon_id() {
+		// parse_mapi_identity stays tilde-only: the status read path relies on it returning null for
+		// legacy ids, which the Merchant API rejects as invalid resource names.
+		$this->assertNull( $this->batch_product_helper->parse_mapi_identity( 'online:en:US:gla_29' ) );
+		$this->assertSame(
+			[ 'en', 'US', 'gla_29' ],
+			$this->batch_product_helper->parse_mapi_identity( 'en~US~gla_29' )
+		);
+	}
+
 	public function test_generate_stale_products_delete_entries() {
 		$products         = $this->create_and_return_supported_test_products();
 		$stale_product    = $products[0];
@@ -1156,6 +1139,35 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertNotContains( $stale_google_ids['US'], $google_ids );
 	}
 
+	public function test_generate_stale_products_delete_entries_handles_legacy_colon_id() {
+		// Regression (GOOWOO-802): the stale-products cleanup path must convert a legacy Content API
+		// id, not skip it, or the out-of-audience country's entry lingers in Merchant Center.
+		$products         = $this->create_and_return_supported_test_products();
+		$stale_product    = $products[0];
+		$stale_product_id = $stale_product->get_id();
+
+		$this->target_audience->expects( $this->once() )
+			->method( 'get_target_countries' )
+			->willReturn( [ 'US' ] );
+
+		// AU is no longer in the target audience and stored under the legacy colon format.
+		$this->product_meta->update_google_ids(
+			$stale_product,
+			[
+				'AU' => "online:en:AU:gla_{$stale_product_id}",
+				'US' => "online:en:US:gla_{$stale_product_id}",
+			]
+		);
+
+		$results = $this->batch_product_helper->generate_stale_products_delete_entries( $products );
+
+		$this->assertCount( 1, $results );
+		$this->assertSame( "online:en:AU:gla_{$stale_product_id}", $results[0]['google_id'] );
+		$this->assertSame( 'en', $results[0]['input']->get_content_language() );
+		$this->assertSame( 'AU', $results[0]['input']->get_feed_label() );
+		$this->assertSame( "gla_{$stale_product_id}", $results[0]['input']->get_offer_id() );
+	}
+
 	public function test_generate_stale_countries_delete_entries() {
 		$products         = $this->create_and_return_supported_test_products();
 		$stale_product    = $products[0];
@@ -1185,6 +1197,35 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertContains( $stale_google_ids['AU'], $google_ids );
 		$this->assertContains( $stale_google_ids['DK'], $google_ids );
 		$this->assertNotContains( $stale_google_ids['US'], $google_ids );
+	}
+
+	public function test_generate_stale_countries_delete_entries_handles_legacy_colon_id() {
+		// Regression (GOOWOO-802): the stale-country cleanup path must convert a legacy Content API
+		// id, not skip it, or the entry for the stale country lingers in Merchant Center.
+		$products         = $this->create_and_return_supported_test_products();
+		$stale_product    = $products[0];
+		$stale_product_id = $stale_product->get_id();
+
+		$this->target_audience->expects( $this->once() )
+			->method( 'get_main_target_country' )
+			->willReturn( 'US' );
+
+		// AU is stale (not the main country) and stored under the legacy colon format.
+		$this->product_meta->update_google_ids(
+			$stale_product,
+			[
+				'AU' => "online:en:AU:gla_{$stale_product_id}",
+				'US' => "online:en:US:gla_{$stale_product_id}",
+			]
+		);
+
+		$results = $this->batch_product_helper->generate_stale_countries_delete_entries( $products );
+
+		$this->assertCount( 1, $results );
+		$this->assertSame( "online:en:AU:gla_{$stale_product_id}", $results[0]['google_id'] );
+		$this->assertSame( 'en', $results[0]['input']->get_content_language() );
+		$this->assertSame( 'AU', $results[0]['input']->get_feed_label() );
+		$this->assertSame( "gla_{$stale_product_id}", $results[0]['input']->get_offer_id() );
 	}
 
 	public function test_generate_mapi_update_entries_merges_parent_and_variation_attributes() {
@@ -1429,7 +1470,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertSame( 'AUD', $captured_currencies_by_country['AU'] );
 	}
 
-	public function test_primary_entry_uses_store_currency_regardless_of_market_currency_array() {
+	public function test_primary_bare_label_entry_keeps_store_currency_and_extra_currency_adds_derived_entry() {
 		$product = WC_Helper_Product::create_simple_product();
 
 		$this->set_up_market_service_stubs(
@@ -1439,7 +1480,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 					'country'    => 'US',
 					'feed_label' => 'US',
 					'language'   => 'en',
-					'currency'   => [ 'EUR' ],
+					'currency'   => [ get_woocommerce_currency(), 'EUR' ],
 				],
 			]
 		);
@@ -1449,8 +1490,230 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
 
-		$this->assertCount( 1, $results );
+		$this->assertCount( 2, $results );
+
+		// The bare-label entry always prices in the store currency.
+		$this->assertSame( 'US', $results[0]['input']->get_feed_label() );
 		$this->assertSame( get_woocommerce_currency(), $results[0]['input']->get_attributes()['price']['currencyCode'] );
+
+		// The additional currency gets its own derived-label entry with
+		// converted prices; both entries stay attached to the primary country.
+		$this->assertSame( 'US-EN-EUR', $results[1]['input']->get_feed_label() );
+		$this->assertSame( 'EUR', $results[1]['input']->get_attributes()['price']['currencyCode'] );
+		$this->assertSame( 'US', $results[1]['country'] );
+	}
+
+	public function test_secondary_market_with_two_currencies_emits_one_entry_per_currency() {
+		$product        = WC_Helper_Product::create_simple_product();
+		$store_currency = get_woocommerce_currency();
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'AE' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+				'ae'      => [
+					'country'    => 'AE',
+					'feed_label' => 'AE',
+					'language'   => [ 'en' ],
+					'currency'   => [ $store_currency, 'AED' ],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+
+		$this->assertCount( 3, $results );
+
+		$labels = array_map(
+			static function ( array $entry ): string {
+				return $entry['input']->get_feed_label();
+			},
+			$results
+		);
+
+		$this->assertContains( 'AE-EN-' . $store_currency, $labels );
+		$this->assertContains( 'AE-EN-AED', $labels );
+
+		foreach ( $results as $entry ) {
+			if ( 'AE-EN-AED' === $entry['input']->get_feed_label() ) {
+				$this->assertSame( 'AED', $entry['input']->get_attributes()['price']['currencyCode'] );
+			}
+			if ( 'AE-EN-' . $store_currency === $entry['input']->get_feed_label() ) {
+				$this->assertSame( $store_currency, $entry['input']->get_attributes()['price']['currencyCode'] );
+			}
+		}
+	}
+
+	public function test_unconvertible_currency_skips_only_that_currency_entry() {
+		$product        = WC_Helper_Product::create_simple_product();
+		$store_currency = get_woocommerce_currency();
+
+		// AED has no converted price, so its entry is skipped while the
+		// store-currency entry and the primary entry still sync.
+		$this->wpml_converted_prices['AED'] = null;
+
+		$this->set_up_market_service_stubs(
+			[ 'US', 'AE' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+				'ae'      => [
+					'country'    => 'AE',
+					'feed_label' => 'AE',
+					'language'   => [ 'en' ],
+					'currency'   => [ $store_currency, 'AED' ],
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$results = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+
+		$this->assertCount( 2, $results );
+
+		$labels = array_map(
+			static function ( array $entry ): string {
+				return $entry['input']->get_feed_label();
+			},
+			$results
+		);
+
+		$this->assertContains( 'US', $labels );
+		$this->assertContains( 'AE-EN-' . $store_currency, $labels );
+		$this->assertNotContains( 'AE-EN-AED', $labels );
+	}
+
+	public function test_stale_entry_generators_keep_every_configured_currency_label() {
+		$products         = $this->create_and_return_supported_test_products();
+		$stale_product    = $products[0];
+		$stale_product_id = $stale_product->get_id();
+
+		$this->market_service->expects( $this->any() )
+			->method( 'get_all_feed_labels' )
+			->willReturn( [ 'US', 'AE-EN-USD', 'AE-EN-AED' ] );
+
+		$google_ids = [
+			'AE-EN-USD' => "en~AE-EN-USD~gla_{$stale_product_id}",
+			'AE-EN-AED' => "en~AE-EN-AED~gla_{$stale_product_id}",
+			'DK'        => "en~DK~gla_{$stale_product_id}",
+		];
+		$this->product_meta->update_google_ids( $stale_product, $google_ids );
+
+		$results = $this->batch_product_helper->generate_stale_products_delete_entries( $products );
+
+		$this->assertCount( 1, $results );
+		$this->assertContains( $google_ids['DK'], array_column( $results, 'google_id' ) );
+	}
+
+	public function test_generate_skips_unchanged_recently_synced_product() {
+		$this->set_up_market_service_stubs(
+			[ 'US' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$product = WC_Helper_Product::create_simple_product();
+
+		// First pass builds the entry and its payload hash.
+		$entries = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		$this->assertCount( 1, $entries );
+		$hash = $entries[0]['hash'];
+
+		// Simulate a successful sync of that payload.
+		$this->product_meta->update_sync_hash( $product, $hash );
+		$this->product_meta->update_synced_at( $product, time() );
+
+		// Unchanged and recently synced: skipped.
+		$this->assertEmpty( $this->batch_product_helper->generate_mapi_update_entries( [ $product ] ) );
+
+		// Stale sync (older than the expiry window): not skipped, so it gets refreshed.
+		$this->product_meta->update_synced_at( $product, time() - ( 26 * DAY_IN_SECONDS ) );
+		$this->assertCount( 1, $this->batch_product_helper->generate_mapi_update_entries( [ $product ] ) );
+	}
+
+	public function test_force_resync_filter_includes_unchanged_product() {
+		$this->set_up_market_service_stubs(
+			[ 'US' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$product = WC_Helper_Product::create_simple_product();
+		$entries = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		$this->product_meta->update_sync_hash( $product, $entries[0]['hash'] );
+		$this->product_meta->update_synced_at( $product, time() );
+
+		// Would be skipped without the filter.
+		$this->assertEmpty( $this->batch_product_helper->generate_mapi_update_entries( [ $product ] ) );
+
+		add_filter( 'woocommerce_gla_force_product_resync', '__return_true' );
+		$forced = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		remove_filter( 'woocommerce_gla_force_product_resync', '__return_true' );
+
+		$this->assertCount( 1, $forced );
+	}
+
+	public function test_freshness_filter_is_clamped_to_the_expiry_window() {
+		$this->set_up_market_service_stubs(
+			[ 'US' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$product = WC_Helper_Product::create_simple_product();
+		$entries = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		$this->product_meta->update_sync_hash( $product, $entries[0]['hash'] );
+		// Synced 30 days ago: past the 25-day resubmission window.
+		$this->product_meta->update_synced_at( $product, time() - ( 30 * DAY_IN_SECONDS ) );
+
+		// A freshness filter above the expiry window must not let the product be skipped,
+		// or ResubmitExpiringProducts would no-op and the product could expire out of MC.
+		add_filter(
+			'woocommerce_gla_sync_hash_freshness',
+			function () {
+				return 60 * DAY_IN_SECONDS;
+			}
+		);
+		$entries2 = $this->batch_product_helper->generate_mapi_update_entries( [ $product ] );
+		remove_all_filters( 'woocommerce_gla_sync_hash_freshness' );
+
+		$this->assertCount( 1, $entries2 );
 	}
 
 	/**
@@ -1485,6 +1748,38 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->market_service->method( 'get_all_countries' )->willReturn( $all_countries );
 		$this->market_service->method( 'get_participating_markets' )->willReturn( $markets );
 		$this->market_service->method( 'get_main_feed_label' )->willReturn( $main_feed_label );
+
+		// Mirrors MarketService::get_participating_currencies() with every
+		// configured currency treated as convertible: the market's configured
+		// currencies without duplicates, or the store currency when none are
+		// configured.
+		$this->market_service->method( 'get_participating_currencies' )->willReturnCallback(
+			static function ( array $market ): array {
+				$configured = is_array( $market['currency'] ?? null )
+					? $market['currency']
+					: [ $market['currency'] ?? '' ];
+
+				$currencies = array_values( array_unique( array_filter( array_map( 'strval', $configured ) ) ) );
+
+				return empty( $currencies ) ? [ get_woocommerce_currency() ] : $currencies;
+			}
+		);
+
+		// Non-store-currency entries are skipped when no converted price is
+		// available, so the WPML stub returns the product's own price for any
+		// requested currency; a test can mark a currency unconvertible via
+		// $this->wpml_converted_prices before calling this helper.
+		$this->wpml->method( 'get_product_price_in_currency' )->willReturnCallback(
+			function ( WC_Product $product, string $currency ): ?float {
+				if ( array_key_exists( $currency, $this->wpml_converted_prices ) ) {
+					return $this->wpml_converted_prices[ $currency ];
+				}
+
+				$price = $product->get_regular_price();
+
+				return '' === $price ? null : (float) $price;
+			}
+		);
 
 		// Mirrors MarketService::get_market_feed_label(): the stored label plus
 		// the uppercase two-letter language code plus the uppercase currency,

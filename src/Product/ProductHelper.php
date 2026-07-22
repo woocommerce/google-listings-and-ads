@@ -129,6 +129,17 @@ class ProductHelper implements Service {
 	}
 
 	/**
+	 * Store the hash of the ProductInput payload last successfully synced, used to
+	 * skip re-syncing unchanged products.
+	 *
+	 * @param WC_Product $product
+	 * @param string     $hash
+	 */
+	public function update_sync_hash( WC_Product $product, string $hash ): void {
+		$this->meta_handler->update_sync_hash( $product, $hash );
+	}
+
+	/**
 	 * @param WC_Product $product
 	 */
 	public function mark_as_unsynced( $product ): void {

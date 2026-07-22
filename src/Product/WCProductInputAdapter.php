@@ -8,6 +8,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
+use DateInterval;
+use WC_DateTime;
 use WC_Product;
 use WC_Product_Variable;
 use WC_Product_Variation;
@@ -26,9 +28,9 @@ class WCProductInputAdapter {
 
 	use PluginHelper;
 
-	public const AVAILABILITY_IN_STOCK     = 'in_stock';
-	public const AVAILABILITY_OUT_OF_STOCK = 'out_of_stock';
-	public const AVAILABILITY_BACKORDER    = 'backorder';
+	public const AVAILABILITY_IN_STOCK     = 'IN_STOCK';
+	public const AVAILABILITY_OUT_OF_STOCK = 'OUT_OF_STOCK';
+	public const AVAILABILITY_BACKORDER    = 'BACKORDER';
 
 	public const IMAGE_SIZE_FULL = 'full';
 
@@ -149,6 +151,7 @@ class WCProductInputAdapter {
 		$this->map_images();
 		$this->map_availability();
 		$this->map_price();
+		$this->map_sale_price();
 		$this->map_shipping();
 		$this->map_product_types();
 
@@ -157,6 +160,14 @@ class WCProductInputAdapter {
 		$this->map_gla_attributes();
 		$this->map_gtin();
 		$this->override_attributes();
+
+		// availability, condition, gender, ageGroup and sizeType (remapped to the plural
+		// sizeTypes MAPI key by set_attribute()) are all Merchant API enums (IN_STOCK, NEW,
+		// MALE, ADULT, REGULAR, etc.), but their values can arrive lowercase from a mapping
+		// rule, merchant-configured attribute meta, or the override filter (e.g. the
+		// pre-orders integration's `preorder`) — all of which store/accept the lowercase
+		// option keys used by the admin UI. Uppercase them here regardless of source.
+		$this->normalize_enum_attributes();
 	}
 
 	/**
@@ -335,8 +346,41 @@ class WCProductInputAdapter {
 	}
 
 	/**
-	 * Map the regular price, applying currency conversion and the target
-	 * country's tax inclusion/exclusion rules.
+	 * Normalise availability, condition, gender, ageGroup and sizeTypes to the Merchant API's
+	 * uppercase enum casing (e.g. IN_STOCK, NEW, MALE, ADULT, REGULAR). map_availability()
+	 * already emits an uppercase value, but all of these can also arrive lowercase through
+	 * attribute mapping or the override filter (e.g. the pre-orders integration's lowercase
+	 * `preorder`, or the lowercase option keys the admin UI stores for the others), so every
+	 * path needs uppercasing here rather than relying on the Merchant API normalising it.
+	 * Note: sizeType (singular) is remapped to the plural sizeTypes array key by
+	 * set_attribute(), which is why this operates on sizeTypes rather than sizeType.
+	 */
+	protected function normalize_enum_attributes(): void {
+		foreach ( [ 'availability', 'condition', 'gender', 'ageGroup' ] as $attribute_id ) {
+			if ( ! empty( $this->attributes[ $attribute_id ] ) && is_string( $this->attributes[ $attribute_id ] ) ) {
+				$this->attributes[ $attribute_id ] = strtoupper( $this->attributes[ $attribute_id ] );
+			}
+		}
+
+		if ( ! empty( $this->attributes['sizeTypes'] ) && is_array( $this->attributes['sizeTypes'] ) ) {
+			$this->attributes['sizeTypes'] = array_map(
+				function ( $size_type ) {
+					return is_string( $size_type ) ? strtoupper( $size_type ) : $size_type;
+				},
+				$this->attributes['sizeTypes']
+			);
+		}
+	}
+
+	/**
+	 * Map the regular price, applying the target country's tax
+	 * inclusion/exclusion rules.
+	 *
+	 * With a currency override set, the price is always the converted value
+	 * (WPML conversion when available, otherwise the market's fixed exchange
+	 * rate); when no converted value is available the price is left unset, so
+	 * a store-currency amount is never submitted under a non-store-currency
+	 * feed label.
 	 */
 	protected function map_price(): void {
 		$regular_price = $this->wc_product->get_regular_price();
@@ -350,33 +394,17 @@ class WCProductInputAdapter {
 				$converted = (float) $regular_price * $this->exchange_rate;
 			}
 
-			if ( null !== $converted ) {
-				$price = $this->apply_tax_for_target_country( (float) $converted );
-
-				/** This filter is documented in src/Product/WCProductAdapter.php */
-				$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $this->wc_product, $this->tax_excluded );
-
-				$this->attributes['price'] = $this->to_money( (float) $price, strtoupper( $this->currency_override ) );
+			if ( null === $converted ) {
 				return;
 			}
 
-			// A currency override with no conversion source falls through to
-			// the store-currency price. That only mislabels the market's
-			// entries when the override is a different currency: an override
-			// equal to the store currency (the masked value every market gets
-			// while no multilingual integration is active) needs no conversion
-			// and must not raise a false alarm on every sync.
-			if ( strtoupper( $this->currency_override ) !== get_woocommerce_currency() ) {
-				do_action(
-					'woocommerce_gla_error',
-					sprintf(
-						'No conversion source for the currency override "%s" (product ID: %s): WPML conversion is unavailable and the market has no exchange rate. Emitting the store currency price instead.',
-						$this->currency_override,
-						$this->wc_product->get_id()
-					),
-					__METHOD__
-				);
-			}
+			$price = $this->apply_tax_for_target_country( (float) $converted );
+
+			/** This filter is documented in src/Product/WCProductAdapter.php */
+			$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $this->wc_product, $this->tax_excluded );
+
+			$this->attributes['price'] = $this->to_money( (float) $price, strtoupper( $this->currency_override ) );
+			return;
 		}
 
 		if ( '' === $regular_price ) {
@@ -434,6 +462,103 @@ class WCProductInputAdapter {
 			: array_sum( array_map( 'wc_round_tax_total', $taxes ) );
 
 		return round( $price + $taxes_total, wc_get_price_decimals() );
+	}
+
+	/**
+	 * Map the sale price and sale price effective date, applying tax inclusion/exclusion rules.
+	 * Ported from WCProductAdapter::map_wc_product_sale_price to preserve behavior.
+	 */
+	protected function map_sale_price(): void {
+		// Grab the sale price of the base product. Some plugins (Dynamic pricing as an
+		// example) filter the active price, but not the sale price. If the active price
+		// < the regular price treat it as a sale price.
+		$regular_price = $this->wc_product->get_regular_price();
+		$sale_price    = $this->wc_product->get_sale_price();
+		$active_price  = $this->wc_product->get_price();
+		if (
+			( empty( $sale_price ) && $active_price < $regular_price ) ||
+			( ! empty( $sale_price ) && $active_price < $sale_price )
+		) {
+			$sale_price = $active_price;
+		}
+
+		if ( '' === $sale_price ) {
+			return;
+		}
+
+		$sale_price = $this->tax_excluded
+			? wc_get_price_excluding_tax( $this->wc_product, [ 'price' => $sale_price ] )
+			: wc_get_price_including_tax( $this->wc_product, [ 'price' => $sale_price ] );
+
+		/** This filter is documented in src/Product/WCProductAdapter.php */
+		$sale_price = apply_filters( 'woocommerce_gla_product_attribute_value_sale_price', $sale_price, $this->wc_product, $this->tax_excluded );
+
+		// If the sale price dates no longer apply, make sure we don't include a sale price.
+		$now                 = new WC_DateTime();
+		$sale_price_end_date = $this->wc_product->get_date_on_sale_to();
+		if ( ! empty( $sale_price_end_date ) && $sale_price_end_date < $now ) {
+			return;
+		}
+
+		$this->attributes['salePrice'] = $this->to_money( (float) $sale_price, get_woocommerce_currency() );
+
+		$effective_date = $this->get_sale_price_effective_date();
+		if ( null !== $effective_date ) {
+			$this->attributes['salePriceEffectiveDate'] = $effective_date;
+		}
+	}
+
+	/**
+	 * Return the sale effective dates for the WooCommerce product as a Merchant API
+	 * Interval (`startTime`/`endTime` RFC3339 timestamps), omitting either bound when
+	 * unset. Date-branch logic ported from WCProductAdapter::get_wc_product_sale_price_effective_date.
+	 *
+	 * @return array|null
+	 */
+	protected function get_sale_price_effective_date(): ?array {
+		$start_date = $this->wc_product->get_date_on_sale_from();
+		$end_date   = $this->wc_product->get_date_on_sale_to();
+
+		$now = new WC_DateTime();
+		// if we have a sale end date in the future, but no start date, set the start date to now()
+		if (
+			! empty( $end_date ) &&
+			$end_date > $now &&
+			empty( $start_date )
+		) {
+			$start_date = $now;
+		}
+		// if we have a sale start date in the past, but no end date, do not include the start date.
+		if (
+			! empty( $start_date ) &&
+			$start_date < $now &&
+			empty( $end_date )
+		) {
+			$start_date = null;
+		}
+		// if we have a start date in the future, but no end date, assume a one-day sale.
+		if (
+			! empty( $start_date ) &&
+			$start_date > $now &&
+			empty( $end_date )
+		) {
+			$end_date = clone $start_date;
+			$end_date->add( new DateInterval( 'P1D' ) );
+		}
+
+		if ( empty( $start_date ) && empty( $end_date ) ) {
+			return null;
+		}
+
+		$effective_date = [];
+		if ( ! empty( $start_date ) ) {
+			$effective_date['startTime'] = (string) $start_date;
+		}
+		if ( ! empty( $end_date ) ) {
+			$effective_date['endTime'] = (string) $end_date;
+		}
+
+		return $effective_date;
 	}
 
 	/**

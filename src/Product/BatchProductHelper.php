@@ -244,7 +244,7 @@ class BatchProductHelper implements Service {
 	 *
 	 * @param WC_Product[] $products
 	 *
-	 * @return array<int, array{product: WC_Product, country: string, input: ProductInput}>
+	 * @return array<int, array{product: WC_Product, country: string, input: ProductInput, hash: string}>
 	 */
 	public function generate_mapi_update_entries( array $products ): array {
 		$entries       = [];
@@ -296,21 +296,68 @@ class BatchProductHelper implements Service {
 						continue;
 					}
 
-					// Each primary language entry is priced in that language's
-					// WooCommerce Multilingual default currency; a language
-					// without a pairing keeps the store currency.
-					$primary_currency = '';
-					if ( $wpml_active ) {
-						$entry_language   = '' !== $product_language ? $product_language : $this->wpml->get_default_language_code();
-						$primary_currency = $this->wpml->get_default_currency_for_language( $entry_language );
+					// Add shipping for all countries across all markets.
+					$primary_input = $this->generate_product_input( $product, $main_feed_label, $main_feed_label, $this->market_service->get_all_countries(), $mapping_rules, $product_language );
+					$primary_hash  = $this->product_input_hash( $primary_input );
+
+					if ( ! $this->can_skip_unchanged_product( $product, $primary_hash ) ) {
+						$product_entries[] = [
+							'product' => $product,
+							'country' => $main_feed_label,
+							'input'   => $primary_input,
+							'hash'    => $primary_hash,
+						];
 					}
 
-					// Add shipping for all countries across all markets.
-					$product_entries[] = [
-						'product' => $product,
-						'country' => $main_feed_label,
-						'input'   => $this->generate_product_input( $product, $main_feed_label, $main_feed_label, $this->market_service->get_all_countries(), $mapping_rules, $product_language, $primary_currency ),
-					];
+					// The bare-label entry above carries the store currency;
+					// each additional participating primary currency gets its
+					// own derived-label entry with converted prices.
+					foreach ( $this->market_service->get_participating_currencies( $primary_market ) as $primary_currency ) {
+						if ( get_woocommerce_currency() === $primary_currency ) {
+							continue;
+						}
+
+						if ( ! $this->product_priced_in_currency( $product, $primary_currency ) ) {
+							do_action(
+								'woocommerce_gla_debug_message',
+								sprintf( 'Skipping the %s primary market entry for product (ID: %s): its price cannot be converted into that currency.', $primary_currency, $product->get_id() ),
+								__METHOD__
+							);
+
+							continue;
+						}
+
+						$primary_currency_label = $this->market_service->get_market_feed_label( $main_feed_label, $product_language, $primary_currency );
+
+						$primary_currency_validation = $this->validate_product(
+							$this->product_factory->create( $product, $main_feed_label, $mapping_rules, $primary_currency_label, $product_language, $primary_currency )
+						);
+						if ( $primary_currency_validation instanceof BatchInvalidProductEntry ) {
+							$this->mark_as_invalid( $primary_currency_validation );
+
+							do_action(
+								'woocommerce_gla_debug_message',
+								sprintf( 'Skipping product (ID: %s) because it does not pass validation for the %s primary market feed: %s', $product->get_id(), $primary_currency, wp_json_encode( $primary_currency_validation ) ),
+								__METHOD__
+							);
+
+							continue 2;
+						}
+
+						$primary_currency_input = $this->generate_product_input( $product, $main_feed_label, $primary_currency_label, $this->market_service->get_all_countries(), $mapping_rules, $product_language, $primary_currency );
+						$primary_currency_hash  = $this->product_input_hash( $primary_currency_input );
+
+						if ( $this->can_skip_unchanged_product( $product, $primary_currency_hash ) ) {
+							continue;
+						}
+
+						$product_entries[] = [
+							'product' => $product,
+							'country' => $main_feed_label,
+							'input'   => $primary_currency_input,
+							'hash'    => $primary_currency_hash,
+						];
+					}
 				}
 
 				// Participating markets only: a market priced in a non-store
@@ -331,31 +378,62 @@ class BatchProductHelper implements Service {
 					// (both falling back to site defaults inside the
 					// derivation). A market with no configured languages
 					// accepts every product under its site-language label.
-					$market_currency   = $this->extract_currency( $market );
-					$market_language   = empty( $market['language'] ) ? '' : $product_language;
-					$market_feed_label = $this->market_service->get_market_feed_label( $market['feed_label'], $market_language, $market_currency );
+					// Every participating currency produces its own entry.
+					$market_language = empty( $market['language'] ) ? '' : $product_language;
 
-					$secondary_validation = $this->validate_product(
-						$this->product_factory->create( $product, $market['country'], $mapping_rules, $market_feed_label, $product_language, $market_currency )
-					);
-					if ( $secondary_validation instanceof BatchInvalidProductEntry ) {
-						$this->mark_as_invalid( $secondary_validation );
+					// A configured exchange rate converts any product's price at
+					// sync time, so it keeps a currency's entries flowing when
+					// WPML cannot convert for this product.
+					$market_exchange_rate = self::extract_exchange_rate( $market );
 
-						do_action(
-							'woocommerce_gla_debug_message',
-							sprintf( 'Skipping product (ID: %s) because it does not pass validation for secondary market %s: %s', $product->get_id(), $market_id, wp_json_encode( $secondary_validation ) ),
-							__METHOD__
+					foreach ( $this->market_service->get_participating_currencies( $market ) as $market_currency ) {
+						if ( ! $this->product_priced_in_currency( $product, $market_currency ) && $market_exchange_rate <= 0 ) {
+							do_action(
+								'woocommerce_gla_debug_message',
+								sprintf( 'Skipping the %s entry of secondary market %s for product (ID: %s): its price cannot be converted into that currency.', $market_currency, $market_id, $product->get_id() ),
+								__METHOD__
+							);
+
+							continue;
+						}
+
+						$market_feed_label = $this->market_service->get_market_feed_label( $market['feed_label'], $market_language, $market_currency );
+
+						// Store-currency entries need no conversion, so they
+						// carry no currency override and price exactly as a
+						// single-currency market's entries always have.
+						$currency_override = get_woocommerce_currency() === $market_currency ? '' : $market_currency;
+
+						$secondary_validation = $this->validate_product(
+							$this->product_factory->create( $product, $market['country'], $mapping_rules, $market_feed_label, $product_language, $currency_override )
 						);
+						if ( $secondary_validation instanceof BatchInvalidProductEntry ) {
+							$this->mark_as_invalid( $secondary_validation );
 
-						continue 2;
+							do_action(
+								'woocommerce_gla_debug_message',
+								sprintf( 'Skipping product (ID: %s) because it does not pass validation for secondary market %s: %s', $product->get_id(), $market_id, wp_json_encode( $secondary_validation ) ),
+								__METHOD__
+							);
+
+							continue 3;
+						}
+
+						// Secondary market shipping is scoped to the market's own country.
+						$secondary_input = $this->generate_product_input( $product, $market['country'], $market_feed_label, [ $market['country'] ], $mapping_rules, $product_language, $currency_override, $market_exchange_rate );
+						$secondary_hash  = $this->product_input_hash( $secondary_input );
+
+						if ( $this->can_skip_unchanged_product( $product, $secondary_hash ) ) {
+							continue;
+						}
+
+						$product_entries[] = [
+							'product' => $product,
+							'country' => $market['country'],
+							'input'   => $secondary_input,
+							'hash'    => $secondary_hash,
+						];
 					}
-
-					// Secondary market shipping is scoped to the market's own country.
-					$product_entries[] = [
-						'product' => $product,
-						'country' => $market['country'],
-						'input'   => $this->generate_product_input( $product, $market['country'], $market_feed_label, [ $market['country'] ], $mapping_rules, $product_language, $market_currency, self::extract_exchange_rate( $market ) ),
-					];
 				}
 
 				if ( ! empty( $product_entries ) ) {
@@ -443,19 +521,24 @@ class BatchProductHelper implements Service {
 	}
 
 	/**
-	 * Extracts a single currency code from a market config.
+	 * Whether a product can be priced in the given currency.
 	 *
-	 * Each MC product carries exactly one price.currency. Markets store currency
-	 * as an array of codes; the first entry is used.
+	 * The store currency always qualifies. Any other currency qualifies only
+	 * when WPML can produce a converted or manually set price for the product,
+	 * so a product is never submitted with a store-currency price under a
+	 * non-store-currency feed label.
 	 *
-	 * @param array $market A market config array as returned by MarketService.
+	 * @param WC_Product $product
+	 * @param string     $currency ISO 4217 currency code.
 	 *
-	 * @return string The single currency code, or empty string when none is set.
+	 * @return bool
 	 */
-	private static function extract_currency( array $market ): string {
-		return is_array( $market['currency'] ?? null )
-			? (string) ( $market['currency'][0] ?? '' )
-			: (string) ( $market['currency'] ?? '' );
+	private function product_priced_in_currency( WC_Product $product, string $currency ): bool {
+		if ( get_woocommerce_currency() === $currency ) {
+			return true;
+		}
+
+		return null !== $this->wpml->get_product_price_in_currency( $product, $currency );
 	}
 
 	/**
@@ -490,6 +573,46 @@ class BatchProductHelper implements Service {
 	}
 
 	/**
+	 * A stable hash of the ProductInput payload, used to skip re-syncing products
+	 * whose Merchant API payload is unchanged since the last successful sync.
+	 *
+	 * @param ProductInput $input
+	 *
+	 * @return string
+	 */
+	protected function product_input_hash( ProductInput $input ): string {
+		return md5( (string) wp_json_encode( $input->to_array() ) );
+	}
+
+	/**
+	 * Whether a product can be skipped because its payload is unchanged since the last
+	 * successful sync. Products old enough to be due for expiry resubmission are never
+	 * skipped, and woocommerce_gla_force_product_resync forces a full re-sync.
+	 *
+	 * @param WC_Product $product
+	 * @param string     $hash    The current ProductInput hash.
+	 *
+	 * @return bool
+	 */
+	protected function can_skip_unchanged_product( WC_Product $product, string $hash ): bool {
+		if ( apply_filters( 'woocommerce_gla_force_product_resync', false, $product ) ) {
+			return false;
+		}
+
+		if ( $this->meta_handler->get_sync_hash( $product ) !== $hash ) {
+			return false;
+		}
+
+		// Clamp to the expiry-resubmission window so a filtered freshness can never let an
+		// unchanged product be skipped past the point it is due for resubmission.
+		$max_freshness = ProductRepository::RESUBMIT_EXPIRY_DAYS * DAY_IN_SECONDS;
+		$freshness     = min( (int) apply_filters( 'woocommerce_gla_sync_hash_freshness', $max_freshness ), $max_freshness );
+		$synced_at     = (int) $this->meta_handler->get_synced_at( $product );
+
+		return $synced_at > ( time() - $freshness );
+	}
+
+	/**
 	 * Generate MAPI delete entries for the given products.
 	 *
 	 * @param WC_Product[] $products
@@ -513,7 +636,7 @@ class BatchProductHelper implements Service {
 			}
 
 			foreach ( $google_ids as $google_id ) {
-				$identity = $this->parse_mapi_identity( (string) $google_id );
+				$identity = $this->parse_deletable_identity( (string) $google_id );
 				if ( null === $identity ) {
 					continue;
 				}
@@ -535,6 +658,10 @@ class BatchProductHelper implements Service {
 	 * Parse a MAPI Google product id (e.g. `en~US~gla_29`) into its identity array
 	 * [language, feed, offerId].
 	 *
+	 * Tilde-only by design: a legacy Content API id (`online:en:US:gla_29`) returns null so the
+	 * status-read path skips it (the Merchant API rejects legacy ids as invalid resource names).
+	 * Deletion paths that must also accept legacy ids use parse_deletable_identity() instead.
+	 *
 	 * @param string $google_id
 	 *
 	 * @return array{0: string, 1: string, 2: string}|null
@@ -546,6 +673,33 @@ class BatchProductHelper implements Service {
 		}
 
 		return [ $parts[0], $parts[1], $parts[2] ];
+	}
+
+	/**
+	 * Resolve a stored google product id into a MAPI identity [language, feed, offerId] for
+	 * deletion, accepting both the native MAPI id (`en~US~gla_29`) and the legacy Content API id
+	 * (`online:en:US:gla_29`) that pre-migration syncs stored. This lets products synced before the
+	 * MAPI cutover still be removed from Merchant Center. Returns null if neither format matches.
+	 *
+	 * @param string $google_id
+	 *
+	 * @return array{0: string, 1: string, 2: string}|null
+	 */
+	public function parse_deletable_identity( string $google_id ): ?array {
+		$identity = $this->parse_mapi_identity( $google_id );
+		if ( null !== $identity ) {
+			return $identity;
+		}
+
+		// Legacy Content API id: online:language:country:offerId. The target country is the feed
+		// for these single-feed products; only the `online` channel was ever stored, so anything
+		// else is not a legacy id we can delete.
+		$parts = explode( ':', $google_id, 4 );
+		if ( count( $parts ) === 4 && 'online' === $parts[0] ) {
+			return [ $parts[1], $parts[2], $parts[3] ];
+		}
+
+		return null;
 	}
 
 	/**
@@ -596,7 +750,7 @@ class BatchProductHelper implements Service {
 			$stale_ids  = array_diff_key( $google_ids, array_flip( $keep_feed_labels ) );
 
 			foreach ( $stale_ids as $google_id ) {
-				$identity = $this->parse_mapi_identity( (string) $google_id );
+				$identity = $this->parse_deletable_identity( (string) $google_id );
 				if ( null === $identity ) {
 					continue;
 				}

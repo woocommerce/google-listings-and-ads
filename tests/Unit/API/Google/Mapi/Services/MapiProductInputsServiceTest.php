@@ -113,6 +113,31 @@ class MapiProductInputsServiceTest extends UnitTest {
 		$this->assertSame( 'sku42', $result->get_offer_id() );
 	}
 
+	public function test_insert_logs_the_payload_via_debug_message() {
+		// The Merchant API push must be logged so syncs can be verified/troubleshot.
+		$input = $this->make_input();
+		$this->client->method( 'post' )->willReturn(
+			[
+				'name'    => 'accounts/12345/productInputs/online~en~US~sku42',
+				'offerId' => 'sku42',
+			]
+		);
+
+		$messages = [];
+		$callback = static function ( $message ) use ( &$messages ) {
+			$messages[] = $message;
+		};
+		add_action( 'woocommerce_gla_debug_message', $callback );
+
+		$this->service->insert( $input );
+
+		remove_action( 'woocommerce_gla_debug_message', $callback );
+
+		$logged = implode( "\n", $messages );
+		$this->assertStringContainsString( 'productInputs.insert sku42', $logged );
+		$this->assertStringContainsString( '"title":"Test"', $logged );
+	}
+
 	public function test_insert_routes_different_market_to_a_different_data_source() {
 		$input = $this->make_input( 'sku42', 'fr', 'CA' );
 
@@ -139,19 +164,29 @@ class MapiProductInputsServiceTest extends UnitTest {
 	}
 
 	public function test_insert_many_keys_successes_and_failures_by_index() {
-		$this->client->method( 'request_async' )
+		$this->client->method( 'batch_async' )
 			->willReturnCallback(
-				function ( string $method, string $path, array $body ) {
-					if ( 'bad' === $body['offerId'] ) {
-						return Create::rejectionFor( new MerchantApiException( 500, [], __METHOD__ ) );
+				function ( array $requests ) {
+					$results = [];
+					foreach ( $requests as $index => $sub ) {
+						$offer_id = $sub['body']['offerId'];
+						if ( 'bad' === $offer_id ) {
+							$results[ $index ] = [
+								'status' => 500,
+								'body'   => [],
+							];
+						} else {
+							$results[ $index ] = [
+								'status' => 200,
+								'body'   => [
+									'name'    => 'accounts/12345/productInputs/' . $offer_id,
+									'offerId' => $offer_id,
+								],
+							];
+						}
 					}
 
-					return Create::promiseFor(
-						[
-							'name'    => 'accounts/12345/productInputs/' . $body['offerId'],
-							'offerId' => $body['offerId'],
-						]
-					);
+					return Create::promiseFor( $results );
 				}
 			);
 
@@ -176,17 +211,23 @@ class MapiProductInputsServiceTest extends UnitTest {
 	public function test_insert_many_routes_each_input_to_its_own_data_source() {
 		$paths_seen = [];
 
-		$this->client->method( 'request_async' )
+		$this->client->method( 'batch_async' )
 			->willReturnCallback(
-				function ( string $method, string $path, array $body ) use ( &$paths_seen ) {
-					$paths_seen[ $body['offerId'] ] = $path;
+				function ( array $requests ) use ( &$paths_seen ) {
+					$results = [];
+					foreach ( $requests as $index => $sub ) {
+						$offer_id                = $sub['body']['offerId'];
+						$paths_seen[ $offer_id ] = $sub['path'];
+						$results[ $index ]       = [
+							'status' => 200,
+							'body'   => [
+								'name'    => 'accounts/12345/productInputs/' . $offer_id,
+								'offerId' => $offer_id,
+							],
+						];
+					}
 
-					return Create::promiseFor(
-						[
-							'name'    => 'accounts/12345/productInputs/' . $body['offerId'],
-							'offerId' => $body['offerId'],
-						]
-					);
+					return Create::promiseFor( $results );
 				}
 			);
 
@@ -199,6 +240,132 @@ class MapiProductInputsServiceTest extends UnitTest {
 
 		$this->assertSame( $this->expected_path( self::DS_EN_US ), $paths_seen['us_sku'] );
 		$this->assertSame( $this->expected_path( self::DS_FR_CA ), $paths_seen['ca_sku'] );
+	}
+
+	public function test_insert_many_marks_missing_batch_subresponses_as_failures() {
+		$this->client->method( 'batch_async' )
+			->willReturnCallback(
+				function ( array $requests ) {
+					// Simulate the parser yielding no sub-response for 'bad'.
+					$results = [];
+					foreach ( $requests as $index => $sub ) {
+						if ( 'bad' === $sub['body']['offerId'] ) {
+							continue;
+						}
+						$results[ $index ] = [
+							'status' => 200,
+							'body'   => [ 'offerId' => $sub['body']['offerId'] ],
+						];
+					}
+
+					return Create::promiseFor( $results );
+				}
+			);
+
+		$result = $this->service->insert_many(
+			[
+				$this->make_input( 'good1' ),
+				$this->make_input( 'bad' ),
+				$this->make_input( 'good2' ),
+			]
+		);
+
+		$this->assertCount( 2, $result['successes'] );
+		$this->assertCount( 1, $result['failures'] );
+		$this->assertArrayHasKey( 1, $result['failures'] );
+		// A missing sub-response is a retryable failure (>= 500), never a silent no-op.
+		$this->assertGreaterThanOrEqual( 500, $result['failures'][1]->get_http_status() );
+	}
+
+	public function test_insert_many_marks_all_inputs_failed_when_the_batch_request_rejects() {
+		$this->client->method( 'batch_async' )
+			->willReturn( Create::rejectionFor( new MerchantApiException( 503, [], __METHOD__ ) ) );
+
+		$result = $this->service->insert_many(
+			[
+				$this->make_input( 'a' ),
+				$this->make_input( 'b' ),
+				$this->make_input( 'c' ),
+			]
+		);
+
+		$this->assertCount( 0, $result['successes'] );
+		$this->assertCount( 3, $result['failures'] );
+		$this->assertInstanceOf( MerchantApiException::class, $result['failures'][0] );
+		$this->assertSame( 503, $result['failures'][0]->get_http_status() );
+	}
+
+	public function test_insert_many_chunks_into_multiple_batches_and_keys_by_original_index() {
+		add_filter(
+			'woocommerce_gla_mapi_batch_size',
+			function () {
+				return 2;
+			}
+		);
+
+		$batch_calls = 0;
+		$this->client->method( 'batch_async' )
+			->willReturnCallback(
+				function ( array $requests ) use ( &$batch_calls ) {
+					++$batch_calls;
+					$results = [];
+					foreach ( $requests as $index => $sub ) {
+						$results[ $index ] = [
+							'status' => 200,
+							'body'   => [ 'offerId' => $sub['body']['offerId'] ],
+						];
+					}
+
+					return Create::promiseFor( $results );
+				}
+			);
+
+		$result = $this->service->insert_many(
+			[
+				$this->make_input( 's0' ),
+				$this->make_input( 's1' ),
+				$this->make_input( 's2' ),
+				$this->make_input( 's3' ),
+				$this->make_input( 's4' ),
+			]
+		);
+		remove_all_filters( 'woocommerce_gla_mapi_batch_size' );
+
+		// 5 inputs at batch_size 2 => 3 batches (2 + 2 + 1), demuxed back to the original indices.
+		$this->assertSame( 3, $batch_calls );
+		$this->assertCount( 5, $result['successes'] );
+		foreach ( range( 0, 4 ) as $i ) {
+			$this->assertArrayHasKey( $i, $result['successes'] );
+			$this->assertSame( "s{$i}", $result['successes'][ $i ]->get_offer_id() );
+		}
+	}
+
+	public function test_delete_many_ignores_a_subresponse_for_an_unrequested_id() {
+		$this->client->method( 'batch_async' )
+			->willReturnCallback(
+				function ( array $requests ) {
+					$results = [];
+					foreach ( $requests as $index => $sub ) {
+						$results[ $index ] = [
+							'status' => 200,
+							'body'   => [],
+						];
+					}
+					// A stray sub-response for an id that was never requested.
+					$results[999] = [
+						'status' => 200,
+						'body'   => [],
+					];
+
+					return Create::promiseFor( $results );
+				}
+			);
+
+		$result = $this->service->delete_many( [ $this->make_input( 'a' ) ] );
+
+		// The typed delete callback must not receive a null input: the stray id is ignored.
+		$this->assertCount( 1, $result['successes'] );
+		$this->assertArrayNotHasKey( 999, $result['successes'] );
 	}
 
 	public function test_patch_resolves_data_source_and_builds_correct_path() {
@@ -358,14 +525,23 @@ class MapiProductInputsServiceTest extends UnitTest {
 	}
 
 	public function test_delete_many_keys_successes_and_failures_by_index() {
-		$this->client->method( 'request_async' )
+		$this->client->method( 'batch_async' )
 			->willReturnCallback(
-				function ( string $method, string $path ) {
-					if ( false !== strpos( $path, 'bad' ) ) {
-						return Create::rejectionFor( new MerchantApiException( 404, [], __METHOD__ ) );
+				function ( array $requests ) {
+					$results = [];
+					foreach ( $requests as $index => $sub ) {
+						$results[ $index ] = false !== strpos( $sub['path'], 'bad' )
+							? [
+								'status' => 404,
+								'body'   => [],
+							]
+							: [
+								'status' => 200,
+								'body'   => [],
+							];
 					}
 
-					return Create::promiseFor( [] );
+					return Create::promiseFor( $results );
 				}
 			);
 
@@ -388,12 +564,19 @@ class MapiProductInputsServiceTest extends UnitTest {
 	public function test_delete_many_routes_each_input_to_its_own_data_source() {
 		$paths_seen = [];
 
-		$this->client->method( 'request_async' )
+		$this->client->method( 'batch_async' )
 			->willReturnCallback(
-				function ( string $method, string $path ) use ( &$paths_seen ) {
-					$paths_seen[] = [ $method, $path ];
+				function ( array $requests ) use ( &$paths_seen ) {
+					$results = [];
+					foreach ( $requests as $index => $sub ) {
+						$paths_seen[]      = [ $sub['method'], $sub['path'] ];
+						$results[ $index ] = [
+							'status' => 200,
+							'body'   => [],
+						];
+					}
 
-					return Create::promiseFor( [] );
+					return Create::promiseFor( $results );
 				}
 			);
 

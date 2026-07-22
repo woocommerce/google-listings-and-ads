@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPML;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductInputAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
+use WC_DateTime;
 use WC_Helper_Product;
 use WC_Tax;
 
@@ -121,6 +122,214 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertArrayNotHasKey( 'price', $attrs );
 	}
 
+	public function test_omits_price_when_currency_override_cannot_be_converted() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_regular_price( '19.99' );
+		$product->save();
+
+		$wpml = $this->createMock( WPML::class );
+		$wpml->method( 'get_product_price_in_currency' )->willReturn( null );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'AE', null, [], [], [], 'AE-EN-AED', '', 'AED', $wpml ) )->get_product_input()->get_attributes();
+
+		// A store-currency amount must never be submitted under a
+		// non-store-currency feed label, so the price stays unset.
+		$this->assertArrayNotHasKey( 'price', $attrs );
+	}
+
+	public function test_omits_price_when_currency_override_set_without_wpml() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_regular_price( '19.99' );
+		$product->save();
+
+		$attrs = ( new WCProductInputAdapter( $product, 'AE', null, [], [], [], 'AE-EN-AED', '', 'AED', null ) )->get_product_input()->get_attributes();
+
+		$this->assertArrayNotHasKey( 'price', $attrs );
+	}
+
+	public function test_maps_sale_price_and_effective_date() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'             => 80,
+				'regular_price'     => 100,
+				'sale_price'        => 80,
+				'date_on_sale_from' => '2021-01-01',
+				'date_on_sale_to'   => '2099-01-01',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame(
+			[
+				'amountMicros' => '100000000',
+				'currencyCode' => get_woocommerce_currency(),
+			],
+			$attrs['price']
+		);
+		$this->assertSame(
+			[
+				'amountMicros' => '80000000',
+				'currencyCode' => get_woocommerce_currency(),
+			],
+			$attrs['salePrice']
+		);
+		$this->assertSame(
+			[
+				'startTime' => (string) $product->get_date_on_sale_from(),
+				'endTime'   => (string) $product->get_date_on_sale_to(),
+			],
+			$attrs['salePriceEffectiveDate']
+		);
+	}
+
+	public function test_sale_price_is_not_set_if_empty() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 100,
+				'regular_price' => 100,
+				'sale_price'    => '',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertArrayNotHasKey( 'salePrice', $attrs );
+		$this->assertArrayNotHasKey( 'salePriceEffectiveDate', $attrs );
+	}
+
+	public function test_sale_price_is_set_if_zero() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 100,
+				'regular_price' => 100,
+				'sale_price'    => 0,
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( '0', $attrs['salePrice']['amountMicros'] );
+	}
+
+	public function test_sale_price_is_not_set_if_sale_end_date_passed() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'           => 100,
+				'regular_price'   => 100,
+				'sale_price'      => 50,
+				'date_on_sale_to' => '0000-01-01',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertArrayNotHasKey( 'salePrice', $attrs );
+		$this->assertArrayNotHasKey( 'salePriceEffectiveDate', $attrs );
+	}
+
+	public function test_sale_price_effective_date_start_is_set_to_now_if_empty() {
+		$now = (string) ( new WC_DateTime( 'now' ) );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'           => 50,
+				'regular_price'   => 100,
+				'sale_price'      => 50,
+				'date_on_sale_to' => '2099-01-01',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertArrayHasKey( 'salePriceEffectiveDate', $attrs );
+		$this->assertNotEmpty( $attrs['salePriceEffectiveDate']['startTime'] );
+		$this->assertGreaterThanOrEqual( new WC_DateTime( $now ), new WC_DateTime( $attrs['salePriceEffectiveDate']['startTime'] ) );
+		$this->assertSame( (string) new WC_DateTime( '2099-01-01' ), $attrs['salePriceEffectiveDate']['endTime'] );
+	}
+
+	public function test_sale_price_effective_date_start_is_not_set_if_in_past_and_no_end_date() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'             => 50,
+				'regular_price'     => 100,
+				'sale_price'        => 50,
+				'date_on_sale_from' => '0000-01-01',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertArrayNotHasKey( 'salePriceEffectiveDate', $attrs );
+	}
+
+	public function test_sale_price_effective_date_end_is_set_to_one_day_if_start_in_future_but_no_end() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'             => 100,
+				'regular_price'     => 100,
+				'sale_price'        => 50,
+				'date_on_sale_from' => '2099-01-01',
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame(
+			[
+				'startTime' => (string) new WC_DateTime( '2099-01-01' ),
+				'endTime'   => (string) new WC_DateTime( '2099-01-02' ),
+			],
+			$attrs['salePriceEffectiveDate']
+		);
+	}
+
+	public function test_sale_price_effective_date_is_not_set_if_not_set() {
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 50,
+				'regular_price' => 100,
+				'sale_price'    => 50,
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertArrayHasKey( 'salePrice', $attrs );
+		$this->assertArrayNotHasKey( 'salePriceEffectiveDate', $attrs );
+	}
+
+	public function test_applies_sale_price_attribute_value_filter() {
+		add_filter(
+			'woocommerce_gla_product_attribute_value_sale_price',
+			function () {
+				return 20;
+			}
+		);
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'price'         => 50,
+				'regular_price' => 100,
+				'sale_price'    => 50,
+			]
+		);
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+		remove_all_filters( 'woocommerce_gla_product_attribute_value_sale_price' );
+
+		$this->assertSame( '20000000', $attrs['salePrice']['amountMicros'] );
+	}
+
 	public function test_maps_availability_in_stock() {
 		$product = WC_Helper_Product::create_simple_product();
 		$product->set_stock_status( 'instock' );
@@ -128,7 +337,7 @@ class WCProductInputAdapterTest extends UnitTest {
 
 		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
 
-		$this->assertSame( 'in_stock', $attrs['availability'] );
+		$this->assertSame( 'IN_STOCK', $attrs['availability'] );
 	}
 
 	public function test_maps_availability_out_of_stock() {
@@ -138,7 +347,141 @@ class WCProductInputAdapterTest extends UnitTest {
 
 		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
 
-		$this->assertSame( 'out_of_stock', $attrs['availability'] );
+		$this->assertSame( 'OUT_OF_STOCK', $attrs['availability'] );
+	}
+
+	public function test_maps_availability_backorder() {
+		$product = WC_Helper_Product::create_simple_product( false );
+		$product->set_manage_stock( true );
+		$product->set_stock_status( 'instock' );
+		$product->set_backorders( 'yes' );
+		$product->set_stock_quantity( 0 );
+		$product->save();
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( 'BACKORDER', $attrs['availability'] );
+	}
+
+	public function test_uppercases_availability_set_via_override_filter() {
+		// Value injected by the override filter (e.g. the pre-orders integration's
+		// lowercase `preorder`) must still be sent as the Merchant API's uppercase enum.
+		$product = WC_Helper_Product::create_simple_product();
+
+		$cb = static function ( array $overrides ): array {
+			$overrides['availability'] = 'preorder';
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( 'PREORDER', $attrs['availability'] );
+	}
+
+	public function test_uppercases_condition_set_via_override_filter() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$cb = static function ( array $overrides ): array {
+			$overrides['condition'] = 'refurbished';
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( 'REFURBISHED', $attrs['condition'] );
+	}
+
+	public function test_uppercases_gender_set_via_override_filter() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$cb = static function ( array $overrides ): array {
+			$overrides['gender'] = 'female';
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( 'FEMALE', $attrs['gender'] );
+	}
+
+	public function test_uppercases_age_group_set_via_override_filter() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$cb = static function ( array $overrides ): array {
+			$overrides['ageGroup'] = 'toddler';
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( 'TODDLER', $attrs['ageGroup'] );
+	}
+
+	public function test_uppercases_size_types_set_via_override_filter() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$cb = static function ( array $overrides ): array {
+			$overrides['sizeTypes'] = [ 'petite' ];
+			return $overrides;
+		};
+		add_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US' ) )->get_product_input()->get_attributes();
+
+		remove_filter( 'woocommerce_gla_product_attribute_values', $cb );
+
+		$this->assertSame( [ 'PETITE' ], $attrs['sizeTypes'] );
+	}
+
+	public function test_uppercases_enum_attributes_set_via_mapping_rule() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->save();
+
+		$rules = [
+			[
+				'attribute'               => 'condition',
+				'source'                  => 'refurbished',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'gender',
+				'source'                  => 'female',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'ageGroup',
+				'source'                  => 'toddler',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'sizeType',
+				'source'                  => 'petite',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+		];
+
+		$attrs = ( new WCProductInputAdapter( $product, 'US', null, [], [], $rules ) )->get_product_input()->get_attributes();
+
+		$this->assertSame( 'REFURBISHED', $attrs['condition'] );
+		$this->assertSame( 'FEMALE', $attrs['gender'] );
+		$this->assertSame( 'TODDLER', $attrs['ageGroup'] );
+		$this->assertSame( [ 'PETITE' ], $attrs['sizeTypes'] );
 	}
 
 	public function test_omits_images_when_product_has_none() {
@@ -365,9 +708,9 @@ class WCProductInputAdapterTest extends UnitTest {
 		$this->assertSame( 'Cotton', $attrs['material'] );
 		$this->assertSame( 'Striped', $attrs['pattern'] );
 		$this->assertSame( 'MPN123', $attrs['mpn'] );
-		$this->assertSame( 'new', $attrs['condition'] );
-		$this->assertSame( 'adult', $attrs['ageGroup'] );
-		$this->assertSame( 'unisex', $attrs['gender'] );
+		$this->assertSame( 'NEW', $attrs['condition'] );
+		$this->assertSame( 'ADULT', $attrs['ageGroup'] );
+		$this->assertSame( 'UNISEX', $attrs['gender'] );
 	}
 
 	public function test_maps_size_attribute() {
@@ -395,7 +738,7 @@ class WCProductInputAdapterTest extends UnitTest {
 		) )->get_product_input()->get_attributes();
 
 		$this->assertSame( [ '00012345678905' ], $attrs['gtins'] );
-		$this->assertSame( [ 'regular' ], $attrs['sizeTypes'] );
+		$this->assertSame( [ 'REGULAR' ], $attrs['sizeTypes'] );
 		$this->assertArrayNotHasKey( 'gtin', $attrs );
 		$this->assertArrayNotHasKey( 'sizeType', $attrs );
 	}
@@ -992,68 +1335,6 @@ class WCProductInputAdapterTest extends UnitTest {
 
 		$this->assertSame( '90000000', $attrs['price']['amountMicros'] );
 		$this->assertSame( 'EUR', $attrs['price']['currencyCode'] );
-	}
-
-	public function test_currency_override_without_conversion_source_logs_and_falls_back() {
-		$product = WC_Helper_Product::create_simple_product(
-			false,
-			[
-				'price'         => 100,
-				'regular_price' => 100,
-			]
-		);
-
-		$wpml = $this->createMock( WPML::class );
-		$wpml->method( 'get_product_price_in_currency' )->willReturn( null );
-
-		$logged = [];
-		add_action(
-			'woocommerce_gla_error',
-			function ( $message, $method ) use ( &$logged ) {
-				$logged[] = [ $message, $method ];
-			},
-			10,
-			2
-		);
-
-		$attrs = ( new WCProductInputAdapter( $product, 'DE', null, [], [], [], '', '', 'EUR', $wpml ) )->get_product_input()->get_attributes();
-
-		$this->assertCount( 1, $logged );
-		$this->assertStringContainsString( 'EUR', $logged[0][0] );
-		$this->assertSame( '100000000', $attrs['price']['amountMicros'] );
-		$this->assertSame( get_woocommerce_currency(), $attrs['price']['currencyCode'] );
-	}
-
-	public function test_store_currency_override_without_conversion_source_does_not_log() {
-		$product = WC_Helper_Product::create_simple_product(
-			false,
-			[
-				'price'         => 100,
-				'regular_price' => 100,
-			]
-		);
-
-		$wpml = $this->createMock( WPML::class );
-		$wpml->method( 'get_product_price_in_currency' )->willReturn( null );
-
-		$logged = [];
-		add_action(
-			'woocommerce_gla_error',
-			function ( $message, $method ) use ( &$logged ) {
-				$logged[] = [ $message, $method ];
-			},
-			10,
-			2
-		);
-
-		// An override equal to the store currency is what every secondary
-		// market carries while no multilingual integration is active; the
-		// emitted price and label are correct, so nothing may be logged.
-		$attrs = ( new WCProductInputAdapter( $product, 'DE', null, [], [], [], '', '', get_woocommerce_currency(), $wpml ) )->get_product_input()->get_attributes();
-
-		$this->assertCount( 0, $logged );
-		$this->assertSame( '100000000', $attrs['price']['amountMicros'] );
-		$this->assertSame( get_woocommerce_currency(), $attrs['price']['currencyCode'] );
 	}
 
 	public function test_virtual_product_zero_shipping_carries_entry_currency() {

@@ -4,6 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\ConnectException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiProductInputsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
@@ -29,6 +31,7 @@ class ProductSyncer implements Service {
 
 	public const FAILURE_THRESHOLD        = 5;         // Number of failed attempts allowed per FAILURE_THRESHOLD_WINDOW
 	public const FAILURE_THRESHOLD_WINDOW = '3 hours'; // PHP supported Date and Time format: https://www.php.net/manual/en/datetime.formats.php
+	public const DEFAULT_CONCURRENCY      = 10;        // Concurrent Merchant API batch requests during a product sync.
 
 	/**
 	 * @var MapiProductInputsService
@@ -106,7 +109,7 @@ class ProductSyncer implements Service {
 	/**
 	 * Submit MAPI ProductInput entries to Merchant Center via productInputs.insert.
 	 *
-	 * @param array<int, array{product: WC_Product, country: string, input: ProductInput}> $entries
+	 * @param array<int, array{product: WC_Product, country: string, input: ProductInput, hash: string}> $entries
 	 *
 	 * @return BatchProductResponse Containing both the synced and invalid products.
 	 *
@@ -129,7 +132,7 @@ class ProductSyncer implements Service {
 			);
 
 			try {
-				$result = $this->mapi_inputs->insert_many( $inputs );
+				$result = $this->mapi_inputs->insert_many( $inputs, $this->get_sync_concurrency() );
 			} catch ( Exception $exception ) {
 				do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
 
@@ -145,6 +148,10 @@ class ProductSyncer implements Service {
 
 					$updated_products[] = $synced_entry;
 					$this->batch_helper->mark_as_synced( $synced_entry );
+
+					if ( isset( $entry['hash'] ) ) {
+						$this->product_helper->update_sync_hash( $entry['product'], $entry['hash'] );
+					}
 				} elseif ( isset( $result['failures'][ $index ] ) ) {
 					$invalid_entry = $this->build_invalid_entry( $entry['product']->get_id(), $result['failures'][ $index ] );
 
@@ -198,13 +205,56 @@ class ProductSyncer implements Service {
 	 * @return BatchInvalidProductEntry
 	 */
 	protected function build_invalid_entry( int $wc_product_id, Exception $reason ): BatchInvalidProductEntry {
-		if ( $reason instanceof MerchantApiException && $reason->get_http_status() >= 500 ) {
+		if ( $this->is_retryable_reason( $reason ) ) {
 			$errors = [ GoogleProductService::INTERNAL_ERROR_REASON => $reason->getMessage() ];
 		} else {
 			$errors = [ 'invalid' => $reason->getMessage() ];
 		}
 
 		return new BatchInvalidProductEntry( $wc_product_id, null, $errors );
+	}
+
+	/**
+	 * Whether a Merchant API status should be retried (429 rate limit or 5xx) rather
+	 * than recorded as a permanent invalid product.
+	 *
+	 * @param int $status
+	 *
+	 * @return bool
+	 */
+	protected function is_retryable_status( int $status ): bool {
+		return 429 === $status || $status >= 500;
+	}
+
+	/**
+	 * Whether a sync failure should be retried: a transient Merchant API status (429/5xx)
+	 * or a connection-level error that outlived the client's retry middleware.
+	 *
+	 * @param Exception $reason
+	 *
+	 * @return bool
+	 */
+	protected function is_retryable_reason( Exception $reason ): bool {
+		if ( $reason instanceof ConnectException ) {
+			return true;
+		}
+
+		if ( $reason instanceof MerchantApiException ) {
+			return $this->is_retryable_status( $reason->get_http_status() );
+		}
+
+		// A transport error with no HTTP response (connection reset, etc.) is transient.
+		return $reason instanceof RequestException && ! $reason->hasResponse();
+	}
+
+	/**
+	 * Number of concurrent Merchant API product requests to run per batch,
+	 * filterable via woocommerce_gla_mapi_product_concurrency.
+	 *
+	 * @return int
+	 */
+	protected function get_sync_concurrency(): int {
+		return max( 1, (int) apply_filters( 'woocommerce_gla_mapi_product_concurrency', self::DEFAULT_CONCURRENCY ) );
 	}
 
 	/**
@@ -236,7 +286,7 @@ class ProductSyncer implements Service {
 	public function delete_by_id_map( array $product_id_map ): BatchProductResponse {
 		$entries = [];
 		foreach ( $product_id_map as $google_id => $wc_product_id ) {
-			$identity = $this->batch_helper->parse_mapi_identity( (string) $google_id );
+			$identity = $this->batch_helper->parse_deletable_identity( (string) $google_id );
 			if ( null === $identity ) {
 				continue;
 			}
@@ -372,7 +422,7 @@ class ProductSyncer implements Service {
 			);
 
 			try {
-				$result = $this->mapi_inputs->delete_many( $inputs );
+				$result = $this->mapi_inputs->delete_many( $inputs, $this->get_sync_concurrency() );
 			} catch ( Exception $exception ) {
 				do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
 
@@ -421,7 +471,7 @@ class ProductSyncer implements Service {
 
 		if ( 404 === $status ) {
 			$errors = [ GoogleProductService::NOT_FOUND_ERROR_REASON => $reason->getMessage() ];
-		} elseif ( $status >= 500 ) {
+		} elseif ( $this->is_retryable_reason( $reason ) ) {
 			$errors = [ GoogleProductService::INTERNAL_ERROR_REASON => $reason->getMessage() ];
 		} else {
 			$errors = [ 'invalid' => $reason->getMessage() ];

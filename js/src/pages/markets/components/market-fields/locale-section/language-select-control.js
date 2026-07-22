@@ -10,7 +10,8 @@ import { glaData } from '~/constants';
 import { useAdaptiveFormContext } from '~/components/adaptive-form';
 import AppSearchableSelectControl from '~/components/app-searchable-select-control';
 import AppInputControl from '~/components/app-input-control';
-import useAvailableStoreLanguages from '~/hooks/useAvailableStoreLanguages';
+import useAvailableLanguagesCurrencies from '~/hooks/useAvailableLanguagesCurrencies';
+import getValidCurrencyCodes from '../../../utils/getValidCurrencyCodes';
 
 /**
  * Renders the language select control within the market edit form.
@@ -21,9 +22,11 @@ import useAvailableStoreLanguages from '~/hooks/useAvailableStoreLanguages';
 const LanguageSelectControl = () => {
 	const {
 		getInputProps,
+		setValues,
 		adapter: { renderRequestedValidation },
 	} = useAdaptiveFormContext();
-	const { languages, hasFinishedResolution } = useAvailableStoreLanguages();
+	const { languages, currencies, hasFinishedResolution } =
+		useAvailableLanguagesCurrencies();
 
 	if ( ! glaData.isMultiLingualStore ) {
 		return (
@@ -44,11 +47,42 @@ const LanguageSelectControl = () => {
 		label: language.label,
 	} ) );
 
-	const { onChange, selected } = getInputProps( 'language' );
+	const { selected } = getInputProps( 'language' );
+	const currencyInputProps = getInputProps( 'currency' );
 
 	const selectedOptions =
 		options?.filter( ( option ) => selected?.includes( option.value ) ) ??
 		[];
+
+	/**
+	 * Language change handler
+	 * Updates the currency selection to only include currencies that are valid
+	 * for the new language selection.
+	 *
+	 * @param {Array<{value: string}>} changedOptions The new language options.
+	 * @return {void}
+	 */
+	const handleLanguageChange = ( changedOptions ) => {
+		const newLanguages = changedOptions.map( ( option ) => option.value );
+
+		const validCurrencyCodes = getValidCurrencyCodes(
+			currencies,
+			newLanguages
+		);
+		const selectedCurrencies = currencyInputProps.selected ?? [];
+
+		// Currently-selected currency codes that are still valid for the new language selection.
+		const prunedCurrencies = selectedCurrencies.filter( ( code ) =>
+			validCurrencyCodes.has( code )
+		);
+
+		setValues( {
+			language: newLanguages,
+			...( prunedCurrencies.length !== selectedCurrencies.length
+				? { currency: prunedCurrencies }
+				: {} ),
+		} );
+	};
 
 	return (
 		<div>
@@ -57,9 +91,7 @@ const LanguageSelectControl = () => {
 				options={ options }
 				disabled={ ! hasFinishedResolution }
 				selected={ selectedOptions }
-				onChange={ ( changedOptions ) =>
-					onChange( changedOptions.map( ( option ) => option.value ) )
-				}
+				onChange={ handleLanguageChange }
 				helperText={ __(
 					"Languages and currencies are populated from your multilingual plugin. You can remove them per market but can't add ones the plugin doesn't provide.",
 					'google-listings-and-ads'

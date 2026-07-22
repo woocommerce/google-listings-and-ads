@@ -111,32 +111,11 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	/**
 	 * Register the service.
 	 *
-	 * Watches two signals that change what the feed should contain without any
-	 * market being edited:
-	 *
-	 * - The WooCommerce Multilingual settings option: the primary market's
-	 *   per-entry currencies are derived from its default currency per
-	 *   language, so a change to those pairings must reschedule a full product
-	 *   sync for the feed to follow them.
-	 * - Currency conversion availability, so market participation changes
-	 *   propagate to Merchant Center without waiting for an unrelated sync.
+	 * Watches for changes in currency conversion availability so market
+	 * participation changes propagate to Merchant Center without waiting for
+	 * an unrelated sync.
 	 */
 	public function register(): void {
-		add_action(
-			'update_option__wcml_settings',
-			function ( $old_value, $value ) {
-				$old = is_array( $old_value ) ? ( $old_value['default_currencies'] ?? [] ) : [];
-				$new = is_array( $value ) ? ( $value['default_currencies'] ?? [] ) : [];
-
-				// Loose comparison: same pairings in a different order are not a change.
-				if ( $old != $new ) { // phpcs:ignore Universal.Operators.StrictComparisons.LooseNotEqual
-					$this->job_repository->get( UpdateAllProducts::class )->schedule();
-				}
-			},
-			10,
-			2
-		);
-
 		add_action(
 			'init',
 			function () {
@@ -180,14 +159,23 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Whether any stored secondary market is priced in a currency other than
-	 * the store currency, i.e. depends on conversion availability to take part.
+	 * Whether any stored secondary market or the primary market carries a
+	 * currency other than the store currency, i.e. depends on conversion
+	 * availability for at least one of its feeds to take part.
 	 *
 	 * @return bool
 	 */
 	private function has_markets_requiring_conversion(): bool {
 		foreach ( $this->get_stored_secondary_markets() as $market ) {
-			if ( get_woocommerce_currency() !== $this->get_market_currency( $market ) ) {
+			foreach ( $this->get_market_currencies( $market ) as $currency ) {
+				if ( get_woocommerce_currency() !== $currency ) {
+					return true;
+				}
+			}
+		}
+
+		foreach ( $this->get_existing_primary_currencies() as $currency ) {
+			if ( get_woocommerce_currency() !== $currency ) {
 				return true;
 			}
 		}
@@ -198,18 +186,33 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	/**
 	 * Returns all markets, keyed by ID with the synthesised primary always first.
 	 *
+	 * The shipping method (`shipping_rate`/`shipping_time`) is a single, store-wide
+	 * setting held in the MERCHANT_CENTER option. Secondary markets keep their own
+	 * snapshot of it from when they were created, but those copies can drift out of
+	 * date (e.g. the merchant later switches the global rate to `manual`). Every
+	 * returned market therefore reflects the current global values rather than its
+	 * stored snapshot, so every consumer — the sync check, the currency map builder
+	 * and the REST responses — reads a single source of truth. The same is done for
+	 * `free_shipping` (see GOOWOO-698).
+	 *
 	 * @return array[] Keyed by market ID ('primary', then secondary IDs).
 	 */
 	public function get_markets(): array {
 		$secondary = $this->get_stored_secondary_markets();
 
-		$all_rates     = $this->get_cached_shipping_rates();
-		$all_countries = $this->wc->get_countries();
-		$is_flat_mode  = $this->is_flat_shipping_rate();
+		$all_rates       = $this->get_cached_shipping_rates();
+		$all_countries   = $this->wc->get_countries();
+		$is_flat_mode    = $this->is_flat_shipping_rate();
+		$global_shipping = $this->global_shipping_method();
 
 		foreach ( $secondary as &$market ) {
 			$market  = $this->apply_site_locale_when_not_multilingual( $market );
 			$country = $market['country'] ?? null;
+
+			// Overwrite the stored snapshot with the live global shipping method so
+			// no decision is ever made against a stale per-market copy.
+			$market['shipping_rate'] = $global_shipping['shipping_rate'];
+			$market['shipping_time'] = $global_shipping['shipping_time'];
 
 			// DB rate rows are retained when the merchant switches modes so they
 			// can be restored later, so the read boundary has to gate them.
@@ -290,20 +293,18 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	/**
 	 * Whether a secondary market currently takes part in syncing to Google.
 	 *
-	 * A market priced in the store currency always takes part. A market priced
-	 * in any other currency takes part only while price conversion is
-	 * available (WPML active with WCML multi-currency on).
+	 * A market takes part when at least one of its currencies does: the store
+	 * currency always takes part, and any other currency only while price
+	 * conversion is available (WPML active with WCML multi-currency on). A
+	 * market with a mix of convertible and unconvertible currencies keeps
+	 * syncing the currencies it can.
 	 *
 	 * @param array $market The market config.
 	 *
 	 * @return bool
 	 */
 	private function is_market_participating( array $market ): bool {
-		if ( get_woocommerce_currency() === $this->get_market_currency( $market ) ) {
-			return true;
-		}
-
-		return $this->wpml->can_convert_currency();
+		return ! empty( $this->get_participating_currencies( $market ) );
 	}
 
 	/**
@@ -343,48 +344,20 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	public function get_primary_market(): array {
 		$mc_settings      = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
 		$default_language = [ $this->get_site_primary_language() ];
-
-		$languages = is_array( $mc_settings['language'] ?? null ) ? $mc_settings['language'] : $default_language;
+		$default_currency = [ $this->get_site_primary_currency() ];
 
 		return [
 			'id'            => 'primary',
 			'label'         => __( 'Primary Market', 'google-listings-and-ads' ),
 			'countries'     => $this->target_audience->get_target_countries(),
 			'country'       => null,
-			'language'      => $languages,
-			'currency'      => $this->get_primary_market_currencies( $languages ),
+			'language'      => is_array( $mc_settings['language'] ?? null ) ? $mc_settings['language'] : $default_language,
+			'currency'      => is_array( $mc_settings['currency'] ?? null ) ? $mc_settings['currency'] : $default_currency,
 			'feed_label'    => null,
 			'shipping_rate' => $mc_settings['shipping_rate'] ?? null,
 			'shipping_time' => $mc_settings['shipping_time'] ?? null,
 			'free_shipping' => $this->get_primary_free_shipping_threshold(),
 		];
-	}
-
-	/**
-	 * Returns the primary market's currencies, derived from the WooCommerce
-	 * Multilingual default currency per language: each primary language entry
-	 * is priced in its language's paired currency, and a language without a
-	 * pairing keeps the site primary currency. The stored primary currency
-	 * setting is never read; the per-language pairings are the single source
-	 * of truth.
-	 *
-	 * @param array $languages The primary market's language codes.
-	 *
-	 * @return string[]
-	 */
-	private function get_primary_market_currencies( array $languages ): array {
-		$currencies = [];
-
-		foreach ( $this->normalise_language_codes( $languages ) as $language ) {
-			$paired       = $this->wpml->get_default_currency_for_language( $language );
-			$currencies[] = '' !== $paired ? $paired : $this->get_site_primary_currency();
-		}
-
-		if ( empty( $currencies ) ) {
-			$currencies[] = $this->get_site_primary_currency();
-		}
-
-		return array_values( array_unique( $currencies ) );
 	}
 
 	/**
@@ -476,7 +449,9 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$this->extend_shipping_to_country( $config['country'] );
 		}
 
-		if ( 'manual' !== ( $config['shipping_rate'] ?? null ) ) {
+		// The shipping method is global, so whether Merchant Center needs a sync is
+		// decided by the global setting, not by this market's stored snapshot.
+		if ( $this->global_shipping_is_syncable() ) {
 			$this->schedule_shipping_sync();
 		}
 
@@ -486,9 +461,10 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		 * Fires after a secondary market is successfully added.
 		 *
 		 * @param string $id     The market ID.
-		 * @param array  $config The market configuration as persisted, including shipping_rate and shipping_time defaults.
+		 * @param array  $config The market configuration as persisted. The shipping_rate/shipping_time
+		 *                       reflect the current global shipping method (see get_markets()).
 		 */
-		do_action( 'woocommerce_gla_market_added', $id, $config );
+		do_action( 'woocommerce_gla_market_added', $id, array_merge( $config, $this->global_shipping_method() ) );
 	}
 
 	/**
@@ -509,7 +485,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	public function update_market( string $id, array $config ): array {
 		if ( 'primary' === $id ) {
 			$language_change_pending = array_key_exists( 'language', $config );
-			$primary_existing_langs  = $language_change_pending ? $this->get_existing_primary_languages() : [];
+			$primary_existing_langs  = $this->get_existing_primary_languages();
 			$primary_countries       = $language_change_pending ? $this->target_audience->get_target_countries() : [];
 
 			$existing_target = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
@@ -532,13 +508,19 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$merged_countries   = $merged_target['countries'] ?? [];
 			$existing_language  = $existing_mc['language'] ?? [];
 			$merged_language    = $merged_mc['language'] ?? [];
+			$existing_currency  = $existing_mc['currency'] ?? [];
+			$merged_currency    = $merged_mc['currency'] ?? [];
 
-			// The primary market's currencies are derived from the WooCommerce
-			// Multilingual per-language defaults and never written here, so a
-			// currency key on the update cannot require a resync.
+			$removed_currencies = array_diff( $existing_currency, $merged_currency );
+			if ( ! empty( $removed_currencies ) ) {
+				$this->schedule_primary_currency_cleanup( $removed_currencies, $primary_existing_langs );
+			}
+
 			$resync_needed = $existing_countries !== $merged_countries
 				|| array_diff( $existing_language, $merged_language ) !== []
-				|| array_diff( $merged_language, $existing_language ) !== [];
+				|| array_diff( $merged_language, $existing_language ) !== []
+				|| array_diff( $existing_currency, $merged_currency ) !== []
+				|| array_diff( $merged_currency, $existing_currency ) !== [];
 
 			if ( $resync_needed ) {
 				$this->job_repository->get( UpdateAllProducts::class )->schedule();
@@ -546,6 +528,12 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 			return $this->fire_market_updated_action( $id );
 		}
+
+		// Secondary markets don't own a shipping method — it is driven by the global
+		// setting (see get_markets()). The Edit Market screen still submits these
+		// fields on every save, so drop them rather than letting them mutate the
+		// stored snapshot or trip the shipping-sync change detection below.
+		unset( $config['shipping_rate'], $config['shipping_time'] );
 
 		$markets  = $this->get_stored_secondary_markets();
 		$existing = $markets[ $id ] ?? [];
@@ -579,7 +567,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 					$this->get_market_feed_label_variants(
 						$old_feed_label,
 						is_array( $existing['language'] ?? null ) ? $existing['language'] : [],
-						$this->get_market_currency( $existing )
+						$this->get_market_currencies( $existing )
 					),
 					$new_labels
 				)
@@ -589,7 +577,9 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 				->schedule( [ 'feed_labels' => $orphaned ] );
 		}
 
-		$shipping_keys = [ 'country', 'currency', 'shipping_rate', 'shipping_time' ];
+		// shipping_rate/shipping_time are global and were dropped above, so only a
+		// country or currency change can affect what this market syncs to Google.
+		$shipping_keys = [ 'country', 'currency' ];
 		foreach ( $shipping_keys as $key ) {
 			if ( ( $existing[ $key ] ?? null ) !== ( $merged[ $key ] ?? null ) ) {
 				$this->schedule_shipping_sync();
@@ -664,6 +654,49 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
+	 * Schedules cleanup of the primary market's entries for currencies removed
+	 * from its configured currency list.
+	 *
+	 * Each removed currency's entries sit under one derived label per primary
+	 * language, based on the main feed label. The store currency is never
+	 * cleaned up here: its entries live under the bare main feed label, which
+	 * stays current regardless of the configured currency list.
+	 *
+	 * @param array $removed_currencies Currency codes removed from the primary market.
+	 * @param array $languages          The primary languages before the update.
+	 */
+	private function schedule_primary_currency_cleanup( array $removed_currencies, array $languages ): void {
+		$main_feed_label = $this->get_main_feed_label();
+
+		if ( '' === $main_feed_label ) {
+			return;
+		}
+
+		$labels    = [];
+		$languages = empty( $languages ) ? [ '' ] : $languages;
+
+		foreach ( $removed_currencies as $currency ) {
+			$currency = (string) $currency;
+			if ( '' === $currency || get_woocommerce_currency() === $currency ) {
+				continue;
+			}
+
+			foreach ( $languages as $language ) {
+				$labels[] = $this->get_market_feed_label( $main_feed_label, (string) $language, $currency );
+			}
+		}
+
+		$labels = array_values( array_unique( $labels ) );
+
+		if ( empty( $labels ) ) {
+			return;
+		}
+
+		$this->job_repository->get( CleanupOrphanedMarketProductsJob::class )
+			->schedule( [ 'feed_labels' => $labels ] );
+	}
+
+	/**
 	 * Returns the primary market's language list from the MERCHANT_CENTER option,
 	 * falling back to a single-entry list with the site-derived default. Mirrors
 	 * the language fallback in get_primary_market() but does not trigger the
@@ -679,6 +712,23 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		}
 
 		return [ $this->get_site_primary_language() ];
+	}
+
+	/**
+	 * Returns the primary market's currency list from the MERCHANT_CENTER option,
+	 * falling back to a single-entry list with the site-derived default. Mirrors
+	 * get_existing_primary_languages() for the currency field.
+	 *
+	 * @return array
+	 */
+	private function get_existing_primary_currencies(): array {
+		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+
+		if ( is_array( $mc_settings['currency'] ?? null ) ) {
+			return $mc_settings['currency'];
+		}
+
+		return [ $this->get_site_primary_currency() ];
 	}
 
 	/**
@@ -749,7 +799,6 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$deleted_config = $markets[ $id ];
 		$country        = $deleted_config['country'] ?? null;
 		$feed_label     = $deleted_config['feed_label'] ?? null;
-		$shipping_rate  = $deleted_config['shipping_rate'] ?? null;
 
 		unset( $markets[ $id ] );
 		$this->options->update( OptionsInterface::MARKETS, $markets );
@@ -771,13 +820,16 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 						'feed_labels' => $this->get_market_feed_label_variants(
 							$feed_label,
 							is_array( $deleted_config['language'] ?? null ) ? $deleted_config['language'] : [],
-							$this->get_market_currency( $deleted_config )
+							$this->get_market_currencies( $deleted_config )
 						),
 					]
 				);
 		}
 
-		if ( 'manual' !== $shipping_rate ) {
+		// The shipping method is global. Deleting a market whose stored snapshot said
+		// `manual` while the global rate is flat/automatic must still notify Google,
+		// so the decision reads the global setting rather than the deleted snapshot.
+		if ( $this->global_shipping_is_syncable() ) {
 			$this->schedule_shipping_sync();
 		}
 
@@ -788,17 +840,20 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		 *
 		 * @param string $id             The market ID.
 		 * @param array  $deleted_config The market configuration as it existed at the time of deletion.
+		 *                               The shipping_rate/shipping_time reflect the current global
+		 *                               shipping method (see get_markets()).
 		 */
-		do_action( 'woocommerce_gla_market_deleted', $id, $deleted_config );
+		do_action( 'woocommerce_gla_market_deleted', $id, array_merge( $deleted_config, $this->global_shipping_method() ) );
 	}
 
 	/**
 	 * Returns every valid `google_ids` tracking key across all configured markets:
-	 * one derived feed label per market.
+	 * one derived feed label per market language-currency pair.
 	 *
-	 * The primary market keeps its bare label so existing entries keep the
-	 * identity they already have in Google Merchant Center; each secondary
-	 * market contributes its currency-derived label.
+	 * The primary market keeps its bare label for the store currency so
+	 * existing entries keep the identity they already have in Google Merchant
+	 * Center, and contributes derived labels for its additional currencies;
+	 * each secondary market contributes its language-currency derived labels.
 	 *
 	 * @return string[]
 	 */
@@ -860,20 +915,57 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
-	 * Returns a market's effective currency code: the first configured entry
-	 * of its `currency[]` list, or the store currency when none is set. This
-	 * is the currency the market's prices are submitted in.
+	 * Returns a market's configured currency codes in stored order without
+	 * duplicates, or a single-entry list with the store currency when none is
+	 * configured. Every configured currency produces its own feeds; see
+	 * get_participating_currencies() for the subset currently allowed to sync.
 	 *
 	 * @param array $market The market config.
 	 *
-	 * @return string
+	 * @return string[]
 	 */
-	private function get_market_currency( array $market ): string {
-		$currency = is_array( $market['currency'] ?? null )
-			? (string) ( $market['currency'][0] ?? '' )
-			: (string) ( $market['currency'] ?? '' );
+	private function get_market_currencies( array $market ): array {
+		$configured = is_array( $market['currency'] ?? null )
+			? $market['currency']
+			: [ $market['currency'] ?? '' ];
 
-		return '' === $currency ? get_woocommerce_currency() : $currency;
+		$currencies = [];
+		foreach ( $configured as $currency ) {
+			$currency = (string) $currency;
+			if ( '' !== $currency ) {
+				$currencies[] = $currency;
+			}
+		}
+
+		$currencies = array_values( array_unique( $currencies ) );
+
+		return empty( $currencies ) ? [ get_woocommerce_currency() ] : $currencies;
+	}
+
+	/**
+	 * Returns the market currencies that currently take part in syncing: the
+	 * store currency always takes part, and any other currency only while
+	 * price conversion is available (WPML active with WCML multi-currency on)
+	 * or while the market carries a configured exchange rate, which is its
+	 * own conversion source.
+	 *
+	 * @param array $market The market config.
+	 *
+	 * @return string[]
+	 */
+	public function get_participating_currencies( array $market ): array {
+		$store_currency = get_woocommerce_currency();
+		$can_convert    = $this->wpml->can_convert_currency();
+		$has_rate       = isset( $market['exchange_rate'] ) && is_numeric( $market['exchange_rate'] ) && (float) $market['exchange_rate'] > 0;
+
+		return array_values(
+			array_filter(
+				$this->get_market_currencies( $market ),
+				function ( string $currency ) use ( $store_currency, $can_convert, $has_rate ): bool {
+					return $currency === $store_currency || $can_convert || $has_rate;
+				}
+			)
+		);
 	}
 
 	/**
@@ -916,46 +1008,70 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * Returns each market's derived feed labels together with the languages they match.
 	 *
 	 * The primary market contributes its bare main feed label with the primary
-	 * language list. Each participating secondary market contributes one
-	 * language-currency derived label per configured language, each paired with
-	 * that single language; a market with no configured languages contributes
-	 * one site-language label paired with an empty list (matching every
-	 * language). Excluded markets (see get_participating_markets()) contribute
-	 * nothing, which is what lets the stale-entry cleanup remove their
-	 * Merchant Center entries.
+	 * language list (the store currency's feed, kept bare so existing entries
+	 * keep their Merchant Center identity), plus one derived label per primary
+	 * language per additional participating primary currency. Each
+	 * participating secondary market contributes one language-currency derived
+	 * label per configured language per participating currency, each paired
+	 * with that single language; a market with no configured languages
+	 * contributes one site-language label per participating currency, paired
+	 * with an empty list (matching every language). Excluded markets and
+	 * currencies (see get_participating_currencies()) contribute nothing,
+	 * which is what lets the stale-entry cleanup remove their Merchant Center
+	 * entries.
 	 *
 	 * @return array<int, array{feed_label: string, languages: array}>
 	 */
 	private function get_market_labels_with_languages(): array {
+		$main_feed_label   = $this->get_main_feed_label();
+		$primary_languages = $this->get_existing_primary_languages();
+
 		$markets = [
 			[
-				'feed_label' => $this->get_main_feed_label(),
-				'languages'  => $this->get_existing_primary_languages(),
+				'feed_label' => $main_feed_label,
+				'languages'  => $primary_languages,
 			],
 		];
+
+		$primary_extra_currencies = array_diff(
+			$this->get_participating_currencies( [ 'currency' => $this->get_existing_primary_currencies() ] ),
+			[ get_woocommerce_currency() ]
+		);
+
+		if ( '' !== $main_feed_label ) {
+			foreach ( $primary_extra_currencies as $currency ) {
+				foreach ( $primary_languages as $language ) {
+					$markets[] = [
+						'feed_label' => $this->get_market_feed_label( $main_feed_label, (string) $language, $currency ),
+						'languages'  => [ (string) $language ],
+					];
+				}
+			}
+		}
 
 		foreach ( $this->get_participating_secondary_markets() as $market ) {
 			$market          = $this->apply_site_locale_when_not_multilingual( $market );
 			$base_feed_label = (string) ( $market['feed_label'] ?? '' );
-			$currency        = $this->get_market_currency( $market );
 			$languages       = is_array( $market['language'] ?? null ) ? $market['language'] : [];
 
-			if ( empty( $languages ) ) {
-				// A market with no configured languages accepts every product;
-				// all its entries sync under the site-language label, so it
-				// contributes that single label matching every language.
-				$markets[] = [
-					'feed_label' => $this->get_market_feed_label( $base_feed_label, '', $currency ),
-					'languages'  => [],
-				];
-				continue;
-			}
+			foreach ( $this->get_participating_currencies( $market ) as $currency ) {
+				if ( empty( $languages ) ) {
+					// A market with no configured languages accepts every product;
+					// all its entries sync under the site-language label, so it
+					// contributes that single label matching every language.
+					$markets[] = [
+						'feed_label' => $this->get_market_feed_label( $base_feed_label, '', $currency ),
+						'languages'  => [],
+					];
+					continue;
+				}
 
-			foreach ( $languages as $language ) {
-				$markets[] = [
-					'feed_label' => $this->get_market_feed_label( $base_feed_label, (string) $language, $currency ),
-					'languages'  => [ (string) $language ],
-				];
+				foreach ( $languages as $language ) {
+					$markets[] = [
+						'feed_label' => $this->get_market_feed_label( $base_feed_label, (string) $language, $currency ),
+						'languages'  => [ (string) $language ],
+					];
+				}
 			}
 		}
 
@@ -964,33 +1080,39 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 	/**
 	 * Returns every `google_ids` key a market's entries can be stored under:
-	 * the stored base feed label, the superseded currency-only label, and one
-	 * language-currency label per configured language.
+	 * the stored base feed label and one language-currency label per
+	 * configured language per configured currency.
 	 *
-	 * The base label and the currency-only label are always included so
-	 * entries synced before the language component was added to the scheme
-	 * are still found and cleaned up.
+	 * The base label is included so entries synced under the earliest scheme,
+	 * which used the stored label verbatim, are still found and cleaned up.
+	 * The intermediate currency-only scheme is not covered: it never shipped,
+	 * so its keys cannot exist outside stores that ran intermediate builds.
 	 *
 	 * @param string $feed_label The market's stored feed label.
 	 * @param array  $languages  The market's configured language codes. An
-	 *                           empty list contributes the site-language label.
-	 * @param string $currency   The market's effective currency code.
+	 *                           empty list contributes the site-language labels.
+	 * @param array  $currencies The market's configured currency codes. An
+	 *                           empty list contributes the store-currency labels.
 	 *
 	 * @return string[]
 	 */
-	private function get_market_feed_label_variants( string $feed_label, array $languages, string $currency ): array {
-		if ( '' === $currency ) {
-			$currency = get_woocommerce_currency();
+	private function get_market_feed_label_variants( string $feed_label, array $languages, array $currencies ): array {
+		if ( empty( $currencies ) ) {
+			$currencies = [ get_woocommerce_currency() ];
 		}
 
-		$variants = [
-			$feed_label,
-			$feed_label . '-' . strtoupper( $currency ),
-		];
-
+		$variants  = [ $feed_label ];
 		$languages = empty( $languages ) ? [ '' ] : $languages;
-		foreach ( $languages as $language ) {
-			$variants[] = $this->get_market_feed_label( $feed_label, (string) $language, $currency );
+
+		foreach ( $currencies as $currency ) {
+			$currency = (string) $currency;
+			if ( '' === $currency ) {
+				$currency = get_woocommerce_currency();
+			}
+
+			foreach ( $languages as $language ) {
+				$variants[] = $this->get_market_feed_label( $feed_label, (string) $language, $currency );
+			}
 		}
 
 		return array_values( array_unique( $variants ) );
@@ -998,11 +1120,11 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 
 	/**
 	 * Returns the current derived feed label set for a market config: one
-	 * language-currency label per configured language (the site-language
-	 * label when no languages are configured).
+	 * language-currency label per configured language per configured currency
+	 * (the site-language labels when no languages are configured).
 	 *
 	 * @param string $feed_label The market's stored feed label.
-	 * @param array  $market     The market config the languages and currency come from.
+	 * @param array  $market     The market config the languages and currencies come from.
 	 *
 	 * @return string[]
 	 */
@@ -1011,11 +1133,12 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			? $market['language']
 			: [ '' ];
 
-		$currency = $this->get_market_currency( $market );
-		$labels   = [];
+		$labels = [];
 
-		foreach ( $languages as $language ) {
-			$labels[] = $this->get_market_feed_label( $feed_label, (string) $language, $currency );
+		foreach ( $this->get_market_currencies( $market ) as $currency ) {
+			foreach ( $languages as $language ) {
+				$labels[] = $this->get_market_feed_label( $feed_label, (string) $language, $currency );
+			}
 		}
 
 		return array_values( array_unique( $labels ) );
@@ -1097,18 +1220,21 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	/**
 	 * Whether any configured market needs its shipping settings synced to Merchant Center.
 	 *
-	 * Returns true when at least one participating market has a non-`manual`
-	 * `shipping_rate` combined with `shipping_time === 'flat'`. A non-`manual`
-	 * secondary market is enough to require a sync even when the primary
-	 * itself is `manual`.
+	 * A market is syncable when its `shipping_rate` is `flat` or `automatic` and its
+	 * `shipping_time` is `flat`. Anything else (`manual`, or a missing or unrecognised
+	 * value) is not syncable and must not schedule a sync, because the DB shipping
+	 * adapter would then be asked to push rates the merchant never entered.
+	 *
+	 * Only participating markets count: a syncable secondary market is enough to
+	 * require a sync even when the primary itself is `manual`, while markets
+	 * excluded from syncing (see get_participating_markets()) never require one.
+	 * Every market reflects the global shipping method (see get_markets()).
 	 *
 	 * @return bool
 	 */
 	public function has_syncable_markets(): bool {
 		foreach ( $this->get_participating_markets() as $market ) {
-			$rate = $market['shipping_rate'] ?? null;
-			$time = $market['shipping_time'] ?? null;
-			if ( 'manual' !== $rate && 'flat' === $time ) {
+			if ( $this->is_syncable_shipping_method( $market['shipping_rate'] ?? null, $market['shipping_time'] ?? null ) ) {
 				return true;
 			}
 		}
@@ -1207,15 +1333,9 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 *
 	 * @param array $config Partial config — only supplied keys are written.
 	 *
-	 * @throws InvalidValue When `language` is present but not an array.
+	 * @throws InvalidValue When `language` or `currency` is present but not an array.
 	 */
 	private function update_primary_market_fanout( array $config ): void {
-		// The primary market's currencies are derived from the WooCommerce
-		// Multilingual default currency per language, so an incoming currency
-		// key is ignored rather than rejected: the Markets UI echoes the whole
-		// form back on every primary save.
-		unset( $config['currency'] );
-
 		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
 		$mc_updated  = false;
 
@@ -1229,12 +1349,15 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$mc_updated                   = true;
 		}
 
-		if ( array_key_exists( 'language', $config ) ) {
-			if ( ! is_array( $config['language'] ) ) {
-				throw InvalidValue::not_array( 'language' );
+		foreach ( [ 'language', 'currency' ] as $key ) {
+			if ( ! array_key_exists( $key, $config ) ) {
+				continue;
 			}
-			$mc_settings['language'] = array_values( array_unique( $config['language'] ) );
-			$mc_updated              = true;
+			if ( ! is_array( $config[ $key ] ) ) {
+				throw InvalidValue::not_array( $key );
+			}
+			$mc_settings[ $key ] = array_values( array_unique( $config[ $key ] ) );
+			$mc_updated          = true;
 		}
 
 		if ( $mc_updated ) {
@@ -1283,6 +1406,52 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
 
 		return is_array( $mc_settings ) && 'flat' === ( $mc_settings['shipping_rate'] ?? null );
+	}
+
+	/**
+	 * Returns the store-wide shipping method from the MERCHANT_CENTER option.
+	 *
+	 * This is the single source of truth for every market's shipping_rate and
+	 * shipping_time; both values are null when the setting is unset.
+	 *
+	 * @return array{shipping_rate: string|null, shipping_time: string|null}
+	 */
+	private function global_shipping_method(): array {
+		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+		if ( ! is_array( $mc_settings ) ) {
+			$mc_settings = [];
+		}
+
+		return [
+			'shipping_rate' => $mc_settings['shipping_rate'] ?? null,
+			'shipping_time' => $mc_settings['shipping_time'] ?? null,
+		];
+	}
+
+	/**
+	 * Whether the global shipping method can be synced to Merchant Center.
+	 *
+	 * Used by add_market()/delete_market() to decide whether the change needs to be
+	 * pushed to Google. Mirrors the per-market predicate in has_syncable_markets().
+	 *
+	 * @return bool
+	 */
+	private function global_shipping_is_syncable(): bool {
+		$global = $this->global_shipping_method();
+
+		return $this->is_syncable_shipping_method( $global['shipping_rate'], $global['shipping_time'] );
+	}
+
+	/**
+	 * Whether a shipping method (rate + time) is syncable to Merchant Center.
+	 *
+	 * @param string|null $rate The shipping_rate value.
+	 * @param string|null $time The shipping_time value.
+	 *
+	 * @return bool True when the rate is `flat` or `automatic` and the time is `flat`.
+	 */
+	private function is_syncable_shipping_method( $rate, $time ): bool {
+		return in_array( $rate, [ 'flat', 'automatic' ], true ) && 'flat' === $time;
 	}
 
 	/**
