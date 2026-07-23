@@ -287,6 +287,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$product = call_user_func( $callback );
 		// First mark the product as synced to update its meta data
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
+		$this->product_helper->update_sync_hash( $product, 'somehash', 'en', 'US' );
 
 		$this->product_helper->mark_as_unsynced( $product );
 
@@ -296,6 +297,42 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertEmpty( $this->product_meta->get_errors( $product ) );
 		$this->assertEmpty( $this->product_meta->get_failed_sync_attempts( $product ) );
 		$this->assertEmpty( $this->product_meta->get_sync_failed_at( $product ) );
+		$this->assertEmpty( $this->product_meta->get_sync_hash( $product ) );
+	}
+
+	public function test_update_sync_hash_keys_by_language_and_feed_label() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->product_helper->update_sync_hash( $product, 'hash-us', 'en', 'US' );
+		$this->product_helper->update_sync_hash( $product, 'hash-de', 'de', 'DE-DE-EUR' );
+
+		$this->assertSame(
+			[
+				'en|US'        => 'hash-us',
+				'de|DE-DE-EUR' => 'hash-de',
+			],
+			$this->product_meta->get_sync_hash( $product )
+		);
+
+		// Updating one entry leaves the other keys untouched.
+		$this->product_helper->update_sync_hash( $product, 'hash-us-2', 'en', 'US' );
+		$this->assertSame(
+			[
+				'en|US'        => 'hash-us-2',
+				'de|DE-DE-EUR' => 'hash-de',
+			],
+			$this->product_meta->get_sync_hash( $product )
+		);
+	}
+
+	public function test_update_sync_hash_replaces_a_legacy_string_value() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->update_meta_data( '_wc_gla_sync_hash', 'legacy-hash' );
+		$product->save_meta_data();
+
+		$this->product_helper->update_sync_hash( $product, 'hash-us', 'en', 'US' );
+
+		$this->assertSame( [ 'en|US' => 'hash-us' ], $this->product_meta->get_sync_hash( $product ) );
 	}
 
 	public function test_mark_as_unsynced_remove_sync_status_for_unsyncable_products() {

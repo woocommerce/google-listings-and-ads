@@ -150,7 +150,12 @@ class ProductSyncer implements Service {
 					$this->batch_helper->mark_as_synced( $synced_entry );
 
 					if ( isset( $entry['hash'] ) ) {
-						$this->product_helper->update_sync_hash( $entry['product'], $entry['hash'] );
+						$this->product_helper->update_sync_hash(
+							$entry['product'],
+							$entry['hash'],
+							$entry['input']->get_content_language(),
+							$entry['input']->get_feed_label()
+						);
 					}
 				} elseif ( isset( $result['failures'][ $index ] ) ) {
 					$invalid_entry = $this->build_invalid_entry( $entry['product']->get_id(), $result['failures'][ $index ] );
