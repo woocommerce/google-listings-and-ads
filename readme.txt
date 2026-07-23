@@ -140,6 +140,9 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 3.8.1 - 2026-07-23 =
+
+
 = 3.8.0 - 2026-07-21 =
 * Break - Migrate to the Merchant API from the Content Shopping API.
 * Dev - Bump WooCommerce "tested up to" version 10.9.
@@ -150,14 +153,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 = 3.7.3 - 2026-07-08 =
 * Add - Added update notification when plugin version 3.8.0 is available
-
-= 3.7.2 - 2026-06-29 =
-* Add - Added an option to connect a Merchant Center account when a service-based user adds physical products.
-* Dev - Remove $_GET parameter overrides in Options::get_ads_id() and Options::get_merchant_id().
-* Fix - Align the main tab navigation's keyboard-focus indicator with the WordPress core style and stop showing a focus indicator on mouse press.
-* Fix - Ensure incomplete connection states show as disconnected.
-* Fix - Fix flaky E2E tests for onboarding step-3 campaign flow.
-* Fix - Fix webpack commons chunk misconfiguration causing disproportionate bundle growth; add dedicated bundlewatch entries for all page chunks with realistic size limits.
-* Fix - Resolved console log errors when selecting AI generated images in campaigns.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
