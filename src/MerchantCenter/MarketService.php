@@ -334,6 +334,111 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	}
 
 	/**
+	 * Backfills secondary markets from pre-existing per-country flat-rate shipping data.
+	 *
+	 * Before the Markets feature, a store could configure a distinct flat rate and/or
+	 * delivery time per country while all of those countries lived in a single feed. The
+	 * new structure represents the primary market with one shipping configuration (the main
+	 * target country's), so any target country whose stored flat-rate shipping differs from
+	 * the main country's would silently lose its distinct rate/time once folded into the
+	 * primary market. This carries those distinctions forward: every differing country is
+	 * split into its own editable secondary market and removed from the primary feed's
+	 * target audience, while countries that share the main country's shipping stay in the
+	 * primary market.
+	 *
+	 * Runs only for flat-rate stores and never overwrites an already-configured Markets
+	 * option, so it is safe to call more than once (it is a no-op after the first run).
+	 *
+	 * @return void
+	 */
+	public function backfill_secondary_markets_from_shipping(): void {
+		// Per-country DB rate/time rows only drive Merchant Center in flat mode; other
+		// modes have no per-country overrides to preserve.
+		if ( ! $this->is_flat_shipping_rate() ) {
+			return;
+		}
+
+		// Never clobber a store that already has secondary markets configured.
+		if ( ! empty( $this->get_stored_secondary_markets() ) ) {
+			return;
+		}
+
+		$target_countries = $this->target_audience->get_target_countries();
+		$main_country     = $this->target_audience->get_main_target_country();
+
+		// Nothing to split when there is at most one country or no main country.
+		if ( count( $target_countries ) < 2 || '' === $main_country ) {
+			return;
+		}
+
+		$rates = $this->get_cached_shipping_rates();
+		$times = $this->shipping_time_query->get_all_shipping_times();
+
+		$baseline_signature = $this->get_country_shipping_signature( $main_country, $rates, $times );
+
+		$secondary_markets = [];
+		$remaining_primary = [];
+
+		foreach ( $target_countries as $country ) {
+			// The main country and any country sharing its shipping stay in the primary market.
+			if ( $country === $main_country
+				|| $this->get_country_shipping_signature( $country, $rates, $times ) === $baseline_signature ) {
+				$remaining_primary[] = $country;
+				continue;
+			}
+
+			$id = $this->generate_market_id( $country );
+
+			$secondary_markets[ $id ] = [
+				'country'        => $country,
+				'feed_label'     => strtoupper( $country ),
+				'language'       => [ $this->get_site_primary_language() ],
+				'currency'       => [ $this->get_site_primary_currency() ],
+				'shipping_rate'  => 'flat',
+				'shipping_time'  => 'flat',
+				// These countries were part of the primary feed, so a later delete should
+				// return them to it (see delete_market()).
+				'was_in_primary' => true,
+			];
+		}
+
+		if ( empty( $secondary_markets ) ) {
+			return;
+		}
+
+		$this->options->update( OptionsInterface::MARKETS, $secondary_markets );
+
+		$target_audience              = $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] );
+		$target_audience['countries'] = array_values( $remaining_primary );
+		$this->options->update( OptionsInterface::TARGET_AUDIENCE, $target_audience );
+	}
+
+	/**
+	 * Builds a comparable signature of a country's stored flat-rate shipping (rate, free
+	 * shipping threshold, min and max delivery time) so two countries can be tested for
+	 * having identical shipping.
+	 *
+	 * @param string $country The country code.
+	 * @param array  $rates   Shipping rates keyed by country (see ShippingRateQuery::get_all_shipping_rates()).
+	 * @param array  $times   Shipping times keyed by country (see ShippingTimeQuery::get_all_shipping_times()).
+	 *
+	 * @return string
+	 */
+	private function get_country_shipping_signature( string $country, array $rates, array $times ): string {
+		$rate = $rates[ $country ] ?? [];
+		$time = $times[ $country ] ?? [];
+
+		return (string) wp_json_encode(
+			[
+				'rate'          => isset( $rate['rate'] ) ? (string) $rate['rate'] : null,
+				'free_shipping' => $rate['free_shipping_threshold'] ?? null,
+				'time'          => isset( $time['time'] ) ? (string) $time['time'] : null,
+				'max_time'      => isset( $time['max_time'] ) ? (string) $time['max_time'] : null,
+			]
+		);
+	}
+
+	/**
 	 * Builds and returns the full response-ready primary market.
 	 *
 	 * Composes from TargetAudience, MerchantCenter options, site locale/currency,

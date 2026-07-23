@@ -517,6 +517,191 @@ class MarketServiceTest extends UnitTest {
 		$this->assertTrue( $update_calls[ OptionsInterface::MARKETS ]['gb']['was_in_primary'] );
 	}
 
+	public function test_backfill_splits_country_with_distinct_shipping_into_secondary_market(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'MU', 'ZW', 'FR', 'CM' ],
+				],
+			]
+		);
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'MU', 'ZW', 'FR', 'CM' ] );
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'MU' );
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn(
+			[
+				'MU' => [
+					'country_code'            => 'MU',
+					'currency'                => 'USD',
+					'free_shipping_threshold' => 44.0,
+					'rate'                    => '77',
+				],
+				'ZW' => [
+					'country_code'            => 'ZW',
+					'currency'                => 'USD',
+					'free_shipping_threshold' => 44.0,
+					'rate'                    => '77',
+				],
+				'FR' => [
+					'country_code'            => 'FR',
+					'currency'                => 'USD',
+					'free_shipping_threshold' => 44.0,
+					'rate'                    => '77',
+				],
+				'CM' => [
+					'country_code'            => 'CM',
+					'currency'                => 'USD',
+					'free_shipping_threshold' => 10.0,
+					'rate'                    => '55',
+				],
+			]
+		);
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn(
+			[
+				'MU' => [
+					'country_code' => 'MU',
+					'time'         => '7',
+					'max_time'     => '14',
+				],
+				'ZW' => [
+					'country_code' => 'ZW',
+					'time'         => '7',
+					'max_time'     => '14',
+				],
+				'FR' => [
+					'country_code' => 'FR',
+					'time'         => '7',
+					'max_time'     => '14',
+				],
+				'CM' => [
+					'country_code' => 'CM',
+					'time'         => '1',
+					'max_time'     => '5',
+				],
+			]
+		);
+
+		$update_calls = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$update_calls ) {
+					$update_calls[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->market_service->backfill_secondary_markets_from_shipping();
+
+		// Only Cameroon (distinct rate/time) is split into its own editable secondary market.
+		$this->assertArrayHasKey( OptionsInterface::MARKETS, $update_calls );
+		$this->assertSame( [ 'cm' ], array_keys( $update_calls[ OptionsInterface::MARKETS ] ) );
+
+		$cm = $update_calls[ OptionsInterface::MARKETS ]['cm'];
+		$this->assertSame( 'CM', $cm['country'] );
+		$this->assertSame( 'CM', $cm['feed_label'] );
+		$this->assertSame( 'flat', $cm['shipping_rate'] );
+		$this->assertSame( 'flat', $cm['shipping_time'] );
+		$this->assertTrue( $cm['was_in_primary'] );
+
+		// The countries sharing the main country's shipping stay in the primary feed.
+		$this->assertArrayHasKey( OptionsInterface::TARGET_AUDIENCE, $update_calls );
+		$this->assertSame( [ 'MU', 'ZW', 'FR' ], $update_calls[ OptionsInterface::TARGET_AUDIENCE ]['countries'] );
+	}
+
+	public function test_backfill_no_op_when_all_countries_share_shipping(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MARKETS         => [],
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'MU', 'ZW', 'FR' ],
+				],
+			]
+		);
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'MU', 'ZW', 'FR' ] );
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'MU' );
+		$shared_rate = [
+			'MU' => [
+				'free_shipping_threshold' => 44.0,
+				'rate'                    => '77',
+			],
+			'ZW' => [
+				'free_shipping_threshold' => 44.0,
+				'rate'                    => '77',
+			],
+			'FR' => [
+				'free_shipping_threshold' => 44.0,
+				'rate'                    => '77',
+			],
+		];
+		$shared_time = [
+			'MU' => [
+				'time'     => '7',
+				'max_time' => '14',
+			],
+			'ZW' => [
+				'time'     => '7',
+				'max_time' => '14',
+			],
+			'FR' => [
+				'time'     => '7',
+				'max_time' => '14',
+			],
+		];
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn( $shared_rate );
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn( $shared_time );
+
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->market_service->backfill_secondary_markets_from_shipping();
+	}
+
+	public function test_backfill_no_op_when_not_flat_shipping(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'automatic',
+					'shipping_time' => 'flat',
+				],
+			]
+		);
+
+		$this->options->expects( $this->never() )->method( 'update' );
+		$this->shipping_rate_query->expects( $this->never() )->method( 'get_all_shipping_rates' );
+
+		$this->market_service->backfill_secondary_markets_from_shipping();
+	}
+
+	public function test_backfill_no_op_when_secondary_markets_already_exist(): void {
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'feed_label' => 'GB',
+					],
+				],
+			]
+		);
+
+		$this->options->expects( $this->never() )->method( 'update' );
+
+		$this->market_service->backfill_secondary_markets_from_shipping();
+	}
+
 	public function test_add_market_records_was_in_primary_false_when_country_was_not_targeted(): void {
 		$config = [
 			'country'    => 'DE',

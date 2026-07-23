@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20211228T1
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20220524T1653383133;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20240813T1653383133;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20250910T1653383133;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20260722T1653383133;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\MigrationVersion141;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migrator;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductFeedQueryHelper;
@@ -28,6 +29,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MarketService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
@@ -114,6 +116,7 @@ class DBServiceProvider extends AbstractServiceProvider {
 		$this->share_migration( Migration20231109T1653383133::class, BudgetRecommendationTable::class );
 		$this->share_migration( Migration20240813T1653383133::class, ShippingTimeTable::class );
 		$this->share_migration( Migration20250910T1653383133::class, ActionScheduler::class );
+		$this->share_migration( Migration20260722T1653383133::class, MarketService::class );
 		$this->share_with_tags( Migrator::class, MigrationInterface::class );
 	}
 
