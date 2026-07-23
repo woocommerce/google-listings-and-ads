@@ -50,6 +50,12 @@ class AssetImageProxyController extends BaseController {
 
 	/**
 	 * Register rest routes with WordPress.
+	 *
+	 * Note: this runs on every REST API request (WP fires `rest_api_init` unconditionally
+	 * for route discovery), not just requests to this endpoint, so nothing here should
+	 * attach global filters. The `rest_pre_serve_request` filter is instead attached from
+	 * within `create_image_response()`, which only runs once this endpoint has actually
+	 * been dispatched and produced an image response.
 	 */
 	public function register_routes(): void {
 		$this->register_route(
@@ -64,8 +70,6 @@ class AssetImageProxyController extends BaseController {
 				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
-
-		add_filter( 'rest_pre_serve_request', [ $this, 'serve_image_response' ], 10, 4 );
 	}
 
 	/**
@@ -249,12 +253,20 @@ class AssetImageProxyController extends BaseController {
 	 *
 	 * Returns a WP_REST_Response that is served as raw binary via rest_pre_serve_request.
 	 *
+	 * The filter is attached here, rather than in register_routes(), so it's only ever
+	 * added when this endpoint has actually produced an image to serve — not on every
+	 * REST API request site-wide. WP_REST_Server::serve_request() dispatches the matched
+	 * route's callback (which reaches this method) before applying rest_pre_serve_request,
+	 * so attaching it here still reaches WP in time to affect this response.
+	 *
 	 * @param string $image_data   The image binary data.
 	 * @param string $content_type The content type of the image.
 	 *
 	 * @return Response
 	 */
 	private function create_image_response( string $image_data, string $content_type ): Response {
+		add_filter( 'rest_pre_serve_request', [ $this, 'serve_image_response' ], 10, 4 );
+
 		$response = new Response( $image_data, 200 );
 		$response->header( 'Content-Type', $content_type );
 		$response->header( 'Content-Length', (string) strlen( $image_data ) );
@@ -266,22 +278,47 @@ class AssetImageProxyController extends BaseController {
 	}
 
 	/**
+	 * Determine whether a rest_pre_serve_request $result is this endpoint's own successful
+	 * image response, i.e. one built by create_image_response(), and should be served as
+	 * raw binary rather than left to WordPress's default JSON handling.
+	 *
+	 * @param mixed $result The value passed to serve_image_response() by WordPress.
+	 *
+	 * @return bool
+	 */
+	private function is_image_proxy_response( $result ): bool {
+		if ( ! $result instanceof Response ) {
+			return false;
+		}
+
+		$headers = $result->get_headers();
+
+		return 200 === $result->get_status() && isset( $headers['X-GLA-Image-Proxy'] );
+	}
+
+	/**
 	 * Serve image proxy response as raw binary, bypassing JSON encoding.
 	 *
-	 * @param bool             $served  Whether the request has already been served.
-	 * @param Response         $result  The response to serve.
-	 * @param \WP_REST_Request $request The request instance.
-	 * @param \WP_REST_Server  $server  The server instance.
+	 * Hooked onto the `rest_pre_serve_request` filter from create_image_response(), so it's
+	 * only attached during requests that actually reach this endpoint's success path — not
+	 * on every REST request site-wide. That filter is still global, though: other unrelated
+	 * callbacks hooked onto it can pass values that aren't strictly booleans (e.g. null)
+	 * before this one runs, so $served and $result must stay untyped/nullable here rather
+	 * than throwing under strict_types.
+	 *
+	 * @param mixed            $served   Whether the request has already been served.
+	 * @param mixed            $result   The response to serve.
+	 * @param \WP_REST_Request $_request Unused; required by the rest_pre_serve_request signature.
+	 * @param \WP_REST_Server  $_server  Unused; required by the rest_pre_serve_request signature.
 	 *
 	 * @return bool True if served, false to allow default handling.
 	 */
-	public function serve_image_response( bool $served, Response $result, $request, $server ): bool {
+	public function serve_image_response( $served, $result, $_request, $_server ): bool {
 		if ( $served ) {
 			return true;
 		}
 
-		$headers = $result->get_headers();
-		if ( $result->get_status() !== 200 || ! isset( $headers['X-GLA-Image-Proxy'] ) ) {
+		if ( ! $this->is_image_proxy_response( $result ) ) {
 			return false;
 		}
 
@@ -298,6 +335,9 @@ class AssetImageProxyController extends BaseController {
 
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo $result->get_data();
+
+		// This response has been served; no need to keep evaluating it on this filter for the rest of the request.
+		remove_filter( 'rest_pre_serve_request', [ $this, 'serve_image_response' ], 10 );
 
 		return true;
 	}
