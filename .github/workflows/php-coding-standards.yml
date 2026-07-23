@@ -7,10 +7,14 @@ on:
       - develop
     paths:
       - "**.php"
+      - composer.json # Required for PHP compat tests.
+      - composer.lock # Required for PHP compat tests.
       - .github/workflows/php-coding-standards.yml
   pull_request:
     paths:
       - "**.php"
+      - composer.json # Required for PHP compat tests.
+      - composer.lock # Required for PHP compat tests.
       - .github/workflows/php-coding-standards.yml
 
 concurrency:
@@ -38,3 +42,48 @@ jobs:
 
       - name: Run PHPCS on all tests
         run: vendor/bin/phpcs -q --standard=tests/phpcs.xml.dist --report=checkstyle | cs2pr
+
+  phpcompat:
+    name: PHP compatibility
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Prepare PHP
+        uses: woocommerce/grow/prepare-php@da5279aa4d76745ef32970e49b5ef7903a3b457a # v2.2.2
+        with:
+          tools: cs2pr
+          install-deps: no
+
+      - name: Prepare node
+        uses: woocommerce/grow/prepare-node@da5279aa4d76745ef32970e49b5ef7903a3b457a # v2.2.2
+        with:
+          node-version-file: ".nvmrc"
+          ignore-scripts: "no"
+
+      # The use of WP-Scripts results in PHP files being generated during the npm build step.
+      # In order to ensure PHP Compatibility, the build step must be run in order to ensure all
+      # files in the production release of the plugin are compatible with the target PHP versions.
+      - name: Build production bundle
+        run: |
+          echo "::group::Build log"
+          npm run build
+          echo "::endgroup::"
+
+      # The PHP Compatibility sniffs need to include the vendor directory to ensure all files
+      # in the production release of the plugin are compatible with the target PHP versions.
+      - name: Install composer production dependencies
+        run: composer install --no-dev --prefer-dist --optimize-autoloader
+
+      # Installed globally to ensure dev dependencies are not included in compatibility sniffs.
+      # At the time of writing no production version of PHPCompatibility/PHP-Compatibility supports
+      # PHP 8.4 so a dev version is used in order to ensure the sniffs that have been created are
+      # included in the checks.
+      - name: Install PHP Compatibility dev-develop globally
+        run: |
+          composer global config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+          composer global require --dev phpcompatibility/php-compatibility:dev-develop#8daeec54772a592ad369be23ae02ed593c71e7f1
+
+      - name: Run PHPCompatibility on all files
+        run: ~/.composer/vendor/bin/phpcs . --standard=.php-compat.xml.dist -q --report=checkstyle | cs2pr
