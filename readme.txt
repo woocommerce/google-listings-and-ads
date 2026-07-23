@@ -141,7 +141,7 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 == Changelog ==
 
 = 3.8.1 - 2026-07-23 =
-
+* Fix - Avoid image-proxy fatals when `rest_pre_serve_request` returns null.
 
 = 3.8.0 - 2026-07-21 =
 * Break - Migrate to the Merchant API from the Content Shopping API.
