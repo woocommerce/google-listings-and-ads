@@ -15,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
@@ -393,8 +394,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
 		/** @var MapiProductsService $mapi_products */
-		$mapi_products       = $this->container->get( MapiProductsService::class );
-		$visibility_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
+		$mapi_products = $this->container->get( MapiProductsService::class );
+		/** @var BatchProductHelper $batch_product_helper */
+		$batch_product_helper = $this->container->get( BatchProductHelper::class );
+		$visibility_meta_key  = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
 
 		// Map each synced Merchant API product ID back to its WooCommerce product.
 		$google_id_to_wc_id = [];
@@ -416,6 +419,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			}
 
 			foreach ( $product_helper->get_synced_google_product_ids( $wc_product ) ?? [] as $google_id ) {
+				// Skip legacy (pre-migration) colon-format ids; the Merchant API rejects them as invalid names.
+				if ( null === $batch_product_helper->parse_mapi_identity( (string) $google_id ) ) {
+					continue;
+				}
 				$google_id_to_wc_id[ $google_id ] = $wc_product_id;
 			}
 		}

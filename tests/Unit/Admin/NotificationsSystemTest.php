@@ -4,13 +4,12 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Admin;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\NotificationsSystem;
-use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\Asset;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
-use ReflectionClass;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -72,9 +71,6 @@ class NotificationsSystemTest extends UnitTest {
 	public function test_enqueues_assets_on_marketing_overview_page() {
 		$this->set_marketing_overview_page();
 
-		$this->options->method( 'get_merchant_id' )->willReturn( 123 );
-		$this->options->method( 'get_ads_id' )->willReturn( 456 );
-
 		$this->assets_handler->expects( $this->once() )
 			->method( 'register_many' )
 			->with(
@@ -115,9 +111,6 @@ class NotificationsSystemTest extends UnitTest {
 		$_GET['page'] = 'wc-admin';
 		$_GET['path'] = '/analytics/overview';
 
-		$this->options->method( 'get_merchant_id' )->willReturn( 123 );
-		$this->options->method( 'get_ads_id' )->willReturn( 456 );
-
 		$this->assets_handler->expects( $this->once() )->method( 'register_many' );
 		$this->assets_handler->expects( $this->once() )->method( 'enqueue_many' );
 
@@ -137,7 +130,7 @@ class NotificationsSystemTest extends UnitTest {
 		do_action( 'admin_enqueue_scripts' );
 	}
 
-	public function test_adds_gla_data_inline_script_to_notifications_bundle() {
+	public function test_gla_data_fallback_does_not_overwrite_existing_gla_data() {
 		$this->set_marketing_overview_page();
 
 		update_option( 'date_format', 'F j, Y' );
@@ -145,29 +138,27 @@ class NotificationsSystemTest extends UnitTest {
 		$this->options->method( 'get_merchant_id' )->willReturn( 123 );
 		$this->options->method( 'get_ads_id' )->willReturn( 456 );
 
-		$this->assets_handler->expects( $this->once() )
-			->method( 'register_many' )
-			->with(
-				$this->callback(
-					function ( array $assets ) {
-						$script   = $this->get_script_asset( $assets );
-						$gla_data = $this->get_inline_script_data( $script, 'glaData' );
+		// This test checks WordPress's actual registered script data below, so it
+		// needs a real handler here instead of the mocked $this->assets_handler.
+		$notifications_system = new NotificationsSystem( new AssetsHandler(), $this->options );
 
-						$this->assertSame( 'F j, Y', $gla_data['dateFormat'] );
-						$this->assertSame( 123, $gla_data['initialWpData']['mcId'] );
-						$this->assertSame( 456, $gla_data['initialWpData']['adsId'] );
-						$this->assertNotEmpty( $gla_data['initialWpData']['version'] );
-
-						return true;
-					}
-				)
-			);
-
-		$this->assets_handler->expects( $this->once() )->method( 'enqueue_many' );
-
-		$this->notifications_system->register();
+		$notifications_system->register();
 		set_current_screen( 'dashboard' );
 		do_action( 'admin_enqueue_scripts' );
+
+		$inline_scripts = wp_scripts()->get_data( 'google-listings-and-ads-notifications-system', 'before' );
+		$this->assertNotEmpty( $inline_scripts );
+
+		$inline_script = implode( '', (array) $inline_scripts );
+
+		// Must merge into (not overwrite) `window.glaData`, since the main
+		// bundle's own `glaData` isn't guaranteed present on this page (e.g.
+		// the core WooCommerce Marketing overview page).
+		$this->assertStringContainsString( 'window.glaData = window.glaData ||', $inline_script );
+		$this->assertStringContainsString( '"slug":"gla"', $inline_script );
+		$this->assertStringContainsString( '"dateFormat":"F j, Y"', $inline_script );
+		$this->assertStringContainsString( '"mcId":123', $inline_script );
+		$this->assertStringContainsString( '"adsId":456', $inline_script );
 	}
 
 	/**
@@ -195,42 +186,6 @@ class NotificationsSystemTest extends UnitTest {
 		foreach ( $expected_handles as $expected_handle ) {
 			$this->assertContains( $expected_handle, $handles );
 		}
-	}
-
-	/**
-	 * Get the script asset from a list of registered assets.
-	 *
-	 * @param Asset[] $assets
-	 *
-	 * @return AdminScriptWithBuiltDependenciesAsset
-	 */
-	private function get_script_asset( array $assets ): AdminScriptWithBuiltDependenciesAsset {
-		foreach ( $assets as $asset ) {
-			if ( $asset instanceof AdminScriptWithBuiltDependenciesAsset ) {
-				return $asset;
-			}
-		}
-
-		$this->fail( 'Expected AdminScriptWithBuiltDependenciesAsset in registered assets.' );
-	}
-
-	/**
-	 * Get inline script data from a script asset.
-	 *
-	 * @param AdminScriptWithBuiltDependenciesAsset $script
-	 * @param string                                $variable_name
-	 *
-	 * @return array
-	 */
-	private function get_inline_script_data( AdminScriptWithBuiltDependenciesAsset $script, string $variable_name ): array {
-		$reflection = new ReflectionClass( $script );
-		$property   = $reflection->getProperty( 'inline_scripts' );
-		$property->setAccessible( true );
-		$inline_scripts = $property->getValue( $script );
-
-		$this->assertArrayHasKey( $variable_name, $inline_scripts );
-
-		return $inline_scripts[ $variable_name ];
 	}
 
 	/**
