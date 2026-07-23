@@ -53,6 +53,14 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	protected $client;
 
 	/**
+	 * Resource names confirmed to exist on the account during this request, so repeat
+	 * resolutions of the same data source do not re-issue a dataSources.get.
+	 *
+	 * @var array<string, true>
+	 */
+	private $verified_data_sources = [];
+
+	/**
 	 * MapiDataSourcesService constructor.
 	 *
 	 * @param MerchantApiClient $client
@@ -107,7 +115,16 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		$cache     = (array) $this->options->get( OptionsInterface::MAPI_DATA_SOURCES, [] );
 
 		if ( isset( $cache[ $cache_key ] ) && '' !== $cache[ $cache_key ] ) {
-			return (string) $cache[ $cache_key ];
+			$name = (string) $cache[ $cache_key ];
+
+			if ( isset( $this->verified_data_sources[ $name ] ) || $this->data_source_exists( $name ) ) {
+				$this->verified_data_sources[ $name ] = true;
+				return $name;
+			}
+
+			// The cached data source is gone: drop it and re-resolve below.
+			unset( $cache[ $cache_key ] );
+			$this->options->update( OptionsInterface::MAPI_DATA_SOURCES, $cache );
 		}
 
 		$existing = $this->find_existing_data_source( $type, $content_language, $match_value );
@@ -118,7 +135,48 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		$cache[ $cache_key ] = $name;
 		$this->options->update( OptionsInterface::MAPI_DATA_SOURCES, $cache );
 
+		// Just observed on the account (discovered or created), so it exists without a further request.
+		$this->verified_data_sources[ $name ] = true;
+
 		return $name;
+	}
+
+	/**
+	 * Whether a cached data source resource name still exists on the account.
+	 *
+	 * @param string $name Data source resource name.
+	 *
+	 * @return bool
+	 */
+	private function data_source_exists( string $name ): bool {
+		try {
+			$this->client->get( sprintf( '%s/%s', MapiPaths::DATASOURCES, $name ) );
+
+			return true;
+		} catch ( MerchantApiException $exception ) {
+			return 404 !== $exception->get_http_status();
+		}
+	}
+
+	/**
+	 * Drop the cached product data source for a (contentLanguage, feedLabel) pair, from both the
+	 * option cache and the verified-this-request set, so the next ensure_data_source_for() call
+	 * re-resolves it. Used to recover from a product insert rejected with "data source not found".
+	 *
+	 * @param string $content_language Language code.
+	 * @param string $feed_label       Feed label.
+	 */
+	public function forget_data_source_for( string $content_language, string $feed_label ): void {
+		$cache_key = self::PRODUCT_SOURCE['cache_prefix'] . $content_language . '|' . $feed_label;
+		$cache     = (array) $this->options->get( OptionsInterface::MAPI_DATA_SOURCES, [] );
+
+		if ( ! isset( $cache[ $cache_key ] ) ) {
+			return;
+		}
+
+		$name = (string) $cache[ $cache_key ];
+		unset( $cache[ $cache_key ], $this->verified_data_sources[ $name ] );
+		$this->options->update( OptionsInterface::MAPI_DATA_SOURCES, $cache );
 	}
 
 	/**
