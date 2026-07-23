@@ -1,5 +1,16 @@
 *** Google for WooCommerce Changelog ***
 
+= 3.8.0 - 2026-07-21 =
+* Break - Migrate to the Merchant API from the Content Shopping API.
+* Dev - Bump WooCommerce "tested up to" version 10.9.
+* Dev - Bump WordPress "tested up to" version 7.0.
+* Fix - Prevent adblockers from blocking auto-generated images in the preview.
+* Tweak - Enable brand guidelines on non-shopping campaigns.
+* Tweak - Remove beta block-based product editor integration ahead of its retirement in WooCommerce 11.0.
+
+= 3.7.3 - 2026-07-08 =
+* Add - Added update notification when plugin version 3.8.0 is available
+
 = 3.7.2 - 2026-06-29 =
 * Add - Added an option to connect a Merchant Center account when a service-based user adds physical products.
 * Dev - Remove $_GET parameter overrides in Options::get_ads_id() and Options::get_merchant_id().

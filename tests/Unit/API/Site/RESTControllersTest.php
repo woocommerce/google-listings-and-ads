@@ -131,4 +131,45 @@ class RESTControllersTest extends UnitTest {
 
 		$this->assertCount( 3, $captured, 'One error expected per invalid entry (string, stdClass, null).' );
 	}
+
+	/**
+	 * Regression: when resolving the whole 'rest_controller' tag throws (e.g. a
+	 * TypeError from a dependency whose constructor signature changed mid-upgrade,
+	 * per GOOWOO-800), registration must catch it, log via woocommerce_gla_error,
+	 * and return without propagating the fatal to the rest of the admin page.
+	 *
+	 * Uses a TypeError specifically, not a plain Exception: TypeError extends
+	 * \Error, not \Exception, so this also locks in that the catch clause is
+	 * \Throwable (broad enough to cover Error subclasses) rather than just
+	 * \Exception, which would silently miss the exact failure this PR fixes.
+	 */
+	public function test_register_controllers_catches_error_thrown_while_resolving_tag() {
+		$container = $this->createMock( ContainerInterface::class );
+		$container->method( 'get' )
+			->with( 'rest_controller' )
+			->willThrowException(
+				new \TypeError(
+					'MerchantMetrics::__construct(): Argument #1 ($mapi_client) must be of type MerchantApiClient, ShoppingContent given'
+				)
+			);
+
+		$captured = [];
+		$listener = function ( $message ) use ( &$captured ) {
+			$captured[] = $message;
+		};
+		add_action( 'woocommerce_gla_error', $listener );
+
+		$rest_controllers = new RESTControllers();
+		$rest_controllers->set_container( $container );
+
+		$reflection = new \ReflectionClass( $rest_controllers );
+		$method     = $reflection->getMethod( 'register_controllers' );
+		$method->setAccessible( true );
+		$method->invoke( $rest_controllers );
+
+		remove_action( 'woocommerce_gla_error', $listener );
+
+		$this->assertCount( 1, $captured, 'The TypeError should be logged instead of propagating as a fatal.' );
+		$this->assertStringContainsString( 'MerchantMetrics', $captured[0] );
+	}
 }

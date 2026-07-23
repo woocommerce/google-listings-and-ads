@@ -1,14 +1,3 @@
-jest.mock( '~/hooks/useMCIssuesTypeFilter', () => ( {
-	__esModule: true,
-	default: jest
-		.fn()
-		.mockName( 'useMCIssuesTypeFilter' )
-		.mockReturnValue( {
-			data: { issues: [] },
-			hasFinishedResolution: true,
-		} ),
-} ) );
-
 jest.mock( '~/hooks/useActiveIssueType' );
 jest.mock( '~/utils/tracks', () => {
 	return {
@@ -45,7 +34,7 @@ describe( 'Request Review Component', () => {
 				<ReviewRequest
 					account={ {
 						hasFinishedResolution: true,
-						data: { status, reviewEligibleRegions: [] },
+						data: { status, issues: [], reviewAction: null },
 					} }
 				/>
 			);
@@ -64,7 +53,10 @@ describe( 'Request Review Component', () => {
 						data: {
 							status,
 							issues: [ '#1', '#2' ],
-							reviewEligibleRegions: [ 'US' ],
+							reviewAction: {
+								type: 'in_app',
+								isAvailable: true,
+							},
 						},
 					} }
 				/>
@@ -88,19 +80,16 @@ describe( 'Request Review Component', () => {
 	);
 
 	// eslint-disable-next-line jest/expect-expect
-	it.each( [
-		'APPROVED',
-		'ONBOARDING',
-		'UNDER_REVIEW',
-		'PENDING_REVIEW',
-		'UNKNOWN',
-	] )( 'Status %s not rendering the notice', ( status ) => {
-		useActiveIssueType.mockReturnValue( 'account' );
-		isNotRendering( {
-			hasFinishedResolution: true,
-			data: { status },
-		} );
-	} );
+	it.each( [ 'APPROVED', 'ONBOARDING', 'UNDER_REVIEW', 'UNKNOWN' ] )(
+		'Status %s not rendering the notice',
+		( status ) => {
+			useActiveIssueType.mockReturnValue( 'account' );
+			isNotRendering( {
+				hasFinishedResolution: true,
+				data: { status },
+			} );
+		}
+	);
 
 	// eslint-disable-next-line jest/expect-expect
 	it( "Doesn't render if it is resolving", () => {

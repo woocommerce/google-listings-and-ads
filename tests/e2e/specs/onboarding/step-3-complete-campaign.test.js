@@ -123,10 +123,9 @@ test.describe( 'Complete your campaign', () => {
 			} ),
 
 			completeCampaign.fulfillMCReview( {
-				cooldown: 0,
+				status: 'APPROVED',
 				issues: [],
-				reviewEligibleRegions: [],
-				status: 'ONBOARDING',
+				reviewAction: null,
 			} ),
 
 			completeCampaign.fulfillMCReportProgram( {

@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiIssueResolutionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
@@ -98,53 +99,67 @@ class RequestReviewController extends BaseOptionsController {
 	/**
 	 * Get the callback function after requesting a review.
 	 *
+	 * Completes the in-app account-review action via the Issue Resolution triggeraction
+	 * method.
+	 *
 	 * @return callable
 	 */
 	protected function post_review_request_callback(): callable {
 		return function () {
 			try {
+				// Re-render so the action context used to trigger is current, not a cached copy.
+				$review_status = $this->request_review_statuses->get_statuses_from_response(
+					$this->get_account_review_status()
+				);
+				$action        = $review_status['reviewAction'] ?? null;
 
-				// getting the current account status
-				$account_review_status = $this->get_review_status();
-
-				// Abort if it's in cool down period
-				if ( $account_review_status['cooldown'] ) {
-					do_action(
-						'woocommerce_gla_request_review_failure',
-						[
-							'error'                 => 'cooldown',
-							'account_review_status' => $account_review_status,
-						]
-					);
-					throw new Exception( __( 'Your account is under cool down period and cannot request a new review.', 'google-listings-and-ads' ), 400 );
-				}
-
-				// Abort if there is no eligible region available
-				if ( ! count( $account_review_status['reviewEligibleRegions'] ) ) {
+				// Abort if there is no available account-review action to request.
+				if ( ! $action || empty( $action['isAvailable'] ) ) {
 					do_action(
 						'woocommerce_gla_request_review_failure',
 						[
 							'error'                 => 'ineligible',
-							'account_review_status' => $account_review_status,
+							'account_review_status' => $review_status,
 						]
 					);
-					throw new Exception( __( 'Your account is not eligible for a new request review.', 'google-listings-and-ads' ), 400 );
+					throw new Exception( __( 'Your account is not eligible for a new review request.', 'google-listings-and-ads' ), 400 );
 				}
 
-				$this->account_request_review( $account_review_status['reviewEligibleRegions'] );
+				// Only the in-app action can be completed server-side; the redirect variant is opened in the browser.
+				if ( 'in_app' !== ( $action['type'] ?? '' ) ) {
+					do_action(
+						'woocommerce_gla_request_review_failure',
+						[
+							'error'                 => 'redirect_required',
+							'account_review_status' => $review_status,
+						]
+					);
+					throw new Exception( __( 'This review request must be completed in Merchant Center.', 'google-listings-and-ads' ), 400 );
+				}
+
+				// Confirm the flow's required inputs (the "resolved all issues" checkbox);
+				// triggeraction rejects an empty inputValues when the flow has a required input.
+				$this->merchant->trigger_review_action(
+					(string) ( $action['actionContext'] ?? '' ),
+					(string) ( $action['flowId'] ?? '' ),
+					$action['inputValues'] ?? []
+				);
+
 				return $this->set_under_review_status();
 
 			} catch ( Exception $e ) {
 				/**
-				 * Catch potential errors in any specific region API call.
+				 * Treat an "already under review" response as success.
 				 *
-				 * Notice due some inconsistencies with Google API we are not considering [Bad Request -> ...already under review...]
-				 * as an exception. This is because we suspect that calling the API of a region is triggering other regions requests as well.
-				 * This makes all the calls after the first to fail as they will be under review.
-				 *
-				 * The undesired call of this function for accounts under review is already prevented in a previous stage, so, there is no danger doing this.
+				 * The account can already be under review when the action is triggered, which the
+				 * Merchant API reports as an error. There is no dedicated signal for this yet
+				 * (triggeraction is allowlist-gated), so match the message, scoped to client errors
+				 * so a 5xx is never misread as success. Prefer a structured check on
+				 * MerchantApiException's response body / errors once the exact error shape for the
+				 * "already under review" case has been confirmed against a live allowlisted account.
 				 */
-				if ( strpos( $e->getMessage(), 'under review' ) !== false ) {
+				$code = $e->getCode();
+				if ( $code >= 400 && $code < 500 && stripos( $e->getMessage(), 'under review' ) !== false ) {
 					return $this->set_under_review_status();
 				}
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
@@ -159,14 +174,16 @@ class RequestReviewController extends BaseOptionsController {
 	 */
 	private function set_under_review_status() {
 		$new_status = [
-			'issues'                => [],
-			'cooldown'              => 0,
-			'status'                => $this->request_review_statuses::UNDER_REVIEW,
-			'reviewEligibleRegions' => [],
+			'status'       => $this->request_review_statuses::UNDER_REVIEW,
+			'issues'       => [],
+			'reviewAction' => null,
 		];
 
-		// Update Account status when successful response
-		$this->set_cached_review_status( $new_status );
+		// UNDER_REVIEW is an optimistic, client-side state: the Merchant API has no "under review"
+		// signal, so it cannot be re-derived from a fresh render. Cache it for the longer
+		// under-review window; once it expires the status reverts to the live severity-based
+		// status from renderaccountissues.
+		$this->set_cached_review_status( $new_status, $this->request_review_statuses->get_under_review_lifetime() );
 
 		return new Response( $new_status );
 	}
@@ -178,19 +195,13 @@ class RequestReviewController extends BaseOptionsController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'status'                => [
+			'status'       => [
 				'type'        => 'string',
 				'description' => __( 'The status of the last review.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
-			'cooldown'              => [
-				'type'        => 'integer',
-				'description' => __( 'Timestamp indicating if the user is in cool down period.', 'google-listings-and-ads' ),
-				'context'     => [ 'view' ],
-				'readonly'    => true,
-			],
-			'issues'                => [
+			'issues'       => [
 				'type'        => 'array',
 				'description' => __( 'The issues related to the Merchant Center to be reviewed and addressed before approval.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
@@ -199,13 +210,19 @@ class RequestReviewController extends BaseOptionsController {
 					'type' => 'string',
 				],
 			],
-			'reviewEligibleRegions' => [
-				'type'        => 'array',
-				'description' => __( 'The region codes in which is allowed to request a new review.', 'google-listings-and-ads' ),
+			'reviewAction' => [
+				'type'        => [ 'object', 'null' ],
+				'description' => __( 'The account-review action to request a new review, or null when none is available.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
-				'items'       => [
-					'type' => 'string',
+				'properties'  => [
+					'type'        => [ 'type' => 'string' ],
+					'isAvailable' => [ 'type' => 'boolean' ],
+					'buttonLabel' => [ 'type' => 'string' ],
+					'uri'         => [
+						'type'        => 'string',
+						'description' => __( 'Merchant Center URL for the redirect action; absent for in-app actions.', 'google-listings-and-ads' ),
+					],
 				],
 			],
 		];
@@ -226,13 +243,14 @@ class RequestReviewController extends BaseOptionsController {
 	/**
 	 * Save the Account Review Status data inside a transient for caching purposes.
 	 *
-	 * @param array $value The Account Review Status data to save in the transient
+	 * @param array    $value    The Account Review Status data to save in the transient
+	 * @param int|null $lifetime Optional cache lifetime in seconds; defaults to the account review lifetime.
 	 */
-	private function set_cached_review_status( $value ): void {
+	private function set_cached_review_status( $value, ?int $lifetime = null ): void {
 		$this->transients->set(
 			TransientsInterface::MC_ACCOUNT_REVIEW,
 			$value,
-			$this->request_review_statuses->get_account_review_lifetime()
+			$lifetime ?? $this->request_review_statuses->get_account_review_lifetime()
 		);
 	}
 
@@ -257,9 +275,45 @@ class RequestReviewController extends BaseOptionsController {
 		$review_status = $this->get_cached_review_status();
 
 		if ( is_null( $review_status ) ) {
-			$response      = $this->get_account_review_status();
-			$review_status = $this->request_review_statuses->get_statuses_from_response( $response );
+			$review_status = $this->render_review_status();
 			$this->set_cached_review_status( $review_status );
+		}
+
+		return $review_status;
+	}
+
+	/**
+	 * Render the review status for the GET response.
+	 *
+	 * The account issues are first rendered with in-app (built-in) actions. When the account
+	 * has issues but the render returns no triggerable action - which happens when the account
+	 * is not on Google's triggeraction allowlist - it re-renders with the Merchant Center
+	 * redirect action so a working "Request review" control stays visible instead of silently
+	 * disappearing.
+	 *
+	 * `actionContext`/`flowId`/`inputValues` are consumed only server-side by the POST handler
+	 * (which re-renders fresh), so they are stripped from the client-facing payload here.
+	 *
+	 * @return array
+	 * @throws Exception If the render fails.
+	 */
+	private function render_review_status(): array {
+		$review_status = $this->request_review_statuses->get_statuses_from_response(
+			$this->get_account_review_status()
+		);
+
+		if ( ! empty( $review_status['issues'] ) && empty( $review_status['reviewAction'] ) ) {
+			$review_status = $this->request_review_statuses->get_statuses_from_response(
+				$this->get_account_review_status( MapiIssueResolutionService::USER_INPUT_REDIRECT )
+			);
+		}
+
+		if ( is_array( $review_status['reviewAction'] ?? null ) ) {
+			unset(
+				$review_status['reviewAction']['actionContext'],
+				$review_status['reviewAction']['flowId'],
+				$review_status['reviewAction']['inputValues']
+			);
 		}
 
 		return $review_status;
@@ -268,67 +322,24 @@ class RequestReviewController extends BaseOptionsController {
 	/**
 	 * Get Account Review Status
 	 *
+	 * @param string $user_input_action_option How user-input actions are rendered (in-app built-in vs redirect).
+	 *
 	 * @return array the response data
 	 * @throws Exception When there is an invalid response.
 	 */
-	public function get_account_review_status() {
+	public function get_account_review_status( string $user_input_action_option = MapiIssueResolutionService::USER_INPUT_BUILT_IN ) {
 		try {
 			if ( ! $this->middleware->is_subaccount() ) {
 				return [];
 			}
 
-			$response = $this->merchant->get_account_review_status();
+			$response = $this->merchant->get_account_review_status( $user_input_action_option );
 			do_action( 'woocommerce_gla_request_review_response', $response );
 			return $response;
 		} catch ( Exception $e ) {
 			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
 			throw new Exception(
 				$e->getMessage() ?? __( 'Error getting account review status.', 'google-listings-and-ads' ),
-				$e->getCode()
-			);
-		}
-	}
-
-
-	/**
-	 * Request a new account review
-	 *
-	 * @param array $regions Regions to request a review.
-	 * @return array With a successful message
-	 * @throws Exception When there is an invalid response.
-	 */
-	public function account_request_review( $regions ) {
-		try {
-
-			// For each region we request a new review
-			foreach ( $regions as $region_code => $region_types ) {
-
-				$result = $this->merchant->account_request_review( $region_code, $region_types );
-
-				if ( 200 !== $result->getStatusCode() ) {
-					do_action(
-						'woocommerce_gla_request_review_failure',
-						[
-							'error'       => 'response',
-							'region_code' => $region_code,
-							'response'    => $result,
-						]
-					);
-					do_action( 'woocommerce_gla_guzzle_invalid_response', $result, __METHOD__ );
-					$error = $response['message'] ?? __( 'Invalid response getting requesting a new review.', 'google-listings-and-ads' );
-					throw new Exception( $error, $result->getStatusCode() );
-				}
-			}
-
-			// Otherwise, return a successful message and update the account status
-			return [
-				'message' => __( 'A new review has been successfully requested', 'google-listings-and-ads' ),
-			];
-
-		} catch ( Exception $e ) {
-			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
-			throw new Exception(
-				$e->getMessage() ?? __( 'Error requesting a new review.', 'google-listings-and-ads' ),
 				$e->getCode()
 			);
 		}

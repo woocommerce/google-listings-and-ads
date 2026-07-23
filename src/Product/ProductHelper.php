@@ -125,6 +125,17 @@ class ProductHelper implements Service {
 	}
 
 	/**
+	 * Store the hash of the ProductInput payload last successfully synced, used to
+	 * skip re-syncing unchanged products.
+	 *
+	 * @param WC_Product $product
+	 * @param string     $hash
+	 */
+	public function update_sync_hash( WC_Product $product, string $hash ): void {
+		$this->meta_handler->update_sync_hash( $product, $hash );
+	}
+
+	/**
 	 * @param WC_Product $product
 	 */
 	public function mark_as_unsynced( $product ): void {
@@ -304,8 +315,7 @@ class ProductHelper implements Service {
 	 * @return int the ID for the WC product linked to the provided Google product ID (0 if not found)
 	 */
 	public function get_wc_product_id( string $mc_product_id ): int {
-		// Maybe remove everything before the last colon ':'
-		$mc_product_id_tokens = explode( ':', $mc_product_id );
+		$mc_product_id_tokens = preg_split( '/[:~]/', $mc_product_id );
 		$mc_product_id        = end( $mc_product_id_tokens );
 
 		// Support a fully numeric ID both with and without the `gla_` prefix.
