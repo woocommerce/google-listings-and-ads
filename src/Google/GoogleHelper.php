@@ -1238,6 +1238,16 @@ class GoogleHelper implements Service {
 	 * @return array
 	 */
 	public function get_mc_supported_languages(): array {
+		return self::mc_supported_languages();
+	}
+
+	/**
+	 * The Merchant Center supported language codes, keyed by ISO 639-1 code. Backs the public
+	 * accessor and the static content-language derivation.
+	 *
+	 * @return array
+	 */
+	private static function mc_supported_languages(): array {
 		// Repeated values removed:
 		// 'pt', // Brazilian Portuguese
 		// 'zh', // Simplified Chinese*
@@ -1252,6 +1262,7 @@ class GoogleHelper implements Service {
 			'fr' => 'fr', // French
 			'de' => 'de', // German
 			'he' => 'he', // Hebrew
+			'hi' => 'hi', // Hindi
 			'hu' => 'hu', // Hungarian
 			'id' => 'id', // Indonesian
 			'it' => 'it', // Italian
@@ -1274,6 +1285,18 @@ class GoogleHelper implements Service {
 			'uk' => 'uk', // Ukrainian
 			'vi' => 'vi', // Vietnamese
 		];
+	}
+
+	/**
+	 * The site's Merchant Center content language: the locale's two-letter code, or 'en' when it
+	 * is empty or not MC-supported. Multilingual plugins can report codes the Merchant API rejects.
+	 *
+	 * @return string
+	 */
+	public static function get_mc_content_language(): string {
+		$language = strtolower( substr( (string) get_locale(), 0, 2 ) );
+
+		return array_key_exists( $language, self::mc_supported_languages() ) ? $language : 'en';
 	}
 
 	/**
