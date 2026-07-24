@@ -85,10 +85,34 @@ class SalesNotGrowingEvaluatorTest extends UnitTest {
 		$this->assertFalse( $evaluator->should_show() );
 	}
 
+	public function test_get_first_order_date_counts_paid_non_completed_order() {
+		$this->create_order( 'processing', 20 );
+
+		$this->assertNotNull( $this->invoke_get_first_order_date() );
+	}
+
+	public function test_get_first_order_date_ignores_unpaid_orders() {
+		$this->create_order( 'pending', 99 );
+		$this->create_order( 'failed', 99 );
+
+		$this->assertNull( $this->invoke_get_first_order_date() );
+	}
+
+	public function test_get_gmv_for_period_sums_paid_orders_and_excludes_unpaid() {
+		$this->create_order( 'completed', 20 );
+		$this->create_order( 'processing', 30 );
+		$this->create_order( 'pending', 99 );
+
+		$start = ( new DateTime( 'now', new DateTimeZone( 'UTC' ) ) )->modify( '-1 month' );
+		$end   = ( new DateTime( 'now', new DateTimeZone( 'UTC' ) ) )->modify( '+1 day' );
+
+		$this->assertSame( 50.0, $this->invoke_get_gmv_for_period( $start, $end ) );
+	}
+
 	/**
 	 * Create a test evaluator with a stubbed earliest-order date and GMV values.
 	 *
-	 * @param DateTime|null $first_order_date Earliest completed order date, or null when there are no sales.
+	 * @param DateTime|null $first_order_date Earliest paid order date, or null when there are no sales.
 	 * @param float         $current_gmv      GMV returned for the current month period.
 	 * @param float         $prior_gmv        GMV returned for the prior-year period.
 	 *
@@ -139,5 +163,45 @@ class SalesNotGrowingEvaluatorTest extends UnitTest {
 	 */
 	private function months_ago( int $months ): DateTime {
 		return ( new DateTime( 'now', new DateTimeZone( 'UTC' ) ) )->modify( "-{$months} month" );
+	}
+
+	/**
+	 * Invoke the protected get_first_order_date() method on the real evaluator.
+	 *
+	 * @return DateTime|null
+	 */
+	private function invoke_get_first_order_date(): ?DateTime {
+		$method = new \ReflectionMethod( $this->evaluator, 'get_first_order_date' );
+		$method->setAccessible( true );
+
+		return $method->invoke( $this->evaluator );
+	}
+
+	/**
+	 * Invoke the protected get_gmv_for_period() method on the real evaluator.
+	 *
+	 * @param DateTime $start
+	 * @param DateTime $end
+	 *
+	 * @return float
+	 */
+	private function invoke_get_gmv_for_period( DateTime $start, DateTime $end ): float {
+		$method = new \ReflectionMethod( $this->evaluator, 'get_gmv_for_period' );
+		$method->setAccessible( true );
+
+		return $method->invoke( $this->evaluator, $start, $end );
+	}
+
+	/**
+	 * Create a WooCommerce order with the given status and total.
+	 *
+	 * @param string $status
+	 * @param float  $total
+	 */
+	private function create_order( string $status, float $total ): void {
+		$order = wc_create_order();
+		$order->set_status( $status );
+		$order->set_total( $total );
+		$order->save();
 	}
 }

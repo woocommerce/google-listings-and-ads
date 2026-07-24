@@ -50,8 +50,8 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 		$this->assertEquals( NotificationSnoozeDurations::READY_BUT_NO_SALES, $this->evaluator->get_snooze_duration() );
 	}
 
-	public function test_should_show_when_store_is_ready_and_has_no_completed_orders() {
-		$evaluator = $this->create_evaluator_with_completed_orders( false );
+	public function test_should_show_when_store_is_ready_and_has_no_revenue_orders() {
+		$evaluator = $this->create_evaluator_with_revenue_orders( false );
 
 		$this->wc->method( 'has_enabled_payment_gateways' )->willReturn( true );
 
@@ -68,13 +68,13 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 		$this->wc->method( 'get_shipping_zones' )->willReturn( [] );
 		$this->wc->method( 'get_shipping_zone' )->with( 0 )->willReturn( $default_zone );
 
-		$evaluator = $this->create_evaluator_with_completed_orders( false, null );
+		$evaluator = $this->create_evaluator_with_revenue_orders( false, null );
 
 		$this->assertTrue( $evaluator->should_show() );
 	}
 
 	public function test_should_not_show_when_payment_gateways_are_missing() {
-		$evaluator = $this->create_evaluator_with_completed_orders( false );
+		$evaluator = $this->create_evaluator_with_revenue_orders( false );
 
 		$this->wc->method( 'has_enabled_payment_gateways' )->willReturn( false );
 		$evaluator->expects( $this->never() )->method( 'store_has_any_enabled_shipping_method' );
@@ -83,15 +83,15 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 	}
 
 	public function test_should_not_show_when_shipping_methods_are_missing() {
-		$evaluator = $this->create_evaluator_with_completed_orders( false, false );
+		$evaluator = $this->create_evaluator_with_revenue_orders( false, false );
 
 		$this->wc->method( 'has_enabled_payment_gateways' )->willReturn( true );
 
 		$this->assertFalse( $evaluator->should_show() );
 	}
 
-	public function test_should_not_show_when_completed_orders_exist() {
-		$evaluator = $this->create_evaluator_with_completed_orders( true );
+	public function test_should_not_show_when_revenue_orders_exist() {
+		$evaluator = $this->create_evaluator_with_revenue_orders( true );
 
 		$this->wc->method( 'has_enabled_payment_gateways' )->willReturn( true );
 
@@ -99,28 +99,28 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 	}
 
 	public function test_cache_hit_skips_query() {
-		$evaluator = $this->create_evaluator_with_completed_orders( false );
+		$evaluator = $this->create_evaluator_with_revenue_orders( false );
 		$user_id   = $this->login_as_administrator();
 
 		set_transient( NotificationCacheKeys::for_user( 'ready-but-no-sales', $user_id ), 1, HOUR_IN_SECONDS );
 
 		$this->wc->expects( $this->never() )->method( 'has_enabled_payment_gateways' );
 		$evaluator->expects( $this->never() )->method( 'store_has_any_enabled_shipping_method' );
-		$evaluator->expects( $this->never() )->method( 'has_completed_orders' );
+		$evaluator->expects( $this->never() )->method( 'has_minimum_revenue_orders' );
 
 		$this->assertTrue( $evaluator->should_show() );
 	}
 
 	/**
-	 * Create a test evaluator with a stubbed completed orders check.
+	 * Create a test evaluator with a stubbed revenue orders check.
 	 *
-	 * @param bool      $has_completed_orders
+	 * @param bool      $has_revenue_orders
 	 * @param bool|null $has_shipping_methods When null, the real shipping check runs.
 	 *
 	 * @return ReadyButNoSalesEvaluator|MockObject
 	 */
-	private function create_evaluator_with_completed_orders( bool $has_completed_orders, ?bool $has_shipping_methods = true ): ReadyButNoSalesEvaluator {
-		$only_methods = [ 'has_completed_orders' ];
+	private function create_evaluator_with_revenue_orders( bool $has_revenue_orders, ?bool $has_shipping_methods = true ): ReadyButNoSalesEvaluator {
+		$only_methods = [ 'has_minimum_revenue_orders' ];
 
 		if ( null !== $has_shipping_methods ) {
 			$only_methods[] = 'store_has_any_enabled_shipping_method';
@@ -131,7 +131,7 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 			->onlyMethods( $only_methods )
 			->getMock();
 
-		$evaluator->method( 'has_completed_orders' )->willReturn( $has_completed_orders );
+		$evaluator->method( 'has_minimum_revenue_orders' )->willReturn( $has_revenue_orders );
 
 		if ( null !== $has_shipping_methods ) {
 			$evaluator->method( 'store_has_any_enabled_shipping_method' )->willReturn( $has_shipping_methods );
