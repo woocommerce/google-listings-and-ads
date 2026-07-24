@@ -177,7 +177,8 @@ class WCCouponAdapter implements Validatable {
 			'promotionId'       => $this->promotion_id,
 			'contentLanguage'   => $this->content_language,
 			'targetCountry'     => $this->target_country,
-			'redemptionChannel' => $this->redemption_channel,
+			// redemptionChannel is a repeated field in the Merchant API schema, so send an array.
+			'redemptionChannel' => [ $this->redemption_channel ],
 			'attributes'        => $attributes,
 		];
 	}

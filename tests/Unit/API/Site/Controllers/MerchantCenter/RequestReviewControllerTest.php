@@ -226,6 +226,40 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 		);
 	}
 
+	public function test_request_review_passes_confirmation_input_values() {
+		$action = $this->in_app_action();
+		$action['builtinUserInputAction']['flows'][0]['inputs'] = [
+			[
+				'id'            => 'confirm',
+				'required'      => true,
+				'checkboxInput' => [],
+			],
+		];
+
+		$this->merchant->expects( $this->once() )
+			->method( 'get_account_review_status' )
+			->willReturn(
+				$this->render_response( RequestReviewStatuses::SEVERITY_ERROR, 'Account suspended', [ $action ] )
+			);
+
+		$this->merchant->expects( $this->once() )
+			->method( 'trigger_review_action' )
+			->with(
+				'ctx-token',
+				'flow-1',
+				[
+					[
+						'inputFieldId'       => 'confirm',
+						'checkboxInputValue' => [ 'value' => true ],
+					],
+				]
+			)
+			->willReturn( [ 'name' => 'accounts/12345/action' ] );
+
+		$response = $this->do_post_request_review();
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
 	public function test_request_review_ineligible() {
 		$this->merchant->expects( $this->once() )
 			->method( 'get_account_review_status' )

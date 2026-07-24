@@ -48,7 +48,7 @@ class MapiPromotionsServiceTest extends UnitTest {
 			'promotionId'       => 'gla_15',
 			'contentLanguage'   => 'en',
 			'targetCountry'     => 'US',
-			'redemptionChannel' => 'ONLINE',
+			'redemptionChannel' => [ 'ONLINE' ],
 			'attributes'        => [ 'genericRedemptionCode' => 'SAVE10' ],
 		];
 

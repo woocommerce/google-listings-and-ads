@@ -59,10 +59,14 @@ class MapiProductInputsService implements OptionsAwareInterface {
 			$input->get_feed_label()
 		);
 
+		$this->log( sprintf( 'productInputs.insert %s: %s', $input->get_offer_id(), wp_json_encode( $input->to_array() ) ), __METHOD__ );
+
 		$body = $this->client->post(
 			$this->build_path( $data_source ),
 			$input->to_array()
 		);
+
+		$this->log( sprintf( 'productInputs.insert %s succeeded (%s)', $input->get_offer_id(), $body['name'] ?? '' ), __METHOD__ );
 
 		return ProductInput::from_array( $body );
 	}
@@ -87,9 +91,13 @@ class MapiProductInputsService implements OptionsAwareInterface {
 				$input->get_feed_label()
 			);
 			$paths_by_index[ $index ] = $this->build_path( $data_source );
+
+			// Bulk sync logs a lightweight per-item line; the full payload is logged only by the
+			// single-item insert()/patch() used by the debugger, to avoid a JSON dump per product.
+			$this->log( sprintf( 'productInputs.insert %s', $input->get_offer_id() ), __METHOD__ );
 		}
 
-		return $this->run_in_batches(
+		$result = $this->run_in_batches(
 			$inputs,
 			$concurrency,
 			__METHOD__,
@@ -104,6 +112,10 @@ class MapiProductInputsService implements OptionsAwareInterface {
 				return ProductInput::from_array( $body );
 			}
 		);
+
+		$this->log( sprintf( 'productInputs.insert batch of %d: %d succeeded, %d failed', count( $inputs ), count( $result['successes'] ), count( $result['failures'] ) ), __METHOD__ );
+
+		return $result;
 	}
 
 	/**
@@ -128,10 +140,14 @@ class MapiProductInputsService implements OptionsAwareInterface {
 			$input->get_feed_label()
 		);
 
+		$this->log( sprintf( 'productInputs.patch %s (%s): %s', $input->get_offer_id(), implode( ',', $mask ), wp_json_encode( $input->to_array() ) ), __METHOD__ );
+
 		$body = $this->client->patch(
 			$this->build_patch_path( $input, $mask, $data_source ),
 			$input->to_array()
 		);
+
+		$this->log( sprintf( 'productInputs.patch %s succeeded (%s)', $input->get_offer_id(), $body['name'] ?? '' ), __METHOD__ );
 
 		return ProductInput::from_array( $body );
 	}
@@ -163,6 +179,8 @@ class MapiProductInputsService implements OptionsAwareInterface {
 				$input->get_feed_label()
 			);
 			$paths_by_index[ $index ] = $this->build_patch_path( $input, $mask, $data_source );
+
+			$this->log( sprintf( 'productInputs.patch %s (%s)', $input->get_offer_id(), implode( ',', $mask ) ), __METHOD__ );
 		}
 
 		$client = $this->client;
@@ -189,6 +207,8 @@ class MapiProductInputsService implements OptionsAwareInterface {
 			]
 		) )->promise()->wait();
 
+		$this->log( sprintf( 'productInputs.patch batch of %d: %d succeeded, %d failed', count( $patches ), count( $successes ), count( $failures ) ), __METHOD__ );
+
 		return [
 			'successes' => $successes,
 			'failures'  => $failures,
@@ -209,7 +229,11 @@ class MapiProductInputsService implements OptionsAwareInterface {
 			$input->get_feed_label()
 		);
 
+		$this->log( sprintf( 'productInputs.delete %s', $input->get_offer_id() ), __METHOD__ );
+
 		$this->client->delete( $this->build_delete_path( $input, $data_source ) );
+
+		$this->log( sprintf( 'productInputs.delete %s succeeded', $input->get_offer_id() ), __METHOD__ );
 	}
 
 	/**
@@ -230,9 +254,11 @@ class MapiProductInputsService implements OptionsAwareInterface {
 				$input->get_feed_label()
 			);
 			$paths_by_index[ $index ] = $this->build_delete_path( $input, $data_source );
+
+			$this->log( sprintf( 'productInputs.delete %s', $input->get_offer_id() ), __METHOD__ );
 		}
 
-		return $this->run_in_batches(
+		$result = $this->run_in_batches(
 			$inputs,
 			$concurrency,
 			__METHOD__,
@@ -246,6 +272,10 @@ class MapiProductInputsService implements OptionsAwareInterface {
 				return $input;
 			}
 		);
+
+		$this->log( sprintf( 'productInputs.delete batch of %d: %d succeeded, %d failed', count( $inputs ), count( $result['successes'] ), count( $result['failures'] ) ), __METHOD__ );
+
+		return $result;
 	}
 
 	/**
@@ -320,6 +350,17 @@ class MapiProductInputsService implements OptionsAwareInterface {
 			'successes' => $successes,
 			'failures'  => $failures,
 		];
+	}
+
+	/**
+	 * Emit a debug-log entry for a Merchant API product write so the payload and outcome of a
+	 * push can be verified and troubleshot. Recorded only when GLA debug logging is enabled.
+	 *
+	 * @param string $message
+	 * @param string $method  Calling method, for the debug log's source attribution.
+	 */
+	private function log( string $message, string $method ): void {
+		do_action( 'woocommerce_gla_debug_message', $message, $method );
 	}
 
 	/**

@@ -26,9 +26,9 @@ class WCProductInputAdapter {
 
 	use PluginHelper;
 
-	public const AVAILABILITY_IN_STOCK     = 'in_stock';
-	public const AVAILABILITY_OUT_OF_STOCK = 'out_of_stock';
-	public const AVAILABILITY_BACKORDER    = 'backorder';
+	public const AVAILABILITY_IN_STOCK     = 'IN_STOCK';
+	public const AVAILABILITY_OUT_OF_STOCK = 'OUT_OF_STOCK';
+	public const AVAILABILITY_BACKORDER    = 'BACKORDER';
 
 	public const IMAGE_SIZE_FULL = 'full';
 
@@ -133,6 +133,14 @@ class WCProductInputAdapter {
 		$this->map_gla_attributes();
 		$this->map_gtin();
 		$this->override_attributes();
+
+		// availability, condition, gender, ageGroup and sizeType (remapped to the plural
+		// sizeTypes MAPI key by set_attribute()) are all Merchant API enums (IN_STOCK, NEW,
+		// MALE, ADULT, REGULAR, etc.), but their values can arrive lowercase from a mapping
+		// rule, merchant-configured attribute meta, or the override filter (e.g. the
+		// pre-orders integration's `preorder`) — all of which store/accept the lowercase
+		// option keys used by the admin UI. Uppercase them here regardless of source.
+		$this->normalize_enum_attributes();
 	}
 
 	/**
@@ -302,6 +310,33 @@ class WCProductInputAdapter {
 		}
 
 		$this->attributes['availability'] = $availability;
+	}
+
+	/**
+	 * Normalise availability, condition, gender, ageGroup and sizeTypes to the Merchant API's
+	 * uppercase enum casing (e.g. IN_STOCK, NEW, MALE, ADULT, REGULAR). map_availability()
+	 * already emits an uppercase value, but all of these can also arrive lowercase through
+	 * attribute mapping or the override filter (e.g. the pre-orders integration's lowercase
+	 * `preorder`, or the lowercase option keys the admin UI stores for the others), so every
+	 * path needs uppercasing here rather than relying on the Merchant API normalising it.
+	 * Note: sizeType (singular) is remapped to the plural sizeTypes array key by
+	 * set_attribute(), which is why this operates on sizeTypes rather than sizeType.
+	 */
+	protected function normalize_enum_attributes(): void {
+		foreach ( [ 'availability', 'condition', 'gender', 'ageGroup' ] as $attribute_id ) {
+			if ( ! empty( $this->attributes[ $attribute_id ] ) && is_string( $this->attributes[ $attribute_id ] ) ) {
+				$this->attributes[ $attribute_id ] = strtoupper( $this->attributes[ $attribute_id ] );
+			}
+		}
+
+		if ( ! empty( $this->attributes['sizeTypes'] ) && is_array( $this->attributes['sizeTypes'] ) ) {
+			$this->attributes['sizeTypes'] = array_map(
+				function ( $size_type ) {
+					return is_string( $size_type ) ? strtoupper( $size_type ) : $size_type;
+				},
+				$this->attributes['sizeTypes']
+			);
+		}
 	}
 
 	/**

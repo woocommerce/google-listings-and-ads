@@ -145,8 +145,60 @@ class RequestReviewStatusesTest extends UnitTest {
 				'buttonLabel'   => 'Request review',
 				'actionContext' => 'ctx-token',
 				'flowId'        => 'flow-1',
+				'inputValues'   => [],
 			],
 			$result['reviewAction']
+		);
+	}
+
+	public function test_in_app_action_builds_checkbox_input_values() {
+		$action = [
+			'isAvailable'            => true,
+			'buttonLabel'            => 'Request review',
+			'builtinUserInputAction' => [
+				'actionContext' => 'ctx-token',
+				'flows'         => [
+					[
+						'id'     => 'flow-1',
+						'inputs' => [
+							[
+								'id'        => 'notes',
+								'textInput' => [],
+							],
+							[
+								'id'            => 'confirm',
+								'required'      => true,
+								'checkboxInput' => [],
+							],
+							[
+								'id'            => 'optin',
+								'required'      => false,
+								'checkboxInput' => [],
+							],
+						],
+					],
+				],
+			],
+		];
+
+		$result = $this->statuses->get_statuses_from_response(
+			$this->response( [ $this->issue( RequestReviewStatuses::SEVERITY_ERROR, 'Suspended', [ $action ] ) ] )
+		);
+
+		// Every checkbox is confirmed regardless of its required flag; the text field carries no
+		// server-side value.
+		$this->assertSame(
+			[
+				[
+					'inputFieldId'       => 'confirm',
+					'checkboxInputValue' => [ 'value' => true ],
+				],
+				[
+					'inputFieldId'       => 'optin',
+					'checkboxInputValue' => [ 'value' => true ],
+				],
+			],
+			$result['reviewAction']['inputValues']
 		);
 	}
 
