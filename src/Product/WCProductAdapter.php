@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Condition;
@@ -123,7 +124,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	protected function map_woocommerce_product() {
 		$this->setChannel( self::CHANNEL_ONLINE );
 
-		$content_language = empty( get_locale() ) ? 'en' : strtolower( substr( get_locale(), 0, 2 ) ); // ISO 639-1.
+		$content_language = GoogleHelper::get_mc_content_language();
 		$this->setContentLanguage( $content_language );
 
 		$this->map_wc_product_id()
