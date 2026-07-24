@@ -38,7 +38,7 @@ class NotificationCacheInvalidatorTest extends UnitTest {
 	}
 
 	/**
-	 * register() binds real WordPress actions; clear them so listeners from one test do not
+	 * Clears the real WordPress actions register() binds, so listeners from one test do not
 	 * fire in the next.
 	 */
 	public function tearDown(): void {
