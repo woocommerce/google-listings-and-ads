@@ -36,9 +36,14 @@ import './index.scss';
  *
  * @param {Object} props Component props.
  * @param {string} props.assetKey Asset key.
+ * @param {(url: string) => string} props.getDisplayImageUrl Function to get the display URL for an image, useful for handling ad blockers.
  * @param {Function} props.onAddSelectedImages Callback to add selected images.
  */
-export default function GenAIImagePicker( { assetKey, onAddSelectedImages } ) {
+export default function GenAIImagePicker( {
+	assetKey,
+	getDisplayImageUrl,
+	onAddSelectedImages,
+} ) {
 	const { values } = useAdaptiveFormContext();
 	const addedImageUrls = values[ assetKey ] || [];
 	const { final_url: finalUrl } = values;
@@ -108,7 +113,7 @@ export default function GenAIImagePicker( { assetKey, onAddSelectedImages } ) {
 								>
 									<img
 										className="gla-media-selector__medium"
-										src={ src }
+										src={ getDisplayImageUrl( src ) }
 										alt=""
 									/>
 								</AppButton>

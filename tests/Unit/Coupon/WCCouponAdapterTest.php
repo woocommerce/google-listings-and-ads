@@ -48,7 +48,7 @@ class WCCouponAdapterTest extends UnitTest {
 		);
 
 		$promotion = $adapted_coupon->get_promotion();
-		$this->assertEquals( 'ONLINE', $promotion['redemptionChannel'] );
+		$this->assertSame( [ 'ONLINE' ], $promotion['redemptionChannel'] );
 	}
 
 	public function test_content_language_is_set_by_default_to_en() {

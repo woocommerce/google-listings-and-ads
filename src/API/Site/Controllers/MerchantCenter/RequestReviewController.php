@@ -137,10 +137,12 @@ class RequestReviewController extends BaseOptionsController {
 					throw new Exception( __( 'This review request must be completed in Merchant Center.', 'google-listings-and-ads' ), 400 );
 				}
 
-				// The account-review flow completes with no input values.
+				// Confirm the flow's required inputs (the "resolved all issues" checkbox);
+				// triggeraction rejects an empty inputValues when the flow has a required input.
 				$this->merchant->trigger_review_action(
 					(string) ( $action['actionContext'] ?? '' ),
-					(string) ( $action['flowId'] ?? '' )
+					(string) ( $action['flowId'] ?? '' ),
+					$action['inputValues'] ?? []
 				);
 
 				return $this->set_under_review_status();
@@ -289,8 +291,8 @@ class RequestReviewController extends BaseOptionsController {
 	 * redirect action so a working "Request review" control stays visible instead of silently
 	 * disappearing.
 	 *
-	 * `actionContext`/`flowId` are consumed only server-side by the POST handler (which
-	 * re-renders fresh), so they are stripped from the client-facing payload here.
+	 * `actionContext`/`flowId`/`inputValues` are consumed only server-side by the POST handler
+	 * (which re-renders fresh), so they are stripped from the client-facing payload here.
 	 *
 	 * @return array
 	 * @throws Exception If the render fails.
@@ -307,7 +309,11 @@ class RequestReviewController extends BaseOptionsController {
 		}
 
 		if ( is_array( $review_status['reviewAction'] ?? null ) ) {
-			unset( $review_status['reviewAction']['actionContext'], $review_status['reviewAction']['flowId'] );
+			unset(
+				$review_status['reviewAction']['actionContext'],
+				$review_status['reviewAction']['flowId'],
+				$review_status['reviewAction']['inputValues']
+			);
 		}
 
 		return $review_status;

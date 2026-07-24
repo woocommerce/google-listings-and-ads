@@ -113,6 +113,31 @@ class MapiProductInputsServiceTest extends UnitTest {
 		$this->assertSame( 'sku42', $result->get_offer_id() );
 	}
 
+	public function test_insert_logs_the_payload_via_debug_message() {
+		// The Merchant API push must be logged so syncs can be verified/troubleshot.
+		$input = $this->make_input();
+		$this->client->method( 'post' )->willReturn(
+			[
+				'name'    => 'accounts/12345/productInputs/online~en~US~sku42',
+				'offerId' => 'sku42',
+			]
+		);
+
+		$messages = [];
+		$callback = static function ( $message ) use ( &$messages ) {
+			$messages[] = $message;
+		};
+		add_action( 'woocommerce_gla_debug_message', $callback );
+
+		$this->service->insert( $input );
+
+		remove_action( 'woocommerce_gla_debug_message', $callback );
+
+		$logged = implode( "\n", $messages );
+		$this->assertStringContainsString( 'productInputs.insert sku42', $logged );
+		$this->assertStringContainsString( '"title":"Test"', $logged );
+	}
+
 	public function test_insert_routes_different_market_to_a_different_data_source() {
 		$input = $this->make_input( 'sku42', 'fr', 'CA' );
 
