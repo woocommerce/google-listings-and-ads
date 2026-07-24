@@ -60,6 +60,32 @@ class GoogleHelperTest extends UnitTest {
 		$this->assertNotEmpty( $supported );
 		$this->assertArrayHasKey( 'en', $supported );
 		$this->assertEquals( 'en', $supported['en'] );
+		// Hindi is supported by Merchant Center; keep it listed so those merchants are not
+		// downgraded to 'en' by get_mc_content_language().
+		$this->assertArrayHasKey( 'hi', $supported );
+	}
+
+	public function test_get_mc_content_language_uses_supported_locale_code() {
+		$filter = static function () {
+			return 'fr_BE';
+		};
+		add_filter( 'locale', $filter );
+
+		$this->assertSame( 'fr', GoogleHelper::get_mc_content_language() );
+
+		remove_filter( 'locale', $filter );
+	}
+
+	public function test_get_mc_content_language_falls_back_to_en_for_unsupported_locale() {
+		// Multilingual plugins can report non-ISO-639-1 codes, e.g. Albanian as 'als' -> 'al'.
+		$filter = static function () {
+			return 'als';
+		};
+		add_filter( 'locale', $filter );
+
+		$this->assertSame( 'en', GoogleHelper::get_mc_content_language() );
+
+		remove_filter( 'locale', $filter );
 	}
 
 	public function test_is_country_supported() {
