@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationE
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\RevenueOrdersTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 
 defined( 'ABSPATH' ) || exit;
@@ -22,6 +23,7 @@ defined( 'ABSPATH' ) || exit;
 class ReadyButNoSalesEvaluator implements NotificationEvaluatorInterface, Service {
 
 	use CachedNotificationEvaluatorTrait;
+	use RevenueOrdersTrait;
 
 	/** @var WC */
 	private $wc;
@@ -58,7 +60,7 @@ class ReadyButNoSalesEvaluator implements NotificationEvaluatorInterface, Servic
 			return false;
 		}
 
-		return ! $this->has_completed_orders();
+		return ! $this->has_minimum_revenue_orders( 1 );
 	}
 
 	/**
@@ -98,22 +100,5 @@ class ReadyButNoSalesEvaluator implements NotificationEvaluatorInterface, Servic
 	 */
 	public function get_snooze_duration(): ?int {
 		return NotificationSnoozeDurations::READY_BUT_NO_SALES;
-	}
-
-	/**
-	 * Whether the store has at least one completed order.
-	 *
-	 * @return bool
-	 */
-	protected function has_completed_orders(): bool {
-		$orders = wc_get_orders(
-			[
-				'status' => 'completed',
-				'limit'  => 1,
-				'return' => 'ids',
-			]
-		);
-
-		return ! empty( $orders );
 	}
 }
