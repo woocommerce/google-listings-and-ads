@@ -41,17 +41,6 @@ class InvalidAsset extends LogicException implements GoogleListingsAndAdsExcepti
 	}
 
 	/**
-	 * Return a new instance of the exception when an asset with the given handle already exists.
-	 *
-	 * @param string $handle The asset handle that exists.
-	 *
-	 * @return static
-	 */
-	public static function handle_exists( string $handle ) {
-		return new static( sprintf( 'The asset handle "%s" already exists.', $handle ) );
-	}
-
-	/**
 	 * Create a new exception for an unreadable asset.
 	 *
 	 * @param string $path

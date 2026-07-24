@@ -69,6 +69,20 @@ class AssetsHandlerTest extends TestCase {
 		$handler->enqueue_handle( 'gla-foo' );
 	}
 
+	public function test_enqueue_asset_object_enqueues_all_assets_under_same_handle() {
+		$handler = new AssetsHandler();
+		$script  = $this->asset( 'gla-foo', ScriptAsset::class );
+		$style   = $this->asset( 'gla-foo', StyleAsset::class );
+		$handler->register( $script );
+		$handler->register( $style );
+
+		$script->expects( $this->once() )->method( 'enqueue' );
+		$style->expects( $this->once() )->method( 'enqueue' );
+
+		// Enqueuing just the script object also enqueues the style sharing its handle.
+		$handler->enqueue( $script );
+	}
+
 	public function test_dequeue_handle_dequeues_all_assets_under_handle() {
 		$handler = new AssetsHandler();
 		$script  = $this->asset( 'gla-foo', ScriptAsset::class );
