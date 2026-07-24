@@ -22,6 +22,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SalesNot
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SkippedCampaignEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\Sold10ItemsEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\TrackingOffEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationCacheInvalidator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
@@ -49,6 +50,7 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 		Service::class                           => true,
 		NotificationEvaluatorInterface::class    => true,
 		NotificationService::class               => true,
+		NotificationCacheInvalidator::class      => true,
 		AbandonedOnboardingEvaluator::class      => true,
 		CampaignNoSalesEvaluator::class          => true,
 		CouponsNotSyncedEvaluator::class         => true,
@@ -69,6 +71,7 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 	 */
 	public function register(): void {
 		$this->share_with_tags( NotificationService::class, WP::class );
+		$this->share_with_tags( NotificationCacheInvalidator::class );
 		$this->share_with_tags( SkippedCampaignEvaluator::class, AdsCampaign::class, OnboardingCompleted::class, ServiceBasedMerchantState::class );
 		$this->share_with_tags( AbandonedOnboardingEvaluator::class );
 		$this->share_with_tags( NotOnboarded90DaysEvaluator::class, OnboardingCompleted::class );

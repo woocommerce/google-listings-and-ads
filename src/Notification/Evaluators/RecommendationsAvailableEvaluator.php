@@ -9,7 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsRecommendationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationEvaluatorTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\InvalidatableNotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 
@@ -22,7 +22,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
-class RecommendationsAvailableEvaluator implements NotificationEvaluatorInterface, AdsAwareInterface, Service {
+class RecommendationsAvailableEvaluator implements InvalidatableNotificationEvaluatorInterface, AdsAwareInterface, Service {
 
 	use AdsAwareTrait;
 	use CachedNotificationEvaluatorTrait;
@@ -109,5 +109,15 @@ class RecommendationsAvailableEvaluator implements NotificationEvaluatorInterfac
 	 */
 	public function get_snooze_duration(): ?int {
 		return NotificationSnoozeDurations::RECOMMENDATIONS_AVAILABLE;
+	}
+
+	/**
+	 * Recommendations are campaign-derived, so a campaign being created/edited/deleted can
+	 * change what Google recommends; Google-side changes are picked up on the hourly refresh.
+	 *
+	 * @return string[]
+	 */
+	public function get_invalidation_hooks(): array {
+		return [ 'woocommerce_gla_updated_campaign' ];
 	}
 }

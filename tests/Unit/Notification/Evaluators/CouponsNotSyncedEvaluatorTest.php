@@ -135,9 +135,9 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 
 	public function test_cache_hit_skips_query() {
 		$evaluator = $this->create_evaluator( true, false, [ 1 => [ 1 ] ], [] );
-		$user_id   = $this->login_as_administrator();
+		$this->login_as_administrator();
 
-		set_transient( NotificationCacheKeys::for_user( 'coupons-not-synced', $user_id ), 0, HOUR_IN_SECONDS );
+		set_transient( NotificationCacheKeys::for_site( 'coupons-not-synced' ), 0, HOUR_IN_SECONDS );
 
 		$evaluator->expects( $this->never() )->method( 'get_coupon_post_ids' );
 

@@ -206,9 +206,9 @@ class CampaignNoSalesEvaluatorTest extends UnitTest {
 	}
 
 	public function test_cache_hit_skips_api_call() {
-		$user_id = $this->login_as_administrator();
+		$this->login_as_administrator();
 
-		set_transient( NotificationCacheKeys::for_user( 'campaign-no-sales', $user_id ), 0, HOUR_IN_SECONDS );
+		set_transient( NotificationCacheKeys::for_site( 'campaign-no-sales' ), 0, HOUR_IN_SECONDS );
 
 		$this->ads_recommendations->expects( $this->never() )->method( 'get_recommendations' );
 		$this->ads_campaign->expects( $this->never() )->method( 'get_campaigns' );
