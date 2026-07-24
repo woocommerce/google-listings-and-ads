@@ -288,6 +288,24 @@ class WCProductAdapterTest extends UnitTest {
 		$this->assertEquals( 'fr', $adapted_product->getContentLanguage() );
 	}
 
+	public function test_content_language_falls_back_to_en_for_unsupported_locale() {
+		add_filter(
+			'locale',
+			function () {
+				return 'als';
+			}
+		);
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => WC_Helper_Product::create_simple_product( false ),
+				'targetCountry' => 'US',
+			]
+		);
+
+		$this->assertEquals( 'en', $adapted_product->getContentLanguage() );
+	}
+
 	public function test_offer_id_is_set() {
 		$product         = WC_Helper_Product::create_simple_product( false );
 		$adapted_product = new WCProductAdapter(
