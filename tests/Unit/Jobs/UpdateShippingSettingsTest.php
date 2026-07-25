@@ -6,7 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateShippingSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -95,7 +94,7 @@ class UpdateShippingSettingsTest extends UnitTest {
 		do_action( $this->job->get_process_item_hook(), [] );
 	}
 
-	public function test_process_items_fails_if_mc_not_connected() {
+	public function test_process_items_skipped_if_mc_not_connected() {
 		$this->merchant_center->expects( $this->any() )
 			->method( 'is_connected' )
 			->willReturn( false );
@@ -105,13 +104,11 @@ class UpdateShippingSettingsTest extends UnitTest {
 
 		$this->google_settings->expects( $this->never() )
 			->method( 'sync_shipping' );
-
-		$this->expectException( JobException::class );
 
 		do_action( $this->job->get_process_item_hook(), [] );
 	}
 
-	public function test_process_items_fails_if_shipping_not_set_to_automatic_sync() {
+	public function test_process_items_skipped_if_shipping_not_set_to_automatic_sync() {
 		$this->merchant_center->expects( $this->any() )
 			->method( 'is_connected' )
 			->willReturn( true );
@@ -121,8 +118,6 @@ class UpdateShippingSettingsTest extends UnitTest {
 
 		$this->google_settings->expects( $this->never() )
 			->method( 'sync_shipping' );
-
-		$this->expectException( JobException::class );
 
 		do_action( $this->job->get_process_item_hook(), [] );
 	}
