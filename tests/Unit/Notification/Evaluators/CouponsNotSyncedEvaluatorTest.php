@@ -49,6 +49,19 @@ class CouponsNotSyncedEvaluatorTest extends UnitTest {
 		$this->assertEquals( NotificationSnoozeDurations::COUPONS_NOT_SYNCED, $this->evaluator->get_snooze_duration() );
 	}
 
+	public function test_get_invalidation_hooks_covers_create_update_and_sync() {
+		// Creating/updating a coupon can make the notification appear; syncing one can make it
+		// disappear. All three transitions must bust the cache, or a stale result sticks until TTL.
+		$this->assertSame(
+			[
+				'woocommerce_new_coupon',
+				'woocommerce_update_coupon',
+				'woocommerce_gla_updated_coupon',
+			],
+			$this->evaluator->get_invalidation_hooks()
+		);
+	}
+
 	public function test_should_show_when_supported_coupon_exists_and_none_synced() {
 		$supported_coupon   = $this->create_coupon( 1, false, [] );
 		$unsupported_coupon = $this->create_coupon( 2, true, [ 'test@example.com' ] );
