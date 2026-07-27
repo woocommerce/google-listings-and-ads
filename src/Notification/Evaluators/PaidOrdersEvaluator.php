@@ -13,13 +13,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\SiteScopedNotificat
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class Sold10ItemsEvaluator
+ * Class PaidOrdersEvaluator
  *
  * Fires once the merchant has 10 or more paid WooCommerce orders with revenue.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
-class Sold10ItemsEvaluator implements SiteScopedNotificationEvaluatorInterface, Service {
+class PaidOrdersEvaluator implements SiteScopedNotificationEvaluatorInterface, Service {
 
 	use CachedNotificationEvaluatorTrait;
 	use RevenueOrdersTrait;
@@ -32,7 +32,7 @@ class Sold10ItemsEvaluator implements SiteScopedNotificationEvaluatorInterface, 
 	 * @return string
 	 */
 	public function get_id(): string {
-		return 'sold-10-items';
+		return 'paid-orders';
 	}
 
 	/**
@@ -50,7 +50,7 @@ class Sold10ItemsEvaluator implements SiteScopedNotificationEvaluatorInterface, 
 	 * @return int
 	 */
 	public function get_priority(): int {
-		return NotificationPriorities::SOLD_10_ITEMS;
+		return NotificationPriorities::PAID_ORDERS;
 	}
 
 	/**
@@ -59,6 +59,6 @@ class Sold10ItemsEvaluator implements SiteScopedNotificationEvaluatorInterface, 
 	 * @return int|null
 	 */
 	public function get_snooze_duration(): ?int {
-		return NotificationSnoozeDurations::SOLD_10_ITEMS;
+		return NotificationSnoozeDurations::PAID_ORDERS;
 	}
 }

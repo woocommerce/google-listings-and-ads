@@ -13,14 +13,14 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\Abandone
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CampaignNoSalesEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CouponsNotSyncedEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\EnhancedConversionsOffEvaluator;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\NotOnboarded90DaysEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\NotOnboardedEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\PausedCampaignEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\ProductIssuesEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\ReadyButNoSalesEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\RecommendationsAvailableEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SalesNotGrowingEvaluator;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SkippedCampaignEvaluator;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\Sold10ItemsEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SkippedCampaignCreationEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\PaidOrdersEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\TrackingOffEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationCacheInvalidator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
@@ -55,14 +55,14 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 		CampaignNoSalesEvaluator::class          => true,
 		CouponsNotSyncedEvaluator::class         => true,
 		EnhancedConversionsOffEvaluator::class   => true,
-		NotOnboarded90DaysEvaluator::class       => true,
+		NotOnboardedEvaluator::class             => true,
 		PausedCampaignEvaluator::class           => true,
 		ProductIssuesEvaluator::class            => true,
 		ReadyButNoSalesEvaluator::class          => true,
 		RecommendationsAvailableEvaluator::class => true,
 		SalesNotGrowingEvaluator::class          => true,
-		SkippedCampaignEvaluator::class          => true,
-		Sold10ItemsEvaluator::class              => true,
+		SkippedCampaignCreationEvaluator::class  => true,
+		PaidOrdersEvaluator::class               => true,
 		TrackingOffEvaluator::class              => true,
 	];
 
@@ -72,13 +72,13 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 	public function register(): void {
 		$this->share_with_tags( NotificationService::class, WP::class );
 		$this->share_with_tags( NotificationCacheInvalidator::class );
-		$this->share_with_tags( SkippedCampaignEvaluator::class, AdsCampaign::class, OnboardingCompleted::class, ServiceBasedMerchantState::class );
+		$this->share_with_tags( SkippedCampaignCreationEvaluator::class, AdsCampaign::class, OnboardingCompleted::class, ServiceBasedMerchantState::class );
 		$this->share_with_tags( AbandonedOnboardingEvaluator::class, ServiceBasedMerchantState::class, OnboardingCompleted::class );
-		$this->share_with_tags( NotOnboarded90DaysEvaluator::class, OnboardingCompleted::class );
+		$this->share_with_tags( NotOnboardedEvaluator::class, OnboardingCompleted::class );
 		$this->share_with_tags( EnhancedConversionsOffEvaluator::class );
 		$this->share_with_tags( TrackingOffEvaluator::class );
 		$this->share_with_tags( ProductIssuesEvaluator::class, ServiceBasedMerchantState::class );
-		$this->share_with_tags( Sold10ItemsEvaluator::class );
+		$this->share_with_tags( PaidOrdersEvaluator::class );
 		$this->share_with_tags( ReadyButNoSalesEvaluator::class, WC::class );
 		$this->share_with_tags( CouponsNotSyncedEvaluator::class, MerchantCenterService::class, TargetAudience::class );
 		$this->share_with_tags( SalesNotGrowingEvaluator::class );
