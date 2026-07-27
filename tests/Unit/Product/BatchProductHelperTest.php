@@ -2035,9 +2035,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			);
 		};
 
-		$product        = WC_Helper_Product::create_simple_product();
-		$helper_first   = $build_helper( 'accounts/1/dataSources/111' );
-		$entries_first  = $helper_first->generate_mapi_update_entries( [ $product ] );
+		$product       = WC_Helper_Product::create_simple_product();
+		$helper_first  = $build_helper( 'accounts/1/dataSources/111' );
+		$entries_first = $helper_first->generate_mapi_update_entries( [ $product ] );
 		$this->assertCount( 1, $entries_first );
 
 		$entry_key = $entries_first[0]['input']->get_content_language() . '|' . $entries_first[0]['input']->get_feed_label();
