@@ -19,7 +19,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\ProductI
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\ReadyButNoSalesEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\RecommendationsAvailableEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SalesNotGrowingEvaluator;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SkippedCampaignEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SkippedCampaignCreationEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\PaidOrdersEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\TrackingOffEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationCacheInvalidator;
@@ -61,7 +61,7 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 		ReadyButNoSalesEvaluator::class          => true,
 		RecommendationsAvailableEvaluator::class => true,
 		SalesNotGrowingEvaluator::class          => true,
-		SkippedCampaignEvaluator::class          => true,
+		SkippedCampaignCreationEvaluator::class  => true,
 		PaidOrdersEvaluator::class               => true,
 		TrackingOffEvaluator::class              => true,
 	];
@@ -72,7 +72,7 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 	public function register(): void {
 		$this->share_with_tags( NotificationService::class, WP::class );
 		$this->share_with_tags( NotificationCacheInvalidator::class );
-		$this->share_with_tags( SkippedCampaignEvaluator::class, AdsCampaign::class, OnboardingCompleted::class, ServiceBasedMerchantState::class );
+		$this->share_with_tags( SkippedCampaignCreationEvaluator::class, AdsCampaign::class, OnboardingCompleted::class, ServiceBasedMerchantState::class );
 		$this->share_with_tags( AbandonedOnboardingEvaluator::class );
 		$this->share_with_tags( NotOnboardedEvaluator::class, OnboardingCompleted::class );
 		$this->share_with_tags( EnhancedConversionsOffEvaluator::class );
