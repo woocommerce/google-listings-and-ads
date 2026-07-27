@@ -17,7 +17,7 @@ class NotificationPriorities {
 	public const PRODUCT_ISSUES            = 10;
 	public const SKIPPED_CAMPAIGN_CREATION = 20;
 	public const ABANDONED_ONBOARDING      = 30;
-	public const NOT_ONBOARDED_90_DAYS     = 40;
+	public const NOT_ONBOARDED             = 40;
 	public const ENHANCED_CONVERSIONS_OFF  = 50;
 	public const TRACKING_OFF              = 60;
 	public const PAID_ORDERS               = 70;

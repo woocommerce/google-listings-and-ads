@@ -13,7 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\Abandone
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CampaignNoSalesEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CouponsNotSyncedEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\EnhancedConversionsOffEvaluator;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\NotOnboarded90DaysEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\NotOnboardedEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\PausedCampaignEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\ProductIssuesEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\ReadyButNoSalesEvaluator;
@@ -55,7 +55,7 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 		CampaignNoSalesEvaluator::class          => true,
 		CouponsNotSyncedEvaluator::class         => true,
 		EnhancedConversionsOffEvaluator::class   => true,
-		NotOnboarded90DaysEvaluator::class       => true,
+		NotOnboardedEvaluator::class             => true,
 		PausedCampaignEvaluator::class           => true,
 		ProductIssuesEvaluator::class            => true,
 		ReadyButNoSalesEvaluator::class          => true,
@@ -74,7 +74,7 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( NotificationCacheInvalidator::class );
 		$this->share_with_tags( SkippedCampaignEvaluator::class, AdsCampaign::class, OnboardingCompleted::class, ServiceBasedMerchantState::class );
 		$this->share_with_tags( AbandonedOnboardingEvaluator::class );
-		$this->share_with_tags( NotOnboarded90DaysEvaluator::class, OnboardingCompleted::class );
+		$this->share_with_tags( NotOnboardedEvaluator::class, OnboardingCompleted::class );
 		$this->share_with_tags( EnhancedConversionsOffEvaluator::class );
 		$this->share_with_tags( TrackingOffEvaluator::class );
 		$this->share_with_tags( ProductIssuesEvaluator::class, ServiceBasedMerchantState::class );

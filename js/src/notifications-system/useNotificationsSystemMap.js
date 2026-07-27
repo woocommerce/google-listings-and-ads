@@ -267,7 +267,7 @@ const useNotificationsSystemMap = () => {
 					},
 				],
 			},
-			'not-onboarded-90-days': {
+			'not-onboarded': {
 				isReady: hasFinishedResolution,
 				title: __(
 					'Finish your Google for WooCommerce connection',

@@ -8,7 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\Abandone
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CampaignNoSalesEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\CouponsNotSyncedEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\EnhancedConversionsOffEvaluator;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\NotOnboarded90DaysEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\NotOnboardedEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\PausedCampaignEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\ProductIssuesEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\ReadyButNoSalesEvaluator;
@@ -45,7 +45,7 @@ class CoreServiceProviderTest extends ContainerAwareUnitTest {
 		CampaignNoSalesEvaluator::class,
 		CouponsNotSyncedEvaluator::class,
 		EnhancedConversionsOffEvaluator::class,
-		NotOnboarded90DaysEvaluator::class,
+		NotOnboardedEvaluator::class,
 		PausedCampaignEvaluator::class,
 		ProductIssuesEvaluator::class,
 		ReadyButNoSalesEvaluator::class,

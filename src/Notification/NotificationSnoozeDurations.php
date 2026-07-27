@@ -20,7 +20,7 @@ class NotificationSnoozeDurations {
 	public const UNTIL_NEXT_LOGIN = -1;
 
 	public const ABANDONED_ONBOARDING      = 30 * DAY_IN_SECONDS;
-	public const NOT_ONBOARDED_90_DAYS     = 30 * DAY_IN_SECONDS;
+	public const NOT_ONBOARDED             = 30 * DAY_IN_SECONDS;
 	public const ENHANCED_CONVERSIONS_OFF  = 7 * DAY_IN_SECONDS;
 	public const TRACKING_OFF              = 7 * DAY_IN_SECONDS;
 	public const PAID_ORDERS               = 7 * DAY_IN_SECONDS;
