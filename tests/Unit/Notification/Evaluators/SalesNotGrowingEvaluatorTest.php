@@ -75,9 +75,9 @@ class SalesNotGrowingEvaluatorTest extends UnitTest {
 
 	public function test_cache_hit_skips_query() {
 		$evaluator = $this->create_evaluator( $this->years_ago( 2 ), 100.0, 250.0 );
-		$user_id   = $this->login_as_administrator();
+		$this->login_as_administrator();
 
-		set_transient( NotificationCacheKeys::for_user( 'sales-not-growing', $user_id ), 0, HOUR_IN_SECONDS );
+		set_transient( NotificationCacheKeys::for_site( 'sales-not-growing' ), 0, HOUR_IN_SECONDS );
 
 		$evaluator->expects( $this->never() )->method( 'get_first_order_date' );
 		$evaluator->expects( $this->never() )->method( 'get_gmv_for_period' );

@@ -11,7 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationEvaluatorTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\InvalidatableNotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -38,7 +38,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
-class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwareInterface, OptionsAwareInterface, Service {
+class SkippedCampaignEvaluator implements InvalidatableNotificationEvaluatorInterface, AdsAwareInterface, OptionsAwareInterface, Service {
 
 	use AdsAwareTrait;
 	use CachedNotificationEvaluatorTrait;
@@ -144,5 +144,15 @@ class SkippedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwa
 	 */
 	public function get_snooze_duration(): ?int {
 		return null;
+	}
+
+	/**
+	 * Creating a campaign resolves the "skipped campaign" condition; deleting the last one
+	 * can bring it back.
+	 *
+	 * @return string[]
+	 */
+	public function get_invalidation_hooks(): array {
+		return [ 'woocommerce_gla_updated_campaign' ];
 	}
 }

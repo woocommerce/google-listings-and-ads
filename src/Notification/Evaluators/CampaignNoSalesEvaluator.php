@@ -12,7 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationEvaluatorTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\InvalidatableNotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 
@@ -26,7 +26,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
-class CampaignNoSalesEvaluator implements NotificationEvaluatorInterface, AdsAwareInterface, Service {
+class CampaignNoSalesEvaluator implements InvalidatableNotificationEvaluatorInterface, AdsAwareInterface, Service {
 
 	use AdsAwareTrait;
 	use CachedNotificationEvaluatorTrait;
@@ -146,5 +146,15 @@ class CampaignNoSalesEvaluator implements NotificationEvaluatorInterface, AdsAwa
 	 */
 	public function get_snooze_duration(): ?int {
 		return NotificationSnoozeDurations::CAMPAIGN_NO_SALES;
+	}
+
+	/**
+	 * Creating or deleting a campaign changes which campaigns this evaluates; the "no sales"
+	 * side still relies on the cache's hourly refresh.
+	 *
+	 * @return string[]
+	 */
+	public function get_invalidation_hooks(): array {
+		return [ 'woocommerce_gla_updated_campaign' ];
 	}
 }

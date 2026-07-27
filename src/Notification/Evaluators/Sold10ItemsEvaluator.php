@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationEvaluatorTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationCacheKeys;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\RevenueOrdersTrait;
@@ -61,14 +60,5 @@ class Sold10ItemsEvaluator implements SiteScopedNotificationEvaluatorInterface, 
 	 */
 	public function get_snooze_duration(): ?int {
 		return NotificationSnoozeDurations::SOLD_10_ITEMS;
-	}
-
-	/**
-	 * Site-scoped evaluators share one cache entry per store.
-	 *
-	 * @return string
-	 */
-	protected function get_cache_key(): string {
-		return NotificationCacheKeys::for_site( $this->get_id() );
 	}
 }

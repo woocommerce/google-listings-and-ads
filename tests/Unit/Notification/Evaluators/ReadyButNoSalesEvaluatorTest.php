@@ -100,9 +100,9 @@ class ReadyButNoSalesEvaluatorTest extends UnitTest {
 
 	public function test_cache_hit_skips_query() {
 		$evaluator = $this->create_evaluator_with_revenue_orders( false );
-		$user_id   = $this->login_as_administrator();
+		$this->login_as_administrator();
 
-		set_transient( NotificationCacheKeys::for_user( 'ready-but-no-sales', $user_id ), 1, HOUR_IN_SECONDS );
+		set_transient( NotificationCacheKeys::for_site( 'ready-but-no-sales' ), 1, HOUR_IN_SECONDS );
 
 		$this->wc->expects( $this->never() )->method( 'has_enabled_payment_gateways' );
 		$evaluator->expects( $this->never() )->method( 'store_has_any_enabled_shipping_method' );
