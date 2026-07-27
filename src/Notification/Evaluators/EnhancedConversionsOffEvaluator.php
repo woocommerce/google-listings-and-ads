@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class EnhancedConversionsOffEvaluator
  *
- * Fires when Ads setup is complete and enhanced conversions are disabled.
+ * Fires when the Ads account is connected and enhanced conversions are disabled.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
@@ -42,7 +42,7 @@ class EnhancedConversionsOffEvaluator implements NotificationEvaluatorInterface,
 	 * @return bool
 	 */
 	public function should_show(): bool {
-		if ( ! $this->ads_service->is_setup_complete() ) {
+		if ( ! $this->ads_service->connected_account() ) {
 			return false;
 		}
 

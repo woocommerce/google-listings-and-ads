@@ -55,8 +55,8 @@ class EnhancedConversionsOffEvaluatorTest extends UnitTest {
 		$this->assertEquals( NotificationSnoozeDurations::ENHANCED_CONVERSIONS_OFF, $this->evaluator->get_snooze_duration() );
 	}
 
-	public function test_should_show_when_ads_complete_and_enhanced_conversions_disabled() {
-		$this->ads_service->method( 'is_setup_complete' )->willReturn( true );
+	public function test_should_show_when_ads_account_connected_and_enhanced_conversions_disabled() {
+		$this->ads_service->method( 'connected_account' )->willReturn( true );
 		$this->options->method( 'get' )
 			->with( OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED, false )
 			->willReturn( false );
@@ -64,14 +64,14 @@ class EnhancedConversionsOffEvaluatorTest extends UnitTest {
 		$this->assertTrue( $this->evaluator->should_show() );
 	}
 
-	public function test_should_not_show_when_ads_incomplete() {
-		$this->ads_service->method( 'is_setup_complete' )->willReturn( false );
+	public function test_should_not_show_when_ads_account_not_connected() {
+		$this->ads_service->method( 'connected_account' )->willReturn( false );
 
 		$this->assertFalse( $this->evaluator->should_show() );
 	}
 
 	public function test_should_not_show_when_enhanced_conversions_enabled() {
-		$this->ads_service->method( 'is_setup_complete' )->willReturn( true );
+		$this->ads_service->method( 'connected_account' )->willReturn( true );
 		$this->options->method( 'get' )
 			->with( OptionsInterface::ADS_ENHANCED_CONVERSIONS_ENABLED, false )
 			->willReturn( true );
