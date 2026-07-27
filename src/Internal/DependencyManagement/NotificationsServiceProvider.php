@@ -20,7 +20,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\ReadyBut
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\RecommendationsAvailableEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SalesNotGrowingEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SkippedCampaignEvaluator;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\Sold10ItemsEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\PaidOrdersEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\TrackingOffEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationCacheInvalidator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
@@ -62,7 +62,7 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 		RecommendationsAvailableEvaluator::class => true,
 		SalesNotGrowingEvaluator::class          => true,
 		SkippedCampaignEvaluator::class          => true,
-		Sold10ItemsEvaluator::class              => true,
+		PaidOrdersEvaluator::class               => true,
 		TrackingOffEvaluator::class              => true,
 	];
 
@@ -78,7 +78,7 @@ class NotificationsServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( EnhancedConversionsOffEvaluator::class );
 		$this->share_with_tags( TrackingOffEvaluator::class );
 		$this->share_with_tags( ProductIssuesEvaluator::class, ServiceBasedMerchantState::class );
-		$this->share_with_tags( Sold10ItemsEvaluator::class );
+		$this->share_with_tags( PaidOrdersEvaluator::class );
 		$this->share_with_tags( ReadyButNoSalesEvaluator::class, WC::class );
 		$this->share_with_tags( CouponsNotSyncedEvaluator::class, MerchantCenterService::class, TargetAudience::class );
 		$this->share_with_tags( SalesNotGrowingEvaluator::class );

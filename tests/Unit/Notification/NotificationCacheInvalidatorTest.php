@@ -83,17 +83,17 @@ class NotificationCacheInvalidatorTest extends UnitTest {
 
 	public function test_evaluator_without_the_interface_is_ignored() {
 		$plain = $this->createMock( NotificationEvaluatorInterface::class );
-		$plain->method( 'get_id' )->willReturn( 'sold-10-items' );
+		$plain->method( 'get_id' )->willReturn( 'paid-orders' );
 
 		$this->set_evaluators( [ $plain ] );
 		$this->invalidator->register();
 
-		set_transient( NotificationCacheKeys::for_site( 'sold-10-items' ), 1, HOUR_IN_SECONDS );
+		set_transient( NotificationCacheKeys::for_site( 'paid-orders' ), 1, HOUR_IN_SECONDS );
 
 		do_action( 'woocommerce_gla_updated_campaign' );
 
 		// A trend-only evaluator declares no hooks, so its cache survives (TTL-only).
-		$this->assertSame( 1, (int) get_transient( NotificationCacheKeys::for_site( 'sold-10-items' ) ) );
+		$this->assertSame( 1, (int) get_transient( NotificationCacheKeys::for_site( 'paid-orders' ) ) );
 	}
 
 	public function test_all_declared_hooks_invalidate_the_evaluator() {
