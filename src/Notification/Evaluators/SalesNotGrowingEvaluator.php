@@ -81,7 +81,7 @@ class SalesNotGrowingEvaluator implements NotificationEvaluatorInterface, Servic
 
 	/**
 	 * Whether the store has more than one year of sales data, i.e. its earliest
-	 * completed order is more than a year old.
+	 * paid order is more than a year old.
 	 *
 	 * @return bool
 	 */
@@ -98,36 +98,35 @@ class SalesNotGrowingEvaluator implements NotificationEvaluatorInterface, Servic
 	}
 
 	/**
-	 * Get the creation date of the store's earliest completed order, or null when
-	 * there are no completed orders.
+	 * Get the creation date of the store's earliest paid order, or null when there
+	 * are no paid orders.
 	 *
 	 * @return DateTime|null
 	 */
 	protected function get_first_order_date(): ?DateTime {
 		global $wpdb;
 
-		if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name from $wpdb->prefix.
-			$date = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT MIN( date_created_gmt )
-					FROM {$wpdb->prefix}wc_orders
-					WHERE type = 'shop_order'
-						AND status = %s",
-					'wc-completed'
-				)
-			);
-		} else {
-			$date = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT MIN( post_date_gmt )
-					FROM {$wpdb->posts}
-					WHERE post_type = 'shop_order'
-						AND post_status = %s",
-					'wc-completed'
-				)
-			);
+		$statuses = $this->paid_statuses();
+		if ( empty( $statuses ) ) {
+			return null;
 		}
+		$placeholders = implode( ', ', array_fill( 0, count( $statuses ), '%s' ) );
+
+		if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			$query = "SELECT MIN( date_created_gmt )
+				FROM {$wpdb->prefix}wc_orders
+				WHERE type = 'shop_order'
+					AND status IN ( $placeholders )";
+		} else {
+			$query = "SELECT MIN( post_date_gmt )
+				FROM {$wpdb->posts}
+				WHERE post_type = 'shop_order'
+					AND post_status IN ( $placeholders )";
+		}
+
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- table names from $wpdb and built %s placeholders.
+		$date = $wpdb->get_var( $wpdb->prepare( $query, $statuses ) );
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
 
 		if ( empty( $date ) ) {
 			return null;
@@ -137,7 +136,7 @@ class SalesNotGrowingEvaluator implements NotificationEvaluatorInterface, Servic
 	}
 
 	/**
-	 * Sum GMV for completed orders within a date range.
+	 * Sum GMV for paid orders within a date range.
 	 *
 	 * @param DateTime $start
 	 * @param DateTime $end
@@ -147,6 +146,12 @@ class SalesNotGrowingEvaluator implements NotificationEvaluatorInterface, Servic
 	protected function get_gmv_for_period( DateTime $start, DateTime $end ): float {
 		global $wpdb;
 
+		$statuses = $this->paid_statuses();
+		if ( empty( $statuses ) ) {
+			return 0.0;
+		}
+		$placeholders = implode( ', ', array_fill( 0, count( $statuses ), '%s' ) );
+
 		$start_sql = $this->format_datetime_as_gmt( $start );
 		$end_sql   = $this->format_datetime_as_gmt( $end );
 
@@ -154,7 +159,7 @@ class SalesNotGrowingEvaluator implements NotificationEvaluatorInterface, Servic
 			$query = "SELECT COALESCE( SUM( total_amount ), 0 )
 				FROM {$wpdb->prefix}wc_orders
 				WHERE type = 'shop_order'
-					AND status = %s
+					AND status IN ( $placeholders )
 					AND date_created_gmt >= %s
 					AND date_created_gmt <= %s";
 		} else {
@@ -163,24 +168,36 @@ class SalesNotGrowingEvaluator implements NotificationEvaluatorInterface, Servic
 				INNER JOIN {$wpdb->postmeta} AS meta
 					ON posts.ID = meta.post_id
 				WHERE posts.post_type = 'shop_order'
-					AND posts.post_status = %s
+					AND posts.post_status IN ( $placeholders )
 					AND meta.meta_key = '_order_total'
 					AND posts.post_date_gmt >= %s
 					AND posts.post_date_gmt <= %s";
 		}
 
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- table names from $wpdb.
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- table names from $wpdb and built %s placeholders.
 		$sum = $wpdb->get_var(
 			$wpdb->prepare(
 				$query,
-				'wc-completed',
-				$start_sql,
-				$end_sql
+				array_merge( $statuses, [ $start_sql, $end_sql ] )
 			)
 		);
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
 
 		return (float) $sum;
+	}
+
+	/**
+	 * The WooCommerce paid order statuses, wc-prefixed for querying the status column.
+	 *
+	 * @return string[]
+	 */
+	private function paid_statuses(): array {
+		return array_map(
+			static function ( string $status ): string {
+				return 'wc-' . $status;
+			},
+			wc_get_is_paid_statuses()
+		);
 	}
 
 	/**
