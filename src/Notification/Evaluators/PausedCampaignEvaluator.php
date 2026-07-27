@@ -10,7 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationEvaluatorTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\InvalidatableNotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 
@@ -23,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
-class PausedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwareInterface, Service {
+class PausedCampaignEvaluator implements InvalidatableNotificationEvaluatorInterface, AdsAwareInterface, Service {
 
 	use AdsAwareTrait;
 	use CachedNotificationEvaluatorTrait;
@@ -94,5 +94,15 @@ class PausedCampaignEvaluator implements NotificationEvaluatorInterface, AdsAwar
 	 */
 	public function get_snooze_duration(): ?int {
 		return NotificationSnoozeDurations::PAUSED_CAMPAIGN;
+	}
+
+	/**
+	 * A campaign's status changing (pause/resume), or a campaign being created or deleted,
+	 * changes whether any campaign is non-enabled.
+	 *
+	 * @return string[]
+	 */
+	public function get_invalidation_hooks(): array {
+		return [ 'woocommerce_gla_updated_campaign' ];
 	}
 }

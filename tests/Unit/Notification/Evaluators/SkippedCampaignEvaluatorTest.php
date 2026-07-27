@@ -215,9 +215,9 @@ class SkippedCampaignEvaluatorTest extends UnitTest {
 	}
 
 	public function test_cache_hit_skips_api_call() {
-		$user_id = $this->login_as_administrator();
+		$this->login_as_administrator();
 
-		set_transient( NotificationCacheKeys::for_user( 'skipped-campaign-creation', $user_id ), 0, HOUR_IN_SECONDS );
+		set_transient( NotificationCacheKeys::for_site( 'skipped-campaign-creation' ), 0, HOUR_IN_SECONDS );
 
 		$this->ads_campaign->expects( $this->never() )->method( 'get_campaigns' );
 

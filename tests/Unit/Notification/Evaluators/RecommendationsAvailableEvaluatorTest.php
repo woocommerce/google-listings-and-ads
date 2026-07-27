@@ -128,9 +128,9 @@ class RecommendationsAvailableEvaluatorTest extends UnitTest {
 	}
 
 	public function test_cache_hit_skips_api_call() {
-		$user_id = $this->login_as_administrator();
+		$this->login_as_administrator();
 
-		set_transient( NotificationCacheKeys::for_user( 'recommendations-available', $user_id ), 0, HOUR_IN_SECONDS );
+		set_transient( NotificationCacheKeys::for_site( 'recommendations-available' ), 0, HOUR_IN_SECONDS );
 
 		$this->ads_recommendations->expects( $this->never() )->method( 'get_recommendations' );
 		$this->ads_campaign->expects( $this->never() )->method( 'get_highest_spend_campaign' );

@@ -9,7 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\CachedNotificationEvaluatorTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationEvaluatorInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\InvalidatableNotificationEvaluatorInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationSnoozeDurations;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
@@ -32,7 +32,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
-class CouponsNotSyncedEvaluator implements NotificationEvaluatorInterface, Service {
+class CouponsNotSyncedEvaluator implements InvalidatableNotificationEvaluatorInterface, Service {
 
 	use CachedNotificationEvaluatorTrait;
 
@@ -118,6 +118,15 @@ class CouponsNotSyncedEvaluator implements NotificationEvaluatorInterface, Servi
 	 */
 	public function get_snooze_duration(): ?int {
 		return NotificationSnoozeDurations::COUPONS_NOT_SYNCED;
+	}
+
+	/**
+	 * Syncing (or updating) a coupon changes how many coupons remain unsynced.
+	 *
+	 * @return string[]
+	 */
+	public function get_invalidation_hooks(): array {
+		return [ 'woocommerce_gla_updated_coupon' ];
 	}
 
 	/**
