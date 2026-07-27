@@ -8,7 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SkippedCampaignEvaluator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators\SkippedCampaignCreationEvaluator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationCacheKeys;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notification\NotificationPriorities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OnboardingCompleted;
@@ -20,11 +20,11 @@ use PHPUnit\Framework\MockObject\MockObject;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class SkippedCampaignEvaluatorTest
+ * Class SkippedCampaignCreationEvaluatorTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notification\Evaluators
  */
-class SkippedCampaignEvaluatorTest extends UnitTest {
+class SkippedCampaignCreationEvaluatorTest extends UnitTest {
 
 	/** @var MockObject|AdsService $ads_service */
 	protected $ads_service;
@@ -41,7 +41,7 @@ class SkippedCampaignEvaluatorTest extends UnitTest {
 	/** @var MockObject|ServiceBasedMerchantState $service_based_merchant_state */
 	protected $service_based_merchant_state;
 
-	/** @var SkippedCampaignEvaluator $evaluator */
+	/** @var SkippedCampaignCreationEvaluator $evaluator */
 	protected $evaluator;
 
 	/**
@@ -55,7 +55,7 @@ class SkippedCampaignEvaluatorTest extends UnitTest {
 		$this->onboarding_completed         = $this->createMock( OnboardingCompleted::class );
 		$this->options                      = $this->createMock( OptionsInterface::class );
 		$this->service_based_merchant_state = $this->createMock( ServiceBasedMerchantState::class );
-		$this->evaluator                    = new SkippedCampaignEvaluator( $this->ads_campaign, $this->onboarding_completed, $this->service_based_merchant_state );
+		$this->evaluator                    = new SkippedCampaignCreationEvaluator( $this->ads_campaign, $this->onboarding_completed, $this->service_based_merchant_state );
 		$this->evaluator->set_ads_object( $this->ads_service );
 		$this->evaluator->set_options_object( $this->options );
 	}

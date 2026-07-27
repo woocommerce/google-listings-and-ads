@@ -78,7 +78,7 @@ const STATIC_MAP = {
 			},
 		],
 	},
-	'sold-10-items': {
+	'paid-orders': {
 		title: __(
 			'Drive more sales with Google Ads',
 			'google-listings-and-ads'
@@ -88,7 +88,7 @@ const STATIC_MAP = {
 				"Congrats on your first 10 sales – now let's find your next customer. Reach high-intent shoppers across Google. Get $500 USD or more in Google ad credit. Offer for new advertisers only. <link>Terms apply.</link>",
 				'google-listings-and-ads'
 			),
-			{ link: <TermsApplyLink linkId="sold-10-items" /> }
+			{ link: <TermsApplyLink linkId="paid-orders" /> }
 		),
 		actions: [
 			{
@@ -267,7 +267,7 @@ const useNotificationsSystemMap = () => {
 					},
 				],
 			},
-			'not-onboarded-90-days': {
+			'not-onboarded': {
 				isReady: hasFinishedResolution,
 				title: __(
 					'Finish your Google for WooCommerce connection',

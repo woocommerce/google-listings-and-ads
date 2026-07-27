@@ -38,6 +38,11 @@ class NotificationsSystemTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
+		// Detach pre-existing admin_enqueue_scripts callbacks so firing the action runs only
+		// what register() adds. WooCommerce core's WCAdminAssets callbacks print output when
+		// the WooCommerce checkout has no built admin assets, which breaks strict CI output.
+		remove_all_actions( 'admin_enqueue_scripts' );
+
 		$this->login_as_administrator();
 
 		$this->assets_handler = $this->createMock( AssetsHandlerInterface::class );

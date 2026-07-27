@@ -17,7 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WPAwareTrait;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class NotOnboarded90DaysEvaluator
+ * Class NotOnboardedEvaluator
  *
  * Fires when Google for WooCommerce onboarding is not complete, WooCommerce onboarding
  * has been completed or skipped, and either WooCommerce or the plugin has been active
@@ -25,7 +25,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
-class NotOnboarded90DaysEvaluator implements NotificationEvaluatorInterface, OptionsAwareInterface, WPAwareInterface, Service {
+class NotOnboardedEvaluator implements NotificationEvaluatorInterface, OptionsAwareInterface, WPAwareInterface, Service {
 
 	use OptionsAwareTrait;
 	use WPAwareTrait;
@@ -39,7 +39,7 @@ class NotOnboarded90DaysEvaluator implements NotificationEvaluatorInterface, Opt
 	private $onboarding_completed;
 
 	/**
-	 * NotOnboarded90DaysEvaluator constructor.
+	 * NotOnboardedEvaluator constructor.
 	 *
 	 * @param OnboardingCompleted $onboarding_completed
 	 */
@@ -53,7 +53,7 @@ class NotOnboarded90DaysEvaluator implements NotificationEvaluatorInterface, Opt
 	 * @return string
 	 */
 	public function get_id(): string {
-		return 'not-onboarded-90-days';
+		return 'not-onboarded';
 	}
 
 	/**
@@ -85,7 +85,7 @@ class NotOnboarded90DaysEvaluator implements NotificationEvaluatorInterface, Opt
 	 * @return int
 	 */
 	public function get_priority(): int {
-		return NotificationPriorities::NOT_ONBOARDED_90_DAYS;
+		return NotificationPriorities::NOT_ONBOARDED;
 	}
 
 	/**
@@ -94,7 +94,7 @@ class NotOnboarded90DaysEvaluator implements NotificationEvaluatorInterface, Opt
 	 * @return int|null
 	 */
 	public function get_snooze_duration(): ?int {
-		return NotificationSnoozeDurations::NOT_ONBOARDED_90_DAYS;
+		return NotificationSnoozeDurations::NOT_ONBOARDED;
 	}
 
 	/**

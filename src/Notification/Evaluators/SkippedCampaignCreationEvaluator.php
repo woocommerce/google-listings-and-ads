@@ -21,7 +21,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\ServiceBasedMerchantStat
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class SkippedCampaignEvaluator
+ * Class SkippedCampaignCreationEvaluator
  *
  * Fires when the merchant finished onboarding but skipped campaign creation: onboarding
  * is complete and the account has no enabled Performance Max campaigns — including any
@@ -38,7 +38,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notification\Evaluators
  */
-class SkippedCampaignEvaluator implements InvalidatableNotificationEvaluatorInterface, AdsAwareInterface, OptionsAwareInterface, Service {
+class SkippedCampaignCreationEvaluator implements InvalidatableNotificationEvaluatorInterface, AdsAwareInterface, OptionsAwareInterface, Service {
 
 	use AdsAwareTrait;
 	use CachedNotificationEvaluatorTrait;
@@ -54,7 +54,7 @@ class SkippedCampaignEvaluator implements InvalidatableNotificationEvaluatorInte
 	private $service_based_merchant_state;
 
 	/**
-	 * SkippedCampaignEvaluator constructor.
+	 * SkippedCampaignCreationEvaluator constructor.
 	 *
 	 * @param AdsCampaign               $ads_campaign
 	 * @param OnboardingCompleted       $onboarding_completed

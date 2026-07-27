@@ -251,7 +251,7 @@ class NotificationServiceTest extends UnitTest {
 	public function test_site_scoped_notification_persists_state_in_site_option() {
 		$this->set_evaluators(
 			[
-				$this->create_mocked_evaluator( 'sold-10-items', 10, true, null, true ),
+				$this->create_mocked_evaluator( 'paid-orders', 10, true, null, true ),
 			]
 		);
 
@@ -260,19 +260,19 @@ class NotificationServiceTest extends UnitTest {
 		$site_state = get_option( 'gla_' . OptionsInterface::NOTIFICATIONS_SITE_STATE, [] );
 		$user_state = get_user_meta( get_current_user_id(), 'gla_notifications_state', true );
 
-		$this->assertNotEmpty( $site_state['sold-10-items']['triggered_at'] );
-		$this->assertFalse( isset( $user_state['sold-10-items'] ) );
+		$this->assertNotEmpty( $site_state['paid-orders']['triggered_at'] );
+		$this->assertFalse( isset( $user_state['paid-orders'] ) );
 	}
 
 	public function test_site_scoped_dismiss_is_shared_across_users() {
 		$this->set_evaluators(
 			[
-				$this->create_mocked_evaluator( 'sold-10-items', 10, true, null, true ),
+				$this->create_mocked_evaluator( 'paid-orders', 10, true, null, true ),
 			]
 		);
 
 		$this->service->get_notifications();
-		$this->service->dismiss( 'sold-10-items' );
+		$this->service->dismiss( 'paid-orders' );
 
 		$second_admin_id = $this->factory->user->create( [ 'role' => 'administrator' ] );
 		wp_set_current_user( $second_admin_id );
@@ -283,7 +283,7 @@ class NotificationServiceTest extends UnitTest {
 	public function test_triggered_at_is_set_once_for_site_scoped_notifications() {
 		$this->set_evaluators(
 			[
-				$this->create_mocked_evaluator( 'sold-10-items', 10, true, null, true ),
+				$this->create_mocked_evaluator( 'paid-orders', 10, true, null, true ),
 			]
 		);
 
