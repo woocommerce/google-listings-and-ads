@@ -144,6 +144,10 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	/**
 	 * Whether a cached data source resource name still exists on the account.
 	 *
+	 * Only a 404 proves absence, so any other error (auth, transient 5xx) keeps the cached name:
+	 * discarding it there would force a needless list-or-create, and a genuinely missing source
+	 * still surfaces on the insert that follows.
+	 *
 	 * @param string $name Data source resource name.
 	 *
 	 * @return bool
@@ -159,15 +163,37 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Drop the cached product data source for a (contentLanguage, feedLabel) pair, from both the
-	 * option cache and the verified-this-request set, so the next ensure_data_source_for() call
-	 * re-resolves it. Used to recover from a product insert rejected with "data source not found".
+	 * Drop the cached product data source for a (contentLanguage, feedLabel) pair, so the next
+	 * ensure_data_source_for() call re-resolves it. Used to recover from a product insert
+	 * rejected with "data source not found".
 	 *
 	 * @param string $content_language Language code.
 	 * @param string $feed_label       Feed label.
 	 */
 	public function forget_data_source_for( string $content_language, string $feed_label ): void {
-		$cache_key = self::PRODUCT_SOURCE['cache_prefix'] . $content_language . '|' . $feed_label;
+		$this->forget_data_source( self::PRODUCT_SOURCE, $content_language, $feed_label );
+	}
+
+	/**
+	 * Drop the cached promotion data source for a (contentLanguage, targetCountry) pair, so the
+	 * next ensure_promotion_data_source_for() call re-resolves it.
+	 *
+	 * @param string $content_language Language code.
+	 * @param string $target_country   Target country code.
+	 */
+	public function forget_promotion_data_source_for( string $content_language, string $target_country ): void {
+		$this->forget_data_source( self::PROMOTION_SOURCE, $content_language, $target_country );
+	}
+
+	/**
+	 * Drop a cached data source from both the option cache and the verified-this-request set.
+	 *
+	 * @param array  $type             One of the *_SOURCE descriptors.
+	 * @param string $content_language Language code.
+	 * @param string $match_value      Secondary identity value (feed label or target country).
+	 */
+	private function forget_data_source( array $type, string $content_language, string $match_value ): void {
+		$cache_key = $type['cache_prefix'] . $content_language . '|' . $match_value;
 		$cache     = (array) $this->options->get( OptionsInterface::MAPI_DATA_SOURCES, [] );
 
 		if ( ! isset( $cache[ $cache_key ] ) ) {
@@ -177,6 +203,24 @@ class MapiDataSourcesService implements OptionsAwareInterface {
 		$name = (string) $cache[ $cache_key ];
 		unset( $cache[ $cache_key ], $this->verified_data_sources[ $name ] );
 		$this->options->update( OptionsInterface::MAPI_DATA_SOURCES, $cache );
+	}
+
+	/**
+	 * Whether a failure is a "data source not found" rejection: a 404 whose message names the
+	 * data source. A write cannot 404 on the item it is creating, so a 404 is the data source.
+	 *
+	 * @param mixed $failure
+	 *
+	 * @return bool
+	 */
+	public static function is_missing_data_source_failure( $failure ): bool {
+		if ( ! $failure instanceof MerchantApiException || 404 !== $failure->get_http_status() ) {
+			return false;
+		}
+
+		$message = $failure->getMessage();
+
+		return false !== stripos( $message, 'data source' ) || false !== stripos( $message, 'datasource' );
 	}
 
 	/**
