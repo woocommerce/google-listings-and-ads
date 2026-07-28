@@ -121,12 +121,18 @@ class CouponsNotSyncedEvaluator implements InvalidatableNotificationEvaluatorInt
 	}
 
 	/**
-	 * Syncing (or updating) a coupon changes how many coupons remain unsynced.
+	 * The set of unsynced coupons changes both when a coupon is created or edited (a new
+	 * supported coupon can make the notification appear) and when one is synced to Google
+	 * (which can make it disappear), so all three transitions must bust the cache.
 	 *
 	 * @return string[]
 	 */
 	public function get_invalidation_hooks(): array {
-		return [ 'woocommerce_gla_updated_coupon' ];
+		return [
+			'woocommerce_new_coupon',
+			'woocommerce_update_coupon',
+			'woocommerce_gla_updated_coupon',
+		];
 	}
 
 	/**
