@@ -48,3 +48,18 @@
 	margin: $grid-unit-10 0;
 	max-width: 100%;
 }
+
+// Backorder availability date notice (Inventory tab, classic product editor).
+#woocommerce-product-data #inventory_product_data .gla-backorder-availability-date-notice {
+	margin: $grid-unit-20;
+
+	.components-notice {
+		margin: 0;
+		padding: $grid-unit-15 $grid-unit-15 $grid-unit-15 $grid-unit-20;
+	}
+
+	a {
+		color: $gla-color-blue-50;
+		font-weight: 500;
+	}
+}

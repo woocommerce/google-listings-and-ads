@@ -7,6 +7,7 @@ import $ from 'jquery';
  * Internal dependencies
  */
 import { glaProductData } from '~/constants';
+import './backorder-availability-date-notice';
 import './custom-inputs';
 import './index.scss';
 
