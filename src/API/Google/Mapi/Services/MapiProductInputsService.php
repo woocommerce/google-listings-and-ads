@@ -132,12 +132,13 @@ class MapiProductInputsService implements OptionsAwareInterface {
 		$reresolved     = [];
 
 		foreach ( $result['failures'] as $index => $failure ) {
-			if ( ! isset( $inputs[ $index ] ) || ! $this->is_missing_data_source_failure( $failure ) ) {
+			if ( ! isset( $inputs[ $index ] ) || ! MapiDataSourcesService::is_missing_data_source_failure( $failure ) ) {
 				continue;
 			}
 
 			$input = $inputs[ $index ];
-			$pair  = $input->get_content_language() . '|' . $input->get_feed_label();
+			// Local grouping key, so each (language, feed) pair is re-resolved once per retry pass.
+			$pair = $input->get_content_language() . '|' . $input->get_feed_label();
 
 			if ( ! array_key_exists( $pair, $reresolved ) ) {
 				try {
@@ -187,24 +188,6 @@ class MapiProductInputsService implements OptionsAwareInterface {
 		$this->log( sprintf( 'productInputs.insert retried %d inputs after data source re-resolution: %d succeeded', count( $retry_inputs ), count( $retry_result['successes'] ) ), __METHOD__ );
 
 		return $result;
-	}
-
-	/**
-	 * Whether a batch failure is a "data source not found" rejection: a 404 whose message names the
-	 * data source. Insert cannot 404 on the product it is creating, so a 404 is the data source.
-	 *
-	 * @param mixed $failure The per-input failure recorded by run_in_batches().
-	 *
-	 * @return bool
-	 */
-	private function is_missing_data_source_failure( $failure ): bool {
-		if ( ! $failure instanceof MerchantApiException || 404 !== $failure->get_http_status() ) {
-			return false;
-		}
-
-		$message = $failure->getMessage();
-
-		return false !== stripos( $message, 'data source' ) || false !== stripos( $message, 'datasource' );
 	}
 
 	/**
