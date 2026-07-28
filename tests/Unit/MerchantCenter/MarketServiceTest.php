@@ -1411,6 +1411,9 @@ class MarketServiceTest extends UnitTest {
 	}
 
 	public function test_update_market_cleanup_covers_removed_currency_across_all_languages(): void {
+		// A multi-language/currency market is a multilingual concept, so its feeds keep the suffix.
+		$this->wpml->method( 'is_active' )->willReturn( true );
+
 		$existing = [
 			'de' => [
 				'country'    => 'DE',
@@ -2153,7 +2156,9 @@ class MarketServiceTest extends UnitTest {
 
 	public function test_delete_market_schedules_cleanup_across_all_language_currency_variants(): void {
 		// Multi-language/currency markets are an automatic/manual concept, so this
-		// exercises the persisted delete path.
+		// exercises the persisted delete path. They are multilingual, so feeds keep the suffix.
+		$this->wpml->method( 'is_active' )->willReturn( true );
+
 		$existing = [
 			'de' => [
 				'country'       => 'DE',
@@ -4159,10 +4164,23 @@ class MarketServiceTest extends UnitTest {
 	}
 
 	public function test_get_market_feed_label_appends_uppercase_language_and_currency(): void {
+		// The language/currency suffix applies for a multilingual store (or any non-store currency).
+		$this->wpml->method( 'is_active' )->willReturn( true );
+
 		$this->assertSame( 'BE-FR-EUR', $this->market_service->get_market_feed_label( 'BE', 'fr', 'EUR' ) );
 		$this->assertSame( 'BE-FR-EUR', $this->market_service->get_market_feed_label( 'BE', 'FR', 'eur' ) );
 		$this->assertSame( 'BE-FR-EUR', $this->market_service->get_market_feed_label( 'BE', 'fr_FR', 'EUR' ) );
 		$this->assertSame( 'FR-NL-USD', $this->market_service->get_market_feed_label( 'FR', 'nl', 'USD' ) );
+	}
+
+	public function test_get_market_feed_label_is_bare_for_non_multilingual_store_currency(): void {
+		// A non-multilingual store's store-currency feed collapses to one feed per market, so it
+		// uses the bare base label (like the primary market). Non-store currencies keep the suffix.
+		$this->wpml->method( 'is_active' )->willReturn( false );
+
+		$this->assertSame( 'FR', $this->market_service->get_market_feed_label( 'FR', 'en', get_woocommerce_currency() ) );
+		$this->assertSame( 'FR', $this->market_service->get_market_feed_label( 'FR', '', '' ) );
+		$this->assertSame( 'FR-EN-EUR', $this->market_service->get_market_feed_label( 'FR', 'en', 'EUR' ) );
 	}
 
 	public function test_get_market_feed_label_returns_empty_string_for_empty_base_label(): void {
@@ -4170,6 +4188,10 @@ class MarketServiceTest extends UnitTest {
 	}
 
 	public function test_get_market_feed_label_falls_back_to_site_language_and_store_currency_when_empty(): void {
+		// On a multilingual store the empty language/currency fall back to the site language and
+		// store currency in the suffix.
+		$this->wpml->method( 'is_active' )->willReturn( true );
+
 		$this->assertSame(
 			'BE-' . strtoupper( substr( get_locale(), 0, 2 ) ) . '-' . get_woocommerce_currency(),
 			$this->market_service->get_market_feed_label( 'BE', '', '' )
@@ -4244,7 +4266,7 @@ class MarketServiceTest extends UnitTest {
 		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
 
 		$this->assertSame(
-			[ 'US', 'AE-' . strtoupper( substr( get_locale(), 0, 2 ) ) . '-' . get_woocommerce_currency() ],
+			[ 'US', 'AE' ],
 			$this->market_service->get_all_feed_labels()
 		);
 	}
@@ -4337,7 +4359,7 @@ class MarketServiceTest extends UnitTest {
 		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
 
 		$this->assertSame(
-			[ 'US', 'AE-' . strtoupper( substr( get_locale(), 0, 2 ) ) . '-' . get_woocommerce_currency() ],
+			[ 'US', 'AE' ],
 			$this->market_service->get_feed_labels_for_language( $site_language )
 		);
 	}
@@ -5133,6 +5155,9 @@ class MarketServiceTest extends UnitTest {
 	}
 
 	public function test_delete_market_schedules_cleanup_with_every_currency_label(): void {
+		// A multi-language/currency market is a multilingual concept, so its feeds keep the suffix.
+		$this->wpml->method( 'is_active' )->willReturn( true );
+
 		$store_currency = get_woocommerce_currency();
 
 		$existing = [

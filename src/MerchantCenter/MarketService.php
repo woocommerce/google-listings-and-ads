@@ -1115,6 +1115,15 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 			$currency = get_woocommerce_currency();
 		}
 
+		// A non-multilingual store has a single language, so its store-currency feed collapses
+		// to one feed per market. That feed uses the bare base label (like the primary market),
+		// matching the design that flat/non-multilingual markets carry no language/currency in
+		// their feed label. Non-store currencies (e.g. an exchange-rate market) keep the suffix
+		// so their distinct feed stays uniquely labelled.
+		if ( ! $this->has_multilingual_support() && get_woocommerce_currency() === $currency ) {
+			return strtoupper( $base_feed_label );
+		}
+
 		return strtoupper( $base_feed_label . '-' . substr( $language, 0, 2 ) . '-' . $currency );
 	}
 
