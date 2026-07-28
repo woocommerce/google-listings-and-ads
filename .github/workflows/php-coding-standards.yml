@@ -7,10 +7,14 @@ on:
       - develop
     paths:
       - "**.php"
+      - composer.json
+      - composer.lock
       - .github/workflows/php-coding-standards.yml
   pull_request:
     paths:
       - "**.php"
+      - composer.json
+      - composer.lock
       - .github/workflows/php-coding-standards.yml
 
 concurrency:
