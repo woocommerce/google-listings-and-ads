@@ -591,13 +591,12 @@ class MapiProductInputsServiceTest extends UnitTest {
 	}
 
 	/**
-	 * A "data source not found" 404 for the given offer id, as run_in_batches records it.
-	 *
-	 * @param string $offer_id
+	 * A "data source not found" 404, as run_in_batches records it. The real rejection names the
+	 * data source, not the product, so this takes no offer id.
 	 *
 	 * @return array
 	 */
-	protected function data_source_404( string $offer_id ): array {
+	protected function data_source_404(): array {
 		return [
 			'status' => 404,
 			'body'   => [ 'error' => [ 'message' => '[dataSource] Data source with id 999 was not found.' ] ],
@@ -641,7 +640,7 @@ class MapiProductInputsServiceTest extends UnitTest {
 					foreach ( $requests as $index => $sub ) {
 						// First pass: the data source 404s. Retry pass: it succeeds.
 						$results[ $index ] = 1 === $call
-							? $this->data_source_404( $sub['body']['offerId'] )
+							? $this->data_source_404()
 							: $this->insert_ok( $sub['body']['offerId'] );
 					}
 					return Create::promiseFor( $results );
@@ -667,7 +666,7 @@ class MapiProductInputsServiceTest extends UnitTest {
 					++$call;
 					$results = [];
 					foreach ( $requests as $index => $sub ) {
-						$results[ $index ] = $this->data_source_404( $sub['body']['offerId'] );
+						$results[ $index ] = $this->data_source_404();
 					}
 					return Create::promiseFor( $results );
 				}
@@ -753,7 +752,7 @@ class MapiProductInputsServiceTest extends UnitTest {
 					++$call;
 					$results = [];
 					foreach ( $requests as $index => $sub ) {
-						$results[ $index ] = $this->data_source_404( $sub['body']['offerId'] );
+						$results[ $index ] = $this->data_source_404();
 					}
 					return Create::promiseFor( $results );
 				}
