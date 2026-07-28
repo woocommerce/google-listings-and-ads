@@ -1242,8 +1242,9 @@ class GoogleHelper implements Service {
 	}
 
 	/**
-	 * The Merchant Center supported language codes, keyed by ISO 639-1 code. Backs the public
-	 * accessor and the static content-language derivation.
+	 * The Merchant Center supported language codes, keyed by ISO 639-1 code. Kept separate from
+	 * get_mc_supported_languages() because that accessor is an instance method stubbed in tests,
+	 * while get_mc_content_language() is static and so cannot call it.
 	 *
 	 * @return array
 	 */
