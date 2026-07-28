@@ -5,7 +5,10 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\AssetImageProxyController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
+use ReflectionMethod;
 use WP_Error;
+use WP_REST_Request as Request;
+use WP_REST_Response as Response;
 
 /**
  * Class AssetImageProxyControllerTest
@@ -386,5 +389,119 @@ class AssetImageProxyControllerTest extends RESTControllerUnitTest {
 		$data = $response->get_data();
 		$this->assertArrayHasKey( 'code', $data );
 		$this->assertEquals( 'rest_forbidden', $data['code'] );
+	}
+
+	/**
+	 * Data provider of non-bool values for $served, the kind of value another callback
+	 * hooked onto the shared `rest_pre_serve_request` filter chain could pass through.
+	 *
+	 * @return array[]
+	 */
+	public function data_non_bool_served_values(): array {
+		return [
+			'null'         => [ null ],
+			'zero'         => [ 0 ],
+			'empty string' => [ '' ],
+			'empty array'  => [ [] ],
+		];
+	}
+
+	/**
+	 * Regression test for GOOWOO-834: `rest_pre_serve_request` is a global filter, so
+	 * WordPress core or another plugin's callback earlier in the same chain can pass a
+	 * non-bool value for $served (a literal `null` did exactly this in production). A
+	 * strict `bool` type hint on that parameter caused an uncaught TypeError for REST
+	 * responses that had nothing to do with this endpoint. serve_image_response() must
+	 * tolerate this instead of crashing.
+	 *
+	 * @dataProvider data_non_bool_served_values
+	 *
+	 * @param mixed $served A non-bool value for the $served argument.
+	 */
+	public function test_serve_image_response_does_not_throw_on_non_bool_served( $served ): void {
+		$unrelated_response = new Response( [ 'some' => 'data' ], 200 );
+		$request            = new Request( 'GET', '/wp/v2/posts' );
+
+		global $wp_rest_server;
+
+		$result = $this->controller->serve_image_response( $served, $unrelated_response, $request, $wp_rest_server );
+
+		$this->assertFalse( $result, 'A response without the image-proxy header should not be served as raw binary.' );
+	}
+
+	/**
+	 * Regression test for GOOWOO-834: $result may not be a WP_REST_Response at all if an
+	 * earlier callback on the same filter chain replaced it (e.g. with a WP_Error).
+	 * serve_image_response() must not assume the type.
+	 */
+	public function test_serve_image_response_does_not_throw_on_non_response_result(): void {
+		$request = new Request( 'GET', '/wp/v2/posts' );
+
+		global $wp_rest_server;
+
+		$result = $this->controller->serve_image_response( false, new WP_Error( 'some_error' ), $request, $wp_rest_server );
+
+		$this->assertFalse( $result );
+	}
+
+	/**
+	 * Data provider for is_image_proxy_response(), the guard serve_image_response() uses
+	 * to decide whether a rest_pre_serve_request $result is its own image to serve raw.
+	 *
+	 * @return array[]
+	 */
+	public function data_image_proxy_response_candidates(): array {
+		return [
+			'own image response'               => [
+				$this->make_image_proxy_response( 200 ),
+				true,
+			],
+			'missing X-GLA-Image-Proxy header' => [
+				new Response( [ 'message' => 'ok' ], 200 ),
+				false,
+			],
+			'non-200 status'                   => [
+				$this->make_image_proxy_response( 404 ),
+				false,
+			],
+			'not a WP_REST_Response'           => [
+				new WP_Error( 'some_error' ),
+				false,
+			],
+		];
+	}
+
+	/**
+	 * Build a Response carrying the X-GLA-Image-Proxy header that create_image_response()
+	 * sets on a successful image fetch.
+	 *
+	 * @param int $status The response status.
+	 *
+	 * @return Response
+	 */
+	private function make_image_proxy_response( int $status ): Response {
+		$response = new Response( 'binary-data', $status );
+		$response->header( 'X-GLA-Image-Proxy', '1' );
+
+		return $response;
+	}
+
+	/**
+	 * Test that is_image_proxy_response() correctly identifies this endpoint's own
+	 * successful image response, and rejects anything else, independent of the
+	 * header()/echo side effects in serve_image_response() that this suite can't
+	 * exercise directly (WP's PHPUnit bootstrap emits output before tests run, so
+	 * header() always throws "headers already sent" under convertWarningsToExceptions).
+	 *
+	 * @dataProvider data_image_proxy_response_candidates
+	 *
+	 * @param mixed $result   The candidate value.
+	 * @param bool  $expected Whether it should be identified as this endpoint's own image response.
+	 */
+	public function test_is_image_proxy_response( $result, bool $expected ): void {
+		$method = new ReflectionMethod( AssetImageProxyController::class, 'is_image_proxy_response' );
+		$method->setAccessible( true );
+
+		$this->assertSame( $expected, $method->invoke( $this->controller, $result ) );
 	}
 }
