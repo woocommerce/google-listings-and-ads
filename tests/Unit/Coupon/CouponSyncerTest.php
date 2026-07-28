@@ -136,7 +136,7 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 		$this->promotions_service->expects( $this->exactly( 2 ) )
 			->method( 'insert_promotion' )
 			->willReturnCallback(
-				function ( string $data_source, array $promotion ) use ( &$seen_sources ) {
+				function ( string $data_source ) use ( &$seen_sources ) {
 					$seen_sources[] = $data_source;
 
 					if ( 1 === count( $seen_sources ) ) {
