@@ -167,6 +167,53 @@ class MapiDataSourcesServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_forget_promotion_data_source_for_removes_only_the_promotion_entry() {
+		$stored = [
+			OptionsInterface::MAPI_DATA_SOURCES => [
+				'product|en|US'   => 'accounts/12345/dataSources/100',
+				'promotion|en|US' => 'accounts/12345/dataSources/300',
+			],
+		];
+		$this->options->method( 'get' )->willReturnCallback(
+			function ( string $key, $fallback = false ) use ( &$stored ) {
+				return $stored[ $key ] ?? $fallback;
+			}
+		);
+		$this->options->method( 'update' )->willReturnCallback(
+			function ( string $key, $value ) use ( &$stored ) {
+				$stored[ $key ] = $value;
+				return true;
+			}
+		);
+
+		$this->service->forget_promotion_data_source_for( 'en', 'US' );
+
+		$this->assertSame(
+			[ 'product|en|US' => 'accounts/12345/dataSources/100' ],
+			$stored[ OptionsInterface::MAPI_DATA_SOURCES ]
+		);
+	}
+
+	public function test_is_missing_data_source_failure_only_matches_data_source_404s() {
+		$this->assertTrue(
+			MapiDataSourcesService::is_missing_data_source_failure(
+				new MerchantApiException( 404, [ 'error' => [ 'message' => '[dataSource] Data source with id 999 was not found.' ] ], __METHOD__ )
+			)
+		);
+		// A 404 that is not about the data source, and a non-404, are both left alone.
+		$this->assertFalse(
+			MapiDataSourcesService::is_missing_data_source_failure(
+				new MerchantApiException( 404, [ 'error' => [ 'message' => 'The resource was not found.' ] ], __METHOD__ )
+			)
+		);
+		$this->assertFalse(
+			MapiDataSourcesService::is_missing_data_source_failure(
+				new MerchantApiException( 500, [ 'error' => [ 'message' => 'data source blew up' ] ], __METHOD__ )
+			)
+		);
+		$this->assertFalse( MapiDataSourcesService::is_missing_data_source_failure( null ) );
+	}
+
 	public function test_reuses_existing_data_source_matching_language_and_feed() {
 		$this->options->method( 'get' )->willReturn( [] );
 		$this->client->expects( $this->once() )
