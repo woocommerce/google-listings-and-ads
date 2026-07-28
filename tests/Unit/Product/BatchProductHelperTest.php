@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Models\ProductInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Mapi\Services\MapiDataSourcesService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
@@ -2053,6 +2054,32 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$entries_second = $helper_second->generate_mapi_update_entries( [ $product ] );
 		$this->assertCount( 1, $entries_second );
 		$this->assertNotSame( $entries_first[0]['hash'], $entries_second[0]['hash'] );
+	}
+
+	public function test_data_source_resolution_failure_skips_the_product() {
+		$this->set_up_market_service_stubs(
+			[ 'US' ],
+			[
+				'primary' => [
+					'country'    => 'US',
+					'feed_label' => 'US',
+					'language'   => 'en',
+				],
+			]
+		);
+
+		$this->validator->expects( $this->any() )->method( 'validate' )->willReturn( [] );
+		$this->rules_query->expects( $this->any() )->method( 'get_results' )->willReturn( [] );
+
+		$this->data_sources->method( 'ensure_data_source_for' )
+			->willThrowException( new MerchantApiException( 500, [], __METHOD__ ) );
+
+		$product = WC_Helper_Product::create_simple_product();
+
+		// The resolution failure is caught per product inside
+		// generate_mapi_update_entries(); the product is skipped and the
+		// exception does not fail the whole batch.
+		$this->assertSame( [], $this->batch_product_helper->generate_mapi_update_entries( [ $product ] ) );
 	}
 
 	/**

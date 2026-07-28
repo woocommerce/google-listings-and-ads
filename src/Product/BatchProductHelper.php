@@ -616,7 +616,9 @@ class BatchProductHelper implements Service {
 	 * connecting a different account or recreating a deleted data source changes
 	 * the hash, and an entry the destination has never received cannot be skipped
 	 * as "unchanged". Resolving also guarantees the data source exists before the
-	 * entry is submitted.
+	 * entry is submitted. The resolution runs even for entries that are then
+	 * skipped as unchanged: the resource name is part of the hashed payload, so
+	 * it must be resolved before the skip check can compare hashes.
 	 *
 	 * @param ProductInput $input
 	 *
@@ -659,6 +661,8 @@ class BatchProductHelper implements Service {
 			return false;
 		}
 
+		// The "|" delimiter follows the same convention as the MapiDataSourcesService
+		// cache key; never reuse this key format with values that can contain "|".
 		if ( ( $hashes[ $content_language . '|' . $feed_label ] ?? null ) !== $hash ) {
 			return false;
 		}

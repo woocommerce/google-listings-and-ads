@@ -358,6 +358,8 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 
 		// First mark the product as synced to update its meta data
 		$this->product_helper->mark_as_synced( $variation, $this->generate_google_product_mock() );
+		$this->product_helper->update_sync_hash( $variation, 'somehash', 'en', 'US' );
+		$this->product_helper->update_sync_hash( $parent, 'somehash', 'en', 'US' );
 
 		$this->product_helper->mark_as_unsynced( $variation );
 
@@ -371,6 +373,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 			$this->assertEmpty( $this->product_meta->get_errors( $product ) );
 			$this->assertEmpty( $this->product_meta->get_failed_sync_attempts( $product ) );
 			$this->assertEmpty( $this->product_meta->get_sync_failed_at( $product ) );
+			$this->assertEmpty( $this->product_meta->get_sync_hash( $product ) );
 		}
 	}
 
@@ -380,6 +383,8 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 
 		// First mark the product as synced to update its meta data
 		$this->product_helper->mark_as_synced( $variation, $this->generate_google_product_mock() );
+		$this->product_helper->update_sync_hash( $variation, 'somehash', 'en', 'US' );
+		$this->product_helper->update_sync_hash( $parent, 'somehash', 'en', 'US' );
 
 		// make the variation orphan by setting its parent to 0
 		$variation->set_parent_id( 0 );
@@ -395,10 +400,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		// will be deleted when calling mark_as_unsynced.
 		$this->assertEquals( null, $this->product_meta->get_sync_status( $variation ) );
 		$this->assertEmpty( $this->product_meta->get_google_ids( $variation ) );
+		$this->assertEmpty( $this->product_meta->get_sync_hash( $variation ) );
 
 		$this->assertNotEmpty( $this->product_meta->get_synced_at( $parent ) );
 		$this->assertEquals( SyncStatus::SYNCED, $this->product_meta->get_sync_status( $parent ) );
 		$this->assertNotEmpty( $this->product_meta->get_google_ids( $parent ) );
+		$this->assertSame( [ 'en|US' => 'somehash' ], $this->product_meta->get_sync_hash( $parent ) );
 	}
 
 	/**

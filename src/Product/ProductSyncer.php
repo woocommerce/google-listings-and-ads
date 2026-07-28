@@ -149,7 +149,7 @@ class ProductSyncer implements Service {
 					$updated_products[] = $synced_entry;
 					$this->batch_helper->mark_as_synced( $synced_entry );
 
-					if ( isset( $entry['hash'] ) ) {
+					if ( isset( $entry['hash'], $entry['input'] ) ) {
 						$this->product_helper->update_sync_hash(
 							$entry['product'],
 							$entry['hash'],

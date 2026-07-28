@@ -75,7 +75,9 @@ class ProductMetaHandler implements Service, Registerable {
 		self::KEY_MC_STATUS              => 'string',
 		// Keyed by "{contentLanguage}|{feedLabel}"; a product tracks one hash per
 		// synced entry. Reads may still return a legacy string stored before this
-		// was an array, which consumers treat as no-match.
+		// was an array, which consumers treat as no-match. If a caller still passes
+		// a plain string, update() intentionally casts it to a single-element array;
+		// that array holds no entry key, so it is also treated as no-match.
 		self::KEY_SYNC_HASH              => 'array',
 	];
 
