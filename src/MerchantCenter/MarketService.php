@@ -346,9 +346,44 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 	 * @return array[] Keyed by market ID.
 	 */
 	private function get_secondary_markets_source(): array {
-		return $this->is_flat_shipping_rate()
-			? $this->get_derived_flat_secondary_markets()
-			: $this->get_stored_secondary_markets();
+		if ( ! $this->is_flat_shipping_rate() ) {
+			return $this->get_stored_secondary_markets();
+		}
+
+		$this->reconcile_orphaned_stored_markets();
+
+		return $this->get_derived_flat_secondary_markets();
+	}
+
+	/**
+	 * Fold any persisted secondary markets back into the flat model.
+	 *
+	 * Flat markets are derived from the shipping tables and never persisted, but a store that
+	 * created markets under automatic/manual mode (add_market() removes their country from the
+	 * target audience and stores them in the Markets option) — or under an earlier flat
+	 * implementation — can still carry entries there. Once the global rate is flat those entries
+	 * would be orphaned: invisible on the Markets page, not deletable, and no longer synced,
+	 * because their country is in no market at all.
+	 *
+	 * Restoring each such country to the target audience makes it targeted again and re-derived
+	 * from its own shipping rows (as its own market when they differ from the main country's,
+	 * otherwise folded into the primary market), then the stale entries are cleared. The stored
+	 * language/currency is intentionally dropped — flat rate carries none. Idempotent: a no-op
+	 * once there are no stored markets.
+	 */
+	private function reconcile_orphaned_stored_markets(): void {
+		$stored = $this->get_stored_secondary_markets();
+		if ( empty( $stored ) ) {
+			return;
+		}
+
+		foreach ( $stored as $market ) {
+			if ( ! empty( $market['country'] ) ) {
+				$this->restore_country_to_target_audience( (string) $market['country'] );
+			}
+		}
+
+		$this->options->update( OptionsInterface::MARKETS, [] );
 	}
 
 	/**
@@ -956,7 +991,7 @@ class MarketService implements Service, OptionsAwareInterface, Registerable {
 		// removes the country from the store entirely: it leaves the target audience and
 		// its shipping rows are dropped (this is effectively editing the target audience).
 		if ( $this->is_flat_shipping_rate() ) {
-			$secondary = $this->get_derived_flat_secondary_markets();
+			$secondary = $this->get_secondary_markets_source();
 			if ( ! isset( $secondary[ $id ] ) ) {
 				return;
 			}

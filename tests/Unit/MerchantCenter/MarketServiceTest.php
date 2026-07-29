@@ -731,6 +731,63 @@ class MarketServiceTest extends UnitTest {
 		$this->assertSame( 'GB', $markets['gb']['country'] );
 	}
 
+	public function test_flat_mode_reconciles_orphaned_stored_markets_back_into_the_audience(): void {
+		// A market persisted under automatic/manual mode (its country removed from the audience)
+		// would be orphaned once the store is flat: invisible, undeletable, and unsynced. Reading
+		// markets in flat mode must fold its country back into the audience and clear the stale entry.
+		$this->set_up_options_get(
+			[
+				OptionsInterface::MERCHANT_CENTER => [
+					'shipping_rate' => 'flat',
+					'shipping_time' => 'flat',
+				],
+				OptionsInterface::MARKETS         => [
+					'gb' => [
+						'country'    => 'GB',
+						'language'   => [ 'en' ],
+						'currency'   => [ 'GBP' ],
+						'feed_label' => 'GB',
+					],
+				],
+				OptionsInterface::TARGET_AUDIENCE => [
+					'location'  => 'selected',
+					'countries' => [ 'US' ],
+				],
+			]
+		);
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US' ] );
+		$this->target_audience->method( 'get_main_target_country' )->willReturn( 'US' );
+		$this->wc->method( 'get_countries' )->willReturn( [] );
+		$this->shipping_rate_query->method( 'get_all_shipping_rates' )->willReturn( [ 'US' => [ 'rate' => '5' ] ] );
+		$this->shipping_time_query->method( 'get_all_shipping_times' )->willReturn(
+			[
+				'US' => [
+					'time'     => '2',
+					'max_time' => '4',
+				],
+			]
+		);
+
+		$updates = [];
+		$this->options->method( 'update' )
+			->willReturnCallback(
+				function ( $key, $value ) use ( &$updates ) {
+					$updates[ $key ] = $value;
+					return true;
+				}
+			);
+
+		$this->market_service->get_markets();
+
+		// The stale stored market is cleared...
+		$this->assertArrayHasKey( OptionsInterface::MARKETS, $updates );
+		$this->assertSame( [], $updates[ OptionsInterface::MARKETS ] );
+
+		// ...and its country is folded back into the target audience so it stays targeted.
+		$this->assertArrayHasKey( OptionsInterface::TARGET_AUDIENCE, $updates );
+		$this->assertContains( 'GB', $updates[ OptionsInterface::TARGET_AUDIENCE ]['countries'] );
+	}
+
 	public function test_add_market_records_was_in_primary_false_when_country_was_not_targeted(): void {
 		$config = [
 			'country'    => 'DE',
