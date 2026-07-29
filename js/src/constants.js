@@ -42,6 +42,9 @@ export const SHIPPING_RATE_METHOD = {
 	FLAT_RATE: 'flat_rate',
 };
 
+export const DEFAULT_SHIPPING_MIN_TIME = 1;
+export const DEFAULT_SHIPPING_MAX_TIME = 5;
+
 // Stepper key related
 const campaignStepEntries = [
 	[ 'CAMPAIGN', 'campaign' ],

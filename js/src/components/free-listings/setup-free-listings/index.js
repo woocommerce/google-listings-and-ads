@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useRef } from '@wordpress/element';
+import { useRef, useEffect } from '@wordpress/element';
 import { createSlotFill } from '@wordpress/components';
 import { Form } from '@woocommerce/components';
 import { pick, noop } from 'lodash';
@@ -92,6 +92,29 @@ const SetupFreeListings = ( {
 } ) => {
 	const formRef = useRef();
 
+	// AdaptiveForm ignores `initialValues` changes after mount. When SavedSetupStepper
+	// auto-saves default shipping times (e.g. after the wp_gla_shipping_times table is
+	// cleared), the store updates and `shippingTimes` arrives as a new prop, but the
+	// form's internal `shipping_country_times` stays stale. This effect detects the
+	// empty → non-empty transition and pushes the new value into the live form state.
+	// skipNextTimesChangeRef prevents the resulting handleChange from firing a redundant
+	// saveShippingTimes — the data was just saved by SavedSetupStepper moments before.
+	const prevShippingTimesRef = useRef( shippingTimes );
+	const skipNextTimesChangeRef = useRef( false );
+	useEffect( () => {
+		const prev = prevShippingTimesRef.current;
+		prevShippingTimesRef.current = shippingTimes;
+
+		if ( ! formRef.current || ! shippingTimes ) {
+			return;
+		}
+
+		if ( prev?.length === 0 && shippingTimes.length > 0 ) {
+			skipNextTimesChangeRef.current = true;
+			formRef.current.setValue( 'shipping_country_times', shippingTimes );
+		}
+	}, [ shippingTimes ] );
+
 	if ( ! ( targetAudience && settings && shippingRates && shippingTimes ) ) {
 		return <AppSpinner />;
 	}
@@ -133,6 +156,13 @@ const SetupFreeListings = ( {
 				setValue( 'shipping_country_rates', nextValue );
 			}
 		} else if ( change.name === 'shipping_country_times' ) {
+			// Skip the save when the change was triggered by syncing times from the store
+			// (see skipNextTimesChangeRef above) — the data is already persisted.
+			if ( skipNextTimesChangeRef.current ) {
+				skipNextTimesChangeRef.current = false;
+				return;
+			}
+
 			// Skip the call of `onShippingTimesChange` if any shipping times are invalid.
 			const error = handleValidate( values );
 			const isValid = ! error.hasOwnProperty( change.name );
